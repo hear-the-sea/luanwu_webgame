@@ -87,3 +87,6 @@ Thumbs.db
 *.lnk
 .claude/worktrees/
 AGENTS.md
+.codex
+.superpowers/brainstorm/
+docs/superpowers/
