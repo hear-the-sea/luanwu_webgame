@@ -122,6 +122,10 @@ def _build_resource_page_context(member: Any, *, manor: Manor, page_mode: str) -
     )
 
 
+def build_guild_resource_context(member: Any, *, manor: Manor, page_mode: str = "detail") -> dict[str, Any]:
+    return _build_resource_page_context(member, manor=manor, page_mode=page_mode)
+
+
 @login_required
 @require_guild_member
 @rate_limit_redirect("guild_donate", limit=10, window_seconds=60)
@@ -129,23 +133,22 @@ def donate_resource(request: Any) -> HttpResponse:
     """捐赠资源"""
     member = request.guild_member
 
-    if request.method == "POST":
-        resource_type = request.POST.get("resource_type")
-        amount = safe_int(request.POST.get("amount", 0), default=0, min_val=0)
+    if request.method != "POST":
+        return redirect("guilds:detail", guild_id=member.guild_id)
 
-        outcome = execute_guild_action(
-            request,
-            action=lambda: contribution_service.donate_resource(member, resource_type, amount),
-            success_message="捐赠成功！您获得了相应的贡献度",
-            error_message_formatter=sanitize_error_message,
-        )
-        if outcome.succeeded:
-            return redirect("guilds:resources")
+    resource_type = request.POST.get("resource_type")
+    amount = safe_int(request.POST.get("amount", 0), default=0, min_val=0)
 
-    manor = get_object_or_404(Manor, user=request.user)
-    context = _build_resource_page_context(member, manor=manor, page_mode="donate")
+    outcome = execute_guild_action(
+        request,
+        action=lambda: contribution_service.donate_resource(member, resource_type, amount),
+        success_message="捐赠成功！您获得了相应的贡献度",
+        error_message_formatter=sanitize_error_message,
+    )
+    if outcome.succeeded:
+        return redirect("guilds:detail", guild_id=member.guild_id)
 
-    return render(request, "guilds/donate.html", context)
+    return redirect("guilds:detail", guild_id=member.guild_id)
 
 
 @login_required
@@ -194,7 +197,7 @@ def resource_status(request: Any) -> HttpResponse:
     member = request.guild_member
     manor = get_object_or_404(Manor, user=request.user)
 
-    context = _build_resource_page_context(member, manor=manor, page_mode="resources")
+    context = build_guild_resource_context(member, manor=manor, page_mode="resources")
 
     return render(request, "guilds/resources.html", context)
 

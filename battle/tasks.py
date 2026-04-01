@@ -9,6 +9,7 @@ from django.db import transaction
 
 from core.exceptions import GameError
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
+from gameplay.services.missions_impl.enemy_guest_configs import EnemyGuestConfig, normalize_enemy_guest_configs
 from guests.models import Guest
 
 from .services import simulate_report
@@ -78,33 +79,15 @@ def _normalize_mapping(raw) -> dict:
     raise AssertionError(f"invalid mission mapping payload: {raw!r}")
 
 
-def _normalize_guest_configs(raw) -> list[str | dict]:
-    if raw is None:
-        return []
-    if not isinstance(raw, (list, tuple, set)):
-        raise AssertionError(f"invalid mission guest configs: {raw!r}")
-    normalized: list[str | dict] = []
-    for entry in raw:
-        if isinstance(entry, str):
-            key = entry.strip()
-            if not key:
-                raise AssertionError(f"invalid mission guest config entry: {entry!r}")
-            normalized.append(key)
-        elif isinstance(entry, dict):
-            raw_key = entry.get("key")
-            if not isinstance(raw_key, str) or not raw_key.strip():
-                raise AssertionError(f"invalid mission guest config entry: {entry!r}")
-            skills = entry.get("skills")
-            if skills is not None:
-                if not isinstance(skills, (list, tuple, set)):
-                    raise AssertionError(f"invalid mission guest config skills: {skills!r}")
-                for skill in skills:
-                    if not isinstance(skill, str) or not skill.strip():
-                        raise AssertionError(f"invalid mission guest config skills entry: {skill!r}")
-            normalized.append(entry)
-        else:
-            raise AssertionError(f"invalid mission guest config entry: {entry!r}")
-    return normalized
+def _normalize_guest_configs(raw) -> list[EnemyGuestConfig]:
+    return normalize_enemy_guest_configs(raw)
+
+
+def _resolve_defender_max_squad(defender_setup: dict | None) -> int | None:
+    if not defender_setup:
+        return None
+    guest_configs = _normalize_guest_configs(defender_setup.get("guest_keys"))
+    return len(guest_configs) or None
 
 
 def _normalize_troop_loadout(raw) -> dict[str, int]:
@@ -343,6 +326,7 @@ def generate_report_task(
                 send_message=False,
                 auto_reward=False,
                 drop_handler=None,
+                defender_max_squad=_resolve_defender_max_squad(defender_setup),
                 max_squad=getattr(manor, "max_squad_size", None),
                 apply_damage=False,
                 use_lock=False,  # 修复：门客已DEPLOYED，不需要锁校验

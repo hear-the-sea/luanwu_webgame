@@ -12,15 +12,15 @@
     </div>
 
     <nav class="tw-mission-tabs">
-        <button class="tw-trade-tab active" data-tab="junior">初级任务</button>
-        <button class="tw-trade-tab" data-tab="intermediate">中级任务</button>
-        <button class="tw-trade-tab" data-tab="advanced">高级任务</button>
+        <button class="tw-trade-tab{% if active_tab == 'junior' %} active{% endif %}" data-tab="junior">初级任务</button>
+        <button class="tw-trade-tab{% if active_tab == 'intermediate' %} active{% endif %}" data-tab="intermediate">中级任务</button>
+        <button class="tw-trade-tab{% if active_tab == 'advanced' %} active{% endif %}" data-tab="advanced">高级任务</button>
     </nav>
 
     <section class="tw-card" style="padding: 0; overflow: hidden; border-top-left-radius: 0;">
         <div class="tw-mission-content">
             <!-- Junior Tab -->
-            <div id="tab-junior" class="mission-tab-content active">
+            <div id="tab-junior" class="mission-tab-content{% if active_tab == 'junior' %} active{% endif %}"{% if active_tab != 'junior' %} style="display: none;"{% endif %}>
                 <table class="tw-mission-table">
                     <thead>
                         <tr>
@@ -36,7 +36,7 @@
                         {% with mission=item.mission %}
                         <tr>
                             <td>
-                                <div class="font-bold text-text-primary">{{ mission.name }}</div>
+                                <a class="font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
                             </td>
                             <td class="text-center">
                                 <span class="tw-chip">
@@ -62,7 +62,7 @@
             </div>
 
             <!-- Intermediate Tab -->
-            <div id="tab-intermediate" class="mission-tab-content" style="display: none;">
+            <div id="tab-intermediate" class="mission-tab-content{% if active_tab == 'intermediate' %} active{% endif %}"{% if active_tab != 'intermediate' %} style="display: none;"{% endif %}>
                 <table class="tw-mission-table">
                     <thead>
                         <tr>
@@ -78,7 +78,7 @@
                         {% with mission=item.mission %}
                         <tr>
                             <td>
-                                <div class="font-bold text-text-primary">{{ mission.name }}</div>
+                                <a class="font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
                             </td>
                             <td class="text-center">
                                 <span class="tw-chip">
@@ -104,7 +104,7 @@
             </div>
 
             <!-- Advanced Tab -->
-            <div id="tab-advanced" class="mission-tab-content" style="display: none;">
+            <div id="tab-advanced" class="mission-tab-content{% if active_tab == 'advanced' %} active{% endif %}"{% if active_tab != 'advanced' %} style="display: none;"{% endif %}>
                 <table class="tw-mission-table">
                     <thead>
                         <tr>
@@ -120,7 +120,7 @@
                         {% with mission=item.mission %}
                         <tr>
                             <td>
-                                <div class="font-bold text-text-primary">{{ mission.name }}</div>
+                                <a class="font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
                             </td>
                             <td class="text-center">
                                 <span class="tw-chip">
@@ -193,9 +193,6 @@
                                     {% else %}
                                         <span class="tw-badge">{{ label|slice:":1" }}</span>
                                     {% endif %}
-                                    <div class="tw-enemy-meta">
-                                        <span class="tw-guest-name-sm rarity-text-{{ template.rarity|default:'black'|lower }}">{{ label }}</span>
-                                    </div>
                                 </div>
                                 {% endwith %}
                                 {% endwith %}

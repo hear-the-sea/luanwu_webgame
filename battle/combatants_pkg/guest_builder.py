@@ -152,6 +152,13 @@ def serialize_guest_for_report(combatant: Combatant) -> Dict[str, Any]:
     }
 
 
+def resolve_guest_display_name(guest: Guest) -> str:
+    override = getattr(guest, "_display_name_override", None)
+    if isinstance(override, str) and override.strip():
+        return override.strip()
+    return guest.display_name
+
+
 def build_guest_combatants(
     guests: List[Guest],
     side: str,
@@ -204,7 +211,7 @@ def build_guest_combatants(
         priority = 0
         team.append(
             Combatant(
-                name=guest.display_name,
+                name=resolve_guest_display_name(guest),
                 guest_id=getattr(guest, "id", None),
                 attack=attack,
                 defense=defense,

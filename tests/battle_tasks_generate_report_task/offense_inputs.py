@@ -106,3 +106,45 @@ def test_generate_report_task_rejects_blank_battle_type(monkeypatch, django_user
             troop_loadout={},
             battle_type=" ",
         )
+
+
+@pytest.mark.django_db
+def test_generate_report_task_offense_uses_enemy_guest_count_as_defender_max_squad(monkeypatch, django_user_model):
+    from battle.tasks import generate_report_task
+    from gameplay.models import MissionTemplate
+
+    user = django_user_model.objects.create_user(username="task_offense_enemy_guest_count", password="pass")
+    manor = ensure_manor(user)
+    mission = MissionTemplate.objects.create(
+        key="task_offense_enemy_guest_count",
+        name="敌方人数任务",
+        battle_type="task",
+        enemy_guests=[{"key": f"enemy_{i}"} for i in range(7)],
+    )
+
+    assert_no_retry(monkeypatch)
+
+    captured = {}
+
+    class _FakeReport:
+        pk = 123
+
+    def _fake_simulate_report(**kwargs):
+        captured.update(kwargs)
+        return _FakeReport()
+
+    monkeypatch.setattr("battle.tasks.simulate_report", _fake_simulate_report)
+
+    result = generate_report_task.run(
+        manor_id=manor.id,
+        mission_id=mission.id,
+        run_id=None,
+        guest_ids=[],
+        troop_loadout={},
+        battle_type="task",
+        defender_setup={"guest_keys": mission.enemy_guests},
+    )
+
+    assert result == 123
+    assert captured["max_squad"] == manor.max_squad_size
+    assert captured["defender_max_squad"] == 7

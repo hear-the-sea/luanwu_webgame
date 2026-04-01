@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from gameplay.services.missions_impl.enemy_guest_configs import EnemyGuestConfig, normalize_enemy_guest_configs
+
 
 def _normalize_optional_mapping(raw: Any, *, contract_name: str) -> dict[str, Any]:
     if raw is None:
@@ -11,23 +13,11 @@ def _normalize_optional_mapping(raw: Any, *, contract_name: str) -> dict[str, An
     raise AssertionError(f"invalid {contract_name}: {raw!r}")
 
 
-def _normalize_guest_configs(raw: Any) -> list[str | dict[str, Any]]:
-    if raw is None:
-        return []
-    if not isinstance(raw, (list, tuple, set)):
-        raise AssertionError(f"invalid battle defender guest_keys payload: {raw!r}")
-    normalized: list[str | dict[str, Any]] = []
-    for entry in raw:
-        if isinstance(entry, str):
-            key = entry.strip()
-            if not key:
-                raise AssertionError(f"invalid battle defender guest_keys entry: {entry!r}")
-            normalized.append(key)
-        elif isinstance(entry, dict):
-            normalized.append(entry)
-        else:
-            raise AssertionError(f"invalid battle defender guest_keys entry: {entry!r}")
-    return normalized
+def _normalize_guest_configs(raw: Any) -> list[EnemyGuestConfig]:
+    try:
+        return normalize_enemy_guest_configs(raw)
+    except AssertionError as exc:
+        raise AssertionError(f"invalid battle defender guest_keys payload: {raw!r}") from exc
 
 
 def _normalize_troop_loadout_input(raw: Any) -> dict[str, int] | None:

@@ -11,6 +11,7 @@ from battle import execution as battle_execution
 from battle.combatants_pkg import cache as guest_template_cache
 from battle.models import BattleReport, TroopTemplate
 from core.exceptions import GuildValidationError
+from gameplay.models import Message
 from gameplay.services.battle_snapshots import build_guest_battle_snapshots
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestArchetype, GuestRarity, GuestTemplate
@@ -567,6 +568,77 @@ def test_finalize_guild_mission_returns_survivors_and_awards_ruby(django_user_mo
     assert run.battle_report_id == report.id
     assert storage.count == 42
     assert guild.warehouse_items.get(item_key="red_ruby").quantity == 5
+
+
+@pytest.mark.django_db(transaction=True)
+def test_finalize_guild_mission_sends_report_message_to_all_active_members(django_user_model, monkeypatch):
+    leader, leader_manor = _create_user_with_manor(django_user_model, "guild_mission_report_leader")
+    admin, admin_manor = _create_user_with_manor(django_user_model, "guild_mission_report_admin")
+    member, member_manor = _create_user_with_manor(django_user_model, "guild_mission_report_member")
+    guild = Guild.objects.create(name="帮会任务战报群发帮", founder=leader, is_active=True)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    GuildMember.objects.create(guild=guild, user=admin, position="admin", is_active=True)
+    GuildMember.objects.create(guild=guild, user=member, position="member", is_active=True)
+    template = GuildMissionTemplate.objects.create(
+        key="guild_report_delivery_task",
+        name="群发战报任务",
+        description="",
+        difficulty="junior",
+        task_type="dispatch",
+        base_duration_seconds=60,
+        ruby_reward=0,
+        recommended_guest_count=1,
+        allow_troops=False,
+        enemy_guests=[],
+        enemy_troops={},
+        enemy_technology={},
+        is_active=True,
+    )
+    guest = _create_guest(manor=leader_manor, template=_create_template("guild_report_delivery_tpl"), name="先锋")
+    entry = hero_pool_service.submit_hero_pool_entry(leader_member, guest_id=guest.id, slot_index=1).entry
+    hero_pool_service.add_lineup_entry(guild=guild, operator=leader, pool_entry_id=entry.id)
+
+    monkeypatch.setattr("guilds.services.guild_missions.schedule_guild_mission_completion", lambda _run: None)
+
+    from guilds.services import guild_missions as guild_mission_service
+
+    run = guild_mission_service.launch_guild_mission(
+        guild=guild,
+        operator=leader,
+        template_key=template.key,
+        pool_entry_ids=[entry.id],
+        troop_loadout={},
+    )
+
+    report = BattleReport.objects.create(
+        manor=leader_manor,
+        opponent_name=template.name,
+        battle_type="guild_mission",
+        attacker_team=[],
+        attacker_troops={},
+        defender_team=[],
+        defender_troops={},
+        rounds=[],
+        losses={"attacker": {"casualties": []}, "defender": {}},
+        drops={},
+        winner="attacker",
+        starts_at=timezone.now() - timedelta(seconds=5),
+        completed_at=timezone.now(),
+        seed=21,
+    )
+    monkeypatch.setattr("guilds.services.guild_missions.execute_battle", lambda *args, **kwargs: report)
+
+    assert guild_mission_service.finalize_guild_mission_run(run)
+
+    messages = list(
+        Message.objects.filter(
+            kind=Message.Kind.BATTLE,
+            title=f"{template.name} 战报",
+            battle_report=report,
+        ).order_by("manor_id")
+    )
+
+    assert [message.manor_id for message in messages] == sorted([leader_manor.id, admin_manor.id, member_manor.id])
 
 
 @pytest.mark.django_db(transaction=True)

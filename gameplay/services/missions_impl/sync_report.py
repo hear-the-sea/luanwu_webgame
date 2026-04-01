@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from ...models import Manor, MissionTemplate
+from .enemy_guest_configs import EnemyGuestConfig, normalize_enemy_guest_configs
 
 
 def _normalize_enemy_technology_config(raw) -> Dict[str, object]:
@@ -37,33 +38,15 @@ def _normalize_mapping(raw) -> Dict[str, object]:
     raise AssertionError(f"invalid mission mapping payload: {raw!r}")
 
 
-def _normalize_guest_configs(raw) -> list[str | Dict[str, object]]:
-    if raw is None:
-        return []
-    if not isinstance(raw, (list, tuple, set)):
-        raise AssertionError(f"invalid mission guest configs: {raw!r}")
-    normalized: list[str | Dict[str, object]] = []
-    for entry in raw:
-        if isinstance(entry, str):
-            key = entry.strip()
-            if not key:
-                raise AssertionError(f"invalid mission guest config entry: {entry!r}")
-            normalized.append(key)
-        elif isinstance(entry, dict):
-            raw_key = entry.get("key")
-            if not isinstance(raw_key, str) or not raw_key.strip():
-                raise AssertionError(f"invalid mission guest config entry: {entry!r}")
-            skills = entry.get("skills")
-            if skills is not None:
-                if not isinstance(skills, (list, tuple, set)):
-                    raise AssertionError(f"invalid mission guest config skills: {skills!r}")
-                for skill in skills:
-                    if not isinstance(skill, str) or not skill.strip():
-                        raise AssertionError(f"invalid mission guest config skills entry: {skill!r}")
-            normalized.append(entry)
-        else:
-            raise AssertionError(f"invalid mission guest config entry: {entry!r}")
-    return normalized
+def _normalize_guest_configs(raw) -> list[EnemyGuestConfig]:
+    return normalize_enemy_guest_configs(raw)
+
+
+def _resolve_defender_max_squad(defender_setup: Dict[str, object]) -> int | None:
+    if not defender_setup:
+        return None
+    guest_configs = _normalize_guest_configs(defender_setup.get("guest_keys"))
+    return len(guest_configs) or None
 
 
 def _normalize_troop_loadout(raw) -> Dict[str, int]:
@@ -190,6 +173,7 @@ def generate_sync_battle_report(
         send_message=False,
         auto_reward=False,
         drop_handler=None,
+        defender_max_squad=_resolve_defender_max_squad(defender_setup),
         max_squad=getattr(manor, "max_squad_size", None),
         apply_damage=False,
         use_lock=False,

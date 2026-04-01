@@ -18,6 +18,7 @@ from ..constants import GUILD_CREATION_COST, GUILD_HALL_DISPLAY_LIMIT, GUILD_LIS
 from ..decorators import require_guild_leader
 from ..models import Guild
 from ..services import guild as guild_service
+from .contribution import build_guild_resource_context
 from .helpers import execute_guild_action, load_guild_leader, load_recent_announcements
 
 
@@ -162,6 +163,9 @@ def guild_detail(request: Any, guild_id: int) -> HttpResponse:
         "member_count": guild.current_member_count,
         "announcements": announcements,
     }
+    if is_member and member is not None:
+        manor = get_object_or_404(Manor, user=request.user)
+        context.update(build_guild_resource_context(member, manor=manor))
 
     return render(request, "guilds/detail.html", context)
 

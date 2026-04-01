@@ -293,6 +293,59 @@ def test_page_context_cleans_cross_guild_inconsistent_entries(django_user_model)
 
 
 @pytest.mark.django_db
+def test_hero_pool_page_context_builds_status_counts_for_roster_filters(django_user_model):
+    leader, leader_manor = _create_user_with_manor(django_user_model, "ghp_plan_status_leader")
+    guild = Guild.objects.create(name="计划状态帮", founder=leader)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+
+    template = _create_template("ghp_plan_status_tpl")
+    my_guest = _create_guest(manor=leader_manor, template=template, name="我的门客", level=26)
+    hero_pool_service.submit_hero_pool_entry(leader_member, guest_id=my_guest.id, slot_index=1)
+
+    other_user, other_manor = _create_user_with_manor(django_user_model, "ghp_plan_status_member")
+    other_member = GuildMember.objects.create(guild=guild, user=other_user, position="member")
+    lineup_guest = _create_guest(manor=other_manor, template=template, name="已上阵门客", level=24)
+    lineup_entry = hero_pool_service.submit_hero_pool_entry(other_member, guest_id=lineup_guest.id, slot_index=1).entry
+    hero_pool_service.add_lineup_entry(guild=guild, operator=leader, pool_entry_id=lineup_entry.id)
+
+    idle_user, idle_manor = _create_user_with_manor(django_user_model, "ghp_plan_status_idle")
+    idle_member = GuildMember.objects.create(guild=guild, user=idle_user, position="member")
+    idle_guest = _create_guest(manor=idle_manor, template=template, name="可加入门客", level=18)
+    hero_pool_service.submit_hero_pool_entry(idle_member, guest_id=idle_guest.id, slot_index=1)
+
+    context = hero_pool_service.get_hero_pool_page_context(leader_member)
+
+    assert context["hero_pool_filter_counts"] == {
+        "joinable": 1,
+        "lineup": 1,
+        "mine": 1,
+        "all": 3,
+    }
+    status_keys = {row["status_key"] for row in context["pool_rows"]}
+    assert status_keys >= {"mine", "lineup", "joinable"}
+
+
+@pytest.mark.django_db
+def test_hero_pool_page_context_builds_scrollable_lineup_summary_rows(django_user_model):
+    leader, leader_manor = _create_user_with_manor(django_user_model, "ghp_plan_lineup_leader")
+    guild = Guild.objects.create(name="计划出战帮", founder=leader)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+
+    template = _create_template("ghp_plan_lineup_tpl")
+    guest = _create_guest(manor=leader_manor, template=template, name="赵云", level=30)
+    entry = hero_pool_service.submit_hero_pool_entry(leader_member, guest_id=guest.id, slot_index=1).entry
+    hero_pool_service.add_lineup_entry(guild=guild, operator=leader, pool_entry_id=entry.id)
+
+    context = hero_pool_service.get_hero_pool_page_context(leader_member)
+
+    assert context["lineup_summary_rows"][0]["guest_name"] == "赵云"
+    assert context["lineup_summary_rows"][0]["owner_name"] == leader.manor.display_name
+    assert context["lineup_summary_rows"][0]["avatar_url"] == (
+        guest.template.avatar.url if guest.template.avatar else None
+    )
+
+
+@pytest.mark.django_db
 def test_lock_guild_lineup_for_dispatch_locks_guest_order(django_user_model):
     leader, leader_manor = _create_user_with_manor(django_user_model, "ghp_lock_leader")
     guild = Guild.objects.create(name="门客池锁定帮", founder=leader)

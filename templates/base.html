@@ -177,6 +177,7 @@
         {% block extra_scripts %}{% endblock %}
     </div>
     {% if user.is_authenticated %}
+    <script src="{% static 'js/partial_nav_core.js' %}"></script>
     <script src="{% static 'js/nav_partial.js' %}"></script>
     {% endif %}
 </body>

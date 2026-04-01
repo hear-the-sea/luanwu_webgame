@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
+from .enemy_guest_configs import normalize_enemy_guest_configs
+
 
 def normalize_mapping(raw: Any) -> Dict[str, object]:
     if raw is None:
@@ -20,32 +22,7 @@ def normalize_mapping(raw: Any) -> Dict[str, object]:
 
 
 def normalize_guest_configs(raw: Any) -> List[Any]:
-    if raw is None:
-        return []
-    if not isinstance(raw, (list, tuple, set)):
-        raise AssertionError(f"invalid mission guest configs: {raw!r}")
-    normalized: List[Any] = []
-    for entry in raw:
-        if isinstance(entry, str):
-            key = entry.strip()
-            if not key:
-                raise AssertionError(f"invalid mission guest config entry: {entry!r}")
-            normalized.append(key)
-        elif isinstance(entry, dict):
-            raw_key = entry.get("key")
-            if not isinstance(raw_key, str) or not raw_key.strip():
-                raise AssertionError(f"invalid mission guest config entry: {entry!r}")
-            skills = entry.get("skills")
-            if skills is not None:
-                if not isinstance(skills, (list, tuple, set)):
-                    raise AssertionError(f"invalid mission guest config skills: {skills!r}")
-                for skill in skills:
-                    if not isinstance(skill, str) or not skill.strip():
-                        raise AssertionError(f"invalid mission guest config skills entry: {skill!r}")
-            normalized.append(entry)
-        else:
-            raise AssertionError(f"invalid mission guest config entry: {entry!r}")
-    return normalized
+    return list(normalize_enemy_guest_configs(raw))
 
 
 def load_locked_mission_run(*, mission_run_model: Any, run_pk: int):

@@ -1,14 +1,24 @@
 # guilds/services/warehouse.py
 
+from __future__ import annotations
+
 from django.db import transaction
 from django.db.models import F
 
 from core.exceptions import GuildWarehouseError
-from gameplay.models import InventoryItem, Manor
+from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
+from gameplay.services.resources import grant_resources_locked
 
-from ..constants import DAILY_EXCHANGE_LIMIT
-from ..models import GuildExchangeLog, GuildMember, GuildWarehouse
+from ..constants import CONTRIBUTION_RATES, DAILY_EXCHANGE_LIMIT
+from ..models import Guild, GuildExchangeLog, GuildMember, GuildWarehouse
 from .warehouse_config import get_production_items
+
+PROJECTED_RESOURCE_KEYS = ("silver", "grain", "gold_bar")
+PROJECTED_RESOURCE_LABELS = {
+    "silver": "银两",
+    "grain": "粮食",
+    "gold_bar": "金条",
+}
 
 
 def add_item_to_warehouse(guild, item_key, quantity, contribution_cost):
@@ -37,6 +47,100 @@ def add_item_to_warehouse(guild, item_key, quantity, contribution_cost):
     )
 
 
+def _is_projected_resource_item(item_key: str) -> bool:
+    return item_key in PROJECTED_RESOURCE_KEYS
+
+
+def _get_projected_resource_quantity(guild, item_key: str) -> int:
+    return max(0, int(getattr(guild, item_key, 0) or 0))
+
+
+def _get_projected_resource_exchange_cost(item_key: str) -> int:
+    return max(0, int(CONTRIBUTION_RATES.get(item_key, 0) or 0))
+
+
+def _grant_inventory_item_to_manor_locked(manor, template, quantity: int) -> None:
+    inventory_item = (
+        InventoryItem.objects.select_for_update()
+        .filter(
+            manor=manor,
+            template=template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+        .first()
+    )
+
+    if inventory_item:
+        InventoryItem.objects.filter(pk=inventory_item.pk).update(quantity=F("quantity") + quantity)
+        return
+
+    InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        quantity=quantity,
+    )
+
+
+def _exchange_projected_resource_item(member, item_key: str, quantity: int) -> None:
+    with transaction.atomic():
+        # 与帮会捐献保持一致的锁顺序，避免资源互转路径死锁。
+        manor_locked = Manor.objects.select_for_update().get(user=member.user)
+        guild_locked = Guild.objects.select_for_update().get(pk=member.guild_id)
+        member_locked = GuildMember.objects.select_for_update().get(pk=member.pk)
+
+        member_locked.reset_daily_limits()
+
+        if member_locked.daily_exchange_count >= DAILY_EXCHANGE_LIMIT:
+            raise GuildWarehouseError(f"今日兑换次数已达上限（{DAILY_EXCHANGE_LIMIT}次）")
+
+        available_quantity = _get_projected_resource_quantity(guild_locked, item_key)
+        if available_quantity < quantity:
+            raise GuildWarehouseError(f"库存不足，剩余{available_quantity}件")
+
+        total_cost = _get_projected_resource_exchange_cost(item_key) * quantity
+        if member_locked.current_contribution < total_cost:
+            raise GuildWarehouseError(f"贡献度不足，需要{total_cost}贡献")
+
+        updated_member = GuildMember.objects.filter(pk=member_locked.pk).update(
+            current_contribution=F("current_contribution") - total_cost,
+            daily_exchange_count=F("daily_exchange_count") + 1,
+        )
+        if not updated_member:
+            raise GuildWarehouseError("贡献度扣除失败，请重试")
+
+        updated_guild = Guild.objects.filter(pk=guild_locked.pk, **{f"{item_key}__gte": quantity}).update(
+            **{item_key: F(item_key) - quantity}
+        )
+        if not updated_guild:
+            raise GuildWarehouseError("库存不足，兑换失败")
+
+        if item_key in {"silver", "grain"}:
+            credited, _overflow = grant_resources_locked(
+                manor_locked,
+                {item_key: quantity},
+                note="帮会仓库兑换",
+                reason=ResourceEvent.Reason.TASK_REWARD,
+                sync_production=False,
+            )
+            if int(credited.get(item_key, 0) or 0) < quantity:
+                raise GuildWarehouseError("庄园容量不足，兑换失败")
+        else:
+            try:
+                template = ItemTemplate.objects.get(key=item_key)
+            except ItemTemplate.DoesNotExist as exc:
+                raise GuildWarehouseError("物品不存在") from exc
+            _grant_inventory_item_to_manor_locked(manor_locked, template, quantity)
+
+        GuildExchangeLog.objects.create(
+            guild=guild_locked,
+            member=member_locked,
+            item_key=item_key,
+            quantity=quantity,
+            contribution_cost=total_cost,
+        )
+
+
 def exchange_item(member, item_key, quantity=1):
     """
     兑换帮会仓库物品（并发安全版本 + 修复字段错误）
@@ -58,6 +162,10 @@ def exchange_item(member, item_key, quantity=1):
     """
     if quantity <= 0:
         raise GuildWarehouseError("兑换数量必须为正整数")
+
+    if _is_projected_resource_item(item_key):
+        _exchange_projected_resource_item(member, item_key, quantity)
+        return
 
     from gameplay.models import ItemTemplate
 
@@ -124,29 +232,7 @@ def exchange_item(member, item_key, quantity=1):
         # 修复：使用正确的template字段和StorageLocation枚举
         # 并发安全：锁定Manor防止并发冲突
         manor = Manor.objects.select_for_update().get(user=member_locked.user)
-
-        # 锁定现有库存记录，防止并发冲突
-        inventory_item = (
-            InventoryItem.objects.select_for_update()
-            .filter(
-                manor=manor,
-                template=template,  # 修复：使用template字段而不是item_key
-                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-            )
-            .first()
-        )
-
-        if inventory_item:
-            # 已有该物品，使用F()表达式增加数量
-            InventoryItem.objects.filter(pk=inventory_item.pk).update(quantity=F("quantity") + quantity)
-        else:
-            # 首次获得该物品，创建新记录
-            InventoryItem.objects.create(
-                manor=manor,
-                template=template,  # 修复：使用template字段
-                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-                quantity=quantity,
-            )
+        _grant_inventory_item_to_manor_locked(manor, template, quantity)
 
         # 步骤6：记录兑换日志
         GuildExchangeLog.objects.create(
@@ -205,14 +291,33 @@ def produce_resource_packs(guild, tech_level):
     _produce_items_from_config(guild, "resource", tech_level)
 
 
+def _build_projected_resource_item(guild, item_key, template):
+    quantity = _get_projected_resource_quantity(guild, item_key)
+    if quantity <= 0:
+        return None
+    projected_item = GuildWarehouse(
+        guild=guild,
+        item_key=item_key,
+        quantity=0,
+        contribution_cost=_get_projected_resource_exchange_cost(item_key),
+        total_produced=0,
+        total_exchanged=0,
+    )
+    projected_item.template = template or ItemTemplate(
+        key=item_key,
+        name=PROJECTED_RESOURCE_LABELS.get(item_key, item_key),
+        is_usable=True,
+    )
+    projected_item.display_name = PROJECTED_RESOURCE_LABELS.get(item_key, item_key)
+    projected_item.is_usable = True
+    projected_item.display_quantity = quantity
+    projected_item.is_projected = True
+    return projected_item
+
+
 def get_warehouse_items(guild, page=1, per_page=50):
     """
     获取帮会仓库物品列表，附加ItemTemplate信息（N+1查询优化版本 + 分页）
-
-    性能优化：
-    - 原实现：每个仓库物品执行1次ItemTemplate查询（N+1问题）
-    - 优化后：批量预加载所有模板，总共2次查询
-    - 分页优化：每页最多加载per_page条记录
 
     Args:
         guild: Guild对象
@@ -232,31 +337,49 @@ def get_warehouse_items(guild, page=1, per_page=50):
 
     from gameplay.utils.template_loader import get_item_templates_by_keys
 
-    # 查询1：获取所有仓库物品（QuerySet，延迟执行）
-    warehouse_queryset = GuildWarehouse.objects.filter(guild=guild, quantity__gt=0).order_by(
-        "-contribution_cost", "item_key"
+    warehouse_items = list(
+        GuildWarehouse.objects.filter(guild=guild, quantity__gt=0).order_by("-contribution_cost", "item_key")
     )
 
-    # 分页处理
-    paginator = Paginator(warehouse_queryset, per_page)
-    page_obj = paginator.get_page(page)
+    existing_keys = {item.item_key for item in warehouse_items}
+    for item_key in PROJECTED_RESOURCE_KEYS:
+        if item_key in existing_keys:
+            continue
+        projected_item = _build_projected_resource_item(guild, item_key, None)
+        if projected_item is not None:
+            warehouse_items.append(projected_item)
 
-    # 转换为列表以便后续处理
-    warehouse_items = list(page_obj)
+    warehouse_items.sort(key=lambda item: (-item.contribution_cost, item.item_key))
+
+    paginator = Paginator(warehouse_items, per_page)
+    page_obj = paginator.get_page(page)
+    page_items = list(page_obj)
 
     # 查询2：批量预加载当前页需要的ItemTemplate，避免逐个查询
-    item_keys = {item.item_key for item in warehouse_items}
+    item_keys = {item.item_key for item in page_items}
     templates_dict = get_item_templates_by_keys(item_keys)
 
     # 在内存中关联模板信息
-    for item in warehouse_items:
-        template = templates_dict.get(item.item_key)
-        item.template = template
+    for item in page_items:
+        if not getattr(item, "template", None):
+            item.template = templates_dict.get(item.item_key)
+        item.display_name = getattr(
+            item,
+            "display_name",
+            PROJECTED_RESOURCE_LABELS.get(item.item_key, item.template.name if item.template else item.item_key),
+        )
+        item.display_quantity = max(0, int(getattr(item, "quantity", 0) or 0))
+        if _is_projected_resource_item(item.item_key):
+            item.is_projected = True
+            item.display_quantity = _get_projected_resource_quantity(guild, item.item_key)
+            item.contribution_cost = _get_projected_resource_exchange_cost(item.item_key)
+            item.is_usable = True
+            continue
         # 如果找不到模板，标记为不可用（防止幽灵物品被兑换）
-        item.is_usable = template.is_usable if template else False
+        item.is_usable = item.template.is_usable if item.template else False
 
     return {
-        "items": warehouse_items,
+        "items": page_items,
         "page": page_obj.number,
         "total_pages": paginator.num_pages,
         "total_count": paginator.count,

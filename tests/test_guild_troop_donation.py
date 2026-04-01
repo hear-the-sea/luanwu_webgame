@@ -154,7 +154,7 @@ def test_donate_troops_recovers_when_storage_create_hits_integrity_error(guild_m
 
 
 @pytest.mark.django_db
-def test_donate_troops_view_success_redirects_back_to_resources_and_sets_message(django_user_model):
+def test_donate_troops_view_success_redirects_back_to_guild_detail_and_sets_message(django_user_model):
     user = django_user_model.objects.create_user(username="gt_view_donor", password="pass12345")
     manor = ensure_manor(user)
     guild = Guild.objects.create(name="护院捐赠视图帮会", founder=user, is_active=True)
@@ -173,7 +173,7 @@ def test_donate_troops_view_success_redirects_back_to_resources_and_sets_message
     )
 
     assert response.redirect_chain
-    assert response.redirect_chain[-1][0].endswith(reverse("guilds:resources"))
+    assert response.redirect_chain[-1][0].endswith(reverse("guilds:detail", args=[guild.id]))
     messages = [str(message) for message in get_messages(response.wsgi_request)]
     assert messages[-1] == "护院已捐赠到帮会护院池"
     assert "护院已捐赠到帮会护院池" in response.content.decode("utf-8")
@@ -199,7 +199,7 @@ def test_donate_troops_view_failure_uses_game_error_message_chain(django_user_mo
     )
 
     assert response.redirect_chain
-    assert response.redirect_chain[-1][0].endswith(reverse("guilds:resources"))
+    assert response.redirect_chain[-1][0].endswith(reverse("guilds:detail", args=[guild.id]))
     messages = [str(message) for message in get_messages(response.wsgi_request)]
     assert messages[-1] == "捐赠数量必须大于 0"
     assert "捐赠数量必须大于 0" in response.content.decode("utf-8")
@@ -223,6 +223,6 @@ def test_donate_troops_view_escapes_failure_message_html(django_user_model):
 
     body = response.content.decode("utf-8")
     assert response.redirect_chain
-    assert response.redirect_chain[-1][0].endswith(reverse("guilds:resources"))
+    assert response.redirect_chain[-1][0].endswith(reverse("guilds:detail", args=[guild.id]))
     assert "&lt;b&gt;bad&lt;/b&gt;" in body
     assert "<b>bad</b>" not in body

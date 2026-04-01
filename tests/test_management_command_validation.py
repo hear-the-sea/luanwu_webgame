@@ -9,6 +9,7 @@ from django.test import override_settings
 from battle.management.commands.load_troop_templates import Command, _load_avatar_for_troop
 from battle.models import TroopTemplate
 from gameplay.models import BuildingType, MissionTemplate
+from guests.models import GuestTemplate
 from guilds.models import GuildMissionTemplate
 
 
@@ -88,6 +89,68 @@ def test_default_mission_templates_define_junior_mission_tiering():
     assert jingyanggang.difficulty == "junior"
     assert jingyanggang.enemy_guests == [{"key": "task_jingyang_tiger", "label": "猛虎"}]
     assert jingyanggang.enemy_technology == {"level": 0, "guest_level": 24, "guest_bonus": 0.02}
+
+    huashan = MissionTemplate.objects.get(key="huashan_lunjian")
+    assert huashan.enemy_guests == [
+        {"key": "task_huashan_jianwang", "label": "贱王之王"},
+        {"key": "task_huashan_jianjing", "label": "顶级贱精"},
+        {"key": "task_huashan_jianjing", "label": "顶级贱精"},
+        {"key": "task_huashan_audience_a", "label": "观众甲"},
+    ]
+
+
+@pytest.mark.django_db
+def test_default_mission_templates_split_wulongshan_enemy_keys_by_display_name():
+    payload_path = settings.BASE_DIR / "data" / "mission_templates.yaml"
+
+    call_command("load_mission_templates", file=str(payload_path), verbosity=0)
+
+    wulongshan = MissionTemplate.objects.get(key="wulongshan")
+    assert wulongshan.enemy_guests == [
+        {"key": "task_wulong_bandit_chief_zuanshanbao", "label": "钻山豹"},
+        {"key": "task_wulong_bandit_chief_zuoshandiao", "label": "座山雕"},
+    ]
+
+
+@pytest.mark.django_db
+def test_default_mission_templates_split_shiren_named_enemy_keys_by_display_name():
+    payload_path = settings.BASE_DIR / "data" / "mission_templates.yaml"
+
+    call_command("load_mission_templates", file=str(payload_path), verbosity=0)
+
+    shiren = MissionTemplate.objects.get(key="shiren_daochang")
+    assert shiren.enemy_guests == [
+        "hero_du_sha",
+        "hero_li_dazui",
+        "hero_hahaer",
+        "hero_tu_jiaojiao",
+        "hero_yin_jiuyou",
+        {"key": "task_shiren_xiaomimi", "label": "萧咪咪"},
+        {"key": "task_shiren_xuanyuansanguang", "label": "轩辕三光"},
+        {"key": "task_shiren_tiezhan", "label": "铁战"},
+        "hero_bai_kaixin",
+        {"key": "task_shiren_luoshixiongdi", "label": "罗氏兄弟"},
+    ]
+
+
+@pytest.mark.django_db
+def test_default_mission_templates_enemy_guest_keys_resolve_to_guest_templates():
+    guest_payload_path = settings.BASE_DIR / "data" / "guest_templates.yaml"
+    mission_payload_path = settings.BASE_DIR / "data" / "mission_templates.yaml"
+
+    call_command("load_guest_templates", file=str(guest_payload_path), verbosity=0, skip_images=True)
+    call_command("load_mission_templates", file=str(mission_payload_path), verbosity=0)
+
+    guest_keys: set[str] = set()
+    for mission in MissionTemplate.objects.all():
+        for entry in mission.enemy_guests:
+            if isinstance(entry, str):
+                guest_keys.add(entry)
+            else:
+                guest_keys.add(entry["key"])
+
+    existing_keys = set(GuestTemplate.objects.filter(key__in=guest_keys).values_list("key", flat=True))
+    assert guest_keys == existing_keys
 
 
 @pytest.mark.django_db

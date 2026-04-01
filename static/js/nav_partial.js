@@ -11,6 +11,7 @@
   const SECTION_IDS = ["main-nav", "info-bar", PAGE_SHELL_ID];
   const EXTRA_HEAD_START_MARKER = "PAGE_EXTRA_HEAD_START";
   const EXTRA_HEAD_END_MARKER = "PAGE_EXTRA_HEAD_END";
+  const partialNavCore = window.PartialNavCore;
   const allowedPaths = new Set(
     Array.from(document.querySelectorAll(NAV_LINK_SELECTOR))
       .map((link) => {
@@ -181,38 +182,17 @@
     }
   }
 
-  function executePageScripts(nextDocument) {
+  async function executePageScripts(nextDocument) {
     const scriptContainer = nextDocument.getElementById(EXTRA_SCRIPTS_ID);
-    if (!scriptContainer) {
+    if (!scriptContainer || !partialNavCore || typeof partialNavCore.runPageScripts !== "function") {
       return;
     }
-
-    const scripts = Array.from(scriptContainer.querySelectorAll("script"));
-    scripts.forEach((scriptEl) => {
-      const src = scriptEl.getAttribute("src");
-      if (src) {
-        let absoluteSrc = "";
-        try {
-          absoluteSrc = new URL(src, window.location.href).href;
-        } catch (error) {
-          return;
-        }
-        if (loadedScriptUrls.has(absoluteSrc)) {
-          return;
-        }
-
-        loadedScriptUrls.add(absoluteSrc);
-        const script = document.createElement("script");
-        script.src = absoluteSrc;
-        script.async = false;
-        document.body.appendChild(script);
-        return;
-      }
-
-      const code = scriptEl.textContent || "";
-      if (code.trim()) {
-        executeInlineScript(code);
-      }
+    await partialNavCore.runPageScripts({
+      scriptContainer,
+      documentObj: document,
+      currentUrl: window.location.href,
+      loadedScriptUrls,
+      executeInlineScript,
     });
   }
 
@@ -267,7 +247,7 @@
 
       syncExtraHead(nextDocument);
       updatePageMeta(nextDocument);
-      executePageScripts(nextDocument);
+      await executePageScripts(nextDocument);
 
       if (!options || options.pushState !== false) {
         window.history.pushState({ partialNav: true }, "", targetUrl.href);

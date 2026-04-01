@@ -11,7 +11,7 @@
             <p class="caption">{{ guild.name }}</p>
         </div>
         <div class="flex gap-2">
-            <a href="{% url 'guilds:resources' %}" class="tw-btn-secondary">资源状态</a>
+            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-secondary">帮会主页</a>
             <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-secondary">返回帮会</a>
         </div>
     </div>

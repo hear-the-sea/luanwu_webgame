@@ -108,6 +108,46 @@ def test_build_defender_setup_and_drop_table_rejects_mapping_guest_config_with_i
         _build_defender_setup(mission, loadout={})
 
 
+def test_build_defender_setup_and_drop_table_rejects_blank_guest_label():
+    mission = SimpleNamespace(
+        is_defense=False,
+        enemy_guests=[{"key": "enemy_guest", "label": "   "}],
+        enemy_troops={},
+        enemy_technology={},
+        drop_table={},
+    )
+
+    with pytest.raises(AssertionError, match="invalid mission enemy_guests"):
+        _build_defender_setup(mission, loadout={})
+
+
+def test_build_defender_setup_and_drop_table_rejects_non_string_guest_label():
+    mission = SimpleNamespace(
+        is_defense=False,
+        enemy_guests=[{"key": "enemy_guest", "label": 123}],
+        enemy_troops={},
+        enemy_technology={},
+        drop_table={},
+    )
+
+    with pytest.raises(AssertionError, match="invalid mission enemy_guests"):
+        _build_defender_setup(mission, loadout={})
+
+
+def test_build_defender_setup_and_drop_table_preserves_guest_label():
+    mission = SimpleNamespace(
+        is_defense=False,
+        enemy_guests=[{"key": "enemy_guest", "label": "任务别名"}],
+        enemy_troops={},
+        enemy_technology={},
+        drop_table={},
+    )
+
+    defender_setup, _drop_table = _build_defender_setup(mission, loadout={})
+
+    assert defender_setup["guest_keys"] == [{"key": "enemy_guest", "skills": None, "label": "任务别名"}]
+
+
 def test_build_defender_setup_and_drop_table_rejects_invalid_enemy_technology():
     mission = SimpleNamespace(
         is_defense=False,

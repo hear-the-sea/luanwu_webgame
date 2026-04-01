@@ -311,10 +311,19 @@ def test_default_special_yaml_contains_task_specific_enemy_templates() -> None:
     command = Command()
     payload = command._load_heroes_payload("")
 
+    green_keys = {entry["key"] for entry in payload.get("green", [])}
     blue_keys = {entry["key"] for entry in payload.get("blue", [])}
     orange_keys = {entry["key"] for entry in payload.get("orange", [])}
 
-    assert "task_wulong_bandit_chief" in blue_keys
+    assert "task_huashan_jianwang" in green_keys
+    assert "task_huashan_jianjing" in green_keys
+    assert "task_huashan_audience_a" in green_keys
+    assert "task_wulong_bandit_chief_zuanshanbao" in blue_keys
+    assert "task_wulong_bandit_chief_zuoshandiao" in blue_keys
+    assert "task_shiren_xiaomimi" in blue_keys
+    assert "task_shiren_xuanyuansanguang" in blue_keys
+    assert "task_shiren_tiezhan" in blue_keys
+    assert "task_shiren_luoshixiongdi" in blue_keys
     assert "task_barbarian_chanyu" in orange_keys
 
 
@@ -328,8 +337,56 @@ def test_load_guest_templates_imports_default_special_task_heroes(tmp_path: Path
         verbosity=0,
     )
 
+    tiger = GuestTemplate.objects.get(key="task_jingyang_tiger")
+    assert tiger.name == "猛虎"
+
+    jianwang = GuestTemplate.objects.get(key="task_huashan_jianwang")
+    assert jianwang.name == "贱王之王"
+    assert jianwang.rarity == "green"
+    assert jianwang.recruitable is False
+
+    jianjing = GuestTemplate.objects.get(key="task_huashan_jianjing")
+    assert jianjing.name == "顶级贱精"
+    assert jianjing.rarity == "green"
+    assert jianjing.recruitable is False
+
+    audience = GuestTemplate.objects.get(key="task_huashan_audience_a")
+    assert audience.name == "观众甲"
+    assert audience.rarity == "green"
+    assert audience.recruitable is False
+
+    bandit_a = GuestTemplate.objects.get(key="task_wulong_bandit_chief_zuanshanbao")
+    assert bandit_a.name == "钻山豹"
+    assert bandit_a.rarity == "blue"
+    assert bandit_a.recruitable is False
+
+    bandit_b = GuestTemplate.objects.get(key="task_wulong_bandit_chief_zuoshandiao")
+    assert bandit_b.name == "座山雕"
+    assert bandit_b.rarity == "blue"
+    assert bandit_b.recruitable is False
+
+    xiaomimi = GuestTemplate.objects.get(key="task_shiren_xiaomimi")
+    assert xiaomimi.name == "萧咪咪"
+    assert xiaomimi.rarity == "blue"
+    assert xiaomimi.recruitable is False
+
+    xuanyuan = GuestTemplate.objects.get(key="task_shiren_xuanyuansanguang")
+    assert xuanyuan.name == "轩辕三光"
+    assert xuanyuan.rarity == "blue"
+    assert xuanyuan.recruitable is False
+
+    tiezhan = GuestTemplate.objects.get(key="task_shiren_tiezhan")
+    assert tiezhan.name == "铁战"
+    assert tiezhan.rarity == "blue"
+    assert tiezhan.recruitable is False
+
+    luoshi = GuestTemplate.objects.get(key="task_shiren_luoshixiongdi")
+    assert luoshi.name == "罗氏兄弟"
+    assert luoshi.rarity == "blue"
+    assert luoshi.recruitable is False
+
     template = GuestTemplate.objects.get(key="task_barbarian_chanyu")
-    assert template.name == "蛮族单于"
+    assert template.name == "单于"
     assert template.rarity == "orange"
     assert template.recruitable is False
 

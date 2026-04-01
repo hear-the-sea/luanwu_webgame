@@ -6,7 +6,7 @@
     "build:css": "tailwindcss -i ./src/input.css -o ./static/css/tailwind.css",
     "watch:css": "tailwindcss -i ./src/input.css -o ./static/css/tailwind.css --watch",
     "build:css:prod": "tailwindcss -i ./src/input.css -o ./static/css/tailwind.css --minify",
-    "test:js": "node --test static/js/tests/chat_widget_*.test.js"
+    "test:js": "node --test static/js/tests/*.test.js"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.0",

@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from gameplay.services.missions_impl.sync_report import generate_sync_battle_report
+from guests.models import GuestTemplate
 
 
 def test_generate_sync_battle_report_defense_rejects_invalid_enemy_technology(monkeypatch):
@@ -121,6 +122,57 @@ def test_generate_sync_battle_report_defense_rejects_invalid_enemy_guest_mapping
             travel_seconds=0,
             seed=1,
         )
+
+
+def test_generate_sync_battle_report_defense_passes_enemy_label_override_to_ai_guests(monkeypatch):
+    captured: dict[str, object] = {}
+
+    def _fake_simulate_report(**kwargs):
+        captured.update(kwargs)
+        return {"ok": True}
+
+    template = GuestTemplate(
+        key="enemy_guest",
+        name="模板原名",
+        archetype="military",
+        rarity="green",
+        base_attack=100,
+        base_intellect=90,
+        base_defense=80,
+        base_agility=70,
+        base_luck=60,
+        base_hp=1200,
+        default_gender="unknown",
+        default_morality=50,
+    )
+
+    monkeypatch.setattr("battle.combatants_pkg.ai_generator.get_all_guest_templates", lambda: {"enemy_guest": template})
+    monkeypatch.setattr("battle.services.simulate_report", _fake_simulate_report)
+
+    mission = SimpleNamespace(
+        is_defense=True,
+        enemy_technology={"guest_level": 30},
+        enemy_guests=[{"key": "enemy_guest", "label": "任务别名"}],
+        enemy_troops={},
+        battle_type="task",
+        name="Defense Mission",
+        drop_table={},
+    )
+    manor = SimpleNamespace(max_squad_size=6)
+
+    generate_sync_battle_report(
+        manor=manor,
+        mission=mission,
+        guests=[],
+        loadout={},
+        defender_setup={},
+        travel_seconds=0,
+        seed=1,
+    )
+
+    attacker_guests = captured["attacker_guests"]
+    assert len(attacker_guests) == 1
+    assert getattr(attacker_guests[0], "_display_name_override", None) == "任务别名"
 
 
 def test_generate_sync_battle_report_defense_rejects_invalid_enemy_troops(monkeypatch):

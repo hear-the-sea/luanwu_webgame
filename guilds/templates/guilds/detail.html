@@ -93,9 +93,13 @@
                     <dt>金条</dt>
                     <dd class="tw-guild-resource-value resource-gold">{{ guild.gold_bar }}</dd>
                 </div>
+                <div>
+                    <dt>护院</dt>
+                    <dd class="tw-guild-resource-value resource-blue">{{ troop_overview.total_count }}</dd>
+                </div>
             </dl>
             <div class="tw-guild-card-divider">
-                <a href="{% url 'guilds:donate' %}" class="tw-btn-primary w-full text-center">捐赠资源</a>
+                <button type="button" class="tw-btn-primary w-full" onclick="openGuildDonationModal()">捐赠资源</button>
             </div>
         </section>
         {% endif %}
@@ -210,28 +214,174 @@
     </div>
 </div>
 {% endif %}
+
+{% if is_member %}
+<div class="tw-modal-overlay" id="guild-donation-modal" style="display: none;">
+    <div class="tw-modal-content">
+        <div class="tw-modal-header">
+            <h3>资源捐赠</h3>
+            <button type="button" class="tw-modal-close" onclick="closeGuildDonationModal()">&times;</button>
+        </div>
+        <div class="tw-modal-body">
+            <div class="tw-form-field">
+                <label for="guild-donation-kind">捐赠类型</label>
+                <select id="guild-donation-kind" class="tw-input">
+                    <option value="silver">银两</option>
+                    <option value="grain">粮食</option>
+                    <option value="gold_bar">金条</option>
+                    <option value="troops">护院</option>
+                </select>
+            </div>
+
+            <form method="post" action="{% url 'guilds:donate' %}" id="guild-resource-donation-form">
+                {% csrf_token %}
+                <input type="hidden" id="resource_type" name="resource_type" value="silver">
+                {% for key, entry in donation_entries.items %}
+                <section class="guild-resource-panel" data-resource-panel="{{ key }}" {% if key != "silver" %}hidden{% endif %}>
+                    <dl class="tw-guild-dl">
+                        <div>
+                            <dt>我的{{ entry.label }}</dt>
+                            <dd class="tw-guild-resource-value">{{ entry.available|floatformat:0 }}</dd>
+                        </div>
+                        <div>
+                            <dt>今日已捐</dt>
+                            <dd>{{ entry.donated_today|floatformat:0 }} / {{ entry.daily_limit|floatformat:0 }}</dd>
+                        </div>
+                        <div>
+                            <dt>今日剩余</dt>
+                            <dd>{{ entry.remaining_today|floatformat:0 }}</dd>
+                        </div>
+                        <div>
+                            <dt>转换比例</dt>
+                            <dd>1 {{ entry.label }} = {{ entry.rate }} 贡献度</dd>
+                        </div>
+                    </dl>
+                    <div class="tw-form-field mt-4">
+                        <label for="{{ entry.input_id }}">捐赠数量</label>
+                        <input
+                            type="number"
+                            id="{{ entry.input_id }}"
+                            name="amount"
+                            min="1"
+                            max="{{ entry.max_amount|default:0 }}"
+                            class="tw-input"
+                            {% if key == "silver" %}required{% else %}disabled{% endif %}>
+                    </div>
+                </section>
+                {% endfor %}
+                <button type="submit" class="tw-btn-primary w-full mt-2">确认捐赠</button>
+            </form>
+
+            <form method="post" action="{% url 'guilds:donate_troops' %}" id="guild-troop-donation-form" style="display: none;">
+                {% csrf_token %}
+                <dl class="tw-guild-dl">
+                    <div>
+                        <dt>帮会护院总数</dt>
+                        <dd>{{ troop_overview.total_count }}</dd>
+                    </div>
+                    <div>
+                        <dt>帮会护院种类</dt>
+                        <dd>{{ troop_overview.kinds_count }}</dd>
+                    </div>
+                </dl>
+                <div class="tw-form-field mt-4">
+                    <label for="troop_key">护院类型</label>
+                    <select id="troop_key" name="troop_key" class="tw-input" disabled>
+                        {% for troop in player_troops %}
+                        <option value="{{ troop.troop_template.key }}">{{ troop.troop_template.name }}（可用 {{ troop.count }}）</option>
+                        {% endfor %}
+                    </select>
+                    {% if not player_troops %}
+                    <small class="tw-muted">当前无可捐赠护院，请先在庄园内招募护院。</small>
+                    {% endif %}
+                </div>
+                <div class="tw-form-field">
+                    <label for="troop_quantity">数量</label>
+                    <input type="number" id="troop_quantity" name="quantity" min="1" class="tw-input" disabled>
+                </div>
+                <button type="submit" class="tw-btn-secondary w-full mt-2" {% if not player_troops %}disabled{% endif %}>确认捐赠护院</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-    // Modal handling
-    const modal = document.getElementById('disband-modal');
-    if (modal) {
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                modal.style.display = 'none';
+    (() => {
+        const modal = document.getElementById('disband-modal');
+        const guildDonationModal = document.getElementById('guild-donation-modal');
+        const donationKindSelect = document.getElementById('guild-donation-kind');
+        const resourceDonationForm = document.getElementById('guild-resource-donation-form');
+        const troopDonationForm = document.getElementById('guild-troop-donation-form');
+        const resourceTypeInput = document.getElementById('resource_type');
+        const resourcePanels = Array.from(document.querySelectorAll('[data-resource-panel]'));
+        const troopKeyInput = document.getElementById('troop_key');
+        const troopQuantityInput = document.getElementById('troop_quantity');
+
+        if (modal) {
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        function syncGuildDonationForms() {
+            if (!donationKindSelect || !resourceDonationForm || !troopDonationForm) return;
+            const kind = donationKindSelect.value;
+            const isTroops = kind === 'troops';
+            resourceDonationForm.style.display = isTroops ? 'none' : 'block';
+            troopDonationForm.style.display = isTroops ? 'block' : 'none';
+            if (troopKeyInput) {
+                troopKeyInput.disabled = !isTroops;
+                troopKeyInput.required = isTroops;
+            }
+            if (troopQuantityInput) {
+                troopQuantityInput.disabled = !isTroops;
+                troopQuantityInput.required = isTroops;
+            }
+            resourcePanels.forEach((panel) => {
+                const active = !isTroops && panel.dataset.resourcePanel === kind;
+                panel.hidden = !active;
+                panel.querySelectorAll('input[name="amount"]').forEach((input) => {
+                    input.disabled = !active;
+                    input.required = active;
+                });
+            });
+            if (!isTroops && resourceTypeInput) {
+                resourceTypeInput.value = kind;
+            }
+        }
+
+        window.openGuildDonationModal = function openGuildDonationModal() {
+            if (!guildDonationModal) return;
+            guildDonationModal.style.display = 'flex';
+            syncGuildDonationForms();
+        };
+
+        window.closeGuildDonationModal = function closeGuildDonationModal() {
+            if (!guildDonationModal) return;
+            guildDonationModal.style.display = 'none';
+        };
+
+        donationKindSelect?.addEventListener('change', syncGuildDonationForms);
+        guildDonationModal?.addEventListener('click', (event) => {
+            if (event.target === guildDonationModal) {
+                window.closeGuildDonationModal();
             }
         });
-    }
-    // 退出帮会确认
-    document.getElementById('leave-guild-form')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        try {
-            const confirmed = await gameDialog.danger('确认退出帮会吗？退出后当前贡献将清零。', { title: '退出帮会' });
-            if (confirmed) e.target.submit();
-        } catch (err) {
-            console.error('退出帮会确认失败:', err);
-        }
-    });
+
+        document.getElementById('leave-guild-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const confirmed = await gameDialog.danger('确认退出帮会吗？退出后当前贡献将清零。', { title: '退出帮会' });
+                if (confirmed) e.target.submit();
+            } catch (err) {
+                console.error('退出帮会确认失败:', err);
+            }
+        });
+    })();
 </script>
 {% endblock %}

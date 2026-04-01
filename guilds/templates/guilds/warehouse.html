@@ -27,15 +27,21 @@
                 <article class="tw-building-card">
                     <header>
                         <div>
-                            <h3>{{ item.template.name|default:item.item_key }}</h3>
-                            <p class="tw-muted">帮会科技每日产出</p>
+                            <h3>{{ item.display_name|default:item.template.name|default:item.item_key }}</h3>
+                            <p class="tw-muted">
+                                {% if item.is_projected %}
+                                帮会资源实时同步
+                                {% else %}
+                                帮会科技每日产出
+                                {% endif %}
+                            </p>
                         </div>
-                        <span class="tw-badge-gold">{{ item.quantity }}</span>
+                        <span class="tw-badge-gold">{{ item.display_quantity }}</span>
                     </header>
                     <dl class="tw-guild-dl">
                         <div>
                             <dt>库存数量</dt>
-                            <dd>{{ item.quantity }}</dd>
+                            <dd>{{ item.display_quantity }}</dd>
                         </div>
                         <div>
                             <dt>兑换成本</dt>
@@ -55,8 +61,8 @@
                             <button
                                 type="button"
                                 class="tw-btn-primary w-full"
-                                onclick="openExchangeModal('{{ item.item_key|escapejs }}', {{ item.contribution_cost }}, {{ item.quantity }}, '{{ item.template.name|default:item.item_key|escapejs }}')"
-                                {% if item.quantity <= 0 %}disabled title="库存不足"{% endif %}
+                                onclick="openExchangeModal('{{ item.item_key|escapejs }}', {{ item.contribution_cost }}, {{ item.display_quantity }}, '{{ item.display_name|default:item.template.name|default:item.item_key|escapejs }}')"
+                                {% if item.display_quantity <= 0 %}disabled title="库存不足"{% endif %}
                             >
                                 兑换
                             </button>
@@ -143,63 +149,65 @@
 
 {% block extra_scripts %}
 <script>
-    const exchangeModal = document.getElementById('exchange-modal');
-    const exchangeForm = document.getElementById('exchange-form');
-    const exchangeItemName = document.getElementById('exchange-item-name');
-    const exchangeCost = document.getElementById('exchange-cost');
-    const exchangeStock = document.getElementById('exchange-stock');
-    const exchangeWarning = document.getElementById('exchange-warning');
-    const quantityInput = document.getElementById('quantity');
-    const submitButton = document.getElementById('exchange-submit');
+    (() => {
+        const exchangeModal = document.getElementById('exchange-modal');
+        const exchangeForm = document.getElementById('exchange-form');
+        const exchangeItemName = document.getElementById('exchange-item-name');
+        const exchangeCost = document.getElementById('exchange-cost');
+        const exchangeStock = document.getElementById('exchange-stock');
+        const exchangeWarning = document.getElementById('exchange-warning');
+        const quantityInput = document.getElementById('quantity');
+        const submitButton = document.getElementById('exchange-submit');
 
-    const currentContribution = {{ member.current_contribution }};
+        const currentContribution = {{ member.current_contribution }};
 
-    function openExchangeModal(itemKey, cost, stock, itemName) {
-        exchangeForm.action = `/guilds/warehouse/${encodeURIComponent(itemKey)}/exchange/`;
-        exchangeItemName.textContent = itemName || itemKey;
-        exchangeCost.textContent = cost;
-        exchangeStock.textContent = stock;
-        quantityInput.max = stock;
-        quantityInput.value = 1;
+        function checkExchangeValidity(unitCost, stock, quantity) {
+            const totalCost = unitCost * quantity;
+            const warningText = exchangeWarning.querySelector('p');
 
-        checkExchangeValidity(cost, stock, 1);
-
-        exchangeModal.style.display = 'flex';
-    }
-
-    function closeExchangeModal() {
-        exchangeModal.style.display = 'none';
-    }
-
-    function checkExchangeValidity(unitCost, stock, quantity) {
-        const totalCost = unitCost * quantity;
-        const warningText = exchangeWarning.querySelector('p');
-
-        if (quantity > stock) {
-            exchangeWarning.style.display = 'block';
-            warningText.textContent = `库存不足，最多只能兑换 ${stock} 个`;
-            submitButton.disabled = true;
-        } else if (totalCost > currentContribution) {
-            exchangeWarning.style.display = 'block';
-            warningText.textContent = `贡献度不足，需要 ${totalCost} 贡献度`;
-            submitButton.disabled = true;
-        } else {
-            exchangeWarning.style.display = 'none';
-            submitButton.disabled = false;
+            if (quantity > stock) {
+                exchangeWarning.style.display = 'block';
+                warningText.textContent = `库存不足，最多只能兑换 ${stock} 个`;
+                submitButton.disabled = true;
+            } else if (totalCost > currentContribution) {
+                exchangeWarning.style.display = 'block';
+                warningText.textContent = `贡献度不足，需要 ${totalCost} 贡献度`;
+                submitButton.disabled = true;
+            } else {
+                exchangeWarning.style.display = 'none';
+                submitButton.disabled = false;
+            }
         }
-    }
 
-    quantityInput?.addEventListener('input', function() {
-        const cost = parseInt(exchangeCost.textContent);
-        const stock = parseInt(exchangeStock.textContent);
-        const quantity = parseInt(this.value) || 1;
-        checkExchangeValidity(cost, stock, quantity);
-    });
+        window.openExchangeModal = function openExchangeModal(itemKey, cost, stock, itemName) {
+            exchangeForm.action = `/guilds/warehouse/${encodeURIComponent(itemKey)}/exchange/`;
+            exchangeItemName.textContent = itemName || itemKey;
+            exchangeCost.textContent = cost;
+            exchangeStock.textContent = stock;
+            quantityInput.max = stock;
+            quantityInput.value = 1;
 
-    exchangeModal?.addEventListener('click', (event) => {
-        if (event.target === exchangeModal) {
-            closeExchangeModal();
-        }
-    });
+            checkExchangeValidity(cost, stock, 1);
+
+            exchangeModal.style.display = 'flex';
+        };
+
+        window.closeExchangeModal = function closeExchangeModal() {
+            exchangeModal.style.display = 'none';
+        };
+
+        quantityInput?.addEventListener('input', function() {
+            const cost = parseInt(exchangeCost.textContent);
+            const stock = parseInt(exchangeStock.textContent);
+            const quantity = parseInt(this.value) || 1;
+            checkExchangeValidity(cost, stock, quantity);
+        });
+
+        exchangeModal?.addEventListener('click', (event) => {
+            if (event.target === exchangeModal) {
+                window.closeExchangeModal();
+            }
+        });
+    })();
 </script>
 {% endblock %}

@@ -378,6 +378,50 @@ def _seconds_until(target_time, *, now=None) -> int:
     return max(0, int((target_time - current_time).total_seconds()))
 
 
+def _build_pool_row_payload(
+    *,
+    entry: GuildHeroPoolEntry,
+    member_id: int,
+    lineup_pool_entry_ids: set[int],
+) -> dict[str, Any]:
+    source_guest = entry.source_guest
+    if source_guest is None:
+        raise AssertionError("invalid hero pool row missing source_guest")
+
+    if entry.id in lineup_pool_entry_ids:
+        status_key = "lineup"
+        status_label = "已上阵"
+    elif entry.owner_member_id == member_id:
+        status_key = "mine"
+        status_label = "我的槽位"
+    else:
+        status_key = "joinable"
+        status_label = "可加入"
+
+    return {
+        "entry": entry,
+        "guest_name": source_guest.display_name,
+        "guest_level": source_guest.level,
+        "guest_rarity": source_guest.rarity,
+        "owner_name": entry.owner_member.user.manor.display_name,
+        "avatar_url": source_guest.template.avatar.url if source_guest.template.avatar else None,
+        "status_key": status_key,
+        "status_label": status_label,
+        "is_owner": entry.owner_member_id == member_id,
+        "in_lineup": entry.id in lineup_pool_entry_ids,
+        "search_text": f"{source_guest.display_name} {entry.owner_member.user.manor.display_name}".lower(),
+    }
+
+
+def _build_filter_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
+    return {
+        "joinable": sum(1 for row in rows if row["status_key"] == "joinable"),
+        "lineup": sum(1 for row in rows if row["status_key"] == "lineup"),
+        "mine": sum(1 for row in rows if row["status_key"] == "mine"),
+        "all": len(rows),
+    }
+
+
 def get_hero_pool_page_context(member: GuildMember) -> dict[str, Any]:
     now = timezone.now()
     guild_id = member.guild_id
@@ -424,12 +468,24 @@ def get_hero_pool_page_context(member: GuildMember) -> dict[str, Any]:
         )
 
     pool_rows = [
-        {
-            "entry": entry,
-            "is_owner": entry.owner_member_id == member.id,
-            "in_lineup": entry.id in lineup_pool_entry_ids,
-        }
+        _build_pool_row_payload(entry=entry, member_id=member.id, lineup_pool_entry_ids=lineup_pool_entry_ids)
         for entry in active_entries
+    ]
+    lineup_summary_rows = [
+        {
+            "lineup_entry_id": lineup.id,
+            "slot_index": lineup.slot_index,
+            "guest_name": lineup.pool_entry.source_guest.display_name,
+            "guest_rarity": lineup.pool_entry.source_guest.rarity,
+            "owner_name": lineup.pool_entry.owner_member.user.manor.display_name,
+            "avatar_url": (
+                lineup.pool_entry.source_guest.template.avatar.url
+                if lineup.pool_entry.source_guest.template.avatar
+                else None
+            ),
+        }
+        for lineup in lineup_entries
+        if lineup.pool_entry and lineup.pool_entry.source_guest
     ]
 
     return {
@@ -437,9 +493,11 @@ def get_hero_pool_page_context(member: GuildMember) -> dict[str, Any]:
         "member": member,
         "slot_rows": slot_rows,
         "pool_rows": pool_rows,
+        "lineup_summary_rows": lineup_summary_rows,
         "lineup_entries": lineup_entries,
         "available_guests": available_guests,
         "my_guest_ids": my_guest_ids,
+        "hero_pool_filter_counts": _build_filter_counts(pool_rows),
         "lineup_count": len(lineup_entries),
         "lineup_limit": get_guild_lineup_capacity(member.guild),
         "hero_pool_slot_limit": guild_constants.GUILD_HERO_POOL_SLOT_LIMIT,

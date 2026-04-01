@@ -8,73 +8,22 @@
     <div class="tw-section-header">
         <div>
             <h1>帮会任务</h1>
-            <p class="caption">管理员/帮主可从当前上阵门客中发起帮会出征，完成后红宝石会进入帮会仓库。</p>
+            <p class="caption">管理员/帮主可选择帮会可派遣门客发起帮会出征，完成后红宝石会进入帮会仓库。</p>
         </div>
         <div class="flex gap-2">
-            <a href="{% url 'guilds:hero_pool' %}" class="tw-btn-secondary">门客池</a>
             <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
         </div>
     </div>
 
-    <div class="tw-guild-info-grid">
-        <section class="tw-card">
-            <h2>当前帮会出征</h2>
-            {% if active_run %}
-            <div class="tw-guild-announcement announcement-system">
-                <div class="tw-guild-announcement-header">
-                    <span class="tw-guild-announcement-title">{{ active_run.template.name }}</span>
-                    <span class="tw-muted">门客 {{ active_run.selected_guest_count }} 名</span>
-                </div>
-                <p class="m-0">剩余时间：
-                    <span class="countdown"
-                          data-countdown="{{ active_run.return_at|date:'c' }}"
-                          data-format="zh"
-                          data-refresh="1"
-                          title="预计完成 {{ active_run.return_at|date:'Y-m-d H:i:s' }}">计算中</span>
-                </p>
-                {% if member.can_manage %}
-                <form method="post" action="{% url 'guilds:mission_retreat' %}" class="mt-4">
-                    {% csrf_token %}
-                    <input type="hidden" name="run_id" value="{{ active_run.id }}">
-                    <button type="submit" class="tw-btn-secondary">撤回</button>
-                </form>
-                {% endif %}
-            </div>
-            {% else %}
-            <p class="tw-muted m-0">暂无帮会出征任务。</p>
-            {% endif %}
-        </section>
-
-        <section class="tw-card">
-            <h2>当前上阵门客</h2>
-            <p class="caption">当前上阵 {{ lineup_entries|length }} / {{ lineup_limit }}，单次最多派遣 {{ dispatch_limit }} 名。</p>
-            {% if lineup_entries %}
-            <div class="mt-4">
-                {% for lineup in lineup_entries %}
-                <div class="tw-guild-announcement">
-                    <div class="tw-guild-announcement-header">
-                        <span class="tw-guild-announcement-title">出战位 {{ lineup.slot_index }}</span>
-                        <span class="tw-muted">{{ lineup.pool_entry.owner_member.user.manor.display_name }}</span>
-                    </div>
-                    <p class="m-0">{{ lineup.pool_entry.source_guest.display_name }} · Lv{{ lineup.pool_entry.source_guest.level }}</p>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <p class="tw-muted m-0">请先在帮会门客池中设置上阵门客。</p>
-            {% endif %}
-        </section>
-    </div>
-
     <nav class="tw-mission-tabs tw-guild-section-spacing">
-        <button class="tw-trade-tab active" data-tab="junior">初级任务</button>
-        <button class="tw-trade-tab" data-tab="intermediate">中级任务</button>
-        <button class="tw-trade-tab" data-tab="advanced">高级任务</button>
+        <button class="tw-trade-tab{% if active_tab == 'junior' %} active{% endif %}" data-tab="junior">初级任务</button>
+        <button class="tw-trade-tab{% if active_tab == 'intermediate' %} active{% endif %}" data-tab="intermediate">中级任务</button>
+        <button class="tw-trade-tab{% if active_tab == 'advanced' %} active{% endif %}" data-tab="advanced">高级任务</button>
     </nav>
 
     <section class="tw-card" style="padding: 0; overflow: hidden; border-top-left-radius: 0;">
         <div class="tw-mission-content">
-            <div id="tab-junior" class="mission-tab-content active">
+            <div id="tab-junior" class="mission-tab-content{% if active_tab == 'junior' %} active{% endif %}"{% if active_tab != 'junior' %} style="display: none;"{% endif %}>
                 <table class="tw-mission-table">
                     <thead>
                         <tr>
@@ -110,7 +59,7 @@
                 </table>
             </div>
 
-            <div id="tab-intermediate" class="mission-tab-content" style="display: none;">
+            <div id="tab-intermediate" class="mission-tab-content{% if active_tab == 'intermediate' %} active{% endif %}"{% if active_tab != 'intermediate' %} style="display: none;"{% endif %}>
                 <table class="tw-mission-table">
                     <thead>
                         <tr>
@@ -146,7 +95,7 @@
                 </table>
             </div>
 
-            <div id="tab-advanced" class="mission-tab-content" style="display: none;">
+            <div id="tab-advanced" class="mission-tab-content{% if active_tab == 'advanced' %} active{% endif %}"{% if active_tab != 'advanced' %} style="display: none;"{% endif %}>
                 <table class="tw-mission-table">
                     <thead>
                         <tr>

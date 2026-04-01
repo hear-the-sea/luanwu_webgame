@@ -1,0 +1,504 @@
+.ghp-page {
+    --ghp-panel-height: clamp(30rem, calc(100vh - 18rem), 44rem);
+    --ghp-surface: linear-gradient(180deg, rgba(255, 248, 235, 0.98) 0%, rgba(245, 232, 210, 0.98) 100%);
+    --ghp-border: rgba(108, 72, 42, 0.18);
+    --ghp-shadow: 0 18px 36px rgba(62, 41, 19, 0.12);
+    --ghp-accent: #8a4f20;
+    --ghp-accent-soft: rgba(138, 79, 32, 0.12);
+}
+
+.ghp-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(21rem, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.ghp-roster-panel > .tw-card,
+.ghp-slot-summary,
+.ghp-lineup-summary {
+    background: var(--ghp-surface);
+    border: 1px solid var(--ghp-border);
+    box-shadow: var(--ghp-shadow);
+}
+
+.ghp-roster-panel > .tw-card,
+.ghp-lineup-summary {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.ghp-roster-panel > .tw-card {
+    min-height: var(--ghp-panel-height);
+}
+
+.ghp-summary-column {
+    display: grid;
+    gap: 1rem;
+    min-height: 0;
+}
+
+.ghp-roster-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+    padding-bottom: 0.95rem;
+    margin-bottom: 0.95rem;
+    border-bottom: 1px solid rgba(108, 72, 42, 0.12);
+}
+
+.ghp-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+}
+
+.ghp-chip {
+    min-width: 5.5rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid rgba(108, 72, 42, 0.18);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.ghp-chip:hover,
+.ghp-chip:focus-visible {
+    border-color: rgba(138, 79, 32, 0.4);
+    color: var(--ghp-accent);
+    transform: translateY(-1px);
+}
+
+.ghp-chip.is-active {
+    background: linear-gradient(135deg, #8a4f20 0%, #bf7a35 100%);
+    border-color: transparent;
+    color: #fff8ef;
+    box-shadow: 0 10px 18px rgba(138, 79, 32, 0.2);
+}
+
+.ghp-search-row {
+    width: min(100%, 18rem);
+    margin-left: auto;
+}
+
+.ghp-search-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.ghp-roster-table {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.ghp-roster-head,
+.ghp-roster-row {
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1.3fr) minmax(0, 1fr) 7rem 8.5rem;
+    gap: 0.9rem;
+    align-items: center;
+}
+
+.ghp-roster-head {
+    padding: 0 0.95rem 0.7rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.ghp-roster-scroll,
+.ghp-lineup-scroll {
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(138, 79, 32, 0.42) rgba(108, 72, 42, 0.08);
+}
+
+.ghp-roster-scroll {
+    flex: 1;
+    min-height: 22rem;
+    max-height: var(--ghp-panel-height);
+    padding-right: 0.35rem;
+}
+
+.ghp-lineup-scroll {
+    min-height: 16rem;
+    max-height: min(22rem, calc(100vh - 31rem));
+    padding-right: 0.35rem;
+}
+
+.ghp-roster-scroll::-webkit-scrollbar,
+.ghp-lineup-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.ghp-roster-scroll::-webkit-scrollbar-track,
+.ghp-lineup-scroll::-webkit-scrollbar-track {
+    background: rgba(108, 72, 42, 0.08);
+    border-radius: 999px;
+}
+
+.ghp-roster-scroll::-webkit-scrollbar-thumb,
+.ghp-lineup-scroll::-webkit-scrollbar-thumb {
+    background: rgba(138, 79, 32, 0.42);
+    border-radius: 999px;
+}
+
+.ghp-roster-row,
+.ghp-lineup-row,
+.tw-guild-hero-slot-card {
+    border: 1px solid rgba(108, 72, 42, 0.14);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.ghp-roster-row {
+    padding: 0.85rem 0.95rem;
+}
+
+.ghp-roster-row + .ghp-roster-row {
+    margin-top: 0.7rem;
+}
+
+.ghp-roster-row[hidden] {
+    display: none !important;
+}
+
+.ghp-avatar-cell,
+.ghp-lineup-row > .guest-avatar,
+.tw-guild-guest-mini-card > .guest-avatar {
+    justify-self: center;
+}
+
+.ghp-page .guest-avatar {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    border-radius: 12px;
+    border-width: 1px;
+    box-shadow: 0 6px 16px rgba(74, 38, 18, 0.14);
+}
+
+.ghp-page .guest-avatar img {
+    border-radius: 11px;
+}
+
+.ghp-page .guest-avatar:hover {
+    transform: translateY(-1px);
+}
+
+.ghp-guest-cell,
+.ghp-owner-cell,
+.ghp-lineup-meta,
+.tw-guild-guest-mini-meta {
+    min-width: 0;
+}
+
+.ghp-guest-name,
+.tw-guild-guest-name {
+    font-weight: 700;
+    text-decoration: none;
+    word-break: break-word;
+}
+
+.ghp-guest-meta,
+.ghp-owner-note {
+    display: block;
+    margin-top: 0.18rem;
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    line-height: 1.35;
+}
+
+.ghp-owner-cell {
+    color: var(--text-secondary);
+    word-break: break-word;
+}
+
+.ghp-status-cell {
+    justify-self: start;
+    padding: 0.28rem 0.65rem;
+    border-radius: 999px;
+    background: var(--ghp-accent-soft);
+    color: var(--ghp-accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.ghp-action-cell {
+    justify-self: end;
+}
+
+.ghp-empty-state {
+    display: grid;
+    place-items: center;
+    min-height: 8rem;
+    padding: 1rem;
+    text-align: center;
+}
+
+.ghp-slot-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.ghp-slot-summary-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+}
+
+.ghp-slot-tab-row {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.ghp-slot-tab {
+    padding: 0.38rem 0.82rem;
+    border: 1px solid rgba(108, 72, 42, 0.18);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.ghp-slot-tab:hover,
+.ghp-slot-tab:focus-visible {
+    border-color: rgba(138, 79, 32, 0.38);
+    color: var(--ghp-accent);
+    transform: translateY(-1px);
+}
+
+.ghp-slot-tab.is-active {
+    background: linear-gradient(135deg, #8a4f20 0%, #bf7a35 100%);
+    border-color: transparent;
+    color: #fff8ef;
+    box-shadow: 0 8px 16px rgba(138, 79, 32, 0.18);
+}
+
+.tw-guild-hero-slot-grid {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.tw-guild-hero-slot-card {
+    padding: 1rem;
+}
+
+.tw-guild-hero-slot-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.85rem;
+}
+
+.tw-guild-hero-slot-head h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.tw-guild-hero-slot-meta {
+    display: grid;
+    gap: 0.7rem;
+}
+
+.tw-guild-guest-mini-card {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.tw-guild-hero-slot-form {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 0.95rem;
+}
+
+.tw-guild-slot-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+}
+
+.tw-guild-slot-btn {
+    min-width: 5rem;
+    justify-content: center;
+}
+
+.ghp-lineup-summary {
+    gap: 0.9rem;
+}
+
+.ghp-summary-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+}
+
+.ghp-lineup-row {
+    display: grid;
+    grid-template-columns: 2.6rem 48px minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.8rem 0.9rem;
+}
+
+.ghp-lineup-row + .ghp-lineup-row {
+    margin-top: 0.7rem;
+}
+
+.ghp-lineup-slot {
+    color: var(--text-muted);
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.ghp-lineup-action {
+    justify-self: end;
+}
+
+.ghp-filter-empty[hidden] {
+    display: none;
+}
+
+@media (max-width: 1100px) {
+    .ghp-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ghp-summary-column {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ghp-lineup-scroll {
+        max-height: min(24rem, 42vh);
+    }
+}
+
+@media (max-width: 768px) {
+    .ghp-page {
+        --ghp-panel-height: min(34rem, 62vh);
+    }
+
+    .ghp-roster-toolbar,
+    .ghp-summary-head,
+    .ghp-slot-summary-head,
+    .tw-guild-hero-slot-head {
+        align-items: stretch;
+    }
+
+    .ghp-search-row {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .ghp-roster-head {
+        display: none;
+    }
+
+    .ghp-roster-scroll {
+        padding-right: 0.1rem;
+    }
+
+    .ghp-roster-row {
+        grid-template-columns: 48px minmax(0, 1fr);
+        grid-template-areas:
+            "avatar guest"
+            "avatar owner"
+            "status status"
+            "action action";
+        gap: 0.6rem 0.8rem;
+        align-items: start;
+    }
+
+    .ghp-roster-row .ghp-avatar-cell {
+        grid-area: avatar;
+        justify-self: start;
+    }
+
+    .ghp-roster-row .ghp-guest-cell {
+        grid-area: guest;
+    }
+
+    .ghp-roster-row .ghp-owner-cell {
+        grid-area: owner;
+        font-size: 0.9rem;
+    }
+
+    .ghp-roster-row .ghp-status-cell {
+        grid-area: status;
+        justify-self: start;
+    }
+
+    .ghp-roster-row .ghp-action-cell {
+        grid-area: action;
+        justify-self: stretch;
+    }
+
+    .ghp-roster-row .ghp-action-cell form,
+    .ghp-roster-row .ghp-action-cell .tw-muted {
+        display: block;
+        width: 100%;
+        text-align: left;
+    }
+
+    .ghp-lineup-row {
+        grid-template-columns: 2.2rem 48px minmax(0, 1fr);
+        grid-template-areas:
+            "slot avatar meta"
+            "slot action action";
+    }
+
+    .ghp-lineup-slot {
+        grid-area: slot;
+        align-self: start;
+    }
+
+    .ghp-lineup-row > .guest-avatar {
+        grid-area: avatar;
+    }
+
+    .ghp-lineup-meta {
+        grid-area: meta;
+    }
+
+    .ghp-lineup-action {
+        grid-area: action;
+        justify-self: start;
+    }
+
+    .tw-guild-slot-actions,
+    .ghp-slot-tab-row,
+    .ghp-chip-row {
+        flex-direction: column;
+    }
+
+    .tw-guild-slot-actions > *,
+    .ghp-slot-tab,
+    .ghp-chip {
+        width: 100%;
+    }
+}

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 import pytest
 from django.db import DatabaseError
 from django.urls import reverse
@@ -42,7 +44,66 @@ class TestTaskBoardPage:
         response = client.get(reverse("gameplay:tasks") + "?mission=huashan_lunjian")
         assert response.status_code == 200
 
-    def test_task_board_selected_mission_shows_enemy_guest_rarity_classes(
+    def test_task_board_selects_matching_difficulty_tab_for_selected_mission(self, manor_with_user):
+        _manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key="task_board_selected_intermediate",
+            name="指定中级任务",
+            difficulty=MissionTemplate.Difficulty.INTERMEDIATE,
+            daily_limit=3,
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert '<button class="tw-trade-tab active" data-tab="intermediate">中级任务</button>' in body
+        assert '<div id="tab-intermediate" class="mission-tab-content active">' in body
+
+    def test_task_board_mission_names_link_to_details_for_every_difficulty(self, manor_with_user):
+        _manor, client = manor_with_user
+        missions = [
+            ("task_board_name_link_junior", "名称链接初级", "junior"),
+            ("task_board_name_link_intermediate", "名称链接中级", "intermediate"),
+            ("task_board_name_link_advanced", "名称链接高级", "advanced"),
+        ]
+
+        for key, name, difficulty in missions:
+            MissionTemplate.objects.create(
+                key=key,
+                name=name,
+                difficulty=difficulty,
+                daily_limit=3,
+            )
+
+        response = client.get(reverse("gameplay:tasks"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        for key, name, _difficulty in missions:
+            pattern = rf'<a[^>]+href="\?mission={key}"[^>]*>{name}</a>'
+            assert re.search(pattern, body)
+
+    def test_task_board_mission_name_links_do_not_render_underlines(self, manor_with_user):
+        _manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key="task_board_name_link_no_underline",
+            name="名称无下划线",
+            difficulty="junior",
+            daily_limit=3,
+        )
+
+        response = client.get(reverse("gameplay:tasks"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        pattern = (
+            rf'<a[^>]+class="[^"]*no-underline[^"]*hover:no-underline[^"]*"[^>]+'
+            rf'href="\?mission={mission.key}"[^>]*>{mission.name}</a>'
+        )
+        assert re.search(pattern, body)
+
+    def test_task_board_selected_mission_hides_enemy_guest_names_below_cards(
         self,
         manor_with_user,
     ):
@@ -73,12 +134,12 @@ class TestTaskBoardPage:
 
         assert response.status_code == 200
         body = response.content.decode("utf-8")
-        assert "灰阶敌将" in body
-        assert "rarity-text-gray" in body
-        assert "黑阶敌将" in body
-        assert "rarity-text-black" in body
+        assert body.count("tw-enemy-entry") >= 2
+        assert "tw-enemy-meta" not in body
+        assert '<span class="tw-guest-name-sm rarity-text-gray">灰阶敌将</span>' not in body
+        assert '<span class="tw-guest-name-sm rarity-text-black">黑阶敌将</span>' not in body
 
-    def test_task_board_selected_high_end_mission_uses_elite_enemy_rarity(
+    def test_task_board_selected_high_end_mission_hides_elite_enemy_name_row(
         self,
         manor_with_user,
         mission_templates,
@@ -98,4 +159,5 @@ class TestTaskBoardPage:
         assert response.status_code == 200
         body = response.content.decode("utf-8")
         assert "单于" in body
-        assert "rarity-text-orange" in body
+        assert "tw-enemy-entry" in body
+        assert "tw-enemy-meta" not in body

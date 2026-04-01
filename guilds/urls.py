@@ -3,7 +3,7 @@
 from django.urls import path
 
 from .views.announcement import announcement_list, create_announcement
-from .views.contribution import contribution_ranking, donate_resource, donation_logs, resource_logs, resource_status
+from .views.contribution import contribution_ranking, donate_resource, donation_logs, resource_logs
 from .views.core import create_guild, guild_detail, guild_hall, guild_info, guild_list, guild_search
 from .views.hero_pool import hero_pool_page, hero_pool_remove, hero_pool_submit, lineup_add, lineup_remove
 from .views.membership import (
@@ -76,8 +76,7 @@ urlpatterns = [
     # 公告
     path("announcements/", announcement_list, name="announcements"),
     path("announcement/create/", create_announcement, name="create_announcement"),
-    # 资源与日志
-    path("resources/", resource_status, name="resources"),
+    # 日志
     path("logs/donation/", donation_logs, name="donation_logs"),
     path("logs/resource/", resource_logs, name="resource_logs"),
 ]

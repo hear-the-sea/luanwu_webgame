@@ -1,0 +1,7 @@
+<div class="guest-avatar">
+    {% if avatar_url %}
+    <img src="{{ avatar_url }}" alt="{{ guest_name }}" loading="lazy" width="48" height="48">
+    {% else %}
+    {{ guest_name|slice:":1"|default:"?" }}
+    {% endif %}
+</div>

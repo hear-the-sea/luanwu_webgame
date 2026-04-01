@@ -1,10 +1,14 @@
 {% extends "base.html" %}
-{% load guest_extras %}
+{% load static guest_extras %}
 
 {% block title %}帮会门客池 - {{ guild.name }}{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/guild-hero-pool.css' %}">
+{% endblock %}
+
 {% block content %}
-<section class="dashboard">
+<section class="dashboard ghp-page">
     <div class="tw-section-header">
         <div>
             <h1>帮会门客池</h1>
@@ -14,168 +18,224 @@
         </div>
     </div>
 
-    <section class="tw-card">
-        <h2 class="m-0">我的门客槽位</h2>
-        <div class="tw-guild-hero-slot-grid">
-            {% for slot in slot_rows %}
-            <article class="tw-guild-hero-slot-card">
-                <div class="tw-guild-hero-slot-head">
-                    <h3>槽位 {{ slot.slot_index }}</h3>
-                    {% if slot.entry %}
-                    <span class="tw-level-badge">有效</span>
-                    {% else %}
-                    <span class="tw-muted">空槽</span>
-                    {% endif %}
-                </div>
-
-                {% if slot.entry %}
-                <div class="tw-guild-hero-slot-meta">
-                    <div class="tw-guild-guest-mini-card tw-guild-guest-mini-card--slot m-0">
-                        <div class="tw-guild-guest-avatar">
-                            {% if slot.entry.source_guest.template.avatar %}
-                            <img src="{{ slot.entry.source_guest.template.avatar.url }}" alt="{{ slot.entry.source_guest.display_name }}" loading="lazy">
-                            {% else %}
-                            <div class="tw-avatar-placeholder">{{ slot.entry.source_guest.display_name|slice:":1"|default:"?" }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="tw-guild-guest-mini-meta">
-                            <p class="tw-guild-guest-name rarity-text-{{ slot.entry.source_guest.rarity }}">{{ slot.entry.source_guest.display_name }}</p>
-                            <p class="tw-guild-guest-sub">Lv{{ slot.entry.source_guest.level }} · {{ slot.entry.source_guest.get_gender_display }}</p>
-                        </div>
-                    </div>
-                    <p class="m-0 text-sm">
-                        替换冷却：
-                        {% if slot.cooldown_seconds > 0 %}
-                        <span class="countdown" data-countdown="{{ slot.cooldown_until|date:'c' }}" data-format="zh-no-sec" data-refresh="1">{{ slot.cooldown_until|date:"H:i:s" }}</span>
-                        {% else %}
-                        <span class="text-accent-green">可替换</span>
-                        {% endif %}
-                    </p>
-                </div>
-                {% else %}
-                <p class="tw-muted text-sm">当前未设置门客。</p>
-                {% endif %}
-
-                <form method="post" action="{% url 'guilds:hero_pool_submit' %}" class="tw-guild-hero-slot-form">
-                    {% csrf_token %}
-                    <input type="hidden" name="slot_index" value="{{ slot.slot_index }}">
-                    <select name="guest_id" class="tw-form-select" required>
-                        <option value="">选择门客</option>
-                        {% for guest in available_guests %}
-                            {% if guest.id in my_guest_ids %}
-                                {% if slot.entry and guest.id == slot.entry.source_guest_id %}
-                                <option value="{{ guest.id }}">{{ guest.display_name }} (Lv{{ guest.level }})</option>
-                                {% else %}
-                                <option value="{{ guest.id }}" disabled>{{ guest.display_name }} (Lv{{ guest.level }}) - 已在其他槽位</option>
-                                {% endif %}
-                            {% else %}
-                                <option value="{{ guest.id }}">{{ guest.display_name }} (Lv{{ guest.level }})</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                    {% if slot.entry %}
-                    <div class="tw-guild-slot-actions">
-                        <button type="submit" class="tw-btn-primary tw-guild-slot-btn">替换门客</button>
-                        <button
-                            type="submit"
-                            formaction="{% url 'guilds:hero_pool_remove' %}"
-                            formnovalidate
-                            class="tw-btn-secondary tw-guild-slot-btn"
-                        >
-                            清空槽位
+    <div
+        class="ghp-layout"
+        data-ghp-page="hero-pool"
+        data-filter-count-joinable="{{ hero_pool_filter_counts.joinable|default_if_none:0 }}"
+        data-filter-count-lineup="{{ hero_pool_filter_counts.lineup|default_if_none:0 }}"
+        data-filter-count-mine="{{ hero_pool_filter_counts.mine|default_if_none:0 }}"
+        data-filter-count-all="{{ hero_pool_filter_counts.all|default_if_none:0 }}"
+    >
+        <section class="ghp-roster-panel">
+            <div class="tw-card">
+                <div class="ghp-roster-toolbar">
+                    <div class="ghp-chip-row">
+                        <button type="button" class="ghp-chip is-active" data-status-filter="joinable">
+                            可加入 {{ hero_pool_filter_counts.joinable }}
+                        </button>
+                        <button type="button" class="ghp-chip" data-status-filter="lineup">
+                            已上阵 {{ hero_pool_filter_counts.lineup }}
+                        </button>
+                        <button type="button" class="ghp-chip" data-status-filter="mine">
+                            我的 {{ hero_pool_filter_counts.mine }}
+                        </button>
+                        <button type="button" class="ghp-chip" data-status-filter="all">
+                            全部 {{ hero_pool_filter_counts.all }}
                         </button>
                     </div>
-                    {% else %}
-                    <button type="submit" class="tw-btn-primary tw-guild-slot-btn">提交门客</button>
-                    {% endif %}
-                </form>
-            </article>
-            {% endfor %}
-        </div>
-    </section>
+                    <div class="ghp-search-row">
+                        <input
+                            type="search"
+                            class="tw-input ghp-search-input"
+                            placeholder="搜索门客 / 所属玩家"
+                            aria-label="搜索门客或所属玩家"
+                        >
+                    </div>
+                </div>
 
-    <section class="tw-card tw-guild-section-spacing">
-        <div class="flex justify-between items-center">
-            <h2 class="m-0">帮会出战名单（{{ lineup_count }}/{{ lineup_limit }}）</h2>
-        </div>
-        <div class="tw-guild-card-grid mt-4">
-            {% for lineup in lineup_entries %}
-            <article class="tw-guild-hero-card">
-                <div class="tw-guild-hero-card-head">
-                    <span class="tw-level-badge">出战位 #{{ lineup.slot_index }}</span>
-                </div>
-                <div class="tw-guild-guest-mini-card tw-guild-guest-mini-card--card">
-                    <div class="tw-guild-guest-avatar">
-                        {% if lineup.pool_entry.source_guest.template.avatar %}
-                        <img src="{{ lineup.pool_entry.source_guest.template.avatar.url }}" alt="{{ lineup.pool_entry.source_guest.display_name }}" loading="lazy">
-                        {% else %}
-                        <div class="tw-avatar-placeholder">{{ lineup.pool_entry.source_guest.display_name|slice:":1"|default:"?" }}</div>
-                        {% endif %}
+                <div class="ghp-roster-table">
+                    <div class="ghp-roster-head">
+                        <div class="ghp-avatar-cell"></div>
+                        <div class="ghp-guest-cell">门客</div>
+                        <div class="ghp-owner-cell">所属玩家</div>
+                        <div class="ghp-status-cell">状态</div>
+                        <div class="ghp-action-cell">操作</div>
                     </div>
-                    <div class="tw-guild-guest-mini-meta">
-                        <p class="tw-guild-guest-name rarity-text-{{ lineup.pool_entry.source_guest.rarity }}">{{ lineup.pool_entry.source_guest.display_name }}</p>
-                        <p class="tw-guild-guest-sub">Lv{{ lineup.pool_entry.source_guest.level }}</p>
+                    <div class="ghp-roster-scroll" data-ghp-region="roster-scroll">
+                        {% for row in pool_rows %}
+                        <div
+                            class="ghp-roster-row"
+                            data-status-key="{{ row.status_key }}"
+                            data-search-text="{{ row.search_text }}"
+                        >
+                            <div class="ghp-avatar-cell">
+                                {% include "guilds/_guest_avatar.html" with avatar_url=row.avatar_url guest_name=row.guest_name only %}
+                            </div>
+                            <div class="ghp-guest-cell">
+                                <span class="ghp-guest-name rarity-text-{{ row.guest_rarity }}">{{ row.guest_name }}</span>
+                                <span class="ghp-guest-meta">Lv{{ row.guest_level }}</span>
+                            </div>
+                            <div class="ghp-owner-cell">{{ row.owner_name }}</div>
+                            <div class="ghp-status-cell">{{ row.status_label }}</div>
+                            <div class="ghp-action-cell">
+                                {% if row.status_key == "lineup" %}
+                                <span class="tw-muted">已上阵</span>
+                                {% elif not member.can_manage %}
+                                <span class="tw-muted">-</span>
+                                {% elif lineup_count >= lineup_limit %}
+                                <span class="tw-muted">名单已满</span>
+                                {% else %}
+                                <form method="post" action="{% url 'guilds:lineup_add' %}" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="pool_entry_id" value="{{ row.entry.id }}">
+                                    <button type="submit" class="tw-btn-secondary tw-btn-sm tw-guild-slot-btn">加入出战</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="ghp-empty-state">
+                            <p class="tw-muted">当前没有门客池条目</p>
+                        </div>
+                        {% endfor %}
+                        <div class="ghp-empty-state ghp-filter-empty" hidden>
+                            <p class="tw-muted">没有符合条件的门客</p>
+                        </div>
                     </div>
                 </div>
-                <p class="tw-guild-hero-owner">所属玩家：{{ lineup.pool_entry.owner_member.user.manor.display_name }}</p>
-                {% if member.can_manage %}
-                <form method="post" action="{% url 'guilds:lineup_remove' %}" class="tw-guild-hero-action">
-                    {% csrf_token %}
-                    <input type="hidden" name="lineup_entry_id" value="{{ lineup.id }}">
-                    <button type="submit" class="tw-btn-secondary tw-btn-sm tw-guild-slot-btn">下阵</button>
-                </form>
-                {% endif %}
-            </article>
-            {% empty %}
-            <p class="tw-muted">暂无出战门客</p>
-            {% endfor %}
-        </div>
-    </section>
+            </div>
+        </section>
 
-    <section class="tw-card tw-guild-section-spacing">
-        <h2 class="m-0">门客池总览</h2>
-        <div class="tw-guild-card-grid mt-4">
-            {% for row in pool_rows %}
-            <article class="tw-guild-hero-card {% if row.is_owner %}tw-guild-hero-card--self{% endif %}">
-                {% if row.is_owner %}
-                <span class="tw-guild-self-badge">我</span>
-                {% endif %}
-                <div class="tw-guild-guest-mini-card tw-guild-guest-mini-card--card">
-                    <div class="tw-guild-guest-avatar">
-                        {% if row.entry.source_guest.template.avatar %}
-                        <img src="{{ row.entry.source_guest.template.avatar.url }}" alt="{{ row.entry.source_guest.display_name }}" loading="lazy">
-                        {% else %}
-                        <div class="tw-avatar-placeholder">{{ row.entry.source_guest.display_name|slice:":1"|default:"?" }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="tw-guild-guest-mini-meta">
-                        <p class="tw-guild-guest-name rarity-text-{{ row.entry.source_guest.rarity }}">{{ row.entry.source_guest.display_name }}</p>
-                        <p class="tw-guild-guest-sub">Lv{{ row.entry.source_guest.level }}</p>
+        <aside class="ghp-summary-column">
+            <section class="ghp-slot-summary tw-card" data-ghp-region="slot-summary">
+                <div class="ghp-slot-summary-head">
+                    <h2 class="m-0">我的门客槽位</h2>
+                    <div class="ghp-slot-tab-row" role="tablist" aria-label="门客槽位切换">
+                        {% for slot in slot_rows %}
+                        <button
+                            type="button"
+                            class="ghp-slot-tab{% if forloop.first %} is-active{% endif %}"
+                            data-ghp-slot-target="{{ slot.slot_index }}"
+                            aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"
+                        >
+                            槽位{{ slot.slot_index }}
+                        </button>
+                        {% endfor %}
                     </div>
                 </div>
-                <p class="tw-guild-hero-owner">
-                    所属玩家：{{ row.entry.owner_member.user.manor.display_name }}
-                </p>
-                <div class="tw-guild-hero-action">
-                    {% if row.in_lineup %}
-                        <span class="tw-muted">已上阵</span>
-                    {% elif member.can_manage and lineup_count >= lineup_limit %}
-                        <span class="tw-muted">名单已满</span>
-                    {% elif member.can_manage %}
-                        <form method="post" action="{% url 'guilds:lineup_add' %}" class="inline">
+                <div class="tw-guild-hero-slot-grid">
+                    {% for slot in slot_rows %}
+                    <article
+                        class="tw-guild-hero-slot-card"
+                        data-ghp-slot-card="{{ slot.slot_index }}"
+                        {% if not forloop.first %}hidden{% endif %}
+                    >
+                        <div class="tw-guild-hero-slot-head">
+                            <h3>槽位 {{ slot.slot_index }}</h3>
+                            {% if slot.entry %}
+                            <span class="tw-level-badge">有效</span>
+                            {% else %}
+                            <span class="tw-muted">空槽</span>
+                            {% endif %}
+                        </div>
+
+                        {% if slot.entry %}
+                        <div class="tw-guild-hero-slot-meta">
+                            <div class="tw-guild-guest-mini-card tw-guild-guest-mini-card--slot m-0">
+                                {% if slot.entry.source_guest.template.avatar %}
+                                {% include "guilds/_guest_avatar.html" with avatar_url=slot.entry.source_guest.template.avatar.url guest_name=slot.entry.source_guest.display_name only %}
+                                {% else %}
+                                {% include "guilds/_guest_avatar.html" with guest_name=slot.entry.source_guest.display_name only %}
+                                {% endif %}
+                                <div class="tw-guild-guest-mini-meta">
+                                    <p class="tw-guild-guest-name rarity-text-{{ slot.entry.source_guest.rarity }}">{{ slot.entry.source_guest.display_name }}</p>
+                                    <p class="tw-guild-guest-sub">Lv{{ slot.entry.source_guest.level }} · {{ slot.entry.source_guest.get_gender_display }}</p>
+                                </div>
+                            </div>
+                            <p class="m-0 text-sm">
+                                替换冷却：
+                                {% if slot.cooldown_seconds > 0 %}
+                                <span class="countdown" data-countdown="{{ slot.cooldown_until|date:'c' }}" data-format="zh-no-sec" data-refresh="1">{{ slot.cooldown_until|date:"H:i:s" }}</span>
+                                {% else %}
+                                <span class="text-accent-green">可替换</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% else %}
+                        <p class="tw-muted text-sm">当前未设置门客。</p>
+                        {% endif %}
+
+                        <form method="post" action="{% url 'guilds:hero_pool_submit' %}" class="tw-guild-hero-slot-form">
                             {% csrf_token %}
-                            <input type="hidden" name="pool_entry_id" value="{{ row.entry.id }}">
-                            <button type="submit" class="tw-btn-secondary tw-btn-sm tw-guild-slot-btn">加入出战</button>
+                            <input type="hidden" name="slot_index" value="{{ slot.slot_index }}">
+                            <select name="guest_id" class="tw-form-select" required>
+                                <option value="">选择门客</option>
+                                {% for guest in available_guests %}
+                                    {% if guest.id in my_guest_ids %}
+                                        {% if slot.entry and guest.id == slot.entry.source_guest_id %}
+                                        <option value="{{ guest.id }}">{{ guest.display_name }} (Lv{{ guest.level }})</option>
+                                        {% else %}
+                                        <option value="{{ guest.id }}" disabled>{{ guest.display_name }} (Lv{{ guest.level }}) - 已在其他槽位</option>
+                                        {% endif %}
+                                    {% else %}
+                                        <option value="{{ guest.id }}">{{ guest.display_name }} (Lv{{ guest.level }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            {% if slot.entry %}
+                            <div class="tw-guild-slot-actions">
+                                <button type="submit" class="tw-btn-primary tw-guild-slot-btn">替换门客</button>
+                                <button
+                                    type="submit"
+                                    formaction="{% url 'guilds:hero_pool_remove' %}"
+                                    formnovalidate
+                                    class="tw-btn-secondary tw-guild-slot-btn"
+                                >
+                                    清空槽位
+                                </button>
+                            </div>
+                            {% else %}
+                            <button type="submit" class="tw-btn-primary tw-guild-slot-btn">提交门客</button>
+                            {% endif %}
                         </form>
-                    {% else %}
-                        <span class="tw-muted">未上阵</span>
-                    {% endif %}
+                    </article>
+                    {% endfor %}
                 </div>
-            </article>
-            {% empty %}
-            <p class="tw-muted">当前没有门客池条目</p>
-            {% endfor %}
-        </div>
-    </section>
+            </section>
+
+            <section class="ghp-lineup-summary tw-card">
+                <div class="ghp-summary-head">
+                    <h2 class="m-0">当前出战名单（{{ lineup_count }}/{{ lineup_limit }}）</h2>
+                </div>
+                <div class="ghp-lineup-scroll" data-ghp-region="lineup-scroll">
+                    {% for row in lineup_summary_rows %}
+                    <div class="ghp-lineup-row">
+                        <div class="ghp-lineup-slot">#{{ row.slot_index }}</div>
+                        {% include "guilds/_guest_avatar.html" with avatar_url=row.avatar_url guest_name=row.guest_name only %}
+                        <div class="ghp-lineup-meta">
+                            <span class="ghp-guest-name rarity-text-{{ row.guest_rarity }}">{{ row.guest_name }}</span>
+                            <span class="ghp-owner-note">所属玩家：{{ row.owner_name }}</span>
+                        </div>
+                        {% if member.can_manage %}
+                        <form method="post" action="{% url 'guilds:lineup_remove' %}" class="ghp-lineup-action">
+                            {% csrf_token %}
+                            <input type="hidden" name="lineup_entry_id" value="{{ row.lineup_entry_id }}">
+                            <button type="submit" class="tw-btn-secondary tw-btn-sm tw-guild-slot-btn">下阵</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="ghp-empty-state">
+                        <p class="tw-muted">暂无出战门客</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </aside>
+    </div>
 </section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/guild-hero-pool.js' %}"></script>
 {% endblock %}

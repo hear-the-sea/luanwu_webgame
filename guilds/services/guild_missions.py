@@ -12,8 +12,11 @@ from django.utils import timezone
 from battle.execution import BattleOptions, execute_battle
 from common.utils.celery import safe_apply_async
 from core.exceptions import GuildMembershipError, GuildPermissionError, GuildValidationError
+from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
+from gameplay.models import Manor
 from gameplay.services.battle_snapshots import build_guest_battle_snapshots, build_guest_snapshot_proxies
 from gameplay.services.manor.core import ensure_manor
+from gameplay.services.utils.messages import bulk_create_messages
 
 from ..models import (
     Guild,
@@ -140,6 +143,7 @@ def get_guild_mission_page_context(member: GuildMember, *, selected_mission_key:
         (mission for mission in mission_templates if mission.key == selected_mission_key),
         None,
     )
+    active_tab = selected_mission.difficulty if selected_mission else "junior"
     return {
         "guild": guild,
         "member": member,
@@ -147,6 +151,7 @@ def get_guild_mission_page_context(member: GuildMember, *, selected_mission_key:
         "mission_templates": mission_templates,
         "mission_groups": mission_groups,
         "selected_mission": selected_mission,
+        "active_tab": active_tab,
         "lineup_entries": lineup_entries,
         "troop_storages": troop_storages,
         "dispatch_limit": get_guild_dispatch_capacity(guild),
@@ -342,6 +347,39 @@ def _build_guild_mission_defender_setup(run: GuildMissionRun) -> dict[str, Any]:
     }
 
 
+def _send_guild_mission_report_messages(run: GuildMissionRun, report: Any) -> None:
+    member_user_ids = list(
+        GuildMember.objects.filter(guild=run.guild, is_active=True).values_list("user_id", flat=True)
+    )
+    if not member_user_ids:
+        return
+
+    user_to_manor = {manor.user_id: manor for manor in Manor.objects.filter(user_id__in=member_user_ids)}
+    messages_data = [
+        {
+            "manor": manor,
+            "kind": "battle",
+            "title": f"{run.template.name} 战报",
+            "body": "",
+            "battle_report": report,
+        }
+        for user_id in member_user_ids
+        if (manor := user_to_manor.get(user_id)) is not None
+    ]
+    if not messages_data:
+        return
+
+    try:
+        bulk_create_messages(messages_data)
+    except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
+        logger.exception(
+            "Guild mission report delivery failed: run_id=%s guild_id=%s recipient_count=%s",
+            run.id,
+            run.guild_id,
+            len(messages_data),
+        )
+
+
 @transaction.atomic
 def finalize_guild_mission_run(run: GuildMissionRun, *, now=None) -> bool:
     finalized_at = now or timezone.now()
@@ -390,4 +428,5 @@ def finalize_guild_mission_run(run: GuildMissionRun, *, now=None) -> bool:
     locked_run.completed_at = finalized_at
     locked_run.battle_report = report
     locked_run.save(update_fields=["status", "completed_at", "battle_report"])
+    _send_guild_mission_report_messages(locked_run, report)
     return True

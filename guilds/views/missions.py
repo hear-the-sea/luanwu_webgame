@@ -93,4 +93,4 @@ def donate_troops(request: Any) -> HttpResponse:
         success_message="护院已捐赠到帮会护院池",
         error_message_formatter=sanitize_error_message,
     )
-    return redirect("guilds:resources")
+    return redirect("guilds:detail", guild_id=member.guild_id)

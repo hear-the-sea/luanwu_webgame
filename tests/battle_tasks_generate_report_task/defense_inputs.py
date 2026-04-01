@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from gameplay.services.manor.core import ensure_manor
+from guests.models import GuestTemplate
 from tests.battle_tasks_generate_report_task.support import assert_no_retry
 
 
@@ -61,6 +62,60 @@ def test_generate_report_task_defense_rejects_invalid_enemy_guest_mapping_skills
             troop_loadout={},
             battle_type="task",
         )
+
+
+@pytest.mark.django_db
+def test_generate_report_task_defense_passes_enemy_label_override_to_ai_guests(monkeypatch, django_user_model):
+    from battle.tasks import generate_report_task
+    from gameplay.models import MissionTemplate
+
+    captured: dict[str, object] = {}
+
+    def _fake_simulate_report(**kwargs):
+        captured.update(kwargs)
+        return type("DummyReport", (), {"pk": 1})()
+
+    user = django_user_model.objects.create_user(username="task_defense_guest_label", password="pass")
+    manor = ensure_manor(user)
+    mission = MissionTemplate.objects.create(
+        key="m_task_defense_guest_label",
+        name="DefenseTaskGuestLabel",
+        is_defense=True,
+        enemy_technology={"guest_level": 30},
+        enemy_troops={},
+        enemy_guests=[{"key": "enemy_guest", "label": "任务别名"}],
+    )
+    template = GuestTemplate.objects.create(
+        key="enemy_guest",
+        name="模板原名",
+        archetype="military",
+        rarity="green",
+        base_attack=100,
+        base_intellect=90,
+        base_defense=80,
+        base_agility=70,
+        base_luck=60,
+        base_hp=1200,
+    )
+
+    assert template.key == "enemy_guest"
+    assert_no_retry(monkeypatch)
+    monkeypatch.setattr("battle.tasks.simulate_report", _fake_simulate_report)
+    monkeypatch.setattr("battle.combatants_pkg.ai_generator.get_all_guest_templates", lambda: {"enemy_guest": template})
+
+    report_id = generate_report_task.run(
+        manor_id=manor.id,
+        mission_id=mission.id,
+        run_id=None,
+        guest_ids=[],
+        troop_loadout={},
+        battle_type="task",
+    )
+
+    attacker_guests = captured["attacker_guests"]
+    assert report_id == 1
+    assert len(attacker_guests) == 1
+    assert getattr(attacker_guests[0], "_display_name_override", None) == "任务别名"
 
 
 @pytest.mark.django_db

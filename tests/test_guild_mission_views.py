@@ -76,6 +76,9 @@ def test_guild_mission_page_renders_tabbed_task_list_without_troop_pool(guild_me
     assert "视图任务" in body
     assert "tw-mission-tabs" in body
     assert "帮会护院池" not in body
+    assert "当前帮会出征" not in body
+    assert "当前上阵门客" not in body
+    assert "门客池" not in body
     assert "详情" in body
 
 
@@ -123,6 +126,31 @@ def test_guild_mission_page_renders_selected_task_detail_modal(guild_member_clie
     assert "配置护院" in body
     assert "详情门客" in body
     assert "非上阵门客" not in body
+
+
+@pytest.mark.django_db
+def test_guild_mission_page_selects_matching_difficulty_tab_for_selected_mission(guild_member_client):
+    client, _user, _guild = guild_member_client
+    template = GuildMissionTemplate.objects.create(
+        key="guild_selected_intermediate_task",
+        name="指定中级帮会任务",
+        description="",
+        difficulty="intermediate",
+        task_type="escort",
+        base_duration_seconds=900,
+        ruby_reward=12,
+        recommended_guest_count=1,
+        allow_troops=True,
+        is_active=True,
+        sort_weight=3,
+    )
+
+    response = client.get(f"{reverse('guilds:missions')}?mission={template.key}")
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert '<button class="tw-trade-tab active" data-tab="intermediate">中级任务</button>' in body
+    assert '<div id="tab-intermediate" class="mission-tab-content active">' in body
 
 
 @pytest.mark.django_db

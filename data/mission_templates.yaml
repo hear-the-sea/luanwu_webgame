@@ -143,13 +143,13 @@ missions:
     guest_only: true
 
     enemy_guests:
-      - key: base_gray_military
+      - key: task_huashan_jianwang
         label: 贱王之王
-      - key: base_gray_military
+      - key: task_huashan_jianjing
         label: 顶级贱精
-      - key: base_gray_military
+      - key: task_huashan_jianjing
         label: 顶级贱精
-      - key: base_black_civil
+      - key: task_huashan_audience_a
         label: 观众甲
 
     enemy_technology:
@@ -174,14 +174,14 @@ missions:
     is_defense: true
 
     enemy_guests:
-      - key: hero_zhai_rang
+      - key: hist_suitang_0162_zhairang
         skills:
           - tangseng_sermon
       - key: hero_qin_shubao
         skills:
           - brahma_true_fire
-      - hero_dan_xiongxin
-      - hero_wang_bodang
+      - hist_suitang_0164_shanxiongxin
+      - hist_suitang_0165_wangbodang
       - hero_luo_cheng
       - hero_cheng_yaojin
 
@@ -240,9 +240,9 @@ missions:
     battle_type: task1
 
     enemy_guests:
-      - key: task_wulong_bandit_chief
+      - key: task_wulong_bandit_chief_zuanshanbao
         label: 钻山豹
-      - key: task_wulong_bandit_chief
+      - key: task_wulong_bandit_chief_zuoshandiao
         label: 座山雕
 
     enemy_technology:
@@ -267,7 +267,7 @@ missions:
 
     enemy_guests:
       - hero_cheng_yaojin
-      - hero_zhai_rang
+      - hist_suitang_0162_zhairang
 
     enemy_troops:
       jian_xia: 400
@@ -372,14 +372,14 @@ missions:
       - hero_hahaer
       - hero_tu_jiaojiao
       - hero_yin_jiuyou
-      - key: base_black_civil
+      - key: task_shiren_xiaomimi
         label: 萧咪咪
-      - key: base_black_civil
+      - key: task_shiren_xuanyuansanguang
         label: 轩辕三光
-      - key: base_black_military
+      - key: task_shiren_tiezhan
         label: 铁战
       - hero_bai_kaixin
-      - key: base_black_military
+      - key: task_shiren_luoshixiongdi
         label: 罗氏兄弟
 
     enemy_technology:

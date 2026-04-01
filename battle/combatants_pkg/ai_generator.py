@@ -5,7 +5,7 @@ AI guest generator.
 from __future__ import annotations
 
 import random
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Mapping, Sequence
 
 from guests.models import Guest
 
@@ -64,7 +64,7 @@ def allocate_ai_attribute_points(guest: Guest, total_points: int) -> Dict[str, i
     return allocation
 
 
-def build_named_ai_guests(guest_keys: List[str | Dict[str, Any]], level: int = 50) -> List[Guest]:
+def build_named_ai_guests(guest_keys: Sequence[str | Mapping[str, Any]], level: int = 50) -> List[Guest]:
     """
     Build AI guests from specified templates with random attribute growth.
 
@@ -88,7 +88,7 @@ def build_named_ai_guests(guest_keys: List[str | Dict[str, Any]], level: int = 5
         if isinstance(entry, str):
             if not entry.strip():
                 raise AssertionError(f"invalid ai guest config entry: {entry!r}")
-            parsed_configs.append({"key": entry, "skills": None})
+            parsed_configs.append({"key": entry, "skills": None, "label": None})
             template_keys_to_fetch.append(entry)
         elif isinstance(entry, dict):
             key = entry.get("key", "")
@@ -101,7 +101,12 @@ def build_named_ai_guests(guest_keys: List[str | Dict[str, Any]], level: int = 5
                 for skill in skills:
                     if not isinstance(skill, str) or not skill.strip():
                         raise AssertionError(f"invalid ai guest config skills entry: {skill!r}")
-            parsed_configs.append({"key": key, "skills": skills})
+            label = entry.get("label")
+            if label is not None and (not isinstance(label, str) or not label.strip()):
+                raise AssertionError(f"invalid ai guest config label: {label!r}")
+            parsed_configs.append(
+                {"key": key, "skills": skills, "label": label.strip() if isinstance(label, str) else None}
+            )
             template_keys_to_fetch.append(key)
         else:
             raise AssertionError(f"invalid ai guest config entry: {entry!r}")
@@ -113,6 +118,7 @@ def build_named_ai_guests(guest_keys: List[str | Dict[str, Any]], level: int = 5
     for config in parsed_configs:
         template_key = config["key"]
         override_skills = config["skills"]
+        display_name_override = config.get("label")
 
         template = templates.get(template_key)
         if not template:
@@ -151,6 +157,8 @@ def build_named_ai_guests(guest_keys: List[str | Dict[str, Any]], level: int = 5
 
         if override_skills is not None:
             setattr(dummy_guest, "_override_skills", override_skills)
+        if display_name_override is not None:
+            setattr(dummy_guest, "_display_name_override", display_name_override)
 
         guests.append(dummy_guest)
 
