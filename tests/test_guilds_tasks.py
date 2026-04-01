@@ -7,11 +7,227 @@ from django.db.utils import DatabaseError
 from django.utils import timezone
 from kombu.exceptions import OperationalError
 
+from gameplay.services.manor.core import ensure_manor
+from guests.models import Guest, GuestArchetype, GuestRarity, GuestTemplate
+from guilds.services import hero_pool as hero_pool_service
+
 
 def _dispatch_immediately(task, *, args=None, kwargs=None, countdown=None, logger=None, log_message="", **_kwargs):
     del kwargs, countdown, logger, log_message, _kwargs
     task.run(*(args or []))
     return True
+
+
+def _create_user_with_manor(django_user_model, username: str):
+    user = django_user_model.objects.create_user(username=username, password="pass12345")
+    manor = ensure_manor(user)
+    return user, manor
+
+
+def _create_template(key: str) -> GuestTemplate:
+    return GuestTemplate.objects.create(
+        key=key,
+        name=f"模板{key}",
+        archetype=GuestArchetype.MILITARY,
+        rarity=GuestRarity.GREEN,
+    )
+
+
+def _create_guest(*, manor, template: GuestTemplate, name: str, level: int = 20) -> Guest:
+    return Guest.objects.create(
+        manor=manor,
+        template=template,
+        custom_name=name,
+        level=level,
+        force=120,
+        intellect=85,
+        defense_stat=100,
+        agility=90,
+        luck=60,
+    )
+
+
+def _create_active_guild_run(django_user_model, *, username: str, key_suffix: str, return_at):
+    from battle.models import TroopTemplate
+    from guilds.models import Guild, GuildMember, GuildMissionRun, GuildMissionTemplate, GuildTroopStorage
+
+    user, manor = _create_user_with_manor(django_user_model, username)
+    guild = Guild.objects.create(name=f"任务帮会{key_suffix}", founder=user, is_active=True)
+    member = GuildMember.objects.create(guild=guild, user=user, position="leader", is_active=True)
+    template = GuildMissionTemplate.objects.create(
+        key=f"guild_task_{key_suffix}",
+        name="任务测试",
+        description="",
+        difficulty="junior",
+        task_type="dispatch",
+        base_duration_seconds=60,
+        ruby_reward=3,
+        recommended_guest_count=1,
+        allow_troops=True,
+        is_active=True,
+    )
+    troop_template = TroopTemplate.objects.create(key=f"guild_task_archer_{key_suffix}", name="任务弓手")
+    GuildTroopStorage.objects.create(guild=guild, troop_template=troop_template, count=50)
+    guest = _create_guest(manor=manor, template=_create_template(f"guild_task_tpl_{key_suffix}"), name="队长")
+    entry = hero_pool_service.submit_hero_pool_entry(member, guest_id=guest.id, slot_index=1).entry
+    hero_pool_service.add_lineup_entry(guild=guild, operator=user, pool_entry_id=entry.id)
+
+    run = GuildMissionRun.objects.create(
+        guild=guild,
+        template=template,
+        started_by=member,
+        status="active",
+        selected_guest_count=1,
+        ruby_reward=template.ruby_reward,
+        guest_ids=[guest.id],
+        guest_snapshots=[],
+        troop_loadout={troop_template.key: 20},
+        battle_at=return_at - timedelta(seconds=30),
+        return_at=return_at,
+    )
+    return run
+
+
+@pytest.mark.django_db
+def test_complete_guild_mission_task_reschedules_when_not_due(monkeypatch, django_user_model):
+    from guilds.tasks import complete_guild_mission_task
+
+    now = timezone.now()
+    run = _create_active_guild_run(
+        django_user_model,
+        username="guild_task_future",
+        key_suffix="future",
+        return_at=now + timedelta(seconds=10),
+    )
+
+    called: dict[str, object] = {}
+    finalized: list[int] = []
+
+    monkeypatch.setattr("guilds.tasks.timezone.now", lambda: now)
+    monkeypatch.setattr(
+        "guilds.tasks.safe_apply_async_with_dedup",
+        lambda *_args, args=None, countdown=None, **_kwargs: called.update({"args": args, "countdown": countdown})
+        or True,
+    )
+    monkeypatch.setattr("guilds.tasks.finalize_guild_mission_run", lambda *_args, **_kwargs: finalized.append(run.id))
+    monkeypatch.setattr(
+        complete_guild_mission_task,
+        "retry",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("retry should not be called")),
+    )
+
+    assert complete_guild_mission_task.run(run.id) == "rescheduled"
+    assert called["args"] == [run.id]
+    assert called["countdown"] == 10
+    assert not finalized
+
+
+@pytest.mark.django_db
+def test_complete_guild_mission_task_finalizes_due_run(monkeypatch, django_user_model):
+    from guilds.tasks import complete_guild_mission_task
+
+    now = timezone.now()
+    run = _create_active_guild_run(
+        django_user_model,
+        username="guild_task_due",
+        key_suffix="due",
+        return_at=now - timedelta(seconds=1),
+    )
+
+    finalized: list[tuple[int, object]] = []
+    monkeypatch.setattr("guilds.tasks.timezone.now", lambda: now)
+    monkeypatch.setattr(
+        "guilds.tasks.finalize_guild_mission_run",
+        lambda locked_run, now=None: finalized.append((locked_run.id, now)),
+    )
+
+    assert complete_guild_mission_task.run(run.id) == "completed"
+    assert finalized == [(run.id, now)]
+
+
+@pytest.mark.django_db
+def test_complete_guild_mission_task_retries_when_reschedule_dispatch_fails(monkeypatch, django_user_model):
+    from guilds.tasks import complete_guild_mission_task
+
+    now = timezone.now()
+    run = _create_active_guild_run(
+        django_user_model,
+        username="guild_task_retry",
+        key_suffix="retry",
+        return_at=now + timedelta(seconds=5),
+    )
+
+    retried: dict[str, object] = {}
+
+    monkeypatch.setattr("guilds.tasks.timezone.now", lambda: now)
+    monkeypatch.setattr("guilds.tasks.safe_apply_async_with_dedup", lambda *_args, **_kwargs: False)
+
+    def _retry(*, exc=None, **_kwargs):
+        retried["exc"] = exc
+        raise RuntimeError("retried")
+
+    monkeypatch.setattr(complete_guild_mission_task, "retry", _retry)
+
+    with pytest.raises(RuntimeError, match="retried"):
+        complete_guild_mission_task.run(run.id)
+
+    assert "guild mission reschedule dispatch failed" in str(retried["exc"])
+
+
+@pytest.mark.django_db
+def test_scan_due_guild_missions_finalizes_overdue_runs(monkeypatch, django_user_model):
+    from guilds.models import GuildMissionRun
+    from guilds.tasks import scan_due_guild_missions
+
+    now = timezone.now()
+    due_run = _create_active_guild_run(
+        django_user_model,
+        username="guild_task_scan_due",
+        key_suffix="scan_due",
+        return_at=now - timedelta(seconds=5),
+    )
+    future_run = _create_active_guild_run(
+        django_user_model,
+        username="guild_task_scan_future",
+        key_suffix="scan_future",
+        return_at=now + timedelta(seconds=30),
+    )
+
+    finalized: list[int] = []
+    monkeypatch.setattr("guilds.tasks.timezone.now", lambda: now)
+
+    def _fake_finalize(run, *, now=None):
+        GuildMissionRun.objects.filter(pk=run.pk).update(status=GuildMissionRun.Status.COMPLETED, completed_at=now)
+        finalized.append(run.id)
+        return True
+
+    monkeypatch.setattr("guilds.tasks.finalize_guild_mission_run", _fake_finalize)
+
+    assert scan_due_guild_missions() == 1
+    assert finalized == [due_run.id]
+    assert GuildMissionRun.objects.get(pk=future_run.pk).status == GuildMissionRun.Status.ACTIVE
+
+
+@pytest.mark.django_db
+def test_scan_due_guild_missions_programming_error_bubbles_up(monkeypatch, django_user_model):
+    from guilds.tasks import scan_due_guild_missions
+
+    now = timezone.now()
+    _create_active_guild_run(
+        django_user_model,
+        username="guild_task_scan_bug",
+        key_suffix="scan_bug",
+        return_at=now - timedelta(seconds=5),
+    )
+
+    monkeypatch.setattr("guilds.tasks.timezone.now", lambda: now)
+    monkeypatch.setattr(
+        "guilds.tasks.finalize_guild_mission_run",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("broken guild mission scan contract")),
+    )
+
+    with pytest.raises(AssertionError, match="broken guild mission scan contract"):
+        scan_due_guild_missions()
 
 
 @pytest.mark.django_db

@@ -1,0 +1,147 @@
+# ============================================================
+# 帮会任务模板配置文件
+# ============================================================
+# 本文件用于配置帮会任务，包括巡逻、押运、讨伐等玩法。
+# 字段风格与个人任务导入保持一致，便于统一维护。
+
+missions:
+  - key: guild_patrol_alpha
+    name: 夜袭乌鳞寨
+    description: |
+      近来北郊商道一入子夜便灯火尽灭，往返车队不是失了骡马，便是天明后只剩翻倒车辙。帮中弟子顺着断箭、碎缰和半截焦木一路摸到山坳，才看见乌鳞寨早把谷口修成了连环哨卡，拒马、暗哨与巡夜火把一层压着一层。
+
+      寨中人白日敛迹，夜里却轮番下山掠货，惯会先放小股人手引人追击，再借山路弯口突然合围。若想把这条商线重新打通，不能只顾着往前压，还得有人盯住两翼伏兵，免得主力刚进谷口，退路便先被人摸黑截断。
+    difficulty: junior
+    task_type: patrol
+    base_duration_seconds: 1500
+    ruby_reward: 96
+    recommended_guest_count: 10
+    allow_troops: true
+    enemy_guests:
+      - template_key: hero_zhuge_lei
+        skills:
+          - stratagem_burst
+      - template_key: hero_hahaer
+      - template_key: hero_bai_kaixin
+      - template_key: hero_long_xiaoyun
+        skills:
+          - stratagem_burst
+      - template_key: hero_ruan_shizhong
+      - template_key: base_gray_military
+      - template_key: base_gray_military
+      - template_key: base_black_military
+      - template_key: base_black_military_2
+      - template_key: base_gray_civil
+    enemy_troops:
+      qiang_hao: 700
+      jian_hao: 650
+      fast_archer: 600
+      dao_jie: 450
+    enemy_technology:
+      level: 6
+      guest_level: 82
+      guest_bonus: 0.24
+    is_active: true
+    sort_weight: 10
+
+  - key: guild_supply_escort
+    name: 血旗镖局风云
+    description: |
+      血旗镖局表面替各路商号押送金银药材，暗地里却替人收账、截货、买命，沿河几个渡口最近都挂上了他们的旗。凡是不肯交路银的商队，不是半夜改道，就是第二天只剩散落河滩的箱板和染血车帘，连船家都开始装聋作哑，不敢多问一句。
+
+      探子送回的消息说，这支人马不像寻常匪帮，各车之间号令极严，前阵短弓压路，中段刀枪护箱，尾队还留着专门断后的老手。真打起来，他们未必急着和你硬换，只会边退边拖，把人一步步拽进最窄最乱的那段河道。
+    difficulty: intermediate
+    task_type: escort
+    base_duration_seconds: 2100
+    ruby_reward: 168
+    recommended_guest_count: 14
+    allow_troops: true
+    enemy_guests:
+      - template_key: hero_zhuge_lei
+        skills:
+          - stratagem_burst
+      - template_key: hero_jin_jiuling
+        skills:
+          - stratagem_burst
+      - template_key: hero_xue_xiaoren
+      - template_key: hero_wuhua_heshang
+      - template_key: hero_hahaer
+      - template_key: hero_bai_kaixin
+      - template_key: hero_long_xiaoyun
+        skills:
+          - stratagem_burst
+      - template_key: hero_bei_haishi
+        skills:
+          - stratagem_burst
+      - template_key: hero_ruan_shizhong
+      - template_key: hero_lv_xiangchuan
+      - template_key: base_gray_military
+      - template_key: base_gray_military
+      - template_key: base_gray_civil
+    enemy_troops:
+      qiang_ba: 1100
+      jian_hao: 900
+      divine_archer: 1000
+      quan_wang: 800
+    enemy_technology:
+      level: 8
+      guest_level: 92
+      guest_bonus: 0.44
+    is_active: true
+    sort_weight: 20
+
+  - key: guild_blackwind_assault
+    name: 黑风关总攻
+    description: |
+      黑风关原是旧时军镇咽喉，多年废弃后反被各路亡命和旧军头子修成了铁桶。关前壕沟是新翻的，拒马、滚木和石垒顺着山口一层层铺开，城头昼夜轮火不熄；前几次探路的人才看见墙影里箭光一闪，山道上就已经响起调兵铜哨。
+
+      更麻烦的是，关内粮械齐备，轮守之人熟悉军阵，能把外墙、甬道和内寨连成一口气。若真要把黑风关从地图上抹去，便不是冲开一道门那么简单，而是要顶着连番反扑一路杀到关楼，把还在运转的整座堡寨硬生生拆开。
+    difficulty: advanced
+    task_type: suppress
+    base_duration_seconds: 3000
+    ruby_reward: 288
+    recommended_guest_count: 18
+    allow_troops: true
+    enemy_guests:
+      - template_key: hero_zhuge_lei
+        skills:
+          - stratagem_burst
+      - template_key: hero_jin_jiuling
+        skills:
+          - stratagem_burst
+      - template_key: hero_xue_xiaoren
+        skills:
+          - stratagem_burst
+      - template_key: hero_wuhua_heshang
+        skills:
+          - stratagem_burst
+      - template_key: hero_hahaer
+      - template_key: hero_bai_kaixin
+      - template_key: hero_tie_chuanjia
+      - template_key: hero_laoshi_heshang
+      - template_key: hero_lu_xiaojia
+      - template_key: hero_xue_yiren
+      - template_key: hero_mei_ruohua
+      - template_key: hero_chen_xuanfeng
+      - template_key: hero_feng_xifan
+      - template_key: hero_long_xiaoyun
+        skills:
+          - stratagem_burst
+      - template_key: hero_bei_haishi
+        skills:
+          - stratagem_burst
+      - template_key: hero_ruan_shizhong
+      - template_key: hero_lv_xiangchuan
+      - template_key: hero_wang_lianhua
+    enemy_troops:
+      qiang_wang: 1600
+      jian_sheng: 1350
+      arrow_god: 1500
+      quan_sheng: 900
+      dao_sheng: 850
+    enemy_technology:
+      level: 10
+      guest_level: 100
+      guest_bonus: 0.78
+    is_active: true
+    sort_weight: 30

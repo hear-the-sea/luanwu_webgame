@@ -30,6 +30,7 @@ def test_bootstrap_game_data_runs_expected_steps(monkeypatch):
         "load_troop_templates",
         "load_guest_templates",
         "load_mission_templates",
+        "load_guild_mission_templates",
         "seed_work_templates",
     ]
     kwargs_by_name = {name: kwargs for name, kwargs in calls}
@@ -76,6 +77,7 @@ def test_bootstrap_game_data_continue_on_error_keeps_running(monkeypatch):
         "load_troop_templates",
         "load_guest_templates",
         "load_mission_templates",
+        "load_guild_mission_templates",
         "seed_work_templates",
     ]
 

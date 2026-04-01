@@ -4,6 +4,7 @@ from io import StringIO
 
 import pytest
 from django.core.management import call_command
+from django.utils import timezone
 
 from gameplay.services.runtime_configs import format_runtime_config_summary, reload_runtime_configs
 
@@ -209,7 +210,12 @@ def test_reload_runtime_configs_updates_guild_module_constants(monkeypatch):
                         "names": {"equipment_forge": "刷新锻造"},
                     },
                     "warehouse": {"exchange_costs": {"gear_green": 77}, "daily_exchange_limit": 15},
-                    "hero_pool": {"slot_limit": 4, "battle_lineup_limit": 30, "replace_cooldown_seconds": 900},
+                    "hero_pool": {
+                        "slot_limit": 4,
+                        "battle_lineup_limit": 30,
+                        "dispatch_guest_base_limit": 8,
+                        "replace_cooldown_seconds": 900,
+                    },
                 },
             )
 
@@ -221,9 +227,47 @@ def test_reload_runtime_configs_updates_guild_module_constants(monkeypatch):
             assert guild_constants.GUILD_UPGRADE_BASE_COST == 12
             assert guild_constants.MIN_DONATION_AMOUNT == 500
             assert guild_constants.DAILY_EXCHANGE_LIMIT == 15
-            assert guild_constants.GUILD_HERO_POOL_SLOT_LIMIT == 4
-            assert guild_constants.GUILD_BATTLE_LINEUP_LIMIT == 30
+            assert guild_constants.GUILD_HERO_POOL_SLOT_LIMIT == 2
+            assert guild_constants.GUILD_BATTLE_LINEUP_LIMIT == 20
+            assert guild_constants.GUILD_DISPATCH_GUEST_BASE_LIMIT == 5
             assert guild_constants.GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS == 900
+    finally:
+        clear_guild_rules_cache()
+        reload_runtime_configs()
+
+
+def test_reload_runtime_configs_updates_guild_service_runtime_values(monkeypatch):
+    import guilds.services.hero_pool as hero_pool_service
+    import guilds.services.technology as technology_service
+    from guilds.constants import clear_guild_rules_cache
+
+    try:
+        clear_guild_rules_cache()
+        with monkeypatch.context() as patcher:
+            patcher.setattr(
+                "guilds.constants.load_yaml_data",
+                lambda *args, **kwargs: {
+                    "technology": {
+                        "upgrade_costs": {"equipment_forge": {"silver": 7000, "grain": 3000, "gold_bar": 2}},
+                    },
+                    "hero_pool": {
+                        "replace_cooldown_seconds": 120,
+                    },
+                },
+            )
+
+            reload_runtime_configs()
+
+            cost = technology_service.calculate_tech_upgrade_cost("equipment_forge", 0)
+            ruby_cost = technology_service.calculate_tech_upgrade_cost("guild_lineup_capacity", 0)
+            submitted_at = timezone.now()
+            cooldown_until = hero_pool_service._replace_cooldown_until(
+                type("Entry", (), {"last_submitted_at": submitted_at})()
+            )
+
+            assert cost == {"silver": 7000, "grain": 3000, "gold_bar": 2}
+            assert ruby_cost == {"red_ruby": 1}
+            assert int((cooldown_until - submitted_at).total_seconds()) == 120
     finally:
         clear_guild_rules_cache()
         reload_runtime_configs()

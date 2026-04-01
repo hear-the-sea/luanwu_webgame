@@ -23,7 +23,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% if active_runs or upgrading_buildings or upgrading_technologies or active_scouts or active_raids or incoming_raids %}
+                {% if active_runs or upgrading_buildings or upgrading_technologies or active_scouts or active_raids or incoming_raids or active_guild_mission %}
 
                 {# 敌袭警报 #}
                 {% for raid in incoming_raids %}
@@ -114,6 +114,24 @@
                     </td>
                 </tr>
                 {% endfor %}
+
+                {% if active_guild_mission %}
+                <tr>
+                    <td>
+                        <strong>帮会出征：{{ active_guild_mission.template.name }}</strong>
+                    </td>
+                    <td>
+                        <span class="countdown"
+                              data-countdown="{{ active_guild_mission.return_at|date:'c' }}"
+                              data-format="zh"
+                              data-refresh="1"
+                              title="预计完成 {{ active_guild_mission.return_at|date:'Y-m-d H:i:s' }}">计算中</span>
+                    </td>
+                    <td>
+                        <a href="{% url 'guilds:missions' %}" class="btn-secondary btn-sm">查看</a>
+                    </td>
+                </tr>
+                {% endif %}
 
                 {# 门客出征事件 #}
                 {% for run in active_runs %}

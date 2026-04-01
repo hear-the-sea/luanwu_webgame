@@ -287,3 +287,55 @@ def test_upgrade_technology_insufficient_resources(monkeypatch, django_user_mode
 
     tech.refresh_from_db()
     assert tech.level == 0
+
+
+@pytest.mark.django_db
+def test_upgrade_new_guild_capacity_tech_consumes_red_ruby(monkeypatch, django_user_model):
+    from guilds.models import Guild, GuildResourceLog, GuildTechnology, GuildWarehouse
+    from guilds.services.technology import upgrade_technology
+
+    monkeypatch.setattr(
+        "guilds.services.technology.get_active_membership",
+        lambda *_a, **_k: SimpleNamespace(can_manage=True),
+    )
+    monkeypatch.setattr("guilds.services.technology.create_announcement", lambda *_a, **_k: None)
+
+    operator = django_user_model.objects.create_user(username="tech_operator_red_ruby", password="pass")
+    founder = django_user_model.objects.create_user(username="tech_founder_red_ruby", password="pass")
+    guild = Guild.objects.create(name="TechGuildRedRuby", founder=founder, silver=0, grain=0, gold_bar=0)
+    tech = GuildTechnology.objects.create(guild=guild, tech_key="guild_lineup_capacity", level=0, max_level=5)
+    ruby = GuildWarehouse.objects.create(guild=guild, item_key="red_ruby", quantity=3, contribution_cost=0)
+
+    upgrade_technology(guild, "guild_lineup_capacity", operator)
+
+    tech.refresh_from_db()
+    guild.refresh_from_db()
+    ruby.refresh_from_db()
+
+    assert tech.level == 1
+    assert ruby.quantity == 2
+    assert guild.silver == 0
+    assert guild.grain == 0
+    assert guild.gold_bar == 0
+    assert GuildResourceLog.objects.filter(
+        guild=guild,
+        action="tech_upgrade",
+        note__contains="红宝石x1",
+    ).exists()
+
+
+@pytest.mark.django_db
+def test_capacity_helpers_clamp_to_spec_maximums(django_user_model, monkeypatch):
+    from guilds.models import Guild, GuildTechnology
+    from guilds.services.technology import get_guild_dispatch_capacity, get_guild_lineup_capacity
+
+    monkeypatch.setattr("guilds.constants.GUILD_BATTLE_LINEUP_LIMIT", 30)
+    monkeypatch.setattr("guilds.constants.GUILD_DISPATCH_GUEST_BASE_LIMIT", 10)
+
+    founder = django_user_model.objects.create_user(username="tech_founder_capacity_clamp", password="pass")
+    guild = Guild.objects.create(name="TechCapacityClamp", founder=founder)
+    GuildTechnology.objects.create(guild=guild, tech_key="guild_lineup_capacity", level=20, max_level=20)
+    GuildTechnology.objects.create(guild=guild, tech_key="guild_dispatch_capacity", level=20, max_level=20)
+
+    assert get_guild_lineup_capacity(guild) == 40
+    assert get_guild_dispatch_capacity(guild) == 25

@@ -1,0 +1,126 @@
+{% if selected_mission %}
+<div class="tw-modal-overlay" aria-hidden="false">
+    <div class="tw-modal-content" style="max-width: 960px;">
+        <div class="tw-modal-header">
+            <div>
+                <p class="tw-muted text-sm mb-2">帮会任务情报</p>
+                <h3>{{ selected_mission.name }}</h3>
+            </div>
+            <a href="{% url 'guilds:missions' %}" class="tw-btn-secondary tw-btn-sm">关闭</a>
+        </div>
+        <div class="tw-modal-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="task-info">
+                    <p class="tw-muted mb-4">{{ selected_mission.description|default:"暂无任务描述" }}</p>
+                    <div class="flex items-center gap-2 flex-wrap mb-4">
+                        <span class="tw-chip">{{ selected_mission.get_difficulty_display }}</span>
+                        <span class="tw-chip">{{ selected_mission.get_task_type_display }}</span>
+                        <span class="tw-chip">推荐门客 {{ selected_mission.recommended_guest_count }}</span>
+                        <span class="tw-chip">红宝石 {{ selected_mission.ruby_reward }}</span>
+                        <span class="tw-chip">
+                            {% if selected_mission.allow_troops %}允许护院{% else %}仅门客{% endif %}
+                        </span>
+                    </div>
+                    <p class="tw-muted text-sm">预计耗时 {{ selected_mission.base_duration_seconds }} 秒</p>
+                </div>
+
+                <div>
+                    <h4 class="mb-4 font-bold">出征配置</h4>
+                    <form method="post" action="{% url 'guilds:mission_launch' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="template_key" value="{{ selected_mission.key }}">
+
+                        <div class="mb-4">
+                            <label class="font-bold mb-2 block">选择门客</label>
+                            <div class="tw-guest-selection">
+                                {% for lineup in lineup_entries %}
+                                <label class="tw-guest-checkbox">
+                                    <input type="checkbox"
+                                           name="pool_entry_ids"
+                                           value="{{ lineup.pool_entry_id }}"
+                                           class="guest-input">
+                                    <div class="tw-guest-card">
+                                        <div class="tw-guest-details">
+                                            <div class="tw-guest-info-row">
+                                                <span class="tw-guest-name-sm">{{ lineup.pool_entry.source_guest.display_name }}</span>
+                                                <span class="tw-guest-level-sm">位 {{ lineup.slot_index }}</span>
+                                            </div>
+                                            <div class="tw-guest-stats-sm">
+                                                <span>{{ lineup.pool_entry.owner_member.user.manor.display_name }}</span>
+                                                <span>Lv.{{ lineup.pool_entry.source_guest.level }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                                {% empty %}
+                                <p class="tw-muted">暂无可派遣上阵门客</p>
+                                {% endfor %}
+                            </div>
+                            <div class="tw-selection-summary">
+                                已选择 <strong id="selected-guest-count" data-max-squad="{{ dispatch_limit }}">0</strong> / {{ dispatch_limit }} 人
+                            </div>
+                        </div>
+
+                        {% if selected_mission.allow_troops %}
+                        <div class="mb-4 mt-6">
+                            <label class="font-bold mb-2 block">配置护院</label>
+                            {% if troop_storages %}
+                            <div class="tw-troop-selection">
+                                {% for storage in troop_storages %}
+                                <div class="tw-troop-row">
+                                    <div class="tw-troop-info">
+                                        <div class="tw-troop-details">
+                                            <span class="tw-troop-name">{{ storage.troop_template.name }}</span>
+                                            <span class="tw-troop-count">可用: {{ storage.count }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="tw-troop-slider-group">
+                                        <input type="range"
+                                               class="tw-troop-slider"
+                                               value="0"
+                                               min="0"
+                                               max="{{ storage.count }}"
+                                               data-troop-key="{{ storage.troop_template.key }}"
+                                               data-max="{{ storage.count }}">
+                                        <input type="number"
+                                               class="tw-troop-num-input"
+                                               value="0"
+                                               min="0"
+                                               max="{{ storage.count }}"
+                                               data-troop-key="{{ storage.troop_template.key }}"
+                                               data-max="{{ storage.count }}"
+                                               name="troop_{{ storage.troop_template.key }}">
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="tw-empty-hint">
+                                <p class="tw-muted">暂无可用护院</p>
+                                <p class="caption tw-muted">请先在帮会资源页捐赠护院</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="flex gap-4 mt-8">
+                            <button type="submit"
+                                    class="{% if active_run or not lineup_entries %}tw-btn-secondary{% else %}tw-btn-primary{% endif %}"
+                                    {% if active_run or not lineup_entries %}disabled{% endif %}>
+                                {% if active_run %}
+                                已有进行中的帮会任务
+                                {% elif not lineup_entries %}
+                                暂无可派遣门客
+                                {% else %}
+                                发起出征
+                                {% endif %}
+                            </button>
+                            <a href="{% url 'guilds:missions' %}" class="tw-btn-secondary">取消</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

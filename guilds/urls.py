@@ -20,6 +20,7 @@ from .views.membership import (
     transfer_leadership,
     upgrade_guild,
 )
+from .views.missions import donate_troops, launch_mission, missions, retreat_mission
 from .views.technology import technology_list, upgrade_technology
 from .views.warehouse import exchange_item, exchange_logs, warehouse
 
@@ -54,6 +55,11 @@ urlpatterns = [
     path("hero-pool/remove/", hero_pool_remove, name="hero_pool_remove"),
     path("hero-pool/lineup/add/", lineup_add, name="lineup_add"),
     path("hero-pool/lineup/remove/", lineup_remove, name="lineup_remove"),
+    # 帮会任务与护院池
+    path("missions/", missions, name="missions"),
+    path("missions/launch/", launch_mission, name="mission_launch"),
+    path("missions/retreat/", retreat_mission, name="mission_retreat"),
+    path("missions/donate-troops/", donate_troops, name="donate_troops"),
     # 帮会升级
     path("upgrade/", upgrade_guild, name="upgrade"),
     path("disband/", disband_guild, name="disband"),

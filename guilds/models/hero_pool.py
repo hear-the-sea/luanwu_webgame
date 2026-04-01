@@ -66,7 +66,7 @@ class GuildHeroPoolEntry(models.Model):
 
 
 class GuildBattleLineupEntry(models.Model):
-    """帮会出战门客名单（最多20名）。"""
+    """帮会出战门客名单（容量可由科技扩展至最多40名）。"""
 
     guild = models.ForeignKey(
         Guild,
@@ -82,8 +82,8 @@ class GuildBattleLineupEntry(models.Model):
     )
     slot_index = models.PositiveSmallIntegerField(
         verbose_name="出战位",
-        validators=[MinValueValidator(1), MaxValueValidator(20)],
-        help_text="帮会出战名单最多20名",
+        validators=[MinValueValidator(1), MaxValueValidator(40)],
+        help_text="帮会出战名单最多40名",
     )
     selected_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -102,7 +102,7 @@ class GuildBattleLineupEntry(models.Model):
         ordering = ["slot_index", "id"]
         constraints = [
             models.CheckConstraint(
-                condition=models.Q(slot_index__gte=1) & models.Q(slot_index__lte=20),
+                condition=models.Q(slot_index__gte=1) & models.Q(slot_index__lte=40),
                 name="gbl_slot_range_ck",
             ),
             models.UniqueConstraint(fields=["guild", "slot_index"], name="gbl_guild_slot_uq"),

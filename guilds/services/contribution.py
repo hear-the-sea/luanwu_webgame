@@ -1,11 +1,11 @@
 # guilds/services/contribution.py
 
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Sum
 from django.utils import timezone
 
 from core.exceptions import GuildContributionError
-from gameplay.models import Manor, ResourceEvent
+from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
 from gameplay.services.resources import spend_resources_locked
 
 from ..constants import CONTRIBUTION_RATES, DAILY_DONATION_LIMITS, MIN_DONATION_AMOUNT
@@ -13,6 +13,12 @@ from ..models import Guild, GuildDonationLog, GuildMember, GuildResourceLog
 
 # 安全修复：贡献度累积上限，防止PositiveIntegerField溢出（最大2147483647）
 MAX_CONTRIBUTION = 2_000_000_000  # 20亿安全上限
+GOLD_BAR_ITEM_KEY = "gold_bar"
+DONATION_RESOURCE_LABELS = {
+    "silver": "银两",
+    "grain": "粮食",
+    "gold_bar": "金条",
+}
 
 
 def donate_resource(member, resource_type, amount):
@@ -28,7 +34,7 @@ def donate_resource(member, resource_type, amount):
 
     Args:
         member: GuildMember对象
-        resource_type: 'silver' 或 'grain'
+        resource_type: 'silver'、'grain' 或 'gold_bar'
         amount: 捐赠数量
 
     Raises:
@@ -39,8 +45,10 @@ def donate_resource(member, resource_type, amount):
         raise GuildContributionError(f"不支持捐赠{resource_type}")
 
     # 验证捐赠数量
-    if amount < MIN_DONATION_AMOUNT:
+    if resource_type != GOLD_BAR_ITEM_KEY and amount < MIN_DONATION_AMOUNT:
         raise GuildContributionError(f"单次捐赠最少{MIN_DONATION_AMOUNT}单位")
+    if resource_type == GOLD_BAR_ITEM_KEY and amount < 1:
+        raise GuildContributionError("金条捐赠数量必须大于0")
 
     # 安全修复：添加单次捐赠上限，防止整数溢出和异常数据
     MAX_DONATION_AMOUNT = 100_000_000  # 1亿上限
@@ -48,7 +56,7 @@ def donate_resource(member, resource_type, amount):
         raise GuildContributionError(f"单次捐赠最多{MAX_DONATION_AMOUNT:,}单位")
 
     # 获取今日日期，用于重置每日统计
-    today = timezone.now().date()
+    today = timezone.localdate()
 
     # 并发安全的事务处理
     with transaction.atomic():
@@ -70,17 +78,30 @@ def donate_resource(member, resource_type, amount):
             current_daily_silver = 0
             current_daily_grain = 0
 
-        # 验证每日捐赠上限
+        daily_limit = DAILY_DONATION_LIMITS.get(resource_type)
         if resource_type == "silver":
-            if current_daily_silver + amount > DAILY_DONATION_LIMITS["silver"]:
-                raise GuildContributionError(f"今日银两捐赠已达上限（{DAILY_DONATION_LIMITS['silver']}）")
+            if daily_limit is not None and current_daily_silver + amount > daily_limit:
+                raise GuildContributionError(f"今日银两捐赠已达上限（{daily_limit}）")
             new_daily_silver = current_daily_silver + amount
             new_daily_grain = current_daily_grain
-        else:  # grain
-            if current_daily_grain + amount > DAILY_DONATION_LIMITS["grain"]:
-                raise GuildContributionError(f"今日粮食捐赠已达上限（{DAILY_DONATION_LIMITS['grain']}）")
+        elif resource_type == "grain":
+            if daily_limit is not None and current_daily_grain + amount > daily_limit:
+                raise GuildContributionError(f"今日粮食捐赠已达上限（{daily_limit}）")
             new_daily_silver = current_daily_silver
             new_daily_grain = current_daily_grain + amount
+        else:
+            today_gold_bar_donated = (
+                GuildDonationLog.objects.filter(
+                    member=member_locked,
+                    resource_type=GOLD_BAR_ITEM_KEY,
+                    donated_at__date=today,
+                ).aggregate(total=Sum("amount"))["total"]
+                or 0
+            )
+            if daily_limit is not None and today_gold_bar_donated + amount > daily_limit:
+                raise GuildContributionError(f"今日金条捐赠已达上限（{daily_limit}）")
+            new_daily_silver = current_daily_silver
+            new_daily_grain = current_daily_grain
 
         # 计算获得的贡献
         contribution = amount * CONTRIBUTION_RATES[resource_type]
@@ -89,10 +110,37 @@ def donate_resource(member, resource_type, amount):
         if member_locked.total_contribution + contribution > MAX_CONTRIBUTION:
             raise GuildContributionError(f"贡献度已达上限（{MAX_CONTRIBUTION:,}）")
 
-        # 步骤3：使用统一的资源消费函数扣除玩家资源（已包含并发安全检查）
-        spend_resources_locked(
-            manor, {resource_type: amount}, note="帮会捐献", reason=ResourceEvent.Reason.GUILD_DONATION
-        )
+        # 步骤3：扣除玩家资源（银两/粮食走庄园资源，金条走仓库InventoryItem）
+        if resource_type == GOLD_BAR_ITEM_KEY:
+            try:
+                gold_bar_template = ItemTemplate.objects.get(key=GOLD_BAR_ITEM_KEY)
+            except ItemTemplate.DoesNotExist:
+                raise GuildContributionError("金条物品不存在，请联系管理员")
+
+            gold_bar_item = (
+                InventoryItem.objects.select_for_update()
+                .filter(
+                    manor=manor,
+                    template=gold_bar_template,
+                    storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+                )
+                .first()
+            )
+            if not gold_bar_item or gold_bar_item.quantity < amount:
+                raise GuildContributionError("金条不足")
+
+            updated = InventoryItem.objects.filter(pk=gold_bar_item.pk, quantity__gte=amount).update(
+                quantity=F("quantity") - amount
+            )
+            if not updated:
+                raise GuildContributionError("金条不足")
+            gold_bar_item.refresh_from_db(fields=["quantity"])
+            if gold_bar_item.quantity == 0:
+                gold_bar_item.delete()
+        else:
+            spend_resources_locked(
+                manor, {resource_type: amount}, note="帮会捐献", reason=ResourceEvent.Reason.GUILD_DONATION
+            )
 
         # 步骤4：使用F()表达式原子性地增加帮会资源
         Guild.objects.filter(pk=guild_locked.pk).update(**{resource_type: F(resource_type) + amount})
@@ -123,8 +171,9 @@ def donate_resource(member, resource_type, amount):
             action="donation",
             silver_change=amount if resource_type == "silver" else 0,
             grain_change=amount if resource_type == "grain" else 0,
+            gold_bar_change=amount if resource_type == GOLD_BAR_ITEM_KEY else 0,
             related_user=member_locked.user,
-            note=f"捐赠{amount}{resource_type}，获得{contribution}贡献",
+            note=f"捐赠{amount}{DONATION_RESOURCE_LABELS.get(resource_type, resource_type)}，获得{contribution}贡献",
         )
 
 

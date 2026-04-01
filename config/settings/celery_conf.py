@@ -89,6 +89,7 @@ CELERY_TASK_ROUTES = {
     "gameplay.scan_raid_runs": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.backfill_global_mail_campaign": {"queue": CELERY_TIMER_QUEUE},
     "guilds.cleanup_invalid_hero_pool": {"queue": CELERY_TIMER_QUEUE},
+    "guilds.scan_due_missions": {"queue": CELERY_TIMER_QUEUE},
 }
 
 CELERY_BEAT_SCHEDULE = {
@@ -163,6 +164,10 @@ CELERY_BEAT_SCHEDULE = {
     "cleanup-invalid-guild-hero-pool": {
         "task": "guilds.cleanup_invalid_hero_pool",
         "schedule": crontab(minute="*/5"),
+    },
+    "scan-due-guild-missions": {
+        "task": "guilds.scan_due_missions",
+        "schedule": crontab(minute="*/1"),
     },
     "scan-scout-records": {
         "task": "gameplay.scan_scout_records",

@@ -1,14 +1,13 @@
 {% extends "base.html" %}
-{% load static %}
 
-{% block title %}资源状态 - {{ guild.name }}{% endblock %}
+{% block title %}{% block page_title %}帮会资源 - {{ guild.name }}{% endblock %}{% endblock %}
 
 {% block content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
-            <h1>资源状态</h1>
-            <p class="caption">{{ guild.name }}</p>
+            <h1>{% block page_heading %}资源与捐赠{% endblock %}</h1>
+            <p class="caption">{{ guild.name }} · 我的贡献度：{{ member.current_contribution|floatformat:0 }} / {{ member.total_contribution|floatformat:0 }}（总计）</p>
         </div>
         <div class="flex gap-2">
             <a href="{% url 'guilds:resource_logs' %}" class="tw-btn-secondary">资源流水</a>
@@ -17,7 +16,6 @@
         </div>
     </div>
 
-    <!-- 当前资源 -->
     <section class="tw-card">
         <h2>帮会资源</h2>
         <div class="tw-guild-resource-cards">
@@ -33,67 +31,155 @@
                 <h4>金条</h4>
                 <p class="tw-guild-resource-amount">{{ guild.gold_bar }}</p>
             </div>
-        </div>
-        <div class="tw-guild-card-divider">
-            <a href="{% url 'guilds:donate' %}" class="tw-btn-primary w-full text-center">
-                捐赠资源
-            </a>
-        </div>
-    </section>
-
-    <!-- 资源用途 -->
-    <section class="tw-card tw-guild-section-spacing">
-        <h2>资源用途</h2>
-        <div class="tw-guild-usage-cards">
-            <div class="tw-guild-usage-card tw-guild-usage-blue">
-                <h3>升级帮会</h3>
-                <p>消耗帮会资源提升帮会等级，增加成员容量。等级越高，所需资源越多。</p>
-                <div class="tw-guild-usage-footer">
-                    <p class="tw-muted">当前等级：Lv {{ guild.level }} / 10</p>
-                </div>
-            </div>
-            <div class="tw-guild-usage-card tw-guild-usage-purple">
-                <h3>研究科技</h3>
-                <p>升级帮会科技，提升全员生产和战斗能力，每日自动产出道具。</p>
-                <div class="tw-guild-usage-footer">
-                    <p class="tw-muted">
-                        <a href="{% url 'guilds:technology' %}">查看科技 →</a>
-                    </p>
-                </div>
-            </div>
-            <div class="tw-guild-usage-card tw-guild-usage-orange">
-                <h3>每日产出</h3>
-                <p>帮会科技每日自动产出道具，存入帮会仓库供成员兑换。</p>
-                <div class="tw-guild-usage-footer">
-                    <p class="tw-muted">
-                        <a href="{% url 'guilds:warehouse' %}">查看仓库 →</a>
-                    </p>
-                </div>
+            <div class="tw-guild-resource-card tw-guild-resource-purple">
+                <h4>红宝石</h4>
+                <p class="tw-guild-resource-amount">{{ red_ruby_count }}</p>
             </div>
         </div>
     </section>
 
-    <!-- 成员贡献统计 -->
     <section class="tw-card tw-guild-section-spacing">
-        <h2>我的贡献</h2>
+        <h2>帮会护院概览</h2>
         <div class="tw-guild-contribution-cards">
             <div class="tw-guild-contribution-item">
-                <h4>当前贡献度</h4>
-                <p class="tw-guild-contribution-value resource-blue">{{ member.current_contribution|floatformat:0 }}</p>
-                <p class="tw-muted">可用于兑换物品</p>
+                <h4>护院总数</h4>
+                <p class="tw-guild-contribution-value resource-blue">{{ troop_overview.total_count }}</p>
             </div>
             <div class="tw-guild-contribution-item">
-                <h4>总贡献度</h4>
-                <p class="tw-guild-contribution-value tw-guild-cost-value">{{ member.total_contribution|floatformat:0 }}</p>
-                <p class="tw-muted">历史累计贡献</p>
+                <h4>护院种类</h4>
+                <p class="tw-guild-contribution-value tw-guild-resource-purple">{{ troop_overview.kinds_count }}</p>
             </div>
             <div class="tw-guild-contribution-item">
-                <h4>本周贡献</h4>
-                <p class="tw-guild-contribution-value tw-guild-resource-purple">{{ member.weekly_contribution|floatformat:0 }}</p>
+                <h4>护院预览</h4>
+                {% if troop_overview.preview %}
                 <p class="tw-muted">
-                    <a href="{% url 'guilds:contribution_ranking' %}">查看排行 →</a>
+                    {% for storage in troop_overview.preview %}
+                    {{ storage.troop_template.name }}×{{ storage.count }}{% if not forloop.last %}、{% endif %}
+                    {% endfor %}
                 </p>
+                {% else %}
+                <p class="tw-muted">当前无库存</p>
+                {% endif %}
             </div>
+        </div>
+    </section>
+
+    <section class="tw-card tw-guild-section-spacing">
+        <div class="flex justify-between items-center">
+            <h2 class="m-0">帮会护院明细</h2>
+            <a href="{% url 'guilds:missions' %}" class="tw-btn-secondary tw-btn-sm">管理护院池</a>
+        </div>
+        {% if troop_storages %}
+        <div class="mt-4">
+            {% for storage in troop_storages %}
+            <div class="tw-guild-announcement">
+                <div class="tw-guild-announcement-header">
+                    <span class="tw-guild-announcement-title">{{ storage.troop_template.name }}</span>
+                    <span class="tw-muted">库存 {{ storage.count }}</span>
+                </div>
+                <p class="m-0">模板标识：{{ storage.troop_template.key }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="tw-muted mt-4">当前还没有可用护院库存。</p>
+        {% endif %}
+    </section>
+
+    <section class="tw-card tw-guild-section-spacing">
+        <h2>统一捐赠面板</h2>
+        <div class="tw-guild-donate-grid">
+            {% for key, entry in donation_entries.items %}
+            <section class="tw-card">
+                <h3>捐赠{{ entry.label }}</h3>
+                <dl class="tw-guild-dl">
+                    <div>
+                        <dt>转换比例</dt>
+                        <dd>1 {{ entry.label }} = {{ entry.rate }} 贡献度</dd>
+                    </div>
+                    <div>
+                        <dt>我的{{ entry.label }}</dt>
+                        <dd class="tw-guild-resource-value">{{ entry.available|floatformat:0 }}</dd>
+                    </div>
+                    <div>
+                        <dt>今日已捐</dt>
+                        <dd>{{ entry.donated_today|floatformat:0 }} / {{ entry.daily_limit|floatformat:0 }}</dd>
+                    </div>
+                    <div>
+                        <dt>今日剩余</dt>
+                        <dd>{{ entry.remaining_today|floatformat:0 }}</dd>
+                    </div>
+                </dl>
+                <form method="post" action="{% url 'guilds:donate' %}" class="mt-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="resource_type" value="{{ entry.resource_type }}">
+                    <div class="tw-form-field">
+                        <label for="{{ entry.input_id }}">捐赠数量</label>
+                        <input
+                            type="number"
+                            id="{{ entry.input_id }}"
+                            name="amount"
+                            min="1"
+                            max="{{ entry.max_amount|default:0 }}"
+                            placeholder="输入捐赠数量"
+                            required
+                            class="tw-input">
+                    </div>
+                    <button type="submit" class="tw-btn-primary w-full mt-2" {% if entry.available <= 0 or entry.remaining_today <= 0 %}disabled{% endif %}>
+                        捐赠
+                    </button>
+                </form>
+            </section>
+            {% endfor %}
+
+            <section class="tw-card">
+                <h3>捐赠护院</h3>
+                <p class="tw-muted">护院捐赠会进入帮会护院池，可用于帮会任务出征。</p>
+                <dl class="tw-guild-dl">
+                    <div>
+                        <dt>当前护院总数</dt>
+                        <dd>{{ troop_overview.total_count }}</dd>
+                    </div>
+                    <div>
+                        <dt>当前护院种类</dt>
+                        <dd>{{ troop_overview.kinds_count }}</dd>
+                    </div>
+                </dl>
+                <form method="post" action="{% url 'guilds:donate_troops' %}" class="mt-4">
+                    {% csrf_token %}
+                    <div class="tw-form-field">
+                        <label for="troop_key">护院 key</label>
+                        <input
+                            type="text"
+                            id="troop_key"
+                            name="troop_key"
+                            class="tw-input"
+                            list="troop-key-list"
+                            placeholder="输入护院 key"
+                            required>
+                    </div>
+                    <datalist id="troop-key-list">
+                        {% for troop in player_troops %}
+                        <option value="{{ troop.troop_template.key }}">{{ troop.troop_template.name }}（可用 {{ troop.count }}）</option>
+                        {% endfor %}
+                    </datalist>
+                    {% if not player_troops %}
+                    <p class="tw-muted mt-2">当前无可捐赠护院，请先在庄园内招募护院。</p>
+                    {% endif %}
+                    <div class="tw-form-field">
+                        <label for="troop_quantity">数量</label>
+                        <input
+                            type="number"
+                            id="troop_quantity"
+                            name="quantity"
+                            min="1"
+                            class="tw-input"
+                            placeholder="输入数量"
+                            required>
+                    </div>
+                    <button type="submit" class="tw-btn-secondary w-full mt-2">捐赠护院</button>
+                </form>
+            </section>
         </div>
     </section>
 </section>

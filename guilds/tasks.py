@@ -10,6 +10,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from common.utils import celery as celery_utils
+from common.utils.celery import safe_apply_async_with_dedup
 from core.utils.infrastructure import (
     CACHE_INFRASTRUCTURE_EXCEPTIONS,
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
@@ -17,9 +18,11 @@ from core.utils.infrastructure import (
     combine_infrastructure_exceptions,
 )
 from core.utils.task_monitoring import increment_degraded_counter
+from gameplay.tasks._scheduled import DEFAULT_TASK_DEDUP_TIMEOUT, maybe_reschedule_for_future
 
-from .models import Guild, GuildDonationLog, GuildExchangeLog, GuildResourceLog, GuildTechnology
+from .models import Guild, GuildDonationLog, GuildExchangeLog, GuildMissionRun, GuildResourceLog, GuildTechnology
 from .services.contribution import reset_weekly_contributions
+from .services.guild_missions import finalize_guild_mission_run
 from .services.hero_pool import cleanup_invalid_hero_pool_entries
 from .services.warehouse import produce_equipment, produce_experience_items, produce_resource_packs
 
@@ -28,6 +31,16 @@ GUILD_PRODUCTION_PARTIAL_RETRY_LIMIT = 1
 FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY = "guilds:daily_production:failed_guild_ids"
 GUILD_TASK_RETRY_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
     *celery_utils.CELERY_DISPATCH_INFRA_EXCEPTIONS,
+    infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
+)
+
+
+class GuildMissionTaskRetryRequested(RuntimeError):
+    """帮会任务补调度失败时的显式重试标记。"""
+
+
+GUILD_MISSION_TASK_RETRY_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
+    GuildMissionTaskRetryRequested,
     infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
 )
 
@@ -115,6 +128,71 @@ def _run_guild_production_step(
         logger.error("Failed to produce %s for guild %s: %s", item_label, guild.id, exc)
         return True
     return False
+
+
+def _load_guild_mission_run_for_completion(run_id: int) -> GuildMissionRun | None:
+    return GuildMissionRun.objects.select_related("guild", "template", "started_by__user").filter(pk=run_id).first()
+
+
+def _reschedule_guild_mission_if_needed(run: GuildMissionRun, *, run_id: int) -> tuple[str | None, object]:
+    failure_message = f"guild mission reschedule dispatch failed: run_id={run_id}"
+    try:
+        return maybe_reschedule_for_future(
+            task_func=complete_guild_mission_task,
+            record_id=run_id,
+            eta_value=run.return_at,
+            dedup_key=f"guild_mission:complete:{run_id}",
+            schedule_func=safe_apply_async_with_dedup,
+            logger=logger,
+            now_func=timezone.now,
+            log_message=f"guild mission reschedule failed: run_id={run_id}",
+            failure_message=failure_message,
+            dedup_timeout=DEFAULT_TASK_DEDUP_TIMEOUT,
+        )
+    except RuntimeError as exc:
+        raise GuildMissionTaskRetryRequested(str(exc)) from exc
+
+
+@shared_task(name="guilds.complete_guild_mission", bind=True, max_retries=2, default_retry_delay=30)
+def complete_guild_mission_task(self, run_id: int):
+    try:
+        run = _load_guild_mission_run_for_completion(run_id)
+        if not run:
+            logger.warning("GuildMissionRun %d not found", run_id)
+            return "not_found"
+
+        rescheduled, now = _reschedule_guild_mission_if_needed(run, run_id=run_id)
+        if rescheduled is not None:
+            return rescheduled
+
+        finalize_guild_mission_run(run, now=now)
+        return "completed"
+    except GUILD_MISSION_TASK_RETRY_EXCEPTIONS as exc:
+        logger.exception("Failed to complete guild mission %d: %s", run_id, exc)
+        raise self.retry(exc=exc)
+
+
+@shared_task(name="guilds.scan_due_missions")
+def scan_due_guild_missions(limit: int = 200) -> int:
+    now = timezone.now()
+    qs = (
+        GuildMissionRun.objects.select_related("guild", "guild__founder", "template", "started_by__user")
+        .filter(
+            status=GuildMissionRun.Status.ACTIVE,
+            return_at__isnull=False,
+            return_at__lte=now,
+        )
+        .order_by("return_at", "id")[:limit]
+    )
+    count = 0
+    for run in qs:
+        try:
+            finalize_guild_mission_run(run, now=now)
+            if not GuildMissionRun.objects.filter(pk=run.pk, status=GuildMissionRun.Status.ACTIVE).exists():
+                count += 1
+        except GUILD_MISSION_TASK_RETRY_EXCEPTIONS:
+            logger.exception("Failed to finalize guild mission run %d", run.id)
+    return count
 
 
 def _process_guild_production_once(guild_id: int) -> tuple[str, bool]:

@@ -11,8 +11,9 @@ from django.utils import timezone
 from core.exceptions import GuildMembershipError, GuildPermissionError, GuildValidationError
 from guests.models import Guest
 
-from ..constants import GUILD_BATTLE_LINEUP_LIMIT, GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS, GUILD_HERO_POOL_SLOT_LIMIT
+from .. import constants as guild_constants
 from ..models import Guild, GuildBattleLineupEntry, GuildHeroPoolEntry, GuildMember
+from .technology import get_guild_dispatch_capacity, get_guild_lineup_capacity
 
 
 @dataclass(frozen=True)
@@ -45,8 +46,8 @@ def _normalize_slot_index(raw_slot_index: Any) -> int:
         slot_index = int(raw_slot_index)
     except (TypeError, ValueError):
         raise GuildValidationError("槽位参数错误")
-    if slot_index < 1 or slot_index > GUILD_HERO_POOL_SLOT_LIMIT:
-        raise GuildValidationError(f"槽位必须在 1~{GUILD_HERO_POOL_SLOT_LIMIT} 之间")
+    if slot_index < 1 or slot_index > guild_constants.GUILD_HERO_POOL_SLOT_LIMIT:
+        raise GuildValidationError(f"槽位必须在 1~{guild_constants.GUILD_HERO_POOL_SLOT_LIMIT} 之间")
     return slot_index
 
 
@@ -76,7 +77,7 @@ def _lock_active_member(member: GuildMember) -> GuildMember:
 
 
 def _replace_cooldown_until(entry: GuildHeroPoolEntry) -> datetime:
-    return entry.last_submitted_at + timedelta(seconds=GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS)
+    return entry.last_submitted_at + timedelta(seconds=guild_constants.GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS)
 
 
 def _is_entry_invalid(entry: GuildHeroPoolEntry, *, guild_id: int | None = None) -> bool:
@@ -197,8 +198,8 @@ def remove_hero_pool_entry(member: GuildMember, *, slot_index: int) -> HeroPoolR
     return HeroPoolRemoveResult(slot_index=normalized_slot, lineup_removed_count=lineup_removed_count)
 
 
-def _next_lineup_slot(existing_slots: set[int]) -> int | None:
-    for slot in range(1, GUILD_BATTLE_LINEUP_LIMIT + 1):
+def _next_lineup_slot(existing_slots: set[int], *, lineup_limit: int) -> int | None:
+    for slot in range(1, lineup_limit + 1):
         if slot not in existing_slots:
             return slot
     return None
@@ -238,12 +239,13 @@ def add_lineup_entry(*, guild: Guild, operator, pool_entry_id: int, now=None) ->
     lineup_rows = list(
         GuildBattleLineupEntry.objects.select_for_update().filter(guild=locked_guild).order_by("slot_index")
     )
+    lineup_limit = get_guild_lineup_capacity(locked_guild)
     if any(row.pool_entry_id == pool_entry.id for row in lineup_rows):
         raise GuildValidationError("该门客已在出战名单中")
-    if len(lineup_rows) >= GUILD_BATTLE_LINEUP_LIMIT:
-        raise GuildValidationError(f"出战名单已满（最多 {GUILD_BATTLE_LINEUP_LIMIT} 名）")
+    if len(lineup_rows) >= lineup_limit:
+        raise GuildValidationError(f"出战名单已满（最多 {lineup_limit} 名）")
 
-    slot_index = _next_lineup_slot({row.slot_index for row in lineup_rows})
+    slot_index = _next_lineup_slot({row.slot_index for row in lineup_rows}, lineup_limit=lineup_limit)
     if slot_index is None:
         raise GuildValidationError("未找到可用出战槽位")
 
@@ -363,8 +365,9 @@ def lock_guild_lineup_for_dispatch(guild: Guild, *, now=None) -> GuildLineupLock
     if invalid_entry_ids:
         GuildBattleLineupEntry.objects.filter(id__in=invalid_entry_ids).delete()
 
+    dispatch_capacity = get_guild_dispatch_capacity(locked_guild)
     return GuildLineupLockResult(
-        guest_ids=guest_ids[:GUILD_BATTLE_LINEUP_LIMIT],
+        guest_ids=guest_ids[:dispatch_capacity],
         locked_at=locked_at,
         removed_invalid_count=len(invalid_entry_ids),
     )
@@ -403,7 +406,7 @@ def get_hero_pool_page_context(member: GuildMember) -> dict[str, Any]:
     available_guests = list(member.user.manor.guests.select_related("template").order_by("-level", "id"))
 
     slot_rows: list[dict[str, Any]] = []
-    for slot_index in range(1, GUILD_HERO_POOL_SLOT_LIMIT + 1):
+    for slot_index in range(1, guild_constants.GUILD_HERO_POOL_SLOT_LIMIT + 1):
         entry = my_entries_by_slot.get(slot_index)
         cooldown_until = None
         cooldown_seconds = 0
@@ -438,7 +441,7 @@ def get_hero_pool_page_context(member: GuildMember) -> dict[str, Any]:
         "available_guests": available_guests,
         "my_guest_ids": my_guest_ids,
         "lineup_count": len(lineup_entries),
-        "lineup_limit": GUILD_BATTLE_LINEUP_LIMIT,
-        "hero_pool_slot_limit": GUILD_HERO_POOL_SLOT_LIMIT,
-        "replace_cooldown_minutes": GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS // 60,
+        "lineup_limit": get_guild_lineup_capacity(member.guild),
+        "hero_pool_slot_limit": guild_constants.GUILD_HERO_POOL_SLOT_LIMIT,
+        "replace_cooldown_minutes": guild_constants.GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS // 60,
     }

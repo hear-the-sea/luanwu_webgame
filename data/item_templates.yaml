@@ -83,6 +83,17 @@ items:
     storage_space: 20
     is_usable: false
 
+  - key: red_ruby
+    name: 红宝石
+    description: 帮会扩容科技升级所需的稀有宝石。
+    effect_type: resource
+    rarity: blue
+    tradeable: true
+    price: 500000
+    storage_space: 1
+    is_usable: false
+    image: red_ruby.png
+
   - key: haorenka
     name: 好人卡
     description: 乱舞最有囤积价值的道具之一，是成为好人的重要证明。

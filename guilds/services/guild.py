@@ -9,13 +9,7 @@ from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.models import Manor
 from gameplay.services.utils.messages import bulk_create_messages
 
-from ..constants import (
-    GUILD_CREATION_COST,
-    GUILD_NAME_MAX_LENGTH,
-    GUILD_NAME_MIN_LENGTH,
-    GUILD_NAME_PATTERN,
-    GUILD_UPGRADE_BASE_COST,
-)
+from .. import constants as guild_constants
 from ..models import Guild, GuildAnnouncement, GuildHeroPoolEntry, GuildMember, GuildTechnology
 from .utils import get_active_membership
 
@@ -37,13 +31,13 @@ def validate_guild_name(name: str) -> None:
 
     name = name.strip()
 
-    if len(name) < GUILD_NAME_MIN_LENGTH:
-        raise GuildValidationError(f"帮会名称至少需要{GUILD_NAME_MIN_LENGTH}个字符")
+    if len(name) < guild_constants.GUILD_NAME_MIN_LENGTH:
+        raise GuildValidationError(f"帮会名称至少需要{guild_constants.GUILD_NAME_MIN_LENGTH}个字符")
 
-    if len(name) > GUILD_NAME_MAX_LENGTH:
-        raise GuildValidationError(f"帮会名称最多{GUILD_NAME_MAX_LENGTH}个字符")
+    if len(name) > guild_constants.GUILD_NAME_MAX_LENGTH:
+        raise GuildValidationError(f"帮会名称最多{guild_constants.GUILD_NAME_MAX_LENGTH}个字符")
 
-    if not GUILD_NAME_PATTERN.match(name):
+    if not guild_constants.GUILD_NAME_PATTERN.match(name):
         raise GuildValidationError("帮会名称只能包含中文、英文、数字和下划线")
 
 
@@ -69,7 +63,7 @@ def create_guild(user, name, description="", emblem="default"):
     name = name.strip() if name else ""
     validate_guild_name(name)
 
-    required_gold_bars = GUILD_CREATION_COST["gold_bar"]
+    required_gold_bars = guild_constants.GUILD_CREATION_COST["gold_bar"]
 
     with transaction.atomic():
         # 并发安全：锁定并校验当前用户的帮会成员记录（OneToOneField 防止重复入帮）
@@ -245,7 +239,7 @@ def calculate_guild_upgrade_cost(current_level):
     """计算帮会升级成本"""
     if current_level >= 10:
         return None
-    return GUILD_UPGRADE_BASE_COST * (2 ** (current_level - 1))
+    return guild_constants.GUILD_UPGRADE_BASE_COST * (2 ** (current_level - 1))
 
 
 def initialize_guild_technologies(guild):
@@ -261,6 +255,9 @@ def initialize_guild_technologies(guild):
         # 福利类
         ("resource_boost", "welfare", 5),
         ("march_speed", "welfare", 5),
+        # 帮会任务容量科技
+        ("guild_lineup_capacity", "combat", 20),
+        ("guild_dispatch_capacity", "combat", 20),
     ]
 
     technologies_to_create = [

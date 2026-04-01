@@ -142,7 +142,7 @@ def test_same_player_two_guests_can_both_enter_lineup(django_user_model):
 
 @pytest.mark.django_db
 def test_lineup_has_capacity_limit(django_user_model, monkeypatch):
-    monkeypatch.setattr(hero_pool_service, "GUILD_BATTLE_LINEUP_LIMIT", 2)
+    monkeypatch.setattr("guilds.constants.GUILD_BATTLE_LINEUP_LIMIT", 2)
 
     leader, leader_manor = _create_user_with_manor(django_user_model, "ghp_leader_limit")
     guild = Guild.objects.create(name="门客池上限帮", founder=leader)
@@ -163,6 +163,59 @@ def test_lineup_has_capacity_limit(django_user_model, monkeypatch):
 
     with pytest.raises(GuildValidationError, match="出战名单已满"):
         hero_pool_service.add_lineup_entry(guild=guild, operator=leader, pool_entry_id=entry_ids[2])
+
+
+@pytest.mark.django_db
+def test_lineup_limit_uses_guild_lineup_capacity_tech(django_user_model, monkeypatch):
+    from guilds.models import GuildTechnology
+
+    monkeypatch.setattr("guilds.constants.GUILD_BATTLE_LINEUP_LIMIT", 20)
+
+    leader, _ = _create_user_with_manor(django_user_model, "ghp_leader_dynamic_limit")
+    guild = Guild.objects.create(name="门客池动态上限帮", founder=leader)
+    GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    GuildTechnology.objects.create(guild=guild, tech_key="guild_lineup_capacity", level=1, max_level=20)
+
+    template = _create_template("ghp_tpl_dynamic_limit")
+    entry_ids: list[int] = []
+    for idx in range(21):
+        user, manor = _create_user_with_manor(django_user_model, f"ghp_dynamic_limit_{idx}")
+        member = GuildMember.objects.create(guild=guild, user=user, position="member")
+        guest = _create_guest(manor=manor, template=template, name=f"门客{idx}")
+        entry = hero_pool_service.submit_hero_pool_entry(member, guest_id=guest.id, slot_index=1).entry
+        entry_ids.append(entry.id)
+
+    for entry_id in entry_ids:
+        hero_pool_service.add_lineup_entry(guild=guild, operator=leader, pool_entry_id=entry_id)
+
+    assert GuildBattleLineupEntry.objects.filter(guild=guild).count() == 21
+
+
+@pytest.mark.django_db
+def test_lock_guild_lineup_uses_dispatch_capacity_tech(django_user_model, monkeypatch):
+    from guilds.models import GuildTechnology
+
+    monkeypatch.setattr("guilds.constants.GUILD_BATTLE_LINEUP_LIMIT", 10)
+    monkeypatch.setattr("guilds.constants.GUILD_DISPATCH_GUEST_BASE_LIMIT", 2)
+
+    leader, _ = _create_user_with_manor(django_user_model, "ghp_leader_dispatch_limit")
+    guild = Guild.objects.create(name="门客池动态出征帮", founder=leader)
+    GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    GuildTechnology.objects.create(guild=guild, tech_key="guild_dispatch_capacity", level=1, max_level=20)
+
+    template = _create_template("ghp_tpl_dispatch_limit")
+    expected_guest_ids: list[int] = []
+    for idx in range(4):
+        user, manor = _create_user_with_manor(django_user_model, f"ghp_dispatch_limit_{idx}")
+        member = GuildMember.objects.create(guild=guild, user=user, position="member")
+        guest = _create_guest(manor=manor, template=template, name=f"出征门客{idx}")
+        expected_guest_ids.append(guest.id)
+        entry = hero_pool_service.submit_hero_pool_entry(member, guest_id=guest.id, slot_index=1).entry
+        hero_pool_service.add_lineup_entry(guild=guild, operator=leader, pool_entry_id=entry.id)
+
+    result = hero_pool_service.lock_guild_lineup_for_dispatch(guild)
+
+    assert result.guest_ids == expected_guest_ids[:3]
 
 
 @pytest.mark.django_db

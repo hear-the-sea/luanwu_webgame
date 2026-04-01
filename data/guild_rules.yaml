@@ -9,10 +9,12 @@ contribution:
   rates:
     silver: 1
     grain: 2
+    gold_bar: 50
   daily_limits:
     silver: 100000
     grain: 50000
-  min_donation_amount: 100
+    gold_bar: 20
+  min_donation_amount: 1
 technology:
   upgrade_costs:
     equipment_forge:
@@ -43,6 +45,10 @@ technology:
       silver: 10000
       grain: 5000
       gold_bar: 3
+    guild_lineup_capacity:
+      red_ruby: 1
+    guild_dispatch_capacity:
+      red_ruby: 1
   names:
     equipment_forge: 装备锻造
     experience_refine: 经验炼制
@@ -51,6 +57,8 @@ technology:
     troop_tactics: 强兵战术
     resource_boost: 资源增产
     march_speed: 行军加速
+    guild_lineup_capacity: 出战位扩容
+    guild_dispatch_capacity: 出征位扩容
 warehouse:
   exchange_costs:
     gear_green: 50
@@ -66,4 +74,5 @@ warehouse:
 hero_pool:
   slot_limit: 2
   battle_lineup_limit: 20
+  dispatch_guest_base_limit: 5
   replace_cooldown_seconds: 1800

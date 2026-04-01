@@ -11,8 +11,12 @@ from .models import (
     GuildExchangeLog,
     GuildHeroPoolEntry,
     GuildMember,
+    GuildMissionRun,
+    GuildMissionTemplate,
     GuildResourceLog,
     GuildTechnology,
+    GuildTroopDonationLog,
+    GuildTroopStorage,
     GuildWarehouse,
 )
 
@@ -28,6 +32,10 @@ apply_common_field_labels(
     GuildResourceLog,
     GuildHeroPoolEntry,
     GuildBattleLineupEntry,
+    GuildMissionTemplate,
+    GuildMissionRun,
+    GuildTroopStorage,
+    GuildTroopDonationLog,
 )
 apply_model_property_labels(
     Guild,
@@ -128,3 +136,62 @@ class GuildBattleLineupEntryAdmin(admin.ModelAdmin):
     list_filter = ["guild", "selected_at"]
     search_fields = ["guild__name", "pool_entry__owner_member__user__username"]
     readonly_fields = ["selected_at"]
+
+
+@admin.register(GuildMissionTemplate)
+class GuildMissionTemplateAdmin(admin.ModelAdmin):
+    list_display = [
+        "key",
+        "name",
+        "difficulty",
+        "task_type",
+        "base_duration_seconds",
+        "ruby_reward",
+        "allow_troops",
+        "is_active",
+        "sort_weight",
+    ]
+    list_filter = ["difficulty", "task_type", "allow_troops", "is_active"]
+    search_fields = ["key", "name"]
+
+
+@admin.register(GuildMissionRun)
+class GuildMissionRunAdmin(admin.ModelAdmin):
+    list_display = [
+        "guild",
+        "template",
+        "status",
+        "started_by",
+        "selected_guest_count",
+        "ruby_reward",
+        "started_at",
+        "completed_at",
+    ]
+    list_filter = ["status", "started_at", "completed_at"]
+    search_fields = ["guild__name", "template__key", "template__name", "started_by__user__username"]
+    readonly_fields = ["started_at", "completed_at"]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(GuildTroopStorage)
+class GuildTroopStorageAdmin(admin.ModelAdmin):
+    list_display = ["guild", "troop_template", "count", "updated_at", "created_at"]
+    list_filter = ["guild", "troop_template"]
+    search_fields = ["guild__name", "troop_template__key", "troop_template__name"]
+    readonly_fields = ["updated_at", "created_at"]
+
+
+@admin.register(GuildTroopDonationLog)
+class GuildTroopDonationLogAdmin(admin.ModelAdmin):
+    list_display = ["guild", "member", "troop_template", "quantity", "donated_at"]
+    list_filter = ["donated_at", "troop_template"]
+    search_fields = ["guild__name", "member__user__username", "troop_template__key", "troop_template__name"]
+    readonly_fields = ["donated_at"]

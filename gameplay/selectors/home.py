@@ -4,6 +4,7 @@ import logging
 
 from django.conf import settings
 from django.core.cache import cache
+from django.db.models import Q
 from django.utils import timezone
 
 from core.utils import safe_int
@@ -104,6 +105,21 @@ def get_home_context(manor) -> dict:
 
     from ..services.raid import get_active_raids, get_active_scouts, get_incoming_raids
 
+    active_guild_mission = None
+    if hasattr(manor.user, "guild_membership") and manor.user.guild_membership.is_active:
+        from guilds.models import GuildMissionRun
+
+        active_guild_mission = (
+            GuildMissionRun.objects.select_related("template")
+            .filter(
+                guild=manor.user.guild_membership.guild,
+                status=GuildMissionRun.Status.ACTIVE,
+            )
+            .filter(Q(return_at__isnull=True) | Q(return_at__gt=now))
+            .order_by("-started_at")
+            .first()
+        )
+
     return {
         "manor": manor,
         "resources": resources,
@@ -121,4 +137,5 @@ def get_home_context(manor) -> dict:
         "active_scouts": get_active_scouts(manor),
         "active_raids": get_active_raids(manor),
         "incoming_raids": get_incoming_raids(manor),
+        "active_guild_mission": active_guild_mission,
     }

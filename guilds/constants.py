@@ -27,9 +27,9 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
         "guild_upgrade_base_cost": 5,
     },
     "contribution": {
-        "rates": {"silver": 1, "grain": 2},
-        "daily_limits": {"silver": 100000, "grain": 50000},
-        "min_donation_amount": 100,
+        "rates": {"silver": 1, "grain": 2, "gold_bar": 50},
+        "daily_limits": {"silver": 100000, "grain": 50000, "gold_bar": 20},
+        "min_donation_amount": 1,
     },
     "technology": {
         "upgrade_costs": {
@@ -40,6 +40,8 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
             "troop_tactics": {"silver": 8000, "grain": 3000, "gold_bar": 2},
             "resource_boost": {"silver": 10000, "grain": 5000, "gold_bar": 3},
             "march_speed": {"silver": 10000, "grain": 5000, "gold_bar": 3},
+            "guild_lineup_capacity": {"red_ruby": 1},
+            "guild_dispatch_capacity": {"red_ruby": 1},
         },
         "names": {
             "equipment_forge": "装备锻造",
@@ -49,6 +51,8 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
             "troop_tactics": "强兵战术",
             "resource_boost": "资源增产",
             "march_speed": "行军加速",
+            "guild_lineup_capacity": "出战位扩容",
+            "guild_dispatch_capacity": "出征位扩容",
         },
     },
     "warehouse": {
@@ -68,42 +72,46 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
     "hero_pool": {
         "slot_limit": 2,
         "battle_lineup_limit": 20,
+        "dispatch_guest_base_limit": 5,
         "replace_cooldown_seconds": 30 * 60,
     },
 }
 
 
-def _to_positive_int(raw: Any, default: int, *, minimum: int = 1) -> int:
+def _to_positive_int(raw: Any, default: int, *, minimum: int = 1, maximum: int | None = None) -> int:
     try:
         value = int(raw)
     except (TypeError, ValueError):
-        return max(minimum, int(default))
-    return max(minimum, value)
+        value = int(default)
+    value = max(minimum, value)
+    if maximum is not None:
+        value = min(maximum, value)
+    return value
 
 
 def _normalize_int_map(raw: Any, default: dict[str, int], *, minimum: int = 0) -> dict[str, int]:
+    result: dict[str, int] = dict(default)
     if not isinstance(raw, dict):
-        return dict(default)
-    result: dict[str, int] = {}
+        return result
     for raw_key, raw_value in raw.items():
         key = str(raw_key).strip()
         if not key:
             continue
         result[key] = _to_positive_int(raw_value, default.get(key, minimum), minimum=minimum)
-    return result or dict(default)
+    return result
 
 
 def _normalize_nested_int_map(raw: Any, default: dict[str, dict[str, int]]) -> dict[str, dict[str, int]]:
+    result: dict[str, dict[str, int]] = {key: dict(value) for key, value in default.items()}
     if not isinstance(raw, dict):
-        return {key: dict(value) for key, value in default.items()}
-    result: dict[str, dict[str, int]] = {}
+        return result
     for raw_key, raw_value in raw.items():
         key = str(raw_key).strip()
         if not key:
             continue
         fallback = default.get(key, {})
         result[key] = _normalize_int_map(raw_value, fallback, minimum=0)
-    return result or {key: dict(value) for key, value in default.items()}
+    return result
 
 
 def normalize_guild_rules(raw: Any) -> dict[str, Any]:
@@ -117,14 +125,14 @@ def normalize_guild_rules(raw: Any) -> dict[str, Any]:
         "hero_pool": ensure_mapping(root.get("hero_pool"), logger=logger, context="guild rules.hero_pool"),
     }
 
+    technology_names = dict(DEFAULT_GUILD_RULES["technology"]["names"])
     technology_names_raw = config["technology"].get("names")
-    technology_names = (
-        {str(key).strip(): str(value).strip() for key, value in technology_names_raw.items() if str(key).strip()}
-        if isinstance(technology_names_raw, dict)
-        else dict(DEFAULT_GUILD_RULES["technology"]["names"])
-    )
-    if not technology_names:
-        technology_names = dict(DEFAULT_GUILD_RULES["technology"]["names"])
+    if isinstance(technology_names_raw, dict):
+        for raw_key, raw_value in technology_names_raw.items():
+            key = str(raw_key).strip()
+            if not key:
+                continue
+            technology_names[key] = str(raw_value).strip()
 
     return {
         "pagination": {
@@ -189,10 +197,17 @@ def normalize_guild_rules(raw: Any) -> dict[str, Any]:
             "slot_limit": _to_positive_int(
                 config["hero_pool"].get("slot_limit"),
                 DEFAULT_GUILD_RULES["hero_pool"]["slot_limit"],
+                maximum=2,
             ),
             "battle_lineup_limit": _to_positive_int(
                 config["hero_pool"].get("battle_lineup_limit"),
                 DEFAULT_GUILD_RULES["hero_pool"]["battle_lineup_limit"],
+                maximum=20,
+            ),
+            "dispatch_guest_base_limit": _to_positive_int(
+                config["hero_pool"].get("dispatch_guest_base_limit"),
+                DEFAULT_GUILD_RULES["hero_pool"]["dispatch_guest_base_limit"],
+                maximum=5,
             ),
             "replace_cooldown_seconds": _to_positive_int(
                 config["hero_pool"].get("replace_cooldown_seconds"),
@@ -226,7 +241,8 @@ def refresh_guild_constants() -> None:
     global CONTRIBUTION_RATES, DAILY_DONATION_LIMITS, MIN_DONATION_AMOUNT
     global TECH_UPGRADE_COSTS, TECH_NAMES
     global EXCHANGE_COSTS, DAILY_EXCHANGE_LIMIT
-    global GUILD_HERO_POOL_SLOT_LIMIT, GUILD_BATTLE_LINEUP_LIMIT, GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS
+    global GUILD_HERO_POOL_SLOT_LIMIT, GUILD_BATTLE_LINEUP_LIMIT, GUILD_DISPATCH_GUEST_BASE_LIMIT
+    global GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS
 
     _GUILD_RULES = load_guild_rules()
 
@@ -248,6 +264,7 @@ def refresh_guild_constants() -> None:
 
     GUILD_HERO_POOL_SLOT_LIMIT = _GUILD_RULES["hero_pool"]["slot_limit"]
     GUILD_BATTLE_LINEUP_LIMIT = _GUILD_RULES["hero_pool"]["battle_lineup_limit"]
+    GUILD_DISPATCH_GUEST_BASE_LIMIT = _GUILD_RULES["hero_pool"]["dispatch_guest_base_limit"]
     GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS = _GUILD_RULES["hero_pool"]["replace_cooldown_seconds"]
 
 
@@ -282,4 +299,5 @@ DAILY_EXCHANGE_LIMIT = _GUILD_RULES["warehouse"]["daily_exchange_limit"]
 # ============ 帮会门客池 ============
 GUILD_HERO_POOL_SLOT_LIMIT = _GUILD_RULES["hero_pool"]["slot_limit"]
 GUILD_BATTLE_LINEUP_LIMIT = _GUILD_RULES["hero_pool"]["battle_lineup_limit"]
+GUILD_DISPATCH_GUEST_BASE_LIMIT = _GUILD_RULES["hero_pool"]["dispatch_guest_base_limit"]
 GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS = _GUILD_RULES["hero_pool"]["replace_cooldown_seconds"]

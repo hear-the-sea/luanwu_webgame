@@ -11,10 +11,104 @@ from django.views.decorators.http import require_POST
 
 from core.utils.rate_limit import rate_limit_redirect
 
-from ..constants import TECH_NAMES
+from .. import constants as guild_constants
 from ..decorators import require_guild_member
 from ..services import technology as technology_service
 from .helpers import build_guild_member_context, execute_guild_action, load_ordered_technologies
+
+
+def _format_upgrade_cost(tech: Any) -> str:
+    cost = technology_service.calculate_tech_upgrade_cost(tech.tech_key, tech.level)
+    labels = {
+        "silver": "银两",
+        "grain": "粮食",
+        "gold_bar": "金条",
+        "red_ruby": "红宝石",
+    }
+    parts = [
+        f"{labels.get(resource_key, resource_key)} x{amount}" for resource_key, amount in cost.items() if amount > 0
+    ]
+    return "、".join(parts) if parts else "无"
+
+
+def _format_percent(value: float) -> str:
+    return f"{int(round(value * 100))}%"
+
+
+def _format_military_study_effect(level: int) -> str:
+    return (
+        f"武力 +{_format_percent(technology_service._calc_military_study_bonus(level, 'guest_force'))}，"
+        f"智力 +{_format_percent(technology_service._calc_military_study_bonus(level, 'guest_intellect'))}，"
+        f"防御 +{_format_percent(technology_service._calc_military_study_bonus(level, 'guest_defense'))}"
+    )
+
+
+def _format_troop_tactics_effect(level: int) -> str:
+    return (
+        f"攻击 +{_format_percent(technology_service._calc_troop_tactics_bonus(level, 'troop_attack'))}，"
+        f"防御 +{_format_percent(technology_service._calc_troop_tactics_bonus(level, 'troop_defense'))}，"
+        f"生命 +{_format_percent(technology_service._calc_troop_tactics_bonus(level, 'troop_hp'))}"
+    )
+
+
+def _build_tech_display_meta(tech: Any) -> dict[str, str]:
+    if tech.tech_key == "equipment_forge":
+        return {"description": "每日生产装备道具", "upgrade_cost": _format_upgrade_cost(tech)}
+    if tech.tech_key == "experience_refine":
+        return {"description": "每日生产经验道具", "upgrade_cost": _format_upgrade_cost(tech)}
+    if tech.tech_key == "resource_supply":
+        return {"description": "每日生产资源礼包", "upgrade_cost": _format_upgrade_cost(tech)}
+    if tech.tech_key == "military_study":
+        return {
+            "description": "提升门客攻击力",
+            "current_effect": _format_military_study_effect(tech.level) if tech.level > 0 else "未激活",
+            "next_effect": _format_military_study_effect(min(tech.max_level, tech.level + 1)),
+            "upgrade_cost": _format_upgrade_cost(tech),
+        }
+    if tech.tech_key == "troop_tactics":
+        return {
+            "description": "提升门客防御力和生命",
+            "current_effect": _format_troop_tactics_effect(tech.level) if tech.level > 0 else "未激活",
+            "next_effect": _format_troop_tactics_effect(min(tech.max_level, tech.level + 1)),
+            "upgrade_cost": _format_upgrade_cost(tech),
+        }
+    if tech.tech_key == "guild_lineup_capacity":
+        next_capacity = min(
+            technology_service.MAX_GUILD_LINEUP_CAPACITY,
+            int(guild_constants.GUILD_BATTLE_LINEUP_LIMIT) + min(tech.max_level, tech.level + 1),
+        )
+        return {
+            "description": "提升帮会已上阵名单总容量",
+            "current_effect": f"{technology_service.get_guild_lineup_capacity(tech.guild)} 名",
+            "next_effect": f"{next_capacity} 名",
+            "upgrade_cost": _format_upgrade_cost(tech),
+        }
+    if tech.tech_key == "guild_dispatch_capacity":
+        next_capacity = min(
+            technology_service.MAX_GUILD_DISPATCH_CAPACITY,
+            int(guild_constants.GUILD_DISPATCH_GUEST_BASE_LIMIT) + min(tech.max_level, tech.level + 1),
+        )
+        return {
+            "description": "提升单次帮会任务最多可派出的门客人数",
+            "current_effect": f"{technology_service.get_guild_dispatch_capacity(tech.guild)} 名",
+            "next_effect": f"{next_capacity} 名",
+            "upgrade_cost": _format_upgrade_cost(tech),
+        }
+    if tech.tech_key == "resource_boost":
+        return {
+            "description": "提升庄园资源产出",
+            "current_effect": f"+{tech.level * 10}%" if tech.level > 0 else "未激活",
+            "next_effect": f"+{(tech.level + 1) * 10}%",
+            "upgrade_cost": _format_upgrade_cost(tech),
+        }
+    if tech.tech_key == "march_speed":
+        return {
+            "description": "减少行军时间",
+            "current_effect": f"-{tech.level * 5}%" if tech.level > 0 else "未激活",
+            "next_effect": f"-{(tech.level + 1) * 5}%",
+            "upgrade_cost": _format_upgrade_cost(tech),
+        }
+    return {"description": "科技效果", "upgrade_cost": _format_upgrade_cost(tech)}
 
 
 @login_required
@@ -22,10 +116,12 @@ from .helpers import build_guild_member_context, execute_guild_action, load_orde
 def technology_list(request: Any) -> HttpResponse:
     """科技列表"""
     member = request.guild_member
+    technologies = load_ordered_technologies(member.guild)
     context = build_guild_member_context(
         member,
-        technologies=load_ordered_technologies(member.guild),
-        tech_names=TECH_NAMES,
+        technologies=technologies,
+        tech_names=guild_constants.TECH_NAMES,
+        tech_display_meta={tech.tech_key: _build_tech_display_meta(tech) for tech in technologies},
     )
 
     return render(request, "guilds/technology.html", context)
@@ -42,7 +138,7 @@ def upgrade_technology(request: Any, tech_key: str) -> HttpResponse:
     execute_guild_action(
         request,
         action=lambda: technology_service.upgrade_technology(member.guild, tech_key, request.user),
-        success_message=lambda _result: f"{TECH_NAMES.get(tech_key, tech_key)}升级成功！",
+        success_message=lambda _result: f"{guild_constants.TECH_NAMES.get(tech_key, tech_key)}升级成功！",
     )
 
     return redirect("guilds:technology")

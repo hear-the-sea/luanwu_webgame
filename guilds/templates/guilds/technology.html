@@ -26,17 +26,7 @@
                     <header>
                         <div>
                             <h3>{{ tech_names|get_item:tech.tech_key|default:tech.tech_key }}</h3>
-                            <p class="tw-muted">
-                                {% if tech.tech_key == 'equipment_forge' %}
-                                    每日生产装备道具
-                                {% elif tech.tech_key == 'experience_refine' %}
-                                    每日生产经验道具
-                                {% elif tech.tech_key == 'resource_supply' %}
-                                    每日生产资源礼包
-                                {% else %}
-                                    生产类科技
-                                {% endif %}
-                            </p>
+                            <p class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'description' }}</p>
                         </div>
                         <span class="tw-badge-gold">Lv {{ tech.level }}</span>
                     </header>
@@ -58,7 +48,7 @@
                         {% if tech.level < tech.max_level %}
                         <div>
                             <dt>升级成本</dt>
-                            <dd class="tw-muted">需消耗帮会资源</dd>
+                            <dd class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'upgrade_cost' }}</dd>
                         </div>
                         {% endif %}
                     </dl>
@@ -89,15 +79,7 @@
                     <header>
                         <div>
                             <h3>{{ tech_names|get_item:tech.tech_key|default:tech.tech_key }}</h3>
-                            <p class="muted-text">
-                                {% if tech.tech_key == 'military_study' %}
-                                    提升门客攻击力
-                                {% elif tech.tech_key == 'troop_tactics' %}
-                                    提升门客防御力和生命
-                                {% else %}
-                                    战斗类科技
-                                {% endif %}
-                            </p>
+                            <p class="muted-text">{{ tech_display_meta|get_item:tech.tech_key|get_item:'description' }}</p>
                         </div>
                         <span class="tw-badge-gold">Lv {{ tech.level }}</span>
                     </header>
@@ -107,23 +89,25 @@
                             <dd>{{ tech.level }} / {{ tech.max_level }}</dd>
                         </div>
                         <div>
-                            <dt>当前加成</dt>
+                            <dt>当前效果</dt>
                             <dd>
-                                {% if tech.level > 0 %}
-                                    <span class="tw-guild-tech-effect">+{{ tech.level|mul:5 }}%</span>
-                                {% else %}
+                                {% with current_effect=tech_display_meta|get_item:tech.tech_key|get_item:'current_effect' %}
+                                {% if current_effect == '未激活' %}
                                     <span class="tw-guild-tech-inactive">未激活</span>
+                                {% else %}
+                                    <span class="tw-guild-tech-effect">{{ current_effect }}</span>
                                 {% endif %}
+                                {% endwith %}
                             </dd>
                         </div>
                         {% if tech.level < tech.max_level %}
                         <div>
-                            <dt>下级加成</dt>
-                            <dd class="guild-tech-effect">+{{ tech.level|add:1|mul:5 }}%</dd>
+                            <dt>下级效果</dt>
+                            <dd class="guild-tech-effect">{{ tech_display_meta|get_item:tech.tech_key|get_item:'next_effect' }}</dd>
                         </div>
                         <div>
                             <dt>升级成本</dt>
-                            <dd class="tw-muted">需消耗帮会资源</dd>
+                            <dd class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'upgrade_cost' }}</dd>
                         </div>
                         {% endif %}
                     </dl>
@@ -154,15 +138,7 @@
                     <header>
                         <div>
                             <h3>{{ tech_names|get_item:tech.tech_key|default:tech.tech_key }}</h3>
-                            <p class="muted-text">
-                                {% if tech.tech_key == 'resource_boost' %}
-                                    提升庄园资源产出
-                                {% elif tech.tech_key == 'march_speed' %}
-                                    减少行军时间
-                                {% else %}
-                                    福利类科技
-                                {% endif %}
-                            </p>
+                            <p class="muted-text">{{ tech_display_meta|get_item:tech.tech_key|get_item:'description' }}</p>
                         </div>
                         <span class="tw-badge-gold">Lv {{ tech.level }}</span>
                     </header>
@@ -172,37 +148,25 @@
                             <dd>{{ tech.level }} / {{ tech.max_level }}</dd>
                         </div>
                         <div>
-                            <dt>当前加成</dt>
+                            <dt>当前效果</dt>
                             <dd>
-                                {% if tech.level > 0 %}
-                                    {% if tech.tech_key == 'resource_boost' %}
-                                        <span class="tw-guild-tech-effect">+{{ tech.level|mul:10 }}%</span>
-                                    {% elif tech.tech_key == 'march_speed' %}
-                                        <span class="tw-guild-tech-effect">-{{ tech.level|mul:5 }}%</span>
-                                    {% else %}
-                                        <span class="tw-guild-tech-effect">+{{ tech.level|mul:5 }}%</span>
-                                    {% endif %}
-                                {% else %}
+                                {% with current_effect=tech_display_meta|get_item:tech.tech_key|get_item:'current_effect' %}
+                                {% if current_effect == '未激活' %}
                                     <span class="tw-guild-tech-inactive">未激活</span>
+                                {% else %}
+                                    <span class="tw-guild-tech-effect">{{ current_effect }}</span>
                                 {% endif %}
+                                {% endwith %}
                             </dd>
                         </div>
                         {% if tech.level < tech.max_level %}
                         <div>
-                            <dt>下级加成</dt>
-                            <dd>
-                                {% if tech.tech_key == 'resource_boost' %}
-                                    <span class="tw-guild-tech-effect">+{{ tech.level|add:1|mul:10 }}%</span>
-                                {% elif tech.tech_key == 'march_speed' %}
-                                    <span class="tw-guild-tech-effect">-{{ tech.level|add:1|mul:5 }}%</span>
-                                {% else %}
-                                    <span class="tw-guild-tech-effect">+{{ tech.level|add:1|mul:5 }}%</span>
-                                {% endif %}
-                            </dd>
+                            <dt>下级效果</dt>
+                            <dd><span class="tw-guild-tech-effect">{{ tech_display_meta|get_item:tech.tech_key|get_item:'next_effect' }}</span></dd>
                         </div>
                         <div>
                             <dt>升级成本</dt>
-                            <dd class="tw-muted">需消耗帮会资源</dd>
+                            <dd class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'upgrade_cost' }}</dd>
                         </div>
                         {% endif %}
                     </dl>

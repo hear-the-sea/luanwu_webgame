@@ -10,7 +10,7 @@ StepFunc = Callable[[], object]
 
 
 class Command(BaseCommand):
-    help = "一键加载核心游戏数据（建筑/科技/物品/兵种/门客/任务/打工）并刷新运行期配置。"
+    help = "一键加载核心游戏数据（建筑/科技/物品/兵种/门客/任务/帮会任务/打工）并刷新运行期配置。"
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
@@ -66,6 +66,7 @@ class Command(BaseCommand):
             ("加载兵种模板", _call("load_troop_templates", skip_images=skip_images)),
             ("加载门客模板", _call("load_guest_templates", skip_images=skip_images)),
             ("加载任务模板", _call("load_mission_templates")),
+            ("加载帮会任务模板", _call("load_guild_mission_templates")),
             ("初始化打工模板", _call("seed_work_templates")),
         ]
 

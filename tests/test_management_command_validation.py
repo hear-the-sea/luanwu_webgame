@@ -8,6 +8,7 @@ from django.test import override_settings
 from battle.management.commands.load_troop_templates import Command, _load_avatar_for_troop
 from battle.models import TroopTemplate
 from gameplay.models import BuildingType, MissionTemplate
+from guilds.models import GuildMissionTemplate
 
 
 @pytest.mark.django_db
@@ -74,6 +75,41 @@ missions:
     assert mission.probability_drop_table == {}
     assert mission.base_travel_time == 1200
     assert mission.daily_limit == 3
+
+
+@pytest.mark.django_db
+def test_load_guild_mission_templates_command_tolerates_invalid_numbers(tmp_path):
+    payload_path = tmp_path / "guild_mission_templates.yaml"
+    payload_path.write_text(
+        """
+missions:
+  - key: cmd_guild_mission_bad_numbers
+    name: 脏数据帮会任务
+    enemy_guests: bad
+    enemy_troops: []
+    enemy_technology: []
+    base_duration_seconds: bad
+    ruby_reward: -1
+    recommended_guest_count: 0
+    allow_troops: "true"
+    is_active: "false"
+    sort_weight: bad
+""",
+        encoding="utf-8",
+    )
+
+    call_command("load_guild_mission_templates", file=str(payload_path), verbosity=0)
+
+    mission = GuildMissionTemplate.objects.get(key="cmd_guild_mission_bad_numbers")
+    assert mission.enemy_guests == []
+    assert mission.enemy_troops == {}
+    assert mission.enemy_technology == {}
+    assert mission.base_duration_seconds == 600
+    assert mission.ruby_reward == 0
+    assert mission.recommended_guest_count == 1
+    assert mission.allow_troops is True
+    assert mission.is_active is False
+    assert mission.sort_weight == 0
 
 
 @pytest.mark.django_db

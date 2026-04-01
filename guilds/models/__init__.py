@@ -3,6 +3,7 @@ from .business import GuildAnnouncement, GuildApplication, GuildTechnology, Guil
 from .hero_pool import GuildBattleLineupEntry, GuildHeroPoolEntry
 from .logs import GuildDonationLog, GuildExchangeLog, GuildResourceLog
 from .member import GuildMember
+from .missions import GuildMissionRun, GuildMissionTemplate, GuildTroopDonationLog, GuildTroopStorage
 
 __all__ = [
     # Base
@@ -17,6 +18,10 @@ __all__ = [
     "GuildAnnouncement",
     "GuildHeroPoolEntry",
     "GuildBattleLineupEntry",
+    "GuildMissionTemplate",
+    "GuildMissionRun",
+    "GuildTroopStorage",
+    "GuildTroopDonationLog",
     # Logs
     "GuildExchangeLog",
     "GuildDonationLog",

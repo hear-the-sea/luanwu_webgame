@@ -27,18 +27,18 @@
       });
     });
 
-    const selectedCountEl = document.getElementById("selected-guest-count");
+    const selectedCountEls = document.querySelectorAll("[id='selected-guest-count']");
     const guestInputs = document.querySelectorAll(".guest-input");
-    const maxSquadSize = Number.parseInt(selectedCountEl?.dataset?.maxSquad || "0", 10)
-      || Number.parseInt(document.body.dataset.maxMissionSquad || "0", 10)
-      || 5;
 
-    const updateGuestCount = () => {
-      if (!selectedCountEl) {
+    const updateGuestCount = (scope) => {
+      if (!selectedCountEls.length) {
         return;
       }
-      const count = document.querySelectorAll(".guest-input:checked").length;
-      selectedCountEl.textContent = String(count);
+      selectedCountEls.forEach((element) => {
+        const container = scope || element.closest("form") || document;
+        const count = container.querySelectorAll(".guest-input:checked").length;
+        element.textContent = String(count);
+      });
     };
 
     guestInputs.forEach((input) => {
@@ -47,7 +47,12 @@
       }
       input.dataset.changeBound = "1";
       input.addEventListener("change", () => {
-        const selectedGuests = document.querySelectorAll(".guest-input:checked").length;
+        const form = input.closest("form") || document;
+        const selectedCountEl = form.querySelector("[id='selected-guest-count']") || selectedCountEls[0];
+        const maxSquadSize = Number.parseInt(selectedCountEl?.dataset?.maxSquad || "0", 10)
+          || Number.parseInt(document.body.dataset.maxMissionSquad || "0", 10)
+          || 5;
+        const selectedGuests = form.querySelectorAll(".guest-input:checked").length;
         if (selectedGuests > maxSquadSize) {
           input.checked = false;
           if (typeof window.gameAlert === "function") {
@@ -57,7 +62,7 @@
           }
           return;
         }
-        updateGuestCount();
+        updateGuestCount(form);
       });
     });
 
@@ -67,8 +72,9 @@
       }
       slider.dataset.inputBound = "1";
       slider.addEventListener("input", () => {
+        const form = slider.closest("form") || document;
         const troopKey = slider.dataset.troopKey;
-        const numInput = document.querySelector(`.tw-troop-num-input[data-troop-key="${troopKey}"]`);
+        const numInput = form.querySelector(`.tw-troop-num-input[data-troop-key="${troopKey}"]`);
         if (numInput) {
           numInput.value = slider.value;
         }
@@ -79,11 +85,12 @@
       if (input.dataset.inputBound !== "1") {
         input.dataset.inputBound = "1";
         input.addEventListener("input", () => {
+          const form = input.closest("form") || document;
           const troopKey = input.dataset.troopKey;
           const max = Number.parseInt(input.dataset.max || "0", 10) || 0;
           let value = Number.parseInt(input.value, 10) || 0;
           value = Math.max(0, Math.min(max, value));
-          const slider = document.querySelector(`.tw-troop-slider[data-troop-key="${troopKey}"]`);
+          const slider = form.querySelector(`.tw-troop-slider[data-troop-key="${troopKey}"]`);
           if (slider) {
             slider.value = String(value);
           }

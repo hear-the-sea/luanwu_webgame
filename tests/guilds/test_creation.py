@@ -23,7 +23,9 @@ class TestGuildCreation:
         membership = GuildMember.objects.get(user=user_with_gold_bars, guild=guild)
         assert membership.position == "leader"
         assert membership.is_active is True
-        assert guild.technologies.count() == 7
+        assert guild.technologies.count() == 9
+        assert guild.technologies.get(tech_key="guild_lineup_capacity").max_level == 20
+        assert guild.technologies.get(tech_key="guild_dispatch_capacity").max_level == 20
 
     def test_create_guild_duplicate_name(self, user_with_gold_bars, django_user_model, gold_bar_template):
         guild_service.create_guild(user=user_with_gold_bars, name="唯一帮会", description="")
@@ -57,3 +59,15 @@ class TestGuildCreation:
 
         with pytest.raises(GuildValidationError, match="金条不足"):
             guild_service.create_guild(user=user, name="穷人帮会", description="")
+
+    def test_create_guild_uses_runtime_creation_cost(self, user_with_gold_bars, monkeypatch):
+        monkeypatch.setattr("guilds.constants.GUILD_CREATION_COST", {"gold_bar": 11})
+
+        with pytest.raises(GuildValidationError, match="金条不足，需要11金条"):
+            guild_service.create_guild(user=user_with_gold_bars, name="动态成本帮会", description="")
+
+    def test_calculate_guild_upgrade_cost_uses_runtime_base_cost(self, monkeypatch):
+        monkeypatch.setattr("guilds.constants.GUILD_UPGRADE_BASE_COST", 12)
+
+        assert guild_service.calculate_guild_upgrade_cost(1) == 12
+        assert guild_service.calculate_guild_upgrade_cost(2) == 24
