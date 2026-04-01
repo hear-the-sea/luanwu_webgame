@@ -191,8 +191,11 @@
                                     {% if template and template.avatar %}
                                         <img src="{{ template.avatar.url }}" alt="{{ label }}" title="{{ label }}" class="tw-enemy-avatar" loading="lazy" decoding="async">
                                     {% else %}
-                                        <span class="tw-badge">{{ label }}</span>
+                                        <span class="tw-badge">{{ label|slice:":1" }}</span>
                                     {% endif %}
+                                    <div class="tw-enemy-meta">
+                                        <span class="tw-guest-name-sm rarity-text-{{ template.rarity|default:'black'|lower }}">{{ label }}</span>
+                                    </div>
                                 </div>
                                 {% endwith %}
                                 {% endwith %}

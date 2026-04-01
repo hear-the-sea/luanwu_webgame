@@ -4,6 +4,9 @@ import pytest
 from django.db import DatabaseError
 from django.urls import reverse
 
+from gameplay.models import MissionTemplate
+from guests.models import GuestTemplate
+
 
 @pytest.mark.django_db
 class TestTaskBoardPage:
@@ -38,3 +41,61 @@ class TestTaskBoardPage:
         _manor, client = manor_with_user
         response = client.get(reverse("gameplay:tasks") + "?mission=huashan_lunjian")
         assert response.status_code == 200
+
+    def test_task_board_selected_mission_shows_enemy_guest_rarity_classes(
+        self,
+        manor_with_user,
+    ):
+        _manor, client = manor_with_user
+        GuestTemplate.objects.create(
+            key="task_board_enemy_gray",
+            name="灰阶敌将",
+            archetype="military",
+            rarity="gray",
+        )
+        GuestTemplate.objects.create(
+            key="task_board_enemy_black",
+            name="黑阶敌将",
+            archetype="civil",
+            rarity="black",
+        )
+        MissionTemplate.objects.create(
+            key="task_board_enemy_rarity",
+            name="测试敌方颜色",
+            enemy_guests=[
+                {"key": "task_board_enemy_gray", "label": "灰阶敌将"},
+                {"key": "task_board_enemy_black", "label": "黑阶敌将"},
+            ],
+            daily_limit=3,
+        )
+
+        response = client.get(reverse("gameplay:tasks") + "?mission=task_board_enemy_rarity")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "灰阶敌将" in body
+        assert "rarity-text-gray" in body
+        assert "黑阶敌将" in body
+        assert "rarity-text-black" in body
+
+    def test_task_board_selected_high_end_mission_uses_elite_enemy_rarity(
+        self,
+        manor_with_user,
+        mission_templates,
+    ):
+        _manor, client = manor_with_user
+        GuestTemplate.objects.update_or_create(
+            key="task_barbarian_chanyu",
+            defaults={
+                "name": "蛮族单于",
+                "archetype": "military",
+                "rarity": "orange",
+            },
+        )
+
+        response = client.get(reverse("gameplay:tasks") + "?mission=manzu_ruqin")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "单于" in body
+        assert "rarity-text-orange" in body

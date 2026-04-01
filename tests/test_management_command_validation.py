@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import override_settings
@@ -75,6 +76,18 @@ missions:
     assert mission.probability_drop_table == {}
     assert mission.base_travel_time == 1200
     assert mission.daily_limit == 3
+
+
+@pytest.mark.django_db
+def test_default_mission_templates_define_junior_mission_tiering():
+    payload_path = settings.BASE_DIR / "data" / "mission_templates.yaml"
+
+    call_command("load_mission_templates", file=str(payload_path), verbosity=0)
+
+    jingyanggang = MissionTemplate.objects.get(key="jingyanggang")
+    assert jingyanggang.difficulty == "junior"
+    assert jingyanggang.enemy_guests == [{"key": "task_jingyang_tiger", "label": "猛虎"}]
+    assert jingyanggang.enemy_technology == {"level": 0, "guest_level": 24, "guest_bonus": 0.02}
 
 
 @pytest.mark.django_db

@@ -38,7 +38,7 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
     extra_attempts = bulk_get_mission_extra_attempts(manor, missions)
     enemy_keys, troop_keys, drop_keys = mission_helpers.collect_mission_asset_keys(missions)
     guest_templates = {
-        tpl.key: tpl for tpl in GuestTemplate.objects.filter(key__in=enemy_keys).only("key", "name", "avatar")
+        tpl.key: tpl for tpl in GuestTemplate.objects.filter(key__in=enemy_keys).only("key", "name", "avatar", "rarity")
     }
     guest_labels = {key: tpl.name for key, tpl in guest_templates.items()}
 

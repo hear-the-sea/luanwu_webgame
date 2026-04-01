@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
@@ -304,6 +305,33 @@ def test_load_guest_templates_removes_records_not_in_latest_payload(tmp_path: Pa
     assert set(Skill.objects.values_list("key", flat=True)) == {"skill_loader_keep"}
     assert set(SkillBook.objects.values_list("key", flat=True)) == {"book_loader_keep"}
     assert set(RecruitmentPool.objects.values_list("key", flat=True)) == {"pool_loader_keep"}
+
+
+def test_default_special_yaml_contains_task_specific_enemy_templates() -> None:
+    command = Command()
+    payload = command._load_heroes_payload("")
+
+    blue_keys = {entry["key"] for entry in payload.get("blue", [])}
+    orange_keys = {entry["key"] for entry in payload.get("orange", [])}
+
+    assert "task_wulong_bandit_chief" in blue_keys
+    assert "task_barbarian_chanyu" in orange_keys
+
+
+@pytest.mark.django_db
+def test_load_guest_templates_imports_default_special_task_heroes(tmp_path: Path) -> None:
+    call_command(
+        "load_guest_templates",
+        file=str(Path(settings.BASE_DIR) / "data" / "guest_templates.yaml"),
+        heroes_dir=str(Path(settings.BASE_DIR) / "data" / "guests"),
+        skip_images=True,
+        verbosity=0,
+    )
+
+    template = GuestTemplate.objects.get(key="task_barbarian_chanyu")
+    assert template.name == "蛮族单于"
+    assert template.rarity == "orange"
+    assert template.recruitable is False
 
 
 @pytest.mark.django_db

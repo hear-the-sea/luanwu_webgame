@@ -1,4 +1,173 @@
 # 特殊/隐藏BOSS门客
 
 heroes:
-  orange: []
+  green:
+    - key: task_jingyang_tiger
+      name: 景阳冈猛虎
+      archetype: military
+      recruitable: false
+      custom_stats:
+        force: 132
+        intellect: 46
+        defense: 104
+        agility: 118
+        luck: 42
+        base_hp: 1680
+    - key: task_fugui_instructor
+      name: 富贵山庄教头
+      archetype: military
+      recruitable: false
+      custom_stats:
+        force: 126
+        intellect: 72
+        defense: 118
+        agility: 86
+        luck: 50
+        base_hp: 1740
+    - key: task_matchmaking_bear
+      name: 机关战熊
+      archetype: military
+      recruitable: false
+      custom_stats:
+        force: 138
+        intellect: 38
+        defense: 128
+        agility: 72
+        luck: 36
+        base_hp: 1960
+    - key: task_orchard_wraith
+      name: 桃林怨灵
+      archetype: civil
+      recruitable: false
+      custom_stats:
+        force: 118
+        intellect: 126
+        defense: 94
+        agility: 88
+        luck: 56
+        base_hp: 1620
+  blue:
+    - key: task_wulong_bandit_chief
+      name: 乌龙山匪首
+      archetype: military
+      recruitable: false
+      custom_stats:
+        force: 166
+        intellect: 90
+        defense: 132
+        agility: 114
+        luck: 62
+        base_hp: 1880
+    - key: task_shizipo_sun_erniang
+      name: 十字坡孙二娘
+      archetype: military
+      recruitable: false
+      custom_stats:
+        force: 172
+        intellect: 84
+        defense: 138
+        agility: 112
+        luck: 66
+        base_hp: 1920
+    - key: task_shizipo_zhang_qing
+      name: 十字坡张青
+      archetype: military
+      recruitable: false
+      custom_stats:
+        force: 168
+        intellect: 80
+        defense: 142
+        agility: 104
+        luck: 60
+        base_hp: 1940
+    - key: task_mechanism_cat
+      name: 改装机关猫
+      archetype: military
+      recruitable: false
+      custom_stats:
+        force: 158
+        intellect: 78
+        defense: 128
+        agility: 138
+        luck: 48
+        base_hp: 1800
+    - key: task_mechanism_bird
+      name: 机关雏鸟
+      archetype: military
+      recruitable: false
+      custom_stats:
+        force: 150
+        intellect: 96
+        defense: 116
+        agility: 142
+        luck: 52
+        base_hp: 1760
+    - key: task_nine_peaks_bandit
+      name: 九峰寨匪头
+      archetype: military
+      recruitable: false
+      custom_stats:
+        force: 170
+        intellect: 86
+        defense: 136
+        agility: 106
+        luck: 58
+        base_hp: 1900
+  purple:
+    - key: task_cellar_guard
+      name: 天蓬地窖守卫
+      archetype: military
+      recruitable: false
+      custom_stats:
+        force: 196
+        intellect: 110
+        defense: 164
+        agility: 124
+        luck: 68
+        base_hp: 2160
+    - key: task_fox_spirit_keeper
+      name: 地窖狐妖守藏者
+      archetype: civil
+      recruitable: false
+      custom_stats:
+        force: 184
+        intellect: 168
+        defense: 146
+        agility: 132
+        luck: 78
+        base_hp: 2060
+    - key: task_heaven_cave_sentinel
+      name: 洞天金甲神兵
+      archetype: military
+      recruitable: false
+      custom_stats:
+        force: 208
+        intellect: 118
+        defense: 176
+        agility: 118
+        luck: 70
+        base_hp: 2240
+  red:
+    - key: task_barbarian_vanguard
+      name: 蛮族先锋统领
+      archetype: military
+      recruitable: false
+      custom_stats:
+        force: 228
+        intellect: 104
+        defense: 188
+        agility: 136
+        luck: 82
+        base_hp: 2400
+  orange:
+    - key: task_barbarian_chanyu
+      name: 蛮族单于
+      archetype: military
+      recruitable: false
+      custom_stats:
+        force: 246
+        intellect: 116
+        defense: 202
+        agility: 142
+        luck: 90
+        base_hp: 2560
