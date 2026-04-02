@@ -9,9 +9,56 @@ from django.urls import reverse
 from django.utils import timezone
 
 from battle.models import BattleReport
-from gameplay.models import ArenaEntry, ArenaMatch, ArenaTournament, ItemTemplate, Message, RaidRun
+from gameplay.models import (
+    ArenaCoopEntry,
+    ArenaCoopEvent,
+    ArenaEntry,
+    ArenaMatch,
+    ArenaTournament,
+    ItemTemplate,
+    Message,
+    RaidRun,
+)
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestTemplate, Skill, SkillBook
+
+
+@pytest.mark.django_db
+def test_arena_coop_report_is_visible_to_participant(client, django_user_model):
+    owner_user = django_user_model.objects.create_user(username="arena_coop_report_owner", password="pass123")
+    user = django_user_model.objects.create_user(username="arena_coop_report_user", password="pass123")
+    owner_manor = ensure_manor(owner_user)
+    manor = ensure_manor(user)
+    now = timezone.now()
+    report = BattleReport.objects.create(
+        manor=owner_manor,
+        opponent_name="张无忌",
+        battle_type="arena_coop",
+        attacker_team=[{"name": "甲", "guest_id": 1, "template_key": "a"}],
+        attacker_troops={},
+        defender_team=[{"name": "张无忌", "guest_id": None, "template_key": "arena_gl_top_zhang_wuji_boss"}],
+        defender_troops={},
+        rounds=[],
+        losses={"attacker": {}, "defender": {}},
+        drops={},
+        winner="attacker",
+        starts_at=now,
+        completed_at=now,
+        seed=9,
+    )
+    event = ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.COMPLETED,
+        player_limit=5,
+        guest_limit_per_entry=3,
+        battle_report=report,
+    )
+    ArenaCoopEntry.objects.create(event=event, manor=owner_manor, status=ArenaCoopEntry.Status.COMPLETED)
+    ArenaCoopEntry.objects.create(event=event, manor=manor, status=ArenaCoopEntry.Status.COMPLETED)
+
+    assert client.login(username="arena_coop_report_user", password="pass123")
+    response = client.get(reverse("battle:report_detail", kwargs={"pk": report.pk}))
+
+    assert response.status_code == 200
 
 
 @pytest.mark.django_db

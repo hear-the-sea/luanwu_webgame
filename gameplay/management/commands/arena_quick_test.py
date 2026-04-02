@@ -11,8 +11,8 @@ from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.db.models import Count, F
 from django.utils import timezone
 
+import gameplay.services.arena.core as arena_core
 from gameplay.models import ArenaEntry, ArenaTournament
-from gameplay.services.arena import core as arena_core
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestTemplate
 

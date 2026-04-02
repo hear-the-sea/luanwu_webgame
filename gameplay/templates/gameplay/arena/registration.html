@@ -73,7 +73,70 @@
 </section>
 {% endblock %}
 
-{% block arena_body %}{% endblock %}
+{% block arena_body %}
+<section class="tw-panel mb-6">
+    <div class="tw-panel-header">围攻光明顶</div>
+    <div class="tw-panel-content text-sm">
+        <p class="mb-2">5 人共斗，每人 {{ arena_coop_event.guest_limit_per_entry }} 门客，每日 {{ arena_coop_event.daily_limit }} 次。</p>
+        <p class="text-text-muted mb-3">{{ arena_coop_event.description }}</p>
+
+        {% if arena_coop_recruiting_event %}
+        <p class="text-text-muted mb-3">
+            当前共斗池：场次 #{{ arena_coop_recruiting_event.id }}
+            （{{ arena_coop_recruiting_event.entries.count }}/{{ arena_coop_recruiting_event.player_limit }}）
+        </p>
+        {% endif %}
+
+        {% if arena_coop_active_entry %}
+        <div class="p-3 rounded-md border border-border-light bg-bg-hover">
+            <p class="font-semibold">您已报名共斗场次 #{{ arena_coop_active_entry.event_id }}（{{ arena_coop_active_entry.event.get_status_display }}）</p>
+            <div class="mt-2 flex flex-wrap gap-2">
+                {% for link in arena_coop_active_entry.entry_guests.all %}
+                <span class="px-2 py-1 rounded text-xs border border-border-light bg-bg-secondary">
+                    {{ link.guest.display_name }} Lv{{ link.guest.level }}
+                </span>
+                {% empty %}
+                <span class="text-text-muted">无报名门客</span>
+                {% endfor %}
+            </div>
+            <div class="mt-3 flex items-center gap-2 flex-wrap">
+                <a href="{% url 'gameplay:arena_coop_detail' arena_coop_active_entry.event_id %}" class="tw-btn-secondary tw-btn-sm">查看共斗详情</a>
+                {% if arena_coop_active_entry.event.status == 'recruiting' or arena_coop_active_entry.event.status == 'preparing' %}
+                <form method="post" action="{% url 'gameplay:arena_coop_cancel' %}" class="inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="tw-btn-secondary tw-btn-sm">撤销共斗报名</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% elif arena_coop_remaining_daily <= 0 %}
+        <p class="text-sm text-rose-700">今日共斗次数已用完，请明日再来。</p>
+        {% else %}
+        <form method="post" action="{% url 'gameplay:arena_coop_register' %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <p class="text-sm text-text-muted mb-2">请选择上阵门客（最多 {{ arena_coop_event.guest_limit_per_entry }} 名）</p>
+            <div class="tw-arena-guest-grid mb-3">
+                {% for guest in arena_coop_available_guests|slice:":12" %}
+                <label class="tw-arena-guest-option">
+                    <span class="text-sm truncate">{{ guest.display_name }} Lv{{ guest.level }}</span>
+                    <input type="checkbox" name="guest_ids" value="{{ guest.id }}" class="arena-guest-checkbox"
+                           {% if guest.id in arena_coop_selected_guest_ids %}checked{% endif %}>
+                </label>
+                {% empty %}
+                <p class="text-sm text-text-muted">暂无空闲门客可报名共斗。</p>
+                {% endfor %}
+            </div>
+            <div class="flex items-center gap-3 flex-wrap">
+                <button type="submit" class="tw-btn-primary">报名围攻光明顶</button>
+                <span class="text-xs text-text-muted">推荐 3 名主力满配门客出战，Boss 为张无忌。</span>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
 
 {% block arena_scripts %}
 <script src="{% static 'js/arena-registration.js' %}"></script>

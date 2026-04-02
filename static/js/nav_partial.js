@@ -197,10 +197,7 @@
   }
 
   function updatePageMeta(nextDocument) {
-    const nextTitle = nextDocument.querySelector("title");
-    if (nextTitle) {
-      document.title = nextTitle.textContent;
-    }
+    document.title = "春秋乱世庄园主";
 
     const nextCsrfMeta = nextDocument.querySelector('meta[name="csrf-token"]');
     const currentCsrfMeta = document.querySelector('meta[name="csrf-token"]');

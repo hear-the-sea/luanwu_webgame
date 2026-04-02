@@ -228,6 +228,78 @@ heroes:
         agility: 118
         luck: 70
         base_hp: 2240
+    - key: arena_gl_top_zhang_wuji_boss
+      name: 张无忌
+      archetype: military
+      recruitable: false
+      skills:
+        - gl_top_nine_yang_guard
+        - gl_top_qiankun_shift
+        - gl_top_mingjiao_command
+        - gl_top_holy_flame_rage
+        - gl_top_qiankun_holy_flame
+      custom_stats:
+        force: 268
+        intellect: 226
+        defense: 240
+        agility: 188
+        luck: 118
+        base_hp: 6200
+    - key: arena_gl_top_yang_xiao_guard
+      name: 杨逍
+      archetype: military
+      recruitable: false
+      skills:
+        - gl_top_mingjiao_command
+        - gl_top_left_envoy_edge
+      custom_stats:
+        force: 224
+        intellect: 186
+        defense: 192
+        agility: 176
+        luck: 92
+        base_hp: 3600
+    - key: arena_gl_top_wei_yixiao_guard
+      name: 韦一笑
+      archetype: military
+      recruitable: false
+      skills:
+        - gl_top_cold_blood_swoop
+      custom_stats:
+        force: 214
+        intellect: 148
+        defense: 182
+        agility: 228
+        luck: 96
+        base_hp: 3300
+    - key: arena_gl_top_five_flags_elite_front
+      name: 五行旗精锐
+      archetype: military
+      recruitable: false
+      skills:
+        - gl_top_five_flags_barrier
+        - gl_top_banner_fire_volley
+      custom_stats:
+        force: 198
+        intellect: 132
+        defense: 206
+        agility: 150
+        luck: 70
+        base_hp: 2950
+    - key: arena_gl_top_five_flags_elite_rear
+      name: 五行旗精锐
+      archetype: military
+      recruitable: false
+      skills:
+        - gl_top_five_flags_barrier
+        - gl_top_banner_fire_volley
+      custom_stats:
+        force: 194
+        intellect: 136
+        defense: 198
+        agility: 156
+        luck: 72
+        base_hp: 2950
   red:
     - key: task_barbarian_vanguard
       name: 蛮族先锋统领

@@ -322,4 +322,8 @@ def calculate_attack_damage(
     else:
         damage = _apply_slaughter_multiplier(actor, target, total_damage_value, calculate_slaughter_multiplier)
 
+    from ..arena_coop import adjust_arena_coop_damage
+
+    damage = adjust_arena_coop_damage(actor, target, damage)
+
     return _DamageCalculation(damage=damage, is_crit=is_crit, is_double_strike=is_double_strike)

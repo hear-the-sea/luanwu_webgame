@@ -1,6 +1,50 @@
 {% extends "gameplay/arena/base.html" %}
 
 {% block arena_body %}
+<section class="tw-panel mb-6">
+    <div class="tw-panel-header">进行中的共斗</div>
+    <div class="tw-panel-content text-sm">
+        <div class="space-y-2">
+            {% for event in running_coop_events %}
+            <div class="p-3 rounded-md border border-border-light bg-bg-hover">
+                <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <p>围攻光明顶 #{{ event.id }} | {{ event.get_status_display }} | 参战 {{ event.active_entries }}/{{ event.player_limit }}</p>
+                    <span class="tw-pill rarity-red">Boss：{{ event.boss_name }}</span>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'gameplay:arena_coop_detail' event.id %}" class="tw-btn-secondary tw-btn-sm">查看共斗详情</a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="tw-empty-hint">暂无进行中的共斗场次。</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="tw-panel mb-6">
+    <div class="tw-panel-header">最近结束的共斗</div>
+    <div class="tw-panel-content text-sm">
+        <div class="space-y-2">
+            {% for event in recent_coop_events %}
+            <div class="p-3 rounded-md border border-border-light bg-bg-hover">
+                <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <p>围攻光明顶 #{{ event.id }} | {{ event.get_status_display }} | Boss：{{ event.boss_name }}</p>
+                    {% if event.ended_at %}
+                    <span class="text-text-muted">{{ event.ended_at|date:"m-d H:i" }} 结束</span>
+                    {% endif %}
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'gameplay:arena_coop_detail' event.id %}" class="tw-btn-secondary tw-btn-sm">查看共斗详情</a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="tw-empty-hint">暂无最近结束的共斗场次。</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
 <section class="tw-panel">
     <div class="tw-panel-header">进行中的赛事</div>
     <div class="tw-panel-content text-sm">

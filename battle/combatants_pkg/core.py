@@ -45,7 +45,12 @@ class Combatant:
     intellect_attr: int = 0
     defense_attr: int = 0
     guest_id: int | None = None
+    owner_entry_id: int | None = None
+    combatant_slot: int | None = None
+    is_boss: bool = False
     level: int = 1
+    battle_modifiers: Dict[str, float] = field(default_factory=dict)
+    battle_state: Dict[str, Any] = field(default_factory=dict)
     status_effects: Dict[str, Dict[str, int]] = field(default_factory=dict)
     has_acted_this_round: bool = False
     current_round: int = 0

@@ -129,10 +129,18 @@ class Command(BaseCommand):
                 raise CommandError(f"Skills file {skills_path} does not exist.")
             return self._load_payload(skills_path)
 
-        default_skills_path = Path(settings.BASE_DIR) / "data" / "guest_skills.yaml"
-        if default_skills_path.exists():
-            return self._load_payload(default_skills_path)
-        return {}
+        combined: dict[str, list[Any]] = {"skills": [], "skill_books": []}
+        default_paths = [
+            Path(settings.BASE_DIR) / "data" / "guest_skills.yaml",
+            Path(settings.BASE_DIR) / "data" / "arena_coop_special_skills.yaml",
+        ]
+        for path in default_paths:
+            if not path.exists():
+                continue
+            payload = self._load_payload(path)
+            combined["skills"].extend(payload.get("skills") or [])
+            combined["skill_books"].extend(payload.get("skill_books") or [])
+        return combined
 
     def _load_heroes_payload(self, heroes_dir: str) -> dict[str, list]:
         if heroes_dir:

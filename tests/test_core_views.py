@@ -246,6 +246,16 @@ class TestCoreViews:
         assert f'href="{reverse("gameplay:warehouse")}" data-partial-nav="1"' in body
         assert f'href="{reverse("trade:trade")}" data-partial-nav="1"' in body
 
+    def test_authenticated_pages_use_a_fixed_browser_title(self, manor_with_user):
+        """认证页面的浏览器标题应固定为游戏名。"""
+        _manor, client = manor_with_user
+
+        response = client.get(reverse("gameplay:dashboard"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "<title>春秋乱世庄园主</title>" in body
+
     def test_home_sidebar_uses_real_links_and_no_placeholder_values(self, manor_with_user):
         """首页侧栏只展示真实入口，不再保留伪链接或硬编码业务值。"""
         _manor, client = manor_with_user

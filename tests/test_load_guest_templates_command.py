@@ -328,6 +328,43 @@ def test_default_special_yaml_contains_task_specific_enemy_templates() -> None:
 
 
 @pytest.mark.django_db
+def test_load_guest_templates_merges_default_arena_coop_special_skills(tmp_path: Path, monkeypatch) -> None:
+    base_dir = tmp_path / "repo"
+    data_dir = base_dir / "data"
+    guests_dir = data_dir / "guests"
+    data_dir.mkdir(parents=True)
+    guests_dir.mkdir()
+
+    (data_dir / "guest_skills.yaml").write_text(
+        "skills:\n  - key: base_skill\n    name: 基础技能\n",
+        encoding="utf-8",
+    )
+    (data_dir / "arena_coop_special_skills.yaml").write_text(
+        "skills:\n  - key: gl_top_nine_yang_guard\n    name: 九阳护体\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(settings, "BASE_DIR", str(base_dir))
+
+    payload = Command()._load_skills_payload("")
+
+    keys = {entry["key"] for entry in payload["skills"]}
+    assert "base_skill" in keys
+    assert "gl_top_nine_yang_guard" in keys
+
+
+def test_default_special_yaml_contains_guangming_top_enemy_templates() -> None:
+    payload = Command()._load_heroes_payload("")
+
+    purple_keys = {entry["key"] for entry in payload.get("purple", [])}
+
+    assert "arena_gl_top_zhang_wuji_boss" in purple_keys
+    assert "arena_gl_top_yang_xiao_guard" in purple_keys
+    assert "arena_gl_top_wei_yixiao_guard" in purple_keys
+    assert "arena_gl_top_five_flags_elite_front" in purple_keys
+    assert "arena_gl_top_five_flags_elite_rear" in purple_keys
+
+
+@pytest.mark.django_db
 def test_load_guest_templates_imports_default_special_task_heroes(tmp_path: Path) -> None:
     call_command(
         "load_guest_templates",

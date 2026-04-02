@@ -55,7 +55,12 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
         # 3) 竞技场公开战报（通过 ArenaMatch 关联）
         return (
             BattleReport.objects.select_related("manor")
-            .filter(Q(manor=manor) | Q(messages__manor=manor) | Q(arena_matches__isnull=False))
+            .filter(
+                Q(manor=manor)
+                | Q(messages__manor=manor)
+                | Q(arena_matches__isnull=False)
+                | Q(arena_coop_events__entries__manor=manor)
+            )
             .distinct()
         )
 

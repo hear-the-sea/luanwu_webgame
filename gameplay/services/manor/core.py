@@ -136,7 +136,7 @@ def _run_manor_refresh(
     include_activity_refresh: bool,
     sync_resource_projection_func: Callable[[Manor], None],
 ) -> None:
-    from ..arena import refresh_arena_activity
+    from ..arena.core import refresh_arena_activity
     from ..missions import refresh_mission_runs
     from ..raid import refresh_raid_runs, refresh_scout_records
 

@@ -5,6 +5,7 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
+import gameplay.services.arena.core as arena_core
 from core.exceptions import (
     ArenaBusyError,
     ArenaCancellationError,
@@ -13,7 +14,6 @@ from core.exceptions import (
     InsufficientSilverError,
 )
 from gameplay.models import ArenaEntry, ArenaEntryGuest, ArenaMatch, ArenaTournament, Message
-from gameplay.services.arena import core as arena_core
 from gameplay.services.arena.core import cancel_arena_entry, register_arena_entry, run_due_arena_rounds
 from gameplay.services.manor.core import ensure_manor
 from guests.models import GuestStatus

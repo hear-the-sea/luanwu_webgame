@@ -47,6 +47,14 @@ class AttackLogEntry(TypedDict):
     counter_defeated: NotRequired[bool]
     attack_type: NotRequired[AttackType]
     actor_defeated: NotRequired[bool]
+    actor_guest_id: NotRequired[int | None]
+    actor_owner_entry_id: NotRequired[int | None]
+    actor_combatant_slot: NotRequired[int | None]
+    target_guest_id: NotRequired[int | None]
+    target_owner_entry_id: NotRequired[int | None]
+    target_combatant_slot: NotRequired[int | None]
+    target_template_key: NotRequired[str | None]
+    target_is_boss: NotRequired[bool]
 
 
 @dataclass(frozen=True, slots=True)

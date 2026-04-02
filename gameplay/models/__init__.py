@@ -9,6 +9,7 @@ public model classes/constants here to preserve the historical import style:
 """
 
 from .arena import ArenaEntry, ArenaEntryGuest, ArenaExchangeRecord, ArenaMatch, ArenaTournament
+from .arena_coop import ArenaCoopContribution, ArenaCoopEntry, ArenaCoopEntryGuest, ArenaCoopEvent
 from .items import GlobalMailCampaign, GlobalMailDelivery, InventoryItem, ItemTemplate, Message, ResourceEvent
 from .manor import (
     CITANG_BUILDING_TIME_REDUCTION_PER_LEVEL,
@@ -74,6 +75,10 @@ __all__ = [
     "ArenaEntryGuest",
     "ArenaMatch",
     "ArenaExchangeRecord",
+    "ArenaCoopEvent",
+    "ArenaCoopEntry",
+    "ArenaCoopEntryGuest",
+    "ArenaCoopContribution",
     # missions
     "MissionTemplate",
     "MissionRun",

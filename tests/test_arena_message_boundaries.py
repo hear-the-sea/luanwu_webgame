@@ -7,10 +7,10 @@ from django.contrib.auth import get_user_model
 from django.db import DatabaseError, transaction
 from django.utils import timezone
 
+import gameplay.services.arena.lifecycle_helpers as arena_lifecycle_helpers
+import gameplay.services.arena.match_helpers as arena_match_helpers
 from core.exceptions import BattlePreparationError, MessageError
 from gameplay.models import ArenaEntry, ArenaTournament
-from gameplay.services.arena import lifecycle_helpers as arena_lifecycle_helpers
-from gameplay.services.arena import match_helpers as arena_match_helpers
 from gameplay.services.manor.core import ensure_manor
 
 User = get_user_model()

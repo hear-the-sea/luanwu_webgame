@@ -59,6 +59,13 @@ def _append_heal_event(events: List[Dict[str, Any]], heal_event: Dict[str, Any] 
     events.append(heal_event)
 
 
+def _append_status_event(events: List[Dict[str, Any]], status_event: Dict[str, Any] | None) -> None:
+    if not status_event:
+        return
+    status_event["order"] = len(events) + 1
+    events.append(status_event)
+
+
 def _append_attack_event(
     events: List[Dict[str, Any]], event: Dict[str, Any] | None, priority: int | None = None
 ) -> None:
@@ -131,11 +138,14 @@ def _resolve_standard_round(
     rng: random.Random,
     round_no: int,
 ) -> Dict[str, Any]:
+    from ..arena_coop import sync_arena_coop_combat_state, try_trigger_arena_coop_pre_action_heal
     from ..status_manager import prepare_combatants_for_round, try_trigger_battle_heal_on_action
     from ..utils.status_effects import handle_pre_action_status
 
     prepare_combatants_for_round(attacker_units, defender_units, round_no, promote_pending=True)
     events: List[Dict[str, Any]] = []
+    for status_event in sync_arena_coop_combat_state(attacker_units, defender_units, round_no):
+        _append_status_event(events, status_event)
 
     for actor in determine_turn_order(attacker_units, defender_units, rng):
         if actor.hp <= 0:
@@ -143,6 +153,7 @@ def _resolve_standard_round(
         if handle_pre_action_status(actor, events):
             continue
 
+        _append_heal_event(events, try_trigger_arena_coop_pre_action_heal(actor))
         _append_heal_event(events, try_trigger_battle_heal_on_action(actor, rng))
         _append_attack_event(events, perform_attack(actor, attacker_units, defender_units, rng, round_priority=0))
 
@@ -157,6 +168,7 @@ def resolve_priority_phases(
     defender_team: List["Combatant"],
     rng: random.Random,
 ) -> Tuple[List[Dict[str, Any]], int]:
+    from ..arena_coop import sync_arena_coop_combat_state, try_trigger_arena_coop_pre_action_heal
     from ..status_manager import prepare_combatants_for_round, try_trigger_battle_heal_on_action
     from ..utils.status_effects import handle_pre_action_status
 
@@ -172,6 +184,8 @@ def resolve_priority_phases(
     for priority in staged_priorities:
         events: List[Dict[str, Any]] = []
         prepare_combatants_for_round(attacker_team, defender_team, next_round_no, promote_pending=True)
+        for status_event in sync_arena_coop_combat_state(attacker_team, defender_team, next_round_no):
+            _append_status_event(events, status_event)
         phase_attackers = _iter_phase_attackers(attacker_team, defender_team, rng, priority)
         for actor in phase_attackers:
             if actor.hp <= 0:
@@ -180,6 +194,7 @@ def resolve_priority_phases(
             if handle_pre_action_status(actor, events):
                 continue
             # 未被控制的单位，在行动前尝试触发五气朝元（拳类武艺科技）
+            _append_heal_event(events, try_trigger_arena_coop_pre_action_heal(actor))
             _append_heal_event(events, try_trigger_battle_heal_on_action(actor, rng))
             _append_attack_event(
                 events,
@@ -208,7 +223,7 @@ def simulate_battle(
     from ..constants import MAX_ROUNDS
 
     if max_rounds is None:
-        max_rounds = MAX_ROUNDS
+        max_rounds = int(config.get("max_rounds", MAX_ROUNDS))
 
     # 安全修复：验证回合数范围，防止负数和过大值导致异常
     max_rounds = max(1, min(max_rounds, MAX_ROUNDS * 2))
@@ -216,7 +231,7 @@ def simulate_battle(
     priority_rounds, next_round_start = resolve_priority_phases(attacker_units, defender_units, rng)
     rounds.extend(priority_rounds)
     round_no = next_round_start
-    remaining_rounds = max_rounds
+    remaining_rounds = max(0, max_rounds - len(priority_rounds))
     while remaining_rounds > 0 and alive(attacker_units) and alive(defender_units):
         rounds.append(_resolve_standard_round(attacker_units, defender_units, rng, round_no))
         round_no += 1

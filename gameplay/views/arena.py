@@ -13,17 +13,15 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
+import gameplay.services.arena.coop_core as arena_coop_core
+import gameplay.services.arena.core as arena_core
 from core.decorators import flash_unexpected_view_error
 from core.exceptions import ArenaGuestSelectionError, GameError
 from core.utils import safe_positive_int, sanitize_error_message
 from core.utils.rate_limit import rate_limit_redirect
-from gameplay.selectors.arena import (
-    get_arena_event_detail_context,
-    get_arena_events_context,
-    get_arena_exchange_context,
-    get_arena_registration_context,
-)
-from gameplay.services.arena import core as arena_core
+from gameplay.selectors.arena.details import get_arena_coop_event_detail_context, get_arena_event_detail_context
+from gameplay.selectors.arena.events import get_arena_events_context
+from gameplay.selectors.arena.registration import get_arena_exchange_context, get_arena_registration_context
 from gameplay.services.manor.core import get_manor, project_manor_activity_for_read
 from gameplay.utils.template_loader import get_item_template_names_by_keys
 from gameplay.views.read_helpers import get_prepared_manor_for_read
@@ -33,18 +31,6 @@ logger = logging.getLogger(__name__)
 ARENA_TAB_REGISTRATION = "registration"
 ARENA_TAB_EVENTS = "events"
 ARENA_TAB_EXCHANGE = "exchange"
-
-
-def register_arena_entry(*args, **kwargs):
-    return arena_core.register_arena_entry(*args, **kwargs)
-
-
-def cancel_arena_entry(*args, **kwargs):
-    return arena_core.cancel_arena_entry(*args, **kwargs)
-
-
-def exchange_arena_reward(*args, **kwargs):
-    return arena_core.exchange_arena_reward(*args, **kwargs)
 
 
 def _get_registration_silver_cost() -> int:
@@ -183,6 +169,21 @@ class ArenaEventDetailView(BaseArenaView):
         return context
 
 
+class ArenaCoopEventDetailView(BaseArenaView):
+    active_tab = ARENA_TAB_EVENTS
+    template_name = "gameplay/arena/coop_detail.html"
+    show_arena_hero_card = False
+
+    def _build_page_context(self, manor):
+        event_id = safe_positive_int(self.kwargs.get("event_id"), default=None)
+        if event_id is None:
+            raise Http404("共斗场次不存在")
+        context = get_arena_coop_event_detail_context(manor, event_id=event_id)
+        if context is None:
+            raise Http404("共斗场次不存在或已不可查看")
+        return context
+
+
 @login_required
 @require_POST
 @rate_limit_redirect("arena_register", limit=20, window_seconds=60)
@@ -191,7 +192,7 @@ def arena_register_view(request: HttpRequest) -> HttpResponse:
     redirect_target = _resolve_safe_next_url(request, default_view_name="gameplay:arena")
     try:
         guest_ids = _parse_guest_ids(request.POST.getlist("guest_ids"))
-        result = register_arena_entry(manor, guest_ids)
+        result = arena_core.register_arena_entry(manor, guest_ids)
         if result.auto_started:
             messages.success(
                 request,
@@ -225,7 +226,7 @@ def arena_cancel_view(request: HttpRequest) -> HttpResponse:
     manor = get_manor(request.user)
     redirect_target = _resolve_safe_next_url(request, default_view_name="gameplay:arena")
     try:
-        canceled_count = cancel_arena_entry(manor)
+        canceled_count = arena_core.cancel_arena_entry(manor)
         messages.success(
             request,
             f"已撤销报名（{canceled_count} 条），可重新报名（报名费 {_get_registration_silver_cost()} 银两不返还）。",
@@ -248,19 +249,65 @@ def arena_cancel_view(request: HttpRequest) -> HttpResponse:
 
 @login_required
 @require_POST
+@rate_limit_redirect("arena_coop_register", limit=20, window_seconds=60)
+def arena_coop_register_view(request: HttpRequest) -> HttpResponse:
+    manor = get_manor(request.user)
+    redirect_target = _resolve_safe_next_url(request, default_view_name="gameplay:arena")
+    guest_ids = _parse_guest_ids(request.POST.getlist("guest_ids"))
+    try:
+        result = arena_coop_core.register_arena_coop_entry(manor, guest_ids)
+        if result.moved_to_preparing:
+            messages.success(request, "报名成功！共斗人数已满，已进入开战准备期。")
+        else:
+            messages.success(request, f"报名成功！当前共斗人数 {result.entry_count}/{result.event.player_limit}。")
+    except GameError as exc:
+        _handle_known_arena_error(request, exc)
+    except DatabaseError as exc:
+        _handle_unexpected_arena_error(
+            request,
+            exc,
+            log_message="arena coop register failed: user_id=%s manor_id=%s",
+            log_args=(getattr(request.user, "id", None), getattr(manor, "id", None)),
+        )
+    return redirect(redirect_target)
+
+
+@login_required
+@require_POST
+@rate_limit_redirect("arena_coop_cancel", limit=20, window_seconds=60)
+def arena_coop_cancel_view(request: HttpRequest) -> HttpResponse:
+    manor = get_manor(request.user)
+    redirect_target = _resolve_safe_next_url(request, default_view_name="gameplay:arena")
+    try:
+        canceled_count = arena_coop_core.cancel_arena_coop_entry(manor)
+        messages.success(request, f"已撤销共斗报名（{canceled_count} 条），可重新报名。")
+    except GameError as exc:
+        _handle_known_arena_error(request, exc)
+    except DatabaseError as exc:
+        _handle_unexpected_arena_error(
+            request,
+            exc,
+            log_message="arena coop cancel failed: user_id=%s manor_id=%s",
+            log_args=(getattr(request.user, "id", None), getattr(manor, "id", None)),
+        )
+    return redirect(redirect_target)
+
+
+@login_required
+@require_POST
 @rate_limit_redirect("arena_exchange", limit=30, window_seconds=60)
 def arena_exchange_view(request: HttpRequest) -> HttpResponse:
     manor = get_manor(request.user)
     redirect_target = _resolve_safe_next_url(request, default_view_name="gameplay:arena")
     reward_key = (request.POST.get("reward_key") or "").strip()
-    quantity = safe_positive_int(request.POST.get("quantity"), default=1)
+    quantity = safe_positive_int(request.POST.get("quantity"), default=1) or 1
 
     if not reward_key:
         messages.error(request, "兑换项不能为空")
         return redirect(redirect_target)
 
     try:
-        result = exchange_arena_reward(manor, reward_key, quantity=quantity)
+        result = arena_core.exchange_arena_reward(manor, reward_key, quantity=quantity)
         random_draw_summary = ""
         if result.random_granted_items:
             item_names = get_item_template_names_by_keys(result.random_granted_items.keys())

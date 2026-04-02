@@ -1,6 +1,6 @@
 # 项目重构优化规则与阶段目标（2026-03）
 
-最近更新：2026-03-26
+最近更新：2026-04-02
 
 本文档不记录详细审计过程、历史数据或阶段性结果，只保留后续重构必须遵守的规则，以及各阶段的优化目标。
 
@@ -30,6 +30,7 @@
 - 最近一次边界复核结论：
   - `config/urls.py`、`gameplay/context_processors.py`、`gameplay/views/arena.py`、`guests/urls.py`、`guilds/urls.py` 已改为显式子模块导入，不再依赖热点包根聚合入口。
   - `gameplay/views/__init__.py`、`gameplay/selectors/__init__.py`、`guests/views/__init__.py`、`guilds/views/__init__.py` 已收口为无副作用最小包标记文件。
+  - `2026-04-02` 已继续推进 arena 边界收口：`gameplay/services/arena/__init__.py` 与 `gameplay/selectors/arena/__init__.py` 已都收口为无副作用最小包标记；`gameplay/views/arena.py` 已改为显式依赖 `gameplay.selectors.arena.registration / events / details` 与 `gameplay.services.arena.core / coop_core`，不再通过 arena 包根聚合入口取页面查询或 service 常量；原 `gameplay/selectors/arena.py` 485 行热点已拆为 `gameplay/selectors/arena/common.py`（154 行）、`gameplay/selectors/arena/registration.py`（99 行）、`gameplay/selectors/arena/events.py`（57 行）与 `gameplay/selectors/arena/details.py`（151 行），且 `python -m pytest tests/test_arena_audit_boundaries.py tests/arena_services/coop_registration.py tests/arena_services/coop_resolution.py tests/test_arena_views.py tests/test_arena_tasks.py tests/test_battle_report_view.py tests/test_arena_coop_battle_mechanics.py tests/test_load_guest_templates_command.py tests/test_battle_attack_metadata.py tests/test_battle_guest_display_names.py -q` 通过，结果为 `69 passed`；`node --test static/js/tests/nav_partial.test.js` 通过，结果为 `1 passed`。
   - `2026-03-25` 已启动复杂度热点首刀整改：`gameplay/views/jail.py` 中的“锁包装与异常/响应映射”及“监牢/结义林状态载荷拼装”已分别下沉到 `gameplay/views/jail_action_support.py` 与 `gameplay/views/jail_payloads.py`；主文件体量已由 `514` 行降到 `368` 行，且 `python -m flake8 gameplay/views/jail.py gameplay/views/jail_action_support.py gameplay/views/jail_payloads.py`、`python -m mypy gameplay/views/jail.py gameplay/views/jail_action_support.py gameplay/views/jail_payloads.py` 与 `python -m pytest tests/test_jail_views.py tests/test_jail_service.py -q` 均通过。
   - `2026-03-25` 已推进复杂度热点第二刀：`trade/selector_builders.py` 中的钱庄/兵库上下文构建已按业务域拆到 `trade/bank_context_builder.py`，`trade/selectors.py` 也已改为显式依赖该子模块；`trade/selector_builders.py` 主文件已由 `437` 行降到 `331` 行，且 `python -m flake8 trade/selector_builders.py trade/bank_context_builder.py trade/selectors.py`、`python -m mypy trade/selector_builders.py trade/bank_context_builder.py trade/selectors.py` 与 `python -m pytest tests/test_trade_selectors.py tests/trade/test_trade_page_view.py -q` 均通过。
   - `2026-03-25` 已推进复杂度热点第三刀：`gameplay/services/manor/core.py` 中的“庄园初始化/补建/坐标分配”与“庄园命名规则/改名事务”已分别按稳定职责拆到 `gameplay/services/manor/bootstrap.py` 与 `gameplay/services/manor/naming.py`，同时保留 `core.py` 作为兼容公开入口；`gameplay/services/manor/core.py` 主文件已由 `622` 行降到 `362` 行，且 `python -m flake8 gameplay/services/manor/core.py gameplay/services/manor/bootstrap.py gameplay/services/manor/naming.py`、`python -m mypy gameplay/services/manor/core.py gameplay/services/manor/bootstrap.py gameplay/services/manor/naming.py` 与 `python -m pytest tests/gameplay_services/manor_bootstrap.py tests/test_manor_naming.py tests/gameplay/manor_refresh.py tests/test_upgrade_concurrency_limits.py -q` 均通过。

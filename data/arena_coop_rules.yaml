@@ -1,0 +1,53 @@
+registration:
+  player_limit: 5
+  guest_limit_per_entry: 3
+  daily_participation_limit: 2
+  prepare_duration_seconds: 120
+  registration_silver_cost: 0
+  recruiting_lock_key: arena:coop:recruiting_event:create
+  recruiting_lock_timeout: 5
+
+runtime:
+  auto_start_scan_seconds: 30
+  completed_retention_seconds: 86400
+
+contribution:
+  minimum_share_bps: 500
+
+rewards:
+  participation_coins: 30
+  clear_coins: 40
+  damage_tiers:
+    - min_share_bps: 1000
+      coins: 20
+    - min_share_bps: 1500
+      coins: 40
+    - min_share_bps: 2000
+      coins: 70
+    - min_share_bps: 2500
+      coins: 100
+  rank_rewards:
+    1: 80
+    2: 50
+    3: 30
+
+rare_drop:
+  enabled: true
+  item_key: equip_tulongdao
+  chance_bps: 10
+  requires_clear: true
+  requires_minimum_contribution: true
+
+enemy:
+  boss:
+    template_key: arena_gl_top_zhang_wuji_boss
+    display_name: 张无忌
+  guards:
+    - template_key: arena_gl_top_yang_xiao_guard
+      display_name: 杨逍
+    - template_key: arena_gl_top_wei_yixiao_guard
+      display_name: 韦一笑
+    - template_key: arena_gl_top_five_flags_elite_front
+      display_name: 五行旗精锐
+    - template_key: arena_gl_top_five_flags_elite_rear
+      display_name: 五行旗精锐

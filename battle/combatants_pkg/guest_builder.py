@@ -148,6 +148,9 @@ def serialize_guest_for_report(combatant: Combatant) -> Dict[str, Any]:
         "priority": combatant.priority,
         "template_key": combatant.template_key,
         "guest_id": combatant.guest_id,
+        "owner_entry_id": combatant.owner_entry_id,
+        "combatant_slot": combatant.combatant_slot,
+        "is_boss": combatant.is_boss,
         "level": combatant.level,
     }
 
@@ -226,6 +229,9 @@ def build_guest_combatants(
                 troop_strength=0,
                 initial_hp=hp,
                 template_key=guest.template.key,
+                owner_entry_id=getattr(guest, "_owner_entry_id", None),
+                combatant_slot=getattr(guest, "_combatant_slot", None),
+                is_boss=bool(getattr(guest, "_is_boss", False)),
                 skills=serialize_skills(guest, override_skill_keys=override_skill_keys),
                 force_attr=getattr(guest, "force", 100),
                 intellect_attr=getattr(guest, "intellect", 100),

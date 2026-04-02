@@ -89,6 +89,14 @@ def perform_attack(
                 "index": idx,
                 "kills": 0,
                 "target_defeated": False,
+                "actor_guest_id": actor.guest_id,
+                "actor_owner_entry_id": actor.owner_entry_id,
+                "actor_combatant_slot": actor.combatant_slot,
+                "target_guest_id": current_target.guest_id,
+                "target_owner_entry_id": current_target.owner_entry_id,
+                "target_combatant_slot": current_target.combatant_slot,
+                "target_template_key": current_target.template_key,
+                "target_is_boss": current_target.is_boss,
             }
             action_logs.append(dodge_entry)
             continue
@@ -129,6 +137,14 @@ def perform_attack(
             "counter_defeated": applied.counter_defeated,
             "attack_type": attack_type,
             "actor_defeated": actor_defeated,
+            "actor_guest_id": actor.guest_id,
+            "actor_owner_entry_id": actor.owner_entry_id,
+            "actor_combatant_slot": actor.combatant_slot,
+            "target_guest_id": current_target.guest_id,
+            "target_owner_entry_id": current_target.owner_entry_id,
+            "target_combatant_slot": current_target.combatant_slot,
+            "target_template_key": current_target.template_key,
+            "target_is_boss": current_target.is_boss,
         }
 
         entry["status_inflicted"] = process_status_effects(

@@ -27,6 +27,12 @@ BATTLE_TYPES: Dict[str, dict] = {
         "description": "玩家间竞技场比武",
         "loot_pool": {},
     },
+    "arena_coop": {
+        "name": "围攻光明顶",
+        "description": "五人共斗，围攻光明顶上的明教群雄",
+        "loot_pool": {},
+        "max_rounds": 24,
+    },
 }
 
 

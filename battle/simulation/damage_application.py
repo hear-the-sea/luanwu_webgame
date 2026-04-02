@@ -44,11 +44,16 @@ def _apply_reflect(
     troop_unit_hp_fn,
     calculate_slaughter_multiplier_fn,
 ) -> tuple[int, int, bool]:
-    reflect_ratio = target.tech_effects.get("damage_reflect", 0)
-    if reflect_ratio <= 0 or target.troop_class != "jian":
-        return 0, 0, False
+    from ..arena_coop import get_arena_coop_reflect_values
 
+    reflect_ratio = target.tech_effects.get("damage_reflect", 0)
     max_reflect = int(actor.attack * 1.0)
+    if reflect_ratio <= 0 or target.troop_class != "jian":
+        reflect_ratio, special_cap = get_arena_coop_reflect_values(target)
+        if reflect_ratio <= 0:
+            return 0, 0, False
+        max_reflect = special_cap if special_cap > 0 else max_reflect
+
     reflect_damage = min(int(damage * reflect_ratio), max_reflect)
     actor.hp -= reflect_damage
 

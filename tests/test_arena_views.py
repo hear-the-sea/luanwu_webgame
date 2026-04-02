@@ -11,7 +11,16 @@ from django.utils import timezone
 
 from battle.models import BattleReport
 from core.exceptions import ArenaError
-from gameplay.models import ArenaEntry, ArenaEntryGuest, ArenaMatch, ArenaTournament, ItemTemplate
+from gameplay.models import (
+    ArenaCoopContribution,
+    ArenaCoopEntry,
+    ArenaCoopEvent,
+    ArenaEntry,
+    ArenaEntryGuest,
+    ArenaMatch,
+    ArenaTournament,
+    ItemTemplate,
+)
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestStatus, GuestTemplate
 
@@ -83,6 +92,18 @@ def test_arena_view_renders(arena_client):
 
 
 @pytest.mark.django_db
+def test_arena_registration_page_lists_guangming_top_card(arena_client):
+    client, _manor = arena_client
+
+    response = client.get(reverse("gameplay:arena"))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert "围攻光明顶" in body
+    assert "5 人共斗" in body
+
+
+@pytest.mark.django_db
 @pytest.mark.parametrize(
     ("view_name", "selector_attr"),
     [
@@ -121,6 +142,26 @@ def test_arena_events_view_renders(arena_client):
 
 
 @pytest.mark.django_db
+def test_arena_events_view_lists_recent_completed_coop_event(arena_client):
+    client, manor = arena_client
+    event = ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.COMPLETED,
+        player_limit=5,
+        guest_limit_per_entry=3,
+        boss_name="张无忌",
+        ended_at=timezone.now() - timedelta(hours=1),
+    )
+    ArenaCoopEntry.objects.create(event=event, manor=manor, status=ArenaCoopEntry.Status.COMPLETED)
+
+    response = client.get(reverse("gameplay:arena_events"))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert "最近结束的共斗" in body
+    assert f"围攻光明顶 #{event.id}" in body
+
+
+@pytest.mark.django_db
 def test_arena_exchange_page_view_renders(arena_client):
     client, _manor = arena_client
     response = client.get(reverse("gameplay:arena_exchange_page"))
@@ -147,6 +188,98 @@ def test_arena_register_view_creates_entry(arena_client):
     entry = ArenaEntry.objects.filter(manor=manor).first()
     assert entry is not None
     assert ArenaEntryGuest.objects.filter(entry=entry).count() == 2
+
+
+@pytest.mark.django_db
+def test_arena_coop_register_view_creates_entry(arena_client):
+    client, manor = arena_client
+    template = _build_guest_template("arena_coop_view_tpl")
+    guest1 = _build_guest(manor, template, "A")
+    guest2 = _build_guest(manor, template, "B")
+    guest3 = _build_guest(manor, template, "C")
+
+    response = client.post(
+        reverse("gameplay:arena_coop_register"),
+        {"guest_ids": [str(guest1.id), str(guest2.id), str(guest3.id)]},
+    )
+
+    assert response.status_code == 302
+    assert ArenaCoopEntry.objects.filter(manor=manor).exists()
+
+
+@pytest.mark.django_db
+def test_arena_coop_detail_view_renders(arena_client):
+    client, manor = arena_client
+    now = timezone.now()
+    report = BattleReport.objects.create(
+        manor=manor,
+        opponent_name="张无忌",
+        battle_type="arena_coop",
+        attacker_team=[],
+        attacker_troops={},
+        defender_team=[],
+        defender_troops={},
+        rounds=[],
+        losses={"attacker": {}, "defender": {}},
+        drops={},
+        winner="attacker",
+        starts_at=now,
+        completed_at=now,
+        seed=3,
+    )
+    event = ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.COMPLETED,
+        player_limit=5,
+        guest_limit_per_entry=3,
+        boss_name="张无忌",
+        boss_remaining_hp=0,
+        battle_report=report,
+    )
+    entry = ArenaCoopEntry.objects.create(event=event, manor=manor, status=ArenaCoopEntry.Status.COMPLETED)
+    ArenaCoopContribution.objects.create(
+        event=event,
+        entry=entry,
+        total_damage=1234,
+        boss_damage=1000,
+        guard_damage=234,
+        effective_damage=1234,
+        damage_share_bps=5000,
+        damage_rank=1,
+        met_minimum_contribution=True,
+        participation_coins=30,
+        damage_coins=20,
+        rank_coins=80,
+        clear_coins=40,
+        total_coins=170,
+    )
+
+    response = client.get(reverse("gameplay:arena_coop_detail", args=[event.id]))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert "围攻光明顶" in body
+    assert "Boss" in body
+    assert "1234" in body
+
+
+@pytest.mark.django_db
+def test_arena_coop_detail_view_shows_live_boss_hp_for_registered_event(arena_client):
+    client, manor = arena_client
+    template = _build_guest_template("arena_coop_detail_live_hp_tpl")
+    guests = [_build_guest(manor, template, suffix) for suffix in ["A", "B", "C"]]
+
+    response = client.post(
+        reverse("gameplay:arena_coop_register"),
+        {"guest_ids": [str(guest.id) for guest in guests]},
+        follow=True,
+    )
+
+    entry = ArenaCoopEntry.objects.get(manor=manor)
+    detail_response = client.get(reverse("gameplay:arena_coop_detail", args=[entry.event_id]))
+
+    assert response.status_code == 200
+    assert detail_response.status_code == 200
+    assert "剩余生命：300000" in detail_response.content.decode("utf-8")
 
 
 @pytest.mark.django_db
@@ -385,7 +518,7 @@ def test_arena_register_view_known_error_shows_message(arena_client, monkeypatch
     guest = _build_guest(manor, template, "K")
 
     monkeypatch.setattr(
-        "gameplay.views.arena.register_arena_entry",
+        "gameplay.views.arena.arena_core.register_arena_entry",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(ArenaError("arena blocked")),
     )
 
@@ -407,7 +540,7 @@ def test_arena_register_view_raw_value_error_bubbles_up(arena_client, monkeypatc
     guest = _build_guest(manor, template, "V")
 
     monkeypatch.setattr(
-        "gameplay.views.arena.register_arena_entry",
+        "gameplay.views.arena.arena_core.register_arena_entry",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("arena legacy")),
     )
 
@@ -425,7 +558,7 @@ def test_arena_register_view_database_error_does_not_500(arena_client, monkeypat
     guest = _build_guest(manor, template, "X")
 
     monkeypatch.setattr(
-        "gameplay.views.arena.register_arena_entry",
+        "gameplay.views.arena.arena_core.register_arena_entry",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("db down")),
     )
 
@@ -447,7 +580,7 @@ def test_arena_register_view_programming_error_bubbles_up(arena_client, monkeypa
     guest = _build_guest(manor, template, "Y")
 
     monkeypatch.setattr(
-        "gameplay.views.arena.register_arena_entry",
+        "gameplay.views.arena.arena_core.register_arena_entry",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("boom")),
     )
 
@@ -465,7 +598,7 @@ def test_arena_exchange_view_database_error_does_not_500(arena_client, monkeypat
     manor.save(update_fields=["arena_coins"])
 
     monkeypatch.setattr(
-        "gameplay.views.arena.exchange_arena_reward",
+        "gameplay.views.arena.arena_core.exchange_arena_reward",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("db down")),
     )
 

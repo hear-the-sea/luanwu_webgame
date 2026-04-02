@@ -1,11 +1,14 @@
 from django.urls import path
 
 from .views.arena import (
+    ArenaCoopEventDetailView,
     ArenaEventDetailView,
     ArenaEventsView,
     ArenaExchangePageView,
     ArenaView,
     arena_cancel_view,
+    arena_coop_cancel_view,
+    arena_coop_register_view,
     arena_exchange_view,
     arena_register_view,
 )
@@ -97,9 +100,12 @@ urlpatterns = [
     path("arena/", ArenaView.as_view(), name="arena"),
     path("arena/events/", ArenaEventsView.as_view(), name="arena_events"),
     path("arena/events/<int:tournament_id>/", ArenaEventDetailView.as_view(), name="arena_event_detail"),
+    path("arena/coop/<int:event_id>/", ArenaCoopEventDetailView.as_view(), name="arena_coop_detail"),
     path("arena/exchange/", ArenaExchangePageView.as_view(), name="arena_exchange_page"),
     path("arena/register/", arena_register_view, name="arena_register"),
     path("arena/cancel/", arena_cancel_view, name="arena_cancel"),
+    path("arena/coop/register/", arena_coop_register_view, name="arena_coop_register"),
+    path("arena/coop/cancel/", arena_coop_cancel_view, name="arena_coop_cancel"),
     path("arena/exchange/submit/", arena_exchange_view, name="arena_exchange"),
     path("messages/", MessageListView.as_view(), name="messages"),
     path("messages/view/<int:pk>/", view_message, name="view_message"),

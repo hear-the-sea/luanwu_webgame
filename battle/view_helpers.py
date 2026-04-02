@@ -29,6 +29,11 @@ def _load_arena_match_for_report(report: "BattleReport"):
     return ArenaMatch.objects.select_related("attacker_entry", "defender_entry").filter(battle_report=report).first()
 
 
+def _load_arena_coop_event_for_report(report: "BattleReport"):
+    ArenaCoopEvent = apps.get_model("gameplay", "ArenaCoopEvent")
+    return ArenaCoopEvent.objects.filter(battle_report=report).first()
+
+
 def resolve_report_runtime_context(report: "BattleReport", *, manor_id: int) -> dict[str, Any]:
     mission_run = _load_mission_run_for_report(report)
     if mission_run and mission_run.mission.is_defense:
@@ -46,6 +51,10 @@ def resolve_report_runtime_context(report: "BattleReport", *, manor_id: int) -> 
         if getattr(arena_match.attacker_entry, "manor_id", None) == manor_id:
             return {"player_side": "attacker", "raid_run": None}
         return {"player_side": "spectator", "raid_run": None}
+
+    arena_coop_event = _load_arena_coop_event_for_report(report)
+    if arena_coop_event:
+        return {"player_side": "attacker", "raid_run": None}
 
     inferred_side = infer_side_from_guest_ownership(report, manor_id)
     if inferred_side:

@@ -1,0 +1,112 @@
+# 竞技场共斗《围攻光明顶》专用技能
+
+skills:
+  - key: gl_top_nine_yang_guard
+    name: 九阳护体
+    rarity: purple
+    description: 九阳真气流转周身，血线压低后会稳定回春续战。
+    base_probability: 0.8
+    kind: passive
+    damage_formula:
+      base: 0
+    targets: 1
+
+  - key: gl_top_qiankun_shift
+    name: 乾坤大挪移
+    rarity: purple
+    description: 挪移劲力、卸转强攻，压缩单次爆发并在后段反震来敌。
+    base_probability: 0.75
+    kind: passive
+    damage_formula:
+      base: 0
+    targets: 1
+
+  - key: gl_top_mingjiao_command
+    name: 明教号令
+    rarity: purple
+    description: 教主号令群雄，护卫未灭时明教诸将攻势齐涨。
+    base_probability: 0.75
+    kind: passive
+    damage_formula:
+      base: 0
+    targets: 1
+
+  - key: gl_top_holy_flame_rage
+    name: 圣火狂势
+    rarity: purple
+    description: 圣火愈燃愈烈，血线越低，张无忌越趋狂暴。
+    base_probability: 0.75
+    kind: passive
+    damage_formula:
+      base: 0
+    targets: 1
+
+  - key: gl_top_cold_blood_swoop
+    name: 蝠影掠命
+    rarity: purple
+    description: 韦一笑化作残影扑杀后排，专噬低血。
+    base_probability: 0.8
+    kind: active
+    damage_formula:
+      base: 1680
+      ally:
+        force: 0.6
+        agility: 1.2
+      enemy:
+        defense: 0.25
+    targets: 1
+
+  - key: gl_top_qiankun_holy_flame
+    name: 乾坤圣火印
+    rarity: purple
+    description: 九阳与圣火并行，挟挪移劲道轰击两名强敌。
+    base_probability: 0.8
+    kind: active
+    damage_formula:
+      base: 3600
+      ally:
+        force: 0.65
+        intellect: 0.4
+      enemy:
+        defense: 0.28
+    targets: 2
+
+  - key: gl_top_left_envoy_edge
+    name: 光明左使
+    rarity: purple
+    description: 杨逍执掌左使威势，一击贯穿来敌阵形。
+    base_probability: 0.78
+    kind: active
+    damage_formula:
+      base: 2400
+      ally:
+        force: 0.58
+        intellect: 0.35
+      enemy:
+        defense: 0.22
+    targets: 2
+
+  - key: gl_top_banner_fire_volley
+    name: 旗火齐发
+    rarity: purple
+    description: 五行旗前后呼应，旗火与劲弩同时压向敌阵。
+    base_probability: 0.72
+    kind: active
+    damage_formula:
+      base: 1800
+      ally:
+        force: 0.4
+        intellect: 0.18
+      enemy:
+        defense: 0.16
+    targets: 2
+
+  - key: gl_top_five_flags_barrier
+    name: 五行旗护阵
+    rarity: purple
+    description: 旗阵未破之前，为张无忌稳固阵脚并大幅压低来敌杀伤。
+    base_probability: 0.75
+    kind: passive
+    damage_formula:
+      base: 0
+    targets: 1
