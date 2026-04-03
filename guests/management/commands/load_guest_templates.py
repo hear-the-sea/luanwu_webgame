@@ -10,6 +10,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
+from battle.combatants_pkg.cache import clear_guest_template_cache
 from core.utils.image_utils import compress_and_resize_image
 from core.utils.yaml_loader import ensure_mapping, load_yaml_data
 from guests.growth_rules import RARITY_HP_PROFILES
@@ -233,6 +234,7 @@ class Command(BaseCommand):
                 "status_probability": data.get("status_probability", 0.0),
                 "status_duration": data.get("status_duration", 1),
                 "damage_formula": data.get("damage_formula", {}),
+                "passive_config": data.get("passive_config") or {},
                 "required_level": data.get("required_level", 0),
                 "required_force": data.get("required_force", 0),
                 "required_intellect": data.get("required_intellect", 0),
@@ -566,6 +568,7 @@ class Command(BaseCommand):
 
     def _finish_sync(self, verbosity: int, fallback_avatar_count: int) -> None:
         clear_template_cache()
+        clear_guest_template_cache()
         if verbosity >= 1:
             if fallback_avatar_count:
                 self.stdout.write(self.style.SUCCESS(f"Assigned {fallback_avatar_count} fallback avatars."))

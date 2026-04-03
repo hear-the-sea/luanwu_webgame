@@ -1318,6 +1318,59 @@ table.table tbody tr+tr {
   gap: 0.4rem;
 }
 
+.event-line > .event-passive-layout {
+  display: grid;
+  grid-template-columns: clamp(5.5rem, 18vw, 9rem) auto minmax(0, 1fr);
+  justify-content: normal;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.event-passive-entry {
+  margin-bottom: 0.2rem;
+}
+
+.event-passive-layout {
+  width: 100%;
+}
+
+.event-passive-name {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-passive-tag {
+  white-space: nowrap;
+}
+
+.event-passive-tag .tech-tag {
+  margin-left: 0;
+}
+
+.event-passive-extra {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.event-passive-extra .heal-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-passive-extra .status-pill {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .event-order {
   width: 1.8rem;
   height: 1.8rem;

@@ -44,27 +44,7 @@
             </div>
         </div>
         <div class="tw-building-main">
-            <header>
-                <div class="tw-building-headline">
-                    <h3>{{ arena_event.name }}</h3>
-                    <span class="tw-level-badge">{{ arena_event.subtitle }}</span>
-                </div>
-                <p class="tw-building-desc">{{ arena_event.description }}</p>
-            </header>
-            <dl class="tw-arena-rule-list">
-                <div>
-                    <dt>报名人数</dt>
-                    <dd>{{ arena_event.player_limit }} 人满员开赛</dd>
-                </div>
-                <div>
-                    <dt>回合频率</dt>
-                    <dd>每 {{ arena_event.round_interval_label }} 1 轮</dd>
-                </div>
-                <div>
-                    <dt>每日次数</dt>
-                    <dd>{{ daily_limit }} 次</dd>
-                </div>
-            </dl>
+            {% include "gameplay/arena/partials/summary_intro.html" with summary=arena_event compact=False %}
             {% block arena_event_action %}{% endblock %}
         </div>
     </article>

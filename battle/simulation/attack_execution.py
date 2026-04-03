@@ -7,6 +7,7 @@ from __future__ import annotations
 import random
 from typing import TYPE_CHECKING, Any, cast
 
+from ..passives import run_passives_for_timing
 from .damage_application import apply_damage_results
 from .damage_calculation import calculate_attack_damage, process_status_effects
 from .target_selection import is_ranged_attack, select_attack_targets
@@ -72,6 +73,17 @@ def perform_attack(
     action_logs: list[AttackLogEntry] = []
     actor_defeated = False
     for idx, current_target in enumerate(selection.engaged_targets):
+        passive_events_before: list[dict[str, Any]] = []
+        run_passives_for_timing(
+            "attack_before",
+            actor=actor,
+            target=current_target,
+            attacker_team=attacker_team,
+            defender_team=defender_team,
+            round_no=actor.current_round,
+            event_sink=passive_events_before,
+            rng=rng,
+        )
         dodge_chance = calculate_dodge_chance(current_target)
         if rng.random() < dodge_chance:
             dodge_entry: AttackLogEntry = {
@@ -98,6 +110,8 @@ def perform_attack(
                 "target_template_key": current_target.template_key,
                 "target_is_boss": current_target.is_boss,
             }
+            if passive_events_before:
+                dodge_entry["passive_events_before"] = passive_events_before
             action_logs.append(dodge_entry)
             continue
 
@@ -111,6 +125,17 @@ def perform_attack(
 
         applied = apply_damage_results(actor, current_target, damage_calc.damage, rng)
         actor_defeated = actor_defeated or applied.actor_defeated
+        passive_events_after: list[dict[str, Any]] = []
+        run_passives_for_timing(
+            "hit_taken",
+            actor=current_target,
+            target=actor,
+            attacker_team=attacker_team,
+            defender_team=defender_team,
+            round_no=actor.current_round,
+            event_sink=passive_events_after,
+            rng=rng,
+        )
 
         attack_type: AttackType = "ranged" if is_ranged_attack(actor, round_priority) else "melee"
         entry: AttackLogEntry = {
@@ -146,10 +171,24 @@ def perform_attack(
             "target_template_key": current_target.template_key,
             "target_is_boss": current_target.is_boss,
         }
+        if passive_events_before:
+            entry["passive_events_before"] = passive_events_before
 
         entry["status_inflicted"] = process_status_effects(
             actor, current_target, selection.skills, rng, phase="inflict"
         )
+        run_passives_for_timing(
+            "attack_after",
+            actor=actor,
+            target=current_target,
+            attacker_team=attacker_team,
+            defender_team=defender_team,
+            round_no=actor.current_round,
+            event_sink=passive_events_after,
+            rng=rng,
+        )
+        if passive_events_after:
+            entry["passive_events_after"] = passive_events_after
         action_logs.append(entry)
 
         if actor_defeated:

@@ -72,6 +72,11 @@ ARENA_COOP_PHASE_MESSAGES = {
     2: "明教号令震荡全场，张无忌踏入二阶段",
     3: "圣火狂势彻底爆发，张无忌踏入三阶段",
 }
+ARENA_COOP_GUARD_STATE_KEYS = {
+    "arena_coop_boss_alive",
+    "arena_coop_phase_1",
+    "arena_coop_phase_2_plus",
+}
 
 
 def _template_key(value: Any) -> str:
@@ -123,6 +128,26 @@ def _combat_modifiers(unit: Any) -> dict[str, float]:
     return modifiers
 
 
+def _clear_arena_coop_guard_state(unit: Any) -> None:
+    state = _combat_state(unit)
+    for key in ARENA_COOP_GUARD_STATE_KEYS:
+        state.pop(key, None)
+
+
+def _has_action_before_heal_passive(unit: Any) -> bool:
+    for skill in getattr(unit, "skills", []) or []:
+        if str(skill.get("kind") or "") != "passive":
+            continue
+        config = skill.get("passive_config") or {}
+        for trigger in config.get("triggers") or []:
+            if str(trigger.get("timing") or "") != "action_before":
+                continue
+            for effect in trigger.get("effects") or []:
+                if str(effect.get("type") or "") == "heal_ratio":
+                    return True
+    return False
+
+
 def _resolve_boss_phase(boss: Any) -> int:
     if getattr(boss, "max_hp", 0) <= 0:
         return 1
@@ -145,60 +170,26 @@ def sync_arena_coop_combat_state(
 
     for unit in defenders:
         _combat_modifiers(unit).clear()
+        _clear_arena_coop_guard_state(unit)
 
     boss = next((unit for unit in defenders if _template_key(unit) == ARENA_COOP_BOSS_TEMPLATE_KEY), None)
     if boss is None or getattr(boss, "hp", 0) <= 0:
         return []
 
     alive_guards = [unit for unit in defenders if unit is not boss and getattr(unit, "hp", 0) > 0]
-    alive_five_flags = [unit for unit in alive_guards if _template_key(unit) in ARENA_COOP_FIVE_FLAGS_TEMPLATE_KEYS]
     phase = _resolve_boss_phase(boss)
 
     boss_state = _combat_state(boss)
     previous_phase = boss_state.get("arena_coop_phase")
     boss_state["arena_coop_phase"] = phase
 
-    incoming_multiplier = 1.0
-    if len(alive_five_flags) >= 2:
-        incoming_multiplier *= 0.50
-    elif len(alive_five_flags) == 1:
-        incoming_multiplier *= 0.72
-
-    outgoing_multiplier = 1.0 + 0.08 * len(alive_guards)
-    if phase == 2:
-        outgoing_multiplier *= 1.20
-    elif phase == 3:
-        outgoing_multiplier *= 1.40
-
-    boss_modifiers = _combat_modifiers(boss)
-    boss_modifiers["incoming_damage_multiplier"] = incoming_multiplier
-    boss_modifiers["outgoing_damage_multiplier"] = outgoing_multiplier
-    boss_modifiers["burst_softcap_threshold"] = 12000.0 if phase == 1 else 14000.0 if phase == 2 else 16000.0
-    boss_modifiers["burst_softcap_overflow_ratio"] = 0.35
-    if phase == 2:
-        boss_modifiers["self_heal_ratio_on_action"] = 0.03
-        boss_modifiers["reflect_ratio"] = 0.06
-        boss_modifiers["reflect_cap"] = 5000.0
-    elif phase == 3:
-        boss_modifiers["self_heal_ratio_on_action"] = 0.05
-        boss_modifiers["reflect_ratio"] = 0.10
-        boss_modifiers["reflect_cap"] = 8000.0
-
-    boss_alive = getattr(boss, "hp", 0) > 0
-    guard_base_multiplier = 1.0
-    if boss_alive:
-        guard_base_multiplier = 1.08 if phase == 1 else 1.15
-
     for guard in alive_guards:
-        guard_key = _template_key(guard)
-        modifiers = _combat_modifiers(guard)
-        modifiers["outgoing_damage_multiplier"] = guard_base_multiplier
-        if guard_key == ARENA_COOP_YANG_XIAO_TEMPLATE_KEY:
-            modifiers["outgoing_damage_multiplier"] *= 1.10
-        elif guard_key == ARENA_COOP_WEI_YIXIAO_TEMPLATE_KEY:
-            modifiers["outgoing_damage_multiplier"] *= 1.15
+        guard_state = _combat_state(guard)
+        guard_state["arena_coop_boss_alive"] = True
+        if phase == 1:
+            guard_state["arena_coop_phase_1"] = True
         else:
-            modifiers["outgoing_damage_multiplier"] *= 1.05
+            guard_state["arena_coop_phase_2_plus"] = True
 
     if previous_phase is None or int(previous_phase) >= phase:
         return []
@@ -215,6 +206,8 @@ def sync_arena_coop_combat_state(
 
 def try_trigger_arena_coop_pre_action_heal(actor: Any) -> dict[str, Any] | None:
     if getattr(actor, "hp", 0) <= 0:
+        return None
+    if _has_action_before_heal_passive(actor):
         return None
 
     modifiers = _combat_modifiers(actor)

@@ -1,76 +1,12 @@
 {% extends "gameplay/arena/base.html" %}
 
 {% block arena_body %}
-<section class="tw-panel mb-6">
-    <div class="tw-panel-header">进行中的共斗</div>
-    <div class="tw-panel-content text-sm">
-        <div class="space-y-2">
-            {% for event in running_coop_events %}
-            <div class="p-3 rounded-md border border-border-light bg-bg-hover">
-                <div class="flex items-center justify-between gap-3 flex-wrap">
-                    <p>围攻光明顶 #{{ event.id }} | {{ event.get_status_display }} | 参战 {{ event.active_entries }}/{{ event.player_limit }}</p>
-                    <span class="tw-pill rarity-red">Boss：{{ event.boss_name }}</span>
-                </div>
-                <div class="mt-3">
-                    <a href="{% url 'gameplay:arena_coop_detail' event.id %}" class="tw-btn-secondary tw-btn-sm">查看共斗详情</a>
-                </div>
-            </div>
-            {% empty %}
-            <p class="tw-empty-hint">暂无进行中的共斗场次。</p>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
-<section class="tw-panel mb-6">
-    <div class="tw-panel-header">最近结束的共斗</div>
-    <div class="tw-panel-content text-sm">
-        <div class="space-y-2">
-            {% for event in recent_coop_events %}
-            <div class="p-3 rounded-md border border-border-light bg-bg-hover">
-                <div class="flex items-center justify-between gap-3 flex-wrap">
-                    <p>围攻光明顶 #{{ event.id }} | {{ event.get_status_display }} | Boss：{{ event.boss_name }}</p>
-                    {% if event.ended_at %}
-                    <span class="text-text-muted">{{ event.ended_at|date:"m-d H:i" }} 结束</span>
-                    {% endif %}
-                </div>
-                <div class="mt-3">
-                    <a href="{% url 'gameplay:arena_coop_detail' event.id %}" class="tw-btn-secondary tw-btn-sm">查看共斗详情</a>
-                </div>
-            </div>
-            {% empty %}
-            <p class="tw-empty-hint">暂无最近结束的共斗场次。</p>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
 <section class="tw-panel">
     <div class="tw-panel-header">进行中的赛事</div>
     <div class="tw-panel-content text-sm">
         <div class="space-y-2">
-            {% for row in running_tournaments %}
-            {% with tournament=row.tournament %}
-            <div class="p-3 rounded-md border border-border-light bg-bg-hover">
-                <div class="flex items-center justify-between gap-3 flex-wrap">
-                    <p>赛事 #{{ tournament.id }} | 第 {{ tournament.current_round }} 轮 | 存活 {{ tournament.active_entries }}/{{ tournament.total_entries }}</p>
-                    {% if row.is_mine %}
-                    <span class="tw-pill rarity-blue">我已参赛</span>
-                    {% endif %}
-                </div>
-                {% if tournament.next_round_at %}
-                <p class="text-text-muted">
-                    下一轮：
-                    <span class="countdown" data-countdown="{{ tournament.next_round_at|date:'c' }}" data-format="zh-no-sec" data-refresh="1">
-                        {{ tournament.next_round_at|date:"m-d H:i:s" }}
-                    </span>
-                </p>
-                {% endif %}
-                <div class="mt-3">
-                    <a href="{% url 'gameplay:arena_event_detail' tournament.id %}" class="tw-btn-secondary tw-btn-sm">查看赛事详情</a>
-                </div>
-            </div>
-            {% endwith %}
+            {% for row in running_tournament_card_rows %}
+            {% include "gameplay/arena/partials/event_list_card.html" with row=row %}
             {% empty %}
             <p class="tw-empty-hint">暂无进行中的赛事。</p>
             {% endfor %}

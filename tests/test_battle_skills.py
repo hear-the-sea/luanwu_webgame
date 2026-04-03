@@ -4,6 +4,7 @@ from types import SimpleNamespace
 import pytest
 
 from battle.combat_math import SLAUGHTER_MULTIPLIER, effective_attack_value, effective_defense_value, troop_unit_hp
+from battle.combatants_pkg.guest_builder import serialize_skills
 from battle.simulation.constants import GUEST_SKILL_VS_TROOP_MULTIPLIER
 from battle.simulation.damage_calculation import calculate_attack_damage, process_status_effects
 from battle.skills import apply_skill_statuses, skill_damage_bonus, trigger_skills
@@ -50,6 +51,14 @@ class FixedRng:
         return 1.0
 
 
+class _SkillCollection:
+    def __init__(self, skills):
+        self._skills = skills
+
+    def all(self):
+        return list(self._skills)
+
+
 def test_trigger_skills_allows_only_one_active():
     """
     测试技能触发规则：
@@ -75,6 +84,38 @@ def test_trigger_skills_allows_only_one_active():
     passives = [skill for skill in triggered if skill["kind"] == "passive"]
     assert len(actives) == 1  # 最多1个主动技能
     assert len(passives) == 1  # 被动技能触发
+
+
+def test_serialize_skills_preserves_passive_config_for_template_skills():
+    passive_skill = SimpleNamespace(
+        key="gl_top_nine_yang_guard",
+        name="九阳护体",
+        base_power=0,
+        base_probability=0.75,
+        kind="passive",
+        status_effect="",
+        status_probability=0.0,
+        status_duration=1,
+        damage_formula={},
+        targets=1,
+        passive_config={
+            "triggers": [
+                {
+                    "timing": "action_before",
+                    "effects": [{"type": "heal_ratio", "value": 0.05, "max_hp_based": True}],
+                }
+            ]
+        },
+    )
+    guest = SimpleNamespace(
+        pk=None,
+        template=SimpleNamespace(initial_skills=_SkillCollection([passive_skill])),
+    )
+
+    payload = serialize_skills(guest)
+
+    assert payload[0]["kind"] == "passive"
+    assert payload[0]["passive_config"]["triggers"][0]["timing"] == "action_before"
 
 
 def test_skill_damage_bonus_uses_calculator(monkeypatch):

@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Literal, NotRequired, TypedDict
 
 AttackSkill = Dict[str, Any]
 AttackType = Literal["ranged", "melee"]
+PassiveLogEntry = Dict[str, Any]
 
 
 class AttackLogEntry(TypedDict):
@@ -36,6 +37,8 @@ class AttackLogEntry(TypedDict):
     target_defeated: bool
 
     additional_targets: NotRequired[List["AttackLogEntry"]]
+    passive_events_before: NotRequired[List[PassiveLogEntry]]
+    passive_events_after: NotRequired[List[PassiveLogEntry]]
 
     # 武艺/技术特殊效果（命中时才会记录）
     is_double_strike: NotRequired[bool]

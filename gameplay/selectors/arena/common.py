@@ -20,6 +20,10 @@ ARENA_PRIMARY_EVENT_BASE = {
 }
 
 
+def build_summary_metrics(*rows: tuple[str, str]) -> list[dict[str, str]]:
+    return [{"label": label, "value": value} for label, value in rows]
+
+
 def build_reward_rows(manor: Manor) -> list[dict]:
     catalog = load_arena_reward_catalog()
     resource_labels = dict(ResourceType.choices)
@@ -127,6 +131,11 @@ def build_common_context(manor: Manor) -> dict:
             "player_limit": arena_core.ARENA_TOURNAMENT_PLAYER_LIMIT,
             "round_interval_seconds": round_interval_seconds,
             "round_interval_label": round_interval_label,
+            "summary_metrics": build_summary_metrics(
+                ("报名人数", f"{arena_core.ARENA_TOURNAMENT_PLAYER_LIMIT} 人满员开赛"),
+                ("回合频率", f"每 {round_interval_label} 1 轮"),
+                ("每日次数", f"{arena_core.ARENA_DAILY_PARTICIPATION_LIMIT} 次"),
+            ),
         },
         "registration_silver_cost": arena_core.ARENA_REGISTRATION_SILVER_COST,
         "can_afford_registration": manor.silver >= arena_core.ARENA_REGISTRATION_SILVER_COST,

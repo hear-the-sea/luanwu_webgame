@@ -381,6 +381,8 @@ def _settle_coop_event_locked(
     for entry in locked_entries:
         entry.status = ArenaCoopEntry.Status.COMPLETED
     ArenaCoopEntry.objects.bulk_update(locked_entries, ["status"])
+    for entry in locked_entries:
+        _release_entry_guest_statuses(entry)
 
     for entry in locked_entries:
         locked_manor = Manor.objects.select_for_update().get(pk=entry.manor_id)
@@ -596,12 +598,30 @@ def _move_event_to_preparing_locked(event: ArenaCoopEvent, *, now: datetime | No
     return True
 
 
-def _create_entry_with_snapshots_locked(
+def _upsert_entry_with_snapshots_locked(
     event: ArenaCoopEvent,
     locked_manor: Manor,
     selected_guests: list[Guest],
 ) -> ArenaCoopEntry:
-    entry = ArenaCoopEntry.objects.create(event=event, manor=locked_manor)
+    entry = (
+        ArenaCoopEntry.objects.select_for_update()
+        .filter(
+            event=event,
+            manor=locked_manor,
+            status=ArenaCoopEntry.Status.CANCELLED,
+        )
+        .order_by("-joined_at", "-id")
+        .first()
+    )
+    if entry is None:
+        entry = ArenaCoopEntry.objects.create(event=event, manor=locked_manor)
+    else:
+        entry.status = ArenaCoopEntry.Status.REGISTERED
+        entry.cancelled_at = None
+        entry.joined_at = timezone.now()
+        entry.save(update_fields=["status", "cancelled_at", "joined_at"])
+        entry.entry_guests.all().delete()
+
     ArenaCoopEntryGuest.objects.bulk_create(
         [
             ArenaCoopEntryGuest(
@@ -654,7 +674,7 @@ def register_arena_coop_entry(manor: Manor, guest_ids: Iterable[int]) -> ArenaCo
     selected_guests = _load_selected_guests_locked(locked_manor, selected_guest_ids)
     _deduct_registration_silver_locked(locked_manor, silver_cost=ARENA_COOP_REGISTRATION_SILVER_COST)
     event = _get_or_create_recruiting_event_locked()
-    entry = _create_entry_with_snapshots_locked(event, locked_manor, selected_guests)
+    entry = _upsert_entry_with_snapshots_locked(event, locked_manor, selected_guests)
     entry_count = event.entries.filter(status=ArenaCoopEntry.Status.REGISTERED).count()
     moved_to_preparing = False
     if entry_count >= event.player_limit:
@@ -677,7 +697,11 @@ def cancel_arena_coop_entry(manor: Manor) -> int:
         .filter(
             manor=locked_manor,
             status=ArenaCoopEntry.Status.REGISTERED,
-            event__status__in=[ArenaCoopEvent.Status.RECRUITING, ArenaCoopEvent.Status.PREPARING],
+            event__status__in=[
+                ArenaCoopEvent.Status.RECRUITING,
+                ArenaCoopEvent.Status.PREPARING,
+                ArenaCoopEvent.Status.RUNNING,
+            ],
         )
         .order_by("-joined_at", "-id")
         .first()
@@ -686,7 +710,7 @@ def cancel_arena_coop_entry(manor: Manor) -> int:
         raise ArenaCancellationError("当前没有可撤销的共斗报名")
 
     event = ArenaCoopEvent.objects.select_for_update().get(pk=entry.event_id)
-    if event.status not in [ArenaCoopEvent.Status.RECRUITING, ArenaCoopEvent.Status.PREPARING]:
+    if event.status != ArenaCoopEvent.Status.RECRUITING:
         raise ArenaCancellationError("活动已开战，当前不可撤销报名")
 
     entry.status = ArenaCoopEntry.Status.CANCELLED
@@ -694,13 +718,6 @@ def cancel_arena_coop_entry(manor: Manor) -> int:
     entry.save(update_fields=["status", "cancelled_at"])
     _release_entry_guest_statuses(entry)
     _update_daily_counter_locked(locked_manor, delta=-1)
-
-    remaining = event.entries.filter(status=ArenaCoopEntry.Status.REGISTERED).count()
-    if event.status == ArenaCoopEvent.Status.PREPARING and remaining < event.player_limit:
-        event.status = ArenaCoopEvent.Status.RECRUITING
-        event.prepare_ends_at = None
-        event.save(update_fields=["status", "prepare_ends_at", "updated_at"])
-
     return 1
 
 

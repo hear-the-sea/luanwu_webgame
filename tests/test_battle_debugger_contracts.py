@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from copy import deepcopy
+
 import pytest
+from django.conf import settings
+from django.core.cache import cache
 from django.http import HttpResponse
 from django.test import RequestFactory, override_settings
 
 from battle_debugger.config import BattleConfig, ConfigLoader, InvalidPresetError, PartyConfig
-from battle_debugger.views import custom_config, simulate, tune
+from battle_debugger.views import custom_config, result_detail, simulate, tune
 
 
 def _make_staff_post_request(django_user_model, path: str, data: dict):
@@ -157,3 +161,112 @@ def test_custom_config_renders_error_for_empty_sides(django_user_model, monkeypa
 
     assert response.status_code == 200
     assert "攻方必须至少有门客或小兵".encode("utf-8") in response.content
+
+
+@pytest.mark.django_db
+@override_settings(DEBUG=True)
+def test_result_detail_renders_passive_events_in_detailed_log(django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(
+        username="debugger-result-detail-passive",
+        password="pass",
+        is_staff=True,
+    )
+    request = RequestFactory().get("/debugger/result/passive-check/")
+    request.user = user
+
+    result_id = "passive-check"
+    cache.set(
+        f"battle_result_{result_id}",
+        {
+            "config": {"name": "passive-check"},
+            "results": [
+                {
+                    "winner": "attacker",
+                    "combat_log": [
+                        {
+                            "round": 1,
+                            "events": [
+                                {
+                                    "type": "passive",
+                                    "side": "attacker",
+                                    "order": 1,
+                                    "unit": "张无忌",
+                                    "effect": "九阳护体",
+                                    "message": "内息流转",
+                                    "healed": 15000,
+                                },
+                                {
+                                    "side": "attacker",
+                                    "order": 2,
+                                    "actor": "甲",
+                                    "target": "杨逍",
+                                    "damage": 1000,
+                                    "skills": ["乾坤圣火印"],
+                                    "is_crit": False,
+                                    "is_dodge": False,
+                                    "agility": 100,
+                                    "kind": "guest",
+                                    "priority": 0,
+                                    "status_inflicted": [],
+                                    "kills": 0,
+                                    "target_defeated": False,
+                                    "additional_targets": [
+                                        {
+                                            "actor": "甲",
+                                            "target": "张无忌",
+                                            "damage": 800,
+                                            "skills": ["乾坤圣火印"],
+                                            "is_crit": False,
+                                            "is_dodge": False,
+                                            "agility": 100,
+                                            "kind": "guest",
+                                            "priority": 0,
+                                            "status_inflicted": [],
+                                            "kills": 0,
+                                            "target_defeated": False,
+                                            "passive_events_before": [
+                                                {
+                                                    "type": "passive",
+                                                    "unit": "甲",
+                                                    "effect": "先手蓄劲",
+                                                    "message": "追击再起",
+                                                }
+                                            ],
+                                            "passive_events_after": [
+                                                {
+                                                    "type": "passive",
+                                                    "unit": "张无忌",
+                                                    "effect": "乾坤留痕",
+                                                    "message": "卸力反震",
+                                                }
+                                            ],
+                                        }
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                }
+            ],
+        },
+        timeout=60,
+    )
+
+    templates = deepcopy(settings.TEMPLATES)
+    templates[0]["DIRS"] = [*templates[0].get("DIRS", []), str(settings.BASE_DIR / "battle_debugger" / "templates")]
+    monkeypatch.setattr("django.urls.reverse", lambda *args, **kwargs: "/debugger/")
+    monkeypatch.setattr("django.urls.base.reverse", lambda *args, **kwargs: "/debugger/")
+
+    with override_settings(TEMPLATES=templates):
+        response = result_detail(request, result_id=result_id)
+
+    body = response.content.decode("utf-8")
+    assert response.status_code == 200
+    assert "九阳护体" in body
+    assert "内息流转" in body
+    assert "先手蓄劲" in body
+    assert "追击再起" in body
+    assert "乾坤留痕" in body
+    assert "卸力反震" in body
+    assert "event-passive-layout" in body
+    assert "event-passive-tag" in body

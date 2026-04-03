@@ -143,19 +143,6 @@ heroes:
       intellect: 58
       defense: 18
       agility: 12
-  - key: hist_songliaojinyuan_0048
-    name: 富弼
-    default_gender: male
-    archetype: civil
-    flavor: （1004年-1083年）北宋名相，三朝元老。他与范仲淹共同主持庆历新政，是北宋政坛的中流砥柱。他出使辽国，据理力争，维护了国家尊严。他为官清廉，政声卓著，是北宋名相的典范。其稳健持重，为朝廷提供了长期稳定的支撑。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
   - key: hist_songliaojinyuan_0049
     name: 韩琦
     default_gender: male
@@ -174,19 +161,6 @@ heroes:
     default_gender: male
     archetype: civil
     flavor: （922年-992年）宋初名相，辅佐赵匡胤统一天下。他策划陈桥兵变，参与杯酒释兵权，是北宋开国的首席功臣。他自称"半部论语治天下"，虽有自夸之嫌，却也展现了治国理政的才能。其权衡功过仍受史家反复评议，影响深远。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
-  - key: hist_songliaojinyuan_0051
-    name: 王旦
-    default_gender: male
-    archetype: civil
-    flavor: （957年-1017年）北宋名相，与寇准并称。他宽厚谦和，善于用人，是宋真宗时期的贤相。他与寇准政见不同，却能相互尊重，共同维护朝廷稳定。其调和之功，使政局少有震荡，被视为良臣典范。其稳健作风为宋初政治留下良好范式。
     growth_range:
     - 6
     - 11
@@ -234,50 +208,11 @@ heroes:
       intellect: 18
       defense: 24
       agility: 16
-  - key: hist_songliaojinyuan_0061
-    name: 种师道
-    default_gender: male
-    archetype: military
-    flavor: （1051年-1126年）种家军领袖，抗金名将。他主张抗金，反对议和。开封保卫战中，他率军力战，最终忧愤而死。他是北宋末年少有的清醒之士。其主战立场与忠烈精神，为后世所传颂。其家国情怀成为将门精神的代表。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 42
-      intellect: 18
-      defense: 24
-      agility: 16
-  - key: hist_songliaojinyuan_0064
-    name: 晏殊
-    default_gender: male
-    archetype: civil
-    flavor: （991年-1055年）北宋宰相，婉约词的重要代表。无可奈何花落去，似曾相识燕归来——他的词雍容华贵，充满富贵气象。他主政时期，提携了范仲淹、欧阳修等后辈，对北宋文化繁荣功不可没。其词风与政声相映，成为宋代士大夫典范。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
   - key: hist_songliaojinyuan_0065
     name: 秦观
     default_gender: male
     archetype: civil
     flavor: （1049年-1100年）苏门四学士，婉约派词人。两情若是久长时，又岂在朝朝暮暮——他的词凄婉动人，情深意切。他与苏轼亦师亦友，却命运多舛，一生坎坷。他的词作虽不多，却篇篇精品。其情感深度与词法精巧，后世推为婉约典范。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
-  - key: hist_songliaojinyuan_0067
-    name: 邵雍
-    default_gender: male
-    archetype: civil
-    flavor: （1011年-1077年）北宋理学家，易学大师。他创立先天易学，以数理解释宇宙变化。他隐居苏门山，不求仕进，专心学问。他的《皇极经世》对后世易学影响深远。其数理体系被后世视为易学重要分水岭。其学说影响宋明易学发展方向。
     growth_range:
     - 6
     - 11
@@ -351,32 +286,6 @@ heroes:
       intellect: 58
       defense: 18
       agility: 12
-  - key: hist_songliaojinyuan_0081
-    name: 孟珙
-    default_gender: male
-    archetype: military
-    flavor: （1195年-1246年）南宋晚期最杰出的名将，灭金的功臣。他联蒙灭金，亲率宋军攻入蔡州，俘获金哀宗尸骨。他又转而抗蒙，在京湖战区建立防线，多次击退蒙军。他是儒将典范，能文能武，被誉为"机动防御大师"。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 42
-      intellect: 18
-      defense: 24
-      agility: 16
-  - key: hist_songliaojinyuan_0082
-    name: 刘锜
-    default_gender: male
-    archetype: military
-    flavor: （1098年-1162年）南宋抗金名将，顺昌大捷的英雄。他以两万兵力大败金兀术十万大军，创造了以少胜多的奇迹。他用兵如神，令金人闻风丧胆。其胜利极大振奋南宋军心，被视为中兴战绩之一。其用兵胆略为后世将帅所称道。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 42
-      intellect: 18
-      defense: 24
-      agility: 16
   - key: hist_songliaojinyuan_0083
     name: 吴玠
     default_gender: male
@@ -390,24 +299,37 @@ heroes:
       intellect: 18
       defense: 24
       agility: 16
-  - key: hist_songliaojinyuan_0084
-    name: 吴璘
+  - key: hist_songliaojinyuan_0067
+    name: 邵雍
     default_gender: male
-    archetype: military
-    flavor: （1102年-1167年）吴玠之弟，继承兄志抗金。他镇守川陕二十余年，使金人始终无法突破西线。他发展的"叠阵法"成为对抗骑兵的有效战术。其持久防守为南宋西线提供坚实屏障。其战术创新对后世守边作战具有示范意义。
+    archetype: civil
+    flavor: （1011年-1077年）北宋理学家，易学大师。他创立先天易学，以数理解释宇宙变化。他隐居苏门山，不求仕进，专心学问。他的《皇极经世》对后世易学影响深远。其数理体系被后世视为易学重要分水岭。其学说影响宋明易学发展方向。
     growth_range:
     - 6
     - 11
     attribute_weights:
-      force: 42
-      intellect: 18
-      defense: 24
-      agility: 16
-  - key: hist_songliaojinyuan_0085
-    name: 岳云
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_songliaojinyuan_0064
+    name: 晏殊
+    default_gender: male
+    archetype: civil
+    flavor: （991年-1055年）北宋宰相，婉约词的重要代表。无可奈何花落去，似曾相识燕归来——他的词雍容华贵，充满富贵气象。他主政时期，提携了范仲淹、欧阳修等后辈，对北宋文化繁荣功不可没。其词风与政声相映，成为宋代士大夫典范。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_songliaojinyuan_0081
+    name: 孟珙
     default_gender: male
     archetype: military
-    flavor: （1119年-1142年）岳飞长子，年少成名的小将。他两次夺得郾城之战头功，勇冠三军。他与父亲同时被害，年仅二十三岁，令人扼腕。其英年早逝成为岳家冤案最令人痛惜的一笔。其忠勇形象在民间传说中尤为鲜明。
+    flavor: （1195年-1246年）南宋晚期最杰出的名将，灭金的功臣。他联蒙灭金，亲率宋军攻入蔡州，俘获金哀宗尸骨。他又转而抗蒙，在京湖战区建立防线，多次击退蒙军。他是儒将典范，能文能武，被誉为"机动防御大师"。
     growth_range:
     - 6
     - 11
@@ -429,11 +351,11 @@ heroes:
       intellect: 18
       defense: 24
       agility: 16
-  - key: hist_songliaojinyuan_0088
-    name: 贾似道
+  - key: hist_songliaojinyuan_0048
+    name: 富弼
     default_gender: male
     archetype: civil
-    flavor: （1213年-1275年）南宋权臣，专权误国的典型。他虚报鄂州之战战功，打压异己，最终加速了南宋的灭亡。他是南宋末年政治腐败的象征。其专权之弊为史家所痛斥，成为亡国的典型反面。其所为成为后世警戒权臣误国的案例。
+    flavor: （1004年-1083年）北宋名相，三朝元老。他与范仲淹共同主持庆历新政，是北宋政坛的中流砥柱。他出使辽国，据理力争，维护了国家尊严。他为官清廉，政声卓著，是北宋名相的典范。其稳健持重，为朝廷提供了长期稳定的支撑。
     growth_range:
     - 6
     - 11
@@ -442,7 +364,85 @@ heroes:
       intellect: 58
       defense: 18
       agility: 12
+  - key: hist_songliaojinyuan_0051
+    name: 王旦
+    default_gender: male
+    archetype: civil
+    flavor: （957年-1017年）北宋名相，与寇准并称。他宽厚谦和，善于用人，是宋真宗时期的贤相。他与寇准政见不同，却能相互尊重，共同维护朝廷稳定。其调和之功，使政局少有震荡，被视为良臣典范。其稳健作风为宋初政治留下良好范式。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_songliaojinyuan_0061
+    name: 种师道
+    default_gender: male
+    archetype: military
+    flavor: （1051年-1126年）种家军领袖，抗金名将。他主张抗金，反对议和。开封保卫战中，他率军力战，最终忧愤而死。他是北宋末年少有的清醒之士。其主战立场与忠烈精神，为后世所传颂。其家国情怀成为将门精神的代表。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 24
+      agility: 16
+  - key: hist_songliaojinyuan_0082
+    name: 刘锜
+    default_gender: male
+    archetype: military
+    flavor: （1098年-1162年）南宋抗金名将，顺昌大捷的英雄。他以两万兵力大败金兀术十万大军，创造了以少胜多的奇迹。他用兵如神，令金人闻风丧胆。其胜利极大振奋南宋军心，被视为中兴战绩之一。其用兵胆略为后世将帅所称道。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 24
+      agility: 16
   blue:
+  - key: hist_songliaojinyuan_0084
+    name: 吴璘
+    default_gender: male
+    archetype: military
+    flavor: （1102年-1167年）吴玠之弟，继承兄志抗金。他镇守川陕二十余年，使金人始终无法突破西线。他发展的"叠阵法"成为对抗骑兵的有效战术。其持久防守为南宋西线提供坚实屏障。其战术创新对后世守边作战具有示范意义。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 24
+      agility: 16
+  - key: hist_songliaojinyuan_0085
+    name: 岳云
+    default_gender: male
+    archetype: military
+    flavor: （1119年-1142年）岳飞长子，年少成名的小将。他两次夺得郾城之战头功，勇冠三军。他与父亲同时被害，年仅二十三岁，令人扼腕。其英年早逝成为岳家冤案最令人痛惜的一笔。其忠勇形象在民间传说中尤为鲜明。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 24
+      agility: 16
+  - key: hist_songliaojinyuan_0088
+    name: 贾似道
+    default_gender: male
+    archetype: civil
+    flavor: （1213年-1275年）南宋权臣，专权误国的典型。他虚报鄂州之战战功，打压异己，最终加速了南宋的灭亡。他是南宋末年政治腐败的象征。其专权之弊为史家所痛斥，成为亡国的典型反面。其所为成为后世警戒权臣误国的案例。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
   - key: hist_songliaojinyuan_0045
     name: 曾巩
     default_gender: male

@@ -79,6 +79,19 @@ heroes:
       defense: 16
       agility: 10
   purple:
+  - key: hist_xianqin_0022
+    name: 姬寤生
+    default_gender: male
+    archetype: military
+    flavor: （前757年—前701年）春秋小霸，敢射天子。他是郑庄公，以弱胜强，击败诸侯联军；假命伐宋，令诸侯侧目。繻葛之战中，郑军射伤周桓王肩膀，王室威严扫地。他处理叔段之乱，"不及黄泉，无相见也"，后掘地见母，成就黄泉见母的佳话。他的称霸，虽不如齐桓晋文之盛，却开启了诸侯争霸的时代。春秋首位真正意义上的霸主，郑庄公实为先驱。
+    growth_range:
+    - 7
+    - 10
+    attribute_weights:
+      force: 38
+      intellect: 20
+      defense: 24
+      agility: 18
   - key: hist_xianqin_0007
     name: 李耳
     default_gender: male
@@ -274,19 +287,6 @@ heroes:
       intellect: 20
       defense: 26
       agility: 16
-  - key: hist_xianqin_0022
-    name: 姬寤生
-    default_gender: male
-    archetype: military
-    flavor: （前757年—前701年）春秋小霸，敢射天子。他是郑庄公，以弱胜强，击败诸侯联军；假命伐宋，令诸侯侧目。繻葛之战中，郑军射伤周桓王肩膀，王室威严扫地。他处理叔段之乱，"不及黄泉，无相见也"，后掘地见母，成就黄泉见母的佳话。他的称霸，虽不如齐桓晋文之盛，却开启了诸侯争霸的时代。春秋首位真正意义上的霸主，郑庄公实为先驱。
-    growth_range:
-    - 7
-    - 10
-    attribute_weights:
-      force: 38
-      intellect: 20
-      defense: 24
-      agility: 18
   - key: hist_xianqin_0023
     name: 曾参
     default_gender: male

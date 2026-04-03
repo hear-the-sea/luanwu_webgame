@@ -325,7 +325,72 @@ heroes:
       intellect: 56
       defense: 24
       agility: 8
+  - key: hist_sljnbc_0116
+    name: 徐盛
+    default_gender: male
+    archetype: military
+    flavor: （？—？）东吴名将，字文向，琅琊莒县人。他早年避乱江东，以勇武著称，从基层军官做起，一步步升至将军。他作战勇猛，多次击退曹魏进攻，尤其擅长防守作战。黄武三年（224年）曹丕亲率大军南征，声势浩大，东吴上下震恐。他献计在长江南岸用芦苇扎成假城楼、假箭垛，绵延数百里，远望如真城一般。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 34
+      intellect: 12
+      defense: 34
+      agility: 20
+  - key: hist_sljnbc_0118
+    name: 蒋钦
+    default_gender: male
+    archetype: military
+    flavor: （？—220年）东吴名将，字公奕，九江寿春人。他早年与周泰一同追随孙策，从平定江东开始便屡立战功，是东吴开国功臣之一。他作战勇猛，擅长水战，多次讨平山越叛乱，是东吴平定内患的主力将领。他为人最大的特点是节俭。他位至将军，俸禄优厚，家中却无余财，母亲妻子都穿着粗布衣裳。孙权巡视时发现此事，深为感动，特意赐其母锦绣衣物。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 10
+      defense: 30
+      agility: 24
+  - key: hist_sljnbc_0135
+    name: 文钦
+    default_gender: male
+    archetype: military
+    flavor: （？—258年）淮南悍将，寿春枭雄。谯郡人，骁勇善战，以勇烈闻名于曹魏军中。他是曹爽亲信，高平陵之变后深感危机。司马师废黜曹芳时，他与毌丘俭在淮南起兵勤王，是为寿春三叛之二。兵败后他逃往东吴，东吴授予他官职兵权。诸葛诞起兵时他随吴军入援寿春，然而二人政见不合、猜忌日深。城中粮尽，诸葛诞欲杀东吴降卒以省粮，他坚决反对，矛盾激化。诸葛诞先下手为强，将他杀死。他的两个儿子文鸯、文虎闻父被杀，当即翻城投降司马昭。一代猛将竟死于自己人之手，令人唏嘘。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 14
+      defense: 28
+      agility: 20
+  - key: hist_sljnbc_0126
+    name: 刘表
+    default_gender: male
+    archetype: civil
+    flavor: （142年—208年）坐拥荆襄，守成之主。出身山阳刘氏，为汉室宗亲。他单骑入宜城，依靠蒯越、蔡瑁等豪族平定荆州，建立起南方最富庶的割据政权。辖地千里，带甲十万，招揽天下流亡士人，设学校、建水师，使荆州成为乱世中的一片乐土。然而他只知守土不知进取，坐观天下纷争而不出兵，错失问鼎天下的机会。曹操南下前夕病逝，二子相争致使基业瓦解。他是乱世中典型的"文人诸侯"，有德而无雄才，守成可嘉而开创不足。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 56
+      defense: 24
+      agility: 8
   purple:
+  - key: hist_sljnbc_0108
+    name: 乐进
+    default_gender: male
+    archetype: military
+    flavor: （？—218年）曹魏名将，字文谦，阳平卫国人，五子良将之一。他身材短小，却胆气过人，作战勇猛。他早年追随曹操，每战必争先，攻城野战无所不当。官渡之战他斩杀袁绍大将淳于琼，战功卓著。此后征乌桓、平青州、败袁谭，所向披靡，被封为右将军。建安二十年（215年）合肥之战，他与张辽、李典仅以七千守军面对孙权十万大军。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 42
+      intellect: 8
+      defense: 26
+      agility: 24
   - key: hist_sljnbc_0106
     name: 夏侯渊
     default_gender: male
@@ -352,19 +417,6 @@ heroes:
       intellect: 10
       defense: 36
       agility: 18
-  - key: hist_sljnbc_0108
-    name: 乐进
-    default_gender: male
-    archetype: military
-    flavor: （？—218年）曹魏名将，字文谦，阳平卫国人，五子良将之一。他身材短小，却胆气过人，作战勇猛。他早年追随曹操，每战必争先，攻城野战无所不当。官渡之战他斩杀袁绍大将淳于琼，战功卓著。此后征乌桓、平青州、败袁谭，所向披靡，被封为右将军。建安二十年（215年）合肥之战，他与张辽、李典仅以七千守军面对孙权十万大军。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 42
-      intellect: 8
-      defense: 26
-      agility: 24
   - key: hist_sljnbc_0109
     name: 周泰
     default_gender: male
@@ -391,19 +443,6 @@ heroes:
       intellect: 14
       defense: 34
       agility: 18
-  - key: hist_sljnbc_0116
-    name: 徐盛
-    default_gender: male
-    archetype: military
-    flavor: （？—？）东吴名将，字文向，琅琊莒县人。他早年避乱江东，以勇武著称，从基层军官做起，一步步升至将军。他作战勇猛，多次击退曹魏进攻，尤其擅长防守作战。黄武三年（224年）曹丕亲率大军南征，声势浩大，东吴上下震恐。他献计在长江南岸用芦苇扎成假城楼、假箭垛，绵延数百里，远望如真城一般。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 36
-      intellect: 10
-      defense: 34
-      agility: 20
   - key: hist_sljnbc_0117
     name: 丁奉
     default_gender: male
@@ -417,19 +456,6 @@ heroes:
       intellect: 10
       defense: 24
       agility: 26
-  - key: hist_sljnbc_0118
-    name: 蒋钦
-    default_gender: male
-    archetype: military
-    flavor: （？—220年）东吴名将，字公奕，九江寿春人。他早年与周泰一同追随孙策，从平定江东开始便屡立战功，是东吴开国功臣之一。他作战勇猛，擅长水战，多次讨平山越叛乱，是东吴平定内患的主力将领。他为人最大的特点是节俭。他位至将军，俸禄优厚，家中却无余财，母亲妻子都穿着粗布衣裳。孙权巡视时发现此事，深为感动，特意赐其母锦绣衣物。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 38
-      intellect: 10
-      defense: 28
-      agility: 24
   - key: hist_sljnbc_0119
     name: 刘琨
     default_gender: male
@@ -521,19 +547,6 @@ heroes:
       intellect: 18
       defense: 24
       agility: 22
-  - key: hist_sljnbc_0126
-    name: 刘表
-    default_gender: male
-    archetype: civil
-    flavor: （142年—208年）坐拥荆襄，守成之主。出身山阳刘氏，为汉室宗亲。他单骑入宜城，依靠蒯越、蔡瑁等豪族平定荆州，建立起南方最富庶的割据政权。辖地千里，带甲十万，招揽天下流亡士人，设学校、建水师，使荆州成为乱世中的一片乐土。然而他只知守土不知进取，坐观天下纷争而不出兵，错失问鼎天下的机会。曹操南下前夕病逝，二子相争致使基业瓦解。他是乱世中典型的"文人诸侯"，有德而无雄才，守成可嘉而开创不足。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 12
-      intellect: 56
-      defense: 24
-      agility: 8
   - key: hist_sljnbc_0127
     name: 陈寿
     default_gender: male
@@ -638,16 +651,3 @@ heroes:
       intellect: 18
       defense: 30
       agility: 18
-  - key: hist_sljnbc_0135
-    name: 文钦
-    default_gender: male
-    archetype: military
-    flavor: （？—258年）淮南悍将，寿春枭雄。谯郡人，骁勇善战，以勇烈闻名于曹魏军中。他是曹爽亲信，高平陵之变后深感危机。司马师废黜曹芳时，他与毌丘俭在淮南起兵勤王，是为寿春三叛之二。兵败后他逃往东吴，东吴授予他官职兵权。诸葛诞起兵时他随吴军入援寿春，然而二人政见不合、猜忌日深。城中粮尽，诸葛诞欲杀东吴降卒以省粮，他坚决反对，矛盾激化。诸葛诞先下手为强，将他杀死。他的两个儿子文鸯、文虎闻父被杀，当即翻城投降司马昭。一代猛将竟死于自己人之手，令人唏嘘。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 38
-      intellect: 14
-      defense: 26
-      agility: 22

@@ -1,0 +1,28 @@
+<div class="p-3 rounded-md border border-border-light bg-bg-hover">
+    <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div class="space-y-1">
+            <div class="flex items-center gap-2 flex-wrap">
+                <p class="font-semibold">{{ row.title }}</p>
+                {% if row.badge_text %}
+                <span class="tw-pill {{ row.badge_class|default:'rarity-blue' }}">{{ row.badge_text }}</span>
+                {% endif %}
+            </div>
+            <p class="text-text-muted">{{ row.summary }}</p>
+            {% if row.countdown_at %}
+            <p class="text-text-muted">
+                {{ row.countdown_label }}
+                <span class="countdown" data-countdown="{{ row.countdown_at|date:'c' }}" data-format="zh-no-sec" data-refresh="1">
+                    {{ row.countdown_at|date:"m-d H:i:s" }}
+                </span>
+            </p>
+            {% elif row.meta_datetime %}
+            <p class="text-text-muted">{{ row.meta_datetime|date:"m-d H:i" }} {{ row.meta_label }}</p>
+            {% elif row.meta_text %}
+            <p class="text-text-muted">{{ row.meta_text }}</p>
+            {% endif %}
+        </div>
+        {% if row.action_url %}
+        <a href="{{ row.action_url }}" class="tw-btn-secondary tw-btn-sm">{{ row.action_label }}</a>
+        {% endif %}
+    </div>
+</div>

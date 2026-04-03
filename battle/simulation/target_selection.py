@@ -15,6 +15,10 @@ if TYPE_CHECKING:
     from ..combatants_pkg.core import Combatant
 
 
+def _active_attack_skills(skills: list[AttackSkill]) -> list[AttackSkill]:
+    return [skill for skill in skills if str(skill.get("kind", "active")) == "active"]
+
+
 def is_ranged_attack(actor: "Combatant", round_priority: int) -> bool:
     """判断是否为远程攻击（弓箭手在先攻/先锋回合视为远程攻击）"""
     if actor.troop_class != "gong":
@@ -91,7 +95,7 @@ def select_attack_targets(
 
     # 关键：保持 RNG 消耗顺序——先选主目标，再触发技能（历史实现依赖此顺序保证可复现）
     primary_target = select_target_with_priority(actor, opponents, rng)
-    skills = trigger_attack_skills_fn(actor, rng)
+    skills = _active_attack_skills(trigger_attack_skills_fn(actor, rng))
 
     multi_targets = max(1, max(int(skill.get("targets", 1)) for skill in skills) if skills else 1)
     engaged_targets = [primary_target]

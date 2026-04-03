@@ -143,6 +143,7 @@ class Skill(models.Model):
     status_probability = models.FloatField(default=0.0)
     status_duration = models.PositiveIntegerField(default=1)
     damage_formula = models.JSONField(default=dict, blank=True)
+    passive_config = models.JSONField(default=dict, blank=True)
     required_level = models.PositiveIntegerField(default=0)
     required_force = models.PositiveIntegerField(default=0)
     required_intellect = models.PositiveIntegerField(default=0)

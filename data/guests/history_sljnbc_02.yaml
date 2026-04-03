@@ -325,7 +325,85 @@ heroes:
       intellect: 58
       defense: 20
       agility: 10
+  - key: hist_sljnbc_0088
+    name: 罗宪
+    default_gender: male
+    archetype: military
+    flavor: （218年—270年）蜀汉末年及西晋初年将领，字令则，襄阳人。他少年时便以才学闻名，师从谯周学习经学。入仕后他历任太子舍人、宣信校尉等职，曾出使东吴，辞令敏捷，应对得体，吴人叹为观止。蜀汉末年他任巴东太守，镇守永安（今重庆奉节）。景耀六年（263年）邓艾灭蜀，成都失守，刘禅投降。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 18
+      defense: 28
+      agility: 16
+  - key: hist_sljnbc_0089
+    name: 谢艾
+    default_gender: male
+    archetype: military
+    flavor: （？—353年）儒将奇才，三战三捷。本是一介书生，却有韩信之才。前凉危急之时，受命领兵，大破后赵名将麻秋、王擢。以七千人破数万敌，不仅有谋，更有胆。他常乘白色轺车指挥作战，风度翩翩，是十六国时期少有的儒将典范。善用奇兵屡以少胜多，稳定凉州，使前凉得以喘息。儒雅从容而临阵果决，名声远播河西。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 20
+      defense: 24
+      agility: 20
   purple:
+  - key: hist_sljnbc_0081
+    name: 黄权
+    default_gender: male
+    archetype: civil
+    flavor: （？—240年）忠义两全，无奈降魏。刘备伐吴时，被任命防备魏兵，因夷陵战败，归路被断，不得已率众降魏。面对曹丕的赏识，他不卑不亢，不背旧主。刘备得知后叹曰：“孤负黄权，权不负孤。”他在魏国深受敬重，历任高官，善始善终。入魏后仍不忘旧恩，常为蜀臣辩护，守节自持。其子留蜀亦得善待，更显其名望与人品。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 14
+      intellect: 54
+      defense: 22
+      agility: 10
+  - key: hist_sljnbc_0072
+    name: 刘晔
+    default_gender: male
+    archetype: civil
+    flavor: （？—234年）曹魏谋士，字子扬，淮南成德人，汉室宗亲。他年少时便有胆识，曾亲手斩杀欺凌其家的郑宝。曹操征伐庐江时他前来投奔，此后随军征战，屡献良谋。刘备入蜀立足未稳时他劝曹操乘势攻蜀，未被采纳；刘备伐吴大败时他又劝曹丕趁机伐吴，仍未被采纳。两次错失良机后果然如其所料，蜀吴均得以喘息。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 14
+      intellect: 56
+      defense: 20
+      agility: 10
+  - key: hist_sljnbc_0073
+    name: 郝昭
+    default_gender: male
+    archetype: military
+    flavor: （？—229年）陈仓铁壁，千古名将。为人雄壮，早在少年时入伍，屡立战功。诸葛亮二出祁山，以数万大军围攻陈仓，郝昭仅以千余人据守，筑双墙、防云梯、射火箭，坚守二十余日，令孔明无功而返。善于守城，冷静坚毅，是曹魏西线的一座不可逾越的丰碑。守陈仓一役成攻防典范，使关中屏障得以稳固。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 34
+      intellect: 14
+      defense: 40
+      agility: 12
+  - key: hist_sljnbc_0080
+    name: 田丰
+    default_gender: male
+    archetype: civil
+    flavor: （？—200年）刚而犯上，身死狱中。袁绍谋士，为人刚直，多谋善断。曾劝袁绍趁曹操攻刘备时袭许都，未被采纳。官渡之战前力谏不可决战，触怒袁绍下狱。袁绍战败后，因羞见田丰反而将其赐死。其才智虽高，却因性格刚烈而未能尽展。直谏多中肯，却终以容不得谏言而殒。史家常以其为戒：主帅不能纳谏，败亡在所难免。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 20
+      agility: 10
   - key: hist_sljnbc_0065
     name: 韦睿
     default_gender: male
@@ -378,32 +456,6 @@ heroes:
       intellect: 22
       defense: 26
       agility: 18
-  - key: hist_sljnbc_0072
-    name: 刘晔
-    default_gender: male
-    archetype: civil
-    flavor: （？—234年）曹魏谋士，字子扬，淮南成德人，汉室宗亲。他年少时便有胆识，曾亲手斩杀欺凌其家的郑宝。曹操征伐庐江时他前来投奔，此后随军征战，屡献良谋。刘备入蜀立足未稳时他劝曹操乘势攻蜀，未被采纳；刘备伐吴大败时他又劝曹丕趁机伐吴，仍未被采纳。两次错失良机后果然如其所料，蜀吴均得以喘息。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 14
-      intellect: 56
-      defense: 20
-      agility: 10
-  - key: hist_sljnbc_0073
-    name: 郝昭
-    default_gender: male
-    archetype: military
-    flavor: （？—229年）陈仓铁壁，千古名将。为人雄壮，早在少年时入伍，屡立战功。诸葛亮二出祁山，以数万大军围攻陈仓，郝昭仅以千余人据守，筑双墙、防云梯、射火箭，坚守二十余日，令孔明无功而返。善于守城，冷静坚毅，是曹魏西线的一座不可逾越的丰碑。守陈仓一役成攻防典范，使关中屏障得以稳固。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 34
-      intellect: 14
-      defense: 40
-      agility: 12
   - key: hist_sljnbc_0078
     name: 冯太后
     default_gender: female
@@ -417,32 +469,6 @@ heroes:
       intellect: 56
       defense: 24
       agility: 8
-  - key: hist_sljnbc_0080
-    name: 田丰
-    default_gender: male
-    archetype: civil
-    flavor: （？—200年）刚而犯上，身死狱中。袁绍谋士，为人刚直，多谋善断。曾劝袁绍趁曹操攻刘备时袭许都，未被采纳。官渡之战前力谏不可决战，触怒袁绍下狱。袁绍战败后，因羞见田丰反而将其赐死。其才智虽高，却因性格刚烈而未能尽展。直谏多中肯，却终以容不得谏言而殒。史家常以其为戒：主帅不能纳谏，败亡在所难免。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 20
-      agility: 10
-  - key: hist_sljnbc_0081
-    name: 黄权
-    default_gender: male
-    archetype: civil
-    flavor: （？—240年）忠义两全，无奈降魏。刘备伐吴时，被任命防备魏兵，因夷陵战败，归路被断，不得已率众降魏。面对曹丕的赏识，他不卑不亢，不背旧主。刘备得知后叹曰：“孤负黄权，权不负孤。”他在魏国深受敬重，历任高官，善始善终。入魏后仍不忘旧恩，常为蜀臣辩护，守节自持。其子留蜀亦得善待，更显其名望与人品。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 14
-      intellect: 54
-      defense: 22
-      agility: 10
   - key: hist_sljnbc_0082
     name: 鸠摩罗什
     default_gender: male
@@ -521,32 +547,6 @@ heroes:
       intellect: 64
       defense: 16
       agility: 12
-  - key: hist_sljnbc_0088
-    name: 罗宪
-    default_gender: male
-    archetype: military
-    flavor: （218年—270年）蜀汉末年及西晋初年将领，字令则，襄阳人。他少年时便以才学闻名，师从谯周学习经学。入仕后他历任太子舍人、宣信校尉等职，曾出使东吴，辞令敏捷，应对得体，吴人叹为观止。蜀汉末年他任巴东太守，镇守永安（今重庆奉节）。景耀六年（263年）邓艾灭蜀，成都失守，刘禅投降。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 36
-      intellect: 18
-      defense: 26
-      agility: 20
-  - key: hist_sljnbc_0089
-    name: 谢艾
-    default_gender: male
-    archetype: military
-    flavor: （？—353年）儒将奇才，三战三捷。本是一介书生，却有韩信之才。前凉危急之时，受命领兵，大破后赵名将麻秋、王擢。以七千人破数万敌，不仅有谋，更有胆。他常乘白色轺车指挥作战，风度翩翩，是十六国时期少有的儒将典范。善用奇兵屡以少胜多，稳定凉州，使前凉得以喘息。儒雅从容而临阵果决，名声远播河西。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 36
-      intellect: 18
-      defense: 24
-      agility: 22
   - key: hist_sljnbc_0090
     name: 刘义隆
     default_gender: male

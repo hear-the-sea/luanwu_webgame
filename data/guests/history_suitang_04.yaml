@@ -26,84 +26,6 @@ heroes:
       intellect: 28
       defense: 28
       agility: 12
-  - key: hist_suitang_0135_lijifu
-    name: 李吉甫
-    default_gender: male
-    archetype: civil
-    flavor: （758年-814年）唐代宰相兼学者，仕途主要在宪宗朝前后展开。其政治主张重在整饬吏治、加强中央对地方的掌控，同时关注地理、州县沿革等"硬信息"，相传编撰的地理著作与资料整理对后世研究郡县制度颇有助益。李吉甫的形象并非单纯的书斋学者：他把学术兴趣与行政需求结合起来，在藩镇割据、财政紧迫的现实里寻找可操作的治理工具。其家族与子李德裕后来卷入党争，也使他常被放入晚唐政治谱系中回望。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 14
-      intellect: 50
-      defense: 24
-      agility: 12
-  - key: hist_suitang_0136_peixiu
-    name: 裴休
-    default_gender: male
-    archetype: civil
-    flavor: （791年-864年）唐代宰相，晚唐士大夫中兼具政治经历与宗教兴趣的一员。其在朝中历任要职，处在宦官势力强、党争与边患交织的时代，很多决策难以凭理想推进。与此同时，他与禅门交往密切，常被提及与黄檗希运等高僧的关系，并留下与佛教文献相关的序跋传说。裴休的独特之处在于：他既是体制内的掌权者，又努力在纷乱中寻求思想安顿；这种"入世与出世并行"的姿态，正是晚唐知识人精神史的一种缩影。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 12
-      intellect: 50
-      defense: 24
-      agility: 14
-  - key: hist_suitang_0137_lizongmin
-    name: 李宗闵
-    default_gender: male
-    archetype: civil
-    flavor: （? - 847年）唐代宰相，亦是牛李党争中的关键人物。其仕途多次大起大落，常与科举取士、吏部用人以及朝廷派系更迭相牵连。李宗闵并非纯粹的"党争符号"，他在政务上也有对地方治理与官员选任的实践；但在晚唐语境里，任何人事安排都容易被解释为结党营私，从而引发更猛烈的反扑。其结局显示，党争不仅消耗个人，也消耗制度信誉：当政治判断被派系立场先行，人们对政策本身的讨论空间便越来越小。李宗闵的生涯因此像一面镜子，映照晚唐官场如何被内耗拖向失控。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 14
-      intellect: 48
-      defense: 24
-      agility: 14
-  - key: hist_suitang_0138_linghuchu
-    name: 令狐楚
-    default_gender: male
-    archetype: civil
-    flavor: （766年-837年）唐代大臣与文学家，文章著名，亦以政务资历见称。其入仕后历任地方与中枢职务，在宦官势力强盛、藩镇割据未解的局面下处理政务，既要讲原则，也要顾现实。令狐楚的文学成就使他在文坛被记住，但更值得注意的是他在政治与文化之间的双重身份：一方面参与制度运作与人事进退，另一方面以文笔塑造士大夫的自我形象。其家族在晚唐政坛延续影响，子令狐绹亦至宰辅，使令狐楚成为观察晚唐"门第、文名与官位"如何互相加持的一条线索。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 14
-      intellect: 50
-      defense: 24
-      agility: 12
-  - key: hist_suitang_0139_linghutao
-    name: 令狐绹
-    default_gender: male
-    archetype: civil
-    flavor: （798年-872年）唐代宰相，处在晚唐后期政治结构趋于紧绷的年代。其在中枢的作为常与党争、人事、宦官势力的牵制联系在一起：宰相名义上总揽政务，实则处处受限，很多措施只能在局部修补。史书对令狐绹评价不一，有的称其能守成、有的指其因循，这种差异与晚唐政治的"无解题"有关——财政与军事问题不断恶化，任何选择都伴随成本。令狐绹这一生提醒我们：晚唐的失败不一定来自某个坏人，而更像一套机制在长期透支后的集体疲态，宰相往往只是承担后果的那个人。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 14
-      intellect: 48
-      defense: 26
-      agility: 12
-  - key: hist_suitang_0140_baiminzhong
-    name: 白敏中
-    default_gender: male
-    archetype: civil
-    flavor: （? - 870年）唐代宰相，宣宗末年至懿宗初年的政局中曾居高位。其在史传中的存在感往往来自人事与政争记录：官场关系、政策取舍、与宦官及外廷的互动，构成他形象的主要线索。白敏中并非以大开大合的改革著称，而更像晚唐"维持运转型"中枢官员：在财政、边防、藩镇问题都不轻的情况下，宰相需要不断在短期稳定与长期积弊之间取舍。读白敏中，能感到晚唐政治的沉重——不是没有人做事，而是很多事做了也难见起色；这类人物的平庸感，恰是时代困局的注脚。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 14
-      intellect: 46
-      defense: 26
-      agility: 14
   - key: hist_suitang_0141_wangxianzhi
     name: 王仙芝
     default_gender: male
@@ -117,6 +39,85 @@ heroes:
       intellect: 18
       defense: 28
       agility: 18
+  blue:
+  - key: hist_suitang_0135_lijifu
+    name: 李吉甫
+    default_gender: male
+    archetype: civil
+    flavor: （758年-814年）唐代宰相兼学者，仕途主要在宪宗朝前后展开。其政治主张重在整饬吏治、加强中央对地方的掌控，同时关注地理、州县沿革等"硬信息"，相传编撰的地理著作与资料整理对后世研究郡县制度颇有助益。李吉甫的形象并非单纯的书斋学者：他把学术兴趣与行政需求结合起来，在藩镇割据、财政紧迫的现实里寻找可操作的治理工具。其家族与子李德裕后来卷入党争，也使他常被放入晚唐政治谱系中回望。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 50
+      defense: 24
+      agility: 12
+  - key: hist_suitang_0136_peixiu
+    name: 裴休
+    default_gender: male
+    archetype: civil
+    flavor: （791年-864年）唐代宰相，晚唐士大夫中兼具政治经历与宗教兴趣的一员。其在朝中历任要职，处在宦官势力强、党争与边患交织的时代，很多决策难以凭理想推进。与此同时，他与禅门交往密切，常被提及与黄檗希运等高僧的关系，并留下与佛教文献相关的序跋传说。裴休的独特之处在于：他既是体制内的掌权者，又努力在纷乱中寻求思想安顿；这种"入世与出世并行"的姿态，正是晚唐知识人精神史的一种缩影。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 24
+      agility: 14
+  - key: hist_suitang_0137_lizongmin
+    name: 李宗闵
+    default_gender: male
+    archetype: civil
+    flavor: （? - 847年）唐代宰相，亦是牛李党争中的关键人物。其仕途多次大起大落，常与科举取士、吏部用人以及朝廷派系更迭相牵连。李宗闵并非纯粹的"党争符号"，他在政务上也有对地方治理与官员选任的实践；但在晚唐语境里，任何人事安排都容易被解释为结党营私，从而引发更猛烈的反扑。其结局显示，党争不仅消耗个人，也消耗制度信誉：当政治判断被派系立场先行，人们对政策本身的讨论空间便越来越小。李宗闵的生涯因此像一面镜子，映照晚唐官场如何被内耗拖向失控。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 48
+      defense: 24
+      agility: 14
+  - key: hist_suitang_0138_linghuchu
+    name: 令狐楚
+    default_gender: male
+    archetype: civil
+    flavor: （766年-837年）唐代大臣与文学家，文章著名，亦以政务资历见称。其入仕后历任地方与中枢职务，在宦官势力强盛、藩镇割据未解的局面下处理政务，既要讲原则，也要顾现实。令狐楚的文学成就使他在文坛被记住，但更值得注意的是他在政治与文化之间的双重身份：一方面参与制度运作与人事进退，另一方面以文笔塑造士大夫的自我形象。其家族在晚唐政坛延续影响，子令狐绹亦至宰辅，使令狐楚成为观察晚唐"门第、文名与官位"如何互相加持的一条线索。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 48
+      defense: 24
+      agility: 14
+  - key: hist_suitang_0139_linghutao
+    name: 令狐绹
+    default_gender: male
+    archetype: civil
+    flavor: （798年-872年）唐代宰相，处在晚唐后期政治结构趋于紧绷的年代。其在中枢的作为常与党争、人事、宦官势力的牵制联系在一起：宰相名义上总揽政务，实则处处受限，很多措施只能在局部修补。史书对令狐绹评价不一，有的称其能守成、有的指其因循，这种差异与晚唐政治的"无解题"有关——财政与军事问题不断恶化，任何选择都伴随成本。令狐绹这一生提醒我们：晚唐的失败不一定来自某个坏人，而更像一套机制在长期透支后的集体疲态，宰相往往只是承担后果的那个人。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 48
+      defense: 24
+      agility: 14
+  - key: hist_suitang_0140_baiminzhong
+    name: 白敏中
+    default_gender: male
+    archetype: civil
+    flavor: （? - 870年）唐代宰相，宣宗末年至懿宗初年的政局中曾居高位。其在史传中的存在感往往来自人事与政争记录：官场关系、政策取舍、与宦官及外廷的互动，构成他形象的主要线索。白敏中并非以大开大合的改革著称，而更像晚唐"维持运转型"中枢官员：在财政、边防、藩镇问题都不轻的情况下，宰相需要不断在短期稳定与长期积弊之间取舍。读白敏中，能感到晚唐政治的沉重——不是没有人做事，而是很多事做了也难见起色；这类人物的平庸感，恰是时代困局的注脚。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 46
+      defense: 24
+      agility: 16
   - key: hist_suitang_0150_lichun
     name: 李春
     default_gender: male
@@ -124,13 +125,12 @@ heroes:
     flavor: （生卒年不详）隋代匠师，相传主持建造赵州桥（安济桥）。这座敞肩石拱桥以结构轻巧、跨度宏大著称，历经千年风雨仍能通行，是中国古代桥梁技术的标志性成果。关于李春的生平细节史料不多，但其姓名与桥铭相连，使"工匠"也能在历史中留下可见的署名。赵州桥的意义不止是"早"，更在于它展示了成熟的力学经验与施工组织能力，说明隋代社会已具备支撑大型公共工程的技术与协作体系。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 12
-      intellect: 48
-      defense: 26
+      intellect: 50
+      defense: 24
       agility: 14
-  blue:
   - key: hist_suitang_0142_choushiliang
     name: 仇士良
     default_gender: male

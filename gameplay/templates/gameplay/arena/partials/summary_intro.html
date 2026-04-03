@@ -1,0 +1,21 @@
+<header>
+    <div class="tw-building-headline">
+        <h3>{{ summary.name }}</h3>
+        {% if summary.subtitle %}
+        <span class="tw-level-badge">{{ summary.subtitle }}</span>
+        {% endif %}
+    </div>
+    {% if summary.description %}
+    <p class="{% if compact %}text-text-muted mb-3{% else %}tw-building-desc{% endif %}">{{ summary.description }}</p>
+    {% endif %}
+</header>
+{% if summary.summary_metrics %}
+<dl class="tw-arena-rule-list{% if compact %} mb-4{% endif %}">
+    {% for metric in summary.summary_metrics %}
+    <div>
+        <dt>{{ metric.label }}</dt>
+        <dd>{{ metric.value }}</dd>
+    </div>
+    {% endfor %}
+</dl>
+{% endif %}

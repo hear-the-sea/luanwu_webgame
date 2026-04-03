@@ -1,21 +1,29 @@
 from __future__ import annotations
 
-from datetime import timedelta
-
 from django.db.models import Count, Q
-from django.utils import timezone
+from django.urls import reverse
 
-import gameplay.services.arena.coop_core as arena_coop_core
-from gameplay.models import ArenaCoopEntry, ArenaCoopEvent, ArenaEntry, ArenaTournament, Manor
+from gameplay.models import ArenaEntry, ArenaTournament, Manor
 
 from .common import build_common_context, running_row_sort_key
-from .registration import get_arena_coop_summary_context
+
+
+def build_running_tournament_card_row(row: dict) -> dict:
+    tournament = row["tournament"]
+    return {
+        "title": f"天下布武 #{tournament.id}",
+        "summary": f"第 {tournament.current_round} 轮 | 存活 {tournament.active_entries}/{tournament.total_entries}",
+        "badge_text": "我已参赛" if row["is_mine"] else "",
+        "badge_class": "rarity-blue",
+        "countdown_at": tournament.next_round_at,
+        "countdown_label": "下一轮：",
+        "action_url": reverse("gameplay:arena_event_detail", args=[tournament.id]),
+        "action_label": "查看赛事详情",
+    }
 
 
 def get_arena_events_context(manor: Manor) -> dict:
     context = build_common_context(manor)
-    context.update(get_arena_coop_summary_context(manor))
-    current_time = timezone.now()
     running_tournaments = list(
         ArenaTournament.objects.filter(status=ArenaTournament.Status.RUNNING)
         .annotate(
@@ -37,23 +45,5 @@ def get_arena_events_context(manor: Manor) -> dict:
     ]
     running_rows.sort(key=running_row_sort_key)
     context["running_tournaments"] = running_rows
-    context["running_coop_events"] = list(
-        ArenaCoopEvent.objects.filter(status__in=[ArenaCoopEvent.Status.PREPARING, ArenaCoopEvent.Status.RUNNING])
-        .annotate(
-            total_entries=Count("entries"),
-            active_entries=Count("entries", filter=Q(entries__status=ArenaCoopEntry.Status.REGISTERED)),
-        )
-        .order_by("prepare_ends_at", "started_at", "id")[:20]
-    )
-    coop_visible_cutoff = current_time - timedelta(seconds=arena_coop_core.ARENA_COOP_COMPLETED_RETENTION_SECONDS)
-    context["recent_coop_events"] = list(
-        ArenaCoopEvent.objects.filter(
-            status__in=[ArenaCoopEvent.Status.COMPLETED, ArenaCoopEvent.Status.CANCELLED],
-            ended_at__isnull=False,
-            ended_at__gte=coop_visible_cutoff,
-            entries__manor=manor,
-        )
-        .distinct()
-        .order_by("-ended_at", "-id")[:20]
-    )
+    context["running_tournament_card_rows"] = [build_running_tournament_card_row(row) for row in running_rows]
     return context

@@ -237,6 +237,7 @@ heroes:
         - gl_top_qiankun_shift
         - gl_top_mingjiao_command
         - gl_top_holy_flame_rage
+        - gl_top_five_flags_barrier
         - gl_top_qiankun_holy_flame
       custom_stats:
         force: 268
@@ -250,6 +251,7 @@ heroes:
       archetype: military
       recruitable: false
       skills:
+        - gl_top_guard_morale
         - gl_top_mingjiao_command
         - gl_top_left_envoy_edge
       custom_stats:
@@ -264,6 +266,7 @@ heroes:
       archetype: military
       recruitable: false
       skills:
+        - gl_top_guard_morale
         - gl_top_cold_blood_swoop
       custom_stats:
         force: 214
@@ -277,6 +280,7 @@ heroes:
       archetype: military
       recruitable: false
       skills:
+        - gl_top_guard_morale
         - gl_top_five_flags_barrier
         - gl_top_banner_fire_volley
       custom_stats:
@@ -291,6 +295,7 @@ heroes:
       archetype: military
       recruitable: false
       skills:
+        - gl_top_guard_morale
         - gl_top_five_flags_barrier
         - gl_top_banner_fire_volley
       custom_stats:

@@ -8,6 +8,7 @@ from gameplay.models import ArenaCoopContribution, ArenaCoopEvent, ItemTemplate,
 from gameplay.services.arena.coop_core import run_due_arena_coop_events
 from gameplay.services.arena.coop_rewards import build_reward_breakdown
 from gameplay.services.manor.core import ensure_manor
+from guests.models import Guest, GuestStatus
 from tests.arena_services.support import User, create_guest, create_guest_template, fund_manor
 
 
@@ -53,6 +54,7 @@ def test_run_due_arena_coop_events_creates_contributions_and_rewards(monkeypatch
     )
 
     entry_ids = []
+    registered_guest_ids = []
     for idx in range(5):
         user = User.objects.create_user(
             username=f"arena_coop_resolve_{idx}",
@@ -62,6 +64,10 @@ def test_run_due_arena_coop_events_creates_contributions_and_rewards(monkeypatch
         manor = ensure_manor(user)
         fund_manor(manor)
         guests = [create_guest(manor, template, f"{idx}_{slot}") for slot in ["A", "B", "C"]]
+        registered_guest_ids.extend(guest.id for guest in guests)
+        for guest in guests:
+            guest.status = GuestStatus.ARENA
+        Guest.objects.bulk_update(guests, ["status"])
         entry = event.entries.create(manor=manor)
         entry_ids.append(entry.id)
         for slot_index, guest in enumerate(guests):
@@ -155,6 +161,9 @@ def test_run_due_arena_coop_events_creates_contributions_and_rewards(monkeypatch
     assert contributions[0].total_coins > contributions[1].total_coins
     assert contributions[0].rare_drop_item_key == "equip_tulongdao"
     assert contributions[0].rare_drop_granted is True
+    assert list(Guest.objects.filter(id__in=registered_guest_ids).values_list("status", flat=True)) == [
+        GuestStatus.IDLE
+    ] * len(registered_guest_ids)
 
 
 @pytest.mark.django_db

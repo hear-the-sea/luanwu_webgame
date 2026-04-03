@@ -313,19 +313,6 @@ heroes:
       intellect: 12
       defense: 28
       agility: 16
-  - key: hist_qinhan_0035
-    name: 张释之
-    default_gender: male
-    archetype: civil
-    flavor: （生年不详—前147年）西汉名臣，以执法平允与守程序著称，事迹多见于文景时期断狱故事。张释之的"可贵"不在于他总能判得让所有人满意，而在于他敢把皇帝也纳入法度边界：君主有怒气、有好恶，但司法不能随之摇摆，否则"法"就会变成权力情绪的延伸。史书借张释之反复呈现一种理想的官僚姿态——在强权面前保持专业与克制，用程序与条文把暴怒、猜疑与报复挡在门外。
-    growth_range:
-    - 7
-    - 10
-    attribute_weights:
-      force: 10
-      intellect: 58
-      defense: 20
-      agility: 12
   - key: hist_qinhan_0036
     name: 张骞
     default_gender: male
@@ -353,6 +340,19 @@ heroes:
       defense: 22
       agility: 12
   blue:
+  - key: hist_qinhan_0035
+    name: 张释之
+    default_gender: male
+    archetype: civil
+    flavor: （生年不详—前147年）西汉名臣，以执法平允与守程序著称，事迹多见于文景时期断狱故事。张释之的"可贵"不在于他总能判得让所有人满意，而在于他敢把皇帝也纳入法度边界：君主有怒气、有好恶，但司法不能随之摇摆，否则"法"就会变成权力情绪的延伸。史书借张释之反复呈现一种理想的官僚姿态——在强权面前保持专业与克制，用程序与条文把暴怒、猜疑与报复挡在门外。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 56
+      defense: 22
+      agility: 12
   - key: hist_qinhan_0024
     name: 刘向
     default_gender: male

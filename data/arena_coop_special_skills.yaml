@@ -10,6 +10,17 @@ skills:
     damage_formula:
       base: 0
     targets: 1
+    passive_config:
+      triggers:
+        - timing: action_before
+          conditions:
+            hp_ratio_lte: 0.7
+          effects:
+            - type: heal_ratio
+              value: 0.05
+              max_hp_based: true
+              log: true
+              log_name: 九阳护体
 
   - key: gl_top_qiankun_shift
     name: 乾坤大挪移
@@ -20,6 +31,21 @@ skills:
     damage_formula:
       base: 0
     targets: 1
+    passive_config:
+      triggers:
+        - timing: hit_taken
+          conditions:
+            hp_ratio_lte: 0.4
+          effects:
+            - type: emit_log
+              log_name: 乾坤大挪移
+              message: 卸力反震
+            - type: set_reflect
+              ratio: 0.1
+              cap: 8000
+            - type: set_softcap
+              threshold: 16000
+              overflow_ratio: 0.35
 
   - key: gl_top_mingjiao_command
     name: 明教号令
@@ -30,6 +56,188 @@ skills:
     damage_formula:
       base: 0
     targets: 1
+    passive_config:
+      triggers:
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_gte: 0.700001
+            ally_alive_template_count_gte: 5
+            ally_alive_template_count_lte: 5
+          effects:
+            - type: emit_log
+              log_name: 明教号令
+              message: 号令群雄
+            - type: modify_outgoing_damage
+              value: 1.32
+            - type: set_softcap
+              threshold: 12000
+              overflow_ratio: 0.35
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_gte: 0.700001
+            ally_alive_template_count_gte: 4
+            ally_alive_template_count_lte: 4
+          effects:
+            - type: emit_log
+              log_name: 明教号令
+              message: 号令群雄
+            - type: modify_outgoing_damage
+              value: 1.24
+            - type: set_softcap
+              threshold: 12000
+              overflow_ratio: 0.35
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_gte: 0.700001
+            ally_alive_template_count_gte: 3
+            ally_alive_template_count_lte: 3
+          effects:
+            - type: emit_log
+              log_name: 明教号令
+              message: 号令群雄
+            - type: modify_outgoing_damage
+              value: 1.16
+            - type: set_softcap
+              threshold: 12000
+              overflow_ratio: 0.35
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_gte: 0.700001
+            ally_alive_template_count_gte: 2
+            ally_alive_template_count_lte: 2
+          effects:
+            - type: emit_log
+              log_name: 明教号令
+              message: 号令群雄
+            - type: modify_outgoing_damage
+              value: 1.08
+            - type: set_softcap
+              threshold: 12000
+              overflow_ratio: 0.35
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_gte: 0.700001
+            ally_alive_template_count_gte: 1
+            ally_alive_template_count_lte: 1
+          effects:
+            - type: emit_log
+              log_name: 明教号令
+              message: 号令群雄
+            - type: modify_outgoing_damage
+              value: 1.0
+            - type: set_softcap
+              threshold: 12000
+              overflow_ratio: 0.35
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_lte: 0.7
+            hp_ratio_gte: 0.400001
+            ally_alive_template_count_gte: 5
+            ally_alive_template_count_lte: 5
+          effects:
+            - type: emit_log
+              log_name: 明教号令
+              message: 号令群雄
+            - type: modify_outgoing_damage
+              value: 1.584
+            - type: set_softcap
+              threshold: 14000
+              overflow_ratio: 0.35
+            - type: set_reflect
+              ratio: 0.06
+              cap: 5000
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_lte: 0.7
+            hp_ratio_gte: 0.400001
+            ally_alive_template_count_gte: 4
+            ally_alive_template_count_lte: 4
+          effects:
+            - type: emit_log
+              log_name: 明教号令
+              message: 号令群雄
+            - type: modify_outgoing_damage
+              value: 1.488
+            - type: set_softcap
+              threshold: 14000
+              overflow_ratio: 0.35
+            - type: set_reflect
+              ratio: 0.06
+              cap: 5000
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_lte: 0.7
+            hp_ratio_gte: 0.400001
+            ally_alive_template_count_gte: 3
+            ally_alive_template_count_lte: 3
+          effects:
+            - type: emit_log
+              log_name: 明教号令
+              message: 号令群雄
+            - type: modify_outgoing_damage
+              value: 1.392
+            - type: set_softcap
+              threshold: 14000
+              overflow_ratio: 0.35
+            - type: set_reflect
+              ratio: 0.06
+              cap: 5000
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_lte: 0.7
+            hp_ratio_gte: 0.400001
+            ally_alive_template_count_gte: 2
+            ally_alive_template_count_lte: 2
+          effects:
+            - type: emit_log
+              log_name: 明教号令
+              message: 号令群雄
+            - type: modify_outgoing_damage
+              value: 1.296
+            - type: set_softcap
+              threshold: 14000
+              overflow_ratio: 0.35
+            - type: set_reflect
+              ratio: 0.06
+              cap: 5000
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_lte: 0.7
+            hp_ratio_gte: 0.400001
+            ally_alive_template_count_gte: 1
+            ally_alive_template_count_lte: 1
+          effects:
+            - type: emit_log
+              log_name: 明教号令
+              message: 号令群雄
+            - type: modify_outgoing_damage
+              value: 1.2
+            - type: set_softcap
+              threshold: 14000
+              overflow_ratio: 0.35
+            - type: set_reflect
+              ratio: 0.06
+              cap: 5000
 
   - key: gl_top_holy_flame_rage
     name: 圣火狂势
@@ -40,6 +248,103 @@ skills:
     damage_formula:
       base: 0
     targets: 1
+    passive_config:
+      triggers:
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_lte: 0.4
+            ally_alive_template_count_gte: 5
+            ally_alive_template_count_lte: 5
+          effects:
+            - type: emit_log
+              log_name: 圣火狂势
+              message: 圣火暴涨
+            - type: modify_outgoing_damage
+              value: 1.848
+            - type: set_softcap
+              threshold: 16000
+              overflow_ratio: 0.35
+            - type: set_reflect
+              ratio: 0.1
+              cap: 8000
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_lte: 0.4
+            ally_alive_template_count_gte: 4
+            ally_alive_template_count_lte: 4
+          effects:
+            - type: emit_log
+              log_name: 圣火狂势
+              message: 圣火暴涨
+            - type: modify_outgoing_damage
+              value: 1.736
+            - type: set_softcap
+              threshold: 16000
+              overflow_ratio: 0.35
+            - type: set_reflect
+              ratio: 0.1
+              cap: 8000
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_lte: 0.4
+            ally_alive_template_count_gte: 3
+            ally_alive_template_count_lte: 3
+          effects:
+            - type: emit_log
+              log_name: 圣火狂势
+              message: 圣火暴涨
+            - type: modify_outgoing_damage
+              value: 1.624
+            - type: set_softcap
+              threshold: 16000
+              overflow_ratio: 0.35
+            - type: set_reflect
+              ratio: 0.1
+              cap: 8000
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_lte: 0.4
+            ally_alive_template_count_gte: 2
+            ally_alive_template_count_lte: 2
+          effects:
+            - type: emit_log
+              log_name: 圣火狂势
+              message: 圣火暴涨
+            - type: modify_outgoing_damage
+              value: 1.512
+            - type: set_softcap
+              threshold: 16000
+              overflow_ratio: 0.35
+            - type: set_reflect
+              ratio: 0.1
+              cap: 8000
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            hp_ratio_lte: 0.4
+            ally_alive_template_count_gte: 1
+            ally_alive_template_count_lte: 1
+          effects:
+            - type: emit_log
+              log_name: 圣火狂势
+              message: 圣火暴涨
+            - type: modify_outgoing_damage
+              value: 1.4
+            - type: set_softcap
+              threshold: 16000
+              overflow_ratio: 0.35
+            - type: set_reflect
+              ratio: 0.1
+              cap: 8000
 
   - key: gl_top_cold_blood_swoop
     name: 蝠影掠命
@@ -101,6 +406,98 @@ skills:
         defense: 0.16
     targets: 2
 
+  - key: gl_top_guard_morale
+    name: 明教战意
+    rarity: purple
+    description: 教众在教主坐镇时战意高昂，随战局阶段同步抬升杀势。
+    base_probability: 0.75
+    kind: passive
+    damage_formula:
+      base: 0
+    targets: 1
+    passive_config:
+      triggers:
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_yang_xiao_guard
+            state_present:
+              - arena_coop_boss_alive
+              - arena_coop_phase_1
+          effects:
+            - type: emit_log
+              log_name: 明教战意
+              message: 战意高涨
+            - type: modify_outgoing_damage
+              value: 1.188
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_wei_yixiao_guard
+            state_present:
+              - arena_coop_boss_alive
+              - arena_coop_phase_1
+          effects:
+            - type: emit_log
+              log_name: 明教战意
+              message: 战意高涨
+            - type: modify_outgoing_damage
+              value: 1.242
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_five_flags_elite_front
+              - arena_gl_top_five_flags_elite_rear
+            state_present:
+              - arena_coop_boss_alive
+              - arena_coop_phase_1
+          effects:
+            - type: emit_log
+              log_name: 明教战意
+              message: 战意高涨
+            - type: modify_outgoing_damage
+              value: 1.134
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_yang_xiao_guard
+            state_present:
+              - arena_coop_boss_alive
+              - arena_coop_phase_2_plus
+          effects:
+            - type: emit_log
+              log_name: 明教战意
+              message: 战意高涨
+            - type: modify_outgoing_damage
+              value: 1.265
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_wei_yixiao_guard
+            state_present:
+              - arena_coop_boss_alive
+              - arena_coop_phase_2_plus
+          effects:
+            - type: emit_log
+              log_name: 明教战意
+              message: 战意高涨
+            - type: modify_outgoing_damage
+              value: 1.3225
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_five_flags_elite_front
+              - arena_gl_top_five_flags_elite_rear
+            state_present:
+              - arena_coop_boss_alive
+              - arena_coop_phase_2_plus
+          effects:
+            - type: emit_log
+              log_name: 明教战意
+              message: 战意高涨
+            - type: modify_outgoing_damage
+              value: 1.2075
+
   - key: gl_top_five_flags_barrier
     name: 五行旗护阵
     rarity: purple
@@ -110,3 +507,46 @@ skills:
     damage_formula:
       base: 0
     targets: 1
+    passive_config:
+      triggers:
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            ally_alive_template_count_gte:
+              arena_gl_top_five_flags_elite_front: 1
+              arena_gl_top_five_flags_elite_rear: 1
+          effects:
+            - type: emit_log
+              log_name: 五行旗护阵
+              message: 旗阵护体
+            - type: modify_incoming_damage
+              value: 0.5
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            ally_alive_template_count_gte:
+              arena_gl_top_five_flags_elite_front: 1
+            ally_alive_template_count_lte:
+              arena_gl_top_five_flags_elite_rear: 0
+          effects:
+            - type: emit_log
+              log_name: 五行旗护阵
+              message: 旗阵护体
+            - type: modify_incoming_damage
+              value: 0.72
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_zhang_wuji_boss
+            ally_alive_template_count_gte:
+              arena_gl_top_five_flags_elite_rear: 1
+            ally_alive_template_count_lte:
+              arena_gl_top_five_flags_elite_front: 0
+          effects:
+            - type: emit_log
+              log_name: 五行旗护阵
+              message: 旗阵护体
+            - type: modify_incoming_damage
+              value: 0.72

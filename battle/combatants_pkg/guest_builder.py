@@ -49,6 +49,7 @@ def _serialize_skill(skill: Skill) -> dict:
         "status_duration": getattr(skill, "status_duration", 1),
         "damage_formula": getattr(skill, "damage_formula", {}),
         "targets": getattr(skill, "targets", 1),
+        "passive_config": getattr(skill, "passive_config", {}) or {},
     }
 
 

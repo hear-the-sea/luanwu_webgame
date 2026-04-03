@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from django.db.models import Count
+from django.db.models import Count, Q
 
 import gameplay.services.arena.coop_core as arena_coop_core
 from gameplay.models import ArenaCoopEntry, ArenaCoopEvent, ArenaEntry, ArenaExchangeRecord, ArenaTournament, Manor
 from guests.models import GuestStatus
 
-from .common import build_common_context, build_reward_rows, today_coop_participation_stats
+from .common import build_common_context, build_reward_rows, build_summary_metrics, today_coop_participation_stats
 
 
 def get_active_entry(manor: Manor) -> ArenaEntry | None:
@@ -61,9 +61,24 @@ def get_arena_coop_summary_context(manor: Manor) -> dict:
             "player_limit": arena_coop_core.ARENA_COOP_PLAYER_LIMIT,
             "guest_limit_per_entry": arena_coop_core.ARENA_COOP_MAX_GUESTS_PER_ENTRY,
             "daily_limit": arena_coop_core.ARENA_COOP_DAILY_PARTICIPATION_LIMIT,
+            "registration_hint": "武林高手齐聚光明顶，请派遣3名主力门客参战",
+            "summary_metrics": build_summary_metrics(
+                ("报名人数", f"{arena_coop_core.ARENA_COOP_PLAYER_LIMIT} 人满员开战"),
+                ("上阵人数", f"每人 {arena_coop_core.ARENA_COOP_MAX_GUESTS_PER_ENTRY} 名主力"),
+                ("每日次数", f"{arena_coop_core.ARENA_COOP_DAILY_PARTICIPATION_LIMIT} 次"),
+            ),
         },
         "arena_coop_active_entry": active_entry,
-        "arena_coop_recruiting_event": ArenaCoopEvent.objects.filter(status=ArenaCoopEvent.Status.RECRUITING).first(),
+        "arena_coop_recruiting_event": (
+            ArenaCoopEvent.objects.filter(status=ArenaCoopEvent.Status.RECRUITING)
+            .annotate(
+                registered_entry_count=Count(
+                    "entries",
+                    filter=Q(entries__status=ArenaCoopEntry.Status.REGISTERED),
+                )
+            )
+            .first()
+        ),
         "arena_coop_available_guests": available_guests,
         "arena_coop_selected_guest_ids": selected_guest_ids,
     }

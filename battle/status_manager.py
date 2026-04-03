@@ -27,6 +27,8 @@ def prepare_combatants_for_round(
     for unit in chain(attacker_team, defender_team):
         unit.has_acted_this_round = False
         unit.current_round = round_no
+        if isinstance(getattr(unit, "battle_modifiers", None), dict):
+            unit.battle_modifiers.clear()
         if not getattr(unit, "status_effects", None):
             continue
         for status, payload in list(unit.status_effects.items()):

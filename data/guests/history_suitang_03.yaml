@@ -1,5 +1,5 @@
 heroes:
-  purple:
+  blue:
   - key: hist_suitang_0091_jiadao
     name: 贾岛
     default_gender: male
@@ -7,7 +7,7 @@ heroes:
     flavor: （779年-843年）中唐诗人，早年为僧，后还俗应试，终身以"苦吟"闻名。"推敲"典故便出自其改诗琢句的执拗，显示他对语言精确度的近乎偏执。贾岛作品多写寒士处境、旅途寂寥与清冷景物，句法瘦硬，意境峭拔。与孟郊并称"郊寒岛瘦"，正是同一类审美：不追繁华，专写清苦。贾岛把诗当作工艺：一字一字磨出来的冷光，未必热烈，却极其耐看。读他，能感到中唐文人的孤独被压缩进短句里，像敲在石上的回声。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 10
       intellect: 52
@@ -20,7 +20,7 @@ heroes:
     flavor: （约836年-910年）晚唐五代词人，经历唐末兵乱与政权更替。其诗词多写乱离、离乡与旧国回忆，情感沉痛而不失清婉，"未老莫还乡"道尽时代迁徙之伤。韦庄并非只会写愁，他后期入蜀并参与政务，见证地方政权如何在废墟上重建秩序。正因亲历动荡，他的文字像一份私人史：不讲宏大叙事，只写个体在乱世中的漂泊与无奈。韦庄把晚唐的凄惋带进五代，让词从宫廷绮靡转向对现实伤痛的记录。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 14
       intellect: 48
@@ -33,7 +33,7 @@ heroes:
     flavor: （833年-909年）晚唐诗人，以讽刺与议论见长。其科举屡败，十试不第的经历使其对官场弊病与社会不公更为敏感，诗文常带辛辣与冷笑。罗隐并不只"骂人"，他也能写世情与人生无奈，只是更愿用尖锐语气戳破虚伪。晚唐政治腐败、藩镇混战之际，他的笔像一把刻刀，把时人不敢直言的怨气刻在诗里。后来仕途有所着落，却已难改锋芒。读罗隐，会感到一种"笑里藏刀"的清醒：越是荒唐，越要把话说透。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 14
       intellect: 50
@@ -46,51 +46,12 @@ heroes:
     flavor: （742年-805年）唐德宗，处在藩镇割据与财政紧张的时代，曾试图通过整饬财赋与用兵削藩重建中央权威。其改革与征讨引发多次兵乱，泾原兵变后不得不出奔，显示朝廷对军队控制已极为脆弱。德宗性格多疑而急切，政策时松时紧，既想恢复秩序，又常以苛急方式透支信任；后期在财政上更依赖盐铁与宦官体系，使问题更复杂。德宗一朝像拉扯不断的绳结：每一次用力都在改变结构，却未必朝向更好的方向。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 18
       intellect: 46
       defense: 24
       agility: 12
-  - key: hist_suitang_0095_lishu
-    name: 李诵
-    default_gender: male
-    archetype: civil
-    flavor: （761年-806年）唐顺宗，在位短暂却以"永贞革新"闻名。其即位后试图推动政治改革，依靠王叔文等整顿弊政、限制宦官与改善财政，但改革迅速遭既得利益反扑。顺宗又因疾病影响政务，终在压力下禅位。顺宗的历史意义不在治绩多少，而在揭示中唐体制的硬度：改革意愿存在，但政治结构对变动极不友好。永贞革新的失败让"变法"成为高风险行为，也使后世看到宦官、藩镇、士大夫之间的力量格局已难靠皇帝个人扭转。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 14
-      intellect: 48
-      defense: 24
-      agility: 14
-  - key: hist_suitang_0096_liliheng
-    name: 李恒
-    default_gender: male
-    archetype: civil
-    flavor: （795年-824年）唐穆宗，承接宪宗削藩后的余势，却未能延续紧绷的治理节奏。史书多记其沉湎声色、政务松弛，朝廷对藩镇与宦官的制衡进一步削弱。穆宗朝并非没有人才与政策讨论，但皇帝个人意志不足使其难以形成持续推力，国家逐渐滑向"表面平静、结构松动"的状态。穆宗这一段更像一次提醒：短暂回升之后，若缺乏稳定的制度自律，权力很快会回到旧轨道——由近侍与派系主导。与其说穆宗败家，不如说他让体制惯性重新占上风。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 16
-      intellect: 44
-      defense: 24
-      agility: 16
-  - key: hist_suitang_0097_lizhan
-    name: 李湛
-    default_gender: male
-    archetype: civil
-    flavor: （809年-827年）唐敬宗，在位时间不长，宫廷政治却更显危险。史载其喜游宴而疏政务，近臣与宦官势力趁机加深对禁军与机要的控制，最终导致其被弑。敬宗之死并非偶发刺杀，而是晚唐权力结构恶化的结果：皇帝离开政务中心，权力就会被更接近刀兵的人填补。敬宗的短暂统治像一盏骤灭的灯，提醒人们晚唐皇权已不再"天然安全"，宫廷内部的暴力逻辑开始吞噬君主本身。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 14
-      intellect: 46
-      defense: 22
-      agility: 18
   - key: hist_suitang_0098_liang
     name: 李昂
     default_gender: male
@@ -98,7 +59,7 @@ heroes:
     flavor: （809年-840年）唐文宗，曾有意限制宦官权势，企图重建皇权与官僚政治的边界。最著名的尝试是甘露之变：文宗与朝臣策划除宦，事败反遭大规模清洗，宦官势力更盛。文宗并非不勤政，他的问题在于手段与资源不足：没有稳固的禁军控制权，任何反击都可能变成自残。文宗的悲剧在于看清问题，却无法掌握解决问题的工具。其统治揭示晚唐核心矛盾：皇帝名义至高，但武力与信息常在宦官之手，改革因此近乎不可能。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 14
       intellect: 48
@@ -111,25 +72,12 @@ heroes:
     flavor: （814年-846年）唐武宗，性格强硬，崇尚节俭与武功，试图整顿财政与军政。其最具争议的政策是会昌灭佛，出于财政、户籍与政治控制等多重考虑，对寺院与僧尼群体进行严厉打击，影响深远。武宗亦在对外与对内事务中表现出一定决断，但其统治并未改变晚唐结构性困境。从武宗身上可以看到国家在危机中可能采取的强力收缩：当财政紧张与权力失衡叠加，宗教与社会组织便可能成为整顿对象；评价武宗既要看到整饬意图，也要看到粗暴代价与短期性。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 18
       intellect: 46
       defense: 26
       agility: 10
-  - key: hist_suitang_0100_lipi
-    name: 李漼
-    default_gender: male
-    archetype: civil
-    flavor: （833年-873年）唐懿宗，晚唐矛盾继续积累的阶段性君主。其时期宦官势力与藩镇结构未见根本改变，朝廷财政与社会压力加深，民间不满与地方动荡逐步增多。史书多批评其荒怠与奢侈，但更关键的是制度层面的疲惫：中央难以有效管理地方，军费与赋税机制不断扭曲，使基层承受更重负担。懿宗一朝并非突然崩坏，而是把崩坏条件继续堆高；理解李漼，不能只看个人品行，而要看到晚唐已进入系统性透支阶段。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 14
-      intellect: 44
-      defense: 24
-      agility: 18
   - key: hist_suitang_0101_lixi
     name: 李儇
     default_gender: male
@@ -137,7 +85,7 @@ heroes:
     flavor: （862年-888年）唐僖宗，处在晚唐大乱的核心时期。黄巢起义爆发后，朝廷失去对关中与东南的有效控制，僖宗多次出奔，皇权威望急剧下滑。其统治中宦官专权加深，地方藩镇趁乱坐大，导致唐朝从"衰"转为"碎"。僖宗并非全无作为，但面对财政崩溃与军事失控，皇帝个人已难扭转局势。僖宗在历史叙事里更像一个转折标记：帝都不再是帝都，朝廷不再能调动全国资源；黄巢之乱之后，统一已难回。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 12
       intellect: 44
@@ -150,90 +98,12 @@ heroes:
     flavor: （867年-904年）唐昭宗，身处军阀割据与宦官专权的双重夹击。其多次试图摆脱宦官控制、重建皇权，甚至出走以求借外力，但每一步都被更强武力反制。昭宗时期朝廷与各大军阀的关系近乎"挟天子以令诸侯"的典型场景，皇帝沦为政治筹码。其最终被杀，象征唐朝最后的尊严被彻底剥夺。昭宗的悲剧不是能力不足，而是权力资源早已不在皇帝手里：禁军、财赋、信息皆外移，皇帝再有意志也只能在他人棋盘上移动。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 16
       intellect: 46
       defense: 24
       agility: 14
-  - key: hist_suitang_0103_lizhu
-    name: 李柷
-    default_gender: male
-    archetype: civil
-    flavor: （892年-908年）唐哀帝，唐朝最后一位皇帝。其即位时大势已去，朝廷被权臣与军阀操控，皇帝只是合法性外衣。随着朱温势力完全控制中枢，李柷被迫禅位，唐朝正式终结，五代时代开启。哀帝在史书中常显得"无为"，但这恰是现实：当王朝机器已被拆散，个人努力几乎无从着力。李柷更像一个终点：从盛唐到末唐，制度光泽被慢慢磨尽，最终只剩一个名字来完成交接仪式；这不是一个人的失败，而是一个帝国的寿终正寝。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 10
-      intellect: 46
-      defense: 24
-      agility: 20
-  - key: hist_suitang_0104_tangjian
-    name: 唐俭
-    default_gender: male
-    archetype: civil
-    flavor: （571年-640年）唐初重臣，以善于辞令与对外交涉著称。其多次奉命出使突厥等势力，在唐初边疆形势未稳时为朝廷争取时间与空间。外交在初唐并非宴饮礼仪，而是与军事实力相互配合的前线工作，唐俭常在刀尖上谈判。史书对其评价偏重谨慎与识大体，能把个人荣辱放在国家利益之后。相比名将，他更像幕后把关者：用一封信、一句话，减少一场仗的代价，让新王朝在强敌环伺中站稳脚跟。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 14
-      intellect: 48
-      defense: 24
-      agility: 14
-  - key: hist_suitang_0105_duanzhixuan
-    name: 段志玄
-    default_gender: male
-    archetype: military
-    flavor: （？-？）唐初将领，列名开国诸将，在统一战争与守边事务中有实际贡献。史料记载不如名帅详尽，反而说明他更像军中"可用之人"：能在不同战线承担统兵、镇守、护送等具体任务，把战术命令落实到基层。唐初军事集团庞大，真正支撑胜利的不止少数传奇主帅，也包括许多稳健执行者。段志玄的意义正在于这种无名功：战场不只需要冲锋英雄，还需要能守补给线、按规矩带兵的中坚。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 38
-      intellect: 18
-      defense: 32
-      agility: 12
-  - key: hist_suitang_0106_qututong
-    name: 屈突通
-    default_gender: male
-    archetype: military
-    flavor: （557年-628年）隋末唐初名将，早年为隋守将，曾在关中与唐军对峙，展现顽强的守御能力。隋亡大势既定后，他转而归唐，并在新政治环境中继续从军效力，成为旧朝名将如何融入新朝的典型。屈突通的价值不只在战功，更在其立场转变背后的现实：在鼎革之际，忠于旧主与保全百姓、家族常难两全。史书对他有褒有贬，但其经历真实反映隋唐转折期将领的艰难选择——多数人只能在大势里寻找可活的路径。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 38
-      intellect: 20
-      defense: 30
-      agility: 12
-  - key: hist_suitang_0107_yinkaishan
-    name: 殷开山
-    default_gender: male
-    archetype: military
-    flavor: （？-622年）唐初开国将领之一，随李渊起兵并参与早期关键战事。其军功多见于开国诸将列传，虽不如名帅显赫，却属于新王朝最需要的那类人：在兵力、粮饷都紧张的阶段，能带兵、能守城、能执行。殷开山去世较早，使其名声不易被后世反复讲述，但早亡也意味着他未被卷入后续权力清洗。殷开山提醒：开国功臣并非都在画像里，更多人把血与时间投入战争后便被时代翻页。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 36
-      intellect: 20
-      defense: 32
-      agility: 12
-  - key: hist_suitang_0108_liuzhenghui
-    name: 刘政会
-    default_gender: male
-    archetype: civil
-    flavor: （？-635年）唐初重臣，参与开国政务与军事筹画，属于从创业走向建制的那一代官员。初唐需要把军功集团与官僚体系缝合起来：既要奖功安众，又要建立可持续的行政程序。刘政会在其中承担把事情办成的角色，更多出现于机务与人事安排。史书对其记载不多，说明其不以奇谋名世，却以稳定与持重被信任。这样的官员往往没有响亮传说，却在制度成形时极为重要：他们让朝廷从临时指挥所变成能每日运转的政府。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 14
-      intellect: 48
-      defense: 26
-      agility: 12
   - key: hist_suitang_0109_zhangliang
     name: 张亮
     default_gender: male
@@ -241,12 +111,116 @@ heroes:
     flavor: （？-646年）唐初将领，早年从军立功，亦参与边防与平叛，名列功臣之中。唐初功臣政治风险极高：皇权强化、宗室争斗与功臣自危并存，许多人既要立功，也要学会收敛。张亮后因政治案件获罪被诛，显示开国功臣的安全边界并不牢固。其起落更像新王朝稳定过程中的一次切割：皇帝通过清洗与惩处重新划定权力边界。张亮的结局提醒：在从乱世到治世的过渡里，军功不是护身符。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 38
       intellect: 18
       defense: 28
       agility: 16
+  - key: hist_suitang_0095_lishu
+    name: 李诵
+    default_gender: male
+    archetype: civil
+    flavor: （761年-806年）唐顺宗，在位短暂却以"永贞革新"闻名。其即位后试图推动政治改革，依靠王叔文等整顿弊政、限制宦官与改善财政，但改革迅速遭既得利益反扑。顺宗又因疾病影响政务，终在压力下禅位。顺宗的历史意义不在治绩多少，而在揭示中唐体制的硬度：改革意愿存在，但政治结构对变动极不友好。永贞革新的失败让"变法"成为高风险行为，也使后世看到宦官、藩镇、士大夫之间的力量格局已难靠皇帝个人扭转。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 46
+      defense: 24
+      agility: 16
+  - key: hist_suitang_0097_lizhan
+    name: 李湛
+    default_gender: male
+    archetype: civil
+    flavor: （809年-827年）唐敬宗，在位时间不长，宫廷政治却更显危险。史载其喜游宴而疏政务，近臣与宦官势力趁机加深对禁军与机要的控制，最终导致其被弑。敬宗之死并非偶发刺杀，而是晚唐权力结构恶化的结果：皇帝离开政务中心，权力就会被更接近刀兵的人填补。敬宗的短暂统治像一盏骤灭的灯，提醒人们晚唐皇权已不再"天然安全"，宫廷内部的暴力逻辑开始吞噬君主本身。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 44
+      defense: 22
+      agility: 20
+  - key: hist_suitang_0100_lipi
+    name: 李漼
+    default_gender: male
+    archetype: civil
+    flavor: （833年-873年）唐懿宗，晚唐矛盾继续积累的阶段性君主。其时期宦官势力与藩镇结构未见根本改变，朝廷财政与社会压力加深，民间不满与地方动荡逐步增多。史书多批评其荒怠与奢侈，但更关键的是制度层面的疲惫：中央难以有效管理地方，军费与赋税机制不断扭曲，使基层承受更重负担。懿宗一朝并非突然崩坏，而是把崩坏条件继续堆高；理解李漼，不能只看个人品行，而要看到晚唐已进入系统性透支阶段。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 44
+      defense: 24
+      agility: 20
+  - key: hist_suitang_0103_lizhu
+    name: 李柷
+    default_gender: male
+    archetype: civil
+    flavor: （892年-908年）唐哀帝，唐朝最后一位皇帝。其即位时大势已去，朝廷被权臣与军阀操控，皇帝只是合法性外衣。随着朱温势力完全控制中枢，李柷被迫禅位，唐朝正式终结，五代时代开启。哀帝在史书中常显得"无为"，但这恰是现实：当王朝机器已被拆散，个人努力几乎无从着力。李柷更像一个终点：从盛唐到末唐，制度光泽被慢慢磨尽，最终只剩一个名字来完成交接仪式；这不是一个人的失败，而是一个帝国的寿终正寝。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 44
+      defense: 24
+      agility: 22
+  - key: hist_suitang_0104_tangjian
+    name: 唐俭
+    default_gender: male
+    archetype: civil
+    flavor: （571年-640年）唐初重臣，以善于辞令与对外交涉著称。其多次奉命出使突厥等势力，在唐初边疆形势未稳时为朝廷争取时间与空间。外交在初唐并非宴饮礼仪，而是与军事实力相互配合的前线工作，唐俭常在刀尖上谈判。史书对其评价偏重谨慎与识大体，能把个人荣辱放在国家利益之后。相比名将，他更像幕后把关者：用一封信、一句话，减少一场仗的代价，让新王朝在强敌环伺中站稳脚跟。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 48
+      defense: 22
+      agility: 16
+  - key: hist_suitang_0105_duanzhixuan
+    name: 段志玄
+    default_gender: male
+    archetype: military
+    flavor: （？-？）唐初将领，列名开国诸将，在统一战争与守边事务中有实际贡献。史料记载不如名帅详尽，反而说明他更像军中"可用之人"：能在不同战线承担统兵、镇守、护送等具体任务，把战术命令落实到基层。唐初军事集团庞大，真正支撑胜利的不止少数传奇主帅，也包括许多稳健执行者。段志玄的意义正在于这种无名功：战场不只需要冲锋英雄，还需要能守补给线、按规矩带兵的中坚。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 18
+      defense: 30
+      agility: 16
+  - key: hist_suitang_0107_yinkaishan
+    name: 殷开山
+    default_gender: male
+    archetype: military
+    flavor: （？-622年）唐初开国将领之一，随李渊起兵并参与早期关键战事。其军功多见于开国诸将列传，虽不如名帅显赫，却属于新王朝最需要的那类人：在兵力、粮饷都紧张的阶段，能带兵、能守城、能执行。殷开山去世较早，使其名声不易被后世反复讲述，但早亡也意味着他未被卷入后续权力清洗。殷开山提醒：开国功臣并非都在画像里，更多人把血与时间投入战争后便被时代翻页。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 20
+      defense: 30
+      agility: 14
+  - key: hist_suitang_0108_liuzhenghui
+    name: 刘政会
+    default_gender: male
+    archetype: civil
+    flavor: （？-635年）唐初重臣，参与开国政务与军事筹画，属于从创业走向建制的那一代官员。初唐需要把军功集团与官僚体系缝合起来：既要奖功安众，又要建立可持续的行政程序。刘政会在其中承担把事情办成的角色，更多出现于机务与人事安排。史书对其记载不多，说明其不以奇谋名世，却以稳定与持重被信任。这样的官员往往没有响亮传说，却在制度成形时极为重要：他们让朝廷从临时指挥所变成能每日运转的政府。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 46
+      defense: 26
+      agility: 14
   - key: hist_suitang_0110_gaoshilian
     name: 高士廉
     default_gender: male
@@ -254,12 +228,12 @@ heroes:
     flavor: （？-647年）唐初重臣，出身关陇名门，与皇室姻亲关系密切，是贞观政治的重要支点之一。其在选任、礼制与政务协调中发挥作用，既代表贵族集团影响力，也体现唐初逐渐制度化的用人机制。高士廉善于在功臣、宗室与文臣之间维持平衡，不以锋芒取胜，而以持重与分寸见长。正因这种"稳"，他在贞观初年能久居中枢并参与塑造政治风气，说明治世不只靠名场面，也靠协调者把关系网络转成可运转秩序。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 14
       intellect: 48
-      defense: 26
-      agility: 12
+      defense: 24
+      agility: 14
   - key: hist_suitang_0111_wenyanbo
     name: 温彦博
     default_gender: male
@@ -267,12 +241,12 @@ heroes:
     flavor: （573年-640年）唐初宰辅之一，以稳健持重著称，参与贞观时期政务运作与制度推进。他更擅长在纷繁事务中保持条理：处理奏议、协调部门、平衡人事，使朝廷机器能按规则运行。贞观政治成形，既需要魏征那样的直谏，也需要温彦博这样把政策落地的人。史书评其谨慎持平，这类品质在开国后尤为稀缺——因为太多功臣习惯用战场逻辑处理朝堂。温彦博的价值就在于把朝廷从豪杰聚会转向官僚治理，让治世具备日常形态。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 14
-      intellect: 50
+      intellect: 48
       defense: 24
-      agility: 12
+      agility: 14
   - key: hist_suitang_0112_cenwenben
     name: 岑文本
     default_gender: male
@@ -280,39 +254,25 @@ heroes:
     flavor: （595年-645年）唐初名臣，以文才与政务能力见长，参与机密与制诰，是贞观朝重要文臣之一。其擅长把皇帝意图转化为可执行的政令，又能以学识为政策提供论证，使文治不止是口号。制诰与文书在初唐不是装饰，而是国家组织能力的核心：写得准，才能传得开、行得下。岑文本性格谨慎，不喜夸张，却能在关键问题上提出清晰判断。他最出色的地方，是把复杂事务写成明确规则，让政令穿过层级真正到达地方。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 12
-      intellect: 50
+      intellect: 48
       defense: 24
-      agility: 14
-  - key: hist_suitang_0118_hanxiu
-    name: 韩休
+      agility: 16
+  - key: hist_suitang_0096_liliheng
+    name: 李恒
     default_gender: male
     archetype: civil
-    flavor: （？-740年）唐代宰相，以直言敢谏著称。史载其进谏不避权贵，言辞往往刺耳，却能迫使朝廷正视问题。韩休与玄宗之间的关系常被描写为君臣互相忍耐：皇帝需要这样的制衡者，又常被其直言所触怒。正因敢言，韩休在开元政治中扮演类似刹车的角色，使盛世不至完全滑向恣意。这也提醒：再强盛的时代也需要制度性的反对意见，否则错误会被赞美包裹。韩休并非完人，但他以个人风险换取公共纠错空间，是盛唐政治难得的硬度。
+    flavor: （795年-824年）唐穆宗，承接宪宗削藩后的余势，却未能延续紧绷的治理节奏。史书多记其沉湎声色、政务松弛，朝廷对藩镇与宦官的制衡进一步削弱。穆宗朝并非没有人才与政策讨论，但皇帝个人意志不足使其难以形成持续推力，国家逐渐滑向"表面平静、结构松动"的状态。穆宗这一段更像一次提醒：短暂回升之后，若缺乏稳定的制度自律，权力很快会回到旧轨道——由近侍与派系主导。与其说穆宗败家，不如说他让体制惯性重新占上风。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 14
-      intellect: 50
+      intellect: 46
       defense: 24
-      agility: 12
-  - key: hist_suitang_0119_peiyaoqing
-    name: 裴耀卿
-    default_gender: male
-    archetype: civil
-    flavor: （681年-743年）唐代大臣，重视财政与漕运，在开元时期推动粮运与供给体系优化。都城与边防长期依赖南北运输，漕运一旦阻塞，政治与军事实力都会受影响；裴耀卿的工作正是把看不见的运输线变成可持续的国家血管。其改革多涉及制度细节：仓储、转运、官吏考核与成本控制，听来琐碎，却决定盛世能否真正运转。裴耀卿用理财与行政把繁荣落到地面，而不是停留在诗文赞颂里，证明治理不仅是战略决断，也是一套精细工程。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 14
-      intellect: 50
-      defense: 24
-      agility: 12
-  blue:
+      agility: 16
   - key: hist_suitang_0113_xujingzong
     name: 许敬宗
     default_gender: male
@@ -573,3 +533,43 @@ heroes:
       intellect: 48
       defense: 24
       agility: 14
+  purple:
+  - key: hist_suitang_0106_qututong
+    name: 屈突通
+    default_gender: male
+    archetype: military
+    flavor: （557年-628年）隋末唐初名将，早年为隋守将，曾在关中与唐军对峙，展现顽强的守御能力。隋亡大势既定后，他转而归唐，并在新政治环境中继续从军效力，成为旧朝名将如何融入新朝的典型。屈突通的价值不只在战功，更在其立场转变背后的现实：在鼎革之际，忠于旧主与保全百姓、家族常难两全。史书对他有褒有贬，但其经历真实反映隋唐转折期将领的艰难选择——多数人只能在大势里寻找可活的路径。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 38
+      intellect: 20
+      defense: 30
+      agility: 12
+  - key: hist_suitang_0118_hanxiu
+    name: 韩休
+    default_gender: male
+    archetype: civil
+    flavor: （？-740年）唐代宰相，以直言敢谏著称。史载其进谏不避权贵，言辞往往刺耳，却能迫使朝廷正视问题。韩休与玄宗之间的关系常被描写为君臣互相忍耐：皇帝需要这样的制衡者，又常被其直言所触怒。正因敢言，韩休在开元政治中扮演类似刹车的角色，使盛世不至完全滑向恣意。这也提醒：再强盛的时代也需要制度性的反对意见，否则错误会被赞美包裹。韩休并非完人，但他以个人风险换取公共纠错空间，是盛唐政治难得的硬度。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 14
+      intellect: 50
+      defense: 24
+      agility: 12
+  - key: hist_suitang_0119_peiyaoqing
+    name: 裴耀卿
+    default_gender: male
+    archetype: civil
+    flavor: （681年-743年）唐代大臣，重视财政与漕运，在开元时期推动粮运与供给体系优化。都城与边防长期依赖南北运输，漕运一旦阻塞，政治与军事实力都会受影响；裴耀卿的工作正是把看不见的运输线变成可持续的国家血管。其改革多涉及制度细节：仓储、转运、官吏考核与成本控制，听来琐碎，却决定盛世能否真正运转。裴耀卿用理财与行政把繁荣落到地面，而不是停留在诗文赞颂里，证明治理不仅是战略决断，也是一套精细工程。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 14
+      intellect: 50
+      defense: 24
+      agility: 12
