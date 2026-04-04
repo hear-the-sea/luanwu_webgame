@@ -4,6 +4,8 @@ from typing import Any
 
 from core.config import GUEST
 
+from .combatants_pkg.core import BattleModifiers
+
 ARENA_COOP_BOSS_TEMPLATE_KEY = "arena_gl_top_zhang_wuji_boss"
 ARENA_COOP_YANG_XIAO_TEMPLATE_KEY = "arena_gl_top_yang_xiao_guard"
 ARENA_COOP_WEI_YIXIAO_TEMPLATE_KEY = "arena_gl_top_wei_yixiao_guard"
@@ -119,13 +121,43 @@ def _combat_state(unit: Any) -> dict[str, Any]:
     return state
 
 
-def _combat_modifiers(unit: Any) -> dict[str, float]:
+def _combat_modifiers(unit: Any) -> BattleModifiers:
     modifiers = getattr(unit, "battle_modifiers", None)
     if isinstance(modifiers, dict):
         return modifiers
     modifiers = {}
     setattr(unit, "battle_modifiers", modifiers)
     return modifiers
+
+
+def _multiplier_from_sources(modifiers: BattleModifiers, *, flat_key: str, sources_key: str) -> float:
+    sources = modifiers.get(sources_key)
+    if isinstance(sources, dict) and sources:
+        total = 1.0
+        for value in sources.values():
+            total *= float(value or 1.0)
+        return total
+    return float(modifiers.get(flat_key, 1.0) or 1.0)
+
+
+def _apply_softcap_once(damage: int, payload: dict[str, Any]) -> int:
+    threshold = int(payload.get("threshold", 0) or 0)
+    overflow_ratio = float(payload.get("overflow_ratio", 1.0) or 1.0)
+    if threshold <= 0 or damage <= threshold:
+        return damage
+    return threshold + int((damage - threshold) * overflow_ratio)
+
+
+def _apply_softcaps(damage: int, modifiers: BattleModifiers) -> int:
+    sources = modifiers.get("burst_softcap_sources")
+    if isinstance(sources, dict) and sources:
+        adjusted_values = [damage]
+        for payload in sources.values():
+            if not isinstance(payload, dict):
+                continue
+            adjusted_values.append(_apply_softcap_once(damage, payload))
+        return min(adjusted_values)
+    return damage
 
 
 def _clear_arena_coop_guard_state(unit: Any) -> None:
@@ -240,13 +272,24 @@ def adjust_arena_coop_damage(actor: Any, target: Any, damage: int) -> int:
     actor_modifiers = _combat_modifiers(actor)
     target_modifiers = _combat_modifiers(target)
 
-    adjusted = int(damage * float(actor_modifiers.get("outgoing_damage_multiplier", 1.0) or 1.0))
-    softcap_threshold = int(target_modifiers.get("burst_softcap_threshold", 0) or 0)
-    overflow_ratio = float(target_modifiers.get("burst_softcap_overflow_ratio", 1.0) or 1.0)
-    if softcap_threshold > 0 and adjusted > softcap_threshold:
-        adjusted = softcap_threshold + int((adjusted - softcap_threshold) * overflow_ratio)
+    adjusted = int(
+        damage
+        * _multiplier_from_sources(
+            actor_modifiers,
+            flat_key="outgoing_damage_multiplier",
+            sources_key="outgoing_damage_multiplier_sources",
+        )
+    )
+    adjusted = _apply_softcaps(adjusted, target_modifiers)
 
-    adjusted = int(adjusted * float(target_modifiers.get("incoming_damage_multiplier", 1.0) or 1.0))
+    adjusted = int(
+        adjusted
+        * _multiplier_from_sources(
+            target_modifiers,
+            flat_key="incoming_damage_multiplier",
+            sources_key="incoming_damage_multiplier_sources",
+        )
+    )
     return max(1, adjusted)
 
 

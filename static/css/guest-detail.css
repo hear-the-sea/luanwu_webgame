@@ -365,20 +365,19 @@
   min-width: auto;
 }
 
-.guest-detail .tooltip {
+.guest-detail .guest-equip-tooltip-trigger {
   position: relative;
   cursor: help;
 }
 
-.guest-detail .tooltip::after {
+.guest-detail .guest-equip-tooltip-trigger::after {
   display: none;
 }
 
-.guest-detail .tooltip .tooltip-bubble {
-  position: absolute;
-  left: 0;
-  top: 100%;
-  margin-top: 6px;
+.guest-detail .guest-equip-tooltip-bubble {
+  position: fixed;
+  display: none;
+  pointer-events: none;
   padding: 0.5rem 0.65rem;
   min-width: 240px;
   max-width: 320px;
@@ -392,24 +391,35 @@
   visibility: hidden;
   transition: opacity 0.12s ease, transform 0.12s ease;
   transform: translateY(-4px);
-  z-index: 40;
+  z-index: 1000;
 }
 
-.guest-detail .tooltip:hover .tooltip-bubble {
+.guest-detail .guest-equip-tooltip-trigger.is-tooltip-active .guest-equip-tooltip-bubble {
+  display: block;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .guest-detail .guest-equip-tooltip-trigger:hover .guest-equip-tooltip-bubble {
+    display: block;
+  }
+}
+
+.guest-detail .guest-equip-tooltip-trigger:hover .guest-equip-tooltip-bubble,
+.guest-detail .guest-equip-tooltip-trigger.is-tooltip-active .guest-equip-tooltip-bubble {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
 }
 
-.guest-detail .tooltip .tooltip-bubble div + div {
+.guest-detail .guest-equip-tooltip-bubble div + div {
   margin-top: 0.2rem;
 }
 
-.tooltip .set-member.equipped {
+.guest-detail .guest-equip-tooltip-bubble .set-member.equipped {
   color: #15803d;
 }
 
-.tooltip .set-member.unequipped {
+.guest-detail .guest-equip-tooltip-bubble .set-member.unequipped {
   color: #5c3b1e;
 }
 

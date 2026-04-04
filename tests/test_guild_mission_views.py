@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 from django.contrib.messages import get_messages
-from django.test import Client
+from django.test import Client, override_settings
 from django.urls import reverse
 
 from battle.models import TroopTemplate
@@ -60,7 +60,7 @@ def test_guild_mission_page_renders_tabbed_task_list_without_troop_pool(guild_me
         name="视图任务",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="guest",
         base_duration_seconds=600,
         ruby_reward=2,
         recommended_guest_count=2,
@@ -80,6 +80,7 @@ def test_guild_mission_page_renders_tabbed_task_list_without_troop_pool(guild_me
     assert "当前上阵门客" not in body
     assert "门客池" not in body
     assert "详情" in body
+    assert "门客" in body
 
 
 @pytest.mark.django_db
@@ -91,7 +92,7 @@ def test_guild_mission_page_renders_selected_task_detail_modal(guild_member_clie
         name="详情任务",
         description="显示详情",
         difficulty="intermediate",
-        task_type="escort",
+        task_type="troop",
         base_duration_seconds=900,
         ruby_reward=20,
         recommended_guest_count=1,
@@ -126,6 +127,62 @@ def test_guild_mission_page_renders_selected_task_detail_modal(guild_member_clie
     assert "配置护院" in body
     assert "详情门客" in body
     assert "非上阵门客" not in body
+    assert "护院" in body
+
+
+@pytest.mark.django_db
+def test_guild_mission_task_type_display_matches_personal_mission_style():
+    guest_template = GuildMissionTemplate(
+        key="guild_guest_type_task",
+        name="门客任务",
+        difficulty="junior",
+        task_type="guest",
+        allow_troops=False,
+    )
+    troop_template = GuildMissionTemplate(
+        key="guild_troop_type_task",
+        name="护院任务",
+        difficulty="intermediate",
+        task_type="troop",
+        allow_troops=True,
+    )
+    defense_template = GuildMissionTemplate(
+        key="guild_defense_type_task",
+        name="防守任务",
+        difficulty="advanced",
+        task_type="defense",
+        allow_troops=True,
+    )
+
+    assert guest_template.get_task_type_display() == "门客"
+    assert troop_template.get_task_type_display() == "护院"
+    assert defense_template.get_task_type_display() == "防守"
+
+
+@pytest.mark.django_db
+def test_guild_mission_page_shows_scaled_duration_for_selected_task(guild_member_client):
+    client, _user, _guild = guild_member_client
+    template = GuildMissionTemplate.objects.create(
+        key="guild_modal_scaled_duration_task",
+        name="倍率详情任务",
+        description="显示倍率耗时",
+        difficulty="intermediate",
+        task_type="guest",
+        base_duration_seconds=900,
+        ruby_reward=20,
+        recommended_guest_count=1,
+        allow_troops=False,
+        is_active=True,
+        sort_weight=5,
+    )
+
+    with override_settings(GAME_TIME_MULTIPLIER=5):
+        response = client.get(f"{reverse('guilds:missions')}?mission={template.key}")
+
+    body = response.content.decode("utf-8")
+
+    assert response.status_code == 200
+    assert "预计耗时 180 秒" in body
 
 
 @pytest.mark.django_db
@@ -136,7 +193,7 @@ def test_guild_mission_page_selects_matching_difficulty_tab_for_selected_mission
         name="指定中级帮会任务",
         description="",
         difficulty="intermediate",
-        task_type="escort",
+        task_type="troop",
         base_duration_seconds=900,
         ruby_reward=12,
         recommended_guest_count=1,
@@ -165,7 +222,7 @@ def test_non_manager_cannot_launch_guild_mission(django_user_model):
         name="视图任务",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="guest",
         base_duration_seconds=600,
         ruby_reward=2,
         recommended_guest_count=2,
@@ -193,7 +250,7 @@ def test_manager_can_launch_guild_mission_and_redirect_back(guild_member_client)
         name="发起视图任务",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="guest",
         base_duration_seconds=600,
         ruby_reward=2,
         recommended_guest_count=1,
@@ -233,7 +290,7 @@ def test_guild_mission_page_uses_manager_only_retreat_button(client, django_user
         name="按钮任务",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="guest",
         base_duration_seconds=600,
         ruby_reward=2,
         recommended_guest_count=1,
@@ -266,7 +323,7 @@ def test_manager_can_retreat_guild_mission(guild_member_client):
         name="撤回视图任务",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="guest",
         base_duration_seconds=600,
         ruby_reward=2,
         recommended_guest_count=1,

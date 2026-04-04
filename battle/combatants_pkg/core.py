@@ -6,7 +6,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, TypeAlias, TypedDict
+
+
+class SoftcapSource(TypedDict):
+    threshold: float
+    overflow_ratio: float
+
+
+BattleModifiers: TypeAlias = dict[str, Any]
 
 
 @dataclass(slots=True)
@@ -49,7 +57,7 @@ class Combatant:
     combatant_slot: int | None = None
     is_boss: bool = False
     level: int = 1
-    battle_modifiers: Dict[str, float] = field(default_factory=dict)
+    battle_modifiers: BattleModifiers = field(default_factory=dict)
     battle_state: Dict[str, Any] = field(default_factory=dict)
     status_effects: Dict[str, Dict[str, int]] = field(default_factory=dict)
     has_acted_this_round: bool = False

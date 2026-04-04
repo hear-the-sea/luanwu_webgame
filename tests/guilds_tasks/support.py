@@ -54,7 +54,7 @@ def create_active_guild_run(django_user_model, *, username: str, key_suffix: str
         name="任务测试",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="troop",
         base_duration_seconds=60,
         ruby_reward=3,
         recommended_guest_count=1,

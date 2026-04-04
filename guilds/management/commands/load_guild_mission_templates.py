@@ -52,6 +52,23 @@ def _coerce_bool(value, default: bool = False) -> bool:
     return default
 
 
+def _normalize_task_type(value, *, allow_troops: bool) -> str:
+    normalized = str(value or "").strip().lower()
+    if normalized in {"dispatch", "patrol"}:
+        return GuildMissionTemplate.TaskType.TROOP if allow_troops else GuildMissionTemplate.TaskType.GUEST
+    if normalized == "escort":
+        return GuildMissionTemplate.TaskType.TROOP
+    if normalized == "suppress":
+        return GuildMissionTemplate.TaskType.DEFENSE
+    if normalized in {
+        GuildMissionTemplate.TaskType.GUEST,
+        GuildMissionTemplate.TaskType.TROOP,
+        GuildMissionTemplate.TaskType.DEFENSE,
+    }:
+        return normalized
+    return GuildMissionTemplate.TaskType.TROOP if allow_troops else GuildMissionTemplate.TaskType.GUEST
+
+
 class Command(BaseCommand):
     help = "Load guild mission templates (帮会任务配置) from a YAML/JSON config file."
 
@@ -113,15 +130,17 @@ class Command(BaseCommand):
             if not isinstance(enemy_technology, dict):
                 enemy_technology = {}
 
+            allow_troops = _coerce_bool(entry.get("allow_troops"), False)
+
             defaults = {
                 "name": name,
                 "description": str(entry.get("description") or ""),
                 "difficulty": str(entry.get("difficulty") or "junior"),
-                "task_type": str(entry.get("task_type") or "patrol"),
+                "task_type": _normalize_task_type(entry.get("task_type"), allow_troops=allow_troops),
                 "base_duration_seconds": _coerce_positive_int(entry.get("base_duration_seconds"), 600),
                 "ruby_reward": _coerce_non_negative_int(entry.get("ruby_reward"), 0),
                 "recommended_guest_count": _coerce_positive_int(entry.get("recommended_guest_count"), 1),
-                "allow_troops": _coerce_bool(entry.get("allow_troops"), False),
+                "allow_troops": allow_troops,
                 "enemy_guests": enemy_guests,
                 "enemy_troops": enemy_troops,
                 "enemy_technology": enemy_technology,

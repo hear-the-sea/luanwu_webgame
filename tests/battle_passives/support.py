@@ -1,6 +1,7 @@
 import random
 from types import SimpleNamespace
 
+from battle.arena_coop import adjust_arena_coop_damage
 from battle.passive_conditions import conditions_match
 from battle.passive_effects import apply_effect
 from battle.passives import run_passives_for_timing
@@ -10,6 +11,7 @@ from battle.status_manager import prepare_combatants_for_round
 
 __all__ = [
     "_resolve_standard_round",
+    "adjust_arena_coop_damage",
     "apply_effect",
     "conditions_match",
     "make_unit",

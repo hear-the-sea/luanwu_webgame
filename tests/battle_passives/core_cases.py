@@ -1,5 +1,6 @@
 from .support import (
     _resolve_standard_round,
+    adjust_arena_coop_damage,
     apply_effect,
     conditions_match,
     make_unit,
@@ -50,8 +51,228 @@ def test_apply_set_reflect_and_softcap_effects_write_modifiers():
 
     assert actor.battle_modifiers["reflect_ratio"] == 0.1
     assert actor.battle_modifiers["reflect_cap"] == 8000
-    assert actor.battle_modifiers["burst_softcap_threshold"] == 16000
-    assert actor.battle_modifiers["burst_softcap_overflow_ratio"] == 0.35
+    assert actor.battle_modifiers["burst_softcap_sources"]["__direct__"]["threshold"] == 16000
+    assert actor.battle_modifiers["burst_softcap_sources"]["__direct__"]["overflow_ratio"] == 0.35
+    assert "burst_softcap_threshold" not in actor.battle_modifiers
+    assert "burst_softcap_overflow_ratio" not in actor.battle_modifiers
+
+
+def test_apply_effect_can_buff_all_allies():
+    actor = make_unit(name="军师", side="defender", template_key="guild_wulinzhai_junshi", battle_modifiers={})
+    ally = make_unit(name="喽啰", side="defender", template_key="guild_wulinzhai_minion", battle_modifiers={})
+    enemy = make_unit(name="来敌", side="attacker", template_key="hero_guest", battle_modifiers={})
+
+    apply_effect(
+        {"type": "modify_outgoing_damage", "value": 1.12, "target_scope": "allies"},
+        {
+            "actor": actor,
+            "target": None,
+            "attacker_team": [enemy],
+            "defender_team": [actor, ally],
+            "event_sink": [],
+        },
+    )
+
+    assert actor.battle_modifiers["outgoing_damage_multiplier"] == 1.12
+    assert ally.battle_modifiers["outgoing_damage_multiplier"] == 1.12
+    assert enemy.battle_modifiers == {}
+
+
+def test_apply_effect_can_buff_filtered_ally_templates_only():
+    actor = make_unit(name="监军", side="defender", template_key="guild_blackwind_gate_overseer", battle_modifiers={})
+    frontline = make_unit(name="铁卫", side="defender", template_key="guild_blackwind_iron_guard", battle_modifiers={})
+    rear = make_unit(name="弓队长", side="defender", template_key="guild_blackwind_bow_captain", battle_modifiers={})
+
+    apply_effect(
+        {
+            "type": "set_softcap",
+            "threshold": 9800,
+            "overflow_ratio": 0.4,
+            "target_scope": "allies",
+            "target_template_in": ["guild_blackwind_gate_overseer", "guild_blackwind_iron_guard"],
+        },
+        {
+            "actor": actor,
+            "target": None,
+            "attacker_team": [],
+            "defender_team": [actor, frontline, rear],
+            "event_sink": [],
+        },
+    )
+
+    assert actor.battle_modifiers["burst_softcap_sources"]["__direct__"]["threshold"] == 9800
+    assert frontline.battle_modifiers["burst_softcap_sources"]["__direct__"]["threshold"] == 9800
+    assert rear.battle_modifiers == {}
+
+
+def test_apply_effect_deduplicates_same_skill_source_across_multiple_holders():
+    general = make_unit(name="夜哨甲", side="defender", template_key="guild_wulinzhai_night_watch", battle_modifiers={})
+    watcher = make_unit(name="夜哨乙", side="defender", template_key="guild_wulinzhai_junshi", battle_modifiers={})
+    ally = make_unit(name="喽啰", side="defender", template_key="guild_wulinzhai_minion", battle_modifiers={})
+
+    first_context = {
+        "actor": general,
+        "skill_key": "guild_wulinzhai_night_signal",
+        "target": None,
+        "attacker_team": [],
+        "defender_team": [general, watcher, ally],
+        "event_sink": [],
+    }
+    second_context = {
+        "actor": watcher,
+        "skill_key": "guild_wulinzhai_night_signal",
+        "target": None,
+        "attacker_team": [],
+        "defender_team": [general, watcher, ally],
+        "event_sink": [],
+    }
+
+    apply_effect({"type": "modify_outgoing_damage", "value": 1.12, "target_scope": "allies"}, first_context)
+    apply_effect({"type": "modify_outgoing_damage", "value": 1.12, "target_scope": "allies"}, second_context)
+
+    assert ally.battle_modifiers["outgoing_damage_multiplier"] == 1.12
+
+
+def test_apply_effect_combines_distinct_skill_sources_for_damage_multiplier():
+    actor = make_unit(name="守将", side="defender", template_key="guild_blackwind_gate_general", battle_modifiers={})
+    ally = make_unit(name="铁卫", side="defender", template_key="guild_blackwind_iron_guard", battle_modifiers={})
+    enemy = make_unit(name="来敌", side="attacker", template_key="hero_guest", battle_modifiers={})
+
+    apply_effect(
+        {"type": "modify_outgoing_damage", "value": 1.18, "target_scope": "allies"},
+        {
+            "actor": actor,
+            "skill_key": "guild_blackwind_battle_standard",
+            "target": None,
+            "attacker_team": [enemy],
+            "defender_team": [actor, ally],
+            "event_sink": [],
+        },
+    )
+    apply_effect(
+        {
+            "type": "modify_outgoing_damage",
+            "value": 1.1,
+            "target_scope": "allies",
+            "target_template_in": ["guild_blackwind_iron_guard"],
+        },
+        {
+            "actor": make_unit(
+                name="监军",
+                side="defender",
+                template_key="guild_blackwind_gate_overseer",
+                battle_modifiers={},
+            ),
+            "skill_key": "guild_blackwind_overseer_order",
+            "target": None,
+            "attacker_team": [enemy],
+            "defender_team": [actor, ally],
+            "event_sink": [],
+        },
+    )
+
+    assert ally.battle_modifiers["outgoing_damage_multiplier"] == 1.298
+    assert adjust_arena_coop_damage(ally, enemy, 1000) == 1298
+
+
+def test_run_passives_for_timing_deduplicates_same_group_aura_and_combines_distinct_ones():
+    general = make_unit(
+        name="守将",
+        side="defender",
+        template_key="guild_blackwind_gate_general",
+        battle_modifiers={},
+        skills=[
+            {
+                "key": "guild_blackwind_battle_standard",
+                "name": "黑风战旗",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "round_start",
+                            "effects": [{"type": "modify_outgoing_damage", "value": 1.18, "target_scope": "allies"}],
+                        }
+                    ]
+                },
+            }
+        ],
+    )
+    overseer = make_unit(
+        name="监军甲",
+        side="defender",
+        template_key="guild_blackwind_gate_overseer",
+        battle_modifiers={},
+        skills=[
+            {
+                "key": "guild_blackwind_overseer_order",
+                "name": "督战严令",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "round_start",
+                            "effects": [
+                                {
+                                    "type": "modify_outgoing_damage",
+                                    "value": 1.1,
+                                    "target_scope": "allies",
+                                    "target_template_in": ["guild_blackwind_iron_guard"],
+                                }
+                            ],
+                        }
+                    ]
+                },
+            }
+        ],
+    )
+    second_overseer = make_unit(
+        name="监军乙",
+        side="defender",
+        template_key="guild_blackwind_patrol_captain",
+        battle_modifiers={},
+        skills=[
+            {
+                "key": "guild_blackwind_overseer_order",
+                "name": "督战严令",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "round_start",
+                            "effects": [
+                                {
+                                    "type": "modify_outgoing_damage",
+                                    "value": 1.1,
+                                    "target_scope": "allies",
+                                    "target_template_in": ["guild_blackwind_iron_guard"],
+                                }
+                            ],
+                        }
+                    ]
+                },
+            }
+        ],
+    )
+    frontline = make_unit(name="铁卫", side="defender", template_key="guild_blackwind_iron_guard", battle_modifiers={})
+
+    defenders = [general, overseer, second_overseer, frontline]
+    for actor in defenders:
+        run_passives_for_timing(
+            "round_start",
+            actor=actor,
+            target=None,
+            attacker_team=[],
+            defender_team=defenders,
+            round_no=1,
+            event_sink=[],
+            rng=random.Random(1),
+        )
+
+    assert frontline.battle_modifiers["outgoing_damage_multiplier"] == 1.298
+    assert (
+        adjust_arena_coop_damage(frontline, make_unit(name="来敌", side="attacker", template_key="hero_guest"), 1000)
+        == 1298
+    )
 
 
 def test_run_passives_for_timing_executes_matching_trigger_only_once():

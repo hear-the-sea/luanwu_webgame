@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 from django.core.management import call_command
 
-from guests.models import GuestTemplate, RecruitmentPool, RecruitmentPoolEntry, Skill, SkillBook
+from gameplay.services.manor.core import ensure_manor
+from guests.models import Guest, GuestStatus, GuestTemplate, RecruitmentPool, RecruitmentPoolEntry, Skill, SkillBook
 
 
 @pytest.mark.django_db
@@ -293,3 +294,175 @@ def test_load_guest_templates_removes_records_not_in_latest_payload(tmp_path: Pa
     assert set(Skill.objects.values_list("key", flat=True)) == {"skill_loader_keep"}
     assert set(SkillBook.objects.values_list("key", flat=True)) == {"book_loader_keep"}
     assert set(RecruitmentPool.objects.values_list("key", flat=True)) == {"pool_loader_keep"}
+
+
+@pytest.mark.django_db
+def test_load_guest_templates_reimport_syncs_existing_guest_current_hp_for_base_hp_changes(
+    tmp_path: Path,
+    django_user_model,
+) -> None:
+    payload_v1 = {
+        "templates": [
+            {
+                "key": "tpl_loader_hp_sync",
+                "name": "血量同步模板",
+                "archetype": "military",
+                "rarity": "gray",
+                "base_hp": 1200,
+            }
+        ],
+    }
+    payload_v2 = {
+        "templates": [
+            {
+                "key": "tpl_loader_hp_sync",
+                "name": "血量同步模板",
+                "archetype": "military",
+                "rarity": "gray",
+                "base_hp": 1000,
+            }
+        ],
+    }
+
+    file_v1 = tmp_path / "guest_templates_hp_sync_v1.json"
+    file_v1.write_text(json.dumps(payload_v1, ensure_ascii=False), encoding="utf-8")
+
+    file_v2 = tmp_path / "guest_templates_hp_sync_v2.json"
+    file_v2.write_text(json.dumps(payload_v2, ensure_ascii=False), encoding="utf-8")
+
+    skills_file = tmp_path / "skills_empty.json"
+    skills_file.write_text("{}", encoding="utf-8")
+
+    heroes_dir = tmp_path / "heroes"
+    heroes_dir.mkdir()
+
+    call_command(
+        "load_guest_templates",
+        file=str(file_v1),
+        skills_file=str(skills_file),
+        heroes_dir=str(heroes_dir),
+        skip_images=True,
+        verbosity=0,
+    )
+
+    template = GuestTemplate.objects.get(key="tpl_loader_hp_sync")
+    user = django_user_model.objects.create_user(username="load_guest_templates_hp_sync", password="pass12345")
+    manor = ensure_manor(user)
+
+    full_guest = Guest.objects.create(
+        manor=manor,
+        template=template,
+        level=10,
+        force=100,
+        intellect=80,
+        defense_stat=80,
+    )
+    half_guest = Guest.objects.create(
+        manor=manor,
+        template=template,
+        level=10,
+        force=100,
+        intellect=80,
+        defense_stat=80,
+        current_hp=full_guest.max_hp // 2,
+    )
+
+    assert full_guest.current_hp == 5200
+    assert half_guest.current_hp == 2600
+
+    call_command(
+        "load_guest_templates",
+        file=str(file_v2),
+        skills_file=str(skills_file),
+        heroes_dir=str(heroes_dir),
+        skip_images=True,
+        verbosity=0,
+    )
+
+    full_guest.refresh_from_db()
+    half_guest.refresh_from_db()
+
+    assert full_guest.max_hp == 5000
+    assert half_guest.max_hp == 5000
+    assert full_guest.current_hp == 5000
+    assert half_guest.current_hp == 2500
+
+
+@pytest.mark.django_db
+def test_load_guest_templates_reimport_clears_injured_status_when_hp_sync_reaches_full(
+    tmp_path: Path,
+    django_user_model,
+) -> None:
+    payload_v1 = {
+        "templates": [
+            {
+                "key": "tpl_loader_hp_status_sync",
+                "name": "血量状态同步模板",
+                "archetype": "military",
+                "rarity": "gray",
+                "base_hp": 1200,
+            }
+        ],
+    }
+    payload_v2 = {
+        "templates": [
+            {
+                "key": "tpl_loader_hp_status_sync",
+                "name": "血量状态同步模板",
+                "archetype": "military",
+                "rarity": "gray",
+                "base_hp": 1000,
+            }
+        ],
+    }
+
+    file_v1 = tmp_path / "guest_templates_hp_status_sync_v1.json"
+    file_v1.write_text(json.dumps(payload_v1, ensure_ascii=False), encoding="utf-8")
+
+    file_v2 = tmp_path / "guest_templates_hp_status_sync_v2.json"
+    file_v2.write_text(json.dumps(payload_v2, ensure_ascii=False), encoding="utf-8")
+
+    skills_file = tmp_path / "skills_empty.json"
+    skills_file.write_text("{}", encoding="utf-8")
+
+    heroes_dir = tmp_path / "heroes"
+    heroes_dir.mkdir()
+
+    call_command(
+        "load_guest_templates",
+        file=str(file_v1),
+        skills_file=str(skills_file),
+        heroes_dir=str(heroes_dir),
+        skip_images=True,
+        verbosity=0,
+    )
+
+    template = GuestTemplate.objects.get(key="tpl_loader_hp_status_sync")
+    user = django_user_model.objects.create_user(username="load_guest_templates_hp_status_sync", password="pass12345")
+    manor = ensure_manor(user)
+
+    guest = Guest.objects.create(
+        manor=manor,
+        template=template,
+        level=10,
+        force=100,
+        intellect=80,
+        defense_stat=80,
+        current_hp=5200,
+        status=GuestStatus.INJURED,
+    )
+
+    call_command(
+        "load_guest_templates",
+        file=str(file_v2),
+        skills_file=str(skills_file),
+        heroes_dir=str(heroes_dir),
+        skip_images=True,
+        verbosity=0,
+    )
+
+    guest.refresh_from_db()
+
+    assert guest.max_hp == 5000
+    assert guest.current_hp == 5000
+    assert guest.status == GuestStatus.IDLE

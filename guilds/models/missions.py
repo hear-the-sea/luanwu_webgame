@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 from battle.models import BattleReport, TroopTemplate
+from core.utils.time_scale import scale_duration
 
 from .base import Guild
 from .member import GuildMember
@@ -10,22 +11,27 @@ from .member import GuildMember
 class GuildMissionTemplate(models.Model):
     """帮会任务模板。"""
 
+    class TaskType(models.TextChoices):
+        GUEST = "guest", "门客"
+        TROOP = "troop", "护院"
+        DEFENSE = "defense", "防守"
+
     DIFFICULTY_CHOICES = [
         ("junior", "初级"),
         ("intermediate", "中级"),
         ("advanced", "高级"),
-    ]
-    TASK_TYPE_CHOICES = [
-        ("patrol", "巡逻"),
-        ("escort", "押运"),
-        ("suppress", "讨伐"),
     ]
 
     key = models.SlugField(unique=True, verbose_name="任务标识")
     name = models.CharField(max_length=64, verbose_name="任务名称")
     description = models.TextField(blank=True, verbose_name="任务描述")
     difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default="junior", verbose_name="难度")
-    task_type = models.CharField(max_length=20, choices=TASK_TYPE_CHOICES, default="patrol", verbose_name="任务类型")
+    task_type = models.CharField(
+        max_length=20,
+        choices=TaskType.choices,
+        default=TaskType.GUEST,
+        verbose_name="任务类型",
+    )
     base_duration_seconds = models.PositiveIntegerField(default=600, verbose_name="基础耗时(秒)")
     ruby_reward = models.PositiveIntegerField(default=0, verbose_name="红宝石奖励")
     recommended_guest_count = models.PositiveSmallIntegerField(default=1, verbose_name="推荐门客数")
@@ -44,6 +50,10 @@ class GuildMissionTemplate(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name}({self.key})"
+
+    @property
+    def actual_duration_seconds(self) -> int:
+        return scale_duration(self.base_duration_seconds, minimum=1)
 
 
 class GuildMissionRun(models.Model):

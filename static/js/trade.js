@@ -382,7 +382,7 @@
 
   function initTooltip() {
     if (typeof window.initItemTooltip === "function") {
-      window.initItemTooltip({ key: "trade_market" });
+      window.initItemTooltip({ key: "trade_market", trackPointer: false });
     }
   }
 

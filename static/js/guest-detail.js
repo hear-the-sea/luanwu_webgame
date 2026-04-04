@@ -1,4 +1,13 @@
-document.addEventListener("DOMContentLoaded", () => {
+const initGuestDetailPage = () => {
+  const detailRoot = document.querySelector(".guest-detail");
+  if (!detailRoot) {
+    return;
+  }
+  if (detailRoot.dataset.pageInitialized === "1") {
+    return;
+  }
+  detailRoot.dataset.pageInitialized = "1";
+
   const attributeResponseFieldMap = {
     force: "force",
     intellect: "intellect",
@@ -163,6 +172,15 @@ document.addEventListener("DOMContentLoaded", () => {
   bindAllocateForms();
   bindDismissForms();
 
+  if (typeof window.initItemTooltip === "function") {
+    window.initItemTooltip({
+      key: "guest_detail_equipment",
+      cellSelector: ".guest-equip-tooltip-trigger",
+      tooltipSelector: ".guest-equip-tooltip-bubble",
+      trackPointer: false,
+    });
+  }
+
   const skillModal = document.getElementById("skill-book-modal");
   const openSkillButtons = document.querySelectorAll(".open-skill-modal");
   const closeSkillButtons = document.querySelectorAll(".close-skill-modal");
@@ -303,4 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   equipModal?.querySelector(".close-equip-modal")?.addEventListener("click", closeEquipModal);
-});
+};
+
+document.addEventListener("DOMContentLoaded", initGuestDetailPage);
+document.addEventListener("partial-nav:loaded", initGuestDetailPage);

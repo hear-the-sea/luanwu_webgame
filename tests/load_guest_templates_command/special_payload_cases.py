@@ -11,12 +11,21 @@ from guests.management.commands.load_guest_templates import Command
 from guests.models import GuestTemplate, Skill, SkillKind
 
 
+def _hero_entry_by_key(payload: dict[str, list[dict[str, object]]], key: str) -> dict[str, object]:
+    for entries in payload.values():
+        for entry in entries:
+            if entry["key"] == key:
+                return entry
+    raise AssertionError(f"missing hero entry: {key}")
+
+
 def test_default_special_yaml_contains_task_specific_enemy_templates() -> None:
     command = Command()
     payload = command._load_heroes_payload("")
 
     green_keys = {entry["key"] for entry in payload.get("green", [])}
     blue_keys = {entry["key"] for entry in payload.get("blue", [])}
+    purple_keys = {entry["key"] for entry in payload.get("purple", [])}
     orange_keys = {entry["key"] for entry in payload.get("orange", [])}
 
     assert "task_huashan_jianwang" in green_keys
@@ -28,10 +37,14 @@ def test_default_special_yaml_contains_task_specific_enemy_templates() -> None:
     assert "task_shiren_xuanyuansanguang" in blue_keys
     assert "task_shiren_tiezhan" in blue_keys
     assert "task_shiren_luoshixiongdi" in blue_keys
+    assert "guild_wulinzhai_torch_archer" in blue_keys
+    assert "guild_wulinzhai_zhai_zhu" in purple_keys
+    assert "guild_bloodflag_head_escort" in purple_keys
+    assert "guild_blackwind_iron_guard" in purple_keys
+    assert "guild_blackwind_gate_general" in orange_keys
     assert "task_barbarian_chanyu" in orange_keys
 
 
-@pytest.mark.django_db
 def test_load_guest_templates_merges_default_arena_coop_special_skills(tmp_path: Path, monkeypatch) -> None:
     base_dir = tmp_path / "repo"
     data_dir = base_dir / "data"
@@ -54,6 +67,32 @@ def test_load_guest_templates_merges_default_arena_coop_special_skills(tmp_path:
     keys = {entry["key"] for entry in payload["skills"]}
     assert "base_skill" in keys
     assert "gl_top_nine_yang_guard" in keys
+
+
+def test_load_guest_templates_merges_default_guild_mission_special_skills() -> None:
+    payload = Command()._load_skills_payload("")
+
+    skills = {entry["key"]: entry for entry in payload["skills"]}
+
+    assert "guild_wulinzhai_shadow_raid" in skills
+    assert skills["guild_wulinzhai_night_signal"]["kind"] == "passive"
+    assert skills["guild_wulinzhai_night_signal"]["passive_config"]
+    assert skills["guild_bloodflag_convoy_command"]["kind"] == "passive"
+    assert skills["guild_bloodflag_convoy_command"]["passive_config"]
+    assert skills["guild_blackwind_battle_standard"]["kind"] == "passive"
+    assert skills["guild_blackwind_battle_standard"]["passive_config"]
+
+
+def test_default_special_yaml_contains_guild_mission_template_skill_bindings() -> None:
+    payload = Command()._load_heroes_payload("")
+
+    wulinzhai_zhai_zhu = _hero_entry_by_key(payload, "guild_wulinzhai_zhai_zhu")
+    bloodflag_head_escort = _hero_entry_by_key(payload, "guild_bloodflag_head_escort")
+    blackwind_gate_general = _hero_entry_by_key(payload, "guild_blackwind_gate_general")
+
+    assert "guild_wulinzhai_shadow_raid" in wulinzhai_zhai_zhu["skills"]
+    assert "guild_bloodflag_convoy_command" in bloodflag_head_escort["skills"]
+    assert "guild_blackwind_battle_standard" in blackwind_gate_general["skills"]
 
 
 @pytest.mark.django_db
@@ -121,7 +160,6 @@ def test_default_special_yaml_contains_guangming_top_enemy_templates() -> None:
     assert "gl_top_guard_morale" in front_entry["skills"]
 
 
-@pytest.mark.django_db
 def test_default_arena_coop_special_skills_include_passive_configs() -> None:
     payload = Command()._load_skills_payload("")
     skills = {entry["key"]: entry for entry in payload.get("skills", [])}
@@ -210,6 +248,21 @@ def test_load_guest_templates_imports_default_special_task_heroes(tmp_path: Path
     assert luoshi.name == "罗氏兄弟"
     assert luoshi.rarity == "blue"
     assert luoshi.recruitable is False
+
+    wulin = GuestTemplate.objects.get(key="guild_wulinzhai_zhai_zhu")
+    assert wulin.name == "乌鳞寨寨主"
+    assert wulin.rarity == "purple"
+    assert wulin.recruitable is False
+
+    bloodflag = GuestTemplate.objects.get(key="guild_bloodflag_head_escort")
+    assert bloodflag.name == "血旗总镖头"
+    assert bloodflag.rarity == "purple"
+    assert bloodflag.recruitable is False
+
+    blackwind = GuestTemplate.objects.get(key="guild_blackwind_gate_general")
+    assert blackwind.name == "黑风关守将"
+    assert blackwind.rarity == "orange"
+    assert blackwind.recruitable is False
 
     template = GuestTemplate.objects.get(key="task_barbarian_chanyu")
     assert template.name == "单于"

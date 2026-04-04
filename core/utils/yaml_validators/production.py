@@ -106,6 +106,103 @@ def validate_stable_production(
 
 VALID_SKILL_RARITIES = {"black", "gray", "green", "red", "blue", "purple", "orange"}
 VALID_SKILL_KINDS = {"active", "passive"}
+VALID_PASSIVE_EFFECT_TYPES = {
+    "heal_ratio",
+    "modify_outgoing_damage",
+    "modify_incoming_damage",
+    "set_softcap",
+    "set_reflect",
+    "set_state",
+    "emit_log",
+}
+VALID_PASSIVE_TARGET_SCOPES = {"self", "allies"}
+
+
+def _validate_passive_effects(
+    effects: list[dict],
+    *,
+    result: ValidationResult,
+    file: str,
+    path: str,
+) -> None:
+    for effect_idx, effect in enumerate(effects):
+        effect_path = f"{path}.effects[{effect_idx}]"
+        if not isinstance(effect, dict):
+            result.add(file, effect_path, "expected a mapping")
+            continue
+
+        effect_type = effect.get("type")
+        if effect_type is None:
+            result.add(file, effect_path, "missing required field 'type'")
+        else:
+            _check_in(
+                effect_type,
+                VALID_PASSIVE_EFFECT_TYPES,
+                result=result,
+                file=file,
+                path=effect_path,
+                field_name="type",
+            )
+
+        target_scope = effect.get("target_scope")
+        if target_scope is not None:
+            _check_in(
+                target_scope,
+                VALID_PASSIVE_TARGET_SCOPES,
+                result=result,
+                file=file,
+                path=effect_path,
+                field_name="target_scope",
+            )
+
+        target_template_in = effect.get("target_template_in")
+        if target_template_in is not None:
+            if not isinstance(target_template_in, list):
+                result.add(file, effect_path, "field 'target_template_in' expected list")
+            else:
+                for item_idx, item in enumerate(target_template_in):
+                    if not isinstance(item, str) or not item.strip():
+                        result.add(
+                            file,
+                            f"{effect_path}.target_template_in[{item_idx}]",
+                            "expected a non-empty string",
+                        )
+
+        target_kind_is = effect.get("target_kind_is")
+        if target_kind_is is not None and (not isinstance(target_kind_is, str) or not target_kind_is.strip()):
+            result.add(file, effect_path, "field 'target_kind_is' expected non-empty string")
+
+
+def _validate_passive_config(passive_config: dict, *, result: ValidationResult, file: str, path: str) -> None:
+    triggers = passive_config.get("triggers")
+    if triggers is None:
+        return
+    if not isinstance(triggers, list):
+        result.add(file, f"{path}.triggers", "expected a list")
+        return
+
+    for trigger_idx, trigger in enumerate(triggers):
+        trigger_path = f"{path}.triggers[{trigger_idx}]"
+        if not isinstance(trigger, dict):
+            result.add(file, trigger_path, "expected a mapping")
+            continue
+
+        timing = trigger.get("timing")
+        if timing is not None and (not isinstance(timing, str) or not timing.strip()):
+            result.add(file, trigger_path, "field 'timing' expected non-empty string")
+
+        conditions = trigger.get("conditions")
+        if conditions is not None and not isinstance(conditions, dict):
+            result.add(file, trigger_path, "field 'conditions' expected mapping")
+
+        effects = trigger.get("effects")
+        if effects is None:
+            result.add(file, trigger_path, "missing required field 'effects'")
+            continue
+        if not isinstance(effects, list):
+            result.add(file, f"{trigger_path}.effects", "expected a list")
+            continue
+        _validate_passive_effects(effects, result=result, file=file, path=trigger_path)
 
 
 def validate_guest_skills(data: dict, *, file: str = "guest_skills.yaml") -> ValidationResult:
@@ -175,6 +272,13 @@ def validate_guest_skills(data: dict, *, file: str = "guest_skills.yaml") -> Val
             _check_positive(
                 required_value, result=result, file=file, path=path, field_name=field_name, allow_zero=False
             )
+
+        passive_config = skill.get("passive_config")
+        if passive_config is not None:
+            if isinstance(passive_config, dict):
+                _validate_passive_config(passive_config, result=result, file=file, path=f"{path}.passive_config")
+            else:
+                result.add(file, f"{path}.passive_config", "expected a mapping")
 
     return result
 

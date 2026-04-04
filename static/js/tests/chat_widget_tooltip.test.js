@@ -51,3 +51,53 @@ test("computeTooltipPosition keeps the tooltip inside viewport padding when spac
 
   assert.deepEqual(position, { left: 12, top: 18 });
 });
+
+test("resolveAnchorPoint uses the cell bottom-left when pointer tracking is disabled", () => {
+  const point = tooltip.resolveAnchorPoint(
+    { left: 40, top: 20, width: 100, height: 30, bottom: 50 },
+    null
+  );
+
+  assert.deepEqual(point, { x: 40, y: 50 });
+});
+
+test("initTooltip skips mousemove listener when pointer tracking is disabled", () => {
+  const listeners = [];
+  const previousDocument = global.document;
+  const previousMatchMedia = global.matchMedia;
+  const previousAddEventListener = global.addEventListener;
+  const previousRequestAnimationFrame = global.requestAnimationFrame;
+  const previousRegistry = global.__webgame_tooltip;
+
+  global.document = {
+    querySelector(selector) {
+      return selector === ".guest-equip-tooltip-trigger" ? {} : null;
+    },
+    addEventListener(type) {
+      listeners.push(type);
+    },
+  };
+  global.matchMedia = () => ({ matches: true });
+  global.addEventListener = () => {};
+  global.requestAnimationFrame = (callback) => {
+    callback();
+    return 1;
+  };
+  global.__webgame_tooltip = {};
+
+  tooltip.initTooltip({
+    key: "guest_detail_test",
+    cellSelector: ".guest-equip-tooltip-trigger",
+    tooltipSelector: ".guest-equip-tooltip-bubble",
+    trackPointer: false,
+  });
+
+  global.document = previousDocument;
+  global.matchMedia = previousMatchMedia;
+  global.addEventListener = previousAddEventListener;
+  global.requestAnimationFrame = previousRequestAnimationFrame;
+  global.__webgame_tooltip = previousRegistry;
+
+  assert.ok(listeners.includes("mouseover"));
+  assert.ok(!listeners.includes("mousemove"));
+});

@@ -138,6 +138,52 @@ def test_gear_options_view_lists_free_gear_without_inventory(game_data, django_u
 
 
 @pytest.mark.django_db
+def test_gear_options_view_accepts_nested_set_bonus_definition(game_data, django_user_model):
+    cache.clear()
+    user = django_user_model.objects.create_user(username="view_gear_options_nested_set_bonus", password="pass123")
+    manor = ensure_manor(user)
+    client = Client()
+    assert client.login(username="view_gear_options_nested_set_bonus", password="pass123")
+    before_count = GearItem.objects.filter(manor=manor).count()
+
+    template = ItemTemplate.objects.create(
+        key=f"view_gear_options_nested_set_bonus_{manor.id}",
+        name="嵌套套装测试刀",
+        effect_type="equip_weapon",
+        rarity="blue",
+        effect_payload={
+            "force": 18,
+            "set_key": "nested_set_bonus_suite",
+            "set_description": "嵌套套装",
+            "set_bonus": {
+                "pieces": 4,
+                "bonus": {
+                    "force": 12,
+                    "hp": 80,
+                },
+            },
+        },
+    )
+    InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    response = client.get(reverse("guests:gear_options"), {"slot": GearSlot.WEAPON})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload["options"]) == 1
+    assert payload["options"][0]["template_key"] == template.key
+    assert payload["options"][0]["name"] == template.name
+    assert payload["options"][0]["count"] == 1
+    assert GearItem.objects.filter(manor=manor).count() == before_count
+    assert not GearItem.objects.filter(manor=manor, template__key=template.key).exists()
+
+
+@pytest.mark.django_db
 def test_equip_view_accepts_template_key_and_materializes_on_write(game_data, django_user_model):
     manor, guest, client = bootstrap_guest_client(game_data, django_user_model, username="view_equip_template_key")
 

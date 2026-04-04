@@ -63,6 +63,7 @@ def get_guild_mission_page_context(member: GuildMember, *, selected_mission_key:
         .select_related("troop_template")
         .order_by("troop_template__priority", "troop_template__id")
     )
+
     mission_groups = {
         "junior": [mission for mission in mission_templates if mission.difficulty == "junior"],
         "intermediate": [mission for mission in mission_templates if mission.difficulty == "intermediate"],
@@ -184,6 +185,7 @@ def launch_guild_mission(
     )
 
     now = timezone.now()
+    duration_seconds = template.actual_duration_seconds
     run = GuildMissionRun.objects.create(
         guild=locked_guild,
         template=template,
@@ -194,8 +196,8 @@ def launch_guild_mission(
         guest_ids=[guest.id for guest in guests],
         guest_snapshots=guest_snapshots,
         troop_loadout=normalized_troops,
-        battle_at=now + timedelta(seconds=template.base_duration_seconds),
-        return_at=now + timedelta(seconds=template.base_duration_seconds),
+        battle_at=now + timedelta(seconds=duration_seconds),
+        return_at=now + timedelta(seconds=duration_seconds),
     )
     schedule_guild_mission_completion(run)
     return run
