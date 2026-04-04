@@ -8,6 +8,7 @@ from django.db import IntegrityError
 from django.db.models import F, QuerySet
 
 from ....models import InventoryItem, ItemTemplate, Manor, ResourceEvent
+from ...pvp_runtime.loot import normalize_positive_int_mapping
 from ...resources import log_resource_gain
 from .config import (
     LOOT_ITEM_SAMPLE_BATCH_SIZE,
@@ -16,7 +17,7 @@ from .config import (
     PVPConstants,
     random,
 )
-from .troops import _coerce_positive_int, _normalize_mapping, _normalize_positive_int_mapping
+from .troops import _coerce_positive_int, _normalize_mapping
 
 
 def _calculate_resource_loot(defender: Manor, loot_percent: float) -> Dict[str, int]:
@@ -190,8 +191,8 @@ def _apply_loot(
     """
     从防守方扣除被掠夺的资源和物品，返回实际扣除量。
     """
-    loot_resources = _normalize_positive_int_mapping(loot_resources)
-    loot_items = _normalize_positive_int_mapping(loot_items)
+    loot_resources = normalize_positive_int_mapping(loot_resources)
+    loot_items = normalize_positive_int_mapping(loot_items)
     manor = locked_manor or Manor.objects.select_for_update().get(pk=defender.pk)
     actual_resources: Dict[str, int] = {}
     actual_items: Dict[str, int] = {}
@@ -243,8 +244,8 @@ def _apply_loot(
 
 def _format_loot_description(resources: Dict[str, int], items: Dict[str, int]) -> str:
     """格式化战利品描述"""
-    resources = _normalize_positive_int_mapping(resources)
-    items = _normalize_positive_int_mapping(items)
+    resources = normalize_positive_int_mapping(resources)
+    items = normalize_positive_int_mapping(items)
     parts = []
 
     if resources.get("grain"):
@@ -269,7 +270,7 @@ def _format_battle_rewards_description(battle_rewards: Dict[str, Any]) -> str:
 
     parts = []
     exp_fruit = _coerce_positive_int(normalized_rewards.get("exp_fruit", 0), 0)
-    equipment = _normalize_positive_int_mapping(normalized_rewards.get("equipment"))
+    equipment = normalize_positive_int_mapping(normalized_rewards.get("equipment"))
 
     if exp_fruit > 0:
         parts.append(f"经验果 x{exp_fruit}")
@@ -294,7 +295,7 @@ def _format_capture_description(capture_payload: Any) -> str:
 
 def _grant_loot_items(manor: Manor, items: Dict[str, int]) -> None:
     """批量发放掠夺的物品"""
-    items = _normalize_positive_int_mapping(items)
+    items = normalize_positive_int_mapping(items)
     if not items:
         return
 

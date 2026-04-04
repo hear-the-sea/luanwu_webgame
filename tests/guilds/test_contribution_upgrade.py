@@ -6,7 +6,7 @@ from django.utils import timezone
 import guilds.constants as guild_constants
 from core.exceptions import GuildContributionError, GuildValidationError
 from gameplay.models import InventoryItem, ItemTemplate, Manor
-from guilds.models import GuildDonationLog, GuildMember, GuildResourceLog
+from guilds.models import GuildDonationLog, GuildMember, GuildResourceLog, GuildWarehouse
 from guilds.services import contribution as contribution_service
 from guilds.services import guild as guild_service
 
@@ -100,8 +100,10 @@ class TestGuildContribution:
         member.refresh_from_db()
         guild.refresh_from_db()
         gold_bar_item.refresh_from_db()
+        warehouse_row = GuildWarehouse.objects.get(guild=guild, item_key="gold_bar")
 
-        assert guild.gold_bar == 2
+        assert guild.gold_bar == 0
+        assert warehouse_row.quantity == 2
         assert gold_bar_item.quantity == initial_quantity - 2
         assert member.total_contribution == expected_contribution
         assert GuildDonationLog.objects.filter(guild=guild, member=member, resource_type="gold_bar", amount=2).exists()
@@ -174,24 +176,24 @@ class TestGuildContribution:
 class TestGuildUpgrade:
     def test_upgrade_guild(self, user_with_gold_bars):
         guild = guild_service.create_guild(user=user_with_gold_bars, name="升级帮会", description="")
-
-        guild.gold_bar = 100
-        guild.save()
+        GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=100, contribution_cost=50)
 
         initial_level = guild.level
 
         guild_service.upgrade_guild(guild, user_with_gold_bars)
         guild.refresh_from_db()
 
+        remaining_row = GuildWarehouse.objects.get(guild=guild, item_key="gold_bar")
         assert guild.level == initial_level + 1
-        assert guild.gold_bar < 100
+        assert remaining_row.quantity < 100
+        assert remaining_row.total_exchanged == guild_constants.GUILD_UPGRADE_BASE_COST
 
     def test_upgrade_max_level(self, user_with_gold_bars):
         guild = guild_service.create_guild(user=user_with_gold_bars, name="满级帮会", description="")
 
         guild.level = 10
-        guild.gold_bar = 10000
         guild.save()
+        GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=10000, contribution_cost=50)
 
         with pytest.raises(GuildValidationError, match="最高等级"):
             guild_service.upgrade_guild(guild, user_with_gold_bars)

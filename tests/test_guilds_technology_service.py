@@ -6,6 +6,13 @@ import pytest
 from django.db.utils import DatabaseError
 
 
+def _seed_basic_tech_upgrade_warehouse_costs(guild) -> None:
+    from guilds.models import GuildWarehouse
+
+    GuildWarehouse.objects.create(guild=guild, item_key="grain", quantity=999999, contribution_cost=2)
+    GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=999999, contribution_cost=50)
+
+
 @pytest.mark.django_db
 def test_calculate_tech_upgrade_cost_defaults_and_scales():
     from guilds.services.technology import calculate_tech_upgrade_cost
@@ -132,8 +139,9 @@ def test_upgrade_technology_happy_path(monkeypatch, django_user_model):
     ensure_manor(operator)
 
     founder = django_user_model.objects.create_user(username="tech_founder4", password="pass")
-    guild = Guild.objects.create(name="TechGuild4", founder=founder, silver=999999, grain=999999, gold_bar=999999)
+    guild = Guild.objects.create(name="TechGuild4", founder=founder, silver=999999, grain=0, gold_bar=0)
     tech = GuildTechnology.objects.create(guild=guild, tech_key="equipment_forge", level=0, max_level=5)
+    _seed_basic_tech_upgrade_warehouse_costs(guild)
 
     upgrade_technology(guild, "equipment_forge", operator)
 
@@ -143,6 +151,39 @@ def test_upgrade_technology_happy_path(monkeypatch, django_user_model):
     assert guild.silver < 999999
     assert GuildResourceLog.objects.filter(guild=guild, action="tech_upgrade").exists()
     assert announcements
+
+
+@pytest.mark.django_db
+def test_upgrade_technology_spends_grain_and_gold_bar_from_warehouse(monkeypatch, django_user_model):
+    from guilds.models import Guild, GuildTechnology, GuildWarehouse
+    from guilds.services.technology import upgrade_technology
+
+    monkeypatch.setattr(
+        "guilds.services.technology.get_active_membership",
+        lambda *_a, **_k: SimpleNamespace(can_manage=True),
+    )
+    monkeypatch.setattr("guilds.services.technology.create_announcement", lambda *_a, **_k: None)
+
+    operator = django_user_model.objects.create_user(username="tech_operator_warehouse_cost", password="pass")
+    founder = django_user_model.objects.create_user(username="tech_founder_warehouse_cost", password="pass")
+    guild = Guild.objects.create(name="TechWarehouseCost", founder=founder, silver=10000, grain=0, gold_bar=0)
+    GuildTechnology.objects.create(guild=guild, tech_key="march_speed", level=0, max_level=5)
+    grain_row = GuildWarehouse.objects.create(guild=guild, item_key="grain", quantity=6000, contribution_cost=2)
+    gold_bar_row = GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=4, contribution_cost=50)
+
+    upgrade_technology(guild, "march_speed", operator)
+
+    guild.refresh_from_db()
+    grain_row.refresh_from_db()
+    gold_bar_row.refresh_from_db()
+
+    assert guild.silver == 0
+    assert guild.grain == 0
+    assert guild.gold_bar == 0
+    assert grain_row.quantity == 1000
+    assert grain_row.total_exchanged == 5000
+    assert gold_bar_row.quantity == 1
+    assert gold_bar_row.total_exchanged == 3
 
 
 @pytest.mark.django_db
@@ -164,10 +205,11 @@ def test_upgrade_technology_keeps_success_when_announcement_fails(monkeypatch, d
         name="TechGuildAnnounceFail",
         founder=founder,
         silver=999999,
-        grain=999999,
-        gold_bar=999999,
+        grain=0,
+        gold_bar=0,
     )
     tech = GuildTechnology.objects.create(guild=guild, tech_key="equipment_forge", level=0, max_level=5)
+    _seed_basic_tech_upgrade_warehouse_costs(guild)
 
     monkeypatch.setattr(
         "guilds.services.technology.create_announcement",
@@ -202,10 +244,11 @@ def test_upgrade_technology_programming_error_in_announcement_bubbles_up(monkeyp
         name="TechGuildAnnounceBug",
         founder=founder,
         silver=999999,
-        grain=999999,
-        gold_bar=999999,
+        grain=0,
+        gold_bar=0,
     )
     tech = GuildTechnology.objects.create(guild=guild, tech_key="equipment_forge", level=0, max_level=5)
+    _seed_basic_tech_upgrade_warehouse_costs(guild)
 
     monkeypatch.setattr(
         "guilds.services.technology.create_announcement",
@@ -279,8 +322,9 @@ def test_upgrade_technology_insufficient_resources(monkeypatch, django_user_mode
 
     operator = django_user_model.objects.create_user(username="tech_operator3", password="pass")
     founder = django_user_model.objects.create_user(username="tech_founder6", password="pass")
-    guild = Guild.objects.create(name="TechGuild6", founder=founder, silver=0, grain=999999, gold_bar=999999)
+    guild = Guild.objects.create(name="TechGuild6", founder=founder, silver=0, grain=0, gold_bar=0)
     tech = GuildTechnology.objects.create(guild=guild, tech_key="equipment_forge", level=0, max_level=5)
+    _seed_basic_tech_upgrade_warehouse_costs(guild)
 
     with pytest.raises(GuildTechnologyError, match="银两不足"):
         upgrade_technology(guild, "equipment_forge", operator)

@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db import models
 from django.db.models import Count, Q
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -55,6 +56,12 @@ class Guild(models.Model):
     # 状态
     is_active = models.BooleanField(default=True, verbose_name="是否活跃")
     auto_accept = models.BooleanField(default=False, verbose_name="自动接受申请")
+    newbie_protection_until = models.DateTimeField(null=True, blank=True, verbose_name="新帮保护截止时间")
+    defeat_protection_until = models.DateTimeField(null=True, blank=True, verbose_name="战败保护截止时间")
+    pvp_attack_count_today = models.PositiveSmallIntegerField(default=0, verbose_name="今日主动进攻次数")
+    pvp_attack_count_reset_at = models.DateField(default=timezone.localdate, verbose_name="PVP 主动进攻重置时间")
+    pvp_defense_count_today = models.PositiveSmallIntegerField(default=0, verbose_name="今日被攻击次数")
+    pvp_defense_count_reset_at = models.DateField(default=timezone.localdate, verbose_name="PVP 被攻击重置时间")
 
     # 自定义管理器
     objects = GuildManager()
@@ -104,3 +111,15 @@ class Guild(models.Model):
     def can_appoint_admin(self):
         """是否可以任命管理员"""
         return self.get_admins().count() < 2
+
+    @property
+    def is_under_newbie_protection(self) -> bool:
+        if not self.newbie_protection_until:
+            return False
+        return self.newbie_protection_until > timezone.now()
+
+    @property
+    def is_under_defeat_protection(self) -> bool:
+        if not self.defeat_protection_until:
+            return False
+        return self.defeat_protection_until > timezone.now()

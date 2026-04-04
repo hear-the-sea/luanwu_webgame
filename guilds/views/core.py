@@ -18,6 +18,7 @@ from gameplay.models import Manor
 from ..decorators import require_guild_leader
 from ..models import Guild
 from ..services import guild as guild_service
+from ..services.warehouse import get_guild_material_balances
 from .contribution import build_guild_resource_context
 from .helpers import execute_guild_action, load_guild_leader, load_recent_announcements
 
@@ -166,6 +167,7 @@ def guild_detail(request: Any, guild_id: int) -> HttpResponse:
     if is_member and member is not None:
         manor = get_object_or_404(Manor, user=request.user)
         context.update(build_guild_resource_context(member, manor=manor))
+        context["guild_material_balances"] = get_guild_material_balances(member.guild)
 
     return render(request, "guilds/detail.html", context)
 
@@ -202,6 +204,7 @@ def guild_info(request: Any, guild_id: int) -> HttpResponse:
 
     context = {
         "guild": guild,
+        "guild_material_balances": get_guild_material_balances(guild),
     }
 
     return render(request, "guilds/info.html", context)

@@ -12,6 +12,7 @@
         </div>
         <div class="flex gap-2">
             <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
+            <a href="{% url 'guilds:pvp' %}" class="tw-btn-secondary">帮会PVP</a>
         </div>
     </div>
 
@@ -71,11 +72,11 @@
             </div>
             <div>
                 <dt>粮食</dt>
-                <dd class="tw-guild-resource-value resource-grain">{{ guild.grain|floatformat:0 }}</dd>
+                <dd class="tw-guild-resource-value resource-grain">{{ guild_material_balances.grain|floatformat:0 }}</dd>
             </div>
             <div>
                 <dt>金条</dt>
-                <dd class="tw-guild-resource-value resource-gold">{{ guild.gold_bar }}</dd>
+                <dd class="tw-guild-resource-value resource-gold">{{ guild_material_balances.gold_bar }}</dd>
             </div>
         </dl>
     </section>

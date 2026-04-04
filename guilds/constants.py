@@ -75,6 +75,18 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
         "dispatch_guest_base_limit": 5,
         "replace_cooldown_seconds": 30 * 60,
     },
+    "pvp": {
+        "newbie_protection_seconds": 48 * 3600,
+        "defeat_protection_seconds": 12 * 3600,
+        "max_daily_attack_count": 2,
+        "max_daily_defense_count": 3,
+        "max_target_level_gap": 3,
+        "silver_floor": 20000,
+        "silver_loot_percent": 10,
+        "warehouse_loot_percent": 10,
+        "fixed_attack_cost_silver": 10000,
+        "warehouse_loot_whitelist": ["grain", "gold_bar", "red_ruby"],
+    },
 }
 
 
@@ -123,6 +135,7 @@ def normalize_guild_rules(raw: Any) -> dict[str, Any]:
         "technology": ensure_mapping(root.get("technology"), logger=logger, context="guild rules.technology"),
         "warehouse": ensure_mapping(root.get("warehouse"), logger=logger, context="guild rules.warehouse"),
         "hero_pool": ensure_mapping(root.get("hero_pool"), logger=logger, context="guild rules.hero_pool"),
+        "pvp": ensure_mapping(root.get("pvp"), logger=logger, context="guild rules.pvp"),
     }
 
     technology_names = dict(DEFAULT_GUILD_RULES["technology"]["names"])
@@ -215,6 +228,64 @@ def normalize_guild_rules(raw: Any) -> dict[str, Any]:
                 minimum=0,
             ),
         },
+        "pvp": {
+            "newbie_protection_seconds": _to_positive_int(
+                config["pvp"].get("newbie_protection_seconds"),
+                DEFAULT_GUILD_RULES["pvp"]["newbie_protection_seconds"],
+                minimum=0,
+            ),
+            "defeat_protection_seconds": _to_positive_int(
+                config["pvp"].get("defeat_protection_seconds"),
+                DEFAULT_GUILD_RULES["pvp"]["defeat_protection_seconds"],
+                minimum=0,
+            ),
+            "max_daily_attack_count": _to_positive_int(
+                config["pvp"].get("max_daily_attack_count"),
+                DEFAULT_GUILD_RULES["pvp"]["max_daily_attack_count"],
+                minimum=0,
+            ),
+            "max_daily_defense_count": _to_positive_int(
+                config["pvp"].get("max_daily_defense_count"),
+                DEFAULT_GUILD_RULES["pvp"]["max_daily_defense_count"],
+                minimum=0,
+            ),
+            "max_target_level_gap": _to_positive_int(
+                config["pvp"].get("max_target_level_gap"),
+                DEFAULT_GUILD_RULES["pvp"]["max_target_level_gap"],
+                minimum=0,
+            ),
+            "silver_floor": _to_positive_int(
+                config["pvp"].get("silver_floor"),
+                DEFAULT_GUILD_RULES["pvp"]["silver_floor"],
+                minimum=0,
+            ),
+            "silver_loot_percent": _to_positive_int(
+                config["pvp"].get("silver_loot_percent"),
+                DEFAULT_GUILD_RULES["pvp"]["silver_loot_percent"],
+                minimum=0,
+                maximum=100,
+            ),
+            "warehouse_loot_percent": _to_positive_int(
+                config["pvp"].get("warehouse_loot_percent"),
+                DEFAULT_GUILD_RULES["pvp"]["warehouse_loot_percent"],
+                minimum=0,
+                maximum=100,
+            ),
+            "fixed_attack_cost_silver": _to_positive_int(
+                config["pvp"].get("fixed_attack_cost_silver"),
+                DEFAULT_GUILD_RULES["pvp"]["fixed_attack_cost_silver"],
+                minimum=0,
+            ),
+            "warehouse_loot_whitelist": [
+                str(item_key).strip()
+                for item_key in config["pvp"].get(
+                    "warehouse_loot_whitelist",
+                    DEFAULT_GUILD_RULES["pvp"]["warehouse_loot_whitelist"],
+                )
+                if str(item_key).strip()
+            ]
+            or list(DEFAULT_GUILD_RULES["pvp"]["warehouse_loot_whitelist"]),
+        },
     }
 
 
@@ -243,6 +314,12 @@ def refresh_guild_constants() -> None:
     global EXCHANGE_COSTS, DAILY_EXCHANGE_LIMIT
     global GUILD_HERO_POOL_SLOT_LIMIT, GUILD_BATTLE_LINEUP_LIMIT, GUILD_DISPATCH_GUEST_BASE_LIMIT
     global GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS
+    global GUILD_PVP_RULES
+    global GUILD_PVP_NEWBIE_PROTECTION_SECONDS, GUILD_PVP_DEFEAT_PROTECTION_SECONDS
+    global GUILD_PVP_MAX_DAILY_ATTACK_COUNT, GUILD_PVP_MAX_DAILY_DEFENSE_COUNT
+    global GUILD_PVP_MAX_TARGET_LEVEL_GAP, GUILD_PVP_SILVER_FLOOR
+    global GUILD_PVP_SILVER_LOOT_PERCENT, GUILD_PVP_WAREHOUSE_LOOT_PERCENT
+    global GUILD_PVP_FIXED_ATTACK_COST_SILVER, GUILD_PVP_WAREHOUSE_LOOT_WHITELIST
 
     _GUILD_RULES = load_guild_rules()
 
@@ -266,6 +343,17 @@ def refresh_guild_constants() -> None:
     GUILD_BATTLE_LINEUP_LIMIT = _GUILD_RULES["hero_pool"]["battle_lineup_limit"]
     GUILD_DISPATCH_GUEST_BASE_LIMIT = _GUILD_RULES["hero_pool"]["dispatch_guest_base_limit"]
     GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS = _GUILD_RULES["hero_pool"]["replace_cooldown_seconds"]
+    GUILD_PVP_RULES = _GUILD_RULES["pvp"]
+    GUILD_PVP_NEWBIE_PROTECTION_SECONDS = GUILD_PVP_RULES["newbie_protection_seconds"]
+    GUILD_PVP_DEFEAT_PROTECTION_SECONDS = GUILD_PVP_RULES["defeat_protection_seconds"]
+    GUILD_PVP_MAX_DAILY_ATTACK_COUNT = GUILD_PVP_RULES["max_daily_attack_count"]
+    GUILD_PVP_MAX_DAILY_DEFENSE_COUNT = GUILD_PVP_RULES["max_daily_defense_count"]
+    GUILD_PVP_MAX_TARGET_LEVEL_GAP = GUILD_PVP_RULES["max_target_level_gap"]
+    GUILD_PVP_SILVER_FLOOR = GUILD_PVP_RULES["silver_floor"]
+    GUILD_PVP_SILVER_LOOT_PERCENT = GUILD_PVP_RULES["silver_loot_percent"]
+    GUILD_PVP_WAREHOUSE_LOOT_PERCENT = GUILD_PVP_RULES["warehouse_loot_percent"]
+    GUILD_PVP_FIXED_ATTACK_COST_SILVER = GUILD_PVP_RULES["fixed_attack_cost_silver"]
+    GUILD_PVP_WAREHOUSE_LOOT_WHITELIST = GUILD_PVP_RULES["warehouse_loot_whitelist"]
 
 
 _GUILD_RULES = load_guild_rules()
@@ -301,3 +389,16 @@ GUILD_HERO_POOL_SLOT_LIMIT = _GUILD_RULES["hero_pool"]["slot_limit"]
 GUILD_BATTLE_LINEUP_LIMIT = _GUILD_RULES["hero_pool"]["battle_lineup_limit"]
 GUILD_DISPATCH_GUEST_BASE_LIMIT = _GUILD_RULES["hero_pool"]["dispatch_guest_base_limit"]
 GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS = _GUILD_RULES["hero_pool"]["replace_cooldown_seconds"]
+
+# ============ 帮会 PVP ============
+GUILD_PVP_RULES = _GUILD_RULES["pvp"]
+GUILD_PVP_NEWBIE_PROTECTION_SECONDS = GUILD_PVP_RULES["newbie_protection_seconds"]
+GUILD_PVP_DEFEAT_PROTECTION_SECONDS = GUILD_PVP_RULES["defeat_protection_seconds"]
+GUILD_PVP_MAX_DAILY_ATTACK_COUNT = GUILD_PVP_RULES["max_daily_attack_count"]
+GUILD_PVP_MAX_DAILY_DEFENSE_COUNT = GUILD_PVP_RULES["max_daily_defense_count"]
+GUILD_PVP_MAX_TARGET_LEVEL_GAP = GUILD_PVP_RULES["max_target_level_gap"]
+GUILD_PVP_SILVER_FLOOR = GUILD_PVP_RULES["silver_floor"]
+GUILD_PVP_SILVER_LOOT_PERCENT = GUILD_PVP_RULES["silver_loot_percent"]
+GUILD_PVP_WAREHOUSE_LOOT_PERCENT = GUILD_PVP_RULES["warehouse_loot_percent"]
+GUILD_PVP_FIXED_ATTACK_COST_SILVER = GUILD_PVP_RULES["fixed_attack_cost_silver"]
+GUILD_PVP_WAREHOUSE_LOOT_WHITELIST = GUILD_PVP_RULES["warehouse_loot_whitelist"]

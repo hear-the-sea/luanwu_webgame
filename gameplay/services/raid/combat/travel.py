@@ -22,6 +22,9 @@ from core.utils.time_scale import scale_duration
 from guests.models import Guest
 
 from ....models import Manor, RaidRun
+from ...pvp_runtime.lifecycle import compute_symmetric_return_seconds
+from ...pvp_runtime.messages import build_blocked_target_body
+from ...pvp_runtime.protection import build_daily_cap_result
 from ...utils.messages import create_message
 from ..utils import calculate_distance, is_same_region
 from .config import PVPConstants
@@ -58,8 +61,13 @@ def _get_defender_battle_block_reason(defender: Manor, *, now: datetime | None =
         .exclude(status=RaidRun.Status.MARCHING)
         .count()
     )
-    if recent_attacks >= PVPConstants.RAID_MAX_DAILY_ATTACKS_RECEIVED:
-        return "该目标今日已被多次攻击，暂时无法攻击"
+    cap_result = build_daily_cap_result(
+        current_count=recent_attacks,
+        max_count=PVPConstants.RAID_MAX_DAILY_ATTACKS_RECEIVED,
+        blocked_reason="该目标今日已被多次攻击，暂时无法攻击",
+    )
+    if cap_result.blocked:
+        return cap_result.reason
     return None
 
 
@@ -76,8 +84,7 @@ def _retreat_raid_run_due_to_blocked_target(
         Countdown seconds until the run finishes returning.
     """
     now = now or timezone.now()
-    elapsed = max(0, int((now - locked_run.started_at).total_seconds()))
-    return_time = max(1, elapsed)
+    return_time = compute_symmetric_return_seconds(started_at=locked_run.started_at, now=now)
 
     locked_run.status = RaidRun.Status.RETREATED
     locked_run.return_at = now + timedelta(seconds=return_time)
@@ -88,7 +95,7 @@ def _retreat_raid_run_due_to_blocked_target(
             manor=locked_run.attacker,
             kind="system",
             title="部队已遣返",
-            body=f"目标 {locked_run.defender.display_name} 当前无法交战（{reason}），您的部队已自动遣返。",
+            body=build_blocked_target_body(target_name=locked_run.defender.display_name, reason=reason),
         )
     except RAID_BLOCKED_TARGET_MESSAGE_EXCEPTIONS as exc:
         logger.warning(

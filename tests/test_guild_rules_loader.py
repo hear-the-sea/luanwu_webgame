@@ -70,3 +70,25 @@ def test_load_guild_rules_reads_yaml_via_cache(monkeypatch):
         assert loaded["warehouse"]["daily_exchange_limit"] == 7
     finally:
         clear_guild_rules_cache()
+
+
+def test_load_guild_rules_normalizes_pvp_section():
+    rules = normalize_guild_rules(
+        {
+            "pvp": {
+                "newbie_protection_seconds": 172800,
+                "defeat_protection_seconds": 43200,
+                "max_daily_attack_count": 2,
+                "max_daily_defense_count": 3,
+                "max_target_level_gap": 3,
+                "silver_floor": 20000,
+                "silver_loot_percent": 10,
+                "warehouse_loot_percent": 10,
+                "fixed_attack_cost_silver": 10000,
+                "warehouse_loot_whitelist": ["grain", "gold_bar", "red_ruby"],
+            }
+        }
+    )
+
+    assert rules["pvp"]["fixed_attack_cost_silver"] == 10000
+    assert rules["pvp"]["warehouse_loot_whitelist"] == ["grain", "gold_bar", "red_ruby"]

@@ -14,6 +14,7 @@ from core.utils.rate_limit import rate_limit_redirect
 from .. import constants as guild_constants
 from ..decorators import require_guild_member
 from ..services import technology as technology_service
+from ..services.warehouse import get_guild_material_balances
 from .helpers import build_guild_member_context, execute_guild_action, load_ordered_technologies
 
 
@@ -120,6 +121,7 @@ def technology_list(request: Any) -> HttpResponse:
     context = build_guild_member_context(
         member,
         technologies=technologies,
+        guild_material_balances=get_guild_material_balances(member.guild),
         tech_names=guild_constants.TECH_NAMES,
         tech_display_meta={tech.tech_key: _build_tech_display_meta(tech) for tech in technologies},
     )

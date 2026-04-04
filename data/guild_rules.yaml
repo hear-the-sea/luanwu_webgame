@@ -76,3 +76,17 @@ hero_pool:
   battle_lineup_limit: 20
   dispatch_guest_base_limit: 5
   replace_cooldown_seconds: 1800
+pvp:
+  newbie_protection_seconds: 172800
+  defeat_protection_seconds: 43200
+  max_daily_attack_count: 2
+  max_daily_defense_count: 3
+  max_target_level_gap: 3
+  silver_floor: 20000
+  silver_loot_percent: 10
+  warehouse_loot_percent: 10
+  fixed_attack_cost_silver: 10000
+  warehouse_loot_whitelist:
+    - grain
+    - gold_bar
+    - red_ruby

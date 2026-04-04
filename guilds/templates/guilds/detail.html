@@ -87,11 +87,11 @@
                 </div>
                 <div>
                     <dt>粮食</dt>
-                    <dd class="tw-guild-resource-value resource-grain">{{ guild.grain|floatformat:0 }}</dd>
+                    <dd class="tw-guild-resource-value resource-grain">{{ guild_material_balances.grain|floatformat:0 }}</dd>
                 </div>
                 <div>
                     <dt>金条</dt>
-                    <dd class="tw-guild-resource-value resource-gold">{{ guild.gold_bar }}</dd>
+                    <dd class="tw-guild-resource-value resource-gold">{{ guild_material_balances.gold_bar }}</dd>
                 </div>
                 <div>
                     <dt>护院</dt>
@@ -114,6 +114,7 @@
                 <a href="{% url 'guilds:warehouse' %}" class="tw-btn-secondary">帮会仓库</a>
                 <a href="{% url 'guilds:hero_pool' %}" class="tw-btn-secondary">帮会门客池</a>
                 <a href="{% url 'guilds:missions' %}" class="tw-btn-secondary">帮会任务</a>
+                <a href="{% url 'guilds:pvp' %}" class="tw-btn-secondary">帮会PVP</a>
                 <a href="{% url 'guilds:contribution_ranking' %}" class="tw-btn-secondary">贡献排行</a>
                 <a href="{% url 'guilds:announcements' %}" class="tw-btn-secondary">帮会公告</a>
                 {% if member.can_manage %}

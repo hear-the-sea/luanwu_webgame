@@ -6,14 +6,15 @@ from typing import SupportsInt, cast
 from django.db import transaction
 from django.db.models import F
 
-from core.exceptions import GuildMembershipError, GuildTechnologyError
+from core.exceptions import GuildMembershipError, GuildTechnologyError, GuildWarehouseError
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.models import Manor
 
 from .. import constants as guild_constants
-from ..models import Guild, GuildResourceLog, GuildTechnology, GuildWarehouse
+from ..models import Guild, GuildResourceLog, GuildTechnology
 from .guild import create_announcement
 from .utils import get_active_membership
+from .warehouse import spend_guild_warehouse_items_locked
 
 logger = logging.getLogger(__name__)
 CAPACITY_TECH_KEYS = {"guild_lineup_capacity", "guild_dispatch_capacity"}
@@ -83,18 +84,15 @@ def upgrade_technology(guild, tech_key, operator):
 
         if tech_key in CAPACITY_TECH_KEYS:
             ruby_cost = int(cost.get("red_ruby", 0))
-            warehouse_ruby = (
-                GuildWarehouse.objects.select_for_update().filter(guild=guild_locked, item_key="red_ruby").first()
-            )
-            ruby_quantity = warehouse_ruby.quantity if warehouse_ruby else 0
-            if ruby_quantity < ruby_cost:
-                raise GuildTechnologyError(f"帮会仓库红宝石不足，需要{ruby_cost}")
             if ruby_cost > 0:
-                updated = GuildWarehouse.objects.filter(pk=warehouse_ruby.pk, quantity__gte=ruby_cost).update(
-                    quantity=F("quantity") - ruby_cost
-                )
-                if updated == 0:
-                    raise GuildTechnologyError(f"帮会仓库红宝石不足，需要{ruby_cost}")
+                try:
+                    spend_guild_warehouse_items_locked(
+                        guild_locked,
+                        {"red_ruby": ruby_cost},
+                        error_prefix="帮会仓库",
+                    )
+                except GuildWarehouseError as exc:
+                    raise GuildTechnologyError(str(exc)) from exc
             GuildTechnology.objects.filter(pk=tech_locked.pk).update(level=F("level") + 1)
             tech_locked.refresh_from_db(fields=["level"])
             GuildResourceLog.objects.create(
@@ -106,17 +104,19 @@ def upgrade_technology(guild, tech_key, operator):
         else:
             if guild_locked.silver < cost["silver"]:
                 raise GuildTechnologyError(f"帮会银两不足，需要{cost['silver']}")
-            if guild_locked.grain < cost["grain"]:
-                raise GuildTechnologyError(f"帮会粮食不足，需要{cost['grain']}")
-            if guild_locked.gold_bar < cost["gold_bar"]:
-                raise GuildTechnologyError(f"帮会金条不足，需要{cost['gold_bar']}")
+            warehouse_cost = {
+                item_key: cost.get(item_key, 0)
+                for item_key in ("grain", "gold_bar")
+                if int(cost.get(item_key, 0) or 0) > 0
+            }
+            if warehouse_cost:
+                try:
+                    spend_guild_warehouse_items_locked(guild_locked, warehouse_cost, error_prefix="帮会")
+                except GuildWarehouseError as exc:
+                    raise GuildTechnologyError(str(exc)) from exc
 
-            # 步骤3：使用F()表达式原子性地扣除帮会资源
-            Guild.objects.filter(pk=guild_locked.pk).update(
-                silver=F("silver") - cost["silver"],
-                grain=F("grain") - cost["grain"],
-                gold_bar=F("gold_bar") - cost["gold_bar"],
-            )
+            # 步骤3：银两继续使用 Guild 字段扣减
+            Guild.objects.filter(pk=guild_locked.pk).update(silver=F("silver") - cost["silver"])
 
             # 步骤4：使用F()表达式原子性地升级科技
             GuildTechnology.objects.filter(pk=tech_locked.pk).update(level=F("level") + 1)

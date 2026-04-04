@@ -10,6 +10,7 @@ from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
 from gameplay.services.resources import spend_resources_locked
 
 from ..models import Guild, GuildDonationLog, GuildMember, GuildResourceLog
+from .warehouse import add_item_to_warehouse
 
 # 安全修复：贡献度累积上限，防止PositiveIntegerField溢出（最大2147483647）
 MAX_CONTRIBUTION = 2_000_000_000  # 20亿安全上限
@@ -139,8 +140,16 @@ def donate_resource(member, resource_type, amount):
                 manor, {resource_type: amount}, note="帮会捐献", reason=ResourceEvent.Reason.GUILD_DONATION
             )
 
-        # 步骤4：使用F()表达式原子性地增加帮会资源
-        Guild.objects.filter(pk=guild_locked.pk).update(**{resource_type: F(resource_type) + amount})
+        # 步骤4：银两继续写 Guild 字段；粮食/金条写入真实帮会仓库行
+        if resource_type == "silver":
+            Guild.objects.filter(pk=guild_locked.pk).update(silver=F("silver") + amount)
+        else:
+            add_item_to_warehouse(
+                guild_locked,
+                resource_type,
+                amount,
+                guild_constants.CONTRIBUTION_RATES[resource_type],
+            )
 
         # 步骤5：使用F()表达式原子性地更新成员贡献和每日统计
         # 注意：每日计数不能用F()表达式，因为需要在重置后再累加

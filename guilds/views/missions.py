@@ -14,6 +14,7 @@ from core.utils import safe_int, sanitize_error_message
 
 from ..decorators import require_guild_member
 from ..models import GuildMissionRun
+from ..services import guild_dispatch as guild_dispatch_service
 from ..services import guild_missions as guild_mission_service
 from ..services import guild_troops as guild_troop_service
 from .helpers import execute_guild_action
@@ -37,7 +38,7 @@ def launch_mission(request: Any) -> HttpResponse:
     member = request.guild_member
     template_key = str(request.POST.get("template_key", "")).strip()
     pool_entry_ids = request.POST.getlist("pool_entry_ids")
-    troop_loadout = guild_mission_service.parse_troop_loadout_from_post(request.POST)
+    troop_loadout = guild_dispatch_service.parse_troop_loadout_from_post(request.POST)
 
     execute_guild_action(
         request,

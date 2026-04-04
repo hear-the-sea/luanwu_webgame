@@ -18,6 +18,7 @@ from gameplay.models import InventoryItem, Manor, PlayerTroop
 from ..decorators import require_guild_member
 from ..models import GuildTroopStorage, GuildWarehouse
 from ..services import contribution as contribution_service
+from ..services.warehouse import get_guild_material_balances
 from .helpers import build_guild_member_context, execute_guild_action, load_donation_logs, load_resource_logs
 
 
@@ -100,6 +101,7 @@ def _build_resource_page_context(member: Any, *, manor: Manor, page_mode: str) -
         member,
         manor=manor,
         page_mode=page_mode,
+        guild_material_balances=get_guild_material_balances(guild),
         red_ruby_count=_load_red_ruby_count(guild),
         troop_storages=troop_storages,
         player_troops=player_troops,

@@ -4,7 +4,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils import timezone
 
-from core.exceptions import GuildMembershipError, GuildPermissionError, GuildValidationError
+from core.exceptions import GuildMembershipError, GuildPermissionError, GuildValidationError, GuildWarehouseError
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.models import Manor
 from gameplay.services.utils.messages import bulk_create_messages
@@ -12,6 +12,7 @@ from gameplay.services.utils.messages import bulk_create_messages
 from .. import constants as guild_constants
 from ..models import Guild, GuildAnnouncement, GuildHeroPoolEntry, GuildMember, GuildTechnology
 from .utils import get_active_membership
+from .warehouse import spend_guild_warehouse_items_locked
 
 logger = logging.getLogger(__name__)
 
@@ -171,14 +172,16 @@ def upgrade_guild(guild, operator):
         # 计算升级成本（必须在锁内根据当前等级计算，避免并发下低价升级）
         cost = calculate_guild_upgrade_cost(guild_locked.level)
 
-        if guild_locked.gold_bar < cost:
-            raise GuildValidationError(f"帮会金条不足，需要{cost}金条")
+        try:
+            spend_guild_warehouse_items_locked(guild_locked, {"gold_bar": cost}, error_prefix="帮会")
+        except GuildWarehouseError as exc:
+            raise GuildValidationError(f"帮会金条不足，需要{cost}金条") from exc
 
-        # 步骤3：使用F()表达式原子性地扣除金条并提升等级
-        Guild.objects.filter(pk=guild_locked.pk).update(gold_bar=F("gold_bar") - cost, level=F("level") + 1)
+        # 步骤3：使用F()表达式原子性地提升等级
+        Guild.objects.filter(pk=guild_locked.pk).update(level=F("level") + 1)
 
         # 刷新对象以获取更新后的值（用于日志和公告）
-        guild_locked.refresh_from_db(fields=["level", "gold_bar"])
+        guild_locked.refresh_from_db(fields=["level"])
 
         # 步骤4：记录资源流水
         from ..models import GuildResourceLog

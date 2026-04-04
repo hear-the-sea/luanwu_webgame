@@ -7,6 +7,7 @@ from datetime import timedelta
 from celery import shared_task
 from django.core.cache import cache
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from common.utils import celery as celery_utils
@@ -20,9 +21,18 @@ from core.utils.infrastructure import (
 from core.utils.task_monitoring import increment_degraded_counter
 from gameplay.tasks._scheduled import DEFAULT_TASK_DEDUP_TIMEOUT, maybe_reschedule_for_future
 
-from .models import Guild, GuildDonationLog, GuildExchangeLog, GuildMissionRun, GuildResourceLog, GuildTechnology
+from .models import (
+    Guild,
+    GuildDonationLog,
+    GuildExchangeLog,
+    GuildMissionRun,
+    GuildRaidRun,
+    GuildResourceLog,
+    GuildTechnology,
+)
 from .services.contribution import reset_weekly_contributions
 from .services.guild_missions import finalize_guild_mission_run
+from .services.guild_raids import finalize_guild_raid, process_due_guild_raid, process_guild_raid_battle
 from .services.hero_pool import cleanup_invalid_hero_pool_entries
 from .services.warehouse import produce_equipment, produce_experience_items, produce_resource_packs
 
@@ -41,6 +51,16 @@ class GuildMissionTaskRetryRequested(RuntimeError):
 
 GUILD_MISSION_TASK_RETRY_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
     GuildMissionTaskRetryRequested,
+    infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
+)
+
+
+class GuildRaidTaskRetryRequested(RuntimeError):
+    """帮会掠夺补调度失败时的显式重试标记。"""
+
+
+GUILD_RAID_TASK_RETRY_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
+    GuildRaidTaskRetryRequested,
     infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
 )
 
@@ -153,6 +173,40 @@ def _reschedule_guild_mission_if_needed(run: GuildMissionRun, *, run_id: int) ->
         raise GuildMissionTaskRetryRequested(str(exc)) from exc
 
 
+def _load_guild_raid_run_for_completion(run_id: int) -> GuildRaidRun | None:
+    return (
+        GuildRaidRun.objects.select_related(
+            "attacker_guild",
+            "attacker_guild__founder",
+            "defender_guild",
+            "defender_guild__founder",
+            "started_by__user",
+        )
+        .filter(pk=run_id)
+        .first()
+    )
+
+
+def _reschedule_guild_raid_if_needed(run: GuildRaidRun, *, run_id: int) -> tuple[str | None, object]:
+    eta_value = run.battle_at if run.status == GuildRaidRun.Status.MARCHING else run.return_at
+    failure_message = f"guild raid reschedule dispatch failed: run_id={run_id}"
+    try:
+        return maybe_reschedule_for_future(
+            task_func=complete_guild_raid_task,
+            record_id=run_id,
+            eta_value=eta_value,
+            dedup_key=f"guild_raid:complete:{run_id}",
+            schedule_func=safe_apply_async_with_dedup,
+            logger=logger,
+            now_func=timezone.now,
+            log_message=f"guild raid reschedule failed: run_id={run_id}",
+            failure_message=failure_message,
+            dedup_timeout=DEFAULT_TASK_DEDUP_TIMEOUT,
+        )
+    except RuntimeError as exc:
+        raise GuildRaidTaskRetryRequested(str(exc)) from exc
+
+
 @shared_task(name="guilds.complete_guild_mission", bind=True, max_retries=2, default_retry_delay=30)
 def complete_guild_mission_task(self, run_id: int):
     try:
@@ -192,6 +246,62 @@ def scan_due_guild_missions(limit: int = 200) -> int:
                 count += 1
         except GUILD_MISSION_TASK_RETRY_EXCEPTIONS:
             logger.exception("Failed to finalize guild mission run %d", run.id)
+    return count
+
+
+@shared_task(name="guilds.complete_guild_raid", bind=True, max_retries=2, default_retry_delay=30)
+def complete_guild_raid_task(self, run_id: int):
+    try:
+        run = _load_guild_raid_run_for_completion(run_id)
+        if not run:
+            logger.warning("GuildRaidRun %d not found", run_id)
+            return "not_found"
+        if run.status == GuildRaidRun.Status.COMPLETED:
+            return "already_completed"
+
+        rescheduled, now = _reschedule_guild_raid_if_needed(run, run_id=run_id)
+        if rescheduled is not None:
+            return rescheduled
+
+        if run.status == GuildRaidRun.Status.MARCHING:
+            process_guild_raid_battle(run, now=now)
+            return "completed"
+
+        finalize_guild_raid(run, now=now)
+        return "completed"
+    except GUILD_RAID_TASK_RETRY_EXCEPTIONS as exc:
+        logger.exception("Failed to complete guild raid %d: %s", run_id, exc)
+        raise self.retry(exc=exc)
+
+
+@shared_task(name="guilds.scan_due_raids")
+def scan_due_guild_raids(limit: int = 200) -> int:
+    now = timezone.now()
+    qs = (
+        GuildRaidRun.objects.select_related(
+            "attacker_guild",
+            "attacker_guild__founder",
+            "defender_guild",
+            "defender_guild__founder",
+            "started_by__user",
+        )
+        .filter(
+            Q(status=GuildRaidRun.Status.MARCHING, battle_at__isnull=False, battle_at__lte=now)
+            | Q(
+                status__in=[GuildRaidRun.Status.RETURNING, GuildRaidRun.Status.RETREATED],
+                return_at__isnull=False,
+                return_at__lte=now,
+            )
+        )
+        .order_by("battle_at", "return_at", "id")[:limit]
+    )
+    count = 0
+    for run in qs:
+        try:
+            if process_due_guild_raid(run, now=now):
+                count += 1
+        except GUILD_RAID_TASK_RETRY_EXCEPTIONS:
+            logger.exception("Failed to finalize guild raid run %d", run.id)
     return count
 
 

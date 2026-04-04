@@ -4,6 +4,7 @@ from .hero_pool import GuildBattleLineupEntry, GuildHeroPoolEntry
 from .logs import GuildDonationLog, GuildExchangeLog, GuildResourceLog
 from .member import GuildMember
 from .missions import GuildMissionRun, GuildMissionTemplate, GuildTroopDonationLog, GuildTroopStorage
+from .pvp import GuildRaidRun
 
 __all__ = [
     # Base
@@ -22,6 +23,7 @@ __all__ = [
     "GuildMissionRun",
     "GuildTroopStorage",
     "GuildTroopDonationLog",
+    "GuildRaidRun",
     # Logs
     "GuildExchangeLog",
     "GuildDonationLog",

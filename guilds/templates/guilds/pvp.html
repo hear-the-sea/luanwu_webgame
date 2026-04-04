@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}帮会PVP{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+    <div class="tw-section-header">
+        <div>
+            <h1>帮会PVP</h1>
+            <p class="caption">管理员/帮主可发起帮会进攻，获胜后掠夺物资与战斗回收会进入帮会仓库。</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
+        </div>
+    </div>
+
+    <section class="tw-card">
+        <p class="m-0">今日主动进攻 {{ attack_count }}/{{ attack_limit }}，今日被攻击 {{ defense_count }}/{{ defense_limit }}</p>
+    </section>
+
+    {% if active_run %}
+    <section class="tw-card tw-guild-section-spacing">
+        <h2>当前出征</h2>
+        <p class="m-0">目标：{{ active_run.defender_guild.name }}</p>
+        <p class="m-0">状态：{{ active_run.get_status_display }}</p>
+        {% if member.can_manage and active_run.status == "marching" %}
+        <form method="post" action="{% url 'guilds:pvp_retreat' %}" class="mt-4">
+            {% csrf_token %}
+            <input type="hidden" name="run_id" value="{{ active_run.id }}">
+            <button type="submit" class="tw-btn-secondary">撤回</button>
+        </form>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    {% if incoming_runs %}
+    <section class="tw-card tw-guild-section-spacing">
+        <h2>来袭预警</h2>
+        {% for run in incoming_runs %}
+        <p class="m-0">{{ run.attacker_guild.name }} 正在来袭，预计 {{ run.battle_at|date:"H:i:s" }} 抵达。</p>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <section class="tw-card tw-guild-section-spacing">
+        <h2>帮会出征</h2>
+        {% if not member.can_manage %}
+        <p class="tw-muted m-0">仅帮主或管理员可配置帮会出征。</p>
+        {% elif active_run %}
+        <p class="tw-muted m-0">当前已有出征中的帮会部队，返程结束前不可再次发起进攻。</p>
+        {% else %}
+        <p class="caption">选择一个目标帮会、勾选本次上阵门客，并按需携带护院出征。</p>
+        <form id="guild-pvp-launch-form" method="post" action="{% url 'guilds:pvp_launch' %}">
+            {% csrf_token %}
+
+            <section class="tw-guild-section-spacing">
+                <h3>选择目标帮会</h3>
+                <div class="tw-guild-info-grid">
+                    {% for target in targets %}
+                    <label class="tw-card" style="display: block; cursor: {% if target.can_attack %}pointer{% else %}not-allowed{% endif %};">
+                        <div style="display: flex; align-items: flex-start; gap: 10px;">
+                            <input
+                                type="radio"
+                                name="defender_guild_id"
+                                value="{{ target.guild.id }}"
+                                {% if not target.can_attack %}disabled{% endif %}>
+                            <div>
+                                <h4 style="margin: 0 0 8px;">{{ target.guild.name }}</h4>
+                                <p class="tw-muted" style="margin: 0 0 4px;">等级：Lv {{ target.guild.level }}</p>
+                                <p class="tw-muted" style="margin: 0 0 4px;">预计单程 {{ target.travel_time_seconds }} 秒</p>
+                                {% if target.can_attack %}
+                                <p class="caption" style="margin: 0;">满足出征条件，可作为本次进攻目标。</p>
+                                {% else %}
+                                <p class="caption" style="margin: 0;">{{ target.blocked_reason }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </label>
+                    {% empty %}
+                    <p class="tw-muted m-0">暂无可显示的目标帮会。</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="tw-guild-section-spacing">
+                <h3>选择门客</h3>
+                <p class="caption">本次最多可派遣 {{ dispatch_limit }} 名上阵门客。</p>
+                {% if lineup_entries %}
+                <div class="tw-guild-quick-links">
+                    {% for entry in lineup_entries %}
+                    <label class="tw-btn-secondary" style="display: inline-flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" name="pool_entry_ids" value="{{ entry.pool_entry_id }}">
+                        {{ entry.pool_entry.source_guest.display_name }}
+                    </label>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="tw-muted m-0">当前没有可派遣的上阵门客。</p>
+                {% endif %}
+            </section>
+
+            <section class="tw-guild-section-spacing">
+                <h3>配置护院</h3>
+                {% if troop_storages %}
+                <div class="tw-guild-dl">
+                    {% for storage in troop_storages %}
+                    <div>
+                        <dt>{{ storage.troop_template.name }}</dt>
+                        <dd>
+                            当前库存 {{ storage.count }}
+                            <input
+                                class="tw-input"
+                                style="margin-top: 8px;"
+                                type="number"
+                                name="troop_{{ storage.troop_template.key }}"
+                                min="0"
+                                max="{{ storage.count }}"
+                                value="0">
+                        </dd>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="tw-muted m-0">当前没有可派遣的帮会护院。</p>
+                {% endif %}
+            </section>
+
+            <section class="tw-guild-section-spacing">
+                <button type="submit" class="tw-btn-primary">发起帮会出征</button>
+            </section>
+        </form>
+        {% endif %}
+    </section>
+</section>
+{% endblock %}

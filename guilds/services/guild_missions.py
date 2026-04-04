@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from battle.execution import BattleOptions, execute_battle
 from common.utils.celery import safe_apply_async
-from core.exceptions import GuildMembershipError, GuildPermissionError, GuildValidationError
+from core.exceptions import GuildValidationError
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.models import Manor
 from gameplay.services.battle_snapshots import build_guest_battle_snapshots, build_guest_snapshot_proxies
@@ -27,63 +27,11 @@ from ..models import (
     GuildTroopStorage,
 )
 from . import guild_troops
+from .guild_dispatch import load_dispatch_lineup_rows, lock_manage_member, normalize_positive_ids
 from .technology import get_guild_dispatch_capacity, get_guild_lineup_capacity
 from .warehouse import add_item_to_warehouse
 
 logger = logging.getLogger(__name__)
-
-
-def _normalize_positive_ids(raw_values: list[Any]) -> list[int]:
-    normalized: list[int] = []
-    seen: set[int] = set()
-    for raw in raw_values or []:
-        if raw is None or isinstance(raw, bool):
-            raise GuildValidationError("门客参数错误")
-        try:
-            value = int(raw)
-        except (TypeError, ValueError) as exc:
-            raise GuildValidationError("门客参数错误") from exc
-        if value <= 0:
-            raise GuildValidationError("门客参数错误")
-        if value in seen:
-            continue
-        normalized.append(value)
-        seen.add(value)
-    return normalized
-
-
-def _lock_manage_member(*, guild: Guild, operator, action_label: str) -> GuildMember:
-    membership = (
-        GuildMember.objects.select_for_update()
-        .select_related("guild", "user")
-        .filter(guild=guild, user=operator, is_active=True)
-        .first()
-    )
-    if not membership:
-        raise GuildMembershipError("您不在帮会中")
-    if not membership.can_manage:
-        raise GuildPermissionError(f"只有管理员/帮主可以{action_label}帮会任务")
-    return membership
-
-
-def _load_dispatch_lineup_rows(*, guild: Guild, pool_entry_ids: list[int]) -> list[GuildBattleLineupEntry]:
-    row_map = {
-        row.pool_entry_id: row
-        for row in GuildBattleLineupEntry.objects.select_for_update()
-        .select_related("pool_entry__owner_member__user__manor", "pool_entry__source_guest__template")
-        .filter(guild=guild, pool_entry_id__in=pool_entry_ids)
-        .order_by("slot_index", "id")
-    }
-    if len(row_map) != len(pool_entry_ids):
-        raise GuildValidationError("每次出征只能从上阵门客中选取")
-
-    ordered_rows: list[GuildBattleLineupEntry] = []
-    for pool_entry_id in pool_entry_ids:
-        row = row_map.get(pool_entry_id)
-        if row is None or row.pool_entry.source_guest is None:
-            raise GuildValidationError("每次出征只能从上阵门客中选取")
-        ordered_rows.append(row)
-    return ordered_rows
 
 
 def _dispatch_countdown_for_run(run: GuildMissionRun) -> int:
@@ -91,25 +39,6 @@ def _dispatch_countdown_for_run(run: GuildMissionRun) -> int:
         raise RuntimeError("guild mission run missing return_at")
     remaining_seconds = math.ceil((run.return_at - timezone.now()).total_seconds())
     return max(0, remaining_seconds)
-
-
-def parse_troop_loadout_from_post(post_data) -> dict[str, int]:
-    loadout: dict[str, int] = {}
-    for key, raw_value in getattr(post_data, "items", lambda: [])():
-        if not isinstance(key, str) or not key.startswith("troop_"):
-            continue
-        troop_key = key.removeprefix("troop_").strip()
-        if not troop_key:
-            continue
-        if raw_value is None or isinstance(raw_value, bool):
-            continue
-        try:
-            quantity = int(raw_value)
-        except (TypeError, ValueError):
-            continue
-        if quantity > 0:
-            loadout[troop_key] = quantity
-    return loadout
 
 
 def get_guild_mission_page_context(member: GuildMember, *, selected_mission_key: str = "") -> dict[str, Any]:
@@ -220,7 +149,7 @@ def launch_guild_mission(
     troop_loadout: dict[str, int],
 ) -> GuildMissionRun:
     locked_guild = Guild.objects.select_for_update().get(pk=guild.pk, is_active=True)
-    membership = _lock_manage_member(guild=locked_guild, operator=operator, action_label="发起")
+    membership = lock_manage_member(guild=locked_guild, operator=operator, permission_label="发起帮会任务")
     refresh_due_guild_mission_runs(locked_guild)
 
     if (
@@ -234,11 +163,11 @@ def launch_guild_mission(
     if template is None:
         raise GuildValidationError("帮会任务不存在")
 
-    normalized_pool_entry_ids = _normalize_positive_ids(pool_entry_ids)
+    normalized_pool_entry_ids = normalize_positive_ids(pool_entry_ids)
     if not normalized_pool_entry_ids:
         raise GuildValidationError("请选择至少一名上阵门客")
 
-    lineup_rows = _load_dispatch_lineup_rows(guild=locked_guild, pool_entry_ids=normalized_pool_entry_ids)
+    lineup_rows = load_dispatch_lineup_rows(guild=locked_guild, pool_entry_ids=normalized_pool_entry_ids)
     dispatch_limit = get_guild_dispatch_capacity(locked_guild)
     if len(lineup_rows) > dispatch_limit:
         raise GuildValidationError(f"本次最多只能派出 {dispatch_limit} 名门客")
@@ -281,7 +210,7 @@ def request_retreat(*, run: GuildMissionRun, operator) -> None:
         if locked_run is None:
             raise GuildValidationError("帮会任务不存在")
 
-        _lock_manage_member(guild=locked_run.guild, operator=operator, action_label="撤回")
+        lock_manage_member(guild=locked_run.guild, operator=operator, permission_label="撤回帮会任务")
         if locked_run.status != GuildMissionRun.Status.ACTIVE:
             raise GuildValidationError("当前任务不可撤回")
 

@@ -64,13 +64,13 @@ def _get_or_create_locked_storage(*, guild: Guild, troop_template: TroopTemplate
         )
 
 
-def _extract_attacker_troops_lost(loadout: dict[str, int], report: object | None) -> dict[str, int]:
+def _extract_troops_lost(*, loadout: dict[str, int], report: object | None, side: str) -> dict[str, int]:
     if not report:
         return {}
 
     losses = getattr(report, "losses", None) or {}
-    attacker_losses = losses.get("attacker", {}) or {}
-    casualties = attacker_losses.get("casualties", []) or []
+    side_losses = losses.get(side, {}) or {}
+    casualties = side_losses.get("casualties", []) or []
     if not isinstance(casualties, list):
         return {}
 
@@ -93,6 +93,22 @@ def _extract_attacker_troops_lost(loadout: dict[str, int], report: object | None
     return troops_lost
 
 
+def load_guild_troop_loadout(*, guild: Guild) -> dict[str, int]:
+    return {
+        storage.troop_template.key: int(storage.count or 0)
+        for storage in GuildTroopStorage.objects.select_related("troop_template")
+        .filter(guild=guild, count__gt=0)
+        .order_by("troop_template__priority", "troop_template__id")
+    }
+
+
+def build_guild_defender_setup(*, guild: Guild) -> dict[str, dict[str, int]]:
+    troop_loadout = load_guild_troop_loadout(guild=guild)
+    if not troop_loadout:
+        return {}
+    return {"troop_loadout": troop_loadout}
+
+
 def calculate_surviving_guild_troops(loadout: dict[str, int], report: object | None = None) -> dict[str, int]:
     normalized_loadout = _normalize_positive_int_mapping(loadout)
     if not normalized_loadout:
@@ -100,7 +116,7 @@ def calculate_surviving_guild_troops(loadout: dict[str, int], report: object | N
     if not report:
         return normalized_loadout
 
-    troops_lost = _extract_attacker_troops_lost(normalized_loadout, report)
+    troops_lost = _extract_troops_lost(loadout=normalized_loadout, report=report, side="attacker")
     surviving: dict[str, int] = {}
     for troop_key, original_count in normalized_loadout.items():
         lost = min(original_count, troops_lost.get(troop_key, 0))
@@ -108,6 +124,46 @@ def calculate_surviving_guild_troops(loadout: dict[str, int], report: object | N
         if remaining > 0:
             surviving[troop_key] = remaining
     return surviving
+
+
+@transaction.atomic
+def apply_guild_troop_losses(
+    *, guild: Guild, loadout: dict[str, int], report: object | None, side: str
+) -> dict[str, int]:
+    normalized_loadout = _normalize_positive_int_mapping(loadout)
+    if not normalized_loadout or not report:
+        return {}
+
+    troops_lost = _extract_troops_lost(loadout=normalized_loadout, report=report, side=side)
+    if not troops_lost:
+        return {}
+
+    storages = {
+        storage.troop_template.key: storage
+        for storage in GuildTroopStorage.objects.select_for_update()
+        .select_related("troop_template")
+        .filter(guild=guild, troop_template__key__in=troops_lost.keys())
+        .order_by("troop_template__priority", "troop_template__id")
+    }
+
+    applied_losses: dict[str, int] = {}
+    now = timezone.now()
+    for troop_key, lost in troops_lost.items():
+        storage = storages.get(troop_key)
+        if storage is None:
+            continue
+        applied_lost = min(int(storage.count or 0), lost)
+        if applied_lost <= 0:
+            continue
+        updated_rows = GuildTroopStorage.objects.filter(pk=storage.pk, count__gte=applied_lost).update(
+            count=F("count") - applied_lost,
+            updated_at=now,
+        )
+        if updated_rows != 1:
+            continue
+        applied_losses[troop_key] = applied_lost
+
+    return applied_losses
 
 
 @transaction.atomic
