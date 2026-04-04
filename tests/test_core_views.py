@@ -256,6 +256,29 @@ class TestCoreViews:
         body = response.content.decode("utf-8")
         assert "<title>春秋乱世庄园主</title>" in body
 
+    def test_guest_layout_uses_shared_class_instead_of_inline_style(self, client):
+        response = client.get(reverse("accounts:login"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert 'class="content-area content-area--guest"' in body
+        assert (
+            'style="padding: 20px; min-height: 400px; display: flex; align-items: center; justify-content: center;"'
+            not in body
+        )
+
+    def test_authenticated_home_menu_uses_shared_classes_instead_of_inline_styles(self, manor_with_user):
+        _manor, client = manor_with_user
+
+        response = client.get(reverse("home"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert 'class="nav-tab nav-tab--messages ' in body
+        assert 'style="position: relative;"' not in body
+        assert 'style="display: contents;"' not in body
+        assert 'style="width: 100%; border: 1px solid #5A2D0C; cursor: pointer;"' not in body
+
     def test_home_sidebar_uses_real_links_and_no_placeholder_values(self, manor_with_user):
         """首页侧栏只展示真实入口，不再保留伪链接或硬编码业务值。"""
         _manor, client = manor_with_user

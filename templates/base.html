@@ -42,10 +42,10 @@
             <a href="{% url 'gameplay:arena' %}" data-partial-nav="1" class="nav-tab {% if 'arena' in request.path %}active{% endif %}">竞技场</a>
             <a href="{% url 'gameplay:work' %}" data-partial-nav="1" class="nav-tab {% if 'work' in request.path %}active{% endif %}">打工</a>
             <a href="{% url 'gameplay:tasks' %}" data-partial-nav="1" class="nav-tab {% if 'tasks' in request.path %}active{% endif %}">任务</a>
-            <a href="{% url 'gameplay:messages' %}" data-partial-nav="1" class="nav-tab {% if 'messages' in request.path %}active{% endif %}" id="nav-messages-link-top" style="position: relative;" data-unread="{{ message_unread_count|default:0 }}">
+            <a href="{% url 'gameplay:messages' %}" data-partial-nav="1" class="nav-tab nav-tab--messages {% if 'messages' in request.path %}active{% endif %}" id="nav-messages-link-top" data-unread="{{ message_unread_count|default:0 }}">
                 消息
                 {% if message_unread_count > 0 %}
-                <span style="position: absolute; top: -4px; right: -4px; background: var(--accent-red, #DC143C); color: white; font-size: 10px; padding: 2px 5px; border-radius: 10px; font-weight: bold;">{{ message_unread_count }}</span>
+                <span class="nav-badge">{{ message_unread_count }}</span>
                 {% endif %}
             </a>
             {% else %}
@@ -110,17 +110,16 @@
                             {% if message_unread_count > 0 %}({{ message_unread_count }}){% endif %}
                         </a>
                         <a href="{% url 'gameplay:settings' %}" class="btn-menu">设置</a>
-                        <form method="post" action="{% url 'accounts:logout' %}" style="display: contents;">
+                        <form method="post" action="{% url 'accounts:logout' %}" class="menu-form">
                             {% csrf_token %}
-                            <button type="submit" class="btn-menu"
-                                style="width: 100%; border: 1px solid #5A2D0C; cursor: pointer;">退出</button>
+                            <button type="submit" class="btn-menu btn-menu--logout">退出</button>
                         </form>
                     </div>
                 </div>
             </aside>
             {% endif %}
 
-            <main class="content-area" {% if not user.is_authenticated %}style="padding: 20px; min-height: 400px; display: flex; align-items: center; justify-content: center;"{% endif %}>
+            <main class="content-area {% if not user.is_authenticated %}content-area--guest{% endif %}">
                 {% if messages %}
                 <ul class="flash-messages">
                     {% for message in messages %}

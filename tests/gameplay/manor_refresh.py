@@ -71,7 +71,7 @@ def test_project_manor_activity_for_read_runs_activity_refresh_with_read_project
         lambda _manor, prefer_async=False: calls.__setitem__("raid", calls["raid"] + 1),
     )
     monkeypatch.setattr(
-        "gameplay.services.arena.refresh_arena_activity",
+        "gameplay.services.arena.core.refresh_arena_activity",
         lambda _manor, now=None: calls.__setitem__("arena", calls["arena"] + 1),
     )
 

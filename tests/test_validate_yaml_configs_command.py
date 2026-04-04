@@ -11,7 +11,7 @@ from core.utils.yaml_schema import get_supported_yaml_configs
 
 @pytest.mark.django_db
 def test_validate_yaml_configs_reports_all_supported_files():
-    """All 22 YAML configs are now covered; no skipped files expected."""
+    """Default data directory YAML files should all have schema coverage."""
     stdout = StringIO()
 
     call_command(
@@ -24,8 +24,15 @@ def test_validate_yaml_configs_reports_all_supported_files():
     output = stdout.getvalue()
     assert "Validated" in output
     assert "supported YAML config file" in output
-    # No files should be skipped once all 22 configs have schema coverage
     assert "Skipped YAML files without schema coverage" not in output
+
+
+def test_supported_yaml_configs_include_recent_runtime_and_template_files():
+    supported = set(get_supported_yaml_configs())
+
+    assert "arena_coop_rules.yaml" in supported
+    assert "arena_coop_special_skills.yaml" in supported
+    assert "guild_mission_templates.yaml" in supported
 
 
 def test_validate_yaml_configs_strict_coverage_fails_for_unsupported_files(tmp_path):

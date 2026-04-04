@@ -232,6 +232,50 @@ def test_market_create_listing_view_rejects_out_of_range_duration_without_servic
 
 
 @pytest.mark.django_db
+def test_market_create_listing_view_reads_latest_market_service_listing_fees(monkeypatch, client, django_user_model):
+    observed: dict[str, int] = {}
+
+    class _DummyListing:
+        total_price = 100
+
+        class _Template:
+            name = "物品"
+
+        item_template = _Template()
+
+        def get_duration_display(self):
+            return "2小时46分钟"
+
+    def _create_listing(_manor, item_key, quantity, unit_price, duration):
+        observed.update(
+            {
+                "item_key": item_key,
+                "quantity": quantity,
+                "unit_price": unit_price,
+                "duration": duration,
+            }
+        )
+        return _DummyListing()
+
+    monkeypatch.setattr("trade.services.market_service.LISTING_FEES", {9999: 7777})
+    monkeypatch.setattr("trade.views.create_listing", _create_listing)
+
+    user = django_user_model.objects.create_user(username="market_create_runtime_duration", password="pass12345")
+    _ = ensure_manor(user)
+    client.force_login(user)
+
+    resp = client.post(
+        reverse("trade:market_create_listing"),
+        {"item_key": "k", "quantity": "1", "unit_price": "10", "duration": "9999"},
+    )
+
+    assert resp.status_code == 302
+    assert "tab=market" in resp["Location"]
+    assert "view=sell" in resp["Location"]
+    assert observed == {"item_key": "k", "quantity": 1, "unit_price": 10, "duration": 9999}
+
+
+@pytest.mark.django_db
 def test_market_purchase_view_success(monkeypatch, client, django_user_model):
     class _DummyListing:
         quantity = 2
@@ -304,7 +348,7 @@ def test_market_purchase_view_tolerates_missing_threshold_setting(monkeypatch, c
         listing = _DummyListing()
 
     monkeypatch.setattr("trade.views.purchase_listing", lambda *_args, **_kwargs: _DummyTransaction())
-    monkeypatch.setattr("trade.views.settings.TRADE_HIGH_VALUE_SILVER_THRESHOLD", None, raising=False)
+    monkeypatch.setattr("trade.view_helpers.settings.TRADE_HIGH_VALUE_SILVER_THRESHOLD", None, raising=False)
 
     user = django_user_model.objects.create_user(username="market_buy_missing_threshold", password="pass12345")
     _ = ensure_manor(user)
@@ -331,7 +375,7 @@ def test_market_purchase_view_tolerates_invalid_threshold_setting(monkeypatch, c
         listing = _DummyListing()
 
     monkeypatch.setattr("trade.views.purchase_listing", lambda *_args, **_kwargs: _DummyTransaction())
-    monkeypatch.setattr("trade.views.settings.TRADE_HIGH_VALUE_SILVER_THRESHOLD", "invalid", raising=False)
+    monkeypatch.setattr("trade.view_helpers.settings.TRADE_HIGH_VALUE_SILVER_THRESHOLD", "invalid", raising=False)
 
     user = django_user_model.objects.create_user(username="market_buy_invalid_threshold", password="pass12345")
     _ = ensure_manor(user)
@@ -341,6 +385,45 @@ def test_market_purchase_view_tolerates_invalid_threshold_setting(monkeypatch, c
     assert resp.status_code == 302
     msgs = [m.message for m in get_messages(resp.wsgi_request)]
     assert any("成功购买" in m for m in msgs)
+
+
+@pytest.mark.django_db
+def test_market_purchase_view_uses_shared_threshold_warning_helper(monkeypatch, client, django_user_model):
+    class _DummyListing:
+        quantity = 2
+
+        class _Template:
+            name = "物品"
+
+        item_template = _Template()
+
+    class _DummyTransaction:
+        total_price = 123
+        listing = _DummyListing()
+
+    calls: list[dict[str, object]] = []
+
+    monkeypatch.setattr("trade.views.purchase_listing", lambda *_args, **_kwargs: _DummyTransaction())
+    monkeypatch.setattr(
+        "trade.view_helpers.warn_if_threshold_exceeded",
+        lambda **kwargs: calls.append(kwargs),
+    )
+
+    user = django_user_model.objects.create_user(username="market_buy_shared_threshold", password="pass12345")
+    _ = ensure_manor(user)
+    client.force_login(user)
+
+    resp = client.post(reverse("trade:market_purchase", args=[7]))
+    assert resp.status_code == 302
+    assert calls == [
+        {
+            "setting_name": "TRADE_HIGH_VALUE_SILVER_THRESHOLD",
+            "default": 1_000_000,
+            "value": 123,
+            "log_message": "High-value market purchase: user_id=%s listing_id=%s total_price=%s",
+            "log_args": (user.id, 7, 123),
+        }
+    ]
 
 
 @pytest.mark.django_db

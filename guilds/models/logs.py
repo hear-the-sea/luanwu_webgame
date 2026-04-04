@@ -35,6 +35,7 @@ class GuildDonationLog(models.Model):
     RESOURCE_CHOICES = [
         ("silver", "银两"),
         ("grain", "粮食"),
+        ("gold_bar", "金条"),
     ]
 
     guild = models.ForeignKey(Guild, on_delete=models.CASCADE, related_name="donation_logs", verbose_name="所属帮会")

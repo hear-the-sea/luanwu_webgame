@@ -1,4 +1,5 @@
 (() => {
+  const warehousePageCore = window.WarehousePageCore;
   const WAREHOUSE_MODAL_CONFIG = {
     rebirth: {
       title: "选择要重生的门客",
@@ -33,7 +34,6 @@
   };
 
   const WAREHOUSE_GUEST_LIST_IDS = Object.values(WAREHOUSE_MODAL_CONFIG).map((config) => config.listId);
-  const SOUL_FUSION_DEFAULT_RARITIES = ["green", "blue", "purple"];
   const SOUL_FUSION_RARITY_LABELS = {
     green: "绿色",
     blue: "蓝色",
@@ -45,22 +45,6 @@
     currentActionUrl: null,
     currentItemId: null,
     selectedGuestId: null,
-  };
-
-  const parsePositiveInt = (value, fallbackValue) => {
-    const parsedValue = Number.parseInt(value, 10);
-    return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : fallbackValue;
-  };
-
-  const parseSoulFusionRarities = (rawValue) => {
-    if (!rawValue) {
-      return [...SOUL_FUSION_DEFAULT_RARITIES];
-    }
-    const normalized = String(rawValue)
-      .split(",")
-      .map((value) => value.trim())
-      .filter(Boolean);
-    return normalized.length > 0 ? normalized : [...SOUL_FUSION_DEFAULT_RARITIES];
   };
 
   const showErrorDialog = (message, title = "错误") => {
@@ -107,11 +91,10 @@
     if (!triggerElement) {
       return "";
     }
-    const minLevel = parsePositiveInt(triggerElement.dataset.soulFusionMinLevel, 30);
-    const rarityText = parseSoulFusionRarities(triggerElement.dataset.soulFusionRarities)
-      .map((rarity) => SOUL_FUSION_RARITY_LABELS[rarity] || rarity)
-      .join(" / ");
-    return `当前容器要求：${minLevel}级以上，且为${rarityText}门客`;
+    return warehousePageCore.formatSoulFusionRequirementHint(
+      warehousePageCore.buildWarehouseFilterState(triggerElement.dataset),
+      SOUL_FUSION_RARITY_LABELS
+    );
   };
 
   const resetSoulFusionGuestFilter = () => {
@@ -135,14 +118,17 @@
       return;
     }
 
-    const minLevel = parsePositiveInt(triggerElement?.dataset?.soulFusionMinLevel, 30);
-    const allowedRarities = new Set(parseSoulFusionRarities(triggerElement?.dataset?.soulFusionRarities));
+    const filterState = warehousePageCore.buildWarehouseFilterState(triggerElement?.dataset);
     let visibleCount = 0;
 
     list.querySelectorAll(".tw-guest-option").forEach((option) => {
-      const guestLevel = parsePositiveInt(option.dataset.guestLevel, 0);
-      const guestRarity = String(option.dataset.guestRarity || "").trim();
-      const isVisible = guestLevel >= minLevel && allowedRarities.has(guestRarity);
+      const isVisible = warehousePageCore.shouldGuestMatchWarehouseFilter(
+        {
+          level: option.dataset.guestLevel,
+          rarity: option.dataset.guestRarity,
+        },
+        filterState
+      );
       option.style.display = isVisible ? "" : "none";
       option.classList.remove("selected");
       if (isVisible) {

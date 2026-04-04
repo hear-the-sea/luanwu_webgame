@@ -89,6 +89,64 @@ def test_reload_runtime_configs_updates_arena_module_constants(monkeypatch):
         reload_runtime_configs()
 
 
+def test_reload_runtime_configs_updates_arena_coop_module_constants(monkeypatch):
+    """reload_runtime_configs() must propagate fresh values into arena/coop_core.py module globals."""
+    import gameplay.services.arena.coop_core as arena_coop_core
+    import gameplay.services.arena.coop_rules as arena_coop_rules_module
+    from gameplay.services.arena.coop_rules import clear_arena_coop_rules_cache
+
+    try:
+        clear_arena_coop_rules_cache()
+        with monkeypatch.context() as patcher:
+            patcher.setattr(
+                arena_coop_rules_module,
+                "load_yaml_data",
+                lambda *args, **kwargs: {
+                    "registration": {
+                        "player_limit": 4,
+                        "guest_limit_per_entry": 2,
+                        "daily_participation_limit": 6,
+                        "prepare_duration_seconds": 45,
+                        "registration_silver_cost": 888,
+                        "recruiting_lock_key": "arena:coop:test:refresh",
+                        "recruiting_lock_timeout": 9,
+                    },
+                    "runtime": {
+                        "auto_start_scan_seconds": 15,
+                        "completed_retention_seconds": 321,
+                    },
+                    "contribution": {
+                        "minimum_share_bps": 777,
+                    },
+                    "rewards": {
+                        "participation_coins": 66,
+                    },
+                    "enemy": {
+                        "boss": {
+                            "template_key": "arena_gl_top_zhang_wuji_boss",
+                            "display_name": "测试张无忌",
+                        }
+                    },
+                },
+            )
+
+            summary = reload_runtime_configs()
+
+            assert arena_coop_core.ARENA_COOP_PLAYER_LIMIT == 4
+            assert arena_coop_core.ARENA_COOP_MAX_GUESTS_PER_ENTRY == 2
+            assert arena_coop_core.ARENA_COOP_DAILY_PARTICIPATION_LIMIT == 6
+            assert arena_coop_core.ARENA_COOP_PREPARE_DURATION_SECONDS == 45
+            assert arena_coop_core.ARENA_COOP_COMPLETED_RETENTION_SECONDS == 321
+            assert arena_coop_core.ARENA_COOP_MINIMUM_SHARE_BPS == 777
+            assert arena_coop_core.ARENA_COOP_REGISTRATION_SILVER_COST == 888
+            assert arena_coop_core.ARENA_COOP_RECRUITING_LOCK_KEY == "arena:coop:test:refresh"
+            assert arena_coop_core.ARENA_COOP_RECRUITING_LOCK_TIMEOUT == 9
+            assert summary["arena_coop_rank_rules"] == len(arena_coop_core.ARENA_COOP_RULES["rewards"]["rank_rewards"])
+    finally:
+        clear_arena_coop_rules_cache()
+        reload_runtime_configs()
+
+
 def test_reload_runtime_configs_rejects_invalid_arena_override_setting(monkeypatch, settings):
     import gameplay.services.arena.rules as arena_rules_module
     from gameplay.services.arena.rules import clear_arena_rules_cache
@@ -270,4 +328,62 @@ def test_reload_runtime_configs_updates_guild_service_runtime_values(monkeypatch
             assert int((cooldown_until - submitted_at).total_seconds()) == 120
     finally:
         clear_guild_rules_cache()
+        reload_runtime_configs()
+
+
+def test_reload_runtime_configs_refreshes_recruitment_rarity_cache(monkeypatch):
+    import guests.utils.recruitment_utils as recruitment_utils
+
+    payload = {
+        "value": {
+            "total_weight": 100,
+            "weights": {
+                "orange": 1,
+                "hermit": 2,
+                "purple": 3,
+                "red": 4,
+                "blue": 5,
+                "green": 6,
+                "gray": 7,
+            },
+        }
+    }
+
+    try:
+        recruitment_utils.clear_recruitment_rarity_cache()
+        with monkeypatch.context() as patcher:
+            patcher.setattr(recruitment_utils, "load_yaml_data", lambda *args, **kwargs: payload["value"])
+
+            total_weight, rarity_weights, rarity_distribution = recruitment_utils.get_recruitment_rarity_distribution()
+            assert total_weight == 100
+            assert dict(rarity_weights)["green"] == 6
+            assert dict(rarity_distribution)["black"] == 72
+
+            payload["value"] = {
+                "total_weight": 100,
+                "weights": {
+                    "orange": 11,
+                    "hermit": 12,
+                    "purple": 13,
+                    "red": 14,
+                    "blue": 15,
+                    "green": 16,
+                    "gray": 17,
+                },
+            }
+
+            reload_runtime_configs()
+
+            refreshed_total_weight, refreshed_weights, refreshed_distribution = (
+                recruitment_utils.get_recruitment_rarity_distribution()
+            )
+            assert refreshed_total_weight == 100
+            assert dict(refreshed_weights)["green"] == 16
+            assert dict(refreshed_distribution)["black"] == 2
+            assert recruitment_utils.TOTAL_WEIGHT == 100
+            assert dict(recruitment_utils.RARITY_WEIGHTS)["green"] == 16
+            assert recruitment_utils.BLACK_WEIGHT == 2
+            assert dict(recruitment_utils.RARITY_DISTRIBUTION)["black"] == 2
+    finally:
+        recruitment_utils.clear_recruitment_rarity_cache()
         reload_runtime_configs()

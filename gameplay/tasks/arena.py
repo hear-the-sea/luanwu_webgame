@@ -5,12 +5,8 @@ import logging
 from celery import shared_task
 from django.utils import timezone
 
+import gameplay.services.arena.coop_core as arena_coop_core
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
-from gameplay.services.arena.coop_core import (
-    ARENA_COOP_COMPLETED_RETENTION_SECONDS,
-    cleanup_expired_arena_coop_events,
-    run_due_arena_coop_events,
-)
 from gameplay.services.arena.core import cleanup_expired_tournaments, run_due_arena_rounds, start_ready_tournaments
 
 logger = logging.getLogger(__name__)
@@ -44,15 +40,15 @@ def scan_arena_tournaments(limit: int = 20) -> dict[str, int]:
         failed_stages.append("cleanup_expired_tournaments")
 
     try:
-        processed_coop = run_due_arena_coop_events(limit=limit)
+        processed_coop = arena_coop_core.run_due_arena_coop_events(limit=limit)
     except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
         logger.exception("arena coop scan failed")
         failed_stages.append("run_due_arena_coop_events")
 
     try:
-        cleaned_coop = cleanup_expired_arena_coop_events(
+        cleaned_coop = arena_coop_core.cleanup_expired_arena_coop_events(
             now=timezone.now(),
-            grace_seconds=ARENA_COOP_COMPLETED_RETENTION_SECONDS,
+            grace_seconds=arena_coop_core.ARENA_COOP_COMPLETED_RETENTION_SECONDS,
             limit=max(20, int(limit)),
         )
     except DATABASE_INFRASTRUCTURE_EXCEPTIONS:

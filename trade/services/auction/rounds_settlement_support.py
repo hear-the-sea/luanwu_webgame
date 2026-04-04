@@ -12,16 +12,19 @@ from gameplay.models import Manor
 from gameplay.services.inventory.core import consume_inventory_item_for_manor_locked
 from trade.models import AuctionBid, AuctionSlot, FrozenGoldBar
 from trade.services.auction.constants import GOLD_BAR_ITEM_KEY
-from trade.services.auction.gold_bars import consume_frozen_gold_bars, try_get_frozen_record, unfreeze_gold_bars
+from trade.services.auction.gold_bars import (
+    consume_frozen_gold_bars,
+    require_frozen_record,
+    try_get_frozen_record,
+    unfreeze_gold_bars,
+)
 
 
 def refund_losing_bids_impl(losing_bids: list[AuctionBid]) -> None:
     for losing_bid in losing_bids:
-        try:
-            if losing_bid.frozen_record and losing_bid.frozen_record.is_frozen:
-                unfreeze_gold_bars(losing_bid.frozen_record)
-        except FrozenGoldBar.DoesNotExist:
-            pass
+        frozen_record = require_frozen_record(losing_bid, context="losing auction bid")
+        if frozen_record.is_frozen:
+            unfreeze_gold_bars(frozen_record)
 
         losing_bid.status = AuctionBid.Status.REFUNDED
         losing_bid.refunded_at = timezone.now()

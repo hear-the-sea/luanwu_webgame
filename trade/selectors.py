@@ -4,6 +4,7 @@ from typing import Any
 
 from django.http import HttpRequest
 
+import trade.services.market_service as market_service
 from gameplay.services.manor.troop_bank import (
     get_troop_bank_capacity,
     get_troop_bank_remaining_space,
@@ -15,7 +16,7 @@ from trade.bank_context_builder import build_bank_trade_context
 from trade.selector_builders import build_auction_trade_context, build_market_trade_context, build_shop_trade_context
 from trade.services.auction_service import get_active_slots, get_auction_stats, get_my_bids, get_my_leading_bids
 from trade.services.bank_service import get_bank_info
-from trade.services.market_service import LISTING_FEES, get_active_listings, get_my_listings, get_tradeable_inventory
+from trade.services.market_service import get_active_listings, get_my_listings, get_tradeable_inventory
 from trade.services.shop_service import (
     build_sellable_inventory_display_rows,
     get_sellable_inventory,
@@ -41,7 +42,7 @@ def _build_market_duration_options() -> list[dict[str, int | str]]:
             "label": _format_market_duration_label(duration),
             "fee": fee,
         }
-        for duration, fee in sorted(LISTING_FEES.items())
+        for duration, fee in sorted(market_service.LISTING_FEES.items())
     ]
 
 

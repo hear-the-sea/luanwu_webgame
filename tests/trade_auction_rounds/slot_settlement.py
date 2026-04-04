@@ -225,6 +225,74 @@ def test_rounds_module_settle_slot_raises_when_winner_missing_frozen_record(djan
 
 
 @pytest.mark.django_db
+def test_rounds_module_settle_slot_raises_when_losing_bid_missing_frozen_record(monkeypatch, django_user_model):
+    from trade.services.auction.rounds import _settle_slot
+
+    user_one = django_user_model.objects.create_user(username="auction_settle_loser_missing_1", password="pass123")
+    user_two = django_user_model.objects.create_user(username="auction_settle_loser_missing_2", password="pass123")
+    manor_one = ensure_manor(user_one)
+    manor_two = ensure_manor(user_two)
+
+    item_tpl = _create_auction_item_template("auction_settle_loser_missing_item")
+    auction_round = AuctionRound.objects.create(
+        round_number=10019,
+        status=AuctionRound.Status.ACTIVE,
+        start_at=timezone.now() - timedelta(days=2),
+        end_at=timezone.now() - timedelta(minutes=1),
+    )
+    slot = AuctionSlot.objects.create(
+        round=auction_round,
+        item_template=item_tpl,
+        quantity=1,
+        starting_price=10,
+        current_price=10,
+        min_increment=1,
+        status=AuctionSlot.Status.ACTIVE,
+        config_key=item_tpl.key,
+        slot_index=0,
+    )
+    winning_bid = AuctionBid.objects.create(
+        slot=slot,
+        manor=manor_one,
+        amount=20,
+        status=AuctionBid.Status.ACTIVE,
+        frozen_gold_bars=20,
+    )
+    losing_bid = AuctionBid.objects.create(
+        slot=slot,
+        manor=manor_two,
+        amount=15,
+        status=AuctionBid.Status.ACTIVE,
+        frozen_gold_bars=15,
+    )
+    winning_frozen = FrozenGoldBar.objects.create(
+        manor=manor_one,
+        amount=20,
+        reason=FrozenGoldBar.Reason.AUCTION_BID,
+        auction_bid=winning_bid,
+        is_frozen=True,
+    )
+
+    monkeypatch.setattr(
+        "trade.services.auction.gold_bars.consume_inventory_item_for_manor_locked", lambda *a, **k: None
+    )
+    monkeypatch.setattr("trade.services.auction.rounds.create_message", lambda *a, **k: None)
+    monkeypatch.setattr("trade.services.auction.rounds.notify_user", lambda *a, **k: True)
+
+    with pytest.raises(RuntimeError, match="missing frozen record"):
+        _settle_slot(slot)
+
+    slot.refresh_from_db()
+    winning_bid.refresh_from_db()
+    losing_bid.refresh_from_db()
+    winning_frozen.refresh_from_db()
+    assert slot.status == AuctionSlot.Status.ACTIVE
+    assert winning_bid.status == AuctionBid.Status.ACTIVE
+    assert losing_bid.status == AuctionBid.Status.ACTIVE
+    assert winning_frozen.is_frozen is True
+
+
+@pytest.mark.django_db
 def test_rounds_module_settle_slot_does_not_emit_notifications_before_commit(monkeypatch, django_user_model):
     from trade.services.auction.rounds import _settle_slot
 

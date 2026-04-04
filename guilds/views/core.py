@@ -10,11 +10,11 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
+import guilds.constants as guild_constants
 from core.utils import safe_int, safe_ordering
 from core.utils.rate_limit import rate_limit_redirect
 from gameplay.models import Manor
 
-from ..constants import GUILD_CREATION_COST, GUILD_HALL_DISPLAY_LIMIT, GUILD_LIST_PAGE_SIZE
 from ..decorators import require_guild_leader
 from ..models import Guild
 from ..services import guild as guild_service
@@ -36,7 +36,7 @@ def guild_hall(request: Any) -> HttpResponse:
     guilds = (
         Guild.objects.with_member_count()
         .filter(is_active=True)
-        .order_by("-level", "-created_at")[:GUILD_HALL_DISPLAY_LIMIT]
+        .order_by("-level", "-created_at")[: guild_constants.GUILD_HALL_DISPLAY_LIMIT]
     )
 
     context = {
@@ -53,7 +53,7 @@ def guild_list(request: Any) -> HttpResponse:
     ordering = safe_ordering(request.GET.get("ordering", "-level"), "-level")
     search = request.GET.get("search", "")
     page = safe_int(request.GET.get("page", 1), default=1, min_val=1)
-    page_size = GUILD_LIST_PAGE_SIZE
+    page_size = guild_constants.GUILD_LIST_PAGE_SIZE
 
     guilds = guild_service.get_guild_list(ordering=ordering, search=search, page=page, page_size=page_size)
 
@@ -132,7 +132,7 @@ def create_guild(request: Any) -> HttpResponse:
     context = {
         "manor": manor,
         "gold_bar_count": gold_bar_count,
-        "creation_cost": GUILD_CREATION_COST,
+        "creation_cost": guild_constants.GUILD_CREATION_COST,
     }
 
     return render(request, "guilds/create.html", context)

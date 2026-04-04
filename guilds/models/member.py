@@ -39,6 +39,7 @@ class GuildMember(models.Model):
     # 捐赠限制（每日）
     daily_donation_silver = models.PositiveIntegerField(default=0, verbose_name="今日捐赠银两")
     daily_donation_grain = models.PositiveIntegerField(default=0, verbose_name="今日捐赠粮食")
+    daily_donation_gold_bar = models.PositiveIntegerField(default=0, verbose_name="今日捐赠金条")
     daily_donation_reset_at = models.DateField(default=timezone.now, verbose_name="每日捐赠重置时间")
 
     # 兑换限制（每日）
@@ -83,13 +84,14 @@ class GuildMember(models.Model):
         today = timezone.now().date()
         updated = False
 
-        if self.daily_donation_reset_at < today:
+        if self.daily_donation_reset_at is None or self.daily_donation_reset_at < today:
             self.daily_donation_silver = 0
             self.daily_donation_grain = 0
+            self.daily_donation_gold_bar = 0
             self.daily_donation_reset_at = today
             updated = True
 
-        if self.daily_exchange_reset_at < today:
+        if self.daily_exchange_reset_at is None or self.daily_exchange_reset_at < today:
             self.daily_exchange_count = 0
             self.daily_exchange_reset_at = today
             updated = True

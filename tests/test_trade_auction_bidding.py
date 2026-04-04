@@ -133,6 +133,53 @@ def test_place_bid_allows_same_player_to_raise_bid_and_unfreezes_previous(monkey
 
 
 @pytest.mark.django_db
+def test_place_bid_raises_when_previous_bid_frozen_record_is_missing(monkeypatch, django_user_model):
+    monkeypatch.setattr(auction_service, "_notify_outbid_vickrey", lambda *args, **kwargs: None)
+
+    user = django_user_model.objects.create_user(username="auction_missing_previous_frozen", password="pass12345")
+    manor = ensure_manor(user)
+    _set_gold_bars(manor, 12)
+
+    slot = create_active_round_slot(item_key="auction_missing_previous_frozen_item", quantity=2)
+
+    bid1, _ = auction_service.place_bid(manor, slot.id, 5)
+    bid1.frozen_record.delete()
+
+    with pytest.raises(RuntimeError, match="missing frozen record"):
+        auction_service.place_bid(manor, slot.id, 7)
+
+    bid1.refresh_from_db()
+    slot.refresh_from_db()
+    assert bid1.status == AuctionBid.Status.ACTIVE
+    assert AuctionBid.objects.filter(slot=slot).count() == 1
+
+
+@pytest.mark.django_db
+def test_place_bid_raises_when_outbid_player_frozen_record_is_missing(monkeypatch, django_user_model):
+    monkeypatch.setattr(auction_service, "_notify_outbid_vickrey", lambda *args, **kwargs: None)
+
+    user1 = django_user_model.objects.create_user(username="auction_missing_kicked_frozen_1", password="pass12345")
+    user2 = django_user_model.objects.create_user(username="auction_missing_kicked_frozen_2", password="pass12345")
+    manor1 = ensure_manor(user1)
+    manor2 = ensure_manor(user2)
+    _set_gold_bars(manor1, 10)
+    _set_gold_bars(manor2, 10)
+
+    slot = create_active_round_slot(item_key="auction_missing_kicked_frozen_item", quantity=1)
+
+    bid1, _ = auction_service.place_bid(manor1, slot.id, 5)
+    bid1.frozen_record.delete()
+
+    with pytest.raises(RuntimeError, match="missing frozen record"):
+        auction_service.place_bid(manor2, slot.id, 6)
+
+    bid1.refresh_from_db()
+    slot.refresh_from_db()
+    assert bid1.status == AuctionBid.Status.ACTIVE
+    assert AuctionBid.objects.filter(slot=slot).count() == 1
+
+
+@pytest.mark.django_db
 def test_place_bid_succeeds_when_outbid_notification_fails(monkeypatch, django_user_model):
     user1 = django_user_model.objects.create_user(username="auction_notify_fail_1", password="pass12345")
     user2 = django_user_model.objects.create_user(username="auction_notify_fail_2", password="pass12345")

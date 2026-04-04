@@ -71,6 +71,67 @@ def test_get_blueprint_synthesis_options_only_shows_owned_blueprints(django_user
 
 
 @pytest.mark.django_db
+def test_get_blueprint_synthesis_options_reads_latest_runtime_blueprint_config(django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(username="forge_bp_runtime_refresh", password="pass123")
+    manor = ensure_manor(user)
+    PlayerTechnology.objects.create(manor=manor, tech_key="forging", level=9)
+
+    old_blueprint = _create_item_template("bp_runtime_old", "旧图纸", "tool", "blue")
+    new_blueprint = _create_item_template("bp_runtime_new", "新图纸", "tool", "purple")
+    _create_item_template("equip_runtime_old", "旧产物", "equip_weapon", "blue")
+    _create_item_template("equip_runtime_new", "新产物", "equip_weapon", "purple")
+    tong = _create_item_template("tong", "铜", "resource", "black")
+
+    InventoryItem.objects.create(manor=manor, template=old_blueprint, quantity=1)
+    InventoryItem.objects.create(manor=manor, template=new_blueprint, quantity=1)
+    InventoryItem.objects.create(manor=manor, template=tong, quantity=10)
+
+    payload = {
+        "value": {
+            "recipes": [
+                {
+                    "blueprint_key": "bp_runtime_old",
+                    "result_item_key": "equip_runtime_old",
+                    "required_forging": 5,
+                    "quantity_out": 1,
+                    "description": "",
+                    "costs": {"tong": 1},
+                }
+            ]
+        }
+    }
+    monkeypatch.setattr(forge_service, "load_yaml_data", lambda *args, **kwargs: payload["value"])
+
+    try:
+        forge_service.clear_forge_blueprint_cache()
+        options = forge_service.get_blueprint_synthesis_options(manor)
+
+        assert [row["blueprint_key"] for row in options] == ["bp_runtime_old"]
+        assert options[0]["result_name"] == "旧产物"
+
+        payload["value"] = {
+            "recipes": [
+                {
+                    "blueprint_key": "bp_runtime_new",
+                    "result_item_key": "equip_runtime_new",
+                    "required_forging": 7,
+                    "quantity_out": 1,
+                    "description": "",
+                    "costs": {"tong": 2},
+                }
+            ]
+        }
+
+        forge_service.clear_forge_blueprint_cache()
+        options = forge_service.get_blueprint_synthesis_options(manor)
+
+        assert [row["blueprint_key"] for row in options] == ["bp_runtime_new"]
+        assert options[0]["result_name"] == "新产物"
+    finally:
+        forge_service.clear_forge_blueprint_cache()
+
+
+@pytest.mark.django_db
 def test_synthesize_equipment_with_blueprint_consumes_inputs_and_grants_output(django_user_model, monkeypatch):
     user = django_user_model.objects.create_user(username="forge_bp_make", password="pass123")
     manor = ensure_manor(user)

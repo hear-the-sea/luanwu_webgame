@@ -106,13 +106,16 @@ def get_home_context(manor) -> dict:
     from ..services.raid import get_active_raids, get_active_scouts, get_incoming_raids
 
     active_guild_mission = None
-    if hasattr(manor.user, "guild_membership") and manor.user.guild_membership.is_active:
+    user = getattr(manor, "user", None)
+    guild_membership = getattr(user, "guild_membership", None)
+    if guild_membership is not None and getattr(guild_membership, "is_active", False):
         from guilds.models import GuildMissionRun
 
+        guild = getattr(guild_membership, "guild", None)
         active_guild_mission = (
             GuildMissionRun.objects.select_related("template")
             .filter(
-                guild=manor.user.guild_membership.guild,
+                guild=guild,
                 status=GuildMissionRun.Status.ACTIVE,
             )
             .filter(Q(return_at__isnull=True) | Q(return_at__gt=now))

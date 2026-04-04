@@ -5,11 +5,11 @@ from __future__ import annotations
 from django.db import transaction
 from django.db.models import F
 
+import guilds.constants as guild_constants
 from core.exceptions import GuildWarehouseError
 from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
 from gameplay.services.resources import grant_resources_locked
 
-from ..constants import CONTRIBUTION_RATES, DAILY_EXCHANGE_LIMIT
 from ..models import Guild, GuildExchangeLog, GuildMember, GuildWarehouse
 from .warehouse_config import get_production_items
 
@@ -56,7 +56,7 @@ def _get_projected_resource_quantity(guild, item_key: str) -> int:
 
 
 def _get_projected_resource_exchange_cost(item_key: str) -> int:
-    return max(0, int(CONTRIBUTION_RATES.get(item_key, 0) or 0))
+    return max(0, int(guild_constants.CONTRIBUTION_RATES.get(item_key, 0) or 0))
 
 
 def _grant_inventory_item_to_manor_locked(manor, template, quantity: int) -> None:
@@ -91,8 +91,8 @@ def _exchange_projected_resource_item(member, item_key: str, quantity: int) -> N
 
         member_locked.reset_daily_limits()
 
-        if member_locked.daily_exchange_count >= DAILY_EXCHANGE_LIMIT:
-            raise GuildWarehouseError(f"今日兑换次数已达上限（{DAILY_EXCHANGE_LIMIT}次）")
+        if member_locked.daily_exchange_count >= guild_constants.DAILY_EXCHANGE_LIMIT:
+            raise GuildWarehouseError(f"今日兑换次数已达上限（{guild_constants.DAILY_EXCHANGE_LIMIT}次）")
 
         available_quantity = _get_projected_resource_quantity(guild_locked, item_key)
         if available_quantity < quantity:
@@ -146,6 +146,7 @@ def exchange_item(member, item_key, quantity=1):
     兑换帮会仓库物品（并发安全版本 + 修复字段错误）
 
     使用数据库行锁和F()表达式确保并发安全：
+    - 锁定Manor并与捐赠路径保持一致的共享锁顺序
     - 锁定GuildMember防止贡献度透支
     - 锁定GuildWarehouse防止物品超卖
     - 锁定InventoryItem防止物品发放时的并发冲突
@@ -178,16 +179,19 @@ def exchange_item(member, item_key, quantity=1):
         raise GuildWarehouseError("物品不存在")
 
     # 并发安全的事务处理
-    # 锁定顺序：GuildMember -> GuildWarehouse -> InventoryItem
+    # 锁定顺序：Manor -> GuildMember -> GuildWarehouse
     with transaction.atomic():
+        # 与帮会捐赠保持一致的共享锁顺序，避免 Manor/GuildMember 交叉等待。
+        manor_locked = Manor.objects.select_for_update().get(user=member.user)
+
         # 步骤1：锁定成员并验证兑换次数和贡献度
         member_locked = GuildMember.objects.select_for_update().get(pk=member.pk)
 
         # 重置每日限制（必须在锁内执行，避免并发下穿透每日上限）
         member_locked.reset_daily_limits()
 
-        if member_locked.daily_exchange_count >= DAILY_EXCHANGE_LIMIT:
-            raise GuildWarehouseError(f"今日兑换次数已达上限（{DAILY_EXCHANGE_LIMIT}次）")
+        if member_locked.daily_exchange_count >= guild_constants.DAILY_EXCHANGE_LIMIT:
+            raise GuildWarehouseError(f"今日兑换次数已达上限（{guild_constants.DAILY_EXCHANGE_LIMIT}次）")
 
         # 步骤2：锁定仓库物品并验证库存
         warehouse_item = (
@@ -230,9 +234,8 @@ def exchange_item(member, item_key, quantity=1):
 
         # 步骤5：添加物品到玩家仓库
         # 修复：使用正确的template字段和StorageLocation枚举
-        # 并发安全：锁定Manor防止并发冲突
-        manor = Manor.objects.select_for_update().get(user=member_locked.user)
-        _grant_inventory_item_to_manor_locked(manor, template, quantity)
+        # 并发安全：沿用已持有的Manor锁完成发放
+        _grant_inventory_item_to_manor_locked(manor_locked, template, quantity)
 
         # 步骤6：记录兑换日志
         GuildExchangeLog.objects.create(

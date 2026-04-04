@@ -1,14 +1,14 @@
 # guilds/services/contribution.py
 
 from django.db import transaction
-from django.db.models import F, Sum
+from django.db.models import F
 from django.utils import timezone
 
+import guilds.constants as guild_constants
 from core.exceptions import GuildContributionError
 from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
 from gameplay.services.resources import spend_resources_locked
 
-from ..constants import CONTRIBUTION_RATES, DAILY_DONATION_LIMITS, MIN_DONATION_AMOUNT
 from ..models import Guild, GuildDonationLog, GuildMember, GuildResourceLog
 
 # 安全修复：贡献度累积上限，防止PositiveIntegerField溢出（最大2147483647）
@@ -41,12 +41,12 @@ def donate_resource(member, resource_type, amount):
         GuildContributionError: 验证失败
     """
     # 验证资源类型
-    if resource_type not in CONTRIBUTION_RATES:
+    if resource_type not in guild_constants.CONTRIBUTION_RATES:
         raise GuildContributionError(f"不支持捐赠{resource_type}")
 
     # 验证捐赠数量
-    if resource_type != GOLD_BAR_ITEM_KEY and amount < MIN_DONATION_AMOUNT:
-        raise GuildContributionError(f"单次捐赠最少{MIN_DONATION_AMOUNT}单位")
+    if resource_type != GOLD_BAR_ITEM_KEY and amount < guild_constants.MIN_DONATION_AMOUNT:
+        raise GuildContributionError(f"单次捐赠最少{guild_constants.MIN_DONATION_AMOUNT}单位")
     if resource_type == GOLD_BAR_ITEM_KEY and amount < 1:
         raise GuildContributionError("金条捐赠数量必须大于0")
 
@@ -72,39 +72,36 @@ def donate_resource(member, resource_type, amount):
         # 在锁内重置每日统计，避免并发绕过上限
         current_daily_silver = member_locked.daily_donation_silver
         current_daily_grain = member_locked.daily_donation_grain
+        current_daily_gold_bar = member_locked.daily_donation_gold_bar
 
         # 如果日期已过，重置每日计数
         if member_locked.daily_donation_reset_at is None or member_locked.daily_donation_reset_at < today:
             current_daily_silver = 0
             current_daily_grain = 0
+            current_daily_gold_bar = 0
 
-        daily_limit = DAILY_DONATION_LIMITS.get(resource_type)
+        daily_limit = guild_constants.DAILY_DONATION_LIMITS.get(resource_type)
         if resource_type == "silver":
             if daily_limit is not None and current_daily_silver + amount > daily_limit:
                 raise GuildContributionError(f"今日银两捐赠已达上限（{daily_limit}）")
             new_daily_silver = current_daily_silver + amount
             new_daily_grain = current_daily_grain
+            new_daily_gold_bar = current_daily_gold_bar
         elif resource_type == "grain":
             if daily_limit is not None and current_daily_grain + amount > daily_limit:
                 raise GuildContributionError(f"今日粮食捐赠已达上限（{daily_limit}）")
             new_daily_silver = current_daily_silver
             new_daily_grain = current_daily_grain + amount
+            new_daily_gold_bar = current_daily_gold_bar
         else:
-            today_gold_bar_donated = (
-                GuildDonationLog.objects.filter(
-                    member=member_locked,
-                    resource_type=GOLD_BAR_ITEM_KEY,
-                    donated_at__date=today,
-                ).aggregate(total=Sum("amount"))["total"]
-                or 0
-            )
-            if daily_limit is not None and today_gold_bar_donated + amount > daily_limit:
+            if daily_limit is not None and current_daily_gold_bar + amount > daily_limit:
                 raise GuildContributionError(f"今日金条捐赠已达上限（{daily_limit}）")
             new_daily_silver = current_daily_silver
             new_daily_grain = current_daily_grain
+            new_daily_gold_bar = current_daily_gold_bar + amount
 
         # 计算获得的贡献
-        contribution = amount * CONTRIBUTION_RATES[resource_type]
+        contribution = amount * guild_constants.CONTRIBUTION_RATES[resource_type]
 
         # 安全修复：检查贡献度累积上限，防止整数溢出
         if member_locked.total_contribution + contribution > MAX_CONTRIBUTION:
@@ -153,6 +150,7 @@ def donate_resource(member, resource_type, amount):
             weekly_contribution=F("weekly_contribution") + contribution,
             daily_donation_silver=new_daily_silver,
             daily_donation_grain=new_daily_grain,
+            daily_donation_gold_bar=new_daily_gold_bar,
             daily_donation_reset_at=today,
         )
 

@@ -1,23 +1,22 @@
 """交易视图。"""
 
-import logging
 from typing import Any
 
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
-from core.utils import safe_int
+import trade.services.market_service as market_service
+import trade.view_helpers as trade_view_helpers
 from core.utils.rate_limit import rate_limit_redirect
 from gameplay.models import Manor
 from gameplay.services.manor import troop_bank as troop_bank_service
 from trade.page_context import build_trade_page_context
 from trade.services.auction_service import place_bid
 from trade.services.bank_service import exchange_gold_bar
-from trade.services.market_service import LISTING_FEES, cancel_listing, create_listing, purchase_listing
+from trade.services.market_service import cancel_listing, create_listing, purchase_listing
 from trade.services.shop_service import buy_item, sell_item
 from trade.view_helpers import execute_manor_trade_action_and_redirect as _execute_manor_trade_action_and_redirect
 from trade.view_helpers import handle_troop_bank_transfer as _handle_troop_bank_transfer
@@ -26,28 +25,9 @@ from trade.view_helpers import parse_positive_post_int_or_redirect as _parse_pos
 from trade.view_helpers import parse_required_post_text as _parse_required_post_text
 from trade.view_helpers import parse_trade_item_quantity_form as _parse_trade_item_quantity_form
 
-logger = logging.getLogger(__name__)
-ALLOWED_MARKET_DURATIONS = frozenset(LISTING_FEES.keys())
 
-
-def _get_positive_int_setting(name: str, default: int) -> int:
-    value = safe_int(getattr(settings, name, default), default=default)
-    if value is None or value <= 0:
-        return default
-    return value
-
-
-def _warn_if_threshold_exceeded(
-    *,
-    setting_name: str,
-    default: int,
-    value: int,
-    log_message: str,
-    log_args: tuple[object, ...],
-) -> None:
-    threshold = _get_positive_int_setting(setting_name, default)
-    if value >= threshold:
-        logger.warning(log_message, *log_args)
+def _allowed_market_durations() -> frozenset[int]:
+    return frozenset(market_service.LISTING_FEES.keys())
 
 
 class TradeView(LoginRequiredMixin, TemplateView):
@@ -161,7 +141,7 @@ def withdraw_troop_from_bank_view(request: HttpRequest) -> HttpResponse:
 @rate_limit_redirect("market_create", limit=10, window_seconds=60)
 def market_create_listing_view(request: HttpRequest) -> HttpResponse:
     """创建交易行挂单"""
-    parsed = _parse_market_listing_form(request, allowed_durations=ALLOWED_MARKET_DURATIONS)
+    parsed = _parse_market_listing_form(request, allowed_durations=_allowed_market_durations())
     if isinstance(parsed, HttpResponseRedirect):
         return parsed
 
@@ -188,7 +168,7 @@ def market_purchase_view(request: HttpRequest, listing_id: int) -> HttpResponse:
 
     def _purchase(manor: Manor) -> Any:
         transaction = purchase_listing(manor, listing_id)
-        _warn_if_threshold_exceeded(
+        trade_view_helpers.warn_if_threshold_exceeded(
             setting_name="TRADE_HIGH_VALUE_SILVER_THRESHOLD",
             default=1_000_000,
             value=transaction.total_price,
@@ -236,7 +216,7 @@ def auction_bid_view(request: HttpRequest, slot_id: int) -> HttpResponse:
 
     def _place_bid(manor: Manor) -> bool:
         _bid, is_first_bid = place_bid(manor, slot_id, amount)
-        _warn_if_threshold_exceeded(
+        trade_view_helpers.warn_if_threshold_exceeded(
             setting_name="AUCTION_HIGH_BID_THRESHOLD",
             default=200,
             value=amount,

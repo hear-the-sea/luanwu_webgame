@@ -1,6 +1,7 @@
 (() => {
   const CHUNK_SIZE = 96;
   const CHUNK_RENDER_THRESHOLD = 160;
+  const recruitmentHallCore = window.RecruitmentHallCore;
 
   let selectedIds = new Set();
   let candidates = [];
@@ -64,21 +65,23 @@
     return Boolean(candidate?.rarity_revealed) || candidate?.rarity === "gray" || candidate?.rarity === "red";
   };
 
+  const replaceSelectedIds = (ids) => {
+    selectedIds = new Set(recruitmentHallCore.normalizeSelectedIds(ids));
+  };
+
   const syncSelectedCandidateInputs = () => {
     const hiddenContainer = document.getElementById("candidate-selected-ids");
     if (!hiddenContainer) {
       return;
     }
     hiddenContainer.textContent = "";
-    Array.from(selectedIds)
-      .sort((left, right) => left - right)
-      .forEach((id) => {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "candidate_ids";
-        input.value = String(id);
-        hiddenContainer.appendChild(input);
-      });
+    recruitmentHallCore.normalizeSelectedIds(selectedIds).forEach((id) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = "candidate_ids";
+      input.value = String(id);
+      hiddenContainer.appendChild(input);
+    });
   };
 
   const updateCandidateEmptyHint = () => {
@@ -102,9 +105,10 @@
     checkbox.checked = selectedIds.has(candidate.id);
     checkbox.addEventListener("change", () => {
       if (checkbox.checked) {
-        selectedIds.add(candidate.id);
+        replaceSelectedIds([...selectedIds, candidate.id]);
       } else {
         selectedIds.delete(candidate.id);
+        replaceSelectedIds(selectedIds);
       }
       syncSelectedCandidateInputs();
       updateRenderProgress();
@@ -146,7 +150,7 @@
       candidateObserver = null;
     }
 
-    selectedIds = new Set();
+    replaceSelectedIds([]);
     candidates = parseCandidatesPayload();
     syncSelectedCandidateInputs();
 
@@ -162,21 +166,18 @@
     candidateList.textContent = "";
 
     let renderedCount = 0;
-    const useChunkedRender = candidates.length > CHUNK_RENDER_THRESHOLD;
+    const useChunkedRender = recruitmentHallCore.shouldUseChunkedRender(candidates.length, CHUNK_RENDER_THRESHOLD);
     const stepSize = useChunkedRender ? CHUNK_SIZE : Math.max(candidates.length, 1);
     const updateRenderProgress = () => {
       if (!renderProgress) {
         return;
       }
-      if (!candidates.length) {
-        renderProgress.textContent = "";
-        return;
-      }
-      if (useChunkedRender) {
-        renderProgress.textContent = `已加载 ${renderedCount}/${candidates.length}，已勾选 ${selectedIds.size}`;
-        return;
-      }
-      renderProgress.textContent = `共 ${candidates.length} 名候选，已勾选 ${selectedIds.size}`;
+      renderProgress.textContent = recruitmentHallCore.buildRenderProgressText({
+        total: candidates.length,
+        rendered: renderedCount,
+        selected: selectedIds.size,
+        chunked: useChunkedRender,
+      });
     };
 
     const renderNextChunk = () => {
@@ -239,7 +240,10 @@
       }
       button.dataset.ajaxBound = "1";
       button.addEventListener("click", () => {
-        candidates.forEach((candidate) => selectedIds.add(candidate.id));
+        replaceSelectedIds([
+          ...selectedIds,
+          ...candidates.map((candidate) => candidate.id),
+        ]);
         syncSelectedCandidateInputs();
         syncRenderedSelections(candidateList);
         updateRenderProgress();

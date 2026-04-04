@@ -18,8 +18,8 @@ from core.utils.infrastructure import (
 from gameplay.models import Manor
 from gameplay.services.utils.messages import create_message
 from gameplay.services.utils.notifications import notify_user
-from trade.models import AuctionBid, AuctionRound, AuctionSlot, FrozenGoldBar
-from trade.services.auction.gold_bars import freeze_gold_bars, unfreeze_gold_bars
+from trade.models import AuctionBid, AuctionRound, AuctionSlot
+from trade.services.auction.gold_bars import freeze_gold_bars, require_frozen_record, unfreeze_gold_bars
 
 logger = logging.getLogger(__name__)
 AUCTION_OUTBID_MESSAGE_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
@@ -121,11 +121,9 @@ def _replace_previous_bid(previous_bid: AuctionBid | None) -> None:
     if not previous_bid:
         return
 
-    try:
-        if previous_bid.frozen_record:
-            unfreeze_gold_bars(previous_bid.frozen_record)
-    except FrozenGoldBar.DoesNotExist:
-        pass
+    frozen_record = require_frozen_record(previous_bid, context="previous auction bid")
+    if frozen_record.is_frozen:
+        unfreeze_gold_bars(frozen_record)
 
     previous_bid.status = AuctionBid.Status.OUTBID
     previous_bid.save(update_fields=["status"])
@@ -156,11 +154,9 @@ def _kick_out_player_if_needed(
     outbid_player = player_to_kick.manor
     player_to_kick.status = AuctionBid.Status.OUTBID
     player_to_kick.save(update_fields=["status"])
-    try:
-        if player_to_kick.frozen_record:
-            unfreeze_gold_bars(player_to_kick.frozen_record)
-    except FrozenGoldBar.DoesNotExist:
-        pass
+    frozen_record = require_frozen_record(player_to_kick, context="outbid auction bid")
+    if frozen_record.is_frozen:
+        unfreeze_gold_bars(frozen_record)
     return outbid_player
 
 

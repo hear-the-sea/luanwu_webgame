@@ -4,6 +4,8 @@ from typing import Any
 
 
 def reload_runtime_configs() -> dict[str, int]:
+    from gameplay.services.arena.coop_core import refresh_arena_coop_constants
+    from gameplay.services.arena.coop_rules import clear_arena_coop_rules_cache, load_arena_coop_rules
     from gameplay.services.arena.core import refresh_arena_constants
     from gameplay.services.arena.rewards import clear_arena_reward_cache, load_arena_reward_catalog
     from gameplay.services.arena.rules import clear_arena_rules_cache, load_arena_rules
@@ -19,6 +21,7 @@ def reload_runtime_configs() -> dict[str, int]:
     from gameplay.services.buildings.smithy import clear_smithy_production_cache, load_smithy_production_config
     from gameplay.services.buildings.stable import clear_stable_production_cache, load_stable_production_config
     from guests.growth_rules import clear_guest_growth_rules_cache, load_guest_growth_rules
+    from guests.utils.recruitment_utils import refresh_recruitment_rarity_constants
     from guilds.constants import clear_guild_rules_cache, load_guild_rules, refresh_guild_constants
     from guilds.services.warehouse_config import get_warehouse_production, reload_warehouse_production
     from trade.services.auction_config import load_auction_config, reload_auction_config
@@ -54,6 +57,7 @@ def reload_runtime_configs() -> dict[str, int]:
 
     clear_guest_growth_rules_cache()
     guest_growth_rules = load_guest_growth_rules()
+    _recruitment_total_weight, recruitment_weights, _recruitment_distribution = refresh_recruitment_rarity_constants()
 
     clear_arena_reward_cache()
     arena_rewards = load_arena_reward_catalog()
@@ -61,6 +65,10 @@ def reload_runtime_configs() -> dict[str, int]:
     clear_arena_rules_cache()
     arena_rules = load_arena_rules()
     refresh_arena_constants()
+
+    clear_arena_coop_rules_cache()
+    arena_coop_rules = load_arena_coop_rules()
+    refresh_arena_coop_constants()
 
     clear_trade_market_rules_cache()
     trade_market_rules = load_trade_market_rules()
@@ -80,8 +88,10 @@ def reload_runtime_configs() -> dict[str, int]:
         "ranch_entries": len(ranch_cfg),
         "smithy_entries": len(smithy_cfg),
         "guest_growth_rarities": len((guest_growth_rules.get("rarity_attribute_growth_range") or {})),
+        "recruitment_rarity_weights": len(recruitment_weights),
         "arena_rewards": len(arena_rewards),
         "arena_rank_rules": len((arena_rules.get("rewards") or {}).get("rank_bonus_coins", {})),
+        "arena_coop_rank_rules": len((arena_coop_rules.get("rewards") or {}).get("rank_rewards", {})),
         "trade_listing_durations": len((trade_market_rules.get("listing_fees") or {})),
         "guild_tech_rules": len((guild_rules.get("technology") or {}).get("upgrade_costs", {})),
     }
@@ -99,8 +109,10 @@ def format_runtime_config_summary(summary: dict[str, Any]) -> str:
         "ranch_entries",
         "smithy_entries",
         "guest_growth_rarities",
+        "recruitment_rarity_weights",
         "arena_rewards",
         "arena_rank_rules",
+        "arena_coop_rank_rules",
         "trade_listing_durations",
         "guild_tech_rules",
     ]

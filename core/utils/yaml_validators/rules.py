@@ -1,4 +1,4 @@
-"""Validators for arena, trade, warehouse, auction, guild, and recruitment YAML configs."""
+"""Validators for arena, coop arena, trade, warehouse, auction, guild, and recruitment YAML configs."""
 
 from __future__ import annotations
 
@@ -51,6 +51,176 @@ def validate_arena_rules(data: dict, *, file: str = "arena_rules.yaml") -> Valid
         if rank_bonus is not None:
             if not isinstance(rank_bonus, dict):
                 result.add(file, "rewards.rank_bonus_coins", "expected a mapping")
+
+    return result
+
+
+def validate_arena_coop_rules(data: dict, *, file: str = "arena_coop_rules.yaml") -> ValidationResult:
+    result = ValidationResult()
+
+    if not isinstance(data, dict):
+        result.add(file, "<root>", "expected a mapping at root level")
+        return result
+
+    for section in ("registration", "runtime", "contribution", "rewards", "rare_drop", "enemy"):
+        section_data = data.get(section)
+        if section_data is None:
+            result.add(file, "<root>", f"missing required section '{section}'")
+        elif not isinstance(section_data, dict):
+            result.add(file, section, "expected a mapping")
+
+    registration = data.get("registration")
+    if isinstance(registration, dict):
+        for field_name in (
+            "player_limit",
+            "guest_limit_per_entry",
+            "daily_participation_limit",
+            "prepare_duration_seconds",
+            "registration_silver_cost",
+            "recruiting_lock_timeout",
+        ):
+            value = registration.get(field_name)
+            if value is None:
+                continue
+            _check_type(value, int, result=result, file=file, path="registration", field_name=field_name)
+            _check_positive(
+                value,
+                result=result,
+                file=file,
+                path="registration",
+                field_name=field_name,
+                allow_zero=field_name == "registration_silver_cost",
+            )
+        recruiting_lock_key = registration.get("recruiting_lock_key")
+        if recruiting_lock_key is not None:
+            _check_type(
+                recruiting_lock_key,
+                str,
+                result=result,
+                file=file,
+                path="registration",
+                field_name="recruiting_lock_key",
+            )
+
+    runtime = data.get("runtime")
+    if isinstance(runtime, dict):
+        for field_name in ("auto_start_scan_seconds", "completed_retention_seconds"):
+            value = runtime.get(field_name)
+            if value is None:
+                continue
+            _check_type(value, int, result=result, file=file, path="runtime", field_name=field_name)
+            _check_positive(
+                value,
+                result=result,
+                file=file,
+                path="runtime",
+                field_name=field_name,
+                allow_zero=field_name == "completed_retention_seconds",
+            )
+
+    contribution = data.get("contribution")
+    if isinstance(contribution, dict):
+        minimum_share_bps = contribution.get("minimum_share_bps")
+        if minimum_share_bps is not None:
+            _check_type(
+                minimum_share_bps,
+                int,
+                result=result,
+                file=file,
+                path="contribution",
+                field_name="minimum_share_bps",
+            )
+            _check_positive(
+                minimum_share_bps,
+                result=result,
+                file=file,
+                path="contribution",
+                field_name="minimum_share_bps",
+            )
+
+    rewards = data.get("rewards")
+    if isinstance(rewards, dict):
+        for field_name in ("participation_coins", "clear_coins"):
+            value = rewards.get(field_name)
+            if value is None:
+                continue
+            _check_type(value, int, result=result, file=file, path="rewards", field_name=field_name)
+            _check_positive(value, result=result, file=file, path="rewards", field_name=field_name)
+
+        damage_tiers = rewards.get("damage_tiers")
+        if damage_tiers is not None:
+            if not isinstance(damage_tiers, list):
+                result.add(file, "rewards.damage_tiers", "expected a list")
+            else:
+                for idx, row in enumerate(damage_tiers):
+                    row_path = f"rewards.damage_tiers[{idx}]"
+                    if not isinstance(row, dict):
+                        result.add(file, row_path, "expected a mapping")
+                        continue
+                    _check_required_fields(
+                        row,
+                        ["min_share_bps", "coins"],
+                        result=result,
+                        file=file,
+                        path=row_path,
+                    )
+                    for field_name in ("min_share_bps", "coins"):
+                        value = row.get(field_name)
+                        if value is None:
+                            continue
+                        _check_type(value, int, result=result, file=file, path=row_path, field_name=field_name)
+                        _check_positive(value, result=result, file=file, path=row_path, field_name=field_name)
+
+        rank_rewards = rewards.get("rank_rewards")
+        if rank_rewards is not None and not isinstance(rank_rewards, dict):
+            result.add(file, "rewards.rank_rewards", "expected a mapping")
+
+    rare_drop = data.get("rare_drop")
+    if isinstance(rare_drop, dict):
+        for field_name in ("enabled", "requires_clear", "requires_minimum_contribution"):
+            value = rare_drop.get(field_name)
+            if value is None:
+                continue
+            _check_type(value, bool, result=result, file=file, path="rare_drop", field_name=field_name)
+        item_key = rare_drop.get("item_key")
+        if item_key is not None:
+            _check_type(item_key, str, result=result, file=file, path="rare_drop", field_name="item_key")
+        chance_bps = rare_drop.get("chance_bps")
+        if chance_bps is not None:
+            _check_type(chance_bps, int, result=result, file=file, path="rare_drop", field_name="chance_bps")
+            _check_positive(chance_bps, result=result, file=file, path="rare_drop", field_name="chance_bps")
+
+    enemy = data.get("enemy")
+    if isinstance(enemy, dict):
+        boss = enemy.get("boss")
+        if boss is not None:
+            if not isinstance(boss, dict):
+                result.add(file, "enemy.boss", "expected a mapping")
+            else:
+                _check_required_fields(
+                    boss,
+                    ["template_key", "display_name"],
+                    result=result,
+                    file=file,
+                    path="enemy.boss",
+                )
+        guards = enemy.get("guards")
+        if guards is not None:
+            if not isinstance(guards, list):
+                result.add(file, "enemy.guards", "expected a list")
+            else:
+                for idx, guard in enumerate(guards):
+                    guard_path = f"enemy.guards[{idx}]"
+                    if not isinstance(guard, dict):
+                        result.add(file, guard_path, "expected a mapping")
+                        continue
+                    _check_required_fields(
+                        guard,
+                        ["template_key", "display_name"],
+                        result=result,
+                        file=file,
+                        path=guard_path,
+                    )
 
     return result
 

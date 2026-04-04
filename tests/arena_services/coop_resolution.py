@@ -4,12 +4,123 @@ import pytest
 from django.utils import timezone
 
 from battle.models import BattleReport
+from core.exceptions import MessageError
 from gameplay.models import ArenaCoopContribution, ArenaCoopEvent, ItemTemplate, Message
 from gameplay.services.arena.coop_core import run_due_arena_coop_events
 from gameplay.services.arena.coop_rewards import build_reward_breakdown
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestStatus
 from tests.arena_services.support import User, create_guest, create_guest_template, fund_manor
+
+
+def _build_coop_message_fixture(label: str) -> tuple[ArenaCoopEvent, list, BattleReport]:
+    ItemTemplate.objects.get_or_create(
+        key="equip_tulongdao",
+        defaults={
+            "name": "屠龙刀",
+            "effect_type": ItemTemplate.EffectType.TOOL,
+        },
+    )
+    template = create_guest_template(f"{label}_tpl")
+    event = ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.PREPARING,
+        player_limit=5,
+        guest_limit_per_entry=3,
+        prepare_duration_seconds=120,
+        prepare_ends_at=timezone.now(),
+        boss_template_key="arena_gl_top_zhang_wuji_boss",
+        boss_name="张无忌",
+        enemy_snapshot={
+            "boss": {"template_key": "arena_gl_top_zhang_wuji_boss", "display_name": "张无忌"},
+            "guards": [],
+        },
+        reward_snapshot={
+            "rewards": {
+                "participation_coins": 30,
+                "clear_coins": 40,
+                "damage_tiers": [{"min_share_bps": 1000, "coins": 20}],
+                "rank_rewards": {1: 80},
+            },
+            "rare_drop": {
+                "item_key": "equip_tulongdao",
+                "chance_bps": 10,
+                "enabled": True,
+                "requires_clear": True,
+                "requires_minimum_contribution": True,
+            },
+        },
+        daily_rule_snapshot={"contribution": {"minimum_share_bps": 500}},
+    )
+
+    manors = []
+    entry_ids = []
+    for idx in range(5):
+        user = User.objects.create_user(
+            username=f"{label}_{idx}",
+            password="pass123",
+            email=f"{label}_{idx}@test.local",
+        )
+        manor = ensure_manor(user)
+        fund_manor(manor)
+        manors.append(manor)
+        guests = [create_guest(manor, template, f"{idx}_{slot}") for slot in ["A", "B", "C"]]
+        entry = event.entries.create(manor=manor)
+        entry_ids.append(entry.id)
+        for slot_index, guest in enumerate(guests):
+            stat_block = guest.stat_block()
+            entry.entry_guests.create(
+                guest=guest,
+                slot_index=slot_index,
+                snapshot={
+                    "guest_id": guest.id,
+                    "template_key": guest.template.key,
+                    "display_name": guest.display_name,
+                    "level": guest.level,
+                    "rarity": guest.rarity,
+                    "attack": stat_block["attack"],
+                    "defense": stat_block["defense"],
+                    "max_hp": guest.max_hp,
+                    "current_hp": guest.current_hp,
+                    "agility": guest.agility,
+                    "skill_keys": [],
+                },
+            )
+
+    report = BattleReport.objects.create(
+        manor=manors[0],
+        opponent_name="张无忌",
+        battle_type="arena_coop",
+        attacker_team=[],
+        attacker_troops={},
+        defender_team=[],
+        defender_troops={},
+        rounds=[
+            {
+                "round": 1,
+                "events": [
+                    {
+                        "damage": 2000,
+                        "actor_owner_entry_id": entry_ids[0],
+                        "target_template_key": "arena_gl_top_zhang_wuji_boss",
+                        "target_is_boss": True,
+                    },
+                    {
+                        "damage": 100,
+                        "actor_owner_entry_id": entry_ids[1],
+                        "target_template_key": "arena_gl_top_zhang_wuji_boss",
+                        "target_is_boss": True,
+                    },
+                ],
+            }
+        ],
+        losses={"attacker": {}, "defender": {}},
+        drops={},
+        winner="attacker",
+        starts_at=timezone.now(),
+        completed_at=timezone.now(),
+        seed=2,
+    )
+    return event, manors, report
 
 
 @pytest.mark.django_db
@@ -168,110 +279,7 @@ def test_run_due_arena_coop_events_creates_contributions_and_rewards(monkeypatch
 
 @pytest.mark.django_db
 def test_run_due_arena_coop_events_sends_battle_and_settlement_messages(monkeypatch):
-    ItemTemplate.objects.create(
-        key="equip_tulongdao",
-        name="屠龙刀",
-        effect_type=ItemTemplate.EffectType.TOOL,
-    )
-    template = create_guest_template("arena_coop_message_tpl")
-    event = ArenaCoopEvent.objects.create(
-        status=ArenaCoopEvent.Status.PREPARING,
-        player_limit=5,
-        guest_limit_per_entry=3,
-        prepare_duration_seconds=120,
-        prepare_ends_at=timezone.now(),
-        boss_template_key="arena_gl_top_zhang_wuji_boss",
-        boss_name="张无忌",
-        enemy_snapshot={
-            "boss": {"template_key": "arena_gl_top_zhang_wuji_boss", "display_name": "张无忌"},
-            "guards": [],
-        },
-        reward_snapshot={
-            "rewards": {
-                "participation_coins": 30,
-                "clear_coins": 40,
-                "damage_tiers": [{"min_share_bps": 1000, "coins": 20}],
-                "rank_rewards": {1: 80},
-            },
-            "rare_drop": {
-                "item_key": "equip_tulongdao",
-                "chance_bps": 10,
-                "enabled": True,
-                "requires_clear": True,
-                "requires_minimum_contribution": True,
-            },
-        },
-        daily_rule_snapshot={"contribution": {"minimum_share_bps": 500}},
-    )
-
-    manors = []
-    entry_ids = []
-    for idx in range(5):
-        user = User.objects.create_user(
-            username=f"arena_coop_message_{idx}",
-            password="pass123",
-            email=f"arena_coop_message_{idx}@test.local",
-        )
-        manor = ensure_manor(user)
-        fund_manor(manor)
-        manors.append(manor)
-        guests = [create_guest(manor, template, f"{idx}_{slot}") for slot in ["A", "B", "C"]]
-        entry = event.entries.create(manor=manor)
-        entry_ids.append(entry.id)
-        for slot_index, guest in enumerate(guests):
-            stat_block = guest.stat_block()
-            entry.entry_guests.create(
-                guest=guest,
-                slot_index=slot_index,
-                snapshot={
-                    "guest_id": guest.id,
-                    "template_key": guest.template.key,
-                    "display_name": guest.display_name,
-                    "level": guest.level,
-                    "rarity": guest.rarity,
-                    "attack": stat_block["attack"],
-                    "defense": stat_block["defense"],
-                    "max_hp": guest.max_hp,
-                    "current_hp": guest.current_hp,
-                    "agility": guest.agility,
-                    "skill_keys": [],
-                },
-            )
-
-    report = BattleReport.objects.create(
-        manor=manors[0],
-        opponent_name="张无忌",
-        battle_type="arena_coop",
-        attacker_team=[],
-        attacker_troops={},
-        defender_team=[],
-        defender_troops={},
-        rounds=[
-            {
-                "round": 1,
-                "events": [
-                    {
-                        "damage": 2000,
-                        "actor_owner_entry_id": entry_ids[0],
-                        "target_template_key": "arena_gl_top_zhang_wuji_boss",
-                        "target_is_boss": True,
-                    },
-                    {
-                        "damage": 100,
-                        "actor_owner_entry_id": entry_ids[1],
-                        "target_template_key": "arena_gl_top_zhang_wuji_boss",
-                        "target_is_boss": True,
-                    },
-                ],
-            }
-        ],
-        losses={"attacker": {}, "defender": {}},
-        drops={},
-        winner="attacker",
-        starts_at=timezone.now(),
-        completed_at=timezone.now(),
-        seed=2,
-    )
+    event, manors, report = _build_coop_message_fixture("arena_coop_message")
 
     monkeypatch.setattr(
         "gameplay.services.arena.coop_core._run_coop_battle_locked",
@@ -294,6 +302,50 @@ def test_run_due_arena_coop_events_sends_battle_and_settlement_messages(monkeypa
     assert "排名第 1" in reward_message.body
     assert "角斗币 170" in reward_message.body
     assert "屠龙刀" in reward_message.body
+
+
+@pytest.mark.django_db
+def test_run_due_arena_coop_events_degrades_expected_message_error(monkeypatch):
+    event, manors, report = _build_coop_message_fixture("arena_coop_message_degraded")
+
+    monkeypatch.setattr(
+        "gameplay.services.arena.coop_core._run_coop_battle_locked",
+        lambda locked_event, now: report,
+    )
+    monkeypatch.setattr("gameplay.services.arena.coop_rewards.random.random", lambda: 0.0)
+    monkeypatch.setattr(
+        "gameplay.services.arena.coop_core.create_message",
+        lambda **kwargs: (_ for _ in ()).throw(MessageError("message backend down")),
+    )
+
+    processed = run_due_arena_coop_events(limit=10)
+
+    event.refresh_from_db()
+    assert processed == 1
+    assert event.status == ArenaCoopEvent.Status.COMPLETED
+    assert Message.objects.filter(manor__in=manors).count() == 0
+
+
+@pytest.mark.django_db
+def test_run_due_arena_coop_events_runtime_message_error_bubbles_up(monkeypatch):
+    event, _manors, report = _build_coop_message_fixture("arena_coop_message_runtime")
+
+    monkeypatch.setattr(
+        "gameplay.services.arena.coop_core._run_coop_battle_locked",
+        lambda locked_event, now: report,
+    )
+    monkeypatch.setattr("gameplay.services.arena.coop_rewards.random.random", lambda: 0.0)
+    monkeypatch.setattr(
+        "gameplay.services.arena.coop_core.create_message",
+        lambda **kwargs: (_ for _ in ()).throw(RuntimeError("message backend down")),
+    )
+
+    with pytest.raises(RuntimeError, match="message backend down"):
+        run_due_arena_coop_events(limit=10)
+
+    event.refresh_from_db()
+    assert event.status == ArenaCoopEvent.Status.PREPARING
+    assert ArenaCoopContribution.objects.filter(event=event).count() == 0
 
 
 @pytest.mark.django_db

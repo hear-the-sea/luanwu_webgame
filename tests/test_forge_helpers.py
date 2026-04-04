@@ -185,3 +185,88 @@ def test_get_equipment_options_uses_single_inventory_query_for_materials(monkeyp
     assert options[0]["materials"][0]["current"] == 10
     assert options[0]["materials"][1]["current"] == 5
     assert len(inventory_queries) == 1
+
+
+@pytest.mark.django_db
+def test_get_equipment_options_reads_latest_runtime_equipment_config(monkeypatch, django_user_model):
+    user = django_user_model.objects.create_user(username="forge_equipment_runtime_refresh", password="pass123")
+    manor = ensure_manor(user)
+
+    ItemTemplate.objects.create(
+        key="equip_runtime_old",
+        name="旧运行时头盔",
+        effect_type="equip_helmet",
+        rarity="green",
+    )
+    ItemTemplate.objects.create(
+        key="equip_runtime_new",
+        name="新运行时衣服",
+        effect_type="equip_armor",
+        rarity="blue",
+    )
+    tong = ItemTemplate.objects.create(key="tong", name="铜", effect_type="resource", rarity="black")
+    InventoryItem.objects.create(manor=manor, template=tong, quantity=10)
+
+    payload = {
+        "value": {
+            "equipment": {
+                "equip_runtime_old": {
+                    "category": "helmet",
+                    "materials": {"tong": 1},
+                    "base_duration": 120,
+                    "required_forging": 1,
+                }
+            }
+        }
+    }
+    with monkeypatch.context() as runtime_patch:
+        runtime_patch.setattr(forge_service, "load_yaml_data", lambda *args, **kwargs: payload["value"])
+        runtime_patch.setattr(forge_service, "get_player_technology_level", lambda *_args, **_kwargs: 9)
+        runtime_patch.setattr(forge_service, "get_max_forging_quantity", lambda _manor: 50)
+        runtime_patch.setattr(forge_service, "has_active_forging", lambda _manor: False)
+        runtime_patch.setattr(forge_service, "calculate_forging_duration", lambda _base, _manor: 90)
+
+        forge_service.clear_forge_equipment_cache()
+        options = forge_service.get_equipment_options(manor)
+        assert [row["key"] for row in options] == ["equip_runtime_old"]
+        assert options[0]["name"] == "旧运行时头盔"
+
+        payload["value"] = {
+            "equipment": {
+                "equip_runtime_new": {
+                    "category": "armor",
+                    "materials": {"tong": 2},
+                    "base_duration": 180,
+                    "required_forging": 3,
+                }
+            }
+        }
+
+        forge_service.clear_forge_equipment_cache()
+        options = forge_service.get_equipment_options(manor)
+        assert [row["key"] for row in options] == ["equip_runtime_new"]
+        assert options[0]["name"] == "新运行时衣服"
+    forge_service.clear_forge_equipment_cache()
+
+
+def test_runtime_equipment_refresh_cleanup_restores_repo_default_config(monkeypatch):
+    payload = {
+        "value": {
+            "equipment": {
+                "equip_runtime_temp": {
+                    "category": "armor",
+                    "materials": {"tong": 2},
+                    "base_duration": 180,
+                    "required_forging": 3,
+                }
+            }
+        }
+    }
+
+    with monkeypatch.context() as runtime_patch:
+        runtime_patch.setattr(forge_service, "load_yaml_data", lambda *args, **kwargs: payload["value"])
+        forge_service.clear_forge_equipment_cache()
+        assert set(forge_service.EQUIPMENT_CONFIG) == {"equip_runtime_temp"}
+
+    forge_service.clear_forge_equipment_cache()
+    assert "equip_bupao" in forge_service.EQUIPMENT_CONFIG

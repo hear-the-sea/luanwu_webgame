@@ -12,6 +12,9 @@ from django.utils import timezone
 
 from core.exceptions import ProductionStartError
 from gameplay.models import HorseProduction, LivestockProduction, SmeltingProduction
+from gameplay.services.buildings import ranch as ranch_service
+from gameplay.services.buildings import smithy as smithy_service
+from gameplay.services.buildings import stable as stable_service
 
 
 @pytest.mark.django_db
@@ -28,6 +31,39 @@ class TestProductionViews:
         assert "js/production-cost-preview.js" in body
         assert "onchange=" not in body
         assert "function updateTotalCost" not in body
+
+    def test_stable_page_reads_latest_runtime_stable_config(self, manor_with_user, monkeypatch):
+        _manor, client = manor_with_user
+
+        try:
+            monkeypatch.setattr(
+                stable_service,
+                "load_yaml_data",
+                lambda *args, **kwargs: {
+                    "production": {
+                        "runtime_horse": {
+                            "grain_cost": 321,
+                            "base_duration": 180,
+                            "required_horsemanship": 1,
+                        }
+                    }
+                },
+            )
+            stable_service.clear_stable_production_cache()
+
+            response = client.get(reverse("gameplay:stable"))
+
+            assert response.status_code == 200
+            assert len(response.context["horse_options"]) == 1
+            option = response.context["horse_options"][0]
+            assert option["key"] == "runtime_horse"
+            assert option["name"] == "runtime_horse"
+            assert option["grain_cost"] == 321
+            assert option["base_duration"] == 180
+            assert option["required_horsemanship"] == 1
+        finally:
+            monkeypatch.undo()
+            stable_service.clear_stable_production_cache()
 
     def test_stable_page_tolerates_resource_sync_error(self, manor_with_user, monkeypatch):
         _manor, client = manor_with_user
@@ -70,6 +106,39 @@ class TestProductionViews:
         assert "js/production-cost-preview.js" in body
         assert "onchange=" not in body
         assert "function updateTotalCost" not in body
+
+    def test_ranch_page_reads_latest_runtime_ranch_config(self, manor_with_user, monkeypatch):
+        _manor, client = manor_with_user
+
+        try:
+            monkeypatch.setattr(
+                ranch_service,
+                "load_yaml_data",
+                lambda *args, **kwargs: {
+                    "production": {
+                        "runtime_livestock": {
+                            "grain_cost": 222,
+                            "base_duration": 240,
+                            "required_animal_husbandry": 1,
+                        }
+                    }
+                },
+            )
+            ranch_service.clear_ranch_production_cache()
+
+            response = client.get(reverse("gameplay:ranch"))
+
+            assert response.status_code == 200
+            assert len(response.context["livestock_options"]) == 1
+            option = response.context["livestock_options"][0]
+            assert option["key"] == "runtime_livestock"
+            assert option["name"] == "runtime_livestock"
+            assert option["grain_cost"] == 222
+            assert option["base_duration"] == 240
+            assert option["required_animal_husbandry"] == 1
+        finally:
+            monkeypatch.undo()
+            ranch_service.clear_ranch_production_cache()
 
     def test_stable_page_uses_explicit_read_helper(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user
@@ -161,6 +230,44 @@ class TestProductionViews:
         assert "js/production-cost-preview.js" in body
         assert "onchange=" not in body
         assert "function updateTotalCost" not in body
+
+    def test_smithy_page_reads_latest_runtime_smithy_config(self, manor_with_user, monkeypatch):
+        _manor, client = manor_with_user
+
+        try:
+            monkeypatch.setattr(
+                smithy_service,
+                "load_yaml_data",
+                lambda *args, **kwargs: {
+                    "production": {
+                        "runtime_medicine": {
+                            "cost_type": "silver",
+                            "cost_amount": 77,
+                            "base_duration": 150,
+                            "required_smithy": 1,
+                            "category": "medicine",
+                        }
+                    }
+                },
+            )
+            smithy_service.clear_smithy_production_cache()
+
+            response = client.get(reverse("gameplay:smithy"))
+
+            assert response.status_code == 200
+            assert len(response.context["metal_options"]) == 1
+            option = response.context["metal_options"][0]
+            assert option["key"] == "runtime_medicine"
+            assert option["name"] == "runtime_medicine"
+            assert option["cost_type"] == "silver"
+            assert option["cost_amount"] == 77
+            assert option["base_duration"] == 150
+            assert option["required_level"] == 1
+            assert option["required_type_label"] == "冶炼坊"
+            assert option["category"] == "medicine"
+        finally:
+            monkeypatch.undo()
+            smithy_service.clear_smithy_production_cache()
 
     def test_smithy_page_active_production_has_refresh_countdown(self, manor_with_user):
         manor, client = manor_with_user

@@ -8,6 +8,7 @@ MAX_SHIM_LINES = 20
 SHIM_PATHS = [
     PROJECT_ROOT / "tests" / "test_arena_views.py",
     PROJECT_ROOT / "tests" / "test_battle_report_view.py",
+    PROJECT_ROOT / "tests" / "test_guilds_tasks.py",
     PROJECT_ROOT / "tests" / "test_load_guest_templates_command.py",
 ]
 
@@ -15,7 +16,7 @@ SHIM_PATHS = [
 def test_recent_audit_entry_updates_document_header() -> None:
     header = AUDIT_DOC.read_text(encoding="utf-8").splitlines()[2]
 
-    assert header == "最近更新：2026-04-03"
+    assert header == "最近更新：2026-04-04"
 
 
 def test_split_test_entrypoints_remain_small_compatibility_shims() -> None:
@@ -28,7 +29,8 @@ def test_audit_doc_hot_test_baseline_matches_current_repo_state() -> None:
     audit_text = AUDIT_DOC.read_text(encoding="utf-8")
 
     assert "`tests/test_guild_mission_service.py`（`743` 行）" in audit_text
-    assert "`tests/test_guilds_tasks.py`（`690` 行）" in audit_text
+    assert "`tests/test_production_views.py`（`523` 行）" in audit_text
     assert "`tests/test_arena_views.py`（`697` 行）" not in audit_text
     assert "`tests/test_battle_report_view.py`（`679` 行）" not in audit_text
+    assert "`tests/test_guilds_tasks.py`（`690` 行）" not in audit_text
     assert "`tests/test_load_guest_templates_command.py`（`593` 行）" not in audit_text

@@ -119,3 +119,11 @@ def try_get_frozen_record(bid: AuctionBid) -> Optional[FrozenGoldBar]:
         return bid.frozen_record
     except FrozenGoldBar.DoesNotExist:
         return None
+
+
+def require_frozen_record(bid: AuctionBid, *, context: str) -> FrozenGoldBar:
+    """Strict access to the bid's frozen record for ledger-critical flows."""
+    frozen_record = try_get_frozen_record(bid)
+    if not frozen_record:
+        raise RuntimeError(f"{context} missing frozen record: bid_id={bid.id}")
+    return frozen_record

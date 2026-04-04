@@ -220,6 +220,24 @@ a[x-apple-data-detectors]:active {
   font-size: 16px;
 }
 
+.nav-tab--messages {
+  position: relative;
+}
+
+.nav-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--accent-red);
+  color: var(--text-light);
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+}
+
 .nav-tab:hover {
   color: #FFF8E7;
   background: linear-gradient(to bottom, #8B5A30, #6E4425);
@@ -344,6 +362,10 @@ a[x-apple-data-detectors]:active {
   gap: 4px;
 }
 
+.menu-form {
+  display: contents;
+}
+
 .btn-menu {
   display: block;
   text-align: center;
@@ -357,6 +379,12 @@ a[x-apple-data-detectors]:active {
   white-space: nowrap;
 }
 
+.btn-menu--logout {
+  width: 100%;
+  cursor: pointer;
+  font-family: inherit;
+}
+
 .btn-menu:hover {
   background: linear-gradient(to bottom, #B25E35, #A0522D);
 }
@@ -368,6 +396,13 @@ a[x-apple-data-detectors]:active {
   gap: 8px;
   min-width: 0; /* 防止 grid/flex 子元素溢出 */
   overflow: hidden; /* 确保内容不会超出 */
+}
+
+.content-area--guest {
+  padding: 20px;
+  min-height: 400px;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 资源状态栏 (底部) */

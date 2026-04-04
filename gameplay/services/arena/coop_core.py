@@ -14,8 +14,19 @@ from battle.arena_coop import ARENA_COOP_ENEMY_FINAL_STATS, configure_arena_coop
 from battle.combatants_pkg import build_named_ai_guests
 from battle.models import BattleReport
 from battle.services import simulate_report
-from core.exceptions import ArenaBusyError, ArenaCancellationError, ArenaEntryStateError, ArenaParticipationLimitError
+from core.exceptions import (
+    ArenaBusyError,
+    ArenaCancellationError,
+    ArenaEntryStateError,
+    ArenaParticipationLimitError,
+    MessageError,
+)
 from core.utils.cache_lock import acquire_best_effort_lock, release_best_effort_lock
+from core.utils.infrastructure import (
+    DATABASE_INFRASTRUCTURE_EXCEPTIONS,
+    InfrastructureExceptions,
+    combine_infrastructure_exceptions,
+)
 from gameplay.models import (
     ArenaCoopContribution,
     ArenaCoopEntry,
@@ -37,6 +48,10 @@ from .coop_rules import load_arena_coop_rules
 from .snapshots import build_entry_guest_snapshot, load_entry_guests
 
 logger = logging.getLogger(__name__)
+ARENA_COOP_SETTLEMENT_MESSAGE_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
+    MessageError,
+    infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
+)
 
 _load_positive_int_setting = _arena_helpers.load_positive_int_setting
 _normalize_guest_ids = _arena_helpers.normalize_guest_ids
@@ -300,7 +315,7 @@ def _send_coop_settlement_messages(
             title=reward_title,
             body=reward_body,
         )
-    except Exception:
+    except ARENA_COOP_SETTLEMENT_MESSAGE_EXCEPTIONS:
         logger.exception(
             "arena coop settlement messages failed: event_id=%s manor_id=%s entry_id=%s",
             locked_event.id,

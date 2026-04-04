@@ -111,6 +111,18 @@ def clear_recruitment_rarity_cache() -> None:
     _load_rarity_distribution.cache_clear()
 
 
+def refresh_recruitment_rarity_constants() -> tuple[int, list[tuple[str, int]], list[tuple[str, int]]]:
+    clear_recruitment_rarity_cache()
+    total_weight, rarity_weights, rarity_distribution = get_recruitment_rarity_distribution()
+
+    global TOTAL_WEIGHT, BLACK_WEIGHT
+    TOTAL_WEIGHT = total_weight
+    RARITY_WEIGHTS[:] = rarity_weights
+    BLACK_WEIGHT = int(dict(rarity_distribution).get(GuestRarity.BLACK, 0))
+    RARITY_DISTRIBUTION[:] = rarity_distribution
+    return total_weight, rarity_weights, rarity_distribution
+
+
 def get_recruitment_rarity_distribution() -> tuple[int, list[tuple[str, int]], list[tuple[str, int]]]:
     total_weight, rarity_weights, rarity_distribution = _load_rarity_distribution()
     return total_weight, list(rarity_weights), list(rarity_distribution)

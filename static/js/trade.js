@@ -2,9 +2,9 @@
   "use strict";
 
   const TRADE_PAGE_SELECTOR = '[data-trade-page="1"]';
-  const DEFAULT_MARKET_DURATION = "7200";
-  const ONE_HOUR_SECONDS = 3600;
-  const ONE_MINUTE_SECONDS = 60;
+  const tradeCore = window.TradePageCore;
+  const DEFAULT_MARKET_DURATION = tradeCore.DEFAULT_MARKET_DURATION;
+  const ONE_HOUR_SECONDS = tradeCore.ONE_HOUR_SECONDS;
 
   let activeRoot = null;
   let clickHandler = null;
@@ -13,11 +13,6 @@
   let submitHandler = null;
   let marketCountdownTimer = null;
   let auctionCountdownTimer = null;
-
-  function parseInteger(value, fallback = 0) {
-    const parsed = Number.parseInt(String(value || ""), 10);
-    return Number.isNaN(parsed) ? fallback : parsed;
-  }
 
   function clearTimers() {
     if (marketCountdownTimer !== null) {
@@ -54,42 +49,6 @@
     submitHandler = null;
   }
 
-  function formatMarketCountdown(remainingSeconds) {
-    if (remainingSeconds <= 0) {
-      return "已过期";
-    }
-    const hours = Math.floor(remainingSeconds / ONE_HOUR_SECONDS);
-    const minutes = Math.floor((remainingSeconds % ONE_HOUR_SECONDS) / ONE_MINUTE_SECONDS);
-    const seconds = remainingSeconds % ONE_MINUTE_SECONDS;
-    if (hours > 0) {
-      return `${hours}小时${minutes}分`;
-    }
-    if (minutes > 0) {
-      return `${minutes}分${seconds}秒`;
-    }
-    return `${seconds}秒`;
-  }
-
-  function formatAuctionCountdown(remainingSeconds) {
-    if (remainingSeconds <= 0) {
-      return "已结束";
-    }
-    const days = Math.floor(remainingSeconds / 86400);
-    const hours = Math.floor((remainingSeconds % 86400) / 3600);
-    const minutes = Math.floor((remainingSeconds % 3600) / 60);
-    const seconds = remainingSeconds % 60;
-    if (days > 0) {
-      return `${days}天${hours}小时`;
-    }
-    if (hours > 0) {
-      return `${hours}小时${minutes}分`;
-    }
-    if (minutes > 0) {
-      return `${minutes}分${seconds}秒`;
-    }
-    return `${seconds}秒`;
-  }
-
   function updateMarketCountdowns(root) {
     const countdownElements = root.querySelectorAll(".tw-market-countdown");
     if (countdownElements.length === 0) {
@@ -103,7 +62,7 @@
         return;
       }
       const remainingSeconds = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
-      element.textContent = formatMarketCountdown(remainingSeconds);
+      element.textContent = tradeCore.formatMarketCountdown(remainingSeconds);
       element.style.color =
         remainingSeconds <= 0
           ? "var(--text-muted)"
@@ -126,7 +85,7 @@
       return;
     }
 
-    let remaining = parseInteger(countdownElement.dataset.remaining, -1);
+    let remaining = tradeCore.parseInteger(countdownElement.dataset.remaining, -1);
     if (remaining < 0) {
       return;
     }
@@ -139,7 +98,7 @@
         }
         return;
       }
-      countdownElement.textContent = formatAuctionCountdown(remaining);
+      countdownElement.textContent = tradeCore.formatAuctionCountdown(remaining);
       countdownElement.style.color =
         remaining <= 0 ? "var(--text-muted)" : remaining < ONE_HOUR_SECONDS ? "#FF6B6B" : "var(--text-secondary)";
       remaining -= 1;
@@ -198,37 +157,31 @@
       return;
     }
 
-    const slotId = parseInteger(trigger.dataset.slotId, 0);
-    const itemName = trigger.dataset.itemName || "";
-    const cutoffPrice = parseInteger(trigger.dataset.cutoffPrice, 0);
-    const winnerCount = parseInteger(trigger.dataset.winnerCount, 0);
-    const bidderCount = parseInteger(trigger.dataset.bidderCount, 0);
-    const startingPrice = parseInteger(trigger.dataset.startingPrice, 1);
-    const myBidAmount = parseInteger(trigger.dataset.myBidAmount, 0);
+    const state = tradeCore.buildBidModalState({
+      slotId: trigger.dataset.slotId,
+      itemName: trigger.dataset.itemName,
+      cutoffPrice: trigger.dataset.cutoffPrice,
+      winnerCount: trigger.dataset.winnerCount,
+      bidderCount: trigger.dataset.bidderCount,
+      startingPrice: trigger.dataset.startingPrice,
+      myBidAmount: trigger.dataset.myBidAmount,
+    });
 
-    form.action = buildAuctionBidAction(root, slotId);
-    itemNameElement.textContent = itemName;
-    winnerCountElement.textContent = `${winnerCount} 人`;
-    cutoffPriceElement.textContent = `${cutoffPrice} 金条`;
+    form.action = buildAuctionBidAction(root, state.slotId);
+    itemNameElement.textContent = state.itemName;
+    winnerCountElement.textContent = `${state.winnerCount} 人`;
+    cutoffPriceElement.textContent = `${state.cutoffPrice} 金条`;
 
-    let minBid = startingPrice;
-    let hintText = `名额未满，最低 ${startingPrice} 金条即可进入中标范围`;
-    if (myBidAmount > 0) {
+    if (state.myBidVisible) {
       myBidGroup.style.display = "block";
-      myBidElement.textContent = `${myBidAmount} 金条`;
-      minBid = myBidAmount + 1;
-      hintText = `需要高于您当前出价 ${myBidAmount} 金条`;
+      myBidElement.textContent = state.myBidText;
     } else {
       myBidGroup.style.display = "none";
-      if (bidderCount >= winnerCount) {
-        minBid = cutoffPrice + 1;
-        hintText = `名额已满，需要高于最低中标价 ${cutoffPrice} 金条才能进入前 ${winnerCount} 名`;
-      }
     }
 
-    hintElement.textContent = hintText;
-    amountInput.value = String(minBid);
-    amountInput.min = String(minBid);
+    hintElement.textContent = state.hintText;
+    amountInput.value = String(state.minBid);
+    amountInput.min = String(state.minBid);
     modal.style.display = "flex";
   }
 
@@ -245,7 +198,7 @@
     if (!selectedDuration || !feeElement) {
       return;
     }
-    const fee = parseInteger(selectedDuration.dataset.tradeDurationFee, 0);
+    const fee = tradeCore.parseInteger(selectedDuration.dataset.tradeDurationFee, 0);
     feeElement.textContent = fee.toLocaleString();
   }
 
@@ -256,9 +209,10 @@
     if (!quantityInput || !unitPriceInput || !totalPriceElement) {
       return;
     }
-    const quantity = parseInteger(quantityInput.value, 0);
-    const unitPrice = parseInteger(unitPriceInput.value, 0);
-    totalPriceElement.textContent = (quantity * unitPrice).toLocaleString();
+    totalPriceElement.textContent = tradeCore.calculateListingTotal(
+      quantityInput.value,
+      unitPriceInput.value
+    ).toLocaleString();
   }
 
   function openListingModal(root, trigger) {
@@ -287,8 +241,8 @@
 
     const itemKey = trigger.dataset.itemKey || "";
     const itemName = trigger.dataset.itemName || "";
-    const available = parseInteger(trigger.dataset.available, 0);
-    const minPrice = parseInteger(trigger.dataset.minPrice, 0);
+    const available = tradeCore.parseInteger(trigger.dataset.available, 0);
+    const minPrice = tradeCore.parseInteger(trigger.dataset.minPrice, 0);
     const rarity = trigger.dataset.rarity || "gray";
     const imageUrl = trigger.dataset.imageUrl || "";
 

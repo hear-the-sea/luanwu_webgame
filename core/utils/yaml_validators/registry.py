@@ -23,6 +23,7 @@ from .production import (
     validate_technology_templates,
 )
 from .rules import (
+    validate_arena_coop_rules,
     validate_arena_rewards,
     validate_arena_rules,
     validate_auction_items,
@@ -34,6 +35,7 @@ from .rules import (
 from .templates import (
     validate_building_templates,
     validate_guest_templates,
+    validate_guild_mission_templates,
     validate_item_templates,
     validate_mission_templates,
     validate_troop_templates,
@@ -50,12 +52,14 @@ SUPPORTED_YAML_CONFIGS = (
     "forge_equipment.yaml",
     "shop_items.yaml",
     "arena_rules.yaml",
+    "arena_coop_rules.yaml",
     "trade_market_rules.yaml",
     "warehouse_production.yaml",
     "auction_items.yaml",
     "forge_blueprints.yaml",
     "forge_decompose.yaml",
     "guest_skills.yaml",
+    "arena_coop_special_skills.yaml",
     "recruitment_rarity_weights.yaml",
     "arena_rewards.yaml",
     "smithy_production.yaml",
@@ -64,6 +68,7 @@ SUPPORTED_YAML_CONFIGS = (
     "guild_rules.yaml",
     "guest_growth_rules.yaml",
     "technology_templates.yaml",
+    "guild_mission_templates.yaml",
 )
 
 
@@ -92,12 +97,14 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
     forge_data = _load("forge_equipment.yaml")
     shop_data = _load("shop_items.yaml")
     arena_data = _load("arena_rules.yaml")
+    arena_coop_data = _load("arena_coop_rules.yaml")
     trade_data = _load("trade_market_rules.yaml")
     warehouse_data = _load("warehouse_production.yaml")
     auction_data = _load("auction_items.yaml")
     blueprints_data = _load("forge_blueprints.yaml")
     decompose_data = _load("forge_decompose.yaml")
     skills_data = _load("guest_skills.yaml")
+    arena_coop_skills_data = _load("arena_coop_special_skills.yaml")
     rarity_weights_data = _load("recruitment_rarity_weights.yaml")
     arena_rewards_data = _load("arena_rewards.yaml")
     smithy_data = _load("smithy_production.yaml")
@@ -106,6 +113,7 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
     guild_data = _load("guild_rules.yaml")
     growth_data = _load("guest_growth_rules.yaml")
     tech_data = _load("technology_templates.yaml")
+    guild_mission_data = _load("guild_mission_templates.yaml")
 
     # Build cross-reference key sets for referential integrity checks
     item_keys: set[str] | None = None
@@ -140,6 +148,9 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
     if arena_data is not None:
         result.merge(validate_arena_rules(arena_data))
 
+    if arena_coop_data is not None:
+        result.merge(validate_arena_coop_rules(arena_coop_data))
+
     if trade_data is not None:
         result.merge(validate_trade_market_rules(trade_data))
 
@@ -157,6 +168,9 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
 
     if skills_data is not None:
         result.merge(validate_guest_skills(skills_data))
+
+    if arena_coop_skills_data is not None:
+        result.merge(validate_guest_skills(arena_coop_skills_data, file="arena_coop_special_skills.yaml"))
 
     if rarity_weights_data is not None:
         result.merge(validate_recruitment_rarity_weights(rarity_weights_data))
@@ -181,6 +195,9 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
 
     if tech_data is not None:
         result.merge(validate_technology_templates(tech_data))
+
+    if guild_mission_data is not None:
+        result.merge(validate_guild_mission_templates(guild_mission_data))
 
     return result
 

@@ -114,6 +114,42 @@ def test_guild_detail_page_resets_silver_and_grain_daily_display_after_day_rollo
 
 
 @pytest.mark.django_db
+def test_guild_detail_page_uses_member_gold_bar_daily_counter(guild_member_client):
+    client, guild, member, _manor = guild_member_client
+    member.daily_donation_gold_bar = 4
+    member.daily_donation_reset_at = timezone.localdate()
+    member.save(update_fields=["daily_donation_gold_bar", "daily_donation_reset_at"])
+
+    response = client.get(reverse("guilds:detail", args=[guild.id]))
+
+    assert response.status_code == 200
+    donation_entries = response.context["donation_entries"]
+    assert donation_entries["gold_bar"]["donated_today"] == 4
+    assert donation_entries["gold_bar"]["remaining_today"] == int(DAILY_DONATION_LIMITS["gold_bar"]) - 4
+
+
+@pytest.mark.django_db
+def test_guild_detail_page_reads_latest_runtime_contribution_rules(guild_member_client, monkeypatch):
+    client, guild, _member, manor = guild_member_client
+    manor.silver = 23
+    manor.grain = 40
+    manor.save(update_fields=["silver", "grain"])
+    monkeypatch.setattr("guilds.constants.CONTRIBUTION_RATES", {"silver": 9, "grain": 8, "gold_bar": 7})
+    monkeypatch.setattr("guilds.constants.DAILY_DONATION_LIMITS", {"silver": 5, "grain": 7, "gold_bar": 2})
+
+    response = client.get(reverse("guilds:detail", args=[guild.id]))
+
+    assert response.status_code == 200
+    donation_entries = response.context["donation_entries"]
+    assert donation_entries["silver"]["rate"] == 9
+    assert donation_entries["silver"]["daily_limit"] == 5
+    assert donation_entries["grain"]["rate"] == 8
+    assert donation_entries["grain"]["daily_limit"] == 7
+    assert donation_entries["gold_bar"]["rate"] == 7
+    assert donation_entries["gold_bar"]["daily_limit"] == 2
+
+
+@pytest.mark.django_db
 def test_resources_page_is_removed(guild_member_client):
     client, _guild, _member, _manor = guild_member_client
 

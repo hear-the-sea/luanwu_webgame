@@ -109,6 +109,60 @@ def test_get_decomposable_equipment_options_supports_device_category(django_user
 
 
 @pytest.mark.django_db
+def test_get_decomposable_equipment_options_reads_latest_runtime_decompose_config(django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(username="forge_decompose_runtime_refresh", password="pass123")
+    manor = ensure_manor(user)
+
+    green = _create_item_template("equip_runtime_green", "运行时绿装", "equip_weapon", "green")
+    blue = _create_item_template("equip_runtime_blue", "运行时蓝装", "equip_weapon", "blue")
+    InventoryItem.objects.create(manor=manor, template=green, quantity=1)
+    InventoryItem.objects.create(manor=manor, template=blue, quantity=1)
+
+    payload = {
+        "value": {
+            "supported_rarities": ["green"],
+            "rarity_labels": {"green": "绿色", "blue": "蓝色"},
+            "rarity_order": {"green": 1, "blue": 2},
+            "base_materials": {
+                "green": {"tong": [1, 1]},
+                "blue": {"tong": [2, 2]},
+            },
+            "chance_rewards": {
+                "green": {"wood_essence": 1.0},
+                "blue": {"wood_essence": 1.0},
+            },
+        }
+    }
+    monkeypatch.setattr(forge_service, "load_yaml_data", lambda *args, **kwargs: payload["value"])
+    monkeypatch.setattr(forge_service, "get_recruitment_equipment_keys", lambda: set())
+
+    try:
+        forge_service.clear_forge_decompose_cache()
+        options = forge_service.get_decomposable_equipment_options(manor)
+        assert [row["key"] for row in options] == ["equip_runtime_green"]
+
+        payload["value"] = {
+            "supported_rarities": ["blue"],
+            "rarity_labels": {"green": "绿色", "blue": "蓝色"},
+            "rarity_order": {"green": 1, "blue": 2},
+            "base_materials": {
+                "green": {"tong": [1, 1]},
+                "blue": {"tong": [2, 2]},
+            },
+            "chance_rewards": {
+                "green": {"wood_essence": 1.0},
+                "blue": {"wood_essence": 1.0},
+            },
+        }
+
+        forge_service.clear_forge_decompose_cache()
+        options = forge_service.get_decomposable_equipment_options(manor)
+        assert [row["key"] for row in options] == ["equip_runtime_blue"]
+    finally:
+        forge_service.clear_forge_decompose_cache()
+
+
+@pytest.mark.django_db
 def test_decompose_equipment_consumes_gear_and_grants_rewards(django_user_model, monkeypatch):
     user = django_user_model.objects.create_user(username="forge_decompose", password="pass123")
     manor = ensure_manor(user)

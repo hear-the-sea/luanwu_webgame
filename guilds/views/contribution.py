@@ -10,13 +10,13 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+import guilds.constants as guild_constants
 from core.utils import safe_int, sanitize_error_message
 from core.utils.rate_limit import rate_limit_redirect
 from gameplay.models import InventoryItem, Manor, PlayerTroop
 
-from ..constants import CONTRIBUTION_RATES, DAILY_DONATION_LIMITS
 from ..decorators import require_guild_member
-from ..models import GuildDonationLog, GuildTroopStorage, GuildWarehouse
+from ..models import GuildTroopStorage, GuildWarehouse
 from ..services import contribution as contribution_service
 from .helpers import build_guild_member_context, execute_guild_action, load_donation_logs, load_resource_logs
 
@@ -55,43 +55,35 @@ def _build_resource_page_context(member: Any, *, manor: Manor, page_mode: str) -
     today = timezone.localdate()
     display_daily_donation_silver = int(member.daily_donation_silver)
     display_daily_donation_grain = int(member.daily_donation_grain)
+    display_daily_donation_gold_bar = int(member.daily_donation_gold_bar)
     if member.daily_donation_reset_at is None or member.daily_donation_reset_at < today:
         display_daily_donation_silver = 0
         display_daily_donation_grain = 0
-    today_gold_bar_donated = int(
-        GuildDonationLog.objects.filter(
-            member=member,
-            resource_type="gold_bar",
-            donated_at__date=today,
-        ).aggregate(
-            total=Sum("amount")
-        )["total"]
-        or 0
-    )
+        display_daily_donation_gold_bar = 0
 
     donation_entries = {
         "silver": {
             "label": "银两",
-            "rate": CONTRIBUTION_RATES.get("silver", 0),
+            "rate": guild_constants.CONTRIBUTION_RATES.get("silver", 0),
             "available": int(manor.silver),
             "donated_today": display_daily_donation_silver,
-            "daily_limit": int(DAILY_DONATION_LIMITS.get("silver", 0)),
+            "daily_limit": int(guild_constants.DAILY_DONATION_LIMITS.get("silver", 0)),
             "resource_type": "silver",
         },
         "grain": {
             "label": "粮食",
-            "rate": CONTRIBUTION_RATES.get("grain", 0),
+            "rate": guild_constants.CONTRIBUTION_RATES.get("grain", 0),
             "available": int(manor.grain),
             "donated_today": display_daily_donation_grain,
-            "daily_limit": int(DAILY_DONATION_LIMITS.get("grain", 0)),
+            "daily_limit": int(guild_constants.DAILY_DONATION_LIMITS.get("grain", 0)),
             "resource_type": "grain",
         },
         "gold_bar": {
             "label": "金条",
-            "rate": CONTRIBUTION_RATES.get("gold_bar", 0),
+            "rate": guild_constants.CONTRIBUTION_RATES.get("gold_bar", 0),
             "available": _load_gold_bar_inventory(manor),
-            "donated_today": today_gold_bar_donated,
-            "daily_limit": int(DAILY_DONATION_LIMITS.get("gold_bar", 0)),
+            "donated_today": display_daily_donation_gold_bar,
+            "daily_limit": int(guild_constants.DAILY_DONATION_LIMITS.get("gold_bar", 0)),
             "resource_type": "gold_bar",
         },
     }
@@ -117,8 +109,8 @@ def _build_resource_page_context(member: Any, *, manor: Manor, page_mode: str) -
             "preview": troop_preview,
         },
         donation_entries=donation_entries,
-        contribution_rates=CONTRIBUTION_RATES,
-        daily_limits=DAILY_DONATION_LIMITS,
+        contribution_rates=guild_constants.CONTRIBUTION_RATES,
+        daily_limits=guild_constants.DAILY_DONATION_LIMITS,
     )
 
 

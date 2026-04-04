@@ -10,7 +10,7 @@ from trade.selectors import get_trade_context
 
 @pytest.mark.django_db
 def test_get_trade_context_includes_market_duration_options(monkeypatch, django_user_model):
-    monkeypatch.setattr("trade.selectors.LISTING_FEES", {28800: 12000, 7200: 5000, 86400: 20000})
+    monkeypatch.setattr("trade.services.market_service.LISTING_FEES", {28800: 12000, 7200: 5000, 86400: 20000})
 
     manor = create_manor(django_user_model, username="trade_ctx_duration_options")
     request = RequestFactory().get("/trade", {"tab": "market"})
@@ -21,6 +21,21 @@ def test_get_trade_context_includes_market_duration_options(monkeypatch, django_
         {"value": 7200, "label": "2小时", "fee": 5000},
         {"value": 28800, "label": "8小时", "fee": 12000},
         {"value": 86400, "label": "1天", "fee": 20000},
+    ]
+
+
+@pytest.mark.django_db
+def test_get_trade_context_reads_latest_market_service_listing_fees(monkeypatch, django_user_model):
+    monkeypatch.setattr("trade.services.market_service.LISTING_FEES", {14400: 9000, 7200: 5000})
+
+    manor = create_manor(django_user_model, username="trade_ctx_runtime_listing_fees")
+    request = RequestFactory().get("/trade", {"tab": "market"})
+
+    context = get_trade_context(request, manor)
+
+    assert context["market_duration_options"] == [
+        {"value": 7200, "label": "2小时", "fee": 5000},
+        {"value": 14400, "label": "4小时", "fee": 9000},
     ]
 
 

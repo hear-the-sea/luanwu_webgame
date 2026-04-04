@@ -53,7 +53,7 @@ def test_auction_bid_view_tolerates_missing_threshold_setting(monkeypatch, clien
     client.force_login(user)
 
     monkeypatch.setattr("trade.views.place_bid", lambda *_args, **_kwargs: (object(), True))
-    monkeypatch.setattr("trade.views.settings.AUCTION_HIGH_BID_THRESHOLD", None, raising=False)
+    monkeypatch.setattr("trade.view_helpers.settings.AUCTION_HIGH_BID_THRESHOLD", None, raising=False)
 
     resp = client.post(reverse("trade:auction_bid", args=[1]), {"amount": "5"})
     assert resp.status_code == 302
@@ -68,8 +68,35 @@ def test_auction_bid_view_tolerates_invalid_threshold_setting(monkeypatch, clien
     client.force_login(user)
 
     monkeypatch.setattr("trade.views.place_bid", lambda *_args, **_kwargs: (object(), True))
-    monkeypatch.setattr("trade.views.settings.AUCTION_HIGH_BID_THRESHOLD", "invalid", raising=False)
+    monkeypatch.setattr("trade.view_helpers.settings.AUCTION_HIGH_BID_THRESHOLD", "invalid", raising=False)
 
     resp = client.post(reverse("trade:auction_bid", args=[1]), {"amount": "5"})
     msgs = [m.message for m in get_messages(resp.wsgi_request)]
     assert any("成功出价" in m for m in msgs)
+
+
+@pytest.mark.django_db
+def test_auction_bid_view_uses_shared_threshold_warning_helper(monkeypatch, client, django_user_model):
+    calls: list[dict[str, object]] = []
+
+    user = django_user_model.objects.create_user(username="auction_bid_shared_threshold", password="pass12345")
+    _ = ensure_manor(user)
+    client.force_login(user)
+
+    monkeypatch.setattr("trade.views.place_bid", lambda *_args, **_kwargs: (object(), True))
+    monkeypatch.setattr(
+        "trade.view_helpers.warn_if_threshold_exceeded",
+        lambda **kwargs: calls.append(kwargs),
+    )
+
+    resp = client.post(reverse("trade:auction_bid", args=[9]), {"amount": "77"})
+    assert resp.status_code == 302
+    assert calls == [
+        {
+            "setting_name": "AUCTION_HIGH_BID_THRESHOLD",
+            "default": 200,
+            "value": 77,
+            "log_message": "High-value auction bid: user_id=%s slot_id=%s amount=%s",
+            "log_args": (user.id, 9, 77),
+        }
+    ]

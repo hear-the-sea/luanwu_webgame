@@ -1,4 +1,4 @@
-"""Validators for item, building, guest, troop, and mission template YAML configs."""
+"""Validators for item, building, guest, troop, mission, and guild mission template YAML configs."""
 
 from __future__ import annotations
 
@@ -453,5 +453,74 @@ def validate_mission_templates(
                             f"{path}.drop_table",
                             f"item key '{drop_key}' not found in item_templates.yaml",
                         )
+
+    return result
+
+
+def validate_guild_mission_templates(data: dict, *, file: str = "guild_mission_templates.yaml") -> ValidationResult:
+    result = ValidationResult()
+
+    if not isinstance(data, dict):
+        result.add(file, "<root>", "expected a mapping at root level")
+        return result
+
+    missions = data.get("missions")
+    if missions is None:
+        result.add(file, "<root>", "missing required key 'missions'")
+        return result
+
+    if not isinstance(missions, list):
+        result.add(file, "missions", "expected a list")
+        return result
+
+    _check_unique_keys(missions, "key", result=result, file=file, context="missions")
+
+    for idx, mission in enumerate(missions):
+        path = f"missions[{idx}]"
+        if not isinstance(mission, dict):
+            result.add(file, path, "expected a mapping")
+            continue
+
+        _check_required_fields(mission, ["key", "name"], result=result, file=file, path=path)
+
+        for field_name in ("description", "difficulty", "task_type"):
+            value = mission.get(field_name)
+            if value is None:
+                continue
+            _check_type(value, str, result=result, file=file, path=path, field_name=field_name)
+
+        for field_name in ("base_duration_seconds", "recommended_guest_count"):
+            value = mission.get(field_name)
+            if value is None:
+                continue
+            _check_type(value, int, result=result, file=file, path=path, field_name=field_name)
+            _check_positive(value, result=result, file=file, path=path, field_name=field_name, allow_zero=False)
+
+        ruby_reward = mission.get("ruby_reward")
+        if ruby_reward is not None:
+            _check_type(ruby_reward, int, result=result, file=file, path=path, field_name="ruby_reward")
+            _check_positive(ruby_reward, result=result, file=file, path=path, field_name="ruby_reward")
+
+        sort_weight = mission.get("sort_weight")
+        if sort_weight is not None:
+            _check_type(sort_weight, int, result=result, file=file, path=path, field_name="sort_weight")
+
+        for bool_field in ("allow_troops", "is_active"):
+            value = mission.get(bool_field)
+            if value is None:
+                continue
+            _check_type(value, bool, result=result, file=file, path=path, field_name=bool_field)
+
+        enemy_guests = mission.get("enemy_guests")
+        if enemy_guests is not None and not isinstance(enemy_guests, list):
+            result.add(file, f"{path}.enemy_guests", "expected a list")
+
+        enemy_troops = mission.get("enemy_troops")
+        if enemy_troops is not None and not isinstance(enemy_troops, dict):
+            result.add(file, f"{path}.enemy_troops", "expected a mapping")
+
+        enemy_technology = mission.get("enemy_technology")
+        if enemy_technology is not None and not isinstance(enemy_technology, dict):
+            result.add(file, f"{path}.enemy_technology", "expected a mapping")
 
     return result
