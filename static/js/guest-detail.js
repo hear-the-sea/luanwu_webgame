@@ -177,6 +177,7 @@ const initGuestDetailPage = () => {
       key: "guest_detail_equipment",
       cellSelector: ".guest-equip-tooltip-trigger",
       tooltipSelector: ".guest-equip-tooltip-bubble",
+      trackPointer: false,
     });
   }
 

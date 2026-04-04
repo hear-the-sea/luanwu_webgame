@@ -145,6 +145,7 @@
             tooltipSelector: options.tooltipSelector || '.tw-item-tooltip',
             viewportPadding: options.viewportPadding || 20,
             offset: options.offset || 8,
+            trackPointer: options.trackPointer !== undefined ? !!options.trackPointer : true,
             enableHover: options.enableHover !== undefined ? !!options.enableHover : supportsHover,
             enableTouch: options.enableTouch !== undefined ? !!options.enableTouch : !supportsHover,
         };
@@ -242,7 +243,9 @@
             activeCell = cell;
             activeAnchor = null;
             activeCell.classList.add('is-tooltip-active');
-            updateAnchorFromEvent(activeCell, event);
+            if (config.trackPointer) {
+                updateAnchorFromEvent(activeCell, event);
+            }
             requestUpdate();
         }
 
@@ -254,13 +257,15 @@
                 }
             });
 
-            document.addEventListener('mousemove', throttle(function(event) {
-                const cell = event.target?.closest?.(config.cellSelector);
-                if (activeCell && cell === activeCell) {
-                    updateAnchorFromEvent(activeCell, event);
-                    requestUpdate();
-                }
-            }, 32));
+            if (config.trackPointer) {
+                document.addEventListener('mousemove', throttle(function(event) {
+                    const cell = event.target?.closest?.(config.cellSelector);
+                    if (activeCell && cell === activeCell) {
+                        updateAnchorFromEvent(activeCell, event);
+                        requestUpdate();
+                    }
+                }, 32));
+            }
 
             document.addEventListener('mouseout', function(event) {
                 const cell = event.target?.closest?.(config.cellSelector);

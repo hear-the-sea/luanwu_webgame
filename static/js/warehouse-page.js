@@ -374,7 +374,7 @@
     restoreScrollPosition();
 
     if (typeof window.initItemTooltip === "function") {
-      window.initItemTooltip({ key: "warehouse" });
+      window.initItemTooltip({ key: "warehouse", trackPointer: false });
     }
   };
 
