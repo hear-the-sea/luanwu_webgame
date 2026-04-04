@@ -17,6 +17,16 @@ def _create_manor(username: str):
     return ensure_manor(user)
 
 
+def test_region_dict_contains_only_four_continents_and_overseas():
+    assert REGION_DICT == {
+        "north": "北俱芦洲",
+        "east": "东胜神洲",
+        "west": "西牛贺洲",
+        "south": "南赡部洲",
+        "overseas": "化外之地",
+    }
+
+
 @pytest.mark.django_db
 def test_relocate_manor_rejects_invalid_region(monkeypatch):
     manor = _create_manor("relocate_invalid_region")

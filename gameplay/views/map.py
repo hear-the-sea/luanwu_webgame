@@ -171,6 +171,13 @@ def _build_raid_status_response(manor: Any) -> JsonResponse:
     )
 
 
+def _resolve_region_key(region: str | None, *, fallback: str) -> str:
+    normalized_region = (region or "").strip()
+    if normalized_region in dict(REGION_CHOICES):
+        return normalized_region
+    return fallback
+
+
 class MapView(LoginRequiredMixin, TemplateView):
     """世界地图页面"""
 
@@ -185,13 +192,14 @@ class MapView(LoginRequiredMixin, TemplateView):
             project_fn=project_manor_activity_for_read,
         )
         # 获取当前选中的地区（默认显示玩家所在地区）
-        selected_region = self.request.GET.get("region", manor.region)
+        selected_region = _resolve_region_key(self.request.GET.get("region"), fallback=manor.region)
 
         # 获取搜索查询
         search_query = self.request.GET.get("q", "").strip()
 
         context.update(get_map_context(manor, selected_region, search_query))
         context["regions"] = REGION_CHOICES
+        context["selected_region_display"] = dict(REGION_CHOICES).get(selected_region, selected_region)
 
         return context
 
@@ -227,7 +235,7 @@ def map_search_api(request: HttpRequest) -> JsonResponse:
 
     search_type = request.GET.get("type", "region")
     query = request.GET.get("q", "").strip()
-    region = request.GET.get("region", manor.region)
+    region = _resolve_region_key(request.GET.get("region"), fallback=manor.region)
     page = safe_int(request.GET.get("page", "1"), 1, min_val=1) or 1
     page_size = UIConstants.MAP_SEARCH_PAGE_SIZE
 

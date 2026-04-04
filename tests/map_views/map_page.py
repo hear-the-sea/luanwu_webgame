@@ -16,6 +16,20 @@ class TestMapViews:
         assert response.status_code == 200
         assert "regions" in response.context
 
+    def test_map_page_exposes_only_four_continents_and_overseas(self, manor_with_user):
+        _manor, client = manor_with_user
+
+        response = client.get(reverse("gameplay:map"))
+
+        assert response.status_code == 200
+        assert response.context["regions"] == [
+            ("north", "北俱芦洲"),
+            ("east", "东胜神洲"),
+            ("west", "西牛贺洲"),
+            ("south", "南赡部洲"),
+            ("overseas", "化外之地"),
+        ]
+
     def test_map_page_loads_external_page_script_without_inline_logic(self, manor_with_user):
         _manor, client = manor_with_user
 
@@ -61,9 +75,19 @@ class TestMapViews:
 
     def test_map_region_filter(self, manor_with_user):
         manor, client = manor_with_user
-        response = client.get(reverse("gameplay:map") + "?region=beijing")
+        response = client.get(reverse("gameplay:map") + "?region=north")
         assert response.status_code == 200
-        assert response.context["selected_region"] == "beijing"
+        assert response.context["selected_region"] == "north"
+
+    def test_map_page_renders_selected_region_display_name(self, manor_with_user):
+        _manor, client = manor_with_user
+
+        response = client.get(reverse("gameplay:map") + "?region=north")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "北俱芦洲地区的庄园" in body
+        assert "north地区的庄园" not in body
 
     def test_raid_config_page_loads_external_page_script_without_inline_logic(
         self,

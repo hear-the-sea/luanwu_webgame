@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any, cast
 
 from django.conf import settings
 from django.core.cache import cache
@@ -122,6 +123,11 @@ def get_home_context(manor) -> dict:
             .order_by("-started_at")
             .first()
         )
+        if active_guild_mission is not None:
+            can_manage_guild_mission = bool(getattr(guild_membership, "can_manage", False))
+            active_guild_mission_view = cast(Any, active_guild_mission)
+            active_guild_mission_view.can_manage = can_manage_guild_mission
+            active_guild_mission_view.can_retreat_from_home = can_manage_guild_mission
 
     return {
         "manor": manor,

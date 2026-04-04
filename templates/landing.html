@@ -128,7 +128,15 @@
                               title="预计完成 {{ active_guild_mission.return_at|date:'Y-m-d H:i:s' }}">计算中</span>
                     </td>
                     <td>
+                        {% if active_guild_mission.can_retreat_from_home %}
+                        <form method="post" action="{% url 'guilds:mission_retreat' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="run_id" value="{{ active_guild_mission.id }}">
+                            <button type="submit" class="btn-secondary btn-sm">撤回</button>
+                        </form>
+                        {% else %}
                         <a href="{% url 'guilds:missions' %}" class="btn-secondary btn-sm">查看</a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endif %}

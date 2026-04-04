@@ -64,50 +64,10 @@ class GameBalance:
 # ============ 地区系统常量 ============
 
 REGION_CHOICES = [
-    # 直辖市
-    ("beijing", "北京"),
-    ("tianjin", "天津"),
-    ("shanghai", "上海"),
-    ("chongqing", "重庆"),
-    # 华北
-    ("hebei", "河北"),
-    ("shanxi", "山西"),
-    ("neimenggu", "内蒙古"),
-    # 东北
-    ("liaoning", "辽宁"),
-    ("jilin", "吉林"),
-    ("heilongjiang", "黑龙江"),
-    # 华东
-    ("jiangsu", "江苏"),
-    ("zhejiang", "浙江"),
-    ("anhui", "安徽"),
-    ("fujian", "福建"),
-    ("jiangxi", "江西"),
-    ("shandong", "山东"),
-    # 华中
-    ("henan", "河南"),
-    ("hubei", "湖北"),
-    ("hunan", "湖南"),
-    # 华南
-    ("guangdong", "广东"),
-    ("guangxi", "广西"),
-    ("hainan", "海南"),
-    # 西南
-    ("sichuan", "四川"),
-    ("guizhou", "贵州"),
-    ("yunnan", "云南"),
-    ("xizang", "西藏"),
-    # 西北
-    ("shaanxi", "陕西"),
-    ("gansu", "甘肃"),
-    ("qinghai", "青海"),
-    ("ningxia", "宁夏"),
-    ("xinjiang", "新疆"),
-    # 特别行政区
-    ("hongkong", "香港"),
-    ("macao", "澳门"),
-    ("taiwan", "台湾"),
-    # 特殊地区
+    ("north", "北俱芦洲"),
+    ("east", "东胜神洲"),
+    ("west", "西牛贺洲"),
+    ("south", "南赡部洲"),
     ("overseas", "化外之地"),
 ]
 

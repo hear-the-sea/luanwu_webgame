@@ -214,10 +214,10 @@ def test_ensure_manor_recovers_existing_half_initialized_manor(monkeypatch):
     half_ready = Manor.objects.create(user=user, region="overseas", coordinate_x=0, coordinate_y=0)
     monkeypatch.setattr("gameplay.services.manor.core.generate_unique_coordinate", lambda _region: (456, 789))
 
-    manor = ensure_manor(user, region="jiangnan")
+    manor = ensure_manor(user, region="north")
 
     assert manor.id == half_ready.id
-    assert manor.region == "jiangnan"
+    assert manor.region == "north"
     assert manor.coordinate_x == 456
     assert manor.coordinate_y == 789
 
