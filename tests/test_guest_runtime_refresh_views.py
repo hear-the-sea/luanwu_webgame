@@ -18,7 +18,7 @@ from gameplay.models import (
     RaidRun,
 )
 from gameplay.services.manor.core import ensure_manor
-from guests.models import Guest, GuestStatus, GuestTemplate
+from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestStatus, GuestTemplate
 
 
 def _create_guest(manor, *, prefix: str) -> Guest:
@@ -171,6 +171,31 @@ def test_guest_detail_view_loads_external_page_script_without_inline_detail_logi
     content = response.content.decode("utf-8")
     assert "js/guest-detail.js" in content
     assert "const attributeResponseFieldMap" not in content
+
+
+@pytest.mark.django_db
+def test_guest_detail_view_loads_tooltip_script_for_equipped_gear(game_data, django_user_model):
+    user = django_user_model.objects.create_user(username="detail_tooltip_script", password="pass123")
+    manor = ensure_manor(user)
+    guest = _create_guest(manor, prefix="detail_tooltip_script")
+    gear_template = GearTemplate.objects.create(
+        key="detail_tooltip_script_gear",
+        name="边界测试剑",
+        slot=GearSlot.WEAPON,
+        rarity="green",
+    )
+    GearItem.objects.create(manor=manor, template=gear_template, guest=guest)
+
+    client = Client()
+    client.force_login(user)
+
+    response = client.get(reverse("guests:detail", args=[guest.pk]))
+
+    assert response.status_code == 200
+    content = response.content.decode("utf-8")
+    assert "js/tooltip.js" in content
+    assert "guest-equip-tooltip-trigger" in content
+    assert "guest-equip-tooltip-bubble" in content
 
 
 @pytest.mark.django_db

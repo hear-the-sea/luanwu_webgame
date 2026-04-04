@@ -194,6 +194,69 @@ heroes:
         agility: 106
         luck: 58
         base_hp: 1900
+    - key: guild_wulinzhai_night_watch
+      name: 乌鳞夜哨
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_wulinzhai_night_signal
+      custom_stats:
+        force: 176
+        intellect: 104
+        defense: 144
+        agility: 128
+        luck: 64
+        base_hp: 1980
+    - key: guild_wulinzhai_blade_ambusher
+      name: 乌鳞伏刀手
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_wulinzhai_shadow_raid
+      custom_stats:
+        force: 188
+        intellect: 82
+        defense: 146
+        agility: 136
+        luck: 62
+        base_hp: 2020
+    - key: guild_wulinzhai_torch_archer
+      name: 乌鳞火把弓手
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_wulinzhai_torch_volley
+      custom_stats:
+        force: 180
+        intellect: 92
+        defense: 136
+        agility: 142
+        luck: 60
+        base_hp: 1960
+    - key: guild_wulinzhai_path_scout
+      name: 乌鳞探路哨
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_wulinzhai_shadow_raid
+      custom_stats:
+        force: 172
+        intellect: 96
+        defense: 132
+        agility: 150
+        luck: 66
+        base_hp: 1920
+    - key: guild_wulinzhai_minion
+      name: 乌鳞寨喽啰
+      archetype: military
+      recruitable: false
+      custom_stats:
+        force: 168
+        intellect: 74
+        defense: 138
+        agility: 118
+        luck: 52
+        base_hp: 1880
   purple:
     - key: task_cellar_guard
       name: 守卫
@@ -228,6 +291,216 @@ heroes:
         agility: 118
         luck: 70
         base_hp: 2240
+    - key: guild_wulinzhai_zhai_zhu
+      name: 乌鳞寨寨主
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_wulinzhai_shadow_raid
+        - guild_wulinzhai_torch_volley
+      custom_stats:
+        force: 214
+        intellect: 120
+        defense: 176
+        agility: 142
+        luck: 76
+        base_hp: 2480
+    - key: guild_wulinzhai_junshi
+      name: 乌鳞寨军师
+      archetype: civil
+      recruitable: false
+      skills:
+        - guild_wulinzhai_night_signal
+      custom_stats:
+        force: 172
+        intellect: 198
+        defense: 148
+        agility: 138
+        luck: 82
+        base_hp: 2300
+    - key: guild_bloodflag_head_escort
+      name: 血旗总镖头
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_bloodflag_convoy_command
+        - guild_bloodflag_pressing_blade
+      custom_stats:
+        force: 226
+        intellect: 132
+        defense: 186
+        agility: 148
+        luck: 80
+        base_hp: 2620
+    - key: guild_bloodflag_deputy_escort
+      name: 血旗副镖头
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_bloodflag_pressing_blade
+      custom_stats:
+        force: 216
+        intellect: 126
+        defense: 180
+        agility: 144
+        luck: 76
+        base_hp: 2480
+    - key: guild_bloodflag_rearguard_veteran
+      name: 血旗断后老手
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_bloodflag_rearguard_counter
+      custom_stats:
+        force: 212
+        intellect: 114
+        defense: 188
+        agility: 132
+        luck: 72
+        base_hp: 2520
+    - key: guild_bloodflag_blade_guard
+      name: 血旗刀镖手
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_bloodflag_pressing_blade
+      custom_stats:
+        force: 206
+        intellect: 108
+        defense: 174
+        agility: 138
+        luck: 70
+        base_hp: 2380
+    - key: guild_bloodflag_bow_guard
+      name: 血旗弓镖手
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_bloodflag_arrow_screen
+      custom_stats:
+        force: 198
+        intellect: 118
+        defense: 166
+        agility: 150
+        luck: 72
+        base_hp: 2320
+    - key: guild_bloodflag_pathfinder
+      name: 血旗趟子手
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_bloodflag_rearguard_counter
+      custom_stats:
+        force: 202
+        intellect: 116
+        defense: 164
+        agility: 156
+        luck: 74
+        base_hp: 2280
+    - key: guild_bloodflag_escort_master
+      name: 血旗押阵师
+      archetype: civil
+      recruitable: false
+      skills:
+        - guild_bloodflag_convoy_command
+      custom_stats:
+        force: 184
+        intellect: 204
+        defense: 158
+        agility: 134
+        luck: 84
+        base_hp: 2260
+    - key: guild_blackwind_gate_overseer
+      name: 黑风关监军
+      archetype: civil
+      recruitable: false
+      skills:
+        - guild_blackwind_overseer_order
+      custom_stats:
+        force: 192
+        intellect: 214
+        defense: 170
+        agility: 136
+        luck: 82
+        base_hp: 2440
+    - key: guild_blackwind_iron_guard
+      name: 黑风铁卫
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_blackwind_countercharge
+      custom_stats:
+        force: 224
+        intellect: 118
+        defense: 202
+        agility: 132
+        luck: 74
+        base_hp: 2740
+    - key: guild_blackwind_bow_captain
+      name: 黑风关弓队都头
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_blackwind_arrow_barrage
+      custom_stats:
+        force: 210
+        intellect: 132
+        defense: 176
+        agility: 156
+        luck: 76
+        base_hp: 2480
+    - key: guild_blackwind_assault_blade
+      name: 黑风破阵刀手
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_blackwind_gate_breaker
+      custom_stats:
+        force: 220
+        intellect: 108
+        defense: 184
+        agility: 142
+        luck: 72
+        base_hp: 2560
+    - key: guild_blackwind_patrol_captain
+      name: 黑风巡关校尉
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_blackwind_overseer_order
+      custom_stats:
+        force: 216
+        intellect: 126
+        defense: 188
+        agility: 146
+        luck: 74
+        base_hp: 2540
+    - key: guild_blackwind_guard_soldier
+      name: 黑风关守卒
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_blackwind_countercharge
+      custom_stats:
+        force: 206
+        intellect: 102
+        defense: 182
+        agility: 128
+        luck: 68
+        base_hp: 2420
+    - key: guild_blackwind_spear_soldier
+      name: 黑风枪卒
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_blackwind_countercharge
+      custom_stats:
+        force: 212
+        intellect: 98
+        defense: 186
+        agility: 124
+        luck: 68
+        base_hp: 2460
     - key: arena_gl_top_zhang_wuji_boss
       name: 张无忌
       archetype: military
@@ -318,6 +591,20 @@ heroes:
         luck: 82
         base_hp: 2400
   orange:
+    - key: guild_blackwind_gate_general
+      name: 黑风关守将
+      archetype: military
+      recruitable: false
+      skills:
+        - guild_blackwind_battle_standard
+        - guild_blackwind_gate_breaker
+      custom_stats:
+        force: 248
+        intellect: 142
+        defense: 214
+        agility: 146
+        luck: 86
+        base_hp: 2960
     - key: task_barbarian_chanyu
       name: 单于
       archetype: military

@@ -11,10 +11,21 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from battle.combatants_pkg.cache import clear_guest_template_cache
+from core.config import GUEST
 from core.utils.image_utils import compress_and_resize_image
 from core.utils.yaml_loader import ensure_mapping, load_yaml_data
 from guests.growth_rules import RARITY_HP_PROFILES
-from guests.models import GuestRarity, GuestTemplate, RecruitmentPool, RecruitmentPoolEntry, Skill, SkillBook, SkillKind
+from guests.models import (
+    Guest,
+    GuestRarity,
+    GuestStatus,
+    GuestTemplate,
+    RecruitmentPool,
+    RecruitmentPoolEntry,
+    Skill,
+    SkillBook,
+    SkillKind,
+)
 from guests.services.recruitment_templates import clear_template_cache
 
 logger = logging.getLogger(__name__)
@@ -397,10 +408,17 @@ class Command(BaseCommand):
         template_keys: set[str] = set()
         template_skill_keys: dict[str, list[str]] = {}
         fallback_avatar_count = 0
+        synced_guest_hp_count = 0
 
         for data in template_data:
+            existing = GuestTemplate.objects.filter(key=data["key"]).only("id", "base_hp").first()
+            previous_base_hp = int(existing.base_hp or 0) if existing is not None else None
             obj, created = GuestTemplate.objects.update_or_create(
                 key=data["key"], defaults=self._template_defaults(data)
+            )
+            synced_guest_hp_count += self._sync_existing_guest_current_hp_for_template_base_hp(
+                template=obj,
+                previous_base_hp=previous_base_hp,
             )
             if not skip_images:
                 fallback_avatar_count += self._sync_template_avatar(
@@ -417,8 +435,65 @@ class Command(BaseCommand):
             template_skill_keys[obj.key] = data.get("skills") or []
             if verbosity >= 1:
                 self.stdout.write(f"{'Created' if created else 'Updated'} template {obj.key}")
+        if verbosity >= 1 and synced_guest_hp_count > 0:
+            self.stdout.write(f"Synchronized current_hp for {synced_guest_hp_count} guests after template HP updates")
 
         return template_keys, template_skill_keys, fallback_avatar_count
+
+    def _sync_existing_guest_current_hp_for_template_base_hp(
+        self,
+        *,
+        template: GuestTemplate,
+        previous_base_hp: int | None,
+    ) -> int:
+        if previous_base_hp is None:
+            return 0
+
+        new_base_hp = int(template.base_hp or 0)
+        if previous_base_hp == new_base_hp:
+            return 0
+
+        hp_floor = int(GUEST.MIN_HP_FLOOR)
+        defense_to_hp = int(GUEST.DEFENSE_TO_HP_MULTIPLIER)
+        dirty_guests: list[Guest] = []
+        guest_qs = Guest.objects.filter(template=template).only(
+            "id", "current_hp", "hp_bonus", "defense_stat", "status"
+        )
+
+        for guest in guest_qs:
+            old_max_hp = max(
+                hp_floor,
+                int(previous_base_hp)
+                + int(getattr(guest, "hp_bonus", 0) or 0)
+                + int(guest.defense_stat or 0) * defense_to_hp,
+            )
+            new_max_hp = max(
+                hp_floor,
+                new_base_hp + int(getattr(guest, "hp_bonus", 0) or 0) + int(guest.defense_stat or 0) * defense_to_hp,
+            )
+            current_hp = int(getattr(guest, "current_hp", 0) or 0)
+            if current_hp <= 0:
+                target_hp = 0
+            elif current_hp >= old_max_hp:
+                target_hp = new_max_hp
+            else:
+                target_hp = max(1, min(new_max_hp, int(new_max_hp * current_hp / old_max_hp)))
+
+            target_status = guest.status
+            if target_hp >= new_max_hp and target_status == GuestStatus.INJURED:
+                target_status = GuestStatus.IDLE
+
+            if target_hp == current_hp and target_status == guest.status:
+                continue
+            guest.current_hp = target_hp
+            guest.status = target_status
+            dirty_guests.append(guest)
+
+        if not dirty_guests:
+            return 0
+
+        Guest.objects.bulk_update(dirty_guests, ["current_hp", "status"])
+        return len(dirty_guests)
 
     def _sync_template_skills(
         self,

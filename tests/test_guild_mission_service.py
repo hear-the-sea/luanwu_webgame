@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 from django.db import IntegrityError, transaction
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from battle import execution as battle_execution
@@ -70,7 +70,7 @@ class TestGuildMissionModelConstraints:
             name="模型唯一运行任务",
             description="smoke",
             difficulty="junior",
-            task_type="patrol",
+            task_type="guest",
             base_duration_seconds=300,
             ruby_reward=10,
             recommended_guest_count=1,
@@ -126,7 +126,7 @@ def test_launch_guild_mission_snapshots_guests_and_deducts_troops(django_user_mo
         name="巡山",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="guest",
         base_duration_seconds=600,
         ruby_reward=2,
         recommended_guest_count=2,
@@ -171,6 +171,54 @@ def test_launch_guild_mission_snapshots_guests_and_deducts_troops(django_user_mo
 
 
 @pytest.mark.django_db(transaction=True)
+def test_launch_guild_mission_clamps_snapshot_hp_when_guest_current_hp_exceeds_max(django_user_model, monkeypatch):
+    leader, leader_manor = _create_user_with_manor(django_user_model, "guild_mission_launch_hp_clamp_leader")
+    guild = Guild.objects.create(name="帮会任务血量钳制帮", founder=leader, is_active=True)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    template = GuildMissionTemplate.objects.create(
+        key="guild_launch_hp_clamp_task",
+        name="血量钳制任务",
+        description="",
+        difficulty="junior",
+        task_type="guest",
+        base_duration_seconds=600,
+        ruby_reward=2,
+        recommended_guest_count=1,
+        allow_troops=False,
+        is_active=True,
+        sort_weight=2,
+    )
+    guest = _create_guest(
+        manor=leader_manor,
+        template=_create_template("guild_launch_hp_clamp_tpl"),
+        name="钳制门客",
+    )
+    guest.current_hp = guest.max_hp + 5000
+    guest.save(update_fields=["current_hp"])
+
+    entry = hero_pool_service.submit_hero_pool_entry(leader_member, guest_id=guest.id, slot_index=1).entry
+    hero_pool_service.add_lineup_entry(guild=guild, operator=leader, pool_entry_id=entry.id)
+
+    monkeypatch.setattr(
+        "guilds.services.guild_missions.schedule_guild_mission_completion",
+        lambda _run: None,
+    )
+
+    from guilds.services import guild_missions as guild_mission_service
+
+    run = guild_mission_service.launch_guild_mission(
+        guild=guild,
+        operator=leader,
+        template_key=template.key,
+        pool_entry_ids=[entry.id],
+        troop_loadout={},
+    )
+
+    assert len(run.guest_snapshots) == 1
+    assert run.guest_snapshots[0]["current_hp"] == run.guest_snapshots[0]["max_hp"]
+
+
+@pytest.mark.django_db(transaction=True)
 def test_launch_guild_mission_defers_completion_dispatch_until_commit(django_user_model, monkeypatch):
     leader, leader_manor = _create_user_with_manor(django_user_model, "guild_mission_launch_on_commit_leader")
     guild = Guild.objects.create(name="帮会任务提交后调度帮", founder=leader, is_active=True)
@@ -180,7 +228,7 @@ def test_launch_guild_mission_defers_completion_dispatch_until_commit(django_use
         name="提交后调度",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="guest",
         base_duration_seconds=600,
         ruby_reward=2,
         recommended_guest_count=1,
@@ -213,6 +261,48 @@ def test_launch_guild_mission_defers_completion_dispatch_until_commit(django_use
     assert len(callbacks) == 1
 
     assert dispatch_calls == [[run.id]]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_launch_guild_mission_applies_global_time_multiplier_to_schedule(django_user_model, monkeypatch):
+    leader, leader_manor = _create_user_with_manor(django_user_model, "guild_mission_launch_time_scale_leader")
+    guild = Guild.objects.create(name="帮会任务时间倍率帮", founder=leader, is_active=True)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    template = GuildMissionTemplate.objects.create(
+        key="guild_launch_time_scale_task",
+        name="时间倍率任务",
+        description="",
+        difficulty="junior",
+        task_type="guest",
+        base_duration_seconds=600,
+        ruby_reward=2,
+        recommended_guest_count=1,
+        allow_troops=False,
+        is_active=True,
+        sort_weight=4,
+    )
+    guest = _create_guest(manor=leader_manor, template=_create_template("guild_launch_time_scale_tpl"), name="甲")
+    entry = hero_pool_service.submit_hero_pool_entry(leader_member, guest_id=guest.id, slot_index=1).entry
+    hero_pool_service.add_lineup_entry(guild=guild, operator=leader, pool_entry_id=entry.id)
+
+    monkeypatch.setattr("guilds.services.guild_missions.schedule_guild_mission_completion", lambda _run: None)
+
+    from guilds.services import guild_missions as guild_mission_service
+
+    fixed_now = timezone.now()
+    monkeypatch.setattr(guild_mission_service.timezone, "now", lambda: fixed_now)
+
+    with override_settings(GAME_TIME_MULTIPLIER=5):
+        run = guild_mission_service.launch_guild_mission(
+            guild=guild,
+            operator=leader,
+            template_key=template.key,
+            pool_entry_ids=[entry.id],
+            troop_loadout={},
+        )
+
+    assert run.battle_at == fixed_now + timedelta(seconds=120)
+    assert run.return_at == fixed_now + timedelta(seconds=120)
 
 
 @pytest.mark.django_db
@@ -274,7 +364,7 @@ def test_retreat_guild_mission_returns_all_troops_without_ruby_reward(django_use
         name="撤回测试任务",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="guest",
         base_duration_seconds=600,
         ruby_reward=3,
         recommended_guest_count=1,
@@ -320,7 +410,7 @@ def test_get_guild_mission_page_context_finalizes_overdue_active_run(django_user
         name="读路径收口任务",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="guest",
         base_duration_seconds=60,
         ruby_reward=2,
         recommended_guest_count=1,
@@ -380,7 +470,7 @@ def test_launch_guild_mission_ignores_overdue_active_run_after_finalizing(django
         name="发起收口任务",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="guest",
         base_duration_seconds=60,
         ruby_reward=2,
         recommended_guest_count=1,
@@ -447,7 +537,7 @@ def test_request_retreat_finalizes_overdue_active_run_instead_of_refunding_all_t
         name="撤回收口任务",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="guest",
         base_duration_seconds=60,
         ruby_reward=3,
         recommended_guest_count=1,
@@ -512,7 +602,7 @@ def test_finalize_guild_mission_returns_survivors_and_awards_ruby(django_user_mo
         name="剿匪",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="guest",
         base_duration_seconds=60,
         ruby_reward=5,
         recommended_guest_count=1,
@@ -584,7 +674,7 @@ def test_finalize_guild_mission_sends_report_message_to_all_active_members(djang
         name="群发战报任务",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="guest",
         base_duration_seconds=60,
         ruby_reward=0,
         recommended_guest_count=1,
@@ -654,7 +744,7 @@ def test_finalize_guild_mission_forwards_expanded_battle_limits(django_user_mode
         name="人数上限测试",
         description="",
         difficulty="junior",
-        task_type="dispatch",
+        task_type="guest",
         base_duration_seconds=60,
         ruby_reward=0,
         recommended_guest_count=6,

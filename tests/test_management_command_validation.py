@@ -13,6 +13,16 @@ from guests.models import GuestTemplate
 from guilds.models import GuildMissionTemplate
 
 
+def _enemy_guest_key(entry):
+    if isinstance(entry, str):
+        return entry
+    return entry.get("template_key") or entry.get("key") or ""
+
+
+def _enemy_guest_keys(entries):
+    return [_enemy_guest_key(entry) for entry in entries]
+
+
 @pytest.mark.django_db
 def test_load_building_templates_command_tolerates_invalid_numbers(tmp_path):
     payload_path = tmp_path / "building_templates.yaml"
@@ -154,6 +164,75 @@ def test_default_mission_templates_enemy_guest_keys_resolve_to_guest_templates()
 
 
 @pytest.mark.django_db
+def test_default_guild_mission_templates_use_guild_specific_enemy_templates():
+    guest_payload_path = settings.BASE_DIR / "data" / "guest_templates.yaml"
+    mission_payload_path = settings.BASE_DIR / "data" / "guild_mission_templates.yaml"
+
+    call_command("load_guest_templates", file=str(guest_payload_path), verbosity=0, skip_images=True)
+    call_command("load_guild_mission_templates", file=str(mission_payload_path), verbosity=0)
+
+    patrol = GuildMissionTemplate.objects.get(key="guild_patrol_alpha")
+    escort = GuildMissionTemplate.objects.get(key="guild_supply_escort")
+    assault = GuildMissionTemplate.objects.get(key="guild_blackwind_assault")
+
+    patrol_keys = _enemy_guest_keys(patrol.enemy_guests)
+    escort_keys = _enemy_guest_keys(escort.enemy_guests)
+    assault_keys = _enemy_guest_keys(assault.enemy_guests)
+
+    assert patrol_keys == [
+        "guild_wulinzhai_zhai_zhu",
+        "guild_wulinzhai_junshi",
+        "guild_wulinzhai_night_watch",
+        "guild_wulinzhai_blade_ambusher",
+        "guild_wulinzhai_blade_ambusher",
+        "guild_wulinzhai_torch_archer",
+        "guild_wulinzhai_torch_archer",
+        "guild_wulinzhai_path_scout",
+        "guild_wulinzhai_minion",
+        "guild_wulinzhai_minion",
+    ]
+    assert escort_keys == [
+        "guild_bloodflag_head_escort",
+        "guild_bloodflag_deputy_escort",
+        "guild_bloodflag_rearguard_veteran",
+        "guild_bloodflag_blade_guard",
+        "guild_bloodflag_blade_guard",
+        "guild_bloodflag_blade_guard",
+        "guild_bloodflag_bow_guard",
+        "guild_bloodflag_bow_guard",
+        "guild_bloodflag_bow_guard",
+        "guild_bloodflag_pathfinder",
+        "guild_bloodflag_pathfinder",
+        "guild_bloodflag_escort_master",
+        "guild_bloodflag_escort_master",
+    ]
+    assert assault_keys == [
+        "guild_blackwind_gate_general",
+        "guild_blackwind_gate_overseer",
+        "guild_blackwind_iron_guard",
+        "guild_blackwind_iron_guard",
+        "guild_blackwind_bow_captain",
+        "guild_blackwind_bow_captain",
+        "guild_blackwind_assault_blade",
+        "guild_blackwind_assault_blade",
+        "guild_blackwind_assault_blade",
+        "guild_blackwind_assault_blade",
+        "guild_blackwind_patrol_captain",
+        "guild_blackwind_patrol_captain",
+        "guild_blackwind_guard_soldier",
+        "guild_blackwind_guard_soldier",
+        "guild_blackwind_guard_soldier",
+        "guild_blackwind_spear_soldier",
+        "guild_blackwind_spear_soldier",
+        "guild_blackwind_spear_soldier",
+    ]
+
+    guest_keys = set(patrol_keys + escort_keys + assault_keys)
+    existing_keys = set(GuestTemplate.objects.filter(key__in=guest_keys).values_list("key", flat=True))
+    assert guest_keys == existing_keys
+
+
+@pytest.mark.django_db
 def test_load_guild_mission_templates_command_tolerates_invalid_numbers(tmp_path):
     payload_path = tmp_path / "guild_mission_templates.yaml"
     payload_path.write_text(
@@ -183,6 +262,7 @@ missions:
     assert mission.base_duration_seconds == 600
     assert mission.ruby_reward == 0
     assert mission.recommended_guest_count == 1
+    assert mission.task_type == "troop"
     assert mission.allow_troops is True
     assert mission.is_active is False
     assert mission.sort_weight == 0

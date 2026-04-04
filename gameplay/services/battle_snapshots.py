@@ -208,8 +208,7 @@ def build_guest_battle_snapshot(guest: Any, *, include_identity: bool = True) ->
     troop_capacity_raw = compute_guest_troop_capacity(guest) if isinstance(guest, Guest) else stats.troop_capacity
     troop_capacity = _resolve_live_computed_stat_int(troop_capacity_raw, field_name="troop_capacity", minimum=0)
     current_hp = _resolve_live_snapshot_stat_int(guest, field_name="current_hp", minimum=1)
-    if current_hp > max_hp:
-        raise AssertionError(f"invalid battle guest current_hp: {current_hp!r}")
+    current_hp = min(max_hp, current_hp)
     payload: dict[str, Any] = {
         "snapshot_version": 1,
         "display_name": _resolve_live_snapshot_text_field(guest, field_name="display_name"),

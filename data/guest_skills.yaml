@@ -387,3 +387,288 @@ skills:
     required_level: 15
     required_force: 150
     targets: 3
+
+  # ---------- 帮会任务专属技能 ----------
+  - key: guild_wulinzhai_shadow_raid
+    name: 夜幕劫袭
+    rarity: blue
+    description: 借夜色贴近敌阵，挥刀连袭两名目标，专打队伍露出的破绽。
+    base_probability: 0.78
+    kind: active
+    damage_formula:
+      base: 980
+      ally:
+        force: 2.6
+        agility: 2.4
+        luck: 0.3
+      enemy:
+        defense: 0.24
+        agility: 0.18
+    required_level: 18
+    required_force: 96
+    required_agility: 108
+    targets: 2
+
+  - key: guild_wulinzhai_torch_volley
+    name: 火把乱射
+    rarity: blue
+    description: 借火把照明齐射山道，对三名敌人压出一轮凌乱却凶狠的箭雨。
+    base_probability: 0.76
+    kind: active
+    damage_formula:
+      base: 860
+      ally:
+        force: 1.8
+        intellect: 1.2
+        agility: 2.1
+      enemy:
+        defense: 0.22
+        agility: 0.16
+    required_level: 18
+    required_force: 90
+    required_agility: 102
+    targets: 3
+
+  - key: guild_wulinzhai_night_signal
+    name: 夜哨号火
+    rarity: purple
+    description: 山口号火一起，乌鳞寨众匪立刻收拢阵脚，趁乱压出更狠一轮攻势。
+    base_probability: 0.75
+    kind: passive
+    damage_formula:
+      base: 0
+    targets: 1
+    passive_config:
+      triggers:
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - guild_wulinzhai_junshi
+              - guild_wulinzhai_night_watch
+          effects:
+            - type: emit_log
+              log_name: 夜哨号火
+              message: 哨火示警
+            - type: modify_outgoing_damage
+              value: 1.12
+              target_scope: allies
+            - type: set_softcap
+              threshold: 9000
+              overflow_ratio: 0.4
+              target_scope: allies
+
+  - key: guild_bloodflag_convoy_command
+    name: 血旗押阵
+    rarity: purple
+    description: 镖队号令严整，主心骨未乱时，押运众人会不断前压抢节奏。
+    base_probability: 0.75
+    kind: passive
+    damage_formula:
+      base: 0
+    targets: 1
+    passive_config:
+      triggers:
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - guild_bloodflag_head_escort
+              - guild_bloodflag_escort_master
+          effects:
+            - type: emit_log
+              log_name: 血旗押阵
+              message: 旗令前压
+            - type: modify_outgoing_damage
+              value: 1.15
+              target_scope: allies
+            - type: set_softcap
+              threshold: 11000
+              overflow_ratio: 0.38
+              target_scope: allies
+
+  - key: guild_bloodflag_pressing_blade
+    name: 压阵逼锋
+    rarity: purple
+    description: 镖师借车阵掩护贴身抢位，刀锋连进，一击便逼得敌人难以喘息。
+    base_probability: 0.77
+    kind: active
+    damage_formula:
+      base: 1120
+      ally:
+        force: 3.3
+        agility: 1.9
+        luck: 0.4
+      enemy:
+        defense: 0.26
+        agility: 0.18
+    required_level: 22
+    required_force: 120
+    required_agility: 96
+    targets: 1
+
+  - key: guild_bloodflag_rearguard_counter
+    name: 断后回斩
+    rarity: purple
+    description: 后队老手半步不让，借退势回身反斩，将追近的两名敌人一并卷入刀势。
+    base_probability: 0.75
+    kind: active
+    damage_formula:
+      base: 980
+      ally:
+        force: 2.8
+        defense: 1.1
+        agility: 1.2
+      enemy:
+        defense: 0.24
+        agility: 0.12
+    required_level: 22
+    required_force: 116
+    required_agility: 88
+    targets: 2
+
+  - key: guild_bloodflag_arrow_screen
+    name: 河道箭幕
+    rarity: purple
+    description: 镖局弓手借狭道铺开箭幕，对前方三名敌人持续压射，不给轻易突进的机会。
+    base_probability: 0.76
+    kind: active
+    damage_formula:
+      base: 930
+      ally:
+        force: 1.9
+        intellect: 1.0
+        agility: 2.5
+      enemy:
+        defense: 0.22
+        agility: 0.18
+    required_level: 21
+    required_force: 94
+    required_agility: 112
+    targets: 3
+
+  - key: guild_blackwind_battle_standard
+    name: 黑风战旗
+    rarity: purple
+    description: 关楼战旗一立，黑风关守军杀意更盛，同时借阵势稳住正面承压。
+    base_probability: 0.75
+    kind: passive
+    damage_formula:
+      base: 0
+    targets: 1
+    passive_config:
+      triggers:
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - guild_blackwind_gate_general
+          effects:
+            - type: emit_log
+              log_name: 黑风战旗
+              message: 战旗高举
+            - type: modify_outgoing_damage
+              value: 1.18
+              target_scope: allies
+            - type: modify_incoming_damage
+              value: 0.88
+              target_scope: allies
+
+  - key: guild_blackwind_overseer_order
+    name: 督战严令
+    rarity: purple
+    description: 监军在阵后严令死守，前排兵卒会在喝令中稳住阵脚，持续压住正面攻势。
+    base_probability: 0.75
+    kind: passive
+    damage_formula:
+      base: 0
+    targets: 2
+    passive_config:
+      triggers:
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - guild_blackwind_gate_overseer
+              - guild_blackwind_patrol_captain
+          effects:
+            - type: emit_log
+              log_name: 督战严令
+              message: 严令死守
+            - type: modify_outgoing_damage
+              value: 1.1
+              target_scope: allies
+              target_template_in:
+                - guild_blackwind_gate_overseer
+                - guild_blackwind_patrol_captain
+                - guild_blackwind_iron_guard
+                - guild_blackwind_assault_blade
+                - guild_blackwind_guard_soldier
+                - guild_blackwind_spear_soldier
+            - type: set_softcap
+              threshold: 9800
+              overflow_ratio: 0.4
+              target_scope: allies
+              target_template_in:
+                - guild_blackwind_gate_overseer
+                - guild_blackwind_patrol_captain
+                - guild_blackwind_iron_guard
+                - guild_blackwind_assault_blade
+                - guild_blackwind_guard_soldier
+                - guild_blackwind_spear_soldier
+
+  - key: guild_blackwind_gate_breaker
+    name: 破关猛轰
+    rarity: purple
+    description: 借重甲与冲势硬砸正面，一击直撞敌阵核心，仿佛城门都要被撞开。
+    base_probability: 0.75
+    kind: active
+    damage_formula:
+      base: 1320
+      ally:
+        force: 3.9
+        defense: 1.2
+        agility: 0.8
+      enemy:
+        defense: 0.28
+        agility: 0.1
+    required_level: 24
+    required_force: 132
+    required_agility: 84
+    targets: 1
+
+  - key: guild_blackwind_arrow_barrage
+    name: 关楼箭雨
+    rarity: purple
+    description: 关楼弓队居高齐发，密集箭雨直落阵前，对三名敌人形成连绵压制。
+    base_probability: 0.76
+    kind: active
+    damage_formula:
+      base: 1010
+      ally:
+        force: 2.0
+        intellect: 1.3
+        agility: 2.6
+      enemy:
+        defense: 0.24
+        agility: 0.18
+    required_level: 24
+    required_force: 100
+    required_agility: 116
+    targets: 3
+
+  - key: guild_blackwind_countercharge
+    name: 关前反冲
+    rarity: purple
+    description: 守军趁敌脚步未稳突然顶枪反冲，同时逼退两名贴近的前排对手。
+    base_probability: 0.78
+    kind: active
+    damage_formula:
+      base: 1080
+      ally:
+        force: 3.0
+        defense: 1.3
+        agility: 1.0
+      enemy:
+        defense: 0.26
+        agility: 0.12
+    required_level: 23
+    required_force: 122
+    required_agility: 86
+    targets: 2

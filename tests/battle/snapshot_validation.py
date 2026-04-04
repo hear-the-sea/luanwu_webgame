@@ -194,7 +194,7 @@ def test_build_guest_battle_snapshot_rejects_blank_display_name(monkeypatch):
         build_guest_battle_snapshot(guest, include_identity=False)
 
 
-def test_build_guest_battle_snapshot_rejects_current_hp_exceeding_max_hp(monkeypatch):
+def test_build_guest_battle_snapshot_clamps_current_hp_exceeding_max_hp(monkeypatch):
     guest = SimpleNamespace(
         display_name="快照门客",
         rarity="green",
@@ -214,5 +214,7 @@ def test_build_guest_battle_snapshot_rejects_current_hp_exceeding_max_hp(monkeyp
         lambda _guest: SimpleNamespace(attack=1, defense=1, max_hp=10, troop_capacity=0),
     )
 
-    with pytest.raises(AssertionError, match="invalid battle guest current_hp"):
-        build_guest_battle_snapshot(guest, include_identity=False)
+    payload = build_guest_battle_snapshot(guest, include_identity=False)
+
+    assert payload["current_hp"] == 10
+    assert payload["max_hp"] == 10

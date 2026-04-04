@@ -1,7 +1,7 @@
 # ============================================================
 # 帮会任务模板配置文件
 # ============================================================
-# 本文件用于配置帮会任务，包括巡逻、押运、讨伐等玩法。
+# 本文件用于配置帮会任务，任务类型与个人任务口径保持一致：门客/护院/防守。
 # 字段风格与个人任务导入保持一致，便于统一维护。
 
 missions:
@@ -12,26 +12,22 @@ missions:
 
       寨中人白日敛迹，夜里却轮番下山掠货，惯会先放小股人手引人追击，再借山路弯口突然合围。若想把这条商线重新打通，不能只顾着往前压，还得有人盯住两翼伏兵，免得主力刚进谷口，退路便先被人摸黑截断。
     difficulty: junior
-    task_type: patrol
+    task_type: troop
     base_duration_seconds: 1500
     ruby_reward: 96
     recommended_guest_count: 10
     allow_troops: true
     enemy_guests:
-      - template_key: hero_zhuge_lei
-        skills:
-          - stratagem_burst
-      - template_key: hero_hahaer
-      - template_key: hero_bai_kaixin
-      - template_key: hero_long_xiaoyun
-        skills:
-          - stratagem_burst
-      - template_key: hero_ruan_shizhong
-      - template_key: base_gray_military
-      - template_key: base_gray_military
-      - template_key: base_black_military
-      - template_key: base_black_military_2
-      - template_key: base_gray_civil
+      - template_key: guild_wulinzhai_zhai_zhu
+      - template_key: guild_wulinzhai_junshi
+      - template_key: guild_wulinzhai_night_watch
+      - template_key: guild_wulinzhai_blade_ambusher
+      - template_key: guild_wulinzhai_blade_ambusher
+      - template_key: guild_wulinzhai_torch_archer
+      - template_key: guild_wulinzhai_torch_archer
+      - template_key: guild_wulinzhai_path_scout
+      - template_key: guild_wulinzhai_minion
+      - template_key: guild_wulinzhai_minion
     enemy_troops:
       qiang_hao: 700
       jian_hao: 650
@@ -51,33 +47,25 @@ missions:
 
       探子送回的消息说，这支人马不像寻常匪帮，各车之间号令极严，前阵短弓压路，中段刀枪护箱，尾队还留着专门断后的老手。真打起来，他们未必急着和你硬换，只会边退边拖，把人一步步拽进最窄最乱的那段河道。
     difficulty: intermediate
-    task_type: escort
+    task_type: troop
     base_duration_seconds: 2100
     ruby_reward: 168
     recommended_guest_count: 14
     allow_troops: true
     enemy_guests:
-      - template_key: hero_zhuge_lei
-        skills:
-          - stratagem_burst
-      - template_key: hero_jin_jiuling
-        skills:
-          - stratagem_burst
-      - template_key: hero_xue_xiaoren
-      - template_key: hero_wuhua_heshang
-      - template_key: hero_hahaer
-      - template_key: hero_bai_kaixin
-      - template_key: hero_long_xiaoyun
-        skills:
-          - stratagem_burst
-      - template_key: hero_bei_haishi
-        skills:
-          - stratagem_burst
-      - template_key: hero_ruan_shizhong
-      - template_key: hero_lv_xiangchuan
-      - template_key: base_gray_military
-      - template_key: base_gray_military
-      - template_key: base_gray_civil
+      - template_key: guild_bloodflag_head_escort
+      - template_key: guild_bloodflag_deputy_escort
+      - template_key: guild_bloodflag_rearguard_veteran
+      - template_key: guild_bloodflag_blade_guard
+      - template_key: guild_bloodflag_blade_guard
+      - template_key: guild_bloodflag_blade_guard
+      - template_key: guild_bloodflag_bow_guard
+      - template_key: guild_bloodflag_bow_guard
+      - template_key: guild_bloodflag_bow_guard
+      - template_key: guild_bloodflag_pathfinder
+      - template_key: guild_bloodflag_pathfinder
+      - template_key: guild_bloodflag_escort_master
+      - template_key: guild_bloodflag_escort_master
     enemy_troops:
       qiang_ba: 1100
       jian_hao: 900
@@ -97,42 +85,30 @@ missions:
 
       更麻烦的是，关内粮械齐备，轮守之人熟悉军阵，能把外墙、甬道和内寨连成一口气。若真要把黑风关从地图上抹去，便不是冲开一道门那么简单，而是要顶着连番反扑一路杀到关楼，把还在运转的整座堡寨硬生生拆开。
     difficulty: advanced
-    task_type: suppress
+    task_type: troop
     base_duration_seconds: 3000
     ruby_reward: 288
     recommended_guest_count: 18
     allow_troops: true
     enemy_guests:
-      - template_key: hero_zhuge_lei
-        skills:
-          - stratagem_burst
-      - template_key: hero_jin_jiuling
-        skills:
-          - stratagem_burst
-      - template_key: hero_xue_xiaoren
-        skills:
-          - stratagem_burst
-      - template_key: hero_wuhua_heshang
-        skills:
-          - stratagem_burst
-      - template_key: hero_hahaer
-      - template_key: hero_bai_kaixin
-      - template_key: hero_tie_chuanjia
-      - template_key: hero_laoshi_heshang
-      - template_key: hero_lu_xiaojia
-      - template_key: hero_xue_yiren
-      - template_key: hero_mei_ruohua
-      - template_key: hero_chen_xuanfeng
-      - template_key: hero_feng_xifan
-      - template_key: hero_long_xiaoyun
-        skills:
-          - stratagem_burst
-      - template_key: hero_bei_haishi
-        skills:
-          - stratagem_burst
-      - template_key: hero_ruan_shizhong
-      - template_key: hero_lv_xiangchuan
-      - template_key: hero_wang_lianhua
+      - template_key: guild_blackwind_gate_general
+      - template_key: guild_blackwind_gate_overseer
+      - template_key: guild_blackwind_iron_guard
+      - template_key: guild_blackwind_iron_guard
+      - template_key: guild_blackwind_bow_captain
+      - template_key: guild_blackwind_bow_captain
+      - template_key: guild_blackwind_assault_blade
+      - template_key: guild_blackwind_assault_blade
+      - template_key: guild_blackwind_assault_blade
+      - template_key: guild_blackwind_assault_blade
+      - template_key: guild_blackwind_patrol_captain
+      - template_key: guild_blackwind_patrol_captain
+      - template_key: guild_blackwind_guard_soldier
+      - template_key: guild_blackwind_guard_soldier
+      - template_key: guild_blackwind_guard_soldier
+      - template_key: guild_blackwind_spear_soldier
+      - template_key: guild_blackwind_spear_soldier
+      - template_key: guild_blackwind_spear_soldier
     enemy_troops:
       qiang_wang: 1600
       jian_sheng: 1350

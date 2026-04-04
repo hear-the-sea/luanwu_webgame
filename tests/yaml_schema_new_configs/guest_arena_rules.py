@@ -38,6 +38,52 @@ def test_guest_skills_rejects_non_positive_attribute_requirement():
     assert_invalid(result, substring="required_agility")
 
 
+def test_guest_skills_rejects_invalid_passive_effect_target_scope():
+    data = {
+        "skills": [
+            {
+                "key": "passive_signal",
+                "name": "被动信号",
+                "rarity": "purple",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "round_start",
+                            "effects": [{"type": "modify_outgoing_damage", "value": 1.1, "target_scope": "teamwide"}],
+                        }
+                    ]
+                },
+            }
+        ]
+    }
+    result = validate_guest_skills(data)
+    assert_invalid(result, substring="target_scope")
+
+
+def test_guest_skills_rejects_blank_passive_effect_target_kind_is():
+    data = {
+        "skills": [
+            {
+                "key": "passive_signal",
+                "name": "被动信号",
+                "rarity": "purple",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "round_start",
+                            "effects": [{"type": "modify_outgoing_damage", "value": 1.1, "target_kind_is": "   "}],
+                        }
+                    ]
+                },
+            }
+        ]
+    }
+    result = validate_guest_skills(data)
+    assert_invalid(result, substring="target_kind_is")
+
+
 def test_recruitment_rarity_weights_rejects_non_dict_root():
     result = validate_recruitment_rarity_weights("nope")
     assert_invalid(result)

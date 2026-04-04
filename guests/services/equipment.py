@@ -84,7 +84,7 @@ def _extract_extra_stats_from_item_payload(raw: Any) -> dict[str, int]:
     return _normalize_extra_stats(extra_stats_payload)
 
 
-def _normalize_set_bonus(raw: Any) -> dict[str, int]:
+def _normalize_active_set_bonus(raw: Any) -> dict[str, int]:
     payload = _require_mapping(raw, field_name="set_bonus")
     normalized: dict[str, int] = {}
     for key, value in payload.items():
@@ -93,6 +93,26 @@ def _normalize_set_bonus(raw: Any) -> dict[str, int]:
             raise AssertionError(f"invalid guest equipment set_bonus key: {key!r}")
         normalized[normalized_key] = _require_int(value, field_name=f"set_bonus[{normalized_key}]")
     return normalized
+
+
+def _normalize_template_set_bonus(raw: Any) -> dict[str, Any]:
+    payload = _require_mapping(raw, field_name="set_bonus")
+    pieces = payload.get("pieces")
+    bonuses = payload.get("bonus") or payload.get("bonuses") or payload
+
+    if pieces is not None:
+        normalized_pieces = _require_int(pieces, field_name="set_bonus[pieces]", minimum=1)
+    else:
+        normalized_pieces = None
+
+    bonus_map = _require_mapping(bonuses, field_name="set_bonus bonus")
+    normalized_bonus = _normalize_active_set_bonus(bonus_map)
+    if normalized_pieces is None:
+        return normalized_bonus
+    return {
+        "pieces": normalized_pieces,
+        "bonus": normalized_bonus,
+    }
 
 
 def _slot_capacity(slot: str) -> int:
@@ -192,7 +212,7 @@ def apply_set_bonuses(guest: Guest) -> Dict[str, int]:
     """
     重新计算套装效果，并将其数值写回门客属性。上一轮套装效果会被先撤销。
     """
-    previous = _normalize_set_bonus(guest.gear_set_bonus)
+    previous = _normalize_active_set_bonus(guest.gear_set_bonus)
     current = compute_set_bonus(guest.gear_items.select_related("template"))
     if previous == current:
         return current
@@ -242,7 +262,7 @@ def _build_gear_template_defaults(item_template: Any, *, slot: str) -> dict[str,
             field_name="set_description",
             allow_blank=True,
         ),
-        "set_bonus": _normalize_set_bonus(payload.get("set_bonus")),
+        "set_bonus": _normalize_template_set_bonus(payload.get("set_bonus")),
         "attack_bonus": 0,
         "defense_bonus": 0,
         "extra_stats": extra_stats,

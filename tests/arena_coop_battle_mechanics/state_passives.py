@@ -16,6 +16,13 @@ from battle.simulation.battle_flow import simulate_battle
 from .support import apply_round_start_passives, make_guest, make_unit
 
 
+def _assert_softcap_source(unit, skill_key: str, *, threshold: float, overflow_ratio: float) -> None:
+    assert unit.battle_modifiers["burst_softcap_sources"][skill_key]["threshold"] == pytest.approx(threshold)
+    assert unit.battle_modifiers["burst_softcap_sources"][skill_key]["overflow_ratio"] == pytest.approx(overflow_ratio)
+    assert "burst_softcap_threshold" not in unit.battle_modifiers
+    assert "burst_softcap_overflow_ratio" not in unit.battle_modifiers
+
+
 def test_configure_arena_coop_enemy_guest_applies_fixed_final_hp():
     boss = make_guest("arena_gl_top_zhang_wuji_boss", base_hp=6200)
     yang = make_guest("arena_gl_top_yang_xiao_guard", base_hp=3600)
@@ -141,14 +148,14 @@ def test_boss_round_start_passives_apply_phase_modifiers():
     apply_round_start_passives(defenders)
     assert boss.battle_modifiers["incoming_damage_multiplier"] == pytest.approx(0.5)
     assert boss.battle_modifiers["outgoing_damage_multiplier"] == pytest.approx(1.32)
-    assert boss.battle_modifiers["burst_softcap_threshold"] == pytest.approx(12000)
+    _assert_softcap_source(boss, "gl_top_mingjiao_command", threshold=12000, overflow_ratio=0.35)
     assert "reflect_ratio" not in boss.battle_modifiers
 
     boss.hp = 180000
     sync_arena_coop_combat_state([], defenders, round_no=2)
     apply_round_start_passives(defenders)
     assert boss.battle_modifiers["outgoing_damage_multiplier"] == pytest.approx(1.584)
-    assert boss.battle_modifiers["burst_softcap_threshold"] == pytest.approx(14000)
+    _assert_softcap_source(boss, "gl_top_mingjiao_command", threshold=14000, overflow_ratio=0.35)
     assert boss.battle_modifiers["reflect_ratio"] == pytest.approx(0.06)
     assert boss.battle_modifiers["reflect_cap"] == pytest.approx(5000)
 
@@ -156,7 +163,7 @@ def test_boss_round_start_passives_apply_phase_modifiers():
     sync_arena_coop_combat_state([], defenders, round_no=3)
     apply_round_start_passives(defenders)
     assert boss.battle_modifiers["outgoing_damage_multiplier"] == pytest.approx(1.848)
-    assert boss.battle_modifiers["burst_softcap_threshold"] == pytest.approx(16000)
+    _assert_softcap_source(boss, "gl_top_holy_flame_rage", threshold=16000, overflow_ratio=0.35)
     assert boss.battle_modifiers["reflect_ratio"] == pytest.approx(0.1)
     assert boss.battle_modifiers["reflect_cap"] == pytest.approx(8000)
 
