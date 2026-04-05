@@ -9,6 +9,7 @@ SHIM_PATHS = [
     PROJECT_ROOT / "tests" / "test_arena_views.py",
     PROJECT_ROOT / "tests" / "test_battle_report_view.py",
     PROJECT_ROOT / "tests" / "test_guilds_tasks.py",
+    PROJECT_ROOT / "tests" / "test_guild_pvp_service.py",
     PROJECT_ROOT / "tests" / "test_load_guest_templates_command.py",
 ]
 

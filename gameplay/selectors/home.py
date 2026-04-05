@@ -107,10 +107,12 @@ def get_home_context(manor) -> dict:
     from ..services.raid import get_active_raids, get_active_scouts, get_incoming_raids
 
     active_guild_mission = None
+    active_guild_pvp_run = None
+    incoming_guild_pvp_runs = []
     user = getattr(manor, "user", None)
     guild_membership = getattr(user, "guild_membership", None)
     if guild_membership is not None and getattr(guild_membership, "is_active", False):
-        from guilds.models import GuildMissionRun
+        from guilds.models import GuildMissionRun, GuildRaidRun
 
         guild = getattr(guild_membership, "guild", None)
         active_guild_mission = (
@@ -128,6 +130,43 @@ def get_home_context(manor) -> dict:
             active_guild_mission_view = cast(Any, active_guild_mission)
             active_guild_mission_view.can_manage = can_manage_guild_mission
             active_guild_mission_view.can_retreat_from_home = can_manage_guild_mission
+
+        active_guild_pvp_run = (
+            GuildRaidRun.objects.select_related("defender_guild")
+            .filter(
+                attacker_guild=guild,
+                status__in=[
+                    GuildRaidRun.Status.MARCHING,
+                    GuildRaidRun.Status.BATTLING,
+                    GuildRaidRun.Status.RETURNING,
+                    GuildRaidRun.Status.RETREATED,
+                ],
+            )
+            .filter(Q(return_at__isnull=True) | Q(return_at__gt=now))
+            .order_by("-started_at", "-id")
+            .first()
+        )
+        if active_guild_pvp_run is not None:
+            active_guild_pvp_run_view = cast(Any, active_guild_pvp_run)
+            active_guild_pvp_run_view.can_retreat_from_home = bool(
+                getattr(guild_membership, "can_manage", False)
+                and active_guild_pvp_run.status == GuildRaidRun.Status.MARCHING
+            )
+            active_guild_pvp_run_view.next_state_at = (
+                active_guild_pvp_run.battle_at
+                if active_guild_pvp_run.status in [GuildRaidRun.Status.MARCHING, GuildRaidRun.Status.BATTLING]
+                else active_guild_pvp_run.return_at
+            )
+
+        incoming_guild_pvp_runs = list(
+            GuildRaidRun.objects.select_related("attacker_guild")
+            .filter(
+                defender_guild=guild,
+                status=GuildRaidRun.Status.MARCHING,
+                battle_at__gt=now,
+            )
+            .order_by("battle_at", "id")
+        )
 
     return {
         "manor": manor,
@@ -147,4 +186,6 @@ def get_home_context(manor) -> dict:
         "active_raids": get_active_raids(manor),
         "incoming_raids": get_incoming_raids(manor),
         "active_guild_mission": active_guild_mission,
+        "active_guild_pvp_run": active_guild_pvp_run,
+        "incoming_guild_pvp_runs": incoming_guild_pvp_runs,
     }

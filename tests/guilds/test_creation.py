@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 import pytest
+from django.utils import timezone
 
 from core.exceptions import GuildValidationError
 from gameplay.models import InventoryItem
@@ -26,6 +29,19 @@ class TestGuildCreation:
         assert guild.technologies.count() == 9
         assert guild.technologies.get(tech_key="guild_lineup_capacity").max_level == 20
         assert guild.technologies.get(tech_key="guild_dispatch_capacity").max_level == 20
+
+    def test_create_guild_sets_newbie_protection_from_runtime_rules(self, user_with_gold_bars, monkeypatch):
+        protection_seconds = 3600
+        monkeypatch.setattr("guilds.constants.GUILD_PVP_NEWBIE_PROTECTION_SECONDS", protection_seconds)
+        before_create = timezone.now()
+
+        guild = guild_service.create_guild(user=user_with_gold_bars, name="保护帮会", description="")
+        after_create = timezone.now()
+
+        assert guild.newbie_protection_until is not None
+        lower_bound = before_create + timedelta(seconds=protection_seconds)
+        upper_bound = after_create + timedelta(seconds=protection_seconds)
+        assert lower_bound <= guild.newbie_protection_until <= upper_bound
 
     def test_create_guild_duplicate_name(self, user_with_gold_bars, django_user_model, gold_bar_template):
         guild_service.create_guild(user=user_with_gold_bars, name="唯一帮会", description="")

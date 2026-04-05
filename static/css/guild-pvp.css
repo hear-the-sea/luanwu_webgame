@@ -1,0 +1,403 @@
+.gpvp-page .gpvp-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.gpvp-page .gpvp-inline-state {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gpvp-page .gpvp-inline-state h2 {
+  margin: 0;
+}
+
+.gpvp-page .gpvp-grid {
+  display: grid;
+  grid-template-columns: minmax(17rem, 1.02fr) minmax(0, 1.34fr) minmax(15rem, 0.94fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.gpvp-page .gpvp-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 0;
+}
+
+.gpvp-page .gpvp-panel .caption {
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.gpvp-page .gpvp-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.gpvp-page .gpvp-panel-head h2 {
+  margin: 0 0 0.1rem;
+  font-size: 1.08rem;
+}
+
+.gpvp-page .gpvp-count-pill {
+  padding: 0.3rem 0.62rem;
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-size: 0.86rem;
+}
+
+.gpvp-page .gpvp-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+  align-items: center;
+}
+
+.gpvp-page .gpvp-search-input {
+  flex: 1 1 12rem;
+  min-width: 10rem;
+  font-size: 0.9rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.gpvp-page .gpvp-region-select {
+  flex: 0 0 8.75rem;
+  min-width: 8.75rem;
+  font-size: 0.9rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.gpvp-page .gpvp-chip-row {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.gpvp-page .gpvp-chip {
+  padding: 0.36rem 0.72rem;
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.84rem;
+}
+
+.gpvp-page .gpvp-chip.is-active {
+  border-color: var(--accent-gold);
+  background: #fdf6e3;
+  color: var(--text-primary);
+  box-shadow: 0 0 0 1px var(--accent-gold);
+}
+
+.gpvp-page .gpvp-target-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.38rem;
+  max-height: 16.25rem;
+  overflow: auto;
+  padding-right: 0.15rem;
+}
+
+.gpvp-page .gpvp-target-row {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-light);
+  border-radius: 0.62rem;
+  background: linear-gradient(180deg, var(--bg-panel), var(--bg-hover));
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gpvp-page .gpvp-target-radio {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gpvp-page .gpvp-target-row:hover {
+  border-color: var(--border-primary);
+  transform: translateY(-1px);
+}
+
+.gpvp-page .gpvp-target-row.is-active {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 1px var(--accent-gold);
+}
+
+.gpvp-page .gpvp-target-row.is-selected-target {
+  background: linear-gradient(180deg, #fffaf0, #f8ecd0);
+}
+
+.gpvp-page .gpvp-target-row.is-blocked {
+  opacity: 0.82;
+}
+
+.gpvp-page .gpvp-target-row-main,
+.gpvp-page .gpvp-target-row-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.gpvp-page .gpvp-target-row-main strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1rem;
+}
+
+.gpvp-page .gpvp-target-row-meta {
+  margin-top: 0.14rem;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.gpvp-page .gpvp-target-row-note {
+  margin-top: 0.16rem;
+  font-size: 0.78rem;
+  line-height: 1.25;
+  color: var(--text-muted);
+}
+
+.gpvp-page .gpvp-target-row-note.is-attackable {
+  color: var(--accent-green);
+}
+
+.gpvp-page .gpvp-target-row-note.is-blocked {
+  color: var(--accent-red);
+}
+
+.gpvp-page .gpvp-target-badge,
+.gpvp-page .gpvp-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.16rem 0.48rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.gpvp-page .gpvp-target-badge {
+  background: rgba(139, 69, 19, 0.08);
+  color: var(--text-secondary);
+}
+
+.gpvp-page .gpvp-status-pill {
+  border: 1px solid var(--border-light);
+  background: var(--bg-panel);
+}
+
+.gpvp-page .gpvp-status-pill.is-attackable {
+  color: var(--accent-green);
+  border-color: rgba(5, 150, 105, 0.35);
+  background: rgba(5, 150, 105, 0.08);
+}
+
+.gpvp-page .gpvp-status-pill.is-blocked {
+  color: var(--accent-red);
+  border-color: rgba(220, 20, 60, 0.25);
+  background: rgba(220, 20, 60, 0.06);
+}
+
+.gpvp-page .gpvp-guest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.2rem, 9.2rem));
+  gap: 0.52rem;
+  justify-content: flex-start;
+}
+
+.gpvp-page .gpvp-scroll-panel {
+  max-height: 16.25rem;
+  overflow: auto;
+  align-content: start;
+  padding-right: 0.15rem;
+}
+
+.gpvp-page .gpvp-guest-option .tw-guest-card {
+  min-height: 4rem;
+  gap: 0.52rem;
+  padding: 0.44rem 0.5rem;
+  align-items: center;
+  border-width: 1px;
+}
+
+.gpvp-page .gpvp-guest-option .tw-guest-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.375rem;
+}
+
+.gpvp-page .gpvp-guest-option .tw-guest-name-sm,
+.gpvp-page .gpvp-guest-option .tw-guest-level-sm,
+.gpvp-page .gpvp-guest-option .tw-guest-stats-sm {
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.gpvp-page .gpvp-guest-option .tw-guest-info-row {
+  gap: 0.2rem;
+  align-items: center;
+}
+
+.gpvp-page .gpvp-guest-option .tw-guest-details {
+  min-width: 0;
+}
+
+.gpvp-page .gpvp-guest-option .tw-guest-level-sm {
+  padding: 0.12rem 0.3rem;
+}
+
+.gpvp-page .gpvp-guest-option .tw-guest-level-sm,
+.gpvp-page .gpvp-guest-option .tw-guest-stats-sm {
+  color: var(--text-muted);
+}
+
+.gpvp-page .gpvp-troop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.gpvp-page .gpvp-troop-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.56rem 0.62rem;
+  border: 1px solid var(--border-light);
+  border-radius: 0.56rem;
+  background: linear-gradient(180deg, var(--bg-panel), var(--bg-hover));
+}
+
+.gpvp-page .gpvp-troop-main {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.gpvp-page .gpvp-troop-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  overflow: hidden;
+  border-radius: 0.375rem;
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+.gpvp-page .gpvp-troop-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gpvp-page .gpvp-troop-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.14rem;
+  font-size: 0.84rem;
+  line-height: 1.15;
+}
+
+.gpvp-page .gpvp-troop-controls {
+  display: flex;
+  gap: 0.18rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.gpvp-page .gpvp-troop-controls .tw-btn-sm {
+  padding: 0.2rem 0.48rem;
+  min-width: 0;
+  font-size: 0.78rem;
+}
+
+.gpvp-page .gpvp-troop-input {
+  width: 3.2rem;
+  text-align: center;
+  padding: 0.26rem 0.34rem;
+  font-size: 0.82rem;
+}
+
+.gpvp-page .gpvp-submit-actions {
+  display: flex;
+  justify-content: center;
+  padding-top: 0.1rem;
+}
+
+.gpvp-page .gpvp-submit-actions .tw-btn-primary {
+  min-width: 12rem;
+  font-size: 0.95rem;
+  padding: 0.72rem 1.2rem;
+}
+
+.gpvp-page .gpvp-empty-state {
+  padding: 0.85rem;
+  border: 1px dashed var(--border-light);
+  border-radius: 0.72rem;
+  text-align: center;
+  background: rgba(255, 248, 231, 0.6);
+}
+
+@media (max-width: 1280px) {
+  .gpvp-page .gpvp-grid {
+    grid-template-columns: minmax(0, 1.28fr) minmax(17rem, 0.92fr);
+  }
+
+  .gpvp-page .gpvp-panel--targets {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 960px) {
+  .gpvp-page .gpvp-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gpvp-page .gpvp-panel--targets {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .gpvp-page .gpvp-panel-head,
+  .gpvp-page .gpvp-toolbar,
+  .gpvp-page .gpvp-troop-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gpvp-page .gpvp-region-select {
+    min-width: 0;
+    flex-basis: auto;
+  }
+
+  .gpvp-page .gpvp-troop-controls {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .gpvp-page .gpvp-scroll-panel,
+  .gpvp-page .gpvp-target-list {
+    max-height: none;
+  }
+}

@@ -178,9 +178,12 @@
                 {% endif %}
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="task-info">
-                    <p class="tw-muted mb-4">{{ selected_mission.description }}</p>
-                    <div class="mb-4">
+                <div class="task-info tw-task-detail-stack">
+                    <section class="tw-task-detail-section">
+                        <h5 class="text-text-primary text-lg font-bold mb-3">任务简介</h5>
+                        <p class="tw-muted mb-0">{{ selected_mission.description }}</p>
+                    </section>
+                    <section class="tw-task-detail-section">
                         <h5 class="text-text-primary text-lg font-bold mb-2">敌人情报</h5>
                         <div class="tw-enemy-grid">
                             {% for entry in selected_mission.enemy_guests %}
@@ -213,8 +216,8 @@
                                 {% endwith %}
                             {% endfor %}
                         </div>
-                    </div>
-                    <div class="mb-4">
+                    </section>
+                    <section class="tw-task-detail-section">
                         <h5 class="text-text-primary text-lg font-bold mb-2">掉落预览</h5>
                         <div class="flex flex-wrap gap-2">
                             {% if selected_drop_items %}
@@ -235,124 +238,126 @@
                             </div>
                         </div>
                         {% endif %}
-                    </div>
-                    {% if selected_mission.is_defense %}
-                        <p class="tw-muted text-sm">敌军来袭时间固定，等待战报回传。</p>
-                    {% else %}
-                        <p class="tw-muted text-sm">双程时间按行军速度动态计算，最低 300 秒。</p>
-                    {% endif %}
-                </div>
-                <div>
-                    <h4 class="mb-4 font-bold">
-                        {% if selected_mission.is_defense %}防守配置{% elif selected_mission.guest_only %}门客出征{% else %}出征配置{% endif %}
-                    </h4>
-                    {% if selected_mission.is_defense %}
-                        <p class="tw-muted text-sm mb-4">将自动使用庄园内所有空闲门客与护院</p>
-                        {% if not available_guests %}
-                            <p class="tw-muted mb-4">暂无空闲门客</p>
-                        {% endif %}
-                    {% else %}
-                        {% if selected_mission.guest_only %}
-                            <p class="tw-muted text-sm mb-4">仅派遣门客，不可携带护院</p>
+                        {% if selected_mission.is_defense %}
+                            <p class="tw-muted text-sm mt-3 mb-0">敌军来袭时间固定，等待战报回传。</p>
                         {% else %}
-                            <p class="tw-muted text-sm mb-4">最多可派遣 {{ max_squad }} 名门客</p>
+                            <p class="tw-muted text-sm mt-3 mb-0">双程时间按行军速度动态计算，最低 300 秒。</p>
                         {% endif %}
-                    {% endif %}
-                    <form method="post" action="{% url 'gameplay:accept_mission' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="mission_key" value="{{ selected_mission.key }}">
-                        {% if not selected_mission.is_defense %}
-                            <div class="mb-4">
-                                <label class="font-bold mb-2 block">选择门客（空闲）</label>
-                                <div class="tw-guest-selection">
-                                    {% for guest in available_guests %}
-                                        <label class="tw-guest-checkbox">
-                                            <input type="checkbox" name="guest_ids" value="{{ guest.id }}" class="guest-input">
-                                            <div class="tw-guest-card">
-                                                <div class="tw-guest-avatar">
-                                                    {% if guest.template.avatar %}
-                                                    <img src="{{ guest.template.avatar.url }}" alt="{{ guest.display_name }}" loading="lazy" decoding="async">
+                    </section>
+                </div>
+                <div class="tw-task-detail-stack">
+                    <section class="tw-task-detail-section">
+                        <h4 class="mb-4 font-bold">
+                            {% if selected_mission.is_defense %}防守配置{% elif selected_mission.guest_only %}门客出征{% else %}出征配置{% endif %}
+                        </h4>
+                        {% if selected_mission.is_defense %}
+                            <p class="tw-muted text-sm mb-4">将自动使用庄园内所有空闲门客与护院</p>
+                            {% if not available_guests %}
+                                <p class="tw-muted mb-4">暂无空闲门客</p>
+                            {% endif %}
+                        {% else %}
+                            {% if selected_mission.guest_only %}
+                                <p class="tw-muted text-sm mb-4">仅派遣门客，不可携带护院</p>
+                            {% else %}
+                                <p class="tw-muted text-sm mb-4">最多可派遣 {{ max_squad }} 名门客</p>
+                            {% endif %}
+                        {% endif %}
+                        <form method="post" action="{% url 'gameplay:accept_mission' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="mission_key" value="{{ selected_mission.key }}">
+                            {% if not selected_mission.is_defense %}
+                                <div class="mb-4">
+                                    <label class="font-bold mb-2 block">选择门客（空闲）</label>
+                                    <div class="tw-guest-selection">
+                                        {% for guest in available_guests %}
+                                            <label class="tw-guest-checkbox">
+                                                <input type="checkbox" name="guest_ids" value="{{ guest.id }}" class="guest-input">
+                                                <div class="tw-guest-card">
+                                                    <div class="tw-guest-avatar">
+                                                        {% if guest.template.avatar %}
+                                                        <img src="{{ guest.template.avatar.url }}" alt="{{ guest.display_name }}" loading="lazy" decoding="async">
+                                                        {% else %}
+                                                        <div class="tw-avatar-placeholder">{{ guest.display_name|slice:":1" }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="tw-guest-details">
+                                                        <div class="tw-guest-info-row">
+                                                            <span class="tw-guest-name-sm rarity-text-{{ guest.template.rarity|lower }}">{{ guest.display_name }}</span>
+                                                            <span class="tw-guest-level-sm">Lv.{{ guest.level }}</span>
+                                                        </div>
+                                                        <div class="tw-guest-stats-sm">
+                                                            <span title="生命">HP {{ guest.current_hp }}/{{ guest.max_hp }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        {% empty %}
+                                            <p class="tw-muted">暂无空闲门客</p>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="tw-selection-summary">
+                                        已选择 <strong id="selected-guest-count" data-max-squad="{{ max_squad }}">0</strong> / {{ max_squad }} 人
+                                    </div>
+                                </div>
+                                {% if not selected_mission.guest_only %}
+                                <div class="mb-4 mt-6">
+                                    <label class="font-bold mb-2 block">配置护院</label>
+                                    {% if player_troops %}
+                                    <div class="tw-troop-selection">
+                                        {% for troop in player_troops %}
+                                        <div class="tw-troop-row">
+                                            <div class="tw-troop-info">
+                                                <div class="tw-troop-avatar">
+                                                    {% if troop.avatar %}
+                                                    <img src="{{ troop.avatar }}" alt="{{ troop.name }}" loading="lazy" decoding="async">
                                                     {% else %}
-                                                    <div class="tw-avatar-placeholder">{{ guest.display_name|slice:":1" }}</div>
+                                                    <div class="tw-avatar-placeholder">{{ troop.name|slice:":1" }}</div>
                                                     {% endif %}
                                                 </div>
-                                                <div class="tw-guest-details">
-                                                    <div class="tw-guest-info-row">
-                                                        <span class="tw-guest-name-sm rarity-text-{{ guest.template.rarity|lower }}">{{ guest.display_name }}</span>
-                                                        <span class="tw-guest-level-sm">Lv.{{ guest.level }}</span>
-                                                    </div>
-                                                    <div class="tw-guest-stats-sm">
-                                                        <span title="生命">HP {{ guest.current_hp }}/{{ guest.max_hp }}</span>
-                                                    </div>
+                                                <div class="tw-troop-details">
+                                                    <span class="tw-troop-name">{{ troop.name }}</span>
+                                                    <span class="tw-troop-count">可用: {{ troop.count }}</span>
                                                 </div>
                                             </div>
-                                        </label>
-                                    {% empty %}
-                                        <p class="tw-muted">暂无空闲门客</p>
-                                    {% endfor %}
-                                </div>
-                                <div class="tw-selection-summary">
-                                    已选择 <strong id="selected-guest-count" data-max-squad="{{ max_squad }}">0</strong> / {{ max_squad }} 人
-                                </div>
-                            </div>
-                            {% if not selected_mission.guest_only %}
-                            <div class="mb-4 mt-6">
-                                <label class="font-bold mb-2 block">配置护院</label>
-                                {% if player_troops %}
-                                <div class="tw-troop-selection">
-                                    {% for troop in player_troops %}
-                                    <div class="tw-troop-row">
-                                        <div class="tw-troop-info">
-                                            <div class="tw-troop-avatar">
-                                                {% if troop.avatar %}
-                                                <img src="{{ troop.avatar }}" alt="{{ troop.name }}" loading="lazy" decoding="async">
-                                                {% else %}
-                                                <div class="tw-avatar-placeholder">{{ troop.name|slice:":1" }}</div>
-                                                {% endif %}
-                                            </div>
-                                            <div class="tw-troop-details">
-                                                <span class="tw-troop-name">{{ troop.name }}</span>
-                                                <span class="tw-troop-count">可用: {{ troop.count }}</span>
+                                            <div class="tw-troop-slider-group">
+                                                <input type="range" class="tw-troop-slider"
+                                                       value="0" min="0" max="{{ troop.count }}"
+                                                       data-troop-key="{{ troop.key }}" data-max="{{ troop.count }}">
+                                                <input type="number" class="tw-troop-num-input"
+                                                       value="0" min="0" max="{{ troop.count }}"
+                                                       data-troop-key="{{ troop.key }}" data-max="{{ troop.count }}"
+                                                       name="troop_{{ troop.key }}">
                                             </div>
                                         </div>
-                                        <div class="tw-troop-slider-group">
-                                            <input type="range" class="tw-troop-slider"
-                                                   value="0" min="0" max="{{ troop.count }}"
-                                                   data-troop-key="{{ troop.key }}" data-max="{{ troop.count }}">
-                                            <input type="number" class="tw-troop-num-input"
-                                                   value="0" min="0" max="{{ troop.count }}"
-                                                   data-troop-key="{{ troop.key }}" data-max="{{ troop.count }}"
-                                                   name="troop_{{ troop.key }}">
-                                        </div>
+                                        {% endfor %}
                                     </div>
-                                    {% endfor %}
-                                </div>
-                                {% else %}
-                                <div class="tw-empty-hint">
-                                    <p class="tw-muted">暂无可用护院</p>
-                                    <p class="caption tw-muted">请先在练功场招募护院</p>
+                                    {% else %}
+                                    <div class="tw-empty-hint">
+                                        <p class="tw-muted">暂无可用护院</p>
+                                        <p class="caption tw-muted">请先在练功场招募护院</p>
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 {% endif %}
+                            {% endif %}
+                            <div class="flex gap-4 mt-8">
+                                {% if selected_attempts >= selected_daily_limit %}
+                                    <button type="submit" class="tw-btn-secondary" disabled>
+                                        {% if selected_mission.is_defense %}无法接受{% else %}无法出征{% endif %}
+                                    </button>
+                                {% elif not available_guests and not selected_mission.is_defense %}
+                                    <button type="submit" class="tw-btn-secondary" disabled>
+                                        无法出征
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="tw-btn-primary">
+                                        {% if selected_mission.is_defense %}接受任务{% else %}派遣出征{% endif %}
+                                    </button>
+                                {% endif %}
+                                <a href="{% url 'gameplay:tasks' %}" class="tw-btn-secondary">取消</a>
                             </div>
-                            {% endif %}
-                        {% endif %}
-                        <div class="flex gap-4 mt-8">
-                            {% if selected_attempts >= selected_daily_limit %}
-                                <button type="submit" class="tw-btn-secondary" disabled>
-                                    {% if selected_mission.is_defense %}无法接受{% else %}无法出征{% endif %}
-                                </button>
-                            {% elif not available_guests and not selected_mission.is_defense %}
-                                <button type="submit" class="tw-btn-secondary" disabled>
-                                    无法出征
-                                </button>
-                            {% else %}
-                                <button type="submit" class="tw-btn-primary">
-                                    {% if selected_mission.is_defense %}接受任务{% else %}派遣出征{% endif %}
-                                </button>
-                            {% endif %}
-                            <a href="{% url 'gameplay:tasks' %}" class="tw-btn-secondary">取消</a>
-                        </div>
-                    </form>
+                        </form>
+                    </section>
                 </div>
             </div>
         </div>

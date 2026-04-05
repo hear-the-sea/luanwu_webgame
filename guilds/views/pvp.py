@@ -22,7 +22,6 @@ from .helpers import execute_guild_action
 @require_guild_member
 def pvp_page(request: Any) -> HttpResponse:
     now = timezone.now()
-    guild_raid_service.prepare_guild_pvp_read_state(request.guild_member.guild, now=now)
     context = guild_pvp_query_service.get_guild_pvp_page_context(request.guild_member, now=now)
     return render(request, "guilds/pvp.html", context)
 

@@ -21,6 +21,30 @@ def test_scan_due_guild_missions_is_scheduled_every_minute():
     assert entry["schedule"]._orig_minute == "*/1"
 
 
+def test_guild_timer_tasks_are_routed_to_timer_queue():
+    expected_timer_tasks = [
+        "guilds.complete_guild_mission",
+        "guilds.scan_due_missions",
+        "guilds.complete_guild_raid",
+        "guilds.scan_due_raids",
+        "guilds.process_single_guild_production",
+        "guilds.tech_daily_production",
+        "guilds.reset_weekly_stats",
+        "guilds.cleanup_old_logs",
+        "guilds.cleanup_invalid_hero_pool",
+    ]
+
+    for task_name in expected_timer_tasks:
+        assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": settings.CELERY_TIMER_QUEUE}
+
+
+def test_scan_due_guild_raids_is_scheduled_every_minute():
+    entry = settings.CELERY_BEAT_SCHEDULE["scan-due-guild-raids"]
+
+    assert entry["task"] == "guilds.scan_due_raids"
+    assert entry["schedule"]._orig_minute == "*/1"
+
+
 @pytest.mark.django_db
 def test_guild_mission_migration_seed_uses_safe_inactive_defaults():
     migration = importlib.import_module("guilds.migrations.0008_guild_mission_and_troop_models")

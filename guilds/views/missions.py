@@ -15,6 +15,7 @@ from core.utils import safe_int, sanitize_error_message
 from ..decorators import require_guild_member
 from ..models import GuildMissionRun
 from ..services import guild_dispatch as guild_dispatch_service
+from ..services import guild_mission_queries as guild_mission_query_service
 from ..services import guild_missions as guild_mission_service
 from ..services import guild_troops as guild_troop_service
 from .helpers import execute_guild_action
@@ -24,7 +25,7 @@ from .helpers import execute_guild_action
 @require_guild_member
 def missions(request: Any) -> HttpResponse:
     selected_mission_key = str(request.GET.get("mission", "")).strip()
-    context = guild_mission_service.get_guild_mission_page_context(
+    context = guild_mission_query_service.get_guild_mission_page_context(
         request.guild_member,
         selected_mission_key=selected_mission_key,
     )

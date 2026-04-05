@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 
 from django.db import IntegrityError, transaction
 from django.db.models import F
@@ -106,12 +107,15 @@ def create_guild(user, name, description="", emblem="default"):
 
         # 创建帮会
         try:
+            now = timezone.now()
             guild = Guild.objects.create(
                 name=name,
                 description=description,
                 emblem=emblem,
                 founder=user,
                 level=1,
+                newbie_protection_until=now
+                + timedelta(seconds=max(0, int(guild_constants.GUILD_PVP_NEWBIE_PROTECTION_SECONDS or 0))),
             )
         except IntegrityError:
             # unique=True on Guild.name

@@ -49,9 +49,13 @@ def _draw_weighted_item_loot(rows: list[GuildWarehouse], *, draw_count: int) -> 
 
 
 def transfer_guild_raid_loot(*, attacker_guild: Guild, defender_guild: Guild) -> tuple[int, dict[str, int]]:
+    from .guild_raid_support import lock_guild_pair
+
     rules = get_guild_raid_rules()
-    attacker_locked = Guild.objects.select_for_update().get(pk=attacker_guild.pk)
-    defender_locked = Guild.objects.select_for_update().get(pk=defender_guild.pk)
+    attacker_locked, defender_locked = lock_guild_pair(
+        attacker_guild_id=attacker_guild.pk,
+        defender_guild_id=defender_guild.pk,
+    )
 
     silver_floor = int(rules["silver_floor"] or 0)
     silver_percent = int(rules["silver_loot_percent"] or 0)

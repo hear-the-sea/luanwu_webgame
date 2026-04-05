@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from gameplay.services.manor.core import ensure_manor
-from guilds.models import Guild, GuildMember, GuildMissionRun, GuildMissionTemplate
+from guilds.models import Guild, GuildMember, GuildMissionRun, GuildMissionTemplate, GuildRaidRun
 
 
 @pytest.mark.django_db
@@ -205,3 +205,67 @@ def test_manage_member_can_retreat_guild_mission_from_home_event(client, django_
     assert response.redirect_chain
     assert run.status == GuildMissionRun.Status.RETREATED
     assert messages[-1] == "帮会任务已撤回"
+
+
+@pytest.mark.django_db
+def test_home_page_shows_active_guild_pvp_event_with_retreat_for_manage_member(client, django_user_model):
+    user = django_user_model.objects.create_user(username="guild_home_pvp_manage_user", password="pass12345")
+    ensure_manor(user)
+    guild = Guild.objects.create(name="首页帮会PVP进攻帮", founder=user, is_active=True)
+    GuildMember.objects.create(guild=guild, user=user, position="leader", is_active=True)
+
+    defender_user = django_user_model.objects.create_user(username="guild_home_pvp_manage_target", password="pass12345")
+    ensure_manor(defender_user)
+    defender_guild = Guild.objects.create(name="首页帮会PVP防守帮", founder=defender_user, is_active=True)
+    GuildMember.objects.create(guild=defender_guild, user=defender_user, position="leader", is_active=True)
+
+    run = GuildRaidRun.objects.create(
+        attacker_guild=guild,
+        defender_guild=defender_guild,
+        started_by=user.guild_membership,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        travel_time=600,
+        battle_at=timezone.now() + timedelta(minutes=5),
+    )
+    assert client.login(username="guild_home_pvp_manage_user", password="pass12345")
+
+    response = client.get("/")
+
+    body = response.content.decode("utf-8")
+    assert f"帮会进攻：{defender_guild.name}" in body
+    assert reverse("guilds:pvp_retreat") in body
+    assert f'value="{run.id}"' in body
+    assert reverse("guilds:pvp") in body
+
+
+@pytest.mark.django_db
+def test_home_page_shows_incoming_guild_pvp_event_link(client, django_user_model):
+    defender_user = django_user_model.objects.create_user(username="guild_home_pvp_incoming_user", password="pass12345")
+    ensure_manor(defender_user)
+    defender_guild = Guild.objects.create(name="首页帮会PVP来袭帮", founder=defender_user, is_active=True)
+    GuildMember.objects.create(guild=defender_guild, user=defender_user, position="member", is_active=True)
+
+    attacker_user = django_user_model.objects.create_user(
+        username="guild_home_pvp_incoming_target", password="pass12345"
+    )
+    ensure_manor(attacker_user)
+    attacker_guild = Guild.objects.create(name="首页帮会PVP敌袭帮", founder=attacker_user, is_active=True)
+    GuildMember.objects.create(guild=attacker_guild, user=attacker_user, position="leader", is_active=True)
+
+    GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_user.guild_membership,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        travel_time=600,
+        battle_at=timezone.now() + timedelta(minutes=8),
+    )
+    assert client.login(username="guild_home_pvp_incoming_user", password="pass12345")
+
+    response = client.get("/")
+
+    body = response.content.decode("utf-8")
+    assert f"帮会来袭：{attacker_guild.name}" in body
+    assert reverse("guilds:pvp") in body

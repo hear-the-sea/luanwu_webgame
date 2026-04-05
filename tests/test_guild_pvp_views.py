@@ -73,6 +73,45 @@ def test_guild_pvp_page_lists_attackable_targets(guild_member_client, django_use
 
 
 @pytest.mark.django_db
+def test_guild_pvp_page_uses_list_detail_layout_and_hides_old_hint_blocks(guild_member_client, django_user_model):
+    client, user, guild = guild_member_client
+    leader_member = user.guild_membership
+
+    other_user, _other_manor = _create_user_with_manor(django_user_model, "guild_pvp_view_layout_target")
+    target_guild = Guild.objects.create(name="界面目标帮", founder=other_user, is_active=True, level=guild.level + 2)
+    GuildMember.objects.create(guild=target_guild, user=other_user, position="leader", is_active=True)
+
+    guest = _create_guest(manor=user.manor, template=_create_template("guild_pvp_layout_tpl"), name="界面门客")
+    entry = hero_pool_service.submit_hero_pool_entry(leader_member, guest_id=guest.id, slot_index=1).entry
+    hero_pool_service.add_lineup_entry(guild=guild, operator=user, pool_entry_id=entry.id)
+
+    troop_template = TroopTemplate.objects.create(key="guild_pvp_layout_guard", name="界面护院")
+    GuildTroopStorage.objects.create(guild=guild, troop_template=troop_template, count=9)
+
+    response = client.get(reverse("guilds:pvp"))
+    body = response.content.decode("utf-8")
+
+    assert response.status_code == 200
+    assert "搜索帮会名称" in body
+    assert "全部区域" in body
+    assert "北俱芦洲" in body
+    assert ">全部<" in body
+    assert ">可进攻<" in body
+    assert ">不可进攻<" in body
+    assert "发起帮会出征" in body
+    assert "gpvp-submit-bar" not in body
+    assert "gpvp-target-detail" not in body
+    assert "data-target-detail" not in body
+    assert "data-target-confirm" not in body
+    assert "管理员/帮主可发起帮会进攻" not in body
+    assert "今日主动进攻" not in body
+    assert "当前出征" not in body
+    assert "来袭预警" not in body
+    assert 'type="radio"' in body
+    assert 'name="defender_guild_id"' in body
+
+
+@pytest.mark.django_db
 def test_guild_pvp_page_resets_stale_daily_counters_before_disabling_targets(guild_member_client, django_user_model):
     client, _user, guild = guild_member_client
     yesterday = timezone.localdate() - timedelta(days=1)
@@ -97,8 +136,8 @@ def test_guild_pvp_page_resets_stale_daily_counters_before_disabling_targets(gui
 
     assert response.status_code == 200
     assert "跨天恢复目标帮" in body
-    assert "今日主动进攻 0/2，今日被攻击 0/3" in body
-    assert "满足出征条件，可作为本次进攻目标。" in body
+    assert "搜索帮会名称" in body
+    assert "满足出征条件，可作为本次进攻目标。" not in body
     assert "今日主动进攻次数已达上限" not in body
     assert "对方今日被攻击次数已达上限" not in body
 
@@ -108,6 +147,21 @@ def test_guild_pvp_page_resets_stale_daily_counters_before_disabling_targets(gui
     assert guild.pvp_attack_count_reset_at == yesterday
     assert target_guild.pvp_defense_count_today == 3
     assert target_guild.pvp_defense_count_reset_at == yesterday
+
+
+@pytest.mark.django_db
+def test_guild_pvp_page_does_not_process_due_runs_on_get(guild_member_client, monkeypatch):
+    client, _user, _guild = guild_member_client
+
+    def _raise_if_called(*_args, **_kwargs):
+        raise AssertionError("prepare_guild_pvp_read_state should not run during GET render")
+
+    monkeypatch.setattr("guilds.views.pvp.guild_raid_service.prepare_guild_pvp_read_state", _raise_if_called)
+
+    response = client.get(reverse("guilds:pvp"))
+
+    assert response.status_code == 200
+    assert "帮会PVP" in response.content.decode("utf-8")
 
 
 @pytest.mark.django_db

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import math
 from datetime import timedelta
 from typing import Any, cast
 
@@ -17,7 +16,7 @@ from gameplay.services.battle_snapshots import build_guest_battle_snapshots, bui
 from gameplay.services.manor.core import ensure_manor
 
 from .. import constants as guild_constants
-from ..models import Guild, GuildBattleLineupEntry, GuildRaidRun
+from ..models import Guild, GuildRaidRun
 from . import guild_troops
 from .guild_dispatch import load_dispatch_lineup_rows, lock_manage_member, normalize_positive_ids
 from .guild_raid_loot import grant_guild_raid_battle_rewards, transfer_guild_raid_loot
@@ -28,6 +27,10 @@ from .guild_raid_rules import (
     get_guild_battle_block_reason,
     reset_guild_pvp_counters_if_needed,
 )
+from .guild_raid_support import apply_guild_defeat_protection as _apply_guild_defeat_protection
+from .guild_raid_support import dispatch_countdown_for_run as _dispatch_countdown_for_run
+from .guild_raid_support import load_defender_guests as _load_defender_guests
+from .guild_raid_support import lock_guild_pair as _lock_guild_pair
 from .technology import get_guild_dispatch_capacity
 
 logger = logging.getLogger(__name__)
@@ -37,50 +40,6 @@ IN_FLIGHT_GUILD_RAID_STATUSES = (
     GuildRaidRun.Status.RETURNING,
     GuildRaidRun.Status.RETREATED,
 )
-
-
-def _next_due_at(run: GuildRaidRun):
-    if run.status == GuildRaidRun.Status.MARCHING:
-        return run.battle_at
-    if run.status in (GuildRaidRun.Status.RETURNING, GuildRaidRun.Status.RETREATED):
-        return run.return_at
-    return None
-
-
-def _dispatch_countdown_for_run(run: GuildRaidRun) -> int:
-    due_at = _next_due_at(run)
-    if due_at is None:
-        raise RuntimeError("guild raid run missing due time")
-    remaining_seconds = math.ceil((due_at - timezone.now()).total_seconds())
-    return max(0, remaining_seconds)
-
-
-def _load_defender_guests(defender_guild: Guild) -> list[Any]:
-    guests: list[Any] = []
-    lineup_rows = (
-        GuildBattleLineupEntry.objects.filter(guild=defender_guild)
-        .select_related("pool_entry__source_guest__template", "pool_entry__source_guest__manor")
-        .order_by("slot_index", "id")
-    )
-    for row in lineup_rows:
-        guest = row.pool_entry.source_guest
-        if guest is not None:
-            guests.append(guest)
-    return guests
-
-
-def _apply_guild_defeat_protection(defender_guild: Guild, *, now=None) -> None:
-    now = now or timezone.now()
-    duration_seconds = int(guild_constants.GUILD_PVP_DEFEAT_PROTECTION_SECONDS or 0)
-    if duration_seconds <= 0:
-        return
-
-    new_until = now + timedelta(seconds=duration_seconds)
-    current_until = defender_guild.defeat_protection_until
-    if current_until and current_until > new_until:
-        new_until = current_until
-    defender_guild.defeat_protection_until = new_until
-    defender_guild.save(update_fields=["defeat_protection_until"])
 
 
 def schedule_guild_raid_completion(run: GuildRaidRun) -> None:
@@ -154,7 +113,6 @@ def prepare_guild_pvp_read_state(guild: Guild, *, now=None) -> None:
     refresh_due_guild_raids(guild, now=now, include_incoming_marching=True)
 
 
-@transaction.atomic
 def start_guild_raid(
     *,
     guild: Guild,
@@ -163,10 +121,33 @@ def start_guild_raid(
     pool_entry_ids: list[int],
     troop_loadout: dict[str, int],
 ) -> GuildRaidRun:
-    locked_guild = Guild.objects.select_for_update().get(pk=guild.pk, is_active=True)
-    locked_defender = Guild.objects.select_for_update().get(pk=defender_guild.pk, is_active=True)
-    if locked_guild.pk == locked_defender.pk:
+    if guild.pk == defender_guild.pk:
         raise GuildValidationError("不能进攻自己的帮会")
+
+    refresh_due_guild_raids(guild)
+    return _start_guild_raid_atomic(
+        guild=guild,
+        defender_guild=defender_guild,
+        operator=operator,
+        pool_entry_ids=pool_entry_ids,
+        troop_loadout=troop_loadout,
+    )
+
+
+@transaction.atomic
+def _start_guild_raid_atomic(
+    *,
+    guild: Guild,
+    defender_guild: Guild,
+    operator,
+    pool_entry_ids: list[int],
+    troop_loadout: dict[str, int],
+) -> GuildRaidRun:
+    locked_guild, locked_defender = _lock_guild_pair(
+        attacker_guild_id=guild.pk,
+        defender_guild_id=defender_guild.pk,
+        require_active=True,
+    )
 
     today = timezone.localdate()
     reset_guild_pvp_counters_if_needed(locked_guild, today=today)
@@ -176,7 +157,6 @@ def start_guild_raid(
         raise GuildValidationError(blocked_reason or "当前不可发起帮会攻击")
 
     membership = lock_manage_member(guild=locked_guild, operator=operator, permission_label="发起帮会攻击")
-    refresh_due_guild_raids(locked_guild)
 
     if (
         GuildRaidRun.objects.select_for_update()
@@ -277,7 +257,10 @@ def process_guild_raid_battle(run: GuildRaidRun, *, now=None) -> bool:
     if locked_run.battle_at is not None and locked_run.battle_at > processed_at:
         return False
 
-    defender_locked = Guild.objects.select_for_update().get(pk=locked_run.defender_guild_id)
+    attacker_locked, defender_locked = _lock_guild_pair(
+        attacker_guild_id=locked_run.attacker_guild_id,
+        defender_guild_id=locked_run.defender_guild_id,
+    )
     blocked_reason = get_guild_battle_block_reason(defender_guild=defender_locked, now=processed_at)
     if blocked_reason:
         locked_run.status = GuildRaidRun.Status.RETREATED
@@ -329,7 +312,7 @@ def process_guild_raid_battle(run: GuildRaidRun, *, now=None) -> bool:
     loot_items: dict[str, int] = {}
     if is_attacker_victory:
         loot_silver, loot_items = transfer_guild_raid_loot(
-            attacker_guild=locked_run.attacker_guild,
+            attacker_guild=attacker_locked,
             defender_guild=defender_locked,
         )
         _apply_guild_defeat_protection(defender_locked, now=processed_at)
@@ -338,7 +321,7 @@ def process_guild_raid_battle(run: GuildRaidRun, *, now=None) -> bool:
     reward_items = dict(equipment_recovery or {})
     if int(exp_fruit_count or 0) > 0:
         reward_items["experience_fruit"] = int(exp_fruit_count)
-    winner_guild = locked_run.attacker_guild if is_attacker_victory else defender_locked
+    winner_guild = attacker_locked if is_attacker_victory else defender_locked
     battle_rewards = grant_guild_raid_battle_rewards(guild=winner_guild, rewards=reward_items)
 
     locked_run.status = GuildRaidRun.Status.RETURNING

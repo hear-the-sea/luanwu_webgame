@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 from django.contrib.messages import get_messages
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, override_settings
 from django.urls import reverse
 
@@ -24,6 +25,39 @@ def _create_template(key: str) -> GuestTemplate:
         name=f"模板{key}",
         archetype=GuestArchetype.MILITARY,
         rarity=GuestRarity.GREEN,
+    )
+
+
+def _create_template_with_avatar(key: str, *, name: str | None = None) -> GuestTemplate:
+    resolved_name = name or f"模板{key}"
+    return GuestTemplate.objects.create(
+        key=key,
+        name=resolved_name,
+        archetype=GuestArchetype.MILITARY,
+        rarity=GuestRarity.GREEN,
+        avatar=SimpleUploadedFile(
+            name=f"{key}.gif",
+            content=(
+                b"GIF89a\x01\x00\x01\x00\x80\x00\x00"
+                b"\x00\x00\x00\xff\xff\xff!\xf9\x04\x00"
+                b"\x00\x00\x00\x00,\x00\x00\x00\x00\x01"
+                b"\x00\x01\x00\x00\x02\x02D\x01\x00;"
+            ),
+            content_type="image/gif",
+        ),
+    )
+
+
+def _build_uploaded_gif(name: str) -> SimpleUploadedFile:
+    return SimpleUploadedFile(
+        name=name,
+        content=(
+            b"GIF89a\x01\x00\x01\x00\x80\x00\x00"
+            b"\x00\x00\x00\xff\xff\xff!\xf9\x04\x00"
+            b"\x00\x00\x00\x00,\x00\x00\x00\x00\x01"
+            b"\x00\x01\x00\x00\x02\x02D\x01\x00;"
+        ),
+        content_type="image/gif",
     )
 
 
@@ -128,6 +162,107 @@ def test_guild_mission_page_renders_selected_task_detail_modal(guild_member_clie
     assert "详情门客" in body
     assert "非上阵门客" not in body
     assert "护院" in body
+    assert "任务简介" in body
+    assert body.count("tw-task-detail-section") >= 3
+
+
+@pytest.mark.django_db
+def test_guild_mission_page_selected_detail_shows_enemy_intel_like_personal_mission(guild_member_client):
+    client, _user, _guild = guild_member_client
+    enemy_guest = _create_template_with_avatar("guild_enemy_guest_tpl", name="敌方先锋")
+    enemy_troop = TroopTemplate.objects.create(
+        key="guild_enemy_archer",
+        name="敌方弓手",
+        avatar=_build_uploaded_gif("guild_enemy_archer.gif"),
+    )
+    template = GuildMissionTemplate.objects.create(
+        key="guild_enemy_intel_task",
+        name="敌情任务",
+        description="展示敌方配置",
+        difficulty="junior",
+        task_type="troop",
+        ruby_reward=5,
+        recommended_guest_count=2,
+        allow_troops=True,
+        enemy_guests=[{"key": enemy_guest.key, "label": enemy_guest.name}],
+        enemy_troops={enemy_troop.key: 18},
+        is_active=True,
+    )
+
+    response = client.get(f"{reverse('guilds:missions')}?mission={template.key}")
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert "敌人情报" in body
+    assert "tw-enemy-grid" in body
+    assert enemy_guest.avatar.url in body
+    assert "敌方先锋" in body
+    assert enemy_troop.avatar.url in body
+    assert "×18" in body
+
+
+@pytest.mark.django_db
+def test_guild_mission_page_selected_detail_supports_template_key_enemy_guest_entries(guild_member_client):
+    client, _user, _guild = guild_member_client
+    enemy_guest = _create_template_with_avatar("guild_enemy_template_key_tpl", name="模板键敌将")
+    template = GuildMissionTemplate.objects.create(
+        key="guild_enemy_template_key_task",
+        name="模板键敌情任务",
+        description="展示 template_key 敌方门客",
+        difficulty="junior",
+        task_type="guest",
+        ruby_reward=3,
+        recommended_guest_count=1,
+        allow_troops=False,
+        enemy_guests=[{"template_key": enemy_guest.key}],
+        is_active=True,
+    )
+
+    response = client.get(f"{reverse('guilds:missions')}?mission={template.key}")
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert enemy_guest.avatar.url in body
+
+
+@pytest.mark.django_db
+def test_guild_mission_page_selected_detail_reuses_avatar_cards_for_dispatch_loadout(guild_member_client):
+    client, user, guild = guild_member_client
+    leader_member = user.guild_membership
+    guest_template = _create_template_with_avatar("guild_dispatch_guest_tpl", name="门面门客")
+    lineup_guest = _create_guest(manor=user.manor, template=guest_template, name="门面门客")
+    lineup_entry = hero_pool_service.submit_hero_pool_entry(
+        leader_member,
+        guest_id=lineup_guest.id,
+        slot_index=1,
+    ).entry
+    hero_pool_service.add_lineup_entry(guild=guild, operator=user, pool_entry_id=lineup_entry.id)
+    troop_template = TroopTemplate.objects.create(
+        key="guild_dispatch_archer",
+        name="门面弓手",
+        avatar=_build_uploaded_gif("guild_dispatch_archer.gif"),
+    )
+    GuildTroopStorage.objects.create(guild=guild, troop_template=troop_template, count=24)
+    template = GuildMissionTemplate.objects.create(
+        key="guild_dispatch_card_task",
+        name="出征样式任务",
+        description="展示头像卡片",
+        difficulty="intermediate",
+        task_type="troop",
+        ruby_reward=6,
+        recommended_guest_count=1,
+        allow_troops=True,
+        is_active=True,
+    )
+
+    response = client.get(f"{reverse('guilds:missions')}?mission={template.key}")
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert "tw-guest-avatar" in body
+    assert guest_template.avatar.url in body
+    assert "tw-troop-avatar" in body
+    assert troop_template.avatar.url in body
 
 
 @pytest.mark.django_db

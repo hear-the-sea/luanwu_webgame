@@ -401,7 +401,7 @@ def test_retreat_guild_mission_returns_all_troops_without_ruby_reward(django_use
 
 
 @pytest.mark.django_db(transaction=True)
-def test_get_guild_mission_page_context_finalizes_overdue_active_run(django_user_model, monkeypatch):
+def test_get_guild_mission_page_context_does_not_finalize_overdue_active_run(django_user_model, monkeypatch):
     leader, leader_manor = _create_user_with_manor(django_user_model, "guild_mission_context_finalize_leader")
     guild = Guild.objects.create(name="帮会任务读路径收口帮", founder=leader, is_active=True)
     leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
@@ -423,9 +423,65 @@ def test_get_guild_mission_page_context_finalizes_overdue_active_run(django_user
 
     monkeypatch.setattr("guilds.services.guild_missions.schedule_guild_mission_completion", lambda _run: None)
 
+    from guilds.services import guild_mission_queries as guild_mission_query_service
     from guilds.services import guild_missions as guild_mission_service
 
     run = guild_mission_service.launch_guild_mission(
+        guild=guild,
+        operator=leader,
+        template_key=template.key,
+        pool_entry_ids=[entry.id],
+        troop_loadout={},
+    )
+    GuildMissionRun.objects.filter(pk=run.pk).update(return_at=timezone.now() - timedelta(seconds=1))
+    monkeypatch.setattr(
+        guild_mission_service,
+        "refresh_due_guild_mission_runs",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("refresh_due_guild_mission_runs should not run during page context reads")
+        ),
+    )
+
+    context = guild_mission_query_service.get_guild_mission_page_context(leader_member)
+
+    assert context["active_run"] is None
+    run.refresh_from_db()
+    assert run.status == GuildMissionRun.Status.ACTIVE
+    assert run.completed_at is None
+
+
+@pytest.mark.django_db(transaction=True)
+def test_launch_guild_mission_keeps_overdue_finalization_when_new_launch_validation_fails(
+    django_user_model, monkeypatch
+):
+    leader, leader_manor = _create_user_with_manor(django_user_model, "guild_mission_launch_overdue_rollback_leader")
+    guild = Guild.objects.create(name="帮会任务事务收口帮", founder=leader, is_active=True)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    template = GuildMissionTemplate.objects.create(
+        key="guild_launch_overdue_rollback_task",
+        name="事务收口任务",
+        description="",
+        difficulty="junior",
+        task_type="guest",
+        base_duration_seconds=60,
+        ruby_reward=2,
+        recommended_guest_count=1,
+        allow_troops=False,
+        is_active=True,
+    )
+    guest = _create_guest(
+        manor=leader_manor,
+        template=_create_template("guild_launch_overdue_rollback_tpl"),
+        name="事务收口门客",
+    )
+    entry = hero_pool_service.submit_hero_pool_entry(leader_member, guest_id=guest.id, slot_index=1).entry
+    hero_pool_service.add_lineup_entry(guild=guild, operator=leader, pool_entry_id=entry.id)
+
+    monkeypatch.setattr("guilds.services.guild_missions.schedule_guild_mission_completion", lambda _run: None)
+
+    from guilds.services import guild_missions as guild_mission_service
+
+    overdue_run = guild_mission_service.launch_guild_mission(
         guild=guild,
         operator=leader,
         template_key=template.key,
@@ -446,18 +502,24 @@ def test_get_guild_mission_page_context_finalizes_overdue_active_run(django_user
         winner="attacker",
         starts_at=timezone.now() - timedelta(seconds=5),
         completed_at=timezone.now(),
-        seed=11,
+        seed=112,
     )
-    GuildMissionRun.objects.filter(pk=run.pk).update(return_at=timezone.now() - timedelta(seconds=1))
+    GuildMissionRun.objects.filter(pk=overdue_run.pk).update(return_at=timezone.now() - timedelta(seconds=1))
     monkeypatch.setattr(guild_mission_service, "execute_battle", lambda *args, **kwargs: report)
 
-    context = guild_mission_service.get_guild_mission_page_context(leader_member)
+    with pytest.raises(GuildValidationError, match="请选择至少一名上阵门客"):
+        guild_mission_service.launch_guild_mission(
+            guild=guild,
+            operator=leader,
+            template_key=template.key,
+            pool_entry_ids=[],
+            troop_loadout={},
+        )
 
-    assert context["active_run"] is None
-    run.refresh_from_db()
-    assert run.status == GuildMissionRun.Status.COMPLETED
-    assert run.completed_at is not None
-    assert run.battle_report_id == report.id
+    overdue_run.refresh_from_db()
+    assert overdue_run.status == GuildMissionRun.Status.COMPLETED
+    assert overdue_run.completed_at is not None
+    assert GuildMissionRun.objects.filter(guild=guild, status=GuildMissionRun.Status.ACTIVE).count() == 0
 
 
 @pytest.mark.django_db(transaction=True)

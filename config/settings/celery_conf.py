@@ -58,6 +58,7 @@ CELERY_TASK_QUEUES = (
 
 CELERY_TASK_ROUTES = {
     "battle.generate_report": {"queue": CELERY_BATTLE_QUEUE},
+    "core.record_celery_beat_heartbeat": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.complete_mission": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.scan_due_missions": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.complete_building_upgrade": {"queue": CELERY_TIMER_QUEUE},
@@ -82,14 +83,28 @@ CELERY_TASK_ROUTES = {
     "guests.scan_passive_hp_recovery": {"queue": CELERY_TIMER_QUEUE},
     "guests.process_daily_loyalty": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.complete_scout": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.complete_scout_return": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.scan_scout_records": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.scan_arena_tournaments": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.process_raid_battle": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.complete_raid": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.scan_raid_runs": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.backfill_global_mail_campaign": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.cleanup_old_data": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.decay_prisoner_loyalty": {"queue": CELERY_TIMER_QUEUE},
+    "guilds.complete_guild_mission": {"queue": CELERY_TIMER_QUEUE},
     "guilds.cleanup_invalid_hero_pool": {"queue": CELERY_TIMER_QUEUE},
+    "guilds.complete_guild_raid": {"queue": CELERY_TIMER_QUEUE},
+    "guilds.scan_due_raids": {"queue": CELERY_TIMER_QUEUE},
     "guilds.scan_due_missions": {"queue": CELERY_TIMER_QUEUE},
+    "guilds.process_single_guild_production": {"queue": CELERY_TIMER_QUEUE},
+    "guilds.tech_daily_production": {"queue": CELERY_TIMER_QUEUE},
+    "guilds.reset_weekly_stats": {"queue": CELERY_TIMER_QUEUE},
+    "guilds.cleanup_old_logs": {"queue": CELERY_TIMER_QUEUE},
+    "trade.refresh_shop_stock": {"queue": CELERY_TIMER_QUEUE},
+    "trade.process_expired_listings": {"queue": CELERY_TIMER_QUEUE},
+    "trade.settle_auction_round": {"queue": CELERY_TIMER_QUEUE},
+    "trade.create_auction_round": {"queue": CELERY_TIMER_QUEUE},
 }
 
 CELERY_BEAT_SCHEDULE = {
@@ -167,6 +182,10 @@ CELERY_BEAT_SCHEDULE = {
     },
     "scan-due-guild-missions": {
         "task": "guilds.scan_due_missions",
+        "schedule": crontab(minute="*/1"),
+    },
+    "scan-due-guild-raids": {
+        "task": "guilds.scan_due_raids",
         "schedule": crontab(minute="*/1"),
     },
     "scan-scout-records": {

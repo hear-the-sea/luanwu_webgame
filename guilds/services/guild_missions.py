@@ -6,7 +6,6 @@ from datetime import timedelta
 from typing import Any, cast
 
 from django.db import transaction
-from django.db.models import Q
 from django.utils import timezone
 
 from battle.execution import BattleOptions, execute_battle
@@ -18,17 +17,10 @@ from gameplay.services.battle_snapshots import build_guest_battle_snapshots, bui
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.utils.messages import bulk_create_messages
 
-from ..models import (
-    Guild,
-    GuildBattleLineupEntry,
-    GuildMember,
-    GuildMissionRun,
-    GuildMissionTemplate,
-    GuildTroopStorage,
-)
+from ..models import Guild, GuildMember, GuildMissionRun, GuildMissionTemplate
 from . import guild_troops
 from .guild_dispatch import load_dispatch_lineup_rows, lock_manage_member, normalize_positive_ids
-from .technology import get_guild_dispatch_capacity, get_guild_lineup_capacity
+from .technology import get_guild_dispatch_capacity
 from .warehouse import add_item_to_warehouse
 
 logger = logging.getLogger(__name__)
@@ -39,54 +31,6 @@ def _dispatch_countdown_for_run(run: GuildMissionRun) -> int:
         raise RuntimeError("guild mission run missing return_at")
     remaining_seconds = math.ceil((run.return_at - timezone.now()).total_seconds())
     return max(0, remaining_seconds)
-
-
-def get_guild_mission_page_context(member: GuildMember, *, selected_mission_key: str = "") -> dict[str, Any]:
-    guild = member.guild
-    now = timezone.now()
-    refresh_due_guild_mission_runs(guild, now=now)
-    active_run = (
-        GuildMissionRun.objects.select_related("template", "started_by__user__manor")
-        .filter(guild=guild, status=GuildMissionRun.Status.ACTIVE)
-        .filter(Q(return_at__isnull=True) | Q(return_at__gt=now))
-        .order_by("-started_at")
-        .first()
-    )
-    mission_templates = list(GuildMissionTemplate.objects.filter(is_active=True).order_by("sort_weight", "id"))
-    lineup_entries = list(
-        GuildBattleLineupEntry.objects.filter(guild=guild)
-        .select_related("pool_entry__source_guest__template", "pool_entry__owner_member__user__manor")
-        .order_by("slot_index", "id")
-    )
-    troop_storages = list(
-        GuildTroopStorage.objects.filter(guild=guild, count__gt=0)
-        .select_related("troop_template")
-        .order_by("troop_template__priority", "troop_template__id")
-    )
-
-    mission_groups = {
-        "junior": [mission for mission in mission_templates if mission.difficulty == "junior"],
-        "intermediate": [mission for mission in mission_templates if mission.difficulty == "intermediate"],
-        "advanced": [mission for mission in mission_templates if mission.difficulty == "advanced"],
-    }
-    selected_mission = next(
-        (mission for mission in mission_templates if mission.key == selected_mission_key),
-        None,
-    )
-    active_tab = selected_mission.difficulty if selected_mission else "junior"
-    return {
-        "guild": guild,
-        "member": member,
-        "active_run": active_run,
-        "mission_templates": mission_templates,
-        "mission_groups": mission_groups,
-        "selected_mission": selected_mission,
-        "active_tab": active_tab,
-        "lineup_entries": lineup_entries,
-        "troop_storages": troop_storages,
-        "dispatch_limit": get_guild_dispatch_capacity(guild),
-        "lineup_limit": get_guild_lineup_capacity(guild),
-    }
 
 
 def schedule_guild_mission_completion(run: GuildMissionRun) -> None:
@@ -140,8 +84,26 @@ def refresh_due_guild_mission_runs(guild: Guild, *, now=None) -> int:
     return finalized_count
 
 
-@transaction.atomic
 def launch_guild_mission(
+    *,
+    guild: Guild,
+    operator,
+    template_key: str,
+    pool_entry_ids: list[int],
+    troop_loadout: dict[str, int],
+) -> GuildMissionRun:
+    refresh_due_guild_mission_runs(guild)
+    return _launch_guild_mission_atomic(
+        guild=guild,
+        operator=operator,
+        template_key=template_key,
+        pool_entry_ids=pool_entry_ids,
+        troop_loadout=troop_loadout,
+    )
+
+
+@transaction.atomic
+def _launch_guild_mission_atomic(
     *,
     guild: Guild,
     operator,
@@ -151,7 +113,6 @@ def launch_guild_mission(
 ) -> GuildMissionRun:
     locked_guild = Guild.objects.select_for_update().get(pk=guild.pk, is_active=True)
     membership = lock_manage_member(guild=locked_guild, operator=operator, permission_label="发起帮会任务")
-    refresh_due_guild_mission_runs(locked_guild)
 
     if (
         GuildMissionRun.objects.select_for_update()

@@ -410,7 +410,7 @@ def test_donate_grain_adds_real_guild_warehouse_item(guild_member_ready_for_grai
 
 
 @pytest.mark.django_db
-def test_resource_promotion_migration_fails_fast_when_real_rows_already_exist(django_user_model):
+def test_resource_promotion_migration_merges_remaining_old_fields_into_existing_resource_rows(django_user_model):
     migration_module = import_module("guilds.migrations.0012_promote_grain_gold_bar_to_warehouse_items")
 
     leader = django_user_model.objects.create_user(username="guild_migration_existing_row", password="pass123")
@@ -422,7 +422,8 @@ def test_resource_promotion_migration_fails_fast_when_real_rows_already_exist(dj
         grain=12,
         gold_bar=3,
     )
-    GuildWarehouse.objects.create(guild=guild, item_key="grain", quantity=1, contribution_cost=2)
+    GuildWarehouse.objects.create(guild=guild, item_key="grain", quantity=1, contribution_cost=9, total_produced=4)
+    GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=5, contribution_cost=7, total_produced=8)
 
     class _Apps:
         @staticmethod
@@ -434,8 +435,20 @@ def test_resource_promotion_migration_fails_fast_when_real_rows_already_exist(dj
                 return GuildWarehouse
             raise LookupError(model_name)
 
-    with pytest.raises(RuntimeError, match="grain"):
-        migration_module.forward_promote_resources(_Apps(), None)
+    migration_module.forward_promote_resources(_Apps(), None)
+
+    guild.refresh_from_db()
+    grain_row = GuildWarehouse.objects.get(guild=guild, item_key="grain")
+    gold_bar_row = GuildWarehouse.objects.get(guild=guild, item_key="gold_bar")
+
+    assert guild.grain == 0
+    assert guild.gold_bar == 0
+    assert grain_row.quantity == 13
+    assert grain_row.total_produced == 16
+    assert grain_row.contribution_cost == 2
+    assert gold_bar_row.quantity == 8
+    assert gold_bar_row.total_produced == 11
+    assert gold_bar_row.contribution_cost == 50
 
 
 @pytest.mark.django_db

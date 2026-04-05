@@ -22,27 +22,13 @@ def _promote_resource_to_warehouse(GuildWarehouse, guild_id, item_key, quantity,
     )
     warehouse_row.quantity = int(warehouse_row.quantity or 0) + quantity
     warehouse_row.total_produced = int(warehouse_row.total_produced or 0) + quantity
-    warehouse_row.save(update_fields=["quantity", "total_produced"])
-
-
-def _assert_no_existing_promoted_resource_rows(GuildWarehouse):
-    existing_row = (
-        GuildWarehouse.objects.filter(item_key__in=[GRAIN_ITEM_KEY, GOLD_BAR_ITEM_KEY])
-        .order_by("guild_id", "item_key")
-        .values_list("guild_id", "item_key")
-        .first()
-    )
-    if existing_row is None:
-        return
-
-    guild_id, item_key = existing_row
-    raise RuntimeError(f"Unexpected pre-0012 guild warehouse row exists for guild_id={guild_id}, item_key={item_key}")
+    warehouse_row.contribution_cost = contribution_cost
+    warehouse_row.save(update_fields=["quantity", "total_produced", "contribution_cost"])
 
 
 def forward_promote_resources(apps, schema_editor):
     Guild = apps.get_model("guilds", "Guild")
     GuildWarehouse = apps.get_model("guilds", "GuildWarehouse")
-    _assert_no_existing_promoted_resource_rows(GuildWarehouse)
 
     for guild in Guild.objects.all().iterator():
         grain_quantity = int(guild.grain or 0)

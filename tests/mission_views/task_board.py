@@ -161,3 +161,20 @@ class TestTaskBoardPage:
         assert "单于" in body
         assert "tw-enemy-entry" in body
         assert "tw-enemy-meta" not in body
+
+    def test_task_board_selected_mission_groups_detail_sections_with_shared_frames(self, manor_with_user):
+        _manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key="task_board_detail_sections",
+            name="分区样式任务",
+            description="测试详情分区边框",
+            difficulty="junior",
+            daily_limit=3,
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "任务简介" in body
+        assert body.count("tw-task-detail-section") >= 3
