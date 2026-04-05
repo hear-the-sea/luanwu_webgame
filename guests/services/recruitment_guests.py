@@ -164,6 +164,7 @@ def _resolve_bulk_finalize_request(candidates: List[RecruitmentCandidate]) -> tu
         raise AssertionError(f"invalid recruitment candidate manor id: {raw_manor_id!r}")
 
     requested_ids: list[int] = []
+    seen_candidate_ids: set[int] = set()
     for candidate in candidates:
         raw_candidate_id = getattr(candidate, "id", None)
         raw_candidate_manor_id = getattr(candidate, "manor_id", None)
@@ -184,7 +185,10 @@ def _resolve_bulk_finalize_request(candidates: List[RecruitmentCandidate]) -> tu
             )
         if candidate_manor_id != manor_id:
             raise AssertionError(f"mixed recruitment candidate manor ids: {candidate_manor_id!r} != {manor_id!r}")
+        if candidate_id in seen_candidate_ids:
+            continue
         requested_ids.append(candidate_id)
+        seen_candidate_ids.add(candidate_id)
 
     return manor_id, requested_ids
 
@@ -247,9 +251,14 @@ def bulk_finalize_candidates(
     locked_candidates = [
         locked_candidates_map[candidate_id] for candidate_id in requested_ids if candidate_id in locked_candidates_map
     ]
-    stale_candidates = [
-        candidate for candidate in candidates if getattr(candidate, "id", None) not in locked_candidates_map
-    ]
+    stale_candidates: list[RecruitmentCandidate] = []
+    seen_stale_candidate_ids: set[int | None] = set()
+    for candidate in candidates:
+        candidate_id = getattr(candidate, "id", None)
+        if candidate_id in locked_candidates_map or candidate_id in seen_stale_candidate_ids:
+            continue
+        stale_candidates.append(candidate)
+        seen_stale_candidate_ids.add(candidate_id)
     if not locked_candidates:
         return [], stale_candidates or candidates
 

@@ -103,7 +103,7 @@
 - `HomeView`、`MapView`、`raid_status_api` 已退出 GET 读路径中的 `raid/scout` 补偿刷新；显式刷新统一收口到 `POST /gameplay/api/map/status/refresh/` 和 `gameplay.services.raid.refresh_raid_activity()`，不再由 view 内联拼接活动补偿。
 - `raid / scout` 的发起、撤退、返程完成、refresh 补偿边界已拆到稳定服务入口；`mission` 与 `guest recruitment` 的主写入口、refresh 契约和 finalize 竞争语义也都已有服务层与 integration 测试约束。
 - `refresh_manor_state(...)` 已收紧为默认只处理建筑/资源读侧投影；活动补偿只会在显式 `include_activity_refresh=True` 或显式 refresh API / worker 链路中运行，不再默认挂回页面读路径。
-- `2026-03-24` 已把热点页面 GET 的读侧活动投影统一收口到 `project_manor_activity_for_read()`：`HomeView`、`MapView`、`WarehouseView`、`WorkView`、`BaseArenaView`、`build_task_board_context()` 以及 `guest roster/detail` 统一先做资源投影，再补齐已到期的 `mission / scout / raid` 完成态；相关回归 `pytest tests/test_guest_runtime_refresh_views.py tests/test_arena_views.py tests/test_core_views.py tests/test_inventory_views.py tests/test_map_views.py tests/test_work_views.py -q` 为 `147 passed`。
+- `2026-03-24` 曾把热点页面 GET 的活动投影统一收口到 `project_manor_activity_for_read()`；该入口在 `2026-04-05` 已进一步收紧为纯读侧资源投影，不再补齐 `mission / scout / raid / arena` 完成态，相关状态收口继续保留在显式 refresh / finalize / task 链路中。后续回归应围绕“页面 GET 不推进业务状态”来维护，而不是恢复旧的隐式补偿语义。
 - `2026-03-22` 已再次完成阶段 2 封板验证：`tests/test_map_views.py`、`tests/test_core_views.py` 共 `61 passed`，用于约束首页/地图读路径与显式刷新入口不回退。
 - `2026-03-22` 已再次完成阶段 2 real-services gate：`DJANGO_TEST_USE_ENV_SERVICES=1 make test-critical` 共 `20 passed, 3 skipped`，覆盖 `raid / scout / mission / guest recruitment / work service` 的关键并发与任务派发语义。
 - 阶段 2 的关键 real-services 套件会继续保留在 `make test-critical`、`make test-real-services` 与 `make test-gates` 中，后续作为回归门禁持续维护，不再把阶段 2 当作主线开发主题。
@@ -563,7 +563,7 @@
 
 - 阶段 2 已完成封板；后续只保留 `make test-critical` / `make test-real-services` / `make test-gates` 这类固定回归维护，不再把并发基线收口当作主线开发主题。
 - 阶段 3 已完成封板；此前 broad `except Exception`、生产代码裸 `raise ValueError(...)`、宽泛 `ignore_errors = true` 与高频用户链路尾项都已收口，后续零散的低频复用路径契约补强或类型注解扩展只按常规维护处理，不再作为单独阶段阻断项。
-- 页面读路径的热点活动投影已经统一到 `project_manor_activity_for_read()`，当前剩余工作主要是继续用回归测试守住“页面不隐式塞补偿逻辑、selector 不回退到隐藏刷新、编程错误不被 view 层猜测分类”这三条边界。
+- 页面读路径的热点资源投影已经统一到 `project_manor_activity_for_read()`，而活动状态收口已从该入口移除；当前剩余工作主要是继续用回归测试守住“页面不隐式塞补偿逻辑、selector 不回退到隐藏刷新、编程错误不被 view 层猜测分类”这三条边界。
 - 类型门禁的后续增量工作将转入常规维护：`battle / mission / arena` 周边共享依赖仍可按依赖簇继续补齐注解并扩大 `disallow_untyped_defs = true` 严格名单，但这已不再视作阶段 3 未完成项。
 - 当前最高优先级主题已调整为“前端边界与基模板真实性治理”：
   - 先清理 `templates/base.html` 中的硬编码状态、伪入口与无责任归属的全局 UI 杂项，确保共享模板只承载真实、可解释、已实现的全局能力。

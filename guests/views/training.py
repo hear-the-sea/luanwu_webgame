@@ -103,10 +103,10 @@ class TrainView(LoginRequiredMixin, TemplateView):
         guest = form.cleaned_data["guest"]
         levels = form.cleaned_data["levels"]
         try:
-            train_guest(guest, levels)
-            eta = guest.training_complete_at
+            updated_guest = train_guest(guest, levels)
+            eta = updated_guest.training_complete_at
             eta_str = eta.strftime("%H:%M:%S") if eta else ""
-            messages.success(request, f"{guest.display_name} 正在升级，预计 {eta_str} 完成")
+            messages.success(request, f"{updated_guest.display_name} 正在升级，预计 {eta_str} 完成")
         except GameError as exc:
             messages.error(request, sanitize_error_message(exc))
         except DatabaseError as exc:

@@ -56,19 +56,19 @@ def get_work_page_context(manor: Any, *, current_tier: str, page: int) -> dict[s
         .order_by("work_template_id", "complete_at", "-started_at", "-id")
     )
 
-    assignment_by_work_template_id: dict[int, WorkAssignment] = {}
-    for assignment in sorted(
-        pending_assignments,
-        key=lambda item: (
-            0 if item.status == WorkAssignment.Status.WORKING else 1,
-            item.complete_at,
-            -item.id,
-        ),
-    ):
-        assignment_by_work_template_id.setdefault(assignment.work_template_id, assignment)
+    claimable_assignment_by_work_template_id: dict[int, WorkAssignment] = {}
+    working_assignment_by_work_template_id: dict[int, WorkAssignment] = {}
+    for assignment in pending_assignments:
+        if assignment.status == WorkAssignment.Status.COMPLETED:
+            claimable_assignment_by_work_template_id.setdefault(assignment.work_template_id, assignment)
+            continue
+        if assignment.status == WorkAssignment.Status.WORKING:
+            working_assignment_by_work_template_id.setdefault(assignment.work_template_id, assignment)
 
     for work in works:
-        work.active_assignment = assignment_by_work_template_id.get(work.id)
+        work.claimable_assignment = claimable_assignment_by_work_template_id.get(work.id)
+        work.working_assignment = working_assignment_by_work_template_id.get(work.id)
+        work.active_assignment = work.claimable_assignment or work.working_assignment
         work.eligible_idle_guests = [
             guest
             for guest in idle_guests

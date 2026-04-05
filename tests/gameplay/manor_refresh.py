@@ -4,6 +4,7 @@ import pytest
 from django_redis.exceptions import ConnectionInterrupted
 
 import gameplay.services.manor.core as manor_service
+import gameplay.services.resources as resource_service
 from gameplay.models import RaidRun, ScoutRecord
 from gameplay.services.manor.core import ensure_manor, project_manor_activity_for_read, refresh_manor_state
 
@@ -42,18 +43,13 @@ def test_refresh_manor_state_defaults_to_read_projection_only(django_user_model,
 
 
 @pytest.mark.django_db
-def test_project_manor_activity_for_read_runs_activity_refresh_with_read_projection(
-    django_user_model, settings, monkeypatch
-):
+def test_project_manor_activity_for_read_runs_resource_projection_only(django_user_model, settings, monkeypatch):
     user = django_user_model.objects.create_user(username="player_project_activity_read", password="pass12345")
     manor = ensure_manor(user)
 
     settings.MANOR_STATE_REFRESH_MIN_INTERVAL_SECONDS = 0
 
-    calls = {"finalize": 0, "project": 0, "mission": 0, "scout": 0, "raid": 0, "arena": 0}
-    monkeypatch.setattr(
-        manor_service, "finalize_upgrades", lambda _manor: calls.__setitem__("finalize", calls["finalize"] + 1)
-    )
+    calls = {"project": 0, "mission": 0, "scout": 0, "raid": 0, "arena": 0}
     monkeypatch.setattr(
         "gameplay.services.resources.project_resource_production_for_read",
         lambda _manor: calls.__setitem__("project", calls["project"] + 1),
@@ -77,7 +73,27 @@ def test_project_manor_activity_for_read_runs_activity_refresh_with_read_project
 
     project_manor_activity_for_read(manor)
 
-    assert calls == {"finalize": 1, "project": 1, "mission": 1, "scout": 1, "raid": 1, "arena": 1}
+    assert calls == {"project": 1, "mission": 0, "scout": 0, "raid": 0, "arena": 0}
+
+
+@pytest.mark.django_db
+def test_project_resource_production_for_read_does_not_refresh_work_assignments(django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(username="player_project_resource_read", password="pass12345")
+    manor = ensure_manor(user)
+
+    calls = {"resource": 0, "work": 0}
+    monkeypatch.setattr(
+        "gameplay.services.resources.sync_resource_production",
+        lambda _manor, persist=False: calls.__setitem__("resource", calls["resource"] + 1),
+    )
+    monkeypatch.setattr(
+        "gameplay.services.work.refresh_work_assignments",
+        lambda _manor: calls.__setitem__("work", calls["work"] + 1),
+    )
+
+    resource_service.project_resource_production_for_read(manor)
+
+    assert calls == {"resource": 1, "work": 0}
 
 
 @pytest.mark.django_db

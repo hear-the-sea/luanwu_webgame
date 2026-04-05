@@ -181,21 +181,15 @@ def project_manor_activity_for_read(
     prefer_async: bool = False,
 ) -> None:
     """
-    Apply the read-side manor projection and compensate due activity state.
+    Apply the read-side manor projection without mutating activity state.
 
-    This keeps page reads lightweight for resources while still finalizing
-    overdue mission/scout/raid/arena activity so guest availability and status
-    displays do not lag behind completed activity.
+    页面 GET 只能做读侧资源投影；mission / scout / raid / arena 的状态收口
+    必须继续走显式 refresh / finalize / task 入口，不能再挂回页面读取链路。
     """
+    del prefer_async
     from ..resources import project_resource_production_for_read
 
     project_resource_production_for_read(manor)
-    _run_manor_refresh(
-        manor,
-        prefer_async=prefer_async,
-        include_activity_refresh=True,
-        sync_resource_projection_func=_noop_manor_step,
-    )
 
 
 def finalize_building_upgrade(building: Building, now: datetime | None = None, send_notification: bool = True) -> bool:

@@ -319,20 +319,12 @@ def sync_resource_production(manor: Manor, *, persist: bool = True) -> None:
 
 def project_resource_production_for_read(manor: Manor) -> None:
     """
-    在读路径中投影庄园资源状态，并收口已到期的打工任务。
+    在读路径中投影庄园资源状态。
 
     这是页面读取入口应使用的显式接口，避免调用方直接依赖
     `sync_resource_production(..., persist=False)` 的实现细节。
-
-    除了资源投影以外，读路径还需要把已到期但尚未领奖的打工任务
-    统一收口为 `COMPLETED`，并释放门客回到空闲状态，避免门客在
-    倒计时结束后仍长期停留在“打工中”。
     """
     sync_resource_production(manor, persist=False)
-    # Delay import to avoid a circular dependency through services package init.
-    from .work import refresh_work_assignments
-
-    refresh_work_assignments(manor)
 
 
 def log_resource_gain(manor: Manor, payload: Dict[str, int], reason: str, note: str = "") -> None:

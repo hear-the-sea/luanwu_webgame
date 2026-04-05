@@ -11,7 +11,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
-from django.http import HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -150,7 +150,32 @@ def recall_work_view(request: HttpRequest, pk: int) -> HttpResponse:
     """召回打工中的门客"""
     redirect_url = _resolve_work_redirect_url(request)
     manor = get_manor(request.user)
-    assignment = get_object_or_404(WorkAssignment, id=pk, manor=manor, status=WorkAssignment.Status.WORKING)
+
+    try:
+        refresh_work_assignments(manor)
+    except DatabaseError as exc:
+        _handle_unexpected_work_error(
+            request,
+            exc,
+            log_message="Unexpected work refresh before recall: manor_id=%s user_id=%s assignment_id=%s",
+            log_args=(
+                getattr(manor, "id", None),
+                getattr(request.user, "id", None),
+                pk,
+            ),
+        )
+        return redirect(redirect_url)
+
+    assignment = get_object_or_404(
+        WorkAssignment.objects.select_related("guest", "work_template"),
+        id=pk,
+        manor=manor,
+    )
+    if assignment.status == WorkAssignment.Status.COMPLETED and not assignment.reward_claimed:
+        messages.info(request, f"{assignment.guest.display_name} 的打工已完成，请先领取报酬")
+        return redirect(redirect_url)
+    if assignment.status != WorkAssignment.Status.WORKING:
+        raise Http404("打工任务不存在")
 
     try:
         recall_guest_from_work(assignment)

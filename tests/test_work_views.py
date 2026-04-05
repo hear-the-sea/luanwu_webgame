@@ -79,7 +79,7 @@ class TestWorkViews:
         assert guest.display_name in body
         assert "打工中 (" not in body
 
-    def test_work_page_refreshes_overdue_assignment_and_releases_guest(self, manor_with_user):
+    def test_work_page_does_not_refresh_overdue_assignment_or_release_guest(self, manor_with_user):
         manor, client = manor_with_user
         guest, work_template = self._create_work_data(manor, "expired_assignment")
         guest.status = GuestStatus.WORKING
@@ -97,9 +97,9 @@ class TestWorkViews:
         assert response.status_code == 200
         assignment.refresh_from_db()
         guest.refresh_from_db()
-        assert assignment.status == WorkAssignment.Status.COMPLETED
+        assert assignment.status == WorkAssignment.Status.WORKING
         assert assignment.reward_claimed is False
-        assert guest.status == GuestStatus.IDLE
+        assert guest.status == GuestStatus.WORKING
 
     def test_work_tier_filter(self, manor_with_user):
         """打工等级过滤"""
@@ -208,6 +208,31 @@ class TestWorkViews:
         assert response.status_code == 302
         assert response.url == next_url
 
+    def test_recall_work_view_overdue_assignment_redirects_to_claim_reward(self, manor_with_user):
+        manor, client = manor_with_user
+        guest, work_template = self._create_work_data(manor, "recall_expired")
+        guest.status = GuestStatus.WORKING
+        guest.save(update_fields=["status"])
+        assignment = WorkAssignment.objects.create(
+            manor=manor,
+            guest=guest,
+            work_template=work_template,
+            status=WorkAssignment.Status.WORKING,
+            complete_at=timezone.now() - timezone.timedelta(minutes=1),
+        )
+
+        response = client.post(reverse("gameplay:recall_work", kwargs={"pk": assignment.pk}))
+
+        assert response.status_code == 302
+        assert response.url == reverse("gameplay:work")
+        assignment.refresh_from_db()
+        guest.refresh_from_db()
+        assert assignment.status == WorkAssignment.Status.COMPLETED
+        assert assignment.reward_claimed is False
+        assert guest.status == GuestStatus.IDLE
+        messages = [str(m) for m in get_messages(response.wsgi_request)]
+        assert any("已完成，请先领取报酬" in message for message in messages)
+
     def test_recall_work_redirects_back_to_current_page_when_next_provided(self, manor_with_user):
         manor, client = manor_with_user
         guest, work_template = self._create_work_data(manor, "recall_next", tier=WorkTemplate.Tier.SENIOR)
@@ -227,6 +252,45 @@ class TestWorkViews:
 
         assert response.status_code == 302
         assert response.url == next_url
+
+    def test_work_page_keeps_claim_entry_visible_when_same_work_has_new_working_assignment(self, manor_with_user):
+        manor, client = manor_with_user
+        completed_guest, work_template = self._create_work_data(manor, "claim_and_working")
+        working_guest_template = GuestTemplate.objects.create(
+            key=f"view_work_guest_tpl_claim_and_working_extra_{manor.id}",
+            name="打工门客模板claim_and_working_extra",
+            archetype=GuestArchetype.CIVIL,
+            rarity=GuestRarity.GRAY,
+        )
+        working_guest = Guest.objects.create(
+            manor=manor,
+            template=working_guest_template,
+            status=GuestStatus.WORKING,
+        )
+        completed_assignment = WorkAssignment.objects.create(
+            manor=manor,
+            guest=completed_guest,
+            work_template=work_template,
+            status=WorkAssignment.Status.COMPLETED,
+            complete_at=timezone.now() - timezone.timedelta(minutes=10),
+        )
+        WorkAssignment.objects.create(
+            manor=manor,
+            guest=working_guest,
+            work_template=work_template,
+            status=WorkAssignment.Status.WORKING,
+            complete_at=timezone.now() + timezone.timedelta(minutes=20),
+        )
+
+        response = client.get(reverse("gameplay:work"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert completed_guest.display_name in body
+        assert working_guest.display_name in body
+        assert reverse("gameplay:claim_work_reward", kwargs={"pk": completed_assignment.pk}) in body
+        assert "已完成，可领取报酬" in body
+        assert "当前另有门客正在打工" in body
 
     def test_claim_work_reward_redirects_back_to_current_page_when_next_provided(self, manor_with_user):
         manor, client = manor_with_user
@@ -371,7 +435,7 @@ class TestWorkViews:
             guest=guest,
             work_template=work_template,
             status=WorkAssignment.Status.WORKING,
-            complete_at=timezone.now(),
+            complete_at=timezone.now() + timezone.timedelta(minutes=5),
         )
 
         monkeypatch.setattr(

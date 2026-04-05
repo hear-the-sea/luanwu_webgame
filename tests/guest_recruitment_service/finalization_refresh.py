@@ -175,6 +175,97 @@ def test_bulk_finalize_candidates_marks_missing_candidates_as_failed(django_user
 
 
 @pytest.mark.django_db
+def test_bulk_finalize_candidates_deduplicates_repeated_candidate_input(django_user_model):
+    user = django_user_model.objects.create_user(
+        username="bulk_finalize_duplicate_user",
+        password="pass123",
+        email="bulk_finalize_duplicate_user@test.local",
+    )
+    manor = ensure_manor(user)
+
+    template = GuestTemplate.objects.create(
+        key="bulk_finalize_duplicate_tpl",
+        name="批量重复模板",
+        archetype="civil",
+        rarity="gray",
+        base_attack=60,
+        base_intellect=80,
+        base_defense=50,
+        base_agility=40,
+        base_luck=30,
+        base_hp=500,
+    )
+    pool = RecruitmentPool.objects.create(
+        key="bulk_finalize_duplicate_pool",
+        name="批量重复卡池",
+        cost={},
+        tier=RecruitmentPool.Tier.CUNMU,
+        draw_count=1,
+    )
+    candidate = RecruitmentCandidate.objects.create(
+        manor=manor,
+        pool=pool,
+        template=template,
+        display_name="重复候选",
+        rarity="gray",
+        archetype="civil",
+    )
+
+    created, failed = recruitment_guest_service.bulk_finalize_candidates([candidate, candidate])
+
+    assert len(created) == 1
+    assert failed == []
+    assert RecruitmentRecord.objects.filter(manor=manor).count() == 1
+    assert Guest.objects.filter(manor=manor).count() == 1
+    assert RecruitmentCandidate.objects.filter(pk=candidate.pk).exists() is False
+
+
+@pytest.mark.django_db
+def test_bulk_finalize_candidates_deduplicates_repeated_stale_candidate_input(django_user_model):
+    user = django_user_model.objects.create_user(
+        username="bulk_finalize_duplicate_stale_user",
+        password="pass123",
+        email="bulk_finalize_duplicate_stale_user@test.local",
+    )
+    manor = ensure_manor(user)
+
+    template = GuestTemplate.objects.create(
+        key="bulk_finalize_duplicate_stale_tpl",
+        name="批量重复失效模板",
+        archetype="civil",
+        rarity="gray",
+        base_attack=60,
+        base_intellect=80,
+        base_defense=50,
+        base_agility=40,
+        base_luck=30,
+        base_hp=500,
+    )
+    pool = RecruitmentPool.objects.create(
+        key="bulk_finalize_duplicate_stale_pool",
+        name="批量重复失效卡池",
+        cost={},
+        tier=RecruitmentPool.Tier.CUNMU,
+        draw_count=1,
+    )
+    candidate = RecruitmentCandidate.objects.create(
+        manor=manor,
+        pool=pool,
+        template=template,
+        display_name="重复失效候选",
+        rarity="gray",
+        archetype="civil",
+    )
+    stale_candidate = RecruitmentCandidate.objects.get(pk=candidate.pk)
+    RecruitmentCandidate.objects.filter(pk=candidate.pk).delete()
+
+    created, failed = recruitment_guest_service.bulk_finalize_candidates([stale_candidate, stale_candidate])
+
+    assert created == []
+    assert [failed_candidate.id for failed_candidate in failed] == [candidate.id]
+
+
+@pytest.mark.django_db
 def test_bulk_finalize_candidates_rejects_unpersisted_candidate():
     with pytest.raises(AssertionError, match="invalid recruitment candidate id"):
         recruitment_guest_service.bulk_finalize_candidates([SimpleNamespace(id=None, manor_id=1)])

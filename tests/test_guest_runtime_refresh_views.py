@@ -216,7 +216,7 @@ def test_roster_view_loads_external_page_script_without_inline_roster_logic(game
 
 
 @pytest.mark.django_db
-def test_roster_view_finalizes_due_mission_before_render(game_data, django_user_model, settings):
+def test_roster_view_does_not_finalize_due_mission_on_get(game_data, django_user_model, settings):
     user = django_user_model.objects.create_user(username="roster_due_mission", password="pass123")
     manor = ensure_manor(user)
     guest = _create_guest(manor, prefix="roster_due_mission")
@@ -243,13 +243,13 @@ def test_roster_view_finalizes_due_mission_before_render(game_data, django_user_
     assert response.status_code == 200
     guest.refresh_from_db(fields=["status"])
     run.refresh_from_db(fields=["status", "completed_at"])
-    assert guest.status == GuestStatus.IDLE
-    assert run.status == MissionRun.Status.COMPLETED
-    assert run.completed_at is not None
+    assert guest.status == GuestStatus.DEPLOYED
+    assert run.status == MissionRun.Status.ACTIVE
+    assert run.completed_at is None
 
 
 @pytest.mark.django_db
-def test_home_view_finalizes_due_raid_before_render(game_data, django_user_model, settings):
+def test_home_view_does_not_finalize_due_raid_on_get(game_data, django_user_model, settings):
     attacker = django_user_model.objects.create_user(username="home_due_raid", password="pass123")
     defender = django_user_model.objects.create_user(username="home_due_raid_target", password="pass123")
     manor = ensure_manor(attacker)
@@ -277,13 +277,13 @@ def test_home_view_finalizes_due_raid_before_render(game_data, django_user_model
     assert response.status_code == 200
     guest.refresh_from_db(fields=["status"])
     run.refresh_from_db(fields=["status", "completed_at"])
-    assert guest.status == GuestStatus.IDLE
-    assert run.status == RaidRun.Status.COMPLETED
-    assert run.completed_at is not None
+    assert guest.status == GuestStatus.DEPLOYED
+    assert run.status == RaidRun.Status.RETREATED
+    assert run.completed_at is None
 
 
 @pytest.mark.django_db
-def test_roster_view_finalizes_due_arena_tournament_before_render(game_data, django_user_model, settings):
+def test_roster_view_does_not_finalize_due_arena_tournament_on_get(game_data, django_user_model, settings):
     user = django_user_model.objects.create_user(username="roster_due_arena", password="pass123")
     manor = ensure_manor(user)
     guest = _create_guest(manor, prefix="roster_due_arena")
@@ -312,7 +312,7 @@ def test_roster_view_finalizes_due_arena_tournament_before_render(game_data, dja
     guest.refresh_from_db(fields=["status"])
     tournament.refresh_from_db(fields=["status", "ended_at", "winner_entry_id"])
     entry.refresh_from_db(fields=["status", "final_rank"])
-    assert guest.status == GuestStatus.IDLE
-    assert tournament.status == ArenaTournament.Status.COMPLETED
-    assert tournament.ended_at is not None
-    assert entry.status == ArenaEntry.Status.WINNER
+    assert guest.status == GuestStatus.ARENA
+    assert tournament.status == ArenaTournament.Status.RUNNING
+    assert tournament.ended_at is None
+    assert entry.status == ArenaEntry.Status.REGISTERED

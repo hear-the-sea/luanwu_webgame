@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 import pytest
 from django.db import DatabaseError
 from django.urls import reverse
+from django.utils import timezone
 
 from core.exceptions import GameError, GuestItemOwnershipError, InvalidAllocationError
 from gameplay.models import ItemTemplate
@@ -184,6 +187,22 @@ def test_train_view_value_error_bubbles_up(django_user_model, monkeypatch):
 
     with pytest.raises(ValueError, match="legacy train"):
         client.post(reverse("guests:train"), {"guest": str(guest.pk), "levels": "1"})
+
+
+@pytest.mark.django_db
+def test_train_view_success_message_uses_updated_eta(django_user_model, monkeypatch):
+    client, manor = login_client(django_user_model, prefix="train_success_eta")
+    guest = create_guest(manor, prefix="train_success_eta")
+    expected_eta = timezone.now() + timedelta(minutes=5)
+    updated_guest = guest
+    updated_guest.training_complete_at = expected_eta
+
+    monkeypatch.setattr("guests.views.training.train_guest", lambda *_a, **_k: updated_guest)
+
+    response = client.post(reverse("guests:train"), {"guest": str(guest.pk), "levels": "1"})
+
+    assert response.status_code == 302
+    assert any(expected_eta.strftime("%H:%M:%S") in message for message in messages(response))
 
 
 @pytest.mark.django_db
