@@ -234,8 +234,11 @@ def test_home_page_shows_active_guild_pvp_event_with_retreat_for_manage_member(c
 
     body = response.content.decode("utf-8")
     assert f"帮会进攻：{defender_guild.name}" in body
+    assert f"正在向{defender_guild.name}进军" in body
+    assert "预计到达" in body
     assert reverse("guilds:pvp_retreat") in body
     assert f'value="{run.id}"' in body
+    assert ">撤回<" in body
     assert reverse("guilds:pvp") in body
 
 
@@ -268,4 +271,45 @@ def test_home_page_shows_incoming_guild_pvp_event_link(client, django_user_model
 
     body = response.content.decode("utf-8")
     assert f"帮会来袭：{attacker_guild.name}" in body
+    assert "敌方帮会正在向本帮进军" in body
+    assert "预计到达" in body
+    assert reverse("guilds:pvp") in body
+
+
+@pytest.mark.django_db
+def test_home_page_shows_projected_status_attributes_for_overdue_incoming_guild_pvp_run(
+    client,
+    django_user_model,
+):
+    defender_user = django_user_model.objects.create_user(username="guild_home_pvp_overdue_user", password="pass12345")
+    ensure_manor(defender_user)
+    defender_guild = Guild.objects.create(name="首页帮会PVP过期守方", founder=defender_user, is_active=True)
+    GuildMember.objects.create(guild=defender_guild, user=defender_user, position="member", is_active=True)
+
+    attacker_user = django_user_model.objects.create_user(
+        username="guild_home_pvp_overdue_target", password="pass12345"
+    )
+    ensure_manor(attacker_user)
+    attacker_guild = Guild.objects.create(name="首页帮会PVP过期来袭", founder=attacker_user, is_active=True)
+    GuildMember.objects.create(guild=attacker_guild, user=attacker_user, position="leader", is_active=True)
+
+    return_at = timezone.now() + timedelta(minutes=6)
+    GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_user.guild_membership,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        travel_time=600,
+        battle_at=timezone.now() - timedelta(seconds=5),
+        return_at=return_at,
+    )
+    assert client.login(username="guild_home_pvp_overdue_user", password="pass12345")
+
+    response = client.get("/")
+
+    body = response.content.decode("utf-8")
+    assert f"帮会来袭：{attacker_guild.name}" in body
+    assert "敌方帮会已抵达，正在交战" in body
+    assert 'title="预计结束 ' in body
     assert reverse("guilds:pvp") in body

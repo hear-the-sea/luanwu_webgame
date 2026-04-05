@@ -44,6 +44,14 @@ def _create_guest(*, manor, template: GuestTemplate, name: str) -> Guest:
     )
 
 
+def _extract_target_row(body: str, guild_id: int) -> str:
+    marker = f'data-target-id="{guild_id}"'
+    start = body.index(marker)
+    start = body.rfind("<label", 0, start)
+    end = body.index("</label>", start) + len("</label>")
+    return body[start:end]
+
+
 @pytest.fixture
 def guild_member_client(django_user_model):
     user, _manor = _create_user_with_manor(django_user_model, "guild_pvp_view_leader")
@@ -107,6 +115,7 @@ def test_guild_pvp_page_uses_list_detail_layout_and_hides_old_hint_blocks(guild_
     assert "今日主动进攻" not in body
     assert "当前出征" not in body
     assert "来袭预警" not in body
+    assert "基础阵容预计" in body
     assert 'type="radio"' in body
     assert 'name="defender_guild_id"' in body
 
@@ -162,6 +171,153 @@ def test_guild_pvp_page_does_not_process_due_runs_on_get(guild_member_client, mo
 
     assert response.status_code == 200
     assert "帮会PVP" in response.content.decode("utf-8")
+
+
+@pytest.mark.django_db
+def test_guild_pvp_page_renders_projected_status_attributes_for_target_rows(guild_member_client, django_user_model):
+    client, _user, guild = guild_member_client
+
+    attackable_user, _attackable_manor = _create_user_with_manor(django_user_model, "guild_pvp_projected_attackable")
+    attackable_guild = Guild.objects.create(
+        name="可投影目标帮",
+        founder=attackable_user,
+        is_active=True,
+        level=guild.level,
+        silver=50000,
+    )
+    GuildMember.objects.create(guild=attackable_guild, user=attackable_user, position="leader", is_active=True)
+
+    blocked_user, _blocked_manor = _create_user_with_manor(django_user_model, "guild_pvp_projected_blocked")
+    blocked_guild = Guild.objects.create(
+        name="受保护目标帮",
+        founder=blocked_user,
+        is_active=True,
+        level=guild.level + 1,
+        silver=50000,
+        defeat_protection_until=timezone.now() + timedelta(hours=1),
+    )
+    GuildMember.objects.create(guild=blocked_guild, user=blocked_user, position="leader", is_active=True)
+
+    response = client.get(reverse("guilds:pvp"))
+    body = response.content.decode("utf-8")
+
+    attackable_row = _extract_target_row(body, attackable_guild.id)
+    blocked_row = _extract_target_row(body, blocked_guild.id)
+
+    assert response.status_code == 200
+    assert "基础阵容预计" in body
+    assert attackable_row.count('data-display-status="attackable"') == 1
+    assert 'data-target-status="attackable"' in attackable_row
+    assert "基础阵容预计" in attackable_row
+    assert 'value="%s"' % attackable_guild.id in attackable_row
+    assert "checked" in attackable_row
+    assert "disabled" not in attackable_row
+
+    assert blocked_row.count('data-display-status="blocked"') == 1
+    assert 'data-target-status="blocked"' in blocked_row
+    assert "基础阵容预计" in blocked_row
+    assert "is-blocked" in blocked_row
+    assert "对方处于战败保护期" in blocked_row
+    assert 'value="%s"' % blocked_guild.id in blocked_row
+    assert "disabled" in blocked_row
+    assert "checked" not in blocked_row
+
+
+@pytest.mark.django_db
+def test_guild_pvp_page_does_not_mark_blocked_default_target_as_selected(guild_member_client, django_user_model):
+    client, _user, guild = guild_member_client
+
+    blocked_user, _blocked_manor = _create_user_with_manor(django_user_model, "guild_pvp_blocked_default_target")
+    blocked_guild = Guild.objects.create(
+        name="唯一受保护目标帮",
+        founder=blocked_user,
+        is_active=True,
+        level=guild.level,
+        silver=50000,
+        defeat_protection_until=timezone.now() + timedelta(hours=1),
+    )
+    GuildMember.objects.create(guild=blocked_guild, user=blocked_user, position="leader", is_active=True)
+
+    response = client.get(reverse("guilds:pvp"))
+    body = response.content.decode("utf-8")
+    blocked_row = _extract_target_row(body, blocked_guild.id)
+
+    assert response.status_code == 200
+    assert 'data-display-status="blocked"' in blocked_row
+    assert "is-blocked" in blocked_row
+    assert "is-active" not in blocked_row
+    assert "is-selected-target" not in blocked_row
+    assert "disabled" in blocked_row
+    assert "checked" not in blocked_row
+
+
+@pytest.mark.django_db
+def test_get_guild_pvp_page_context_returns_projected_target_card_and_runs(django_user_model):
+    user, _manor = _create_user_with_manor(django_user_model, "guild_pvp_projected_context_leader")
+    guild = Guild.objects.create(name="投影进攻帮", founder=user, is_active=True, level=5, silver=50000)
+    member = GuildMember.objects.create(guild=guild, user=user, position="leader", is_active=True)
+
+    target_user, _target_manor = _create_user_with_manor(django_user_model, "guild_pvp_projected_target")
+    target_guild = Guild.objects.create(name="投影目标帮", founder=target_user, is_active=True, level=6, silver=50000)
+    GuildMember.objects.create(guild=target_guild, user=target_user, position="leader", is_active=True)
+
+    incoming_user, _incoming_manor = _create_user_with_manor(django_user_model, "guild_pvp_projected_incoming")
+    incoming_guild = Guild.objects.create(
+        name="投影来袭帮", founder=incoming_user, is_active=True, level=6, silver=50000
+    )
+    incoming_member = GuildMember.objects.create(
+        guild=incoming_guild, user=incoming_user, position="leader", is_active=True
+    )
+
+    now = timezone.now()
+    active_run = GuildRaidRun.objects.create(
+        attacker_guild=guild,
+        defender_guild=target_guild,
+        started_by=member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        battle_at=now + timedelta(seconds=90),
+        return_at=now + timedelta(seconds=210),
+    )
+    incoming_run = GuildRaidRun.objects.create(
+        attacker_guild=incoming_guild,
+        defender_guild=guild,
+        started_by=incoming_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        battle_at=now - timedelta(seconds=15),
+        return_at=now + timedelta(seconds=120),
+    )
+
+    from guilds.services.guild_pvp_queries import get_guild_pvp_page_context
+
+    context = get_guild_pvp_page_context(member, now=now)
+
+    projected_target = next(target for target in context["targets"] if target.guild.id == target_guild.id)
+    projected_active_run = context["active_run"]
+    projected_incoming_run = next(run for run in context["incoming_runs"] if run.run.id == incoming_run.id)
+
+    assert not isinstance(projected_target, dict)
+    assert projected_target.status_key == "attackable"
+    assert projected_target.travel_time_seconds > 0
+    assert projected_target.travel_projection_label == f"基础阵容预计 {projected_target.travel_time_seconds} 秒"
+    assert not hasattr(projected_target, "can_attack")
+    assert context["default_target_id"] == target_guild.id
+    assert context["target_filter_counts"] == {"all": 2, "attackable": 2, "blocked": 0}
+
+    assert projected_active_run.run.id == active_run.id
+    assert projected_active_run.display_status_key == "marching"
+    assert projected_active_run.display_hint == f"正在向{target_guild.name}进军"
+    assert projected_active_run.display_eta_at == active_run.battle_at
+    assert not hasattr(projected_active_run, "id")
+    assert not hasattr(projected_active_run, "next_state_at")
+
+    assert projected_incoming_run.run.id == incoming_run.id
+    assert projected_incoming_run.display_status_key == "arrived"
+    assert projected_incoming_run.display_hint == "敌方帮会已抵达，正在交战"
+    assert projected_incoming_run.display_eta_at == incoming_run.return_at
+    assert not hasattr(projected_incoming_run, "id")
+    assert not hasattr(projected_incoming_run, "next_state_at")
 
 
 @pytest.mark.django_db

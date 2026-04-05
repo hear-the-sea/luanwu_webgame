@@ -5,10 +5,17 @@ from typing import Any
 from django.db.models import Q
 from django.utils import timezone
 
-from gameplay.constants import REGION_CHOICES, REGION_DICT
+from gameplay.constants import REGION_CHOICES
 
 from .. import constants as guild_constants
 from ..models import Guild, GuildBattleLineupEntry, GuildMember, GuildRaidRun, GuildTroopStorage
+from .guild_pvp_display import (
+    GuildPvpRunDisplay,
+    GuildPvpTargetCardDisplay,
+    project_active_guild_pvp_run,
+    project_guild_pvp_target_card,
+    project_incoming_guild_pvp_run,
+)
 from .guild_raid_rules import calculate_guild_raid_travel_time, can_attack_guild, get_effective_pvp_counter_state
 from .technology import get_guild_dispatch_capacity
 
@@ -20,24 +27,23 @@ IN_FLIGHT_GUILD_RAID_STATUSES = (
 )
 
 
-def _build_target_card(*, guild: Guild, target: Guild, lineup_guests: list[Any], now) -> dict[str, Any]:
+def _project_target_card(
+    *,
+    guild: Guild,
+    target: Guild,
+    lineup_guests: list[Any],
+    now,
+) -> tuple[GuildPvpTargetCardDisplay, bool]:
     can_attack, blocked_reason = can_attack_guild(attacker_guild=guild, defender_guild=target, now=now)
-    status_key = "attackable" if can_attack else "blocked"
-    founder_manor = getattr(getattr(target, "founder", None), "manor", None)
-    region_key = getattr(founder_manor, "region", "")
-    region_display = REGION_DICT.get(region_key, region_key or "未知区域")
-    return {
-        "guild": target,
-        "can_attack": can_attack,
-        "blocked_reason": blocked_reason,
-        "status_key": status_key,
-        "region_key": region_key,
-        "region_display": region_display,
-        "status_label": "可进攻" if can_attack else "暂不可进攻",
-        "detail_message": blocked_reason or "符合当前条件，可作为本次进攻目标。",
-        "search_text": f"{target.name} {region_display} lv {target.level} {status_key}",
-        "travel_time_seconds": calculate_guild_raid_travel_time(lineup_guests, {}),
-    }
+    return (
+        project_guild_pvp_target_card(
+            target,
+            can_attack=can_attack,
+            blocked_reason=blocked_reason,
+            travel_time_seconds=calculate_guild_raid_travel_time(lineup_guests, {}),
+        ),
+        can_attack,
+    )
 
 
 def get_guild_pvp_page_context(member: GuildMember, *, now=None) -> dict[str, Any]:
@@ -63,33 +69,50 @@ def get_guild_pvp_page_context(member: GuildMember, *, now=None) -> dict[str, An
         .select_related("founder__manor")
         .order_by("level", "id")
     )
-    targets = [
-        _build_target_card(guild=guild, target=target, lineup_guests=lineup_guests, now=resolved_now)
+    projected_targets = [
+        _project_target_card(guild=guild, target=target, lineup_guests=lineup_guests, now=resolved_now)
         for target in target_guilds
     ]
-    default_target = next((target for target in targets if target["can_attack"]), targets[0] if targets else None)
+    targets = [projected_target for projected_target, _can_attack in projected_targets]
+    default_target = next(
+        (projected_target for projected_target, can_attack in projected_targets if can_attack),
+        projected_targets[0][0] if projected_targets else None,
+    )
     target_filter_counts = {
         "all": len(targets),
-        "attackable": sum(1 for target in targets if target["can_attack"]),
-        "blocked": sum(1 for target in targets if not target["can_attack"]),
+        "attackable": sum(1 for _projected_target, can_attack in projected_targets if can_attack),
+        "blocked": sum(1 for _projected_target, can_attack in projected_targets if not can_attack),
     }
-    active_run = (
+    active_run_row = (
         GuildRaidRun.objects.select_related("defender_guild", "started_by__user")
         .filter(attacker_guild=guild, status__in=IN_FLIGHT_GUILD_RAID_STATUSES)
         .filter(Q(return_at__isnull=True) | Q(return_at__gt=resolved_now))
         .order_by("-started_at", "-id")
         .first()
     )
-    incoming_runs = list(
+    active_run: GuildPvpRunDisplay | None = None
+    if active_run_row is not None:
+        active_run = project_active_guild_pvp_run(active_run_row, now=resolved_now, can_manage=member.can_manage)
+    incoming_run_rows = list(
         GuildRaidRun.objects.select_related("attacker_guild", "started_by__user")
-        .filter(defender_guild=guild, status=GuildRaidRun.Status.MARCHING, battle_at__gt=resolved_now)
-        .order_by("battle_at", "id")
+        .filter(
+            defender_guild=guild,
+        )
+        .filter(
+            Q(status=GuildRaidRun.Status.MARCHING)
+            | Q(status=GuildRaidRun.Status.BATTLING, return_at__isnull=True)
+            | Q(status=GuildRaidRun.Status.BATTLING, return_at__gt=resolved_now)
+        )
+        .order_by("battle_at", "return_at", "id")
     )
+    incoming_runs: list[GuildPvpRunDisplay] = [
+        project_incoming_guild_pvp_run(run, now=resolved_now) for run in incoming_run_rows
+    ]
     return {
         "guild": guild,
         "member": member,
         "targets": targets,
-        "default_target_id": default_target["guild"].id if default_target else None,
+        "default_target_id": default_target.guild.id if default_target else None,
         "target_filter_counts": target_filter_counts,
         "region_filter_choices": [{"value": value, "label": label} for value, label in REGION_CHOICES],
         "active_run": active_run,

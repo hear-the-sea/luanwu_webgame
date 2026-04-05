@@ -118,26 +118,26 @@
                 {% if active_guild_pvp_run %}
                 <tr>
                     <td>
-                        <strong>帮会进攻：{{ active_guild_pvp_run.defender_guild.name }}</strong>
-                        <div class="muted-text">{{ active_guild_pvp_run.get_status_display }}</div>
+                        <strong>帮会进攻：{{ active_guild_pvp_run.run.defender_guild.name }}</strong>
+                        <div class="muted-text">{{ active_guild_pvp_run.display_hint }}</div>
                     </td>
                     <td>
-                        {% if active_guild_pvp_run.next_state_at %}
+                        {% if active_guild_pvp_run.display_eta_at %}
                         <span class="countdown"
-                              data-countdown="{{ active_guild_pvp_run.next_state_at|date:'c' }}"
+                              data-countdown="{{ active_guild_pvp_run.display_eta_at|date:'c' }}"
                               data-format="zh"
                               data-refresh="1"
-                              title="预计 {{ active_guild_pvp_run.next_state_at|date:'Y-m-d H:i:s' }}">计算中</span>
+                              title="预计{{ active_guild_pvp_run.display_eta_label }} {{ active_guild_pvp_run.display_eta_at|date:'Y-m-d H:i:s' }}">计算中</span>
                         {% else %}
                         <span class="muted-text">等待更新</span>
                         {% endif %}
                     </td>
                     <td>
-                        {% if active_guild_pvp_run.can_retreat_from_home %}
+                        {% if active_guild_pvp_run.can_retreat %}
                         <form method="post" action="{% url 'guilds:pvp_retreat' %}">
                             {% csrf_token %}
-                            <input type="hidden" name="run_id" value="{{ active_guild_pvp_run.id }}">
-                            <button type="submit" class="btn-secondary btn-sm">撤回</button>
+                            <input type="hidden" name="run_id" value="{{ active_guild_pvp_run.run.id }}">
+                            <button type="submit" class="btn-secondary btn-sm">{{ active_guild_pvp_run.action_label }}</button>
                         </form>
                         {% else %}
                         <a href="{% url 'guilds:pvp' %}" class="btn-secondary btn-sm">查看</a>
@@ -149,15 +149,19 @@
                 {% for run in incoming_guild_pvp_runs %}
                 <tr>
                     <td>
-                        <strong>帮会来袭：{{ run.attacker_guild.name }}</strong>
-                        <div class="muted-text">敌方帮会正在向本帮进军</div>
+                        <strong>帮会来袭：{{ run.run.attacker_guild.name }}</strong>
+                        <div class="muted-text">{{ run.display_hint }}</div>
                     </td>
                     <td>
+                        {% if run.display_eta_at %}
                         <span class="countdown"
-                              data-countdown="{{ run.battle_at|date:'c' }}"
+                              data-countdown="{{ run.display_eta_at|date:'c' }}"
                               data-format="zh"
                               data-refresh="1"
-                              title="预计到达 {{ run.battle_at|date:'Y-m-d H:i:s' }}">计算中</span>
+                              title="预计{{ run.display_eta_label }} {{ run.display_eta_at|date:'Y-m-d H:i:s' }}">计算中</span>
+                        {% else %}
+                        <span class="muted-text">等待更新</span>
+                        {% endif %}
                     </td>
                     <td>
                         <a href="{% url 'guilds:pvp' %}" class="btn-secondary btn-sm">查看</a>

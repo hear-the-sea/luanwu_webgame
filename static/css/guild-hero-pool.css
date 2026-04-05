@@ -491,14 +491,31 @@
     }
 
     .tw-guild-slot-actions,
-    .ghp-slot-tab-row,
-    .ghp-chip-row {
+    .ghp-slot-tab-row {
         flex-direction: column;
     }
 
+    .ghp-chip-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.4rem;
+    }
+
     .tw-guild-slot-actions > *,
-    .ghp-slot-tab,
-    .ghp-chip {
+    .ghp-slot-tab {
         width: 100%;
+    }
+
+    .ghp-chip {
+        min-width: 0;
+        width: 100%;
+        padding-inline: 0.4rem;
+        font-size: 0.84rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .ghp-chip-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }

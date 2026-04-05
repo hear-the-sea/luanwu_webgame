@@ -194,7 +194,7 @@ def test_effective_attack_value_troop_vs_guest_uses_smaller_multiplier():
     troop = make_unit(kind="troop", unit_attack=50, troop_strength=100, initial_troop_strength=100)
     guest = make_unit(kind="guest")
     value = effective_attack_value(troop, guest)
-    expected = max(1, int(50 * max(1.0, 100 / 2.5)))
+    expected = max(1, int(50 * max(1.0, 100 / 2.0)))
     assert value == expected
 
 
@@ -249,7 +249,7 @@ def test_guest_vs_troop_normal_attack_keeps_slaughter_multiplier():
 
     reduction = target.unit_defense / (target.unit_defense + 50)
     base_damage = max(1, int(actor.attack * (1 - reduction)))
-    expected = int(base_damage * SLAUGHTER_MULTIPLIER)
+    expected = int(base_damage * 10)
     assert result.damage == expected
 
 

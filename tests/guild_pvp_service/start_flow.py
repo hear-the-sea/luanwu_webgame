@@ -360,3 +360,47 @@ def test_prepare_guild_pvp_read_state_processes_due_incoming_marching_run(django
     prepare_guild_pvp_read_state(defender_guild, now=now)
 
     assert processed_run_ids == [due_run.id]
+
+
+@pytest.mark.django_db
+def test_get_guild_pvp_page_context_keeps_overdue_and_battling_incoming_runs_visible(django_user_model):
+    defender_guild, defender_member, _defender_manor = create_guild_with_leader(django_user_model, "来袭守方")
+    attacker_guild, attacker_member, attacker_manor = create_guild_with_leader(django_user_model, "来袭攻方")
+    attacker_guest = create_guest(
+        manor=attacker_manor,
+        template=create_template("guild_pvp_incoming_visibility_tpl"),
+        name="来袭门客",
+    )
+    now = timezone.now()
+    overdue_marching = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        guest_ids=[attacker_guest.id],
+        guest_snapshots=build_guest_battle_snapshots([attacker_guest], include_identity=True),
+        troop_loadout={},
+        travel_time=300,
+        battle_at=now - timedelta(seconds=5),
+        return_at=now + timedelta(seconds=295),
+    )
+    battling = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.BATTLING,
+        selected_guest_count=1,
+        guest_ids=[attacker_guest.id],
+        guest_snapshots=build_guest_battle_snapshots([attacker_guest], include_identity=True),
+        troop_loadout={},
+        travel_time=300,
+        battle_at=now - timedelta(seconds=30),
+        return_at=now + timedelta(seconds=270),
+    )
+
+    from guilds.services.guild_pvp_queries import get_guild_pvp_page_context
+
+    context = get_guild_pvp_page_context(defender_member, now=now)
+
+    assert {run.run.id for run in context["incoming_runs"]} == {overdue_marching.id, battling.id}

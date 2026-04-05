@@ -191,6 +191,17 @@ def request_retreat(*, run: GuildMissionRun, operator) -> None:
     raise GuildValidationError("当前任务不可撤回")
 
 
+def can_retreat(run: GuildMissionRun, *, now=None) -> bool:
+    if run.status != GuildMissionRun.Status.ACTIVE:
+        return False
+
+    resolved_now = now or timezone.now()
+    return_at = getattr(run, "return_at", None)
+    if return_at is None:
+        return False
+    return return_at > resolved_now
+
+
 def _resolve_guild_mission_attacker_limit(run: GuildMissionRun) -> int:
     candidate = int(getattr(run, "selected_guest_count", 0) or len(getattr(run, "guest_snapshots", []) or []))
     return max(1, candidate)

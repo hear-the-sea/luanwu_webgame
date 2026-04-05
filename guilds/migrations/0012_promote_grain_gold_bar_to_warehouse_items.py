@@ -53,23 +53,36 @@ def forward_promote_resources(apps, schema_editor):
             Guild.objects.filter(pk=guild.pk).update(grain=0, gold_bar=0)
 
 
+def _load_resource_row(GuildWarehouse, guild_id, item_key):
+    return GuildWarehouse.objects.filter(guild_id=guild_id, item_key=item_key).first()
+
+
+def _assert_safe_to_reverse_resource_row(resource_row, item_key):
+    if resource_row is None:
+        return
+
+    quantity = int(resource_row.quantity or 0)
+    total_produced = int(resource_row.total_produced or 0)
+    total_exchanged = int(resource_row.total_exchanged or 0)
+    if total_exchanged > 0 or total_produced != quantity:
+        raise RuntimeError(
+            f"cannot safely reverse promoted resource row: item_key={item_key} "
+            f"quantity={quantity} total_produced={total_produced} total_exchanged={total_exchanged}"
+        )
+
+
 def backward_restore_resources(apps, schema_editor):
     Guild = apps.get_model("guilds", "Guild")
     GuildWarehouse = apps.get_model("guilds", "GuildWarehouse")
 
     for guild in Guild.objects.all().iterator():
-        grain_quantity = (
-            GuildWarehouse.objects.filter(guild_id=guild.id, item_key=GRAIN_ITEM_KEY)
-            .values_list("quantity", flat=True)
-            .first()
-            or 0
-        )
-        gold_bar_quantity = (
-            GuildWarehouse.objects.filter(guild_id=guild.id, item_key=GOLD_BAR_ITEM_KEY)
-            .values_list("quantity", flat=True)
-            .first()
-            or 0
-        )
+        grain_row = _load_resource_row(GuildWarehouse, guild.id, GRAIN_ITEM_KEY)
+        gold_bar_row = _load_resource_row(GuildWarehouse, guild.id, GOLD_BAR_ITEM_KEY)
+        _assert_safe_to_reverse_resource_row(grain_row, GRAIN_ITEM_KEY)
+        _assert_safe_to_reverse_resource_row(gold_bar_row, GOLD_BAR_ITEM_KEY)
+
+        grain_quantity = int((grain_row.quantity if grain_row is not None else 0) or 0)
+        gold_bar_quantity = int((gold_bar_row.quantity if gold_bar_row is not None else 0) or 0)
 
         if grain_quantity or gold_bar_quantity:
             Guild.objects.filter(pk=guild.pk).update(grain=grain_quantity, gold_bar=gold_bar_quantity)

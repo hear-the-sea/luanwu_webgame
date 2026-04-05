@@ -43,7 +43,7 @@
                     <div class="gpvp-panel-head">
                         <div>
                             <h2>选择目标帮会</h2>
-                            <p class="caption m-0">按名称、区域和状态筛选后，点击帮会即可选中。</p>
+                            <p class="caption m-0">按名称、区域和状态筛选后，点击帮会即可选中。目标时间按当前门客基础阵容预估，未计入右侧护院调整。</p>
                         </div>
                     </div>
 
@@ -72,10 +72,11 @@
                     <div class="gpvp-target-list gpvp-scroll-panel" data-target-list>
                         {% for target in targets %}
                         <label
-                            class="gpvp-target-row{% if target.guild.id == default_target_id %} is-active is-selected-target{% endif %}{% if not target.can_attack %} is-blocked{% endif %}"
+                            class="gpvp-target-row{% if target.guild.id == default_target_id and target.status_key == 'attackable' %} is-active is-selected-target{% endif %}{% if target.status_key != 'attackable' %} is-blocked{% endif %}"
                             data-target-option
                             data-target-id="{{ target.guild.id }}"
                             data-target-status="{{ target.status_key }}"
+                            data-display-status="{{ target.status_key }}"
                             data-target-region="{{ target.region_key }}"
                             data-target-search="{{ target.search_text|lower }}"
                         >
@@ -85,20 +86,20 @@
                                 value="{{ target.guild.id }}"
                                 class="gpvp-target-radio"
                                 data-target-radio
-                                {% if target.guild.id == default_target_id and target.can_attack %}checked{% endif %}
-                                {% if not target.can_attack %}disabled{% endif %}
+                                {% if target.guild.id == default_target_id and target.status_key == 'attackable' %}checked{% endif %}
+                                {% if target.status_key != 'attackable' %}disabled{% endif %}
                             >
                             <div class="gpvp-target-row-main">
                                 <strong>{{ target.guild.name }}</strong>
                                 <span class="gpvp-target-badge">Lv {{ target.guild.level }}</span>
                             </div>
                             <div class="gpvp-target-row-meta">
-                                <span>{{ target.region_display }} · {{ target.travel_time_seconds }} 秒</span>
-                                <span class="gpvp-status-pill{% if target.can_attack %} is-attackable{% else %} is-blocked{% endif %}">
+                                <span>{{ target.region_display }} · {{ target.travel_projection_label }}</span>
+                                <span class="gpvp-status-pill{% if target.status_key == 'attackable' %} is-attackable{% else %} is-blocked{% endif %}">
                                     {{ target.status_label }}
                                 </span>
                             </div>
-                            <div class="gpvp-target-row-note{% if target.can_attack %} is-attackable{% else %} is-blocked{% endif %}">
+                            <div class="gpvp-target-row-note{% if target.status_key == 'attackable' %} is-attackable{% else %} is-blocked{% endif %}">
                                 {{ target.detail_message }}
                             </div>
                         </label>
