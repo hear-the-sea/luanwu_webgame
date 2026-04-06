@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from pathlib import Path
 
 import pytest
 from django.contrib.messages import get_messages
@@ -118,6 +119,16 @@ def test_guild_pvp_page_uses_list_detail_layout_and_hides_old_hint_blocks(guild_
     assert "基础阵容预计" in body
     assert 'type="radio"' in body
     assert 'name="defender_guild_id"' in body
+
+
+def test_guild_pvp_styles_give_guest_cards_more_name_space() -> None:
+    css_path = Path(__file__).resolve().parents[1] / "static" / "css" / "guild-pvp.css"
+    css = css_path.read_text(encoding="utf-8")
+
+    assert "grid-template-columns: repeat(auto-fill, minmax(10.6rem, 10.6rem));" in css
+    assert ".gpvp-page .gpvp-guest-option .tw-guest-name-sm {" in css
+    assert "flex: 1 1 auto;" in css
+    assert "min-width: 0;" in css
 
 
 @pytest.mark.django_db
