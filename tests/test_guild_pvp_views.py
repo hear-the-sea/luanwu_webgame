@@ -222,18 +222,22 @@ def test_guild_pvp_page_resets_stale_daily_counters_before_disabling_targets(gui
 
 
 @pytest.mark.django_db
-def test_guild_pvp_page_does_not_process_due_runs_on_get(guild_member_client, monkeypatch):
-    client, _user, _guild = guild_member_client
+def test_guild_pvp_page_processes_due_runs_on_get(guild_member_client, monkeypatch):
+    client, _user, guild = guild_member_client
+    captured_calls: list[tuple[int, object]] = []
 
-    def _raise_if_called(*_args, **_kwargs):
-        raise AssertionError("prepare_guild_pvp_read_state should not run during GET render")
+    def _capture_prepare(current_guild, *, now=None):
+        captured_calls.append((current_guild.pk, now))
 
-    monkeypatch.setattr("guilds.views.pvp.guild_raid_service.prepare_guild_pvp_read_state", _raise_if_called)
+    monkeypatch.setattr("guilds.views.pvp.guild_raid_service.prepare_guild_pvp_read_state", _capture_prepare)
 
     response = client.get(reverse("guilds:pvp"))
 
     assert response.status_code == 200
     assert "帮会PVP" in response.content.decode("utf-8")
+    assert len(captured_calls) == 1
+    assert captured_calls[0][0] == guild.pk
+    assert captured_calls[0][1] is not None
 
 
 @pytest.mark.django_db

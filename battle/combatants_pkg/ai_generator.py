@@ -155,6 +155,10 @@ def build_named_ai_guests(guest_keys: Sequence[str | Mapping[str, Any]], level: 
                 dummy_guest.defense_stat += attr_allocation.get("defense", 0)
                 dummy_guest.agility += attr_allocation.get("agility", 0)
 
+        # Unsaved AI guests keep the model default current_hp=0 unless we explicitly
+        # initialize it, which would make battle reports show them as near-dead.
+        dummy_guest.current_hp = dummy_guest.max_hp
+
         if override_skills is not None:
             setattr(dummy_guest, "_override_skills", override_skills)
         if display_name_override is not None:
@@ -179,6 +183,7 @@ def build_ai_guests(rng: random.Random) -> List[Guest]:
             attack_bonus=20,
             defense_bonus=20,
         )
+        dummy_guest.current_hp = dummy_guest.max_hp
         guests.append(dummy_guest)
     return guests
 

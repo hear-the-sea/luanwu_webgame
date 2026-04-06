@@ -156,6 +156,82 @@ def test_finalize_guild_mission_sends_report_message_to_all_active_members(djang
 
 
 @pytest.mark.django_db(transaction=True)
+def test_finalize_guild_mission_defers_report_messages_until_after_commit(django_user_model, monkeypatch):
+    leader, leader_manor = create_user_with_manor(django_user_model, "guild_mission_after_commit_leader")
+    guild = Guild.objects.create(name="帮会任务延后战报帮", founder=leader, is_active=True)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    template = GuildMissionTemplate.objects.create(
+        key="guild_after_commit_report_task",
+        name="延后战报任务",
+        description="",
+        difficulty="junior",
+        task_type="guest",
+        base_duration_seconds=60,
+        ruby_reward=0,
+        recommended_guest_count=1,
+        allow_troops=False,
+        enemy_guests=[],
+        enemy_troops={},
+        enemy_technology={},
+        is_active=True,
+    )
+    guest = create_guest(
+        manor=leader_manor,
+        template=create_template("guild_mission_after_commit_tpl"),
+        name="延后战报门客",
+    )
+    entry = hero_pool_service.submit_hero_pool_entry(leader_member, guest_id=guest.id, slot_index=1).entry
+    hero_pool_service.add_lineup_entry(guild=guild, operator=leader, pool_entry_id=entry.id)
+
+    monkeypatch.setattr("guilds.services.guild_missions.schedule_guild_mission_completion", lambda _run: None)
+
+    from guilds.services import guild_missions as guild_mission_service
+
+    run = guild_mission_service.launch_guild_mission(
+        guild=guild,
+        operator=leader,
+        template_key=template.key,
+        pool_entry_ids=[entry.id],
+        troop_loadout={},
+    )
+
+    report = BattleReport.objects.create(
+        manor=leader_manor,
+        opponent_name=template.name,
+        battle_type="guild_mission",
+        attacker_team=[],
+        attacker_troops={},
+        defender_team=[],
+        defender_troops={},
+        rounds=[],
+        losses={"attacker": {"casualties": []}, "defender": {}},
+        drops={},
+        winner="attacker",
+        starts_at=timezone.now() - timedelta(seconds=5),
+        completed_at=timezone.now(),
+        seed=99,
+    )
+
+    callbacks: list[object] = []
+    reported_run_ids: list[int] = []
+
+    monkeypatch.setattr(guild_mission_service.transaction, "on_commit", lambda callback: callbacks.append(callback))
+    monkeypatch.setattr("guilds.services.guild_missions.execute_battle", lambda *args, **kwargs: report)
+    monkeypatch.setattr(
+        "guilds.services.guild_missions._send_guild_mission_report_messages",
+        lambda current_run, _report: reported_run_ids.append(current_run.id),
+    )
+
+    assert guild_mission_service.finalize_guild_mission_run(run) is True
+    assert reported_run_ids == []
+    assert len(callbacks) == 1
+
+    callbacks[0]()
+
+    assert reported_run_ids == [run.id]
+
+
+@pytest.mark.django_db(transaction=True)
 def test_finalize_guild_mission_forwards_expanded_battle_limits(django_user_model, monkeypatch):
     leader, leader_manor = create_user_with_manor(django_user_model, "guild_mission_expand_limits_leader")
     guild = Guild.objects.create(name="公会任务扩展人数帮", founder=leader, is_active=True)

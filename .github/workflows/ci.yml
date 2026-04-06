@@ -12,11 +12,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
+
+      - name: Install Node dependencies
+        run: npm ci
 
       - name: Install dependencies
         run: |
@@ -27,6 +36,9 @@ jobs:
           pip install -r requirements-dev.txt
           # Type-checking deps (keep them small/stable for CI).
           pip install "mypy>=1.8" "django-stubs>=5.0" "django-stubs-ext>=5.0" "types-PyYAML"
+
+      - name: Frontend Unit Tests
+        run: npm run test:js
 
       - name: Lint (flake8)
         run: |

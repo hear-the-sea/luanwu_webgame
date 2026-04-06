@@ -81,7 +81,7 @@
 - 经过这两刀，当前测试层已无超过 `500` 行的测试文件；后续若继续按审计文档推进，应转回“新的超阈值复核 + 门禁边界补强”模式，而不是继续为拆分而拆分。
 - `2026-03-26` 新一轮仓库级复核补充了三条必须进入计划的结论：
   - 基模板仍存在硬编码业务值与伪入口：`templates/base.html` 中的行动力、贡献积分和多处 `href="#"` 菜单不符合“页面状态必须真实可解释”的治理要求。
-  - 前端工程化仍明显落后于后端：`package.json` 仅保留 Tailwind 构建脚本，`static/js` 已累积约 `5k+` 行页面脚本，却没有任何前端 lint / test / bundler 执行链路；阶段 4 不能仅以“模板内联脚本清零”宣布完成。
+  - 前端工程化仍明显落后于后端：仓库当前虽已具备最小前端测试执行链路（`package.json` 提供 `npm run test:js`，本轮也已把它补进 CI），但仍缺少前端 lint 与更成体系的构建/模块化约束，`static/js` 已累积约 `5k+` 行页面脚本；阶段 4 不能仅以“模板内联脚本清零”宣布完成。
   - 复杂度热点已转为“预算上方的多职责入口”：`trade/services/auction/rounds.py`、`websocket/consumers/world_chat.py`、`gameplay/views/map.py`、`gameplay/views/inventory.py`、`static/js/chat_widget.js` 应作为下一轮候选，而不是继续只盯超 `600` 行文件。
 - `2026-03-26` 已完成阶段 4 后续治理的第一刀：`templates/base.html` 已移除首页侧栏中的硬编码行动力/贡献占位值与 `href="#"` 伪入口，功能菜单只保留真实路由；同时 `gameplay/context_processors.py` 已补齐首页侧栏“当前贡献”文案来源，没有帮会成员身份时明确展示“未加入帮会”，避免共享模板继续展示伪状态。
 - `2026-03-26` 已完成页面脚本治理试点第一刀：`static/js/chat_widget.js` 已按 `core / renderer / main` 拆分为 `chat_widget_core.js`、`chat_widget_renderer.js` 与主入口脚本，继续保持无 bundler 的静态脚本加载方式；同时新增 `npm run test:js`，使用 `node --test static/js/tests/chat_widget_core.test.js` 为聊天挂件核心纯逻辑提供最小可执行验证链路。

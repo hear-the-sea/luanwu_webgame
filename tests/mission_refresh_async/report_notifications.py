@@ -6,6 +6,7 @@ import pytest
 
 import gameplay.services.missions_impl.execution as mission_execution
 from core.exceptions import MessageError
+from gameplay.services.missions_impl import finalize_command as mission_finalize_command
 
 
 def _mission_run(
@@ -100,3 +101,46 @@ def test_send_mission_report_notification_runtime_marker_error_bubbles_up(monkey
 
     with pytest.raises(RuntimeError, match="ws backend down"):
         _send_report(run, report)
+
+
+@pytest.mark.django_db
+def test_finalize_mission_run_defers_report_message_until_after_commit(monkeypatch):
+    callbacks: list[object] = []
+    reported: list[tuple[int, int]] = []
+    report = SimpleNamespace(id=808)
+    locked_run = SimpleNamespace(
+        pk=707,
+        id=707,
+        status="active",
+        Status=SimpleNamespace(COMPLETED="completed"),
+        mission=SimpleNamespace(is_defense=False),
+        is_retreating=False,
+        manor=SimpleNamespace(user_id=33),
+        manor_id=22,
+    )
+
+    monkeypatch.setattr(mission_finalize_command.transaction, "on_commit", lambda callback: callbacks.append(callback))
+
+    mission_finalize_command.finalize_mission_run(
+        SimpleNamespace(pk=707),
+        now=SimpleNamespace(),
+        load_locked_mission_run=lambda _pk: locked_run,
+        build_defense_report_if_needed=lambda _run: report,
+        extract_report_guest_state=lambda *_args, **_kwargs: ({}, set(), []),
+        select_guests_for_finalize=lambda *_args, **_kwargs: [],
+        prepare_guest_updates_for_finalize=lambda *_args, **_kwargs: ([], []),
+        mark_run_completed=lambda current_run, _now: setattr(current_run, "status", current_run.Status.COMPLETED),
+        apply_defender_troop_losses=lambda *_args, **_kwargs: None,
+        return_attacker_troops_after_mission=lambda *_args, **_kwargs: None,
+        apply_mission_rewards_if_won=lambda *_args, **_kwargs: None,
+        send_mission_report_message=lambda current_run, current_report: reported.append(
+            (current_run.id, current_report.id)
+        ),
+    )
+
+    assert reported == []
+    assert len(callbacks) == 1
+
+    callbacks[0]()
+
+    assert reported == [(707, 808)]

@@ -362,6 +362,56 @@ def test_prepare_guild_pvp_read_state_processes_due_incoming_marching_run(django
     assert processed_run_ids == [due_run.id]
 
 
+@pytest.mark.django_db(transaction=True)
+def test_start_guild_raid_defers_warning_messages_until_after_commit(django_user_model, monkeypatch):
+    attacker_guild, leader, _attacker_manor = create_guild_with_leader(django_user_model, "延后预警攻方")
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(django_user_model, "延后预警守方")
+    attacker_guild.silver = 50000
+    attacker_guild.save(update_fields=["silver"])
+    guest = create_guest(
+        manor=leader.user.manor,
+        template=create_template("guild_pvp_warning_after_commit_tpl"),
+        name="延后预警门客",
+    )
+    pool_entry_id = seed_attacker_lineup(guild=attacker_guild, leader=leader, guest=guest)
+
+    callbacks: list[object] = []
+    warning_run_ids: list[int] = []
+
+    monkeypatch.setattr(
+        "guilds.services.guild_raids.transaction.on_commit", lambda callback: callbacks.append(callback)
+    )
+    monkeypatch.setattr(
+        "guilds.services.guild_raids.calculate_guild_raid_travel_time",
+        lambda *_args, **_kwargs: 120,
+    )
+    monkeypatch.setattr(
+        "guilds.services.guild_raids.schedule_guild_raid_completion",
+        lambda *_args, **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        "guilds.services.guild_raids.send_guild_raid_warning_messages",
+        lambda run: warning_run_ids.append(run.id),
+    )
+
+    from guilds.services.guild_raids import start_guild_raid
+
+    run = start_guild_raid(
+        guild=attacker_guild,
+        defender_guild=defender_guild,
+        operator=leader.user,
+        pool_entry_ids=[pool_entry_id],
+        troop_loadout={},
+    )
+
+    assert warning_run_ids == []
+    assert len(callbacks) == 1
+
+    callbacks[0]()
+
+    assert warning_run_ids == [run.id]
+
+
 @pytest.mark.django_db
 def test_get_guild_pvp_page_context_keeps_overdue_and_battling_incoming_runs_visible(django_user_model):
     defender_guild, defender_member, _defender_manor = create_guild_with_leader(django_user_model, "来袭守方")

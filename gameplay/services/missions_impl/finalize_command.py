@@ -53,4 +53,8 @@ def finalize_mission_run(
 
         return_attacker_troops_after_mission(locked_run, report)
         apply_mission_rewards_if_won(locked_run, report, player_side)
-        send_mission_report_message(locked_run, report)
+
+        def _send_report_message_after_commit() -> None:
+            send_mission_report_message(locked_run, report)
+
+        transaction.on_commit(_send_report_message_after_commit)

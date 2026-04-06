@@ -34,6 +34,66 @@ def _load_arena_coop_event_for_report(report: "BattleReport"):
     return ArenaCoopEvent.objects.filter(battle_report=report).first()
 
 
+def _load_guild_mission_run_for_report(report: "BattleReport"):
+    GuildMissionRun = apps.get_model("guilds", "GuildMissionRun")
+    return GuildMissionRun.objects.filter(battle_report=report).first()
+
+
+def _load_guild_raid_run_for_report(report: "BattleReport"):
+    GuildRaidRun = apps.get_model("guilds", "GuildRaidRun")
+    return GuildRaidRun.objects.filter(battle_report=report).first()
+
+
+def _load_report_message_for_manor(report: "BattleReport", *, manor_id: int):
+    Message = apps.get_model("gameplay", "Message")
+    return Message.objects.filter(battle_report=report, manor_id=manor_id).order_by("-created_at", "-id").first()
+
+
+def _resolve_guild_raid_player_side(guild_raid_run: Any, *, report: "BattleReport", manor_id: int) -> str | None:
+    GuildMember = apps.get_model("guilds", "GuildMember")
+    if GuildMember.objects.filter(
+        guild_id=guild_raid_run.defender_guild_id,
+        is_active=True,
+        user__manor__id=manor_id,
+    ).exists():
+        return "defender"
+    if GuildMember.objects.filter(
+        guild_id=guild_raid_run.attacker_guild_id,
+        is_active=True,
+        user__manor__id=manor_id,
+    ).exists():
+        return "attacker"
+
+    report_message = _load_report_message_for_manor(report, manor_id=manor_id)
+    if report_message is None:
+        return None
+
+    title = str(getattr(report_message, "title", "") or "").strip()
+    if "防守" in title:
+        return "defender"
+    if "进攻" in title:
+        return "attacker"
+    return None
+
+
+def _extract_raid_resource_drops(raid_run: Any) -> dict[str, int]:
+    drops = {
+        str(key): int(amount)
+        for key, amount in dict(getattr(raid_run, "loot_resources", {}) or {}).items()
+        if int(amount)
+    }
+    loot_silver = int(getattr(raid_run, "loot_silver", 0) or 0)
+    if loot_silver:
+        drops["silver"] = drops.get("silver", 0) + loot_silver
+    return drops
+
+
+def _extract_raid_item_drops(raid_run: Any) -> dict[str, int]:
+    return {
+        str(key): int(amount) for key, amount in dict(getattr(raid_run, "loot_items", {}) or {}).items() if int(amount)
+    }
+
+
 def resolve_report_runtime_context(report: "BattleReport", *, manor_id: int) -> dict[str, Any]:
     mission_run = _load_mission_run_for_report(report)
     if mission_run and mission_run.mission.is_defense:
@@ -55,6 +115,24 @@ def resolve_report_runtime_context(report: "BattleReport", *, manor_id: int) -> 
     arena_coop_event = _load_arena_coop_event_for_report(report)
     if arena_coop_event:
         return {"player_side": "attacker", "raid_run": None}
+
+    guild_mission_run = _load_guild_mission_run_for_report(report)
+    if guild_mission_run:
+        return {"player_side": "attacker", "raid_run": None}
+
+    guild_raid_run = _load_guild_raid_run_for_report(report)
+    if guild_raid_run:
+        player_side = _resolve_guild_raid_player_side(guild_raid_run, report=report, manor_id=manor_id)
+        if player_side is None:
+            player_side = infer_side_from_guest_ownership(report, manor_id)
+        if player_side is None:
+            if report.manor_id == manor_id:
+                player_side = "attacker"
+            elif report.messages.filter(manor_id=manor_id).exists():
+                player_side = "defender"
+            else:
+                player_side = "attacker"
+        return {"player_side": player_side, "raid_run": guild_raid_run}
 
     inferred_side = infer_side_from_guest_ownership(report, manor_id)
     if inferred_side:
@@ -306,8 +384,8 @@ def resolve_display_drops(
         return drops
 
     if player_side == "attacker":
-        merge_nonzero_drops(drops, raid_run.loot_resources or {})
-        merge_nonzero_drops(drops, raid_run.loot_items or {})
+        merge_nonzero_drops(drops, _extract_raid_resource_drops(raid_run))
+        merge_nonzero_drops(drops, _extract_raid_item_drops(raid_run))
 
     battle_rewards = raid_run.battle_rewards or {}
     exp_fruit = battle_rewards.get("exp_fruit", 0)
@@ -325,8 +403,8 @@ def resolve_display_losses(*, player_won: bool, player_side: str, raid_run) -> d
 
     losses: dict[str, int] = {}
     if player_side == "defender":
-        merge_nonzero_drops(losses, raid_run.loot_resources or {})
-        merge_nonzero_drops(losses, raid_run.loot_items or {})
+        merge_nonzero_drops(losses, _extract_raid_resource_drops(raid_run))
+        merge_nonzero_drops(losses, _extract_raid_item_drops(raid_run))
     return losses
 
 

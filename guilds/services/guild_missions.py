@@ -283,6 +283,13 @@ def _send_guild_mission_report_messages(run: GuildMissionRun, report: Any) -> No
         )
 
 
+def _schedule_guild_mission_report_messages(run: GuildMissionRun, report: Any) -> None:
+    def _send_report_messages_after_commit() -> None:
+        _send_guild_mission_report_messages(run, report)
+
+    transaction.on_commit(_send_report_messages_after_commit)
+
+
 @transaction.atomic
 def finalize_guild_mission_run(run: GuildMissionRun, *, now=None) -> bool:
     finalized_at = now or timezone.now()
@@ -331,5 +338,5 @@ def finalize_guild_mission_run(run: GuildMissionRun, *, now=None) -> bool:
     locked_run.completed_at = finalized_at
     locked_run.battle_report = report
     locked_run.save(update_fields=["status", "completed_at", "battle_report"])
-    _send_guild_mission_report_messages(locked_run, report)
+    _schedule_guild_mission_report_messages(locked_run, report)
     return True

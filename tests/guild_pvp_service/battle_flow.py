@@ -260,6 +260,70 @@ def test_process_guild_raid_battle_uses_and_applies_defender_troops(django_user_
 
 
 @pytest.mark.django_db(transaction=True)
+def test_process_guild_raid_battle_defers_report_messages_until_after_commit(django_user_model, monkeypatch):
+    attacker_guild, attacker_member, attacker_manor = create_guild_with_leader(django_user_model, "战报延后攻方")
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(django_user_model, "战报延后守方")
+    attacker_guest = create_guest(
+        manor=attacker_manor,
+        template=create_template("guild_pvp_report_after_commit_tpl"),
+        name="战报延后门客",
+    )
+    now = timezone.now()
+    run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        guest_ids=[attacker_guest.id],
+        guest_snapshots=build_guest_battle_snapshots([attacker_guest], include_identity=True),
+        troop_loadout={},
+        travel_time=300,
+        battle_at=now,
+        return_at=now + timedelta(seconds=300),
+    )
+    report = BattleReport.objects.create(
+        manor=attacker_manor,
+        opponent_name=defender_guild.name,
+        battle_type="guild_raid",
+        attacker_team=[],
+        attacker_troops={},
+        defender_team=[],
+        defender_troops={},
+        rounds=[],
+        losses={},
+        drops={},
+        winner="attacker",
+        starts_at=now,
+        completed_at=now,
+    )
+
+    callbacks: list[object] = []
+    report_message_run_ids: list[int] = []
+
+    monkeypatch.setattr(
+        "guilds.services.guild_raids.transaction.on_commit", lambda callback: callbacks.append(callback)
+    )
+    monkeypatch.setattr("guilds.services.guild_raids.execute_battle", lambda *_args, **_kwargs: report)
+    monkeypatch.setattr("guilds.services.guild_raids.calculate_battle_salvage", lambda *_args, **_kwargs: (0, {}))
+    monkeypatch.setattr("guilds.services.guild_raids.schedule_guild_raid_completion", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        "guilds.services.guild_raids.send_guild_raid_report_messages",
+        lambda current_run, _report: report_message_run_ids.append(current_run.id),
+    )
+
+    from guilds.services.guild_raids import process_guild_raid_battle
+
+    assert process_guild_raid_battle(run, now=now) is True
+    assert report_message_run_ids == []
+    assert len(callbacks) == 1
+
+    callbacks[0]()
+
+    assert report_message_run_ids == [run.id]
+
+
+@pytest.mark.django_db(transaction=True)
 def test_finalize_guild_raid_marks_returning_run_completed_and_returns_surviving_troops(
     django_user_model,
 ):

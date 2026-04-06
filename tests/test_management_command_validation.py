@@ -185,12 +185,21 @@ def test_default_guild_mission_templates_use_guild_specific_enemy_templates():
         "guild_wulinzhai_night_watch",
         "guild_wulinzhai_blade_ambusher",
         "guild_wulinzhai_blade_ambusher",
+        "guild_wulinzhai_blade_ambusher",
+        "guild_wulinzhai_torch_archer",
         "guild_wulinzhai_torch_archer",
         "guild_wulinzhai_torch_archer",
         "guild_wulinzhai_path_scout",
         "guild_wulinzhai_minion",
         "guild_wulinzhai_minion",
     ]
+    assert patrol.enemy_troops == {
+        "qiang_hao": 760,
+        "jian_hao": 700,
+        "fast_archer": 650,
+        "dao_jie": 500,
+    }
+    assert patrol.enemy_technology == {"level": 7, "guest_level": 88, "guest_bonus": 0.36}
     assert escort_keys == [
         "guild_bloodflag_head_escort",
         "guild_bloodflag_deputy_escort",
@@ -198,21 +207,34 @@ def test_default_guild_mission_templates_use_guild_specific_enemy_templates():
         "guild_bloodflag_blade_guard",
         "guild_bloodflag_blade_guard",
         "guild_bloodflag_blade_guard",
+        "guild_bloodflag_blade_guard",
+        "guild_bloodflag_bow_guard",
         "guild_bloodflag_bow_guard",
         "guild_bloodflag_bow_guard",
         "guild_bloodflag_bow_guard",
         "guild_bloodflag_pathfinder",
         "guild_bloodflag_pathfinder",
+        "guild_bloodflag_escort_master",
         "guild_bloodflag_escort_master",
         "guild_bloodflag_escort_master",
     ]
+    assert escort.enemy_troops == {
+        "qiang_ba": 1180,
+        "jian_hao": 980,
+        "divine_archer": 1080,
+        "quan_wang": 860,
+    }
+    assert escort.enemy_technology == {"level": 10, "guest_level": 102, "guest_bonus": 0.62}
     assert assault_keys == [
         "guild_blackwind_gate_general",
         "guild_blackwind_gate_overseer",
         "guild_blackwind_iron_guard",
         "guild_blackwind_iron_guard",
+        "guild_blackwind_iron_guard",
         "guild_blackwind_bow_captain",
         "guild_blackwind_bow_captain",
+        "guild_blackwind_bow_captain",
+        "guild_blackwind_assault_blade",
         "guild_blackwind_assault_blade",
         "guild_blackwind_assault_blade",
         "guild_blackwind_assault_blade",
@@ -222,10 +244,19 @@ def test_default_guild_mission_templates_use_guild_specific_enemy_templates():
         "guild_blackwind_guard_soldier",
         "guild_blackwind_guard_soldier",
         "guild_blackwind_guard_soldier",
+        "guild_blackwind_spear_soldier",
         "guild_blackwind_spear_soldier",
         "guild_blackwind_spear_soldier",
         "guild_blackwind_spear_soldier",
     ]
+    assert assault.enemy_troops == {
+        "qiang_wang": 1700,
+        "jian_sheng": 1450,
+        "arrow_god": 1620,
+        "quan_sheng": 980,
+        "dao_sheng": 930,
+    }
+    assert assault.enemy_technology == {"level": 12, "guest_level": 108, "guest_bonus": 0.96}
 
     guest_keys = set(patrol_keys + escort_keys + assault_keys)
     existing_keys = set(GuestTemplate.objects.filter(key__in=guest_keys).values_list("key", flat=True))

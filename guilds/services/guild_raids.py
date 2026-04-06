@@ -113,6 +113,20 @@ def prepare_guild_pvp_read_state(guild: Guild, *, now=None) -> None:
     refresh_due_guild_raids(guild, now=now, include_incoming_marching=True)
 
 
+def _schedule_guild_raid_warning_messages(run: GuildRaidRun) -> None:
+    def _send_warning_messages_after_commit() -> None:
+        send_guild_raid_warning_messages(run)
+
+    transaction.on_commit(_send_warning_messages_after_commit)
+
+
+def _schedule_guild_raid_report_messages(run: GuildRaidRun, report: Any) -> None:
+    def _send_report_messages_after_commit() -> None:
+        send_guild_raid_report_messages(run, report)
+
+    transaction.on_commit(_send_report_messages_after_commit)
+
+
 def start_guild_raid(
     *,
     guild: Guild,
@@ -206,7 +220,7 @@ def _start_guild_raid_atomic(
     locked_defender.pvp_defense_count_today = int(locked_defender.pvp_defense_count_today or 0) + 1
     locked_defender.save(update_fields=["pvp_defense_count_today"])
     schedule_guild_raid_completion(run)
-    send_guild_raid_warning_messages(run)
+    _schedule_guild_raid_warning_messages(run)
     return run
 
 
@@ -345,7 +359,7 @@ def process_guild_raid_battle(run: GuildRaidRun, *, now=None) -> bool:
         ]
     )
     schedule_guild_raid_completion(locked_run)
-    send_guild_raid_report_messages(locked_run, report)
+    _schedule_guild_raid_report_messages(locked_run, report)
     return True
 
 

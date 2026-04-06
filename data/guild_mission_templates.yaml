@@ -23,20 +23,22 @@ missions:
       - template_key: guild_wulinzhai_night_watch
       - template_key: guild_wulinzhai_blade_ambusher
       - template_key: guild_wulinzhai_blade_ambusher
+      - template_key: guild_wulinzhai_blade_ambusher
+      - template_key: guild_wulinzhai_torch_archer
       - template_key: guild_wulinzhai_torch_archer
       - template_key: guild_wulinzhai_torch_archer
       - template_key: guild_wulinzhai_path_scout
       - template_key: guild_wulinzhai_minion
       - template_key: guild_wulinzhai_minion
     enemy_troops:
-      qiang_hao: 700
-      jian_hao: 650
-      fast_archer: 600
-      dao_jie: 450
+      qiang_hao: 760
+      jian_hao: 700
+      fast_archer: 650
+      dao_jie: 500
     enemy_technology:
-      level: 6
-      guest_level: 82
-      guest_bonus: 0.24
+      level: 7
+      guest_level: 88
+      guest_bonus: 0.36
     is_active: true
     sort_weight: 10
 
@@ -59,22 +61,25 @@ missions:
       - template_key: guild_bloodflag_blade_guard
       - template_key: guild_bloodflag_blade_guard
       - template_key: guild_bloodflag_blade_guard
+      - template_key: guild_bloodflag_blade_guard
+      - template_key: guild_bloodflag_bow_guard
       - template_key: guild_bloodflag_bow_guard
       - template_key: guild_bloodflag_bow_guard
       - template_key: guild_bloodflag_bow_guard
       - template_key: guild_bloodflag_pathfinder
       - template_key: guild_bloodflag_pathfinder
+      - template_key: guild_bloodflag_escort_master
       - template_key: guild_bloodflag_escort_master
       - template_key: guild_bloodflag_escort_master
     enemy_troops:
-      qiang_ba: 1100
-      jian_hao: 900
-      divine_archer: 1000
-      quan_wang: 800
+      qiang_ba: 1180
+      jian_hao: 980
+      divine_archer: 1080
+      quan_wang: 860
     enemy_technology:
-      level: 8
-      guest_level: 92
-      guest_bonus: 0.44
+      level: 10
+      guest_level: 102
+      guest_bonus: 0.62
     is_active: true
     sort_weight: 20
 
@@ -95,8 +100,11 @@ missions:
       - template_key: guild_blackwind_gate_overseer
       - template_key: guild_blackwind_iron_guard
       - template_key: guild_blackwind_iron_guard
+      - template_key: guild_blackwind_iron_guard
       - template_key: guild_blackwind_bow_captain
       - template_key: guild_blackwind_bow_captain
+      - template_key: guild_blackwind_bow_captain
+      - template_key: guild_blackwind_assault_blade
       - template_key: guild_blackwind_assault_blade
       - template_key: guild_blackwind_assault_blade
       - template_key: guild_blackwind_assault_blade
@@ -106,18 +114,19 @@ missions:
       - template_key: guild_blackwind_guard_soldier
       - template_key: guild_blackwind_guard_soldier
       - template_key: guild_blackwind_guard_soldier
+      - template_key: guild_blackwind_spear_soldier
       - template_key: guild_blackwind_spear_soldier
       - template_key: guild_blackwind_spear_soldier
       - template_key: guild_blackwind_spear_soldier
     enemy_troops:
-      qiang_wang: 1600
-      jian_sheng: 1350
-      arrow_god: 1500
-      quan_sheng: 900
-      dao_sheng: 850
+      qiang_wang: 1700
+      jian_sheng: 1450
+      arrow_god: 1620
+      quan_sheng: 980
+      dao_sheng: 930
     enemy_technology:
-      level: 10
-      guest_level: 100
-      guest_bonus: 0.78
+      level: 12
+      guest_level: 108
+      guest_bonus: 0.96
     is_active: true
     sort_weight: 30
