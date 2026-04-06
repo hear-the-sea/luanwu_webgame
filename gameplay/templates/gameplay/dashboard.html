@@ -56,7 +56,7 @@
                             <div>
                                 <dt>升级完成</dt>
                                 <dd>
-                                    <span class="countdown" data-countdown="{{ building.upgrade_complete_at|date:'c' }}" data-refresh="1">
+                                    <span class="countdown" data-countdown="{{ building.upgrade_complete_at|date:'c' }}" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_building_upgrades_api' %}" data-refresh-method="post">
                                         {{ building.upgrade_complete_at|date:"H:i:s" }}
                                     </span>
                                 </dd>

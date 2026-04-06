@@ -7,9 +7,10 @@ from __future__ import annotations
 import logging
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
@@ -19,10 +20,18 @@ from django.views.generic import TemplateView
 from core.decorators import flash_unexpected_view_error
 from core.exceptions import GameError
 from core.utils import safe_redirect_url, sanitize_error_message
+from core.utils.rate_limit import rate_limit_json
 from gameplay.models import Building
-from gameplay.services.manor.core import start_upgrade
+from gameplay.services.manor.core import finalize_upgrades, get_manor, start_upgrade
+
+from .runtime_refresh_support import run_refresh_api
 
 logger = logging.getLogger(__name__)
+
+
+def _refresh_building_upgrades(manor) -> int:
+    finalize_upgrades(manor)
+    return 0
 
 
 def _handle_unexpected_building_error(
@@ -81,3 +90,19 @@ class UpgradeBuildingView(LoginRequiredMixin, TemplateView):
                 ),
             )
         return redirect(redirect_url)
+
+
+@login_required
+@require_POST
+@rate_limit_json("building_runtime_refresh", limit=30, window_seconds=60, error_message="状态刷新过于频繁，请稍后再试")
+def refresh_building_upgrades_api(request: HttpRequest) -> JsonResponse:
+    manor = get_manor(request.user)
+    return run_refresh_api(
+        operation=lambda: _refresh_building_upgrades(manor),
+        logger_instance=logger,
+        log_message="Unexpected building refresh error: manor_id=%s user_id=%s",
+        log_args=(
+            getattr(manor, "id", None),
+            getattr(request.user, "id", None),
+        ),
+    )

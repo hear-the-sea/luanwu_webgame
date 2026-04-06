@@ -78,6 +78,8 @@ class TestWorkViews:
         assert "执行门客" in body
         assert guest.display_name in body
         assert "打工中 (" not in body
+        assert reverse("gameplay:refresh_work_assignments_api") in body
+        assert 'data-refresh-method="post"' in body
 
     def test_work_page_does_not_refresh_overdue_assignment_or_release_guest(self, manor_with_user):
         manor, client = manor_with_user

@@ -3,7 +3,15 @@ from django.urls import reverse
 from django.utils import timezone
 
 from gameplay.models import InventoryItem, ItemTemplate
-from guests.models import Guest, GuestArchetype, GuestRarity, GuestStatus, GuestTemplate
+from guests.models import (
+    Guest,
+    GuestArchetype,
+    GuestRarity,
+    GuestRecruitment,
+    GuestStatus,
+    GuestTemplate,
+    RecruitmentPool,
+)
 
 
 @pytest.mark.django_db
@@ -138,6 +146,32 @@ class TestInventoryPageContext:
         body = response.content.decode("utf-8")
         assert "js/recruitment-hall.js" in body
         assert "const CHUNK_SIZE" not in body
+
+    def test_recruitment_hall_page_active_recruitment_has_refresh_endpoint(self, manor_with_user):
+        manor, client = manor_with_user
+        pool = RecruitmentPool.objects.create(
+            key=f"hall_refresh_pool_{manor.id}",
+            name="候选卡池",
+            cooldown_seconds=60,
+            draw_count=2,
+        )
+        GuestRecruitment.objects.create(
+            manor=manor,
+            pool=pool,
+            cost={},
+            draw_count=2,
+            duration_seconds=60,
+            status=GuestRecruitment.Status.PENDING,
+            complete_at=timezone.now() + timezone.timedelta(minutes=1),
+        )
+
+        response = client.get(reverse("gameplay:recruitment_hall"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert 'data-refresh="1"' in body
+        assert reverse("gameplay:refresh_recruitment_hall_api") in body
+        assert 'data-refresh-method="post"' in body
 
     def test_recruitment_hall_page_syncs_resources_before_loading_context(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user

@@ -11,7 +11,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
-from django.http import Http404, HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -20,6 +20,7 @@ from django.views.generic import TemplateView
 from core.decorators import flash_unexpected_view_error
 from core.exceptions import GameError
 from core.utils import safe_positive_int, safe_redirect_url, sanitize_error_message
+from core.utils.rate_limit import rate_limit_json
 from gameplay.models import WorkAssignment, WorkTemplate
 from gameplay.selectors.work import get_work_page_context
 from gameplay.services.manor.core import get_manor, project_manor_activity_for_read
@@ -32,7 +33,14 @@ from gameplay.services.work import (
 from gameplay.views.read_helpers import get_prepared_manor_for_read
 from guests.models import Guest
 
+from .runtime_refresh_support import run_refresh_api
+
 logger = logging.getLogger(__name__)
+
+
+def _refresh_work_runtime(manor: Any) -> int:
+    refresh_work_assignments(manor)
+    return 0
 
 
 def _handle_unexpected_work_error(
@@ -87,6 +95,22 @@ class WorkView(LoginRequiredMixin, TemplateView):
             )
         )
         return context
+
+
+@login_required
+@require_POST
+@rate_limit_json("work_runtime_refresh", limit=30, window_seconds=60, error_message="状态刷新过于频繁，请稍后再试")
+def refresh_work_assignments_api(request: HttpRequest) -> JsonResponse:
+    manor = get_manor(request.user)
+    return run_refresh_api(
+        operation=lambda: _refresh_work_runtime(manor),
+        logger_instance=logger,
+        log_message="Unexpected work refresh error: manor_id=%s user_id=%s",
+        log_args=(
+            getattr(manor, "id", None),
+            getattr(request.user, "id", None),
+        ),
+    )
 
 
 @login_required

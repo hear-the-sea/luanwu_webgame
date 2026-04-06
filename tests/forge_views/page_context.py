@@ -48,6 +48,8 @@ class TestForgePageContext:
         body = response.content.decode("utf-8")
         assert "js/dashboard.js" in body
         assert 'data-refresh="1"' in body
+        assert reverse("gameplay:refresh_production_runtime_api") in body
+        assert 'data-refresh-method="post"' in body
 
     def test_forge_page_uses_explicit_read_helper(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user

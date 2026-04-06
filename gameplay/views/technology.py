@@ -11,7 +11,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -20,6 +20,7 @@ from django.views.generic import TemplateView
 from core.decorators import flash_unexpected_view_error
 from core.exceptions import GameError
 from core.utils import safe_redirect_url, sanitize_error_message
+from core.utils.rate_limit import rate_limit_json
 from gameplay.selectors.technology import (
     get_technology_page_context,
     normalize_martial_troop_class,
@@ -27,8 +28,10 @@ from gameplay.selectors.technology import (
 )
 from gameplay.services.manor.core import get_manor
 from gameplay.services.resources import project_resource_production_for_read
-from gameplay.services.technology import upgrade_technology
+from gameplay.services.technology import refresh_technology_upgrades, upgrade_technology
 from gameplay.views.read_helpers import get_prepared_manor_for_read
+
+from .runtime_refresh_support import run_refresh_api
 
 logger = logging.getLogger(__name__)
 
@@ -114,3 +117,21 @@ def upgrade_technology_view(request: HttpRequest, tech_key: str) -> HttpResponse
     redirect_url = _build_technology_redirect_url(tab, troop)
     redirect_url = safe_redirect_url(request, next_url, redirect_url)
     return redirect(redirect_url)
+
+
+@login_required
+@require_POST
+@rate_limit_json(
+    "technology_runtime_refresh", limit=30, window_seconds=60, error_message="状态刷新过于频繁，请稍后再试"
+)
+def refresh_technology_upgrades_api(request: HttpRequest) -> JsonResponse:
+    manor = get_manor(request.user)
+    return run_refresh_api(
+        operation=lambda: refresh_technology_upgrades(manor),
+        logger_instance=logger,
+        log_message="Unexpected technology refresh error: manor_id=%s user_id=%s",
+        log_args=(
+            getattr(manor, "id", None),
+            getattr(request.user, "id", None),
+        ),
+    )

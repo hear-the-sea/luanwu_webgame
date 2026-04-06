@@ -37,6 +37,8 @@
                             <span class="countdown"
                                   data-countdown="{{ recruitment.complete_at|date:'c' }}"
                                   data-refresh="1"
+                                  data-refresh-url="{% url 'gameplay:refresh_troop_recruitments_api' %}"
+                                  data-refresh-method="post"
                                   data-complete-text="已完成，正在刷新">计算中</span>
                         </span>
                     </div>

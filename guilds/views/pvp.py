@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from core.utils import safe_int, sanitize_error_message
+from core.utils.rate_limit import rate_limit_json
+from gameplay.views.runtime_refresh_support import run_refresh_api
 
 from ..decorators import require_guild_member
 from ..models import Guild, GuildRaidRun
@@ -17,6 +20,8 @@ from ..services import guild_pvp_queries as guild_pvp_query_service
 from ..services import guild_raids as guild_raid_service
 from .helpers import execute_guild_action
 
+logger = logging.getLogger(__name__)
+
 
 @login_required
 @require_guild_member
@@ -24,6 +29,26 @@ def pvp_page(request: Any) -> HttpResponse:
     now = timezone.now()
     context = guild_pvp_query_service.get_guild_pvp_page_context(request.guild_member, now=now)
     return render(request, "guilds/pvp.html", context)
+
+
+@login_required
+@require_guild_member
+@require_POST
+@rate_limit_json("guild_pvp_runtime_refresh", limit=30, window_seconds=60, error_message="状态刷新过于频繁，请稍后再试")
+def refresh_pvp_activity_api(request: Any) -> JsonResponse:
+    member = request.guild_member
+    return run_refresh_api(
+        operation=lambda: guild_raid_service.refresh_due_guild_raids(
+            member.guild,
+            include_incoming_marching=True,
+        ),
+        logger_instance=logger,
+        log_message="Unexpected guild pvp refresh error: guild_id=%s user_id=%s",
+        log_args=(
+            getattr(member.guild, "id", None),
+            getattr(request.user, "id", None),
+        ),
+    )
 
 
 @login_required

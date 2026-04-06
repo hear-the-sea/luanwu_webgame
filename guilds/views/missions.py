@@ -2,15 +2,18 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from core.utils import safe_int, sanitize_error_message
+from core.utils.rate_limit import rate_limit_json
+from gameplay.views.runtime_refresh_support import run_refresh_api
 
 from ..decorators import require_guild_member
 from ..models import GuildMissionRun
@@ -19,6 +22,8 @@ from ..services import guild_mission_queries as guild_mission_query_service
 from ..services import guild_missions as guild_mission_service
 from ..services import guild_troops as guild_troop_service
 from .helpers import execute_guild_action
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -30,6 +35,25 @@ def missions(request: Any) -> HttpResponse:
         selected_mission_key=selected_mission_key,
     )
     return render(request, "guilds/missions.html", context)
+
+
+@login_required
+@require_guild_member
+@require_POST
+@rate_limit_json(
+    "guild_mission_runtime_refresh", limit=30, window_seconds=60, error_message="状态刷新过于频繁，请稍后再试"
+)
+def refresh_mission_runs_api(request: Any) -> JsonResponse:
+    member = request.guild_member
+    return run_refresh_api(
+        operation=lambda: guild_mission_service.refresh_due_guild_mission_runs(member.guild),
+        logger_instance=logger,
+        log_message="Unexpected guild mission refresh error: guild_id=%s user_id=%s",
+        log_args=(
+            getattr(member.guild, "id", None),
+            getattr(request.user, "id", None),
+        ),
+    )
 
 
 @login_required

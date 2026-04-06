@@ -30,7 +30,7 @@ def _largest_test_files(limit: int) -> list[tuple[int, str]]:
 def test_recent_audit_entry_updates_document_header() -> None:
     header = AUDIT_DOC.read_text(encoding="utf-8").splitlines()[2]
 
-    assert header == "最近更新：2026-04-05"
+    assert header == "最近更新：2026-04-06"
 
 
 def test_split_test_entrypoints_remain_small_compatibility_shims() -> None:

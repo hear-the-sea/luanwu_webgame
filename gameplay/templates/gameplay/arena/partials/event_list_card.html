@@ -11,7 +11,7 @@
             {% if row.countdown_at %}
             <p class="text-text-muted">
                 {{ row.countdown_label }}
-                <span class="countdown" data-countdown="{{ row.countdown_at|date:'c' }}" data-format="zh-no-sec" data-refresh="1">
+                <span class="countdown" data-countdown="{{ row.countdown_at|date:'c' }}" data-format="zh-no-sec" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_arena_activity_api' %}" data-refresh-method="post">
                     {{ row.countdown_at|date:"m-d H:i:s" }}
                 </span>
             </p>

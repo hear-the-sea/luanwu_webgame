@@ -1,6 +1,6 @@
 # 项目重构优化规则与阶段目标（2026-03）
 
-最近更新：2026-04-05
+最近更新：2026-04-06
 
 本文档不记录详细审计过程、历史数据或阶段性结果，只保留后续重构必须遵守的规则，以及各阶段的优化目标。
 
@@ -23,6 +23,7 @@
   - 2026-03-26 `python -m flake8 --jobs=1 accounts battle gameplay guests guilds trade core websocket config tests` 通过。
   - 2026-03-26 `python -m pytest -q -m "not integration"` 通过，结果为 `2454 passed, 38 deselected`。
   - 2026-04-04 `npm run test:js`、`python -m flake8 --jobs=1 accounts battle gameplay guests guilds trade core websocket config tests`、`python -m mypy accounts battle common config core gameplay guests guilds tasks trade websocket` 与 `python -m pytest -x -q -m "not integration"` 通过；结果分别为 `10 passed`、`flake8 通过`、`533 source files mypy 通过` 与 `2669 passed, 40 deselected`。
+  - 2026-04-06 `python -m pytest -q` 通过，结果为 `2782 passed, 41 skipped`。
 - 当前已封板阶段：
   - 阶段 1 已完成：热点页面入口、读写边界与包级聚合导入治理已收口。
   - 阶段 2 已完成：`mission / raid / guest recruitment` 的统一写模型、显式 refresh 边界与关键 real-services gate 已建立。
@@ -31,6 +32,7 @@
 - 最近一次边界复核结论：
   - `config/urls.py`、`gameplay/context_processors.py`、`gameplay/views/arena.py`、`guests/urls.py`、`guilds/urls.py` 已改为显式子模块导入，不再依赖热点包根聚合入口。
   - `gameplay/views/__init__.py`、`gameplay/selectors/__init__.py`、`guests/views/__init__.py`、`guilds/views/__init__.py` 已收口为无副作用最小包标记文件。
+  - `2026-04-06` 已继续收口页面倒计时的显式 refresh 边界：建筑、科技、生产、打工、护院募兵、招募大厅与竞技场页面的倒计时组件都已改为命中显式 `POST` refresh API，不再依赖整页 `GET` reload 暗中完成状态收口；对应默认门禁 `python -m pytest -q` 已通过，结果为 `2782 passed, 41 skipped`。
   - `2026-04-02` 已继续推进 arena 边界收口：`gameplay/services/arena/__init__.py` 与 `gameplay/selectors/arena/__init__.py` 已都收口为无副作用最小包标记；`gameplay/views/arena.py` 已改为显式依赖 `gameplay.selectors.arena.registration / events / details` 与 `gameplay.services.arena.core / coop_core`，不再通过 arena 包根聚合入口取页面查询或 service 常量；原 `gameplay/selectors/arena.py` 485 行热点已拆为 `gameplay/selectors/arena/common.py`（154 行）、`gameplay/selectors/arena/registration.py`（99 行）、`gameplay/selectors/arena/events.py`（57 行）与 `gameplay/selectors/arena/details.py`（151 行），且 `python -m pytest tests/test_arena_audit_boundaries.py tests/arena_services/coop_registration.py tests/arena_services/coop_resolution.py tests/test_arena_views.py tests/test_arena_tasks.py tests/test_battle_report_view.py tests/test_arena_coop_battle_mechanics.py tests/test_load_guest_templates_command.py tests/test_battle_attack_metadata.py tests/test_battle_guest_display_names.py -q` 通过，结果为 `69 passed`；`node --test static/js/tests/nav_partial.test.js` 通过，结果为 `1 passed`。
   - `2026-04-03` 已补 arena coop / passive 战斗链路回归与模板复杂度收口：`battle/simulation/battle_flow.py` 中 `battle_start / round_start / action_before / action_end` 的被动事件已改为统一经过事件追加入口补 `order`，不再把裸 `passive` 事件直接写进回合日志；`battle/status_manager.py` 已在通用 `prepare_combatants_for_round()` 中清空回合级 `battle_modifiers`，避免被动倍率跨回合残留；`tests/test_battle_passives.py` 已收口为兼容入口，并拆到 `tests/battle_passives/core_cases.py`（356 行）与 `tests/battle_passives/attack_flow_cases.py`（356 行）；`tests/test_arena_coop_battle_mechanics.py` 也已收口为兼容入口，并拆到 `tests/arena_coop_battle_mechanics/state_passives.py`（425 行）与 `tests/arena_coop_battle_mechanics/simulation_cases.py`（407 行）；`battle_debugger/templates/battle_debugger/result_detail.html` 已将页面样式与事件列表拆到 `battle_debugger/templates/battle_debugger/partials/result_detail_styles.html`（498 行）与 `battle_debugger/templates/battle_debugger/partials/event_list.html`（73 行），主模板降到 159 行；`battle/templates/battle/report_detail.html` 也已将页面样式拆到 `battle/templates/battle/partials/report_detail_styles.html`（173 行），主模板降到 337 行。验证结果：`python -m pytest tests/test_battle_passives.py tests/test_battle_report_view.py tests/test_battle_debugger_contracts.py tests/test_arena_coop_battle_mechanics.py -q` 通过，结果为 `41 passed`；`python -m pytest tests/test_battle_passives.py tests/test_battle_report_view.py tests/test_battle_debugger_contracts.py tests/test_arena_views.py tests/arena_services/coop_registration.py tests/arena_services/coop_resolution.py tests/test_arena_coop_battle_mechanics.py tests/test_load_guest_templates_command.py -q` 通过，结果为 `91 passed`。
   - `2026-03-25` 已启动复杂度热点首刀整改：`gameplay/views/jail.py` 中的“锁包装与异常/响应映射”及“监牢/结义林状态载荷拼装”已分别下沉到 `gameplay/views/jail_action_support.py` 与 `gameplay/views/jail_payloads.py`；主文件体量已由 `514` 行降到 `368` 行，且 `python -m flake8 gameplay/views/jail.py gameplay/views/jail_action_support.py gameplay/views/jail_payloads.py`、`python -m mypy gameplay/views/jail.py gameplay/views/jail_action_support.py gameplay/views/jail_payloads.py` 与 `python -m pytest tests/test_jail_views.py tests/test_jail_service.py -q` 均通过。
@@ -52,7 +54,7 @@
   - 阶段 5 仅保留“持续维护”主题：超大测试文件收缩主线已基本完成，但 env-services / 并发集成环境的外部依赖可用性仍会影响真实环境 gate 的稳定性。
   - `2026-03-25` 新一轮复杂度复核中点名的三处热点：`gameplay/services/manor/core.py`、`gameplay/views/jail.py`、`trade/selector_builders.py` 当前都已压回默认 Python 复杂度预算以内；这轮支线可视为完成一轮收口，但后续仍需持续防止公开入口再次堆回多职责。
   - 最新模板复杂度复核显示，仓库内仍存在超过 `500` 行的模板热点；当前最高体量模板为 `battle_debugger/templates/battle_debugger/custom_config.html`（`738` 行），其次是 `battle_debugger/templates/battle_debugger/tune_result.html`（`492` 行）与 `trade/templates/trade/partials/_market.html`（`485` 行）。`battle_debugger/templates/battle_debugger/result_detail.html` 与 `battle/templates/battle/report_detail.html` 已在本轮回落到默认预算以内，但 battle debugger 仍有其它热点待后续治理。
-  - 最新测试复杂度复核显示，仓库内仍存在超过 `500` 行的测试文件；当前最高体量测试文件为 `tests/battle_passives/core_cases.py`（`590` 行），其次是 `tests/test_production_views.py`（`523` 行）与 `tests/test_guild_mission_views.py`（`492` 行），其中前两者仍高于 `500` 行。`tests/test_guild_mission_service.py`、`tests/test_guild_warehouse_service.py`、`tests/test_guilds_tasks.py`、`tests/test_arena_views.py`、`tests/test_battle_report_view.py` 与 `tests/test_load_guest_templates_command.py` 已回落到兼容入口体量，因此“超大测试文件收口”仍未全量完成，但当前热点名单必须以新基线为准。
+  - 最新测试复杂度复核显示，仓库内当前最高体量测试文件为 `tests/battle_passives/core_cases.py`（`590` 行），其次是 `tests/test_core_views.py`（`574` 行）与 `tests/test_production_views.py`（`529` 行）；这三项当前都仍高于 `500` 行。`tests/test_guild_mission_service.py`、`tests/test_guild_warehouse_service.py`、`tests/test_guilds_tasks.py`、`tests/test_arena_views.py`、`tests/test_battle_report_view.py` 与 `tests/test_load_guest_templates_command.py` 已回落到兼容入口体量，因此“超大测试文件收口”虽已显著收敛，但当前热点名单必须以新基线为准。
   - 后续若继续推进复杂度治理，应优先复核新的超阈值文件是否真的形成认知热点，再按稳定业务职责切分；默认不再把已经回到预算内的模块作为主线持续拆分对象。
   - 默认门禁、真实环境 gate、复杂度预算与文档基线需要在后续每轮改动后持续复核，不再单列历史批次明细。
   - `2026-03-26` 复核确认：阶段 4 “模板内联脚本清零”虽已完成，但前端工程化并未收口；`package.json` 仍只有 Tailwind 构建脚本，没有前端 lint / test / bundler 入口，`static/js` 当前约 `5k+` 行手写页面脚本，且仓库内没有任何前端测试执行链路。这一项应作为新的治理主线，而不是继续把“脚本已迁出模板”误判为前端边界已稳定。

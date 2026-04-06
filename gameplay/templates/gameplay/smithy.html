@@ -28,7 +28,7 @@
                         {% if production.time_remaining > 0 %}
                             <span class="tw-chip">
                                 剩余时间：
-                                <span class="countdown" data-countdown="{{ production.complete_at|date:'c' }}" data-refresh="1">
+                                <span class="countdown" data-countdown="{{ production.complete_at|date:'c' }}" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_production_runtime_api' %}" data-refresh-method="post">
                                     {{ production.time_remaining }} 秒
                                 </span>
                             </span>

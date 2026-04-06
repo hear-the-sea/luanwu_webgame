@@ -67,7 +67,7 @@
                         <div>
                             <dt>研究完成</dt>
                             <dd>
-                                <span class="countdown" data-countdown="{{ tech.upgrade_complete_at|date:'c' }}" data-refresh="1" data-complete-text="完成">
+                                <span class="countdown" data-countdown="{{ tech.upgrade_complete_at|date:'c' }}" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_technology_upgrades_api' %}" data-refresh-method="post" data-complete-text="完成">
                                     {{ tech.time_remaining }}秒
                                 </span>
                             </dd>
@@ -145,7 +145,7 @@
                     <div>
                         <dt>研究完成</dt>
                         <dd>
-                            <span class="countdown" data-countdown="{{ tech.upgrade_complete_at|date:'c' }}" data-refresh="1" data-complete-text="完成">
+                            <span class="countdown" data-countdown="{{ tech.upgrade_complete_at|date:'c' }}" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_technology_upgrades_api' %}" data-refresh-method="post" data-complete-text="完成">
                                 {{ tech.time_remaining }}秒
                             </span>
                         </dd>

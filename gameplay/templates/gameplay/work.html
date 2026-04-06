@@ -83,6 +83,8 @@
                                     <span class="countdown"
                                           data-countdown="{{ working_assignment.complete_at|date:'c' }}"
                                           data-format="zh-no-sec"
+                                          data-refresh-url="{% url 'gameplay:refresh_work_assignments_api' %}"
+                                          data-refresh-method="post"
                                           data-refresh="1">计算中</span>
                                 </p>
                                 <form method="post" action="{% url 'gameplay:recall_work' working_assignment.id %}" class="recall-form text-center">
@@ -101,6 +103,8 @@
                                 <span class="countdown"
                                       data-countdown="{{ working_assignment.complete_at|date:'c' }}"
                                       data-format="zh-no-sec"
+                                      data-refresh-url="{% url 'gameplay:refresh_work_assignments_api' %}"
+                                      data-refresh-method="post"
                                       data-refresh="1">计算中</span>
                             </p>
                             <form method="post" action="{% url 'gameplay:recall_work' working_assignment.id %}" class="recall-form text-center">

@@ -127,6 +127,8 @@
                               data-countdown="{{ active_guild_pvp_run.display_eta_at|date:'c' }}"
                               data-format="zh"
                               data-refresh="1"
+                              data-refresh-url="{% url 'guilds:refresh_pvp_activity_api' %}"
+                              data-refresh-method="post"
                               title="预计{{ active_guild_pvp_run.display_eta_label }} {{ active_guild_pvp_run.display_eta_at|date:'Y-m-d H:i:s' }}">计算中</span>
                         {% else %}
                         <span class="muted-text">等待更新</span>
@@ -158,6 +160,8 @@
                               data-countdown="{{ run.display_eta_at|date:'c' }}"
                               data-format="zh"
                               data-refresh="1"
+                              data-refresh-url="{% url 'guilds:refresh_pvp_activity_api' %}"
+                              data-refresh-method="post"
                               title="预计{{ run.display_eta_label }} {{ run.display_eta_at|date:'Y-m-d H:i:s' }}">计算中</span>
                         {% else %}
                         <span class="muted-text">等待更新</span>
@@ -179,6 +183,8 @@
                               data-countdown="{{ active_guild_mission.return_at|date:'c' }}"
                               data-format="zh"
                               data-refresh="1"
+                              data-refresh-url="{% url 'guilds:refresh_mission_runs_api' %}"
+                              data-refresh-method="post"
                               title="预计完成 {{ active_guild_mission.return_at|date:'Y-m-d H:i:s' }}">计算中</span>
                     </td>
                     <td>
@@ -228,6 +234,8 @@
                               data-countdown="{{ run.next_state_at|date:'c' }}"
                               data-format="zh"
                               data-refresh="1"
+                              data-refresh-url="{% url 'gameplay:refresh_mission_runs_api' %}"
+                              data-refresh-method="post"
                               title="预计{% if run.is_returning %}{% if run.mission.is_defense %}结算{% else %}返回{% endif %}{% else %}{% if run.mission.is_defense %}敌军到达{% else %}到达{% endif %}{% endif %} {{ run.next_state_at|date:'Y-m-d H:i:s' }}">计算中</span>
                     </td>
                     <td>
@@ -263,6 +271,8 @@
                               data-countdown="{{ building.upgrade_complete_at|date:'c' }}"
                               data-format="zh"
                               data-refresh="1"
+                              data-refresh-url="{% url 'gameplay:refresh_building_upgrades_api' %}"
+                              data-refresh-method="post"
                               data-complete-text="完成"
                               title="预计完成 {{ building.upgrade_complete_at|date:'Y-m-d H:i:s' }}">计算中</span>
                     </td>
@@ -284,6 +294,8 @@
                               data-countdown="{{ tech.upgrade_complete_at|date:'c' }}"
                               data-format="zh"
                               data-refresh="1"
+                              data-refresh-url="{% url 'gameplay:refresh_technology_upgrades_api' %}"
+                              data-refresh-method="post"
                               data-complete-text="完成"
                               title="预计完成 {{ tech.upgrade_complete_at|date:'Y-m-d H:i:s' }}">计算中</span>
                     </td>

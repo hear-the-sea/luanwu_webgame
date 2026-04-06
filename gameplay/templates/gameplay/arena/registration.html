@@ -17,7 +17,7 @@
         {% if active_entry.tournament.status == 'running' and active_entry.tournament.next_round_at %}
         <p class="text-text-muted mt-1">
             下一轮开始于：
-            <span class="countdown" data-countdown="{{ active_entry.tournament.next_round_at|date:'c' }}" data-format="zh-no-sec" data-refresh="1">
+            <span class="countdown" data-countdown="{{ active_entry.tournament.next_round_at|date:'c' }}" data-format="zh-no-sec" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_arena_activity_api' %}" data-refresh-method="post">
                 {{ active_entry.tournament.next_round_at|date:"m-d H:i:s" }}
             </span>
         </p>

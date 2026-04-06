@@ -6,9 +6,11 @@ import pytest
 from django.contrib.messages import get_messages
 from django.db import DatabaseError
 from django.urls import reverse
+from django.utils import timezone
 from django_redis.exceptions import ConnectionInterrupted
 
 from core.exceptions import TroopRecruitmentError
+from gameplay.models import TroopRecruitment
 from gameplay.services.utils import cache as cache_utils
 from guests.views.recruit import _invalidate_recruitment_hall_cache_for_manor
 
@@ -33,6 +35,28 @@ class TestRecruitmentViews:
         options = response.context["recruitment_options"]
         assert options
         assert all(option.get("troop_class") == "jian" for option in options)
+
+    def test_troop_recruitment_page_active_queue_has_refresh_endpoint(self, manor_with_user):
+        manor, client = manor_with_user
+        TroopRecruitment.objects.create(
+            manor=manor,
+            troop_key="dao_guard",
+            troop_name="刀盾护院",
+            quantity=1,
+            equipment_costs={},
+            retainer_cost=1,
+            base_duration=60,
+            actual_duration=60,
+            complete_at=timezone.now() + timezone.timedelta(minutes=1),
+        )
+
+        response = client.get(reverse("gameplay:troop_recruitment"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert 'data-refresh="1"' in body
+        assert reverse("gameplay:refresh_troop_recruitments_api") in body
+        assert 'data-refresh-method="post"' in body
 
     def test_troop_recruitment_page_uses_explicit_read_helper(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user

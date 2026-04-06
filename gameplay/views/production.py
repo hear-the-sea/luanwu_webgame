@@ -12,7 +12,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
@@ -20,7 +20,7 @@ from django.views.generic import TemplateView
 from core.decorators import flash_unexpected_view_error
 from core.exceptions import GameError
 from core.utils import safe_positive_int, sanitize_error_message
-from core.utils.rate_limit import rate_limit_redirect
+from core.utils.rate_limit import rate_limit_json, rate_limit_redirect
 from gameplay.constants import UIConstants
 from gameplay.models import Manor
 from gameplay.selectors.production import (
@@ -29,8 +29,10 @@ from gameplay.selectors.production import (
     get_smithy_page_context,
     get_stable_page_context,
 )
+from gameplay.services.buildings import forge as forge_service
 from gameplay.services.buildings import ranch as ranch_service
 from gameplay.services.buildings import smithy as smithy_service
+from gameplay.services.buildings import stable as stable_service
 from gameplay.services.buildings.stable import start_horse_production
 from gameplay.services.manor.core import get_manor
 from gameplay.services.resources import project_resource_production_for_read
@@ -40,6 +42,8 @@ from gameplay.views.production_forge_handlers import (
     handle_synthesize_blueprint_equipment,
 )
 from gameplay.views.read_helpers import get_prepared_manor_for_read
+
+from .runtime_refresh_support import run_refresh_api
 
 logger = logging.getLogger(__name__)
 
@@ -157,6 +161,15 @@ def _run_basic_production_start(
     return redirect(redirect_name)
 
 
+def _refresh_all_active_productions(manor: Manor) -> int:
+    return (
+        int(stable_service.refresh_horse_productions(manor))
+        + int(ranch_service.refresh_livestock_productions(manor))
+        + int(smithy_service.refresh_smelting_productions(manor))
+        + int(forge_service.refresh_equipment_forgings(manor))
+    )
+
+
 class StableView(LoginRequiredMixin, TemplateView):
     """马房页面"""
 
@@ -168,6 +181,24 @@ class StableView(LoginRequiredMixin, TemplateView):
         context["manor"] = manor
         context.update(get_stable_page_context(manor))
         return context
+
+
+@login_required
+@require_POST
+@rate_limit_json(
+    "production_runtime_refresh", limit=30, window_seconds=60, error_message="状态刷新过于频繁，请稍后再试"
+)
+def refresh_production_runtime_api(request: HttpRequest) -> JsonResponse:
+    manor = get_manor(request.user)
+    return run_refresh_api(
+        operation=lambda: _refresh_all_active_productions(manor),
+        logger_instance=logger,
+        log_message="Unexpected production refresh error: manor_id=%s user_id=%s",
+        log_args=(
+            getattr(manor, "id", None),
+            getattr(request.user, "id", None),
+        ),
+    )
 
 
 @login_required

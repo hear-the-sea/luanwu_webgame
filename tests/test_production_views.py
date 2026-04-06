@@ -95,6 +95,8 @@ class TestProductionViews:
         body = response.content.decode("utf-8")
         assert "js/dashboard.js" in body
         assert 'data-refresh="1"' in body
+        assert reverse("gameplay:refresh_production_runtime_api") in body
+        assert 'data-refresh-method="post"' in body
 
     def test_ranch_page(self, manor_with_user):
         """畜牧场页面"""
@@ -219,6 +221,8 @@ class TestProductionViews:
         body = response.content.decode("utf-8")
         assert "js/dashboard.js" in body
         assert 'data-refresh="1"' in body
+        assert reverse("gameplay:refresh_production_runtime_api") in body
+        assert 'data-refresh-method="post"' in body
 
     def test_smithy_page(self, manor_with_user):
         """冶炼坊页面"""
@@ -289,6 +293,8 @@ class TestProductionViews:
         body = response.content.decode("utf-8")
         assert "js/dashboard.js" in body
         assert 'data-refresh="1"' in body
+        assert reverse("gameplay:refresh_production_runtime_api") in body
+        assert 'data-refresh-method="post"' in body
 
     def test_start_horse_production_database_error_does_not_500(self, manor_with_user, monkeypatch):
         _manor, client = manor_with_user

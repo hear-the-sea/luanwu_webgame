@@ -20,8 +20,8 @@ from .views.membership import (
     transfer_leadership,
     upgrade_guild,
 )
-from .views.missions import donate_troops, launch_mission, missions, retreat_mission
-from .views.pvp import launch_guild_raid, pvp_page, retreat_guild_raid
+from .views.missions import donate_troops, launch_mission, missions, refresh_mission_runs_api, retreat_mission
+from .views.pvp import launch_guild_raid, pvp_page, refresh_pvp_activity_api, retreat_guild_raid
 from .views.technology import technology_list, upgrade_technology
 from .views.warehouse import exchange_item, exchange_logs, warehouse
 
@@ -58,11 +58,13 @@ urlpatterns = [
     path("hero-pool/lineup/remove/", lineup_remove, name="lineup_remove"),
     # 帮会任务与护院池
     path("missions/", missions, name="missions"),
+    path("api/missions/refresh/", refresh_mission_runs_api, name="refresh_mission_runs_api"),
     path("missions/launch/", launch_mission, name="mission_launch"),
     path("missions/retreat/", retreat_mission, name="mission_retreat"),
     path("missions/donate-troops/", donate_troops, name="donate_troops"),
     # 帮会 PVP
     path("pvp/", pvp_page, name="pvp"),
+    path("api/pvp/refresh/", refresh_pvp_activity_api, name="refresh_pvp_activity_api"),
     path("pvp/launch/", launch_guild_raid, name="pvp_launch"),
     path("pvp/retreat/", retreat_guild_raid, name="pvp_retreat"),
     # 帮会升级

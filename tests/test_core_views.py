@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import timedelta
 from types import SimpleNamespace
 
@@ -110,6 +111,124 @@ class TestCoreViews:
         refresh_url = reverse("gameplay:refresh_raid_activity_api")
         assert body.count(f'data-refresh-url="{refresh_url}"') == 3
         assert body.count('data-refresh-method="post"') == 3
+
+    def test_home_page_all_refreshing_countdowns_expose_explicit_refresh_or_check_endpoint(
+        self,
+        authenticated_client,
+        monkeypatch,
+    ):
+        manor = ensure_manor(authenticated_client.user)
+        now = timezone.now()
+
+        monkeypatch.setattr(
+            "gameplay.views.core.get_prepared_manor_for_read",
+            lambda request, **_kwargs: manor,
+        )
+        monkeypatch.setattr(
+            "gameplay.views.core.get_home_context",
+            lambda _manor: {
+                "manor": manor,
+                "resources": [],
+                "resource_labels": {},
+                "guests": [],
+                "guest_count": 0,
+                "total_guest_salary": 0,
+                "building_income": [],
+                "grain_production": 0,
+                "personnel_grain_cost": 0,
+                "player_troops": [],
+                "active_scouts": [
+                    SimpleNamespace(
+                        id=11,
+                        defender=SimpleNamespace(display_name="目标庄园"),
+                        status="scouting",
+                        next_state_at=now + timedelta(minutes=3),
+                        get_status_display="侦察中",
+                    )
+                ],
+                "active_raids": [
+                    SimpleNamespace(
+                        id=12,
+                        defender=SimpleNamespace(display_name="目标庄园"),
+                        status="marching",
+                        next_state_at=now + timedelta(minutes=5),
+                        get_status_display="行军中",
+                        can_retreat=False,
+                        is_retreating=False,
+                    )
+                ],
+                "incoming_raids": [
+                    SimpleNamespace(
+                        id=13,
+                        attacker=SimpleNamespace(display_name="来袭者", location_display="齐国 临淄"),
+                        arrive_at=now + timedelta(minutes=7),
+                    )
+                ],
+                "active_guild_pvp_run": SimpleNamespace(
+                    run=SimpleNamespace(id=21, defender_guild=SimpleNamespace(name="敌方帮会")),
+                    display_hint="正在向敌方帮会进军",
+                    display_eta_at=now + timedelta(minutes=6),
+                    display_eta_label="到达",
+                    can_retreat=True,
+                    action_label="撤回",
+                ),
+                "incoming_guild_pvp_runs": [
+                    SimpleNamespace(
+                        run=SimpleNamespace(attacker_guild=SimpleNamespace(name="来袭帮会")),
+                        display_hint="敌方帮会正在向本帮进军",
+                        display_eta_at=now + timedelta(minutes=8),
+                        display_eta_label="到达",
+                    )
+                ],
+                "active_guild_mission": SimpleNamespace(
+                    id=31,
+                    template=SimpleNamespace(name="帮会巡防"),
+                    return_at=now + timedelta(minutes=4),
+                    can_retreat_from_home=False,
+                ),
+                "active_runs": [
+                    SimpleNamespace(
+                        id=41,
+                        mission=SimpleNamespace(name="普通出征", is_defense=False),
+                        is_retreating=False,
+                        is_returning=False,
+                        next_state_at=now + timedelta(minutes=9),
+                        can_retreat=True,
+                    )
+                ],
+                "upgrading_buildings": [
+                    SimpleNamespace(
+                        level=1,
+                        upgrade_complete_at=now + timedelta(minutes=2),
+                        building_type=SimpleNamespace(name="农田"),
+                    )
+                ],
+                "upgrading_technologies": [
+                    SimpleNamespace(
+                        level=2,
+                        upgrade_complete_at=now + timedelta(minutes=10),
+                        display_name="刀兵攻击",
+                        tech_key="dao_attack",
+                    )
+                ],
+            },
+        )
+
+        response = authenticated_client.get(reverse("home"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        countdown_tags = re.findall(r"<span class=\"countdown\".*?>", body, flags=re.DOTALL)
+        refreshing_countdowns = [tag for tag in countdown_tags if 'data-refresh="1"' in tag]
+        assert refreshing_countdowns
+        for tag in refreshing_countdowns:
+            assert 'data-refresh-url="' in tag or 'data-check-url="' in tag
+        assert reverse("gameplay:refresh_raid_activity_api") in body
+        assert reverse("gameplay:refresh_mission_runs_api") in body
+        assert reverse("gameplay:refresh_building_upgrades_api") in body
+        assert reverse("gameplay:refresh_technology_upgrades_api") in body
+        assert reverse("guilds:refresh_pvp_activity_api") in body
+        assert reverse("guilds:refresh_mission_runs_api") in body
 
     def test_home_page_uses_external_landing_script_for_retreat_and_collapse_actions(
         self,
@@ -337,6 +456,8 @@ class TestCoreViews:
         body = response.content.decode("utf-8")
         assert 'data-countdown="' in body
         assert 'data-refresh="1"' in body
+        assert reverse("gameplay:refresh_building_upgrades_api") in body
+        assert 'data-refresh-method="post"' in body
 
     def test_dashboard_max_level_building_shows_maxed_state(self, manor_with_user):
         """达到建筑等级上限时，页面应显示满级、禁用升级按钮，并将升级消耗显示为 /。"""

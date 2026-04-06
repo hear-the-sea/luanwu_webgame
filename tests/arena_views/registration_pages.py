@@ -90,6 +90,34 @@ def test_arena_events_view_renders(arena_client):
 
 
 @pytest.mark.django_db
+def test_arena_pages_running_tournament_countdown_uses_refresh_endpoint(arena_client):
+    client, manor = arena_client
+    now = timezone.now()
+    tournament = ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RUNNING,
+        player_limit=10,
+        round_interval_seconds=600,
+        current_round=1,
+        started_at=now - timedelta(minutes=5),
+        next_round_at=now + timedelta(minutes=1),
+    )
+    ArenaEntry.objects.create(tournament=tournament, manor=manor, status=ArenaEntry.Status.REGISTERED)
+
+    registration_response = client.get(reverse("gameplay:arena"))
+    events_response = client.get(reverse("gameplay:arena_events"))
+
+    assert registration_response.status_code == 200
+    assert events_response.status_code == 200
+    registration_body = registration_response.content.decode("utf-8")
+    events_body = events_response.content.decode("utf-8")
+    refresh_url = reverse("gameplay:refresh_arena_activity_api")
+    assert refresh_url in registration_body
+    assert refresh_url in events_body
+    assert 'data-refresh-method="post"' in registration_body
+    assert 'data-refresh-method="post"' in events_body
+
+
+@pytest.mark.django_db
 def test_arena_events_view_lists_recent_completed_coop_event(arena_client):
     client, manor = arena_client
     event = ArenaCoopEvent.objects.create(

@@ -12,7 +12,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -21,11 +21,14 @@ from django.views.generic import TemplateView
 from core.decorators import flash_unexpected_view_error
 from core.exceptions import GameError
 from core.utils import safe_positive_int, sanitize_error_message
-from core.utils.rate_limit import rate_limit_redirect
+from core.utils.rate_limit import rate_limit_json, rate_limit_redirect
 from gameplay.selectors.troop_recruitment import get_troop_recruitment_context
 from gameplay.services.manor.core import get_manor
+from gameplay.services.recruitment.recruitment import refresh_troop_recruitments
 from gameplay.services.resources import project_resource_production_for_read
 from gameplay.views.read_helpers import get_prepared_manor_for_read
+
+from .runtime_refresh_support import run_refresh_api
 
 logger = logging.getLogger(__name__)
 
@@ -189,4 +192,22 @@ def withdraw_troop_from_bank_view(request: HttpRequest) -> HttpResponse:
         transfer_action=withdraw_troops_from_bank,
         success_message_template="已从钱庄取出 {quantity} 名{troop_name}",
         log_message="Unexpected troop bank withdraw error: manor_id=%s user_id=%s troop_key=%s quantity=%s",
+    )
+
+
+@login_required
+@require_POST
+@rate_limit_json(
+    "troop_recruitment_runtime_refresh", limit=30, window_seconds=60, error_message="状态刷新过于频繁，请稍后再试"
+)
+def refresh_troop_recruitments_api(request: HttpRequest) -> JsonResponse:
+    manor = get_manor(request.user)
+    return run_refresh_api(
+        operation=lambda: refresh_troop_recruitments(manor),
+        logger_instance=logger,
+        log_message="Unexpected troop recruitment refresh error: manor_id=%s user_id=%s",
+        log_args=(
+            getattr(manor, "id", None),
+            getattr(request.user, "id", None),
+        ),
     )

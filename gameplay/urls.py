@@ -11,14 +11,16 @@ from .views.arena import (
     arena_coop_register_view,
     arena_exchange_view,
     arena_register_view,
+    refresh_arena_activity_api,
 )
-from .views.buildings import UpgradeBuildingView
+from .views.buildings import UpgradeBuildingView, refresh_building_upgrades_api
 from .views.core import DashboardView, RankingView, SettingsView, rename_manor_view
 from .views.inventory import (
     RecruitmentHallView,
     WarehouseView,
     move_item_to_treasury_view,
     move_item_to_warehouse_view,
+    refresh_recruitment_hall_api,
     use_guest_rarity_upgrade_view,
     use_guest_rebirth_card_view,
     use_item_view,
@@ -66,6 +68,7 @@ from .views.messages import (
 from .views.missions import (
     AcceptMissionView,
     TaskBoardView,
+    refresh_mission_runs_api,
     retreat_mission_view,
     retreat_scout_view,
     use_mission_card_view,
@@ -76,6 +79,7 @@ from .views.production import (
     SmithyView,
     StableView,
     decompose_equipment_view,
+    refresh_production_runtime_api,
     start_equipment_forging_view,
     start_horse_production_view,
     start_livestock_production_view,
@@ -85,11 +89,18 @@ from .views.production import (
 from .views.recruitment import (
     TroopRecruitmentView,
     deposit_troop_to_bank_view,
+    refresh_troop_recruitments_api,
     start_troop_recruitment_view,
     withdraw_troop_from_bank_view,
 )
-from .views.technology import TechnologyView, upgrade_technology_view
-from .views.work import WorkView, assign_work_view, claim_work_reward_view, recall_work_view
+from .views.technology import TechnologyView, refresh_technology_upgrades_api, upgrade_technology_view
+from .views.work import (
+    WorkView,
+    assign_work_view,
+    claim_work_reward_view,
+    recall_work_view,
+    refresh_work_assignments_api,
+)
 
 app_name = "gameplay"
 
@@ -107,6 +118,7 @@ urlpatterns = [
     path("arena/coop/register/", arena_coop_register_view, name="arena_coop_register"),
     path("arena/coop/cancel/", arena_coop_cancel_view, name="arena_coop_cancel"),
     path("arena/exchange/submit/", arena_exchange_view, name="arena_exchange"),
+    path("api/arena/refresh/", refresh_arena_activity_api, name="refresh_arena_activity_api"),
     path("messages/", MessageListView.as_view(), name="messages"),
     path("messages/view/<int:pk>/", view_message, name="view_message"),
     path("messages/<int:pk>/claim/", claim_attachment_view, name="claim_attachment"),
@@ -124,16 +136,21 @@ urlpatterns = [
     path("warehouse/move-to-treasury/<int:pk>/", move_item_to_treasury_view, name="move_to_treasury"),
     path("warehouse/move-to-warehouse/<int:pk>/", move_item_to_warehouse_view, name="move_to_warehouse"),
     path("recruitment/", RecruitmentHallView.as_view(), name="recruitment_hall"),
+    path("api/recruitment/refresh/", refresh_recruitment_hall_api, name="refresh_recruitment_hall_api"),
     path("building/<int:pk>/upgrade/", UpgradeBuildingView.as_view(), name="upgrade_building"),
+    path("api/buildings/upgrades/refresh/", refresh_building_upgrades_api, name="refresh_building_upgrades_api"),
     path("tasks/accept/", AcceptMissionView.as_view(), name="accept_mission"),
     path("tasks/use-card/", use_mission_card_view, name="use_mission_card"),
     path("missions/<int:pk>/retreat/", retreat_mission_view, name="mission_retreat"),
+    path("api/missions/refresh/", refresh_mission_runs_api, name="refresh_mission_runs_api"),
     path("technology/", TechnologyView.as_view(), name="technology"),
     path("technology/upgrade/<str:tech_key>/", upgrade_technology_view, name="upgrade_technology"),
+    path("api/technology/upgrades/refresh/", refresh_technology_upgrades_api, name="refresh_technology_upgrades_api"),
     path("work/", WorkView.as_view(), name="work"),
     path("work/assign/", assign_work_view, name="assign_work"),
     path("work/recall/<int:pk>/", recall_work_view, name="recall_work"),
     path("work/claim/<int:pk>/", claim_work_reward_view, name="claim_work_reward"),
+    path("api/work/refresh/", refresh_work_assignments_api, name="refresh_work_assignments_api"),
     path("stable/", StableView.as_view(), name="stable"),
     path("stable/produce/", start_horse_production_view, name="start_horse_production"),
     path("ranch/", RanchView.as_view(), name="ranch"),
@@ -144,6 +161,7 @@ urlpatterns = [
     path("forge/start/", start_equipment_forging_view, name="start_equipment_forging"),
     path("forge/synthesize/", synthesize_blueprint_equipment_view, name="synthesize_blueprint_equipment"),
     path("forge/decompose/", decompose_equipment_view, name="decompose_equipment"),
+    path("api/production/refresh/", refresh_production_runtime_api, name="refresh_production_runtime_api"),
     path("settings/", SettingsView.as_view(), name="settings"),
     path("settings/rename/", rename_manor_view, name="rename_manor"),
     path("jail/", JailView.as_view(), name="jail"),
@@ -158,6 +176,7 @@ urlpatterns = [
     path("troop-recruitment/start/", start_troop_recruitment_view, name="start_troop_recruitment"),
     path("troop-recruitment/bank/deposit/", deposit_troop_to_bank_view, name="deposit_troop_to_bank"),
     path("troop-recruitment/bank/withdraw/", withdraw_troop_from_bank_view, name="withdraw_troop_from_bank"),
+    path("api/troop-recruitment/refresh/", refresh_troop_recruitments_api, name="refresh_troop_recruitments_api"),
     # 地图与踢馆系统
     path("map/", MapView.as_view(), name="map"),
     path("map/raid/<int:target_id>/", RaidConfigView.as_view(), name="raid_config"),

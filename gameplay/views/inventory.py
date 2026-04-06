@@ -10,7 +10,7 @@ from typing import Any, Callable, Mapping
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -18,7 +18,7 @@ from django.views.generic import TemplateView
 
 from core.exceptions import GameError
 from core.utils import is_ajax_request, safe_int, safe_positive_int
-from core.utils.rate_limit import rate_limit_redirect
+from core.utils.rate_limit import rate_limit_json, rate_limit_redirect
 from gameplay.constants import UIConstants
 from gameplay.models import InventoryItem
 from gameplay.selectors.recruitment import get_recruitment_hall_context
@@ -34,6 +34,7 @@ from gameplay.services.inventory.use import use_inventory_item
 from gameplay.services.manor.core import get_manor, project_manor_activity_for_read
 from gameplay.services.manor.treasury import move_item_to_treasury, move_item_to_warehouse
 from gameplay.services.resources import project_resource_production_for_read
+from gameplay.services.utils.cache import invalidate_recruitment_hall_cache
 from gameplay.views.inventory_action_support import (
     build_inventory_use_success_message,
     inventory_error_response,
@@ -45,8 +46,17 @@ from gameplay.views.inventory_action_support import (
     unexpected_inventory_error_response,
 )
 from gameplay.views.read_helpers import get_prepared_manor_for_read
+from guests.services.recruitment import refresh_guest_recruitments
+
+from .runtime_refresh_support import run_refresh_api
 
 logger = logging.getLogger(__name__)
+
+
+def _refresh_recruitment_hall_runtime(manor: Any) -> int:
+    refreshed = int(refresh_guest_recruitments(manor) or 0)
+    invalidate_recruitment_hall_cache(int(manor.id))
+    return refreshed
 
 
 def _warehouse_item(manor: Any, pk: int) -> InventoryItem:
@@ -158,6 +168,24 @@ class RecruitmentHallView(LoginRequiredMixin, TemplateView):
         )
         context.update(get_recruitment_hall_context(manor, UIConstants.RECRUIT_RECORDS_DISPLAY))
         return context
+
+
+@login_required
+@require_POST
+@rate_limit_json(
+    "guest_recruitment_runtime_refresh", limit=30, window_seconds=60, error_message="状态刷新过于频繁，请稍后再试"
+)
+def refresh_recruitment_hall_api(request: HttpRequest) -> JsonResponse:
+    manor = get_manor(request.user)
+    return run_refresh_api(
+        operation=lambda: _refresh_recruitment_hall_runtime(manor),
+        logger_instance=logger,
+        log_message="Unexpected guest recruitment refresh error: manor_id=%s user_id=%s",
+        log_args=(
+            getattr(manor, "id", None),
+            getattr(request.user, "id", None),
+        ),
+    )
 
 
 class WarehouseView(LoginRequiredMixin, TemplateView):

@@ -4,8 +4,10 @@ import pytest
 from django.contrib.messages import get_messages
 from django.db import DatabaseError
 from django.urls import reverse
+from django.utils import timezone
 
 from core.exceptions import TechnologyError
+from gameplay.models import PlayerTechnology
 
 
 @pytest.mark.django_db
@@ -35,6 +37,24 @@ class TestTechnologyViews:
         response = client.get(reverse("gameplay:technology") + "?tab=unknown")
         assert response.status_code == 200
         assert response.context["current_tab"] == "basic"
+
+    def test_technology_page_active_upgrade_has_refresh_endpoint(self, manor_with_user):
+        manor, client = manor_with_user
+        PlayerTechnology.objects.create(
+            manor=manor,
+            tech_key="dao_attack",
+            level=0,
+            is_upgrading=True,
+            upgrade_complete_at=timezone.now() + timezone.timedelta(minutes=1),
+        )
+
+        response = client.get(reverse("gameplay:technology") + "?tab=martial&troop=dao")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert 'data-refresh="1"' in body
+        assert reverse("gameplay:refresh_technology_upgrades_api") in body
+        assert 'data-refresh-method="post"' in body
 
     def test_technology_page_uses_explicit_read_helper(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user
