@@ -10,6 +10,7 @@ from gameplay.constants import UIConstants
 from gameplay.models import MissionRun, MissionTemplate, ResourceType
 from gameplay.services.inventory.core import get_item_quantity
 from gameplay.services.manor.core import project_manor_activity_for_read
+from gameplay.services.missions import can_retreat
 from gameplay.services.missions_impl.attempts import bulk_get_mission_extra_attempts, bulk_mission_attempts_today
 from gameplay.services.recruitment.recruitment import get_player_troops
 from gameplay.utils.template_loader import get_item_templates_by_keys, get_troop_templates_by_keys
@@ -82,6 +83,8 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         .filter(status=MissionRun.Status.ACTIVE)
         .order_by("-started_at")[: UIConstants.ACTIVE_RUNS_DISPLAY]
     )
+    for run in active_runs:
+        setattr(run, "can_retreat", can_retreat(run))
 
     context: dict[str, Any] = {
         "manor": manor,

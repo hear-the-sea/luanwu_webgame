@@ -12,6 +12,12 @@ from tests.context_processors.support import FakeRedis
 pytestmark = pytest.mark.django_db
 
 
+def test_online_presence_http_touch_debounce_stays_responsive():
+    from gameplay.services import online_presence_backend
+
+    assert online_presence_backend.ONLINE_USER_TOUCH_CACHE_TIMEOUT <= 15
+
+
 def test_notifications_authenticated_http_touch_refreshes_online_count(monkeypatch, django_user_model):
     user = django_user_model.objects.create_user(username="ctx_touch_user", password="pass")
     request = RequestFactory().get("/")

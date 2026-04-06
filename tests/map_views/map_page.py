@@ -2,8 +2,12 @@
 地图页面与配置页测试
 """
 
+from datetime import timedelta
+from types import SimpleNamespace
+
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 
 from gameplay.services.manor.core import ensure_manor
 
@@ -88,6 +92,63 @@ class TestMapViews:
         body = response.content.decode("utf-8")
         assert "北俱芦洲地区的庄园" in body
         assert "north地区的庄园" not in body
+
+    def test_map_page_raid_scout_countdowns_use_explicit_refresh_api(self, manor_with_user, monkeypatch):
+        manor, client = manor_with_user
+        now = timezone.now()
+
+        monkeypatch.setattr(
+            "gameplay.views.map.get_prepared_manor_for_read",
+            lambda request, **_kwargs: manor,
+        )
+        monkeypatch.setattr(
+            "gameplay.views.map.get_map_context",
+            lambda _manor, selected_region, search_query: {
+                "manor": _manor,
+                "selected_region": selected_region,
+                "search_query": search_query,
+                "protection_status": {},
+                "active_raids": [
+                    SimpleNamespace(
+                        id=12,
+                        defender=SimpleNamespace(display_name="目标庄园"),
+                        status="marching",
+                        next_state_at=now + timedelta(minutes=5),
+                        get_status_display="行军中",
+                    )
+                ],
+                "active_scouts": [
+                    SimpleNamespace(
+                        id=11,
+                        defender=SimpleNamespace(display_name="侦察目标"),
+                        status="scouting",
+                        next_state_at=now + timedelta(minutes=3),
+                        get_status_display="侦察中",
+                    )
+                ],
+                "incoming_raids": [
+                    SimpleNamespace(
+                        id=13,
+                        attacker=SimpleNamespace(display_name="来袭者"),
+                        arrive_at=now + timedelta(minutes=7),
+                    )
+                ],
+                "scout_count": 2,
+                "player_troops": [],
+            },
+        )
+
+        response = client.get(reverse("gameplay:map"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        refresh_url = reverse("gameplay:refresh_raid_activity_api")
+        assert body.count(f'data-refresh-url="{refresh_url}"') == 3
+        assert body.count('data-refresh-method="post"') == 3
+        assert "当前战况" in body
+        assert "踢馆：目标庄园" in body
+        assert "侦察：侦察目标" in body
+        assert "来袭：来袭者" in body
 
     def test_raid_config_page_loads_external_page_script_without_inline_logic(
         self,

@@ -20,6 +20,7 @@
 | 文档 | 说明 |
 |------|------|
 | [健康检查运行手册](runbook_health_checks.md) | `/health/live` 与 `/health/ready` 的排障口径 |
+| [Docker 部署运行手册](runbook_deploy_docker.md) | 镜像构建、传输、更新容器、Redis 认证与清理经验 |
 | [数据流边界](domain_boundaries.md) | 关键领域的数据来源、缓存、补偿与失败语义 |
 | [第二阶段统一写模型基线](write_model_boundaries.md) | `mission / raid / guest recruitment` 写路径基线 |
 | [技术审计（2026-03）](technical_audit_2026-03.md) | 当前治理基线、约束与验证记录 |
@@ -38,5 +39,6 @@
 2. 联调页面动作、JSON 端点或 WebSocket，先看 [接口与实时入口](api.md)
 3. 改模型、迁移、索引或并发状态机，先看 [数据库边界](database.md) 与 [数据流边界](domain_boundaries.md)
 4. 涉及 YAML、导库或热刷新，先看 [配置数据](config_data.md)
+5. 涉及镜像构建、服务器更新、Redis 认证或 Docker 清理，先看 [Docker 部署运行手册](runbook_deploy_docker.md)
 
-*最近校正：2026-03-26*
+*最近校正：2026-04-06*

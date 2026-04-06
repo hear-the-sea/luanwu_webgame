@@ -9,6 +9,7 @@ from gameplay.utils.template_loader import get_troop_templates_by_keys
 from guests.models import GuestTemplate
 
 from ..models import GuildBattleLineupEntry, GuildMember, GuildMissionRun, GuildMissionTemplate, GuildTroopStorage
+from .guild_missions import can_retreat as can_retreat_guild_mission
 from .technology import get_guild_dispatch_capacity, get_guild_lineup_capacity
 
 
@@ -107,6 +108,7 @@ def get_guild_mission_page_context(
         "guild": guild,
         "member": member,
         "active_run": active_run,
+        "active_run_can_retreat": can_retreat_guild_mission(active_run, now=resolved_now) if active_run else False,
         "mission_templates": mission_templates,
         "mission_groups": mission_groups,
         "selected_mission": selected_mission,

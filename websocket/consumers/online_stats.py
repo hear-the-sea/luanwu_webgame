@@ -38,13 +38,13 @@ class OnlineStatsConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsume
     ONLINE_USERS_KEY = ONLINE_USERS_ZSET_KEY
     ONLINE_WS_USERS_KEY = ONLINE_WS_USERS_ZSET_KEY
     ONLINE_USERS_TTL = ONLINE_USERS_TTL_SECONDS  # 30 minutes window for auto-cleanup
-    ONLINE_USERS_HEARTBEAT_INTERVAL = 300  # refresh every 5 minutes
+    ONLINE_USERS_HEARTBEAT_INTERVAL = 60  # refresh every 1 minute
     ONLINE_USER_CONN_COUNT_KEY_PREFIX = "online_user_conn_count:"
 
     ONLINE_COUNT_CACHE_KEY = ONLINE_USERS_CACHE_KEY
     TOTAL_COUNT_CACHE_KEY = "stats:total_users_count"
-    ONLINE_COUNT_CACHE_TTL = 15
-    TOTAL_COUNT_CACHE_TTL = 300
+    ONLINE_COUNT_CACHE_TTL = 5
+    TOTAL_COUNT_CACHE_TTL = 30
 
     BROADCAST_DEBOUNCE_SECONDS = 1
     BROADCAST_DEBOUNCE_CACHE_KEY = "stats:online:broadcast:debounce"
@@ -254,6 +254,8 @@ class OnlineStatsConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsume
                 if not self.is_real_user or not self.user_id:
                     return
                 await self.touch_online_user(self.user_id)
+                stats = await self.get_stats()
+                await self._broadcast_stats_best_effort(stats)
             except asyncio.CancelledError:
                 return
             except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:

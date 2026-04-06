@@ -40,6 +40,78 @@
     </div>
     {% endif %}
 
+    {% if active_raids or active_scouts or incoming_raids %}
+    <section class="tw-card">
+        <div class="tw-manor-list-header">
+            <h2>当前战况</h2>
+            <span class="tw-manor-count">自动刷新</span>
+        </div>
+        <div class="flex flex-col gap-3">
+            {% for raid in active_raids %}
+            <div class="tw-manor-card">
+                <div class="tw-manor-card-info">
+                    <div class="tw-manor-name">踢馆：{{ raid.defender.display_name }}</div>
+                    <div class="tw-manor-location">{{ raid.get_status_display }}</div>
+                </div>
+                <div class="tw-manor-card-stats">
+                    <span class="countdown"
+                          data-countdown="{{ raid.next_state_at|date:'c' }}"
+                          data-format="zh"
+                          data-refresh="1"
+                          data-refresh-url="{% url 'gameplay:refresh_raid_activity_api' %}"
+                          data-refresh-method="post"
+                          title="预计 {{ raid.next_state_at|date:'Y-m-d H:i:s' }}">计算中</span>
+                </div>
+            </div>
+            {% endfor %}
+
+            {% for scout in active_scouts %}
+            <div class="tw-manor-card">
+                <div class="tw-manor-card-info">
+                    <div class="tw-manor-name">侦察：{{ scout.defender.display_name }}</div>
+                    <div class="tw-manor-location">
+                        {% if scout.status == 'scouting' %}
+                        探子正在前往目标
+                        {% elif scout.status == 'returning' %}
+                        探子正在返程
+                        {% else %}
+                        {{ scout.get_status_display }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="tw-manor-card-stats">
+                    <span class="countdown"
+                          data-countdown="{{ scout.next_state_at|date:'c' }}"
+                          data-format="zh"
+                          data-refresh="1"
+                          data-refresh-url="{% url 'gameplay:refresh_raid_activity_api' %}"
+                          data-refresh-method="post"
+                          title="预计{% if scout.status == 'scouting' %}到达{% else %}返回{% endif %} {{ scout.next_state_at|date:'Y-m-d H:i:s' }}">计算中</span>
+                </div>
+            </div>
+            {% endfor %}
+
+            {% for raid in incoming_raids %}
+            <div class="tw-manor-card">
+                <div class="tw-manor-card-info">
+                    <div class="tw-manor-name">来袭：{{ raid.attacker.display_name }}</div>
+                    <div class="tw-manor-location">敌方正在向你的庄园进军</div>
+                </div>
+                <div class="tw-manor-card-stats">
+                    <span class="countdown"
+                          data-countdown="{{ raid.arrive_at|date:'c' }}"
+                          data-format="zh"
+                          data-refresh="1"
+                          data-refresh-url="{% url 'gameplay:refresh_raid_activity_api' %}"
+                          data-refresh-method="post"
+                          title="预计到达 {{ raid.arrive_at|date:'Y-m-d H:i:s' }}">计算中</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
     <!-- 搜索和筛选 -->
     <section class="tw-card tw-map-controls">
         <div class="tw-control-row">

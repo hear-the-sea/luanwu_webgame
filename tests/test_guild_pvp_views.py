@@ -82,6 +82,58 @@ def test_guild_pvp_page_lists_attackable_targets(guild_member_client, django_use
 
 
 @pytest.mark.django_db
+def test_guild_pvp_page_active_runs_use_explicit_refresh_api(guild_member_client, django_user_model):
+    client, user, guild = guild_member_client
+    member = user.guild_membership
+
+    defender_user, _defender_manor = _create_user_with_manor(django_user_model, "guild_pvp_active_defender")
+    defender_guild = Guild.objects.create(
+        name="帮会PVP进行中目标", founder=defender_user, is_active=True, level=6, silver=50000
+    )
+    GuildMember.objects.create(guild=defender_guild, user=defender_user, position="leader", is_active=True)
+
+    incoming_user, _incoming_manor = _create_user_with_manor(django_user_model, "guild_pvp_active_incoming")
+    incoming_guild = Guild.objects.create(
+        name="帮会PVP来袭目标", founder=incoming_user, is_active=True, level=6, silver=50000
+    )
+    incoming_member = GuildMember.objects.create(
+        guild=incoming_guild, user=incoming_user, position="leader", is_active=True
+    )
+
+    now = timezone.now()
+    GuildRaidRun.objects.create(
+        attacker_guild=guild,
+        defender_guild=defender_guild,
+        started_by=member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        battle_at=now + timedelta(minutes=5),
+        return_at=now + timedelta(minutes=10),
+    )
+    GuildRaidRun.objects.create(
+        attacker_guild=incoming_guild,
+        defender_guild=guild,
+        started_by=incoming_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        battle_at=now + timedelta(minutes=7),
+        return_at=now + timedelta(minutes=14),
+    )
+
+    response = client.get(reverse("guilds:pvp"))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    refresh_url = reverse("guilds:refresh_pvp_activity_api")
+    assert "js/dashboard.js" in body
+    assert "当前战况" in body
+    assert "帮会出征：帮会PVP进行中目标" in body
+    assert "帮会来袭：帮会PVP来袭目标" in body
+    assert body.count(f'data-refresh-url="{refresh_url}"') == 2
+    assert body.count('data-refresh-method="post"') == 2
+
+
+@pytest.mark.django_db
 def test_guild_pvp_page_uses_list_detail_layout_and_hides_old_hint_blocks(guild_member_client, django_user_model):
     client, user, guild = guild_member_client
     leader_member = user.guild_membership

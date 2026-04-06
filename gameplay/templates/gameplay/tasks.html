@@ -11,6 +11,64 @@
         </div>
     </div>
 
+    {% if active_runs %}
+    <section class="tw-card mb-6">
+        <div class="tw-manor-list-header">
+            <h2>当前出征</h2>
+            <span class="tw-manor-count">自动刷新</span>
+        </div>
+        <div class="flex flex-col gap-3">
+            {% for run in active_runs %}
+            <div class="tw-manor-card">
+                <div class="tw-manor-card-info">
+                    <div class="tw-manor-name">
+                        {% if run.mission.is_defense %}
+                        防守：{{ run.mission.name }}
+                        {% else %}
+                        出征：{{ run.mission.name }}
+                        {% endif %}
+                    </div>
+                    <div class="tw-manor-location">
+                        {% if run.is_retreating %}
+                        {% if run.mission.is_defense %}防守撤销中{% else %}门客撤退中{% endif %}
+                        {% elif run.is_returning %}
+                        {% if run.mission.is_defense %}战斗结算中{% else %}门客正在返程{% endif %}
+                        {% else %}
+                        {% if run.mission.is_defense %}敌军正在来袭{% else %}门客正在前往目标{% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="tw-manor-card-stats">
+                    <span class="countdown"
+                          data-countdown="{{ run.next_state_at|date:'c' }}"
+                          data-format="zh"
+                          data-refresh="1"
+                          data-refresh-url="{% url 'gameplay:refresh_mission_runs_api' %}"
+                          data-refresh-method="post"
+                          title="预计{% if run.is_returning %}{% if run.mission.is_defense %}结算{% else %}返回{% endif %}{% else %}{% if run.mission.is_defense %}敌军到达{% else %}到达{% endif %}{% endif %} {{ run.next_state_at|date:'Y-m-d H:i:s' }}">计算中</span>
+                    {% if not run.is_returning %}
+                    <form method="post" action="{% url 'gameplay:mission_retreat' run.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="tw-btn-secondary tw-btn-sm" {% if not run.can_retreat %}disabled{% endif %}>
+                            {% if run.mission.is_defense %}取消{% else %}撤退{% endif %}
+                        </button>
+                    </form>
+                    {% else %}
+                    <span class="tw-muted">
+                        {% if run.is_retreating %}
+                            {% if run.mission.is_defense %}取消中{% else %}撤退中{% endif %}
+                        {% else %}
+                            {% if run.mission.is_defense %}结算中{% else %}返程中{% endif %}
+                        {% endif %}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
     <nav class="tw-mission-tabs">
         <button class="tw-trade-tab{% if active_tab == 'junior' %} active{% endif %}" data-tab="junior">初级任务</button>
         <button class="tw-trade-tab{% if active_tab == 'intermediate' %} active{% endif %}" data-tab="intermediate">中级任务</button>
@@ -367,5 +425,6 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="{% static 'js/dashboard.js' %}"></script>
 <script src="{% static 'js/tasks-page.js' %}"></script>
 {% endblock %}

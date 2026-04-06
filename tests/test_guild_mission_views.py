@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 import pytest
 from django.contrib.messages import get_messages
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, override_settings
 from django.urls import reverse
+from django.utils import timezone
 
 from battle.models import TroopTemplate
 from gameplay.services.manor.core import ensure_manor
@@ -115,6 +118,44 @@ def test_guild_mission_page_renders_tabbed_task_list_without_troop_pool(guild_me
     assert "门客池" not in body
     assert "详情" in body
     assert "门客" in body
+
+
+@pytest.mark.django_db
+def test_guild_mission_page_active_run_uses_explicit_refresh_api(guild_member_client):
+    client, user, guild = guild_member_client
+    template = GuildMissionTemplate.objects.create(
+        key="guild_active_run_task",
+        name="帮会进行中任务",
+        description="",
+        difficulty="junior",
+        task_type="guest",
+        base_duration_seconds=600,
+        ruby_reward=2,
+        recommended_guest_count=1,
+        allow_troops=False,
+        is_active=True,
+        sort_weight=1,
+    )
+    GuildMissionRun.objects.create(
+        guild=guild,
+        template=template,
+        started_by=user.guild_membership,
+        status=GuildMissionRun.Status.ACTIVE,
+        selected_guest_count=1,
+        ruby_reward=2,
+        return_at=timezone.now() + timedelta(minutes=8),
+    )
+
+    response = client.get(reverse("guilds:missions"))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    refresh_url = reverse("guilds:refresh_mission_runs_api")
+    assert "js/dashboard.js" in body
+    assert "当前帮会出征" in body
+    assert "帮会进行中任务" in body
+    assert body.count(f'data-refresh-url="{refresh_url}"') == 1
+    assert body.count('data-refresh-method="post"') == 1
 
 
 @pytest.mark.django_db

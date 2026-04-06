@@ -13,7 +13,7 @@ ONLINE_WS_USERS_ZSET_KEY = "online_users_ws_zset"
 ONLINE_USERS_TTL_SECONDS = 1800
 ONLINE_USERS_CACHE_KEY = "stats:online_users_count"
 ONLINE_USER_TOUCH_CACHE_KEY_PREFIX = "stats:online_users:touch:"
-ONLINE_USER_TOUCH_CACHE_TIMEOUT = 60
+ONLINE_USER_TOUCH_CACHE_TIMEOUT = 15
 
 
 def get_redis_connection_if_supported() -> Any | None:

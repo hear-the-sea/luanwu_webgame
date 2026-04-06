@@ -10,6 +10,13 @@ from gameplay.context_processors import notifications
 pytestmark = pytest.mark.django_db
 
 
+def test_notifications_global_stats_cache_timeouts_stay_responsive():
+    from gameplay.selectors import stats
+
+    assert stats.TOTAL_USERS_CACHE_TIMEOUT <= 30
+    assert stats.ONLINE_USERS_CACHE_TIMEOUT <= 5
+
+
 def test_notifications_anonymous_tolerates_explicit_cache_and_redis_infrastructure_failures(monkeypatch):
     request = RequestFactory().get("/")
     request.user = AnonymousUser()

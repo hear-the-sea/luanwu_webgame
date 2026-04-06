@@ -18,6 +18,67 @@
         </div>
     </div>
 
+    {% if active_run or incoming_runs %}
+    <section class="tw-card gpvp-shell" style="margin-bottom: 1.5rem;">
+        <div class="tw-manor-list-header">
+            <h2>当前战况</h2>
+            <span class="tw-manor-count">自动刷新</span>
+        </div>
+        <div class="flex flex-col gap-3">
+            {% if active_run %}
+            <div class="tw-manor-card">
+                <div class="tw-manor-card-info">
+                    <div class="tw-manor-name">帮会出征：{{ active_run.run.defender_guild.name }}</div>
+                    <div class="tw-manor-location">{{ active_run.display_hint }}</div>
+                </div>
+                <div class="tw-manor-card-stats">
+                    {% if active_run.display_eta_at %}
+                    <span class="countdown"
+                          data-countdown="{{ active_run.display_eta_at|date:'c' }}"
+                          data-format="zh"
+                          data-refresh="1"
+                          data-refresh-url="{% url 'guilds:refresh_pvp_activity_api' %}"
+                          data-refresh-method="post"
+                          title="预计{{ active_run.display_eta_label }} {{ active_run.display_eta_at|date:'Y-m-d H:i:s' }}">计算中</span>
+                    {% else %}
+                    <span class="tw-muted">等待更新</span>
+                    {% endif %}
+                    {% if active_run.can_retreat %}
+                    <form method="post" action="{% url 'guilds:pvp_retreat' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="run_id" value="{{ active_run.run.id }}">
+                        <button type="submit" class="tw-btn-secondary tw-btn-sm">{{ active_run.action_label }}</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% for run in incoming_runs %}
+            <div class="tw-manor-card">
+                <div class="tw-manor-card-info">
+                    <div class="tw-manor-name">帮会来袭：{{ run.run.attacker_guild.name }}</div>
+                    <div class="tw-manor-location">{{ run.display_hint }}</div>
+                </div>
+                <div class="tw-manor-card-stats">
+                    {% if run.display_eta_at %}
+                    <span class="countdown"
+                          data-countdown="{{ run.display_eta_at|date:'c' }}"
+                          data-format="zh"
+                          data-refresh="1"
+                          data-refresh-url="{% url 'guilds:refresh_pvp_activity_api' %}"
+                          data-refresh-method="post"
+                          title="预计{{ run.display_eta_label }} {{ run.display_eta_at|date:'Y-m-d H:i:s' }}">计算中</span>
+                    {% else %}
+                    <span class="tw-muted">等待更新</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
     <section class="tw-card gpvp-shell">
         {% if not member.can_manage %}
         <p class="tw-muted m-0">仅帮主或管理员可配置帮会出征。</p>
@@ -25,7 +86,6 @@
         <div class="gpvp-inline-state">
             <h2>暂不可再次出征</h2>
             <p class="m-0">当前已有帮会部队在外，返程结束前不可再次发起进攻。</p>
-            <p class="tw-muted m-0">实时状态与撤回入口已移至首页事件栏。</p>
         </div>
         {% else %}
         <form
@@ -226,5 +286,6 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="{% static 'js/dashboard.js' %}"></script>
 <script src="{% static 'js/guild-pvp-page.js' %}"></script>
 {% endblock %}

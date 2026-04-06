@@ -109,6 +109,13 @@ class OnlineStatsConsumerInternalTests(SimpleTestCase):
         consumer.close = AsyncMock()
         return consumer
 
+    def test_online_stats_refresh_thresholds_stay_responsive(self):
+        consumer = self._build_consumer()
+
+        assert consumer.ONLINE_USERS_HEARTBEAT_INTERVAL <= 60
+        assert consumer.ONLINE_COUNT_CACHE_TTL <= 5
+        assert consumer.TOTAL_COUNT_CACHE_TTL <= 30
+
     def test_broadcast_debounce_skips_when_gate_is_closed(self):
         consumer = self._build_consumer()
         consumer.BROADCAST_DEBOUNCE_SECONDS = 1
@@ -235,6 +242,33 @@ class OnlineStatsConsumerInternalTests(SimpleTestCase):
                 consumer._touch_online_user_sync(user_id=1, now_ts=time.time())
         finally:
             cache.delete = original_delete
+
+    def test_heartbeat_loop_refreshes_and_broadcasts_stats(self):
+        consumer = self._build_consumer()
+        consumer.is_real_user = True
+        consumer.user_id = 9
+        consumer.touch_online_user = AsyncMock()
+        consumer.get_stats = AsyncMock(return_value={"online_count": 4, "total_count": 12})
+        consumer._broadcast_stats_best_effort = AsyncMock()
+
+        sleep_calls = {"count": 0}
+        original_sleep = asyncio.sleep
+
+        async def _fake_sleep(_interval: float):
+            sleep_calls["count"] += 1
+            if sleep_calls["count"] > 1:
+                raise asyncio.CancelledError()
+            return None
+
+        asyncio.sleep = _fake_sleep
+        try:
+            asyncio.run(consumer._heartbeat_loop())
+        finally:
+            asyncio.sleep = original_sleep
+
+        consumer.touch_online_user.assert_awaited_once_with(9)
+        consumer.get_stats.assert_awaited_once_with()
+        consumer._broadcast_stats_best_effort.assert_awaited_once_with({"online_count": 4, "total_count": 12})
 
     def test_cleanup_expired_users_sync_handles_redis_error(self):
         consumer = self._build_consumer()

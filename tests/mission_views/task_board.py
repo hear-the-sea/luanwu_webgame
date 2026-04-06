@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import re
+from datetime import timedelta
 
 import pytest
 from django.db import DatabaseError
 from django.urls import reverse
+from django.utils import timezone
 
-from gameplay.models import MissionTemplate
+from gameplay.models import MissionRun, MissionTemplate
 from guests.models import GuestTemplate
 
 
@@ -25,8 +27,35 @@ class TestTaskBoardPage:
 
         assert response.status_code == 200
         body = response.content.decode("utf-8")
+        assert "js/dashboard.js" in body
         assert "js/tasks-page.js" in body
         assert "const maxSquadSize" not in body
+
+    def test_task_board_active_runs_use_explicit_refresh_api(self, manor_with_user):
+        manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key="task_board_active_run",
+            name="进行中任务",
+            difficulty=MissionTemplate.Difficulty.JUNIOR,
+            daily_limit=3,
+        )
+        MissionRun.objects.create(
+            manor=manor,
+            mission=mission,
+            status=MissionRun.Status.ACTIVE,
+            travel_time=300,
+            return_at=timezone.now() + timedelta(minutes=10),
+        )
+
+        response = client.get(reverse("gameplay:tasks"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        refresh_url = reverse("gameplay:refresh_mission_runs_api")
+        assert "当前出征" in body
+        assert "进行中任务" in body
+        assert body.count(f'data-refresh-url="{refresh_url}"') == 1
+        assert body.count('data-refresh-method="post"') == 1
 
     def test_task_board_tolerates_resource_sync_error(self, manor_with_user, monkeypatch):
         _manor, client = manor_with_user

@@ -15,6 +15,41 @@
         </div>
     </div>
 
+    {% if active_run %}
+    <section class="tw-card tw-guild-section-spacing">
+        <div class="tw-manor-list-header">
+            <h2>当前帮会出征</h2>
+            <span class="tw-manor-count">自动刷新</span>
+        </div>
+        <div class="tw-manor-card">
+            <div class="tw-manor-card-info">
+                <div class="tw-manor-name">帮会任务：{{ active_run.template.name }}</div>
+                <div class="tw-manor-location">已派遣 {{ active_run.selected_guest_count }} 名门客，任务完成后自动结算</div>
+            </div>
+            <div class="tw-manor-card-stats">
+                {% if active_run.return_at %}
+                <span class="countdown"
+                      data-countdown="{{ active_run.return_at|date:'c' }}"
+                      data-format="zh"
+                      data-refresh="1"
+                      data-refresh-url="{% url 'guilds:refresh_mission_runs_api' %}"
+                      data-refresh-method="post"
+                      title="预计完成 {{ active_run.return_at|date:'Y-m-d H:i:s' }}">计算中</span>
+                {% else %}
+                <span class="tw-muted">等待更新</span>
+                {% endif %}
+                {% if member.can_manage and active_run_can_retreat %}
+                <form method="post" action="{% url 'guilds:mission_retreat' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="run_id" value="{{ active_run.id }}">
+                    <button type="submit" class="tw-btn-secondary tw-btn-sm">撤回</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
     <nav class="tw-mission-tabs tw-guild-section-spacing">
         <button class="tw-trade-tab{% if active_tab == 'junior' %} active{% endif %}" data-tab="junior">初级任务</button>
         <button class="tw-trade-tab{% if active_tab == 'intermediate' %} active{% endif %}" data-tab="intermediate">中级任务</button>
@@ -138,5 +173,6 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="{% static 'js/dashboard.js' %}"></script>
 <script src="{% static 'js/tasks-page.js' %}"></script>
 {% endblock %}
