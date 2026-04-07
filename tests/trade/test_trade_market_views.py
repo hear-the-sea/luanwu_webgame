@@ -257,10 +257,61 @@ def test_market_create_listing_view_reads_latest_market_service_listing_fees(mon
         )
         return _DummyListing()
 
-    monkeypatch.setattr("trade.services.market_service.LISTING_FEES", {9999: 7777})
+    monkeypatch.setattr(
+        "trade.services.market_service.load_trade_market_rules",
+        lambda: {"listing_fees": {9999: 7777}},
+    )
     monkeypatch.setattr("trade.views.create_listing", _create_listing)
 
     user = django_user_model.objects.create_user(username="market_create_runtime_duration", password="pass12345")
+    _ = ensure_manor(user)
+    client.force_login(user)
+
+    resp = client.post(
+        reverse("trade:market_create_listing"),
+        {"item_key": "k", "quantity": "1", "unit_price": "10", "duration": "9999"},
+    )
+
+    assert resp.status_code == 302
+    assert "tab=market" in resp["Location"]
+    assert "view=sell" in resp["Location"]
+    assert observed == {"item_key": "k", "quantity": 1, "unit_price": 10, "duration": 9999}
+
+
+@pytest.mark.django_db
+def test_market_create_listing_view_reads_runtime_listing_fees_via_loader(monkeypatch, client, django_user_model):
+    observed: dict[str, int] = {}
+
+    class _DummyListing:
+        total_price = 100
+
+        class _Template:
+            name = "物品"
+
+        item_template = _Template()
+
+        def get_duration_display(self):
+            return "2小时46分钟"
+
+    def _create_listing(_manor, item_key, quantity, unit_price, duration):
+        observed.update(
+            {
+                "item_key": item_key,
+                "quantity": quantity,
+                "unit_price": unit_price,
+                "duration": duration,
+            }
+        )
+        return _DummyListing()
+
+    monkeypatch.setattr("trade.services.market_service.LISTING_FEES", {28800: 12000})
+    monkeypatch.setattr(
+        "trade.services.market_service.load_trade_market_rules",
+        lambda: {"listing_fees": {9999: 7777}},
+    )
+    monkeypatch.setattr("trade.views.create_listing", _create_listing)
+
+    user = django_user_model.objects.create_user(username="market_create_runtime_loader_duration", password="pass12345")
     _ = ensure_manor(user)
     client.force_login(user)
 

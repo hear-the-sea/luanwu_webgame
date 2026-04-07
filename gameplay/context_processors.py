@@ -13,6 +13,7 @@ from gameplay.services.utils.messages import unread_message_count
 logger = logging.getLogger(__name__)
 
 DEFAULT_PROTECTION_STATUS = {"is_protected": False, "type_display": "", "remaining_display": ""}
+_NOTIFICATIONS_REQUEST_CACHE_ATTR = "_notifications_context_cache"
 
 
 def _build_default_context() -> dict[str, Any]:
@@ -22,6 +23,14 @@ def _build_default_context() -> dict[str, Any]:
         "total_user_count": 0,
         "header_protection_status": DEFAULT_PROTECTION_STATUS.copy(),
     }
+
+
+def _clone_notifications_context(context: dict[str, Any]) -> dict[str, Any]:
+    cloned = dict(context)
+    protection_status = cloned.get("header_protection_status")
+    if isinstance(protection_status, dict):
+        cloned["header_protection_status"] = dict(protection_status)
+    return cloned
 
 
 def _should_load_global_stats(request) -> bool:
@@ -100,13 +109,19 @@ def notifications(request):
     - Sidebar raid/scout data cached for 10 seconds per user
     - Player rank cached for 30 seconds per user
     """
+    cached_context = getattr(request, _NOTIFICATIONS_REQUEST_CACHE_ATTR, None)
+    if isinstance(cached_context, dict):
+        return _clone_notifications_context(cached_context)
+
     context = _build_default_context()
     if _should_load_global_stats(request):
         context["total_user_count"] = stats_selector.load_total_user_count()
         context["online_user_count"] = stats_selector.load_online_user_count()
 
     if not request.user.is_authenticated:
+        setattr(request, _NOTIFICATIONS_REQUEST_CACHE_ATTR, _clone_notifications_context(context))
         return context
 
     _populate_authenticated_context(context, request)
+    setattr(request, _NOTIFICATIONS_REQUEST_CACHE_ATTR, _clone_notifications_context(context))
     return context

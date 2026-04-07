@@ -233,9 +233,50 @@ def test_persist_failed_guild_ids_uses_atomic_merge(monkeypatch):
     assert calls == [(FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY, [1, 2], None)]
 
 
+def test_failed_guild_ids_remain_visible_after_cache_recovers_without_new_write(monkeypatch):
+    from guilds.tasks import _persist_failed_guild_ids, get_failed_guild_ids
+
+    healthy = False
+    values = {}
+
+    monkeypatch.setattr("core.utils.atomic_cache._LOCAL_ID_SET_FALLBACK", {})
+
+    class FakeCache:
+        def add(self, key, value, timeout=None):
+            if not healthy:
+                raise ConnectionError("cache unavailable")
+            if key.endswith(":lock"):
+                return True
+            values.setdefault(key, value)
+            return True
+
+        def get(self, key, default=None):
+            if not healthy:
+                raise ConnectionError("cache unavailable")
+            return values.get(key, default)
+
+        def set(self, key, value, timeout=None):
+            if not healthy:
+                raise ConnectionError("cache unavailable")
+            values[key] = value
+
+        def delete(self, key):
+            values.pop(key, None)
+
+    monkeypatch.setattr("core.utils.atomic_cache.cache", FakeCache())
+    monkeypatch.setattr("guilds.tasks.cache", FakeCache())
+
+    _persist_failed_guild_ids([7, 8])
+
+    healthy = True
+
+    assert get_failed_guild_ids() == [7, 8]
+
+
 def test_get_failed_guild_ids_cache_infrastructure_error_returns_empty(monkeypatch):
     from guilds.tasks import get_failed_guild_ids
 
+    monkeypatch.setattr("core.utils.atomic_cache._LOCAL_ID_SET_FALLBACK", {})
     monkeypatch.setattr(
         "guilds.tasks.cache.get",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(ConnectionError("cache unavailable")),
@@ -247,6 +288,7 @@ def test_get_failed_guild_ids_cache_infrastructure_error_returns_empty(monkeypat
 def test_get_failed_guild_ids_cache_programming_error_bubbles_up(monkeypatch):
     from guilds.tasks import get_failed_guild_ids
 
+    monkeypatch.setattr("core.utils.atomic_cache._LOCAL_ID_SET_FALLBACK", {})
     monkeypatch.setattr(
         "guilds.tasks.cache.get",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("broken failed-id cache read contract")),
@@ -266,6 +308,47 @@ def test_clear_failed_guild_ids_cache_programming_error_bubbles_up(monkeypatch):
 
     with pytest.raises(AssertionError, match="broken failed-id cache delete contract"):
         _clear_failed_guild_ids()
+
+
+def test_clear_failed_guild_ids_removes_local_fallback_without_revival(monkeypatch):
+    from guilds.tasks import _clear_failed_guild_ids, _persist_failed_guild_ids, get_failed_guild_ids
+
+    healthy = False
+    values = {}
+
+    monkeypatch.setattr("core.utils.atomic_cache._LOCAL_ID_SET_FALLBACK", {})
+
+    class FakeCache:
+        def add(self, key, value, timeout=None):
+            if not healthy:
+                raise ConnectionError("cache unavailable")
+            if key.endswith(":lock"):
+                return True
+            values.setdefault(key, value)
+            return True
+
+        def get(self, key, default=None):
+            if not healthy:
+                raise ConnectionError("cache unavailable")
+            return values.get(key, default)
+
+        def set(self, key, value, timeout=None):
+            if not healthy:
+                raise ConnectionError("cache unavailable")
+            values[key] = value
+
+        def delete(self, key):
+            values.pop(key, None)
+
+    monkeypatch.setattr("core.utils.atomic_cache.cache", FakeCache())
+    monkeypatch.setattr("guilds.tasks.cache", FakeCache())
+
+    _persist_failed_guild_ids([7, 8])
+    healthy = True
+
+    _clear_failed_guild_ids()
+
+    assert get_failed_guild_ids() == []
 
 
 @pytest.mark.django_db

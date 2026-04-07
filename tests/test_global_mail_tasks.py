@@ -184,6 +184,7 @@ def test_backfill_global_mail_campaign_task_programming_error_bubbles_up(monkeyp
 
 
 def test_global_mail_failed_manor_ids_cache_programming_errors_bubble_up(monkeypatch):
+    monkeypatch.setattr("core.utils.atomic_cache._LOCAL_ID_SET_FALLBACK", {})
     monkeypatch.setattr(
         "gameplay.tasks.global_mail.cache.get",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("broken global mail failed-id cache get")),
@@ -210,6 +211,44 @@ def test_persist_failed_manor_ids_merges_existing_ids_atomically(monkeypatch):
     assert calls == [("gameplay:global_mail:failed_manor_ids:7", [2, 3], FAILED_GLOBAL_MAIL_MANOR_IDS_TTL)]
 
 
+def test_global_mail_failed_manor_ids_remain_visible_after_cache_recovers_without_new_write(monkeypatch):
+    healthy = False
+    values = {}
+
+    monkeypatch.setattr("core.utils.atomic_cache._LOCAL_ID_SET_FALLBACK", {})
+
+    class FakeCache:
+        def add(self, key, value, timeout=None):
+            if not healthy:
+                raise ConnectionError("cache unavailable")
+            if key.endswith(":lock"):
+                return True
+            values.setdefault(key, value)
+            return True
+
+        def get(self, key, default=None):
+            if not healthy:
+                raise ConnectionError("cache unavailable")
+            return values.get(key, default)
+
+        def set(self, key, value, timeout=None):
+            if not healthy:
+                raise ConnectionError("cache unavailable")
+            values[key] = value
+
+        def delete(self, key):
+            values.pop(key, None)
+
+    monkeypatch.setattr("core.utils.atomic_cache.cache", FakeCache())
+    monkeypatch.setattr("gameplay.tasks.global_mail.cache", FakeCache())
+
+    persist_failed_manor_ids(9, [3, 4])
+
+    healthy = True
+
+    assert get_failed_manor_ids(9) == [3, 4]
+
+
 def test_global_mail_failed_manor_ids_cache_delete_programming_error_bubbles_up(monkeypatch):
     monkeypatch.setattr(
         "gameplay.tasks.global_mail.cache.delete",
@@ -218,6 +257,45 @@ def test_global_mail_failed_manor_ids_cache_delete_programming_error_bubbles_up(
 
     with pytest.raises(AssertionError, match="broken global mail failed-id cache delete"):
         clear_failed_manor_ids(7)
+
+
+def test_clear_failed_manor_ids_removes_local_fallback_without_revival(monkeypatch):
+    healthy = False
+    values = {}
+
+    monkeypatch.setattr("core.utils.atomic_cache._LOCAL_ID_SET_FALLBACK", {})
+
+    class FakeCache:
+        def add(self, key, value, timeout=None):
+            if not healthy:
+                raise ConnectionError("cache unavailable")
+            if key.endswith(":lock"):
+                return True
+            values.setdefault(key, value)
+            return True
+
+        def get(self, key, default=None):
+            if not healthy:
+                raise ConnectionError("cache unavailable")
+            return values.get(key, default)
+
+        def set(self, key, value, timeout=None):
+            if not healthy:
+                raise ConnectionError("cache unavailable")
+            values[key] = value
+
+        def delete(self, key):
+            values.pop(key, None)
+
+    monkeypatch.setattr("core.utils.atomic_cache.cache", FakeCache())
+    monkeypatch.setattr("gameplay.tasks.global_mail.cache", FakeCache())
+
+    persist_failed_manor_ids(9, [3, 4])
+    healthy = True
+
+    clear_failed_manor_ids(9)
+
+    assert get_failed_manor_ids(9) == []
 
 
 def test_enqueue_global_mail_backfill_submits_expected_args(monkeypatch):

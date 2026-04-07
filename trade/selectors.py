@@ -40,7 +40,7 @@ def _build_market_duration_options() -> list[dict[str, int | str]]:
             "label": _format_market_duration_label(duration),
             "fee": fee,
         }
-        for duration, fee in sorted(market_service.LISTING_FEES.items())
+        for duration, fee in sorted(market_service.get_listing_fees().items())
     ]
 
 

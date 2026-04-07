@@ -5,7 +5,6 @@ from typing import Any, Callable
 from core.exceptions import MessageError, RaidStartError
 from core.utils.infrastructure import (
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
-    INFRASTRUCTURE_EXCEPTIONS,
     InfrastructureExceptions,
     combine_infrastructure_exceptions,
 )
@@ -81,7 +80,7 @@ def start_raid(
         )
     try:
         dispatch_raid_battle_task(run, travel_time)
-    except INFRASTRUCTURE_EXCEPTIONS as exc:
+    except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
         logger.error(
             "raid battle dispatch failed after start: run_id=%s attacker=%s defender=%s error=%s",
             getattr(run, "id", None),

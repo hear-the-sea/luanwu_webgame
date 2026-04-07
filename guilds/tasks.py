@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from common.utils import celery as celery_utils
 from common.utils.celery import safe_apply_async_with_dedup
-from core.utils.atomic_cache import merge_int_id_set
+from core.utils.atomic_cache import clear_local_int_id_set_fallback, get_int_id_set, merge_int_id_set
 from core.utils.infrastructure import (
     CACHE_INFRASTRUCTURE_EXCEPTIONS,
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
@@ -111,6 +111,7 @@ def _persist_failed_guild_ids(failed_guild_ids: list[int]) -> None:
 
 
 def _clear_failed_guild_ids() -> None:
+    clear_local_int_id_set_fallback(FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY)
     try:
         cache.delete(FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY)
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
@@ -119,7 +120,7 @@ def _clear_failed_guild_ids() -> None:
 
 def get_failed_guild_ids() -> list[int]:
     try:
-        return _normalize_failed_guild_ids(cache.get(FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY))
+        return get_int_id_set(FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY, ttl=None)
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
         logger.warning("Failed to read failed guild production IDs", exc_info=True)
         return []

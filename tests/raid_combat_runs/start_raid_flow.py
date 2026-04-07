@@ -345,6 +345,70 @@ def test_start_raid_dispatch_programming_error_bubbles_up(monkeypatch):
         combat_runs.start_raid(attacker, defender, [101], {"inf": 1})
 
 
+def test_start_raid_due_battle_fallback_infrastructure_error_degrades_and_returns_run(monkeypatch):
+    attacker = SimpleNamespace(pk=1, id=1, defeat_protection_until=None)
+    defender = SimpleNamespace(pk=2, id=2)
+    created_run = SimpleNamespace(id=104, attacker=attacker, defender=defender)
+
+    monkeypatch.setattr(combat_runs.transaction, "atomic", contextlib.nullcontext)
+    monkeypatch.setattr(
+        combat_runs,
+        "_validate_and_normalize_raid_inputs",
+        lambda *_args, **_kwargs: ([101], {"inf": 1}),
+    )
+    monkeypatch.setattr(combat_runs, "_lock_manor_pair", lambda *_args, **_kwargs: (attacker, defender))
+    monkeypatch.setattr(combat_runs, "_recheck_can_attack_target", lambda *_args, **_kwargs: (True, ""))
+    monkeypatch.setattr(combat_runs, "get_active_raid_count", lambda *_args, **_kwargs: 0)
+    monkeypatch.setattr(combat_runs, "_load_and_validate_attacker_guests", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(combat_runs, "_normalize_and_validate_raid_loadout", lambda *_args, **_kwargs: {"inf": 1})
+    monkeypatch.setattr(combat_runs, "_deduct_troops", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_runs, "calculate_raid_travel_time", lambda *_args, **_kwargs: 0)
+    monkeypatch.setattr(combat_runs, "_create_raid_run_record", lambda *_args, **_kwargs: created_run)
+    monkeypatch.setattr(combat_runs, "_invalidate_recent_attacks_cache_on_commit", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_runs, "_send_raid_incoming_message", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        combat_runs,
+        "_dispatch_raid_battle_task",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("battle state write failed")),
+    )
+
+    result = combat_runs.start_raid(attacker, defender, [101], {"inf": 1})
+
+    assert result is created_run
+
+
+def test_start_raid_due_battle_fallback_connection_error_degrades_and_returns_run(monkeypatch):
+    attacker = SimpleNamespace(pk=1, id=1, defeat_protection_until=None)
+    defender = SimpleNamespace(pk=2, id=2)
+    created_run = SimpleNamespace(id=105, attacker=attacker, defender=defender)
+
+    monkeypatch.setattr(combat_runs.transaction, "atomic", contextlib.nullcontext)
+    monkeypatch.setattr(
+        combat_runs,
+        "_validate_and_normalize_raid_inputs",
+        lambda *_args, **_kwargs: ([101], {"inf": 1}),
+    )
+    monkeypatch.setattr(combat_runs, "_lock_manor_pair", lambda *_args, **_kwargs: (attacker, defender))
+    monkeypatch.setattr(combat_runs, "_recheck_can_attack_target", lambda *_args, **_kwargs: (True, ""))
+    monkeypatch.setattr(combat_runs, "get_active_raid_count", lambda *_args, **_kwargs: 0)
+    monkeypatch.setattr(combat_runs, "_load_and_validate_attacker_guests", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(combat_runs, "_normalize_and_validate_raid_loadout", lambda *_args, **_kwargs: {"inf": 1})
+    monkeypatch.setattr(combat_runs, "_deduct_troops", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_runs, "calculate_raid_travel_time", lambda *_args, **_kwargs: 0)
+    monkeypatch.setattr(combat_runs, "_create_raid_run_record", lambda *_args, **_kwargs: created_run)
+    monkeypatch.setattr(combat_runs, "_invalidate_recent_attacks_cache_on_commit", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_runs, "_send_raid_incoming_message", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        combat_runs,
+        "_dispatch_raid_battle_task",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(ConnectionError("battle backend unavailable")),
+    )
+
+    result = combat_runs.start_raid(attacker, defender, [101], {"inf": 1})
+
+    assert result is created_run
+
+
 def test_validate_and_normalize_raid_inputs_uses_uncached_attack_check(monkeypatch):
     attacker = SimpleNamespace(id=1)
     defender = SimpleNamespace(id=2)

@@ -11,7 +11,10 @@ from trade.selectors import get_trade_context
 
 @pytest.mark.django_db
 def test_get_trade_context_includes_market_duration_options(monkeypatch, django_user_model):
-    monkeypatch.setattr("trade.services.market_service.LISTING_FEES", {28800: 12000, 7200: 5000, 86400: 20000})
+    monkeypatch.setattr(
+        "trade.services.market_service.load_trade_market_rules",
+        lambda: {"listing_fees": {28800: 12000, 7200: 5000, 86400: 20000}},
+    )
 
     manor = create_manor(django_user_model, username="trade_ctx_duration_options")
     request = RequestFactory().get("/trade", {"tab": "market"})
@@ -27,9 +30,31 @@ def test_get_trade_context_includes_market_duration_options(monkeypatch, django_
 
 @pytest.mark.django_db
 def test_get_trade_context_reads_latest_market_service_listing_fees(monkeypatch, django_user_model):
-    monkeypatch.setattr("trade.services.market_service.LISTING_FEES", {14400: 9000, 7200: 5000})
+    monkeypatch.setattr(
+        "trade.services.market_service.load_trade_market_rules",
+        lambda: {"listing_fees": {14400: 9000, 7200: 5000}},
+    )
 
     manor = create_manor(django_user_model, username="trade_ctx_runtime_listing_fees")
+    request = RequestFactory().get("/trade", {"tab": "market"})
+
+    context = get_trade_context(manor=manor, params=build_trade_request_params(request))
+
+    assert context["market_duration_options"] == [
+        {"value": 7200, "label": "2小时", "fee": 5000},
+        {"value": 14400, "label": "4小时", "fee": 9000},
+    ]
+
+
+@pytest.mark.django_db
+def test_get_trade_context_reads_runtime_listing_fees_via_loader(monkeypatch, django_user_model):
+    monkeypatch.setattr("trade.services.market_service.LISTING_FEES", {28800: 12000})
+    monkeypatch.setattr(
+        "trade.services.market_service.load_trade_market_rules",
+        lambda: {"listing_fees": {14400: 9000, 7200: 5000}},
+    )
+
+    manor = create_manor(django_user_model, username="trade_ctx_runtime_loader_listing_fees")
     request = RequestFactory().get("/trade", {"tab": "market"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))

@@ -27,7 +27,7 @@ from trade.view_helpers import parse_trade_item_quantity_form as _parse_trade_it
 
 
 def _allowed_market_durations() -> frozenset[int]:
-    return frozenset(market_service.LISTING_FEES.keys())
+    return market_service.get_allowed_listing_durations()
 
 
 class TradeView(LoginRequiredMixin, TemplateView):

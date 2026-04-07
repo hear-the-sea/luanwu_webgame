@@ -63,11 +63,21 @@ def load_trade_market_rules() -> dict[str, dict[int, int]]:
 def clear_trade_market_rules_cache() -> None:
     global LISTING_FEES
     load_trade_market_rules.cache_clear()
-    LISTING_FEES = dict(load_trade_market_rules()["listing_fees"])
+    LISTING_FEES = get_listing_fees()
 
 
 # 手续费配置
-LISTING_FEES = dict(load_trade_market_rules()["listing_fees"])
+def get_listing_fees() -> dict[int, int]:
+    """Return the latest normalized listing-fee rules."""
+    return dict(load_trade_market_rules()["listing_fees"])
+
+
+def get_allowed_listing_durations() -> frozenset[int]:
+    """Return the current allowed listing durations as a stable runtime view."""
+    return frozenset(get_listing_fees())
+
+
+LISTING_FEES = get_listing_fees()
 
 # 从 core.config 导入配置
 TRANSACTION_TAX_RATE = TRADE.TRANSACTION_TAX_RATE
@@ -183,7 +193,7 @@ def get_listing_fee(duration: int) -> int:
     Returns:
         手续费金额
     """
-    return LISTING_FEES.get(duration, 5000)
+    return get_listing_fees().get(duration, 5000)
 
 
 def validate_listing_price(item_template: ItemTemplate, unit_price: int) -> None:
@@ -242,7 +252,7 @@ def create_listing(
         unit_price,
         duration,
         normalize_listing_inputs=normalize_listing_inputs,
-        listing_fees=LISTING_FEES,
+        listing_fees=get_listing_fees(),
         load_market_item_template=load_market_item_template,
         validate_listing_price=validate_listing_price,
         manor_model=Manor,

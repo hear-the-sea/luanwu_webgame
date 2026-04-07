@@ -206,6 +206,39 @@ def test_notifications_non_home_pages_skip_home_sidebar_queries(monkeypatch, dja
     assert "sidebar_current_contribution_label" not in context
 
 
+def test_notifications_reuses_request_scoped_authenticated_payload(monkeypatch, django_user_model):
+    user = django_user_model.objects.create_user(username="ctx_request_scope_user", password="pass")
+    _ = ensure_manor(user)
+    request = RequestFactory().get("/manor/warehouse/")
+    request.user = user
+
+    unread_calls = {"count": 0}
+    protection_calls = {"count": 0}
+
+    monkeypatch.setattr("gameplay.selectors.stats.load_total_user_count", lambda: 0)
+    monkeypatch.setattr("gameplay.selectors.stats.load_online_user_count", lambda: 0)
+
+    def _load_unread(_manor):
+        unread_calls["count"] += 1
+        return 3
+
+    def _load_protection(_manor):
+        protection_calls["count"] += 1
+        return {"is_protected": True, "type_display": "护盾", "remaining_display": "10m"}
+
+    monkeypatch.setattr("gameplay.context_processors.unread_message_count", _load_unread)
+    monkeypatch.setattr("gameplay.services.raid.get_protection_status", _load_protection)
+
+    first = notifications(request)
+    second = notifications(request)
+
+    assert first["message_unread_count"] == 3
+    assert second["message_unread_count"] == 3
+    assert first["header_protection_status"] == second["header_protection_status"]
+    assert unread_calls["count"] == 1
+    assert protection_calls["count"] == 1
+
+
 def test_notifications_home_page_includes_active_guild_contribution_label(monkeypatch, django_user_model):
     user = django_user_model.objects.create_user(username="ctx_guild_member_user", password="pass")
     manor = ensure_manor(user)

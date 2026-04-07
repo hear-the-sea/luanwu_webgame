@@ -60,6 +60,11 @@ def _get_local_fallback_ids(key: str) -> list[int]:
         return list(_LOCAL_ID_SET_FALLBACK.get(key, []))
 
 
+def clear_local_int_id_set_fallback(key: str) -> None:
+    with _LOCAL_ID_SET_FALLBACK_LOCK:
+        _LOCAL_ID_SET_FALLBACK.pop(key, None)
+
+
 def _drain_local_fallback_ids(key: str, applied_ids: list[int]) -> None:
     if not applied_ids:
         return
@@ -122,6 +127,30 @@ def merge_int_id_set(
         sleep(_MERGE_LOCK_POLL_INTERVAL_SECONDS)
 
 
+def get_int_id_set(
+    key: str,
+    *,
+    ttl: int | None = None,
+    timeout: object = _UNSET,
+) -> list[int]:
+    cache_timeout = _resolve_timeout(ttl=ttl, timeout=timeout)
+    pending_ids = _get_local_fallback_ids(key)
+
+    try:
+        existing = cache.get(key) or []
+    except CACHE_INFRASTRUCTURE_EXCEPTIONS:
+        return _merge_ids([], pending_ids)
+
+    merged = _merge_ids(existing, pending_ids)
+    if pending_ids:
+        try:
+            cache.set(key, merged, timeout=cache_timeout)
+        except CACHE_INFRASTRUCTURE_EXCEPTIONS:
+            return merged
+        _drain_local_fallback_ids(key, pending_ids)
+    return merged
+
+
 def _claim_local_counter_fallback(key: str) -> int:
     with _LOCAL_COUNTER_FALLBACK_LOCK:
         pending = _LOCAL_COUNTER_FALLBACK.pop(key, 0)
@@ -173,6 +202,8 @@ def increment_counter(key: str, *, ttl: int | None) -> int:
 
 
 __all__ = [
+    "clear_local_int_id_set_fallback",
+    "get_int_id_set",
     "increment_counter",
     "merge_int_id_set",
     "normalize_int_ids",

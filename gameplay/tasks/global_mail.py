@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
 from core.exceptions import MessageError
-from core.utils.atomic_cache import merge_int_id_set
+from core.utils.atomic_cache import clear_local_int_id_set_fallback, get_int_id_set, merge_int_id_set
 from core.utils.infrastructure import (
     CACHE_INFRASTRUCTURE_EXCEPTIONS,
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
@@ -56,10 +56,7 @@ def get_failed_manor_ids(campaign_id: int) -> list[int]:
     """Read persisted failed manor IDs for a campaign."""
     key = _get_failed_manor_ids_cache_key(campaign_id)
     try:
-        value = cache.get(key)
-        if isinstance(value, list):
-            return [int(x) for x in value]
-        return []
+        return get_int_id_set(key, ttl=FAILED_GLOBAL_MAIL_MANOR_IDS_TTL)
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
         logger.warning(
             "Failed to read global mail failed manor IDs: campaign_id=%s",
@@ -72,6 +69,7 @@ def get_failed_manor_ids(campaign_id: int) -> list[int]:
 def clear_failed_manor_ids(campaign_id: int) -> None:
     """Clear persisted failed manor IDs for a campaign after successful retry."""
     key = _get_failed_manor_ids_cache_key(campaign_id)
+    clear_local_int_id_set_fallback(key)
     try:
         cache.delete(key)
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
