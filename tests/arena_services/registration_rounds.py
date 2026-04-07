@@ -6,6 +6,7 @@ import pytest
 from django.utils import timezone
 
 import gameplay.services.arena.core as arena_core
+import gameplay.services.arena.match_helpers as arena_match_helpers
 from core.exceptions import (
     ArenaBusyError,
     ArenaCancellationError,
@@ -251,6 +252,77 @@ def test_run_due_arena_rounds_completes_tournament_and_grants_coins():
     assert manor_b.arena_coins > 0
     assert Message.objects.filter(manor=manor_a).exists()
     assert Message.objects.filter(manor=manor_b).exists()
+
+
+@pytest.mark.django_db
+def test_run_due_arena_rounds_recovers_when_round_finalize_was_skipped_after_match_message_error(monkeypatch):
+    template = create_guest_template("arena_round_recovery_tpl")
+
+    user_a = User.objects.create_user(
+        username="arena_round_recovery_a",
+        password="pass123",
+        email="arena_round_recovery_a@test.local",
+    )
+    user_b = User.objects.create_user(
+        username="arena_round_recovery_b",
+        password="pass123",
+        email="arena_round_recovery_b@test.local",
+    )
+    manor_a = ensure_manor(user_a)
+    manor_b = ensure_manor(user_b)
+    fund_manor(manor_a)
+    fund_manor(manor_b)
+    guest_a = create_guest(manor_a, template, "A")
+    guest_b = create_guest(manor_b, template, "B")
+
+    now = timezone.now()
+    tournament = ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RUNNING,
+        player_limit=2,
+        round_interval_seconds=600,
+        current_round=1,
+        started_at=now,
+        next_round_at=now - timedelta(seconds=1),
+    )
+    entry_a = ArenaEntry.objects.create(tournament=tournament, manor=manor_a)
+    entry_b = ArenaEntry.objects.create(tournament=tournament, manor=manor_b)
+    ArenaEntryGuest.objects.create(entry=entry_a, guest=guest_a)
+    ArenaEntryGuest.objects.create(entry=entry_b, guest=guest_b)
+    match = ArenaMatch.objects.create(
+        tournament=tournament,
+        round_number=1,
+        match_index=0,
+        attacker_entry=entry_a,
+        defender_entry=entry_b,
+        status=ArenaMatch.Status.SCHEDULED,
+    )
+
+    monkeypatch.setattr(
+        arena_match_helpers,
+        "create_message",
+        lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("message backend down")),
+    )
+
+    with pytest.raises(RuntimeError, match="message backend down"):
+        run_due_arena_rounds(now=now, limit=10)
+
+    tournament.refresh_from_db()
+    match.refresh_from_db()
+    assert tournament.status == ArenaTournament.Status.RUNNING
+    assert match.status == ArenaMatch.Status.COMPLETED
+
+    monkeypatch.setattr(arena_match_helpers, "create_message", lambda **_kwargs: object())
+
+    processed = run_due_arena_rounds(now=now + timedelta(seconds=601), limit=10)
+
+    tournament.refresh_from_db()
+    entry_a.refresh_from_db()
+    entry_b.refresh_from_db()
+
+    assert processed == 1
+    assert tournament.status == ArenaTournament.Status.COMPLETED
+    assert tournament.winner_entry_id in {entry_a.id, entry_b.id}
+    assert ArenaMatch.objects.filter(tournament=tournament, round_number=2).count() == 0
 
 
 @pytest.mark.django_db

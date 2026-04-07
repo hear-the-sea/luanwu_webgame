@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from typing import Any, Literal
 
-from django.db import transaction
 from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
@@ -14,6 +13,7 @@ from core.utils.infrastructure import (
     InfrastructureExceptions,
     combine_infrastructure_exceptions,
 )
+from core.utils.side_effects import DEFAULT_SIDE_EFFECT_EXCEPTIONS, schedule_best_effort_after_commit
 
 from ..utils.messages import create_message
 from . import scout_refresh as scout_refresh_command
@@ -136,7 +136,17 @@ def run_scout_followup(action: ScoutFollowupAction, record: Any, **context: Any)
 
 
 def schedule_scout_followup(action: ScoutFollowupAction, record: Any, **context: Any) -> None:
-    transaction.on_commit(lambda: run_scout_followup(action, record, **context))
+    schedule_best_effort_after_commit(
+        lambda: run_scout_followup(action, record, **context),
+        logger=logger,
+        log_message=(
+            "Scout follow-up callback failed: "
+            f"action={action} record_id={getattr(record, 'id', None)} "
+            f"attacker={getattr(record, 'attacker_id', None)} defender={getattr(record, 'defender_id', None)}"
+        ),
+        expected_exceptions=DEFAULT_SIDE_EFFECT_EXCEPTIONS,
+        degraded_component="scout_followup_callback",
+    )
 
 
 def dispatch_scout_task(
@@ -184,37 +194,57 @@ def dispatch_scout_task(
     )
 
 
-def schedule_scout_completion(record: Any, countdown: int) -> None:
-    transaction.on_commit(
+def _schedule_scout_dispatch_after_commit(
+    task_name: str,
+    *,
+    countdown: int,
+    record: Any,
+    log_message: str,
+    false_log_message: str,
+) -> None:
+    schedule_best_effort_after_commit(
         lambda: dispatch_scout_task(
-            "complete_scout_task",
+            task_name,
             countdown=countdown,
             record=record,
-            log_message="complete_scout_task dispatch failed",
-            false_log_message="complete_scout_task dispatch returned False; scout may remain in outbound state",
-        )
+            log_message=log_message,
+            false_log_message=false_log_message,
+        ),
+        logger=logger,
+        log_message=(
+            f"{task_name} callback failed: "
+            f"record_id={record.id} attacker={record.attacker_id} defender={record.defender_id}"
+        ),
+        expected_exceptions=DEFAULT_SIDE_EFFECT_EXCEPTIONS,
+        degraded_component="scout_task_dispatch",
+    )
+
+
+def schedule_scout_completion(record: Any, countdown: int) -> None:
+    _schedule_scout_dispatch_after_commit(
+        "complete_scout_task",
+        countdown=countdown,
+        record=record,
+        log_message="complete_scout_task dispatch failed",
+        false_log_message="complete_scout_task dispatch returned False; scout may remain in outbound state",
     )
 
 
 def schedule_scout_return_completion(record: Any, countdown: int) -> None:
-    transaction.on_commit(
-        lambda: dispatch_scout_task(
-            "complete_scout_return_task",
-            countdown=countdown,
-            record=record,
-            log_message="complete_scout_return_task dispatch failed",
-            false_log_message="complete_scout_return_task dispatch returned False; scout may remain returning",
-        )
+    _schedule_scout_dispatch_after_commit(
+        "complete_scout_return_task",
+        countdown=countdown,
+        record=record,
+        log_message="complete_scout_return_task dispatch failed",
+        false_log_message="complete_scout_return_task dispatch returned False; scout may remain returning",
     )
 
 
 def schedule_scout_return_completion_after_retreat(record: Any, countdown: int) -> None:
-    transaction.on_commit(
-        lambda: dispatch_scout_task(
-            "complete_scout_return_task",
-            countdown=countdown,
-            record=record,
-            log_message="complete_scout_return_task dispatch failed for retreat",
-            false_log_message="complete_scout_return_task dispatch returned False after scout retreat; scout may remain returning",
-        )
+    _schedule_scout_dispatch_after_commit(
+        "complete_scout_return_task",
+        countdown=countdown,
+        record=record,
+        log_message="complete_scout_return_task dispatch failed for retreat",
+        false_log_message="complete_scout_return_task dispatch returned False after scout retreat; scout may remain returning",
     )

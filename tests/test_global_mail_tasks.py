@@ -10,6 +10,7 @@ from core.exceptions import MessageError
 from gameplay.models import GlobalMailCampaign, GlobalMailDelivery, Message
 from gameplay.services.manor.core import ensure_manor
 from gameplay.tasks.global_mail import (
+    FAILED_GLOBAL_MAIL_MANOR_IDS_TTL,
     backfill_global_mail_campaign_task,
     clear_failed_manor_ids,
     enqueue_global_mail_backfill,
@@ -193,6 +194,20 @@ def test_global_mail_failed_manor_ids_cache_programming_errors_bubble_up(monkeyp
 
     with pytest.raises(AssertionError, match="broken global mail failed-id cache get"):
         get_failed_manor_ids(7)
+
+
+def test_persist_failed_manor_ids_merges_existing_ids_atomically(monkeypatch):
+    calls = []
+
+    def _fake_merge(key, ids, *, ttl):
+        calls.append((key, ids, ttl))
+        return [1, 2, 3]
+
+    monkeypatch.setattr("gameplay.tasks.global_mail.merge_int_id_set", _fake_merge)
+
+    persist_failed_manor_ids(7, [2, 3])
+
+    assert calls == [("gameplay:global_mail:failed_manor_ids:7", [2, 3], FAILED_GLOBAL_MAIL_MANOR_IDS_TTL)]
 
 
 def test_global_mail_failed_manor_ids_cache_delete_programming_error_bubbles_up(monkeypatch):

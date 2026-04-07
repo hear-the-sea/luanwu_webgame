@@ -12,6 +12,7 @@ from django.utils import timezone
 
 from common.utils import celery as celery_utils
 from common.utils.celery import safe_apply_async_with_dedup
+from core.utils.atomic_cache import merge_int_id_set
 from core.utils.infrastructure import (
     CACHE_INFRASTRUCTURE_EXCEPTIONS,
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
@@ -104,9 +105,7 @@ def _persist_failed_guild_ids(failed_guild_ids: list[int]) -> None:
         return
 
     try:
-        existing_ids = _normalize_failed_guild_ids(cache.get(FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY))
-        merged_ids = existing_ids + [guild_id for guild_id in normalized_ids if guild_id not in existing_ids]
-        cache.set(FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY, merged_ids, timeout=None)
+        merge_int_id_set(FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY, normalized_ids, ttl=None)
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
         logger.warning("Failed to persist failed guild production IDs", exc_info=True)
 

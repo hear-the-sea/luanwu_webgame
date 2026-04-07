@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 from django.utils import timezone
+from kombu.exceptions import OperationalError
 
 from trade.models import ShopStock
 from trade.services.shop_config import ShopItemConfig
@@ -69,10 +70,10 @@ def test_settle_auction_round_task_falls_back_to_sync_create_when_dispatch_fails
         lambda: {"settled": 1, "sold": 2, "unsold": 0, "total_gold_bars": 20},
     )
 
-    def _raise_dispatch_error():
+    def _raise_dispatch_error(*_args, **_kwargs):
         raise ConnectionError("dispatch failed")
 
-    monkeypatch.setattr("trade.tasks.create_auction_round_task.delay", _raise_dispatch_error)
+    monkeypatch.setattr("trade.tasks.create_auction_round_task.apply_async", _raise_dispatch_error)
     called = {"sync_create": 0}
     monkeypatch.setattr(
         "trade.services.auction_service.create_auction_round",
@@ -82,6 +83,29 @@ def test_settle_auction_round_task_falls_back_to_sync_create_when_dispatch_fails
     result = settle_auction_round_task.run()
     assert "结算完成" in result
     assert "售出 2 件" in result
+    assert called["sync_create"] == 1
+
+
+@pytest.mark.django_db
+def test_settle_auction_round_task_falls_back_to_sync_create_on_broker_operational_error(monkeypatch):
+    monkeypatch.setattr(
+        "trade.services.auction_service.settle_auction_round",
+        lambda: {"settled": 1, "sold": 2, "unsold": 0, "total_gold_bars": 20},
+    )
+
+    def _raise_operational_error(*_args, **_kwargs):
+        raise OperationalError("broker unavailable")
+
+    monkeypatch.setattr("trade.tasks.create_auction_round_task.apply_async", _raise_operational_error)
+    called = {"sync_create": 0}
+    monkeypatch.setattr(
+        "trade.services.auction_service.create_auction_round",
+        lambda: called.__setitem__("sync_create", called["sync_create"] + 1),
+    )
+
+    result = settle_auction_round_task.run()
+
+    assert "结算完成" in result
     assert called["sync_create"] == 1
 
 
@@ -188,7 +212,7 @@ def test_settle_auction_round_task_coerces_invalid_stats_numbers(monkeypatch):
         "trade.services.auction_service.settle_auction_round",
         lambda: {"settled": "1", "sold": "x", "unsold": None, "total_gold_bars": -7},
     )
-    monkeypatch.setattr("trade.tasks.create_auction_round_task.delay", lambda: None)
+    monkeypatch.setattr("trade.tasks.create_auction_round_task.apply_async", lambda *_args, **_kwargs: None)
 
     result = settle_auction_round_task.run()
     assert "结算完成" in result
@@ -260,8 +284,8 @@ def test_settle_auction_round_task_sync_fallback_programming_error_bubbles_up(mo
     )
 
     monkeypatch.setattr(
-        "trade.tasks.create_auction_round_task.delay",
-        lambda: (_ for _ in ()).throw(ConnectionError("dispatch failed")),
+        "trade.tasks.create_auction_round_task.apply_async",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(ConnectionError("dispatch failed")),
     )
     monkeypatch.setattr(
         "trade.services.auction_service.create_auction_round",

@@ -127,7 +127,9 @@ def test_start_scout_dispatch_runs_after_commit(django_user_model, monkeypatch):
 
     callbacks = []
     monkeypatch.setattr(
-        scout_service.scout_followups.transaction, "on_commit", lambda callback: callbacks.append(callback)
+        scout_service.scout_followups,
+        "schedule_best_effort_after_commit",
+        lambda callback, **_kwargs: callbacks.append(callback),
     )
     monkeypatch.setattr(scout_service, "can_attack_target", lambda *_args, **_kwargs: (True, ""))
     monkeypatch.setattr(scout_service, "calculate_scout_success_rate", lambda *_args, **_kwargs: 0.5)

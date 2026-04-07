@@ -37,6 +37,7 @@ from typing import Any
 from django.core.cache import cache
 
 from core.utils import task_monitoring_registry
+from core.utils.atomic_cache import increment_counter
 from core.utils.degradation import CELERY_TASK_RETRY, record_degradation
 from core.utils.infrastructure import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
@@ -283,12 +284,7 @@ def increment_degraded_counter(component: str) -> None:
     today = timezone.now().date().isoformat()
     key = f"degraded:{component}:{today}"
     try:
-        try:
-            cache.incr(key)
-        except ValueError:
-            cache.set(key, 1, timeout=_DEGRADED_COUNTER_TTL)
-        except CACHE_INFRASTRUCTURE_EXCEPTIONS:
-            cache.set(key, 1, timeout=_DEGRADED_COUNTER_TTL)
+        increment_counter(key, ttl=_DEGRADED_COUNTER_TTL)
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
         return
 

@@ -31,6 +31,21 @@ def try_dispatch_mission_refresh_task(task: Any, run_id: int, *, logger: Any, de
     )
 
 
+def prevalidate_launch_report(
+    mission: Any,
+    loadout: Dict[str, int],
+    *,
+    normalize_guest_configs,
+    normalize_mapping,
+) -> None:
+    build_defender_setup_and_drop_table(
+        mission,
+        loadout,
+        normalize_guest_configs=normalize_guest_configs,
+        normalize_mapping=normalize_mapping,
+    )
+
+
 def schedule_mission_completion_task(
     run: Any,
     complete_mission_task: Any,

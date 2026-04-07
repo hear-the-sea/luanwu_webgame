@@ -163,6 +163,7 @@ def launch_mission(
     *,
     seed: Any = None,
     scale_duration,
+    prevalidate_launch_report,
     import_launch_post_action_tasks,
     try_prepare_launch_report,
     dispatch_complete_mission_task,
@@ -180,6 +181,7 @@ def launch_mission(
             troop_loadout,
             scale_duration=scale_duration,
         )
+        prevalidate_launch_report(mission, loadout)
         mark_guests_deployed_if_needed(mission, guests)
         guest_snapshots = build_guest_battle_snapshots(guests, include_identity=True)
         run = create_mission_run_record(manor, mission, guests, guest_snapshots, loadout, travel_seconds)

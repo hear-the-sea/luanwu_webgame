@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import timedelta
 
 import pytest
+from django.db import DatabaseError
+from django.test import TestCase
 from django.utils import timezone
 
 from core.exceptions import MessageError
@@ -44,15 +46,21 @@ def test_dismiss_marching_raids_if_protected_reacts_to_defeat_protection(django_
 
     monkeypatch.setattr(gameplay_tasks, "complete_raid_task", object(), raising=False)
 
-    dismissed = combat_travel._dismiss_marching_raids_if_protected(defender)
+    with TestCase.captureOnCommitCallbacks(execute=False) as callbacks:
+        dismissed = combat_travel._dismiss_marching_raids_if_protected(defender)
 
     run.refresh_from_db()
     assert dismissed == 1
     assert run.status == RaidRun.Status.RETREATED
     assert run.return_at is not None and run.return_at > now
+    assert len(scheduled) == 1
+    assert sent_messages == []
+
+    for callback in callbacks:
+        callback()
+
     assert len(sent_messages) == 1
     assert "战败保护期" in sent_messages[0]["body"]
-    assert len(scheduled) == 1
 
 
 def test_resolve_complete_raid_task_missing_target_module_degrades(monkeypatch):
@@ -78,10 +86,66 @@ def test_resolve_complete_raid_task_nested_import_error_bubbles_up(monkeypatch):
         combat_travel.resolve_complete_raid_task(logger=combat_travel.logger)
 
 
+@pytest.mark.django_db
+def test_dismiss_marching_raids_if_protected_db_message_failure_still_persists(django_user_model, monkeypatch):
+    attacker, defender = build_attacker_defender(
+        django_user_model,
+        attacker_username="raid_dismiss_db_attacker",
+        defender_username="raid_dismiss_db_defender",
+    )
+
+    now = timezone.now()
+    defender.defeat_protection_until = now + timedelta(minutes=30)
+    defender.save(update_fields=["defeat_protection_until"])
+
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.MARCHING,
+        troop_loadout={},
+        travel_time=60,
+        battle_at=now + timedelta(seconds=30),
+        return_at=now + timedelta(seconds=60),
+    )
+    scheduled = []
+
+    monkeypatch.setattr(
+        combat_travel,
+        "create_message",
+        lambda **_kwargs: (_ for _ in ()).throw(DatabaseError("db write failed")),
+    )
+    monkeypatch.setattr(
+        combat_travel, "safe_apply_async", lambda task, **kwargs: scheduled.append((task, kwargs)) or True
+    )
+
+    import gameplay.tasks as gameplay_tasks
+
+    monkeypatch.setattr(gameplay_tasks, "complete_raid_task", object(), raising=False)
+
+    with TestCase.captureOnCommitCallbacks(execute=False) as callbacks:
+        dismissed = combat_travel._dismiss_marching_raids_if_protected(defender)
+
+    run.refresh_from_db()
+    assert dismissed == 1
+    assert run.status == RaidRun.Status.RETREATED
+    assert run.return_at is not None and run.return_at > now
+    assert len(scheduled) == 1
+
+    for callback in callbacks:
+        callback()
+
+
 def test_retreat_raid_run_due_to_blocked_target_programming_error_bubbles_up(monkeypatch):
     now = timezone.now()
     saved = {"fields": None}
     locked_run = build_locked_run(run_id=21, now=now, save_fields=saved)
+    callbacks = []
+
+    monkeypatch.setattr(
+        combat_travel,
+        "schedule_best_effort_after_commit",
+        lambda callback, **_kwargs: callbacks.append(callback),
+    )
 
     monkeypatch.setattr(
         combat_travel,
@@ -89,18 +153,38 @@ def test_retreat_raid_run_due_to_blocked_target_programming_error_bubbles_up(mon
         lambda **_kwargs: (_ for _ in ()).throw(AssertionError("broken blocked-target message contract")),
     )
 
-    with pytest.raises(AssertionError, match="broken blocked-target message contract"):
-        combat_travel._retreat_raid_run_due_to_blocked_target(locked_run, now=now, reason="战败保护")
+    return_time = combat_travel._retreat_raid_run_due_to_blocked_target(locked_run, now=now, reason="战败保护")
 
+    assert return_time == 15
     assert locked_run.status == RaidRun.Status.RETREATED
     assert locked_run.return_at == now + timedelta(seconds=15)
     assert saved["fields"] == ["status", "return_at"]
+    assert len(callbacks) == 1
+
+    with pytest.raises(AssertionError, match="broken blocked-target message contract"):
+        callbacks[0]()
 
 
 def test_retreat_raid_run_due_to_blocked_target_explicit_message_error_degrades(monkeypatch):
     now = timezone.now()
     saved = {"fields": None}
     locked_run = build_locked_run(run_id=22, now=now, save_fields=saved)
+    callbacks = []
+
+    def _capture_after_commit(callback, *, expected_exceptions, **_kwargs):
+        def _run():
+            try:
+                callback()
+            except expected_exceptions:
+                return None
+
+        callbacks.append(_run)
+
+    monkeypatch.setattr(
+        combat_travel,
+        "schedule_best_effort_after_commit",
+        _capture_after_commit,
+    )
 
     monkeypatch.setattr(
         combat_travel,
@@ -114,12 +198,21 @@ def test_retreat_raid_run_due_to_blocked_target_explicit_message_error_degrades(
     assert locked_run.status == RaidRun.Status.RETREATED
     assert locked_run.return_at == now + timedelta(seconds=15)
     assert saved["fields"] == ["status", "return_at"]
+    assert len(callbacks) == 1
+    callbacks[0]()
 
 
 def test_retreat_raid_run_due_to_blocked_target_runtime_marker_error_bubbles_up(monkeypatch):
     now = timezone.now()
     saved = {"fields": None}
     locked_run = build_locked_run(run_id=23, now=now, save_fields=saved)
+    callbacks = []
+
+    monkeypatch.setattr(
+        combat_travel,
+        "schedule_best_effort_after_commit",
+        lambda callback, **_kwargs: callbacks.append(callback),
+    )
 
     monkeypatch.setattr(
         combat_travel,
@@ -127,5 +220,13 @@ def test_retreat_raid_run_due_to_blocked_target_runtime_marker_error_bubbles_up(
         lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("message backend down")),
     )
 
+    return_time = combat_travel._retreat_raid_run_due_to_blocked_target(locked_run, now=now, reason="战败保护")
+
+    assert return_time == 15
+    assert locked_run.status == RaidRun.Status.RETREATED
+    assert locked_run.return_at == now + timedelta(seconds=15)
+    assert saved["fields"] == ["status", "return_at"]
+    assert len(callbacks) == 1
+
     with pytest.raises(RuntimeError, match="message backend down"):
-        combat_travel._retreat_raid_run_due_to_blocked_target(locked_run, now=now, reason="战败保护")
+        callbacks[0]()

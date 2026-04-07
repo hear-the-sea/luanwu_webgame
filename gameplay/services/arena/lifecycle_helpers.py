@@ -12,6 +12,7 @@ from core.utils.infrastructure import (
     InfrastructureExceptions,
     combine_infrastructure_exceptions,
 )
+from core.utils.side_effects import schedule_best_effort_after_commit
 from gameplay.models import ArenaEntry, ArenaEntryGuest, ArenaMatch, ArenaTournament, Manor, Message
 from gameplay.services.utils.messages import create_message
 from guests.models import Guest, GuestStatus
@@ -20,6 +21,10 @@ ARENA_SETTLEMENT_MESSAGE_EXCEPTIONS: InfrastructureExceptions = combine_infrastr
     MessageError,
     infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
 )
+
+
+def _send_arena_settlement_message(*, manor: Manor, title: str, body: str) -> None:
+    create_message(manor=manor, kind=Message.Kind.REWARD, title=title, body=body)
 
 
 def schedule_round_locked(
@@ -106,17 +111,29 @@ def finalize_tournament_locked(
         Manor.objects.filter(pk=entry.manor_id).update(arena_coins=F("arena_coins") + entry.coin_reward)
         title = "竞技场结算奖励"
         body = f"本场排名第 {entry.final_rank}，获得角斗币 {entry.coin_reward}。"
-        try:
-            create_message(manor=entry.manor, kind=Message.Kind.REWARD, title=title, body=body)
-        except ARENA_SETTLEMENT_MESSAGE_EXCEPTIONS as exc:
-            logger.warning(
-                "arena settlement message failed: tournament_id=%s entry_id=%s manor_id=%s error=%s",
-                tournament.id,
-                entry.id,
-                entry.manor_id,
-                exc,
-                exc_info=True,
+
+        def _send_settlement_message(
+            *,
+            manor=entry.manor,
+            title=title,
+            body=body,
+        ) -> None:
+            _send_arena_settlement_message(
+                manor=manor,
+                title=title,
+                body=body,
             )
+
+        schedule_best_effort_after_commit(
+            _send_settlement_message,
+            logger=logger,
+            log_message=(
+                "arena settlement message failed: "
+                f"tournament_id={tournament.id} entry_id={entry.id} manor_id={entry.manor_id}"
+            ),
+            expected_exceptions=ARENA_SETTLEMENT_MESSAGE_EXCEPTIONS,
+            degraded_component="arena_settlement_messages",
+        )
 
     participating_guest_ids = list(
         ArenaEntryGuest.objects.filter(entry_id__in=[entry.id for entry in entries]).values_list("guest_id", flat=True)

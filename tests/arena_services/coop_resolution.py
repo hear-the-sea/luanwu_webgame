@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import pytest
+from django.db import DatabaseError
+from django.test import TestCase
 from django.utils import timezone
 
 from battle.models import BattleReport
@@ -287,7 +289,15 @@ def test_run_due_arena_coop_events_sends_battle_and_settlement_messages(monkeypa
     )
     monkeypatch.setattr("gameplay.services.arena.coop_rewards.random.random", lambda: 0.0)
 
-    processed = run_due_arena_coop_events(limit=10)
+    with TestCase.captureOnCommitCallbacks(execute=False) as callbacks:
+        processed = run_due_arena_coop_events(limit=10)
+
+    event.refresh_from_db()
+    assert event.status == ArenaCoopEvent.Status.COMPLETED
+    assert Message.objects.filter(manor__in=manors).count() == 0
+
+    for callback in callbacks:
+        callback()
 
     assert processed == 1
     top_messages = list(Message.objects.filter(manor=manors[0]).order_by("kind", "title"))
@@ -318,16 +328,49 @@ def test_run_due_arena_coop_events_degrades_expected_message_error(monkeypatch):
         lambda **kwargs: (_ for _ in ()).throw(MessageError("message backend down")),
     )
 
-    processed = run_due_arena_coop_events(limit=10)
+    with TestCase.captureOnCommitCallbacks(execute=False) as callbacks:
+        processed = run_due_arena_coop_events(limit=10)
 
     event.refresh_from_db()
     assert processed == 1
     assert event.status == ArenaCoopEvent.Status.COMPLETED
+
+    for callback in callbacks:
+        callback()
+
     assert Message.objects.filter(manor__in=manors).count() == 0
 
 
 @pytest.mark.django_db
-def test_run_due_arena_coop_events_runtime_message_error_bubbles_up(monkeypatch):
+def test_run_due_arena_coop_events_db_message_failure_keeps_completion(monkeypatch):
+    event, manors, report = _build_coop_message_fixture("arena_coop_message_db_failure")
+
+    monkeypatch.setattr(
+        "gameplay.services.arena.coop_core._run_coop_battle_locked",
+        lambda locked_event, now: report,
+    )
+    monkeypatch.setattr("gameplay.services.arena.coop_rewards.random.random", lambda: 0.0)
+    monkeypatch.setattr(
+        "gameplay.services.arena.coop_core.create_message",
+        lambda **kwargs: (_ for _ in ()).throw(DatabaseError("db message write failed")),
+    )
+
+    with TestCase.captureOnCommitCallbacks(execute=False) as callbacks:
+        processed = run_due_arena_coop_events(limit=10)
+
+    event.refresh_from_db()
+    assert processed == 1
+    assert event.status == ArenaCoopEvent.Status.COMPLETED
+    assert ArenaCoopContribution.objects.filter(event=event).count() == 5
+
+    for callback in callbacks:
+        callback()
+
+    assert Message.objects.filter(manor__in=manors).count() == 0
+
+
+@pytest.mark.django_db
+def test_run_due_arena_coop_events_runtime_message_error_bubbles_up_after_commit(monkeypatch):
     event, _manors, report = _build_coop_message_fixture("arena_coop_message_runtime")
 
     monkeypatch.setattr(
@@ -340,12 +383,17 @@ def test_run_due_arena_coop_events_runtime_message_error_bubbles_up(monkeypatch)
         lambda **kwargs: (_ for _ in ()).throw(RuntimeError("message backend down")),
     )
 
-    with pytest.raises(RuntimeError, match="message backend down"):
-        run_due_arena_coop_events(limit=10)
+    with TestCase.captureOnCommitCallbacks(execute=False) as callbacks:
+        processed = run_due_arena_coop_events(limit=10)
 
     event.refresh_from_db()
-    assert event.status == ArenaCoopEvent.Status.PREPARING
-    assert ArenaCoopContribution.objects.filter(event=event).count() == 0
+    assert processed == 1
+    assert event.status == ArenaCoopEvent.Status.COMPLETED
+    assert ArenaCoopContribution.objects.filter(event=event).count() == 5
+
+    with pytest.raises(RuntimeError, match="message backend down"):
+        for callback in callbacks:
+            callback()
 
 
 @pytest.mark.django_db

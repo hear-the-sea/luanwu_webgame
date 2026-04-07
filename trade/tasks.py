@@ -9,6 +9,7 @@ import logging
 from celery import shared_task
 from django.utils import timezone
 
+from common.utils.celery import safe_apply_async
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from core.utils.task_monitoring import increment_degraded_counter
 from trade.models import ShopStock
@@ -155,10 +156,12 @@ def settle_auction_round_task(self):
 
         if settled > 0:
             # 结算完成后触发创建新轮次
-            try:
-                create_auction_round_task.delay()
-            except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
-                logger.warning("拍卖结算后触发新轮次任务失败，立即切换为同步创建: %s", exc, exc_info=True)
+            dispatched = safe_apply_async(
+                create_auction_round_task,
+                logger=logger,
+                log_message="拍卖结算后触发新轮次任务失败，立即切换为同步创建",
+            )
+            if not dispatched:
                 try:
                     create_auction_round()
                 except DATABASE_INFRASTRUCTURE_EXCEPTIONS as fallback_exc:

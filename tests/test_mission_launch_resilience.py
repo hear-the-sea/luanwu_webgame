@@ -223,6 +223,25 @@ def test_launch_mission_completion_dispatch_runtime_marker_error_bubbles_up(
 
 
 @pytest.mark.django_db(transaction=True)
+def test_launch_mission_invalid_enemy_payload_fails_before_persisting_run(
+    game_data, mission_templates, manor_with_troops
+):
+    manor = manor_with_troops
+    mission = _select_offense_mission()
+    guest = _create_launch_guest(manor)
+    mission.enemy_troops = "broken-payload"
+    mission.save(update_fields=["enemy_troops"])
+
+    with pytest.raises(AssertionError, match="invalid mission enemy_troops"):
+        mission_execution.launch_mission(manor, mission, [guest.id], {})
+
+    guest.refresh_from_db()
+
+    assert not MissionRun.objects.filter(manor=manor, mission=mission).exists()
+    assert guest.status == GuestStatus.IDLE
+
+
+@pytest.mark.django_db(transaction=True)
 def test_launch_mission_does_not_trigger_refresh_command(game_data, mission_templates, manor_with_troops, monkeypatch):
     manor = manor_with_troops
     mission = _select_offense_mission()

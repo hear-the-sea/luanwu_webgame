@@ -199,6 +199,20 @@ class TestTaskMonitoringCounters:
         assert all(not thread.is_alive() for thread in threads)
         assert store[metric_key] == 2
 
+    def test_increment_degraded_counter_uses_atomic_increment(self, monkeypatch):
+        calls = []
+
+        monkeypatch.setattr(
+            task_monitoring,
+            "increment_counter",
+            lambda key, *, ttl: calls.append((key, ttl)) or 2,
+        )
+
+        task_monitoring.increment_degraded_counter("global_mail")
+
+        assert calls
+        assert calls[0][0].startswith("degraded:global_mail:")
+
     def test_get_redis_registry_client_returns_none_when_django_redis_missing(self, monkeypatch):
         original_import = builtins.__import__
 

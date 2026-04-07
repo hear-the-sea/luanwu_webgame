@@ -27,6 +27,7 @@ from core.utils.infrastructure import (
     InfrastructureExceptions,
     combine_infrastructure_exceptions,
 )
+from core.utils.side_effects import schedule_best_effort_after_commit
 from gameplay.models import (
     ArenaCoopContribution,
     ArenaCoopEntry,
@@ -301,27 +302,19 @@ def _send_coop_settlement_messages(
         f"{_format_rare_drop_summary(contribution.rare_drop_item_key)}。"
     )
 
-    try:
-        create_message(
-            manor=locked_manor,
-            kind=Message.Kind.BATTLE,
-            title=battle_title,
-            body=battle_body,
-            battle_report=report,
-        )
-        create_message(
-            manor=locked_manor,
-            kind=Message.Kind.REWARD,
-            title=reward_title,
-            body=reward_body,
-        )
-    except ARENA_COOP_SETTLEMENT_MESSAGE_EXCEPTIONS:
-        logger.exception(
-            "arena coop settlement messages failed: event_id=%s manor_id=%s entry_id=%s",
-            locked_event.id,
-            locked_manor.id,
-            contribution.entry_id,
-        )
+    create_message(
+        manor=locked_manor,
+        kind=Message.Kind.BATTLE,
+        title=battle_title,
+        body=battle_body,
+        battle_report=report,
+    )
+    create_message(
+        manor=locked_manor,
+        kind=Message.Kind.REWARD,
+        title=reward_title,
+        body=reward_body,
+    )
 
 
 def _settle_coop_event_locked(
@@ -407,11 +400,30 @@ def _settle_coop_event_locked(
             total_coins=contribution.total_coins,
             rare_drop_item_key=contribution.rare_drop_item_key,
         )
-        _send_coop_settlement_messages(
+
+        def _send_settlement_messages(
+            *,
             locked_event=locked_event,
             locked_manor=locked_manor,
             contribution=contribution,
             report=report,
+        ) -> None:
+            _send_coop_settlement_messages(
+                locked_event=locked_event,
+                locked_manor=locked_manor,
+                contribution=contribution,
+                report=report,
+            )
+
+        schedule_best_effort_after_commit(
+            _send_settlement_messages,
+            logger=logger,
+            log_message=(
+                "arena coop settlement messages failed: "
+                f"event_id={locked_event.id} manor_id={locked_manor.id} entry_id={contribution.entry_id}"
+            ),
+            expected_exceptions=ARENA_COOP_SETTLEMENT_MESSAGE_EXCEPTIONS,
+            degraded_component="arena_coop_messages",
         )
 
     locked_event.status = ArenaCoopEvent.Status.COMPLETED

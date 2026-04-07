@@ -273,7 +273,7 @@ def test_finalize_tournament_locked_keeps_success_when_database_message_failure(
 
 
 @pytest.mark.django_db(transaction=True)
-def test_finalize_tournament_locked_runtime_marker_error_bubbles_up(monkeypatch):
+def test_finalize_tournament_locked_runtime_marker_error_bubbles_up_after_commit(monkeypatch):
     tournament = ArenaTournament.objects.create(
         status=ArenaTournament.Status.RUNNING,
         player_limit=2,
@@ -299,22 +299,40 @@ def test_finalize_tournament_locked_runtime_marker_error_bubbles_up(monkeypatch)
         "create_message",
         lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("message backend down")),
     )
+    callbacks = []
+
+    monkeypatch.setattr(
+        arena_lifecycle_helpers,
+        "schedule_best_effort_after_commit",
+        lambda callback, **_kwargs: callbacks.append(callback),
+    )
+
+    with transaction.atomic():
+        arena_lifecycle_helpers.finalize_tournament_locked(
+            tournament,
+            winner_entry=winner_entry,
+            now=timezone.now(),
+            calculate_ranked_entries=lambda entries, winner: [winner]
+            + [entry for entry in entries if entry.pk != winner.pk],
+            reward_for_rank=lambda rank: 100 if rank == 1 else 20,
+            logger=logging.getLogger("tests.arena.lifecycle_helpers"),
+        )
+
+    tournament.refresh_from_db()
+    winner_entry.refresh_from_db()
+
+    assert tournament.status == ArenaTournament.Status.COMPLETED
+    assert winner_entry.status == ArenaEntry.Status.WINNER
+    assert winner_entry.coin_reward == 100
+    assert len(callbacks) == 2
 
     with pytest.raises(RuntimeError, match="message backend down"):
-        with transaction.atomic():
-            arena_lifecycle_helpers.finalize_tournament_locked(
-                tournament,
-                winner_entry=winner_entry,
-                now=timezone.now(),
-                calculate_ranked_entries=lambda entries, winner: [winner]
-                + [entry for entry in entries if entry.pk != winner.pk],
-                reward_for_rank=lambda rank: 100 if rank == 1 else 20,
-                logger=logging.getLogger("tests.arena.lifecycle_helpers"),
-            )
+        for callback in callbacks:
+            callback()
 
 
 @pytest.mark.django_db(transaction=True)
-def test_finalize_tournament_locked_programming_error_bubbles_up(monkeypatch):
+def test_finalize_tournament_locked_programming_error_bubbles_up_after_commit(monkeypatch):
     tournament = ArenaTournament.objects.create(
         status=ArenaTournament.Status.RUNNING,
         player_limit=2,
@@ -340,21 +358,33 @@ def test_finalize_tournament_locked_programming_error_bubbles_up(monkeypatch):
         "create_message",
         lambda **_kwargs: (_ for _ in ()).throw(AssertionError("broken arena settlement message contract")),
     )
+    callbacks = []
 
-    with pytest.raises(AssertionError, match="broken arena settlement message contract"):
-        with transaction.atomic():
-            arena_lifecycle_helpers.finalize_tournament_locked(
-                tournament,
-                winner_entry=winner_entry,
-                now=timezone.now(),
-                calculate_ranked_entries=lambda entries, winner: [winner]
-                + [entry for entry in entries if entry.pk != winner.pk],
-                reward_for_rank=lambda rank: 100 if rank == 1 else 20,
-                logger=logging.getLogger("tests.arena.lifecycle_helpers"),
-            )
+    monkeypatch.setattr(
+        arena_lifecycle_helpers,
+        "schedule_best_effort_after_commit",
+        lambda callback, **_kwargs: callbacks.append(callback),
+    )
+
+    with transaction.atomic():
+        arena_lifecycle_helpers.finalize_tournament_locked(
+            tournament,
+            winner_entry=winner_entry,
+            now=timezone.now(),
+            calculate_ranked_entries=lambda entries, winner: [winner]
+            + [entry for entry in entries if entry.pk != winner.pk],
+            reward_for_rank=lambda rank: 100 if rank == 1 else 20,
+            logger=logging.getLogger("tests.arena.lifecycle_helpers"),
+        )
 
     tournament.refresh_from_db()
     winner_entry.refresh_from_db()
 
-    assert tournament.status == ArenaTournament.Status.RUNNING
-    assert winner_entry.status == ArenaEntry.Status.REGISTERED
+    assert tournament.status == ArenaTournament.Status.COMPLETED
+    assert winner_entry.status == ArenaEntry.Status.WINNER
+    assert winner_entry.coin_reward == 100
+    assert len(callbacks) == 2
+
+    with pytest.raises(AssertionError, match="broken arena settlement message contract"):
+        for callback in callbacks:
+            callback()

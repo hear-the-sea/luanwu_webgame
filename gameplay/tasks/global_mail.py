@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
 from core.exceptions import MessageError
+from core.utils.atomic_cache import merge_int_id_set
 from core.utils.infrastructure import (
     CACHE_INFRASTRUCTURE_EXCEPTIONS,
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
@@ -42,12 +43,7 @@ def persist_failed_manor_ids(campaign_id: int, failed_ids: list[int]) -> None:
         return
     key = _get_failed_manor_ids_cache_key(campaign_id)
     try:
-        existing = cache.get(key) or []
-        if isinstance(existing, list):
-            merged = list({int(x) for x in existing} | {int(x) for x in failed_ids})
-        else:
-            merged = [int(x) for x in failed_ids]
-        cache.set(key, merged, timeout=FAILED_GLOBAL_MAIL_MANOR_IDS_TTL)
+        merge_int_id_set(key, failed_ids, ttl=FAILED_GLOBAL_MAIL_MANOR_IDS_TTL)
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
         logger.warning(
             "Failed to persist global mail failed manor IDs: campaign_id=%s",

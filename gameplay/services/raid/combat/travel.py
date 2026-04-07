@@ -18,6 +18,7 @@ from core.utils.infrastructure import (
     InfrastructureExceptions,
     combine_infrastructure_exceptions,
 )
+from core.utils.side_effects import schedule_best_effort_after_commit
 from core.utils.time_scale import scale_duration
 from guests.models import Guest
 
@@ -90,22 +91,24 @@ def _retreat_raid_run_due_to_blocked_target(
     locked_run.return_at = now + timedelta(seconds=return_time)
     locked_run.save(update_fields=["status", "return_at"])
 
-    try:
+    def _send_blocked_target_message() -> None:
         create_message(
             manor=locked_run.attacker,
             kind="system",
             title="部队已遣返",
             body=build_blocked_target_body(target_name=locked_run.defender.display_name, reason=reason),
         )
-    except RAID_BLOCKED_TARGET_MESSAGE_EXCEPTIONS as exc:
-        logger.warning(
-            "raid blocked-target message failed: run_id=%s attacker=%s defender=%s error=%s",
-            locked_run.id,
-            locked_run.attacker_id,
-            locked_run.defender_id,
-            exc,
-            exc_info=True,
-        )
+
+    schedule_best_effort_after_commit(
+        _send_blocked_target_message,
+        logger=logger,
+        log_message=(
+            "raid blocked-target message failed: "
+            f"run_id={locked_run.id} attacker={locked_run.attacker_id} defender={locked_run.defender_id}"
+        ),
+        expected_exceptions=RAID_BLOCKED_TARGET_MESSAGE_EXCEPTIONS,
+        degraded_component="raid_blocked_target_message",
+    )
 
     return return_time
 

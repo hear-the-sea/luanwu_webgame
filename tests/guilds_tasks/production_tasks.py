@@ -218,6 +218,21 @@ def test_persist_failed_guild_ids_cache_programming_error_bubbles_up(monkeypatch
         _persist_failed_guild_ids([1, 2])
 
 
+def test_persist_failed_guild_ids_uses_atomic_merge(monkeypatch):
+    from guilds.tasks import FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY, _persist_failed_guild_ids
+
+    calls = []
+
+    monkeypatch.setattr(
+        "guilds.tasks.merge_int_id_set",
+        lambda key, ids, *, ttl: calls.append((key, ids, ttl)) or [1, 2],
+    )
+
+    _persist_failed_guild_ids([1, 2])
+
+    assert calls == [(FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY, [1, 2], None)]
+
+
 def test_get_failed_guild_ids_cache_infrastructure_error_returns_empty(monkeypatch):
     from guilds.tasks import get_failed_guild_ids
 

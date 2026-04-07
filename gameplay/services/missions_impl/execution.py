@@ -152,6 +152,11 @@ def launch_mission(
         seed=seed,
         **build_launch_mission_dependencies(
             scale_duration=scale_duration,
+            prevalidate_launch_report=partial(
+                mission_followups.prevalidate_launch_report,
+                normalize_guest_configs=_normalize_guest_configs,
+                normalize_mapping=_normalize_mapping,
+            ),
             import_launch_post_action_tasks=partial(
                 mission_followups.import_launch_post_action_tasks,
                 logger=logger,

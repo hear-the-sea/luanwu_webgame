@@ -313,13 +313,20 @@ def _run_tournament_round(tournament_id: int, *, now: datetime) -> bool:
             )
             .order_by("match_index", "id")
         )
+        has_existing_round_matches = (
+            tournament.current_round > 0
+            and ArenaMatch.objects.filter(tournament=tournament, round_number=tournament.current_round).exists()
+        )
 
         if not pending_matches:
-            next_round_number = max(1, tournament.current_round + 1)
-            return _schedule_round_locked(tournament, round_number=next_round_number, now=now)
+            if not has_existing_round_matches:
+                next_round_number = max(1, tournament.current_round + 1)
+                return _schedule_round_locked(tournament, round_number=next_round_number, now=now)
+            pending_match_ids: list[int] = []
+        else:
+            pending_match_ids = [match.id for match in pending_matches]
 
         round_number = tournament.current_round
-        pending_match_ids = [match.id for match in pending_matches]
         # 避免并发 worker 重复处理本轮，先把下次扫描时间推后。
         tournament.next_round_at = now + _round_interval_delta(tournament)
         tournament.save(update_fields=["next_round_at", "updated_at"])
