@@ -3,6 +3,7 @@ from __future__ import annotations
 from itertools import count
 
 from django.contrib.messages import get_messages
+from django.core.cache import cache
 from django.test import Client
 
 from gameplay.models import InventoryItem, ItemTemplate
@@ -37,6 +38,7 @@ def messages(response) -> list[str]:
 
 
 def login_client(django_user_model, *, prefix: str = "guest_view_boundary"):
+    cache.clear()
     username = unique(prefix)
     user = django_user_model.objects.create_user(username=username, password="pass123")
     manor = ensure_manor(user)

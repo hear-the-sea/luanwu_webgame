@@ -1,6 +1,6 @@
 # 项目重构优化规则与阶段目标（2026-03）
 
-最近更新：2026-04-06
+最近更新：2026-04-07
 
 本文档不记录详细审计过程、历史数据或阶段性结果，只保留后续重构必须遵守的规则，以及各阶段的优化目标。
 
@@ -25,6 +25,7 @@
   - 2026-04-04 `npm run test:js`、`python -m flake8 --jobs=1 accounts battle gameplay guests guilds trade core websocket config tests`、`python -m mypy accounts battle common config core gameplay guests guilds tasks trade websocket` 与 `python -m pytest -x -q -m "not integration"` 通过；结果分别为 `10 passed`、`flake8 通过`、`533 source files mypy 通过` 与 `2669 passed, 40 deselected`。
   - 2026-04-06 `npm run test:js`、`make lint` 与 `python -m pytest -q -m "not integration"` 通过；结果分别为 `12 passed`、`flake8 + mypy（551 source files）通过` 与 `2796 passed, 41 deselected`。
   - 2026-04-06 `python -m pytest -q` 通过，结果为 `2782 passed, 41 skipped`。
+  - 2026-04-07 `npm run test:js`、`make lint` 与 `python -m pytest -q` 通过；结果分别为 `12 passed`、`flake8 + mypy（553 source files）通过` 与 `2853 passed, 41 skipped`。
 - 当前已封板阶段：
   - 阶段 1 已完成：热点页面入口、读写边界与包级聚合导入治理已收口。
   - 阶段 2 已完成：`mission / raid / guest recruitment` 的统一写模型、显式 refresh 边界与关键 real-services gate 已建立。

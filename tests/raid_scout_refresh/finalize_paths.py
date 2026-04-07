@@ -63,7 +63,9 @@ def test_finalize_scout_return_marks_retreated_records_without_failure_message(d
     )
     callbacks = []
     monkeypatch.setattr(
-        scout_service.scout_followups.transaction, "on_commit", lambda callback: callbacks.append(callback)
+        scout_service.scout_followups,
+        "schedule_best_effort_after_commit",
+        lambda callback, **_kwargs: callbacks.append(callback),
     )
 
     complete_time = request_time + timedelta(seconds=5)
@@ -108,7 +110,9 @@ def test_finalize_scout_return_recreates_missing_scout_troop_row_for_success(dja
 
     callbacks = []
     monkeypatch.setattr(
-        scout_service.scout_followups.transaction, "on_commit", lambda callback: callbacks.append(callback)
+        scout_service.scout_followups,
+        "schedule_best_effort_after_commit",
+        lambda callback, **_kwargs: callbacks.append(callback),
     )
     monkeypatch.setattr(scout_service.scout_followups, "send_scout_success_message", lambda *_args, **_kwargs: None)
 
@@ -173,7 +177,9 @@ def test_finalize_scout_detected_message_runs_after_commit_and_failure_does_not_
     monkeypatch.setattr(scout_service.scout_followups, "send_scout_detected_message", _fail_detected)
     callbacks = []
     monkeypatch.setattr(
-        scout_service.scout_followups.transaction, "on_commit", lambda callback: callbacks.append(callback)
+        scout_service.scout_followups,
+        "schedule_best_effort_after_commit",
+        lambda callback, **_kwargs: callbacks.append(callback),
     )
 
     now = timezone.now()

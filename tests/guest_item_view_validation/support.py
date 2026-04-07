@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.core.management import call_command
 from django.test import Client
 
 from gameplay.services.manor.core import ensure_manor
@@ -14,7 +15,10 @@ def bootstrap_guest_client(game_data, django_user_model, *, username: str):
     manor.grain = manor.silver = 500000
     manor.save(update_fields=["grain", "silver"])
 
-    pool = RecruitmentPool.objects.get(key="cunmu")
+    pool = RecruitmentPool.objects.filter(key="cunmu").first()
+    if pool is None:
+        call_command("load_guest_templates", verbosity=0, skip_images=True)
+        pool = RecruitmentPool.objects.get(key="cunmu")
     candidate = recruit_guest(manor, pool, seed=1)[0]
     guest = finalize_candidate(candidate)
 
