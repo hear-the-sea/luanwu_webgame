@@ -348,7 +348,7 @@ class TestWorkViews:
         guest, work_template = self._create_work_data(manor, "assign_known")
 
         monkeypatch.setattr(
-            "gameplay.views.work.assign_guest_to_work",
+            "gameplay.views.work.assign_guest_to_work_with_refresh",
             lambda *_args, **_kwargs: (_ for _ in ()).throw(WorkError("work blocked")),
         )
 
@@ -366,7 +366,7 @@ class TestWorkViews:
         guest, work_template = self._create_work_data(manor, "assign_value_error")
 
         monkeypatch.setattr(
-            "gameplay.views.work.assign_guest_to_work",
+            "gameplay.views.work.assign_guest_to_work_with_refresh",
             lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("bad payload")),
         )
 
@@ -381,7 +381,7 @@ class TestWorkViews:
         guest, work_template = self._create_work_data(manor, "assign_exc")
 
         monkeypatch.setattr(
-            "gameplay.views.work.assign_guest_to_work",
+            "gameplay.views.work.assign_guest_to_work_with_refresh",
             lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("db down")),
         )
 
@@ -399,7 +399,7 @@ class TestWorkViews:
         guest, work_template = self._create_work_data(manor, "assign_runtime")
 
         monkeypatch.setattr(
-            "gameplay.views.work.assign_guest_to_work",
+            "gameplay.views.work.assign_guest_to_work_with_refresh",
             lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("boom")),
         )
 
@@ -417,7 +417,7 @@ class TestWorkViews:
         def _unexpected_assign(*_args, **_kwargs):
             called["count"] += 1
 
-        monkeypatch.setattr("gameplay.views.work.assign_guest_to_work", _unexpected_assign)
+        monkeypatch.setattr("gameplay.views.work.assign_guest_to_work_with_refresh", _unexpected_assign)
 
         response = client.post(
             reverse("gameplay:assign_work"),
@@ -441,7 +441,7 @@ class TestWorkViews:
         )
 
         monkeypatch.setattr(
-            "gameplay.views.work.recall_guest_from_work",
+            "gameplay.views.work.recall_guest_from_work_with_refresh",
             lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("db down")),
         )
 
@@ -463,7 +463,7 @@ class TestWorkViews:
         )
 
         monkeypatch.setattr(
-            "gameplay.views.work.claim_work_reward",
+            "gameplay.views.work.claim_work_reward_with_refresh",
             lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("db down")),
         )
 

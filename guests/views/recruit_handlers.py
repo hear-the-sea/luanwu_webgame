@@ -18,17 +18,15 @@ def handle_recruit_draw(
     pool: Any,
     run_locked_action: Callable[..., HttpResponse],
     format_duration: Callable[[int], str],
-    invalidate_cache_fn: Callable[[int | None], bool],
     json_success_response: Callable[..., HttpResponse],
     start_guest_recruitment_fn: Callable[..., Any],
 ) -> HttpResponse:
     def _perform_draw() -> HttpResponse:
         recruitment = start_guest_recruitment_fn(manor, pool)
         eta_text = format_duration(recruitment.duration_seconds)
-        cache_ok = invalidate_cache_fn(getattr(manor, "id", None))
         message = f"{pool.name} 已开始招募，预计 {eta_text} 后完成。"
         if is_ajax:
-            return json_success_response(request, manor, message, use_cache=cache_ok)
+            return json_success_response(request, manor, message, use_cache=False)
 
         messages.success(request, message)
         return redirect("gameplay:recruitment_hall")
@@ -62,6 +60,7 @@ def handle_candidate_accept(
     normalize_action: Callable[[str | None], str | None],
     parse_positive_candidate_ids: Callable[[list[str]], list[int] | None],
     load_selected_candidates: Callable[[Any, list[int]], tuple[Any, list[Any]]],
+    discard_candidates: Callable[[list[Any]], int],
     retain_candidates: Callable[[list[Any]], tuple[int, str | None]],
     finalize_candidates: Callable[[list[Any]], tuple[list[Any], list[Any]]],
     run_locked_action: Callable[..., HttpResponse],
@@ -88,6 +87,7 @@ def handle_candidate_accept(
         outcome = execute_candidate_action(
             action=action_request.action,
             selection=action_request.selection,
+            discard_candidates=discard_candidates,
             retain_candidates=retain_candidates,
             finalize_candidates=finalize_candidates,
         )
@@ -119,7 +119,6 @@ def handle_magnifying_glass_reveal(
     item_id_int: int | None,
     run_locked_action: Callable[..., HttpResponse],
     recruitment_hall_response: Callable[..., HttpResponse],
-    invalidate_cache_fn: Callable[[int | None], bool],
     use_magnifying_glass_for_candidates_fn: Callable[[Any, int], int],
 ) -> HttpResponse:
     if item_id_int is None:
@@ -132,13 +131,12 @@ def handle_magnifying_glass_reveal(
             use_magnifying_glass_for_candidates=use_magnifying_glass_for_candidates_fn,
         )
         if count > 0:
-            cache_ok = invalidate_cache_fn(getattr(manor, "id", None))
             return recruitment_hall_response(
                 request,
                 manor,
                 f"使用放大镜成功：显现 {count} 位候选门客的稀有度",
                 is_ajax=is_ajax,
-                use_cache=cache_ok,
+                use_cache=False,
             )
         return recruitment_hall_response(
             request,

@@ -34,7 +34,6 @@ from gameplay.services.inventory.use import use_inventory_item
 from gameplay.services.manor.core import get_manor, project_manor_activity_for_read
 from gameplay.services.manor.treasury import move_item_to_treasury, move_item_to_warehouse
 from gameplay.services.resources import project_resource_production_for_read
-from gameplay.services.utils.cache import invalidate_recruitment_hall_cache
 from gameplay.views.inventory_action_support import (
     build_inventory_use_success_message,
     inventory_error_response,
@@ -54,9 +53,7 @@ logger = logging.getLogger(__name__)
 
 
 def _refresh_recruitment_hall_runtime(manor: Any) -> int:
-    refreshed = int(refresh_guest_recruitments(manor) or 0)
-    invalidate_recruitment_hall_cache(int(manor.id))
-    return refreshed
+    return int(refresh_guest_recruitments(manor) or 0)
 
 
 def _warehouse_item(manor: Any, pk: int) -> InventoryItem:

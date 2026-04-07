@@ -4,7 +4,10 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any, Dict
+
+from django.core.cache import cache
 
 from core.exceptions import (
     DuplicateEquipmentError,
@@ -15,6 +18,7 @@ from core.exceptions import (
     GuestNotIdleError,
     ItemNotFoundError,
 )
+from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
 if TYPE_CHECKING:
     from gameplay.models import Manor
@@ -24,6 +28,8 @@ from django.db.models import Count, Min
 
 from ..models import GearItem, GearSlot, GearTemplate, Guest, GuestRarity, GuestStatus
 from ..utils.equipment_utils import EQUIP_SLOT_MAP, SET_STAT_FIELD_MAP, compute_set_bonus
+
+logger = logging.getLogger(__name__)
 
 _GEAR_EXTRA_STAT_FIELDS = {
     "hp": "hp_bonus",
@@ -36,6 +42,41 @@ _GEAR_EXTRA_STAT_FIELDS = {
 }
 
 _GEAR_TEMPLATE_META_FIELDS = {"set_key", "set_description", "set_bonus"}
+
+
+def gear_options_cache_key(manor_id: int, slot: str) -> str:
+    return f"gear_options:{manor_id}:{slot}"
+
+
+def _safe_cache_delete_many(keys: list[str]) -> None:
+    try:
+        cache.delete_many(keys)
+    except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
+        logger.warning("Gear options cache.delete_many failed: keys_count=%s error=%s", len(keys), exc, exc_info=True)
+
+
+def _clear_gear_options_cache(manor_id: int, *, slots: set[str] | None = None) -> None:
+    slot_values = slots or {choice.value for choice in GearSlot}
+    keys = [gear_options_cache_key(manor_id, value) for value in slot_values]
+    _safe_cache_delete_many(keys)
+
+
+def _best_effort_clear_gear_options_cache(manor_id: int, *, slots: set[str] | None = None) -> None:
+    try:
+        _clear_gear_options_cache(manor_id, slots=slots)
+    except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
+        logger.warning(
+            "Gear options cache invalidation skipped: manor_id=%s slots=%s error=%s",
+            manor_id,
+            sorted(slots) if slots else None,
+            exc,
+            exc_info=True,
+        )
+
+
+def _schedule_gear_options_cache_clear(manor_id: int, *, slots: set[str] | None = None) -> None:
+    scheduled_slots = set(slots) if slots else None
+    transaction.on_commit(lambda: _best_effort_clear_gear_options_cache(manor_id, slots=scheduled_slots))
 
 
 def _require_mapping(raw: Any, *, field_name: str) -> dict[str, Any]:
@@ -535,6 +576,7 @@ def equip_guest(gear: GearItem, guest: Guest) -> GearItem:
         guest.current_hp = guest.max_hp
         guest.save(update_fields=["current_hp"])
 
+    _schedule_gear_options_cache_clear(guest.manor_id, slots={slot})
     return gear
 
 
@@ -604,4 +646,5 @@ def unequip_guest_item(gear: GearItem, guest: Guest, *, allow_injured: bool = Fa
             quantity=1,
         )
 
+    _schedule_gear_options_cache_clear(guest.manor_id, slots={gear.template.slot})
     return gear

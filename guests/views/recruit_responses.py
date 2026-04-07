@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
 from typing import Any
 
 from django.contrib import messages
@@ -144,26 +143,21 @@ def candidate_action_success_response(
     outcome: CandidateActionOutcome,
     *,
     is_ajax: bool,
-    invalidate_cache_fn: Callable[[Any], bool],
     preview_limit: int,
 ) -> HttpResponse:
-    manor_id = getattr(manor, "id", None)
-
     if outcome.action == "discard":
         message = f"已放弃 {outcome.affected_count} 名候选门客。"
-        cache_ok = invalidate_cache_fn(manor_id)
         return recruitment_hall_response(
             request,
             manor,
             message,
             is_ajax=is_ajax,
             message_level="warning" if is_ajax else "info",
-            use_cache=cache_ok,
+            use_cache=False,
         )
 
     if outcome.action == "retain":
         if outcome.affected_count:
-            cache_ok = invalidate_cache_fn(manor_id)
             success_message = f"已将 {outcome.affected_count} 名候选收为家丁。"
             if is_ajax:
                 message = success_message
@@ -174,7 +168,7 @@ def candidate_action_success_response(
                     manor,
                     message,
                     is_ajax=is_ajax,
-                    use_cache=cache_ok,
+                    use_cache=False,
                 )
             messages.success(request, success_message)
             if outcome.error_message:
@@ -197,7 +191,6 @@ def candidate_action_success_response(
         )
 
     if outcome.succeeded:
-        cache_ok = invalidate_cache_fn(manor_id)
         success_message = format_bulk_recruit_success_message(outcome.succeeded, preview_limit=preview_limit)
         if is_ajax:
             message = success_message
@@ -208,7 +201,7 @@ def candidate_action_success_response(
                 manor,
                 message,
                 is_ajax=is_ajax,
-                use_cache=cache_ok,
+                use_cache=False,
             )
         messages.success(request, success_message)
         if outcome.failed:
@@ -216,7 +209,6 @@ def candidate_action_success_response(
         return redirect("gameplay:recruitment_hall")
 
     if outcome.failed:
-        cache_ok = invalidate_cache_fn(manor_id)
         return recruitment_hall_response(
             request,
             manor,
@@ -224,7 +216,7 @@ def candidate_action_success_response(
             is_ajax=is_ajax,
             status=200,
             message_level="warning",
-            use_cache=cache_ok,
+            use_cache=False,
         )
 
     return recruitment_hall_response(

@@ -4,7 +4,7 @@ from collections.abc import Callable
 from typing import Any
 
 from django.contrib import messages
-from django.db import DatabaseError, transaction
+from django.db import DatabaseError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 
@@ -13,7 +13,6 @@ from core.exceptions import GameError
 from core.utils import safe_int
 from core.utils.locked_actions import execute_locked_action
 from gameplay.models import MissionRun
-from gameplay.services.inventory import core as inventory_core
 
 from . import mission_helpers
 
@@ -241,15 +240,18 @@ def handle_use_mission_card(
     *,
     manor: Any,
     mission: Any,
-    add_mission_extra_attempt_fn: Callable[[Any, Any, int], Any],
+    add_mission_extra_attempt_fn: Callable[..., Any],
 ) -> HttpResponse:
     def _mission_redirect() -> HttpResponse:
         return mission_helpers.mission_tasks_redirect(mission.key)
 
     def _perform_use_card() -> None:
-        with transaction.atomic():
-            inventory_core.consume_inventory_item_for_manor_locked(manor, mission_helpers.MISSION_CARD_KEY, 1)
-            add_mission_extra_attempt_fn(manor, mission, 1)
+        add_mission_extra_attempt_fn(
+            manor=manor,
+            mission=mission,
+            item_key=mission_helpers.MISSION_CARD_KEY,
+            count=1,
+        )
         messages.success(request, f"使用任务卡成功，{mission.name} 今日次数+1")
 
     def _on_lock_conflict() -> HttpResponse:

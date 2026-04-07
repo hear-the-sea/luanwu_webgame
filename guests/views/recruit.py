@@ -17,18 +17,15 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
-from core.exceptions import GameError
-from core.utils import is_json_request, json_error, safe_positive_int, sanitize_error_message
+from core.utils import is_json_request, json_error, safe_positive_int
 from core.utils.locked_actions import acquire_scoped_action_lock, release_scoped_action_lock
 from core.utils.rate_limit import rate_limit_redirect
 from gameplay.services.manor.core import get_manor
-from gameplay.services.utils import cache as gameplay_cache_service
-from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
 from ..forms import RecruitForm
 from ..models import RecruitmentCandidate
 from ..services.recruitment import start_guest_recruitment, use_magnifying_glass_for_candidates
-from ..services.recruitment_guests import bulk_finalize_candidates, convert_candidate_to_retainer
+from ..services.recruitment_guests import bulk_finalize_candidates, discard_candidates, retain_candidates
 from .recruit_action_runtime import RECRUIT_ACTION_LOCK_SPEC, run_locked_recruit_action
 from .recruit_handlers import handle_candidate_accept, handle_magnifying_glass_reveal, handle_recruit_draw
 from .recruit_responses import candidate_action_success_response as _candidate_action_success_response
@@ -62,32 +59,8 @@ def _parse_positive_candidate_ids(raw_values: list[str]) -> list[int] | None:
     return parsed
 
 
-def _retain_candidates(candidates: list[RecruitmentCandidate]) -> tuple[int, str | None]:
-    retained = 0
-    error_message = None
-    for candidate in candidates:
-        try:
-            convert_candidate_to_retainer(candidate)
-            retained += 1
-        except GameError as exc:
-            error_message = sanitize_error_message(exc)
-            break
-    return retained, error_message
-
-
 def _finalize_candidates(candidates: list[RecruitmentCandidate]) -> tuple[list[Any], list[Any]]:
     return bulk_finalize_candidates(candidates)
-
-
-def _invalidate_recruitment_hall_cache_for_manor(manor_id: int | None) -> bool:
-    if not manor_id:
-        return True
-    try:
-        gameplay_cache_service.invalidate_recruitment_hall_cache(int(manor_id))
-        return True
-    except CACHE_INFRASTRUCTURE_EXCEPTIONS:
-        logger.warning("Failed to invalidate recruitment hall cache from view: manor_id=%s", manor_id, exc_info=True)
-        return False
 
 
 def _acquire_recruit_action_lock(action: str, manor_id: int, scope: str) -> tuple[bool, str, str | None]:
@@ -145,7 +118,6 @@ class RecruitView(LoginRequiredMixin, TemplateView):
             pool=pool,
             run_locked_action=_run_locked_recruit_action,
             format_duration=_format_duration,
-            invalidate_cache_fn=_invalidate_recruitment_hall_cache_for_manor,
             json_success_response=_json_recruitment_hall_success,
             start_guest_recruitment_fn=start_guest_recruitment,
         )
@@ -168,14 +140,14 @@ def accept_candidate_view(request: HttpRequest) -> HttpResponse:
         normalize_action=_normalize_candidate_action,
         parse_positive_candidate_ids=_parse_positive_candidate_ids,
         load_selected_candidates=_load_selected_candidates,
-        retain_candidates=_retain_candidates,
+        discard_candidates=discard_candidates,
+        retain_candidates=retain_candidates,
         finalize_candidates=_finalize_candidates,
         run_locked_action=_run_locked_recruit_action,
         recruitment_hall_response=_recruitment_hall_response,
         resolution_error_response=_recruitment_hall_resolution_error_response,
         candidate_action_success_response=partial(
             _candidate_action_success_response,
-            invalidate_cache_fn=_invalidate_recruitment_hall_cache_for_manor,
             preview_limit=RECRUIT_SUCCESS_NAME_PREVIEW_LIMIT,
         ),
     )
@@ -198,6 +170,5 @@ def use_magnifying_glass_view(request: HttpRequest) -> HttpResponse:
         item_id_int=item_id_int,
         run_locked_action=_run_locked_recruit_action,
         recruitment_hall_response=_recruitment_hall_response,
-        invalidate_cache_fn=_invalidate_recruitment_hall_cache_for_manor,
         use_magnifying_glass_for_candidates_fn=use_magnifying_glass_for_candidates,
     )

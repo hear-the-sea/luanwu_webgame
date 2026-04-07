@@ -47,7 +47,6 @@ def test_recruit_view_ajax_success_returns_recruitment_hall_partials(game_data, 
     client = Client()
     assert client.login(username="view_recruit_ajax_success", password="pass123")
     pool = RecruitmentPool.objects.get(key="cunmu")
-
     response = client.post(
         reverse("guests:recruit"),
         {"pool": str(pool.pk)},
@@ -73,7 +72,6 @@ def test_recruit_view_ajax_success_bypasses_cache_when_invalidation_fails(game_d
     assert client.login(username="view_recruit_ajax_uncached", password="pass123")
     pool = RecruitmentPool.objects.get(key="cunmu")
 
-    monkeypatch.setattr("guests.views.recruit._invalidate_recruitment_hall_cache_for_manor", lambda *_a, **_k: False)
     monkeypatch.setattr(
         "gameplay.selectors.recruitment._safe_cache_get",
         lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("cache.get should be bypassed")),
@@ -154,7 +152,9 @@ def test_candidate_accept_view_uses_manor_wide_candidate_action_lock(game_data, 
 
 
 @pytest.mark.django_db
-def test_candidate_accept_view_retain_ajax_success_returns_recruitment_hall_partials(game_data, django_user_model):
+def test_candidate_accept_view_retain_ajax_success_returns_recruitment_hall_partials(
+    game_data, django_user_model, monkeypatch
+):
     user = django_user_model.objects.create_user(username="view_candidate_accept_retain_ajax", password="pass123")
     manor = ensure_manor(user)
     manor.grain = manor.silver = 500000
@@ -164,6 +164,14 @@ def test_candidate_accept_view_retain_ajax_success_returns_recruitment_hall_part
     pool = RecruitmentPool.objects.get(key="cunmu")
     candidate = recruit_guest(manor, pool, seed=6)[0]
     retainer_before = manor.retainer_count
+    monkeypatch.setattr(
+        "gameplay.selectors.recruitment._safe_cache_get",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("cache.get should be bypassed")),
+    )
+    monkeypatch.setattr(
+        "gameplay.selectors.recruitment._safe_cache_set",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("cache.set should be bypassed")),
+    )
 
     response = client.post(
         reverse("guests:candidate_accept"),
@@ -219,6 +227,55 @@ def test_candidate_accept_view_discard_all_without_candidate_ids(game_data, djan
 
 
 @pytest.mark.django_db
+def test_candidate_accept_view_discard_all_uses_service_command(game_data, django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(username="view_candidate_accept_discard_service", password="pass123")
+    manor = ensure_manor(user)
+    client = Client()
+    assert client.login(username="view_candidate_accept_discard_service", password="pass123")
+    pool = RecruitmentPool.objects.get(key="cunmu")
+    candidates = recruit_guest(manor, pool, seed=31)
+    called: dict[str, object] = {}
+
+    def _fake_discard(current_candidates):
+        called["candidates"] = list(current_candidates)
+        return len(current_candidates)
+
+    monkeypatch.setattr("guests.views.recruit.discard_candidates", _fake_discard)
+
+    response = client.post(reverse("guests:candidate_accept"), {"scope": "all", "action": "discard"})
+
+    assert response.status_code == 302
+    assert response.url == reverse("gameplay:recruitment_hall")
+    assert called["candidates"] == candidates
+
+
+@pytest.mark.django_db
+def test_candidate_accept_view_retain_uses_service_command(game_data, django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(username="view_candidate_accept_retain_service", password="pass123")
+    manor = ensure_manor(user)
+    client = Client()
+    assert client.login(username="view_candidate_accept_retain_service", password="pass123")
+    pool = RecruitmentPool.objects.get(key="cunmu")
+    candidate = recruit_guest(manor, pool, seed=32)[0]
+    called: dict[str, object] = {}
+
+    def _fake_retain(current_candidates):
+        called["candidates"] = list(current_candidates)
+        return 1, None
+
+    monkeypatch.setattr("guests.views.recruit.retain_candidates", _fake_retain)
+
+    response = client.post(
+        reverse("guests:candidate_accept"),
+        {"candidate_ids": [str(candidate.pk)], "action": "retain"},
+    )
+
+    assert response.status_code == 302
+    assert response.url == reverse("gameplay:recruitment_hall")
+    assert called["candidates"] == [candidate]
+
+
+@pytest.mark.django_db
 def test_candidate_accept_view_accept_all_without_candidate_ids(game_data, django_user_model, monkeypatch):
     user = django_user_model.objects.create_user(username="view_candidate_accept_accept_all", password="pass123")
     manor = ensure_manor(user)
@@ -263,7 +320,7 @@ def test_candidate_accept_view_rejects_invalid_action(game_data, django_user_mod
         return 0, None
 
     monkeypatch.setattr("guests.views.recruit._finalize_candidates", _unexpected_finalize)
-    monkeypatch.setattr("guests.views.recruit._retain_candidates", _unexpected_retain)
+    monkeypatch.setattr("guests.views.recruit.retain_candidates", _unexpected_retain)
 
     response = client.post(
         reverse("guests:candidate_accept"),
@@ -346,7 +403,9 @@ def test_use_magnifying_glass_view_rejects_when_action_lock_conflicts_ajax(game_
 
 
 @pytest.mark.django_db
-def test_use_magnifying_glass_view_ajax_success_returns_recruitment_hall_partials(game_data, django_user_model):
+def test_use_magnifying_glass_view_ajax_success_returns_recruitment_hall_partials(
+    game_data, django_user_model, monkeypatch
+):
     user = django_user_model.objects.create_user(username="view_magnify_ajax_success", password="pass123")
     manor = ensure_manor(user)
     manor.grain = manor.silver = 500000
@@ -369,6 +428,14 @@ def test_use_magnifying_glass_view_ajax_success_returns_recruitment_hall_partial
         template=template,
         quantity=1,
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    monkeypatch.setattr(
+        "gameplay.selectors.recruitment._safe_cache_get",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("cache.get should be bypassed")),
+    )
+    monkeypatch.setattr(
+        "gameplay.selectors.recruitment._safe_cache_set",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("cache.set should be bypassed")),
     )
 
     response = client.post(

@@ -72,15 +72,6 @@ def resolve_all_candidate_selection(
     candidate_model: Any,
 ) -> tuple[CandidateSelection | None, RecruitViewResolutionError | None]:
     queryset = candidate_model.objects.filter(manor=manor).order_by("id")
-    if action == "discard":
-        candidate_total = queryset.count()
-        if candidate_total <= 0:
-            return None, RecruitViewResolutionError("当前没有可操作的候选门客。")
-        return (
-            CandidateSelection(queryset=queryset, candidates=[], candidate_ids=None, target_count=candidate_total),
-            None,
-        )
-
     candidates = list(queryset)
     if not candidates:
         return None, RecruitViewResolutionError("当前没有可操作的候选门客。")
@@ -145,12 +136,13 @@ def execute_candidate_action(
     *,
     action: str,
     selection: CandidateSelection,
+    discard_candidates: Callable[[list[Any]], int],
     retain_candidates: Callable[[list[Any]], tuple[int, str | None]],
     finalize_candidates: Callable[[list[Any]], tuple[list[Any], list[Any]]],
 ) -> CandidateActionOutcome:
     if action == "discard":
-        selection.queryset.delete()
-        return CandidateActionOutcome(action=action, affected_count=selection.target_count)
+        discarded_count = discard_candidates(selection.candidates)
+        return CandidateActionOutcome(action=action, affected_count=discarded_count)
 
     if action == "retain":
         retained, error_message = retain_candidates(selection.candidates)

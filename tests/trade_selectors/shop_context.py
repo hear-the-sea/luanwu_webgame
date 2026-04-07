@@ -4,15 +4,19 @@ import pytest
 from django.db import DatabaseError
 from django.test import RequestFactory
 
+import trade.selectors as trade_selectors
 from tests.trade_selectors.support import DummySellable, create_manor, make_sellable_items
+from trade.page_context import build_trade_request_params
 from trade.selectors import get_trade_context
 from trade.services.shop_service import ShopItemDisplay
 
 
+def test_trade_selectors_no_longer_exposes_sync_resource_production_shim():
+    assert not hasattr(trade_selectors, "sync_resource_production")
+
+
 @pytest.mark.django_db
 def test_get_trade_context_shop_builds_categories_and_filters(monkeypatch, django_user_model):
-    monkeypatch.setattr("trade.selectors.sync_resource_production", lambda *_args, **_kwargs: None)
-
     manor = create_manor(django_user_model, username="trade_ctx_shop")
 
     shop_items = [
@@ -58,7 +62,7 @@ def test_get_trade_context_shop_builds_categories_and_filters(monkeypatch, djang
     monkeypatch.setattr("trade.selectors.get_sellable_inventory", _sellable_inventory)
 
     request = RequestFactory().get("/trade", {"tab": "shop", "category": "magnifying_glass"})
-    context = get_trade_context(request, manor)
+    context = get_trade_context(manor=manor, params=build_trade_request_params(request))
 
     assert context["current_tab"] == "shop"
     assert context["selected_category"] == "tool"
@@ -74,8 +78,6 @@ def test_get_trade_context_shop_builds_categories_and_filters(monkeypatch, djang
 
 @pytest.mark.django_db
 def test_get_trade_context_shop_treats_loot_box_as_tool_category(monkeypatch, django_user_model):
-    monkeypatch.setattr("trade.selectors.sync_resource_production", lambda *_args, **_kwargs: None)
-
     manor = create_manor(django_user_model, username="trade_ctx_shop_loot_box")
 
     shop_items = [
@@ -115,7 +117,7 @@ def test_get_trade_context_shop_treats_loot_box_as_tool_category(monkeypatch, dj
     monkeypatch.setattr("trade.selectors.get_sellable_inventory", lambda *_args, **_kwargs: [])
 
     request = RequestFactory().get("/trade", {"tab": "shop", "category": "tool"})
-    context = get_trade_context(request, manor)
+    context = get_trade_context(manor=manor, params=build_trade_request_params(request))
 
     assert context["selected_category"] == "tool"
     assert [item.key for item in context["shop_items"]] == ["work_chest_small"]
@@ -124,8 +126,6 @@ def test_get_trade_context_shop_treats_loot_box_as_tool_category(monkeypatch, dj
 
 @pytest.mark.django_db
 def test_get_trade_context_shop_paginates_buy_and_sell_lists_independently(monkeypatch, django_user_model):
-    monkeypatch.setattr("trade.selectors.sync_resource_production", lambda *_args, **_kwargs: None)
-
     manor = create_manor(django_user_model, username="trade_ctx_shop_paging")
 
     shop_items = [
@@ -151,7 +151,7 @@ def test_get_trade_context_shop_paginates_buy_and_sell_lists_independently(monke
     monkeypatch.setattr("trade.selectors.get_sellable_inventory", lambda *_args, **_kwargs: make_sellable_items(23))
 
     request = RequestFactory().get("/trade", {"tab": "shop", "view": "sell", "buy_page": "-8", "sell_page": "2"})
-    context = get_trade_context(request, manor)
+    context = get_trade_context(manor=manor, params=build_trade_request_params(request))
 
     assert context["current_tab"] == "shop"
     assert context["shop_view"] == "sell"
@@ -163,7 +163,6 @@ def test_get_trade_context_shop_paginates_buy_and_sell_lists_independently(monke
 
 @pytest.mark.django_db
 def test_get_trade_context_shop_tolerates_data_loading_errors(monkeypatch, django_user_model):
-    monkeypatch.setattr("trade.selectors.sync_resource_production", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         "trade.selectors.get_shop_items_for_display",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("shop items failed")),
@@ -176,7 +175,7 @@ def test_get_trade_context_shop_tolerates_data_loading_errors(monkeypatch, djang
     manor = create_manor(django_user_model, username="trade_ctx_shop_load_err")
     request = RequestFactory().get("/trade", {"tab": "shop"})
 
-    context = get_trade_context(request, manor)
+    context = get_trade_context(manor=manor, params=build_trade_request_params(request))
     assert context["current_tab"] == "shop"
     assert context["shop_items"] == []
     assert context["inventory"] == []
@@ -185,7 +184,6 @@ def test_get_trade_context_shop_tolerates_data_loading_errors(monkeypatch, djang
 
 @pytest.mark.django_db
 def test_get_trade_context_shop_programming_error_bubbles_up(monkeypatch, django_user_model):
-    monkeypatch.setattr("trade.selectors.sync_resource_production", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         "trade.selectors.get_shop_items_for_display",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("shop bug")),
@@ -195,12 +193,11 @@ def test_get_trade_context_shop_programming_error_bubbles_up(monkeypatch, django
     request = RequestFactory().get("/trade", {"tab": "shop"})
 
     with pytest.raises(RuntimeError, match="shop bug"):
-        get_trade_context(request, manor)
+        get_trade_context(manor=manor, params=build_trade_request_params(request))
 
 
 @pytest.mark.django_db
 def test_get_trade_context_shop_runtime_marker_bubbles_up(monkeypatch, django_user_model):
-    monkeypatch.setattr("trade.selectors.sync_resource_production", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         "trade.selectors.get_shop_items_for_display",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("database backend unavailable")),
@@ -210,4 +207,4 @@ def test_get_trade_context_shop_runtime_marker_bubbles_up(monkeypatch, django_us
     request = RequestFactory().get("/trade", {"tab": "shop"})
 
     with pytest.raises(RuntimeError, match="database backend unavailable"):
-        get_trade_context(request, manor)
+        get_trade_context(manor=manor, params=build_trade_request_params(request))

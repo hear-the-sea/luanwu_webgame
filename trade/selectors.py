@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
-
-from django.http import HttpRequest
 
 import trade.services.market_service as market_service
 from gameplay.services.manor.troop_bank import (
@@ -11,7 +10,6 @@ from gameplay.services.manor.troop_bank import (
     get_troop_bank_rows,
     get_troop_bank_used_space,
 )
-from gameplay.services.resources import sync_resource_production as _sync_resource_production
 from trade.bank_context_builder import build_bank_trade_context
 from trade.selector_builders import build_auction_trade_context, build_market_trade_context, build_shop_trade_context
 from trade.services.auction_service import get_active_slots, get_auction_stats, get_my_bids, get_my_leading_bids
@@ -60,16 +58,14 @@ def _base_trade_context(tab: str, manor: Any) -> dict[str, Any]:
     }
 
 
-# Backwards-compatible aliases for tests that still monkeypatch selector-level symbols.
-sync_resource_production = _sync_resource_production
 _ORIGINAL_GET_SELLABLE_INVENTORY = get_sellable_inventory
 
 
-def _update_auction_context(request: HttpRequest, manor: Any, context: dict[str, Any]) -> None:
+def _update_auction_context(params: Mapping[str, str], manor: Any, context: dict[str, Any]) -> None:
     from trade.services.auction_service import get_slots_bid_info_batch
 
     build_auction_trade_context(
-        request,
+        params,
         manor,
         context,
         get_auction_stats=get_auction_stats,
@@ -80,9 +76,9 @@ def _update_auction_context(request: HttpRequest, manor: Any, context: dict[str,
     )
 
 
-def _update_shop_context(request: HttpRequest, manor: Any, context: dict[str, Any]) -> None:
+def _update_shop_context(params: Mapping[str, str], manor: Any, context: dict[str, Any]) -> None:
     build_shop_trade_context(
-        request,
+        params,
         manor,
         context,
         get_shop_items_for_display=get_shop_items_for_display,
@@ -93,9 +89,9 @@ def _update_shop_context(request: HttpRequest, manor: Any, context: dict[str, An
     )
 
 
-def _update_bank_context(request: HttpRequest, manor: Any, context: dict[str, Any]) -> None:
+def _update_bank_context(params: Mapping[str, str], manor: Any, context: dict[str, Any]) -> None:
     build_bank_trade_context(
-        request,
+        params,
         manor,
         context,
         get_bank_info=get_bank_info,
@@ -106,9 +102,9 @@ def _update_bank_context(request: HttpRequest, manor: Any, context: dict[str, An
     )
 
 
-def _update_market_context(request: HttpRequest, manor: Any, context: dict[str, Any]) -> None:
+def _update_market_context(params: Mapping[str, str], manor: Any, context: dict[str, Any]) -> None:
     build_market_trade_context(
-        request,
+        params,
         manor,
         context,
         get_active_listings=get_active_listings,
@@ -125,13 +121,13 @@ _TAB_CONTEXT_BUILDERS = {
 }
 
 
-def get_trade_context(request: HttpRequest, manor: Any) -> dict[str, Any]:
-    tab = request.GET.get("tab", "shop")
+def get_trade_context(*, manor: Any, params: Mapping[str, str]) -> dict[str, Any]:
+    tab = params.get("tab", "shop")
     context = _base_trade_context(tab, manor)
     context["trade_alerts"] = []
 
     builder = _TAB_CONTEXT_BUILDERS.get(tab)
     if builder is not None:
-        builder(request, manor, context)
+        builder(params, manor, context)
 
     return context

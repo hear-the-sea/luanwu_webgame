@@ -84,6 +84,20 @@ def add_mission_extra_attempt(manor: Manor, mission: MissionTemplate, count: int
             return extra.extra_count
 
 
+def add_mission_extra_attempt_with_item_cost(
+    manor: Manor,
+    mission: MissionTemplate,
+    *,
+    item_key: str,
+    count: int = 1,
+) -> int:
+    from ...services.inventory import core as inventory_core
+
+    with transaction.atomic():
+        inventory_core.consume_inventory_item_for_manor_locked(manor, item_key, 1)
+        return add_mission_extra_attempt(manor, mission, count)
+
+
 def get_mission_daily_limit(manor: Manor, mission: MissionTemplate) -> int:
     extra = _resolve_non_negative_int(get_mission_extra_attempts(manor, mission), field_name="extra attempts")
     daily_limit = _resolve_non_negative_int(getattr(mission, "daily_limit", None), field_name="daily_limit")

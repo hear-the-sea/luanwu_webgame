@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any, Callable
-
-from django.http import HttpRequest
 
 from gameplay.services.technology import get_troop_class_for_key
 from trade.selector_builders import _safe_call, record_trade_issue
@@ -35,7 +34,7 @@ def _build_troop_bank_categories(available_classes: set[str]) -> list[dict[str, 
 
 
 def build_bank_trade_context(
-    request: HttpRequest,
+    params: Mapping[str, str],
     manor: Any,
     context: dict[str, Any],
     *,
@@ -45,7 +44,7 @@ def build_bank_trade_context(
     get_troop_bank_remaining_space: Callable[..., Any],
     get_troop_bank_rows: Callable[..., Any],
 ) -> None:
-    selected_troop_category = (request.GET.get("troop_category") or "all").strip() or "all"
+    selected_troop_category = (params.get("troop_category") or "all").strip() or "all"
     manor_id = getattr(manor, "id", None)
     context["bank_info"] = _safe_call(
         get_bank_info,

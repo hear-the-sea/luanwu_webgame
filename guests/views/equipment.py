@@ -44,26 +44,6 @@ def _safe_cache_set(key: str, value: object, timeout: int) -> None:
         logger.warning("Gear options cache.set failed: key=%s error=%s", key, exc, exc_info=True)
 
 
-def _safe_cache_delete_many(keys: list[str]) -> None:
-    try:
-        cache.delete_many(keys)
-    except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
-        logger.warning("Gear options cache.delete_many failed: keys_count=%s error=%s", len(keys), exc, exc_info=True)
-
-
-def _best_effort_clear_gear_options_cache(manor_id: int, *, slots: set[str] | None = None) -> None:
-    try:
-        _clear_gear_options_cache(manor_id, slots=slots)
-    except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
-        logger.warning(
-            "Gear options cache invalidation skipped: manor_id=%s slots=%s error=%s",
-            manor_id,
-            sorted(slots) if slots else None,
-            exc,
-            exc_info=True,
-        )
-
-
 @login_required
 @require_POST
 @rate_limit_redirect("equip", limit=15, window_seconds=60)
@@ -92,7 +72,6 @@ def equip_view(request: HttpRequest) -> HttpResponse:
         )
 
         equipment_service.equip_guest(gear, guest)
-        _best_effort_clear_gear_options_cache(manor.id, slots={gear.template.slot})
     except GameError as exc:
         error_msg = sanitize_error_message(exc)
         if is_ajax_request(request):
@@ -175,14 +154,11 @@ def unequip_view(request: HttpRequest) -> HttpResponse:
 
     try:
         removed = 0
-        changed_slots = set()
         for gear in gears:
             equipment_service.unequip_guest_item(gear, guest)
-            changed_slots.add(gear.template.slot)
             removed += 1
         if removed:
             messages.success(request, f"{guest.display_name} 卸下 {removed} 件装备")
-            _best_effort_clear_gear_options_cache(manor.id, slots=changed_slots)
         else:
             messages.info(request, "没有可卸下的装备")
     except GameError as exc:
@@ -211,7 +187,7 @@ def gear_options_view(request):
     if not slot or slot not in slot_label_map:
         return JsonResponse({"error": "invalid_slot"}, status=400)
 
-    cache_key = _gear_options_cache_key(manor.id, slot)
+    cache_key = equipment_service.gear_options_cache_key(manor.id, slot)
     cached = _safe_cache_get(cache_key)
     if cached is not None:
         return JsonResponse(cached)
@@ -239,13 +215,3 @@ def gear_options_view(request):
     }
     _safe_cache_set(cache_key, payload, timeout=CACHE_TIMEOUT_SHORT)
     return JsonResponse(payload)
-
-
-def _clear_gear_options_cache(manor_id: int, slots: set[str] | None = None) -> None:
-    slot_values = slots or {choice.value for choice in GearSlot}
-    keys = [_gear_options_cache_key(manor_id, value) for value in slot_values]
-    _safe_cache_delete_many(keys)
-
-
-def _gear_options_cache_key(manor_id: int, slot: str) -> str:
-    return f"gear_options:{manor_id}:{slot}"

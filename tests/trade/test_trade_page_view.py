@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import pytest
 from django.db import DatabaseError
+from django.test import RequestFactory
 from django.urls import reverse
 
 from gameplay.models import Manor
 from gameplay.services.manor.core import ensure_manor
+from trade.page_context import build_trade_page_context
 
 
 @pytest.mark.django_db
@@ -89,3 +91,33 @@ def test_trade_view_renders_bank_degraded_banner_and_disables_exchange(monkeypat
     content = resp.content.decode("utf-8")
     assert "钱庄汇率数据暂时不可用，已暂时关闭兑换。" in content
     assert "兑换暂不可用" in content
+
+
+@pytest.mark.django_db
+def test_trade_page_context_passes_normalized_params_to_selector(monkeypatch, django_user_model):
+    user = django_user_model.objects.create_user(username="trade_ctx_normalized_params", password="pass12345")
+    manor = ensure_manor(user)
+    request = RequestFactory().get("/trade", {"tab": "market", "view": "sell", "page": "3"})
+    request.user = user
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr("trade.page_context.get_prepared_manor_for_read", lambda *_args, **_kwargs: manor)
+    monkeypatch.setattr(
+        "trade.page_context.build_trade_request_params",
+        lambda _request: {"tab": "market", "view": "sell", "page": "3"},
+    )
+
+    def _fake_get_trade_context(*, manor, params):
+        captured["manor"] = manor
+        captured["params"] = params
+        return {"current_tab": params["tab"]}
+
+    monkeypatch.setattr("trade.page_context.get_trade_context", _fake_get_trade_context)
+
+    context = build_trade_page_context(request)
+
+    assert context == {"current_tab": "market"}
+    assert captured == {
+        "manor": manor,
+        "params": {"tab": "market", "view": "sell", "page": "3"},
+    }

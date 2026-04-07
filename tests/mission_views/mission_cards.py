@@ -39,7 +39,7 @@ class TestMissionCardView:
         def _unexpected_add(*_args, **_kwargs):
             called["count"] += 1
 
-        monkeypatch.setattr("gameplay.views.missions.add_mission_extra_attempt", _unexpected_add)
+        monkeypatch.setattr("gameplay.views.missions.add_mission_extra_attempt_with_item_cost", _unexpected_add)
 
         response = client.post(reverse("gameplay:use_mission_card"), {"mission_key": mission.key})
         assert_redirect(response, f"{reverse('gameplay:tasks')}?mission={mission.key}")
@@ -89,9 +89,36 @@ class TestMissionCardView:
             lambda *_args, **_kwargs: None,
         )
         monkeypatch.setattr(
-            "gameplay.views.missions.add_mission_extra_attempt",
+            "gameplay.views.missions.add_mission_extra_attempt_with_item_cost",
             lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("legacy mission card error")),
         )
 
         with pytest.raises(ValueError, match="legacy mission card error"):
             client.post(reverse("gameplay:use_mission_card"), {"mission_key": mission.key})
+
+    def test_use_mission_card_delegates_to_service_command(self, manor_with_user, monkeypatch):
+        manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key=f"view_use_card_service_command_{manor.id}",
+            name="任务卡服务命令任务",
+        )
+        called: dict[str, object] = {}
+
+        def _fake_use(*, manor, mission, item_key, count=1):
+            called["manor"] = manor
+            called["mission"] = mission
+            called["item_key"] = item_key
+            called["count"] = count
+            return 3
+
+        monkeypatch.setattr("gameplay.views.missions.add_mission_extra_attempt_with_item_cost", _fake_use)
+
+        response = client.post(reverse("gameplay:use_mission_card"), {"mission_key": mission.key})
+
+        assert_redirect(response, f"{reverse('gameplay:tasks')}?mission={mission.key}")
+        assert called == {
+            "manor": manor,
+            "mission": mission,
+            "item_key": "mission_card",
+            "count": 1,
+        }

@@ -230,6 +230,24 @@ def claim_work_reward(assignment: WorkAssignment) -> Dict[str, int]:
     return {"silver": reward_silver}
 
 
+def assign_guest_to_work_with_refresh(*, manor: Manor, guest: Guest, work_template: WorkTemplate) -> WorkAssignment:
+    """刷新当前庄园的打工状态后，再派遣门客打工。"""
+    refresh_work_assignments(manor)
+    return assign_guest_to_work(guest, work_template)
+
+
+def recall_guest_from_work_with_refresh(*, manor: Manor, assignment: WorkAssignment) -> bool:
+    """刷新当前庄园的打工状态后，再尝试召回门客。"""
+    refresh_work_assignments(manor)
+    return recall_guest_from_work(assignment)
+
+
+def claim_work_reward_with_refresh(*, manor: Manor, assignment: WorkAssignment) -> Dict[str, int]:
+    """刷新当前庄园的打工状态后，再尝试领取报酬。"""
+    refresh_work_assignments(manor)
+    return claim_work_reward(assignment)
+
+
 def refresh_work_assignments(manor: Manor) -> None:
     """
     刷新打工状态

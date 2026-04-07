@@ -18,16 +18,16 @@ from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
 from core.decorators import flash_unexpected_view_error
-from core.exceptions import GameError
+from core.exceptions import GameError, WorkNotInProgressError
 from core.utils import safe_positive_int, safe_redirect_url, sanitize_error_message
 from core.utils.rate_limit import rate_limit_json
 from gameplay.models import WorkAssignment, WorkTemplate
 from gameplay.selectors.work import get_work_page_context
 from gameplay.services.manor.core import get_manor, project_manor_activity_for_read
 from gameplay.services.work import (
-    assign_guest_to_work,
-    claim_work_reward,
-    recall_guest_from_work,
+    assign_guest_to_work_with_refresh,
+    claim_work_reward_with_refresh,
+    recall_guest_from_work_with_refresh,
     refresh_work_assignments,
 )
 from gameplay.views.read_helpers import get_prepared_manor_for_read
@@ -126,27 +126,11 @@ def assign_work_view(request: HttpRequest) -> HttpResponse:
         messages.error(request, "参数错误")
         return redirect(redirect_url)
 
-    try:
-        refresh_work_assignments(manor)
-    except DatabaseError as exc:
-        _handle_unexpected_work_error(
-            request,
-            exc,
-            log_message="Unexpected work refresh before assign: manor_id=%s user_id=%s guest_id=%s work_key=%s",
-            log_args=(
-                getattr(manor, "id", None),
-                getattr(request.user, "id", None),
-                guest_id,
-                work_key,
-            ),
-        )
-        return redirect(redirect_url)
-
     guest = get_object_or_404(Guest, id=guest_id, manor=manor)
     work_template = get_object_or_404(WorkTemplate, key=work_key)
 
     try:
-        assign_guest_to_work(guest, work_template)
+        assign_guest_to_work_with_refresh(manor=manor, guest=guest, work_template=work_template)
         # 计算完成时间（小时）
         hours = work_template.work_duration / 3600
         messages.success(request, f"{guest.display_name} 已前往 {work_template.name} 打工，预计 {hours:.1f} 小时后完成")
@@ -175,21 +159,6 @@ def recall_work_view(request: HttpRequest, pk: int) -> HttpResponse:
     redirect_url = _resolve_work_redirect_url(request)
     manor = get_manor(request.user)
 
-    try:
-        refresh_work_assignments(manor)
-    except DatabaseError as exc:
-        _handle_unexpected_work_error(
-            request,
-            exc,
-            log_message="Unexpected work refresh before recall: manor_id=%s user_id=%s assignment_id=%s",
-            log_args=(
-                getattr(manor, "id", None),
-                getattr(request.user, "id", None),
-                pk,
-            ),
-        )
-        return redirect(redirect_url)
-
     assignment = get_object_or_404(
         WorkAssignment.objects.select_related("guest", "work_template"),
         id=pk,
@@ -202,12 +171,19 @@ def recall_work_view(request: HttpRequest, pk: int) -> HttpResponse:
         raise Http404("打工任务不存在")
 
     try:
-        recall_guest_from_work(assignment)
+        recall_guest_from_work_with_refresh(manor=manor, assignment=assignment)
         messages.success(
             request, f"{assignment.guest.display_name} 已从 {assignment.work_template.name} 召回（无报酬）"
         )
     except GameError as exc:
-        _handle_known_work_error(request, exc)
+        if isinstance(exc, WorkNotInProgressError):
+            assignment.refresh_from_db(fields=["status", "reward_claimed"])
+            if assignment.status == WorkAssignment.Status.COMPLETED and not assignment.reward_claimed:
+                messages.info(request, f"{assignment.guest.display_name} 的打工已完成，请先领取报酬")
+            else:
+                _handle_known_work_error(request, exc)
+        else:
+            _handle_known_work_error(request, exc)
     except DatabaseError as exc:
         _handle_unexpected_work_error(
             request,
@@ -230,25 +206,10 @@ def claim_work_reward_view(request: HttpRequest, pk: int) -> HttpResponse:
     redirect_url = _resolve_work_redirect_url(request)
     manor = get_manor(request.user)
 
-    try:
-        refresh_work_assignments(manor)
-    except DatabaseError as exc:
-        _handle_unexpected_work_error(
-            request,
-            exc,
-            log_message="Unexpected work refresh before claim: manor_id=%s user_id=%s assignment_id=%s",
-            log_args=(
-                getattr(manor, "id", None),
-                getattr(request.user, "id", None),
-                pk,
-            ),
-        )
-        return redirect(redirect_url)
-
     assignment = get_object_or_404(WorkAssignment, id=pk, manor=manor)
 
     try:
-        reward = claim_work_reward(assignment)
+        reward = claim_work_reward_with_refresh(manor=manor, assignment=assignment)
         messages.success(request, f"{assignment.guest.display_name} 完成打工，获得银两 {reward['silver']}")
     except GameError as exc:
         _handle_known_work_error(request, exc)

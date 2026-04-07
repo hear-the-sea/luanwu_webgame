@@ -6,6 +6,7 @@ import pytest
 from django.urls import reverse
 from django.utils import timezone
 
+import gameplay.views.inventory as inventory_views
 from gameplay.models import MissionTemplate, PlayerTechnology, WorkAssignment, WorkTemplate
 from guests.models import GuestStatus, GuestTemplate
 from guilds.models import Guild, GuildMember, GuildMissionRun, GuildMissionTemplate, GuildRaidRun
@@ -135,7 +136,7 @@ def test_refresh_troop_recruitments_api_delegates_to_service(manor_with_user, mo
 
 
 @pytest.mark.django_db
-def test_refresh_recruitment_hall_api_delegates_and_invalidates_cache(manor_with_user, monkeypatch):
+def test_refresh_recruitment_hall_api_delegates_without_extra_view_cache_invalidation(manor_with_user, monkeypatch):
     manor, client = manor_with_user
     calls: list[str] = []
 
@@ -143,15 +144,12 @@ def test_refresh_recruitment_hall_api_delegates_and_invalidates_cache(manor_with
         "gameplay.views.inventory.refresh_guest_recruitments",
         lambda current_manor: calls.append(f"refresh:{current_manor.id}") or 1,
     )
-    monkeypatch.setattr(
-        "gameplay.views.inventory.invalidate_recruitment_hall_cache",
-        lambda manor_id: calls.append(f"invalidate:{manor_id}"),
-    )
 
     response = client.post(reverse("gameplay:refresh_recruitment_hall_api"))
 
     assert response.status_code == 200
-    assert calls == [f"refresh:{manor.id}", f"invalidate:{manor.id}"]
+    assert not hasattr(inventory_views, "invalidate_recruitment_hall_cache")
+    assert calls == [f"refresh:{manor.id}"]
 
 
 @pytest.mark.django_db

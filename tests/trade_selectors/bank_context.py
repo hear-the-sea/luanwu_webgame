@@ -5,12 +5,12 @@ from django.db import DatabaseError
 from django.test import RequestFactory
 
 from tests.trade_selectors.support import create_manor
+from trade.page_context import build_trade_request_params
 from trade.selectors import get_trade_context
 
 
 @pytest.mark.django_db
 def test_get_trade_context_bank_includes_bank_info(monkeypatch, django_user_model):
-    monkeypatch.setattr("trade.selectors.sync_resource_production", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         "trade.selectors.get_bank_info",
         lambda *_args, **_kwargs: {
@@ -31,7 +31,7 @@ def test_get_trade_context_bank_includes_bank_info(monkeypatch, django_user_mode
     manor = create_manor(django_user_model, username="trade_ctx_bank")
     request = RequestFactory().get("/trade", {"tab": "bank"})
 
-    context = get_trade_context(request, manor)
+    context = get_trade_context(manor=manor, params=build_trade_request_params(request))
     assert context["current_tab"] == "bank"
     assert context["bank_info"]["current_rate"] == 123
     assert context["trade_alerts"] == []
@@ -42,32 +42,7 @@ def test_get_trade_context_bank_includes_bank_info(monkeypatch, django_user_mode
 
 
 @pytest.mark.django_db
-def test_get_trade_context_bank_tolerates_sync_resource_error(monkeypatch, django_user_model):
-    monkeypatch.setattr(
-        "trade.selectors.sync_resource_production",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("sync failed")),
-    )
-    monkeypatch.setattr(
-        "trade.selectors.get_bank_info",
-        lambda *_args, **_kwargs: {
-            "current_rate": 123,
-            "pricing_degraded": False,
-            "exchange_available": True,
-            "pricing_status_message": "",
-        },
-    )
-
-    manor = create_manor(django_user_model, username="trade_ctx_bank_sync_err")
-    request = RequestFactory().get("/trade", {"tab": "bank"})
-
-    context = get_trade_context(request, manor)
-    assert context["current_tab"] == "bank"
-    assert context["bank_info"]["current_rate"] == 123
-
-
-@pytest.mark.django_db
 def test_get_trade_context_bank_marks_bank_info_error_as_degraded(monkeypatch, django_user_model):
-    monkeypatch.setattr("trade.selectors.sync_resource_production", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         "trade.selectors.get_bank_info",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("bank failed")),
@@ -76,7 +51,7 @@ def test_get_trade_context_bank_marks_bank_info_error_as_degraded(monkeypatch, d
     manor = create_manor(django_user_model, username="trade_ctx_bank_info_err")
     request = RequestFactory().get("/trade", {"tab": "bank"})
 
-    context = get_trade_context(request, manor)
+    context = get_trade_context(manor=manor, params=build_trade_request_params(request))
     assert context["current_tab"] == "bank"
     assert context["bank_info"]["pricing_degraded"] is True
     assert context["bank_info"]["exchange_available"] is False

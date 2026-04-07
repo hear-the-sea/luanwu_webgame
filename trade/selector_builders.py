@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Mapping
 from typing import Any, Callable
 
 from django.core.paginator import Paginator
 from django.db.models import QuerySet
-from django.http import HttpRequest
 
 from core.utils import safe_int, safe_ordering
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
@@ -107,7 +107,7 @@ def _filter_tradeable_inventory(
 
 
 def build_auction_trade_context(
-    request: HttpRequest,
+    params: Mapping[str, str],
     manor: Any,
     context: dict[str, Any],
     *,
@@ -118,18 +118,18 @@ def build_auction_trade_context(
     get_slots_bid_info_batch: Callable[..., Any],
 ) -> None:
     context["auction_stats"] = _safe_call(get_auction_stats, manor, default={}, log_message="load auction stats failed")
-    auction_view = request.GET.get("view", "browse")
+    auction_view = params.get("view", "browse")
     context["auction_view"] = auction_view
 
     if auction_view == "browse":
-        category = request.GET.get("category", "all")
-        rarity = request.GET.get("rarity", "all")
+        category = params.get("category", "all")
+        rarity = params.get("rarity", "all")
         order_by = safe_ordering(
-            request.GET.get("order_by", "-current_price"),
+            params.get("order_by", "-current_price"),
             "-current_price",
             {"-current_price", "current_price", "-bid_count", "bid_count"},
         )
-        page = safe_int(request.GET.get("page", 1), 1, min_val=1)
+        page = safe_int(params.get("page", 1), 1, min_val=1)
         slots = _safe_call(
             get_active_slots,
             category=category,
@@ -186,7 +186,7 @@ def build_auction_trade_context(
 
 
 def build_shop_trade_context(
-    request: HttpRequest,
+    params: Mapping[str, str],
     manor: Any,
     context: dict[str, Any],
     *,
@@ -196,14 +196,14 @@ def build_shop_trade_context(
     build_sellable_inventory_display_rows: Callable[..., Any],
     original_get_sellable_inventory: Callable[..., Any],
 ) -> None:
-    shop_view = request.GET.get("view", "buy")
+    shop_view = params.get("view", "buy")
     if shop_view not in {"buy", "sell"}:
         shop_view = "buy"
-    selected_category = request.GET.get("category", "all")
+    selected_category = params.get("category", "all")
     if selected_category != "all":
         selected_category = normalize_effect_type(selected_category)
-    buy_page = safe_int(request.GET.get("buy_page", 1), 1, min_val=1)
-    sell_page = safe_int(request.GET.get("sell_page", 1), 1, min_val=1)
+    buy_page = safe_int(params.get("buy_page", 1), 1, min_val=1)
+    sell_page = safe_int(params.get("sell_page", 1), 1, min_val=1)
 
     shop_items = _safe_call(get_shop_items_for_display, default=[], log_message="load shop items failed")
     sellable_inventory_source = _safe_call(
@@ -246,7 +246,7 @@ def build_shop_trade_context(
 
 
 def build_market_trade_context(
-    request: HttpRequest,
+    params: Mapping[str, str],
     manor: Any,
     context: dict[str, Any],
     *,
@@ -254,14 +254,14 @@ def build_market_trade_context(
     get_tradeable_inventory: Callable[..., Any],
     get_my_listings: Callable[..., Any],
 ) -> None:
-    market_view = request.GET.get("view", "buy")
+    market_view = params.get("view", "buy")
     context["market_view"] = market_view
 
     if market_view == "buy":
-        category = request.GET.get("category", "all")
-        rarity = request.GET.get("rarity", "all")
+        category = params.get("category", "all")
+        rarity = params.get("rarity", "all")
         order_by = safe_ordering(
-            request.GET.get("order_by", "-listed_at"),
+            params.get("order_by", "-listed_at"),
             "-listed_at",
             {"-listed_at", "listed_at", "-price", "price", "-expires_at", "expires_at"},
         )
@@ -273,7 +273,7 @@ def build_market_trade_context(
             default=[],
             log_message="load market active listings failed",
         )
-        page = safe_int(request.GET.get("page", 1), 1, min_val=1)
+        page = safe_int(params.get("page", 1), 1, min_val=1)
         page_obj = Paginator(listings, TRADE_ITEM_PAGE_SIZE).get_page(page)
         context.update(
             {
@@ -288,10 +288,10 @@ def build_market_trade_context(
         return
 
     if market_view == "sell":
-        category = request.GET.get("category", "all")
+        category = params.get("category", "all")
         if category != "all":
             category = normalize_effect_type(category)
-        page = safe_int(request.GET.get("page", 1), 1, min_val=1)
+        page = safe_int(params.get("page", 1), 1, min_val=1)
         tradeable_qs = _safe_call(
             _filter_tradeable_inventory,
             manor,
@@ -312,7 +312,7 @@ def build_market_trade_context(
         return
 
     if market_view == "my_listings":
-        status = request.GET.get("status", "all")
+        status = params.get("status", "all")
         my_listings = _safe_call(
             get_my_listings,
             manor,
@@ -320,7 +320,7 @@ def build_market_trade_context(
             default=[],
             log_message="load my market listings failed",
         )
-        page = safe_int(request.GET.get("page", 1), 1, min_val=1)
+        page = safe_int(params.get("page", 1), 1, min_val=1)
         page_obj = Paginator(my_listings, TRADE_ITEM_PAGE_SIZE).get_page(page)
         context.update(
             {

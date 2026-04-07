@@ -8,7 +8,7 @@ from django_redis.exceptions import ConnectionInterrupted
 
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
-from guests.models import GearItem, GearSlot
+from guests.models import GearItem, GearSlot, GearTemplate
 from tests.guest_item_view_validation.support import bootstrap_guest_client
 
 
@@ -250,3 +250,47 @@ def test_equip_view_accepts_free_gear_id_without_inventory(game_data, django_use
 
     gear.refresh_from_db()
     assert gear.guest_id == guest.id
+
+
+@pytest.mark.django_db(transaction=True)
+def test_dismiss_guest_view_invalidates_cached_gear_options_after_returning_equipment(game_data, django_user_model):
+    cache.clear()
+    manor, guest, client = bootstrap_guest_client(
+        game_data,
+        django_user_model,
+        username="view_gear_options_dismiss_invalidation",
+    )
+
+    template = ItemTemplate.objects.create(
+        key=f"view_gear_options_dismiss_invalidation_{manor.id}",
+        name="辞退归还测试刀",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        rarity="green",
+        effect_payload={},
+        is_usable=True,
+    )
+    gear_template = GearTemplate.objects.create(
+        key=template.key,
+        name="辞退归还测试刀",
+        slot=GearSlot.WEAPON,
+        rarity="green",
+    )
+    GearItem.objects.create(manor=manor, template=gear_template, guest=guest)
+
+    initial = client.get(reverse("guests:gear_options"), {"slot": GearSlot.WEAPON})
+
+    assert initial.status_code == 200
+    assert initial.json()["options"] == []
+
+    dismiss = client.post(reverse("guests:dismiss", args=[guest.pk]))
+
+    assert dismiss.status_code == 302
+    assert dismiss.url == reverse("guests:roster")
+
+    refreshed = client.get(reverse("guests:gear_options"), {"slot": GearSlot.WEAPON})
+
+    assert refreshed.status_code == 200
+    payload = refreshed.json()
+    assert len(payload["options"]) == 1
+    assert payload["options"][0]["template_key"] == template.key
+    assert payload["options"][0]["count"] == 1

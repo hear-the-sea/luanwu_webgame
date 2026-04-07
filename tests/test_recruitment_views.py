@@ -7,12 +7,10 @@ from django.contrib.messages import get_messages
 from django.db import DatabaseError
 from django.urls import reverse
 from django.utils import timezone
-from django_redis.exceptions import ConnectionInterrupted
 
+import guests.views.recruit as recruit_views
 from core.exceptions import TroopRecruitmentError
 from gameplay.models import TroopRecruitment
-from gameplay.services.utils import cache as cache_utils
-from guests.views.recruit import _invalidate_recruitment_hall_cache_for_manor
 
 
 @pytest.mark.django_db
@@ -209,11 +207,5 @@ class TestRecruitmentViews:
             )
 
 
-def test_invalidate_recruitment_hall_cache_for_manor_tolerates_connection_interrupted(monkeypatch):
-    monkeypatch.setattr(
-        cache_utils,
-        "invalidate_recruitment_hall_cache",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(ConnectionInterrupted("cache down")),
-    )
-
-    assert _invalidate_recruitment_hall_cache_for_manor(1) is False
+def test_recruit_view_no_longer_exposes_cache_invalidation_helper():
+    assert not hasattr(recruit_views, "_invalidate_recruitment_hall_cache_for_manor")

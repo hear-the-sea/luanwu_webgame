@@ -7,6 +7,7 @@ from django.db import transaction
 
 from core.config import GUEST
 from core.exceptions import (
+    GameError,
     GuestNotFoundError,
     GuestNotIdleError,
     InvalidAllocationError,
@@ -303,6 +304,39 @@ def bulk_finalize_candidates(
 
 
 @transaction.atomic
+def discard_candidates(candidates: List[RecruitmentCandidate]) -> int:
+    """批量放弃候选门客。"""
+    if not candidates:
+        return 0
+
+    manor_id, requested_ids = _resolve_bulk_finalize_request(candidates)
+    locked_candidates = list(
+        RecruitmentCandidate.objects.select_for_update().filter(manor_id=manor_id, id__in=requested_ids).order_by("id")
+    )
+    if not locked_candidates:
+        return 0
+
+    candidate_ids = [candidate.id for candidate in locked_candidates]
+    RecruitmentCandidate.objects.filter(id__in=candidate_ids).delete()
+    invalidate_recruitment_hall_cache(manor_id)
+    return len(candidate_ids)
+
+
+def retain_candidates(candidates: List[RecruitmentCandidate]) -> tuple[int, str | None]:
+    """批量将候选门客转为家丁，遇到首个业务失败时停止。"""
+    retained = 0
+    error_message = None
+    for candidate in candidates:
+        try:
+            convert_candidate_to_retainer(candidate)
+            retained += 1
+        except GameError as exc:
+            error_message = str(exc)
+            break
+    return retained, error_message
+
+
+@transaction.atomic
 def convert_candidate_to_retainer(candidate: RecruitmentCandidate) -> None:
     """将候选门客转为家丁。"""
     candidate_id, manor_id = _validate_retainer_candidate_identity(candidate)
@@ -382,6 +416,8 @@ __all__ = [
     "bulk_finalize_candidates",
     "convert_candidate_to_retainer",
     "create_guest_from_template",
+    "discard_candidates",
     "finalize_candidate",
     "grant_template_skills",
+    "retain_candidates",
 ]

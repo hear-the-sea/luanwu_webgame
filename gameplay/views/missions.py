@@ -19,7 +19,7 @@ from gameplay.models import ScoutRecord
 from gameplay.services import missions as mission_service
 from gameplay.services import raid as raid_service
 from gameplay.services.manor.core import get_manor
-from gameplay.services.missions_impl.attempts import add_mission_extra_attempt
+from gameplay.services.missions_impl.attempts import add_mission_extra_attempt_with_item_cost
 from gameplay.services.missions_impl.execution import launch_mission, request_retreat
 
 from . import mission_helpers
@@ -133,5 +133,5 @@ def use_mission_card_view(request: HttpRequest) -> HttpResponse:
         request,
         manor=manor,
         mission=mission,
-        add_mission_extra_attempt_fn=add_mission_extra_attempt,
+        add_mission_extra_attempt_fn=add_mission_extra_attempt_with_item_cost,
     )
