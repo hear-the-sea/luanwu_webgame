@@ -114,6 +114,24 @@ def test_notifications_ajax_requests_skip_global_stats_queries(monkeypatch):
     assert context["online_user_count"] == 0
 
 
+def test_notifications_partial_navigation_requests_keep_loading_global_stats(monkeypatch):
+    request = RequestFactory().get(
+        "/",
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        HTTP_X_PARTIAL_NAVIGATION="1",
+        HTTP_ACCEPT="text/html",
+    )
+    request.user = AnonymousUser()
+
+    monkeypatch.setattr("gameplay.selectors.stats.load_total_user_count", lambda: 23)
+    monkeypatch.setattr("gameplay.selectors.stats.load_online_user_count", lambda: 7)
+
+    context = notifications(request)
+
+    assert context["total_user_count"] == 23
+    assert context["online_user_count"] == 7
+
+
 def test_notifications_total_user_count_uses_local_fallback_when_cache_reads_fail(monkeypatch):
     request = RequestFactory().get("/")
     request.user = AnonymousUser()

@@ -34,6 +34,8 @@ def _clone_notifications_context(context: dict[str, Any]) -> dict[str, Any]:
 
 
 def _should_load_global_stats(request) -> bool:
+    if request.headers.get("x-partial-navigation") == "1":
+        return True
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         return False
     accept = request.headers.get("accept", "")
