@@ -9,7 +9,7 @@ from gameplay.services.utils.cache import (
     invalidate_recruitment_hall_cache,
     recruitment_hall_context_cache_key,
 )
-from guests.models import RecruitmentPool
+from guests.models import Guest, GuestStatus, GuestTemplate, RecruitmentPool, RecruitmentRecord
 from guests.services import recruitment_shared as recruitment_shared_service
 from guests.services.recruitment import recruit_guest
 
@@ -51,6 +51,29 @@ def test_recruit_guest_invalidates_cached_empty_recruitment_hall_context(game_da
 
     cached_after = get_recruitment_hall_context(manor, records_limit=5)
     assert cached_after["candidate_count"] == expected_count
+
+
+@pytest.mark.django_db
+def test_get_recruitment_hall_context_does_not_reuse_cached_record_limit(game_data, django_user_model):
+    user = django_user_model.objects.create_user(username="recruit_cache_records_limit", password="pass123")
+    manor = ensure_manor(user)
+
+    template = GuestTemplate.objects.first()
+    assert template is not None
+    pool = RecruitmentPool.objects.get(key="cunmu")
+
+    guest_a = Guest.objects.create(manor=manor, template=template, status=GuestStatus.IDLE, custom_name="候选甲")
+    guest_b = Guest.objects.create(manor=manor, template=template, status=GuestStatus.IDLE, custom_name="候选乙")
+    RecruitmentRecord.objects.create(manor=manor, pool=pool, guest=guest_a, rarity=guest_a.rarity)
+    RecruitmentRecord.objects.create(manor=manor, pool=pool, guest=guest_b, rarity=guest_b.rarity)
+
+    cache.delete(recruitment_hall_context_cache_key(manor.id))
+
+    limited_context = get_recruitment_hall_context(manor, records_limit=1)
+    expanded_context = get_recruitment_hall_context(manor, records_limit=2)
+
+    assert len(limited_context["records"]) == 1
+    assert len(expanded_context["records"]) == 2
 
 
 @pytest.mark.django_db

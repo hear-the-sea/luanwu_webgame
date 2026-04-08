@@ -15,7 +15,7 @@ from tests.raid_concurrency_integration.support import build_attacker_defender
 
 @pytest.mark.integration
 @pytest.mark.django_db(transaction=True)
-def test_finalize_raid_concurrent_requests_only_one_thread_completes(monkeypatch, django_user_model):
+def test_finalize_raid_concurrent_requests_only_one_thread_completes(monkeypatch, django_user_model, load_guest_data):
     if connection.vendor == "sqlite":
         pytest.skip("SQLite does not provide row-level select_for_update semantics for this concurrency scenario")
 
@@ -84,7 +84,9 @@ def test_finalize_raid_concurrent_requests_only_one_thread_completes(monkeypatch
 
 @pytest.mark.integration
 @pytest.mark.django_db(transaction=True)
-def test_refresh_raid_runs_concurrent_with_finalize_raid_completes_only_once(monkeypatch, django_user_model):
+def test_refresh_raid_runs_concurrent_with_finalize_raid_completes_only_once(
+    monkeypatch, django_user_model, load_guest_data
+):
     if connection.vendor == "sqlite":
         pytest.skip("SQLite does not provide row-level select_for_update semantics for this concurrency scenario")
 

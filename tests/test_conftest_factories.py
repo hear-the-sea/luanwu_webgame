@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import pytest
 
+from guests.models import GuestTemplate, RecruitmentPool
+from tests.conftest import ensure_guest_data_loaded
+
 
 @pytest.mark.django_db
 def test_user_factory_creates_distinct_users(user_factory):
@@ -27,3 +30,20 @@ def test_manor_factory_creates_manor_for_user(manor_factory):
     manor, user = manor_factory(username="factory_manor_user")
 
     assert manor.user_id == user.id
+
+
+@pytest.mark.django_db
+def test_ensure_guest_data_loaded_reloads_missing_templates(game_data, django_db_blocker):
+    assert GuestTemplate.objects.exists() is True
+    assert RecruitmentPool.objects.exists() is True
+
+    GuestTemplate.objects.all().delete()
+
+    assert GuestTemplate.objects.exists() is False
+    assert RecruitmentPool.objects.exists() is True
+
+    with django_db_blocker.unblock():
+        ensure_guest_data_loaded()
+
+    assert GuestTemplate.objects.exists() is True
+    assert RecruitmentPool.objects.exists() is True

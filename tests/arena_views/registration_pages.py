@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from urllib.parse import quote
 
 import pytest
 from django.urls import reverse
@@ -48,6 +49,8 @@ def test_arena_registration_page_lists_guangming_top_card(arena_client):
     assert body.count("tw-building-card tw-building-card--manor tw-arena-hero-card") >= 2
     assert body.count('class="tw-arena-signup-panel"') >= 2
     assert body.count(">提交报名<") >= 2
+    assert quote("images/buildings/竞技场.webp") in body
+    assert quote("images/buildings/围攻光明顶.webp") in body
     assert "报名围攻光明顶" not in body
 
 

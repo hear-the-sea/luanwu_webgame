@@ -23,6 +23,42 @@ from gameplay.services.manor.core import ensure_manor
 PROJECT_ROOT = Path(__file__).parent.parent
 
 
+def _run_project_command(command: str, /, **kwargs) -> None:
+    original_cwd = os.getcwd()
+    os.chdir(PROJECT_ROOT)
+    try:
+        call_command(command, **kwargs)
+    finally:
+        os.chdir(original_cwd)
+
+
+def ensure_test_schema_ready() -> None:
+    from django.db import connection
+
+    if "django_migrations" not in connection.introspection.table_names():
+        call_command("migrate", verbosity=0, interactive=False)
+
+
+def ensure_troop_data_loaded() -> None:
+    if TroopTemplate.objects.exists():
+        return
+    _run_project_command("load_troop_templates", verbosity=0, skip_images=True)
+
+
+def ensure_guest_data_loaded() -> None:
+    from guests.models import GuestTemplate, RecruitmentPool
+
+    if GuestTemplate.objects.exists() and RecruitmentPool.objects.exists():
+        return
+    _run_project_command("load_guest_templates", verbosity=0, skip_images=True)
+
+
+def ensure_game_data_loaded() -> None:
+    ensure_test_schema_ready()
+    ensure_troop_data_loaded()
+    ensure_guest_data_loaded()
+
+
 def _env_services_enabled() -> bool:
     return os.environ.get("DJANGO_TEST_USE_ENV_SERVICES", "0") == "1"
 
@@ -160,7 +196,7 @@ def _require_external_celery_broker(celery_app, *, strict: bool) -> None:
         _gate_outcome(f"integration tests require reachable Celery broker: {exc}", strict=strict)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def game_data(django_db_setup, django_db_blocker):
     """Load shared game templates used by integration-style tests.
 
@@ -169,19 +205,7 @@ def game_data(django_db_setup, django_db_blocker):
     - Uses `skip_images=True` to keep tests fast and hermetic.
     """
     with django_db_blocker.unblock():
-        original_cwd = os.getcwd()
-        os.chdir(PROJECT_ROOT)
-        try:
-            # Ensure schema exists when running a narrow subset of tests.
-            from django.db import connection
-
-            if "django_migrations" not in connection.introspection.table_names():
-                call_command("migrate", verbosity=0, interactive=False)
-
-            call_command("load_troop_templates", verbosity=0, skip_images=True)
-            call_command("load_guest_templates", verbosity=0, skip_images=True)
-        finally:
-            os.chdir(original_cwd)
+        ensure_game_data_loaded()
 
 
 @pytest.fixture(scope="function")
@@ -190,44 +214,21 @@ def mission_templates(django_db_setup, django_db_blocker):
     在每个测试中加载任务模板（需要事务支持）
     """
     with django_db_blocker.unblock():
-        original_cwd = os.getcwd()
-        os.chdir(PROJECT_ROOT)
-        try:
-            call_command("load_mission_templates", file="data/mission_templates.yaml", verbosity=0)
-        finally:
-            os.chdir(original_cwd)
+        _run_project_command("load_mission_templates", file="data/mission_templates.yaml", verbosity=0)
 
 
 @pytest.fixture(scope="function")
 def load_guest_data(django_db_setup, django_db_blocker):
     """Ensure guest templates and recruitment pools exist for transactional tests."""
     with django_db_blocker.unblock():
-        from guests.models import RecruitmentPool
-
-        if RecruitmentPool.objects.exists():
-            return
-
-        original_cwd = os.getcwd()
-        os.chdir(PROJECT_ROOT)
-        try:
-            call_command("load_guest_templates", verbosity=0, skip_images=True)
-        finally:
-            os.chdir(original_cwd)
+        ensure_guest_data_loaded()
 
 
 @pytest.fixture(scope="function")
 def load_troop_data(django_db_setup, django_db_blocker):
     """Ensure troop templates exist for transactional tests."""
     with django_db_blocker.unblock():
-        if TroopTemplate.objects.exists():
-            return
-
-        original_cwd = os.getcwd()
-        os.chdir(PROJECT_ROOT)
-        try:
-            call_command("load_troop_templates", verbosity=0, skip_images=True)
-        finally:
-            os.chdir(original_cwd)
+        ensure_troop_data_loaded()
 
 
 @pytest.fixture(scope="function")

@@ -52,7 +52,7 @@ def _serialize_recruit_records(records) -> list[dict]:
     return payload
 
 
-def _build_cached_payload(manor, records_limit: int) -> dict:
+def _serialize_cached_payload(manor) -> dict:
     candidates_payload = list(
         list_candidates(manor).values(
             "id",
@@ -61,8 +61,6 @@ def _build_cached_payload(manor, records_limit: int) -> dict:
             "rarity_revealed",
         )
     )
-    records = list(manor.recruit_records.select_related("guest__template").order_by("-created_at")[:records_limit])
-    records_payload = _serialize_recruit_records(records)
 
     magnifying_glass_items = (
         manor.inventory_items.filter(
@@ -84,9 +82,13 @@ def _build_cached_payload(manor, records_limit: int) -> dict:
     return {
         "candidates_payload": candidates_payload,
         "candidate_count": len(candidates_payload),
-        "records_payload": records_payload,
         "magnifying_glass_items": magnifying_payload,
     }
+
+
+def _load_recruitment_records_payload(manor, records_limit: int) -> list[dict]:
+    records = list(manor.recruit_records.select_related("guest__template").order_by("-created_at")[:records_limit])
+    return _serialize_recruit_records(records)
 
 
 def _safe_cache_get(key: str):
@@ -115,9 +117,10 @@ def get_recruitment_hall_context(manor, records_limit: int, *, use_cache: bool =
     cache_key = _recruitment_hall_cache_key(int(manor.id))
     cached_payload = _safe_cache_get(cache_key) if use_cache else None
     if cached_payload is None:
-        cached_payload = _build_cached_payload(manor, records_limit)
+        cached_payload = _serialize_cached_payload(manor)
         if use_cache:
             _safe_cache_set(cache_key, cached_payload, timeout=CACHE_TIMEOUT_SHORT)
+    records_payload = _load_recruitment_records_payload(manor, records_limit)
 
     return {
         "manor": manor,
@@ -127,6 +130,6 @@ def get_recruitment_hall_context(manor, records_limit: int, *, use_cache: bool =
         "candidates_payload": cached_payload["candidates_payload"],
         "candidate_count": cached_payload["candidate_count"],
         "active_recruitment": active_recruitment,
-        "records": cached_payload["records_payload"],
+        "records": records_payload,
         "magnifying_glass_items": cached_payload["magnifying_glass_items"],
     }
