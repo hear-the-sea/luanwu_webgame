@@ -86,6 +86,7 @@ Thumbs.db
 *:Zone.Identifier
 *.lnk
 .claude/worktrees/
+.worktrees/
 AGENTS.md
 .codex
 .superpowers/brainstorm/
