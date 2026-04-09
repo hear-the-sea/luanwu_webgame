@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 import gameplay.services.technology_helpers as technology_helpers
 
@@ -71,6 +72,32 @@ def test_group_martial_technology_entries_uses_business_order_and_name_fallback(
     assert [item["class_key"] for item in grouped] == ["dao", "jian"]
     assert grouped[0]["class_name"] == "刀类"
     assert grouped[1]["class_name"] == "剑类"
+
+
+def test_schedule_technology_completion_task_logs_warning_when_dispatch_returns_false():
+    callbacks: list[object] = []
+    tech = SimpleNamespace(id=17, manor_id=23, tech_key="march_art")
+    logger = MagicMock()
+
+    technology_helpers.schedule_technology_completion_task(
+        tech,
+        eta_seconds=45,
+        logger=logger,
+        transaction_module=SimpleNamespace(on_commit=callbacks.append),
+        safe_apply_async_func=lambda *_args, **_kwargs: False,
+    )
+
+    assert len(callbacks) == 1
+
+    callbacks[0]()
+
+    logger.warning.assert_called_once_with(
+        "complete_technology_upgrade dispatch failed: tech_id=%s manor_id=%s tech_key=%s countdown=%s",
+        17,
+        23,
+        "march_art",
+        45,
+    )
 
 
 def test_build_technology_upgrade_response_formats_message():

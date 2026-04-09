@@ -8,6 +8,7 @@ from django.db import OperationalError
 from django.utils import timezone
 
 import gameplay.tasks as tasks
+from core.exceptions.recruitment_extended import TroopRecruitmentNotReadyError, TroopTemplateNotFoundError
 from tests.gameplay_tasks.support import Chain, patch_model
 
 
@@ -78,12 +79,19 @@ def test_scan_troop_recruitments_counts(monkeypatch):
         objects = Chain(slice_result=recruitments)
 
     monkeypatch.setattr("gameplay.models.TroopRecruitment", _TroopRecruitment)
-    monkeypatch.setattr(
-        "gameplay.services.recruitment.recruitment.finalize_troop_recruitment",
-        lambda recruitment, **_kwargs: recruitment.id == 2,
-    )
+
+    finalized_ids = []
+
+    def _finalize(recruitment, **_kwargs):
+        finalized_ids.append(recruitment.id)
+        if recruitment.id == 1:
+            raise TroopRecruitmentNotReadyError(message="募兵尚未完成")
+        return None
+
+    monkeypatch.setattr("gameplay.services.recruitment.recruitment.finalize_troop_recruitment", _finalize)
 
     assert tasks.scan_troop_recruitments() == 1
+    assert finalized_ids == [1, 2]
 
 
 @pytest.mark.django_db
@@ -102,6 +110,34 @@ def test_complete_troop_recruitment_programming_error_bubbles_without_retry(monk
 
     with pytest.raises(AssertionError, match="broken troop recruitment finalize contract"):
         tasks.complete_troop_recruitment.run(21)
+
+
+@pytest.mark.django_db
+def test_complete_troop_recruitment_skips_when_not_ready(monkeypatch):
+    now = timezone.now()
+    recruitment = SimpleNamespace(complete_at=now - timedelta(seconds=1), id=22)
+    patch_model(monkeypatch, "gameplay.models.TroopRecruitment", first_result=recruitment)
+    monkeypatch.setattr(
+        "gameplay.services.recruitment.recruitment.finalize_troop_recruitment",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            TroopRecruitmentNotReadyError(message="募兵状态不正确，当前状态不是 recruiting")
+        ),
+    )
+
+    assert tasks.complete_troop_recruitment.run(22) == "skipped"
+
+
+@pytest.mark.django_db
+def test_complete_troop_recruitment_skips_when_troop_template_missing(monkeypatch):
+    now = timezone.now()
+    recruitment = SimpleNamespace(complete_at=now - timedelta(seconds=1), id=23)
+    patch_model(monkeypatch, "gameplay.models.TroopRecruitment", first_result=recruitment)
+    monkeypatch.setattr(
+        "gameplay.services.recruitment.recruitment.finalize_troop_recruitment",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(TroopTemplateNotFoundError("missing_template")),
+    )
+
+    assert tasks.complete_troop_recruitment.run(23) == "skipped"
 
 
 @pytest.mark.django_db
