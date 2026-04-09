@@ -132,6 +132,11 @@ from .recruitment import (
     RecruitmentError,
     RecruitmentItemOwnershipError,
 )
+from .recruitment_extended import (
+    TroopRecruitmentNotFoundError,
+    TroopRecruitmentNotReadyError,
+    TroopTemplateNotFoundError,
+)
 from .resource import (
     CapacityError,
     EquipmentSlotFullError,
@@ -275,6 +280,10 @@ __all__ = [
     "RecruitmentCandidateStateError",
     "AttributePointError",
     "InvalidAllocationError",
+    # Troop Recruitment Extended
+    "TroopRecruitmentNotFoundError",
+    "TroopRecruitmentNotReadyError",
+    "TroopTemplateNotFoundError",
     # Task
     "TaskDispatchError",
     "TaskRescheduleError",
