@@ -144,6 +144,7 @@ from .resource import (
     SkillSlotFullError,
     TreasuryCapacityFullError,
 )
+from .task import TaskDispatchError, TaskRescheduleError
 from .trade import ShopValidationError, TradeError, TradeValidationError
 
 __all__ = [
@@ -274,4 +275,7 @@ __all__ = [
     "RecruitmentCandidateStateError",
     "AttributePointError",
     "InvalidAllocationError",
+    # Task
+    "TaskDispatchError",
+    "TaskRescheduleError",
 ]
