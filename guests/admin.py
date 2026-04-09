@@ -46,13 +46,14 @@ class GuestTemplateAdmin(admin.ModelAdmin):
     list_filter = ("rarity", "archetype", "recruitable")
     search_fields = ("name", "key")
     list_editable = ("recruitable",)
-    ordering = ("name",)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(_rarity_rank=guest_template_rarity_rank_case("rarity"))
-
-    def get_ordering(self, request):
-        return ("-_rarity_rank", "name")
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(_rarity_rank=guest_template_rarity_rank_case("rarity"))
+            .order_by("-_rarity_rank", "name")
+        )
 
     @admin.action(description="批量设置为可招募")
     def mark_recruitable(self, request, queryset):

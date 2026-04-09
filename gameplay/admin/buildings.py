@@ -28,7 +28,7 @@ class WorkTemplateAdmin(admin.ModelAdmin):
 class WorkAssignmentAdmin(admin.ModelAdmin):
     list_display = ("guest", "work_template", "manor", "status", "started_at", "complete_at", "reward_claimed")
     list_filter = ("status", "reward_claimed")
-    search_fields = ("guest__name", "manor__user__username")
+    search_fields = ("guest__custom_name", "guest__template__name", "manor__user__username")
     autocomplete_fields = ("manor", "guest", "work_template")
     readonly_fields = ("started_at", "complete_at", "finished_at")
     date_hierarchy = "started_at"
