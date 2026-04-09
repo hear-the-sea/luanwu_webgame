@@ -8,6 +8,7 @@ from django.db import OperationalError
 from django.utils import timezone
 
 import gameplay.tasks as tasks
+from core.exceptions.recruitment_extended import TroopRecruitmentNotReadyError
 from tests.gameplay_tasks.support import Chain, patch_model
 
 
@@ -77,10 +78,15 @@ def test_scan_troop_recruitments_counts(monkeypatch):
 
         objects = Chain(slice_result=recruitments)
 
+    def _finalize_recruitment(recruitment, **_kwargs):
+        if recruitment.id == 2:
+            return None
+        raise TroopRecruitmentNotReadyError(f"not ready {recruitment.id}")
+
     monkeypatch.setattr("gameplay.models.TroopRecruitment", _TroopRecruitment)
     monkeypatch.setattr(
         "gameplay.services.recruitment.recruitment.finalize_troop_recruitment",
-        lambda recruitment, **_kwargs: recruitment.id == 2,
+        _finalize_recruitment,
     )
 
     assert tasks.scan_troop_recruitments() == 1

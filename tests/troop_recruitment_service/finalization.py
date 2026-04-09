@@ -159,3 +159,18 @@ def test_finalize_troop_recruitment_raises_when_troop_template_not_found(monkeyp
 
     with pytest.raises(TroopTemplateNotFoundError, match="nonexistent_troop"):
         finalize_troop_recruitment(recruitment, send_notification=False)
+
+
+@pytest.mark.parametrize(
+    ("error_cls", "kwargs", "expected_error_code"),
+    [
+        (TroopRecruitmentNotFoundError, {"recruitment_id": 1}, "troop_recruitment_not_found"),
+        (TroopRecruitmentNotReadyError, {"complete_at": "2026-04-09T00:00:00"}, "troop_recruitment_not_ready"),
+        (TroopTemplateNotFoundError, {"troop_key": "scout"}, "troop_template_not_found"),
+    ],
+)
+def test_recruitment_extended_exceptions_expose_specific_error_code(error_cls, kwargs, expected_error_code):
+    error = error_cls(**kwargs)
+
+    assert error.error_code == expected_error_code
+    assert error.error_code != "game_error"
