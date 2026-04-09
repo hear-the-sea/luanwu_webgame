@@ -14,6 +14,7 @@ from django.utils import timezone
 from common.utils.celery import safe_apply_async_with_dedup
 from core.config import GUEST, GUEST_LOYALTY
 from core.exceptions import MessageError
+from core.exceptions.task import TaskRescheduleError
 from core.utils.infrastructure import (
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
     InfrastructureExceptions,
@@ -66,7 +67,7 @@ def complete_guest_training(self, guest_id: int) -> str:
                         "scan_guest_training fallback will handle completion",
                         guest_id,
                     )
-                    return "reschedule_failed"
+                    raise TaskRescheduleError("complete_guest_training调度失败")
                 return "rescheduled"
         finalized = finalize_guest_training(guest, now=now)
         return "completed" if finalized else "skipped"
@@ -142,7 +143,7 @@ def complete_guest_recruitment(self, recruitment_id: int) -> str:
                         "scan_guest_recruitments fallback will handle completion",
                         recruitment_id,
                     )
-                    return "reschedule_failed"
+                    raise TaskRescheduleError("complete_guest_recruitment调度失败")
                 return "rescheduled"
 
         finalized = finalize_guest_recruitment(recruitment, now=now, send_notification=True)
