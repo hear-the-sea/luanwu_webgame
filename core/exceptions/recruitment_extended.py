@@ -12,7 +12,7 @@ from .gameplay import TroopRecruitmentError
 class TroopRecruitmentNotFoundError(TroopRecruitmentError):
     """募兵记录不存在"""
 
-    error_code = "TROOP_RECRUITMENT_NOT_FOUND"
+    code = "troop_recruitment_not_found"
 
     def __init__(self, recruitment_id: int | None = None, message: str | None = None):
         if message is None:
@@ -23,7 +23,7 @@ class TroopRecruitmentNotFoundError(TroopRecruitmentError):
 class TroopRecruitmentNotReadyError(TroopRecruitmentError):
     """募兵尚未完成"""
 
-    error_code = "TROOP_RECRUITMENT_NOT_READY"
+    code = "troop_recruitment_not_ready"
 
     def __init__(self, complete_at: str | None = None, message: str | None = None):
         if message is None:
@@ -34,7 +34,7 @@ class TroopRecruitmentNotReadyError(TroopRecruitmentError):
 class TroopTemplateNotFoundError(TroopRecruitmentError):
     """战斗兵种模板不存在"""
 
-    error_code = "TROOP_TEMPLATE_NOT_FOUND"
+    code = "troop_template_not_found"
 
     def __init__(self, troop_key: str, message: str | None = None):
         if message is None:
