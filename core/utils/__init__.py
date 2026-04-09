@@ -1,5 +1,6 @@
 """Core utilities"""
 
+from .error_migration import convert_bool_to_exception, convert_string_result_to_exception
 from .http import accepts_json, is_ajax_request, is_json_request
 from .network import get_client_ip
 from .responses import json_error, json_success
@@ -29,4 +30,6 @@ __all__ = [
     "is_json_request",
     "json_error",
     "json_success",
+    "convert_bool_to_exception",
+    "convert_string_result_to_exception",
 ]
