@@ -32,6 +32,11 @@ def complete_troop_recruitment(self, recruitment_id: int):
     """
     Complete troop recruitment background task.
     """
+    from core.exceptions.recruitment_extended import (
+        TroopRecruitmentNotFoundError,
+        TroopRecruitmentNotReadyError,
+        TroopTemplateNotFoundError,
+    )
     from gameplay.models import TroopRecruitment
     from gameplay.services.recruitment.recruitment import finalize_troop_recruitment
 
@@ -61,8 +66,12 @@ def complete_troop_recruitment(self, recruitment_id: int):
         if rescheduled is not None:
             return rescheduled
 
-        finalized = finalize_troop_recruitment(recruitment, send_notification=True)
-        return "completed" if finalized else "skipped"
+        try:
+            finalize_troop_recruitment(recruitment, send_notification=True)
+        except (TroopRecruitmentNotFoundError, TroopRecruitmentNotReadyError, TroopTemplateNotFoundError) as exc:
+            logger.warning("Failed to finalize troop recruitment %s: %s", recruitment_id, exc)
+            return "skipped"
+        return "completed"
     except RECRUITMENT_TASK_RETRY_EXCEPTIONS as exc:
         logger.exception("Failed to complete troop recruitment %s: %s", recruitment_id, exc)
         raise self.retry(exc=exc)
@@ -73,6 +82,11 @@ def scan_troop_recruitments(limit: int = 200):
     """
     Scan and complete all overdue troop recruitments (for worker downtime recovery).
     """
+    from core.exceptions.recruitment_extended import (
+        TroopRecruitmentNotFoundError,
+        TroopRecruitmentNotReadyError,
+        TroopTemplateNotFoundError,
+    )
     from gameplay.models import TroopRecruitment
     from gameplay.services.recruitment.recruitment import finalize_troop_recruitment
 
@@ -82,9 +96,19 @@ def scan_troop_recruitments(limit: int = 200):
         .filter(status=TroopRecruitment.Status.RECRUITING, complete_at__lte=now)
         .order_by("complete_at")[:limit]
     )
+
+    def _finalize_recruitment(recruitment: TroopRecruitment) -> bool:
+        """Wrapper that returns True on success, False on expected business errors."""
+        try:
+            finalize_troop_recruitment(recruitment, send_notification=True)
+            return True
+        except (TroopRecruitmentNotFoundError, TroopRecruitmentNotReadyError, TroopTemplateNotFoundError):
+            # Skip recruitments that can't be finalized
+            return False
+
     return count_finalized_records(
         qs,
-        finalize=lambda recruitment: finalize_troop_recruitment(recruitment, send_notification=True),
+        finalize=_finalize_recruitment,
         logger=logger,
         error_message="Failed to finalize troop recruitment %s: %s",
         expected_exceptions=RECRUITMENT_TASK_RETRY_EXCEPTIONS,

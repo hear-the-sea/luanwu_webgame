@@ -17,6 +17,12 @@ def refresh_troop_recruitments(manor: Manor) -> int:
     """
     刷新募兵状态，完成所有到期的募兵。
     """
+    from core.exceptions.recruitment_extended import (
+        TroopRecruitmentNotFoundError,
+        TroopRecruitmentNotReadyError,
+        TroopTemplateNotFoundError,
+    )
+
     from .lifecycle import finalize_troop_recruitment
 
     completed = 0
@@ -26,8 +32,12 @@ def refresh_troop_recruitments(manor: Manor) -> int:
     )
 
     for recruitment in recruiting:
-        if finalize_troop_recruitment(recruitment, send_notification=True):
+        try:
+            finalize_troop_recruitment(recruitment, send_notification=True)
             completed += 1
+        except (TroopRecruitmentNotFoundError, TroopRecruitmentNotReadyError, TroopTemplateNotFoundError):
+            # Skip recruitments that can't be finalized
+            pass
 
     return completed
 

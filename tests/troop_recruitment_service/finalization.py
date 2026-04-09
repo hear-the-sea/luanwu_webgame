@@ -4,6 +4,11 @@ import pytest
 
 from battle.models import TroopTemplate
 from core.exceptions import MessageError
+from core.exceptions.recruitment_extended import (
+    TroopRecruitmentNotFoundError,
+    TroopRecruitmentNotReadyError,
+    TroopTemplateNotFoundError,
+)
 from gameplay.models import PlayerTroop, TroopRecruitment
 from gameplay.services.recruitment.recruitment import finalize_troop_recruitment
 from tests.troop_recruitment_service.support import build_due_recruitment
@@ -16,7 +21,7 @@ def test_finalize_troop_recruitment_auto_creates_missing_troop_template(recruit_
     manor = recruit_manor
     recruitment = build_due_recruitment(manor, troop_key="scout", troop_name="探子", quantity=3)
 
-    assert finalize_troop_recruitment(recruitment, send_notification=False) is True
+    finalize_troop_recruitment(recruitment, send_notification=False)
 
     recruitment.refresh_from_db()
     assert recruitment.status == TroopRecruitment.Status.COMPLETED
@@ -39,7 +44,7 @@ def test_finalize_troop_recruitment_keeps_success_when_explicit_failures(monkeyp
         lambda *_args, **_kwargs: (_ for _ in ()).throw(ConnectionError("ws backend down")),
     )
 
-    assert finalize_troop_recruitment(recruitment, send_notification=True) is True
+    finalize_troop_recruitment(recruitment, send_notification=True)
     recruitment.refresh_from_db()
     assert recruitment.status == TroopRecruitment.Status.COMPLETED
 
@@ -92,3 +97,65 @@ def test_finalize_troop_recruitment_notification_programming_error_bubbles_up(mo
 
     recruitment.refresh_from_db()
     assert recruitment.status == TroopRecruitment.Status.COMPLETED
+
+
+@pytest.mark.django_db
+def test_finalize_troop_recruitment_raises_when_recruitment_not_found(recruit_manor):
+    """Test that finalize raises TroopRecruitmentNotFoundError when recruitment doesn't exist."""
+    from gameplay.models import TroopRecruitment
+
+    # Create a recruitment and then delete it to simulate a non-existent record
+    recruitment = build_due_recruitment(recruit_manor, troop_key="scout", troop_name="探子", quantity=2)
+    recruitment_id = recruitment.id
+    recruitment.delete()
+
+    # Create a fake recruitment object with the deleted ID
+    fake_recruitment = TroopRecruitment(id=recruitment_id, manor_id=recruit_manor.id)
+
+    with pytest.raises(TroopRecruitmentNotFoundError):
+        finalize_troop_recruitment(fake_recruitment, send_notification=False)
+
+
+@pytest.mark.django_db
+def test_finalize_troop_recruitment_raises_when_status_not_recruiting(recruit_manor):
+    """Test that finalize raises TroopRecruitmentNotReadyError when status is not RECRUITING."""
+    from gameplay.models import TroopRecruitment
+
+    recruitment = build_due_recruitment(recruit_manor, troop_key="scout", troop_name="探子", quantity=2)
+    recruitment.status = TroopRecruitment.Status.COMPLETED
+    recruitment.save()
+
+    with pytest.raises(TroopRecruitmentNotReadyError, match="募兵状态不正确"):
+        finalize_troop_recruitment(recruitment, send_notification=False)
+
+
+@pytest.mark.django_db
+def test_finalize_troop_recruitment_raises_when_not_complete_yet(recruit_manor):
+    """Test that finalize raises TroopRecruitmentNotReadyError when complete_at is in the future."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    recruitment = build_due_recruitment(recruit_manor, troop_key="scout", troop_name="探子", quantity=2)
+    # Set complete_at to 1 hour in the future
+    recruitment.complete_at = timezone.now() + timedelta(hours=1)
+    recruitment.save()
+
+    with pytest.raises(TroopRecruitmentNotReadyError):
+        finalize_troop_recruitment(recruitment, send_notification=False)
+
+
+@pytest.mark.django_db
+def test_finalize_troop_recruitment_raises_when_troop_template_not_found(monkeypatch, recruit_manor):
+    """Test that finalize raises TroopTemplateNotFoundError when troop template can't be created."""
+    recruitment = build_due_recruitment(recruit_manor, troop_key="nonexistent_troop", troop_name="不存在", quantity=2)
+
+    # Mock get_troop_template to return None (template config not found)
+    # The import is within _get_or_create_battle_troop_template
+    monkeypatch.setattr(
+        "gameplay.services.recruitment.recruitment.get_troop_template",
+        lambda _key: None,
+    )
+
+    with pytest.raises(TroopTemplateNotFoundError, match="nonexistent_troop"):
+        finalize_troop_recruitment(recruitment, send_notification=False)

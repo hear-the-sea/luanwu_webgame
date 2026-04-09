@@ -14,6 +14,11 @@ from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
 from core.exceptions import MessageError
+from core.exceptions.recruitment_extended import (
+    TroopRecruitmentNotFoundError,
+    TroopRecruitmentNotReadyError,
+    TroopTemplateNotFoundError,
+)
 from core.utils import safe_int
 from core.utils.imports import is_missing_target_import
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS, NOTIFICATION_INFRASTRUCTURE_EXCEPTIONS
@@ -115,9 +120,14 @@ def _get_or_create_battle_troop_template(recruitment: TroopRecruitment) -> Troop
     return troop_template
 
 
-def finalize_troop_recruitment(recruitment: TroopRecruitment, send_notification: bool = False) -> bool:
+def finalize_troop_recruitment(recruitment: TroopRecruitment, send_notification: bool = False) -> None:
     """
     完成募兵，将护院添加到玩家存储。
+
+    Raises:
+        TroopRecruitmentNotFoundError: 募兵记录不存在
+        TroopRecruitmentNotReadyError: 募兵尚未完成或状态不正确
+        TroopTemplateNotFoundError: 战斗兵种模板不存在
     """
     with transaction.atomic():
         locked_recruitment = (
@@ -127,17 +137,20 @@ def finalize_troop_recruitment(recruitment: TroopRecruitment, send_notification:
             .first()
         )
         if not locked_recruitment:
-            return False
+            raise TroopRecruitmentNotFoundError(recruitment_id=recruitment.pk)
 
         if locked_recruitment.status != TroopRecruitment.Status.RECRUITING:
-            return False
+            raise TroopRecruitmentNotReadyError(
+                complete_at=str(locked_recruitment.complete_at),
+                message=f"募兵状态不正确: status={locked_recruitment.status}",
+            )
 
         if locked_recruitment.complete_at > timezone.now():
-            return False
+            raise TroopRecruitmentNotReadyError(complete_at=str(locked_recruitment.complete_at))
 
         troop_template = _get_or_create_battle_troop_template(locked_recruitment)
         if not troop_template:
-            return False
+            raise TroopTemplateNotFoundError(troop_key=locked_recruitment.troop_key)
 
         player_troop, _ = PlayerTroop.objects.get_or_create(
             manor=locked_recruitment.manor,
@@ -173,7 +186,6 @@ def finalize_troop_recruitment(recruitment: TroopRecruitment, send_notification:
                 exc,
                 exc_info=True,
             )
-            return True
         except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
             logger.warning(
                 "troop recruitment message creation failed: recruitment_id=%s manor_id=%s error=%s",
@@ -182,7 +194,6 @@ def finalize_troop_recruitment(recruitment: TroopRecruitment, send_notification:
                 exc,
                 exc_info=True,
             )
-            return True
 
         try:
             notify_user(
@@ -203,5 +214,3 @@ def finalize_troop_recruitment(recruitment: TroopRecruitment, send_notification:
                 exc,
                 exc_info=True,
             )
-
-    return True
