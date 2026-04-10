@@ -16,6 +16,27 @@ from tests.troop_recruitment_service.support import build_due_recruitment
 pytest_plugins = ("tests.troop_recruitment_service.fixtures",)
 
 
+def test_troop_recruitment_not_found_error_uses_specific_error_code():
+    error = TroopRecruitmentNotFoundError()
+
+    assert error.error_code == "troop_recruitment_not_found"
+    assert error.error_code != MessageError.error_code
+
+
+def test_troop_recruitment_not_ready_error_uses_specific_error_code():
+    error = TroopRecruitmentNotReadyError()
+
+    assert error.error_code == "troop_recruitment_not_ready"
+    assert error.error_code != MessageError.error_code
+
+
+def test_troop_template_not_found_error_uses_specific_error_code():
+    error = TroopTemplateNotFoundError("scout")
+
+    assert error.error_code == "troop_template_not_found"
+    assert error.error_code != MessageError.error_code
+
+
 @pytest.mark.django_db
 def test_finalize_troop_recruitment_auto_creates_missing_troop_template(recruit_manor):
     manor = recruit_manor

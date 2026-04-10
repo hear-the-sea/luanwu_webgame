@@ -44,10 +44,12 @@ def safe_apply_async(
 
     Semantics:
     - Returns True when the task is successfully enqueued into the broker.
-    - Returns False when dispatch fails (broker unavailable, serialization error, etc.).
+    - Returns False when dispatch fails with an infrastructure exception covered by
+      ``CELERY_DISPATCH_INFRA_EXCEPTIONS``.
       In this case ``celery_dispatch_failed`` degraded counter is incremented via
       ``core.utils.task_monitoring.increment_degraded_counter``.
-    - Does NOT raise on failure by default (``raise_on_failure=False``).
+    - Non-infrastructure dispatch errors continue to raise.
+    - Does NOT raise on infrastructure failure by default (``raise_on_failure=False``).
 
     Caller responsibility:
     - Check the return value and decide whether synchronous fallback is needed.
