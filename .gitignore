@@ -59,6 +59,8 @@ celerybeat.pid
 *.swo
 *~
 .DS_Store
+.claude/
+.omc/
 
 # Testing
 .pytest_cache/
@@ -85,7 +87,6 @@ runtime/
 Thumbs.db
 *:Zone.Identifier
 *.lnk
-.claude/worktrees/
 .worktrees/
 AGENTS.md
 .codex
