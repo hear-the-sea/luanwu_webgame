@@ -104,21 +104,19 @@ def schedule_technology_completion_task(
         return
 
     def _dispatch_completion_task() -> None:
-        dispatched = safe_apply_async_func(
+        safe_apply_async_func(
             complete_technology_upgrade,
             args=[tech.id],
             countdown=countdown,
             logger=logger,
             log_message="complete_technology_upgrade dispatch failed",
+            log_extra={
+                "tech_id": getattr(tech, "id", None),
+                "manor_id": getattr(tech, "manor_id", None),
+                "tech_key": getattr(tech, "tech_key", None),
+                "countdown": countdown,
+            },
         )
-        if dispatched is False:
-            logger.warning(
-                "complete_technology_upgrade dispatch failed: tech_id=%s manor_id=%s tech_key=%s countdown=%s",
-                getattr(tech, "id", None),
-                getattr(tech, "manor_id", None),
-                getattr(tech, "tech_key", None),
-                countdown,
-            )
 
     transaction_module.on_commit(_dispatch_completion_task)
 

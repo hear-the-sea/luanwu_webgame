@@ -1,4 +1,13 @@
-document.addEventListener("DOMContentLoaded", () => {
+const initGuestRosterPage = () => {
+  const rosterRoot = document.querySelector(".dashboard");
+  if (!rosterRoot) {
+    return;
+  }
+  if (rosterRoot.dataset.pageInitialized === "1") {
+    return;
+  }
+  rosterRoot.dataset.pageInitialized = "1";
+
   const showError = (message) => {
     let container = document.querySelector(".flash-messages");
     if (!container) {
@@ -317,4 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-});
+};
+
+document.addEventListener("DOMContentLoaded", initGuestRosterPage);
+document.addEventListener("partial-nav:loaded", initGuestRosterPage);

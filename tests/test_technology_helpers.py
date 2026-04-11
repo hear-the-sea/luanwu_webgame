@@ -74,30 +74,43 @@ def test_group_martial_technology_entries_uses_business_order_and_name_fallback(
     assert grouped[1]["class_name"] == "剑类"
 
 
-def test_schedule_technology_completion_task_logs_warning_when_dispatch_returns_false():
+def test_schedule_technology_completion_task_passes_dispatch_context_to_safe_apply_async():
     callbacks: list[object] = []
     tech = SimpleNamespace(id=17, manor_id=23, tech_key="march_art")
     logger = MagicMock()
+    dispatch_calls: list[dict[str, object]] = []
+
+    def _safe_apply_async(*_args, **kwargs):
+        dispatch_calls.append(kwargs)
+        return False
 
     technology_helpers.schedule_technology_completion_task(
         tech,
         eta_seconds=45,
         logger=logger,
         transaction_module=SimpleNamespace(on_commit=callbacks.append),
-        safe_apply_async_func=lambda *_args, **_kwargs: False,
+        safe_apply_async_func=_safe_apply_async,
     )
 
     assert len(callbacks) == 1
 
     callbacks[0]()
 
-    logger.warning.assert_called_once_with(
-        "complete_technology_upgrade dispatch failed: tech_id=%s manor_id=%s tech_key=%s countdown=%s",
-        17,
-        23,
-        "march_art",
-        45,
-    )
+    assert dispatch_calls == [
+        {
+            "args": [17],
+            "countdown": 45,
+            "logger": logger,
+            "log_message": "complete_technology_upgrade dispatch failed",
+            "log_extra": {
+                "tech_id": 17,
+                "manor_id": 23,
+                "tech_key": "march_art",
+                "countdown": 45,
+            },
+        }
+    ]
+    logger.warning.assert_not_called()
 
 
 def test_build_technology_upgrade_response_formats_message():

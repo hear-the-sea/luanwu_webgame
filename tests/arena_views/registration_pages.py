@@ -55,6 +55,22 @@ def test_arena_registration_page_lists_guangming_top_card(arena_client):
 
 
 @pytest.mark.django_db
+def test_arena_registration_page_lists_all_idle_guests_for_coop_signup(arena_client):
+    client, manor = arena_client
+    template = _build_guest_template("arena_coop_all_idle_tpl")
+    guests = [_build_guest(manor, template, f"空闲门客{idx}") for idx in range(13)]
+
+    response = client.get(reverse("gameplay:arena"))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    coop_form_marker = f'<form method="post" action="{reverse("gameplay:arena_coop_register")}">'
+    coop_form = body.split(coop_form_marker, 1)[1].split("</form>", 1)[0]
+    for guest in guests:
+        assert f'value="{guest.id}"' in coop_form
+
+
+@pytest.mark.django_db
 @pytest.mark.parametrize(
     ("view_name", "selector_attr"),
     [

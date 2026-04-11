@@ -63,6 +63,26 @@ def test_safe_apply_async_logs_on_failure_when_logger_provided(caplog):
     assert "custom error message" in caplog.text
 
 
+def test_safe_apply_async_merges_log_extra_on_failure(caplog):
+    task = _Task(failure=OperationalError("dispatch failed"))
+    test_logger = logging.getLogger("test_celery.extra")
+
+    with caplog.at_level(logging.WARNING):
+        ok = celery_utils.safe_apply_async(
+            task,
+            logger=test_logger,
+            log_message="dispatch failed with context",
+            log_extra={"tech_id": 17, "manor_id": 23},
+        )
+
+    assert ok is False
+    record = next(record for record in caplog.records if record.message == "dispatch failed with context")
+    assert record.tech_id == 17
+    assert record.manor_id == 23
+    assert record.degraded is True
+    assert record.component == "celery_dispatch"
+
+
 def test_safe_apply_async_can_raise_on_failure():
     task = _Task(failure=OperationalError("dispatch failed"))
 

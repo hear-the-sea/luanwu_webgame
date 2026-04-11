@@ -133,7 +133,7 @@
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <p class="text-sm text-text-muted mb-2">请选择上阵门客（最多 {{ arena_coop_event.guest_limit_per_entry }} 名）</p>
                 <div class="tw-arena-guest-grid mb-3">
-                    {% for guest in arena_coop_available_guests|slice:":12" %}
+                    {% for guest in arena_coop_available_guests %}
                     <label class="tw-arena-guest-option">
                         <span class="text-sm truncate">{{ guest.display_name }} Lv{{ guest.level }}</span>
                         <input type="checkbox" name="guest_ids" value="{{ guest.id }}" class="arena-guest-checkbox"

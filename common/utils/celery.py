@@ -34,6 +34,7 @@ def safe_apply_async(
     countdown: Optional[int] = None,
     logger: Optional[logging.Logger] = None,
     log_message: str = "celery task dispatch failed",
+    log_extra: Optional[Mapping[str, Any]] = None,
     raise_on_failure: bool = False,
 ) -> bool:
     """
@@ -56,6 +57,7 @@ def safe_apply_async(
     - For "best-effort" callsites (notifications, cache refreshes): silently skip on False.
     - For "must-execute" callsites (state machine transitions, resource mutations): provide
       a synchronous fallback path when False is returned.
+    - Use ``log_extra`` to attach business context fields to the single dispatch failure log.
 
     When ``degraded=True`` appears in log records or the degraded counter increments,
     it indicates an infrastructure issue with the broker (Redis unavailable, network partition,
@@ -66,7 +68,9 @@ def safe_apply_async(
         return True
     except CELERY_DISPATCH_INFRA_EXCEPTIONS:
         if logger:
-            logger.warning(log_message, exc_info=True, extra={"degraded": True, "component": "celery_dispatch"})
+            extra = dict(log_extra or {})
+            extra.update({"degraded": True, "component": "celery_dispatch"})
+            logger.warning(log_message, exc_info=True, extra=extra)
         from core.utils.task_monitoring import increment_degraded_counter
 
         increment_degraded_counter("celery_dispatch_failed")
