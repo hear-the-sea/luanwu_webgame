@@ -206,6 +206,10 @@ module = [
     "core.utils.yaml_loader",
     "core.utils.yaml_schema",
     "gameplay.services.arena.core",
+    "gameplay.services.arena.coop_battle",
+    "gameplay.services.arena.coop_core",
+    "gameplay.services.arena.coop_lifecycle",
+    "gameplay.services.arena.coop_settlement",
     "gameplay.services.arena.rules",
     "gameplay.services.online_presence_backend",
     "gameplay.services.buildings.*",
@@ -237,6 +241,10 @@ module = [
     "guilds.views.hero_pool",
     "guilds.views.technology",
     "trade.selectors",
+    "trade.services.auction.rounds",
+    "trade.services.auction.rounds_delivery_support",
+    "trade.services.auction.rounds_lifecycle_support",
+    "trade.services.auction.rounds_settlement_support",
     "trade.services.bank_service",
 ]
 disallow_untyped_defs = true

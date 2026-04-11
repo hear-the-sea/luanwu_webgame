@@ -161,6 +161,8 @@ python -m pytest -m "not integration"
 DJANGO_TEST_USE_ENV_SERVICES=1 make test-real-services
 ```
 
+该命令会先预检 MySQL 与 Redis；若外部服务不可用，会在进入 pytest 前直接失败，避免把环境缺失伪装成业务回归失败。
+
 固定验收流程：
 
 ```bash

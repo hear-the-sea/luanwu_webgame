@@ -89,6 +89,8 @@ make test
 DJANGO_TEST_USE_ENV_SERVICES=1 make test-real-services
 ```
 
+该命令现在会先预检 MySQL 与 Redis 可用性；若外部服务未启动，会在进入 pytest 前直接失败。
+
 固定验收流程：
 
 ```bash

@@ -16,7 +16,7 @@ def test_trade_tasks_no_longer_uses_bare_delay():
 
 
 def test_arena_coop_uses_after_commit_helper_for_messages():
-    content = _read("gameplay/services/arena/coop_core.py")
+    content = _read("gameplay/services/arena/coop_settlement.py")
     assert "schedule_best_effort_after_commit(" in content
 
 

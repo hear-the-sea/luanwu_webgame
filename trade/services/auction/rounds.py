@@ -51,7 +51,7 @@ AUCTION_MESSAGE_DELIVERY_EXCEPTIONS: InfrastructureExceptions = combine_infrastr
 )
 
 
-def _safe_int(value, default: int) -> int:
+def _safe_int(value: Any, default: int) -> int:
     try:
         return int(value)
     except (TypeError, ValueError):

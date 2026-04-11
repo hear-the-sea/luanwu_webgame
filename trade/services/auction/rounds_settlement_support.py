@@ -139,10 +139,10 @@ def settle_slot_impl(
             winning_bid.save(update_fields=["status"])
 
             def _notify_winner(
-                slot=slot,
-                winner=winner,
-                settlement_price=settlement_price,
-                total_winners=actual_winner_count,
+                slot: AuctionSlot = slot,
+                winner: Manor = winner,
+                settlement_price: int = settlement_price,
+                total_winners: int = actual_winner_count,
             ) -> None:
                 send_winning_notification_func(slot, winner, settlement_price, total_winners)
 

@@ -8,9 +8,11 @@ CRITICAL_INTEGRATION_TESTS ?= \
 	tests/test_raid_scout_concurrency_integration.py \
 	tests/test_mission_concurrency_integration.py \
 	tests/test_guest_recruitment_concurrency_integration.py \
+	tests/test_arena_coop_concurrency_integration.py \
+	tests/test_trade_auction_concurrency_integration.py \
 	tests/test_work_service_concurrency.py
 
-.PHONY: install install-unpinned install-lock install-dev-lock migrate bootstrap-data dev dev-ws worker beat test test-unit test-unit-cov test-critical test-integration test-all format lint lint-strict check clean lock lock-dev test-real-services test-gates cov cov-html
+.PHONY: install install-unpinned install-lock install-dev-lock migrate bootstrap-data dev dev-ws worker beat test test-unit test-unit-cov test-critical test-integration test-all format lint lint-strict check clean lock lock-dev test-real-services test-real-services-preflight test-gates cov cov-html
 
 install:
 	@if [ -f requirements-dev.lock.txt ]; then \
@@ -79,10 +81,14 @@ test-unit-cov:
 
 test-critical:
 	@if [ "$$DJANGO_TEST_USE_ENV_SERVICES" = "1" ]; then \
+		$(MAKE) test-real-services-preflight && \
 		$(PYTHON) -m pytest $(CRITICAL_INTEGRATION_TESTS) -q; \
 	else \
 		echo "Skipping critical concurrency integration tests; set DJANGO_TEST_USE_ENV_SERVICES=1 (or run 'make test-real-services') to enable non-SQLite verification."; \
 	fi
+
+test-real-services-preflight:
+	@$(PYTHON) scripts/check_env_services_ready.py
 
 test-real-services:
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -107,6 +113,7 @@ test-gates:
 	@$(MAKE) test-real-services
 
 test-integration:
+	@$(MAKE) test-real-services-preflight
 	DJANGO_TEST_USE_ENV_SERVICES=1 $(PYTHON) -m pytest -m integration -q
 
 test-all:
