@@ -82,6 +82,7 @@ logs/
 
 # Runtime bind-mount directories (production data)
 runtime/
+dump.rdb
 
 # OS
 Thumbs.db
