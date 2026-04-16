@@ -29,6 +29,7 @@ from .equipment_inventory import (
     ensure_inventory_gears,
     list_available_equippable_gear_options,
     resolve_equippable_gear,
+    resolve_equippable_gear_locked,
 )
 from .equipment_payloads import GEAR_EXTRA_STAT_FIELDS, build_gear_template_preview, normalize_extra_stats
 from .equipment_stats import apply_set_bonuses, apply_template_stats_to_guest, slot_capacity
@@ -124,10 +125,19 @@ def _clear_replaced_items(guest: Guest, existing_items: list[GearItem], updates:
 
 
 @transaction.atomic
-def equip_guest(gear: GearItem, guest: Guest) -> GearItem:
+def equip_guest(gear: str | GearItem, guest: Guest, *, slot: str | None = None) -> GearItem:
     """为门客装备道具。"""
-    gear = GearItem.objects.select_for_update().get(pk=gear.pk)
     guest = Guest.objects.select_for_update().get(pk=guest.pk)
+    inventory_consumed = False
+    if isinstance(gear, GearItem):
+        gear = GearItem.objects.select_for_update().select_related("template").get(pk=gear.pk)
+    elif isinstance(gear, str):
+        resolved = resolve_equippable_gear_locked(guest.manor, gear, slot=slot)
+        gear = resolved.gear
+        inventory_consumed = resolved.consumed_inventory
+    else:
+        raise AssertionError(f"invalid guest equipment choice: {gear!r}")
+
     if guest.status != GuestStatus.IDLE:
         raise GuestNotIdleError(guest)
 
@@ -153,7 +163,8 @@ def equip_guest(gear: GearItem, guest: Guest) -> GearItem:
     gear.guest = guest
     gear.save(update_fields=["guest"])
 
-    consume_warehouse_item_for_gear(guest, gear)
+    if not inventory_consumed:
+        consume_warehouse_item_for_gear(guest, gear)
 
     apply_template_stats_to_guest(guest, gear.template, +1, updates)
     guest.save(update_fields=list(updates))
@@ -170,8 +181,8 @@ def equip_guest(gear: GearItem, guest: Guest) -> GearItem:
 @transaction.atomic
 def unequip_guest_item(gear: GearItem, guest: Guest, *, allow_injured: bool = False) -> GearItem:
     """卸下门客的装备道具。"""
-    gear = GearItem.objects.select_for_update().get(pk=gear.pk)
     guest = Guest.objects.select_for_update().get(pk=guest.pk)
+    gear = GearItem.objects.select_for_update().get(pk=gear.pk)
     allowed_statuses = {GuestStatus.IDLE}
     if allow_injured:
         allowed_statuses.add(GuestStatus.INJURED)

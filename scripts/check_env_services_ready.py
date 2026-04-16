@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from typing import Mapping
 from urllib.parse import urlparse
 
+DEFAULT_PROBE_TIMEOUT_SECONDS = 3
+
 
 @dataclass(frozen=True)
 class ServiceProbe:
@@ -14,6 +16,7 @@ class ServiceProbe:
     endpoint: str
     command: list[str]
     env_overrides: dict[str, str]
+    timeout_seconds: int
 
 
 def _coerce_env(env: Mapping[str, str] | None) -> Mapping[str, str]:
@@ -52,6 +55,7 @@ def build_mysql_probe(env: Mapping[str, str] | None = None) -> ServiceProbe:
         endpoint=endpoint,
         command=command,
         env_overrides=env_overrides,
+        timeout_seconds=DEFAULT_PROBE_TIMEOUT_SECONDS,
     )
 
 
@@ -63,12 +67,24 @@ def build_redis_probe(env: Mapping[str, str] | None = None) -> ServiceProbe:
     parsed = urlparse(redis_url)
     host = parsed.hostname or "127.0.0.1"
     port = parsed.port or 6379
+    database = parsed.path.lstrip("/") or "0"
+    command = ["redis-cli", "-h", host, "-p", str(port), "-n", database]
+    if parsed.scheme == "rediss":
+        command.append("--tls")
+    if parsed.username:
+        command.extend(["--user", parsed.username])
+    command.append("ping")
+
+    env_overrides: dict[str, str] = {}
+    if parsed.password:
+        env_overrides["REDISCLI_AUTH"] = parsed.password
 
     return ServiceProbe(
         name="redis",
         endpoint=f"{host}:{port}",
-        command=["redis-cli", "-u", redis_url, "ping"],
-        env_overrides={},
+        command=command,
+        env_overrides=env_overrides,
+        timeout_seconds=DEFAULT_PROBE_TIMEOUT_SECONDS,
     )
 
 
@@ -87,7 +103,10 @@ def run_probe(
             capture_output=True,
             text=True,
             check=False,
+            timeout=probe.timeout_seconds,
         )
+    except subprocess.TimeoutExpired:
+        return f"{probe.name} preflight timed out at {probe.endpoint} after {probe.timeout_seconds}s"
     except OSError as exc:
         return f"{probe.name} preflight failed at {probe.endpoint}: {exc}"
 

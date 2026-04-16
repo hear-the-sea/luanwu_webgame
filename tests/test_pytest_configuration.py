@@ -25,6 +25,12 @@ def test_makefile_critical_gate_includes_trade_auction_concurrency_file():
     assert "tests/test_trade_auction_concurrency_integration.py" in makefile_content
 
 
+def test_makefile_critical_gate_includes_guest_equipment_concurrency_file():
+    makefile_content = (Path(__file__).resolve().parents[1] / "Makefile").read_text(encoding="utf-8")
+
+    assert "tests/test_guest_equipment_concurrency_integration.py" in makefile_content
+
+
 def test_makefile_real_service_gates_run_preflight_script():
     makefile_content = (Path(__file__).resolve().parents[1] / "Makefile").read_text(encoding="utf-8")
 

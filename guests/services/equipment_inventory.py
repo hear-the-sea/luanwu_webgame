@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from django.db.models import Count, F, Min
@@ -19,6 +20,12 @@ if TYPE_CHECKING:
     from gameplay.models import Manor
 
     from ..models import Guest
+
+
+@dataclass(frozen=True)
+class ResolvedEquippableGear:
+    gear: GearItem
+    consumed_inventory: bool
 
 
 def list_free_gear_options(manor: Manor, *, slot: str) -> list[dict[str, Any]]:
@@ -166,6 +173,67 @@ def resolve_equippable_gear(manor: Manor, choice: str | GearItem, *, slot: str |
             return gear
 
     return get_or_create_free_gear_for_template_key(manor, template_key=raw_choice, slot=slot)
+
+
+def resolve_equippable_gear_locked(
+    manor: Manor,
+    choice: str,
+    *,
+    slot: str | None = None,
+) -> ResolvedEquippableGear:
+    raw_choice = choice.strip()
+    if not raw_choice:
+        raise EquipmentError("请选择可用装备")
+
+    if raw_choice.isdigit():
+        gear = (
+            manor.gears.select_for_update()
+            .select_related("template")
+            .filter(pk=int(raw_choice), guest__isnull=True)
+            .first()
+        )
+        if gear is not None:
+            if slot and gear.template.slot != slot:
+                raise EquipmentError("装备槽位不匹配")
+            return ResolvedEquippableGear(gear=gear, consumed_inventory=False)
+
+    inventory_item = (
+        InventoryItem.objects.select_for_update()
+        .select_related("template")
+        .filter(
+            manor=manor,
+            template__key=raw_choice,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            quantity__gt=0,
+        )
+        .order_by("id")
+        .first()
+    )
+    if inventory_item is None:
+        raise ItemNotFoundError("未找到可用装备")
+
+    resolved_slot = EQUIP_SLOT_MAP.get(inventory_item.template.effect_type)
+    if not resolved_slot:
+        raise ItemNotFoundError("未找到可用装备")
+    if slot and resolved_slot != slot:
+        raise EquipmentError("装备槽位不匹配")
+
+    gear_template, _ = GearTemplate.objects.update_or_create(
+        key=inventory_item.template.key,
+        defaults=build_gear_template_defaults(inventory_item.template, slot=resolved_slot),
+    )
+    gear = (
+        manor.gears.select_for_update()
+        .select_related("template")
+        .filter(template=gear_template, guest__isnull=True)
+        .first()
+    )
+    if gear is None:
+        gear = GearItem.objects.create(manor=manor, template=gear_template)
+
+    InventoryItem.objects.filter(pk=inventory_item.pk).update(quantity=F("quantity") - 1)
+    InventoryItem.objects.filter(pk=inventory_item.pk, quantity__lte=0).delete()
+    return ResolvedEquippableGear(gear=gear, consumed_inventory=True)
 
 
 def ensure_inventory_gears(manor: Manor, *, slot: str | None = None) -> None:

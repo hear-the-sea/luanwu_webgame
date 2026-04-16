@@ -65,13 +65,11 @@ def equip_view(request: HttpRequest) -> HttpResponse:
             raise EquipmentError("请选择门客与可用装备")
 
         guest = form.cleaned_data["guest"]
-        gear = equipment_service.resolve_equippable_gear(
-            manor,
+        gear = equipment_service.equip_guest(
             form.cleaned_data["gear"],
+            guest,
             slot=slot or None,
         )
-
-        equipment_service.equip_guest(gear, guest)
     except GameError as exc:
         error_msg = sanitize_error_message(exc)
         if is_ajax_request(request):

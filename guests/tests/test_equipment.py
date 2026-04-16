@@ -5,7 +5,8 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from core.exceptions import BattlePreparationError
+from core.exceptions import BattlePreparationError, ItemNotFoundError
+from gameplay.models import InventoryItem, ItemTemplate
 from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestArchetype, GuestRarity, GuestTemplate
 from guests.services.equipment import equip_guest, unequip_guest_item
 
@@ -329,3 +330,63 @@ class TestEquipmentTroopCapacity(TestCase):
         self.assertEqual(new_gear.guest_id, self.guest.id)
         self.assertEqual(self.guest.troop_capacity_bonus, 0)
         self.assertEqual(self.guest.troop_capacity, 200)
+
+
+class TestEquipmentStringChoiceResolution(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="equip_choice_user", password="testpass")
+        self.manor = self.user.manor
+        self.guest_template = GuestTemplate.objects.create(
+            key="equip_choice_guest_tpl",
+            name="装备解析门客",
+            rarity=GuestRarity.BLUE,
+            archetype=GuestArchetype.MILITARY,
+            base_hp=1000,
+        )
+        self.guest = Guest.objects.create(
+            template=self.guest_template,
+            manor=self.manor,
+            level=10,
+            force=120,
+            intellect=100,
+            defense_stat=90,
+            current_hp=5500,
+        )
+        self.item_template = ItemTemplate.objects.create(
+            key="equip_choice_weapon",
+            name="装备解析刀",
+            effect_type="equip_weapon",
+            effect_payload={"force": 15},
+            rarity=GuestRarity.GREEN,
+        )
+
+    def test_equip_guest_accepts_template_key_and_consumes_warehouse_stock(self):
+        InventoryItem.objects.create(
+            manor=self.manor,
+            template=self.item_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            quantity=1,
+        )
+
+        equipped = equip_guest(self.item_template.key, self.guest, slot=GearSlot.WEAPON)
+
+        self.guest.refresh_from_db()
+        equipped.refresh_from_db()
+        self.assertEqual(equipped.guest_id, self.guest.id)
+        self.assertEqual(equipped.template.key, self.item_template.key)
+        self.assertEqual(self.guest.force, 135)
+        self.assertFalse(
+            InventoryItem.objects.filter(
+                manor=self.manor,
+                template=self.item_template,
+                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            ).exists()
+        )
+
+    def test_equip_guest_rejects_template_key_without_stock_and_leaves_no_dirty_gear(self):
+        with self.assertRaises(ItemNotFoundError):
+            equip_guest(self.item_template.key, self.guest, slot=GearSlot.WEAPON)
+
+        self.guest.refresh_from_db()
+        self.assertFalse(self.guest.gear_items.exists())
+        self.assertFalse(GearItem.objects.filter(manor=self.manor, template__key=self.item_template.key).exists())

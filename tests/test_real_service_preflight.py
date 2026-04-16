@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import sys
 from pathlib import Path
 
@@ -26,9 +27,10 @@ def test_build_mysql_probe_uses_configured_database_endpoint():
     assert probe.endpoint == "db.internal:3307"
     assert probe.command == ["mysqladmin", "ping", "-h", "db.internal", "-P", "3307", "-u", "webgame"]
     assert probe.env_overrides == {"MYSQL_PWD": "secret"}
+    assert probe.timeout_seconds == 3
 
 
-def test_build_redis_probe_uses_cache_url_endpoint():
+def test_build_redis_probe_uses_env_auth_without_password_in_command():
     probe = preflight.build_redis_probe(
         {
             "REDIS_CACHE_URL": "redis://:secret@redis.internal:6380/2",
@@ -37,4 +39,24 @@ def test_build_redis_probe_uses_cache_url_endpoint():
 
     assert probe.name == "redis"
     assert probe.endpoint == "redis.internal:6380"
-    assert probe.command == ["redis-cli", "-u", "redis://:secret@redis.internal:6380/2", "ping"]
+    assert probe.command == ["redis-cli", "-h", "redis.internal", "-p", "6380", "-n", "2", "ping"]
+    assert probe.env_overrides == {"REDISCLI_AUTH": "secret"}
+    assert probe.timeout_seconds == 3
+    assert "secret" not in " ".join(probe.command)
+
+
+def test_run_probe_reports_timeout():
+    probe = preflight.ServiceProbe(
+        name="redis",
+        endpoint="redis.internal:6380",
+        command=["redis-cli", "ping"],
+        env_overrides={},
+        timeout_seconds=2,
+    )
+
+    def _runner(*args, **kwargs):
+        raise subprocess.TimeoutExpired(cmd=kwargs["args"] if "args" in kwargs else args[0], timeout=2)
+
+    failure = preflight.run_probe(probe, runner=_runner)
+
+    assert failure == "redis preflight timed out at redis.internal:6380 after 2s"
