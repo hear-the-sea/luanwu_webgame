@@ -493,6 +493,228 @@ items:
     price: 5000
     is_usable: false
 
+  # ---------- 铁匠铺图纸 ----------
+
+  - key: blueprint_xiaoweitoukie
+    name: 校尉头盔图纸
+    description: 军中校尉制式头盔的锻造图，持有后方可在铁匠铺合成校尉头盔，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 12000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_xiaoweikaijia
+    name: 校尉铠甲图纸
+    description: 军中校尉制式铠甲的锻造图，持有后方可在铁匠铺合成校尉铠甲，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 12000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_xiaoweichangxue
+    name: 校尉长靴图纸
+    description: 军中校尉制式长靴的锻造图，持有后方可在铁匠铺合成校尉长靴，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 12000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_xiaoweichangjian
+    name: 校尉长剑图纸
+    description: 军中校尉制式长剑的锻造图，持有后方可在铁匠铺合成校尉长剑，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 12000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_qinglongkui
+    name: 青龙盔图纸
+    description: 四象套装头盔部件的铸造图，持有后方可在铁匠铺合成青龙盔，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 12000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_qinglongjia
+    name: 青龙甲图纸
+    description: 四象套装护甲部件的铸造图，持有后方可在铁匠铺合成青龙甲，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 12000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_qinglongxue
+    name: 青龙靴图纸
+    description: 四象套装战靴部件的铸造图，持有后方可在铁匠铺合成青龙靴，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 12000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_qinglongdao
+    name: 青龙刀图纸
+    description: 四象套装武器部件的铸造图，持有后方可在铁匠铺合成青龙刀，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 12000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_huxianpao
+    name: 狐仙袍图纸
+    description: 狐仙套装法袍的织炼图，持有后方可在铁匠铺合成狐仙袍，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 28000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_huxianxie
+    name: 狐仙鞋图纸
+    description: 狐仙套装战鞋的织炼图，持有后方可在铁匠铺合成狐仙鞋，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 28000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_huxianjian
+    name: 狐仙剑图纸
+    description: 狐仙套装宝剑的铸造图，持有后方可在铁匠铺合成狐仙剑，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 28000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_qilinkui
+    name: 麒麟盔图纸
+    description: 麒麟套装头盔部件的铸造图，持有后方可在铁匠铺合成麒麟盔，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 32000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_qilinjia
+    name: 麒麟甲图纸
+    description: 麒麟套装护甲部件的铸造图，持有后方可在铁匠铺合成麒麟甲，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 32000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_qilinxue
+    name: 麒麟靴图纸
+    description: 麒麟套装战靴部件的铸造图，持有后方可在铁匠铺合成麒麟靴，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 32000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_qilindao
+    name: 麒麟刀图纸
+    description: 麒麟套装武器部件的铸造图，持有后方可在铁匠铺合成麒麟刀，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 32000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_xuanwukui
+    name: 玄武盔图纸
+    description: 玄武套装头盔部件的铸造图，持有后方可在铁匠铺合成玄武盔，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 32000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_xuanwujia
+    name: 玄武甲图纸
+    description: 玄武套装护甲部件的铸造图，持有后方可在铁匠铺合成玄武甲，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 32000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_xuanwuxue
+    name: 玄武靴图纸
+    description: 玄武套装战靴部件的铸造图，持有后方可在铁匠铺合成玄武靴，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 32000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_xuanwuchui
+    name: 玄武锤图纸
+    description: 玄武套装武器部件的铸造图，持有后方可在铁匠铺合成玄武锤，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 32000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_fenglingguan
+    name: 凤翎冠图纸
+    description: 凤翎套装头部部件的锻制图，持有后方可在铁匠铺合成凤翎冠，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 28000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_fenglingshan
+    name: 凤翎扇图纸
+    description: 凤翎套装武器部件的锻制图，持有后方可在铁匠铺合成凤翎扇，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 28000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_fenghuangyu
+    name: 凤凰羽图纸
+    description: 凤翎套装饰品部件的锻制图，持有后方可在铁匠铺合成凤凰羽，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 28000
+    storage_space: 1
+    is_usable: false
+
   - key: pubayi_guest_card
     name: 蒲巴乙门客卡
     description: 使用后有概率招募到绿色或蓝色门客「蒲巴乙」。

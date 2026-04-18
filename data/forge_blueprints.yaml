@@ -8,39 +8,281 @@
 # - costs: 每次合成消耗（支持资源与道具）
 
 recipes:
-  - blueprint_key: blueprint_qingmangjian
-    result_item_key: equip_qingmangjian
+  - blueprint_key: blueprint_xiaoweitoukie
+    result_item_key: equip_xiaoweitoukie
     required_forging: 5
     quantity_out: 1
-    description: 青芒剑图纸，偏向中阶锻造。
+    description: 校尉头盔图纸，蓝色四件套的入门部件之一。
     costs:
-      tong: 20
-      xi: 12
+      tong: 22
+      xi: 14
+      tie: 10
+      wood_essence: 1
+      copper_essence: 1
+
+  - blueprint_key: blueprint_xiaoweikaijia
+    result_item_key: equip_xiaoweikaijia
+    required_forging: 5
+    quantity_out: 1
+    description: 校尉铠甲图纸，强调军阵防护，材料消耗在同套装中最高。
+    costs:
+      tong: 30
+      xi: 18
+      tie: 14
+      wood_essence: 1
+      copper_essence: 2
+
+  - blueprint_key: blueprint_xiaoweichangxue
+    result_item_key: equip_xiaoweichangxue
+    required_forging: 5
+    quantity_out: 1
+    description: 校尉长靴图纸，材料相对轻一些，便于成套补齐。
+    costs:
+      tong: 18
+      xi: 10
+      tie: 8
+      wood_essence: 1
+      copper_essence: 1
+
+  - blueprint_key: blueprint_xiaoweichangjian
+    result_item_key: equip_xiaoweichangjian
+    required_forging: 5
+    quantity_out: 1
+    description: 校尉长剑图纸，适合中阶军阵门客使用。
+    costs:
+      tong: 26
+      xi: 16
+      tie: 12
+      wood_essence: 1
+      copper_essence: 2
+
+  - blueprint_key: blueprint_qinglongkui
+    result_item_key: equip_qinglongkui
+    required_forging: 5
+    quantity_out: 1
+    description: 四象套装头盔图纸，兼顾灵性与防护。
+    costs:
+      tong: 24
+      xi: 14
+      tie: 10
+      wood_essence: 2
+      copper_essence: 1
+
+  - blueprint_key: blueprint_qinglongjia
+    result_item_key: equip_qinglongjia
+    required_forging: 5
+    quantity_out: 1
+    description: 四象套装护甲图纸，材料扎实，兼顾智力成长。
+    costs:
+      tong: 30
+      xi: 18
+      tie: 14
+      wood_essence: 2
+      copper_essence: 2
+
+  - blueprint_key: blueprint_qinglongxue
+    result_item_key: equip_qinglongxue
+    required_forging: 5
+    quantity_out: 1
+    description: 四象套装战靴图纸，消耗略低，方便拼成四件套。
+    costs:
+      tong: 18
+      xi: 10
       tie: 8
       wood_essence: 2
       copper_essence: 1
 
-  - blueprint_key: blueprint_duanmajian
-    result_item_key: equip_duanmajian
+  - blueprint_key: blueprint_qinglongdao
+    result_item_key: equip_qinglongdao
+    required_forging: 5
+    quantity_out: 1
+    description: 四象套装武器图纸，兼顾力道与术法加成。
+    costs:
+      tong: 26
+      xi: 16
+      tie: 12
+      wood_essence: 2
+      copper_essence: 2
+
+  - blueprint_key: blueprint_huxianpao
+    result_item_key: equip_huxianpao
     required_forging: 7
     quantity_out: 1
-    description: 断马剑图纸，需求更高，材料更重。
+    description: 狐仙袍图纸，偏术法与气运路线的紫色三件套核心部件。
     costs:
-      tong: 28
+      tong: 34
+      xi: 22
+      tie: 16
+      wood_essence: 3
+      copper_essence: 2
+      xuan_tie_essence: 1
+      water_stone: 1
+
+  - blueprint_key: blueprint_huxianxie
+    result_item_key: equip_huxianxie
+    required_forging: 7
+    quantity_out: 1
+    description: 狐仙鞋图纸，灵巧部件，材料低于法袍与宝剑。
+    costs:
+      tong: 26
+      xi: 16
+      tie: 12
+      wood_essence: 2
+      copper_essence: 2
+      xuan_tie_essence: 1
+      air_stone: 1
+
+  - blueprint_key: blueprint_huxianjian
+    result_item_key: equip_huxianjian
+    required_forging: 7
+    quantity_out: 1
+    description: 狐仙剑图纸，兼顾力道与灵性，属于紫色三件套武器位。
+    costs:
+      tong: 32
+      xi: 20
+      tie: 16
+      wood_essence: 2
+      copper_essence: 2
+      xuan_tie_essence: 1
+      air_stone: 1
+      water_stone: 1
+
+  - blueprint_key: blueprint_qilinkui
+    result_item_key: equip_qilinkui
+    required_forging: 9
+    quantity_out: 1
+    description: 麒麟盔图纸，顶阶四件套头部部件。
+    costs:
+      tong: 38
+      xi: 24
+      tie: 18
+      xuan_tie_essence: 1
+      fire_stone: 1
+
+  - blueprint_key: blueprint_qilinjia
+    result_item_key: equip_qilinjia
+    required_forging: 9
+    quantity_out: 1
+    description: 麒麟甲图纸，顶阶护甲位，材料消耗在麒麟套中最高。
+    costs:
+      tong: 46
+      xi: 30
+      tie: 24
+      xuan_tie_essence: 2
+      fire_stone: 1
+      earth_stone: 1
+
+  - blueprint_key: blueprint_qilinxue
+    result_item_key: equip_qilinxue
+    required_forging: 9
+    quantity_out: 1
+    description: 麒麟靴图纸，用于补齐整套机动性。
+    costs:
+      tong: 30
       xi: 18
       tie: 14
       xuan_tie_essence: 1
       fire_stone: 1
 
-  - blueprint_key: blueprint_mingshejiebian
-    result_item_key: equip_mingshejiebian
+  - blueprint_key: blueprint_qilindao
+    result_item_key: equip_qilindao
     required_forging: 9
     quantity_out: 1
-    description: 冥蛇节鞭图纸，顶阶锻造配方之一。
+    description: 麒麟刀图纸，顶阶四件套武器位，强调杀伤与压制。
     costs:
-      tong: 36
-      xi: 24
+      tong: 42
+      xi: 26
       tie: 20
       xuan_tie_essence: 2
-      air_stone: 1
+      fire_stone: 1
+
+  - blueprint_key: blueprint_xuanwukui
+    result_item_key: equip_xuanwukui
+    required_forging: 9
+    quantity_out: 1
+    description: 玄武盔图纸，偏耐久与防御路线的顶阶部件。
+    costs:
+      tong: 40
+      xi: 26
+      tie: 20
+      xuan_tie_essence: 1
+      water_stone: 1
+
+  - blueprint_key: blueprint_xuanwujia
+    result_item_key: equip_xuanwujia
+    required_forging: 9
+    quantity_out: 1
+    description: 玄武甲图纸，顶阶四件套中最重的防具位。
+    costs:
+      tong: 48
+      xi: 32
+      tie: 26
+      xuan_tie_essence: 2
+      water_stone: 1
       earth_stone: 1
+
+  - blueprint_key: blueprint_xuanwuxue
+    result_item_key: equip_xuanwuxue
+    required_forging: 9
+    quantity_out: 1
+    description: 玄武靴图纸，强调稳固与阵地机动。
+    costs:
+      tong: 32
+      xi: 20
+      tie: 16
+      xuan_tie_essence: 1
+      earth_stone: 1
+
+  - blueprint_key: blueprint_xuanwuchui
+    result_item_key: equip_xuanwuchui
+    required_forging: 9
+    quantity_out: 1
+    description: 玄武锤图纸，兼顾力量与耐久，是玄武套装武器核心。
+    costs:
+      tong: 44
+      xi: 28
+      tie: 22
+      xuan_tie_essence: 2
+      water_stone: 1
+      earth_stone: 1
+
+  - blueprint_key: blueprint_fenglingguan
+    result_item_key: equip_fenglingguan
+    required_forging: 7
+    quantity_out: 1
+    description: 凤翎冠图纸，偏智力与气运的紫色三件套头部部件。
+    costs:
+      tong: 30
+      xi: 18
+      tie: 14
+      wood_essence: 2
+      copper_essence: 3
+      air_stone: 1
+
+  - blueprint_key: blueprint_fenglingshan
+    result_item_key: equip_fenglingshan
+    required_forging: 7
+    quantity_out: 1
+    description: 凤翎扇图纸，术法输出位，材料略高于头部部件。
+    costs:
+      tong: 34
+      xi: 20
+      tie: 16
+      wood_essence: 2
+      copper_essence: 3
+      air_stone: 1
+      water_stone: 1
+
+  - blueprint_key: blueprint_fenghuangyu
+    result_item_key: equip_fenghuangyu
+    required_forging: 7
+    quantity_out: 1
+    description: 凤凰羽图纸，凤翎套装饰品位，金属消耗低于常规防具与武器。
+    costs:
+      tong: 24
+      xi: 14
+      tie: 10
+      wood_essence: 3
+      copper_essence: 3
+      air_stone: 1
+      water_stone: 1

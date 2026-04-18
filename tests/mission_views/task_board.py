@@ -127,10 +127,59 @@ class TestTaskBoardPage:
         assert response.status_code == 200
         body = response.content.decode("utf-8")
         pattern = (
-            rf'<a[^>]+class="[^"]*no-underline[^"]*hover:no-underline[^"]*"[^>]+'
+            rf'<a[^>]+class="[^"]*tw-mission-name-link[^"]*no-underline[^"]*hover:no-underline[^"]*"[^>]+'
             rf'href="\?mission={mission.key}"[^>]*>{mission.name}</a>'
         )
         assert re.search(pattern, body)
+
+    def test_task_board_uses_responsive_mission_table_column_classes(self, manor_with_user):
+        _manor, client = manor_with_user
+        MissionTemplate.objects.create(
+            key="task_board_responsive_columns",
+            name="移动端列宽任务",
+            difficulty="junior",
+            daily_limit=3,
+        )
+
+        response = client.get(reverse("gameplay:tasks"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert 'class="tw-mission-name-col"' in body
+        assert 'class="tw-mission-meta-col text-center"' in body
+        assert 'class="tw-mission-action-col text-center"' in body
+
+    def test_task_board_all_difficulty_tabs_share_junior_table_markup(self, manor_with_user):
+        _manor, client = manor_with_user
+        missions = [
+            ("task_board_same_markup_junior", "初级统一任务", "junior"),
+            ("task_board_same_markup_intermediate", "中级统一任务", "intermediate"),
+            ("task_board_same_markup_advanced", "高级统一任务", "advanced"),
+        ]
+
+        for key, name, difficulty in missions:
+            MissionTemplate.objects.create(
+                key=key,
+                name=name,
+                difficulty=difficulty,
+                daily_limit=3,
+            )
+
+        response = client.get(reverse("gameplay:tasks"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert body.count('class="tw-mission-name-col">任务名称</th>') == 3
+        assert body.count('class="tw-mission-meta-col text-center">类型</th>') == 3
+        assert body.count('class="tw-mission-meta-col text-center">今日剩余</th>') == 3
+        assert body.count('class="tw-mission-action-col text-center">操作</th>') == 3
+        for key, name, _difficulty in missions:
+            pattern = (
+                rf'<td class="tw-mission-name-col">\s*'
+                rf'<a class="tw-mission-name-link font-bold text-text-primary no-underline hover:no-underline" '
+                rf'href="\?mission={key}">{name}</a>'
+            )
+            assert re.search(pattern, body)
 
     def test_task_board_selected_mission_hides_enemy_guest_names_below_cards(
         self,

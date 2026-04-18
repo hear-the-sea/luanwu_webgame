@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import timedelta
 
 import pytest
@@ -118,6 +119,84 @@ def test_guild_mission_page_renders_tabbed_task_list_without_troop_pool(guild_me
     assert "门客池" not in body
     assert "详情" in body
     assert "门客" in body
+
+
+@pytest.mark.django_db
+def test_guild_mission_page_list_hides_task_description(guild_member_client):
+    client, _user, _guild = guild_member_client
+    GuildMissionTemplate.objects.create(
+        key="guild_list_without_description",
+        name="只看名称任务",
+        description="这段简介不该出现在帮会任务列表中",
+        difficulty="junior",
+        task_type="guest",
+        base_duration_seconds=600,
+        ruby_reward=3,
+        recommended_guest_count=1,
+        allow_troops=False,
+        is_active=True,
+        sort_weight=1,
+    )
+
+    response = client.get(reverse("guilds:missions"))
+    body = response.content.decode("utf-8")
+
+    assert response.status_code == 200
+    assert "只看名称任务" in body
+    assert "这段简介不该出现在帮会任务列表中" not in body
+
+
+@pytest.mark.django_db
+def test_guild_mission_page_task_name_links_to_selected_detail(guild_member_client):
+    client, _user, _guild = guild_member_client
+    template = GuildMissionTemplate.objects.create(
+        key="guild_name_link_task",
+        name="名称可点击任务",
+        description="",
+        difficulty="junior",
+        task_type="guest",
+        base_duration_seconds=600,
+        ruby_reward=3,
+        recommended_guest_count=1,
+        allow_troops=False,
+        is_active=True,
+        sort_weight=1,
+    )
+
+    response = client.get(reverse("guilds:missions"))
+    body = response.content.decode("utf-8")
+
+    assert response.status_code == 200
+    assert re.search(
+        rf'class="[^"]*tw-mission-name-link[^"]*"[^>]*href="\?mission={re.escape(template.key)}"[^>]*>{re.escape(template.name)}</a>',
+        body,
+    )
+
+
+@pytest.mark.django_db
+def test_guild_mission_page_uses_responsive_mission_table_column_classes(guild_member_client):
+    client, _user, _guild = guild_member_client
+    GuildMissionTemplate.objects.create(
+        key="guild_responsive_columns_task",
+        name="移动端帮会列宽任务",
+        description="",
+        difficulty="junior",
+        task_type="guest",
+        base_duration_seconds=600,
+        ruby_reward=3,
+        recommended_guest_count=1,
+        allow_troops=False,
+        is_active=True,
+        sort_weight=1,
+    )
+
+    response = client.get(reverse("guilds:missions"))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert 'class="tw-mission-name-col"' in body
+    assert 'class="tw-mission-meta-col text-center"' in body
+    assert 'class="tw-mission-action-col text-center"' in body
 
 
 @pytest.mark.django_db

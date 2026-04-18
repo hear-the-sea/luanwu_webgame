@@ -2665,6 +2665,59 @@
   background-color: var(--bg-hover);
 }
 
+.tw-mission-name-link {
+  display: block;
+  line-height: 1.4;
+}
+
+.tw-mission-name-col {
+  min-width: 0;
+}
+
+.tw-mission-meta-col,
+  .tw-mission-action-col {
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .tw-mission-table th,
+    .tw-mission-table td {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+  }
+
+  .tw-mission-name-link {
+    font-size: 0.9375rem;
+    line-height: 1.35;
+  }
+
+  .tw-mission-meta-col {
+    width: 4.5rem;
+    font-size: 0.8125rem;
+  }
+
+  .tw-mission-action-col {
+    width: 4.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .tw-mission-table .tw-chip {
+    padding-left: 0.375rem;
+    padding-right: 0.375rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  .tw-mission-action-col .tw-btn-sm {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1.1rem;
+  }
+}
+
 /* ========== 芯片/标签 ========== */
 
 .tw-chip {

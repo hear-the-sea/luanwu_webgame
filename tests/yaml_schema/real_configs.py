@@ -9,6 +9,7 @@ from core.utils.yaml_schema import (
     validate_arena_rules,
     validate_auction_items,
     validate_building_templates,
+    validate_forge_blueprints,
     validate_forge_equipment,
     validate_guest_skills,
     validate_guest_templates,
@@ -87,6 +88,84 @@ class TestRealConfigsPassValidation:
 
         item_keys = {item["key"] for item in item_data.get("items", []) if isinstance(item, dict) and "key" in item}
         assert_valid(validate_forge_equipment(forge_data, item_keys=item_keys))
+
+    def test_forge_blueprints_valid(self, data_dir):
+        import yaml
+
+        with (data_dir / "forge_blueprints.yaml").open("r", encoding="utf-8") as handle:
+            forge_data = yaml.safe_load(handle)
+        with (data_dir / "item_templates.yaml").open("r", encoding="utf-8") as handle:
+            item_data = yaml.safe_load(handle)
+
+        item_keys = {item["key"] for item in item_data.get("items", []) if isinstance(item, dict) and "key" in item}
+        assert_valid(validate_forge_blueprints(forge_data, item_keys=item_keys))
+
+    def test_core_set_blueprints_stay_wired_across_configs(self, data_dir):
+        import yaml
+
+        tracked_blueprints = {
+            "blueprint_xiaoweitoukie",
+            "blueprint_xiaoweikaijia",
+            "blueprint_xiaoweichangxue",
+            "blueprint_xiaoweichangjian",
+            "blueprint_qinglongkui",
+            "blueprint_qinglongjia",
+            "blueprint_qinglongxue",
+            "blueprint_qinglongdao",
+            "blueprint_qilinkui",
+            "blueprint_qilinjia",
+            "blueprint_qilinxue",
+            "blueprint_qilindao",
+            "blueprint_xuanwukui",
+            "blueprint_xuanwujia",
+            "blueprint_xuanwuxue",
+            "blueprint_xuanwuchui",
+            "blueprint_fenglingguan",
+            "blueprint_fenghuangyu",
+            "blueprint_fenglingshan",
+            "blueprint_huxianpao",
+            "blueprint_huxianxie",
+            "blueprint_huxianjian",
+        }
+
+        with (data_dir / "forge_blueprints.yaml").open("r", encoding="utf-8") as handle:
+            forge_data = yaml.safe_load(handle)
+        with (data_dir / "item_templates.yaml").open("r", encoding="utf-8") as handle:
+            item_data = yaml.safe_load(handle)
+
+        item_keys = {item["key"] for item in item_data.get("items", []) if isinstance(item, dict) and "key" in item}
+        blueprint_keys = {
+            recipe["blueprint_key"]
+            for recipe in forge_data.get("recipes", [])
+            if isinstance(recipe, dict) and "blueprint_key" in recipe
+        }
+
+        assert tracked_blueprints <= item_keys
+        assert tracked_blueprints <= blueprint_keys
+
+    def test_legacy_green_weapon_blueprints_are_removed(self, data_dir):
+        import yaml
+
+        removed_blueprints = {
+            "blueprint_qingmangjian",
+            "blueprint_duanmajian",
+            "blueprint_mingshejiebian",
+        }
+
+        with (data_dir / "forge_blueprints.yaml").open("r", encoding="utf-8") as handle:
+            forge_data = yaml.safe_load(handle)
+        with (data_dir / "item_templates.yaml").open("r", encoding="utf-8") as handle:
+            item_data = yaml.safe_load(handle)
+
+        item_keys = {item["key"] for item in item_data.get("items", []) if isinstance(item, dict) and "key" in item}
+        blueprint_keys = {
+            recipe["blueprint_key"]
+            for recipe in forge_data.get("recipes", [])
+            if isinstance(recipe, dict) and "blueprint_key" in recipe
+        }
+
+        assert removed_blueprints.isdisjoint(item_keys)
+        assert removed_blueprints.isdisjoint(blueprint_keys)
 
     def test_shop_items_valid(self, data_dir):
         import yaml

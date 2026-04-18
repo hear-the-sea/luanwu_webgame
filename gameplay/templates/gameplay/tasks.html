@@ -82,10 +82,10 @@
                 <table class="tw-mission-table">
                     <thead>
                         <tr>
-                            <th>任务名称</th>
-                            <th class="w-[120px] text-center">类型</th>
-                            <th class="w-[150px] text-center">今日剩余</th>
-                            <th class="w-[120px] text-center">操作</th>
+                            <th class="tw-mission-name-col">任务名称</th>
+                            <th class="tw-mission-meta-col text-center">类型</th>
+                            <th class="tw-mission-meta-col text-center">今日剩余</th>
+                            <th class="tw-mission-action-col text-center">操作</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -93,18 +93,18 @@
                         {% if item.mission.difficulty == 'junior' %}
                         {% with mission=item.mission %}
                         <tr>
-                            <td>
-                                <a class="font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
+                            <td class="tw-mission-name-col">
+                                <a class="tw-mission-name-link font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">
                                     {% if mission.is_defense %}防守{% elif mission.guest_only %}门客{% else %}护院{% endif %}
                                 </span>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">{{ item.remaining }} / {{ item.daily_limit }}</span>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-action-col text-center">
                                 <a class="{% if item.remaining > 0 %}tw-btn-primary{% else %}tw-btn-secondary{% endif %} tw-btn-sm" href="?mission={{ mission.key }}">详情</a>
                             </td>
                         </tr>
@@ -124,10 +124,10 @@
                 <table class="tw-mission-table">
                     <thead>
                         <tr>
-                            <th>任务名称</th>
-                            <th class="w-[120px] text-center">类型</th>
-                            <th class="w-[150px] text-center">今日剩余</th>
-                            <th class="w-[120px] text-center">操作</th>
+                            <th class="tw-mission-name-col">任务名称</th>
+                            <th class="tw-mission-meta-col text-center">类型</th>
+                            <th class="tw-mission-meta-col text-center">今日剩余</th>
+                            <th class="tw-mission-action-col text-center">操作</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -135,18 +135,18 @@
                         {% if item.mission.difficulty == 'intermediate' %}
                         {% with mission=item.mission %}
                         <tr>
-                            <td>
-                                <a class="font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
+                            <td class="tw-mission-name-col">
+                                <a class="tw-mission-name-link font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">
                                     {% if mission.is_defense %}防守{% elif mission.guest_only %}门客{% else %}护院{% endif %}
                                 </span>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">{{ item.remaining }} / {{ item.daily_limit }}</span>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-action-col text-center">
                                 <a class="{% if item.remaining > 0 %}tw-btn-primary{% else %}tw-btn-secondary{% endif %} tw-btn-sm" href="?mission={{ mission.key }}">详情</a>
                             </td>
                         </tr>
@@ -166,10 +166,10 @@
                 <table class="tw-mission-table">
                     <thead>
                         <tr>
-                            <th>任务名称</th>
-                            <th class="w-[120px] text-center">类型</th>
-                            <th class="w-[150px] text-center">今日剩余</th>
-                            <th class="w-[120px] text-center">操作</th>
+                            <th class="tw-mission-name-col">任务名称</th>
+                            <th class="tw-mission-meta-col text-center">类型</th>
+                            <th class="tw-mission-meta-col text-center">今日剩余</th>
+                            <th class="tw-mission-action-col text-center">操作</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -177,18 +177,18 @@
                         {% if item.mission.difficulty == 'advanced' %}
                         {% with mission=item.mission %}
                         <tr>
-                            <td>
-                                <a class="font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
+                            <td class="tw-mission-name-col">
+                                <a class="tw-mission-name-link font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">
                                     {% if mission.is_defense %}防守{% elif mission.guest_only %}门客{% else %}护院{% endif %}
                                 </span>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">{{ item.remaining }} / {{ item.daily_limit }}</span>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-action-col text-center">
                                 <a class="{% if item.remaining > 0 %}tw-btn-primary{% else %}tw-btn-secondary{% endif %} tw-btn-sm" href="?mission={{ mission.key }}">详情</a>
                             </td>
                         </tr>

@@ -62,26 +62,25 @@
                 <table class="tw-mission-table">
                     <thead>
                         <tr>
-                            <th>任务名称</th>
-                            <th class="w-[120px] text-center">类型</th>
-                            <th class="w-[120px] text-center">红宝石</th>
-                            <th class="w-[160px] text-center">操作</th>
+                            <th class="tw-mission-name-col">任务名称</th>
+                            <th class="tw-mission-meta-col text-center">类型</th>
+                            <th class="tw-mission-meta-col text-center">红宝石</th>
+                            <th class="tw-mission-action-col text-center">操作</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for mission in mission_groups.junior %}
                         <tr>
-                            <td>
-                                <div class="font-bold text-text-primary">{{ mission.name }}</div>
-                                <div class="tw-muted text-sm mt-2">{{ mission.description|default:"暂无任务描述" }}</div>
+                            <td class="tw-mission-name-col">
+                                <a class="tw-mission-name-link font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">{{ mission.get_task_type_display }}</span>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">{{ mission.ruby_reward }}</span>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-action-col text-center">
                                 <a class="tw-btn-primary tw-btn-sm" href="?mission={{ mission.key }}">详情</a>
                             </td>
                         </tr>
@@ -98,26 +97,25 @@
                 <table class="tw-mission-table">
                     <thead>
                         <tr>
-                            <th>任务名称</th>
-                            <th class="w-[120px] text-center">类型</th>
-                            <th class="w-[120px] text-center">红宝石</th>
-                            <th class="w-[160px] text-center">操作</th>
+                            <th class="tw-mission-name-col">任务名称</th>
+                            <th class="tw-mission-meta-col text-center">类型</th>
+                            <th class="tw-mission-meta-col text-center">红宝石</th>
+                            <th class="tw-mission-action-col text-center">操作</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for mission in mission_groups.intermediate %}
                         <tr>
-                            <td>
-                                <div class="font-bold text-text-primary">{{ mission.name }}</div>
-                                <div class="tw-muted text-sm mt-2">{{ mission.description|default:"暂无任务描述" }}</div>
+                            <td class="tw-mission-name-col">
+                                <a class="tw-mission-name-link font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">{{ mission.get_task_type_display }}</span>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">{{ mission.ruby_reward }}</span>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-action-col text-center">
                                 <a class="tw-btn-primary tw-btn-sm" href="?mission={{ mission.key }}">详情</a>
                             </td>
                         </tr>
@@ -134,26 +132,25 @@
                 <table class="tw-mission-table">
                     <thead>
                         <tr>
-                            <th>任务名称</th>
-                            <th class="w-[120px] text-center">类型</th>
-                            <th class="w-[120px] text-center">红宝石</th>
-                            <th class="w-[160px] text-center">操作</th>
+                            <th class="tw-mission-name-col">任务名称</th>
+                            <th class="tw-mission-meta-col text-center">类型</th>
+                            <th class="tw-mission-meta-col text-center">红宝石</th>
+                            <th class="tw-mission-action-col text-center">操作</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for mission in mission_groups.advanced %}
                         <tr>
-                            <td>
-                                <div class="font-bold text-text-primary">{{ mission.name }}</div>
-                                <div class="tw-muted text-sm mt-2">{{ mission.description|default:"暂无任务描述" }}</div>
+                            <td class="tw-mission-name-col">
+                                <a class="tw-mission-name-link font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">{{ mission.get_task_type_display }}</span>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">{{ mission.ruby_reward }}</span>
                             </td>
-                            <td class="text-center">
+                            <td class="tw-mission-action-col text-center">
                                 <a class="tw-btn-primary tw-btn-sm" href="?mission={{ mission.key }}">详情</a>
                             </td>
                         </tr>

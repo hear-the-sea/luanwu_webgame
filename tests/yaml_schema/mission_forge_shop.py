@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from core.utils.yaml_schema import validate_forge_equipment, validate_mission_templates, validate_shop_items
+from core.utils.yaml_schema import (
+    validate_forge_blueprints,
+    validate_forge_equipment,
+    validate_mission_templates,
+    validate_shop_items,
+)
 from tests.yaml_schema.support import assert_has_error, assert_valid
 
 
@@ -113,3 +118,19 @@ class TestShopItemsValidation:
         data = {"items": [{"item_key": "grain", "daily_refresh": "yes"}]}
         result = validate_shop_items(data)
         assert_has_error(result, substring="expected bool")
+
+
+class TestForgeBlueprintValidation:
+    def test_blueprint_key_referential_integrity(self):
+        data = {
+            "recipes": [
+                {
+                    "blueprint_key": "missing_blueprint",
+                    "result_item_key": "equip_qingmangjian",
+                    "required_forging": 5,
+                    "quantity_out": 1,
+                }
+            ]
+        }
+        result = validate_forge_blueprints(data, item_keys={"equip_qingmangjian"})
+        assert_has_error(result, substring="blueprint_key 'missing_blueprint' not found in item_templates.yaml")

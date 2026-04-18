@@ -162,6 +162,11 @@ def validate_forge_blueprints(
             path=path,
         )
 
+        blueprint_key = recipe.get("blueprint_key")
+        if blueprint_key is not None and item_keys is not None:
+            if blueprint_key not in item_keys:
+                result.add(file, path, f"blueprint_key '{blueprint_key}' not found in item_templates.yaml")
+
         result_item_key = recipe.get("result_item_key")
         if result_item_key is not None and item_keys is not None:
             if result_item_key not in item_keys:
