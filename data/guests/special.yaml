@@ -6,6 +6,7 @@ heroes:
       name: 贱王之王
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 41
         intellect: 12
@@ -16,6 +17,7 @@ heroes:
       name: 顶级贱精
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 41
         intellect: 12
@@ -26,6 +28,7 @@ heroes:
       name: 观众甲
       archetype: civil
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 29
         intellect: 32
@@ -36,6 +39,7 @@ heroes:
       name: 猛虎
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 132
         intellect: 46
@@ -47,6 +51,7 @@ heroes:
       name: 武师教头
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 126
         intellect: 72
@@ -58,6 +63,7 @@ heroes:
       name: 机关熊
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 138
         intellect: 38
@@ -69,6 +75,7 @@ heroes:
       name: 孤魂野鬼
       archetype: civil
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 118
         intellect: 126
@@ -81,6 +88,7 @@ heroes:
       name: 钻山豹
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 166
         intellect: 90
@@ -92,6 +100,7 @@ heroes:
       name: 座山雕
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 166
         intellect: 90
@@ -103,6 +112,7 @@ heroes:
       name: 萧咪咪
       archetype: civil
       recruitable: false
+      default_gender: female
       custom_stats:
         force: 36
         intellect: 40
@@ -113,6 +123,7 @@ heroes:
       name: 轩辕三光
       archetype: civil
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 36
         intellect: 40
@@ -123,6 +134,7 @@ heroes:
       name: 铁战
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 51
         intellect: 15
@@ -133,6 +145,7 @@ heroes:
       name: 罗氏兄弟
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 51
         intellect: 15
@@ -143,6 +156,7 @@ heroes:
       name: 孙二娘
       archetype: military
       recruitable: false
+      default_gender: female
       custom_stats:
         force: 172
         intellect: 84
@@ -153,6 +167,7 @@ heroes:
     - key: task_shizipo_zhang_qing
       name: 张青
       archetype: military
+      default_gender: male
       recruitable: false
       custom_stats:
         force: 168
@@ -165,6 +180,7 @@ heroes:
       name: 改装机械猫
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 158
         intellect: 78
@@ -176,6 +192,7 @@ heroes:
       name: 黑衣人
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 150
         intellect: 96
@@ -187,6 +204,7 @@ heroes:
       name: 土匪
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 170
         intellect: 86
@@ -198,6 +216,7 @@ heroes:
       name: 乌鳞夜哨
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_wulinzhai_night_signal
       custom_stats:
@@ -211,6 +230,7 @@ heroes:
       name: 乌鳞伏刀手
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_wulinzhai_shadow_raid
       custom_stats:
@@ -224,6 +244,7 @@ heroes:
       name: 乌鳞火把弓手
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_wulinzhai_torch_volley
       custom_stats:
@@ -237,6 +258,7 @@ heroes:
       name: 乌鳞探路哨
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_wulinzhai_shadow_raid
       custom_stats:
@@ -250,6 +272,7 @@ heroes:
       name: 乌鳞寨喽啰
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 168
         intellect: 74
@@ -262,6 +285,7 @@ heroes:
       name: 守卫
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 196
         intellect: 110
@@ -273,6 +297,7 @@ heroes:
       name: 小狐仙
       archetype: civil
       recruitable: false
+      default_gender: female
       custom_stats:
         force: 184
         intellect: 168
@@ -284,6 +309,7 @@ heroes:
       name: 金甲神兵
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 208
         intellect: 118
@@ -295,6 +321,7 @@ heroes:
       name: 乌鳞寨寨主
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_wulinzhai_shadow_raid
         - guild_wulinzhai_torch_volley
@@ -309,6 +336,7 @@ heroes:
       name: 乌鳞寨军师
       archetype: civil
       recruitable: false
+      default_gender: male
       skills:
         - guild_wulinzhai_night_signal
       custom_stats:
@@ -322,6 +350,7 @@ heroes:
       name: 血旗总镖头
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_bloodflag_convoy_command
         - guild_bloodflag_pressing_blade
@@ -336,6 +365,7 @@ heroes:
       name: 血旗副镖头
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_bloodflag_pressing_blade
       custom_stats:
@@ -349,6 +379,7 @@ heroes:
       name: 血旗断后老手
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_bloodflag_rearguard_counter
       custom_stats:
@@ -362,6 +393,7 @@ heroes:
       name: 血旗刀镖手
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_bloodflag_pressing_blade
       custom_stats:
@@ -375,6 +407,7 @@ heroes:
       name: 血旗弓镖手
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_bloodflag_arrow_screen
       custom_stats:
@@ -388,6 +421,7 @@ heroes:
       name: 血旗趟子手
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_bloodflag_rearguard_counter
       custom_stats:
@@ -401,6 +435,7 @@ heroes:
       name: 血旗押阵师
       archetype: civil
       recruitable: false
+      default_gender: male
       skills:
         - guild_bloodflag_convoy_command
       custom_stats:
@@ -414,6 +449,7 @@ heroes:
       name: 黑风关监军
       archetype: civil
       recruitable: false
+      default_gender: male
       skills:
         - guild_blackwind_overseer_order
       custom_stats:
@@ -427,6 +463,7 @@ heroes:
       name: 黑风铁卫
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_blackwind_countercharge
       custom_stats:
@@ -440,6 +477,7 @@ heroes:
       name: 黑风关弓队都头
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_blackwind_arrow_barrage
       custom_stats:
@@ -453,6 +491,7 @@ heroes:
       name: 黑风破阵刀手
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_blackwind_gate_breaker
       custom_stats:
@@ -466,6 +505,7 @@ heroes:
       name: 黑风巡关校尉
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_blackwind_overseer_order
       custom_stats:
@@ -479,6 +519,7 @@ heroes:
       name: 黑风关守卒
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_blackwind_countercharge
       custom_stats:
@@ -492,6 +533,7 @@ heroes:
       name: 黑风枪卒
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_blackwind_countercharge
       custom_stats:
@@ -505,6 +547,7 @@ heroes:
       name: 张无忌
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - gl_top_nine_yang_guard
         - gl_top_qiankun_shift
@@ -523,6 +566,7 @@ heroes:
       name: 杨逍
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - gl_top_guard_morale
         - gl_top_mingjiao_command
@@ -538,6 +582,7 @@ heroes:
       name: 韦一笑
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - gl_top_guard_morale
         - gl_top_cold_blood_swoop
@@ -552,6 +597,7 @@ heroes:
       name: 五行旗精锐
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - gl_top_guard_morale
         - gl_top_five_flags_barrier
@@ -567,6 +613,7 @@ heroes:
       name: 五行旗精锐
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - gl_top_guard_morale
         - gl_top_five_flags_barrier
@@ -583,6 +630,7 @@ heroes:
       name: 蛮族先锋统领
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 228
         intellect: 104
@@ -595,6 +643,7 @@ heroes:
       name: 黑风关守将
       archetype: military
       recruitable: false
+      default_gender: male
       skills:
         - guild_blackwind_battle_standard
         - guild_blackwind_gate_breaker
@@ -609,6 +658,7 @@ heroes:
       name: 单于
       archetype: military
       recruitable: false
+      default_gender: male
       custom_stats:
         force: 246
         intellect: 116

@@ -1,13 +1,13 @@
 <div class="tw-modal-overlay" id="medicine-modal" style="display: none;">
-    <div class="tw-modal-content">
-        <div class="tw-modal-header">
+    <div class="tw-modal-content guest-roster-modal guest-roster-modal--item">
+        <div class="tw-modal-header guest-roster-modal__header">
             <h3>选择药品</h3>
             <button type="button" class="tw-modal-close close-medicine-modal">&times;</button>
         </div>
-        <div class="tw-modal-body">
-            <p class="tw-muted" id="medicine-modal-target"></p>
+        <div class="tw-modal-body guest-roster-modal__body">
+            <p class="tw-muted guest-roster-modal__target" id="medicine-modal-target"></p>
             {% if medicine_items %}
-            <form method="post" id="medicine-form" action="">
+            <form method="post" id="medicine-form" action="" class="guest-roster-modal__form">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{% url 'guests:roster' %}">
                 <div class="tw-form-field">
@@ -18,12 +18,12 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="flex justify-end gap-2 mt-4">
+                <div class="guest-roster-modal__actions">
                     <button type="submit" class="tw-btn-primary">使用</button>
                 </div>
             </form>
             {% else %}
-            <p class="tw-muted">仓库暂无药品。</p>
+            <p class="tw-muted guest-roster-modal__empty">仓库暂无药品。</p>
             {% endif %}
         </div>
     </div>

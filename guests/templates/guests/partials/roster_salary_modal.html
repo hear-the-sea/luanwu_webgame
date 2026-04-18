@@ -1,19 +1,19 @@
 <div class="tw-modal-overlay" id="salary-modal" style="display: none;">
-    <div class="tw-modal-content" style="max-width: 360px;">
-        <div class="tw-modal-header">
+    <div class="tw-modal-content guest-roster-modal guest-roster-modal--salary">
+        <div class="tw-modal-header guest-roster-modal__header">
             <h3>支付工资</h3>
             <button type="button" class="tw-modal-close close-salary-modal">&times;</button>
         </div>
-        <div class="tw-modal-body">
-            <p style="margin: 0 0 1rem;">确定要支付 <strong id="salary-guest-name"></strong> 的工资吗？</p>
-            <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; text-align: center;">
-                <div style="color: var(--text-muted); font-size: 0.9rem;">需支付</div>
-                <div style="font-size: 1.5rem; font-weight: bold; color: #FFA500;" id="salary-amount"></div>
+        <div class="tw-modal-body guest-roster-modal__body">
+            <p class="guest-roster-modal__message">确定要支付 <strong id="salary-guest-name"></strong> 的工资吗？</p>
+            <div class="guest-roster-modal__salary-card">
+                <div class="guest-roster-modal__salary-label">需支付</div>
+                <div class="guest-roster-modal__salary-amount" id="salary-amount"></div>
             </div>
         </div>
-        <div class="tw-modal-footer">
+        <div class="tw-modal-footer guest-roster-modal__footer">
             <button type="button" class="tw-btn-secondary close-salary-modal">取消</button>
-            <form method="post" id="salary-form" action="" style="margin: 0;">
+            <form method="post" id="salary-form" action="" class="guest-roster-modal__footer-form">
                 {% csrf_token %}
                 <button type="submit" class="tw-btn-primary" id="salary-confirm-btn">确认支付</button>
             </form>

@@ -216,6 +216,51 @@ def test_roster_view_loads_external_page_script_without_inline_roster_logic(game
 
 
 @pytest.mark.django_db
+def test_roster_view_renders_unified_modal_layout_classes(game_data, django_user_model):
+    user = django_user_model.objects.create_user(username="roster_modal_layout", password="pass123")
+    manor = ensure_manor(user)
+    _create_guest(manor, prefix="roster_modal_layout")
+    exp_template = ItemTemplate.objects.create(
+        key="roster_modal_layout_exp",
+        name="名册经验书",
+        effect_type=ItemTemplate.EffectType.EXPERIENCE_ITEM,
+        effect_payload={"time": 3600},
+    )
+    medicine_template = ItemTemplate.objects.create(
+        key="roster_modal_layout_medicine",
+        name="名册金创药",
+        effect_type=ItemTemplate.EffectType.MEDICINE,
+        effect_payload={"hp": 100},
+    )
+    InventoryItem.objects.create(
+        manor=manor,
+        template=exp_template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    InventoryItem.objects.create(
+        manor=manor,
+        template=medicine_template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    client = Client()
+    client.force_login(user)
+
+    response = client.get(reverse("guests:roster"))
+
+    assert response.status_code == 200
+    content = response.content.decode("utf-8")
+    assert content.count("guest-roster-modal") >= 3
+    assert "guest-roster-modal__body" in content
+    assert "guest-roster-modal__actions" in content
+    assert "guest-roster-modal__salary-card" in content
+    assert 'style="max-width: 360px;"' not in content
+    assert 'style="margin: 0 0 1rem;"' not in content
+
+
+@pytest.mark.django_db
 def test_roster_view_does_not_finalize_due_mission_on_get(game_data, django_user_model, settings):
     user = django_user_model.objects.create_user(username="roster_due_mission", password="pass123")
     manor = ensure_manor(user)
