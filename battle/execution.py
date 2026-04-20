@@ -24,6 +24,7 @@ from .combatants_pkg import (
     normalize_troop_loadout,
     serialize_guest_for_report,
 )
+from .combatants_pkg.troop_device_bonuses import build_troop_device_bonuses
 from .constants import DEFAULT_BATTLE_TYPE, MAX_SQUAD, get_battle_config
 from .defender_setup import build_defender_guest_and_loadout as _build_defender_guest_and_loadout_from_sources
 from .models import BattleReport
@@ -193,6 +194,7 @@ def _prepare_battle_environment(active_guests: List[Guest], options: BattleOptio
 
 def _build_attacker_units(
     guests: List[Guest],
+    active_guests: List[Guest],
     normalized_loadout: Dict[str, int],
     options: BattleOptions,
     manor,
@@ -206,11 +208,13 @@ def _build_attacker_units(
     )
 
     attacker_manor = manor if options.attacker_manor is None else options.attacker_manor
+    attacker_device_bonuses = build_troop_device_bonuses(active_guests)
     attacker_troops = build_troop_combatants(
         normalized_loadout,
         side="attacker",
         manor=attacker_manor,
         tech_levels=options.attacker_tech_levels,
+        device_bonuses=attacker_device_bonuses,
     )
     return attacker_guests_comb, attacker_troops
 
@@ -235,8 +239,13 @@ def _build_defender_units(
         defender_guest_bonuses,
         defender_guest_skills,
     )
+    active_defender_guests = (options.defender_guests or [])[: options.defender_limit]
+    defender_device_bonuses = build_troop_device_bonuses(active_defender_guests)
     defender_troops = build_troop_combatants(
-        defender_loadout, side="defender", tech_levels=defender_tech_levels or None
+        defender_loadout,
+        side="defender",
+        tech_levels=defender_tech_levels or None,
+        device_bonuses=defender_device_bonuses,
     )
     return defender_guests_comb, defender_troops, defender_loadout
 
@@ -356,7 +365,13 @@ def execute_battle(
     config = get_battle_config(options.battle_type)
     normalized_loadout = _prepare_battle_environment(active_guests, options)
     final_seed, rng = _resolve_battle_rng(options.seed, options.rng_source)
-    attacker_guests_comb, attacker_troops = _build_attacker_units(guests, normalized_loadout, options, manor)
+    attacker_guests_comb, attacker_troops = _build_attacker_units(
+        guests,
+        active_guests,
+        normalized_loadout,
+        options,
+        manor,
+    )
     now = timezone.now()
     defender_guests_comb, defender_troops, defender_loadout = _build_defender_units(options, rng, now)
     attacker_units = attacker_guests_comb + attacker_troops

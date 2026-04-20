@@ -215,6 +215,126 @@ def test_execute_raid_battle_uses_attacker_snapshot(monkeypatch, django_user_mod
 
 
 @pytest.mark.django_db
+def test_execute_raid_battle_uses_all_idle_defenders_even_when_max_squad_is_lower(monkeypatch, django_user_model):
+    attacker, defender = build_attacker_defender(
+        django_user_model,
+        attacker_username="raid_defender_all_idle_a",
+        defender_username="raid_defender_all_idle_d",
+    )
+    monkeypatch.setattr(defender, "get_building_level", lambda _key: 0)
+
+    template = GuestTemplate.objects.create(
+        key="raid_defender_all_idle_tpl",
+        name="踢馆守方门客",
+        archetype="military",
+        rarity="green",
+        base_attack=120,
+        base_intellect=90,
+        base_defense=100,
+        base_agility=90,
+        base_luck=50,
+        base_hp=1500,
+    )
+    attacker_guest = Guest.objects.create(
+        manor=attacker,
+        template=template,
+        status=GuestStatus.DEPLOYED,
+        level=20,
+        force=300,
+        intellect=120,
+        defense_stat=130,
+        agility=110,
+        current_hp=900,
+    )
+    defender_guest_1 = Guest.objects.create(
+        manor=defender,
+        template=template,
+        status=GuestStatus.IDLE,
+        level=20,
+        force=180,
+        intellect=90,
+        defense_stat=100,
+        agility=95,
+        current_hp=1200,
+    )
+    defender_guest_2 = Guest.objects.create(
+        manor=defender,
+        template=template,
+        status=GuestStatus.IDLE,
+        level=18,
+        force=170,
+        intellect=88,
+        defense_stat=98,
+        agility=92,
+        current_hp=1180,
+    )
+    defender_guest_3 = Guest.objects.create(
+        manor=defender,
+        template=template,
+        status=GuestStatus.IDLE,
+        level=16,
+        force=160,
+        intellect=85,
+        defense_stat=96,
+        agility=90,
+        current_hp=1160,
+    )
+    defender_guest_4 = Guest.objects.create(
+        manor=defender,
+        template=template,
+        status=GuestStatus.IDLE,
+        level=14,
+        force=150,
+        intellect=84,
+        defense_stat=94,
+        agility=88,
+        current_hp=1140,
+    )
+    excluded_guest = Guest.objects.create(
+        manor=defender,
+        template=template,
+        status=GuestStatus.WORKING,
+        level=30,
+        force=250,
+        intellect=100,
+        defense_stat=120,
+        agility=100,
+        current_hp=1300,
+    )
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.MARCHING,
+        troop_loadout={},
+        travel_time=60,
+        battle_at=timezone.now(),
+        return_at=timezone.now(),
+    )
+    run.guests.add(attacker_guest)
+
+    captured: dict[str, object] = {}
+
+    def _fake_simulate_report(**kwargs):
+        captured["defender_guest_ids"] = [guest.id for guest in kwargs["defender_guests"]]
+        captured["defender_max_squad"] = kwargs["defender_max_squad"]
+        return SimpleNamespace(winner="attacker")
+
+    monkeypatch.setattr("battle.services.simulate_report", _fake_simulate_report)
+    monkeypatch.setattr(combat_battle, "_apply_guest_damage_from_report", lambda *_args, **_kwargs: None)
+
+    combat_battle._execute_raid_battle(run)
+
+    assert captured["defender_guest_ids"] == [
+        defender_guest_1.id,
+        defender_guest_2.id,
+        defender_guest_3.id,
+        defender_guest_4.id,
+    ]
+    assert captured["defender_max_squad"] == 4
+    assert excluded_guest.id not in captured["defender_guest_ids"]
+
+
+@pytest.mark.django_db
 def test_process_raid_battle_cleans_up_run_when_manor_lock_fails(monkeypatch, django_user_model):
     attacker, defender = build_attacker_defender(
         django_user_model,

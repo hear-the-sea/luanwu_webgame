@@ -37,6 +37,22 @@ def test_build_gear_template_preview_rejects_unknown_extra_stats_key():
         build_gear_template_preview(_build_item_template_stub(effect_payload={"mystery": 1}))
 
 
+def test_build_gear_template_preview_ignores_troop_stat_bonus_metadata_for_device_items():
+    preview = build_gear_template_preview(
+        _build_item_template_stub(
+            effect_type="equip_device",
+            effect_payload={
+                "force": 12,
+                "troop_stat_bonus": {"gong": {"hp_flat": 20, "hp_pct": 0.5}},
+            },
+        )
+    )
+
+    assert preview is not None
+    assert preview.slot == GearSlot.DEVICE
+    assert preview.extra_stats == {"force": 12}
+
+
 def test_build_gear_template_preview_rejects_invalid_set_bonus_entry():
     with pytest.raises(AssertionError, match="invalid guest equipment set_bonus\\[force\\]"):
         build_gear_template_preview(

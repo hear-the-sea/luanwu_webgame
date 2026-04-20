@@ -143,6 +143,41 @@ class TestRealConfigsPassValidation:
         assert tracked_blueprints <= item_keys
         assert tracked_blueprints <= blueprint_keys
 
+    def test_device_blueprints_stay_wired_across_configs(self, data_dir):
+        import yaml
+
+        tracked_blueprints = {
+            "blueprint_xiaoxingjiguanshu",
+            "blueprint_tongchanjiguan",
+            "blueprint_jixiemao",
+            "blueprint_jiguanchuniao",
+            "blueprint_kuileimuren",
+            "blueprint_qingji",
+            "blueprint_taotieding",
+            "blueprint_jiguanxiong",
+            "blueprint_muniuliuma",
+            "blueprint_kuileiren",
+            "blueprint_xuanwujigui",
+            "blueprint_feiyuan",
+            "blueprint_chixiaojifeng",
+            "blueprint_mojiajiguanren",
+        }
+
+        with (data_dir / "forge_blueprints.yaml").open("r", encoding="utf-8") as handle:
+            forge_data = yaml.safe_load(handle)
+        with (data_dir / "item_templates.yaml").open("r", encoding="utf-8") as handle:
+            item_data = yaml.safe_load(handle)
+
+        item_keys = {item["key"] for item in item_data.get("items", []) if isinstance(item, dict) and "key" in item}
+        blueprint_keys = {
+            recipe["blueprint_key"]
+            for recipe in forge_data.get("recipes", [])
+            if isinstance(recipe, dict) and "blueprint_key" in recipe
+        }
+
+        assert tracked_blueprints <= item_keys
+        assert tracked_blueprints <= blueprint_keys
+
     def test_legacy_green_weapon_blueprints_are_removed(self, data_dir):
         import yaml
 

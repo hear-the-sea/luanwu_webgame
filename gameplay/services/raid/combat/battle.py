@@ -372,7 +372,7 @@ def _execute_raid_battle(run: RaidRun) -> Any:
         attacker_guests=attacker_combat_guests,
         defender_setup=defender_setup,
         defender_guests=defender_guests,  # type: ignore[arg-type]
-        defender_max_squad=getattr(defender, "max_squad_size", None),
+        defender_max_squad=len(defender_guests) if defender_guests else None,
         opponent_name=defender.display_name,
         travel_seconds=0,
         send_message=False,

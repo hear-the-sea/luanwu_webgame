@@ -10,6 +10,7 @@ from battle.troops import default_troop_loadout, load_troop_templates
 
 from .core import Combatant
 from .tech_effects import build_tech_effects
+from .troop_device_bonuses import TroopStatBonuses, apply_troop_device_bonus
 
 
 def normalize_troop_loadout(
@@ -36,6 +37,7 @@ def build_troop_combatants(
     side: str,
     manor=None,
     tech_levels: Optional[Dict[str, int]] = None,
+    device_bonuses: TroopStatBonuses | None = None,
 ) -> List[Combatant]:
     """
     Build troop combatant list.
@@ -71,16 +73,40 @@ def build_troop_combatants(
         if effective_levels is not None:
             bonuses = get_troop_stat_bonuses_from_levels(effective_levels, key)
 
+        base_attack = apply_troop_device_bonus(
+            base_value=definition.get("base_attack", 30),
+            troop_class=troop_class,
+            stat="attack",
+            device_bonuses=device_bonuses,
+        )
+        base_defense = apply_troop_device_bonus(
+            base_value=definition.get("base_defense", 20),
+            troop_class=troop_class,
+            stat="defense",
+            device_bonuses=device_bonuses,
+        )
+        base_hp = apply_troop_device_bonus(
+            base_value=definition.get("base_hp", 80),
+            troop_class=troop_class,
+            stat="hp",
+            device_bonuses=device_bonuses,
+        )
+        base_agility = apply_troop_device_bonus(
+            base_value=definition.get("speed_bonus", 0),
+            troop_class=troop_class,
+            stat="agility",
+            device_bonuses=device_bonuses,
+        )
+
         attack_mult = 1.0 + bonuses.get("attack", 0)
         defense_mult = 1.0 + bonuses.get("defense", 0)
         hp_mult = 1.0 + bonuses.get("hp", 0)
         agility_mult = 1.0 + bonuses.get("agility", 0)
 
-        unit_attack = int(definition.get("base_attack", 30) * attack_mult)
-        unit_defense = int(definition.get("base_defense", 20) * defense_mult)
-        unit_hp = int(definition.get("base_hp", 80) * hp_mult)
-        base_agility = definition.get("speed_bonus", 0)
-        agility = int(base_agility * agility_mult) if base_agility > 0 else base_agility
+        unit_attack = int(base_attack * attack_mult)
+        unit_defense = int(base_defense * defense_mult)
+        unit_hp = int(base_hp * hp_mult)
+        agility = int(base_agility * agility_mult) if base_agility > 0 else int(base_agility)
 
         attack = unit_attack * count
         defense = unit_defense * count

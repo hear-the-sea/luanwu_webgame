@@ -19,7 +19,7 @@ GEAR_EXTRA_STAT_FIELDS = {
     "troop_capacity": "troop_capacity_bonus",
 }
 
-GEAR_TEMPLATE_META_FIELDS = {"set_key", "set_description", "set_bonus"}
+GEAR_TEMPLATE_META_FIELDS = {"set_key", "set_description", "set_bonus", "troop_stat_bonus"}
 
 
 def require_mapping(raw: Any, *, field_name: str) -> dict[str, Any]:

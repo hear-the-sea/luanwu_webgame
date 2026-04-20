@@ -715,6 +715,146 @@ items:
     storage_space: 1
     is_usable: false
 
+  - key: blueprint_xiaoxingjiguanshu
+    name: 小型机关鼠图纸
+    description: 小型机关鼠的构造图，持有后方可在铁匠铺合成小型机关鼠，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: green
+    tradeable: true
+    price: 18000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_tongchanjiguan
+    name: 铜蝉机关图纸
+    description: 铜蝉机关的构造图，持有后方可在铁匠铺合成铜蝉机关，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: green
+    tradeable: true
+    price: 18000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_jixiemao
+    name: 机械猫图纸
+    description: 机械猫的锻造图，持有后方可在铁匠铺合成机械猫，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 26000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_jiguanchuniao
+    name: 机关雏鸟图纸
+    description: 机关雏鸟的锻造图，持有后方可在铁匠铺合成机关雏鸟，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 26000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_kuileimuren
+    name: 傀儡木人图纸
+    description: 傀儡木人的锻造图，持有后方可在铁匠铺合成傀儡木人，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 26000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_qingji
+    name: 庆忌图纸
+    description: 庆忌的锻造图，持有后方可在铁匠铺合成庆忌，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 26000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_taotieding
+    name: 饕餮鼎图纸
+    description: 饕餮鼎的铸造图，持有后方可在铁匠铺合成饕餮鼎，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 42000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_jiguanxiong
+    name: 机关熊图纸
+    description: 机关熊的铸造图，持有后方可在铁匠铺合成机关熊，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 42000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_muniuliuma
+    name: 木牛流马图纸
+    description: 木牛流马的铸造图，持有后方可在铁匠铺合成木牛流马，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 42000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_kuileiren
+    name: 傀儡人图纸
+    description: 傀儡人的铸造图，持有后方可在铁匠铺合成傀儡人，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 42000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_xuanwujigui
+    name: 玄武机龟图纸
+    description: 玄武机龟的铸造图，持有后方可在铁匠铺合成玄武机龟，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 42000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_feiyuan
+    name: 飞鸢图纸
+    description: 飞鸢的锻造图，持有后方可在铁匠铺合成飞鸢，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: orange
+    tradeable: true
+    price: 88000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_chixiaojifeng
+    name: 赤霄机凤图纸
+    description: 赤霄机凤的锻造图，持有后方可在铁匠铺合成赤霄机凤，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: orange
+    tradeable: true
+    price: 88000
+    storage_space: 1
+    is_usable: false
+
+  - key: blueprint_mojiajiguanren
+    name: 墨家机关人图纸
+    description: 墨家机关人的锻造图，持有后方可在铁匠铺合成墨家机关人，且每次合成都会消耗1张。
+    effect_type: tool
+    rarity: orange
+    tradeable: true
+    price: 88000
+    storage_space: 1
+    is_usable: false
+
   - key: pubayi_guest_card
     name: 蒲巴乙门客卡
     description: 使用后有概率招募到绿色或蓝色门客「蒲巴乙」。

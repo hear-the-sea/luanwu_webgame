@@ -132,6 +132,44 @@ def test_get_blueprint_synthesis_options_reads_latest_runtime_blueprint_config(d
 
 
 @pytest.mark.django_db
+def test_get_blueprint_synthesis_options_reads_device_blueprint_from_runtime_config(django_user_model):
+    user = django_user_model.objects.create_user(username="forge_bp_device_runtime", password="pass123")
+    manor = ensure_manor(user)
+    PlayerTechnology.objects.create(manor=manor, tech_key="forging", level=12)
+
+    blueprint = _create_item_template("blueprint_xiaoxingjiguanshu", "小型机关鼠图纸", "tool", "green")
+    _create_item_template("equip_xiaoxingjiguanshu", "小型机关鼠", "equip_device", "green")
+    tong = _create_item_template("tong", "铜", "resource", "black")
+    xi = _create_item_template("xi", "锡", "resource", "black")
+    tie = _create_item_template("tie", "铁", "resource", "black")
+    wood_essence = _create_item_template("wood_essence", "木质精华", "resource", "black")
+    copper_essence = _create_item_template("copper_essence", "铜质精华", "resource", "black")
+    air_stone = _create_item_template("air_stone", "空气之石", "resource", "black")
+
+    InventoryItem.objects.create(manor=manor, template=blueprint, quantity=2)
+    InventoryItem.objects.create(manor=manor, template=tong, quantity=99)
+    InventoryItem.objects.create(manor=manor, template=xi, quantity=99)
+    InventoryItem.objects.create(manor=manor, template=tie, quantity=99)
+    InventoryItem.objects.create(manor=manor, template=wood_essence, quantity=99)
+    InventoryItem.objects.create(manor=manor, template=copper_essence, quantity=99)
+    InventoryItem.objects.create(manor=manor, template=air_stone, quantity=99)
+
+    try:
+        forge_service.clear_forge_blueprint_cache()
+        options = forge_service.get_blueprint_synthesis_options(manor)
+    finally:
+        forge_service.clear_forge_blueprint_cache()
+
+    device_options = [row for row in options if row["blueprint_key"] == "blueprint_xiaoxingjiguanshu"]
+    assert len(device_options) == 1
+    option = device_options[0]
+    assert option["result_effect_type"] == "equip_device"
+    assert option["result_name"] == "小型机关鼠"
+    assert option["required_forging"] == 6
+    assert option["can_synthesize"] is True
+
+
+@pytest.mark.django_db
 def test_synthesize_equipment_with_blueprint_consumes_inputs_and_grants_output(django_user_model, monkeypatch):
     user = django_user_model.objects.create_user(username="forge_bp_make", password="pass123")
     manor = ensure_manor(user)

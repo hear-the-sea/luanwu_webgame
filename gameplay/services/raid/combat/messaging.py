@@ -13,6 +13,26 @@ from .loot import _format_battle_rewards_description, _format_capture_descriptio
 from .troops import _normalize_mapping, _normalize_positive_int_mapping
 
 
+def _send_raid_capture_loss_message(run: RaidRun, capture_payload: object) -> None:
+    capture_desc = _format_capture_description(capture_payload)
+    if not capture_desc:
+        return
+
+    loser_manor = run.defender if run.is_attacker_victory else run.attacker
+    winner_manor = run.attacker if run.is_attacker_victory else run.defender
+    winner_name = getattr(winner_manor, "display_name", "对手")
+
+    create_message(
+        manor=loser_manor,
+        kind="battle",
+        title="门客被俘通知",
+        body=f"""在本次踢馆战斗中，你方门客已被 {winner_name} 俘获，并已被押入对方监牢。
+
+{capture_desc}""",
+        battle_report=run.battle_report,
+    )
+
+
 def _send_raid_battle_messages(run: RaidRun) -> None:
     """发送踢馆战报消息"""
     is_victory = run.is_attacker_victory
@@ -104,3 +124,5 @@ def _send_raid_battle_messages(run: RaidRun) -> None:
         body=defender_body,
         battle_report=run.battle_report,
     )
+
+    _send_raid_capture_loss_message(run, battle_rewards.get("capture"))

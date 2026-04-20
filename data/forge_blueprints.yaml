@@ -286,3 +286,202 @@ recipes:
       copper_essence: 3
       air_stone: 1
       water_stone: 1
+
+  - blueprint_key: blueprint_xiaoxingjiguanshu
+    result_item_key: equip_xiaoxingjiguanshu
+    required_forging: 6
+    quantity_out: 1
+    description: 小型机关鼠图纸，入门器械中最轻巧的一支，依旧需要完整机簧与风行辅材。
+    costs:
+      tong: 28
+      xi: 18
+      tie: 14
+      wood_essence: 2
+      copper_essence: 1
+      air_stone: 1
+
+  - blueprint_key: blueprint_tongchanjiguan
+    result_item_key: equip_tongchanjiguan
+    required_forging: 6
+    quantity_out: 1
+    description: 铜蝉机关图纸，薄翼与传声机括都需要更精细的金属与灵材配比。
+    costs:
+      tong: 30
+      xi: 20
+      tie: 16
+      wood_essence: 1
+      copper_essence: 2
+      water_stone: 1
+
+  - blueprint_key: blueprint_jixiemao
+    result_item_key: equip_jixiemao
+    required_forging: 8
+    quantity_out: 1
+    description: 机械猫图纸，灵巧关节与潜行机簧让其成本明显高于常规蓝装。
+    costs:
+      tong: 40
+      xi: 26
+      tie: 20
+      wood_essence: 2
+      copper_essence: 2
+      xuan_tie_essence: 1
+      air_stone: 1
+
+  - blueprint_key: blueprint_jiguanchuniao
+    result_item_key: equip_jiguanchuniao
+    required_forging: 8
+    quantity_out: 1
+    description: 机关雏鸟图纸，羽翼滑翔结构复杂，额外需要风行与灵水辅材稳固机件。
+    costs:
+      tong: 42
+      xi: 28
+      tie: 20
+      wood_essence: 2
+      copper_essence: 2
+      xuan_tie_essence: 1
+      air_stone: 1
+      water_stone: 1
+
+  - blueprint_key: blueprint_kuileimuren
+    result_item_key: equip_kuileimuren
+    required_forging: 8
+    quantity_out: 1
+    description: 傀儡木人图纸，躯干承压结构沉重，木精与土性辅材消耗都高于常规蓝装。
+    costs:
+      tong: 44
+      xi: 30
+      tie: 24
+      wood_essence: 2
+      copper_essence: 3
+      xuan_tie_essence: 1
+      earth_stone: 1
+
+  - blueprint_key: blueprint_qingji
+    result_item_key: equip_qingji
+    required_forging: 8
+    quantity_out: 1
+    description: 庆忌图纸，轻灵小巧但工艺精细，仍需完整玄铁与风性辅材配合。
+    costs:
+      tong: 38
+      xi: 24
+      tie: 18
+      wood_essence: 2
+      copper_essence: 2
+      xuan_tie_essence: 1
+      air_stone: 1
+
+  - blueprint_key: blueprint_taotieding
+    result_item_key: equip_taotieding
+    required_forging: 10
+    quantity_out: 1
+    description: 饕餮鼎图纸，兼具祭器与器械之重，铸造所需金属与精华远超常规紫装。
+    costs:
+      tong: 60
+      xi: 40
+      tie: 32
+      wood_essence: 2
+      copper_essence: 3
+      xuan_tie_essence: 2
+      water_stone: 1
+      earth_stone: 1
+      fire_stone: 1
+
+  - blueprint_key: blueprint_jiguanxiong
+    result_item_key: equip_jiguanxiong
+    required_forging: 10
+    quantity_out: 1
+    description: 机关熊图纸，重载骨架与驱动机括都需要更高强度的材料投入。
+    costs:
+      tong: 56
+      xi: 38
+      tie: 30
+      wood_essence: 2
+      copper_essence: 3
+      xuan_tie_essence: 2
+      earth_stone: 1
+      fire_stone: 1
+
+  - blueprint_key: blueprint_muniuliuma
+    result_item_key: equip_muniuliuma
+    required_forging: 10
+    quantity_out: 1
+    description: 木牛流马图纸，承载与续行结构极重，对木精、玄铁与水土辅材要求都更高。
+    costs:
+      tong: 54
+      xi: 36
+      tie: 28
+      wood_essence: 3
+      copper_essence: 3
+      xuan_tie_essence: 2
+      earth_stone: 1
+      water_stone: 1
+
+  - blueprint_key: blueprint_kuileiren
+    result_item_key: equip_kuileiren
+    required_forging: 10
+    quantity_out: 1
+    description: 傀儡人图纸，关节联动与平衡校准复杂，属于高成本紫阶器械。
+    costs:
+      tong: 58
+      xi: 38
+      tie: 30
+      wood_essence: 2
+      copper_essence: 3
+      xuan_tie_essence: 2
+      earth_stone: 1
+      air_stone: 1
+
+  - blueprint_key: blueprint_xuanwujigui
+    result_item_key: equip_xuanwujigui
+    required_forging: 10
+    quantity_out: 1
+    description: 玄武机龟图纸，防御型器械的代表，装甲与水土稳固成本都被显著拉高。
+    costs:
+      tong: 62
+      xi: 42
+      tie: 34
+      wood_essence: 2
+      copper_essence: 3
+      xuan_tie_essence: 2
+      water_stone: 1
+      earth_stone: 1
+
+  - blueprint_key: blueprint_feiyuan
+    result_item_key: equip_feiyuan
+    required_forging: 12
+    quantity_out: 1
+    description: 飞鸢图纸，顶阶飞行器械的机关与外翼都极其昂贵，远超常规橙装。
+    costs:
+      tong: 84
+      xi: 56
+      tie: 44
+      xuan_tie_essence: 3
+      air_stone: 2
+      fire_stone: 1
+
+  - blueprint_key: blueprint_chixiaojifeng
+    result_item_key: equip_chixiaojifeng
+    required_forging: 12
+    quantity_out: 1
+    description: 赤霄机凤图纸，赤铜羽翼与高温驱动核心令其成为顶阶高耗器械之一。
+    costs:
+      tong: 88
+      xi: 58
+      tie: 46
+      xuan_tie_essence: 3
+      fire_stone: 2
+      air_stone: 1
+
+  - blueprint_key: blueprint_mojiajiguanren
+    result_item_key: equip_mojiajiguanren
+    required_forging: 12
+    quantity_out: 1
+    description: 墨家机关人图纸，顶阶机关造物的核心蓝图，金属、玄铁与多系属性石消耗均为器械之最。
+    costs:
+      tong: 96
+      xi: 64
+      tie: 52
+      xuan_tie_essence: 4
+      earth_stone: 1
+      fire_stone: 1
+      water_stone: 1
