@@ -126,6 +126,38 @@ class TestInventoryPageContext:
         assert "onclick=" not in body
         assert "onchange=" not in body
 
+    def test_warehouse_page_renders_confirm_metadata_for_repeatable_guest_scroll(self, manor_with_user):
+        manor, client = manor_with_user
+        scroll_template = ItemTemplate.objects.create(
+            key="view_edward_blue_guest_scroll",
+            name="蓝色爱德华召唤卷轴",
+            effect_type=ItemTemplate.EffectType.TOOL,
+            is_usable=True,
+            effect_payload={
+                "action": "summon_guest",
+                "required_items": {"gold_bar": 50},
+                "confirm_title": "使用确认",
+                "confirm_text": "确认使用「蓝色爱德华召唤卷轴」？将消耗 50 根金条，并获得 1 名蓝色门客「爱德华」。",
+                "confirm_ok_text": "确认使用",
+                "choices": [{"template_key": "orig_edward_blue", "weight": 100}],
+            },
+        )
+        InventoryItem.objects.create(
+            manor=manor,
+            template=scroll_template,
+            quantity=1,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+
+        response = client.get(reverse("gameplay:warehouse"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert 'data-confirm-title="使用确认"' in body
+        assert 'data-confirm-ok-text="确认使用"' in body
+        assert "爱德华召唤卷轴" in body
+        assert "消耗 50 根金条" in body
+
     def test_recruitment_hall_page(self, manor_with_user):
         _manor, client = manor_with_user
         response = client.get(reverse("gameplay:recruitment_hall"))

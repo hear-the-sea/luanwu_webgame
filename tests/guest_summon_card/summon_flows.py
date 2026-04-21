@@ -5,7 +5,7 @@ from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.inventory.use import use_inventory_item
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestTemplate
-from tests.guest_summon_card.support import make_pubayi_template
+from tests.guest_summon_card.support import make_edward_template, make_pubayi_template
 
 
 @pytest.mark.django_db
@@ -319,3 +319,190 @@ def test_summon_card_keeps_scroll_when_required_items_insufficient(django_user_m
     assert scroll.quantity == 1
     assert good_cards.quantity == 100
     assert manor.guests.filter(template__key=template.key).count() == 0
+
+
+@pytest.mark.django_db
+def test_edward_blue_scroll_consumes_gold_bars_and_summons_guest(django_user_model):
+    user = django_user_model.objects.create_user(username="edward_scroll_blue", password="pass123")
+    manor = ensure_manor(user)
+
+    blue_edward = make_edward_template("orig_edward_blue_test", "blue")
+    gold_bar_template = ItemTemplate.objects.create(
+        key="gold_bar",
+        name="金条",
+        effect_type=ItemTemplate.EffectType.RESOURCE,
+        is_usable=False,
+        rarity="orange",
+    )
+    scroll_template = ItemTemplate.objects.create(
+        key="edward_blue_guest_scroll_test",
+        name="蓝色爱德华召唤卷轴",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=True,
+        effect_payload={
+            "action": "summon_guest",
+            "required_items": {"gold_bar": 50},
+            "choices": [{"template_key": blue_edward.key, "weight": 100}],
+        },
+    )
+    gold_bars = InventoryItem.objects.create(
+        manor=manor,
+        template=gold_bar_template,
+        quantity=80,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    scroll = InventoryItem.objects.create(
+        manor=manor,
+        template=scroll_template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    payload = use_inventory_item(scroll)
+
+    assert payload["获得门客"] == "爱德华"
+    assert payload["稀有度"] == "蓝"
+    gold_bars.refresh_from_db()
+    assert gold_bars.quantity == 30
+    assert manor.guests.filter(template__key=blue_edward.key).count() == 1
+    assert not InventoryItem.objects.filter(pk=scroll.pk).exists()
+
+
+@pytest.mark.django_db
+def test_edward_purple_scroll_consumes_gold_bars_and_summons_guest(django_user_model):
+    user = django_user_model.objects.create_user(username="edward_scroll_purple", password="pass123")
+    manor = ensure_manor(user)
+
+    purple_edward = make_edward_template("orig_edward_purple_test", "purple")
+    gold_bar_template = ItemTemplate.objects.create(
+        key="gold_bar",
+        name="金条",
+        effect_type=ItemTemplate.EffectType.RESOURCE,
+        is_usable=False,
+        rarity="orange",
+    )
+    scroll_template = ItemTemplate.objects.create(
+        key="edward_purple_guest_scroll_test",
+        name="紫色爱德华召唤卷轴",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=True,
+        effect_payload={
+            "action": "summon_guest",
+            "required_items": {"gold_bar": 150},
+            "choices": [{"template_key": purple_edward.key, "weight": 100}],
+        },
+    )
+    gold_bars = InventoryItem.objects.create(
+        manor=manor,
+        template=gold_bar_template,
+        quantity=200,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    scroll = InventoryItem.objects.create(
+        manor=manor,
+        template=scroll_template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    payload = use_inventory_item(scroll)
+
+    assert payload["获得门客"] == "爱德华"
+    assert payload["稀有度"] == "紫"
+    gold_bars.refresh_from_db()
+    assert gold_bars.quantity == 50
+    assert manor.guests.filter(template__key=purple_edward.key).count() == 1
+    assert not InventoryItem.objects.filter(pk=scroll.pk).exists()
+
+
+@pytest.mark.django_db
+def test_edward_scroll_allows_repeatable_summons(django_user_model):
+    user = django_user_model.objects.create_user(username="edward_scroll_repeatable", password="pass123")
+    manor = ensure_manor(user)
+
+    blue_edward = make_edward_template("orig_edward_blue_repeatable_test", "blue")
+    gold_bar_template = ItemTemplate.objects.create(
+        key="gold_bar",
+        name="金条",
+        effect_type=ItemTemplate.EffectType.RESOURCE,
+        is_usable=False,
+        rarity="orange",
+    )
+    scroll_template = ItemTemplate.objects.create(
+        key="edward_blue_guest_scroll_repeatable_test",
+        name="蓝色爱德华召唤卷轴",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=True,
+        effect_payload={
+            "action": "summon_guest",
+            "required_items": {"gold_bar": 50},
+            "choices": [{"template_key": blue_edward.key, "weight": 100}],
+        },
+    )
+    gold_bars = InventoryItem.objects.create(
+        manor=manor,
+        template=gold_bar_template,
+        quantity=120,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    scroll = InventoryItem.objects.create(
+        manor=manor,
+        template=scroll_template,
+        quantity=2,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    use_inventory_item(scroll)
+    scroll.refresh_from_db()
+    use_inventory_item(scroll)
+
+    gold_bars.refresh_from_db()
+    assert gold_bars.quantity == 20
+    assert manor.guests.filter(template__key=blue_edward.key).count() == 2
+
+
+@pytest.mark.django_db
+def test_edward_scroll_keeps_scroll_when_gold_bars_insufficient(django_user_model):
+    user = django_user_model.objects.create_user(username="edward_scroll_gold_fail", password="pass123")
+    manor = ensure_manor(user)
+
+    blue_edward = make_edward_template("orig_edward_blue_insufficient_test", "blue")
+    gold_bar_template = ItemTemplate.objects.create(
+        key="gold_bar",
+        name="金条",
+        effect_type=ItemTemplate.EffectType.RESOURCE,
+        is_usable=False,
+        rarity="orange",
+    )
+    scroll_template = ItemTemplate.objects.create(
+        key="edward_blue_guest_scroll_insufficient_test",
+        name="蓝色爱德华召唤卷轴",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=True,
+        effect_payload={
+            "action": "summon_guest",
+            "required_items": {"gold_bar": 50},
+            "choices": [{"template_key": blue_edward.key, "weight": 100}],
+        },
+    )
+    gold_bars = InventoryItem.objects.create(
+        manor=manor,
+        template=gold_bar_template,
+        quantity=20,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    scroll = InventoryItem.objects.create(
+        manor=manor,
+        template=scroll_template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    with pytest.raises(InsufficientStockError):
+        use_inventory_item(scroll)
+
+    scroll.refresh_from_db()
+    gold_bars.refresh_from_db()
+    assert scroll.quantity == 1
+    assert gold_bars.quantity == 20
+    assert manor.guests.filter(template__key=blue_edward.key).count() == 0

@@ -153,8 +153,8 @@ missions:
         label: 观众甲
 
     enemy_technology:
-      level: 0
-      guest_level: 22
+      level: 2
+      guest_level: 39
       guest_bonus: 0.1
 
     drop_table:
@@ -186,8 +186,8 @@ missions:
       - hero_cheng_yaojin
 
     enemy_technology:
-      level: 3               # 3级科技
-      guest_level: 50        # 50级门客
+      level: 8               # 8级科技
+      guest_level: 61        # 61级门客
       guest_bonus: 0.1       # +10%属性加成
 
     enemy_troops:
@@ -223,8 +223,8 @@ missions:
         label: 猛虎
 
     enemy_technology:
-      level: 0
-      guest_level: 24
+      level: 3
+      guest_level: 39
       guest_bonus: 0.02
 
     drop_table:
@@ -246,8 +246,8 @@ missions:
         label: 座山雕
 
     enemy_technology:
-      level: 1
-      guest_level: 28
+      level: 4
+      guest_level: 43
       guest_bonus: 0.04
 
     enemy_troops:
@@ -273,8 +273,8 @@ missions:
       jian_xia: 400
 
     enemy_technology:
-      level: 2
-      guest_level: 40
+      level: 5
+      guest_level: 53
       guest_bonus: 0.10
 
     drop_table:
@@ -295,8 +295,8 @@ missions:
         label: 武师教头
 
     enemy_technology:
-      level: 0
-      guest_level: 30
+      level: 3
+      guest_level: 40
       guest_bonus: 0.05
 
     drop_table:
@@ -324,8 +324,8 @@ missions:
       dao_ba: 100
 
     enemy_technology:
-      level: 2
-      guest_level: 38
+      level: 6
+      guest_level: 57
       guest_bonus: 0.10
 
     drop_table:
@@ -350,8 +350,8 @@ missions:
       qiang_ba: 500
 
     enemy_technology:
-      level: 4
-      guest_level: 52
+      level: 7
+      guest_level: 60
       guest_bonus: 0.18
 
     drop_table:
@@ -383,8 +383,8 @@ missions:
         label: 罗氏兄弟
 
     enemy_technology:
-      level: 1
-      guest_level: 42
+      level: 6
+      guest_level: 55
       guest_bonus: 0.08
 
     drop_table:
@@ -419,8 +419,8 @@ missions:
         label: 改装机械猫
 
     enemy_technology:
-      level: 2
-      guest_level: 40
+      level: 7
+      guest_level: 58
       guest_bonus: 0.12
 
     drop_table:
@@ -441,8 +441,8 @@ missions:
         label: 机关熊
 
     enemy_technology:
-      level: 1
-      guest_level: 32
+      level: 4
+      guest_level: 45
       guest_bonus: 0.08
 
     drop_table:
@@ -476,8 +476,8 @@ missions:
         label: 守卫
 
     enemy_technology:
-      level: 3
-      guest_level: 46
+      level: 8
+      guest_level: 64
       guest_bonus: 0.12
 
     drop_table:
@@ -521,8 +521,8 @@ missions:
         label: 小狐仙
 
     enemy_technology:
-      level: 5
-      guest_level: 58
+      level: 9
+      guest_level: 80
       guest_bonus: 0.20
 
     drop_table:
@@ -557,8 +557,8 @@ missions:
       jian_sheng: 300
 
     enemy_technology:
-      level: 3
-      guest_level: 44
+      level: 7
+      guest_level: 59
       guest_bonus: 0.10
 
     drop_table:
@@ -586,8 +586,8 @@ missions:
       quan_sheng: 400
 
     enemy_technology:
-      level: 5
-      guest_level: 60
+      level: 9
+      guest_level: 75
       guest_bonus: 0.22
 
     drop_table:
@@ -626,8 +626,8 @@ missions:
       arrow_god: 100
 
     enemy_technology:
-      level: 3
-      guest_level: 45
+      level: 6
+      guest_level: 58
       guest_bonus: 0.12
 
     drop_table:
@@ -654,8 +654,8 @@ missions:
         label: 孤魂野鬼
 
     enemy_technology:
-      level: 1
-      guest_level: 34
+      level: 3
+      guest_level: 41
       guest_bonus: 0.06
 
     drop_table:
@@ -682,8 +682,8 @@ missions:
       qiang_wang: 500
 
     enemy_technology:
-      level: 6
-      guest_level: 68
+      level: 10
+      guest_level: 83
       guest_bonus: 0.28
 
     drop_table:
@@ -711,8 +711,8 @@ missions:
         label: 单于
 
     enemy_technology:
-      level: 7
-      guest_level: 72
+      level: 10
+      guest_level: 86
       guest_bonus: 0.30
 
     enemy_troops:
@@ -745,8 +745,8 @@ missions:
       qiang_wang: 1000
 
     enemy_technology:
-      level: 6
-      guest_level: 70
+      level: 10
+      guest_level: 81
       guest_bonus: 0.26
 
     drop_table:
@@ -775,8 +775,8 @@ missions:
       dao_sheng: 200
 
     enemy_technology:
-      level: 4
-      guest_level: 48
+      level: 5
+      guest_level: 54
       guest_bonus: 0.16
 
     drop_table:

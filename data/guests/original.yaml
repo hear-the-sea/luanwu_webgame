@@ -60,6 +60,21 @@ heroes:
       intellect: 45
       defense: 25
       agility: 15
+  - key: orig_edward_blue
+    name: 爱德华
+    archetype: military
+    flavor: 爱德华出身西方炼金术世家，自幼沉迷于金属转化、药剂淬炼与机关改造之术。与寻常术士不同，他并不满足于在书斋中推演公式，而是执意将炼金术带上战场，用药火、钢铁与爆鸣验证自己的理论。长期与炉火和兵器为伴，使他练就了远超常人的体魄与战斗直觉，也让他在冷静推算之外，多了几分武人的锋锐。对爱德华而言，炼金并非单纯的学问，而是一种足以改造武器、改造战局，甚至改造命运的力量。
+    default_gender: male
+    default_morality: 68
+    growth_range:
+    - 5
+    - 10
+    recruitable: false
+    attribute_weights:
+      force: 40
+      intellect: 20
+      defense: 20
+      agility: 20
   purple:
   - key: orig_zhu_yingtai
     name: 祝英台
@@ -76,3 +91,18 @@ heroes:
       intellect: 40
       defense: 15
       agility: 30
+  - key: orig_edward_purple
+    name: 爱德华
+    archetype: military
+    flavor: 爱德华来自西方，以炼金术士之名游历诸国，既精通金属转化、药剂淬炼，也擅长将复杂的炼成理论用于实战。他始终相信，真正高明的炼金术不该停留于瓶罐与图纸之间，而应能在瞬息万变的战场上化作决定胜负的力量。多年游历与试验，让他将学者的精密与武者的果决熔于一身，举手投足间都带着炉火锻出的冷峻与自信。有人视他为异乡怪杰，也有人敬他为掌控钢铁与火焰的战斗炼金术士，而爱德华只把自己看作不断逼近“真理”的求索者。
+    default_gender: male
+    default_morality: 72
+    growth_range:
+    - 6
+    - 12
+    recruitable: false
+    attribute_weights:
+      force: 45
+      intellect: 20
+      defense: 20
+      agility: 15

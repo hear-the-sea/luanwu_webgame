@@ -948,6 +948,46 @@ items:
         - template_key: orig_liang_shanbo
           weight: 100
 
+  - key: edward_blue_guest_scroll
+    name: 蓝色爱德华召唤卷轴
+    description: 来自异域的炼金术卷轴，封存着战斗炼金术士爱德华的召唤印记。仓库中使用后消耗50根金条，可获得蓝色门客「爱德华」。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 3000000
+    storage_space: 1
+    is_usable: true
+    effect_payload:
+      action: summon_guest
+      required_items:
+        gold_bar: 50
+      confirm_title: 使用确认
+      confirm_text: 确认使用「蓝色爱德华召唤卷轴」？将消耗 50 根金条，并获得 1 名蓝色门客「爱德华」。
+      confirm_ok_text: 确认使用
+      choices:
+        - template_key: orig_edward_blue
+          weight: 100
+
+  - key: edward_purple_guest_scroll
+    name: 紫色爱德华召唤卷轴
+    description: 以高阶炼金术刻印而成的珍贵卷轴，蕴含更强的召唤共鸣。仓库中使用后消耗150根金条，可获得紫色门客「爱德华」。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 5000000
+    storage_space: 1
+    is_usable: true
+    effect_payload:
+      action: summon_guest
+      required_items:
+        gold_bar: 150
+      confirm_title: 使用确认
+      confirm_text: 确认使用「紫色爱德华召唤卷轴」？将消耗 150 根金条，并获得 1 名紫色门客「爱德华」。
+      confirm_ok_text: 确认使用
+      choices:
+        - template_key: orig_edward_purple
+          weight: 100
+
   - key: mawencai_guest_scroll
     name: 马文才门客合成卷轴
     description: 仓库中使用后消耗90张好人卡，可获得绿色门客「马文才」。若庄园已拥有该门客，则无法再次获得。

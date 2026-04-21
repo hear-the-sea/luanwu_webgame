@@ -95,10 +95,100 @@ def test_default_mission_templates_define_junior_mission_tiering():
 
     call_command("load_mission_templates", file=str(payload_path), verbosity=0)
 
+    expected_enemy_technology = {
+        "huashan_lunjian": {
+            "difficulty": "junior",
+            "enemy_technology": {"level": 2, "guest_level": 39, "guest_bonus": 0.1},
+        },
+        "jingyanggang": {
+            "difficulty": "junior",
+            "enemy_technology": {"level": 3, "guest_level": 39, "guest_bonus": 0.02},
+        },
+        "wulongshan": {
+            "difficulty": "junior",
+            "enemy_technology": {"level": 4, "guest_level": 43, "guest_bonus": 0.04},
+        },
+        "fugui_shanzhuang": {
+            "difficulty": "junior",
+            "enemy_technology": {"level": 3, "guest_level": 40, "guest_bonus": 0.05},
+        },
+        "biwu_zhaoqin": {
+            "difficulty": "junior",
+            "enemy_technology": {"level": 4, "guest_level": 45, "guest_bonus": 0.08},
+        },
+        "taozi_fenban": {
+            "difficulty": "junior",
+            "enemy_technology": {"level": 3, "guest_level": 41, "guest_bonus": 0.06},
+        },
+        "wagangzhai_nixi": {
+            "difficulty": "intermediate",
+            "enemy_technology": {"level": 8, "guest_level": 61, "guest_bonus": 0.1},
+        },
+        "wagangzhai": {
+            "difficulty": "intermediate",
+            "enemy_technology": {"level": 5, "guest_level": 53, "guest_bonus": 0.1},
+        },
+        "shizipo_heidian": {
+            "difficulty": "intermediate",
+            "enemy_technology": {"level": 6, "guest_level": 57, "guest_bonus": 0.1},
+        },
+        "shanhaiguan": {
+            "difficulty": "intermediate",
+            "enemy_technology": {"level": 7, "guest_level": 60, "guest_bonus": 0.18},
+        },
+        "shiren_daochang": {
+            "difficulty": "intermediate",
+            "enemy_technology": {"level": 6, "guest_level": 55, "guest_bonus": 0.08},
+        },
+        "jiguanshou_chuxian": {
+            "difficulty": "intermediate",
+            "enemy_technology": {"level": 7, "guest_level": 58, "guest_bonus": 0.12},
+        },
+        "tianpeng_dijiao_1": {
+            "difficulty": "intermediate",
+            "enemy_technology": {"level": 8, "guest_level": 64, "guest_bonus": 0.12},
+        },
+        "jiguan_chuniao": {
+            "difficulty": "intermediate",
+            "enemy_technology": {"level": 7, "guest_level": 59, "guest_bonus": 0.1},
+        },
+        "jiufeng_feihuan": {
+            "difficulty": "intermediate",
+            "enemy_technology": {"level": 6, "guest_level": 58, "guest_bonus": 0.12},
+        },
+        "liangshanbo_zhuyingtai": {
+            "difficulty": "intermediate",
+            "enemy_technology": {"level": 5, "guest_level": 54, "guest_bonus": 0.16},
+        },
+        "tianpeng_dijiao_2": {
+            "difficulty": "advanced",
+            "enemy_technology": {"level": 9, "guest_level": 80, "guest_bonus": 0.2},
+        },
+        "dongtian_fudi": {
+            "difficulty": "advanced",
+            "enemy_technology": {"level": 9, "guest_level": 75, "guest_bonus": 0.22},
+        },
+        "simian_chuge": {
+            "difficulty": "advanced",
+            "enemy_technology": {"level": 10, "guest_level": 83, "guest_bonus": 0.28},
+        },
+        "manzu_ruqin": {
+            "difficulty": "advanced",
+            "enemy_technology": {"level": 10, "guest_level": 86, "guest_bonus": 0.3},
+        },
+        "zhuiji_manzu": {
+            "difficulty": "advanced",
+            "enemy_technology": {"level": 10, "guest_level": 81, "guest_bonus": 0.26},
+        },
+    }
+
+    for mission_key, expected in expected_enemy_technology.items():
+        mission = MissionTemplate.objects.get(key=mission_key)
+        assert mission.difficulty == expected["difficulty"]
+        assert mission.enemy_technology == expected["enemy_technology"]
+
     jingyanggang = MissionTemplate.objects.get(key="jingyanggang")
-    assert jingyanggang.difficulty == "junior"
     assert jingyanggang.enemy_guests == [{"key": "task_jingyang_tiger", "label": "猛虎"}]
-    assert jingyanggang.enemy_technology == {"level": 0, "guest_level": 24, "guest_bonus": 0.02}
 
     huashan = MissionTemplate.objects.get(key="huashan_lunjian")
     assert huashan.enemy_guests == [

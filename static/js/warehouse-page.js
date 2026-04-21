@@ -63,6 +63,27 @@
     return Promise.resolve();
   };
 
+  const confirmWarehouseUseForm = async (form) => {
+    const confirmText = form.dataset.confirmText;
+    if (!confirmText) {
+      return true;
+    }
+
+    if (window.gameConfirm) {
+      return window.gameConfirm(confirmText, {
+        title: form.dataset.confirmTitle || "使用确认",
+        okText: form.dataset.confirmOkText || "确认使用",
+      });
+    }
+    if (window.gameDialog?.confirm) {
+      return window.gameDialog.confirm(confirmText, {
+        title: form.dataset.confirmTitle || "使用确认",
+        okText: form.dataset.confirmOkText || "确认使用",
+      });
+    }
+    return window.confirm(confirmText);
+  };
+
   const saveScrollPosition = () => {
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const tableWrapper = document.querySelector(".tw-table-wrapper");
@@ -259,6 +280,11 @@
         event.preventDefault();
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn?.textContent || "";
+
+        const confirmed = await confirmWarehouseUseForm(form);
+        if (!confirmed) {
+          return;
+        }
 
         if (submitBtn) {
           submitBtn.disabled = true;

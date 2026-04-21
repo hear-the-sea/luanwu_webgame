@@ -259,6 +259,18 @@ def test_load_guest_templates_imports_default_special_task_heroes(tmp_path: Path
     assert bloodflag.rarity == "purple"
     assert bloodflag.recruitable is False
 
+    edward_blue = GuestTemplate.objects.get(key="orig_edward_blue")
+    assert edward_blue.name == "爱德华"
+    assert edward_blue.rarity == "blue"
+    assert edward_blue.archetype == "military"
+    assert edward_blue.recruitable is False
+
+    edward_purple = GuestTemplate.objects.get(key="orig_edward_purple")
+    assert edward_purple.name == "爱德华"
+    assert edward_purple.rarity == "purple"
+    assert edward_purple.archetype == "military"
+    assert edward_purple.recruitable is False
+
     blackwind = GuestTemplate.objects.get(key="guild_blackwind_gate_general")
     assert blackwind.name == "黑风关守将"
     assert blackwind.rarity == "orange"

@@ -152,7 +152,15 @@
                                     {% elif payload.action == 'upgrade_guest_rarity' %}
                                     <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-action-type="rarity_upgrade" data-action-url="{% url 'gameplay:use_guest_rarity_upgrade' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     {% else %}
-                                    <form method="post" action="{% url 'gameplay:use_item' entry.id %}">
+                                    <form
+                                        method="post"
+                                        action="{% url 'gameplay:use_item' entry.id %}"
+                                        {% if payload.confirm_text %}
+                                        data-confirm-title="{{ payload.confirm_title|default:'使用确认' }}"
+                                        data-confirm-text="{{ payload.confirm_text }}"
+                                        data-confirm-ok-text="{{ payload.confirm_ok_text|default:'确认使用' }}"
+                                        {% endif %}
+                                    >
                                         {% csrf_token %}
                                         <button type="submit" class="tw-btn-primary tw-btn-sm" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     </form>
