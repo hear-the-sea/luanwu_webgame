@@ -64,9 +64,13 @@ class GuildMemberAdmin(admin.ModelAdmin):
 
 @admin.register(GuildTechnology)
 class GuildTechnologyAdmin(admin.ModelAdmin):
-    list_display = ["guild", "tech_key", "category", "level", "max_level", "last_production_at"]
+    list_display = ["guild", "tech_key", "category", "level", "display_effective_max_level", "last_production_at"]
     list_filter = ["category", "level"]
     search_fields = ["guild__name", "tech_key"]
+
+    @admin.display(description="最高等级")
+    def display_effective_max_level(self, obj):
+        return obj.effective_max_level
 
 
 @admin.register(GuildWarehouse)

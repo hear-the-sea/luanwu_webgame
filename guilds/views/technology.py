@@ -32,51 +32,34 @@ def _format_upgrade_cost(tech: Any) -> str:
     return "、".join(parts) if parts else "无"
 
 
-def _format_percent(value: float) -> str:
-    return f"{int(round(value * 100))}%"
+def _resolve_display_max_level(tech: Any) -> int:
+    return int(getattr(tech, "effective_max_level", getattr(tech, "max_level", 0)) or 0)
 
 
-def _format_military_study_effect(level: int) -> str:
-    return (
-        f"武力 +{_format_percent(technology_service._calc_military_study_bonus(level, 'guest_force'))}，"
-        f"智力 +{_format_percent(technology_service._calc_military_study_bonus(level, 'guest_intellect'))}，"
-        f"防御 +{_format_percent(technology_service._calc_military_study_bonus(level, 'guest_defense'))}"
-    )
-
-
-def _format_troop_tactics_effect(level: int) -> str:
-    return (
-        f"攻击 +{_format_percent(technology_service._calc_troop_tactics_bonus(level, 'troop_attack'))}，"
-        f"防御 +{_format_percent(technology_service._calc_troop_tactics_bonus(level, 'troop_defense'))}，"
-        f"生命 +{_format_percent(technology_service._calc_troop_tactics_bonus(level, 'troop_hp'))}"
-    )
+def _format_troop_tactics_effect(level: int, max_level: int) -> str:
+    return f"按 {level} / {max_level} 级线性映射个人兵种科技"
 
 
 def _build_tech_display_meta(tech: Any) -> dict[str, str]:
+    max_level = _resolve_display_max_level(tech)
+
     if tech.tech_key == "equipment_forge":
         return {"description": "每日生产装备道具", "upgrade_cost": _format_upgrade_cost(tech)}
     if tech.tech_key == "experience_refine":
         return {"description": "每日生产经验道具", "upgrade_cost": _format_upgrade_cost(tech)}
     if tech.tech_key == "resource_supply":
         return {"description": "每日生产资源礼包", "upgrade_cost": _format_upgrade_cost(tech)}
-    if tech.tech_key == "military_study":
-        return {
-            "description": "提升门客攻击力",
-            "current_effect": _format_military_study_effect(tech.level) if tech.level > 0 else "未激活",
-            "next_effect": _format_military_study_effect(min(tech.max_level, tech.level + 1)),
-            "upgrade_cost": _format_upgrade_cost(tech),
-        }
     if tech.tech_key == "troop_tactics":
         return {
-            "description": "提升门客防御力和生命",
-            "current_effect": _format_troop_tactics_effect(tech.level) if tech.level > 0 else "未激活",
-            "next_effect": _format_troop_tactics_effect(min(tech.max_level, tech.level + 1)),
+            "description": "将帮会科技等级线性映射到个人兵种科技",
+            "current_effect": _format_troop_tactics_effect(tech.level, max_level) if tech.level > 0 else "未激活",
+            "next_effect": _format_troop_tactics_effect(min(max_level, tech.level + 1), max_level),
             "upgrade_cost": _format_upgrade_cost(tech),
         }
     if tech.tech_key == "guild_lineup_capacity":
         next_capacity = min(
             technology_service.MAX_GUILD_LINEUP_CAPACITY,
-            int(guild_constants.GUILD_BATTLE_LINEUP_LIMIT) + min(tech.max_level, tech.level + 1),
+            int(guild_constants.GUILD_BATTLE_LINEUP_LIMIT) + min(max_level, tech.level + 1),
         )
         return {
             "description": "提升帮会已上阵名单总容量",
@@ -87,7 +70,7 @@ def _build_tech_display_meta(tech: Any) -> dict[str, str]:
     if tech.tech_key == "guild_dispatch_capacity":
         next_capacity = min(
             technology_service.MAX_GUILD_DISPATCH_CAPACITY,
-            int(guild_constants.GUILD_DISPATCH_GUEST_BASE_LIMIT) + min(tech.max_level, tech.level + 1),
+            int(guild_constants.GUILD_DISPATCH_GUEST_BASE_LIMIT) + min(max_level, tech.level + 1),
         )
         return {
             "description": "提升单次帮会任务最多可派出的门客人数",

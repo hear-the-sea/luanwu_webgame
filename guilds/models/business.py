@@ -16,7 +16,7 @@ class GuildTechnology(models.Model):
     ]
 
     guild = models.ForeignKey(Guild, on_delete=models.CASCADE, related_name="technologies", verbose_name="所属帮会")
-    tech_key = models.CharField(max_length=50, verbose_name="科技标识", help_text="如: equipment_forge, military_study")
+    tech_key = models.CharField(max_length=50, verbose_name="科技标识", help_text="如: equipment_forge, troop_tactics")
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="production", verbose_name="科技分类")
     level = models.PositiveIntegerField(default=0, verbose_name="科技等级")
     max_level = models.PositiveIntegerField(default=5, verbose_name="最高等级")
@@ -34,9 +34,16 @@ class GuildTechnology(models.Model):
         return f"{self.guild.name} - {self.tech_key} Lv.{self.level}"
 
     @property
+    def effective_max_level(self):
+        """返回运行时生效的最高等级。"""
+        from guilds.services.technology import get_effective_guild_tech_max_level
+
+        return get_effective_guild_tech_max_level(self.tech_key, self.max_level)
+
+    @property
     def can_upgrade(self):
         """是否可升级"""
-        return self.level < self.max_level
+        return self.level < self.effective_max_level
 
 
 class GuildWarehouse(models.Model):

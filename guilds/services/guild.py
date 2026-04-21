@@ -251,22 +251,6 @@ def calculate_guild_upgrade_cost(current_level):
 
 def initialize_guild_technologies(guild):
     """初始化帮会科技"""
-    tech_configs = [
-        # 生产类
-        ("equipment_forge", "production", 5),
-        ("experience_refine", "production", 5),
-        ("resource_supply", "production", 5),
-        # 战斗类
-        ("military_study", "combat", 5),
-        ("troop_tactics", "combat", 5),
-        # 福利类
-        ("resource_boost", "welfare", 5),
-        ("march_speed", "welfare", 5),
-        # 帮会任务容量科技
-        ("guild_lineup_capacity", "combat", 20),
-        ("guild_dispatch_capacity", "combat", 20),
-    ]
-
     technologies_to_create = [
         GuildTechnology(
             guild=guild,
@@ -275,7 +259,7 @@ def initialize_guild_technologies(guild):
             level=0,
             max_level=max_level,
         )
-        for tech_key, category, max_level in tech_configs
+        for tech_key, category, max_level in guild_constants.get_supported_guild_technology_configs()
     ]
     GuildTechnology.objects.bulk_create(technologies_to_create)
 

@@ -69,6 +69,48 @@ def test_launch_guild_mission_snapshots_guests_and_deducts_troops(django_user_mo
 
 
 @pytest.mark.django_db(transaction=True)
+def test_launch_guild_mission_snapshots_attacker_troop_tech_levels(django_user_model, monkeypatch):
+    leader, leader_manor = create_user_with_manor(django_user_model, "guild_mission_launch_tech_snapshot_leader")
+    guild = Guild.objects.create(name="帮会任务科技快照帮", founder=leader, is_active=True)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    template = GuildMissionTemplate.objects.create(
+        key="guild_launch_tech_snapshot_task",
+        name="科技快照任务",
+        description="",
+        difficulty="junior",
+        task_type="guest",
+        base_duration_seconds=600,
+        ruby_reward=0,
+        recommended_guest_count=1,
+        allow_troops=False,
+        is_active=True,
+        sort_weight=1,
+    )
+    guest = create_guest(manor=leader_manor, template=create_template("guild_launch_tech_snapshot_tpl"), name="甲")
+    entry = hero_pool_service.submit_hero_pool_entry(leader_member, guest_id=guest.id, slot_index=1).entry
+    hero_pool_service.add_lineup_entry(guild=guild, operator=leader, pool_entry_id=entry.id)
+
+    monkeypatch.setattr("guilds.services.guild_missions.schedule_guild_mission_completion", lambda _run: None)
+    monkeypatch.setattr(
+        "guilds.services.guild_missions.build_guild_troop_tech_levels",
+        lambda _guild: {"gong_attack": 2, "gong_hp": 1},
+        raising=False,
+    )
+
+    from guilds.services import guild_missions as guild_mission_service
+
+    run = guild_mission_service.launch_guild_mission(
+        guild=guild,
+        operator=leader,
+        template_key=template.key,
+        pool_entry_ids=[entry.id],
+        troop_loadout={},
+    )
+
+    assert run.attacker_troop_tech_snapshot == {"gong_attack": 2, "gong_hp": 1}
+
+
+@pytest.mark.django_db(transaction=True)
 def test_launch_guild_mission_clamps_snapshot_hp_when_guest_current_hp_exceeds_max(django_user_model, monkeypatch):
     leader, leader_manor = create_user_with_manor(django_user_model, "guild_mission_launch_hp_clamp_leader")
     guild = Guild.objects.create(name="帮会任务血量钳制帮", founder=leader, is_active=True)

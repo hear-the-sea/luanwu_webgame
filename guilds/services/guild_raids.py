@@ -31,7 +31,7 @@ from .guild_raid_support import apply_guild_defeat_protection as _apply_guild_de
 from .guild_raid_support import dispatch_countdown_for_run as _dispatch_countdown_for_run
 from .guild_raid_support import load_defender_guests as _load_defender_guests
 from .guild_raid_support import lock_guild_pair as _lock_guild_pair
-from .technology import get_guild_dispatch_capacity
+from .technology import build_guild_troop_tech_levels, get_guild_dispatch_capacity
 
 logger = logging.getLogger(__name__)
 IN_FLIGHT_GUILD_RAID_STATUSES = (
@@ -193,6 +193,7 @@ def _start_guild_raid_atomic(
 
     guests = [row.pool_entry.source_guest for row in lineup_rows if row.pool_entry.source_guest is not None]
     guest_snapshots = build_guest_battle_snapshots(guests, include_identity=True)
+    attacker_troop_tech_snapshot = build_guild_troop_tech_levels(locked_guild)
     normalized_troops = guild_troops.deduct_guild_troops(guild=locked_guild, loadout=troop_loadout or {})
     travel_time = calculate_guild_raid_travel_time(guests, normalized_troops)
     now = timezone.now()
@@ -205,6 +206,7 @@ def _start_guild_raid_atomic(
         guest_ids=[guest.id for guest in guests],
         guest_snapshots=guest_snapshots,
         troop_loadout=normalized_troops,
+        attacker_troop_tech_snapshot=attacker_troop_tech_snapshot,
         travel_time=travel_time,
         started_at=now,
         battle_at=now + timedelta(seconds=travel_time),
@@ -293,6 +295,9 @@ def process_guild_raid_battle(run: GuildRaidRun, *, now=None) -> bool:
     attacker_limit = max(1, int(getattr(locked_run, "selected_guest_count", 0) or len(battle_guest_models)))
     defender_guests = _load_defender_guests(defender_locked)
     defender_setup = guild_troops.build_guild_defender_setup(guild=defender_locked)
+    attacker_tech_levels = dict(locked_run.attacker_troop_tech_snapshot or {})
+    if not attacker_tech_levels:
+        attacker_tech_levels = build_guild_troop_tech_levels(attacker_locked)
     defender_limit = max(1, len(defender_guests) if defender_guests else attacker_limit)
     report = execute_battle(
         report_owner,
@@ -311,6 +316,7 @@ def process_guild_raid_battle(run: GuildRaidRun, *, now=None) -> bool:
             validate_attacker_troop_capacity=False,
             limit=attacker_limit,
             defender_limit=defender_limit,
+            attacker_tech_levels=attacker_tech_levels,
         ),
     )
     if defender_setup:

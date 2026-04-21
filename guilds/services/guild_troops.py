@@ -11,6 +11,7 @@ from core.exceptions import GuildMembershipError, GuildValidationError
 from gameplay.models import PlayerTroop
 
 from ..models import Guild, GuildMember, GuildTroopDonationLog, GuildTroopStorage
+from .technology import build_guild_troop_tech_levels
 
 
 def _lock_active_member(member: GuildMember) -> GuildMember:
@@ -102,11 +103,14 @@ def load_guild_troop_loadout(*, guild: Guild) -> dict[str, int]:
     }
 
 
-def build_guild_defender_setup(*, guild: Guild) -> dict[str, dict[str, int]]:
+def build_guild_defender_setup(*, guild: Guild) -> dict[str, Any]:
     troop_loadout = load_guild_troop_loadout(guild=guild)
     if not troop_loadout:
         return {}
-    return {"troop_loadout": troop_loadout}
+    return {
+        "troop_loadout": troop_loadout,
+        "technology": {"levels": build_guild_troop_tech_levels(guild)},
+    }
 
 
 def calculate_surviving_guild_troops(loadout: dict[str, int], report: object | None = None) -> dict[str, int]:

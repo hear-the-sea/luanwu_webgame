@@ -20,7 +20,7 @@ from gameplay.services.utils.messages import bulk_create_messages
 from ..models import Guild, GuildMember, GuildMissionRun, GuildMissionTemplate
 from . import guild_troops
 from .guild_dispatch import load_dispatch_lineup_rows, lock_manage_member, normalize_positive_ids
-from .technology import get_guild_dispatch_capacity
+from .technology import build_guild_troop_tech_levels, get_guild_dispatch_capacity
 from .warehouse import add_item_to_warehouse
 
 logger = logging.getLogger(__name__)
@@ -136,6 +136,7 @@ def _launch_guild_mission_atomic(
 
     guests = [row.pool_entry.source_guest for row in lineup_rows if row.pool_entry.source_guest is not None]
     guest_snapshots = build_guest_battle_snapshots(guests, include_identity=True)
+    attacker_troop_tech_snapshot = build_guild_troop_tech_levels(locked_guild)
 
     requested_troops = troop_loadout or {}
     if not template.allow_troops and requested_troops:
@@ -157,6 +158,7 @@ def _launch_guild_mission_atomic(
         guest_ids=[guest.id for guest in guests],
         guest_snapshots=guest_snapshots,
         troop_loadout=normalized_troops,
+        attacker_troop_tech_snapshot=attacker_troop_tech_snapshot,
         battle_at=now + timedelta(seconds=duration_seconds),
         return_at=now + timedelta(seconds=duration_seconds),
     )
@@ -307,6 +309,9 @@ def finalize_guild_mission_run(run: GuildMissionRun, *, now=None) -> bool:
     battle_guest_models = cast(list[Any], guest_models)
     attacker_limit = _resolve_guild_mission_attacker_limit(locked_run)
     defender_setup = _build_guild_mission_defender_setup(locked_run)
+    attacker_tech_levels = dict(locked_run.attacker_troop_tech_snapshot or {})
+    if not attacker_tech_levels:
+        attacker_tech_levels = build_guild_troop_tech_levels(locked_run.guild)
     defender_limit = (
         max(1, len(defender_setup["guest_keys"])) if defender_setup["guest_keys"] else max(1, attacker_limit)
     )
@@ -326,6 +331,7 @@ def finalize_guild_mission_run(run: GuildMissionRun, *, now=None) -> bool:
             validate_attacker_troop_capacity=False,
             limit=attacker_limit,
             defender_limit=defender_limit,
+            attacker_tech_levels=attacker_tech_levels,
         ),
     )
 

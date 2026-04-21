@@ -26,7 +26,9 @@ class TestGuildCreation:
         membership = GuildMember.objects.get(user=user_with_gold_bars, guild=guild)
         assert membership.position == "leader"
         assert membership.is_active is True
-        assert guild.technologies.count() == 9
+        assert guild.technologies.count() == 8
+        assert not guild.technologies.filter(tech_key="military_study").exists()
+        assert guild.technologies.get(tech_key="troop_tactics").max_level == 10
         assert guild.technologies.get(tech_key="guild_lineup_capacity").max_level == 20
         assert guild.technologies.get(tech_key="guild_dispatch_capacity").max_level == 20
 

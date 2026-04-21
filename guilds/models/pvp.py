@@ -39,6 +39,7 @@ class GuildRaidRun(models.Model):
     guest_ids = models.JSONField("出征门客ID", default=list, blank=True)
     guest_snapshots = models.JSONField("出征门客快照", default=list, blank=True)
     troop_loadout = models.JSONField("护院编队", default=dict, blank=True)
+    attacker_troop_tech_snapshot = models.JSONField("攻击方护院科技快照", default=dict, blank=True)
     travel_time = models.PositiveIntegerField("单程行军时间(秒)", default=0)
     battle_report = models.ForeignKey(
         "battle.BattleReport",

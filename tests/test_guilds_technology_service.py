@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 from types import SimpleNamespace
 
 import pytest
@@ -43,22 +44,94 @@ def test_get_tech_bonus_branches(django_user_model):
     founder = django_user_model.objects.create_user(username="tech_founder2", password="pass")
     guild = Guild.objects.create(name="TechGuild2", founder=founder)
 
-    GuildTechnology.objects.create(guild=guild, tech_key="military_study", level=5)
     GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", level=4)
     GuildTechnology.objects.create(guild=guild, tech_key="resource_boost", level=2)
     GuildTechnology.objects.create(guild=guild, tech_key="march_speed", level=3)
 
-    assert get_tech_bonus(guild, "guest_force") == pytest.approx(0.10)
-    assert get_tech_bonus(guild, "guest_intellect") == pytest.approx(0.06)
-    assert get_tech_bonus(guild, "guest_defense") == pytest.approx(0.02)
+    assert get_tech_bonus(guild, "guest_force") == pytest.approx(0.0)
+    assert get_tech_bonus(guild, "guest_intellect") == pytest.approx(0.0)
+    assert get_tech_bonus(guild, "guest_defense") == pytest.approx(0.0)
 
-    assert get_tech_bonus(guild, "troop_attack") == pytest.approx(0.12)
-    assert get_tech_bonus(guild, "troop_defense") == pytest.approx(0.06)
+    assert get_tech_bonus(guild, "troop_attack") == pytest.approx(0.0)
+    assert get_tech_bonus(guild, "troop_defense") == pytest.approx(0.0)
     assert get_tech_bonus(guild, "troop_hp") == pytest.approx(0.0)
 
     assert get_tech_bonus(guild, "resource_production") == pytest.approx(0.10)
     assert get_tech_bonus(guild, "march_speed") == pytest.approx(0.15)
     assert get_tech_bonus(guild, "unknown") == pytest.approx(0.0)
+
+
+@pytest.mark.django_db
+def test_get_effective_guild_tech_max_level_projects_troop_tactics_to_runtime_cap():
+    from guilds.services.technology import get_effective_guild_tech_max_level
+
+    assert get_effective_guild_tech_max_level("troop_tactics", 5) == 10
+    assert get_effective_guild_tech_max_level("troop_tactics", 10) == 10
+    assert get_effective_guild_tech_max_level("march_speed", 5) == 5
+
+
+@pytest.mark.django_db
+def test_build_guild_troop_tech_levels_maps_troop_tactics_linearly(monkeypatch, django_user_model):
+    from guilds.models import Guild, GuildTechnology
+    from guilds.services.technology import build_guild_troop_tech_levels
+
+    founder = django_user_model.objects.create_user(username="tech_founder_troop_mapping", password="pass")
+    guild = Guild.objects.create(name="TechTroopMappingGuild", founder=founder)
+    GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", level=7, max_level=5)
+
+    monkeypatch.setattr(
+        "guilds.services.technology.player_technology_service.load_technology_templates",
+        lambda: {
+            "technologies": [
+                {"key": "dao_attack", "troop_class": "dao", "max_level": 5},
+                {"key": "dao_hp", "troop_class": "dao", "max_level": 8},
+                {"key": "resource_supply", "max_level": 5},
+            ]
+        },
+    )
+
+    assert build_guild_troop_tech_levels(guild) == {
+        "dao_attack": 3,
+        "dao_hp": 5,
+    }
+
+
+@pytest.mark.django_db
+def test_build_guild_troop_tech_levels_defaults_missing_troop_tactics_to_zero(monkeypatch, django_user_model):
+    from guilds.models import Guild
+    from guilds.services.technology import build_guild_troop_tech_levels
+
+    founder = django_user_model.objects.create_user(username="tech_founder_troop_mapping_zero", password="pass")
+    guild = Guild.objects.create(name="TechTroopMappingZeroGuild", founder=founder)
+
+    monkeypatch.setattr(
+        "guilds.services.technology.player_technology_service.load_technology_templates",
+        lambda: {
+            "technologies": [
+                {"key": "dao_attack", "troop_class": "dao", "max_level": 5},
+                {"key": "dao_hp", "troop_class": "dao", "max_level": 8},
+            ]
+        },
+    )
+
+    assert build_guild_troop_tech_levels(guild) == {
+        "dao_attack": 0,
+        "dao_hp": 0,
+    }
+
+
+@pytest.mark.django_db
+def test_legacy_military_study_row_no_longer_grants_guest_bonuses(django_user_model):
+    from guilds.models import Guild, GuildTechnology
+    from guilds.services.technology import get_tech_bonus
+
+    founder = django_user_model.objects.create_user(username="tech_founder_legacy_military", password="pass")
+    guild = Guild.objects.create(name="TechGuildLegacyMilitary", founder=founder)
+    GuildTechnology.objects.create(guild=guild, tech_key="military_study", level=5)
+
+    assert get_tech_bonus(guild, "guest_force") == pytest.approx(0.0)
+    assert get_tech_bonus(guild, "guest_intellect") == pytest.approx(0.0)
+    assert get_tech_bonus(guild, "guest_defense") == pytest.approx(0.0)
 
 
 @pytest.mark.django_db
@@ -68,7 +141,6 @@ def test_apply_guild_bonus_to_guest_and_troop(django_user_model):
 
     founder = django_user_model.objects.create_user(username="tech_founder3", password="pass")
     guild = Guild.objects.create(name="TechGuild3", founder=founder)
-    GuildTechnology.objects.create(guild=guild, tech_key="military_study", level=5)
     GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", level=5)
 
     user_no_guild = SimpleNamespace()
@@ -87,24 +159,21 @@ def test_apply_guild_bonus_to_guest_and_troop(django_user_model):
         defense=100,
         manor=SimpleNamespace(user=user_in_guild),
     )
-    assert apply_guild_bonus_to_guest(guest_in_guild) == {"force": 110, "intellect": 106, "defense": 102}
+    assert apply_guild_bonus_to_guest(guest_in_guild) == {"force": 100, "intellect": 100, "defense": 100}
 
     troop_stats = {"attack": 100, "defense": 100, "hp": 100}
     assert apply_guild_bonus_to_troop(troop_stats, user_no_guild) == troop_stats
 
-    # troop_tactics level=5 -> attack +15%, defense +9%, hp +5%
-    # Note: implementation truncates via int().
-    assert apply_guild_bonus_to_troop(troop_stats, user_in_guild) == {"attack": 114, "defense": 109, "hp": 105}
+    assert apply_guild_bonus_to_troop(troop_stats, user_in_guild) == troop_stats
 
 
 @pytest.mark.django_db
 def test_apply_guild_bonus_to_guest_supports_defense_stat_field(django_user_model):
-    from guilds.models import Guild, GuildTechnology
+    from guilds.models import Guild
     from guilds.services.technology import apply_guild_bonus_to_guest
 
     founder = django_user_model.objects.create_user(username="tech_founder_defense_stat", password="pass")
     guild = Guild.objects.create(name="TechGuildDefenseStat", founder=founder)
-    GuildTechnology.objects.create(guild=guild, tech_key="military_study", level=5)
 
     user_in_guild = SimpleNamespace(guild_membership=SimpleNamespace(is_active=True, guild=guild))
     guest_in_guild = SimpleNamespace(
@@ -114,7 +183,105 @@ def test_apply_guild_bonus_to_guest_supports_defense_stat_field(django_user_mode
         manor=SimpleNamespace(user=user_in_guild),
     )
 
-    assert apply_guild_bonus_to_guest(guest_in_guild) == {"force": 110, "intellect": 106, "defense": 102}
+    assert apply_guild_bonus_to_guest(guest_in_guild) == {"force": 100, "intellect": 100, "defense": 100}
+
+
+@pytest.mark.django_db
+def test_load_ordered_technologies_projects_legacy_troop_tactics_runtime_max_level(django_user_model):
+    from guilds.models import Guild, GuildTechnology
+    from guilds.views.helpers import load_ordered_technologies
+
+    founder = django_user_model.objects.create_user(username="tech_founder_view_projection", password="pass")
+    guild = Guild.objects.create(name="TechViewProjectionGuild", founder=founder)
+    tech = GuildTechnology.objects.create(
+        guild=guild, tech_key="troop_tactics", category="combat", level=5, max_level=5
+    )
+
+    technologies = load_ordered_technologies(guild)
+    projected = next(item for item in technologies if item.tech_key == "troop_tactics")
+
+    assert projected.effective_max_level == 10
+    tech.refresh_from_db()
+    assert tech.max_level == 5
+
+
+@pytest.mark.django_db
+def test_guild_technology_can_upgrade_uses_effective_runtime_max_level(django_user_model):
+    from guilds.models import Guild, GuildTechnology
+
+    founder = django_user_model.objects.create_user(username="tech_founder_runtime_property", password="pass")
+    guild = Guild.objects.create(name="TechRuntimePropertyGuild", founder=founder)
+    tech = GuildTechnology.objects.create(
+        guild=guild, tech_key="troop_tactics", category="combat", level=5, max_level=5
+    )
+
+    assert tech.effective_max_level == 10
+    assert tech.can_upgrade is True
+
+
+@pytest.mark.django_db
+def test_apply_guild_bonus_to_troop_uses_mapped_personal_tech_levels(monkeypatch, django_user_model):
+    from guilds.models import Guild
+    from guilds.services.technology import apply_guild_bonus_to_troop
+
+    founder = django_user_model.objects.create_user(username="tech_founder_troop_stats_mapping", password="pass")
+    guild = Guild.objects.create(name="TechTroopStatsMappingGuild", founder=founder)
+    user_in_guild = SimpleNamespace(guild_membership=SimpleNamespace(is_active=True, guild=guild))
+
+    monkeypatch.setattr(
+        "guilds.services.technology.build_guild_troop_tech_levels",
+        lambda _guild: {"gong_attack": 2, "gong_hp": 1},
+    )
+
+    troop_stats = {"troop_key": "archer", "attack": 100, "defense": 100, "hp": 100}
+    assert apply_guild_bonus_to_troop(troop_stats, user_in_guild) == {
+        "attack": 120,
+        "defense": 100,
+        "hp": 110,
+    }
+
+
+@pytest.mark.django_db
+def test_normalize_guild_technology_rows_migration_backfills_troop_tactics_and_removes_military_study(
+    django_user_model,
+):
+    from django.apps import apps
+
+    from guilds.models import Guild, GuildTechnology
+
+    migration_module = importlib.import_module("guilds.migrations.0017_normalize_guild_technology_rows")
+
+    founder = django_user_model.objects.create_user(username="tech_founder_migration_normalize", password="pass")
+    guild = Guild.objects.create(name="TechMigrationNormalizeGuild", founder=founder)
+    troop_tactics = GuildTechnology.objects.create(
+        guild=guild,
+        tech_key="troop_tactics",
+        category="combat",
+        level=5,
+        max_level=5,
+    )
+    GuildTechnology.objects.create(
+        guild=guild,
+        tech_key="military_study",
+        category="combat",
+        level=3,
+        max_level=5,
+    )
+
+    migration_module.normalize_guild_technology_rows(apps, None)
+
+    troop_tactics.refresh_from_db()
+    assert troop_tactics.max_level == 10
+    assert not GuildTechnology.objects.filter(guild=guild, tech_key="military_study").exists()
+
+
+@pytest.mark.django_db
+def test_troop_tactics_display_meta_uses_mapping_copy():
+    from guilds.views.technology import _build_tech_display_meta
+
+    display_meta = _build_tech_display_meta(SimpleNamespace(tech_key="troop_tactics", level=0, max_level=10))
+
+    assert display_meta["description"] == "将帮会科技等级线性映射到个人兵种科技"
 
 
 @pytest.mark.django_db
@@ -184,6 +351,29 @@ def test_upgrade_technology_spends_grain_and_gold_bar_from_warehouse(monkeypatch
     assert grain_row.total_exchanged == 5000
     assert gold_bar_row.quantity == 1
     assert gold_bar_row.total_exchanged == 3
+
+
+@pytest.mark.django_db
+def test_upgrade_technology_uses_runtime_troop_tactics_cap_for_legacy_rows(monkeypatch, django_user_model):
+    from guilds.models import Guild, GuildTechnology
+    from guilds.services.technology import upgrade_technology
+
+    monkeypatch.setattr(
+        "guilds.services.technology.get_active_membership",
+        lambda *_a, **_k: SimpleNamespace(can_manage=True),
+    )
+    monkeypatch.setattr("guilds.services.technology.create_announcement", lambda *_a, **_k: None)
+
+    operator = django_user_model.objects.create_user(username="tech_operator_runtime_troop_cap", password="pass")
+    founder = django_user_model.objects.create_user(username="tech_founder_runtime_troop_cap", password="pass")
+    guild = Guild.objects.create(name="TechRuntimeTroopCapGuild", founder=founder, silver=999999, grain=0, gold_bar=0)
+    tech = GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", level=5, max_level=5)
+    _seed_basic_tech_upgrade_warehouse_costs(guild)
+
+    upgrade_technology(guild, "troop_tactics", operator)
+
+    tech.refresh_from_db()
+    assert tech.level == 6
 
 
 @pytest.mark.django_db
@@ -283,6 +473,26 @@ def test_upgrade_technology_permission_denied(monkeypatch, django_user_model):
 
     with pytest.raises(GuildTechnologyError, match="只有帮主和管理员"):
         upgrade_technology(guild, "equipment_forge", operator)
+
+
+@pytest.mark.django_db
+def test_upgrade_removed_military_study_is_rejected(monkeypatch, django_user_model):
+    from core.exceptions import GuildTechnologyError
+    from guilds.models import Guild, GuildTechnology
+    from guilds.services.technology import upgrade_technology
+
+    monkeypatch.setattr(
+        "guilds.services.technology.get_active_membership",
+        lambda *_a, **_k: SimpleNamespace(can_manage=True),
+    )
+
+    operator = django_user_model.objects.create_user(username="tech_operator_removed_military", password="pass")
+    founder = django_user_model.objects.create_user(username="tech_founder_removed_military", password="pass")
+    guild = Guild.objects.create(name="TechGuildRemovedMilitary", founder=founder)
+    GuildTechnology.objects.create(guild=guild, tech_key="military_study", level=0, max_level=5)
+
+    with pytest.raises(GuildTechnologyError, match="科技不存在"):
+        upgrade_technology(guild, "military_study", operator)
 
 
 @pytest.mark.django_db

@@ -29,10 +29,6 @@ technology:
       silver: 4000
       grain: 3000
       gold_bar: 1
-    military_study:
-      silver: 8000
-      grain: 3000
-      gold_bar: 2
     troop_tactics:
       silver: 8000
       grain: 3000
@@ -53,7 +49,6 @@ technology:
     equipment_forge: 装备锻造
     experience_refine: 经验炼制
     resource_supply: 资源补给
-    military_study: 兵法研习
     troop_tactics: 强兵战术
     resource_boost: 资源增产
     march_speed: 行军加速

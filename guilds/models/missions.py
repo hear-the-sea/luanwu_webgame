@@ -85,6 +85,7 @@ class GuildMissionRun(models.Model):
     guest_ids = models.JSONField(default=list, blank=True, verbose_name="参战门客ID")
     guest_snapshots = models.JSONField(default=list, blank=True, verbose_name="参战门客快照")
     troop_loadout = models.JSONField(default=dict, blank=True, verbose_name="护院编队")
+    attacker_troop_tech_snapshot = models.JSONField(default=dict, blank=True, verbose_name="攻击方护院科技快照")
     battle_report = models.ForeignKey(
         BattleReport,
         on_delete=models.SET_NULL,

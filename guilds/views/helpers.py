@@ -8,6 +8,7 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
 from core.exceptions import GameError
+from guilds import constants as guild_constants
 from guilds.models import Guild, GuildAnnouncement, GuildApplication, GuildMember
 
 ActionResultT = TypeVar("ActionResultT")
@@ -96,7 +97,8 @@ def load_recent_announcements(guild: Guild, *, limit: int = 5) -> list[GuildAnno
 
 
 def load_ordered_technologies(guild: Guild) -> list[Any]:
-    return list(guild.technologies.order_by("category", "tech_key"))
+    supported_keys = guild_constants.get_supported_guild_technology_keys()
+    return list(guild.technologies.filter(tech_key__in=supported_keys).order_by("category", "tech_key"))
 
 
 def load_donation_logs(guild: Guild, *, limit: int = 50) -> list[Any]:

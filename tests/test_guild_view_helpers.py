@@ -251,12 +251,34 @@ def test_load_ordered_technologies_returns_sorted_list():
     leader_user = _create_user("guild_tech_leader")
     guild = Guild.objects.create(name="科技排序帮", founder=leader_user, is_active=True)
     GuildMember.objects.create(guild=guild, user=leader_user, position="leader")
-    GuildTechnology.objects.create(guild=guild, tech_key="b_key", category="welfare", level=1)
-    GuildTechnology.objects.create(guild=guild, tech_key="a_key", category="combat", level=1)
+    GuildTechnology.objects.create(guild=guild, tech_key="march_speed", category="welfare", level=1)
+    GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", category="combat", level=1, max_level=5)
+    GuildTechnology.objects.create(guild=guild, tech_key="legacy_key", category="combat", level=1)
 
     technologies = load_ordered_technologies(guild)
 
-    assert [(tech.category, tech.tech_key) for tech in technologies] == [("combat", "a_key"), ("welfare", "b_key")]
+    assert [(tech.category, tech.tech_key) for tech in technologies] == [
+        ("combat", "troop_tactics"),
+        ("welfare", "march_speed"),
+    ]
+
+
+@pytest.mark.django_db
+def test_load_ordered_technologies_excludes_name_only_unsupported_rows(monkeypatch):
+    from guilds import constants as guild_constants
+
+    leader_user = _create_user("guild_tech_supported_keys_leader")
+    guild = Guild.objects.create(name="科技支持判定帮", founder=leader_user, is_active=True)
+    GuildMember.objects.create(guild=guild, user=leader_user, position="leader")
+    GuildTechnology.objects.create(guild=guild, tech_key="display_only", category="combat", level=1)
+    GuildTechnology.objects.create(guild=guild, tech_key="march_speed", category="welfare", level=1)
+
+    monkeypatch.setitem(guild_constants.TECH_NAMES, "display_only", "仅展示科技")
+    monkeypatch.delitem(guild_constants.TECH_UPGRADE_COSTS, "display_only", raising=False)
+
+    technologies = load_ordered_technologies(guild)
+
+    assert [tech.tech_key for tech in technologies] == ["march_speed"]
 
 
 @pytest.mark.django_db

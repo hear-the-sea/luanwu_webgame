@@ -53,6 +53,8 @@ def test_finalize_guild_mission_returns_survivors_and_awards_ruby(django_user_mo
         pool_entry_ids=[entry.id],
         troop_loadout={troop_template.key: 20},
     )
+    run.attacker_troop_tech_snapshot = {"archer_attack": 6, "archer_hp": 3}
+    run.save(update_fields=["attacker_troop_tech_snapshot"])
 
     report = BattleReport.objects.create(
         manor=leader_manor,
@@ -70,13 +72,27 @@ def test_finalize_guild_mission_returns_survivors_and_awards_ruby(django_user_mo
         completed_at=timezone.now(),
         seed=1,
     )
-    monkeypatch.setattr("guilds.services.guild_missions.execute_battle", lambda *args, **kwargs: report)
+    captured: dict[str, Any] = {}
+
+    def _fake_execute_battle(*args, **kwargs):
+        captured["options"] = args[3]
+        return report
+
+    monkeypatch.setattr("guilds.services.guild_missions.execute_battle", _fake_execute_battle)
+    monkeypatch.setattr(
+        "guilds.services.guild_missions.build_guild_troop_tech_levels",
+        lambda _guild: {"archer_attack": 6, "archer_hp": 3},
+        raising=False,
+    )
 
     now = timezone.now()
     guild_mission_service.finalize_guild_mission_run(run, now=now)
     run.refresh_from_db()
 
     storage = GuildTroopStorage.objects.get(guild=guild, troop_template=troop_template)
+    options = captured.get("options")
+    assert options is not None
+    assert options.attacker_tech_levels == {"archer_attack": 6, "archer_hp": 3}
     assert run.status == "completed"
     assert run.completed_at == now
     assert run.battle_report_id == report.id
@@ -331,3 +347,260 @@ def test_finalize_guild_mission_forwards_expanded_battle_limits(django_user_mode
     assert all(isinstance(entry, dict) for entry in captured["raw_guest_keys"])
     assert all("template_key" not in entry for entry in captured["raw_guest_keys"])
     assert [entry["key"] for entry in captured["raw_guest_keys"]] == [tpl.key for tpl in enemy_templates]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_finalize_guild_mission_attacker_troops_use_guild_tech_levels_not_manor_tech(django_user_model, monkeypatch):
+    from battle.troops import invalidate_troop_templates_cache
+    from gameplay.models import PlayerTechnology
+
+    leader, leader_manor = create_user_with_manor(django_user_model, "guild_mission_attacker_guild_tech")
+    guild = Guild.objects.create(name="帮会任务科技归属帮", founder=leader, is_active=True)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    template = GuildMissionTemplate.objects.create(
+        key="guild_mission_attacker_guild_tech_task",
+        name="科技归属任务",
+        description="",
+        difficulty="junior",
+        task_type="guest",
+        base_duration_seconds=60,
+        ruby_reward=0,
+        recommended_guest_count=1,
+        allow_troops=True,
+        enemy_guests=[],
+        enemy_troops={},
+        enemy_technology={},
+        is_active=True,
+    )
+    TroopTemplate.objects.update_or_create(
+        key="archer",
+        defaults={
+            "name": "弓手",
+            "base_attack": 10,
+            "base_defense": 4,
+            "base_hp": 20,
+            "speed_bonus": 5,
+            "priority": 1,
+            "default_count": 0,
+        },
+    )
+    invalidate_troop_templates_cache()
+    archer_template = TroopTemplate.objects.get(key="archer")
+    GuildTroopStorage.objects.create(guild=guild, troop_template=archer_template, count=10)
+    PlayerTechnology.objects.create(manor=leader_manor, tech_key="gong_attack", level=10)
+    PlayerTechnology.objects.create(manor=leader_manor, tech_key="gong_hp", level=10)
+
+    guest = create_guest(
+        manor=leader_manor, template=create_template("guild_mission_attacker_guild_tech_tpl"), name="先锋"
+    )
+    guest_snapshots = build_guest_battle_snapshots([guest], include_identity=True)
+    run = GuildMissionRun.objects.create(
+        guild=guild,
+        template=template,
+        started_by=leader_member,
+        status=GuildMissionRun.Status.ACTIVE,
+        selected_guest_count=1,
+        ruby_reward=0,
+        guest_ids=[guest.id],
+        guest_snapshots=guest_snapshots,
+        troop_loadout={"archer": 4},
+        attacker_troop_tech_snapshot={"gong_attack": 2, "gong_hp": 1},
+    )
+
+    captured: dict[str, Any] = {}
+
+    def _fake_execute_simulation(attacker_units, defender_units, options, config, rng, final_seed):
+        troop = next(unit for unit in attacker_units if getattr(unit, "template_key", "") == "archer")
+        captured["unit_attack"] = troop.unit_attack
+        captured["unit_hp"] = troop.unit_hp
+        captured["tech_effects"] = dict(troop.tech_effects)
+        simulation = SimpleNamespace(
+            losses={"attacker": {"casualties": []}, "defender": {"casualties": []}},
+            drops={},
+            winner="attacker",
+            rounds=[],
+            starts_at=timezone.now(),
+            completed_at=timezone.now(),
+            seed=final_seed,
+        )
+        return simulation, options.opponent_name or config.get("name", "帮会任务")
+
+    monkeypatch.setattr(
+        "guilds.services.guild_missions.build_guild_troop_tech_levels",
+        lambda _guild: {"gong_attack": 2, "gong_hp": 1},
+        raising=False,
+    )
+    monkeypatch.setattr("battle.execution._execute_simulation", _fake_execute_simulation)
+
+    from guilds.services import guild_missions as guild_mission_service
+
+    assert guild_mission_service.finalize_guild_mission_run(run) is True
+    assert captured["unit_attack"] == 12
+    assert captured["unit_hp"] == 22
+    assert captured["tech_effects"] == {}
+
+
+@pytest.mark.django_db(transaction=True)
+def test_finalize_guild_mission_falls_back_to_current_guild_tech_for_legacy_empty_snapshot(
+    django_user_model,
+    monkeypatch,
+):
+    leader, leader_manor = create_user_with_manor(django_user_model, "guild_mission_legacy_snapshot_leader")
+    guild = Guild.objects.create(name="帮会任务兼容帮", founder=leader, is_active=True)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    template = GuildMissionTemplate.objects.create(
+        key="guild_mission_legacy_snapshot_task",
+        name="兼容任务",
+        description="",
+        difficulty="junior",
+        task_type="guest",
+        base_duration_seconds=60,
+        ruby_reward=0,
+        recommended_guest_count=1,
+        allow_troops=True,
+        enemy_guests=[],
+        enemy_troops={},
+        enemy_technology={},
+        is_active=True,
+    )
+    troop_template = TroopTemplate.objects.create(key="guild_mission_legacy_archer", name="兼容弓手")
+    GuildTroopStorage.objects.create(guild=guild, troop_template=troop_template, count=20)
+    guest = create_guest(manor=leader_manor, template=create_template("guild_mission_legacy_snapshot_tpl"), name="先锋")
+    run = GuildMissionRun.objects.create(
+        guild=guild,
+        template=template,
+        started_by=leader_member,
+        status=GuildMissionRun.Status.ACTIVE,
+        selected_guest_count=1,
+        ruby_reward=0,
+        guest_ids=[guest.id],
+        guest_snapshots=build_guest_battle_snapshots([guest], include_identity=True),
+        troop_loadout={troop_template.key: 6},
+        attacker_troop_tech_snapshot={},
+    )
+    report = BattleReport.objects.create(
+        manor=leader_manor,
+        opponent_name=template.name,
+        battle_type="guild_mission",
+        attacker_team=[],
+        attacker_troops={troop_template.key: 6},
+        defender_team=[],
+        defender_troops={},
+        rounds=[],
+        losses={},
+        drops={},
+        winner="defender",
+        starts_at=timezone.now(),
+        completed_at=timezone.now(),
+        seed=7,
+    )
+
+    captured: dict[str, Any] = {}
+
+    def _fake_execute_battle(*args, **kwargs):
+        captured["options"] = args[3]
+        return report
+
+    monkeypatch.setattr("guilds.services.guild_missions.execute_battle", _fake_execute_battle)
+    monkeypatch.setattr(
+        "guilds.services.guild_missions.build_guild_troop_tech_levels",
+        lambda _guild: {"archer_attack": 4, "archer_hp": 2},
+        raising=False,
+    )
+
+    from guilds.services import guild_missions as guild_mission_service
+
+    assert guild_mission_service.finalize_guild_mission_run(run, now=timezone.now()) is True
+    assert captured["options"].attacker_tech_levels == {"archer_attack": 4, "archer_hp": 2}
+
+
+@pytest.mark.django_db(transaction=True)
+def test_finalize_guild_mission_uses_launch_time_troop_tech_snapshot_after_guild_upgrade(
+    django_user_model, monkeypatch
+):
+    from battle.troops import invalidate_troop_templates_cache
+    from gameplay.models import PlayerTechnology
+    from guilds.models import GuildTechnology
+
+    leader, leader_manor = create_user_with_manor(django_user_model, "guild_mission_snapshot_timing_leader")
+    guild = Guild.objects.create(name="帮会任务时序帮", founder=leader, is_active=True)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    template = GuildMissionTemplate.objects.create(
+        key="guild_mission_snapshot_timing_task",
+        name="时序任务",
+        description="",
+        difficulty="junior",
+        task_type="guest",
+        base_duration_seconds=60,
+        ruby_reward=0,
+        recommended_guest_count=1,
+        allow_troops=True,
+        enemy_guests=[],
+        enemy_troops={},
+        enemy_technology={},
+        is_active=True,
+    )
+    troop_tactics = GuildTechnology.objects.create(
+        guild=guild,
+        tech_key="troop_tactics",
+        category="combat",
+        level=2,
+        max_level=10,
+    )
+    TroopTemplate.objects.update_or_create(
+        key="archer",
+        defaults={
+            "name": "弓手",
+            "base_attack": 10,
+            "base_defense": 4,
+            "base_hp": 20,
+            "speed_bonus": 5,
+            "priority": 1,
+            "default_count": 0,
+        },
+    )
+    invalidate_troop_templates_cache()
+    archer_template = TroopTemplate.objects.get(key="archer")
+    GuildTroopStorage.objects.create(guild=guild, troop_template=archer_template, count=10)
+    PlayerTechnology.objects.create(manor=leader_manor, tech_key="gong_attack", level=10)
+    PlayerTechnology.objects.create(manor=leader_manor, tech_key="gong_hp", level=10)
+    guest = create_guest(manor=leader_manor, template=create_template("guild_mission_snapshot_timing_tpl"), name="先锋")
+    entry = hero_pool_service.submit_hero_pool_entry(leader_member, guest_id=guest.id, slot_index=1).entry
+    hero_pool_service.add_lineup_entry(guild=guild, operator=leader, pool_entry_id=entry.id)
+
+    monkeypatch.setattr("guilds.services.guild_missions.schedule_guild_mission_completion", lambda _run: None)
+
+    from guilds.services import guild_missions as guild_mission_service
+
+    run = guild_mission_service.launch_guild_mission(
+        guild=guild,
+        operator=leader,
+        template_key=template.key,
+        pool_entry_ids=[entry.id],
+        troop_loadout={"archer": 4},
+    )
+    troop_tactics.level = 10
+    troop_tactics.save(update_fields=["level"])
+
+    captured: dict[str, Any] = {}
+
+    def _fake_execute_simulation(attacker_units, defender_units, options, config, rng, final_seed):
+        troop = next(unit for unit in attacker_units if getattr(unit, "template_key", "") == "archer")
+        captured["unit_attack"] = troop.unit_attack
+        captured["unit_hp"] = troop.unit_hp
+        simulation = SimpleNamespace(
+            losses={"attacker": {"casualties": []}, "defender": {"casualties": []}},
+            drops={},
+            winner="attacker",
+            rounds=[],
+            starts_at=timezone.now(),
+            completed_at=timezone.now(),
+            seed=final_seed,
+        )
+        return simulation, options.opponent_name or config.get("name", "帮会任务")
+
+    monkeypatch.setattr("battle.execution._execute_simulation", _fake_execute_simulation)
+
+    assert guild_mission_service.finalize_guild_mission_run(run) is True
+    assert captured["unit_attack"] == 12
+    assert captured["unit_hp"] == 24

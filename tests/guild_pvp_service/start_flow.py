@@ -150,6 +150,41 @@ def test_start_guild_raid_generates_guest_snapshots_and_travel_time(django_user_
 
 
 @pytest.mark.django_db(transaction=True)
+def test_start_guild_raid_snapshots_attacker_troop_tech_levels(django_user_model, monkeypatch):
+    attacker_guild, leader, _attacker_manor = create_guild_with_leader(django_user_model, "科技快照攻方")
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(django_user_model, "科技快照守方")
+    attacker_guild.silver = 50000
+    attacker_guild.save(update_fields=["silver"])
+    guest = create_guest(
+        manor=leader.user.manor,
+        template=create_template("guild_pvp_start_tech_snapshot_tpl"),
+        name="进攻门客",
+    )
+    pool_entry_id = seed_attacker_lineup(guild=attacker_guild, leader=leader, guest=guest)
+
+    monkeypatch.setattr("guilds.services.guild_raids.calculate_guild_raid_travel_time", lambda *_a, **_k: 120)
+    monkeypatch.setattr("guilds.services.guild_raids.schedule_guild_raid_completion", lambda _run: None)
+    monkeypatch.setattr("guilds.services.guild_raids.send_guild_raid_warning_messages", lambda *_a, **_k: None)
+    monkeypatch.setattr(
+        "guilds.services.guild_raids.build_guild_troop_tech_levels",
+        lambda _guild: {"gong_attack": 2, "gong_hp": 1},
+        raising=False,
+    )
+
+    from guilds.services.guild_raids import start_guild_raid
+
+    run = start_guild_raid(
+        guild=attacker_guild,
+        defender_guild=defender_guild,
+        operator=leader.user,
+        pool_entry_ids=[pool_entry_id],
+        troop_loadout={},
+    )
+
+    assert run.attacker_troop_tech_snapshot == {"gong_attack": 2, "gong_hp": 1}
+
+
+@pytest.mark.django_db(transaction=True)
 def test_start_guild_raid_refreshes_due_runs_before_locking_guild_pair(django_user_model, monkeypatch):
     attacker_guild, leader, _attacker_manor = create_guild_with_leader(django_user_model, "先刷新")
     defender_guild, _defender_member, _defender_manor = create_guild_with_leader(django_user_model, "后锁帮")

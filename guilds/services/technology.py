@@ -7,8 +7,10 @@ from django.db import transaction
 from django.db.models import F
 
 from core.exceptions import GuildMembershipError, GuildTechnologyError, GuildWarehouseError
+from core.game_data.technology import get_troop_stat_bonuses_from_levels
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.models import Manor
+from gameplay.services import technology as player_technology_service
 
 from .. import constants as guild_constants
 from ..models import Guild, GuildResourceLog, GuildTechnology
@@ -20,6 +22,49 @@ logger = logging.getLogger(__name__)
 CAPACITY_TECH_KEYS = {"guild_lineup_capacity", "guild_dispatch_capacity"}
 MAX_GUILD_LINEUP_CAPACITY = 40
 MAX_GUILD_DISPATCH_CAPACITY = 25
+GUEST_BONUS_TYPES = {"guest_force", "guest_intellect", "guest_defense"}
+TROOP_TACTICS_RUNTIME_MAX_LEVEL = 10
+
+
+def _is_supported_tech_key(tech_key: str) -> bool:
+    return tech_key in guild_constants.get_supported_guild_technology_keys()
+
+
+def _coerce_non_negative_int(value: object, default: int = 0) -> int:
+    try:
+        return max(0, int(cast(SupportsInt | str | bytes | bytearray, value)))
+    except (TypeError, ValueError):
+        return default
+
+
+def get_effective_guild_tech_max_level(tech_key: str, stored_max_level: object) -> int:
+    if tech_key == "troop_tactics":
+        return TROOP_TACTICS_RUNTIME_MAX_LEVEL
+    return _coerce_non_negative_int(stored_max_level)
+
+
+def _can_upgrade_guild_technology(tech: GuildTechnology) -> bool:
+    return tech.level < get_effective_guild_tech_max_level(tech.tech_key, tech.max_level)
+
+
+def build_guild_troop_tech_levels(guild: Guild) -> dict[str, int]:
+    troop_tactics_level = get_guild_tech_level(guild, "troop_tactics")
+    troop_tactics_max_level = get_effective_guild_tech_max_level("troop_tactics", TROOP_TACTICS_RUNTIME_MAX_LEVEL)
+    projected_level = max(0, min(troop_tactics_level, troop_tactics_max_level))
+
+    resolved: dict[str, int] = {}
+    data = player_technology_service.load_technology_templates()
+    for template in data.get("technologies", []) or []:
+        if not isinstance(template, dict):
+            continue
+        tech_key = str(template.get("key") or "").strip()
+        troop_class = str(template.get("troop_class") or "").strip()
+        if not tech_key or not troop_class:
+            continue
+        personal_max_level = _coerce_non_negative_int(template.get("max_level"))
+        mapped_level = (projected_level * personal_max_level) // troop_tactics_max_level
+        resolved[tech_key] = min(personal_max_level, mapped_level)
+    return resolved
 
 
 def calculate_tech_upgrade_cost(tech_key, current_level):
@@ -59,6 +104,9 @@ def upgrade_technology(guild, tech_key, operator):
     if not membership.can_manage:
         raise GuildTechnologyError("只有帮主和管理员可以升级科技")
 
+    if not _is_supported_tech_key(tech_key):
+        raise GuildTechnologyError("科技不存在")
+
     # 获取科技
     try:
         tech = GuildTechnology.objects.get(guild=guild, tech_key=tech_key)
@@ -66,7 +114,7 @@ def upgrade_technology(guild, tech_key, operator):
         raise GuildTechnologyError("科技不存在")
 
     # 验证是否可升级
-    if not tech.can_upgrade:
+    if not _can_upgrade_guild_technology(tech):
         raise GuildTechnologyError("科技已达最高等级")
 
     # 并发安全的事务处理
@@ -79,7 +127,7 @@ def upgrade_technology(guild, tech_key, operator):
         cost = calculate_tech_upgrade_cost(tech_key, tech_locked.level)
 
         # 步骤2：在锁内重新验证条件，防止并发穿透
-        if not tech_locked.can_upgrade:
+        if not _can_upgrade_guild_technology(tech_locked):
             raise GuildTechnologyError("科技已达最高等级")
 
         if tech_key in CAPACITY_TECH_KEYS:
@@ -197,37 +245,6 @@ def get_guild_dispatch_capacity(guild):
     )
 
 
-def _calc_military_study_bonus(level: int, bonus_type: str) -> float:
-    if bonus_type == "guest_force":
-        bonus = 0.0
-        if level >= 1:
-            bonus += 0.02 * min(level, 2)
-        if level >= 3:
-            bonus += 0.02 * (level - 2)
-        return bonus
-
-    if bonus_type == "guest_intellect":
-        return 0.02 * (level - 2) if level >= 3 else 0.0
-
-    if bonus_type == "guest_defense":
-        return 0.02 if level >= 5 else 0.0
-
-    return 0.0
-
-
-def _calc_troop_tactics_bonus(level: int, bonus_type: str) -> float:
-    if bonus_type == "troop_attack":
-        return 0.03 * level
-
-    if bonus_type == "troop_defense":
-        return 0.03 * (level - 2) if level >= 3 else 0.0
-
-    if bonus_type == "troop_hp":
-        return 0.05 if level >= 5 else 0.0
-
-    return 0.0
-
-
 def get_tech_bonus(guild, bonus_type):
     """
     获取科技加成
@@ -239,13 +256,11 @@ def get_tech_bonus(guild, bonus_type):
     Returns:
         float: 加成系数（如0.1表示10%加成）
     """
-    if bonus_type in {"guest_force", "guest_intellect", "guest_defense"}:
-        level = get_guild_tech_level(guild, "military_study")
-        return _calc_military_study_bonus(level, bonus_type)
+    if bonus_type in GUEST_BONUS_TYPES:
+        return 0.0
 
     if bonus_type in {"troop_attack", "troop_defense", "troop_hp"}:
-        level = get_guild_tech_level(guild, "troop_tactics")
-        return _calc_troop_tactics_bonus(level, bonus_type)
+        return 0.0
 
     if bonus_type == "resource_production":
         level = get_guild_tech_level(guild, "resource_boost")
@@ -277,26 +292,10 @@ def apply_guild_bonus_to_guest(guest):
     except (TypeError, ValueError):
         base_defense = 0
 
-    # 检查玩家是否在帮会中
-    user = guest.manor.user
-    if not hasattr(user, "guild_membership") or not user.guild_membership.is_active:
-        return {
-            "force": guest.force,
-            "intellect": guest.intellect,
-            "defense": base_defense,
-        }
-
-    guild = user.guild_membership.guild
-
-    # 应用加成
-    force_bonus = get_tech_bonus(guild, "guest_force")
-    intellect_bonus = get_tech_bonus(guild, "guest_intellect")
-    defense_bonus = get_tech_bonus(guild, "guest_defense")
-
     return {
-        "force": int(guest.force * (1 + force_bonus)),
-        "intellect": int(guest.intellect * (1 + intellect_bonus)),
-        "defense": int(base_defense * (1 + defense_bonus)),
+        "force": guest.force,
+        "intellect": guest.intellect,
+        "defense": base_defense,
     }
 
 
@@ -316,11 +315,18 @@ def apply_guild_bonus_to_troop(troop_stats, user):
         return troop_stats
 
     guild = user.guild_membership.guild
+    troop_key = str(troop_stats.get("troop_key") or troop_stats.get("key") or "").strip()
+    if not troop_key:
+        return {
+            "attack": int(troop_stats.get("attack", 0)),
+            "defense": int(troop_stats.get("defense", 0)),
+            "hp": int(troop_stats.get("hp", 0)),
+        }
 
-    # 应用加成
-    attack_bonus = get_tech_bonus(guild, "troop_attack")
-    defense_bonus = get_tech_bonus(guild, "troop_defense")
-    hp_bonus = get_tech_bonus(guild, "troop_hp")
+    bonuses = get_troop_stat_bonuses_from_levels(build_guild_troop_tech_levels(guild), troop_key)
+    attack_bonus = float(bonuses.get("attack", 0.0) or 0.0)
+    defense_bonus = float(bonuses.get("defense", 0.0) or 0.0)
+    hp_bonus = float(bonuses.get("hp", 0.0) or 0.0)
 
     return {
         "attack": int(troop_stats.get("attack", 0) * (1 + attack_bonus)),

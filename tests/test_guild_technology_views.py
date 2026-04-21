@@ -43,7 +43,7 @@ def test_technology_page_renders_capacity_tech_with_count_effect_and_ruby_cost(g
 
 
 @pytest.mark.django_db
-def test_technology_page_renders_actual_military_study_formula(guild_tech_client):
+def test_technology_page_hides_removed_military_study_even_if_legacy_row_exists(guild_tech_client):
     client, _user, guild = guild_tech_client
     GuildTechnology.objects.create(guild=guild, tech_key="military_study", category="combat", level=3, max_level=5)
 
@@ -51,8 +51,24 @@ def test_technology_page_renders_actual_military_study_formula(guild_tech_client
 
     content = response.content.decode("utf-8")
     assert response.status_code == 200
-    assert "武力 +6%，智力 +2%，防御 +0%" in content
-    assert "武力 +8%，智力 +4%，防御 +0%" in content
+    assert "兵法研习" not in content
+    assert "提升门客攻击力" not in content
+    assert "武力 +6%，智力 +2%，防御 +0%" not in content
+
+
+@pytest.mark.django_db
+def test_technology_page_projects_legacy_troop_tactics_to_runtime_max_and_mapping_copy(guild_tech_client):
+    client, _user, guild = guild_tech_client
+    GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", category="combat", level=5, max_level=5)
+
+    response = client.get(reverse("guilds:technology"))
+
+    content = response.content.decode("utf-8")
+    assert response.status_code == 200
+    assert "将帮会科技等级线性映射到个人兵种科技" in content
+    assert "5 / 10" in content
+    assert "按 5 / 10 级线性映射个人兵种科技" in content
+    assert "按 6 / 10 级线性映射个人兵种科技" in content
 
 
 @pytest.mark.django_db

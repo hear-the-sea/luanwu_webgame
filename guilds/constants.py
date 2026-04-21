@@ -36,7 +36,6 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
             "equipment_forge": {"silver": 5000, "grain": 2000, "gold_bar": 1},
             "experience_refine": {"silver": 5000, "grain": 2000, "gold_bar": 1},
             "resource_supply": {"silver": 4000, "grain": 3000, "gold_bar": 1},
-            "military_study": {"silver": 8000, "grain": 3000, "gold_bar": 2},
             "troop_tactics": {"silver": 8000, "grain": 3000, "gold_bar": 2},
             "resource_boost": {"silver": 10000, "grain": 5000, "gold_bar": 3},
             "march_speed": {"silver": 10000, "grain": 5000, "gold_bar": 3},
@@ -47,7 +46,6 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
             "equipment_forge": "装备锻造",
             "experience_refine": "经验炼制",
             "resource_supply": "资源补给",
-            "military_study": "兵法研习",
             "troop_tactics": "强兵战术",
             "resource_boost": "资源增产",
             "march_speed": "行军加速",
@@ -88,6 +86,17 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
         "warehouse_loot_whitelist": ["grain", "gold_bar", "red_ruby"],
     },
 }
+
+GUILD_TECHNOLOGY_CONFIGS: tuple[tuple[str, str, int], ...] = (
+    ("equipment_forge", "production", 5),
+    ("experience_refine", "production", 5),
+    ("resource_supply", "production", 5),
+    ("troop_tactics", "combat", 10),
+    ("resource_boost", "welfare", 5),
+    ("march_speed", "welfare", 5),
+    ("guild_lineup_capacity", "combat", 20),
+    ("guild_dispatch_capacity", "combat", 20),
+)
 
 
 def _to_positive_int(raw: Any, default: int, *, minimum: int = 1, maximum: int | None = None) -> int:
@@ -302,6 +311,15 @@ def load_guild_rules() -> dict[str, Any]:
 
 def clear_guild_rules_cache() -> None:
     load_guild_rules.cache_clear()
+
+
+def get_supported_guild_technology_configs() -> tuple[tuple[str, str, int], ...]:
+    supported_rule_keys = set(TECH_NAMES).intersection(TECH_UPGRADE_COSTS)
+    return tuple(config for config in GUILD_TECHNOLOGY_CONFIGS if config[0] in supported_rule_keys)
+
+
+def get_supported_guild_technology_keys() -> frozenset[str]:
+    return frozenset(tech_key for tech_key, _category, _max_level in get_supported_guild_technology_configs())
 
 
 def refresh_guild_constants() -> None:
