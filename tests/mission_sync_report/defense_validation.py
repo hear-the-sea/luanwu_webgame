@@ -148,6 +148,7 @@ def test_generate_sync_battle_report_defense_passes_enemy_label_override_to_ai_g
 
     monkeypatch.setattr("battle.combatants_pkg.ai_generator.get_all_guest_templates", lambda: {"enemy_guest": template})
     monkeypatch.setattr("battle.services.simulate_report", _fake_simulate_report)
+    monkeypatch.setattr("gameplay.services.technology.get_player_technologies", lambda _manor: {})
 
     mission = SimpleNamespace(
         is_defense=True,
@@ -471,3 +472,43 @@ def test_generate_sync_battle_report_defense_rejects_blank_enemy_guest_skill_ent
             travel_seconds=0,
             seed=1,
         )
+
+
+def test_generate_sync_battle_report_defense_passes_player_technology_to_defender_setup(monkeypatch):
+    captured: dict[str, object] = {}
+
+    def _fake_simulate_report(**kwargs):
+        captured.update(kwargs)
+        return {"ok": True}
+
+    monkeypatch.setattr("battle.services.simulate_report", _fake_simulate_report)
+    monkeypatch.setattr(
+        "gameplay.services.technology.get_player_technologies", lambda _manor: {"gong_attack": 7, "gong_hp": 5}
+    )
+    monkeypatch.setattr("battle.combatants_pkg.build_named_ai_guests", lambda *_a, **_k: [])
+
+    mission = SimpleNamespace(
+        is_defense=True,
+        enemy_technology={},
+        enemy_guests=[],
+        enemy_troops={},
+        battle_type="task",
+        name="Defense Mission",
+        drop_table={},
+    )
+    manor = SimpleNamespace(max_squad_size=6)
+
+    generate_sync_battle_report(
+        manor=manor,
+        mission=mission,
+        guests=[],
+        loadout={"archer": 12},
+        defender_setup={},
+        travel_seconds=0,
+        seed=1,
+    )
+
+    assert captured["defender_setup"] == {
+        "troop_loadout": {"archer": 12},
+        "technology": {"levels": {"gong_attack": 7, "gong_hp": 5}},
+    }

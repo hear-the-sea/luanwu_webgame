@@ -114,6 +114,19 @@ def test_get_guest_stat_bonuses_tolerates_invalid_guest_bonus():
     assert bonuses == {"attack": 0.0, "defense": 0.0, "hp": 0.0, "agility": 0.0}
 
 
+def test_build_player_battle_technology_payload_wraps_levels(monkeypatch):
+    manor = object()
+    monkeypatch.setattr(
+        tech_service,
+        "get_player_technologies",
+        lambda current_manor: {"gong_attack": 7} if current_manor is manor else {},
+    )
+
+    payload = tech_service.build_player_battle_technology_payload(manor)
+
+    assert payload == {"levels": {"gong_attack": 7}}
+
+
 def test_refresh_technology_upgrades_local_fallback_throttles_when_cache_unavailable(monkeypatch, settings):
     settings.MANOR_STATE_REFRESH_MIN_INTERVAL_SECONDS = 5
     tech_refresh_state.clear_local_tech_refresh_fallback()

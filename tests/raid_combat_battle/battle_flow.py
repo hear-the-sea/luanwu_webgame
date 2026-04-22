@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from battle.models import TroopTemplate
 from core.exceptions import BattlePreparationError
-from gameplay.models import PlayerTroop, RaidRun
+from gameplay.models import PlayerTechnology, PlayerTroop, RaidRun
 from gameplay.services.raid.combat import battle as combat_battle
 from gameplay.services.raid.combat import runs as combat_runs
 from guests.models import Guest, GuestStatus, GuestTemplate
@@ -332,6 +332,86 @@ def test_execute_raid_battle_uses_all_idle_defenders_even_when_max_squad_is_lowe
     ]
     assert captured["defender_max_squad"] == 4
     assert excluded_guest.id not in captured["defender_guest_ids"]
+
+
+@pytest.mark.django_db
+def test_execute_raid_battle_passes_defender_technology_levels(monkeypatch, django_user_model):
+    attacker, defender = build_attacker_defender(
+        django_user_model,
+        attacker_username="raid_defender_tech_a",
+        defender_username="raid_defender_tech_d",
+    )
+
+    template = GuestTemplate.objects.create(
+        key="raid_defender_tech_tpl",
+        name="踢馆科技门客",
+        archetype="military",
+        rarity="green",
+        base_attack=120,
+        base_intellect=90,
+        base_defense=100,
+        base_agility=90,
+        base_luck=50,
+        base_hp=1500,
+    )
+    attacker_guest = Guest.objects.create(
+        manor=attacker,
+        template=template,
+        status=GuestStatus.DEPLOYED,
+        level=20,
+        force=300,
+        intellect=120,
+        defense_stat=130,
+        agility=110,
+        current_hp=900,
+    )
+    defender_guest = Guest.objects.create(
+        manor=defender,
+        template=template,
+        status=GuestStatus.IDLE,
+        level=20,
+        force=180,
+        intellect=90,
+        defense_stat=100,
+        agility=95,
+        current_hp=1200,
+    )
+    PlayerTechnology.objects.create(manor=defender, tech_key="gong_attack", level=10)
+    PlayerTechnology.objects.create(manor=defender, tech_key="gong_hp", level=8)
+
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.MARCHING,
+        troop_loadout={},
+        travel_time=60,
+        battle_at=timezone.now(),
+        return_at=timezone.now(),
+    )
+    run.guests.add(attacker_guest)
+
+    captured: dict[str, object] = {}
+
+    def _fake_simulate_report(**kwargs):
+        captured["defender_setup"] = kwargs["defender_setup"]
+        return SimpleNamespace(
+            winner="attacker",
+            attacker_team=[{"guest_id": attacker_guest.id, "remaining_hp": 500}],
+            defender_team=[{"guest_id": defender_guest.id, "remaining_hp": 300}],
+            losses={
+                "attacker": {"hp_updates": {str(attacker_guest.id): 500}},
+                "defender": {"hp_updates": {str(defender_guest.id): 300}},
+            },
+        )
+
+    monkeypatch.setattr("battle.services.simulate_report", _fake_simulate_report)
+
+    combat_battle._execute_raid_battle(run)
+
+    assert captured["defender_setup"] == {
+        "troop_loadout": {},
+        "technology": {"levels": {"gong_attack": 10, "gong_hp": 8}},
+    }
 
 
 @pytest.mark.django_db

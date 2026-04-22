@@ -117,6 +117,10 @@ def get_player_technologies(manor: Any) -> Dict[str, int]:
     return {tech.tech_key: tech.level for tech in manor.technologies.all()}
 
 
+def build_player_battle_technology_payload(manor: Any) -> Dict[str, Dict[str, int]]:
+    return {"levels": get_player_technologies(manor)}
+
+
 def get_technology_display_data(manor: Any, category: str) -> List[Dict[str, Any]]:
     technologies = get_technologies_by_category(category)
     player_techs = {pt.tech_key: pt for pt in manor.technologies.all()}

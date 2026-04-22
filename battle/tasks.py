@@ -275,6 +275,7 @@ def generate_report_task(
         if mission and mission.is_defense:
             from battle.combatants_pkg import build_named_ai_guests
             from core.game_data.technology import get_guest_stat_bonuses, resolve_enemy_tech_levels
+            from gameplay.services.technology import build_player_battle_technology_payload
 
             tech_conf = _normalize_enemy_technology_config(mission.enemy_technology)
             attacker_guest_level = _coerce_enemy_guest_level(tech_conf)
@@ -285,7 +286,6 @@ def generate_report_task(
             attacker_guest_bonuses = get_guest_stat_bonuses(tech_conf)
             attacker_guest_skills = _normalize_guest_skills(tech_conf)
             enemy_troops = _normalize_troop_loadout(mission.enemy_troops)
-
             report = simulate_report(
                 manor=manor,
                 battle_type=normalized_battle_type,
@@ -293,7 +293,10 @@ def generate_report_task(
                 troop_loadout=enemy_troops,
                 fill_default_troops=False,
                 attacker_guests=attacker_guests,
-                defender_setup={"troop_loadout": normalized_troop_loadout},
+                defender_setup={
+                    "troop_loadout": normalized_troop_loadout,
+                    "technology": build_player_battle_technology_payload(manor),
+                },
                 defender_guests=battle_guests,
                 defender_max_squad=len(guests) if guests else None,
                 drop_table={},

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from gameplay.models import PlayerTechnology
 from gameplay.services.manor.core import ensure_manor
 from guests.models import GuestTemplate
 from tests.battle_tasks_generate_report_task.support import assert_no_retry
@@ -145,3 +146,46 @@ def test_generate_report_task_defense_rejects_invalid_defender_troop_loadout(mon
             troop_loadout={"archer": "bad"},
             battle_type="task",
         )
+
+
+@pytest.mark.django_db
+def test_generate_report_task_defense_passes_player_technology_to_defender_setup(monkeypatch, django_user_model):
+    from battle.tasks import generate_report_task
+    from gameplay.models import MissionTemplate
+
+    captured: dict[str, object] = {}
+
+    def _fake_simulate_report(**kwargs):
+        captured.update(kwargs)
+        return type("DummyReport", (), {"pk": 1})()
+
+    user = django_user_model.objects.create_user(username="task_defense_player_tech", password="pass")
+    manor = ensure_manor(user)
+    PlayerTechnology.objects.create(manor=manor, tech_key="gong_attack", level=7)
+    PlayerTechnology.objects.create(manor=manor, tech_key="gong_hp", level=5)
+    mission = MissionTemplate.objects.create(
+        key="m_task_defense_player_tech",
+        name="DefenseTaskPlayerTech",
+        is_defense=True,
+        enemy_technology={},
+        enemy_troops={},
+        enemy_guests=[],
+    )
+
+    assert_no_retry(monkeypatch)
+    monkeypatch.setattr("battle.tasks.simulate_report", _fake_simulate_report)
+
+    report_id = generate_report_task.run(
+        manor_id=manor.id,
+        mission_id=mission.id,
+        run_id=None,
+        guest_ids=[],
+        troop_loadout={"archer": 12},
+        battle_type="task",
+    )
+
+    assert report_id == 1
+    assert captured["defender_setup"] == {
+        "troop_loadout": {"archer": 12},
+        "technology": {"levels": {"gong_attack": 7, "gong_hp": 5}},
+    }

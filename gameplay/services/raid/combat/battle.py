@@ -20,6 +20,7 @@ from core.utils.infrastructure import (
     combine_infrastructure_exceptions,
 )
 from gameplay.services.battle_snapshots import build_guest_battle_snapshots, build_guest_snapshot_proxies
+from gameplay.services.technology import build_player_battle_technology_payload
 from guests.models import Guest, GuestStatus
 from guests.query_utils import guest_template_rarity_rank_case
 
@@ -358,10 +359,9 @@ def _execute_raid_battle(run: RaidRun) -> Any:
     ):
         defender_troops[troop.troop_template.key] = troop.count
     defender_guest_ids = {guest.id for guest in defender_guests}
-
     defender_setup = {
         "troop_loadout": defender_troops,
-        "technology": {},
+        "technology": build_player_battle_technology_payload(defender),
     }
 
     report = simulate_report(
