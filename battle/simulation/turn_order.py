@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING, List
 
 from .utils import alive
 
@@ -18,12 +18,15 @@ def determine_turn_order(
     defender_team: List["Combatant"],
     rng: random.Random,
 ) -> List["Combatant"]:
+    del rng
     participants = alive(attacker_team) + alive(defender_team)
     if not participants:
         return []
-    weighted: List[Tuple[float, float, "Combatant"]] = []
-    for combatant in participants:
-        initiative = combatant.agility + rng.uniform(0, 5)
-        weighted.append((initiative, rng.random(), combatant))
-    weighted.sort(key=lambda item: (item[0], item[1]), reverse=True)
-    return [item[2] for item in weighted]
+    return sorted(
+        participants,
+        key=lambda combatant: (
+            combatant.agility,
+            1 if combatant.side == "defender" else 0,
+        ),
+        reverse=True,
+    )

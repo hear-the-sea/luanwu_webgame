@@ -36,7 +36,7 @@ from .inventory.core import consume_inventory_item, get_item_quantity
 
 GOLD_BAR_ITEM_KEY = "gold_bar"
 
-UNIQUE_PRISONER_RECRUIT_TEMPLATE_GROUPS = {
+PRISONER_RECRUIT_DUPLICATE_TEMPLATE_GROUPS = {
     "hist_sljnbc_0589": ("hist_sljnbc_0589", "hist_sljnbc_0589_blue", "hist_sljnbc_0589_purple"),
     "hist_sljnbc_0589_blue": ("hist_sljnbc_0589", "hist_sljnbc_0589_blue", "hist_sljnbc_0589_purple"),
     "hist_sljnbc_0589_purple": ("hist_sljnbc_0589", "hist_sljnbc_0589_blue", "hist_sljnbc_0589_purple"),
@@ -49,8 +49,23 @@ UNIQUE_PRISONER_RECRUIT_TEMPLATE_GROUPS = {
 }
 
 
-def _get_prisoner_recruit_exclusive_keys(template_key: str) -> tuple[str, ...]:
-    return UNIQUE_PRISONER_RECRUIT_TEMPLATE_GROUPS.get(str(template_key or "").strip(), ())
+PRISONER_RECRUIT_REPEATABLE_TEMPLATE_GROUPS: dict[str, tuple[str, ...]] = {
+    "pubayi_green": ("pubayi_green", "pubayi_blue"),
+    "pubayi_blue": ("pubayi_green", "pubayi_blue"),
+    "orig_edward_blue": ("orig_edward_blue", "orig_edward_purple"),
+    "orig_edward_purple": ("orig_edward_blue", "orig_edward_purple"),
+}
+
+
+def _get_prisoner_recruit_duplicate_keys(template_key: str) -> tuple[str, ...]:
+    normalized_key = str(template_key or "").strip()
+    if not normalized_key:
+        return ()
+    return PRISONER_RECRUIT_DUPLICATE_TEMPLATE_GROUPS.get(normalized_key, (normalized_key,))
+
+
+def _get_prisoner_recruit_repeatable_keys(template_key: str) -> tuple[str, ...]:
+    return PRISONER_RECRUIT_REPEATABLE_TEMPLATE_GROUPS.get(str(template_key or "").strip(), ())
 
 
 def list_held_prisoners(manor: Manor) -> List[JailPrisoner]:
@@ -201,8 +216,13 @@ def recruit_prisoner(manor: Manor, prisoner_id: int) -> Guest:
         raise GuestCapacityFullError()
 
     template: GuestTemplate = prisoner.guest_template
-    exclusive_template_keys = _get_prisoner_recruit_exclusive_keys(template.key)
-    if exclusive_template_keys and locked_manor.guests.filter(template__key__in=exclusive_template_keys).exists():
+    repeatable_template_keys = _get_prisoner_recruit_repeatable_keys(template.key)
+    duplicate_template_keys = _get_prisoner_recruit_duplicate_keys(template.key)
+    if (
+        duplicate_template_keys
+        and not repeatable_template_keys
+        and locked_manor.guests.filter(template__key__in=duplicate_template_keys).exists()
+    ):
         raise JailError(f"庄园已拥有门客「{template.name}」，不可重复招募")
 
     cost = int(getattr(PVPConstants, "JAIL_RECRUIT_GOLD_BAR_COST", 1) or 1)

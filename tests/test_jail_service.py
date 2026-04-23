@@ -404,11 +404,13 @@ def test_recruit_prisoner_raises_when_gold_insufficient(mock_manor_model):
     manor = MagicMock()
     manor.guest_capacity = 10
     manor.guests.count.return_value = 5
+    manor.guests.filter.return_value.exists.return_value = False
     mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
 
     prisoner = MagicMock()
     prisoner.status = jail_service.JailPrisoner.Status.HELD
     prisoner.loyalty = 20
+    prisoner.guest_template = SimpleNamespace(key="hist_sljnbc_0013", name="吕布")
 
     with patch.object(jail_service.JailPrisoner, "objects") as mock_qs:
         mock_qs.select_for_update.return_value.select_related.return_value.filter.return_value.first.return_value = (
@@ -422,6 +424,172 @@ def test_recruit_prisoner_raises_when_gold_insufficient(mock_manor_model):
             with patch.object(jail_service, "get_item_quantity", return_value=0):
                 with pytest.raises(jail_service.JailError, match="金条不足"):
                     jail_service.recruit_prisoner(manor, prisoner_id=1)
+
+
+@patch("gameplay.services.jail.Manor")
+def test_recruit_prisoner_rejects_duplicate_standard_guest(mock_manor_model):
+    manor = MagicMock()
+    manor.guest_capacity = 10
+    manor.guests.count.return_value = 2
+    manor.guests.filter.return_value.exists.return_value = True
+    mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
+
+    prisoner = MagicMock()
+    prisoner.status = jail_service.JailPrisoner.Status.HELD
+    prisoner.loyalty = 20
+    prisoner.guest_template = SimpleNamespace(
+        key="hist_sljnbc_0013",
+        name="吕布",
+        default_gender="male",
+        default_morality=60,
+        base_attack=100,
+        base_intellect=80,
+        base_defense=90,
+        base_agility=70,
+        base_luck=50,
+        base_hp=1000,
+        rarity="purple",
+        archetype="military",
+    )
+    prisoner.original_guest_name = ""
+
+    with patch.object(jail_service.JailPrisoner, "objects") as mock_qs:
+        mock_qs.select_for_update.return_value.select_related.return_value.filter.return_value.first.return_value = (
+            prisoner
+        )
+
+        with patch.object(jail_service, "get_item_quantity", return_value=1):
+            with patch.object(jail_service, "apply_recruitment_variance") as mock_variance:
+                mock_variance.return_value = {
+                    "force": 100,
+                    "intellect": 80,
+                    "defense": 90,
+                    "agility": 70,
+                    "luck": 50,
+                }
+                with patch.object(jail_service.Guest.objects, "create", return_value=MagicMock()):
+                    with patch.object(jail_service, "grant_template_skills"):
+                        with patch.object(jail_service, "consume_inventory_item") as mock_consume:
+                            with pytest.raises(jail_service.JailError, match="不可重复招募"):
+                                jail_service.recruit_prisoner(manor, prisoner_id=1)
+
+    mock_consume.assert_not_called()
+
+
+@patch("gameplay.services.jail.Manor")
+def test_recruit_prisoner_allows_duplicate_repeatable_standard_guest(mock_manor_model, monkeypatch):
+    manor = MagicMock()
+    manor.guest_capacity = 10
+    manor.guests.count.return_value = 2
+    manor.guests.filter.return_value.exists.return_value = True
+    mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
+    monkeypatch.setattr(
+        jail_service,
+        "PRISONER_RECRUIT_REPEATABLE_TEMPLATE_GROUPS",
+        {"hist_sljnbc_0013": ("hist_sljnbc_0013",)},
+    )
+
+    prisoner = MagicMock()
+    prisoner.status = jail_service.JailPrisoner.Status.HELD
+    prisoner.loyalty = 20
+    prisoner.guest_template = SimpleNamespace(
+        key="hist_sljnbc_0013",
+        name="吕布",
+        default_gender="male",
+        default_morality=60,
+        base_attack=100,
+        base_intellect=80,
+        base_defense=90,
+        base_agility=70,
+        base_luck=50,
+        base_hp=1000,
+        rarity="purple",
+        archetype="military",
+    )
+    prisoner.original_guest_name = ""
+
+    created_guest = MagicMock()
+
+    with patch.object(jail_service.JailPrisoner, "objects") as mock_qs:
+        mock_qs.select_for_update.return_value.select_related.return_value.filter.return_value.first.return_value = (
+            prisoner
+        )
+
+        with patch.object(jail_service, "get_item_quantity", return_value=1):
+            with patch.object(jail_service, "apply_recruitment_variance") as mock_variance:
+                mock_variance.return_value = {
+                    "force": 100,
+                    "intellect": 80,
+                    "defense": 90,
+                    "agility": 70,
+                    "luck": 50,
+                }
+                with patch.object(jail_service.Guest.objects, "create", return_value=created_guest):
+                    with patch.object(jail_service, "grant_template_skills"):
+                        with patch.object(jail_service, "consume_inventory_item") as mock_consume:
+                            result = jail_service.recruit_prisoner(manor, prisoner_id=1)
+
+    assert result is created_guest
+    mock_consume.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    ("template_key", "template_name"),
+    [
+        ("pubayi_blue", "蒲巴乙"),
+        ("orig_edward_blue", "爱德华"),
+    ],
+)
+@patch("gameplay.services.jail.Manor")
+def test_recruit_prisoner_allows_duplicate_configured_repeatable_guest(mock_manor_model, template_key, template_name):
+    manor = MagicMock()
+    manor.guest_capacity = 10
+    manor.guests.count.return_value = 2
+    manor.guests.filter.return_value.exists.return_value = True
+    mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
+
+    prisoner = MagicMock()
+    prisoner.status = jail_service.JailPrisoner.Status.HELD
+    prisoner.loyalty = 20
+    prisoner.guest_template = SimpleNamespace(
+        key=template_key,
+        name=template_name,
+        default_gender="male",
+        default_morality=60,
+        base_attack=100,
+        base_intellect=80,
+        base_defense=90,
+        base_agility=70,
+        base_luck=50,
+        base_hp=1000,
+        rarity="blue",
+        archetype="military",
+    )
+    prisoner.original_guest_name = ""
+
+    created_guest = MagicMock()
+
+    with patch.object(jail_service.JailPrisoner, "objects") as mock_qs:
+        mock_qs.select_for_update.return_value.select_related.return_value.filter.return_value.first.return_value = (
+            prisoner
+        )
+
+        with patch.object(jail_service, "get_item_quantity", return_value=1):
+            with patch.object(jail_service, "apply_recruitment_variance") as mock_variance:
+                mock_variance.return_value = {
+                    "force": 100,
+                    "intellect": 80,
+                    "defense": 90,
+                    "agility": 70,
+                    "luck": 50,
+                }
+                with patch.object(jail_service.Guest.objects, "create", return_value=created_guest):
+                    with patch.object(jail_service, "grant_template_skills"):
+                        with patch.object(jail_service, "consume_inventory_item") as mock_consume:
+                            result = jail_service.recruit_prisoner(manor, prisoner_id=1)
+
+    assert result is created_guest
+    mock_consume.assert_called_once()
 
 
 @patch("gameplay.services.jail.Manor")
