@@ -9,7 +9,7 @@
     "test:js": "node --test static/js/tests/chat_widget_*.test.js"
   },
   "devDependencies": {
-    "tailwindcss": "^3.4.0",
+    "tailwindcss": "^4.2.4",
     "postcss": "^8.4.32",
     "autoprefixer": "^10.4.16"
   }
