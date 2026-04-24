@@ -34,6 +34,7 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
     "technology": {
         "upgrade_costs": {
             "equipment_forge": {"silver": 5000, "grain": 2000, "gold_bar": 1},
+            "guard_armory": {"silver": 5000, "grain": 2500, "gold_bar": 1},
             "experience_refine": {"silver": 5000, "grain": 2000, "gold_bar": 1},
             "resource_supply": {"silver": 4000, "grain": 3000, "gold_bar": 1},
             "troop_tactics": {"silver": 8000, "grain": 3000, "gold_bar": 2},
@@ -44,7 +45,8 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
         },
         "names": {
             "equipment_forge": "装备锻造",
-            "experience_refine": "经验炼制",
+            "guard_armory": "护院军备",
+            "experience_refine": "武学研习",
             "resource_supply": "资源补给",
             "troop_tactics": "强兵战术",
             "resource_boost": "资源增产",
@@ -88,9 +90,10 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
 }
 
 GUILD_TECHNOLOGY_CONFIGS: tuple[tuple[str, str, int], ...] = (
-    ("equipment_forge", "production", 5),
-    ("experience_refine", "production", 5),
-    ("resource_supply", "production", 5),
+    ("equipment_forge", "production", 10),
+    ("guard_armory", "production", 10),
+    ("experience_refine", "production", 10),
+    ("resource_supply", "production", 10),
     ("troop_tactics", "combat", 10),
     ("resource_boost", "welfare", 5),
     ("march_speed", "welfare", 5),

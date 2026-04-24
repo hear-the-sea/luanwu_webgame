@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
+import yaml
 
 import battle.troops as troop_loader
 import gameplay.services.buildings.base as building_base
@@ -9,6 +12,23 @@ import gameplay.services.recruitment.recruitment as troop_recruitment
 import guilds.services.warehouse_config as warehouse_config
 import trade.services.auction_config as auction_config
 import trade.services.shop_config as shop_config
+
+
+def test_warehouse_production_item_keys_exist_in_item_templates():
+    base_dir = Path(__file__).resolve().parents[1]
+    production = yaml.safe_load((base_dir / "data" / "warehouse_production.yaml").read_text(encoding="utf-8"))
+    item_templates = yaml.safe_load((base_dir / "data" / "item_templates.yaml").read_text(encoding="utf-8"))
+    item_keys = {entry["key"] for entry in item_templates["items"]}
+
+    missing = []
+    for section, section_data in production.items():
+        for level, entries in (section_data.get("levels") or {}).items():
+            for entry in entries:
+                item_key = entry.get("item_key")
+                if item_key not in item_keys:
+                    missing.append((section, level, item_key))
+
+    assert missing == []
 
 
 def test_recruitment_troop_loader_sanitizes_invalid_yaml(tmp_path):

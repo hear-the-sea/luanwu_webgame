@@ -337,7 +337,7 @@ def validate_trade_market_rules(data: dict, *, file: str = "trade_market_rules.y
 # Schema: warehouse_production.yaml
 # ---------------------------------------------------------------------------
 
-VALID_WAREHOUSE_TECH_KEYS = {"equipment", "experience", "resource"}
+VALID_WAREHOUSE_TECH_KEYS = {"equipment", "experience", "guard", "resource"}
 
 
 def validate_warehouse_production(data: dict, *, file: str = "warehouse_production.yaml") -> ValidationResult:
@@ -401,6 +401,23 @@ def validate_warehouse_production(data: dict, *, file: str = "warehouse_producti
                         path=item_path,
                         field_name="contribution_cost",
                         allow_zero=False,
+                    )
+                weekly_personal_limit = item.get("weekly_personal_limit")
+                if weekly_personal_limit is not None:
+                    _check_type(
+                        weekly_personal_limit,
+                        int,
+                        result=result,
+                        file=file,
+                        path=item_path,
+                        field_name="weekly_personal_limit",
+                    )
+                    _check_positive(
+                        weekly_personal_limit,
+                        result=result,
+                        file=file,
+                        path=item_path,
+                        field_name="weekly_personal_limit",
                     )
 
     return result

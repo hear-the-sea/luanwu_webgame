@@ -216,6 +216,166 @@ def test_work_loot_box_grants_random_silver_and_single_gear_drop(monkeypatch, dj
 
 
 @pytest.mark.django_db
+def test_loot_box_weighted_gear_choices_select_weighted_gear(monkeypatch, django_user_model):
+    user = django_user_model.objects.create_user(username="weighted_loot_box_logic", password="pass123")
+    manor = ensure_manor(user)
+
+    target_gear = GearTemplate.objects.create(
+        key="weighted_loot_gear_a",
+        name="权重测试头盔A",
+        slot=GearSlot.HELMET,
+        rarity="green",
+    )
+    GearTemplate.objects.create(
+        key="weighted_loot_gear_b",
+        name="权重测试头盔B",
+        slot=GearSlot.HELMET,
+        rarity="green",
+    )
+
+    chest_template = ItemTemplate.objects.create(
+        key="weighted_loot_box_test",
+        name="权重装备宝箱测试",
+        effect_type=ItemTemplate.EffectType.LOOT_BOX,
+        is_usable=True,
+        effect_payload={
+            "gear_chance": 1,
+            "gear_choices": [
+                {"item_key": "weighted_loot_gear_a", "weight": 90},
+                {"item_key": "weighted_loot_gear_b", "weight": 10},
+            ],
+        },
+    )
+    chest = InventoryItem.objects.create(
+        manor=manor,
+        template=chest_template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.random", lambda: 0.0)
+    monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.uniform", lambda _a, _b: 1.0)
+
+    payload = use_inventory_item(chest)
+
+    gained_gears = manor.gears.filter(template__key__in=["weighted_loot_gear_a", "weighted_loot_gear_b"])
+    assert gained_gears.count() == 1
+    assert gained_gears.filter(template_id=target_gear.id).exists()
+    assert any(entry == f"装备【{target_gear.name}】" for entry in payload["rewards"])
+
+
+@pytest.mark.django_db
+def test_loot_box_weighted_gear_choices_grant_inventory_equipment_when_template_not_materialized(
+    monkeypatch, django_user_model
+):
+    user = django_user_model.objects.create_user(username="weighted_loot_box_item_gear", password="pass123")
+    manor = ensure_manor(user)
+    target_template = ItemTemplate.objects.create(
+        key="weighted_inventory_gear_a",
+        name="权重测试装备道具A",
+        effect_type="equip_helmet",
+        is_usable=False,
+        effect_payload={"hp": 10},
+        rarity="green",
+    )
+    ItemTemplate.objects.create(
+        key="weighted_inventory_gear_b",
+        name="权重测试装备道具B",
+        effect_type="equip_helmet",
+        is_usable=False,
+        effect_payload={"hp": 20},
+        rarity="green",
+    )
+    chest_template = ItemTemplate.objects.create(
+        key="weighted_inventory_gear_box_test",
+        name="权重装备道具箱测试",
+        effect_type=ItemTemplate.EffectType.LOOT_BOX,
+        is_usable=True,
+        effect_payload={
+            "gear_chance": 1,
+            "gear_choices": [
+                {"item_key": "weighted_inventory_gear_a", "weight": 90},
+                {"item_key": "weighted_inventory_gear_b", "weight": 10},
+            ],
+        },
+    )
+    chest = InventoryItem.objects.create(
+        manor=manor,
+        template=chest_template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.random", lambda: 0.0)
+    monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.uniform", lambda _a, _b: 1.0)
+
+    payload = use_inventory_item(chest)
+
+    inventory_entry = InventoryItem.objects.get(
+        manor=manor,
+        template=target_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    assert inventory_entry.quantity == 1
+    assert manor.gears.filter(template__key="weighted_inventory_gear_a").count() == 0
+    assert any(entry == f"装备【{target_template.name}】" for entry in payload["rewards"])
+
+
+@pytest.mark.django_db
+def test_loot_box_weighted_skill_book_choices_select_weighted_book(monkeypatch, django_user_model):
+    user = django_user_model.objects.create_user(username="weighted_skill_book_box", password="pass123")
+    manor = ensure_manor(user)
+    target_book = ItemTemplate.objects.create(
+        key="weighted_skill_book_a",
+        name="权重测试技能书A",
+        effect_type=ItemTemplate.EffectType.SKILL_BOOK,
+        is_usable=False,
+        effect_payload={"skill_key": "weighted_skill_a", "skill_name": "权重术法A"},
+        rarity="green",
+    )
+    ItemTemplate.objects.create(
+        key="weighted_skill_book_b",
+        name="权重测试技能书B",
+        effect_type=ItemTemplate.EffectType.SKILL_BOOK,
+        is_usable=False,
+        effect_payload={"skill_key": "weighted_skill_b", "skill_name": "权重术法B"},
+        rarity="green",
+    )
+    chest_template = ItemTemplate.objects.create(
+        key="weighted_skill_book_box_test",
+        name="权重技能书箱测试",
+        effect_type=ItemTemplate.EffectType.LOOT_BOX,
+        is_usable=True,
+        effect_payload={
+            "skill_book_chance": 1,
+            "skill_book_choices": [
+                {"item_key": "weighted_skill_book_a", "weight": 90},
+                {"item_key": "weighted_skill_book_b", "weight": 10},
+            ],
+        },
+    )
+    chest = InventoryItem.objects.create(
+        manor=manor,
+        template=chest_template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.random", lambda: 0.0)
+    monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.uniform", lambda _a, _b: 1.0)
+
+    payload = use_inventory_item(chest)
+
+    skill_book_entry = InventoryItem.objects.get(
+        manor=manor,
+        template=target_book,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    assert skill_book_entry.quantity == 1
+    assert any(entry == f"技能书【{target_book.name}】" for entry in payload["rewards"])
+
+
+@pytest.mark.django_db
 def test_loot_box_malformed_silver_grant_result_raises_assertion_error(monkeypatch, django_user_model):
     user = django_user_model.objects.create_user(username="loot_box_bad_silver_result", password="pass123")
     manor = ensure_manor(user)

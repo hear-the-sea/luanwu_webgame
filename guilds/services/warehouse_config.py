@@ -27,6 +27,7 @@ class ProductionItem:
     item_key: str
     quantity: int
     contribution_cost: int
+    weekly_personal_limit: int = 0
 
 
 @dataclass
@@ -92,11 +93,13 @@ def load_warehouse_production() -> Dict[str, TechProduction]:
                     continue
                 quantity = _coerce_positive_int(item.get("quantity"), 1)
                 contribution_cost = _coerce_non_negative_int(item.get("contribution_cost"), 0)
+                weekly_personal_limit = _coerce_non_negative_int(item.get("weekly_personal_limit"), 0)
                 normalized_items.append(
                     ProductionItem(
                         item_key=item_key,
                         quantity=quantity,
                         contribution_cost=contribution_cost,
+                        weekly_personal_limit=weekly_personal_limit,
                     )
                 )
             levels[level_int] = normalized_items
@@ -133,3 +136,17 @@ def get_production_items(tech_key: str, level: int) -> List[ProductionItem]:
     if tech:
         return tech.get_items(level)
     return []
+
+
+def get_weekly_personal_limit(item_key: str) -> int:
+    """获取物品每周个人兑换上限；0 表示不限购。"""
+    normalized_key = str(item_key or "").strip()
+    if not normalized_key:
+        return 0
+    limits: list[int] = []
+    for production in get_warehouse_production().values():
+        for items in production.levels.values():
+            for item in items:
+                if item.item_key == normalized_key and item.weekly_personal_limit > 0:
+                    limits.append(item.weekly_personal_limit)
+    return max(limits, default=0)

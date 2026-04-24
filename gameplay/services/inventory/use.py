@@ -12,6 +12,7 @@ from typing import Any, Callable, Dict, List
 
 from django.db import transaction
 
+from common.utils.random_utils import weighted_random_choice
 from core.exceptions import (
     GuestAlreadyOwnedError,
     GuestCapacityFullError,
@@ -77,6 +78,23 @@ def _normalize_non_empty_string_list(raw: Any, *, field_name: str) -> list[str]:
     normalized: list[str] = []
     for entry in raw:
         normalized.append(_normalize_non_empty_string(entry, field_name=field_name))
+    return normalized
+
+
+def _normalize_weighted_item_choices(raw: Any, *, field_name: str) -> list[dict[str, int | str]]:
+    if not isinstance(raw, list) or not raw:
+        raise ItemNotConfiguredError(f"{field_name} 配置异常")
+
+    normalized: list[dict[str, int | str]] = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            raise ItemNotConfiguredError(f"{field_name} 配置异常")
+        normalized.append(
+            {
+                "item_key": _normalize_non_empty_string(entry.get("item_key"), field_name=field_name),
+                "weight": _normalize_positive_config_int(entry.get("weight"), field_name=field_name),
+            }
+        )
     return normalized
 
 
@@ -366,19 +384,35 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
     gear_keys: list[str] = []
     if gear_keys_raw is not None:
         gear_keys = _normalize_non_empty_string_list(gear_keys_raw, field_name="gear_keys")
+    gear_choices_raw = payload.get("gear_choices")
+    gear_choices: list[dict[str, int | str]] = []
+    if gear_choices_raw is not None:
+        gear_choices = _normalize_weighted_item_choices(gear_choices_raw, field_name="gear_choices")
     gear_chance = _normalize_probability(payload.get("gear_chance"), field_name="gear_chance")
     skipped_bonus_items: List[str] = []
-    if gear_chance > 0 and gear_keys and inventory_random.random() < gear_chance:
+    if gear_chance > 0 and (gear_choices or gear_keys) and inventory_random.random() < gear_chance:
         from guests.models import GearTemplate
         from guests.services.equipment import give_gear
 
-        gear_key = inventory_random.choice(gear_keys)
-        gear_template = GearTemplate.objects.filter(key=gear_key).first()
-        if not gear_template:
-            skipped_bonus_items.append(gear_key)
+        if gear_choices:
+            choice_keys = [str(entry["item_key"]) for entry in gear_choices]
+            choice_weights = [float(entry["weight"]) for entry in gear_choices]
+            gear_key = weighted_random_choice(choice_keys, choice_weights, inventory_random)
         else:
+            gear_key = inventory_random.choice(gear_keys)
+        gear_template = GearTemplate.objects.filter(key=gear_key).first()
+        if gear_template:
             give_gear(manor, gear_template)
             rewards.append(f"装备【{gear_template.name}】")
+        else:
+            from guests.utils.equipment_utils import EQUIP_SLOT_MAP
+
+            item_template = ItemTemplate.objects.filter(key=gear_key).first()
+            if item_template and item_template.effect_type in EQUIP_SLOT_MAP:
+                add_item_to_inventory(manor, gear_key, 1)
+                rewards.append(f"装备【{item_template.name}】")
+            else:
+                skipped_bonus_items.append(gear_key)
 
     # 4. 技能书掉落（概率，随机一本）
     skill_book_chance = _normalize_probability(payload.get("skill_book_chance"), field_name="skill_book_chance")
@@ -386,8 +420,21 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
     skill_book_keys: list[str] = []
     if skill_book_keys_raw is not None:
         skill_book_keys = _normalize_non_empty_string_list(skill_book_keys_raw, field_name="skill_book_keys")
-    if skill_book_chance > 0 and skill_book_keys and inventory_random.random() < skill_book_chance:
-        book_key = inventory_random.choice(skill_book_keys)
+    skill_book_choices_raw = payload.get("skill_book_choices")
+    skill_book_choices: list[dict[str, int | str]] = []
+    if skill_book_choices_raw is not None:
+        skill_book_choices = _normalize_weighted_item_choices(skill_book_choices_raw, field_name="skill_book_choices")
+    if (
+        skill_book_chance > 0
+        and (skill_book_choices or skill_book_keys)
+        and inventory_random.random() < skill_book_chance
+    ):
+        if skill_book_choices:
+            choice_keys = [str(entry["item_key"]) for entry in skill_book_choices]
+            choice_weights = [float(entry["weight"]) for entry in skill_book_choices]
+            book_key = weighted_random_choice(choice_keys, choice_weights, inventory_random)
+        else:
+            book_key = inventory_random.choice(skill_book_keys)
         try:
             add_item_to_inventory(manor, book_key, 1)
             book_template = ItemTemplate.objects.filter(key=book_key).first()

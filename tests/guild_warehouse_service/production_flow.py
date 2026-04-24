@@ -97,3 +97,31 @@ def test_produce_equipment_reads_latest_runtime_warehouse_production_config(djan
         assert new_item.contribution_cost == 99
     finally:
         warehouse_config.reload_warehouse_production()
+
+
+@pytest.mark.django_db
+def test_produce_equipment_level_ten_uses_master_box(django_user_model):
+    leader = django_user_model.objects.create_user(username="guild_wh_level_ten", password="pass123")
+    ensure_manor(leader)
+    guild = Guild.objects.create(name="十级仓库帮", founder=leader, is_active=True)
+
+    produce_equipment(guild, 10)
+
+    master_box = GuildWarehouse.objects.get(guild=guild, item_key="guild_gear_box_master")
+    assert master_box.quantity == 2
+    assert master_box.contribution_cost == 800
+
+
+@pytest.mark.django_db
+def test_produce_guard_items_level_ten_uses_master_box(django_user_model):
+    from guilds.services.warehouse import produce_guard_items
+
+    leader = django_user_model.objects.create_user(username="guild_guard_level_ten", password="pass123")
+    ensure_manor(leader)
+    guild = Guild.objects.create(name="十级护院帮", founder=leader, is_active=True)
+
+    produce_guard_items(guild, 10)
+
+    master_box = GuildWarehouse.objects.get(guild=guild, item_key="guild_guard_box_master")
+    assert master_box.quantity == 2
+    assert master_box.contribution_cost == 360

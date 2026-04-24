@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta
+
 from django.db import transaction
 from django.db.models import F, Sum
+from django.utils import timezone
 
 import guilds.constants as guild_constants
 from core.exceptions import GuildWarehouseError
@@ -11,7 +14,7 @@ from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
 from gameplay.services.resources import grant_resources_locked
 
 from ..models import Guild, GuildExchangeLog, GuildMember, GuildWarehouse
-from .warehouse_config import get_production_items
+from .warehouse_config import get_production_items, get_weekly_personal_limit
 
 PROJECTED_RESOURCE_KEYS = ("silver",)
 REAL_GUILD_RESOURCE_ITEM_KEYS = ("grain", "gold_bar")
@@ -87,6 +90,54 @@ def _should_exchange_projected_resource_item(*, guild: Guild, item_key: str) -> 
     return _get_projected_resource_quantity(guild, item_key) > 0
 
 
+def _get_current_week_start_at():
+    today = timezone.localdate()
+    week_start_date = today - timedelta(days=today.weekday())
+    return timezone.make_aware(datetime.combine(week_start_date, datetime.min.time()))
+
+
+def get_member_weekly_exchange_quantity(member, item_key: str) -> int:
+    """统计成员本周已兑换某物品的数量。"""
+    total = GuildExchangeLog.objects.filter(
+        member=member,
+        item_key=item_key,
+        exchanged_at__gte=_get_current_week_start_at(),
+    ).aggregate(total=Sum("quantity"))["total"]
+    return max(0, int(total or 0))
+
+
+def get_member_weekly_exchange_quantities(member, item_keys) -> dict[str, int]:
+    """批量统计成员本周已兑换物品数量。"""
+    normalized_keys = {str(item_key or "").strip() for item_key in item_keys}
+    normalized_keys.discard("")
+    if not member or not normalized_keys:
+        return {}
+
+    rows = (
+        GuildExchangeLog.objects.filter(
+            member=member,
+            item_key__in=normalized_keys,
+            exchanged_at__gte=_get_current_week_start_at(),
+        )
+        .values("item_key")
+        .annotate(total=Sum("quantity"))
+    )
+    return {str(row["item_key"]): max(0, int(row["total"] or 0)) for row in rows}
+
+
+def _validate_weekly_personal_limit(member, item_key: str, quantity: int) -> None:
+    weekly_limit = get_weekly_personal_limit(item_key)
+    if weekly_limit <= 0:
+        return
+    used_quantity = get_member_weekly_exchange_quantity(member, item_key)
+    if used_quantity + quantity <= weekly_limit:
+        return
+    if used_quantity >= weekly_limit:
+        raise GuildWarehouseError(f"本周该物品兑换次数已达上限（{weekly_limit}件）")
+    remaining = max(0, weekly_limit - used_quantity)
+    raise GuildWarehouseError(f"本周该物品剩余可兑换{remaining}件")
+
+
 def _grant_exchanged_item_locked(manor, item_key: str, template, quantity: int) -> None:
     if item_key in MANOR_RESOURCE_ITEM_KEYS:
         credited, _overflow = grant_resources_locked(
@@ -137,6 +188,8 @@ def _exchange_projected_resource_item(member, item_key: str, quantity: int) -> N
 
         if member_locked.daily_exchange_count >= guild_constants.DAILY_EXCHANGE_LIMIT:
             raise GuildWarehouseError(f"今日兑换次数已达上限（{guild_constants.DAILY_EXCHANGE_LIMIT}次）")
+
+        _validate_weekly_personal_limit(member_locked, item_key, quantity)
 
         available_quantity = _get_projected_resource_quantity(guild_locked, item_key)
         if available_quantity < quantity:
@@ -278,6 +331,8 @@ def exchange_item(member, item_key, quantity=1):
         if member_locked.daily_exchange_count >= guild_constants.DAILY_EXCHANGE_LIMIT:
             raise GuildWarehouseError(f"今日兑换次数已达上限（{guild_constants.DAILY_EXCHANGE_LIMIT}次）")
 
+        _validate_weekly_personal_limit(member_locked, item_key, quantity)
+
         # 步骤2：锁定仓库物品并验证库存
         warehouse_item = (
             GuildWarehouse.objects.select_for_update().filter(guild=member_locked.guild, item_key=item_key).first()
@@ -357,9 +412,14 @@ def produce_equipment(guild, tech_level):
     _produce_items_from_config(guild, "equipment", tech_level)
 
 
+def produce_guard_items(guild, tech_level):
+    """护院军备科技产出护院招募装备箱"""
+    _produce_items_from_config(guild, "guard", tech_level)
+
+
 def produce_experience_items(guild, tech_level):
     """
-    经验炼制科技产出经验道具
+    经验炼制科技产出技能书箱
 
     Args:
         guild: Guild对象
@@ -400,10 +460,13 @@ def _build_projected_resource_item(guild, item_key, template):
     projected_item.is_usable = True
     projected_item.display_quantity = quantity
     projected_item.is_projected = True
+    projected_item.weekly_personal_limit = get_weekly_personal_limit(item_key)
+    projected_item.weekly_exchanged_quantity = 0
+    projected_item.weekly_exchange_remaining = projected_item.weekly_personal_limit
     return projected_item
 
 
-def get_warehouse_items(guild, page=1, per_page=50):
+def get_warehouse_items(guild, page=1, per_page=50, member=None):
     """
     获取帮会仓库物品列表，附加ItemTemplate信息（N+1查询优化版本 + 分页）
 
@@ -447,8 +510,17 @@ def get_warehouse_items(guild, page=1, per_page=50):
     item_keys = {item.item_key for item in page_items}
     templates_dict = get_item_templates_by_keys(item_keys)
 
+    weekly_limits = {item.item_key: get_weekly_personal_limit(item.item_key) for item in page_items}
+    limited_item_keys = [item_key for item_key, limit in weekly_limits.items() if limit > 0]
+    weekly_used_by_key = get_member_weekly_exchange_quantities(member, limited_item_keys)
+
     # 在内存中关联模板信息
     for item in page_items:
+        weekly_limit = weekly_limits.get(item.item_key, 0)
+        weekly_used = weekly_used_by_key.get(item.item_key, 0) if weekly_limit > 0 else 0
+        item.weekly_personal_limit = weekly_limit
+        item.weekly_exchanged_quantity = weekly_used
+        item.weekly_exchange_remaining = max(0, weekly_limit - weekly_used) if weekly_limit > 0 else 0
         if not getattr(item, "template", None):
             item.template = templates_dict.get(item.item_key)
         item.display_name = getattr(

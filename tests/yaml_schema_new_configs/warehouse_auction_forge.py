@@ -31,6 +31,31 @@ def test_warehouse_production_rejects_unknown_tech_key():
     assert_invalid(result, substring="unknown tech section")
 
 
+def test_warehouse_production_accepts_guard_tech_key():
+    data = {"guard": {"levels": {1: [{"item_key": "guild_guard_box_basic", "quantity": 1, "contribution_cost": 80}]}}}
+    result = validate_warehouse_production(data)
+    assert result.is_valid, result.errors
+
+
+def test_warehouse_production_rejects_negative_weekly_personal_limit():
+    data = {
+        "equipment": {
+            "levels": {
+                1: [
+                    {
+                        "item_key": "guild_gear_box_green",
+                        "quantity": 1,
+                        "contribution_cost": 70,
+                        "weekly_personal_limit": -1,
+                    }
+                ]
+            }
+        }
+    }
+    result = validate_warehouse_production(data)
+    assert_invalid(result, substring="weekly_personal_limit")
+
+
 def test_auction_items_rejects_non_dict_root():
     result = validate_auction_items([])
     assert_invalid(result, substring="expected a mapping")

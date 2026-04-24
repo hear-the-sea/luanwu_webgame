@@ -47,6 +47,12 @@
                             <dt>兑换成本</dt>
                             <dd class="tw-guild-cost-value">{{ item.contribution_cost }} 贡献</dd>
                         </div>
+                        {% if item.weekly_personal_limit %}
+                        <div>
+                            <dt>本周限购</dt>
+                            <dd>{{ item.weekly_exchanged_quantity }}/{{ item.weekly_personal_limit }}，剩余 {{ item.weekly_exchange_remaining }}</dd>
+                        </div>
+                        {% endif %}
                         <div>
                             <dt>历史产出</dt>
                             <dd>{{ item.total_produced }}</dd>
@@ -61,8 +67,8 @@
                             <button
                                 type="button"
                                 class="tw-btn-primary w-full"
-                                onclick="openExchangeModal('{{ item.item_key|escapejs }}', {{ item.contribution_cost }}, {{ item.display_quantity }}, '{{ item.display_name|default:item.template.name|default:item.item_key|escapejs }}')"
-                                {% if item.display_quantity <= 0 %}disabled title="库存不足"{% endif %}
+                                onclick="openExchangeModal('{{ item.item_key|escapejs }}', {{ item.contribution_cost }}, {{ item.display_quantity }}, '{{ item.display_name|default:item.template.name|default:item.item_key|escapejs }}', {{ item.weekly_exchange_remaining|default:0 }}, {{ item.weekly_personal_limit|default:0 }})"
+                                {% if item.display_quantity <= 0 %}disabled title="库存不足"{% elif item.weekly_personal_limit and item.weekly_exchange_remaining <= 0 %}disabled title="本周限购已达上限"{% endif %}
                             >
                                 兑换
                             </button>
@@ -161,13 +167,16 @@
 
         const currentContribution = {{ member.current_contribution }};
 
-        function checkExchangeValidity(unitCost, stock, quantity) {
+        function checkExchangeValidity(unitCost, stock, quantity, weeklyRemaining, weeklyLimit) {
             const totalCost = unitCost * quantity;
             const warningText = exchangeWarning.querySelector('p');
+            const maxQuantity = weeklyLimit > 0 ? Math.min(stock, weeklyRemaining) : stock;
 
-            if (quantity > stock) {
+            if (quantity > maxQuantity) {
                 exchangeWarning.style.display = 'block';
-                warningText.textContent = `库存不足，最多只能兑换 ${stock} 个`;
+                warningText.textContent = weeklyLimit > 0
+                    ? `本周剩余可兑换 ${weeklyRemaining} 个`
+                    : `库存不足，最多只能兑换 ${stock} 个`;
                 submitButton.disabled = true;
             } else if (totalCost > currentContribution) {
                 exchangeWarning.style.display = 'block';
@@ -179,15 +188,17 @@
             }
         }
 
-        window.openExchangeModal = function openExchangeModal(itemKey, cost, stock, itemName) {
+        window.openExchangeModal = function openExchangeModal(itemKey, cost, stock, itemName, weeklyRemaining, weeklyLimit) {
             exchangeForm.action = `/guilds/warehouse/${encodeURIComponent(itemKey)}/exchange/`;
             exchangeItemName.textContent = itemName || itemKey;
             exchangeCost.textContent = cost;
             exchangeStock.textContent = stock;
-            quantityInput.max = stock;
+            quantityInput.dataset.weeklyRemaining = weeklyRemaining;
+            quantityInput.dataset.weeklyLimit = weeklyLimit;
+            quantityInput.max = weeklyLimit > 0 ? Math.min(stock, weeklyRemaining) : stock;
             quantityInput.value = 1;
 
-            checkExchangeValidity(cost, stock, 1);
+            checkExchangeValidity(cost, stock, 1, weeklyRemaining, weeklyLimit);
 
             exchangeModal.style.display = 'flex';
         };
@@ -200,7 +211,9 @@
             const cost = parseInt(exchangeCost.textContent);
             const stock = parseInt(exchangeStock.textContent);
             const quantity = parseInt(this.value) || 1;
-            checkExchangeValidity(cost, stock, quantity);
+            const weeklyRemaining = parseInt(this.dataset.weeklyRemaining) || 0;
+            const weeklyLimit = parseInt(this.dataset.weeklyLimit) || 0;
+            checkExchangeValidity(cost, stock, quantity, weeklyRemaining, weeklyLimit);
         });
 
         exchangeModal?.addEventListener('click', (event) => {

@@ -21,6 +21,10 @@ technology:
       silver: 5000
       grain: 2000
       gold_bar: 1
+    guard_armory:
+      silver: 5000
+      grain: 2500
+      gold_bar: 1
     experience_refine:
       silver: 5000
       grain: 2000
@@ -47,7 +51,8 @@ technology:
       red_ruby: 1
   names:
     equipment_forge: 装备锻造
-    experience_refine: 经验炼制
+    guard_armory: 护院军备
+    experience_refine: 武学研习
     resource_supply: 资源补给
     troop_tactics: 强兵战术
     resource_boost: 资源增产

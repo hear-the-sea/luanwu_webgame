@@ -45,8 +45,10 @@ def _build_tech_display_meta(tech: Any) -> dict[str, str]:
 
     if tech.tech_key == "equipment_forge":
         return {"description": "每日生产装备道具", "upgrade_cost": _format_upgrade_cost(tech)}
+    if tech.tech_key == "guard_armory":
+        return {"description": "每日生产护院招募装备箱", "upgrade_cost": _format_upgrade_cost(tech)}
     if tech.tech_key == "experience_refine":
-        return {"description": "每日生产经验道具", "upgrade_cost": _format_upgrade_cost(tech)}
+        return {"description": "每日生产技能书箱", "upgrade_cost": _format_upgrade_cost(tech)}
     if tech.tech_key == "resource_supply":
         return {"description": "每日生产资源礼包", "upgrade_cost": _format_upgrade_cost(tech)}
     if tech.tech_key == "troop_tactics":

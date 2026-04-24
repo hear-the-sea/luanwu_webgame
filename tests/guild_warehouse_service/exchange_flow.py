@@ -7,7 +7,8 @@ from core.exceptions import GuildWarehouseError
 from gameplay.models import InventoryItem
 from guilds.constants import CONTRIBUTION_RATES
 from guilds.models import GuildExchangeLog, GuildWarehouse
-from guilds.services.warehouse import exchange_item
+from guilds.services import warehouse_config
+from guilds.services.warehouse import exchange_item, get_member_weekly_exchange_quantity
 
 pytest_plugins = ("tests.guild_warehouse_service.support",)
 
@@ -202,6 +203,52 @@ def test_exchange_item_uses_latest_runtime_daily_exchange_limit(guild_member_wit
 
     with pytest.raises(GuildWarehouseError, match="今日兑换次数已达上限（0次）"):
         exchange_item(member, "silver", 1)
+
+
+@pytest.mark.django_db
+def test_exchange_item_rejects_when_weekly_item_limit_is_exhausted(
+    guild_member_with_warehouse_item,
+    monkeypatch,
+):
+    guild, member = guild_member_with_warehouse_item
+    payload = {
+        "equipment": {
+            "levels": {
+                1: [
+                    {
+                        "item_key": "guild_wh_item",
+                        "quantity": 1,
+                        "contribution_cost": 5,
+                        "weekly_personal_limit": 2,
+                    }
+                ]
+            }
+        }
+    }
+    monkeypatch.setattr(warehouse_config, "load_yaml_data", lambda *args, **kwargs: payload)
+
+    try:
+        warehouse_config.reload_warehouse_production()
+        GuildExchangeLog.objects.create(
+            guild=guild,
+            member=member,
+            item_key="guild_wh_item",
+            quantity=2,
+            contribution_cost=10,
+        )
+        assert warehouse_config.get_weekly_personal_limit("guild_wh_item") == 2
+        assert get_member_weekly_exchange_quantity(member, "guild_wh_item") == 2
+
+        with pytest.raises(GuildWarehouseError, match="本周该物品兑换次数已达上限（2件）"):
+            exchange_item(member, "guild_wh_item", 1)
+
+        member.refresh_from_db()
+        warehouse_item = GuildWarehouse.objects.get(guild=guild, item_key="guild_wh_item")
+        assert member.current_contribution == 100
+        assert warehouse_item.quantity == 10
+        assert GuildExchangeLog.objects.filter(member=member, item_key="guild_wh_item").count() == 1
+    finally:
+        warehouse_config.reload_warehouse_production()
 
 
 @pytest.mark.django_db

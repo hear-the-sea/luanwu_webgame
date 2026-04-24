@@ -30,7 +30,7 @@ def warehouse(request):
     page = safe_int(request.GET.get("page", 1), default=1, min_val=1)
 
     # 获取仓库物品列表（分页）
-    warehouse_data = warehouse_service.get_warehouse_items(member.guild, page=page, per_page=50)
+    warehouse_data = warehouse_service.get_warehouse_items(member.guild, page=page, per_page=50, member=member)
     context = build_guild_member_context(
         member,
         warehouse_items=warehouse_data["items"],

@@ -105,6 +105,59 @@ items:
     is_usable: false
 
 
+  # ---------- 帮会资源补给包 ----------
+
+  - key: resource_pack_silver
+    name: 帮会银两补给包
+    description: 帮会资源补给科技生产的银两包，使用后获得银两。
+    effect_type: resource_pack
+    rarity: green
+    tradeable: false
+    price: 0
+    storage_space: 1
+    is_usable: true
+    effect_payload:
+      silver: 5000
+
+  - key: resource_pack_grain
+    name: 帮会粮食补给包
+    description: 帮会资源补给科技生产的粮食包，使用后获得粮食。
+    effect_type: resource_pack
+    rarity: green
+    tradeable: false
+    price: 0
+    storage_space: 1
+    is_usable: true
+    effect_payload:
+      grain: 5000
+
+  - key: resource_pack_mixed
+    name: 帮会混合补给包
+    description: 帮会资源补给科技生产的混合资源包，使用后获得银两和粮食。
+    effect_type: resource_pack
+    rarity: blue
+    tradeable: false
+    price: 0
+    storage_space: 1
+    is_usable: true
+    effect_payload:
+      silver: 5000
+      grain: 5000
+
+  - key: resource_pack_advanced
+    name: 帮会高级补给包
+    description: 帮会资源补给科技生产的高级资源包，使用后获得更多银两和粮食。
+    effect_type: resource_pack
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 1
+    is_usable: true
+    effect_payload:
+      silver: 12000
+      grain: 8000
+
+
   - key: wood_essence
     name: 木质精华
     description: 经林间灵气缓慢凝成的晶质碎片，色泽温润如新木，握在掌心时会透出淡淡草木清香与细微暖意。
@@ -1198,6 +1251,409 @@ items:
         - book_thunder_control    # 驭雷术
         - book_dragon_break_curse # 破龙咒
         - book_endless_chatter    # 唧唧歪歪
+
+  # ---------- 帮会护院箱 ----------
+
+  - key: guild_guard_box_basic
+    name: 帮会基础护院箱
+    description: 帮会军备库提供的基础护院装备箱，可开出招募低阶护院所需装备。
+    effect_type: loot_box
+    rarity: green
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      gear_chance: 1
+      gear_choices:
+        - item_key: equip_buxie
+          weight: 18
+        - item_key: equip_bupao
+          weight: 18
+        - item_key: equip_zaohongma
+          weight: 14
+        - item_key: equip_duandao
+          weight: 13
+        - item_key: equip_changqiang
+          weight: 13
+        - item_key: equip_duanjian
+          weight: 12
+        - item_key: equip_niupibian
+          weight: 6
+        - item_key: equip_changgong
+          weight: 6
+
+  - key: guild_guard_box_advanced
+    name: 帮会进阶护院箱
+    description: 帮会军备库提供的进阶护院装备箱，可开出招募中阶护院所需装备。
+    effect_type: loot_box
+    rarity: blue
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      gear_chance: 1
+      gear_choices:
+        - item_key: equip_yangpixue
+          weight: 16
+        - item_key: equip_shengpijia
+          weight: 16
+        - item_key: equip_tieyekui
+          weight: 16
+        - item_key: equip_zaohongma
+          weight: 12
+        - item_key: equip_dakandao
+          weight: 10
+        - item_key: equip_baoweiqiang
+          weight: 10
+        - item_key: equip_changjian
+          weight: 10
+        - item_key: equip_fanqugong
+          weight: 10
+
+  - key: guild_guard_box_elite
+    name: 帮会精锐护院箱
+    description: 帮会军备库提供的精锐护院装备箱，可开出招募高阶护院所需装备。
+    effect_type: loot_box
+    rarity: blue
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      gear_chance: 1
+      gear_choices:
+        - item_key: equip_gangpianxue
+          weight: 16
+        - item_key: equip_housipao
+          weight: 16
+        - item_key: equip_yulindin
+          weight: 14
+        - item_key: equip_huangbiaoma
+          weight: 12
+        - item_key: equip_tongchangdao
+          weight: 11
+        - item_key: equip_hutoumao
+          weight: 11
+        - item_key: equip_qingmangjian
+          weight: 10
+        - item_key: equip_tietaigong
+          weight: 10
+
+  - key: guild_guard_box_refined
+    name: 帮会精制护院箱
+    description: 帮会军备库提供的精制护院装备箱，偏向高阶护院招募装备。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      gear_chance: 1
+      gear_choices:
+        - item_key: equip_yanyuxue
+          weight: 16
+        - item_key: equip_shapijia
+          weight: 16
+        - item_key: equip_baihongkui
+          weight: 14
+        - item_key: equip_dawanma
+          weight: 12
+        - item_key: equip_jingtiedao
+          weight: 11
+        - item_key: equip_pansheqiang
+          weight: 11
+        - item_key: equip_duanmajian
+          weight: 10
+        - item_key: equip_shenbigong
+          weight: 10
+
+  - key: guild_guard_box_master
+    name: 帮会宗师护院匣
+    description: 帮会军备库提供的宗师护院装备匣，掉落池集中在高阶招募装备。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      gear_chance: 1
+      gear_choices:
+        - item_key: equip_yanyuxue
+          weight: 18
+        - item_key: equip_shapijia
+          weight: 18
+        - item_key: equip_baihongkui
+          weight: 16
+        - item_key: equip_dawanma
+          weight: 14
+        - item_key: equip_jingtiedao
+          weight: 12
+        - item_key: equip_pansheqiang
+          weight: 12
+        - item_key: equip_mingshejiebian
+          weight: 10
+
+  # ---------- 帮会技能书箱 ----------
+
+  - key: guild_skill_book_box_green
+    name: 帮会初级技能书箱
+    description: 帮会藏书阁整理的初级技能书箱，可开出一本绿色技能书。
+    effect_type: loot_box
+    rarity: green
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      skill_book_chance: 1
+      skill_book_choices:
+        - item_key: book_ice_curse
+          weight: 25
+        - item_key: book_thunder_control
+          weight: 25
+        - item_key: book_dragon_break_curse
+          weight: 25
+        - item_key: book_endless_chatter
+          weight: 25
+
+  - key: guild_skill_book_box_blue
+    name: 帮会中级技能书箱
+    description: 帮会藏书阁整理的中级技能书箱，可开出一本蓝色技能书。
+    effect_type: loot_box
+    rarity: blue
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      skill_book_chance: 1
+      skill_book_choices:
+        - item_key: book_taiyi_wind
+          weight: 18
+        - item_key: book_flower_rain
+          weight: 18
+        - item_key: book_soul_erode
+          weight: 18
+        - item_key: book_red_lotus_dance
+          weight: 16
+        - item_key: book_fatal_chain_sword
+          weight: 15
+        - item_key: book_meteor_pierce_moon
+          weight: 15
+
+  - key: guild_skill_book_box_purple
+    name: 帮会高级技能书箱
+    description: 帮会藏书阁整理的高级技能书箱，可开出一本紫色技能书。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      skill_book_chance: 1
+      skill_book_choices:
+        - item_key: book_thunder_nine_heavens
+          weight: 18
+        - item_key: book_tangseng_sermon
+          weight: 18
+        - item_key: book_five_thunder_descent
+          weight: 18
+        - item_key: book_brahma_true_fire
+          weight: 16
+        - item_key: book_hell_instant_formation
+          weight: 15
+        - item_key: book_prison_break_blade
+          weight: 15
+
+  - key: guild_skill_book_box_refined
+    name: 帮会精研技能书箱
+    description: 帮会藏书阁精研整理的技能书箱，掉落池更偏强力紫色技能书。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      skill_book_chance: 1
+      skill_book_choices:
+        - item_key: book_five_thunder_descent
+          weight: 22
+        - item_key: book_brahma_true_fire
+          weight: 22
+        - item_key: book_thunder_nine_heavens
+          weight: 20
+        - item_key: book_hell_instant_formation
+          weight: 18
+        - item_key: book_city_felling_strike
+          weight: 18
+
+  - key: guild_skill_book_box_master
+    name: 帮会宗师技能秘匣
+    description: 帮会藏书阁压箱底的宗师秘匣，可开出一本高价值技能书。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      skill_book_chance: 1
+      skill_book_choices:
+        - item_key: book_five_thunder_descent
+          weight: 22
+        - item_key: book_brahma_true_fire
+          weight: 22
+        - item_key: book_stratagem_burst
+          weight: 20
+        - item_key: book_city_felling_strike
+          weight: 18
+        - item_key: book_hell_instant_formation
+          weight: 18
+
+  # ---------- 帮会装备箱 ----------
+
+  - key: guild_gear_box_green
+    name: 帮会绿装箱
+    description: 帮会锻造坊打造的基础装备箱，可开出一件绿色装备。
+    effect_type: loot_box
+    rarity: green
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      gear_chance: 1
+      gear_choices:
+        - item_key: equip_tieyekui
+          weight: 14
+        - item_key: equip_housipao
+          weight: 14
+        - item_key: equip_gangpianxue
+          weight: 14
+        - item_key: equip_qingmangjian
+          weight: 12
+        - item_key: equip_tongchangdao
+          weight: 12
+        - item_key: equip_hutoumao
+          weight: 12
+        - item_key: equip_tietaigong
+          weight: 11
+        - item_key: equip_tongling
+          weight: 11
+
+  - key: guild_gear_box_blue
+    name: 帮会蓝装箱
+    description: 帮会锻造坊打造的进阶装备箱，可开出一件蓝色装备。
+    effect_type: loot_box
+    rarity: blue
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      gear_chance: 1
+      gear_choices:
+        - item_key: equip_jiaodoushitoukui
+          weight: 15
+        - item_key: equip_jiaodoushixiongjia
+          weight: 15
+        - item_key: equip_jiaodoushizhixue
+          weight: 15
+        - item_key: equip_xiaoweichangjian
+          weight: 12
+        - item_key: equip_qinglongdao
+          weight: 11
+        - item_key: equip_pozhenqiang
+          weight: 11
+        - item_key: equip_chuanyungong
+          weight: 11
+        - item_key: equip_longwenyupei
+          weight: 10
+
+  - key: guild_gear_box_purple
+    name: 帮会紫装箱
+    description: 帮会锻造坊打造的高阶装备箱，可开出一件紫色装备。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      gear_chance: 1
+      gear_choices:
+        - item_key: equip_qilinkui
+          weight: 16
+        - item_key: equip_qilinjia
+          weight: 16
+        - item_key: equip_qilinxue
+          weight: 16
+        - item_key: equip_qixingjian
+          weight: 13
+        - item_key: equip_bawangqiang
+          weight: 13
+        - item_key: equip_qilindao
+          weight: 13
+        - item_key: equip_qilinzui
+          weight: 13
+
+  - key: guild_gear_box_refined_purple
+    name: 帮会精铸紫装箱
+    description: 经帮会匠师精铸的紫装箱，掉落池更集中。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      gear_chance: 1
+      gear_choices:
+        - item_key: equip_qilinkui
+          weight: 20
+        - item_key: equip_qilinjia
+          weight: 20
+        - item_key: equip_qilinxue
+          weight: 20
+        - item_key: equip_qixingjian
+          weight: 14
+        - item_key: equip_bawangqiang
+          weight: 13
+        - item_key: equip_qilindao
+          weight: 13
+
+  - key: guild_gear_box_master
+    name: 帮会宗师秘匣
+    description: 帮会满阶锻造工坊出品的秘匣，可开出一件高质量紫装。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      gear_chance: 1
+      gear_choices:
+        - item_key: equip_qilinjia
+          weight: 18
+        - item_key: equip_qilinkui
+          weight: 16
+        - item_key: equip_qilinxue
+          weight: 16
+        - item_key: equip_qixingjian
+          weight: 14
+        - item_key: equip_bawangqiang
+          weight: 14
+        - item_key: equip_qilindao
+          weight: 12
+        - item_key: equip_qilinzui
+          weight: 10
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                              技能书

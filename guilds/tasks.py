@@ -35,7 +35,7 @@ from .services.contribution import reset_weekly_contributions
 from .services.guild_missions import finalize_guild_mission_run
 from .services.guild_raids import finalize_guild_raid, process_due_guild_raid, process_guild_raid_battle
 from .services.hero_pool import cleanup_invalid_hero_pool_entries
-from .services.warehouse import produce_equipment, produce_experience_items, produce_resource_packs
+from .services.warehouse import produce_equipment, produce_experience_items, produce_guard_items, produce_resource_packs
 
 logger = logging.getLogger(__name__)
 GUILD_PRODUCTION_PARTIAL_RETRY_LIMIT = 1
@@ -335,6 +335,19 @@ def _process_guild_production_once(guild_id: int) -> tuple[str, bool]:
             producer=produce_experience_items,
             produced_items=produced_items,
             item_label="experience",
+            now=now,
+        )
+        or partial_failure
+    )
+
+    # 护院军备
+    partial_failure = (
+        _run_guild_production_step(
+            guild,
+            tech_key="guard_armory",
+            producer=produce_guard_items,
+            produced_items=produced_items,
+            item_label="guard",
             now=now,
         )
         or partial_failure

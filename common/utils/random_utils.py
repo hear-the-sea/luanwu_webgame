@@ -8,9 +8,13 @@ from __future__ import annotations
 
 import math
 import random
-from typing import List, Sequence, Tuple, TypeVar
+from typing import List, Protocol, Sequence, Tuple, TypeVar
 
 T = TypeVar("T")
+
+
+class SupportsUniform(Protocol):
+    def uniform(self, a: float, b: float) -> float: ...
 
 
 # 二项分布采样阈值：小于此值用精确计算，大于等于此值用正态近似
@@ -20,7 +24,7 @@ BINOMIAL_EXACT_THRESHOLD = 1000
 def weighted_random_choice(
     items: Sequence[T],
     weights: Sequence[float],
-    rng: random.Random,
+    rng: SupportsUniform,
 ) -> T:
     """
     根据权重从列表中随机选择一个元素。
