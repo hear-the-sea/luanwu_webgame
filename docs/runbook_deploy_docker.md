@@ -1,6 +1,6 @@
 # Docker 部署运行手册
 
-> 最近校正：2026-04-06
+> 最近校正：2026-05-02
 
 本文档沉淀当前仓库在 WSL2 本地构建、导出镜像、传输到服务器、更新运行中容器与排查常见 Docker 发布问题的实操经验。
 
@@ -54,7 +54,7 @@ docker buildx build --platform "linux/amd64" -t "webgame:v1" --load "."
 npm run build:css
 ```
 
-原因是当前 [Dockerfile](/home/daniel/code/web_game_v5/Dockerfile#L24) 只安装 Python 依赖并复制仓库内容，不会在构建阶段自动执行前端构建。
+原因是当前 [Dockerfile](/home/daniel/code/web_game_v5/Dockerfile#L24) 只按 `requirements.lock.txt` 安装 Python 依赖并复制仓库内容，不会在构建阶段自动执行前端构建。
 
 ## 导出并传输镜像
 
@@ -98,25 +98,25 @@ cp ".env.docker.prod.example" ".env.docker"
 先启动基础设施：
 
 ```bash
-docker compose -f "docker-compose.prod.yml" up -d "db" "redis"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d "db" "redis"
 ```
 
 再手动执行迁移：
 
 ```bash
-docker compose -f "docker-compose.prod.yml" run --rm "web" python manage.py migrate --noinput
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" python manage.py migrate --noinput
 ```
 
 如果需要导入模板数据：
 
 ```bash
-docker compose -f "docker-compose.prod.yml" run --rm "web" python manage.py bootstrap_game_data --skip-images
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" python manage.py bootstrap_game_data --skip-images
 ```
 
 最后启动业务服务：
 
 ```bash
-docker compose -f "docker-compose.prod.yml" up -d "web" "worker" "worker_battle" "worker_timer" "beat" "nginx"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d "web" "worker" "worker_battle" "worker_timer" "beat" "nginx"
 ```
 
 ## 更新已有旧版本容器
@@ -140,24 +140,24 @@ docker compose down -v
 ```bash
 cd "/opt/web_game_v5"
 docker load -i "webgame_v1.tar.gz"
-docker compose -f "docker-compose.prod.yml" stop "beat" "worker" "worker_battle" "worker_timer"
-docker compose -f "docker-compose.prod.yml" run --rm "web" python manage.py migrate --noinput
-docker compose -f "docker-compose.prod.yml" up -d --force-recreate --no-deps \
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" stop "beat" "worker" "worker_battle" "worker_timer"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" python manage.py migrate --noinput
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --force-recreate --no-deps \
   "web" "worker" "worker_battle" "worker_timer" "beat"
 ```
 
 如果这次发布还改了 Nginx 配置，再额外重建：
 
 ```bash
-docker compose -f "docker-compose.prod.yml" up -d --force-recreate --no-deps "nginx"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --force-recreate --no-deps "nginx"
 ```
 
 验证状态：
 
 ```bash
-docker compose -f "docker-compose.prod.yml" ps
-docker compose -f "docker-compose.prod.yml" logs --tail=100 "web"
-docker compose -f "docker-compose.prod.yml" logs --tail=100 "worker"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" ps
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "web"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "worker"
 curl "http://127.0.0.1/health/"
 ```
 
@@ -181,14 +181,14 @@ DJANGO_RUN_MIGRATIONS=1
 如果只是运行期 YAML 规则调整，可以只执行：
 
 ```bash
-docker compose -f "docker-compose.prod.yml" run --rm "web" \
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" \
   python manage.py reload_runtime_configs
 ```
 
 如果需要给缺失形象的门客补图，执行：
 
 ```bash
-docker compose -f "docker-compose.prod.yml" run --rm "web" \
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" \
   python manage.py load_guest_templates --assign-missing-avatars
 ```
 
@@ -230,16 +230,16 @@ REDIS_PASSWORD=your-strong-password
 改完后不能只重启应用，必须重建 Redis 容器：
 
 ```bash
-docker compose -f "docker-compose.prod.yml" stop "web" "worker" "worker_battle" "worker_timer" "beat"
-docker compose -f "docker-compose.prod.yml" up -d --force-recreate "redis"
-docker compose -f "docker-compose.prod.yml" up -d --force-recreate "web" "worker" "worker_battle" "worker_timer" "beat"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" stop "web" "worker" "worker_battle" "worker_timer" "beat"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --force-recreate "redis"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --force-recreate "web" "worker" "worker_battle" "worker_timer" "beat"
 ```
 
 自检命令：
 
 ```bash
-docker compose -f "docker-compose.prod.yml" exec "redis" sh -c 'echo "$REDIS_PASSWORD"'
-docker compose -f "docker-compose.prod.yml" exec "web" sh -c 'echo "$REDIS_PASSWORD"'
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec "redis" sh -c 'echo "$REDIS_PASSWORD"'
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec "web" sh -c 'echo "$REDIS_PASSWORD"'
 ```
 
 如果 `redis` 容器内输出为空，说明 Compose 配置仍未把密码注入进去。

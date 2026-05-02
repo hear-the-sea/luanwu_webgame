@@ -28,7 +28,7 @@
 - MySQL（真实服务环境） / SQLite（本地默认与 hermetic 测试）
 - Tailwind CSS
 
-默认开发与 hermetic 测试会退回 SQLite / LocMem / InMemory channel layer / memory Celery；真实并发与 Redis 语义仍需外部服务验证。
+默认 `.env.example` 使用 SQLite，hermetic 测试会退回 SQLite / LocMem / InMemory channel layer / memory Celery；普通开发运行若启用 WebSocket、缓存或 Celery，仍需要本地 Redis。真实并发与 Redis 语义需外部服务验证。
 
 ## 快速开始
 
@@ -150,6 +150,7 @@ tests/       pytest 测试
 - `Makefile`
 - `pyproject.toml`
 - `requirements.txt`
+- `requirements.lock.txt`
 - `requirements-dev.txt`
 - `package.json`
 - `docker-compose.yml`

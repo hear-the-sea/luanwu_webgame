@@ -21,9 +21,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN python -m venv "$VIRTUAL_ENV"
 
-COPY requirements.txt /app/requirements.txt
+COPY requirements.lock.txt /app/requirements.lock.txt
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r /app/requirements.txt
+    && pip install --no-cache-dir -r /app/requirements.lock.txt
 
 
 FROM python:3.12-slim AS runtime

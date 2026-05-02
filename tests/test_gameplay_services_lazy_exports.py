@@ -20,6 +20,18 @@ UTILS_TARGET_MODULES = (
 @contextmanager
 def isolated_service_imports():
     originals = {name: sys.modules.get(name) for name in TARGET_MODULES}
+    root_package = sys.modules.get("gameplay")
+    root_had_services = root_package is not None and hasattr(root_package, "services")
+    original_root_services = getattr(root_package, "services", None) if root_had_services else None
+    package = sys.modules.get("gameplay.services")
+    original_attrs = {}
+    if package is not None:
+        for name in TARGET_MODULES:
+            if name == "gameplay.services":
+                continue
+            attr_name = name.rsplit(".", 1)[-1]
+            if hasattr(package, attr_name):
+                original_attrs[attr_name] = getattr(package, attr_name)
 
     for name in TARGET_MODULES:
         sys.modules.pop(name, None)
@@ -33,6 +45,20 @@ def isolated_service_imports():
         for name, module in originals.items():
             if module is not None:
                 sys.modules[name] = module
+        if root_package is not None:
+            if root_had_services:
+                setattr(root_package, "services", original_root_services)
+            elif hasattr(root_package, "services"):
+                delattr(root_package, "services")
+        if package is not None:
+            for name in TARGET_MODULES:
+                if name == "gameplay.services":
+                    continue
+                attr_name = name.rsplit(".", 1)[-1]
+                if attr_name in original_attrs:
+                    setattr(package, attr_name, original_attrs[attr_name])
+                elif hasattr(package, attr_name):
+                    delattr(package, attr_name)
 
 
 @contextmanager

@@ -30,7 +30,21 @@ def _largest_test_files(limit: int) -> list[tuple[int, str]]:
 def test_recent_audit_entry_updates_document_header() -> None:
     header = AUDIT_DOC.read_text(encoding="utf-8").splitlines()[2]
 
-    assert header == "最近更新：2026-04-07"
+    assert header == "最近更新：2026-05-02"
+
+
+def test_recent_audit_entry_records_gate_verification_summary() -> None:
+    audit_text = AUDIT_DOC.read_text(encoding="utf-8")
+
+    assert "2026-05-02 `make lint` 通过" in audit_text
+    assert "`make test` 通过" in audit_text
+    assert (
+        "`python -m pytest tests/test_deployment_configuration.py tests/test_technical_audit_baseline.py tests/test_gameplay_services_lazy_exports.py tests/test_mission_sync_report.py -q` 通过"
+        in audit_text
+    )
+    assert (
+        "结果分别为 `flake8 + mypy（563 source files）通过`、`2969 passed, 44 deselected` 与 `35 passed`" in audit_text
+    )
 
 
 def test_split_test_entrypoints_remain_small_compatibility_shims() -> None:

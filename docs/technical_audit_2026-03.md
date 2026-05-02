@@ -1,6 +1,6 @@
 # 项目重构优化规则与阶段目标（2026-03）
 
-最近更新：2026-04-12
+最近更新：2026-05-02
 
 本文档不记录详细审计过程、历史数据或阶段性结果，只保留后续重构必须遵守的规则，以及各阶段的优化目标。
 
@@ -27,6 +27,7 @@
   - 2026-04-06 `python -m pytest -q` 通过，结果为 `2782 passed, 41 skipped`。
   - 2026-04-07 `npm run test:js`、`make lint` 与 `python -m pytest -q` 通过；结果分别为 `12 passed`、`flake8 + mypy（553 source files）通过` 与 `2853 passed, 41 skipped`。
   - 2026-04-12 `python -m pytest -q tests/test_type_gate_configuration.py` 与 `make lint` 通过；结果分别为 `1 passed` 与 `flake8 + mypy（562 source files）通过`。
+  - 2026-05-02 `make lint` 通过；`make test` 通过；`python -m pytest tests/test_deployment_configuration.py tests/test_technical_audit_baseline.py tests/test_gameplay_services_lazy_exports.py tests/test_mission_sync_report.py -q` 通过；结果分别为 `flake8 + mypy（563 source files）通过`、`2969 passed, 44 deselected` 与 `35 passed`。
 - 当前已封板阶段：
   - 阶段 1 已完成：热点页面入口、读写边界与包级聚合导入治理已收口。
   - 阶段 2 已完成：`mission / raid / guest recruitment` 的统一写模型、显式 refresh 边界与关键 real-services gate 已建立。
@@ -64,7 +65,7 @@
   - 阶段 5 仅保留“持续维护”主题：超大测试文件收缩主线已基本完成，但 env-services / 并发集成环境的外部依赖可用性仍会影响真实环境 gate 的稳定性。
   - `2026-03-25` 新一轮复杂度复核中点名的三处热点：`gameplay/services/manor/core.py`、`gameplay/views/jail.py`、`trade/selector_builders.py` 当前都已压回默认 Python 复杂度预算以内；这轮支线可视为完成一轮收口，但后续仍需持续防止公开入口再次堆回多职责。
   - 最新模板复杂度复核显示，仓库内仍存在超过 `500` 行的模板热点；当前最高体量模板为 `battle_debugger/templates/battle_debugger/custom_config.html`（`738` 行），其次是 `battle_debugger/templates/battle_debugger/tune_result.html`（`492` 行）与 `trade/templates/trade/partials/_market.html`（`485` 行）。`battle_debugger/templates/battle_debugger/result_detail.html` 与 `battle/templates/battle/report_detail.html` 已在本轮回落到默认预算以内，但 battle debugger 仍有其它热点待后续治理。
-  - 最新测试复杂度复核显示，仓库内当前最高体量测试文件为 `tests/battle_passives/core_cases.py`（`590` 行），其次是 `tests/test_core_views.py`（`574` 行）与 `tests/battle_report_view/access_and_perspectives.py`（`545` 行）；`tests/test_guild_mission_views.py`（`533` 行）与 `tests/test_production_views.py`（`529` 行）紧随其后。这几项当前都仍高于 `500` 行。`tests/test_guild_mission_service.py`、`tests/test_guild_warehouse_service.py`、`tests/test_guilds_tasks.py`、`tests/test_arena_views.py`、`tests/test_battle_report_view.py` 与 `tests/test_load_guest_templates_command.py` 已回落到兼容入口体量，因此“超大测试文件收口”虽已显著收敛，但当前热点名单必须以新基线为准。
+  - 最新测试复杂度复核显示，仓库内当前最高体量测试文件为 `tests/guild_pvp_service/battle_flow.py`（`663` 行），其次是 `tests/test_jail_service.py`（`647` 行）与 `tests/test_guild_mission_views.py`（`612` 行）；`tests/guild_mission_service/finalize_flow.py`（`606` 行）、`tests/test_guilds_technology_service.py`（`595` 行）与 `tests/battle_passives/core_cases.py`（`590` 行）紧随其后。这几项当前都仍高于 `500` 行。`tests/test_guild_mission_service.py`、`tests/test_guild_warehouse_service.py`、`tests/test_guilds_tasks.py`、`tests/test_arena_views.py`、`tests/test_battle_report_view.py` 与 `tests/test_load_guest_templates_command.py` 已回落到兼容入口体量，因此“超大测试文件收口”虽已显著收敛，但当前热点名单必须以新基线为准。
   - 后续若继续推进复杂度治理，应优先复核新的超阈值文件是否真的形成认知热点，再按稳定业务职责切分；默认不再把已经回到预算内的模块作为主线持续拆分对象。
   - 默认门禁、真实环境 gate、复杂度预算与文档基线需要在后续每轮改动后持续复核，不再单列历史批次明细。
   - `2026-03-26` 复核确认：阶段 4 “模板内联脚本清零”虽已完成，但前端工程化并未收口；仓库当前虽已具备最小前端测试执行链路（`package.json` 提供 `npm run test:js`，本轮也已把它补进 CI），但仍缺少前端 lint 与更成体系的构建/模块化约束，`static/js` 当前仍约 `5k+` 行手写页面脚本。这一项应作为新的治理主线，而不是继续把“脚本已迁出模板”误判为前端边界已稳定。
