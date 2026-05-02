@@ -6,7 +6,7 @@ from django.db import transaction
 from core.exceptions import GuildWarehouseError
 from gameplay.models import InventoryItem
 from guilds.constants import CONTRIBUTION_RATES
-from guilds.models import GuildExchangeLog, GuildWarehouse
+from guilds.models import Guild, GuildExchangeLog, GuildMember, GuildWarehouse
 from guilds.services import warehouse_config
 from guilds.services.warehouse import exchange_item, get_member_weekly_exchange_quantity
 
@@ -38,13 +38,15 @@ def test_exchange_item_locks_manor_before_member_for_non_projected_items(monkeyp
 
     monkeypatch.setattr(transaction, "atomic", lambda: _Atomic())
 
+    guild = type("GuildArg", (), {"pk": 9})()
     member = type(
         "MemberArg",
         (),
         {
             "pk": 1,
+            "guild_id": 9,
             "user": object(),
-            "guild": object(),
+            "guild": guild,
         },
     )()
     member_locked = type(
@@ -52,6 +54,7 @@ def test_exchange_item_locks_manor_before_member_for_non_projected_items(monkeyp
         (),
         {
             "pk": 1,
+            "guild_id": 9,
             "user": member.user,
             "guild": member.guild,
             "current_contribution": 100,
@@ -76,13 +79,23 @@ def test_exchange_item_locks_manor_before_member_for_non_projected_items(monkeyp
             events.append("member_lock")
             return self
 
+        def select_related(self, *args):
+            assert args == ("guild", "user")
+            return self
+
         def get(self, pk):
             assert pk == member.pk
             return member_locked
 
-        def filter(self, pk):
-            assert pk == member_locked.pk
+        def filter(self, **kwargs):
+            if "guild_id" in kwargs:
+                assert kwargs == {"pk": member.pk, "guild_id": 9, "is_active": True}
+            else:
+                assert kwargs == {"pk": member_locked.pk}
             return self
+
+        def first(self):
+            return member_locked
 
         def update(self, **kwargs):
             events.append(f"member_update:{sorted(kwargs)}")
@@ -177,6 +190,27 @@ def test_exchange_item_grants_projected_silver_to_member_manor(guild_member_with
     assert member.current_contribution == 500 - (7 * CONTRIBUTION_RATES["silver"])
     assert member.daily_exchange_count == 1
     assert GuildExchangeLog.objects.filter(member=member, item_key="silver", quantity=7).exists()
+
+
+@pytest.mark.django_db
+def test_exchange_item_rejects_member_moved_to_another_guild(guild_member_with_projected_resources):
+    old_guild, stale_member, manor = guild_member_with_projected_resources
+    new_guild = Guild.objects.create(name="新帮会", founder=stale_member.user, is_active=True, silver=999)
+    GuildMember.objects.filter(pk=stale_member.pk).update(guild=new_guild, current_contribution=500)
+
+    with pytest.raises(GuildWarehouseError, match="您不在帮会中"):
+        exchange_item(stale_member, "silver", 7)
+
+    old_guild.refresh_from_db()
+    new_guild.refresh_from_db()
+    manor.refresh_from_db()
+    current_member = GuildMember.objects.get(pk=stale_member.pk)
+
+    assert old_guild.silver == 120
+    assert new_guild.silver == 999
+    assert manor.silver == 0
+    assert current_member.current_contribution == 500
+    assert GuildExchangeLog.objects.filter(member=current_member).exists() is False
 
 
 @pytest.mark.django_db

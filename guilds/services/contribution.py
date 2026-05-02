@@ -5,11 +5,12 @@ from django.db.models import F
 from django.utils import timezone
 
 import guilds.constants as guild_constants
-from core.exceptions import GuildContributionError
+from core.exceptions import GuildContributionError, GuildMembershipError
 from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
 from gameplay.services.resources import spend_resources_locked
 
 from ..models import Guild, GuildDonationLog, GuildMember, GuildResourceLog
+from .utils import lock_active_member_for_guild
 from .warehouse import add_item_to_warehouse
 
 # 安全修复：贡献度累积上限，防止PositiveIntegerField溢出（最大2147483647）
@@ -68,7 +69,10 @@ def donate_resource(member, resource_type, amount):
         guild_locked = Guild.objects.select_for_update().get(pk=member.guild_id)
 
         # 步骤2：锁定成员并验证每日捐赠上限
-        member_locked = GuildMember.objects.select_for_update().get(pk=member.pk)
+        try:
+            member_locked = lock_active_member_for_guild(member, model=GuildMember)
+        except GuildMembershipError as exc:
+            raise GuildContributionError(str(exc)) from exc
 
         # 在锁内重置每日统计，避免并发绕过上限
         current_daily_silver = member_locked.daily_donation_silver

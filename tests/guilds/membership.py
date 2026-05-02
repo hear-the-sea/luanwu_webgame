@@ -7,7 +7,7 @@ from django.db.utils import DatabaseError
 from django.test import TestCase
 
 from core.exceptions import GuildMembershipError, GuildPermissionError, MessageError
-from guilds.models import GuildMember
+from guilds.models import Guild, GuildMember
 from guilds.services import guild as guild_service
 from guilds.services import member as member_service
 from guilds.services import member_notifications
@@ -52,6 +52,30 @@ class TestGuildMembership:
         assert application.status == "approved"
         membership = GuildMember.objects.get(user=second_user, guild=guild)
         assert membership.is_active is True
+
+    def test_approve_application_rechecks_reviewer_permission_inside_transaction(
+        self, user_with_gold_bars, second_user, monkeypatch
+    ):
+        guild = guild_service.create_guild(user=user_with_gold_bars, name="审批竞态帮会", description="")
+        reviewer_member = GuildMember.objects.get(user=user_with_gold_bars, guild=guild)
+        application = member_service.apply_to_guild(second_user, guild, "请收留我")
+        real_get_active_membership = member_service.get_active_membership
+
+        def _demote_after_initial_check(*args, **kwargs):
+            resolved = real_get_active_membership(*args, **kwargs)
+            GuildMember.objects.filter(pk=reviewer_member.pk).update(position="member")
+            return resolved
+
+        monkeypatch.setattr("guilds.services.member.get_active_membership", _demote_after_initial_check)
+
+        with pytest.raises(GuildPermissionError, match="您没有审批权限"):
+            member_service.approve_application(application, user_with_gold_bars)
+
+        application.refresh_from_db()
+        reviewer_member.refresh_from_db()
+        assert application.status == "pending"
+        assert reviewer_member.position == "leader"
+        assert GuildMember.objects.filter(user=second_user).exists() is False
 
     def test_approve_application_defers_followups_until_outer_commit(
         self, user_with_gold_bars, second_user, monkeypatch
@@ -146,6 +170,54 @@ class TestGuildMembership:
         assert target_member.is_active is False
         assert target_member.left_at is not None
 
+    def test_kick_member_rechecks_operator_permission_inside_transaction(
+        self, user_with_gold_bars, second_user, monkeypatch
+    ):
+        guild = guild_service.create_guild(user=user_with_gold_bars, name="辞退竞态帮会", description="")
+        operator_member = GuildMember.objects.get(user=user_with_gold_bars, guild=guild)
+        target_member = GuildMember.objects.create(guild=guild, user=second_user, position="member")
+        real_get_active_membership = member_service.get_active_membership
+
+        def _demote_after_initial_check(*args, **kwargs):
+            resolved = real_get_active_membership(*args, **kwargs)
+            GuildMember.objects.filter(pk=operator_member.pk).update(position="member")
+            return resolved
+
+        monkeypatch.setattr("guilds.services.member.get_active_membership", _demote_after_initial_check)
+
+        with pytest.raises(GuildPermissionError, match="您没有辞退权限"):
+            member_service.kick_member(target_member, user_with_gold_bars)
+
+        target_member.refresh_from_db()
+        operator_member.refresh_from_db()
+        assert target_member.is_active is True
+        assert operator_member.position == "member"
+
+    def test_kick_member_rejects_target_moved_to_another_guild(self, user_with_gold_bars, second_user):
+        old_guild = guild_service.create_guild(user=user_with_gold_bars, name="旧辞退帮会", description="")
+        target_member = GuildMember.objects.create(guild=old_guild, user=second_user, position="member")
+        new_guild = Guild.objects.create(name="新辞退帮会", founder=user_with_gold_bars, is_active=True)
+        GuildMember.objects.filter(pk=target_member.pk).update(guild=new_guild)
+
+        with pytest.raises(GuildMembershipError, match="该成员已不在帮会中"):
+            member_service.kick_member(target_member, user_with_gold_bars)
+
+        target_member.refresh_from_db()
+        assert target_member.guild_id == new_guild.id
+        assert target_member.is_active is True
+
+    def test_appoint_admin_rejects_target_that_left_after_initial_check(self, user_with_gold_bars, second_user):
+        guild = guild_service.create_guild(user=user_with_gold_bars, name="任命竞态帮会", description="")
+        target_member = GuildMember.objects.create(guild=guild, user=second_user, position="member")
+        GuildMember.objects.filter(pk=target_member.pk).update(is_active=False, left_at=None)
+
+        with pytest.raises(GuildMembershipError, match="该成员已离开帮会"):
+            member_service.appoint_admin(target_member, user_with_gold_bars)
+
+        target_member.refresh_from_db()
+        assert target_member.is_active is False
+        assert target_member.position == "member"
+
     def test_leave_guild(self, user_with_gold_bars, second_user):
         guild = guild_service.create_guild(user=user_with_gold_bars, name="退出帮会", description="")
         member = GuildMember.objects.create(guild=guild, user=second_user, position="member")
@@ -155,6 +227,19 @@ class TestGuildMembership:
         member.refresh_from_db()
         assert member.is_active is False
         assert member.left_at is not None
+
+    def test_leave_guild_rejects_member_moved_to_another_guild(self, user_with_gold_bars, second_user):
+        old_guild = guild_service.create_guild(user=user_with_gold_bars, name="旧退出帮会", description="")
+        stale_member = GuildMember.objects.create(guild=old_guild, user=second_user, position="member")
+        new_guild = Guild.objects.create(name="新退出帮会", founder=user_with_gold_bars, is_active=True)
+        GuildMember.objects.filter(pk=stale_member.pk).update(guild=new_guild)
+
+        with pytest.raises(GuildMembershipError, match="您不在帮会中"):
+            member_service.leave_guild(stale_member)
+
+        stale_member.refresh_from_db()
+        assert stale_member.guild_id == new_guild.id
+        assert stale_member.is_active is True
 
     def test_leader_cannot_leave(self, user_with_gold_bars):
         guild = guild_service.create_guild(user=user_with_gold_bars, name="帮主帮会", description="")

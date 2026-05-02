@@ -14,7 +14,7 @@ from ..models import Guild, GuildApplication, GuildMember
 from .guild import create_announcement
 from .hero_pool import invalidate_member_hero_pool
 from .member_notifications import resolve_display_name, send_system_message_to_user
-from .utils import get_active_membership
+from .utils import get_active_membership, lock_active_member_for_guild
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +87,7 @@ def _approve_application_state(application, reviewer, auto=False):
         # 验证权限（非自动审批时）
         if not auto:
             membership = get_active_membership(guild_locked, reviewer, "您没有审批权限")
+            membership = lock_active_member_for_guild(membership, error_msg="您没有审批权限")
             if not membership.can_manage:
                 raise GuildPermissionError("您没有审批权限")
 
@@ -159,6 +160,7 @@ def _reject_application_state(application, reviewer, note=""):
             raise GuildMembershipError("申请已被处理")
 
         membership = get_active_membership(application_locked.guild, reviewer, "您没有审批权限")
+        membership = lock_active_member_for_guild(membership, error_msg="您没有审批权限")
         if not membership.can_manage:
             raise GuildPermissionError("您没有审批权限")
 
@@ -191,9 +193,7 @@ def _leave_guild_state(member):
 
     guild = member.guild
     with transaction.atomic():
-        member_locked = GuildMember.objects.select_for_update().get(pk=member.pk)
-        if not member_locked.is_active:
-            raise GuildMembershipError("您不在帮会中")
+        member_locked = lock_active_member_for_guild(member, error_msg="您不在帮会中")
 
         member_locked.is_active = False
         member_locked.left_at = timezone.now()
@@ -225,9 +225,15 @@ def _kick_member_state(target_member, operator):
 
     guild = target_member.guild
     with transaction.atomic():
-        target_locked = GuildMember.objects.select_for_update().get(pk=target_member.pk)
-        if not target_locked.is_active:
-            raise GuildMembershipError("该成员已不在帮会中")
+        operator_member = lock_active_member_for_guild(operator_member, error_msg="您没有辞退权限")
+        if not operator_member.can_manage:
+            raise GuildPermissionError("您没有辞退权限")
+
+        target_locked = lock_active_member_for_guild(target_member, error_msg="该成员已不在帮会中")
+        if target_locked.position in ["leader", "admin"]:
+            raise GuildPermissionError("无法辞退帮主或管理员")
+        if target_locked.user_id == operator.id:
+            raise GuildPermissionError("无法辞退自己")
 
         target_locked.is_active = False
         target_locked.left_at = timezone.now()
@@ -266,11 +272,14 @@ def _appoint_admin_state(target_member, operator):
     guild = target_member.guild
     with transaction.atomic():
         guild_locked = Guild.objects.select_for_update().get(pk=target_member.guild_id)
+        operator_member = lock_active_member_for_guild(operator_member, error_msg="只有帮主可以任命管理员")
+        if not operator_member.is_leader:
+            raise GuildPermissionError("只有帮主可以任命管理员")
         admin_count = guild_locked.members.filter(is_active=True, position="admin").count()
         if admin_count >= 2:
             raise GuildMembershipError("管理员数量已达上限（2人）")
 
-        target_locked = GuildMember.objects.select_for_update().get(pk=target_member.pk)
+        target_locked = lock_active_member_for_guild(target_member, error_msg="该成员已离开帮会")
         if target_locked.position != "member":
             raise GuildMembershipError("该成员已是管理人员")
 
@@ -310,7 +319,10 @@ def _demote_admin_state(target_member, operator):
 
     guild = target_member.guild
     with transaction.atomic():
-        target_locked = GuildMember.objects.select_for_update().get(pk=target_member.pk)
+        operator_member = lock_active_member_for_guild(operator_member, error_msg="只有帮主可以罢免管理员")
+        if not operator_member.is_leader:
+            raise GuildPermissionError("只有帮主可以罢免管理员")
+        target_locked = lock_active_member_for_guild(target_member, error_msg="该成员已离开帮会")
         if target_locked.position != "admin":
             raise GuildMembershipError("该成员不是管理员")
         target_locked.position = "member"
@@ -348,8 +360,8 @@ def _transfer_leadership_state(current_leader_member, new_leader_member):
 
     guild = current_leader_member.guild
     with transaction.atomic():
-        current_locked = GuildMember.objects.select_for_update().get(pk=current_leader_member.pk)
-        new_locked = GuildMember.objects.select_for_update().get(pk=new_leader_member.pk)
+        current_locked = lock_active_member_for_guild(current_leader_member, error_msg="您不是帮主")
+        new_locked = lock_active_member_for_guild(new_leader_member, error_msg="该成员已离开帮会")
 
         if not current_locked.is_leader:
             raise GuildPermissionError("您不是帮主")

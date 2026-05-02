@@ -15,7 +15,7 @@ from gameplay.services import technology as player_technology_service
 from .. import constants as guild_constants
 from ..models import Guild, GuildResourceLog, GuildTechnology
 from .guild import create_announcement
-from .utils import get_active_membership
+from .utils import get_active_membership, lock_active_member_for_guild
 from .warehouse import spend_guild_warehouse_items_locked
 
 logger = logging.getLogger(__name__)
@@ -122,6 +122,16 @@ def upgrade_technology(guild, tech_key, operator):
         # 步骤1：锁定帮会和科技，防止并发升级
         guild_locked = Guild.objects.select_for_update().get(pk=guild.pk)
         tech_locked = GuildTechnology.objects.select_for_update().get(pk=tech.pk)
+        if getattr(membership, "pk", None) is not None:
+            try:
+                membership = lock_active_member_for_guild(
+                    membership,
+                    error_msg="只有帮主和管理员可以升级科技",
+                )
+            except GuildMembershipError as exc:
+                raise GuildTechnologyError(str(exc)) from exc
+        if not membership.can_manage:
+            raise GuildTechnologyError("只有帮主和管理员可以升级科技")
 
         # 成本必须基于锁内的当前等级计算，避免并发下低价升级
         cost = calculate_tech_upgrade_cost(tech_key, tech_locked.level)

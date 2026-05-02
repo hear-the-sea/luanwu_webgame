@@ -4,9 +4,9 @@ import pytest
 from django.utils import timezone
 
 import guilds.constants as guild_constants
-from core.exceptions import GuildContributionError, GuildValidationError
+from core.exceptions import GuildContributionError, GuildPermissionError, GuildValidationError
 from gameplay.models import InventoryItem, ItemTemplate, Manor
-from guilds.models import GuildDonationLog, GuildMember, GuildResourceLog, GuildWarehouse
+from guilds.models import Guild, GuildDonationLog, GuildMember, GuildResourceLog, GuildWarehouse
 from guilds.services import contribution as contribution_service
 from guilds.services import guild as guild_service
 
@@ -20,7 +20,8 @@ class TestGuildContribution:
 
         manor = Manor.objects.get(user=user_with_gold_bars)
         manor.silver = 100000
-        manor.save()
+        manor.silver_capacity = 100000
+        manor.save(update_fields=["silver", "silver_capacity"])
 
         member = GuildMember.objects.get(user=user_with_gold_bars, guild=guild)
         initial_contribution = member.total_contribution
@@ -53,7 +54,8 @@ class TestGuildContribution:
 
         manor = Manor.objects.get(user=user_with_gold_bars)
         manor.silver = 100000
-        manor.save()
+        manor.silver_capacity = 100000
+        manor.save(update_fields=["silver", "silver_capacity"])
 
         member = GuildMember.objects.get(user=user_with_gold_bars, guild=guild)
         monkeypatch.setattr("guilds.constants.MIN_DONATION_AMOUNT", 50)
@@ -81,6 +83,29 @@ class TestGuildContribution:
         assert member.current_contribution == 350
         assert guild.silver == 50
         assert manor.silver == 99950
+
+    def test_donate_resource_rejects_member_moved_to_another_guild(self, user_with_gold_bars):
+        old_guild = guild_service.create_guild(user=user_with_gold_bars, name="旧捐献帮会", description="")
+        member = GuildMember.objects.get(user=user_with_gold_bars, guild=old_guild)
+        new_guild = Guild.objects.create(name="新捐献帮会", founder=user_with_gold_bars, is_active=True)
+        GuildMember.objects.filter(pk=member.pk).update(guild=new_guild, current_contribution=0)
+        manor = Manor.objects.get(user=user_with_gold_bars)
+        manor.silver = 100000
+        manor.save(update_fields=["silver"])
+
+        with pytest.raises(GuildContributionError, match="您不在帮会中"):
+            contribution_service.donate_resource(member, "silver", 10000)
+
+        old_guild.refresh_from_db()
+        new_guild.refresh_from_db()
+        manor.refresh_from_db()
+        current_member = GuildMember.objects.get(pk=member.pk)
+
+        assert old_guild.silver == 0
+        assert new_guild.silver == 0
+        assert manor.silver == 100000
+        assert current_member.current_contribution == 0
+        assert GuildDonationLog.objects.filter(member=current_member).exists() is False
 
     def test_donate_gold_bar_success(self, user_with_gold_bars):
         guild = guild_service.create_guild(user=user_with_gold_bars, name="金条捐赠帮会", description="")
@@ -187,6 +212,28 @@ class TestGuildUpgrade:
         assert guild.level == initial_level + 1
         assert remaining_row.quantity < 100
         assert remaining_row.total_exchanged == guild_constants.GUILD_UPGRADE_BASE_COST
+
+    def test_upgrade_guild_rechecks_leader_permission_inside_transaction(self, user_with_gold_bars, monkeypatch):
+        guild = guild_service.create_guild(user=user_with_gold_bars, name="升级竞态帮会", description="")
+        leader_member = GuildMember.objects.get(user=user_with_gold_bars, guild=guild)
+        GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=100, contribution_cost=50)
+
+        real_get_active_membership = guild_service.get_active_membership
+
+        def _demote_after_initial_check(*args, **kwargs):
+            resolved = real_get_active_membership(*args, **kwargs)
+            GuildMember.objects.filter(pk=leader_member.pk).update(position="member")
+            return resolved
+
+        monkeypatch.setattr("guilds.services.guild.get_active_membership", _demote_after_initial_check)
+
+        with pytest.raises(GuildPermissionError, match="只有帮主可以升级帮会"):
+            guild_service.upgrade_guild(guild, user_with_gold_bars)
+
+        guild.refresh_from_db()
+        warehouse_row = GuildWarehouse.objects.get(guild=guild, item_key="gold_bar")
+        assert guild.level == 1
+        assert warehouse_row.quantity == 100
 
     def test_upgrade_max_level(self, user_with_gold_bars):
         guild = guild_service.create_guild(user=user_with_gold_bars, name="满级帮会", description="")

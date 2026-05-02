@@ -12,7 +12,7 @@ from gameplay.services.utils.messages import bulk_create_messages
 
 from .. import constants as guild_constants
 from ..models import Guild, GuildAnnouncement, GuildHeroPoolEntry, GuildMember, GuildTechnology
-from .utils import get_active_membership
+from .utils import get_active_membership, lock_active_member_for_guild
 from .warehouse import spend_guild_warehouse_items_locked
 
 logger = logging.getLogger(__name__)
@@ -167,7 +167,14 @@ def upgrade_guild(guild, operator):
     # 并发安全的事务处理
     with transaction.atomic():
         # 步骤1：锁定帮会，防止并发升级
-        guild_locked = Guild.objects.select_for_update().get(pk=guild.pk)
+        try:
+            guild_locked = Guild.objects.select_for_update().get(pk=guild.pk, is_active=True)
+        except Guild.DoesNotExist as exc:
+            raise GuildValidationError("帮会已解散") from exc
+        if getattr(membership, "pk", None) is not None:
+            membership = lock_active_member_for_guild(membership, error_msg="只有帮主可以升级帮会")
+        if not membership.is_leader:
+            raise GuildPermissionError("只有帮主可以升级帮会")
 
         # 步骤2：在锁内重新验证条件，防止并发穿透
         if guild_locked.level >= 10:
@@ -280,22 +287,32 @@ def disband_guild(guild, operator):
     if not membership.is_leader:
         raise GuildPermissionError("只有帮主可以解散帮会")
 
-    # 预加载成员 user_id 和对应的 manor（避免事务中的 N+1 查询）
-    member_user_ids = list(guild.members.filter(is_active=True).values_list("user_id", flat=True))
-    user_to_manor = {m.user_id: m for m in Manor.objects.filter(user_id__in=member_user_ids)}
-    guild_name = guild.name  # 缓存名称，事务外使用
-
     with transaction.atomic():
+        try:
+            guild_locked = Guild.objects.select_for_update().get(pk=guild.pk, is_active=True)
+        except Guild.DoesNotExist as exc:
+            raise GuildMembershipError("帮会已解散") from exc
+        if getattr(membership, "pk", None) is not None:
+            membership = lock_active_member_for_guild(membership, error_msg="只有帮主可以解散帮会")
+        if not membership.is_leader:
+            raise GuildPermissionError("只有帮主可以解散帮会")
+
+        # 预加载成员 user_id，确保通知对象来自锁内的当前活跃成员集合。
+        member_user_ids = list(guild_locked.members.filter(is_active=True).values_list("user_id", flat=True))
+        guild_name = guild_locked.name
+
         # 标记帮会为不活跃
-        guild.is_active = False
-        guild.save(update_fields=["is_active"])
+        guild_locked.is_active = False
+        guild_locked.save(update_fields=["is_active"])
 
         # 标记所有成员为离开
-        guild.members.filter(is_active=True).update(
+        guild_locked.members.filter(is_active=True).update(
             is_active=False,
             left_at=timezone.now(),
         )
-        GuildHeroPoolEntry.objects.filter(guild=guild).delete()
+        GuildHeroPoolEntry.objects.filter(guild=guild_locked).delete()
+
+    user_to_manor = {m.user_id: m for m in Manor.objects.filter(user_id__in=member_user_ids)}
 
     messages_data = []
     for user_id in member_user_ids:

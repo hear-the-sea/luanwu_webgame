@@ -9,11 +9,12 @@ from django.db.models import F, Sum
 from django.utils import timezone
 
 import guilds.constants as guild_constants
-from core.exceptions import GuildWarehouseError
+from core.exceptions import GuildMembershipError, GuildWarehouseError
 from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
 from gameplay.services.resources import grant_resources_locked
 
 from ..models import Guild, GuildExchangeLog, GuildMember, GuildWarehouse
+from .utils import lock_active_member_for_guild
 from .warehouse_config import get_production_items, get_weekly_personal_limit
 
 PROJECTED_RESOURCE_KEYS = ("silver",)
@@ -182,7 +183,10 @@ def _exchange_projected_resource_item(member, item_key: str, quantity: int) -> N
         # 与帮会捐献保持一致的锁顺序，避免资源互转路径死锁。
         manor_locked = Manor.objects.select_for_update().get(user=member.user)
         guild_locked = Guild.objects.select_for_update().get(pk=member.guild_id)
-        member_locked = GuildMember.objects.select_for_update().get(pk=member.pk)
+        try:
+            member_locked = lock_active_member_for_guild(member, model=GuildMember)
+        except GuildMembershipError as exc:
+            raise GuildWarehouseError(str(exc)) from exc
 
         member_locked.reset_daily_limits()
 
@@ -323,7 +327,10 @@ def exchange_item(member, item_key, quantity=1):
         manor_locked = Manor.objects.select_for_update().get(user=member.user)
 
         # 步骤1：锁定成员并验证兑换次数和贡献度
-        member_locked = GuildMember.objects.select_for_update().get(pk=member.pk)
+        try:
+            member_locked = lock_active_member_for_guild(member, model=GuildMember)
+        except GuildMembershipError as exc:
+            raise GuildWarehouseError(str(exc)) from exc
 
         # 重置每日限制（必须在锁内执行，避免并发下穿透每日上限）
         member_locked.reset_daily_limits()
