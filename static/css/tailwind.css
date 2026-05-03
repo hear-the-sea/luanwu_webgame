@@ -5444,6 +5444,25 @@
   color: var(--text-muted);
 }
 
+.tw-building-card .tw-guild-tech-actions {
+  display: block;
+  padding-top: 1rem;
+  text-align: center;
+}
+
+.tw-guild-tech-actions form {
+  margin: 0px;
+  width: 100%;
+  text-align: center;
+}
+
+.tw-guild-tech-action-button {
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  min-width: 112px;
+}
+
 .tw-guild-section-spacing {
   margin-top: 1.5rem;
 }
@@ -5718,18 +5737,6 @@
 
 .w-7 {
   width: 1.75rem;
-}
-
-.w-\[120px\] {
-  width: 120px;
-}
-
-.w-\[150px\] {
-  width: 150px;
-}
-
-.w-\[160px\] {
-  width: 160px;
 }
 
 .w-\[90\%\] {

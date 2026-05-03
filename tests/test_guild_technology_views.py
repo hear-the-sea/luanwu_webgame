@@ -43,6 +43,97 @@ def test_technology_page_renders_capacity_tech_with_count_effect_and_ruby_cost(g
 
 
 @pytest.mark.django_db
+def test_technology_page_uses_category_switches_and_removes_caption(guild_tech_client):
+    client, _user, guild = guild_tech_client
+    GuildTechnology.objects.create(
+        guild=guild, tech_key="equipment_forge", category="production", level=1, max_level=10
+    )
+    GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", category="combat", level=1, max_level=10)
+    GuildTechnology.objects.create(guild=guild, tech_key="resource_boost", category="welfare", level=1, max_level=5)
+
+    response = client.get(reverse("guilds:technology"))
+
+    content = response.content.decode("utf-8")
+    assert response.status_code == 200
+    assert "科技视图帮 · 提升全员生产战斗能力" not in content
+    assert "?category=production" in content
+    assert "?category=combat" in content
+    assert "?category=welfare" in content
+    assert "生产类科技" in content
+    assert "战斗类科技" in content
+    assert "福利类科技" in content
+    assert "每日生产装备道具" in content
+    assert "将帮会科技等级线性映射到个人兵种科技" not in content
+    assert "提升庄园资源产出" not in content
+
+
+@pytest.mark.django_db
+def test_technology_page_filters_to_selected_category(guild_tech_client):
+    client, _user, guild = guild_tech_client
+    GuildTechnology.objects.create(
+        guild=guild, tech_key="equipment_forge", category="production", level=1, max_level=10
+    )
+    GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", category="combat", level=1, max_level=10)
+    GuildTechnology.objects.create(guild=guild, tech_key="resource_boost", category="welfare", level=1, max_level=5)
+
+    response = client.get(reverse("guilds:technology") + "?category=combat")
+
+    content = response.content.decode("utf-8")
+    assert response.status_code == 200
+    assert "将帮会科技等级线性映射到个人兵种科技" in content
+    assert "每日生产装备道具" not in content
+    assert "提升庄园资源产出" not in content
+
+
+@pytest.mark.django_db
+def test_technology_page_uses_unified_card_style_without_section_title(guild_tech_client):
+    client, _user, guild = guild_tech_client
+    GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", category="combat", level=1, max_level=10)
+
+    response = client.get(reverse("guilds:technology") + "?category=combat")
+
+    content = response.content.decode("utf-8")
+    assert response.status_code == 200
+    assert "<h2>生产类科技</h2>" not in content
+    assert "<h2>战斗类科技</h2>" not in content
+    assert "<h2>福利类科技</h2>" not in content
+    assert 'class="building-grid"' not in content
+    assert 'class="building-card"' not in content
+    assert 'class="tw-building-grid"' in content
+    assert 'class="tw-building-card"' in content
+
+
+@pytest.mark.django_db
+def test_technology_upgrade_action_is_centered_with_spacing(guild_tech_client):
+    client, _user, guild = guild_tech_client
+    GuildTechnology.objects.create(
+        guild=guild, tech_key="equipment_forge", category="production", level=1, max_level=10
+    )
+
+    response = client.get(reverse("guilds:technology") + "?category=production")
+
+    content = response.content.decode("utf-8")
+    assert response.status_code == 200
+    assert 'class="tw-card-actions tw-guild-tech-actions"' in content
+    assert 'class="tw-btn-primary tw-guild-tech-action-button"' in content
+    assert 'action="/guilds/technology/equipment_forge/upgrade/?category=production"' in content
+    assert content.index('class="tw-card-actions tw-guild-tech-actions"') > content.index('class="tw-guild-dl"')
+    assert "升级" in content
+
+
+@pytest.mark.django_db
+def test_upgrade_technology_redirect_preserves_selected_category(guild_tech_client, monkeypatch):
+    client, _user, _guild = guild_tech_client
+
+    monkeypatch.setattr("guilds.views.technology.technology_service.upgrade_technology", lambda *_a, **_k: None)
+
+    response = client.post(reverse("guilds:upgrade_tech", kwargs={"tech_key": "troop_tactics"}) + "?category=combat")
+
+    assert response.status_code == 302
+    assert response.url == reverse("guilds:technology") + "?category=combat"
+
+
+@pytest.mark.django_db
 def test_technology_page_hides_removed_military_study_even_if_legacy_row_exists(guild_tech_client):
     client, _user, guild = guild_tech_client
     GuildTechnology.objects.create(guild=guild, tech_key="military_study", category="combat", level=3, max_level=5)

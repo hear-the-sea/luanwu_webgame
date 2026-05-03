@@ -8,20 +8,27 @@
     <div class="tw-section-header">
         <div>
             <h1>科技研究</h1>
-            <p class="caption">{{ guild.name }} · 提升全员生产战斗能力</p>
         </div>
         <div class="flex gap-2">
             <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
         </div>
     </div>
 
+    <nav class="tw-category-tabs mb-6" aria-label="科技分类">
+        {% for tab in tech_category_tabs %}
+        <a href="{% url 'guilds:technology' %}?category={{ tab.key }}"
+           class="tw-tab-item {% if tab.active %}active{% endif %}">
+            {{ tab.label }}
+        </a>
+        {% endfor %}
+    </nav>
+
     <!-- 生产类科技 -->
+    {% if current_tech_category == 'production' %}
     <section class="tw-card">
-        <h2>生产类科技</h2>
         <p class="tw-muted">每日自动生产道具，存入帮会仓库供成员兑换</p>
         <div class="tw-building-grid">
-            {% for tech in technologies %}
-                {% if tech.category == 'production' %}
+            {% for tech in filtered_technologies %}
                 <article class="tw-building-card">
                     <header>
                         <div>
@@ -52,34 +59,35 @@
                         </div>
                         {% endif %}
                     </dl>
-                    {% if member.can_manage %}
-                        <form method="post" action="{% url 'guilds:upgrade_tech' tech.tech_key %}">
-                            {% csrf_token %}
-                            <button type="submit" class="tw-btn-primary" {% if not tech.can_upgrade %}disabled{% endif %}>
-                                {% if not tech.can_upgrade %}已满级{% else %}升级{% endif %}
-                            </button>
-                        </form>
-                    {% else %}
-                        <button type="button" class="tw-btn-secondary" disabled>需管理权限</button>
-                    {% endif %}
+                    <div class="tw-card-actions tw-guild-tech-actions">
+                        {% if member.can_manage %}
+                            <form method="post" action="{% url 'guilds:upgrade_tech' tech.tech_key %}?category={{ current_tech_category }}">
+                                {% csrf_token %}
+                                <button type="submit" class="tw-btn-primary tw-guild-tech-action-button" {% if not tech.can_upgrade %}disabled{% endif %}>
+                                    {% if not tech.can_upgrade %}已满级{% else %}升级{% endif %}
+                                </button>
+                            </form>
+                        {% else %}
+                            <button type="button" class="tw-btn-secondary tw-guild-tech-action-button" disabled>需管理权限</button>
+                        {% endif %}
+                    </div>
                 </article>
-                {% endif %}
             {% endfor %}
         </div>
     </section>
+    {% endif %}
 
     <!-- 战斗类科技 -->
-    <section class="tw-card tw-guild-section-spacing">
-        <h2>战斗类科技</h2>
-        <p class="muted-text">提升全体成员门客的战斗属性</p>
-        <div class="building-grid">
-            {% for tech in technologies %}
-                {% if tech.category == 'combat' %}
-                <article class="building-card">
+    {% if current_tech_category == 'combat' %}
+    <section class="tw-card">
+        <p class="tw-muted">提升全体成员门客的战斗属性</p>
+        <div class="tw-building-grid">
+            {% for tech in filtered_technologies %}
+                <article class="tw-building-card">
                     <header>
                         <div>
                             <h3>{{ tech_names|get_item:tech.tech_key|default:tech.tech_key }}</h3>
-                            <p class="muted-text">{{ tech_display_meta|get_item:tech.tech_key|get_item:'description' }}</p>
+                            <p class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'description' }}</p>
                         </div>
                         <span class="tw-badge-gold">Lv {{ tech.level }}</span>
                     </header>
@@ -103,7 +111,7 @@
                         {% if tech.can_upgrade %}
                         <div>
                             <dt>下级效果</dt>
-                            <dd class="guild-tech-effect">{{ tech_display_meta|get_item:tech.tech_key|get_item:'next_effect' }}</dd>
+                            <dd class="tw-guild-tech-effect">{{ tech_display_meta|get_item:tech.tech_key|get_item:'next_effect' }}</dd>
                         </div>
                         <div>
                             <dt>升级成本</dt>
@@ -111,34 +119,35 @@
                         </div>
                         {% endif %}
                     </dl>
-                    {% if member.can_manage %}
-                        <form method="post" action="{% url 'guilds:upgrade_tech' tech.tech_key %}">
-                            {% csrf_token %}
-                            <button type="submit" class="tw-btn-primary" {% if not tech.can_upgrade %}disabled{% endif %}>
-                                {% if not tech.can_upgrade %}已满级{% else %}升级{% endif %}
-                            </button>
-                        </form>
-                    {% else %}
-                        <button type="button" class="tw-btn-secondary" disabled>需管理权限</button>
-                    {% endif %}
+                    <div class="tw-card-actions tw-guild-tech-actions">
+                        {% if member.can_manage %}
+                            <form method="post" action="{% url 'guilds:upgrade_tech' tech.tech_key %}?category={{ current_tech_category }}">
+                                {% csrf_token %}
+                                <button type="submit" class="tw-btn-primary tw-guild-tech-action-button" {% if not tech.can_upgrade %}disabled{% endif %}>
+                                    {% if not tech.can_upgrade %}已满级{% else %}升级{% endif %}
+                                </button>
+                            </form>
+                        {% else %}
+                            <button type="button" class="tw-btn-secondary tw-guild-tech-action-button" disabled>需管理权限</button>
+                        {% endif %}
+                    </div>
                 </article>
-                {% endif %}
             {% endfor %}
         </div>
     </section>
+    {% endif %}
 
     <!-- 福利类科技 -->
-    <section class="tw-card tw-guild-section-spacing">
-        <h2>福利类科技</h2>
-        <p class="muted-text">提升全体成员的资源产出和行动效率</p>
-        <div class="building-grid">
-            {% for tech in technologies %}
-                {% if tech.category == 'welfare' %}
-                <article class="building-card">
+    {% if current_tech_category == 'welfare' %}
+    <section class="tw-card">
+        <p class="tw-muted">提升全体成员的资源产出和行动效率</p>
+        <div class="tw-building-grid">
+            {% for tech in filtered_technologies %}
+                <article class="tw-building-card">
                     <header>
                         <div>
                             <h3>{{ tech_names|get_item:tech.tech_key|default:tech.tech_key }}</h3>
-                            <p class="muted-text">{{ tech_display_meta|get_item:tech.tech_key|get_item:'description' }}</p>
+                            <p class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'description' }}</p>
                         </div>
                         <span class="tw-badge-gold">Lv {{ tech.level }}</span>
                     </header>
@@ -170,21 +179,23 @@
                         </div>
                         {% endif %}
                     </dl>
-                    {% if member.can_manage %}
-                        <form method="post" action="{% url 'guilds:upgrade_tech' tech.tech_key %}">
-                            {% csrf_token %}
-                            <button type="submit" class="tw-btn-primary" {% if not tech.can_upgrade %}disabled{% endif %}>
-                                {% if not tech.can_upgrade %}已满级{% else %}升级{% endif %}
-                            </button>
-                        </form>
-                    {% else %}
-                        <button type="button" class="tw-btn-secondary" disabled>需管理权限</button>
-                    {% endif %}
+                    <div class="tw-card-actions tw-guild-tech-actions">
+                        {% if member.can_manage %}
+                            <form method="post" action="{% url 'guilds:upgrade_tech' tech.tech_key %}?category={{ current_tech_category }}">
+                                {% csrf_token %}
+                                <button type="submit" class="tw-btn-primary tw-guild-tech-action-button" {% if not tech.can_upgrade %}disabled{% endif %}>
+                                    {% if not tech.can_upgrade %}已满级{% else %}升级{% endif %}
+                                </button>
+                            </form>
+                        {% else %}
+                            <button type="button" class="tw-btn-secondary tw-guild-tech-action-button" disabled>需管理权限</button>
+                        {% endif %}
+                    </div>
                 </article>
-                {% endif %}
             {% endfor %}
         </div>
     </section>
+    {% endif %}
 </section>
 {% endblock %}
 

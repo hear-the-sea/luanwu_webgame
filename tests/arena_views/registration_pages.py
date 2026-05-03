@@ -30,6 +30,7 @@ def test_arena_view_renders(arena_client):
     assert response.status_code == 200
     body = response.content.decode("utf-8")
     assert "竞技场" in body
+    assert "参与 <strong>天下布武</strong>，赢取角斗币并兑换奖励。" not in body
     assert "js/arena-registration.js" in body
     assert 'document.addEventListener("DOMContentLoaded"' not in body
 

@@ -7,6 +7,7 @@ from typing import Any
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from core.utils.rate_limit import rate_limit_redirect
@@ -16,6 +17,14 @@ from ..decorators import require_guild_member
 from ..services import technology as technology_service
 from ..services.warehouse import get_guild_material_balances
 from .helpers import build_guild_member_context, execute_guild_action, load_ordered_technologies
+
+TECH_CATEGORY_TABS = (
+    ("production", "生产类科技"),
+    ("combat", "战斗类科技"),
+    ("welfare", "福利类科技"),
+)
+
+VALID_TECH_CATEGORIES = frozenset(key for key, _label in TECH_CATEGORY_TABS)
 
 
 def _format_upgrade_cost(tech: Any) -> str:
@@ -103,9 +112,28 @@ def technology_list(request: Any) -> HttpResponse:
     """科技列表"""
     member = request.guild_member
     technologies = load_ordered_technologies(member.guild)
+
+    current_category = str(request.GET.get("category") or "").strip()
+    if current_category not in VALID_TECH_CATEGORIES:
+        available_categories = {tech.category for tech in technologies}
+        current_category = (
+            "production"
+            if "production" in available_categories
+            else next(
+                (key for key, _label in TECH_CATEGORY_TABS if key in available_categories),
+                "production",
+            )
+        )
+
+    filtered_technologies = [tech for tech in technologies if tech.category == current_category]
     context = build_guild_member_context(
         member,
         technologies=technologies,
+        filtered_technologies=filtered_technologies,
+        current_tech_category=current_category,
+        tech_category_tabs=[
+            {"key": key, "label": label, "active": key == current_category} for key, label in TECH_CATEGORY_TABS
+        ],
         guild_material_balances=get_guild_material_balances(member.guild),
         tech_names=guild_constants.TECH_NAMES,
         tech_display_meta={tech.tech_key: _build_tech_display_meta(tech) for tech in technologies},
@@ -127,5 +155,9 @@ def upgrade_technology(request: Any, tech_key: str) -> HttpResponse:
         action=lambda: technology_service.upgrade_technology(member.guild, tech_key, request.user),
         success_message=lambda _result: f"{guild_constants.TECH_NAMES.get(tech_key, tech_key)}升级成功！",
     )
+
+    current_category = str(request.GET.get("category") or "").strip()
+    if current_category in VALID_TECH_CATEGORIES:
+        return redirect(f"{reverse('guilds:technology')}?category={current_category}")
 
     return redirect("guilds:technology")
