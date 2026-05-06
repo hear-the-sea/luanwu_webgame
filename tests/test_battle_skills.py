@@ -9,6 +9,7 @@ from battle.simulation.constants import GUEST_SKILL_VS_TROOP_MULTIPLIER
 from battle.simulation.damage_calculation import calculate_attack_damage, process_status_effects
 from battle.skills import apply_skill_statuses, skill_damage_bonus, trigger_skills
 from battle.status_manager import prepare_combatants_for_round
+from core.exceptions import GameError
 
 
 def make_unit(**kwargs):
@@ -221,7 +222,7 @@ def test_effective_attack_value_rejects_invalid_current_troop_strength():
     troop = make_unit(kind="troop", unit_attack=40, troop_strength="bad", initial_troop_strength=120)
     enemy = make_unit(kind="troop")
 
-    with pytest.raises(AssertionError, match="invalid battle current troop strength"):
+    with pytest.raises(GameError, match="invalid battle current troop strength"):
         effective_attack_value(troop, enemy)
 
 
@@ -229,14 +230,14 @@ def test_effective_defense_value_rejects_invalid_unit_defense():
     troop = make_unit(kind="troop", defense=360, troop_strength=180, initial_troop_strength=180, unit_defense="bad")
     attacker = make_unit(kind="troop", troop_strength=120, initial_troop_strength=120)
 
-    with pytest.raises(AssertionError, match="invalid battle unit_defense"):
+    with pytest.raises(GameError, match="invalid battle unit_defense"):
         effective_defense_value(troop, attacker)
 
 
 def test_troop_unit_hp_rejects_invalid_max_hp():
     troop = make_unit(kind="troop", unit_hp=None, max_hp="bad", troop_strength=50, initial_troop_strength=50)
 
-    with pytest.raises(AssertionError, match="invalid battle max_hp"):
+    with pytest.raises(GameError, match="invalid battle max_hp"):
         troop_unit_hp(troop)
 
 

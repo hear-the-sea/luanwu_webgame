@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, Optional, TypeVar
+from typing import Any, Dict, List, Optional, TypeVar, overload
 from urllib.parse import unquote
 
 from django.http import HttpRequest
@@ -43,6 +43,16 @@ ALLOWED_ORDERING_FIELDS = {
 }
 
 
+@overload
+def safe_int(
+    value: Any, default: None = None, min_val: Optional[int] = None, max_val: Optional[int] = None
+) -> Optional[int]: ...
+
+
+@overload
+def safe_int(value: Any, default: int = 0, min_val: Optional[int] = None, max_val: Optional[int] = None) -> int: ...
+
+
 def safe_int(
     value: Any, default: Optional[int] = 0, min_val: Optional[int] = None, max_val: Optional[int] = None
 ) -> Optional[int]:
@@ -73,6 +83,31 @@ def safe_int(
     return result
 
 
+def safe_non_negative_int(value: Any, default: int = 0) -> int:
+    """
+    安全地将值转换为非负整数（>= 0）。
+
+    Args:
+        value: 要转换的值
+        default: 转换失败或越界时的默认值
+
+    Returns:
+        非负整数或默认值
+    """
+    result = safe_int(value, default=None)
+    if result is None or result < 0:
+        return default
+    return result
+
+
+@overload
+def safe_positive_int(value: Any, default: None = None) -> Optional[int]: ...
+
+
+@overload
+def safe_positive_int(value: Any, default: int) -> int: ...
+
+
 def safe_positive_int(value: Any, default: Optional[int] = None) -> Optional[int]:
     """
     安全地将值转换为正整数（> 0）。
@@ -88,6 +123,34 @@ def safe_positive_int(value: Any, default: Optional[int] = None) -> Optional[int
     if result is None or result <= 0:
         return default
     return result
+
+
+def require_positive_int(value: Any, *, contract_name: str) -> int:
+    """
+    严格要求正整数值（> 0），违规时抛出 GameError。
+
+    用于内部契约检查（如战斗数值校验），与 safe_* 系列不同，
+    此函数在输入无效时抛出异常而非返回默认值。
+
+    Args:
+        value: 要校验的值
+        contract_name: 契约名称（用于错误消息）
+
+    Returns:
+        正整数
+
+    Raises:
+        GameError: 值无效或非正整数
+    """
+    if value is None or isinstance(value, bool):
+        raise GameError(f"invalid {contract_name}: {value!r}")
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError) as exc:
+        raise GameError(f"invalid {contract_name}: {value!r}") from exc
+    if parsed <= 0:
+        raise GameError(f"invalid {contract_name}: {value!r}")
+    return parsed
 
 
 def parse_json_object(raw: Any, *, empty_as_object: bool = False) -> Optional[Dict[str, Any]]:
@@ -111,6 +174,18 @@ def parse_json_object(raw: Any, *, empty_as_object: bool = False) -> Optional[Di
     if not isinstance(data, dict):
         return None
     return data
+
+
+@overload
+def safe_float(
+    value: Any, default: None = None, min_val: Optional[float] = None, max_val: Optional[float] = None
+) -> Optional[float]: ...
+
+
+@overload
+def safe_float(
+    value: Any, default: float = 0.0, min_val: Optional[float] = None, max_val: Optional[float] = None
+) -> float: ...
 
 
 def safe_float(

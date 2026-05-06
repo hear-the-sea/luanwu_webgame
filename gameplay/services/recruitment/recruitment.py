@@ -19,7 +19,7 @@ from django.db.models import F
 from django.utils import timezone
 
 from core.exceptions import TroopRecruitmentAlreadyInProgressError, TroopRecruitmentError
-from core.utils import safe_int
+from core.utils import safe_non_negative_int, safe_positive_int
 from core.utils.time_scale import scale_duration
 
 from ...constants import BuildingKeys
@@ -48,20 +48,6 @@ __all__ = [
     "refresh_troop_recruitments",
     "start_troop_recruitment",
 ]
-
-
-def _coerce_non_negative_int(value: Any, default: int = 0) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None:
-        return default
-    return max(0, parsed)
-
-
-def _coerce_positive_int(value: Any, default: int = 1) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None:
-        return default
-    return max(1, parsed)
 
 
 def calculate_recruitment_duration(base_duration: int, manor: Manor) -> int:
@@ -129,7 +115,7 @@ def get_max_recruit_quantity(
         return TROOP_RECRUITMENT_DEFAULT_MAX_QUANTITY
 
     resolved_tech_level = (
-        _coerce_non_negative_int(tech_level)
+        safe_non_negative_int(tech_level)
         if tech_level is not None
         else max(0, get_player_technology_level(manor, tech_key))
     )
@@ -137,7 +123,7 @@ def get_max_recruit_quantity(
         return TROOP_RECRUITMENT_DEFAULT_MAX_QUANTITY
 
     tech_template = get_technology_template(tech_key) or {}
-    effect_per_level = _coerce_positive_int(
+    effect_per_level = safe_positive_int(
         tech_template.get("effect_per_level"),
         TROOP_RECRUITMENT_DEFAULT_MAX_QUANTITY,
     )
@@ -497,7 +483,7 @@ def _consume_equipment_for_recruitment(manor: Manor, equipment_list: list[str], 
 
 
 def _consume_retainers_for_recruitment(manor: Manor, retainer_cost: int) -> None:
-    available_retainers = _coerce_non_negative_int(getattr(manor, "retainer_count", 0), 0)
+    available_retainers = safe_non_negative_int(getattr(manor, "retainer_count", 0))
     if available_retainers < retainer_cost:
         raise TroopRecruitmentError(f"家丁不足，需要{retainer_cost}")
 

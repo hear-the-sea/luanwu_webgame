@@ -3,6 +3,9 @@ from __future__ import annotations
 import math
 from typing import Any
 
+from core.exceptions import GameError
+from core.utils import require_positive_int
+
 # ============ 战斗数值常量 ============
 
 # 门客对小兵的屠戮倍率
@@ -28,23 +31,11 @@ TROOP_VS_TROOP_ATTACK_DIVISOR = 1.0
 TROOP_DEFENSE_SQRT_DIVISOR = 2.0
 
 
-def _coerce_positive_int(value: Any, *, contract_name: str) -> int:
-    if value is None or isinstance(value, bool):
-        raise AssertionError(f"invalid {contract_name}: {value!r}")
-    try:
-        parsed = int(value)
-    except (TypeError, ValueError) as exc:
-        raise AssertionError(f"invalid {contract_name}: {value!r}") from exc
-    if parsed <= 0:
-        raise AssertionError(f"invalid {contract_name}: {value!r}")
-    return parsed
-
-
 def _unit_strength(unit: Any) -> int:
     strength = getattr(unit, "initial_troop_strength", None)
     if strength is None:
         strength = getattr(unit, "troop_strength", None)
-    return _coerce_positive_int(strength, contract_name="battle troop strength")
+    return require_positive_int(strength, contract_name="battle troop strength")
 
 
 def _current_strength(unit: Any) -> int:
@@ -58,16 +49,16 @@ def _current_strength(unit: Any) -> int:
     strength = getattr(unit, "troop_strength", None)
     if strength is None:
         strength = getattr(unit, "initial_troop_strength", 0)
-        return _coerce_positive_int(strength, contract_name="battle current troop strength")
+        return require_positive_int(strength, contract_name="battle current troop strength")
     if isinstance(strength, bool):
-        raise AssertionError(f"invalid battle current troop strength: {strength!r}")
+        raise GameError(f"invalid battle current troop strength: {strength!r}")
     try:
         parsed_strength = int(strength)
-    except (TypeError, ValueError) as exc:
-        raise AssertionError(f"invalid battle current troop strength: {strength!r}") from exc
+    except (TypeError, ValueError):
+        raise GameError(f"invalid battle current troop strength: {strength!r}")
     if parsed_strength > 0:
         return parsed_strength
-    return _coerce_positive_int(
+    return require_positive_int(
         getattr(unit, "initial_troop_strength", 0), contract_name="battle current troop strength"
     )
 
@@ -75,18 +66,18 @@ def _current_strength(unit: Any) -> int:
 def _unit_attack_value(unit: Any) -> int:
     unit_attack = getattr(unit, "unit_attack", None)
     if unit_attack is not None:
-        return _coerce_positive_int(unit_attack, contract_name="battle unit_attack")
+        return require_positive_int(unit_attack, contract_name="battle unit_attack")
     strength = max(1, _unit_strength(unit))
-    attack = _coerce_positive_int(getattr(unit, "attack", None), contract_name="battle attack")
+    attack = require_positive_int(getattr(unit, "attack", None), contract_name="battle attack")
     return max(1, int(attack / strength))
 
 
 def _unit_defense_value(unit: Any) -> int:
     unit_defense = getattr(unit, "unit_defense", None)
     if unit_defense is not None:
-        return _coerce_positive_int(unit_defense, contract_name="battle unit_defense")
+        return require_positive_int(unit_defense, contract_name="battle unit_defense")
     strength = max(1, _unit_strength(unit))
-    defense = _coerce_positive_int(getattr(unit, "defense", None), contract_name="battle defense")
+    defense = require_positive_int(getattr(unit, "defense", None), contract_name="battle defense")
     return max(1, int(defense / strength))
 
 
@@ -103,7 +94,7 @@ def troop_unit_hp(unit: Any) -> int:
         if parsed_unit_hp > 0:
             return parsed_unit_hp
     strength = max(1, _unit_strength(unit))
-    max_hp = _coerce_positive_int(getattr(unit, "max_hp", strength), contract_name="battle max_hp")
+    max_hp = require_positive_int(getattr(unit, "max_hp", strength), contract_name="battle max_hp")
     return max(1, int(max_hp / strength))
 
 

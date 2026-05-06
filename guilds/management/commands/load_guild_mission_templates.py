@@ -7,32 +7,11 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from core.utils import safe_int
+from core.utils import safe_int, safe_non_negative_int, safe_positive_int
 from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
 from guilds.models import GuildMissionTemplate
 
 logger = logging.getLogger(__name__)
-
-
-def _coerce_positive_int(value, default: int) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None or parsed <= 0:
-        return default
-    return parsed
-
-
-def _coerce_non_negative_int(value, default: int = 0) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None or parsed < 0:
-        return default
-    return parsed
-
-
-def _coerce_int(value, default: int = 0) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None:
-        return default
-    return parsed
 
 
 def _coerce_bool(value, default: bool = False) -> bool:
@@ -137,15 +116,15 @@ class Command(BaseCommand):
                 "description": str(entry.get("description") or ""),
                 "difficulty": str(entry.get("difficulty") or "junior"),
                 "task_type": _normalize_task_type(entry.get("task_type"), allow_troops=allow_troops),
-                "base_duration_seconds": _coerce_positive_int(entry.get("base_duration_seconds"), 600),
-                "ruby_reward": _coerce_non_negative_int(entry.get("ruby_reward"), 0),
-                "recommended_guest_count": _coerce_positive_int(entry.get("recommended_guest_count"), 1),
+                "base_duration_seconds": safe_positive_int(entry.get("base_duration_seconds"), 600),
+                "ruby_reward": safe_non_negative_int(entry.get("ruby_reward"), 0),
+                "recommended_guest_count": safe_positive_int(entry.get("recommended_guest_count"), 1),
                 "allow_troops": allow_troops,
                 "enemy_guests": enemy_guests,
                 "enemy_troops": enemy_troops,
                 "enemy_technology": enemy_technology,
                 "is_active": _coerce_bool(entry.get("is_active"), True),
-                "sort_weight": _coerce_int(entry.get("sort_weight"), 0),
+                "sort_weight": safe_int(entry.get("sort_weight"), default=0),
             }
             obj, created = GuildMissionTemplate.objects.update_or_create(key=key, defaults=defaults)
             action = "Created" if created else "Updated"

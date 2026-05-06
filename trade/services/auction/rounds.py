@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, List, Optional
 from django.core.cache import cache
 
 from core.exceptions import MessageError
+from core.utils import safe_int
 from core.utils.infrastructure import (
     CACHE_INFRASTRUCTURE_EXCEPTIONS,
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
@@ -49,13 +50,6 @@ AUCTION_MESSAGE_DELIVERY_EXCEPTIONS: InfrastructureExceptions = combine_infrastr
     MessageError,
     infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
 )
-
-
-def _safe_int(value: Any, default: int) -> int:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return default
 
 
 def _safe_cache_add(key: str, value: Any, timeout: int) -> bool:
@@ -143,7 +137,7 @@ def settle_auction_round(
         safe_cache_add_func=_safe_cache_add,
         safe_cache_get_func=_safe_cache_get,
         safe_cache_delete_func=_safe_cache_delete,
-        safe_int_func=_safe_int,
+        safe_int_func=safe_int,
         logger=logger,
         database_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
     )
@@ -167,7 +161,7 @@ def _consume_winning_bid_frozen_gold_bars(winning_bid: AuctionBid, winner: Manor
         winning_bid,
         winner,
         settlement_price,
-        safe_int_func=_safe_int,
+        safe_int_func=safe_int,
         partial_consume_func=_partial_consume_frozen_gold_bars,
     )
 
@@ -176,7 +170,7 @@ def _settle_slot(slot: AuctionSlot) -> Dict:
     """结算单个拍卖位（维克里拍卖）。"""
     return settle_slot_impl(
         slot,
-        safe_int_func=_safe_int,
+        safe_int_func=safe_int,
         refund_losing_bids_func=_refund_losing_bids,
         consume_winning_bid_frozen_gold_bars_func=_consume_winning_bid_frozen_gold_bars,
         send_winning_notification_func=_send_winning_notification_vickrey,
@@ -192,7 +186,7 @@ def _partial_consume_frozen_gold_bars(bid: AuctionBid, manor: Manor, consume_amo
         manor,
         consume_amount,
         refund_amount,
-        safe_int_func=_safe_int,
+        safe_int_func=safe_int,
         logger=logger,
     )
 
@@ -220,4 +214,4 @@ def _send_winning_notification_vickrey(
 
 def _grant_auction_item_directly(manor: Manor, item_template: ItemTemplate, quantity: int) -> None:
     """Fallback path when reward message creation fails."""
-    grant_auction_item_directly_impl(manor, item_template, quantity, safe_int_func=_safe_int)
+    grant_auction_item_directly_impl(manor, item_template, quantity, safe_int_func=safe_int)

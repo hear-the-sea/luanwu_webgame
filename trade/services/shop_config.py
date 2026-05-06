@@ -8,6 +8,7 @@ from typing import Any, List
 from django.conf import settings
 
 from core.config import TRADE
+from core.utils import safe_int
 from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
 from gameplay.models import ItemTemplate
 
@@ -32,17 +33,10 @@ class ShopItemConfig:
         return self.stock == -1
 
 
-def _coerce_int(raw: Any, default: int = 0) -> int:
-    try:
-        return int(raw)
-    except (TypeError, ValueError):
-        return default
-
-
 def _coerce_optional_non_negative_int(raw: Any) -> int | None:
     if raw is None:
         return None
-    parsed = _coerce_int(raw, -1)
+    parsed = safe_int(raw, default=-1)
     if parsed < 0:
         return None
     return parsed
@@ -51,7 +45,7 @@ def _coerce_optional_non_negative_int(raw: Any) -> int | None:
 def _coerce_stock(raw: Any) -> int:
     if raw is None:
         return -1
-    parsed = _coerce_int(raw, -2)
+    parsed = safe_int(raw, default=-2)
     if parsed == -2:
         return 0
     if parsed == -1:
@@ -130,7 +124,7 @@ def get_base_price(item_key: str) -> int | None:
     """
     config = get_shop_item_config(item_key)
     if config and config.price is not None:
-        return max(0, _coerce_int(config.price, 0))
+        return max(0, safe_int(config.price, 0))
 
     try:
         template = ItemTemplate.objects.only("price").get(key=item_key)
@@ -165,5 +159,5 @@ def get_sell_price_by_template(template: ItemTemplate) -> int:
     """
     config = get_shop_item_config(template.key)
     if config and config.price is not None:
-        return max(0, _coerce_int(config.price, 0))
-    return max(0, _coerce_int(template.price, 0))
+        return max(0, safe_int(config.price, 0))
+    return max(0, safe_int(template.price, 0))

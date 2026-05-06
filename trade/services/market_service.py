@@ -15,6 +15,7 @@ from django.utils import timezone
 
 from core.config import TRADE
 from core.exceptions import InsufficientResourceError, TradeValidationError
+from core.utils import safe_int
 from core.utils.yaml_loader import load_yaml_data
 from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
 from gameplay.models.items import LEGACY_TOOL_EFFECT_TYPES
@@ -99,13 +100,6 @@ ALLOWED_LISTING_ORDER_BY = {
     "expires_at",
     "-expires_at",
 }
-
-
-def _safe_int(value, default: int) -> int:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return default
 
 
 def charge_listing_fee(locked_manor: Manor, silver_amount: int) -> None:
@@ -207,8 +201,8 @@ def validate_listing_price(item_template: ItemTemplate, unit_price: int) -> None
     Raises:
         TradeValidationError: 如果价格不合法
     """
-    template_price = max(0, _safe_int(getattr(item_template, "price", 0), 0))
-    normalized_unit_price = _safe_int(unit_price, -1)
+    template_price = max(0, safe_int(getattr(item_template, "price", 0), 0))
+    normalized_unit_price = safe_int(unit_price, -1)
     min_price = int(template_price * MIN_PRICE_MULTIPLIER)
     if normalized_unit_price < min_price:
         raise TradeValidationError(f"单价不能低于 {min_price} 银两")
@@ -267,7 +261,7 @@ def create_listing(
         create_listing_record=create_listing_record,
         market_listing_model=MarketListing,
         max_total_price=MAX_TOTAL_PRICE,
-        safe_int=_safe_int,
+        safe_int=safe_int,
     )
 
 

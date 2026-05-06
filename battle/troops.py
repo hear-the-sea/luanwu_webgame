@@ -8,7 +8,7 @@ from typing import Any, Dict, List
 from django.conf import settings
 from django.core.cache import cache
 
-from core.utils import safe_int
+from core.utils import safe_non_negative_int
 from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
 
 DEFAULT_TROOP_FILE = Path(settings.BASE_DIR) / "data" / "troop_templates.yaml"
@@ -17,13 +17,6 @@ logger = logging.getLogger(__name__)
 # 兵种模板缓存键和过期时间
 TROOP_TEMPLATES_CACHE_KEY = "troop_templates:db"
 TROOP_TEMPLATES_CACHE_TIMEOUT = 300  # 5分钟
-
-
-def _coerce_non_negative_int(value: Any, default: int = 0) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None:
-        return default
-    return max(0, parsed)
 
 
 def _normalize_troop_template_item(raw: Any) -> tuple[str, dict] | None:
@@ -40,12 +33,12 @@ def _normalize_troop_template_item(raw: Any) -> tuple[str, dict] | None:
         {
             "label": str(item.get("name") or key),
             "description": str(item.get("description") or ""),
-            "base_attack": _coerce_non_negative_int(item.get("base_attack"), 30),
-            "base_defense": _coerce_non_negative_int(item.get("base_defense"), 20),
-            "base_hp": _coerce_non_negative_int(item.get("base_hp"), 80),
-            "speed_bonus": _coerce_non_negative_int(item.get("speed_bonus"), 10),
-            "priority": _coerce_non_negative_int(item.get("priority"), 0),
-            "default_count": _coerce_non_negative_int(item.get("default_count"), 120),
+            "base_attack": safe_non_negative_int(item.get("base_attack"), 30),
+            "base_defense": safe_non_negative_int(item.get("base_defense"), 20),
+            "base_hp": safe_non_negative_int(item.get("base_hp"), 80),
+            "speed_bonus": safe_non_negative_int(item.get("speed_bonus"), 10),
+            "priority": safe_non_negative_int(item.get("priority"), 0),
+            "default_count": safe_non_negative_int(item.get("default_count"), 120),
             "avatar": None,
         },
     )
@@ -148,5 +141,5 @@ def default_troop_loadout() -> Dict[str, int]:
     templates = load_troop_templates()
     loadout = {}
     for key, data in templates.items():
-        loadout[key] = _coerce_non_negative_int(data.get("default_count"), 120)
+        loadout[key] = safe_non_negative_int(data.get("default_count"), 120)
     return loadout

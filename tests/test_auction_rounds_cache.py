@@ -6,15 +6,15 @@ from trade.services.auction import rounds as auction_rounds
 
 
 def test_safe_int_returns_int_when_valid():
-    assert auction_rounds._safe_int(10, default=0) == 10
-    assert auction_rounds._safe_int("20", default=0) == 20
-    assert auction_rounds._safe_int(5.7, default=0) == 5
+    assert auction_rounds.safe_int(10, default=0) == 10
+    assert auction_rounds.safe_int("20", default=0) == 20
+    assert auction_rounds.safe_int(5.7, default=0) == 5
 
 
 def test_safe_int_returns_default_when_invalid():
-    assert auction_rounds._safe_int(None, default=10) == 10
-    assert auction_rounds._safe_int("invalid", default=5) == 5
-    assert auction_rounds._safe_int({}, default=3) == 3
+    assert auction_rounds.safe_int(None, default=10) == 10
+    assert auction_rounds.safe_int("invalid", default=5) == 5
+    assert auction_rounds.safe_int({}, default=3) == 3
 
 
 def test_safe_cache_add_returns_bool(monkeypatch):

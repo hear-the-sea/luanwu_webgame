@@ -7,6 +7,7 @@
 
 import logging
 
+from core.utils import safe_int
 from gameplay.models import Manor
 
 from . import bank_supply_runtime as _bank_supply_runtime
@@ -17,7 +18,6 @@ from .bank_pricing import (
     GOLD_BAR_MIN_PRICE,
     _calculate_supply_factor_from_supply,
     _normalize_positive_quantity,
-    _safe_int,
     calculate_progressive_factor,
 )
 
@@ -123,7 +123,7 @@ def calculate_gold_bar_cost(
     if supply_factor is None:
         supply_factor_fn = resolve_calculate_supply_factor(calculate_supply_factor)
         supply_factor = supply_factor_fn(fail_closed=fail_closed) if fail_closed else supply_factor_fn()
-    today_count = max(0, _safe_int(get_today_exchange_count_value(manor), 0))
+    today_count = max(0, safe_int(get_today_exchange_count_value(manor), 0))
 
     base_cost = 0
     rate_details: list[int] = []

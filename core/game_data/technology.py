@@ -6,17 +6,18 @@ from typing import Any, Dict, Optional
 
 from django.conf import settings
 
+from core.utils import safe_int as _safe_int_core
 from core.utils.yaml_loader import ensure_mapping, load_yaml_data
-
-logger = logging.getLogger(__name__)
-TECHNOLOGY_TEMPLATES_PATH = settings.BASE_DIR / "data" / "technology_templates.yaml"
 
 
 def _coerce_int(value: Any, default: int = 0) -> int:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return default
+    """Safe integer coercion, returning int (never None)."""
+    result = _safe_int_core(value, default=default)
+    return default if result is None else result
+
+
+logger = logging.getLogger(__name__)
+TECHNOLOGY_TEMPLATES_PATH = settings.BASE_DIR / "data" / "technology_templates.yaml"
 
 
 def _coerce_float(value: Any, default: float = 0.0) -> float:

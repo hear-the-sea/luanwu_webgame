@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, List
 from django.utils import timezone
 
 from core.exceptions import BattlePreparationError
+from core.utils import require_positive_int
 from guests.guest_combat_stats import is_live_guest_model
 from guests.guest_rules import compute_guest_troop_capacity
 from guests.models import Guest, GuestStatus
@@ -65,18 +66,6 @@ def _normalize_optional_mapping(raw: Any, *, contract_name: str) -> Dict[str, An
     return raw
 
 
-def _coerce_positive_int(value: Any, *, contract_name: str) -> int:
-    if value is None or isinstance(value, bool):
-        raise AssertionError(f"invalid {contract_name}: {value!r}")
-    try:
-        parsed = int(value)
-    except (TypeError, ValueError) as exc:
-        raise AssertionError(f"invalid {contract_name}: {value!r}") from exc
-    if parsed <= 0:
-        raise AssertionError(f"invalid {contract_name}: {value!r}")
-    return parsed
-
-
 def _normalize_skill_keys(raw: Any, *, contract_name: str) -> List[str] | None:
     if raw is None:
         return None
@@ -122,7 +111,7 @@ def _extract_defender_tech_profile(defender_setup: Dict[str, Any] | None) -> tup
 
     defender_tech_levels = resolve_enemy_tech_levels(tech_conf)
     if "guest_level" in tech_conf:
-        defender_guest_level = _coerce_positive_int(
+        defender_guest_level = require_positive_int(
             tech_conf.get("guest_level"),
             contract_name="battle defender guest_level",
         )

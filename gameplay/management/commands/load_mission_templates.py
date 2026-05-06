@@ -7,18 +7,11 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from core.utils import safe_int
+from core.utils import safe_positive_int
 from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
 from gameplay.models import MissionTemplate
 
 logger = logging.getLogger(__name__)
-
-
-def _coerce_positive_int(value, default: int) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None or parsed <= 0:
-        return default
-    return parsed
 
 
 def _coerce_bool(value, default: bool = False) -> bool:
@@ -118,8 +111,8 @@ class Command(BaseCommand):
                 "enemy_technology": enemy_technology,
                 "drop_table": drop_table,
                 "probability_drop_table": probability_drop_table,
-                "base_travel_time": _coerce_positive_int(entry.get("base_travel_time"), 1200),
-                "daily_limit": _coerce_positive_int(entry.get("daily_limit"), 3),
+                "base_travel_time": safe_positive_int(entry.get("base_travel_time"), 1200),
+                "daily_limit": safe_positive_int(entry.get("daily_limit"), 3),
             }
             obj, created = MissionTemplate.objects.update_or_create(key=key, defaults=defaults)
             action = "Created" if created else "Updated"

@@ -19,7 +19,7 @@ from core.exceptions.recruitment_extended import (
     TroopRecruitmentNotReadyError,
     TroopTemplateNotFoundError,
 )
-from core.utils import safe_int
+from core.utils import safe_int, safe_non_negative_int, safe_positive_int
 from core.utils.imports import is_missing_target_import
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS, NOTIFICATION_INFRASTRUCTURE_EXCEPTIONS
 
@@ -29,20 +29,6 @@ if TYPE_CHECKING:
     from battle.models import TroopTemplate
 
 logger = logging.getLogger(__name__)
-
-
-def _coerce_non_negative_int(value: object, default: int = 0) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None:
-        return default
-    return max(0, parsed)
-
-
-def _coerce_positive_int(value: object, default: int = 1) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None:
-        return default
-    return max(1, parsed)
 
 
 def schedule_recruitment_completion(recruitment: TroopRecruitment, eta_seconds: int) -> None:
@@ -102,12 +88,12 @@ def _get_or_create_battle_troop_template(recruitment: TroopRecruitment) -> Troop
     defaults = {
         "name": str(troop_config.get("name") or recruitment.troop_name or recruitment.troop_key),
         "description": str(troop_config.get("description") or ""),
-        "base_attack": _coerce_non_negative_int(troop_config.get("base_attack"), 30),
-        "base_defense": _coerce_non_negative_int(troop_config.get("base_defense"), 20),
-        "base_hp": _coerce_non_negative_int(troop_config.get("base_hp"), 80),
-        "speed_bonus": _coerce_non_negative_int(troop_config.get("speed_bonus"), 10),
+        "base_attack": safe_non_negative_int(troop_config.get("base_attack"), 30),
+        "base_defense": safe_non_negative_int(troop_config.get("base_defense"), 20),
+        "base_hp": safe_non_negative_int(troop_config.get("base_hp"), 80),
+        "speed_bonus": safe_non_negative_int(troop_config.get("speed_bonus"), 10),
         "priority": safe_int(troop_config.get("priority"), default=0) or 0,
-        "default_count": _coerce_positive_int(troop_config.get("default_count"), 120),
+        "default_count": safe_positive_int(troop_config.get("default_count"), 120),
     }
 
     troop_template, created = TroopTemplate.objects.get_or_create(key=recruitment.troop_key, defaults=defaults)

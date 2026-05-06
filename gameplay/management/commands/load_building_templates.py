@@ -7,19 +7,12 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from core.utils import safe_float, safe_int
+from core.utils import safe_float, safe_non_negative_int
 from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
 from gameplay.models import BuildingType
 from gameplay.services.utils.template_cache import clear_building_template_cache
 
 logger = logging.getLogger(__name__)
-
-
-def _coerce_non_negative_int(value, default: int) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None or parsed < 0:
-        return default
-    return parsed
 
 
 def _coerce_non_negative_float(value, default: float) -> float:
@@ -92,9 +85,9 @@ class Command(BaseCommand):
                 "description": str(entry.get("description") or ""),
                 "category": str(entry.get("category") or BuildingType._meta.get_field("category").default),
                 "resource_type": resource_type,
-                "base_rate_per_hour": _coerce_non_negative_int(entry.get("base_rate_per_hour"), 0),
+                "base_rate_per_hour": safe_non_negative_int(entry.get("base_rate_per_hour"), 0),
                 "rate_growth": _coerce_non_negative_float(entry.get("rate_growth"), 0.0),
-                "base_upgrade_time": _coerce_non_negative_int(entry.get("base_upgrade_time"), 60),
+                "base_upgrade_time": safe_non_negative_int(entry.get("base_upgrade_time"), 60),
                 "time_growth": _coerce_non_negative_float(entry.get("time_growth"), 1.25),
                 "base_cost": base_cost,
                 "cost_growth": _coerce_non_negative_float(entry.get("cost_growth"), 1.35),

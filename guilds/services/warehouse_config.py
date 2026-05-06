@@ -9,11 +9,11 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from django.conf import settings
 
-from core.utils import safe_int
+from core.utils import safe_int, safe_non_negative_int, safe_positive_int
 from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
 
 WAREHOUSE_PRODUCTION_PATH = settings.BASE_DIR / "data" / "warehouse_production.yaml"
@@ -40,20 +40,6 @@ class TechProduction:
     def get_items(self, level: int) -> List[ProductionItem]:
         """获取指定等级的产出物品列表"""
         return self.levels.get(level, [])
-
-
-def _coerce_non_negative_int(value: Any, default: int = 0) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None:
-        return default
-    return max(0, parsed)
-
-
-def _coerce_positive_int(value: Any, default: int = 1) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None:
-        return default
-    return max(1, parsed)
 
 
 def load_warehouse_production() -> Dict[str, TechProduction]:
@@ -91,9 +77,9 @@ def load_warehouse_production() -> Dict[str, TechProduction]:
                 item_key = str(item.get("item_key") or "").strip()
                 if not item_key:
                     continue
-                quantity = _coerce_positive_int(item.get("quantity"), 1)
-                contribution_cost = _coerce_non_negative_int(item.get("contribution_cost"), 0)
-                weekly_personal_limit = _coerce_non_negative_int(item.get("weekly_personal_limit"), 0)
+                quantity = safe_positive_int(item.get("quantity"), 1)
+                contribution_cost = safe_non_negative_int(item.get("contribution_cost"))
+                weekly_personal_limit = safe_non_negative_int(item.get("weekly_personal_limit"))
                 normalized_items.append(
                     ProductionItem(
                         item_key=item_key,

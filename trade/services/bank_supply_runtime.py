@@ -10,6 +10,7 @@ from django.core.cache import cache
 from django.db.models import Sum
 from django.utils import timezone
 
+from core.utils import safe_int
 from core.utils.cache_lock import release_cache_key_if_owner
 from core.utils.infrastructure import CACHE_INFRASTRUCTURE_EXCEPTIONS, DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.models import InventoryItem, Manor
@@ -24,7 +25,6 @@ from .bank_pricing import (
     SUPPLY_STALE_CACHE_KEY,
     SUPPLY_STALE_CACHE_TTL,
     GoldBarPricingUnavailableError,
-    _safe_int,
 )
 from .cache_resilience import (
     best_effort_cache_add,
@@ -205,7 +205,7 @@ def get_today_exchange_count_value(manor: Manor) -> int:
     count = GoldBarExchangeLog.objects.filter(manor=manor, exchange_date=today).aggregate(total=Sum("quantity"))[
         "total"
     ]
-    return max(0, _safe_int(count, 0))
+    return max(0, safe_int(count, 0))
 
 
 def resolve_get_effective_gold_supply(default_fn: Callable[..., int]) -> Callable[..., int]:
@@ -269,7 +269,7 @@ def get_effective_gold_supply_data(*, fail_closed: bool = False) -> tuple[int, s
             manor__user__last_login__gte=cutoff,
         ).aggregate(total=Sum("quantity"))
 
-        total = max(0, _safe_int(result["total"], 0))
+        total = max(0, safe_int(result["total"], 0))
         safe_cache_set_value(SUPPLY_CACHE_KEY, total, SUPPLY_CACHE_TTL)
         safe_cache_set_value(SUPPLY_STALE_CACHE_KEY, total, SUPPLY_STALE_CACHE_TTL)
         return total, "db"

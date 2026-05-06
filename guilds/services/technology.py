@@ -8,6 +8,7 @@ from django.db.models import F
 
 from core.exceptions import GuildMembershipError, GuildTechnologyError, GuildWarehouseError
 from core.game_data.technology import get_troop_stat_bonuses_from_levels
+from core.utils import safe_non_negative_int
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.models import Manor
 from gameplay.services import technology as player_technology_service
@@ -30,17 +31,10 @@ def _is_supported_tech_key(tech_key: str) -> bool:
     return tech_key in guild_constants.get_supported_guild_technology_keys()
 
 
-def _coerce_non_negative_int(value: object, default: int = 0) -> int:
-    try:
-        return max(0, int(cast(SupportsInt | str | bytes | bytearray, value)))
-    except (TypeError, ValueError):
-        return default
-
-
 def get_effective_guild_tech_max_level(tech_key: str, stored_max_level: object) -> int:
     if tech_key == "troop_tactics":
         return TROOP_TACTICS_RUNTIME_MAX_LEVEL
-    return _coerce_non_negative_int(stored_max_level)
+    return safe_non_negative_int(stored_max_level)
 
 
 def _can_upgrade_guild_technology(tech: GuildTechnology) -> bool:
@@ -61,7 +55,7 @@ def build_guild_troop_tech_levels(guild: Guild) -> dict[str, int]:
         troop_class = str(template.get("troop_class") or "").strip()
         if not tech_key or not troop_class:
             continue
-        personal_max_level = _coerce_non_negative_int(template.get("max_level"))
+        personal_max_level = safe_non_negative_int(template.get("max_level"))
         mapped_level = (projected_level * personal_max_level) // troop_tactics_max_level
         resolved[tech_key] = min(personal_max_level, mapped_level)
     return resolved

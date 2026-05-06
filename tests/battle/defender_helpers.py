@@ -6,6 +6,7 @@ import pytest
 from django.utils import timezone
 
 from battle.services import _build_defender_guest_and_loadout, _extract_defender_tech_profile
+from core.exceptions import GameError
 
 
 def test_extract_defender_tech_profile_rejects_invalid_technology_payload():
@@ -14,7 +15,7 @@ def test_extract_defender_tech_profile_rejects_invalid_technology_payload():
 
 
 def test_extract_defender_tech_profile_rejects_invalid_guest_level():
-    with pytest.raises(AssertionError, match="invalid battle defender guest_level"):
+    with pytest.raises(GameError, match="invalid battle defender guest_level"):
         _extract_defender_tech_profile({"technology": {"guest_level": "bad"}})
 
 

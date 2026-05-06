@@ -12,6 +12,7 @@ from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
 from core.exceptions import BattlePreparationError, MessageError
+from core.utils import safe_positive_int
 from core.utils.imports import is_missing_target_import
 from core.utils.infrastructure import (
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
@@ -53,7 +54,7 @@ from .travel import (
     _get_defender_battle_block_reason,
     _retreat_raid_run_due_to_blocked_target,
 )
-from .troops import _coerce_positive_int, _normalize_mapping, _normalize_positive_int_mapping
+from .troops import _normalize_mapping, _normalize_positive_int_mapping
 
 logger = logging.getLogger(__name__)
 
@@ -165,7 +166,7 @@ def _apply_salvage_reward(locked_run: RaidRun, report: Any, is_attacker_victory:
     from gameplay.services.battle_salvage import calculate_battle_salvage, grant_battle_salvage
 
     exp_fruit_count, equipment_recovery = calculate_battle_salvage(report)
-    normalized_exp_fruit_count = _coerce_positive_int(exp_fruit_count, 0)
+    normalized_exp_fruit_count = safe_positive_int(exp_fruit_count, 0)
     normalized_equipment_recovery = _normalize_positive_int_mapping(equipment_recovery)
     if normalized_exp_fruit_count <= 0 and not normalized_equipment_recovery:
         return

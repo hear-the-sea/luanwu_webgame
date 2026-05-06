@@ -10,6 +10,8 @@ import logging
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict
 
+from core.utils import safe_positive_int
+
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -25,14 +27,6 @@ def _normalize_mapping(raw: Any) -> Dict[str, Any]:
     return {}
 
 
-def _coerce_positive_int(raw: Any, default: int = 0) -> int:
-    try:
-        parsed = int(raw)
-    except (TypeError, ValueError):
-        parsed = default
-    return parsed if parsed > 0 else 0
-
-
 def _normalize_positive_int_mapping(raw: Any) -> Dict[str, int]:
     data = _normalize_mapping(raw)
     normalized: Dict[str, int] = {}
@@ -40,7 +34,7 @@ def _normalize_positive_int_mapping(raw: Any) -> Dict[str, int]:
         normalized_key = str(key or "").strip()
         if not normalized_key:
             continue
-        normalized_value = _coerce_positive_int(value, 0)
+        normalized_value = safe_positive_int(value, 0)
         if normalized_value > 0:
             normalized[normalized_key] = normalized_value
     return normalized
@@ -81,7 +75,7 @@ def _extract_raid_troops_lost(
         key = str(entry.get("key") or "").strip()
         if key not in normalized_loadout or key not in troop_definitions:
             continue
-        lost = _coerce_positive_int(entry.get("lost", 0), 0)
+        lost = safe_positive_int(entry.get("lost", 0), 0)
         if lost > 0:
             troops_lost[key] = troops_lost.get(key, 0) + lost
     return troops_lost

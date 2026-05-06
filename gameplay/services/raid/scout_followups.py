@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
 from core.exceptions import MessageError
+from core.utils import safe_non_negative_int
 from core.utils.imports import is_missing_target_import
 from core.utils.infrastructure import (
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
@@ -38,14 +39,6 @@ def _normalize_mapping(raw: Any) -> dict[str, Any]:
     return {}
 
 
-def _coerce_non_negative_int(raw: Any, default: int = 0) -> int:
-    try:
-        parsed = int(raw)
-    except (TypeError, ValueError):
-        parsed = default
-    return parsed if parsed >= 0 else 0
-
-
 def log_scout_followup_failure(action: str, **context: Any) -> None:
     context_str = " ".join(f"{key}={value}" for key, value in context.items())
     if context_str:
@@ -58,8 +51,8 @@ def send_scout_success_message(record: Any) -> None:
     """发送侦察成功消息。"""
     intel = _normalize_mapping(record.intel_data)
     troop_description = str(intel.get("troop_description") or "未知")
-    guest_count = _coerce_non_negative_int(intel.get("guest_count", 0), 0)
-    avg_guest_level = _coerce_non_negative_int(intel.get("avg_guest_level", 0), 0)
+    guest_count = safe_non_negative_int(intel.get("guest_count", 0), 0)
+    avg_guest_level = safe_non_negative_int(intel.get("avg_guest_level", 0), 0)
     asset_level = str(intel.get("asset_level") or "未知")
 
     body = f"""探子已成功潜入 {record.defender.display_name}，获取到以下情报：

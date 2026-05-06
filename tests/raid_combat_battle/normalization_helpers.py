@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 from django.db import DatabaseError
 
+from core.utils import safe_positive_int
 from gameplay.services.raid.combat import battle as combat_battle
 
 
@@ -21,20 +22,20 @@ def test_normalize_mapping_returns_empty_dict_when_invalid():
 
 
 def test_coerce_positive_int_returns_int_when_valid():
-    assert combat_battle._coerce_positive_int(10) == 10
-    assert combat_battle._coerce_positive_int("20") == 20
-    assert combat_battle._coerce_positive_int(5.7) == 5
+    assert safe_positive_int(10, default=0) == 10
+    assert safe_positive_int("20", default=0) == 20
+    assert safe_positive_int(5.7, default=0) == 5
 
 
 def test_coerce_positive_int_returns_zero_when_negative():
-    assert combat_battle._coerce_positive_int(-5) == 0
-    assert combat_battle._coerce_positive_int(0) == 0
+    assert safe_positive_int(-5, default=0) == 0
+    assert safe_positive_int(0, default=0) == 0
 
 
 def test_coerce_positive_int_returns_default_when_invalid():
-    assert combat_battle._coerce_positive_int(None, default=10) == 10
-    assert combat_battle._coerce_positive_int("invalid", default=5) == 5
-    assert combat_battle._coerce_positive_int({}, default=3) == 3
+    assert safe_positive_int(None, default=10) == 10
+    assert safe_positive_int("invalid", default=5) == 5
+    assert safe_positive_int({}, default=3) == 3
 
 
 def test_normalize_positive_int_mapping_filters_invalid_keys():

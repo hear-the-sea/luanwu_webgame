@@ -16,6 +16,7 @@ from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
 
+from core.utils import safe_int
 from core.utils.cache_lock import release_cache_key_if_owner
 from core.utils.infrastructure import CACHE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.models import Manor, ResourceEvent
@@ -47,7 +48,6 @@ from .bank_pricing import (  # noqa: F401
     GoldBarPricingUnavailableError,
     _calculate_supply_factor_from_supply,
     _normalize_positive_quantity,
-    _safe_int,
     calculate_progressive_factor,
 )
 from .bank_runtime import build_exchange_result as runtime_build_exchange_result
@@ -160,7 +160,7 @@ def get_today_exchange_count(manor: Manor) -> int:
             total=Sum("quantity")
         ),
         now_func=timezone.now,
-        safe_int=_safe_int,
+        safe_int=safe_int,
     )
 
 

@@ -7,6 +7,8 @@ from typing import Any, Dict, Iterable, Tuple
 from django.db import IntegrityError
 from django.db.models import F, QuerySet
 
+from core.utils import safe_positive_int
+
 from ....models import InventoryItem, ItemTemplate, Manor, ResourceEvent
 from ...pvp_runtime.loot import normalize_positive_int_mapping
 from ...resources import log_resource_gain
@@ -17,7 +19,7 @@ from .config import (
     PVPConstants,
     random,
 )
-from .troops import _coerce_positive_int, _normalize_mapping
+from .troops import _normalize_mapping
 
 
 def _calculate_resource_loot(defender: Manor, loot_percent: float) -> Dict[str, int]:
@@ -269,7 +271,7 @@ def _format_battle_rewards_description(battle_rewards: Dict[str, Any]) -> str:
         return ""
 
     parts = []
-    exp_fruit = _coerce_positive_int(normalized_rewards.get("exp_fruit", 0), 0)
+    exp_fruit = safe_positive_int(normalized_rewards.get("exp_fruit", 0), 0)
     equipment = normalize_positive_int_mapping(normalized_rewards.get("equipment"))
 
     if exp_fruit > 0:

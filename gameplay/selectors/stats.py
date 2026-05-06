@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.utils import timezone
 
+from core.utils import safe_non_negative_int
 from core.utils.degradation import CACHE_FALLBACK, REDIS_FAILURE, record_degradation
 from core.utils.infrastructure import INFRASTRUCTURE_EXCEPTIONS
 from gameplay.services.online_presence_backend import ONLINE_USERS_TTL_SECONDS, count_online_users
@@ -105,7 +106,7 @@ def _load_cached_stat_or_none(key: str) -> tuple[int | None, bool]:
     if cached is None:
         return None, True
 
-    resolved = _safe_int(cached, default=0)
+    resolved = safe_non_negative_int(cached, default=0)
     _set_local_stats_cache(key, resolved, timeout=max(ONLINE_USERS_CACHE_TIMEOUT, TOTAL_USERS_CACHE_TIMEOUT))
     return resolved, True
 
@@ -113,14 +114,6 @@ def _load_cached_stat_or_none(key: str) -> tuple[int | None, bool]:
 def _persist_stat_cache(key: str, value: int, timeout: int) -> None:
     _set_local_stats_cache(key, value, timeout=timeout)
     _safe_cache_set(key, value, timeout=timeout)
-
-
-def _safe_int(value, default: int = 0) -> int:
-    try:
-        resolved = int(value)
-    except (TypeError, ValueError):
-        return default
-    return max(0, resolved)
 
 
 def load_total_user_count() -> int:
@@ -135,14 +128,16 @@ def load_total_user_count() -> int:
 
     total_count = User.objects.filter(is_staff=False, is_superuser=False).count()
     _persist_stat_cache(TOTAL_USERS_CACHE_KEY, total_count, timeout=TOTAL_USERS_CACHE_TIMEOUT)
-    return _safe_int(total_count)
+    return safe_non_negative_int(total_count)
 
 
 def _load_online_user_count_from_redis() -> int:
     redis = get_redis_connection()
     if redis is None:
         raise NotImplementedError("Redis operations are unavailable for the configured cache backend")
-    return _safe_int(count_online_users(redis, now_ts=float(time.time()), ttl_seconds=ONLINE_USERS_TTL_SECONDS))
+    return safe_non_negative_int(
+        count_online_users(redis, now_ts=float(time.time()), ttl_seconds=ONLINE_USERS_TTL_SECONDS)
+    )
 
 
 def _load_online_user_count_from_db() -> int:
@@ -169,7 +164,7 @@ def load_online_user_count() -> int:
         record_degradation(REDIS_FAILURE, component="stats_selector", detail="online user count Redis read failed")
         fallback_cached = _get_local_stats_cache(ONLINE_USERS_CACHE_KEY)
         if fallback_cached is not None:
-            return _safe_int(fallback_cached)
+            return safe_non_negative_int(fallback_cached)
         online_count = _load_online_user_count_from_db()
         _persist_stat_cache(ONLINE_USERS_CACHE_KEY, online_count, timeout=ONLINE_USERS_FALLBACK_CACHE_TIMEOUT)
         return online_count

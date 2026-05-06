@@ -10,6 +10,7 @@ from celery import shared_task
 from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
+from core.utils import safe_int, safe_non_negative_int
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from core.utils.task_monitoring import increment_degraded_counter
 from trade.models import ShopStock
@@ -18,27 +19,15 @@ from trade.services.shop_config import get_shop_config, reload_shop_config
 logger = logging.getLogger(__name__)
 
 
-def _safe_int(value, default: int = 0) -> int:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return default
-
-
-def _coerce_non_negative_int(value, default: int = 0) -> int:
-    parsed = _safe_int(value, default)
-    return parsed if parsed >= 0 else default
-
-
 def _normalize_settlement_stats(stats) -> tuple[int, int, int, int]:
     if not isinstance(stats, dict):
         logger.warning("settle_auction_round returned non-dict stats: %r", stats)
         return 0, 0, 0, 0
 
-    settled = _coerce_non_negative_int(stats.get("settled", 0), 0)
-    sold = _coerce_non_negative_int(stats.get("sold", 0), 0)
-    unsold = _coerce_non_negative_int(stats.get("unsold", 0), 0)
-    total_gold_bars = _coerce_non_negative_int(stats.get("total_gold_bars", 0), 0)
+    settled = safe_non_negative_int(stats.get("settled", 0), 0)
+    sold = safe_non_negative_int(stats.get("sold", 0), 0)
+    unsold = safe_non_negative_int(stats.get("unsold", 0), 0)
+    total_gold_bars = safe_non_negative_int(stats.get("total_gold_bars", 0), 0)
     return settled, sold, unsold, total_gold_bars
 
 
@@ -62,7 +51,7 @@ def refresh_shop_stock(self):
         for item in config_list:
             item_key = str(getattr(item, "item_key", "") or "").strip()
             daily_refresh = bool(getattr(item, "daily_refresh", False))
-            stock = _coerce_non_negative_int(getattr(item, "stock", 0), 0)
+            stock = safe_non_negative_int(getattr(item, "stock", 0), 0)
 
             # 只刷新设置了 daily_refresh 且有限库存的商品
             if not item_key:
@@ -126,7 +115,7 @@ def process_expired_listings(self):
     try:
         from trade.services.market_service import expire_listings
 
-        count = _coerce_non_negative_int(expire_listings(), 0)
+        count = safe_non_negative_int(expire_listings(), 0)
         return f"处理了 {count} 个过期挂单"
     except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
         logger.exception("Failed to process expired listings: %s", exc)
@@ -196,9 +185,9 @@ def create_auction_round_task(self):
         auction_round = create_auction_round()
 
         if auction_round:
-            round_number = _safe_int(getattr(auction_round, "round_number", 0), 0)
+            round_number = safe_int(getattr(auction_round, "round_number", 0), 0)
             try:
-                slot_count = _coerce_non_negative_int(auction_round.slots.count(), 0)
+                slot_count = safe_non_negative_int(auction_round.slots.count(), 0)
             except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
                 # Slot count is informational; degrade to 0 on infra errors.
                 logger.warning(

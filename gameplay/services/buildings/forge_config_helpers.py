@@ -3,6 +3,20 @@ from __future__ import annotations
 import copy
 from typing import Any, Dict, List, cast
 
+from core.utils import safe_float as _safe_float
+from core.utils import safe_int as _safe_int
+
+
+def _coerce_int(value: Any, default: int) -> int:
+    result = _safe_int(value, default=default)
+    return default if result is None else result
+
+
+def _coerce_float(value: Any, default: float) -> float:
+    result = _safe_float(value, default=default)
+    return default if result is None else result
+
+
 DEFAULT_FORGE_DECOMPOSE_CONFIG: Dict[str, Any] = {
     "supported_rarities": ["green", "blue", "purple", "orange"],
     "rarity_labels": {
@@ -90,25 +104,11 @@ def _require_probability(raw: Any, *, field_name: str) -> float:
     return value
 
 
-def _coerce_int(value: Any, default: int) -> int:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return default
-
-
-def _coerce_float(value: Any, default: float) -> float:
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return default
-
-
 def _normalize_quantity_range(raw_value: Any, fallback: list[int]) -> list[int]:
     if not isinstance(raw_value, (list, tuple)) or len(raw_value) != 2:
         return list(fallback)
-    minimum = _coerce_int(raw_value[0], fallback[0])
-    maximum = _coerce_int(raw_value[1], fallback[1])
+    minimum = _coerce_int(raw_value[0], default=fallback[0])
+    maximum = _coerce_int(raw_value[1], default=fallback[1])
     minimum = max(0, minimum)
     maximum = max(minimum, maximum)
     return [minimum, maximum]
@@ -139,7 +139,9 @@ def _normalize_decompose_config(raw: Any) -> Dict[str, Any]:
             rarity_key = str(rarity).strip()
             if not rarity_key:
                 continue
-            config["rarity_order"][rarity_key] = max(0, _coerce_int(order, config["rarity_order"].get(rarity_key, 0)))
+            config["rarity_order"][rarity_key] = max(
+                0, _coerce_int(order, default=config["rarity_order"].get(rarity_key, 0))
+            )
 
     base_materials = raw.get("base_materials")
     if isinstance(base_materials, dict):
@@ -171,7 +173,7 @@ def _normalize_decompose_config(raw: Any) -> Dict[str, Any]:
                 if not reward_name:
                     continue
                 fallback_prob = float(chance_map.get(reward_name, 0.0))
-                prob = _coerce_float(raw_prob, fallback_prob)
+                prob = _coerce_float(raw_prob, default=fallback_prob)
                 chance_map[reward_name] = max(0.0, min(1.0, prob))
             if chance_map:
                 config["chance_rewards"][rarity_key] = chance_map

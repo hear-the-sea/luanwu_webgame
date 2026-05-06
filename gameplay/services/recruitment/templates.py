@@ -7,24 +7,10 @@ from typing import Any
 
 from django.conf import settings
 
-from core.utils import safe_int
+from core.utils import safe_non_negative_int, safe_positive_int
 from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
 
 logger = logging.getLogger(__name__)
-
-
-def _coerce_non_negative_int(value: Any, default: int = 0) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None:
-        return default
-    return max(0, parsed)
-
-
-def _coerce_positive_int(value: Any, default: int = 1) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None:
-        return default
-    return max(1, parsed)
 
 
 def _normalize_recruit_config(raw: Any, *, troop_key: str) -> dict[str, Any] | None:
@@ -41,10 +27,10 @@ def _normalize_recruit_config(raw: Any, *, troop_key: str) -> dict[str, Any] | N
 
     return {
         "tech_key": tech_key,
-        "tech_level": _coerce_non_negative_int(recruit.get("tech_level"), 0),
+        "tech_level": safe_non_negative_int(recruit.get("tech_level"), 0),
         "equipment": equipment,
-        "retainer_cost": _coerce_positive_int(recruit.get("retainer_cost"), 1),
-        "base_duration": _coerce_positive_int(recruit.get("base_duration"), 120),
+        "retainer_cost": safe_positive_int(recruit.get("retainer_cost"), 1),
+        "base_duration": safe_positive_int(recruit.get("base_duration"), 120),
     }
 
 
@@ -67,10 +53,10 @@ def _normalize_troop_templates_payload(raw: Any) -> dict[str, Any]:
         normalized["key"] = key
         normalized["name"] = str(troop.get("name") or key)
         normalized["description"] = str(troop.get("description") or "")
-        normalized["base_attack"] = _coerce_non_negative_int(troop.get("base_attack"), 0)
-        normalized["base_defense"] = _coerce_non_negative_int(troop.get("base_defense"), 0)
-        normalized["base_hp"] = _coerce_non_negative_int(troop.get("base_hp"), 0)
-        normalized["speed_bonus"] = _coerce_non_negative_int(troop.get("speed_bonus"), 0)
+        normalized["base_attack"] = safe_non_negative_int(troop.get("base_attack"), 0)
+        normalized["base_defense"] = safe_non_negative_int(troop.get("base_defense"), 0)
+        normalized["base_hp"] = safe_non_negative_int(troop.get("base_hp"), 0)
+        normalized["speed_bonus"] = safe_non_negative_int(troop.get("speed_bonus"), 0)
         normalized["avatar"] = str(troop.get("avatar") or "")
         normalized["recruit"] = _normalize_recruit_config(troop.get("recruit"), troop_key=key)
         normalized_troops.append(normalized)

@@ -19,6 +19,7 @@ from core.exceptions import (
     ItemNotFoundError,
     ShopValidationError,
 )
+from core.utils import safe_int, safe_non_negative_int
 from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
 from gameplay.models.items import (
     ITEM_EFFECT_TYPE_LABELS,
@@ -63,18 +64,6 @@ class SellableItemDisplay:
 EFFECT_TYPE_CATEGORY = ITEM_EFFECT_TYPE_LABELS
 
 
-def _coerce_int(raw: Any, default: int = 0) -> int:
-    try:
-        return int(raw)
-    except (TypeError, ValueError):
-        return default
-
-
-def _coerce_non_negative_int(raw: Any, default: int = 0) -> int:
-    parsed = _coerce_int(raw, default)
-    return parsed if parsed >= 0 else default
-
-
 def _normalize_mapping(raw: Any) -> dict:
     if isinstance(raw, dict):
         return raw
@@ -114,7 +103,7 @@ def get_shop_items_for_display() -> List[ShopItemDisplay]:
 
         # 确定价格
         raw_price = config.price if config.price is not None else template.price
-        price = _coerce_non_negative_int(raw_price, 0)
+        price = safe_non_negative_int(raw_price, 0)
 
         # 确定库存
         if config.is_unlimited:
@@ -124,7 +113,7 @@ def get_shop_items_for_display() -> List[ShopItemDisplay]:
         else:
             # 有限库存：从数据库获取当前库存，如果不存在则使用配置的初始值
             current_stock = stocks.get(config.item_key, config.stock)
-            current_stock = _coerce_non_negative_int(current_stock, 0)
+            current_stock = safe_non_negative_int(current_stock, 0)
             stock = current_stock
             stock_display = str(current_stock)
             available = current_stock > 0
@@ -158,7 +147,7 @@ def _build_sell_price_overrides() -> dict[str, int]:
     for config in get_shop_config():
         if config.price is None:
             continue
-        overrides[config.item_key] = _coerce_non_negative_int(config.price, 0)
+        overrides[config.item_key] = safe_non_negative_int(config.price, 0)
     return overrides
 
 
@@ -196,7 +185,7 @@ def build_sellable_inventory_display_rows(items: Iterable[InventoryItem]) -> Lis
     for item in items:
         sell_price = sell_price_overrides.get(item.template.key)
         if sell_price is None:
-            sell_price = _coerce_non_negative_int(item.template.price, 0)
+            sell_price = safe_non_negative_int(item.template.price, 0)
         if sell_price > 0:
             result.append(SellableItemDisplay(inventory_item=item, sell_price=sell_price))
 
@@ -237,7 +226,7 @@ def buy_item(manor: Manor, item_key: str, quantity: int) -> Dict:
     Raises:
         GameError: 购买失败时抛出显式领域异常
     """
-    quantity = _coerce_int(quantity, 0)
+    quantity = safe_int(quantity, 0)
     if quantity <= 0:
         raise ShopValidationError(action="buy")
 
@@ -254,7 +243,7 @@ def buy_item(manor: Manor, item_key: str, quantity: int) -> Dict:
 
     # 确定价格
     raw_unit_price = config.price if config.price is not None else template.price
-    unit_price = _coerce_int(raw_unit_price, -1)
+    unit_price = safe_int(raw_unit_price, -1)
     if unit_price < 0:
         raise ItemNotConfiguredError("商品价格配置异常")
     total_cost = unit_price * quantity
@@ -263,7 +252,7 @@ def buy_item(manor: Manor, item_key: str, quantity: int) -> Dict:
     if not config.is_unlimited:
         stock, created = ShopStock.objects.select_for_update().get_or_create(
             item_key=item_key,
-            defaults={"current_stock": _coerce_non_negative_int(config.stock, 0)},
+            defaults={"current_stock": safe_non_negative_int(config.stock, 0)},
         )
         if stock.current_stock < quantity:
             raise InsufficientStockError(template.name, quantity, int(stock.current_stock), message="库存不足")
@@ -337,7 +326,7 @@ def sell_item(manor: Manor, item_key: str, quantity: int) -> Dict:
     Raises:
         GameError: 出售失败时抛出显式领域异常
     """
-    quantity = _coerce_int(quantity, 0)
+    quantity = safe_int(quantity, 0)
     if quantity <= 0:
         raise ShopValidationError(action="sell")
 

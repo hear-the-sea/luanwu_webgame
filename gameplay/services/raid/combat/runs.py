@@ -66,7 +66,7 @@ from .troop_ops import (  # noqa: F401
 )
 
 # Import normalization helpers from the troops sub-module (still used in this file).
-from .troops import _coerce_positive_int, _normalize_mapping, _normalize_positive_int_mapping  # noqa: F401
+from .troops import _normalize_mapping, _normalize_positive_int_mapping  # noqa: F401
 
 logger = logging.getLogger(__name__)
 

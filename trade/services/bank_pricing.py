@@ -4,7 +4,7 @@
 本模块只包含不依赖任何 IO（缓存/数据库）的部分：
   - 金条配置常量
   - 异常类
-  - 基础工具函数（_safe_int, _normalize_positive_quantity）
+  - 基础工具函数（_normalize_positive_quantity）
   - 纯数学汇率因子计算（_calculate_supply_factor_from_supply, calculate_progressive_factor）
 """
 
@@ -12,6 +12,7 @@ import math
 from decimal import Decimal
 
 from core.exceptions import GameError, TradeValidationError
+from core.utils import safe_int
 
 # ============ 金条基础配置 ============
 
@@ -48,15 +49,8 @@ class GoldBarPricingUnavailableError(GameError):
 # ============ 基础工具函数 ============
 
 
-def _safe_int(value, default: int) -> int:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return default
-
-
 def _normalize_positive_quantity(quantity) -> int:
-    normalized = _safe_int(quantity, 0)
+    normalized = safe_int(quantity, default=0)
     if normalized <= 0:
         raise TradeValidationError("兑换数量必须大于0")
     return normalized
@@ -91,6 +85,6 @@ def calculate_progressive_factor(today_count: int) -> float:
     Returns:
         float: 累进系数，范围 1.0 ~ 1.60
     """
-    normalized_count = max(0, _safe_int(today_count, 0))
+    normalized_count = max(0, safe_int(today_count, default=0))
     factor = 1 + GOLD_BAR_PROGRESSIVE_FACTOR * normalized_count
     return min(factor, 1.60)

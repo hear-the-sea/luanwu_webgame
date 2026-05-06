@@ -9,6 +9,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from core.exceptions import MessageError, TradeValidationError
+from core.utils import safe_int
 from core.utils.infrastructure import (
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
     NOTIFICATION_INFRASTRUCTURE_EXCEPTIONS,
@@ -28,26 +29,19 @@ AUCTION_OUTBID_MESSAGE_EXCEPTIONS: InfrastructureExceptions = combine_infrastruc
 )
 
 
-def _safe_int(value, default: int) -> int:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return default
-
-
 def _normalize_bid_amount(amount: int) -> int:
-    normalized = _safe_int(amount, 0)
+    normalized = safe_int(amount, default=0)
     if normalized <= 0:
         raise TradeValidationError("出价金额必须大于0")
     return normalized
 
 
 def _safe_winner_count(slot: AuctionSlot) -> int:
-    return max(1, _safe_int(getattr(slot, "quantity", 1), 1))
+    return max(1, safe_int(getattr(slot, "quantity", 1), 1))
 
 
 def _require_valid_winner_count(slot: AuctionSlot) -> int:
-    winner_count = _safe_int(getattr(slot, "quantity", 0), 0)
+    winner_count = safe_int(getattr(slot, "quantity", 0), 0)
     if winner_count <= 0:
         raise TradeValidationError("拍卖位配置异常，请联系管理员")
     return winner_count

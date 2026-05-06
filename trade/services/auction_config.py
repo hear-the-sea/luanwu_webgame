@@ -49,20 +49,6 @@ class AuctionConfig:
     items: List[AuctionItemConfig]
 
 
-def _coerce_int(value: Any, *, default: int, min_val: int) -> int:
-    parsed = safe_int(value, default=default)
-    if parsed is None:
-        return default
-    return max(min_val, parsed)
-
-
-def _coerce_float(value: Any, *, default: float, min_val: float) -> float:
-    parsed = safe_float(value, default=default)
-    if parsed is None:
-        return default
-    return max(min_val, parsed)
-
-
 def _coerce_bool(value: Any, *, default: bool = False) -> bool:
     if isinstance(value, bool):
         return value
@@ -93,9 +79,9 @@ def load_auction_config() -> AuctionConfig:
     # 解析全局设置
     settings_data = ensure_mapping(payload.get("settings"), logger=logger, context="auction config settings")
     auction_settings = AuctionSettings(
-        cycle_days=_coerce_int(settings_data.get("cycle_days"), default=3, min_val=1),
-        min_increment_ratio=_coerce_float(settings_data.get("min_increment_ratio"), default=0.1, min_val=0.0),
-        default_min_increment=_coerce_int(settings_data.get("default_min_increment"), default=1, min_val=1),
+        cycle_days=safe_int(settings_data.get("cycle_days"), default=3, min_val=1),
+        min_increment_ratio=safe_float(settings_data.get("min_increment_ratio"), default=0.1, min_val=0.0),
+        default_min_increment=safe_int(settings_data.get("default_min_increment"), default=1, min_val=1),
     )
 
     # 解析商品列表
@@ -112,10 +98,10 @@ def load_auction_config() -> AuctionConfig:
 
         config = AuctionItemConfig(
             item_key=item_key,
-            slots=_coerce_int(item.get("slots"), default=1, min_val=1),
-            quantity_per_slot=_coerce_int(item.get("quantity_per_slot"), default=1, min_val=1),
-            starting_price=_coerce_int(item.get("starting_price"), default=1, min_val=1),
-            min_increment=_coerce_int(
+            slots=safe_int(item.get("slots"), default=1, min_val=1),
+            quantity_per_slot=safe_int(item.get("quantity_per_slot"), default=1, min_val=1),
+            starting_price=safe_int(item.get("starting_price"), default=1, min_val=1),
+            min_increment=safe_int(
                 item.get("min_increment"),
                 default=auction_settings.default_min_increment,
                 min_val=1,
