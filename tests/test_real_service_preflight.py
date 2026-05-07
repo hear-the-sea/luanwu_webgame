@@ -60,3 +60,32 @@ def test_run_probe_reports_timeout():
     failure = preflight.run_probe(probe, runner=_runner)
 
     assert failure == "redis preflight timed out at redis.internal:6380 after 2s"
+
+
+def test_format_real_service_start_hint_points_to_lifecycle_targets_without_passwords():
+    hint = preflight.format_real_service_start_hint()
+
+    assert "make test-real-services-up" in hint
+    assert "DJANGO_TEST_USE_ENV_SERVICES=1 make test-real-services" in hint
+    assert "make test-real-services-down" in hint
+    assert "password" not in hint.lower()
+    assert "secret" not in hint
+
+
+def test_main_failure_output_points_to_lifecycle_targets_without_real_services(monkeypatch, capsys):
+    monkeypatch.setattr(
+        preflight,
+        "check_env_services_ready",
+        lambda: ["mysql preflight failed at db.internal:3306: exit=1"],
+    )
+
+    exit_code = preflight.main()
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert "real-services preflight failed:" in captured.err
+    assert "mysql preflight failed at db.internal:3306: exit=1" in captured.err
+    assert "make test-real-services-up" in captured.err
+    assert "DJANGO_TEST_USE_ENV_SERVICES=1 make test-real-services" in captured.err
+    assert "make test-real-services-down" in captured.err
+    assert "secret" not in captured.err

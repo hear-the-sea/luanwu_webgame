@@ -6,6 +6,7 @@
     "build:css": "tailwindcss -i ./src/input.css -o ./static/css/tailwind.css",
     "watch:css": "tailwindcss -i ./src/input.css -o ./static/css/tailwind.css --watch",
     "build:css:prod": "tailwindcss -i ./src/input.css -o ./static/css/tailwind.css --minify",
+    "check:js": "find static/js -maxdepth 1 -name '*.js' -print0 | xargs -0 -n1 node --check",
     "test:js": "node --test static/js/tests/*.test.js"
   },
   "devDependencies": {

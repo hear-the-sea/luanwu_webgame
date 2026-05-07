@@ -131,6 +131,16 @@ def check_env_services_ready(
     return failures
 
 
+def format_real_service_start_hint() -> str:
+    return "\n".join(
+        [
+            "Start MySQL and Redis with `make test-real-services-up`, then run:",
+            "  `DJANGO_TEST_USE_ENV_SERVICES=1 make test-real-services`",
+            "When finished, stop the services with `make test-real-services-down`.",
+        ]
+    )
+
+
 def main() -> int:
     failures = check_env_services_ready()
     if not failures:
@@ -140,10 +150,7 @@ def main() -> int:
     print("real-services preflight failed:", file=sys.stderr)
     for failure in failures:
         print(f"  - {failure}", file=sys.stderr)
-    print(
-        "Start MySQL and Redis first, then rerun `DJANGO_TEST_USE_ENV_SERVICES=1 make test-real-services`.",
-        file=sys.stderr,
-    )
+    print(format_real_service_start_hint(), file=sys.stderr)
     return 2
 
 

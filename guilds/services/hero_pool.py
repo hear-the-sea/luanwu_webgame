@@ -61,19 +61,30 @@ def _normalize_guest_id(raw_guest_id: Any) -> int:
     return guest_id
 
 
-def _lock_active_member(member: GuildMember) -> GuildMember:
-    locked_member = (
+def _lock_guild_and_active_member(
+    *,
+    guild_id: int,
+    member_id: int | None = None,
+    user: Any | None = None,
+    error_msg: str = "您不在帮会中",
+) -> tuple[Guild, GuildMember]:
+    locked_guild = Guild.objects.select_for_update().get(pk=guild_id)
+    member_qs = (
         GuildMember.objects.select_for_update()
         .select_related("guild", "user__manor")
         .filter(
-            pk=member.pk,
+            guild=locked_guild,
             is_active=True,
         )
-        .first()
     )
+    if member_id is not None:
+        member_qs = member_qs.filter(pk=member_id)
+    if user is not None:
+        member_qs = member_qs.filter(user=user)
+    locked_member = member_qs.first()
     if not locked_member:
-        raise GuildMembershipError("您不在帮会中")
-    return locked_member
+        raise GuildMembershipError(error_msg)
+    return locked_guild, locked_member
 
 
 def _replace_cooldown_until(entry: GuildHeroPoolEntry) -> datetime:
@@ -100,13 +111,14 @@ def _is_entry_invalid(entry: GuildHeroPoolEntry, *, guild_id: int | None = None)
 
 
 @transaction.atomic
-def submit_hero_pool_entry(member: GuildMember, *, guest_id: int, slot_index: int, now=None) -> HeroPoolSubmitResult:
+def submit_hero_pool_entry(
+    member: GuildMember, *, guest_id: int, slot_index: int, now: datetime | None = None
+) -> HeroPoolSubmitResult:
     current_time = now or timezone.now()
-    locked_member = _lock_active_member(member)
     normalized_slot = _normalize_slot_index(slot_index)
     normalized_guest_id = _normalize_guest_id(guest_id)
 
-    guild = Guild.objects.select_for_update().get(pk=locked_member.guild_id)
+    guild, locked_member = _lock_guild_and_active_member(guild_id=member.guild_id, member_id=member.pk)
 
     locked_guest = (
         Guest.objects.select_for_update()
@@ -176,13 +188,13 @@ def submit_hero_pool_entry(member: GuildMember, *, guest_id: int, slot_index: in
 
 @transaction.atomic
 def remove_hero_pool_entry(member: GuildMember, *, slot_index: int) -> HeroPoolRemoveResult:
-    locked_member = _lock_active_member(member)
     normalized_slot = _normalize_slot_index(slot_index)
     current_time = timezone.now()
+    guild, locked_member = _lock_guild_and_active_member(guild_id=member.guild_id, member_id=member.pk)
 
     target_entry = (
         GuildHeroPoolEntry.objects.select_for_update()
-        .filter(guild_id=locked_member.guild_id, owner_member_id=locked_member.id, slot_index=normalized_slot)
+        .filter(guild=guild, owner_member_id=locked_member.id, slot_index=normalized_slot)
         .first()
     )
     if not target_entry:
@@ -212,20 +224,18 @@ def _assert_entry_valid_or_cleanup(*, entry: GuildHeroPoolEntry, guild_id: int) 
 
 
 @transaction.atomic
-def add_lineup_entry(*, guild: Guild, operator, pool_entry_id: int, now=None) -> LineupAddResult:
+def add_lineup_entry(
+    *, guild: Guild, operator: Any, pool_entry_id: int, now: datetime | None = None
+) -> LineupAddResult:
     del now
-    operator_member = (
-        GuildMember.objects.select_for_update()
-        .select_related("guild")
-        .filter(guild=guild, user=operator, is_active=True)
-        .first()
+    locked_guild, operator_member = _lock_guild_and_active_member(
+        guild_id=guild.pk,
+        user=operator,
+        error_msg="您不在该帮会中",
     )
-    if not operator_member:
-        raise GuildMembershipError("您不在该帮会中")
     if not operator_member.can_manage:
         raise GuildPermissionError("只有管理员/帮主可以设置出战名单")
 
-    locked_guild = Guild.objects.select_for_update().get(pk=guild.pk)
     pool_entry = (
         GuildHeroPoolEntry.objects.select_for_update()
         .select_related("owner_member", "source_guest__manor")
@@ -259,15 +269,12 @@ def add_lineup_entry(*, guild: Guild, operator, pool_entry_id: int, now=None) ->
 
 
 @transaction.atomic
-def remove_lineup_entry(*, guild: Guild, operator, lineup_entry_id: int) -> None:
-    operator_member = (
-        GuildMember.objects.select_for_update()
-        .select_related("guild")
-        .filter(guild=guild, user=operator, is_active=True)
-        .first()
+def remove_lineup_entry(*, guild: Guild, operator: Any, lineup_entry_id: int) -> None:
+    locked_guild, operator_member = _lock_guild_and_active_member(
+        guild_id=guild.pk,
+        user=operator,
+        error_msg="您不在该帮会中",
     )
-    if not operator_member:
-        raise GuildMembershipError("您不在该帮会中")
     if not operator_member.can_manage:
         raise GuildPermissionError("只有管理员/帮主可以调整出战名单")
 
@@ -275,7 +282,7 @@ def remove_lineup_entry(*, guild: Guild, operator, lineup_entry_id: int) -> None
         GuildBattleLineupEntry.objects.select_for_update()
         .filter(
             pk=lineup_entry_id,
-            guild=guild,
+            guild=locked_guild,
         )
         .first()
     )
@@ -332,7 +339,7 @@ def cleanup_invalid_hero_pool_entries_for_guild(*, guild_id: int, limit: int = 1
 
 
 @transaction.atomic
-def lock_guild_lineup_for_dispatch(guild: Guild, *, now=None) -> GuildLineupLockResult:
+def lock_guild_lineup_for_dispatch(guild: Guild, *, now: datetime | None = None) -> GuildLineupLockResult:
     """
     出征时锁定出征阵容（锁定的是门客列表，不是属性快照）。
 
@@ -373,7 +380,7 @@ def lock_guild_lineup_for_dispatch(guild: Guild, *, now=None) -> GuildLineupLock
     )
 
 
-def _seconds_until(target_time, *, now=None) -> int:
+def _seconds_until(target_time: datetime, *, now: datetime | None = None) -> int:
     current_time = now or timezone.now()
     return max(0, int((target_time - current_time).total_seconds()))
 

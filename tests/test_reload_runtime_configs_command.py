@@ -42,6 +42,7 @@ def test_reload_runtime_configs_command_renders_summary(monkeypatch):
     assert "shop_items=3" in rendered
     assert "forge_equipment=4" in rendered
     assert "guest_growth_rarities=7" in rendered
+    assert "will not reflect the new values until the process is restarted" not in rendered
 
 
 def test_reload_runtime_configs_updates_arena_module_constants(monkeypatch):

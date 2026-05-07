@@ -53,3 +53,18 @@ def test_env_example_uses_local_development_defaults() -> None:
     assert values["DJANGO_DB_ENGINE"] == "django.db.backends.sqlite3"
     assert values["DJANGO_DB_NAME"] == "db.sqlite3"
     assert values["DJANGO_SECURE_SSL_REDIRECT"] == "0"
+
+
+def test_prod_env_enables_full_async_readiness_checks() -> None:
+    values: dict[str, str] = {}
+    for line in (PROJECT_ROOT / ".env.docker.prod.example").read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        values[key] = value
+
+    assert values["DJANGO_HEALTH_CHECK_CELERY_BROKER"] == "1"
+    assert values["DJANGO_HEALTH_CHECK_CELERY_WORKERS"] == "1"
+    assert values["DJANGO_HEALTH_CHECK_CELERY_BEAT"] == "1"
+    assert values["DJANGO_HEALTH_CHECK_CELERY_ROUNDTRIP"] == "1"

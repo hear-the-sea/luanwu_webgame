@@ -4,10 +4,12 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 AUDIT_DOC = PROJECT_ROOT / "docs" / "technical_audit_2026-03.md"
+COMPATIBILITY_INVENTORY_DOC = PROJECT_ROOT / "docs" / "compatibility_inventory_2026-03.md"
 MAX_SHIM_LINES = 20
 SHIM_PATHS = [
     PROJECT_ROOT / "tests" / "test_arena_views.py",
     PROJECT_ROOT / "tests" / "test_battle_report_view.py",
+    PROJECT_ROOT / "tests" / "test_guild_mission_views.py",
     PROJECT_ROOT / "tests" / "test_guild_mission_service.py",
     PROJECT_ROOT / "tests" / "test_guild_pvp_service.py",
     PROJECT_ROOT / "tests" / "test_guild_warehouse_service.py",
@@ -30,21 +32,23 @@ def _largest_test_files(limit: int) -> list[tuple[int, str]]:
 def test_recent_audit_entry_updates_document_header() -> None:
     header = AUDIT_DOC.read_text(encoding="utf-8").splitlines()[2]
 
-    assert header == "最近更新：2026-05-02"
+    assert header == "最近更新：2026-05-06"
 
 
 def test_recent_audit_entry_records_gate_verification_summary() -> None:
     audit_text = AUDIT_DOC.read_text(encoding="utf-8")
 
-    assert "2026-05-02 `make lint` 通过" in audit_text
-    assert "`make test` 通过" in audit_text
+    assert "2026-05-06 `make lint` 通过" in audit_text
+    assert '`python -m pytest -m "not integration" -q` 通过' in audit_text
     assert (
-        "`python -m pytest tests/test_deployment_configuration.py tests/test_technical_audit_baseline.py tests/test_gameplay_services_lazy_exports.py tests/test_mission_sync_report.py -q` 通过"
+        "`python -m pytest -q tests/test_real_service_preflight.py tests/test_type_gate_configuration.py tests/test_guild_mission_views.py tests/test_technical_audit_baseline.py tests/test_guild_pvp_views.py tests/test_runtime_refresh_views.py tests/test_guild_hero_pool.py tests/test_guild_hero_pool_views.py tests/test_deployment_configuration.py tests/test_pytest_configuration.py tests/test_reload_runtime_configs_command.py` 通过"
         in audit_text
     )
     assert (
-        "结果分别为 `flake8 + mypy（563 source files）通过`、`2969 passed, 44 deselected` 与 `35 passed`" in audit_text
+        "结果分别为 `JS gate + flake8 + mypy（563 source files）通过`、`2992 passed, 44 deselected` 与 `97 passed`"
+        in audit_text
     )
+    assert "预检提示已明确指向 `make test-real-services-up`" in audit_text
 
 
 def test_split_test_entrypoints_remain_small_compatibility_shims() -> None:
@@ -59,6 +63,16 @@ def test_compatibility_shims_keep_matching_split_test_directories() -> None:
     for path in SHIM_PATHS:
         split_dir = tests_root / path.stem.removeprefix("test_")
         assert split_dir.is_dir(), f"{path.name} should keep matching split test directory {split_dir.name}"
+
+
+def test_compatibility_inventory_records_current_public_shims() -> None:
+    inventory_text = COMPATIBILITY_INVENTORY_DOC.read_text(encoding="utf-8")
+
+    assert "`battle/simulation_core.py`" in inventory_text
+    assert "`gameplay/models/__init__.py`" in inventory_text
+    assert "`guilds/models/__init__.py`" in inventory_text
+    assert "`guests/services/recruitment.py`" in inventory_text
+    assert "`gameplay/services/technology.py`" in inventory_text
 
 
 def test_audit_doc_hot_test_baseline_matches_current_repo_state() -> None:

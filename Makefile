@@ -13,7 +13,7 @@ CRITICAL_INTEGRATION_TESTS ?= \
 	tests/test_trade_auction_concurrency_integration.py \
 	tests/test_work_service_concurrency.py
 
-.PHONY: install install-unpinned install-lock install-dev-lock migrate bootstrap-data dev dev-ws worker beat test test-unit test-unit-cov test-critical test-integration test-all format lint lint-strict check clean lock lock-dev test-real-services test-real-services-preflight test-gates cov cov-html
+.PHONY: install install-unpinned install-lock install-dev-lock migrate bootstrap-data dev dev-ws worker beat test test-unit test-unit-cov test-critical test-integration test-all format lint lint-js lint-strict check clean lock lock-dev test-real-services-up test-real-services-down test-real-services test-real-services-preflight test-gates cov cov-html
 
 install:
 	@if [ -f requirements-dev.lock.txt ]; then \
@@ -91,6 +91,12 @@ test-critical:
 test-real-services-preflight:
 	@$(PYTHON) scripts/check_env_services_ready.py
 
+test-real-services-up:
+	docker compose -f docker-compose.yml up -d db redis
+
+test-real-services-down:
+	docker compose -f docker-compose.yml stop db redis
+
 test-real-services:
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo "  Running real external-service gate (DJANGO_TEST_USE_ENV_SERVICES=1)"
@@ -134,7 +140,11 @@ format:
 	black .
 	isort .
 
-lint:
+lint-js:
+	npm run check:js
+	npm run test:js
+
+lint: lint-js
 	$(PYTHON) -m flake8 --jobs=1 $(FLAKE8_TARGETS)
 	@$(PYTHON) -m mypy --version >/dev/null 2>&1 || { echo "mypy is required for lint. Run: make install"; exit 1; }
 	$(PYTHON) -m mypy $(MYPY_TARGETS)

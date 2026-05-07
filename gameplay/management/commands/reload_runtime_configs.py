@@ -11,10 +11,3 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         summary = reload_runtime_configs()
         self.stdout.write(self.style.SUCCESS(f"[OK] 运行期配置已刷新: {format_runtime_config_summary(summary)}"))
-        self.stdout.write(
-            self.style.WARNING(
-                "Note: module-level constants in views and selectors (imported via 'from X import Y') "
-                "will not reflect the new values until the process is restarted. "
-                "Business logic service functions are updated."
-            )
-        )

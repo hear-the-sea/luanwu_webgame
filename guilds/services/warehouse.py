@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from datetime import datetime, timedelta
+from typing import Any
 
 from django.db import transaction
 from django.db.models import F, Sum
@@ -32,7 +34,7 @@ WAREHOUSE_ITEM_LABELS = {
 }
 
 
-def add_item_to_warehouse(guild, item_key, quantity, contribution_cost):
+def add_item_to_warehouse(guild: Guild, item_key: str, quantity: int, contribution_cost: int) -> None:
     """
     添加物品到帮会仓库
 
@@ -63,7 +65,7 @@ def _is_projected_resource_item(item_key: str) -> bool:
     return item_key in PROJECTED_RESOURCE_KEYS
 
 
-def _get_projected_resource_quantity(guild, item_key: str) -> int:
+def _get_projected_resource_quantity(guild: Guild, item_key: str) -> int:
     if item_key not in WAREHOUSE_LIST_PROJECTED_RESOURCE_KEYS:
         return 0
     return max(0, int(getattr(guild, item_key, 0) or 0))
@@ -91,13 +93,13 @@ def _should_exchange_projected_resource_item(*, guild: Guild, item_key: str) -> 
     return _get_projected_resource_quantity(guild, item_key) > 0
 
 
-def _get_current_week_start_at():
+def _get_current_week_start_at() -> datetime:
     today = timezone.localdate()
     week_start_date = today - timedelta(days=today.weekday())
     return timezone.make_aware(datetime.combine(week_start_date, datetime.min.time()))
 
 
-def get_member_weekly_exchange_quantity(member, item_key: str) -> int:
+def get_member_weekly_exchange_quantity(member: GuildMember, item_key: str) -> int:
     """统计成员本周已兑换某物品的数量。"""
     total = GuildExchangeLog.objects.filter(
         member=member,
@@ -107,7 +109,7 @@ def get_member_weekly_exchange_quantity(member, item_key: str) -> int:
     return max(0, int(total or 0))
 
 
-def get_member_weekly_exchange_quantities(member, item_keys) -> dict[str, int]:
+def get_member_weekly_exchange_quantities(member: GuildMember | None, item_keys: Iterable[Any]) -> dict[str, int]:
     """批量统计成员本周已兑换物品数量。"""
     normalized_keys = {str(item_key or "").strip() for item_key in item_keys}
     normalized_keys.discard("")
@@ -126,7 +128,7 @@ def get_member_weekly_exchange_quantities(member, item_keys) -> dict[str, int]:
     return {str(row["item_key"]): max(0, int(row["total"] or 0)) for row in rows}
 
 
-def _validate_weekly_personal_limit(member, item_key: str, quantity: int) -> None:
+def _validate_weekly_personal_limit(member: GuildMember, item_key: str, quantity: int) -> None:
     weekly_limit = get_weekly_personal_limit(item_key)
     if weekly_limit <= 0:
         return
@@ -139,7 +141,7 @@ def _validate_weekly_personal_limit(member, item_key: str, quantity: int) -> Non
     raise GuildWarehouseError(f"本周该物品剩余可兑换{remaining}件")
 
 
-def _grant_exchanged_item_locked(manor, item_key: str, template, quantity: int) -> None:
+def _grant_exchanged_item_locked(manor: Manor, item_key: str, template: Any, quantity: int) -> None:
     if item_key in MANOR_RESOURCE_ITEM_KEYS:
         credited, _overflow = grant_resources_locked(
             manor,
@@ -155,7 +157,7 @@ def _grant_exchanged_item_locked(manor, item_key: str, template, quantity: int) 
     _grant_inventory_item_to_manor_locked(manor, template, quantity)
 
 
-def _grant_inventory_item_to_manor_locked(manor, template, quantity: int) -> None:
+def _grant_inventory_item_to_manor_locked(manor: Manor, template: Any, quantity: int) -> None:
     inventory_item = (
         InventoryItem.objects.select_for_update()
         .filter(
@@ -178,7 +180,7 @@ def _grant_inventory_item_to_manor_locked(manor, template, quantity: int) -> Non
     )
 
 
-def _exchange_projected_resource_item(member, item_key: str, quantity: int) -> None:
+def _exchange_projected_resource_item(member: GuildMember, item_key: str, quantity: int) -> None:
     with transaction.atomic():
         # 与帮会捐献保持一致的锁顺序，避免资源互转路径死锁。
         manor_locked = Manor.objects.select_for_update().get(user=member.user)
@@ -233,7 +235,7 @@ def _exchange_projected_resource_item(member, item_key: str, quantity: int) -> N
         )
 
 
-def get_guild_material_balances(guild) -> dict[str, int]:
+def get_guild_material_balances(guild: Guild) -> dict[str, int]:
     warehouse_totals = {
         row["item_key"]: int(row["total"] or 0)
         for row in (
@@ -249,7 +251,9 @@ def get_guild_material_balances(guild) -> dict[str, int]:
     }
 
 
-def spend_guild_warehouse_items_locked(guild, item_costs, *, error_prefix: str = "帮会") -> dict[str, int]:
+def spend_guild_warehouse_items_locked(
+    guild: Guild, item_costs: Mapping[str, Any], *, error_prefix: str = "帮会"
+) -> dict[str, int]:
     normalized_costs = {
         item_key: max(0, int(quantity or 0)) for item_key, quantity in item_costs.items() if int(quantity or 0) > 0
     }
@@ -281,7 +285,7 @@ def spend_guild_warehouse_items_locked(guild, item_costs, *, error_prefix: str =
     return normalized_costs
 
 
-def exchange_item(member, item_key, quantity=1):
+def exchange_item(member: GuildMember, item_key: str, quantity: int = 1) -> None:
     """
     兑换帮会仓库物品（并发安全版本 + 修复字段错误）
 
@@ -394,7 +398,7 @@ def exchange_item(member, item_key, quantity=1):
         )
 
 
-def _produce_items_from_config(guild, tech_key: str, tech_level: int):
+def _produce_items_from_config(guild: Guild, tech_key: str, tech_level: int) -> None:
     """
     通用科技产出函数（使用YAML配置）
 
@@ -408,7 +412,7 @@ def _produce_items_from_config(guild, tech_key: str, tech_level: int):
         add_item_to_warehouse(guild, item.item_key, item.quantity, item.contribution_cost)
 
 
-def produce_equipment(guild, tech_level):
+def produce_equipment(guild: Guild, tech_level: int) -> None:
     """
     装备锻造科技产出装备
 
@@ -419,12 +423,12 @@ def produce_equipment(guild, tech_level):
     _produce_items_from_config(guild, "equipment", tech_level)
 
 
-def produce_guard_items(guild, tech_level):
+def produce_guard_items(guild: Guild, tech_level: int) -> None:
     """护院军备科技产出护院招募装备箱"""
     _produce_items_from_config(guild, "guard", tech_level)
 
 
-def produce_experience_items(guild, tech_level):
+def produce_experience_items(guild: Guild, tech_level: int) -> None:
     """
     经验炼制科技产出技能书箱
 
@@ -435,7 +439,7 @@ def produce_experience_items(guild, tech_level):
     _produce_items_from_config(guild, "experience", tech_level)
 
 
-def produce_resource_packs(guild, tech_level):
+def produce_resource_packs(guild: Guild, tech_level: int) -> None:
     """
     资源补给科技产出资源包
 
@@ -446,11 +450,11 @@ def produce_resource_packs(guild, tech_level):
     _produce_items_from_config(guild, "resource", tech_level)
 
 
-def _build_projected_resource_item(guild, item_key, template):
+def _build_projected_resource_item(guild: Guild, item_key: str, template: Any) -> Any | None:
     quantity = _get_projected_resource_quantity(guild, item_key)
     if quantity <= 0:
         return None
-    projected_item = GuildWarehouse(
+    projected_item: Any = GuildWarehouse(
         guild=guild,
         item_key=item_key,
         quantity=0,
@@ -473,7 +477,9 @@ def _build_projected_resource_item(guild, item_key, template):
     return projected_item
 
 
-def get_warehouse_items(guild, page=1, per_page=50, member=None):
+def get_warehouse_items(
+    guild: Guild, page: int = 1, per_page: int = 50, member: GuildMember | None = None
+) -> dict[str, Any]:
     """
     获取帮会仓库物品列表，附加ItemTemplate信息（N+1查询优化版本 + 分页）
 
@@ -495,7 +501,7 @@ def get_warehouse_items(guild, page=1, per_page=50, member=None):
 
     from gameplay.utils.template_loader import get_item_templates_by_keys
 
-    warehouse_items = list(
+    warehouse_items: list[Any] = list(
         GuildWarehouse.objects.filter(guild=guild, quantity__gt=0).order_by("-contribution_cost", "item_key")
     )
 
@@ -559,7 +565,7 @@ def get_warehouse_items(guild, page=1, per_page=50, member=None):
     }
 
 
-def get_exchange_logs(guild, limit=50):
+def get_exchange_logs(guild: Guild, limit: int = 50) -> Any:
     """
     获取兑换日志
 

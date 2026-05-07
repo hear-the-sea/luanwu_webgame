@@ -12,6 +12,8 @@ TARGET_MODULES = {
     "trade.services.auction.rounds_lifecycle_support",
     "trade.services.auction.rounds_settlement_support",
     "trade.services.auction.rounds_delivery_support",
+    "guilds.services.hero_pool",
+    "guilds.services.warehouse",
 }
 
 

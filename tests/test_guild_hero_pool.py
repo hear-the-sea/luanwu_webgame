@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from pathlib import Path
 
 import pytest
 from django.utils import timezone
@@ -382,3 +383,12 @@ def test_lock_guild_lineup_for_dispatch_drops_invalid_lineup_rows(django_user_mo
     assert lock_result.guest_ids == []
     assert lock_result.removed_invalid_count == 1
     assert not GuildBattleLineupEntry.objects.filter(pk=lineup.pk).exists()
+
+
+def test_hero_pool_write_paths_use_guild_first_lock_helper() -> None:
+    source = Path(__file__).resolve().parents[1] / "guilds" / "services" / "hero_pool.py"
+    text = source.read_text(encoding="utf-8")
+
+    assert "def _lock_guild_and_active_member(" in text
+    assert "_lock_active_member(member)" not in text
+    assert 'GuildMember.objects.select_for_update()\n        .select_related("guild")' not in text

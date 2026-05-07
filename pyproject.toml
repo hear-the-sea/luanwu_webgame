@@ -234,6 +234,8 @@ module = [
     "gameplay.services.technology_runtime",
     "guests.services.*",
     "guilds.constants",
+    "guilds.services.hero_pool",
+    "guilds.services.warehouse",
     "guilds.views.announcement",
     "guilds.views.contribution",
     "guilds.views.core",
