@@ -29,6 +29,26 @@ PLACEHOLDER_SNIPPETS = (
     "后世评述亦多，影响延续至今",
     "其相关事功在后世整理时常被引述",
 )
+LIMITED_SOURCE_SNIPPETS = (
+    "史籍记载有限",
+    "记载有限",
+    "史载简略",
+    "史载甚略",
+    "传世记载零散",
+    "传世材料不足",
+    "现存材料不足",
+    "难确考",
+    "难以详考",
+    "难以确考",
+    "难以完整复原",
+    "生平不详",
+    "事迹不彰",
+    "事迹罕传",
+    "行迹难稽",
+    "无从详考",
+)
+MIN_LIMITED_SOURCE_FLAVOR_LEN = 50
+MIN_HISTORY_FLAVOR_LEN = 70
 
 
 @dataclass(frozen=True)
@@ -85,6 +105,20 @@ def _source_text_matches(file_name: str, source_text: str, expected_hints: tuple
     if file_name == "special.yaml" and SOURCE_TITLE_PATTERN.search(source_text):
         return True
     return False
+
+
+def _is_source_limited_history_flavor(record: GuestRecord) -> bool:
+    if not record.file.startswith(HISTORY_FILE_PREFIX):
+        return False
+    if len(record.flavor) < MIN_LIMITED_SOURCE_FLAVOR_LEN:
+        return False
+    return any(snippet in record.flavor for snippet in LIMITED_SOURCE_SNIPPETS)
+
+
+def _effective_min_flavor_len(record: GuestRecord, configured_min: int) -> int:
+    if record.file.startswith(HISTORY_FILE_PREFIX):
+        return min(configured_min, MIN_HISTORY_FLAVOR_LEN)
+    return configured_min
 
 
 def load_guest_records(guests_dir: Path, batch_size: int) -> list[GuestRecord]:
@@ -165,15 +199,16 @@ def audit_records(records: Iterable[GuestRecord], min_flavor_len: int = 100) -> 
                 record=record,
                 detail=f"Unexpected gender value: {record.gender!r}.",
             )
+        effective_min_flavor_len = _effective_min_flavor_len(record, min_flavor_len)
         if not record.flavor:
             _add_issue(issues, severity="error", code="missing_flavor", record=record, detail="Flavor text is empty.")
-        elif len(record.flavor) < min_flavor_len:
+        elif len(record.flavor) < effective_min_flavor_len and not _is_source_limited_history_flavor(record):
             _add_issue(
                 issues,
                 severity="warning",
                 code="short_flavor",
                 record=record,
-                detail=f"Flavor too short ({len(record.flavor)} chars, requires >= {min_flavor_len}).",
+                detail=f"Flavor too short ({len(record.flavor)} chars, requires >= {effective_min_flavor_len}).",
             )
 
         if record.key and key_counter[record.key] > 1:
