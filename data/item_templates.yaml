@@ -1251,6 +1251,93 @@ items:
         - book_thunder_control    # 驭雷术
         - book_dragon_break_curse # 破龙咒
         - book_endless_chatter    # 唧唧歪歪
+        - book_steadfast_planning # 静水筹谋
+        - book_iron_wall_heart    # 铁壁心法
+
+  - key: work_chest_medium
+    name: 打工宝箱（中）
+    description: 打工获得的中型宝箱，打开后可获得随机黄金，有小概率获得蓝色装备或技能书。
+    effect_type: loot_box
+    rarity: blue
+    tradeable: true
+    price: 15000
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      silver_min: 10000
+      silver_max: 20000
+      gear_chance: 0.1
+      gear_keys:
+        - equip_yangpixue
+        - equip_shengpijia
+        - equip_tieyekui
+        - equip_housipao
+        - equip_shapijia
+        - equip_gangpianxue
+        - equip_yanyuxue
+        - equip_qingmangjian
+        - equip_duanmajian
+        - equip_tongchangdao
+        - equip_jingtiedao
+        - equip_xiaoweichangjian
+      skill_book_chance: 0.1
+      skill_book_keys:
+        - book_taiyi_wind
+        - book_flower_rain
+        - book_soul_erode
+        - book_red_lotus_dance
+        - book_fatal_chain_sword
+        - book_meteor_pierce_moon
+        - book_ice_curse          # 寒冰咒
+        - book_thunder_control    # 驭雷术
+        - book_dragon_break_curse # 破龙咒
+        - book_endless_chatter    # 唧唧歪歪
+        - book_steadfast_planning # 静水筹谋
+        - book_iron_wall_heart    # 铁壁心法
+        - book_last_chance_revival # 绝处逢生
+        - book_draw_enemy_blades   # 招锋引敌
+
+  - key: work_chest_large
+    name: 打工宝箱（大）
+    description: 打工获得的大型宝箱，打开后可获得随机铂金，有小概率获得紫色装备或技能书。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: true
+    price: 40000
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      silver_min: 20000
+      silver_max: 40000
+      gear_chance: 0.2
+      gear_keys:
+        - equip_yanyuxue
+        - equip_shapijia
+        - equip_baihongkui
+        - equip_dawanma
+        - equip_jingtiedao
+        - equip_pansheqiang
+        - equip_duanmajian
+        - equip_shenbigong
+        - equip_qingmangjian
+        - equip_tongchangdao
+        - equip_xiaoweichangjian
+        - equip_xiaoweichangxue
+        - equip_xiaoweikaijia
+        - equip_xiaoweitoukui
+      skill_book_chance: 0.1
+      skill_book_keys:
+        - book_thunder_nine_heavens
+        - book_tangseng_sermon
+        - book_five_thunder_descent
+        - book_brahma_true_fire
+        - book_hell_instant_formation
+        - book_prison_break_blade
+        - book_stratagem_burst
+        - book_city_felling_strike
+        - book_comrade_command
+        - book_desperate_beast
+        - book_bloodthirsty_fury
 
   # ---------- 帮会护院箱 ----------
 
@@ -1419,6 +1506,10 @@ items:
           weight: 25
         - item_key: book_endless_chatter
           weight: 25
+        - item_key: book_steadfast_planning
+          weight: 18
+        - item_key: book_iron_wall_heart
+          weight: 18
 
   - key: guild_skill_book_box_blue
     name: 帮会中级技能书箱
@@ -1444,6 +1535,10 @@ items:
           weight: 15
         - item_key: book_meteor_pierce_moon
           weight: 15
+        - item_key: book_last_chance_revival
+          weight: 12
+        - item_key: book_draw_enemy_blades
+          weight: 12
 
   - key: guild_skill_book_box_purple
     name: 帮会高级技能书箱
@@ -1469,6 +1564,12 @@ items:
           weight: 15
         - item_key: book_prison_break_blade
           weight: 15
+        - item_key: book_comrade_command
+          weight: 12
+        - item_key: book_desperate_beast
+          weight: 12
+        - item_key: book_bloodthirsty_fury
+          weight: 10
 
   - key: guild_skill_book_box_refined
     name: 帮会精研技能书箱
@@ -1492,6 +1593,12 @@ items:
           weight: 18
         - item_key: book_city_felling_strike
           weight: 18
+        - item_key: book_comrade_command
+          weight: 16
+        - item_key: book_desperate_beast
+          weight: 16
+        - item_key: book_bloodthirsty_fury
+          weight: 14
 
   - key: guild_skill_book_box_master
     name: 帮会宗师技能秘匣
@@ -1515,6 +1622,12 @@ items:
           weight: 18
         - item_key: book_hell_instant_formation
           weight: 18
+        - item_key: book_comrade_command
+          weight: 16
+        - item_key: book_desperate_beast
+          weight: 16
+        - item_key: book_bloodthirsty_fury
+          weight: 14
 
   # ---------- 帮会装备箱 ----------
 
@@ -1782,6 +1895,31 @@ items:
     tradeable: true
     price: 45000
 
+  # ---------- 通用被动技能书（绿色品质）----------
+  - key: book_steadfast_planning
+    name: 《静水筹谋》秘术
+    description: 记载临阵静观与借势放大的心法，适合智谋型门客研习。
+    effect_type: skill_book
+    image: skill1.png
+    rarity: green
+    effect_payload:
+      skill_key: steadfast_planning
+      skill_name: 静水筹谋
+    tradeable: true
+    price: 65000
+
+  - key: book_iron_wall_heart
+    name: 《铁壁心法》秘术
+    description: 讲究稳守中宫、卸去冲击的护身心法，适合防御扎实的门客。
+    effect_type: skill_book
+    image: skill1.png
+    rarity: green
+    effect_payload:
+      skill_key: iron_wall_heart
+      skill_name: 铁壁心法
+    tradeable: true
+    price: 65000
+
   # ---------- 文系技能书（蓝色品质）----------
   - key: book_taiyi_wind
     name: 《太乙生风》秘术
@@ -1831,6 +1969,55 @@ items:
     tradeable: true
     price: 210000
 
+  # ---------- 通用被动技能书（蓝色/紫色品质）----------
+  - key: book_desperate_beast
+    name: 《困兽犹斗》秘术
+    description: 记载绝境反扑与逆势爆发的武道心法。
+    effect_type: skill_book
+    image: skill3.png
+    rarity: purple
+    effect_payload:
+      skill_key: desperate_beast
+      skill_name: 困兽犹斗
+    tradeable: true
+    price: 700000
+
+  - key: book_last_chance_revival
+    name: 《绝处逢生》秘术
+    description: 记录险境中强行回气、稳住生机的保命法门。
+    effect_type: skill_book
+    image: skill2.png
+    rarity: blue
+    effect_payload:
+      skill_key: last_chance_revival
+      skill_name: 绝处逢生
+    tradeable: true
+    price: 260000
+
+  - key: book_bloodthirsty_fury
+    name: 《嗜血狂怒》秘术
+    description: 以血催火、燃尽气机的狂怒秘术。
+    effect_type: skill_book
+    image: skill3.png
+    rarity: purple
+    effect_payload:
+      skill_key: bloodthirsty_fury
+      skill_name: 嗜血狂怒
+    tradeable: true
+    price: 820000
+
+  - key: book_draw_enemy_blades
+    name: 《招锋引敌》秘术
+    description: 让对手更愿意把火力压向自己的诱敌法门。
+    effect_type: skill_book
+    image: skill2.png
+    rarity: blue
+    effect_payload:
+      skill_key: draw_enemy_blades
+      skill_name: 招锋引敌
+    tradeable: true
+    price: 240000
+
   # ---------- 文系技能书（紫色品质）----------
   - key: book_thunder_nine_heavens
     name: 《雷动九天》秘术
@@ -1879,6 +2066,19 @@ items:
       skill_name: 梵天真火
     tradeable: true
     price: 750000
+
+  # ---------- 通用被动技能书（紫色品质）----------
+  - key: book_comrade_command
+    name: 《同袍号令》秘术
+    description: 统合队伍节奏的号令秘卷，可让同袍攻势更为齐整。
+    effect_type: skill_book
+    image: skill3.png
+    rarity: purple
+    effect_payload:
+      skill_key: comrade_command
+      skill_name: 同袍号令
+    tradeable: true
+    price: 620000
 
   # ---------- 敏捷系技能书（紫色品质）----------
   - key: book_hell_instant_formation
@@ -2136,7 +2336,7 @@ items:
 
   # ---------- 头盔 - 蓝色品质（发展期）----------
 
-  - key: equip_xiaoweitoukie
+  - key: equip_xiaoweitoukui
     name: 校尉头盔
     description: 军中校尉制式头盔，上有龙纹标识，象征军阶与荣誉。
     effect_type: equip_helmet

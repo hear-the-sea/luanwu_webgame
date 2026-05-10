@@ -9,7 +9,7 @@
 
 recipes:
   - blueprint_key: blueprint_xiaoweitoukie
-    result_item_key: equip_xiaoweitoukie
+    result_item_key: equip_xiaoweitoukui
     required_forging: 5
     quantity_out: 1
     description: 校尉头盔图纸，蓝色四件套的入门部件之一。

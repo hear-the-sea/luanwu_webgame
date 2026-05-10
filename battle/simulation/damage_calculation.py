@@ -182,6 +182,33 @@ def _apply_guest_vs_troop_split_scaling(
     return _at_least_one(scaled)
 
 
+def _apply_passive_true_damage(actor: "Combatant", target: "Combatant", damage: int) -> int:
+    modifiers = getattr(actor, "battle_modifiers", None)
+    if not isinstance(modifiers, dict):
+        return damage
+    sources = modifiers.get("true_damage_ratio_sources")
+    if not isinstance(sources, dict) or not sources:
+        return damage
+
+    max_hp = max(0, int(getattr(actor, "max_hp", 0) or 0))
+    if max_hp <= 0:
+        return damage
+
+    extra_damage = 0
+    for payload in sources.values():
+        if not isinstance(payload, dict):
+            continue
+        ratio = float(payload.get("value") or 0)
+        if ratio <= 0:
+            continue
+        multiplier = float(payload.get("troop_value_multiplier") or 1.0) if target.kind == "troop" else 1.0
+        extra_damage += max(0, int(max_hp * ratio * multiplier))
+
+    if extra_damage <= 0:
+        return damage
+    return _at_least_one(damage + extra_damage)
+
+
 @overload
 def process_status_effects(
     actor: "Combatant",
@@ -325,5 +352,6 @@ def calculate_attack_damage(
     from ..arena_coop import adjust_arena_coop_damage
 
     damage = adjust_arena_coop_damage(actor, target, damage)
+    damage = _apply_passive_true_damage(actor, target, damage)
 
     return _DamageCalculation(damage=damage, is_crit=is_crit, is_double_strike=is_double_strike)

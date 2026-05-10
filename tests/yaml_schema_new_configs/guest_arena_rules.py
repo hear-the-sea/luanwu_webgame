@@ -84,6 +84,106 @@ def test_guest_skills_rejects_blank_passive_effect_target_kind_is():
     assert_invalid(result, substring="target_kind_is")
 
 
+def test_guest_skills_rejects_invalid_passive_trigger_chance():
+    for chance in (1.5, None, True):
+        data = {
+            "skills": [
+                {
+                    "key": "passive_signal",
+                    "name": "被动信号",
+                    "rarity": "purple",
+                    "kind": "passive",
+                    "passive_config": {
+                        "triggers": [
+                            {
+                                "timing": "round_start",
+                                "chance": chance,
+                                "effects": [{"type": "emit_log", "log_name": "被动信号", "message": "触发"}],
+                            }
+                        ]
+                    },
+                }
+            ]
+        }
+        result = validate_guest_skills(data)
+        assert_invalid(result, substring="chance")
+
+
+def test_guest_skills_rejects_unknown_passive_trigger_timing():
+    data = {
+        "skills": [
+            {
+                "key": "passive_signal",
+                "name": "被动信号",
+                "rarity": "purple",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "before_turn",
+                            "effects": [{"type": "emit_log", "log_name": "被动信号", "message": "触发"}],
+                        }
+                    ]
+                },
+            }
+        ]
+    }
+    result = validate_guest_skills(data)
+    assert_invalid(result, substring="timing")
+
+
+def test_guest_skills_rejects_unknown_passive_condition_key():
+    data = {
+        "skills": [
+            {
+                "key": "passive_signal",
+                "name": "被动信号",
+                "rarity": "purple",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "round_start",
+                            "conditions": {"unknown_condition": True},
+                            "effects": [{"type": "emit_log", "log_name": "被动信号", "message": "触发"}],
+                        }
+                    ]
+                },
+            }
+        ]
+    }
+    result = validate_guest_skills(data)
+    assert_invalid(result, substring="unknown_condition")
+
+
+def test_guest_skills_accepts_new_passive_effect_types():
+    data = {
+        "skills": [
+            {
+                "key": "passive_signal",
+                "name": "被动信号",
+                "rarity": "purple",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "round_start",
+                            "chance": 0.5,
+                            "effects": [
+                                {"type": "lose_hp_ratio", "value": 0.1, "nonlethal": True},
+                                {"type": "modify_target_weight", "value": 0.5},
+                                {"type": "add_true_damage", "value": 0.05, "troop_value_multiplier": 0.25},
+                            ],
+                        }
+                    ]
+                },
+            }
+        ]
+    }
+    result = validate_guest_skills(data)
+    assert result.is_valid
+
+
 def test_recruitment_rarity_weights_rejects_non_dict_root():
     result = validate_recruitment_rarity_weights("nope")
     assert_invalid(result)

@@ -106,10 +106,33 @@ def validate_stable_production(
 
 VALID_SKILL_RARITIES = {"black", "gray", "green", "red", "blue", "purple", "orange"}
 VALID_SKILL_KINDS = {"active", "passive"}
+VALID_PASSIVE_TIMINGS = {
+    "battle_start",
+    "round_start",
+    "action_before",
+    "action_end",
+    "attack_before",
+    "hit_taken",
+    "attack_after",
+}
+VALID_PASSIVE_CONDITION_KEYS = {
+    "hp_ratio_lte",
+    "hp_ratio_gte",
+    "self_is_boss",
+    "self_template_in",
+    "target_kind_is",
+    "state_present",
+    "state_absent",
+    "ally_alive_template_count_gte",
+    "ally_alive_template_count_lte",
+}
 VALID_PASSIVE_EFFECT_TYPES = {
+    "add_true_damage",
     "heal_ratio",
+    "lose_hp_ratio",
     "modify_outgoing_damage",
     "modify_incoming_damage",
+    "modify_target_weight",
     "set_softcap",
     "set_reflect",
     "set_state",
@@ -190,10 +213,30 @@ def _validate_passive_config(passive_config: dict, *, result: ValidationResult, 
         timing = trigger.get("timing")
         if timing is not None and (not isinstance(timing, str) or not timing.strip()):
             result.add(file, trigger_path, "field 'timing' expected non-empty string")
+        elif isinstance(timing, str):
+            _check_in(timing, VALID_PASSIVE_TIMINGS, result=result, file=file, path=trigger_path, field_name="timing")
+
+        if "chance" in trigger:
+            chance = trigger.get("chance")
+            _check_type(chance, (int, float), result=result, file=file, path=trigger_path, field_name="chance")
+            if isinstance(chance, bool):
+                result.add(file, trigger_path, "field 'chance' expected int | float, got bool")
+            elif isinstance(chance, (int, float)) and not (0.0 <= float(chance) <= 1.0):
+                result.add(file, trigger_path, f"field 'chance' must be between 0 and 1, got {chance}")
 
         conditions = trigger.get("conditions")
         if conditions is not None and not isinstance(conditions, dict):
             result.add(file, trigger_path, "field 'conditions' expected mapping")
+        elif isinstance(conditions, dict):
+            for condition_key in conditions:
+                _check_in(
+                    condition_key,
+                    VALID_PASSIVE_CONDITION_KEYS,
+                    result=result,
+                    file=file,
+                    path=f"{trigger_path}.conditions",
+                    field_name=str(condition_key),
+                )
 
         effects = trigger.get("effects")
         if effects is None:

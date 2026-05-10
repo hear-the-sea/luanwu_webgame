@@ -124,6 +124,21 @@ def _record_softcap_source(
     }
 
 
+def _record_true_damage_source(
+    target_unit: Any,
+    *,
+    source_key: str,
+    value: float,
+    troop_value_multiplier: float,
+) -> None:
+    modifiers = _modifier_payload(target_unit)
+    sources = _modifier_source_payload(modifiers, "true_damage_ratio_sources")
+    sources[source_key] = {
+        "value": float(value),
+        "troop_value_multiplier": float(troop_value_multiplier),
+    }
+
+
 def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
     actor = context["actor"]
     event_sink = context["event_sink"]
@@ -155,6 +170,32 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
                 )
         return
 
+    if effect_type == "lose_hp_ratio":
+        for target_unit in targets:
+            base_hp = (
+                int(getattr(target_unit, "hp", 0) or 0)
+                if effect.get("current_hp_based")
+                else int(getattr(target_unit, "max_hp", 0) or 0)
+            )
+            current_hp = int(getattr(target_unit, "hp", 0) or 0)
+            lost = max(1, int(base_hp * float(effect.get("value") or 0)))
+            if effect.get("nonlethal"):
+                lost = min(lost, max(0, current_hp - 1))
+            else:
+                lost = min(lost, max(0, current_hp))
+            target_unit.hp = current_hp - lost
+            if lost > 0 and effect.get("log"):
+                _append_passive_event(
+                    event_sink,
+                    {
+                        "side": getattr(target_unit, "side", ""),
+                        "unit": getattr(target_unit, "name", ""),
+                        "effect": str(effect.get("log_name") or effect_type),
+                        "lost": lost,
+                    },
+                )
+        return
+
     if effect_type == "modify_outgoing_damage":
         for target_unit in targets:
             _record_multiplier_source(
@@ -174,6 +215,27 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
                 sources_key="incoming_damage_multiplier_sources",
                 source_key=source_key,
                 value=float(effect.get("value") or 0),
+            )
+        return
+
+    if effect_type == "modify_target_weight":
+        for target_unit in targets:
+            _record_multiplier_source(
+                target_unit,
+                flat_key="target_weight_multiplier",
+                sources_key="target_weight_multiplier_sources",
+                source_key=source_key,
+                value=float(effect.get("value") or 0),
+            )
+        return
+
+    if effect_type == "add_true_damage":
+        for target_unit in targets:
+            _record_true_damage_source(
+                target_unit,
+                source_key=source_key,
+                value=float(effect.get("value") or 0),
+                troop_value_multiplier=float(effect.get("troop_value_multiplier") or 1.0),
             )
         return
 

@@ -1,3 +1,8 @@
+import pytest
+
+from battle.simulation.damage_calculation import calculate_attack_damage
+from battle.simulation.target_selection import select_target_with_priority
+
 from .support import (
     _resolve_standard_round,
     adjust_arena_coop_damage,
@@ -9,6 +14,16 @@ from .support import (
     run_passives_for_timing,
     simulate_battle,
 )
+
+
+class _CountingRng:
+    def __init__(self, value: float = 0.0):
+        self.value = value
+        self.calls = 0
+
+    def random(self) -> float:
+        self.calls += 1
+        return self.value
 
 
 def test_passive_conditions_match_hp_ratio_and_boss_flag():
@@ -38,6 +53,92 @@ def test_apply_heal_ratio_effect_uses_max_hp_and_emits_event():
     assert events[0]["type"] == "passive"
     assert events[0]["effect"] == "九阳护体"
     assert events[0]["healed"] == 15000
+
+
+def test_apply_lose_hp_ratio_effect_uses_current_hp_and_stays_nonlethal():
+    actor = make_unit(name="武痴", hp=100, max_hp=1000)
+    events = []
+
+    apply_effect(
+        {
+            "type": "lose_hp_ratio",
+            "value": 0.1,
+            "current_hp_based": True,
+            "nonlethal": True,
+            "log": True,
+            "log_name": "嗜血狂怒",
+        },
+        {"actor": actor, "target": None, "event_sink": events},
+    )
+
+    assert actor.hp == 90
+    assert events[0]["type"] == "passive"
+    assert events[0]["effect"] == "嗜血狂怒"
+    assert events[0]["lost"] == 10
+
+
+def test_apply_true_damage_modifier_adds_max_hp_damage_after_base_calculation():
+    actor = make_unit(
+        name="狂士",
+        attack=100,
+        max_hp=1000,
+        hp=1000,
+        priority=0,
+        troop_class="",
+        tech_effects={},
+        battle_modifiers={},
+    )
+    target = make_unit(name="目标", side="defender", defense=0, troop_class="", tech_effects={})
+    baseline = calculate_attack_damage(actor, target, [], random.Random(0), round_priority=0)
+
+    apply_effect(
+        {"type": "add_true_damage", "value": 0.1, "troop_value_multiplier": 0.25},
+        {"actor": actor, "target": None, "event_sink": []},
+    )
+    boosted = calculate_attack_damage(actor, target, [], random.Random(0), round_priority=0)
+
+    assert boosted.damage == baseline.damage + 100
+
+
+def test_apply_true_damage_modifier_decays_against_troops():
+    actor = make_unit(
+        name="狂士",
+        attack=100,
+        max_hp=1000,
+        hp=1000,
+        priority=0,
+        troop_class="",
+        tech_effects={},
+        battle_modifiers={},
+    )
+    target = make_unit(
+        name="护院",
+        side="defender",
+        kind="troop",
+        defense=0,
+        unit_defense=1,
+        troop_strength=100,
+        initial_troop_strength=100,
+        troop_class="dao",
+        tech_effects={},
+    )
+    baseline = calculate_attack_damage(actor, target, [], random.Random(0), round_priority=0)
+
+    apply_effect(
+        {"type": "add_true_damage", "value": 0.1, "troop_value_multiplier": 0.25},
+        {"actor": actor, "target": None, "event_sink": []},
+    )
+    boosted = calculate_attack_damage(actor, target, [], random.Random(0), round_priority=0)
+
+    assert boosted.damage == baseline.damage + 25
+
+
+def test_target_weight_modifier_makes_unit_more_likely_to_be_attacked():
+    actor = make_unit(name="攻击者", kind="troop", troop_class="", tech_effects={})
+    marked = make_unit(name="诱敌者", battle_modifiers={"target_weight_multiplier": 1000})
+    other = make_unit(name="旁人", battle_modifiers={})
+
+    assert select_target_with_priority(actor, [marked, other], random.Random(0)) is marked
 
 
 def test_apply_set_reflect_and_softcap_effects_write_modifiers():
@@ -334,6 +435,130 @@ def test_run_passives_for_timing_executes_matching_trigger_only_once():
 
     assert actor.hp == 135000
     assert len(events) == 1
+
+
+def test_run_passives_for_timing_respects_trigger_chance():
+    actor = make_unit(
+        name="文士",
+        side="defender",
+        hp=100,
+        max_hp=200,
+        battle_modifiers={},
+        battle_state={},
+        skills=[
+            {
+                "key": "chance_guard",
+                "name": "谨慎筹谋",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "round_start",
+                            "chance": 0.25,
+                            "effects": [{"type": "heal_ratio", "value": 0.1, "max_hp_based": True}],
+                        }
+                    ]
+                },
+            }
+        ],
+    )
+    rng = _CountingRng(value=0.3)
+
+    run_passives_for_timing(
+        "round_start",
+        actor=actor,
+        target=None,
+        attacker_team=[actor],
+        defender_team=[],
+        round_no=1,
+        event_sink=[],
+        rng=rng,
+    )
+
+    assert actor.hp == 100
+    assert rng.calls == 1
+
+
+def test_run_passives_for_timing_does_not_consume_rng_when_conditions_fail():
+    actor = make_unit(
+        name="文士",
+        side="defender",
+        hp=180,
+        max_hp=200,
+        battle_modifiers={},
+        battle_state={},
+        skills=[
+            {
+                "key": "chance_guard",
+                "name": "谨慎筹谋",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "round_start",
+                            "chance": 0.25,
+                            "conditions": {"hp_ratio_lte": 0.5},
+                            "effects": [{"type": "heal_ratio", "value": 0.1, "max_hp_based": True}],
+                        }
+                    ]
+                },
+            }
+        ],
+    )
+    rng = _CountingRng(value=0.0)
+
+    run_passives_for_timing(
+        "round_start",
+        actor=actor,
+        target=None,
+        attacker_team=[actor],
+        defender_team=[],
+        round_no=1,
+        event_sink=[],
+        rng=rng,
+    )
+
+    assert actor.hp == 180
+    assert rng.calls == 0
+
+
+def test_run_passives_for_timing_rejects_invalid_trigger_chance():
+    actor = make_unit(
+        name="文士",
+        side="defender",
+        hp=100,
+        max_hp=200,
+        battle_modifiers={},
+        battle_state={},
+        skills=[
+            {
+                "key": "chance_guard",
+                "name": "谨慎筹谋",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "round_start",
+                            "chance": True,
+                            "effects": [{"type": "heal_ratio", "value": 0.1, "max_hp_based": True}],
+                        }
+                    ]
+                },
+            }
+        ],
+    )
+
+    with pytest.raises(AssertionError, match="invalid passive trigger chance"):
+        run_passives_for_timing(
+            "round_start",
+            actor=actor,
+            target=None,
+            attacker_team=[actor],
+            defender_team=[],
+            round_no=1,
+            event_sink=[],
+            rng=_CountingRng(value=0.0),
+        )
 
 
 def test_run_passives_for_hit_taken_updates_target_reflect_state():

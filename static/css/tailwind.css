@@ -2278,7 +2278,7 @@
 .tw-manor-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0px;
 }
 
 @media (max-width: 640px) {
@@ -2304,6 +2304,14 @@
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+.tw-list-divider-line {
+  margin-left: 0.75rem;
+  margin-right: 0.75rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-top: 1px solid var(--border-light);
 }
 
 .tw-manor-card:hover {
@@ -5525,6 +5533,11 @@
 
 .m-0 {
   margin: 0px;
+}
+
+.mx-3 {
+  margin-left: 0.75rem;
+  margin-right: 0.75rem;
 }
 
 .mx-\[-0\.5rem\] {

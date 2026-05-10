@@ -281,7 +281,7 @@ def test_troop_tactics_display_meta_uses_mapping_copy():
 
     display_meta = _build_tech_display_meta(SimpleNamespace(tech_key="troop_tactics", level=0, max_level=10))
 
-    assert display_meta["description"] == "将帮会科技等级线性映射到个人兵种科技"
+    assert display_meta["description"] == "帮会科技一发功，兵种科技就跟着胡乱长个儿"
 
 
 @pytest.mark.django_db

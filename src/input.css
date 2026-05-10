@@ -1053,13 +1053,18 @@
   }
 
   .tw-manor-list {
-    @apply flex flex-col gap-2;
+    @apply flex flex-col gap-0;
   }
 
   .tw-manor-card {
     @apply flex justify-between items-center px-4 py-3
            bg-bg-hover rounded-md border border-border-light
            cursor-pointer transition-all;
+  }
+
+  .tw-list-divider-line {
+    @apply mx-3 my-2;
+    border-top: 1px solid var(--border-light);
   }
 
   .tw-manor-card:hover {

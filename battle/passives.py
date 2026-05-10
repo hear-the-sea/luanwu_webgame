@@ -6,6 +6,22 @@ from .passive_conditions import conditions_match
 from .passive_effects import apply_effect
 
 
+def _trigger_chance_matches(trigger: dict[str, Any], rng: Any) -> bool:
+    raw_chance = trigger.get("chance", 1.0)
+    if raw_chance is None or isinstance(raw_chance, bool):
+        raise AssertionError(f"invalid passive trigger chance: {raw_chance!r}")
+    try:
+        chance = float(raw_chance)
+    except (TypeError, ValueError) as exc:
+        raise AssertionError(f"invalid passive trigger chance: {raw_chance!r}") from exc
+
+    if chance <= 0:
+        return False
+    if chance >= 1:
+        return True
+    return bool(rng.random() < chance)
+
+
 def run_passives_for_timing(
     timing: str,
     *,
@@ -37,6 +53,8 @@ def run_passives_for_timing(
             if str(trigger.get("timing") or "") != timing:
                 continue
             if not conditions_match(trigger.get("conditions") or {}, context):
+                continue
+            if not _trigger_chance_matches(trigger, rng):
                 continue
             for effect in trigger.get("effects") or []:
                 apply_effect(effect, context)

@@ -222,6 +222,13 @@ class TestRealConfigsPassValidation:
             "book_fatal_chain_sword",
             "book_meteor_pierce_moon",
             "book_hell_instant_formation",
+            "book_steadfast_planning",
+            "book_iron_wall_heart",
+            "book_last_chance_revival",
+            "book_draw_enemy_blades",
+            "book_desperate_beast",
+            "book_bloodthirsty_fury",
+            "book_comrade_command",
         }
 
         with (data_dir / "item_templates.yaml").open("r", encoding="utf-8") as handle:
@@ -230,21 +237,35 @@ class TestRealConfigsPassValidation:
             shop_data = yaml.safe_load(handle)
         with (data_dir / "auction_items.yaml").open("r", encoding="utf-8") as handle:
             auction_data = yaml.safe_load(handle)
+        with (data_dir / "guest_skills.yaml").open("r", encoding="utf-8") as handle:
+            skill_data = yaml.safe_load(handle)
 
         item_keys = {item["key"] for item in item_data.get("items", []) if isinstance(item, dict) and "key" in item}
+        skill_keys = {
+            skill["key"] for skill in skill_data.get("skills", []) if isinstance(skill, dict) and "key" in skill
+        }
         shop_item_keys = {
             item["item_key"] for item in shop_data.get("items", []) if isinstance(item, dict) and "item_key" in item
         }
         auction_item_keys = {
             item["item_key"] for item in auction_data.get("items", []) if isinstance(item, dict) and "item_key" in item
         }
+        tracked_book_skill_keys = {
+            item.get("effect_payload", {}).get("skill_key")
+            for item in item_data.get("items", [])
+            if isinstance(item, dict) and item.get("key") in tracked_skill_books
+        }
 
         assert tracked_skill_books <= item_keys
+        assert tracked_book_skill_keys <= skill_keys
         assert tracked_skill_books <= shop_item_keys
         assert {
             "book_prison_break_blade",
             "book_city_felling_strike",
             "book_hell_instant_formation",
+            "book_desperate_beast",
+            "book_bloodthirsty_fury",
+            "book_comrade_command",
         } <= auction_item_keys
         assert_valid(validate_auction_items(auction_data, item_keys=item_keys))
 

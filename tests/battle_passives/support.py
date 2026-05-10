@@ -34,6 +34,9 @@ def make_unit(**kwargs):
         "is_boss": False,
         "battle_modifiers": {},
         "battle_state": {},
+        "status_effects": {},
+        "tech_effects": {},
+        "priority": 0,
         "skills": [],
     }
     defaults.update(kwargs)

@@ -19,6 +19,35 @@ def _active_attack_skills(skills: list[AttackSkill]) -> list[AttackSkill]:
     return [skill for skill in skills if str(skill.get("kind", "active")) == "active"]
 
 
+def _target_weight(unit: "Combatant") -> float:
+    modifiers = getattr(unit, "battle_modifiers", None)
+    if not isinstance(modifiers, dict):
+        return 1.0
+    weight = float(modifiers.get("target_weight_multiplier", 1.0) or 1.0)
+    return max(0.0, weight)
+
+
+def _weighted_choice(units: list["Combatant"], rng: random.Random) -> "Combatant":
+    if not units:
+        raise AssertionError("expected non-empty unit list")
+
+    weights = [_target_weight(unit) for unit in units]
+    if not any(weight != 1.0 for weight in weights):
+        return rng.choice(units)
+
+    total = sum(weights)
+    if total <= 0:
+        return rng.choice(units)
+
+    cursor = rng.random() * total
+    running = 0.0
+    for unit, weight in zip(units, weights):
+        running += weight
+        if cursor < running:
+            return unit
+    return units[-1]
+
+
 def is_ranged_attack(actor: "Combatant", round_priority: int) -> bool:
     """判断是否为远程攻击（弓箭手在先攻/先锋回合视为远程攻击）"""
     if actor.troop_class != "gong":
@@ -61,10 +90,10 @@ def select_target_with_priority(actor: "Combatant", opponents: list["Combatant"]
 
     # 加权概率判定
     if priority_targets and rng.random() < PRIORITY_TARGET_WEIGHT:
-        return rng.choice(priority_targets)
+        return _weighted_choice(priority_targets, rng)
 
     # 无优先目标或随机判定：完全随机选择
-    return rng.choice(opponents)
+    return _weighted_choice(opponents, rng)
 
 
 def select_attack_targets(

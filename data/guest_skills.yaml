@@ -672,3 +672,159 @@ skills:
     required_force: 122
     required_agility: 86
     targets: 2
+
+  # ---------- 通用被动 ----------
+  - key: steadfast_planning
+    name: 静水筹谋
+    rarity: green
+    description: 以静制动，沉着观察局势后再稳步放大己方攻势。
+    kind: passive
+    required_level: 12
+    required_intellect: 80
+    passive_config:
+      triggers:
+        - timing: round_start
+          chance: 0.35
+          conditions:
+            hp_ratio_gte: 0.7
+          effects:
+            - type: emit_log
+              log_name: 静水筹谋
+              message: 以静制动
+            - type: modify_outgoing_damage
+              value: 1.10
+              target_scope: self
+
+  - key: iron_wall_heart
+    name: 铁壁心法
+    rarity: green
+    description: 守中求稳，越是稳住心神，越能把外来的冲击化作缓冲。
+    kind: passive
+    required_level: 14
+    required_defense: 90
+    passive_config:
+      triggers:
+        - timing: round_start
+          chance: 0.35
+          conditions:
+            hp_ratio_gte: 0.6
+          effects:
+            - type: emit_log
+              log_name: 铁壁心法
+              message: 稳如磐石
+            - type: modify_incoming_damage
+              value: 0.85
+              target_scope: self
+
+  - key: desperate_beast
+    name: 困兽犹斗
+    rarity: purple
+    description: 陷入绝境时强行压榨战意，攻势更狠，但防线也会露出破绽。
+    kind: passive
+    required_level: 24
+    required_force: 140
+    passive_config:
+      triggers:
+        - timing: round_start
+          conditions:
+            hp_ratio_lte: 0.35
+          effects:
+            - type: emit_log
+              log_name: 困兽犹斗
+              message: 绝境反扑
+            - type: modify_outgoing_damage
+              value: 1.16
+              target_scope: self
+            - type: modify_incoming_damage
+              value: 1.05
+              target_scope: self
+
+  - key: last_chance_revival
+    name: 绝处逢生
+    rarity: blue
+    description: 气息将绝时守住最后一线生机，短促回气后重新稳住阵脚。
+    kind: passive
+    required_level: 25
+    required_defense: 100
+    passive_config:
+      triggers:
+        - timing: action_before
+          conditions:
+            hp_ratio_lte: 0.25
+            state_absent: last_chance_revival_used
+          effects:
+            - type: set_state
+              key: last_chance_revival_used
+              value: true
+            - type: emit_log
+              log_name: 绝处逢生
+              message: 一息尚存
+            - type: heal_ratio
+              value: 0.2
+              max_hp_based: true
+              log: true
+              log_name: 绝处逢生
+
+  - key: bloodthirsty_fury
+    name: 嗜血狂怒
+    rarity: purple
+    description: 以自身气血催发狂怒，本回合每次命中都附带生命上限转化的真实伤害。
+    kind: passive
+    required_level: 50
+    required_defense: 200
+    passive_config:
+      triggers:
+        - timing: round_start
+          effects:
+            - type: emit_log
+              log_name: 嗜血狂怒
+              message: 血怒燃起
+            - type: lose_hp_ratio
+              value: 0.1
+              current_hp_based: true
+              nonlethal: true
+              log: true
+              log_name: 嗜血狂怒
+            - type: add_true_damage
+              value: 0.1
+              troop_value_multiplier: 0.25
+              target_scope: self
+
+  - key: draw_enemy_blades
+    name: 招锋引敌
+    rarity: blue
+    description: 主动露出破绽牵动敌阵，使对手更容易把攻势集中到自己身上。
+    kind: passive
+    required_level: 18
+    required_defense: 90
+    passive_config:
+      triggers:
+        - timing: round_start
+          effects:
+            - type: emit_log
+              log_name: 招锋引敌
+              message: 引敌来攻
+            - type: modify_target_weight
+              value: 3.0
+              target_scope: self
+
+  - key: comrade_command
+    name: 同袍号令
+    rarity: purple
+    description: 借队伍完整之势统一号令，让同袍间的输出更像一个整体。
+    kind: passive
+    required_level: 26
+    required_intellect: 130
+    passive_config:
+      triggers:
+        - timing: round_start
+          chance: 0.2
+          conditions:
+            ally_alive_template_count_gte: 3
+          effects:
+            - type: emit_log
+              log_name: 同袍号令
+              message: 号令齐发
+            - type: modify_outgoing_damage
+              value: 1.06
+              target_scope: allies

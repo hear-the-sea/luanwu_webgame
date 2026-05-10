@@ -39,12 +39,12 @@ def trigger_skills(attacker, rng: random.Random) -> List[Dict]:
     chance = max(MIN_SKILL_CHANCE, min(MAX_SKILL_CHANCE, base_chance))
 
     for skill in attacker.skills:
+        if not _is_active_skill(skill):
+            triggered.append(skill)
+            continue
         if rng.random() > chance:
             continue
-        if _is_active_skill(skill):
-            triggered_active.append(skill)
-        else:
-            triggered.append(skill)
+        triggered_active.append(skill)
     if triggered_active:
         triggered.append(rng.choice(triggered_active))
     return triggered

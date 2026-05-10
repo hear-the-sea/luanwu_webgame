@@ -142,6 +142,13 @@
         return;
       }
 
+      if (fragment.childNodes.length > 0) {
+        const divider = document.createElement("div");
+        divider.className = "tw-list-divider-line";
+        divider.setAttribute("aria-hidden", "true");
+        fragment.appendChild(divider);
+      }
+
       const isSelf = manorId === currentManorId;
       const card = document.createElement("div");
       card.className = `tw-manor-card${isSelf ? " self" : ""}`;

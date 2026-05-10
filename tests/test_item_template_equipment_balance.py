@@ -35,6 +35,19 @@ def _load_forge_equipment() -> dict[str, dict]:
     return payload["equipment"]
 
 
+def _iter_loot_box_item_keys(item: dict) -> list[tuple[str, str]]:
+    payload = item.get("effect_payload") or {}
+    refs: list[tuple[str, str]] = []
+    for field in ("gear_keys", "skill_book_keys"):
+        for key in payload.get(field) or []:
+            refs.append((field, str(key)))
+    for field in ("gear_choices", "skill_book_choices"):
+        for choice in payload.get(field) or []:
+            if isinstance(choice, dict) and choice.get("item_key"):
+                refs.append((field, str(choice["item_key"])))
+    return refs
+
+
 def _equipment_score(effect_payload: dict) -> float:
     return (
         float(effect_payload.get("hp", 0)) / 18.0
@@ -103,6 +116,21 @@ def test_equipment_payload_uses_supported_stats_only():
             invalid_stats_by_item[key] = sorted(invalid_stats)
 
     assert invalid_stats_by_item == {}
+
+
+def test_loot_box_item_references_exist():
+    items = _load_item_templates()
+    known_keys = set(items)
+
+    missing_refs: dict[str, list[str]] = {}
+    for key, item in items.items():
+        if item.get("effect_type") != "loot_box":
+            continue
+        missing = [ref_key for _field, ref_key in _iter_loot_box_item_keys(item) if ref_key not in known_keys]
+        if missing:
+            missing_refs[key] = sorted(set(missing))
+
+    assert missing_refs == {}
 
 
 def test_forgeable_equipment_progresses_with_recipe_tier():

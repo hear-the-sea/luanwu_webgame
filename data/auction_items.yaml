@@ -99,6 +99,27 @@ items:
     min_increment: 1
     enabled: true
 
+  - item_key: book_comrade_command
+    slots: 1
+    quantity_per_slot: 1
+    starting_price: 6
+    min_increment: 1
+    enabled: true
+
+  - item_key: book_desperate_beast
+    slots: 1
+    quantity_per_slot: 1
+    starting_price: 7
+    min_increment: 1
+    enabled: true
+
+  - item_key: book_bloodthirsty_fury
+    slots: 1
+    quantity_per_slot: 1
+    starting_price: 8
+    min_increment: 1
+    enabled: true
+
   # ══════════════════════════════════════════════════════════════════════════════
   #                              武器 - 橙色品质
   # ══════════════════════════════════════════════════════════════════════════════

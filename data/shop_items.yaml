@@ -230,6 +230,27 @@ items:
   - item_key: book_hell_instant_formation
     stock: 1
     daily_refresh: false
+  - item_key: book_steadfast_planning
+    stock: 1
+    daily_refresh: false
+  - item_key: book_iron_wall_heart
+    stock: 1
+    daily_refresh: false
+  - item_key: book_last_chance_revival
+    stock: 1
+    daily_refresh: false
+  - item_key: book_draw_enemy_blades
+    stock: 1
+    daily_refresh: false
+  - item_key: book_desperate_beast
+    stock: 1
+    daily_refresh: false
+  - item_key: book_bloodthirsty_fury
+    stock: 1
+    daily_refresh: false
+  - item_key: book_comrade_command
+    stock: 1
+    daily_refresh: false
   - item_key: equip_caomao
     stock: 1
     daily_refresh: false
@@ -275,7 +296,7 @@ items:
   - item_key: equip_qingtengguan
     stock: 1
     daily_refresh: false
-  - item_key: equip_xiaoweitoukie
+  - item_key: equip_xiaoweitoukui
     stock: 1
     daily_refresh: false
   - item_key: equip_jiaodoushitoukui
