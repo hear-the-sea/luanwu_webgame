@@ -2,16 +2,20 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterable, Mapping
 from datetime import datetime, timedelta
+from functools import lru_cache
 from typing import Any
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import F, Sum
 from django.utils import timezone
 
 import guilds.constants as guild_constants
 from core.exceptions import GuildMembershipError, GuildWarehouseError
+from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
 from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
 from gameplay.services.resources import grant_resources_locked
 
@@ -32,6 +36,40 @@ WAREHOUSE_ITEM_LABELS = {
     **PROJECTED_RESOURCE_LABELS,
     "red_ruby": "红宝石",
 }
+
+logger = logging.getLogger(__name__)
+ITEM_TEMPLATES_PATH = settings.BASE_DIR / "data" / "item_templates.yaml"
+
+
+@lru_cache(maxsize=1)
+def _load_item_display_catalog() -> dict[str, dict[str, Any]]:
+    raw = load_yaml_data(ITEM_TEMPLATES_PATH, logger=logger, context="item templates", default={})
+    root = ensure_mapping(raw, logger=logger, context="item templates root")
+    items = ensure_list(root.get("items"), logger=logger, context="item templates.items")
+
+    catalog: dict[str, dict[str, Any]] = {}
+    for entry_raw in items:
+        entry = ensure_mapping(entry_raw, logger=logger, context="item templates.item")
+        key = str(entry.get("key") or "").strip()
+        if not key:
+            continue
+        catalog[key] = {
+            "name": str(entry.get("name") or key).strip() or key,
+            "description": str(entry.get("description") or "").strip(),
+            "effect_type": str(entry.get("effect_type") or ItemTemplate.EffectType.RESOURCE_PACK).strip(),
+            "effect_payload": entry.get("effect_payload") or {},
+            "icon": str(entry.get("icon") or "").strip(),
+            "rarity": str(entry.get("rarity") or "gray").strip(),
+            "tradeable": bool(entry.get("tradeable", False)),
+            "price": int(entry.get("price", 0) or 0),
+            "storage_space": int(entry.get("storage_space", 1) or 1),
+            "is_usable": bool(entry.get("is_usable", False)),
+        }
+    return catalog
+
+
+def _get_item_display_meta(item_key: str) -> dict[str, Any]:
+    return _load_item_display_catalog().get(str(item_key or "").strip(), {})
 
 
 def add_item_to_warehouse(guild: Guild, item_key: str, quantity: int, contribution_cost: int) -> None:
@@ -59,6 +97,59 @@ def add_item_to_warehouse(guild: Guild, item_key: str, quantity: int, contributi
         contribution_cost=contribution_cost,
         total_produced=F("total_produced") + quantity,
     )
+
+
+def _get_or_create_item_template_for_exchange(item_key: str) -> ItemTemplate | None:
+    from gameplay.models import ItemTemplate as ItemTemplateModel
+
+    try:
+        template = ItemTemplateModel.objects.get(key=item_key)
+    except ItemTemplateModel.DoesNotExist:
+        template = None
+
+    display_meta = _get_item_display_meta(item_key)
+    if template is not None:
+        if display_meta:
+            update_fields = []
+            field_updates = {
+                "name": display_meta["name"],
+                "description": display_meta.get("description", ""),
+                "effect_type": display_meta.get("effect_type", ItemTemplateModel.EffectType.RESOURCE_PACK),
+                "effect_payload": display_meta.get("effect_payload", {}),
+                "icon": display_meta.get("icon", ""),
+                "rarity": display_meta.get("rarity", "gray"),
+                "tradeable": bool(display_meta.get("tradeable", False)),
+                "price": int(display_meta.get("price", 0) or 0),
+                "storage_space": int(display_meta.get("storage_space", 1) or 1),
+                "is_usable": bool(display_meta.get("is_usable", False)),
+            }
+            for field_name, field_value in field_updates.items():
+                if getattr(template, field_name) != field_value:
+                    setattr(template, field_name, field_value)
+                    update_fields.append(field_name)
+            if update_fields:
+                template.save(update_fields=update_fields)
+        return template
+
+    if not display_meta:
+        return None
+
+    template, _created = ItemTemplateModel.objects.update_or_create(
+        key=item_key,
+        defaults={
+            "name": display_meta["name"],
+            "description": display_meta.get("description", ""),
+            "effect_type": display_meta.get("effect_type", ItemTemplateModel.EffectType.RESOURCE_PACK),
+            "effect_payload": display_meta.get("effect_payload", {}),
+            "icon": display_meta.get("icon", ""),
+            "rarity": display_meta.get("rarity", "gray"),
+            "tradeable": bool(display_meta.get("tradeable", False)),
+            "price": int(display_meta.get("price", 0) or 0),
+            "storage_space": int(display_meta.get("storage_space", 1) or 1),
+            "is_usable": bool(display_meta.get("is_usable", False)),
+        },
+    )
+    return template
 
 
 def _is_projected_resource_item(item_key: str) -> bool:
@@ -312,17 +403,8 @@ def exchange_item(member: GuildMember, item_key: str, quantity: int = 1) -> None
         _exchange_projected_resource_item(member, item_key, quantity)
         return
 
-    from gameplay.models import ItemTemplate
-
     template = None
-    if item_key not in MANOR_RESOURCE_ITEM_KEYS:
-        # 验证物品模板是否存在并可用
-        try:
-            template = ItemTemplate.objects.get(key=item_key)
-            if not _is_real_guild_resource_item(item_key) and not template.is_usable:
-                raise GuildWarehouseError("此物品不可在仓库使用")
-        except ItemTemplate.DoesNotExist:
-            raise GuildWarehouseError("物品不存在")
+    requires_inventory_template = item_key not in MANOR_RESOURCE_ITEM_KEYS
 
     # 并发安全的事务处理
     # 锁定顺序：Manor -> GuildMember -> GuildWarehouse
@@ -359,6 +441,14 @@ def exchange_item(member: GuildMember, item_key: str, quantity: int = 1) -> None
         total_cost = warehouse_item.contribution_cost * quantity
         if member_locked.current_contribution < total_cost:
             raise GuildWarehouseError(f"贡献度不足，需要{total_cost}贡献")
+
+        if requires_inventory_template:
+            # 仅在兑换基础校验通过后物化模板，避免失败兑换留下额外写入。
+            template = _get_or_create_item_template_for_exchange(item_key)
+            if template is None:
+                raise GuildWarehouseError("物品不存在")
+            if not _is_real_guild_resource_item(item_key) and not template.is_usable:
+                raise GuildWarehouseError("此物品不可在仓库使用")
 
         # 步骤3：使用F()表达式扣除贡献度和增加兑换次数
         updated_member = GuildMember.objects.filter(pk=member_locked.pk).update(
@@ -536,10 +626,26 @@ def get_warehouse_items(
         item.weekly_exchange_remaining = max(0, weekly_limit - weekly_used) if weekly_limit > 0 else 0
         if not getattr(item, "template", None):
             item.template = templates_dict.get(item.item_key)
+        display_meta = _get_item_display_meta(item.item_key)
+        template_name = (
+            item.template.name
+            if item.template and item.template.name and item.template.name.strip() != item.item_key
+            else None
+        )
         item.display_name = getattr(
             item,
             "display_name",
-            PROJECTED_RESOURCE_LABELS.get(item.item_key, item.template.name if item.template else item.item_key),
+            PROJECTED_RESOURCE_LABELS.get(
+                item.item_key,
+                display_meta.get("name") or template_name or item.item_key,
+            ),
+        )
+        item.display_description = getattr(
+            item,
+            "display_description",
+            display_meta.get("description")
+            or (item.template.description if item.template and item.template.description else None)
+            or ("帮会资源实时同步" if getattr(item, "is_projected", False) else "帮会科技每日产出"),
         )
         item.display_quantity = max(0, int(getattr(item, "quantity", 0) or 0))
         if getattr(item, "is_projected", False):
@@ -551,7 +657,7 @@ def get_warehouse_items(
             item.is_usable = True
             continue
         # 如果找不到模板，标记为不可用（防止幽灵物品被兑换）
-        item.is_usable = item.template.is_usable if item.template else False
+        item.is_usable = item.template.is_usable if item.template else bool(display_meta.get("is_usable", False))
 
     return {
         "items": page_items,

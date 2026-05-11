@@ -8,10 +8,12 @@ from django.urls import reverse
 from django.utils import timezone
 
 from battle.models import TroopTemplate
-from gameplay.models import ItemTemplate, PlayerTroop
+from core.exceptions import GuildWarehouseError
+from gameplay.models import InventoryItem, ItemTemplate, PlayerTroop
 from gameplay.services.manor.core import ensure_manor
 from guilds.constants import DAILY_DONATION_LIMITS
 from guilds.models import Guild, GuildMember, GuildTroopStorage, GuildWarehouse
+from guilds.services.warehouse import exchange_item
 
 
 @pytest.fixture
@@ -177,6 +179,63 @@ def test_guild_warehouse_page_projects_guild_resources_without_writing_guild_war
     assert projected_entries["grain"].is_projected is True
     assert projected_entries["gold_bar"].display_quantity == guild.gold_bar
     assert projected_entries["gold_bar"].is_projected is True
+
+
+@pytest.mark.django_db
+def test_guild_warehouse_page_renders_production_items_without_item_templates(guild_member_client):
+    client, guild, _member, _manor = guild_member_client
+
+    ItemTemplate.objects.filter(key="guild_gear_box_master").delete()
+    GuildWarehouse.objects.create(guild=guild, item_key="guild_gear_box_master", quantity=2, contribution_cost=800)
+
+    response = client.get(reverse("guilds:warehouse"))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert "帮会宗师秘匣" in body
+    assert "帮会满阶锻造工坊出品的秘匣，可开出一件高质量紫装。" in body
+    assert "<h3>guild_gear_box_master</h3>" not in body
+    assert "openExchangeModal('guild_gear_box_master'" in body
+
+
+@pytest.mark.django_db
+def test_guild_warehouse_exchange_creates_yaml_backed_loot_box_template(guild_member_client):
+    _client, guild, member, manor = guild_member_client
+    member.current_contribution = 1000
+    member.save(update_fields=["current_contribution"])
+
+    ItemTemplate.objects.filter(key="guild_gear_box_master").delete()
+    GuildWarehouse.objects.create(guild=guild, item_key="guild_gear_box_master", quantity=1, contribution_cost=800)
+
+    exchange_item(member, "guild_gear_box_master", 1)
+
+    template = ItemTemplate.objects.get(key="guild_gear_box_master")
+    assert template.name == "帮会宗师秘匣"
+    assert template.effect_type == ItemTemplate.EffectType.LOOT_BOX
+    assert template.is_usable is True
+    assert template.effect_payload["gear_chance"] == 1
+    assert template.effect_payload["gear_choices"][0]["item_key"] == "equip_qilinjia"
+    inventory_item = InventoryItem.objects.get(
+        manor=manor,
+        template=template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    assert inventory_item.quantity == 1
+
+
+@pytest.mark.django_db
+def test_guild_warehouse_exchange_does_not_create_yaml_template_when_validation_fails(guild_member_client):
+    _client, guild, member, _manor = guild_member_client
+    member.current_contribution = 10
+    member.save(update_fields=["current_contribution"])
+
+    ItemTemplate.objects.filter(key="guild_gear_box_master").delete()
+    GuildWarehouse.objects.create(guild=guild, item_key="guild_gear_box_master", quantity=1, contribution_cost=800)
+
+    with pytest.raises(GuildWarehouseError, match="贡献度不足"):
+        exchange_item(member, "guild_gear_box_master", 1)
+
+    assert ItemTemplate.objects.filter(key="guild_gear_box_master").exists() is False
 
 
 @pytest.mark.django_db
