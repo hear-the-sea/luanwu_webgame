@@ -18,6 +18,12 @@ from . import mission_helpers
 
 logger = logging.getLogger(__name__)
 
+VALID_MISSION_TABS = {
+    MissionTemplate.Difficulty.JUNIOR,
+    MissionTemplate.Difficulty.INTERMEDIATE,
+    MissionTemplate.Difficulty.ADVANCED,
+}
+
 
 def build_troop_config() -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
     return mission_helpers.build_troop_config()
@@ -52,7 +58,10 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
     selected_mission, selected_attempts, selected_daily_limit, selected_remaining = (
         mission_helpers.build_selection_summary(selected_key, missions_by_key, attempts, extra_attempts)
     )
+    requested_tab = (request.GET.get("tab") or "").strip()
     active_tab = selected_mission.difficulty if selected_mission else MissionTemplate.Difficulty.JUNIOR
+    if not selected_mission and requested_tab in VALID_MISSION_TABS:
+        active_tab = requested_tab
     available_guests = (
         manor.guests.filter(status=GuestStatus.IDLE)
         .select_related("template")
@@ -85,6 +94,7 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         "selected_remaining": selected_remaining,
         "selected_daily_limit": selected_daily_limit,
         "active_tab": active_tab,
+        "task_board_close_url": f"{request.path}?tab={active_tab}",
         "mission_card_count": mission_card_count,
         "selected_drop_items": [],
         "selected_probability_drop_items": [],

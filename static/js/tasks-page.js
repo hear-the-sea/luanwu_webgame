@@ -24,6 +24,9 @@
           content.style.display = "block";
           window.setTimeout(() => content.classList.add("active"), 10);
         }
+        if (window.history && window.history.replaceState && window.TasksPageCore?.buildTaskTabUrl) {
+          window.history.replaceState({}, "", window.TasksPageCore.buildTaskTabUrl(window.location.href, tabId));
+        }
       });
     });
 

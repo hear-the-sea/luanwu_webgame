@@ -869,6 +869,7 @@ heroes:
       archetype: civil
       recruitable: false
       default_gender: male
+      avatar: pig_male_special2.png
       skills:
         - wanxian_fengbang_zhiming
       custom_stats:

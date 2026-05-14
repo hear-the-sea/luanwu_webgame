@@ -1223,6 +1223,7 @@ items:
     name: 打工宝箱（小）
     description: 打工获得的小型宝箱，打开后可获得随机白银，有小概率获得绿色装备或技能书。
     effect_type: loot_box
+    image: small.png
     rarity: green
     tradeable: true
     price: 5000
@@ -1266,6 +1267,7 @@ items:
     description: 打工获得的中型宝箱，打开后可获得随机黄金，有小概率获得蓝色装备或技能书。
     effect_type: loot_box
     rarity: blue
+    image: middle.png
     tradeable: true
     price: 15000
     storage_space: 5
@@ -1316,6 +1318,7 @@ items:
     description: 打工获得的大型宝箱，打开后可获得随机铂金，有小概率获得紫色装备或技能书。
     effect_type: loot_box
     rarity: purple
+    image: large.png
     tradeable: true
     price: 40000
     storage_space: 5

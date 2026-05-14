@@ -156,7 +156,7 @@
                 <p class="tw-muted text-sm mb-2">任务情报</p>
                 <h3>{{ selected_mission.name }}</h3>
             </div>
-            <a href="{% url 'gameplay:tasks' %}" class="tw-btn-secondary tw-btn-sm">关闭</a>
+            <a href="{{ task_board_close_url }}" class="tw-btn-secondary tw-btn-sm">关闭</a>
         </div>
         <div class="tw-modal-body">
             <div class="flex items-center gap-2 flex-wrap mb-6">
@@ -370,7 +370,7 @@
                                         {% if selected_mission.is_defense %}接受任务{% else %}派遣出征{% endif %}
                                     </button>
                                 {% endif %}
-                                <a href="{% url 'gameplay:tasks' %}" class="tw-btn-secondary">取消</a>
+                                <a href="{{ task_board_close_url }}" class="tw-btn-secondary">取消</a>
                             </div>
                         </form>
                     </section>
@@ -384,5 +384,6 @@
 
 {% block extra_scripts %}
 <script src="{% static 'js/dashboard.js' %}"></script>
+<script src="{% static 'js/tasks_page_core.js' %}"></script>
 <script src="{% static 'js/tasks-page.js' %}"></script>
 {% endblock %}

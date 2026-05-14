@@ -107,6 +107,31 @@ def test_resource_pack_invalid_resource_amount_raises_config_error(django_user_m
 
 
 @pytest.mark.django_db
+def test_resource_pack_message_uses_resource_labels(django_user_model):
+    user = django_user_model.objects.create_user(username="resource_pack_message_labels", password="pass123")
+    manor = ensure_manor(user)
+
+    template = ItemTemplate.objects.create(
+        key="resource_pack_message_labels_test",
+        name="中文资源包",
+        effect_type=ItemTemplate.EffectType.RESOURCE_PACK,
+        is_usable=True,
+        effect_payload={"silver": 100, "grain": 50},
+    )
+    item = InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    payload = use_inventory_item(item)
+
+    assert payload["_message"] == "获得 银两+100、粮食+50"
+    assert "silver+100" not in payload["_message"]
+
+
+@pytest.mark.django_db
 def test_resource_pack_malformed_grant_result_raises_assertion_error(monkeypatch, django_user_model):
     user = django_user_model.objects.create_user(username="resource_pack_bad_grant_result", password="pass123")
     manor = ensure_manor(user)

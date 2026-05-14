@@ -91,6 +91,33 @@ class TestTaskBoardPage:
         assert '<button class="tw-trade-tab active" data-tab="intermediate">中级任务</button>' in body
         assert '<div id="tab-intermediate" class="mission-tab-content active">' in body
 
+    def test_task_board_preserves_requested_tab_without_selected_mission(self, manor_with_user):
+        _manor, client = manor_with_user
+
+        response = client.get(reverse("gameplay:tasks") + "?tab=advanced")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert '<button class="tw-trade-tab active" data-tab="advanced">高级任务</button>' in body
+        assert '<div id="tab-advanced" class="mission-tab-content active">' in body
+
+    def test_task_board_detail_close_returns_to_selected_mission_tab(self, manor_with_user):
+        _manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key="task_board_close_advanced",
+            name="关闭回高级任务",
+            difficulty=MissionTemplate.Difficulty.ADVANCED,
+            daily_limit=3,
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        expected_url = f'{reverse("gameplay:tasks")}?tab=advanced'
+        assert f'href="{expected_url}" class="tw-btn-secondary tw-btn-sm">关闭</a>' in body
+        assert f'href="{expected_url}" class="tw-btn-secondary">取消</a>' in body
+
     def test_task_board_mission_names_link_to_details_for_every_difficulty(self, manor_with_user):
         _manor, client = manor_with_user
         missions = [

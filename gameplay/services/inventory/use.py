@@ -20,7 +20,7 @@ from core.exceptions import (
     ItemNotFoundError,
     ItemNotUsableError,
 )
-from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
+from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent, ResourceType
 from gameplay.services.resources import grant_resources, grant_resources_locked
 
 from .core import add_item_to_inventory, consume_inventory_item_for_manor_locked, consume_inventory_item_locked
@@ -36,6 +36,8 @@ from .random_source import inventory_random
 logger = logging.getLogger(__name__)
 
 ItemEffectHandler = Callable[[InventoryItem], dict[str, Any]]
+
+RESOURCE_LABELS = dict(ResourceType.choices)
 
 # 不在仓库使用的物品提示信息
 NON_WAREHOUSE_MESSAGES: dict[str, str] = {
@@ -237,6 +239,10 @@ def _grant_item_resources(manor: Manor, payload: dict[str, int], note: str) -> d
     return _normalize_granted_resource_mapping(credited_raw, contract_name="inventory resource grant result")
 
 
+def _format_resource_parts(resources: dict[str, int]) -> list[str]:
+    return [f"{RESOURCE_LABELS.get(key, key)}+{value}" for key, value in resources.items()]
+
+
 def _normalize_probability(value: Any, *, field_name: str) -> float:
     """Normalize probability config to [0, 1]. Supports 0.1 or 10 (percent)."""
     if value is None or value == "":
@@ -270,7 +276,7 @@ def _apply_resource_pack(item: InventoryItem) -> Dict[str, Any]:
     if not normalized_payload:
         raise ItemNotConfiguredError()
     granted_resources = _grant_item_resources(item.manor, normalized_payload, item.template.name)
-    parts = [f"{key}+{value}" for key, value in granted_resources.items()]
+    parts = _format_resource_parts(granted_resources)
     return {
         **granted_resources,
         "_message": f"获得 {'、'.join(parts)}",
@@ -380,7 +386,7 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
     resources = _normalize_resource_reward_mapping(payload.get("resources"), field_name="resources")
     if resources:
         result = _grant_item_resources(manor, resources, item.template.name)
-        parts = [f"{k}+{v}" for k, v in result.items()]
+        parts = _format_resource_parts(result)
         rewards.append("资源：" + "、".join(parts))
 
     # 2. 普通物品掉落（随机数量，可选）
