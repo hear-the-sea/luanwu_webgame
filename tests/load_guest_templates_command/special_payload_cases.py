@@ -95,6 +95,33 @@ def test_default_special_yaml_contains_guild_mission_template_skill_bindings() -
     assert "guild_blackwind_battle_standard" in blackwind_gate_general["skills"]
 
 
+def test_wanxian_key_bosses_use_exclusive_skills() -> None:
+    heroes_payload = Command()._load_heroes_payload("")
+    skills_payload = Command()._load_skills_payload("")
+
+    skills = {entry["key"]: entry for entry in skills_payload["skills"]}
+    expected_bindings = {
+        "task_wanxian_qingsuan_fuzhao": "wanxian_qingsuan_fuzhao",
+        "task_wanxian_shier_xianyin": "wanxian_shier_xianyin",
+        "task_wanxian_randeng": "wanxian_randeng_dengyan",
+        "task_wanxian_jiang_ziya": "wanxian_fengbang_zhiming",
+        "task_wanxian_dashenbian": "wanxian_dashenbian",
+        "task_wanxian_yuxu_tianfa": "wanxian_yuxu_tianfa",
+    }
+
+    for boss_key, skill_key in expected_bindings.items():
+        boss = _hero_entry_by_key(heroes_payload, boss_key)
+        assert skill_key in boss["skills"]
+
+        skill = skills[skill_key]
+        assert len(skill["name"]) == 4
+        assert skill["kind"] == "active"
+        assert skill["rarity"] == "purple"
+        assert skill["base_probability"] >= 0.7
+        assert skill["targets"] >= 2
+        assert skill["damage_formula"]["base"] >= 2800
+
+
 @pytest.mark.django_db
 def test_load_guest_templates_imports_passive_config(tmp_path: Path) -> None:
     main_file = tmp_path / "guest_templates.json"

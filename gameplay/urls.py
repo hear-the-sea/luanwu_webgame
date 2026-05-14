@@ -14,7 +14,7 @@ from .views.arena import (
     refresh_arena_activity_api,
 )
 from .views.buildings import UpgradeBuildingView, refresh_building_upgrades_api
-from .views.core import DashboardView, RankingView, SettingsView, rename_manor_view
+from .views.core import DashboardView, GuideView, RankingView, SettingsView, rename_manor_view
 from .views.inventory import (
     RecruitmentHallView,
     WarehouseView,
@@ -164,6 +164,7 @@ urlpatterns = [
     path("api/production/refresh/", refresh_production_runtime_api, name="refresh_production_runtime_api"),
     path("settings/", SettingsView.as_view(), name="settings"),
     path("settings/rename/", rename_manor_view, name="rename_manor"),
+    path("guide/", GuideView.as_view(), name="guide"),
     path("jail/", JailView.as_view(), name="jail"),
     path("jail/prisoner/<int:prisoner_id>/recruit/", recruit_prisoner_view, name="recruit_prisoner_view"),
     path("jail/prisoner/<int:prisoner_id>/draw-pie/", draw_pie_view, name="draw_pie_view"),

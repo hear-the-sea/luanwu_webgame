@@ -90,6 +90,27 @@ missions:
 
 
 @pytest.mark.django_db
+def test_load_mission_templates_command_imports_entry_cost(tmp_path):
+    payload_path = tmp_path / "mission_templates.yaml"
+    payload_path.write_text(
+        """
+missions:
+  - key: cmd_mission_entry_cost
+    name: 入场消耗任务
+    entry_cost:
+      wanyin_flag_fragment: 1
+      yuxu_broken_seal: 2
+""",
+        encoding="utf-8",
+    )
+
+    call_command("load_mission_templates", file=str(payload_path), verbosity=0)
+
+    mission = MissionTemplate.objects.get(key="cmd_mission_entry_cost")
+    assert mission.entry_cost == {"wanyin_flag_fragment": 1, "yuxu_broken_seal": 2}
+
+
+@pytest.mark.django_db
 def test_default_mission_templates_define_junior_mission_tiering():
     payload_path = settings.BASE_DIR / "data" / "mission_templates.yaml"
 
@@ -231,6 +252,41 @@ def test_default_mission_templates_split_shiren_named_enemy_keys_by_display_name
         "hero_bai_kaixin",
         {"key": "task_shiren_luoshixiongdi", "label": "罗氏兄弟"},
     ]
+
+
+@pytest.mark.django_db
+def test_default_mission_templates_import_wanxian_niming_chain():
+    payload_path = settings.BASE_DIR / "data" / "mission_templates.yaml"
+
+    call_command("load_mission_templates", file=str(payload_path), verbosity=0)
+
+    biyou = MissionTemplate.objects.get(key="biyou_candeng")
+    assert biyou.name == "碧游残灯"
+    assert biyou.difficulty == "advanced"
+    assert biyou.daily_limit == 3
+    assert biyou.entry_cost == {}
+    assert biyou.drop_table["wanyin_flag_fragment"] == {"chance": 0.35, "count": 1}
+    assert biyou.enemy_guests == [
+        "task_wanxian_nangong_lie",
+        "task_wanxian_lu_xuanqing",
+        "task_wanxian_baihe_fushi",
+        "task_wanxian_zhuxian_canfeng",
+        "task_wanxian_yuzhu",
+        "task_wanxian_qingsuan_fuzhao",
+    ]
+
+    shier = MissionTemplate.objects.get(key="shier_xianyin")
+    assert shier.name == "十二仙印"
+    assert shier.daily_limit == 2
+    assert shier.entry_cost == {"wanyin_flag_fragment": 1}
+    assert shier.drop_table["yuxu_broken_seal"] == {"chance": 0.25, "count": 1}
+
+    fengbang = MissionTemplate.objects.get(key="fengbang_tianmen")
+    assert fengbang.name == "封榜天门"
+    assert fengbang.daily_limit == 1
+    assert fengbang.entry_cost == {"yuxu_broken_seal": 1}
+    assert "fengbang_torn_page" not in fengbang.drop_table
+    assert fengbang.drop_table["equip_fengshenbang"] == 0.005
 
 
 @pytest.mark.django_db

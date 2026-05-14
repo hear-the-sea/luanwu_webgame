@@ -121,24 +121,65 @@
     if (topLink) topLink.dataset.unread = currentUnreadCount;
   }
 
+  function dismissToast(toast) {
+    toast.classList.add("toast-leaving");
+    setTimeout(() => toast.remove(), 300);
+  }
+
+  function getToastIcon(kind) {
+    const icons = {
+      battle: "战",
+      trade: "市",
+      guild: "帮",
+      reward: "赏",
+    };
+    return icons[kind] || null;
+  }
+
   function showToast({ title, body, kind }) {
     const container = document.getElementById(toastContainerId);
     if (!container) return;
+    const toastKind = kind || "system";
     const toast = document.createElement("div");
-    toast.className = `toast toast-${kind || "system"}`;
+    toast.className = `toast toast-${toastKind}`;
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
+
+    const toastIcon = getToastIcon(toastKind);
+
+    const contentEl = document.createElement("div");
+    contentEl.className = "toast-content";
+
     const titleEl = document.createElement("div");
     titleEl.className = "toast-title";
     titleEl.textContent = title || "新通知";
+
     const bodyEl = document.createElement("div");
     bodyEl.className = "toast-body";
     bodyEl.textContent = body || "";
-    toast.appendChild(titleEl);
-    toast.appendChild(bodyEl);
+
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "toast-close";
+    closeBtn.setAttribute("aria-label", "关闭通知");
+    closeBtn.textContent = "×";
+    closeBtn.addEventListener("click", () => dismissToast(toast));
+
+    contentEl.appendChild(titleEl);
+    if (bodyEl.textContent) {
+      contentEl.appendChild(bodyEl);
+    }
+    if (toastIcon) {
+      const iconEl = document.createElement("div");
+      iconEl.className = "toast-icon";
+      iconEl.setAttribute("aria-hidden", "true");
+      iconEl.textContent = toastIcon;
+      toast.appendChild(iconEl);
+    }
+    toast.appendChild(contentEl);
+    toast.appendChild(closeBtn);
     container.appendChild(toast);
-    setTimeout(() => {
-      toast.style.opacity = "0";
-      setTimeout(() => toast.remove(), 300);
-    }, 5000);
+    setTimeout(() => dismissToast(toast), 5000);
   }
 
   function handlePayload(payload) {
@@ -187,7 +228,7 @@
       return;
     }
     updateUnreadCount(1);
-    showToast({ title: payload.title || "新消息", body: payload.body || "", kind: "system" });
+    showToast({ title: payload.title || "新消息", body: payload.body || payload.message || "", kind: payload.kind || "system" });
   }
 
   function connect() {

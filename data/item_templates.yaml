@@ -1231,6 +1231,13 @@ items:
     effect_payload:
       silver_min: 5000
       silver_max: 10000
+      item_rewards:
+        - item_key: fangdajing
+          min_quantity: 0
+          max_quantity: 2
+        - item_key: mission_card
+          min_quantity: 0
+          max_quantity: 1
       # 10%概率获得绿色非套装装备（随机一件）
       gear_chance: 0.1
       gear_keys:
@@ -1266,6 +1273,13 @@ items:
     effect_payload:
       silver_min: 10000
       silver_max: 20000
+      item_rewards:
+        - item_key: fangdajing
+          min_quantity: 1
+          max_quantity: 2
+        - item_key: mission_card
+          min_quantity: 0
+          max_quantity: 2
       gear_chance: 0.1
       gear_keys:
         - equip_yangpixue
@@ -1309,6 +1323,13 @@ items:
     effect_payload:
       silver_min: 20000
       silver_max: 40000
+      item_rewards:
+        - item_key: fangdajing
+          min_quantity: 1
+          max_quantity: 3
+        - item_key: mission_card
+          min_quantity: 1
+          max_quantity: 3
       gear_chance: 0.2
       gear_keys:
         - equip_yanyuxue
@@ -2092,6 +2113,27 @@ items:
       skill_name: 瞬狱杀阵
     tradeable: true
     price: 680000
+
+  # ---------- 任务信物 ----------
+  - key: wanyin_flag_fragment
+    name: 万仙阵旗残片
+    description: 万仙阵门破碎后遗落的阵旗残片，仍残留碧游宫聚众成阵的气息。
+    effect_type: resource
+    rarity: blue
+    tradeable: false
+    price: 0
+    storage_space: 1
+    is_usable: false
+
+  - key: yuxu_broken_seal
+    name: 玉虚碎印
+    description: 十二道玉虚仙印破碎后凝成的残片，可短暂撬开封榜天门的禁制。
+    effect_type: resource
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 1
+    is_usable: false
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 新手套装（一蓑烟雨）
@@ -5390,9 +5432,10 @@ items:
     price: 52000
     storage_space: 100
     effect_payload:
-      intellect: 56
-      luck: 18
-      hp: 240
+      intellect: 60
+      luck: 30
+      defense: 10
+      hp: 500
 
   - key: equip_shanheshejitu
     name: 山河社稷图

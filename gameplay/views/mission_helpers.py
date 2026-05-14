@@ -168,6 +168,14 @@ def collect_mission_asset_keys(missions: list[MissionTemplate]) -> tuple[set[str
         else:
             raise AssertionError(f"invalid mission probability_drop_table: {probability_drop_table!r}")
 
+        entry_cost = getattr(mission, "entry_cost", None)
+        if entry_cost is None:
+            normalized_entry_cost: dict[str, Any] = {}
+        elif isinstance(entry_cost, dict):
+            normalized_entry_cost = entry_cost
+        else:
+            raise AssertionError(f"invalid mission entry_cost: {entry_cost!r}")
+
         for key in normalized_enemy_troops.keys():
             if not isinstance(key, str) or not key.strip():
                 raise AssertionError(f"invalid mission enemy_troops key: {key!r}")
@@ -179,6 +187,10 @@ def collect_mission_asset_keys(missions: list[MissionTemplate]) -> tuple[set[str
         for key in normalized_probability_drop_table.keys():
             if not isinstance(key, str) or not key.strip():
                 raise AssertionError(f"invalid mission probability_drop_table key: {key!r}")
+            drop_keys.add(key.strip())
+        for key in normalized_entry_cost.keys():
+            if not isinstance(key, str) or not key.strip():
+                raise AssertionError(f"invalid mission entry_cost key: {key!r}")
             drop_keys.add(key.strip())
         for drop_value in normalized_drop_table.values():
             if not isinstance(drop_value, dict):
@@ -386,6 +398,47 @@ def build_drop_lists(
         probability_drops.append({"label": display_label, "rarity": rarity})
 
     return guaranteed_drops, probability_drops
+
+
+def build_entry_cost_list(
+    selected_mission: MissionTemplate,
+    item_templates: dict[str, Any],
+    manor: Any,
+    *,
+    get_item_quantity_func,
+) -> tuple[list[dict[str, Any]], bool]:
+    raw_entry_cost = getattr(selected_mission, "entry_cost", None)
+    if raw_entry_cost is None:
+        entry_cost: dict[str, Any] = {}
+    elif isinstance(raw_entry_cost, dict):
+        entry_cost = raw_entry_cost
+    else:
+        raise AssertionError(f"invalid mission entry_cost: {raw_entry_cost!r}")
+
+    entries: list[dict[str, Any]] = []
+    can_afford = True
+    for key, raw_amount in entry_cost.items():
+        if not isinstance(key, str) or not key.strip():
+            raise AssertionError(f"invalid mission entry_cost key: {key!r}")
+        if isinstance(raw_amount, bool) or not isinstance(raw_amount, int) or raw_amount <= 0:
+            raise AssertionError(f"invalid mission entry_cost amount: {raw_amount!r}")
+
+        item_key = key.strip()
+        template = item_templates.get(item_key)
+        owned = get_item_quantity_func(manor, item_key)
+        missing = owned < raw_amount
+        can_afford = can_afford and not missing
+        entries.append(
+            {
+                "key": item_key,
+                "label": getattr(template, "name", item_key),
+                "required": raw_amount,
+                "owned": owned,
+                "rarity": getattr(template, "rarity", "default") or "default",
+                "missing": missing,
+            }
+        )
+    return entries, can_afford
 
 
 def build_mission_data(

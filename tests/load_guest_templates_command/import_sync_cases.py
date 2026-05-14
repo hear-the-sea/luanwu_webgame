@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+from io import StringIO
 from pathlib import Path
 
 import pytest
 from django.core.management import call_command
 
+from gameplay.models import JailPrisoner
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestStatus, GuestTemplate, RecruitmentPool, RecruitmentPoolEntry, Skill, SkillBook
 
@@ -294,6 +296,71 @@ def test_load_guest_templates_removes_records_not_in_latest_payload(tmp_path: Pa
     assert set(Skill.objects.values_list("key", flat=True)) == {"skill_loader_keep"}
     assert set(SkillBook.objects.values_list("key", flat=True)) == {"book_loader_keep"}
     assert set(RecruitmentPool.objects.values_list("key", flat=True)) == {"pool_loader_keep"}
+
+
+@pytest.mark.django_db
+def test_load_guest_templates_skips_removed_templates_with_protected_prisoners(
+    tmp_path: Path,
+    django_user_model,
+) -> None:
+    protected_template = GuestTemplate.objects.create(
+        key="tpl_loader_protected_prisoner",
+        name="受保护模板",
+        archetype="military",
+        rarity="green",
+    )
+    removable_template = GuestTemplate.objects.create(
+        key="tpl_loader_unreferenced_removed",
+        name="无引用旧模板",
+        archetype="civil",
+        rarity="gray",
+    )
+    captor_user = django_user_model.objects.create_user(username="loader_protected_captor", password="pass12345")
+    original_user = django_user_model.objects.create_user(username="loader_protected_original", password="pass12345")
+    captor = ensure_manor(captor_user)
+    original_manor = ensure_manor(original_user)
+    JailPrisoner.objects.create(
+        captor=captor,
+        original_manor=original_manor,
+        guest_template=protected_template,
+        original_guest_name="受保护囚徒",
+    )
+
+    payload = {
+        "templates": [
+            {
+                "key": "tpl_loader_keep_after_protected",
+                "name": "保留模板",
+                "archetype": "civil",
+                "rarity": "gray",
+            },
+        ],
+    }
+    main_file = tmp_path / "guest_templates_protected_cleanup.json"
+    main_file.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+    skills_file = tmp_path / "skills_empty.json"
+    skills_file.write_text("{}", encoding="utf-8")
+
+    heroes_dir = tmp_path / "heroes"
+    heroes_dir.mkdir()
+    out = StringIO()
+
+    call_command(
+        "load_guest_templates",
+        file=str(main_file),
+        skills_file=str(skills_file),
+        heroes_dir=str(heroes_dir),
+        skip_images=True,
+        verbosity=1,
+        stdout=out,
+    )
+
+    assert GuestTemplate.objects.filter(pk=protected_template.pk).exists()
+    assert not GuestTemplate.objects.filter(pk=removable_template.pk).exists()
+    assert GuestTemplate.objects.filter(key="tpl_loader_keep_after_protected").exists()
+    assert "Skipped 1 removed templates still referenced by protected records" in out.getvalue()
+    assert "tpl_loader_protected_prisoner" in out.getvalue()
 
 
 @pytest.mark.django_db

@@ -8,7 +8,7 @@ from django.db import DatabaseError
 from django.urls import reverse
 from django.utils import timezone
 
-from gameplay.models import MissionRun, MissionTemplate
+from gameplay.models import InventoryItem, ItemTemplate, MissionRun, MissionTemplate
 from guests.models import GuestTemplate
 
 
@@ -31,7 +31,7 @@ class TestTaskBoardPage:
         assert "js/tasks-page.js" in body
         assert "const maxSquadSize" not in body
 
-    def test_task_board_active_runs_use_explicit_refresh_api(self, manor_with_user):
+    def test_task_board_hides_active_runs_summary(self, manor_with_user):
         manor, client = manor_with_user
         mission = MissionTemplate.objects.create(
             key="task_board_active_run",
@@ -39,7 +39,7 @@ class TestTaskBoardPage:
             difficulty=MissionTemplate.Difficulty.JUNIOR,
             daily_limit=3,
         )
-        MissionRun.objects.create(
+        run = MissionRun.objects.create(
             manor=manor,
             mission=mission,
             status=MissionRun.Status.ACTIVE,
@@ -52,10 +52,12 @@ class TestTaskBoardPage:
         assert response.status_code == 200
         body = response.content.decode("utf-8")
         refresh_url = reverse("gameplay:refresh_mission_runs_api")
-        assert "当前出征" in body
-        assert "进行中任务" in body
-        assert body.count(f'data-refresh-url="{refresh_url}"') == 1
-        assert body.count('data-refresh-method="post"') == 1
+        assert "当前出征" not in body
+        assert "出征：进行中任务" not in body
+        assert "防守：进行中任务" not in body
+        assert f'data-refresh-url="{refresh_url}"' not in body
+        assert 'data-refresh-method="post"' not in body
+        assert reverse("gameplay:mission_retreat", kwargs={"pk": run.pk}) not in body
 
     def test_task_board_tolerates_resource_sync_error(self, manor_with_user, monkeypatch):
         _manor, client = manor_with_user
@@ -131,6 +133,46 @@ class TestTaskBoardPage:
             rf'href="\?mission={mission.key}"[^>]*>{mission.name}</a>'
         )
         assert re.search(pattern, body)
+
+    def test_task_board_displays_entry_cost_and_disables_launch_when_missing(self, manor_with_user):
+        manor, client = manor_with_user
+        token = ItemTemplate.objects.create(
+            key="task_board_entry_token",
+            name="任务入场令",
+            effect_type="resource",
+            rarity="blue",
+            tradeable=False,
+            price=0,
+            storage_space=1,
+            is_usable=False,
+        )
+        mission = MissionTemplate.objects.create(
+            key="task_board_entry_cost",
+            name="入场消耗展示任务",
+            difficulty="advanced",
+            entry_cost={token.key: 2},
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "入场消耗" in body
+        assert "任务入场令 x2" in body
+        assert "持有 0" in body
+        assert "信物不足" in body
+
+        InventoryItem.objects.create(
+            manor=manor,
+            template=token,
+            quantity=2,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        body = response.content.decode("utf-8")
+        assert "持有 2" in body
+        assert "信物不足" not in body
 
     def test_task_board_uses_responsive_mission_table_column_classes(self, manor_with_user):
         _manor, client = manor_with_user

@@ -47,6 +47,21 @@ class TestMissionTemplatesValidation:
         data = {"missions": [{"key": "m", "name": "M", "drop_table": {"silver": 1000}}]}
         assert_valid(validate_mission_templates(data, item_keys={"grain"}))
 
+    def test_entry_cost_referential_integrity(self):
+        data = {"missions": [{"key": "m", "name": "M", "entry_cost": {"missing_token": 1}}]}
+        result = validate_mission_templates(data, item_keys={"known_token"})
+        assert_has_error(result, substring="entry cost item key 'missing_token' not found in item_templates.yaml")
+
+    def test_entry_cost_requires_positive_number(self):
+        data = {"missions": [{"key": "m", "name": "M", "entry_cost": {"known_token": 0}}]}
+        result = validate_mission_templates(data, item_keys={"known_token"})
+        assert_has_error(result, substring="expected a positive integer")
+
+    def test_entry_cost_rejects_fractional_amount(self):
+        data = {"missions": [{"key": "m", "name": "M", "entry_cost": {"known_token": 1.5}}]}
+        result = validate_mission_templates(data, item_keys={"known_token"})
+        assert_has_error(result, substring="expected a positive integer")
+
     def test_enemy_technology_types(self):
         data = {
             "missions": [

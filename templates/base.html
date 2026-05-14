@@ -105,6 +105,7 @@
                     <div class="panel-content menu-grid">
                         <a href="{% url 'accounts:profile' %}" class="btn-menu">资料</a>
                         <a href="{% url 'gameplay:ranking' %}" class="btn-menu">排名</a>
+                        <a href="{% url 'gameplay:guide' %}" class="btn-menu">游戏攻略</a>
                         <a href="{% url 'gameplay:messages' %}" class="btn-menu" id="nav-messages-link" data-unread="{{ message_unread_count|default:0 }}">
                             消息
                             {% if message_unread_count > 0 %}({{ message_unread_count }}){% endif %}

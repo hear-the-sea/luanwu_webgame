@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}游戏攻略{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+    <div class="tw-section-header">
+        <h1>游戏攻略</h1>
+        <p class="caption">给新庄园主的基础说明书：先知道东西从哪来，再考虑江湖由谁来管。</p>
+    </div>
+
+    <section class="tw-panel mb-6">
+        <div class="tw-panel-header">基础资源怎么来</div>
+        <div class="tw-panel-content">
+            <div class="grid gap-4 md:grid-cols-3">
+                <div class="p-4 bg-bg-secondary rounded">
+                    <h3 class="m-0 mb-2 text-lg font-semibold">粮食主要靠农田</h3>
+                    <p class="m-0 text-text-muted">农田会持续产粮，茅厕也能补一点粮银收入。粮食是养人、出征、升级时的底气，仓里没粮，豪言壮语也会饿得发抖。</p>
+                </div>
+                <div class="p-4 bg-bg-secondary rounded">
+                    <h3 class="m-0 mb-2 text-lg font-semibold">银两主要靠税务司</h3>
+                    <p class="m-0 text-text-muted">税务司、澡堂等建筑会带来银两收入。银两用途很广，升级建筑、培养队伍、周转交易都离不开它。</p>
+                </div>
+                <div class="p-4 bg-bg-secondary rounded">
+                    <h3 class="m-0 mb-2 text-lg font-semibold">容量要看粮仓和银库</h3>
+                    <p class="m-0 text-text-muted">资源不是无限往口袋里塞的。粮仓管粮食上限，银库管银两上限，快满了就该升级，不然产出容易白白溢出。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="tw-panel mb-6">
+        <div class="tw-panel-header">门客在哪招，有什么用</div>
+        <div class="tw-panel-content">
+            <div class="grid gap-4 md:grid-cols-2">
+                <div class="p-4 bg-bg-secondary rounded">
+                    <h3 class="m-0 mb-2 text-lg font-semibold">门客去聚贤庄招募</h3>
+                    <p class="m-0 text-text-muted">在庄园建筑里找到聚贤庄，点“招募门客”进入招募大厅。聚贤庄等级会影响门客容量，地方太小，英雄来了也只能在门口排队。</p>
+                </div>
+                <div class="p-4 bg-bg-secondary rounded">
+                    <h3 class="m-0 mb-2 text-lg font-semibold">门客是你的行动队</h3>
+                    <p class="m-0 text-text-muted">门客可以出任务、上地图踢馆、参与战斗，也能通过升级、属性点、技能书和装备变强。简单说：你负责点按钮，他们负责替你挨揍和揍人。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="tw-panel mb-6">
+        <div class="tw-panel-header">装备如何获得</div>
+        <div class="tw-panel-content">
+            <div class="grid gap-4 md:grid-cols-3">
+                <div class="p-4 bg-bg-secondary rounded">
+                    <h3 class="m-0 mb-2 text-base font-semibold">装备可以从打工宝箱开出</h3>
+                    <p class="m-0 text-text-muted">安排打工能拿到宝箱，宝箱里有银两，也可能开出装备或技能书。想白手起家，先让大家把零工干起来。</p>
+                </div>
+                <div class="p-4 bg-bg-secondary rounded">
+                    <h3 class="m-0 mb-2 text-base font-semibold">铁匠铺走锻造路线</h3>
+                    <p class="m-0 text-text-muted">铁匠铺用于锻造装备，部分装备需要图纸或材料。材料别乱扔，今天嫌它占格子，明天可能就差它一块。</p>
+                </div>
+                <div class="p-4 bg-bg-secondary rounded">
+                    <h3 class="m-0 mb-2 text-base font-semibold">帮会也有装备箱</h3>
+                    <p class="m-0 text-text-muted">加入帮会后，可以关注帮会相关产出和装备箱。独行侠很潇洒，但有人供货时确实更香。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="tw-panel mb-6">
+        <div class="tw-panel-header">新手顺手做什么</div>
+        <div class="tw-panel-content">
+            <ol class="m-0 pl-6 space-y-3 text-text-muted">
+                <li><strong class="text-text-primary">先升级资源建筑：</strong>农田、税务司、粮仓、银库优先看一眼，资源稳定了，后面操作才不抠搜。</li>
+                <li><strong class="text-text-primary">招几个门客：</strong>去聚贤庄招募，招到后记得培养和装备，不然他们只是在名单里占座。</li>
+                <li><strong class="text-text-primary">做任务和打工：</strong>任务给收益，打工给宝箱，都是前期攒家底的老实活。</li>
+                <li><strong class="text-text-primary">打架前先侦察：</strong>地图踢馆别硬冲，先看目标信息。鲁莽能制造故事，也能制造战报里的惨案。</li>
+            </ol>
+        </div>
+    </section>
+
+    <section class="tw-panel">
+        <div class="tw-panel-header">下一步去哪</div>
+        <div class="tw-panel-content">
+            <div class="flex flex-wrap gap-3">
+                <a class="tw-btn-primary" href="{% url 'gameplay:dashboard' %}">打理庄园</a>
+                <a class="tw-btn-primary" href="{% url 'guests:roster' %}">看看门客</a>
+                <a class="tw-btn-primary" href="{% url 'gameplay:tasks' %}">接点任务</a>
+                <a class="tw-btn-secondary" href="{% url 'home' %}">回到首页</a>
+            </div>
+        </div>
+    </section>
+</section>
+{% endblock %}

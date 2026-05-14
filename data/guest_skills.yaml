@@ -266,6 +266,122 @@ skills:
     required_intellect: 150
     targets: 1
 
+  # ---------- 万仙逆命关键首领专属技能 ----------
+  - key: wanxian_qingsuan_fuzhao
+    name: 符诏清算
+    rarity: purple
+    description: 符诏悬空落笔，勾去阵中榜外残名，对多名敌人降下清算雷文。
+    base_probability: 0.76
+    kind: active
+    damage_formula:
+      base: 2800
+      ally:
+        force: 0.35
+        intellect: 7.6
+        luck: 1.0
+      enemy:
+        defense: 0.3
+        intellect: 0.24
+    required_level: 70
+    required_intellect: 220
+    targets: 2
+
+  - key: wanxian_shier_xianyin
+    name: 仙印镇阵
+    rarity: purple
+    description: 十二道玉虚法印同时镇落，封死退路后轰击敌阵中枢。
+    base_probability: 0.74
+    kind: active
+    damage_formula:
+      base: 3400
+      ally:
+        force: 0.45
+        intellect: 8.8
+        defense: 0.8
+      enemy:
+        defense: 0.36
+        intellect: 0.28
+    required_level: 85
+    required_intellect: 260
+    targets: 3
+
+  - key: wanxian_randeng_dengyan
+    name: 佛灯焚阵
+    rarity: purple
+    description: 过去佛灯照见前尘因果，灯焰扫过之处，阵中生机被层层焚尽。
+    base_probability: 0.73
+    kind: active
+    damage_formula:
+      base: 3300
+      ally:
+        force: 0.25
+        intellect: 9.2
+        luck: 1.1
+      enemy:
+        defense: 0.32
+        intellect: 0.32
+    required_level: 95
+    required_intellect: 300
+    targets: 3
+
+  - key: wanxian_fengbang_zhiming
+    name: 封榜敕命
+    rarity: purple
+    description: 封神榜金光铺开，敕命如山压落，榜上神名随令齐鸣。
+    base_probability: 0.72
+    kind: active
+    damage_formula:
+      base: 3600
+      ally:
+        force: 0.35
+        intellect: 9.6
+        luck: 1.3
+      enemy:
+        defense: 0.34
+        intellect: 0.3
+    required_level: 95
+    required_intellect: 320
+    targets: 3
+
+  - key: wanxian_dashenbian
+    name: 神鞭伐魂
+    rarity: purple
+    description: 神鞭化作天律长痕，专击逆命之魂，鞭影横扫前阵。
+    base_probability: 0.75
+    kind: active
+    damage_formula:
+      base: 3100
+      ally:
+        force: 8.4
+        intellect: 1.2
+        agility: 1.6
+      enemy:
+        defense: 0.38
+        agility: 0.22
+    required_level: 95
+    required_force: 300
+    required_agility: 220
+    targets: 2
+
+  - key: wanxian_yuxu_tianfa
+    name: 天罚诛逆
+    rarity: purple
+    description: 玉虚敕令引动天罚雷火，封榜天门前万法齐坠，镇杀逆命之人。
+    base_probability: 0.72
+    kind: active
+    damage_formula:
+      base: 3900
+      ally:
+        force: 0.55
+        intellect: 10.2
+        luck: 1.4
+      enemy:
+        defense: 0.38
+        intellect: 0.34
+    required_level: 100
+    required_intellect: 340
+    targets: 4
+
   # ---------- 武系进阶绝学（紫色品质）----------
   - key: prison_break_blade
     name: 破狱狂刀
@@ -363,7 +479,7 @@ skills:
       enemy:
         defense: 0.2
         agility: 0.15
-    required_level: 16
+    required_level: 55
     required_force: 80
     required_agility: 110
     targets: 2
@@ -384,7 +500,7 @@ skills:
       enemy:
         defense: 0.3
         intellect: 0.2
-    required_level: 15
+    required_level: 45
     required_force: 150
     targets: 3
 
@@ -690,7 +806,7 @@ skills:
           effects:
             - type: emit_log
               log_name: 静水筹谋
-              message: 以静制动
+              message: 伤害增加
             - type: modify_outgoing_damage
               value: 1.10
               target_scope: self
@@ -711,7 +827,7 @@ skills:
           effects:
             - type: emit_log
               log_name: 铁壁心法
-              message: 稳如磐石
+              message: 获得减伤
             - type: modify_incoming_damage
               value: 0.85
               target_scope: self
@@ -731,7 +847,7 @@ skills:
           effects:
             - type: emit_log
               log_name: 困兽犹斗
-              message: 绝境反扑
+              message: 进入狂暴
             - type: modify_outgoing_damage
               value: 1.16
               target_scope: self
@@ -758,7 +874,7 @@ skills:
               value: true
             - type: emit_log
               log_name: 绝处逢生
-              message: 一息尚存
+              message: 血量回复
             - type: heal_ratio
               value: 0.2
               max_hp_based: true
@@ -778,7 +894,7 @@ skills:
           effects:
             - type: emit_log
               log_name: 嗜血狂怒
-              message: 血怒燃起
+              message: 获得真伤
             - type: lose_hp_ratio
               value: 0.1
               current_hp_based: true
@@ -803,7 +919,7 @@ skills:
           effects:
             - type: emit_log
               log_name: 招锋引敌
-              message: 引敌来攻
+              message: 受击概率↑
             - type: modify_target_weight
               value: 3.0
               target_scope: self
@@ -824,7 +940,7 @@ skills:
           effects:
             - type: emit_log
               log_name: 同袍号令
-              message: 号令齐发
+              message: 全体伤害↑
             - type: modify_outgoing_damage
               value: 1.06
               target_scope: allies

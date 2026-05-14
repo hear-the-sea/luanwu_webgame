@@ -29,18 +29,22 @@
                                     {% if book.skill %}
                                         <div class="skill-book-skill-meta">
                                             <div class="skill-book-skill-name rarity-text {{ book.skill.rarity|rarity_class }}">
-                                                {{ book.skill.name }}
+                                                {{ book.skill_name }}
                                             </div>
-                                            <div>{{ book.skill.description }}</div>
+                                            <div>{{ book.skill_description }}</div>
                                         </div>
                                         {% if book.requirements %}
                                             <div class="tw-muted">学习要求：{{ book.requirements_text }}</div>
                                         {% endif %}
-                                        {% if book.unmet_requirements %}
-                                            <div class="tw-muted">当前不足：{{ book.unmet_requirements|join:"，" }}</div>
-                                        {% endif %}
                                     {% else %}
-                                        {{ book.skill_key|default:"未知技能" }}
+                                        <div class="skill-book-skill-meta">
+                                            <div class="skill-book-skill-name rarity-text rarity-default">
+                                                {{ book.skill_name }}
+                                            </div>
+                                            {% if book.skill_description %}
+                                                <div>{{ book.skill_description }}</div>
+                                            {% endif %}
+                                        </div>
                                     {% endif %}
                                 </td>
                                 <td>{{ book.inventory.quantity }}</td>

@@ -18,7 +18,7 @@ from gameplay.models import (
     RaidRun,
 )
 from gameplay.services.manor.core import ensure_manor
-from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestStatus, GuestTemplate
+from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestStatus, GuestTemplate, Skill, SkillKind
 
 
 def _create_guest(manor, *, prefix: str) -> Guest:
@@ -154,6 +154,113 @@ def test_guest_detail_view_bubbles_up_invalid_skill_book_payload(game_data, djan
 
     with pytest.raises(AssertionError, match="invalid guest roster skill_book effect_payload"):
         client.get(reverse("guests:detail", args=[guest.pk]))
+
+
+@pytest.mark.django_db
+def test_guest_detail_skill_book_modal_hides_unmet_requirement_details(game_data, django_user_model):
+    user = django_user_model.objects.create_user(username="detail_skill_book_requirements", password="pass123")
+    manor = ensure_manor(user)
+    guest = _create_guest(manor, prefix="detail_skill_book_requirements")
+    skill = Skill.objects.create(
+        key="detail_skill_book_requirements_skill",
+        name="门槛心法",
+        description="需要更高境界方可研习。",
+        required_level=guest.level + 10,
+        required_force=guest.force + 50,
+    )
+    template = ItemTemplate.objects.create(
+        key="detail_skill_book_requirements_item",
+        name="门槛心法秘卷",
+        effect_type=ItemTemplate.EffectType.SKILL_BOOK,
+        effect_payload={"skill_key": skill.key, "skill_name": skill.name},
+    )
+    InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    client = Client()
+    client.force_login(user)
+
+    response = client.get(reverse("guests:detail", args=[guest.pk]))
+
+    assert response.status_code == 200
+    content = response.content.decode("utf-8")
+    assert "条件不足" in content
+    assert "学习要求：等级需 ≥" in content
+    assert "当前不足" not in content
+
+
+@pytest.mark.django_db
+def test_guest_detail_skill_book_modal_falls_back_to_book_payload_description(game_data, django_user_model):
+    user = django_user_model.objects.create_user(username="detail_passive_book_fallback", password="pass123")
+    manor = ensure_manor(user)
+    guest = _create_guest(manor, prefix="detail_passive_book_fallback")
+    template = ItemTemplate.objects.create(
+        key="detail_passive_book_fallback_item",
+        name="新被动秘卷",
+        description="被动技能书描述兜底。",
+        effect_type=ItemTemplate.EffectType.SKILL_BOOK,
+        effect_payload={
+            "skill_key": "detail_missing_passive_skill",
+            "skill_name": "新被动心法",
+            "skill_description": "新被动技能描述兜底。",
+        },
+    )
+    InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    client = Client()
+    client.force_login(user)
+
+    response = client.get(reverse("guests:detail", args=[guest.pk]))
+
+    assert response.status_code == 200
+    content = response.content.decode("utf-8")
+    assert "新被动心法" in content
+    assert "新被动技能描述兜底。" in content
+    assert "detail_missing_passive_skill" not in content
+
+
+@pytest.mark.django_db
+def test_guest_detail_skill_book_modal_renders_passive_skill_description(game_data, django_user_model):
+    user = django_user_model.objects.create_user(username="detail_passive_skill_description", password="pass123")
+    manor = ensure_manor(user)
+    guest = _create_guest(manor, prefix="detail_passive_skill_description")
+    skill = Skill.objects.create(
+        key="detail_passive_skill_description_skill",
+        name="静守心诀",
+        kind=SkillKind.PASSIVE,
+        description="被动技能实际效果描述。",
+    )
+    template = ItemTemplate.objects.create(
+        key="detail_passive_skill_description_item",
+        name="静守心诀秘卷",
+        effect_type=ItemTemplate.EffectType.SKILL_BOOK,
+        effect_payload={"skill_key": skill.key, "skill_name": skill.name},
+    )
+    InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    client = Client()
+    client.force_login(user)
+
+    response = client.get(reverse("guests:detail", args=[guest.pk]))
+
+    assert response.status_code == 200
+    content = response.content.decode("utf-8")
+    assert "静守心诀" in content
+    assert "被动技能实际效果描述。" in content
 
 
 @pytest.mark.django_db

@@ -11,64 +11,6 @@
         </div>
     </div>
 
-    {% if active_runs %}
-    <section class="tw-card mb-6">
-        <div class="tw-manor-list-header">
-            <h2>当前出征</h2>
-            <span class="tw-manor-count">自动刷新</span>
-        </div>
-        <div class="flex flex-col gap-3">
-            {% for run in active_runs %}
-            <div class="tw-manor-card">
-                <div class="tw-manor-card-info">
-                    <div class="tw-manor-name">
-                        {% if run.mission.is_defense %}
-                        防守：{{ run.mission.name }}
-                        {% else %}
-                        出征：{{ run.mission.name }}
-                        {% endif %}
-                    </div>
-                    <div class="tw-manor-location">
-                        {% if run.is_retreating %}
-                        {% if run.mission.is_defense %}防守撤销中{% else %}门客撤退中{% endif %}
-                        {% elif run.is_returning %}
-                        {% if run.mission.is_defense %}战斗结算中{% else %}门客正在返程{% endif %}
-                        {% else %}
-                        {% if run.mission.is_defense %}敌军正在来袭{% else %}门客正在前往目标{% endif %}
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="tw-manor-card-stats">
-                    <span class="countdown"
-                          data-countdown="{{ run.next_state_at|date:'c' }}"
-                          data-format="zh"
-                          data-refresh="1"
-                          data-refresh-url="{% url 'gameplay:refresh_mission_runs_api' %}"
-                          data-refresh-method="post"
-                          title="预计{% if run.is_returning %}{% if run.mission.is_defense %}结算{% else %}返回{% endif %}{% else %}{% if run.mission.is_defense %}敌军到达{% else %}到达{% endif %}{% endif %} {{ run.next_state_at|date:'Y-m-d H:i:s' }}">计算中</span>
-                    {% if not run.is_returning %}
-                    <form method="post" action="{% url 'gameplay:mission_retreat' run.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="tw-btn-secondary tw-btn-sm" {% if not run.can_retreat %}disabled{% endif %}>
-                            {% if run.mission.is_defense %}取消{% else %}撤退{% endif %}
-                        </button>
-                    </form>
-                    {% else %}
-                    <span class="tw-muted">
-                        {% if run.is_retreating %}
-                            {% if run.mission.is_defense %}取消中{% else %}撤退中{% endif %}
-                        {% else %}
-                            {% if run.mission.is_defense %}结算中{% else %}返程中{% endif %}
-                        {% endif %}
-                    </span>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </section>
-    {% endif %}
-
     <nav class="tw-mission-tabs">
         <button class="tw-trade-tab{% if active_tab == 'junior' %} active{% endif %}" data-tab="junior">初级任务</button>
         <button class="tw-trade-tab{% if active_tab == 'intermediate' %} active{% endif %}" data-tab="intermediate">中级任务</button>
@@ -302,6 +244,18 @@
                             <p class="tw-muted text-sm mt-3 mb-0">双程时间按行军速度动态计算，最低 300 秒。</p>
                         {% endif %}
                     </section>
+                    {% if selected_entry_cost_items %}
+                    <section class="tw-task-detail-section">
+                        <h5 class="text-text-primary text-lg font-bold mb-2">入场消耗</h5>
+                        <div class="flex flex-wrap gap-2">
+                            {% for cost in selected_entry_cost_items %}
+                                <span class="tw-pill rarity-{{ cost.rarity|default:'default' }}">
+                                    {{ cost.label }} x{{ cost.required }}（持有 {{ cost.owned }}）
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </section>
+                    {% endif %}
                 </div>
                 <div class="tw-task-detail-stack">
                     <section class="tw-task-detail-section">
@@ -402,6 +356,10 @@
                                 {% if selected_attempts >= selected_daily_limit %}
                                     <button type="submit" class="tw-btn-secondary" disabled>
                                         {% if selected_mission.is_defense %}无法接受{% else %}无法出征{% endif %}
+                                    </button>
+                                {% elif not can_afford_entry_cost %}
+                                    <button type="submit" class="tw-btn-secondary" disabled>
+                                        信物不足
                                     </button>
                                 {% elif not available_guests and not selected_mission.is_defense %}
                                     <button type="submit" class="tw-btn-secondary" disabled>

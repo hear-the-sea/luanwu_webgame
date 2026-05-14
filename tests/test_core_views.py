@@ -413,8 +413,24 @@ class TestCoreViews:
         assert "未加入帮会" in body
         assert f'href="{reverse("accounts:profile")}" class="btn-menu"' in body
         assert f'href="{reverse("gameplay:ranking")}" class="btn-menu"' in body
+        assert f'href="{reverse("gameplay:guide")}" class="btn-menu"' in body
         assert f'href="{reverse("gameplay:messages")}" class="btn-menu"' in body
         assert f'href="{reverse("gameplay:settings")}" class="btn-menu"' in body
+
+    def test_guide_page_renders_beginner_tips_with_shared_layout(self, manor_with_user):
+        _manor, client = manor_with_user
+
+        response = client.get(reverse("gameplay:guide"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "游戏攻略" in body
+        assert "粮食主要靠农田" in body
+        assert "门客去聚贤庄招募" in body
+        assert "装备可以从打工宝箱" in body
+        assert 'class="dashboard"' in body
+        assert 'class="tw-panel' in body
+        assert "guide-card" not in body
 
     def test_authenticated_layout_loads_chat_widget_modules_in_order(self, manor_with_user):
         """聊天挂件脚本应按 core -> renderer -> layout -> connection -> main 的顺序加载。"""

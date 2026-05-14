@@ -129,6 +129,33 @@ def _normalize_resource_reward_mapping(raw: Any, *, field_name: str) -> dict[str
     return normalized
 
 
+def _normalize_item_reward_entries(raw: Any, *, field_name: str) -> list[dict[str, int | str]]:
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        raise ItemNotConfiguredError(f"{field_name} 配置异常")
+
+    normalized: list[dict[str, int | str]] = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            raise ItemNotConfiguredError(f"{field_name} 配置异常")
+        item_key = _normalize_non_empty_string(entry.get("item_key"), field_name=field_name)
+        min_quantity = _normalize_non_negative_config_int(entry.get("min_quantity", 1), field_name=field_name)
+        max_quantity = _normalize_non_negative_config_int(
+            entry.get("max_quantity", min_quantity), field_name=field_name
+        )
+        if max_quantity < min_quantity:
+            raise ItemNotConfiguredError(f"{field_name} 配置异常")
+        normalized.append(
+            {
+                "item_key": item_key,
+                "min_quantity": min_quantity,
+                "max_quantity": max_quantity,
+            }
+        )
+    return normalized
+
+
 def _normalize_granted_resource_mapping(raw: Any, *, contract_name: str) -> dict[str, int]:
     if not isinstance(raw, dict):
         raise AssertionError(f"invalid {contract_name}: {raw!r}")
@@ -347,6 +374,7 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
 
     manor = item.manor
     rewards: List[str] = []
+    skipped_bonus_items: List[str] = []
 
     # 1. 固定资源掉落（可选）
     resources = _normalize_resource_reward_mapping(payload.get("resources"), field_name="resources")
@@ -355,7 +383,29 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
         parts = [f"{k}+{v}" for k, v in result.items()]
         rewards.append("资源：" + "、".join(parts))
 
-    # 2. 随机银两（可选）
+    # 2. 普通物品掉落（随机数量，可选）
+    item_rewards = _normalize_item_reward_entries(payload.get("item_rewards"), field_name="item_rewards")
+    for reward in item_rewards:
+        item_key = str(reward["item_key"])
+        quantity = inventory_random.randint(int(reward["min_quantity"]), int(reward["max_quantity"]))
+        if quantity <= 0:
+            continue
+        try:
+            add_item_to_inventory(manor, item_key, quantity)
+            reward_template = ItemTemplate.objects.filter(key=item_key).first()
+            reward_name = reward_template.name if reward_template else item_key
+            rewards.append(f"物品【{reward_name}】x{quantity}")
+        except ItemNotFoundError as exc:
+            logger.warning(
+                "loot box item reward grant skipped: manor_id=%s loot_box_item_id=%s reward_item_key=%s error=%s",
+                manor.id,
+                item.id,
+                item_key,
+                exc,
+            )
+            skipped_bonus_items.append(item_key)
+
+    # 3. 随机银两（可选）
     silver_min_raw = payload.get("silver_min")
     silver_max_raw = payload.get("silver_max")
     if silver_min_raw is not None or silver_max_raw is not None:
@@ -379,7 +429,7 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
             if granted_silver > 0:
                 rewards.append(f"银两+{granted_silver}")
 
-    # 3. 装备掉落（概率，随机一件）
+    # 4. 装备掉落（概率，随机一件）
     gear_keys_raw = payload.get("gear_keys")
     gear_keys: list[str] = []
     if gear_keys_raw is not None:
@@ -389,7 +439,6 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
     if gear_choices_raw is not None:
         gear_choices = _normalize_weighted_item_choices(gear_choices_raw, field_name="gear_choices")
     gear_chance = _normalize_probability(payload.get("gear_chance"), field_name="gear_chance")
-    skipped_bonus_items: List[str] = []
     if gear_chance > 0 and (gear_choices or gear_keys) and inventory_random.random() < gear_chance:
         from guests.models import GearTemplate
         from guests.services.equipment import give_gear
@@ -414,7 +463,7 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
             else:
                 skipped_bonus_items.append(gear_key)
 
-    # 4. 技能书掉落（概率，随机一本）
+    # 5. 技能书掉落（概率，随机一本）
     skill_book_chance = _normalize_probability(payload.get("skill_book_chance"), field_name="skill_book_chance")
     skill_book_keys_raw = payload.get("skill_book_keys")
     skill_book_keys: list[str] = []

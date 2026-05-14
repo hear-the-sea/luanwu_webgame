@@ -45,6 +45,9 @@ def _iter_loot_box_item_keys(item: dict) -> list[tuple[str, str]]:
         for choice in payload.get(field) or []:
             if isinstance(choice, dict) and choice.get("item_key"):
                 refs.append((field, str(choice["item_key"])))
+    for reward in payload.get("item_rewards") or []:
+        if isinstance(reward, dict) and reward.get("item_key"):
+            refs.append(("item_rewards", str(reward["item_key"])))
     return refs
 
 
@@ -131,6 +134,38 @@ def test_loot_box_item_references_exist():
             missing_refs[key] = sorted(set(missing))
 
     assert missing_refs == {}
+
+
+def test_work_chests_include_tool_item_reward_ranges():
+    items = _load_item_templates()
+    expected = {
+        "work_chest_small": {
+            "fangdajing": (0, 2),
+            "mission_card": (0, 1),
+        },
+        "work_chest_medium": {
+            "fangdajing": (1, 2),
+            "mission_card": (0, 2),
+        },
+        "work_chest_large": {
+            "fangdajing": (1, 3),
+            "mission_card": (1, 3),
+        },
+    }
+
+    actual = {}
+    for chest_key in expected:
+        rewards = items[chest_key]["effect_payload"].get("item_rewards") or []
+        actual[chest_key] = {
+            str(reward.get("item_key")): (
+                int(reward.get("min_quantity")),
+                int(reward.get("max_quantity")),
+            )
+            for reward in rewards
+            if isinstance(reward, dict)
+        }
+
+    assert actual == expected
 
 
 def test_forgeable_equipment_progresses_with_recipe_tier():

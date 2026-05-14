@@ -639,6 +639,287 @@ heroes:
         luck: 82
         base_hp: 2400
   orange:
+    - key: task_wanxian_nangong_lie
+      name: 南宫烈
+      archetype: military
+      recruitable: false
+      default_gender: male
+      custom_stats:
+        force: 238
+        intellect: 132
+        defense: 218
+        agility: 142
+        luck: 82
+        base_hp: 2860
+    - key: task_wanxian_lu_xuanqing
+      name: 陆玄清
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      skills:
+        - stratagem_burst
+      custom_stats:
+        force: 168
+        intellect: 238
+        defense: 174
+        agility: 156
+        luck: 92
+        base_hp: 2640
+    - key: task_wanxian_baihe_fushi
+      name: 白鹤符使
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      skills:
+        - thunder_control
+      custom_stats:
+        force: 152
+        intellect: 232
+        defense: 162
+        agility: 166
+        luck: 98
+        base_hp: 2520
+    - key: task_wanxian_zhuxian_canfeng
+      name: 诛仙残锋
+      archetype: military
+      recruitable: false
+      default_gender: unknown
+      skills:
+        - hell_instant_formation
+      custom_stats:
+        force: 264
+        intellect: 150
+        defense: 176
+        agility: 226
+        luck: 96
+        base_hp: 2760
+    - key: task_wanxian_yuzhu
+      name: 余烛
+      archetype: military
+      recruitable: false
+      default_gender: male
+      skills:
+        - iron_wall_heart
+      custom_stats:
+        force: 218
+        intellect: 154
+        defense: 238
+        agility: 132
+        luck: 88
+        base_hp: 3100
+    - key: task_wanxian_qingsuan_fuzhao
+      name: 清算符诏
+      archetype: civil
+      recruitable: false
+      default_gender: unknown
+      skills:
+        - wanxian_qingsuan_fuzhao
+      custom_stats:
+        force: 168
+        intellect: 268
+        defense: 202
+        agility: 152
+        luck: 106
+        base_hp: 3300
+    - key: task_wanxian_nezha
+      name: 哪吒
+      archetype: military
+      recruitable: false
+      default_gender: male
+      skills:
+        - hell_instant_formation
+      custom_stats:
+        force: 286
+        intellect: 176
+        defense: 218
+        agility: 286
+        luck: 112
+        base_hp: 3520
+    - key: task_wanxian_yangjian
+      name: 杨戬
+      archetype: military
+      recruitable: false
+      default_gender: male
+      skills:
+        - iron_wall_heart
+        - last_chance_revival
+      custom_stats:
+        force: 286
+        intellect: 198
+        defense: 286
+        agility: 218
+        luck: 118
+        base_hp: 3900
+    - key: task_wanxian_taiyi
+      name: 太乙
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      skills:
+        - brahma_true_fire
+      custom_stats:
+        force: 172
+        intellect: 294
+        defense: 210
+        agility: 178
+        luck: 112
+        base_hp: 3440
+    - key: task_wanxian_guangchengzi
+      name: 广成子
+      archetype: military
+      recruitable: false
+      default_gender: male
+      skills:
+        - city_felling_strike
+      custom_stats:
+        force: 298
+        intellect: 224
+        defense: 276
+        agility: 166
+        luck: 116
+        base_hp: 3820
+    - key: task_wanxian_chijingzi
+      name: 赤精子
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      skills:
+        - stratagem_burst
+      custom_stats:
+        force: 188
+        intellect: 282
+        defense: 202
+        agility: 202
+        luck: 150
+        base_hp: 3360
+    - key: task_wanxian_cihang
+      name: 慈航
+      archetype: civil
+      recruitable: false
+      default_gender: unknown
+      skills:
+        - tangseng_sermon
+        - last_chance_revival
+      custom_stats:
+        force: 160
+        intellect: 288
+        defense: 232
+        agility: 172
+        luck: 130
+        base_hp: 3600
+    - key: task_wanxian_juliusun
+      name: 惧留孙
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      skills:
+        - draw_enemy_blades
+      custom_stats:
+        force: 184
+        intellect: 270
+        defense: 226
+        agility: 194
+        luck: 112
+        base_hp: 3480
+    - key: task_wanxian_shier_xianyin
+      name: 十二仙印
+      archetype: civil
+      recruitable: false
+      default_gender: unknown
+      skills:
+        - wanxian_shier_xianyin
+      custom_stats:
+        force: 232
+        intellect: 320
+        defense: 268
+        agility: 214
+        luck: 136
+        base_hp: 4300
+    - key: task_wanxian_randeng
+      name: 燃灯
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      skills:
+        - wanxian_randeng_dengyan
+      custom_stats:
+        force: 198
+        intellect: 338
+        defense: 254
+        agility: 204
+        luck: 142
+        base_hp: 4300
+    - key: task_wanxian_nanji_xianweng
+      name: 南极仙翁
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      skills:
+        - last_chance_revival
+        - iron_wall_heart
+      custom_stats:
+        force: 170
+        intellect: 318
+        defense: 286
+        agility: 176
+        luck: 156
+        base_hp: 4520
+    - key: task_wanxian_jiang_ziya
+      name: 姜子牙
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      skills:
+        - wanxian_fengbang_zhiming
+      custom_stats:
+        force: 188
+        intellect: 342
+        defense: 246
+        agility: 198
+        luck: 168
+        base_hp: 4400
+    - key: task_wanxian_dashenbian
+      name: 打神鞭
+      archetype: military
+      recruitable: false
+      default_gender: unknown
+      skills:
+        - wanxian_dashenbian
+      custom_stats:
+        force: 338
+        intellect: 210
+        defense: 238
+        agility: 252
+        luck: 130
+        base_hp: 4100
+    - key: task_wanxian_bangshangming
+      name: 榜上名
+      archetype: civil
+      recruitable: false
+      default_gender: unknown
+      skills:
+        - soul_erode
+      custom_stats:
+        force: 186
+        intellect: 322
+        defense: 250
+        agility: 210
+        luck: 160
+        base_hp: 4200
+    - key: task_wanxian_yuxu_tianfa
+      name: 玉虚天罚
+      archetype: civil
+      recruitable: false
+      default_gender: unknown
+      skills:
+        - wanxian_yuxu_tianfa
+      custom_stats:
+        force: 286
+        intellect: 368
+        defense: 318
+        agility: 238
+        luck: 180
+        base_hp: 5200
     - key: guild_blackwind_gate_general
       name: 黑风关守将
       archetype: military

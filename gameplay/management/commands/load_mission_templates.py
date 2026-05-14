@@ -92,6 +92,10 @@ class Command(BaseCommand):
             if not isinstance(enemy_technology, dict):
                 enemy_technology = {}
 
+            entry_cost = entry.get("entry_cost")
+            if not isinstance(entry_cost, dict):
+                entry_cost = {}
+
             drop_table = entry.get("drop_table")
             if not isinstance(drop_table, dict):
                 drop_table = {}
@@ -109,6 +113,7 @@ class Command(BaseCommand):
                 "enemy_guests": enemy_guests,
                 "enemy_troops": enemy_troops,
                 "enemy_technology": enemy_technology,
+                "entry_cost": entry_cost,
                 "drop_table": drop_table,
                 "probability_drop_table": probability_drop_table,
                 "base_travel_time": safe_positive_int(entry.get("base_travel_time"), 1200),

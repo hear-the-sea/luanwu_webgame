@@ -454,6 +454,25 @@ def validate_mission_templates(
                             f"item key '{drop_key}' not found in item_templates.yaml",
                         )
 
+        entry_cost = mission.get("entry_cost")
+        if entry_cost is not None:
+            if not isinstance(entry_cost, dict):
+                result.add(file, path, "field 'entry_cost' expected a mapping")
+            else:
+                for item_key, amount in entry_cost.items():
+                    if item_keys is not None and item_key not in item_keys:
+                        result.add(
+                            file,
+                            f"{path}.entry_cost",
+                            f"entry cost item key '{item_key}' not found in item_templates.yaml",
+                        )
+                    if isinstance(amount, bool) or not isinstance(amount, int) or amount <= 0:
+                        result.add(
+                            file,
+                            f"{path}.entry_cost.{item_key}",
+                            f"expected a positive integer, got {amount!r}",
+                        )
+
     return result
 
 

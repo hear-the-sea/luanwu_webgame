@@ -28,6 +28,7 @@ class MissionTemplate(models.Model):
     enemy_guests = models.JSONField(default=list, blank=True)
     enemy_troops = models.JSONField(default=dict, blank=True)
     enemy_technology = models.JSONField(default=dict, blank=True, help_text="敌方护院科技配置")
+    entry_cost = models.JSONField(default=dict, blank=True, help_text="任务入场消耗")
     drop_table = models.JSONField(default=dict, blank=True)
     probability_drop_table = models.JSONField(default=dict, blank=True, help_text="概率掉落表")
     base_travel_time = models.PositiveIntegerField(default=1200, help_text="往返基础耗时（秒）")

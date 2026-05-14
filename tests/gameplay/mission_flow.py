@@ -3,8 +3,14 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
-from core.exceptions import MissionCannotRetreatError, MissionSquadSizeExceededError, MissionTroopLoadoutError
-from gameplay.models import MissionRun, MissionTemplate
+from core.exceptions import (
+    InsufficientStockError,
+    MissionCannotRetreatError,
+    MissionSquadSizeExceededError,
+    MissionTroopLoadoutError,
+)
+from gameplay.models import InventoryItem, ItemTemplate, MissionRun, MissionTemplate
+from gameplay.services.inventory.core import add_item_to_inventory
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.missions import launch_mission, refresh_mission_runs, request_retreat
 from guests.models import GuestStatus
@@ -13,9 +19,14 @@ from tests.gameplay.support import recruit_frontline_guests
 
 @pytest.mark.django_db(transaction=True)
 def test_mission_launch_and_return(game_data, mission_templates, manor_with_troops):
-    mission = MissionTemplate.objects.filter(guest_only=False, is_defense=False).first()
-    if not mission:
-        pytest.skip("No mission available that allows troops")
+    mission = MissionTemplate.objects.create(
+        key="mission_launch_return_case",
+        name="出征返程测试任务",
+        guest_only=False,
+        is_defense=False,
+        enemy_troops={"dao_ke": 1},
+        drop_table={"silver": 1},
+    )
     manor = manor_with_troops
     manor.silver = max(int(manor.silver or 0), 5_000)
     manor.save(update_fields=["silver"])
@@ -150,6 +161,89 @@ def test_mission_launch_rejects_when_guest_count_exceeds_max_squad(game_data, mi
     for guest in guests:
         guest.refresh_from_db()
         assert guest.status == GuestStatus.IDLE
+
+
+@pytest.mark.django_db(transaction=True)
+def test_mission_launch_consumes_entry_cost_item(game_data, django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(username="player_mission_entry_cost", password="pass12345")
+    manor = ensure_manor(user)
+    item_template = ItemTemplate.objects.create(
+        key="mission_entry_token",
+        name="任务入场信物",
+        effect_type="resource",
+        rarity="blue",
+        tradeable=False,
+        price=0,
+        storage_space=1,
+        is_usable=False,
+    )
+    add_item_to_inventory(manor, item_template.key, 2)
+    mission = MissionTemplate.objects.create(
+        key="mission_entry_cost_case",
+        name="入场消耗任务",
+        guest_only=True,
+        entry_cost={item_template.key: 1},
+    )
+    recruit_frontline_guests(manor, count=1)
+    guest = manor.guests.first()
+
+    monkeypatch.setattr(
+        "gameplay.services.missions_impl.mission_followups.try_prepare_launch_report",
+        lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.missions_impl.mission_followups.dispatch_complete_mission_task",
+        lambda *args, **kwargs: None,
+    )
+
+    launch_mission(manor, mission, [guest.id], {})
+
+    inventory_item = InventoryItem.objects.get(
+        manor=manor,
+        template=item_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    assert inventory_item.quantity == 1
+
+
+@pytest.mark.django_db(transaction=True)
+def test_mission_launch_rejects_missing_entry_cost_item(game_data, django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(username="player_mission_missing_entry_cost", password="pass12345")
+    manor = ensure_manor(user)
+    item_template = ItemTemplate.objects.create(
+        key="mission_missing_entry_token",
+        name="缺失任务信物",
+        effect_type="resource",
+        rarity="blue",
+        tradeable=False,
+        price=0,
+        storage_space=1,
+        is_usable=False,
+    )
+    mission = MissionTemplate.objects.create(
+        key="mission_missing_entry_cost_case",
+        name="缺少入场消耗任务",
+        guest_only=True,
+        entry_cost={item_template.key: 1},
+    )
+    recruit_frontline_guests(manor, count=1)
+    guest = manor.guests.first()
+
+    monkeypatch.setattr(
+        "gameplay.services.missions_impl.mission_followups.try_prepare_launch_report",
+        lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.missions_impl.mission_followups.dispatch_complete_mission_task",
+        lambda *args, **kwargs: None,
+    )
+
+    with pytest.raises(InsufficientStockError, match="缺失任务信物数量不足"):
+        launch_mission(manor, mission, [guest.id], {})
+
+    guest.refresh_from_db()
+    assert guest.status == GuestStatus.IDLE
+    assert MissionRun.objects.filter(mission=mission).exists() is False
 
 
 @pytest.mark.django_db(transaction=True)

@@ -3,19 +3,16 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from django.db.models import Prefetch
 from django.http import HttpRequest
 
-from gameplay.constants import UIConstants
-from gameplay.models import MissionRun, MissionTemplate, ResourceType
+from gameplay.models import MissionTemplate, ResourceType
 from gameplay.services.inventory.core import get_item_quantity
 from gameplay.services.manor.core import project_manor_activity_for_read
-from gameplay.services.missions import can_retreat
 from gameplay.services.missions_impl.attempts import bulk_get_mission_extra_attempts, bulk_mission_attempts_today
 from gameplay.services.recruitment.recruitment import get_player_troops
 from gameplay.utils.template_loader import get_item_templates_by_keys, get_troop_templates_by_keys
 from gameplay.views.read_helpers import get_prepared_manor_for_read
-from guests.models import Guest, GuestStatus, GuestTemplate, SkillBook
+from guests.models import GuestStatus, GuestTemplate, SkillBook
 
 from . import mission_helpers
 
@@ -77,14 +74,6 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
 
     mission_card_count = get_item_quantity(manor, mission_helpers.MISSION_CARD_KEY)
     troop_templates, config_items = build_troop_config()
-    active_runs = (
-        manor.mission_runs.select_related("mission", "battle_report")
-        .prefetch_related(Prefetch("guests", queryset=Guest.objects.select_related("template")))
-        .filter(status=MissionRun.Status.ACTIVE)
-        .order_by("-started_at")[: UIConstants.ACTIVE_RUNS_DISPLAY]
-    )
-    for run in active_runs:
-        setattr(run, "can_retreat", can_retreat(run))
 
     context: dict[str, Any] = {
         "manor": manor,
@@ -99,10 +88,11 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         "mission_card_count": mission_card_count,
         "selected_drop_items": [],
         "selected_probability_drop_items": [],
+        "selected_entry_cost_items": [],
+        "can_afford_entry_cost": True,
         "available_guests": available_guests,
         "troop_config": config_items,
         "player_troops": get_player_troops(manor),
-        "active_runs": active_runs,
         "guest_labels": guest_labels,
         "guest_templates": guest_templates,
         "troop_templates_objs": troop_templates_objs,
@@ -124,5 +114,13 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         )
         context["selected_drop_items"] = guaranteed_drops
         context["selected_probability_drop_items"] = probability_drops
+        entry_cost_items, can_afford_entry_cost = mission_helpers.build_entry_cost_list(
+            selected_mission,
+            item_templates,
+            manor,
+            get_item_quantity_func=get_item_quantity,
+        )
+        context["selected_entry_cost_items"] = entry_cost_items
+        context["can_afford_entry_cost"] = can_afford_entry_cost
 
     return context

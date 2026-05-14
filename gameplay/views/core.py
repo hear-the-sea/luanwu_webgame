@@ -101,6 +101,12 @@ class SettingsView(LoginRequiredMixin, TemplateView):
         return context
 
 
+class GuideView(LoginRequiredMixin, TemplateView):
+    """游戏攻略页面"""
+
+    template_name = "gameplay/guide.html"
+
+
 @login_required
 @require_POST
 def rename_manor_view(request: HttpRequest) -> HttpResponse:

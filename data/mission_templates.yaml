@@ -798,6 +798,140 @@ missions:
     base_travel_time: 900
     daily_limit: 3
 
+  - key: biyou_candeng
+    name: 碧游残灯
+    difficulty: advanced
+    description: |
+      万仙阵外，截教败局已现。碧游宫阵旗折断，残灯将熄，周营与玉虚门人已封住阵门，准备将阵中余众一并清算。此时，一盏未灭的碧游残灯越过仙门禁制，落入庄园。灯火中传来截教残魂的求援：不是求逆转天命，也不是求替截教洗去旧罪，而是求庄园主入阵夺回第一面万仙阵旗，让尚未入榜、尚未作恶的门人有机会活着离开。
+
+      庄园门客踏入阵门，从周营清剿军、玉虚巡阵者与失控剑痕之间杀出一条路。阵门之上，清算符诏仍在一笔一笔抹去榜外残名；阵门之下，碧游残灯只剩最后一线火光。若此战得胜，截教反攻便从这一点残火开始。
+    battle_type: task1
+
+    enemy_guests:
+      - task_wanxian_nangong_lie
+      - task_wanxian_lu_xuanqing
+      - task_wanxian_baihe_fushi
+      - task_wanxian_zhuxian_canfeng
+      - task_wanxian_yuzhu
+      - task_wanxian_qingsuan_fuzhao
+
+    enemy_troops:
+      dao_sheng: 700
+      qiang_wang: 650
+      arrow_god: 500
+
+    enemy_technology:
+      level: 10
+      guest_level: 88
+      guest_bonus: 0.34
+
+    drop_table:
+      silver: 60000
+      experience_pineapple:
+        chance: 0.65
+        count: 8
+      book_last_chance_revival: 0.05
+      equip_baguajing: 0.06
+      wanyin_flag_fragment:
+        chance: 0.35
+        count: 1
+
+    base_travel_time: 1800
+    daily_limit: 3
+
+  - key: shier_xianyin
+    name: 十二仙印
+    difficulty: advanced
+    description: |
+      阵旗重燃后，万仙阵中层忽然降下十二道玉虚仙印。它们不是仙人本尊，却承载着阐教诸仙的法宝、道统与杀伐意志。哪吒杀星开路，杨戬玄功镇身，太乙神火焚阵，广成番天印压断截教气运。凡庄园主之令入阵相助截教者，皆被天命识作乱榜异数。
+
+      若十二印合拢，截教残部将被重新压回死局；若仙印破碎，万仙阵中层便会重开，截教败兵也将第一次从逃亡转为反攻。此战不问天命宽恕，只问仙印能否挡住人间兵锋。
+    battle_type: task1
+    entry_cost:
+      wanyin_flag_fragment: 1
+
+    enemy_guests:
+      - task_wanxian_nezha
+      - task_wanxian_yangjian
+      - task_wanxian_taiyi
+      - task_wanxian_guangchengzi
+      - task_wanxian_chijingzi
+      - task_wanxian_cihang
+      - task_wanxian_juliusun
+      - task_wanxian_shier_xianyin
+
+    enemy_troops:
+      jian_sheng: 850
+      arrow_god: 800
+      qiang_wang: 750
+      quan_sheng: 500
+
+    enemy_technology:
+      level: 10
+      guest_level: 94
+      guest_bonus: 0.46
+
+    drop_table:
+      silver: 80000
+      experience_pineapple:
+        chance: 0.7
+        count: 12
+      book_five_thunder_descent: 0.04
+      book_hell_instant_formation: 0.04
+      equip_taiqingyuce: 0.008
+      yuxu_broken_seal:
+        chance: 0.25
+        count: 1
+
+    base_travel_time: 2400
+    daily_limit: 2
+
+  - key: fengbang_tianmen
+    name: 封榜天门
+    difficulty: advanced
+    description: |
+      十二仙印破碎后，封神榜裂开一页，天门显现。姜子牙持榜而立，燃灯道人点起过去佛灯，打神鞭化为天罚，榜上神名也从金光中逐一醒来。此战已不是救援，而是夺榜改命。封榜天门前，清算将落，截教最后一页榜外残命悬于一线。
+
+      庄园主率门客直面封神榜、打神鞭与玉虚天罚，要证明一件事：天命可以定胜负，却不能把所有失败者都抹成灰烬。若此战得胜，封神大势仍会落下，但碧游残火将不再被天命彻底抹去。
+    battle_type: task1
+    entry_cost:
+      yuxu_broken_seal: 1
+
+    enemy_guests:
+      - task_wanxian_randeng
+      - task_wanxian_nanji_xianweng
+      - task_wanxian_jiang_ziya
+      - task_wanxian_dashenbian
+      - task_wanxian_bangshangming
+      - task_wanxian_yuxu_tianfa
+
+    enemy_troops:
+      dao_sheng: 1000
+      jian_sheng: 1000
+      arrow_god: 900
+      qiang_wang: 900
+      quan_sheng: 700
+
+    enemy_technology:
+      level: 10
+      guest_level: 100
+      guest_bonus: 0.62
+
+    drop_table:
+      silver: 100000
+      experience_pineapple:
+        chance: 0.8
+        count: 15
+      book_dragon_roar: 0.02
+      book_five_thunder_descent: 0.04
+      book_last_chance_revival: 0.06
+      equip_baguajing: 0.08
+      equip_taiqingyuce: 0.01
+      equip_fengshenbang: 0.005
+
+    base_travel_time: 3000
+    daily_limit: 1
+
   # ========================================
   # 示例2：简单新手任务（已注释，可取消注释使用）
   # ========================================

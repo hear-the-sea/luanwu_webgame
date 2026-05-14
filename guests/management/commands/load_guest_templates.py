@@ -9,6 +9,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.db.models.deletion import ProtectedError
 
 from battle.combatants_pkg.cache import clear_guest_template_cache
 from core.config import GUEST
@@ -619,9 +620,33 @@ class Command(BaseCommand):
         queryset = (
             GuestTemplate.objects.exclude(key__in=template_keys) if template_keys else GuestTemplate.objects.all()
         )
-        removed, _ = queryset.delete()
+        try:
+            removed, _ = queryset.delete()
+        except ProtectedError as exc:
+            protected_templates = self._protected_guest_templates_from_error(exc)
+            if not protected_templates:
+                raise
+            protected_keys = sorted(protected_templates.values_list("key", flat=True))
+            queryset = queryset.exclude(pk__in=protected_templates.values("pk"))
+            removed, _ = queryset.delete()
+            self.stdout.write(
+                self.style.WARNING(
+                    "Skipped "
+                    f"{len(protected_keys)} removed templates still referenced by protected records: "
+                    f"{', '.join(protected_keys)}"
+                )
+            )
         if removed:
             self.stdout.write(self.style.WARNING(f"Removed {removed} templates not defined in payload"))
+
+    def _protected_guest_templates_from_error(self, exc: ProtectedError):
+        template_ids = {
+            template_id
+            for obj in exc.protected_objects
+            for template_id in [getattr(obj, "guest_template_id", None)]
+            if template_id is not None
+        }
+        return GuestTemplate.objects.filter(pk__in=template_ids)
 
     def _cleanup_removed_books(self, book_keys: set[str]) -> None:
         queryset = SkillBook.objects.exclude(key__in=book_keys) if book_keys else SkillBook.objects.all()

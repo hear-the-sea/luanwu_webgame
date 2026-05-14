@@ -21,6 +21,34 @@ from .attempts import get_mission_daily_limit, mission_attempts_today
 from .loadout import normalize_mission_loadout, travel_time_seconds
 
 
+def _normalize_entry_cost(mission: MissionTemplate) -> dict[str, int]:
+    raw_entry_cost = getattr(mission, "entry_cost", None)
+    if raw_entry_cost is None:
+        return {}
+    if not isinstance(raw_entry_cost, dict):
+        raise AssertionError(f"invalid mission entry_cost: {raw_entry_cost!r}")
+
+    normalized: dict[str, int] = {}
+    for raw_key, raw_amount in raw_entry_cost.items():
+        if not isinstance(raw_key, str) or not raw_key.strip():
+            raise AssertionError(f"invalid mission entry_cost key: {raw_key!r}")
+        if isinstance(raw_amount, bool) or not isinstance(raw_amount, int) or raw_amount <= 0:
+            raise AssertionError(f"invalid mission entry_cost amount: {raw_amount!r}")
+        normalized[raw_key.strip()] = raw_amount
+    return normalized
+
+
+def consume_entry_cost_if_needed(manor: Manor, mission: MissionTemplate) -> None:
+    entry_cost = _normalize_entry_cost(mission)
+    if not entry_cost:
+        return
+
+    from ..inventory.core import consume_inventory_item_for_manor_locked
+
+    for item_key, amount in entry_cost.items():
+        consume_inventory_item_for_manor_locked(manor, item_key, amount)
+
+
 def _resolve_max_squad_size(manor: Manor) -> int:
     raw_max_squad_size = getattr(manor, "max_squad_size", None)
     if raw_max_squad_size is None:
@@ -173,6 +201,7 @@ def launch_mission(
     with transaction.atomic():
         Manor.objects.select_for_update().get(pk=manor.pk)
         validate_mission_attempts(manor, mission)
+        consume_entry_cost_if_needed(manor, mission)
 
         guests, loadout, travel_seconds = prepare_launch_inputs(
             manor,

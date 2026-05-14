@@ -31,18 +31,37 @@ logger = logging.getLogger(__name__)
 MAX_GUEST_SKILL_SLOTS = int(GUEST.MAX_SKILL_SLOTS)
 
 
-def _resolve_skill_book_skill_key(entry) -> str | None:
+def _resolve_skill_book_payload(entry) -> dict[str, str | None]:
     payload = entry.template.effect_payload
     if payload is None:
-        return None
+        return {"skill_key": None, "skill_name": None, "skill_description": None}
     if not isinstance(payload, dict):
         raise AssertionError(f"invalid guest roster skill_book effect_payload: {payload!r}")
-    raw_key = payload.get("skill_key")
-    if raw_key is None:
-        return None
-    if not isinstance(raw_key, str) or not raw_key.strip():
-        raise AssertionError(f"invalid guest roster skill_book skill_key: {raw_key!r}")
-    return raw_key.strip()
+
+    resolved: dict[str, str | None] = {}
+    for field_name in ("skill_key", "skill_name", "skill_description"):
+        raw_value = payload.get(field_name)
+        if raw_value is None:
+            resolved[field_name] = None
+            continue
+        if not isinstance(raw_value, str) or not raw_value.strip():
+            raise AssertionError(f"invalid guest roster skill_book {field_name}: {raw_value!r}")
+        resolved[field_name] = raw_value.strip()
+    return resolved
+
+
+def _skill_book_display_meta(entry, skill, payload: dict[str, str | None]) -> dict[str, str]:
+    display_name = getattr(skill, "name", "") or payload.get("skill_name") or payload.get("skill_key") or "未知技能"
+    display_description = (
+        getattr(skill, "description", "")
+        or payload.get("skill_description")
+        or getattr(entry.template, "description", "")
+        or ""
+    )
+    return {
+        "skill_name": display_name,
+        "skill_description": display_description,
+    }
 
 
 def _load_guest_detail(manor, guest_pk: int):
@@ -139,11 +158,14 @@ def _build_skill_books_context(manor, guest, guest_skill_records):
             storage_location=InventoryItem.StorageLocation.WAREHOUSE,
         )
         .select_related("template")
-        .only("id", "quantity", "template__name", "template__effect_payload")
+        .only("id", "quantity", "template__name", "template__description", "template__effect_payload")
         .order_by("template__name")
     )
-    skill_key_entries = [(entry, _resolve_skill_book_skill_key(entry)) for entry in skill_book_items]
-    skill_keys = {skill_key for _entry, skill_key in skill_key_entries if skill_key}
+    skill_key_entries = []
+    for entry in skill_book_items:
+        payload = _resolve_skill_book_payload(entry)
+        skill_key_entries.append((entry, payload["skill_key"], payload))
+    skill_keys = {skill_key for _entry, skill_key, _payload in skill_key_entries if skill_key}
     learned_skill_keys = {record.skill.key for record in guest_skill_records}
     skills = {
         skill.key: skill
@@ -159,16 +181,18 @@ def _build_skill_books_context(manor, guest, guest_skill_records):
             "required_agility",
         )
     }
-    for entry, key in skill_key_entries:
+    for entry, key, payload in skill_key_entries:
         skill = skills.get(key)
         requirements = collect_skill_requirements(skill)
         unmet_requirements = collect_unmet_skill_requirements(guest, skill)
         already_learned = bool(skill and skill.key in learned_skill_keys)
+        display_meta = _skill_book_display_meta(entry, skill, payload)
         skill_books.append(
             {
                 "inventory": entry,
                 "skill": skill,
                 "skill_key": key,
+                **display_meta,
                 "requirements": requirements,
                 "requirements_text": "，".join(requirements),
                 "unmet_requirements": unmet_requirements,

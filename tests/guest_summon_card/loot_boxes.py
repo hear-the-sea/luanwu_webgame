@@ -216,6 +216,89 @@ def test_work_loot_box_grants_random_silver_and_single_gear_drop(monkeypatch, dj
 
 
 @pytest.mark.django_db
+def test_loot_box_grants_random_item_rewards_and_skips_zero_quantity(monkeypatch, django_user_model):
+    user = django_user_model.objects.create_user(username="loot_box_item_rewards", password="pass123")
+    manor = ensure_manor(user)
+    ItemTemplate.objects.create(
+        key="loot_reward_zero_item",
+        name="零数量道具",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=False,
+    )
+    rewarded_item = ItemTemplate.objects.create(
+        key="loot_reward_task_card",
+        name="测试任务卡",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=False,
+    )
+    chest_template = ItemTemplate.objects.create(
+        key="loot_box_item_rewards_test",
+        name="普通物品奖励宝箱",
+        effect_type=ItemTemplate.EffectType.LOOT_BOX,
+        is_usable=True,
+        effect_payload={
+            "item_rewards": [
+                {"item_key": "loot_reward_zero_item", "min_quantity": 0, "max_quantity": 2},
+                {"item_key": "loot_reward_task_card", "min_quantity": 1, "max_quantity": 3},
+            ],
+        },
+    )
+    chest = InventoryItem.objects.create(
+        manor=manor,
+        template=chest_template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    rolls = iter([0, 2])
+    monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.randint", lambda _a, _b: next(rolls))
+
+    payload = use_inventory_item(chest)
+
+    assert not InventoryItem.objects.filter(manor=manor, template__key="loot_reward_zero_item").exists()
+    rewarded_entry = InventoryItem.objects.get(
+        manor=manor,
+        template=rewarded_item,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    assert rewarded_entry.quantity == 2
+    assert "物品【测试任务卡】x2" in payload["rewards"]
+    assert payload["skipped_bonus_items"] == []
+    assert not InventoryItem.objects.filter(pk=chest.pk).exists()
+
+
+@pytest.mark.django_db
+def test_loot_box_tracks_missing_random_item_reward(monkeypatch, django_user_model):
+    user = django_user_model.objects.create_user(username="loot_box_missing_item_reward", password="pass123")
+    manor = ensure_manor(user)
+    chest_template = ItemTemplate.objects.create(
+        key="loot_box_missing_item_reward_test",
+        name="缺失物品奖励宝箱",
+        effect_type=ItemTemplate.EffectType.LOOT_BOX,
+        is_usable=True,
+        effect_payload={
+            "item_rewards": [
+                {"item_key": "missing_random_reward_item", "min_quantity": 1, "max_quantity": 1},
+            ],
+        },
+    )
+    chest = InventoryItem.objects.create(
+        manor=manor,
+        template=chest_template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.randint", lambda _a, _b: 1)
+
+    payload = use_inventory_item(chest)
+
+    assert payload["skipped_bonus_items"] == ["missing_random_reward_item"]
+    assert payload["rewards"] == []
+    assert not InventoryItem.objects.filter(pk=chest.pk).exists()
+
+
+@pytest.mark.django_db
 def test_loot_box_weighted_gear_choices_select_weighted_gear(monkeypatch, django_user_model):
     user = django_user_model.objects.create_user(username="weighted_loot_box_logic", password="pass123")
     manor = ensure_manor(user)
