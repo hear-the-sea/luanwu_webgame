@@ -580,5 +580,6 @@ def use_inventory_item(item: InventoryItem, manor: Manor | None = None) -> Dict[
             raise ItemNotUsableError(template.name, effect_type)
         raise ItemNotUsableError(template.name, "unknown_effect")
 
+    locked_item.refresh_from_db(fields=["quantity"])
     consume_inventory_item_locked(locked_item, 1)
     return effect_summary

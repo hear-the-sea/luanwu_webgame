@@ -11,7 +11,7 @@ heroes:
     recruitable: true
     avatar: pig_wu_male2.png
     growth_range:
-    - 6
+    - 7
     - 11
     attribute_weights:
       force: 45
@@ -26,7 +26,7 @@ heroes:
     default_morality: 75
     recruitable: true
     growth_range:
-    - 6
+    - 7
     - 11
     attribute_weights:
       force: 45
@@ -42,7 +42,7 @@ heroes:
     default_morality: 70
     recruitable: true
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 45

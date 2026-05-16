@@ -226,6 +226,15 @@ def test_forgeable_weapon_lines_have_distinct_secondary_roles():
 def test_equipment_sets_use_consistent_bonus_definition_per_set():
     items = _load_item_templates()
 
+    def _normalize_set_bonus(raw):
+        if isinstance(raw, list):
+            return [
+                {"pieces": entry.get("pieces"), "bonus": entry.get("bonus")} for entry in raw if isinstance(entry, dict)
+            ]
+        if isinstance(raw, dict):
+            return {"pieces": raw.get("pieces"), "bonus": raw.get("bonus")}
+        return {"pieces": None, "bonus": None}
+
     set_bonus_by_key: dict[str, dict] = {}
     inconsistent_sets: dict[str, list[str]] = {}
     for key, item in _iter_equipment_items(items):
@@ -234,10 +243,7 @@ def test_equipment_sets_use_consistent_bonus_definition_per_set():
         if not set_key:
             continue
 
-        normalized = {
-            "pieces": payload.get("set_bonus", {}).get("pieces"),
-            "bonus": payload.get("set_bonus", {}).get("bonus"),
-        }
+        normalized = _normalize_set_bonus(payload.get("set_bonus"))
         current = set_bonus_by_key.get(set_key)
         if current is None:
             set_bonus_by_key[set_key] = normalized
@@ -298,3 +304,24 @@ def test_orange_equipment_non_hp_attribute_sum_stays_within_target_band():
             over_budget[key] = total
 
     assert over_budget == {}
+
+
+def test_tuwujian_is_orange_anti_sorcery_sword():
+    items = _load_item_templates()
+
+    tuwujian = items["equip_tuwujian"]
+
+    assert tuwujian["name"] == "屠巫剑"
+    assert tuwujian["effect_type"] == "equip_weapon"
+    assert tuwujian["rarity"] == "orange"
+    assert tuwujian["tradeable"] is True
+    assert tuwujian["price"] == 52000
+    assert tuwujian["storage_space"] == 100
+    assert tuwujian["effect_payload"] == {
+        "force": 48,
+        "intellect": 26,
+        "agility": 18,
+        "luck": 4,
+        "defense": 4,
+        "hp": 620,
+    }

@@ -40,7 +40,7 @@ DEFAULT_GUEST_GROWTH_RULES: dict[str, Any] = {
         "red": [4, 7],
         "blue": [5, 9],
         "purple": [6, 11],
-        "orange": [6, 14],
+        "orange": [8, 14],
     },
     "archetype_attribute_weights": {
         "military": {"force": 40, "intellect": 15, "defense": 23, "agility": 22},

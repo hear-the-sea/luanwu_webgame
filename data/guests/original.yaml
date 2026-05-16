@@ -41,7 +41,7 @@ heroes:
     default_gender: male
     default_morality: 70
     growth_range:
-    - 4
+    - 5
     - 9
     recruitable: false
     avatar: pubayi.png
@@ -53,7 +53,7 @@ heroes:
     default_morality: 88
     growth_range:
     - 5
-    - 10
+    - 9
     recruitable: false
     attribute_weights:
       force: 15
@@ -68,7 +68,7 @@ heroes:
     default_morality: 68
     growth_range:
     - 5
-    - 10
+    - 9
     recruitable: false
     attribute_weights:
       force: 40
@@ -99,10 +99,27 @@ heroes:
     default_morality: 72
     growth_range:
     - 6
-    - 12
+    - 11
     recruitable: false
     attribute_weights:
       force: 45
       intellect: 20
       defense: 20
       agility: 15
+  - key: orig_crayon_shinchan_purple
+    name: 蜡笔小新
+    archetype: military
+    flavor: 野原新之助，来自春日部的五岁幼稚园小孩，天真、顽皮、胆大又不按常理出牌。他看似总在胡闹，却常能用最直接的行动打破僵局；面对危险时也会为了家人和朋友爆发出惊人的勇气。小新并不靠拳脚取胜，他厉害在谁也猜不到下一步会做什么。越是紧张严肃的场面，他越能用一通胡闹把对手节奏打乱，偏偏还常常误打误撞地把事情办成。
+    default_gender: male
+    avatar: monkey_male_special2.png
+    default_morality: 75
+    growth_range:
+    - 6
+    - 11
+    recruitable: false
+    attribute_weights:
+      force: 42
+      intellect: 10
+      defense: 20
+      agility: 18
+      luck: 10

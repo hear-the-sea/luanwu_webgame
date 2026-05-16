@@ -98,7 +98,7 @@ heroes:
     archetype: civil
     flavor: 1256年至1301年在世，元代书法家，字伯机。善行草，悬腕回腕之法自成一家，笔势遒劲纵逸。与赵孟頫并称南赵北鲜，传世有《石鼓歌》《醉时歌》《苏轼海棠诗》等帖。晚年官位不显，居杭州困踬而终。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -111,7 +111,7 @@ heroes:
     archetype: civil
     flavor: （1258年-1328年）元代书法家。他与赵孟頫、鲜于枢并称“元初三大家”。其作品常被后世书家临摹评点。他的书法兼具法度与文人气，既承赵孟頫一路，也形成自身面貌，是理解元代书风分化的重要线索。这使他在元代书史中不仅有名作，也有明确的风格位置。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -124,7 +124,7 @@ heroes:
     archetype: civil
     flavor: （1295年-1345年）元代书法家，蒙古族。他的草书飘逸洒脱，是元代书法的另一高峰。其草书以劲健纵逸见长，既保留游牧文化的力度感，又与中原书学传统深度融合，辨识度极高。后世论草书气骨与速度感时，常把他列作典型范例。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -137,7 +137,7 @@ heroes:
     archetype: military
     flavor: 元朝将领，世祖时期从征南宋，参与攻灭赵宋的多场战事。史料对其早年经历及族属背景记载甚少，可确知者为灭宋战役中积功获擢。其名见于元史征伐诸传，然生平细节多已湮没，后世评价常受限于记载缺失。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -150,7 +150,7 @@ heroes:
     archetype: military
     flavor: 元朝将领，至元年间奉命征讨缅甸，率军深入蒲甘腹地。战事艰难，虽展军威但损失亦重，缅地暑湿疫病交加，士卒多病损。远征细节散见于元史及西南诸夷列传，其生平本末记录不全，后世难窥全貌。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -163,7 +163,7 @@ heroes:
     archetype: military
     flavor: 也先帖木儿（?—1294年），元朝将领。至元年间率军镇守西北，屡与叛王海都部交战，戍边有劳。元世祖命其节制河西、甘肃诸军，巩固西北防线。其守边细节史籍记载有限，大德年间犹见其旧部仍驻要隘。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -176,7 +176,7 @@ heroes:
     archetype: military
     flavor: （1237年-1297年）元朝名将，击败海都的功臣。他在西北边疆多次击退海都军，是元朝边防的柱石。在土土哈身上，可见将领个人能力与军政体系边界之间持续拉扯的现实。这些结论也常被用于横向比较不同政权在同类压力下的应对能力。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -189,7 +189,7 @@ heroes:
     archetype: military
     flavor: 1328年至1362年在世，元末将领。本贯沈丘，至正间起兵镇压红巾军，连复关陕、河南诸路，官至河南行省平章政事。被降将田丰、王士诚诱杀于益都，元廷遂失中原屏障。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -202,7 +202,7 @@ heroes:
     archetype: military
     flavor: （?-1375年）即王保保，元末名将。他继承义父察罕帖木儿的事业，是元朝最后的支柱。朱元璋称他为"天下奇男子"。关于扩廓帖木儿的讨论长期活跃，正因为其个案能集中呈现国家能力的边界问题。这也意味着，其历史位置不宜被简化为“成”或“败”，而应在过程维度中加以解释。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -215,7 +215,7 @@ heroes:
     archetype: military
     flavor: （?-1374年）元末将领，镇守关陕。他与扩廓帖木儿争权，导致元军内讧。他的行为加速了元朝的灭亡。李思齐战场表现在不同文献中呈现差异化叙述，值得结合成书背景一并辨析。李思齐相关史料之所以常被引用，在于其个案能够同时呈现前线压力与后方治理的联动关系。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -228,7 +228,7 @@ heroes:
     archetype: military
     flavor: 孛罗帖木儿（?—1365年），元末权臣。至正年间与扩廓帖木儿争兵权，率军入大都控制朝廷，挟制顺帝，专擅朝政。其跋扈激化元廷内部分裂，至正二十五年被顺帝密令刺杀于宫中。内讧加速了元朝统治的瓦解。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -241,7 +241,7 @@ heroes:
     archetype: military
     flavor: ?至1362年在世，元朝宗室，元末镇守辽东。当红巾军横扫中原之际保境自守，使辽东暂免大规模战火。其死后纳哈出继守其地，直至洪武二十年方归降明朝。生平详情史籍记载零散。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -254,7 +254,7 @@ heroes:
     archetype: military
     flavor: 元末白莲教首领，与刘福通等于至正十一年（1351年）在颍州发动起义，以"明王出世"为号召，揭开元末红巾军大起义序幕。不久被元军捕杀，其子韩林儿被刘福通拥立为小明王，继续抗元事业直至覆亡。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -267,7 +267,7 @@ heroes:
     archetype: military
     flavor: （1302年-1355年）红巾军领袖，朱元璋的岳父。他收留朱元璋，是朱元璋事业的起点。研究郭子兴时，战术层面的得失与政治层面的约束应被并列考察，二者缺一不可。这种多维度分析路径，能有效避免将复杂战局简化为单一英雄叙事。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -280,7 +280,7 @@ heroes:
     archetype: military
     flavor: 徐寿辉（1320年—1360年），元末红巾军领袖，天完政权建立者。至正十一年起兵蕲州，以弥勒教聚众，攻克湖广、江西北部诸州县，建都蕲水，称帝。后势力渐衰，为部将陈友谅架空，至正二十年被陈友谅遣人刺杀于采石。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -293,7 +293,7 @@ heroes:
     archetype: military
     flavor: 红巾军徐寿辉部将，后率军入蜀，1362年称帝，国号大夏，建元天统。据四川全境，轻徭薄赋、休养生息，与朱元璋对峙数年。1366年病卒，子明昇嗣位，洪武四年降明。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -306,7 +306,7 @@ heroes:
     archetype: military
     flavor: 方国珍（1319—1374），台州黄岩人，盐贩出身。至正八年聚众海上起兵反元，据有浙东庆元、台州、温州三路，以水军之利称雄。曾屡受元廷招安反复无常，亦与朱元璋遣使通好。至正二十七年兵败归降，授广西行省左丞，安置南京，病卒。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -319,7 +319,7 @@ heroes:
     archetype: military
     flavor: 也速，蒙古宗室后裔，约活动于13世纪中后期。史载曾受命统兵镇守北方边地，其名散见于元廷戍防与宗室名录。然《元史》未立专传，其仕宦履历、军功战绩及生卒确年皆已难详考。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -332,7 +332,7 @@ heroes:
     archetype: military
     flavor: （?-约1290年）蒙古将领，征战四方。他参与了多次征服战役，是蒙古帝国扩张时期的重要将领。围绕帖木儿不花的记录常见立场分歧，也因此能够有效揭示官方叙述与后世阐释之间的距离。在帖木儿不花身上，政策设计、执行链条与地方反馈之间的落差表现得尤为清楚。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -345,7 +345,7 @@ heroes:
     archetype: military
     flavor: （?-约1260年）蒙古宗室，东道诸王之一，成吉思汗弟后裔，分封东北，拥兵甚众。自太宗至世祖朝参预征伐与朝议，其宗室身份使其立场常随蒙古内部格局而动。史载晚年事跡甚少，约卒于中统年间。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -358,7 +358,7 @@ heroes:
     archetype: military
     flavor: 脱欢（1304—1362），权臣燕铁木儿之子。其父拥立元顺帝后旋卒，脱欢袭爵，初仍预朝政，然权势已大逊于乃父。顺帝亲政后渐见疏远，后出为外职。其生平散见于元末政争记载，始终受制于燕铁木儿家族盛极而衰的阴影之下。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -371,7 +371,7 @@ heroes:
     archetype: military
     flavor: 元钦察人，宿卫出身。泰定帝崩后发动政变，拥立文宗图帖睦尔。两都之战中率军击败上都军，以功封太平王，总揽朝政，权倾一时。1333年病卒，家族势力随之瓦解。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -384,7 +384,7 @@ heroes:
     archetype: civil
     flavor: （1257年-1308年）元朝名臣，历仕世祖、成宗、武宗三朝，官至中书右丞相。成宗去世后力主迎立武宗，对政权平稳过渡起关键作用。施政以稳健务实著称，注重协调蒙汉官僚关系以维持朝局稳定。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -397,7 +397,7 @@ heroes:
     archetype: civil
     flavor: （1279年-1338年）元朝文学家，回族。他的诗歌雄浑大气，是元代少数民族诗人的代表。若只看单一维度容易低估马祖常，其意义更体现在文本、立场与时代的交叉点上。马祖常留下的表达范式被后世反复激活，使其在文学传统中始终保持可见度。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -410,7 +410,7 @@ heroes:
     archetype: civil
     flavor: 欧阳玄（1283—1358），字原功，庐陵人。元朝翰林学士，以文章受知于朝。至正年间受命参与纂修宋、辽、金三史，任总裁官，负责发凡起例及统稿审定。一时朝廷制诰碑铭多出其手。晚年致仕，卒于大都，赠楚国公，谥曰文。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -423,7 +423,7 @@ heroes:
     archetype: civil
     flavor: （1303年-1372年）元末明初文学家。他入仕元朝，后归降明朝，参与《元史》的编修工作。他横跨元明之际的政治与文坛，其史学参与和文章风格都体现出过渡时代知识人的现实调适能力。明初修史与文坛重建过程中，危素都扮演了过渡性角色。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -436,7 +436,7 @@ heroes:
     archetype: civil
     flavor: 曹知白（1272—1355），字又玄，号云西，华亭人。元代山水画家，家富藏书，筑园池延纳文士。其画师法李成、郭熙，笔墨清润疏秀，晚年愈趋简淡，与黄公望、倪瓒等有交游。传世画作有《寒林图》《疏松幽岫图》等。兼工诗文，然集已散佚。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -449,7 +449,7 @@ heroes:
     archetype: civil
     flavor: 元代画家，嘉兴人，擅山水、花鸟。画风精工细腻，设色明丽，承南宋院体传统而自成一格。与吴镇比邻而居，吴简盛繁，各擅胜场。传世作品有《秋林高士图》等。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -462,7 +462,7 @@ heroes:
     archetype: civil
     flavor: （1290年-1343年）元代书画家、鉴赏家。他是元文宗时期的重臣，精通书画鉴定，收藏丰富。柯九思的历史面貌通常要结合文体表现、价值取向与现实处境三层信息来判断。围绕柯九思形成的历代评议并非静止结论，而是一条持续更新的接受链条。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -475,7 +475,7 @@ heroes:
     archetype: civil
     flavor: （1262年-1319年）元代女书画家，赵孟頫之妻，世称管夫人。工书善画，尤擅墨竹与梅兰，笔意清秀。其书法得赵孟頫指授，行楷颇肖其夫。今存《竹石图》等作品传世，诗文信札亦见才情与识见。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12

@@ -39,13 +39,15 @@ SET_STAT_FIELD_MAP = {
 }
 
 
-def _normalize_set_bonus_definition(raw_bonus) -> tuple[int | None, dict]:
+def _normalize_set_bonus_definitions(raw_bonus) -> list[tuple[int | None, dict]]:
     bonus_def = raw_bonus or {}
+    if isinstance(bonus_def, (list, tuple)):
+        definitions: list[tuple[int | None, dict]] = []
+        for entry in bonus_def:
+            definitions.extend(_normalize_set_bonus_definitions(entry))
+        return definitions
     if not isinstance(bonus_def, dict):
-        if isinstance(bonus_def, (list, tuple)):
-            bonus_def = {"bonus": bonus_def}
-        else:
-            return None, {}
+        return []
 
     pieces = bonus_def.get("pieces")
     bonuses = bonus_def.get("bonus") or bonus_def.get("bonuses") or bonus_def
@@ -55,8 +57,8 @@ def _normalize_set_bonus_definition(raw_bonus) -> tuple[int | None, dict]:
         else:
             bonuses = {}
     if not isinstance(bonuses, dict):
-        return pieces, {}
-    return pieces, bonuses
+        return []
+    return [(pieces, bonuses)]
 
 
 def _collect_set_info(gear_items) -> Dict[str, Dict[str, object]]:
@@ -68,33 +70,33 @@ def _collect_set_info(gear_items) -> Dict[str, Dict[str, object]]:
         set_key = getattr(tpl, "set_key", "") or ""
         if not set_key:
             continue
-        pieces, bonuses = _normalize_set_bonus_definition(getattr(tpl, "set_bonus", None))
-        if not bonuses:
+        bonus_definitions = _normalize_set_bonus_definitions(getattr(tpl, "set_bonus", None))
+        if not bonus_definitions:
             continue
 
-        info = sets.setdefault(set_key, {"count": 0, "pieces": pieces, "bonus": bonuses})
+        info = sets.setdefault(set_key, {"count": 0, "definitions": bonus_definitions})
         info["count"] = int(info.get("count") or 0) + 1  # type: ignore[arg-type, call-overload]
-        if info.get("pieces") is None and pieces is not None:
-            info["pieces"] = pieces
-        if info.get("bonus") is None:
-            info["bonus"] = bonuses
+        if not info.get("definitions"):
+            info["definitions"] = bonus_definitions
     return sets
 
 
 def _accumulate_active_set_bonuses(sets: Dict[str, Dict[str, object]]) -> Dict[str, int]:
     bonuses_out: Dict[str, int] = {}
     for info in sets.values():
-        required = int(info.get("pieces") or info.get("count") or 0)  # type: ignore[arg-type, call-overload]
-        if int(info.get("count") or 0) < required:  # type: ignore[arg-type, call-overload]
+        count = int(info.get("count") or 0)  # type: ignore[arg-type, call-overload]
+        definitions = info.get("definitions") or []
+        if not isinstance(definitions, list):
             continue
-        bonus_map = info.get("bonus") or {}
-        if not isinstance(bonus_map, dict):
-            continue
-        for stat, value in bonus_map.items():
-            try:
-                bonuses_out[stat] = bonuses_out.get(stat, 0) + int(value)
-            except (TypeError, ValueError):
+        for pieces, bonus_map in definitions:
+            required = int(pieces or count or 0)
+            if count < required or not isinstance(bonus_map, dict):
                 continue
+            for stat, value in bonus_map.items():
+                try:
+                    bonuses_out[stat] = bonuses_out.get(stat, 0) + int(value)
+                except (TypeError, ValueError):
+                    continue
     return bonuses_out
 
 

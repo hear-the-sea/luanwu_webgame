@@ -85,7 +85,7 @@ heroes:
     archetype: military
     flavor: 完颜昌，金宗室，太祖从弟。早年伐辽有功，天会间主攻宋。天眷间转而主和，力主归宋河南、陕西地，以议和换稳定。兀术等主战派诬其通宋谋反，天眷二年被杀。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -98,7 +98,7 @@ heroes:
     archetype: military
     flavor: 撒离喝（？—1150），金朝将领。以勇猛善攻著称，参与灭辽伐宋之役，在攻略陕西、河南等地时屡任前锋。史载其攻城拔寨甚力，为金初重要战将。然生平细节多有缺略，具体战功及早年经历已难详考。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -111,7 +111,7 @@ heroes:
     archetype: civil
     flavor: 张浩（1085—1156），辽阳人，金朝汉臣。博通经史，历仕太祖至海陵王数朝，累官至尚书令。金初制度草创，浩主持制定朝仪、官制，推行科举，选拔汉士，于金朝政权汉化与制度建设用力甚多。为人持重，颇受倚重，然其具体施政细节后世记载已不甚详备。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -124,7 +124,7 @@ heroes:
     archetype: civil
     flavor: （1081年-1149年）金朝汉臣，一代名相。他历仕太宗、熙宗两朝，推行汉化改革，是金朝政治制度的主要设计者。韩昉的政治角色并非固定不变，而是在不同阶段随局势调整而迁移。从方法论上看，它能有效连接叙事史学与结构分析之间的解释鸿沟。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -137,7 +137,7 @@ heroes:
     archetype: civil
     flavor: 刘豫（1073—1143），景州阜城人。原为宋臣，金兵南下时降金。天会八年（1130）被金立为皇帝，国号大齐，都大名府，后迁汴京。替金统制中原，征敛赋税，助金攻宋。屡次南侵屡败，渐失金人信任，天会十五年（1137）被废，贬为蜀王。其政权实为金人操控之傀儡，个人施政空间有限。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -150,7 +150,7 @@ heroes:
     archetype: civil
     flavor: 苏天爵（1294—1352），字伯修，真定人。由国子学生入仕，累官至江浙行省参知政事。他留心元代文献，辑《国朝名臣事略》十五卷，纂《元文类》七十卷，自著《滋溪文稿》三十卷，为保存元初至中叶典章人物事迹做了切实的汇编工作。晚年卷入朝中党争，卒于军中。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -163,7 +163,7 @@ heroes:
     archetype: civil
     flavor: （1107年-1159年）金朝诗人，北宋遗民。他的诗词充满亡国之痛，是金朝汉族文人的代表。其诗词既保留北宋文脉，又吸纳金代现实经验，因而常被拿来观察易代之际文人身份如何重新安放。不少金元文学研究也借其作品讨论“遗民情绪”的表达边界。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -176,7 +176,7 @@ heroes:
     archetype: civil
     flavor: 赵秉文（1159—1232），字周臣，磁州滏阳人。大定二十五年进士，累官至礼部尚书。金室南渡后主盟文坛近三十年，力倡平易通达之风，纠南渡前浮艳之弊。有《滏水文集》传世，诗、文、书皆为人所重。晚年目睹国势日蹙，卒于金亡前夕。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -189,7 +189,7 @@ heroes:
     archetype: civil
     flavor: 王若虚（1174-1243），金朝文学家、文学批评家。金亡后隐居不仕，号滹南遗老。所著《滹南遗老集》涵盖经史辨疑与诗文评论，持论平实，不逐虚华，是研究金代学术思想的重要文献。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -202,7 +202,7 @@ heroes:
     archetype: civil
     flavor: 李纯甫（1185—1231），字之纯，弘州襄阴人，号屏山居士。承安二年进士，仕至京兆府判官。中年后潜心佛学，倡三教合一之说，撰《鸣道集说》批评宋儒理学，在金末思想界引起较大反响。其诗风纵横奇崛，与赵秉文、元好问皆有交往，是金末文坛颇具异端色彩的人物。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -215,7 +215,7 @@ heroes:
     archetype: civil
     flavor: 党怀英，金朝文学家、书法家。原籍冯翊，少与辛弃疾同学。篆书独步一时，与赵秉文并称。承安间为翰林学士承旨，曾修《辽史》。工诗文，著有《竹溪集》，时推金朝书坛之首。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -228,7 +228,7 @@ heroes:
     archetype: civil
     flavor: 王庭筠，字子端，号黄华老人，辽东人。金大定进士，官至翰林修撰。工诗文书画，尤精墨竹山水，笔意上追米芾、苏轼，为金代文人画之冠冕。其书学二王，秀润天成，今存《幽竹枯槎图》等作，可见一代北方士大夫之审美风范。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -241,7 +241,7 @@ heroes:
     archetype: civil
     flavor: 赵沨，字文孺，号黄山，东平人。金大定进士，官至礼部郎中。工诗，善山水画，时人以其与王庭筠并论。然其画作几无存世，生平记载亦零散简略，今所见多转引自同时代人诗文酬赠，完整面貌已难确考。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -254,7 +254,7 @@ heroes:
     archetype: civil
     flavor: 辛愿（？-约1221），金朝诗人，号溪南诗老。其诗风慷慨悲凉，气格刚健，多写乱世漂泊之感。晚年贫困潦倒，依友人而居。诗作存世不多，元好问《中州集》收录其部分作品。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -267,7 +267,7 @@ heroes:
     archetype: civil
     flavor: 李俊民，金末元初诗人。金承安间进士及第，官至尚书省令史。金亡不仕元，隐居教授。忽必烈以安车召见，仍辞归山林。诗多沧桑之慨，著有《庄靖集》，号鹤鸣老人。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -280,7 +280,7 @@ heroes:
     archetype: civil
     flavor: （1203年-1250年）金末史学家，《归潜志》的作者。他记录了金朝末年的历史，是研究金史的重要资料。从刘祁作品的语气与题材变化，可以清楚追踪其人生处境对表达方式的持续影响。围绕刘祁的研究通常会在文本细读与时代语境之间往返，以避免人物评价被单一路径固化。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -293,7 +293,7 @@ heroes:
     archetype: civil
     flavor: 刘从益（1086-1149），金朝汉族士大夫。通儒学，入仕后致力兴学育才，在地方任职时推行教化、劝课农桑，培养了一批金代文士。其子刘祁为金元之际文士，《归潜志》作者。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -306,7 +306,7 @@ heroes:
     archetype: military
     flavor: （?-1213年）金朝名将，抗蒙先驱。他在蒙古入侵初期坚守边疆，英勇作战，最终力战殉国。研究杨伯仁时，战术层面的得失与政治层面的约束应被并列考察，二者缺一不可。围绕杨伯仁的争议长期存在，本质上是在讨论不同历史条件下“可行策略”的边界。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -319,7 +319,7 @@ heroes:
     archetype: military
     flavor: 郭虾蟆，金末将领。与兄禄大同守会州。兄战死后代领其军，坚守孤城十余年，屡败蒙军。城破之日举家自焚，部属无一降者。金亡后犹守节不屈，时人叹其忠烈。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -332,7 +332,7 @@ heroes:
     archetype: military
     flavor: 移剌蒲阿，契丹人，金末将领。与完颜陈和尚并肩抗蒙，屡经战阵。正大九年三峰山之战兵溃被俘，拒降遇害。其出身及将略可窥金季多族将领之尴尬处境，然史传简略，早年事功与具体战历多已失载。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -345,7 +345,7 @@ heroes:
     archetype: military
     flavor: 金朝将领。贞祐年间蒙古大举南下，温迪罕达奉命镇守北边要地，屡次督军抵御。兴定元年（1217）殁于战阵。其镇边方略与具体战绩，《金史》记载甚为简略，后人难以详考。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -358,7 +358,7 @@ heroes:
     archetype: military
     flavor: 仆散揆（？—1207），金朝后期将领，章宗时官至平章政事。泰和六年南宋韩侂胄北伐，仆散揆受命为统帅，分九道南下反击，连克数州，迫使宋廷议和。他治军严整、调度有方，是金末少有的能统重兵之臣。然卒于军中，金亦未能借此战挽回颓势。其早年履历史籍记载有限。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -371,7 +371,7 @@ heroes:
     archetype: military
     flavor: （1120年-1178年）金朝名将，征宋功臣。他在宋金战争中屡立战功，是金朝中期的重要军事统帅。围绕纥石烈志宁的军事评价长期分化，核心往往不在勇怯，而在资源条件下的取舍逻辑。围绕纥石烈志宁的争议长期存在，本质上是在讨论不同历史条件下“可行策略”的边界。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -384,7 +384,7 @@ heroes:
     archetype: civil
     flavor: 金朝名将，世宗朝重臣。大定初年，契丹移剌窝斡叛乱，忠义受命统军讨平。其后主持对宋战事，于宿州等地与宋军交战，迫使南宋签订隆兴和议。世宗倚之为肱骨，历官平章政事、右丞相。大定二十七年卒。其人行事稳健，于军政两端皆有实绩。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -397,7 +397,7 @@ heroes:
     archetype: civil
     flavor: 金朝名臣。世宗大定年间官至平章政事，主持推行考课法，严核百官实绩，裁汰冗员。其整顿使世宗朝吏治一度清明，府库充实。历仕熙宗至世宗三朝，以清严著称于世。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -410,7 +410,7 @@ heroes:
     archetype: civil
     flavor: （?-1207年）金朝名臣，"泰和律令"的主持者。他主持修订法典，为金朝的法制建设做出重要贡献。张万公留下的表达范式被后世反复激活，使其在文学传统中始终保持可见度。围绕张万公的功过讨论长期不断，原因在于其个案能够同时承载价值判断与机制分析。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -423,7 +423,7 @@ heroes:
     archetype: civil
     flavor: 完颜匡（?-1160年）金朝宗室。完颜亮弑熙宗自立后，匡因对其暴政多有非议，被诬谋反处死。金朝中期宗室倾轧酷烈，匡之遭际正是权力清洗之一幕。其事《金史》仅存零星记载，生平细节已难详考。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -436,7 +436,7 @@ heroes:
     archetype: civil
     flavor: 契丹贵族，辽亡后仕金。天会四年（1126），宋廷密遣使臣蜡书诱其反金，仲恭尽告于金帅，事遂泄。后历太宗、熙宗两朝，累官至尚书右丞、封越国公。其抉择折射辽金宋鼎革之际个人出处之难。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -449,7 +449,7 @@ heroes:
     archetype: military
     flavor: （约1162年-1226年）蒙古四杰之一，铁木真的结义兄弟。他从少年时代就追随铁木真，忠心耿耿，战功赫赫。他是蒙古帝国的开国元勋，被封为"右手万户长"。就材料价值而言，博尔术的记载因保留多重立场而尤为可贵，可用于对照正史与后世评论的张力结构。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -462,7 +462,7 @@ heroes:
     archetype: military
     flavor: （约1183年-1242年）铁木真次子，察合台汗国的建立者。他严格执行成吉思汗的法典"扎撒"，是蒙古帝国法律秩序的维护者。他的汗国存在了数百年。围绕察合台的记录常见立场分歧，也因此能够有效揭示官方叙述与后世阐释之间的距离。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -475,7 +475,7 @@ heroes:
     archetype: military
     flavor: 术赤（约1181—1227），铁木真长子，金帐汗国奠基者。率军西征，征服钦察草原与花剌子模北境，后领有额尔齐斯河以西广大封地。因其母曾被蔑儿乞部掳走，身世争议伴随终生。与察合台不睦，未继汗位，早逝于封地。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -488,7 +488,7 @@ heroes:
     archetype: military
     flavor: 畏兀儿人，元初名将。早年入忽必烈潜邸，后随军攻宋。至元年间，以回回炮猛攻襄阳，城破，宋将吕文焕降。继而率军南下，平定湖南、广西、海南等地。官至湖广行省左丞相。至元二十三年病卒于任上。其用兵迅猛果决，为元朝统一江南之关键将领。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -501,7 +501,7 @@ heroes:
     archetype: military
     flavor: （1238年-1280年）元朝汉人将领，灭南宋的功臣。他率水军在崖山击败南宋残军，俘获南宋皇室。他在崖山刻石"张弘范灭宋于此"，成为历史的见证。张弘范相关史料之所以常被引用，在于其个案能够同时呈现前线压力与后方治理的联动关系。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -514,7 +514,7 @@ heroes:
     archetype: civil
     flavor: （1235年-1281年）元朝天文学家，与郭守敬共同编制《授时历》。他精通数学与天文，为授时历的编制作出了重要贡献。他是元代科技发展的重要推动者。关于王恂的争议并未削弱其地位，反而让其成为理解当时文化分歧与价值碰撞的关键人物。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -527,7 +527,7 @@ heroes:
     archetype: military
     flavor: （约1160年-约1225年）蒙古四杰之一，铁木真的义兄。他从少年时代追随铁木真，忠心不二，战功卓著。他是蒙古建国的元勋之一。从战役链条看，赤老温并非孤立节点，其表现通常与同代将领协同关系紧密相连。正因如此，相关讨论往往不止于战果，而会追问组织能力、情报质量与统治目标的内在关联。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -540,7 +540,7 @@ heroes:
     archetype: military
     flavor: （约1160年-约1235年）蒙古四杰之一，铁木真的救命恩人。他曾在铁木真受伤时独自守护，忠诚无二。他被封为千户长，是蒙古帝国的开国功臣。者勒蔑的政策选择不能孤立理解，必须结合当时财政压力、边疆局势与朝局互动来判断。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -553,7 +553,7 @@ heroes:
     archetype: military
     flavor: 蒙古开国元勋，铁木真早年伴当。从铁木真统一蒙古诸部，屡为先锋，以骁勇著称。与者勒蔑、哲别、速不台并称"四犬"，深得铁木真信重。征乃蛮、伐克烈诸役皆与焉。约卒于成吉思汗六年（1211年）前后。然传世记载甚少，其生平详节多不可考。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -566,7 +566,7 @@ heroes:
     archetype: military
     flavor: 合撒儿，铁木真胞弟，以神射闻名，随兄征战统一蒙古各部，屡任前锋。大蒙古国建立后受封领地。其生平多见于《蒙古秘史》，具体战役细节与卒年诸说不一。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -579,7 +579,7 @@ heroes:
     archetype: military
     flavor: 成吉思汗异母弟。为人敦厚，早年从征蒙古诸部，屡建战功。蒙古立国后受封，太祖尝命其掌刑狱之事。其后裔领广宁路，世代为元廷宗室重臣。史载其天性纯厚，不争权势，以忠谨见称。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -592,7 +592,7 @@ heroes:
     archetype: military
     flavor: 帖木格，铁木真幼弟，受封蒙古本部大片领地。成吉思汗西征时留守漠北监国。窝阔台汗时期渐失势，后因涉嫌谋逆被处置。其事记载零散，施政细节已难确考。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -605,7 +605,7 @@ heroes:
     archetype: military
     flavor: （1206年-1248年）蒙古第三任大汗，窝阔台之子。他继位后与拔都产生矛盾，在位仅两年便病逝。他的短命统治加速了蒙古帝国的分裂。从治理逻辑看，贵由的成功与失误往往来自同一组制度条件的不同阶段效应。对其功过的持续争论，也使这一案例长期保持解释活力。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -618,7 +618,7 @@ heroes:
     archetype: military
     flavor: （1219年-1266年）拖雷幼子，蒙哥汗死后，与忽必烈争位。1260年在和林被蒙古本土诸王推举为大汗，代表草原旧俗，反对汉地治理模式。四年内战渐失势，1264年降忽必烈，后囚禁而死。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42

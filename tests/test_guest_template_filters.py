@@ -26,6 +26,24 @@ def test_gear_summary_combines_description_stats_and_set_bonus():
     assert guest_extras.gear_summary(template) == ("佩剑；攻击+12、防御+5、运势+3；青龙（2件）：攻击+8")
 
 
+def test_gear_summary_renders_multi_tier_set_bonus():
+    template = SimpleNamespace(
+        description="面具",
+        attack_bonus=0,
+        defense_bonus=0,
+        extra_stats={"hp": 260},
+        set_key="春日部防卫队",
+        set_bonus=[
+            {"pieces": 2, "bonus": {"attack": 40, "defense": 30}},
+            {"pieces": 4, "bonus": {"hp": 600, "agility": 25, "luck": 20}},
+        ],
+    )
+
+    assert guest_extras.gear_summary(template) == (
+        "面具；生命+260；春日部防卫队（2件）：攻击+40、防御+30；" "春日部防卫队（4件）：生命+600、敏捷+25、运势+20"
+    )
+
+
 def test_gear_tooltip_renders_lines_for_stats_and_set_members():
     template = SimpleNamespace(
         description="佩剑",
@@ -52,6 +70,36 @@ def test_gear_tooltip_renders_lines_for_stats_and_set_members():
     assert "套装属性：" in html
     assert "攻击+8" in html
     assert "运势+2" in html
+
+
+def test_gear_tooltip_renders_multi_tier_set_bonus_lines():
+    template = SimpleNamespace(
+        description="面具",
+        attack_bonus=0,
+        defense_bonus=0,
+        extra_stats={"hp": 260},
+        set_key="春日部防卫队",
+    )
+    set_map = {
+        "春日部防卫队": {
+            "description": "春日部防卫队",
+            "members": [{"name": "动感超人面具", "slot": "helmet"}],
+            "bonus": [
+                {"pieces": 2, "bonus": {"attack": 40, "defense": 30}},
+                {"pieces": 4, "bonus": {"hp": 600, "agility": 25, "luck": 20}},
+            ],
+        }
+    }
+
+    html = str(guest_extras.gear_tooltip(template, set_map))
+
+    assert "2件套属性：" in html
+    assert "攻击+40" in html
+    assert "防御+30" in html
+    assert "4件套属性：" in html
+    assert "生命+600" in html
+    assert "敏捷+25" in html
+    assert "运势+20" in html
 
 
 def test_attribute_icons_renders_expected_icon_pack():

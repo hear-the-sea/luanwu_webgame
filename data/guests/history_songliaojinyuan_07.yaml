@@ -72,7 +72,7 @@ heroes:
     archetype: military
     flavor: （?-1122年）辽末奚族将领，奚回离保之族。天祚帝西逃后，他在燕京辅佐耶律淳建北辽，任北院枢密使。宋金夹攻之际屡破宋军，后北辽内溃被迫西走，为部下所害。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -85,7 +85,7 @@ heroes:
     archetype: military
     flavor: （?-约1125年）辽朝宗室，抗金将领。他在辽亡后仍坚持抵抗金朝，是契丹人的骄傲。研究耶律燕山时，战术层面的得失与政治层面的约束应被并列考察，二者缺一不可。其案例对理解战时治理能力的上限与下限，具有稳定的参照价值。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -98,7 +98,7 @@ heroes:
     archetype: civil
     flavor: （?-约1100年）辽朝名臣，汉化推动者。他精通汉学，推动辽朝政治制度改革。其改革思路在辽史研究中亦常被讨论。萧昱既能支撑作品层面的精读，也能连接更宏观的历史议题，研究价值相当稳定。萧昱相关记述之所以长期被引用，正因其能够连接微观经验与宏观背景。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -111,7 +111,7 @@ heroes:
     archetype: civil
     flavor: 辽朝汉臣，善辞令，屡使北宋，曾参与重熙年间辽宋关约议定与岁币交涉。其外交斡旋对维系双方和平关系产生过实际作用，为辽朝处理对宋事务的关键使臣之一。史籍记载有限。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -124,7 +124,7 @@ heroes:
     archetype: military
     flavor: 辽朝名将，于辽圣宗、兴宗年间历任军职，曾任南京留守，主持南面防务。史载其守边多年，辽宋边境得以相对安定，曾参与对阻卜诸部之军事行动。其生平具体事迹传世不多，卒年约在重熙年间。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -137,7 +137,7 @@ heroes:
     archetype: military
     flavor: （?-约1115年）辽末将领，天祚帝时为先锋都统。金太祖起兵，他奉命征讨，与金军战于宁江州、出河店等地，屡战不利。其用兵之失与辽军体制朽坏相关，后事迹不显。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -150,7 +150,7 @@ heroes:
     archetype: civil
     flavor: 辽朝宗室成员，约活跃于辽道宗时期。史载其曾预朝政，然传世文献对其具体官职、政绩及生卒均缺载。辽中后期诸宗室生平多湮没无闻，其名虽偶见提及，事迹已难复原。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -163,7 +163,7 @@ heroes:
     archetype: civil
     flavor: 辽朝汉臣，辽道宗年间权臣。进士出身，累官至北府宰相，深得道宗宠信，权势一时煊赫。曾卷入朝中党争及诬陷皇后萧观音一案，后失势遭贬。其仕途起伏折射辽末政治生态，然史载多据政敌口径，细节须慎辨。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -176,7 +176,7 @@ heroes:
     archetype: civil
     flavor: 耶律俨（？—约1110年），本姓李，辽道宗赐姓耶律。道宗朝进士，官至参知政事。大安年间奉诏修纂《皇朝实录》七十卷，为元人修《辽史》所倚重之主要史源。其书今已散佚，仅赖《辽史》引录得存片段。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -189,7 +189,7 @@ heroes:
     archetype: military
     flavor: （981年-1032年）李继迁之子，李元昊之父。他巩固西夏政权，发展经济文化，为儿子称帝做好了准备。他是西夏从部落联盟向封建王朝转型的关键人物。他在内政整饬与对外周旋之间维持了罕见平衡，使西夏得以完成由边地势力向王朝体制的关键过渡。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -202,7 +202,7 @@ heroes:
     archetype: military
     flavor: 西夏毅宗，幼年即位，成年后推行汉化政策，增用汉人官职，加强与北宋的文化交流与制度借鉴。其在位期间西夏封建化进程加速，为西夏中期文化融合的关键时期。然其早逝，诸多举措未竟。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -215,7 +215,7 @@ heroes:
     archetype: civil
     flavor: 野利仁荣（？-1042），西夏开国重臣，党项羌野利部人。李元昊称帝前后，命其主持创制西夏文字，仁荣摹汉字形体而造蕃书十二卷，字形方整、笔画繁密，使党项始有本族文字。元昊设蕃学，以仁荣主其事，用西夏文译《孝经》《尔雅》等书，推行蕃礼。然其生平仕宦细节，传世记载甚略。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -228,7 +228,7 @@ heroes:
     archetype: military
     flavor: 李乾顺（1083—1139），西夏崇宗，三岁即位，在位五十余年。前期由梁氏等摄政，亲政后整饬内政、提倡文教，并在辽、宋、金之间审慎周旋。其时西夏避开多线大战，国势一度恢复，是西夏由动荡转向中兴的重要君主。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -241,7 +241,7 @@ heroes:
     archetype: civil
     flavor: （1124年-1193年）西夏仁宗，在位五十四年。他颁行《天盛改旧新定律令》，大力兴学养士，推崇儒学与佛教，西夏文教臻于鼎盛。然其对外被迫臣服金朝，对内权臣任得敬擅权分国，晚年政局实有隐忧。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -254,7 +254,7 @@ heroes:
     archetype: military
     flavor: 任得敬（？—1170），西夏外戚权臣，原为宋朝边将降附西夏。以女为仁宗皇后得势，累官至楚王、太师。乾祐元年逼迫仁宗李仁孝分国自立，求金朝册封遭拒，事败被仁孝诛杀，西夏内乱暂息。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -267,7 +267,7 @@ heroes:
     archetype: military
     flavor: （？-1211年）西夏襄宗，弑君篡位者。他发动政变夺取皇位，但在蒙古入侵时表现软弱。他的统治加速了西夏的衰落。李安全所面对的并非单纯兵力对抗，还包括补给、地理与盟友稳定性的复合压力。因此，后人得以超越战果表层，观察组织效率、情报条件与统治目标之间如何相互制约。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -280,7 +280,7 @@ heroes:
     archetype: civil
     flavor: （1163年-1226年）西夏神宗，西夏末期皇帝。他是中国历史上唯一的状元皇帝，却在位期间与蒙古反复交战，国力大损。这位“状元天子”在强敌压境下屡作高风险决断，其成败常被视作西夏晚期制度韧性的集中检验。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -293,7 +293,7 @@ heroes:
     archetype: military
     flavor: 西夏末帝。公元1226年兄献宗惊惧而卒，李睍继位于危亡之际。次年成吉思汗大军围中兴府，李睍据城死守半载，粮尽援绝。1227年七月城破出降，旋为蒙古所杀，西夏遂亡。其即位不足两年，于国运倾颓之际勉力支撑，终难挽狂澜。西夏亡后典籍散佚，其生平细节多不可考。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -306,7 +306,7 @@ heroes:
     archetype: military
     flavor: 西夏宗室重臣。嵬名氏为西夏皇族之姓。西夏末年蒙古大举南侵，嵬名安惠率部力战不屈。其忠勇为时人所称。然传世文献对其官职、战历及最终结局均付阙如，仅知其于国难之际挺身抗敌，姓名因抗蒙事迹得以留存。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -319,7 +319,7 @@ heroes:
     archetype: civil
     flavor: （？-1183年）西夏名臣，学者。他精通汉学，推动西夏文化发展。他是西夏汉化进程的重要人物。与同题材人物相比，斡道冲在表达策略上的取舍更具个人印记，这正是其价值所在。围绕斡道冲的研究通常会在文本细读与时代语境之间往返，以避免人物评价被单一路径固化。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -332,7 +332,7 @@ heroes:
     archetype: military
     flavor: （1061年-1086年）西夏惠宗，幼年即位的皇帝。他母亲梁太后摄政，与宋朝关系紧张。他试图亲政却被软禁，抑郁而终。李秉常所处权力结构并不线性清晰，其关键选择通常受多方博弈共同塑造。这类个案对理解王朝治理节奏与政策传导损耗，提供了可操作的比较坐标。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -345,7 +345,7 @@ heroes:
     archetype: civil
     flavor: 西夏惠宗生母，毅宗谅祚皇后。惠宗七岁即位，梁氏以太后摄政，大权独揽。主政期间屡次对宋用兵，永乐城一役宋军死伤惨重。她对内诛除异己，一度幽禁亲宋的惠宗，长期掌控朝局。其统治强化了西夏军事自主，但连年征战亦使国力耗损。现存记载中关于其卒年与早年家世存在分歧。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -358,7 +358,7 @@ heroes:
     archetype: military
     flavor: 没藏讹庞，西夏外戚权臣，没藏太后之兄。景宗李元昊死后，以外戚身份辅佐年幼的毅宗李谅祚，独揽朝政十余年。权势极盛时，朝中大臣多出其门。后与谅祚矛盾激化，终被诛杀。其擅权为西夏早期外戚干政之典型，惜相关记档散佚，具体政务已难详考。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -371,7 +371,7 @@ heroes:
     archetype: military
     flavor: 野利遇乞，西夏名将，文字学家野利仁荣之兄。李元昊时期统军对宋作战，以骁勇著称，屡立战功。后遭宋朝离间，被元昊疑其不忠而赐死。其生平见于宋人笔记与西夏残档，然具体战役细节所存甚少。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -384,7 +384,7 @@ heroes:
     archetype: military
     flavor: 西夏宗室将领，从元昊征宋，好水川、定川寨之战功勋显著。其以骑战见长，善用地形设伏。晚年曾建言以守代攻、保存国力之策，然史籍记载有限，生平细节多不可考。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -397,7 +397,7 @@ heroes:
     archetype: military
     flavor: 曹玮仁，生平记载极为稀少。据零星追述，或为西夏末年将领，曾参与抵抗蒙古入侵。然正史无传，其族属、职衔及具体事迹均难确证。后世偶有提及，称其坚守城池，为党项末代守卫者之一，然真伪已难辨析。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -410,7 +410,7 @@ heroes:
     archetype: civil
     flavor: （生卒年不详）西夏宗室，出使大臣。他多次出使宋朝，维护西夏外交利益。他是西夏外交史上的重要人物。李彦宗案例在学术讨论中常被引用，是因为它能有效连接微观叙事与宏观结构。也正因为材料层次丰富，相关结论往往具备较好的迁移与比照价值。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -423,7 +423,7 @@ heroes:
     archetype: military
     flavor: （1122年-1161年）金海陵王，迁都燕京的皇帝。他雄心勃勃，发动南侵却在采石矶惨败。他残暴多疑，最终被部下所杀。他的失败标志着金朝由盛转衰。围绕完颜亮的政治评价经常出现分歧，原因在于短期稳定与长期代价并不总是同向。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -436,7 +436,7 @@ heroes:
     archetype: military
     flavor: 完颜陈和尚（1192—1232），金末将领，原名彝，字良佐，丰州人。早年因事系狱，后被金哀宗起用，率忠孝军屡挫蒙古军。天兴元年三峰山之战金军溃败，他退守钧州，城破被俘，拒降被杀。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -449,7 +449,7 @@ heroes:
     archetype: military
     flavor: 完颜守绪（1198—1234），金朝末帝，庙号哀宗。在位期间疆土日蹙，先弃汴京，退守蔡州。天兴三年，宋蒙联军合围蔡州，城中粮尽援绝。守绪知大势已去，传位于完颜承麟，遂自缢于幽兰轩。其死标志着立国百二十年的女真金朝覆亡。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -462,7 +462,7 @@ heroes:
     archetype: military
     flavor: 完颜吴乞买（1075—1135），汉名完颜晟，金太祖阿骨打之弟，金朝第二位皇帝。天会三年挥师南下，攻克汴京，虏宋徽宗、钦宗北归，北宋灭亡，史称靖康之变。在位期间推行汉制，设三省，定礼乐，奠定金朝统治中原的根基。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -475,7 +475,7 @@ heroes:
     archetype: civil
     flavor: （1119年-1150年）金熙宗，金朝第三位皇帝。他推行汉化改革，改官制、建礼仪。虽然晚年昏庸，却为金朝的封建化进程做出了贡献。将完颜晟与同代统治者并读，可更准确地识别其策略选择的独特性与局限性。这使其成为连接政治史、制度史与社会史的重要交汇点。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -488,7 +488,7 @@ heroes:
     archetype: civil
     flavor: （1168年-1208年）金章宗，金朝文化鼎盛时期的皇帝。他精通诗词书画，在位期间金朝文化达到顶峰。“泰和体”诗歌成为一代风尚。章宗朝以文治著称，但繁华背后同样积累了军政隐忧，这种盛衰并存的局面正是金末转折的前奏。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 12
@@ -501,7 +501,7 @@ heroes:
     archetype: military
     flavor: 完颜珣（1163—1224），金宣宗，金朝第八位皇帝。即位时蒙古已大举南下，中都残破。贞祐二年力排众议迁都汴京，金廷得以暂避锋芒。然其对宋开战、弃河北于不顾之策，后世争议颇多。在位十一年，虽勉力支撑，终未能扭转国势倾颓。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -514,7 +514,7 @@ heroes:
     archetype: military
     flavor: 金卫绍王，章宗之弟。即位后蒙古南侵，金军节节败退，中都告急。其优柔寡断，未能遏制朝中权臣倾轧，在位六年即为纥石烈胡沙虎所弑。史称其「柔弱鲜智能」，金室自此由盛转衰。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -527,7 +527,7 @@ heroes:
     archetype: military
     flavor: 完颜娄室（1077—1130），金朝开国大将，字斡里衍。早年随阿骨打起兵，灭辽战争中屡建战功，擒辽天祚帝。后随完颜宗翰南下攻宋，屡败宋军。天会八年病卒于军中。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -540,7 +540,7 @@ heroes:
     archetype: military
     flavor: 金开国将领，从阿骨打起兵，参与护步答冈、黄龙府等灭辽关键战役。后率军追击辽天祚帝，收降奚部。其生平于《金史》有载，但早年履历不详，具体战功往往与同侪混记。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -553,7 +553,7 @@ heroes:
     archetype: military
     flavor: 完颜杲（1068—1123），金朝开国宗王，阿骨打同母弟，女真名斜也。太祖时受命统军灭辽，任内外诸军都统。天辅六年破辽中京，追辽天祚帝。太宗即位后受命经略中原，天会元年病卒。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -566,7 +566,7 @@ heroes:
     archetype: military
     flavor: （?-1140年）金朝名将，完颜宗弼的部将。他在对宋战争中屡建奇功，是金军南侵的重要将领。从完颜银术可可见，短期军事成绩未必等同于长期政治与战略收益。完颜银术可相关史料之所以常被引用，在于其个案能够同时呈现前线压力与后方治理的联动关系。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -579,7 +579,7 @@ heroes:
     archetype: military
     flavor: 完颜昂（？—1162年），金朝宗室，为完颜亮所亲信。皇统九年参与弑熙宗之变，完颜亮即位后授以兵权。正隆年间随亮南侵，统前锋之师。正隆六年完颜亮在瓜洲被弑，昂亦死于乱军之中。其生平记载零散，诸事细节难详。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -592,7 +592,7 @@ heroes:
     archetype: military
     flavor: 金末名将，与完颜陈和尚齐名。三峰山之战，金军主力遭蒙军四面包围，粮道断绝。合达率残部力战，士卒饥冻交迫仍无降意，终与陈和尚同殉于阵。其忠勇为敌所敬，然金室已颓，独木难支。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -605,7 +605,7 @@ heroes:
     archetype: military
     flavor: 完颜仲德（？—1234年），金末重臣。天兴元年拜尚书右丞，次年随哀宗迁蔡州，主持城防。蒙宋联军围城数月，仲德激励将士，昼夜督战。天兴三年正月城破，率残部巷战，投汝水而死。金末殉节之臣，仲德最为壮烈。史载其守城细节甚少，方略已不可考。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -618,7 +618,7 @@ heroes:
     archetype: military
     flavor: 完颜承裔（？-1230），金末将领。蒙古攻金期间，他在河北一带率部抵御，多次挫败蒙军攻势，为风雨飘摇的金朝争取了喘息之机。然金室衰微，孤城难守，最终以身殉国。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -631,7 +631,7 @@ heroes:
     archetype: military
     flavor: 蒲察官奴（？—1233年），金末将领，忠孝军统制。天兴二年哀宗困守归德，官奴率部屡挫蒙古追兵，以少击众，军心赖之稍定。然其恃功骄恣，擅杀朝臣，渐为哀宗所忌。未几，哀宗设计诛之。其善战与结局之酷，为金末军将失驭之一例。战事细节史载阙如。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42

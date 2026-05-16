@@ -100,8 +100,8 @@ heroes:
     default_morality: 70
     recruitable: true
     growth_range:
-    - 3
-    - 6
+    - 4
+    - 7
     attribute_weights:
       force: 15
       intellect: 40
@@ -206,7 +206,7 @@ heroes:
     recruitable: true
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 10
       intellect: 45
@@ -311,7 +311,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 30
@@ -326,7 +326,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 20
@@ -341,7 +341,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 30
@@ -371,7 +371,7 @@ heroes:
     default_morality: 90
     recruitable: true
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 30
@@ -386,7 +386,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 40
@@ -401,7 +401,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 30
@@ -416,7 +416,7 @@ heroes:
     default_morality: 60
     recruitable: true
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 30
@@ -431,7 +431,7 @@ heroes:
     default_morality: 90
     recruitable: true
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 35
@@ -446,7 +446,7 @@ heroes:
     default_morality: 85
     recruitable: true
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 35
@@ -463,7 +463,7 @@ heroes:
     recruitable: true
     growth_range:
     - 7
-    - 10
+    - 11
     attribute_weights:
       force: 35
       intellect: 15
@@ -478,7 +478,7 @@ heroes:
     recruitable: true
     growth_range:
     - 8
-    - 10
+    - 11
     attribute_weights:
       force: 32
       intellect: 28
@@ -493,7 +493,7 @@ heroes:
     recruitable: true
     growth_range:
     - 7
-    - 10
+    - 11
     attribute_weights:
       force: 35
       intellect: 20
@@ -508,7 +508,7 @@ heroes:
     recruitable: true
     growth_range:
     - 7
-    - 10
+    - 11
     attribute_weights:
       force: 30
       intellect: 20

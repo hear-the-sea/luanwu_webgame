@@ -59,7 +59,7 @@ heroes:
     flavor: （生卒年不详）蒯彻，楚汉之际谋士，先后服务诸侯，尤以游说与战略判断见长。其主要贡献在于提出因势制衡的谋略框架，深刻影响了楚汉战争后期的政治与军事布局。
     growth_range:
     - 5
-    - 8
+    - 10
     attribute_weights:
       force: 14
       intellect: 51

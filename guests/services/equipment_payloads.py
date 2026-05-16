@@ -79,7 +79,16 @@ def normalize_active_set_bonus(raw: Any) -> dict[str, int]:
     return normalized
 
 
-def normalize_template_set_bonus(raw: Any) -> dict[str, Any]:
+def normalize_template_set_bonus(raw: Any) -> dict[str, Any] | list[dict[str, Any]]:
+    if isinstance(raw, list):
+        normalized_entries: list[dict[str, Any]] = []
+        for entry in raw:
+            normalized = normalize_template_set_bonus(entry)
+            if isinstance(normalized, list):
+                normalized_entries.extend(normalized)
+            else:
+                normalized_entries.append(normalized)
+        return normalized_entries
     payload = require_mapping(raw, field_name="set_bonus")
     pieces = payload.get("pieces")
     bonuses = payload.get("bonus") or payload.get("bonuses") or payload

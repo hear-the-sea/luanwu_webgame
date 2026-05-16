@@ -6,7 +6,7 @@ heroes:
     archetype: civil
     flavor: （生卒年不详）喻皓是北宋著名都料匠，以营造术闻名。开封开宝寺塔常与其名相连，沈括《梦溪笔谈》还记下他解释木塔“似倾而正”的构造道理。其所著《木经》虽已失传，却长期被视作宋代营造法的重要源头。
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 14
@@ -19,7 +19,7 @@ heroes:
     archetype: military
     flavor: （991年—1047年）滕宗谅是北宋边臣，任庆州知州时整修城防、招辑流民，西北军政颇有成效。后又重修巴陵岳阳楼，请范仲淹作《岳阳楼记》，遂使一座楼、一篇文与其姓名一并流传。被记住的不只是文名缘分，也有实打实的治边政绩。
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 42
@@ -32,7 +32,7 @@ heroes:
     archetype: military
     flavor: （生卒年不详）焦赞在正史中着墨不多，却因杨家将故事长期流传。民间演义多写他与孟良并称，常为抗辽军中的冲阵先锋，以勇猛、急烈、善破围著称。后世记住焦赞，主要不是因显赫官爵，而是因他在杨家将叙事里成了北宋猛将形象的一部分。
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 47
@@ -60,7 +60,7 @@ heroes:
     flavor: （生卒年不详）孔延龄为宋代孔子后裔，名字多见于朝廷优礼孔门、维持曲阜奉祀的记录。宋廷不断以赐爵、赐田、修庙和整饬祀典来巩固孔氏宗主地位，他正是这一套礼制运作中的人物。后世记其名，主要是因其身处宋代尊孔制度的核心脉络。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 53
@@ -99,7 +99,7 @@ heroes:
     flavor: （生卒年不详）刘永年见于宋代州县任官记录，现存材料主要保存其在地方行政体系中的位置，详细生平已难尽考。这类官员不以一场大战成名，却实际承接仓廪、差役、文移等日常政务。其名能留在史料中，本身就说明他曾是地方运转链条上的实任人物。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 17
       intellect: 50
@@ -112,7 +112,7 @@ heroes:
     flavor: （生卒年不详）王仁睿是宋初内廷人物，出自赵光义旧邸近侍，后入宫禁任事。太宗朝宗室疑狱频仍，他的名字与赵廷美案等宫廷政治事件一并见于记载。后世记住王仁睿，并非因为文治武功，而是因为他卷入了宋初皇权整合时最敏感的内廷事务。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 52
@@ -125,7 +125,7 @@ heroes:
     flavor: （生卒年不详）吴仁裕活动于五代入宋之际，名字留在宋初人物与任官记录中。其生平事迹不若名臣名将显赫，但正因这类人在新旧政权交替间继续供职，才使州县文书、行政秩序得以承续。后世提及吴仁裕，多把他放在宋初承接旧制的人物群中理解。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 17
       intellect: 50
@@ -138,7 +138,7 @@ heroes:
     flavor: （生卒年不详）孔端操是宋代孔氏后裔，名字主要见于孔门世系、袭封承祀和庙学祭礼相关记录。宋朝尊孔，不只靠颁诏，还要靠曲阜孔氏一代代主持奉祀、维系门庙秩序。后世保存孔端操之名，正是因为他属于这条礼制传承中的具体人物。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 16
       intellect: 51
@@ -151,7 +151,7 @@ heroes:
     flavor: （生卒年不详）王景绝见于宋代任官与地方政务记录，现存史料对其个人经历着墨不丰，能确认的主要是其身处州县行政体系之中。此类人物留下的不是传奇故事，而是实打实的公事履历。后世提到王景绝，更多是把他放回宋代基层治理网络里来看。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 13
       intellect: 52
@@ -164,7 +164,7 @@ heroes:
     flavor: （生卒年不详）陈太初是宋代官员，名字见于州县任职与文事记载，具体仕历虽不完备，却可知其并非空见于谱录之人。宋代大量地方事务依靠此类士人官员承接，他们未必留下大传，却在赋役、教化与讼狱等日常政务中留下痕迹。陈太初之名，便是这样保存下来的。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 14
       intellect: 51
@@ -203,7 +203,7 @@ heroes:
     flavor: （生卒年不详）范墉同属宋代范氏家族，现存记载多保留其任官与家族脉络。两宋范门人物繁多，能在史料中留下姓名者，多半都实际进入过官僚体系。范墉的史料价值，便在于他让后人看到范仲淹家族并非只出名臣，也有一批分布各地的仕宦成员。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 14
       intellect: 52
@@ -216,7 +216,7 @@ heroes:
     flavor: （生卒年不详）范正平是宋代范氏后裔，名字见于家传与任官记录。范氏自范仲淹以后数代有人出仕，许多人物虽无专门列传，却仍能从谱系和官历中辨出其存在。范正平被保存下来，正说明范门仕宦影响并未止于一二位显达人物。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 13
       intellect: 53
@@ -229,7 +229,7 @@ heroes:
     flavor: （生卒年不详）范正思亦属宋代范氏后裔，相关材料主要来自家族世系与任官名录。两宋士大夫家族常以谱牒和墓志保存成员经历，范正思之名便是在这类材料中得以留存。后世提起他，多半是在追索范门支派与仕宦分布时一并论及。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 14
       intellect: 54
@@ -242,7 +242,7 @@ heroes:
     flavor: （生卒年不详）范正民是宋代范氏家族成员，名字见于范门后裔的谱录与任官信息。此类人物未必留下单独传记，但他们共同构成了北宋名门长期出仕的社会事实。范正民之名被后人记下，正是因为他属于这一持续数代的士族仕宦链条。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 14
       intellect: 53
@@ -255,7 +255,7 @@ heroes:
     flavor: （生卒年不详）范直筠是宋代范氏后裔，名字留在范氏家传与任官记录中。范氏一门不仅有范仲淹、范纯仁这类名臣，也有许多散在州县任事的后人。范直筠虽无显赫专传，但其姓名留存本身，就是范门影响深入地方官僚体系的证据。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 51
@@ -281,7 +281,7 @@ heroes:
     flavor: （生卒年不详）范纯佑出自范仲淹家族，名字见于范门子弟仕历。北宋范氏后人分任州县与朝官，许多人没有显赫事功，却因家世和官历被完整记下。后世提到范纯佑，通常是在梳理范仲淹后裔时，把他列为有官守可考的一支。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 17
       intellect: 50
@@ -307,7 +307,7 @@ heroes:
     flavor: （1072年—1144年）葛胜仲是北宋末南宋初文臣，历任中书舍人、翰林学士等职，南渡后仍参与朝廷文诰政务。他以文章见长，著有《丹阳集》，又亲历两宋之际的政局转折。后世记其名，既因词臣文采，也因他留下了南北鼎革时的士大夫见闻。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 54
@@ -320,7 +320,7 @@ heroes:
     flavor: （生卒年不详）刘承珪是宋代内臣，名字见于内廷供奉、库藏或造作事务相关记录。宋代宫中器用、财货与传宣并非小事，往往都由内臣具体承办。后世保存刘承珪之名，正因为他属于宋代内廷运作体系里有职掌可考的人物。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 52
@@ -333,7 +333,7 @@ heroes:
     flavor: （生卒年不详）李从善是南唐宗室，李煜之弟，曾多次奉命出使北宋。南唐亡国后，他随宗室入宋，成为南唐故国人物北迁的代表之一。后世记李从善，主要因为他站在南唐与北宋关系的交界处，既见证了出使往来，也见证了故国覆亡。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 14
       intellect: 53
@@ -346,7 +346,7 @@ heroes:
     flavor: （生卒年不详）李神祐在公议之中不靠声量取胜，他更擅长把笼统条目拆成能执行的细则，让事情有人领、有人办、有人核。局势反复时，这样的本事尤其可贵，因为它能替法度保住连续性，也替官府省下许多反复折腾。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 14
       intellect: 50
@@ -359,7 +359,7 @@ heroes:
     flavor: （1000年—1070年）梁适是北宋仁宗、英宗朝重臣，早年历任州郡，后入中枢，官至同中书门下平章事。他在地方任上处理赋役、整饬吏治，入相后又参与朝廷大政。梁适被记住，不只因位至宰辅，更因他走的是由能吏而成台阁重臣的路数。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 50
@@ -424,7 +424,7 @@ heroes:
     flavor: （1034年—1097年）钱勰是北宋文臣，吴越王钱俶之后，历任知制诰、翰林学士等职，也曾出使辽国。其文名之外，更有承当外交使命的实绩，与苏轼等人亦多唱和往来。后世记钱勰，常把他看作兼有词臣风采与使臣才干的一类人物。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 14
       intellect: 54
@@ -450,7 +450,7 @@ heroes:
     flavor: （生卒年不详）王守规是宋代官员，名字散见于任官与地方政务材料。虽然详细生平不易复原，但其姓名能够保存在题名和史传附见之中，说明其并非虚名人物。后世提王守规，主要是在宋代州县治理与官僚网络里确认其位置。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 12
       intellect: 52
@@ -463,7 +463,7 @@ heroes:
     flavor: （生卒年不详）谢德权见于宋代官僚任使记录，活动范围大致在地方行政与上传下达的体系之内。对这种人物，史书往往只留姓名、职任与所涉公事，不专记其日常。谢德权之名能留下，恰说明他确曾参与宋代政务运转的具体环节。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 15
       intellect: 54
@@ -489,7 +489,7 @@ heroes:
     flavor: （967年—1020年）姚铉是宋初文臣兼学者，最著名的事迹是奉诏编成《唐文粹》一千卷，为唐代文章保存大批篇章。宋初崇文修书，他正是这一文化工程的重要参与者。后世提起姚铉，多先想到《唐文粹》，再想到他本人的仕历。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 12
       intellect: 50
@@ -502,7 +502,7 @@ heroes:
     flavor: （生卒年不详）张继能是宋代官员，名字见于州县任职和文教政务相关材料。现存史料不够铺开其全貌，但至少能确定其真实处在宋代地方治理链条之中。后世保留张继能之名，也正因为他曾在文教与吏治事务中留下实际位置。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 16
       intellect: 51
@@ -528,7 +528,7 @@ heroes:
     flavor: （1040年—1090年）赵禼是神宗朝能臣，历任西北边职与朝中要任，长期参与边防、军储和对夏事务。其名多见于西北经略与台谏政论，既熟边情，也能在朝廷议事。后世称道赵禼，主要因他是北宋少见兼通边务与中枢政务的人。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 12
       intellect: 54
@@ -541,7 +541,7 @@ heroes:
     flavor: （1031年—1098年）朱寿昌是北宋官员，幼年生母被逐，至中年仍四方访求，甚至一度弃官远行，终于在陕州寻得母亲并迎养终老。“弃官寻母”一事传遍天下，朝廷亦加旌表。后世记朱寿昌，首先记的就是这桩真切可考的孝行。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 16
       intellect: 50
@@ -554,7 +554,7 @@ heroes:
     flavor: （1000年—1065年）陈希亮是北宋官员，历知州郡，以治事严明、敢抑豪强著称，后人也常因其为苏轼岳父而记其名。他在地方任上处断积案、整饬吏治，留下的是能吏声名。被记住的原因，一半在政绩，一半在与苏氏家族的关联。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 50
@@ -566,8 +566,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）种朴出自北宋西北种氏将门，相关记载主要见于种氏家族与边防军务材料。种家数代守边、长期与西夏周旋，他的名字正是在这种家族军事传统中被保存。后世论种朴，多不离“种家军”这一西北将门背景。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 48
       intellect: 13
@@ -579,7 +579,7 @@ heroes:
     archetype: military
     flavor: （生卒年不详）甘昭吉是宋代武臣，名字散见于边防驻军与将校记录。现存材料虽难拼出完整传记，但可知其属于实任军职人物，而非后起附会。后世保存甘昭吉之名，主要因为他身处宋代长期守边、轮驻、调兵的军务体系之中。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -592,8 +592,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）高延德见于宋代武臣名录与边地军务材料，主要活动应在驻防、行军一线。对这类中层将校，史书往往只保留任职和战事位置，不详叙个人生平。高延德之名之所以得存，正因为他曾在宋代边防系统中实际任事。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 48
       intellect: 18
@@ -605,8 +605,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）韩守英是宋代武臣，名字散见于边防军务和将校名录。宋代不少中层将领只在战事或调兵记录中短暂出现，但这已足以证明其军职身份。韩守英被后人记下，主要因为他曾是宋军边防体系中的实任将校。
     growth_range:
-    - 4
-    - 6
+    - 3
+    - 7
     attribute_weights:
       force: 47
       intellect: 12
@@ -618,8 +618,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）刘几是宋代军职人物，名字可见于边防与军务记载。现存史料着墨不多，但能确认其属于宋军将校序列，而非纯粹传说人物。后世提到刘几，主要是把他置于宋代守边将领与军政执行层中理解。
     growth_range:
-    - 4
-    - 6
+    - 3
+    - 7
     attribute_weights:
       force: 47
       intellect: 13
@@ -631,8 +631,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）刘惟简见于宋代军政链条中的任职记载，虽无完整列传，但并非只存于杂说。其姓名能在边务材料中被保存下来，说明其确曾参与守边或调兵事务。后世理解刘惟简，也应放在宋军实际运转的背景里。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 47
       intellect: 18
@@ -644,8 +644,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）啰麻当属宋代边地或部族武人，名字本身便显示其并非中原士族出身。此类人物多见于边境军报、招抚和征讨记录，是宋廷经营边地时不可回避的力量。后世记啰麻，重点就在其所代表的边疆军事色彩。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 48
       intellect: 14
@@ -657,7 +657,7 @@ heroes:
     archetype: military
     flavor: （生卒年不详）李光祚见于宋代将校与军务材料，主要留名于守边、驻军一类记录。宋代许多武臣没有完整列传，只能从战事、调兵、军职升转中辨认其活动。李光祚便属于这类有军历可考的实任武臣。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 45
@@ -670,8 +670,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）李大信的名字散见于宋代军前与后方衔接事务记录，可知其并非只参与单一战阵，而与行军调度、军务执行有关。此类人物常不以显赫战功著史，却直接承担军队运转。后世保存李大信之名，也正因为他处在这种关键的执行位置。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 47
       intellect: 16
@@ -683,8 +683,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）李继冲多见于宋代军报和战役相关记载，是有名可稽的武臣。史料对其个人细节交代不多，但能确认其曾参与实际军务，而不是只在演义中出现。李继冲被记下，主要因其身处宋代边战与调兵体系之内。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 46
       intellect: 16
@@ -696,8 +696,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）李舜举是宋代武臣，名字见于军中任使和边地事务记录。现存史料虽未详述其个人经历，但足可确认其曾在宋军体系中实际任职。后世保存李舜举之名，主要基于这些可以落实到军务位置的材料。
     growth_range:
-    - 4
-    - 6
+    - 3
+    - 7
     attribute_weights:
       force: 45
       intellect: 15
@@ -709,7 +709,7 @@ heroes:
     archetype: military
     flavor: （生卒年不详）吕璹是宋代武臣，名字见于军政链条中的任职记录。对这种中层将领，史书往往只保留其所在军职、所处战线与相关军务，很少铺陈生平。吕璹能够留名，说明其确实参与过宋代边防或驻军体系的运作。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -722,8 +722,8 @@ heroes:
     archetype: military
     flavor: （941年—1008年）秦翰是北宋名宦官将领，太宗、真宗朝长期出镇边地，参与河北、河东一线军务。宋代宦官多掌内廷，而秦翰却能久预军政、屡立边功，在宋初极为少见。后世谈宋初边将，常把他视作宦者统兵的代表人物。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 48
       intellect: 14
@@ -735,8 +735,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）孙行友见于宋代军务与将校记录，其名主要保存在守边、行军或军械粮道相关材料中。此类武臣未必有专传，却是战争真正赖以运转的基层骨架。后世提孙行友，更多是把他视作宋军系统中的实任将校。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 48
       intellect: 15
@@ -748,8 +748,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）盛佶多见于宋代军务记录，属于有名可稽的将校人物。其史料不以文采见长，而是散在调兵、守御、行军等材料之中。后世记盛佶，重在确认其曾身处军前体系，而不是为其附会过多性格判断。
     growth_range:
-    - 4
-    - 6
+    - 3
+    - 7
     attribute_weights:
       force: 44
       intellect: 15
@@ -761,8 +761,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）石知颙是宋代武职人物，名字散见于守边和军政材料。其事迹虽不完整，却足以表明他属于宋军将校系统，而非只留一名于杂说。后世保存石知颙之名，正因为这些零散记录共同勾出了一位真实在军中任事的武臣。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 46
       intellect: 14
@@ -774,8 +774,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）田仁朗见于宋代战事与军务记录，主要属于有名可考的将校人物。宋军前线的大量守城、转运、轮驻事务往往不写成传奇，却都需要具体武臣承担。田仁朗之名得以保留，便说明他曾参与这类实际军务。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 46
       intellect: 15
@@ -787,8 +787,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）王庶是两宋之际主张恢复的将臣，靖康之后曾上书朝廷，主张联络两河义军、收复失地。其言多切中时势，却不尽为主和者所用，仕途亦因此受挫。后世记王庶，主要记的是这份在南渡初年仍坚持北伐恢复的主张。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 48
       intellect: 12
@@ -800,7 +800,7 @@ heroes:
     archetype: military
     flavor: （生卒年不详）杨师璠的名字多见于战役纪载和地方军务材料，说明其活动与平乱、守边等事务有关。虽然细节残缺，但其身份并不虚浮，而是可放回宋代地方武备体系中理解。后世记杨师璠，主要也是因其在这一类军务记录里留下了位置。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 42
@@ -813,8 +813,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）姚友仲是宋代武臣，名字散见于边防或地方军务记录。两宋军中人物众多，能被史料留下姓名者，往往都曾真实参与驻防、征讨或整军事务。姚友仲留名的意义，也正在于其属于这类有军历可稽的将校人物。
     growth_range:
-    - 4
-    - 6
+    - 3
+    - 7
     attribute_weights:
       force: 42
       intellect: 14
@@ -826,8 +826,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）赵崇韬的本事，不在夸耀，而在关键节点总能下对手。守城、野战、追击三样场面切换之间，他懂得及时变阵，不让部伍困死在一套旧法里。政局越反复，这种统御基本功越显得硬。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 47
       intellect: 18
@@ -839,8 +839,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）全师雄是北宋初蜀中起事人物，曾聚众反宋，一度围逼成都，成为西南局势中的大乱源。其名之所以载入史册，不在忠义评价，而在这场震动朝廷的地方兵变。后人提到全师雄，往往就是在讲宋初平蜀后的余波未息。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 48
       intellect: 18
@@ -852,8 +852,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）孙路见于宋代将校和军务材料，具体生平虽不完备，但其军职身份并不模糊。宋代边防体系中大量人物正是以这种方式留下姓名，只见任事位置，不见长篇列传。孙路便属于这类有军历可考的武臣。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 48
       intellect: 13
@@ -865,7 +865,7 @@ heroes:
     archetype: military
     flavor: （生卒年不详）种诂同为北宋种氏将门人物，名字见于西北边务与家族世系。种氏一门在宋夏前线久有声名，成员往往以守边、驻军、经略军寨留名。种诂被后世记住，正因为他属于这支以西北军功著称的将门脉络。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 43
@@ -878,8 +878,8 @@ heroes:
     archetype: military
     flavor: （生卒年不详）种诊也是北宋种氏武臣一脉，史料对其个人事迹着墨有限，但其名字确实保存在西北将门与边战记录中。种氏家族数代在宋夏边境任事，许多成员正因军寨、守边与调兵经历而见于史传。种诊的历史位置，也应放在这一长期边防体系中理解。
     growth_range:
-    - 4
-    - 8
+    - 3
+    - 7
     attribute_weights:
       force: 48
       intellect: 11
@@ -891,7 +891,7 @@ heroes:
     archetype: military
     flavor: （生卒年不详）窦神宝是宋代武臣，名字散见于战事和军职升转记录。现存材料虽不足以详叙其一生，但可确认其参与过宋代军事系统的实际运作。后世提窦神宝，主要就是把他放在边军将校这一层面上来认识。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 44
@@ -904,7 +904,7 @@ heroes:
     archetype: military
     flavor: （生卒年不详）郭京是靖康年间最具争议的人物之一，自称能用“六甲法”退敌，竟被朝廷委以守城之任。他主张开宣化门出战，结果宋军大败，东京防线随之崩溃。后世记住郭京，正是把他当作靖康误国、怪力乱政的典型。
     growth_range:
-    - 4
+    - 3
     - 7
     attribute_weights:
       force: 43
@@ -918,7 +918,7 @@ heroes:
     flavor: （生卒年不详）陈千二见于宋代地方行政人物记录，相关材料多保留其姓名与公事位置。此类人物往往没有显赫家世或专传，却真实参与州县治理、兵后收拾或民政执行。后世保存陈千二之名，正是因为他属于这批有迹可寻的基层官员。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 14
       intellect: 53
@@ -931,7 +931,7 @@ heroes:
     flavor: （生卒年不详）陈咏是宋代官员，名字见于任官和政务执行材料。史料没有为他单开大传，但仍留下其所处官职与行政轨迹，可见其属于真实在职的宋代臣僚。后世提及陈咏，重点也在这种可核的任官身份，而非附会气质评语。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 12
       intellect: 50

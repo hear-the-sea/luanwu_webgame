@@ -261,7 +261,7 @@ def test_default_mission_templates_import_wanxian_niming_chain():
     call_command("load_mission_templates", file=str(payload_path), verbosity=0)
 
     biyou = MissionTemplate.objects.get(key="biyou_candeng")
-    assert biyou.name == "碧游残灯"
+    assert biyou.name == "封神之战：碧游残灯"
     assert biyou.difficulty == "advanced"
     assert biyou.daily_limit == 3
     assert biyou.entry_cost == {}
@@ -276,17 +276,57 @@ def test_default_mission_templates_import_wanxian_niming_chain():
     ]
 
     shier = MissionTemplate.objects.get(key="shier_xianyin")
-    assert shier.name == "十二仙印"
+    assert shier.name == "封神之战：十二仙印"
     assert shier.daily_limit == 2
     assert shier.entry_cost == {"wanyin_flag_fragment": 1}
     assert shier.drop_table["yuxu_broken_seal"] == {"chance": 0.25, "count": 1}
 
     fengbang = MissionTemplate.objects.get(key="fengbang_tianmen")
-    assert fengbang.name == "封榜天门"
+    assert fengbang.name == "封神之战：封榜天门"
     assert fengbang.daily_limit == 1
     assert fengbang.entry_cost == {"yuxu_broken_seal": 1}
     assert "fengbang_torn_page" not in fengbang.drop_table
     assert fengbang.drop_table["equip_fengshenbang"] == 0.005
+
+
+@pytest.mark.django_db
+def test_default_mission_templates_import_zhuolu_zhongyuan():
+    payload_path = settings.BASE_DIR / "data" / "mission_templates.yaml"
+
+    call_command("load_mission_templates", file=str(payload_path), verbosity=0)
+
+    mission = MissionTemplate.objects.get(key="zhuolu_zhongyuan")
+    assert mission.name == "逐鹿中原"
+    assert mission.difficulty == "advanced"
+    assert mission.daily_limit == 1
+    assert mission.base_travel_time == 3600
+    assert mission.enemy_guests == [
+        "task_zhuolu_chiyou",
+        "task_zhuolu_fengbo",
+        "task_zhuolu_yushi",
+        "task_zhuolu_shitieshou",
+        "task_zhuolu_shitieshou",
+        "task_zhuolu_shitieshou",
+    ]
+    assert mission.enemy_troops == {
+        "dao_sheng": 1000,
+        "qiang_wang": 1000,
+        "jian_sheng": 1000,
+        "quan_sheng": 900,
+        "arrow_god": 900,
+    }
+    assert mission.enemy_technology == {"level": 10, "guest_level": 100, "guest_bonus": 0.62}
+    assert mission.drop_table == {
+        "silver": 100000,
+        "experience_watermelon": {"chance": 0.7, "count": 4},
+        "book_bloodthirsty_fury": 0.05,
+        "book_desperate_beast": 0.05,
+        "book_prison_break_blade": 0.04,
+        "book_city_felling_strike": 0.04,
+        "equip_shanheshejitu": 0.01,
+        "equip_zhoutianxingpan": 0.01,
+        "equip_xuanyuanjian": 0.005,
+    }
 
 
 @pytest.mark.django_db

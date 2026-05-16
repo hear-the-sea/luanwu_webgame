@@ -103,6 +103,21 @@
                                 <div class="tw-tooltip-set">
                                     <div class="tw-set-name">套装：{{ payload.set_description }}</div>
                                     {% if payload.set_bonus %}
+                                    {% if payload.set_bonus.0 %}
+                                    {% for set_bonus in payload.set_bonus %}
+                                    <div class="tw-set-bonus">
+                                        <span>{{ set_bonus.pieces }}件套效果：</span>
+                                        {% if set_bonus.bonus.hp %}生命+{{ set_bonus.bonus.hp }} {% endif %}
+                                        {% if set_bonus.bonus.defense %}防御+{{ set_bonus.bonus.defense }} {% endif %}
+                                        {% if set_bonus.bonus.force %}武力+{{ set_bonus.bonus.force }} {% endif %}
+                                        {% if set_bonus.bonus.agility %}敏捷+{{ set_bonus.bonus.agility }} {% endif %}
+                                        {% if set_bonus.bonus.luck %}幸运+{{ set_bonus.bonus.luck }} {% endif %}
+                                        {% if set_bonus.bonus.intellect %}智力+{{ set_bonus.bonus.intellect }} {% endif %}
+                                        {% if set_bonus.bonus.attack %}攻击+{{ set_bonus.bonus.attack }} {% endif %}
+                                        {% if set_bonus.bonus.troop_capacity %}可携带护院人数+{{ set_bonus.bonus.troop_capacity }} {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                    {% else %}
                                     <div class="tw-set-bonus">
                                         <span>{{ payload.set_bonus.pieces }}件套效果：</span>
                                         {% if payload.set_bonus.bonus.hp %}生命+{{ payload.set_bonus.bonus.hp }} {% endif %}
@@ -111,8 +126,10 @@
                                         {% if payload.set_bonus.bonus.agility %}敏捷+{{ payload.set_bonus.bonus.agility }} {% endif %}
                                         {% if payload.set_bonus.bonus.luck %}幸运+{{ payload.set_bonus.bonus.luck }} {% endif %}
                                         {% if payload.set_bonus.bonus.intellect %}智力+{{ payload.set_bonus.bonus.intellect }} {% endif %}
+                                        {% if payload.set_bonus.bonus.attack %}攻击+{{ payload.set_bonus.bonus.attack }} {% endif %}
                                         {% if payload.set_bonus.bonus.troop_capacity %}可携带护院人数+{{ payload.set_bonus.bonus.troop_capacity }} {% endif %}
                                     </div>
+                                    {% endif %}
                                     {% endif %}
                                 </div>
                                 {% endif %}

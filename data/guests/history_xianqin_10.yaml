@@ -7,7 +7,7 @@ heroes:
     archetype: civil
     flavor: （生卒年不详）卞庄子，名声未必最显，却常在艰难时局中承担收束纷争的职责。善把空泛议论落回具体条目，令文书、钱粮与吏责彼此咬合，不致各行其是。其治务不倚猛药，宁以连续修补积累成效，故往往后劲更长。
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 12
@@ -20,7 +20,7 @@ heroes:
     archetype: civil
     flavor: （生卒年不详）韩厥，素以稳而能断著称，少空论，多实作。处理边地与腹地事务时，他坚持因地制宜，反对粗暴套用同一尺度。其难得处不在高论，而在能把原则化成可执行的日常秩序。
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 17
@@ -33,7 +33,7 @@ heroes:
     archetype: civil
     flavor: （生卒年不详）柳下惠，不独以操守闻名，亦见于其处理公务的分寸感。善统筹财政与人力，使紧绷资源仍可支撑基本秩序，不令理想沦为空谈。其贡献并非轰烈，却常在长期治理中稳稳显现。
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 14
@@ -46,7 +46,7 @@ heroes:
     archetype: civil
     flavor: （生卒年不详）吴王僚，相关记述虽散，却仍可见其在关键政务上的稳定手腕。其思路重缓急有序，不以短期胜负透支长期承受，故能在波动中维持基本框架。其风格克制而务实，使其影响多属静水深流。
     growth_range:
-    - 6
+    - 5
     - 9
     attribute_weights:
       force: 13
@@ -61,7 +61,7 @@ heroes:
     flavor: 伯舆，史籍载录有限。主政地方时以沉稳见称，赋役与争讼交织之际，先定章程而后安民心，不以苛急图速效。不慕虚名，着力将芜杂政令梳理为有据可依之常例，使属吏知所守、百姓知所从。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 12
       intellect: 50
@@ -87,7 +87,7 @@ heroes:
     flavor: 北宫结，卫大夫，襄公朝臣。于公事能辨曲直，断狱不徇私情。每议旧制积弊，辄指其关节不通处，并举替代条目，不务空言。同僚惮其直，然事过多服其公允。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 12
       intellect: 51
@@ -100,7 +100,7 @@ heroes:
     flavor: 北宫遗，春秋时卫国大夫，其名略见于《左传》。卫献公出奔之际，北宫遗奉命出使，于列国间斡旋周旋，言辞有节而不失卫之体面。史载零碎，其后行迹无多可考。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 16
       intellect: 52
@@ -113,7 +113,7 @@ heroes:
     flavor: 鲍牵，齐大夫，鲍叔牙后裔。庆氏之乱后齐国公室凋敝，牵主理仓廪，先核民口实数再定征调之额。遇灾年辄请缓赋，以保耕织不辍。时人多谓其政不峻刻而有成。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 53
@@ -152,7 +152,7 @@ heroes:
     flavor: 鉏麑，春秋时晋国力士。晋灵公不君，使鉏麑往刺正卿赵盾。晨至其门，见盾盛服将朝，坐而假寐，心敬其勤。麑退而叹曰："贼民之主，不忠；弃君之命，不信。"触庭槐而死。事载《左传》。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 16
       intellect: 51
@@ -178,7 +178,7 @@ heroes:
     flavor: 公之，身世仕履多湮没，仅散见载籍。其为政不逐虚声，务在条理分明。每治一事，先明职守、次定程限，使同僚各知本分。故虽处多事之秋，所辖鲜有推诿紊乱之弊。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 53
@@ -204,7 +204,7 @@ heroes:
     flavor: 公父文伯，春秋鲁国人物，其母敬姜以知礼善训见称，相关故事多见于礼学叙述。文伯本人事迹不算丰厚，却因母教而留名，折射出鲁国贵族家法、礼教与士大夫修身观念。其完整仕履史籍记载有限。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 17
       intellect: 50
@@ -217,7 +217,7 @@ heroes:
     flavor: 公父穆伯，史籍记载有限。逢灾荒与徙民交困之际，先固粮秣治安，次及赋役教化，施为有次第。其治事守底限而知变通，故危局下犹能维系数县安稳。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 50
@@ -243,7 +243,7 @@ heroes:
     flavor: 国佐，生卒年不详。其理事不执一法，先察各地物产、民情与惯例，再定缓急次序。或遇腹地与边郡政令相抵，能据实奏请变通，使条规落地而不生硬。史籍记载有限。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 15
       intellect: 54
@@ -256,7 +256,7 @@ heroes:
     flavor: 国子高，生平多见于零散记述。每逢诸方争执不下、局面胶着之际，常被推举主持事务。不急于立威，先理顺旧有条规纰漏，再逐次推行新法。名不显赫，然每遇疑难，同僚多思其周密。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 14
       intellect: 52
@@ -269,7 +269,7 @@ heroes:
     flavor: 国昭子，生卒年不详。每受托调解争端或督办急务，先明职分与责守，使各曹知所当行。议事不逐高论，唯求条理分明、便于执行，故在政令反复之际仍能稳住局面。史籍记载有限。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 13
       intellect: 51
@@ -295,7 +295,7 @@ heroes:
     flavor: 国弱，生卒年不详。善理赋役调配与仓廪调度，视岁入丰歉定支出缓急，不因上令急促而倾摇地方。连年多事之秋，力主持重节用，使民力不竭、官库有继。史籍记载有限。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 15
       intellect: 51
@@ -308,7 +308,7 @@ heroes:
     flavor: 子尾，春秋人物，史籍记载有限。其名多附见于列国卿族与政争材料，完整生平已难复原。可以确认的是，他身处贵族政治网络之中，而非后世地方行政语境。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 12
       intellect: 50
@@ -321,7 +321,7 @@ heroes:
     flavor: 姬亥，处列国纷争之际，治事谨严有度。凡赋税出纳，必立册登记，使账目可循。属吏行事，皆有程限，逾期则按律问责。其治下政令通畅，吏不敢欺，虽逢变局而府库不虚，民力不困。然其生平细节，史籍记载有限。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 14
       intellect: 51
@@ -334,7 +334,7 @@ heroes:
     flavor: 季公鸟，先秦人物，史籍记载有限。现存材料不足以确认其官职和事功，只能从零散姓名中判断其属于春秋人物谱系。其史影残缺，名存而事隐。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 16
       intellect: 50
@@ -347,7 +347,7 @@ heroes:
     flavor: 季冶，不以军功显名，然每逢邦国危疑，辄受命安辑地方。其理事不务速效，先察民情利弊，次第施为。遇积年旧弊，则徐徐厘正，不使更张骤急而扰民。任内赋役均平，狱讼渐稀，所治之邑久而益安。其详备事迹，史籍记载有限。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 52
@@ -360,7 +360,7 @@ heroes:
     flavor: 高偃，先秦人物，史籍记载有限。其名或与齐国高氏人物相关，但具体行迹难详。传世文献只留下春秋世族人物的片段轮廓。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 16
       intellect: 53
@@ -399,7 +399,7 @@ heroes:
     flavor: 高固，先秦人物，史籍记载有限。现存材料不足以确认其仕途层级和具体政绩，只能见其名附于高氏人物谱系之中。他的轮廓残缺，却仍可放在齐国世族政治背景下理解。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 12
       intellect: 54
@@ -412,7 +412,7 @@ heroes:
     flavor: 《左传》载，高弱为春秋齐国公族。鲁成公十七年据卢邑叛齐侯，齐遣国佐帅师围之。会齐侯杀国佐于内，高弱遂降。其叛因及降后事迹，经传所记甚略，生平难以详考。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 13
       intellect: 54
@@ -438,7 +438,7 @@ heroes:
     flavor: 高止，春秋齐国公族，与高弱同出高氏。《左传》载鲁襄公二十九年，齐诸卿大夫联手逐高止，迫其出奔北燕。其子高竖后据邑以叛。高止在燕事迹，史传无载。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 53
@@ -451,7 +451,7 @@ heroes:
     flavor: 高无咎，先秦人物，史籍记载有限。其名或与齐国高氏相关，但具体世系、官职与事迹难以确证。传世材料只留下世族谱系与零散记录中的片影。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 16
       intellect: 54
@@ -477,7 +477,7 @@ heroes:
     flavor: 齐国公族高氏之后。高氏世为齐上卿，春秋时与国氏并为天子所命之守臣。高齮事迹散见于《左传》零散记述，多涉齐卿族间攻伐与盟会。其进退之际，可见齐国世族与公室权力之消长。详细生平史籍记载有限。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 17
       intellect: 50
@@ -503,7 +503,7 @@ heroes:
     flavor: 晋卿韩氏之后，谥韩简子。父贞子韩须卒，不信继为晋卿。时六卿柄政，韩氏据平阳，与赵、魏相倚为重。不信持重守成，无显赫征伐记录，传子韩庚。事迹《史记·韩世家》仅存世系名谥，具体治政史籍记载有限。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 16
       intellect: 52
@@ -529,7 +529,7 @@ heroes:
     flavor: 晋卿韩氏之后，谥韩贞子。先祖韩厥有功于晋景公，得列卿位。韩须嗣为韩氏宗主，守平阳封邑。时晋室渐卑，政在六卿，韩须处其间而事迹罕传。《史记·韩世家》仅记其继立与传子韩不信，政绩军功皆无详录，史籍记载有限。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 13
       intellect: 50
@@ -542,7 +542,7 @@ heroes:
     flavor: 韩无忌，春秋中期晋国公族，韩献子厥之长子。其人素有废疾，自知不堪为嗣。韩献子告老时，无忌力荐其弟韩起继卿位，自请居于其下。晋悼公嘉其让德，以无忌为公族大夫，掌公族事务。其让位之举，时人多誉之，后世亦称其贤。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 16
       intellect: 52
@@ -568,7 +568,7 @@ heroes:
     flavor: 季甲，史载零散，事迹断简残编。然其治事一以贯之，重然诺，务实行。列国倾轧日亟，犹力持议政公器，不使朝争堕为私怨。时人谓其不恃口辩，以笃行取信于士民。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 14
       intellect: 54
@@ -581,7 +581,7 @@ heroes:
     flavor: 季鲂侯，先秦人物，史籍记载有限。其名留于零散材料，具体身份、事功与结局难以详考。传世文献只保留了模糊姓名，未留下足以附会文教或政令的细节。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 50
@@ -633,7 +633,7 @@ heroes:
     flavor: 孔婴齐，先秦人物，史籍记载有限。现存材料不足以确认其完整生平与事功，后世只从零散古籍中得见其名。他处于春秋人物谱系边缘，不能套用后世户籍、赋税或水利制度来理解。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 14
       intellect: 51
@@ -659,7 +659,7 @@ heroes:
     flavor: 孔鲤（前532—前483），字伯鱼，孔子之子，孔伋（子思）之父。其个人事迹传世不多，最著名的是孔子庭训“学诗乎”“学礼乎”的故事。孔鲤的历史地位不在功业，而在孔门家学承续：由孔子至子思，再到孟子一系，儒学传统由此延展。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 17
       intellect: 52
@@ -672,7 +672,7 @@ heroes:
     flavor: 伶州鸠，周景王时乐官，见载于《国语·周语》。王问七律之故，州鸠对以天地四时配五声十二律，辨音律与风土相感之理。其答问为研究先秦乐论与天人观念之重要史料。史籍所传仅此一段。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 53
@@ -724,7 +724,7 @@ heroes:
     flavor: 卢蒲癸，春秋齐国人物。齐襄公之女文姜曾与卢蒲癸相关传闻相连，其名亦见于齐国公族与内乱材料之中。传世记载零散，难以复原完整生平，但可见其处在齐国贵族政治与宫廷传闻交错处。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 13
       intellect: 52
@@ -737,7 +737,7 @@ heroes:
     flavor: 管至父，齐国大夫。襄公时与连称同戍葵丘，瓜时而往，约及瓜而代。公食言不遣，二人积怨，遂与公孙无知合谋，乘襄公田猎，弑之于途。无知自立，旋为渠丘大夫雍廪所杀，至父亦受诛。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 11
       intellect: 53
@@ -802,7 +802,7 @@ heroes:
     flavor: 孟公绰，春秋鲁国大夫，见于《论语》。孔子称其可为赵、魏家臣，却不足以任滕、薛大夫，评价颇有分寸。其人以廉静寡欲见称，适合辅佐强家守成，却未必能独当小国政局。传世事迹不多。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 13
       intellect: 50
@@ -828,7 +828,7 @@ heroes:
     flavor: 潘党，春秋楚国将领，见于晋楚邲之战相关记载。战后楚庄王欲筑京观，潘党曾以武功相劝，庄王则以“武有七德”回应，显示楚国霸业叙事中的武德观。其个人生平不详，但因这段对话留名。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 17
       intellect: 51
@@ -841,7 +841,7 @@ heroes:
     flavor: 庆佐，先秦人物，史籍记载有限。其名或与齐国庆氏人物相关，但具体身份、官职与事件难以确证。他处于春秋卿族谱系边缘，不宜附会官署、案牍或政令细节。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 17
       intellect: 51
@@ -867,7 +867,7 @@ heroes:
     flavor: 庆郑，春秋晋国大夫。韩原之战前，谏晋惠公勿以郑国战马代本国马，言异地之马临阵易惊，不可倚仗。惠公不纳，战败于秦。庆郑以直谏称，然亦因此获罪，战后为惠公所杀。其事迹多见于《左传》《国语》。
     growth_range:
     - 3
-    - 6
+    - 7
     attribute_weights:
       force: 12
       intellect: 54

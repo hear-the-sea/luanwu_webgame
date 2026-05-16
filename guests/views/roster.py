@@ -123,6 +123,11 @@ def _build_gear_set_context(gear_items):
         if not members:
             continue
         bonus = members[0].set_bonus or {}
+        pieces = None
+        if isinstance(bonus, dict):
+            pieces = bonus.get("pieces")
+        elif isinstance(bonus, list) and bonus and isinstance(bonus[0], dict):
+            pieces = bonus[0].get("pieces")
         members_payload = [
             {
                 "id": tpl.id,
@@ -136,8 +141,8 @@ def _build_gear_set_context(gear_items):
         set_desc = members[0].set_description if hasattr(members[0], "set_description") else ""
         payload = {
             "description": set_desc,
-            "pieces": bonus.get("pieces"),
-            "bonus": bonus.get("bonus") or bonus,
+            "pieces": pieces,
+            "bonus": bonus,
             "members": members_payload,
         }
         gear_sets.append({"key": set_key, **payload})

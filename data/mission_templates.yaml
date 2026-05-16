@@ -132,6 +132,86 @@
 
 missions:
   # ========================================
+  # 联名任务：春日部大作战
+  # ========================================
+  - key: kasukabe_daisakusen
+    name: 春日部大作战
+    difficulty: intermediate
+    description: |
+      庄园附近突然出现一支自称“春日部防卫队”的神秘队伍。他们本是追查被妖怪夺走的神奇蜡笔，却不慎把庄园周边画成了临时游乐战场：粮仓墙上长出大象鼻子，演武场地面变成蹦床，护院巡逻路线也被涂鸦迷宫搅得七零八落。
+
+      为了平息这场哭笑不得的混乱，庄主需要进入春日部游乐战场，突破玩具机关、恶作剧陷阱和防卫队试炼，击败被蜡笔力量影响的涂鸦大魔王，回收“小新的蜡笔”。集齐150个蜡笔后，可在仓库中招募紫色武门客「蜡笔小新」。
+    battle_type: task1
+
+    enemy_guests:
+      - key: task_kasukabe_patrol_captain
+        label: 春日部巡逻队长
+      - key: task_kasukabe_toy_crocodile
+        label: 玩具机关鳄鱼
+      - key: task_kasukabe_defense_member
+        label: 迷路的防卫队员
+      - key: task_kasukabe_crayon_clone
+        label: 蜡笔恶作剧分身
+      - key: task_kasukabe_doodle_boss
+        label: 涂鸦大魔王
+
+    enemy_troops:
+      quan_wang: 300
+      archer: 300
+      dao_ba: 200
+
+    enemy_technology:
+      level: 7
+      guest_level: 60
+      guest_bonus: 0.12
+
+    drop_table:
+      silver: 40000
+      kasukabe_crayon: 1
+      kasukabe_crayon_bonus_1:
+        chance: 0.55
+        count: 1
+        choices:
+          - kasukabe_crayon
+      kasukabe_crayon_bonus_2:
+        chance: 0.25
+        count: 2
+        choices:
+          - kasukabe_crayon
+      kasukabe_crayon_bonus_4:
+        chance: 0.08
+        count: 4
+        choices:
+          - kasukabe_crayon
+      kasukabe_crayon_bonus_10:
+        chance: 0.015
+        count: 10
+        choices:
+          - kasukabe_crayon
+      experience_pineapple:
+        chance: 0.35
+        count: 3
+      experience_watermelon:
+        chance: 0.05
+        count: 1
+      buxuedan:
+        chance: 0.45
+        count: 6
+      fangdajing:
+        chance: 0.18
+        count: 2
+      mission_card:
+        chance: 0.08
+        count: 1
+      equip_action_mask: 0.10
+      equip_shiro_leash: 0.10
+      equip_kasukabe_satchel: 0.08
+      equip_action_beam_glove: 0.06
+      equip_nohara_pan: 0.05
+
+    daily_limit: 3
+
+  # ========================================
   # 门客任务：华山论贱
   # ========================================
   - key: huashan_lunjian
@@ -930,6 +1010,51 @@ missions:
       equip_fengshenbang: 0.005
 
     base_travel_time: 3000
+    daily_limit: 1
+
+  - key: zhuolu_zhongyuan
+    name: 逐鹿中原
+    difficulty: advanced
+    description: |
+      封榜天门之后，封神榜归位，天命暂定。但中原龙脉承受封神余威，竟引动上古涿鹿之战的兵主命格。九黎战旗自地脉升起，蚩尤率风伯、雨师重开涿鹿战局，欲以兵锋再问中原归属。
+
+      轩辕剑光在梦中示警：此战若败，中原龙脉将被九黎战旗夺走，人间秩序也会重新落入上古兵争。庄园主须率门客入阵，与蚩尤正面逐鹿，镇住中原气运。
+    battle_type: task1
+
+    enemy_guests:
+      - task_zhuolu_chiyou
+      - task_zhuolu_fengbo
+      - task_zhuolu_yushi
+      - task_zhuolu_shitieshou
+      - task_zhuolu_shitieshou
+      - task_zhuolu_shitieshou
+
+    enemy_troops:
+      dao_sheng: 1000
+      qiang_wang: 1000
+      jian_sheng: 1000
+      quan_sheng: 900
+      arrow_god: 900
+
+    enemy_technology:
+      level: 10
+      guest_level: 100
+      guest_bonus: 0.62
+
+    drop_table:
+      silver: 100000
+      experience_watermelon:
+        chance: 0.7
+        count: 4
+      book_bloodthirsty_fury: 0.05
+      book_desperate_beast: 0.05
+      book_prison_break_blade: 0.04
+      book_city_felling_strike: 0.04
+      equip_shanheshejitu: 0.01
+      equip_zhoutianxingpan: 0.01
+      equip_xuanyuanjian: 0.005
+
+    base_travel_time: 3600
     daily_limit: 1
 
   # ========================================

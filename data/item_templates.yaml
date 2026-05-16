@@ -2138,10 +2138,160 @@ items:
     storage_space: 1
     is_usable: false
 
+  - key: kasukabe_crayon
+    name: 小新的蜡笔
+    description: 春日部大作战中回收的神奇蜡笔。集齐150个后可在仓库中使用，招募紫色武门客「蜡笔小新」。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 30000
+    storage_space: 1
+    is_usable: true
+    effect_payload:
+      action: summon_guest
+      required_items:
+        kasukabe_crayon: 149
+      exclusive_template_keys:
+        - orig_crayon_shinchan_purple
+      confirm_title: 使用确认
+      confirm_text: 确认消耗150个「小新的蜡笔」？将获得紫色武门客「蜡笔小新」。
+      confirm_ok_text: 招募蜡笔小新
+      choices:
+        - template_key: orig_crayon_shinchan_purple
+          weight: 100
+
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 新手套装（一蓑烟雨）
   # ══════════════════════════════════════════════════════════════════════════════
   # 套装效果：集齐4件获得 luck+20, force+20, hp+200
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  #                         装备类 - 春日部防卫队（蓝色品质）
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  - key: equip_action_mask
+    name: 动感超人面具
+    description: 春日部防卫队收藏的英雄面具，戴上后总觉得出拳更有气势。
+    effect_type: equip_helmet
+    rarity: blue
+    tradeable: true
+    price: 6000
+    storage_space: 100
+    effect_payload:
+      force: 18
+      agility: 16
+      hp: 260
+      set_key: kasukabe_defense_set
+      set_description: 春日部防卫队
+      set_bonus:
+        - pieces: 2
+          bonus:
+            attack: 40
+            defense: 30
+        - pieces: 4
+          bonus:
+            hp: 600
+            agility: 25
+            luck: 20
+
+  - key: equip_shiro_leash
+    name: 小白的散步绳
+    description: 看似普通的牵绳，却能在混战中稳住阵脚，守住不该乱跑的人。
+    effect_type: equip_ornament
+    rarity: blue
+    tradeable: true
+    price: 5600
+    storage_space: 100
+    effect_payload:
+      hp: 360
+      defense: 15
+      luck: 10
+      set_key: kasukabe_defense_set
+      set_description: 春日部防卫队
+      set_bonus:
+        - pieces: 2
+          bonus:
+            attack: 40
+            defense: 30
+        - pieces: 4
+          bonus:
+            hp: 600
+            agility: 25
+            luck: 20
+
+  - key: equip_kasukabe_satchel
+    name: 春日部小书包
+    description: 塞满点心、画纸和奇怪作战计划的小书包，防护意外地可靠。
+    effect_type: equip_armor
+    rarity: blue
+    tradeable: true
+    price: 6200
+    storage_space: 100
+    effect_payload:
+      hp: 420
+      defense: 18
+      luck: 12
+      set_key: kasukabe_defense_set
+      set_description: 春日部防卫队
+      set_bonus:
+        - pieces: 2
+          bonus:
+            attack: 40
+            defense: 30
+        - pieces: 4
+          bonus:
+            hp: 600
+            agility: 25
+            luck: 20
+
+  - key: equip_action_beam_glove
+    name: 动感光波手套
+    description: 模仿动感超人招式制作的手套，挥动时能带出夸张的战斗节奏。
+    effect_type: equip_weapon
+    rarity: blue
+    tradeable: true
+    price: 7000
+    storage_space: 100
+    effect_payload:
+      force: 42
+      agility: 18
+      set_key: kasukabe_defense_set
+      set_description: 春日部防卫队
+      set_bonus:
+        - pieces: 2
+          bonus:
+            attack: 40
+            defense: 30
+        - pieces: 4
+          bonus:
+            hp: 600
+            agility: 25
+            luck: 20
+
+  - key: equip_nohara_pan
+    name: 野原家的平底锅
+    description: 厨房里磨炼出的实战兵器，攻守兼备，敲起来声势惊人。
+    effect_type: equip_weapon
+    rarity: blue
+    tradeable: true
+    price: 6800
+    storage_space: 100
+    effect_payload:
+      force: 36
+      defense: 18
+      hp: 180
+      set_key: kasukabe_defense_set
+      set_description: 春日部防卫队
+      set_bonus:
+        - pieces: 2
+          bonus:
+            attack: 40
+            defense: 30
+        - pieces: 4
+          bonus:
+            hp: 600
+            agility: 25
+            luck: 20
 
   - key: equip_caomao
     name: 斗笠
@@ -4444,6 +4594,22 @@ items:
       luck: 6
       defense: 4
       hp: 600
+
+  - key: equip_tuwujian
+    name: 屠巫剑
+    description: 剑身赤金如烬，刃纹似符火游走。相传此剑专破巫祝妖术，出鞘时有焚符断咒之声。
+    effect_type: equip_weapon
+    rarity: orange
+    tradeable: true
+    price: 52000
+    storage_space: 100
+    effect_payload:
+      force: 48
+      intellect: 26
+      agility: 18
+      luck: 4
+      defense: 4
+      hp: 620
 
   - key: equip_fangtianhuaji
     name: 方天画戟

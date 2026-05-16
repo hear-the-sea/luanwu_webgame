@@ -921,6 +921,137 @@ heroes:
         agility: 238
         luck: 180
         base_hp: 5200
+    - key: task_kasukabe_patrol_captain
+      name: 春日部巡逻队长
+      archetype: military
+      recruitable: false
+      default_gender: male
+      skills:
+        - comrade_command
+      custom_stats:
+        force: 164
+        intellect: 118
+        defense: 132
+        agility: 156
+        luck: 92
+        base_hp: 2500
+    - key: task_kasukabe_toy_crocodile
+      name: 玩具机关鳄鱼
+      archetype: military
+      recruitable: false
+      default_gender: unknown
+      skills:
+        - iron_wall_heart
+      custom_stats:
+        force: 176
+        intellect: 74
+        defense: 170
+        agility: 110
+        luck: 76
+        base_hp: 2800
+    - key: task_kasukabe_defense_member
+      name: 迷路的防卫队员
+      archetype: civil
+      recruitable: false
+      default_gender: unknown
+      skills:
+        - endless_chatter
+      custom_stats:
+        force: 112
+        intellect: 154
+        defense: 120
+        agility: 142
+        luck: 128
+        base_hp: 2300
+    - key: task_kasukabe_crayon_clone
+      name: 蜡笔恶作剧分身
+      archetype: civil
+      recruitable: false
+      default_gender: unknown
+      skills:
+        - soul_erode
+      custom_stats:
+        force: 128
+        intellect: 182
+        defense: 118
+        agility: 168
+        luck: 138
+        base_hp: 2400
+    - key: task_kasukabe_doodle_boss
+      name: 涂鸦大魔王
+      archetype: military
+      recruitable: false
+      default_gender: unknown
+      skills:
+        - desperate_beast
+        - draw_enemy_blades
+      custom_stats:
+        force: 226
+        intellect: 148
+        defense: 206
+        agility: 156
+        luck: 110
+        base_hp: 3400
+    - key: task_zhuolu_chiyou
+      name: 蚩尤
+      archetype: military
+      recruitable: false
+      default_gender: male
+      skills:
+        - bloodthirsty_fury
+        - prison_break_blade
+      custom_stats:
+        force: 368
+        intellect: 218
+        defense: 330
+        agility: 248
+        luck: 150
+        base_hp: 5400
+    - key: task_zhuolu_fengbo
+      name: 风伯
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      skills:
+        - taiyi_wind
+        - comrade_command
+      custom_stats:
+        force: 218
+        intellect: 330
+        defense: 244
+        agility: 286
+        luck: 142
+        base_hp: 4300
+    - key: task_zhuolu_yushi
+      name: 雨师
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      skills:
+        - thunder_nine_heavens
+        - city_felling_strike
+      custom_stats:
+        force: 226
+        intellect: 342
+        defense: 268
+        agility: 226
+        luck: 154
+        base_hp: 4500
+    - key: task_zhuolu_shitieshou
+      name: 食铁兽
+      archetype: military
+      recruitable: false
+      default_gender: unknown
+      skills:
+        - desperate_beast
+        - iron_wall_heart
+      custom_stats:
+        force: 320
+        intellect: 126
+        defense: 314
+        agility: 188
+        luck: 96
+        base_hp: 4800
     - key: guild_blackwind_gate_general
       name: 黑风关守将
       archetype: military

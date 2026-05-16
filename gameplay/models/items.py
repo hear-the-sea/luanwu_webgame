@@ -127,26 +127,46 @@ def _resource_pack_summary(payload: dict) -> str:
     return "、".join(parts)
 
 
+def _iter_set_bonus_entries(set_bonus) -> list[tuple[int | None, dict]]:
+    if isinstance(set_bonus, list):
+        entries = []
+        for entry in set_bonus:
+            entries.extend(_iter_set_bonus_entries(entry))
+        return entries
+    if not isinstance(set_bonus, dict):
+        return []
+    bonus_map = set_bonus.get("bonus") if "bonus" in set_bonus else set_bonus.get("bonuses")
+    if bonus_map is None:
+        bonus_map = set_bonus
+    if not isinstance(bonus_map, dict):
+        return []
+    return [(set_bonus.get("pieces"), bonus_map)]
+
+
 def _equipment_set_summary(payload: dict) -> str:
     set_desc = payload.get("set_description")
     set_bonus = payload.get("set_bonus") or {}
     if not (set_desc or set_bonus):
         return ""
 
-    pieces = set_bonus.get("pieces") if isinstance(set_bonus, dict) else None
-    bonus_map = set_bonus.get("bonus") if isinstance(set_bonus, dict) else None
-    bonus_parts = []
-    if isinstance(bonus_map, dict):
+    desc_text = set_desc or "套装"
+    tier_summaries = []
+    for pieces, bonus_map in _iter_set_bonus_entries(set_bonus):
+        bonus_parts = []
         for key, value in bonus_map.items():
+            if key in {"pieces", "bonus", "bonuses"}:
+                continue
             if value is None:
                 continue
             bonus_parts.append(f"{_ITEM_EFFECT_STAT_LABELS.get(key, key)}+{value}")
-
-    desc_text = set_desc or "套装"
-    piece_text = f"（{pieces}件）" if pieces else ""
-    if bonus_parts:
-        return f"{desc_text}{piece_text}：" + "、".join(bonus_parts)
-    return f"{desc_text}{piece_text}"
+        piece_text = f"（{pieces}件）" if pieces else ""
+        if bonus_parts:
+            tier_summaries.append(f"{desc_text}{piece_text}：" + "、".join(bonus_parts))
+        else:
+            tier_summaries.append(f"{desc_text}{piece_text}")
+    if tier_summaries:
+        return "；".join(tier_summaries)
+    return desc_text
 
 
 def _equipment_summary(payload: dict) -> str:

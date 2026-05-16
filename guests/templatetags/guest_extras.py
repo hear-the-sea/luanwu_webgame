@@ -46,20 +46,40 @@ def _iter_template_stat_parts(template) -> list[str]:
     return parts
 
 
+def _iter_set_bonus_entries(set_bonus) -> list[tuple[int | None, dict]]:
+    if isinstance(set_bonus, list):
+        entries = []
+        for entry in set_bonus:
+            entries.extend(_iter_set_bonus_entries(entry))
+        return entries
+    if not isinstance(set_bonus, dict):
+        return []
+    bonus_map = set_bonus.get("bonus") if "bonus" in set_bonus else set_bonus.get("bonuses")
+    if bonus_map is None:
+        bonus_map = set_bonus
+    if not isinstance(bonus_map, dict):
+        return []
+    return [(set_bonus.get("pieces"), bonus_map)]
+
+
 def _build_set_bonus_summary(set_key: str, set_bonus) -> str:
-    pieces = set_bonus.get("pieces") if isinstance(set_bonus, dict) else None
-    bonus_map = set_bonus.get("bonus") if isinstance(set_bonus, dict) else None
-    bonus_parts = []
-    if isinstance(bonus_map, dict):
+    set_texts = []
+    for pieces, bonus_map in _iter_set_bonus_entries(set_bonus):
+        bonus_parts = []
         for key, value in bonus_map.items():
+            if key in {"pieces", "bonus", "bonuses"}:
+                continue
             if value is None:
                 continue
             bonus_parts.append(f"{_GEAR_STAT_LABELS.get(key, key)}+{value}")
-    piece_text = f"{pieces}件" if pieces else "套装"
-    set_text = f"{set_key or '套装'}（{piece_text}）"
-    if bonus_parts:
-        set_text += "：" + "、".join(bonus_parts)
-    return set_text
+        piece_text = f"{pieces}件" if pieces else "套装"
+        set_text = f"{set_key or '套装'}（{piece_text}）"
+        if bonus_parts:
+            set_text += "：" + "、".join(bonus_parts)
+        set_texts.append(set_text)
+    if set_texts:
+        return "；".join(set_texts)
+    return set_key or "套装"
 
 
 def _render_set_members(lines: list, members: list, set_desc: str, esc) -> None:
@@ -91,17 +111,21 @@ def _render_set_members(lines: list, members: list, set_desc: str, esc) -> None:
 
 
 def _render_set_bonus_lines(lines: list, bonus_map: dict, esc) -> None:
-    if not isinstance(bonus_map, dict) or not bonus_map:
+    entries = _iter_set_bonus_entries(bonus_map)
+    if not entries:
         return
-    bonus_parts = []
-    for key, value in bonus_map.items():
-        if value is None:
-            continue
-        label = _GEAR_STAT_LABELS.get(key, key)
-        bonus_parts.append(format_html("{}+{}", esc(label), value))
-    if bonus_parts:
-        lines.append("套装属性：")
-        lines.extend(bonus_parts)
+    for pieces, entry_bonus_map in entries:
+        bonus_parts = []
+        for key, value in entry_bonus_map.items():
+            if key in {"pieces", "bonus", "bonuses"}:
+                continue
+            if value is None:
+                continue
+            label = _GEAR_STAT_LABELS.get(key, key)
+            bonus_parts.append(format_html("{}+{}", esc(label), value))
+        if bonus_parts:
+            lines.append(f"{pieces}件套属性：" if pieces else "套装属性：")
+            lines.extend(bonus_parts)
 
 
 def _normalize_rarity(value: str | GuestRarity | None) -> GuestRarity | None:
