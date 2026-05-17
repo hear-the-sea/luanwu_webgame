@@ -17,12 +17,7 @@
                     <div class="event-passive-layout">
                         <strong class="event-passive-name">{{ event.unit }}</strong>
                         <span class="event-passive-tag"><span class="tech-tag heal">{{ event.effect }}</span></span>
-                        {% if event.healed or event.message %}
-                            <span class="event-passive-extra">
-                                {% if event.healed %}<span class="heal-text">恢复 +{{ event.healed }} HP</span>{% endif %}
-                                {% if event.message %}<span class="status-pill">{{ event.message }}</span>{% endif %}
-                            </span>
-                        {% endif %}
+                        {% include "battle/partials/passive_event_extra.html" with passive_event=event %}
                     </div>
                 </div>
             {% elif event.status %}
@@ -46,21 +41,21 @@
                 </div>
                 <div class="muted-text">
                     {% for passive in event.passive_events_before %}
-                        <div class="event-passive-entry"><div class="event-passive-layout"><strong class="event-passive-name">{{ passive.unit }}</strong><span class="event-passive-tag"><span class="tech-tag heal">{{ passive.effect }}</span></span>{% if passive.healed or passive.message %}<span class="event-passive-extra">{% if passive.healed %}<span class="heal-text">恢复 +{{ passive.healed }} HP</span>{% endif %}{% if passive.message %}<span class="status-pill">{{ passive.message }}</span>{% endif %}</span>{% endif %}</div></div>
+                        <div class="event-passive-entry"><div class="event-passive-layout"><strong class="event-passive-name">{{ passive.unit }}</strong><span class="event-passive-tag"><span class="tech-tag heal">{{ passive.effect }}</span></span>{% include "battle/partials/passive_event_extra.html" with passive_event=passive %}</div></div>
                     {% endfor %}
                     <div>→ {{ event.target }} (-{{ event.damage }}) ｜ 伤害人数：{{ event.kills|default:0 }}{% if event.target_defeated %} ｜ 敌方全军覆没{% endif %}</div>
                     {% if event.reflect_damage %}<div class="reflect-text">← {{ event.target }}爆发护身剑罡（{{ event.reflect_damage }}伤害）｜ 伤害人数：{{ event.reflect_kills|default:0 }}</div>{% endif %}
                     {% if event.counter_damage %}<div class="counter-text">← {{ event.target }}爆发反戈一击（{{ event.counter_damage }}伤害）｜ 伤害人数：{{ event.counter_kills|default:0 }}</div>{% endif %}
                     {% for passive in event.passive_events_after %}
-                        <div class="event-passive-entry"><div class="event-passive-layout"><strong class="event-passive-name">{{ passive.unit }}</strong><span class="event-passive-tag"><span class="tech-tag heal">{{ passive.effect }}</span></span>{% if passive.healed or passive.message %}<span class="event-passive-extra">{% if passive.healed %}<span class="heal-text">恢复 +{{ passive.healed }} HP</span>{% endif %}{% if passive.message %}<span class="status-pill">{{ passive.message }}</span>{% endif %}</span>{% endif %}</div></div>
+                        <div class="event-passive-entry"><div class="event-passive-layout"><strong class="event-passive-name">{{ passive.unit }}</strong><span class="event-passive-tag"><span class="tech-tag heal">{{ passive.effect }}</span></span>{% include "battle/partials/passive_event_extra.html" with passive_event=passive %}</div></div>
                     {% endfor %}
                     {% for sub in event.additional_targets %}
                         {% for passive in sub.passive_events_before %}
-                            <div class="event-passive-entry"><div class="event-passive-layout"><strong class="event-passive-name">{{ passive.unit }}</strong><span class="event-passive-tag"><span class="tech-tag heal">{{ passive.effect }}</span></span>{% if passive.healed or passive.message %}<span class="event-passive-extra">{% if passive.healed %}<span class="heal-text">恢复 +{{ passive.healed }} HP</span>{% endif %}{% if passive.message %}<span class="status-pill">{{ passive.message }}</span>{% endif %}</span>{% endif %}</div></div>
+                            <div class="event-passive-entry"><div class="event-passive-layout"><strong class="event-passive-name">{{ passive.unit }}</strong><span class="event-passive-tag"><span class="tech-tag heal">{{ passive.effect }}</span></span>{% include "battle/partials/passive_event_extra.html" with passive_event=passive %}</div></div>
                         {% endfor %}
                         <div>→ {{ sub.target }} (-{{ sub.damage }}) ｜ 伤害人数：{{ sub.kills|default:0 }}</div>
                         {% for passive in sub.passive_events_after %}
-                            <div class="event-passive-entry"><div class="event-passive-layout"><strong class="event-passive-name">{{ passive.unit }}</strong><span class="event-passive-tag"><span class="tech-tag heal">{{ passive.effect }}</span></span>{% if passive.healed or passive.message %}<span class="event-passive-extra">{% if passive.healed %}<span class="heal-text">恢复 +{{ passive.healed }} HP</span>{% endif %}{% if passive.message %}<span class="status-pill">{{ passive.message }}</span>{% endif %}</span>{% endif %}</div></div>
+                            <div class="event-passive-entry"><div class="event-passive-layout"><strong class="event-passive-name">{{ passive.unit }}</strong><span class="event-passive-tag"><span class="tech-tag heal">{{ passive.effect }}</span></span>{% include "battle/partials/passive_event_extra.html" with passive_event=passive %}</div></div>
                         {% endfor %}
                     {% endfor %}
                 </div>

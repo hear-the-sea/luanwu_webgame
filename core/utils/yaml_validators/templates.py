@@ -354,6 +354,18 @@ def validate_mission_templates(
             )
             _check_positive(base_travel_time, result=result, file=file, path=path, field_name="base_travel_time")
 
+        available_weekdays = mission.get("available_weekdays")
+        if available_weekdays is not None:
+            if not isinstance(available_weekdays, list):
+                result.add(file, path, "field 'available_weekdays' expected a list")
+            else:
+                for weekday_idx, weekday in enumerate(available_weekdays):
+                    weekday_path = f"{path}.available_weekdays[{weekday_idx}]"
+                    if isinstance(weekday, bool) or not isinstance(weekday, int):
+                        result.add(file, weekday_path, f"expected int, got {type(weekday).__name__}")
+                    elif not 1 <= weekday <= 7:
+                        result.add(file, weekday_path, "must be between 1 and 7")
+
         # Validate enemy_guests
         enemy_guests = mission.get("enemy_guests")
         if enemy_guests is not None:

@@ -129,6 +129,31 @@
         return rect;
     }
 
+    function eventTargetMatchesIgnore(target, ignoreSelector) {
+        return !!(ignoreSelector && target?.closest?.(ignoreSelector));
+    }
+
+    function syncTooltipContent(cell, tooltipSelector, contentAttribute) {
+        if (!cell || !contentAttribute) {
+            return;
+        }
+        const tooltip = cell.querySelector?.(tooltipSelector);
+        if (!tooltip) {
+            return;
+        }
+        tooltip.textContent = cell.getAttribute(contentAttribute) || '';
+    }
+
+    function clearTooltipContent(cell, tooltipSelector, contentAttribute) {
+        if (!cell || !contentAttribute) {
+            return;
+        }
+        const tooltip = cell.querySelector?.(tooltipSelector);
+        if (tooltip) {
+            tooltip.textContent = '';
+        }
+    }
+
     function initTooltip(options) {
         if (!root || typeof document === 'undefined') {
             return;
@@ -148,6 +173,8 @@
             trackPointer: options.trackPointer !== undefined ? !!options.trackPointer : true,
             enableHover: options.enableHover !== undefined ? !!options.enableHover : supportsHover,
             enableTouch: options.enableTouch !== undefined ? !!options.enableTouch : !supportsHover,
+            ignoreSelector: options.ignoreSelector || '',
+            contentAttribute: options.contentAttribute || '',
         };
 
         if (!document.querySelector(config.cellSelector)) {
@@ -175,6 +202,7 @@
         function clearActiveCell() {
             if (activeCell?.classList) {
                 clearTooltipPosition(activeCell);
+                clearTooltipContent(activeCell, config.tooltipSelector, config.contentAttribute);
                 activeCell.classList.remove('is-tooltip-active');
             }
             activeCell = null;
@@ -237,11 +265,13 @@
         function setActiveCell(cell, event) {
             if (activeCell !== cell && activeCell?.classList) {
                 clearTooltipPosition(activeCell);
+                clearTooltipContent(activeCell, config.tooltipSelector, config.contentAttribute);
                 activeCell.classList.remove('is-tooltip-active');
             }
 
             activeCell = cell;
             activeAnchor = null;
+            syncTooltipContent(activeCell, config.tooltipSelector, config.contentAttribute);
             activeCell.classList.add('is-tooltip-active');
             if (config.trackPointer) {
                 updateAnchorFromEvent(activeCell, event);
@@ -251,6 +281,9 @@
 
         if (config.enableHover) {
             document.addEventListener('mouseover', function(event) {
+                if (eventTargetMatchesIgnore(event.target, config.ignoreSelector)) {
+                    return;
+                }
                 const cell = event.target?.closest?.(config.cellSelector);
                 if (cell) {
                     setActiveCell(cell, event);
@@ -259,6 +292,9 @@
 
             if (config.trackPointer) {
                 document.addEventListener('mousemove', throttle(function(event) {
+                    if (eventTargetMatchesIgnore(event.target, config.ignoreSelector)) {
+                        return;
+                    }
                     const cell = event.target?.closest?.(config.cellSelector);
                     if (activeCell && cell === activeCell) {
                         updateAnchorFromEvent(activeCell, event);
@@ -277,6 +313,9 @@
 
         if (config.enableTouch) {
             document.addEventListener('click', function(event) {
+                if (eventTargetMatchesIgnore(event.target, config.ignoreSelector)) {
+                    return;
+                }
                 const cell = event.target?.closest?.(config.cellSelector);
                 if (cell) {
                     if (activeCell === cell) {
@@ -322,6 +361,9 @@
         resolveAnchorPoint,
         computeTooltipPosition,
         measureTooltip,
+        eventTargetMatchesIgnore,
+        syncTooltipContent,
+        clearTooltipContent,
         initTooltip,
     };
 });

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+import yaml
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -21,6 +22,22 @@ def _enemy_guest_key(entry):
 
 def _enemy_guest_keys(entries):
     return [_enemy_guest_key(entry) for entry in entries]
+
+
+def _load_blueprint_sources_by_result() -> dict[str, str]:
+    payload_path = settings.BASE_DIR / "data" / "forge_blueprints.yaml"
+    payload = yaml.safe_load(payload_path.read_text(encoding="utf-8"))
+    recipes = payload.get("recipes") or []
+    return {
+        str(recipe["result_item_key"]): str(recipe["blueprint_key"])
+        for recipe in recipes
+        if isinstance(recipe, dict) and recipe.get("result_item_key") and recipe.get("blueprint_key")
+    }
+
+
+def _expected_mission_source_keys(equipment_keys: set[str]) -> set[str]:
+    blueprint_by_result = _load_blueprint_sources_by_result()
+    return {blueprint_by_result.get(equipment_key, equipment_key) for equipment_key in equipment_keys}
 
 
 @pytest.mark.django_db
@@ -111,6 +128,29 @@ missions:
 
 
 @pytest.mark.django_db
+def test_load_mission_templates_command_imports_available_weekdays(tmp_path):
+    payload_path = tmp_path / "mission_templates.yaml"
+    payload_path.write_text(
+        """
+missions:
+  - key: cmd_mission_weekdays
+    name: 星期开放任务
+    available_weekdays:
+      - 5
+      - 1
+      - 7
+      - 5
+""",
+        encoding="utf-8",
+    )
+
+    call_command("load_mission_templates", file=str(payload_path), verbosity=0)
+
+    mission = MissionTemplate.objects.get(key="cmd_mission_weekdays")
+    assert mission.available_weekdays == [1, 5, 7]
+
+
+@pytest.mark.django_db
 def test_default_mission_templates_define_junior_mission_tiering():
     payload_path = settings.BASE_DIR / "data" / "mission_templates.yaml"
 
@@ -141,13 +181,13 @@ def test_default_mission_templates_define_junior_mission_tiering():
             "difficulty": "junior",
             "enemy_technology": {"level": 3, "guest_level": 41, "guest_bonus": 0.06},
         },
+        "wagangzhai": {
+            "difficulty": "junior",
+            "enemy_technology": {"level": 5, "guest_level": 53, "guest_bonus": 0.1},
+        },
         "wagangzhai_nixi": {
             "difficulty": "intermediate",
             "enemy_technology": {"level": 8, "guest_level": 61, "guest_bonus": 0.1},
-        },
-        "wagangzhai": {
-            "difficulty": "intermediate",
-            "enemy_technology": {"level": 5, "guest_level": 53, "guest_bonus": 0.1},
         },
         "shizipo_heidian": {
             "difficulty": "intermediate",
@@ -218,6 +258,66 @@ def test_default_mission_templates_define_junior_mission_tiering():
         {"key": "task_huashan_jianjing", "label": "顶级贱精"},
         {"key": "task_huashan_audience_a", "label": "观众甲"},
     ]
+
+
+@pytest.mark.django_db
+def test_default_mission_templates_cover_mid_tier_equipment_sources():
+    payload_path = settings.BASE_DIR / "data" / "mission_templates.yaml"
+
+    call_command("load_mission_templates", file=str(payload_path), verbosity=0)
+
+    intermediate_equipment = {
+        "equip_yunwenfayi",
+        "equip_wujinjia",
+        "equip_linwenzhanjia",
+        "equip_xuanjiazhanbao",
+        "equip_feiyukui",
+        "equip_langyakui",
+        "equip_xuantiekui",
+        "equip_yunwenkui",
+        "equip_hantiekui",
+        "equip_zhuifengxue",
+        "equip_yingxingxue",
+        "equip_pojunxue",
+        "equip_jinlinxue",
+        "equip_qianliju",
+        "equip_juanmaochitu",
+        "equip_zhaoyeyushizi",
+        "equip_bailongju",
+        "equip_zhuidian",
+        "equip_hanyuejian",
+        "equip_lieyandao",
+        "equip_duanhunbian",
+        "equip_zhenyuechui",
+        "equip_xuanbinggong",
+        "equip_xingluoshan",
+    }
+    flexible_equipment = {
+        "equip_fengyuzan",
+        "equip_huyaxianglian",
+        "equip_linghuzhui",
+        "equip_xingshashouchuan",
+        "equip_xueyuzhuo",
+        "equip_xuantiejie",
+        "equip_liuyunpei",
+        "equip_zhaoyaojing",
+        "equip_qiankunquan",
+        "equip_tianjiluopan",
+        "equip_lingwenyubi",
+        "equip_guanxingdeng",
+    }
+
+    intermediate_drop_keys = set()
+    mid_or_advanced_drop_keys = set()
+    for mission in MissionTemplate.objects.all():
+        if mission.difficulty == "intermediate":
+            intermediate_drop_keys.update(mission.drop_table)
+            mid_or_advanced_drop_keys.update(mission.drop_table)
+        elif mission.difficulty == "advanced":
+            mid_or_advanced_drop_keys.update(mission.drop_table)
+
+    assert _expected_mission_source_keys(intermediate_equipment) <= intermediate_drop_keys
+    assert _expected_mission_source_keys(flexible_equipment) <= mid_or_advanced_drop_keys
 
 
 @pytest.mark.django_db

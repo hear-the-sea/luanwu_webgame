@@ -269,7 +269,7 @@ class SmithyView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         manor = _get_prepared_production_manor(self.request, source="smithy_view")
         context["manor"] = manor
-        context.update(get_smithy_page_context(manor))
+        context.update(get_smithy_page_context(manor, current_category=self.request.GET.get("category")))
         return context
 
 

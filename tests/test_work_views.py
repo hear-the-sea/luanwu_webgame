@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from core.exceptions import WorkError
-from gameplay.models import WorkAssignment, WorkTemplate
+from gameplay.models import ItemTemplate, WorkAssignment, WorkTemplate
 from guests.models import Guest, GuestArchetype, GuestRarity, GuestStatus, GuestTemplate
 
 
@@ -25,6 +25,18 @@ class TestWorkViews:
         tier: str = WorkTemplate.Tier.JUNIOR,
         display_order: int = 0,
     ) -> tuple[Guest, WorkTemplate]:
+        for key, name in (
+            ("work_chest_small", "打工宝箱（小）"),
+            ("work_chest_medium", "打工宝箱（中）"),
+            ("work_chest_large", "打工宝箱（大）"),
+        ):
+            ItemTemplate.objects.get_or_create(
+                key=key,
+                defaults={
+                    "name": name,
+                    "effect_type": ItemTemplate.EffectType.LOOT_BOX,
+                },
+            )
         guest_template = GuestTemplate.objects.create(
             key=f"view_work_guest_tpl_{suffix}_{manor.id}",
             name=f"打工门客模板{suffix}",

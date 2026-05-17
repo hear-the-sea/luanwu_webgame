@@ -302,8 +302,8 @@ def start_horse_production(manor: Manor, horse_key: str, quantity: int = 1) -> H
                 message=f"粮食不足，需要{total_grain_cost}点粮食",
             ) from exc
 
-        # 计算实际生产时间（时间不随数量增加）
-        actual_duration = calculate_production_duration(config["base_duration"], manor)
+        unit_duration = calculate_production_duration(config["base_duration"], manor)
+        actual_duration = unit_duration * quantity
 
         # 创建生产记录
         production = HorseProduction.objects.create(

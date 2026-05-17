@@ -214,6 +214,28 @@ def get_max_smelting_quantity(manor: Manor) -> int:
     return max(1, smelting_level * 100)
 
 
+def get_max_smithy_medicine_quantity(manor: Manor) -> int:
+    """
+    获取单次药品制作的最大数量。
+
+    药品按冶炼坊建筑等级解锁，批量制作上限也跟随冶炼坊等级。
+    """
+    smithy_level = manor.get_building_level(BuildingKeys.SMITHY)
+    return max(1, smithy_level * 100)
+
+
+def _get_max_quantity_for_config(manor: Manor, config: Dict[str, Any]) -> int:
+    if config.get("category") == "medicine":
+        return get_max_smithy_medicine_quantity(manor)
+    return get_max_smelting_quantity(manor)
+
+
+def _get_quantity_limit_label(config: Dict[str, Any]) -> str:
+    if config.get("category") == "medicine":
+        return "冶炼坊等级"
+    return "冶炼技等级"
+
+
 def calculate_smelting_duration(base_duration: int, manor: Manor) -> int:
     """
     计算实际冶炼时间。
@@ -259,7 +281,6 @@ def get_metal_options(manor: Manor) -> List[Dict[str, Any]]:
 
     smelting_level = get_player_technology_level(manor, "smelting")
     smithy_level = manor.get_building_level(BuildingKeys.SMITHY)
-    max_quantity = get_max_smelting_quantity(manor)
     is_producing = has_active_smelting_production(manor)
 
     normalized_configs = {
@@ -277,6 +298,7 @@ def get_metal_options(manor: Manor) -> List[Dict[str, Any]]:
     for metal_key, config in normalized_configs.items():
         actual_duration = calculate_smelting_duration(config["base_duration"], manor)
         is_unlocked, required_level, required_type_label = _get_unlock_requirement(config, smelting_level, smithy_level)
+        max_quantity = _get_max_quantity_for_config(manor, config)
         cost_type = config["cost_type"]
         cost_amount = config["cost_amount"]
         category = config["category"]
@@ -347,11 +369,12 @@ def start_smelting_production(manor: Manor, metal_key: str, quantity: int = 1) -
         raise ProductionStartError(f"需要{required_type_label}{required_level}级才能制作{metal_name_for_level}")
 
     # 验证制作数量
-    max_quantity = get_max_smelting_quantity(manor)
+    max_quantity = _get_max_quantity_for_config(manor, config)
     if quantity < 1:
         raise ProductionStartError("制作数量至少为1")
     if quantity > max_quantity:
-        raise ProductionStartError(f"冶炼技等级限制，单次最多制作{max_quantity}个")
+        limit_label = _get_quantity_limit_label(config)
+        raise ProductionStartError(f"{limit_label}限制，单次最多制作{max_quantity}个")
 
     # 获取消耗配置
     cost_type = config["cost_type"]
@@ -407,8 +430,8 @@ def start_smelting_production(manor: Manor, metal_key: str, quantity: int = 1) -
                 raise ProductionStartError(f"{cost_name}不足")
             consume_inventory_item_locked(item, total_cost)
 
-        # 计算实际制作时间（时间不随数量增加）
-        actual_duration = calculate_smelting_duration(config["base_duration"], manor)
+        unit_duration = calculate_smelting_duration(config["base_duration"], manor)
+        actual_duration = unit_duration * quantity
 
         # 创建制作记录
         production = SmeltingProduction.objects.create(

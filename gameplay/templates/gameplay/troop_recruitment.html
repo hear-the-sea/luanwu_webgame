@@ -107,7 +107,7 @@
                             </div>
                             <div class="text-center">
                                 <dt class="text-xs text-text-muted mb-1">实际时间</dt>
-                                <dd class="m-0 text-sm font-semibold text-accent-green">{{ troop.actual_duration }} 秒</dd>
+                                <dd class="m-0 text-sm font-semibold text-accent-green" id="duration-{{ troop.key }}">{{ troop.actual_duration }} 秒</dd>
                             </div>
                         </div>
                     </dl>
@@ -125,7 +125,9 @@
                                 <label for="quantity-{{ troop.key }}" class="text-sm text-text-secondary">数量：</label>
                                 <input type="number" name="quantity" id="quantity-{{ troop.key }}"
                                        value="1" min="1" max="{{ troop.max_quantity }}"
-                                       class="tw-quantity-input">
+                                       class="tw-quantity-input"
+                                       data-unit-duration="{{ troop.actual_duration }}"
+                                       data-duration-target="duration-{{ troop.key }}">
                             </div>
                             {% if troop.can_afford %}
                                 <button type="submit" class="tw-btn-primary w-full">招募</button>

@@ -235,6 +235,39 @@ class TestProductionViews:
         assert "onchange=" not in body
         assert "function updateTotalCost" not in body
 
+    def test_smithy_page_switches_between_metal_and_medicine_categories(self, manor_with_user):
+        _manor, client = manor_with_user
+
+        response = client.get(f"{reverse('gameplay:smithy')}?category=medicine")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert 'href="?category=metal"' in body
+        assert 'href="?category=medicine"' in body
+        assert 'value="zhixuesan"' in body
+        assert 'value="tong"' not in body
+
+    def test_smithy_medicine_quantity_input_allows_batch_quantity_without_smelting_tech(self, manor_with_user):
+        _manor, client = manor_with_user
+
+        response = client.get(f"{reverse('gameplay:smithy')}?category=medicine")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert 'id="quantity-zhixuesan"' in body
+        assert 'id="quantity-zhixuesan"\n                                       value="1" min="1" max="100"' in body
+
+    def test_smithy_quantity_input_updates_duration_preview(self, manor_with_user):
+        _manor, client = manor_with_user
+
+        response = client.get(f"{reverse('gameplay:smithy')}?category=medicine")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert 'id="duration-zhixuesan"' in body
+        assert 'data-unit-duration="' in body
+        assert 'data-duration-target="duration-zhixuesan"' in body
+
     def test_smithy_page_reads_latest_runtime_smithy_config(self, manor_with_user, monkeypatch):
         _manor, client = manor_with_user
 

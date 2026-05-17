@@ -46,6 +46,101 @@ def test_start_smelting_production_rejects_invalid_type_with_explicit_error(djan
 
 
 @pytest.mark.django_db
+def test_start_horse_production_scales_duration_by_quantity(django_user_model, monkeypatch):
+    manor = _create_manor("production_horse_batch_duration", django_user_model)
+    monkeypatch.setattr(
+        stable_service,
+        "HORSE_CONFIG",
+        {
+            "war_horse": {
+                "grain_cost": 10,
+                "base_duration": 60,
+                "required_horsemanship": 1,
+            }
+        },
+    )
+    monkeypatch.setattr("gameplay.services.technology.get_player_technology_level", lambda *_args, **_kwargs: 5)
+    monkeypatch.setattr("gameplay.services.buildings.stable.calculate_production_duration", lambda *_args: 30)
+    monkeypatch.setattr("gameplay.services.buildings.stable._schedule_production_completion", lambda *_args: None)
+
+    production = start_horse_production(manor, "war_horse", 3)
+
+    assert production.actual_duration == 90
+
+
+@pytest.mark.django_db
+def test_start_livestock_production_scales_duration_by_quantity(django_user_model, monkeypatch):
+    manor = _create_manor("production_livestock_batch_duration", django_user_model)
+    monkeypatch.setattr(
+        ranch_service,
+        "LIVESTOCK_CONFIG",
+        {
+            "chicken": {
+                "grain_cost": 10,
+                "base_duration": 60,
+                "required_animal_husbandry": 1,
+            }
+        },
+    )
+    monkeypatch.setattr("gameplay.services.technology.get_player_technology_level", lambda *_args, **_kwargs: 5)
+    monkeypatch.setattr("gameplay.services.buildings.ranch.calculate_livestock_duration", lambda *_args: 30)
+    monkeypatch.setattr("gameplay.services.buildings.ranch._schedule_livestock_completion", lambda *_args: None)
+
+    production = start_livestock_production(manor, "chicken", 3)
+
+    assert production.actual_duration == 90
+
+
+@pytest.mark.django_db
+def test_start_smelting_production_allows_batch_medicine_by_smithy_level(django_user_model, monkeypatch):
+    manor = _create_manor("production_smelting_medicine_batch", django_user_model)
+    monkeypatch.setattr(
+        smithy_service,
+        "METAL_CONFIG",
+        {
+            "zhixuesan": {
+                "cost_type": "silver",
+                "cost_amount": 50,
+                "base_duration": 60,
+                "category": "medicine",
+                "required_smithy": 1,
+            }
+        },
+    )
+    monkeypatch.setattr("gameplay.services.technology.get_player_technology_level", lambda *_args, **_kwargs: 0)
+    monkeypatch.setattr("gameplay.services.buildings.smithy._schedule_smelting_completion", lambda *_args: None)
+
+    production = start_smelting_production(manor, "zhixuesan", 2)
+
+    assert production.quantity == 2
+    assert production.cost_amount == 100
+
+
+@pytest.mark.django_db
+def test_start_smelting_production_scales_duration_by_quantity(django_user_model, monkeypatch):
+    manor = _create_manor("production_smelting_batch_duration", django_user_model)
+    monkeypatch.setattr(
+        smithy_service,
+        "METAL_CONFIG",
+        {
+            "zhixuesan": {
+                "cost_type": "silver",
+                "cost_amount": 50,
+                "base_duration": 60,
+                "category": "medicine",
+                "required_smithy": 1,
+            }
+        },
+    )
+    monkeypatch.setattr("gameplay.services.technology.get_player_technology_level", lambda *_args, **_kwargs: 0)
+    monkeypatch.setattr("gameplay.services.buildings.smithy._schedule_smelting_completion", lambda *_args: None)
+
+    production = start_smelting_production(manor, "zhixuesan", 3)
+
+    assert production.actual_duration == smithy_service.calculate_smelting_duration(60, manor) * 3
+
+
+@pytest.mark.django_db
 def test_start_horse_production_rejects_malformed_runtime_config(django_user_model, monkeypatch):
     manor = _create_manor("production_horse_bad_config", django_user_model)
     monkeypatch.setattr(

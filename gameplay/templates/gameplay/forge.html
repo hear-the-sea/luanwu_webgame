@@ -162,7 +162,7 @@
                                 </div>
                                 <div class="text-center">
                                     <dt class="text-xs text-text-muted mb-1">实际时间</dt>
-                                    <dd class="m-0 text-sm font-semibold text-accent-green">{{ item.actual_duration }} 秒</dd>
+                                    <dd class="m-0 text-sm font-semibold text-accent-green" id="duration-{{ item.key }}">{{ item.actual_duration }} 秒</dd>
                                 </div>
                             </div>
                         </dl>
@@ -181,7 +181,9 @@
                                     <label for="quantity-{{ item.key }}" class="text-sm text-text-secondary">数量：</label>
                                     <input type="number" name="quantity" id="quantity-{{ item.key }}"
                                            value="1" min="1" max="{{ item.max_quantity }}"
-                                           class="tw-quantity-input">
+                                           class="tw-quantity-input"
+                                           data-unit-duration="{{ item.actual_duration }}"
+                                           data-duration-target="duration-{{ item.key }}">
                                 </div>
                                 {% if item.can_afford %}
                                     <button type="submit" class="tw-btn-primary w-full">锻造</button>

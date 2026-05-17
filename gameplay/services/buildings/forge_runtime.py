@@ -156,7 +156,8 @@ def start_equipment_forging(
             consume_inventory_item_locked=consume_inventory_item_locked,
         )
 
-        actual_duration = calculate_forging_duration(config["base_duration"], locked_manor)
+        unit_duration = calculate_forging_duration(config["base_duration"], locked_manor)
+        actual_duration = unit_duration * quantity
         production = create_equipment_production_record(
             equipment_production_model=EquipmentProduction,
             locked_manor=locked_manor,

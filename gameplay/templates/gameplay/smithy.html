@@ -52,8 +52,17 @@
                 {% if is_producing %}<br><span class="text-accent-red font-medium">当前有物品正在制作中，同时只能制作一种物品</span>{% endif %}
             </p>
 
+            <nav class="tw-category-tabs" aria-label="冶炼坊制作分类">
+                {% for category in smithy_categories %}
+                <a href="?category={{ category.key }}"
+                   class="tw-tab-item {% if category.key == current_smithy_category %}active{% endif %}">
+                    {{ category.label }}
+                </a>
+                {% endfor %}
+            </nav>
+
             <div class="tw-building-grid">
-                {% for metal in metal_options %}
+                {% for metal in selected_metal_options %}
                 <article class="tw-building-card {% if not metal.is_unlocked %}opacity-60{% elif is_producing %}opacity-50{% endif %}">
                     <header>
                         <div>
@@ -77,7 +86,7 @@
                             </div>
                             <div class="text-center">
                                 <dt class="text-xs text-text-muted mb-1">实际时间</dt>
-                                <dd class="m-0 text-sm font-semibold text-accent-green">{{ metal.actual_duration }} 秒</dd>
+                                <dd class="m-0 text-sm font-semibold text-accent-green" id="duration-{{ metal.key }}">{{ metal.actual_duration }} 秒</dd>
                             </div>
                         </div>
                     </dl>
@@ -93,11 +102,13 @@
                             <div class="flex items-center justify-center gap-2 mb-3 flex-wrap">
                                 <label for="quantity-{{ metal.key }}" class="text-sm text-text-secondary">数量：</label>
                                 <input type="number" name="quantity" id="quantity-{{ metal.key }}"
-                                       value="1" min="1" max="{{ metal.max_quantity }}"
+                                       value="1" min="1" max="{{ metal.max_quantity }}" step="1" inputmode="numeric"
                                        class="tw-quantity-input"
                                        data-unit-cost="{{ metal.cost_amount }}"
                                        data-unit-label="{{ metal.cost_type_name }}"
-                                       data-total-target="total-{{ metal.key }}">
+                                       data-total-target="total-{{ metal.key }}"
+                                       data-unit-duration="{{ metal.actual_duration }}"
+                                       data-duration-target="duration-{{ metal.key }}">
                                 <span class="text-xs text-accent-red font-medium" id="total-{{ metal.key }}">总计：{{ metal.cost_amount }} {{ metal.cost_type_name }}</span>
                             </div>
                             {% if metal.can_afford %}
@@ -108,6 +119,8 @@
                         {% endif %}
                     </form>
                 </article>
+                {% empty %}
+                <div class="tw-empty-state">当前分类暂无可制作物品</div>
                 {% endfor %}
             </div>
         </div>

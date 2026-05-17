@@ -232,7 +232,6 @@
 
     const selectButtons = [
       document.getElementById("candidate-select-all"),
-      document.getElementById("candidate-select-all-top"),
     ].filter(Boolean);
     selectButtons.forEach((button) => {
       if (button.dataset.ajaxBound === "1") {

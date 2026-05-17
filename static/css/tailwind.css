@@ -3573,7 +3573,8 @@
 }
 
 .tw-badge-maxed {
-  background: linear-gradient(135deg, var(--accent-green), #1E3A1F) !important;
+  background: linear-gradient(135deg, var(--accent-gold), var(--border-decorative)) !important;
+  color: var(--text-primary) !important;
 }
 
 .tw-badge-upgrading {

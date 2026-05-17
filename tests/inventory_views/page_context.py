@@ -10,6 +10,7 @@ from guests.models import (
     GuestRecruitment,
     GuestStatus,
     GuestTemplate,
+    RecruitmentCandidate,
     RecruitmentPool,
 )
 
@@ -178,6 +179,88 @@ class TestInventoryPageContext:
         body = response.content.decode("utf-8")
         assert "js/recruitment-hall.js" in body
         assert "const CHUNK_SIZE" not in body
+
+    def test_recruitment_hall_candidate_header_does_not_render_select_all(self, manor_with_user):
+        manor, client = manor_with_user
+        pool = RecruitmentPool.objects.create(
+            key=f"header_select_all_pool_{manor.id}",
+            name="候选卡池",
+            cooldown_seconds=60,
+            draw_count=1,
+        )
+        template = GuestTemplate.objects.create(
+            key=f"header_select_all_guest_{manor.id}",
+            name="候选门客",
+            rarity=GuestRarity.GRAY,
+            archetype=GuestArchetype.CIVIL,
+        )
+        RecruitmentCandidate.objects.create(
+            manor=manor,
+            pool=pool,
+            template=template,
+            display_name="候选门客",
+            rarity=GuestRarity.GRAY,
+            archetype=GuestArchetype.CIVIL,
+        )
+
+        response = client.get(reverse("gameplay:recruitment_hall"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert 'id="candidate-select-all-top"' not in body
+
+    def test_recruitment_hall_pool_images_use_uncropped_display_class(self, manor_with_user):
+        _manor, client = manor_with_user
+        RecruitmentPool.objects.update_or_create(
+            key="cunmu",
+            defaults={
+                "name": "村募",
+                "description": "地方招募",
+                "cooldown_seconds": 60,
+                "tier": RecruitmentPool.Tier.CUNMU,
+            },
+        )
+
+        response = client.get(reverse("gameplay:recruitment_hall"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "recruit-pool-image" in body
+        assert "pool-img-container" in body
+        assert 'class="w-full h-full object-cover"' not in body
+
+    def test_recruitment_hall_pool_images_keep_desktop_left_rail_layout(self, manor_with_user):
+        _manor, client = manor_with_user
+
+        response = client.get(reverse("gameplay:recruitment_hall"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "padding-left: 13.5rem" in body
+        assert "min-height: 11.6rem" in body
+        assert "border-right: 1px solid #e5e7eb" in body
+
+    def test_recruitment_hall_pool_images_do_not_use_padded_backdrop(self, manor_with_user):
+        _manor, client = manor_with_user
+
+        response = client.get(reverse("gameplay:recruitment_hall"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "padding: 0.4rem" not in body
+        assert "linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%)" not in body
+        assert "object-fit: cover" in body
+
+    def test_recruitment_hall_pool_grid_uses_two_desktop_columns(self, manor_with_user):
+        _manor, client = manor_with_user
+
+        response = client.get(reverse("gameplay:recruitment_hall"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "grid-cols-1 md:grid-cols-2" in body
+        assert "lg:grid-cols-3" not in body
+        assert "xl:grid-cols-4" not in body
 
     def test_recruitment_hall_page_active_recruitment_has_refresh_endpoint(self, manor_with_user):
         manor, client = manor_with_user

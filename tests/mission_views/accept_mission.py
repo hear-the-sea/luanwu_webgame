@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import date
+
 import pytest
 from django.db import DatabaseError
 from django.urls import reverse
@@ -23,6 +25,30 @@ class TestAcceptMissionView:
         response = client.post(reverse("gameplay:accept_mission"), {"mission_key": mission_key})
         assert_redirect(response, f"{reverse('gameplay:tasks')}?mission={mission_key}")
         assert any("任务不存在" in message for message in response_messages(response))
+
+    def test_accept_mission_rejects_mission_unavailable_for_current_weekday(self, manor_with_user, monkeypatch):
+        manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key=f"view_accept_weekday_unavailable_{manor.id}",
+            name="非今日任务",
+            available_weekdays=[2],
+        )
+        called = {"count": 0}
+        monkeypatch.setattr(
+            "gameplay.views.mission_helpers.timezone.localdate",
+            lambda: date(2026, 5, 18),
+        )
+
+        def _unexpected_launch(*_args, **_kwargs):
+            called["count"] += 1
+
+        monkeypatch.setattr("gameplay.views.missions.launch_mission", _unexpected_launch)
+
+        response = client.post(reverse("gameplay:accept_mission"), {"mission_key": mission.key})
+
+        assert_redirect(response, reverse("gameplay:tasks"))
+        assert any("该任务今日未开放" in message for message in response_messages(response))
+        assert called["count"] == 0
 
     def test_accept_mission_rejects_when_action_lock_conflicts(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user

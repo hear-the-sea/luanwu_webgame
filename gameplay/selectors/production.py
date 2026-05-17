@@ -37,6 +37,11 @@ from gameplay.views.production_helpers import (
     resolve_decompose_category,
 )
 
+SMITHY_CATEGORIES = (
+    {"key": "metal", "label": "金属"},
+    {"key": "medicine", "label": "药品"},
+)
+
 
 def get_stable_page_context(manor: Any) -> dict[str, Any]:
     speed_bonus = get_stable_speed_bonus(manor)
@@ -64,10 +69,21 @@ def get_ranch_page_context(manor: Any) -> dict[str, Any]:
     }
 
 
-def get_smithy_page_context(manor: Any) -> dict[str, Any]:
+def _normalize_smithy_category(raw_category: str | None) -> str:
+    category = (raw_category or "metal").strip()
+    available = {item["key"] for item in SMITHY_CATEGORIES}
+    return category if category in available else "metal"
+
+
+def get_smithy_page_context(manor: Any, *, current_category: str | None = None) -> dict[str, Any]:
     speed_bonus = get_smithy_speed_bonus(manor)
+    normalized_category = _normalize_smithy_category(current_category)
+    metal_options = get_metal_options(manor)
     return {
-        "metal_options": get_metal_options(manor),
+        "current_smithy_category": normalized_category,
+        "smithy_categories": SMITHY_CATEGORIES,
+        "metal_options": metal_options,
+        "selected_metal_options": [option for option in metal_options if option.get("category") == normalized_category],
         "active_productions": get_active_smelting_productions(manor),
         "speed_bonus": speed_bonus,
         "speed_bonus_percent": int(speed_bonus * 100),

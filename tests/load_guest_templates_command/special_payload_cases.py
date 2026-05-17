@@ -83,6 +83,15 @@ def test_load_guest_templates_merges_default_guild_mission_special_skills() -> N
     assert skills["guild_blackwind_battle_standard"]["passive_config"]
 
 
+def test_bloodthirsty_fury_triggers_before_its_action() -> None:
+    payload = Command()._load_skills_payload("")
+    skills = {entry["key"]: entry for entry in payload["skills"]}
+
+    trigger = skills["bloodthirsty_fury"]["passive_config"]["triggers"][0]
+
+    assert trigger["timing"] == "action_before"
+
+
 def test_default_special_yaml_contains_guild_mission_template_skill_bindings() -> None:
     payload = Command()._load_heroes_payload("")
 

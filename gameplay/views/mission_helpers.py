@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import logging
+from datetime import date
 from typing import Any
 
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.utils import timezone
 
 from core.decorators import flash_unexpected_view_error
 from core.exceptions import GameError
@@ -71,6 +73,39 @@ def mission_tasks_redirect(mission_key: str | None = None) -> HttpResponse:
     return redirect(mission_tasks_url(mission_key))
 
 
+def _normalized_available_weekdays(mission: MissionTemplate) -> set[int]:
+    raw_weekdays = getattr(mission, "available_weekdays", None)
+    if not isinstance(raw_weekdays, list):
+        return set()
+
+    weekdays: set[int] = set()
+    for raw_weekday in raw_weekdays:
+        if isinstance(raw_weekday, bool):
+            continue
+        try:
+            weekday = int(raw_weekday)
+        except (TypeError, ValueError):
+            continue
+        if 1 <= weekday <= 7:
+            weekdays.add(weekday)
+    return weekdays
+
+
+def is_mission_available_on(mission: MissionTemplate, current_date: date | None = None) -> bool:
+    weekdays = _normalized_available_weekdays(mission)
+    if not weekdays:
+        return True
+    today = current_date or timezone.localdate()
+    return today.isoweekday() in weekdays
+
+
+def filter_available_missions(
+    missions: list[MissionTemplate], current_date: date | None = None
+) -> list[MissionTemplate]:
+    today = current_date or timezone.localdate()
+    return [mission for mission in missions if is_mission_available_on(mission, today)]
+
+
 def resolve_mission_or_redirect(
     request: HttpRequest, mission_key_raw: Any
 ) -> tuple[MissionTemplate | None, HttpResponse | None]:
@@ -83,6 +118,10 @@ def resolve_mission_or_redirect(
     if mission is None:
         messages.error(request, "任务不存在")
         return None, mission_tasks_redirect(mission_key)
+
+    if not is_mission_available_on(mission):
+        messages.error(request, "该任务今日未开放")
+        return None, mission_tasks_redirect()
 
     return mission, None
 

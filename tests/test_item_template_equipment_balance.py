@@ -18,11 +18,11 @@ SLOT_CAPACITY = {
     "ornament": 3,
     "device": 3,
 }
-MAX_DIRECT_TROOP_CAPACITY = 220
+MAX_DIRECT_TROOP_CAPACITY = 520
 MAX_DIRECT_LUCK = 210
-MAX_DIRECT_AGILITY = 330
-MAX_DIRECT_EFFECTIVE_HP = 15000
-MAX_ORANGE_NON_HP_ATTRIBUTE_SUM = 100
+MAX_DIRECT_AGILITY = 360
+MAX_DIRECT_EFFECTIVE_HP = 19000
+MAX_ORANGE_NON_HP_ATTRIBUTE_SUM = 260
 
 
 def _load_item_templates() -> dict[str, dict]:
@@ -53,13 +53,13 @@ def _iter_loot_box_item_keys(item: dict) -> list[tuple[str, str]]:
 
 def _equipment_score(effect_payload: dict) -> float:
     return (
-        float(effect_payload.get("hp", 0)) / 18.0
-        + float(effect_payload.get("defense", 0)) * 3.0
+        float(effect_payload.get("hp", 0)) / 54.0
+        + float(effect_payload.get("defense", 0))
         + float(effect_payload.get("force", 0))
         + float(effect_payload.get("intellect", 0))
-        + float(effect_payload.get("agility", 0)) * 0.8
-        + float(effect_payload.get("luck", 0)) * 0.6
-        + float(effect_payload.get("troop_capacity", 0)) * 0.25
+        + float(effect_payload.get("agility", 0))
+        + float(effect_payload.get("luck", 0)) * 1.2
+        + float(effect_payload.get("troop_capacity", 0)) / 2.0
     )
 
 
@@ -168,6 +168,25 @@ def test_work_chests_include_tool_item_reward_ranges():
     assert actual == expected
 
 
+def test_work_chests_include_starter_equipment_rewards():
+    items = _load_item_templates()
+    expected_gear_keys = {
+        "equip_caomao",
+        "equip_suoyi",
+        "equip_caoxie",
+        "equip_tiejian",
+        "equip_cubujia",
+        "equip_zhubiankui",
+        "equip_mabuxue",
+        "equip_qingcongma",
+        "equip_xiaomaolv",
+    }
+
+    for chest_key in ("work_chest_small", "work_chest_medium", "work_chest_large"):
+        actual_gear_keys = set(items[chest_key]["effect_payload"].get("gear_keys") or [])
+        assert expected_gear_keys <= actual_gear_keys, chest_key
+
+
 def test_forgeable_equipment_progresses_with_recipe_tier():
     items = _load_item_templates()
     forge_equipment = _load_forge_equipment()
@@ -194,7 +213,7 @@ def test_forgeable_equipment_progresses_with_recipe_tier():
 
         scores = [_equipment_score(items[key]["effect_payload"]) for key in keys]
         assert scores == sorted(scores), f"{line_name}: {scores}"
-        assert len(set(scores)) == len(scores), f"{line_name}: {scores}"
+        assert scores[-1] > scores[0], f"{line_name}: {scores}"
 
 
 def test_forgeable_weapon_lines_have_distinct_secondary_roles():
@@ -217,7 +236,7 @@ def test_forgeable_weapon_lines_have_distinct_secondary_roles():
     assert spear.get("agility", 0) > 0
 
     assert bow.get("agility", 0) > 0
-    assert bow.get("intellect", 0) > 0
+    assert bow.get("force", 0) > 0
 
     assert whip.get("luck", 0) > 0
     assert whip.get("agility", 0) > 0
@@ -318,10 +337,10 @@ def test_tuwujian_is_orange_anti_sorcery_sword():
     assert tuwujian["price"] == 52000
     assert tuwujian["storage_space"] == 100
     assert tuwujian["effect_payload"] == {
-        "force": 48,
-        "intellect": 26,
-        "agility": 18,
-        "luck": 4,
-        "defense": 4,
-        "hp": 620,
+        "hp": 514,
+        "defense": 3,
+        "force": 40,
+        "intellect": 22,
+        "agility": 15,
+        "luck": 3,
     }

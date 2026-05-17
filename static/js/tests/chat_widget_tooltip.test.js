@@ -101,3 +101,38 @@ test("initTooltip skips mousemove listener when pointer tracking is disabled", (
   assert.ok(listeners.includes("mouseover"));
   assert.ok(!listeners.includes("mousemove"));
 });
+
+test("eventTargetMatchesIgnore detects ignored tooltip controls", () => {
+  const ignoredTarget = {
+    closest(selector) {
+      return selector === ".tooltip-ignore" ? {} : null;
+    },
+  };
+  const regularTarget = {
+    closest() {
+      return null;
+    },
+  };
+
+  assert.equal(tooltip.eventTargetMatchesIgnore(ignoredTarget, ".tooltip-ignore"), true);
+  assert.equal(tooltip.eventTargetMatchesIgnore(regularTarget, ".tooltip-ignore"), false);
+  assert.equal(tooltip.eventTargetMatchesIgnore(ignoredTarget, ""), false);
+});
+
+test("syncTooltipContent fills and clears tooltip text from an attribute", () => {
+  const tooltipElem = { textContent: "" };
+  const cell = {
+    getAttribute(name) {
+      return name === "data-tooltip-text" ? "武力：81" : "";
+    },
+    querySelector(selector) {
+      return selector === ".guest-attribute-tooltip-bubble" ? tooltipElem : null;
+    },
+  };
+
+  tooltip.syncTooltipContent(cell, ".guest-attribute-tooltip-bubble", "data-tooltip-text");
+  assert.equal(tooltipElem.textContent, "武力：81");
+
+  tooltip.clearTooltipContent(cell, ".guest-attribute-tooltip-bubble", "data-tooltip-text");
+  assert.equal(tooltipElem.textContent, "");
+});

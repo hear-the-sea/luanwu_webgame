@@ -15,7 +15,10 @@
                 </form>
                 <span>武力</span>
             </div>
-            <strong class="js-attribute-icons" data-attribute="force">{{ guest.force|attribute_icons }}</strong>
+            <strong class="guest-attribute-tooltip-trigger" tabindex="0" aria-label="武力 {{ guest.force }}" data-tooltip-text="武力：{{ guest.force }}">
+                <span class="js-attribute-icons" data-attribute="force">{{ guest.force|attribute_icons }}</span>
+                <span class="guest-attribute-tooltip-bubble" role="tooltip" aria-hidden="true"></span>
+            </strong>
         </div>
         <div class="stat-row">
             <div class="stat-left">
@@ -29,7 +32,10 @@
                 </form>
                 <span>智力</span>
             </div>
-            <strong class="js-attribute-icons" data-attribute="intellect">{{ guest.intellect|attribute_icons }}</strong>
+            <strong class="guest-attribute-tooltip-trigger" tabindex="0" aria-label="智力 {{ guest.intellect }}" data-tooltip-text="智力：{{ guest.intellect }}">
+                <span class="js-attribute-icons" data-attribute="intellect">{{ guest.intellect|attribute_icons }}</span>
+                <span class="guest-attribute-tooltip-bubble" role="tooltip" aria-hidden="true"></span>
+            </strong>
         </div>
         <div class="stat-row">
             <div class="stat-left">
@@ -43,7 +49,10 @@
                 </form>
                 <span>防御</span>
             </div>
-            <strong class="js-attribute-icons" data-attribute="defense">{{ guest.defense_stat|attribute_icons }}</strong>
+            <strong class="guest-attribute-tooltip-trigger" tabindex="0" aria-label="防御 {{ guest.defense_stat }}" data-tooltip-text="防御：{{ guest.defense_stat }}">
+                <span class="js-attribute-icons" data-attribute="defense">{{ guest.defense_stat|attribute_icons }}</span>
+                <span class="guest-attribute-tooltip-bubble" role="tooltip" aria-hidden="true"></span>
+            </strong>
         </div>
         <div class="stat-row">
             <div class="stat-left">
@@ -57,14 +66,20 @@
                 </form>
                 <span>敏捷</span>
             </div>
-            <strong class="js-attribute-icons" data-attribute="agility">{{ guest.agility|attribute_icons }}</strong>
+            <strong class="guest-attribute-tooltip-trigger" tabindex="0" aria-label="敏捷 {{ guest.agility }}" data-tooltip-text="敏捷：{{ guest.agility }}">
+                <span class="js-attribute-icons" data-attribute="agility">{{ guest.agility|attribute_icons }}</span>
+                <span class="guest-attribute-tooltip-bubble" role="tooltip" aria-hidden="true"></span>
+            </strong>
         </div>
         <div class="stat-row">
             <div class="stat-left">
                 <span class="add-btn-placeholder"></span>
                 <span>运势</span>
             </div>
-            <strong class="js-attribute-icons" data-attribute="luck">{{ guest.luck|attribute_icons }}</strong>
+            <strong class="guest-attribute-tooltip-trigger" tabindex="0" aria-label="运势 {{ guest.luck }}" data-tooltip-text="运势：{{ guest.luck }}">
+                <span class="js-attribute-icons" data-attribute="luck">{{ guest.luck|attribute_icons }}</span>
+                <span class="guest-attribute-tooltip-bubble" role="tooltip" aria-hidden="true"></span>
+            </strong>
         </div>
         <div class="stat-row">
             <span>操作</span>

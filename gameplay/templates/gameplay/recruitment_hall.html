@@ -31,41 +31,58 @@
         margin-top: auto;
     }
 
-    /* 响应式卡片布局：移动端垂直，PC端水平 */
+    /* 招募类型图片完整展示，避免建筑主体被卡片裁切 */
     .pool-img-container {
-        height: 8rem; /* 128px (mobile) - 增加高度以显示更多图片内容 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 9rem;
         width: 100%;
+        overflow: hidden;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .recruit-pool-image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
     }
 
     @media (min-width: 768px) {
-        /* PC端：卡片设为相对定位，作为容器 */
         .pool-card-responsive {
             display: flex !important;
-            flex-direction: column !important; /* 恢复垂直堆叠，但用absolute定位实现特殊效果 */
+            flex-direction: column !important;
             position: relative;
-            padding-left: 8.25rem !important; /* 左侧留出更宽图片空间 */
-            min-height: 8.5rem; /* 避免文本与按钮被截断 */
+            min-height: 11.6rem;
+            padding-left: 13.5rem !important;
             justify-content: center;
         }
-        /* 图片容器绝对定位到左侧 */
+
         .pool-img-container {
             position: absolute;
             left: 0;
             top: 0;
             bottom: 0;
-            width: 7.5rem !important; /* 提升PC端图片区域宽度 */
-            height: 100% !important;  /* 撑满卡片高度 */
-            border-right: 2px solid #e5e7eb;
+            width: 100% !important;
+            max-width: 12.5rem;
+            height: 100% !important;
+            border-right: 1px solid #e5e7eb;
+            border-bottom: 0;
         }
+
         .pool-content {
-            padding: 0.55rem 0.2rem 0.55rem 0 !important;
+            padding: 0.7rem 0.65rem 0.7rem 0 !important;
             width: 100%;
         }
+
         .pool-desc {
             min-height: 0;
             max-height: none;
             overflow: visible;
         }
+
         .recruit-action {
             margin-top: 0;
         }

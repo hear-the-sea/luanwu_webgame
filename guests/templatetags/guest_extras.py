@@ -27,6 +27,7 @@ _GEAR_STAT_LABELS = {
     "agility": "敏捷",
     "luck": "运势",
     "attack": "攻击",
+    "troop_capacity": "可携带护院人数",
 }
 
 

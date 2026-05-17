@@ -89,6 +89,7 @@ def test_start_troop_recruitment_deducts_inventory_and_retainers(monkeypatch, re
         "gameplay.services.recruitment.recruitment._schedule_recruitment_completion",
         lambda recruitment, eta_seconds: schedule_calls.append((recruitment.id, eta_seconds)),
     )
+    monkeypatch.setattr("gameplay.services.recruitment.recruitment.calculate_recruitment_duration", lambda *_args: 30)
 
     recruitment = start_troop_recruitment(manor, "spearman", quantity=2)
 
@@ -96,6 +97,7 @@ def test_start_troop_recruitment_deducts_inventory_and_retainers(monkeypatch, re
     assert manor.retainer_count == 16
     assert recruitment.retainer_cost == 4
     assert recruitment.equipment_costs == {"equip_spear_recruit": 2, "equip_shield_recruit": 2}
+    assert recruitment.actual_duration == 60
     assert recruitment.status == TroopRecruitment.Status.RECRUITING
     assert schedule_calls == [(recruitment.id, recruitment.actual_duration)]
 

@@ -76,7 +76,7 @@
                             </div>
                             <div class="text-center">
                                 <dt class="text-xs text-text-muted mb-1">实际时间</dt>
-                                <dd class="m-0 text-sm font-semibold text-accent-green">{{ livestock.actual_duration }} 秒</dd>
+                                <dd class="m-0 text-sm font-semibold text-accent-green" id="duration-{{ livestock.key }}">{{ livestock.actual_duration }} 秒</dd>
                             </div>
                         </div>
                     </dl>
@@ -96,7 +96,9 @@
                                        class="tw-quantity-input"
                                        data-unit-cost="{{ livestock.grain_cost }}"
                                        data-unit-label="粮食"
-                                       data-total-target="total-{{ livestock.key }}">
+                                       data-total-target="total-{{ livestock.key }}"
+                                       data-unit-duration="{{ livestock.actual_duration }}"
+                                       data-duration-target="duration-{{ livestock.key }}">
                                 <span class="text-xs text-accent-red font-medium" id="total-{{ livestock.key }}">总计：{{ livestock.grain_cost }} 粮食</span>
                             </div>
                             {% if livestock.can_afford %}

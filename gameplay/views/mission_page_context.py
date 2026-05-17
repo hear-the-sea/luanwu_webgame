@@ -36,7 +36,7 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         logger=logger,
         source="task_board_view",
     )
-    missions = list(MissionTemplate.objects.all().order_by("id"))
+    missions = mission_helpers.filter_available_missions(list(MissionTemplate.objects.all().order_by("id")))
     missions_by_key = {mission.key: mission for mission in missions}
     attempts = bulk_mission_attempts_today(manor, missions)
     extra_attempts = bulk_get_mission_extra_attempts(manor, missions)

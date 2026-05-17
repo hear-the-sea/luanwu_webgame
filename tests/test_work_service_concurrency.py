@@ -9,10 +9,23 @@ from django.utils import timezone
 
 import gameplay.services.work as work_service
 from core.exceptions import WorkError, WorkLimitExceededError, WorkNotInProgressError, WorkRewardClaimedError
-from gameplay.models import WorkAssignment, WorkTemplate
+from gameplay.models import InventoryItem, ItemTemplate, WorkAssignment, WorkTemplate
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.work import assign_guest_to_work, claim_work_reward, recall_guest_from_work
 from guests.models import Guest, GuestArchetype, GuestRarity, GuestStatus, GuestTemplate
+
+
+def _create_work_chest_templates() -> None:
+    for key, name in (
+        ("work_chest_small", "打工宝箱（小）"),
+        ("work_chest_medium", "打工宝箱（中）"),
+        ("work_chest_large", "打工宝箱（大）"),
+    ):
+        ItemTemplate.objects.create(
+            key=key,
+            name=name,
+            effect_type=ItemTemplate.EffectType.LOOT_BOX,
+        )
 
 
 @pytest.mark.django_db
@@ -21,6 +34,7 @@ def test_claim_work_reward_rechecks_locked_assignment_state(django_user_model):
     manor = ensure_manor(user)
     manor.silver = 0
     manor.save(update_fields=["silver"])
+    _create_work_chest_templates()
 
     guest_template = GuestTemplate.objects.create(
         key=f"work_claim_lock_tpl_{user.id}",
@@ -47,7 +61,7 @@ def test_claim_work_reward_rechecks_locked_assignment_state(django_user_model):
     stale_b = WorkAssignment.objects.get(pk=assignment.pk)
 
     result = claim_work_reward(stale_a)
-    assert result == {"silver": 123}
+    assert result["silver"] == 123
 
     with pytest.raises(WorkRewardClaimedError):
         claim_work_reward(stale_b)
@@ -56,6 +70,61 @@ def test_claim_work_reward_rechecks_locked_assignment_state(django_user_model):
     assignment.refresh_from_db()
     assert manor.silver == 123
     assert assignment.reward_claimed is True
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("tier", "expected_chest_key"),
+    (
+        (WorkTemplate.Tier.JUNIOR, "work_chest_small"),
+        (WorkTemplate.Tier.INTERMEDIATE, "work_chest_medium"),
+        (WorkTemplate.Tier.SENIOR, "work_chest_large"),
+    ),
+)
+def test_claim_work_reward_grants_tier_work_chest(django_user_model, tier, expected_chest_key):
+    user = django_user_model.objects.create_user(username=f"work_chest_{tier}", password="pass123")
+    manor = ensure_manor(user)
+    manor.silver = 0
+    manor.save(update_fields=["silver"])
+    _create_work_chest_templates()
+
+    guest_template = GuestTemplate.objects.create(
+        key=f"work_chest_tpl_{tier}_{user.id}",
+        name="宝箱领取模板",
+        archetype=GuestArchetype.CIVIL,
+        rarity=GuestRarity.GRAY,
+    )
+    guest = Guest.objects.create(manor=manor, template=guest_template, status=GuestStatus.IDLE)
+    work_template = WorkTemplate.objects.create(
+        key=f"work_chest_work_{tier}_{user.id}",
+        name="宝箱领取工作",
+        tier=tier,
+        reward_silver=321,
+        work_duration=60,
+    )
+    assignment = WorkAssignment.objects.create(
+        manor=manor,
+        guest=guest,
+        work_template=work_template,
+        status=WorkAssignment.Status.COMPLETED,
+        complete_at=timezone.now(),
+    )
+
+    reward = claim_work_reward(assignment)
+
+    manor.refresh_from_db()
+    assert manor.silver == 321
+    assert reward["silver"] == 321
+    assert reward["item_key"] == expected_chest_key
+    assert (
+        InventoryItem.objects.filter(
+            manor=manor,
+            template__key=expected_chest_key,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            quantity=1,
+        ).count()
+        == 1
+    )
 
 
 @pytest.mark.django_db

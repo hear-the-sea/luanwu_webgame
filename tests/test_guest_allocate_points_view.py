@@ -49,6 +49,11 @@ def test_allocate_points_ajax_returns_attribute_panel_html(client, django_user_m
     assert payload["success"] is True
     assert "attribute_panel_html" in payload
     assert "guest-attribute-panel" in payload["attribute_panel_html"]
+    assert "guest-attribute-tooltip-trigger" in payload["attribute_panel_html"]
+    assert 'class="stat-row guest-attribute-tooltip-trigger"' not in payload["attribute_panel_html"]
+    assert '<strong class="guest-attribute-tooltip-trigger"' in payload["attribute_panel_html"]
+    assert 'data-tooltip-text="武力：81"' in payload["attribute_panel_html"]
+    assert ">武力：81</span>" not in payload["attribute_panel_html"]
 
     guest.refresh_from_db()
     assert guest.force == 81

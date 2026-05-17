@@ -59,8 +59,8 @@ def test_kasukabe_blue_equipment_set_uses_fixed_bonuses():
         assert item["effect_type"].startswith("equip_")
         assert payload["set_key"] == "kasukabe_defense_set"
         assert payload["set_bonus"] == [
-            {"pieces": 2, "bonus": {"attack": 40, "defense": 30}},
-            {"pieces": 4, "bonus": {"hp": 600, "agility": 25, "luck": 20}},
+            {"pieces": 2, "bonus": {"defense": 20, "attack": 30}},
+            {"pieces": 4, "bonus": {"hp": 600, "agility": 20, "luck": 15}},
         ]
 
 
@@ -71,6 +71,7 @@ def test_kasukabe_mission_rewards_crayons_and_blue_gear():
     drop_table = mission["drop_table"]
 
     assert mission["name"] == "春日部大作战"
+    assert mission["available_weekdays"] == [2, 4, 6, 7]
     assert mission["difficulty"] == "intermediate"
     assert mission["enemy_technology"] == {"level": 7, "guest_level": 60, "guest_bonus": 0.12}
     assert drop_table["kasukabe_crayon"] == 1
@@ -89,3 +90,12 @@ def test_kasukabe_guest_is_purple_military_non_pool_guest():
     assert guest["name"] == "蜡笔小新"
     assert guest["archetype"] == "military"
     assert guest["recruitable"] is False
+
+
+def test_liangshanbo_mission_uses_configured_weekday_rotation():
+    missions = _missions()
+
+    mission = missions["liangshanbo_zhuyingtai"]
+
+    assert mission["name"] == "梁山伯与祝英台"
+    assert mission["available_weekdays"] == [1, 3, 5, 6, 7]

@@ -102,6 +102,34 @@ def test_gear_tooltip_renders_multi_tier_set_bonus_lines():
     assert "运势+20" in html
 
 
+def test_gear_summary_renders_troop_capacity_label_in_chinese():
+    template = SimpleNamespace(
+        description="军鼓",
+        attack_bonus=0,
+        defense_bonus=0,
+        extra_stats={"troop_capacity": 12},
+        set_key="",
+        set_bonus={},
+    )
+
+    assert guest_extras.gear_summary(template) == "军鼓；可携带护院人数+12"
+
+
+def test_gear_tooltip_renders_troop_capacity_label_in_chinese():
+    template = SimpleNamespace(
+        description="军鼓",
+        attack_bonus=0,
+        defense_bonus=0,
+        extra_stats={"troop_capacity": 12},
+        set_key="",
+    )
+
+    html = str(guest_extras.gear_tooltip(template))
+
+    assert "可携带护院人数 +12" in html
+    assert "troop_capacity" not in html
+
+
 def test_attribute_icons_renders_expected_icon_pack():
     html = str(guest_extras.attribute_icons(85))
 

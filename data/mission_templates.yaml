@@ -17,6 +17,7 @@
 #   - is_defense: 防守任务（可选，默认false，敌方来袭）
 #   - daily_limit: 每日挑战次数限制（可选，默认3次，整数）
 #   - base_travel_time: 往返基础耗时，单位：秒（可选，默认1200秒=20分钟，整数）
+#   - available_weekdays: 开放星期（可选，1=周一 ... 7=周日；不填或空列表表示每日开放）
 #
 # 【敌方阵容配置】
 #   - enemy_guests: 敌方门客列表（可选，支持两种格式）
@@ -137,6 +138,7 @@ missions:
   - key: kasukabe_daisakusen
     name: 春日部大作战
     difficulty: intermediate
+    available_weekdays: [2, 4, 6, 7]
     description: |
       庄园附近突然出现一支自称“春日部防卫队”的神秘队伍。他们本是追查被妖怪夺走的神奇蜡笔，却不慎把庄园周边画成了临时游乐战场：粮仓墙上长出大象鼻子，演武场地面变成蹦床，护院巡逻路线也被涂鸦迷宫搅得七零八落。
 
@@ -239,6 +241,8 @@ missions:
 
     drop_table:
       silver: 3000
+      equip_shushengzhesan: 0.04
+      equip_yanlingmao: 0.05
 
     daily_limit: 3
 
@@ -282,6 +286,12 @@ missions:
         chance: 0.3
         count: 5
       equip_feiyunzui: 0.1
+      equip_tiehufu: 0.06
+      equip_yiqiyaopai: 0.05
+      equip_xuantiekui: 0.07
+      equip_hantiekui: 0.06
+      equip_wujinjia: 0.06
+      equip_linwenzhanjia: 0.05
 
     base_travel_time: 20
     daily_limit: 3
@@ -309,6 +319,8 @@ missions:
 
     drop_table:
       silver: 2000
+      equip_hupixue: 0.06
+      equip_huwenkui: 0.05
 
     daily_limit: 3
 
@@ -335,12 +347,16 @@ missions:
 
     drop_table:
       silver: 10000
+      equip_baoutoukui: 0.05
+      equip_tiegugun: 0.04
+      equip_youxiaxue: 0.05
+      equip_mengguma: 0.02
 
     daily_limit: 3
 
   - key: wagangzhai
     name: 瓦岗寨
-    difficulty: intermediate
+    difficulty: junior
     description: |
       瓦岗寨原来的寨主翟让被程咬金击败后让出寨主之位，程咬金自号"大魔国混世魔王"，并带领瓦岗军四处出门踢馆打劫，引得各地庄园主怨声在道，大家决定联手打击瓦岗寨，维护和保障各庄园的和平与稳定。
     battle_type: task1
@@ -359,6 +375,15 @@ missions:
 
     drop_table:
       silver: 20000
+      equip_suozijia: 0.05
+      equip_shanwenjia: 0.05
+      equip_tiexianjia: 0.04
+      equip_pofengji: 0.05
+      equip_tongshanchui: 0.04
+      equip_tiehufu: 0.05
+      equip_yiqiyaopai: 0.05
+      equip_xiliangma: 0.02
+      equip_chibiao: 0.02
 
     daily_limit: 3
 
@@ -382,6 +407,10 @@ missions:
     drop_table:
       silver: 30000
       experience_peach: 6
+      equip_yupei: 0.08
+      equip_fudai: 0.06
+      equip_zhujian: 0.04
+      equip_moyuyan: 0.05
 
     daily_limit: 3
 
@@ -410,6 +439,15 @@ missions:
 
     drop_table:
       silver: 30000
+      equip_hushenfu: 0.06
+      equip_tongjing: 0.05
+      equip_fudai: 0.06
+      equip_duanhunbian: 0.07
+      equip_hanyuejian: 0.07
+      equip_lieyandao: 0.07
+      equip_zhenyuechui: 0.06
+      equip_huyaxianglian: 0.06
+      equip_xueyuzhuo: 0.06
 
     daily_limit: 3
 
@@ -436,6 +474,13 @@ missions:
 
     drop_table:
       silver: 40000
+      equip_luopan: 0.06
+      equip_tiehufu: 0.06
+      equip_feiyukui: 0.06
+      equip_langyakui: 0.06
+      equip_zhaoyeyushizi: 0.07
+      equip_zhuidian: 0.06
+      equip_bailongju: 0.05
 
     daily_limit: 3
 
@@ -470,6 +515,12 @@ missions:
     drop_table:
       silver: 20000
       experience_peach: 9
+      equip_tanmunianzhu: 0.05
+      equip_taomujian: 0.05
+      equip_yunwenkui: 0.06
+      equip_yunwenfayi: 0.06
+      equip_xingluoshan: 0.06
+      equip_linghuzhui: 0.06
 
     daily_limit: 3
 
@@ -505,6 +556,12 @@ missions:
 
     drop_table:
       equip_jixiemao: 1
+      equip_qingtongsuanchou: 0.06
+      equip_zhaoyaojing: 0.08
+      equip_qiankunquan: 0.07
+      equip_tianjiluopan: 0.07
+      equip_lingwenyubi: 0.07
+      equip_guanxingdeng: 0.07
 
     daily_limit: 3
 
@@ -527,6 +584,10 @@ missions:
 
     drop_table:
       silver: 20000
+      equip_xuantiejia: 0.04
+      equip_qingtongsuanchou: 0.05
+      equip_tongjing: 0.05
+      equip_qingzongma: 0.02
 
     daily_limit: 3
 
@@ -564,6 +625,12 @@ missions:
       silver: 50000
       experience_pineapple: 15
       equip_junzijian: 0.1
+      equip_yupei: 0.06
+      equip_fudai: 0.06
+      equip_xuanjiazhanbao: 0.05
+      equip_xuanbinggong: 0.06
+      equip_fengyuzan: 0.07
+      equip_xingshashouchuan: 0.07
 
     daily_limit: 3
 
@@ -645,6 +712,7 @@ missions:
       silver: 30000
       equip_jiguanchuniao: 1
       equip_feiyunzui: 0.1
+      equip_luopan: 0.05
 
     daily_limit: 3
 
@@ -715,6 +783,12 @@ missions:
       equip_lingboxie: 1
       equip_yemantoukie: 0.1
       equip_yemankandao: 0.1
+      equip_zhuifengxue: 0.07
+      equip_yingxingxue: 0.07
+      equip_pojunxue: 0.06
+      equip_jinlinxue: 0.06
+      equip_qianliju: 0.06
+      equip_juanmaochitu: 0.06
 
     daily_limit: 3
 
@@ -740,6 +814,17 @@ missions:
 
     drop_table:
       experience_peach: 15
+      equip_qingzhujia: 0.05
+      equip_qingtengguan: 0.05
+      equip_zhuyelu: 0.06
+      equip_tayunxue: 0.05
+      equip_jifengxue: 0.04
+      equip_hushenfu: 0.05
+      equip_taomupai: 0.04
+      equip_tanmunianzhu: 0.04
+      equip_taomujian: 0.05
+      equip_luopan: 0.05
+      equip_taxuema: 0.02
 
     daily_limit: 3
 
@@ -837,6 +922,7 @@ missions:
   - key: liangshanbo_zhuyingtai
     name: 梁山伯与祝英台
     difficulty: intermediate
+    available_weekdays: [1, 3, 5, 6, 7]
     description: |
       红罗山书院里，三好学生梁山伯与女扮男装求学的祝英台在上学途中偶然相遇，二人一见如故，当下投名结义。三载同窗，情意在书声与山色间日渐深厚；待到英台学成归家，山伯一路相送十八里，英台屡借草木禽鸟暗寄芳心，山伯却迟迟未解。直到祝家厅前，英台换回红妆、手奉香茗，山伯方知“九弟即九妹”，二人遂私订终身。
 
@@ -869,6 +955,11 @@ missions:
           - equip_nichangwuxie
           - equip_nichangjian
       equip_baguadao: 0.1
+      equip_yiqiyaopai: 0.06
+      equip_zhujian: 0.05
+      equip_moyuyan: 0.05
+      equip_xuantiejie: 0.07
+      equip_liuyunpei: 0.07
 
     probability_drop_table:
       equip_nichangyuyi: 1

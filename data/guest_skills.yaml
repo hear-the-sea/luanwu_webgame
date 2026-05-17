@@ -890,7 +890,7 @@ skills:
     required_defense: 200
     passive_config:
       triggers:
-        - timing: round_start
+        - timing: action_before
           effects:
             - type: emit_log
               log_name: 嗜血狂怒

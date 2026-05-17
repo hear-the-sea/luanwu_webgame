@@ -514,7 +514,8 @@ def _create_troop_recruitment_record(
     retainer_cost: int,
     base_duration: int,
 ) -> tuple[TroopRecruitment, int]:
-    actual_duration = calculate_recruitment_duration(base_duration, manor)
+    unit_duration = calculate_recruitment_duration(base_duration, manor)
+    actual_duration = unit_duration * quantity
     recruitment = TroopRecruitment.objects.create(
         manor=manor,
         troop_key=troop_key,

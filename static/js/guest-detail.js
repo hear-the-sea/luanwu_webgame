@@ -108,6 +108,12 @@ const initGuestDetailPage = () => {
       if (attrElem) {
         attrElem.innerHTML = renderAttributeIconsHtml(nextAttrValue);
       }
+      const tooltipTrigger = attrElem?.closest?.(".guest-attribute-tooltip-trigger");
+      if (tooltipTrigger) {
+        const label = tooltipTrigger.getAttribute("aria-label")?.split(" ")[0] || "";
+        tooltipTrigger.setAttribute("aria-label", `${label} ${nextAttrValue}`.trim());
+        tooltipTrigger.setAttribute("data-tooltip-text", `${label}：${nextAttrValue}`);
+      }
     }
 
     setAllocateButtonsBusy(false);
@@ -173,6 +179,15 @@ const initGuestDetailPage = () => {
   bindDismissForms();
 
   if (typeof window.initItemTooltip === "function") {
+    window.initItemTooltip({
+      key: "guest_detail_attributes",
+      cellSelector: ".guest-attribute-tooltip-trigger",
+      tooltipSelector: ".guest-attribute-tooltip-bubble",
+      ignoreSelector: ".js-allocate-points-form, .add-btn",
+      contentAttribute: "data-tooltip-text",
+      trackPointer: false,
+    });
+
     window.initItemTooltip({
       key: "guest_detail_equipment",
       cellSelector: ".guest-equip-tooltip-trigger",

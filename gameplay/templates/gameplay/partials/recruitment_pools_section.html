@@ -3,18 +3,18 @@
 <section class="tw-panel mb-6" id="recruit-pools-section">
     <div class="tw-panel-header">招募类型</div>
     <div class="tw-panel-content">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             {% for pool in pools %}
             <article class="tw-building-card overflow-hidden text-sm pool-card-responsive">
                 <div class="relative w-full bg-gray-200 pool-img-container">
                     {% if pool.key == 'cunmu' %}
-                    <img src="{% static 'images/buildings/cunmu.webp' %}" class="w-full h-full object-cover" alt="{{ pool.name }}" loading="lazy" decoding="async">
+                    <img src="{% static 'images/buildings/cunmu.webp' %}" class="recruit-pool-image" alt="{{ pool.name }}" loading="lazy" decoding="async">
                     {% elif pool.key == 'xiangshi' %}
-                    <img src="{% static 'images/buildings/xiangshi.webp' %}" class="w-full h-full object-cover" alt="{{ pool.name }}" loading="lazy" decoding="async">
+                    <img src="{% static 'images/buildings/xiangshi.webp' %}" class="recruit-pool-image" alt="{{ pool.name }}" loading="lazy" decoding="async">
                     {% elif pool.key == 'huishi' %}
-                    <img src="{% static 'images/buildings/huishi.webp' %}" class="w-full h-full object-cover" alt="{{ pool.name }}" loading="lazy" decoding="async">
+                    <img src="{% static 'images/buildings/huishi.webp' %}" class="recruit-pool-image" alt="{{ pool.name }}" loading="lazy" decoding="async">
                     {% elif pool.key == 'dianshi' %}
-                    <img src="{% static 'images/buildings/dianshi.webp' %}" class="w-full h-full object-cover" alt="{{ pool.name }}" loading="lazy" decoding="async">
+                    <img src="{% static 'images/buildings/dianshi.webp' %}" class="recruit-pool-image" alt="{{ pool.name }}" loading="lazy" decoding="async">
                     {% endif %}
                 </div>
 

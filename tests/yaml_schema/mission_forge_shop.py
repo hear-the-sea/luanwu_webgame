@@ -75,6 +75,11 @@ class TestMissionTemplatesValidation:
         result = validate_mission_templates(data)
         assert_has_error(result, substring="expected int")
 
+    def test_available_weekdays_rejects_invalid_weekday(self):
+        data = {"missions": [{"key": "m", "name": "M", "available_weekdays": [1, 8]}]}
+        result = validate_mission_templates(data)
+        assert_has_error(result, substring="must be between 1 and 7")
+
 
 class TestForgeEquipmentValidation:
     def test_valid_entry(self):

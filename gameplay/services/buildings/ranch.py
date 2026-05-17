@@ -302,8 +302,8 @@ def start_livestock_production(manor: Manor, livestock_key: str, quantity: int =
                 message=f"粮食不足，需要{total_grain_cost}点粮食",
             ) from exc
 
-        # 计算实际养殖时间（时间不随数量增加）
-        actual_duration = calculate_livestock_duration(config["base_duration"], manor)
+        unit_duration = calculate_livestock_duration(config["base_duration"], manor)
+        actual_duration = unit_duration * quantity
 
         # 创建养殖记录
         production = LivestockProduction.objects.create(

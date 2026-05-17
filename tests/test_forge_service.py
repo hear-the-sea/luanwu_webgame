@@ -53,8 +53,8 @@ def test_start_equipment_forging_consumes_materials_and_creates_record(monkeypat
     assert production.status == EquipmentProduction.Status.FORGING
     assert production.quantity == 2
     assert production.material_costs == {"tong": 6, "xi": 4}
-    assert production.actual_duration == 90
-    assert scheduled == {"id": production.id, "duration": 90}
+    assert production.actual_duration == 180
+    assert scheduled == {"id": production.id, "duration": 180}
     assert InventoryItem.objects.get(manor=manor, template=tong).quantity == 4
     assert InventoryItem.objects.get(manor=manor, template=xi).quantity == 4
 

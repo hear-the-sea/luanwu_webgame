@@ -31,6 +31,23 @@ def _coerce_bool(value, default: bool = False) -> bool:
     return default
 
 
+def _normalize_available_weekdays(value) -> list[int]:
+    if not isinstance(value, list):
+        return []
+
+    weekdays: set[int] = set()
+    for raw_weekday in value:
+        if isinstance(raw_weekday, bool):
+            continue
+        try:
+            weekday = int(raw_weekday)
+        except (TypeError, ValueError):
+            continue
+        if 1 <= weekday <= 7:
+            weekdays.add(weekday)
+    return sorted(weekdays)
+
+
 class Command(BaseCommand):
     help = "Load mission templates (掉落/敌人/耗时) from a YAML/JSON config file."
 
@@ -116,6 +133,7 @@ class Command(BaseCommand):
                 "entry_cost": entry_cost,
                 "drop_table": drop_table,
                 "probability_drop_table": probability_drop_table,
+                "available_weekdays": _normalize_available_weekdays(entry.get("available_weekdays")),
                 "base_travel_time": safe_positive_int(entry.get("base_travel_time"), 1200),
                 "daily_limit": safe_positive_int(entry.get("daily_limit"), 3),
             }

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from django.db import IntegrityError, transaction
 from django.utils import timezone
@@ -17,9 +17,16 @@ from core.exceptions import (
 )
 from core.utils.time_scale import scale_duration
 from gameplay.models import Manor, ResourceEvent, ResourceType, WorkAssignment, WorkTemplate
+from gameplay.services.inventory.core import add_item_to_inventory_locked
 from guests.models import Guest, GuestStatus
 
 MAX_CONCURRENT_WORKERS = 3  # 最多同时打工人数
+
+WORK_TIER_CHEST_KEYS: dict[str, str] = {
+    WorkTemplate.Tier.JUNIOR.value: "work_chest_small",
+    WorkTemplate.Tier.INTERMEDIATE.value: "work_chest_medium",
+    WorkTemplate.Tier.SENIOR.value: "work_chest_large",
+}
 
 
 def _ensure_guest_meets_work_requirements(guest: Guest, work_template: WorkTemplate) -> None:
@@ -187,7 +194,7 @@ def recall_guest_from_work(assignment: WorkAssignment) -> bool:
     return True
 
 
-def claim_work_reward(assignment: WorkAssignment) -> Dict[str, int]:
+def claim_work_reward(assignment: WorkAssignment) -> Dict[str, Any]:
     """
     领取打工报酬
     返回获得的资源
@@ -205,11 +212,13 @@ def claim_work_reward(assignment: WorkAssignment) -> Dict[str, int]:
             raise WorkRewardClaimedError()
 
         reward_silver = locked_assignment.work_template.reward_silver
+        chest_key = WORK_TIER_CHEST_KEYS[locked_assignment.work_template.tier]
 
         # 增加庄园银两
         manor = Manor.objects.select_for_update().get(pk=locked_assignment.manor_id)
         manor.silver += reward_silver
         manor.save(update_fields=["silver"])
+        chest_item = add_item_to_inventory_locked(manor, chest_key, 1)
 
         # 记录资源流水
         ResourceEvent.objects.create(
@@ -227,7 +236,12 @@ def claim_work_reward(assignment: WorkAssignment) -> Dict[str, int]:
     # 让传入对象状态保持同步，避免调用方误判
     assignment.reward_claimed = True
 
-    return {"silver": reward_silver}
+    return {
+        "silver": reward_silver,
+        "item_key": chest_key,
+        "item_name": chest_item.template.name,
+        "item_quantity": 1,
+    }
 
 
 def assign_guest_to_work_with_refresh(*, manor: Manor, guest: Guest, work_template: WorkTemplate) -> WorkAssignment:
@@ -242,7 +256,7 @@ def recall_guest_from_work_with_refresh(*, manor: Manor, assignment: WorkAssignm
     return recall_guest_from_work(assignment)
 
 
-def claim_work_reward_with_refresh(*, manor: Manor, assignment: WorkAssignment) -> Dict[str, int]:
+def claim_work_reward_with_refresh(*, manor: Manor, assignment: WorkAssignment) -> Dict[str, Any]:
     """刷新当前庄园的打工状态后，再尝试领取报酬。"""
     refresh_work_assignments(manor)
     return claim_work_reward(assignment)

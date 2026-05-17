@@ -182,6 +182,58 @@
   max-width: 100%;
 }
 
+.guest-detail .guest-attribute-tooltip-trigger {
+  position: relative;
+  cursor: help;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  outline: none;
+}
+
+.guest-detail .guest-attribute-tooltip-trigger:focus-visible {
+  box-shadow: 0 0 0 3px rgba(184, 147, 94, 0.28);
+  border-radius: 8px;
+}
+
+.guest-detail .guest-attribute-tooltip-bubble {
+  position: fixed;
+  display: none;
+  pointer-events: none;
+  padding: 0.35rem 0.55rem;
+  min-width: 92px;
+  border-radius: 8px;
+  background: #4c2b12;
+  color: #fff7e8;
+  box-shadow: 0 8px 24px rgba(76, 43, 18, 0.22);
+  line-height: 1.25;
+  font-size: 0.86rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  transform: translateY(-4px);
+  z-index: 1000;
+}
+
+.guest-detail .guest-attribute-tooltip-trigger.is-tooltip-active .guest-attribute-tooltip-bubble {
+  display: block;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .guest-detail .guest-attribute-tooltip-trigger:hover .guest-attribute-tooltip-bubble {
+    display: block;
+  }
+}
+
+.guest-detail .guest-attribute-tooltip-trigger:hover .guest-attribute-tooltip-bubble,
+.guest-detail .guest-attribute-tooltip-trigger:focus-visible .guest-attribute-tooltip-bubble,
+.guest-detail .guest-attribute-tooltip-trigger.is-tooltip-active .guest-attribute-tooltip-bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
 .guest-detail .attr-icon {
   width: 16px;
   height: 16px;

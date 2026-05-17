@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from datetime import timedelta
+from datetime import date, timedelta
 
 import pytest
 from django.db import DatabaseError
@@ -141,6 +141,39 @@ class TestTaskBoardPage:
         for key, name, _difficulty in missions:
             pattern = rf'<a[^>]+href="\?mission={key}"[^>]*>{name}</a>'
             assert re.search(pattern, body)
+
+    def test_task_board_only_lists_missions_available_for_current_weekday(self, manor_with_user, monkeypatch):
+        _manor, client = manor_with_user
+        MissionTemplate.objects.create(
+            key="task_board_weekly_monday",
+            name="周一出现任务",
+            difficulty="junior",
+            available_weekdays=[1],
+        )
+        MissionTemplate.objects.create(
+            key="task_board_weekly_tuesday",
+            name="周二出现任务",
+            difficulty="junior",
+            available_weekdays=[2],
+        )
+        MissionTemplate.objects.create(
+            key="task_board_weekly_everyday",
+            name="每日出现任务",
+            difficulty="junior",
+            available_weekdays=[],
+        )
+        monkeypatch.setattr(
+            "gameplay.views.mission_helpers.timezone.localdate",
+            lambda: date(2026, 5, 18),
+        )
+
+        response = client.get(reverse("gameplay:tasks"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "周一出现任务" in body
+        assert "每日出现任务" in body
+        assert "周二出现任务" not in body
 
     def test_task_board_mission_name_links_do_not_render_underlines(self, manor_with_user):
         _manor, client = manor_with_user
@@ -285,6 +318,37 @@ class TestTaskBoardPage:
         assert "tw-enemy-meta" not in body
         assert '<span class="tw-guest-name-sm rarity-text-gray">灰阶敌将</span>' not in body
         assert '<span class="tw-guest-name-sm rarity-text-black">黑阶敌将</span>' not in body
+
+    def test_task_board_selected_mission_omits_dynamic_travel_time_note(self, manor_with_user):
+        _manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key="task_board_without_travel_time_note",
+            name="隐藏行军提示任务",
+            difficulty="junior",
+            daily_limit=3,
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "双程时间按行军速度动态计算，最低 300 秒。" not in body
+
+    def test_task_board_selected_defense_mission_omits_fixed_arrival_note(self, manor_with_user):
+        _manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key="task_board_without_fixed_arrival_note",
+            name="隐藏来袭提示任务",
+            difficulty="junior",
+            daily_limit=3,
+            is_defense=True,
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "敌军来袭时间固定，等待战报回传。" not in body
 
     def test_task_board_selected_high_end_mission_hides_elite_enemy_name_row(
         self,

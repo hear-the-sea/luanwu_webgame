@@ -195,7 +195,7 @@ def test_effective_attack_value_troop_vs_guest_uses_smaller_multiplier():
     troop = make_unit(kind="troop", unit_attack=50, troop_strength=100, initial_troop_strength=100)
     guest = make_unit(kind="guest")
     value = effective_attack_value(troop, guest)
-    expected = max(1, int(50 * max(1.0, 100 / 2.0)))
+    expected = max(1, int(50 * max(1.0, 100 / 1.5)))
     assert value == expected
 
 

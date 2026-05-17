@@ -196,8 +196,16 @@ def test_result_detail_renders_passive_events_in_detailed_log(django_user_model,
                                     "healed": 15000,
                                 },
                                 {
+                                    "type": "passive",
                                     "side": "attacker",
                                     "order": 2,
+                                    "unit": "武痴",
+                                    "effect": "嗜血狂怒",
+                                    "lost": 90,
+                                },
+                                {
+                                    "side": "attacker",
+                                    "order": 3,
                                     "actor": "甲",
                                     "target": "杨逍",
                                     "damage": 1000,
@@ -264,6 +272,8 @@ def test_result_detail_renders_passive_events_in_detailed_log(django_user_model,
     assert response.status_code == 200
     assert "九阳护体" in body
     assert "内息流转" in body
+    assert "嗜血狂怒" in body
+    assert "损失 90 HP" in body
     assert "先手蓄劲" in body
     assert "追击再起" in body
     assert "乾坤留痕" in body

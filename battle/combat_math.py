@@ -16,8 +16,8 @@ SLAUGHTER_MULTIPLIER = 10
 # 小兵对门客的攻击除数
 # 公式：effective_attack = unit_attack * (strength / divisor)
 # 数值越小，小兵对门客伤害越高
-# 从2.5改为2.0，进一步提高小兵对门客的威胁
-TROOP_VS_GUEST_ATTACK_DIVISOR = 2.0
+# 从2.0改为1.5，进一步提高小兵对门客的威胁
+TROOP_VS_GUEST_ATTACK_DIVISOR = 1.5
 
 # 小兵对小兵的攻击除数
 # 设为1.0表示直接乘以兵力数，大幅提高小兵互殴伤害
@@ -136,7 +136,7 @@ def effective_attack_value(actor: Any, target: Any | None = None) -> int:
     计算有效攻击值，小兵攻击时根据当前兵力数量和目标类型使用不同的倍率。
 
     小兵攻击倍率设计：
-    - 对门客：兵力/2.0（平衡调整，让小兵对门客有更大威胁）
+    - 对门客：兵力/1.5（平衡调整，让小兵对门客有更大威胁）
     - 对小兵：兵力/1.0（极限倍率，大幅提高小兵互殴伤害）
 
     倍率差异原因：
@@ -144,7 +144,7 @@ def effective_attack_value(actor: Any, target: Any | None = None) -> int:
     - 小兵互殴需要极高伤害压制拳系五气朝元恢复（25人/回合）
     - 目标：让战斗快速结束，同时小兵配置有战术意义
 
-    **平衡调整**: 小兵对门客倍率从/2.5改为/2.0，进一步提高伤害
+    **平衡调整**: 小兵对门客倍率从/2.0改为/1.5，进一步提高伤害
     """
     if getattr(actor, "kind", "") != "troop":
         return int(getattr(actor, "attack", 0))

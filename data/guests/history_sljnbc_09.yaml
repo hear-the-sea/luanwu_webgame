@@ -1,4 +1,18 @@
 heroes:
+  purple:
+  - key: hist_sljnbc_0425
+    name: 貂蝉
+    default_gender: female
+    archetype: civil
+    flavor: （生卒不详）中国古代四大美女之一，主要见于《三国演义》等文学作品。据演义描述，她本是司徒王允家中歌女，天姿国色。王允为除掉权臣董卓，设下连环计，将她先许与吕布后献于董卓，使二人反目成仇。她周旋于董卓、吕布之间，以美色离间二人关系。最终吕布被她所惑，刺杀董卓于未央宫前。她在完成使命后下落成谜，有说法称她随吕布至下邳。
+    growth_range:
+    - 6
+    - 12
+    attribute_weights:
+      force: 20
+      intellect: 40
+      defense: 20
+      agility: 20
   green:
   - key: hist_sljnbc_0401
     name: 姚兴
@@ -312,19 +326,6 @@ heroes:
       intellect: 64
       defense: 18
       agility: 10
-  - key: hist_sljnbc_0425
-    name: 貂蝉
-    default_gender: female
-    archetype: civil
-    flavor: （生卒不详）中国古代四大美女之一，主要见于《三国演义》等文学作品。据演义描述，她本是司徒王允家中歌女，天姿国色。王允为除掉权臣董卓，设下连环计，将她先许与吕布后献于董卓，使二人反目成仇。她周旋于董卓、吕布之间，以美色离间二人关系。最终吕布被她所惑，刺杀董卓于未央宫前。她在完成使命后下落成谜，有说法称她随吕布至下邳。
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 20
-      intellect: 40
-      defense: 20
-      agility: 20
   - key: hist_sljnbc_0426
     name: 焦触
     default_gender: male
