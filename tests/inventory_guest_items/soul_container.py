@@ -3,6 +3,7 @@ import pytest
 from core.exceptions import GuestItemConfigurationError, GuestNotRequirementError
 from gameplay.models import InventoryItem
 from gameplay.services.inventory.guest_items import use_soul_container
+from gameplay.services.inventory.soul_fusion_helpers import SOUL_FUSION_RESULT_CONFIG
 from guests.models import GearItem, GearSlot, Guest, GuestStatus, GuestTemplate
 from guests.services.equipment import ensure_inventory_gears, equip_guest, unequip_guest_item
 from tests.inventory_guest_items.support_upgrade import (
@@ -10,6 +11,37 @@ from tests.inventory_guest_items.support_upgrade import (
     _prepare_soul_container_case,
     _SoulFusionFixedRng,
 )
+
+
+def test_soul_fusion_ornament_balance_ranges_are_raised_for_each_rarity():
+    expected = {
+        "green": {
+            "stat_total_range": (47, 59),
+            "hp_range": (135, 215),
+            "stat_floor": {"force": 13, "intellect": 12, "agility": 13, "luck": 10},
+        },
+        "blue": {
+            "stat_total_range": (65, 81),
+            "hp_range": (215, 325),
+            "stat_floor": {"force": 15, "intellect": 13, "agility": 15, "luck": 11},
+        },
+        "purple": {
+            "stat_total_range": (87, 105),
+            "hp_range": (305, 425),
+            "stat_floor": {"force": 17, "intellect": 15, "agility": 17, "luck": 13},
+        },
+    }
+
+    actual = {
+        rarity: {
+            "stat_total_range": config["stat_total_range"],
+            "hp_range": config["hp_range"],
+            "stat_floor": config["stat_floor"],
+        }
+        for rarity, config in SOUL_FUSION_RESULT_CONFIG.items()
+    }
+
+    assert actual == expected
 
 
 @pytest.mark.django_db
@@ -49,8 +81,8 @@ def test_use_soul_container_generates_green_ornament_with_military_bias_and_retu
     assert generated_item.template.rarity == "green"
     assert generated_item.template.effect_type == "equip_ornament"
     assert set(payload.keys()) == {"hp", "force", "intellect", "agility", "luck"}
-    assert 42 <= payload["force"] + payload["intellect"] + payload["agility"] + payload["luck"] <= 54
-    assert 130 <= payload["hp"] <= 210
+    assert 47 <= payload["force"] + payload["intellect"] + payload["agility"] + payload["luck"] <= 59
+    assert 135 <= payload["hp"] <= 215
     assert payload["force"] > payload["intellect"]
     assert payload["agility"] >= payload["luck"]
     assert not Guest.objects.filter(pk=guest.pk).exists()
@@ -229,8 +261,8 @@ def test_use_soul_container_generates_blue_ornament_with_civil_bias(monkeypatch,
 
     assert generated_item.template.name == "北冥冰链"
     assert generated_item.template.rarity == "blue"
-    assert 60 <= payload["force"] + payload["intellect"] + payload["agility"] + payload["luck"] <= 76
-    assert 210 <= payload["hp"] <= 320
+    assert 65 <= payload["force"] + payload["intellect"] + payload["agility"] + payload["luck"] <= 81
+    assert 215 <= payload["hp"] <= 325
     assert payload["intellect"] > payload["force"]
     assert payload["intellect"] >= payload["agility"]
     assert all(payload[stat] > 0 for stat in ["force", "intellect", "agility", "luck"])
