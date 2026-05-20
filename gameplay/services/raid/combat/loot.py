@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, Tuple
+from typing import Any, Dict, Iterable, Sequence, Tuple
 
 from django.db import IntegrityError
 from django.db.models import F, QuerySet
@@ -19,19 +19,97 @@ from .config import (
     PVPConstants,
     random,
 )
-from .troops import _normalize_mapping
+from .troops import _extract_raid_troops_lost, _normalize_mapping
 
 
-def _calculate_resource_loot(defender: Manor, loot_percent: float) -> Dict[str, int]:
+def _safe_loot_ratio(value: Any, default: float) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _calculate_resource_loot_cap(
+    *,
+    guests: Sequence[Any] | None,
+    troop_loadout: Dict[str, int] | None,
+    battle_report: Any = None,
+) -> int:
+    max_per_type = safe_positive_int(getattr(PVPConstants, "LOOT_RESOURCE_MAX_PER_TYPE", 30000), 30000)
+    full_guest_count = safe_positive_int(getattr(PVPConstants, "LOOT_FULL_GUEST_COUNT", 18), 18)
+    full_troop_count = safe_positive_int(getattr(PVPConstants, "LOOT_FULL_TROOP_COUNT", 3600), 3600)
+    min_cap_ratio = _safe_loot_ratio(getattr(PVPConstants, "LOOT_MIN_CAP_RATIO", 0.08), 0.08)
+    survival_base = _safe_loot_ratio(getattr(PVPConstants, "LOOT_SURVIVAL_BASE_RATIO", 0.35), 0.35)
+    survival_scale = _safe_loot_ratio(getattr(PVPConstants, "LOOT_SURVIVAL_SCALING_RATIO", 0.65), 0.65)
+
+    if max_per_type <= 0:
+        return 0
+    if full_guest_count <= 0 or full_troop_count <= 0:
+        return max_per_type
+    if guests is None and troop_loadout is None and battle_report is None:
+        return max_per_type
+
+    guest_count = len(guests or [])
+    normalized_loadout = normalize_positive_int_mapping(troop_loadout)
+    deployed_troops = sum(normalized_loadout.values())
+    if guest_count <= 0 or deployed_troops <= 0:
+        return int(max_per_type * max(0.0, min_cap_ratio))
+
+    guest_factor = min(guest_count / full_guest_count, 1.0)
+    troop_factor = min(deployed_troops / full_troop_count, 1.0)
+    departure_ratio = max(min_cap_ratio, guest_factor * troop_factor)
+
+    troop_losses = _extract_raid_troops_lost(normalized_loadout, battle_report)
+    surviving_troops = max(0, deployed_troops - sum(troop_losses.values()))
+    survival_ratio = surviving_troops / deployed_troops
+    survival_multiplier = survival_base + survival_scale * survival_ratio
+
+    return int(max_per_type * departure_ratio * survival_multiplier)
+
+
+def _calculate_item_loot_capacity(
+    *,
+    guests: Sequence[Any] | None,
+    troop_loadout: Dict[str, int] | None,
+    battle_report: Any = None,
+) -> int:
+    max_capacity = safe_positive_int(getattr(PVPConstants, "LOOT_ITEM_CAPACITY_MAX", 30000), 30000)
+    if guests is None and troop_loadout is None and battle_report is None:
+        return max_capacity
+    resource_max = safe_positive_int(getattr(PVPConstants, "LOOT_RESOURCE_MAX_PER_TYPE", 2_000_000), 2_000_000)
+    if resource_max <= 0:
+        return max_capacity
+
+    resource_cap = _calculate_resource_loot_cap(
+        guests=guests,
+        troop_loadout=troop_loadout,
+        battle_report=battle_report,
+    )
+    return int(max_capacity * min(resource_cap / resource_max, 1.0))
+
+
+def _calculate_resource_loot(
+    defender: Manor,
+    loot_percent: float,
+    *,
+    guests: Sequence[Any] | None = None,
+    troop_loadout: Dict[str, int] | None = None,
+    battle_report: Any = None,
+) -> Dict[str, int]:
     loot_resources: Dict[str, int] = {}
+    loot_cap = _calculate_resource_loot_cap(
+        guests=guests,
+        troop_loadout=troop_loadout,
+        battle_report=battle_report,
+    )
 
     if defender.grain > 0:
-        loot_grain = min(int(defender.grain * loot_percent), 10000)
+        loot_grain = min(int(defender.grain * loot_percent), loot_cap)
         if loot_grain > 0:
             loot_resources["grain"] = loot_grain
 
     if defender.silver > 0:
-        loot_silver = min(int(defender.silver * loot_percent), 10000)
+        loot_silver = min(int(defender.silver * loot_percent), loot_cap)
         if loot_silver > 0:
             loot_resources["silver"] = loot_silver
 
@@ -47,7 +125,7 @@ def _build_loot_item_queryset(defender: Manor) -> QuerySet[InventoryItem]:
     )
 
 
-def _parse_loot_candidate(row: Dict[str, Any], loot_items: Dict[str, int]) -> Tuple[str, int, float] | None:
+def _parse_loot_candidate(row: Dict[str, Any], loot_items: Dict[str, int]) -> Tuple[str, int, float, int] | None:
     quantity = int(row.get("quantity", 0) or 0)
     if quantity <= 0:
         return None
@@ -65,31 +143,39 @@ def _parse_loot_candidate(row: Dict[str, Any], loot_items: Dict[str, int]) -> Tu
 
     rarity_mult = PVPConstants.RARITY_LOOT_MULTIPLIER.get(rarity, 1.0)
     loot_chance = PVPConstants.LOOT_ITEM_BASE_CHANCE * rarity_mult
-    return template_key, quantity, loot_chance
+    storage_space = safe_positive_int(row.get("template__storage_space", 1), 1)
+    return template_key, quantity, loot_chance, max(1, storage_space)
 
 
-def _roll_loot_quantity(quantity: int) -> int:
+def _roll_loot_quantity(quantity: int, *, remaining_capacity: int, storage_space: int) -> int:
+    if remaining_capacity <= 0 or storage_space <= 0:
+        return 0
     max_qty = min(
         int(quantity * PVPConstants.LOOT_ITEM_MAX_QUANTITY_PERCENT),
         PVPConstants.LOOT_ITEM_MAX_QUANTITY,
+        remaining_capacity // storage_space,
     )
+    if max_qty <= 0:
+        return 0
     loot_qty = random.randint(1, max(1, max_qty))
     return min(loot_qty, quantity)
 
 
-def _try_loot_from_row(row: Dict[str, Any], loot_items: Dict[str, int]) -> Tuple[str, int] | None:
+def _try_loot_from_row(
+    row: Dict[str, Any], loot_items: Dict[str, int], *, remaining_capacity: int
+) -> Tuple[str, int, int] | None:
     candidate = _parse_loot_candidate(row, loot_items)
     if candidate is None:
         return None
 
-    template_key, quantity, loot_chance = candidate
+    template_key, quantity, loot_chance, storage_space = candidate
     if random.random() >= loot_chance:
         return None
 
-    loot_qty = _roll_loot_quantity(quantity)
+    loot_qty = _roll_loot_quantity(quantity, remaining_capacity=remaining_capacity, storage_space=storage_space)
     if loot_qty <= 0:
         return None
-    return template_key, loot_qty
+    return template_key, loot_qty, storage_space * loot_qty
 
 
 def _collect_loot_from_rows(
@@ -98,24 +184,30 @@ def _collect_loot_from_rows(
     *,
     items_looted: int,
     max_loot_items: int,
-) -> int:
+    remaining_capacity: int,
+) -> tuple[int, int]:
     for row in rows:
         if items_looted >= max_loot_items:
             break
+        if remaining_capacity <= 0:
+            break
 
-        looted = _try_loot_from_row(row, loot_items)
+        looted = _try_loot_from_row(row, loot_items, remaining_capacity=remaining_capacity)
         if looted is None:
             continue
 
-        template_key, loot_qty = looted
+        template_key, loot_qty, capacity_used = looted
         loot_items[template_key] = loot_qty
         items_looted += 1
+        remaining_capacity -= capacity_used
 
-    return items_looted
+    return items_looted, remaining_capacity
 
 
 def _build_small_inventory_rows(base_qs: QuerySet[InventoryItem]) -> list[Dict[str, Any]]:
-    rows: list[Dict[str, Any]] = list(base_qs.values("quantity", "template__key", "template__rarity"))  # type: ignore[arg-type]
+    rows: list[Dict[str, Any]] = list(
+        base_qs.values("quantity", "template__key", "template__rarity", "template__storage_space")  # type: ignore[arg-type]
+    )
     random.shuffle(rows)
     return rows
 
@@ -133,9 +225,13 @@ def _iter_sample_batches(base_qs: QuerySet[InventoryItem]) -> Iterable[list[Dict
         offset = random.randint(0, max_offset) if max_offset else 0
 
         batch_rows: list[Dict[str, Any]] = list(
-            remaining_qs.order_by("id").values("id", "quantity", "template__key", "template__rarity")[  # type: ignore[arg-type]
-                offset : offset + batch_size
-            ]
+            remaining_qs.order_by("id").values(  # type: ignore[arg-type]
+                "id",
+                "quantity",
+                "template__key",
+                "template__rarity",
+                "template__storage_space",
+            )[offset : offset + batch_size]
         )
         if not batch_rows:
             continue
@@ -147,31 +243,55 @@ def _iter_sample_batches(base_qs: QuerySet[InventoryItem]) -> Iterable[list[Dict
         yield batch_rows
 
 
-def _calculate_loot_items(base_qs: QuerySet[InventoryItem]) -> Dict[str, int]:
+def _calculate_loot_items(
+    base_qs: QuerySet[InventoryItem],
+    *,
+    guests: Sequence[Any] | None = None,
+    troop_loadout: Dict[str, int] | None = None,
+    battle_report: Any = None,
+) -> Dict[str, int]:
     loot_items: Dict[str, int] = {}
     items_looted = 0
     max_loot_items = PVPConstants.LOOT_ITEM_MAX_COUNT
+    remaining_capacity = _calculate_item_loot_capacity(
+        guests=guests,
+        troop_loadout=troop_loadout,
+        battle_report=battle_report,
+    )
 
     total_candidates = base_qs.count()
     if total_candidates <= LOOT_ITEM_SMALL_INVENTORY_THRESHOLD:
         rows = _build_small_inventory_rows(base_qs)
-        _collect_loot_from_rows(rows, loot_items, items_looted=items_looted, max_loot_items=max_loot_items)
+        _collect_loot_from_rows(
+            rows,
+            loot_items,
+            items_looted=items_looted,
+            max_loot_items=max_loot_items,
+            remaining_capacity=remaining_capacity,
+        )
         return loot_items
 
     for batch_rows in _iter_sample_batches(base_qs):
-        items_looted = _collect_loot_from_rows(
+        items_looted, remaining_capacity = _collect_loot_from_rows(
             batch_rows,
             loot_items,
             items_looted=items_looted,
             max_loot_items=max_loot_items,
+            remaining_capacity=remaining_capacity,
         )
-        if items_looted >= max_loot_items:
+        if items_looted >= max_loot_items or remaining_capacity <= 0:
             break
 
     return loot_items
 
 
-def _calculate_loot(defender: Manor) -> Tuple[Dict[str, int], Dict[str, int]]:
+def _calculate_loot(
+    defender: Manor,
+    *,
+    guests: Sequence[Any] | None = None,
+    troop_loadout: Dict[str, int] | None = None,
+    battle_report: Any = None,
+) -> Tuple[Dict[str, int], Dict[str, int]]:
     """
     计算战利品。
 
@@ -182,8 +302,19 @@ def _calculate_loot(defender: Manor) -> Tuple[Dict[str, int], Dict[str, int]]:
         PVPConstants.LOOT_RESOURCE_MIN_PERCENT,
         PVPConstants.LOOT_RESOURCE_MAX_PERCENT,
     )
-    loot_resources = _calculate_resource_loot(defender, loot_percent)
-    loot_items = _calculate_loot_items(_build_loot_item_queryset(defender))
+    loot_resources = _calculate_resource_loot(
+        defender,
+        loot_percent,
+        guests=guests,
+        troop_loadout=troop_loadout,
+        battle_report=battle_report,
+    )
+    loot_items = _calculate_loot_items(
+        _build_loot_item_queryset(defender),
+        guests=guests,
+        troop_loadout=troop_loadout,
+        battle_report=battle_report,
+    )
     return loot_resources, loot_items
 
 

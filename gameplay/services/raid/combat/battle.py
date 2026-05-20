@@ -111,7 +111,12 @@ def _apply_raid_loot_if_needed(locked_run: RaidRun, is_attacker_victory: bool) -
         return
 
     locked_defender = Manor.objects.select_for_update().get(pk=locked_run.defender_id)
-    loot_resources, loot_items = _calculate_loot(locked_defender)
+    loot_resources, loot_items = _calculate_loot(
+        locked_defender,
+        guests=list(locked_run.guests.all()),
+        troop_loadout=locked_run.troop_loadout,
+        battle_report=locked_run.battle_report,
+    )
     applied_resources, applied_items = _apply_loot(
         locked_defender,
         loot_resources,

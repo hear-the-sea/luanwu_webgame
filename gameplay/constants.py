@@ -125,6 +125,13 @@ class PVPConstants:
     # 战利品
     LOOT_RESOURCE_MIN_PERCENT = 0.10  # 最低掠夺10%
     LOOT_RESOURCE_MAX_PERCENT = 0.30  # 最高掠夺30%
+    LOOT_RESOURCE_MAX_PER_TYPE = 2_000_000  # 单次每种资源最高掠夺量
+    LOOT_ITEM_CAPACITY_MAX = 30000  # 单次物品战利品最高携带容量
+    LOOT_FULL_GUEST_COUNT = 18  # 满编出征门客数
+    LOOT_FULL_TROOP_COUNT = 3600  # 满编出征护院数
+    LOOT_MIN_CAP_RATIO = 0.08  # 低配出征最低搬运上限比例
+    LOOT_SURVIVAL_BASE_RATIO = 0.35  # 战损后最低可带回比例
+    LOOT_SURVIVAL_SCALING_RATIO = 0.65  # 护院存活率影响的可带回比例
     LOOT_ITEM_BASE_CHANCE = 0.20  # 物品掠夺基础概率20%
     LOOT_ITEM_MAX_COUNT = 3  # 每次最多掠夺3件物品
     LOOT_ITEM_MAX_QUANTITY_PERCENT = 0.20  # 每件物品最多掠夺20%

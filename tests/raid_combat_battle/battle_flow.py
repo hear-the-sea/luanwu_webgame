@@ -4,6 +4,7 @@ from datetime import timedelta
 from types import SimpleNamespace
 
 import pytest
+from django.db import transaction
 from django.utils import timezone
 
 from battle.models import TroopTemplate
@@ -104,6 +105,53 @@ def test_apply_defeat_protection_sets_defender_until(django_user_model):
     expected = now + timedelta(seconds=combat_battle.PVPConstants.RAID_DEFEAT_PROTECTION_SECONDS)
     assert defender.defeat_protection_until is not None
     assert abs((defender.defeat_protection_until - expected).total_seconds()) <= 1
+
+
+@pytest.mark.django_db
+def test_apply_raid_loot_passes_raid_context_to_loot_calculation(monkeypatch, django_user_model):
+    attacker, defender = build_attacker_defender(
+        django_user_model,
+        attacker_username="raid_loot_context_a",
+        defender_username="raid_loot_context_d",
+    )
+    guest = SimpleNamespace(id=1001, level=10)
+    guest_manager = SimpleNamespace(all=lambda: [guest])
+    report = SimpleNamespace(losses={"attacker": {"casualties": [{"key": "dao_ke", "lost": 5}]}})
+    locked_run = SimpleNamespace(
+        defender_id=defender.id,
+        guests=guest_manager,
+        troop_loadout={"dao_ke": 20},
+        battle_report=report,
+        loot_resources={},
+        loot_items={},
+    )
+    captured: dict[str, object] = {}
+
+    def _fake_calculate_loot(locked_defender, *, guests, troop_loadout, battle_report):
+        captured["defender_id"] = locked_defender.id
+        captured["guests"] = guests
+        captured["troop_loadout"] = troop_loadout
+        captured["battle_report"] = battle_report
+        return {"grain": 12}, {}
+
+    monkeypatch.setattr(combat_battle, "_calculate_loot", _fake_calculate_loot)
+    monkeypatch.setattr(
+        combat_battle,
+        "_apply_loot",
+        lambda _defender, loot_resources, loot_items, locked_manor=None: (loot_resources, loot_items),
+    )
+
+    with transaction.atomic():
+        combat_battle._apply_raid_loot_if_needed(locked_run, is_attacker_victory=True)
+
+    assert captured == {
+        "defender_id": defender.id,
+        "guests": [guest],
+        "troop_loadout": {"dao_ke": 20},
+        "battle_report": report,
+    }
+    assert locked_run.loot_resources == {"grain": 12}
+    assert locked_run.loot_items == {}
 
 
 @pytest.mark.django_db
