@@ -14,6 +14,7 @@ from guests.models import Guest, GuestStatus
 from guests.services.health import recover_guest_hp
 from guests.services.loyalty import grant_battle_victory_loyalty
 
+from .city_defense import build_city_defense_combatants, serialize_city_defenses_for_report
 from .combatants_pkg import (
     Combatant,
     assign_agility_based_priorities,
@@ -55,6 +56,7 @@ class BattleOptions:
     attacker_guest_bonuses: Dict[str, float] | None = None
     attacker_guest_skills: List[str] | None = None
     attacker_manor: Any | None = None
+    defender_manor: Any | None = None
     validate_attacker_troop_capacity: bool = True
 
 
@@ -212,7 +214,7 @@ def _build_defender_units(
     options: BattleOptions,
     rng: random.Random,
     now,
-) -> tuple[List[Combatant], List[Combatant], Dict[str, int]]:
+) -> tuple[List[Combatant], List[Combatant], List[Combatant], Dict[str, int]]:
     defender_tech_levels, defender_guest_level, defender_guest_bonuses, defender_guest_skills = (
         _extract_defender_tech_profile(options.defender_setup)
     )
@@ -236,7 +238,8 @@ def _build_defender_units(
         tech_levels=defender_tech_levels or None,
         device_bonuses=defender_device_bonuses,
     )
-    return defender_guests_comb, defender_troops, defender_loadout
+    defender_city_defenses = build_city_defense_combatants(options.defender_manor, side="defender")
+    return defender_guests_comb, defender_troops, defender_city_defenses, defender_loadout
 
 
 def _execute_simulation(
@@ -294,6 +297,7 @@ def _finalize_battle_results(
     guests: List[Guest],
     attacker_guests_comb: List[Combatant],
     defender_guests_comb: List[Combatant],
+    defender_city_defenses: List[Combatant],
     normalized_loadout: Dict[str, int],
     defender_loadout: Dict[str, int],
     options: BattleOptions,
@@ -323,14 +327,22 @@ def _finalize_battle_results(
         )
         simulation.losses["defender"]["hp_updates"] = defender_hp_updates
 
+    defender_city_defense_rows = serialize_city_defenses_for_report(defender_city_defenses)
+    if options.apply_damage and options.defender_manor is not None:
+        from gameplay.services.city_defense import apply_city_defense_battle_damage
+
+        apply_city_defense_battle_damage(options.defender_manor, defender_city_defense_rows)
+
     report = BattleReport.objects.create(
         manor=manor,
         opponent_name=opponent_label,
         battle_type=options.battle_type,
         attacker_team=[serialize_guest_for_report(c) for c in attacker_guests_comb],
         attacker_troops=normalized_loadout,
+        attacker_city_defenses=[],
         defender_team=[serialize_guest_for_report(c) for c in defender_guests_comb],
         defender_troops=defender_loadout,
+        defender_city_defenses=defender_city_defense_rows,
         rounds=simulation.rounds,
         losses=simulation.losses,
         drops=simulation.drops,
@@ -362,9 +374,11 @@ def execute_battle(
         manor,
     )
     now = timezone.now()
-    defender_guests_comb, defender_troops, defender_loadout = _build_defender_units(options, rng, now)
+    defender_guests_comb, defender_troops, defender_city_defenses, defender_loadout = _build_defender_units(
+        options, rng, now
+    )
     attacker_units = attacker_guests_comb + attacker_troops
-    defender_units = defender_guests_comb + defender_troops
+    defender_units = defender_guests_comb + defender_troops + defender_city_defenses
     simulation, opponent_label = _execute_simulation(attacker_units, defender_units, options, config, rng, final_seed)
     return _finalize_battle_results(
         manor,
@@ -372,6 +386,7 @@ def execute_battle(
         guests,
         attacker_guests_comb,
         defender_guests_comb,
+        defender_city_defenses,
         normalized_loadout,
         defender_loadout,
         options,

@@ -5,6 +5,7 @@ from typing import Any
 from common.constants.resources import ResourceType
 from gameplay.constants import BUILDING_MAX_LEVELS
 from gameplay.models import BuildingCategory
+from gameplay.services.city_defense import is_city_defense_key, prepare_city_defense_display
 from gameplay.services.manor.core import get_rename_card_count
 from gameplay.services.manor.prestige import get_prestige_progress
 from gameplay.services.ranking import get_ranking_with_player_context
@@ -26,6 +27,9 @@ def _prepare_building_display(buildings: Any) -> list[Any]:
         building.is_max_level = is_max_level
         building.can_upgrade = not building.is_upgrading and not is_max_level
         building.next_level_cost_display = None if is_max_level else building.next_level_cost()
+        building.is_city_defense = is_city_defense_key(building.building_type.key)
+        if building.is_city_defense:
+            prepare_city_defense_display(building)
         prepared.append(building)
     return prepared
 

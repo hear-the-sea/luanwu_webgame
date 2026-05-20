@@ -92,7 +92,7 @@ def validate_item_templates(data: dict, *, file: str = "item_templates.yaml") ->
 # Schema: building_templates.yaml
 # ---------------------------------------------------------------------------
 
-VALID_BUILDING_CATEGORIES = {"resource", "storage", "production", "personnel", "special"}
+VALID_BUILDING_CATEGORIES = {"resource", "storage", "production", "personnel", "special", "city_defense"}
 VALID_BUILDING_RESOURCE_TYPES = {"grain", "silver"}
 
 

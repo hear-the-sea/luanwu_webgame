@@ -189,3 +189,4 @@ def test_generate_report_task_defense_passes_player_technology_to_defender_setup
         "troop_loadout": {"archer": 12},
         "technology": {"levels": {"gong_attack": 7, "gong_hp": 5}},
     }
+    assert captured["defender_manor"] == manor

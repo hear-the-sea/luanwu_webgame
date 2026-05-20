@@ -87,6 +87,13 @@ GUEST_VS_TROOP_DEFENSE_CONSTANT = 50
 # 设计目标：压制技能秒杀护院，但保留技能的明显收益
 GUEST_SKILL_VS_TROOP_MULTIPLIER = 5.0
 
+# ============ 城防伤害倍率 ============
+
+GUEST_VS_CITY_DEFENSE_DAMAGE_MULTIPLIER = 3.0
+TROOP_VS_CITY_DEFENSE_DAMAGE_MULTIPLIER = 0.5
+ARROW_TOWER_VS_GUEST_DAMAGE_MULTIPLIER = 3.0
+ARROW_TOWER_VS_TROOP_DAMAGE_MULTIPLIER = 2.0
+
 # ============ 优先级阶段配置 ============
 
 # 允许的最小优先级值（防止配置错误导致无限循环）

@@ -8,6 +8,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from battle.models import TroopTemplate
+from core.config import BUILDING_KEYS
 from core.exceptions import BattlePreparationError
 from gameplay.models import PlayerTechnology, PlayerTroop, RaidRun
 from gameplay.services.raid.combat import battle as combat_battle
@@ -442,6 +443,7 @@ def test_execute_raid_battle_passes_defender_technology_levels(monkeypatch, djan
 
     def _fake_simulate_report(**kwargs):
         captured["defender_setup"] = kwargs["defender_setup"]
+        captured["defender_manor"] = kwargs["defender_manor"]
         return SimpleNamespace(
             winner="attacker",
             attacker_team=[{"guest_id": attacker_guest.id, "remaining_hp": 500}],
@@ -460,6 +462,49 @@ def test_execute_raid_battle_passes_defender_technology_levels(monkeypatch, djan
         "troop_loadout": {},
         "technology": {"levels": {"gong_attack": 10, "gong_hp": 8}},
     }
+    assert captured["defender_manor"] == defender
+
+
+@pytest.mark.django_db
+def test_execute_raid_battle_persists_defender_city_defense_damage(monkeypatch, django_user_model):
+    attacker, defender = build_attacker_defender(
+        django_user_model,
+        attacker_username="raid_city_defense_damage_a",
+        defender_username="raid_city_defense_damage_d",
+    )
+    wall = defender.buildings.select_related("building_type").get(building_type__key=BUILDING_KEYS.WALL)
+    wall.current_hp = 3000
+    wall.hp_updated_at = timezone.now()
+    wall.save(update_fields=["current_hp", "hp_updated_at"])
+
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.MARCHING,
+        troop_loadout={},
+        travel_time=60,
+        battle_at=timezone.now(),
+        return_at=timezone.now(),
+    )
+
+    def _fake_simulate_report(**_kwargs):
+        return SimpleNamespace(
+            winner="attacker",
+            defender_city_defenses=[
+                {
+                    "key": BUILDING_KEYS.WALL,
+                    "hp": 123,
+                }
+            ],
+        )
+
+    monkeypatch.setattr("battle.services.simulate_report", _fake_simulate_report)
+    monkeypatch.setattr(combat_battle, "_apply_guest_damage_from_report", lambda *_args, **_kwargs: None)
+
+    combat_battle._execute_raid_battle(run)
+
+    wall.refresh_from_db()
+    assert wall.current_hp == 123
 
 
 @pytest.mark.django_db

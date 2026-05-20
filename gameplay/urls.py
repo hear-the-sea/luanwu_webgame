@@ -13,7 +13,7 @@ from .views.arena import (
     arena_register_view,
     refresh_arena_activity_api,
 )
-from .views.buildings import UpgradeBuildingView, refresh_building_upgrades_api
+from .views.buildings import RepairCityDefenseView, UpgradeBuildingView, refresh_building_upgrades_api
 from .views.core import DashboardView, GuideView, RankingView, SettingsView, rename_manor_view
 from .views.inventory import (
     RecruitmentHallView,
@@ -138,6 +138,7 @@ urlpatterns = [
     path("recruitment/", RecruitmentHallView.as_view(), name="recruitment_hall"),
     path("api/recruitment/refresh/", refresh_recruitment_hall_api, name="refresh_recruitment_hall_api"),
     path("building/<int:pk>/upgrade/", UpgradeBuildingView.as_view(), name="upgrade_building"),
+    path("building/<int:pk>/repair-city-defense/", RepairCityDefenseView.as_view(), name="repair_city_defense"),
     path("api/buildings/upgrades/refresh/", refresh_building_upgrades_api, name="refresh_building_upgrades_api"),
     path("tasks/accept/", AcceptMissionView.as_view(), name="accept_mission"),
     path("tasks/use-card/", use_mission_card_view, name="use_mission_card"),

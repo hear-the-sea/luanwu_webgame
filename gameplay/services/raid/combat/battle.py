@@ -378,6 +378,7 @@ def _execute_raid_battle(run: RaidRun) -> Any:
         attacker_guests=attacker_combat_guests,
         defender_setup=defender_setup,
         defender_guests=defender_guests,  # type: ignore[arg-type]
+        defender_manor=defender,
         defender_max_squad=len(defender_guests) if defender_guests else None,
         opponent_name=defender.display_name,
         travel_seconds=0,
@@ -391,6 +392,9 @@ def _execute_raid_battle(run: RaidRun) -> Any:
         attacker_guest_ids=attacker_guest_ids,
         defender_guest_ids=defender_guest_ids,
     )
+    from gameplay.services.city_defense import apply_city_defense_battle_damage
+
+    apply_city_defense_battle_damage(defender, getattr(report, "defender_city_defenses", []) or [])
 
     return report
 

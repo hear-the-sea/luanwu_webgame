@@ -113,6 +113,7 @@ def build_battle_options(
     attacker_guest_bonuses: dict[str, float] | None,
     attacker_guest_skills: list[str] | None,
     attacker_manor,
+    defender_manor,
     validate_attacker_troop_capacity: bool,
 ) -> BattleOptions:
     return BattleOptions(
@@ -136,5 +137,6 @@ def build_battle_options(
         attacker_guest_bonuses=attacker_guest_bonuses,
         attacker_guest_skills=attacker_guest_skills,
         attacker_manor=attacker_manor,
+        defender_manor=defender_manor,
         validate_attacker_troop_capacity=validate_attacker_troop_capacity,
     )

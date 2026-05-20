@@ -512,3 +512,4 @@ def test_generate_sync_battle_report_defense_passes_player_technology_to_defende
         "troop_loadout": {"archer": 12},
         "technology": {"levels": {"gong_attack": 7, "gong_hp": 5}},
     }
+    assert captured["defender_manor"] is manor

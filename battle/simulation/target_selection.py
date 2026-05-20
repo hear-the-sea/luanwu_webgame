@@ -7,6 +7,8 @@ from __future__ import annotations
 import random
 from typing import TYPE_CHECKING, Callable
 
+from battle.city_defense import WALL_INTERCEPT_CHANCE
+
 from .constants import PRIORITY_TARGET_WEIGHT, TROOP_COUNTERS
 from .types import AttackSkill, _SelectedAttackTargets
 from .utils import alive
@@ -78,6 +80,22 @@ def select_target_with_priority(actor: "Combatant", opponents: list["Combatant"]
     """
     priority_targets: list["Combatant"] = []
 
+    if actor.side == "attacker":
+        wall_targets = [
+            unit
+            for unit in opponents
+            if unit.kind == "city_defense"
+            and unit.template_key == "wall"
+            and float(getattr(unit, "battle_modifiers", {}).get("wall_intercept_chance", WALL_INTERCEPT_CHANCE) or 0.0)
+            > 0
+        ]
+        if wall_targets:
+            intercept_chance = float(
+                wall_targets[0].battle_modifiers.get("wall_intercept_chance", WALL_INTERCEPT_CHANCE) or 0.0
+            )
+            if rng.random() < max(0.0, min(1.0, intercept_chance)):
+                return _weighted_choice(wall_targets, rng)
+
     # 护院：优先攻击克制的兵种
     if actor.kind == "troop":
         counter_class = TROOP_COUNTERS.get(actor.troop_class)
@@ -127,6 +145,11 @@ def select_attack_targets(
     skills = _active_attack_skills(trigger_attack_skills_fn(actor, rng))
 
     multi_targets = max(1, max(int(skill.get("targets", 1)) for skill in skills) if skills else 1)
+    city_defense_targets = 1
+    modifiers = getattr(actor, "battle_modifiers", None)
+    if isinstance(modifiers, dict):
+        city_defense_targets = int(modifiers.get("city_defense_attack_targets", 1) or 1)
+    multi_targets = max(multi_targets, city_defense_targets)
     engaged_targets = [primary_target]
 
     available_opponents = [unit for unit in opponents if unit is not primary_target]

@@ -22,6 +22,7 @@ from core.exceptions import GameError
 from core.utils import safe_redirect_url, sanitize_error_message
 from core.utils.rate_limit import rate_limit_json
 from gameplay.models import Building
+from gameplay.services.city_defense import repair_city_defense
 from gameplay.services.manor.core import finalize_upgrades, get_manor, start_upgrade
 
 from .runtime_refresh_support import run_refresh_api
@@ -83,6 +84,46 @@ class UpgradeBuildingView(LoginRequiredMixin, TemplateView):
                 request,
                 exc,
                 log_message="Unexpected building upgrade view error: manor_id=%s user_id=%s building_id=%s",
+                log_args=(
+                    getattr(building.manor, "id", None),
+                    getattr(request.user, "id", None),
+                    getattr(building, "id", None),
+                ),
+            )
+        return redirect(redirect_url)
+
+
+@method_decorator(require_POST, name="dispatch")
+class RepairCityDefenseView(LoginRequiredMixin, TemplateView):
+    """城防耐久修复视图"""
+
+    http_method_names = ["post"]
+    success_url = reverse_lazy("gameplay:dashboard")
+
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        redirect_url = safe_redirect_url(
+            request,
+            (request.POST.get("next") or "").strip(),
+            str(self.success_url),
+        )
+        building = get_object_or_404(
+            Building.objects.select_related("manor", "manor__user", "building_type"),
+            pk=kwargs["pk"],
+            manor__user=request.user,
+        )
+        try:
+            cost = repair_city_defense(building)
+            if cost > 0:
+                messages.success(request, f"{building.building_type.name} 修复完成，消耗银两 {cost}")
+            else:
+                messages.info(request, f"{building.building_type.name} 耐久已满")
+        except GameError as exc:
+            _handle_known_building_error(request, exc)
+        except DatabaseError as exc:
+            _handle_unexpected_building_error(
+                request,
+                exc,
+                log_message="Unexpected city defense repair view error: manor_id=%s user_id=%s building_id=%s",
                 log_args=(
                     getattr(building.manor, "id", None),
                     getattr(request.user, "id", None),

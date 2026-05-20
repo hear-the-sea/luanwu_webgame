@@ -17,6 +17,9 @@ categories:
   - key: special
     name: 特殊建筑
     description: 具有特殊功能的建筑
+  - key: city_defense
+    name: 城防建筑
+    description: 守护庄园的防御建筑
 
 buildings:
   # ==================== 资源生产 ====================
@@ -294,4 +297,33 @@ buildings:
       grain: 800
       silver: 1200
     cost_growth: 1.4
+    icon: ""
+
+  # ==================== 城防建筑 ====================
+  - key: wall
+    name: 城墙
+    category: city_defense
+    description: 高墙深垒，敌至城下先撞此关。升级提升战斗中的城墙血量与防御，满级30000血。
+    resource_type: silver
+    base_rate_per_hour: 0
+    rate_growth: 0.0
+    base_upgrade_time: 900
+    time_growth: 1.85
+    base_cost:
+      silver: 18000
+    cost_growth: 1.85
+    icon: ""
+
+  - key: arrow_tower
+    name: 箭塔
+    category: city_defense
+    description: 箭楼凌空，敌军未近先闻弦响。升级提升血量、防御与攻击，满级可同时攻击3个目标。
+    resource_type: silver
+    base_rate_per_hour: 0
+    rate_growth: 0.0
+    base_upgrade_time: 1200
+    time_growth: 1.85
+    base_cost:
+      silver: 18000
+    cost_growth: 1.85
     icon: ""

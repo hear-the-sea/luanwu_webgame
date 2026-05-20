@@ -145,6 +145,8 @@ class BuildingKeys:
     CITANG: str = "citang"  # 祠堂
     JAIL: str = "jail"  # 监牢
     OATH_GROVE: str = "oath_grove"  # 结义林
+    WALL: str = "wall"  # 城墙
+    ARROW_TOWER: str = "arrow_tower"  # 箭塔
 
 
 # ============ 稀有度配置 ============

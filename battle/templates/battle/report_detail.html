@@ -57,6 +57,18 @@
                         <li>未携带护院</li>
                     {% endfor %}
                 </ul>
+                <h4 style="margin-bottom: 0px;">城防建筑</h4>
+                <ul class="troop-list">
+                    {% for defense in attacker_city_defenses %}
+                        <li class="troop-item">
+                            <span class="troop-info">
+                                <strong>{{ defense.display_name }}</strong>
+                            </span>
+                        </li>
+                    {% empty %}
+                        <li>无</li>
+                    {% endfor %}
+                </ul>
             </article>
             <article class="tw-building-card">
                 <h3>
@@ -94,6 +106,18 @@
                         </li>
                     {% empty %}
                         <li>未携带护院</li>
+                    {% endfor %}
+                </ul>
+                <h4 style="margin-bottom: 0px;">城防建筑</h4>
+                <ul class="troop-list">
+                    {% for defense in defender_city_defenses %}
+                        <li class="troop-item">
+                            <span class="troop-info">
+                                <strong>{{ defense.display_name }}</strong>
+                            </span>
+                        </li>
+                    {% empty %}
+                        <li>无</li>
                     {% endfor %}
                 </ul>
             </article>

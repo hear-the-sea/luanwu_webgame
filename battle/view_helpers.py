@@ -220,6 +220,15 @@ def resolve_perspective(
     )
 
 
+def resolve_city_defense_perspective(
+    report: "BattleReport",
+    player_side: str,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    if player_side == "defender":
+        return report.defender_city_defenses or [], report.attacker_city_defenses or []
+    return report.attacker_city_defenses or [], report.defender_city_defenses or []
+
+
 def serialize_troops(troops_raw: dict[str, int], troop_definitions: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
     return [
         {
@@ -230,6 +239,55 @@ def serialize_troops(troops_raw: dict[str, int], troop_definitions: dict[str, di
         }
         for key, count in troops_raw.items()
         if count
+    ]
+
+
+def serialize_city_defense_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _grade(level: int) -> str:
+        if level >= 8:
+            return "高级"
+        if level >= 4:
+            return "中级"
+        return "初级"
+
+    def _condition_prefix(hp: int, max_hp: int) -> str:
+        if max_hp <= 0:
+            return ""
+        if hp >= max_hp:
+            return "崭新的"
+        if hp < max_hp / 2:
+            return "破烂的"
+        return ""
+
+    def _display_name(row: dict[str, Any], name: str, level: int, hp: int, max_hp: int) -> str:
+        key = str(row.get("key") or "")
+        if key == "arrow_tower":
+            base_name = "箭塔"
+        elif key == "wall":
+            base_name = "城墙"
+        else:
+            base_name = name
+        return f"{_condition_prefix(hp, max_hp)}{_grade(level)}{base_name}"
+
+    return [
+        {
+            "key": str(row.get("key") or ""),
+            "name": str(row.get("name") or row.get("key") or "城防"),
+            "level": int(row.get("level") or 0),
+            "hp": int(row.get("hp") or 0),
+            "max_hp": int(row.get("max_hp") or 0),
+            "attack": int(row.get("attack") or 0),
+            "defense": int(row.get("defense") or 0),
+            "display_name": _display_name(
+                row,
+                str(row.get("name") or row.get("key") or "城防"),
+                int(row.get("level") or 0),
+                int(row.get("hp") or 0),
+                int(row.get("max_hp") or 0),
+            ),
+        }
+        for row in rows
+        if isinstance(row, dict)
     ]
 
 

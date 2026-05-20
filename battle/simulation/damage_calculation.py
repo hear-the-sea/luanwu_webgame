@@ -8,6 +8,8 @@ import random
 from typing import TYPE_CHECKING, Callable, List, Literal, overload
 
 from .constants import (
+    ARROW_TOWER_VS_GUEST_DAMAGE_MULTIPLIER,
+    ARROW_TOWER_VS_TROOP_DAMAGE_MULTIPLIER,
     BASE_CRIT_CHANCE,
     COUNTER_DAMAGE_MULTIPLIER,
     CRIT_DAMAGE_MULTIPLIER,
@@ -15,6 +17,7 @@ from .constants import (
     DAMAGE_VARIANCE_MIN,
     DEFAULT_DEFENSE_CONSTANT,
     GUEST_SKILL_VS_TROOP_MULTIPLIER,
+    GUEST_VS_CITY_DEFENSE_DAMAGE_MULTIPLIER,
     GUEST_VS_GUEST_DAMAGE_MULTIPLIER,
     GUEST_VS_GUEST_DEFENSE_CONSTANT,
     GUEST_VS_TROOP_DEFENSE_CONSTANT,
@@ -22,6 +25,7 @@ from .constants import (
     PREEMPTIVE_DAMAGE_REDUCTION,
     SOFTCAP_THRESHOLD,
     TROOP_COUNTERS,
+    TROOP_VS_CITY_DEFENSE_DAMAGE_MULTIPLIER,
     TROOP_VS_GUEST_DEFENSE_CONSTANT,
 )
 from .target_selection import is_ranged_attack
@@ -108,7 +112,25 @@ def _calculate_base_damage(
     base_damage = attack_value * attack_multiplier * (1 - damage_reduction)
     if actor.kind == "guest" and target.kind == "guest":
         base_damage *= GUEST_VS_GUEST_DAMAGE_MULTIPLIER
+    if actor.kind == "guest" and target.kind == "city_defense":
+        base_damage *= GUEST_VS_CITY_DEFENSE_DAMAGE_MULTIPLIER
     return base_damage
+
+
+def _city_defense_damage_multiplier(actor: "Combatant", target: "Combatant") -> float:
+    from core.config import BUILDING_KEYS
+
+    if target.kind == "city_defense":
+        if actor.kind == "troop":
+            return TROOP_VS_CITY_DEFENSE_DAMAGE_MULTIPLIER
+
+    if actor.kind == "city_defense" and actor.template_key == BUILDING_KEYS.ARROW_TOWER:
+        if target.kind == "guest":
+            return ARROW_TOWER_VS_GUEST_DAMAGE_MULTIPLIER
+        if target.kind == "troop":
+            return ARROW_TOWER_VS_TROOP_DAMAGE_MULTIPLIER
+
+    return 1.0
 
 
 def _apply_round_and_tech_damage_modifiers(actor: "Combatant", round_priority: int, damage: int) -> int:
@@ -291,6 +313,7 @@ def calculate_attack_damage(
     10) 双倍打击
     11) 状态惩罚（伤害降低）
     12) 对小兵目标的最终倍率：普攻屠戮倍率 + 技能伤害独立倍率
+    13) 非门客来源的城防相关最终伤害倍率
 
     该函数不直接修改 actor/target 的血量或兵力，专注于"伤害数值"的计算。
     """
@@ -348,6 +371,10 @@ def calculate_attack_damage(
         )
     else:
         damage = _apply_slaughter_multiplier(actor, target, total_damage_value, calculate_slaughter_multiplier)
+
+    city_defense_multiplier = _city_defense_damage_multiplier(actor, target)
+    if city_defense_multiplier != 1.0:
+        damage = _at_least_one(int(damage * city_defense_multiplier))
 
     from ..arena_coop import adjust_arena_coop_damage
 

@@ -19,12 +19,17 @@ def determine_turn_order(
     rng: random.Random,
 ) -> List["Combatant"]:
     del rng
-    participants = alive(attacker_team) + alive(defender_team)
+    participants = [
+        unit
+        for unit in alive(attacker_team) + alive(defender_team)
+        if not getattr(unit, "battle_modifiers", {}).get("skip_turn")
+    ]
     if not participants:
         return []
     return sorted(
         participants,
         key=lambda combatant: (
+            1 if getattr(combatant, "battle_modifiers", {}).get("fixed_first") else 0,
             combatant.agility,
             1 if combatant.side == "defender" else 0,
         ),

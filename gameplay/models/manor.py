@@ -212,6 +212,8 @@ class Manor(models.Model):
                 BuildingKeys.CITANG,
                 BuildingKeys.JAIL,
                 BuildingKeys.OATH_GROVE,
+                BuildingKeys.WALL,
+                BuildingKeys.ARROW_TOWER,
             ]
             buildings = self.buildings.select_related("building_type").filter(building_type__key__in=key_buildings)
             self._building_levels = {b.building_type.key: b.level for b in buildings}
@@ -371,6 +373,7 @@ class BuildingCategory(models.TextChoices):
     PRODUCTION = "production", "生产加工"
     PERSONNEL = "personnel", "人员管理"
     SPECIAL = "special", "特殊建筑"
+    CITY_DEFENSE = "city_defense", "城防建筑"
 
 
 class BuildingType(models.Model):
@@ -406,6 +409,8 @@ class Building(models.Model):
     level = models.PositiveIntegerField(default=1)
     is_upgrading = models.BooleanField(default=False)
     upgrade_complete_at = models.DateTimeField(null=True, blank=True)
+    current_hp = models.PositiveIntegerField("当前耐久", default=0)
+    hp_updated_at = models.DateTimeField("耐久恢复时间", default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

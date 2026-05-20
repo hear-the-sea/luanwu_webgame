@@ -235,6 +235,7 @@ def simulate_report(
     attacker_guest_bonuses: Dict[str, float] | None = None,
     attacker_guest_skills: List[str] | None = None,
     attacker_manor=None,
+    defender_manor=None,
     validate_attacker_troop_capacity: bool = True,
 ) -> BattleReport:
     """
@@ -264,6 +265,7 @@ def simulate_report(
         attacker_guest_bonuses: 攻击方门客属性加成（可选）
         attacker_guest_skills: 攻击方门客临时技能覆盖（可选）
         attacker_manor: 攻击方科技来源庄园（可选，默认为 manor）
+        defender_manor: 防守方庄园（可选，用于城防建筑）
         validate_attacker_troop_capacity: 是否校验攻击方带兵上限（默认开启）
 
     Returns:
@@ -294,6 +296,7 @@ def simulate_report(
         attacker_guest_bonuses=attacker_guest_bonuses,
         attacker_guest_skills=attacker_guest_skills,
         attacker_manor=attacker_manor,
+        defender_manor=defender_manor,
         validate_attacker_troop_capacity=validate_attacker_troop_capacity,
     )
     return _execute_battle_with_optional_lock(

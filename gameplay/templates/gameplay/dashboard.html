@@ -49,8 +49,13 @@
                     </header>
                     <dl>
                         <div>
-                            <dt>当前产能</dt>
-                            <dd>{{ building.hourly_rate|floatformat:0 }} / 小时</dd>
+                            {% if building.is_city_defense %}
+                                <dt>城防血量</dt>
+                                <dd>{{ building.current_hp }} / {{ building.city_defense_max_hp }}</dd>
+                            {% else %}
+                                <dt>当前产能</dt>
+                                <dd>{{ building.hourly_rate|floatformat:0 }} / 小时</dd>
+                            {% endif %}
                         </div>
                         {% if building.is_upgrading %}
                             <div>
@@ -108,6 +113,16 @@
                                 <a class="tw-btn-primary" href="{% url 'gameplay:jail' %}">查看</a>
                             {% elif building.building_type.key == 'oath_grove' %}
                                 <a class="tw-btn-primary" href="{% url 'gameplay:oath_grove' %}">查看</a>
+                            {% elif building.is_city_defense %}
+                                <form method="post" action="{% url 'gameplay:repair_city_defense' building.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}#building-{{ building.pk }}">
+                                    {% if building.city_defense_repair_cost %}
+                                        <button type="submit" class="tw-btn-primary">修复（{{ building.city_defense_repair_cost }}银两）</button>
+                                    {% else %}
+                                        <button type="button" class="tw-btn-secondary" disabled>耐久已满</button>
+                                    {% endif %}
+                                </form>
                             {% endif %}
                         </div>
                     </div>
