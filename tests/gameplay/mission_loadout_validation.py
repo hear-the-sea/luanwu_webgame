@@ -57,6 +57,39 @@ def test_mission_travel_time_rejects_missing_troop_templates_for_non_empty_loado
         mission_loadout_service.travel_time_seconds(60, guests=[], troop_loadout={"archer": 1})
 
 
+def test_calculate_travel_time_uses_average_agility_with_fifty_percent_cap(monkeypatch):
+    monkeypatch.setattr(
+        "gameplay.utils.resource_calculator.scale_duration",
+        lambda seconds, minimum=1: max(minimum, int(seconds)),
+    )
+    slow_guest = type("_Guest", (), {"agility": 100})()
+    fast_guest = type("_Guest", (), {"agility": 9999})()
+
+    moderate = calculate_travel_time(1800, guests=[slow_guest], troop_loadout={}, troop_templates={})
+    capped = calculate_travel_time(1800, guests=[fast_guest], troop_loadout={}, troop_templates={})
+
+    assert moderate == 1620
+    assert capped == 900
+
+
+def test_calculate_travel_time_ignores_troop_speed_bonus(monkeypatch):
+    monkeypatch.setattr(
+        "gameplay.utils.resource_calculator.scale_duration",
+        lambda seconds, minimum=1: max(minimum, int(seconds)),
+    )
+
+    baseline = calculate_travel_time(1800, guests=[], troop_loadout={}, troop_templates={"archer": {"speed_bonus": 60}})
+    with_troops = calculate_travel_time(
+        1800,
+        guests=[],
+        troop_loadout={"archer": 100},
+        troop_templates={"archer": {"speed_bonus": 60}},
+    )
+
+    assert baseline == 1800
+    assert with_troops == baseline
+
+
 def test_calculate_travel_time_rejects_invalid_loadout_shape():
     with pytest.raises(AssertionError, match="invalid mission troop loadout payload"):
         calculate_travel_time(60, guests=[], troop_loadout=["archer"], troop_templates={"archer": {"speed_bonus": 1}})

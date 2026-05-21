@@ -16,7 +16,7 @@
 #   - battle_type: 战斗类型（可选，默认"task"）
 #   - is_defense: 防守任务（可选，默认false，敌方来袭）
 #   - daily_limit: 每日挑战次数限制（可选，默认3次，整数）
-#   - base_travel_time: 往返基础耗时，单位：秒（可选，默认1200秒=20分钟，整数）
+#   - base_travel_time: 往返基础耗时，单位：秒（可选，默认1800秒=30分钟，整数）
 #   - available_weekdays: 开放星期（可选，1=周一 ... 7=周日；不填或空列表表示每日开放）
 #
 # 【敌方阵容配置】
@@ -270,14 +270,14 @@ missions:
       - hero_cheng_yaojin
 
     enemy_technology:
-      level: 8               # 8级科技
-      guest_level: 61        # 61级门客
-      guest_bonus: 0.1       # +10%属性加成
+      level: 9               # 9级科技
+      guest_level: 80        # 80级门客
+      guest_bonus: 0.3       # +30%属性加成
 
     enemy_troops:
-      arrow_god: 200
-      quan_sheng: 200
-      qiang_wang: 200
+      arrow_god: 300
+      quan_sheng: 300
+      qiang_wang: 300
 
     drop_table:
       silver: 40000
@@ -293,7 +293,7 @@ missions:
       equip_wujinjia: 0.06
       equip_linwenzhanjia: 0.05
 
-    base_travel_time: 20
+    base_travel_time: 1800
     daily_limit: 3
 
 
@@ -877,11 +877,11 @@ missions:
 
     enemy_technology:
       level: 10
-      guest_level: 86
-      guest_bonus: 0.30
+      guest_level: 100
+      guest_bonus: 0.5
 
     enemy_troops:
-      qiang_wang: 1000
+      qiang_wang: 1500
 
     drop_table:
       silver: 50000
@@ -966,7 +966,7 @@ missions:
       equip_nichangwuxie: 1
       equip_nichangjian: 1
 
-    base_travel_time: 900
+    base_travel_time: 1800
     daily_limit: 3
 
   - key: biyou_candeng
@@ -1054,7 +1054,7 @@ missions:
         chance: 0.25
         count: 1
 
-    base_travel_time: 2400
+    base_travel_time: 1800
     daily_limit: 2
 
   - key: fengbang_tianmen
@@ -1100,7 +1100,7 @@ missions:
       equip_taiqingyuce: 0.01
       equip_fengshenbang: 0.005
 
-    base_travel_time: 3000
+    base_travel_time: 1800
     daily_limit: 1
 
   - key: zhuolu_zhongyuan
@@ -1145,7 +1145,7 @@ missions:
       equip_zhoutianxingpan: 0.01
       equip_xuanyuanjian: 0.005
 
-    base_travel_time: 3600
+    base_travel_time: 1800
     daily_limit: 1
 
   # ========================================

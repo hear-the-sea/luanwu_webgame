@@ -36,7 +36,7 @@ class MissionTemplate(models.Model):
         blank=True,
         help_text="任务开放星期，ISO weekday：1=周一，7=周日；空列表表示每日开放",
     )
-    base_travel_time = models.PositiveIntegerField(default=1200, help_text="往返基础耗时（秒）")
+    base_travel_time = models.PositiveIntegerField(default=1800, help_text="往返基础耗时（秒）")
     daily_limit = models.PositiveIntegerField(default=3)
 
     class Meta:

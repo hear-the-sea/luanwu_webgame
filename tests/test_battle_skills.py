@@ -241,7 +241,7 @@ def test_troop_unit_hp_rejects_invalid_max_hp():
         troop_unit_hp(troop)
 
 
-def test_guest_vs_troop_normal_attack_keeps_slaughter_multiplier():
+def test_guest_vs_troop_normal_attack_uses_increased_slaughter_multiplier():
     actor = make_unit(kind="guest", attack=1000, priority=0)
     target = make_unit(kind="troop", side="defender", unit_defense=10, troop_strength=200, unit_hp=10)
     rng = FixedRng()
@@ -250,7 +250,7 @@ def test_guest_vs_troop_normal_attack_keeps_slaughter_multiplier():
 
     reduction = target.unit_defense / (target.unit_defense + 50)
     base_damage = max(1, int(actor.attack * (1 - reduction)))
-    expected = int(base_damage * 10)
+    expected = int(base_damage * 12)
     assert result.damage == expected
 
 

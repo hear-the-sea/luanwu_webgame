@@ -39,6 +39,36 @@ def test_notifications_authenticated_falls_back_when_sidebar_cache_payload_inval
     assert context["sidebar_rank"] == 9
 
 
+def test_notifications_home_page_includes_sidebar_action_points(monkeypatch, django_user_model):
+    user = django_user_model.objects.create_user(username="ctx_action_points_user", password="pass")
+    manor = ensure_manor(user)
+    manor.action_points = 977
+    manor.save(update_fields=["action_points"])
+    user._state.fields_cache.pop("manor", None)
+    request = RequestFactory().get("/")
+    request.user = user
+
+    def fake_cache_get(key, default=None):
+        if key == "stats:total_users_count":
+            return 5
+        if key == "stats:online_users_count":
+            return 2
+        if key == f"sidebar:rank:{manor.id}":
+            return None
+        return default
+
+    monkeypatch.setattr("gameplay.selectors.stats.cache.get", fake_cache_get)
+    monkeypatch.setattr("gameplay.selectors.stats.cache.set", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("gameplay.selectors.sidebar.cache.get", fake_cache_get)
+    monkeypatch.setattr("gameplay.selectors.sidebar.cache.set", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("gameplay.context_processors.unread_message_count", lambda _manor: 0)
+    monkeypatch.setattr("gameplay.services.ranking.get_player_rank", lambda _manor: 9)
+
+    context = notifications(request)
+
+    assert context["sidebar_action_points"] == 977
+
+
 def test_notifications_authenticated_partial_sidebar_failures_do_not_hide_other_sections(
     monkeypatch, django_user_model
 ):

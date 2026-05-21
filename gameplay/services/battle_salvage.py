@@ -83,6 +83,25 @@ def _collect_guest_template_keys(report) -> set[str]:
     return template_keys
 
 
+def _collect_city_defense_template_keys(report) -> set[str]:
+    attacker_city_defenses = _require_list(
+        getattr(report, "attacker_city_defenses", []),
+        field_name="report.attacker_city_defenses",
+    )
+    defender_city_defenses = _require_list(
+        getattr(report, "defender_city_defenses", []),
+        field_name="report.defender_city_defenses",
+    )
+    template_keys: set[str] = set()
+    for entry in list(attacker_city_defenses) + list(defender_city_defenses):
+        payload = _require_mapping(entry, field_name="city defense entry")
+        raw_key = payload.get("key")
+        if raw_key in (None, ""):
+            continue
+        template_keys.add(_require_non_empty_string(raw_key, field_name="city defense key"))
+    return template_keys
+
+
 def _collect_casualties(report, side: str | None = None) -> List[Dict[str, Any]]:
     raw_losses = getattr(report, "losses", None)
     losses = _require_mapping(raw_losses, field_name="report.losses")
@@ -105,7 +124,12 @@ def _collect_casualties(report, side: str | None = None) -> List[Dict[str, Any]]
     return casualties
 
 
-def _calculate_troop_exp_fruit(casualties: List[Dict[str, Any]], *, guest_template_keys: set[str]) -> float:
+def _calculate_troop_exp_fruit(
+    casualties: List[Dict[str, Any]],
+    *,
+    guest_template_keys: set[str],
+    ignored_template_keys: set[str],
+) -> float:
     from gameplay.services.recruitment.recruitment import get_troop_template
 
     troop_exp_fruit = 0.0
@@ -113,7 +137,7 @@ def _calculate_troop_exp_fruit(casualties: List[Dict[str, Any]], *, guest_templa
         key, lost = _resolve_casualty_entry(entry)
         if lost <= 0:
             continue
-        if key in guest_template_keys:
+        if key in guest_template_keys or key in ignored_template_keys:
             continue
 
         troop_config = get_troop_template(key)
@@ -133,6 +157,7 @@ def _calculate_equipment_recovery(
     rng: random.Random,
     *,
     guest_template_keys: set[str],
+    ignored_template_keys: set[str],
 ) -> Dict[str, int]:
     from gameplay.services.recruitment.recruitment import get_troop_template
 
@@ -141,7 +166,7 @@ def _calculate_equipment_recovery(
         key, lost = _resolve_casualty_entry(entry)
         if lost <= 0:
             continue
-        if key in guest_template_keys:
+        if key in guest_template_keys or key in ignored_template_keys:
             continue
 
         troop_config = get_troop_template(key)
@@ -218,7 +243,12 @@ def calculate_battle_salvage(
 
     all_casualties = _collect_casualties(report)
     guest_template_keys = _collect_guest_template_keys(report)
-    troop_exp_fruit = _calculate_troop_exp_fruit(all_casualties, guest_template_keys=guest_template_keys)
+    ignored_template_keys = _collect_city_defense_template_keys(report)
+    troop_exp_fruit = _calculate_troop_exp_fruit(
+        all_casualties,
+        guest_template_keys=guest_template_keys,
+        ignored_template_keys=ignored_template_keys,
+    )
     normalized_equipment_side = _normalize_side(equipment_casualty_side)
     if not normalized_equipment_side:
         equipment_casualties = all_casualties
@@ -228,6 +258,7 @@ def calculate_battle_salvage(
         equipment_casualties,
         rng,
         guest_template_keys=guest_template_keys,
+        ignored_template_keys=ignored_template_keys,
     )
     guest_exp_fruit = _calculate_guest_recovery(report)
 

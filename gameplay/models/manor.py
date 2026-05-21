@@ -36,6 +36,8 @@ PRODUCTION_SPEED_BONUS_PER_LEVEL = 0.0556
 CITANG_BUILDING_TIME_REDUCTION_PER_LEVEL = 0.05  # 每级减少5%建筑时间
 CITANG_RECRUITMENT_SPEED_BONUS_PER_LEVEL = 0.0625  # 每级提升6.25%招募速度
 
+ACTION_POINTS_MAX = 1000
+
 
 class Manor(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="manor")
@@ -57,6 +59,8 @@ class Manor(models.Model):
     retainer_count = models.PositiveIntegerField("家丁", default=0)
     prestige = models.PositiveIntegerField("声望", default=0)
     prestige_silver_spent = models.PositiveIntegerField("累计花费银两（声望计算用）", default=0)
+    action_points = models.PositiveSmallIntegerField("行动力", default=ACTION_POINTS_MAX)
+    action_points_updated_at = models.DateTimeField("行动力更新时间", default=timezone.now)
     resource_updated_at = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
 

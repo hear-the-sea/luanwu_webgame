@@ -38,3 +38,9 @@ def load_sidebar_rank(manor) -> int:
     rank = safe_non_negative_int(get_player_rank(manor))
     _safe_cache_set(cache_key_rank, rank, timeout=SIDEBAR_RANK_CACHE_TIMEOUT)
     return rank
+
+
+def load_sidebar_action_points(manor) -> int:
+    from gameplay.services.action_points import get_current_action_points
+
+    return get_current_action_points(manor)

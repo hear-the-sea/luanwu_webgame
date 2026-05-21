@@ -89,6 +89,7 @@
                             <li><label>您的官职:</label> <span>{{ user.title|default:"平民" }}</span></li>
                             <li><label>您的声望:</label> <span>{{ sidebar_prestige|default:0 }}</span></li>
                             <li><label>庄园排名:</label> <span>{% if sidebar_rank %}{{ sidebar_rank }}{% else %}未上榜{% endif %}</span></li>
+                            <li><label>行动力:</label> <span>{{ sidebar_action_points|default:1000 }}/1000</span></li>
                             <li><label>粮食储量:</label> <span>{{ user.manor.grain }}/{{ user.manor.grain_capacity }}</span></li>
                             <li><label>白银储量:</label> <span>{{ user.manor.silver }}/{{ user.manor.silver_capacity }}</span></li>
                             <li><label>家丁人数:</label> <span>{{ user.manor.retainer_count }}/{{ user.manor.retainer_capacity }} 人</span></li>

@@ -14,6 +14,7 @@ class ManorAdmin(admin.ModelAdmin):
         "coordinate_x",
         "coordinate_y",
         "prestige",
+        "action_points",
         "grain",
         "silver",
         "arena_coins",
@@ -23,7 +24,19 @@ class ManorAdmin(admin.ModelAdmin):
     autocomplete_fields = ("user",)
     readonly_fields = ("created_at", "resource_updated_at", "last_active_at")
     fieldsets = (
-        ("基本信息", {"fields": ("user", "name", "prestige", "prestige_silver_spent")}),
+        (
+            "基本信息",
+            {
+                "fields": (
+                    "user",
+                    "name",
+                    "prestige",
+                    "prestige_silver_spent",
+                    "action_points",
+                    "action_points_updated_at",
+                )
+            },
+        ),
         ("位置信息", {"fields": ("region", "coordinate_x", "coordinate_y", "last_active_at")}),
         (
             "资源",

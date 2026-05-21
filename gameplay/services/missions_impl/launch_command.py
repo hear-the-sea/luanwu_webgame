@@ -16,6 +16,7 @@ from core.exceptions import (
 )
 
 from ...models import Manor, MissionRun, MissionTemplate
+from ..action_points import consume_action_points_for_expedition
 from ..battle_snapshots import build_guest_battle_snapshots
 from .attempts import get_mission_daily_limit, mission_attempts_today
 from .loadout import normalize_mission_loadout, travel_time_seconds
@@ -199,12 +200,13 @@ def launch_mission(
     validate_mission_attempts(manor, mission)
 
     with transaction.atomic():
-        Manor.objects.select_for_update().get(pk=manor.pk)
-        validate_mission_attempts(manor, mission)
-        consume_entry_cost_if_needed(manor, mission)
+        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+        validate_mission_attempts(locked_manor, mission)
+        consume_action_points_for_expedition(locked_manor)
+        consume_entry_cost_if_needed(locked_manor, mission)
 
         guests, loadout, travel_seconds = prepare_launch_inputs(
-            manor,
+            locked_manor,
             mission,
             guest_ids,
             troop_loadout,
@@ -213,7 +215,7 @@ def launch_mission(
         prevalidate_launch_report(mission, loadout)
         mark_guests_deployed_if_needed(mission, guests)
         guest_snapshots = build_guest_battle_snapshots(guests, include_identity=True)
-        run = create_mission_run_record(manor, mission, guests, guest_snapshots, loadout, travel_seconds)
+        run = create_mission_run_record(locked_manor, mission, guests, guest_snapshots, loadout, travel_seconds)
 
     generate_report_task, complete_mission_task = import_launch_post_action_tasks()
     try_prepare_launch_report(

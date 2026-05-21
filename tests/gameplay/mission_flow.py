@@ -4,6 +4,7 @@ import pytest
 from django.utils import timezone
 
 from core.exceptions import (
+    ActionPointsInsufficientError,
     InsufficientStockError,
     MissionCannotRetreatError,
     MissionSquadSizeExceededError,
@@ -204,6 +205,64 @@ def test_mission_launch_consumes_entry_cost_item(game_data, django_user_model, m
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
     assert inventory_item.quantity == 1
+
+
+@pytest.mark.django_db(transaction=True)
+def test_mission_launch_consumes_action_points(game_data, django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(username="player_mission_action_points", password="pass12345")
+    manor = ensure_manor(user)
+    mission = MissionTemplate.objects.create(
+        key="mission_action_points_case",
+        name="行动力任务",
+        guest_only=True,
+    )
+    recruit_frontline_guests(manor, count=1)
+    guest = manor.guests.first()
+
+    monkeypatch.setattr(
+        "gameplay.services.missions_impl.mission_followups.try_prepare_launch_report",
+        lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.missions_impl.mission_followups.dispatch_complete_mission_task",
+        lambda *args, **kwargs: None,
+    )
+
+    launch_mission(manor, mission, [guest.id], {})
+
+    manor.refresh_from_db()
+    assert manor.action_points == 990
+
+
+@pytest.mark.django_db(transaction=True)
+def test_mission_launch_rejects_when_action_points_insufficient(game_data, django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(username="player_mission_no_action_points", password="pass12345")
+    manor = ensure_manor(user)
+    manor.action_points = 9
+    manor.save(update_fields=["action_points"])
+    mission = MissionTemplate.objects.create(
+        key="mission_no_action_points_case",
+        name="行动力不足任务",
+        guest_only=True,
+    )
+    recruit_frontline_guests(manor, count=1)
+    guest = manor.guests.first()
+
+    monkeypatch.setattr(
+        "gameplay.services.missions_impl.mission_followups.try_prepare_launch_report",
+        lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.missions_impl.mission_followups.dispatch_complete_mission_task",
+        lambda *args, **kwargs: None,
+    )
+
+    with pytest.raises(ActionPointsInsufficientError, match="行动力不足"):
+        launch_mission(manor, mission, [guest.id], {})
+
+    manor.refresh_from_db()
+    assert manor.action_points == 9
+    assert MissionRun.objects.filter(mission=mission).exists() is False
 
 
 @pytest.mark.django_db(transaction=True)

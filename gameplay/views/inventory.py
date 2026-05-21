@@ -209,7 +209,7 @@ class WarehouseView(LoginRequiredMixin, TemplateView):
 
 @login_required
 @require_POST
-@rate_limit_redirect("use_item", limit=20, window_seconds=60)
+@rate_limit_redirect("use_item", limit=50, window_seconds=60)
 def use_item_view(request: HttpRequest, pk: int) -> HttpResponse:
     """使用物品"""
     manor = get_manor(request.user)

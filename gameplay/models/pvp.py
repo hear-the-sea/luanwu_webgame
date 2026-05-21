@@ -77,7 +77,7 @@ class ScoutRecord(models.Model):
 
 
 class ScoutCooldown(models.Model):
-    """侦察冷却记录（同一目标30分钟冷却）"""
+    """侦察冷却记录（同一目标10分钟冷却）"""
 
     attacker = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="scout_cooldowns_sent")
     defender = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="scout_cooldowns_received")

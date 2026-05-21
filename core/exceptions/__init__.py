@@ -31,6 +31,7 @@ from .building import (
     TechnologyUpgradeInProgressError,
 )
 from .gameplay import (
+    ActionPointsInsufficientError,
     ArenaBusyError,
     ArenaCancellationError,
     ArenaEntryStateError,
@@ -218,6 +219,7 @@ __all__ = [
     "ArenaExchangeError",
     "ArenaInsufficientCoinsError",
     "ArenaRewardLimitError",
+    "ActionPointsInsufficientError",
     "BattlePreparationError",
     "JailError",
     "MissionError",

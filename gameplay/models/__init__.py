@@ -12,6 +12,7 @@ from .arena import ArenaEntry, ArenaEntryGuest, ArenaExchangeRecord, ArenaMatch,
 from .arena_coop import ArenaCoopContribution, ArenaCoopEntry, ArenaCoopEntryGuest, ArenaCoopEvent
 from .items import GlobalMailCampaign, GlobalMailDelivery, InventoryItem, ItemTemplate, Message, ResourceEvent
 from .manor import (
+    ACTION_POINTS_MAX,
     CITANG_BUILDING_TIME_REDUCTION_PER_LEVEL,
     CITANG_RECRUITMENT_SPEED_BONUS_PER_LEVEL,
     GUEST_CAPACITY_BASE,
@@ -62,6 +63,7 @@ __all__ = [
     "PRODUCTION_SPEED_BONUS_PER_LEVEL",
     "CITANG_BUILDING_TIME_REDUCTION_PER_LEVEL",
     "CITANG_RECRUITMENT_SPEED_BONUS_PER_LEVEL",
+    "ACTION_POINTS_MAX",
     # items/messages/resources
     "ResourceEvent",
     "ItemTemplate",

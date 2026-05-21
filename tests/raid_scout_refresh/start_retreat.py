@@ -78,6 +78,14 @@ def test_lock_manor_pair_raises_scout_start_error_when_target_missing(monkeypatc
         scout_service._lock_manor_pair(1, 2)
 
 
+def test_calculate_scout_travel_time_uses_halved_distance_and_base_time(monkeypatch):
+    attacker = SimpleNamespace(coordinate_x=0, coordinate_y=0)
+    defender = SimpleNamespace(coordinate_x=10, coordinate_y=0)
+    monkeypatch.setattr(scout_service, "scale_duration", lambda seconds, minimum=1: max(minimum, int(seconds)))
+
+    assert scout_service.calculate_scout_travel_time(attacker, defender) == 40
+
+
 @pytest.mark.django_db(transaction=True)
 def test_request_scout_retreat_recreates_missing_scout_troop_row(django_user_model, monkeypatch):
     attacker, defender = build_attacker_defender(
@@ -172,3 +180,34 @@ def test_start_scout_dispatch_runs_after_commit(django_user_model, monkeypatch):
             "countdown": 45,
         }
     ]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_start_scout_does_not_require_action_points(django_user_model, monkeypatch):
+    attacker, defender = build_attacker_defender(
+        django_user_model,
+        attacker_username="scout_no_action_points_attacker",
+        defender_username="scout_no_action_points_defender",
+    )
+    attacker.action_points = 0
+    attacker.save(update_fields=["action_points"])
+    scout_template, _ = TroopTemplate.objects.get_or_create(key=PVPConstants.SCOUT_TROOP_KEY, defaults={"name": "探子"})
+    PlayerTroop.objects.update_or_create(
+        manor=attacker,
+        troop_template=scout_template,
+        defaults={"count": 2},
+    )
+
+    monkeypatch.setattr(scout_service, "can_attack_target", lambda *_args, **_kwargs: (True, ""))
+    monkeypatch.setattr(scout_service, "check_scout_cooldown", lambda *_args, **_kwargs: (False, None))
+    monkeypatch.setattr(scout_service, "calculate_scout_success_rate", lambda *_args, **_kwargs: 0.5)
+    monkeypatch.setattr(scout_service, "calculate_scout_travel_time", lambda *_args, **_kwargs: 45)
+    monkeypatch.setattr(scout_service.scout_followups, "schedule_scout_completion", lambda *_args, **_kwargs: None)
+
+    record = scout_service.start_scout(attacker, defender)
+
+    attacker.refresh_from_db()
+    troop = PlayerTroop.objects.get(manor=attacker, troop_template=scout_template)
+    assert record.status == ScoutRecord.Status.SCOUTING
+    assert attacker.action_points == 0
+    assert troop.count == 1

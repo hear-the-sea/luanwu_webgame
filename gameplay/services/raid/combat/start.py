@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from core.exceptions import MessageError, RaidStartError
+from core.exceptions import ActionPointsInsufficientError, MessageError, RaidStartError
 from core.utils.infrastructure import (
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
     InfrastructureExceptions,
@@ -28,6 +28,7 @@ def start_raid(
     recheck_can_attack_target: Callable[..., tuple[bool, str]],
     get_active_raid_count: Callable[[Any], int],
     raid_max_concurrent: int,
+    consume_action_points: Callable[[Any], int],
     load_and_validate_attacker_guests: Callable[[Any, list[int]], list[Any]],
     normalize_and_validate_raid_loadout: Callable[[list[Any], dict[str, int]], dict[str, int]],
     deduct_troops: Callable[[Any, dict[str, int]], None],
@@ -51,6 +52,11 @@ def start_raid(
         active_count = get_active_raid_count(attacker_locked)
         if active_count >= raid_max_concurrent:
             raise RaidStartError(f"同时最多进行 {raid_max_concurrent} 次出征")
+
+        try:
+            consume_action_points(attacker_locked)
+        except ActionPointsInsufficientError as exc:
+            raise RaidStartError(str(exc)) from exc
 
         guests = load_and_validate_attacker_guests(attacker_locked, guest_ids)
         loadout = normalize_and_validate_raid_loadout(guests, troop_loadout)

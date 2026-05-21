@@ -171,9 +171,7 @@ def normalize_mission_loadout(raw: Dict[str, int] | None, troop_templates: Dict[
 
 
 # 旅行时间计算常量
-AGILITY_SPEED_FACTOR = 0.5  # 敏捷转换速度系数（每点敏捷减免0.5秒）
-TROOP_SPEED_FACTOR = 0.5  # 兵种速度加成系数
-DEFAULT_TROOP_SPEED = 60  # 默认兵种速度加成
+MISSION_AGILITY_REDUCTION_CAP = 0.50  # 门客平均敏捷最多减少50%任务行军时间
 MIN_TRAVEL_TIME = 10  # 最小旅行时间（秒）
 
 
@@ -191,11 +189,12 @@ def _resolve_mission_loadout_quantity(raw: Any, *, field_name: str) -> int:
 
 def calculate_travel_time(base_time: int, guests, troop_loadout: Dict[str, int], troop_templates: Dict) -> int:
     """
-    计算任务旅行时间，考虑门客敏捷和兵种速度加成。
+    计算任务旅行时间，考虑门客平均敏捷加成。
 
     计算规则：
-    - 门客敏捷提供速度加成（每点0.5秒减免）
-    - 兵种speed_bonus取加权平均，提供额外减免
+    - 平均敏捷每10点减少1%时间
+    - 敏捷最多减少50%时间
+    - 兵种配置仅参与载荷校验，不影响任务时长
     - 最少旅行时间为10秒
 
     Args:
@@ -218,25 +217,13 @@ def calculate_travel_time(base_time: int, guests, troop_loadout: Dict[str, int],
             raise AssertionError(f"invalid mission troop loadout key: {key!r}")
         normalized_loadout[key] = count
 
-    # 门客敏捷加成
-    guest_speed = sum(getattr(guest, "agility", 0) for guest in guests)
-
-    # 兵种速度加成（加权平均）
-    total_troops = sum(count for count in normalized_loadout.values() if count > 0)
-    if total_troops > 0:
-        weighted_speed = sum(
-            count * troop_templates.get(key, {}).get("speed_bonus", DEFAULT_TROOP_SPEED)
-            for key, count in normalized_loadout.items()
-            if count > 0
-        )
-        avg_speed = weighted_speed / total_troops
-        troop_speed = avg_speed * TROOP_SPEED_FACTOR
-    else:
-        troop_speed = 0
-
-    # 总减免时间
-    reduction = int((guest_speed * AGILITY_SPEED_FACTOR) + troop_speed)
-    final_time = max(MIN_TRAVEL_TIME, max(0, base_time - reduction))
+    final_time = int(base_time)
+    guest_count = len(guests)
+    if guest_count > 0:
+        avg_agility = sum(getattr(guest, "agility", 0) for guest in guests) / guest_count
+        agility_reduction = min(MISSION_AGILITY_REDUCTION_CAP, avg_agility / 1000)
+        final_time = int(base_time * (1 - agility_reduction))
+    final_time = max(MIN_TRAVEL_TIME, final_time)
 
     # 应用全局时间流速倍率
     return scale_duration(final_time, minimum=MIN_TRAVEL_TIME)

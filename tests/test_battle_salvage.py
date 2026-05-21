@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from core.config import BUILDING_KEYS
 from core.exceptions import ItemNotFoundError
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.battle_salvage import calculate_battle_salvage, grant_battle_salvage
@@ -123,6 +124,33 @@ def test_calculate_battle_salvage_can_limit_equipment_recovery_to_player_side():
     assert set(equip_attacker_only.keys()).issubset(attacker_equipment_keys)
     assert defender_unique_key not in equip_attacker_only
     assert defender_unique_key in equip_all
+
+
+def test_calculate_battle_salvage_ignores_city_defense_casualties():
+    report = SimpleNamespace(
+        seed=42,
+        losses={
+            "attacker": {"casualties": []},
+            "defender": {"casualties": [{"key": BUILDING_KEYS.ARROW_TOWER, "lost": 1}]},
+        },
+        attacker_team=[],
+        defender_team=[],
+        attacker_city_defenses=[],
+        defender_city_defenses=[
+            {
+                "key": BUILDING_KEYS.ARROW_TOWER,
+                "name": "箭塔",
+                "level": 10,
+                "hp": 0,
+                "max_hp": 15000,
+            }
+        ],
+    )
+
+    exp, equip = calculate_battle_salvage(report)
+
+    assert exp == 0
+    assert equip == {}
 
 
 def test_calculate_battle_salvage_rejects_invalid_side():

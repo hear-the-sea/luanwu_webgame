@@ -219,10 +219,11 @@ def get_manor_public_info(manor: Manor, viewer: Optional[Manor] = None) -> Dict[
         else:
             info["prestige_comparison"] = "equal"
 
-        # 提供一个"基础行军时间"估算（不包含敏捷/骑兵等动态加成）
+        # 提供一个"基础行军时间"估算（不包含敏捷等动态加成）
         base_time = PVPConstants.RAID_BASE_TRAVEL_TIME + distance * PVPConstants.RAID_TRAVEL_TIME_PER_DISTANCE
         if not is_same_region(viewer, manor):
             base_time *= PVPConstants.RAID_CROSS_REGION_MULTIPLIER
+        base_time = min(PVPConstants.RAID_MAX_TRAVEL_TIME, base_time)
         info["travel_time"] = scale_duration(max(60, int(base_time)), minimum=1)
         can_attack, reason = can_attack_target(viewer, manor)
         info["can_attack"] = can_attack

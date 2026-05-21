@@ -113,6 +113,13 @@ class TroopLoadoutError(GameError):
     error_code = "TROOP_LOADOUT_ERROR"
 
 
+class ActionPointsInsufficientError(GameError):
+    """行动力不足"""
+
+    error_code = "ACTION_POINTS_INSUFFICIENT"
+    default_message = "行动力不足，无法出征"
+
+
 class PeaceShieldUnavailableError(GameError):
     """免战牌当前不可使用"""
 

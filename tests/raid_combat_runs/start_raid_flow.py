@@ -10,6 +10,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from core.exceptions import MessageError, RaidStartError
+from gameplay.services.manor.core import ensure_manor
 from gameplay.services.raid import utils as raid_utils
 from gameplay.services.raid.combat import runs as combat_runs
 
@@ -169,6 +170,67 @@ def test_start_raid_succeeds_when_incoming_message_fails(monkeypatch):
 
     assert result is created_run
     assert dispatched == {"run_id": 99, "travel_time": 45}
+
+
+@pytest.mark.django_db(transaction=True)
+def test_start_raid_consumes_action_points(monkeypatch, django_user_model):
+    attacker = ensure_manor(django_user_model.objects.create_user(username="raid_action_points_attacker"))
+    defender = ensure_manor(django_user_model.objects.create_user(username="raid_action_points_defender"))
+    created_run = SimpleNamespace(id=109, attacker=attacker, defender=defender)
+
+    monkeypatch.setattr(
+        combat_runs,
+        "_validate_and_normalize_raid_inputs",
+        lambda *_args, **_kwargs: ([101], {}),
+    )
+    monkeypatch.setattr(combat_runs, "_lock_manor_pair", lambda *_args, **_kwargs: (attacker, defender))
+    monkeypatch.setattr(combat_runs, "_recheck_can_attack_target", lambda *_args, **_kwargs: (True, ""))
+    monkeypatch.setattr(combat_runs, "get_active_raid_count", lambda *_args, **_kwargs: 0)
+    monkeypatch.setattr(combat_runs, "_load_and_validate_attacker_guests", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(combat_runs, "_normalize_and_validate_raid_loadout", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(combat_runs, "_deduct_troops", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_runs, "calculate_raid_travel_time", lambda *_args, **_kwargs: 45)
+    monkeypatch.setattr(combat_runs, "_create_raid_run_record", lambda *_args, **_kwargs: created_run)
+    monkeypatch.setattr(combat_runs, "_invalidate_recent_attacks_cache_on_commit", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_runs, "_send_raid_incoming_message", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_runs, "_dispatch_raid_battle_task", lambda *_args, **_kwargs: None)
+
+    result = combat_runs.start_raid(attacker, defender, [101], {})
+
+    assert result is created_run
+    attacker.refresh_from_db()
+    assert attacker.action_points == 990
+
+
+@pytest.mark.django_db(transaction=True)
+def test_start_raid_rejects_when_action_points_insufficient(monkeypatch, django_user_model):
+    attacker = ensure_manor(django_user_model.objects.create_user(username="raid_no_action_points_attacker"))
+    defender = ensure_manor(django_user_model.objects.create_user(username="raid_no_action_points_defender"))
+    attacker.action_points = 9
+    attacker.save(update_fields=["action_points"])
+    called = {"load_guests": 0}
+
+    monkeypatch.setattr(
+        combat_runs,
+        "_validate_and_normalize_raid_inputs",
+        lambda *_args, **_kwargs: ([101], {}),
+    )
+    monkeypatch.setattr(combat_runs, "_lock_manor_pair", lambda *_args, **_kwargs: (attacker, defender))
+    monkeypatch.setattr(combat_runs, "_recheck_can_attack_target", lambda *_args, **_kwargs: (True, ""))
+    monkeypatch.setattr(combat_runs, "get_active_raid_count", lambda *_args, **_kwargs: 0)
+
+    def _load_guests(*_args, **_kwargs):
+        called["load_guests"] += 1
+        return []
+
+    monkeypatch.setattr(combat_runs, "_load_and_validate_attacker_guests", _load_guests)
+
+    with pytest.raises(RaidStartError, match="行动力不足"):
+        combat_runs.start_raid(attacker, defender, [101], {})
+
+    attacker.refresh_from_db()
+    assert attacker.action_points == 9
+    assert called["load_guests"] == 0
 
 
 def test_start_raid_succeeds_when_incoming_message_database_failure(monkeypatch):

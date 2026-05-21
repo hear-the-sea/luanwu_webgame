@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from common.utils.celery import safe_apply_async, safe_apply_async_with_dedup
+from gameplay.services.action_points import consume_action_points_for_expedition
 from gameplay.services.battle_snapshots import build_guest_battle_snapshots
 from gameplay.services.raid import utils as raid_utils
 from gameplay.services.resources import grant_resources_locked
@@ -107,6 +108,12 @@ def _invalidate_recent_attacks_cache_on_commit(defender_id: int) -> None:
     )
 
 
+def _consume_raid_action_points(manor: Manor) -> int:
+    if not hasattr(manor, "action_points"):
+        return 0
+    return consume_action_points_for_expedition(manor)
+
+
 def _create_raid_run_record(
     attacker: Manor,
     defender: Manor,
@@ -186,6 +193,7 @@ def start_raid(
         recheck_can_attack_target=_recheck_can_attack_target,
         get_active_raid_count=get_active_raid_count,
         raid_max_concurrent=PVPConstants.RAID_MAX_CONCURRENT,
+        consume_action_points=_consume_raid_action_points,
         load_and_validate_attacker_guests=_load_and_validate_attacker_guests,
         normalize_and_validate_raid_loadout=_normalize_and_validate_raid_loadout,
         deduct_troops=_deduct_troops,

@@ -131,26 +131,13 @@ def calculate_raid_travel_time(
     if not is_same_region(attacker, defender):
         cross_region_mult = PVPConstants.RAID_CROSS_REGION_MULTIPLIER
 
-    total_time = (base_time + distance_time) * cross_region_mult
+    total_time = min(PVPConstants.RAID_MAX_TRAVEL_TIME, (base_time + distance_time) * cross_region_mult)
 
     # 敏捷加成：每10点平均敏捷减少1%时间
     if guests:
         avg_agility = sum(g.agility for g in guests) / len(guests)
-        agility_reduction = min(0.5, avg_agility / 1000)  # 最多减少50%
+        agility_reduction = min(PVPConstants.RAID_AGILITY_REDUCTION_CAP, avg_agility / 1000)
         total_time *= 1 - agility_reduction
-
-    # 骑兵加成：检查是否有骑兵类兵种
-    from ...recruitment.recruitment import load_troop_templates
-
-    templates_data = load_troop_templates()
-    cavalry_keys = {"scout"}  # 探子算骑兵
-    for tmpl in templates_data.get("troops", []):
-        if tmpl.get("speed_bonus", 0) >= 5:
-            cavalry_keys.add(tmpl["key"])
-
-    has_cavalry = any(key in cavalry_keys and count > 0 for key, count in troop_loadout.items())
-    if has_cavalry:
-        total_time *= 0.8  # 骑兵减少20%时间
 
     return scale_duration(max(60, int(total_time)), minimum=1)  # 最少1分钟（游戏时间）
 

@@ -102,7 +102,7 @@ missions:
     assert mission.enemy_technology == {}
     assert mission.drop_table == {}
     assert mission.probability_drop_table == {}
-    assert mission.base_travel_time == 1200
+    assert mission.base_travel_time == 1800
     assert mission.daily_limit == 3
 
 
@@ -187,7 +187,7 @@ def test_default_mission_templates_define_junior_mission_tiering():
         },
         "wagangzhai_nixi": {
             "difficulty": "intermediate",
-            "enemy_technology": {"level": 8, "guest_level": 61, "guest_bonus": 0.1},
+            "enemy_technology": {"level": 9, "guest_level": 80, "guest_bonus": 0.3},
         },
         "shizipo_heidian": {
             "difficulty": "intermediate",
@@ -235,7 +235,7 @@ def test_default_mission_templates_define_junior_mission_tiering():
         },
         "manzu_ruqin": {
             "difficulty": "advanced",
-            "enemy_technology": {"level": 10, "guest_level": 86, "guest_bonus": 0.3},
+            "enemy_technology": {"level": 10, "guest_level": 100, "guest_bonus": 0.5},
         },
         "zhuiji_manzu": {
             "difficulty": "advanced",
@@ -399,7 +399,7 @@ def test_default_mission_templates_import_zhuolu_zhongyuan():
     assert mission.name == "逐鹿中原"
     assert mission.difficulty == "advanced"
     assert mission.daily_limit == 1
-    assert mission.base_travel_time == 3600
+    assert mission.base_travel_time == 1800
     assert mission.enemy_guests == [
         "task_zhuolu_chiyou",
         "task_zhuolu_fengbo",

@@ -1,4 +1,5 @@
 import pytest
+from django.core.cache import cache
 from django.db import DatabaseError
 from django.urls import reverse
 
@@ -210,6 +211,26 @@ class TestInventoryGuestItemActions:
         payload = response.json()
         assert payload["success"] is False
         assert "use blocked" in payload["error"]
+
+    def test_use_item_allows_fifty_requests_per_minute(self, manor_with_user, monkeypatch):
+        cache.clear()
+        manor, client = manor_with_user
+        template = ItemTemplate.objects.create(key="view_use_item_rate_limit", name="限流道具", is_usable=True)
+        item = InventoryItem.objects.create(manor=manor, template=template, quantity=1)
+
+        monkeypatch.setattr("gameplay.views.inventory.use_inventory_item", lambda *_args, **_kwargs: {"_message": "ok"})
+
+        url = reverse("gameplay:use_item", kwargs={"pk": item.pk})
+        try:
+            for _ in range(50):
+                response = client.post(url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+                assert response.status_code == 200
+
+            response = client.post(url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+            assert response.status_code == 429
+            assert "频繁" in response.json()["error"]
+        finally:
+            cache.clear()
 
     def test_use_item_ajax_legacy_value_error_bubbles_up(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user

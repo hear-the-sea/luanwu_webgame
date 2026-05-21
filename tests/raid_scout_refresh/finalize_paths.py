@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from battle.models import TroopTemplate
 from gameplay.constants import PVPConstants
-from gameplay.models import PlayerTroop, ScoutRecord
+from gameplay.models import PlayerTroop, ScoutCooldown, ScoutRecord
 from gameplay.services.raid import scout as scout_service
 from tests.raid_scout_refresh.support import build_attacker_defender
 
@@ -186,9 +186,11 @@ def test_finalize_scout_detected_message_runs_after_commit_and_failure_does_not_
     scout_service.finalize_scout(record, now=now)
 
     record.refresh_from_db()
+    cooldown = ScoutCooldown.objects.get(attacker=attacker, defender=defender)
     assert record.status == ScoutRecord.Status.RETURNING
     assert record.is_success is False
     assert record.return_at == now + timedelta(seconds=record.travel_time)
+    assert int((cooldown.cooldown_until - now).total_seconds()) == 10 * 60
     assert sent["count"] == 0
     assert dispatched == []
     assert len(callbacks) == 2

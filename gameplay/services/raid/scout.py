@@ -108,7 +108,7 @@ def calculate_scout_travel_time(attacker: Manor, defender: Manor) -> int:
     """
     计算侦察所需时间（秒）。
 
-    公式：侦察时间 = 距离 × 2 + 60
+    公式：侦察时间 = 距离 × 1 + 30
     """
     distance = calculate_distance(attacker, defender)
     raw = int(distance * PVPConstants.SCOUT_TRAVEL_TIME_PER_DISTANCE + PVPConstants.SCOUT_BASE_TRAVEL_TIME)

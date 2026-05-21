@@ -76,6 +76,7 @@ def _populate_authenticated_context(context: dict[str, Any], request) -> None:
         return
 
     context["sidebar_prestige"] = manor.prestige
+    context["sidebar_action_points"] = sidebar_selector.load_sidebar_action_points(manor)
     context["sidebar_current_contribution_label"] = _resolve_sidebar_current_contribution_label(request)
 
     try:

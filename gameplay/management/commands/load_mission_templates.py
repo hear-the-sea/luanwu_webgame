@@ -134,7 +134,7 @@ class Command(BaseCommand):
                 "drop_table": drop_table,
                 "probability_drop_table": probability_drop_table,
                 "available_weekdays": _normalize_available_weekdays(entry.get("available_weekdays")),
-                "base_travel_time": safe_positive_int(entry.get("base_travel_time"), 1200),
+                "base_travel_time": safe_positive_int(entry.get("base_travel_time"), 1800),
                 "daily_limit": safe_positive_int(entry.get("daily_limit"), 3),
             }
             obj, created = MissionTemplate.objects.update_or_create(key=key, defaults=defaults)

@@ -400,7 +400,10 @@ class TestCoreViews:
 
     def test_home_sidebar_uses_real_links_and_no_placeholder_values(self, manor_with_user):
         """首页侧栏只展示真实入口，不再保留伪链接或硬编码业务值。"""
-        _manor, client = manor_with_user
+        manor, client = manor_with_user
+        manor.action_points = 987
+        manor.action_points_updated_at = timezone.now()
+        manor.save(update_fields=["action_points", "action_points_updated_at"])
 
         response = client.get(reverse("home"))
 
@@ -408,6 +411,7 @@ class TestCoreViews:
         body = response.content.decode("utf-8")
         assert 'href="#"' not in body
         assert "1000/1000" not in body
+        assert "987/1000" in body
         assert "贡献积分" not in body
         assert "当前贡献" in body
         assert "未加入帮会" in body
