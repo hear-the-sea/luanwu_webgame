@@ -6,6 +6,7 @@ from ..models import (
     ArenaExchangeRecord,
     ArenaMatch,
     ArenaTournament,
+    BotProfile,
     Building,
     BuildingType,
     GlobalMailCampaign,
@@ -43,6 +44,7 @@ apply_common_field_labels(
     ArenaEntryGuest,
     ArenaMatch,
     ArenaExchangeRecord,
+    BotProfile,
     ScoutRecord,
     ScoutCooldown,
     RaidRun,
@@ -66,6 +68,7 @@ from .arena import (  # noqa: E402, F401
     ArenaMatchAdmin,
     ArenaTournamentAdmin,
 )
+from .bots import BotBackfillDemandAdmin, BotInventoryDailyCounterAdmin, BotProfileAdmin  # noqa: E402, F401
 from .buildings import BuildingAdmin, BuildingTypeAdmin, WorkAssignmentAdmin, WorkTemplateAdmin  # noqa: E402, F401
 from .core import ManorAdmin, ResourceEventAdmin  # noqa: E402, F401
 from .inventory import InventoryItemAdmin, ItemTemplateAdmin  # noqa: E402, F401
@@ -89,6 +92,10 @@ __all__ = [
     "BuildingAdmin",
     "WorkTemplateAdmin",
     "WorkAssignmentAdmin",
+    # bots
+    "BotBackfillDemandAdmin",
+    "BotInventoryDailyCounterAdmin",
+    "BotProfileAdmin",
     # missions
     "MissionTemplateAdmin",
     "MissionRunAdmin",

@@ -89,6 +89,8 @@ CELERY_TASK_ROUTES = {
     "gameplay.process_raid_battle": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.complete_raid": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.scan_raid_runs": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.plan_virtual_players": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.roll_virtual_players": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.backfill_global_mail_campaign": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.cleanup_old_data": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.decay_prisoner_loyalty": {"queue": CELERY_TIMER_QUEUE},
@@ -224,5 +226,13 @@ CELERY_BEAT_SCHEDULE = {
     "record-celery-beat-heartbeat": {
         "task": "core.record_celery_beat_heartbeat",
         "schedule": crontab(minute="*"),
+    },
+    "plan-virtual-players": {
+        "task": "gameplay.plan_virtual_players",
+        "schedule": crontab(hour="3-5", minute=17),
+    },
+    "roll-virtual-players": {
+        "task": "gameplay.roll_virtual_players",
+        "schedule": crontab(minute="*/15"),
     },
 }

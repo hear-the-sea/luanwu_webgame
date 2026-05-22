@@ -65,6 +65,9 @@ from gameplay.tasks.recruitment import complete_troop_recruitment, scan_troop_re
 # Technology
 from gameplay.tasks.technology import complete_technology_upgrade, scan_technology_upgrades
 
+# Virtual players
+from gameplay.tasks.virtual_players import plan_virtual_players_task, roll_virtual_players_task
+
 __all__ = [
     # Backward compatibility
     "timezone",
@@ -108,4 +111,7 @@ __all__ = [
     # Maintenance
     "cleanup_old_data_task",
     "decay_prisoner_loyalty_task",
+    # Virtual players
+    "plan_virtual_players_task",
+    "roll_virtual_players_task",
 ]

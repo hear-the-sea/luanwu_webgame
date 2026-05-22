@@ -22,6 +22,7 @@ from core.utils.infrastructure import (
 )
 from gameplay.services.battle_snapshots import build_guest_battle_snapshots, build_guest_snapshot_proxies
 from gameplay.services.technology import build_player_battle_technology_payload
+from gameplay.services.virtual_player_loot_limits import clamp_bot_loot_resources
 from guests.models import Guest, GuestStatus
 from guests.query_utils import guest_template_rarity_rank_case
 
@@ -116,6 +117,11 @@ def _apply_raid_loot_if_needed(locked_run: RaidRun, is_attacker_victory: bool) -
         guests=list(locked_run.guests.all()),
         troop_loadout=locked_run.troop_loadout,
         battle_report=locked_run.battle_report,
+    )
+    loot_resources = clamp_bot_loot_resources(
+        attacker=locked_run.attacker,
+        defender=locked_defender,
+        loot_resources=loot_resources,
     )
     applied_resources, applied_items = _apply_loot(
         locked_defender,

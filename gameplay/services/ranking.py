@@ -52,7 +52,11 @@ def get_prestige_ranking(limit: int = 50) -> List[Dict[str, Any]]:
     cache_key = f"{CacheKeys.RANKING_PRESTIGE}:{limit}"
 
     def compute_ranking():
-        manors = Manor.objects.select_related("user").filter(prestige__gt=0).order_by("-prestige", "created_at")[:limit]
+        manors = (
+            Manor.objects.select_related("user")
+            .filter(prestige__gt=0, bot_profile__isnull=True)
+            .order_by("-prestige", "created_at")[:limit]
+        )
 
         ranking = []
         for idx, manor in enumerate(manors, start=1):
@@ -80,7 +84,7 @@ def get_player_rank(manor: Manor) -> Optional[int]:
     Returns:
         排名（从1开始），如果没有声望则返回None
     """
-    if manor.prestige <= 0:
+    if manor.prestige <= 0 or hasattr(manor, "bot_profile"):
         return None
 
     # 使用缓存减少数据库查询
@@ -91,9 +95,13 @@ def get_player_rank(manor: Manor) -> Optional[int]:
 
     # Performance: compute rank using a single COUNT query.
     # Rank = 1 + count(prestige higher OR same prestige but created earlier)
-    ahead_count = Manor.objects.filter(
-        Q(prestige__gt=manor.prestige) | Q(prestige=manor.prestige, created_at__lt=manor.created_at)
-    ).count()
+    ahead_count = (
+        Manor.objects.filter(
+            bot_profile__isnull=True,
+        )
+        .filter(Q(prestige__gt=manor.prestige) | Q(prestige=manor.prestige, created_at__lt=manor.created_at))
+        .count()
+    )
 
     rank = ahead_count + 1
     # 缓存30秒，声望变化时 cache_key 会变化自动失效
@@ -122,7 +130,7 @@ def get_ranking_with_player_context(manor: Manor, limit: int = 50) -> Dict[str, 
 
     # 缓存有声望玩家总数（60秒）
     def compute_total():
-        return Manor.objects.filter(prestige__gt=0).count()
+        return Manor.objects.filter(prestige__gt=0, bot_profile__isnull=True).count()
 
     total_players = get_or_set(CacheKeys.RANKING_TOTAL_PLAYERS, compute_total, timeout=CACHE_TIMEOUT_RANKING)
 

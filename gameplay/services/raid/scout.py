@@ -21,6 +21,7 @@ from core.utils.time_scale import scale_duration
 from ...constants import PVPConstants
 from ...models import Manor, PlayerTroop, ScoutCooldown, ScoutRecord
 from ..technology import get_player_technology_level
+from ..virtual_players import record_virtual_player_backfill_demand_for_search
 from . import scout_finalize as scout_finalize_command
 from . import scout_followups
 from . import scout_refresh as scout_refresh_command
@@ -157,7 +158,7 @@ def start_scout(attacker: Manor, defender: Manor) -> ScoutRecord:
     Raises:
         ScoutStartError: 无法发起侦察时
     """
-    return scout_start_command.start_scout_command(
+    record = scout_start_command.start_scout_command(
         attacker,
         defender,
         can_attack_target_fn=can_attack_target,
@@ -173,6 +174,12 @@ def start_scout(attacker: Manor, defender: Manor) -> ScoutRecord:
         scout_record_model=ScoutRecord,
         scout_troop_key=PVPConstants.SCOUT_TROOP_KEY,
     )
+    record_virtual_player_backfill_demand_for_search(
+        searcher=attacker,
+        region=defender.region,
+        candidate_count=1,
+    )
+    return record
 
 
 def finalize_scout(record: ScoutRecord, now: Optional[datetime] = None) -> None:

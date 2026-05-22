@@ -119,6 +119,7 @@ def test_apply_raid_loot_passes_raid_context_to_loot_calculation(monkeypatch, dj
     guest_manager = SimpleNamespace(all=lambda: [guest])
     report = SimpleNamespace(losses={"attacker": {"casualties": [{"key": "dao_ke", "lost": 5}]}})
     locked_run = SimpleNamespace(
+        attacker=attacker,
         defender_id=defender.id,
         guests=guest_manager,
         troop_loadout={"dao_ke": 20},

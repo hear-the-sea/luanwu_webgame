@@ -40,6 +40,7 @@ from .templates import (
     validate_mission_templates,
     validate_troop_templates,
 )
+from .virtual_players import validate_virtual_players
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,7 @@ SUPPORTED_YAML_CONFIGS = (
     "guest_growth_rules.yaml",
     "technology_templates.yaml",
     "guild_mission_templates.yaml",
+    "virtual_players.yaml",
 )
 
 
@@ -114,6 +116,7 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
     growth_data = _load("guest_growth_rules.yaml")
     tech_data = _load("technology_templates.yaml")
     guild_mission_data = _load("guild_mission_templates.yaml")
+    virtual_players_data = _load("virtual_players.yaml")
 
     # Build cross-reference key sets for referential integrity checks
     item_keys: set[str] | None = None
@@ -198,6 +201,9 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
 
     if guild_mission_data is not None:
         result.merge(validate_guild_mission_templates(guild_mission_data))
+
+    if virtual_players_data is not None:
+        result.merge(validate_virtual_players(virtual_players_data))
 
     return result
 

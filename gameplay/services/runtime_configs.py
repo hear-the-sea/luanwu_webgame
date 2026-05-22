@@ -20,6 +20,7 @@ def reload_runtime_configs() -> dict[str, int]:
     from gameplay.services.buildings.ranch import clear_ranch_production_cache, load_ranch_production_config
     from gameplay.services.buildings.smithy import clear_smithy_production_cache, load_smithy_production_config
     from gameplay.services.buildings.stable import clear_stable_production_cache, load_stable_production_config
+    from gameplay.services.virtual_players import clear_virtual_player_config_cache, load_virtual_player_config
     from guests.growth_rules import clear_guest_growth_rules_cache, load_guest_growth_rules
     from guests.utils.recruitment_utils import refresh_recruitment_rarity_constants
     from guilds.constants import clear_guild_rules_cache, load_guild_rules, refresh_guild_constants
@@ -77,6 +78,9 @@ def reload_runtime_configs() -> dict[str, int]:
     guild_rules = load_guild_rules()
     refresh_guild_constants()
 
+    clear_virtual_player_config_cache()
+    virtual_players = load_virtual_player_config()
+
     return {
         "shop_items": len(shop_items),
         "auction_items": len(getattr(auction_config, "items", [])),
@@ -94,6 +98,7 @@ def reload_runtime_configs() -> dict[str, int]:
         "arena_coop_rank_rules": len((arena_coop_rules.get("rewards") or {}).get("rank_rewards", {})),
         "trade_listing_durations": len((trade_market_rules.get("listing_fees") or {})),
         "guild_tech_rules": len((guild_rules.get("technology") or {}).get("upgrade_costs", {})),
+        "virtual_players": len((virtual_players.get("prestige_bands") or {})),
     }
 
 
@@ -115,6 +120,7 @@ def format_runtime_config_summary(summary: dict[str, Any]) -> str:
         "arena_coop_rank_rules",
         "trade_listing_durations",
         "guild_tech_rules",
+        "virtual_players",
     ]
     parts = [f"{key}={summary[key]}" for key in ordered_keys if key in summary]
     return ", ".join(parts)

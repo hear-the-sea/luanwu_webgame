@@ -126,7 +126,7 @@ def load_total_user_count() -> int:
         if local_fallback is not None:
             return local_fallback
 
-    total_count = User.objects.filter(is_staff=False, is_superuser=False).count()
+    total_count = User.objects.filter(is_staff=False, is_superuser=False, manor__bot_profile__isnull=True).count()
     _persist_stat_cache(TOTAL_USERS_CACHE_KEY, total_count, timeout=TOTAL_USERS_CACHE_TIMEOUT)
     return safe_non_negative_int(total_count)
 
@@ -142,7 +142,12 @@ def _load_online_user_count_from_redis() -> int:
 
 def _load_online_user_count_from_db() -> int:
     time_threshold = timezone.now() - timedelta(minutes=30)
-    return User.objects.filter(is_staff=False, is_superuser=False, last_login__gte=time_threshold).count()
+    return User.objects.filter(
+        is_staff=False,
+        is_superuser=False,
+        manor__bot_profile__isnull=True,
+        last_login__gte=time_threshold,
+    ).count()
 
 
 def load_online_user_count() -> int:
