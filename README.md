@@ -7,8 +7,8 @@
 ## 项目简介
 
 这是一个以春秋战国题材为背景的 Django 游戏项目。当前仓库已实现账号、庄园、门客、战斗、交易、帮会、地图、消息通知与部分实时功能，玩法模板主要由 `data/*.yaml` 驱动。
-<img width="2250" height="522" alt="image" src="https://github.com/user-attachments/assets/657df8ed-9751-42c2-8f39-e455453fbf57" />
-## 致我的童年回忆→乱舞春秋
+<img width="1000" height="228" alt="image" src="https://github.com/user-attachments/assets/b3edb782-02c8-417f-8272-26d6dd8baac9" />
+## 致我的童年回忆----乱舞春秋
 当前前端形态为：
 
 - Django Templates
