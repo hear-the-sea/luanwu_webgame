@@ -55,6 +55,7 @@ projection:
   extra_skills_per_guest: [2]
   high_tier_skill_keys: bad
   high_tier_skill_chance: 2
+  low_stage_powerful_item_chance: 2
   high_tier_skills_per_guest: [1]
   gear_slots_by_archetype: bad
   inventory_quantity_multipliers: bad
@@ -76,6 +77,7 @@ projection:
     assert any("extra_skills_per_guest" in message for message in messages)
     assert any("high_tier_skill_keys" in message for message in messages)
     assert any("high_tier_skill_chance" in message for message in messages)
+    assert any("low_stage_powerful_item_chance" in message for message in messages)
     assert any("high_tier_skills_per_guest" in message for message in messages)
     assert any("gear_slots_by_archetype" in message for message in messages)
     assert any("inventory_quantity_multipliers" in message for message in messages)
@@ -142,13 +144,17 @@ def test_bot_profile_is_registered_in_admin():
     assert "is_due_for_maintenance" in model_admin.list_display
     assert "state" in model_admin.list_filter
     assert "archetype" in model_admin.list_filter
-    assert "prestige_band" in model_admin.list_filter
+    assert "target_prestige_band" in model_admin.list_filter
+    assert "current_prestige_band" in model_admin.list_filter
     assert ("next_growth_at", admin.DateFieldListFilter) in model_admin.list_filter
     assert any(getattr(item, "parameter_name", None) == "due_maintenance" for item in model_admin.list_filter)
     assert "manor__name" in model_admin.search_fields
     assert "manor__user__username" in model_admin.search_fields
     assert "mark_selected_stale" in model_admin.actions
     assert "growth_seed" in model_admin.readonly_fields
+    assert "prestige_band" in model_admin.readonly_fields
+    assert "target_prestige_band" in model_admin.readonly_fields
+    assert "current_prestige_band" in model_admin.readonly_fields
     assert "last_planned_at" in model_admin.readonly_fields
     assert "maintenance_stopped_at" in model_admin.readonly_fields
 
@@ -300,3 +306,5 @@ def test_generate_virtual_players_command_creates_requested_count(settings):
     )
 
     assert BotProfile.objects.filter(manor__region="north", prestige_band="newbie").count() == 2
+    assert BotProfile.objects.filter(manor__region="north", target_prestige_band="newbie").count() == 2
+    assert BotProfile.objects.filter(manor__region="north", current_prestige_band="newbie").count() == 2

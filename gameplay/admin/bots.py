@@ -32,7 +32,8 @@ class BotProfileAdmin(admin.ModelAdmin):
         "manor_prestige",
         "state",
         "archetype",
-        "prestige_band",
+        "target_prestige_band",
+        "current_prestige_band",
         "growth_stage",
         "loot_budget_daily",
         "last_planned_at",
@@ -45,7 +46,8 @@ class BotProfileAdmin(admin.ModelAdmin):
     list_filter = (
         "state",
         "archetype",
-        "prestige_band",
+        "target_prestige_band",
+        "current_prestige_band",
         "manor__region",
         DueMaintenanceFilter,
         ("next_growth_at", admin.DateFieldListFilter),
@@ -58,7 +60,16 @@ class BotProfileAdmin(admin.ModelAdmin):
         "manor__user__username",
     )
     autocomplete_fields = ("manor",)
-    readonly_fields = ("growth_seed", "last_planned_at", "maintenance_stopped_at", "created_at", "updated_at")
+    readonly_fields = (
+        "growth_seed",
+        "prestige_band",
+        "target_prestige_band",
+        "current_prestige_band",
+        "last_planned_at",
+        "maintenance_stopped_at",
+        "created_at",
+        "updated_at",
+    )
     actions = ("mark_selected_stale",)
     date_hierarchy = "next_growth_at"
     ordering = ("next_growth_at", "id")

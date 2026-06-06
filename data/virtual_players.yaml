@@ -94,3 +94,4 @@ projection:
   rare_item_daily_global_cap: 20
   powerful_item_daily_global_cap: 5
   powerful_item_min_price: 100000
+  low_stage_powerful_item_chance: 0.03

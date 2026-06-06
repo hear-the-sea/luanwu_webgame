@@ -181,7 +181,7 @@ def test_population_roll_consumes_backfill_demand_for_region_and_band(settings, 
     assert len(created) == 2
     assert {profile.manor.region for profile in created} == {"south"}
     assert {profile.prestige_band for profile in created} == {"junior"}
-    assert all(500 <= profile.manor.prestige < 2000 for profile in created)
+    assert all(0 <= profile.manor.prestige <= 250 for profile in created)
     assert consume_virtual_player_backfill_demands(limit=10) == []
     backfill_log = next(
         record

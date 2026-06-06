@@ -29,6 +29,8 @@ class BotProfile(models.Model):
     archetype = models.CharField("类型", max_length=16, choices=Archetype.choices, default=Archetype.BALANCED)
     state = models.CharField("状态", max_length=16, choices=State.choices, default=State.ACTIVE)
     prestige_band = models.CharField("声望段", max_length=32, db_index=True)
+    target_prestige_band = models.CharField("目标声望段", max_length=32, db_index=True, default="")
+    current_prestige_band = models.CharField("当前声望段", max_length=32, db_index=True, default="")
     growth_seed = models.PositiveIntegerField("成长种子")
     growth_stage = models.PositiveSmallIntegerField("成长阶段", default=1)
     next_growth_at = models.DateTimeField("下次成长时间", db_index=True)
@@ -46,6 +48,8 @@ class BotProfile(models.Model):
         indexes = [
             models.Index(fields=["state", "next_growth_at"], name="bot_state_next_growth_idx"),
             models.Index(fields=["prestige_band", "state"], name="bot_band_state_idx"),
+            models.Index(fields=["target_prestige_band", "state"], name="bot_target_band_state_idx"),
+            models.Index(fields=["current_prestige_band", "state"], name="bot_current_band_state_idx"),
         ]
 
     def __str__(self) -> str:

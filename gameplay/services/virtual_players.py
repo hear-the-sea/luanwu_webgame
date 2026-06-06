@@ -13,7 +13,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Max
+from django.db.models import Count, Max, Q
 from django.utils import timezone
 
 from battle.models import TroopTemplate
@@ -100,6 +100,7 @@ DEFAULT_VIRTUAL_PLAYER_CONFIG: dict[str, Any] = {
         "rare_item_daily_global_cap": 20,
         "powerful_item_daily_global_cap": 5,
         "powerful_item_min_price": 100_000,
+        "low_stage_powerful_item_chance": 0.03,
     },
 }
 
@@ -189,6 +190,11 @@ CORE_BUILDING_KEYS = (
     BuildingKeys.YOUXIA_BAOTA,
     BuildingKeys.LIANGGONG_CHANG,
 )
+INITIAL_BOT_PRESTIGE = 100
+INITIAL_BOT_BUILDING_LEVEL = 1
+INITIAL_BOT_GUEST_COUNT = 1
+INITIAL_BOT_GUEST_LEVEL = 1
+LOW_STAGE_POWERFUL_ITEM_CUTOFF = 5
 
 
 def _deep_merge_config(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
@@ -372,6 +378,14 @@ def _prestige_band_for_value(prestige: int, config: dict[str, Any]) -> str | Non
         if int(prestige) >= low and (high is None or int(prestige) < high):
             return band_name
     return None
+
+
+def _profile_target_prestige_band(profile: BotProfile) -> str:
+    return str(profile.target_prestige_band or profile.prestige_band)
+
+
+def _target_band_filter(prestige_band: str) -> Q:
+    return Q(target_prestige_band=str(prestige_band)) | Q(target_prestige_band="", prestige_band=str(prestige_band))
 
 
 def record_virtual_player_backfill_demand(*, region: str, prestige_band: str, needed: int) -> None:
@@ -734,6 +748,7 @@ def _project_guests_and_gear(
     rng: random.Random,
     config: dict[str, Any],
     archetype: str,
+    grant_configured_skills: bool = True,
 ) -> None:
     guest_keys = _configured_keys(config, "guest_template_keys")
     if not guest_keys or count <= 0:
@@ -749,7 +764,8 @@ def _project_guests_and_gear(
         guest.current_hp = guest.max_hp
         guest.save(update_fields=["level", "current_hp"])
         _grant_extra_template_skills(guest)
-        _grant_configured_extra_skills(guest, rng=rng, config=config)
+        if grant_configured_skills:
+            _grant_configured_extra_skills(guest, rng=rng, config=config)
         gear_slots = min(_gear_slots_for_archetype(str(archetype), config), len(gear_templates))
         for gear_offset in range(gear_slots):
             _equip_template(guest, gear_templates[(idx + gear_offset) % len(gear_templates)])
@@ -786,7 +802,48 @@ def _inventory_quantity_multiplier(archetype: str, config: dict[str, Any]) -> fl
     return default_multipliers.get(archetype, 1.0)
 
 
-def _project_inventory_stock(
+def _is_powerful_item(template: ItemTemplate, config: dict[str, Any]) -> bool:
+    projection = config.get("projection") or {}
+    powerful_min_price = int(projection.get("powerful_item_min_price") or 100_000)
+    return int(template.price or 0) >= powerful_min_price
+
+
+def _low_stage_powerful_item_chance(config: dict[str, Any]) -> float:
+    projection = config.get("projection") or {}
+    return _chance_value(projection.get("low_stage_powerful_item_chance"), default=0.03)
+
+
+def _bot_inventory_target_quantity(
+    *,
+    level: int,
+    template: ItemTemplate,
+    rng: random.Random,
+    config: dict[str, Any],
+    archetype: str,
+) -> int:
+    projection = config.get("projection") or {}
+    default_quantity = max(1, int(level) // 2)
+    quantity_config = projection.get("loot_item_quantity")
+    quantity = _range_value(rng, quantity_config, default=(default_quantity, default_quantity))
+    quantity = int(quantity * _inventory_quantity_multiplier(str(archetype), config))
+    return max(0, quantity)
+
+
+def _should_project_inventory_template(
+    template: ItemTemplate,
+    *,
+    level: int,
+    rng: random.Random,
+    config: dict[str, Any],
+) -> bool:
+    if int(level or 0) > LOW_STAGE_POWERFUL_ITEM_CUTOFF:
+        return True
+    if not _is_powerful_item(template, config):
+        return True
+    return rng.random() < _low_stage_powerful_item_chance(config)
+
+
+def _replenish_inventory_stock(
     manor: Manor,
     *,
     level: int,
@@ -795,7 +852,6 @@ def _project_inventory_stock(
     archetype: str,
     now=None,
 ) -> None:
-    projection = config.get("projection") or {}
     keys = [*_configured_keys(config, "item_template_keys"), *_configured_keys(config, "loot_item_template_keys")]
     if not keys:
         return
@@ -806,29 +862,39 @@ def _project_inventory_stock(
         return
 
     now = now or timezone.now()
-    default_quantity = max(1, int(level) // 2)
-    quantity_config = projection.get("loot_item_quantity")
-    rows: list[InventoryItem] = []
-    for template in templates:
-        quantity = _range_value(rng, quantity_config, default=(default_quantity, default_quantity))
-        quantity = int(quantity * _inventory_quantity_multiplier(str(archetype), config))
-        quantity = _apply_inventory_daily_caps(template, quantity=quantity, config=config, now=now)
-        if quantity <= 0:
-            continue
-        rows.append(
-            InventoryItem(
-                manor=manor,
-                template=template,
-                quantity=quantity,
-                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-            )
+    existing_by_template = {
+        item.template_id: item
+        for item in InventoryItem.objects.select_for_update().filter(
+            manor=manor,
+            template__in=templates,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
         )
-    if rows:
-        InventoryItem.objects.bulk_create(
-            rows,
-            update_conflicts=True,
-            update_fields=["quantity"],
-            unique_fields=["manor", "template", "storage_location"],
+    }
+    for template in templates:
+        if not _should_project_inventory_template(template, level=level, rng=rng, config=config):
+            continue
+        target_quantity = _bot_inventory_target_quantity(
+            level=level,
+            template=template,
+            rng=rng,
+            config=config,
+            archetype=str(archetype),
+        )
+        existing = existing_by_template.get(template.id)
+        current_quantity = int(existing.quantity or 0) if existing is not None else 0
+        needed = max(0, target_quantity - current_quantity)
+        needed = _apply_inventory_daily_caps(template, quantity=needed, config=config, now=now)
+        if needed <= 0:
+            continue
+        if existing is not None:
+            existing.quantity = current_quantity + needed
+            existing.save(update_fields=["quantity", "updated_at"])
+            continue
+        InventoryItem.objects.create(
+            manor=manor,
+            template=template,
+            quantity=needed,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
         )
 
 
@@ -978,16 +1044,23 @@ def create_virtual_player(
         guest_count=2,
         guest_level=3,
     )
+    starting_projection = BotProjectionConfig(
+        prestige=min(max(0, int(projection.prestige)), INITIAL_BOT_PRESTIGE),
+        building_level=INITIAL_BOT_BUILDING_LEVEL,
+        guest_count=min(max(0, int(projection.guest_count)), INITIAL_BOT_GUEST_COUNT),
+        guest_level=INITIAL_BOT_GUEST_LEVEL,
+    )
 
     user = _create_bot_user(region=region, growth_seed=seed)
     manor = user.manor
     _set_unique_location(manor, region=region)
-    manor.prestige = max(0, int(projection.prestige))
+    manor.prestige = max(0, int(starting_projection.prestige))
     manor.newbie_protection_until = None
     manor.defeat_protection_until = None
     manor.peace_shield_until = None
-    _project_buildings(manor, level=max(1, int(projection.building_level)))
-    _project_resources(manor, archetype=str(archetype), rng=rng, config=config)
+    _project_buildings(manor, level=max(1, int(starting_projection.building_level)))
+    manor.silver = 5000
+    manor.grain = 1200
     manor.resource_updated_at = now
     manor.last_active_at = now - timedelta(days=rng.randint(3, 180), hours=rng.randint(0, 23))
     manor.save(
@@ -1008,24 +1081,17 @@ def create_virtual_player(
         ]
     )
 
-    _project_technologies(manor, level=max(1, int(projection.building_level // 2)), config=config)
+    _project_technologies(manor, level=0, config=config)
     _project_guests_and_gear(
         manor,
-        count=projection.guest_count,
-        level=projection.guest_level,
+        count=starting_projection.guest_count,
+        level=starting_projection.guest_level,
         rng=rng,
         config=config,
         archetype=str(archetype),
+        grant_configured_skills=False,
     )
-    _project_troops(manor, count=max(50, projection.building_level * 80), config=config)
-    _project_inventory_stock(
-        manor,
-        level=max(1, int(projection.building_level)),
-        rng=rng,
-        config=config,
-        archetype=str(archetype),
-        now=now,
-    )
+    _project_troops(manor, count=50, config=config)
 
     next_growth_at, abandon_at, retire_at = _lifecycle_dates(now, rng, config)
     profile = BotProfile.objects.create(
@@ -1033,8 +1099,10 @@ def create_virtual_player(
         archetype=archetype,
         state=BotProfile.State.ACTIVE,
         prestige_band=prestige_band,
+        target_prestige_band=prestige_band,
+        current_prestige_band=_prestige_band_for_value(int(manor.prestige or 0), config) or prestige_band,
         growth_seed=seed,
-        growth_stage=max(1, int(projection.building_level)),
+        growth_stage=INITIAL_BOT_BUILDING_LEVEL,
         next_growth_at=next_growth_at,
         abandon_at=abandon_at,
         retire_at=retire_at,
@@ -1077,7 +1145,7 @@ def _maintenance_projection_from_real_players(
     rng: random.Random,
     config: dict[str, Any],
 ) -> BotProjectionConfig | None:
-    band_range = _prestige_bands(config).get(str(profile.prestige_band))
+    band_range = _prestige_bands(config).get(_profile_target_prestige_band(profile))
     if band_range is None:
         return None
     low, high = band_range
@@ -1086,9 +1154,11 @@ def _maintenance_projection_from_real_players(
 
 def _sync_profile_prestige_band(profile: BotProfile, *, config: dict[str, Any]) -> None:
     current_band = _prestige_band_for_value(int(profile.manor.prestige or 0), config)
-    if current_band and current_band != profile.prestige_band:
-        profile.prestige_band = current_band
-        profile.save(update_fields=["prestige_band", "updated_at"])
+    if not current_band or current_band == profile.current_prestige_band:
+        return
+
+    profile.current_prestige_band = current_band
+    profile.save(update_fields=["current_prestige_band", "updated_at"])
 
 
 def _maintain_active_profile(profile: BotProfile, *, now, config: dict[str, Any]) -> None:
@@ -1100,18 +1170,19 @@ def _maintain_active_profile(profile: BotProfile, *, now, config: dict[str, Any]
     target_guest_count = manor.guests.count()
     target_guest_level = next_stage
     if projection is not None:
-        target_building_level = max(next_stage, int(projection.building_level))
-        target_guest_count = max(target_guest_count, int(projection.guest_count))
-        target_guest_level = max(next_stage, int(projection.guest_level))
+        target_guest_count = min(max(target_guest_count + 1, 1), max(target_guest_count, int(projection.guest_count)))
+        target_guest_level = min(max(next_stage, 1), max(next_stage, int(projection.guest_level)))
 
     _project_buildings(manor, level=target_building_level)
     _project_resources(manor, archetype=profile.archetype, rng=rng, config=config)
     projected_prestige = int(projection.prestige) if projection is not None else next_stage * 250
-    manor.prestige = max(manor.prestige, projected_prestige, target_building_level * 250)
+    gradual_prestige = min(max(int(manor.prestige or 0) + 250, target_building_level * 250), projected_prestige)
+    manor.prestige = max(manor.prestige, gradual_prestige)
     manor.resource_updated_at = now
     manor.save(
         update_fields=["silver_capacity", "grain_capacity", "silver", "grain", "prestige", "resource_updated_at"]
     )
+    _sync_profile_prestige_band(profile, config=config)
     _project_technologies(manor, level=max(1, target_building_level // 2), config=config)
     missing_guests = max(0, target_guest_count - manor.guests.count())
     if missing_guests:
@@ -1128,7 +1199,16 @@ def _maintain_active_profile(profile: BotProfile, *, now, config: dict[str, Any]
             guest.level = target_guest_level
             guest.current_hp = guest.max_hp
             guest.save(update_fields=["level", "current_hp"])
+        _grant_configured_extra_skills(guest, rng=rng, config=config)
     _project_troops(manor, count=max(50, target_building_level * 80), config=config)
+    _replenish_inventory_stock(
+        manor,
+        level=max(1, target_building_level),
+        rng=rng,
+        config=config,
+        archetype=str(profile.archetype),
+        now=now,
+    )
 
     profile.growth_stage = target_building_level
     profile.next_growth_at = _next_growth_time(now, profile, rng, config)
@@ -1402,8 +1482,8 @@ def _roll_population_deficits(
             existing = (
                 _maintained_bot_queryset()
                 .filter(
+                    _target_band_filter(band_name),
                     manor__region=region,
-                    **_band_filter_kwargs(low, high, prefix="manor__"),
                 )
                 .count()
             )

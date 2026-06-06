@@ -88,6 +88,18 @@ def _bootstrap_projection_templates() -> dict[str, object]:
     return {"guest_template": guest_template, "gear_template": gear_template, "troop_template": troop_template}
 
 
+def _run_due_bot_maintenance(profile, *, now, growth_stage: int = 1) -> None:
+    from gameplay.models import BotProfile
+    from gameplay.services.virtual_players import maintain_due_virtual_players
+
+    BotProfile.objects.filter(pk=profile.pk).update(
+        next_growth_at=now - timedelta(minutes=1),
+        growth_stage=growth_stage,
+    )
+    assert maintain_due_virtual_players(now=now, limit=10) >= 1
+    profile.refresh_from_db()
+
+
 @pytest.mark.django_db
 def test_create_virtual_player_projects_real_manor_growth_data(settings, caplog):
     from gameplay.models import BotProfile
@@ -120,22 +132,22 @@ def test_create_virtual_player_projects_real_manor_growth_data(settings, caplog)
     assert profile.abandon_at > now
     assert profile.retire_at > profile.abandon_at
     assert manor.region == "north"
-    assert manor.prestige == 1500
+    assert manor.prestige == 100
     assert manor.newbie_protection_until is None
     assert manor.user.has_usable_password() is False
 
     silver_vault = manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT)
     granary = manor.buildings.get(building_type__key=BuildingKeys.GRANARY)
-    assert silver_vault.level == 6
-    assert granary.level == 6
-    assert manor.silver_capacity == calculate_building_capacity(6, is_silver_vault=True)
-    assert manor.grain_capacity == calculate_building_capacity(6, is_silver_vault=False)
-    assert 0 < manor.silver <= manor.silver_capacity
-    assert 0 < manor.grain <= manor.grain_capacity
+    assert silver_vault.level == 1
+    assert granary.level == 1
+    assert manor.silver_capacity == calculate_building_capacity(1, is_silver_vault=True)
+    assert manor.grain_capacity == calculate_building_capacity(1, is_silver_vault=False)
+    assert manor.silver == 5000
+    assert manor.grain == 1200
 
-    assert PlayerTechnology.objects.filter(manor=manor, level__gt=0).count() == 2
-    assert Guest.objects.filter(manor=manor, level=8).count() == 2
-    assert GearItem.objects.filter(manor=manor, guest__manor=manor).count() == 2
+    assert PlayerTechnology.objects.filter(manor=manor, level__gt=0).count() == 0
+    assert Guest.objects.filter(manor=manor, level=1).count() == 1
+    assert GearItem.objects.filter(manor=manor, guest__manor=manor).count() == 1
     assert all(guest.skills.exists() for guest in manor.guests.all())
     assert manor.troops.filter(count__gt=0).exists()
     created_log = next(
@@ -143,8 +155,52 @@ def test_create_virtual_player_projects_real_manor_growth_data(settings, caplog)
     )
     assert created_log.region == "north"
     assert created_log.prestige_band == "junior"
+    assert profile.target_prestige_band == "junior"
+    assert profile.current_prestige_band == "newbie"
     assert created_log.archetype == BotProfile.Archetype.DOJO
     assert created_log.manor_id == manor.id
+
+
+@pytest.mark.django_db
+def test_create_virtual_player_starts_from_newbie_baseline_even_with_high_projection(settings):
+    from gameplay.models import BotProfile
+    from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
+
+    templates = _bootstrap_projection_templates()
+    expensive_loot = ItemTemplate.objects.create(
+        key=_unique("bot_newbie_expensive"),
+        name="新手不应初始持有的高价值物品",
+        rarity="purple",
+        tradeable=True,
+        price=1_000_000,
+        storage_space=1,
+    )
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "projection": {
+            "guest_template_keys": [templates["guest_template"].key],
+            "gear_template_keys": [templates["gear_template"].key],
+            "troop_template_keys": [templates["troop_template"].key],
+            "item_template_keys": [expensive_loot.key],
+            "loot_item_quantity": [3, 3],
+        }
+    }
+
+    profile = create_virtual_player(
+        region="north",
+        prestige_band="senior",
+        archetype=BotProfile.Archetype.RICH,
+        growth_seed=777,
+        projection=BotProjectionConfig(prestige=12_000, building_level=10, guest_count=5, guest_level=18),
+    )
+
+    manor = profile.manor
+    assert manor.prestige <= 250
+    assert manor.silver == 5000
+    assert manor.grain == 1200
+    assert manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 1
+    assert manor.guests.count() <= 1
+    assert all(guest.level == 1 for guest in manor.guests.all())
+    assert InventoryItem.objects.filter(manor=manor, template=expensive_loot).count() == 0
 
 
 @pytest.mark.django_db
@@ -180,7 +236,7 @@ def test_population_roll_samples_projection_from_real_players_in_same_region(set
 
     bot_manor = Manor.objects.get(bot_profile__isnull=False)
     assert 0 <= bot_manor.prestige < 500
-    assert bot_manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 12
+    assert bot_manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 1
 
 
 @pytest.mark.django_db
@@ -217,6 +273,7 @@ def test_create_virtual_player_guests_learn_configured_extra_skills(settings):
         growth_seed=271,
         projection=BotProjectionConfig(prestige=1200, building_level=6, guest_count=1, guest_level=8),
     )
+    _run_due_bot_maintenance(profile, now=timezone.now(), growth_stage=7)
 
     guest = profile.manor.guests.get()
     learned = {row.skill.key: row.source for row in GuestSkill.objects.filter(guest=guest).select_related("skill")}
@@ -260,6 +317,7 @@ def test_create_virtual_player_guests_rarely_learn_configured_high_tier_skills(s
         growth_seed=272,
         projection=BotProjectionConfig(prestige=1200, building_level=6, guest_count=1, guest_level=8),
     )
+    _run_due_bot_maintenance(profile, now=timezone.now(), growth_stage=7)
 
     guest = profile.manor.guests.get()
     learned = {row.skill.key: row.source for row in GuestSkill.objects.filter(guest=guest).select_related("skill")}
@@ -307,6 +365,7 @@ def test_configured_high_tier_skills_get_priority_over_regular_extra_skills(sett
         growth_seed=273,
         projection=BotProjectionConfig(prestige=1200, building_level=6, guest_count=1, guest_level=8),
     )
+    _run_due_bot_maintenance(profile, now=timezone.now(), growth_stage=7)
 
     guest = profile.manor.guests.get()
     learned_keys = set(guest.guest_skills.values_list("skill__key", flat=True))
@@ -350,6 +409,7 @@ def test_create_virtual_player_projects_tradeable_inventory_and_skips_untradeabl
         growth_seed=170,
         projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=0, guest_level=1),
     )
+    _run_due_bot_maintenance(profile, now=timezone.now(), growth_stage=3)
 
     projected_items = {
         item.template.key: item.quantity
@@ -358,7 +418,7 @@ def test_create_virtual_player_projects_tradeable_inventory_and_skips_untradeabl
             storage_location=InventoryItem.StorageLocation.WAREHOUSE,
         ).select_related("template")
     }
-    assert projected_items == {tradeable.key: 4}
+    assert projected_items == {tradeable.key: 6}
 
 
 @pytest.mark.django_db
@@ -410,6 +470,10 @@ def test_bot_archetype_changes_inventory_and_gear_projection(settings):
         growth_seed=303,
         projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=1, guest_level=4),
     )
+    now = timezone.now()
+    _run_due_bot_maintenance(balanced, now=now, growth_stage=3)
+    _run_due_bot_maintenance(rich, now=now, growth_stage=3)
+    _run_due_bot_maintenance(dojo, now=now, growth_stage=3)
 
     balanced_qty = InventoryItem.objects.get(manor=balanced.manor, template=tradeable).quantity
     rich_qty = InventoryItem.objects.get(manor=rich.manor, template=tradeable).quantity
@@ -583,10 +647,10 @@ def test_due_virtual_player_maintenance_grows_or_marks_stale(settings):
     growing.refresh_from_db()
     retiring.refresh_from_db()
     assert growing.state == BotProfile.State.ACTIVE
-    assert growing.growth_stage == 4
+    assert growing.growth_stage == 2
     assert growing.next_growth_at > now
-    assert growing.manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 4
-    assert PlayerTechnology.objects.get(manor=growing.manor, tech_key="dao_attack").level == 2
+    assert growing.manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 2
+    assert PlayerTechnology.objects.get(manor=growing.manor, tech_key="dao_attack").level == 1
 
     assert retiring.state == BotProfile.State.STALE
     assert retiring.maintenance_stopped_at is None
@@ -639,11 +703,11 @@ def test_due_virtual_player_maintenance_samples_real_player_projection(settings,
     assert maintain_due_virtual_players(now=now, limit=10) == 1
 
     profile.refresh_from_db()
-    assert profile.growth_stage == 9
-    assert profile.manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 9
+    assert profile.growth_stage == 2
+    assert profile.manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 2
     assert profile.manor.guests.count() == 2
-    assert set(profile.manor.guests.values_list("level", flat=True)) == {12}
-    assert PlayerTechnology.objects.get(manor=profile.manor, tech_key="dao_attack").level == 4
+    assert set(profile.manor.guests.values_list("level", flat=True)) == {2}
+    assert PlayerTechnology.objects.get(manor=profile.manor, tech_key="dao_attack").level == 1
 
 
 @pytest.mark.django_db
@@ -687,6 +751,7 @@ def test_virtual_player_rare_and_powerful_inventory_respects_daily_global_caps(s
             "rare_item_daily_global_cap": 1,
             "powerful_item_daily_global_cap": 1,
             "powerful_item_min_price": 100_000,
+            "low_stage_powerful_item_chance": 1.0,
         }
     }
     now = timezone.now()
@@ -708,6 +773,8 @@ def test_virtual_player_rare_and_powerful_inventory_respects_daily_global_caps(s
         now=now,
         projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=0, guest_level=1),
     )
+    _run_due_bot_maintenance(first, now=now, growth_stage=3)
+    _run_due_bot_maintenance(second, now=now, growth_stage=3)
 
     assert InventoryItem.objects.filter(manor=first.manor, template=common).get().quantity == 2
     assert InventoryItem.objects.filter(manor=second.manor, template=common).get().quantity == 2
@@ -735,7 +802,11 @@ def test_virtual_player_rare_and_powerful_inventory_respects_daily_global_caps(s
 @pytest.mark.django_db
 def test_virtual_player_inventory_cap_counter_rolls_back_with_failed_generation(settings):
     from gameplay.models import BotInventoryDailyCounter, BotProfile
-    from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
+    from gameplay.services.virtual_players import (
+        BotProjectionConfig,
+        create_virtual_player,
+        maintain_due_virtual_players,
+    )
 
     cache.clear()
     _bootstrap_projection_templates()
@@ -760,7 +831,7 @@ def test_virtual_player_inventory_cap_counter_rolls_back_with_failed_generation(
 
     with pytest.raises(RuntimeError):
         with transaction.atomic():
-            create_virtual_player(
+            profile = create_virtual_player(
                 region="north",
                 prestige_band="junior",
                 archetype=BotProfile.Archetype.BALANCED,
@@ -768,6 +839,8 @@ def test_virtual_player_inventory_cap_counter_rolls_back_with_failed_generation(
                 now=now,
                 projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=0, guest_level=1),
             )
+            BotProfile.objects.filter(pk=profile.pk).update(next_growth_at=now - timedelta(minutes=1), growth_stage=3)
+            maintain_due_virtual_players(now=now, limit=10)
             raise RuntimeError("rollback generation")
 
     assert BotInventoryDailyCounter.objects.count() == 0
@@ -777,7 +850,11 @@ def test_virtual_player_inventory_cap_counter_rolls_back_with_failed_generation(
 @pytest.mark.django_db(transaction=True)
 def test_virtual_player_inventory_daily_counter_caps_repeated_creates_in_one_transaction(settings):
     from gameplay.models import BotInventoryDailyCounter, BotProfile
-    from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
+    from gameplay.services.virtual_players import (
+        BotProjectionConfig,
+        create_virtual_player,
+        maintain_due_virtual_players,
+    )
 
     cache.clear()
     _bootstrap_projection_templates()
@@ -807,13 +884,15 @@ def test_virtual_player_inventory_daily_counter_caps_repeated_creates_in_one_tra
             "rare_item_daily_global_cap": 2,
             "powerful_item_daily_global_cap": 2,
             "powerful_item_min_price": 100_000,
+            "low_stage_powerful_item_chance": 1.0,
         }
     }
     now = timezone.now()
 
     with transaction.atomic():
+        profile_ids = []
         for offset in range(5):
-            create_virtual_player(
+            profile = create_virtual_player(
                 region="north",
                 prestige_band="junior",
                 archetype=BotProfile.Archetype.BALANCED,
@@ -821,6 +900,12 @@ def test_virtual_player_inventory_daily_counter_caps_repeated_creates_in_one_tra
                 now=now,
                 projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=0, guest_level=1),
             )
+            profile_ids.append(profile.pk)
+        BotProfile.objects.filter(pk__in=profile_ids).update(
+            next_growth_at=now - timedelta(minutes=1),
+            growth_stage=3,
+        )
+        maintain_due_virtual_players(now=now, limit=10)
 
     counter_date = timezone.localtime(now).date()
     assert BotInventoryDailyCounter.objects.get(category="rare", counter_date=counter_date).quantity == 2
@@ -828,6 +913,66 @@ def test_virtual_player_inventory_daily_counter_caps_repeated_creates_in_one_tra
     assert InventoryItem.objects.filter(template=rare).aggregate(total=Sum("quantity"))["total"] == 2
     assert InventoryItem.objects.filter(template=powerful).aggregate(total=Sum("quantity"))["total"] == 2
     assert InventoryItem.objects.filter(template__in=[rare, powerful]).count() == 4
+
+
+@pytest.mark.django_db
+def test_due_virtual_player_maintenance_replenishes_inventory_by_growth_stage(settings):
+    from gameplay.models import BotProfile
+    from gameplay.services.virtual_players import (
+        BotProjectionConfig,
+        create_virtual_player,
+        maintain_due_virtual_players,
+    )
+
+    _bootstrap_projection_templates()
+    common = ItemTemplate.objects.create(
+        key=_unique("bot_stage_common"),
+        name="阶段普通补给",
+        rarity="green",
+        tradeable=True,
+        price=100,
+        storage_space=1,
+    )
+    valuable = ItemTemplate.objects.create(
+        key=_unique("bot_stage_valuable"),
+        name="阶段高价值补给",
+        rarity="green",
+        tradeable=True,
+        price=1_000_000,
+        storage_space=1,
+    )
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "item_template_keys": [common.key, valuable.key],
+            "loot_item_quantity": [2, 2],
+            "inventory_quantity_multipliers": {"balanced": 1},
+            "low_stage_powerful_item_chance": 1.0,
+            "powerful_item_daily_global_cap": 10,
+            "powerful_item_min_price": 100_000,
+        }
+    }
+    now = timezone.now()
+    profile = create_virtual_player(
+        region="north",
+        prestige_band="junior",
+        archetype=BotProfile.Archetype.BALANCED,
+        growth_seed=5150,
+        now=now - timedelta(days=1),
+        projection=BotProjectionConfig(prestige=1900, building_level=3, guest_count=0, guest_level=1),
+    )
+    InventoryItem.objects.filter(manor=profile.manor).delete()
+    BotProfile.objects.filter(pk=profile.pk).update(next_growth_at=now - timedelta(minutes=1), growth_stage=1)
+
+    assert maintain_due_virtual_players(now=now, limit=10) == 1
+
+    stock = {
+        item.template.key: item.quantity
+        for item in InventoryItem.objects.filter(manor=profile.manor).select_related("template")
+    }
+    assert stock[common.key] == 2
+    assert stock[valuable.key] == 2
 
 
 def test_inventory_daily_cap_reservation_recovers_from_counter_create_race(monkeypatch):
@@ -969,10 +1114,46 @@ def test_population_roll_spreads_global_deficit_across_regions_and_bands(setting
     by_band = {}
     for profile in profiles:
         by_region[profile.manor.region] = by_region.get(profile.manor.region, 0) + 1
-        by_band[profile.prestige_band] = by_band.get(profile.prestige_band, 0) + 1
+        by_band[profile.target_prestige_band] = by_band.get(profile.target_prestige_band, 0) + 1
     assert by_region == {"north": 2, "east": 2, "west": 2, "south": 2}
     assert len(by_band) > 1
     assert max(by_band.values()) - min(by_band.values()) <= 1
+
+
+@pytest.mark.django_db
+def test_population_roll_counts_target_band_instead_of_current_prestige(settings):
+    from gameplay.models import BotProfile
+    from gameplay.services.virtual_players import (
+        BotProjectionConfig,
+        create_virtual_player,
+        roll_virtual_player_population,
+    )
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "active_player_multiplier": 0,
+            "min_per_region": 0,
+            "min_attackable_per_band": 1,
+            "hard_cap": 20,
+            "rolling_batch_size": [20, 20],
+        },
+        "prestige_bands": {"newbie": [0, 500], "junior": [500, 2000]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": []},
+    }
+    now = timezone.now()
+    create_virtual_player(
+        region="north",
+        prestige_band="junior",
+        archetype=BotProfile.Archetype.BALANCED,
+        growth_seed=23458,
+        now=now,
+        projection=BotProjectionConfig(prestige=1900, building_level=3, guest_count=0, guest_level=1),
+    )
+
+    assert BotProfile.objects.get(target_prestige_band="junior").current_prestige_band == "newbie"
+    assert roll_virtual_player_population(limit=20, now=now) == 19
+    assert BotProfile.objects.filter(target_prestige_band="junior", manor__region="north").count() == 1
 
 
 @pytest.mark.django_db
@@ -988,6 +1169,123 @@ def test_population_roll_returns_zero_when_lock_is_held(settings):
         assert roll_virtual_player_population(limit=5, now=timezone.now()) == 0
     finally:
         cache.delete("virtual_players:roll_lock")
+
+
+@pytest.mark.django_db
+def test_due_maintenance_keeps_target_prestige_band_while_bot_grows(settings):
+    from gameplay.models import BotProfile
+    from gameplay.services.virtual_players import (
+        BotProjectionConfig,
+        create_virtual_player,
+        maintain_due_virtual_players,
+    )
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {"min_per_region": 0, "min_attackable_per_band": 0, "hard_cap": 10},
+        "prestige_bands": {"newbie": [0, 500], "junior": [500, 2000]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": []},
+    }
+    now = timezone.now()
+    profile = create_virtual_player(
+        region="south",
+        prestige_band="junior",
+        archetype=BotProfile.Archetype.BALANCED,
+        growth_seed=23455,
+        now=now,
+        projection=BotProjectionConfig(prestige=1900, building_level=3, guest_count=0, guest_level=1),
+    )
+    profile.next_growth_at = now - timedelta(minutes=1)
+    profile.save(update_fields=["next_growth_at"])
+
+    assert profile.manor.prestige < 500
+    assert maintain_due_virtual_players(now=now, limit=10) == 1
+
+    profile.refresh_from_db()
+    assert profile.prestige_band == "junior"
+
+
+@pytest.mark.django_db
+def test_virtual_player_tracks_target_and_current_prestige_bands_separately(settings):
+    from gameplay.models import BotProfile
+    from gameplay.services.virtual_players import (
+        BotProjectionConfig,
+        create_virtual_player,
+        maintain_due_virtual_players,
+    )
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {"min_per_region": 0, "min_attackable_per_band": 0, "hard_cap": 10},
+        "prestige_bands": {"newbie": [0, 500], "junior": [500, 2000], "middle": [2000, 8000]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": []},
+    }
+    now = timezone.now()
+    profile = create_virtual_player(
+        region="south",
+        prestige_band="junior",
+        archetype=BotProfile.Archetype.BALANCED,
+        growth_seed=23457,
+        now=now,
+        projection=BotProjectionConfig(prestige=1900, building_level=3, guest_count=0, guest_level=1),
+    )
+
+    assert profile.target_prestige_band == "junior"
+    assert profile.current_prestige_band == "newbie"
+
+    profile.manor.prestige = 2500
+    profile.manor.save(update_fields=["prestige"])
+    profile.next_growth_at = now - timedelta(minutes=1)
+    profile.save(update_fields=["next_growth_at"])
+
+    assert maintain_due_virtual_players(now=now, limit=10) == 1
+
+    profile.refresh_from_db()
+    assert profile.target_prestige_band == "junior"
+    assert profile.current_prestige_band == "middle"
+    assert profile.prestige_band == "junior"
+
+
+@pytest.mark.django_db
+def test_due_maintenance_syncs_current_band_after_growth_crosses_band(settings, django_user_model):
+    from gameplay.models import BotProfile
+    from gameplay.services.virtual_players import maintain_due_virtual_players
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {"min_per_region": 0, "min_attackable_per_band": 0, "hard_cap": 10},
+        "prestige_bands": {"newbie": [0, 500], "junior": [500, 2000]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": []},
+    }
+    user = django_user_model.objects.create_user(username="bot_growth_band_cross", password="pass123")
+    manor = user.manor
+    manor.region = "south"
+    manor.prestige = 250
+    manor.save(update_fields=["region", "prestige"])
+    now = timezone.now()
+    BotProfile.objects.create(
+        manor=manor,
+        archetype=BotProfile.Archetype.BALANCED,
+        state=BotProfile.State.ACTIVE,
+        prestige_band="junior",
+        target_prestige_band="junior",
+        current_prestige_band="newbie",
+        growth_seed=23459,
+        growth_stage=1,
+        next_growth_at=now - timedelta(minutes=1),
+        abandon_at=now + timedelta(days=30),
+        retire_at=now + timedelta(days=60),
+        loot_budget_daily=1000,
+        last_planned_at=now - timedelta(hours=1),
+    )
+
+    assert maintain_due_virtual_players(now=now, limit=10) == 1
+
+    profile = BotProfile.objects.get(manor=manor)
+    assert profile.manor.prestige == 500
+    assert profile.target_prestige_band == "junior"
+    assert profile.current_prestige_band == "junior"
+    assert profile.prestige_band == "junior"
 
 
 @pytest.mark.django_db
@@ -1022,4 +1320,6 @@ def test_due_maintenance_syncs_profile_prestige_band_after_growth(settings):
     assert maintain_due_virtual_players(now=now, limit=10) == 1
 
     profile.refresh_from_db()
-    assert profile.prestige_band == "middle"
+    assert profile.prestige_band == "junior"
+    assert profile.target_prestige_band == "junior"
+    assert profile.current_prestige_band == "middle"

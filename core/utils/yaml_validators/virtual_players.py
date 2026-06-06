@@ -176,6 +176,13 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                     file=file,
                     path="projection.high_tier_skill_chance",
                 )
+            if "low_stage_powerful_item_chance" in projection:
+                _validate_ratio(
+                    projection["low_stage_powerful_item_chance"],
+                    result=result,
+                    file=file,
+                    path="projection.low_stage_powerful_item_chance",
+                )
             if "high_tier_skills_per_guest" in projection:
                 _validate_int_range(
                     projection["high_tier_skills_per_guest"],

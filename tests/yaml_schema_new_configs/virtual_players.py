@@ -26,6 +26,7 @@ def test_virtual_players_accepts_lifecycle_and_inventory_cap_fields():
             "rare_item_daily_global_cap": 20,
             "powerful_item_daily_global_cap": 5,
             "powerful_item_min_price": 100000,
+            "low_stage_powerful_item_chance": 0.03,
         },
     }
 
@@ -64,6 +65,7 @@ def test_virtual_players_rejects_invalid_inventory_projection_fields():
             "rare_item_daily_global_cap": "20",
             "powerful_item_daily_global_cap": 1.5,
             "powerful_item_min_price": "100000",
+            "low_stage_powerful_item_chance": 2,
             "loot_limits": {"real_attacker_daily_resource_cap": "1000000"},
         }
     }
@@ -81,4 +83,5 @@ def test_virtual_players_rejects_invalid_inventory_projection_fields():
     assert any("rare_item_daily_global_cap" in message for message in messages)
     assert any("powerful_item_daily_global_cap" in message for message in messages)
     assert any("powerful_item_min_price" in message for message in messages)
+    assert any("low_stage_powerful_item_chance" in message for message in messages)
     assert any("real_attacker_daily_resource_cap" in message for message in messages)
