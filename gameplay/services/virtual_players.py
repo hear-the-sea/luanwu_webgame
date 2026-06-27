@@ -36,6 +36,7 @@ from gameplay.models import (
 )
 from gameplay.services.manor.core import calculate_building_capacity, generate_unique_coordinate
 from gameplay.services.manor.naming import ManorNameConflictError
+from gameplay.services.technology_catalog import build_technology_index
 from guests.models import GearItem, GearTemplate, Guest, GuestSkill, GuestTemplate, Skill
 from guests.services.equipment_payloads import build_gear_template_defaults, build_gear_template_preview
 from guests.services.equipment_stats import apply_set_bonuses, apply_template_stats_to_guest
@@ -100,7 +101,15 @@ DEFAULT_VIRTUAL_PLAYER_CONFIG: dict[str, Any] = {
         "rare_item_daily_global_cap": 20,
         "powerful_item_daily_global_cap": 5,
         "powerful_item_min_price": 100_000,
+        "powerful_item_min_growth_stage": 5,
         "low_stage_powerful_item_chance": 0.03,
+        "powerful_item_prestige_chance": [
+            {"min_prestige": 0, "chance": 0.0},
+            {"min_prestige": 500, "chance": 0.01},
+            {"min_prestige": 2000, "chance": 0.03},
+            {"min_prestige": 8000, "chance": 0.06},
+            {"min_prestige": 30000, "chance": 0.12},
+        ],
     },
 }
 
@@ -108,6 +117,8 @@ VIRTUAL_PLAYER_CONFIG_PATH = Path(settings.BASE_DIR) / "data" / "virtual_players
 ROLL_LOCK_KEY = "virtual_players:roll_lock"
 ROLL_LOCK_TIMEOUT_SECONDS = 300
 RARE_ITEM_RARITIES = {"purple", "orange", "red", "legendary"}
+ALL_TEMPLATE_SENTINEL = "__all__"
+ALL_TRADEABLE_TEMPLATE_SENTINEL = "__all_tradeable__"
 
 _MANOR_NAME_SURNAMES = (
     "沈",
@@ -180,6 +191,52 @@ _MANOR_NAME_SUFFIXES = (
     "居",
     "轩",
     "庐",
+)
+_MANOR_NAME_INTERNET_PREFIXES = (
+    "摸鱼",
+    "开摆",
+    "咸鱼",
+    "随缘",
+    "夜猫子",
+    "奶茶续命",
+    "快乐老家",
+    "人间清醒",
+    "低调发财",
+    "菜但爱玩",
+    "非酋",
+    "欧皇",
+    "一键收菜",
+    "余额不足",
+)
+_MANOR_NAME_INTERNET_SUFFIXES = (
+    "山庄",
+    "别院",
+    "小筑",
+    "草堂",
+    "轩",
+    "居",
+    "堂",
+    "府",
+    "园",
+    "避难所",
+)
+_MANOR_NAME_INTERNET_STANDALONE = (
+    "坤哥亡命天涯",
+    "听到涛声",
+    "暴打派大星",
+    "今天也想躺平",
+    "打不过就跑",
+    "路过不要打我",
+    "先苟住再说",
+    "上号收个菜",
+    "差点就赢了",
+    "全靠同行衬托",
+    "别看我会输",
+    "不想加班",
+    "精神状态良好",
+    "好运加载中",
+    "这把随缘",
+    "风紧扯呼",
 )
 
 CORE_BUILDING_KEYS = (
@@ -269,23 +326,23 @@ def _generate_bot_manor_name(*, growth_seed: int, salt: int = 0) -> str:
     """Generate player-like manor names without visible system markers."""
     for attempt in range(400):
         rng = random.Random(f"{growth_seed}:{salt}:{attempt}")
-        variant = attempt % 5
-        if variant == 0:
-            candidate = f"{rng.choice(_MANOR_NAME_SURNAMES)}{rng.choice(_MANOR_NAME_GIVEN)}的庄园"
-        elif variant == 1:
-            candidate = (
-                f"{rng.choice(_MANOR_NAME_SURNAMES)}{rng.choice(_MANOR_NAME_GIVEN)}的{rng.choice(_MANOR_NAME_SUFFIXES)}"
-            )
-        elif variant == 2:
-            candidate = f"{rng.choice(_MANOR_NAME_PREFIXES)}{rng.choice(_MANOR_NAME_SURNAMES)}{rng.choice(_MANOR_NAME_SUFFIXES)}"
-        elif variant == 3:
-            candidate = (
-                f"{rng.choice(_MANOR_NAME_GIVEN)}{rng.choice(_MANOR_NAME_PREFIXES)}{rng.choice(_MANOR_NAME_SUFFIXES)}"
-            )
+        roll = rng.random()
+        if roll < 0.38:
+            candidate = rng.choice(_MANOR_NAME_INTERNET_STANDALONE)
+        elif roll < 0.74:
+            candidate = f"{rng.choice(_MANOR_NAME_INTERNET_PREFIXES)}{rng.choice(_MANOR_NAME_INTERNET_SUFFIXES)}"
         else:
-            candidate = (
-                f"{rng.choice(_MANOR_NAME_PREFIXES)}{rng.choice(_MANOR_NAME_GIVEN)}{rng.choice(_MANOR_NAME_SUFFIXES)}"
-            )
+            variant = attempt % 5
+            if variant == 0:
+                candidate = f"{rng.choice(_MANOR_NAME_SURNAMES)}{rng.choice(_MANOR_NAME_GIVEN)}的庄园"
+            elif variant == 1:
+                candidate = f"{rng.choice(_MANOR_NAME_SURNAMES)}{rng.choice(_MANOR_NAME_GIVEN)}的{rng.choice(_MANOR_NAME_SUFFIXES)}"
+            elif variant == 2:
+                candidate = f"{rng.choice(_MANOR_NAME_PREFIXES)}{rng.choice(_MANOR_NAME_SURNAMES)}{rng.choice(_MANOR_NAME_SUFFIXES)}"
+            elif variant == 3:
+                candidate = f"{rng.choice(_MANOR_NAME_GIVEN)}{rng.choice(_MANOR_NAME_PREFIXES)}{rng.choice(_MANOR_NAME_SUFFIXES)}"
+            else:
+                candidate = f"{rng.choice(_MANOR_NAME_PREFIXES)}{rng.choice(_MANOR_NAME_GIVEN)}{rng.choice(_MANOR_NAME_SUFFIXES)}"
         if not Manor.objects.filter(name=candidate).exists():
             return candidate
 
@@ -348,7 +405,35 @@ def _project_resources(manor: Manor, *, archetype: str, rng: random.Random, conf
 def _configured_keys(config: dict[str, Any], field: str) -> list[str]:
     projection = config.get("projection") or {}
     raw = projection.get(field) or []
+    if isinstance(raw, str):
+        return [raw] if raw else []
     return [str(item) for item in raw if item]
+
+
+def _configured_model_keys(
+    config: dict[str, Any],
+    field: str,
+    model,
+) -> list[str]:
+    keys = _configured_keys(config, field)
+    if ALL_TEMPLATE_SENTINEL not in keys:
+        return keys
+    queryset = model.objects.all()
+    return list(queryset.order_by("key").values_list("key", flat=True))
+
+
+def _configured_item_keys(config: dict[str, Any], field: str) -> list[str]:
+    keys = _configured_keys(config, field)
+    if ALL_TEMPLATE_SENTINEL not in keys and ALL_TRADEABLE_TEMPLATE_SENTINEL not in keys:
+        return keys
+    return list(ItemTemplate.objects.filter(tradeable=True).order_by("key").values_list("key", flat=True))
+
+
+def _configured_technology_keys(config: dict[str, Any]) -> list[str]:
+    keys = _configured_keys(config, "technology_keys")
+    if ALL_TEMPLATE_SENTINEL not in keys:
+        return keys
+    return sorted(build_technology_index().keys())
 
 
 def _regions() -> list[str]:
@@ -605,7 +690,7 @@ def create_virtual_players_for_band(
 
 
 def _project_technologies(manor: Manor, *, level: int, config: dict[str, Any]) -> None:
-    keys = _configured_keys(config, "technology_keys")
+    keys = _configured_technology_keys(config)
     if not keys:
         return
     rows = [PlayerTechnology(manor=manor, tech_key=key, level=max(0, int(level)), is_upgrading=False) for key in keys]
@@ -720,7 +805,7 @@ def _gear_slots_for_archetype(archetype: str, config: dict[str, Any]) -> int:
 
 
 def _configured_gear_templates(config: dict[str, Any]) -> list[GearTemplate]:
-    keys = _configured_keys(config, "gear_template_keys")
+    keys = _configured_model_keys(config, "gear_template_keys", GearTemplate)
     if not keys:
         return []
     unique_keys = list(dict.fromkeys(keys))
@@ -750,7 +835,7 @@ def _project_guests_and_gear(
     archetype: str,
     grant_configured_skills: bool = True,
 ) -> None:
-    guest_keys = _configured_keys(config, "guest_template_keys")
+    guest_keys = _configured_model_keys(config, "guest_template_keys", GuestTemplate)
     if not guest_keys or count <= 0:
         return
     templates = list(GuestTemplate.objects.filter(key__in=guest_keys).prefetch_related("initial_skills"))
@@ -772,7 +857,7 @@ def _project_guests_and_gear(
 
 
 def _project_troops(manor: Manor, *, count: int, config: dict[str, Any]) -> None:
-    troop_keys = _configured_keys(config, "troop_template_keys")
+    troop_keys = _configured_model_keys(config, "troop_template_keys", TroopTemplate)
     if not troop_keys:
         return
     templates = list(TroopTemplate.objects.filter(key__in=troop_keys))
@@ -813,6 +898,33 @@ def _low_stage_powerful_item_chance(config: dict[str, Any]) -> float:
     return _chance_value(projection.get("low_stage_powerful_item_chance"), default=0.03)
 
 
+def _powerful_item_min_growth_stage(config: dict[str, Any]) -> int:
+    projection = config.get("projection") or {}
+    return max(0, int(projection.get("powerful_item_min_growth_stage") or 0))
+
+
+def _powerful_item_prestige_chance(config: dict[str, Any], prestige: int) -> float:
+    projection = config.get("projection") or {}
+    raw = projection.get("powerful_item_prestige_chance")
+    if not isinstance(raw, list):
+        return 0.0
+
+    best_chance = 0.0
+    best_min = -1
+    for row in raw:
+        if not isinstance(row, dict):
+            continue
+        try:
+            min_prestige = int(row.get("min_prestige", 0) or 0)
+        except (TypeError, ValueError):
+            continue
+        chance = _chance_value(row.get("chance"), default=0.0)
+        if prestige >= min_prestige and min_prestige >= best_min:
+            best_min = min_prestige
+            best_chance = chance
+    return best_chance
+
+
 def _bot_inventory_target_quantity(
     *,
     level: int,
@@ -833,14 +945,26 @@ def _should_project_inventory_template(
     template: ItemTemplate,
     *,
     level: int,
+    growth_stage: int,
+    prestige: int,
     rng: random.Random,
     config: dict[str, Any],
 ) -> bool:
+    is_powerful = _is_powerful_item(template, config)
+    is_rare = str(template.rarity or "").lower() in RARE_ITEM_RARITIES
+    min_stage = _powerful_item_min_growth_stage(config)
+    if min_stage > 0 and int(growth_stage or 0) < min_stage and (is_powerful or is_rare):
+        return False
     if int(level or 0) > LOW_STAGE_POWERFUL_ITEM_CUTOFF:
+        if is_powerful or is_rare:
+            return rng.random() < _powerful_item_prestige_chance(config, int(prestige or 0))
         return True
-    if not _is_powerful_item(template, config):
+    if not is_powerful and not is_rare:
         return True
-    return rng.random() < _low_stage_powerful_item_chance(config)
+    return rng.random() < min(
+        _low_stage_powerful_item_chance(config),
+        _powerful_item_prestige_chance(config, int(prestige or 0)),
+    )
 
 
 def _replenish_inventory_stock(
@@ -850,16 +974,22 @@ def _replenish_inventory_stock(
     rng: random.Random,
     config: dict[str, Any],
     archetype: str,
+    growth_stage: int,
+    prestige: int,
     now=None,
 ) -> None:
-    keys = [*_configured_keys(config, "item_template_keys"), *_configured_keys(config, "loot_item_template_keys")]
+    keys = [
+        *_configured_item_keys(config, "item_template_keys"),
+        *_configured_item_keys(config, "loot_item_template_keys"),
+    ]
     if not keys:
         return
 
     unique_keys = list(dict.fromkeys(keys))
-    templates = list(ItemTemplate.objects.filter(key__in=unique_keys, tradeable=True))
+    templates = list(ItemTemplate.objects.filter(key__in=unique_keys, tradeable=True).order_by("key"))
     if not templates:
         return
+    rng.shuffle(templates)
 
     now = now or timezone.now()
     existing_by_template = {
@@ -871,7 +1001,14 @@ def _replenish_inventory_stock(
         )
     }
     for template in templates:
-        if not _should_project_inventory_template(template, level=level, rng=rng, config=config):
+        if not _should_project_inventory_template(
+            template,
+            level=level,
+            growth_stage=growth_stage,
+            prestige=prestige,
+            rng=rng,
+            config=config,
+        ):
             continue
         target_quantity = _bot_inventory_target_quantity(
             level=level,
@@ -1207,6 +1344,8 @@ def _maintain_active_profile(profile: BotProfile, *, now, config: dict[str, Any]
         rng=rng,
         config=config,
         archetype=str(profile.archetype),
+        growth_stage=target_building_level,
+        prestige=int(manor.prestige or 0),
         now=now,
     )
 

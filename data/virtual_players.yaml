@@ -30,21 +30,8 @@ resources:
   abandoned: [0.65, 0.95]
 
 projection:
-  guest_template_keys:
-    - hist_qinhan_0452
-    - hist_qinhan_0459
-    - hist_qinhan_0518
-  gear_template_keys:
-    - equip_tieyekui
-    - equip_housipao
-    - equip_gangpianxue
-    - equip_qingmangjian
-    - equip_yunwenkui
-    - equip_wujinjia
-    - equip_lingboxie
-    - equip_qixingjian
-    - equip_taotieding
-    - equip_wuzhuima
+  guest_template_keys: "__all__"
+  gear_template_keys: "__all__"
   gear_slots_by_archetype:
     balanced: 2
     rich: 2
@@ -74,24 +61,27 @@ projection:
     - comrade_command
   high_tier_skill_chance: 0.06
   high_tier_skills_per_guest: [1, 1]
-  troop_template_keys:
-    - dao_ke
-    - qiang_ke
-  item_template_keys:
-    - grain
-    - red_ruby
-  loot_item_template_keys:
-    - gold_bar
+  troop_template_keys: "__all__"
+  item_template_keys: "__all_tradeable__"
+  loot_item_template_keys: []
   loot_item_quantity: [1, 3]
-  technology_keys:
-    - dao_attack
-    - dao_defense
-    - qiang_attack
-    - qiang_defense
+  technology_keys: "__all__"
   loot_budget_daily: 2000000
   loot_limits:
     real_attacker_daily_resource_cap: 2000000
-  rare_item_daily_global_cap: 20
-  powerful_item_daily_global_cap: 5
+  rare_item_daily_global_cap: 8
+  powerful_item_daily_global_cap: 2
   powerful_item_min_price: 100000
+  powerful_item_min_growth_stage: 5
+  powerful_item_prestige_chance:
+    - min_prestige: 0
+      chance: 0.0
+    - min_prestige: 500
+      chance: 0.01
+    - min_prestige: 2000
+      chance: 0.03
+    - min_prestige: 8000
+      chance: 0.06
+    - min_prestige: 30000
+      chance: 0.12
   low_stage_powerful_item_chance: 0.03

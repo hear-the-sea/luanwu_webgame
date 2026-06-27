@@ -105,18 +105,12 @@ def test_virtual_player_default_skill_and_gear_keys_exist_in_source_configs():
     assert set(projection["extra_skill_keys"]) <= skill_keys
     assert set(projection["high_tier_skill_keys"]) <= skill_keys
 
-    item_templates = load_yaml_data(
-        Path("data/item_templates.yaml"),
-        logger=None,
-        context="item templates config",
-        default={},
-    )
-    equip_keys = {
-        row["key"]
-        for row in item_templates.get("items") or []
-        if str(row.get("effect_type") or "").startswith("equip_")
-    }
-    assert set(projection["gear_template_keys"]) <= equip_keys
+    assert projection["guest_template_keys"] == "__all__"
+    assert projection["gear_template_keys"] == "__all__"
+    assert projection["troop_template_keys"] == "__all__"
+    assert projection["technology_keys"] == "__all__"
+    assert projection["item_template_keys"] == "__all_tradeable__"
+    assert projection["powerful_item_min_growth_stage"] >= 1
 
 
 @override_settings(VIRTUAL_PLAYER_CONFIG={"enabled": False})

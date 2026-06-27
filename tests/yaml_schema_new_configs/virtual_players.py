@@ -16,8 +16,16 @@ def test_virtual_players_accepts_lifecycle_and_inventory_cap_fields():
             "stale_no_interaction_days": 30,
         },
         "projection": {
-            "item_template_keys": ["grain", "red_ruby"],
+            "guest_template_keys": "__all__",
+            "gear_template_keys": "__all__",
+            "troop_template_keys": "__all__",
+            "technology_keys": "__all__",
+            "item_template_keys": "__all_tradeable__",
             "loot_item_template_keys": ["gold_bar"],
+            "powerful_item_prestige_chance": [
+                {"min_prestige": 0, "chance": 0.0},
+                {"min_prestige": 30000, "chance": 0.5},
+            ],
             "high_tier_skill_keys": ["stratagem_burst"],
             "high_tier_skill_chance": 0.05,
             "high_tier_skills_per_guest": [1, 1],
@@ -26,6 +34,7 @@ def test_virtual_players_accepts_lifecycle_and_inventory_cap_fields():
             "rare_item_daily_global_cap": 20,
             "powerful_item_daily_global_cap": 5,
             "powerful_item_min_price": 100000,
+            "powerful_item_min_growth_stage": 5,
             "low_stage_powerful_item_chance": 0.03,
         },
     }
@@ -39,6 +48,8 @@ def test_virtual_players_rejects_negative_inventory_cap_fields():
             "rare_item_daily_global_cap": -1,
             "powerful_item_daily_global_cap": -1,
             "powerful_item_min_price": -1,
+            "powerful_item_min_growth_stage": -1,
+            "powerful_item_prestige_chance": "bad",
             "loot_limits": {"real_attacker_daily_resource_cap": -1},
         }
     }
@@ -50,6 +61,8 @@ def test_virtual_players_rejects_negative_inventory_cap_fields():
     assert any("rare_item_daily_global_cap" in message for message in messages)
     assert any("powerful_item_daily_global_cap" in message for message in messages)
     assert any("powerful_item_min_price" in message for message in messages)
+    assert any("powerful_item_min_growth_stage" in message for message in messages)
+    assert any("powerful_item_prestige_chance" in message for message in messages)
     assert any("real_attacker_daily_resource_cap" in message for message in messages)
 
 
@@ -65,6 +78,10 @@ def test_virtual_players_rejects_invalid_inventory_projection_fields():
             "rare_item_daily_global_cap": "20",
             "powerful_item_daily_global_cap": 1.5,
             "powerful_item_min_price": "100000",
+            "powerful_item_min_growth_stage": "5",
+            "powerful_item_prestige_chance": [
+                {"min_prestige": "bad", "chance": 1.2},
+            ],
             "low_stage_powerful_item_chance": 2,
             "loot_limits": {"real_attacker_daily_resource_cap": "1000000"},
         }
@@ -83,5 +100,7 @@ def test_virtual_players_rejects_invalid_inventory_projection_fields():
     assert any("rare_item_daily_global_cap" in message for message in messages)
     assert any("powerful_item_daily_global_cap" in message for message in messages)
     assert any("powerful_item_min_price" in message for message in messages)
+    assert any("powerful_item_min_growth_stage" in message for message in messages)
+    assert any("powerful_item_prestige_chance" in message for message in messages)
     assert any("low_stage_powerful_item_chance" in message for message in messages)
     assert any("real_attacker_daily_resource_cap" in message for message in messages)

@@ -521,6 +521,89 @@ def test_create_virtual_player_materializes_configured_item_equipment_templates(
 
 
 @pytest.mark.django_db
+def test_virtual_player_all_projection_pools_use_available_templates(settings):
+    from gameplay.models import BotProfile
+    from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
+
+    templates = _bootstrap_projection_templates()
+    GuestTemplate.objects.create(
+        key=_unique("bot_all_guest_tpl"),
+        name="虚拟玩家全量门客",
+        archetype=GuestArchetype.MILITARY,
+        rarity=GuestRarity.BLUE,
+        base_attack=160,
+        base_defense=150,
+        base_intellect=130,
+        base_agility=110,
+    )
+    second_gear = GearTemplate.objects.create(
+        key=_unique("bot_all_gear_tpl"),
+        name="虚拟玩家全量装备",
+        slot=GearSlot.ARMOR,
+        rarity=GuestRarity.BLUE,
+        defense_bonus=20,
+    )
+    second_troop = TroopTemplate.objects.create(
+        key=_unique("bot_all_troop_tpl"),
+        name="虚拟玩家全量护院",
+        default_count=80,
+    )
+    tradeable = ItemTemplate.objects.create(
+        key=_unique("bot_all_tradeable_item"),
+        name="虚拟玩家全量可交易物品",
+        rarity="green",
+        tradeable=True,
+        price=10,
+        storage_space=1,
+    )
+    bound = ItemTemplate.objects.create(
+        key=_unique("bot_all_bound_item"),
+        name="虚拟玩家全量绑定物品",
+        rarity="green",
+        tradeable=False,
+        price=10,
+        storage_space=1,
+    )
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "projection": {
+            "guest_template_keys": "__all__",
+            "gear_template_keys": "__all__",
+            "gear_slots_by_archetype": {"balanced": 2},
+            "troop_template_keys": "__all__",
+            "technology_keys": "__all__",
+            "item_template_keys": "__all_tradeable__",
+            "loot_item_quantity": [1, 1],
+            "inventory_quantity_multipliers": {"balanced": 1},
+        }
+    }
+
+    profile = create_virtual_player(
+        region="north",
+        prestige_band="junior",
+        archetype=BotProfile.Archetype.BALANCED,
+        growth_seed=8181,
+        projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=2, guest_level=4),
+    )
+    _run_due_bot_maintenance(profile, now=timezone.now(), growth_stage=3)
+
+    guest_keys = set(profile.manor.guests.values_list("template__key", flat=True))
+    assert len(guest_keys) == 1
+    assert "__all__" not in guest_keys
+    assert guest_keys <= set(GuestTemplate.objects.values_list("key", flat=True))
+    gear_keys = set(GearItem.objects.filter(manor=profile.manor).values_list("template__key", flat=True))
+    assert second_gear.key in gear_keys
+    assert "__all__" not in gear_keys
+    assert gear_keys <= set(GearTemplate.objects.values_list("key", flat=True))
+    troop_keys = set(profile.manor.troops.values_list("troop_template__key", flat=True))
+    assert {templates["troop_template"].key, second_troop.key} <= troop_keys
+    tech_keys = set(PlayerTechnology.objects.filter(manor=profile.manor).values_list("tech_key", flat=True))
+    assert {"dao_attack", "gong_recruit"} <= tech_keys
+    item_keys = set(InventoryItem.objects.filter(manor=profile.manor).values_list("template__key", flat=True))
+    assert tradeable.key in item_keys
+    assert bound.key not in item_keys
+
+
+@pytest.mark.django_db
 def test_create_virtual_player_backfills_historical_timestamps(settings):
     from gameplay.models import BotProfile
     from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
@@ -751,7 +834,9 @@ def test_virtual_player_rare_and_powerful_inventory_respects_daily_global_caps(s
             "rare_item_daily_global_cap": 1,
             "powerful_item_daily_global_cap": 1,
             "powerful_item_min_price": 100_000,
+            "powerful_item_min_growth_stage": 3,
             "low_stage_powerful_item_chance": 1.0,
+            "powerful_item_prestige_chance": [{"min_prestige": 0, "chance": 1.0}],
         }
     }
     now = timezone.now()
@@ -884,7 +969,9 @@ def test_virtual_player_inventory_daily_counter_caps_repeated_creates_in_one_tra
             "rare_item_daily_global_cap": 2,
             "powerful_item_daily_global_cap": 2,
             "powerful_item_min_price": 100_000,
+            "powerful_item_min_growth_stage": 3,
             "low_stage_powerful_item_chance": 1.0,
+            "powerful_item_prestige_chance": [{"min_prestige": 0, "chance": 1.0}],
         }
     }
     now = timezone.now()
@@ -949,8 +1036,10 @@ def test_due_virtual_player_maintenance_replenishes_inventory_by_growth_stage(se
             "loot_item_quantity": [2, 2],
             "inventory_quantity_multipliers": {"balanced": 1},
             "low_stage_powerful_item_chance": 1.0,
+            "powerful_item_min_growth_stage": 5,
             "powerful_item_daily_global_cap": 10,
             "powerful_item_min_price": 100_000,
+            "powerful_item_prestige_chance": [{"min_prestige": 0, "chance": 1.0}],
         }
     }
     now = timezone.now()
@@ -972,7 +1061,216 @@ def test_due_virtual_player_maintenance_replenishes_inventory_by_growth_stage(se
         for item in InventoryItem.objects.filter(manor=profile.manor).select_related("template")
     }
     assert stock[common.key] == 2
+    assert valuable.key not in stock
+
+    BotProfile.objects.filter(pk=profile.pk).update(next_growth_at=now - timedelta(minutes=1), growth_stage=5)
+    assert maintain_due_virtual_players(now=now, limit=10) == 1
+
+    stock = {
+        item.template.key: item.quantity
+        for item in InventoryItem.objects.filter(manor=profile.manor).select_related("template")
+    }
     assert stock[valuable.key] == 2
+
+
+@pytest.mark.django_db
+def test_high_value_inventory_projection_scales_by_bot_prestige(settings):
+    from gameplay.models import BotProfile
+    from gameplay.services.virtual_players import (
+        BotProjectionConfig,
+        create_virtual_player,
+        maintain_due_virtual_players,
+    )
+
+    _bootstrap_projection_templates()
+    common = ItemTemplate.objects.create(
+        key=_unique("bot_prestige_common"),
+        name="声望普通补给",
+        rarity="green",
+        tradeable=True,
+        price=100,
+        storage_space=1,
+    )
+    powerful = ItemTemplate.objects.create(
+        key=_unique("bot_prestige_powerful"),
+        name="声望高价值补给",
+        rarity="purple",
+        tradeable=True,
+        price=1_000_000,
+        storage_space=1,
+    )
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "item_template_keys": [common.key, powerful.key],
+            "loot_item_quantity": [1, 1],
+            "inventory_quantity_multipliers": {"balanced": 1},
+            "powerful_item_min_growth_stage": 5,
+            "powerful_item_min_price": 100_000,
+            "rare_item_daily_global_cap": 10,
+            "powerful_item_daily_global_cap": 10,
+            "low_stage_powerful_item_chance": 1.0,
+            "powerful_item_prestige_chance": [
+                {"min_prestige": 0, "chance": 0.0},
+                {"min_prestige": 30000, "chance": 1.0},
+            ],
+        }
+    }
+    now = timezone.now()
+    low = create_virtual_player(
+        region="north",
+        prestige_band="junior",
+        archetype=BotProfile.Archetype.BALANCED,
+        growth_seed=6160,
+        now=now - timedelta(days=1),
+        projection=BotProjectionConfig(prestige=1500, building_level=8, guest_count=0, guest_level=1),
+    )
+    high = create_virtual_player(
+        region="north",
+        prestige_band="veteran",
+        archetype=BotProfile.Archetype.BALANCED,
+        growth_seed=6161,
+        now=now - timedelta(days=1),
+        projection=BotProjectionConfig(prestige=40000, building_level=8, guest_count=0, guest_level=1),
+    )
+    low.manor.prestige = 1500
+    low.manor.save(update_fields=["prestige"])
+    high.manor.prestige = 40000
+    high.manor.save(update_fields=["prestige"])
+    InventoryItem.objects.filter(manor__in=[low.manor, high.manor]).delete()
+    BotProfile.objects.filter(pk__in=[low.pk, high.pk]).update(
+        next_growth_at=now - timedelta(minutes=1),
+        growth_stage=5,
+    )
+
+    assert maintain_due_virtual_players(now=now, limit=10) == 2
+
+    low_stock = set(InventoryItem.objects.filter(manor=low.manor).values_list("template__key", flat=True))
+    high_stock = set(InventoryItem.objects.filter(manor=high.manor).values_list("template__key", flat=True))
+    assert common.key in low_stock
+    assert powerful.key not in low_stock
+    assert common.key in high_stock
+    assert powerful.key in high_stock
+
+
+@pytest.mark.django_db
+def test_invalid_prestige_chance_config_does_not_open_high_value_inventory(settings):
+    from gameplay.models import BotProfile
+    from gameplay.services.virtual_players import (
+        BotProjectionConfig,
+        create_virtual_player,
+        maintain_due_virtual_players,
+    )
+
+    _bootstrap_projection_templates()
+    powerful = ItemTemplate.objects.create(
+        key=_unique("bot_invalid_prestige_powerful"),
+        name="异常配置高价值补给",
+        rarity="purple",
+        tradeable=True,
+        price=1_000_000,
+        storage_space=1,
+    )
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "item_template_keys": [powerful.key],
+            "loot_item_quantity": [1, 1],
+            "powerful_item_min_growth_stage": 5,
+            "powerful_item_min_price": 100_000,
+            "rare_item_daily_global_cap": 10,
+            "powerful_item_daily_global_cap": 10,
+            "powerful_item_prestige_chance": "bad",
+        }
+    }
+    now = timezone.now()
+    profile = create_virtual_player(
+        region="north",
+        prestige_band="veteran",
+        archetype=BotProfile.Archetype.BALANCED,
+        growth_seed=6170,
+        now=now - timedelta(days=1),
+        projection=BotProjectionConfig(prestige=40000, building_level=8, guest_count=0, guest_level=1),
+    )
+    profile.manor.prestige = 40000
+    profile.manor.save(update_fields=["prestige"])
+    InventoryItem.objects.filter(manor=profile.manor).delete()
+    BotProfile.objects.filter(pk=profile.pk).update(
+        next_growth_at=now - timedelta(minutes=1),
+        growth_stage=5,
+    )
+
+    assert maintain_due_virtual_players(now=now, limit=10) == 1
+
+    assert not InventoryItem.objects.filter(manor=profile.manor, template=powerful).exists()
+
+
+@pytest.mark.django_db
+def test_limited_rare_inventory_projection_samples_across_full_item_pool(settings):
+    from gameplay.models import BotProfile
+    from gameplay.services.virtual_players import (
+        BotProjectionConfig,
+        create_virtual_player,
+        maintain_due_virtual_players,
+    )
+
+    _bootstrap_projection_templates()
+    rare_items = [
+        ItemTemplate.objects.create(
+            key=_unique("bot_full_pool_rare"),
+            name=f"全量池稀有补给{idx}",
+            rarity="purple",
+            tradeable=True,
+            price=100,
+            storage_space=1,
+        )
+        for idx in range(6)
+    ]
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "item_template_keys": [item.key for item in rare_items],
+            "loot_item_quantity": [1, 1],
+            "inventory_quantity_multipliers": {"balanced": 1},
+            "rare_item_daily_global_cap": 2,
+            "powerful_item_min_growth_stage": 5,
+            "powerful_item_prestige_chance": [{"min_prestige": 0, "chance": 1.0}],
+        }
+    }
+    now = timezone.now()
+    profile = create_virtual_player(
+        region="north",
+        prestige_band="junior",
+        archetype=BotProfile.Archetype.BALANCED,
+        growth_seed=7000,
+        now=now - timedelta(days=1),
+        projection=BotProjectionConfig(prestige=1500, building_level=8, guest_count=0, guest_level=1),
+    )
+    InventoryItem.objects.filter(manor=profile.manor).delete()
+    BotProfile.objects.filter(pk=profile.pk).update(
+        next_growth_at=now - timedelta(minutes=1),
+        growth_stage=5,
+    )
+
+    assert maintain_due_virtual_players(now=now, limit=10) == 1
+
+    stocked_keys = list(
+        InventoryItem.objects.filter(manor=profile.manor)
+        .order_by("template__key")
+        .values_list("template__key", flat=True)
+    )
+    expected_keys = [item.key for item in rare_items]
+    seeded_order = sorted(expected_keys)
+    from random import Random
+
+    seeded_rng = Random(7005)
+    seeded_rng.uniform(0.25, 0.55)
+    seeded_rng.shuffle(seeded_order)
+    assert len(stocked_keys) == 2
+    assert stocked_keys == sorted(seeded_order[:2])
 
 
 def test_inventory_daily_cap_reservation_recovers_from_counter_create_race(monkeypatch):
@@ -1051,6 +1349,71 @@ def test_virtual_player_names_stay_unique_for_reused_growth_seed(settings):
         assert "行旅" not in manor_name
         assert "bot" not in manor_name.lower()
         assert not any(ch.isdigit() for ch in manor_name)
+
+
+@pytest.mark.django_db
+def test_virtual_player_name_generator_can_emit_internet_style_names():
+    from gameplay.services import virtual_players
+
+    expected = {
+        "坤哥亡命天涯",
+        "听到涛声",
+        "暴打派大星",
+        "摸鱼山庄",
+        "咸鱼小筑",
+    }
+    generated = {virtual_players._generate_bot_manor_name(growth_seed=seed) for seed in range(1, 80)}
+
+    assert generated & expected
+
+
+@pytest.mark.django_db
+def test_virtual_player_name_generator_prefers_internet_style_names():
+    from gameplay.services import virtual_players
+
+    internet_prefixes = {
+        "摸鱼",
+        "开摆",
+        "咸鱼",
+        "随缘",
+        "夜猫子",
+        "奶茶续命",
+        "快乐老家",
+        "人间清醒",
+        "低调发财",
+        "菜但爱玩",
+        "非酋",
+        "欧皇",
+        "一键收菜",
+        "余额不足",
+    }
+    internet_standalone = {
+        "坤哥亡命天涯",
+        "听到涛声",
+        "暴打派大星",
+        "今天也想躺平",
+        "打不过就跑",
+        "路过不要打我",
+        "先苟住再说",
+        "上号收个菜",
+        "差点就赢了",
+        "全靠同行衬托",
+        "别看我会输",
+        "不想加班",
+        "精神状态良好",
+        "好运加载中",
+        "这把随缘",
+        "风紧扯呼",
+    }
+
+    def is_internet_style(name: str) -> bool:
+        return name in internet_standalone or any(name.startswith(prefix) for prefix in internet_prefixes)
+
+    generated = [virtual_players._generate_bot_manor_name(growth_seed=seed) for seed in range(1, 201)]
+    internet_count = sum(1 for name in generated if is_internet_style(name))
+
+    assert internet_count >= 120
+    assert internet_count < len(generated)
 
 
 @pytest.mark.django_db

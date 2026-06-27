@@ -113,6 +113,14 @@ def validate_shop_items(
         if stock is not None:
             _check_type(stock, int, result=result, file=file, path=path, field_name="stock")
 
+        price = entry.get("price")
+        if price is not None:
+            _check_type(price, int, result=result, file=file, path=path, field_name="price")
+
+        buy_price = entry.get("buy_price")
+        if buy_price is not None:
+            _check_type(buy_price, int, result=result, file=file, path=path, field_name="buy_price")
+
         daily_refresh = entry.get("daily_refresh")
         if daily_refresh is not None:
             _check_type(daily_refresh, bool, result=result, file=file, path=path, field_name="daily_refresh")

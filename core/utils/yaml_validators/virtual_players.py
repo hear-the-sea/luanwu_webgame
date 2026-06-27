@@ -6,6 +6,8 @@ from typing import Any
 
 from .base import ValidationResult, _check_positive, _check_type
 
+_SELECTION_SENTINELS = {"__all__", "__all_tradeable__"}
+
 
 def _validate_int_range(
     value: Any,
@@ -59,12 +61,34 @@ def _validate_ratio(value: Any, *, result: ValidationResult, file: str, path: st
 
 
 def _validate_string_list(value: Any, *, result: ValidationResult, file: str, path: str, field_name: str) -> None:
+    if isinstance(value, str):
+        allowed_sentinels = {"__all__"}
+        if field_name in {"item_template_keys", "loot_item_template_keys"}:
+            allowed_sentinels = _SELECTION_SENTINELS
+        if value not in allowed_sentinels:
+            result.add(file, path, f"field '{field_name}' expected list or supported selector")
+        return
     if not isinstance(value, list):
         result.add(file, path, f"field '{field_name}' expected list, got {type(value).__name__}")
         return
     for idx, item in enumerate(value):
         if not isinstance(item, str):
             result.add(file, f"{path}.{field_name}[{idx}]", "expected string")
+
+
+def _validate_prestige_chance_table(value: Any, *, result: ValidationResult, file: str, path: str) -> None:
+    if not isinstance(value, list):
+        result.add(file, path, "powerful_item_prestige_chance expected a list of prestige chance entries")
+        return
+    for idx, row in enumerate(value):
+        row_path = f"{path}[{idx}]"
+        if not isinstance(row, dict):
+            result.add(file, row_path, "expected a mapping")
+            continue
+        min_prestige = row.get("min_prestige")
+        if not isinstance(min_prestige, int) or min_prestige < 0:
+            result.add(file, f"{row_path}.min_prestige", "expected a non-negative integer")
+        _validate_ratio(row.get("chance"), result=result, file=file, path=f"{row_path}.chance")
 
 
 def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") -> ValidationResult:
@@ -199,6 +223,13 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                     path="projection.loot_item_quantity",
                     min_value=0,
                 )
+            if "powerful_item_prestige_chance" in projection:
+                _validate_prestige_chance_table(
+                    projection["powerful_item_prestige_chance"],
+                    result=result,
+                    file=file,
+                    path="projection.powerful_item_prestige_chance",
+                )
             for mapping_name, value_type in (
                 ("gear_slots_by_archetype", int),
                 ("inventory_quantity_multipliers", (int, float)),
@@ -250,11 +281,16 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                 "rare_item_daily_global_cap",
                 "powerful_item_daily_global_cap",
                 "powerful_item_min_price",
+                "powerful_item_min_growth_stage",
             ):
                 value = projection.get(field_name)
                 if value is None:
                     continue
                 _check_type(value, int, result=result, file=file, path="projection", field_name=field_name)
-                _check_positive(value, result=result, file=file, path="projection", field_name=field_name)
+                if field_name == "powerful_item_min_growth_stage":
+                    if isinstance(value, int) and value < 0:
+                        result.add(file, "projection", f"field '{field_name}' must be >= 0")
+                else:
+                    _check_positive(value, result=result, file=file, path="projection", field_name=field_name)
 
     return result

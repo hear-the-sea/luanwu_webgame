@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import math
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any, List
@@ -27,6 +28,7 @@ class ShopItemConfig:
     price: int | None  # None 表示使用 ItemTemplate.price
     stock: int  # -1 表示无限
     daily_refresh: bool
+    buy_price: int | None = None  # None 表示使用 price 或 ItemTemplate.price
 
     @property
     def is_unlimited(self) -> bool:
@@ -85,6 +87,7 @@ def load_shop_config() -> List[ShopItemConfig]:
         config = ShopItemConfig(
             item_key=item_key,
             price=_coerce_optional_non_negative_int(item.get("price")),
+            buy_price=_coerce_optional_non_negative_int(item.get("buy_price")),
             stock=_coerce_stock(item.get("stock", -1)),
             daily_refresh=_coerce_bool(item.get("daily_refresh", False)),
         )
@@ -133,14 +136,33 @@ def get_base_price(item_key: str) -> int | None:
         return None
 
 
-def get_item_price(item_key: str) -> int | None:
+def get_buy_price(item_key: str) -> int | None:
     """
-    获取商品购买价格 = 基准价 * BUY_PRICE_MULTIPLIER
+    获取商品买入价格。
+    优先使用 YAML 配置的 buy_price；未配置时使用基准回收价乘以商铺买入倍率。
     """
+    config = get_shop_item_config(item_key)
+    if config and config.buy_price is not None:
+        return max(0, safe_int(config.buy_price, 0))
     base_price = get_base_price(item_key)
     if base_price is None:
         return None
-    return int(base_price * BUY_PRICE_MULTIPLIER)
+    return calculate_buy_price(base_price)
+
+
+def calculate_buy_price(base_price: Any) -> int | None:
+    """按商铺默认倍率计算买入价。"""
+    parsed = safe_int(base_price, default=-1)
+    if parsed < 0:
+        return None
+    return math.ceil(parsed * BUY_PRICE_MULTIPLIER)
+
+
+def get_item_price(item_key: str) -> int | None:
+    """
+    获取商品购买价格。
+    """
+    return get_buy_price(item_key)
 
 
 def get_sell_price(item_key: str) -> int:

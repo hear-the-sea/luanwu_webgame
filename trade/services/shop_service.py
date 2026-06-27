@@ -30,7 +30,12 @@ from gameplay.models.items import (
 from gameplay.services.resources import grant_resources_locked, spend_resources_locked
 from gameplay.utils.template_loader import get_item_templates_by_keys
 from trade.models import ShopPurchaseLog, ShopSellLog, ShopStock
-from trade.services.shop_config import get_sell_price_by_template, get_shop_config, get_shop_item_config
+from trade.services.shop_config import (
+    calculate_buy_price,
+    get_sell_price_by_template,
+    get_shop_config,
+    get_shop_item_config,
+)
 
 
 @dataclass
@@ -80,6 +85,15 @@ def _get_category(effect_type: Any) -> str:
     return get_item_effect_type_label(str(effect_type or "").strip())
 
 
+def _get_buy_price_from_config(config: Any, template: ItemTemplate) -> int | None:
+    config_buy_price = getattr(config, "buy_price", None)
+    if config_buy_price is not None:
+        return safe_non_negative_int(config_buy_price, 0)
+
+    base_price = config.price if config.price is not None else template.price
+    return calculate_buy_price(base_price)
+
+
 def get_shop_items_for_display() -> List[ShopItemDisplay]:
     """
     获取商铺商品列表（用于页面展示）
@@ -101,9 +115,7 @@ def get_shop_items_for_display() -> List[ShopItemDisplay]:
         if not template:
             continue
 
-        # 确定价格
-        raw_price = config.price if config.price is not None else template.price
-        price = safe_non_negative_int(raw_price, 0)
+        price = safe_non_negative_int(_get_buy_price_from_config(config, template), 0)
 
         # 确定库存
         if config.is_unlimited:
@@ -241,9 +253,7 @@ def buy_item(manor: Manor, item_key: str, quantity: int) -> Dict:
     except ItemTemplate.DoesNotExist:
         raise ItemNotFoundError("商品不存在")
 
-    # 确定价格
-    raw_unit_price = config.price if config.price is not None else template.price
-    unit_price = safe_int(raw_unit_price, -1)
+    unit_price = safe_int(_get_buy_price_from_config(config, template), -1)
     if unit_price < 0:
         raise ItemNotConfiguredError("商品价格配置异常")
     total_cost = unit_price * quantity

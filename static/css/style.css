@@ -111,11 +111,6 @@ a[x-apple-data-detectors]:active {
     box-shadow: none;
   }
 
-  .game-header {
-    height: 80px;
-    /* 缩小 Banner 高度 */
-  }
-
   .game-header .logo {
     font-size: 24px;
     left: 10px;
@@ -194,6 +189,19 @@ a[x-apple-data-detectors]:active {
   font-weight: bold;
   color: #8B0000;
   text-shadow: 2px 2px 0 #FFF8E7;
+}
+
+@media (max-width: 768px) {
+  .game-header {
+    height: auto;
+    aspect-ratio: 1774 / 178;
+    min-height: 36px;
+    max-height: 80px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    /* 移动端完整显示 Banner */
+  }
 }
 
 /* 导航栏 */

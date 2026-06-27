@@ -337,7 +337,7 @@ class TradeConfig:
     MAX_TOTAL_PRICE: int = 2000000000  # 最高总价20亿（防止整数溢出）
 
     # 商店
-    BUY_PRICE_MULTIPLIER: int = 2  # 购买价 = 基准价 * 2
+    BUY_PRICE_MULTIPLIER: float = 1.5  # 购买价 = 基准价 * 1.5
 
 
 # ============ 单例实例 ============

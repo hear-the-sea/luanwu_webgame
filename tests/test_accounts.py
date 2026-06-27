@@ -157,6 +157,20 @@ def test_register_view_handles_integrity_error_duplicate_manor_name_race(client,
     assert any("该庄园名称已被使用" in msg for msg in form.errors["manor_name"])
 
 
+@pytest.mark.django_db
+def test_register_page_uses_concise_hero_copy(client):
+    response = client.get(reverse("accounts:register"))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert "建立你的庄园势力" in content
+    assert "完成注册后将自动登录，开启你的春秋霸业吧~" in content
+    assert "新玩家招募" not in content
+    assert "初始赠送基础资源" not in content
+    assert "地区将影响地图首页默认显示范围" not in content
+    assert "后续可通过成长与策略拓展势力" not in content
+
+
 def _build_login_request(remote_addr: str = "127.0.0.1"):
     request = RequestFactory().post("/accounts/login/", data={"username": "u", "password": "x"})
     request.META["REMOTE_ADDR"] = remote_addr

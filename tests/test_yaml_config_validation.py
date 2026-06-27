@@ -31,55 +31,36 @@ def test_warehouse_production_item_keys_exist_in_item_templates():
     assert missing == []
 
 
-def test_shop_excludes_green_and_above_equipment():
+def test_shop_recruit_equipment_matches_troop_requirements():
     base_dir = Path(__file__).resolve().parents[1]
     shop_items = yaml.safe_load((base_dir / "data" / "shop_items.yaml").read_text(encoding="utf-8"))
-    item_templates = yaml.safe_load((base_dir / "data" / "item_templates.yaml").read_text(encoding="utf-8"))
-    templates_by_key = {entry["key"]: entry for entry in item_templates["items"]}
-    excluded_rarities = {"green", "blue", "purple", "orange", "red"}
+    troop_templates = yaml.safe_load((base_dir / "data" / "troop_templates.yaml").read_text(encoding="utf-8"))
 
-    disallowed = []
-    for entry in shop_items["items"]:
-        item_key = entry["item_key"]
-        template = templates_by_key.get(item_key)
-        if not template:
-            continue
-        if str(template.get("effect_type", "")).startswith("equip_") and template.get("rarity") in excluded_rarities:
-            disallowed.append(item_key)
+    recruit_equipment_keys = {
+        equipment_key
+        for troop in troop_templates["troops"]
+        for equipment_key in (troop.get("recruit") or {}).get("equipment") or []
+    }
+    shop_equipment_keys = {
+        entry["item_key"] for entry in shop_items["items"] if str(entry["item_key"]).startswith("equip_")
+    }
 
-    assert disallowed == []
+    assert shop_equipment_keys == recruit_equipment_keys
 
 
 def test_shop_items_match_expected_public_sale_catalog():
     base_dir = Path(__file__).resolve().parents[1]
     shop_items = yaml.safe_load((base_dir / "data" / "shop_items.yaml").read_text(encoding="utf-8"))
+    troop_templates = yaml.safe_load((base_dir / "data" / "troop_templates.yaml").read_text(encoding="utf-8"))
+
+    recruit_equipment_keys = {
+        equipment_key
+        for troop in troop_templates["troops"]
+        for equipment_key in (troop.get("recruit") or {}).get("equipment") or []
+    }
 
     expected_keys = [
         "grain",
-        "tong",
-        "xi",
-        "tie",
-        "wood_essence",
-        "copper_essence",
-        "iron_essence",
-        "xuan_tie_essence",
-        "fire_stone",
-        "water_stone",
-        "earth_stone",
-        "air_stone",
-        "zitanmu",
-        "heiyuanshi",
-        "jingangmei",
-        "tiemu",
-        "shuiqumu",
-        "paozi",
-        "zaozi",
-        "gaolu",
-        "ji",
-        "ya",
-        "e",
-        "zhu",
-        "niu",
         "zhixuesan",
         "jinchuangyao",
         "baijiwan",
@@ -87,82 +68,10 @@ def test_shop_items_match_expected_public_sale_catalog():
         "buxuedan",
         "dingxiangdan",
         "tianxiangyuluwan",
-        "experience_fruit",
-        "experience_peach",
-        "experience_pineapple",
-        "experience_watermelon",
-        "fangdajing",
-        "manor_rename_card",
-        "pubayi_guest_card",
-        "panfeng_guest_card",
-        "xingdaorong_guest_card",
         "zhuyingtai_guest_scroll",
         "liangshanbo_guest_scroll",
         "mawencai_guest_scroll",
-        "peerless_general_upgrade_token",
-        "peerless_general_upgrade_token_2",
-        "small_trumpet",
-        "peace_shield_small",
-        "peace_shield_medium",
-        "peace_shield_large",
-        "mission_card",
-        "guest_rebirth_card",
-        "xisuidan",
-        "xidianka",
-        "work_chest_small",
-        "book_dragon_roar",
-        "book_stratagem_burst",
-        "book_prison_break_blade",
-        "book_city_felling_strike",
-        "book_ice_curse",
-        "book_thunder_control",
-        "book_dragon_break_curse",
-        "book_endless_chatter",
-        "book_taiyi_wind",
-        "book_flower_rain",
-        "book_soul_erode",
-        "book_red_lotus_dance",
-        "book_fatal_chain_sword",
-        "book_meteor_pierce_moon",
-        "book_thunder_nine_heavens",
-        "book_tangseng_sermon",
-        "book_five_thunder_descent",
-        "book_brahma_true_fire",
-        "book_hell_instant_formation",
-        "book_steadfast_planning",
-        "book_iron_wall_heart",
-        "book_last_chance_revival",
-        "book_draw_enemy_blades",
-        "book_desperate_beast",
-        "book_bloodthirsty_fury",
-        "book_comrade_command",
-        "equip_caomao",
-        "equip_suoyi",
-        "equip_caoxie",
-        "equip_tiejian",
-        "equip_bumao",
-        "equip_niupimao",
-        "equip_zhubiankui",
-        "equip_bupao",
-        "equip_shengpijia",
-        "equip_cubujia",
-        "equip_buxie",
-        "equip_yangpixue",
-        "equip_mabuxue",
-        "equip_duanjian",
-        "equip_changjian",
-        "equip_duandao",
-        "equip_dakandao",
-        "equip_changqiang",
-        "equip_baoweiqiang",
-        "equip_changgong",
-        "equip_fanqugong",
-        "equip_changbian",
-        "equip_niupibian",
-        "equip_zaohongma",
-        "equip_huangbiaoma",
-        "equip_qingcongma",
-        "equip_xiaomaolv",
+        *sorted(recruit_equipment_keys),
     ]
 
     assert [entry["item_key"] for entry in shop_items["items"]] == expected_keys

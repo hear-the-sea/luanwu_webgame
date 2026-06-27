@@ -3,329 +3,179 @@
 # price: 售价（可选，不填则使用 ItemTemplate.price）
 # stock: 库存数量，-1 表示无限
 # daily_refresh: 是否每日刷新库存（可选，默认 false）
+#
+# 当前商店只售卖：粮食、药品、护院招募装备、门客合成卷轴。
 
 items:
   - item_key: grain
     stock: -1
     daily_refresh: true
-  - item_key: tong
-    stock: 1
-    daily_refresh: false
-  - item_key: xi
-    stock: 1
-    daily_refresh: false
-  - item_key: tie
-    stock: 1
-    daily_refresh: false
-  - item_key: wood_essence
-    stock: 1
-    daily_refresh: false
-  - item_key: copper_essence
-    stock: 1
-    daily_refresh: false
-  - item_key: iron_essence
-    stock: 1
-    daily_refresh: false
-  - item_key: xuan_tie_essence
-    stock: 1
-    daily_refresh: false
-  - item_key: fire_stone
-    stock: 1
-    daily_refresh: false
-  - item_key: water_stone
-    stock: 1
-    daily_refresh: false
-  - item_key: earth_stone
-    stock: 1
-    daily_refresh: false
-  - item_key: air_stone
-    stock: 1
-    daily_refresh: false
-  - item_key: zitanmu
-    stock: 1
-    daily_refresh: false
-  - item_key: heiyuanshi
-    stock: 1
-    daily_refresh: false
-  - item_key: jingangmei
-    stock: 1
-    daily_refresh: false
-  - item_key: tiemu
-    stock: 1
-    daily_refresh: false
-  - item_key: shuiqumu
-    stock: 1
-    daily_refresh: false
-  - item_key: paozi
-    stock: 1
-    daily_refresh: false
-  - item_key: zaozi
-    stock: 1
-    daily_refresh: false
-  - item_key: gaolu
-    stock: 1
-    daily_refresh: false
-  - item_key: ji
-    stock: 1
-    daily_refresh: false
-  - item_key: ya
-    stock: 1
-    daily_refresh: false
-  - item_key: e
-    stock: 1
-    daily_refresh: false
-  - item_key: zhu
-    stock: 1
-    daily_refresh: false
-  - item_key: niu
-    stock: 1
-    daily_refresh: false
+
+  # 药品
   - item_key: zhixuesan
-    stock: 1
-    daily_refresh: false
-  - item_key: jinchuangyao
-    stock: 1
-    daily_refresh: false
-  - item_key: baijiwan
-    stock: 1
-    daily_refresh: false
-  - item_key: baicaodan
-    stock: 1
-    daily_refresh: false
-  - item_key: buxuedan
-    stock: 1
-    daily_refresh: false
-  - item_key: dingxiangdan
-    stock: 1
-    daily_refresh: false
-  - item_key: tianxiangyuluwan
-    stock: 1
-    daily_refresh: false
-  - item_key: experience_fruit
-    stock: 1
-    daily_refresh: false
-  - item_key: experience_peach
-    stock: 1
-    daily_refresh: false
-  - item_key: experience_pineapple
-    stock: 1
-    daily_refresh: false
-  - item_key: experience_watermelon
-    stock: 1
-    daily_refresh: false
-  - item_key: fangdajing
     stock: -1
     daily_refresh: false
-  - item_key: manor_rename_card
-    stock: 1
+  - item_key: jinchuangyao
+    stock: -1
     daily_refresh: false
-  - item_key: pubayi_guest_card
-    stock: 1
+  - item_key: baijiwan
+    stock: -1
     daily_refresh: false
-  - item_key: panfeng_guest_card
-    stock: 1
+  - item_key: baicaodan
+    stock: -1
     daily_refresh: false
-  - item_key: xingdaorong_guest_card
-    stock: 1
+  - item_key: buxuedan
+    stock: -1
     daily_refresh: false
+  - item_key: dingxiangdan
+    stock: -1
+    daily_refresh: false
+  - item_key: tianxiangyuluwan
+    stock: -1
+    daily_refresh: false
+
+  # 门客合成卷轴
   - item_key: zhuyingtai_guest_scroll
-    stock: 1
+    stock: -1
     daily_refresh: false
   - item_key: liangshanbo_guest_scroll
-    stock: 1
+    stock: -1
     daily_refresh: false
   - item_key: mawencai_guest_scroll
-    stock: 1
+    stock: -1
     daily_refresh: false
-  - item_key: peerless_general_upgrade_token
-    stock: 1
-    daily_refresh: false
-  - item_key: peerless_general_upgrade_token_2
-    stock: 1
-    daily_refresh: false
-  - item_key: small_trumpet
-    stock: 1
-    daily_refresh: false
-  - item_key: peace_shield_small
-    stock: 1
-    daily_refresh: false
-  - item_key: peace_shield_medium
-    stock: 1
-    daily_refresh: false
-  - item_key: peace_shield_large
-    stock: 1
-    daily_refresh: false
-  - item_key: mission_card
-    stock: 1
-    daily_refresh: false
-  - item_key: guest_rebirth_card
-    stock: 1
-    daily_refresh: false
-  - item_key: xisuidan
-    stock: 1
-    daily_refresh: false
-  - item_key: xidianka
-    stock: 1
-    daily_refresh: false
-  - item_key: work_chest_small
-    stock: 1
-    daily_refresh: false
-  - item_key: book_dragon_roar
-    stock: 1
-    daily_refresh: false
-  - item_key: book_stratagem_burst
-    stock: 1
-    daily_refresh: false
-  - item_key: book_prison_break_blade
-    stock: 1
-    daily_refresh: false
-  - item_key: book_city_felling_strike
-    stock: 1
-    daily_refresh: false
-  - item_key: book_ice_curse
-    stock: 1
-    daily_refresh: false
-  - item_key: book_thunder_control
-    stock: 1
-    daily_refresh: false
-  - item_key: book_dragon_break_curse
-    stock: 1
-    daily_refresh: false
-  - item_key: book_endless_chatter
-    stock: 1
-    daily_refresh: false
-  - item_key: book_taiyi_wind
-    stock: 1
-    daily_refresh: false
-  - item_key: book_flower_rain
-    stock: 1
-    daily_refresh: false
-  - item_key: book_soul_erode
-    stock: 1
-    daily_refresh: false
-  - item_key: book_red_lotus_dance
-    stock: 1
-    daily_refresh: false
-  - item_key: book_fatal_chain_sword
-    stock: 1
-    daily_refresh: false
-  - item_key: book_meteor_pierce_moon
-    stock: 1
-    daily_refresh: false
-  - item_key: book_thunder_nine_heavens
-    stock: 1
-    daily_refresh: false
-  - item_key: book_tangseng_sermon
-    stock: 1
-    daily_refresh: false
-  - item_key: book_five_thunder_descent
-    stock: 1
-    daily_refresh: false
-  - item_key: book_brahma_true_fire
-    stock: 1
-    daily_refresh: false
-  - item_key: book_hell_instant_formation
-    stock: 1
-    daily_refresh: false
-  - item_key: book_steadfast_planning
-    stock: 1
-    daily_refresh: false
-  - item_key: book_iron_wall_heart
-    stock: 1
-    daily_refresh: false
-  - item_key: book_last_chance_revival
-    stock: 1
-    daily_refresh: false
-  - item_key: book_draw_enemy_blades
-    stock: 1
-    daily_refresh: false
-  - item_key: book_desperate_beast
-    stock: 1
-    daily_refresh: false
-  - item_key: book_bloodthirsty_fury
-    stock: 1
-    daily_refresh: false
-  - item_key: book_comrade_command
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_caomao
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_suoyi
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_caoxie
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_tiejian
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_bumao
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_niupimao
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_zhubiankui
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_bupao
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_shengpijia
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_cubujia
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_buxie
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_yangpixue
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_mabuxue
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_duanjian
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_changjian
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_duandao
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_dakandao
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_changqiang
-    stock: 1
+
+  # 护院招募装备
+  - item_key: equip_baihongkui
+    buy_price: 22500
+    stock: -1
     daily_refresh: false
   - item_key: equip_baoweiqiang
-    stock: 1
+    buy_price: 1875
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_bupao
+    buy_price: 375
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_buxie
+    buy_price: 375
+    stock: -1
     daily_refresh: false
   - item_key: equip_changgong
-    stock: 1
+    buy_price: 375
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_changjian
+    buy_price: 1875
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_changqiang
+    buy_price: 375
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_dakandao
+    buy_price: 1875
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_dawanma
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_duandao
+    buy_price: 375
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_duanjian
+    buy_price: 375
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_duanmajian
+    buy_price: 15000
+    stock: -1
     daily_refresh: false
   - item_key: equip_fanqugong
-    stock: 1
+    buy_price: 1875
+    stock: -1
     daily_refresh: false
-  - item_key: equip_changbian
-    stock: 1
+  - item_key: equip_gangpianxue
+    buy_price: 7500
+    stock: -1
     daily_refresh: false
-  - item_key: equip_niupibian
-    stock: 1
-    daily_refresh: false
-  - item_key: equip_zaohongma
-    stock: 1
+  - item_key: equip_housipao
+    buy_price: 7500
+    stock: -1
     daily_refresh: false
   - item_key: equip_huangbiaoma
-    stock: 1
+    stock: -1
     daily_refresh: false
-  - item_key: equip_qingcongma
-    stock: 1
+  - item_key: equip_hutoumao
+    buy_price: 7500
+    stock: -1
     daily_refresh: false
-  - item_key: equip_xiaomaolv
-    stock: 1
+  - item_key: equip_jicibian
+    buy_price: 7500
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_jingtiedao
+    buy_price: 15000
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_jiulonggangbian
+    buy_price: 15000
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_mingshejiebian
+    buy_price: 22500
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_niupibian
+    buy_price: 1875
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_pansheqiang
+    buy_price: 15000
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_qingmangjian
+    buy_price: 7500
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_shapijia
+    buy_price: 15000
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_shenbigong
+    buy_price: 15000
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_shengpijia
+    buy_price: 1875
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_tietaigong
+    buy_price: 7500
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_tieyekui
+    buy_price: 7500
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_tongchangdao
+    buy_price: 7500
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_yangpixue
+    buy_price: 1875
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_yanyuxue
+    buy_price: 15000
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_yulindin
+    buy_price: 15000
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_zaohongma
+    stock: -1
     daily_refresh: false

@@ -258,7 +258,7 @@ class TestRealConfigsPassValidation:
 
         assert tracked_skill_books <= item_keys
         assert tracked_book_skill_keys <= skill_keys
-        assert tracked_skill_books <= shop_item_keys
+        assert tracked_skill_books.isdisjoint(shop_item_keys)
         assert {
             "book_prison_break_blade",
             "book_city_felling_strike",
