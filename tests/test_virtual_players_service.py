@@ -12,8 +12,18 @@ from django.utils import timezone
 
 from battle.models import TroopTemplate
 from common.constants.resources import ResourceType
-from gameplay.constants import BuildingKeys
-from gameplay.models import Building, BuildingType, InventoryItem, ItemTemplate, Manor, PlayerTechnology
+from gameplay.constants import BuildingKeys, PVPConstants
+from gameplay.models import (
+    Building,
+    BuildingType,
+    InventoryItem,
+    ItemTemplate,
+    Manor,
+    PlayerTechnology,
+    PlayerTroop,
+    RaidRun,
+    ScoutRecord,
+)
 from gameplay.services.manor.core import calculate_building_capacity, ensure_manor
 from guests.models import (
     GearItem,
@@ -23,6 +33,7 @@ from guests.models import (
     GuestArchetype,
     GuestRarity,
     GuestSkill,
+    GuestStatus,
     GuestTemplate,
     Skill,
 )
@@ -86,6 +97,32 @@ def _bootstrap_projection_templates() -> dict[str, object]:
         default_count=120,
     )
     return {"guest_template": guest_template, "gear_template": gear_template, "troop_template": troop_template}
+
+
+def _create_real_manor_for_pvp(django_user_model, *, username: str, prestige: int = 500) -> Manor:
+    user = django_user_model.objects.create_user(username=_unique(username), password="pass123")
+    manor = ensure_manor(user)
+    manor.region = "north"
+    manor.coordinate_x = 20 + next(_COUNTER)
+    manor.coordinate_y = 30 + next(_COUNTER)
+    manor.prestige = prestige
+    manor.newbie_protection_until = None
+    manor.defeat_protection_until = None
+    manor.peace_shield_until = None
+    manor.last_active_at = timezone.now()
+    manor.save(
+        update_fields=[
+            "region",
+            "coordinate_x",
+            "coordinate_y",
+            "prestige",
+            "newbie_protection_until",
+            "defeat_protection_until",
+            "peace_shield_until",
+            "last_active_at",
+        ]
+    )
+    return manor
 
 
 def _run_due_bot_maintenance(profile, *, now, growth_stage: int = 1) -> None:
@@ -679,6 +716,101 @@ def test_virtual_players_are_searchable_but_excluded_from_real_rankings(settings
     ranking_context = get_ranking_with_player_context(real_manor, limit=10)
     assert ranking_context["total_players"] == 1
     assert ranking_context["player_rank"] == 1
+
+
+@pytest.mark.django_db(transaction=True)
+def test_real_player_can_scout_virtual_player_and_receive_normal_intel(settings, django_user_model, monkeypatch):
+    from gameplay.models import BotProfile
+    from gameplay.services.raid import scout as scout_service
+    from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
+
+    templates = _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "projection": {
+            "guest_template_keys": [templates["guest_template"].key],
+            "gear_template_keys": [],
+            "troop_template_keys": [templates["troop_template"].key],
+        }
+    }
+    attacker = _create_real_manor_for_pvp(django_user_model, username="bot_scout_attacker", prestige=500)
+    scout_template, _ = TroopTemplate.objects.get_or_create(
+        key=PVPConstants.SCOUT_TROOP_KEY,
+        defaults={"name": "探子"},
+    )
+    PlayerTroop.objects.update_or_create(manor=attacker, troop_template=scout_template, defaults={"count": 2})
+    bot_profile = create_virtual_player(
+        region="north",
+        prestige_band="newbie",
+        archetype=BotProfile.Archetype.GUARD,
+        growth_seed=8891,
+        projection=BotProjectionConfig(prestige=450, building_level=3, guest_count=1, guest_level=3),
+    )
+    bot_profile.manor.coordinate_x = 25
+    bot_profile.manor.coordinate_y = 35
+    bot_profile.manor.save(update_fields=["coordinate_x", "coordinate_y"])
+
+    monkeypatch.setattr(scout_service.scout_followups, "schedule_scout_completion", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        scout_service.scout_followups, "schedule_scout_return_completion", lambda *_args, **_kwargs: None
+    )
+    monkeypatch.setattr(scout_service, "_roll_scout_success", lambda: 0.0)
+
+    record = scout_service.start_scout(attacker, bot_profile.manor)
+    scout_service.finalize_scout(record, now=timezone.now())
+
+    record.refresh_from_db()
+    troop = PlayerTroop.objects.get(manor=attacker, troop_template=scout_template)
+    assert troop.count == 1
+    assert record.defender_id == bot_profile.manor_id
+    assert record.status == ScoutRecord.Status.RETURNING
+    assert record.is_success is True
+    assert record.intel_data["guest_count"] == 1
+    assert "troop_description" in record.intel_data
+    assert "asset_level" in record.intel_data
+    assert "bot" not in bot_profile.manor.display_name.lower()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_real_player_can_start_raid_against_virtual_player(settings, django_user_model, monkeypatch):
+    from gameplay.models import BotProfile
+    from gameplay.services.raid.combat import runs as combat_runs
+    from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
+
+    templates = _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "projection": {
+            "guest_template_keys": [templates["guest_template"].key],
+            "gear_template_keys": [],
+            "troop_template_keys": [templates["troop_template"].key],
+        }
+    }
+    attacker = _create_real_manor_for_pvp(django_user_model, username="bot_raid_attacker", prestige=500)
+    attacking_guest = Guest.objects.create(
+        manor=attacker,
+        template=templates["guest_template"],
+        level=5,
+        status=GuestStatus.IDLE,
+    )
+    bot_profile = create_virtual_player(
+        region="north",
+        prestige_band="newbie",
+        archetype=BotProfile.Archetype.GUARD,
+        growth_seed=8892,
+        projection=BotProjectionConfig(prestige=450, building_level=3, guest_count=1, guest_level=3),
+    )
+
+    monkeypatch.setattr(combat_runs, "_send_raid_incoming_message", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_runs, "_dispatch_raid_battle_task", lambda *_args, **_kwargs: None)
+
+    run = combat_runs.start_raid(attacker, bot_profile.manor, [attacking_guest.id], {})
+
+    attacking_guest.refresh_from_db()
+    attacker.refresh_from_db()
+    assert run.defender_id == bot_profile.manor_id
+    assert run.status == RaidRun.Status.MARCHING
+    assert run.guests.get().id == attacking_guest.id
+    assert attacking_guest.status == GuestStatus.DEPLOYED
+    assert attacker.action_points == 990
 
 
 @pytest.mark.django_db
