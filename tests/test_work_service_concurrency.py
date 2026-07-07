@@ -8,8 +8,15 @@ from django.db import connection
 from django.utils import timezone
 
 import gameplay.services.work as work_service
-from core.exceptions import WorkError, WorkLimitExceededError, WorkNotInProgressError, WorkRewardClaimedError
+from core.exceptions import (
+    ActionPointsInsufficientError,
+    WorkError,
+    WorkLimitExceededError,
+    WorkNotInProgressError,
+    WorkRewardClaimedError,
+)
 from gameplay.models import InventoryItem, ItemTemplate, WorkAssignment, WorkTemplate
+from gameplay.services.action_points import ACTION_POINT_EXPEDITION_COST
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.work import assign_guest_to_work, claim_work_reward, recall_guest_from_work
 from guests.models import Guest, GuestArchetype, GuestRarity, GuestStatus, GuestTemplate
@@ -346,6 +353,67 @@ def test_assign_guest_to_work_rejects_when_same_work_template_is_busy(django_use
 
     with pytest.raises(WorkError, match="当前已有门客在打工"):
         assign_guest_to_work(guest2, work_template)
+
+
+@pytest.mark.django_db
+def test_assign_guest_to_work_consumes_action_points(django_user_model):
+    user = django_user_model.objects.create_user(username="work_action_points_user", password="pass123")
+    manor = ensure_manor(user)
+    guest_template = GuestTemplate.objects.create(
+        key=f"work_action_points_tpl_{user.id}",
+        name="行动力打工模板",
+        archetype=GuestArchetype.CIVIL,
+        rarity=GuestRarity.GRAY,
+    )
+    guest = Guest.objects.create(manor=manor, template=guest_template, status=GuestStatus.IDLE)
+    work_template = WorkTemplate.objects.create(
+        key=f"work_action_points_work_{user.id}",
+        name="行动力打工",
+        reward_silver=80,
+        work_duration=60,
+        required_level=1,
+        required_force=0,
+        required_intellect=0,
+    )
+
+    assignment = assign_guest_to_work(guest, work_template)
+
+    manor.refresh_from_db()
+    assert assignment.status == WorkAssignment.Status.WORKING
+    assert manor.action_points == 1000 - ACTION_POINT_EXPEDITION_COST
+
+
+@pytest.mark.django_db
+def test_assign_guest_to_work_rejects_when_action_points_insufficient(django_user_model):
+    user = django_user_model.objects.create_user(username="work_no_action_points_user", password="pass123")
+    manor = ensure_manor(user)
+    manor.action_points = ACTION_POINT_EXPEDITION_COST - 1
+    manor.save(update_fields=["action_points"])
+    guest_template = GuestTemplate.objects.create(
+        key=f"work_no_action_points_tpl_{user.id}",
+        name="行动力不足打工模板",
+        archetype=GuestArchetype.CIVIL,
+        rarity=GuestRarity.GRAY,
+    )
+    guest = Guest.objects.create(manor=manor, template=guest_template, status=GuestStatus.IDLE)
+    work_template = WorkTemplate.objects.create(
+        key=f"work_no_action_points_work_{user.id}",
+        name="行动力不足打工",
+        reward_silver=80,
+        work_duration=60,
+        required_level=1,
+        required_force=0,
+        required_intellect=0,
+    )
+
+    with pytest.raises(ActionPointsInsufficientError, match="行动力不足"):
+        assign_guest_to_work(guest, work_template)
+
+    manor.refresh_from_db()
+    guest.refresh_from_db()
+    assert manor.action_points == ACTION_POINT_EXPEDITION_COST - 1
+    assert guest.status == GuestStatus.IDLE
+    assert WorkAssignment.objects.filter(manor=manor).exists() is False
 
 
 @pytest.mark.integration

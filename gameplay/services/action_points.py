@@ -9,7 +9,7 @@ from core.exceptions import ActionPointsInsufficientError
 
 ACTION_POINTS_MAX = 1000
 ACTION_POINT_EXPEDITION_COST = 10
-ACTION_POINT_RECOVERY_SECONDS = 120
+ACTION_POINT_RECOVERY_SECONDS = 60
 
 
 def _coerce_action_points(value: Any) -> int:

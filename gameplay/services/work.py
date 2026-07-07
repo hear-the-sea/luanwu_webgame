@@ -17,6 +17,7 @@ from core.exceptions import (
 )
 from core.utils.time_scale import scale_duration
 from gameplay.models import Manor, ResourceEvent, ResourceType, WorkAssignment, WorkTemplate
+from gameplay.services.action_points import consume_action_points_for_expedition
 from gameplay.services.inventory.core import add_item_to_inventory_locked
 from guests.models import Guest, GuestStatus
 
@@ -73,6 +74,8 @@ def assign_guest_to_work(guest: Guest, work_template: WorkTemplate) -> WorkAssig
 
         # 锁内再次检查要求，避免并发更新属性后绕过验证
         _ensure_guest_meets_work_requirements(guest, work_template)
+
+        consume_action_points_for_expedition(locked_manor)
 
         # 在事务内检查打工人数限制，防止并发超限
         current_working = WorkAssignment.objects.filter(

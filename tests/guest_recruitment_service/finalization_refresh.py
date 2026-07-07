@@ -9,6 +9,7 @@ import guests.services.recruitment as recruitment_command_service
 import guests.services.recruitment_guests as recruitment_guest_service
 from core.exceptions import RecruitmentItemOwnershipError
 from gameplay.models import InventoryItem, ItemTemplate
+from gameplay.services.action_points import ACTION_POINT_EXPEDITION_COST
 from gameplay.services.manor.core import ensure_manor
 from guests.models import (
     Guest,
@@ -19,6 +20,61 @@ from guests.models import (
     RecruitmentRecord,
     Skill,
 )
+
+
+@pytest.mark.django_db(transaction=True)
+def test_start_guest_recruitment_consumes_action_points(django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(
+        username="guest_recruit_action_points",
+        password="pass123",
+        email="guest_recruit_action_points@test.local",
+    )
+    manor = ensure_manor(user)
+    pool = RecruitmentPool.objects.create(
+        key="guest_recruit_action_points_pool",
+        name="行动力招募卡池",
+        cost={},
+        cooldown_seconds=60,
+        tier=RecruitmentPool.Tier.CUNMU,
+        draw_count=1,
+    )
+    monkeypatch.setattr(recruitment_command_service, "_schedule_guest_recruitment_completion", lambda *_args: None)
+
+    recruitment = recruitment_command_service.start_guest_recruitment(manor, pool, seed=123)
+
+    manor.refresh_from_db()
+    assert recruitment.status == GuestRecruitment.Status.PENDING
+    assert manor.action_points == 1000 - ACTION_POINT_EXPEDITION_COST
+
+
+@pytest.mark.django_db(transaction=True)
+def test_start_guest_recruitment_rejects_when_action_points_insufficient(django_user_model, monkeypatch):
+    from core.exceptions import ActionPointsInsufficientError
+
+    user = django_user_model.objects.create_user(
+        username="guest_recruit_no_action_points",
+        password="pass123",
+        email="guest_recruit_no_action_points@test.local",
+    )
+    manor = ensure_manor(user)
+    manor.action_points = ACTION_POINT_EXPEDITION_COST - 1
+    manor.save(update_fields=["action_points"])
+    pool = RecruitmentPool.objects.create(
+        key="guest_recruit_no_action_points_pool",
+        name="行动力不足招募卡池",
+        cost={},
+        cooldown_seconds=60,
+        tier=RecruitmentPool.Tier.CUNMU,
+        draw_count=1,
+    )
+    monkeypatch.setattr(recruitment_command_service, "_schedule_guest_recruitment_completion", lambda *_args: None)
+
+    with pytest.raises(ActionPointsInsufficientError, match="行动力不足"):
+        recruitment_command_service.start_guest_recruitment(manor, pool, seed=123)
+
+    manor.refresh_from_db()
+    assert manor.action_points == ACTION_POINT_EXPEDITION_COST - 1
+    assert GuestRecruitment.objects.filter(manor=manor, pool=pool).exists() is False
 
 
 @pytest.mark.django_db

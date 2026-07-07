@@ -19,6 +19,7 @@ from core.exceptions import InsufficientStockError, RecruitmentError, Recruitmen
 if TYPE_CHECKING:
     from gameplay.models import Manor
 
+from gameplay.services.action_points import consume_action_points_for_expedition
 from gameplay.services.inventory import core as inventory_core
 from gameplay.services.resources import spend_resources
 
@@ -223,6 +224,8 @@ def start_guest_recruitment(manor: Manor, pool: RecruitmentPool, seed: int | Non
     )
     duration_seconds = _recruitment_queries.get_pool_recruitment_duration_seconds(pool)
     cost = _recruitment_flow.resolve_recruitment_cost(pool)
+
+    consume_action_points_for_expedition(locked_manor)
 
     _recruitment_flow.spend_recruitment_cost_if_needed(
         manor=locked_manor,

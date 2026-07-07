@@ -235,6 +235,32 @@ def test_mission_launch_consumes_action_points(game_data, django_user_model, mon
 
 
 @pytest.mark.django_db(transaction=True)
+def test_defense_mission_launch_consumes_action_points(game_data, django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(username="player_defense_mission_action_points", password="pass12345")
+    manor = ensure_manor(user)
+    mission = MissionTemplate.objects.create(
+        key="defense_mission_action_points_case",
+        name="行动力防守任务",
+        is_defense=True,
+        base_travel_time=60,
+    )
+
+    monkeypatch.setattr(
+        "gameplay.services.missions_impl.mission_followups.try_prepare_launch_report",
+        lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.missions_impl.mission_followups.dispatch_complete_mission_task",
+        lambda *args, **kwargs: None,
+    )
+
+    launch_mission(manor, mission, [], {})
+
+    manor.refresh_from_db()
+    assert manor.action_points == 990
+
+
+@pytest.mark.django_db(transaction=True)
 def test_mission_launch_rejects_when_action_points_insufficient(game_data, django_user_model, monkeypatch):
     user = django_user_model.objects.create_user(username="player_mission_no_action_points", password="pass12345")
     manor = ensure_manor(user)
