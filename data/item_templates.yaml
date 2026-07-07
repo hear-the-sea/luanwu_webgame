@@ -99,6 +99,7 @@ items:
     price: 1000
     storage_space: 100
     is_usable: false
+    image: haorenka.png
 
 
   # ---------- 帮会资源补给包 ----------
@@ -112,6 +113,7 @@ items:
     price: 0
     storage_space: 1
     is_usable: true
+    image: resource_pack_silver.png
     effect_payload:
       silver: 5000
 
@@ -124,6 +126,7 @@ items:
     price: 0
     storage_space: 1
     is_usable: true
+    image: resource_pack_grain.png
     effect_payload:
       grain: 5000
 
@@ -136,6 +139,7 @@ items:
     price: 0
     storage_space: 1
     is_usable: true
+    image: resource_pack_mixed.png
     effect_payload:
       silver: 5000
       grain: 5000
@@ -149,6 +153,7 @@ items:
     price: 0
     storage_space: 1
     is_usable: true
+    image: resource_pack_advanced.png
     effect_payload:
       silver: 12000
       grain: 8000
@@ -426,6 +431,7 @@ items:
     storage_space: 1
     effect_payload:
       hp: 200
+    image: baijiwan.png
 
   - key: baicaodan
     name: 白草丹
@@ -437,6 +443,7 @@ items:
     storage_space: 1
     effect_payload:
       hp: 400
+    image: baicaodan.png
 
   - key: buxuedan
     name: 补血丹
@@ -447,6 +454,7 @@ items:
     rarity: black
     tradeable: true
     price: 500
+    image: buxuedan.png
 
   - key: dingxiangdan
     name: 丁香丹
@@ -458,6 +466,7 @@ items:
     storage_space: 2
     effect_payload:
       hp: 800
+    image: dingxiangdan.png
 
   - key: tianxiangyuluwan
     name: 天香玉露丸
@@ -469,6 +478,7 @@ items:
     storage_space: 2
     effect_payload:
       hp: 1500
+    image: tianxiangyuluwan.png
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                              经验道具
@@ -541,6 +551,7 @@ items:
     tradeable: true
     price: 5000
     is_usable: false
+    image: manor_rename_card.png
 
   # ---------- 铁匠铺图纸 ----------
 
@@ -553,6 +564,7 @@ items:
     price: 12000
     storage_space: 1
     is_usable: false
+    image: blueprint_xiaoweitoukie.png
 
   - key: blueprint_xiaoweikaijia
     name: 校尉铠甲图纸
@@ -563,6 +575,7 @@ items:
     price: 12000
     storage_space: 1
     is_usable: false
+    image: blueprint_xiaoweikaijia.png
 
   - key: blueprint_xiaoweichangxue
     name: 校尉长靴图纸
@@ -573,6 +586,7 @@ items:
     price: 12000
     storage_space: 1
     is_usable: false
+    image: blueprint_xiaoweichangxue.png
 
   - key: blueprint_xiaoweichangjian
     name: 校尉长剑图纸
@@ -583,6 +597,7 @@ items:
     price: 12000
     storage_space: 1
     is_usable: false
+    image: blueprint_xiaoweichangjian.png
 
   - key: blueprint_qinglongkui
     name: 青龙盔图纸
@@ -593,6 +608,7 @@ items:
     price: 12000
     storage_space: 1
     is_usable: false
+    image: blueprint_qinglongkui.png
 
   - key: blueprint_qinglongjia
     name: 青龙甲图纸
@@ -603,6 +619,7 @@ items:
     price: 12000
     storage_space: 1
     is_usable: false
+    image: blueprint_qinglongjia.png
 
   - key: blueprint_qinglongxue
     name: 青龙靴图纸
@@ -613,6 +630,7 @@ items:
     price: 12000
     storage_space: 1
     is_usable: false
+    image: blueprint_qinglongxue.png
 
   - key: blueprint_qinglongdao
     name: 青龙刀图纸
@@ -623,6 +641,7 @@ items:
     price: 12000
     storage_space: 1
     is_usable: false
+    image: blueprint_qinglongdao.png
 
   - key: blueprint_huxianpao
     name: 狐仙袍图纸
@@ -633,6 +652,7 @@ items:
     price: 28000
     storage_space: 1
     is_usable: false
+    image: blueprint_huxianpao.png
 
   - key: blueprint_huxianxie
     name: 狐仙鞋图纸
@@ -643,6 +663,7 @@ items:
     price: 28000
     storage_space: 1
     is_usable: false
+    image: blueprint_huxianxie.png
 
   - key: blueprint_huxianjian
     name: 狐仙剑图纸
@@ -653,6 +674,7 @@ items:
     price: 28000
     storage_space: 1
     is_usable: false
+    image: blueprint_huxianjian.png
 
   - key: blueprint_qilinkui
     name: 麒麟盔图纸
@@ -663,6 +685,7 @@ items:
     price: 32000
     storage_space: 1
     is_usable: false
+    image: blueprint_qilinkui.png
 
   - key: blueprint_qilinjia
     name: 麒麟甲图纸
@@ -673,6 +696,7 @@ items:
     price: 32000
     storage_space: 1
     is_usable: false
+    image: blueprint_qilinjia.png
 
   - key: blueprint_qilinxue
     name: 麒麟靴图纸
@@ -683,6 +707,7 @@ items:
     price: 32000
     storage_space: 1
     is_usable: false
+    image: blueprint_qilinxue.png
 
   - key: blueprint_qilindao
     name: 麒麟刀图纸
@@ -693,6 +718,7 @@ items:
     price: 32000
     storage_space: 1
     is_usable: false
+    image: blueprint_qilindao.png
 
   - key: blueprint_xuanwukui
     name: 玄武盔图纸
@@ -703,6 +729,7 @@ items:
     price: 32000
     storage_space: 1
     is_usable: false
+    image: blueprint_xuanwukui.png
 
   - key: blueprint_xuanwujia
     name: 玄武甲图纸
@@ -713,6 +740,7 @@ items:
     price: 32000
     storage_space: 1
     is_usable: false
+    image: blueprint_xuanwujia.png
 
   - key: blueprint_xuanwuxue
     name: 玄武靴图纸
@@ -723,6 +751,7 @@ items:
     price: 32000
     storage_space: 1
     is_usable: false
+    image: blueprint_xuanwuxue.png
 
   - key: blueprint_xuanwuchui
     name: 玄武锤图纸
@@ -733,6 +762,7 @@ items:
     price: 32000
     storage_space: 1
     is_usable: false
+    image: blueprint_xuanwuchui.png
 
   - key: blueprint_fenglingguan
     name: 凤翎冠图纸
@@ -743,6 +773,7 @@ items:
     price: 28000
     storage_space: 1
     is_usable: false
+    image: blueprint_fenglingguan.png
 
   - key: blueprint_fenglingshan
     name: 凤翎扇图纸
@@ -753,6 +784,7 @@ items:
     price: 28000
     storage_space: 1
     is_usable: false
+    image: blueprint_fenglingshan.png
 
   - key: blueprint_fenghuangyu
     name: 凤凰羽图纸
@@ -763,6 +795,7 @@ items:
     price: 28000
     storage_space: 1
     is_usable: false
+    image: blueprint_fenghuangyu.png
 
   - key: blueprint_xiaoxingjiguanshu
     name: 小型机关鼠图纸
@@ -773,6 +806,7 @@ items:
     price: 18000
     storage_space: 1
     is_usable: false
+    image: blueprint_xiaoxingjiguanshu.png
 
   - key: blueprint_tongchanjiguan
     name: 铜蝉机关图纸
@@ -783,6 +817,7 @@ items:
     price: 18000
     storage_space: 1
     is_usable: false
+    image: blueprint_tongchanjiguan.png
 
   - key: blueprint_jixiemao
     name: 机械猫图纸
@@ -793,6 +828,7 @@ items:
     price: 26000
     storage_space: 1
     is_usable: false
+    image: blueprint_jixiemao.png
 
   - key: blueprint_jiguanchuniao
     name: 机关雏鸟图纸
@@ -803,6 +839,7 @@ items:
     price: 26000
     storage_space: 1
     is_usable: false
+    image: blueprint_jiguanchuniao.png
 
   - key: blueprint_kuileimuren
     name: 傀儡木人图纸
@@ -813,6 +850,7 @@ items:
     price: 26000
     storage_space: 1
     is_usable: false
+    image: blueprint_kuileimuren.png
 
   - key: blueprint_qingji
     name: 庆忌图纸
@@ -823,6 +861,7 @@ items:
     price: 26000
     storage_space: 1
     is_usable: false
+    image: blueprint_qingji.png
 
   - key: blueprint_taotieding
     name: 饕餮鼎图纸
@@ -833,6 +872,7 @@ items:
     price: 42000
     storage_space: 1
     is_usable: false
+    image: blueprint_taotieding.png
 
   - key: blueprint_jiguanxiong
     name: 机关熊图纸
@@ -843,6 +883,7 @@ items:
     price: 42000
     storage_space: 1
     is_usable: false
+    image: blueprint_jiguanxiong.png
 
   - key: blueprint_muniuliuma
     name: 木牛流马图纸
@@ -853,6 +894,7 @@ items:
     price: 42000
     storage_space: 1
     is_usable: false
+    image: blueprint_muniuliuma.png
 
   - key: blueprint_kuileiren
     name: 傀儡人图纸
@@ -863,6 +905,7 @@ items:
     price: 42000
     storage_space: 1
     is_usable: false
+    image: blueprint_kuileiren.png
 
   - key: blueprint_xuanwujigui
     name: 玄武机龟图纸
@@ -873,6 +916,7 @@ items:
     price: 42000
     storage_space: 1
     is_usable: false
+    image: blueprint_xuanwujigui.png
 
   - key: blueprint_feiyuan
     name: 飞鸢图纸
@@ -913,6 +957,7 @@ items:
     price: 20000
     storage_space: 1
     is_usable: true
+    image: pubayi_guest_card.png
     effect_payload:
       action: summon_guest
       choices:
@@ -930,6 +975,7 @@ items:
     price: 20000
     storage_space: 1
     is_usable: true
+    image: panfeng_guest_card.png
     effect_payload:
       action: summon_guest
       exclusive_template_keys:
@@ -949,6 +995,7 @@ items:
     price: 20000
     storage_space: 1
     is_usable: true
+    image: xingdaorong_guest_card.png
     effect_payload:
       action: summon_guest
       exclusive_template_keys:
@@ -968,6 +1015,7 @@ items:
     price: 5000000
     storage_space: 1
     is_usable: true
+    image: zhuyingtai_guest_scroll.png
     effect_payload:
       action: summon_guest
       required_items:
@@ -987,6 +1035,7 @@ items:
     price: 3000000
     storage_space: 1
     is_usable: true
+    image: liangshanbo_guest_scroll.png
     effect_payload:
       action: summon_guest
       required_items:
@@ -1006,6 +1055,7 @@ items:
     price: 3000000
     storage_space: 1
     is_usable: true
+    image: edward_blue_guest_scroll.png
     effect_payload:
       action: summon_guest
       required_items:
@@ -1026,6 +1076,7 @@ items:
     price: 5000000
     storage_space: 1
     is_usable: true
+    image: edward_purple_guest_scroll.png
     effect_payload:
       action: summon_guest
       required_items:
@@ -1046,6 +1097,7 @@ items:
     price: 1500000
     storage_space: 1
     is_usable: true
+    image: mawencai_guest_scroll.png
     effect_payload:
       action: summon_guest
       required_items:
@@ -1065,6 +1117,7 @@ items:
     price: 50000
     storage_space: 1
     is_usable: true
+    image: peerless_general_upgrade_token.png
     effect_payload:
       action: upgrade_guest_rarity
       source_template_keys:
@@ -1083,6 +1136,7 @@ items:
     price: 200000
     storage_space: 1
     is_usable: true
+    image: peerless_general_upgrade_token_2.png
     effect_payload:
       action: upgrade_guest_rarity
       source_template_keys:
@@ -1101,6 +1155,7 @@ items:
     price: 100
     storage_space: 1
     is_usable: false
+    image: small_trumpet.png
 
   # ---------- 免战牌系列 ----------
 
@@ -1113,6 +1168,7 @@ items:
     price: 500
     storage_space: 1
     is_usable: true
+    image: peace_shield_small.png
     effect_payload:
       duration: 28800  # 8小时（秒）
 
@@ -1125,6 +1181,7 @@ items:
     price: 1500
     storage_space: 1
     is_usable: true
+    image: peace_shield_medium.png
     effect_payload:
       duration: 86400  # 24小时（秒）
 
@@ -1137,6 +1194,7 @@ items:
     price: 4000
     storage_space: 1
     is_usable: true
+    image: peace_shield_large.png
     effect_payload:
       duration: 259200  # 3天（秒）
 
@@ -1151,6 +1209,7 @@ items:
     price: 1000
     storage_space: 1
     is_usable: false  # 不在仓库直接使用，在任务详情页使用
+    image: mission_card.png
 
   # ---------- 门客重生卡 ----------
 
@@ -1163,6 +1222,7 @@ items:
     price: 50000
     storage_space: 1
     is_usable: true
+    image: guest_rebirth_card.png
     effect_payload:
       action: rebirth_guest
 
@@ -1177,6 +1237,7 @@ items:
     price: 200000
     storage_space: 1
     is_usable: true
+    image: xisuidan.png
     effect_payload:
       action: reroll_growth
 
@@ -1191,6 +1252,7 @@ items:
     price: 10000
     storage_space: 1
     is_usable: true
+    image: xidianka.png
     effect_payload:
       action: reset_allocation
 
@@ -1205,6 +1267,7 @@ items:
     price: 350000
     storage_space: 1
     is_usable: true
+    image: soul_container.png
     effect_payload:
       action: soul_fusion
       min_level: 30
@@ -1421,6 +1484,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_guard_box_basic.png
     effect_payload:
       gear_chance: 1
       gear_choices:
@@ -1450,6 +1514,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_guard_box_advanced.png
     effect_payload:
       gear_chance: 1
       gear_choices:
@@ -1479,6 +1544,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_guard_box_elite.png
     effect_payload:
       gear_chance: 1
       gear_choices:
@@ -1508,6 +1574,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_guard_box_refined.png
     effect_payload:
       gear_chance: 1
       gear_choices:
@@ -1537,6 +1604,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_guard_box_master.png
     effect_payload:
       gear_chance: 1
       gear_choices:
@@ -1566,6 +1634,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_skill_book_box_green.png
     effect_payload:
       skill_book_chance: 1
       skill_book_choices:
@@ -1591,6 +1660,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_skill_book_box_blue.png
     effect_payload:
       skill_book_chance: 1
       skill_book_choices:
@@ -1620,6 +1690,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_skill_book_box_purple.png
     effect_payload:
       skill_book_chance: 1
       skill_book_choices:
@@ -1651,6 +1722,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_skill_book_box_purple.png
     effect_payload:
       skill_book_chance: 1
       skill_book_choices:
@@ -1680,6 +1752,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_skill_book_box_purple.png
     effect_payload:
       skill_book_chance: 1
       skill_book_choices:
@@ -1711,6 +1784,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_gear_box_green.png
     effect_payload:
       gear_chance: 1
       gear_choices:
@@ -1740,6 +1814,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_gear_box_blue.png
     effect_payload:
       gear_chance: 1
       gear_choices:
@@ -1769,6 +1844,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_gear_box_purple.png
     effect_payload:
       gear_chance: 1
       gear_choices:
@@ -1796,6 +1872,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_gear_box_purple.png
     effect_payload:
       gear_chance: 1
       gear_choices:
@@ -1821,6 +1898,7 @@ items:
     price: 0
     storage_space: 5
     is_usable: true
+    image: guild_gear_box_purple.png
     effect_payload:
       gear_chance: 1
       gear_choices:
@@ -2174,6 +2252,7 @@ items:
     price: 0
     storage_space: 1
     is_usable: false
+    image: wanyin_flag_fragment.png
 
   - key: yuxu_broken_seal
     name: 玉虚碎印
@@ -2184,6 +2263,7 @@ items:
     price: 0
     storage_space: 1
     is_usable: false
+    image: yuxu_broken_seal.png
 
   - key: kasukabe_crayon
     name: 小新的蜡笔
@@ -2194,6 +2274,7 @@ items:
     price: 30000
     storage_space: 1
     is_usable: true
+    image: kasukabe_crayon.png
     effect_payload:
       action: summon_guest
       required_items:
@@ -2224,6 +2305,7 @@ items:
     tradeable: true
     price: 6000
     storage_space: 100
+    image: equip_action_mask.png
     effect_payload:
       hp: 300
       defense: 5
@@ -2249,6 +2331,7 @@ items:
     tradeable: true
     price: 5600
     storage_space: 100
+    image: equip_shiro_leash.png
     effect_payload:
       hp: 360
       defense: 15
@@ -2274,6 +2357,7 @@ items:
     tradeable: true
     price: 6200
     storage_space: 100
+    image: equip_kasukabe_satchel.png
     effect_payload:
       hp: 420
       defense: 20
@@ -2299,6 +2383,7 @@ items:
     tradeable: true
     price: 7000
     storage_space: 100
+    image: equip_action_beam_glove.png
     effect_payload:
       force: 40
       agility: 15
@@ -2322,6 +2407,7 @@ items:
     tradeable: true
     price: 6800
     storage_space: 100
+    image: equip_nohara_pan.png
     effect_payload:
       hp: 180
       defense: 18
@@ -3780,6 +3866,7 @@ items:
     tradeable: true
     price: 100
     storage_space: 100
+    image: duanjian.png
     effect_payload:
       hp: 100
       force: 10
@@ -3793,6 +3880,7 @@ items:
     tradeable: true
     price: 300
     storage_space: 100
+    image: changjian.png
     effect_payload:
       hp: 150
       defense: 2
@@ -3873,6 +3961,7 @@ items:
     tradeable: true
     price: 1500
     storage_space: 100
+    image: jingtiedao.png
     effect_payload:
       hp: 50
       force: 35
@@ -3889,6 +3978,7 @@ items:
     tradeable: true
     price: 100
     storage_space: 100
+    image: changqiang.png
     effect_payload:
       hp: 200
       defense: 1
@@ -3946,6 +4036,7 @@ items:
     tradeable: true
     price: 100
     storage_space: 100
+    image: changgong.png
     effect_payload:
       force: 15
       agility: 5
@@ -3958,6 +4049,7 @@ items:
     tradeable: true
     price: 300
     storage_space: 100
+    image: fanqugong.png
     effect_payload:
       force: 15
       agility: 8
@@ -3983,6 +4075,7 @@ items:
     tradeable: true
     price: 1500
     storage_space: 100
+    image: shenbigong.png
     effect_payload:
       force: 20
       agility: 15
@@ -3999,6 +4092,7 @@ items:
     tradeable: true
     price: 100
     storage_space: 100
+    image: changbian.png
     effect_payload:
       force: 12
       agility: 8
@@ -4011,6 +4105,7 @@ items:
     tradeable: true
     price: 300
     storage_space: 100
+    image: niupibian.png
     effect_payload:
       force: 10
       agility: 8
@@ -4024,6 +4119,7 @@ items:
     tradeable: true
     price: 800
     storage_space: 100
+    image: jicibian.png
     effect_payload:
       force: 15
       agility: 8
@@ -4037,6 +4133,7 @@ items:
     tradeable: true
     price: 1500
     storage_space: 100
+    image: jiulonggangbian.png
     effect_payload:
       force: 15
       agility: 10
@@ -4202,6 +4299,7 @@ items:
     tradeable: true
     price: 6000
     storage_space: 100
+    image: junzijian.png
     effect_payload:
       force: 25
       intellect: 35
@@ -4215,6 +4313,7 @@ items:
     tradeable: true
     price: 6000
     storage_space: 100
+    image: qinglongdao.png
     effect_payload:
       hp: 500
       force: 30
@@ -4236,6 +4335,7 @@ items:
     tradeable: true
     price: 6000
     storage_space: 100
+    image: pozhenqiang.png
     effect_payload:
       hp: 150
       force: 50
@@ -4249,6 +4349,7 @@ items:
     tradeable: true
     price: 6000
     storage_space: 100
+    image: chuanyungong.png
     effect_payload:
       force: 40
       agility: 18
@@ -4261,6 +4362,7 @@ items:
     tradeable: true
     price: 6000
     storage_space: 100
+    image: hanyuejian.png
     effect_payload:
       defense: 10
       force: 35
@@ -4412,6 +4514,7 @@ items:
     tradeable: true
     price: 16000
     storage_space: 100
+    image: fenglingshan.png
     effect_payload:
       force: 15
       intellect: 45
@@ -4484,6 +4587,7 @@ items:
     tradeable: true
     price: 16000
     storage_space: 100
+    image: pojunji.png
     effect_payload:
       hp: 214
       force: 50
@@ -4761,6 +4865,7 @@ items:
     tradeable: true
     price: 52000
     storage_space: 100
+    image: zhuxianjian.png
     effect_payload:
       hp: 530
       defense: 5
