@@ -30,6 +30,22 @@ def test_build_mysql_probe_uses_configured_database_endpoint():
     assert probe.timeout_seconds == 3
 
 
+def test_build_mysql_probe_defaults_to_compose_published_endpoint():
+    probe = preflight.build_mysql_probe({})
+
+    assert probe.endpoint == "127.0.0.1:13306"
+    assert probe.command == ["mysqladmin", "ping", "-h", "127.0.0.1", "-P", "13306", "-u", "webgame"]
+    assert probe.env_overrides == {"MYSQL_PWD": "webgame"}
+
+
+def test_build_redis_probe_defaults_to_compose_published_endpoint():
+    probe = preflight.build_redis_probe({})
+
+    assert probe.endpoint == "127.0.0.1:16379"
+    assert probe.command == ["redis-cli", "-h", "127.0.0.1", "-p", "16379", "-n", "2", "ping"]
+    assert probe.env_overrides == {}
+
+
 def test_build_redis_probe_uses_env_auth_without_password_in_command():
     probe = preflight.build_redis_probe(
         {

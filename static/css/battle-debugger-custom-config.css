@@ -1,0 +1,351 @@
+/* 自定义配置页面样式 */
+.debugger-container {
+    padding: 1.5rem;
+}
+
+.debugger-header {
+    margin-bottom: 1.5rem;
+}
+
+.debugger-header h1 {
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    border-bottom: 3px double var(--border-primary);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* 面包屑导航 */
+.breadcrumb {
+    display: flex;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+    font-size: 0.9rem;
+}
+
+.breadcrumb li {
+    color: var(--text-muted);
+}
+
+.breadcrumb li a {
+    color: var(--accent-gold);
+    text-decoration: none;
+}
+
+.breadcrumb li a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb li::after {
+    content: "›";
+    margin-left: 0.5rem;
+    color: var(--text-muted);
+}
+
+.breadcrumb li:last-child::after {
+    content: "";
+}
+
+/* 配置区块 */
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 992px) {
+    .config-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.config-section {
+    background: var(--bg-panel);
+    border: 2px solid var(--border-primary);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.config-section.attacker {
+    border-color: var(--accent-green);
+}
+
+.config-section.defender {
+    border-color: var(--accent-gold);
+}
+
+.config-section-header {
+    padding: 0.8rem 1rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.config-section.attacker .config-section-header {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: #FFF8E7;
+}
+
+.config-section.defender .config-section-header {
+    background: linear-gradient(135deg, var(--accent-gold), #B8860B);
+    color: var(--text-primary);
+}
+
+.config-section-body {
+    padding: 1rem;
+}
+
+/* 子部分标题 */
+.subsection {
+    margin-bottom: 1.5rem;
+}
+
+.subsection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.subsection-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+/* 门客卡片 */
+.unit-card {
+    background: var(--bg-card);
+    border: 2px solid var(--border-light);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.unit-card-header {
+    background: linear-gradient(180deg, #D4A574 0%, #C9985E 100%);
+    padding: 0.5rem 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.unit-card-header strong {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.unit-card-body {
+    padding: 1rem;
+}
+
+.btn-remove {
+    background: linear-gradient(180deg, #8B2500 0%, #6B1D00 100%);
+    border: 1px solid #5A1800;
+    color: #FFF8E7;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-remove:hover {
+    background: linear-gradient(180deg, #7A2000 0%, #5A1600 100%);
+}
+
+/* 表单网格 */
+.form-row {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+}
+
+.form-row.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.form-row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.form-row.cols-5 { grid-template-columns: repeat(5, 1fr); }
+
+@media (max-width: 768px) {
+    .form-row.cols-3, .form-row.cols-5 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select {
+    border: 2px solid var(--border-primary);
+    border-radius: 6px;
+    padding: 0.5rem;
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.2);
+}
+
+/* 复选框样式 */
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+.form-check label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* 技能选择 */
+.skill-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.skill-badge {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: 2px solid var(--border-light);
+    transition: all 0.2s;
+    font-weight: 600;
+}
+
+.skill-badge:hover {
+    border-color: var(--accent-gold);
+}
+
+.skill-badge.selected {
+    background: var(--accent-gold);
+    color: var(--text-primary);
+    border-color: var(--border-decorative);
+}
+
+/* 稀有度标签 */
+.rarity-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.rarity-white { background: #f8f9fa; color: #6c757d; }
+.rarity-green { background: #d4edda; color: #155724; }
+.rarity-blue { background: #d1ecf1; color: #0c5460; }
+.rarity-purple { background: #e2d9f3; color: #5a4b8c; }
+.rarity-orange { background: #ffe5cc; color: #cc5200; }
+.rarity-red { background: #f8d7da; color: #721c24; }
+
+/* 参数配置面板 */
+.params-panel {
+    background: var(--bg-panel);
+    border: 2px solid var(--border-primary);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.params-panel-header {
+    background: linear-gradient(135deg, #8B4513, #6B3410);
+    color: #FFF8E7;
+    padding: 0.8rem 1rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.params-panel-body {
+    padding: 1rem;
+}
+
+.params-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+/* 模拟设置面板 */
+.settings-panel {
+    background: var(--bg-card);
+    border: 2px solid var(--border-light);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    max-width: 400px;
+}
+
+.settings-panel h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 0.5rem;
+}
+
+/* 操作按钮 */
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.btn-add {
+    background: linear-gradient(180deg, #059669 0%, #047857 100%);
+    border: 2px solid #046854;
+    color: #FFF8E7;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-add:hover {
+    background: linear-gradient(180deg, #047857 0%, #035b46 100%);
+}
+
+.btn-add.warning {
+    background: linear-gradient(180deg, var(--accent-gold) 0%, #B8860B 100%);
+    border-color: var(--border-decorative);
+    color: var(--text-primary);
+}
+
+.btn-add.warning:hover {
+    background: linear-gradient(180deg, #B8860B 0%, #9a7209 100%);
+}

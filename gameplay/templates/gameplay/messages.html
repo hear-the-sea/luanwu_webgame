@@ -261,7 +261,12 @@
     </div>
 
     <div class="msg-card">
-        <form method="post" action="{% url 'gameplay:delete_messages' %}" id="message-form">
+        <form
+            method="post"
+            action="{% url 'gameplay:delete_messages' %}"
+            id="message-form"
+            data-mark-read-url="{% url 'gameplay:mark_messages_read' %}"
+        >
             {% csrf_token %}
             {% if message_list %}
             <div class="msg-table-wrapper">

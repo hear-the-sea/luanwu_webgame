@@ -54,6 +54,7 @@
     });
 
     const unreadCountElement = document.getElementById("unread-count");
+    const messageForm = document.getElementById("message-form");
     const messageLinks = document.querySelectorAll(".js-message-link");
     if (!messageLinks.length) {
       return;
@@ -95,14 +96,21 @@
       return event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
     };
 
-    const markMessageAsReadAsync = async (messageUrl, signal) => {
-      const response = await fetch(messageUrl, {
-        method: "GET",
+    const markMessageAsReadAsync = async (messageId, signal) => {
+      const markReadUrl = messageForm?.dataset.markReadUrl || "";
+      if (!markReadUrl || !messageId) {
+        return {};
+      }
+      const formData = new FormData();
+      formData.append("message_ids", messageId);
+      const response = await fetch(markReadUrl, {
+        method: "POST",
         headers: {
           Accept: "application/json",
           "X-Requested-With": "XMLHttpRequest",
           "X-CSRFToken": csrfToken,
         },
+        body: formData,
         credentials: "same-origin",
         signal,
       });
@@ -135,7 +143,7 @@
         const controller = new AbortController();
         const timeoutId = window.setTimeout(() => controller.abort(), 4000);
 
-        markMessageAsReadAsync(targetUrl, controller.signal)
+        markMessageAsReadAsync(link.dataset.messageId, controller.signal)
           .then((data) => {
             if (data && typeof data.unread_count === "number") {
               updateUnreadCount(data.unread_count);

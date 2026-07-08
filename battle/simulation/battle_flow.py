@@ -48,6 +48,8 @@ def _iter_phase_attackers(
     rng: random.Random,
     priority: int,
 ) -> list["Combatant"]:
+    # Negative priority phases are cumulative by design: a faster unit with
+    # priority -2 acts in both the -2 phase and the later -1 phase.
     return [actor for actor in determine_turn_order(attacker_team, defender_team, rng) if actor.priority <= priority]
 
 
@@ -251,7 +253,8 @@ def resolve_priority_phases(
         prepare_combatants_for_round(attacker_team, defender_team, next_round_no, promote_pending=True)
         for status_event in sync_arena_coop_combat_state(attacker_team, defender_team, next_round_no):
             _append_status_event(events, status_event)
-        for unit in alive(attacker_team) + alive(defender_team):
+        phase_units = alive(attacker_team) + alive(defender_team)
+        for unit in phase_units:
             passive_events: List[Dict[str, Any]] = []
             run_passives_for_timing(
                 "round_start",

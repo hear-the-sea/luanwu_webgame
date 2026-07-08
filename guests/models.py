@@ -382,6 +382,13 @@ class GuestRecruitment(models.Model):
             models.Index(fields=["manor", "status", "complete_at"], name="guest_recruit_msc_idx"),
             models.Index(fields=["status", "complete_at"], name="guest_recruit_sc_idx"),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["manor"],
+                condition=models.Q(status="pending"),
+                name="uniq_pending_guest_recruitment_per_manor",
+            ),
+        ]
 
     def __str__(self) -> str:
         pool_name = self.pool.name if self.pool_id and self.pool else "未知卡池"

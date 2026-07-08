@@ -86,10 +86,12 @@ make test
 真实服务门禁：
 
 ```bash
-DJANGO_TEST_USE_ENV_SERVICES=1 make test-real-services
+make test-real-services-up
+make test-real-services
+make test-real-services-down
 ```
 
-该命令现在会先预检 MySQL 与 Redis 可用性；若外部服务未启动，会在进入 pytest 前直接失败。
+`make test-real-services-up` 会在宿主机发布 MySQL `127.0.0.1:13306` 与 Redis `127.0.0.1:16379`，避开常见本机 3306/6379 服务。需要自定义端口时可传入 `REAL_SERVICES_MYSQL_PORT` / `REAL_SERVICES_REDIS_PORT`；测试目标会显式注入匹配的 Django DB 与 Redis 连接参数，避免误连本机默认服务。该命令现在会先预检 MySQL 与 Redis 可用性；若外部服务未启动，会在进入 pytest 前直接失败。
 
 固定验收流程：
 

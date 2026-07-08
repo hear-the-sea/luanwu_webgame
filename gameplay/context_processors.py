@@ -8,6 +8,7 @@ from django.db import DatabaseError
 
 import gameplay.selectors.sidebar as sidebar_selector
 import gameplay.selectors.stats as stats_selector
+from gameplay.services.action_points import ACTION_POINTS_MAX
 from gameplay.services.utils.messages import unread_message_count
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ def _build_default_context() -> dict[str, Any]:
         "online_user_count": 0,
         "total_user_count": 0,
         "header_protection_status": DEFAULT_PROTECTION_STATUS.copy(),
+        "sidebar_action_points_label": f"0/{ACTION_POINTS_MAX}",
     }
 
 
@@ -76,7 +78,9 @@ def _populate_authenticated_context(context: dict[str, Any], request) -> None:
         return
 
     context["sidebar_prestige"] = manor.prestige
-    context["sidebar_action_points"] = sidebar_selector.load_sidebar_action_points(manor)
+    sidebar_action_points = sidebar_selector.load_sidebar_action_points(manor)
+    context["sidebar_action_points"] = sidebar_action_points
+    context["sidebar_action_points_label"] = f"{sidebar_action_points}/{ACTION_POINTS_MAX}"
     context["sidebar_current_contribution_label"] = _resolve_sidebar_current_contribution_label(request)
 
     try:

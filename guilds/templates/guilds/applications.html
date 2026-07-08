@@ -34,7 +34,12 @@
                                     通过
                                 </button>
                             </form>
-                            <button type="button" class="tw-btn-secondary" onclick="showRejectModal({{ app.id }}, '{{ app.applicant.username }}')">
+                            <button
+                                type="button"
+                                class="tw-btn-secondary js-reject-application"
+                                data-reject-url="{% url 'guilds:reject_application' app.id %}"
+                                data-username="{{ app.applicant.username }}"
+                            >
                                 拒绝
                             </button>
                         </div>
@@ -90,11 +95,17 @@
     const rejectForm = document.getElementById('reject-form');
     const rejectTarget = document.getElementById('reject-target');
 
-    function showRejectModal(appId, username) {
-        rejectForm.action = `/guilds/applications/${appId}/reject/`;
+    function showRejectModal(rejectUrl, username) {
+        rejectForm.action = rejectUrl;
         rejectTarget.textContent = `确认拒绝 ${username} 的申请吗？`;
         rejectModal.style.display = 'flex';
     }
+
+    document.querySelectorAll('.js-reject-application').forEach((button) => {
+        button.addEventListener('click', () => {
+            showRejectModal(button.dataset.rejectUrl, button.dataset.username);
+        });
+    });
 
     function closeRejectModal() {
         rejectModal.style.display = 'none';

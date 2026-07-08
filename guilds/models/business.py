@@ -118,6 +118,13 @@ class GuildApplication(models.Model):
         indexes = [
             models.Index(fields=["guild", "status", "-created_at"], name="gapp_guild_sts_cr_idx"),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["guild", "applicant"],
+                condition=models.Q(status="pending"),
+                name="uniq_pending_guild_application",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.applicant.username} -> {self.guild.name} ({self.get_status_display()})"

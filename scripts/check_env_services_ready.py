@@ -8,6 +8,11 @@ from typing import Mapping
 from urllib.parse import urlparse
 
 DEFAULT_PROBE_TIMEOUT_SECONDS = 3
+DEFAULT_MYSQL_HOST = "127.0.0.1"
+DEFAULT_MYSQL_PORT = "13306"
+DEFAULT_MYSQL_USER = "webgame"
+DEFAULT_MYSQL_PASSWORD = "webgame"
+DEFAULT_REDIS_CACHE_URL = "redis://127.0.0.1:16379/2"
 
 
 @dataclass(frozen=True)
@@ -25,10 +30,10 @@ def _coerce_env(env: Mapping[str, str] | None) -> Mapping[str, str]:
 
 def build_mysql_probe(env: Mapping[str, str] | None = None) -> ServiceProbe:
     resolved_env = _coerce_env(env)
-    host = str(resolved_env.get("DJANGO_DB_HOST", "")).strip()
-    port = str(resolved_env.get("DJANGO_DB_PORT", "")).strip()
-    user = str(resolved_env.get("DJANGO_DB_USER", "")).strip()
-    password = str(resolved_env.get("DJANGO_DB_PASSWORD", ""))
+    host = str(resolved_env.get("DJANGO_DB_HOST", DEFAULT_MYSQL_HOST)).strip()
+    port = str(resolved_env.get("DJANGO_DB_PORT", DEFAULT_MYSQL_PORT)).strip()
+    user = str(resolved_env.get("DJANGO_DB_USER", DEFAULT_MYSQL_USER)).strip()
+    password = str(resolved_env.get("DJANGO_DB_PASSWORD", DEFAULT_MYSQL_PASSWORD))
 
     command = ["mysqladmin", "ping"]
     if host:
@@ -62,7 +67,7 @@ def build_mysql_probe(env: Mapping[str, str] | None = None) -> ServiceProbe:
 def build_redis_probe(env: Mapping[str, str] | None = None) -> ServiceProbe:
     resolved_env = _coerce_env(env)
     redis_url = str(
-        resolved_env.get("REDIS_CACHE_URL") or resolved_env.get("REDIS_URL") or "redis://127.0.0.1:6379/2"
+        resolved_env.get("REDIS_CACHE_URL") or resolved_env.get("REDIS_URL") or DEFAULT_REDIS_CACHE_URL
     ).strip()
     parsed = urlparse(redis_url)
     host = parsed.hostname or "127.0.0.1"
@@ -76,8 +81,9 @@ def build_redis_probe(env: Mapping[str, str] | None = None) -> ServiceProbe:
     command.append("ping")
 
     env_overrides: dict[str, str] = {}
-    if parsed.password:
-        env_overrides["REDISCLI_AUTH"] = parsed.password
+    redis_password = parsed.password or str(resolved_env.get("REDIS_PASSWORD", ""))
+    if redis_password:
+        env_overrides["REDISCLI_AUTH"] = redis_password
 
     return ServiceProbe(
         name="redis",
@@ -136,6 +142,8 @@ def format_real_service_start_hint() -> str:
         [
             "Start MySQL and Redis with `make test-real-services-up`, then run:",
             "  `DJANGO_TEST_USE_ENV_SERVICES=1 make test-real-services`",
+            "Defaults: MySQL 127.0.0.1:13306 (webgame/webgame), Redis 127.0.0.1:16379.",
+            "Override host ports with REAL_SERVICES_MYSQL_PORT / REAL_SERVICES_REDIS_PORT.",
             "When finished, stop the services with `make test-real-services-down`.",
         ]
     )

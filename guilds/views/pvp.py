@@ -38,7 +38,7 @@ def pvp_page(request: Any) -> HttpResponse:
 def refresh_pvp_activity_api(request: Any) -> JsonResponse:
     member = request.guild_member
     return run_refresh_api(
-        operation=lambda: guild_raid_service.refresh_due_guild_raids(
+        operation=lambda: guild_raid_service.process_due_guild_pvp_activity(
             member.guild,
             include_incoming_marching=True,
         ),

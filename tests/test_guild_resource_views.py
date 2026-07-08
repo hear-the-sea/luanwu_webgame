@@ -12,7 +12,7 @@ from core.exceptions import GuildWarehouseError
 from gameplay.models import InventoryItem, ItemTemplate, PlayerTroop
 from gameplay.services.manor.core import ensure_manor
 from guilds.constants import DAILY_DONATION_LIMITS
-from guilds.models import Guild, GuildMember, GuildTroopStorage, GuildWarehouse
+from guilds.models import Guild, GuildApplication, GuildMember, GuildTroopStorage, GuildWarehouse
 from guilds.services.warehouse import exchange_item
 
 
@@ -252,3 +252,28 @@ def test_donate_resource_post_redirects_back_to_guild_detail(guild_member_client
 
     assert response.status_code == 302
     assert response["Location"].endswith(reverse("guilds:detail", args=[guild.id]))
+
+
+@pytest.mark.django_db
+def test_donate_resource_rejects_get_before_rate_limit_side_effects(guild_member_client):
+    client, _guild, _member, _manor = guild_member_client
+
+    response = client.get(reverse("guilds:donate"))
+
+    assert response.status_code == 405
+
+
+@pytest.mark.django_db
+def test_application_list_uses_reversed_reject_url_instead_of_hardcoded_path(guild_member_client, django_user_model):
+    client, _guild, member, _manor = guild_member_client
+    member.position = "admin"
+    member.save(update_fields=["position"])
+    applicant = django_user_model.objects.create_user(username="resource_view_applicant", password="pass12345")
+    application = GuildApplication.objects.create(guild=member.guild, applicant=applicant, message="请收留")
+
+    response = client.get(reverse("guilds:applications"))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert reverse("guilds:reject_application", args=[application.id]) in body
+    assert f"/guilds/applications/{application.id}/reject/" not in body

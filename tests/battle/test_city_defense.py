@@ -4,6 +4,7 @@ import random
 from types import SimpleNamespace
 
 import pytest
+from django.db import DatabaseError
 from django.utils import timezone
 
 from battle.city_defense import (
@@ -18,6 +19,7 @@ from battle.city_defense import (
 )
 from battle.combatants_pkg.core import Combatant
 from battle.execution import BattleOptions, _finalize_battle_results
+from battle.models import BattleReport
 from battle.simulation.attack_execution import perform_attack
 from battle.simulation.battle_flow import simulate_battle
 from battle.simulation.damage_calculation import calculate_attack_damage
@@ -258,6 +260,117 @@ def test_arrow_tower_acts_first_in_standard_round_after_negative_priority_phase(
     assert attack_events[0]["priority"] == -1
     assert attack_events[1]["actor"] == "箭塔"
     assert attack_events[1]["priority"] == 0
+
+
+def test_higher_negative_priority_unit_keeps_acting_in_later_priority_phases():
+    fast = _unit("极速先锋", side="attacker", hp=5000, priority=-2)
+    normal = _unit("普通前锋", side="attacker", hp=5000, priority=-1)
+    defender = _unit("守方", side="defender", hp=20000)
+
+    result = simulate_battle(
+        [fast, normal],
+        [defender],
+        random.Random(1),
+        seed=1,
+        travel_seconds=0,
+        config={"max_rounds": 3},
+    )
+
+    priority_attacks = [
+        event
+        for round_data in result.rounds
+        if round_data.get("priority") in {-2, -1}
+        for event in round_data.get("events", [])
+        if event.get("actor") in {"极速先锋", "普通前锋"} and "damage" in event
+    ]
+
+    assert [(event["actor"], event["priority_phase"]) for event in priority_attacks] == [
+        ("极速先锋", -2),
+        ("极速先锋", -1),
+        ("普通前锋", -1),
+    ]
+
+
+def test_priority_phase_applies_round_start_passives_to_slow_targets_before_damage(monkeypatch):
+    fast_attacker = _unit("先攻方", side="attacker", attack=100, hp=1000, priority=-1)
+    slow_defender = _unit("慢速守方", side="defender", hp=1000, priority=0)
+    captured_target_modifiers: list[dict] = []
+
+    def _fake_run_passives_for_timing(timing, *, actor, event_sink, **_kwargs):
+        if timing == "round_start" and actor is slow_defender:
+            actor.battle_modifiers["round_start_guard"] = True
+            event_sink.append({"type": "passive", "actor": actor.name, "timing": timing})
+
+    def _fake_perform_attack(actor, attacker_team, defender_team, rng, round_priority=0):
+        del actor, attacker_team, rng, round_priority
+        captured_target_modifiers.append(dict(defender_team[0].battle_modifiers))
+        return {"actor": "先攻方", "target": "慢速守方", "damage": 1}
+
+    monkeypatch.setattr("battle.passives.run_passives_for_timing", _fake_run_passives_for_timing)
+    monkeypatch.setattr("battle.simulation.battle_flow.perform_attack", _fake_perform_attack)
+
+    simulate_battle(
+        [fast_attacker],
+        [slow_defender],
+        random.Random(1),
+        seed=1,
+        travel_seconds=0,
+        config={"max_rounds": 1},
+    )
+
+    assert captured_target_modifiers[0]["round_start_guard"] is True
+
+
+@pytest.mark.django_db
+def test_finalize_battle_results_rolls_back_rewards_when_later_settlement_fails(monkeypatch, django_user_model):
+    user = django_user_model.objects.create_user(username="battle_finalize_atomic", password="pass12345")
+    manor = ensure_manor(user)
+    manor.silver = 0
+    manor.save(update_fields=["silver"])
+
+    guest_template = SimpleNamespace(key="atomic_guest_tpl", name="结算测试门客")
+    guest = SimpleNamespace(
+        pk=None,
+        id=None,
+        template=guest_template,
+        custom_name="结算测试门客",
+        display_name="结算测试门客",
+        max_hp=100,
+        current_hp=100,
+    )
+    combatant = _unit("结算测试门客", side="attacker", hp=100)
+    simulation = SimpleNamespace(
+        drops={"silver": 100},
+        winner="attacker",
+        losses={"attacker": {}, "defender": {}},
+        rounds=[],
+        starts_at=timezone.now(),
+        completed_at=timezone.now(),
+        seed=123,
+    )
+
+    def _boom(*_args, **_kwargs):
+        raise DatabaseError("hp update failed")
+
+    monkeypatch.setattr("battle.execution.apply_guest_hp_updates", _boom)
+
+    with pytest.raises(DatabaseError, match="hp update failed"):
+        _finalize_battle_results(
+            manor,
+            simulation,
+            [guest],
+            [combatant],
+            [],
+            [],
+            {},
+            {},
+            BattleOptions(send_message=False),
+            "事务测试",
+        )
+
+    manor.refresh_from_db()
+    assert manor.silver == 0
+    assert BattleReport.objects.filter(manor=manor).count() == 0
 
 
 def test_wall_does_not_attack_in_full_battle():

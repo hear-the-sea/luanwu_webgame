@@ -1,6 +1,6 @@
 # Docker 部署运行手册
 
-> 最近校正：2026-05-02
+> 最近校正：2026-07-08
 
 本文档沉淀当前仓库在 WSL2 本地构建、导出镜像、传输到服务器、更新运行中容器与排查常见 Docker 发布问题的实操经验。
 
@@ -21,7 +21,21 @@
 - `redis` 使用 Redis 容器
 - `nginx` 负责静态资源与反向代理
 
+生产镜像内应用进程使用 UID/GID `10001:10001` 运行；`web` 容器在
+[`docker-compose.prod.yml`](/home/daniel/code/web_game_v5/docker-compose.prod.yml#L42)
+中启用了 `read_only: true`。因此 `DJANGO_COLLECTSTATIC=1` 依赖
+`./runtime/staticfiles:/app/staticfiles` 这个可写 volume，首次部署和由 root 创建
+runtime 目录后，都必须把 runtime 目录归属修正给 `10001:10001`。
+`worker`、`worker_battle`、`worker_timer`、`beat` 没有挂载 `/app/staticfiles`，
+生产 Compose 已对这些服务设置 `DJANGO_COLLECTSTATIC=0`，避免只读容器在启动时写静态目录。
+
 这意味着发布时通常只需要传输业务镜像；数据库和 Redis 由服务器上的 Compose 编排直接启动。
+
+内置的 Compose Nginx 只监听 `80:80`，不直接终止 TLS。生产默认
+`DJANGO_SECURE_SSL_REDIRECT=1` 时，必须把这套 Compose 部署在外层 TLS 终止代理或
+负载均衡之后，并确保外层代理传递 `X-Forwarded-Proto: https`。如果只是纯 HTTP 内网
+演练环境，需要在 `.env.docker` 中显式设置 `DJANGO_SECURE_SSL_REDIRECT=0`，不要修改生产
+示例默认值。
 
 ## 本地构建镜像
 
@@ -92,6 +106,7 @@ Loaded image: webgame:v1
 ```bash
 cd "/opt/web_game_v5"
 mkdir -p "runtime/media" "runtime/staticfiles" "runtime/celerybeat"
+chown -R "10001:10001" "runtime/staticfiles" "runtime/media" "runtime/celerybeat"
 cp ".env.docker.prod.example" ".env.docker"
 ```
 

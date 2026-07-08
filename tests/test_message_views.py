@@ -53,6 +53,54 @@ class TestMessageViews:
         assert "document.getElementById('delete-message-form')" not in body
         assert "gameDialog.danger('确认删除这条消息吗？'" not in body
 
+    def test_message_detail_get_does_not_mark_message_read(self, manor_with_user):
+        manor, client = manor_with_user
+        message = Message.objects.create(
+            manor=manor,
+            kind=Message.Kind.SYSTEM,
+            title="GET 不应标记已读",
+            body="测试详情内容",
+            is_read=False,
+        )
+
+        response = client.get(reverse("gameplay:view_message", kwargs={"pk": message.pk}))
+
+        assert response.status_code == 200
+        message.refresh_from_db()
+        assert message.is_read is False
+
+    def test_mark_messages_read_json_marks_selected_and_returns_unread_count(self, manor_with_user):
+        manor, client = manor_with_user
+        selected = Message.objects.create(
+            manor=manor,
+            kind=Message.Kind.SYSTEM,
+            title="AJAX 标记已读",
+            body="测试详情内容",
+            is_read=False,
+        )
+        Message.objects.create(
+            manor=manor,
+            kind=Message.Kind.SYSTEM,
+            title="仍保持未读",
+            body="测试详情内容",
+            is_read=False,
+        )
+
+        response = client.post(
+            reverse("gameplay:mark_messages_read"),
+            {"message_ids": [selected.pk]},
+            HTTP_ACCEPT="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["success"] is True
+        assert payload["message_ids"] == [selected.pk]
+        assert payload["unread_count"] == 1
+        selected.refresh_from_db()
+        assert selected.is_read is True
+
     def test_mark_all_read(self, manor_with_user):
         """标记全部已读"""
         manor, client = manor_with_user

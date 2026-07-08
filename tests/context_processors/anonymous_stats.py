@@ -36,6 +36,7 @@ def test_notifications_anonymous_tolerates_explicit_cache_and_redis_infrastructu
 
     context = notifications(request)
     assert context["message_unread_count"] == 0
+    assert context["sidebar_action_points_label"] == "0/1000"
     assert context["online_user_count"] >= 0
     assert context["total_user_count"] >= 0
 

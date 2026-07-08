@@ -425,13 +425,17 @@ def apply_to_guild(user, guild, message=""):
     if existing:
         raise GuildMembershipError("您已有待审批的申请")
 
-    # 创建申请
-    application = GuildApplication.objects.create(
-        guild=guild,
-        applicant=user,
-        message=message,
-        status="pending",
-    )
+    # 创建申请；数据库约束兜底处理并发重复 pending 申请。
+    try:
+        with transaction.atomic():
+            application = GuildApplication.objects.create(
+                guild=guild,
+                applicant=user,
+                message=message,
+                status="pending",
+            )
+    except IntegrityError:
+        raise GuildMembershipError("您已有待审批的申请")
 
     # 如果设置了自动接受，直接通过
     if guild.auto_accept:

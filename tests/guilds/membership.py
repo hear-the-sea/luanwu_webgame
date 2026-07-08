@@ -3,11 +3,12 @@ from __future__ import annotations
 import logging
 
 import pytest
-from django.db.utils import DatabaseError
+from django.db import transaction
+from django.db.utils import DatabaseError, IntegrityError
 from django.test import TestCase
 
 from core.exceptions import GuildMembershipError, GuildPermissionError, MessageError
-from guilds.models import Guild, GuildMember
+from guilds.models import Guild, GuildApplication, GuildMember
 from guilds.services import guild as guild_service
 from guilds.services import member as member_service
 from guilds.services import member_notifications
@@ -30,6 +31,29 @@ class TestGuildMembership:
         membership = GuildMember.objects.get(user=second_user, guild=guild)
         assert membership.is_active is True
         assert membership.position == "member"
+
+    def test_direct_orm_rejects_second_pending_application_for_same_guild_and_user(
+        self, user_with_gold_bars, second_user
+    ):
+        guild = guild_service.create_guild(user=user_with_gold_bars, name="唯一申请帮会", description="")
+        GuildApplication.objects.create(guild=guild, applicant=second_user, status="pending")
+
+        with pytest.raises(IntegrityError):
+            with transaction.atomic():
+                GuildApplication.objects.create(guild=guild, applicant=second_user, status="pending")
+
+    def test_apply_to_guild_maps_pending_application_integrity_conflict_to_business_error(
+        self, user_with_gold_bars, second_user, monkeypatch
+    ):
+        guild = guild_service.create_guild(user=user_with_gold_bars, name="竞态申请帮会", description="")
+
+        def _raise_integrity_error(**_kwargs):
+            raise IntegrityError("duplicate pending application")
+
+        monkeypatch.setattr(GuildApplication.objects, "create", _raise_integrity_error)
+
+        with pytest.raises(GuildMembershipError, match="您已有待审批的申请"):
+            member_service.apply_to_guild(second_user, guild, "请收留我")
 
     def test_approve_keeps_success_when_followup_notification_fails(
         self, user_with_gold_bars, second_user, monkeypatch

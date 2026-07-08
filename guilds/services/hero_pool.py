@@ -246,6 +246,7 @@ def add_lineup_entry(
         raise GuildValidationError("该门客池条目不存在")
     _assert_entry_valid_or_cleanup(entry=pool_entry, guild_id=locked_guild.id)
 
+    cleanup_invalid_hero_pool_entries_for_guild(guild_id=locked_guild.id, limit=200)
     lineup_rows = list(
         GuildBattleLineupEntry.objects.select_for_update().filter(guild=locked_guild).order_by("slot_index")
     )
@@ -432,7 +433,6 @@ def _build_filter_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
 def get_hero_pool_page_context(member: GuildMember) -> dict[str, Any]:
     now = timezone.now()
     guild_id = member.guild_id
-    cleanup_invalid_hero_pool_entries_for_guild(guild_id=guild_id, limit=200)
 
     active_entries = list(
         GuildHeroPoolEntry.objects.filter(guild_id=guild_id)
@@ -446,6 +446,11 @@ def get_hero_pool_page_context(member: GuildMember) -> dict[str, Any]:
     )
     lineup_entries = list(
         GuildBattleLineupEntry.objects.filter(guild_id=guild_id)
+        .filter(
+            pool_entry__owner_member__is_active=True,
+            pool_entry__owner_member__guild_id=guild_id,
+            pool_entry__source_guest__manor__user_id=F("pool_entry__owner_member__user_id"),
+        )
         .select_related("pool_entry__owner_member__user__manor", "pool_entry__source_guest__template")
         .order_by("slot_index")
     )

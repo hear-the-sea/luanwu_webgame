@@ -403,6 +403,12 @@ def test_refresh_guest_recruitments_only_processes_due_pending_records(django_us
         email="refresh_guest_recruitments_due_pending@test.local",
     )
     manor = ensure_manor(user)
+    future_user = django_user_model.objects.create_user(
+        username="refresh_guest_recruitments_future_pending",
+        password="pass123",
+        email="refresh_guest_recruitments_future_pending@test.local",
+    )
+    future_manor = ensure_manor(future_user)
     pool = RecruitmentPool.objects.create(
         key="refresh_guest_recruitments_pool",
         name="刷新招募测试卡池",
@@ -423,7 +429,7 @@ def test_refresh_guest_recruitments_only_processes_due_pending_records(django_us
         complete_at=now,
     )
     future_pending = GuestRecruitment.objects.create(
-        manor=manor,
+        manor=future_manor,
         pool=pool,
         cost={},
         draw_count=1,

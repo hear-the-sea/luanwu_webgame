@@ -172,7 +172,7 @@ Celery 配置位于 [`config/settings/celery_conf.py`](/home/daniel/code/web_gam
 | 门禁 | 命令 | 覆盖重点 |
 |------|------|----------|
 | Hermetic rapid gate | `make test` / `make test-unit` | 快速反馈；SQLite、LocMem、InMemory channel layer、memory Celery |
-| Real external-service gate | `DJANGO_TEST_USE_ENV_SERVICES=1 make test-real-services` | MySQL 行锁、Redis 语义、真实 Channels / Celery |
+| Real external-service gate | `make test-real-services-up && make test-real-services` | MySQL 行锁、Redis 语义、真实 Channels / Celery；默认宿主机端口为 MySQL `13306`、Redis `16379`，可用 `REAL_SERVICES_MYSQL_PORT` / `REAL_SERVICES_REDIS_PORT` 覆盖 |
 
 补充入口：
 

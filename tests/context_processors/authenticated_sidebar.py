@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from django.db import DatabaseError
 from django.test import RequestFactory
@@ -67,6 +69,14 @@ def test_notifications_home_page_includes_sidebar_action_points(monkeypatch, dja
     context = notifications(request)
 
     assert context["sidebar_action_points"] == 977
+    assert context["sidebar_action_points_label"] == "977/1000"
+
+
+def test_home_sidebar_template_does_not_hardcode_action_points_fallback():
+    template = Path("templates/base.html").read_text(encoding="utf-8")
+
+    assert "sidebar_action_points|default:1000" not in template
+    assert "{{ sidebar_action_points_label }}" in template
 
 
 def test_notifications_authenticated_partial_sidebar_failures_do_not_hide_other_sections(
@@ -102,6 +112,7 @@ def test_notifications_authenticated_partial_sidebar_failures_do_not_hide_other_
 
     context = notifications(request)
     assert context["message_unread_count"] == 0
+    assert context["sidebar_action_points_label"] == "1000/1000"
     assert context["header_protection_status"] == {
         "is_protected": True,
         "type_display": "护盾",

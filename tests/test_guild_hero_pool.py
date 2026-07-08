@@ -167,6 +167,39 @@ def test_lineup_has_capacity_limit(django_user_model, monkeypatch):
 
 
 @pytest.mark.django_db
+def test_lineup_capacity_ignores_and_cleans_invalid_lineup_rows(django_user_model, monkeypatch):
+    monkeypatch.setattr("guilds.constants.GUILD_BATTLE_LINEUP_LIMIT", 1)
+
+    leader, leader_manor = _create_user_with_manor(django_user_model, "ghp_leader_dirty_lineup")
+    guild = Guild.objects.create(name="门客池脏出战帮", founder=leader)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    other_guild = Guild.objects.create(name="门客池迁出帮", founder=leader)
+
+    moved_user, moved_manor = _create_user_with_manor(django_user_model, "ghp_dirty_lineup_moved")
+    moved_member = GuildMember.objects.create(guild=guild, user=moved_user, position="member")
+    template = _create_template("ghp_tpl_dirty_lineup")
+    stale_guest = _create_guest(manor=moved_manor, template=template, name="脏出战门客")
+    stale_entry = hero_pool_service.submit_hero_pool_entry(moved_member, guest_id=stale_guest.id, slot_index=1).entry
+    stale_lineup = GuildBattleLineupEntry.objects.create(
+        guild=guild,
+        pool_entry=stale_entry,
+        slot_index=1,
+        selected_by=leader,
+    )
+
+    moved_member.guild = other_guild
+    moved_member.save(update_fields=["guild"])
+
+    valid_guest = _create_guest(manor=leader_manor, template=template, name="有效出战门客")
+    valid_entry = hero_pool_service.submit_hero_pool_entry(leader_member, guest_id=valid_guest.id, slot_index=1).entry
+
+    result = hero_pool_service.add_lineup_entry(guild=guild, operator=leader, pool_entry_id=valid_entry.id)
+
+    assert result.lineup_entry.pool_entry_id == valid_entry.id
+    assert not GuildBattleLineupEntry.objects.filter(pk=stale_lineup.pk).exists()
+
+
+@pytest.mark.django_db
 def test_lineup_limit_uses_guild_lineup_capacity_tech(django_user_model, monkeypatch):
     from guilds.models import GuildTechnology
 
@@ -266,7 +299,7 @@ def test_leave_or_kick_invalidates_member_hero_pool(django_user_model):
 
 
 @pytest.mark.django_db
-def test_page_context_cleans_cross_guild_inconsistent_entries(django_user_model):
+def test_page_context_filters_cross_guild_inconsistent_entries_without_deleting(django_user_model):
     leader_a, _ = _create_user_with_manor(django_user_model, "ghp_leader_a")
     leader_b, _ = _create_user_with_manor(django_user_model, "ghp_leader_b")
     guild_a = Guild.objects.create(name="门客池A帮", founder=leader_a)
@@ -290,6 +323,11 @@ def test_page_context_cleans_cross_guild_inconsistent_entries(django_user_model)
     context = hero_pool_service.get_hero_pool_page_context(leader_member_a)
 
     assert context["pool_rows"] == []
+    assert GuildHeroPoolEntry.objects.filter(pk=entry.pk).exists()
+
+    deleted_count = hero_pool_service.cleanup_invalid_hero_pool_entries_for_guild(guild_id=guild_a.id)
+
+    assert deleted_count == 1
     assert not GuildHeroPoolEntry.objects.filter(pk=entry.pk).exists()
 
 

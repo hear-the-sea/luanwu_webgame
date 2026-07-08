@@ -4,6 +4,7 @@ import random
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List
 
+from django.db import transaction
 from django.utils import timezone
 
 from core.exceptions import BattlePreparationError
@@ -303,58 +304,59 @@ def _finalize_battle_results(
     options: BattleOptions,
     opponent_label: str,
 ) -> BattleReport:
-    grant_battle_rewards(
-        manor,
-        simulation.drops,
-        opponent_label,
-        auto_reward=options.auto_reward,
-        drop_handler=options.drop_handler,
-    )
-
-    if simulation.winner == "attacker":
-        grant_battle_victory_loyalty(guests)
-    elif simulation.winner == "defender" and options.defender_guests is not None:
-        grant_battle_victory_loyalty(options.defender_guests)
-
-    hp_updates = apply_guest_hp_updates(guests, attacker_guests_comb, apply_damage=options.apply_damage)
-    simulation.losses["attacker"]["hp_updates"] = hp_updates
-
-    if options.defender_guests is not None:
-        defender_hp_updates = apply_guest_hp_updates(
-            options.defender_guests,
-            defender_guests_comb,
-            apply_damage=options.apply_damage,
+    with transaction.atomic():
+        grant_battle_rewards(
+            manor,
+            simulation.drops,
+            opponent_label,
+            auto_reward=options.auto_reward,
+            drop_handler=options.drop_handler,
         )
-        simulation.losses["defender"]["hp_updates"] = defender_hp_updates
 
-    defender_city_defense_rows = serialize_city_defenses_for_report(defender_city_defenses)
-    if options.apply_damage and options.defender_manor is not None:
-        from gameplay.services.city_defense import apply_city_defense_battle_damage
+        if simulation.winner == "attacker":
+            grant_battle_victory_loyalty(guests)
+        elif simulation.winner == "defender" and options.defender_guests is not None:
+            grant_battle_victory_loyalty(options.defender_guests)
 
-        apply_city_defense_battle_damage(options.defender_manor, defender_city_defense_rows)
+        hp_updates = apply_guest_hp_updates(guests, attacker_guests_comb, apply_damage=options.apply_damage)
+        simulation.losses["attacker"]["hp_updates"] = hp_updates
 
-    report = BattleReport.objects.create(
-        manor=manor,
-        opponent_name=opponent_label,
-        battle_type=options.battle_type,
-        attacker_team=[serialize_guest_for_report(c) for c in attacker_guests_comb],
-        attacker_troops=normalized_loadout,
-        attacker_city_defenses=[],
-        defender_team=[serialize_guest_for_report(c) for c in defender_guests_comb],
-        defender_troops=defender_loadout,
-        defender_city_defenses=defender_city_defense_rows,
-        rounds=simulation.rounds,
-        losses=simulation.losses,
-        drops=simulation.drops,
-        winner=simulation.winner,
-        starts_at=simulation.starts_at,
-        completed_at=simulation.completed_at,
-        seed=simulation.seed,
-    )
+        if options.defender_guests is not None:
+            defender_hp_updates = apply_guest_hp_updates(
+                options.defender_guests,
+                defender_guests_comb,
+                apply_damage=options.apply_damage,
+            )
+            simulation.losses["defender"]["hp_updates"] = defender_hp_updates
 
-    if options.send_message:
-        dispatch_battle_message(manor, opponent_label, report)
-    return report
+        defender_city_defense_rows = serialize_city_defenses_for_report(defender_city_defenses)
+        if options.apply_damage and options.defender_manor is not None:
+            from gameplay.services.city_defense import apply_city_defense_battle_damage
+
+            apply_city_defense_battle_damage(options.defender_manor, defender_city_defense_rows)
+
+        report = BattleReport.objects.create(
+            manor=manor,
+            opponent_name=opponent_label,
+            battle_type=options.battle_type,
+            attacker_team=[serialize_guest_for_report(c) for c in attacker_guests_comb],
+            attacker_troops=normalized_loadout,
+            attacker_city_defenses=[],
+            defender_team=[serialize_guest_for_report(c) for c in defender_guests_comb],
+            defender_troops=defender_loadout,
+            defender_city_defenses=defender_city_defense_rows,
+            rounds=simulation.rounds,
+            losses=simulation.losses,
+            drops=simulation.drops,
+            winner=simulation.winner,
+            starts_at=simulation.starts_at,
+            completed_at=simulation.completed_at,
+            seed=simulation.seed,
+        )
+
+        if options.send_message:
+            transaction.on_commit(lambda: dispatch_battle_message(manor, opponent_label, report))
+        return report
 
 
 def execute_battle(

@@ -158,8 +158,12 @@ python -m pytest -m "not integration"
 ### 真实服务门禁
 
 ```bash
-DJANGO_TEST_USE_ENV_SERVICES=1 make test-real-services
+make test-real-services-up
+make test-real-services
+make test-real-services-down
 ```
+
+`make test-real-services-up` 会启动 compose 中的 `db` / `redis`，并默认发布到宿主机 `127.0.0.1:13306` 与 `127.0.0.1:16379`，避免和常见本机 MySQL/Redis 默认端口冲突。需要自定义端口时可传入 `REAL_SERVICES_MYSQL_PORT` / `REAL_SERVICES_REDIS_PORT`；`test-real-services`、`test-critical` 与 `test-integration` 会显式注入匹配的 `DJANGO_DB_*` 与 Redis URL，避免误连本机默认服务。
 
 该命令会先预检 MySQL 与 Redis；若外部服务不可用，会在进入 pytest 前直接失败，避免把环境缺失伪装成业务回归失败。
 

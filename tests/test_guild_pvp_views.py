@@ -239,6 +239,24 @@ def test_guild_pvp_page_does_not_process_due_runs_on_get(guild_member_client, mo
 
 
 @pytest.mark.django_db
+def test_guild_pvp_refresh_api_uses_explicit_due_activity_command(guild_member_client, monkeypatch):
+    client, _user, guild = guild_member_client
+    captured_calls: list[tuple[int, bool]] = []
+
+    def _capture_process(current_guild, *, include_incoming_marching=False):
+        captured_calls.append((current_guild.pk, include_incoming_marching))
+        return 2
+
+    monkeypatch.setattr("guilds.views.pvp.guild_raid_service.process_due_guild_pvp_activity", _capture_process)
+
+    response = client.post(reverse("guilds:refresh_pvp_activity_api"))
+
+    assert response.status_code == 200
+    assert response.json()["refreshed"] == 2
+    assert captured_calls == [(guild.pk, True)]
+
+
+@pytest.mark.django_db
 def test_guild_pvp_page_renders_projected_status_attributes_for_target_rows(guild_member_client, django_user_model):
     client, _user, guild = guild_member_client
 

@@ -125,11 +125,19 @@ def _run_selected_message_action(
 ) -> HttpResponse:
     manor = get_manor(request.user)
     message_ids = request.POST.getlist("message_ids")
+    is_json = is_json_request(request)
     if not message_ids:
+        if is_json:
+            return json_success(message_ids=[], unread_count=_safe_unread_message_count(manor))
         messages.info(request, empty_message)
         return _messages_list_redirect()
 
     action(manor, message_ids)
+    if is_json:
+        return json_success(
+            message_ids=[int(message_id) for message_id in message_ids if str(message_id).isdigit()],
+            unread_count=_safe_unread_message_count(manor),
+        )
     messages.success(request, success_message.format(count=len(message_ids)))
     return _messages_list_redirect()
 
@@ -246,11 +254,7 @@ def view_message(request: HttpRequest, pk: int) -> HttpResponse:
 
     is_json = is_json_request(request)
 
-    # 标记为已读（只有在消息未读时才执行）
     was_unread = not message.is_read
-    if was_unread:
-        mark_messages_read(manor, [message.pk])
-        message.refresh_from_db()
 
     # 对于JSON请求，返回结构化的响应数据
     if is_json:

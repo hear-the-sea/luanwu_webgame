@@ -9,6 +9,7 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 import guilds.constants as guild_constants
 from core.utils import safe_int, sanitize_error_message
@@ -122,13 +123,11 @@ def build_guild_resource_context(member: Any, *, manor: Manor, page_mode: str = 
 
 @login_required
 @require_guild_member
+@require_POST
 @rate_limit_redirect("guild_donate", limit=10, window_seconds=60)
 def donate_resource(request: Any) -> HttpResponse:
     """捐赠资源"""
     member = request.guild_member
-
-    if request.method != "POST":
-        return redirect("guilds:detail", guild_id=member.guild_id)
 
     resource_type = request.POST.get("resource_type")
     amount = safe_int(request.POST.get("amount", 0), default=0, min_val=0)

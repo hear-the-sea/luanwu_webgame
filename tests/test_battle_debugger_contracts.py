@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 from django.conf import settings
@@ -10,6 +11,8 @@ from django.test import RequestFactory, override_settings
 
 from battle_debugger.config import BattleConfig, ConfigLoader, InvalidPresetError, PartyConfig
 from battle_debugger.views import custom_config, result_detail, simulate, tune
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _make_staff_post_request(django_user_model, path: str, data: dict):
@@ -161,6 +164,15 @@ def test_custom_config_renders_error_for_empty_sides(django_user_model, monkeypa
 
     assert response.status_code == 200
     assert "攻方必须至少有门客或小兵".encode("utf-8") in response.content
+
+
+def test_custom_config_template_keeps_page_styles_out_of_main_template():
+    template_path = PROJECT_ROOT / "battle_debugger" / "templates" / "battle_debugger" / "custom_config.html"
+    template = template_path.read_text(encoding="utf-8")
+
+    assert len(template.splitlines()) <= 500
+    assert "<style>" not in template
+    assert "css/battle-debugger-custom-config.css" in template
 
 
 @pytest.mark.django_db

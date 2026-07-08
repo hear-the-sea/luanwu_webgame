@@ -155,16 +155,17 @@ def equip_guest(gear: str | GearItem, guest: Guest, *, slot: str | None = None) 
     for item in existing_items:
         if item.template.name == gear.template.name:
             raise DuplicateEquipmentError()
-    if capacity == 1 and existing_items:
-        _clear_replaced_items(guest, existing_items, updates)
-    elif capacity > 1 and len(existing_items) >= capacity:
+    if capacity > 1 and len(existing_items) >= capacity:
         raise EquipmentSlotFullError(slot)
-
-    gear.guest = guest
-    gear.save(update_fields=["guest"])
 
     if not inventory_consumed:
         consume_warehouse_item_for_gear(guest, gear)
+
+    if capacity == 1 and existing_items:
+        _clear_replaced_items(guest, existing_items, updates)
+
+    gear.guest = guest
+    gear.save(update_fields=["guest"])
 
     apply_template_stats_to_guest(guest, gear.template, +1, updates)
     guest.save(update_fields=list(updates))

@@ -362,7 +362,7 @@ def test_get_guild_pvp_page_context_uses_supplied_now_for_counter_projection(dja
 
 
 @pytest.mark.django_db
-def test_prepare_guild_pvp_read_state_processes_due_incoming_marching_run(django_user_model, monkeypatch):
+def test_prepare_guild_pvp_read_state_does_not_process_due_incoming_marching_run(django_user_model, monkeypatch):
     defender_guild, _defender_member, _defender_manor = create_guild_with_leader(django_user_model, "读侧守方")
     attacker_guild, attacker_member, attacker_manor = create_guild_with_leader(django_user_model, "读侧攻方")
     attacker_guest = create_guest(
@@ -394,6 +394,44 @@ def test_prepare_guild_pvp_read_state_processes_due_incoming_marching_run(django
 
     prepare_guild_pvp_read_state(defender_guild, now=now)
 
+    assert processed_run_ids == []
+    assert GuildRaidRun.objects.filter(pk=due_run.pk, status=GuildRaidRun.Status.MARCHING).exists()
+
+
+@pytest.mark.django_db
+def test_process_due_guild_pvp_activity_processes_due_incoming_marching_run(django_user_model, monkeypatch):
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(django_user_model, "显式守方")
+    attacker_guild, attacker_member, attacker_manor = create_guild_with_leader(django_user_model, "显式攻方")
+    attacker_guest = create_guest(
+        manor=attacker_manor,
+        template=create_template("guild_pvp_command_state_tpl"),
+        name="显式门客",
+    )
+    now = timezone.now()
+    due_run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        guest_ids=[attacker_guest.id],
+        guest_snapshots=build_guest_battle_snapshots([attacker_guest], include_identity=True),
+        troop_loadout={},
+        travel_time=300,
+        battle_at=now - timedelta(seconds=5),
+        return_at=now + timedelta(seconds=295),
+    )
+    processed_run_ids: list[int] = []
+    monkeypatch.setattr(
+        "guilds.services.guild_raids.process_due_guild_raid",
+        lambda run, now=None: processed_run_ids.append(run.id) or True,
+    )
+
+    from guilds.services.guild_raids import process_due_guild_pvp_activity
+
+    processed_count = process_due_guild_pvp_activity(defender_guild, now=now)
+
+    assert processed_count == 1
     assert processed_run_ids == [due_run.id]
 
 

@@ -109,8 +109,16 @@ def refresh_due_guild_raids(guild: Guild, *, now=None, include_incoming_marching
     return processed_count
 
 
+def process_due_guild_pvp_activity(guild: Guild, *, now=None, include_incoming_marching: bool = True) -> int:
+    return refresh_due_guild_raids(
+        guild,
+        now=now,
+        include_incoming_marching=include_incoming_marching,
+    )
+
+
 def prepare_guild_pvp_read_state(guild: Guild, *, now=None) -> None:
-    refresh_due_guild_raids(guild, now=now, include_incoming_marching=True)
+    del guild, now
 
 
 def _schedule_guild_raid_warning_messages(run: GuildRaidRun) -> None:
