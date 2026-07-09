@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from copy import deepcopy
 from pathlib import Path
 
@@ -173,6 +174,28 @@ def test_custom_config_template_keeps_page_styles_out_of_main_template():
     assert len(template.splitlines()) <= 500
     assert "<style>" not in template
     assert "css/battle-debugger-custom-config.css" in template
+
+
+def test_custom_config_template_avoids_dom_xss_sinks():
+    template_path = PROJECT_ROOT / "battle_debugger" / "templates" / "battle_debugger" / "custom_config.html"
+    template = template_path.read_text(encoding="utf-8")
+
+    assert ".innerHTML" not in template
+    assert ".outerHTML" not in template
+    assert ".insertAdjacentHTML" not in template
+    assert not re.search(r"\son[a-z]+\s*=", template)
+
+
+def test_custom_config_template_keeps_dynamic_form_contracts():
+    template_path = PROJECT_ROOT / "battle_debugger" / "templates" / "battle_debugger" / "custom_config.html"
+    template = template_path.read_text(encoding="utf-8")
+
+    assert "document.getElementById(`${side}_guest_count`).value = guestCounters[side]" in template
+    assert "name: `${side}_guest_${idx}_template`" in template
+    assert "name: `${side}_guest_${idx}_level`" in template
+    assert "name: `${side}_guest_${idx}_skills`" in template
+    assert "appendHiddenInput(form, `${side}_troop_types`, troopType)" in template
+    assert "appendHiddenInput(form, `${side}_troop_${troopType}`, count)" in template
 
 
 @pytest.mark.django_db

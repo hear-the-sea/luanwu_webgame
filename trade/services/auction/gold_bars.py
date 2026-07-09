@@ -8,9 +8,13 @@ from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
 
-from core.exceptions import TradeValidationError
+from core.exceptions import ItemInsufficientError, TradeValidationError
 from gameplay.models import InventoryItem, Manor
-from gameplay.services.inventory.core import consume_inventory_item_for_manor_locked, get_item_quantity
+from gameplay.services.inventory.core import (
+    consume_inventory_item_for_manor_locked,
+    consume_inventory_item_locked,
+    get_item_quantity,
+)
 from trade.models import AuctionBid, FrozenGoldBar
 from trade.services.auction.constants import GOLD_BAR_ITEM_KEY
 
@@ -31,6 +35,36 @@ def get_available_gold_bars(manor: Manor) -> int:
     total = get_total_gold_bars(manor)
     frozen = get_frozen_gold_bars(manor)
     return max(0, int(total) - int(frozen))
+
+
+def consume_available_gold_bars_locked(manor: Manor, amount: int) -> None:
+    """消耗未被冻结的仓库金条。调用方必须已经在事务中。"""
+    if not transaction.get_connection().in_atomic_block:
+        raise RuntimeError("consume_available_gold_bars_locked must be called inside transaction.atomic()")
+    amount = int(amount or 0)
+    if amount <= 0:
+        return
+
+    inventory_item = (
+        InventoryItem.objects.select_for_update()
+        .filter(
+            manor=manor,
+            template__key=GOLD_BAR_ITEM_KEY,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+        .select_related("template")
+        .first()
+    )
+    total = int(getattr(inventory_item, "quantity", 0) or 0)
+    frozen = int(
+        FrozenGoldBar.objects.filter(manor=manor, is_frozen=True).aggregate(total=Sum("amount")).get("total") or 0
+    )
+    available = max(0, total - frozen)
+    item_name = getattr(getattr(inventory_item, "template", None), "name", "金条")
+    if available < amount or inventory_item is None:
+        raise ItemInsufficientError(item_name, amount, available)
+
+    consume_inventory_item_locked(inventory_item, amount)
 
 
 def freeze_gold_bars(manor: Manor, amount: int, bid: AuctionBid) -> FrozenGoldBar:
@@ -100,7 +134,12 @@ def consume_frozen_gold_bars(frozen_record: FrozenGoldBar, manor: Manor) -> None
         if not locked or not locked.is_frozen:
             return
 
-        consume_inventory_item_for_manor_locked(manor, GOLD_BAR_ITEM_KEY, locked.amount)
+        consume_inventory_item_for_manor_locked(
+            manor,
+            GOLD_BAR_ITEM_KEY,
+            locked.amount,
+            allow_frozen_gold_bars=True,
+        )
 
         locked.is_frozen = False
         locked.unfrozen_at = timezone.now()

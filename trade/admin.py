@@ -3,6 +3,7 @@ from django.contrib import admin
 from core.admin_i18n import apply_common_field_labels
 from trade.models import (
     AuctionBid,
+    AuctionDelivery,
     AuctionRound,
     AuctionSlot,
     FrozenGoldBar,
@@ -25,6 +26,7 @@ apply_common_field_labels(
     AuctionSlot,
     AuctionBid,
     FrozenGoldBar,
+    AuctionDelivery,
 )
 
 
@@ -247,3 +249,25 @@ class FrozenGoldBarAdmin(admin.ModelAdmin):
     date_hierarchy = "frozen_at"
     readonly_fields = ("frozen_at", "unfrozen_at")
     raw_id_fields = ("manor", "auction_bid")
+
+
+@admin.register(AuctionDelivery)
+class AuctionDeliveryAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "slot",
+        "bid",
+        "manor",
+        "item_template",
+        "quantity",
+        "settlement_price",
+        "status",
+        "delivery_method",
+        "attempts",
+        "created_at",
+        "delivered_at",
+    )
+    list_filter = ("status", "delivery_method", "created_at")
+    search_fields = ("manor__user__username", "item_template__name", "item_template__key")
+    readonly_fields = ("created_at", "updated_at", "delivered_at")
+    raw_id_fields = ("slot", "bid", "manor", "item_template", "message")

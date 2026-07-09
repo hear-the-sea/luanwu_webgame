@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 import gameplay.services.jail as jail_service
+from core.exceptions import ItemInsufficientError
 
 pytestmark = pytest.mark.django_db
 
@@ -207,9 +208,11 @@ def test_draw_pie_raises_when_gold_insufficient():
     with patch.object(jail_service.JailPrisoner, "objects") as mock_qs:
         mock_qs.select_for_update.return_value.filter.return_value.first.return_value = prisoner
 
-        # 修复：Mock InventoryItem 查询链返回 None，避免真实 ORM 尝试解析 SimpleNamespace
-        with patch("gameplay.models.InventoryItem") as mock_inventory_item:
-            mock_inventory_item.objects.select_for_update.return_value.filter.return_value.first.return_value = None
+        with patch.object(
+            jail_service,
+            "consume_available_gold_bars_locked",
+            side_effect=ItemInsufficientError("金条", 1, 0),
+        ):
             with patch.object(jail_service, "get_item_quantity", return_value=0):
                 with pytest.raises(jail_service.JailError, match="金条不足"):
                     jail_service.draw_pie(manor, prisoner_id=1)
@@ -227,25 +230,12 @@ def test_draw_pie_reduces_loyalty_and_consumes_gold(mock_manor_model):
     with patch.object(jail_service.JailPrisoner, "objects") as mock_prisoner_qs:
         mock_prisoner_qs.select_for_update.return_value.filter.return_value.first.return_value = prisoner
 
-        # 修复：Patch gameplay.models.InventoryItem 因为 draw_pie 内部是从那里导入的
-        with patch("gameplay.models.InventoryItem") as mock_inventory_item:
-            # Mock the query for gold bar
-            mock_item_instance = MagicMock()
-            mock_item_instance.pk = 100
-            mock_item_instance.quantity = 5
-            mock_inventory_item.objects.select_for_update.return_value.filter.return_value.first.return_value = (
-                mock_item_instance
-            )
-
-            # Mock atomic update
-            mock_inventory_item.objects.filter.return_value.update.return_value = 1
-
+        with patch.object(jail_service, "consume_available_gold_bars_locked") as mock_consume_gold:
             # Fix random for deterministic test
             with patch.object(random, "randint", return_value=7):
                 result = jail_service.draw_pie(manor, prisoner_id=1)
 
-                # Verify gold bar was consumed via update
-                mock_inventory_item.objects.filter.assert_any_call(pk=100)
+                mock_consume_gold.assert_called_once_with(manor, 1)
                 assert result.loyalty == 73
                 assert result._reduction == 7
 
@@ -262,14 +252,7 @@ def test_draw_pie_loyalty_cannot_go_below_zero(mock_manor_model):
     with patch.object(jail_service.JailPrisoner, "objects") as mock_prisoner_qs:
         mock_prisoner_qs.select_for_update.return_value.filter.return_value.first.return_value = prisoner
 
-        with patch("gameplay.models.InventoryItem") as mock_inventory_item:
-            mock_item_instance = MagicMock()
-            mock_item_instance.pk = 100
-            mock_item_instance.quantity = 5
-            mock_inventory_item.objects.select_for_update.return_value.filter.return_value.first.return_value = (
-                mock_item_instance
-            )
-
+        with patch.object(jail_service, "consume_available_gold_bars_locked"):
             with patch.object(random, "randint", return_value=10):
                 result = jail_service.draw_pie(manor, prisoner_id=1)
                 assert result.loyalty == 0
@@ -287,19 +270,11 @@ def test_draw_pie_uses_configured_gold_cost(mock_manor_model, monkeypatch):
     with patch.object(jail_service.JailPrisoner, "objects") as mock_prisoner_qs:
         mock_prisoner_qs.select_for_update.return_value.filter.return_value.first.return_value = prisoner
 
-        with patch("gameplay.models.InventoryItem") as mock_inventory_item:
-            mock_item_instance = MagicMock()
-            mock_item_instance.pk = 100
-            mock_item_instance.quantity = 5
-            mock_inventory_item.objects.select_for_update.return_value.filter.return_value.first.return_value = (
-                mock_item_instance
-            )
-
+        with patch.object(jail_service, "consume_available_gold_bars_locked") as mock_consume_gold:
             with patch.object(random, "randint", return_value=7):
                 jail_service.draw_pie(manor, prisoner_id=1)
 
-            filter_kwargs = mock_inventory_item.objects.select_for_update.return_value.filter.call_args.kwargs
-            assert filter_kwargs["quantity__gte"] == 2
+            mock_consume_gold.assert_called_once_with(manor, 2)
 
 
 @patch("gameplay.services.jail.Manor")
@@ -314,10 +289,11 @@ def test_draw_pie_raises_when_gold_insufficient_with_manor_lock(mock_manor_model
     with patch.object(jail_service.JailPrisoner, "objects") as mock_qs:
         mock_qs.select_for_update.return_value.filter.return_value.first.return_value = prisoner
 
-        # 修复：Mock InventoryItem 查询链返回 None，触发不足逻辑
-        with patch("gameplay.models.InventoryItem") as mock_inventory_item:
-            mock_inventory_item.objects.select_for_update.return_value.filter.return_value.first.return_value = None
-
+        with patch.object(
+            jail_service,
+            "consume_available_gold_bars_locked",
+            side_effect=ItemInsufficientError("金条", 1, 0),
+        ):
             with patch.object(jail_service, "get_item_quantity", return_value=0):
                 with pytest.raises(jail_service.JailError, match="金条不足"):
                     jail_service.draw_pie(manor, prisoner_id=1)
@@ -417,10 +393,11 @@ def test_recruit_prisoner_raises_when_gold_insufficient(mock_manor_model):
             prisoner
         )
 
-        # 修复：Mock InventoryItem 查询链，使其返回 None
-        with patch("gameplay.models.InventoryItem") as mock_inventory_item:
-            mock_inventory_item.objects.select_for_update.return_value.filter.return_value.first.return_value = None
-
+        with patch.object(
+            jail_service,
+            "consume_available_gold_bars_locked",
+            side_effect=ItemInsufficientError("金条", 1, 0),
+        ):
             with patch.object(jail_service, "get_item_quantity", return_value=0):
                 with pytest.raises(jail_service.JailError, match="金条不足"):
                     jail_service.recruit_prisoner(manor, prisoner_id=1)
@@ -469,7 +446,7 @@ def test_recruit_prisoner_rejects_duplicate_standard_guest(mock_manor_model):
                 }
                 with patch.object(jail_service.Guest.objects, "create", return_value=MagicMock()):
                     with patch.object(jail_service, "grant_template_skills"):
-                        with patch.object(jail_service, "consume_inventory_item") as mock_consume:
+                        with patch.object(jail_service, "consume_available_gold_bars_locked") as mock_consume:
                             with pytest.raises(jail_service.JailError, match="不可重复招募"):
                                 jail_service.recruit_prisoner(manor, prisoner_id=1)
 
@@ -526,7 +503,7 @@ def test_recruit_prisoner_allows_duplicate_repeatable_standard_guest(mock_manor_
                 }
                 with patch.object(jail_service.Guest.objects, "create", return_value=created_guest):
                     with patch.object(jail_service, "grant_template_skills"):
-                        with patch.object(jail_service, "consume_inventory_item") as mock_consume:
+                        with patch.object(jail_service, "consume_available_gold_bars_locked") as mock_consume:
                             result = jail_service.recruit_prisoner(manor, prisoner_id=1)
 
     assert result is created_guest
@@ -585,7 +562,7 @@ def test_recruit_prisoner_allows_duplicate_configured_repeatable_guest(mock_mano
                 }
                 with patch.object(jail_service.Guest.objects, "create", return_value=created_guest):
                     with patch.object(jail_service, "grant_template_skills"):
-                        with patch.object(jail_service, "consume_inventory_item") as mock_consume:
+                        with patch.object(jail_service, "consume_available_gold_bars_locked") as mock_consume:
                             result = jail_service.recruit_prisoner(manor, prisoner_id=1)
 
     assert result is created_guest
@@ -610,7 +587,7 @@ def test_recruit_prisoner_rejects_duplicate_unique_original_guest(mock_manor_mod
             prisoner
         )
 
-        with patch.object(jail_service, "consume_inventory_item") as mock_consume:
+        with patch.object(jail_service, "consume_available_gold_bars_locked") as mock_consume:
             with pytest.raises(jail_service.JailError, match="不可重复招募"):
                 jail_service.recruit_prisoner(manor, prisoner_id=1)
 

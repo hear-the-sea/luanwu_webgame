@@ -30,6 +30,8 @@ from gameplay.models.items import (
 from gameplay.services.resources import grant_resources_locked, spend_resources_locked
 from gameplay.utils.template_loader import get_item_templates_by_keys
 from trade.models import ShopPurchaseLog, ShopSellLog, ShopStock
+from trade.services.auction.constants import GOLD_BAR_ITEM_KEY
+from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 from trade.services.shop_config import (
     calculate_buy_price,
     get_sell_price_by_template,
@@ -355,33 +357,36 @@ def sell_item(manor: Manor, item_key: str, quantity: int) -> Dict:
 
     # 锁定庄园并发放银两（并发安全）
     locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
-    # 扣除背包物品（使用原子操作，在 Manor 锁之后）
-    # IMPORTANT: Must specify storage_location to avoid touching treasury rows.
-    updated = InventoryItem.objects.filter(
-        manor=locked_manor,
-        template=template,
-        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-        quantity__gte=quantity,
-    ).update(quantity=F("quantity") - quantity)
-    if not updated:
-        has_item = InventoryItem.objects.filter(
+    if template.key == GOLD_BAR_ITEM_KEY:
+        consume_available_gold_bars_locked(locked_manor, quantity)
+    else:
+        # 扣除背包物品（使用原子操作，在 Manor 锁之后）
+        # IMPORTANT: Must specify storage_location to avoid touching treasury rows.
+        updated = InventoryItem.objects.filter(
             manor=locked_manor,
             template=template,
             storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-        ).exists()
-        if not has_item:
-            raise ItemInsufficientError(template.name, quantity, 0, message="您没有该物品")
-        available_quantity = (
-            InventoryItem.objects.filter(
+            quantity__gte=quantity,
+        ).update(quantity=F("quantity") - quantity)
+        if not updated:
+            has_item = InventoryItem.objects.filter(
                 manor=locked_manor,
                 template=template,
                 storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            ).exists()
+            if not has_item:
+                raise ItemInsufficientError(template.name, quantity, 0, message="您没有该物品")
+            available_quantity = (
+                InventoryItem.objects.filter(
+                    manor=locked_manor,
+                    template=template,
+                    storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+                )
+                .values_list("quantity", flat=True)
+                .first()
+                or 0
             )
-            .values_list("quantity", flat=True)
-            .first()
-            or 0
-        )
-        raise ItemInsufficientError(template.name, quantity, int(available_quantity), message="物品数量不足")
+            raise ItemInsufficientError(template.name, quantity, int(available_quantity), message="物品数量不足")
 
     grant_resources_locked(
         locked_manor,

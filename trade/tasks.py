@@ -122,6 +122,19 @@ def process_expired_listings(self):
         raise self.retry(exc=exc)
 
 
+@shared_task(name="trade.process_pending_auction_deliveries", bind=True, max_retries=2, default_retry_delay=60)
+def process_pending_auction_deliveries_task(self):
+    """Scan-fallback for auction rewards whose on_commit delivery callback was lost."""
+    try:
+        from trade.services.auction.delivery_outbox import process_pending_auction_deliveries
+
+        count = safe_non_negative_int(process_pending_auction_deliveries(), 0)
+        return f"处理了 {count} 个待交付拍卖奖励"
+    except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
+        logger.exception("Failed to process pending auction deliveries: %s", exc)
+        raise self.retry(exc=exc)
+
+
 # ============ 拍卖行定时任务 ============
 
 

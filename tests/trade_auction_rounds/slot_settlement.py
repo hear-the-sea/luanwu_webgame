@@ -6,8 +6,10 @@ import pytest
 from django.test import TestCase
 from django.utils import timezone
 
+from gameplay.models import InventoryItem
 from gameplay.services.manor.core import ensure_manor
 from tests.helpers.auction import ensure_auction_item_template as _create_auction_item_template
+from tests.helpers.auction import ensure_gold_bar_template
 from trade.models import AuctionBid, AuctionRound, AuctionSlot, FrozenGoldBar
 
 
@@ -179,6 +181,91 @@ def test_rounds_module_settle_slot_partial_refund_flow(monkeypatch, django_user_
     assert result["sold"] is True
     assert slot.status == AuctionSlot.Status.SOLD
     assert bid.status == AuctionBid.Status.WON
+
+
+@pytest.mark.django_db
+def test_rounds_module_settle_slot_partial_refund_consumes_frozen_gold_bars(django_user_model, monkeypatch):
+    from trade.services.auction.rounds import _settle_slot
+
+    user_one = django_user_model.objects.create_user(username="auction_partial_consume_a", password="pass123")
+    user_two = django_user_model.objects.create_user(username="auction_partial_consume_b", password="pass123")
+    manor_one = ensure_manor(user_one)
+    manor_two = ensure_manor(user_two)
+    gold_bar_template = ensure_gold_bar_template()
+
+    InventoryItem.objects.create(
+        manor=manor_one,
+        template=gold_bar_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        quantity=20,
+    )
+    InventoryItem.objects.create(
+        manor=manor_two,
+        template=gold_bar_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        quantity=10,
+    )
+
+    item_tpl = _create_auction_item_template("auction_settle_partial_consumes_frozen_item")
+    auction_round = AuctionRound.objects.create(
+        round_number=10019,
+        status=AuctionRound.Status.ACTIVE,
+        start_at=timezone.now() - timedelta(days=2),
+        end_at=timezone.now() - timedelta(minutes=1),
+    )
+    slot = AuctionSlot.objects.create(
+        round=auction_round,
+        item_template=item_tpl,
+        quantity=2,
+        starting_price=10,
+        current_price=10,
+        min_increment=1,
+        status=AuctionSlot.Status.ACTIVE,
+        config_key=item_tpl.key,
+        slot_index=0,
+    )
+    bid_one = AuctionBid.objects.create(
+        slot=slot, manor=manor_one, amount=20, status=AuctionBid.Status.ACTIVE, frozen_gold_bars=20
+    )
+    bid_two = AuctionBid.objects.create(
+        slot=slot, manor=manor_two, amount=10, status=AuctionBid.Status.ACTIVE, frozen_gold_bars=10
+    )
+    frozen_one = FrozenGoldBar.objects.create(
+        manor=manor_one,
+        amount=20,
+        reason=FrozenGoldBar.Reason.AUCTION_BID,
+        auction_bid=bid_one,
+        is_frozen=True,
+    )
+    frozen_two = FrozenGoldBar.objects.create(
+        manor=manor_two,
+        amount=10,
+        reason=FrozenGoldBar.Reason.AUCTION_BID,
+        auction_bid=bid_two,
+        is_frozen=True,
+    )
+
+    monkeypatch.setattr("trade.services.auction.rounds.create_message", lambda *a, **k: None)
+    monkeypatch.setattr("trade.services.auction.rounds.notify_user", lambda *a, **k: True)
+
+    with TestCase.captureOnCommitCallbacks(execute=True):
+        result = _settle_slot(slot)
+
+    frozen_one.refresh_from_db()
+    frozen_two.refresh_from_db()
+    bid_one.refresh_from_db()
+    bid_two.refresh_from_db()
+    slot.refresh_from_db()
+
+    assert result["sold"] is True
+    assert result["price"] == 20
+    assert slot.status == AuctionSlot.Status.SOLD
+    assert bid_one.status == AuctionBid.Status.WON
+    assert bid_two.status == AuctionBid.Status.WON
+    assert frozen_one.is_frozen is False
+    assert frozen_two.is_frozen is False
+    assert InventoryItem.objects.get(manor=manor_one, template=gold_bar_template).quantity == 10
+    assert not InventoryItem.objects.filter(manor=manor_two, template=gold_bar_template).exists()
 
 
 @pytest.mark.django_db

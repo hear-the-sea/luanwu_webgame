@@ -46,14 +46,21 @@ def test_nginx_health_proxy_forwards_client_ip_for_internal_health_gate() -> Non
     assert "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;" in health_block
 
 
-def test_nginx_preserves_outer_tls_forwarded_proto_for_django_ssl_redirect() -> None:
+def test_nginx_trusts_forwarded_proto_only_from_private_proxy_ranges() -> None:
     nginx_conf = (PROJECT_ROOT / "docker" / "nginx" / "default.conf").read_text(encoding="utf-8")
 
-    assert "map $http_x_forwarded_proto $django_forwarded_proto" in nginx_conf
-    assert 'default "$scheme"' in nginx_conf
-    assert "~*^https$ https" in nginx_conf
-    assert "proxy_set_header X-Forwarded-Proto $django_forwarded_proto;" in nginx_conf
-    assert "proxy_set_header X-Forwarded-Proto $scheme;" not in nginx_conf
+    assert "geo $django_trusted_forwarded_proxy" in nginx_conf
+    assert "127.0.0.1/32 1;" in nginx_conf
+    assert "10.0.0.0/8 1;" in nginx_conf
+    assert "172.16.0.0/12 1;" in nginx_conf
+    assert "192.168.0.0/16 1;" in nginx_conf
+    assert 'map "$django_trusted_forwarded_proxy:$http_x_forwarded_proto" $django_forwarded_proto' in nginx_conf
+    assert "~*^1:https$ https;" in nginx_conf
+    assert 'default "$scheme";' in nginx_conf
+
+    for location in ("location /health/ {", "location /ws/ {", "location / {"):
+        block = nginx_conf.split(location, 1)[1].split("}", 1)[0]
+        assert "proxy_set_header X-Forwarded-Proto $django_forwarded_proto;" in block
 
 
 def test_prod_env_does_not_auto_sync_deleting_guest_templates_on_web_startup() -> None:

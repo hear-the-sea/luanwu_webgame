@@ -12,7 +12,7 @@ from typing import Optional, Tuple
 from django.db import transaction
 from django.utils import timezone
 
-from core.exceptions import RelocationError
+from core.exceptions import ItemInsufficientError, ItemNotFoundError, RelocationError
 
 from ...constants import REGION_DICT, PVPConstants
 from ...models import Manor
@@ -73,29 +73,32 @@ def relocate_manor(manor: Manor, new_region: str) -> Tuple[int, int]:
     if incoming:
         raise RelocationError("有敌军来袭，无法迁移")
 
-    # 检查金条（需要考虑拍卖冻结的金条）
     cost = get_relocation_cost(manor)
-    from trade.services.auction_service import get_available_gold_bars
 
-    from ..inventory.core import consume_inventory_item_for_manor_locked
-
-    available_gold = get_available_gold_bars(manor)
-    if available_gold < cost:
-        raise RelocationError(f"可用金条不足，需要 {cost} 个（当前可用 {available_gold} 个）")
+    from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 
     with transaction.atomic():
-        # 扣除金条
-        consume_inventory_item_for_manor_locked(manor, "gold_bar", cost)
+        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+        try:
+            consume_available_gold_bars_locked(locked_manor, cost)
+        except (ItemInsufficientError, ItemNotFoundError) as exc:
+            available_gold = exc.context.get("available", 0)
+            raise RelocationError(f"可用金条不足，需要 {cost} 个（当前可用 {available_gold} 个）") from exc
 
         # 生成新坐标（确保唯一）
         new_x, new_y = _generate_unique_coordinate(new_region, exclude_manor_id=manor.id)
 
         # 更新庄园
-        manor.region = new_region
-        manor.coordinate_x = new_x
-        manor.coordinate_y = new_y
-        manor.last_relocation_at = timezone.now()
-        manor.save(update_fields=["region", "coordinate_x", "coordinate_y", "last_relocation_at"])
+        locked_manor.region = new_region
+        locked_manor.coordinate_x = new_x
+        locked_manor.coordinate_y = new_y
+        locked_manor.last_relocation_at = timezone.now()
+        locked_manor.save(update_fields=["region", "coordinate_x", "coordinate_y", "last_relocation_at"])
+
+        manor.region = locked_manor.region
+        manor.coordinate_x = locked_manor.coordinate_x
+        manor.coordinate_y = locked_manor.coordinate_y
+        manor.last_relocation_at = locked_manor.last_relocation_at
 
     return new_x, new_y
 

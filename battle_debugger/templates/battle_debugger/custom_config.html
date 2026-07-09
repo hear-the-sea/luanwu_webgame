@@ -34,7 +34,7 @@
                     <div class="subsection">
                         <div class="subsection-header">
                             <h4>门客</h4>
-                            <button type="button" class="btn-add" onclick="addGuest('attacker')">
+                            <button type="button" class="btn-add" data-add-guest="attacker">
                                 + 添加门客
                             </button>
                         </div>
@@ -46,7 +46,7 @@
                     <div class="subsection">
                         <div class="subsection-header">
                             <h4>护院</h4>
-                            <button type="button" class="btn-add" onclick="addTroop('attacker')">
+                            <button type="button" class="btn-add" data-add-troop="attacker">
                                 + 添加护院
                             </button>
                         </div>
@@ -71,7 +71,7 @@
                     <div class="subsection">
                         <div class="subsection-header">
                             <h4>门客</h4>
-                            <button type="button" class="btn-add warning" onclick="addGuest('defender')">
+                            <button type="button" class="btn-add warning" data-add-guest="defender">
                                 + 添加门客
                             </button>
                         </div>
@@ -83,7 +83,7 @@
                     <div class="subsection">
                         <div class="subsection-header">
                             <h4>护院</h4>
-                            <button type="button" class="btn-add warning" onclick="addTroop('defender')">
+                            <button type="button" class="btn-add warning" data-add-troop="defender">
                                 + 添加护院
                             </button>
                         </div>
@@ -148,12 +148,41 @@
 </div>
 
 <script>
-// 数据缓存
 let guestsData = [];
 let skillsData = [];
 let troopsData = [];
+const ATTRS = ['force', 'intellect', 'defense', 'agility', 'luck'];
 
-// 加载数据
+function el(tag, options = {}, children = []) {
+    const node = document.createElement(tag);
+    if (options.className) node.className = options.className;
+    if (options.id) node.id = options.id;
+    if (options.text !== undefined) node.textContent = options.text;
+    if (options.style) node.style.cssText = options.style;
+    Object.entries(options.attrs || {}).forEach(([key, value]) => {
+        if (value === true) {
+            node.setAttribute(key, '');
+        } else if (value !== false && value !== null && value !== undefined) {
+            node.setAttribute(key, String(value));
+        }
+    });
+    Object.entries(options.dataset || {}).forEach(([key, value]) => {
+        node.dataset[key] = String(value ?? '');
+    });
+    children.forEach(child => node.appendChild(typeof child === 'string' ? document.createTextNode(child) : child));
+    return node;
+}
+
+function field(labelText, control, options = {}) {
+    const label = el('label', { text: labelText });
+    if (options.forId) label.setAttribute('for', options.forId);
+    return el('div', { className: 'form-group', style: options.style }, [label, control]);
+}
+
+function numberInput(attrs) {
+    return el('input', { attrs: { type: 'number', ...attrs } });
+}
+
 async function loadData() {
     const [guests, skills, troops] = await Promise.all([
         fetch('{% url "battle_debugger:api_guests" %}').then(r => r.json()),
@@ -165,7 +194,6 @@ async function loadData() {
     troopsData = troops;
 }
 
-// 添加门客
 let guestCounters = { attacker: 0, defender: 0 };
 
 function addGuest(side) {
@@ -175,74 +203,97 @@ function addGuest(side) {
     const card = document.createElement('div');
     card.className = 'unit-card';
     card.id = `${side}_guest_${idx}`;
-    card.innerHTML = `
-        <div class="unit-card-header">
-            <strong>门客 #${idx + 1}</strong>
-            <button type="button" class="btn-remove" onclick="removeGuest('${side}', ${idx})">
-                ✕ 删除
-            </button>
-        </div>
-        <div class="unit-card-body">
-            <div class="form-row cols-3">
-                <div class="form-group" style="grid-column: span 2;">
-                    <label>选择门客</label>
-                    <select name="${side}_guest_${idx}_template" onchange="loadGuestData('${side}', ${idx})" required>
-                        <option value="">-- 选择门客 --</option>
-                        ${guestsData.map(g => `
-                            <option value="${g.key}" data-rarity="${g.rarity}" data-archetype="${g.archetype}"
-                                    data-force="${g.base_force}" data-intellect="${g.base_intellect}"
-                                    data-defense="${g.base_defense}" data-agility="${g.base_agility}"
-                                    data-luck="${g.base_luck}" data-hp="${g.base_hp}">
-                                [${getRarityLabel(g.rarity)}] ${g.name} (${g.archetype === 'civil' ? '文' : '武'})
-                            </option>
-                        `).join('')}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>等级</label>
-                    <input type="number" name="${side}_guest_${idx}_level" value="100" min="1" max="100">
-                </div>
-            </div>
-            <div class="form-check" style="margin-bottom: 0.8rem;">
-                <input type="checkbox" id="${side}_guest_${idx}_use_level_growth" onchange="toggleLevelGrowth('${side}', ${idx})" checked>
-                <label for="${side}_guest_${idx}_use_level_growth">使用等级成长</label>
-            </div>
-            <div class="form-row cols-5" id="${side}_guest_${idx}_attrs_row" style="display: none;">
-                <div class="form-group">
-                    <label>武力</label>
-                    <input type="number" name="${side}_guest_${idx}_force" placeholder="默认" id="${side}_guest_${idx}_force">
-                </div>
-                <div class="form-group">
-                    <label>智力</label>
-                    <input type="number" name="${side}_guest_${idx}_intellect" placeholder="默认" id="${side}_guest_${idx}_intellect">
-                </div>
-                <div class="form-group">
-                    <label>防御</label>
-                    <input type="number" name="${side}_guest_${idx}_defense" placeholder="默认" id="${side}_guest_${idx}_defense">
-                </div>
-                <div class="form-group">
-                    <label>敏捷</label>
-                    <input type="number" name="${side}_guest_${idx}_agility" placeholder="默认" id="${side}_guest_${idx}_agility">
-                </div>
-                <div class="form-group">
-                    <label>幸运</label>
-                    <input type="number" name="${side}_guest_${idx}_luck" placeholder="默认" id="${side}_guest_${idx}_luck">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>技能（点击选择）</label>
-                <div class="skill-badges" id="${side}_guest_${idx}_skills_display">
-                    ${skillsData.map(s => `
-                        <span class="skill-badge" onclick="toggleSkill('${side}', ${idx}, '${s.key}', this)">
-                            ${s.name}
-                        </span>
-                    `).join('')}
-                </div>
-                <input type="hidden" name="${side}_guest_${idx}_skills" id="${side}_guest_${idx}_skills_input">
-            </div>
-        </div>
-    `;
 
+    const removeButton = el('button', {
+        className: 'btn-remove',
+        text: '✕ 删除',
+        attrs: { type: 'button' },
+    });
+    removeButton.addEventListener('click', () => removeGuest(side, idx));
+
+    const header = el('div', { className: 'unit-card-header' }, [
+        el('strong', { text: `门客 #${idx + 1}` }),
+        removeButton,
+    ]);
+
+    const guestSelect = el('select', { attrs: { name: `${side}_guest_${idx}_template`, required: true } }, [
+        el('option', { text: '-- 选择门客 --', attrs: { value: '' } }),
+    ]);
+    guestsData.forEach(guest => {
+        const option = el('option', {
+            text: `[${getRarityLabel(guest.rarity)}] ${guest.name} (${guest.archetype === 'civil' ? '文' : '武'})`,
+            attrs: { value: guest.key },
+            dataset: {
+                rarity: guest.rarity,
+                archetype: guest.archetype,
+                force: guest.base_force,
+                intellect: guest.base_intellect,
+                defense: guest.base_defense,
+                agility: guest.base_agility,
+                luck: guest.base_luck,
+                hp: guest.base_hp,
+            },
+        });
+        guestSelect.appendChild(option);
+    });
+    guestSelect.addEventListener('change', () => loadGuestData(side, idx));
+
+    const levelGrowthId = `${side}_guest_${idx}_use_level_growth`;
+    const levelGrowthCheckbox = el('input', {
+        id: levelGrowthId,
+        attrs: { type: 'checkbox', checked: true },
+    });
+    levelGrowthCheckbox.addEventListener('change', () => toggleLevelGrowth(side, idx));
+
+    const attrsRow = el('div', {
+        className: 'form-row cols-5',
+        id: `${side}_guest_${idx}_attrs_row`,
+        style: 'display: none;',
+    });
+    [
+        ['force', '武力'],
+        ['intellect', '智力'],
+        ['defense', '防御'],
+        ['agility', '敏捷'],
+        ['luck', '幸运'],
+    ].forEach(([key, label]) => {
+        attrsRow.appendChild(field(label, numberInput({
+            name: `${side}_guest_${idx}_${key}`,
+            placeholder: '默认',
+            id: `${side}_guest_${idx}_${key}`,
+        })));
+    });
+
+    const skillBadges = el('div', {
+        className: 'skill-badges',
+        id: `${side}_guest_${idx}_skills_display`,
+    });
+    skillsData.forEach(skill => {
+        const badge = el('span', { className: 'skill-badge', text: skill.name });
+        badge.addEventListener('click', () => toggleSkill(side, idx, skill.key, badge));
+        skillBadges.appendChild(badge);
+    });
+
+    const body = el('div', { className: 'unit-card-body' }, [
+        el('div', { className: 'form-row cols-3' }, [
+            field('选择门客', guestSelect, { style: 'grid-column: span 2;' }),
+            field('等级', numberInput({ name: `${side}_guest_${idx}_level`, value: '100', min: '1', max: '100' })),
+        ]),
+        el('div', { className: 'form-check', style: 'margin-bottom: 0.8rem;' }, [
+            levelGrowthCheckbox,
+            el('label', { text: '使用等级成长', attrs: { for: levelGrowthId } }),
+        ]),
+        attrsRow,
+        field('技能（点击选择）', el('div', {}, [
+            skillBadges,
+            el('input', {
+                id: `${side}_guest_${idx}_skills_input`,
+                attrs: { type: 'hidden', name: `${side}_guest_${idx}_skills` },
+            }),
+        ])),
+    ]);
+
+    card.append(header, body);
     container.appendChild(card);
     document.getElementById(`${side}_guest_count`).value = guestCounters[side];
 }
@@ -255,11 +306,10 @@ function removeGuest(side, idx) {
 function toggleLevelGrowth(side, idx) {
     const checkbox = document.getElementById(`${side}_guest_${idx}_use_level_growth`);
     const attrsRow = document.getElementById(`${side}_guest_${idx}_attrs_row`);
-    const attrs = ['force', 'intellect', 'defense', 'agility', 'luck'];
 
     if (checkbox.checked) {
         attrsRow.style.display = 'none';
-        attrs.forEach(attr => {
+        ATTRS.forEach(attr => {
             document.getElementById(`${side}_guest_${idx}_${attr}`).value = '';
         });
     } else {
@@ -267,7 +317,7 @@ function toggleLevelGrowth(side, idx) {
         const select = document.querySelector(`select[name="${side}_guest_${idx}_template"]`);
         const option = select.selectedOptions[0];
         if (option && option.value) {
-            attrs.forEach(attr => {
+            ATTRS.forEach(attr => {
                 document.getElementById(`${side}_guest_${idx}_${attr}`).value = option.dataset[attr];
             });
         }
@@ -317,70 +367,82 @@ function getRarityLabel(rarity) {
     return labels[rarity] || '?';
 }
 
-// 添加小兵
 function addTroop(side) {
     const container = document.getElementById(`${side}_troops`);
 
     const card = document.createElement('div');
     card.className = 'unit-card';
-    card.innerHTML = `
-        <div class="unit-card-header">
-            <strong>护院</strong>
-            <button type="button" class="btn-remove" onclick="this.parentElement.parentElement.remove()">
-                ✕ 删除
-            </button>
-        </div>
-        <div class="unit-card-body">
-            <div class="form-row cols-2">
-                <div class="form-group">
-                    <label>兵种</label>
-                    <select class="troop-select" data-side="${side}" required>
-                        <option value="">-- 选择兵种 --</option>
-                        ${troopsData.map(t => `
-                            <option value="${t.key}">
-                                ${t.name} (攻:${t.base_attack} 防:${t.base_defense} HP:${t.base_hp})
-                            </option>
-                        `).join('')}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>数量</label>
-                    <input type="number" class="troop-count" min="1" value="100" required>
-                </div>
-            </div>
-        </div>
-    `;
+
+    const removeButton = el('button', {
+        className: 'btn-remove',
+        text: '✕ 删除',
+        attrs: { type: 'button' },
+    });
+    removeButton.addEventListener('click', () => card.remove());
+
+    const troopSelect = el('select', {
+        className: 'troop-select',
+        attrs: { required: true },
+        dataset: { side },
+    }, [el('option', { text: '-- 选择兵种 --', attrs: { value: '' } })]);
+    troopsData.forEach(troop => {
+        troopSelect.appendChild(el('option', {
+            text: `${troop.name} (攻:${troop.base_attack} 防:${troop.base_defense} HP:${troop.base_hp})`,
+            attrs: { value: troop.key },
+        }));
+    });
+
+    card.append(
+        el('div', { className: 'unit-card-header' }, [el('strong', { text: '护院' }), removeButton]),
+        el('div', { className: 'unit-card-body' }, [
+            el('div', { className: 'form-row cols-2' }, [
+                field('兵种', troopSelect),
+                field('数量', numberInput({ class: 'troop-count', min: '1', value: '100', required: true })),
+            ]),
+        ])
+    );
 
     container.appendChild(card);
 }
 
-// 表单提交前处理小兵数据
-document.getElementById('customConfigForm').addEventListener('submit', function(e) {
+function appendHiddenInput(form, name, value) {
+    form.appendChild(el('input', {
+        attrs: { type: 'hidden', name, value },
+        dataset: { generatedTroop: '1' },
+    }));
+}
+
+function appendTroopInputs(event) {
+    const form = event.currentTarget;
+    form.querySelectorAll('[data-generated-troop="1"]').forEach(input => input.remove());
+
     ['attacker', 'defender'].forEach(side => {
         const troopSelects = document.querySelectorAll(`#${side}_troops .troop-select`);
 
-        troopSelects.forEach((select, idx) => {
+        troopSelects.forEach(select => {
             const troopType = select.value;
             if (troopType) {
                 const count = select.closest('.unit-card-body').querySelector('.troop-count').value;
-
-                const typeInput = document.createElement('input');
-                typeInput.type = 'hidden';
-                typeInput.name = `${side}_troop_types`;
-                typeInput.value = troopType;
-                this.appendChild(typeInput);
-
-                const countInput = document.createElement('input');
-                countInput.type = 'hidden';
-                countInput.name = `${side}_troop_${troopType}`;
-                countInput.value = count;
-                this.appendChild(countInput);
+                appendHiddenInput(form, `${side}_troop_types`, troopType);
+                appendHiddenInput(form, `${side}_troop_${troopType}`, count);
             }
         });
     });
-});
+}
 
-// 页面加载时初始化
-document.addEventListener('DOMContentLoaded', loadData);
+function bindControls() {
+    document.querySelectorAll('[data-add-guest]').forEach(button => {
+        button.addEventListener('click', () => addGuest(button.dataset.addGuest));
+    });
+    document.querySelectorAll('[data-add-troop]').forEach(button => {
+        button.addEventListener('click', () => addTroop(button.dataset.addTroop));
+    });
+    document.getElementById('customConfigForm').addEventListener('submit', appendTroopInputs);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    bindControls();
+    loadData();
+});
 </script>
 {% endblock %}

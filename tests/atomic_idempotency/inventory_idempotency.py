@@ -10,6 +10,7 @@ from gameplay.services.inventory.core import (
     consume_inventory_item_locked,
 )
 from gameplay.services.manor.core import ensure_manor
+from trade.models import FrozenGoldBar
 
 
 @pytest.mark.django_db
@@ -56,6 +57,37 @@ def test_consume_inventory_item_by_key_is_safe_when_row_disappears(django_user_m
     consume_inventory_item(manor, tpl.key, 1)
     with pytest.raises(InsufficientStockError):
         consume_inventory_item(manor, tpl.key, 1)
+
+
+@pytest.mark.django_db
+def test_consume_inventory_item_direct_instance_rejects_frozen_gold_bars(django_user_model):
+    user = django_user_model.objects.create_user(username="inv_direct_frozen_gold", password="pass12345")
+    manor = ensure_manor(user)
+
+    tpl = ItemTemplate.objects.create(
+        key="gold_bar",
+        name="金条",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=False,
+    )
+    item = InventoryItem.objects.create(
+        manor=manor,
+        template=tpl,
+        quantity=10,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    FrozenGoldBar.objects.create(
+        manor=manor,
+        amount=10,
+        reason=FrozenGoldBar.Reason.AUCTION_BID,
+        is_frozen=True,
+    )
+
+    with pytest.raises(InsufficientStockError):
+        consume_inventory_item(item, 1)
+
+    item.refresh_from_db()
+    assert item.quantity == 10
 
 
 @pytest.mark.django_db

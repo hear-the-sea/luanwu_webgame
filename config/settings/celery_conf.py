@@ -105,6 +105,7 @@ CELERY_TASK_ROUTES = {
     "guilds.cleanup_old_logs": {"queue": CELERY_TIMER_QUEUE},
     "trade.refresh_shop_stock": {"queue": CELERY_TIMER_QUEUE},
     "trade.process_expired_listings": {"queue": CELERY_TIMER_QUEUE},
+    "trade.process_pending_auction_deliveries": {"queue": CELERY_TIMER_QUEUE},
     "trade.settle_auction_round": {"queue": CELERY_TIMER_QUEUE},
     "trade.create_auction_round": {"queue": CELERY_TIMER_QUEUE},
 }
@@ -205,6 +206,10 @@ CELERY_BEAT_SCHEDULE = {
     "process-expired-market-listings": {
         "task": "trade.process_expired_listings",
         "schedule": crontab(minute="*/2"),
+    },
+    "process-pending-auction-deliveries": {
+        "task": "trade.process_pending_auction_deliveries",
+        "schedule": crontab(minute="*/1"),
     },
     "cleanup-old-resource-events": {
         "task": "gameplay.cleanup_old_data",

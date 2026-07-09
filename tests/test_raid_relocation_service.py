@@ -6,7 +6,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from core.exceptions import RelocationError
+from core.exceptions import ItemInsufficientError, RelocationError
 from gameplay.constants import REGION_DICT
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.raid.relocation import _generate_unique_coordinate, relocate_manor
@@ -79,7 +79,10 @@ def test_relocate_manor_rejects_insufficient_gold(monkeypatch):
 
     monkeypatch.setattr("gameplay.services.raid.relocation.get_active_raid_count", lambda *_a, **_k: 0)
     monkeypatch.setattr("gameplay.services.raid.relocation.get_incoming_raids", lambda *_a, **_k: [])
-    monkeypatch.setattr("trade.services.auction_service.get_available_gold_bars", lambda *_a, **_k: 0)
+    monkeypatch.setattr(
+        "trade.services.auction.gold_bars.consume_available_gold_bars_locked",
+        lambda *_a, **_k: (_ for _ in ()).throw(ItemInsufficientError("金条", 1, 0)),
+    )
 
     with pytest.raises(RelocationError, match="可用金条不足"):
         relocate_manor(manor, next(iter(REGION_DICT.keys())))
@@ -108,10 +111,9 @@ def test_relocate_manor_updates_region_and_coordinates(monkeypatch):
 
     monkeypatch.setattr("gameplay.services.raid.relocation.get_active_raid_count", lambda *_a, **_k: 0)
     monkeypatch.setattr("gameplay.services.raid.relocation.get_incoming_raids", lambda *_a, **_k: [])
-    monkeypatch.setattr("trade.services.auction_service.get_available_gold_bars", lambda *_a, **_k: 9999)
     monkeypatch.setattr("gameplay.services.raid.relocation._generate_unique_coordinate", lambda *_a, **_k: (321, 654))
     monkeypatch.setattr(
-        "gameplay.services.inventory.core.consume_inventory_item_for_manor_locked",
+        "trade.services.auction.gold_bars.consume_available_gold_bars_locked",
         lambda *_a, **_k: None,
     )
 

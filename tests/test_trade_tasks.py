@@ -9,6 +9,7 @@ from trade.services.shop_config import ShopItemConfig
 from trade.tasks import (
     create_auction_round_task,
     process_expired_listings,
+    process_pending_auction_deliveries_task,
     refresh_shop_stock,
     settle_auction_round_task,
 )
@@ -189,6 +190,35 @@ def test_process_expired_listings_retries_on_error(monkeypatch):
 
     with pytest.raises(OSError, match="retry called"):
         process_expired_listings.run()
+
+    assert called["retry"] == 1
+
+
+@pytest.mark.django_db
+def test_process_pending_auction_deliveries_task_reports_processed_count(monkeypatch):
+    monkeypatch.setattr("trade.services.auction.delivery_outbox.process_pending_auction_deliveries", lambda: 3)
+
+    result = process_pending_auction_deliveries_task.run()
+
+    assert result == "处理了 3 个待交付拍卖奖励"
+
+
+@pytest.mark.django_db
+def test_process_pending_auction_deliveries_task_retries_on_database_error(monkeypatch):
+    monkeypatch.setattr(
+        "trade.services.auction.delivery_outbox.process_pending_auction_deliveries",
+        lambda: (_ for _ in ()).throw(OSError("delivery scan failed")),
+    )
+    called = {"retry": 0}
+
+    def _retry(exc):
+        called["retry"] += 1
+        raise OSError(f"retry called: {exc}")
+
+    monkeypatch.setattr(process_pending_auction_deliveries_task, "retry", _retry)
+
+    with pytest.raises(OSError, match="retry called"):
+        process_pending_auction_deliveries_task.run()
 
     assert called["retry"] == 1
 

@@ -5,9 +5,10 @@ from django.db.models import F
 from django.utils import timezone
 
 import guilds.constants as guild_constants
-from core.exceptions import GuildContributionError, GuildMembershipError
-from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
+from core.exceptions import GuildContributionError, GuildMembershipError, ItemInsufficientError, ItemNotFoundError
+from gameplay.models import Manor, ResourceEvent
 from gameplay.services.resources import spend_resources_locked
+from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 
 from ..models import Guild, GuildDonationLog, GuildMember, GuildResourceLog
 from .utils import lock_active_member_for_guild
@@ -115,30 +116,11 @@ def donate_resource(member, resource_type, amount):
         # 步骤3：扣除玩家资源（银两/粮食走庄园资源，金条走仓库InventoryItem）
         if resource_type == GOLD_BAR_ITEM_KEY:
             try:
-                gold_bar_template = ItemTemplate.objects.get(key=GOLD_BAR_ITEM_KEY)
-            except ItemTemplate.DoesNotExist:
-                raise GuildContributionError("金条物品不存在，请联系管理员")
-
-            gold_bar_item = (
-                InventoryItem.objects.select_for_update()
-                .filter(
-                    manor=manor,
-                    template=gold_bar_template,
-                    storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-                )
-                .first()
-            )
-            if not gold_bar_item or gold_bar_item.quantity < amount:
+                consume_available_gold_bars_locked(manor, amount)
+            except ItemInsufficientError:
                 raise GuildContributionError("金条不足")
-
-            updated = InventoryItem.objects.filter(pk=gold_bar_item.pk, quantity__gte=amount).update(
-                quantity=F("quantity") - amount
-            )
-            if not updated:
-                raise GuildContributionError("金条不足")
-            gold_bar_item.refresh_from_db(fields=["quantity"])
-            if gold_bar_item.quantity == 0:
-                gold_bar_item.delete()
+            except ItemNotFoundError as exc:
+                raise GuildContributionError("金条物品不存在，请联系管理员") from exc
         else:
             spend_resources_locked(
                 manor, {resource_type: amount}, note="帮会捐献", reason=ResourceEvent.Reason.GUILD_DONATION

@@ -18,6 +18,8 @@ from core.config import GUEST
 from core.exceptions import (
     GuestCapacityFullError,
     GuestNotIdleError,
+    ItemInsufficientError,
+    ItemNotFoundError,
     JailError,
     OathBondAlreadyExistsError,
     OathCapacityFullError,
@@ -29,10 +31,11 @@ from core.exceptions import (
 from guests.models import Guest, GuestStatus, GuestTemplate
 from guests.services.recruitment_guests import grant_template_skills
 from guests.utils.recruitment_variance import apply_recruitment_variance
+from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 
 from ..constants import PVPConstants
 from ..models import JailPrisoner, Manor, OathBond
-from .inventory.core import consume_inventory_item, get_item_quantity
+from .inventory.core import get_item_quantity
 
 GOLD_BAR_ITEM_KEY = "gold_bar"
 
@@ -141,10 +144,6 @@ def draw_pie(manor: Manor, prisoner_id: int) -> JailPrisoner:
     """
     画饼：消耗1金条，随机降低囚徒5-10点忠诚度
     """
-    from django.db.models import F
-
-    from gameplay.models import InventoryItem  # 修复：补充缺失的导入
-
     prisoner = (
         JailPrisoner.objects.select_for_update()
         .filter(pk=prisoner_id, captor=manor, status=JailPrisoner.Status.HELD)
@@ -153,28 +152,12 @@ def draw_pie(manor: Manor, prisoner_id: int) -> JailPrisoner:
     if not prisoner:
         raise PrisonerUnavailableError()
 
-    # 检查金条
     cost = int(getattr(PVPConstants, "JAIL_PERSUADE_GOLD_BAR_COST", 1) or 1)
-    # 使用 select_for_update 锁定库存行
-    gold_bar_item = (
-        InventoryItem.objects.select_for_update()
-        .filter(
-            manor=manor,
-            template__key=GOLD_BAR_ITEM_KEY,
-            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-            quantity__gte=cost,
-        )
-        .first()
-    )
-
-    if not gold_bar_item:
-        have = get_item_quantity(manor, GOLD_BAR_ITEM_KEY)
+    try:
+        consume_available_gold_bars_locked(manor, cost)
+    except (ItemInsufficientError, ItemNotFoundError) as exc:
+        have = exc.context.get("available", get_item_quantity(manor, GOLD_BAR_ITEM_KEY))
         raise JailError(f"金条不足，需要 {cost} 个（当前 {have} 个）")
-
-    # 原子消耗金条
-    InventoryItem.objects.filter(pk=gold_bar_item.pk).update(quantity=F("quantity") - cost)
-    # 清理零库存
-    InventoryItem.objects.filter(pk=gold_bar_item.pk, quantity__lte=0).delete()
 
     # 随机降低忠诚度
     loyalty_min = int(getattr(PVPConstants, "JAIL_PERSUADE_LOYALTY_MIN", 5) or 5)
@@ -227,10 +210,11 @@ def recruit_prisoner(manor: Manor, prisoner_id: int) -> Guest:
 
     cost = int(getattr(PVPConstants, "JAIL_RECRUIT_GOLD_BAR_COST", 1) or 1)
     if cost > 0:
-        have = get_item_quantity(manor, GOLD_BAR_ITEM_KEY)
-        if have < cost:
+        try:
+            consume_available_gold_bars_locked(locked_manor, cost)
+        except (ItemInsufficientError, ItemNotFoundError) as exc:
+            have = exc.context.get("available", get_item_quantity(manor, GOLD_BAR_ITEM_KEY))
             raise JailError(f"金条不足，需要 {cost} 个（当前 {have} 个）")
-        consume_inventory_item(manor, GOLD_BAR_ITEM_KEY, cost)
 
     rng = random.Random()
     gender_choice = template.default_gender

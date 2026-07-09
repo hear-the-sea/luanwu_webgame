@@ -19,12 +19,10 @@ from core.utils.infrastructure import (
 from gameplay.models import ItemTemplate, Manor
 from gameplay.services.utils.messages import create_message
 from gameplay.services.utils.notifications import notify_user
-from trade.models import AuctionBid, AuctionRound, AuctionSlot
+from trade.models import AuctionBid, AuctionDelivery, AuctionRound, AuctionSlot
 from trade.services.auction.bidding import get_slot_ranking
-from trade.services.auction.rounds_delivery_support import (
-    grant_auction_item_directly_impl,
-    send_winning_notification_vickrey_impl,
-)
+from trade.services.auction.delivery_outbox import create_auction_delivery, process_auction_delivery
+from trade.services.auction.rounds_delivery_support import grant_auction_item_directly_impl
 from trade.services.auction.rounds_lifecycle_support import create_auction_round_impl, settle_auction_round_impl
 from trade.services.auction.rounds_settlement_support import (
     consume_winning_bid_frozen_gold_bars_impl,
@@ -173,7 +171,8 @@ def _settle_slot(slot: AuctionSlot) -> Dict:
         safe_int_func=safe_int,
         refund_losing_bids_func=_refund_losing_bids,
         consume_winning_bid_frozen_gold_bars_func=_consume_winning_bid_frozen_gold_bars,
-        send_winning_notification_func=_send_winning_notification_vickrey,
+        create_winning_delivery_func=_create_winning_delivery,
+        process_winning_delivery_func=_process_winning_delivery,
         get_slot_ranking_func=get_slot_ranking,
         logger=logger,
     )
@@ -191,15 +190,26 @@ def _partial_consume_frozen_gold_bars(bid: AuctionBid, manor: Manor, consume_amo
     )
 
 
-def _send_winning_notification_vickrey(
-    slot: AuctionSlot, winner: Manor, settlement_price: int, total_winners: int
-) -> None:
+def _create_winning_delivery(
+    slot: AuctionSlot,
+    winning_bid: AuctionBid,
+    winner: Manor,
+    settlement_price: int,
+    total_winners: int,
+) -> AuctionDelivery:
+    return create_auction_delivery(
+        slot=slot,
+        bid=winning_bid,
+        manor=winner,
+        settlement_price=settlement_price,
+        total_winners=total_winners,
+    )
+
+
+def _process_winning_delivery(delivery_id: int) -> None:
     """发送中标通知并发放物品（维克里拍卖，每人1个）。"""
-    send_winning_notification_vickrey_impl(
-        slot,
-        winner,
-        settlement_price,
-        total_winners,
+    process_auction_delivery(
+        delivery_id,
         create_message_func=create_message,
         grant_item_directly_func=_grant_auction_item_directly,
         safe_notify_user_func=lambda user_id, payload: _safe_notify_user(
@@ -207,7 +217,6 @@ def _send_winning_notification_vickrey(
             payload,
             log_context="auction won notification",
         ),
-        logger=logger,
         message_delivery_exceptions=AUCTION_MESSAGE_DELIVERY_EXCEPTIONS,
     )
 

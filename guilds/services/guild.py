@@ -5,10 +5,18 @@ from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils import timezone
 
-from core.exceptions import GuildMembershipError, GuildPermissionError, GuildValidationError, GuildWarehouseError
+from core.exceptions import (
+    GuildMembershipError,
+    GuildPermissionError,
+    GuildValidationError,
+    GuildWarehouseError,
+    ItemInsufficientError,
+    ItemNotFoundError,
+)
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.models import Manor
 from gameplay.services.utils.messages import bulk_create_messages
+from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 
 from .. import constants as guild_constants
 from ..models import Guild, GuildAnnouncement, GuildHeroPoolEntry, GuildMember, GuildTechnology
@@ -59,8 +67,6 @@ def create_guild(user, name, description="", emblem="default"):
     Raises:
         GuildValidationError | GuildMembershipError: 验证失败
     """
-    from gameplay.models import InventoryItem, ItemTemplate
-
     # 校验帮会名称格式
     name = name.strip() if name else ""
     validate_guild_name(name)
@@ -78,32 +84,13 @@ def create_guild(user, name, description="", emblem="default"):
         # 锁定庄园行（同时作为创建流程的串行化锚点）
         manor = Manor.objects.select_for_update().get(user=user)
 
-        # 锁定并扣减金条库存（仓库）
+        # 锁定并扣减未被冻结的金条库存（仓库）
         try:
-            gold_bar_template = ItemTemplate.objects.get(key="gold_bar")
-        except ItemTemplate.DoesNotExist:
-            raise GuildValidationError("金条物品不存在，请联系管理员")
-
-        gold_bar_item = (
-            InventoryItem.objects.select_for_update()
-            .filter(
-                manor=manor,
-                template=gold_bar_template,
-                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-            )
-            .first()
-        )
-        if not gold_bar_item or gold_bar_item.quantity < required_gold_bars:
-            raise GuildValidationError(f"金条不足，需要{required_gold_bars}金条")
-
-        updated = InventoryItem.objects.filter(pk=gold_bar_item.pk, quantity__gte=required_gold_bars).update(
-            quantity=F("quantity") - required_gold_bars
-        )
-        if not updated:
-            raise GuildValidationError(f"金条不足，需要{required_gold_bars}金条")
-        gold_bar_item.refresh_from_db(fields=["quantity"])
-        if gold_bar_item.quantity == 0:
-            gold_bar_item.delete()
+            consume_available_gold_bars_locked(manor, required_gold_bars)
+        except ItemNotFoundError as exc:
+            raise GuildValidationError("金条物品不存在，请联系管理员") from exc
+        except ItemInsufficientError as exc:
+            raise GuildValidationError(f"金条不足，需要{required_gold_bars}金条") from exc
 
         # 创建帮会
         try:

@@ -5,10 +5,10 @@ from types import SimpleNamespace
 import pytest
 from django.utils import timezone
 
-from core.exceptions import InsufficientSilverError, ItemNotConfiguredError
+from core.exceptions import InsufficientSilverError, ItemInsufficientError, ItemNotConfiguredError
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
-from trade.models import ShopPurchaseLog, ShopSellLog, ShopStock
+from trade.models import AuctionBid, FrozenGoldBar, ShopPurchaseLog, ShopSellLog, ShopStock
 from trade.services.shop_config import ShopItemConfig
 from trade.services.shop_service import (
     _get_category,
@@ -301,6 +301,48 @@ def test_sell_item_grants_silver_and_clears_zero_inventory(monkeypatch, django_u
     assert log.quantity == 1
     assert log.unit_price == 7
     assert log.total_income == 7
+
+
+@pytest.mark.django_db
+def test_sell_item_rejects_frozen_gold_bars(django_user_model):
+    from tests.helpers.auction import create_active_round_slot, ensure_gold_bar_template
+
+    user = django_user_model.objects.create_user(username="shop_sell_frozen_gold", password="pass12345")
+    manor = ensure_manor(user)
+    _set_manor_silver(manor, 0)
+
+    gold_bar_template = ensure_gold_bar_template()
+    gold_bar_template.price = 100
+    gold_bar_template.save(update_fields=["price"])
+    InventoryItem.objects.create(
+        manor=manor,
+        template=gold_bar_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        quantity=10,
+    )
+    slot = create_active_round_slot(item_key="shop_sell_frozen_gold_item")
+    bid = AuctionBid.objects.create(
+        slot=slot,
+        manor=manor,
+        amount=10,
+        status=AuctionBid.Status.ACTIVE,
+        frozen_gold_bars=10,
+    )
+    FrozenGoldBar.objects.create(
+        manor=manor,
+        amount=10,
+        reason=FrozenGoldBar.Reason.AUCTION_BID,
+        auction_bid=bid,
+        is_frozen=True,
+    )
+
+    with pytest.raises(ItemInsufficientError, match="数量不足"):
+        sell_item(manor, gold_bar_template.key, 1)
+
+    manor.refresh_from_db()
+    assert manor.silver == 0
+    assert InventoryItem.objects.get(manor=manor, template=gold_bar_template).quantity == 10
+    assert not ShopSellLog.objects.filter(manor=manor, item_key=gold_bar_template.key).exists()
 
 
 @pytest.mark.django_db

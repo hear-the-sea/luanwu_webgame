@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Callable
+from typing import Any, Callable
 
 from django.db import transaction
 from django.utils import timezone
@@ -98,7 +98,8 @@ def settle_slot_impl(
     safe_int_func: Callable[[object, int], int],
     refund_losing_bids_func: Callable[[list[AuctionBid]], None],
     consume_winning_bid_frozen_gold_bars_func: Callable[[AuctionBid, Manor, int], None],
-    send_winning_notification_func: Callable[[AuctionSlot, Manor, int, int], None],
+    create_winning_delivery_func: Callable[[AuctionSlot, AuctionBid, Manor, int, int], Any],
+    process_winning_delivery_func: Callable[[int], None],
     get_slot_ranking_func: Callable[[AuctionSlot], list[AuctionBid]],
     logger: logging.Logger,
 ) -> dict[str, object]:
@@ -137,14 +138,18 @@ def settle_slot_impl(
 
             winning_bid.status = AuctionBid.Status.WON
             winning_bid.save(update_fields=["status"])
+            delivery = create_winning_delivery_func(
+                slot,
+                winning_bid,
+                winner,
+                settlement_price,
+                actual_winner_count,
+            )
 
             def _notify_winner(
-                slot: AuctionSlot = slot,
-                winner: Manor = winner,
-                settlement_price: int = settlement_price,
-                total_winners: int = actual_winner_count,
+                delivery_id: int = delivery.id,
             ) -> None:
-                send_winning_notification_func(slot, winner, settlement_price, total_winners)
+                process_winning_delivery_func(delivery_id)
 
             transaction.on_commit(_notify_winner)
 
@@ -189,7 +194,12 @@ def partial_consume_frozen_gold_bars_impl(
                 f"partial consume amount exceeds frozen amount: bid_id={bid.id} consume={consume_amount} amount={locked_amount}"
             )
 
-        consume_inventory_item_for_manor_locked(manor, GOLD_BAR_ITEM_KEY, consume_amount)
+        consume_inventory_item_for_manor_locked(
+            manor,
+            GOLD_BAR_ITEM_KEY,
+            consume_amount,
+            allow_frozen_gold_bars=True,
+        )
 
         locked_record.is_frozen = False
         locked_record.unfrozen_at = timezone.now()

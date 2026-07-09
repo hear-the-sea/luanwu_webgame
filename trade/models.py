@@ -423,3 +423,83 @@ class FrozenGoldBar(models.Model):
     def __str__(self):
         status = "冻结中" if self.is_frozen else "已解冻"
         return f"{self.manor.name} {self.amount}金条 ({status})"
+
+
+class AuctionDelivery(models.Model):
+    """拍卖中标交付 outbox，用于补偿提交后回调丢失的奖励发放。"""
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "待交付"
+        DELIVERED = "delivered", "已交付"
+
+    class Method(models.TextChoices):
+        MESSAGE_ATTACHMENT = "message_attachment", "消息附件"
+        DIRECT_INVENTORY = "direct_inventory", "直接入库"
+
+    slot = models.ForeignKey(
+        AuctionSlot,
+        on_delete=models.CASCADE,
+        related_name="deliveries",
+        verbose_name="拍卖位",
+    )
+    bid = models.OneToOneField(
+        AuctionBid,
+        on_delete=models.CASCADE,
+        related_name="delivery",
+        verbose_name="中标出价",
+    )
+    manor = models.ForeignKey(
+        "gameplay.Manor",
+        on_delete=models.CASCADE,
+        related_name="auction_deliveries",
+        verbose_name="庄园",
+    )
+    item_template = models.ForeignKey(
+        "gameplay.ItemTemplate",
+        on_delete=models.PROTECT,
+        related_name="auction_deliveries",
+        verbose_name="物品模板",
+    )
+    message = models.ForeignKey(
+        "gameplay.Message",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="auction_deliveries",
+        verbose_name="交付消息",
+    )
+    quantity = models.PositiveIntegerField("数量", default=1)
+    settlement_price = models.PositiveIntegerField("结算价（金条）")
+    total_winners = models.PositiveIntegerField("中标人数", default=1)
+    status = models.CharField(
+        "状态",
+        max_length=16,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+    )
+    delivery_method = models.CharField(
+        "交付方式",
+        max_length=32,
+        choices=Method.choices,
+        blank=True,
+    )
+    attempts = models.PositiveIntegerField("尝试次数", default=0)
+    last_error = models.TextField("最近错误", blank=True)
+    delivered_at = models.DateTimeField("交付时间", null=True, blank=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    updated_at = models.DateTimeField("更新时间", auto_now=True)
+
+    class Meta:
+        db_table = "trade_auction_delivery"
+        verbose_name = "拍卖交付"
+        verbose_name_plural = "拍卖交付"
+        ordering = ["created_at"]
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+            models.Index(fields=["manor", "status"]),
+            models.Index(fields=["slot", "status"]),
+        ]
+
+    def __str__(self):
+        return f"{self.manor.name} {self.item_template.name} x{self.quantity} ({self.get_status_display()})"

@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Any, Callable, Dict
 
 from django.db import IntegrityError, transaction
-from django.db.models import F
+from django.db.models import F, Sum
 from django.db.models.functions import Now
 
 from core.exceptions import InsufficientStockError, ItemNotFoundError
@@ -82,7 +82,12 @@ def add_item_to_inventory_locked(
     return item
 
 
-def consume_inventory_item_locked(locked_item: InventoryItem, amount: int = 1) -> None:
+def consume_inventory_item_locked(
+    locked_item: InventoryItem,
+    amount: int = 1,
+    *,
+    allow_frozen_gold_bars: bool = False,
+) -> None:
     """
     消耗背包物品（假设传入的 item 行已在当前事务中被锁定）。
     """
@@ -96,6 +101,15 @@ def consume_inventory_item_locked(locked_item: InventoryItem, amount: int = 1) -
     item_name = getattr(getattr(locked_item, "template", None), "name", "物品")
     if locked_item.quantity < consume_amount:
         raise InsufficientStockError(item_name, consume_amount, locked_item.quantity)
+    if (
+        locked_item.template.key == "gold_bar"
+        and locked_item.storage_location == InventoryItem.StorageLocation.WAREHOUSE
+        and not allow_frozen_gold_bars
+    ):
+        frozen = _get_frozen_gold_bar_quantity(locked_item.manor)
+        available = max(0, int(locked_item.quantity or 0) - frozen)
+        if available < consume_amount:
+            raise InsufficientStockError(item_name, consume_amount, available)
 
     new_qty = int(locked_item.quantity) - int(consume_amount)
 
@@ -113,7 +127,20 @@ def consume_inventory_item_locked(locked_item: InventoryItem, amount: int = 1) -
         locked_item.quantity = new_qty
 
 
-def consume_inventory_item_for_manor_locked(manor: Manor, item_key: str, amount: int = 1) -> None:
+def _get_frozen_gold_bar_quantity(manor: Manor) -> int:
+    from trade.models import FrozenGoldBar
+
+    result = FrozenGoldBar.objects.filter(manor=manor, is_frozen=True).aggregate(total=Sum("amount"))
+    return int(result["total"] or 0)
+
+
+def consume_inventory_item_for_manor_locked(
+    manor: Manor,
+    item_key: str,
+    amount: int = 1,
+    *,
+    allow_frozen_gold_bars: bool = False,
+) -> None:
     """
     按物品 key 消耗庄园仓库物品（在事务内加锁该库存行，但不创建新的事务块）。
     """
@@ -134,7 +161,12 @@ def consume_inventory_item_for_manor_locked(manor: Manor, item_key: str, amount:
     if not locked:
         template = ItemTemplate.objects.filter(key=str(item_key)).only("name").first()
         raise InsufficientStockError(template.name if template else str(item_key), consume_amount, 0)
-    consume_inventory_item_locked(locked, consume_amount)
+    if str(item_key) == "gold_bar" and not allow_frozen_gold_bars:
+        frozen = _get_frozen_gold_bar_quantity(manor)
+        available = max(0, int(locked.quantity or 0) - frozen)
+        if available < consume_amount:
+            raise InsufficientStockError(locked.template.name, consume_amount, available)
+    consume_inventory_item_locked(locked, consume_amount, allow_frozen_gold_bars=allow_frozen_gold_bars)
 
 
 def sync_manor_grain(manor: Manor) -> None:
