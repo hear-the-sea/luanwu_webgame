@@ -5,12 +5,13 @@ from __future__ import annotations
 import logging
 from typing import Any, Callable
 
-from django.db import transaction
+from django.db import IntegrityError, ProgrammingError, transaction
 from django.db.models import F
 from django.utils import timezone
 
 from core.exceptions import MessageError
-from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS, combine_infrastructure_exceptions
+from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
+from core.utils.side_effects import schedule_best_effort_after_commit
 from gameplay.models import ItemTemplate, Manor, Message
 from gameplay.services.utils.messages import create_message
 from gameplay.services.utils.notifications import notify_user
@@ -19,10 +20,7 @@ from trade.services.auction.rounds_delivery_support import grant_auction_item_di
 
 logger = logging.getLogger(__name__)
 
-AUCTION_MESSAGE_DELIVERY_EXCEPTIONS = combine_infrastructure_exceptions(
-    MessageError,
-    infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
-)
+AUCTION_MESSAGE_DELIVERY_EXCEPTIONS = (MessageError,)
 
 
 def create_auction_delivery(
@@ -107,6 +105,10 @@ def process_auction_delivery(
                     "items": {delivery.item_template.key: delivery.quantity},
                 },
             )
+        except ProgrammingError:
+            raise
+        except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
+            raise
         except message_delivery_exceptions as exc:
             delivery_method = AuctionDelivery.Method.DIRECT_INVENTORY
             logger.exception(
@@ -119,19 +121,17 @@ def process_auction_delivery(
             )
             grant_item_directly_func(delivery.manor, delivery.item_template, delivery.quantity)
 
-        safe_notify_user_func(
-            delivery.manor.user_id,
-            {
-                "kind": "auction_won",
-                "title": "【拍卖行】恭喜您成功拍得物品",
-                "item_name": delivery.item_template.name,
-                "item_key": delivery.item_template.key,
-                "quantity": delivery.quantity,
-                "price": delivery.settlement_price,
-                "total_winners": delivery.total_winners,
-                "delivery": delivery_method,
-            },
-        )
+        notification_user_id = delivery.manor.user_id
+        notification_payload = {
+            "kind": "auction_won",
+            "title": "【拍卖行】恭喜您成功拍得物品",
+            "item_name": delivery.item_template.name,
+            "item_key": delivery.item_template.key,
+            "quantity": delivery.quantity,
+            "price": delivery.settlement_price,
+            "total_winners": delivery.total_winners,
+            "delivery": delivery_method,
+        }
 
         delivery.status = AuctionDelivery.Status.DELIVERED
         delivery.delivery_method = delivery_method
@@ -148,7 +148,32 @@ def process_auction_delivery(
                 "updated_at",
             ]
         )
+        schedule_best_effort_after_commit(
+            lambda: safe_notify_user_func(notification_user_id, notification_payload),
+            logger=logger,
+            log_message=f"auction delivery notification failed: delivery_id={delivery.id}",
+            degraded_component="auction_delivery_notification",
+        )
         return True
+
+
+def _record_pending_delivery_failure_best_effort(delivery_id: int, exc: Exception) -> None:
+    error_text = f"{type(exc).__name__}: {exc}"
+    try:
+        AuctionDelivery.objects.filter(pk=delivery_id, status=AuctionDelivery.Status.PENDING).update(
+            attempts=F("attempts") + 1,
+            last_error=error_text,
+            updated_at=timezone.now(),
+        )
+    except ProgrammingError:
+        raise
+    except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
+        logger.exception(
+            "failed to record pending auction delivery failure without replacing original error: "
+            "delivery_id=%s original_error=%s",
+            delivery_id,
+            error_text,
+        )
 
 
 def process_pending_auction_deliveries(*, limit: int = 100) -> int:
@@ -160,6 +185,22 @@ def process_pending_auction_deliveries(*, limit: int = 100) -> int:
     )
     delivered_count = 0
     for delivery_id in delivery_ids:
-        if process_auction_delivery(delivery_id):
-            delivered_count += 1
+        try:
+            if process_auction_delivery(delivery_id):
+                delivered_count += 1
+        except IntegrityError as exc:
+            _record_pending_delivery_failure_best_effort(delivery_id, exc)
+            logger.exception(
+                "deterministic auction delivery failure; keeping pending and continuing: delivery_id=%s",
+                delivery_id,
+            )
+        except ProgrammingError:
+            raise
+        except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
+            _record_pending_delivery_failure_best_effort(delivery_id, exc)
+            logger.exception(
+                "transient auction delivery failure; keeping pending and aborting scan: delivery_id=%s",
+                delivery_id,
+            )
+            raise
     return delivered_count

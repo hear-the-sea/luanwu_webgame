@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import pytest
+from django.db import OperationalError as DatabaseOperationalError
+from django.db import ProgrammingError
 from django.utils import timezone
+from django_redis.exceptions import ConnectionInterrupted
 from kombu.exceptions import OperationalError
 
 from trade.models import ShopStock
@@ -205,22 +208,88 @@ def test_process_pending_auction_deliveries_task_reports_processed_count(monkeyp
 
 @pytest.mark.django_db
 def test_process_pending_auction_deliveries_task_retries_on_database_error(monkeypatch):
+    error = DatabaseOperationalError("delivery scan failed")
     monkeypatch.setattr(
         "trade.services.auction.delivery_outbox.process_pending_auction_deliveries",
-        lambda: (_ for _ in ()).throw(OSError("delivery scan failed")),
+        lambda: (_ for _ in ()).throw(error),
     )
-    called = {"retry": 0}
+    retried_with = []
 
     def _retry(exc):
-        called["retry"] += 1
-        raise OSError(f"retry called: {exc}")
+        retried_with.append(exc)
+        raise RuntimeError("retry called")
 
     monkeypatch.setattr(process_pending_auction_deliveries_task, "retry", _retry)
 
-    with pytest.raises(OSError, match="retry called"):
+    with pytest.raises(RuntimeError, match="retry called"):
         process_pending_auction_deliveries_task.run()
 
-    assert called["retry"] == 1
+    assert retried_with == [error]
+
+
+@pytest.mark.django_db
+def test_process_pending_auction_deliveries_task_programming_error_bubbles_without_retry(monkeypatch):
+    error = ProgrammingError("delivery scan contract bug")
+    monkeypatch.setattr(
+        "trade.services.auction.delivery_outbox.process_pending_auction_deliveries",
+        lambda: (_ for _ in ()).throw(error),
+    )
+    retry_calls = []
+
+    def _retry(exc):
+        retry_calls.append(exc)
+        raise AssertionError("retry should not be called")
+
+    monkeypatch.setattr(process_pending_auction_deliveries_task, "retry", _retry)
+
+    with pytest.raises(ProgrammingError) as exc_info:
+        process_pending_auction_deliveries_task.run()
+
+    assert exc_info.value is error
+    assert retry_calls == []
+
+
+@pytest.mark.django_db
+def test_settle_auction_round_task_retries_on_cache_infrastructure_error(monkeypatch):
+    error = ConnectionInterrupted("settlement lock cache down")
+    monkeypatch.setattr(
+        "trade.services.auction_service.settle_auction_round",
+        lambda: (_ for _ in ()).throw(error),
+    )
+    retried_with = []
+
+    def _retry(exc):
+        retried_with.append(exc)
+        raise RuntimeError("retry called")
+
+    monkeypatch.setattr(settle_auction_round_task, "retry", _retry)
+
+    with pytest.raises(RuntimeError, match="retry called"):
+        settle_auction_round_task.run()
+
+    assert retried_with == [error]
+
+
+@pytest.mark.django_db
+def test_settle_auction_round_task_programming_error_bubbles_without_retry(monkeypatch):
+    error = ProgrammingError("settlement contract bug")
+    monkeypatch.setattr(
+        "trade.services.auction_service.settle_auction_round",
+        lambda: (_ for _ in ()).throw(error),
+    )
+    retry_calls = []
+
+    def _retry(exc):
+        retry_calls.append(exc)
+        raise AssertionError("retry should not be called")
+
+    monkeypatch.setattr(settle_auction_round_task, "retry", _retry)
+
+    with pytest.raises(ProgrammingError) as exc_info:
+        settle_auction_round_task.run()
+
+    assert exc_info.value is error
+    assert retry_calls == []
 
 
 @pytest.mark.django_db
@@ -270,9 +339,11 @@ def test_create_auction_round_task_tolerates_slots_count_error(monkeypatch):
 
 @pytest.mark.django_db
 def test_create_auction_round_task_slot_count_programming_error_bubbles_up(monkeypatch):
+    error = ProgrammingError("broken slot count contract")
+
     class _Slots:
         def count(self):
-            raise AssertionError("broken slot count contract")
+            raise error
 
     class _Round:
         round_number = 3
@@ -280,9 +351,19 @@ def test_create_auction_round_task_slot_count_programming_error_bubbles_up(monke
 
     monkeypatch.setattr("trade.services.auction_config.reload_auction_config", lambda: None)
     monkeypatch.setattr("trade.services.auction_service.create_auction_round", lambda: _Round())
+    retry_calls = []
 
-    with pytest.raises(AssertionError, match="broken slot count contract"):
+    def _retry(exc):
+        retry_calls.append(exc)
+        raise AssertionError("retry should not be called")
+
+    monkeypatch.setattr(create_auction_round_task, "retry", _retry)
+
+    with pytest.raises(ProgrammingError) as exc_info:
         create_auction_round_task.run()
+
+    assert exc_info.value is error
+    assert retry_calls == []
 
 
 @pytest.mark.django_db
@@ -307,20 +388,53 @@ def test_create_auction_round_task_retries_when_reload_fails(monkeypatch):
 
 
 @pytest.mark.django_db
+def test_create_auction_round_task_programming_error_bubbles_without_retry(monkeypatch):
+    error = ProgrammingError("create round contract bug")
+    monkeypatch.setattr("trade.services.auction_config.reload_auction_config", lambda: None)
+    monkeypatch.setattr(
+        "trade.services.auction_service.create_auction_round",
+        lambda: (_ for _ in ()).throw(error),
+    )
+    retry_calls = []
+
+    def _retry(exc):
+        retry_calls.append(exc)
+        raise AssertionError("retry should not be called")
+
+    monkeypatch.setattr(create_auction_round_task, "retry", _retry)
+
+    with pytest.raises(ProgrammingError) as exc_info:
+        create_auction_round_task.run()
+
+    assert exc_info.value is error
+    assert retry_calls == []
+
+
+@pytest.mark.django_db
 def test_settle_auction_round_task_sync_fallback_programming_error_bubbles_up(monkeypatch):
+    error = ProgrammingError("sync create round contract bug")
     monkeypatch.setattr(
         "trade.services.auction_service.settle_auction_round",
         lambda: {"settled": 1, "sold": 2, "unsold": 0, "total_gold_bars": 20},
     )
-
     monkeypatch.setattr(
-        "trade.tasks.create_auction_round_task.apply_async",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(ConnectionError("dispatch failed")),
+        "trade.tasks.safe_apply_async",
+        lambda *_args, **_kwargs: False,
     )
     monkeypatch.setattr(
         "trade.services.auction_service.create_auction_round",
-        lambda: (_ for _ in ()).throw(AssertionError("broken create round contract")),
+        lambda: (_ for _ in ()).throw(error),
     )
+    retry_calls = []
 
-    with pytest.raises(AssertionError, match="broken create round contract"):
+    def _retry(exc):
+        retry_calls.append(exc)
+        raise AssertionError("retry should not be called")
+
+    monkeypatch.setattr(settle_auction_round_task, "retry", _retry)
+
+    with pytest.raises(ProgrammingError) as exc_info:
         settle_auction_round_task.run()
+
+    assert exc_info.value is error
+    assert retry_calls == []

@@ -2,17 +2,188 @@ from __future__ import annotations
 
 import asyncio
 import time
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
+from asgiref.sync import async_to_sync
+from channels.testing import WebsocketCommunicator
 from django.core.cache import cache
 from django.test import SimpleTestCase
 from django_redis.exceptions import ConnectionInterrupted
 from redis.exceptions import RedisError
 
-from websocket.consumers import NotificationConsumer, OnlineStatsConsumer
+from websocket.consumers import NotificationConsumer, OnlineStatsConsumer, WorldChatConsumer
+from websocket.consumers.session_guard import WebSocketSessionValidationResult, WebSocketSessionValidationUnavailable
 
 
 class NotificationConsumerTests(SimpleTestCase):
+    def test_asgi_connect_accepts_then_closes_1013_when_session_validation_is_unavailable(self):
+        async def _scenario():
+            communicator = WebsocketCommunicator(NotificationConsumer.as_asgi(), "/ws/notifications/")
+            validation = AsyncMock(return_value=WebSocketSessionValidationResult.UNAVAILABLE)
+            with (
+                patch.object(NotificationConsumer, "_ensure_valid_session", validation),
+                patch("channels.consumer.aclose_old_connections", new_callable=AsyncMock) as close_connections,
+                patch(
+                    "channels.generic.websocket.aclose_old_connections",
+                    new_callable=AsyncMock,
+                ) as websocket_close_connections,
+            ):
+                try:
+                    connected, _subprotocol = await communicator.connect(timeout=1)
+                    assert connected is True
+                    output = await communicator.receive_output(timeout=1)
+                    assert output == {"type": "websocket.close", "code": 1013}
+                    await communicator.disconnect(code=1013, timeout=1)
+                finally:
+                    if not communicator.future.done():
+                        await communicator.disconnect(code=1013, timeout=1)
+
+                assert close_connections.await_count >= 1
+                assert websocket_close_connections.await_count >= 1
+                assert communicator.future.done()
+                assert not communicator.future.cancelled()
+
+        async_to_sync(_scenario)()
+
+    @staticmethod
+    async def _assert_session_guard_rejection(
+        user,
+        validation_result,
+        message_type,
+        expected_close_code,
+    ):
+        consumer = NotificationConsumer()
+        consumer.scope = {"user": user, "path": "/ws/notifications/"}
+        consumer.accept = AsyncMock()
+        consumer.close = AsyncMock()
+        consumer._ensure_valid_session = AsyncMock(return_value=validation_result)
+
+        allowed = await consumer._guard_single_session({"type": message_type})
+
+        assert allowed is False
+        if message_type == "websocket.connect":
+            consumer.accept.assert_awaited_once_with()
+        else:
+            consumer.accept.assert_not_awaited()
+        consumer.close.assert_awaited_once_with(code=expected_close_code)
+
+    def test_session_guard_rejects_unauthenticated_connect_with_terminal_code(self):
+        asyncio.run(
+            self._assert_session_guard_rejection(
+                None,
+                WebSocketSessionValidationResult.INVALID,
+                "websocket.connect",
+                4401,
+            )
+        )
+
+    def test_session_guard_rejects_invalid_authenticated_connect_with_terminal_code(self):
+        class _User:
+            id = 7
+            is_authenticated = True
+
+        asyncio.run(
+            self._assert_session_guard_rejection(
+                _User(),
+                WebSocketSessionValidationResult.INVALID,
+                "websocket.connect",
+                4403,
+            )
+        )
+
+    def test_session_validation_converts_sync_unavailable_to_result(self):
+        class _User:
+            id = 7
+            is_authenticated = True
+
+        consumer = NotificationConsumer()
+        consumer.scope = {"user": _User(), "path": "/ws/notifications/"}
+        unavailable = WebSocketSessionValidationUnavailable("session backend unavailable")
+
+        def _database_sync_to_async_adapter(_func, *, thread_sensitive):
+            assert thread_sensitive is True
+
+            async def _raise_unavailable(_scope):
+                raise unavailable
+
+            return _raise_unavailable
+
+        with (
+            patch(
+                "websocket.consumers.session_guard.database_sync_to_async",
+                side_effect=_database_sync_to_async_adapter,
+            ),
+            patch(
+                "websocket.consumers.session_guard.should_fail_open_on_single_session_unavailable",
+                return_value=False,
+            ),
+            patch("websocket.consumers.session_guard.record_degradation") as record_degradation_mock,
+        ):
+            result = asyncio.run(consumer._ensure_valid_session(force=True))
+
+        assert result is WebSocketSessionValidationResult.UNAVAILABLE
+        record_degradation_mock.assert_called_once()
+        assert record_degradation_mock.call_args.kwargs["component"] == "single_session_websocket"
+
+    def test_session_guard_closes_connect_with_transient_code_when_validation_is_unavailable(self):
+        class _User:
+            id = 7
+            is_authenticated = True
+
+        asyncio.run(
+            self._assert_session_guard_rejection(
+                _User(),
+                WebSocketSessionValidationResult.UNAVAILABLE,
+                "websocket.connect",
+                1013,
+            )
+        )
+
+    def test_session_guard_closes_active_connection_with_transient_code_when_validation_is_unavailable(self):
+        class _User:
+            id = 7
+            is_authenticated = True
+
+        asyncio.run(
+            self._assert_session_guard_rejection(
+                _User(),
+                WebSocketSessionValidationResult.UNAVAILABLE,
+                "websocket.receive",
+                1013,
+            )
+        )
+
+    def test_session_guard_does_not_accept_again_when_active_session_becomes_invalid(self):
+        class _User:
+            id = 7
+            is_authenticated = True
+
+        asyncio.run(
+            self._assert_session_guard_rejection(
+                _User(),
+                WebSocketSessionValidationResult.INVALID,
+                "websocket.receive",
+                4403,
+            )
+        )
+
+    def test_session_guard_rejects_unknown_validation_result_without_side_effects(self):
+        class _User:
+            id = 7
+            is_authenticated = True
+
+        consumer = NotificationConsumer()
+        consumer.scope = {"user": _User(), "path": "/ws/notifications/"}
+        consumer.accept = AsyncMock()
+        consumer.close = AsyncMock()
+        consumer._ensure_valid_session = AsyncMock(return_value=object())
+
+        with self.assertRaisesRegex(RuntimeError, "Unexpected websocket session validation result"):
+            asyncio.run(consumer._guard_single_session({"type": "websocket.connect"}))
+
+        consumer.accept.assert_not_awaited()
+        consumer.close.assert_not_awaited()
+
     def test_connect_rejects_unauthenticated(self):
         consumer = NotificationConsumer()
         consumer.scope = {"user": None, "path": "/ws/", "client": ("127.0.0.1", 1234)}
@@ -22,7 +193,7 @@ class NotificationConsumerTests(SimpleTestCase):
 
         asyncio.run(consumer.connect())
 
-        consumer.close.assert_awaited_once()
+        consumer.close.assert_awaited_once_with(code=4401)
         consumer.accept.assert_not_awaited()
 
     def test_connect_adds_group_for_authenticated_user(self):
@@ -36,7 +207,7 @@ class NotificationConsumerTests(SimpleTestCase):
         consumer.close = AsyncMock()
         consumer.accept = AsyncMock()
         consumer.channel_layer = AsyncMock()
-        consumer._ensure_valid_session = AsyncMock(return_value=True)
+        consumer._ensure_valid_session = AsyncMock(return_value=WebSocketSessionValidationResult.VALID)
 
         asyncio.run(consumer.connect())
 
@@ -55,24 +226,66 @@ class NotificationConsumerTests(SimpleTestCase):
         consumer.close = AsyncMock()
         consumer.accept = AsyncMock()
         consumer.channel_layer = AsyncMock()
-        consumer._ensure_valid_session = AsyncMock(return_value=False)
+        consumer._ensure_valid_session = AsyncMock(return_value=WebSocketSessionValidationResult.INVALID)
 
         asyncio.run(consumer.connect())
 
-        consumer.close.assert_awaited_once_with()
+        consumer.close.assert_awaited_once_with(code=4403)
         consumer.accept.assert_not_awaited()
 
-    def test_notify_message_filters_payload(self):
+    def test_connect_closes_1013_when_session_validation_is_unavailable(self):
+        class _User:
+            id = 7
+            is_authenticated = True
+
+        consumer = NotificationConsumer()
+        consumer.scope = {"user": _User(), "path": "/ws/", "client": ("127.0.0.1", 1234)}
+        consumer.close = AsyncMock()
+        consumer.accept = AsyncMock()
+        consumer.channel_layer = AsyncMock()
+        consumer._ensure_valid_session = AsyncMock(return_value=WebSocketSessionValidationResult.UNAVAILABLE)
+
+        asyncio.run(consumer.connect())
+
+        consumer.close.assert_awaited_once_with(code=1013)
+        consumer.accept.assert_not_awaited()
+
+    def test_connect_rejects_unknown_validation_result_without_side_effects(self):
+        class _User:
+            id = 7
+            is_authenticated = True
+
+        consumer = NotificationConsumer()
+        consumer.scope = {"user": _User(), "path": "/ws/", "client": ("127.0.0.1", 1234)}
+        consumer.close = AsyncMock()
+        consumer.accept = AsyncMock()
+        consumer.channel_layer = AsyncMock()
+        consumer._ensure_valid_session = AsyncMock(return_value=object())
+
+        with self.assertRaisesRegex(RuntimeError, "Unexpected websocket session validation result"):
+            asyncio.run(consumer.connect())
+
+        consumer.channel_layer.group_add.assert_not_awaited()
+        consumer.accept.assert_not_awaited()
+        consumer.close.assert_not_awaited()
+        assert consumer.group_name is None
+
+    def test_notification_close_codes_are_class_hooks(self):
+        assert NotificationConsumer.UNAUTHENTICATED_CLOSE_CODE == 4401
+        assert NotificationConsumer.INVALID_SESSION_CLOSE_CODE == 4403
+
+    def test_notify_message_emits_only_canonical_top_level_fields(self):
         consumer = NotificationConsumer()
         consumer.send_json = AsyncMock()
 
         event = {
             "payload": {
                 "type": "info",
+                "kind": "system",
                 "title": "t",
                 "message": "m",
                 "data": {"a": 1},
-                "timestamp": 1,
+                "timestamp": "2026-07-10T12:00:00+00:00",
                 "extra": "drop",
             }
         }
@@ -80,8 +293,100 @@ class NotificationConsumerTests(SimpleTestCase):
         asyncio.run(consumer.notify_message(event))
 
         consumer.send_json.assert_awaited_once_with(
-            {"type": "info", "title": "t", "message": "m", "data": {"a": 1}, "timestamp": 1}
+            {
+                "type": "notification",
+                "kind": "system",
+                "title": "t",
+                "body": "m",
+                "data": {"extra": "drop", "a": 1},
+                "timestamp": "2026-07-10T12:00:00+00:00",
+            }
         )
+
+
+class WorldChatSessionValidationTests(SimpleTestCase):
+    @staticmethod
+    def _build_consumer(validation_result) -> WorldChatConsumer:
+        class _User:
+            id = 9
+            is_authenticated = True
+
+        consumer = WorldChatConsumer()
+        consumer.scope = {"user": _User(), "path": "/ws/chat/world/", "client": ("127.0.0.1", 1234)}
+        consumer.channel_name = "world-chat-test"
+        consumer.channel_layer = AsyncMock()
+        consumer.accept = AsyncMock()
+        consumer.close = AsyncMock()
+        consumer.send_json = AsyncMock()
+        consumer._ensure_valid_session = AsyncMock(return_value=validation_result)
+        consumer._get_display_name = AsyncMock(return_value="测试玩家")
+        consumer._get_history = AsyncMock(return_value=[])
+        return consumer
+
+    def test_connect_uses_explicit_session_validation_states(self):
+        async def _scenario():
+            unavailable = self._build_consumer(WebSocketSessionValidationResult.UNAVAILABLE)
+            await unavailable.connect()
+            unavailable.close.assert_awaited_once_with(code=1013)
+            unavailable.accept.assert_not_awaited()
+
+            invalid = self._build_consumer(WebSocketSessionValidationResult.INVALID)
+            await invalid.connect()
+            invalid.close.assert_awaited_once_with()
+            invalid.accept.assert_not_awaited()
+
+            valid = self._build_consumer(WebSocketSessionValidationResult.VALID)
+            await valid.connect()
+            valid.close.assert_not_awaited()
+            valid.accept.assert_awaited_once_with()
+            valid.channel_layer.group_add.assert_awaited_once_with(valid.GROUP_NAME, valid.channel_name)
+
+        asyncio.run(_scenario())
+
+    def test_receive_fallback_uses_explicit_session_validation_states(self):
+        async def _scenario():
+            unavailable = self._build_consumer(WebSocketSessionValidationResult.UNAVAILABLE)
+            unavailable._process_send_message = AsyncMock()
+            await unavailable.receive_json({"type": "send", "text": "hello"})
+            unavailable.close.assert_awaited_once_with(code=1013)
+            unavailable._process_send_message.assert_not_awaited()
+
+            invalid = self._build_consumer(WebSocketSessionValidationResult.INVALID)
+            invalid._process_send_message = AsyncMock()
+            await invalid.receive_json({"type": "send", "text": "hello"})
+            invalid.close.assert_awaited_once_with()
+            invalid._process_send_message.assert_not_awaited()
+
+            valid = self._build_consumer(WebSocketSessionValidationResult.VALID)
+            valid._process_send_message = AsyncMock()
+            await valid.receive_json({"type": "send", "text": "hello"})
+            valid.close.assert_not_awaited()
+            valid._process_send_message.assert_awaited_once_with({"type": "send", "text": "hello"})
+
+        asyncio.run(_scenario())
+
+    def test_connect_rejects_unknown_validation_result_without_side_effects(self):
+        consumer = self._build_consumer(object())
+
+        with self.assertRaisesRegex(RuntimeError, "Unexpected websocket session validation result"):
+            asyncio.run(consumer.connect())
+
+        consumer.channel_layer.group_add.assert_not_awaited()
+        consumer._get_display_name.assert_not_awaited()
+        consumer._get_history.assert_not_awaited()
+        consumer.accept.assert_not_awaited()
+        consumer.close.assert_not_awaited()
+
+    def test_receive_fallback_rejects_unknown_validation_result_without_side_effects(self):
+        consumer = self._build_consumer(object())
+        consumer._process_send_message = AsyncMock()
+
+        with self.assertRaisesRegex(RuntimeError, "Unexpected websocket session validation result"):
+            asyncio.run(consumer.receive_json({"type": "send", "text": "hello"}))
+
+        consumer._process_send_message.assert_not_awaited()
+        consumer.accept.assert_not_awaited()
+        consumer.close.assert_not_awaited()
 
 
 class OnlineStatsConsumerTests(SimpleTestCase):
@@ -148,7 +453,7 @@ class OnlineStatsConsumerTests(SimpleTestCase):
 
         consumer = self._build_consumer()
         consumer.scope = {"user": _User(), "path": "/ws/", "client": ("127.0.0.1", 1234)}
-        consumer._ensure_valid_session = AsyncMock(return_value=True)
+        consumer._ensure_valid_session = AsyncMock(return_value=WebSocketSessionValidationResult.VALID)
 
         async def _noop_heartbeat():
             return None
@@ -174,12 +479,47 @@ class OnlineStatsConsumerTests(SimpleTestCase):
 
         consumer = self._build_consumer()
         consumer.scope = {"user": _User(), "path": "/ws/", "client": ("127.0.0.1", 1234)}
-        consumer._ensure_valid_session = AsyncMock(return_value=False)
+        consumer._ensure_valid_session = AsyncMock(return_value=WebSocketSessionValidationResult.INVALID)
 
         asyncio.run(consumer.connect())
 
         consumer.close.assert_awaited_once_with()
         consumer.accept.assert_not_awaited()
+
+    def test_connect_closes_1013_when_session_validation_is_unavailable(self):
+        class _User:
+            id = 11
+            is_authenticated = True
+            is_staff = False
+            is_superuser = False
+
+        consumer = self._build_consumer()
+        consumer.scope = {"user": _User(), "path": "/ws/", "client": ("127.0.0.1", 1234)}
+        consumer._ensure_valid_session = AsyncMock(return_value=WebSocketSessionValidationResult.UNAVAILABLE)
+
+        asyncio.run(consumer.connect())
+
+        consumer.close.assert_awaited_once_with(code=1013)
+        consumer.accept.assert_not_awaited()
+
+    def test_connect_rejects_unknown_validation_result_without_side_effects(self):
+        class _User:
+            id = 11
+            is_authenticated = True
+            is_staff = False
+            is_superuser = False
+
+        consumer = self._build_consumer()
+        consumer.scope = {"user": _User(), "path": "/ws/", "client": ("127.0.0.1", 1234)}
+        consumer._ensure_valid_session = AsyncMock(return_value=object())
+
+        with self.assertRaisesRegex(RuntimeError, "Unexpected websocket session validation result"):
+            asyncio.run(consumer.connect())
+
+        consumer.channel_layer.group_add.assert_not_awaited()
+        consumer.accept.assert_not_awaited()
+        consumer.close.assert_not_awaited()
+        assert consumer.user_id is None
 
     def test_disconnect_removes_connection_and_broadcasts(self):
         consumer = self._build_consumer()

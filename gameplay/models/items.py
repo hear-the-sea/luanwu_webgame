@@ -1,9 +1,41 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
+from typing import Any
+
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, router, transaction
+from django.db.models.deletion import ProtectedError
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 from .manor import ResourceType
+
+_PREVALIDATED_MESSAGE_DELETIONS: ContextVar[frozenset[tuple[str, int]]] = ContextVar(
+    "prevalidated_message_deletions",
+    default=frozenset(),
+)
+
+
+@contextmanager
+def _allow_prevalidated_message_deletions(
+    database_alias: str,
+    message_ids: Iterable[int],
+) -> Iterator[None]:
+    allowed_deletions = _PREVALIDATED_MESSAGE_DELETIONS.get() | frozenset(
+        (database_alias, message_id) for message_id in message_ids
+    )
+    token = _PREVALIDATED_MESSAGE_DELETIONS.set(allowed_deletions)
+    try:
+        yield
+    finally:
+        _PREVALIDATED_MESSAGE_DELETIONS.reset(token)
+
+
+def _message_deletion_is_prevalidated(database_alias: str, message_id: int | None) -> bool:
+    return message_id is not None and (database_alias, message_id) in _PREVALIDATED_MESSAGE_DELETIONS.get()
 
 
 class ResourceEvent(models.Model):
@@ -262,6 +294,32 @@ class InventoryItem(models.Model):
         return get_item_effect_type_label(self.template.effect_type)
 
 
+AttachmentBucket = dict[str, Any]
+
+
+def normalize_message_attachment_buckets(attachments: object) -> tuple[AttachmentBucket, AttachmentBucket]:
+    """安全提取资源和道具附件分组，非字典分组按空处理。"""
+    if not isinstance(attachments, dict):
+        return {}, {}
+    resources = attachments.get("resources")
+    items = attachments.get("items")
+    return (
+        resources if isinstance(resources, dict) else {},
+        items if isinstance(items, dict) else {},
+    )
+
+
+def message_has_attachments(attachments: object) -> bool:
+    """仅将非空资源或道具字典视为真实附件。"""
+    resources, items = normalize_message_attachment_buckets(attachments)
+    return bool(resources or items)
+
+
+def message_has_protected_attachments(attachments: object, *, is_claimed: bool) -> bool:
+    """判断消息是否含有尚未领取、必须保护的附件资产。"""
+    return not is_claimed and message_has_attachments(attachments)
+
+
 class Message(models.Model):
     class Kind(models.TextChoices):
         BATTLE = "battle", "战报"
@@ -281,6 +339,7 @@ class Message(models.Model):
     )
     attachments = models.JSONField("附件数据", default=dict, blank=True)
     is_claimed = models.BooleanField("已领取", default=False)
+    is_deletion_protected = models.BooleanField("禁止删除", default=False, editable=False)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -292,19 +351,54 @@ class Message(models.Model):
             models.Index(fields=["manor", "is_read", "-created_at"]),
             models.Index(fields=["manor", "is_claimed"]),
             models.Index(fields=["manor", "kind", "-created_at"]),
+            models.Index(
+                fields=["is_deletion_protected", "created_at", "id"],
+                name="message_protected_cleanup_idx",
+            ),
         ]
 
     def __str__(self) -> str:
         return f"[{self.get_kind_display()}] {self.title}"
 
+    def save(self, *args, **kwargs):
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None:
+            update_fields = set(update_fields)
+            kwargs["update_fields"] = update_fields
+        protection_inputs_are_saved = update_fields is None or bool(
+            {"attachments", "is_claimed", "is_deletion_protected"}.intersection(update_fields)
+        )
+        if protection_inputs_are_saved:
+            self.is_deletion_protected = message_has_protected_attachments(
+                self.attachments,
+                is_claimed=self.is_claimed,
+            )
+            if update_fields is not None:
+                update_fields.add("is_deletion_protected")
+        super().save(*args, **kwargs)
+
+    def delete(self, using=None, keep_parents=False):
+        using = using or router.db_for_write(self.__class__, instance=self)
+        with transaction.atomic(using=using):
+            locked_message = self.__class__._base_manager.using(using).select_for_update().filter(pk=self.pk).first()
+            if locked_message is None:
+                return models.Model.delete(self, using=using, keep_parents=keep_parents)
+            if locked_message.has_protected_attachments:
+                raise ProtectedError("未领取附件消息禁止删除", {locked_message})
+            result = models.Model.delete(locked_message, using=using, keep_parents=keep_parents)
+
+        self.pk = locked_message.pk
+        return result
+
     @property
     def has_attachments(self) -> bool:
         """检查是否有附件"""
-        if not self.attachments:
-            return False
-        items = self.attachments.get("items", {})
-        resources = self.attachments.get("resources", {})
-        return bool(items or resources)
+        return message_has_attachments(self.attachments)
+
+    @property
+    def has_protected_attachments(self) -> bool:
+        """检查是否含有禁止删除的未领取附件资产。"""
+        return message_has_protected_attachments(self.attachments, is_claimed=self.is_claimed)
 
     def get_attachment_summary(self) -> str:
         """获取附件摘要，用于列表显示"""
@@ -312,15 +406,13 @@ class Message(models.Model):
             return ""
 
         parts = []
-        attachments = self.attachments or {}
-        resources = attachments.get("resources", {})
-        items = attachments.get("items", {})
+        attachments = self.attachments
+        resources, items = normalize_message_attachment_buckets(attachments)
 
-        if self.is_claimed:
+        if self.is_claimed and isinstance(attachments, dict):
             claimed = attachments.get("claimed")
             if isinstance(claimed, dict):
-                resources = claimed.get("resources", {}) or {}
-                items = claimed.get("items", {}) or {}
+                resources, items = normalize_message_attachment_buckets(claimed)
 
         resource_labels = dict(ResourceType.choices)
         for key, amount in resources.items():
@@ -332,6 +424,22 @@ class Message(models.Model):
             parts.append(f"{len(items)}种道具")
 
         return "、".join(parts) if parts else "附件"
+
+
+@receiver(pre_delete, sender=Message, dispatch_uid="protect_unclaimed_message_attachments")
+def protect_unclaimed_message_attachments(sender, instance: Message, using: str, **kwargs) -> None:
+    """阻止任何 ORM 删除路径丢弃尚未领取的附件资产。"""
+    if _message_deletion_is_prevalidated(using, instance.pk):
+        return
+    locked_message = (
+        sender._base_manager.using(using)
+        .select_for_update()
+        .only("attachments", "is_claimed", "kind", "title")
+        .filter(pk=instance.pk)
+        .first()
+    )
+    if locked_message is not None and locked_message.has_protected_attachments:
+        raise ProtectedError("未领取附件消息禁止删除", {locked_message})
 
 
 def _validate_attachment_bucket(value, bucket_name: str) -> None:

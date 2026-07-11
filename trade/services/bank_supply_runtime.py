@@ -183,18 +183,12 @@ def release_cache_lock_if_owner_value(lock_key: str, lock_token: str) -> None:
         _hooks.release_cache_lock_if_owner(lock_key, lock_token)
         return
 
-    released = release_cache_key_if_owner(
+    release_cache_key_if_owner(
         lock_key,
         lock_token=lock_token,
         logger=logger,
         log_context="gold supply cache lock release",
     )
-    if released:
-        return
-
-    current_token = safe_cache_get_value(lock_key)
-    if current_token == lock_token:
-        safe_cache_delete_value(lock_key)
 
 
 def get_today_exchange_count_value(manor: Manor) -> int:

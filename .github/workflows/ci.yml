@@ -27,6 +27,9 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
+      - name: Check Tailwind artifact drift
+        run: npm run check:css
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -36,6 +39,16 @@ jobs:
           pip install -r requirements-dev.txt
           # Type-checking deps (keep them small/stable for CI).
           pip install "mypy>=1.8" "django-stubs>=5.0" "django-stubs-ext>=5.0" "types-PyYAML"
+
+      - name: Check migration drift
+        env:
+          DJANGO_DEBUG: "0"
+          DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
+          DJANGO_SECRET_KEY: "ci-only-not-a-real-secret-key-change-me-1234567890"
+          DJANGO_STRICT_INFRA_CONFIG: "0"
+          DJANGO_DB_ENGINE: "django.db.backends.sqlite3"
+          DJANGO_DB_NAME: ":memory:"
+        run: python manage.py makemigrations --check --dry-run
 
       - name: Frontend Unit Tests
         run: npm run test:js

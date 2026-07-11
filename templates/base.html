@@ -68,7 +68,7 @@
         {% endif %}
 
         {% with url_name=request.resolver_match.url_name %}
-        <div id="page-shell" class="{% if user.is_authenticated and url_name == 'home' %}main-layout{% elif user.is_authenticated %}full-layout{% else %}simple-layout{% endif %}">
+        <div id="page-shell" data-authenticated="{% if user.is_authenticated %}1{% else %}0{% endif %}" class="{% if user.is_authenticated and url_name == 'home' %}main-layout{% elif user.is_authenticated %}full-layout{% else %}simple-layout{% endif %}">
             {% if user.is_authenticated and url_name == 'home' %}
             <aside class="sidebar">
                 <!-- 庄园状态面板 -->
@@ -163,8 +163,8 @@
 
     <div id="toast-container" class="toast-container"></div>
     <script src="{% static 'js/dialog.js' %}"></script>
-    <script src="{% static 'js/notifications.js' %}"></script>
     {% if user.is_authenticated %}
+    <script src="{% static 'js/notifications.js' %}"></script>
     <script src="{% static 'js/online_stats.js' %}"></script>
     <script src="{% static 'js/chat_widget_core.js' %}"></script>
     <script src="{% static 'js/chat_widget_renderer.js' %}"></script>

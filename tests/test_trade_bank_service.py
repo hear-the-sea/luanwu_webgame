@@ -8,7 +8,7 @@ from core.exceptions import ItemNotFoundError, TradeValidationError
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
 from trade.models import GoldBarExchangeLog
-from trade.services import bank_service
+from trade.services import bank_service, bank_supply_runtime
 
 
 def _ensure_gold_bar_template() -> ItemTemplate:
@@ -334,16 +334,15 @@ def test_get_effective_gold_supply_does_not_release_foreign_lock(monkeypatch):
 
 
 @pytest.mark.django_db
-def test_get_effective_gold_supply_releases_owned_lock(monkeypatch):
+def test_get_effective_gold_supply_delegates_owned_lock_release(monkeypatch):
     lock_key = f"{bank_service.SUPPLY_CACHE_KEY}:lock"
     lock_token_holder: dict[str, str] = {}
     delete_calls: list[str] = []
+    release_calls: list[tuple[str, str]] = []
 
     def fake_safe_cache_get(key, default=None):
         if key == bank_service.SUPPLY_CACHE_KEY:
             return None
-        if key == lock_key:
-            return lock_token_holder.get("token")
         return default
 
     def fake_safe_cache_add(key, value, timeout):
@@ -355,6 +354,56 @@ def test_get_effective_gold_supply_releases_owned_lock(monkeypatch):
     monkeypatch.setattr(bank_service, "_safe_cache_add", fake_safe_cache_add)
     monkeypatch.setattr(bank_service, "_safe_cache_set", lambda *args, **kwargs: None)
     monkeypatch.setattr(bank_service, "_safe_cache_delete", lambda key: delete_calls.append(key))
+    monkeypatch.setattr(
+        bank_service,
+        "release_cache_key_if_owner",
+        lambda key, *, lock_token, **_kwargs: release_calls.append((key, lock_token)) or True,
+    )
 
     bank_service.get_effective_gold_supply()
-    assert delete_calls == [lock_key]
+    assert release_calls == [(lock_key, lock_token_holder["token"])]
+    assert delete_calls == []
+
+
+def test_bank_lock_release_fails_closed_when_owner_release_returns_false(monkeypatch):
+    cache_get_calls: list[str] = []
+    cache_delete_calls: list[str] = []
+
+    monkeypatch.setattr(bank_service, "release_cache_key_if_owner", lambda *_args, **_kwargs: False)
+    monkeypatch.setattr(bank_service, "_safe_cache_get", lambda key, default=None: cache_get_calls.append(key))
+    monkeypatch.setattr(bank_service, "_safe_cache_delete", lambda key: cache_delete_calls.append(key))
+
+    bank_service._release_cache_lock_if_owner("gold-supply:lock", "expired-owner-token")
+
+    assert cache_get_calls == []
+    assert cache_delete_calls == []
+
+
+def test_default_bank_supply_lock_release_fails_closed_when_owner_release_returns_false(monkeypatch):
+    cache_get_calls: list[str] = []
+    cache_delete_calls: list[str] = []
+
+    monkeypatch.setattr(bank_supply_runtime._hooks, "release_cache_lock_if_owner", None)
+    monkeypatch.setattr(
+        bank_supply_runtime,
+        "release_cache_key_if_owner",
+        lambda *_args, **_kwargs: False,
+    )
+    monkeypatch.setattr(
+        bank_supply_runtime,
+        "safe_cache_get_value",
+        lambda key, default=None: cache_get_calls.append(key),
+    )
+    monkeypatch.setattr(
+        bank_supply_runtime,
+        "safe_cache_delete_value",
+        lambda key: cache_delete_calls.append(key),
+    )
+
+    bank_supply_runtime.release_cache_lock_if_owner_value(
+        "gold-supply:lock",
+        "expired-owner-token",
+    )
+
+    assert cache_get_calls == []
+    assert cache_delete_calls == []

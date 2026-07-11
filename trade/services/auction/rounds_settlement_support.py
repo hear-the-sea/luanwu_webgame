@@ -31,33 +31,6 @@ def refund_losing_bids_impl(losing_bids: list[AuctionBid]) -> None:
         losing_bid.save(update_fields=["status", "refunded_at"])
 
 
-def mark_slot_unsold_after_failure_impl(
-    slot: AuctionSlot,
-    *,
-    refund_losing_bids_func: Callable[[list[AuctionBid]], None],
-    logger: logging.Logger,
-    database_exceptions: tuple[type[BaseException], ...],
-) -> bool:
-    try:
-        with transaction.atomic():
-            locked_slot = AuctionSlot.objects.select_for_update().get(pk=slot.pk)
-            if locked_slot.status != AuctionSlot.Status.ACTIVE:
-                return True
-
-            active_bids = list(
-                AuctionBid.objects.select_for_update().filter(slot=locked_slot, status=AuctionBid.Status.ACTIVE)
-            )
-            if active_bids:
-                refund_losing_bids_func(active_bids)
-
-            locked_slot.status = AuctionSlot.Status.UNSOLD
-            locked_slot.save(update_fields=["status"])
-            return True
-    except database_exceptions as exc:
-        logger.exception("failed to force slot %s unsold after settlement error: %s", slot.id, exc)
-        return False
-
-
 def consume_winning_bid_frozen_gold_bars_impl(
     winning_bid: AuctionBid,
     winner: Manor,
@@ -121,11 +94,9 @@ def settle_slot_impl(
             return result
 
         if winner_count <= 0:
-            logger.error("拍卖位配置异常: slot_id=%s quantity=%s", slot.id, slot.quantity)
-            refund_losing_bids_func(ranking)
-            slot.status = AuctionSlot.Status.UNSOLD
-            slot.save(update_fields=["status"])
-            return result
+            raise ValueError(
+                f"auction slot winner_count must be positive: slot_id={slot.id} winner_count={winner_count}"
+            )
 
         actual_winners = ranking[:winner_count]
         actual_winner_count = len(actual_winners)

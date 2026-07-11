@@ -94,6 +94,9 @@ CELERY_TASK_ROUTES = {
     "gameplay.backfill_global_mail_campaign": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.cleanup_old_data": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.decay_prisoner_loyalty": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.publish_world_chat_attempt": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.refund_world_chat_attempt": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.scan_world_chat_attempts": {"queue": CELERY_TIMER_QUEUE},
     "guilds.complete_guild_mission": {"queue": CELERY_TIMER_QUEUE},
     "guilds.cleanup_invalid_hero_pool": {"queue": CELERY_TIMER_QUEUE},
     "guilds.complete_guild_raid": {"queue": CELERY_TIMER_QUEUE},
@@ -218,6 +221,10 @@ CELERY_BEAT_SCHEDULE = {
     "decay-prisoner-loyalty": {
         "task": "gameplay.decay_prisoner_loyalty",
         "schedule": crontab(hour=0, minute=0),
+    },
+    "scan-world-chat-attempts": {
+        "task": "gameplay.scan_world_chat_attempts",
+        "schedule": crontab(minute="*"),
     },
     "settle-auction-round": {
         "task": "trade.settle_auction_round",

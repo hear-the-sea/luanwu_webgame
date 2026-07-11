@@ -11,6 +11,7 @@ public model classes/constants here to preserve the historical import style:
 from .arena import ArenaEntry, ArenaEntryGuest, ArenaExchangeRecord, ArenaMatch, ArenaTournament
 from .arena_coop import ArenaCoopContribution, ArenaCoopEntry, ArenaCoopEntryGuest, ArenaCoopEvent
 from .bots import BotBackfillDemand, BotInventoryDailyCounter, BotProfile
+from .chat import WorldChatSendAttempt
 from .items import GlobalMailCampaign, GlobalMailDelivery, InventoryItem, ItemTemplate, Message, ResourceEvent
 from .manor import (
     ACTION_POINTS_MAX,
@@ -86,6 +87,8 @@ __all__ = [
     "BotBackfillDemand",
     "BotInventoryDailyCounter",
     "BotProfile",
+    # chat
+    "WorldChatSendAttempt",
     # missions
     "MissionTemplate",
     "MissionRun",

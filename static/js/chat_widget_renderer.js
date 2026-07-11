@@ -20,7 +20,7 @@
     const messageTtlMs = config.messageTtlMs;
     const getIsOpen = config.getIsOpen;
     const setUnreadDot = config.setUnreadDot;
-    const messageIds = new Set();
+    const messageDeduplicator = core.createMessageDeduplicator();
 
     function shouldAutoScroll() {
       const threshold = 90;
@@ -86,16 +86,7 @@
         return;
       }
 
-      if (normalized.msgId) {
-        if (messageIds.has(normalized.msgId)) {
-          return;
-        }
-        messageIds.add(normalized.msgId);
-        if (core.shouldResetMessageIds(messageIds.size)) {
-          messageIds.clear();
-          messageIds.add(normalized.msgId);
-        }
-      }
+      if (!messageDeduplicator.accept(normalized)) return;
 
       const shouldScroll = shouldAutoScroll();
       const line = document.createElement("div");
@@ -145,7 +136,7 @@
 
     function clearMessages() {
       messagesEl.textContent = "";
-      messageIds.clear();
+      messageDeduplicator.clear();
     }
 
     function handlePayload(payload, setStatus) {

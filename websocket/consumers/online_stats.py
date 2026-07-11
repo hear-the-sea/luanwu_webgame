@@ -24,7 +24,7 @@ from gameplay.services.online_presence_backend import (
 )
 from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
-from .session_guard import SingleSessionWebSocketMixin
+from .session_guard import SingleSessionWebSocketMixin, WebSocketSessionValidationResult
 
 User = get_user_model()
 
@@ -65,9 +65,15 @@ class OnlineStatsConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsume
             )
             await self.close()
             return
-        if not await self._ensure_valid_session():
+        validation_result = await self._ensure_valid_session()
+        if validation_result is WebSocketSessionValidationResult.UNAVAILABLE:
+            await self.close(code=self.SESSION_VALIDATION_UNAVAILABLE_CLOSE_CODE)
+            return
+        if validation_result is WebSocketSessionValidationResult.INVALID:
             await self.close()
             return
+        if validation_result is not WebSocketSessionValidationResult.VALID:
+            raise RuntimeError(f"Unexpected websocket session validation result: {validation_result!r}")
 
         self.user_id = user.id
         self.is_real_user = not (user.is_staff or user.is_superuser)

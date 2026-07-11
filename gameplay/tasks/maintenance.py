@@ -53,10 +53,11 @@ def cleanup_old_data_task():
     - ResourceEvent: keep 30 days
     - ArenaExchangeRecord: keep 30 days
     - BattleReport: keep 30 days
-    - Message: keep MESSAGE.RETENTION_DAYS days
+    - Message: keep MESSAGE.RETENTION_DAYS days, except unclaimed attachments
     """
     from battle.models import BattleReport
-    from gameplay.models import ArenaExchangeRecord, Message, ResourceEvent
+    from gameplay.models import ArenaExchangeRecord, ResourceEvent
+    from gameplay.services.utils.messages import delete_expired_messages
 
     now = timezone.now()
 
@@ -70,16 +71,19 @@ def cleanup_old_data_task():
         ArenaExchangeRecord, time_field="created_at", cutoff=arena_exchange_cutoff
     )
     battle_report_deleted = _batched_delete_before(BattleReport, time_field="created_at", cutoff=battle_report_cutoff)
-    message_deleted = _batched_delete_before(Message, time_field="created_at", cutoff=message_cutoff)
+    message_result = delete_expired_messages(message_cutoff, batch_size=DELETE_BATCH_SIZE)
+    message_deleted = message_result.deleted_count
 
     total_deleted = resource_deleted + arena_exchange_deleted + battle_report_deleted + message_deleted
     logger.info(
-        "Cleaned old data: total=%d (resource_events=%d, arena_exchange_records=%d, battle_reports=%d, messages=%d)",
+        "Cleaned old data: total=%d (resource_events=%d, arena_exchange_records=%d, battle_reports=%d, "
+        "messages=%d, protected_messages=%d)",
         total_deleted,
         resource_deleted,
         arena_exchange_deleted,
         battle_report_deleted,
         message_deleted,
+        message_result.protected_count,
     )
     return total_deleted
 

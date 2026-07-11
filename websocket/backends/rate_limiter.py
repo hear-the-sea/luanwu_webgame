@@ -7,6 +7,7 @@ import math
 import uuid
 
 from core.utils.infrastructure import INFRASTRUCTURE_EXCEPTIONS
+from websocket.exceptions import WorldChatInfrastructureError
 
 logger = logging.getLogger(__name__)
 
@@ -126,8 +127,6 @@ def rate_limit_sync(
 
     Returns (allowed, retry_after_seconds).
     """
-    from websocket.consumers.world_chat import WorldChatInfrastructureError
-
     if not user_id:
         return False, 3
 

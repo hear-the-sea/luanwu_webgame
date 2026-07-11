@@ -3,21 +3,23 @@ from __future__ import annotations
 import logging
 import random
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import timedelta
 from functools import lru_cache
 from pathlib import Path
+from threading import Event, Thread
 from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.cache import cache
 from django.db import IntegrityError, transaction
 from django.db.models import Count, Max, Q
 from django.utils import timezone
 
 from battle.models import TroopTemplate
 from core.config import GUEST
+from core.utils.cache_lock import acquire_best_effort_lock, release_best_effort_lock, renew_best_effort_lock
 from core.utils.yaml_loader import load_yaml_data
 from gameplay.constants import REGION_CHOICES, BuildingKeys
 from gameplay.models import (
@@ -34,6 +36,7 @@ from gameplay.models import (
     RaidRun,
     ScoutRecord,
 )
+from gameplay.services.manor.coordinates import is_occupied_manor_location_conflict
 from gameplay.services.manor.core import calculate_building_capacity, generate_unique_coordinate
 from gameplay.services.manor.naming import ManorNameConflictError
 from gameplay.services.technology_catalog import build_technology_index
@@ -116,6 +119,7 @@ DEFAULT_VIRTUAL_PLAYER_CONFIG: dict[str, Any] = {
 VIRTUAL_PLAYER_CONFIG_PATH = Path(settings.BASE_DIR) / "data" / "virtual_players.yaml"
 ROLL_LOCK_KEY = "virtual_players:roll_lock"
 ROLL_LOCK_TIMEOUT_SECONDS = 300
+VIRTUAL_PLAYER_COORDINATE_RETRY_LIMIT = 5
 RARE_ITEM_RARITIES = {"purple", "orange", "red", "legendary"}
 ALL_TEMPLATE_SENTINEL = "__all__"
 ALL_TRADEABLE_TEMPLATE_SENTINEL = "__all_tradeable__"
@@ -254,6 +258,10 @@ INITIAL_BOT_GUEST_LEVEL = 1
 LOW_STAGE_POWERFUL_ITEM_CUTOFF = 5
 
 
+class VirtualPlayerPopulationLockLostError(RuntimeError):
+    """Raised when a population roll no longer owns its distributed lock."""
+
+
 def _deep_merge_config(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
     merged = {key: dict(value) if isinstance(value, dict) else value for key, value in base.items()}
     for section, values in override.items():
@@ -364,6 +372,25 @@ def _set_unique_location(manor: Manor, *, region: str) -> None:
     manor.region = region
     manor.coordinate_x = x
     manor.coordinate_y = y
+
+
+def _save_virtual_player_manor_with_coordinate_retry(
+    manor: Manor,
+    *,
+    region: str,
+    update_fields: list[str],
+) -> None:
+    for attempt in range(VIRTUAL_PLAYER_COORDINATE_RETRY_LIMIT):
+        try:
+            with transaction.atomic():
+                manor.save(update_fields=update_fields)
+            return
+        except IntegrityError as exc:
+            if not is_occupied_manor_location_conflict(exc):
+                raise
+            if attempt + 1 >= VIRTUAL_PLAYER_COORDINATE_RETRY_LIMIT:
+                raise
+            _set_unique_location(manor, region=region)
 
 
 def _project_buildings(manor: Manor, *, level: int) -> None:
@@ -1200,7 +1227,9 @@ def create_virtual_player(
     manor.grain = 1200
     manor.resource_updated_at = now
     manor.last_active_at = now - timedelta(days=rng.randint(3, 180), hours=rng.randint(0, 23))
-    manor.save(
+    _save_virtual_player_manor_with_coordinate_retry(
+        manor,
+        region=region,
         update_fields=[
             "region",
             "coordinate_x",
@@ -1215,7 +1244,7 @@ def create_virtual_player(
             "grain",
             "resource_updated_at",
             "last_active_at",
-        ]
+        ],
     )
 
     _project_technologies(manor, level=0, config=config)
@@ -1475,7 +1504,12 @@ def maintain_due_virtual_players(*, now=None, limit: int = 100) -> int:
     return maintained
 
 
-def _retire_excess_virtual_players(*, target: int, now) -> int:
+def _retire_excess_virtual_players(
+    *,
+    target: int,
+    now,
+    ownership_guard: Callable[[], None] | None = None,
+) -> int:
     target = max(0, int(target or 0))
     excess = _maintained_bot_count() - target
     if excess <= 0:
@@ -1488,6 +1522,8 @@ def _retire_excess_virtual_players(*, target: int, now) -> int:
     )
     if not stale_ids:
         return 0
+    if ownership_guard is not None:
+        ownership_guard()
     retired_count = BotProfile.objects.filter(id__in=stale_ids).update(state=BotProfile.State.STALE, next_growth_at=now)
     if retired_count > 0:
         logger.info(
@@ -1529,6 +1565,7 @@ def _create_backfill_demanded_players(
     limit: int,
     now,
     rng: random.Random,
+    ownership_guard: Callable[[], None] | None = None,
 ) -> int:
     created = 0
     normalized_demands: list[dict[str, Any]] = []
@@ -1545,6 +1582,8 @@ def _create_backfill_demanded_players(
         normalized_demands.append({"id": demand_id, "region": region, "prestige_band": band_name, "needed": needed})
 
     if invalid_demand_ids:
+        if ownership_guard is not None:
+            ownership_guard()
         BotBackfillDemand.objects.filter(id__in=invalid_demand_ids).delete()
 
     for demand in normalized_demands:
@@ -1559,6 +1598,8 @@ def _create_backfill_demanded_players(
         cap_reached = False
         while created < limit:
             seed = rng.randint(1, 2_147_483_647)
+            if ownership_guard is not None:
+                ownership_guard()
             with transaction.atomic():
                 locked_demand = BotBackfillDemand.objects.select_for_update().filter(id=demand_id).first()
                 if locked_demand is None or int(locked_demand.needed or 0) <= 0:
@@ -1567,6 +1608,8 @@ def _create_backfill_demanded_players(
                 if hard_cap > 0 and current_active >= hard_cap:
                     cap_reached = True
                     break
+                if ownership_guard is not None:
+                    ownership_guard()
                 create_virtual_player(
                     region=region,
                     prestige_band=band_name,
@@ -1697,15 +1740,83 @@ def _roll_population_deficits(
 
 
 def roll_virtual_player_population(*, limit: int | None = None, now=None) -> int:
-    if not cache.add(ROLL_LOCK_KEY, "1", timeout=ROLL_LOCK_TIMEOUT_SECONDS):
+    acquired, from_cache, lock_token = acquire_best_effort_lock(
+        ROLL_LOCK_KEY,
+        timeout_seconds=ROLL_LOCK_TIMEOUT_SECONDS,
+        logger=logger,
+        log_context="virtual player population roll",
+        allow_local_fallback=False,
+    )
+    if not acquired:
         return 0
+
+    stop_heartbeat = Event()
+    lost_ownership = Event()
+    heartbeat_failed = Event()
+    heartbeat_errors: list[Exception] = []
+
+    def _ownership_guard() -> None:
+        if heartbeat_failed.is_set():
+            raise heartbeat_errors[0]
+        if not lost_ownership.is_set():
+            return
+        raise VirtualPlayerPopulationLockLostError("virtual player population roll lock ownership was lost")
+
+    def _heartbeat() -> None:
+        interval_seconds = max(1, int(ROLL_LOCK_TIMEOUT_SECONDS)) / 3
+        try:
+            while not stop_heartbeat.wait(interval_seconds):
+                renewed = renew_best_effort_lock(
+                    ROLL_LOCK_KEY,
+                    from_cache=from_cache,
+                    lock_token=lock_token,
+                    timeout_seconds=ROLL_LOCK_TIMEOUT_SECONDS,
+                    logger=logger,
+                    log_context="virtual player population roll",
+                )
+                if not renewed:
+                    lost_ownership.set()
+                    stop_heartbeat.set()
+                    return
+        except Exception as exc:
+            heartbeat_errors.append(exc)
+            heartbeat_failed.set()
+            stop_heartbeat.set()
+            logger.exception("Virtual player population roll heartbeat raised an unexpected error")
+
+    heartbeat = Thread(target=_heartbeat, name="virtual-player-population-lock-heartbeat", daemon=True)
+    heartbeat_started = False
     try:
-        return _roll_virtual_player_population_unlocked(limit=limit, now=now)
+        heartbeat.start()
+        heartbeat_started = True
+        result = _roll_virtual_player_population_unlocked(
+            limit=limit,
+            now=now,
+            ownership_guard=_ownership_guard,
+        )
+        stop_heartbeat.set()
+        heartbeat.join()
+        _ownership_guard()
+        return result
     finally:
-        cache.delete(ROLL_LOCK_KEY)
+        stop_heartbeat.set()
+        if heartbeat_started and heartbeat.is_alive():
+            heartbeat.join()
+        release_best_effort_lock(
+            ROLL_LOCK_KEY,
+            from_cache=from_cache,
+            lock_token=lock_token,
+            logger=logger,
+            log_context="virtual player population roll",
+        )
 
 
-def _roll_virtual_player_population_unlocked(*, limit: int | None = None, now=None) -> int:
+def _roll_virtual_player_population_unlocked(
+    *,
+    limit: int | None = None,
+    now=None,
+    ownership_guard: Callable[[], None] | None = None,
+) -> int:
     config = load_virtual_player_config()
     if not bool(config.get("enabled", True)):
         return 0
@@ -1724,7 +1835,11 @@ def _roll_virtual_player_population_unlocked(*, limit: int | None = None, now=No
     )
     target_bot_total = minimum_bot_total
     target_limit = min(target_bot_total, hard_cap) if hard_cap > 0 else target_bot_total
-    retired_for_capacity = _retire_excess_virtual_players(target=target_limit, now=now)
+    retired_for_capacity = _retire_excess_virtual_players(
+        target=target_limit,
+        now=now,
+        ownership_guard=ownership_guard,
+    )
     active_bot_count = _maintained_bot_count()
     if hard_cap > 0 and active_bot_count >= hard_cap:
         return 0
@@ -1754,6 +1869,7 @@ def _roll_virtual_player_population_unlocked(*, limit: int | None = None, now=No
         limit=limit,
         now=now,
         rng=rng,
+        ownership_guard=ownership_guard,
     )
 
     active_bot_count = _maintained_bot_count()
@@ -1779,6 +1895,8 @@ def _roll_virtual_player_population_unlocked(*, limit: int | None = None, now=No
             if hard_cap > 0 and current_active >= hard_cap:
                 return created
             seed = rng.randint(1, 2_147_483_647)
+            if ownership_guard is not None:
+                ownership_guard()
             create_virtual_player(
                 region=str(cell["region"]),
                 prestige_band=str(cell["band_name"]),

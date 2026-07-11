@@ -25,6 +25,9 @@
     const clearTimeoutFn = config.clearTimeoutFn || clearTimeout;
     const setIntervalFn = config.setIntervalFn || setInterval;
     const clearIntervalFn = config.clearIntervalFn || clearInterval;
+    const generateOperationId = config.generateOperationId || core.generateOperationId;
+    const userIdValue = typeof config.userId === "number" ? config.userId : parseInt(config.userId || "0", 10);
+    const userId = Number.isFinite(userIdValue) ? userIdValue : 0;
     const reconnectDelayBase = Number.isFinite(config.reconnectDelayBase)
       ? config.reconnectDelayBase
       : DEFAULT_RECONNECT_DELAY_MS;
@@ -37,6 +40,32 @@
     let reconnectTimer = null;
     let pingTimer = null;
     let disposed = false;
+    const pendingOperations = new Map();
+
+    function sendOperation(operation) {
+      socket.send(
+        JSON.stringify({
+          type: "send",
+          text: operation.text,
+          operation_id: operation.operationId,
+        })
+      );
+    }
+
+    function clearMatchingPending(payload) {
+      if (!payload || typeof payload !== "object") return;
+      if (payload.type !== "send_ack" && payload.type !== "message" && payload.type !== "error") {
+        return;
+      }
+      const operationId = payload.operation_id != null ? String(payload.operation_id) : "";
+      if (!operationId) return;
+      if (payload.type === "message") {
+        const sender = payload.sender && typeof payload.sender === "object" ? payload.sender : {};
+        const senderIdValue = typeof sender.id === "number" ? sender.id : parseInt(sender.id || "0", 10);
+        if (!userId || !Number.isFinite(senderIdValue) || senderIdValue !== userId) return;
+      }
+      pendingOperations.delete(operationId);
+    }
 
     function clearReconnectTimer() {
       if (!reconnectTimer) return;
@@ -77,6 +106,19 @@
         reconnectDelay = reconnectDelayBase;
         setStatus("已连接", "connected");
         clearPingTimer();
+        for (const operation of pendingOperations.values()) {
+          try {
+            sendOperation(operation);
+          } catch (_error) {
+            try {
+              socket.close();
+            } catch (_closeError) {
+              socket = null;
+              scheduleReconnect();
+            }
+            return;
+          }
+        }
         pingTimer = setIntervalFn(() => {
           try {
             if (socket && socket.readyState === WebSocketCtor.OPEN) {
@@ -90,7 +132,9 @@
 
       socket.onmessage = (event) => {
         try {
-          renderer.handlePayload(JSON.parse(event.data), setStatus);
+          const payload = JSON.parse(event.data);
+          clearMatchingPending(payload);
+          renderer.handlePayload(payload, setStatus);
         } catch (_error) {
           // ignore malformed messages
         }
@@ -121,7 +165,15 @@
       }
 
       try {
-        socket.send(JSON.stringify({ type: "send", text }));
+        const operationId = String(generateOperationId());
+        const operation = { operationId, text };
+        pendingOperations.set(operationId, operation);
+        try {
+          sendOperation(operation);
+        } catch (error) {
+          pendingOperations.delete(operationId);
+          throw error;
+        }
         return true;
       } catch (_error) {
         renderer.appendSystem("发送失败，请稍后再试", { kind: "error" });

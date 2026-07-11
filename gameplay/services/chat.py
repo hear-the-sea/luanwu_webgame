@@ -4,70 +4,18 @@
 
 from __future__ import annotations
 
-import logging
-
-from core.exceptions import InsufficientStockError
-from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
-from gameplay.models import Manor
-from gameplay.services.inventory.core import add_item_to_inventory, consume_inventory_item
-
-logger = logging.getLogger(__name__)
+import html
+import re
 
 TRUMPET_ITEM_KEY = "small_trumpet"
+WORLD_CHAT_TEXT_MAX_LENGTH = 200
+_WORLD_CHAT_CONTROL_CHARS_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 
 
-def _get_manor_for_user(user_id: int) -> Manor | None:
-    if not user_id:
-        return None
-    try:
-        return Manor.objects.get(user_id=int(user_id))
-    except (TypeError, ValueError):
-        logger.warning("Invalid user_id when resolving manor for chat service: %r", user_id)
-        return None
-    except Manor.DoesNotExist:
-        return None
-
-
-def consume_trumpet(user_id: int) -> tuple[bool, str]:
-    """
-    消耗小喇叭道具（世界频道发言）
-
-    Args:
-        user_id: 用户ID
-
-    Returns:
-        (success, error_message)
-    """
-    if not user_id:
-        return False, "未登录，无法发言"
-
-    manor = _get_manor_for_user(user_id)
-    if manor is None:
-        return False, "庄园不存在，无法发言"
-
-    try:
-        # 消耗道具（内部包含事务处理）
-        consume_inventory_item(manor, TRUMPET_ITEM_KEY, 1)
-        return True, ""
-    except InsufficientStockError:
-        return False, "小喇叭不足，无法在世界频道发言"
-    except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
-        logger.exception("Infrastructure error when consuming trumpet for user_id=%s", user_id)
-        return False, "扣除小喇叭失败，请稍后重试"
-
-
-def refund_trumpet(user_id: int) -> bool:
-    """
-    返还世界频道发言失败后已扣除的小喇叭。
-    """
-    manor = _get_manor_for_user(user_id)
-    if manor is None:
-        logger.warning("Failed to refund trumpet because manor was not found: user_id=%s", user_id)
-        return False
-
-    try:
-        add_item_to_inventory(manor, TRUMPET_ITEM_KEY, 1)
-        return True
-    except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
-        logger.exception("Infrastructure error when refunding trumpet for user_id=%s", user_id)
-        return False
+def normalize_world_chat_text(text: str) -> str:
+    """Normalize user-submitted world chat text for storage and delivery."""
+    escaped = html.escape(text)
+    cleaned = _WORLD_CHAT_CONTROL_CHARS_RE.sub("", escaped)
+    cleaned = cleaned.replace("\r\n", "\n").replace("\r", "\n")
+    cleaned = re.sub(r"\n{4,}", "\n\n\n", cleaned)
+    return cleaned.strip()[:WORLD_CHAT_TEXT_MAX_LENGTH]

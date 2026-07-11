@@ -4,10 +4,14 @@ from __future__ import annotations
 
 import json
 import logging
+from enum import StrEnum
+
+from redis.exceptions import ResponseError
 
 from core.utils.degradation import CHAT_HISTORY_DEGRADED, record_degradation
 from core.utils.infrastructure import INFRASTRUCTURE_EXCEPTIONS
 from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
+from websocket.exceptions import WorldChatInfrastructureError
 
 logger = logging.getLogger(__name__)
 LUA_FALLBACK_EXCEPTIONS: tuple[type[Exception], ...] = INFRASTRUCTURE_EXCEPTIONS + (AttributeError,)
@@ -40,6 +44,30 @@ while removed < limit do
 end
 return removed
 """
+
+APPEND_HISTORY_WITH_DELIVERY_MARKER_SCRIPT = """
+local history_key = KEYS[1]
+local delivery_marker_key = KEYS[2]
+local payload = ARGV[1]
+local history_limit = tonumber(ARGV[2])
+local ttl = tonumber(ARGV[3])
+local stage = redis.call('GET', delivery_marker_key)
+
+if stage then
+    return stage
+end
+
+redis.call('LPUSH', history_key, payload)
+redis.call('LTRIM', history_key, 0, math.max(0, history_limit - 1))
+redis.call('EXPIRE', history_key, ttl)
+redis.call('SET', delivery_marker_key, 'history')
+return 'history'
+"""
+
+
+class WorldChatDeliveryStage(StrEnum):
+    HISTORY = "history"
+    BROADCASTED = "broadcasted"
 
 
 def _now_ts() -> float:
@@ -83,6 +111,8 @@ def trim_history_by_time_sync(
     """Trim expired messages from history using Lua script for O(1) performance."""
     try:
         redis.eval(TRIM_HISTORY_SCRIPT, 1, history_key, cutoff_ms, history_limit)
+    except ResponseError:
+        raise
     except LUA_FALLBACK_EXCEPTIONS as exc:
         # Fallback to Python-based trimming when Lua is unavailable (e.g., in tests)
         logger.debug("Lua script unavailable, using Python fallback: %s", exc)
@@ -137,39 +167,104 @@ def get_history_sync(
     return messages, False
 
 
+def _coerce_delivery_stage(raw_stage) -> WorldChatDeliveryStage:
+    if isinstance(raw_stage, (bytes, bytearray)):
+        raw_stage = raw_stage.decode("utf-8")
+    try:
+        return WorldChatDeliveryStage(str(raw_stage))
+    except ValueError as exc:
+        raise ResponseError(f"unexpected world chat delivery stage: {raw_stage!r}") from exc
+
+
+def _append_history_fallback(
+    payload: str,
+    redis,
+    *,
+    history_key: str,
+    delivery_marker_key: str,
+    history_limit: int,
+    history_message_ttl_seconds: int,
+) -> WorldChatDeliveryStage:
+    existing_stage = redis.get(delivery_marker_key)
+    if existing_stage is not None:
+        return _coerce_delivery_stage(existing_stage)
+    pipe = redis.pipeline()
+    pipe.lpush(history_key, payload)
+    pipe.ltrim(history_key, 0, max(0, history_limit - 1))
+    pipe.expire(history_key, int(history_message_ttl_seconds) + 60)
+    pipe.execute()
+    if not redis.set(delivery_marker_key, WorldChatDeliveryStage.HISTORY.value):
+        raise WorldChatInfrastructureError("world chat delivery marker update failed")
+    return WorldChatDeliveryStage.HISTORY
+
+
 def append_history_sync(
     message: dict,
     redis,
     *,
     history_key: str,
+    delivery_marker_key: str,
     history_limit: int,
     history_message_ttl_seconds: int,
-) -> None:
-    """Append a message to chat history and trim expired entries."""
-    from websocket.consumers.world_chat import WorldChatInfrastructureError
-
+) -> WorldChatDeliveryStage:
+    """Append history once and return its durable delivery-marker stage."""
     payload = json.dumps(message, ensure_ascii=False, separators=(",", ":"))
     try:
-        pipe = redis.pipeline()
-        pipe.lpush(history_key, payload)
-        pipe.ltrim(history_key, 0, max(0, history_limit - 1))
-        pipe.expire(history_key, int(history_message_ttl_seconds) + 60)
-        pipe.execute()
+        eval_func = getattr(redis, "eval", None)
+        if eval_func is not None:
+            stage = _coerce_delivery_stage(
+                eval_func(
+                    APPEND_HISTORY_WITH_DELIVERY_MARKER_SCRIPT,
+                    2,
+                    history_key,
+                    delivery_marker_key,
+                    payload,
+                    history_limit,
+                    int(history_message_ttl_seconds) + 60,
+                )
+            )
+        else:
+            stage = _append_history_fallback(
+                payload,
+                redis,
+                history_key=history_key,
+                delivery_marker_key=delivery_marker_key,
+                history_limit=history_limit,
+                history_message_ttl_seconds=history_message_ttl_seconds,
+            )
+    except ResponseError:
+        raise
     except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
         logger.warning("World chat history append failed; rejecting send: %s", exc)
         raise WorldChatInfrastructureError("world chat history backend unavailable") from exc
-
-    cutoff_ms = int((_now_ts() - float(history_message_ttl_seconds)) * 1000)
-    trim_history_by_time_sync(cutoff_ms, redis, history_key=history_key, history_limit=history_limit)
+    return stage
 
 
-def remove_history_sync(message: dict, redis, *, history_key: str) -> None:
-    """Best-effort removal for a previously appended message."""
-    from websocket.consumers.world_chat import WorldChatInfrastructureError
-
-    payload = json.dumps(message, ensure_ascii=False, separators=(",", ":"))
+def mark_delivery_broadcasted_sync(redis, *, delivery_marker_key: str) -> None:
     try:
-        redis.lrem(history_key, 1, payload)
+        if not redis.set(
+            delivery_marker_key,
+            WorldChatDeliveryStage.BROADCASTED.value,
+            xx=True,
+            keepttl=True,
+        ):
+            raise WorldChatInfrastructureError("world chat delivery marker update failed")
+    except ResponseError:
+        raise
     except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
-        logger.warning("World chat history compensation delete failed: %s", exc)
-        raise WorldChatInfrastructureError("world chat history compensation unavailable") from exc
+        raise WorldChatInfrastructureError("world chat delivery marker unavailable") from exc
+
+
+def expire_delivery_marker_sync(
+    redis,
+    *,
+    delivery_marker_key: str,
+    ttl_seconds: int,
+) -> None:
+    try:
+        if not redis.expire(delivery_marker_key, int(ttl_seconds)):
+            raise WorldChatInfrastructureError("world chat delivery marker expiry failed")
+    except ResponseError:
+        raise
+    except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
+        raise WorldChatInfrastructureError("world chat delivery marker unavailable") from exc

@@ -7,13 +7,61 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  function loadExternalScript(documentObj, absoluteSrc) {
+  function createAbortError() {
+    const error = new Error("partial navigation aborted");
+    error.name = "AbortError";
+    return error;
+  }
+
+  function throwIfAborted(signal) {
+    if (signal && signal.aborted) {
+      throw createAbortError();
+    }
+  }
+
+  function loadExternalScript(documentObj, absoluteSrc, signal) {
     return new Promise((resolve, reject) => {
+      if (signal && signal.aborted) {
+        reject(createAbortError());
+        return;
+      }
+
       const script = documentObj.createElement("script");
       script.src = absoluteSrc;
       script.async = false;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error(`failed to load script: ${absoluteSrc}`));
+
+      let settled = false;
+      const cleanup = () => {
+        if (signal && typeof signal.removeEventListener === "function") {
+          signal.removeEventListener("abort", handleAbort);
+        }
+        script.onload = null;
+        script.onerror = null;
+      };
+      const finish = (callback) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        callback();
+      };
+      const handleAbort = () => {
+        if (typeof script.remove === "function") {
+          script.remove();
+        }
+        finish(() => reject(createAbortError()));
+      };
+
+      script.onload = () => {
+        if (signal && signal.aborted) {
+          handleAbort();
+          return;
+        }
+        finish(resolve);
+      };
+      script.onerror = () => finish(() => reject(new Error(`failed to load script: ${absoluteSrc}`)));
+      if (signal && typeof signal.addEventListener === "function") {
+        signal.addEventListener("abort", handleAbort, { once: true });
+      }
       documentObj.body.appendChild(script);
     });
   }
@@ -29,9 +77,11 @@
     const loadedScriptUrls = options.loadedScriptUrls;
     const executeInlineScript = options.executeInlineScript;
     const loadExternalScriptFn = options.loadExternalScriptFn || loadExternalScript;
+    const signal = options.signal;
 
     const scripts = Array.from(scriptContainer.querySelectorAll("script"));
     for (const scriptEl of scripts) {
+      throwIfAborted(signal);
       const src = scriptEl.getAttribute("src");
       if (src) {
         const absoluteSrc = new URL(src, currentUrl).href;
@@ -41,7 +91,8 @@
 
         loadedScriptUrls.add(absoluteSrc);
         try {
-          await loadExternalScriptFn(documentObj, absoluteSrc);
+          await loadExternalScriptFn(documentObj, absoluteSrc, signal);
+          throwIfAborted(signal);
         } catch (error) {
           loadedScriptUrls.delete(absoluteSrc);
           throw error;
@@ -51,6 +102,7 @@
 
       const code = scriptEl.textContent || "";
       if (code.trim()) {
+        throwIfAborted(signal);
         executeInlineScript(code);
       }
     }

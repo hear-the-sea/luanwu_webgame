@@ -193,6 +193,22 @@ def test_release_login_lock_programming_error_bubbles_up(monkeypatch):
     assert lock_key not in account_utils._LOCAL_LOGIN_LOCKS
 
 
+def test_release_login_lock_fails_closed_when_owner_release_returns_false(monkeypatch):
+    lock_key = "login_lock:release-failed"
+    lock_token = "expired-owner-token"
+    cache_get = Mock(return_value=lock_token)
+    cache_delete = Mock()
+
+    monkeypatch.setattr(account_utils, "release_cache_key_if_owner", lambda *_args, **_kwargs: False)
+    monkeypatch.setattr(account_utils.cache, "get", cache_get)
+    monkeypatch.setattr(account_utils.cache, "delete", cache_delete)
+
+    account_utils._release_login_lock(lock_key, lock_token)
+
+    cache_get.assert_not_called()
+    cache_delete.assert_not_called()
+
+
 def test_session_key_prefix_handles_none():
     assert account_utils._session_key_prefix(None) == "<none>"
 

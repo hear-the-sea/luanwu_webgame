@@ -3573,8 +3573,7 @@
 }
 
 .tw-badge-maxed {
-  background: linear-gradient(135deg, var(--accent-gold), var(--border-decorative)) !important;
-  color: var(--text-primary) !important;
+  background: linear-gradient(135deg, var(--accent-green), #1E3A1F) !important;
 }
 
 .tw-badge-upgrading {
@@ -5963,6 +5962,12 @@
   margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
 }
 
+.space-y-3 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));
+}
+
 .overflow-hidden {
   overflow: hidden;
 }
@@ -6965,16 +6970,8 @@
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
 
-@media (min-width: 1024px) {
-  .lg\:grid-cols-3 {
+  .md\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1280px) {
-  .xl\:grid-cols-4 {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

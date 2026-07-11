@@ -25,9 +25,11 @@ from core.utils.validation import safe_redirect_url
 from core.utils.view_error_mapping import flash_view_error, json_error_response_for_exception
 from gameplay.constants import UIConstants
 from gameplay.models import ResourceType
+from gameplay.models.items import normalize_message_attachment_buckets
 from gameplay.services.manor.core import get_manor
 from gameplay.services.resources import project_resource_production_for_read
 from gameplay.services.utils.messages import (
+    MessageDeleteResult,
     claim_message_attachments,
     delete_all_messages,
     delete_messages,
@@ -59,13 +61,13 @@ def _build_attachment_details(message: Any) -> dict[str, list[dict[str, Any]]]:
     if not message.has_attachments:
         return attachment_details
 
-    attachments = message.attachments or {}
-    if message.is_claimed:
+    attachments = message.attachments
+    if message.is_claimed and isinstance(attachments, dict):
         claimed = attachments.get("claimed")
         if isinstance(claimed, dict):
             attachments = claimed
 
-    resources = attachments.get("resources", {})
+    resources, items = normalize_message_attachment_buckets(attachments)
     resource_labels = dict(ResourceType.choices)
     for key, amount in resources.items():
         attachment_details["resources"].append(
@@ -76,7 +78,6 @@ def _build_attachment_details(message: Any) -> dict[str, list[dict[str, Any]]]:
             }
         )
 
-    items = attachments.get("items", {})
     item_keys = list(items.keys())
     if item_keys:
         from gameplay.utils.template_loader import get_item_templates_by_keys
@@ -114,6 +115,41 @@ def _resolve_message_action_redirect(request: HttpRequest, default_url_name: str
 
 def _messages_list_redirect() -> HttpResponse:
     return redirect("gameplay:messages")
+
+
+def _message_deletion_feedback(result: MessageDeleteResult) -> str:
+    deleted_count = result.deleted_count
+    protected_count = result.protected_count
+    if protected_count and deleted_count:
+        return f"已删除 {deleted_count} 条消息，{protected_count} 条未领取附件消息已保留"
+    if protected_count:
+        return f"{protected_count} 条未领取附件消息已保留，领取附件后可删除"
+    return f"已删除 {deleted_count} 条消息"
+
+
+def _message_deletion_response(
+    request: HttpRequest,
+    *,
+    manor: Any,
+    result: MessageDeleteResult,
+    message_ids: list[str] | None = None,
+) -> HttpResponse:
+    if is_json_request(request):
+        response_data: dict[str, Any] = {
+            "deleted_count": result.deleted_count,
+            "protected_count": result.protected_count,
+            "unread_count": _safe_unread_message_count(manor),
+        }
+        if message_ids is not None:
+            response_data["message_ids"] = [int(message_id) for message_id in message_ids if str(message_id).isdigit()]
+        return json_success(**response_data)
+
+    feedback = _message_deletion_feedback(result)
+    if result.deleted_count > 0:
+        messages.success(request, feedback)
+    else:
+        messages.info(request, feedback)
+    return _messages_list_redirect()
 
 
 def _run_selected_message_action(
@@ -287,12 +323,21 @@ def view_message(request: HttpRequest, pk: int) -> HttpResponse:
 @require_POST
 def delete_messages_view(request: HttpRequest) -> HttpResponse:
     """Delete only the messages that have been selected via checkboxes."""
-    return _run_selected_message_action(
-        request,
-        action=delete_messages,
-        success_message="已删除 {count} 条消息",
-        empty_message="请先选择需要删除的消息",
-    )
+    manor = get_manor(request.user)
+    message_ids = request.POST.getlist("message_ids")
+    if not message_ids:
+        if is_json_request(request):
+            return _message_deletion_response(
+                request,
+                manor=manor,
+                result=MessageDeleteResult(deleted_count=0, protected_count=0),
+                message_ids=[],
+            )
+        messages.info(request, "请先选择需要删除的消息")
+        return _messages_list_redirect()
+
+    result = delete_messages(manor, message_ids)
+    return _message_deletion_response(request, manor=manor, result=result, message_ids=message_ids)
 
 
 @login_required
@@ -300,9 +345,8 @@ def delete_messages_view(request: HttpRequest) -> HttpResponse:
 def delete_all_messages_view(request: HttpRequest) -> HttpResponse:
     """Handle the 'one click clear' button."""
     manor = get_manor(request.user)
-    delete_all_messages(manor)
-    messages.info(request, "所有消息已清空")
-    return _messages_list_redirect()
+    result = delete_all_messages(manor)
+    return _message_deletion_response(request, manor=manor, result=result)
 
 
 @login_required

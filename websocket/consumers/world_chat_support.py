@@ -4,15 +4,8 @@ import logging
 
 from django.db import DatabaseError
 
-from websocket.backends.chat_history import (
-    append_history_sync,
-    get_history_sync,
-    remove_history_sync,
-    trim_history_by_time_fallback,
-    trim_history_by_time_sync,
-)
+from websocket.backends.chat_history import get_history_sync
 from websocket.backends.rate_limiter import rate_limit_sync
-from websocket.services.message_builder import build_message_sync, next_id_sync
 
 from ..utils import filter_payload
 
@@ -114,57 +107,6 @@ def get_history_sync_for_consumer(
     )
 
 
-def trim_history_by_time_sync_for_consumer(
-    cutoff_ms: int,
-    redis,
-    *,
-    history_key: str,
-    history_limit: int,
-) -> None:
-    trim_history_by_time_sync(
-        cutoff_ms,
-        redis,
-        history_key=history_key,
-        history_limit=history_limit,
-    )
-
-
-def trim_history_by_time_fallback_for_consumer(
-    cutoff_ms: int,
-    redis,
-    *,
-    history_key: str,
-    history_limit: int,
-) -> None:
-    trim_history_by_time_fallback(
-        cutoff_ms,
-        redis,
-        history_key=history_key,
-        history_limit=history_limit,
-    )
-
-
-def append_history_sync_for_consumer(
-    message: dict,
-    redis,
-    *,
-    history_key: str,
-    history_limit: int,
-    history_message_ttl_seconds: int,
-) -> None:
-    append_history_sync(
-        message,
-        redis,
-        history_key=history_key,
-        history_limit=history_limit,
-        history_message_ttl_seconds=history_message_ttl_seconds,
-    )
-
-
-def remove_history_sync_for_consumer(message: dict, redis, *, history_key: str) -> None:
-    remove_history_sync(message, redis, history_key=history_key)
-
-
 def rate_limit_sync_for_consumer(
     user_id: int | None,
     redis,
@@ -177,29 +119,6 @@ def rate_limit_sync_for_consumer(
         redis,
         rate_limit_window_seconds=rate_limit_window_seconds,
         rate_limit_max_messages=rate_limit_max_messages,
-    )
-
-
-def next_id_sync_for_consumer(redis, *, next_id_key: str) -> int:
-    return next_id_sync(redis, next_id_key=next_id_key)
-
-
-def build_message_sync_for_consumer(
-    text: str,
-    redis,
-    *,
-    next_id_key: str,
-    channel: str,
-    user_id: int | None,
-    display_name: str,
-) -> dict:
-    return build_message_sync(
-        text,
-        redis,
-        next_id_key=next_id_key,
-        channel=channel,
-        user_id=user_id,
-        display_name=display_name,
     )
 
 
@@ -233,37 +152,12 @@ async def send_connect_payloads(
 
 
 def filter_chat_message_payload(payload: dict) -> dict:
-    safe_payload = filter_payload(payload, ["type", "channel", "id", "ts", "sender", "text"])
+    safe_payload = filter_payload(
+        payload,
+        ["type", "channel", "id", "operation_id", "ts", "sender", "text"],
+    )
     if "ts" not in safe_payload and "timestamp" in payload:
         safe_payload["ts"] = payload["timestamp"]
     if "text" not in safe_payload and "message" in payload:
         safe_payload["text"] = payload["message"]
     return safe_payload
-
-
-async def remove_history_compensation(
-    *,
-    remove_history_sync_fn,
-    message: dict,
-    expected_infrastructure_exceptions,
-    logger_instance: logging.Logger,
-    user_id: int | None,
-) -> bool:
-    from asgiref.sync import sync_to_async
-
-    try:
-        await sync_to_async(remove_history_sync_fn, thread_sensitive=True)(message)
-        return True
-    except expected_infrastructure_exceptions:
-        logger_instance.exception(
-            "World chat compensation delete failed: user_id=%s message_id=%s",
-            user_id,
-            message.get("id"),
-            extra={
-                "degraded": True,
-                "component": "world_chat_publish",
-                "user_id": user_id,
-                "message_id": message.get("id"),
-            },
-        )
-        return False

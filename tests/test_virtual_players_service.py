@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import threading
+import time
 from datetime import timedelta
 from itertools import count
 
@@ -40,9 +42,23 @@ from guests.models import (
 
 _COUNTER = count(1)
 
+SQLITE_OCCUPIED_MANOR_LOCATION_CONFLICT = (
+    "UNIQUE constraint failed: gameplay_manor.occupied_region, "
+    "gameplay_manor.coordinate_x, gameplay_manor.coordinate_y"
+)
+MYSQL_OCCUPIED_MANOR_LOCATION_CONFLICT = (
+    "Duplicate entry 'north-411-511' for key " "'gameplay_manor.unique_occupied_manor_location'"
+)
+
 
 def _unique(prefix: str) -> str:
     return f"{prefix}_{next(_COUNTER)}"
+
+
+def _mysql_occupied_manor_location_conflict() -> IntegrityError:
+    error = IntegrityError("Django wrapped database integrity error")
+    error.__cause__ = Exception(1062, MYSQL_OCCUPIED_MANOR_LOCATION_CONFLICT)
+    return error
 
 
 def _create_building_type(key: str) -> None:
@@ -97,6 +113,196 @@ def _bootstrap_projection_templates() -> dict[str, object]:
         default_count=120,
     )
     return {"guest_template": guest_template, "gear_template": gear_template, "troop_template": troop_template}
+
+
+@pytest.mark.django_db
+def test_create_virtual_player_retries_coordinate_conflict_without_duplicate_side_effects(
+    settings,
+    monkeypatch,
+    django_user_model,
+):
+    from gameplay.models import BotProfile
+    from gameplay.services import virtual_players
+    from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+            "technology_keys": [],
+        }
+    }
+
+    initial_user_count = django_user_model.objects.count()
+    initial_manor_count = Manor.objects.count()
+    initial_profile_count = BotProfile.objects.count()
+    coordinates = iter([(411, 511), (412, 512)])
+    coordinate_calls = 0
+    final_save_attempts = 0
+    projection_calls = 0
+    original_save = Manor.save
+    original_project_buildings = virtual_players._project_buildings
+
+    def _next_coordinate(_region):
+        nonlocal coordinate_calls
+        coordinate_calls += 1
+        return next(coordinates)
+
+    def _save_with_one_coordinate_conflict(self, *args, **kwargs):
+        nonlocal final_save_attempts
+        update_fields = kwargs.get("update_fields") or []
+        if "coordinate_x" in update_fields and "last_active_at" in update_fields:
+            final_save_attempts += 1
+            if final_save_attempts == 1:
+                raise _mysql_occupied_manor_location_conflict()
+        return original_save(self, *args, **kwargs)
+
+    def _count_project_buildings(*args, **kwargs):
+        nonlocal projection_calls
+        projection_calls += 1
+        return original_project_buildings(*args, **kwargs)
+
+    monkeypatch.setattr(virtual_players, "generate_unique_coordinate", _next_coordinate)
+    monkeypatch.setattr(Manor, "save", _save_with_one_coordinate_conflict)
+    monkeypatch.setattr(virtual_players, "_project_buildings", _count_project_buildings)
+
+    profile = create_virtual_player(
+        region="north",
+        prestige_band="junior",
+        growth_seed=6001,
+        projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=0, guest_level=1),
+    )
+
+    profile.manor.refresh_from_db(fields=["region", "coordinate_x", "coordinate_y"])
+    assert (profile.manor.coordinate_x, profile.manor.coordinate_y) == (412, 512)
+    assert coordinate_calls == 2
+    assert final_save_attempts == 2
+    assert projection_calls == 1
+    assert django_user_model.objects.count() == initial_user_count + 1
+    assert Manor.objects.count() == initial_manor_count + 1
+    assert BotProfile.objects.count() == initial_profile_count + 1
+    assert BotProfile.objects.filter(pk=profile.pk, manor=profile.manor).count() == 1
+
+
+@pytest.mark.django_db
+def test_create_virtual_player_rolls_back_after_coordinate_retry_exhaustion(
+    settings,
+    monkeypatch,
+    django_user_model,
+):
+    from gameplay.models import BotProfile
+    from gameplay.services import virtual_players
+    from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+            "technology_keys": [],
+        }
+    }
+
+    initial_user_count = django_user_model.objects.count()
+    initial_manor_count = Manor.objects.count()
+    initial_profile_count = BotProfile.objects.count()
+    coordinate_values = count(610)
+    coordinate_conflicts: list[IntegrityError] = []
+    original_save = Manor.save
+
+    def _next_coordinate(_region):
+        value = next(coordinate_values)
+        return value, value
+
+    def _save_with_coordinate_conflict(self, *args, **kwargs):
+        update_fields = kwargs.get("update_fields") or []
+        if "coordinate_x" in update_fields and "last_active_at" in update_fields:
+            conflict = IntegrityError(SQLITE_OCCUPIED_MANOR_LOCATION_CONFLICT)
+            coordinate_conflicts.append(conflict)
+            raise conflict
+        return original_save(self, *args, **kwargs)
+
+    monkeypatch.setattr(virtual_players, "generate_unique_coordinate", _next_coordinate)
+    monkeypatch.setattr(Manor, "save", _save_with_coordinate_conflict)
+
+    with pytest.raises(IntegrityError) as exc_info:
+        create_virtual_player(
+            region="north",
+            prestige_band="junior",
+            growth_seed=6002,
+            projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=0, guest_level=1),
+        )
+
+    assert len(coordinate_conflicts) == 5
+    assert exc_info.value is coordinate_conflicts[-1]
+    assert django_user_model.objects.count() == initial_user_count
+    assert Manor.objects.count() == initial_manor_count
+    assert BotProfile.objects.count() == initial_profile_count
+
+
+@pytest.mark.parametrize(
+    "error_message",
+    [
+        pytest.param(
+            "NOT NULL constraint failed: gameplay_manor.region",
+            id="not-null",
+        ),
+        pytest.param("FOREIGN KEY constraint failed", id="foreign-key"),
+        pytest.param(
+            "Duplicate entry 'taken-name' for key 'gameplay_manor.name'",
+            id="other-unique",
+        ),
+        pytest.param(
+            "Duplicate entry 'north-1-2' for key " "'gameplay_manor.unique_occupied_manor_location_shadow'",
+            id="mysql-similar-unique",
+        ),
+        pytest.param(
+            f"{SQLITE_OCCUPIED_MANOR_LOCATION_CONFLICT}, gameplay_manor.user_id",
+            id="sqlite-four-column-unique",
+        ),
+    ],
+)
+@pytest.mark.django_db
+def test_virtual_player_coordinate_retry_propagates_non_coordinate_integrity_error(
+    error_message,
+    monkeypatch,
+    django_user_model,
+):
+    from gameplay.services import virtual_players
+
+    manor = django_user_model.objects.create_user(
+        username=_unique("bot_coordinate_non_target"),
+        password="pass123",
+    ).manor
+    integrity_error = IntegrityError(error_message)
+    save_attempts = 0
+    coordinate_calls = 0
+
+    def _raise_non_coordinate_error(*_args, **_kwargs):
+        nonlocal save_attempts
+        save_attempts += 1
+        raise integrity_error
+
+    def _track_coordinate_change(*_args, **_kwargs):
+        nonlocal coordinate_calls
+        coordinate_calls += 1
+
+    monkeypatch.setattr(manor, "save", _raise_non_coordinate_error)
+    monkeypatch.setattr(virtual_players, "_set_unique_location", _track_coordinate_change)
+
+    with pytest.raises(IntegrityError) as exc_info:
+        virtual_players._save_virtual_player_manor_with_coordinate_retry(
+            manor,
+            region="north",
+            update_fields=["region", "coordinate_x", "coordinate_y"],
+        )
+
+    assert exc_info.value is integrity_error
+    assert save_attempts == 1
+    assert coordinate_calls == 0
 
 
 def _create_real_manor_for_pvp(django_user_model, *, username: str, prestige: int = 500) -> Manor:
@@ -1649,6 +1855,318 @@ def test_population_roll_counts_target_band_instead_of_current_prestige(settings
     assert BotProfile.objects.get(target_prestige_band="junior").current_prestige_band == "newbie"
     assert roll_virtual_player_population(limit=20, now=now) == 19
     assert BotProfile.objects.filter(target_prestige_band="junior", manor__region="north").count() == 1
+
+
+@pytest.mark.django_db
+def test_population_roll_continues_after_one_coordinate_conflict(settings, monkeypatch, django_user_model):
+    from gameplay.models import BotProfile
+    from gameplay.services import virtual_players
+    from gameplay.services.virtual_players import roll_virtual_player_population
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "active_player_multiplier": 0,
+            "min_per_region": 1,
+            "min_attackable_per_band": 0,
+            "hard_cap": 20,
+            "rolling_batch_size": [2, 2],
+        },
+        "prestige_bands": {"newbie": [0, 500]},
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+            "technology_keys": [],
+        },
+    }
+
+    initial_user_count = django_user_model.objects.count()
+    initial_manor_count = Manor.objects.count()
+    initial_profile_count = BotProfile.objects.count()
+    coordinate_values = count(710)
+    final_save_attempts = 0
+    original_save = Manor.save
+
+    def _next_coordinate(_region):
+        value = next(coordinate_values)
+        return value, value + 1
+
+    def _save_with_one_coordinate_conflict(self, *args, **kwargs):
+        nonlocal final_save_attempts
+        update_fields = kwargs.get("update_fields") or []
+        if "coordinate_x" in update_fields and "last_active_at" in update_fields:
+            final_save_attempts += 1
+            if final_save_attempts == 1:
+                raise IntegrityError(SQLITE_OCCUPIED_MANOR_LOCATION_CONFLICT)
+        return original_save(self, *args, **kwargs)
+
+    monkeypatch.setattr(virtual_players, "generate_unique_coordinate", _next_coordinate)
+    monkeypatch.setattr(Manor, "save", _save_with_one_coordinate_conflict)
+
+    assert roll_virtual_player_population(limit=2, now=timezone.now()) == 2
+    assert final_save_attempts == 3
+    assert django_user_model.objects.count() == initial_user_count + 2
+    assert Manor.objects.count() == initial_manor_count + 2
+    assert BotProfile.objects.count() == initial_profile_count + 2
+
+
+def test_population_roll_release_does_not_delete_reacquired_owner_lock(monkeypatch):
+    from core.utils import cache_lock
+    from gameplay.services import virtual_players
+
+    class _FakeCache:
+        def __init__(self):
+            self.values: dict[str, str] = {}
+            self.deleted: list[str] = []
+
+        def add(self, key, value, timeout=None):
+            del timeout
+            if key in self.values:
+                return False
+            self.values[key] = value
+            return True
+
+        def get(self, key, default=None):
+            return self.values.get(key, default)
+
+        def delete(self, key):
+            self.deleted.append(key)
+            self.values.pop(key, None)
+            return True
+
+        def make_key(self, key):
+            return key
+
+    fake_cache = _FakeCache()
+    replacement_token = "worker-b-owner-token"
+    acquired_tokens: list[str] = []
+
+    def _replace_expired_lock(*, limit=None, now=None, ownership_guard=None):
+        del limit, now, ownership_guard
+        acquired_tokens.append(fake_cache.values[virtual_players.ROLL_LOCK_KEY])
+        fake_cache.values[virtual_players.ROLL_LOCK_KEY] = replacement_token
+        return 4
+
+    monkeypatch.setattr(virtual_players, "cache", fake_cache, raising=False)
+    monkeypatch.setattr(cache_lock, "cache", fake_cache)
+    monkeypatch.setattr(
+        cache_lock,
+        "_release_cache_lock_atomic_if_owner",
+        lambda *_a, **_k: cache_lock._AtomicCacheLockReleaseResult.NOT_OWNER,
+    )
+    monkeypatch.setattr(virtual_players, "_roll_virtual_player_population_unlocked", _replace_expired_lock)
+
+    assert virtual_players.roll_virtual_player_population(limit=4, now=timezone.now()) == 4
+    assert acquired_tokens and acquired_tokens[0] != replacement_token
+    assert fake_cache.values[virtual_players.ROLL_LOCK_KEY] == replacement_token
+    assert fake_cache.deleted == []
+
+
+def test_population_roll_renews_periodically_and_stops_heartbeat(monkeypatch):
+    from gameplay.services import virtual_players
+
+    renew_calls: list[tuple[str, bool, str | None, int]] = []
+    renewed_twice = threading.Event()
+    released = threading.Event()
+
+    monkeypatch.setattr(virtual_players, "ROLL_LOCK_TIMEOUT_SECONDS", 1)
+    monkeypatch.setattr(
+        virtual_players,
+        "acquire_best_effort_lock",
+        lambda *_args, **_kwargs: (True, True, "owner-token"),
+    )
+
+    def _renew(key, *, from_cache, lock_token, timeout_seconds, **_kwargs):
+        renew_calls.append((key, from_cache, lock_token, timeout_seconds))
+        if len(renew_calls) >= 2:
+            renewed_twice.set()
+        return True
+
+    def _roll_unlocked(*, limit=None, now=None, ownership_guard=None):
+        del limit, now
+        assert ownership_guard is not None
+        assert renewed_twice.wait(timeout=2)
+        ownership_guard()
+        return 4
+
+    def _release(*_args, **_kwargs):
+        released.set()
+
+    monkeypatch.setattr(virtual_players, "renew_best_effort_lock", _renew, raising=False)
+    monkeypatch.setattr(virtual_players, "release_best_effort_lock", _release)
+    monkeypatch.setattr(virtual_players, "_roll_virtual_player_population_unlocked", _roll_unlocked)
+
+    assert virtual_players.roll_virtual_player_population(limit=4, now=timezone.now()) == 4
+    assert released.is_set()
+    assert len(renew_calls) >= 2
+    assert all(call == (virtual_players.ROLL_LOCK_KEY, True, "owner-token", 1) for call in renew_calls)
+
+    renew_count_after_return = len(renew_calls)
+    time.sleep(0.45)
+    assert len(renew_calls) == renew_count_after_return
+
+
+def test_population_roll_raises_precise_error_when_heartbeat_loses_lock(monkeypatch):
+    from gameplay.services import virtual_players
+
+    renew_attempted = threading.Event()
+    released = threading.Event()
+
+    monkeypatch.setattr(virtual_players, "ROLL_LOCK_TIMEOUT_SECONDS", 1)
+    monkeypatch.setattr(
+        virtual_players,
+        "acquire_best_effort_lock",
+        lambda *_args, **_kwargs: (True, True, "owner-token"),
+    )
+
+    def _lose_lock(*_args, **_kwargs):
+        renew_attempted.set()
+        return False
+
+    def _roll_unlocked(*, limit=None, now=None, ownership_guard=None):
+        del limit, now
+        assert ownership_guard is not None
+        assert renew_attempted.wait(timeout=2)
+        deadline = time.monotonic() + 2
+        while time.monotonic() < deadline:
+            ownership_guard()
+            time.sleep(0.01)
+        raise AssertionError("ownership guard did not observe the lost lease")
+
+    def _release(*_args, **_kwargs):
+        released.set()
+
+    monkeypatch.setattr(virtual_players, "renew_best_effort_lock", _lose_lock, raising=False)
+    monkeypatch.setattr(virtual_players, "release_best_effort_lock", _release)
+    monkeypatch.setattr(virtual_players, "_roll_virtual_player_population_unlocked", _roll_unlocked)
+
+    with pytest.raises(
+        virtual_players.VirtualPlayerPopulationLockLostError,
+        match="virtual player population roll lock ownership was lost",
+    ):
+        virtual_players.roll_virtual_player_population(limit=4, now=timezone.now())
+
+    assert released.is_set()
+
+
+def test_population_roll_re_raises_heartbeat_programming_error_unchanged(monkeypatch):
+    from gameplay.services import virtual_players
+
+    programming_error = TypeError("broken renew contract")
+    heartbeat_caught_error = threading.Event()
+    released = threading.Event()
+    renew_calls: list[None] = []
+    persisted_writes: list[str] = []
+    logged_messages: list[str] = []
+
+    monkeypatch.setattr(virtual_players, "ROLL_LOCK_TIMEOUT_SECONDS", 1)
+    monkeypatch.setattr(
+        virtual_players,
+        "acquire_best_effort_lock",
+        lambda *_args, **_kwargs: (True, True, "owner-token"),
+    )
+
+    def _raise_programming_error(*_args, **_kwargs):
+        renew_calls.append(None)
+        raise programming_error
+
+    def _capture_heartbeat_error(message, *_args, **_kwargs):
+        logged_messages.append(message)
+        heartbeat_caught_error.set()
+
+    def _roll_unlocked(*, limit=None, now=None, ownership_guard=None):
+        del limit, now
+        assert ownership_guard is not None
+        assert heartbeat_caught_error.wait(timeout=2)
+        ownership_guard()
+        persisted_writes.append("unexpected write")
+        return 4
+
+    def _release(*_args, **_kwargs):
+        released.set()
+
+    monkeypatch.setattr(virtual_players, "renew_best_effort_lock", _raise_programming_error)
+    monkeypatch.setattr(virtual_players.logger, "exception", _capture_heartbeat_error)
+    monkeypatch.setattr(virtual_players, "release_best_effort_lock", _release)
+    monkeypatch.setattr(virtual_players, "_roll_virtual_player_population_unlocked", _roll_unlocked)
+
+    raised_errors: list[Exception] = []
+    try:
+        virtual_players.roll_virtual_player_population(limit=4, now=timezone.now())
+    except Exception as exc:
+        raised_errors.append(exc)
+
+    renew_count_after_return = len(renew_calls)
+    time.sleep(0.45)
+    assert len(renew_calls) == renew_count_after_return
+    assert renew_count_after_return == 1
+    assert released.is_set()
+    assert persisted_writes == []
+    assert raised_errors and raised_errors[0] is programming_error
+    assert not isinstance(raised_errors[0], virtual_players.VirtualPlayerPopulationLockLostError)
+    assert logged_messages == ["Virtual player population roll heartbeat raised an unexpected error"]
+
+
+@pytest.mark.django_db
+def test_population_roll_guard_preserves_first_create_and_stops_before_second(settings):
+    from gameplay.models import BotProfile
+    from gameplay.services import virtual_players
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "active_player_multiplier": 0,
+            "min_per_region": 0,
+            "min_attackable_per_band": 1,
+            "hard_cap": 20,
+            "rolling_batch_size": [2, 2],
+        },
+        "prestige_bands": {"newbie": [0, 500]},
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+            "technology_keys": [],
+        },
+    }
+
+    def _guard_after_first_commit():
+        if BotProfile.objects.exists():
+            raise virtual_players.VirtualPlayerPopulationLockLostError(
+                "virtual player population roll lock ownership was lost"
+            )
+
+    with pytest.raises(virtual_players.VirtualPlayerPopulationLockLostError):
+        virtual_players._roll_virtual_player_population_unlocked(
+            limit=2,
+            now=timezone.now(),
+            ownership_guard=_guard_after_first_commit,
+        )
+
+    assert BotProfile.objects.count() == 1
+
+
+def test_population_roll_fails_closed_when_cache_is_unavailable(monkeypatch):
+    from django_redis.exceptions import ConnectionInterrupted
+
+    from core.utils import cache_lock
+    from gameplay.services import virtual_players
+
+    class _BrokenCache:
+        def add(self, *_args, **_kwargs):
+            raise ConnectionInterrupted("population lock cache unavailable")
+
+    broken_cache = _BrokenCache()
+    monkeypatch.setattr(virtual_players, "cache", broken_cache, raising=False)
+    monkeypatch.setattr(cache_lock, "cache", broken_cache)
+    monkeypatch.setattr(
+        virtual_players,
+        "_roll_virtual_player_population_unlocked",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("population roll must fail closed")),
+    )
+
+    assert virtual_players.roll_virtual_player_population(limit=4, now=timezone.now()) == 0
 
 
 @pytest.mark.django_db

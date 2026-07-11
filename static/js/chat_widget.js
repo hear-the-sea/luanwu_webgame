@@ -62,6 +62,7 @@
     WebSocketCtor: window.WebSocket,
     renderer,
     setStatus,
+    userId,
     wsUrl,
   });
 

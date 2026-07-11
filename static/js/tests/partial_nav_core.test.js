@@ -13,12 +13,16 @@ function createFakeDocument() {
         async: true,
         onload: null,
         onerror: null,
+        removed: false,
         _src: "",
         set src(value) {
           this._src = value;
         },
         get src() {
           return this._src;
+        },
+        remove() {
+          this.removed = true;
         },
       };
     },
@@ -108,4 +112,51 @@ test("runPageScripts skips already loaded scripts and still runs inline code", a
 
   assert.equal(documentObj.appendedScripts.length, 0);
   assert.deepEqual(inlineCalls, ["window.__inlineExecuted = true;"]);
+});
+
+test("runPageScripts aborts a pending external script and skips later inline code", async () => {
+  const documentObj = createFakeDocument();
+  const controller = new AbortController();
+  const inlineCalls = [];
+  const scriptContainer = {
+    querySelectorAll() {
+      return [
+        {
+          getAttribute(name) {
+            return name === "src" ? "/static/js/slow-page.js" : null;
+          },
+          textContent: "",
+        },
+        {
+          getAttribute() {
+            return null;
+          },
+          textContent: "window.__staleInlineExecuted = true;",
+        },
+      ];
+    },
+  };
+
+  const runPromise = partialNavCore.runPageScripts({
+    scriptContainer,
+    documentObj,
+    currentUrl: "https://example.com/manor/tasks/",
+    loadedScriptUrls: new Set(),
+    executeInlineScript(code) {
+      inlineCalls.push(code);
+    },
+    signal: controller.signal,
+  });
+
+  await Promise.resolve();
+  assert.equal(documentObj.appendedScripts.length, 1);
+
+  controller.abort();
+  if (documentObj.appendedScripts[0].onload) {
+    documentObj.appendedScripts[0].onload();
+  }
+
+  await assert.rejects(runPromise, (error) => error && error.name === "AbortError");
+  assert.equal(documentObj.appendedScripts[0].removed, true);
+  assert.deepEqual(inlineCalls, []);
 });

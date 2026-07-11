@@ -7,11 +7,12 @@ from __future__ import annotations
 import logging
 
 from celery import shared_task
+from django.db import ProgrammingError
 from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
 from core.utils import safe_int, safe_non_negative_int
-from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
+from core.utils.infrastructure import DATABASE_CACHE_INFRASTRUCTURE_EXCEPTIONS, DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from core.utils.task_monitoring import increment_degraded_counter
 from trade.models import ShopStock
 from trade.services.shop_config import get_shop_config, reload_shop_config
@@ -130,6 +131,8 @@ def process_pending_auction_deliveries_task(self):
 
         count = safe_non_negative_int(process_pending_auction_deliveries(), 0)
         return f"处理了 {count} 个待交付拍卖奖励"
+    except ProgrammingError:
+        raise
     except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
         logger.exception("Failed to process pending auction deliveries: %s", exc)
         raise self.retry(exc=exc)
@@ -145,7 +148,7 @@ def settle_auction_round_task(self):
 
     由 Celery Beat 每 5 分钟检查一次，如果有到期的轮次则进行结算：
     - 中标者：消耗冻结金条，默认通过站内信附件发放物品
-      - 若消息创建失败且属于受控消息/数据库基础设施异常，则降级为直接入仓库
+      - 受控消息业务异常降级为直接入仓库；数据库故障保留待交付记录并由扫描任务重试
     - 落选者：金条已在出价时即时退还
     - 流拍商品：标记状态，不重新上架
 
@@ -166,13 +169,17 @@ def settle_auction_round_task(self):
             if not dispatched:
                 try:
                     create_auction_round()
+                except ProgrammingError:
+                    raise
                 except DATABASE_INFRASTRUCTURE_EXCEPTIONS as fallback_exc:
                     logger.warning("拍卖结算后同步创建新轮次失败: %s", fallback_exc, exc_info=True)
             logger.info(f"拍卖轮次结算完成：售出 {sold} 件，" f"流拍 {unsold} 件，" f"共收取 {total_gold_bars} 金条")
             return f"结算完成：售出 {sold} 件，流拍 {unsold} 件，" f"共 {total_gold_bars} 金条"
         else:
             return "没有需要结算的拍卖轮次"
-    except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
+    except ProgrammingError:
+        raise
+    except DATABASE_CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
         logger.exception("结算拍卖轮次失败: %s", exc)
         raise self.retry(exc=exc)
 
@@ -201,6 +208,8 @@ def create_auction_round_task(self):
             round_number = safe_int(getattr(auction_round, "round_number", 0), 0)
             try:
                 slot_count = safe_non_negative_int(auction_round.slots.count(), 0)
+            except ProgrammingError:
+                raise
             except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
                 # Slot count is informational; degrade to 0 on infra errors.
                 logger.warning(
@@ -214,6 +223,8 @@ def create_auction_round_task(self):
             return f"创建拍卖轮次 #{round_number}，" f"拍卖位数量: {slot_count}"
         else:
             return "已有进行中的拍卖轮次或无可用商品，跳过创建"
+    except ProgrammingError:
+        raise
     except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
         logger.exception("创建拍卖轮次失败: %s", exc)
         raise self.retry(exc=exc)

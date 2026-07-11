@@ -74,6 +74,16 @@ class Manor(models.Model):
     )
     coordinate_x = models.PositiveIntegerField("X坐标", default=0)
     coordinate_y = models.PositiveIntegerField("Y坐标", default=0)
+    occupied_region = models.GeneratedField(
+        expression=models.Case(
+            models.When(coordinate_x__gt=0, coordinate_y__gt=0, then=models.F("region")),
+            default=models.Value(None),
+        ),
+        output_field=models.CharField(max_length=32, null=True),
+        db_persist=True,
+        editable=False,
+        verbose_name="已占用坐标地区",
+    )
     last_active_at = models.DateTimeField("最后活跃时间", default=timezone.now)
 
     # ============ 保护机制 ============
@@ -113,9 +123,8 @@ class Manor(models.Model):
         verbose_name_plural = "庄园"
         constraints = [
             models.UniqueConstraint(
-                fields=["region", "coordinate_x", "coordinate_y"],
-                name="unique_manor_location",
-                condition=models.Q(coordinate_x__gt=0, coordinate_y__gt=0),
+                fields=["occupied_region", "coordinate_x", "coordinate_y"],
+                name="unique_occupied_manor_location",
             )
         ]
         indexes = [

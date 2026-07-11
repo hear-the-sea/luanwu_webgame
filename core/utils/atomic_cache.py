@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import uuid
 from collections.abc import Iterable
 from threading import Lock
 from time import monotonic, sleep
@@ -7,7 +9,10 @@ from typing import Final
 
 from django.core.cache import cache
 
+from core.utils.cache_lock import release_cache_key_if_owner
 from core.utils.infrastructure import CACHE_INFRASTRUCTURE_EXCEPTIONS
+
+logger = logging.getLogger(__name__)
 
 _UNSET: Final[object] = object()
 _MERGE_LOCK_TIMEOUT_SECONDS: Final[float] = 5.0
@@ -78,7 +83,14 @@ def _drain_local_fallback_ids(key: str, applied_ids: list[int]) -> None:
         _LOCAL_ID_SET_FALLBACK.pop(key, None)
 
 
-def _merge_with_lock(key: str, lock_key: str, normalized: list[int], *, cache_timeout: int | None) -> list[int]:
+def _merge_with_lock(
+    key: str,
+    lock_key: str,
+    lock_token: str,
+    normalized: list[int],
+    *,
+    cache_timeout: int | None,
+) -> list[int]:
     try:
         pending_ids = _get_local_fallback_ids(key)
         try:
@@ -94,10 +106,12 @@ def _merge_with_lock(key: str, lock_key: str, normalized: list[int], *, cache_ti
         _drain_local_fallback_ids(key, pending_ids)
         return merged
     finally:
-        try:
-            cache.delete(lock_key)
-        except CACHE_INFRASTRUCTURE_EXCEPTIONS:
-            pass
+        release_cache_key_if_owner(
+            lock_key,
+            lock_token=lock_token,
+            logger=logger,
+            log_context="atomic int id set merge lock release",
+        )
 
 
 def merge_int_id_set(
@@ -117,8 +131,15 @@ def merge_int_id_set(
 
     while True:
         try:
-            if cache.add(lock_key, "1", timeout=int(_MERGE_LOCK_TIMEOUT_SECONDS)):
-                return _merge_with_lock(key, lock_key, normalized, cache_timeout=cache_timeout)
+            lock_token = uuid.uuid4().hex
+            if cache.add(lock_key, lock_token, timeout=int(_MERGE_LOCK_TIMEOUT_SECONDS)):
+                return _merge_with_lock(
+                    key,
+                    lock_key,
+                    lock_token,
+                    normalized,
+                    cache_timeout=cache_timeout,
+                )
         except CACHE_INFRASTRUCTURE_EXCEPTIONS:
             return _merge_local_fallback_ids(key, normalized)
 

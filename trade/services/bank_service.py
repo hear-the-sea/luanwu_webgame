@@ -147,8 +147,6 @@ def _release_cache_lock_if_owner(lock_key: str, lock_token: str) -> None:
         release_cache_key_if_owner=release_cache_key_if_owner,
         logger=logger,
         log_context="gold supply cache lock release",
-        safe_cache_get=_safe_cache_get,
-        safe_cache_delete=_safe_cache_delete,
     )
 
 

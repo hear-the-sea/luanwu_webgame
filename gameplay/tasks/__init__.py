@@ -68,6 +68,13 @@ from gameplay.tasks.technology import complete_technology_upgrade, scan_technolo
 # Virtual players
 from gameplay.tasks.virtual_players import plan_virtual_players_task, roll_virtual_players_task
 
+# World chat
+from gameplay.tasks.world_chat import (
+    publish_world_chat_attempt_task,
+    refund_world_chat_attempt_task,
+    scan_world_chat_attempts_task,
+)
+
 __all__ = [
     # Backward compatibility
     "timezone",
@@ -114,4 +121,8 @@ __all__ = [
     # Virtual players
     "plan_virtual_players_task",
     "roll_virtual_players_task",
+    # World chat
+    "publish_world_chat_attempt_task",
+    "refund_world_chat_attempt_task",
+    "scan_world_chat_attempts_task",
 ]

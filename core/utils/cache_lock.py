@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import time
 import uuid
+from enum import Enum, auto
 from threading import Lock
 
 from django.conf import settings
@@ -12,6 +13,7 @@ from core.utils.infrastructure import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
 _LOCAL_LOCKS: dict[str, tuple[str, float]] = {}
 _LOCAL_LOCKS_GUARD = Lock()
+_NON_ATOMIC_CACHE_LOCK_GUARD = Lock()
 _LOCAL_LOCKS_MAX_SIZE = 20000
 _LOCAL_LOCK_KEY_PREFIX = "local:"
 _CACHE_RELEASE_IF_OWNER_SCRIPT = """
@@ -26,6 +28,33 @@ if current_token == expected_token then
 end
 return 0
 """
+_CACHE_RENEW_IF_OWNER_SCRIPT = """
+local lock_key = KEYS[1]
+local expected_token = ARGV[1]
+local timeout_seconds = ARGV[2]
+local current_token = redis.call('GET', lock_key)
+if not current_token then
+  return 0
+end
+if current_token == expected_token then
+  return redis.call('EXPIRE', lock_key, timeout_seconds)
+end
+return 0
+"""
+
+
+class _AtomicCacheLockReleaseResult(Enum):
+    RELEASED = auto()
+    NOT_OWNER = auto()
+    UNSUPPORTED_BACKEND = auto()
+    INFRASTRUCTURE_FAILURE = auto()
+
+
+class _AtomicCacheLockRenewResult(Enum):
+    RENEWED = auto()
+    NOT_OWNER = auto()
+    UNSUPPORTED_BACKEND = auto()
+    INFRASTRUCTURE_FAILURE = auto()
 
 
 def _cleanup_expired_local_locks(now: float) -> None:
@@ -44,47 +73,61 @@ def _release_cache_lock_atomic_if_owner(
     lock_token: str,
     logger: logging.Logger,
     log_context: str,
-) -> bool | None:
+) -> _AtomicCacheLockReleaseResult:
     """
     Try atomic compare-and-delete in Redis.
 
     Returns:
-        True: deleted successfully
-        False: key missing / ownership mismatch
-        None: atomic release unavailable; caller may fallback
+        RELEASED: deleted successfully
+        NOT_OWNER: key missing / ownership mismatch
+        UNSUPPORTED_BACKEND: non-Redis backend; caller may fallback
+        INFRASTRUCTURE_FAILURE: Redis path failed; leave the lock to expire
     """
     try:
         from django_redis import get_redis_connection
     except ImportError:
-        return None
+        return _AtomicCacheLockReleaseResult.UNSUPPORTED_BACKEND
 
     try:
         redis = get_redis_connection("default")
     except NotImplementedError:
-        return None
+        return _AtomicCacheLockReleaseResult.UNSUPPORTED_BACKEND
     except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
         logger.warning(
-            "%s atomic cache lock release unavailable, fallback to compare-delete: key=%s error=%s",
+            "%s atomic cache lock release failed, leaving lock to expire: key=%s error=%s",
             log_context,
             key,
             exc,
             exc_info=True,
         )
-        return None
+        return _AtomicCacheLockReleaseResult.INFRASTRUCTURE_FAILURE
 
+    redis_key = cache.make_key(key) if hasattr(cache, "make_key") else key  # type: ignore[attr-defined]
+    encode = getattr(getattr(cache, "client", None), "encode", None)
+    if not callable(encode):
+        logger.warning(
+            "%s atomic cache lock release failed because the Redis cache encoder is unavailable; "
+            "leaving lock to expire: key=%s",
+            log_context,
+            key,
+        )
+        return _AtomicCacheLockReleaseResult.INFRASTRUCTURE_FAILURE
+    encoded_lock_token = encode(lock_token)
     try:
-        redis_key = cache.make_key(key) if hasattr(cache, "make_key") else key  # type: ignore[attr-defined]
-        deleted = redis.eval(_CACHE_RELEASE_IF_OWNER_SCRIPT, 1, redis_key, lock_token)
-        return bool(int(deleted or 0))
+        deleted = redis.eval(_CACHE_RELEASE_IF_OWNER_SCRIPT, 1, redis_key, encoded_lock_token)
     except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
         logger.warning(
-            "%s atomic cache lock release unavailable, fallback to compare-delete: key=%s error=%s",
+            "%s atomic cache lock release failed, leaving lock to expire: key=%s error=%s",
             log_context,
             key,
             exc,
             exc_info=True,
         )
-        return None
+        return _AtomicCacheLockReleaseResult.INFRASTRUCTURE_FAILURE
+
+    if bool(int(deleted or 0)):
+        return _AtomicCacheLockReleaseResult.RELEASED
+    return _AtomicCacheLockReleaseResult.NOT_OWNER
 
 
 def _release_cache_lock_non_atomic_if_owner(
@@ -95,33 +138,134 @@ def _release_cache_lock_non_atomic_if_owner(
     log_context: str,
 ) -> bool:
     """Best-effort compare-delete fallback for non-Redis caches."""
+    with _NON_ATOMIC_CACHE_LOCK_GUARD:
+        try:
+            current_token = cache.get(key)
+        except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
+            logger.warning(
+                "%s cache lock ownership check failed: key=%s error=%s",
+                log_context,
+                key,
+                exc,
+                exc_info=True,
+            )
+            return False
+
+        if current_token != lock_token:
+            return False
+
+        try:
+            cache.delete(key)
+            return True
+        except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
+            logger.warning(
+                "%s cache lock delete failed: key=%s error=%s",
+                log_context,
+                key,
+                exc,
+                exc_info=True,
+            )
+            return False
+
+
+def _renew_cache_lock_atomic_if_owner(
+    key: str,
+    *,
+    lock_token: str,
+    timeout_seconds: int,
+    logger: logging.Logger,
+    log_context: str,
+) -> _AtomicCacheLockRenewResult:
+    """Try atomic compare-and-expire in Redis."""
     try:
-        current_token = cache.get(key)
+        from django_redis import get_redis_connection
+    except ImportError:
+        return _AtomicCacheLockRenewResult.UNSUPPORTED_BACKEND
+
+    try:
+        redis = get_redis_connection("default")
+    except NotImplementedError:
+        return _AtomicCacheLockRenewResult.UNSUPPORTED_BACKEND
     except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
         logger.warning(
-            "%s cache lock ownership check failed: key=%s error=%s",
+            "%s atomic cache lock renew failed: key=%s error=%s",
             log_context,
             key,
             exc,
             exc_info=True,
         )
-        return False
+        return _AtomicCacheLockRenewResult.INFRASTRUCTURE_FAILURE
 
-    if current_token != lock_token:
-        return False
+    encode = getattr(getattr(cache, "client", None), "encode", None)
+    if not callable(encode):
+        logger.warning(
+            "%s atomic cache lock renew failed because the Redis cache encoder is unavailable: key=%s",
+            log_context,
+            key,
+        )
+        return _AtomicCacheLockRenewResult.INFRASTRUCTURE_FAILURE
 
     try:
-        cache.delete(key)
-        return True
+        redis_key = cache.make_key(key) if hasattr(cache, "make_key") else key  # type: ignore[attr-defined]
+        encoded_lock_token = encode(lock_token)
+        renewed = redis.eval(
+            _CACHE_RENEW_IF_OWNER_SCRIPT,
+            1,
+            redis_key,
+            encoded_lock_token,
+            max(1, int(timeout_seconds)),
+        )
     except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
         logger.warning(
-            "%s cache lock delete failed: key=%s error=%s",
+            "%s atomic cache lock renew failed: key=%s error=%s",
             log_context,
             key,
             exc,
             exc_info=True,
         )
-        return False
+        return _AtomicCacheLockRenewResult.INFRASTRUCTURE_FAILURE
+
+    if bool(int(renewed or 0)):
+        return _AtomicCacheLockRenewResult.RENEWED
+    return _AtomicCacheLockRenewResult.NOT_OWNER
+
+
+def _renew_cache_lock_non_atomic_if_owner(
+    key: str,
+    *,
+    lock_token: str,
+    timeout_seconds: int,
+    logger: logging.Logger,
+    log_context: str,
+) -> bool:
+    """Compare and touch for non-Redis, single-process cache backends only."""
+    with _NON_ATOMIC_CACHE_LOCK_GUARD:
+        try:
+            current_token = cache.get(key)
+        except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
+            logger.warning(
+                "%s cache lock ownership check failed during renew: key=%s error=%s",
+                log_context,
+                key,
+                exc,
+                exc_info=True,
+            )
+            return False
+
+        if current_token != lock_token:
+            return False
+
+        try:
+            return bool(cache.touch(key, timeout=max(1, int(timeout_seconds))))
+        except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
+            logger.warning(
+                "%s cache lock touch failed: key=%s error=%s",
+                log_context,
+                key,
+                exc,
+                exc_info=True,
+            )
+            return False
 
 
 def acquire_best_effort_lock(
@@ -143,9 +287,10 @@ def acquire_best_effort_lock(
     if allow_local_fallback is None:
         allow_local_fallback = bool(getattr(settings, "BEST_EFFORT_LOCK_ALLOW_LOCAL_FALLBACK", True))
     try:
-        if cache.add(key, lock_token, timeout=timeout):
-            return True, True, lock_token
-        return False, True, None
+        with _NON_ATOMIC_CACHE_LOCK_GUARD:
+            if cache.add(key, lock_token, timeout=timeout):
+                return True, True, lock_token
+            return False, True, None
     except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
         if not allow_local_fallback:
             logger.warning(
@@ -216,6 +361,55 @@ def acquire_action_lock(
     return True, f"{_LOCAL_LOCK_KEY_PREFIX}{key}", lock_token
 
 
+def renew_best_effort_lock(
+    key: str,
+    *,
+    from_cache: bool,
+    lock_token: str | None,
+    timeout_seconds: int,
+    logger: logging.Logger,
+    log_context: str,
+) -> bool:
+    """Renew a lock only while ``lock_token`` still owns it."""
+    if not lock_token:
+        logger.warning("%s lock_token missing, skip renew: key=%s", log_context, key)
+        return False
+
+    timeout = max(1, int(timeout_seconds))
+    if from_cache:
+        renew_result = _renew_cache_lock_atomic_if_owner(
+            key,
+            lock_token=lock_token,
+            timeout_seconds=timeout,
+            logger=logger,
+            log_context=log_context,
+        )
+        if renew_result is _AtomicCacheLockRenewResult.RENEWED:
+            return True
+        if renew_result is _AtomicCacheLockRenewResult.UNSUPPORTED_BACKEND:
+            return _renew_cache_lock_non_atomic_if_owner(
+                key,
+                lock_token=lock_token,
+                timeout_seconds=timeout,
+                logger=logger,
+                log_context=log_context,
+            )
+        return False
+
+    now = time.monotonic()
+    with _LOCAL_LOCKS_GUARD:
+        existing = _LOCAL_LOCKS.get(key)
+        if not existing:
+            return False
+        if existing[1] <= now:
+            _LOCAL_LOCKS.pop(key, None)
+            return False
+        if existing[0] != lock_token:
+            return False
+        _LOCAL_LOCKS[key] = (lock_token, now + timeout)
+        return True
+
+
 def release_best_effort_lock(
     key: str,
     *,
@@ -229,15 +423,15 @@ def release_best_effort_lock(
         return
 
     if from_cache:
-        released = _release_cache_lock_atomic_if_owner(
+        release_result = _release_cache_lock_atomic_if_owner(
             key,
             lock_token=lock_token,
             logger=logger,
             log_context=log_context,
         )
-        if released is True:
+        if release_result is _AtomicCacheLockReleaseResult.RELEASED:
             return
-        if released is None:
+        if release_result is _AtomicCacheLockReleaseResult.UNSUPPORTED_BACKEND:
             _release_cache_lock_non_atomic_if_owner(
                 key,
                 lock_token=lock_token,
@@ -297,15 +491,15 @@ def release_cache_key_if_owner(
         logger.warning("%s lock_token missing, skip release: key=%s", log_context, key)
         return False
 
-    released = _release_cache_lock_atomic_if_owner(
+    release_result = _release_cache_lock_atomic_if_owner(
         key,
         lock_token=lock_token,
         logger=logger,
         log_context=log_context,
     )
-    if released is True:
+    if release_result is _AtomicCacheLockReleaseResult.RELEASED:
         return True
-    if released is None:
+    if release_result is _AtomicCacheLockReleaseResult.UNSUPPORTED_BACKEND:
         return _release_cache_lock_non_atomic_if_owner(
             key,
             lock_token=lock_token,

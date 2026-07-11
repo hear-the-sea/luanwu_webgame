@@ -3,6 +3,7 @@
 """
 
 import pytest
+from bs4 import BeautifulSoup
 from django.contrib.messages import get_messages
 from django.db import DatabaseError
 from django.urls import reverse
@@ -20,6 +21,189 @@ class TestMessageViews:
         response = client.get(reverse("gameplay:messages"))
         assert response.status_code == 200
         assert "message_list" in response.context
+
+    def test_messages_page_get_does_not_run_message_cleanup(self, manor_with_user, monkeypatch):
+        _manor, client = manor_with_user
+        monkeypatch.setattr(
+            "gameplay.services.utils.messages.cleanup_old_messages",
+            lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("GET triggered message cleanup")),
+        )
+
+        response = client.get(reverse("gameplay:messages"))
+
+        assert response.status_code == 200
+
+    def test_non_object_attachments_render_safely_in_list_and_detail(self, manor_with_user):
+        manor, client = manor_with_user
+        messages = [
+            Message.objects.create(
+                manor=manor,
+                kind=Message.Kind.SYSTEM,
+                title=f"非对象附件 {index}",
+                attachments=attachments,
+            )
+            for index, attachments in enumerate((["legacy"], "legacy", 7))
+        ]
+
+        list_response = client.get(reverse("gameplay:messages"))
+
+        assert list_response.status_code == 200
+        for message in messages:
+            assert message.title in list_response.content.decode("utf-8")
+            detail_response = client.get(reverse("gameplay:view_message", kwargs={"pk": message.pk}))
+            assert detail_response.status_code == 200
+            assert "delete-message-form" in detail_response.content.decode("utf-8")
+
+    def test_nested_non_object_attachment_buckets_render_as_no_attachment(self, manor_with_user):
+        manor, client = manor_with_user
+        messages = [
+            Message.objects.create(
+                manor=manor,
+                kind=Message.Kind.REWARD,
+                title=f"脏附件分组 {index}",
+                attachments=attachments,
+            )
+            for index, attachments in enumerate(({"items": "legacy"}, {"resources": ["legacy"]}))
+        ]
+
+        list_response = client.get(reverse("gameplay:messages"))
+
+        assert list_response.status_code == 200
+        for message in messages:
+            detail_response = client.get(reverse("gameplay:view_message", kwargs={"pk": message.pk}))
+            assert detail_response.status_code == 200
+            body = detail_response.content.decode("utf-8")
+            assert "delete-message-form" in body
+            assert "领取附件" not in body
+
+    def test_message_list_separates_mark_read_and_protected_delete_selection(self, manor_with_user):
+        manor, client = manor_with_user
+        protected = Message.objects.create(
+            manor=manor,
+            kind=Message.Kind.REWARD,
+            title="待领取保护消息",
+            attachments={"resources": {"silver": 10}},
+        )
+        claimed = Message.objects.create(
+            manor=manor,
+            kind=Message.Kind.REWARD,
+            title="已领取可删除消息",
+            attachments={"resources": {"silver": 10}},
+            is_claimed=True,
+        )
+        plain = Message.objects.create(manor=manor, kind=Message.Kind.SYSTEM, title="普通可删除消息")
+
+        list_response = client.get(reverse("gameplay:messages"))
+        list_soup = BeautifulSoup(list_response.content.decode("utf-8"), "html.parser")
+        protected_row = list_soup.find("a", {"data-message-id": str(protected.pk)}).find_parent("tr")
+        read_checkbox = protected_row.select_one('input.msg-read-checkbox[name="message_ids"][form="message-form"]')
+        protected_delete_checkbox = protected_row.select_one(
+            'input.msg-delete-checkbox[name="message_ids"][form="delete-selected-messages-form"]'
+        )
+
+        assert [header.get_text(" ", strip=True) for header in list_soup.select(".msg-table thead th")][:2] == [
+            "标记已读",
+            "删除",
+        ]
+        assert read_checkbox is not None
+        assert read_checkbox.has_attr("disabled") is False
+        assert read_checkbox.get("aria-label")
+        assert protected_delete_checkbox is not None
+        assert protected_delete_checkbox.has_attr("disabled")
+        assert protected_delete_checkbox.get("aria-label")
+        delete_help_id = protected_delete_checkbox.get("aria-describedby")
+        assert delete_help_id
+        assert protected_row.find(id=delete_help_id).get_text(" ", strip=True) == "领取附件后可删除"
+
+        for deletable_message in (claimed, plain):
+            deletable_row = list_soup.find("a", {"data-message-id": str(deletable_message.pk)}).find_parent("tr")
+            delete_checkbox = deletable_row.select_one(
+                'input.msg-delete-checkbox[name="message_ids"][form="delete-selected-messages-form"]'
+            )
+            assert delete_checkbox is not None
+            assert delete_checkbox.has_attr("disabled") is False
+            assert delete_checkbox.get("aria-label")
+
+        mark_response = client.post(
+            reverse("gameplay:mark_messages_read"),
+            {"message_ids": [protected.pk]},
+        )
+
+        assert mark_response.status_code == 302
+        protected.refresh_from_db()
+        assert protected.is_read is True
+
+        detail_response = client.get(reverse("gameplay:view_message", kwargs={"pk": protected.pk}))
+        detail_soup = BeautifulSoup(detail_response.content.decode("utf-8"), "html.parser")
+
+        assert detail_soup.find(id="delete-message-form") is None
+        assert "领取附件后可删除" in detail_response.content.decode("utf-8")
+
+    def test_delete_messages_html_reports_exact_deleted_and_protected_counts(self, manor_with_user):
+        manor, client = manor_with_user
+        protected = Message.objects.create(
+            manor=manor,
+            kind=Message.Kind.REWARD,
+            title="待领取保护消息",
+            attachments={"resources": {"silver": 10}},
+        )
+        plain = Message.objects.create(manor=manor, kind=Message.Kind.SYSTEM, title="普通可删除消息")
+
+        response = client.post(
+            reverse("gameplay:delete_messages"),
+            {"message_ids": [protected.pk, plain.pk]},
+        )
+
+        assert response.status_code == 302
+        feedback = [str(message) for message in get_messages(response.wsgi_request)]
+        assert feedback == ["已删除 1 条消息，1 条未领取附件消息已保留"]
+
+    def test_delete_messages_json_returns_exact_deleted_and_protected_counts(self, manor_with_user):
+        manor, client = manor_with_user
+        protected = Message.objects.create(
+            manor=manor,
+            kind=Message.Kind.REWARD,
+            title="待领取保护消息",
+            attachments={"resources": {"silver": 10}},
+        )
+        claimed = Message.objects.create(
+            manor=manor,
+            kind=Message.Kind.REWARD,
+            title="已领取可删除消息",
+            attachments={"resources": {"silver": 10}},
+            is_claimed=True,
+        )
+        plain = Message.objects.create(manor=manor, kind=Message.Kind.SYSTEM, title="普通可删除消息")
+
+        response = client.post(
+            reverse("gameplay:delete_messages"),
+            {"message_ids": [protected.pk, claimed.pk, plain.pk]},
+            HTTP_ACCEPT="application/json",
+        )
+
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["deleted_count"] == 2
+        assert payload["protected_count"] == 1
+        assert Message.objects.filter(pk=protected.pk).exists() is True
+
+    def test_delete_all_messages_json_returns_exact_deleted_and_protected_counts(self, manor_with_user):
+        manor, client = manor_with_user
+        protected = Message.objects.create(
+            manor=manor,
+            kind=Message.Kind.REWARD,
+            title="待领取保护消息",
+            attachments={"resources": {"silver": 10}},
+        )
+        Message.objects.create(manor=manor, kind=Message.Kind.SYSTEM, title="普通可删除消息")
+
+        response = client.post(reverse("gameplay:delete_all_messages"), HTTP_ACCEPT="application/json")
+
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["deleted_count"] == 1
+        assert payload["protected_count"] == 1
+        assert Message.objects.filter(pk=protected.pk).exists() is True
 
     def test_messages_page_loads_external_page_script_without_inline_logic(self, manor_with_user):
         _manor, client = manor_with_user

@@ -1,19 +1,31 @@
 (function () {
-  // 获取所有消息链接（侧边栏和顶部导航）
-  const sidebarLink = document.getElementById("nav-messages-link");
-  const topLink = document.getElementById("nav-messages-link-top");
-  const messagesLink = sidebarLink || topLink;
+  const getSidebarLink = () => document.getElementById("nav-messages-link");
+  const getTopLink = () => document.getElementById("nav-messages-link-top");
 
-  if (!messagesLink) return;
+  function readCurrentUnreadCount() {
+    const link = getSidebarLink() || getTopLink();
+    if (!link) return null;
+    const unread = link.dataset.unread ?? "0";
+    const count = parseInt(unread, 10);
+    return Number.isNaN(count) ? 0 : count;
+  }
 
   const toastContainerId = "toast-container";
   const wsPath = "/ws/notifications/";
+  const INITIAL_RECONNECT_DELAY = 2000;
+  const MAX_RECONNECT_DELAY = 15000;
+  const STABLE_CONNECTION_DELAY = 30000;
+  const RECONNECT_JITTER = 0.1;
+  const TERMINAL_CLOSE_CODES = new Set([4401, 4403]);
+  const TOP_LEVEL_NOTIFICATION_FIELDS = new Set(["type", "kind", "title", "body", "timestamp", "message"]);
   const scheme = window.location.protocol === "https:" ? "wss" : "ws";
   const wsUrl = `${scheme}://${window.location.host}${wsPath}`;
 
   let socket;
-  let reconnectDelay = 2000;
-  let currentUnreadCount = parseInt(messagesLink.dataset.unread || "0", 10);
+  let reconnectDelay = INITIAL_RECONNECT_DELAY;
+  let reconnectTimer = null;
+  let stabilityTimer = null;
+  let currentUnreadCount = readCurrentUnreadCount();
   let refreshBannerShown = false; // 防止重复显示刷新提示
 
   // Performance optimization: show a non-intrusive refresh banner instead of auto-reload
@@ -84,8 +96,13 @@
     showRefreshBanner(message);
   }
 
-  function updateUnreadCount(increment = 1) {
-    currentUnreadCount += increment;
+  function renderUnreadCount() {
+    const sidebarLink = getSidebarLink();
+    const topLink = getTopLink();
+    if (!sidebarLink && !topLink) return;
+    if (currentUnreadCount === null) {
+      currentUnreadCount = readCurrentUnreadCount() ?? 0;
+    }
 
     // 更新侧边栏消息链接文本
     if (sidebarLink) {
@@ -99,16 +116,16 @@
     // 更新顶部导航角标
     if (topLink) {
       // 查找现有的角标元素
-      let badge = topLink.querySelector("span[style*='position: absolute']");
+      let badge = topLink.querySelector(".nav-badge");
 
       if (currentUnreadCount > 0) {
         if (!badge) {
           // 创建新的角标
           badge = document.createElement("span");
-          badge.style.cssText = "position: absolute; top: -4px; right: -4px; background: var(--accent-red, #DC143C); color: white; font-size: 10px; padding: 2px 5px; border-radius: 10px; font-weight: bold;";
+          badge.className = "nav-badge";
           topLink.appendChild(badge);
         }
-        badge.textContent = currentUnreadCount;
+        badge.textContent = String(currentUnreadCount);
         badge.style.display = "";
       } else if (badge) {
         // 隐藏角标
@@ -117,8 +134,17 @@
     }
 
     // 更新 data-unread 属性
-    if (sidebarLink) sidebarLink.dataset.unread = currentUnreadCount;
-    if (topLink) topLink.dataset.unread = currentUnreadCount;
+    if (sidebarLink) sidebarLink.dataset.unread = String(currentUnreadCount);
+    if (topLink) topLink.dataset.unread = String(currentUnreadCount);
+  }
+
+  function updateUnreadCount(increment = 1) {
+    if (currentUnreadCount === null) {
+      currentUnreadCount = readCurrentUnreadCount();
+      if (currentUnreadCount === null) return;
+    }
+    currentUnreadCount += increment;
+    renderUnreadCount();
   }
 
   function dismissToast(toast) {
@@ -184,11 +210,17 @@
 
   function handlePayload(payload) {
     if (!payload) return;
-    if (payload.kind === "system" && payload.building_key) {
+    const detail = (typeof payload.data === "object" && payload.data) || {};
+    const field = (name) => (
+      TOP_LEVEL_NOTIFICATION_FIELDS.has(name) ? payload[name] : detail[name] ?? payload[name]
+    );
+    const kind = field("kind") || "";
+
+    if (kind === "system" && field("building_key")) {
       updateUnreadCount(1);
       showToast({
-        title: payload.title || "建筑升级完成",
-        body: `当前等级 Lv${payload.level || "?"}`,
+        title: field("title") || "建筑升级完成",
+        body: `当前等级 Lv${field("level") ?? "?"}`,
         kind: "system",
       });
       // 如果在庄园页面，自动刷新
@@ -197,11 +229,11 @@
       }
       return;
     }
-    if (payload.kind === "system" && payload.tech_key) {
+    if (kind === "system" && field("tech_key")) {
       updateUnreadCount(1);
       showToast({
-        title: payload.title || "技术研究完成",
-        body: `当前等级 Lv${payload.level || "?"}`,
+        title: field("title") || "技术研究完成",
+        body: `当前等级 Lv${field("level") ?? "?"}`,
         kind: "system",
       });
       // 如果在技术页面，自动刷新
@@ -210,11 +242,11 @@
       }
       return;
     }
-    if (payload.kind === "battle") {
+    if (kind === "battle" || kind === "mission") {
       updateUnreadCount(1);
-      const missionLabel = payload.mission_name || payload.title || payload.mission_key || "";
+      const missionLabel = field("mission_name") || field("title") || field("mission_key") || "";
       showToast({
-        title: payload.title || "战报更新",
+        title: field("title") || "战报更新",
         body: missionLabel ? `${missionLabel} 已完成` : "战斗结果已生成",
         kind: "battle",
       });
@@ -227,33 +259,104 @@
       }
       return;
     }
+    if (kind === "auction_won" || kind === "auction_outbid") {
+      updateUnreadCount(1);
+      const itemName = field("item_name") || "拍卖物品";
+      let auctionBody = field("body") || itemName;
+      if (!field("body") && kind === "auction_won") {
+        const quantity = field("quantity");
+        const price = field("price");
+        const quantityText = quantity ? ` x${quantity}` : "";
+        const priceText = price != null ? `，成交价 ${price} 金条` : "";
+        auctionBody = `${itemName}${quantityText}${priceText}`;
+      } else if (!field("body")) {
+        const price = field("new_price");
+        auctionBody = `${itemName}${price != null ? `，当前最低中标价 ${price} 金条` : ""}`;
+      }
+      showToast({
+        title: field("title") || "拍卖动态",
+        body: auctionBody,
+        kind: "trade",
+      });
+      if (window.location.pathname.includes("/auction")) {
+        scheduleReload();
+      }
+      return;
+    }
     updateUnreadCount(1);
-    showToast({ title: payload.title || "新消息", body: payload.body || payload.message || "", kind: payload.kind || "system" });
+    showToast({
+      title: field("title") || "新消息",
+      body: field("body") || field("message") || "",
+      kind,
+    });
+  }
+
+  function clearStabilityTimer() {
+    if (stabilityTimer === null) return;
+    clearTimeout(stabilityTimer);
+    stabilityTimer = null;
+  }
+
+  function resetReconnectDelay() {
+    reconnectDelay = INITIAL_RECONNECT_DELAY;
+    clearStabilityTimer();
+  }
+
+  function reconnectDelayWithJitter() {
+    const jitterFactor = 1 - RECONNECT_JITTER + (Math.random() * RECONNECT_JITTER * 2);
+    return Math.min(MAX_RECONNECT_DELAY, Math.round(reconnectDelay * jitterFactor));
   }
 
   function connect() {
-    socket = new WebSocket(wsUrl);
+    const currentSocket = new WebSocket(wsUrl);
+    socket = currentSocket;
 
-    socket.onopen = () => {
-      reconnectDelay = 2000;
+    currentSocket.onopen = () => {
+      if (socket !== currentSocket) return;
+      clearStabilityTimer();
+      const scheduledStabilityTimer = setTimeout(() => {
+        if (socket !== currentSocket || stabilityTimer !== scheduledStabilityTimer) return;
+        stabilityTimer = null;
+        reconnectDelay = INITIAL_RECONNECT_DELAY;
+      }, STABLE_CONNECTION_DELAY);
+      stabilityTimer = scheduledStabilityTimer;
     };
 
-    socket.onmessage = (event) => {
+    currentSocket.onmessage = (event) => {
+      if (socket !== currentSocket) return;
+      let payload;
       try {
-        const payload = JSON.parse(event.data);
-        handlePayload(payload);
+        payload = JSON.parse(event.data);
       } catch (e) {
-        // ignore malformed messages
+        return;
       }
+      resetReconnectDelay();
+      handlePayload(payload);
     };
 
-    socket.onclose = () => {
-      setTimeout(connect, reconnectDelay);
-      reconnectDelay = Math.min(reconnectDelay * 2, 15000);
+    currentSocket.onclose = (event) => {
+      if (socket !== currentSocket) return;
+      clearStabilityTimer();
+      if (event && TERMINAL_CLOSE_CODES.has(event.code)) {
+        if (reconnectTimer !== null) {
+          clearTimeout(reconnectTimer);
+          reconnectTimer = null;
+        }
+        return;
+      }
+      if (reconnectTimer !== null) return;
+      const scheduledReconnectTimer = setTimeout(() => {
+        if (socket !== currentSocket || reconnectTimer !== scheduledReconnectTimer) return;
+        reconnectTimer = null;
+        connect();
+      }, reconnectDelayWithJitter());
+      reconnectTimer = scheduledReconnectTimer;
+      reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
     };
 
-    socket.onerror = () => {
-      socket.close();
+    currentSocket.onerror = () => {
+      if (socket !== currentSocket) return;
+      currentSocket.close();
     };
   }
 
@@ -261,4 +364,5 @@
     // 连接 WebSocket
     connect();
   });
+  document.addEventListener("partial-nav:loaded", renderUnreadCount);
 })();

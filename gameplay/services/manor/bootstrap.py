@@ -7,6 +7,7 @@ from django.utils import timezone
 from core.exceptions import GameError
 from gameplay.models import Building, BuildingType, ItemTemplate, Manor
 from gameplay.services.manor import provisioning as _provisioning
+from gameplay.services.manor.coordinates import is_occupied_manor_location_conflict
 from gameplay.services.manor.naming import ManorNameConflictError, is_manor_name_available
 
 logger = logging.getLogger(__name__)
@@ -76,6 +77,7 @@ def _assign_manor_location_and_name(manor: Manor, *, region: str, normalized_nam
         normalized_name=normalized_name,
         generate_unique_coordinate_func=manor_core.generate_unique_coordinate,
         is_manor_name_available_func=is_manor_name_available,
+        is_occupied_manor_location_conflict_func=is_occupied_manor_location_conflict,
         manor_model=Manor,
         conflict_error_cls=ManorNameConflictError,
     )

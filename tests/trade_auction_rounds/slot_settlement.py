@@ -76,7 +76,7 @@ def test_rounds_module_settle_slot_marks_unsold_when_no_bids():
 
 
 @pytest.mark.django_db
-def test_rounds_module_settle_slot_invalid_winner_count_refunds_all_bids(monkeypatch, django_user_model):
+def test_rounds_module_settle_slot_invalid_winner_count_preserves_active_bid(monkeypatch, django_user_model):
     from trade.services.auction.rounds import _settle_slot
 
     user = django_user_model.objects.create_user(username="auction_settle_invalid_winner_count", password="pass123")
@@ -114,18 +114,19 @@ def test_rounds_module_settle_slot_invalid_winner_count_refunds_all_bids(monkeyp
     monkeypatch.setattr("trade.services.auction.rounds.create_message", lambda *a, **k: None)
     monkeypatch.setattr("trade.services.auction.rounds.notify_user", lambda *a, **k: True)
 
-    with TestCase.captureOnCommitCallbacks(execute=True):
-        result = _settle_slot(slot)
+    with pytest.raises(ValueError, match="winner_count must be positive"):
+        with TestCase.captureOnCommitCallbacks(execute=True):
+            _settle_slot(slot)
 
     bid.refresh_from_db()
     frozen.refresh_from_db()
     slot.refresh_from_db()
 
-    assert result["sold"] is False
-    assert result["price"] == 0
-    assert slot.status == AuctionSlot.Status.UNSOLD
-    assert bid.status == AuctionBid.Status.REFUNDED
-    assert frozen.is_frozen is False
+    assert slot.status == AuctionSlot.Status.ACTIVE
+    assert bid.status == AuctionBid.Status.ACTIVE
+    assert bid.refunded_at is None
+    assert frozen.is_frozen is True
+    assert frozen.unfrozen_at is None
 
 
 @pytest.mark.django_db

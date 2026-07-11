@@ -84,6 +84,8 @@ def test_format_real_service_start_hint_points_to_lifecycle_targets_without_pass
     assert "make test-real-services-up" in hint
     assert "DJANGO_TEST_USE_ENV_SERVICES=1 make test-real-services" in hint
     assert "make test-real-services-down" in hint
+    assert "REAL_SERVICES_TEST_DB_USER" in hint
+    assert "webgame/webgame" not in hint
     assert "password" not in hint.lower()
     assert "secret" not in hint
 

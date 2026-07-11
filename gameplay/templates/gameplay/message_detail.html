@@ -96,11 +96,15 @@
             <!-- 操作按钮 -->
             <div class="msg-actions">
                 <a href="{% url 'gameplay:messages' %}" class="msg-btn msg-btn-primary">← 返回列表</a>
+                {% if message.has_attachments and not message.is_claimed %}
+                <span class="msg-claimed-notice">领取附件后可删除</span>
+                {% else %}
                 <form method="post" action="{% url 'gameplay:delete_messages' %}" id="delete-message-form">
                     {% csrf_token %}
                     <input type="hidden" name="message_ids" value="{{ message.id }}">
                     <button type="submit" class="msg-btn msg-btn-danger">删除消息</button>
                 </form>
+                {% endif %}
             </div>
         </div>
     </div>

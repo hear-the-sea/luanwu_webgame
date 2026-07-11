@@ -142,7 +142,8 @@ def format_real_service_start_hint() -> str:
         [
             "Start MySQL and Redis with `make test-real-services-up`, then run:",
             "  `DJANGO_TEST_USE_ENV_SERVICES=1 make test-real-services`",
-            "Defaults: MySQL 127.0.0.1:13306 (webgame/webgame), Redis 127.0.0.1:16379.",
+            "Defaults: MySQL 127.0.0.1:13306, Redis 127.0.0.1:16379.",
+            "The Make targets use REAL_SERVICES_TEST_DB_USER for Django test database creation.",
             "Override host ports with REAL_SERVICES_MYSQL_PORT / REAL_SERVICES_REDIS_PORT.",
             "When finished, stop the services with `make test-real-services-down`.",
         ]

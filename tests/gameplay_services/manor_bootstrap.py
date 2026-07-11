@@ -9,6 +9,11 @@ from gameplay.services.manor import core as manor_service
 from gameplay.services.manor.core import ensure_manor
 from tests.gameplay_services.support import User
 
+SQLITE_OCCUPIED_MANOR_LOCATION_CONFLICT = (
+    "UNIQUE constraint failed: gameplay_manor.occupied_region, "
+    "gameplay_manor.coordinate_x, gameplay_manor.coordinate_y"
+)
+
 
 @pytest.mark.django_db
 def test_ensure_manor_creates_new():
@@ -223,6 +228,30 @@ def test_ensure_manor_recovers_existing_half_initialized_manor(monkeypatch):
 
 
 @pytest.mark.django_db
+def test_ensure_manor_propagates_non_location_integrity_error_from_assignment(monkeypatch):
+    user = User(username="manor_non_location_integrity_error_user")
+    user.set_password("test123")
+    User.objects.bulk_create([user])
+    user = User.objects.get(username="manor_non_location_integrity_error_user")
+
+    original_save = Manor.save
+    expected_error = IntegrityError("Duplicate entry for unrelated manor constraint")
+
+    def _patched_save(self, *args, **kwargs):
+        update_fields = kwargs.get("update_fields")
+        if self.user_id == user.id and update_fields and "coordinate_x" in update_fields:
+            raise expected_error
+        return original_save(self, *args, **kwargs)
+
+    monkeypatch.setattr("gameplay.models.manor.Manor.save", _patched_save)
+
+    with pytest.raises(IntegrityError) as exc_info:
+        ensure_manor(user)
+
+    assert exc_info.value is expected_error
+
+
+@pytest.mark.django_db
 def test_ensure_manor_cleans_up_half_initialized_manor_on_repeated_assignment_failure(monkeypatch):
     user = User(username="manor_cleanup_user")
     user.set_password("test123")
@@ -230,11 +259,14 @@ def test_ensure_manor_cleans_up_half_initialized_manor_on_repeated_assignment_fa
     user = User.objects.get(username="manor_cleanup_user")
 
     original_save = Manor.save
+    save_attempts = 0
 
     def _patched_save(self, *args, **kwargs):
+        nonlocal save_attempts
         update_fields = kwargs.get("update_fields")
         if self.user_id == user.id and update_fields and "coordinate_x" in update_fields:
-            raise IntegrityError("forced coordinate conflict")
+            save_attempts += 1
+            raise IntegrityError(SQLITE_OCCUPIED_MANOR_LOCATION_CONFLICT)
         return original_save(self, *args, **kwargs)
 
     monkeypatch.setattr("gameplay.models.manor.Manor.save", _patched_save)
@@ -242,6 +274,7 @@ def test_ensure_manor_cleans_up_half_initialized_manor_on_repeated_assignment_fa
     with pytest.raises(RuntimeError, match="Failed to allocate"):
         ensure_manor(user)
 
+    assert save_attempts == 5
     assert Manor.objects.filter(user=user).exists() is False
 
 

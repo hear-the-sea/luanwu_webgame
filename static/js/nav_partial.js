@@ -1,13 +1,20 @@
 (function () {
   "use strict";
 
-  if (!window.fetch || !window.DOMParser || !window.history || !window.history.pushState) {
+  if (
+    !window.fetch
+    || !window.DOMParser
+    || !window.AbortController
+    || !window.history
+    || !window.history.pushState
+  ) {
     return;
   }
 
   const NAV_LINK_SELECTOR = '.game-nav a.nav-tab[data-partial-nav="1"]';
   const EXTRA_SCRIPTS_ID = "page-extra-scripts";
   const PAGE_SHELL_ID = "page-shell";
+  const AUTHENTICATED_SHELL_ATTRIBUTE = "data-authenticated";
   const SECTION_IDS = ["main-nav", "info-bar", PAGE_SHELL_ID];
   const EXTRA_HEAD_START_MARKER = "PAGE_EXTRA_HEAD_START";
   const EXTRA_HEAD_END_MARKER = "PAGE_EXTRA_HEAD_END";
@@ -25,6 +32,7 @@
   );
 
   let requestSeq = 0;
+  let activeNavigationController = null;
   const loadedScriptUrls = new Set(
     Array.from(document.querySelectorAll("script[src]"))
       .map((scriptEl) => {
@@ -72,7 +80,7 @@
     }
   }
 
-  async function fetchDocument(url) {
+  async function fetchDocument(url, signal) {
     const response = await fetch(url, {
       method: "GET",
       credentials: "same-origin",
@@ -80,6 +88,7 @@
         "X-Requested-With": "XMLHttpRequest",
         "X-Partial-Navigation": "1",
       },
+      signal,
     });
     if (!response.ok) {
       throw new Error("failed to fetch page");
@@ -90,7 +99,11 @@
     }
 
     const html = await response.text();
-    return new DOMParser().parseFromString(html, "text/html");
+    return {
+      document: new DOMParser().parseFromString(html, "text/html"),
+      redirected: response.redirected === true,
+      finalUrl: typeof response.url === "string" ? response.url.trim() : "",
+    };
   }
 
   function replaceSectionById(id, nextDocument) {
@@ -104,14 +117,48 @@
   }
 
   function replaceCoreSections(nextDocument) {
-    if (!document.getElementById(PAGE_SHELL_ID) || !nextDocument.getElementById(PAGE_SHELL_ID)) {
-      return false;
+    for (const id of SECTION_IDS) {
+      if (!document.getElementById(id) || !nextDocument.getElementById(id)) {
+        return false;
+      }
     }
 
     SECTION_IDS.forEach((id) => {
       replaceSectionById(id, nextDocument);
     });
     return true;
+  }
+
+  function isAuthenticatedDocument(nextDocument) {
+    const nextShell = nextDocument.getElementById(PAGE_SHELL_ID);
+    return Boolean(
+      nextShell
+      && typeof nextShell.getAttribute === "function"
+      && nextShell.getAttribute(AUTHENTICATED_SHELL_ATTRIBUTE) === "1"
+    );
+  }
+
+  function sameRequestLocation(leftUrl, rightUrl) {
+    return leftUrl.origin === rightUrl.origin
+      && leftUrl.pathname === rightUrl.pathname
+      && leftUrl.search === rightUrl.search;
+  }
+
+  function responseHardNavigationUrl(targetUrl, fetchResult) {
+    if (!fetchResult.finalUrl) {
+      return fetchResult.redirected ? targetUrl.href : "";
+    }
+
+    let finalUrl;
+    try {
+      finalUrl = new URL(fetchResult.finalUrl, targetUrl.href);
+    } catch (error) {
+      return targetUrl.href;
+    }
+    if (fetchResult.redirected || !sameRequestLocation(finalUrl, targetUrl)) {
+      return finalUrl.href;
+    }
+    return "";
   }
 
   function findHeadMarkers(doc) {
@@ -182,7 +229,7 @@
     }
   }
 
-  async function executePageScripts(nextDocument) {
+  async function executePageScripts(nextDocument, signal) {
     const scriptContainer = nextDocument.getElementById(EXTRA_SCRIPTS_ID);
     if (!scriptContainer || !partialNavCore || typeof partialNavCore.runPageScripts !== "function") {
       return;
@@ -193,6 +240,7 @@
       currentUrl: window.location.href,
       loadedScriptUrls,
       executeInlineScript,
+      signal,
     });
   }
 
@@ -229,10 +277,28 @@
       return;
     }
 
+    if (activeNavigationController) {
+      activeNavigationController.abort();
+    }
+    const navigationController = new window.AbortController();
+    activeNavigationController = navigationController;
+    const { signal } = navigationController;
     const currentRequestSeq = ++requestSeq;
     try {
-      const nextDocument = await fetchDocument(targetUrl.href);
+      const fetchResult = await fetchDocument(targetUrl.href, signal);
       if (currentRequestSeq !== requestSeq) {
+        return;
+      }
+
+      const hardNavigationUrl = responseHardNavigationUrl(targetUrl, fetchResult);
+      if (hardNavigationUrl) {
+        window.location.href = hardNavigationUrl;
+        return;
+      }
+
+      const nextDocument = fetchResult.document;
+      if (!isAuthenticatedDocument(nextDocument)) {
+        window.location.href = fetchResult.finalUrl || targetUrl.href;
         return;
       }
 
@@ -244,7 +310,10 @@
 
       syncExtraHead(nextDocument);
       updatePageMeta(nextDocument);
-      await executePageScripts(nextDocument);
+      await executePageScripts(nextDocument, signal);
+      if (currentRequestSeq !== requestSeq) {
+        return;
+      }
 
       if (!options || options.pushState !== false) {
         window.history.pushState({ partialNav: true }, "", targetUrl.href);
@@ -253,8 +322,17 @@
       restoreScroll(targetUrl);
       document.dispatchEvent(new CustomEvent("partial-nav:loaded", { detail: { url: targetUrl.href } }));
     } catch (error) {
+      if (signal.aborted || currentRequestSeq !== requestSeq || (error && error.name === "AbortError")) {
+        return;
+      }
       console.error("[partial-nav] navigation failed", error);
-      window.location.href = targetUrl.href;
+      if (currentRequestSeq === requestSeq) {
+        window.location.href = targetUrl.href;
+      }
+    } finally {
+      if (activeNavigationController === navigationController) {
+        activeNavigationController = null;
+      }
     }
   }
 

@@ -1,8 +1,24 @@
 import threading
 
+import pytest
 from django.core.cache import cache as django_cache
 
+from core.utils import atomic_cache
 from core.utils.atomic_cache import increment_counter, merge_int_id_set, normalize_int_ids
+
+
+@pytest.fixture(autouse=True)
+def _owner_aware_atomic_cache_release(monkeypatch):
+    def _release_if_owner(key, *, lock_token, **_kwargs):
+        atomic_cache.cache.delete(key)
+        return True
+
+    monkeypatch.setattr(
+        atomic_cache,
+        "release_cache_key_if_owner",
+        _release_if_owner,
+        raising=False,
+    )
 
 
 def test_normalize_int_ids_deduplicates_preserving_order():
@@ -189,6 +205,49 @@ def test_merge_int_id_set_flushes_local_fallback_after_cache_recovers(monkeypatc
     assert values["ids:recover"] == [8, 1, 2, 3, 4, 5]
     assert steady_state == [8, 1, 2, 3, 4, 5]
     assert deleted_keys == ["ids:recover:lock", "ids:recover:lock"]
+
+
+def test_merge_int_id_set_old_worker_does_not_release_replacement_owner(monkeypatch):
+    lock_key = "ids:replacement-owner:lock"
+    replacement_token = "replacement-owner-token"
+    state: dict[str, object] = {}
+    acquired_tokens: list[str] = []
+    release_calls: list[tuple[str, str]] = []
+
+    class FakeCache:
+        def add(self, key, value, timeout=None):
+            assert key == lock_key
+            acquired_tokens.append(value)
+            state[key] = value
+            return True
+
+        def get(self, key, default=None):
+            return state.get(key, default)
+
+        def set(self, key, value, timeout=None):
+            assert key == "ids:replacement-owner"
+            state[key] = replacement_token
+            state[lock_key] = replacement_token
+
+        def delete(self, key):
+            raise AssertionError(f"raw cache.delete must not release merge lock: {key}")
+
+    def _release_if_owner(key, *, lock_token, **_kwargs):
+        release_calls.append((key, lock_token))
+        if state.get(key) != lock_token:
+            return False
+        state.pop(key, None)
+        return True
+
+    monkeypatch.setattr(atomic_cache, "cache", FakeCache())
+    monkeypatch.setattr(atomic_cache, "release_cache_key_if_owner", _release_if_owner)
+
+    assert merge_int_id_set("ids:replacement-owner", [1], ttl=60) == [1]
+
+    assert len(acquired_tokens) == 1
+    assert acquired_tokens[0] != replacement_token
+    assert release_calls == [(lock_key, acquired_tokens[0])]
+    assert state[lock_key] == replacement_token
 
 
 def test_increment_counter_preserves_concurrent_first_writes(monkeypatch):

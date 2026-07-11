@@ -11,7 +11,7 @@ from django.utils import timezone
 from gameplay.models import InventoryItem
 from gameplay.services.manor.core import ensure_manor
 from tests.helpers.auction import ensure_auction_item_template, ensure_gold_bar_template
-from trade.models import AuctionBid, AuctionRound, AuctionSlot
+from trade.models import AuctionBid, AuctionDelivery, AuctionRound, AuctionSlot
 from trade.services.auction_service import place_bid, settle_auction_round
 
 pytestmark = [pytest.mark.integration]
@@ -41,7 +41,7 @@ def test_settle_auction_round_concurrent_requests_only_one_thread_completes(djan
         round_number=int(timezone.now().timestamp()),
         status=AuctionRound.Status.ACTIVE,
         start_at=timezone.now() - timedelta(minutes=5),
-        end_at=timezone.now() - timedelta(seconds=1),
+        end_at=timezone.now() + timedelta(minutes=5),
     )
     slot = AuctionSlot.objects.create(
         round=auction_round,
@@ -55,10 +55,11 @@ def test_settle_auction_round_concurrent_requests_only_one_thread_completes(djan
         slot_index=0,
     )
 
-    monkeypatch.setattr("trade.services.auction.rounds.create_message", lambda *args, **kwargs: None)
-    monkeypatch.setattr("trade.services.auction.rounds.notify_user", lambda *args, **kwargs: True)
+    monkeypatch.setattr("trade.services.auction.delivery_outbox.notify_user", lambda *args, **kwargs: True)
 
     bid, _ = place_bid(bidder, slot.id, 5)
+    AuctionRound.objects.filter(pk=auction_round.pk).update(end_at=timezone.now() - timedelta(seconds=1))
+    auction_round.refresh_from_db()
 
     barrier = threading.Barrier(2)
     results: list[dict[str, int]] = []
@@ -94,11 +95,7 @@ def test_settle_auction_round_concurrent_requests_only_one_thread_completes(djan
         template=gold_bar_template,
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
-    reward_inventory = InventoryItem.objects.get(
-        manor=bidder,
-        template=auction_item,
-        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-    )
+    delivery = AuctionDelivery.objects.select_related("message").get(bid=bid)
 
     assert errors == []
     assert len(results) == 2
@@ -110,4 +107,7 @@ def test_settle_auction_round_concurrent_requests_only_one_thread_completes(djan
     assert bid.status == AuctionBid.Status.WON
     assert bid.frozen_record.is_frozen is False
     assert gold_bar_inventory.quantity == 5
-    assert reward_inventory.quantity == 1
+    assert delivery.status == AuctionDelivery.Status.DELIVERED
+    assert delivery.delivery_method == AuctionDelivery.Method.MESSAGE_ATTACHMENT
+    assert delivery.message is not None
+    assert delivery.message.attachments.get("items", {}).get(auction_item.key) == 1

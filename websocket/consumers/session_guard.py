@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import time
+from enum import Enum
 
 from channels.db import database_sync_to_async
 
@@ -18,6 +19,15 @@ logger = logging.getLogger(__name__)
 
 class WebSocketSessionValidationUnavailable(RuntimeError):
     """Raised when websocket session validation cannot reach authoritative state."""
+
+
+class WebSocketSessionValidationResult(Enum):
+    VALID = "valid"
+    INVALID = "invalid"
+    UNAVAILABLE = "unavailable"
+
+    def __bool__(self) -> bool:
+        return self is self.VALID
 
 
 WEBSOCKET_SESSION_VALIDATION_EXCEPTIONS: tuple[type[Exception], ...] = EXPECTED_SESSION_VALIDATION_ERRORS
@@ -61,6 +71,7 @@ def is_websocket_session_valid(scope: dict) -> bool:
 
 class SingleSessionWebSocketMixin:
     SESSION_VALIDATION_CACHE_SECONDS = 5.0
+    SESSION_VALIDATION_UNAVAILABLE_CLOSE_CODE = 1013
     _single_session_valid_until: float = 0.0
     _single_session_checked_by_dispatch: bool = False
 
@@ -87,26 +98,63 @@ class SingleSessionWebSocketMixin:
         if message_type == "websocket.disconnect":
             return True
 
-        is_valid = await self._ensure_valid_session(force=(message_type == "websocket.connect"))
-        if is_valid:
+        validation_result = await self._ensure_valid_session(force=(message_type == "websocket.connect"))
+        if validation_result is WebSocketSessionValidationResult.UNAVAILABLE:
+            logger.info(
+                "Closing WebSocket while session validation is unavailable: "
+                "consumer=%s user_id=%s path=%s message_type=%s",
+                self.__class__.__name__,
+                getattr(self.scope.get("user"), "id", None),  # type: ignore[attr-defined]
+                self.scope.get("path"),  # type: ignore[attr-defined]
+                message_type,
+            )
+            await self._reject_websocket_session(
+                message_type=message_type,
+                close_code=self.SESSION_VALIDATION_UNAVAILABLE_CLOSE_CODE,
+            )
+            return False
+
+        if validation_result is WebSocketSessionValidationResult.VALID:
             return True
 
-        logger.info(
-            "Closing stale WebSocket session: consumer=%s user_id=%s path=%s message_type=%s",
-            self.__class__.__name__,
-            getattr(self.scope.get("user"), "id", None),  # type: ignore[attr-defined]
-            self.scope.get("path"),  # type: ignore[attr-defined]
-            message_type,
-        )
-        await self.close()  # type: ignore[attr-defined]
-        return False
+        if validation_result is WebSocketSessionValidationResult.INVALID:
+            logger.info(
+                "Closing stale WebSocket session: consumer=%s user_id=%s path=%s message_type=%s",
+                self.__class__.__name__,
+                getattr(self.scope.get("user"), "id", None),  # type: ignore[attr-defined]
+                self.scope.get("path"),  # type: ignore[attr-defined]
+                message_type,
+            )
+            await self._reject_websocket_session(message_type=message_type)
+            return False
 
-    async def _ensure_valid_session(self, *, force: bool = False) -> bool:
+        raise RuntimeError(f"Unexpected websocket session validation result: {validation_result!r}")
+
+    def _session_rejection_close_code(self) -> int | None:
+        user = self.scope.get("user")  # type: ignore[attr-defined]
+        code_attribute = (
+            "UNAUTHENTICATED_CLOSE_CODE"
+            if not user or not getattr(user, "is_authenticated", False)
+            else "INVALID_SESSION_CLOSE_CODE"
+        )
+        return getattr(self, code_attribute, None)
+
+    async def _reject_websocket_session(self, *, message_type: str, close_code: int | None = None) -> None:
+        if close_code is None:
+            close_code = self._session_rejection_close_code()
+        if message_type == "websocket.connect" and close_code is not None:
+            await self.accept()  # type: ignore[attr-defined]
+        if close_code is None:
+            await self.close()  # type: ignore[attr-defined]
+        else:
+            await self.close(code=close_code)  # type: ignore[attr-defined]
+
+    async def _ensure_valid_session(self, *, force: bool = False) -> WebSocketSessionValidationResult:
         user = self.scope.get("user")  # type: ignore[attr-defined]
         if not user or not getattr(user, "is_authenticated", False):
-            return False
+            return WebSocketSessionValidationResult.INVALID
         if not force and self._has_recent_session_validation():
-            return True
+            return WebSocketSessionValidationResult.VALID
 
         try:
             is_valid = await database_sync_to_async(is_websocket_session_valid, thread_sensitive=True)(self.scope)  # type: ignore[attr-defined]
@@ -131,7 +179,7 @@ class SingleSessionWebSocketMixin:
                     exc_info=True,
                 )
                 self._remember_session_validation()
-                return True
+                return WebSocketSessionValidationResult.VALID
 
             logger.error(
                 "WebSocket session validation unavailable; closing connection: consumer=%s user_id=%s path=%s",
@@ -140,8 +188,9 @@ class SingleSessionWebSocketMixin:
                 self.scope.get("path"),  # type: ignore[attr-defined]
                 exc_info=True,
             )
-            return False
+            return WebSocketSessionValidationResult.UNAVAILABLE
 
         if is_valid:
             self._remember_session_validation()
-        return is_valid
+            return WebSocketSessionValidationResult.VALID
+        return WebSocketSessionValidationResult.INVALID

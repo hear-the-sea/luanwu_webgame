@@ -160,16 +160,12 @@ def _purge_sessions_fallback(user_id: int, current_session_key: str) -> None:
 def _release_login_lock(lock_key: str, lock_token: str) -> None:
     """Best-effort lock release with ownership check."""
     try:
-        released = release_cache_key_if_owner(
+        release_cache_key_if_owner(
             lock_key,
             lock_token=lock_token,
             logger=logger,
             log_context="login lock release",
         )
-        if not released:
-            current_token = cache.get(lock_key)
-            if current_token == lock_token:
-                cache.delete(lock_key)
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
         logger.debug("Failed to release login lock %s", lock_key, exc_info=True)
     finally:

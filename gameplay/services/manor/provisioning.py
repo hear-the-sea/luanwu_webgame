@@ -28,6 +28,7 @@ def assign_manor_location_and_name(
     normalized_name: str | None,
     generate_unique_coordinate_func,
     is_manor_name_available_func,
+    is_occupied_manor_location_conflict_func,
     manor_model,
     conflict_error_cls,
 ) -> bool:
@@ -53,7 +54,9 @@ def assign_manor_location_and_name(
         except IntegrityError as exc:
             if normalized_name and not is_manor_name_available_func(normalized_name, exclude_manor_id=manor.id):
                 raise conflict_error_cls("该庄园名称已被使用") from exc
-            continue
+            if is_occupied_manor_location_conflict_func(exc):
+                continue
+            raise
     return False
 
 

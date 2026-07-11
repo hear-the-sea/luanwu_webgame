@@ -58,12 +58,15 @@
         top: 0;
         z-index: 10;
     }
-    .msg-table th:first-child { width: 40px; text-align: center; }
+    .msg-table th.msg-selection-column {
+        width: 5.5rem;
+        text-align: center;
+    }
     .msg-table th:last-child { width: 100px; text-align: right; }
 
     .msg-table-wrapper {
         max-height: 520px;
-        overflow-y: auto;
+        overflow: auto;
     }
     .msg-table tbody tr {
         border-bottom: 1px solid var(--border-light);
@@ -79,7 +82,7 @@
         padding: 0.85rem 1rem;
         vertical-align: middle;
     }
-    .msg-table td:first-child { text-align: center; }
+    .msg-table td.msg-selection-cell { text-align: center; }
     .msg-table td:last-child { text-align: right; }
 
     /* 复选框 */
@@ -88,6 +91,20 @@
         height: 18px;
         cursor: pointer;
         accent-color: var(--accent-gold);
+    }
+    .msg-checkbox:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+    .msg-delete-help {
+        display: block;
+        max-width: 7rem;
+        margin: 0.25rem auto 0;
+        color: var(--text-muted);
+        font-size: 0.72rem;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+        text-align: center;
     }
 
     /* 消息内容区 */
@@ -220,6 +237,17 @@
         .msg-table td:last-child {
             display: none;
         }
+        .msg-table th,
+        .msg-table td {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        .msg-table th.msg-selection-column {
+            width: 4.75rem;
+        }
+        .msg-delete-help {
+            max-width: 5.5rem;
+        }
         .msg-content {
             flex-direction: column;
             align-items: flex-start;
@@ -263,17 +291,22 @@
     <div class="msg-card">
         <form
             method="post"
-            action="{% url 'gameplay:delete_messages' %}"
+            action="{% url 'gameplay:mark_messages_read' %}"
             id="message-form"
             data-mark-read-url="{% url 'gameplay:mark_messages_read' %}"
         >
             {% csrf_token %}
-            {% if message_list %}
+        </form>
+        <form method="post" action="{% url 'gameplay:delete_messages' %}" id="delete-selected-messages-form">
+            {% csrf_token %}
+        </form>
+        {% if message_list %}
             <div class="msg-table-wrapper">
                 <table class="msg-table">
                     <thead>
                         <tr>
-                            <th></th>
+                            <th scope="col" class="msg-selection-column">标记已读</th>
+                            <th scope="col" class="msg-selection-column">删除</th>
                             <th>消息内容</th>
                             <th>时间</th>
                         </tr>
@@ -281,8 +314,29 @@
                     <tbody>
                         {% for message in message_list %}
                         <tr class="{% if not message.is_read %}unread{% endif %}">
-                            <td>
-                                <input type="checkbox" name="message_ids" value="{{ message.id }}" class="msg-checkbox" form="message-form">
+                            <td class="msg-selection-cell">
+                                <input
+                                    type="checkbox"
+                                    name="message_ids"
+                                    value="{{ message.id }}"
+                                    class="msg-checkbox msg-read-checkbox"
+                                    form="message-form"
+                                    aria-label="标记消息“{{ message.title }}”为已读"
+                                >
+                            </td>
+                            <td class="msg-selection-cell msg-delete-cell">
+                                <input
+                                    type="checkbox"
+                                    name="message_ids"
+                                    value="{{ message.id }}"
+                                    class="msg-checkbox msg-delete-checkbox"
+                                    form="delete-selected-messages-form"
+                                    aria-label="删除消息“{{ message.title }}”"
+                                    {% if message.has_protected_attachments %}disabled aria-disabled="true" aria-describedby="delete-help-{{ message.id }}"{% endif %}
+                                >
+                                {% if message.has_protected_attachments %}
+                                    <span id="delete-help-{{ message.id }}" class="msg-delete-help">领取附件后可删除</span>
+                                {% endif %}
                             </td>
                             <td>
                                 <div class="msg-content">
@@ -314,16 +368,15 @@
             </div>
             <div class="msg-footer">
                 <div class="msg-footer-actions">
-                    <button type="submit" formaction="{% url 'gameplay:mark_messages_read' %}" class="btn-secondary btn-small">标记已读</button>
-                    <button type="submit" formaction="{% url 'gameplay:delete_messages' %}" class="btn-danger btn-small">删除所选</button>
+                    <button type="submit" form="message-form" class="btn-secondary btn-small">标记已读</button>
+                    <button type="submit" form="delete-selected-messages-form" class="btn-danger btn-small">删除所选</button>
                 </div>
             </div>
-            {% else %}
+        {% else %}
             <div class="msg-empty">
                 <p>暂无消息</p>
             </div>
-            {% endif %}
-        </form>
+        {% endif %}
 
         {% if page_obj.paginator.num_pages > 1 %}
         <nav class="msg-pagination">

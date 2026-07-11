@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import random
 from datetime import timedelta
 from itertools import count
 
@@ -10,7 +11,7 @@ from django.utils import timezone
 
 from common.constants.resources import ResourceType
 from gameplay.constants import BuildingKeys
-from gameplay.models import BotProfile, BuildingType, Manor, RaidRun, ScoutRecord
+from gameplay.models import BotBackfillDemand, BotProfile, BuildingType, Manor, RaidRun, ScoutRecord
 from gameplay.services.manor.core import ensure_manor
 
 _COUNTER = count(1)
@@ -259,6 +260,120 @@ def test_population_roll_decrements_backfill_demand_only_for_created_rows(settin
 
 
 @pytest.mark.django_db
+def test_lost_population_lock_preserves_invalid_backfill_demand():
+    from gameplay.services import virtual_players
+
+    demand = BotBackfillDemand.objects.create(region="north", prestige_band="junior", needed=1)
+
+    def _lost_ownership():
+        raise virtual_players.VirtualPlayerPopulationLockLostError(
+            "virtual player population roll lock ownership was lost"
+        )
+
+    with pytest.raises(virtual_players.VirtualPlayerPopulationLockLostError):
+        virtual_players._create_backfill_demanded_players(
+            demands=[
+                {
+                    "id": demand.id,
+                    "region": demand.region,
+                    "prestige_band": demand.prestige_band,
+                    "needed": demand.needed,
+                }
+            ],
+            bands={},
+            hard_cap=10,
+            limit=1,
+            now=timezone.now(),
+            rng=random.Random(1),
+            ownership_guard=_lost_ownership,
+        )
+
+    assert BotBackfillDemand.objects.filter(pk=demand.pk, needed=1).exists()
+
+
+@pytest.mark.django_db
+def test_lost_population_lock_stops_before_backfill_create_transaction():
+    from gameplay.services import virtual_players
+
+    demand = BotBackfillDemand.objects.create(region="north", prestige_band="junior", needed=1)
+
+    def _lost_ownership():
+        raise virtual_players.VirtualPlayerPopulationLockLostError(
+            "virtual player population roll lock ownership was lost"
+        )
+
+    with pytest.raises(virtual_players.VirtualPlayerPopulationLockLostError):
+        virtual_players._create_backfill_demanded_players(
+            demands=[
+                {
+                    "id": demand.id,
+                    "region": demand.region,
+                    "prestige_band": demand.prestige_band,
+                    "needed": demand.needed,
+                }
+            ],
+            bands={"junior": (500, 2000)},
+            hard_cap=10,
+            limit=1,
+            now=timezone.now(),
+            rng=random.Random(1),
+            ownership_guard=_lost_ownership,
+        )
+
+    assert BotBackfillDemand.objects.filter(pk=demand.pk, needed=1).exists()
+    assert BotProfile.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_backfill_rechecks_lost_lock_after_transaction_reads(settings):
+    from gameplay.services import virtual_players
+
+    _bootstrap_building_types()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "active_player_multiplier": 0,
+            "min_per_region": 0,
+            "min_attackable_per_band": 0,
+            "hard_cap": 10,
+        },
+        "prestige_bands": {"junior": [500, 2000]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": []},
+    }
+    demand = BotBackfillDemand.objects.create(region="north", prestige_band="junior", needed=1)
+    guard_checks = 0
+
+    def _lose_after_transaction_starts():
+        nonlocal guard_checks
+        guard_checks += 1
+        if guard_checks >= 2:
+            raise virtual_players.VirtualPlayerPopulationLockLostError(
+                "virtual player population roll lock ownership was lost"
+            )
+
+    with pytest.raises(virtual_players.VirtualPlayerPopulationLockLostError):
+        virtual_players._create_backfill_demanded_players(
+            demands=[
+                {
+                    "id": demand.id,
+                    "region": demand.region,
+                    "prestige_band": demand.prestige_band,
+                    "needed": demand.needed,
+                }
+            ],
+            bands={"junior": (500, 2000)},
+            hard_cap=10,
+            limit=1,
+            now=timezone.now(),
+            rng=random.Random(1),
+            ownership_guard=_lose_after_transaction_starts,
+        )
+
+    assert guard_checks == 2
+    assert BotBackfillDemand.objects.filter(pk=demand.pk, needed=1).exists()
+    assert BotProfile.objects.count() == 0
+
+
+@pytest.mark.django_db
 def test_overpopulation_marks_old_active_bots_stale_without_deleting_manors(settings, caplog):
     from gameplay.services.virtual_players import (
         BotProjectionConfig,
@@ -303,6 +418,50 @@ def test_overpopulation_marks_old_active_bots_stale_without_deleting_manors(sett
     assert overpopulation_log.target == 0
     assert overpopulation_log.excess == 3
     assert overpopulation_log.retired_count == 3
+
+
+@pytest.mark.django_db
+def test_lost_population_lock_stops_before_overpopulation_bulk_retire(settings):
+    from gameplay.services import virtual_players
+
+    _bootstrap_building_types()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "active_player_multiplier": 0,
+            "min_per_region": 0,
+            "min_attackable_per_band": 0,
+            "hard_cap": 10,
+        },
+        "prestige_bands": {"junior": [500, 2000]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": []},
+    }
+    profile = virtual_players.create_virtual_player(
+        region="east",
+        prestige_band="junior",
+        growth_seed=9191,
+        now=timezone.now(),
+        projection=virtual_players.BotProjectionConfig(
+            prestige=900,
+            building_level=3,
+            guest_count=0,
+            guest_level=1,
+        ),
+    )
+
+    def _lost_ownership():
+        raise virtual_players.VirtualPlayerPopulationLockLostError(
+            "virtual player population roll lock ownership was lost"
+        )
+
+    with pytest.raises(virtual_players.VirtualPlayerPopulationLockLostError):
+        virtual_players._retire_excess_virtual_players(
+            target=0,
+            now=timezone.now(),
+            ownership_guard=_lost_ownership,
+        )
+
+    profile.refresh_from_db()
+    assert profile.state == BotProfile.State.ACTIVE
 
 
 @pytest.mark.django_db

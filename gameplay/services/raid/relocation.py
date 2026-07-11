@@ -9,15 +9,22 @@ from __future__ import annotations
 import random
 from typing import Optional, Tuple
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from core.exceptions import ItemInsufficientError, ItemNotFoundError, RelocationError
 
 from ...constants import REGION_DICT, PVPConstants
 from ...models import Manor
+from ..manor.coordinates import is_occupied_manor_location_conflict
 from .combat import get_active_raid_count, get_incoming_raids
 from .utils import get_asset_level
+
+RELOCATION_COORDINATE_RETRY_LIMIT = 5
+
+
+class _RelocationCoordinateConflict(Exception):
+    """坐标唯一约束冲突；外层事务回滚后可重新选点。"""
 
 
 def get_relocation_cost(manor: Manor) -> int:
@@ -77,30 +84,39 @@ def relocate_manor(manor: Manor, new_region: str) -> Tuple[int, int]:
 
     from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 
-    with transaction.atomic():
-        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+    last_coordinate_conflict: IntegrityError | None = None
+    for _attempt in range(RELOCATION_COORDINATE_RETRY_LIMIT):
         try:
-            consume_available_gold_bars_locked(locked_manor, cost)
-        except (ItemInsufficientError, ItemNotFoundError) as exc:
-            available_gold = exc.context.get("available", 0)
-            raise RelocationError(f"可用金条不足，需要 {cost} 个（当前可用 {available_gold} 个）") from exc
+            with transaction.atomic():
+                locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+                try:
+                    consume_available_gold_bars_locked(locked_manor, cost)
+                except (ItemInsufficientError, ItemNotFoundError) as exc:
+                    available_gold = exc.context.get("available", 0)
+                    raise RelocationError(f"可用金条不足，需要 {cost} 个（当前可用 {available_gold} 个）") from exc
 
-        # 生成新坐标（确保唯一）
-        new_x, new_y = _generate_unique_coordinate(new_region, exclude_manor_id=manor.id)
-
-        # 更新庄园
-        locked_manor.region = new_region
-        locked_manor.coordinate_x = new_x
-        locked_manor.coordinate_y = new_y
-        locked_manor.last_relocation_at = timezone.now()
-        locked_manor.save(update_fields=["region", "coordinate_x", "coordinate_y", "last_relocation_at"])
+                new_x, new_y = _generate_unique_coordinate(new_region, exclude_manor_id=manor.id)
+                locked_manor.region = new_region
+                locked_manor.coordinate_x = new_x
+                locked_manor.coordinate_y = new_y
+                locked_manor.last_relocation_at = timezone.now()
+                try:
+                    locked_manor.save(update_fields=["region", "coordinate_x", "coordinate_y", "last_relocation_at"])
+                except IntegrityError as exc:
+                    if not is_occupied_manor_location_conflict(exc):
+                        raise
+                    last_coordinate_conflict = exc
+                    raise _RelocationCoordinateConflict from exc
+        except _RelocationCoordinateConflict:
+            continue
 
         manor.region = locked_manor.region
         manor.coordinate_x = locked_manor.coordinate_x
         manor.coordinate_y = locked_manor.coordinate_y
         manor.last_relocation_at = locked_manor.last_relocation_at
+        return new_x, new_y
 
-    return new_x, new_y
+    raise RelocationError("迁移坐标发生冲突，请稍后重试") from last_coordinate_conflict
 
 
 def _generate_unique_coordinate(region: str, exclude_manor_id: Optional[int] = None) -> Tuple[int, int]:

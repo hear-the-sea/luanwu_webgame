@@ -179,21 +179,13 @@ def release_cache_lock_if_owner_entry(
     release_cache_key_if_owner: Callable[..., bool],
     logger: Any,
     log_context: str,
-    safe_cache_get: Callable[..., Any],
-    safe_cache_delete: Callable[..., None],
 ) -> None:
-    released = release_cache_key_if_owner(
+    release_cache_key_if_owner(
         lock_key,
         lock_token=lock_token,
         logger=logger,
         log_context=log_context,
     )
-    if released:
-        return
-
-    current_token = safe_cache_get(lock_key)
-    if current_token == lock_token:
-        safe_cache_delete(lock_key)
 
 
 def grant_gold_bars_locked(

@@ -1,18 +1,39 @@
 import json
+from contextlib import contextmanager
 
 from django import forms
 from django.contrib import admin
+from django.contrib.admin.actions import delete_selected as django_delete_selected
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth import get_user_model
+from django.core.exceptions import PermissionDenied
+from django.db import DEFAULT_DB_ALIAS, router
 from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.html import format_html
 
 from ..models import GlobalMailCampaign, GlobalMailDelivery, Manor, Message
-from ..services.utils.messages import create_message
+from ..services.utils.messages import MessageDeleteResult, create_message, delete_message_queryset
 from ..tasks.global_mail import enqueue_global_mail_backfill
 
 User = get_user_model()
+
+_MESSAGE_BULK_DELETE_PERMISSION_ATTR = "_message_admin_bulk_delete_permission"
+_MESSAGE_BULK_DELETE_PERMISSION_TOKEN = object()
+_MISSING_REQUEST_ATTR = object()
+
+
+@contextmanager
+def _allow_message_bulk_delete_permission_check(request):
+    previous_value = getattr(request, _MESSAGE_BULK_DELETE_PERMISSION_ATTR, _MISSING_REQUEST_ATTR)
+    setattr(request, _MESSAGE_BULK_DELETE_PERMISSION_ATTR, _MESSAGE_BULK_DELETE_PERMISSION_TOKEN)
+    try:
+        yield
+    finally:
+        if previous_value is _MISSING_REQUEST_ATTR:
+            delattr(request, _MESSAGE_BULK_DELETE_PERMISSION_ATTR)
+        else:
+            setattr(request, _MESSAGE_BULK_DELETE_PERMISSION_ATTR, previous_value)
 
 
 class SendMessageForm(forms.ModelForm):
@@ -285,6 +306,56 @@ class MessageAdmin(admin.ModelAdmin):
     def has_attachments(self, obj):
         return obj.has_attachments
 
+    def has_delete_permission(self, request, obj=None):
+        is_safe_bulk_delete = (
+            getattr(request, _MESSAGE_BULK_DELETE_PERMISSION_ATTR, None) is _MESSAGE_BULK_DELETE_PERMISSION_TOKEN
+        )
+        if obj is not None and obj.has_protected_attachments and not is_safe_bulk_delete:
+            return False
+        return super().has_delete_permission(request, obj)
+
+    def _report_delete_result(self, request, result: MessageDeleteResult) -> None:
+        self.message_user(
+            request,
+            f"已删除 {result.deleted_count} 条消息，{result.protected_count} 条未领取附件消息已保留",
+        )
+
+    def delete_model(self, request, obj):
+        database_alias = obj._state.db or router.db_for_write(Message, instance=obj)
+        if database_alias != DEFAULT_DB_ALIAS:
+            raise PermissionDenied
+        result = delete_message_queryset(Message.objects.using(database_alias).filter(pk=obj.pk))
+        if result.protected_count > 0 or result.deleted_count != 1:
+            raise PermissionDenied
+        return result
+
+    def delete_queryset(self, request, queryset):
+        if queryset.db != DEFAULT_DB_ALIAS:
+            raise PermissionDenied
+        result = delete_message_queryset(
+            queryset,
+            before_delete_batch=lambda eligible_queryset: self.log_deletions(request, eligible_queryset),
+        )
+        self._report_delete_result(request, result)
+        return result
+
+    @admin.action(permissions=["delete"], description="删除所选消息")
+    def delete_selected(self, request, queryset):
+        if queryset.db != DEFAULT_DB_ALIAS:
+            raise PermissionDenied
+        if request.POST.get("post"):
+            with _allow_message_bulk_delete_permission_check(request):
+                _objects, _model_count, perms_needed, protected = self.get_deleted_objects(queryset, request)
+            if perms_needed:
+                raise PermissionDenied
+            if protected:
+                with _allow_message_bulk_delete_permission_check(request):
+                    return django_delete_selected(self, request, queryset)
+            self.delete_queryset(request, queryset)
+            return None
+        with _allow_message_bulk_delete_permission_check(request):
+            return django_delete_selected(self, request, queryset)
+
     def get_form(self, request, obj=None, **kwargs):
         """为添加消息使用自定义表单"""
         if obj is None:  # 只在创建时使用自定义表单
@@ -338,4 +409,4 @@ class MessageAdmin(admin.ModelAdmin):
         queryset.update(is_read=False)
         self.message_user(request, f"已标记 {queryset.count()} 条消息为未读")
 
-    actions = ["mark_as_read", "mark_as_unread"]
+    actions = ["mark_as_read", "mark_as_unread", "delete_selected"]

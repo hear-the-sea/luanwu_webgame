@@ -96,6 +96,30 @@ class Command(BaseCommand):
 
         cutoff = timezone.now() - timedelta(days=days)
 
+        if model_path == "gameplay.Message":
+            from gameplay.services.utils.messages import delete_expired_messages
+
+            result = delete_expired_messages(cutoff, batch_size=batch_size, dry_run=dry_run)
+            deleted_count = result.deleted_count
+            protected_count = result.protected_count
+            if deleted_count == 0 and protected_count == 0:
+                self.stdout.write(f"[{model_path}] 无需清理（保留 {days} 天）")
+                return 0
+
+            if dry_run:
+                message = (
+                    f"[{model_path}] 将删除 {deleted_count} 条 {days} 天前的记录，"
+                    f"保留 {protected_count} 条未领取附件消息"
+                )
+                self.stdout.write(self.style.WARNING(message))
+            else:
+                message = (
+                    f"[{model_path}] 已删除 {deleted_count} 条 {days} 天前的记录，"
+                    f"保留 {protected_count} 条未领取附件消息"
+                )
+                self.stdout.write(self.style.SUCCESS(message))
+            return deleted_count
+
         # 构建过滤条件：{time_field}__lt=cutoff
         filter_kwargs = {f"{time_field}__lt": cutoff}
 
