@@ -299,6 +299,34 @@ def validate_arena_rewards(
                                 weight, result=result, file=file, path=ri_path, field_name="weight", allow_zero=False
                             )
 
+        rotating_pool = entry.get("rotating_blueprint_pool")
+        if rotating_pool is not None:
+            pool_path = f"{path}.rotating_blueprint_pool"
+            if not isinstance(rotating_pool, dict):
+                result.add(file, pool_path, "expected a mapping")
+                continue
+
+            rarity = rotating_pool.get("rarity")
+            if not isinstance(rarity, str) or not rarity.strip():
+                result.add(file, pool_path, "field 'rarity' expected a non-empty string")
+
+            blueprint_keys = rotating_pool.get("blueprint_keys")
+            if not isinstance(blueprint_keys, list):
+                result.add(file, pool_path, "field 'blueprint_keys' expected a list")
+                continue
+            if not all(isinstance(blueprint_key, str) for blueprint_key in blueprint_keys):
+                result.add(file, pool_path, "field 'blueprint_keys' expected a list of strings")
+            elif len(blueprint_keys) != 4 or len(set(blueprint_keys)) != len(blueprint_keys):
+                result.add(file, pool_path, "field 'blueprint_keys' must contain exactly four unique entries")
+
+            for blueprint_index, blueprint_key in enumerate(blueprint_keys):
+                blueprint_path = f"{pool_path}.blueprint_keys[{blueprint_index}]"
+                if not isinstance(blueprint_key, str) or not blueprint_key.startswith("blueprint_"):
+                    result.add(file, blueprint_path, "expected a blueprint_* item key")
+                    continue
+                if item_keys is not None and blueprint_key not in item_keys:
+                    result.add(file, blueprint_path, f"item_key '{blueprint_key}' not found in item_templates.yaml")
+
     return result
 
 

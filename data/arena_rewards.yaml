@@ -35,6 +35,32 @@ rewards:
         - item_key: equip_jiaodoushizhichui
           weight: 15
 
+  - key: blueprint_blue_exchange
+    name: 本周蓝色图纸
+    description: 每周轮换1张完整蓝色装备图纸，每日限兑1张。
+    cost_coins: 600
+    daily_limit: 1
+    rotating_blueprint_pool:
+      rarity: blue
+      blueprint_keys:
+        - blueprint_xiaoweitoukie
+        - blueprint_xiaoweikaijia
+        - blueprint_xiaoweichangxue
+        - blueprint_xiaoweichangjian
+
+  - key: blueprint_purple_exchange
+    name: 本周紫色图纸
+    description: 每周轮换1张完整紫色装备图纸，每日限兑1张。
+    cost_coins: 1800
+    daily_limit: 1
+    rotating_blueprint_pool:
+      rarity: purple
+      blueprint_keys:
+        - blueprint_huxianpao
+        - blueprint_huxianxie
+        - blueprint_huxianjian
+        - blueprint_fenglingguan
+
   - key: panfeng_guest_exchange
     name: 潘凤门客兑换
     description: 兑换后获得「潘凤门客卡」，可直接招募绿色门客潘凤。

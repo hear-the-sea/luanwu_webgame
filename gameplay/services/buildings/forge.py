@@ -18,6 +18,7 @@ from core.utils.yaml_loader import load_yaml_data
 from ...models import EquipmentProduction, InventoryItem, ItemTemplate, Manor
 from ..recruitment.templates import load_troop_templates
 from ..technology import get_player_technology_level
+from . import blueprint_catalog as _blueprint_catalog
 from . import forge_blueprints as _forge_blueprints
 from . import forge_decompose as _forge_decompose
 from . import forge_runtime as _forge_runtime
@@ -136,10 +137,17 @@ def _build_blueprint_recipe_index() -> Dict[str, Dict[str, Any]]:
     return _forge_blueprints.build_blueprint_recipe_index(load_forge_blueprint_config())
 
 
+@lru_cache(maxsize=1)
+def load_blueprint_catalog() -> dict[str, _blueprint_catalog.BlueprintCatalogEntry]:
+    """加载并校验图纸与装备的统一目录。"""
+    return _blueprint_catalog.build_blueprint_catalog(load_forge_blueprint_config())
+
+
 def clear_forge_blueprint_cache() -> None:
     """清理铁匠铺图纸配置缓存。"""
     load_forge_blueprint_config.cache_clear()
     _build_blueprint_recipe_index.cache_clear()
+    load_blueprint_catalog.cache_clear()
 
 
 def get_blueprint_synthesis_options(manor: Manor) -> List[Dict[str, Any]]:

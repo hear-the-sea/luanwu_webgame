@@ -3,6 +3,7 @@
 from django.urls import path
 
 from .views.announcement import announcement_list, create_announcement
+from .views.blueprint_rewards import claim_blueprint_reward
 from .views.contribution import contribution_ranking, donate_resource, donation_logs, resource_logs
 from .views.core import create_guild, guild_detail, guild_hall, guild_info, guild_list, guild_search
 from .views.hero_pool import hero_pool_page, hero_pool_remove, hero_pool_submit, lineup_add, lineup_remove
@@ -80,6 +81,7 @@ urlpatterns = [
     path("warehouse/", warehouse, name="warehouse"),
     path("warehouse/<str:item_key>/exchange/", exchange_item, name="exchange_item"),
     path("warehouse/logs/", exchange_logs, name="exchange_logs"),
+    path("blueprints/<str:blueprint_key>/claim/", claim_blueprint_reward, name="claim_blueprint_reward"),
     # 公告
     path("announcements/", announcement_list, name="announcements"),
     path("announcement/create/", create_announcement, name="create_announcement"),

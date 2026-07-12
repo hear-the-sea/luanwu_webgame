@@ -561,7 +561,7 @@ items:
     effect_type: tool
     rarity: blue
     tradeable: true
-    price: 12000
+    price: 2000
     storage_space: 1
     is_usable: false
     image: blueprint_xiaoweitoukie.png
@@ -572,7 +572,7 @@ items:
     effect_type: tool
     rarity: blue
     tradeable: true
-    price: 12000
+    price: 2000
     storage_space: 1
     is_usable: false
     image: blueprint_xiaoweikaijia.png
@@ -583,7 +583,7 @@ items:
     effect_type: tool
     rarity: blue
     tradeable: true
-    price: 12000
+    price: 2000
     storage_space: 1
     is_usable: false
     image: blueprint_xiaoweichangxue.png
@@ -594,7 +594,7 @@ items:
     effect_type: tool
     rarity: blue
     tradeable: true
-    price: 12000
+    price: 2000
     storage_space: 1
     is_usable: false
     image: blueprint_xiaoweichangjian.png
@@ -605,7 +605,7 @@ items:
     effect_type: tool
     rarity: blue
     tradeable: true
-    price: 12000
+    price: 2000
     storage_space: 1
     is_usable: false
     image: blueprint_qinglongkui.png
@@ -616,7 +616,7 @@ items:
     effect_type: tool
     rarity: blue
     tradeable: true
-    price: 12000
+    price: 2000
     storage_space: 1
     is_usable: false
     image: blueprint_qinglongjia.png
@@ -627,7 +627,7 @@ items:
     effect_type: tool
     rarity: blue
     tradeable: true
-    price: 12000
+    price: 2000
     storage_space: 1
     is_usable: false
     image: blueprint_qinglongxue.png
@@ -638,7 +638,7 @@ items:
     effect_type: tool
     rarity: blue
     tradeable: true
-    price: 12000
+    price: 2000
     storage_space: 1
     is_usable: false
     image: blueprint_qinglongdao.png
@@ -649,7 +649,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 28000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_huxianpao.png
@@ -660,7 +660,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 28000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_huxianxie.png
@@ -671,7 +671,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 28000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_huxianjian.png
@@ -682,7 +682,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 32000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_qilinkui.png
@@ -693,7 +693,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 32000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_qilinjia.png
@@ -704,7 +704,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 32000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_qilinxue.png
@@ -715,7 +715,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 32000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_qilindao.png
@@ -726,7 +726,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 32000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_xuanwukui.png
@@ -737,7 +737,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 32000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_xuanwujia.png
@@ -748,7 +748,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 32000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_xuanwuxue.png
@@ -759,7 +759,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 32000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_xuanwuchui.png
@@ -770,7 +770,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 28000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_fenglingguan.png
@@ -781,7 +781,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 28000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_fenglingshan.png
@@ -792,7 +792,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 28000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_fenghuangyu.png
@@ -825,7 +825,7 @@ items:
     effect_type: tool
     rarity: blue
     tradeable: true
-    price: 26000
+    price: 2000
     storage_space: 1
     is_usable: false
     image: blueprint_jixiemao.png
@@ -836,7 +836,7 @@ items:
     effect_type: tool
     rarity: blue
     tradeable: true
-    price: 26000
+    price: 2000
     storage_space: 1
     is_usable: false
     image: blueprint_jiguanchuniao.png
@@ -847,7 +847,7 @@ items:
     effect_type: tool
     rarity: blue
     tradeable: true
-    price: 26000
+    price: 2000
     storage_space: 1
     is_usable: false
     image: blueprint_kuileimuren.png
@@ -858,7 +858,7 @@ items:
     effect_type: tool
     rarity: blue
     tradeable: true
-    price: 26000
+    price: 2000
     storage_space: 1
     is_usable: false
     image: blueprint_qingji.png
@@ -869,7 +869,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 42000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_taotieding.png
@@ -880,7 +880,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 42000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_jiguanxiong.png
@@ -891,7 +891,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 42000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_muniuliuma.png
@@ -902,7 +902,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 42000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_kuileiren.png
@@ -913,7 +913,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 42000
+    price: 6000
     storage_space: 1
     is_usable: false
     image: blueprint_xuanwujigui.png
@@ -924,7 +924,7 @@ items:
     effect_type: tool
     rarity: orange
     tradeable: true
-    price: 88000
+    price: 20000
     storage_space: 1
     is_usable: false
     image: blueprint_feiyuan.png
@@ -935,7 +935,7 @@ items:
     effect_type: tool
     rarity: orange
     tradeable: true
-    price: 88000
+    price: 20000
     storage_space: 1
     is_usable: false
     image: blueprint_chixiaojifeng.png
@@ -946,7 +946,7 @@ items:
     effect_type: tool
     rarity: orange
     tradeable: true
-    price: 88000
+    price: 20000
     storage_space: 1
     is_usable: false
     image: blueprint_mojiajiguanren.png
@@ -957,7 +957,7 @@ items:
     effect_type: tool
     rarity: blue
     tradeable: true
-    price: 20000
+    price: 2000
     storage_space: 1
     is_usable: true
     image: pubayi_guest_card.png
@@ -1015,7 +1015,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 5000000
+    price: 6000
     storage_space: 1
     is_usable: true
     image: zhuyingtai_guest_scroll.png

@@ -10,7 +10,7 @@ import gameplay.services.arena.core as arena_core
 from common.constants.resources import ResourceType
 from core.utils.time_scale import scale_duration
 from gameplay.models import ArenaCoopEntry, ArenaEntry, ArenaTournament, Manor
-from gameplay.services.arena.rewards import load_arena_reward_catalog
+from gameplay.services.arena.rewards import load_arena_reward_catalog, select_weekly_blueprint_key
 from gameplay.utils.template_loader import get_item_template_names_by_keys
 
 ARENA_PRIMARY_EVENT_BASE = {
@@ -36,10 +36,20 @@ def build_reward_rows(manor: Manor) -> list[dict]:
     for reward in catalog.values():
         all_item_keys.update(reward.items.keys())
         all_item_keys.update(option.item_key for option in reward.random_items)
+        if reward.rotating_blueprint_pool is not None:
+            all_item_keys.add(select_weekly_blueprint_key(reward.rotating_blueprint_pool))
     item_labels = get_item_template_names_by_keys(all_item_keys)
 
     rows: list[dict] = []
     for reward in catalog.values():
+        rotating_blueprint_row = None
+        if reward.rotating_blueprint_pool is not None:
+            blueprint_key = select_weekly_blueprint_key(reward.rotating_blueprint_pool)
+            rotating_blueprint_row = {
+                "key": blueprint_key,
+                "label": item_labels.get(blueprint_key, blueprint_key),
+                "amount": 1,
+            }
         resource_rows = [
             {
                 "key": key,
@@ -83,6 +93,7 @@ def build_reward_rows(manor: Manor) -> list[dict]:
                 "resource_rows": resource_rows,
                 "item_rows": item_rows,
                 "random_item_rows": random_item_rows,
+                "rotating_blueprint_row": rotating_blueprint_row,
                 "can_afford": manor.arena_coins >= reward.cost_coins,
             }
         )

@@ -71,6 +71,11 @@ warehouse:
     resource_pack_common: 20
     resource_pack_advanced: 80
   daily_exchange_limit: 10
+blueprint_rewards:
+  choices:
+    blue: [blueprint_xiaoweitoukie, blueprint_xiaoweikaijia, blueprint_qinglongkui, blueprint_qinglongjia]
+    purple: [blueprint_huxianpao, blueprint_huxianxie, blueprint_qilinkui, blueprint_qilinjia]
+    orange: [blueprint_feiyuan, blueprint_chixiaojifeng, blueprint_mojiajiguanren]
 hero_pool:
   slot_limit: 2
   battle_lineup_limit: 20

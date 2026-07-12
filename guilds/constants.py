@@ -69,6 +69,7 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
         },
         "daily_exchange_limit": 10,
     },
+    "blueprint_rewards": {"choices": {}},
     "hero_pool": {
         "slot_limit": 2,
         "battle_lineup_limit": 20,
@@ -146,6 +147,9 @@ def normalize_guild_rules(raw: Any) -> dict[str, Any]:
         "contribution": ensure_mapping(root.get("contribution"), logger=logger, context="guild rules.contribution"),
         "technology": ensure_mapping(root.get("technology"), logger=logger, context="guild rules.technology"),
         "warehouse": ensure_mapping(root.get("warehouse"), logger=logger, context="guild rules.warehouse"),
+        "blueprint_rewards": ensure_mapping(
+            root.get("blueprint_rewards"), logger=logger, context="guild rules.blueprint_rewards"
+        ),
         "hero_pool": ensure_mapping(root.get("hero_pool"), logger=logger, context="guild rules.hero_pool"),
         "pvp": ensure_mapping(root.get("pvp"), logger=logger, context="guild rules.pvp"),
     }
@@ -217,6 +221,13 @@ def normalize_guild_rules(raw: Any) -> dict[str, Any]:
                 DEFAULT_GUILD_RULES["warehouse"]["daily_exchange_limit"],
                 minimum=0,
             ),
+        },
+        "blueprint_rewards": {
+            "choices": {
+                str(rarity): [str(key).strip() for key in keys if str(key).strip()]
+                for rarity, keys in config["blueprint_rewards"].get("choices", {}).items()
+                if isinstance(keys, list)
+            },
         },
         "hero_pool": {
             "slot_limit": _to_positive_int(

@@ -713,6 +713,13 @@ missions:
       equip_jiguanchuniao: 1
       equip_feiyunzui: 0.1
       equip_luopan: 0.05
+      blueprint_mechanism_blue:
+        chance: 0.20
+        choices:
+          - blueprint_jixiemao
+          - blueprint_jiguanchuniao
+          - blueprint_kuileimuren
+          - blueprint_qingji
 
     daily_limit: 3
 
@@ -1006,6 +1013,19 @@ missions:
       wanyin_flag_fragment:
         chance: 0.35
         count: 1
+      blueprint_advanced_blue:
+        chance: 0.35
+        choices:
+          - blueprint_xiaoweitoukie
+          - blueprint_xiaoweikaijia
+          - blueprint_xiaoweichangxue
+          - blueprint_xiaoweichangjian
+      blueprint_advanced_purple:
+        chance: 0.10
+        choices:
+          - blueprint_huxianpao
+          - blueprint_huxianxie
+          - blueprint_huxianjian
 
     base_travel_time: 1800
     daily_limit: 3
@@ -1099,6 +1119,26 @@ missions:
       equip_baguajing: 0.08
       equip_taiqingyuce: 0.01
       equip_fengshenbang: 0.005
+      blueprint_top_blue:
+        chance: 0.45
+        choices:
+          - blueprint_qinglongkui
+          - blueprint_qinglongjia
+          - blueprint_qinglongxue
+          - blueprint_qinglongdao
+      blueprint_top_purple:
+        chance: 0.25
+        choices:
+          - blueprint_qilinkui
+          - blueprint_qilinjia
+          - blueprint_qilinxue
+          - blueprint_qilindao
+      blueprint_top_orange:
+        chance: 0.03
+        choices:
+          - blueprint_feiyuan
+          - blueprint_chixiaojifeng
+          - blueprint_mojiajiguanren
 
     base_travel_time: 1800
     daily_limit: 1
@@ -1144,6 +1184,26 @@ missions:
       equip_shanheshejitu: 0.01
       equip_zhoutianxingpan: 0.01
       equip_xuanyuanjian: 0.005
+      blueprint_top_blue:
+        chance: 0.45
+        choices:
+          - blueprint_qinglongkui
+          - blueprint_qinglongjia
+          - blueprint_qinglongxue
+          - blueprint_qinglongdao
+      blueprint_top_purple:
+        chance: 0.25
+        choices:
+          - blueprint_qilinkui
+          - blueprint_qilinjia
+          - blueprint_qilinxue
+          - blueprint_qilindao
+      blueprint_top_orange:
+        chance: 0.03
+        choices:
+          - blueprint_feiyuan
+          - blueprint_chixiaojifeng
+          - blueprint_mojiajiguanren
 
     base_travel_time: 1800
     daily_limit: 1

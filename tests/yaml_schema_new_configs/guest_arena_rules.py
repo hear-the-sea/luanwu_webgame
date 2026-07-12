@@ -236,3 +236,23 @@ def test_arena_rewards_rejects_duplicate_keys():
     }
     result = validate_arena_rewards(data)
     assert_invalid(result, substring="duplicate")
+
+
+def test_arena_rewards_rejects_rotating_blueprint_pool_without_four_unique_blueprints():
+    data = {
+        "rewards": [
+            {
+                "key": "blueprint_exchange",
+                "name": "本周图纸",
+                "cost_coins": 600,
+                "rotating_blueprint_pool": {
+                    "rarity": "blue",
+                    "blueprint_keys": ["blueprint_a", "blueprint_a", "blueprint_c"],
+                },
+            }
+        ]
+    }
+
+    result = validate_arena_rewards(data, item_keys={"blueprint_a", "blueprint_c"})
+
+    assert_invalid(result, substring="exactly four unique")

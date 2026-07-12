@@ -45,6 +45,7 @@ DEFAULT_ARENA_COOP_RULES: dict[str, Any] = {
     "rare_drop": {
         "enabled": True,
         "item_key": "equip_tulongdao",
+        "item_choices": [],
         "chance_bps": 10,
         "requires_clear": True,
         "requires_minimum_contribution": True,
@@ -99,6 +100,20 @@ def _normalize_damage_tiers(raw: Any) -> list[dict[str, int]]:
         coins = _to_positive_int(entry.get("coins"), 0, minimum=0)
         rows.append({"min_share_bps": min_share_bps, "coins": coins})
     return rows or default_rows
+
+
+def _normalize_rare_drop_choices(raw: Any) -> list[dict[str, Any]]:
+    if not isinstance(raw, list):
+        return []
+    choices: list[dict[str, Any]] = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            continue
+        item_key = str(entry.get("item_key") or entry.get("key") or "").strip()
+        weight = _to_positive_int(entry.get("weight"), 0, minimum=0)
+        if item_key and weight > 0:
+            choices.append({"item_key": item_key, "weight": weight})
+    return choices
 
 
 def normalize_arena_coop_rules(raw: Any) -> dict[str, Any]:
@@ -201,6 +216,7 @@ def normalize_arena_coop_rules(raw: Any) -> dict[str, Any]:
     config["rare_drop"] = {
         "enabled": bool(rare_drop.get("enabled", config["rare_drop"]["enabled"])),
         "item_key": str(rare_drop.get("item_key") or config["rare_drop"]["item_key"]),
+        "item_choices": _normalize_rare_drop_choices(rare_drop.get("item_choices")),
         "chance_bps": _to_positive_int(
             rare_drop.get("chance_bps"),
             config["rare_drop"]["chance_bps"],

@@ -313,6 +313,7 @@ def validate_mission_templates(
     *,
     file: str = "mission_templates.yaml",
     item_keys: set[str] | None = None,
+    item_rarities: dict[str, str] | None = None,
     troop_keys: set[str] | None = None,
 ) -> ValidationResult:
     result = ValidationResult()
@@ -450,14 +451,40 @@ def validate_mission_templates(
                         continue
                     is_random_choice = isinstance(drop_val, dict) and "choices" in drop_val
                     if is_random_choice:
+                        choices = drop_val["choices"]
+                        if not isinstance(choices, list):
+                            result.add(file, f"{path}.drop_table.{drop_key}.choices", "expected a list")
+                            continue
+                        if drop_key.startswith("blueprint_") and len(choices) > 4:
+                            result.add(
+                                file,
+                                f"{path}.drop_table.{drop_key}.choices",
+                                "blueprint pool supports at most 4 choices",
+                            )
+                        blueprint_rarities: set[str] = set()
                         # Validate the individual choices instead
-                        for choice in drop_val["choices"]:
+                        for choice in choices:
                             if isinstance(choice, str) and choice not in item_keys:
                                 result.add(
                                     file,
                                     f"{path}.drop_table.{drop_key}.choices",
                                     f"choice item key '{choice}' not found in item_templates.yaml",
                                 )
+                            if drop_key.startswith("blueprint_"):
+                                if not isinstance(choice, str) or not choice.startswith("blueprint_"):
+                                    result.add(
+                                        file,
+                                        f"{path}.drop_table.{drop_key}.choices",
+                                        "blueprint pool choices must be blueprint item keys",
+                                    )
+                                elif item_rarities is not None and choice in item_rarities:
+                                    blueprint_rarities.add(item_rarities[choice])
+                        if drop_key.startswith("blueprint_") and len(blueprint_rarities) > 1:
+                            result.add(
+                                file,
+                                f"{path}.drop_table.{drop_key}.choices",
+                                "blueprint pool choices must have one rarity",
+                            )
                         continue
                     if drop_key not in item_keys:
                         result.add(

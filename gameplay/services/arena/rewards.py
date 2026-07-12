@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from django.conf import settings
+from django.utils import timezone
 
 from common.constants.resources import ResourceType
 from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
@@ -24,6 +25,12 @@ class ArenaRandomItemOption:
 
 
 @dataclass(frozen=True)
+class ArenaRotatingBlueprintPool:
+    rarity: str
+    blueprint_keys: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class ArenaRewardDefinition:
     key: str
     name: str
@@ -33,6 +40,7 @@ class ArenaRewardDefinition:
     items: dict[str, int]
     random_items: tuple[ArenaRandomItemOption, ...]
     description: str = ""
+    rotating_blueprint_pool: ArenaRotatingBlueprintPool | None = None
 
 
 def _to_positive_int(raw: Any, *, default: int = 0) -> int:
@@ -63,6 +71,31 @@ def _normalize_random_items(rewards: dict[str, Any], *, context: str) -> tuple[A
             continue
         options.append(ArenaRandomItemOption(item_key=item_key, weight=weight, amount=amount))
     return tuple(options)
+
+
+def _normalize_rotating_blueprint_pool(payload: dict[str, Any], *, context: str) -> ArenaRotatingBlueprintPool | None:
+    raw_pool = payload.get("rotating_blueprint_pool")
+    if raw_pool is None:
+        return None
+
+    pool = ensure_mapping(raw_pool, logger=logger, context=f"{context}.rotating_blueprint_pool")
+    rarity = str(pool.get("rarity") or "").strip()
+    raw_keys = ensure_list(
+        pool.get("blueprint_keys"),
+        logger=logger,
+        context=f"{context}.rotating_blueprint_pool.blueprint_keys",
+    )
+    blueprint_keys = tuple(str(key).strip() for key in raw_keys if str(key).strip())
+    if not rarity or len(blueprint_keys) != 4 or len(set(blueprint_keys)) != len(blueprint_keys):
+        logger.warning("skip invalid rotating blueprint pool: %s", context)
+        return None
+    return ArenaRotatingBlueprintPool(rarity=rarity, blueprint_keys=blueprint_keys)
+
+
+def select_weekly_blueprint_key(pool: ArenaRotatingBlueprintPool, *, today=None) -> str:
+    """Return this ISO week's deterministic blueprint from a four-item pool."""
+    iso_week = (today or timezone.localdate()).isocalendar().week
+    return pool.blueprint_keys[(iso_week - 1) % len(pool.blueprint_keys)]
 
 
 def _normalize_reward_payload(
@@ -124,7 +157,8 @@ def load_arena_reward_catalog() -> dict[str, ArenaRewardDefinition]:
             continue
 
         resources, items, random_items = _normalize_reward_payload(entry, context=context)
-        if not resources and not items and not random_items:
+        rotating_blueprint_pool = _normalize_rotating_blueprint_pool(entry, context=context)
+        if not resources and not items and not random_items and rotating_blueprint_pool is None:
             logger.warning("skip arena reward without payload: %s", key)
             continue
 
@@ -140,6 +174,7 @@ def load_arena_reward_catalog() -> dict[str, ArenaRewardDefinition]:
             items=items,
             random_items=random_items,
             description=str(entry.get("description") or ""),
+            rotating_blueprint_pool=rotating_blueprint_pool,
         )
 
     return catalog

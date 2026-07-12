@@ -27,6 +27,9 @@
                         {% for item in reward.item_rows %}
                         <li class="tw-arena-reward-item">{{ item.label }} x{{ item.amount }}</li>
                         {% endfor %}
+                        {% if reward.rotating_blueprint_row %}
+                        <li class="tw-arena-reward-item">本周图纸：{{ reward.rotating_blueprint_row.label }} x{{ reward.rotating_blueprint_row.amount }}</li>
+                        {% endif %}
                         {% if reward.random_item_rows %}
                         {% if reward.key == "gladiator_chest" %}
                         <li class="tw-arena-reward-item">随机角斗士装备</li>
@@ -34,7 +37,7 @@
                         <li class="tw-arena-reward-item">随机奖励</li>
                         {% endif %}
                         {% endif %}
-                        {% if not reward.resource_rows and not reward.item_rows and not reward.random_item_rows %}
+                        {% if not reward.resource_rows and not reward.item_rows and not reward.random_item_rows and not reward.rotating_blueprint_row %}
                         <li class="tw-arena-reward-item">无奖励配置</li>
                         {% endif %}
                     </ul>

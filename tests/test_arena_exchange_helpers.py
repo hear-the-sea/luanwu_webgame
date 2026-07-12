@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 from django.db import DatabaseError
 
@@ -10,8 +12,10 @@ from gameplay.services.arena.exchange_helpers import (
     normalize_exchange_quantity,
     scale_reward_items,
     scale_reward_resources,
+    select_weekly_blueprint_key,
     send_exchange_success_message,
 )
+from gameplay.services.arena.rewards import ArenaRotatingBlueprintPool
 
 
 def test_normalize_exchange_quantity_validates_positive_values():
@@ -59,6 +63,23 @@ def test_build_exchange_payload_and_summary_cover_all_sections():
 
 def test_build_exchange_summary_returns_default_when_empty():
     assert build_exchange_summary(credited_resources={}, overflow_resources={}, granted_items={}) == "奖励已处理"
+
+
+def test_select_weekly_blueprint_key_uses_iso_week_rotation():
+    pool = ArenaRotatingBlueprintPool(
+        rarity="blue",
+        blueprint_keys=(
+            "blueprint_rotation_a",
+            "blueprint_rotation_b",
+            "blueprint_rotation_c",
+            "blueprint_rotation_d",
+        ),
+    )
+
+    assert select_weekly_blueprint_key(pool, today=date.fromisocalendar(2026, 1, 1)) == "blueprint_rotation_a"
+    assert select_weekly_blueprint_key(pool, today=date.fromisocalendar(2026, 2, 1)) == "blueprint_rotation_b"
+    assert select_weekly_blueprint_key(pool, today=date.fromisocalendar(2026, 4, 1)) == "blueprint_rotation_d"
+    assert select_weekly_blueprint_key(pool, today=date.fromisocalendar(2026, 5, 1)) == "blueprint_rotation_a"
 
 
 def test_grant_exchange_items_locked_merges_grants_and_calls_inventory_writer():
