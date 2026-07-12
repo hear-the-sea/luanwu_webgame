@@ -6,7 +6,15 @@ from django.db.models import Count, Q
 from django.utils import timezone
 
 import gameplay.services.arena.core as arena_core
-from gameplay.models import ArenaCoopContribution, ArenaCoopEvent, ArenaEntry, ArenaMatch, ArenaTournament, Manor
+from gameplay.models import (
+    ArenaCoopContribution,
+    ArenaCoopEntry,
+    ArenaCoopEvent,
+    ArenaEntry,
+    ArenaMatch,
+    ArenaTournament,
+    Manor,
+)
 
 from .common import build_common_context
 from .registration import get_arena_coop_summary_context
@@ -90,7 +98,10 @@ def get_arena_event_detail_context(manor: Manor, tournament_id: int, selected_ro
                     "left_outcome": left_outcome,
                     "right_outcome": right_outcome,
                     "left_is_mine": match.attacker_entry.manor_id == manor.id,
+                    "left_is_virtual": match.attacker_entry.source == ArenaEntry.Source.VIRTUAL,
                     "right_is_mine": match.defender_entry is not None and match.defender_entry.manor_id == manor.id,
+                    "right_is_virtual": match.defender_entry is not None
+                    and match.defender_entry.source == ArenaEntry.Source.VIRTUAL,
                     "report_id": match.battle_report_id,
                 }
             )
@@ -135,6 +146,8 @@ def get_arena_coop_event_detail_context(manor: Manor, event_id: int) -> dict | N
     contributions = list(
         ArenaCoopContribution.objects.select_related("entry__manor").filter(event=event).order_by("damage_rank", "id")
     )
+    real_contributions = [row for row in contributions if row.entry.source == ArenaCoopEntry.Source.PLAYER]
+    virtual_contributions = [row for row in contributions if row.entry.source == ArenaCoopEntry.Source.VIRTUAL]
     context.update(
         {
             "coop_event": event,
@@ -146,7 +159,15 @@ def get_arena_coop_event_detail_context(manor: Manor, event_id: int) -> dict | N
                     "boss_damage": row.boss_damage,
                     "total_coins": row.total_coins,
                 }
-                for row in contributions
+                for row in real_contributions
+            ],
+            "virtual_contribution_rows": [
+                {
+                    "manor_name": row.entry.manor.display_name,
+                    "total_damage": row.total_damage,
+                    "boss_damage": row.boss_damage,
+                }
+                for row in virtual_contributions
             ],
         }
     )

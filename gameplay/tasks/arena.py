@@ -7,7 +7,12 @@ from django.utils import timezone
 
 import gameplay.services.arena.coop_core as arena_coop_core
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
-from gameplay.services.arena.core import cleanup_expired_tournaments, run_due_arena_rounds, start_ready_tournaments
+from gameplay.services.arena.core import (
+    cleanup_expired_tournaments,
+    run_due_arena_rounds,
+    start_due_virtual_backfill_tournaments,
+    start_ready_tournaments,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +22,8 @@ def scan_arena_tournaments(limit: int = 20) -> dict[str, int]:
     started = 0
     processed = 0
     processed_coop = 0
+    virtual_started = 0
+    virtual_coop_prepared = 0
     cleaned = 0
     cleaned_coop = 0
     failed_stages: list[str] = []
@@ -26,6 +33,18 @@ def scan_arena_tournaments(limit: int = 20) -> dict[str, int]:
     except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
         logger.exception("arena tournament start scan failed")
         failed_stages.append("start_ready_tournaments")
+
+    try:
+        virtual_started = start_due_virtual_backfill_tournaments(limit=limit)
+    except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
+        logger.exception("arena virtual tournament backfill scan failed")
+        failed_stages.append("start_due_virtual_backfill_tournaments")
+
+    try:
+        virtual_coop_prepared = arena_coop_core.start_due_virtual_backfill_coop_events(limit=limit)
+    except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
+        logger.exception("arena virtual coop backfill scan failed")
+        failed_stages.append("start_due_virtual_backfill_coop_events")
 
     try:
         processed = run_due_arena_rounds(limit=limit)
@@ -60,6 +79,8 @@ def scan_arena_tournaments(limit: int = 20) -> dict[str, int]:
 
     return {
         "started": int(started),
+        "virtual_started": int(virtual_started),
+        "virtual_coop_prepared": int(virtual_coop_prepared),
         "processed_rounds": int(processed),
         "processed_coop_events": int(processed_coop),
         "cleaned_tournaments": int(cleaned),

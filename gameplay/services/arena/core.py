@@ -32,6 +32,7 @@ from .rules import load_arena_rules
 from .snapshots import build_entry_guest_snapshot
 from .state_helpers import sync_daily_participation_counter_locked as _sync_daily_participation_counter_locked
 from .state_helpers import update_daily_participation_counter_locked as _update_daily_participation_counter_locked
+from .virtual_backfill import backfill_tournament_locked
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +49,7 @@ ARENA_TOURNAMENT_PLAYER_LIMIT = _load_positive_int_setting(
     "ARENA_TOURNAMENT_PLAYER_LIMIT", ARENA_RULES["registration"]["tournament_player_limit"], minimum=2
 )
 ARENA_ROUND_INTERVAL_SECONDS = int(ARENA_RULES["runtime"]["round_interval_seconds"])
+ARENA_VIRTUAL_FILL_WAIT_SECONDS = int(ARENA_RULES["runtime"]["virtual_fill_wait_seconds"])
 ARENA_COMPLETED_RETENTION_SECONDS = int(ARENA_RULES["runtime"]["completed_retention_seconds"])
 ARENA_ROUND_RETRY_SECONDS = int(ARENA_RULES["runtime"]["round_retry_seconds"])
 ARENA_REGISTRATION_SILVER_COST = int(ARENA_RULES["registration"]["registration_silver_cost"])
@@ -61,7 +63,7 @@ def refresh_arena_constants() -> None:
     """重新从 YAML 加载竞技场规则并更新模块级常量。"""
     global ARENA_RULES
     global ARENA_DAILY_PARTICIPATION_LIMIT, ARENA_MAX_GUESTS_PER_ENTRY, ARENA_TOURNAMENT_PLAYER_LIMIT
-    global ARENA_ROUND_INTERVAL_SECONDS, ARENA_COMPLETED_RETENTION_SECONDS, ARENA_ROUND_RETRY_SECONDS
+    global ARENA_ROUND_INTERVAL_SECONDS, ARENA_VIRTUAL_FILL_WAIT_SECONDS, ARENA_COMPLETED_RETENTION_SECONDS, ARENA_ROUND_RETRY_SECONDS
     global ARENA_REGISTRATION_SILVER_COST, ARENA_BASE_PARTICIPATION_COINS, ARENA_RANK_BONUS_COINS
     global ARENA_RECRUITING_LOCK_KEY, ARENA_RECRUITING_LOCK_TIMEOUT
 
@@ -74,6 +76,7 @@ def refresh_arena_constants() -> None:
         "ARENA_TOURNAMENT_PLAYER_LIMIT", ARENA_RULES["registration"]["tournament_player_limit"], minimum=2
     )
     ARENA_ROUND_INTERVAL_SECONDS = int(ARENA_RULES["runtime"]["round_interval_seconds"])
+    ARENA_VIRTUAL_FILL_WAIT_SECONDS = int(ARENA_RULES["runtime"]["virtual_fill_wait_seconds"])
     ARENA_COMPLETED_RETENTION_SECONDS = int(ARENA_RULES["runtime"]["completed_retention_seconds"])
     ARENA_ROUND_RETRY_SECONDS = int(ARENA_RULES["runtime"]["round_retry_seconds"])
     ARENA_REGISTRATION_SILVER_COST = int(ARENA_RULES["registration"]["registration_silver_cost"])
@@ -150,6 +153,7 @@ def _get_or_create_recruiting_tournament_locked() -> ArenaTournament:
             status=ArenaTournament.Status.RECRUITING,
             player_limit=ARENA_TOURNAMENT_PLAYER_LIMIT,
             round_interval_seconds=_round_interval_seconds(),
+            virtual_fill_at=timezone.now() + timedelta(seconds=ARENA_VIRTUAL_FILL_WAIT_SECONDS),
         )
     finally:
         release_best_effort_lock(
@@ -276,6 +280,31 @@ def start_ready_tournaments(limit: int = 20) -> int:
         if start_tournament_if_ready(ArenaTournament(id=tournament_id)):
             started_count += 1
     return started_count
+
+
+def start_due_virtual_backfill_tournaments(*, now: datetime | None = None, limit: int = 20) -> int:
+    now = now or timezone.now()
+    candidate_ids = list(
+        ArenaTournament.objects.filter(
+            status=ArenaTournament.Status.RECRUITING,
+            virtual_fill_completed=False,
+            virtual_fill_at__lte=now,
+        ).values_list("id", flat=True)[: max(1, int(limit))]
+    )
+    started = 0
+    for tournament_id in candidate_ids:
+        with transaction.atomic():
+            tournament = ArenaTournament.objects.select_for_update().filter(pk=tournament_id).first()
+            if not tournament or tournament.status != ArenaTournament.Status.RECRUITING:
+                continue
+            if tournament.virtual_fill_completed or not tournament.virtual_fill_at or tournament.virtual_fill_at > now:
+                continue
+            if backfill_tournament_locked(tournament) <= 0:
+                continue
+            tournament.virtual_fill_completed = True
+            tournament.save(update_fields=["virtual_fill_completed", "updated_at"])
+            started += int(_start_tournament_locked(tournament, now=now))
+    return started
 
 
 def _reward_for_rank(rank: int) -> int:

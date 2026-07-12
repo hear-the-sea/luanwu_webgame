@@ -98,10 +98,12 @@ def settle_coop_event_locked(
 ) -> None:
     rules = load_runtime_rules_for_event(base_rules, locked_event)
     damage_rows = aggregate_event_damage(report.rounds or [], boss_template_key=locked_event.boss_template_key)
-    total_damage = sum(row["total_damage"] for row in damage_rows.values()) or 1
+    real_entries = [entry for entry in registered_entries if entry.source == ArenaCoopEntry.Source.PLAYER]
+    virtual_entries = [entry for entry in registered_entries if entry.source == ArenaCoopEntry.Source.VIRTUAL]
+    total_damage = sum(damage_rows.get(entry.id, {}).get("total_damage", 0) for entry in real_entries) or 1
     ranked_rows: list[dict] = []
 
-    for entry in registered_entries:
+    for entry in real_entries:
         bucket = damage_rows.get(entry.id, {"total_damage": 0, "boss_damage": 0, "guard_damage": 0})
         share_bps = int(bucket["total_damage"] * 10000 / total_damage)
         ranked_rows.append(
@@ -119,7 +121,7 @@ def settle_coop_event_locked(
 
     boss_defeated = report.winner == "attacker"
     ranked_rows = rank_contribution_rows(ranked_rows)
-    ranked_entry_ids = [int(row["entry_id"]) for row in ranked_rows]
+    ranked_entry_ids = [entry.id for entry in registered_entries]
     entry_map = {entry.id: entry for entry in registered_entries}
 
     ArenaCoopContribution.objects.filter(event=locked_event).delete()
@@ -150,6 +152,21 @@ def settle_coop_event_locked(
                 reward_payload=reward_breakdown,
             )
         )
+    for entry in virtual_entries:
+        bucket = damage_rows.get(entry.id, {"total_damage": 0, "boss_damage": 0, "guard_damage": 0})
+        contribution_rows.append(
+            ArenaCoopContribution(
+                event=locked_event,
+                entry=entry,
+                total_damage=bucket["total_damage"],
+                boss_damage=bucket["boss_damage"],
+                guard_damage=bucket["guard_damage"],
+                effective_damage=bucket["total_damage"],
+                damage_share_bps=0,
+                damage_rank=None,
+                met_minimum_contribution=False,
+            )
+        )
     ArenaCoopContribution.objects.bulk_create(contribution_rows)
 
     locked_entries = list(
@@ -166,6 +183,8 @@ def settle_coop_event_locked(
         release_entry_guest_statuses(entry)
 
     for entry in locked_entries:
+        if entry.source != ArenaCoopEntry.Source.PLAYER:
+            continue
         locked_manor = Manor.objects.select_for_update().get(pk=entry.manor_id)
         contribution = contribution_map[entry.id]
         grant_coop_reward_locked(

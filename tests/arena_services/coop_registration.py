@@ -1,7 +1,11 @@
 from __future__ import annotations
 
-import pytest
+from datetime import timedelta
 
+import pytest
+from django.utils import timezone
+
+import gameplay.services.arena.coop_core as arena_coop_core
 from core.exceptions import ArenaCancellationError
 from gameplay.models import ArenaCoopEntry, ArenaCoopEvent
 from gameplay.services.arena.coop_core import cancel_arena_coop_entry, register_arena_coop_entry
@@ -27,6 +31,27 @@ def test_register_arena_coop_entry_creates_recruiting_event_and_snapshots():
     assert result.event.boss_initial_hp == 300000
     assert result.event.boss_remaining_hp == 300000
     assert result.event.daily_rule_snapshot["contribution"]["minimum_share_bps"] > 0
+
+
+@pytest.mark.django_db
+def test_register_arena_coop_entry_persists_eight_hour_virtual_fill_deadline():
+    user = User.objects.create_user(username="arena_coop_virtual_deadline", password="pass123")
+    manor = ensure_manor(user)
+    fund_manor(manor)
+    template = create_guest_template("arena_coop_virtual_deadline_tpl")
+    guests = [create_guest(manor, template, suffix) for suffix in ["A", "B", "C"]]
+    before = timezone.now()
+
+    result = register_arena_coop_entry(manor, [guest.id for guest in guests])
+
+    after = timezone.now()
+    assert result.event.virtual_fill_at is not None
+    assert (
+        before + timedelta(seconds=arena_coop_core.ARENA_COOP_VIRTUAL_FILL_WAIT_SECONDS) <= result.event.virtual_fill_at
+    )
+    assert result.event.virtual_fill_at <= after + timedelta(
+        seconds=arena_coop_core.ARENA_COOP_VIRTUAL_FILL_WAIT_SECONDS
+    )
 
 
 @pytest.mark.django_db

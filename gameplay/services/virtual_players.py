@@ -1169,12 +1169,11 @@ def _backfill_historical_timestamps(*, user: Any, manor: Manor, profile: BotProf
     Guest.objects.filter(manor=manor).update(created_at=historical_created_at, last_hp_recovery_at=manor.last_active_at)
     GearItem.objects.filter(manor=manor).update(acquired_at=historical_created_at)
     InventoryItem.objects.filter(manor=manor).update(created_at=historical_created_at, updated_at=historical_created_at)
-    BotProfile.objects.filter(pk=profile.pk).update(created_at=historical_created_at, updated_at=now)
+    BotProfile.objects.filter(pk=profile.pk).update(updated_at=now)
 
     user.date_joined = historical_created_at
     user.last_login = manor.last_active_at
     manor.created_at = historical_created_at
-    profile.created_at = historical_created_at
 
 
 def _lifecycle_dates(now, rng: random.Random, config: dict[str, Any]) -> tuple[Any, Any, Any]:
@@ -1208,12 +1207,26 @@ def create_virtual_player(
         guest_count=2,
         guest_level=3,
     )
-    starting_projection = BotProjectionConfig(
-        prestige=min(max(0, int(projection.prestige)), INITIAL_BOT_PRESTIGE),
-        building_level=INITIAL_BOT_BUILDING_LEVEL,
-        guest_count=min(max(0, int(projection.guest_count)), INITIAL_BOT_GUEST_COUNT),
-        guest_level=INITIAL_BOT_GUEST_LEVEL,
-    )
+    target_band = _prestige_bands(config).get(prestige_band)
+    target_low = target_band[0] if target_band is not None else 0
+    if target_low > 0:
+        target_high = target_band[1] if target_band is not None else None
+        projected_prestige = max(target_low, int(projection.prestige))
+        if target_high is not None:
+            projected_prestige = min(projected_prestige, target_high - 1)
+        starting_projection = BotProjectionConfig(
+            prestige=projected_prestige,
+            building_level=max(1, int(projection.building_level)),
+            guest_count=max(0, int(projection.guest_count)),
+            guest_level=max(1, int(projection.guest_level)),
+        )
+    else:
+        starting_projection = BotProjectionConfig(
+            prestige=min(max(0, int(projection.prestige)), INITIAL_BOT_PRESTIGE),
+            building_level=INITIAL_BOT_BUILDING_LEVEL,
+            guest_count=min(max(0, int(projection.guest_count)), INITIAL_BOT_GUEST_COUNT),
+            guest_level=INITIAL_BOT_GUEST_LEVEL,
+        )
 
     user = _create_bot_user(region=region, growth_seed=seed)
     manor = user.manor
@@ -1426,7 +1439,7 @@ def _has_long_no_interaction(profile: BotProfile, *, now, config: dict[str, Any]
     if days <= 0:
         return False
     cutoff = now - timedelta(days=days)
-    if profile.last_planned_at and profile.last_planned_at > cutoff:
+    if profile.created_at > cutoff:
         return False
     return not (
         RaidRun.objects.filter(defender=profile.manor, started_at__gte=cutoff).exists()

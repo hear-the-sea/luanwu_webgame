@@ -124,7 +124,7 @@ def test_public_manor_info_does_not_record_backfill_demand_from_read_path(settin
 
 
 @pytest.mark.django_db
-def test_start_scout_records_backfill_demand_without_creating_bot(settings, django_user_model, monkeypatch):
+def test_start_scout_does_not_record_population_backfill_demand(settings, django_user_model, monkeypatch):
     from gameplay.services.raid.scout import start_scout
     from gameplay.services.virtual_players import consume_virtual_player_backfill_demands
 
@@ -148,9 +148,57 @@ def test_start_scout_records_backfill_demand_without_creating_bot(settings, djan
     start_scout(attacker, defender)
 
     assert BotProfile.objects.count() == 0
-    assert consume_virtual_player_backfill_demands(limit=10) == [
-        {"region": "north", "prestige_band": "junior", "needed": 2}
-    ]
+    assert consume_virtual_player_backfill_demands(limit=10) == []
+
+
+@pytest.mark.django_db
+def test_high_band_virtual_player_starts_in_its_actual_prestige_band(settings):
+    from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
+
+    _bootstrap_building_types()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "prestige_bands": {"newbie": [0, 500], "senior": [8000, 30000]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": []},
+    }
+
+    profile = create_virtual_player(
+        region="north",
+        prestige_band="senior",
+        growth_seed=7711,
+        projection=BotProjectionConfig(prestige=9000, building_level=14, guest_count=0, guest_level=14),
+    )
+
+    profile.refresh_from_db()
+    profile.manor.refresh_from_db()
+    assert profile.current_prestige_band == "senior"
+    assert profile.manor.prestige >= 8000
+
+
+@pytest.mark.django_db
+def test_retired_virtual_player_is_not_listed_or_attackable(settings, django_user_model):
+    from gameplay.services.raid.map_search import search_manors_by_region
+    from gameplay.services.raid.utils import can_attack_target
+    from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
+
+    _bootstrap_building_types()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "prestige_bands": {"newbie": [0, 500]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": []},
+    }
+    attacker = _create_real_manor(django_user_model, username="retired_bot_attacker", region="north", prestige=100)
+    profile = create_virtual_player(
+        region="north",
+        prestige_band="newbie",
+        growth_seed=7712,
+        projection=BotProjectionConfig(prestige=100, building_level=1, guest_count=0, guest_level=1),
+    )
+    BotProfile.objects.filter(pk=profile.pk).update(state=BotProfile.State.RETIRED)
+    profile.refresh_from_db()
+
+    rows, _total = search_manors_by_region(attacker, "north", page=1, page_size=20)
+
+    assert profile.manor_id not in {row["id"] for row in rows}
+    assert can_attack_target(attacker, profile.manor)[0] is False
 
 
 @pytest.mark.django_db
@@ -182,7 +230,7 @@ def test_population_roll_consumes_backfill_demand_for_region_and_band(settings, 
     assert len(created) == 2
     assert {profile.manor.region for profile in created} == {"south"}
     assert {profile.prestige_band for profile in created} == {"junior"}
-    assert all(0 <= profile.manor.prestige <= 250 for profile in created)
+    assert all(500 <= profile.manor.prestige < 2000 for profile in created)
     assert consume_virtual_player_backfill_demands(limit=10) == []
     backfill_log = next(
         record
@@ -475,6 +523,7 @@ def test_due_maintenance_moves_profiles_through_slowing_stale_and_retired(settin
     _bootstrap_building_types()
     settings.VIRTUAL_PLAYER_CONFIG = {
         "population": {"min_per_region": 0, "min_attackable_per_band": 0, "hard_cap": 10},
+        "lifecycle": {"stale_no_interaction_days": 0},
         "prestige_bands": {"junior": [500, 2000]},
         "projection": {"guest_template_keys": [], "gear_template_keys": []},
     }
@@ -578,6 +627,7 @@ def test_due_maintenance_marks_bot_stale_after_long_no_interaction(settings):
     )
     BotProfile.objects.filter(pk=profile.pk).update(
         next_growth_at=now - timedelta(minutes=1),
+        created_at=now - timedelta(days=60),
         last_planned_at=now - timedelta(days=60),
     )
     ScoutRecord.objects.filter(defender=profile.manor).delete()

@@ -144,6 +144,22 @@ def test_register_arena_entry_auto_starts_when_reaching_player_limit():
 
 
 @pytest.mark.django_db
+def test_register_arena_entry_persists_five_hour_virtual_fill_deadline():
+    user = User.objects.create_user(username="arena_virtual_deadline", password="pass123")
+    manor = ensure_manor(user)
+    fund_manor(manor)
+    guest = create_guest(manor, create_guest_template("arena_virtual_deadline_tpl"), "A")
+    before = timezone.now()
+
+    result = register_arena_entry(manor, [guest.id])
+
+    after = timezone.now()
+    assert result.tournament.virtual_fill_at is not None
+    assert before + timedelta(seconds=arena_core.ARENA_VIRTUAL_FILL_WAIT_SECONDS) <= result.tournament.virtual_fill_at
+    assert result.tournament.virtual_fill_at <= after + timedelta(seconds=arena_core.ARENA_VIRTUAL_FILL_WAIT_SECONDS)
+
+
+@pytest.mark.django_db
 def test_cancel_arena_entry_releases_guests_and_does_not_consume_daily_quota():
     user = User.objects.create_user(
         username="arena_cancel_quota",

@@ -375,22 +375,22 @@ def test_create_virtual_player_projects_real_manor_growth_data(settings, caplog)
     assert profile.abandon_at > now
     assert profile.retire_at > profile.abandon_at
     assert manor.region == "north"
-    assert manor.prestige == 100
+    assert manor.prestige == 1500
     assert manor.newbie_protection_until is None
     assert manor.user.has_usable_password() is False
 
     silver_vault = manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT)
     granary = manor.buildings.get(building_type__key=BuildingKeys.GRANARY)
-    assert silver_vault.level == 1
-    assert granary.level == 1
-    assert manor.silver_capacity == calculate_building_capacity(1, is_silver_vault=True)
-    assert manor.grain_capacity == calculate_building_capacity(1, is_silver_vault=False)
+    assert silver_vault.level == 6
+    assert granary.level == 6
+    assert manor.silver_capacity == calculate_building_capacity(6, is_silver_vault=True)
+    assert manor.grain_capacity == calculate_building_capacity(6, is_silver_vault=False)
     assert manor.silver == 5000
     assert manor.grain == 1200
 
     assert PlayerTechnology.objects.filter(manor=manor, level__gt=0).count() == 0
-    assert Guest.objects.filter(manor=manor, level=1).count() == 1
-    assert GearItem.objects.filter(manor=manor, guest__manor=manor).count() == 1
+    assert Guest.objects.filter(manor=manor, level=8).count() == 2
+    assert GearItem.objects.filter(manor=manor, guest__manor=manor).count() == 2
     assert all(guest.skills.exists() for guest in manor.guests.all())
     assert manor.troops.filter(count__gt=0).exists()
     created_log = next(
@@ -399,13 +399,13 @@ def test_create_virtual_player_projects_real_manor_growth_data(settings, caplog)
     assert created_log.region == "north"
     assert created_log.prestige_band == "junior"
     assert profile.target_prestige_band == "junior"
-    assert profile.current_prestige_band == "newbie"
+    assert profile.current_prestige_band == "junior"
     assert created_log.archetype == BotProfile.Archetype.DOJO
     assert created_log.manor_id == manor.id
 
 
 @pytest.mark.django_db
-def test_create_virtual_player_starts_from_newbie_baseline_even_with_high_projection(settings):
+def test_create_virtual_player_projects_the_requested_high_prestige_band(settings):
     from gameplay.models import BotProfile
     from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
 
@@ -437,12 +437,12 @@ def test_create_virtual_player_starts_from_newbie_baseline_even_with_high_projec
     )
 
     manor = profile.manor
-    assert manor.prestige <= 250
+    assert manor.prestige == 12_000
     assert manor.silver == 5000
     assert manor.grain == 1200
-    assert manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 1
-    assert manor.guests.count() <= 1
-    assert all(guest.level == 1 for guest in manor.guests.all())
+    assert manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 10
+    assert manor.guests.count() == 5
+    assert all(guest.level == 18 for guest in manor.guests.all())
     assert InventoryItem.objects.filter(manor=manor, template=expensive_loot).count() == 0
 
 
@@ -830,7 +830,7 @@ def test_virtual_player_all_projection_pools_use_available_templates(settings):
     _run_due_bot_maintenance(profile, now=timezone.now(), growth_stage=3)
 
     guest_keys = set(profile.manor.guests.values_list("template__key", flat=True))
-    assert len(guest_keys) == 1
+    assert len(guest_keys) == 2
     assert "__all__" not in guest_keys
     assert guest_keys <= set(GuestTemplate.objects.values_list("key", flat=True))
     gear_keys = set(GearItem.objects.filter(manor=profile.manor).values_list("template__key", flat=True))
@@ -1127,7 +1127,7 @@ def test_due_virtual_player_maintenance_samples_real_player_projection(settings,
     assert profile.growth_stage == 2
     assert profile.manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 2
     assert profile.manor.guests.count() == 2
-    assert set(profile.manor.guests.values_list("level", flat=True)) == {2}
+    assert set(profile.manor.guests.values_list("level", flat=True)) == {2, 4}
     assert PlayerTechnology.objects.get(manor=profile.manor, tech_key="dao_attack").level == 1
 
 
@@ -1822,7 +1822,7 @@ def test_population_roll_spreads_global_deficit_across_regions_and_bands(setting
 
 
 @pytest.mark.django_db
-def test_population_roll_counts_target_band_instead_of_current_prestige(settings):
+def test_population_roll_counts_actual_current_prestige_band(settings):
     from gameplay.models import BotProfile
     from gameplay.services.virtual_players import (
         BotProjectionConfig,
@@ -1852,7 +1852,7 @@ def test_population_roll_counts_target_band_instead_of_current_prestige(settings
         projection=BotProjectionConfig(prestige=1900, building_level=3, guest_count=0, guest_level=1),
     )
 
-    assert BotProfile.objects.get(target_prestige_band="junior").current_prestige_band == "newbie"
+    assert BotProfile.objects.get(target_prestige_band="junior").current_prestige_band == "junior"
     assert roll_virtual_player_population(limit=20, now=now) == 19
     assert BotProfile.objects.filter(target_prestige_band="junior", manor__region="north").count() == 1
 
@@ -2211,7 +2211,7 @@ def test_due_maintenance_keeps_target_prestige_band_while_bot_grows(settings):
     profile.next_growth_at = now - timedelta(minutes=1)
     profile.save(update_fields=["next_growth_at"])
 
-    assert profile.manor.prestige < 500
+    assert profile.manor.prestige == 1900
     assert maintain_due_virtual_players(now=now, limit=10) == 1
 
     profile.refresh_from_db()
@@ -2244,7 +2244,7 @@ def test_virtual_player_tracks_target_and_current_prestige_bands_separately(sett
     )
 
     assert profile.target_prestige_band == "junior"
-    assert profile.current_prestige_band == "newbie"
+    assert profile.current_prestige_band == "junior"
 
     profile.manor.prestige = 2500
     profile.manor.save(update_fields=["prestige"])

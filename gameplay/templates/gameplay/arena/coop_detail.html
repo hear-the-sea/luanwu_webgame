@@ -15,6 +15,17 @@
             {% endif %}
         </div>
 
+        {% if virtual_contribution_rows %}
+        <div class="mt-5 text-sm">
+            <p class="font-semibold mb-2">系统参赛者伤害</p>
+            <div class="space-y-1 text-text-muted">
+                {% for row in virtual_contribution_rows %}
+                <p>{{ row.manor_name }}：总伤害 {{ row.total_damage }}，Boss 伤害 {{ row.boss_damage }}</p>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>

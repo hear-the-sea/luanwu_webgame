@@ -19,7 +19,7 @@ from django.utils import timezone
 from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
 from ...constants import PVPConstants
-from ...models import InventoryItem, Manor, RaidRun
+from ...models import BotProfile, InventoryItem, Manor, RaidRun
 
 logger = logging.getLogger(__name__)
 
@@ -187,6 +187,11 @@ def can_attack_target(
         return False, "免战牌保护期内无法发起攻击"
 
     # 检查防守方保护状态
+    if BotProfile.objects.filter(
+        manor=defender,
+        state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED],
+    ).exists():
+        return False, "该虚拟玩家已退场"
     if defender.is_under_newbie_protection:
         return False, "对方处于新手保护期"
     if check_defeat_protection and defender.is_under_defeat_protection:

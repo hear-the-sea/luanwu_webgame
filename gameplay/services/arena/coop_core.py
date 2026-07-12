@@ -27,6 +27,7 @@ from .coop_lifecycle import (
 )
 from .coop_rules import load_arena_coop_rules
 from .coop_settlement import settle_coop_event_locked
+from .virtual_backfill import backfill_coop_event_locked
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,7 @@ ARENA_COOP_PREPARE_DURATION_SECONDS = _load_positive_int_setting(
     ARENA_COOP_RULES["registration"]["prepare_duration_seconds"],
     minimum=1,
 )
+ARENA_COOP_VIRTUAL_FILL_WAIT_SECONDS = int(ARENA_COOP_RULES["runtime"]["virtual_fill_wait_seconds"])
 ARENA_COOP_COMPLETED_RETENTION_SECONDS = int(ARENA_COOP_RULES["runtime"]["completed_retention_seconds"])
 ARENA_COOP_MINIMUM_SHARE_BPS = int(ARENA_COOP_RULES["contribution"]["minimum_share_bps"])
 ARENA_COOP_REGISTRATION_SILVER_COST = int(ARENA_COOP_RULES["registration"]["registration_silver_cost"])
@@ -74,6 +76,7 @@ def refresh_arena_coop_constants() -> None:
     global ARENA_COOP_MAX_GUESTS_PER_ENTRY
     global ARENA_COOP_DAILY_PARTICIPATION_LIMIT
     global ARENA_COOP_PREPARE_DURATION_SECONDS
+    global ARENA_COOP_VIRTUAL_FILL_WAIT_SECONDS
     global ARENA_COOP_COMPLETED_RETENTION_SECONDS
     global ARENA_COOP_MINIMUM_SHARE_BPS
     global ARENA_COOP_REGISTRATION_SILVER_COST
@@ -101,6 +104,7 @@ def refresh_arena_coop_constants() -> None:
         ARENA_COOP_RULES["registration"]["prepare_duration_seconds"],
         minimum=1,
     )
+    ARENA_COOP_VIRTUAL_FILL_WAIT_SECONDS = int(ARENA_COOP_RULES["runtime"]["virtual_fill_wait_seconds"])
     ARENA_COOP_COMPLETED_RETENTION_SECONDS = int(ARENA_COOP_RULES["runtime"]["completed_retention_seconds"])
     ARENA_COOP_MINIMUM_SHARE_BPS = int(ARENA_COOP_RULES["contribution"]["minimum_share_bps"])
     ARENA_COOP_REGISTRATION_SILVER_COST = int(ARENA_COOP_RULES["registration"]["registration_silver_cost"])
@@ -159,6 +163,7 @@ def register_arena_coop_entry(manor: Manor, guest_ids: Iterable[int]) -> ArenaCo
         recruiting_lock_key=ARENA_COOP_RECRUITING_LOCK_KEY,
         recruiting_lock_timeout=ARENA_COOP_RECRUITING_LOCK_TIMEOUT,
         resolve_boss_initial_hp_fn=resolve_boss_initial_hp,
+        virtual_fill_wait_seconds=ARENA_COOP_VIRTUAL_FILL_WAIT_SECONDS,
     )
     entry = upsert_entry_with_snapshots_locked(event, locked_manor, selected_guests)
     entry_count = event.entries.filter(status=ArenaCoopEntry.Status.REGISTERED).count()
@@ -215,6 +220,31 @@ def cancel_arena_coop_entry(manor: Manor) -> int:
         today_bounds_fn=_today_bounds,
     )
     return 1
+
+
+def start_due_virtual_backfill_coop_events(*, now: datetime | None = None, limit: int = 20) -> int:
+    now = now or timezone.now()
+    event_ids = list(
+        ArenaCoopEvent.objects.filter(
+            status=ArenaCoopEvent.Status.RECRUITING,
+            virtual_fill_completed=False,
+            virtual_fill_at__lte=now,
+        ).values_list("id", flat=True)[: max(1, int(limit))]
+    )
+    prepared = 0
+    for event_id in event_ids:
+        with transaction.atomic():
+            event = ArenaCoopEvent.objects.select_for_update().filter(pk=event_id).first()
+            if not event or event.status != ArenaCoopEvent.Status.RECRUITING:
+                continue
+            if event.virtual_fill_completed or not event.virtual_fill_at or event.virtual_fill_at > now:
+                continue
+            if backfill_coop_event_locked(event) <= 0:
+                continue
+            event.virtual_fill_completed = True
+            event.save(update_fields=["virtual_fill_completed", "updated_at"])
+            prepared += int(move_event_to_preparing_locked(event, now=now))
+    return prepared
 
 
 def run_due_arena_coop_events(*, now: datetime | None = None, limit: int = 20) -> int:

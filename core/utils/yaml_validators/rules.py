@@ -38,6 +38,27 @@ def validate_arena_rules(data: dict, *, file: str = "arena_rules.yaml") -> Valid
                     val, result=result, file=file, path="registration", field_name=int_field, allow_zero=False
                 )
 
+    runtime = data.get("runtime")
+    if isinstance(runtime, dict):
+        virtual_fill_wait = runtime.get("virtual_fill_wait_seconds")
+        if virtual_fill_wait is not None:
+            _check_type(
+                virtual_fill_wait,
+                int,
+                result=result,
+                file=file,
+                path="runtime",
+                field_name="virtual_fill_wait_seconds",
+            )
+            _check_positive(
+                virtual_fill_wait,
+                result=result,
+                file=file,
+                path="runtime",
+                field_name="virtual_fill_wait_seconds",
+                allow_zero=False,
+            )
+
     rewards = data.get("rewards")
     if isinstance(rewards, dict):
         base_coins = rewards.get("base_participation_coins")
@@ -104,7 +125,7 @@ def validate_arena_coop_rules(data: dict, *, file: str = "arena_coop_rules.yaml"
 
     runtime = data.get("runtime")
     if isinstance(runtime, dict):
-        for field_name in ("auto_start_scan_seconds", "completed_retention_seconds"):
+        for field_name in ("auto_start_scan_seconds", "virtual_fill_wait_seconds", "completed_retention_seconds"):
             value = runtime.get(field_name)
             if value is None:
                 continue

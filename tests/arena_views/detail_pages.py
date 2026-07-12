@@ -148,6 +148,86 @@ def test_arena_event_detail_view_renders(arena_client, django_user_model):
 
 
 @pytest.mark.django_db
+def test_arena_event_detail_marks_virtual_opponent(arena_client, django_user_model):
+    client, manor = arena_client
+    virtual_user = django_user_model.objects.create_user(
+        username="arena_detail_virtual_opponent",
+        password="pass123",
+        email="arena_detail_virtual_opponent@test.local",
+    )
+    now = timezone.now()
+    tournament = ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RUNNING,
+        player_limit=2,
+        current_round=1,
+        started_at=now,
+        next_round_at=now + timedelta(minutes=5),
+    )
+    player_entry = ArenaEntry.objects.create(tournament=tournament, manor=manor)
+    virtual_entry = ArenaEntry.objects.create(
+        tournament=tournament,
+        manor=ensure_manor(virtual_user),
+        source=ArenaEntry.Source.VIRTUAL,
+    )
+    ArenaMatch.objects.create(
+        tournament=tournament,
+        round_number=1,
+        match_index=0,
+        attacker_entry=player_entry,
+        defender_entry=virtual_entry,
+        status=ArenaMatch.Status.SCHEDULED,
+    )
+
+    response = client.get(reverse("gameplay:arena_event_detail", args=[tournament.id]))
+
+    assert response.status_code == 200
+    assert "系统参赛者" in response.content.decode("utf-8")
+
+
+@pytest.mark.django_db
+def test_arena_coop_detail_keeps_virtual_damage_out_of_real_reward_ranking(arena_client, django_user_model):
+    client, manor = arena_client
+    virtual_user = django_user_model.objects.create_user(
+        username="arena_coop_detail_virtual",
+        password="pass123",
+        email="arena_coop_detail_virtual@test.local",
+    )
+    event = ArenaCoopEvent.objects.create(status=ArenaCoopEvent.Status.COMPLETED, player_limit=2)
+    player_entry = ArenaCoopEntry.objects.create(event=event, manor=manor, status=ArenaCoopEntry.Status.COMPLETED)
+    virtual_entry = ArenaCoopEntry.objects.create(
+        event=event,
+        manor=ensure_manor(virtual_user),
+        status=ArenaCoopEntry.Status.COMPLETED,
+        source=ArenaCoopEntry.Source.VIRTUAL,
+    )
+    ArenaCoopContribution.objects.create(
+        event=event,
+        entry=player_entry,
+        total_damage=100,
+        boss_damage=80,
+        effective_damage=100,
+        damage_rank=1,
+        total_coins=50,
+    )
+    ArenaCoopContribution.objects.create(
+        event=event,
+        entry=virtual_entry,
+        total_damage=300,
+        boss_damage=250,
+        effective_damage=300,
+    )
+
+    response = client.get(reverse("gameplay:arena_coop_detail", args=[event.id]))
+
+    assert response.status_code == 200
+    assert "系统参赛者伤害" in response.content.decode("utf-8")
+    assert [row["manor_name"] for row in response.context["contribution_rows"]] == [manor.display_name]
+    assert [row["manor_name"] for row in response.context["virtual_contribution_rows"]] == [
+        virtual_entry.manor.display_name
+    ]
+
+
+@pytest.mark.django_db
 def test_arena_event_detail_view_syncs_resources_before_loading_context(arena_client, monkeypatch):
     client, manor = arena_client
     calls: list[str] = []

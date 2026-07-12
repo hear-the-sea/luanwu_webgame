@@ -99,7 +99,7 @@ def finalize_tournament_locked(
     ranked_entries = calculate_ranked_entries(entries, winner_entry)
     for idx, entry in enumerate(ranked_entries, start=1):
         entry.final_rank = idx
-        entry.coin_reward = reward_for_rank(idx)
+        entry.coin_reward = reward_for_rank(idx) if entry.source == ArenaEntry.Source.PLAYER else 0
         if idx == 1:
             entry.status = ArenaEntry.Status.WINNER
         elif entry.status != ArenaEntry.Status.ELIMINATED:
@@ -108,6 +108,8 @@ def finalize_tournament_locked(
     ArenaEntry.objects.bulk_update(ranked_entries, ["final_rank", "coin_reward", "status"])
 
     for entry in ranked_entries:
+        if entry.source != ArenaEntry.Source.PLAYER:
+            continue
         Manor.objects.filter(pk=entry.manor_id).update(arena_coins=F("arena_coins") + entry.coin_reward)
         title = "竞技场结算奖励"
         body = f"本场排名第 {entry.final_rank}，获得角斗币 {entry.coin_reward}。"

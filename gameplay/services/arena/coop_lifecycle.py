@@ -123,6 +123,7 @@ def get_or_create_recruiting_event_locked(
     recruiting_lock_key: str,
     recruiting_lock_timeout: int,
     resolve_boss_initial_hp_fn: Callable[[str], int],
+    virtual_fill_wait_seconds: int,
 ) -> ArenaCoopEvent:
     event = (
         ArenaCoopEvent.objects.select_for_update()
@@ -189,6 +190,7 @@ def get_or_create_recruiting_event_locked(
             player_limit=player_limit,
             guest_limit_per_entry=guest_limit_per_entry,
             prepare_duration_seconds=prepare_duration_seconds,
+            virtual_fill_at=timezone.now() + timedelta(seconds=max(1, int(virtual_fill_wait_seconds))),
             boss_name=str(base_rules["enemy"]["boss"]["display_name"]),
             boss_template_key=boss_template_key,
             boss_initial_hp=boss_initial_hp,

@@ -26,6 +26,7 @@ from core.utils.locked_actions import (
 from core.utils.rate_limit import rate_limit_json
 from core.utils.view_error_mapping import json_error_response_for_exception
 from gameplay.constants import REGION_CHOICES, UIConstants
+from gameplay.models import BotProfile
 from gameplay.models import Manor as ManorModel
 from gameplay.models import RaidRun
 from gameplay.selectors.map import get_map_context, get_raid_config_context
@@ -221,7 +222,10 @@ class RaidConfigView(LoginRequiredMixin, TemplateView):
         target_id = self.kwargs.get("target_id")
 
         # 获取目标庄园
-        target_manor = get_object_or_404(ManorModel, pk=target_id)
+        target_manor = get_object_or_404(
+            ManorModel.objects.exclude(bot_profile__state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED]),
+            pk=target_id,
+        )
 
         context.update(get_raid_config_context(manor, target_manor))
 
@@ -262,7 +266,11 @@ def manor_detail_api(request: HttpRequest, manor_id: int) -> JsonResponse:
 
     try:
         # 优化：使用 select_related 预加载用户信息
-        target_manor = ManorModel.objects.select_related("user").get(pk=manor_id)
+        target_manor = (
+            ManorModel.objects.select_related("user")
+            .exclude(bot_profile__state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED])
+            .get(pk=manor_id)
+        )
     except ManorModel.DoesNotExist:
         return json_error("庄园不存在", status=404)
 

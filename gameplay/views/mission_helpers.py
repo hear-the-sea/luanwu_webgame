@@ -448,12 +448,14 @@ def build_drop_lists(
         rarity = resolve_drop_pool_rarity(val, loot_rarities) or loot_rarities.get(key) or "default"
 
         is_choice_pool = resolve_drop_pool_label(val, drop_labels, item_templates, book_labels) is not None
+        choice_keys = iter_choice_pool_keys(val) if is_choice_pool else []
+        display_key = choice_keys[0] if len(choice_keys) == 1 else key
         if count is not None and count >= 1 and not (is_choice_pool and count == 1):
             display_label = f"{label} x{count}"
         else:
             display_label = label
         drop_item = build_drop_display_item(
-            key=key,
+            key=display_key,
             name=label,
             label=display_label,
             count=count,
@@ -483,7 +485,20 @@ def build_drop_lists(
             )
         )
 
-    return guaranteed_drops, probability_drops
+    preview_keys: set[str] = set()
+    unique_guaranteed_drops: list[dict[str, Any]] = []
+    unique_probability_drops: list[dict[str, Any]] = []
+    for drops, unique_drops in (
+        (guaranteed_drops, unique_guaranteed_drops),
+        (probability_drops, unique_probability_drops),
+    ):
+        for drop in drops:
+            if drop["key"] in preview_keys:
+                continue
+            preview_keys.add(drop["key"])
+            unique_drops.append(drop)
+
+    return unique_guaranteed_drops, unique_probability_drops
 
 
 def build_entry_cost_list(

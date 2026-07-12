@@ -17,6 +17,8 @@ class ArenaTournament(models.Model):
     round_interval_seconds = models.PositiveIntegerField(default=600)
     current_round = models.PositiveIntegerField(default=0)
     next_round_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    virtual_fill_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    virtual_fill_completed = models.BooleanField(default=False)
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     winner_entry = models.ForeignKey(
@@ -42,6 +44,7 @@ class ArenaTournament(models.Model):
         ]
         indexes = [
             models.Index(fields=["status", "next_round_at"], name="arena_tour_status_next_idx"),
+            models.Index(fields=["status", "virtual_fill_at"], name="arena_tour_status_fill_idx"),
         ]
 
     def __str__(self) -> str:
@@ -56,9 +59,14 @@ class ArenaEntry(models.Model):
         ELIMINATED = "eliminated", "已淘汰"
         WINNER = "winner", "冠军"
 
+    class Source(models.TextChoices):
+        PLAYER = "player", "玩家"
+        VIRTUAL = "virtual", "虚拟"
+
     tournament = models.ForeignKey("gameplay.ArenaTournament", on_delete=models.CASCADE, related_name="entries")
     manor = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="arena_entries")
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.REGISTERED, db_index=True)
+    source = models.CharField(max_length=16, choices=Source.choices, default=Source.PLAYER, db_index=True)
     eliminated_round = models.PositiveIntegerField(null=True, blank=True)
     final_rank = models.PositiveIntegerField(null=True, blank=True, db_index=True)
     coin_reward = models.PositiveIntegerField(default=0)
@@ -85,7 +93,13 @@ class ArenaEntryGuest(models.Model):
     """参赛名单中的门客快照关联。"""
 
     entry = models.ForeignKey("gameplay.ArenaEntry", on_delete=models.CASCADE, related_name="entry_guests")
-    guest = models.ForeignKey("guests.Guest", on_delete=models.CASCADE, related_name="arena_entry_links")
+    guest = models.ForeignKey(
+        "guests.Guest",
+        on_delete=models.CASCADE,
+        related_name="arena_entry_links",
+        null=True,
+        blank=True,
+    )
     snapshot = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

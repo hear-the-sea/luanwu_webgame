@@ -18,6 +18,8 @@ class ArenaCoopEvent(models.Model):
     guest_limit_per_entry = models.PositiveSmallIntegerField(default=3)
     prepare_duration_seconds = models.PositiveIntegerField(default=120)
     prepare_ends_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    virtual_fill_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    virtual_fill_completed = models.BooleanField(default=False)
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     battle_report = models.ForeignKey(
@@ -51,6 +53,7 @@ class ArenaCoopEvent(models.Model):
         ]
         indexes = [
             models.Index(fields=["status", "prepare_ends_at"], name="arena_coop_status_prepare_idx"),
+            models.Index(fields=["status", "virtual_fill_at"], name="arena_coop_status_fill_idx"),
         ]
 
     def __str__(self) -> str:
@@ -65,9 +68,14 @@ class ArenaCoopEntry(models.Model):
         CANCELLED = "cancelled", "已撤销"
         COMPLETED = "completed", "已完成"
 
+    class Source(models.TextChoices):
+        PLAYER = "player", "玩家"
+        VIRTUAL = "virtual", "虚拟"
+
     event = models.ForeignKey("gameplay.ArenaCoopEvent", on_delete=models.CASCADE, related_name="entries")
     manor = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="arena_coop_entries")
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.REGISTERED, db_index=True)
+    source = models.CharField(max_length=16, choices=Source.choices, default=Source.PLAYER, db_index=True)
     cancelled_at = models.DateTimeField(null=True, blank=True)
     seed_order = models.PositiveSmallIntegerField(default=0)
     joined_at = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -91,7 +99,13 @@ class ArenaCoopEntryGuest(models.Model):
     """共斗报名中的门客快照。"""
 
     entry = models.ForeignKey("gameplay.ArenaCoopEntry", on_delete=models.CASCADE, related_name="entry_guests")
-    guest = models.ForeignKey("guests.Guest", on_delete=models.CASCADE, related_name="arena_coop_entry_links")
+    guest = models.ForeignKey(
+        "guests.Guest",
+        on_delete=models.CASCADE,
+        related_name="arena_coop_entry_links",
+        null=True,
+        blank=True,
+    )
     slot_index = models.PositiveSmallIntegerField(default=0)
     snapshot = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

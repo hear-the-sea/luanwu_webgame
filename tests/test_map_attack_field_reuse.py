@@ -4,8 +4,10 @@ from types import SimpleNamespace
 
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 
 import gameplay.selectors.map as map_selector
+from gameplay.models import BotProfile
 from gameplay.services.manor.core import ensure_manor
 
 
@@ -75,3 +77,29 @@ def test_manor_detail_api_reuses_attack_fields_from_public_info(monkeypatch, dja
     assert payload["success"] is True
     assert payload["can_attack"] is False
     assert payload["attack_reason"] == "cached"
+
+
+@pytest.mark.django_db
+def test_manor_detail_api_hides_retired_virtual_player(django_user_model, client):
+    viewer_user = django_user_model.objects.create_user(username="map_detail_viewer", password="pass123")
+    viewer_manor = ensure_manor(viewer_user)
+    retired_user = django_user_model.objects.create_user(username="map_detail_retired", password="pass123")
+    retired_manor = ensure_manor(retired_user)
+    now = timezone.now()
+    BotProfile.objects.create(
+        manor=retired_manor,
+        state=BotProfile.State.RETIRED,
+        prestige_band="newbie",
+        target_prestige_band="newbie",
+        current_prestige_band="newbie",
+        growth_seed=retired_manor.id,
+        next_growth_at=now,
+        abandon_at=now,
+        retire_at=now,
+    )
+    client.force_login(viewer_user)
+
+    response = client.get(reverse("gameplay:manor_detail_api", kwargs={"manor_id": retired_manor.id}))
+
+    assert viewer_manor.id != retired_manor.id
+    assert response.status_code == 404

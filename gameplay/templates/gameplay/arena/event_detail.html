@@ -44,6 +44,9 @@
                                 {% if row.left_is_mine %}
                                 <span class="tw-pill rarity-blue ml-1">我</span>
                                 {% endif %}
+                                {% if row.left_is_virtual %}
+                                <span class="tw-pill rarity-gray ml-1">系统参赛者</span>
+                                {% endif %}
                                 {% if row.left_outcome %}
                                 <span class="tw-pill {% if row.left_outcome == '胜利' %}rarity-green{% else %}rarity-red{% endif %} ml-1">{{ row.left_outcome }}</span>
                                 {% endif %}
@@ -55,6 +58,9 @@
                                 </span>
                                 {% if row.right_is_mine %}
                                 <span class="tw-pill rarity-blue ml-1">我</span>
+                                {% endif %}
+                                {% if row.right_is_virtual %}
+                                <span class="tw-pill rarity-gray ml-1">系统参赛者</span>
                                 {% endif %}
                                 {% if row.right_outcome %}
                                 <span class="tw-pill {% if row.right_outcome == '胜利' %}rarity-green{% else %}rarity-red{% endif %} ml-1">{{ row.right_outcome }}</span>

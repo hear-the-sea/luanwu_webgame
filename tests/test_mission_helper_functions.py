@@ -199,6 +199,47 @@ def test_build_drop_lists_prefers_probability_drop_table_for_choice_pool_display
     ]
 
 
+def test_build_drop_lists_deduplicates_single_choice_pool_preview_items():
+    mission = SimpleNamespace(
+        drop_table={
+            "kasukabe_crayon": 1,
+            "kasukabe_crayon_bonus_1": {
+                "chance": 0.55,
+                "count": 1,
+                "choices": ["kasukabe_crayon"],
+            },
+            "kasukabe_crayon_bonus_2": {
+                "chance": 0.25,
+                "count": 2,
+                "choices": ["kasukabe_crayon"],
+            },
+            "kasukabe_crayon_bonus_4": {
+                "chance": 0.08,
+                "count": 4,
+                "choices": ["kasukabe_crayon"],
+            },
+            "kasukabe_crayon_bonus_10": {
+                "chance": 0.015,
+                "count": 10,
+                "choices": ["kasukabe_crayon"],
+            },
+        },
+        probability_drop_table={},
+    )
+    item_templates = {"kasukabe_crayon": SimpleNamespace(name="小新的蜡笔")}
+
+    guaranteed_drops, probability_drops = build_drop_lists(
+        mission,
+        {},
+        item_templates,
+        {},
+        {"kasukabe_crayon": "blue"},
+    )
+
+    assert [drop["key"] for drop in guaranteed_drops] == ["kasukabe_crayon"]
+    assert probability_drops == []
+
+
 def test_build_drop_lists_includes_icon_display_data_for_non_silver_drops():
     mission = SimpleNamespace(
         drop_table={"silver": 2000, "test_item": 2},

@@ -10,14 +10,18 @@ import math
 from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-from django.db.models import Count
+from django.db.models import Count, QuerySet
 from django.utils import timezone
 
 from core.utils.time_scale import scale_duration
 
 from ...constants import PVPConstants
-from ...models import Manor, RaidRun
+from ...models import BotProfile, Manor, RaidRun
 from .utils import calculate_distance, can_attack_target, get_prestige_color, is_same_region
+
+
+def _visible_manors() -> QuerySet[Manor]:
+    return Manor.objects.exclude(bot_profile__state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED])
 
 
 def search_manors_by_name(searcher: Manor, name_query: str, limit: int = 20) -> List[Dict[str, Any]]:
@@ -33,7 +37,8 @@ def search_manors_by_name(searcher: Manor, name_query: str, limit: int = 20) -> 
         庄园列表（包含距离和声望颜色）
     """
     manors = (
-        Manor.objects.filter(name__icontains=name_query)
+        _visible_manors()
+        .filter(name__icontains=name_query)
         .exclude(id=searcher.id)
         .select_related("user")
         .only("id", "name", "prestige", "region", "coordinate_x", "coordinate_y", "user__username")[:limit]
@@ -59,7 +64,8 @@ def search_manors_by_region(
     """
     # 地区列表应包含自己庄园；当某地区仅有自己时，也能看到对应条目，避免误判“该地区无人”。
     queryset = (
-        Manor.objects.filter(region=region)
+        _visible_manors()
+        .filter(region=region)
         .select_related("user")
         .only(
             "id",
@@ -105,7 +111,8 @@ def search_manors_by_coordinate(
     max_y = min(999, int(center_y + radius))
 
     manors = (
-        Manor.objects.filter(
+        _visible_manors()
+        .filter(
             region=target_region,
             coordinate_x__gte=min_x,
             coordinate_x__lte=max_x,

@@ -111,6 +111,30 @@ class TestTaskBoardPage:
         assert '<span class="tw-drop-placeholder" aria-hidden="true">占</span>' in body
         assert ">银两 x500<" in body
 
+    def test_task_board_displays_fixed_and_probability_drops_in_one_preview_grid(self, manor_with_user):
+        _manor, client = manor_with_user
+        probability_item = ItemTemplate.objects.create(
+            key="task_board_probability_preview_item",
+            name="概率预览物品",
+            rarity="green",
+        )
+        mission = MissionTemplate.objects.create(
+            key="task_board_combined_drop_preview",
+            name="合并掉落预览任务",
+            difficulty=MissionTemplate.Difficulty.JUNIOR,
+            drop_table={"silver": 500},
+            probability_drop_table={probability_item.key: 1},
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert ">银两 x500<" in body
+        assert 'title="概率预览物品 x1"' in body
+        assert "概率掉落：" not in body
+        assert body.count('class="tw-drop-grid"') == 1
+
     def test_task_board_empty_fixed_drops_keeps_heading_without_unconfigured_copy(self, manor_with_user):
         _manor, client = manor_with_user
         mission = MissionTemplate.objects.create(

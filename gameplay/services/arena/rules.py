@@ -23,6 +23,7 @@ DEFAULT_ARENA_RULES: dict[str, Any] = {
     },
     "runtime": {
         "round_interval_seconds": 600,
+        "virtual_fill_wait_seconds": 18_000,
         "completed_retention_seconds": 600,
         "round_retry_seconds": 30,
         "recruiting_lock_key": "arena:recruiting_tournament:create",
@@ -102,6 +103,10 @@ def normalize_arena_rules(raw: Any) -> dict[str, Any]:
         "round_interval_seconds": _to_positive_int(
             runtime.get("round_interval_seconds"),
             config["runtime"]["round_interval_seconds"],
+        ),
+        "virtual_fill_wait_seconds": _to_positive_int(
+            runtime.get("virtual_fill_wait_seconds"),
+            config["runtime"]["virtual_fill_wait_seconds"],
         ),
         "completed_retention_seconds": _to_positive_int(
             runtime.get("completed_retention_seconds"),

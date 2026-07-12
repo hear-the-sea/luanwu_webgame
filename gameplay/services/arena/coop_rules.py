@@ -26,6 +26,7 @@ DEFAULT_ARENA_COOP_RULES: dict[str, Any] = {
     },
     "runtime": {
         "auto_start_scan_seconds": 30,
+        "virtual_fill_wait_seconds": 28_800,
         "completed_retention_seconds": 86400,
     },
     "contribution": {
@@ -185,6 +186,10 @@ def normalize_arena_coop_rules(raw: Any) -> dict[str, Any]:
             runtime.get("auto_start_scan_seconds"),
             config["runtime"]["auto_start_scan_seconds"],
             minimum=1,
+        ),
+        "virtual_fill_wait_seconds": _to_positive_int(
+            runtime.get("virtual_fill_wait_seconds"),
+            config["runtime"]["virtual_fill_wait_seconds"],
         ),
         "completed_retention_seconds": _to_positive_int(
             runtime.get("completed_retention_seconds"),

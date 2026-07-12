@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core.utils.yaml_schema import validate_arena_rules, validate_trade_market_rules
+from core.utils.yaml_schema import validate_arena_coop_rules, validate_arena_rules, validate_trade_market_rules
 from tests.yaml_schema.support import assert_has_error, assert_valid
 
 
@@ -27,6 +27,29 @@ class TestArenaRulesValidation:
         }
         result = validate_arena_rules(data)
         assert_has_error(result, substring="must be >= 1")
+
+    def test_zero_virtual_fill_wait_is_invalid(self):
+        data = {
+            "registration": {},
+            "runtime": {"virtual_fill_wait_seconds": 0},
+            "rewards": {},
+        }
+        result = validate_arena_rules(data)
+        assert_has_error(result, substring="field 'virtual_fill_wait_seconds' must be >= 1")
+
+
+class TestArenaCoopRulesValidation:
+    def test_zero_virtual_fill_wait_is_invalid(self):
+        data = {
+            "registration": {},
+            "runtime": {"virtual_fill_wait_seconds": 0},
+            "contribution": {},
+            "rewards": {},
+            "rare_drop": {},
+            "enemy": {},
+        }
+        result = validate_arena_coop_rules(data)
+        assert_has_error(result, substring="field 'virtual_fill_wait_seconds' must be >= 1")
 
 
 class TestTradeMarketRulesValidation:
