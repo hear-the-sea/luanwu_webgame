@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 import pytest
+import yaml
 
 from core.utils.yaml_schema import (
     validate_all_configs,
@@ -286,3 +288,51 @@ class TestRealConfigsPassValidation:
     def test_validate_all_configs(self, data_dir):
         result = validate_all_configs(data_dir)
         assert_valid(result)
+
+    @pytest.mark.parametrize(
+        ("mutation", "expected_error"),
+        [
+            ("rarity", "blueprint rarity must match result_item_key rarity"),
+            ("result_effect_type", "result_item_key must reference an equip_ ItemTemplate"),
+            ("blueprint_effect_type", "blueprint_key must reference a tool ItemTemplate"),
+            ("tradeable", "blueprint_key must reference a tradeable ItemTemplate"),
+            ("blueprint_key_prefix", "blueprint_key must start with 'blueprint_'"),
+            ("orphan_blueprint", "missing forge recipe"),
+        ],
+    )
+    def test_validate_all_configs_rejects_invalid_blueprint_item_contract(
+        self,
+        data_dir,
+        tmp_path,
+        mutation,
+        expected_error,
+    ):
+        shutil.copytree(data_dir, tmp_path, dirs_exist_ok=True)
+        forge_path = tmp_path / "forge_blueprints.yaml"
+        item_path = tmp_path / "item_templates.yaml"
+        forge_data = yaml.safe_load(forge_path.read_text(encoding="utf-8"))
+        item_data = yaml.safe_load(item_path.read_text(encoding="utf-8"))
+        recipe = forge_data["recipes"][0]
+        items_by_key = {item["key"]: item for item in item_data["items"]}
+
+        if mutation == "rarity":
+            items_by_key[recipe["result_item_key"]]["rarity"] = "orange"
+        elif mutation == "result_effect_type":
+            items_by_key[recipe["result_item_key"]]["effect_type"] = "tool"
+        elif mutation == "blueprint_effect_type":
+            items_by_key[recipe["blueprint_key"]]["effect_type"] = "resource"
+        elif mutation == "tradeable":
+            items_by_key[recipe["blueprint_key"]]["tradeable"] = False
+        elif mutation == "blueprint_key_prefix":
+            recipe["blueprint_key"] = "invalid_blueprint_key"
+        else:
+            orphan = {**items_by_key[recipe["blueprint_key"]], "key": "blueprint_orphan_contract"}
+            item_data["items"].append(orphan)
+
+        item_path.write_text(yaml.safe_dump(item_data, allow_unicode=True, sort_keys=False), encoding="utf-8")
+        forge_path.write_text(yaml.safe_dump(forge_data, allow_unicode=True, sort_keys=False), encoding="utf-8")
+
+        result = validate_all_configs(tmp_path)
+
+        assert result.is_valid is False
+        assert any(expected_error in error.message for error in result.errors)

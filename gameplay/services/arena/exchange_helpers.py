@@ -13,12 +13,13 @@ from core.utils.infrastructure import (
     combine_infrastructure_exceptions,
 )
 from gameplay.models import ArenaExchangeRecord, Manor, Message
+from gameplay.services.buildings.forge import load_blueprint_catalog
 from gameplay.services.inventory.core import add_item_to_inventory_locked
 from gameplay.services.resources import grant_resources_locked
 from gameplay.services.utils.messages import create_message
 
 from . import helpers as _arena_helpers
-from .rewards import ArenaRewardDefinition, get_arena_reward_definition
+from .rewards import ArenaRewardDefinition, get_arena_reward_definition, select_weekly_blueprint_key
 
 ARENA_MESSAGE_DELIVERY_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
     MessageError,
@@ -50,6 +51,21 @@ def merge_item_grants(*grant_maps: dict[str, int]) -> dict[str, int]:
         for item_key, amount in grant_map.items():
             merged[item_key] = merged.get(item_key, 0) + int(amount)
     return merged
+
+
+def resolve_rotating_blueprint_grants(
+    reward: ArenaRewardDefinition,
+    quantity: int,
+) -> dict[str, int]:
+    pool = reward.rotating_blueprint_pool
+    if pool is None:
+        return {}
+
+    blueprint_key = select_weekly_blueprint_key(pool)
+    catalog_entry = load_blueprint_catalog().get(blueprint_key)
+    if catalog_entry is None or catalog_entry.rarity != pool.rarity:
+        raise ArenaExchangeError("图纸兑换配置无效")
+    return {blueprint_key: quantity}
 
 
 def build_exchange_payload(
@@ -205,6 +221,8 @@ def exchange_arena_reward(manor: Manor, reward_key: str, quantity: int = 1) -> A
         day_end=day_end,
     )
 
+    rotating_blueprint_grants = resolve_rotating_blueprint_grants(reward, normalized_quantity)
+
     locked_manor.arena_coins = F("arena_coins") - total_cost
     locked_manor.save(update_fields=["arena_coins"])
 
@@ -216,7 +234,10 @@ def exchange_arena_reward(manor: Manor, reward_key: str, quantity: int = 1) -> A
         sync_production=False,
     )
 
-    fixed_item_grants = scale_reward_items(reward.items, normalized_quantity)
+    fixed_item_grants = merge_item_grants(
+        scale_reward_items(reward.items, normalized_quantity),
+        rotating_blueprint_grants,
+    )
     random_item_grants = _arena_helpers.resolve_random_reward_items(reward.random_items, normalized_quantity)
     granted_items = grant_exchange_items_locked(
         fixed_item_grants=fixed_item_grants,

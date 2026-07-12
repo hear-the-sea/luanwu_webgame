@@ -211,6 +211,14 @@ def award_mission_drops_locked(
     manor_locked = locked_manor or Manor.objects.select_for_update().get(pk=manor.pk)
 
     resources, item_keys = _split_drop_payload(drops)
+    blueprint_keys = {key for key in item_keys if key.startswith("blueprint_")}
+    if blueprint_keys:
+        from ..buildings.forge import load_blueprint_catalog
+
+        catalog = load_blueprint_catalog()
+        unknown_blueprints = blueprint_keys - set(catalog)
+        if unknown_blueprints:
+            raise AssertionError(f"invalid mission blueprint drop: {sorted(unknown_blueprints)!r}")
     if resources:
         grant_resources_locked(
             manor_locked,

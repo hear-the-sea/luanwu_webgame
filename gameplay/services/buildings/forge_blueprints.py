@@ -84,6 +84,8 @@ def build_blueprint_recipe_index(config: dict[str, Any]) -> dict[str, dict[str, 
     for raw_recipe in raw_recipes:
         recipe = _normalize_blueprint_recipe(raw_recipe, contract_name="forge blueprint recipe")
         key = recipe["blueprint_key"]
+        if key in result:
+            raise AssertionError(f"duplicate forge blueprint key: {key}")
         result[key] = recipe
     return result
 

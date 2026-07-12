@@ -138,6 +138,7 @@ def validate_forge_blueprints(
     *,
     file: str = "forge_blueprints.yaml",
     item_keys: set[str] | None = None,
+    item_metadata: dict[str, tuple[str, str, bool]] | None = None,
 ) -> ValidationResult:
     result = ValidationResult()
 
@@ -156,6 +157,7 @@ def validate_forge_blueprints(
 
     _check_unique_keys(recipes, "blueprint_key", result=result, file=file, context="recipes")
 
+    recipe_blueprint_keys: set[str] = set()
     for idx, recipe in enumerate(recipes):
         path = f"recipes[{idx}]"
         if not isinstance(recipe, dict):
@@ -171,14 +173,38 @@ def validate_forge_blueprints(
         )
 
         blueprint_key = recipe.get("blueprint_key")
+        if isinstance(blueprint_key, str):
+            recipe_blueprint_keys.add(blueprint_key)
+            if not blueprint_key.startswith("blueprint_"):
+                result.add(file, path, "blueprint_key must start with 'blueprint_'")
         if blueprint_key is not None and item_keys is not None:
             if blueprint_key not in item_keys:
                 result.add(file, path, f"blueprint_key '{blueprint_key}' not found in item_templates.yaml")
 
         result_item_key = recipe.get("result_item_key")
+        if isinstance(result_item_key, str) and not result_item_key.startswith("equip_"):
+            result.add(file, path, "result_item_key must start with 'equip_'")
         if result_item_key is not None and item_keys is not None:
             if result_item_key not in item_keys:
                 result.add(file, path, f"result_item_key '{result_item_key}' not found in item_templates.yaml")
+
+        blueprint_metadata = (
+            item_metadata.get(blueprint_key) if item_metadata is not None and isinstance(blueprint_key, str) else None
+        )
+        result_metadata = (
+            item_metadata.get(result_item_key)
+            if item_metadata is not None and isinstance(result_item_key, str)
+            else None
+        )
+        if blueprint_metadata is not None and blueprint_metadata[0] != "tool":
+            result.add(file, path, "blueprint_key must reference a tool ItemTemplate")
+        if blueprint_metadata is not None and not blueprint_metadata[2]:
+            result.add(file, path, "blueprint_key must reference a tradeable ItemTemplate")
+        if result_metadata is not None and not result_metadata[0].startswith("equip_"):
+            result.add(file, path, "result_item_key must reference an equip_ ItemTemplate")
+        if blueprint_metadata is not None and result_metadata is not None:
+            if blueprint_metadata[1] != result_metadata[1]:
+                result.add(file, path, "blueprint rarity must match result_item_key rarity")
 
         required_forging = recipe.get("required_forging")
         if required_forging is not None:
@@ -197,6 +223,11 @@ def validate_forge_blueprints(
         costs = recipe.get("costs")
         if costs is not None and not isinstance(costs, dict):
             result.add(file, path, "field 'costs' expected a mapping")
+
+    if item_metadata is not None:
+        for blueprint_key in sorted(key for key in item_metadata if key.startswith("blueprint_")):
+            if blueprint_key not in recipe_blueprint_keys:
+                result.add(file, "recipes", f"blueprint ItemTemplate '{blueprint_key}' missing forge recipe")
 
     return result
 

@@ -35,6 +35,11 @@ def grant_coop_reward_locked(locked_manor: Manor, *, total_coins: int, rare_drop
         locked_manor.save(update_fields=["arena_coins"])
 
     rare_drop_key = str(rare_drop_item_key or "").strip()
+    if rare_drop_key.startswith("blueprint_"):
+        from gameplay.services.buildings.forge import load_blueprint_catalog
+
+        if rare_drop_key not in load_blueprint_catalog():
+            raise AssertionError(f"invalid coop blueprint drop: {rare_drop_key}")
     if rare_drop_key and ItemTemplate.objects.filter(key=rare_drop_key).exists():
         add_item_to_inventory_locked(locked_manor, rare_drop_key, 1)
 

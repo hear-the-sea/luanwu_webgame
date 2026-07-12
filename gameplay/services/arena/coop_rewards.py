@@ -3,6 +3,25 @@ from __future__ import annotations
 import random
 
 
+def select_rare_drop_item_key(rare_drop: dict) -> str:
+    choices = rare_drop.get("item_choices") or []
+    weighted_choices = [
+        (str(choice.get("item_key") or "").strip(), int(choice.get("weight") or 0))
+        for choice in choices
+        if isinstance(choice, dict)
+    ]
+    weighted_choices = [(key, weight) for key, weight in weighted_choices if key and weight > 0]
+    if not weighted_choices:
+        return str(rare_drop.get("item_key") or "").strip()
+    total_weight = sum(weight for _key, weight in weighted_choices)
+    roll = random.randrange(total_weight)
+    for key, weight in weighted_choices:
+        if roll < weight:
+            return key
+        roll -= weight
+    return weighted_choices[-1][0]
+
+
 def rank_contribution_rows(rows: list[dict]) -> list[dict]:
     return sorted(
         rows,
@@ -33,5 +52,5 @@ def build_reward_breakdown(row: dict, *, rules: dict, boss_defeated: bool) -> di
         "clear_coins": clear_coins,
         "total_coins": participation + damage_coins + rank_coins + clear_coins,
         "rare_drop_granted": rare_drop_granted,
-        "rare_drop_item_key": rules["rare_drop"]["item_key"] if rare_drop_granted else "",
+        "rare_drop_item_key": select_rare_drop_item_key(rules["rare_drop"]) if rare_drop_granted else "",
     }

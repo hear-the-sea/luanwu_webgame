@@ -33,8 +33,14 @@ rewards:
 
 rare_drop:
   enabled: true
-  item_key: equip_tulongdao
-  chance_bps: 10
+  item_choices:
+    - item_key: blueprint_feiyuan
+      weight: 1
+    - item_key: blueprint_chixiaojifeng
+      weight: 1
+    - item_key: blueprint_mojiajiguanren
+      weight: 1
+  chance_bps: 400
   requires_clear: true
   requires_minimum_contribution: true
 

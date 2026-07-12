@@ -120,11 +120,27 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
 
     # Build cross-reference key sets for referential integrity checks
     item_keys: set[str] | None = None
+    item_rarities: dict[str, str] | None = None
+    item_metadata: dict[str, tuple[str, str, bool]] | None = None
     if item_data is not None:
         result.merge(validate_item_templates(item_data))
         items_list = item_data.get("items") or []
         if isinstance(items_list, list):
             item_keys = {str(item["key"]) for item in items_list if isinstance(item, dict) and item.get("key")}
+            item_rarities = {
+                str(item["key"]): str(item.get("rarity") or "gray")
+                for item in items_list
+                if isinstance(item, dict) and item.get("key")
+            }
+            item_metadata = {
+                str(item["key"]): (
+                    str(item.get("effect_type") or ""),
+                    str(item.get("rarity") or "gray"),
+                    bool(item.get("tradeable", False)),
+                )
+                for item in items_list
+                if isinstance(item, dict) and item.get("key")
+            }
 
     troop_keys: set[str] | None = None
     if troop_data is not None:
@@ -140,7 +156,11 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
         result.merge(validate_guest_templates(guest_data))
 
     if mission_data is not None:
-        result.merge(validate_mission_templates(mission_data, item_keys=item_keys, troop_keys=troop_keys))
+        result.merge(
+            validate_mission_templates(
+                mission_data, item_keys=item_keys, item_rarities=item_rarities, troop_keys=troop_keys
+            )
+        )
 
     if forge_data is not None:
         result.merge(validate_forge_equipment(forge_data, item_keys=item_keys))
@@ -164,7 +184,7 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
         result.merge(validate_auction_items(auction_data, item_keys=item_keys))
 
     if blueprints_data is not None:
-        result.merge(validate_forge_blueprints(blueprints_data, item_keys=item_keys))
+        result.merge(validate_forge_blueprints(blueprints_data, item_keys=item_keys, item_metadata=item_metadata))
 
     if decompose_data is not None:
         result.merge(validate_forge_decompose(decompose_data))
