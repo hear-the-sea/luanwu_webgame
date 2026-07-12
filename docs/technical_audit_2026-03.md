@@ -70,10 +70,10 @@
   - 后续若继续推进复杂度治理，应优先复核新的超阈值文件是否真的形成认知热点，再按稳定业务职责切分；默认不再把已经回到预算内的模块作为主线持续拆分对象。
   - 默认门禁、真实环境 gate、复杂度预算与文档基线需要在后续每轮改动后持续复核，不再单列历史批次明细。
   - `2026-03-26` 复核确认：阶段 4 “模板内联脚本清零”虽已完成，但前端工程化并未收口；仓库当前虽已具备最小前端测试执行链路（`package.json` 提供 `npm run test:js`，本轮也已把它补进 CI），但仍缺少前端 lint 与更成体系的构建/模块化约束，`static/js` 当前仍约 `5k+` 行手写页面脚本。这一项应作为新的治理主线，而不是继续把“脚本已迁出模板”误判为前端边界已稳定。
-  - `2026-03-26` 复核确认：`templates/base.html` 仍承载过多页面专属与未兑现功能入口，存在硬编码展示值（如行动力 `1000/1000`、贡献积分 `0`）与多处 `href="#"` 占位菜单；这类“伪状态 / 伪入口”会破坏页面真实性，必须纳入基模板收口范围。
+  - `2026-07-11` 复核确认：`templates/base.html` 中原有行动力、贡献积分硬编码和 `href="#"` 占位入口已经清理，侧栏状态改由真实上下文驱动；该项已收口，后续只需防止基模板重新吸收页面专属状态。
   - `2026-03-26` 复核确认：热点复杂度已从“超大文件”演进为“预算上方徘徊的多职责文件”问题。本轮已完成 `trade/services/auction/rounds.py`、`websocket/consumers/world_chat.py`、`gameplay/views/map.py`、`gameplay/views/inventory.py`、`guests/services/equipment.py`、`gameplay/services/arena/coop_core.py` 与 `static/js/chat_widget.js` 的一轮收口；后续应继续重点关注新的候选入口，而不是机械反复拆已经回到预算内的模块。
   - `2026-03-26` 复核确认：类型治理仍处于过渡态；全局 `mypy` 仍保持 `disallow_untyped_defs = false`、`ignore_missing_imports = true` 的宽松基线，后续新增热点重构若不顺带收口输入/输出契约与 `Any` 扩散，将继续放大维护成本。
-  - `2026-03-26` 复核确认：局部重复抽象已经出现，例如 `trade/views.py` 与 `trade/view_helpers.py` 各自维护一套阈值告警 helper；后续重构必须把“重复边界”视为真实问题，而不只盯文件行数。
+  - `2026-07-11` 复核确认：交易阈值告警已统一由 `trade/view_helpers.py` 承担，`trade/views.py` 只调用共享入口；原重复 helper 问题已收口。
 
 ## 1. 重构优化规则
 

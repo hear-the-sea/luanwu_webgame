@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from django.db.models import F
 from django.utils import timezone
 
-from core.exceptions import TradeValidationError
+from core.exceptions import InsufficientStockError, TradeValidationError
+from gameplay.services.inventory.core import consume_inventory_item_locked
 
 
 def normalize_listing_inputs(quantity: int, unit_price: int, duration: int, *, safe_int) -> tuple[int, int, int]:
@@ -45,14 +45,11 @@ def validate_gold_bar_availability(*, inventory_item, quantity: int, frozen: int
 
 
 def decrement_listing_inventory(*, inventory_item_model, inventory_item, quantity: int) -> None:
-    updated_rows = inventory_item_model.objects.filter(pk=inventory_item.pk, quantity__gte=quantity).update(
-        quantity=F("quantity") - quantity,
-        updated_at=timezone.now(),
-    )
-    if not updated_rows:
-        raise TradeValidationError("物品数量不足或已被其他操作占用")
-
-    inventory_item_model.objects.filter(pk=inventory_item.pk, quantity=0).delete()
+    del inventory_item_model
+    try:
+        consume_inventory_item_locked(inventory_item, quantity)
+    except InsufficientStockError as exc:
+        raise TradeValidationError("物品数量不足或已被其他操作占用") from exc
 
 
 def validate_listing_total_price(*, unit_price: int, quantity: int, max_total_price: int) -> int:

@@ -127,13 +127,15 @@ def pay_market_purchase(locked_manor: Manor, *, item_name: str, total_price: int
 
 
 def settle_market_sale_proceeds(locked_manor: Manor, *, item_name: str, silver_amount: int) -> None:
-    grant_resources_locked(
+    _credited, overflow = grant_resources_locked(
         locked_manor,
         {"silver": silver_amount},
         note=f"出售{item_name}",
         reason=ResourceEvent.Reason.ITEM_SOLD,
         sync_production=False,
     )
+    if overflow.get("silver", 0) > 0:
+        raise TradeValidationError("卖家银库空间不足，暂时无法完成交易")
 
 
 def send_market_message(**kwargs):
@@ -374,6 +376,7 @@ def cancel_listing(manor: Manor, listing_id: int) -> Dict:
     return _market_commands.cancel_market_listing(
         manor,
         listing_id,
+        manor_model=Manor,
         market_listing_model=MarketListing,
         restore_cancelled_listing_inventory=_market_notification_helpers.restore_cancelled_listing_inventory,
         build_cancel_listing_result=_market_notification_helpers.build_cancel_listing_result,
@@ -386,6 +389,7 @@ def _expire_listings_queryset(expired_listings: QuerySet, log_label: str, limit:
         expired_listings,
         log_label,
         expire_listings_queryset_impl=_expire_listings_queryset_impl,
+        manor_model=Manor,
         market_listing_model=MarketListing,
         restore_cancelled_listing_inventory=_market_notification_helpers.restore_cancelled_listing_inventory,
         grant_market_item_locked=grant_market_item_locked,

@@ -27,6 +27,7 @@ from gameplay.models.items import (
     get_item_effect_type_label,
     normalize_item_effect_type,
 )
+from gameplay.services.inventory.core import add_item_to_inventory_locked, consume_inventory_item_locked
 from gameplay.services.resources import grant_resources_locked, spend_resources_locked
 from gameplay.utils.template_loader import get_item_templates_by_keys
 from trade.models import ShopPurchaseLog, ShopSellLog, ShopStock
@@ -291,17 +292,7 @@ def buy_item(manor: Manor, item_key: str, quantity: int) -> Dict:
             refreshed_stock = ShopStock.objects.filter(pk=stock.pk).values_list("current_stock", flat=True).first() or 0
             raise InsufficientStockError(template.name, quantity, int(refreshed_stock), message="库存不足")
 
-    # 添加物品到背包（原子操作，防止并发丢失更新）
-    # IMPORTANT: Must specify storage_location to avoid MultipleObjectsReturned
-    # when the same template exists in both warehouse and treasury
-    inventory_item, created = InventoryItem.objects.select_for_update().get_or_create(
-        manor=locked_manor,
-        template=template,
-        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-        defaults={"quantity": 0},
-    )
-    # Use atomic F() expression to increment quantity
-    InventoryItem.objects.filter(pk=inventory_item.pk).update(quantity=F("quantity") + quantity)
+    add_item_to_inventory_locked(locked_manor, template.key, quantity)
 
     # 记录购买日志
     ShopPurchaseLog.objects.create(
@@ -360,49 +351,36 @@ def sell_item(manor: Manor, item_key: str, quantity: int) -> Dict:
     if template.key == GOLD_BAR_ITEM_KEY:
         consume_available_gold_bars_locked(locked_manor, quantity)
     else:
-        # 扣除背包物品（使用原子操作，在 Manor 锁之后）
-        # IMPORTANT: Must specify storage_location to avoid touching treasury rows.
-        updated = InventoryItem.objects.filter(
-            manor=locked_manor,
-            template=template,
-            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-            quantity__gte=quantity,
-        ).update(quantity=F("quantity") - quantity)
-        if not updated:
-            has_item = InventoryItem.objects.filter(
+        inventory_item = (
+            InventoryItem.objects.select_for_update()
+            .filter(
                 manor=locked_manor,
                 template=template,
                 storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-            ).exists()
-            if not has_item:
-                raise ItemInsufficientError(template.name, quantity, 0, message="您没有该物品")
-            available_quantity = (
-                InventoryItem.objects.filter(
-                    manor=locked_manor,
-                    template=template,
-                    storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-                )
-                .values_list("quantity", flat=True)
-                .first()
-                or 0
             )
-            raise ItemInsufficientError(template.name, quantity, int(available_quantity), message="物品数量不足")
+            .first()
+        )
+        if inventory_item is None:
+            raise ItemInsufficientError(template.name, quantity, 0, message="您没有该物品")
+        if inventory_item.quantity < quantity:
+            raise ItemInsufficientError(
+                template.name,
+                quantity,
+                int(inventory_item.quantity),
+                message="物品数量不足",
+            )
+        inventory_item.template = template
+        consume_inventory_item_locked(inventory_item, quantity)
 
-    grant_resources_locked(
+    _credited, overflow = grant_resources_locked(
         locked_manor,
         {"silver": total_income},
         f"出售 {template.name} x{quantity}",
         ResourceEvent.Reason.SHOP_SELL,
         sync_production=False,
     )
-
-    # 清理库存为 0 的物品
-    InventoryItem.objects.filter(
-        manor=locked_manor,
-        template=template,
-        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-        quantity=0,
-    ).delete()
+    if overflow.get("silver", 0) > 0:
+        raise ShopValidationError(action="sell", message="银库空间不足，无法收取全部出售收入")
 
     # 记录出售日志
     ShopSellLog.objects.create(

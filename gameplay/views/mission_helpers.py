@@ -362,15 +362,36 @@ def iter_choice_pool_keys(value: Any) -> list[str]:
     return keys
 
 
+def build_drop_display_item(
+    *,
+    key: str,
+    name: str,
+    label: str,
+    count: int | None,
+    rarity: str,
+    item_templates: dict[str, Any],
+) -> dict[str, Any]:
+    template = item_templates.get(key)
+    image = getattr(template, "image", None)
+    return {
+        "key": key,
+        "name": name,
+        "label": label,
+        "count": count,
+        "rarity": rarity,
+        "image_url": image.url if image else "",
+    }
+
+
 def build_drop_lists(
     selected_mission: MissionTemplate,
     drop_labels: dict[str, str],
     item_templates: dict[str, Any],
     book_labels: dict[str, str],
     loot_rarities: dict[str, str],
-) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
-    guaranteed_drops: list[dict[str, str]] = []
-    probability_drops: list[dict[str, str]] = []
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    guaranteed_drops: list[dict[str, Any]] = []
+    probability_drops: list[dict[str, Any]] = []
     handled_probability_keys: set[str] = set()
     raw_drop_table = getattr(selected_mission, "drop_table", None)
     if raw_drop_table is None:
@@ -406,7 +427,16 @@ def build_drop_lists(
                 _, count = parse_drop_value(probability_drop_table.get(choice_key))
                 rarity = loot_rarities.get(choice_key) or "default"
                 display_label = f"{label} x{count}" if (count is not None and count >= 1) else label
-                probability_drops.append({"label": display_label, "rarity": rarity})
+                probability_drops.append(
+                    build_drop_display_item(
+                        key=choice_key,
+                        name=label,
+                        label=display_label,
+                        count=count,
+                        rarity=rarity,
+                        item_templates=item_templates,
+                    )
+                )
             continue
         label = resolve_drop_pool_label(val, drop_labels, item_templates, book_labels) or resolve_drop_label(
             key,
@@ -422,10 +452,18 @@ def build_drop_lists(
             display_label = f"{label} x{count}"
         else:
             display_label = label
+        drop_item = build_drop_display_item(
+            key=key,
+            name=label,
+            label=display_label,
+            count=count,
+            rarity=rarity,
+            item_templates=item_templates,
+        )
         if chance is not None and 0 < chance < 1:
-            probability_drops.append({"label": display_label, "rarity": rarity})
+            probability_drops.append(drop_item)
         else:
-            guaranteed_drops.append({"label": display_label, "rarity": rarity})
+            guaranteed_drops.append(drop_item)
 
     for key, val in probability_drop_table.items():
         if key in handled_probability_keys:
@@ -434,7 +472,16 @@ def build_drop_lists(
         _, count = parse_drop_value(val)
         display_label = f"{label} x{count}" if (count is not None and count >= 1) else label
         rarity = loot_rarities.get(key) or "default"
-        probability_drops.append({"label": display_label, "rarity": rarity})
+        probability_drops.append(
+            build_drop_display_item(
+                key=key,
+                name=label,
+                label=display_label,
+                count=count,
+                rarity=rarity,
+                item_templates=item_templates,
+            )
+        )
 
     return guaranteed_drops, probability_drops
 

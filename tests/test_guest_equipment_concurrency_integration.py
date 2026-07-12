@@ -77,7 +77,7 @@ def test_equip_and_unequip_same_guest_slot_complete_without_deadlock(django_user
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
         quantity=1,
     )
-    old_gear = GearItem.objects.create(manor=manor, template=old_gear_template)
+    old_gear = GearItem.objects.create(manor=manor, template=old_gear_template, inventory_backed=True)
     equipment_service.equip_guest(old_gear, guest)
 
     InventoryItem.objects.create(
@@ -86,7 +86,7 @@ def test_equip_and_unequip_same_guest_slot_complete_without_deadlock(django_user
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
         quantity=1,
     )
-    new_gear = GearItem.objects.create(manor=manor, template=new_gear_template)
+    new_gear = GearItem.objects.create(manor=manor, template=new_gear_template, inventory_backed=True)
 
     equip_pause_reached = threading.Event()
     allow_equip_to_continue = threading.Event()

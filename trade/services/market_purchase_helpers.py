@@ -5,12 +5,7 @@ from gameplay.models import Manor
 
 
 def get_locked_listing_for_purchase(*, market_listing_model, listing_id: int):
-    listing = (
-        market_listing_model.objects.select_for_update()
-        .select_related("seller__user", "item_template")
-        .filter(id=listing_id)
-        .first()
-    )
+    listing = market_listing_model.objects.select_for_update().filter(id=listing_id).first()
     if not listing:
         raise TradeValidationError("挂单不存在")
     return listing

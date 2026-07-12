@@ -312,6 +312,11 @@ class SecurityConfig:
     LOGIN_ATTEMPT_WINDOW: int = 300  # 时间窗口（秒）
     LOGIN_LOCKOUT_DURATION: int = 900  # 锁定时长（秒）
 
+    # 注册限制
+    REGISTRATION_IP_LIMIT: int = 5
+    REGISTRATION_EMAIL_LIMIT: int = 3
+    REGISTRATION_RATE_WINDOW: int = 3600
+
 
 # ============ 消息配置 ============
 

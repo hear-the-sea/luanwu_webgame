@@ -122,6 +122,8 @@ def _clear_replaced_items(guest: Guest, existing_items: list[GearItem], updates:
                 storage_location=InventoryItem.StorageLocation.WAREHOUSE,
                 quantity=1,
             )
+        item.inventory_backed = True
+        item.save(update_fields=["inventory_backed"])
 
 
 @transaction.atomic
@@ -158,14 +160,16 @@ def equip_guest(gear: str | GearItem, guest: Guest, *, slot: str | None = None) 
     if capacity > 1 and len(existing_items) >= capacity:
         raise EquipmentSlotFullError(slot)
 
-    if not inventory_consumed:
-        consume_warehouse_item_for_gear(guest, gear)
+    if gear.inventory_backed and not inventory_consumed:
+        if not consume_warehouse_item_for_gear(guest, gear):
+            raise EquipmentError("装备库存已发生变化，请刷新后重试")
 
     if capacity == 1 and existing_items:
         _clear_replaced_items(guest, existing_items, updates)
 
     gear.guest = guest
-    gear.save(update_fields=["guest"])
+    gear.inventory_backed = False
+    gear.save(update_fields=["guest", "inventory_backed"])
 
     apply_template_stats_to_guest(guest, gear.template, +1, updates)
     guest.save(update_fields=list(updates))
@@ -209,7 +213,8 @@ def unequip_guest_item(gear: GearItem, guest: Guest, *, allow_injured: bool = Fa
             setattr(guest, field, getattr(guest, field) - value)
             updates.add(field)
     gear.guest = None
-    gear.save(update_fields=["guest"])
+    gear.inventory_backed = True
+    gear.save(update_fields=["guest", "inventory_backed"])
     guest.save(update_fields=list(updates))
     apply_set_bonuses(guest)
 

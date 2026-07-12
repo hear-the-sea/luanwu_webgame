@@ -114,6 +114,38 @@ class TestMarketPurchase:
         with pytest.raises(TradeValidationError, match="银两不足"):
             market_service.purchase_listing(buyer_manor, listing.id)
 
+    def test_purchase_rejects_seller_income_overflow_and_rolls_back(
+        self, seller_manor, buyer_manor, tradeable_item_template
+    ):
+        listing = market_service.create_listing(
+            manor=seller_manor,
+            item_key="test_tradeable_item",
+            quantity=10,
+            unit_price=2000,
+            duration=7200,
+        )
+        seller_manor.refresh_from_db()
+        seller_manor.silver_capacity = seller_manor.silver + 5
+        seller_manor.save(update_fields=["silver_capacity"])
+        seller_silver_before = seller_manor.silver
+        buyer_silver_before = buyer_manor.silver
+
+        with pytest.raises(TradeValidationError, match="卖家银库空间不足"):
+            market_service.purchase_listing(buyer_manor, listing.id)
+
+        seller_manor.refresh_from_db()
+        buyer_manor.refresh_from_db()
+        listing.refresh_from_db()
+        assert seller_manor.silver == seller_silver_before
+        assert buyer_manor.silver == buyer_silver_before
+        assert listing.status == MarketListing.Status.ACTIVE
+        assert not MarketTransaction.objects.filter(listing=listing).exists()
+        assert not InventoryItem.objects.filter(
+            manor=buyer_manor,
+            template=tradeable_item_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        ).exists()
+
     def test_purchase_expired_listing(self, seller_manor, buyer_manor):
         listing = market_service.create_listing(
             manor=seller_manor,

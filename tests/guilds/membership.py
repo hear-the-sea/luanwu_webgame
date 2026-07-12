@@ -32,6 +32,65 @@ class TestGuildMembership:
         assert membership.is_active is True
         assert membership.position == "member"
 
+    def test_approve_application_resets_contribution_when_member_moves_to_another_guild(
+        self, user_with_gold_bars, second_user
+    ):
+        old_guild = Guild.objects.create(name="旧贡献帮会", founder=user_with_gold_bars, is_active=True)
+        membership = GuildMember.objects.create(
+            guild=old_guild,
+            user=second_user,
+            position="member",
+            is_active=False,
+            current_contribution=900,
+            total_contribution=1200,
+            weekly_contribution=600,
+            daily_donation_silver=500,
+            daily_donation_grain=400,
+            daily_donation_gold_bar=3,
+            daily_exchange_count=2,
+        )
+        new_guild = guild_service.create_guild(user=user_with_gold_bars, name="新贡献帮会", description="")
+        application = member_service.apply_to_guild(second_user, new_guild, "申请加入")
+
+        member_service.approve_application(application, user_with_gold_bars)
+
+        membership.refresh_from_db()
+        assert membership.guild_id == new_guild.id
+        assert membership.is_active is True
+        assert membership.current_contribution == 0
+        assert membership.total_contribution == 0
+        assert membership.weekly_contribution == 0
+        assert membership.daily_donation_silver == 0
+        assert membership.daily_donation_grain == 0
+        assert membership.daily_donation_gold_bar == 0
+        assert membership.daily_exchange_count == 0
+
+    def test_approve_application_preserves_contribution_when_member_rejoins_same_guild(
+        self, user_with_gold_bars, second_user
+    ):
+        guild = guild_service.create_guild(user=user_with_gold_bars, name="原帮重回帮会", description="")
+        membership = GuildMember.objects.create(
+            guild=guild,
+            user=second_user,
+            position="member",
+            is_active=False,
+            current_contribution=900,
+            total_contribution=1200,
+            weekly_contribution=600,
+            daily_donation_silver=500,
+            daily_exchange_count=2,
+        )
+        application = member_service.apply_to_guild(second_user, guild, "申请回归")
+
+        member_service.approve_application(application, user_with_gold_bars)
+
+        membership.refresh_from_db()
+        assert membership.current_contribution == 900
+        assert membership.total_contribution == 1200
+        assert membership.weekly_contribution == 600
+        assert membership.daily_donation_silver == 500
+        assert membership.daily_exchange_count == 2
+
     def test_direct_orm_rejects_second_pending_application_for_same_guild_and_user(
         self, user_with_gold_bars, second_user
     ):

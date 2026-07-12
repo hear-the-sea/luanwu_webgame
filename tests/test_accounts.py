@@ -6,6 +6,7 @@ from django.core.cache import cache
 from django.db import IntegrityError
 from django.test import RequestFactory, override_settings
 from django.urls import reverse
+from redis.exceptions import RedisError
 
 from accounts import views as account_views
 from accounts.forms import SignUpForm
@@ -30,6 +31,72 @@ def test_user_can_register(client):
     assert response.status_code == 302
     user = User.objects.get(username="test-user")
     assert user.manor.name == "先锋庄园"
+
+
+@pytest.mark.django_db
+def test_register_view_rate_limits_repeated_requests_from_same_ip(client):
+    cache.clear()
+    url = reverse("accounts:register")
+
+    for index in range(account_views.REGISTRATION_IP_LIMIT):
+        response = client.post(url, {"username": f"invalid-{index}"}, REMOTE_ADDR="203.0.113.10")
+        assert response.status_code == 200
+
+    limited = client.post(url, {"username": "still-invalid"}, REMOTE_ADDR="203.0.113.10")
+
+    assert limited.status_code == 302
+    assert limited["Location"] == url
+    assert User.objects.filter(username="still-invalid").exists() is False
+
+
+@pytest.mark.django_db
+def test_register_view_rate_limits_normalized_email_across_ips(client):
+    cache.clear()
+    url = reverse("accounts:register")
+
+    for index in range(account_views.REGISTRATION_EMAIL_LIMIT):
+        response = client.post(
+            url,
+            {"username": f"invalid-email-{index}", "email": " Target@Example.com "},
+            REMOTE_ADDR=f"203.0.113.{20 + index}",
+        )
+        assert response.status_code == 200
+
+    limited = client.post(
+        url,
+        {"username": "email-limited", "email": "target@example.com"},
+        REMOTE_ADDR="203.0.113.99",
+    )
+
+    assert limited.status_code == 302
+    assert limited["Location"] == url
+
+
+@pytest.mark.django_db
+def test_register_view_fails_closed_when_rate_limit_cache_is_unavailable(client, monkeypatch):
+    cache.clear()
+    url = reverse("accounts:register")
+
+    def _raise_cache_error(*_args, **_kwargs):
+        raise RedisError("cache unavailable")
+
+    monkeypatch.setattr(cache, "add", _raise_cache_error)
+    response = client.post(
+        url,
+        {
+            "username": "cache-failure-user",
+            "email": "cache-failure@example.com",
+            "manor_name": "缓存故障庄园",
+            "region": "overseas",
+            "password1": "StrongPass123!",
+            "password2": "StrongPass123!",
+        },
+        REMOTE_ADDR="203.0.113.120",
+    )
+
+    assert response.status_code == 302
+    assert response["Location"] == url
+    assert User.objects.filter(username="cache-failure-user").exists() is False
 
 
 @pytest.mark.django_db

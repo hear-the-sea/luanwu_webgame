@@ -326,6 +326,7 @@ class GearItem(models.Model):
     manor = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="gears")
     template = models.ForeignKey(GearTemplate, on_delete=models.CASCADE)
     guest = models.ForeignKey(Guest, on_delete=models.SET_NULL, null=True, blank=True, related_name="gear_items")
+    inventory_backed = models.BooleanField(default=False)
     level = models.PositiveIntegerField(default=1)
     acquired_at = models.DateTimeField(auto_now_add=True)
 

@@ -1332,6 +1332,41 @@
     background: rgba(74, 38, 18, 0.9);
   }
 
+  .tw-drop-grid {
+    @apply flex flex-wrap gap-2 items-center;
+  }
+
+  .tw-drop-entry {
+    @apply relative inline-flex items-center justify-center;
+  }
+
+  .tw-drop-icon {
+    @apply w-12 h-12 rounded-md flex items-center justify-center overflow-hidden
+           border-2 border-border-primary bg-bg-secondary flex-shrink-0 cursor-pointer;
+  }
+
+  .tw-drop-icon img {
+    @apply w-full h-full object-cover;
+  }
+
+  .tw-drop-placeholder {
+    @apply text-lg font-bold text-text-muted;
+  }
+
+  .tw-drop-count {
+    @apply absolute -bottom-0.5 -right-0.5 text-xs font-semibold
+           px-1 rounded text-text-light;
+    background: rgba(74, 38, 18, 0.9);
+  }
+
+  .tw-drop-icon.rarity-black { border-color: #666; }
+  .tw-drop-icon.rarity-gray { border-color: #999; }
+  .tw-drop-icon.rarity-green { border-color: #2E8B57; }
+  .tw-drop-icon.rarity-blue { border-color: #4169E1; }
+  .tw-drop-icon.rarity-red { border-color: #DC143C; }
+  .tw-drop-icon.rarity-purple { border-color: #9932CC; }
+  .tw-drop-icon.rarity-orange { border-color: #FF8C00; }
+
   /* ========== 门客选择网格 ========== */
   .tw-guest-selection {
     @apply grid gap-2 mb-4;

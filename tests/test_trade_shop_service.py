@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 from django.utils import timezone
 
-from core.exceptions import InsufficientSilverError, ItemInsufficientError, ItemNotConfiguredError
+from core.exceptions import InsufficientSilverError, ItemInsufficientError, ItemNotConfiguredError, ShopValidationError
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
 from trade.models import AuctionBid, FrozenGoldBar, ShopPurchaseLog, ShopSellLog, ShopStock
@@ -178,6 +178,37 @@ def test_buy_item_decrements_stock_and_increments_inventory(monkeypatch, django_
 
 
 @pytest.mark.django_db
+def test_buy_grain_keeps_manor_and_inventory_balances_in_sync(monkeypatch, django_user_model):
+    user = django_user_model.objects.create_user(username="shop_buy_grain", password="pass12345")
+    manor = ensure_manor(user)
+    _set_manor_silver(manor, 1000)
+    manor.grain = 10
+    manor.resource_updated_at = timezone.now()
+    manor.save(update_fields=["grain", "resource_updated_at"])
+    template, _ = ItemTemplate.objects.get_or_create(
+        key="grain",
+        defaults={"name": "粮食", "effect_type": ItemTemplate.EffectType.RESOURCE, "tradeable": True, "price": 1},
+    )
+    InventoryItem.objects.update_or_create(
+        manor=manor,
+        template=template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        defaults={"quantity": 10},
+    )
+    config = ShopItemConfig(item_key=template.key, price=1, buy_price=1, stock=-1, daily_refresh=False)
+    monkeypatch.setattr("trade.services.shop_service.get_shop_item_config", lambda *_args, **_kwargs: config)
+
+    buy_item(manor, template.key, 3)
+
+    manor.refresh_from_db()
+    inventory = InventoryItem.objects.get(
+        manor=manor, template=template, storage_location=InventoryItem.StorageLocation.WAREHOUSE
+    )
+    assert manor.grain == 13
+    assert inventory.quantity == 13
+
+
+@pytest.mark.django_db
 def test_buy_item_prefers_buy_price_without_changing_sell_price(monkeypatch, django_user_model):
     user = django_user_model.objects.create_user(username="shop_buy_price", password="pass12345")
     manor = ensure_manor(user)
@@ -301,6 +332,69 @@ def test_sell_item_grants_silver_and_clears_zero_inventory(monkeypatch, django_u
     assert log.quantity == 1
     assert log.unit_price == 7
     assert log.total_income == 7
+
+
+@pytest.mark.django_db
+def test_sell_grain_keeps_manor_and_inventory_balances_in_sync(django_user_model):
+    user = django_user_model.objects.create_user(username="shop_sell_grain", password="pass12345")
+    manor = ensure_manor(user)
+    _set_manor_silver(manor, 0)
+    manor.grain = 10
+    manor.resource_updated_at = timezone.now()
+    manor.save(update_fields=["grain", "resource_updated_at"])
+    template, _ = ItemTemplate.objects.get_or_create(
+        key="grain",
+        defaults={"name": "粮食", "effect_type": ItemTemplate.EffectType.RESOURCE, "tradeable": True, "price": 1},
+    )
+    template.price = 1
+    template.save(update_fields=["price"])
+    InventoryItem.objects.update_or_create(
+        manor=manor,
+        template=template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        defaults={"quantity": 10},
+    )
+
+    sell_item(manor, template.key, 3)
+
+    manor.refresh_from_db()
+    inventory = InventoryItem.objects.get(
+        manor=manor, template=template, storage_location=InventoryItem.StorageLocation.WAREHOUSE
+    )
+    assert manor.grain == 7
+    assert inventory.quantity == 7
+
+
+@pytest.mark.django_db
+def test_sell_item_rejects_income_overflow_and_rolls_back(django_user_model):
+    user = django_user_model.objects.create_user(username="shop_sell_capacity", password="pass12345")
+    manor = ensure_manor(user)
+    manor.silver_capacity = 100
+    manor.silver = 95
+    manor.resource_updated_at = timezone.now()
+    manor.save(update_fields=["silver_capacity", "silver", "resource_updated_at"])
+    template = ItemTemplate.objects.create(
+        key="shop_sell_capacity_item",
+        name="超额出售物品",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=False,
+        tradeable=False,
+        price=10,
+    )
+    InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        quantity=1,
+    )
+
+    with pytest.raises(ShopValidationError, match="银库空间不足"):
+        sell_item(manor, template.key, 1)
+
+    manor.refresh_from_db()
+    assert manor.silver == 95
+    assert InventoryItem.objects.get(manor=manor, template=template).quantity == 1
+    assert not ShopSellLog.objects.filter(manor=manor, item_key=template.key).exists()
 
 
 @pytest.mark.django_db

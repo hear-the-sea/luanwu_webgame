@@ -4,6 +4,7 @@ import re
 from datetime import date, timedelta
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import DatabaseError
 from django.urls import reverse
 from django.utils import timezone
@@ -74,6 +75,58 @@ class TestTaskBoardPage:
         _manor, client = manor_with_user
         response = client.get(reverse("gameplay:tasks") + "?mission=huashan_lunjian")
         assert response.status_code == 200
+
+    def test_task_board_renders_non_silver_drops_as_drop_icons(self, manor_with_user, settings, tmp_path):
+        _manor, client = manor_with_user
+        settings.MEDIA_ROOT = tmp_path
+        image_item = ItemTemplate.objects.create(
+            key="task_board_drop_icon_image",
+            name="图标物品",
+            image=SimpleUploadedFile("drop-icon.png", b"drop-image", content_type="image/png"),
+            rarity="blue",
+        )
+        placeholder_item = ItemTemplate.objects.create(
+            key="task_board_drop_icon_placeholder",
+            name="占位物品",
+            rarity="green",
+        )
+        mission = MissionTemplate.objects.create(
+            key="task_board_drop_icon_mission",
+            name="掉落图标任务",
+            difficulty=MissionTemplate.Difficulty.JUNIOR,
+            drop_table={
+                "silver": 500,
+                image_item.key: 2,
+                placeholder_item.key: 0.25,
+            },
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert image_item.image.url in body
+        assert 'class="tw-drop-icon rarity-blue"' in body
+        assert '<span class="tw-drop-count">×2</span>' in body
+        assert '<span class="tw-drop-placeholder" aria-hidden="true">占</span>' in body
+        assert ">银两 x500<" in body
+
+    def test_task_board_empty_fixed_drops_keeps_heading_without_unconfigured_copy(self, manor_with_user):
+        _manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key="task_board_empty_fixed_drops",
+            name="无固定掉落任务",
+            difficulty=MissionTemplate.Difficulty.JUNIOR,
+            drop_table={},
+            probability_drop_table={},
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "掉落预览" in body
+        assert "未配置" not in body
 
     def test_task_board_selects_matching_difficulty_tab_for_selected_mission(self, manor_with_user):
         _manor, client = manor_with_user

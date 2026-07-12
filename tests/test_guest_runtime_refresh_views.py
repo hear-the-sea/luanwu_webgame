@@ -85,6 +85,22 @@ def test_guest_detail_view_does_not_finalize_overdue_training_on_get(game_data, 
 
 
 @pytest.mark.django_db
+def test_guest_detail_view_hides_skill_book_acquisition_copy(game_data, django_user_model):
+    user = django_user_model.objects.create_user(username="detail_no_skill_book_copy", password="pass123")
+    manor = ensure_manor(user)
+    guest = _create_guest(manor, prefix="detail_no_skill_book_copy")
+
+    client = Client()
+    client.force_login(user)
+    response = client.get(reverse("guests:detail", args=[guest.pk]))
+
+    assert response.status_code == 200
+    content = response.content.decode("utf-8")
+    assert "门客技能" in content
+    assert "仓库暂无技能书，可前往战斗或活动获取。" not in content
+
+
+@pytest.mark.django_db
 def test_roster_view_uses_explicit_read_helper(game_data, django_user_model, monkeypatch):
     user = django_user_model.objects.create_user(username="roster_read_helper", password="pass123")
     manor = ensure_manor(user)

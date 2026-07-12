@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import importlib
 from types import SimpleNamespace
 
 import pytest
+from django.apps import apps
 
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
-from guests.models import GearSlot, Guest, GuestArchetype, GuestRarity, GuestTemplate
+from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestArchetype, GuestRarity, GuestTemplate
 from guests.services.equipment import (
     apply_set_bonuses,
     build_gear_template_preview,
@@ -111,3 +113,41 @@ def test_ensure_inventory_gears_rejects_invalid_template_payload(django_user_mod
 
     with pytest.raises(AssertionError, match="invalid guest equipment item_template.effect_payload"):
         ensure_inventory_gears(manor, slot=GearSlot.WEAPON)
+
+
+@pytest.mark.django_db
+def test_inventory_backed_migration_reconciles_free_gear_without_losing_quantity(django_user_model):
+    user = django_user_model.objects.create_user(username="equip_projection_migration", password="pass123")
+    manor = ensure_manor(user)
+    item_template = ItemTemplate.objects.create(
+        key="equip_projection_migration_weapon",
+        name="迁移投影武器",
+        effect_type="equip_weapon",
+        rarity=GuestRarity.GREEN,
+        effect_payload={"force": 1},
+    )
+    gear_template = GearTemplate.objects.create(
+        key=item_template.key,
+        name=item_template.name,
+        slot=GearSlot.WEAPON,
+        rarity=GuestRarity.GREEN,
+    )
+    real_gear = GearItem.objects.create(manor=manor, template=gear_template)
+    projected_gear = GearItem.objects.create(manor=manor, template=gear_template)
+    InventoryItem.objects.create(
+        manor=manor,
+        template=item_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        quantity=1,
+    )
+
+    migration = importlib.import_module("guests.migrations.0065_gearitem_inventory_backed")
+    migration.reconcile_existing_inventory_gear(apps, None)
+
+    assert GearItem.objects.filter(pk__in=[real_gear.pk, projected_gear.pk]).exists() is False
+    inventory_item = InventoryItem.objects.get(
+        manor=manor,
+        template=item_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    assert inventory_item.quantity == 2

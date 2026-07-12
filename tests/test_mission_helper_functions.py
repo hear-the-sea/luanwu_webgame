@@ -172,9 +172,71 @@ def test_build_drop_lists_prefers_probability_drop_table_for_choice_pool_display
 
     assert guaranteed_drops == []
     assert probability_drops == [
-        {"label": "霓裳羽衣 x1", "rarity": "green"},
-        {"label": "霓裳舞鞋 x1", "rarity": "green"},
-        {"label": "霓裳剑 x1", "rarity": "green"},
+        {
+            "key": "equip_nichangyuyi",
+            "name": "霓裳羽衣",
+            "label": "霓裳羽衣 x1",
+            "count": 1,
+            "rarity": "green",
+            "image_url": "",
+        },
+        {
+            "key": "equip_nichangwuxie",
+            "name": "霓裳舞鞋",
+            "label": "霓裳舞鞋 x1",
+            "count": 1,
+            "rarity": "green",
+            "image_url": "",
+        },
+        {
+            "key": "equip_nichangjian",
+            "name": "霓裳剑",
+            "label": "霓裳剑 x1",
+            "count": 1,
+            "rarity": "green",
+            "image_url": "",
+        },
+    ]
+
+
+def test_build_drop_lists_includes_icon_display_data_for_non_silver_drops():
+    mission = SimpleNamespace(
+        drop_table={"silver": 2000, "test_item": 2},
+        probability_drop_table={},
+    )
+    item_templates = {
+        "test_item": SimpleNamespace(
+            name="测试物品",
+            image=SimpleNamespace(url="/media/items/test.png"),
+        )
+    }
+
+    guaranteed_drops, probability_drops = build_drop_lists(
+        mission,
+        {"silver": "银两", "test_item": "测试物品"},
+        item_templates,
+        {},
+        {"test_item": "blue"},
+    )
+
+    assert probability_drops == []
+    assert guaranteed_drops == [
+        {
+            "key": "silver",
+            "name": "银两",
+            "label": "银两 x2000",
+            "count": 2000,
+            "rarity": "default",
+            "image_url": "",
+        },
+        {
+            "key": "test_item",
+            "name": "测试物品",
+            "label": "测试物品 x2",
+            "count": 2,
+            "rarity": "blue",
+            "image_url": "/media/items/test.png",
+        },
     ]
 
 

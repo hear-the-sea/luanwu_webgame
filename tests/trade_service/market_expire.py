@@ -5,6 +5,7 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
+from gameplay.models import InventoryItem, ItemTemplate
 from trade.models import MarketListing
 from trade.services import market_service
 
@@ -46,6 +47,45 @@ class TestMarketExpire:
         message = Message.objects.filter(manor=seller_manor, kind="system", title__contains="交易过期").first()
         assert message is not None
         assert message.attachments == {}
+
+    def test_expired_grain_listing_restores_both_balances(self, seller_manor):
+        grain_template, _ = ItemTemplate.objects.get_or_create(
+            key="grain",
+            defaults={
+                "name": "粮食",
+                "effect_type": ItemTemplate.EffectType.RESOURCE,
+                "tradeable": True,
+                "price": 1000,
+            },
+        )
+        grain_template.tradeable = True
+        grain_template.price = 1000
+        grain_template.save(update_fields=["tradeable", "price"])
+        seller_manor.grain = 20
+        seller_manor.resource_updated_at = timezone.now()
+        seller_manor.save(update_fields=["grain", "resource_updated_at"])
+        InventoryItem.objects.update_or_create(
+            manor=seller_manor,
+            template=grain_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            defaults={"quantity": 20},
+        )
+        listing = market_service.create_listing(
+            manor=seller_manor, item_key="grain", quantity=5, unit_price=2000, duration=7200
+        )
+        listing.expires_at = timezone.now() - timedelta(hours=1)
+        listing.save(update_fields=["expires_at"])
+
+        assert market_service.expire_listings() == 1
+
+        seller_manor.refresh_from_db()
+        inventory = InventoryItem.objects.get(
+            manor=seller_manor,
+            template=grain_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+        assert seller_manor.grain == 20
+        assert inventory.quantity == 20
 
     def test_expire_listings_still_returns_inventory_when_create_message_fails(
         self, seller_manor, tradeable_item_template, monkeypatch

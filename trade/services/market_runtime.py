@@ -43,6 +43,7 @@ def expire_listings_queryset_entry(
     log_label: str,
     *,
     expire_listings_queryset_impl: Callable[..., int],
+    manor_model: Any,
     market_listing_model: Any,
     restore_cancelled_listing_inventory: Callable[..., None],
     grant_market_item_locked: Callable[..., None],
@@ -54,6 +55,7 @@ def expire_listings_queryset_entry(
     return expire_listings_queryset_impl(
         expired_listings,
         log_label,
+        manor_model=manor_model,
         market_listing_model=market_listing_model,
         return_inventory_func=lambda *, manor, listing: restore_cancelled_listing_inventory(
             manor=manor,

@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import time
 from threading import Lock
+from typing import cast
 
 from django.conf import settings
 from django.contrib import messages
@@ -13,10 +14,12 @@ from django.core.cache import cache
 from django.db import DatabaseError, IntegrityError, transaction
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, TemplateView
 
 from core.config import SECURITY
 from core.utils.network import get_client_ip
+from core.utils.rate_limit import rate_limit_redirect
 from gameplay.models import Manor
 from gameplay.services.manor.core import ManorNameConflictError
 
@@ -36,6 +39,9 @@ from .register_runtime import apply_registration_integrity_errors, prepare_signu
 LOGIN_ATTEMPT_LIMIT = SECURITY.LOGIN_ATTEMPT_LIMIT
 LOGIN_ATTEMPT_WINDOW = SECURITY.LOGIN_ATTEMPT_WINDOW
 LOGIN_LOCKOUT_DURATION = SECURITY.LOGIN_LOCKOUT_DURATION
+REGISTRATION_IP_LIMIT = SECURITY.REGISTRATION_IP_LIMIT
+REGISTRATION_EMAIL_LIMIT = SECURITY.REGISTRATION_EMAIL_LIMIT
+REGISTRATION_RATE_WINDOW = SECURITY.REGISTRATION_RATE_WINDOW
 logger = logging.getLogger(__name__)
 _LOCAL_LOGIN_CACHE: dict[str, tuple[object, float]] = {}
 _LOCAL_LOGIN_CACHE_GUARD = Lock()
@@ -278,6 +284,35 @@ class LoginView(DjangoLoginView):
         return super().form_invalid(form)
 
 
+def _registration_email_identifier(request) -> str:
+    email = (request.POST.get("email", "") or "").strip().lower()
+    if email:
+        return f"email:{email}"
+    username = (request.POST.get("username", "") or "").strip().lower()
+    return f"missing-email:{username or 'anonymous'}"
+
+
+@method_decorator(
+    rate_limit_redirect(
+        "registration_ip",
+        limit=REGISTRATION_IP_LIMIT,
+        window_seconds=REGISTRATION_RATE_WINDOW,
+        redirect_url=cast(str, reverse_lazy("accounts:register")),
+        error_message="注册请求过于频繁，请稍后再试",
+    ),
+    name="dispatch",
+)
+@method_decorator(
+    rate_limit_redirect(
+        "registration_email",
+        limit=REGISTRATION_EMAIL_LIMIT,
+        window_seconds=REGISTRATION_RATE_WINDOW,
+        key_func=_registration_email_identifier,
+        redirect_url=cast(str, reverse_lazy("accounts:register")),
+        error_message="注册请求过于频繁，请稍后再试",
+    ),
+    name="dispatch",
+)
 class RegisterView(CreateView):
     model = User
     form_class = SignUpForm

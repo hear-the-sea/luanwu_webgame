@@ -27,6 +27,7 @@ def expire_listings_queryset(
     expired_listings: QuerySet,
     log_label: str,
     *,
+    manor_model,
     market_listing_model,
     return_inventory_func: Callable[..., object],
     create_message_func: Callable[..., object],
@@ -55,7 +56,6 @@ def expire_listings_queryset(
             with transaction.atomic():
                 listing = (
                     market_listing_model.objects.select_for_update(skip_locked=True)
-                    .select_related("seller", "item_template")
                     .filter(
                         pk=listing_id,
                         status=market_listing_model.Status.ACTIVE,
@@ -67,7 +67,7 @@ def expire_listings_queryset(
                 if not listing:
                     continue
 
-                seller = listing.seller
+                seller = manor_model.objects.select_for_update().get(pk=listing.seller_id)
                 item_template = listing.item_template
                 item_name = item_template.name
                 item_key = item_template.key

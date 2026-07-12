@@ -146,11 +146,14 @@ def get_or_create_free_gear_for_template_key(manor: Manor, *, template_key: str,
         defaults=build_gear_template_defaults(inventory_item.template, slot=resolved_slot),
     )
     free_gear = (
-        manor.gears.select_related("template").filter(template=gear_template, guest__isnull=True).order_by("id").first()
+        manor.gears.select_related("template")
+        .filter(template=gear_template, guest__isnull=True, inventory_backed=True)
+        .order_by("id")
+        .first()
     )
     if free_gear is not None:
         return free_gear
-    return GearItem.objects.create(manor=manor, template=gear_template)
+    return GearItem.objects.create(manor=manor, template=gear_template, inventory_backed=True)
 
 
 def resolve_equippable_gear(manor: Manor, choice: str | GearItem, *, slot: str | None = None) -> GearItem:
@@ -225,11 +228,11 @@ def resolve_equippable_gear_locked(
     gear = (
         manor.gears.select_for_update()
         .select_related("template")
-        .filter(template=gear_template, guest__isnull=True)
+        .filter(template=gear_template, guest__isnull=True, inventory_backed=True)
         .first()
     )
     if gear is None:
-        gear = GearItem.objects.create(manor=manor, template=gear_template)
+        gear = GearItem.objects.create(manor=manor, template=gear_template, inventory_backed=True)
 
     InventoryItem.objects.filter(pk=inventory_item.pk).update(quantity=F("quantity") - 1)
     InventoryItem.objects.filter(pk=inventory_item.pk, quantity__lte=0).delete()
@@ -254,7 +257,12 @@ def ensure_inventory_gears(manor: Manor, *, slot: str | None = None) -> None:
     if not items:
         target_slots = {EQUIP_SLOT_MAP[effect_type] for effect_type in effect_types if effect_type in EQUIP_SLOT_MAP}
         if target_slots:
-            GearItem.objects.filter(manor=manor, guest__isnull=True, template__slot__in=target_slots).delete()
+            GearItem.objects.filter(
+                manor=manor,
+                guest__isnull=True,
+                inventory_backed=True,
+                template__slot__in=target_slots,
+            ).delete()
         return
     target_slots = {EQUIP_SLOT_MAP[effect_type] for effect_type in effect_types if effect_type in EQUIP_SLOT_MAP}
     synced_slots: set[str] = set()
@@ -267,19 +275,26 @@ def ensure_inventory_gears(manor: Manor, *, slot: str | None = None) -> None:
             key=inventory_item.template.key,
             defaults=build_gear_template_defaults(inventory_item.template, slot=resolved_slot),
         )
-        free_qs = manor.gears.filter(template=gear_template, guest__isnull=True)
+        free_qs = manor.gears.filter(template=gear_template, guest__isnull=True, inventory_backed=True)
         free_count = free_qs.count()
         target_free = require_int(inventory_item.quantity, field_name="inventory gear quantity", minimum=0)
         if free_count < target_free:
             missing = target_free - free_count
-            GearItem.objects.bulk_create([GearItem(manor=manor, template=gear_template) for _ in range(missing)])
+            GearItem.objects.bulk_create(
+                [GearItem(manor=manor, template=gear_template, inventory_backed=True) for _ in range(missing)]
+            )
         elif free_count > target_free:
             to_delete = free_qs[: free_count - target_free]
             GearItem.objects.filter(id__in=[gear.id for gear in to_delete]).delete()
 
     orphan_slots = target_slots - synced_slots
     if orphan_slots:
-        GearItem.objects.filter(manor=manor, guest__isnull=True, template__slot__in=orphan_slots).delete()
+        GearItem.objects.filter(
+            manor=manor,
+            guest__isnull=True,
+            inventory_backed=True,
+            template__slot__in=orphan_slots,
+        ).delete()
 
 
 def consume_warehouse_item_for_gear(guest: Guest, gear: GearItem) -> bool:

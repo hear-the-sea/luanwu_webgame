@@ -5,10 +5,10 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from core.exceptions import BattlePreparationError, ItemNotFoundError
+from core.exceptions import BattlePreparationError, EquipmentError, ItemNotFoundError
 from gameplay.models import InventoryItem, ItemTemplate
 from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestArchetype, GuestRarity, GuestTemplate
-from guests.services.equipment import equip_guest, unequip_guest_item
+from guests.services.equipment import ensure_inventory_gears, equip_guest, unequip_guest_item
 
 User = get_user_model()
 
@@ -390,3 +390,27 @@ class TestEquipmentStringChoiceResolution(TestCase):
         self.guest.refresh_from_db()
         self.assertFalse(self.guest.gear_items.exists())
         self.assertFalse(GearItem.objects.filter(manor=self.manor, template__key=self.item_template.key).exists())
+
+    def test_equip_guest_rejects_stale_projected_gear_after_inventory_is_sold(self):
+        InventoryItem.objects.create(
+            manor=self.manor,
+            template=self.item_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            quantity=1,
+        )
+        ensure_inventory_gears(self.manor, slot=GearSlot.WEAPON)
+        projected_gear = GearItem.objects.get(
+            manor=self.manor,
+            template__key=self.item_template.key,
+            guest__isnull=True,
+        )
+        self.assertTrue(projected_gear.inventory_backed)
+        InventoryItem.objects.filter(manor=self.manor, template=self.item_template).delete()
+
+        with self.assertRaisesRegex(EquipmentError, "库存"):
+            equip_guest(projected_gear, self.guest)
+
+        projected_gear.refresh_from_db()
+        self.guest.refresh_from_db()
+        assert projected_gear.guest_id is None
+        assert self.guest.attack_bonus == 0

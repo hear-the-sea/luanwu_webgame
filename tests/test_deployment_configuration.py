@@ -23,7 +23,36 @@ def test_prod_compose_passes_redis_password_to_redis_container() -> None:
 
     redis_environment = compose["services"]["redis"].get("environment") or {}
 
-    assert redis_environment["REDIS_PASSWORD"] == "${REDIS_PASSWORD:-}"
+    assert redis_environment["REDIS_PASSWORD"] == "${REDIS_PASSWORD:?set REDIS_PASSWORD in .env.docker}"
+
+
+def test_prod_env_requires_a_non_empty_redis_password() -> None:
+    values: dict[str, str] = {}
+    for line in (PROJECT_ROOT / ".env.docker.prod.example").read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        values[key] = value
+
+    assert values["REDIS_PASSWORD"] == "change-me-strong-redis-password"
+
+
+def test_prod_compose_waits_for_dependency_and_application_readiness() -> None:
+    compose = yaml.safe_load((PROJECT_ROOT / "docker-compose.prod.yml").read_text(encoding="utf-8"))
+    services = compose["services"]
+
+    assert "healthcheck" in services["redis"]
+    assert "healthcheck" in services["db"]
+    assert "healthcheck" in services["web"]
+    assert services["web"]["depends_on"]["db"]["condition"] == "service_healthy"
+    assert services["web"]["depends_on"]["redis"]["condition"] == "service_healthy"
+    assert services["nginx"]["depends_on"]["web"]["condition"] == "service_healthy"
+    web_healthcheck = services["web"]["healthcheck"]
+    healthcheck_command = " ".join(web_healthcheck["test"])
+    assert "/health/ready" in healthcheck_command
+    assert "timeout=10" in healthcheck_command
+    assert web_healthcheck["timeout"] == "12s"
 
 
 def test_prod_runbook_compose_commands_load_env_docker_for_interpolation() -> None:

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import pytest
+from django.utils import timezone
 
 from core.exceptions import TradeValidationError
-from gameplay.models import InventoryItem
+from gameplay.models import InventoryItem, ItemTemplate
 from trade.models import MarketListing
 from trade.services import market_service
 
@@ -39,6 +40,49 @@ class TestMarketListing:
             manor=seller_manor, template=tradeable_item_template, storage_location="warehouse"
         ).first()
         assert inventory.quantity == initial_quantity - 10
+
+    def test_grain_listing_and_cancel_keep_manor_and_inventory_balances_in_sync(self, seller_manor):
+        grain_template, _ = ItemTemplate.objects.get_or_create(
+            key="grain",
+            defaults={
+                "name": "粮食",
+                "effect_type": ItemTemplate.EffectType.RESOURCE,
+                "tradeable": True,
+                "price": 1000,
+            },
+        )
+        grain_template.tradeable = True
+        grain_template.price = 1000
+        grain_template.save(update_fields=["tradeable", "price"])
+        seller_manor.grain = 20
+        seller_manor.resource_updated_at = timezone.now()
+        seller_manor.save(update_fields=["grain", "resource_updated_at"])
+        InventoryItem.objects.update_or_create(
+            manor=seller_manor,
+            template=grain_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            defaults={"quantity": 20},
+        )
+
+        listing = market_service.create_listing(
+            manor=seller_manor, item_key="grain", quantity=5, unit_price=2000, duration=7200
+        )
+
+        seller_manor.refresh_from_db()
+        inventory = InventoryItem.objects.get(
+            manor=seller_manor,
+            template=grain_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+        assert seller_manor.grain == 15
+        assert inventory.quantity == 15
+
+        market_service.cancel_listing(seller_manor, listing.id)
+
+        seller_manor.refresh_from_db()
+        inventory.refresh_from_db()
+        assert seller_manor.grain == 20
+        assert inventory.quantity == 20
 
     def test_create_listing_untradeable_item(self, seller_manor, untradeable_item_template):
         InventoryItem.objects.create(

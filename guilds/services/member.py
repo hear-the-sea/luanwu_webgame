@@ -113,12 +113,37 @@ def _approve_application_state(application, reviewer, auto=False):
         # 由于GuildMember.user是OneToOneField，需要处理已存在的记录
         member_record = GuildMember.objects.select_for_update().filter(user=application_locked.applicant).first()
         if member_record:
+            moved_from_another_guild = member_record.guild_id != guild_locked.id
             member_record.guild = guild_locked
             member_record.position = "member"
             member_record.is_active = True
             member_record.joined_at = timezone.now()
             member_record.left_at = None
-            member_record.save(update_fields=["guild", "position", "is_active", "joined_at", "left_at"])
+            update_fields = ["guild", "position", "is_active", "joined_at", "left_at"]
+            if moved_from_another_guild:
+                member_record.current_contribution = 0
+                member_record.total_contribution = 0
+                member_record.weekly_contribution = 0
+                member_record.daily_donation_silver = 0
+                member_record.daily_donation_grain = 0
+                member_record.daily_donation_gold_bar = 0
+                member_record.daily_donation_reset_at = timezone.localdate()
+                member_record.daily_exchange_count = 0
+                member_record.daily_exchange_reset_at = timezone.localdate()
+                update_fields.extend(
+                    [
+                        "current_contribution",
+                        "total_contribution",
+                        "weekly_contribution",
+                        "daily_donation_silver",
+                        "daily_donation_grain",
+                        "daily_donation_gold_bar",
+                        "daily_donation_reset_at",
+                        "daily_exchange_count",
+                        "daily_exchange_reset_at",
+                    ]
+                )
+            member_record.save(update_fields=update_fields)
         else:
             try:
                 GuildMember.objects.create(

@@ -258,10 +258,13 @@ def test_purchase_listing_rejects_nonexistent():
     buyer = MagicMock()
 
     with patch.object(market_service.MarketListing, "objects") as mock_qs:
-        mock_qs.select_for_update.return_value.select_related.return_value.filter.return_value.first.return_value = None
+        locked_chain = mock_qs.select_for_update.return_value
+        locked_chain.filter.return_value.first.return_value = None
 
         with pytest.raises(TradeValidationError, match="挂单不存在"):
             market_service.purchase_listing(buyer, 999)
+
+        locked_chain.select_related.assert_not_called()
 
 
 # ============ cancel_listing tests ============
@@ -272,10 +275,13 @@ def test_cancel_listing_rejects_nonexistent():
     manor = MagicMock()
 
     with patch.object(market_service.MarketListing, "objects") as mock_qs:
-        mock_qs.select_for_update.return_value.select_related.return_value.filter.return_value.first.return_value = None
+        locked_chain = mock_qs.select_for_update.return_value
+        locked_chain.filter.return_value.first.return_value = None
 
         with pytest.raises(TradeValidationError, match="挂单不存在或无权取消"):
             market_service.cancel_listing(manor, 999)
+
+        locked_chain.select_related.assert_not_called()
 
 
 # ============ get_my_listings tests ============
@@ -395,7 +401,7 @@ def test_expire_listings_queryset_skips_when_row_no_longer_active(monkeypatch):
     queryset.filter.return_value.order_by.return_value.values_list.return_value = [1]
 
     locked_chain = MagicMock()
-    locked_chain.select_related.return_value.filter.return_value.first.return_value = None
+    locked_chain.filter.return_value.first.return_value = None
     objects_mock = MagicMock()
     objects_mock.select_for_update.return_value = locked_chain
 
@@ -412,7 +418,8 @@ def test_expire_listings_queryset_skips_when_row_no_longer_active(monkeypatch):
     assert prefilter_kwargs["status"] == market_service.MarketListing.Status.ACTIVE
     assert "expires_at__lte" in prefilter_kwargs
 
-    filter_kwargs = locked_chain.select_related.return_value.filter.call_args.kwargs
+    locked_chain.select_related.assert_not_called()
+    filter_kwargs = locked_chain.filter.call_args.kwargs
     assert filter_kwargs["pk"] == 1
     assert filter_kwargs["status"] == market_service.MarketListing.Status.ACTIVE
     assert "expires_at__lte" in filter_kwargs

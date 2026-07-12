@@ -162,18 +162,14 @@ def cancel_market_listing(
     manor,
     listing_id: int,
     *,
+    manor_model,
     market_listing_model,
     restore_cancelled_listing_inventory,
     build_cancel_listing_result,
     grant_market_item_locked,
 ):
     with transaction.atomic():
-        listing = (
-            market_listing_model.objects.select_for_update()
-            .select_related("item_template")
-            .filter(id=listing_id, seller=manor)
-            .first()
-        )
+        listing = market_listing_model.objects.select_for_update().filter(id=listing_id, seller=manor).first()
 
         if not listing:
             raise TradeValidationError("挂单不存在或无权取消")
@@ -181,11 +177,13 @@ def cancel_market_listing(
         if listing.status != market_listing_model.Status.ACTIVE:
             raise TradeValidationError("该挂单已经不在售状态，无法取消")
 
+        locked_manor = manor_model.objects.select_for_update().get(pk=listing.seller_id)
+
         listing.status = market_listing_model.Status.CANCELLED
         listing.save(update_fields=["status"])
 
         restore_cancelled_listing_inventory(
-            manor=manor,
+            manor=locked_manor,
             listing=listing,
             grant_item_locked=grant_market_item_locked,
         )

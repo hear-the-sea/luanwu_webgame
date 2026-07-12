@@ -219,21 +219,19 @@
                     </section>
                     <section class="tw-task-detail-section">
                         <h5 class="text-text-primary text-lg font-bold mb-2">掉落预览</h5>
-                        <div class="flex flex-wrap gap-2">
+                        <div class="tw-drop-grid">
                             {% if selected_drop_items %}
                                 {% for drop in selected_drop_items %}
-                                    <span class="tw-pill rarity-{{ drop.rarity|default:'default' }}">{{ drop.label }}</span>
+                                    {% include "gameplay/includes/mission_drop_item.html" with drop=drop only %}
                                 {% endfor %}
-                            {% else %}
-                                <span class="tw-pill">未配置</span>
                             {% endif %}
                         </div>
                         {% if selected_probability_drop_items %}
                         <div class="mt-3">
                             <div class="text-text-secondary text-sm mb-2">概率掉落：</div>
-                            <div class="flex flex-wrap gap-2">
+                            <div class="tw-drop-grid">
                                 {% for drop in selected_probability_drop_items %}
-                                    <span class="tw-pill rarity-{{ drop.rarity|default:'default' }}">{{ drop.label }}</span>
+                                    {% include "gameplay/includes/mission_drop_item.html" with drop=drop only %}
                                 {% endfor %}
                             </div>
                         </div>

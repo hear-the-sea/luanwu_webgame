@@ -209,11 +209,11 @@ docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "w
 
 不要带 `--skip-images`，否则图片处理会被跳过。
 
-## Redis 认证坑位
+## Redis 认证
 
 当前生产配置最容易踩的坑是 Redis 密码没有真正传进 Redis 容器。
 
-应用在生产模式下会强制检查 Redis 认证，相关逻辑见 [database.py](/home/daniel/code/web_game_v5/config/settings/database.py#L40)。如果应用端带着 `REDIS_PASSWORD` 连接，而 Redis 服务本身没有启用 `requirepass`，就会出现类似错误：
+应用在生产模式下会强制检查 Redis 认证，相关逻辑见 [database.py](/home/daniel/code/web_game_v5/config/settings/database.py#L40)。`REDIS_PASSWORD` 是生产部署必填项；Compose 会在变量缺失或为空时直接拒绝解析，避免应用与 Redis 的认证状态不一致。
 
 ```text
 AUTH <password> called without any password configured for the default user.
@@ -225,15 +225,12 @@ AUTH <password> called without any password configured for the default user.
 redis:
   image: redis:7-alpine
   environment:
-    REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env.docker}
   command:
     - sh
     - -c
     - |
-      if [ -n "$$REDIS_PASSWORD" ]; then
-        exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD";
-      fi
-      exec redis-server --appendonly yes;
+      exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD";
 ```
 
 同时 `.env.docker` 里要设置：

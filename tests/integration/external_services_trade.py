@@ -2,16 +2,20 @@ from __future__ import annotations
 
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
+from threading import Barrier
 
 import pytest
+from django.db import close_old_connections
 from django.utils import timezone
 
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
 from trade.models import AuctionBid, AuctionRound, AuctionSlot, MarketListing
 from trade.services.auction_service import place_bid, settle_auction_round
-from trade.services.market_service import create_listing, purchase_listing
+from trade.services.market_service import cancel_listing, create_listing, purchase_listing
+from trade.services.shop_service import sell_item
 
 pytestmark = [pytest.mark.integration, pytest.mark.usefixtures("load_guest_data", "load_troop_data")]
 
@@ -28,9 +32,11 @@ def test_integration_market_purchase_flow(require_env_services, django_user_mode
     buyer = ensure_manor(buyer_user)
 
     seller.silver = 100000
+    seller.silver_capacity = 300000
     buyer.silver = 200000
-    seller.save(update_fields=["silver"])
-    buyer.save(update_fields=["silver"])
+    buyer.silver_capacity = 300000
+    seller.save(update_fields=["silver", "silver_capacity"])
+    buyer.save(update_fields=["silver", "silver_capacity"])
 
     item_key = f"intg_market_item_{uuid.uuid4().hex[:8]}"
     template = ItemTemplate.objects.create(
@@ -61,6 +67,74 @@ def test_integration_market_purchase_flow(require_env_services, django_user_mode
     assert listing.status == MarketListing.Status.SOLD
     assert transaction_record.total_price == 6000
     assert buyer_item.quantity == 2
+
+
+@pytest.mark.django_db(transaction=True)
+def test_integration_grain_cancel_and_shop_sale_keep_lock_order_and_balances(require_env_services, django_user_model):
+    user = django_user_model.objects.create_user(
+        username=f"intg_grain_lock_{uuid.uuid4().hex[:8]}",
+        password="pass123",
+    )
+    manor = ensure_manor(user)
+    manor.grain = 20
+    manor.silver = 100000
+    manor.silver_capacity = 300000
+    manor.resource_updated_at = timezone.now()
+    manor.save(update_fields=["grain", "silver", "silver_capacity", "resource_updated_at"])
+    grain_template, _ = ItemTemplate.objects.get_or_create(
+        key="grain",
+        defaults={
+            "name": "粮食",
+            "effect_type": ItemTemplate.EffectType.RESOURCE,
+            "tradeable": True,
+            "price": 1,
+        },
+    )
+    grain_template.tradeable = True
+    grain_template.price = 1
+    grain_template.save(update_fields=["tradeable", "price"])
+    InventoryItem.objects.update_or_create(
+        manor=manor,
+        template=grain_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        defaults={"quantity": 20},
+    )
+    listing = create_listing(manor, "grain", quantity=5, unit_price=1000, duration=7200)
+    start = Barrier(2)
+
+    def _cancel() -> None:
+        close_old_connections()
+        try:
+            local_manor = type(manor).objects.get(pk=manor.pk)
+            start.wait(timeout=10)
+            cancel_listing(local_manor, listing.pk)
+        finally:
+            close_old_connections()
+
+    def _sell() -> None:
+        close_old_connections()
+        try:
+            local_manor = type(manor).objects.get(pk=manor.pk)
+            start.wait(timeout=10)
+            sell_item(local_manor, "grain", 1)
+        finally:
+            close_old_connections()
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(_cancel), executor.submit(_sell)]
+        for future in futures:
+            future.result(timeout=20)
+
+    manor.refresh_from_db()
+    inventory = InventoryItem.objects.get(
+        manor=manor,
+        template=grain_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    listing.refresh_from_db()
+    assert listing.status == MarketListing.Status.CANCELLED
+    assert manor.grain == 19
+    assert inventory.quantity == 19
 
 
 @pytest.mark.django_db(transaction=True)
