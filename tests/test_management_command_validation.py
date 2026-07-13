@@ -426,6 +426,32 @@ def test_default_mission_templates_import_zhuolu_zhongyuan():
         "equip_shanheshejitu": 0.01,
         "equip_zhoutianxingpan": 0.01,
         "equip_xuanyuanjian": 0.005,
+        "blueprint_top_blue": {
+            "chance": 0.45,
+            "choices": [
+                "blueprint_qinglongkui",
+                "blueprint_qinglongjia",
+                "blueprint_qinglongxue",
+                "blueprint_qinglongdao",
+            ],
+        },
+        "blueprint_top_purple": {
+            "chance": 0.25,
+            "choices": [
+                "blueprint_qilinkui",
+                "blueprint_qilinjia",
+                "blueprint_qilinxue",
+                "blueprint_qilindao",
+            ],
+        },
+        "blueprint_top_orange": {
+            "chance": 0.03,
+            "choices": [
+                "blueprint_feiyuan",
+                "blueprint_chixiaojifeng",
+                "blueprint_mojiajiguanren",
+            ],
+        },
     }
 
 

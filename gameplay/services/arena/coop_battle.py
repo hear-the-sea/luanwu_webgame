@@ -30,7 +30,14 @@ def load_runtime_rules_for_event(base_rules: dict[str, Any], event: ArenaCoopEve
     merge_mapping(rules["enemy"], event.enemy_snapshot if isinstance(event.enemy_snapshot, dict) else {})
     reward_snapshot = event.reward_snapshot if isinstance(event.reward_snapshot, dict) else {}
     merge_mapping(rules["rewards"], reward_snapshot.get("rewards"))
-    merge_mapping(rules["rare_drop"], reward_snapshot.get("rare_drop"))
+    rare_drop_snapshot = reward_snapshot.get("rare_drop")
+    if (
+        isinstance(rare_drop_snapshot, dict)
+        and "item_key" in rare_drop_snapshot
+        and "item_choices" not in rare_drop_snapshot
+    ):
+        rules["rare_drop"]["item_choices"] = []
+    merge_mapping(rules["rare_drop"], rare_drop_snapshot)
     daily_snapshot = event.daily_rule_snapshot if isinstance(event.daily_rule_snapshot, dict) else {}
     merge_mapping(rules["registration"], daily_snapshot.get("registration"))
     merge_mapping(rules["contribution"], daily_snapshot.get("contribution"))

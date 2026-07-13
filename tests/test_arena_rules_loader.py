@@ -42,6 +42,7 @@ def test_normalize_arena_rules_merges_and_clamps_values():
         },
         "runtime": {
             "round_interval_seconds": 900,
+            "virtual_fill_wait_seconds": 18000,
             "completed_retention_seconds": 0,
             "round_retry_seconds": 15,
             "recruiting_lock_key": "arena:test:lock",

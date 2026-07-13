@@ -54,6 +54,32 @@ def test_battle_module_load_runtime_rules_for_event_merges_snapshots():
     assert base_rules == base_rules_snapshot
 
 
+def test_battle_module_legacy_item_key_snapshot_does_not_inherit_current_choices():
+    base_rules = {
+        "enemy": {},
+        "rewards": {},
+        "rare_drop": {
+            "item_key": "current_fallback",
+            "item_choices": [{"item_key": "current_blueprint", "weight": 1}],
+        },
+        "registration": {},
+        "contribution": {},
+    }
+    event = ArenaCoopEvent(
+        reward_snapshot={
+            "rare_drop": {
+                "item_key": "legacy_equipment",
+                "chance_bps": 10,
+            }
+        }
+    )
+
+    merged = load_runtime_rules_for_event(base_rules, event)
+
+    assert merged["rare_drop"]["item_key"] == "legacy_equipment"
+    assert merged["rare_drop"]["item_choices"] == []
+
+
 @pytest.mark.django_db
 def test_settlement_module_formats_rare_drop_summary_with_item_name():
     ItemTemplate.objects.create(
