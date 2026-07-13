@@ -1,0 +1,8 @@
+{% if state and not spectator and state.side == visible_side %}
+<span class="battle-unit-state is-{{ state.status }}"
+      data-unit-state-side="{{ state.side }}"
+      role="img"
+      aria-label="{{ state.status_label }}">
+    <span class="battle-unit-state-fill" style="--battle-unit-state-percent: {{ state.percent }}%;"></span>
+</span>
+{% endif %}

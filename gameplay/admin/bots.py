@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Q
 from django.utils import timezone
 
 from ..models import BotBackfillDemand, BotInventoryDailyCounter, BotProfile
@@ -17,9 +18,13 @@ class DueMaintenanceFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         now = timezone.now()
         if self.value() == "yes":
-            return queryset.exclude(state=BotProfile.State.RETIRED).filter(next_growth_at__lte=now)
+            return queryset.exclude(state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED]).filter(
+                next_growth_at__lte=now
+            )
         if self.value() == "no":
-            return queryset.filter(next_growth_at__gt=now)
+            return queryset.filter(
+                Q(state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED]) | Q(next_growth_at__gt=now)
+            )
         return queryset
 
 
@@ -41,6 +46,7 @@ class BotProfileAdmin(admin.ModelAdmin):
         "is_due_for_maintenance",
         "abandon_at",
         "retire_at",
+        "maintenance_started_at",
         "maintenance_stopped_at",
     )
     list_filter = (
@@ -53,6 +59,7 @@ class BotProfileAdmin(admin.ModelAdmin):
         ("next_growth_at", admin.DateFieldListFilter),
         ("abandon_at", admin.DateFieldListFilter),
         ("retire_at", admin.DateFieldListFilter),
+        ("maintenance_started_at", admin.DateFieldListFilter),
         ("maintenance_stopped_at", admin.DateFieldListFilter),
     )
     search_fields = (
@@ -66,6 +73,7 @@ class BotProfileAdmin(admin.ModelAdmin):
         "target_prestige_band",
         "current_prestige_band",
         "last_planned_at",
+        "maintenance_started_at",
         "maintenance_stopped_at",
         "created_at",
         "updated_at",
@@ -84,13 +92,17 @@ class BotProfileAdmin(admin.ModelAdmin):
 
     @admin.display(boolean=True, description="待维护", ordering="next_growth_at")
     def is_due_for_maintenance(self, obj: BotProfile) -> bool:
-        return obj.state != BotProfile.State.RETIRED and obj.next_growth_at <= timezone.now()
+        return (
+            obj.state not in {BotProfile.State.STALE, BotProfile.State.RETIRED} and obj.next_growth_at <= timezone.now()
+        )
 
     @admin.action(description="标记为停滞")
     def mark_selected_stale(self, request, queryset) -> None:
         now = timezone.now()
-        updated = queryset.exclude(state=BotProfile.State.RETIRED).update(
-            state=BotProfile.State.STALE, next_growth_at=now
+        updated = queryset.exclude(state=BotProfile.State.STALE).update(
+            state=BotProfile.State.STALE,
+            next_growth_at=now,
+            maintenance_stopped_at=now,
         )
         self.message_user(request, f"已标记 {updated} 个虚拟玩家为停滞")
 

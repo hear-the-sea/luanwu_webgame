@@ -170,6 +170,7 @@ def test_safe_cache_delete_runtime_marker_error_bubbles_up(monkeypatch):
         raid_utils._safe_cache_delete("raid:test:delete")
 
 
+@pytest.mark.django_db
 def test_can_attack_target_can_bypass_cached_recent_attacks(monkeypatch):
     attacker = SimpleNamespace(
         id=1,
@@ -202,6 +203,7 @@ def test_can_attack_target_can_bypass_cached_recent_attacks(monkeypatch):
     assert allowed_reason == ""
 
 
+@pytest.mark.django_db
 def test_can_attack_target_blocks_defender_defeat_protection():
     attacker = SimpleNamespace(
         id=1,
@@ -223,6 +225,7 @@ def test_can_attack_target_blocks_defender_defeat_protection():
     assert "战败保护期" in reason
 
 
+@pytest.mark.django_db
 def test_can_attack_target_ignores_prestige_gap_when_both_manors_reach_cutoff(monkeypatch):
     cutoff = raid_utils.PVPConstants.RAID_PRESTIGE_PROTECTION_CUTOFF
     attacker = SimpleNamespace(
@@ -249,6 +252,7 @@ def test_can_attack_target_ignores_prestige_gap_when_both_manors_reach_cutoff(mo
     assert reason == ""
 
 
+@pytest.mark.django_db
 def test_can_attack_target_still_blocks_large_prestige_gap_below_cutoff(monkeypatch):
     cutoff = raid_utils.PVPConstants.RAID_PRESTIGE_PROTECTION_CUTOFF
     attacker = SimpleNamespace(
@@ -275,6 +279,7 @@ def test_can_attack_target_still_blocks_large_prestige_gap_below_cutoff(monkeypa
     assert "声望过高" in reason
 
 
+@pytest.mark.django_db
 def test_can_attack_target_uses_dynamic_prestige_range_below_cutoff(monkeypatch):
     attacker = SimpleNamespace(
         id=1,

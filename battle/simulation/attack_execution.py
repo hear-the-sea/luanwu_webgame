@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, cast
 from ..passives import run_passives_for_timing
 from .damage_application import apply_damage_results
 from .damage_calculation import calculate_attack_damage, process_status_effects
+from .report_state import snapshot_unit_state
 from .target_selection import is_ranged_attack, select_attack_targets
 from .types import AttackLogEntry, AttackSkill, AttackType
 from .utils import calculate_dodge_chance
@@ -109,6 +110,8 @@ def perform_attack(
                 "target_combatant_slot": current_target.combatant_slot,
                 "target_template_key": current_target.template_key,
                 "target_is_boss": current_target.is_boss,
+                "actor_state": snapshot_unit_state(actor),
+                "target_state": snapshot_unit_state(current_target),
             }
             if passive_events_before:
                 dodge_entry["passive_events_before"] = passive_events_before
@@ -124,6 +127,8 @@ def perform_attack(
         )
 
         applied = apply_damage_results(actor, current_target, damage_calc.damage, rng)
+        actor_state = snapshot_unit_state(actor)
+        target_state = snapshot_unit_state(current_target)
         actor_defeated = actor_defeated or applied.actor_defeated
         passive_events_after: list[dict[str, Any]] = []
         run_passives_for_timing(
@@ -170,6 +175,8 @@ def perform_attack(
             "target_combatant_slot": current_target.combatant_slot,
             "target_template_key": current_target.template_key,
             "target_is_boss": current_target.is_boss,
+            "actor_state": actor_state,
+            "target_state": target_state,
         }
         if passive_events_before:
             entry["passive_events_before"] = passive_events_before

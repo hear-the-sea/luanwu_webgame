@@ -9,7 +9,7 @@ from django.db.models import F
 
 from core.exceptions import BuildingNotFoundError, InsufficientSpaceError, InsufficientStockError, ItemNotFoundError
 
-from ...constants import BuildingKeys
+from ...constants import BUILDING_MAX_LEVELS, BuildingKeys
 from ...models import InventoryItem, Manor
 
 # 粮食物品模板 key
@@ -24,14 +24,14 @@ def get_treasury_capacity(manor: Manor) -> int:
         manor: 庄园对象
 
     Returns:
-        藏宝阁容量（初始500，每级+500，最大30级，满级15000）
+        藏宝阁容量（初始500，每级+500，建筑最高20级，满级10000）
     """
     treasury = manor.buildings.select_related("building_type").filter(building_type__key=BuildingKeys.TREASURY).first()
 
     if not treasury:
         return 0
 
-    level = min(treasury.level, 30)
+    level = min(treasury.level, BUILDING_MAX_LEVELS[BuildingKeys.TREASURY])
     return 500 + max(0, level - 1) * 500
 
 

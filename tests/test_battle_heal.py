@@ -31,6 +31,9 @@ def test_quan_battle_heal_defender_recovers_13_percent():
     assert heals[0]["healed"] == 130  # 1000 * 13%
     assert defender.hp == 1130
     assert defender.troop_strength == 63
+    assert heals[0]["unit_state"]["current"] == 63
+    assert heals[0]["unit_state"]["maximum"] == 100
+    assert heals[0]["unit_state"]["percent"] == 63
 
 
 def test_quan_battle_heal_attacker_remains_10_percent():
@@ -43,3 +46,6 @@ def test_quan_battle_heal_attacker_remains_10_percent():
     assert heals[0]["healed"] == 100  # 1000 * 10%
     assert attacker.hp == 1100
     assert attacker.troop_strength == 60
+    assert heals[0]["unit_state"]["current"] == 60
+    assert heals[0]["unit_state"]["maximum"] == 100
+    assert heals[0]["unit_state"]["percent"] == 60

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from .combatants_pkg.core import BattleModifiers
+from .simulation.report_state import snapshot_unit_state
 
 
 def _modifier_source_payload(modifiers: BattleModifiers, key: str) -> dict[str, Any]:
@@ -166,6 +167,7 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
                         "unit": getattr(target_unit, "name", ""),
                         "effect": str(effect.get("log_name") or effect_type),
                         "healed": healed,
+                        "unit_state": snapshot_unit_state(target_unit),
                     },
                 )
         return
@@ -192,6 +194,7 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
                         "unit": getattr(target_unit, "name", ""),
                         "effect": str(effect.get("log_name") or effect_type),
                         "lost": lost,
+                        "unit_state": snapshot_unit_state(target_unit),
                     },
                 )
         return
@@ -272,6 +275,7 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
                 "unit": getattr(actor, "name", ""),
                 "effect": str(effect.get("log_name") or ""),
                 "message": str(effect.get("message") or ""),
+                "unit_state": snapshot_unit_state(actor),
             },
         )
         return

@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 from django.utils import timezone
 
-from gameplay.models import InventoryItem, ItemTemplate
+from gameplay.models import Building, BuildingType, InventoryItem, ItemTemplate
 from guests.models import (
     Guest,
     GuestArchetype,
@@ -28,6 +28,35 @@ class TestInventoryPageContext:
         response = client.get(reverse("gameplay:warehouse") + "?tab=treasury")
         assert response.status_code == 200
         assert response.context["current_tab"] == "treasury"
+
+    def test_treasury_tab_reports_over_capacity_without_negative_remaining(self, manor_with_user):
+        manor, client = manor_with_user
+        treasury_type = BuildingType.objects.get(key="treasury")
+        treasury = Building.objects.get(manor=manor, building_type=treasury_type)
+        treasury.level = 1
+        treasury.save(update_fields=["level"])
+        template = ItemTemplate.objects.create(
+            key="over_capacity_display_item",
+            name="超额展示物品",
+            storage_space=300,
+        )
+        InventoryItem.objects.create(
+            manor=manor,
+            template=template,
+            quantity=2,
+            storage_location=InventoryItem.StorageLocation.TREASURY,
+        )
+
+        response = client.get(reverse("gameplay:warehouse") + "?tab=treasury")
+
+        assert response.status_code == 200
+        assert response.context["treasury_remaining"] == 0
+        assert response.context["treasury_over_capacity"] == 100
+        assert response.context["treasury_usage_percent"] == 100
+        body = response.content.decode("utf-8")
+        assert "已超出 100 空间" in body
+        assert "剩余 -100" not in body
+        assert 'style="width: 100%;"' in body
 
     def test_warehouse_page_projects_grain_item_without_writing_inventory(self, manor_with_user):
         manor, client = manor_with_user

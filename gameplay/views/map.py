@@ -223,7 +223,7 @@ class RaidConfigView(LoginRequiredMixin, TemplateView):
 
         # 获取目标庄园
         target_manor = get_object_or_404(
-            ManorModel.objects.exclude(bot_profile__state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED]),
+            ManorModel.objects.exclude(bot_profile__state=BotProfile.State.STALE),
             pk=target_id,
         )
 
@@ -268,7 +268,7 @@ def manor_detail_api(request: HttpRequest, manor_id: int) -> JsonResponse:
         # 优化：使用 select_related 预加载用户信息
         target_manor = (
             ManorModel.objects.select_related("user")
-            .exclude(bot_profile__state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED])
+            .exclude(bot_profile__state=BotProfile.State.STALE)
             .get(pk=manor_id)
         )
     except ManorModel.DoesNotExist:

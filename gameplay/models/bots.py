@@ -37,6 +37,8 @@ class BotProfile(models.Model):
     abandon_at = models.DateTimeField("弃坑时间", db_index=True)
     retire_at = models.DateTimeField("退场时间", db_index=True)
     loot_budget_daily = models.PositiveIntegerField("每日资源预算", default=0)
+    inventory_template_keys = models.JSONField("库存模板池", default=list, blank=True)
+    maintenance_started_at = models.DateTimeField("维护开始时间", null=True, blank=True)
     maintenance_stopped_at = models.DateTimeField("维护停止时间", null=True, blank=True)
     last_planned_at = models.DateTimeField("最近规划时间", null=True, blank=True)
     created_at = models.DateTimeField("创建时间", auto_now_add=True)

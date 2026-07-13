@@ -26,16 +26,18 @@
                     <span class="tw-capacity-used">已使用：{{ treasury_used }}</span>
                     <span class="text-text-muted">/</span>
                     <span class="tw-capacity-total">总容量：{{ treasury_capacity }}</span>
-                    {% widthratio treasury_used treasury_capacity 100 as usage_percent %}
-                    <span class="tw-capacity-remaining {% if usage_percent >= 90 %}critical{% elif usage_percent >= 70 %}warning{% endif %}">
+                    <span class="tw-capacity-remaining {% if treasury_over_capacity %}critical{% elif treasury_usage_percent >= 90 %}critical{% elif treasury_usage_percent >= 70 %}warning{% endif %}">
+                        {% if treasury_over_capacity %}
+                        (已超出 {{ treasury_over_capacity }} 空间)
+                        {% else %}
                         (剩余 {{ treasury_remaining }})
+                        {% endif %}
                     </span>
                 </span>
             </div>
             <div class="tw-capacity-progress">
-                {% widthratio treasury_used treasury_capacity 100 as usage_percent %}
-                <div class="tw-capacity-progress-bar {% if usage_percent >= 90 %}critical{% elif usage_percent >= 70 %}warning{% endif %}"
-                     style="width: {{ usage_percent }}%;"></div>
+                <div class="tw-capacity-progress-bar {% if treasury_over_capacity %}critical{% elif treasury_usage_percent >= 90 %}critical{% elif treasury_usage_percent >= 70 %}warning{% endif %}"
+                     style="width: {{ treasury_usage_percent }}%;"></div>
             </div>
             {% else %}
             <div class="tw-capacity-not-built">

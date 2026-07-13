@@ -237,6 +237,8 @@ def sync_arena_coop_combat_state(
 
 
 def try_trigger_arena_coop_pre_action_heal(actor: Any) -> dict[str, Any] | None:
+    from .simulation.report_state import snapshot_unit_state
+
     if getattr(actor, "hp", 0) <= 0:
         return None
     if _has_action_before_heal_passive(actor):
@@ -262,6 +264,7 @@ def try_trigger_arena_coop_pre_action_heal(actor: Any) -> dict[str, Any] | None:
         "healed": healed,
         "new_hp": actor.hp,
         "effect": "九阳护体",
+        "unit_state": snapshot_unit_state(actor),
     }
 
 

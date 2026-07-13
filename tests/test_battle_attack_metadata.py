@@ -53,3 +53,15 @@ def test_perform_attack_includes_coop_owner_metadata_in_event_logs():
     assert event["actor_combatant_slot"] == 1
     assert event["target_template_key"] == "arena_gl_top_zhang_wuji_boss"
     assert event["target_is_boss"] is True
+    assert event["actor_state"] == {
+        "kind": "guest",
+        "side": "attacker",
+        "current": actor.hp,
+        "maximum": actor.max_hp,
+        "percent": round(actor.hp * 100 / actor.max_hp),
+        "status": "healthy",
+        "status_label": "状态充足",
+    }
+    assert event["target_state"]["side"] == "defender"
+    assert event["target_state"]["current"] == max(0, target.hp)
+    assert event["target_state"]["maximum"] == target.max_hp

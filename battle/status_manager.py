@@ -5,6 +5,7 @@ from itertools import chain
 from typing import Any, Dict, Iterable, List
 
 from .combat_math import troop_unit_hp
+from .simulation.report_state import snapshot_unit_state
 from .utils.status_effects import cleanup_status_effects
 
 # ============ 战斗恢复常量 ============
@@ -118,6 +119,7 @@ def apply_battle_heal(
                             "new_hp": unit.hp,
                             "new_strength": unit.troop_strength,
                             "effect": "五气朝元",
+                            "unit_state": snapshot_unit_state(unit),
                         }
                     )
             # 门客：恢复HP
@@ -132,6 +134,7 @@ def apply_battle_heal(
                         "healed": healed,
                         "new_hp": unit.hp,
                         "effect": "五气朝元",
+                        "unit_state": snapshot_unit_state(unit),
                     }
                 )
     return heals

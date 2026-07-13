@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
 import logging
+import random
 import threading
 import time
+from collections import Counter
 from datetime import timedelta
 from itertools import count
 
@@ -389,7 +392,7 @@ def test_create_virtual_player_projects_real_manor_growth_data(settings, caplog)
     assert manor.grain == 1200
 
     assert PlayerTechnology.objects.filter(manor=manor, level__gt=0).count() == 0
-    assert Guest.objects.filter(manor=manor, level=8).count() == 2
+    assert Guest.objects.filter(manor=manor, level=9).count() == 2
     assert GearItem.objects.filter(manor=manor, guest__manor=manor).count() == 2
     assert all(guest.skills.exists() for guest in manor.guests.all())
     assert manor.troops.filter(count__gt=0).exists()
@@ -441,8 +444,8 @@ def test_create_virtual_player_projects_the_requested_high_prestige_band(setting
     assert manor.silver == 5000
     assert manor.grain == 1200
     assert manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 10
-    assert manor.guests.count() == 5
-    assert all(guest.level == 18 for guest in manor.guests.all())
+    assert manor.guests.count() == 4
+    assert all(guest.level == 15 for guest in manor.guests.all())
     assert InventoryItem.objects.filter(manor=manor, template=expensive_loot).count() == 0
 
 
@@ -511,10 +514,10 @@ def test_create_virtual_player_guests_learn_configured_extra_skills(settings):
 
     profile = create_virtual_player(
         region="north",
-        prestige_band="junior",
+        prestige_band="middle",
         archetype=BotProfile.Archetype.DOJO,
         growth_seed=271,
-        projection=BotProjectionConfig(prestige=1200, building_level=6, guest_count=1, guest_level=8),
+        projection=BotProjectionConfig(prestige=2200, building_level=6, guest_count=1, guest_level=8),
     )
     _run_due_bot_maintenance(profile, now=timezone.now(), growth_stage=7)
 
@@ -543,6 +546,7 @@ def test_create_virtual_player_guests_rarely_learn_configured_high_tier_skills(s
         required_level=99,
     )
     settings.VIRTUAL_PLAYER_CONFIG = {
+        "prestige_bands": {"middle": [2000, 8000]},
         "projection": {
             "guest_template_keys": [templates["guest_template"].key],
             "gear_template_keys": [],
@@ -550,15 +554,15 @@ def test_create_virtual_player_guests_rarely_learn_configured_high_tier_skills(s
             "high_tier_skill_keys": [high_tier_skill.key, blocked_skill.key],
             "high_tier_skill_chance": 1.0,
             "high_tier_skills_per_guest": [1, 1],
-        }
+        },
     }
 
     profile = create_virtual_player(
         region="north",
-        prestige_band="junior",
+        prestige_band="middle",
         archetype=BotProfile.Archetype.DOJO,
         growth_seed=272,
-        projection=BotProjectionConfig(prestige=1200, building_level=6, guest_count=1, guest_level=8),
+        projection=BotProjectionConfig(prestige=2200, building_level=6, guest_count=1, guest_level=8),
     )
     _run_due_bot_maintenance(profile, now=timezone.now(), growth_stage=7)
 
@@ -590,6 +594,7 @@ def test_configured_high_tier_skills_get_priority_over_regular_extra_skills(sett
         for idx in range(2)
     ]
     settings.VIRTUAL_PLAYER_CONFIG = {
+        "prestige_bands": {"middle": [2000, 8000]},
         "projection": {
             "guest_template_keys": [templates["guest_template"].key],
             "gear_template_keys": [],
@@ -598,15 +603,15 @@ def test_configured_high_tier_skills_get_priority_over_regular_extra_skills(sett
             "high_tier_skill_keys": [high_tier_skill.key],
             "high_tier_skill_chance": 1.0,
             "high_tier_skills_per_guest": [1, 1],
-        }
+        },
     }
 
     profile = create_virtual_player(
         region="north",
-        prestige_band="junior",
+        prestige_band="middle",
         archetype=BotProfile.Archetype.DOJO,
         growth_seed=273,
-        projection=BotProjectionConfig(prestige=1200, building_level=6, guest_count=1, guest_level=8),
+        projection=BotProjectionConfig(prestige=2200, building_level=6, guest_count=1, guest_level=8),
     )
     _run_due_bot_maintenance(profile, now=timezone.now(), growth_stage=7)
 
@@ -687,6 +692,7 @@ def test_bot_archetype_changes_inventory_and_gear_projection(settings):
         "projection": {
             "guest_template_keys": [templates["guest_template"].key],
             "gear_template_keys": [templates["gear_template"].key, second_gear.key],
+            "troop_template_keys": [templates["troop_template"].key],
             "gear_slots_by_archetype": {"balanced": 1, "dojo": 2},
             "item_template_keys": [tradeable.key],
         }
@@ -697,21 +703,39 @@ def test_bot_archetype_changes_inventory_and_gear_projection(settings):
         prestige_band="junior",
         archetype=BotProfile.Archetype.BALANCED,
         growth_seed=301,
-        projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=1, guest_level=4),
+        projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=1, guest_level=10, troop_count=100),
     )
     rich = create_virtual_player(
         region="north",
         prestige_band="junior",
         archetype=BotProfile.Archetype.RICH,
         growth_seed=302,
-        projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=1, guest_level=4),
+        projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=1, guest_level=10, troop_count=100),
     )
     dojo = create_virtual_player(
         region="north",
         prestige_band="junior",
         archetype=BotProfile.Archetype.DOJO,
         growth_seed=303,
-        projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=1, guest_level=4),
+        projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=1, guest_level=10, troop_count=100),
+    )
+    guard = create_virtual_player(
+        region="north",
+        prestige_band="junior",
+        archetype=BotProfile.Archetype.GUARD,
+        growth_seed=304,
+        projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=1, guest_level=10, troop_count=100),
+    )
+
+    assert dojo.manor.guests.get().level > balanced.manor.guests.get().level > rich.manor.guests.get().level
+    troop_template = templates["troop_template"]
+    assert (
+        guard.manor.troops.get(troop_template=troop_template).count
+        > balanced.manor.troops.get(troop_template=troop_template).count
+    )
+    assert (
+        balanced.manor.troops.get(troop_template=troop_template).count
+        > dojo.manor.troops.get(troop_template=troop_template).count
     )
     now = timezone.now()
     _run_due_bot_maintenance(balanced, now=now, growth_stage=3)
@@ -721,7 +745,7 @@ def test_bot_archetype_changes_inventory_and_gear_projection(settings):
     balanced_qty = InventoryItem.objects.get(manor=balanced.manor, template=tradeable).quantity
     rich_qty = InventoryItem.objects.get(manor=rich.manor, template=tradeable).quantity
     assert rich_qty > balanced_qty
-    assert GearItem.objects.filter(manor=balanced.manor, guest__isnull=False).count() == 1
+    assert GearItem.objects.filter(manor=balanced.manor, guest__isnull=False).count() == 2
     assert GearItem.objects.filter(manor=dojo.manor, guest__isnull=False).count() == 2
 
 
@@ -812,6 +836,7 @@ def test_virtual_player_all_projection_pools_use_available_templates(settings):
             "guest_template_keys": "__all__",
             "gear_template_keys": "__all__",
             "gear_slots_by_archetype": {"balanced": 2},
+            "gear_max_rarity_by_stage": {1: "blue"},
             "troop_template_keys": "__all__",
             "technology_keys": "__all__",
             "item_template_keys": "__all_tradeable__",
@@ -1068,17 +1093,84 @@ def test_due_virtual_player_maintenance_grows_or_marks_stale(settings):
     growing.refresh_from_db()
     retiring.refresh_from_db()
     assert growing.state == BotProfile.State.ACTIVE
-    assert growing.growth_stage == 2
+    assert growing.growth_stage == 4
     assert growing.next_growth_at > now
-    assert growing.manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 2
-    assert PlayerTechnology.objects.get(manor=growing.manor, tech_key="dao_attack").level == 1
+    assert growing.manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 4
+    assert PlayerTechnology.objects.get(manor=growing.manor, tech_key="dao_attack").level == 2
 
-    assert retiring.state == BotProfile.State.STALE
-    assert retiring.maintenance_stopped_at is None
+    assert retiring.state == BotProfile.State.RETIRED
+    assert retiring.maintenance_stopped_at == now
 
 
 @pytest.mark.django_db
-def test_due_virtual_player_maintenance_samples_real_player_projection(settings, django_user_model):
+def test_virtual_player_maintenance_pays_salaries_only_for_active_and_slowing_profiles(settings):
+    from gameplay.models import BotProfile
+    from gameplay.services.virtual_players import (
+        BotProjectionConfig,
+        create_virtual_player,
+        maintain_due_virtual_players,
+    )
+    from guests.models import SalaryPayment
+
+    templates = _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "lifecycle": {"empty_hit_stale_threshold": 0, "stale_no_interaction_days": 0},
+        "prestige_bands": {"junior": [500, 2000]},
+        "projection": {
+            "guest_template_keys": [templates["guest_template"].key],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+            "technology_keys": [],
+        },
+    }
+    now = timezone.now()
+    profiles = {}
+    for index, state in enumerate(
+        (BotProfile.State.ACTIVE, BotProfile.State.SLOWING, BotProfile.State.ABANDONED, BotProfile.State.RETIRED)
+    ):
+        profile = create_virtual_player(
+            region="east",
+            prestige_band="junior",
+            growth_seed=7_700 + index,
+            now=now,
+            projection=BotProjectionConfig(prestige=900, building_level=3, guest_count=1, guest_level=3),
+        )
+        BotProfile.objects.filter(pk=profile.pk).update(
+            state=state,
+            next_growth_at=now - timedelta(minutes=1),
+            abandon_at=now + timedelta(days=30),
+            retire_at=now + timedelta(days=60),
+            maintenance_stopped_at=now if state == BotProfile.State.RETIRED else None,
+        )
+        profiles[state] = profile
+
+    transitioning = create_virtual_player(
+        region="east",
+        prestige_band="junior",
+        growth_seed=7_799,
+        now=now - timedelta(days=30),
+        projection=BotProjectionConfig(prestige=900, building_level=3, guest_count=1, guest_level=3),
+    )
+    BotProfile.objects.filter(pk=transitioning.pk).update(
+        state=BotProfile.State.ACTIVE,
+        next_growth_at=now - timedelta(minutes=1),
+        created_at=now - timedelta(days=30),
+        abandon_at=now + timedelta(days=1),
+        retire_at=now + timedelta(days=31),
+    )
+
+    assert maintain_due_virtual_players(now=now, limit=10) == 4
+
+    paid_manor_ids = set(SalaryPayment.objects.filter(for_date=now.date()).values_list("manor_id", flat=True))
+    assert paid_manor_ids == {
+        profiles[BotProfile.State.ACTIVE].manor_id,
+        profiles[BotProfile.State.SLOWING].manor_id,
+        transitioning.manor_id,
+    }
+
+
+@pytest.mark.django_db
+def test_due_virtual_player_maintenance_samples_real_player_projection(settings, django_user_model, caplog):
     from gameplay.models import BotProfile
     from gameplay.services.virtual_players import (
         BotProjectionConfig,
@@ -1121,14 +1213,21 @@ def test_due_virtual_player_maintenance_samples_real_player_projection(settings,
     )
     BotProfile.objects.filter(pk=profile.pk).update(next_growth_at=now - timedelta(minutes=1))
 
+    caplog.set_level(logging.INFO, logger="gameplay.services.virtual_players")
     assert maintain_due_virtual_players(now=now, limit=10) == 1
 
     profile.refresh_from_db()
-    assert profile.growth_stage == 2
-    assert profile.manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 2
+    assert profile.growth_stage == 5
+    assert profile.manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 5
     assert profile.manor.guests.count() == 2
-    assert set(profile.manor.guests.values_list("level", flat=True)) == {2, 4}
-    assert PlayerTechnology.objects.get(manor=profile.manor, tech_key="dao_attack").level == 1
+    assert set(profile.manor.guests.values_list("level", flat=True)) == {6}
+    assert PlayerTechnology.objects.get(manor=profile.manor, tech_key="dao_attack").level == 2
+    maintained_log = next(
+        record for record in caplog.records if getattr(record, "event", None) == "virtual_player_maintained"
+    )
+    assert maintained_log.manor_id == profile.manor_id
+    assert maintained_log.before_building_level == 3
+    assert maintained_log.after_building_level == 5
 
 
 @pytest.mark.django_db
@@ -1546,7 +1645,7 @@ def test_invalid_prestige_chance_config_does_not_open_high_value_inventory(setti
 
 
 @pytest.mark.django_db
-def test_limited_rare_inventory_projection_samples_across_full_item_pool(settings):
+def test_limited_rare_inventory_projection_uses_a_bounded_persistent_pool(settings):
     from gameplay.models import BotProfile
     from gameplay.services.virtual_players import (
         BotProjectionConfig,
@@ -1595,20 +1694,15 @@ def test_limited_rare_inventory_projection_samples_across_full_item_pool(setting
 
     assert maintain_due_virtual_players(now=now, limit=10) == 1
 
+    profile.refresh_from_db()
     stocked_keys = list(
         InventoryItem.objects.filter(manor=profile.manor)
         .order_by("template__key")
         .values_list("template__key", flat=True)
     )
-    expected_keys = [item.key for item in rare_items]
-    seeded_order = sorted(expected_keys)
-    from random import Random
-
-    seeded_rng = Random(7005)
-    seeded_rng.uniform(0.25, 0.55)
-    seeded_rng.shuffle(seeded_order)
     assert len(stocked_keys) == 2
-    assert stocked_keys == sorted(seeded_order[:2])
+    assert len(profile.inventory_template_keys) == 4
+    assert set(stocked_keys).issubset(profile.inventory_template_keys)
 
 
 def test_inventory_daily_cap_reservation_recovers_from_counter_create_race(monkeypatch):
@@ -1689,73 +1783,50 @@ def test_virtual_player_names_stay_unique_for_reused_growth_seed(settings):
         assert not any(ch.isdigit() for ch in manor_name)
 
 
-@pytest.mark.django_db
-def test_virtual_player_name_generator_can_emit_internet_style_names():
+def test_virtual_player_name_style_distribution_matches_mixed_online_game_profile():
     from gameplay.services import virtual_players
 
-    expected = {
-        "坤哥亡命天涯",
-        "听到涛声",
-        "暴打派大星",
-        "摸鱼山庄",
-        "咸鱼小筑",
-    }
-    generated = {virtual_players._generate_bot_manor_name(growth_seed=seed) for seed in range(1, 80)}
+    style_counts = Counter(
+        virtual_players._select_bot_manor_name_style(random.Random(f"{seed}:0:0").random()) for seed in range(1, 1001)
+    )
 
-    assert generated & expected
+    assert 450 <= style_counts["modern"] <= 550
+    assert 250 <= style_counts["classical"] <= 350
+    assert 150 <= style_counts["nickname"] <= 250
 
 
-@pytest.mark.django_db
-def test_virtual_player_name_generator_prefers_internet_style_names():
+def test_virtual_player_name_candidates_cover_all_styles_without_specific_memes():
     from gameplay.services import virtual_players
 
-    internet_prefixes = {
-        "摸鱼",
-        "开摆",
-        "咸鱼",
-        "随缘",
-        "夜猫子",
-        "奶茶续命",
-        "快乐老家",
-        "人间清醒",
-        "低调发财",
-        "菜但爱玩",
-        "非酋",
-        "欧皇",
-        "一键收菜",
-        "余额不足",
-    }
-    internet_standalone = {
-        "坤哥亡命天涯",
-        "听到涛声",
-        "暴打派大星",
-        "今天也想躺平",
-        "打不过就跑",
-        "路过不要打我",
-        "先苟住再说",
-        "上号收个菜",
-        "差点就赢了",
-        "全靠同行衬托",
-        "别看我会输",
-        "不想加班",
-        "精神状态良好",
-        "好运加载中",
-        "这把随缘",
-        "风紧扯呼",
+    candidates_by_style = {
+        style: [
+            virtual_players._build_bot_manor_name_candidate(
+                random.Random(f"{style}:{seed}"),
+                style=style,
+                variant=seed,
+            )
+            for seed in range(100)
+        ]
+        for style in ("modern", "classical", "nickname")
     }
 
-    def is_internet_style(name: str) -> bool:
-        return name in internet_standalone or any(name.startswith(prefix) for prefix in internet_prefixes)
-
-    generated = [virtual_players._generate_bot_manor_name(growth_seed=seed) for seed in range(1, 201)]
-    internet_count = sum(1 for name in generated if is_internet_style(name))
-
-    assert internet_count >= 120
-    assert internet_count < len(generated)
+    assert all(len(set(candidates)) >= 30 for candidates in candidates_by_style.values())
+    all_candidates = [name for candidates in candidates_by_style.values() for name in candidates]
+    assert {"坤哥亡命天涯", "暴打派大星"}.isdisjoint(all_candidates)
+    assert all(2 <= len(name) <= 20 for name in all_candidates)
+    assert all("bot" not in name.lower() for name in all_candidates)
+    assert all("虚拟玩家" not in name for name in all_candidates)
+    assert all(not any(char in "0123456789" for char in name) for name in all_candidates)
+    with pytest.raises(ValueError, match="Unsupported bot manor name style"):
+        virtual_players._build_bot_manor_name_candidate(
+            random.Random("unsupported"),
+            style="unsupported",
+            variant=0,
+        )
 
 
 @pytest.mark.django_db
-def test_population_plan_and_roll_use_active_player_multiplier(settings, django_user_model):
+def test_population_plan_and_roll_use_active_player_multiplier(settings, django_user_model, caplog):
     from gameplay.services.virtual_players import plan_virtual_player_population, roll_virtual_player_population
 
     _bootstrap_projection_templates()
@@ -1778,14 +1849,20 @@ def test_population_plan_and_roll_use_active_player_multiplier(settings, django_
         "projection": {"guest_template_keys": [], "gear_template_keys": []},
     }
 
+    caplog.set_level(logging.INFO, logger="gameplay.services.virtual_players")
     plan = plan_virtual_player_population(now=timezone.now())
     assert plan["active_real_players"] == 3
     assert plan["target_bot_total"] == 12
+    assert plan["maintained_bots"] == 0
+    assert plan["attackable_bots"] == 0
+    assert plan["config_summary"]["cell_active_multiplier"] == 4
+    assert json.loads(json.dumps(plan))["cells"] == plan["cells"]
+    assert any(getattr(record, "event", None) == "virtual_player_population_planned" for record in caplog.records)
     assert roll_virtual_player_population(limit=20, now=timezone.now()) == 12
 
 
 @pytest.mark.django_db
-def test_population_roll_spreads_global_deficit_across_regions_and_bands(settings, django_user_model):
+def test_population_roll_places_active_player_demand_in_the_matching_cell(settings, django_user_model):
     from gameplay.models import BotProfile
     from gameplay.services.virtual_players import roll_virtual_player_population
 
@@ -1816,9 +1893,8 @@ def test_population_roll_spreads_global_deficit_across_regions_and_bands(setting
     for profile in profiles:
         by_region[profile.manor.region] = by_region.get(profile.manor.region, 0) + 1
         by_band[profile.target_prestige_band] = by_band.get(profile.target_prestige_band, 0) + 1
-    assert by_region == {"north": 2, "east": 2, "west": 2, "south": 2}
-    assert len(by_band) > 1
-    assert max(by_band.values()) - min(by_band.values()) <= 1
+    assert by_region == {"north": 8}
+    assert by_band == {"newbie": 8}
 
 
 @pytest.mark.django_db
@@ -1853,7 +1929,7 @@ def test_population_roll_counts_actual_current_prestige_band(settings):
     )
 
     assert BotProfile.objects.get(target_prestige_band="junior").current_prestige_band == "junior"
-    assert roll_virtual_player_population(limit=20, now=now) == 19
+    assert roll_virtual_player_population(limit=20, now=now) == 0
     assert BotProfile.objects.filter(target_prestige_band="junior", manor__region="north").count() == 1
 
 
@@ -1861,7 +1937,7 @@ def test_population_roll_counts_actual_current_prestige_band(settings):
 def test_population_roll_continues_after_one_coordinate_conflict(settings, monkeypatch, django_user_model):
     from gameplay.models import BotProfile
     from gameplay.services import virtual_players
-    from gameplay.services.virtual_players import roll_virtual_player_population
+    from gameplay.services.virtual_players import record_virtual_player_backfill_demand, roll_virtual_player_population
 
     _bootstrap_projection_templates()
     settings.VIRTUAL_PLAYER_CONFIG = {
@@ -1903,6 +1979,7 @@ def test_population_roll_continues_after_one_coordinate_conflict(settings, monke
 
     monkeypatch.setattr(virtual_players, "generate_unique_coordinate", _next_coordinate)
     monkeypatch.setattr(Manor, "save", _save_with_one_coordinate_conflict)
+    record_virtual_player_backfill_demand(region="north", prestige_band="newbie", needed=2)
 
     assert roll_virtual_player_population(limit=2, now=timezone.now()) == 2
     assert final_save_attempts == 3
@@ -2137,6 +2214,7 @@ def test_population_roll_guard_preserves_first_create_and_stops_before_second(se
                 "virtual player population roll lock ownership was lost"
             )
 
+    virtual_players.record_virtual_player_backfill_demand(region="north", prestige_band="newbie", needed=2)
     with pytest.raises(virtual_players.VirtualPlayerPopulationLockLostError):
         virtual_players._roll_virtual_player_population_unlocked(
             limit=2,
@@ -2260,7 +2338,7 @@ def test_virtual_player_tracks_target_and_current_prestige_bands_separately(sett
 
 
 @pytest.mark.django_db
-def test_due_maintenance_syncs_current_band_after_growth_crosses_band(settings, django_user_model):
+def test_due_maintenance_keeps_current_band_until_bounded_growth_crosses_band(settings, django_user_model):
     from gameplay.models import BotProfile
     from gameplay.services.virtual_players import maintain_due_virtual_players
 
@@ -2295,9 +2373,9 @@ def test_due_maintenance_syncs_current_band_after_growth_crosses_band(settings, 
     assert maintain_due_virtual_players(now=now, limit=10) == 1
 
     profile = BotProfile.objects.get(manor=manor)
-    assert profile.manor.prestige == 500
+    assert profile.manor.prestige == 313
     assert profile.target_prestige_band == "junior"
-    assert profile.current_prestige_band == "junior"
+    assert profile.current_prestige_band == "newbie"
     assert profile.prestige_band == "junior"
 
 

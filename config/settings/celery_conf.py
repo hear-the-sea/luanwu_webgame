@@ -241,7 +241,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "plan-virtual-players": {
         "task": "gameplay.plan_virtual_players",
-        "schedule": crontab(hour="3-5", minute=17),
+        "schedule": crontab(hour=4, minute=17),
     },
     "roll-virtual-players": {
         "task": "gameplay.roll_virtual_players",

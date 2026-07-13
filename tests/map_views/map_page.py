@@ -9,6 +9,7 @@ import pytest
 from django.urls import reverse
 from django.utils import timezone
 
+from gameplay.models import BotProfile
 from gameplay.services.manor.core import ensure_manor
 
 
@@ -159,6 +160,19 @@ class TestMapViews:
         manor, client = manor_with_user
         target_user = django_user_model.objects.create_user(username="raid_config_target", password="pass123")
         target_manor = ensure_manor(target_user)
+        now = timezone.now()
+        BotProfile.objects.create(
+            manor=target_manor,
+            state=BotProfile.State.RETIRED,
+            prestige_band="newbie",
+            target_prestige_band="newbie",
+            current_prestige_band="newbie",
+            growth_seed=target_manor.id,
+            next_growth_at=now,
+            abandon_at=now,
+            retire_at=now,
+            maintenance_stopped_at=now,
+        )
 
         monkeypatch.setattr(
             "gameplay.views.map.get_prepared_manor_for_read",

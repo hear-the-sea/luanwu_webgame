@@ -18,7 +18,7 @@ def test_virtual_player_planning_and_rolling_are_scheduled_separately():
     rolling = settings.CELERY_BEAT_SCHEDULE["roll-virtual-players"]
 
     assert planning["task"] == "gameplay.plan_virtual_players"
-    assert planning["schedule"]._orig_hour == "3-5"
+    assert planning["schedule"]._orig_hour == 4
     assert planning["schedule"]._orig_minute == 17
     assert rolling["task"] == "gameplay.roll_virtual_players"
     assert rolling["schedule"]._orig_minute == "*/15"

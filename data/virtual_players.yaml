@@ -2,10 +2,15 @@ enabled: true
 
 population:
   active_player_multiplier: 4
-  min_per_region: 20
-  min_attackable_per_band: 10
-  hard_cap: 2000
-  rolling_batch_size: [3, 12]
+  active_window_days: 7
+  cell_floor: 8
+  cell_active_multiplier: 4
+  exploration_supply: 0
+  min_per_region: 0
+  min_attackable_per_band: 6
+  retired_reactivation_chance: 0.70
+  hard_cap: 300
+  rolling_batch_size: [4, 12]
 
 prestige_bands:
   newbie: [0, 500]
@@ -22,6 +27,19 @@ lifecycle:
   empty_hit_window_hours: 24
   stale_no_interaction_days: 30
 
+growth:
+  catch_up_ratio: 0.25
+  slowing_ratio_multiplier: 0.5
+  max_building_step: 2
+  max_guest_level_step: 3
+  max_prestige_step: 500
+  stage_caps:
+    newbie: 3
+    junior: 6
+    middle: 10
+    senior: 15
+    veteran: 20
+
 resources:
   balanced: [0.25, 0.55]
   rich: [0.55, 0.85]
@@ -32,12 +50,11 @@ resources:
 projection:
   guest_template_keys: "__all__"
   gear_template_keys: "__all__"
-  gear_slots_by_archetype:
-    balanced: 2
-    rich: 2
-    dojo: 3
-    guard: 2
-    abandoned: 1
+  gear_max_rarity_by_stage:
+    1: green
+    7: blue
+    11: purple
+    16: orange
   extra_skill_keys:
     - endless_chatter
     - ice_curse
@@ -61,11 +78,31 @@ projection:
     - comrade_command
   high_tier_skill_chance: 0.06
   high_tier_skills_per_guest: [1, 1]
+  early_stage_skill_max: 6
+  early_stage_skill_count: [0, 1]
+  multi_skill_passive_focus_chance: 0.75
   troop_template_keys: "__all__"
   item_template_keys: "__all_tradeable__"
   loot_item_template_keys: []
   loot_item_quantity: [1, 3]
   technology_keys: "__all__"
+  real_projection_sample_size: 25
+  active_sample_days: 30
+  regional_min_sample_size: 5
+  strength_quantile_weights: {p25: 25, p50: 50, p75: 25}
+  real_projection_jitter_bps: 500
+  inventory_template_slots_by_archetype:
+    balanced: 4
+    rich: 5
+    dojo: 3
+    guard: 3
+    abandoned: 4
+  inventory_effect_type_weights:
+    balanced: {resource_pack: 3, resource: 3, experience_items: 2, medicine: 2, tool: 1}
+    rich: {resource_pack: 4, resource: 5, experience_items: 1, medicine: 1, tool: 1}
+    dojo: {resource_pack: 1, resource: 1, experience_items: 4, medicine: 2, tool: 1}
+    guard: {resource_pack: 2, resource: 2, experience_items: 1, medicine: 4, tool: 1}
+    abandoned: {resource_pack: 3, resource: 3, experience_items: 1, medicine: 1, tool: 1}
   loot_budget_daily: 2000000
   loot_limits:
     real_attacker_daily_resource_cap: 2000000
@@ -85,3 +122,16 @@ projection:
     - min_prestige: 30000
       chance: 0.12
   low_stage_powerful_item_chance: 0.03
+
+combat_personas:
+  balanced: {guest_level_multiplier: 1.0, guest_count_multiplier: 1.0, troop_multiplier: 1.0}
+  rich: {guest_level_multiplier: 0.85, guest_count_multiplier: 0.85, troop_multiplier: 0.8}
+  dojo: {guest_level_multiplier: 1.15, guest_count_multiplier: 1.0, troop_multiplier: 0.75}
+  guard: {guest_level_multiplier: 0.85, guest_count_multiplier: 0.85, troop_multiplier: 1.35}
+  abandoned: {guest_level_multiplier: 0.75, guest_count_multiplier: 0.75, troop_multiplier: 0.6}
+
+lifecycle_personas:
+  tourist: {weight: 15, active_days: [7, 21], abandoned_days: [7, 14]}
+  casual: {weight: 45, active_days: [30, 90], abandoned_days: [14, 45]}
+  committed: {weight: 30, active_days: [90, 180], abandoned_days: [30, 60]}
+  veteran: {weight: 10, active_days: [180, 360], abandoned_days: [45, 90]}

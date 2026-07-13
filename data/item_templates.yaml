@@ -42,7 +42,7 @@ items:
     rarity: black
     tradeable: true
     price: 50
-    storage_space: 1
+    storage_space: 2
     is_usable: false
     image: copper.png
 
@@ -53,7 +53,7 @@ items:
     rarity: black
     tradeable: true
     price: 150
-    storage_space: 1
+    storage_space: 3
     is_usable: false
     image: tin.png
 
@@ -64,7 +64,7 @@ items:
     rarity: black
     tradeable: true
     price: 500
-    storage_space: 1
+    storage_space: 5
     is_usable: false
     image: iron.png
 
@@ -76,7 +76,7 @@ items:
     price: 1000000
     image: golden.png
     rarity: green
-    storage_space: 20
+    storage_space: 250
     is_usable: false
 
   - key: red_ruby
@@ -86,7 +86,7 @@ items:
     rarity: blue
     tradeable: true
     price: 500000
-    storage_space: 1
+    storage_space: 150
     is_usable: false
     image: red_ruby.png
 
@@ -111,7 +111,7 @@ items:
     rarity: green
     tradeable: false
     price: 0
-    storage_space: 1
+    storage_space: 25
     is_usable: true
     image: resource_pack_silver.png
     effect_payload:
@@ -124,7 +124,7 @@ items:
     rarity: green
     tradeable: false
     price: 0
-    storage_space: 1
+    storage_space: 25
     is_usable: true
     image: resource_pack_grain.png
     effect_payload:
@@ -137,7 +137,7 @@ items:
     rarity: blue
     tradeable: false
     price: 0
-    storage_space: 1
+    storage_space: 50
     is_usable: true
     image: resource_pack_mixed.png
     effect_payload:
@@ -151,7 +151,7 @@ items:
     rarity: purple
     tradeable: false
     price: 0
-    storage_space: 1
+    storage_space: 100
     is_usable: true
     image: resource_pack_advanced.png
     effect_payload:
@@ -166,7 +166,7 @@ items:
     rarity: green
     tradeable: true
     price: 800
-    storage_space: 1
+    storage_space: 5
     is_usable: false
     image: wood_essence.png
 
@@ -177,7 +177,7 @@ items:
     rarity: green
     tradeable: true
     price: 1200
-    storage_space: 1
+    storage_space: 5
     is_usable: false
     image: copper_essence.png
 
@@ -188,7 +188,7 @@ items:
     rarity: blue
     tradeable: true
     price: 3000
-    storage_space: 1
+    storage_space: 10
     is_usable: false
     image: iron_essence.png
 
@@ -199,7 +199,7 @@ items:
     rarity: blue
     tradeable: true
     price: 5000
-    storage_space: 1
+    storage_space: 10
     is_usable: false
     image: xuan_tie_essence.png
 
@@ -210,7 +210,7 @@ items:
     rarity: blue
     tradeable: true
     price: 4000
-    storage_space: 1
+    storage_space: 10
     is_usable: false
     image: fire_stone.png
 
@@ -221,7 +221,7 @@ items:
     rarity: blue
     tradeable: true
     price: 4000
-    storage_space: 1
+    storage_space: 10
     is_usable: false
     image: water_stone.png
 
@@ -232,7 +232,7 @@ items:
     rarity: blue
     tradeable: true
     price: 4000
-    storage_space: 1
+    storage_space: 10
     is_usable: false
     image: earth_stone.png
 
@@ -243,7 +243,7 @@ items:
     rarity: blue
     tradeable: true
     price: 4000
-    storage_space: 1
+    storage_space: 10
     is_usable: false
     image: air_stone.png
 
@@ -254,7 +254,7 @@ items:
     rarity: green
     tradeable: true
     price: 900
-    storage_space: 1
+    storage_space: 5
     is_usable: false
     image: zitanmu.png
 
@@ -265,7 +265,7 @@ items:
     rarity: green
     tradeable: true
     price: 950
-    storage_space: 1
+    storage_space: 5
     is_usable: false
     image: heiyuanshi.png
 
@@ -276,7 +276,7 @@ items:
     rarity: green
     tradeable: true
     price: 1200
-    storage_space: 1
+    storage_space: 5
     is_usable: false
     image: jingangmei.png
 
@@ -287,7 +287,7 @@ items:
     rarity: green
     tradeable: true
     price: 850
-    storage_space: 1
+    storage_space: 5
     is_usable: false
     image: tiemu.png
 
@@ -298,7 +298,7 @@ items:
     rarity: black
     tradeable: true
     price: 300
-    storage_space: 1
+    storage_space: 2
     is_usable: false
     image: shuiqumu.png
 
@@ -309,7 +309,7 @@ items:
     rarity: black
     tradeable: true
     price: 320
-    storage_space: 1
+    storage_space: 2
     is_usable: false
     image: paozi.png
 
@@ -320,7 +320,7 @@ items:
     rarity: black
     tradeable: true
     price: 350
-    storage_space: 1
+    storage_space: 2
     is_usable: false
     image: zaozi.png
 
@@ -331,7 +331,7 @@ items:
     rarity: blue
     tradeable: true
     price: 5000
-    storage_space: 2
+    storage_space: 20
     is_usable: false
     image: gaolu.png
   # ══════════════════════════════════════════════════════════════════════════════
@@ -345,7 +345,7 @@ items:
     rarity: black
     tradeable: true
     price: 100
-    storage_space: 10
+    storage_space: 5
     is_usable: false
     image: ji.png
 
@@ -356,7 +356,7 @@ items:
     rarity: black
     tradeable: true
     price: 200
-    storage_space: 10
+    storage_space: 5
     is_usable: false
     image: ya.png
 
@@ -378,7 +378,7 @@ items:
     rarity: black
     tradeable: true
     price: 800
-    storage_space: 10
+    storage_space: 15
     is_usable: false
     image: zhu.png
 
@@ -389,7 +389,7 @@ items:
     rarity: green
     tradeable: true
     price: 1500
-    storage_space: 10
+    storage_space: 20
     is_usable: false
     image: niu.png
 
@@ -404,7 +404,7 @@ items:
     rarity: black
     tradeable: true
     price: 100
-    storage_space: 1
+    storage_space: 2
     effect_payload:
       hp: 50
     image: zhixuesan.png
@@ -416,7 +416,7 @@ items:
     rarity: black
     tradeable: true
     price: 200
-    storage_space: 1
+    storage_space: 2
     effect_payload:
       hp: 100
     image: zhixuesan.png
@@ -428,7 +428,7 @@ items:
     rarity: black
     tradeable: true
     price: 400
-    storage_space: 1
+    storage_space: 2
     effect_payload:
       hp: 200
     image: baijiwan.png
@@ -440,7 +440,7 @@ items:
     rarity: black
     tradeable: true
     price: 800
-    storage_space: 1
+    storage_space: 2
     effect_payload:
       hp: 400
     image: baicaodan.png
@@ -454,6 +454,7 @@ items:
     rarity: black
     tradeable: true
     price: 500
+    storage_space: 2
     image: buxuedan.png
 
   - key: dingxiangdan
@@ -463,7 +464,7 @@ items:
     rarity: green
     tradeable: true
     price: 1500
-    storage_space: 2
+    storage_space: 5
     effect_payload:
       hp: 800
     image: dingxiangdan.png
@@ -475,7 +476,7 @@ items:
     rarity: green
     tradeable: true
     price: 3000
-    storage_space: 2
+    storage_space: 5
     effect_payload:
       hp: 1500
     image: tianxiangyuluwan.png
@@ -491,7 +492,7 @@ items:
     rarity: green
     tradeable: true
     price: 50
-    storage_space: 1
+    storage_space: 5
     is_usable: false
     effect_payload:
       time: 60  # 减少60秒
@@ -506,6 +507,7 @@ items:
       time: 7200
     tradeable: true
     price: 1000
+    storage_space: 5
     image: experience_peach.png
 
   - key: experience_pineapple
@@ -517,6 +519,7 @@ items:
       time: 28800
     tradeable: true
     price: 3000
+    storage_space: 10
     image: experience_pineapple.png
 
   - key: experience_watermelon
@@ -528,6 +531,7 @@ items:
       time: 86400
     tradeable: true
     price: 12000
+    storage_space: 20
     image: experience_watermelon.png
 
   # ══════════════════════════════════════════════════════════════════════════════
@@ -541,6 +545,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
+    storage_space: 10
     image: magnifier.png  # 可选：物品图片  文件名
 
   - key: manor_rename_card
@@ -550,6 +555,7 @@ items:
     rarity: blue
     tradeable: true
     price: 5000
+    storage_space: 25
     is_usable: false
     image: manor_rename_card.png
 
@@ -562,7 +568,7 @@ items:
     rarity: blue
     tradeable: true
     price: 2000
-    storage_space: 1
+    storage_space: 75
     is_usable: false
     image: blueprint_xiaoweitoukie.png
 
@@ -573,7 +579,7 @@ items:
     rarity: blue
     tradeable: true
     price: 2000
-    storage_space: 1
+    storage_space: 75
     is_usable: false
     image: blueprint_xiaoweikaijia.png
 
@@ -584,7 +590,7 @@ items:
     rarity: blue
     tradeable: true
     price: 2000
-    storage_space: 1
+    storage_space: 75
     is_usable: false
     image: blueprint_xiaoweichangxue.png
 
@@ -595,7 +601,7 @@ items:
     rarity: blue
     tradeable: true
     price: 2000
-    storage_space: 1
+    storage_space: 75
     is_usable: false
     image: blueprint_xiaoweichangjian.png
 
@@ -606,7 +612,7 @@ items:
     rarity: blue
     tradeable: true
     price: 2000
-    storage_space: 1
+    storage_space: 75
     is_usable: false
     image: blueprint_qinglongkui.png
 
@@ -617,7 +623,7 @@ items:
     rarity: blue
     tradeable: true
     price: 2000
-    storage_space: 1
+    storage_space: 75
     is_usable: false
     image: blueprint_qinglongjia.png
 
@@ -628,7 +634,7 @@ items:
     rarity: blue
     tradeable: true
     price: 2000
-    storage_space: 1
+    storage_space: 75
     is_usable: false
     image: blueprint_qinglongxue.png
 
@@ -639,7 +645,7 @@ items:
     rarity: blue
     tradeable: true
     price: 2000
-    storage_space: 1
+    storage_space: 75
     is_usable: false
     image: blueprint_qinglongdao.png
 
@@ -650,7 +656,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_huxianpao.png
 
@@ -661,7 +667,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_huxianxie.png
 
@@ -672,7 +678,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_huxianjian.png
 
@@ -683,7 +689,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_qilinkui.png
 
@@ -694,7 +700,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_qilinjia.png
 
@@ -705,7 +711,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_qilinxue.png
 
@@ -716,7 +722,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_qilindao.png
 
@@ -727,7 +733,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_xuanwukui.png
 
@@ -738,7 +744,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_xuanwujia.png
 
@@ -749,7 +755,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_xuanwuxue.png
 
@@ -760,7 +766,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_xuanwuchui.png
 
@@ -771,7 +777,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_fenglingguan.png
 
@@ -782,7 +788,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_fenglingshan.png
 
@@ -793,7 +799,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_fenghuangyu.png
 
@@ -804,7 +810,7 @@ items:
     rarity: green
     tradeable: true
     price: 18000
-    storage_space: 1
+    storage_space: 50
     is_usable: false
     image: blueprint_xiaoxingjiguanshu.png
 
@@ -815,7 +821,7 @@ items:
     rarity: green
     tradeable: true
     price: 18000
-    storage_space: 1
+    storage_space: 50
     is_usable: false
     image: blueprint_tongchanjiguan.png
 
@@ -826,7 +832,7 @@ items:
     rarity: blue
     tradeable: true
     price: 2000
-    storage_space: 1
+    storage_space: 75
     is_usable: false
     image: blueprint_jixiemao.png
 
@@ -837,7 +843,7 @@ items:
     rarity: blue
     tradeable: true
     price: 2000
-    storage_space: 1
+    storage_space: 75
     is_usable: false
     image: blueprint_jiguanchuniao.png
 
@@ -848,7 +854,7 @@ items:
     rarity: blue
     tradeable: true
     price: 2000
-    storage_space: 1
+    storage_space: 75
     is_usable: false
     image: blueprint_kuileimuren.png
 
@@ -859,7 +865,7 @@ items:
     rarity: blue
     tradeable: true
     price: 2000
-    storage_space: 1
+    storage_space: 75
     is_usable: false
     image: blueprint_qingji.png
 
@@ -870,7 +876,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_taotieding.png
 
@@ -881,7 +887,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_jiguanxiong.png
 
@@ -892,7 +898,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_muniuliuma.png
 
@@ -903,7 +909,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_kuileiren.png
 
@@ -914,7 +920,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 125
     is_usable: false
     image: blueprint_xuanwujigui.png
 
@@ -925,7 +931,7 @@ items:
     rarity: orange
     tradeable: true
     price: 20000
-    storage_space: 1
+    storage_space: 200
     is_usable: false
     image: blueprint_feiyuan.png
 
@@ -936,7 +942,7 @@ items:
     rarity: orange
     tradeable: true
     price: 20000
-    storage_space: 1
+    storage_space: 200
     is_usable: false
     image: blueprint_chixiaojifeng.png
 
@@ -947,7 +953,7 @@ items:
     rarity: orange
     tradeable: true
     price: 20000
-    storage_space: 1
+    storage_space: 200
     is_usable: false
     image: blueprint_mojiajiguanren.png
 
@@ -958,7 +964,7 @@ items:
     rarity: blue
     tradeable: true
     price: 2000
-    storage_space: 1
+    storage_space: 100
     is_usable: true
     image: pubayi_guest_card.png
     effect_payload:
@@ -976,7 +982,7 @@ items:
     rarity: green
     tradeable: true
     price: 20000
-    storage_space: 1
+    storage_space: 75
     is_usable: true
     image: panfeng_guest_card.png
     effect_payload:
@@ -996,7 +1002,7 @@ items:
     rarity: green
     tradeable: true
     price: 20000
-    storage_space: 1
+    storage_space: 75
     is_usable: true
     image: xingdaorong_guest_card.png
     effect_payload:
@@ -1016,7 +1022,7 @@ items:
     rarity: purple
     tradeable: true
     price: 6000
-    storage_space: 1
+    storage_space: 150
     is_usable: true
     image: zhuyingtai_guest_scroll.png
     effect_payload:
@@ -1036,7 +1042,7 @@ items:
     rarity: blue
     tradeable: true
     price: 3000000
-    storage_space: 1
+    storage_space: 100
     is_usable: true
     image: liangshanbo_guest_scroll.png
     effect_payload:
@@ -1056,7 +1062,7 @@ items:
     rarity: blue
     tradeable: true
     price: 3000000
-    storage_space: 1
+    storage_space: 100
     is_usable: true
     image: edward_blue_guest_scroll.png
     effect_payload:
@@ -1077,7 +1083,7 @@ items:
     rarity: purple
     tradeable: true
     price: 5000000
-    storage_space: 1
+    storage_space: 150
     is_usable: true
     image: edward_purple_guest_scroll.png
     effect_payload:
@@ -1098,7 +1104,7 @@ items:
     rarity: green
     tradeable: true
     price: 1500000
-    storage_space: 1
+    storage_space: 75
     is_usable: true
     image: mawencai_guest_scroll.png
     effect_payload:
@@ -1118,7 +1124,7 @@ items:
     rarity: blue
     tradeable: true
     price: 50000
-    storage_space: 1
+    storage_space: 25
     is_usable: true
     image: peerless_general_upgrade_token.png
     effect_payload:
@@ -1137,7 +1143,7 @@ items:
     rarity: purple
     tradeable: true
     price: 200000
-    storage_space: 1
+    storage_space: 50
     is_usable: true
     image: peerless_general_upgrade_token_2.png
     effect_payload:
@@ -1156,7 +1162,7 @@ items:
     rarity: green
     tradeable: true
     price: 100
-    storage_space: 1
+    storage_space: 10
     is_usable: false
     image: small_trumpet.png
 
@@ -1169,7 +1175,7 @@ items:
     rarity: green
     tradeable: true
     price: 500
-    storage_space: 1
+    storage_space: 25
     is_usable: true
     image: peace_shield_small.png
     effect_payload:
@@ -1182,7 +1188,7 @@ items:
     rarity: blue
     tradeable: true
     price: 1500
-    storage_space: 1
+    storage_space: 50
     is_usable: true
     image: peace_shield_medium.png
     effect_payload:
@@ -1195,7 +1201,7 @@ items:
     rarity: purple
     tradeable: true
     price: 4000
-    storage_space: 1
+    storage_space: 100
     is_usable: true
     image: peace_shield_large.png
     effect_payload:
@@ -1210,7 +1216,7 @@ items:
     rarity: blue
     tradeable: true
     price: 1000
-    storage_space: 1
+    storage_space: 25
     is_usable: false  # 不在仓库直接使用，在任务详情页使用
     image: mission_card.png
 
@@ -1223,7 +1229,7 @@ items:
     rarity: purple
     tradeable: true
     price: 50000
-    storage_space: 1
+    storage_space: 50
     is_usable: true
     image: guest_rebirth_card.png
     effect_payload:
@@ -1238,7 +1244,7 @@ items:
     rarity: orange
     tradeable: true
     price: 200000
-    storage_space: 1
+    storage_space: 150
     is_usable: true
     image: xisuidan.png
     effect_payload:
@@ -1253,7 +1259,7 @@ items:
     rarity: blue
     tradeable: true
     price: 10000
-    storage_space: 1
+    storage_space: 25
     is_usable: true
     image: xidianka.png
     effect_payload:
@@ -1268,7 +1274,7 @@ items:
     rarity: orange
     tradeable: true
     price: 350000
-    storage_space: 1
+    storage_space: 200
     is_usable: true
     image: soul_container.png
     effect_payload:
@@ -1289,7 +1295,7 @@ items:
     rarity: green
     tradeable: true
     price: 5000
-    storage_space: 5
+    storage_space: 25
     is_usable: true
     effect_payload:
       silver_min: 5000
@@ -1341,7 +1347,7 @@ items:
     image: middle.png
     tradeable: true
     price: 15000
-    storage_space: 5
+    storage_space: 50
     is_usable: true
     effect_payload:
       silver_min: 10000
@@ -1410,7 +1416,7 @@ items:
     image: large.png
     tradeable: true
     price: 40000
-    storage_space: 5
+    storage_space: 100
     is_usable: true
     effect_payload:
       silver_min: 20000
@@ -1485,7 +1491,7 @@ items:
     rarity: green
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 25
     is_usable: true
     image: guild_guard_box_basic.png
     effect_payload:
@@ -1515,7 +1521,7 @@ items:
     rarity: blue
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 50
     is_usable: true
     image: guild_guard_box_advanced.png
     effect_payload:
@@ -1545,7 +1551,7 @@ items:
     rarity: blue
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 50
     is_usable: true
     image: guild_guard_box_elite.png
     effect_payload:
@@ -1575,7 +1581,7 @@ items:
     rarity: purple
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 100
     is_usable: true
     image: guild_guard_box_refined.png
     effect_payload:
@@ -1605,7 +1611,7 @@ items:
     rarity: purple
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 100
     is_usable: true
     image: guild_guard_box_master.png
     effect_payload:
@@ -1635,7 +1641,7 @@ items:
     rarity: green
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 25
     is_usable: true
     image: guild_skill_book_box_green.png
     effect_payload:
@@ -1661,7 +1667,7 @@ items:
     rarity: blue
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 50
     is_usable: true
     image: guild_skill_book_box_blue.png
     effect_payload:
@@ -1691,7 +1697,7 @@ items:
     rarity: purple
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 100
     is_usable: true
     image: guild_skill_book_box_purple.png
     effect_payload:
@@ -1723,7 +1729,7 @@ items:
     rarity: purple
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 100
     is_usable: true
     image: guild_skill_book_box_purple.png
     effect_payload:
@@ -1753,7 +1759,7 @@ items:
     rarity: purple
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 100
     is_usable: true
     image: guild_skill_book_box_purple.png
     effect_payload:
@@ -1785,7 +1791,7 @@ items:
     rarity: green
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 25
     is_usable: true
     image: guild_gear_box_green.png
     effect_payload:
@@ -1815,7 +1821,7 @@ items:
     rarity: blue
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 50
     is_usable: true
     image: guild_gear_box_blue.png
     effect_payload:
@@ -1845,7 +1851,7 @@ items:
     rarity: purple
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 100
     is_usable: true
     image: guild_gear_box_purple.png
     effect_payload:
@@ -1873,7 +1879,7 @@ items:
     rarity: purple
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 100
     is_usable: true
     image: guild_gear_box_purple.png
     effect_payload:
@@ -1899,7 +1905,7 @@ items:
     rarity: purple
     tradeable: false
     price: 0
-    storage_space: 5
+    storage_space: 100
     is_usable: true
     image: guild_gear_box_purple.png
     effect_payload:
@@ -1936,6 +1942,7 @@ items:
       skill_name: 龙吟破阵
     tradeable: true
     price: 1000000
+    storage_space: 200
 
   - key: book_stratagem_burst
     name: 《奇策突袭》秘术
@@ -1948,6 +1955,7 @@ items:
       skill_name: 奇策突袭
     tradeable: true
     price: 800000
+    storage_space: 125
 
   - key: book_prison_break_blade
     name: 《破狱狂刀》秘术
@@ -1960,6 +1968,7 @@ items:
       skill_name: 破狱狂刀
     tradeable: true
     price: 700000
+    storage_space: 125
 
   - key: book_city_felling_strike
     name: 《倾城一击》秘术
@@ -1972,6 +1981,7 @@ items:
       skill_name: 倾城一击
     tradeable: true
     price: 750000
+    storage_space: 125
 
   # ---------- 敏捷系技能书（蓝色品质）----------
   - key: book_fatal_chain_sword
@@ -1985,6 +1995,7 @@ items:
       skill_name: 夺命连环剑
     tradeable: true
     price: 260000
+    storage_space: 75
 
   - key: book_meteor_pierce_moon
     name: 《流星贯月》秘术
@@ -1997,6 +2008,7 @@ items:
       skill_name: 流星贯月
     tradeable: true
     price: 240000
+    storage_space: 75
 
   # ---------- 文系技能书（绿色品质）----------
   - key: book_ice_curse
@@ -2010,6 +2022,7 @@ items:
       skill_name: 寒冰咒
     tradeable: true
     price: 50000
+    storage_space: 50
 
   - key: book_thunder_control
     name: 《驭雷术》秘术
@@ -2022,6 +2035,7 @@ items:
       skill_name: 驭雷术
     tradeable: true
     price: 55000
+    storage_space: 50
 
   - key: book_dragon_break_curse
     name: 《破龙咒》秘术
@@ -2034,6 +2048,7 @@ items:
       skill_name: 破龙咒
     tradeable: true
     price: 60000
+    storage_space: 50
 
   - key: book_endless_chatter
     name: 《唧唧歪歪》秘术
@@ -2046,6 +2061,7 @@ items:
       skill_name: 唧唧歪歪
     tradeable: true
     price: 45000
+    storage_space: 50
 
   # ---------- 通用被动技能书（绿色品质）----------
   - key: book_steadfast_planning
@@ -2059,6 +2075,7 @@ items:
       skill_name: 静水筹谋
     tradeable: true
     price: 65000
+    storage_space: 50
 
   - key: book_iron_wall_heart
     name: 《铁壁心法》秘术
@@ -2071,6 +2088,7 @@ items:
       skill_name: 铁壁心法
     tradeable: true
     price: 65000
+    storage_space: 50
 
   # ---------- 文系技能书（蓝色品质）----------
   - key: book_taiyi_wind
@@ -2084,6 +2102,7 @@ items:
       skill_name: 太乙生风
     tradeable: true
     price: 200000
+    storage_space: 75
 
   - key: book_flower_rain
     name: 《天花乱坠》秘术
@@ -2096,6 +2115,7 @@ items:
       skill_name: 天花乱坠
     tradeable: true
     price: 180000
+    storage_space: 75
 
   - key: book_soul_erode
     name: 《销魂蚀骨》秘术
@@ -2108,6 +2128,7 @@ items:
       skill_name: 销魂蚀骨
     tradeable: true
     price: 220000
+    storage_space: 75
 
   - key: book_red_lotus_dance
     name: 《红莲之舞》秘术
@@ -2120,6 +2141,7 @@ items:
       skill_name: 红莲之舞
     tradeable: true
     price: 210000
+    storage_space: 75
 
   # ---------- 通用被动技能书（蓝色/紫色品质）----------
   - key: book_desperate_beast
@@ -2133,6 +2155,7 @@ items:
       skill_name: 困兽犹斗
     tradeable: true
     price: 700000
+    storage_space: 125
 
   - key: book_last_chance_revival
     name: 《绝处逢生》秘术
@@ -2145,6 +2168,7 @@ items:
       skill_name: 绝处逢生
     tradeable: true
     price: 260000
+    storage_space: 75
 
   - key: book_bloodthirsty_fury
     name: 《嗜血狂怒》秘术
@@ -2157,6 +2181,7 @@ items:
       skill_name: 嗜血狂怒
     tradeable: true
     price: 820000
+    storage_space: 125
 
   - key: book_draw_enemy_blades
     name: 《招锋引敌》秘术
@@ -2169,6 +2194,7 @@ items:
       skill_name: 招锋引敌
     tradeable: true
     price: 240000
+    storage_space: 75
 
   # ---------- 文系技能书（紫色品质）----------
   - key: book_thunder_nine_heavens
@@ -2182,6 +2208,7 @@ items:
       skill_name: 雷动九天
     tradeable: true
     price: 600000
+    storage_space: 125
 
   - key: book_tangseng_sermon
     name: 《唐僧说禅》秘术
@@ -2194,6 +2221,7 @@ items:
       skill_name: 唐僧说禅
     tradeable: true
     price: 550000
+    storage_space: 125
 
   - key: book_five_thunder_descent
     name: 《五雷降世》秘术
@@ -2206,6 +2234,7 @@ items:
       skill_name: 五雷降世
     tradeable: true
     price: 700000
+    storage_space: 125
 
   - key: book_brahma_true_fire
     name: 《梵天真火》秘术
@@ -2218,6 +2247,7 @@ items:
       skill_name: 梵天真火
     tradeable: true
     price: 750000
+    storage_space: 125
 
   # ---------- 通用被动技能书（紫色品质）----------
   - key: book_comrade_command
@@ -2231,6 +2261,7 @@ items:
       skill_name: 同袍号令
     tradeable: true
     price: 620000
+    storage_space: 125
 
   # ---------- 敏捷系技能书（紫色品质）----------
   - key: book_hell_instant_formation
@@ -2244,6 +2275,7 @@ items:
       skill_name: 瞬狱杀阵
     tradeable: true
     price: 680000
+    storage_space: 125
 
   # ---------- 任务信物 ----------
   - key: wanyin_flag_fragment
@@ -2253,7 +2285,7 @@ items:
     rarity: blue
     tradeable: false
     price: 0
-    storage_space: 1
+    storage_space: 10
     is_usable: false
     image: wanyin_flag_fragment.png
 
@@ -2264,7 +2296,7 @@ items:
     rarity: purple
     tradeable: false
     price: 0
-    storage_space: 1
+    storage_space: 20
     is_usable: false
     image: yuxu_broken_seal.png
 
@@ -2275,7 +2307,7 @@ items:
     rarity: blue
     tradeable: true
     price: 30000
-    storage_space: 1
+    storage_space: 25
     is_usable: true
     image: kasukabe_crayon.png
     effect_payload:
@@ -2448,6 +2480,7 @@ items:
           luck: 15
     tradeable: false
     price: 0
+    storage_space: 50
 
   - key: equip_suoyi
     name: 蓑衣
@@ -2470,6 +2503,7 @@ items:
           luck: 15
     tradeable: false
     price: 0
+    storage_space: 50
     image: buyi.png
 
   - key: equip_caoxie
@@ -2493,6 +2527,7 @@ items:
           luck: 15
     tradeable: false
     price: 0
+    storage_space: 50
 
   - key: equip_tiejian
     name: 铁剑
@@ -2514,6 +2549,7 @@ items:
           luck: 15
     tradeable: false
     price: 0
+    storage_space: 50
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 头盔
@@ -2526,7 +2562,7 @@ items:
     rarity: black
     tradeable: true
     price: 100
-    storage_space: 100
+    storage_space: 50
     image: equip_bumao.png
     effect_payload:
       hp: 100
@@ -2541,7 +2577,7 @@ items:
     rarity: black
     tradeable: true
     price: 300
-    storage_space: 100
+    storage_space: 50
     image: equip_niupimao.png
     effect_payload:
       hp: 100
@@ -2556,7 +2592,7 @@ items:
     rarity: green
     tradeable: true
     price: 800
-    storage_space: 100
+    storage_space: 75
     image: equip_tieyekui.png
     effect_payload:
       hp: 150
@@ -2570,7 +2606,7 @@ items:
     rarity: green
     tradeable: true
     price: 1500
-    storage_space: 100
+    storage_space: 75
     image: equip_yulindin.png
     effect_payload:
       hp: 500
@@ -2585,7 +2621,7 @@ items:
     rarity: green
     tradeable: true
     price: 3000
-    storage_space: 100
+    storage_space: 75
     image: equip_baihongkui.png
     effect_payload:
       hp: 200
@@ -2600,7 +2636,7 @@ items:
     rarity: black
     tradeable: true
     price: 200
-    storage_space: 100
+    storage_space: 50
     image: equip_zhubiankui.png
     effect_payload:
       hp: 300
@@ -2615,7 +2651,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_yemantoukie.png
     effect_payload:
       hp: 150
@@ -2636,7 +2672,7 @@ items:
     rarity: green
     tradeable: true
     price: 2500
-    storage_space: 100
+    storage_space: 75
     image: equip_huwenkui.png
     effect_payload:
       hp: 220
@@ -2650,7 +2686,7 @@ items:
     rarity: green
     tradeable: true
     price: 2800
-    storage_space: 100
+    storage_space: 75
     image: equip_baoutoukui.png
     effect_payload:
       hp: 200
@@ -2664,7 +2700,7 @@ items:
     rarity: green
     tradeable: true
     price: 2200
-    storage_space: 100
+    storage_space: 75
     image: equip_yanlingmao.png
     effect_payload:
       hp: 200
@@ -2678,7 +2714,7 @@ items:
     rarity: green
     tradeable: true
     price: 2600
-    storage_space: 100
+    storage_space: 75
     image: equip_qingtengguan.png
     effect_payload:
       hp: 200
@@ -2837,7 +2873,7 @@ items:
     rarity: purple
     tradeable: true
     price: 15000
-    storage_space: 100
+    storage_space: 150
     image: equip_qilinkui.png
     effect_payload:
       hp: 440
@@ -2860,7 +2896,7 @@ items:
     rarity: purple
     tradeable: true
     price: 14000
-    storage_space: 100
+    storage_space: 150
     image: equip_fenglingguan.png
     effect_payload:
       hp: 360
@@ -2881,7 +2917,7 @@ items:
     rarity: purple
     tradeable: true
     price: 18000
-    storage_space: 100
+    storage_space: 150
     image: equip_bawangkui.png
     effect_payload:
       hp: 500
@@ -2895,7 +2931,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_xuanwukui.png
     effect_payload:
       hp: 545
@@ -2917,7 +2953,7 @@ items:
     rarity: purple
     tradeable: true
     price: 15500
-    storage_space: 100
+    storage_space: 150
     image: equip_pojunkui.png
     effect_payload:
       hp: 445
@@ -2932,7 +2968,7 @@ items:
     rarity: purple
     tradeable: true
     price: 14500
-    storage_space: 100
+    storage_space: 150
     image: equip_tianjiguan.png
     effect_payload:
       hp: 390
@@ -2949,7 +2985,7 @@ items:
     rarity: orange
     tradeable: true
     price: 50000
-    storage_space: 100
+    storage_space: 200
     image: equip_longhuangguan.png
     effect_payload:
       hp: 620
@@ -2965,7 +3001,7 @@ items:
     rarity: orange
     tradeable: true
     price: 48000
-    storage_space: 100
+    storage_space: 200
     image: equip_diwangkui.png
     effect_payload:
       hp: 503
@@ -2980,7 +3016,7 @@ items:
     rarity: orange
     tradeable: true
     price: 55000
-    storage_space: 100
+    storage_space: 200
     image: equip_taixudiguan.png
     effect_payload:
       hp: 560
@@ -2999,7 +3035,7 @@ items:
     rarity: black
     tradeable: true
     price: 100
-    storage_space: 100
+    storage_space: 50
     image: equip_bupao.png
     effect_payload:
       hp: 100
@@ -3013,7 +3049,7 @@ items:
     rarity: black
     tradeable: true
     price: 300
-    storage_space: 100
+    storage_space: 50
     image: equip_shengpijia.png
     effect_payload:
       hp: 200
@@ -3027,7 +3063,7 @@ items:
     rarity: green
     tradeable: true
     price: 800
-    storage_space: 100
+    storage_space: 75
     image: equip_housipao.png
     effect_payload:
       hp: 100
@@ -3042,7 +3078,7 @@ items:
     rarity: green
     tradeable: true
     price: 1500
-    storage_space: 100
+    storage_space: 75
     image: equip_shapijia.png
     effect_payload:
       hp: 250
@@ -3057,7 +3093,7 @@ items:
     rarity: black
     tradeable: true
     price: 200
-    storage_space: 100
+    storage_space: 50
     image: equip_cubujia.png
     effect_payload:
       hp: 150
@@ -3074,7 +3110,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_suozijia.png
     effect_payload:
       hp: 500
@@ -3088,7 +3124,7 @@ items:
     rarity: green
     tradeable: true
     price: 2500
-    storage_space: 100
+    storage_space: 75
     image: equip_xuantiejia.png
     effect_payload:
       hp: 800
@@ -3101,7 +3137,7 @@ items:
     rarity: green
     tradeable: true
     price: 2800
-    storage_space: 100
+    storage_space: 75
     image: equip_shanwenjia.png
     effect_payload:
       hp: 500
@@ -3115,7 +3151,7 @@ items:
     rarity: green
     tradeable: true
     price: 2200
-    storage_space: 100
+    storage_space: 75
     image: equip_qingzhujia.png
     effect_payload:
       hp: 200
@@ -3130,7 +3166,7 @@ items:
     rarity: green
     tradeable: true
     price: 3000
-    storage_space: 100
+    storage_space: 75
     image: equip_tiexianjia.png
     effect_payload:
       hp: 800
@@ -3144,7 +3180,7 @@ items:
     rarity: green
     tradeable: true
     price: 2800
-    storage_space: 100
+    storage_space: 75
     image: equip_nichangyuyi.png
     effect_payload:
       hp: 50
@@ -3294,7 +3330,7 @@ items:
     rarity: purple
     tradeable: true
     price: 15000
-    storage_space: 100
+    storage_space: 150
     image: equip_huxianpao.png
     effect_payload:
       hp: 535
@@ -3316,7 +3352,7 @@ items:
     rarity: purple
     tradeable: true
     price: 18000
-    storage_space: 100
+    storage_space: 150
     image: equip_qilinjia.png
     effect_payload:
       hp: 575
@@ -3339,7 +3375,7 @@ items:
     rarity: purple
     tradeable: true
     price: 20000
-    storage_space: 100
+    storage_space: 150
     image: equip_xuanwujia.png
     effect_payload:
       hp: 676
@@ -3361,7 +3397,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_tiancanbaoyi.png
     effect_payload:
       hp: 560
@@ -3376,7 +3412,7 @@ items:
     rarity: purple
     tradeable: true
     price: 19000
-    storage_space: 100
+    storage_space: 150
     image: equip_pojunzhanjia.png
     effect_payload:
       hp: 630
@@ -3390,7 +3426,7 @@ items:
     rarity: purple
     tradeable: true
     price: 17000
-    storage_space: 100
+    storage_space: 150
     image: equip_tianjidaopao.png
     effect_payload:
       hp: 376
@@ -3407,7 +3443,7 @@ items:
     rarity: orange
     tradeable: true
     price: 60000
-    storage_space: 100
+    storage_space: 200
     image: equip_longlinzhanjia.png
     effect_payload:
       hp: 720
@@ -3422,7 +3458,7 @@ items:
     rarity: orange
     tradeable: true
     price: 55000
-    storage_space: 100
+    storage_space: 200
     image: equip_jinsirujia.png
     effect_payload:
       hp: 640
@@ -3437,7 +3473,7 @@ items:
     rarity: orange
     tradeable: true
     price: 65000
-    storage_space: 100
+    storage_space: 200
     image: equip_hundunlongpao.png
     effect_payload:
       hp: 540
@@ -3452,7 +3488,7 @@ items:
     rarity: orange
     tradeable: true
     price: 58000
-    storage_space: 100
+    storage_space: 200
     image: equip_ruanweijia.png
     effect_payload:
       hp: 665
@@ -3471,7 +3507,7 @@ items:
     rarity: black
     tradeable: true
     price: 100
-    storage_space: 100
+    storage_space: 50
     image: equip_buxie.png
     effect_payload:
       hp: 100
@@ -3486,7 +3522,7 @@ items:
     rarity: black
     tradeable: true
     price: 300
-    storage_space: 100
+    storage_space: 50
     image: equip_yangpixue.png
     effect_payload:
       hp: 150
@@ -3501,7 +3537,7 @@ items:
     rarity: green
     tradeable: true
     price: 800
-    storage_space: 100
+    storage_space: 75
     image: equip_gangpianxue.png
     effect_payload:
       hp: 300
@@ -3516,7 +3552,7 @@ items:
     rarity: green
     tradeable: true
     price: 1500
-    storage_space: 100
+    storage_space: 75
     image: equip_yanyuxue.png
     effect_payload:
       hp: 200
@@ -3531,7 +3567,7 @@ items:
     rarity: black
     tradeable: true
     price: 200
-    storage_space: 100
+    storage_space: 50
     image: equip_mabuxue.png
     effect_payload:
       hp: 150
@@ -3548,7 +3584,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_hupixue.png
     effect_payload:
       hp: 300
@@ -3563,7 +3599,7 @@ items:
     rarity: green
     tradeable: true
     price: 2200
-    storage_space: 100
+    storage_space: 75
     image: equip_tayunxue.png
     effect_payload:
       hp: 100
@@ -3578,7 +3614,7 @@ items:
     rarity: green
     tradeable: true
     price: 2500
-    storage_space: 100
+    storage_space: 75
     image: equip_jifengxue.png
     effect_payload:
       hp: 240
@@ -3592,7 +3628,7 @@ items:
     rarity: green
     tradeable: true
     price: 2300
-    storage_space: 100
+    storage_space: 75
     image: equip_youxiaxue.png
     effect_payload:
       hp: 200
@@ -3607,7 +3643,7 @@ items:
     rarity: green
     tradeable: true
     price: 2100
-    storage_space: 100
+    storage_space: 75
     image: equip_zhuyelu.png
     effect_payload:
       hp: 100
@@ -3622,7 +3658,7 @@ items:
     rarity: green
     tradeable: true
     price: 2400
-    storage_space: 100
+    storage_space: 75
     image: equip_nichangwuxie.png
     effect_payload:
       hp: 150
@@ -3790,7 +3826,7 @@ items:
     rarity: purple
     tradeable: true
     price: 14000
-    storage_space: 100
+    storage_space: 150
     image: equip_huxianxie.png
     effect_payload:
       hp: 320
@@ -3812,7 +3848,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_qilinxue.png
     effect_payload:
       hp: 308
@@ -3835,7 +3871,7 @@ items:
     rarity: purple
     tradeable: true
     price: 17000
-    storage_space: 100
+    storage_space: 150
     image: equip_xuanwuxue.png
     effect_payload:
       hp: 362
@@ -3857,7 +3893,7 @@ items:
     rarity: purple
     tradeable: true
     price: 15000
-    storage_space: 100
+    storage_space: 150
     image: equip_zhurixue.png
     effect_payload:
       hp: 266
@@ -3872,7 +3908,7 @@ items:
     rarity: purple
     tradeable: true
     price: 15500
-    storage_space: 100
+    storage_space: 150
     image: equip_tianjilu.png
     effect_payload:
       hp: 283
@@ -3887,7 +3923,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16500
-    storage_space: 100
+    storage_space: 150
     image: equip_liekongxue.png
     effect_payload:
       hp: 286
@@ -3904,7 +3940,7 @@ items:
     rarity: orange
     tradeable: true
     price: 50000
-    storage_space: 100
+    storage_space: 200
     image: equip_tatianxue.png
     effect_payload:
       hp: 340
@@ -3920,7 +3956,7 @@ items:
     rarity: orange
     tradeable: true
     price: 48000
-    storage_space: 100
+    storage_space: 200
     image: equip_shenxingxue.png
     effect_payload:
       hp: 330
@@ -3935,7 +3971,7 @@ items:
     rarity: orange
     tradeable: true
     price: 55000
-    storage_space: 100
+    storage_space: 200
     image: equip_wujixingxue.png
     effect_payload:
       hp: 330
@@ -3954,7 +3990,7 @@ items:
     rarity: black
     tradeable: true
     price: 100
-    storage_space: 100
+    storage_space: 50
     image: duanjian.png
     effect_payload:
       hp: 100
@@ -3968,7 +4004,7 @@ items:
     rarity: black
     tradeable: true
     price: 300
-    storage_space: 100
+    storage_space: 50
     image: changjian.png
     effect_payload:
       hp: 150
@@ -3982,7 +4018,7 @@ items:
     rarity: green
     tradeable: true
     price: 800
-    storage_space: 100
+    storage_space: 75
     image: equip_qingmangjian.png
     effect_payload:
       defense: 5
@@ -3996,7 +4032,7 @@ items:
     rarity: green
     tradeable: true
     price: 1500
-    storage_space: 100
+    storage_space: 75
     image: equip_duanmajian.png
     effect_payload:
       force: 25
@@ -4013,7 +4049,7 @@ items:
     rarity: black
     tradeable: true
     price: 100
-    storage_space: 100
+    storage_space: 50
     image: equip_duandao.png
     effect_payload:
       hp: 50
@@ -4027,7 +4063,7 @@ items:
     rarity: black
     tradeable: true
     price: 300
-    storage_space: 100
+    storage_space: 50
     image: equip_dakandao.png
     effect_payload:
       hp: 100
@@ -4040,7 +4076,7 @@ items:
     rarity: green
     tradeable: true
     price: 800
-    storage_space: 100
+    storage_space: 75
     image: equip_tongchangdao.png
     effect_payload:
       hp: 100
@@ -4054,7 +4090,7 @@ items:
     rarity: green
     tradeable: true
     price: 1500
-    storage_space: 100
+    storage_space: 75
     image: jingtiedao.png
     effect_payload:
       hp: 50
@@ -4071,7 +4107,7 @@ items:
     rarity: black
     tradeable: true
     price: 100
-    storage_space: 100
+    storage_space: 50
     image: changqiang.png
     effect_payload:
       hp: 200
@@ -4086,7 +4122,7 @@ items:
     rarity: black
     tradeable: true
     price: 300
-    storage_space: 100
+    storage_space: 50
     image: equip_baoweiqiang.png
     effect_payload:
       defense: 5
@@ -4100,7 +4136,7 @@ items:
     rarity: green
     tradeable: true
     price: 800
-    storage_space: 100
+    storage_space: 75
     image: equip_hutoumao.png
     effect_payload:
       defense: 5
@@ -4114,7 +4150,7 @@ items:
     rarity: green
     tradeable: true
     price: 1500
-    storage_space: 100
+    storage_space: 75
     image: equip_pansheqiang.png
     effect_payload:
       force: 20
@@ -4132,7 +4168,7 @@ items:
     rarity: black
     tradeable: true
     price: 100
-    storage_space: 100
+    storage_space: 50
     image: changgong.png
     effect_payload:
       force: 15
@@ -4145,7 +4181,7 @@ items:
     rarity: black
     tradeable: true
     price: 300
-    storage_space: 100
+    storage_space: 50
     image: fanqugong.png
     effect_payload:
       force: 15
@@ -4158,7 +4194,7 @@ items:
     rarity: green
     tradeable: true
     price: 800
-    storage_space: 100
+    storage_space: 75
     image: equip_tietaigong.png
     effect_payload:
       defense: 5
@@ -4172,7 +4208,7 @@ items:
     rarity: green
     tradeable: true
     price: 1500
-    storage_space: 100
+    storage_space: 75
     image: shenbigong.png
     effect_payload:
       force: 20
@@ -4189,7 +4225,7 @@ items:
     rarity: black
     tradeable: true
     price: 100
-    storage_space: 100
+    storage_space: 50
     image: changbian.png
     effect_payload:
       force: 12
@@ -4202,7 +4238,7 @@ items:
     rarity: black
     tradeable: true
     price: 300
-    storage_space: 100
+    storage_space: 50
     image: niupibian.png
     effect_payload:
       force: 10
@@ -4216,7 +4252,7 @@ items:
     rarity: green
     tradeable: true
     price: 800
-    storage_space: 100
+    storage_space: 75
     image: jicibian.png
     effect_payload:
       force: 15
@@ -4230,7 +4266,7 @@ items:
     rarity: green
     tradeable: true
     price: 1500
-    storage_space: 100
+    storage_space: 75
     image: jiulonggangbian.png
     effect_payload:
       force: 15
@@ -4244,7 +4280,7 @@ items:
     rarity: green
     tradeable: true
     price: 3000
-    storage_space: 100
+    storage_space: 75
     image: equip_mingshejiebian.png
     effect_payload:
       hp: 50
@@ -4263,7 +4299,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_yemankandao.png
     effect_payload:
       force: 40
@@ -4282,7 +4318,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_tiegugun.png
     effect_payload:
       defense: 5
@@ -4295,7 +4331,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_tongshanchui.png
     effect_payload:
       hp: 200
@@ -4309,7 +4345,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_pofengji.png
     effect_payload:
       force: 25
@@ -4323,7 +4359,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_shushengzhesan.png
     effect_payload:
       force: 5
@@ -4551,7 +4587,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_huxianjian.png
     effect_payload:
       force: 41
@@ -4572,7 +4608,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_bawangqiang.png
     effect_payload:
       hp: 237
@@ -4587,7 +4623,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_qilindao.png
     effect_payload:
       hp: 211
@@ -4608,7 +4644,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_xuanwuchui.png
     effect_payload:
       hp: 350
@@ -4629,7 +4665,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: fenglingshan.png
     effect_payload:
       force: 15
@@ -4649,7 +4685,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_qixingjian.png
     effect_payload:
       force: 47
@@ -4663,7 +4699,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_tulongdao.png
     effect_payload:
       hp: 271
@@ -4676,7 +4712,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_tianjizhang.png
     effect_payload:
       hp: 187
@@ -4706,7 +4742,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: pojunji.png
     effect_payload:
       hp: 214
@@ -4721,7 +4757,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_shuanghuagong.png
     effect_payload:
       force: 44
@@ -4735,7 +4771,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_jinshejian.png
     effect_payload:
       force: 45
@@ -4749,7 +4785,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_duomingfeidao.png
     effect_payload:
       force: 38
@@ -4763,7 +4799,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_ziweiruanjian.png
     effect_payload:
       force: 46
@@ -4777,7 +4813,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_yuxiao.png
     effect_payload:
       hp: 85
@@ -4792,7 +4828,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_jinlun.png
     effect_payload:
       hp: 280
@@ -4806,7 +4842,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_xuedao.png
     effect_payload:
       hp: 170
@@ -4820,7 +4856,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_yuanyangdao.png
     effect_payload:
       force: 49
@@ -4834,7 +4870,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_jinshezui.png
     effect_payload:
       force: 43
@@ -4848,7 +4884,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_wuqiaojian.png
     effect_payload:
       force: 53
@@ -4862,7 +4898,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_biyudao.png
     effect_payload:
       force: 48
@@ -4876,7 +4912,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_libiegou.png
     effect_payload:
       force: 50
@@ -4890,7 +4926,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_duoqinghuan.png
     effect_payload:
       hp: 96
@@ -4905,7 +4941,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_xiuhuazhen.png
     effect_payload:
       force: 42
@@ -4921,7 +4957,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_yitianjian.png
     effect_payload:
       hp: 518
@@ -4938,7 +4974,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_tuwujian.png
     effect_payload:
       hp: 514
@@ -4955,7 +4991,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_fangtianhuaji.png
     effect_payload:
       hp: 650
@@ -4971,7 +5007,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_xuanyuanjian.png
     effect_payload:
       hp: 538
@@ -4987,7 +5023,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_panlonggun.png
     effect_payload:
       hp: 680
@@ -5003,7 +5039,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: zhuxianjian.png
     effect_payload:
       hp: 530
@@ -5020,7 +5056,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_qiankunshengong.png
     effect_payload:
       hp: 555
@@ -5037,7 +5073,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_xuantiechongjian.png
     effect_payload:
       hp: 760
@@ -5052,7 +5088,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_dagoubang.png
     effect_payload:
       hp: 567
@@ -5068,7 +5104,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_xiaolifeidao.png
     effect_payload:
       hp: 585
@@ -5084,7 +5120,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_kongquelin.png
     effect_payload:
       hp: 610
@@ -5100,7 +5136,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_tianyamingyuedao.png
     effect_payload:
       hp: 680
@@ -5115,7 +5151,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_yuanyuewandao.png
     effect_payload:
       hp: 577
@@ -5131,7 +5167,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_changshengjian.png
     effect_payload:
       hp: 533
@@ -5157,6 +5193,7 @@ items:
       luck: 22
     tradeable: false
     price: 0
+    storage_space: 150
 
   # ---------- 饰品 - 扩展 ----------
 
@@ -5169,7 +5206,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_tongling.png
     effect_payload:
       agility: 10
@@ -5182,7 +5219,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_yupei.png
     effect_payload:
       hp: 50
@@ -5195,7 +5232,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_hushenfu.png
     effect_payload:
       hp: 100
@@ -5210,7 +5247,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_taomupai.png
     effect_payload:
       defense: 20
@@ -5224,7 +5261,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_fudai.png
     effect_payload:
       hp: 100
@@ -5238,7 +5275,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_tiehufu.png
     effect_payload:
       hp: 200
@@ -5251,7 +5288,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_tanmunianzhu.png
     effect_payload:
       defense: 5
@@ -5267,7 +5304,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_yiqiyaopai.png
     effect_payload:
       hp: 100
@@ -5399,7 +5436,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_qilinzui.png
     effect_payload:
       hp: 235
@@ -5422,7 +5459,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_fenghuangyu.png
     effect_payload:
       hp: 87
@@ -5443,7 +5480,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_longjingzhu.png
     effect_payload:
       hp: 229
@@ -5458,7 +5495,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_xuanwuyufu.png
     effect_payload:
       hp: 286
@@ -5473,7 +5510,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_tianjiyupei.png
     effect_payload:
       hp: 184
@@ -5488,7 +5525,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_pojunhufu.png
     effect_payload:
       hp: 267
@@ -5503,7 +5540,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_guiyuanzhu.png
     effect_payload:
       hp: 297
@@ -5518,7 +5555,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_shenghuoling.png
     effect_payload:
       hp: 261
@@ -5535,7 +5572,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_heshibi.png
     effect_payload:
       hp: 290
@@ -5550,7 +5587,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_chuanguoyuxi.png
     effect_payload:
       hp: 350
@@ -5567,7 +5604,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_qiankunzhu.png
     effect_payload:
       hp: 271
@@ -5584,7 +5621,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_businiaoyu.png
     effect_payload:
       hp: 315
@@ -5598,7 +5635,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_jianghuling.png
     effect_payload:
       hp: 350
@@ -5614,7 +5651,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_shangshanfaeling.png
     effect_payload:
       hp: 273
@@ -5640,6 +5677,7 @@ items:
       luck: 10
     tradeable: false
     price: 0
+    storage_space: 150
     image: taotieding.png
 
   # ---------- 器械 - 扩展 ----------
@@ -5653,7 +5691,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_taomujian.png
     effect_payload:
       defense: 15
@@ -5666,7 +5704,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_tongjing.png
     effect_payload:
       hp: 250
@@ -5680,7 +5718,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_luopan.png
     effect_payload:
       intellect: 20
@@ -5694,7 +5732,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_zhujian.png
     effect_payload:
       defense: 5
@@ -5707,7 +5745,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_moyuyan.png
     effect_payload:
       hp: 50
@@ -5721,7 +5759,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_qingtongsuanchou.png
     effect_payload:
       intellect: 20
@@ -5734,7 +5772,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_xiaoxingjiguanshu.png
     effect_payload:
       hp: 800
@@ -5748,7 +5786,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 100
+    storage_space: 75
     image: equip_tongchanjiguan.png
     effect_payload:
       hp: 1000
@@ -5893,7 +5931,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_baguajing.png
     effect_payload:
       hp: 210
@@ -5907,7 +5945,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_hunyuansan.png
     effect_payload:
       hp: 214
@@ -5922,7 +5960,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_zijinhulu.png
     effect_payload:
       hp: 225
@@ -5937,7 +5975,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_tianyinguqin.png
     effect_payload:
       hp: 214
@@ -5951,7 +5989,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_xuanmingdeng.png
     effect_payload:
       hp: 256
@@ -5966,7 +6004,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_jiguanxiong.png
     effect_payload:
       hp: 203
@@ -5981,7 +6019,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_muniuliuma.png
     effect_payload:
       hp: 209
@@ -5996,7 +6034,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_kuileiren.png
     effect_payload:
       hp: 179
@@ -6011,7 +6049,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 100
+    storage_space: 150
     image: equip_xuanwujigui.png
     effect_payload:
       hp: 236
@@ -6028,7 +6066,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_fengshenbang.png
     effect_payload:
       hp: 350
@@ -6043,7 +6081,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_shanheshejitu.png
     effect_payload:
       hp: 350
@@ -6058,7 +6096,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_zhoutianxingpan.png
     effect_payload:
       defense: 47
@@ -6072,7 +6110,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_taiqingyuce.png
     effect_payload:
       hp: 500
@@ -6086,7 +6124,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_feiyuan.png
     effect_payload:
       hp: 340
@@ -6100,7 +6138,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_chixiaojifeng.png
     effect_payload:
       hp: 300
@@ -6116,7 +6154,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 100
+    storage_space: 200
     image: equip_mojiajiguanren.png
     effect_payload:
       hp: 423
@@ -6137,7 +6175,7 @@ items:
     rarity: black
     tradeable: true
     price: 620
-    storage_space: 200
+    storage_space: 75
     image: equip_zaohongma.png
     effect_payload:
       hp: 50
@@ -6152,7 +6190,7 @@ items:
     rarity: black
     tradeable: true
     price: 975
-    storage_space: 200
+    storage_space: 75
     image: equip_huangbiaoma.png
     effect_payload:
       hp: 200
@@ -6166,7 +6204,7 @@ items:
     rarity: green
     tradeable: true
     price: 1500
-    storage_space: 200
+    storage_space: 100
     image: equip_dawanma.png
     effect_payload:
       hp: 200
@@ -6184,7 +6222,7 @@ items:
     rarity: black
     tradeable: true
     price: 800
-    storage_space: 200
+    storage_space: 75
     image: equip_qingcongma.png
     effect_payload:
       hp: 150
@@ -6199,7 +6237,7 @@ items:
     rarity: black
     tradeable: true
     price: 600
-    storage_space: 200
+    storage_space: 75
     image: equip_xiaomaolv.png
     effect_payload:
       hp: 80
@@ -6216,7 +6254,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 200
+    storage_space: 100
     image: equip_xiliangma.png
     effect_payload:
       hp: 200
@@ -6231,7 +6269,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 200
+    storage_space: 100
     image: equip_mengguma.png
     effect_payload:
       hp: 250
@@ -6246,7 +6284,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 200
+    storage_space: 100
     image: equip_taxuema.png
     effect_payload:
       defense: 5
@@ -6259,7 +6297,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 200
+    storage_space: 100
     image: equip_qingzongma.png
     effect_payload:
       hp: 200
@@ -6273,7 +6311,7 @@ items:
     rarity: green
     tradeable: true
     price: 2000
-    storage_space: 200
+    storage_space: 100
     image: equip_chibiao.png
     effect_payload:
       hp: 250
@@ -6290,7 +6328,7 @@ items:
     rarity: blue
     tradeable: true
     price: 6000
-    storage_space: 200
+    storage_space: 125
     image: equip_feiyunzui.png
     effect_payload:
       hp: 245
@@ -6305,7 +6343,7 @@ items:
     rarity: blue
     tradeable: true
     price: 6000
-    storage_space: 200
+    storage_space: 125
     image: equip_zhaoyeyushizi.png
     effect_payload:
       hp: 270
@@ -6320,7 +6358,7 @@ items:
     rarity: blue
     tradeable: true
     price: 6000
-    storage_space: 200
+    storage_space: 125
     image: equip_juanmaochitu.png
     effect_payload:
       hp: 300
@@ -6335,7 +6373,7 @@ items:
     rarity: blue
     tradeable: true
     price: 6000
-    storage_space: 200
+    storage_space: 125
     image: equip_qianliju.png
     effect_payload:
       hp: 235
@@ -6349,7 +6387,7 @@ items:
     rarity: blue
     tradeable: true
     price: 6000
-    storage_space: 200
+    storage_space: 125
     image: equip_zhuidian.png
     effect_payload:
       hp: 240
@@ -6364,7 +6402,7 @@ items:
     rarity: blue
     tradeable: true
     price: 6000
-    storage_space: 200
+    storage_space: 125
     image: equip_bailongju.png
     effect_payload:
       hp: 270
@@ -6381,7 +6419,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 200
+    storage_space: 175
     image: equip_wuzhuima.png
     effect_payload:
       hp: 292
@@ -6396,7 +6434,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 200
+    storage_space: 175
     image: equip_jueying.png
     effect_payload:
       hp: 305
@@ -6411,7 +6449,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 200
+    storage_space: 175
     image: equip_zhaohuangfeidian.png
     effect_payload:
       hp: 330
@@ -6426,7 +6464,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 200
+    storage_space: 175
     image: equip_dilu.png
     effect_payload:
       hp: 360
@@ -6441,7 +6479,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 200
+    storage_space: 175
     image: equip_qingshuanglu.png
     effect_payload:
       hp: 320
@@ -6456,7 +6494,7 @@ items:
     rarity: purple
     tradeable: true
     price: 16000
-    storage_space: 200
+    storage_space: 175
     image: equip_xuanjiazhanju.png
     effect_payload:
       hp: 312
@@ -6473,7 +6511,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 200
+    storage_space: 250
     image: equip_chituma.png
     effect_payload:
       hp: 362
@@ -6488,7 +6526,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 200
+    storage_space: 250
     image: equip_hanxuebaoma.png
     effect_payload:
       hp: 450
@@ -6502,7 +6540,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 200
+    storage_space: 250
     image: equip_qilin.png
     effect_payload:
       hp: 443
@@ -6518,7 +6556,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 200
+    storage_space: 250
     image: equip_qingluan.png
     effect_payload:
       hp: 307
@@ -6533,7 +6571,7 @@ items:
     rarity: orange
     tradeable: true
     price: 52000
-    storage_space: 200
+    storage_space: 250
     image: equip_shendiao.png
     effect_payload:
       hp: 470

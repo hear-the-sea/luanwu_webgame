@@ -24,6 +24,59 @@ MAX_DIRECT_AGILITY = 360
 MAX_DIRECT_EFFECTIVE_HP = 19000
 MAX_ORANGE_NON_HP_ATTRIBUTE_SUM = 260
 
+EQUIPMENT_STORAGE_BY_RARITY = {"black": 50, "green": 75, "blue": 100, "purple": 150, "orange": 200}
+MOUNT_STORAGE_BY_RARITY = {"black": 75, "green": 100, "blue": 125, "purple": 175, "orange": 250}
+CONSUMABLE_STORAGE_BY_RARITY = {"black": 2, "green": 5, "blue": 10, "purple": 20, "orange": 40}
+TOOL_STORAGE_BY_RARITY = {"black": 5, "green": 10, "blue": 25, "purple": 50, "orange": 100}
+BLUEPRINT_STORAGE_BY_RARITY = {"black": 25, "green": 50, "blue": 75, "purple": 125, "orange": 200}
+GUEST_ITEM_STORAGE_BY_RARITY = {"black": 50, "green": 75, "blue": 100, "purple": 150, "orange": 200}
+LOOT_BOX_STORAGE_BY_RARITY = {"black": 10, "green": 25, "blue": 50, "purple": 100, "orange": 150}
+RESOURCE_STORAGE = {
+    "grain": 1,
+    "tong": 2,
+    "xi": 3,
+    "tie": 5,
+    "gold_bar": 250,
+    "red_ruby": 150,
+    "haorenka": 100,
+    "wood_essence": 5,
+    "copper_essence": 5,
+    "iron_essence": 10,
+    "xuan_tie_essence": 10,
+    "fire_stone": 10,
+    "water_stone": 10,
+    "earth_stone": 10,
+    "air_stone": 10,
+    "zitanmu": 5,
+    "heiyuanshi": 5,
+    "jingangmei": 5,
+    "tiemu": 5,
+    "shuiqumu": 2,
+    "paozi": 2,
+    "zaozi": 2,
+    "gaolu": 20,
+    "ji": 5,
+    "ya": 5,
+    "e": 10,
+    "zhu": 15,
+    "niu": 20,
+    "wanyin_flag_fragment": 10,
+    "yuxu_broken_seal": 20,
+}
+RESOURCE_PACK_STORAGE = {
+    "resource_pack_silver": 25,
+    "resource_pack_grain": 25,
+    "resource_pack_mixed": 50,
+    "resource_pack_advanced": 100,
+}
+STRATEGIC_ITEM_STORAGE = {
+    "peace_shield_small": 25,
+    "peace_shield_medium": 50,
+    "peace_shield_large": 100,
+    "xisuidan": 150,
+    "soul_container": 200,
+}
+
 
 def _load_item_templates() -> dict[str, dict]:
     payload = yaml.safe_load(ITEM_TEMPLATES_PATH.read_text(encoding="utf-8"))
@@ -33,6 +86,33 @@ def _load_item_templates() -> dict[str, dict]:
 def _load_forge_equipment() -> dict[str, dict]:
     payload = yaml.safe_load(FORGE_EQUIPMENT_PATH.read_text(encoding="utf-8"))
     return payload["equipment"]
+
+
+def _expected_storage_space(key: str, item: dict) -> int:
+    if key in RESOURCE_STORAGE:
+        return RESOURCE_STORAGE[key]
+    if key in RESOURCE_PACK_STORAGE:
+        return RESOURCE_PACK_STORAGE[key]
+    if key in STRATEGIC_ITEM_STORAGE:
+        return STRATEGIC_ITEM_STORAGE[key]
+
+    rarity = str(item["rarity"])
+    effect_type = str(item["effect_type"])
+    if effect_type == "equip_mount":
+        return MOUNT_STORAGE_BY_RARITY[rarity]
+    if effect_type.startswith("equip_"):
+        return EQUIPMENT_STORAGE_BY_RARITY[rarity]
+    if effect_type in {"medicine", "experience_items"}:
+        return CONSUMABLE_STORAGE_BY_RARITY[rarity]
+    if effect_type == "loot_box":
+        return LOOT_BOX_STORAGE_BY_RARITY[rarity]
+    if effect_type == "skill_book" or key.startswith("blueprint_"):
+        return BLUEPRINT_STORAGE_BY_RARITY[rarity]
+    if key.endswith(("_guest_card", "_guest_scroll")):
+        return GUEST_ITEM_STORAGE_BY_RARITY[rarity]
+    if effect_type == "tool":
+        return TOOL_STORAGE_BY_RARITY[rarity]
+    raise AssertionError(f"未定义容量规则: {key} ({effect_type})")
 
 
 def _iter_loot_box_item_keys(item: dict) -> list[tuple[str, str]]:
@@ -325,6 +405,37 @@ def test_orange_equipment_non_hp_attribute_sum_stays_within_target_band():
     assert over_budget == {}
 
 
+def test_all_item_templates_define_explicit_positive_storage_space():
+    items = _load_item_templates()
+
+    missing = sorted(key for key, item in items.items() if "storage_space" not in item)
+    invalid = {
+        key: item.get("storage_space")
+        for key, item in items.items()
+        if "storage_space" in item
+        and (
+            not isinstance(item["storage_space"], int)
+            or isinstance(item["storage_space"], bool)
+            or item["storage_space"] < 1
+        )
+    }
+
+    assert missing == []
+    assert invalid == {}
+
+
+def test_item_template_storage_space_matches_treasury_balance_matrix():
+    items = _load_item_templates()
+
+    mismatches = {
+        key: {"actual": item.get("storage_space"), "expected": _expected_storage_space(key, item)}
+        for key, item in items.items()
+        if item.get("storage_space") != _expected_storage_space(key, item)
+    }
+
+    assert mismatches == {}
+
+
 def test_tuwujian_is_orange_anti_sorcery_sword():
     items = _load_item_templates()
 
@@ -335,7 +446,7 @@ def test_tuwujian_is_orange_anti_sorcery_sword():
     assert tuwujian["rarity"] == "orange"
     assert tuwujian["tradeable"] is True
     assert tuwujian["price"] == 52000
-    assert tuwujian["storage_space"] == 100
+    assert tuwujian["storage_space"] == 200
     assert tuwujian["effect_payload"] == {
         "hp": 514,
         "defense": 3,

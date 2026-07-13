@@ -58,6 +58,8 @@ class AttackLogEntry(TypedDict):
     target_combatant_slot: NotRequired[int | None]
     target_template_key: NotRequired[str | None]
     target_is_boss: NotRequired[bool]
+    actor_state: NotRequired[dict[str, Any]]
+    target_state: NotRequired[dict[str, Any]]
 
 
 @dataclass(frozen=True, slots=True)

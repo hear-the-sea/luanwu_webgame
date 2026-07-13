@@ -112,9 +112,14 @@ def get_warehouse_context(manor, current_tab: str, selected_category: str, page:
 
         treasury_capacity = get_treasury_capacity(manor)
         treasury_used = get_treasury_used_space(manor)
+        space_delta = treasury_capacity - treasury_used
         context["treasury_capacity"] = treasury_capacity
         context["treasury_used"] = treasury_used
-        context["treasury_remaining"] = treasury_capacity - treasury_used
+        context["treasury_remaining"] = max(0, space_delta)
+        context["treasury_over_capacity"] = max(0, -space_delta)
+        context["treasury_usage_percent"] = (
+            min(100, int(treasury_used * 100 / treasury_capacity)) if treasury_capacity > 0 else 0
+        )
     else:
         items = (
             manor.inventory_items.filter(storage_location=InventoryItem.StorageLocation.WAREHOUSE, quantity__gt=0)

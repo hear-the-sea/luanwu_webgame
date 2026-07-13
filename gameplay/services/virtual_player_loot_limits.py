@@ -82,8 +82,20 @@ def clamp_bot_loot_resources(
     bot_budget = max(0, int(profile.loot_budget_daily or 0))
     remaining_bot_budget = max(0, bot_budget - _spent_from_bot_defender_today(defender, now=now))
     clamped = _clamp_resources_to_budget(normalized, remaining_bot_budget)
-    if remaining_bot_budget <= 0 and bot_budget > 0 and profile.state != BotProfile.State.RETIRED:
-        BotProfile.objects.filter(pk=profile.pk).update(state=BotProfile.State.STALE, next_growth_at=now)
+    if (
+        remaining_bot_budget <= 0
+        and bot_budget > 0
+        and profile.state
+        not in {
+            BotProfile.State.STALE,
+            BotProfile.State.RETIRED,
+        }
+    ):
+        BotProfile.objects.filter(pk=profile.pk).update(
+            state=BotProfile.State.RETIRED,
+            next_growth_at=now,
+            maintenance_stopped_at=now,
+        )
 
     if not _is_bot_manor(attacker):
         real_cap = _real_attacker_daily_resource_cap()
@@ -94,8 +106,12 @@ def clamp_bot_loot_resources(
     if (
         _resource_total(clamped) >= remaining_bot_budget
         and remaining_bot_budget > 0
-        and profile.state != BotProfile.State.RETIRED
+        and profile.state not in {BotProfile.State.STALE, BotProfile.State.RETIRED}
     ):
-        BotProfile.objects.filter(pk=profile.pk).update(state=BotProfile.State.STALE, next_growth_at=now)
+        BotProfile.objects.filter(pk=profile.pk).update(
+            state=BotProfile.State.RETIRED,
+            next_growth_at=now,
+            maintenance_stopped_at=now,
+        )
 
     return clamped

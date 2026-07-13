@@ -186,18 +186,15 @@ def can_attack_target(
     if attacker.is_under_peace_shield:
         return False, "免战牌保护期内无法发起攻击"
 
-    # 检查防守方保护状态
-    if BotProfile.objects.filter(
-        manor=defender,
-        state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED],
-    ).exists():
-        return False, "该虚拟玩家已退场"
-    if defender.is_under_newbie_protection:
-        return False, "对方处于新手保护期"
-    if check_defeat_protection and defender.is_under_defeat_protection:
-        return False, "对方处于战败保护期"
-    if defender.is_under_peace_shield:
-        return False, "对方处于免战牌保护期"
+    target_block_reason = get_target_attack_block_reason(
+        defender,
+        recent_attacks=recent_attacks,
+        now=now,
+        use_cached_recent_attacks=use_cached_recent_attacks,
+        check_defeat_protection=check_defeat_protection,
+    )
+    if target_block_reason:
+        return False, target_block_reason
 
     # 检查声望差值保护
     color = get_prestige_color(attacker.prestige, defender.prestige)
@@ -206,14 +203,48 @@ def can_attack_target(
     if color == "red":
         return False, "对方声望过高，无法攻击"
 
+    return True, ""
+
+
+def get_target_attack_block_reason(
+    defender: Manor,
+    *,
+    recent_attacks: Optional[int] = None,
+    now: Optional[datetime] = None,
+    use_cached_recent_attacks: bool = True,
+    check_defeat_protection: bool = True,
+) -> str:
+    """Return a blocker shared by every potential attacker for this target."""
+    if BotProfile.objects.filter(
+        manor_id=defender.id,
+        state=BotProfile.State.STALE,
+    ).exists():
+        return "该虚拟玩家暂不可用"
+    if defender.is_under_newbie_protection:
+        return "对方处于新手保护期"
+    if check_defeat_protection and defender.is_under_defeat_protection:
+        return "对方处于战败保护期"
+    if defender.is_under_peace_shield:
+        return "对方处于免战牌保护期"
+
     # 检查目标24小时内被攻击次数（防止小号集群攻击）
     now = now or timezone.now()
     if recent_attacks is None:
         recent_attacks = get_recent_attacks_24h(defender, now=now, use_cache=use_cached_recent_attacks)
     if recent_attacks >= PVPConstants.RAID_MAX_DAILY_ATTACKS_RECEIVED:
-        return False, "该目标今日已被多次攻击，暂时无法攻击"
+        return "该目标今日已被多次攻击，暂时无法攻击"
 
-    return True, ""
+    return ""
+
+
+def is_target_globally_attackable(
+    defender: Manor,
+    *,
+    recent_attacks: Optional[int] = None,
+    now: Optional[datetime] = None,
+) -> bool:
+    """Return whether target-side state permits attacks from some eligible player."""
+    return not get_target_attack_block_reason(defender, recent_attacks=recent_attacks, now=now)
 
 
 def get_asset_level(manor: Manor) -> Tuple[str, int]:

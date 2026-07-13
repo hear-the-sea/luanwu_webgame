@@ -9,7 +9,7 @@ import pytest
 from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
 from django.core.management import call_command
-from django.test import override_settings
+from django.test import RequestFactory, override_settings
 from django.utils import timezone
 
 from gameplay.services.manor.core import ensure_manor
@@ -218,8 +218,8 @@ def test_bot_profile_admin_mark_selected_stale_action(django_user_model, monkeyp
     retired.refresh_from_db()
     assert profile.state == BotProfile.State.STALE
     assert profile.next_growth_at <= timezone.now()
-    assert retired.state == BotProfile.State.RETIRED
-    assert messages and "1" in messages[0]
+    assert retired.state == BotProfile.State.STALE
+    assert messages and "2" in messages[0]
 
 
 @pytest.mark.django_db
@@ -235,10 +235,50 @@ def test_bot_profile_admin_due_display_excludes_retired(django_user_model):
         state=BotProfile.State.RETIRED,
         next_growth_at=timezone.now() - timedelta(minutes=1),
     )
+    stale = _create_bot_profile(
+        django_user_model,
+        state=BotProfile.State.STALE,
+        next_growth_at=timezone.now() - timedelta(minutes=1),
+    )
 
     assert admin_obj.is_due_for_maintenance(due) is True
     assert admin_obj.is_due_for_maintenance(future) is False
     assert admin_obj.is_due_for_maintenance(retired) is False
+    assert admin_obj.is_due_for_maintenance(stale) is False
+
+
+@pytest.mark.django_db
+def test_bot_profile_admin_due_filter_partitions_all_profiles(django_user_model):
+    from gameplay.admin.bots import BotProfileAdmin, DueMaintenanceFilter
+    from gameplay.models import BotProfile
+
+    admin_obj = BotProfileAdmin(BotProfile, AdminSite())
+    due = _create_bot_profile(django_user_model, next_growth_at=timezone.now() - timedelta(minutes=1))
+    future = _create_bot_profile(django_user_model, next_growth_at=timezone.now() + timedelta(hours=1))
+    retired = _create_bot_profile(
+        django_user_model,
+        state=BotProfile.State.RETIRED,
+        next_growth_at=timezone.now() - timedelta(minutes=1),
+    )
+    stale = _create_bot_profile(
+        django_user_model,
+        state=BotProfile.State.STALE,
+        next_growth_at=timezone.now() - timedelta(minutes=1),
+    )
+    queryset = BotProfile.objects.filter(id__in=[due.id, future.id, retired.id, stale.id])
+
+    def filtered_ids(value):
+        request = RequestFactory().get("/admin/gameplay/botprofile/", {"due_maintenance": value})
+        list_filter = DueMaintenanceFilter(request, request.GET.copy(), BotProfile, admin_obj)
+        return set(list_filter.queryset(request, queryset).values_list("id", flat=True))
+
+    yes_ids = filtered_ids("yes")
+    no_ids = filtered_ids("no")
+
+    assert yes_ids == {due.id}
+    assert no_ids == {future.id, retired.id, stale.id}
+    assert yes_ids.isdisjoint(no_ids)
+    assert yes_ids | no_ids == set(queryset.values_list("id", flat=True))
 
 
 @pytest.mark.django_db

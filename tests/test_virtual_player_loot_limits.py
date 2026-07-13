@@ -55,7 +55,8 @@ def test_apply_raid_loot_clamps_bot_defender_resources_to_daily_budget(monkeypat
     assert run.loot_resources == {"grain": 500}
     assert defender.grain == 9_500
     assert defender.silver == 10_000
-    assert profile.state == BotProfile.State.STALE
+    assert profile.state == BotProfile.State.RETIRED
+    assert profile.maintenance_stopped_at is not None
 
 
 @pytest.mark.django_db
@@ -85,7 +86,7 @@ def test_bot_defender_daily_budget_accounts_for_prior_loot(django_user_model):
 
 
 @pytest.mark.django_db
-def test_bot_defender_marks_stale_when_prior_loot_exhausted_budget(django_user_model):
+def test_bot_defender_retires_when_prior_loot_exhausted_budget(django_user_model):
     from gameplay.services.virtual_player_loot_limits import clamp_bot_loot_resources
 
     attacker = _create_manor(django_user_model, "bot_budget_exhausted_attacker")
@@ -109,7 +110,8 @@ def test_bot_defender_marks_stale_when_prior_loot_exhausted_budget(django_user_m
 
     profile.refresh_from_db()
     assert clamped == {}
-    assert profile.state == BotProfile.State.STALE
+    assert profile.state == BotProfile.State.RETIRED
+    assert profile.maintenance_stopped_at is not None
 
 
 @pytest.mark.django_db

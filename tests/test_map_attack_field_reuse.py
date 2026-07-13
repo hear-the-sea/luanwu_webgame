@@ -80,7 +80,7 @@ def test_manor_detail_api_reuses_attack_fields_from_public_info(monkeypatch, dja
 
 
 @pytest.mark.django_db
-def test_manor_detail_api_hides_retired_virtual_player(django_user_model, client):
+def test_manor_detail_api_shows_retired_virtual_player(django_user_model, client):
     viewer_user = django_user_model.objects.create_user(username="map_detail_viewer", password="pass123")
     viewer_manor = ensure_manor(viewer_user)
     retired_user = django_user_model.objects.create_user(username="map_detail_retired", password="pass123")
@@ -102,4 +102,4 @@ def test_manor_detail_api_hides_retired_virtual_player(django_user_model, client
     response = client.get(reverse("gameplay:manor_detail_api", kwargs={"manor_id": retired_manor.id}))
 
     assert viewer_manor.id != retired_manor.id
-    assert response.status_code == 404
+    assert response.status_code == 200

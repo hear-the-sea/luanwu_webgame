@@ -7,6 +7,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import timedelta
 from functools import lru_cache
+from hashlib import blake2b, sha256
 from pathlib import Path
 from threading import Event, Thread
 from typing import Any
@@ -14,14 +15,16 @@ from typing import Any
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Max, Q
+from django.db.models import Count, Max, Q, Sum
 from django.utils import timezone
 
 from battle.models import TroopTemplate
+from common.constants.virtual_players import VIRTUAL_PLAYER_MANAGED_STOCK_EFFECT_TYPES
 from core.config import GUEST
+from core.exceptions import InsufficientResourceError, NoGuestsError, SalaryAlreadyPaidError
 from core.utils.cache_lock import acquire_best_effort_lock, release_best_effort_lock, renew_best_effort_lock
 from core.utils.yaml_loader import load_yaml_data
-from gameplay.constants import REGION_CHOICES, BuildingKeys
+from gameplay.constants import REGION_CHOICES, BuildingKeys, PVPConstants
 from gameplay.models import (
     BotBackfillDemand,
     BotInventoryDailyCounter,
@@ -40,10 +43,30 @@ from gameplay.services.manor.coordinates import is_occupied_manor_location_confl
 from gameplay.services.manor.core import calculate_building_capacity, generate_unique_coordinate
 from gameplay.services.manor.naming import ManorNameConflictError
 from gameplay.services.technology_catalog import build_technology_index
-from guests.models import GearItem, GearTemplate, Guest, GuestSkill, GuestTemplate, Skill
+from gameplay.services.virtual_player_population import PopulationCell, PopulationPlan, plan_population_cells
+from gameplay.services.virtual_player_rules import (
+    apply_combat_persona,
+    apply_stable_troop_variation,
+    bounded_approach,
+    choose_lifecycle,
+    choose_strength_quantile,
+    nearest_rank_quantile,
+)
+from guests.models import (
+    GearItem,
+    GearSlot,
+    GearTemplate,
+    Guest,
+    GuestRarity,
+    GuestSkill,
+    GuestTemplate,
+    Skill,
+    SkillKind,
+)
 from guests.services.equipment_payloads import build_gear_template_defaults, build_gear_template_preview
-from guests.services.equipment_stats import apply_set_bonuses, apply_template_stats_to_guest
+from guests.services.equipment_stats import apply_set_bonuses, apply_template_stats_to_guest, slot_capacity
 from guests.services.recruitment_guests import create_guest_from_template
+from guests.services.salary import pay_all_salaries
 
 logger = logging.getLogger(__name__)
 
@@ -54,14 +77,20 @@ class BotProjectionConfig:
     building_level: int
     guest_count: int
     guest_level: int
+    troop_count: int = 50
 
 
 DEFAULT_VIRTUAL_PLAYER_CONFIG: dict[str, Any] = {
     "enabled": True,
     "population": {
-        "active_player_multiplier": 4,
-        "min_per_region": 20,
-        "min_attackable_per_band": 10,
+        "active_player_multiplier": 2,
+        "active_window_days": 7,
+        "cell_floor": 4,
+        "cell_active_multiplier": 2,
+        "exploration_supply": 0,
+        "min_per_region": 0,
+        "min_attackable_per_band": 4,
+        "retired_reactivation_chance": 0.70,
         "hard_cap": 2000,
         "rolling_batch_size": [3, 12],
     },
@@ -80,6 +109,20 @@ DEFAULT_VIRTUAL_PLAYER_CONFIG: dict[str, Any] = {
         "empty_hit_window_hours": 24,
         "stale_no_interaction_days": 30,
     },
+    "growth": {
+        "catch_up_ratio": 0.25,
+        "slowing_ratio_multiplier": 0.5,
+        "max_building_step": 2,
+        "max_guest_level_step": 3,
+        "max_prestige_step": 500,
+        "stage_caps": {
+            "newbie": 3,
+            "junior": 6,
+            "middle": 10,
+            "senior": 15,
+            "veteran": 20,
+        },
+    },
     "resources": {
         "balanced": [0.25, 0.55],
         "rich": [0.55, 0.85],
@@ -95,8 +138,36 @@ DEFAULT_VIRTUAL_PLAYER_CONFIG: dict[str, Any] = {
         "high_tier_skill_keys": [],
         "high_tier_skill_chance": 0.0,
         "high_tier_skills_per_guest": [1, 1],
+        "early_stage_skill_max": 6,
+        "early_stage_skill_count": [0, 1],
+        "multi_skill_passive_focus_chance": 0.75,
         "troop_template_keys": [],
         "technology_keys": [],
+        "gear_max_rarity_by_stage": {
+            1: "green",
+            7: "blue",
+            11: "purple",
+            16: "orange",
+        },
+        "real_projection_sample_size": 25,
+        "active_sample_days": 30,
+        "regional_min_sample_size": 5,
+        "strength_quantile_weights": {"p25": 25, "p50": 50, "p75": 25},
+        "real_projection_jitter_bps": 500,
+        "inventory_template_slots_by_archetype": {
+            "balanced": 4,
+            "rich": 5,
+            "dojo": 3,
+            "guard": 3,
+            "abandoned": 4,
+        },
+        "inventory_effect_type_weights": {
+            "balanced": {"resource_pack": 3, "resource": 3, "experience_items": 2, "medicine": 2, "tool": 1},
+            "rich": {"resource_pack": 4, "resource": 5, "experience_items": 1, "medicine": 1, "tool": 1},
+            "dojo": {"resource_pack": 1, "resource": 1, "experience_items": 4, "medicine": 2, "tool": 1},
+            "guard": {"resource_pack": 2, "resource": 2, "experience_items": 1, "medicine": 4, "tool": 1},
+            "abandoned": {"resource_pack": 3, "resource": 3, "experience_items": 1, "medicine": 1, "tool": 1},
+        },
         "loot_budget_daily": 2_000_000,
         "loot_limits": {
             "real_attacker_daily_resource_cap": 2_000_000,
@@ -114,6 +185,19 @@ DEFAULT_VIRTUAL_PLAYER_CONFIG: dict[str, Any] = {
             {"min_prestige": 30000, "chance": 0.12},
         ],
     },
+    "combat_personas": {
+        "balanced": {"guest_level_multiplier": 1.0, "guest_count_multiplier": 1.0, "troop_multiplier": 1.0},
+        "rich": {"guest_level_multiplier": 0.85, "guest_count_multiplier": 0.85, "troop_multiplier": 0.8},
+        "dojo": {"guest_level_multiplier": 1.15, "guest_count_multiplier": 1.0, "troop_multiplier": 0.75},
+        "guard": {"guest_level_multiplier": 0.85, "guest_count_multiplier": 0.85, "troop_multiplier": 1.35},
+        "abandoned": {"guest_level_multiplier": 0.75, "guest_count_multiplier": 0.75, "troop_multiplier": 0.6},
+    },
+    "lifecycle_personas": {
+        "tourist": {"weight": 15, "active_days": [7, 21], "abandoned_days": [7, 14]},
+        "casual": {"weight": 45, "active_days": [30, 90], "abandoned_days": [14, 45]},
+        "committed": {"weight": 30, "active_days": [90, 180], "abandoned_days": [30, 60]},
+        "veteran": {"weight": 10, "active_days": [180, 360], "abandoned_days": [45, 90]},
+    },
 }
 
 VIRTUAL_PLAYER_CONFIG_PATH = Path(settings.BASE_DIR) / "data" / "virtual_players.yaml"
@@ -123,6 +207,7 @@ VIRTUAL_PLAYER_COORDINATE_RETRY_LIMIT = 5
 RARE_ITEM_RARITIES = {"purple", "orange", "red", "legendary"}
 ALL_TEMPLATE_SENTINEL = "__all__"
 ALL_TRADEABLE_TEMPLATE_SENTINEL = "__all_tradeable__"
+GEAR_RARITY_RANK = {rarity.value: index for index, rarity in enumerate(GuestRarity)}
 
 _MANOR_NAME_SURNAMES = (
     "沈",
@@ -199,7 +284,6 @@ _MANOR_NAME_SUFFIXES = (
 _MANOR_NAME_INTERNET_PREFIXES = (
     "摸鱼",
     "开摆",
-    "咸鱼",
     "随缘",
     "夜猫子",
     "奶茶续命",
@@ -211,23 +295,38 @@ _MANOR_NAME_INTERNET_PREFIXES = (
     "欧皇",
     "一键收菜",
     "余额不足",
+    "周末上线",
+    "慢慢变强",
+    "路过看看",
+    "今日份",
+    "刚睡醒",
+    "再来一局",
+    "不急着赢",
+    "下班以后",
+    "在线等风",
 )
 _MANOR_NAME_INTERNET_SUFFIXES = (
     "山庄",
-    "别院",
     "小筑",
-    "草堂",
-    "轩",
-    "居",
-    "堂",
-    "府",
-    "园",
-    "避难所",
+    "根据地",
+    "休息区",
+    "补给站",
+    "快乐屋",
+    "慢慢来",
+    "先发育",
+    "不掉线",
+    "来收菜",
+    "等好运",
+    "随便玩",
+    "今晚在线",
+    "明天再说",
+    "营业中",
+    "集合点",
+    "避风港",
+    "后花园",
 )
 _MANOR_NAME_INTERNET_STANDALONE = (
-    "坤哥亡命天涯",
     "听到涛声",
-    "暴打派大星",
     "今天也想躺平",
     "打不过就跑",
     "路过不要打我",
@@ -241,6 +340,92 @@ _MANOR_NAME_INTERNET_STANDALONE = (
     "好运加载中",
     "这把随缘",
     "风紧扯呼",
+    "等等我再上",
+    "今天手气不错",
+    "先把日常做完",
+    "晚点再认真打",
+    "刚来还不太会",
+    "慢慢玩比较快",
+    "让我再发育会儿",
+    "路过顺手收个菜",
+    "上线看看就走",
+    "今天不宜硬刚",
+    "差一点点起飞",
+    "先喝口茶再说",
+    "周末才有空玩",
+    "等一个好运气",
+    "随手点进来的",
+    "别急正在赶路",
+    "这一局先稳住",
+    "明天一定变强",
+)
+_MANOR_NAME_NICKNAME_STANDALONE = (
+    "晚风",
+    "南桥",
+    "半糖",
+    "小满",
+    "十一",
+    "阿七",
+    "木棉",
+    "青团",
+    "栗子",
+    "乌龙",
+    "夏末",
+    "星河",
+    "山茶",
+    "初九",
+    "清欢",
+    "玖玖",
+    "北落",
+    "三月",
+    "白桃",
+    "雾眠",
+    "小禾",
+    "小雨",
+    "阿宁",
+    "团子",
+    "慢热",
+    "未晚",
+    "一川",
+    "听夏",
+    "有光",
+    "云朵",
+    "小鱼干",
+    "松子糖",
+)
+_MANOR_NAME_NICKNAME_PREFIXES = (
+    "小",
+    "阿",
+    "老",
+    "一只",
+    "隔壁的",
+    "晚睡的",
+    "路过的",
+    "发呆的",
+    "爱喝茶的",
+    "慢半拍的",
+    "不着急的",
+    "刚上线的",
+)
+_MANOR_NAME_NICKNAME_CORES = (
+    "栗子",
+    "青团",
+    "乌龙",
+    "晚风",
+    "小禾",
+    "山茶",
+    "木棉",
+    "团子",
+    "南桥",
+    "白桃",
+    "云朵",
+    "星河",
+    "小满",
+    "听夏",
+    "雨声",
+    "松子",
+    "月亮",
+    "茶壶",
 )
 
 CORE_BUILDING_KEYS = (
@@ -330,27 +515,44 @@ def _create_bot_user(*, region: str, growth_seed: int) -> Any:
     raise RuntimeError("Failed to allocate a unique bot manor name after multiple attempts")
 
 
+def _select_bot_manor_name_style(roll: float) -> str:
+    if roll < 0.50:
+        return "modern"
+    if roll < 0.80:
+        return "classical"
+    return "nickname"
+
+
+def _build_bot_manor_name_candidate(rng: random.Random, *, style: str, variant: int) -> str:
+    if style == "modern":
+        if rng.random() < 0.30:
+            return rng.choice(_MANOR_NAME_INTERNET_STANDALONE)
+        return f"{rng.choice(_MANOR_NAME_INTERNET_PREFIXES)}{rng.choice(_MANOR_NAME_INTERNET_SUFFIXES)}"
+    if style == "nickname":
+        if rng.random() < 0.50:
+            return rng.choice(_MANOR_NAME_NICKNAME_STANDALONE)
+        return f"{rng.choice(_MANOR_NAME_NICKNAME_PREFIXES)}{rng.choice(_MANOR_NAME_NICKNAME_CORES)}"
+    if style != "classical":
+        raise ValueError(f"Unsupported bot manor name style: {style}")
+
+    classical_variant = variant % 5
+    if classical_variant == 0:
+        return f"{rng.choice(_MANOR_NAME_SURNAMES)}{rng.choice(_MANOR_NAME_GIVEN)}的庄园"
+    if classical_variant == 1:
+        return f"{rng.choice(_MANOR_NAME_SURNAMES)}{rng.choice(_MANOR_NAME_GIVEN)}的{rng.choice(_MANOR_NAME_SUFFIXES)}"
+    if classical_variant == 2:
+        return f"{rng.choice(_MANOR_NAME_PREFIXES)}{rng.choice(_MANOR_NAME_SURNAMES)}{rng.choice(_MANOR_NAME_SUFFIXES)}"
+    if classical_variant == 3:
+        return f"{rng.choice(_MANOR_NAME_GIVEN)}{rng.choice(_MANOR_NAME_PREFIXES)}{rng.choice(_MANOR_NAME_SUFFIXES)}"
+    return f"{rng.choice(_MANOR_NAME_PREFIXES)}{rng.choice(_MANOR_NAME_GIVEN)}{rng.choice(_MANOR_NAME_SUFFIXES)}"
+
+
 def _generate_bot_manor_name(*, growth_seed: int, salt: int = 0) -> str:
     """Generate player-like manor names without visible system markers."""
     for attempt in range(400):
         rng = random.Random(f"{growth_seed}:{salt}:{attempt}")
-        roll = rng.random()
-        if roll < 0.38:
-            candidate = rng.choice(_MANOR_NAME_INTERNET_STANDALONE)
-        elif roll < 0.74:
-            candidate = f"{rng.choice(_MANOR_NAME_INTERNET_PREFIXES)}{rng.choice(_MANOR_NAME_INTERNET_SUFFIXES)}"
-        else:
-            variant = attempt % 5
-            if variant == 0:
-                candidate = f"{rng.choice(_MANOR_NAME_SURNAMES)}{rng.choice(_MANOR_NAME_GIVEN)}的庄园"
-            elif variant == 1:
-                candidate = f"{rng.choice(_MANOR_NAME_SURNAMES)}{rng.choice(_MANOR_NAME_GIVEN)}的{rng.choice(_MANOR_NAME_SUFFIXES)}"
-            elif variant == 2:
-                candidate = f"{rng.choice(_MANOR_NAME_PREFIXES)}{rng.choice(_MANOR_NAME_SURNAMES)}{rng.choice(_MANOR_NAME_SUFFIXES)}"
-            elif variant == 3:
-                candidate = f"{rng.choice(_MANOR_NAME_GIVEN)}{rng.choice(_MANOR_NAME_PREFIXES)}{rng.choice(_MANOR_NAME_SUFFIXES)}"
-            else:
-                candidate = f"{rng.choice(_MANOR_NAME_PREFIXES)}{rng.choice(_MANOR_NAME_GIVEN)}{rng.choice(_MANOR_NAME_SUFFIXES)}"
+        style = _select_bot_manor_name_style(rng.random())
+        candidate = _build_bot_manor_name_candidate(rng, style=style, variant=attempt)
         if not Manor.objects.filter(name=candidate).exists():
             return candidate
 
@@ -501,19 +703,32 @@ def _target_band_filter(prestige_band: str) -> Q:
 
 
 def record_virtual_player_backfill_demand(*, region: str, prestige_band: str, needed: int) -> None:
-    """Record an async bot backfill demand for later rolling population work."""
+    """Reconcile the current async bot backfill shortage for one population cell."""
     needed = max(0, int(needed or 0))
-    if needed <= 0 or not region or not prestige_band:
+    if not region or not prestige_band:
         return
     normalized_region = str(region)
     normalized_band = str(prestige_band)
     with transaction.atomic():
-        demand, created = BotBackfillDemand.objects.select_for_update().get_or_create(
-            region=normalized_region,
-            prestige_band=normalized_band,
-            defaults={"needed": needed},
+        demand = (
+            BotBackfillDemand.objects.select_for_update()
+            .filter(
+                region=normalized_region,
+                prestige_band=normalized_band,
+            )
+            .first()
         )
-        if not created and needed > int(demand.needed or 0):
+        if needed <= 0:
+            if demand is not None:
+                demand.delete()
+            return
+        if demand is None:
+            BotBackfillDemand.objects.create(
+                region=normalized_region,
+                prestige_band=normalized_band,
+                needed=needed,
+            )
+        elif needed != int(demand.needed or 0):
             demand.needed = needed
             demand.save(update_fields=["needed", "updated_at"])
 
@@ -534,6 +749,147 @@ def consume_virtual_player_backfill_demands(*, limit: int | None = None) -> list
         ]
         BotBackfillDemand.objects.filter(id__in=[row.id for row in rows]).delete()
         return consumed
+
+
+def _should_reactivate_retired_player(
+    *,
+    now,
+    region: str,
+    prestige_band: str,
+    profile_id: int,
+    chance: float,
+) -> bool:
+    normalized_chance = max(0.0, min(1.0, float(chance)))
+    if normalized_chance <= 0:
+        return False
+    if normalized_chance >= 1:
+        return True
+    local_date = timezone.localtime(now).date() if timezone.is_aware(now) else now.date()
+    payload = f"{local_date.isoformat()}:{region}:{prestige_band}:{int(profile_id)}".encode("utf-8")
+    value = int.from_bytes(sha256(payload).digest()[:8], "big") / 2**64
+    return value < normalized_chance
+
+
+@transaction.atomic
+def _try_reactivate_retired_player(
+    *,
+    region: str,
+    prestige_band: str,
+    low: int,
+    high: int | None,
+    now,
+    config: dict[str, Any],
+    evaluated_profile_ids: set[int],
+    ownership_guard: Callable[[], None] | None = None,
+) -> BotProfile | None:
+    queryset = (
+        BotProfile.objects.select_for_update(skip_locked=True)
+        .select_related("manor")
+        .filter(
+            state=BotProfile.State.RETIRED,
+            manor__region=str(region),
+            **_band_filter_kwargs(low, high, prefix="manor__"),
+        )
+        .exclude(id__in=evaluated_profile_ids)
+        .order_by("-maintenance_stopped_at", "-updated_at", "id")
+    )
+    profile = queryset.first()
+    if profile is None:
+        return None
+    evaluated_profile_ids.add(int(profile.id))
+    population = config.get("population") or {}
+    chance = max(0.0, min(1.0, float(population.get("retired_reactivation_chance", 0.70))))
+    if not _should_reactivate_retired_player(
+        now=now,
+        region=str(region),
+        prestige_band=str(prestige_band),
+        profile_id=int(profile.id),
+        chance=chance,
+    ):
+        return None
+    if ownership_guard is not None:
+        ownership_guard()
+
+    local_date = timezone.localtime(now).date() if timezone.is_aware(now) else now.date()
+    lifecycle_rng = random.Random(f"reactivate:{local_date.isoformat()}:{profile.id}")
+    _next_growth_at, abandon_at, retire_at = _lifecycle_dates(now, lifecycle_rng, config)
+    profile.state = BotProfile.State.ACTIVE
+    profile.next_growth_at = now
+    profile.abandon_at = abandon_at
+    profile.retire_at = retire_at
+    profile.maintenance_started_at = now
+    profile.maintenance_stopped_at = None
+    profile.last_planned_at = now
+    profile.save(
+        update_fields=[
+            "state",
+            "next_growth_at",
+            "abandon_at",
+            "retire_at",
+            "maintenance_started_at",
+            "maintenance_stopped_at",
+            "last_planned_at",
+            "updated_at",
+        ]
+    )
+    logger.info(
+        "Virtual player reactivated: profile_id=%s manor_id=%s region=%s prestige_band=%s chance=%s",
+        profile.id,
+        profile.manor_id,
+        region,
+        prestige_band,
+        chance,
+        extra={
+            "event": "virtual_player_reactivated",
+            "profile_id": profile.id,
+            "manor_id": profile.manor_id,
+            "region": str(region),
+            "current_prestige_band": str(prestige_band),
+            "reactivation_chance": chance,
+        },
+    )
+    return profile
+
+
+def _reactivate_or_create_virtual_player(
+    *,
+    region: str,
+    prestige_band: str,
+    low: int,
+    high: int | None,
+    archetype: str,
+    growth_seed: int,
+    now,
+    config: dict[str, Any],
+    projection_factory: Callable[[], BotProjectionConfig],
+    evaluated_profile_ids: set[int],
+    ownership_guard: Callable[[], None] | None = None,
+) -> tuple[BotProfile, bool]:
+    reactivated = _try_reactivate_retired_player(
+        region=region,
+        prestige_band=prestige_band,
+        low=low,
+        high=high,
+        now=now,
+        config=config,
+        evaluated_profile_ids=evaluated_profile_ids,
+        ownership_guard=ownership_guard,
+    )
+    if reactivated is not None:
+        return reactivated, True
+    if ownership_guard is not None:
+        ownership_guard()
+    return (
+        create_virtual_player(
+            region=region,
+            prestige_band=prestige_band,
+            archetype=archetype,
+            growth_seed=growth_seed,
+            now=now,
+            projection=projection_factory(),
+        ),
+        False,
+    )
 
 
 def record_virtual_player_backfill_demand_for_search(
@@ -557,7 +913,9 @@ def record_virtual_player_backfill_demand_for_search(
 
 
 def _active_real_player_count(now) -> int:
-    active_after = now - timedelta(days=7)
+    config = load_virtual_player_config()
+    active_days = max(1, int((config.get("population") or {}).get("active_window_days") or 7))
+    active_after = now - timedelta(days=active_days)
     return Manor.objects.filter(
         bot_profile__isnull=True,
         user__is_staff=False,
@@ -574,14 +932,92 @@ def _maintained_bot_count() -> int:
     return _maintained_bot_queryset().count()
 
 
-def _target_bot_total(config: dict[str, Any], *, now) -> int:
+def _configured_population_value(
+    population: dict[str, Any],
+    field: str,
+    *,
+    legacy_field: str,
+    default: int,
+) -> int:
+    runtime = getattr(settings, "VIRTUAL_PLAYER_CONFIG", None) or {}
+    runtime_population = runtime.get("population") if isinstance(runtime, dict) else None
+    if isinstance(runtime_population, dict):
+        if field in runtime_population:
+            return int(runtime_population[field] or 0)
+        if legacy_field in runtime_population:
+            return int(runtime_population[legacy_field] or 0)
+    return int(population.get(field, population.get(legacy_field, default)) or 0)
+
+
+def _build_population_plan(config: dict[str, Any], *, now) -> PopulationPlan:
     population = config.get("population") or {}
-    multiplier = max(0, int(population.get("active_player_multiplier", 0) or 0))
-    target = _active_real_player_count(now) * multiplier
-    hard_cap = int(population.get("hard_cap", 0) or 0)
-    if hard_cap > 0:
-        target = min(target, hard_cap)
-    return max(0, target)
+    active_days = max(1, int(population.get("active_window_days") or 7))
+    active_after = now - timedelta(days=active_days)
+    recent_after = now - timedelta(hours=24)
+    exhausted_manor_ids = list(
+        RaidRun.objects.filter(started_at__gte=recent_after, defender__bot_profile__isnull=False)
+        .values("defender_id")
+        .annotate(received=Count("id"))
+        .filter(received__gte=PVPConstants.RAID_MAX_DAILY_ATTACKS_RECEIVED)
+        .values_list("defender_id", flat=True)
+    )
+    maintained = _maintained_bot_queryset().select_related("manor")
+    attackable = maintained.filter(
+        Q(manor__newbie_protection_until__isnull=True) | Q(manor__newbie_protection_until__lte=now),
+        Q(manor__defeat_protection_until__isnull=True) | Q(manor__defeat_protection_until__lte=now),
+        Q(manor__peace_shield_until__isnull=True) | Q(manor__peace_shield_until__lte=now),
+    ).exclude(manor_id__in=exhausted_manor_ids)
+    demands = {
+        (row["region"], row["prestige_band"]): int(row["needed"] or 0)
+        for row in BotBackfillDemand.objects.values("region", "prestige_band", "needed")
+    }
+
+    cells: list[PopulationCell] = []
+    for region in _regions():
+        for band_name, (low, high) in _prestige_bands(config).items():
+            band_filter = _band_filter_kwargs(low, high, prefix="manor__")
+            real_filter = _band_filter_kwargs(low, high)
+            cells.append(
+                PopulationCell(
+                    region=region,
+                    prestige_band=band_name,
+                    active_real=Manor.objects.filter(
+                        bot_profile__isnull=True,
+                        user__is_staff=False,
+                        user__is_superuser=False,
+                        region=region,
+                        last_active_at__gte=active_after,
+                        **real_filter,
+                    ).count(),
+                    maintained_supply=maintained.filter(manor__region=region, **band_filter).count(),
+                    attackable_supply=attackable.filter(manor__region=region, **band_filter).count(),
+                    search_demand=demands.get((region, band_name), 0),
+                )
+            )
+
+    return plan_population_cells(
+        cells,
+        cell_floor=max(
+            0,
+            _configured_population_value(
+                population,
+                "cell_floor",
+                legacy_field="min_attackable_per_band",
+                default=4,
+            ),
+        ),
+        cell_multiplier=max(
+            0,
+            _configured_population_value(
+                population,
+                "cell_active_multiplier",
+                legacy_field="active_player_multiplier",
+                default=2,
+            ),
+        ),
+        exploration_supply=max(0, int(population.get("exploration_supply") or 0)),
+        hard_cap=max(0, int(population.get("hard_cap") or 0)),
+    )
 
 
 def _projection_from_real_players(
@@ -590,32 +1026,83 @@ def _projection_from_real_players(
     low: int,
     high: int | None,
     rng: random.Random,
+    config: dict[str, Any] | None = None,
+    now=None,
+    sample_seed: int | None = None,
+    strength_quantile: str = "p50",
 ) -> BotProjectionConfig | None:
+    config = config or load_virtual_player_config()
+    now = now or timezone.now()
+    projection_config = config.get("projection") or {}
+    active_sample_days = max(1, int(projection_config.get("active_sample_days") or 30))
     filters = _band_filter_kwargs(low, high)
     base_qs = Manor.objects.filter(
         bot_profile__isnull=True,
         user__is_staff=False,
         user__is_superuser=False,
+        last_active_at__gte=now - timedelta(days=active_sample_days),
         **filters,
     )
     regional_qs = base_qs.filter(region=region) if region else Manor.objects.none()
-    qs = regional_qs if regional_qs.exists() else base_qs
+    regional_min_sample_size = max(1, int(projection_config.get("regional_min_sample_size") or 5))
+    qs = regional_qs if regional_qs.count() >= regional_min_sample_size else base_qs
     count = qs.count()
     if count <= 0:
         return None
 
-    manor = qs.order_by("id")[rng.randrange(count)]
-    building_level = (
-        manor.buildings.filter(building_type__key__in=CORE_BUILDING_KEYS).aggregate(max_level=Max("level"))["max_level"]
-        or 1
+    sample_size = max(1, int(projection_config.get("real_projection_sample_size") or 25))
+    sample_size = min(sample_size, count)
+    stable_seed = int(sample_seed if sample_seed is not None else rng.getrandbits(63))
+    candidate_ids = list(qs.values_list("id", flat=True))
+    candidate_ids.sort(
+        key=lambda manor_id: blake2b(
+            f"{stable_seed}:{int(manor_id)}".encode("ascii"),
+            digest_size=8,
+        ).digest()
     )
-    guest_stats = manor.guests.aggregate(count=Count("id"), max_level=Max("level"))
-    guest_count = max(1, min(8, int(guest_stats["count"] or 1)))
-    guest_level = max(1, int(guest_stats["max_level"] or building_level))
-
-    prestige = int(manor.prestige or low)
+    selected_ids = candidate_ids[:sample_size]
+    samples = list(
+        qs.filter(id__in=selected_ids)
+        .order_by("id")
+        .annotate(
+            sampled_building_level=Max(
+                "buildings__level",
+                filter=Q(buildings__building_type__key__in=CORE_BUILDING_KEYS),
+            ),
+            sampled_guest_count=Count("guests", distinct=True),
+            sampled_guest_level=Max("guests__level"),
+        )
+        .values("id", "prestige", "sampled_building_level", "sampled_guest_count", "sampled_guest_level")
+    )
+    troop_totals = {
+        row["manor_id"]: int(row["total"] or 0)
+        for row in PlayerTroop.objects.filter(manor_id__in=selected_ids).values("manor_id").annotate(total=Sum("count"))
+    }
+    quantile_by_key = {"p25": 0.25, "p50": 0.50, "p75": 0.75}
+    quantile = quantile_by_key.get(str(strength_quantile), 0.50)
+    building_level = max(
+        1,
+        nearest_rank_quantile([int(row["sampled_building_level"] or 1) for row in samples], quantile),
+    )
+    guest_count = max(
+        1,
+        min(8, nearest_rank_quantile([int(row["sampled_guest_count"] or 1) for row in samples], quantile)),
+    )
+    guest_level = max(
+        1,
+        nearest_rank_quantile(
+            [int(row["sampled_guest_level"] or building_level) for row in samples],
+            quantile,
+        ),
+    )
+    troop_count = max(
+        0,
+        nearest_rank_quantile([troop_totals.get(int(row["id"]), 0) for row in samples], quantile),
+    )
+    prestige = nearest_rank_quantile([int(row["prestige"] or low) for row in samples], quantile)
     if prestige > 0:
-        jitter = max(1, int(prestige * 0.1))
+        jitter_bps = max(0, int(projection_config.get("real_projection_jitter_bps") or 0))
+        jitter = int(prestige * jitter_bps / 10_000)
         prestige += rng.randint(-jitter, jitter)
     upper = high if high is not None else max(low + 1, prestige + 1)
     prestige = max(low, min(max(low, upper - 1), prestige))
@@ -625,6 +1112,7 @@ def _projection_from_real_players(
         building_level=max(1, int(building_level)),
         guest_count=guest_count,
         guest_level=guest_level,
+        troop_count=troop_count,
     )
 
 
@@ -635,8 +1123,30 @@ def _projection_for_band(
     rng: random.Random,
     *,
     region: str | None = None,
+    config: dict[str, Any] | None = None,
+    sample_seed: int | None = None,
+    archetype: str | None = None,
 ) -> BotProjectionConfig:
-    sampled = _projection_from_real_players(region=region, low=low, high=high, rng=rng)
+    config = config or load_virtual_player_config()
+    quantile_weights = (config.get("projection") or {}).get("strength_quantile_weights") or {
+        "p25": 25,
+        "p50": 50,
+        "p75": 25,
+    }
+    strength_quantile = (
+        "p25"
+        if archetype == BotProfile.Archetype.ABANDONED
+        else choose_strength_quantile(int(sample_seed), quantile_weights) if sample_seed is not None else "p50"
+    )
+    sampled = _projection_from_real_players(
+        region=region,
+        low=low,
+        high=high,
+        rng=rng,
+        config=config,
+        sample_seed=sample_seed,
+        strength_quantile=strength_quantile,
+    )
     if sampled is not None:
         return sampled
 
@@ -656,6 +1166,31 @@ def _projection_for_band(
         building_level=band_level,
         guest_count=guest_count,
         guest_level=guest_level,
+    )
+
+
+def _apply_persona_to_projection(
+    projection: BotProjectionConfig,
+    *,
+    archetype: str,
+    config: dict[str, Any],
+    growth_seed: int,
+) -> BotProjectionConfig:
+    targets = apply_combat_persona(
+        {
+            "guest_level": projection.guest_level,
+            "guest_count": projection.guest_count,
+            "troop_count": projection.troop_count,
+        },
+        str(archetype),
+        config=config.get("combat_personas") or {},
+    )
+    return BotProjectionConfig(
+        prestige=projection.prestige,
+        building_level=projection.building_level,
+        guest_count=targets["guest_count"],
+        guest_level=targets["guest_level"],
+        troop_count=apply_stable_troop_variation(targets["troop_count"], growth_seed),
     )
 
 
@@ -701,16 +1236,27 @@ def create_virtual_players_for_band(
     rng = random.Random(int(now.timestamp()))
     low, high = bands[prestige_band]
     profiles: list[BotProfile] = []
+    config = load_virtual_player_config()
     for _idx in range(count):
         seed = rng.randint(1, 2_147_483_647)
+        selected_archetype = archetype or _weighted_archetype(rng)
         profiles.append(
             create_virtual_player(
                 region=region,
                 prestige_band=prestige_band,
-                archetype=archetype or _weighted_archetype(rng),
+                archetype=selected_archetype,
                 growth_seed=seed,
                 now=now,
-                projection=_projection_for_band(prestige_band, low, high, rng, region=region),
+                projection=_projection_for_band(
+                    prestige_band,
+                    low,
+                    high,
+                    rng,
+                    region=region,
+                    config=config,
+                    sample_seed=seed,
+                    archetype=selected_archetype,
+                ),
             )
         )
     return profiles
@@ -788,24 +1334,91 @@ def _chance_value(value: Any, *, default: float = 0.0) -> float:
     return max(0.0, min(1.0, chance))
 
 
-def _grant_configured_extra_skills(guest: Guest, *, rng: random.Random, config: dict[str, Any]) -> None:
-    projection = config.get("projection") or {}
-    high_tier_chance = _chance_value(projection.get("high_tier_skill_chance"), default=0.0)
-    if high_tier_chance > 0 and rng.random() < high_tier_chance:
-        high_tier_count = _range_value(rng, projection.get("high_tier_skills_per_guest"), default=(1, 1))
-        _grant_skills_from_pool(
-            guest,
-            rng=rng,
-            skill_keys=_configured_keys(config, "high_tier_skill_keys"),
-            target_count=high_tier_count,
+def _grant_skills_to_target(
+    guest: Guest,
+    *,
+    rng: random.Random,
+    skill_keys: list[str],
+    target_total: int,
+    preferred_high_tier_keys: set[str],
+    prefer_passive_focus: bool,
+) -> None:
+    existing_records = list(guest.guest_skills.select_related("skill"))
+    existing_ids = {record.skill_id for record in existing_records}
+    remaining_slots = max(0, int(GUEST.MAX_SKILL_SLOTS) - len(existing_ids))
+    needed = min(remaining_slots, max(0, int(target_total) - len(existing_ids)))
+    if needed <= 0:
+        return
+
+    candidates = list(Skill.objects.filter(key__in=skill_keys).exclude(id__in=existing_ids))
+    candidates = [skill for skill in candidates if _guest_meets_skill_requirements(guest, skill)]
+    rng.shuffle(candidates)
+    candidates.sort(key=lambda skill: 0 if skill.key in preferred_high_tier_keys else 1)
+
+    selected: list[Skill] = []
+    if prefer_passive_focus and int(target_total) >= 2:
+        desired_kinds = [SkillKind.ACTIVE, *([SkillKind.PASSIVE] * (min(int(target_total), 3) - 1))]
+        existing_kinds = [record.skill.kind for record in existing_records]
+        for kind in desired_kinds:
+            if existing_kinds.count(kind) + sum(skill.kind == kind for skill in selected) >= desired_kinds.count(kind):
+                continue
+            candidate = next((skill for skill in candidates if skill.kind == kind and skill not in selected), None)
+            if candidate is not None:
+                selected.append(candidate)
+                if len(selected) >= needed:
+                    break
+    for candidate in candidates:
+        if len(selected) >= needed:
+            break
+        if candidate not in selected:
+            selected.append(candidate)
+    if selected:
+        GuestSkill.objects.bulk_create(
+            [GuestSkill(guest=guest, skill=skill, source=GuestSkill.Source.BOOK) for skill in selected],
+            ignore_conflicts=True,
         )
 
-    target_count = _range_value(rng, projection.get("extra_skills_per_guest"), default=(0, 0))
-    _grant_skills_from_pool(
+
+def _grant_configured_extra_skills(
+    guest: Guest,
+    *,
+    growth_stage: int,
+    rng: random.Random,
+    config: dict[str, Any],
+) -> None:
+    projection = config.get("projection") or {}
+    early_stage_max = max(0, int(projection.get("early_stage_skill_max") or 6))
+    if int(growth_stage) <= early_stage_max:
+        target_total = _range_value(rng, projection.get("early_stage_skill_count"), default=(0, 1))
+        _grant_skills_to_target(
+            guest,
+            rng=rng,
+            skill_keys=_configured_keys(config, "extra_skill_keys"),
+            target_total=target_total,
+            preferred_high_tier_keys=set(),
+            prefer_passive_focus=False,
+        )
+        return
+
+    high_tier_keys = _configured_keys(config, "high_tier_skill_keys")
+    high_tier_chance = _chance_value(projection.get("high_tier_skill_chance"), default=0.0)
+    granted_high_tier_count = 0
+    if high_tier_chance > 0 and rng.random() < high_tier_chance:
+        granted_high_tier_count = _range_value(rng, projection.get("high_tier_skills_per_guest"), default=(1, 1))
+    target_total = min(
+        int(GUEST.MAX_SKILL_SLOTS),
+        guest.guest_skills.count()
+        + granted_high_tier_count
+        + _range_value(rng, projection.get("extra_skills_per_guest"), default=(0, 0)),
+    )
+    _grant_skills_to_target(
         guest,
         rng=rng,
-        skill_keys=_configured_keys(config, "extra_skill_keys"),
-        target_count=target_count,
+        skill_keys=[*high_tier_keys, *_configured_keys(config, "extra_skill_keys")],
+        target_total=target_total,
+        preferred_high_tier_keys=set(high_tier_keys) if granted_high_tier_count else set(),
+        prefer_passive_focus=rng.random()
+        < _chance_value(projection.get("multi_skill_passive_focus_chance"), default=0.75),
     )
 
 
@@ -814,21 +1427,117 @@ def _equip_template(guest: Guest, template: GearTemplate) -> None:
     updates = {"attack_bonus", "defense_bonus"}
     apply_template_stats_to_guest(guest, gear.template, +1, updates)
     guest.save(update_fields=list(updates))
-    apply_set_bonuses(guest)
 
 
-def _gear_slots_for_archetype(archetype: str, config: dict[str, Any]) -> int:
+def _gear_rarity_rank(template: GearTemplate) -> int:
+    return int(GEAR_RARITY_RANK.get(str(template.rarity), -1))
+
+
+def _gear_template_power(template: GearTemplate) -> int:
+    extra_stats = template.extra_stats if isinstance(template.extra_stats, dict) else {}
+    return (
+        int(template.attack_bonus or 0)
+        + int(template.defense_bonus or 0)
+        + sum(int(value or 0) for value in extra_stats.values() if isinstance(value, int))
+    )
+
+
+def _gear_max_rarity_for_stage(growth_stage: int, config: dict[str, Any]) -> int:
     projection = config.get("projection") or {}
-    configured = projection.get("gear_slots_by_archetype") or {}
-    if isinstance(configured, dict) and archetype in configured:
-        return max(0, int(configured[archetype] or 0))
-    default_slots: dict[str, int] = {
-        BotProfile.Archetype.DOJO.value: 2,
-        BotProfile.Archetype.GUARD.value: 1,
-        BotProfile.Archetype.RICH.value: 1,
-        BotProfile.Archetype.ABANDONED.value: 0,
-    }
-    return default_slots.get(archetype, 1)
+    configured = projection.get("gear_max_rarity_by_stage") or {}
+    if not isinstance(configured, dict):
+        configured = {}
+    selected_rank = -1
+    selected_stage = -1
+    for raw_stage, rarity in configured.items():
+        try:
+            stage = int(raw_stage)
+        except (TypeError, ValueError):
+            continue
+        rank = GEAR_RARITY_RANK.get(str(rarity), -1)
+        if stage <= int(growth_stage) and stage >= selected_stage and rank >= 0:
+            selected_stage = stage
+            selected_rank = rank
+    if selected_rank >= 0:
+        return selected_rank
+    return GEAR_RARITY_RANK[GuestRarity.GREEN]
+
+
+def _remove_virtual_gear(guest: Guest, gear: GearItem, *, updates: set[str]) -> None:
+    apply_template_stats_to_guest(guest, gear.template, -1, updates)
+    gear.delete()
+
+
+def _reconcile_guest_gear(
+    guest: Guest,
+    *,
+    growth_stage: int,
+    rng: random.Random,
+    config: dict[str, Any],
+) -> None:
+    templates = [
+        template
+        for template in _configured_gear_templates(config)
+        if _gear_rarity_rank(template) <= _gear_max_rarity_for_stage(growth_stage, config)
+    ]
+    if not templates:
+        return
+
+    templates_by_slot: dict[str, list[GearTemplate]] = {}
+    for template in templates:
+        templates_by_slot.setdefault(str(template.slot), []).append(template)
+    for candidates in templates_by_slot.values():
+        rng.shuffle(candidates)
+        candidates.sort(
+            key=lambda template: (_gear_rarity_rank(template), _gear_template_power(template)), reverse=True
+        )
+
+    existing_by_slot: dict[str, list[GearItem]] = {}
+    for gear in guest.gear_items.select_related("template"):
+        existing_by_slot.setdefault(str(gear.template.slot), []).append(gear)
+
+    updates = {"attack_bonus", "defense_bonus"}
+    for slot in GearSlot:
+        slot_key = slot.value
+        capacity = slot_capacity(slot_key)
+        candidates = templates_by_slot.get(slot_key, [])
+        if not candidates:
+            continue
+        desired = candidates[:capacity]
+        current = existing_by_slot.get(slot_key, [])
+        current.sort(
+            key=lambda gear: (_gear_rarity_rank(gear.template), _gear_template_power(gear.template)), reverse=True
+        )
+
+        kept: list[GearItem] = []
+        seen_templates: set[int] = set()
+        for gear in current:
+            if gear.template_id in seen_templates or len(kept) >= capacity:
+                _remove_virtual_gear(guest, gear, updates=updates)
+                continue
+            seen_templates.add(gear.template_id)
+            kept.append(gear)
+
+        for candidate in desired:
+            if any(gear.template_id == candidate.id for gear in kept):
+                continue
+            weaker = [gear for gear in kept if _gear_rarity_rank(gear.template) < _gear_rarity_rank(candidate)]
+            if weaker:
+                replaced = min(
+                    weaker, key=lambda gear: (_gear_rarity_rank(gear.template), _gear_template_power(gear.template))
+                )
+                _remove_virtual_gear(guest, replaced, updates=updates)
+                kept.remove(replaced)
+            elif len(kept) >= capacity:
+                continue
+            _equip_template(guest, candidate)
+            kept.append(guest.gear_items.select_related("template").get(template=candidate))
+
+    guest.save(update_fields=list(updates))
+    apply_set_bonuses(guest)
+    if guest.current_hp > guest.max_hp:
+        guest.current_hp = guest.max_hp
+        guest.save(update_fields=["current_hp"])
 
 
 def _configured_gear_templates(config: dict[str, Any]) -> list[GearTemplate]:
@@ -852,6 +1561,30 @@ def _configured_gear_templates(config: dict[str, Any]) -> list[GearTemplate]:
     return [templates_by_key[key] for key in unique_keys if key in templates_by_key]
 
 
+def _diverse_guest_templates(templates: list[GuestTemplate], *, rng: random.Random) -> list[GuestTemplate]:
+    if len(templates) <= 1:
+        return templates
+    usage_counts = {
+        row["template_id"]: row["count"]
+        for row in (
+            Guest.objects.filter(
+                manor__bot_profile__state__in=[
+                    BotProfile.State.ACTIVE,
+                    BotProfile.State.SLOWING,
+                    BotProfile.State.ABANDONED,
+                ],
+                template__in=templates,
+            )
+            .values("template_id")
+            .annotate(count=Count("id"))
+        )
+    }
+    diversified = list(templates)
+    rng.shuffle(diversified)
+    diversified.sort(key=lambda template: int(usage_counts.get(template.id, 0)))
+    return diversified
+
+
 def _project_guests_and_gear(
     manor: Manor,
     *,
@@ -860,15 +1593,18 @@ def _project_guests_and_gear(
     rng: random.Random,
     config: dict[str, Any],
     archetype: str,
+    growth_stage: int,
     grant_configured_skills: bool = True,
 ) -> None:
     guest_keys = _configured_model_keys(config, "guest_template_keys", GuestTemplate)
     if not guest_keys or count <= 0:
         return
-    templates = list(GuestTemplate.objects.filter(key__in=guest_keys).prefetch_related("initial_skills"))
+    templates = list(
+        GuestTemplate.objects.filter(key__in=guest_keys).order_by("key").prefetch_related("initial_skills")
+    )
     if not templates:
         return
-    gear_templates = _configured_gear_templates(config)
+    templates = _diverse_guest_templates(templates, rng=rng)
     for idx in range(max(0, int(count))):
         template = templates[idx % len(templates)]
         guest = create_guest_from_template(manor=manor, template=template, rng=rng, grant_skills=True)
@@ -877,21 +1613,27 @@ def _project_guests_and_gear(
         guest.save(update_fields=["level", "current_hp"])
         _grant_extra_template_skills(guest)
         if grant_configured_skills:
-            _grant_configured_extra_skills(guest, rng=rng, config=config)
-        gear_slots = min(_gear_slots_for_archetype(str(archetype), config), len(gear_templates))
-        for gear_offset in range(gear_slots):
-            _equip_template(guest, gear_templates[(idx + gear_offset) % len(gear_templates)])
+            _grant_configured_extra_skills(guest, growth_stage=growth_stage, rng=rng, config=config)
+        _reconcile_guest_gear(guest, growth_stage=growth_stage, rng=rng, config=config)
 
 
 def _project_troops(manor: Manor, *, count: int, config: dict[str, Any]) -> None:
     troop_keys = _configured_model_keys(config, "troop_template_keys", TroopTemplate)
     if not troop_keys:
         return
-    templates = list(TroopTemplate.objects.filter(key__in=troop_keys))
+    templates = list(TroopTemplate.objects.filter(key__in=troop_keys).order_by("key"))
     if not templates:
         return
-    per_type = max(1, int(count))
-    rows = [PlayerTroop(manor=manor, troop_template=template, count=per_type) for template in templates]
+    PlayerTroop.objects.filter(manor=manor).exclude(troop_template__in=templates).update(count=0)
+    per_type, remainder = divmod(max(0, int(count)), len(templates))
+    rows = [
+        PlayerTroop(
+            manor=manor,
+            troop_template=template,
+            count=per_type + (1 if index < remainder else 0),
+        )
+        for index, template in enumerate(templates)
+    ]
     PlayerTroop.objects.bulk_create(
         rows,
         update_conflicts=True,
@@ -912,6 +1654,83 @@ def _inventory_quantity_multiplier(archetype: str, config: dict[str, Any]) -> fl
         BotProfile.Archetype.GUARD.value: 1.0,
     }
     return default_multipliers.get(archetype, 1.0)
+
+
+def _inventory_template_slot_count(archetype: str, config: dict[str, Any]) -> int:
+    projection = config.get("projection") or {}
+    configured = projection.get("inventory_template_slots_by_archetype") or {}
+    if isinstance(configured, dict) and archetype in configured:
+        return max(1, int(configured[archetype] or 1))
+    default_slots = DEFAULT_VIRTUAL_PLAYER_CONFIG["projection"]["inventory_template_slots_by_archetype"]
+    return max(1, int(default_slots.get(archetype, default_slots[BotProfile.Archetype.BALANCED.value])))
+
+
+def _inventory_effect_weight(template: ItemTemplate, *, archetype: str, config: dict[str, Any]) -> int:
+    projection = config.get("projection") or {}
+    configured = projection.get("inventory_effect_type_weights") or {}
+    archetype_weights = configured.get(archetype) if isinstance(configured, dict) else None
+    if not isinstance(archetype_weights, dict):
+        archetype_weights = {}
+    return max(1, int(archetype_weights.get(str(template.effect_type), 1) or 1))
+
+
+def _select_inventory_template_pool(
+    profile: BotProfile,
+    templates: list[ItemTemplate],
+    *,
+    archetype: str,
+    rng: random.Random,
+    config: dict[str, Any],
+) -> list[ItemTemplate]:
+    """Keep a small archetype-shaped inventory pool, spreading templates across live bots."""
+    slot_count = min(_inventory_template_slot_count(archetype, config), len(templates))
+    if slot_count <= 0:
+        return []
+
+    by_key = {template.key: template for template in templates}
+    selected = [by_key[key] for key in profile.inventory_template_keys if key in by_key]
+    selected = list(dict.fromkeys(selected))[:slot_count]
+    if len(selected) >= slot_count:
+        return selected
+
+    usage_counts = {
+        row["template_id"]: row["manor_count"]
+        for row in (
+            InventoryItem.objects.filter(
+                manor__bot_profile__state__in=[
+                    BotProfile.State.ACTIVE,
+                    BotProfile.State.SLOWING,
+                    BotProfile.State.ABANDONED,
+                ],
+                template__in=templates,
+            )
+            .values("template_id")
+            .annotate(manor_count=Count("manor_id", distinct=True))
+        )
+    }
+    candidates = [template for template in templates if template not in selected]
+    while candidates and len(selected) < slot_count:
+        weighted_candidates = [
+            (
+                template,
+                _inventory_effect_weight(template, archetype=archetype, config=config)
+                / (1 + int(usage_counts.get(template.id, 0))),
+            )
+            for template in candidates
+        ]
+        total_weight = sum(weight for _template, weight in weighted_candidates)
+        target = rng.uniform(0, total_weight)
+        cumulative = 0.0
+        chosen = weighted_candidates[-1][0]
+        for template, weight in weighted_candidates:
+            cumulative += weight
+            if target <= cumulative:
+                chosen = template
+                break
+        selected.append(chosen)
+        candidates.remove(chosen)
+        usage_counts[chosen.id] = int(usage_counts.get(chosen.id, 0)) + 1
+    return selected
 
 
 def _is_powerful_item(template: ItemTemplate, config: dict[str, Any]) -> bool:
@@ -995,6 +1814,7 @@ def _should_project_inventory_template(
 
 
 def _replenish_inventory_stock(
+    profile: BotProfile,
     manor: Manor,
     *,
     level: int,
@@ -1013,12 +1833,40 @@ def _replenish_inventory_stock(
         return
 
     unique_keys = list(dict.fromkeys(keys))
-    templates = list(ItemTemplate.objects.filter(key__in=unique_keys, tradeable=True).order_by("key"))
-    if not templates:
+    candidate_templates = list(ItemTemplate.objects.filter(key__in=unique_keys, tradeable=True).order_by("key"))
+    if not candidate_templates:
         return
-    rng.shuffle(templates)
+    templates = _select_inventory_template_pool(
+        profile,
+        candidate_templates,
+        archetype=str(archetype),
+        rng=rng,
+        config=config,
+    )
+    pool_keys = [template.key for template in templates]
+    if profile.inventory_template_keys != pool_keys:
+        profile.inventory_template_keys = pool_keys
+        profile.save(update_fields=["inventory_template_keys", "updated_at"])
 
     now = now or timezone.now()
+    stale_template_ids = [
+        template.id
+        for template in candidate_templates
+        if template.key not in pool_keys and template.effect_type in VIRTUAL_PLAYER_MANAGED_STOCK_EFFECT_TYPES
+    ]
+    if stale_template_ids:
+        stale_item_ids = list(
+            InventoryItem.objects.select_for_update()
+            .filter(
+                manor=manor,
+                template_id__in=stale_template_ids,
+                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            )
+            .values_list("id", flat=True)
+        )
+        if stale_item_ids:
+            InventoryItem.objects.filter(id__in=stale_item_ids).delete()
+
     existing_by_template = {
         item.template_id: item
         for item in InventoryItem.objects.select_for_update().filter(
@@ -1177,14 +2025,20 @@ def _backfill_historical_timestamps(*, user: Any, manor: Manor, profile: BotProf
 
 
 def _lifecycle_dates(now, rng: random.Random, config: dict[str, Any]) -> tuple[Any, Any, Any]:
+    lifecycle_personas = config.get("lifecycle_personas") or DEFAULT_VIRTUAL_PLAYER_CONFIG["lifecycle_personas"]
+    dates = choose_lifecycle(rng, now, lifecycle_personas)
     lifecycle = config.get("lifecycle") or {}
-    active_days = _range_value(rng, lifecycle.get("active_days"), default=(30, 90))
-    abandoned_days = _range_value(rng, lifecycle.get("abandoned_days"), default=(14, 45))
     next_growth_hours = _range_value(rng, lifecycle.get("next_growth_hours"), default=(2, 18))
-    abandon_at = now + timedelta(days=active_days)
-    retire_at = abandon_at + timedelta(days=abandoned_days)
     next_growth_at = now + timedelta(hours=next_growth_hours, minutes=rng.randint(0, 59))
-    return next_growth_at, abandon_at, retire_at
+    return next_growth_at, dates.abandon_at, dates.retire_at
+
+
+def _growth_stage_cap_for_band(prestige_band: str, config: dict[str, Any]) -> int:
+    growth = config.get("growth") or {}
+    stage_caps = growth.get("stage_caps") or {}
+    default_caps = DEFAULT_VIRTUAL_PLAYER_CONFIG["growth"]["stage_caps"]
+    raw_cap = stage_caps.get(prestige_band, default_caps.get(prestige_band, max(default_caps.values())))
+    return max(1, int(raw_cap or 1))
 
 
 @transaction.atomic
@@ -1207,8 +2061,15 @@ def create_virtual_player(
         guest_count=2,
         guest_level=3,
     )
+    projection = _apply_persona_to_projection(
+        projection,
+        archetype=str(archetype),
+        config=config,
+        growth_seed=seed,
+    )
     target_band = _prestige_bands(config).get(prestige_band)
     target_low = target_band[0] if target_band is not None else 0
+    stage_cap = _growth_stage_cap_for_band(prestige_band, config)
     if target_low > 0:
         target_high = target_band[1] if target_band is not None else None
         projected_prestige = max(target_low, int(projection.prestige))
@@ -1216,9 +2077,10 @@ def create_virtual_player(
             projected_prestige = min(projected_prestige, target_high - 1)
         starting_projection = BotProjectionConfig(
             prestige=projected_prestige,
-            building_level=max(1, int(projection.building_level)),
+            building_level=min(stage_cap, max(1, int(projection.building_level))),
             guest_count=max(0, int(projection.guest_count)),
             guest_level=max(1, int(projection.guest_level)),
+            troop_count=max(0, int(projection.troop_count)),
         )
     else:
         starting_projection = BotProjectionConfig(
@@ -1226,6 +2088,7 @@ def create_virtual_player(
             building_level=INITIAL_BOT_BUILDING_LEVEL,
             guest_count=min(max(0, int(projection.guest_count)), INITIAL_BOT_GUEST_COUNT),
             guest_level=INITIAL_BOT_GUEST_LEVEL,
+            troop_count=max(0, min(int(projection.troop_count), 50)),
         )
 
     user = _create_bot_user(region=region, growth_seed=seed)
@@ -1268,11 +2131,12 @@ def create_virtual_player(
         rng=rng,
         config=config,
         archetype=str(archetype),
-        grant_configured_skills=False,
+        growth_stage=int(starting_projection.building_level),
     )
-    _project_troops(manor, count=50, config=config)
+    _project_troops(manor, count=max(0, int(starting_projection.troop_count)), config=config)
 
-    next_growth_at, abandon_at, retire_at = _lifecycle_dates(now, rng, config)
+    lifecycle_rng = random.Random(f"lifecycle:{seed}")
+    next_growth_at, abandon_at, retire_at = _lifecycle_dates(now, lifecycle_rng, config)
     profile = BotProfile.objects.create(
         manor=manor,
         archetype=archetype,
@@ -1281,11 +2145,12 @@ def create_virtual_player(
         target_prestige_band=prestige_band,
         current_prestige_band=_prestige_band_for_value(int(manor.prestige or 0), config) or prestige_band,
         growth_seed=seed,
-        growth_stage=INITIAL_BOT_BUILDING_LEVEL,
+        growth_stage=min(stage_cap, max(1, int(starting_projection.building_level))),
         next_growth_at=next_growth_at,
         abandon_at=abandon_at,
         retire_at=retire_at,
         loot_budget_daily=int((config.get("projection") or {}).get("loot_budget_daily", 2_000_000) or 0),
+        maintenance_started_at=now,
         last_planned_at=now,
     )
     _backfill_historical_timestamps(user=user, manor=manor, profile=profile, rng=rng, now=now)
@@ -1328,7 +2193,25 @@ def _maintenance_projection_from_real_players(
     if band_range is None:
         return None
     low, high = band_range
-    return _projection_from_real_players(region=profile.manor.region, low=low, high=high, rng=rng)
+    quantile_weights = (config.get("projection") or {}).get("strength_quantile_weights") or {
+        "p25": 25,
+        "p50": 50,
+        "p75": 25,
+    }
+    strength_quantile = (
+        "p25"
+        if profile.archetype == BotProfile.Archetype.ABANDONED
+        else choose_strength_quantile(profile.growth_seed, quantile_weights)
+    )
+    return _projection_from_real_players(
+        region=profile.manor.region,
+        low=low,
+        high=high,
+        rng=rng,
+        config=config,
+        sample_seed=profile.growth_seed,
+        strength_quantile=strength_quantile,
+    )
 
 
 def _sync_profile_prestige_band(profile: BotProfile, *, config: dict[str, Any]) -> None:
@@ -1340,23 +2223,81 @@ def _sync_profile_prestige_band(profile: BotProfile, *, config: dict[str, Any]) 
     profile.save(update_fields=["current_prestige_band", "updated_at"])
 
 
+def _pay_maintained_bot_salaries(profile: BotProfile, *, now) -> None:
+    manor = profile.manor
+    try:
+        pay_all_salaries(manor, for_date=now.date())
+    except (NoGuestsError, SalaryAlreadyPaidError):
+        pass
+    except InsufficientResourceError:
+        logger.info(
+            "Virtual player could not cover guest salaries: manor_id=%s state=%s",
+            manor.id,
+            profile.state,
+            extra={
+                "event": "virtual_player_salary_unpaid",
+                "manor_id": manor.id,
+                "state": profile.state,
+            },
+        )
+
+
 def _maintain_active_profile(profile: BotProfile, *, now, config: dict[str, Any]) -> None:
     rng = random.Random(profile.growth_seed + profile.growth_stage)
     manor = profile.manor
-    next_stage = max(1, int(profile.growth_stage) + 1)
+    before_building_level = max(1, int(profile.growth_stage))
+    before_guest_level = max([int(level) for level in manor.guests.values_list("level", flat=True)] or [0])
+    before_troop_count = int(manor.troops.aggregate(total=Sum("count"))["total"] or 0)
+    before_prestige = int(manor.prestige or 0)
+    stage_cap = _growth_stage_cap_for_band(_profile_target_prestige_band(profile), config)
     projection = _maintenance_projection_from_real_players(profile, rng=rng, config=config)
-    target_building_level = next_stage
+    if projection is not None:
+        projection = _apply_persona_to_projection(
+            projection,
+            archetype=str(profile.archetype),
+            config=config,
+            growth_seed=int(profile.growth_seed),
+        )
+    growth = config.get("growth") or {}
+    catch_up_ratio = max(0.0, min(1.0, float(growth.get("catch_up_ratio") or 0.25)))
+    if profile.state == BotProfile.State.SLOWING:
+        catch_up_ratio *= max(0.0, min(1.0, float(growth.get("slowing_ratio_multiplier") or 0.5)))
+    current_building_level = max(1, int(profile.growth_stage))
+    projected_building_level = int(projection.building_level) if projection is not None else current_building_level + 1
+    target_building_level = min(
+        stage_cap,
+        bounded_approach(
+            current_building_level,
+            max(current_building_level, projected_building_level),
+            ratio=catch_up_ratio,
+            min_step=1,
+            max_step=max(1, int(growth.get("max_building_step") or 2)),
+        ),
+    )
     target_guest_count = manor.guests.count()
-    target_guest_level = next_stage
+    current_guest_level = max([int(level) for level in manor.guests.values_list("level", flat=True)] or [1])
+    target_guest_level = current_guest_level
     if projection is not None:
         target_guest_count = min(max(target_guest_count + 1, 1), max(target_guest_count, int(projection.guest_count)))
-        target_guest_level = min(max(next_stage, 1), max(next_stage, int(projection.guest_level)))
+        target_guest_level = bounded_approach(
+            current_guest_level,
+            max(current_guest_level, int(projection.guest_level)),
+            ratio=catch_up_ratio,
+            min_step=1,
+            max_step=max(1, int(growth.get("max_guest_level_step") or 3)),
+        )
 
     _project_buildings(manor, level=target_building_level)
     _project_resources(manor, archetype=profile.archetype, rng=rng, config=config)
-    projected_prestige = int(projection.prestige) if projection is not None else next_stage * 250
-    gradual_prestige = min(max(int(manor.prestige or 0) + 250, target_building_level * 250), projected_prestige)
-    manor.prestige = max(manor.prestige, gradual_prestige)
+    current_prestige = int(manor.prestige or 0)
+    projected_prestige = int(projection.prestige) if projection is not None else target_building_level * 250
+    manor.prestige = bounded_approach(
+        current_prestige,
+        max(current_prestige, projected_prestige),
+        ratio=catch_up_ratio,
+        min_step=1,
+        max_step=max(1, int(growth.get("max_prestige_step") or 500)),
+    )
     manor.resource_updated_at = now
     manor.save(
         update_fields=["silver_capacity", "grain_capacity", "silver", "grain", "prestige", "resource_updated_at"]
@@ -1372,15 +2313,32 @@ def _maintain_active_profile(profile: BotProfile, *, now, config: dict[str, Any]
             rng=rng,
             config=config,
             archetype=str(profile.archetype),
+            growth_stage=target_building_level,
         )
     for guest in manor.guests.all():
         if guest.level < target_guest_level:
             guest.level = target_guest_level
             guest.current_hp = guest.max_hp
             guest.save(update_fields=["level", "current_hp"])
-        _grant_configured_extra_skills(guest, rng=rng, config=config)
-    _project_troops(manor, count=max(50, target_building_level * 80), config=config)
+        _grant_configured_extra_skills(guest, growth_stage=target_building_level, rng=rng, config=config)
+        _reconcile_guest_gear(guest, growth_stage=target_building_level, rng=rng, config=config)
+    _pay_maintained_bot_salaries(profile, now=now)
+    current_troop_count = int(manor.troops.aggregate(total=Sum("count"))["total"] or 0)
+    projected_troop_count = (
+        int(projection.troop_count)
+        if projection is not None
+        else apply_stable_troop_variation(target_building_level * 80, int(profile.growth_seed))
+    )
+    target_troop_count = bounded_approach(
+        current_troop_count,
+        max(0, projected_troop_count),
+        ratio=catch_up_ratio,
+        min_step=1,
+        max_step=max(50, target_building_level * 80),
+    )
+    _project_troops(manor, count=max(0, target_troop_count), config=config)
     _replenish_inventory_stock(
+        profile,
         manor,
         level=max(1, target_building_level),
         rng=rng,
@@ -1395,6 +2353,33 @@ def _maintain_active_profile(profile: BotProfile, *, now, config: dict[str, Any]
     profile.next_growth_at = _next_growth_time(now, profile, rng, config)
     profile.last_planned_at = now
     profile.save(update_fields=["growth_stage", "next_growth_at", "last_planned_at", "updated_at"])
+    logger.info(
+        "Virtual player maintained: manor_id=%s region=%s archetype=%s building=%s->%s prestige=%s->%s",
+        manor.id,
+        manor.region,
+        profile.archetype,
+        before_building_level,
+        target_building_level,
+        before_prestige,
+        manor.prestige,
+        extra={
+            "event": "virtual_player_maintained",
+            "manor_id": manor.id,
+            "region": manor.region,
+            "archetype": profile.archetype,
+            "state": profile.state,
+            "target_prestige_band": _profile_target_prestige_band(profile),
+            "current_prestige_band": profile.current_prestige_band,
+            "before_building_level": before_building_level,
+            "after_building_level": target_building_level,
+            "before_guest_level": before_guest_level,
+            "after_guest_level": target_guest_level,
+            "before_troop_count": before_troop_count,
+            "after_troop_count": target_troop_count,
+            "before_prestige": before_prestige,
+            "after_prestige": int(manor.prestige or 0),
+        },
+    )
 
 
 def _loot_resource_total(loot_resources: Any) -> int:
@@ -1413,6 +2398,10 @@ def _is_resource_empty(manor: Manor) -> bool:
     return int(manor.silver or 0) <= 0 and int(manor.grain or 0) <= 0
 
 
+def _maintenance_cycle_started_at(profile: BotProfile):
+    return profile.maintenance_started_at or profile.created_at
+
+
 def _has_repeated_empty_raids(profile: BotProfile, *, now, config: dict[str, Any]) -> bool:
     lifecycle = config.get("lifecycle") or {}
     threshold = int(lifecycle.get("empty_hit_stale_threshold") or 0)
@@ -1420,6 +2409,7 @@ def _has_repeated_empty_raids(profile: BotProfile, *, now, config: dict[str, Any
         return False
     window_hours = int(lifecycle.get("empty_hit_window_hours") or 24)
     since = now - timedelta(hours=max(1, window_hours))
+    since = max(since, _maintenance_cycle_started_at(profile))
     recent_loot = (
         RaidRun.objects.filter(
             defender=profile.manor,
@@ -1439,37 +2429,39 @@ def _has_long_no_interaction(profile: BotProfile, *, now, config: dict[str, Any]
     if days <= 0:
         return False
     cutoff = now - timedelta(days=days)
-    if profile.created_at > cutoff:
+    maintenance_started_at = _maintenance_cycle_started_at(profile)
+    if maintenance_started_at > cutoff:
         return False
+    since = max(cutoff, maintenance_started_at)
     return not (
-        RaidRun.objects.filter(defender=profile.manor, started_at__gte=cutoff).exists()
-        or ScoutRecord.objects.filter(defender=profile.manor, started_at__gte=cutoff).exists()
+        RaidRun.objects.filter(defender=profile.manor, started_at__gte=since).exists()
+        or ScoutRecord.objects.filter(defender=profile.manor, started_at__gte=since).exists()
     )
 
 
-def _mark_profile_stale(profile: BotProfile, *, now) -> None:
-    profile.state = BotProfile.State.STALE
+def _mark_profile_retired(profile: BotProfile, *, now) -> None:
+    profile.state = BotProfile.State.RETIRED
     profile.next_growth_at = now
-    profile.save(update_fields=["state", "next_growth_at", "updated_at"])
+    profile.maintenance_stopped_at = now
+    profile.save(update_fields=["state", "next_growth_at", "maintenance_stopped_at", "updated_at"])
 
 
 def _maintain_profile(profile: BotProfile, *, now, config: dict[str, Any]) -> None:
     _sync_profile_prestige_band(profile, config=config)
 
-    if profile.state == BotProfile.State.STALE:
-        profile.state = BotProfile.State.RETIRED
-        profile.maintenance_stopped_at = now
-        profile.save(update_fields=["state", "maintenance_stopped_at", "updated_at"])
-        return
-
     if _has_repeated_empty_raids(profile, now=now, config=config) or _has_long_no_interaction(
         profile, now=now, config=config
     ):
-        _mark_profile_stale(profile, now=now)
+        _mark_profile_retired(profile, now=now)
         return
 
     if profile.retire_at <= now:
-        _mark_profile_stale(profile, now=now)
+        _mark_profile_retired(profile, now=now)
+        return
+
+    if profile.state == BotProfile.State.ABANDONED:
+        profile.next_growth_at = _next_growth_time(now, profile, random.Random(profile.growth_seed), config)
+        profile.save(update_fields=["next_growth_at", "updated_at"])
         return
 
     if profile.abandon_at <= now:
@@ -1478,12 +2470,20 @@ def _maintain_profile(profile: BotProfile, *, now, config: dict[str, Any]) -> No
         profile.save(update_fields=["state", "next_growth_at", "updated_at"])
         return
 
-    slowing_at = profile.abandon_at - max(timedelta(days=1), (profile.retire_at - profile.abandon_at) / 4)
+    maintenance_started_at = _maintenance_cycle_started_at(profile)
+    active_duration = max(timedelta(days=1), profile.abandon_at - maintenance_started_at)
+    slowing_at = profile.abandon_at - max(timedelta(days=1), active_duration * 0.2)
     if profile.state == BotProfile.State.ACTIVE and slowing_at <= now:
         profile.state = BotProfile.State.SLOWING
         profile.next_growth_at = _next_growth_time(now, profile, random.Random(profile.growth_seed), config)
         profile.last_planned_at = now
         profile.save(update_fields=["state", "next_growth_at", "last_planned_at", "updated_at"])
+        _pay_maintained_bot_salaries(profile, now=now)
+        return
+
+    if profile.archetype == BotProfile.Archetype.ABANDONED:
+        profile.next_growth_at = _next_growth_time(now, profile, random.Random(profile.growth_seed), config)
+        profile.save(update_fields=["next_growth_at", "updated_at"])
         return
 
     _maintain_active_profile(profile, now=now, config=config)
@@ -1495,7 +2495,7 @@ def maintain_due_virtual_players(*, now=None, limit: int = 100) -> int:
     if not bool(config.get("enabled", True)):
         return 0
     profile_ids = list(
-        BotProfile.objects.exclude(state=BotProfile.State.RETIRED)
+        BotProfile.objects.exclude(state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED])
         .filter(next_growth_at__lte=now)
         .order_by("next_growth_at", "id")[: max(0, int(limit))]
         .values_list("id", flat=True)
@@ -1506,7 +2506,7 @@ def maintain_due_virtual_players(*, now=None, limit: int = 100) -> int:
             profile = (
                 BotProfile.objects.select_for_update(skip_locked=True)
                 .select_related("manor")
-                .exclude(state=BotProfile.State.RETIRED)
+                .exclude(state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED])
                 .filter(id=profile_id, next_growth_at__lte=now)
                 .first()
             )
@@ -1537,7 +2537,11 @@ def _retire_excess_virtual_players(
         return 0
     if ownership_guard is not None:
         ownership_guard()
-    retired_count = BotProfile.objects.filter(id__in=stale_ids).update(state=BotProfile.State.STALE, next_growth_at=now)
+    retired_count = BotProfile.objects.filter(id__in=stale_ids).update(
+        state=BotProfile.State.RETIRED,
+        next_growth_at=now,
+        maintenance_stopped_at=now,
+    )
     if retired_count > 0:
         logger.info(
             "Virtual player overpopulation retired: target=%s excess=%s retired_count=%s",
@@ -1554,20 +2558,138 @@ def _retire_excess_virtual_players(
     return retired_count
 
 
+def _retire_excess_population_cells(
+    population_plan: PopulationPlan,
+    *,
+    config: dict[str, Any],
+    now,
+    ownership_guard: Callable[[], None] | None = None,
+) -> int:
+    retired_count = 0
+    total_excess = 0
+    bands = _prestige_bands(config)
+    for cell in population_plan.cells:
+        excess = int(cell.excess)
+        band_range = bands.get(cell.prestige_band)
+        if excess <= 0 or band_range is None:
+            continue
+        low, high = band_range
+        stale_ids = list(
+            _maintained_bot_queryset()
+            .filter(
+                manor__region=cell.region,
+                state__in=[BotProfile.State.ACTIVE, BotProfile.State.SLOWING, BotProfile.State.ABANDONED],
+                **_band_filter_kwargs(low, high, prefix="manor__"),
+            )
+            .order_by("last_planned_at", "created_at", "id")
+            .values_list("id", flat=True)[:excess]
+        )
+        if not stale_ids:
+            continue
+        if ownership_guard is not None:
+            ownership_guard()
+        updated = BotProfile.objects.filter(id__in=stale_ids).update(
+            state=BotProfile.State.RETIRED,
+            next_growth_at=now,
+            maintenance_stopped_at=now,
+        )
+        retired_count += updated
+        total_excess += excess
+
+    if retired_count > 0:
+        logger.info(
+            "Virtual player overpopulation retired by cell: target=%s excess=%s retired_count=%s",
+            population_plan.target_total,
+            total_excess,
+            retired_count,
+            extra={
+                "event": "virtual_player_overpopulation_retired",
+                "target": population_plan.target_total,
+                "excess": total_excess,
+                "retired_count": retired_count,
+            },
+        )
+    return retired_count
+
+
 def plan_virtual_player_population(*, now=None) -> dict[str, Any]:
     config = load_virtual_player_config()
     now = now or timezone.now()
     active_real_players = _active_real_player_count(now)
-    target_bot_total = _target_bot_total(config, now=now)
-    return {
+    population_plan = _build_population_plan(config, now=now)
+    maintained_bots = sum(cell.maintained_supply for cell in population_plan.cells)
+    attackable_bots = sum(cell.attackable_supply for cell in population_plan.cells)
+    population = config.get("population") or {}
+    cell_floor = max(
+        0,
+        _configured_population_value(
+            population,
+            "cell_floor",
+            legacy_field="min_attackable_per_band",
+            default=4,
+        ),
+    )
+    cell_multiplier = max(
+        0,
+        _configured_population_value(
+            population,
+            "cell_active_multiplier",
+            legacy_field="active_player_multiplier",
+            default=2,
+        ),
+    )
+    payload = {
         "enabled": bool(config.get("enabled", True)),
         "regions": _regions(),
         "prestige_bands": list(_prestige_bands(config).keys()),
         "active_real_players": active_real_players,
-        "target_bot_total": target_bot_total,
-        "active_bots": _maintained_bot_count(),
+        "target_bot_total": population_plan.target_total,
+        "active_bots": maintained_bots,
+        "maintained_bots": maintained_bots,
+        "attackable_bots": attackable_bots,
+        "hard_cap": population_plan.hard_cap,
+        "config_summary": {
+            "active_window_days": max(1, int(population.get("active_window_days") or 7)),
+            "cell_floor": cell_floor,
+            "cell_active_multiplier": cell_multiplier,
+            "exploration_supply": max(0, int(population.get("exploration_supply") or 0)),
+        },
+        "cells": [
+            {
+                "region": cell.region,
+                "prestige_band": cell.prestige_band,
+                "active_real": cell.active_real,
+                "maintained_supply": cell.maintained_supply,
+                "attackable_supply": cell.attackable_supply,
+                "search_demand": cell.search_demand,
+                "target": cell.target,
+                "deficit": cell.deficit,
+                "structural_deficit": cell.structural_deficit,
+                "attackable_target": cell.attackable_target,
+                "attackable_deficit": cell.attackable_deficit,
+                "excess": cell.excess,
+            }
+            for cell in population_plan.cells
+        ],
         "planned_at": now.isoformat(),
     }
+    logger.info(
+        "Virtual player population planned: active_real=%s maintained=%s attackable=%s target=%s",
+        active_real_players,
+        maintained_bots,
+        attackable_bots,
+        population_plan.target_total,
+        extra={
+            "event": "virtual_player_population_planned",
+            "active_real_players": active_real_players,
+            "maintained_bots": maintained_bots,
+            "attackable_bots": attackable_bots,
+            "target_bot_total": population_plan.target_total,
+            "hard_cap": population_plan.hard_cap,
+            "cells": payload["cells"],
+        },
+    )
+    return payload
 
 
 def _create_backfill_demanded_players(
@@ -1578,9 +2700,14 @@ def _create_backfill_demanded_players(
     limit: int,
     now,
     rng: random.Random,
+    config: dict[str, Any] | None = None,
+    evaluated_profile_ids: set[int] | None = None,
     ownership_guard: Callable[[], None] | None = None,
 ) -> int:
+    config = config or load_virtual_player_config()
+    evaluated_profile_ids = evaluated_profile_ids if evaluated_profile_ids is not None else set()
     created = 0
+    reactivated_count = 0
     normalized_demands: list[dict[str, Any]] = []
     invalid_demand_ids: list[int] = []
     for demand in demands:
@@ -1608,9 +2735,11 @@ def _create_backfill_demanded_players(
         low, high = bands[band_name]
         needed = max(0, int(demand.get("needed") or 0))
         created_before_demand = created
+        reactivated_before_demand = reactivated_count
         cap_reached = False
         while created < limit:
             seed = rng.randint(1, 2_147_483_647)
+            selected_archetype = _weighted_archetype(rng)
             if ownership_guard is not None:
                 ownership_guard()
             with transaction.atomic():
@@ -1623,14 +2752,30 @@ def _create_backfill_demanded_players(
                     break
                 if ownership_guard is not None:
                     ownership_guard()
-                create_virtual_player(
+                _profile, was_reactivated = _reactivate_or_create_virtual_player(
                     region=region,
                     prestige_band=band_name,
-                    archetype=_weighted_archetype(rng),
+                    low=low,
+                    high=high,
+                    archetype=selected_archetype,
                     growth_seed=seed,
                     now=now,
-                    projection=_projection_for_band(band_name, low, high, rng, region=region),
+                    config=config,
+                    evaluated_profile_ids=evaluated_profile_ids,
+                    ownership_guard=ownership_guard,
+                    projection_factory=lambda: _projection_for_band(
+                        band_name,
+                        low,
+                        high,
+                        rng,
+                        region=region,
+                        config=config,
+                        sample_seed=seed,
+                        archetype=selected_archetype,
+                    ),
                 )
+                if was_reactivated:
+                    reactivated_count += 1
                 locked_demand.needed = max(0, int(locked_demand.needed or 0) - 1)
                 if locked_demand.needed <= 0:
                     locked_demand.delete()
@@ -1639,8 +2784,10 @@ def _create_backfill_demanded_players(
             created += 1
         if needed > 0:
             created_for_demand = created - created_before_demand
+            reactivated_for_demand = reactivated_count - reactivated_before_demand
+            newly_created_for_demand = created_for_demand - reactivated_for_demand
             logger.info(
-                "Virtual player backfill demand consumed: region=%s prestige_band=%s created=%s needed=%s",
+                "Virtual player backfill demand consumed: region=%s prestige_band=%s processed=%s needed=%s",
                 region,
                 band_name,
                 created_for_demand,
@@ -1649,107 +2796,15 @@ def _create_backfill_demanded_players(
                     "event": "virtual_player_backfill_demand_consumed",
                     "region": region,
                     "prestige_band": band_name,
-                    "created_count": created_for_demand,
+                    "processed_count": created_for_demand,
+                    "created_count": newly_created_for_demand,
+                    "reactivated_count": reactivated_for_demand,
                     "needed": needed,
                 },
             )
         if cap_reached or created >= limit:
             return created
     return created
-
-
-def _roll_population_deficits(
-    *,
-    bands: dict[str, tuple[int, int | None]],
-    min_per_region: int,
-    min_per_band: int,
-    target_bot_total: int,
-    active_bot_count: int,
-    limit: int,
-    now,
-    rng: random.Random,
-) -> list[dict[str, Any]]:
-    cells: list[dict[str, Any]] = []
-    planned_by_region = {region: 0 for region in _regions()}
-    total_planned = 0
-    for region in _regions():
-        for band_name, (low, high) in bands.items():
-            existing = (
-                _maintained_bot_queryset()
-                .filter(
-                    _target_band_filter(band_name),
-                    manor__region=region,
-                )
-                .count()
-            )
-            real_active = Manor.objects.filter(
-                bot_profile__isnull=True,
-                user__is_staff=False,
-                user__is_superuser=False,
-                region=region,
-                last_active_at__gte=now - timedelta(days=7),
-                **_band_filter_kwargs(low, high),
-            ).count()
-            deficit = max(0, min_per_band - existing)
-            cells.append(
-                {
-                    "region": region,
-                    "band_name": band_name,
-                    "low": low,
-                    "high": high,
-                    "existing": existing,
-                    "real_active": real_active,
-                    "deficit": deficit,
-                }
-            )
-            planned_by_region[region] += deficit
-            total_planned += deficit
-
-    for region in _regions():
-        current = int(_maintained_bot_queryset().filter(manor__region=region).count())
-        missing = max(0, min_per_region - current - planned_by_region[region])
-        if missing <= 0:
-            continue
-        regional_cells = [cell for cell in cells if cell["region"] == region]
-        regional_cells.sort(key=lambda cell: (int(cell["existing"]) + int(cell["deficit"]), str(cell["band_name"])))
-        while missing > 0 and regional_cells:
-            for cell in regional_cells:
-                if missing <= 0:
-                    break
-                cell["deficit"] += 1
-                planned_by_region[region] += 1
-                total_planned += 1
-                missing -= 1
-
-    global_missing = max(0, target_bot_total - active_bot_count - total_planned)
-    shuffled_cells = list(cells)
-    tie_breakers = {id(cell): rng.random() for cell in shuffled_cells}
-    projected_region_totals = {
-        region: _maintained_bot_queryset().filter(manor__region=region).count() + planned_by_region[region]
-        for region in _regions()
-    }
-    projected_band_totals = {
-        band_name: sum(int(cell["existing"]) + int(cell["deficit"]) for cell in cells if cell["band_name"] == band_name)
-        for band_name in bands
-    }
-    while global_missing > 0 and shuffled_cells and total_planned < limit:
-        cell = min(
-            shuffled_cells,
-            key=lambda row: (
-                0 if int(row["existing"]) + int(row["deficit"]) < int(row["real_active"]) else 1,
-                projected_region_totals[str(row["region"])],
-                projected_band_totals[str(row["band_name"])],
-                int(row["existing"]) + int(row["deficit"]),
-                tie_breakers[id(row)],
-            ),
-        )
-        cell["deficit"] += 1
-        projected_region_totals[str(cell["region"])] += 1
-        projected_band_totals[str(cell["band_name"])] += 1
-        total_planned += 1
-        global_missing -= 1
-
-    return [cell for cell in shuffled_cells if int(cell["deficit"]) > 0]
 
 
 def roll_virtual_player_population(*, limit: int | None = None, now=None) -> int:
@@ -1837,19 +2892,11 @@ def _roll_virtual_player_population_unlocked(
     now = now or timezone.now()
     population = config.get("population") or {}
     hard_cap = int(population.get("hard_cap", 0) or 0)
-    min_per_region = max(0, int(population.get("min_per_region", 0) or 0))
-    min_per_band = max(0, int(population.get("min_attackable_per_band", 0) or 0))
     bands = _prestige_bands(config)
-    target_bot_total = _target_bot_total(config, now=now)
-    minimum_bot_total = max(
-        target_bot_total,
-        len(_regions()) * min_per_region,
-        len(_regions()) * len(bands) * min_per_band,
-    )
-    target_bot_total = minimum_bot_total
-    target_limit = min(target_bot_total, hard_cap) if hard_cap > 0 else target_bot_total
-    retired_for_capacity = _retire_excess_virtual_players(
-        target=target_limit,
+    population_plan = _build_population_plan(config, now=now)
+    retired_for_capacity = _retire_excess_population_cells(
+        population_plan,
+        config=config,
         now=now,
         ownership_guard=ownership_guard,
     )
@@ -1867,6 +2914,7 @@ def _roll_virtual_player_population_unlocked(
     if not bands:
         return retired_for_capacity
 
+    evaluated_profile_ids: set[int] = set()
     created = _create_backfill_demanded_players(
         demands=[
             dict(row)
@@ -1882,21 +2930,23 @@ def _roll_virtual_player_population_unlocked(
         limit=limit,
         now=now,
         rng=rng,
+        config=config,
+        evaluated_profile_ids=evaluated_profile_ids,
         ownership_guard=ownership_guard,
     )
 
-    active_bot_count = _maintained_bot_count()
-    remaining_limit = max(0, limit - created)
-    deficit_cells = _roll_population_deficits(
-        bands=bands,
-        min_per_region=min_per_region,
-        min_per_band=min_per_band,
-        target_bot_total=target_bot_total,
-        active_bot_count=active_bot_count,
-        limit=remaining_limit,
-        now=now,
-        rng=rng,
-    )
+    refreshed_plan = _build_population_plan(config, now=now)
+    deficit_cells: list[dict[str, Any]] = [
+        {
+            "region": cell.region,
+            "band_name": cell.prestige_band,
+            "low": bands[cell.prestige_band][0],
+            "high": bands[cell.prestige_band][1],
+            "deficit": cell.deficit,
+        }
+        for cell in refreshed_plan.cells
+        if cell.prestige_band in bands and cell.deficit > 0
+    ]
     while created < limit and deficit_cells:
         progressed = False
         for cell in deficit_cells:
@@ -1908,20 +2958,29 @@ def _roll_virtual_player_population_unlocked(
             if hard_cap > 0 and current_active >= hard_cap:
                 return created
             seed = rng.randint(1, 2_147_483_647)
+            selected_archetype = _weighted_archetype(rng)
             if ownership_guard is not None:
                 ownership_guard()
-            create_virtual_player(
+            _reactivate_or_create_virtual_player(
                 region=str(cell["region"]),
                 prestige_band=str(cell["band_name"]),
-                archetype=_weighted_archetype(rng),
+                low=int(cell["low"]),
+                high=cell["high"],
+                archetype=selected_archetype,
                 growth_seed=seed,
                 now=now,
-                projection=_projection_for_band(
+                config=config,
+                evaluated_profile_ids=evaluated_profile_ids,
+                ownership_guard=ownership_guard,
+                projection_factory=lambda: _projection_for_band(
                     str(cell["band_name"]),
                     int(cell["low"]),
                     cell["high"],
                     rng,
                     region=str(cell["region"]),
+                    config=config,
+                    sample_seed=seed,
+                    archetype=selected_archetype,
                 ),
             )
             cell["deficit"] = int(cell["deficit"]) - 1

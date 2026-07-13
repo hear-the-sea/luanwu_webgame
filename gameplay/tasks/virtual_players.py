@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 @shared_task(name="gameplay.plan_virtual_players")
 def plan_virtual_players_task() -> dict:
-    """Refresh the virtual-player population plan without creating a visible batch."""
+    """Record an instantaneous virtual-player population plan without creating players."""
     return plan_virtual_player_population()
 
 

@@ -364,3 +364,88 @@ def test_perform_attack_only_exposes_active_skills_in_attack_log(monkeypatch):
 
     assert entry is not None
     assert entry["skills"] == ["乾坤圣火印"]
+
+
+def test_perform_attack_keeps_independent_state_snapshots_for_multiple_targets(monkeypatch):
+    actor = make_unit(
+        name="甲",
+        side="attacker",
+        hp=1000,
+        max_hp=1000,
+        agility=100,
+        priority=0,
+        current_round=1,
+        kind="guest",
+        troop_class="",
+        troop_strength=0,
+        initial_troop_strength=0,
+        guest_id=None,
+        owner_entry_id=None,
+        combatant_slot=None,
+        is_boss=False,
+    )
+    first_target = make_unit(
+        name="乙",
+        side="defender",
+        hp=700,
+        max_hp=1000,
+        agility=20,
+        priority=0,
+        current_round=1,
+        kind="guest",
+        troop_strength=0,
+        initial_troop_strength=0,
+        guest_id=None,
+        owner_entry_id=None,
+        combatant_slot=None,
+        is_boss=False,
+    )
+    second_target = make_unit(
+        name="丙",
+        side="defender",
+        hp=300,
+        max_hp=1000,
+        agility=10,
+        priority=0,
+        current_round=1,
+        kind="guest",
+        troop_strength=0,
+        initial_troop_strength=0,
+        guest_id=None,
+        owner_entry_id=None,
+        combatant_slot=None,
+        is_boss=False,
+    )
+    monkeypatch.setattr(
+        "battle.simulation.attack_execution.select_attack_targets",
+        lambda *_args, **_kwargs: SimpleNamespace(engaged_targets=[first_target, second_target], skills=[]),
+    )
+    monkeypatch.setattr("battle.simulation.attack_execution.calculate_dodge_chance", lambda *_args: 0.0)
+    monkeypatch.setattr(
+        "battle.simulation.attack_execution.calculate_attack_damage",
+        lambda *_args, **_kwargs: SimpleNamespace(damage=10, is_crit=False, is_double_strike=False),
+    )
+    monkeypatch.setattr(
+        "battle.simulation.attack_execution.apply_damage_results",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            display_damage=10,
+            kills=0,
+            target_defeated=False,
+            reflect_damage=0,
+            reflect_kills=0,
+            reflect_defeated=False,
+            counter_damage=0,
+            counter_kills=0,
+            counter_defeated=False,
+            actor_defeated=False,
+        ),
+    )
+    monkeypatch.setattr("battle.simulation.attack_execution.process_status_effects", lambda *_args, **_kwargs: [])
+
+    entry = perform_attack(actor, [actor], [first_target, second_target], random.Random(1))
+
+    assert entry is not None
+    additional = entry["additional_targets"][0]
+    assert entry["target_state"]["current"] == 700
+    assert additional["target_state"]["current"] == 300
+    assert entry["target_state"] is not additional["target_state"]

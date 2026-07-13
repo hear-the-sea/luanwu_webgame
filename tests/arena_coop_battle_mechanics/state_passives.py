@@ -177,6 +177,8 @@ def test_try_trigger_arena_coop_pre_action_heal_restores_boss_hp():
     assert event is not None
     assert event["effect"] == "九阳护体"
     assert event["healed"] == 15000
+    assert event["unit_state"]["current"] == 135000
+    assert event["unit_state"]["maximum"] == 300000
     assert boss.hp == 135000
 
 

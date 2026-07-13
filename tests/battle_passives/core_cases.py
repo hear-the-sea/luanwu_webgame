@@ -53,6 +53,9 @@ def test_apply_heal_ratio_effect_uses_max_hp_and_emits_event():
     assert events[0]["type"] == "passive"
     assert events[0]["effect"] == "九阳护体"
     assert events[0]["healed"] == 15000
+    assert events[0]["unit_state"]["current"] == 135000
+    assert events[0]["unit_state"]["maximum"] == 300000
+    assert events[0]["unit_state"]["percent"] == 45
 
 
 def test_apply_lose_hp_ratio_effect_uses_current_hp_and_stays_nonlethal():
@@ -75,6 +78,9 @@ def test_apply_lose_hp_ratio_effect_uses_current_hp_and_stays_nonlethal():
     assert events[0]["type"] == "passive"
     assert events[0]["effect"] == "嗜血狂怒"
     assert events[0]["lost"] == 10
+    assert events[0]["unit_state"]["current"] == 90
+    assert events[0]["unit_state"]["maximum"] == 1000
+    assert events[0]["unit_state"]["percent"] == 9
 
 
 def test_apply_true_damage_modifier_adds_max_hp_damage_after_base_calculation():

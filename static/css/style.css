@@ -1420,6 +1420,102 @@ table.table tbody tr+tr {
   flex-shrink: 0;
 }
 
+.event-line > .event-unit-summary,
+.event-line > .event-unit-summary.event-passive-layout {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.4rem;
+}
+
+.event-unit-name {
+  flex: 0 1 auto;
+  min-width: 2.5rem;
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.battle-unit-state {
+  flex: 0 0 72px;
+  width: 72px;
+  height: 0.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(92, 60, 31, 0.42);
+  border-radius: 2px;
+  background: #eadfd2;
+  box-shadow: inset 0 1px 2px rgba(50, 25, 10, 0.18);
+}
+
+.battle-unit-state-fill {
+  display: block;
+  width: var(--battle-unit-state-percent);
+  height: 100%;
+  background: var(--accent-green);
+}
+
+.battle-unit-state.is-warning .battle-unit-state-fill {
+  background: #c28a2d;
+}
+
+.battle-unit-state.is-danger .battle-unit-state-fill,
+.battle-unit-state.is-empty .battle-unit-state-fill {
+  background: var(--accent-red);
+}
+
+.event-unit-skills {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-unit-skills > * {
+  flex-shrink: 0;
+}
+
+.event-unit-skills .skill-tag {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-target-summary {
+  min-width: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.event-target-detail {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .battle-unit-state {
+    flex: 0 0 52px;
+    width: 52px;
+  }
+
+  .event-unit-name {
+    max-width: 30%;
+  }
+}
+
 .event-order {
   width: 1.8rem;
   height: 1.8rem;

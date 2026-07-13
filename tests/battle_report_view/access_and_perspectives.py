@@ -9,6 +9,39 @@ from guilds.models import Guild, GuildMember, GuildMissionRun, GuildMissionTempl
 from tests.battle_report_view.support import create_report
 
 
+def _round_with_side_states():
+    return [
+        {
+            "round": 1,
+            "events": [
+                {
+                    "side": "attacker",
+                    "order": 1,
+                    "actor": "进攻门客",
+                    "target": "防守门客",
+                    "damage": 100,
+                    "skills": [],
+                    "status_inflicted": [],
+                    "kills": 0,
+                    "target_defeated": False,
+                    "actor_state": {
+                        "side": "attacker",
+                        "percent": 80,
+                        "status": "healthy",
+                        "status_label": "状态充足",
+                    },
+                    "target_state": {
+                        "side": "defender",
+                        "percent": 35,
+                        "status": "warning",
+                        "status_label": "状态偏低",
+                    },
+                }
+            ],
+        }
+    ]
+
+
 @pytest.mark.django_db
 def test_arena_coop_report_is_visible_to_participant(client, django_user_model):
     owner_user = django_user_model.objects.create_user(username="arena_coop_report_owner", password="pass123")
@@ -53,7 +86,12 @@ def test_arena_report_uses_defender_perspective_for_defender_viewer(client, djan
     attacker_manor = ensure_manor(attacker_user)
     defender_manor = ensure_manor(defender_user)
 
-    report = create_report(manor=attacker_manor, opponent_name=defender_manor.display_name, battle_type="arena")
+    report = create_report(
+        manor=attacker_manor,
+        opponent_name=defender_manor.display_name,
+        battle_type="arena",
+        rounds=_round_with_side_states(),
+    )
     tournament = ArenaTournament.objects.create(
         status=ArenaTournament.Status.RUNNING,
         player_limit=10,
@@ -84,6 +122,9 @@ def test_arena_report_uses_defender_perspective_for_defender_viewer(client, djan
     assert response.context["attacker_team_display"][0]["name"] == "D"
     assert response.context["defender_team_display"][0]["name"] == "A"
     assert response.context["report_title"] == f"{attacker_manor.display_name} 战报"
+    body = response.content.decode("utf-8")
+    assert 'data-unit-state-side="defender"' in body
+    assert 'data-unit-state-side="attacker"' not in body
 
 
 @pytest.mark.django_db
@@ -107,7 +148,12 @@ def test_arena_report_uses_spectator_perspective_for_non_participant_viewer(clie
     defender_manor = ensure_manor(defender_user)
     ensure_manor(spectator_user)
 
-    report = create_report(manor=attacker_manor, opponent_name=defender_manor.display_name, battle_type="arena")
+    report = create_report(
+        manor=attacker_manor,
+        opponent_name=defender_manor.display_name,
+        battle_type="arena",
+        rounds=_round_with_side_states(),
+    )
     tournament = ArenaTournament.objects.create(
         status=ArenaTournament.Status.RUNNING,
         player_limit=10,
@@ -138,6 +184,7 @@ def test_arena_report_uses_spectator_perspective_for_non_participant_viewer(clie
     assert response.context["left_team_title"] == "进攻方"
     assert attacker_manor.display_name in response.context["report_title"]
     assert defender_manor.display_name in response.context["report_title"]
+    assert "battle-unit-state" not in response.content.decode("utf-8")
 
 
 @pytest.mark.django_db

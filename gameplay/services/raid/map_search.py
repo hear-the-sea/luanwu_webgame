@@ -17,11 +17,17 @@ from core.utils.time_scale import scale_duration
 
 from ...constants import PVPConstants
 from ...models import BotProfile, Manor, RaidRun
-from .utils import calculate_distance, can_attack_target, get_prestige_color, is_same_region
+from .utils import (
+    calculate_distance,
+    can_attack_target,
+    get_prestige_color,
+    is_same_region,
+    is_target_globally_attackable,
+)
 
 
 def _visible_manors() -> QuerySet[Manor]:
-    return Manor.objects.exclude(bot_profile__state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED])
+    return Manor.objects.exclude(bot_profile__state=BotProfile.State.STALE)
 
 
 def search_manors_by_name(searcher: Manor, name_query: str, limit: int = 20) -> List[Dict[str, Any]]:
@@ -80,9 +86,38 @@ def search_manors_by_region(
 
     total = queryset.count()
     offset = (page - 1) * page_size
-    manors = queryset[offset : offset + page_size]
+    manors = list(queryset[offset : offset + page_size])
 
-    return _format_manor_list(searcher, manors), total
+    rows = _format_manor_list(searcher, manors)
+    if page == 1:
+        from gameplay.services.virtual_players import record_virtual_player_backfill_demand_for_search
+
+        now = timezone.now()
+        cutoff = now - timedelta(hours=24)
+        target_ids = [manor.id for manor in manors if manor.id != searcher.id]
+        recent_attack_counts = {
+            row["defender_id"]: row["cnt"]
+            for row in (
+                RaidRun.objects.filter(defender_id__in=target_ids, started_at__gte=cutoff)
+                .values("defender_id")
+                .annotate(cnt=Count("id"))
+            )
+        }
+        record_virtual_player_backfill_demand_for_search(
+            searcher=searcher,
+            region=region,
+            candidate_count=sum(
+                1
+                for manor in manors
+                if manor.id != searcher.id
+                and is_target_globally_attackable(
+                    manor,
+                    recent_attacks=int(recent_attack_counts.get(manor.id, 0) or 0),
+                    now=now,
+                )
+            ),
+        )
+    return rows, total
 
 
 def search_manors_by_coordinate(
