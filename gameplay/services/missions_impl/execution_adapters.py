@@ -26,6 +26,12 @@ def normalize_guest_configs(raw: Any) -> List[Any]:
 
 
 def load_locked_mission_run(*, mission_run_model: Any, run_pk: int):
+    from gameplay.models import Manor
+
+    manor_id = mission_run_model.objects.filter(pk=run_pk).values_list("manor_id", flat=True).first()
+    if manor_id is None:
+        return None
+    Manor.objects.select_for_update().get(pk=manor_id)
     return (
         mission_run_model.objects.select_for_update()
         .select_related("mission", "manor", "battle_report")

@@ -219,7 +219,13 @@ def complete_guild_mission_task(self, run_id: int):
         if rescheduled is not None:
             return rescheduled
 
-        finalize_guild_mission_run(run, now=now)
+        finalized = finalize_guild_mission_run(run, now=now)
+        if not finalized:
+            if GuildMissionRun.objects.filter(pk=run_id, status=GuildMissionRun.Status.ACTIVE).exists():
+                raise GuildMissionTaskRetryRequested(
+                    f"guild mission run remains active after finalization no-op: run_id={run_id}"
+                )
+            return "already_completed"
         return "completed"
     except GUILD_MISSION_TASK_RETRY_EXCEPTIONS as exc:
         logger.exception("Failed to complete guild mission %d: %s", run_id, exc)
@@ -264,10 +270,22 @@ def complete_guild_raid_task(self, run_id: int):
             return rescheduled
 
         if run.status == GuildRaidRun.Status.MARCHING:
-            process_guild_raid_battle(run, now=now)
+            processed = process_guild_raid_battle(run, now=now)
+            if not processed:
+                if GuildRaidRun.objects.filter(pk=run_id, status=run.status).exists():
+                    raise GuildRaidTaskRetryRequested(
+                        f"guild raid run remains {run.status} after battle no-op: run_id={run_id}"
+                    )
+                return "already_processed"
             return "completed"
 
-        finalize_guild_raid(run, now=now)
+        finalized = finalize_guild_raid(run, now=now)
+        if not finalized:
+            if GuildRaidRun.objects.filter(pk=run_id, status=run.status).exists():
+                raise GuildRaidTaskRetryRequested(
+                    f"guild raid run remains {run.status} after finalization no-op: run_id={run_id}"
+                )
+            return "already_processed"
         return "completed"
     except GUILD_RAID_TASK_RETRY_EXCEPTIONS as exc:
         logger.exception("Failed to complete guild raid %d: %s", run_id, exc)

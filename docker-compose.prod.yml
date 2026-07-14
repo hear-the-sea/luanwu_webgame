@@ -46,7 +46,7 @@ services:
   web:
     image: ${WEBGAME_IMAGE:-webgame:v1}
     pull_policy: never
-    env_file: .env.docker
+    env_file: ${WEBGAME_ENV_FILE:-.env.docker}
     read_only: true
     tmpfs:
       - /tmp
@@ -76,9 +76,7 @@ services:
     expose:
       - "8000"
     healthcheck:
-      test:
-        - CMD-SHELL
-        - python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=10).read()"
+      test: ["CMD", "python", "scripts/check_web_readiness.py"]
       interval: 15s
       timeout: 12s
       retries: 20
@@ -92,7 +90,7 @@ services:
   worker:
     image: ${WEBGAME_IMAGE:-webgame:v1}
     pull_policy: never
-    env_file: .env.docker
+    env_file: ${WEBGAME_ENV_FILE:-.env.docker}
     environment:
       DJANGO_COLLECTSTATIC: "0"
     read_only: true
@@ -136,7 +134,7 @@ services:
   worker_battle:
     image: ${WEBGAME_IMAGE:-webgame:v1}
     pull_policy: never
-    env_file: .env.docker
+    env_file: ${WEBGAME_ENV_FILE:-.env.docker}
     environment:
       DJANGO_COLLECTSTATIC: "0"
     read_only: true
@@ -180,7 +178,7 @@ services:
   worker_timer:
     image: ${WEBGAME_IMAGE:-webgame:v1}
     pull_policy: never
-    env_file: .env.docker
+    env_file: ${WEBGAME_ENV_FILE:-.env.docker}
     environment:
       DJANGO_COLLECTSTATIC: "0"
     read_only: true
@@ -224,7 +222,7 @@ services:
   beat:
     image: ${WEBGAME_IMAGE:-webgame:v1}
     pull_policy: never
-    env_file: .env.docker
+    env_file: ${WEBGAME_ENV_FILE:-.env.docker}
     environment:
       DJANGO_COLLECTSTATIC: "0"
     read_only: true
@@ -257,17 +255,37 @@ services:
         max-file: "5"
     restart: unless-stopped
 
-  nginx:
-    image: nginx:1.27-alpine
+  caddy:
+    image: caddy:2.10-alpine
+    environment:
+      CADDY_SITE_ADDRESS: ${CADDY_SITE_ADDRESS:?set CADDY_SITE_ADDRESS in .env.docker}
     ports:
       - "80:80"
+      - "443:443"
+      - "443:443/udp"
     volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./runtime/staticfiles:/staticfiles:ro
-      - ./runtime/media:/media:ro
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./runtime/staticfiles:/srv/staticfiles:ro
+      - ./runtime/media:/srv/media:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
     depends_on:
       web:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "caddy", "validate", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     logging:
       driver: "json-file"
       options:
@@ -278,3 +296,5 @@ services:
 volumes:
   db_data:
   redis_data:
+  caddy_data:
+  caddy_config:

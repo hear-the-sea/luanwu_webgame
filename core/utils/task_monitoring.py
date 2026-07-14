@@ -281,7 +281,7 @@ def increment_degraded_counter(component: str) -> None:
     """
     from django.utils import timezone
 
-    today = timezone.now().date().isoformat()
+    today = timezone.localdate().isoformat()
     key = f"degraded:{component}:{today}"
     try:
         increment_counter(key, ttl=_DEGRADED_COUNTER_TTL)
@@ -297,7 +297,7 @@ def get_degraded_counter(component: str, *, date_str: str | None = None) -> int:
     from django.utils import timezone
 
     if date_str is None:
-        date_str = timezone.now().date().isoformat()
+        date_str = timezone.localdate().isoformat()
     key = f"degraded:{component}:{date_str}"
     try:
         value = cache.get(key)

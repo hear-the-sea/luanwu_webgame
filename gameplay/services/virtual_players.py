@@ -2226,7 +2226,7 @@ def _sync_profile_prestige_band(profile: BotProfile, *, config: dict[str, Any]) 
 def _pay_maintained_bot_salaries(profile: BotProfile, *, now) -> None:
     manor = profile.manor
     try:
-        pay_all_salaries(manor, for_date=now.date())
+        pay_all_salaries(manor, for_date=timezone.localdate(now))
     except (NoGuestsError, SalaryAlreadyPaidError):
         pass
     except InsufficientResourceError:

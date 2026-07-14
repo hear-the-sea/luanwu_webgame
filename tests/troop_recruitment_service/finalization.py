@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 import pytest
+from django.db import connection
+from django.utils import timezone
 
 from battle.models import TroopTemplate
 from core.exceptions import MessageError
@@ -50,6 +54,42 @@ def test_finalize_troop_recruitment_auto_creates_missing_troop_template(recruit_
     template = TroopTemplate.objects.get(key="scout")
     troop = PlayerTroop.objects.get(manor=manor, troop_template=template)
     assert troop.count == 3
+
+
+@pytest.mark.django_db
+def test_finalize_troop_recruitment_increments_existing_troop_in_database(recruit_manor):
+    recruitment = build_due_recruitment(recruit_manor, troop_key="scout", troop_name="探子", quantity=3)
+    template = TroopTemplate.objects.create(key="scout", name="探子")
+    troop = PlayerTroop.objects.create(manor=recruit_manor, troop_template=template, count=10)
+    statements: list[str] = []
+
+    def _capture_update(execute, sql, params, many, context):
+        if "gameplay_playertroop" in sql.lower() and sql.lstrip().upper().startswith("UPDATE"):
+            statements.append(sql)
+        return execute(sql, params, many, context)
+
+    with connection.execute_wrapper(_capture_update):
+        finalize_troop_recruitment(recruitment, send_notification=False)
+
+    troop.refresh_from_db()
+    assert troop.count == 13
+    quoted_count = connection.ops.quote_name("count")
+    assert any(f"{quoted_count} + " in statement for statement in statements)
+
+
+@pytest.mark.django_db
+def test_finalize_troop_recruitment_advances_existing_troop_updated_at(recruit_manor):
+    recruitment = build_due_recruitment(recruit_manor, troop_key="scout", troop_name="探子", quantity=3)
+    template = TroopTemplate.objects.create(key="scout", name="探子")
+    troop = PlayerTroop.objects.create(manor=recruit_manor, troop_template=template, count=10)
+    previous_updated_at = timezone.now() - timedelta(days=1)
+    PlayerTroop.objects.filter(pk=troop.pk).update(updated_at=previous_updated_at)
+
+    finalize_troop_recruitment(recruitment, send_notification=False)
+
+    troop.refresh_from_db()
+    assert troop.count == 13
+    assert troop.updated_at > previous_updated_at
 
 
 @pytest.mark.django_db
@@ -153,10 +193,6 @@ def test_finalize_troop_recruitment_raises_when_status_not_recruiting(recruit_ma
 @pytest.mark.django_db
 def test_finalize_troop_recruitment_raises_when_not_complete_yet(recruit_manor):
     """Test that finalize raises TroopRecruitmentNotReadyError when complete_at is in the future."""
-    from datetime import timedelta
-
-    from django.utils import timezone
-
     recruitment = build_due_recruitment(recruit_manor, troop_key="scout", troop_name="探子", quantity=2)
     # Set complete_at to 1 hour in the future
     recruitment.complete_at = timezone.now() + timedelta(hours=1)

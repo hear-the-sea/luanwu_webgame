@@ -195,7 +195,7 @@ def get_today_exchange_count_value(manor: Manor) -> int:
     if _hooks.get_today_exchange_count is not None:
         return _hooks.get_today_exchange_count(manor)
 
-    today = timezone.now().date()
+    today = timezone.localdate()
     count = GoldBarExchangeLog.objects.filter(manor=manor, exchange_date=today).aggregate(total=Sum("quantity"))[
         "total"
     ]

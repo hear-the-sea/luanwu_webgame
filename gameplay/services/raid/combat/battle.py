@@ -69,6 +69,11 @@ RAID_CAPTURE_DEGRADED_EXCEPTIONS: InfrastructureExceptions = INFRASTRUCTURE_EXCE
 
 
 def _load_locked_raid_run(run_pk: int) -> Optional[RaidRun]:
+    manor_ids = RaidRun.objects.filter(pk=run_pk).values_list("attacker_id", "defender_id").first()
+    if manor_ids is None:
+        return None
+    ordered_manor_ids = sorted(set(manor_ids))
+    list(Manor.objects.select_for_update().filter(pk__in=ordered_manor_ids).order_by("pk"))
     return (
         RaidRun.objects.select_for_update()
         .select_related("attacker", "defender")

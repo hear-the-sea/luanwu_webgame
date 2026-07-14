@@ -15,44 +15,91 @@
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws/online-stats/`;
 
-    let ws = null;
-    let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
-    const reconnectDelay = 3000; // 3秒
+    const STABLE_CONNECTION_DELAY = 30000;
+    const reconnectPolicy = window.WebSocketReconnectPolicy.createReconnectPolicy();
+
+    let currentSocket = null;
+    let reconnectTimer = null;
+    let stabilityTimer = null;
+    let disposed = false;
+    let disconnected = false;
+
+    function clearReconnectTimer() {
+        if (reconnectTimer === null) return;
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+    }
+
+    function clearStabilityTimer() {
+        if (stabilityTimer === null) return;
+        clearTimeout(stabilityTimer);
+        stabilityTimer = null;
+    }
+
+    function scheduleReconnect(socket, closeCode) {
+        if (disposed || currentSocket !== socket || reconnectTimer !== null) return;
+        if (!reconnectPolicy.shouldReconnect(closeCode)) {
+            clearReconnectTimer();
+            return;
+        }
+
+        const scheduledTimer = setTimeout(function() {
+            if (disposed || currentSocket !== socket || reconnectTimer !== scheduledTimer) return;
+            reconnectTimer = null;
+            connectWebSocket();
+        }, reconnectPolicy.nextDelay(closeCode));
+        reconnectTimer = scheduledTimer;
+    }
 
     function connectWebSocket() {
+        if (disposed) return;
         try {
-            ws = new WebSocket(wsUrl);
+            const socket = new WebSocket(wsUrl);
+            currentSocket = socket;
 
-            ws.onopen = function(event) {
+            socket.onopen = function() {
+                if (currentSocket !== socket || disposed) return;
                 console.log('在线统计 WebSocket 已连接');
-                reconnectAttempts = 0;
+                clearStabilityTimer();
+                const scheduledTimer = setTimeout(function() {
+                    if (currentSocket !== socket || stabilityTimer !== scheduledTimer) return;
+                    stabilityTimer = null;
+                    reconnectPolicy.markStable();
+                    disconnected = false;
+                }, STABLE_CONNECTION_DELAY);
+                stabilityTimer = scheduledTimer;
             };
 
-            ws.onmessage = function(event) {
+            socket.onmessage = function(event) {
+                if (currentSocket !== socket || disposed) return;
                 try {
                     const data = JSON.parse(event.data);
+                    if (!data || typeof data !== 'object') return;
                     updateOnlineStats(data);
+                    reconnectPolicy.markStable();
+                    disconnected = false;
+                    clearStabilityTimer();
                 } catch (error) {
                     console.error('解析在线统计数据失败:', error);
                 }
             };
 
-            ws.onerror = function(error) {
-                console.error('WebSocket 错误:', error);
+            socket.onerror = function(error) {
+                if (currentSocket !== socket || disposed) return;
+                if (!disconnected) {
+                    console.error('WebSocket 错误:', error);
+                    disconnected = true;
+                }
             };
 
-            ws.onclose = function(event) {
-                console.log('在线统计 WebSocket 已断开');
-
-                // 尝试重连
-                if (reconnectAttempts < maxReconnectAttempts) {
-                    reconnectAttempts++;
-                    console.log(`尝试重连 (${reconnectAttempts}/${maxReconnectAttempts})...`);
-                    setTimeout(connectWebSocket, reconnectDelay);
-                } else {
-                    console.error('达到最大重连次数，放弃重连');
+            socket.onclose = function(event) {
+                if (currentSocket !== socket || disposed) return;
+                clearStabilityTimer();
+                if (!disconnected) {
+                    console.log('在线统计 WebSocket 已断开');
+                    disconnected = true;
                 }
+                scheduleReconnect(socket, event && event.code);
             };
         } catch (error) {
             console.error('创建 WebSocket 连接失败:', error);
@@ -79,10 +126,25 @@
         connectWebSocket();
     }
 
-    // 页面卸载时关闭连接
-    window.addEventListener('beforeunload', function() {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.close();
+    function suspendConnection() {
+        if (disposed) return;
+        disposed = true;
+        clearReconnectTimer();
+        clearStabilityTimer();
+        const socket = currentSocket;
+        currentSocket = null;
+        if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+            socket.close();
         }
-    });
+    }
+
+    function restoreConnection() {
+        if (!disposed) return;
+        disposed = false;
+        disconnected = false;
+        connectWebSocket();
+    }
+
+    window.addEventListener('pagehide', suspendConnection);
+    window.addEventListener('pageshow', restoreConnection);
 })();

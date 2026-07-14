@@ -14,5 +14,5 @@ class GuildBlueprintRewardClaim(models.Model):
         db_table = "guild_blueprint_reward_claims"
         indexes = [
             models.Index(fields=["member", "claimed_at"], name="guild_bp_claim_member_time_idx"),
-            models.Index(fields=["member", "rarity", "claimed_at"], name="guild_bp_claim_member_rarity_idx"),
+            models.Index(fields=["member", "rarity", "claimed_at"], name="guild_bp_member_rarity_idx"),
         ]

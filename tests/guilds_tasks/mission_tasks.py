@@ -58,11 +58,71 @@ def test_complete_guild_mission_task_finalizes_due_run(monkeypatch, django_user_
     monkeypatch.setattr("guilds.tasks.timezone.now", lambda: now)
     monkeypatch.setattr(
         "guilds.tasks.finalize_guild_mission_run",
-        lambda locked_run, now=None: finalized.append((locked_run.id, now)),
+        lambda locked_run, now=None: finalized.append((locked_run.id, now)) or True,
     )
 
     assert complete_guild_mission_task.run(run.id) == "completed"
     assert finalized == [(run.id, now)]
+
+
+@pytest.mark.django_db
+def test_complete_guild_mission_task_retries_when_due_run_remains_active(monkeypatch, django_user_model):
+    from guilds.tasks import complete_guild_mission_task
+
+    now = timezone.now()
+    run = create_active_guild_run(
+        django_user_model,
+        username="guild_task_owner_changed",
+        key_suffix="owner_changed",
+        return_at=now - timedelta(seconds=1),
+    )
+    retried: dict[str, object] = {}
+
+    monkeypatch.setattr("guilds.tasks.timezone.now", lambda: now)
+    monkeypatch.setattr("guilds.tasks.finalize_guild_mission_run", lambda *_args, **_kwargs: False)
+
+    def _retry(*, exc=None, **_kwargs):
+        retried["exc"] = exc
+        raise RuntimeError("retried")
+
+    monkeypatch.setattr(complete_guild_mission_task, "retry", _retry)
+
+    with pytest.raises(RuntimeError, match="retried"):
+        complete_guild_mission_task.run(run.id)
+
+    assert "remains active" in str(retried["exc"])
+
+
+@pytest.mark.django_db
+def test_complete_guild_mission_task_accepts_concurrent_completion(monkeypatch, django_user_model):
+    from guilds.models import GuildMissionRun
+    from guilds.tasks import complete_guild_mission_task
+
+    now = timezone.now()
+    run = create_active_guild_run(
+        django_user_model,
+        username="guild_task_concurrent_completion",
+        key_suffix="concurrent_completion",
+        return_at=now - timedelta(seconds=1),
+    )
+
+    monkeypatch.setattr("guilds.tasks.timezone.now", lambda: now)
+
+    def _concurrent_finalize(*_args, **_kwargs):
+        GuildMissionRun.objects.filter(pk=run.pk).update(
+            status=GuildMissionRun.Status.COMPLETED,
+            completed_at=now,
+        )
+        return False
+
+    monkeypatch.setattr("guilds.tasks.finalize_guild_mission_run", _concurrent_finalize)
+    monkeypatch.setattr(
+        complete_guild_mission_task,
+        "retry",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("retry should not be called")),
+    )
+
+    assert complete_guild_mission_task.run(run.id) == "already_completed"
 
 
 @pytest.mark.django_db

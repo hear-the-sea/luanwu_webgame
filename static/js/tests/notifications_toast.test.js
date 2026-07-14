@@ -4,6 +4,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 
+const reconnectPolicyApi = require("../websocket_reconnect.js");
+
 function createElement(tagName) {
   const listeners = new Map();
   const element = {
@@ -155,6 +157,11 @@ function createNotificationsHarness({
       setTimeout: setFakeTimeout,
       clearTimeout: clearFakeTimeout,
       WebSocket: FakeWebSocket,
+      WebSocketReconnectPolicy: {
+        createReconnectPolicy(options = {}) {
+          return reconnectPolicyApi.createReconnectPolicy({ ...options, randomFn: () => random });
+        },
+      },
     },
     WebSocket: FakeWebSocket,
     Math: mathObj,
@@ -406,6 +413,21 @@ test("transient service closes schedule only one backoff reconnect", () => {
   harness.runTimer(harness.activeTimers()[0]);
 
   assert.equal(harness.sockets.length, 2);
+});
+
+test("capacity closes use a short retry without consuming transient backoff", () => {
+  const harness = createNotificationsHarness({ random: 0 });
+  const firstSocket = harness.sockets[0];
+
+  firstSocket.onclose({ code: 4429 });
+  firstSocket.onclose({ code: 4429 });
+
+  assert.deepEqual(harness.activeTimers().map((timer) => timer.delay), [1000]);
+  harness.runTimer(harness.activeTimers()[0]);
+
+  harness.sockets[1].onclose({ code: 1013 });
+
+  assert.deepEqual(harness.activeTimers().map((timer) => timer.delay), [1800]);
 });
 
 test("transient closes after open use capped exponential backoff", () => {

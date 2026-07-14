@@ -95,6 +95,7 @@ def move_item_to_treasury(manor: Manor, item_id: int, quantity: int) -> None:
     """
     if quantity <= 0:
         raise AssertionError("move_item_to_treasury requires positive quantity")
+    manor = Manor.objects.select_for_update().get(pk=manor.pk)
     # 检查藏宝阁是否存在
     treasury_capacity = get_treasury_capacity(manor)
     if treasury_capacity == 0:
@@ -175,6 +176,7 @@ def move_item_to_warehouse(manor: Manor, item_id: int, quantity: int) -> None:
     """
     if quantity <= 0:
         raise AssertionError("move_item_to_warehouse requires positive quantity")
+    manor = Manor.objects.select_for_update().get(pk=manor.pk)
     # 获取藏宝阁中的物品
     treasury_item = (
         InventoryItem.objects.select_for_update()

@@ -27,6 +27,17 @@ if not SECRET_KEY:
         RuntimeWarning,
     )
 
+if not DEBUG and (
+    SECRET_KEY == "please-change-me-in-production"
+    or len(SECRET_KEY) < 50
+    or len(set(SECRET_KEY)) < 5
+    or SECRET_KEY.startswith("django-insecure-")
+):
+    raise RuntimeError(
+        "DJANGO_SECRET_KEY must be at least 50 characters, contain at least 5 unique characters, "
+        "and must not use public placeholder or django-insecure- values in production."
+    )
+
 # ALLOWED_HOSTS configuration
 allowed_hosts_str = env("DJANGO_ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = []

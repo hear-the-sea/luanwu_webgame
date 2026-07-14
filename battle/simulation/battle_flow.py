@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from .attack_execution import perform_attack
 from .constants import MAX_ALLOWED_PRIORITY, MIN_ALLOWED_PRIORITY
+from .report_state import snapshot_unit_state
 from .turn_order import determine_turn_order
 from .utils import alive, roll_loot, summarize_losses
 
@@ -122,6 +123,7 @@ def _append_waiting_units(
                 "side": unit.side,
                 "status": "charging",
                 "message": "冲锋中",
+                "actor_state": snapshot_unit_state(unit),
                 "order": len(events) + 1,
             }
         )

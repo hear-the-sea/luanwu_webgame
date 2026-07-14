@@ -36,7 +36,30 @@ def _round_with_side_states():
                         "status": "warning",
                         "status_label": "状态偏低",
                     },
-                }
+                },
+                {
+                    "side": "defender",
+                    "order": 2,
+                    "actor": "防守门客",
+                    "target": "进攻门客",
+                    "damage": 80,
+                    "skills": [],
+                    "status_inflicted": [],
+                    "kills": 0,
+                    "target_defeated": False,
+                    "actor_state": {
+                        "side": "defender",
+                        "percent": 35,
+                        "status": "warning",
+                        "status_label": "状态偏低",
+                    },
+                    "target_state": {
+                        "side": "attacker",
+                        "percent": 65,
+                        "status": "healthy",
+                        "status_label": "状态充足",
+                    },
+                },
             ],
         }
     ]
@@ -123,7 +146,7 @@ def test_arena_report_uses_defender_perspective_for_defender_viewer(client, djan
     assert response.context["defender_team_display"][0]["name"] == "A"
     assert response.context["report_title"] == f"{attacker_manor.display_name} 战报"
     body = response.content.decode("utf-8")
-    assert 'data-unit-state-side="defender"' in body
+    assert body.count('data-unit-state-side="defender"') == 2
     assert 'data-unit-state-side="attacker"' not in body
 
 

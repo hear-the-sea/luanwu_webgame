@@ -34,7 +34,7 @@
 - `worker_battle`：`battle` 队列。
 - `worker_timer`：`timer` 队列。
 - `beat`：定时扫描与心跳。
-- `nginx`：静态资源与反向代理。
+- `caddy`：自动 HTTPS、静态/媒体资源、HTTP 与 WebSocket 反向代理。
 - `db`：MySQL 8.4。
 - `redis`：Redis 7。
 
@@ -91,6 +91,14 @@ WebSocket 路由定义于 [`websocket/routing.py`](/home/daniel/code/web_game_v5
 - `ws/notifications/`
 - `ws/online-stats/`
 - `ws/chat/world/`
+
+### WebSocket 连接容量与恢复
+
+每个认证页面固定使用通知、在线统计和世界聊天三条连接。默认每用户允许 `9` 条并发连接，对应三个标签页；IP 级容量和握手令牌桶在 ASGI 认证前独立生效。
+
+每个 Daphne 进程维护一份 Redis Worker 租约，连接槽以 `v2|worker_id|connection_id` 记录所有权。用户级和 IP 级 Lua 脚本在申请新槽时使用 Redis 时间，并原子清理过期槽及租约已失效 Worker 的槽。该机制支持多个 Daphne 实例和滚动发布，不在启动时扫描或全量删除 Redis 数据。
+
+浏览器端三个客户端共享关闭码策略：`4401/4403` 停止重连，`4429` 和浏览器可能映射出的预握手 `1006` 在 1～2 秒内重试，`1013` 使用带抖动的指数退避。连接建立本身不清零退避；收到有效消息或稳定连接 30 秒后才重置。
 
 ## 异步任务与定时扫描
 
@@ -213,7 +221,7 @@ Celery 配置位于 [`config/settings/celery_conf.py`](/home/daniel/code/web_gam
 部署事实：
 
 - 生产 compose 默认让 `web` 容器只读挂载应用目录，运行时写入主要落在 `/tmp` 与 `runtime/*`。
-- 静态资源通过 `nginx` 暴露，媒体文件与 `staticfiles/` 走独立挂载目录。
+- 静态资源通过 `caddy` 暴露，媒体文件与 `staticfiles/` 走独立只读挂载目录；证书状态由 Caddy 命名卷持久化。
 - battle debugger 不是生产常驻能力，不应依赖它作为正式调试入口。
 
 ## 变更协作建议

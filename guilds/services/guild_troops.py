@@ -8,21 +8,28 @@ from django.utils import timezone
 
 from battle.models import TroopTemplate
 from core.exceptions import GuildMembershipError, GuildValidationError
-from gameplay.models import PlayerTroop
+from gameplay.models import Manor, PlayerTroop
 
 from ..models import Guild, GuildMember, GuildTroopDonationLog, GuildTroopStorage
 from .technology import build_guild_troop_tech_levels
 
 
 def _lock_active_member(member: GuildMember) -> GuildMember:
+    locked_manor = Manor.objects.select_for_update().filter(user_id=member.user_id).first()
+    locked_guild = Guild.objects.select_for_update().filter(pk=member.guild_id).first()
+    if locked_manor is None or locked_guild is None:
+        raise GuildMembershipError("您不在帮会中")
+
     locked_member = (
         GuildMember.objects.select_for_update()
-        .select_related("guild", "user__manor")
-        .filter(pk=member.pk, is_active=True)
+        .select_related("user")
+        .filter(pk=member.pk, guild=locked_guild, is_active=True)
         .first()
     )
     if not locked_member:
         raise GuildMembershipError("您不在帮会中")
+    locked_member.guild = locked_guild
+    locked_member.user.manor = locked_manor
     return locked_member
 
 

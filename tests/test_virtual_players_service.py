@@ -1161,7 +1161,9 @@ def test_virtual_player_maintenance_pays_salaries_only_for_active_and_slowing_pr
 
     assert maintain_due_virtual_players(now=now, limit=10) == 4
 
-    paid_manor_ids = set(SalaryPayment.objects.filter(for_date=now.date()).values_list("manor_id", flat=True))
+    paid_manor_ids = set(
+        SalaryPayment.objects.filter(for_date=timezone.localdate(now)).values_list("manor_id", flat=True)
+    )
     assert paid_manor_ids == {
         profiles[BotProfile.State.ACTIVE].manor_id,
         profiles[BotProfile.State.SLOWING].manor_id,

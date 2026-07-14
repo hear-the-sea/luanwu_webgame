@@ -303,7 +303,7 @@ def test_clear_login_attempts_can_preserve_ip_bucket(monkeypatch):
 
 
 @pytest.mark.django_db
-def test_login_view_clears_ip_bucket_after_success(client, monkeypatch):
+def test_login_view_preserves_ip_bucket_after_success(client, monkeypatch):
     cache.clear()
     monkeypatch.setattr(account_views, "LOGIN_ATTEMPT_LIMIT", 3)
     monkeypatch.setattr(account_views, "LOGIN_ATTEMPT_WINDOW", 60)
@@ -311,8 +311,8 @@ def test_login_view_clears_ip_bucket_after_success(client, monkeypatch):
 
     user = User.objects.create_user(username="login_success_user", password="StrongPass123!")
     request = _build_login_request(remote_addr="10.0.0.30")
-    ip_key, _username_key = account_views._get_login_attempt_key(request, user.username)
-    ip_lock_key, _username_lock_key = account_views._get_login_lock_key(request, user.username)
+    ip_key, username_key = account_views._get_login_attempt_key(request, user.username)
+    ip_lock_key, username_lock_key = account_views._get_login_lock_key(request, user.username)
 
     assert account_views._record_failed_attempt(request, user.username) == 1
     assert cache.get(ip_key) == 1
@@ -324,9 +324,26 @@ def test_login_view_clears_ip_bucket_after_success(client, monkeypatch):
     )
 
     assert response.status_code == 302
-    assert cache.get(ip_key) is None
+    assert cache.get(username_key) is None
+    assert cache.get(username_lock_key) is None
+    assert cache.get(ip_key) == 1
     assert cache.get(ip_lock_key) is None
     assert account_views._check_login_attempts(request, "another_user")[0] is False
+
+
+@pytest.mark.parametrize(
+    ("left", "right"),
+    [
+        ("Victim", "victim"),
+        ("Ｖｉｃｔｉｍ", "victim"),
+        (" victim ", "victim"),
+    ],
+)
+def test_login_throttle_keys_normalize_equivalent_usernames(left, right):
+    request = _build_login_request(remote_addr="10.0.0.31")
+
+    assert account_views._get_login_attempt_key(request, left) == account_views._get_login_attempt_key(request, right)
+    assert account_views._get_login_lock_key(request, left) == account_views._get_login_lock_key(request, right)
 
 
 @pytest.mark.django_db

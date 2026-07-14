@@ -240,3 +240,31 @@ HEALTH_CHECK_CELERY_BROKER = (
 # Authentication enforcement should fail closed by default; environments that
 # need a softer posture must opt in explicitly.
 SINGLE_SESSION_FAIL_OPEN = env("DJANGO_SINGLE_SESSION_FAIL_OPEN", "0") == "1"
+
+# Bound authenticated WebSocket fan-out per user. Slots expire unless the
+# consumer heartbeat renews them, so unclean worker exits cannot leak capacity.
+WEBSOCKET_MAX_CONNECTIONS_PER_USER = max(1, int(env("DJANGO_WEBSOCKET_MAX_CONNECTIONS_PER_USER", "9")))
+WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS = max(
+    6,
+    int(env("DJANGO_WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS", "30")),
+)
+WEBSOCKET_WORKER_LEASE_TTL_SECONDS = max(
+    4,
+    int(env("DJANGO_WEBSOCKET_WORKER_LEASE_TTL_SECONDS", "8")),
+)
+WEBSOCKET_WORKER_LEASE_HEARTBEAT_SECONDS = max(
+    1,
+    int(env("DJANGO_WEBSOCKET_WORKER_LEASE_HEARTBEAT_SECONDS", "2")),
+)
+if WEBSOCKET_WORKER_LEASE_HEARTBEAT_SECONDS * 2 >= WEBSOCKET_WORKER_LEASE_TTL_SECONDS:
+    raise RuntimeError("WebSocket worker lease heartbeat must be less than half the TTL")
+
+# Proxy-independent per-IP WebSocket protection. Caddy supplies the client IP
+# only across the trusted Docker network; Redis keeps limits consistent across workers.
+WEBSOCKET_MAX_CONNECTIONS_PER_IP = max(1, int(env("DJANGO_WEBSOCKET_MAX_CONNECTIONS_PER_IP", "20")))
+WEBSOCKET_HANDSHAKE_RATE_PER_SECOND = max(1, int(env("DJANGO_WEBSOCKET_HANDSHAKE_RATE_PER_SECOND", "10")))
+WEBSOCKET_HANDSHAKE_BURST = max(1, int(env("DJANGO_WEBSOCKET_HANDSHAKE_BURST", "20")))
+WEBSOCKET_IP_CONNECTION_SLOT_TTL_SECONDS = max(
+    30,
+    int(env("DJANGO_WEBSOCKET_IP_CONNECTION_SLOT_TTL_SECONDS", "120")),
+)

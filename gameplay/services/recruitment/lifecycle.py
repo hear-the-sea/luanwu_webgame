@@ -9,7 +9,8 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
+from django.db.models import F
 from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
@@ -138,13 +139,27 @@ def finalize_troop_recruitment(recruitment: TroopRecruitment, send_notification:
         if not troop_template:
             raise TroopTemplateNotFoundError(troop_key=locked_recruitment.troop_key)
 
-        player_troop, _ = PlayerTroop.objects.get_or_create(
-            manor=locked_recruitment.manor,
-            troop_template=troop_template,
-            defaults={"count": 0},
+        troop_lookup = {
+            "manor": locked_recruitment.manor,
+            "troop_template": troop_template,
+        }
+        inventory_updated_at = timezone.now()
+        updated = PlayerTroop.objects.filter(**troop_lookup).update(
+            count=F("count") + locked_recruitment.quantity,
+            updated_at=inventory_updated_at,
         )
-        player_troop.count += locked_recruitment.quantity
-        player_troop.save(update_fields=["count", "updated_at"])
+        if not updated:
+            try:
+                with transaction.atomic():
+                    PlayerTroop.objects.create(
+                        **troop_lookup,
+                        count=locked_recruitment.quantity,
+                    )
+            except IntegrityError:
+                PlayerTroop.objects.filter(**troop_lookup).update(
+                    count=F("count") + locked_recruitment.quantity,
+                    updated_at=inventory_updated_at,
+                )
 
         locked_recruitment.status = TroopRecruitment.Status.COMPLETED
         locked_recruitment.finished_at = timezone.now()

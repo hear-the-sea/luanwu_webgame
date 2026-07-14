@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 global.WorldChatWidgetCore = require("../chat_widget_core.js");
+global.WebSocketReconnectPolicy = require("../websocket_reconnect.js");
 const chatWidgetConnection = require("../chat_widget_connection.js");
 
 class FakeWebSocket {
@@ -35,10 +36,10 @@ class FakeWebSocket {
     }
   }
 
-  emitClose() {
+  emitClose(code) {
     this.readyState = FakeWebSocket.CLOSED;
     if (typeof this.onclose === "function") {
-      this.onclose();
+      this.onclose({ code });
     }
   }
 
@@ -70,6 +71,10 @@ test("connection controller sends payloads after socket opens", () => {
       pingCallback = callback;
       return 1;
     },
+    setTimeoutFn() {
+      return 1;
+    },
+    clearTimeoutFn() {},
     clearIntervalFn() {},
     generateOperationId() {
       return "11111111-1111-4111-8111-111111111111";
@@ -295,9 +300,9 @@ test("reconnects and preserves pending when the first resend throws", () => {
     WebSocketCtor: FakeWebSocket,
     renderer: { appendSystem() {}, handlePayload() {} },
     setStatus() {},
-    setTimeoutFn(callback) {
-      reconnectCallbacks.push(callback);
-      return reconnectCallbacks.length;
+    setTimeoutFn(callback, delay) {
+      if (delay !== 30000) reconnectCallbacks.push(callback);
+      return Symbol("timeout");
     },
     clearTimeoutFn() {},
     setIntervalFn() {
@@ -344,9 +349,9 @@ test("reconnects and preserves every pending operation when a middle resend thro
     WebSocketCtor: FakeWebSocket,
     renderer: { appendSystem() {}, handlePayload() {} },
     setStatus() {},
-    setTimeoutFn(callback) {
-      reconnectCallbacks.push(callback);
-      return reconnectCallbacks.length;
+    setTimeoutFn(callback, delay) {
+      if (delay !== 30000) reconnectCallbacks.push(callback);
+      return Symbol("timeout");
     },
     clearTimeoutFn() {},
     setIntervalFn() {
@@ -395,9 +400,9 @@ test("schedules reconnect when closing a failed resend socket throws", () => {
     WebSocketCtor: FakeWebSocket,
     renderer: { appendSystem() {}, handlePayload() {} },
     setStatus() {},
-    setTimeoutFn(callback) {
-      reconnectCallbacks.push(callback);
-      return reconnectCallbacks.length;
+    setTimeoutFn(callback, delay) {
+      if (delay !== 30000) reconnectCallbacks.push(callback);
+      return Symbol("timeout");
     },
     clearTimeoutFn() {},
     setIntervalFn() {
@@ -433,4 +438,148 @@ test("schedules reconnect when closing a failed resend socket throws", () => {
   const thirdSocket = FakeWebSocket.instances[2];
   thirdSocket.open();
   assert.deepEqual(JSON.parse(thirdSocket.sent[0]), originalPayload);
+});
+
+function createLifecycleHarness({ random = 0.5 } = {}) {
+  FakeWebSocket.instances = [];
+  const timeouts = [];
+  const intervals = [];
+  let nextTimerId = 1;
+
+  function addTimer(collection, callback, delay) {
+    const timer = { id: nextTimerId, callback, delay, active: true };
+    nextTimerId += 1;
+    collection.push(timer);
+    return timer.id;
+  }
+
+  const controller = chatWidgetConnection.createConnectionController({
+    WebSocketCtor: FakeWebSocket,
+    renderer: { appendSystem() {}, handlePayload() {} },
+    reconnectPolicyApi: {
+      createReconnectPolicy(options = {}) {
+        return global.WebSocketReconnectPolicy.createReconnectPolicy({
+          ...options,
+          randomFn: () => random,
+        });
+      },
+    },
+    setStatus() {},
+    setTimeoutFn(callback, delay) {
+      return addTimer(timeouts, callback, delay);
+    },
+    clearTimeoutFn(timerId) {
+      const timer = timeouts.find((candidate) => candidate.id === timerId);
+      if (timer) timer.active = false;
+    },
+    setIntervalFn(callback, delay) {
+      return addTimer(intervals, callback, delay);
+    },
+    clearIntervalFn(timerId) {
+      const timer = intervals.find((candidate) => candidate.id === timerId);
+      if (timer) timer.active = false;
+    },
+    wsUrl: "ws://example.com/ws/chat/world/",
+  });
+
+  return {
+    controller,
+    intervals,
+    sockets: FakeWebSocket.instances,
+    activeTimeouts() {
+      return timeouts.filter((timer) => timer.active);
+    },
+    reconnectTimers() {
+      return timeouts.filter((timer) => timer.active && timer.delay !== 30000);
+    },
+    runTimer(timer) {
+      assert.equal(timer.active, true);
+      timer.active = false;
+      timer.callback();
+    },
+  };
+}
+
+test("terminal authentication close codes stop reconnecting", () => {
+  for (const code of [4401, 4403]) {
+    const harness = createLifecycleHarness();
+    harness.controller.connect();
+
+    harness.sockets[0].emitClose(code);
+
+    assert.equal(harness.activeTimeouts().length, 0);
+    harness.controller.connect();
+    assert.equal(harness.controller.sendText("blocked"), false);
+    assert.equal(harness.sockets.length, 1);
+  }
+});
+
+test("capacity close schedules one short reconnect", () => {
+  const harness = createLifecycleHarness({ random: 0 });
+  harness.controller.connect();
+  const socket = harness.sockets[0];
+  socket.open();
+
+  socket.emitClose(4429);
+  socket.onclose({ code: 4429 });
+
+  assert.deepEqual(harness.reconnectTimers().map((timer) => timer.delay), [1000]);
+});
+
+test("opening a chat socket does not reset transient backoff", () => {
+  const harness = createLifecycleHarness();
+  harness.controller.connect();
+  harness.sockets[0].open();
+  harness.sockets[0].emitClose(1013);
+  assert.equal(harness.reconnectTimers()[0].delay, 2000);
+  harness.runTimer(harness.reconnectTimers()[0]);
+
+  harness.sockets[1].open();
+  harness.sockets[1].emitClose(1013);
+
+  assert.equal(harness.reconnectTimers()[0].delay, 4000);
+});
+
+test("valid chat messages reset transient backoff", () => {
+  const harness = createLifecycleHarness();
+  harness.controller.connect();
+  harness.sockets[0].emitClose(1013);
+  harness.runTimer(harness.reconnectTimers()[0]);
+  harness.sockets[1].emitClose(1013);
+  harness.runTimer(harness.reconnectTimers()[0]);
+
+  const socket = harness.sockets[2];
+  socket.open();
+  socket.emitMessage({ type: "message", id: "valid" });
+  socket.emitClose(1013);
+
+  assert.equal(harness.reconnectTimers()[0].delay, 2000);
+});
+
+test("thirty stable seconds reset chat transient backoff", () => {
+  const harness = createLifecycleHarness();
+  harness.controller.connect();
+  harness.sockets[0].emitClose(1013);
+  harness.runTimer(harness.reconnectTimers()[0]);
+
+  const socket = harness.sockets[1];
+  socket.open();
+  const stabilityTimer = harness.activeTimeouts().find((timer) => timer.delay === 30000);
+  harness.runTimer(stabilityTimer);
+  socket.emitClose(1013);
+
+  assert.equal(harness.reconnectTimers()[0].delay, 2000);
+});
+
+test("teardown clears reconnect ping and stability timers", () => {
+  const harness = createLifecycleHarness();
+  harness.controller.connect();
+  const socket = harness.sockets[0];
+  socket.open();
+
+  harness.controller.teardown();
+
+  assert.equal(harness.activeTimeouts().length, 0);
+  assert.equal(harness.intervals.filter((timer) => timer.active).length, 0);
+  assert.equal(socket.readyState, FakeWebSocket.CLOSED);
 });

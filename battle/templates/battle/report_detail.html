@@ -161,9 +161,10 @@
                                     {% elif event.status %}
                                         <div class="event-line">
                                             <span class="event-order">{{ event.order }}</span>
-                                            <div>
-                                                <strong>{{ event.actor }}</strong>
-                                                <span class="status-pill">{{ event.message|default:"状态中..." }}</span>
+                                            <div class="event-unit-summary event-status-layout">
+                                                <strong class="event-unit-name">{{ event.actor }}</strong>
+                                                {% include "battle/partials/unit_state_bar.html" with state=event.actor_state visible_side=my_side spectator=is_spectator %}
+                                                <span class="event-unit-skills"><span class="status-pill">{{ event.message|default:"状态中..." }}</span></span>
                                             </div>
                                         </div>
                                     {% else %}
@@ -242,9 +243,10 @@
                                     {% elif event.status %}
                                         <div class="event-line">
                                             <span class="event-order">{{ event.order }}</span>
-                                            <div>
-                                                <strong>{{ event.actor }}</strong>
-                                                <span class="status-pill">{{ event.message|default:"状态中..." }}</span>
+                                            <div class="event-unit-summary event-status-layout">
+                                                <strong class="event-unit-name">{{ event.actor }}</strong>
+                                                {% include "battle/partials/unit_state_bar.html" with state=event.actor_state visible_side=my_side spectator=is_spectator %}
+                                                <span class="event-unit-skills"><span class="status-pill">{{ event.message|default:"状态中..." }}</span></span>
                                             </div>
                                         </div>
                                     {% else %}

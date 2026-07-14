@@ -76,12 +76,12 @@ class GuildMember(models.Model):
     def reset_weekly_contribution(self):
         """重置本周贡献"""
         self.weekly_contribution = 0
-        self.weekly_reset_at = timezone.now().date()
+        self.weekly_reset_at = timezone.localdate()
         self.save(update_fields=["weekly_contribution", "weekly_reset_at"])
 
     def reset_daily_limits(self):
         """重置每日限制"""
-        today = timezone.now().date()
+        today = timezone.localdate()
         updated = False
 
         if self.daily_donation_reset_at is None or self.daily_donation_reset_at < today:

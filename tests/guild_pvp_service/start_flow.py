@@ -340,6 +340,45 @@ def test_start_guild_raid_keeps_due_battle_processing_when_new_launch_validation
     assert due_run.battle_report_id == report.id
 
 
+@pytest.mark.django_db(transaction=True)
+def test_request_retreat_keeps_overdue_raid_refresh_after_validation_error(django_user_model, monkeypatch):
+    attacker_guild, attacker_member, _attacker_manor = create_guild_with_leader(
+        django_user_model,
+        "过期撤回攻方",
+    )
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(
+        django_user_model,
+        "过期撤回守方",
+    )
+    now = timezone.now()
+    run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=0,
+        guest_ids=[],
+        guest_snapshots=[],
+        troop_loadout={},
+        travel_time=60,
+        battle_at=now - timedelta(seconds=1),
+        return_at=now + timedelta(seconds=59),
+    )
+
+    def _refresh_overdue(_guild, *, now):
+        GuildRaidRun.objects.filter(pk=run.pk).update(status=GuildRaidRun.Status.RETURNING)
+
+    monkeypatch.setattr("guilds.services.guild_raids.refresh_due_guild_raids", _refresh_overdue)
+
+    from guilds.services.guild_raids import request_retreat
+
+    with pytest.raises(GuildValidationError, match="当前出征不可撤回"):
+        request_retreat(run=run, operator=attacker_member.user)
+
+    run.refresh_from_db()
+    assert run.status == GuildRaidRun.Status.RETURNING
+
+
 @pytest.mark.django_db
 def test_get_guild_pvp_page_context_uses_supplied_now_for_counter_projection(django_user_model):
     guild, member, _manor = create_guild_with_leader(django_user_model, "计数投影")

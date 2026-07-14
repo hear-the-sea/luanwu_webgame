@@ -30,6 +30,13 @@ def import_raid_refresh_tasks() -> tuple[Any, Any]:
 
 
 def load_locked_raid_run(*, raid_run_model: Any, run_pk: int) -> Any:
+    from gameplay.models import Manor
+
+    manor_ids = raid_run_model.objects.filter(pk=run_pk).values_list("attacker_id", "defender_id").first()
+    if manor_ids is None:
+        return None
+    ordered_manor_ids = sorted(set(manor_ids))
+    list(Manor.objects.select_for_update().filter(pk__in=ordered_manor_ids).order_by("pk"))
     return (
         raid_run_model.objects.select_for_update()
         .select_related("attacker", "defender", "battle_report")

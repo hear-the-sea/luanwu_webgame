@@ -44,7 +44,7 @@ def load_dispatch_lineup_rows(*, guild: Guild, pool_entry_ids: list[int]) -> lis
     row_map = {
         row.pool_entry_id: row
         for row in GuildBattleLineupEntry.objects.select_for_update()
-        .select_related("pool_entry__owner_member__user__manor", "pool_entry__source_guest__template")
+        .select_related("pool_entry__source_guest__template")
         .filter(guild=guild, pool_entry_id__in=pool_entry_ids)
         .order_by("slot_index", "id")
     }

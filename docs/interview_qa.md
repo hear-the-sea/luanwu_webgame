@@ -52,7 +52,7 @@
 - 基于 Django Channels + Redis channel layer 实现 WebSocket 实时通知、在线人数统计和世界聊天；聊天模块包含限流、历史消息、发送失败补偿和资源返还。
 - 使用 YAML 驱动玩法配置，包括建筑、科技、物品、兵种、门客、任务、商铺、拍卖、竞技场和帮会规则，并提供配置校验、缓存刷新和数据导入命令。
 - 建立两层测试门禁：默认使用 SQLite/LocMem/InMemory 快速测试，关键并发路径使用真实 MySQL/Redis 集成测试验证行锁、事务和 Redis 语义。
-- 使用 Docker Compose 组织 Web、Celery worker、battle worker、timer worker、beat、nginx、MySQL、Redis，并提供 live/ready 健康检查。
+- 使用 Docker Compose 组织 Web、Celery worker、battle worker、timer worker、beat、Caddy、MySQL、Redis；Caddy 自动管理 HTTPS，并提供 live/ready 健康检查。
 
 ## 3. 技术栈问答
 
@@ -815,13 +815,13 @@ WebSocket 是长连接，所以连接建立时要检查用户，接收消息时�
 - `cap_drop: ALL`：去掉不必要 Linux capability。
 - Redis 可以配置密码。
 - 生产要求非 SQLite 数据库。
-- nginx 负责静态资源和反向代理。
+- Caddy 负责自动 HTTPS、静态资源和反向代理，证书状态通过 Docker 命名卷持久化。
 
 面试官可能追问：为什么静态文件不用 Django/Daphne 直接服务？
 
 回答：
 
-Daphne 更适合动态请求和 WebSocket。静态文件由 nginx 处理更高效，也更容易配置缓存、压缩和访问控制。
+Daphne 更适合动态请求和 WebSocket。静态文件由 Caddy 处理更高效，也更容易配置缓存、压缩和访问控制；Caddy 同时自动申请和续期 TLS 证书。
 
 ## 17. 性能与优化问答
 

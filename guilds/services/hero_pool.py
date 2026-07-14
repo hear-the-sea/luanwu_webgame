@@ -71,7 +71,7 @@ def _lock_guild_and_active_member(
     locked_guild = Guild.objects.select_for_update().get(pk=guild_id)
     member_qs = (
         GuildMember.objects.select_for_update()
-        .select_related("guild", "user__manor")
+        .select_related("guild", "user")
         .filter(
             guild=locked_guild,
             is_active=True,
@@ -131,7 +131,7 @@ def submit_hero_pool_entry(
 
     existing_entry = (
         GuildHeroPoolEntry.objects.select_for_update()
-        .select_related("owner_member", "source_guest__manor")
+        .select_related("owner_member", "source_guest")
         .filter(guild=guild, owner_member=locked_member, slot_index=normalized_slot)
         .first()
     )
@@ -141,7 +141,7 @@ def submit_hero_pool_entry(
 
     duplicate_entry = (
         GuildHeroPoolEntry.objects.select_for_update()
-        .select_related("owner_member", "source_guest__manor")
+        .select_related("owner_member", "source_guest")
         .filter(guild=guild, owner_member=locked_member, source_guest_id=locked_guest.id)
         .exclude(slot_index=normalized_slot)
         .first()
@@ -238,7 +238,7 @@ def add_lineup_entry(
 
     pool_entry = (
         GuildHeroPoolEntry.objects.select_for_update()
-        .select_related("owner_member", "source_guest__manor")
+        .select_related("owner_member", "source_guest")
         .filter(pk=pool_entry_id, guild=locked_guild)
         .first()
     )
@@ -352,7 +352,7 @@ def lock_guild_lineup_for_dispatch(guild: Guild, *, now: datetime | None = None)
     locked_guild = Guild.objects.select_for_update().get(pk=guild.pk)
     lineup_entries = list(
         GuildBattleLineupEntry.objects.select_for_update()
-        .select_related("pool_entry__owner_member", "pool_entry__source_guest__manor")
+        .select_related("pool_entry__owner_member", "pool_entry__source_guest")
         .filter(guild=locked_guild)
         .order_by("slot_index", "id")
     )

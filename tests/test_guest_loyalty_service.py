@@ -100,7 +100,7 @@ def test_process_daily_loyalty_increases_paid_guests_and_decreases_unpaid_guests
     paid_guest = Guest.objects.create(manor=manor, template=template, force=10, intellect=10, loyalty=50)
     unpaid_guest = Guest.objects.create(manor=manor, template=template, force=10, intellect=10, loyalty=50)
 
-    today = timezone.now().date()
+    today = timezone.localdate()
     yesterday = today - timedelta(days=1)
     SalaryPayment.objects.create(manor=manor, guest=paid_guest, amount=100, for_date=yesterday)
 

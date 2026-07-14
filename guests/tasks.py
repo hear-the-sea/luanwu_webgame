@@ -249,7 +249,7 @@ def process_daily_loyalty(self) -> str:
     from guests.models import Guest, SalaryPayment
 
     try:
-        today = timezone.now().date()
+        today = timezone.localdate()
         yesterday = today - timedelta(days=1)
 
         paid_guest_ids_qs = SalaryPayment.objects.filter(for_date=yesterday).values_list("guest_id", flat=True)

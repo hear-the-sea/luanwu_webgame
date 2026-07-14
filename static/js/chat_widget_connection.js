@@ -1,20 +1,20 @@
 (function (root, factory) {
-  const api = factory(root.WorldChatWidgetCore);
+  const api = factory(root.WorldChatWidgetCore, root.WebSocketReconnectPolicy);
 
   if (typeof module === "object" && module.exports) {
     module.exports = api;
   }
 
   root.WorldChatWidgetConnection = api;
-})(typeof globalThis !== "undefined" ? globalThis : this, function (core) {
+})(typeof globalThis !== "undefined" ? globalThis : this, function (core, sharedReconnectPolicyApi) {
   "use strict";
 
   if (!core) {
     throw new Error("WorldChatWidgetCore is required before loading WorldChatWidgetConnection");
   }
 
-  const DEFAULT_RECONNECT_DELAY_MS = 1200;
   const DEFAULT_PING_INTERVAL_MS = 25000;
+  const STABLE_CONNECTION_DELAY_MS = 30000;
 
   function createConnectionController(config) {
     const wsUrl = config.wsUrl;
@@ -26,20 +26,23 @@
     const setIntervalFn = config.setIntervalFn || setInterval;
     const clearIntervalFn = config.clearIntervalFn || clearInterval;
     const generateOperationId = config.generateOperationId || core.generateOperationId;
+    const reconnectPolicyApi = config.reconnectPolicyApi || sharedReconnectPolicyApi;
+    if (!reconnectPolicyApi) {
+      throw new Error("WebSocketReconnectPolicy is required before creating a chat connection");
+    }
+    const reconnectPolicy = reconnectPolicyApi.createReconnectPolicy();
     const userIdValue = typeof config.userId === "number" ? config.userId : parseInt(config.userId || "0", 10);
     const userId = Number.isFinite(userIdValue) ? userIdValue : 0;
-    const reconnectDelayBase = Number.isFinite(config.reconnectDelayBase)
-      ? config.reconnectDelayBase
-      : DEFAULT_RECONNECT_DELAY_MS;
     const pingIntervalMs = Number.isFinite(config.pingIntervalMs)
       ? config.pingIntervalMs
       : DEFAULT_PING_INTERVAL_MS;
 
     let socket = null;
-    let reconnectDelay = reconnectDelayBase;
     let reconnectTimer = null;
+    let stabilityTimer = null;
     let pingTimer = null;
     let disposed = false;
+    let terminal = false;
     const pendingOperations = new Map();
 
     function sendOperation(operation) {
@@ -68,9 +71,15 @@
     }
 
     function clearReconnectTimer() {
-      if (!reconnectTimer) return;
+      if (reconnectTimer === null) return;
       clearTimeoutFn(reconnectTimer);
       reconnectTimer = null;
+    }
+
+    function clearStabilityTimer() {
+      if (stabilityTimer === null) return;
+      clearTimeoutFn(stabilityTimer);
+      stabilityTimer = null;
     }
 
     function clearPingTimer() {
@@ -79,31 +88,38 @@
       pingTimer = null;
     }
 
-    function scheduleReconnect() {
-      if (disposed || reconnectTimer) return;
+    function scheduleReconnect(closeCode) {
+      if (disposed || reconnectTimer !== null) return;
+      if (!reconnectPolicy.shouldReconnect(closeCode)) {
+        terminal = true;
+        return;
+      }
       setStatus("重连中…", "connecting");
 
-      reconnectTimer = setTimeoutFn(() => {
+      const scheduledTimer = setTimeoutFn(() => {
+        if (disposed || reconnectTimer !== scheduledTimer) return;
         reconnectTimer = null;
         connect();
-      }, reconnectDelay);
-      reconnectDelay = core.nextReconnectDelay(reconnectDelay);
+      }, reconnectPolicy.nextDelay(closeCode));
+      reconnectTimer = scheduledTimer;
     }
 
     function connect() {
-      if (disposed) return;
+      if (disposed || terminal) return;
       if (socket && (socket.readyState === WebSocketCtor.OPEN || socket.readyState === WebSocketCtor.CONNECTING)) {
         return;
       }
 
       clearReconnectTimer();
+      clearStabilityTimer();
       clearPingTimer();
       setStatus("连接中", "connecting");
 
-      socket = new WebSocketCtor(wsUrl);
+      const currentSocket = new WebSocketCtor(wsUrl);
+      socket = currentSocket;
 
-      socket.onopen = () => {
-        reconnectDelay = reconnectDelayBase;
+      currentSocket.onopen = () => {
+        if (disposed || socket !== currentSocket) return;
         setStatus("已连接", "connected");
         clearPingTimer();
         for (const operation of pendingOperations.values()) {
@@ -111,44 +127,56 @@
             sendOperation(operation);
           } catch (_error) {
             try {
-              socket.close();
+              currentSocket.close();
             } catch (_closeError) {
               socket = null;
-              scheduleReconnect();
+              scheduleReconnect(1006);
             }
             return;
           }
         }
         pingTimer = setIntervalFn(() => {
           try {
-            if (socket && socket.readyState === WebSocketCtor.OPEN) {
-              socket.send(JSON.stringify({ type: "ping" }));
+            if (socket === currentSocket && currentSocket.readyState === WebSocketCtor.OPEN) {
+              currentSocket.send(JSON.stringify({ type: "ping" }));
             }
           } catch (_error) {
             // ignore
           }
         }, pingIntervalMs);
+        const scheduledTimer = setTimeoutFn(() => {
+          if (socket !== currentSocket || stabilityTimer !== scheduledTimer) return;
+          stabilityTimer = null;
+          reconnectPolicy.markStable();
+        }, STABLE_CONNECTION_DELAY_MS);
+        stabilityTimer = scheduledTimer;
       };
 
-      socket.onmessage = (event) => {
+      currentSocket.onmessage = (event) => {
+        if (disposed || socket !== currentSocket) return;
         try {
           const payload = JSON.parse(event.data);
           clearMatchingPending(payload);
           renderer.handlePayload(payload, setStatus);
+          reconnectPolicy.markStable();
+          clearStabilityTimer();
         } catch (_error) {
           // ignore malformed messages
         }
       };
 
-      socket.onclose = () => {
+      currentSocket.onclose = (event) => {
+        if (disposed || socket !== currentSocket) return;
         clearPingTimer();
+        clearStabilityTimer();
         setStatus("已断开", "disconnected");
-        scheduleReconnect();
+        scheduleReconnect(event && event.code);
       };
 
-      socket.onerror = () => {
+      currentSocket.onerror = () => {
+        if (disposed || socket !== currentSocket) return;
         try {
-          socket.close();
+          currentSocket.close();
         } catch (_error) {
           // ignore
         }
@@ -156,7 +184,7 @@
     }
 
     function sendText(text) {
-      if (!text) return false;
+      if (!text || terminal) return false;
 
       if (!socket || socket.readyState !== WebSocketCtor.OPEN) {
         renderer.appendSystem("未连接到世界频道，正在重连…", { kind: "error" });
@@ -184,11 +212,17 @@
     function teardown() {
       disposed = true;
       clearReconnectTimer();
+      clearStabilityTimer();
       clearPingTimer();
 
-      if (socket && socket.readyState === WebSocketCtor.OPEN) {
+      const currentSocket = socket;
+      socket = null;
+      if (
+        currentSocket &&
+        (currentSocket.readyState === WebSocketCtor.OPEN || currentSocket.readyState === WebSocketCtor.CONNECTING)
+      ) {
         try {
-          socket.close();
+          currentSocket.close();
         } catch (_error) {
           // ignore
         }

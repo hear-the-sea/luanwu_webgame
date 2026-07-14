@@ -255,7 +255,7 @@ class RosterView(LoginRequiredMixin, TemplateView):
         )
 
         # 添加工资相关信息（优化 N+1：批量查询已支付状态）
-        today = timezone.now().date()
+        today = timezone.localdate()
         guest_ids = [g.id for g in guests]
         paid_ids = bulk_check_salary_paid(guest_ids, today)
 

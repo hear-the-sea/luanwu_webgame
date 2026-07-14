@@ -184,13 +184,10 @@ def register_arena_coop_entry(manor: Manor, guest_ids: Iterable[int]) -> ArenaCo
     )
 
 
-@transaction.atomic
-def cancel_arena_coop_entry(manor: Manor) -> int:
-    locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
-    entry = (
-        ArenaCoopEntry.objects.select_for_update()
-        .select_related("event")
-        .filter(
+def _lock_coop_cancellation_context(manor_id: int) -> tuple[Manor, ArenaCoopEntry, ArenaCoopEvent]:
+    locked_manor = Manor.objects.select_for_update().get(pk=manor_id)
+    identity = (
+        ArenaCoopEntry.objects.filter(
             manor=locked_manor,
             status=ArenaCoopEntry.Status.REGISTERED,
             event__status__in=[
@@ -200,12 +197,31 @@ def cancel_arena_coop_entry(manor: Manor) -> int:
             ],
         )
         .order_by("-joined_at", "-id")
+        .values_list("id", "event_id")
+        .first()
+    )
+    if identity is None:
+        raise ArenaCancellationError("当前没有可撤销的共斗报名")
+
+    entry_id, event_id = identity
+    event = ArenaCoopEvent.objects.select_for_update().get(pk=event_id)
+    entry = (
+        ArenaCoopEntry.objects.select_for_update()
+        .filter(
+            pk=entry_id,
+            manor=locked_manor,
+            status=ArenaCoopEntry.Status.REGISTERED,
+        )
         .first()
     )
     if entry is None:
         raise ArenaCancellationError("当前没有可撤销的共斗报名")
+    return locked_manor, entry, event
 
-    event = ArenaCoopEvent.objects.select_for_update().get(pk=entry.event_id)
+
+@transaction.atomic
+def cancel_arena_coop_entry(manor: Manor) -> int:
+    locked_manor, entry, event = _lock_coop_cancellation_context(manor.pk)
     if event.status != ArenaCoopEvent.Status.RECRUITING:
         raise ArenaCancellationError("活动已开战，当前不可撤销报名")
 
@@ -261,6 +277,15 @@ def run_due_arena_coop_events(*, now: datetime | None = None, limit: int = 20) -
 
     for event_id in candidate_ids:
         with transaction.atomic():
+            manor_ids = list(
+                ArenaCoopEntry.objects.filter(
+                    event_id=event_id,
+                    status=ArenaCoopEntry.Status.REGISTERED,
+                )
+                .order_by("manor_id")
+                .values_list("manor_id", flat=True)
+            )
+            list(Manor.objects.select_for_update().filter(pk__in=manor_ids).order_by("pk"))
             locked_event = ArenaCoopEvent.objects.select_for_update().filter(pk=event_id).first()
             if not locked_event:
                 continue

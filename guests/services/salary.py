@@ -50,7 +50,7 @@ def check_salary_paid(guest: Guest, for_date: date = None) -> bool:
         是否已支付
     """
     if for_date is None:
-        for_date = timezone.now().date()
+        for_date = timezone.localdate()
 
     return SalaryPayment.objects.filter(guest=guest, for_date=for_date).exists()
 
@@ -67,7 +67,7 @@ def bulk_check_salary_paid(guest_ids: List[int], for_date: date = None) -> Set[i
         已支付工资的门客ID集合
     """
     if for_date is None:
-        for_date = timezone.now().date()
+        for_date = timezone.localdate()
 
     if not guest_ids:
         return set()
@@ -98,7 +98,7 @@ def pay_guest_salary(manor: Manor, guest: Guest, for_date: date = None) -> Salar
     from gameplay.models import Manor
 
     if for_date is None:
-        for_date = timezone.now().date()
+        for_date = timezone.localdate()
 
     # Concurrency safety:
     # - Lock manor row to serialize with pay_all_salaries()
@@ -150,7 +150,7 @@ def pay_all_salaries(manor: Manor, for_date: date = None) -> Dict:
         GameError: 业务验证失败时抛出显式异常
     """
     if for_date is None:
-        for_date = timezone.now().date()
+        for_date = timezone.localdate()
 
     from django.db.models import F
 
@@ -213,7 +213,7 @@ def get_unpaid_guests(manor: Manor, for_date: date = None) -> List[Guest]:
         未支付工资的门客列表
     """
     if for_date is None:
-        for_date = timezone.now().date()
+        for_date = timezone.localdate()
 
     guests = list(Guest.objects.filter(manor=manor).select_related("template"))
 

@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 from enum import Enum
 
+from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
+from django.conf import settings
+from django_redis import get_redis_connection
 
 from core.middleware.single_session import (
     EXPECTED_SESSION_VALIDATION_ERRORS,
@@ -13,6 +17,15 @@ from core.middleware.single_session import (
     should_fail_open_on_single_session_unavailable,
 )
 from core.utils.degradation import SESSION_SYNC_FAILURE, record_degradation
+from core.utils.infrastructure import INFRASTRUCTURE_EXCEPTIONS
+from websocket.backends.connection_limiter import (
+    ConnectionCapacityDecision,
+    acquire_connection_slot,
+    refresh_connection_slot,
+    release_connection_slot,
+)
+from websocket.backends.worker_lease import get_websocket_worker_lease_manager
+from websocket.exceptions import WebSocketConnectionLimitUnavailable
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +44,10 @@ class WebSocketSessionValidationResult(Enum):
 
 
 WEBSOCKET_SESSION_VALIDATION_EXCEPTIONS: tuple[type[Exception], ...] = EXPECTED_SESSION_VALIDATION_ERRORS
+WEBSOCKET_CAPACITY_EXCEPTIONS: tuple[type[Exception], ...] = (
+    WebSocketConnectionLimitUnavailable,
+    *INFRASTRUCTURE_EXCEPTIONS,
+)
 
 
 def is_websocket_session_valid(scope: dict) -> bool:
@@ -72,8 +89,12 @@ def is_websocket_session_valid(scope: dict) -> bool:
 class SingleSessionWebSocketMixin:
     SESSION_VALIDATION_CACHE_SECONDS = 5.0
     SESSION_VALIDATION_UNAVAILABLE_CLOSE_CODE = 1013
+    CONNECTION_LIMIT_REACHED_CLOSE_CODE = 4429
     _single_session_valid_until: float = 0.0
     _single_session_checked_by_dispatch: bool = False
+    _connection_slot_acquired: bool = False
+    _connection_slot_heartbeat_task: asyncio.Task | None = None
+    _connection_slot_worker_id: str | None = None
 
     def _session_validation_now(self) -> float:
         return time.monotonic()
@@ -87,11 +108,192 @@ class SingleSessionWebSocketMixin:
     async def dispatch(self, message):
         if not await self._guard_single_session(message):
             return
+        message_type = str(message.get("type", ""))
+        if message_type == "websocket.connect" and not await self._guard_connection_capacity():
+            return
         self._single_session_checked_by_dispatch = True
         try:
             await super().dispatch(message)
+        except BaseException:
+            if message_type == "websocket.connect":
+                await self._release_connection_slot()
+            raise
         finally:
             self._single_session_checked_by_dispatch = False
+            if message_type == "websocket.disconnect":
+                await self._release_connection_slot()
+
+    def _connection_slot_redis(self):
+        try:
+            return get_redis_connection("default")
+        except INFRASTRUCTURE_EXCEPTIONS as exc:
+            raise WebSocketConnectionLimitUnavailable("WebSocket connection limiter unavailable") from exc
+
+    def _acquire_connection_slot_sync(
+        self, user_id: int, connection_id: str, worker_id: str
+    ) -> ConnectionCapacityDecision:
+        return acquire_connection_slot(
+            self._connection_slot_redis(),
+            user_id=user_id,
+            worker_id=worker_id,
+            connection_id=connection_id,
+            limit=int(settings.WEBSOCKET_MAX_CONNECTIONS_PER_USER),
+            ttl_seconds=int(settings.WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS),
+        )
+
+    def _refresh_connection_slot_sync(self, user_id: int, connection_id: str, worker_id: str) -> bool:
+        return refresh_connection_slot(
+            self._connection_slot_redis(),
+            user_id=user_id,
+            worker_id=worker_id,
+            connection_id=connection_id,
+            ttl_seconds=int(settings.WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS),
+        )
+
+    def _release_connection_slot_sync(self, user_id: int, connection_id: str, worker_id: str) -> None:
+        release_connection_slot(
+            self._connection_slot_redis(),
+            user_id=user_id,
+            worker_id=worker_id,
+            connection_id=connection_id,
+        )
+
+    async def _acquire_connection_slot(
+        self, user_id: int, connection_id: str, worker_id: str
+    ) -> ConnectionCapacityDecision:
+        return await sync_to_async(self._acquire_connection_slot_sync, thread_sensitive=True)(
+            user_id,
+            connection_id,
+            worker_id,
+        )
+
+    async def _refresh_connection_slot(self, user_id: int, connection_id: str, worker_id: str) -> bool:
+        return await sync_to_async(self._refresh_connection_slot_sync, thread_sensitive=True)(
+            user_id,
+            connection_id,
+            worker_id,
+        )
+
+    async def _release_connection_slot_backend(self, user_id: int, connection_id: str, worker_id: str) -> None:
+        await sync_to_async(self._release_connection_slot_sync, thread_sensitive=True)(
+            user_id,
+            connection_id,
+            worker_id,
+        )
+
+    async def _guard_connection_capacity(self) -> bool:
+        user = self.scope.get("user")  # type: ignore[attr-defined]
+        user_id = int(user.id)
+        connection_id = str(self.channel_name)  # type: ignore[attr-defined]
+        worker_lease_manager = getattr(self, "_worker_lease_manager", None)
+        if worker_lease_manager is None:
+            worker_lease_manager = get_websocket_worker_lease_manager()
+        try:
+            worker_id = await worker_lease_manager.ensure_started()
+            decision = await self._acquire_connection_slot(user_id, connection_id, worker_id)
+        except WEBSOCKET_CAPACITY_EXCEPTIONS:
+            logger.error(
+                "WebSocket connection limiter unavailable; rejecting connection: user_id=%s path=%s",
+                user_id,
+                self.scope.get("path"),  # type: ignore[attr-defined]
+                exc_info=True,
+            )
+            await self._reject_websocket_session(
+                message_type="websocket.connect",
+                close_code=self.SESSION_VALIDATION_UNAVAILABLE_CLOSE_CODE,
+            )
+            return False
+
+        if not decision.allowed:
+            logger.info(
+                "WebSocket connection capacity rejected",
+                extra={
+                    "user_id": user_id,
+                    "path": self.scope.get("path"),  # type: ignore[attr-defined]
+                    "close_code": self.CONNECTION_LIMIT_REACHED_CLOSE_CODE,
+                    "active_slots": decision.active_count,
+                    "expired_pruned": decision.expired_pruned,
+                    "dead_worker_pruned": decision.dead_worker_pruned,
+                    "malformed_members": decision.malformed_members,
+                    "worker_id": worker_id[:8],
+                },
+            )
+            await self._reject_websocket_session(
+                message_type="websocket.connect",
+                close_code=self.CONNECTION_LIMIT_REACHED_CLOSE_CODE,
+            )
+            return False
+
+        if decision.dead_worker_pruned:
+            logger.info(
+                "WebSocket user dead worker slots pruned",
+                extra={
+                    "user_id": user_id,
+                    "path": self.scope.get("path"),  # type: ignore[attr-defined]
+                    "active_slots": decision.active_count,
+                    "expired_pruned": decision.expired_pruned,
+                    "dead_worker_pruned": decision.dead_worker_pruned,
+                    "malformed_members": decision.malformed_members,
+                    "worker_id": worker_id[:8],
+                },
+            )
+
+        self._connection_slot_acquired = True
+        self._connection_slot_worker_id = worker_id
+        self._connection_slot_heartbeat_task = asyncio.create_task(
+            self._connection_slot_heartbeat_loop(user_id, connection_id, worker_id)
+        )
+        return True
+
+    async def _connection_slot_heartbeat_loop(self, user_id: int, connection_id: str, worker_id: str) -> None:
+        interval = max(1, int(settings.WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS) // 3)
+        try:
+            while True:
+                await asyncio.sleep(interval)
+                refreshed = await self._refresh_connection_slot(user_id, connection_id, worker_id)
+                if not refreshed:
+                    await self.close(code=self.SESSION_VALIDATION_UNAVAILABLE_CLOSE_CODE)  # type: ignore[attr-defined]
+                    return
+        except asyncio.CancelledError:
+            return
+        except WebSocketConnectionLimitUnavailable:
+            logger.error(
+                "WebSocket connection slot heartbeat unavailable; closing connection: user_id=%s",
+                user_id,
+                exc_info=True,
+            )
+            await self.close(code=self.SESSION_VALIDATION_UNAVAILABLE_CLOSE_CODE)  # type: ignore[attr-defined]
+
+    async def _release_connection_slot(self) -> None:
+        heartbeat = self._connection_slot_heartbeat_task
+        self._connection_slot_heartbeat_task = None
+        if heartbeat is not None:
+            heartbeat.cancel()
+            try:
+                await heartbeat
+            except asyncio.CancelledError:
+                pass
+        if not self._connection_slot_acquired:
+            return
+
+        self._connection_slot_acquired = False
+        worker_id = self._connection_slot_worker_id
+        self._connection_slot_worker_id = None
+        if worker_id is None:
+            return
+        user = self.scope.get("user")  # type: ignore[attr-defined]
+        try:
+            await self._release_connection_slot_backend(
+                int(user.id),
+                str(self.channel_name),  # type: ignore[attr-defined]
+                worker_id,
+            )
+        except WebSocketConnectionLimitUnavailable:
+            logger.warning(
+                "WebSocket connection slot release unavailable: user_id=%s",
+                getattr(user, "id", None),
+                exc_info=True,
+            )
 
     async def _guard_single_session(self, message: dict) -> bool:
         message_type = str(message.get("type", ""))

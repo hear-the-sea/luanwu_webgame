@@ -1182,7 +1182,7 @@ table.table tbody tr+tr {
 
 .battle-round-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: 1.2rem;
 }
 
@@ -1440,9 +1440,18 @@ table.table tbody tr+tr {
   white-space: nowrap;
 }
 
+.event-unit-summary > .event-unit-name,
+.event-actor-settlement-summary > .event-unit-name {
+  flex: 0 1 9rem;
+  width: 9rem;
+  min-width: 2.5rem;
+  max-width: 9rem;
+}
+
 .battle-unit-state {
-  flex: 0 0 72px;
+  flex: 0 1 72px;
   width: 72px;
+  min-width: 40px;
   height: 0.5rem;
   overflow: hidden;
   border: 1px solid rgba(92, 60, 31, 0.42);
@@ -1468,7 +1477,7 @@ table.table tbody tr+tr {
 }
 
 .event-unit-skills {
-  flex: 1 1 0;
+  flex: 1 1 3.5rem;
   min-width: 0;
   display: flex;
   flex-wrap: nowrap;
@@ -1507,12 +1516,19 @@ table.table tbody tr+tr {
 
 @media (max-width: 640px) {
   .battle-unit-state {
-    flex: 0 0 52px;
-    width: 52px;
+    flex: 0 1 clamp(40px, 16vw, 52px);
+    width: clamp(40px, 16vw, 52px);
   }
 
   .event-unit-name {
     max-width: 30%;
+  }
+
+  .event-unit-summary > .event-unit-name,
+  .event-actor-settlement-summary > .event-unit-name {
+    flex: 0 1 clamp(3.5rem, 20vw, 4.5rem);
+    width: clamp(3.5rem, 20vw, 4.5rem);
+    max-width: clamp(3.5rem, 20vw, 4.5rem);
   }
 }
 

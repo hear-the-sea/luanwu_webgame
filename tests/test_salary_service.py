@@ -1,14 +1,37 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime
+from unittest.mock import patch
+from zoneinfo import ZoneInfo
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from core.exceptions import InsufficientResourceError, SalaryAlreadyPaidError
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestRarity, GuestTemplate, SalaryPayment
 from guests.services.salary import pay_all_salaries, pay_guest_salary
+
+
+@pytest.mark.django_db
+def test_pay_guest_salary_defaults_to_shanghai_business_date():
+    user = get_user_model().objects.create_user(username="salary_local_date_user", password="pass123")
+    manor = ensure_manor(user)
+    manor.silver = 10_000
+    manor.save(update_fields=["silver"])
+    template = GuestTemplate.objects.create(
+        key="salary_local_date_guest",
+        name="本地日期工资门客",
+        rarity=GuestRarity.GRAY,
+    )
+    guest = Guest.objects.create(manor=manor, template=template)
+    utc_now = datetime(2026, 7, 13, 16, 30, tzinfo=UTC)
+
+    with timezone.override(ZoneInfo("Asia/Shanghai")), patch("django.utils.timezone.now", return_value=utc_now):
+        payment = pay_guest_salary(manor, guest)
+
+    assert payment.for_date == date(2026, 7, 14)
 
 
 @pytest.mark.django_db

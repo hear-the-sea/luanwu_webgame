@@ -164,6 +164,7 @@
     <div id="toast-container" class="toast-container"></div>
     <script src="{% static 'js/dialog.js' %}"></script>
     {% if user.is_authenticated %}
+    <script src="{% static 'js/websocket_reconnect.js' %}"></script>
     <script src="{% static 'js/notifications.js' %}"></script>
     <script src="{% static 'js/online_stats.js' %}"></script>
     <script src="{% static 'js/chat_widget_core.js' %}"></script>

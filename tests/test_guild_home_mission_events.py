@@ -49,6 +49,7 @@ def test_home_page_shows_active_guild_mission_event(client, django_user_model):
 
 @pytest.mark.django_db
 def test_home_page_hides_overdue_guild_mission_without_refresh_side_effect(client, django_user_model, monkeypatch):
+    now = timezone.now()
     user = django_user_model.objects.create_user(username="guild_home_event_refresh_user", password="pass12345")
     ensure_manor(user)
     guild = Guild.objects.create(name="首页帮会事件刷新帮", founder=user, is_active=True)
@@ -72,7 +73,7 @@ def test_home_page_hides_overdue_guild_mission_without_refresh_side_effect(clien
         status="active",
         selected_guest_count=2,
         ruby_reward=2,
-        return_at=timezone.now() - timedelta(seconds=1),
+        return_at=now - timedelta(seconds=1),
     )
     assert client.login(username="guild_home_event_refresh_user", password="pass12345")
 
@@ -80,6 +81,7 @@ def test_home_page_hides_overdue_guild_mission_without_refresh_side_effect(clien
         "guilds.services.guild_missions.finalize_guild_mission_run",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("home page should not finalize guild missions")),
     )
+    monkeypatch.setattr("gameplay.selectors.home.timezone.now", lambda: now)
 
     response = client.get("/")
 

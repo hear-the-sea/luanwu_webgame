@@ -34,7 +34,9 @@ def test_simulate_report_creates_battle(game_data, django_user_model):
     assert first_round["events"]
     orders = [event["order"] for event in first_round["events"]]
     assert orders == list(range(1, len(orders) + 1))
-    assert any(event.get("status") == "charging" for event in first_round["events"])
+    charging_events = [event for event in first_round["events"] if event.get("status") == "charging"]
+    assert charging_events
+    assert all(event["actor_state"]["side"] == event["side"] for event in charging_events)
     assert any(event.get("preemptive") for event in first_round["events"])
     assert all("agility" in event for event in first_round["events"] if "damage" in event)
     assert sum(report.attacker_troops.values()) > 0

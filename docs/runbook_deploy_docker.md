@@ -1,6 +1,6 @@
 # Docker 部署运行手册
 
-> 最近校正：2026-07-08
+> 最近校正：2026-07-13
 
 本文档沉淀当前仓库在 WSL2 本地构建、导出镜像、传输到服务器、更新运行中容器与排查常见 Docker 发布问题的实操经验。
 
@@ -8,6 +8,7 @@
 
 - [`Dockerfile`](/home/daniel/code/web_game_v5/Dockerfile)
 - [`docker-compose.prod.yml`](/home/daniel/code/web_game_v5/docker-compose.prod.yml)
+- [`docker/caddy/Caddyfile`](/home/daniel/code/web_game_v5/docker/caddy/Caddyfile)
 - [`docker/entrypoint.sh`](/home/daniel/code/web_game_v5/docker/entrypoint.sh)
 - [`.env.docker.prod.example`](/home/daniel/code/web_game_v5/.env.docker.prod.example)
 - [`config/settings/database.py`](/home/daniel/code/web_game_v5/config/settings/database.py)
@@ -19,7 +20,7 @@
 - 应用业务镜像一张，同时供 `web`、`worker`、`worker_battle`、`worker_timer`、`beat` 复用
 - `db` 使用 MySQL 容器
 - `redis` 使用 Redis 容器
-- `nginx` 负责静态资源与反向代理
+- `caddy` 直接监听公网 `80/443`，自动管理 HTTPS、静态资源和反向代理
 
 生产镜像内应用进程使用 UID/GID `10001:10001` 运行；`web` 容器在
 [`docker-compose.prod.yml`](/home/daniel/code/web_game_v5/docker-compose.prod.yml#L42)
@@ -31,11 +32,16 @@ runtime 目录后，都必须把 runtime 目录归属修正给 `10001:10001`。
 
 这意味着发布时通常只需要传输业务镜像；数据库和 Redis 由服务器上的 Compose 编排直接启动。
 
-内置的 Compose Nginx 只监听 `80:80`，不直接终止 TLS。生产默认
-`DJANGO_SECURE_SSL_REDIRECT=1` 时，必须把这套 Compose 部署在外层 TLS 终止代理或
-负载均衡之后，并确保外层代理传递 `X-Forwarded-Proto: https`。如果只是纯 HTTP 内网
-演练环境，需要在 `.env.docker` 中显式设置 `DJANGO_SECURE_SSL_REDIRECT=0`，不要修改生产
-示例默认值。
+Caddy 是唯一公网入口，直接监听 TCP `80/443`，并额外暴露 UDP `443` 供 HTTP/3 使用。
+它会自动申请和续期公开证书，并把 HTTPS 状态通过 `X-Forwarded-Proto` 传给 Django。
+生产保持 `DJANGO_SECURE_SSL_REDIRECT=1`；不再需要外层 TLS 代理或手动运行 Certbot。
+
+首次签发证书前必须满足：
+
+- `CADDY_SITE_ADDRESS` 是真实域名，且域名 A/AAAA 记录已经指向服务器；没有可达 IPv6 时不要保留错误的 AAAA 记录。
+- 公网入站 TCP `80/443` 已放行并转发到该服务器；UDP `443` 可选放行以启用 HTTP/3。
+- 服务器上没有其他进程占用 `80/443`。
+- `caddy_data` 和 `caddy_config` 命名卷必须保留；执行 `docker compose down -v` 会删除证书和 ACME 账户状态。
 
 ## 本地构建镜像
 
@@ -110,6 +116,16 @@ chown -R "10001:10001" "runtime/staticfiles" "runtime/media" "runtime/celerybeat
 cp ".env.docker.prod.example" ".env.docker"
 ```
 
+编辑 `.env.docker`，至少替换数据库、Redis、Django 密钥，并确认
+`CADDY_SITE_ADDRESS`、`DJANGO_ALLOWED_HOSTS` 和 `DJANGO_CSRF_TRUSTED_ORIGINS`
+使用同一个生产域名。启动前验证 Compose 和 Caddy 配置：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" config >/dev/null
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm --no-deps "caddy" \
+  caddy validate --config "/etc/caddy/Caddyfile" --adapter caddyfile
+```
+
 先启动基础设施：
 
 ```bash
@@ -131,7 +147,7 @@ docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "w
 最后启动业务服务：
 
 ```bash
-docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d "web" "worker" "worker_battle" "worker_timer" "beat" "nginx"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d "web" "worker" "worker_battle" "worker_timer" "beat" "caddy"
 ```
 
 ## 更新已有旧版本容器
@@ -161,10 +177,13 @@ docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --for
   "web" "worker" "worker_battle" "worker_timer" "beat"
 ```
 
-如果这次发布还改了 Nginx 配置，再额外重建：
+如果这次发布修改了 Caddy 配置，先校验再平滑加载：
 
 ```bash
-docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --force-recreate --no-deps "nginx"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec "caddy" \
+  caddy validate --config "/etc/caddy/Caddyfile" --adapter caddyfile
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec "caddy" \
+  caddy reload --config "/etc/caddy/Caddyfile" --adapter caddyfile
 ```
 
 验证状态：
@@ -173,8 +192,19 @@ docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --for
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" ps
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "web"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "worker"
-curl "http://127.0.0.1/health/"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "caddy"
+curl --fail --show-error --silent "https://${CADDY_SITE_ADDRESS}/health/live"
 ```
+
+Caddy 日志首次出现证书签发成功后，后续续期由 Caddy 自动完成。排查证书问题时重点检查域名解析、端口占用、防火墙以及 `caddy_data` 卷是否被误删。
+
+## WebSocket 重启恢复
+
+认证页面每页会建立通知、在线统计和世界聊天三条 WebSocket。生产默认每用户上限为 `9`，支持同一账号三个标签页。Daphne Worker 租约 TTL 为 `8` 秒、每 `2` 秒续期；实例异常退出或滚动替换后，新连接会清理死亡 Worker 的用户级和 IP 级槽位，目标恢复时间不超过 `10` 秒。
+
+首次从旧连接成员格式发布到 Worker 所有权格式时，旧成员没有 Worker ID，只能按原分数过期，因此可能出现一次最长约 `120` 秒的兼容窗口。所有新连接均使用版本化成员，后续发布不再受该旧窗口影响。
+
+容量拒绝日志包含 `active_slots`、`expired_pruned`、`dead_worker_pruned`、`malformed_members` 和 `worker_id`。`4429` 表示容量暂满；预握手拒绝在浏览器中也可能表现为 `1006`，两者都会在 1～2 秒内重试，以覆盖 8 秒 Worker 租约失效窗口。`1013` 表示 Redis 或租约基础设施暂不可用，使用指数退避。正常恢复流程不应删除 `websocket:*` Redis 键，也不应在 Daphne 启动时做全量清理，因为这会误删其他存活实例的连接所有权。
 
 ## 迁移和导库的经验约束
 

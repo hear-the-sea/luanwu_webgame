@@ -15,6 +15,7 @@ from django.contrib.staticfiles.handlers import ASGIStaticFilesHandler  # noqa: 
 from django.core.asgi import get_asgi_application  # noqa: E402
 from django.core.exceptions import AppRegistryNotReady  # noqa: E402
 
+from websocket.middleware.ip_capacity import WebSocketIPCapacityMiddleware  # noqa: E402
 from websocket.routing_status import set_websocket_routing_status  # noqa: E402
 
 logger = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ if websocket_routing and getattr(websocket_routing, "websocket_urlpatterns", Non
 
 # HTTP Application Configuration
 # -------------------------------
-# In production, static files should be served by a dedicated web server (nginx, CDN)
+# In production, static files should be served by a dedicated web server (Caddy, CDN)
 # or using WhiteNoise middleware. ASGIStaticFilesHandler is only for development.
 http_app = django_asgi_app
 if settings.DEBUG:
@@ -59,6 +60,8 @@ if settings.DEBUG:
 application = ProtocolTypeRouter(
     {
         "http": http_app,
-        "websocket": AllowedHostsOriginValidator(AuthMiddlewareStack(URLRouter(websocket_urlpatterns))),
+        "websocket": AllowedHostsOriginValidator(
+            WebSocketIPCapacityMiddleware(AuthMiddlewareStack(URLRouter(websocket_urlpatterns)))
+        ),
     }
 )

@@ -172,9 +172,7 @@ def donate_resource(member, resource_type, amount):
 
 def reset_weekly_contributions():
     """重置所有帮会成员的本周贡献（每周一执行）"""
-    from datetime import date
-
-    today = date.today()
+    today = timezone.localdate()
 
     # 性能优化：使用批量更新替代循环中的逐个 save()
     # 避免 N 次数据库写入，改为 1 次批量更新

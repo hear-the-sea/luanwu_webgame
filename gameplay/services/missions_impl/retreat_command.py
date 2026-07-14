@@ -9,8 +9,14 @@ from core.exceptions import MissionCannotRetreatError
 
 
 def request_retreat(run, *, mission_run_model, schedule_mission_completion) -> None:
+    from gameplay.models import Manor
+
     now = timezone.now()
     with transaction.atomic():
+        manor_id = mission_run_model.objects.filter(pk=run.pk).values_list("manor_id", flat=True).first()
+        if manor_id is None:
+            raise MissionCannotRetreatError(reason="ended")
+        Manor.objects.select_for_update().get(pk=manor_id)
         locked_run = mission_run_model.objects.select_for_update().filter(pk=run.pk).first()
         if not locked_run or locked_run.status != mission_run_model.Status.ACTIVE:
             raise MissionCannotRetreatError(reason="ended")

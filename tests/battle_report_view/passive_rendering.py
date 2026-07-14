@@ -49,7 +49,34 @@ def test_report_view_renders_only_friendly_round_state_between_name_and_skills(c
                             "status": "warning",
                             "status_label": "状态偏低",
                         },
-                    }
+                    },
+                    {
+                        "side": "defender",
+                        "order": 2,
+                        "actor": "铁甲枪王",
+                        "target": "赵云",
+                        "damage": 80,
+                        "is_crit": False,
+                        "is_dodge": False,
+                        "skills": [],
+                        "status_inflicted": [],
+                        "kills": 0,
+                        "target_defeated": False,
+                        "actor_state": {
+                            "kind": "troop",
+                            "side": "defender",
+                            "percent": 40,
+                            "status": "warning",
+                            "status_label": "状态偏低",
+                        },
+                        "target_state": {
+                            "kind": "guest",
+                            "side": "attacker",
+                            "percent": 55,
+                            "status": "healthy",
+                            "status_label": "状态充足",
+                        },
+                    },
                 ],
             }
         ],
@@ -60,13 +87,63 @@ def test_report_view_renders_only_friendly_round_state_between_name_and_skills(c
     body = response.content.decode("utf-8")
 
     assert response.status_code == 200
-    assert 'data-unit-state-side="attacker"' in body
+    assert body.count('data-unit-state-side="attacker"') == 2
     assert 'data-unit-state-side="defender"' not in body
     event_start = body.index('class="event-unit-summary"')
     event_end = body.index("</div>", event_start)
     event_markup = body[event_start:event_end]
     assert event_markup.index("event-unit-name") < event_markup.index("battle-unit-state")
     assert event_markup.index("battle-unit-state") < event_markup.index("event-unit-skills")
+
+
+@pytest.mark.django_db
+def test_report_view_renders_charging_actor_state(client, django_user_model):
+    user = django_user_model.objects.create_user(
+        username="battle_report_charging_user",
+        password="pass123",
+        email="battle_report_charging_user@test.local",
+    )
+    manor = ensure_manor(user)
+    report = create_report(
+        manor=manor,
+        opponent_name="敌方庄园",
+        battle_type="task1",
+        rounds=[
+            {
+                "round": 1,
+                "events": [
+                    {
+                        "side": "attacker",
+                        "order": 1,
+                        "actor": "蓄势待发的长名门客",
+                        "status": "charging",
+                        "message": "冲锋中",
+                        "actor_state": {
+                            "kind": "guest",
+                            "side": "attacker",
+                            "percent": 68,
+                            "status": "healthy",
+                            "status_label": "状态充足",
+                        },
+                    }
+                ],
+            }
+        ],
+    )
+
+    assert client.login(username="battle_report_charging_user", password="pass123")
+    response = client.get(reverse("battle:report_detail", kwargs={"pk": report.pk}))
+    body = response.content.decode("utf-8")
+
+    assert response.status_code == 200
+    status_start = body.index('class="event-unit-summary event-status-layout"')
+    status_end = body.index("</div>", status_start)
+    status_markup = body[status_start:status_end]
+    assert "蓄势待发的长名门客" in status_markup
+    assert 'data-unit-state-side="attacker"' in status_markup
+    assert "冲锋中" in status_markup
+    assert status_markup.index("event-unit-name") < status_markup.index("battle-unit-state")
+    assert status_markup.index("battle-unit-state") < status_markup.index("status-pill")
 
 
 @pytest.mark.django_db

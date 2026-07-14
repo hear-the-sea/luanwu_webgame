@@ -5,6 +5,7 @@ import math
 from datetime import timedelta
 from typing import Any, cast
 
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 
@@ -166,23 +167,73 @@ def _launch_guild_mission_atomic(
     return run
 
 
+def _lock_guild_root_for_mission_run(run_id: int) -> Guild | None:
+    guild_id = GuildMissionRun.objects.filter(pk=run_id).values_list("guild_id", flat=True).first()
+    if guild_id is None:
+        return None
+    return Guild.objects.select_for_update().get(pk=guild_id)
+
+
+def _report_owner_user_id_for_mission_run(run_id: int) -> int | None:
+    owner_ids = (
+        GuildMissionRun.objects.filter(pk=run_id).values_list("started_by__user_id", "guild__founder_id").first()
+    )
+    if owner_ids is None:
+        return None
+    return owner_ids[0] or owner_ids[1]
+
+
+def _ensure_report_owner_for_mission_run(run_id: int) -> int | None:
+    owner_user_id = _report_owner_user_id_for_mission_run(run_id)
+    if owner_user_id is None:
+        logger.error("Guild mission report owner is unavailable: run_id=%s", run_id)
+        return None
+    if Manor.objects.filter(user_id=owner_user_id).exists():
+        return owner_user_id
+
+    user = get_user_model().objects.filter(pk=owner_user_id).first()
+    if user is None:
+        logger.error(
+            "Guild mission report owner user is missing: run_id=%s user_id=%s",
+            run_id,
+            owner_user_id,
+        )
+        return None
+    ensure_manor(user)
+    return owner_user_id
+
+
+def _lock_report_owner_manor_for_mission_run(run_id: int, *, owner_user_id: int) -> Manor | None:
+    return Manor.objects.select_for_update().filter(user_id=owner_user_id).first()
+
+
+def _locked_mission_report_owner_user_id(run: GuildMissionRun) -> int | None:
+    started_by = run.started_by
+    if started_by is not None:
+        return started_by.user_id
+    return run.guild.founder_id
+
+
 def request_retreat(*, run: GuildMissionRun, operator) -> None:
     now = timezone.now()
     overdue_guild: Guild | None = None
 
     with transaction.atomic():
+        locked_guild = _lock_guild_root_for_mission_run(run.pk)
+        if locked_guild is None:
+            raise GuildValidationError("帮会任务不存在")
+        lock_manage_member(guild=locked_guild, operator=operator, permission_label="撤回帮会任务")
         locked_run = GuildMissionRun.objects.select_for_update().select_related("guild").filter(pk=run.pk).first()
         if locked_run is None:
             raise GuildValidationError("帮会任务不存在")
 
-        lock_manage_member(guild=locked_run.guild, operator=operator, permission_label="撤回帮会任务")
         if locked_run.status != GuildMissionRun.Status.ACTIVE:
             raise GuildValidationError("当前任务不可撤回")
 
         if locked_run.return_at is not None and locked_run.return_at <= now:
             overdue_guild = locked_run.guild
         else:
-            guild_troops.add_guild_troops(guild=locked_run.guild, loadout=locked_run.troop_loadout)
+            guild_troops.add_guild_troops(guild=locked_guild, loadout=locked_run.troop_loadout)
             locked_run.status = GuildMissionRun.Status.RETREATED
             locked_run.completed_at = now
             locked_run.save(update_fields=["status", "completed_at"])
@@ -292,9 +343,30 @@ def _schedule_guild_mission_report_messages(run: GuildMissionRun, report: Any) -
     transaction.on_commit(_send_report_messages_after_commit)
 
 
-@transaction.atomic
 def finalize_guild_mission_run(run: GuildMissionRun, *, now=None) -> bool:
+    owner_user_id = _ensure_report_owner_for_mission_run(run.pk)
+    if owner_user_id is None:
+        return False
+    return _finalize_guild_mission_run_atomic(run, now=now, expected_report_owner_user_id=owner_user_id)
+
+
+@transaction.atomic
+def _finalize_guild_mission_run_atomic(
+    run: GuildMissionRun,
+    *,
+    now=None,
+    expected_report_owner_user_id: int,
+) -> bool:
     finalized_at = now or timezone.now()
+    report_owner = _lock_report_owner_manor_for_mission_run(
+        run.pk,
+        owner_user_id=expected_report_owner_user_id,
+    )
+    if report_owner is None:
+        return False
+    locked_guild = _lock_guild_root_for_mission_run(run.pk)
+    if locked_guild is None:
+        return False
     locked_run = (
         GuildMissionRun.objects.select_for_update()
         .select_related("guild", "guild__founder", "template", "started_by__user")
@@ -303,8 +375,14 @@ def finalize_guild_mission_run(run: GuildMissionRun, *, now=None) -> bool:
     )
     if locked_run is None or locked_run.status != GuildMissionRun.Status.ACTIVE:
         return False
+    if _locked_mission_report_owner_user_id(locked_run) != expected_report_owner_user_id:
+        logger.info(
+            "Guild mission report owner changed during settlement; retrying from fresh state: run_id=%s",
+            run.pk,
+        )
+        return False
+    locked_run.guild = locked_guild
 
-    report_owner = ensure_manor(locked_run.started_by.user if locked_run.started_by else locked_run.guild.founder)
     guest_models = build_guest_snapshot_proxies(locked_run.guest_snapshots, include_guest_identity=True)
     battle_guest_models = cast(list[Any], guest_models)
     attacker_limit = _resolve_guild_mission_attacker_limit(locked_run)

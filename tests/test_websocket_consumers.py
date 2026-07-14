@@ -11,11 +11,126 @@ from django.test import SimpleTestCase
 from django_redis.exceptions import ConnectionInterrupted
 from redis.exceptions import RedisError
 
+from websocket.backends.connection_limiter import ConnectionCapacityDecision
 from websocket.consumers import NotificationConsumer, OnlineStatsConsumer, WorldChatConsumer
 from websocket.consumers.session_guard import WebSocketSessionValidationResult, WebSocketSessionValidationUnavailable
+from websocket.exceptions import WebSocketConnectionLimitUnavailable
 
 
 class NotificationConsumerTests(SimpleTestCase):
+    def test_connection_slot_redis_translates_client_acquisition_failure(self):
+        consumer = NotificationConsumer()
+
+        with (
+            patch(
+                "websocket.consumers.session_guard.get_redis_connection",
+                side_effect=ConnectionError("redis down"),
+            ),
+            self.assertRaises(WebSocketConnectionLimitUnavailable),
+        ):
+            consumer._connection_slot_redis()
+
+    def test_dispatch_releases_user_capacity_slot_on_disconnect(self):
+        class _User:
+            id = 7
+            is_authenticated = True
+
+        consumer = NotificationConsumer()
+        consumer.scope = {"user": _User(), "path": "/ws/notifications/"}
+        consumer.channel_name = "capacity-lifecycle"
+        consumer._ensure_valid_session = AsyncMock(return_value=WebSocketSessionValidationResult.VALID)
+        consumer._worker_lease_manager = AsyncMock()
+        consumer._worker_lease_manager.ensure_started.return_value = "a" * 32
+        consumer._acquire_connection_slot = AsyncMock(return_value=ConnectionCapacityDecision(True, 1, 0, 2, 0))
+        consumer._refresh_connection_slot = AsyncMock(return_value=True)
+        consumer._release_connection_slot_backend = AsyncMock()
+
+        async def _scenario():
+            with patch("channels.consumer.AsyncConsumer.dispatch", new_callable=AsyncMock) as base_dispatch:
+                await consumer.dispatch({"type": "websocket.connect"})
+                assert consumer._connection_slot_acquired is True
+                assert consumer._connection_slot_heartbeat_task is not None
+
+                await consumer.dispatch({"type": "websocket.disconnect"})
+
+                assert base_dispatch.await_count == 2
+
+        with patch("websocket.consumers.session_guard.logger.info") as info_log:
+            asyncio.run(_scenario())
+
+        consumer._acquire_connection_slot.assert_awaited_once_with(7, "capacity-lifecycle", "a" * 32)
+        consumer._release_connection_slot_backend.assert_awaited_once_with(7, "capacity-lifecycle", "a" * 32)
+        assert consumer._connection_slot_acquired is False
+        assert consumer._connection_slot_heartbeat_task is None
+        assert info_log.call_args.args[0] == "WebSocket user dead worker slots pruned"
+        assert info_log.call_args.kwargs["extra"]["dead_worker_pruned"] == 2
+
+    def test_user_capacity_heartbeat_interval_stays_below_configured_ttl(self):
+        consumer = NotificationConsumer()
+        consumer.close = AsyncMock()
+        consumer._refresh_connection_slot = AsyncMock(return_value=False)
+        sleep = AsyncMock()
+
+        with (
+            patch("websocket.consumers.session_guard.settings.WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS", 6),
+            patch("websocket.consumers.session_guard.asyncio.sleep", sleep),
+        ):
+            asyncio.run(consumer._connection_slot_heartbeat_loop(7, "connection", "a" * 32))
+
+        sleep.assert_awaited_once_with(2)
+        consumer.close.assert_awaited_once_with(code=1013)
+
+    def test_dispatch_rejects_connection_when_user_capacity_is_full(self):
+        class _User:
+            id = 7
+            is_authenticated = True
+
+        consumer = NotificationConsumer()
+        consumer.scope = {"user": _User(), "path": "/ws/notifications/"}
+        consumer.channel_name = "capacity-full"
+        consumer.accept = AsyncMock()
+        consumer.close = AsyncMock()
+        consumer._ensure_valid_session = AsyncMock(return_value=WebSocketSessionValidationResult.VALID)
+        consumer._worker_lease_manager = AsyncMock()
+        consumer._worker_lease_manager.ensure_started.return_value = "b" * 32
+        consumer._acquire_connection_slot = AsyncMock(return_value=ConnectionCapacityDecision(False, 9, 1, 2, 3))
+
+        with patch("websocket.consumers.session_guard.logger.info") as info_log:
+            asyncio.run(consumer.dispatch({"type": "websocket.connect"}))
+
+        consumer.accept.assert_awaited_once_with()
+        consumer.close.assert_awaited_once_with(code=4429)
+        assert info_log.call_args.kwargs["extra"] == {
+            "user_id": 7,
+            "path": "/ws/notifications/",
+            "close_code": 4429,
+            "active_slots": 9,
+            "expired_pruned": 1,
+            "dead_worker_pruned": 2,
+            "malformed_members": 3,
+            "worker_id": "bbbbbbbb",
+        }
+
+    def test_dispatch_rejects_connection_when_capacity_backend_is_unavailable(self):
+        class _User:
+            id = 7
+            is_authenticated = True
+
+        consumer = NotificationConsumer()
+        consumer.scope = {"user": _User(), "path": "/ws/notifications/"}
+        consumer.channel_name = "capacity-unavailable"
+        consumer.accept = AsyncMock()
+        consumer.close = AsyncMock()
+        consumer._ensure_valid_session = AsyncMock(return_value=WebSocketSessionValidationResult.VALID)
+        consumer._worker_lease_manager = AsyncMock()
+        consumer._worker_lease_manager.ensure_started.return_value = "c" * 32
+        consumer._acquire_connection_slot = AsyncMock(side_effect=WebSocketConnectionLimitUnavailable("redis down"))
+
+        asyncio.run(consumer.dispatch({"type": "websocket.connect"}))
+
+        consumer.accept.assert_awaited_once_with()
+        consumer.close.assert_awaited_once_with(code=1013)
+
     def test_asgi_connect_accepts_then_closes_1013_when_session_validation_is_unavailable(self):
         async def _scenario():
             communicator = WebsocketCommunicator(NotificationConsumer.as_asgi(), "/ws/notifications/")

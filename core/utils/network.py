@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import ipaddress
-from typing import Iterable
+from typing import Any, Iterable, Mapping
 
 from django.conf import settings
 from django.http import HttpRequest
@@ -85,6 +85,36 @@ def get_client_ip(request: HttpRequest, *, trust_proxy: bool = False) -> str:
         return remote_addr
 
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR", "")
+    if not x_forwarded_for:
+        return remote_addr
+
+    return _extract_client_ip_from_forwarded_chain(remote_addr, x_forwarded_for, trusted_proxy_ips)
+
+
+def get_asgi_client_ip(scope: Mapping[str, Any], *, trust_proxy: bool = False) -> str:
+    """Resolve an ASGI peer using the same trusted-proxy policy as HTTP requests."""
+    client = scope.get("client")
+    remote_addr = str(client[0]) if isinstance(client, (list, tuple)) and client else ""
+    if not remote_addr:
+        return "unknown"
+
+    if not trust_proxy:
+        return remote_addr
+
+    trusted_proxy_ips = getattr(settings, "TRUSTED_PROXY_IPS", [])
+    if not _is_trusted_proxy(remote_addr, trusted_proxy_ips):
+        return remote_addr
+
+    x_forwarded_for = ""
+    for raw_name, raw_value in scope.get("headers") or []:
+        if bytes(raw_name).lower() != b"x-forwarded-for":
+            continue
+        try:
+            x_forwarded_for = bytes(raw_value).decode("latin-1")
+        except (TypeError, ValueError, UnicodeError):
+            x_forwarded_for = ""
+        break
+
     if not x_forwarded_for:
         return remote_addr
 

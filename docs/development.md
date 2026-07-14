@@ -90,6 +90,8 @@ make dev
 make dev-ws
 ```
 
+认证页面会分别建立通知、在线统计和世界聊天三条 WebSocket。默认用户容量为 `9`，即支持同一账号同时打开三个标签页。连接槽 TTL 为 `30` 秒；Daphne 进程通过 TTL `8` 秒、每 `2` 秒续期的 Redis Worker 租约声明连接所有权。进程异常退出后，新连接会原子清理租约已失效 Worker 的槽位，不需要手工删除 Redis 键。
+
 需要异步任务：
 
 ```bash
@@ -130,7 +132,7 @@ docker compose up --build
 
 - `web` 使用 `daphne`
 - `worker` / `worker_battle` / `worker_timer` 分队列运行
-- `nginx` 负责静态资源与反向代理
+- `caddy` 负责自动 HTTPS、静态资源与 HTTP/WebSocket 反向代理
 
 ## 测试与门禁
 

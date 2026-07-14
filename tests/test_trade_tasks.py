@@ -20,7 +20,7 @@ from trade.tasks import (
 
 @pytest.mark.django_db
 def test_refresh_shop_stock_creates_and_updates_daily_items(monkeypatch):
-    today = timezone.now().date()
+    today = timezone.localdate()
 
     config_list = [
         ShopItemConfig(item_key="daily_item", price=None, stock=5, daily_refresh=True),

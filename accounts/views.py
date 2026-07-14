@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import time
+import unicodedata
 from threading import Lock
 from typing import cast
 
@@ -61,6 +62,11 @@ def _get_client_ip(request) -> str:
     return get_client_ip(request, trust_proxy=True)
 
 
+def _normalize_login_throttle_username(username: str | None) -> str | None:
+    normalized = unicodedata.normalize("NFKC", str(username or "")).strip().casefold()
+    return normalized or None
+
+
 def _get_login_attempt_key(request, username: str | None = None) -> tuple[str, str | None]:
     """
     获取登录尝试的缓存 key（基于 IP + 用户名双重限制）。
@@ -69,6 +75,7 @@ def _get_login_attempt_key(request, username: str | None = None) -> tuple[str, s
         (ip_key, username_key) - 两个缓存 key
     """
     ip = _get_client_ip(request)
+    username = _normalize_login_throttle_username(username)
     ip_key = f"login_attempts:ip:{ip}"
     username_key = f"login_attempts:user:{username}" if username else None
     return ip_key, username_key
@@ -82,6 +89,7 @@ def _get_login_lock_key(request, username: str | None = None) -> tuple[str, str 
         (ip_lock_key, username_lock_key)
     """
     ip = _get_client_ip(request)
+    username = _normalize_login_throttle_username(username)
     ip_lock_key = f"login_lock:ip:{ip}"
     username_lock_key = f"login_lock:user:{username}" if username else None
     return ip_lock_key, username_lock_key
@@ -265,9 +273,9 @@ class LoginView(DjangoLoginView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        # 登录成功后清理用户名与 IP 维度失败记录，避免共享出口 IP 被持续误伤。
+        # 登录成功只清理用户名桶；IP 桶保留共享出口上的整体攻击信号。
         username = form.cleaned_data.get("username", "")
-        _clear_login_attempts(self.request, username, clear_ip=True)
+        _clear_login_attempts(self.request, username, clear_ip=False)
         messages.success(self.request, "欢迎回来，领主大人！")
         return super().form_valid(form)
 

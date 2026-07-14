@@ -12,17 +12,13 @@
 
   const toastContainerId = "toast-container";
   const wsPath = "/ws/notifications/";
-  const INITIAL_RECONNECT_DELAY = 2000;
-  const MAX_RECONNECT_DELAY = 15000;
   const STABLE_CONNECTION_DELAY = 30000;
-  const RECONNECT_JITTER = 0.1;
-  const TERMINAL_CLOSE_CODES = new Set([4401, 4403]);
   const TOP_LEVEL_NOTIFICATION_FIELDS = new Set(["type", "kind", "title", "body", "timestamp", "message"]);
   const scheme = window.location.protocol === "https:" ? "wss" : "ws";
   const wsUrl = `${scheme}://${window.location.host}${wsPath}`;
+  const reconnectPolicy = window.WebSocketReconnectPolicy.createReconnectPolicy();
 
   let socket;
-  let reconnectDelay = INITIAL_RECONNECT_DELAY;
   let reconnectTimer = null;
   let stabilityTimer = null;
   let currentUnreadCount = readCurrentUnreadCount();
@@ -298,13 +294,8 @@
   }
 
   function resetReconnectDelay() {
-    reconnectDelay = INITIAL_RECONNECT_DELAY;
+    reconnectPolicy.markStable();
     clearStabilityTimer();
-  }
-
-  function reconnectDelayWithJitter() {
-    const jitterFactor = 1 - RECONNECT_JITTER + (Math.random() * RECONNECT_JITTER * 2);
-    return Math.min(MAX_RECONNECT_DELAY, Math.round(reconnectDelay * jitterFactor));
   }
 
   function connect() {
@@ -317,7 +308,7 @@
       const scheduledStabilityTimer = setTimeout(() => {
         if (socket !== currentSocket || stabilityTimer !== scheduledStabilityTimer) return;
         stabilityTimer = null;
-        reconnectDelay = INITIAL_RECONNECT_DELAY;
+        reconnectPolicy.markStable();
       }, STABLE_CONNECTION_DELAY);
       stabilityTimer = scheduledStabilityTimer;
     };
@@ -337,7 +328,8 @@
     currentSocket.onclose = (event) => {
       if (socket !== currentSocket) return;
       clearStabilityTimer();
-      if (event && TERMINAL_CLOSE_CODES.has(event.code)) {
+      const closeCode = event && event.code;
+      if (!reconnectPolicy.shouldReconnect(closeCode)) {
         if (reconnectTimer !== null) {
           clearTimeout(reconnectTimer);
           reconnectTimer = null;
@@ -349,9 +341,8 @@
         if (socket !== currentSocket || reconnectTimer !== scheduledReconnectTimer) return;
         reconnectTimer = null;
         connect();
-      }, reconnectDelayWithJitter());
+      }, reconnectPolicy.nextDelay(closeCode));
       reconnectTimer = scheduledReconnectTimer;
-      reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
     };
 
     currentSocket.onerror = () => {

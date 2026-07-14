@@ -45,7 +45,7 @@ def refresh_shop_stock(self):
         reload_shop_config()
         config_list = get_shop_config()
 
-        today = timezone.now().date()
+        today = timezone.localdate()
         refreshed_count = 0
         failed_items = []
 

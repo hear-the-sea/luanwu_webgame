@@ -15,7 +15,7 @@ from core.exceptions import (
     WorkNotInProgressError,
     WorkRewardClaimedError,
 )
-from gameplay.models import InventoryItem, ItemTemplate, WorkAssignment, WorkTemplate
+from gameplay.models import InventoryItem, ItemTemplate, ResourceEvent, WorkAssignment, WorkTemplate
 from gameplay.services.action_points import ACTION_POINT_EXPEDITION_COST
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.work import assign_guest_to_work, claim_work_reward, recall_guest_from_work
@@ -132,6 +132,48 @@ def test_claim_work_reward_grants_tier_work_chest(django_user_model, tier, expec
         ).count()
         == 1
     )
+
+
+@pytest.mark.django_db
+def test_claim_work_reward_credits_and_records_only_available_silver_capacity(django_user_model):
+    user = django_user_model.objects.create_user(username="work_reward_capacity_user", password="pass123")
+    manor = ensure_manor(user)
+    manor.silver = 80
+    manor.silver_capacity = 100
+    manor.save(update_fields=["silver", "silver_capacity"])
+    _create_work_chest_templates()
+    guest_template = GuestTemplate.objects.create(
+        key="work_reward_capacity_guest",
+        name="容量奖励模板",
+        archetype=GuestArchetype.CIVIL,
+        rarity=GuestRarity.GRAY,
+    )
+    guest = Guest.objects.create(manor=manor, template=guest_template, status=GuestStatus.IDLE)
+    work_template = WorkTemplate.objects.create(
+        key="work_reward_capacity_work",
+        name="容量奖励工作",
+        reward_silver=50,
+        work_duration=60,
+    )
+    assignment = WorkAssignment.objects.create(
+        manor=manor,
+        guest=guest,
+        work_template=work_template,
+        status=WorkAssignment.Status.COMPLETED,
+        complete_at=timezone.now(),
+    )
+
+    reward = claim_work_reward(assignment)
+
+    manor.refresh_from_db()
+    events = ResourceEvent.objects.filter(
+        manor=manor,
+        resource_type="silver",
+        reason=ResourceEvent.Reason.WORK_REWARD,
+    )
+    assert manor.silver == 100
+    assert reward["silver"] == 20
+    assert list(events.values_list("delta", flat=True)) == [20]
 
 
 @pytest.mark.django_db

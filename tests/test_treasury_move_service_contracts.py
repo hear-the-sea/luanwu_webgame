@@ -2,9 +2,45 @@ import pytest
 from django.db import transaction
 
 from core.exceptions import InsufficientSpaceError
-from gameplay.models import Building, BuildingType, InventoryItem, ItemTemplate
+from gameplay.models import Building, BuildingType, InventoryItem, ItemTemplate, Manor
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.manor.treasury import get_treasury_capacity, move_item_to_treasury, move_item_to_warehouse
+
+
+@pytest.mark.django_db
+def test_move_item_to_treasury_locks_manor_before_capacity_check(django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(username="treasury_manor_lock_anchor", password="pass123")
+    manor = ensure_manor(user)
+    template = ItemTemplate.objects.create(
+        key="treasury_manor_lock_item",
+        name="庄园锁测试物品",
+        storage_space=1,
+    )
+    item = InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    lock_acquired = False
+    real_capacity = get_treasury_capacity
+
+    class _LockedManorQuery:
+        def get(self, **kwargs):
+            nonlocal lock_acquired
+            lock_acquired = True
+            return Manor.objects.get(**kwargs)
+
+    def _capacity_after_lock(locked_manor):
+        assert lock_acquired is True
+        return real_capacity(locked_manor)
+
+    monkeypatch.setattr(Manor.objects, "select_for_update", lambda: _LockedManorQuery())
+    monkeypatch.setattr("gameplay.services.manor.treasury.get_treasury_capacity", _capacity_after_lock)
+
+    move_item_to_treasury(manor, item.id, 1)
+
+    assert lock_acquired is True
 
 
 @pytest.mark.django_db

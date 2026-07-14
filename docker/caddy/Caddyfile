@@ -1,0 +1,37 @@
+{$CADDY_SITE_ADDRESS} {
+	encode zstd gzip
+
+	request_body {
+		max_size 20MB
+	}
+
+	log {
+		output stdout
+		format json
+	}
+
+	@hashed_static path_regexp hashed_static ^/static/.+\.[0-9a-f]{12}\..+$
+	handle @hashed_static {
+		uri strip_prefix /static
+		root * /srv/staticfiles
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	handle_path /static/* {
+		root * /srv/staticfiles
+		header Cache-Control "public, max-age=3600"
+		file_server
+	}
+
+	handle_path /media/* {
+		root * /srv/media
+		header Cache-Control "public, max-age=86400"
+		file_server
+	}
+
+	handle {
+		# Caddy sets X-Forwarded-* and ignores spoofed incoming values by default.
+		reverse_proxy web:8000
+	}
+}

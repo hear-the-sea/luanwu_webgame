@@ -19,6 +19,7 @@ from core.utils.time_scale import scale_duration
 from gameplay.models import Manor, ResourceEvent, ResourceType, WorkAssignment, WorkTemplate
 from gameplay.services.action_points import consume_action_points_for_expedition
 from gameplay.services.inventory.core import add_item_to_inventory_locked
+from gameplay.services.resources import grant_resources_locked
 from guests.models import Guest, GuestStatus
 
 MAX_CONCURRENT_WORKERS = 3  # 最多同时打工人数
@@ -217,20 +218,17 @@ def claim_work_reward(assignment: WorkAssignment) -> Dict[str, Any]:
         reward_silver = locked_assignment.work_template.reward_silver
         chest_key = WORK_TIER_CHEST_KEYS[locked_assignment.work_template.tier]
 
-        # 增加庄园银两
         manor = Manor.objects.select_for_update().get(pk=locked_assignment.manor_id)
-        manor.silver += reward_silver
-        manor.save(update_fields=["silver"])
-        chest_item = add_item_to_inventory_locked(manor, chest_key, 1)
-
-        # 记录资源流水
-        ResourceEvent.objects.create(
-            manor=manor,
-            resource_type=ResourceType.SILVER,
-            delta=reward_silver,
+        reward_note = f"{locked_assignment.guest.display_name} 在 {locked_assignment.work_template.name} 打工获得报酬"
+        credited, _overflow = grant_resources_locked(
+            manor,
+            {ResourceType.SILVER: reward_silver},
             reason=ResourceEvent.Reason.WORK_REWARD,
-            note=f"{locked_assignment.guest.display_name} 在 {locked_assignment.work_template.name} 打工获得报酬",
+            note=reward_note,
+            sync_production=False,
         )
+        credited_silver = credited.get(ResourceType.SILVER, 0)
+        chest_item = add_item_to_inventory_locked(manor, chest_key, 1)
 
         # 标记为已领取
         locked_assignment.reward_claimed = True
@@ -240,7 +238,7 @@ def claim_work_reward(assignment: WorkAssignment) -> Dict[str, Any]:
     assignment.reward_claimed = True
 
     return {
-        "silver": reward_silver,
+        "silver": credited_silver,
         "item_key": chest_key,
         "item_name": chest_item.template.name,
         "item_quantity": 1,

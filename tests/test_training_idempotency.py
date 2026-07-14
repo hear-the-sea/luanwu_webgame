@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -15,9 +17,11 @@ User = get_user_model()
 def test_train_guest_double_call_spends_once():
     user = User.objects.create_user(username="train_idempotency", password="pass123")
     manor = ensure_manor(user)
+    resource_now = timezone.now()
     manor.grain = 10_000
     manor.silver = 10_000
-    manor.save(update_fields=["grain", "silver"])
+    manor.resource_updated_at = resource_now
+    manor.save(update_fields=["grain", "silver", "resource_updated_at"])
 
     template = GuestTemplate.objects.create(
         key="train_idempotency_tpl",
@@ -39,14 +43,15 @@ def test_train_guest_double_call_spends_once():
     before_grain = manor.grain
     before_silver = manor.silver
 
-    train_guest(guest, levels=1)
-
-    manor.refresh_from_db()
-    after_first_grain = manor.grain
-    after_first_silver = manor.silver
-
-    with pytest.raises(GuestTrainingInProgressError):
+    with patch("gameplay.services.resources.timezone.now", return_value=resource_now):
         train_guest(guest, levels=1)
+
+        manor.refresh_from_db()
+        after_first_grain = manor.grain
+        after_first_silver = manor.silver
+
+        with pytest.raises(GuestTrainingInProgressError):
+            train_guest(guest, levels=1)
 
     manor.refresh_from_db()
     assert manor.grain == after_first_grain

@@ -6,6 +6,7 @@ flake8>=7.0
 isort>=5.13
 mypy>=1.8
 pytest>=7.0
+pytest-asyncio>=0.23
 pytest-django>=4.5
 pre-commit>=3.7
 coverage>=7.0
