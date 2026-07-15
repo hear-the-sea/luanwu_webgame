@@ -957,6 +957,201 @@ items:
     is_usable: false
     image: blueprint_mojiajiguanren.png
 
+  # ---------- 中秋活动道具 ----------
+
+  - key: mid_autumn_mooncake
+    name: 月饼
+    description: 广寒宫试炼中获得的中秋月饼，使用后可获得银两、粮食、药品与经验道具，并有机会得到装备、技能书及其他常用物品。
+    effect_type: loot_box
+    rarity: green
+    tradeable: true
+    price: 10000
+    storage_space: 25
+    is_usable: true
+    image: yuebing.png
+    effect_payload:
+      resources:
+        grain: 2000
+      silver_min: 8000
+      silver_max: 15000
+      item_rewards:
+        - item_key: zhixuesan
+          min_quantity: 2
+          max_quantity: 5
+        - item_key: buxuedan
+          min_quantity: 1
+          max_quantity: 3
+        - item_key: experience_fruit
+          min_quantity: 3
+          max_quantity: 8
+      random_item_groups:
+        - chance: 0.60
+          min_quantity: 1
+          max_quantity: 2
+          choices:
+            - item_key: baicaodan
+              weight: 1
+        - chance: 0.35
+          min_quantity: 1
+          max_quantity: 2
+          choices:
+            - item_key: experience_peach
+              weight: 1
+        - chance: 0.25
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: fangdajing
+              weight: 1
+        - chance: 0.25
+          min_quantity: 1
+          max_quantity: 2
+          choices:
+            - item_key: haorenka
+              weight: 1
+        - chance: 0.08
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: experience_pineapple
+              weight: 1
+        - chance: 0.05
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: mission_card
+              weight: 1
+        - chance: 0.07
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: equip_yupei
+              weight: 1
+            - item_key: equip_fudai
+              weight: 1
+            - item_key: equip_taomujian
+              weight: 1
+            - item_key: equip_tongjing
+              weight: 1
+            - item_key: equip_nichangyuyi
+              weight: 1
+            - item_key: equip_zhuyelu
+              weight: 1
+        - chance: 0.04
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: book_ice_curse
+              weight: 1
+            - item_key: book_thunder_control
+              weight: 1
+            - item_key: book_dragon_break_curse
+              weight: 1
+            - item_key: book_endless_chatter
+              weight: 1
+            - item_key: book_steadfast_planning
+              weight: 1
+            - item_key: book_iron_wall_heart
+              weight: 1
+        - chance: 0.03
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: equip_hanyuejian
+              weight: 1
+            - item_key: equip_xuanbinggong
+              weight: 1
+            - item_key: equip_xingluoshan
+              weight: 1
+            - item_key: equip_xingshashouchuan
+              weight: 1
+            - item_key: equip_liuyunpei
+              weight: 1
+            - item_key: equip_guanxingdeng
+              weight: 1
+        - chance: 0.02
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: book_meteor_pierce_moon
+              weight: 1
+            - item_key: book_taiyi_wind
+              weight: 1
+            - item_key: book_flower_rain
+              weight: 1
+            - item_key: book_soul_erode
+              weight: 1
+            - item_key: book_red_lotus_dance
+              weight: 1
+            - item_key: book_fatal_chain_sword
+              weight: 1
+        - chance: 0.01
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: experience_watermelon
+              weight: 1
+
+  - key: jade_rabbit_summon_scroll
+    name: 玉兔召唤卷轴
+    description: 记有月宫药杵印记的召唤卷轴。使用时消耗卷轴与30个月饼，可招募绿色门客「玉兔」；庄园已拥有玉兔时无法再次招募。
+    effect_type: tool
+    rarity: green
+    tradeable: true
+    price: 30000
+    storage_space: 10
+    is_usable: true
+    image: mawencai_guest_scroll.png
+    effect_payload:
+      action: summon_guest
+      required_items:
+        mid_autumn_mooncake: 30
+      exclusive_template_keys:
+        - myth_moon_jade_rabbit
+      choices:
+        - template_key: myth_moon_jade_rabbit
+          weight: 100
+
+  - key: wu_gang_summon_scroll
+    name: 吴刚召唤卷轴
+    description: 留有月桂斧痕的召唤卷轴。使用时消耗卷轴与60个月饼，可招募蓝色门客「吴刚」；庄园已拥有吴刚时无法再次招募。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 60000
+    storage_space: 25
+    is_usable: true
+    image: liangshanbo_guest_scroll.png
+    effect_payload:
+      action: summon_guest
+      required_items:
+        mid_autumn_mooncake: 60
+      exclusive_template_keys:
+        - myth_moon_wu_gang
+      choices:
+        - template_key: myth_moon_wu_gang
+          weight: 100
+
+  - key: chang_e_summon_scroll
+    name: 嫦娥召唤卷轴
+    description: 浸润广寒月华的召唤卷轴。使用时消耗卷轴与120个月饼，可招募紫色门客「嫦娥」；庄园已拥有嫦娥时无法再次招募。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 120000
+    storage_space: 50
+    is_usable: true
+    image: zhuyingtai_guest_scroll.png
+    effect_payload:
+      action: summon_guest
+      required_items:
+        mid_autumn_mooncake: 120
+      exclusive_template_keys:
+        - hist_xianqin_0413
+      choices:
+        - template_key: hist_xianqin_0413
+          weight: 100
+
   - key: pubayi_guest_card
     name: 蒲巴乙门客卡
     description: 使用后有概率招募到绿色或蓝色门客「蒲巴乙」。

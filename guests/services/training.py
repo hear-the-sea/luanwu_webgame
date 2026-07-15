@@ -123,30 +123,42 @@ def _try_enqueue_complete_guest_training(guest: Guest, *, countdown: int, source
             logger.warning("生产环境：保持训练完成时间，等待定时任务结算")
 
 
-def ensure_auto_training(guest: Guest) -> None:
+def ensure_auto_training(guest: Guest) -> bool:
     """
     如果没有训练计划且门客未达到最高等级，则自动开始训练到下一级。
     """
-    if guest.level >= MAX_GUEST_LEVEL:
-        return
-    if guest.status != GuestStatus.IDLE:
-        return
-    if guest.training_complete_at:
-        return
-    target_level = min(MAX_GUEST_LEVEL, guest.level + 1)
-    duration = get_training_duration(guest, levels=1)
-    guest.training_target_level = target_level
-    guest.training_complete_at = timezone.now() + timedelta(seconds=duration)
-    guest.save(update_fields=["training_target_level", "training_complete_at"])
+    if not getattr(guest, "pk", None):
+        return False
 
-    def enqueue_training() -> None:
-        _try_enqueue_complete_guest_training(
-            guest,
-            countdown=max(0, int(duration)),
-            source="ensure_auto_training",
-        )
+    with transaction.atomic():
+        locked_guest = Guest.objects.select_for_update().select_related("template").get(pk=guest.pk)
+        guest.training_target_level = locked_guest.training_target_level
+        guest.training_complete_at = locked_guest.training_complete_at
 
-    transaction.on_commit(enqueue_training)
+        if locked_guest.level >= MAX_GUEST_LEVEL:
+            return False
+        if locked_guest.status != GuestStatus.IDLE:
+            return False
+        if locked_guest.training_complete_at:
+            return False
+
+        duration = get_training_duration(locked_guest, levels=1)
+        locked_guest.training_target_level = min(MAX_GUEST_LEVEL, locked_guest.level + 1)
+        locked_guest.training_complete_at = timezone.now() + timedelta(seconds=duration)
+        locked_guest.save(update_fields=["training_target_level", "training_complete_at"])
+
+        guest.training_target_level = locked_guest.training_target_level
+        guest.training_complete_at = locked_guest.training_complete_at
+
+        def enqueue_training() -> None:
+            _try_enqueue_complete_guest_training(
+                locked_guest,
+                countdown=max(0, int(duration)),
+                source="ensure_auto_training",
+            )
+
+        transaction.on_commit(enqueue_training)
+    return True
 
 
 def _reduce_guest_training_once(guest: Guest, remaining_seconds: int) -> tuple[int, int, bool]:

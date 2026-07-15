@@ -76,7 +76,7 @@ class TestMessageViews:
             assert "delete-message-form" in body
             assert "领取附件" not in body
 
-    def test_message_list_separates_mark_read_and_protected_delete_selection(self, manor_with_user):
+    def test_message_list_uses_one_selection_for_read_and_delete_actions(self, manor_with_user):
         manor, client = manor_with_user
         protected = Message.objects.create(
             manor=manor,
@@ -95,34 +95,25 @@ class TestMessageViews:
 
         list_response = client.get(reverse("gameplay:messages"))
         list_soup = BeautifulSoup(list_response.content.decode("utf-8"), "html.parser")
-        protected_row = list_soup.find("a", {"data-message-id": str(protected.pk)}).find_parent("tr")
-        read_checkbox = protected_row.select_one('input.msg-read-checkbox[name="message_ids"][form="message-form"]')
-        protected_delete_checkbox = protected_row.select_one(
-            'input.msg-delete-checkbox[name="message_ids"][form="delete-selected-messages-form"]'
-        )
 
-        assert [header.get_text(" ", strip=True) for header in list_soup.select(".msg-table thead th")][:2] == [
-            "标记已读",
-            "删除",
-        ]
-        assert read_checkbox is not None
-        assert read_checkbox.has_attr("disabled") is False
-        assert read_checkbox.get("aria-label")
-        assert protected_delete_checkbox is not None
-        assert protected_delete_checkbox.has_attr("disabled")
-        assert protected_delete_checkbox.get("aria-label")
-        delete_help_id = protected_delete_checkbox.get("aria-describedby")
-        assert delete_help_id
-        assert protected_row.find(id=delete_help_id).get_text(" ", strip=True) == "领取附件后可删除"
+        headers = [header.get_text(" ", strip=True) for header in list_soup.select(".msg-table thead th")]
+        assert headers == ["选择", "消息内容", "时间"]
 
-        for deletable_message in (claimed, plain):
-            deletable_row = list_soup.find("a", {"data-message-id": str(deletable_message.pk)}).find_parent("tr")
-            delete_checkbox = deletable_row.select_one(
-                'input.msg-delete-checkbox[name="message_ids"][form="delete-selected-messages-form"]'
-            )
-            assert delete_checkbox is not None
-            assert delete_checkbox.has_attr("disabled") is False
-            assert delete_checkbox.get("aria-label")
+        for message in (protected, claimed, plain):
+            row = list_soup.find("a", {"data-message-id": str(message.pk)}).find_parent("tr")
+            checkboxes = row.select('input.msg-select-checkbox[name="message_ids"][form="message-form"]')
+            assert len(checkboxes) == 1
+            assert checkboxes[0].has_attr("disabled") is False
+            assert checkboxes[0].get("aria-label") == f"选择消息“{message.title}”"
+            assert row.select_one(".msg-delete-checkbox") is None
+
+        mark_button = list_soup.find("button", string="标记已读")
+        delete_button = list_soup.find("button", string="删除所选")
+        assert mark_button.get("form") == "message-form"
+        assert mark_button.get("formaction") == reverse("gameplay:mark_messages_read")
+        assert delete_button.get("form") == "message-form"
+        assert delete_button.get("formaction") == reverse("gameplay:delete_messages")
+        assert list_soup.find(id="delete-selected-messages-form") is None
 
         mark_response = client.post(
             reverse("gameplay:mark_messages_read"),

@@ -133,6 +133,73 @@
 
 missions:
   # ========================================
+  # 中秋活动：广寒宫试炼
+  # ========================================
+  - key: mid_autumn_moon_palace_trial
+    name: 广寒宫试炼
+    difficulty: intermediate
+    available_weekdays: [2, 4, 6, 7]
+    description: |
+      中秋将近，广寒宫外的月桂忽然枝叶疯长，遮蔽月华，连玉兔捣药的石臼也被散落的桂枝掩埋。吴刚日夜挥斧仍无法遏止异变，嫦娥只得向人间庄园主发出月宫请帖。
+
+      受邀者需穿过桂影迷阵，协助玉兔收集药材，并通过吴刚与嫦娥设下的月宫试炼。完成试炼者可带回月饼，也有机会获得三位月宫门客留下的召唤卷轴。
+    battle_type: task1
+    base_travel_time: 1800
+
+    enemy_guests:
+      - key: myth_moon_jade_rabbit
+        label: 玉兔
+      - key: myth_moon_wu_gang
+        label: 吴刚
+      - key: hist_xianqin_0413
+        label: 嫦娥
+
+    enemy_troops:
+      quan_wang: 300
+      jian_hao: 300
+      divine_archer: 200
+
+    enemy_technology:
+      level: 7
+      guest_level: 60
+      guest_bonus: 0.12
+
+    drop_table:
+      silver: 40000
+      mid_autumn_mooncake: 1
+      mid_autumn_mooncake_bonus_1:
+        chance: 0.55
+        count: 1
+        choices:
+          - mid_autumn_mooncake
+      mid_autumn_mooncake_bonus_2:
+        chance: 0.25
+        count: 2
+        choices:
+          - mid_autumn_mooncake
+      mid_autumn_mooncake_bonus_4:
+        chance: 0.08
+        count: 4
+        choices:
+          - mid_autumn_mooncake
+      mid_autumn_mooncake_bonus_10:
+        chance: 0.015
+        count: 10
+        choices:
+          - mid_autumn_mooncake
+      jade_rabbit_summon_scroll:
+        chance: 0.08
+        count: 1
+      wu_gang_summon_scroll:
+        chance: 0.05
+        count: 1
+      chang_e_summon_scroll:
+        chance: 0.03
+        count: 1
+
+    daily_limit: 3
+
+  # ========================================
   # 联名任务：春日部大作战
   # ========================================
   - key: kasukabe_daisakusen

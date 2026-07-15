@@ -86,21 +86,21 @@ def scan_guest_training(limit: int = 200) -> int:
 
     This periodic scan compensates for tasks that were lost, delayed, or failed
     due to broker restarts, worker crashes, or transient infrastructure errors.
-    It queries for all guests whose ``training_complete_at`` has passed but
-    whose training has not yet been finalized, processing up to *limit* guests
-    per invocation.
+    It prioritizes overdue timers, then uses the remaining batch capacity to
+    restart eligible real-player guests whose timer is missing.
     """
-    from guests.models import Guest
-    from guests.services.training import finalize_guest_training
+    from guests.models import Guest, GuestStatus
+    from guests.services.training import ensure_auto_training, finalize_guest_training
 
     now = timezone.now()
-    qs = (
+    batch_limit = max(0, int(limit))
+    due_guests = list(
         Guest.objects.select_related("manor")
         .filter(training_complete_at__isnull=False, training_complete_at__lte=now)
-        .order_by("training_complete_at")[:limit]
+        .order_by("training_complete_at", "id")[:batch_limit]
     )
     count = 0
-    for guest in qs:
+    for guest in due_guests:
         try:
             if finalize_guest_training(guest, now=now):
                 count += 1
@@ -108,6 +108,27 @@ def scan_guest_training(limit: int = 200) -> int:
             # Per-guest failure should not abort the scan; the next scan cycle
             # will retry any guests that were skipped.
             logger.exception("Failed to finalize guest training %d", guest.id)
+
+    remaining = batch_limit - len(due_guests)
+    if remaining <= 0:
+        return count
+
+    orphan_guests = list(
+        Guest.objects.select_related("template")
+        .filter(
+            manor__bot_profile__isnull=True,
+            status=GuestStatus.IDLE,
+            level__lt=int(GUEST.MAX_LEVEL),
+            training_complete_at__isnull=True,
+        )
+        .order_by("id")[:remaining]
+    )
+    for guest in orphan_guests:
+        try:
+            if ensure_auto_training(guest):
+                count += 1
+        except GUEST_TASK_RETRY_EXCEPTIONS:
+            logger.exception("Failed to reconcile guest training %d", guest.id)
     return count
 
 

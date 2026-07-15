@@ -320,3 +320,49 @@ def test_loot_box_reversed_silver_range_raises_config_error(django_user_model):
 
     item.refresh_from_db()
     assert item.quantity == 1
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("case", "groups"),
+    [
+        ("mapping", {}),
+        ("chance", [{"chance": "bad", "choices": [{"item_key": "reward", "weight": 1}]}]),
+        (
+            "range",
+            [
+                {
+                    "chance": 1,
+                    "min_quantity": 2,
+                    "max_quantity": 1,
+                    "choices": [{"item_key": "reward", "weight": 1}],
+                }
+            ],
+        ),
+        ("choices_empty", [{"chance": 1, "choices": []}]),
+        ("choice_shape", [{"chance": 1, "choices": ["reward"]}]),
+        ("weight", [{"chance": 1, "choices": [{"item_key": "reward", "weight": 0}]}]),
+    ],
+)
+def test_loot_box_invalid_random_item_groups_raise_config_error(case, groups, django_user_model):
+    user = django_user_model.objects.create_user(username=f"bad_random_groups_{case}", password="pass123")
+    manor = ensure_manor(user)
+    template = ItemTemplate.objects.create(
+        key=f"bad_random_groups_box_{case}",
+        name="坏独立概率组宝箱",
+        effect_type=ItemTemplate.EffectType.LOOT_BOX,
+        is_usable=True,
+        effect_payload={"random_item_groups": groups},
+    )
+    item = InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    with pytest.raises(ItemNotConfiguredError, match="random_item_groups 配置异常"):
+        use_inventory_item(item)
+
+    item.refresh_from_db()
+    assert item.quantity == 1

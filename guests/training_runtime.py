@@ -15,7 +15,7 @@ def ensure_training_timer(
     *,
     now: datetime | None = None,
     finalize_guest_training_func: Callable[..., bool],
-    ensure_auto_training_func: Callable[[Guest], None],
+    ensure_auto_training_func: Callable[[Guest], bool],
 ) -> bool:
     """
     Ensure the guest has an active training timer.
@@ -51,7 +51,7 @@ def refresh_guest_state(
     recover_hp: bool = True,
     refresh: bool = False,
     finalize_guest_training_func: Callable[..., bool],
-    ensure_auto_training_func: Callable[[Guest], None],
+    ensure_auto_training_func: Callable[[Guest], bool],
     recover_guest_hp_func: Callable[..., None],
     apply_set_bonuses_func: Callable[[Guest], Any],
 ) -> Guest:

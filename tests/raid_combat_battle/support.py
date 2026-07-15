@@ -41,6 +41,8 @@ def build_run(*, run_id: int, attacker, defender, save_counter: dict[str, int] |
         attacker=attacker,
         defender=defender,
         status=RaidRun.Status.MARCHING,
+        travel_time=0,
+        return_at=None,
         save=save_fn,
     )
 

@@ -92,6 +92,20 @@ heroes:
       intellect: 10
       defense: 24
       agility: 18
+  - key: hist_xianqin_0413
+    name: 嫦娥
+    default_gender: female
+    avatar: chang-e.png
+    archetype: civil
+    flavor: （生卒年不详）后羿之妻，奔月传说的主角。传说后羿从西王母处求得不死之药，嫦娥趁后羿外出时偷食仙药，身体变轻，飘然升天，飞入月宫。从此她独居广寒宫，与玉兔相伴，永世孤寂。嫦娥奔月的故事寄托了古人对月亮的遐想，也隐含着对永生与孤独的思考：长生不老固然令人向往，但失去亲人朋友、独居寒宫，又有何乐趣？这个神话故事在中国家喻户晓，中秋节的习俗也与之相关。嫦娥的形象从最初的窃药者，逐渐演变为美丽孤寂的月中仙子，成为中国文化中最著名的女性神话形象之一。
+    growth_range:
+    - 6
+    - 12
+    attribute_weights:
+      force: 8
+      intellect: 48
+      defense: 18
+      agility: 26
   - key: hist_xianqin_0425
     name: 蚩尤
     default_gender: male
@@ -158,19 +172,6 @@ heroes:
       defense: 24
       agility: 18
   blue:
-  - key: hist_xianqin_0413
-    name: 嫦娥
-    default_gender: female
-    archetype: civil
-    flavor: （生卒年不详）后羿之妻，奔月传说的主角。传说后羿从西王母处求得不死之药，嫦娥趁后羿外出时偷食仙药，身体变轻，飘然升天，飞入月宫。从此她独居广寒宫，与玉兔相伴，永世孤寂。嫦娥奔月的故事寄托了古人对月亮的遐想，也隐含着对永生与孤独的思考：长生不老固然令人向往，但失去亲人朋友、独居寒宫，又有何乐趣？这个神话故事在中国家喻户晓，中秋节的习俗也与之相关。嫦娥的形象从最初的窃药者，逐渐演变为美丽孤寂的月中仙子，成为中国文化中最著名的女性神话形象之一。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 8
-      intellect: 52
-      defense: 22
-      agility: 18
   - key: hist_xianqin_0410
     name: 少康
     default_gender: male

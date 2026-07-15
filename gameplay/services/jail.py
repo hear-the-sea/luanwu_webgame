@@ -30,6 +30,7 @@ from core.exceptions import (
 )
 from guests.models import Guest, GuestStatus, GuestTemplate
 from guests.services.recruitment_guests import grant_template_skills
+from guests.services.training import ensure_auto_training
 from guests.utils.recruitment_variance import apply_recruitment_variance
 from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 
@@ -267,6 +268,7 @@ def recruit_prisoner(manor: Manor, prisoner_id: int) -> Guest:
         current_hp=initial_hp,
     )
     grant_template_skills(guest)
+    ensure_auto_training(guest)
 
     prisoner.status = JailPrisoner.Status.RECRUITED
     prisoner.save(update_fields=["status"])

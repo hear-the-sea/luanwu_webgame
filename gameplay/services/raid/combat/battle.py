@@ -277,6 +277,9 @@ def process_raid_battle(run: RaidRun, now: Optional[datetime] = None) -> None:
             _apply_capture_reward(locked_run, report, is_attacker_victory)
             _apply_salvage_reward(locked_run, report, is_attacker_victory)
 
+            if locked_run.return_at is None:
+                return_seconds = max(0, int(locked_run.travel_time or 0))
+                locked_run.return_at = now + timedelta(seconds=return_seconds)
             locked_run.status = RaidRun.Status.RETURNING
             locked_run.save()
 

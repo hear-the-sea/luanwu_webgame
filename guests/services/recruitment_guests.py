@@ -27,11 +27,13 @@ if TYPE_CHECKING:
 _build_guest_from_candidate = _recruitment_finalize_helpers.build_guest_from_candidate
 _create_recruitment_record = _recruitment_finalize_helpers.create_recruitment_record
 _delete_processed_candidates = _recruitment_finalize_helpers.delete_processed_candidates
+_ensure_candidate_template_available = _recruitment_finalize_helpers.ensure_candidate_template_available
 _ensure_guest_capacity_available = _recruitment_finalize_helpers.ensure_guest_capacity_available
 _ensure_retainer_capacity_available = _recruitment_finalize_helpers.ensure_retainer_capacity_available
 _increment_retainer_count_locked = _recruitment_finalize_helpers.increment_retainer_count_locked
 _load_locked_retainer_candidate = _recruitment_finalize_helpers.load_locked_retainer_candidate
 _remaining_guest_capacity = _recruitment_finalize_helpers.remaining_guest_capacity
+_partition_non_repeatable_candidates = _recruitment_finalize_helpers.partition_non_repeatable_candidates
 _save_guest_objects = _recruitment_finalize_helpers.save_guest_objects
 _split_candidates_by_capacity = _recruitment_finalize_helpers.split_candidates_by_capacity
 _validate_retainer_candidate_identity = _recruitment_finalize_helpers.validate_retainer_candidate_identity
@@ -210,6 +212,7 @@ def finalize_candidate(candidate: RecruitmentCandidate) -> Guest:
     if locked_candidate is None:
         raise RecruitmentCandidateStateError()
 
+    _ensure_candidate_template_available(manor, locked_candidate)
     _ensure_guest_capacity_available(manor)
     guest = _build_guest_from_candidate(
         candidate=locked_candidate,
@@ -263,12 +266,14 @@ def bulk_finalize_candidates(
     if not locked_candidates:
         return [], stale_candidates or candidates
 
+    eligible_candidates, uniqueness_failed = _partition_non_repeatable_candidates(manor, locked_candidates)
+
     available_slots = _remaining_guest_capacity(manor)
     if available_slots <= 0:
         return [], locked_candidates + stale_candidates
 
-    to_process, failed = _split_candidates_by_capacity(locked_candidates, available_slots=available_slots)
-    failed = stale_candidates + failed
+    to_process, capacity_failed = _split_candidates_by_capacity(eligible_candidates, available_slots=available_slots)
+    failed = stale_candidates + uniqueness_failed + capacity_failed
 
     rng = random.Random()
     template_ids = {candidate.template_id for candidate in to_process}

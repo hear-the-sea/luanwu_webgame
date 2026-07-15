@@ -33,6 +33,21 @@ heroes:
       intellect: 10
       defense: 30
       agility: 20
+  - key: myth_moon_jade_rabbit
+    name: 玉兔
+    archetype: civil
+    flavor: （生卒年不详）中国古代月宫神话中的灵兔，常与嫦娥、桂树和广寒宫一同出现。传说它终日在月下持杵捣药，所制或为长生不死之药，或为济世仙丹，各地说法不尽相同。古人仰望月面的斑驳阴影，将其想象成白兔伏在药臼旁，玉兔遂成为月亮最鲜明的化身之一。此后它又融入中秋祭月等民间习俗，在诗词、绘画与器物中反复出现，寄托着人们对团圆、安宁与长生的朴素愿望。
+    default_gender: female
+    default_morality: 90
+    growth_range:
+    - 4
+    - 7
+    recruitable: true
+    attribute_weights:
+      force: 6
+      intellect: 38
+      defense: 16
+      agility: 40
   blue:
   - key: pubayi_blue
     name: 蒲巴乙
@@ -62,6 +77,7 @@ heroes:
       agility: 15
   - key: orig_edward_blue
     name: 爱德华
+    avatar: aidehua.png
     archetype: military
     flavor: 爱德华出身西方炼金术世家，自幼沉迷于金属转化、药剂淬炼与机关改造之术。与寻常术士不同，他并不满足于在书斋中推演公式，而是执意将炼金术带上战场，用药火、钢铁与爆鸣验证自己的理论。长期与炉火和兵器为伴，使他练就了远超常人的体魄与战斗直觉，也让他在冷静推算之外，多了几分武人的锋锐。对爱德华而言，炼金并非单纯的学问，而是一种足以改造武器、改造战局，甚至改造命运的力量。
     default_gender: male
@@ -75,6 +91,21 @@ heroes:
       intellect: 20
       defense: 20
       agility: 20
+  - key: myth_moon_wu_gang
+    name: 吴刚
+    archetype: military
+    flavor: （生卒年不详）中国古代月宫神话人物，因触犯天规，被罚在月中砍伐桂树。那株桂树高大异常，斧痕方现便随即愈合，使他的劳作永无尽头。关于获罪缘由，古籍与后世传说说法不一，既有学仙有过之说，也有怠惰受罚之说。“吴刚伐桂”由此成为中秋月宫叙事的重要组成，也常被用来寄托世人对执念、惩戒与无尽劳作的想象。月色之下，桂影婆娑，而他始终停留在那棵永不倒下的树前。
+    default_gender: male
+    default_morality: 78
+    growth_range:
+    - 5
+    - 9
+    recruitable: true
+    attribute_weights:
+      force: 44
+      intellect: 8
+      defense: 32
+      agility: 16
   purple:
   - key: orig_zhu_yingtai
     name: 祝英台
@@ -93,6 +124,7 @@ heroes:
       agility: 30
   - key: orig_edward_purple
     name: 爱德华
+    avatar: aidehua.png
     archetype: military
     flavor: 爱德华来自西方，以炼金术士之名游历诸国，既精通金属转化、药剂淬炼，也擅长将复杂的炼成理论用于实战。他始终相信，真正高明的炼金术不该停留于瓶罐与图纸之间，而应能在瞬息万变的战场上化作决定胜负的力量。多年游历与试验，让他将学者的精密与武者的果决熔于一身，举手投足间都带着炉火锻出的冷峻与自信。有人视他为异乡怪杰，也有人敬他为掌控钢铁与火焰的战斗炼金术士，而爱德华只把自己看作不断逼近“真理”的求索者。
     default_gender: male

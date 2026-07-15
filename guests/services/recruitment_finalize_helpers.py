@@ -4,7 +4,14 @@ import random
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from core.exceptions import GuestCapacityFullError, RecruitmentCandidateStateError, RetainerCapacityFullError
+from core.exceptions import (
+    GuestAlreadyOwnedError,
+    GuestCapacityFullError,
+    RecruitmentCandidateStateError,
+    RetainerCapacityFullError,
+)
+
+from .recruitment_shared import NON_REPEATABLE_RARITIES
 
 if TYPE_CHECKING:
     from gameplay.models import Manor
@@ -46,6 +53,31 @@ def ensure_guest_capacity_available(manor: Manor) -> int:
     if remaining <= 0:
         raise GuestCapacityFullError()
     return remaining
+
+
+def ensure_candidate_template_available(manor: Manor, candidate: RecruitmentCandidate) -> None:
+    if candidate.rarity not in NON_REPEATABLE_RARITIES:
+        return
+    if manor.guests.filter(template_id=candidate.template_id).exists():
+        raise GuestAlreadyOwnedError(candidate.template)
+
+
+def partition_non_repeatable_candidates(
+    manor: Manor,
+    candidates: list[RecruitmentCandidate],
+) -> tuple[list[RecruitmentCandidate], list[RecruitmentCandidate]]:
+    owned_template_ids = set(manor.guests.values_list("template_id", flat=True))
+    accepted: list[RecruitmentCandidate] = []
+    rejected: list[RecruitmentCandidate] = []
+    for candidate in candidates:
+        is_non_repeatable = candidate.rarity in NON_REPEATABLE_RARITIES
+        if is_non_repeatable and candidate.template_id in owned_template_ids:
+            rejected.append(candidate)
+            continue
+        accepted.append(candidate)
+        if is_non_repeatable:
+            owned_template_ids.add(candidate.template_id)
+    return accepted, rejected
 
 
 def split_candidates_by_capacity(

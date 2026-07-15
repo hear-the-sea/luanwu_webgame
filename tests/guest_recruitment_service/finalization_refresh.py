@@ -7,7 +7,7 @@ import pytest
 
 import guests.services.recruitment as recruitment_command_service
 import guests.services.recruitment_guests as recruitment_guest_service
-from core.exceptions import RecruitmentItemOwnershipError
+from core.exceptions import GuestAlreadyOwnedError, RecruitmentItemOwnershipError
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.action_points import ACTION_POINT_EXPEDITION_COST
 from gameplay.services.manor.core import ensure_manor
@@ -466,3 +466,122 @@ def test_refresh_guest_recruitments_only_processes_due_pending_records(django_us
     assert finalized_ids == [due_pending.pk]
     assert future_pending.pk not in finalized_ids
     assert completed.pk not in finalized_ids
+
+
+@pytest.mark.django_db
+def test_finalize_candidate_rejects_owned_non_repeatable_template(django_user_model):
+    user = django_user_model.objects.create_user(
+        username="finalize_owned_unique_guest",
+        password="pass123",
+    )
+    manor = ensure_manor(user)
+    template = GuestTemplate.objects.create(
+        key="finalize_owned_unique_template",
+        name="已拥有唯一门客",
+        archetype="civil",
+        rarity="green",
+        base_attack=60,
+        base_intellect=80,
+        base_defense=50,
+        base_agility=40,
+        base_luck=30,
+        base_hp=500,
+    )
+    pool = RecruitmentPool.objects.create(
+        key="finalize_owned_unique_pool",
+        name="唯一门客录用测试池",
+        cost={},
+        tier=RecruitmentPool.Tier.CUNMU,
+        draw_count=1,
+    )
+    candidate = RecruitmentCandidate.objects.create(
+        manor=manor,
+        pool=pool,
+        template=template,
+        display_name=template.name,
+        rarity=template.rarity,
+        archetype=template.archetype,
+    )
+    Guest.objects.create(manor=manor, template=template)
+
+    with pytest.raises(GuestAlreadyOwnedError, match="不可重复获得"):
+        recruitment_guest_service.finalize_candidate(candidate)
+
+    assert manor.guests.filter(template=template).count() == 1
+    assert RecruitmentCandidate.objects.filter(pk=candidate.pk).exists()
+
+
+@pytest.mark.django_db
+def test_bulk_finalize_candidates_skips_owned_and_batch_duplicate_non_repeatable_templates(django_user_model):
+    user = django_user_model.objects.create_user(
+        username="bulk_finalize_unique_guests",
+        password="pass123",
+    )
+    manor = ensure_manor(user)
+    owned_template = GuestTemplate.objects.create(
+        key="bulk_finalize_owned_unique_template",
+        name="庄园已有门客",
+        archetype="civil",
+        rarity="green",
+        base_attack=60,
+        base_intellect=80,
+        base_defense=50,
+        base_agility=40,
+        base_luck=30,
+        base_hp=500,
+    )
+    new_template = GuestTemplate.objects.create(
+        key="bulk_finalize_new_unique_template",
+        name="批次唯一门客",
+        archetype="military",
+        rarity="blue",
+        base_attack=80,
+        base_intellect=60,
+        base_defense=60,
+        base_agility=50,
+        base_luck=30,
+        base_hp=600,
+    )
+    pool = RecruitmentPool.objects.create(
+        key="bulk_finalize_unique_pool",
+        name="批量唯一门客录用测试池",
+        cost={},
+        tier=RecruitmentPool.Tier.CUNMU,
+        draw_count=3,
+    )
+    Guest.objects.create(manor=manor, template=owned_template)
+    owned_candidate = RecruitmentCandidate.objects.create(
+        manor=manor,
+        pool=pool,
+        template=owned_template,
+        display_name=owned_template.name,
+        rarity=owned_template.rarity,
+        archetype=owned_template.archetype,
+    )
+    new_candidate = RecruitmentCandidate.objects.create(
+        manor=manor,
+        pool=pool,
+        template=new_template,
+        display_name=new_template.name,
+        rarity=new_template.rarity,
+        archetype=new_template.archetype,
+    )
+    duplicate_candidate = RecruitmentCandidate.objects.create(
+        manor=manor,
+        pool=pool,
+        template=new_template,
+        display_name=new_template.name,
+        rarity=new_template.rarity,
+        archetype=new_template.archetype,
+    )
+
+    created, failed = recruitment_guest_service.bulk_finalize_candidates(
+        [owned_candidate, new_candidate, duplicate_candidate]
+    )
+
+    assert [guest.template_id for guest in created] == [new_template.id]
+    assert [candidate.id for candidate in failed] == [owned_candidate.id, duplicate_candidate.id]
+    assert manor.guests.filter(template=owned_template).count() == 1
+    assert manor.guests.filter(template=new_template).count() == 1
+    assert RecruitmentCandidate.objects.filter(pk=owned_candidate.pk).exists()
+    assert RecruitmentCandidate.objects.filter(pk=duplicate_candidate.pk).exists()

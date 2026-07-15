@@ -267,6 +267,42 @@ def _normalize_probability(value: Any, *, field_name: str) -> float:
     return prob
 
 
+def _normalize_random_item_groups(raw: Any, *, field_name: str) -> list[dict[str, Any]]:
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        raise ItemNotConfiguredError(f"{field_name} 配置异常")
+
+    normalized: list[dict[str, Any]] = []
+    for entry in raw:
+        if not isinstance(entry, dict) or "chance" not in entry:
+            raise ItemNotConfiguredError(f"{field_name} 配置异常")
+        try:
+            chance = _normalize_probability(entry.get("chance"), field_name=field_name)
+            min_quantity = _normalize_non_negative_config_int(
+                entry.get("min_quantity", 1),
+                field_name=field_name,
+            )
+            max_quantity = _normalize_non_negative_config_int(
+                entry.get("max_quantity", min_quantity),
+                field_name=field_name,
+            )
+            choices = _normalize_weighted_item_choices(entry.get("choices"), field_name=field_name)
+        except ItemNotConfiguredError as exc:
+            raise ItemNotConfiguredError(f"{field_name} 配置异常") from exc
+        if max_quantity < min_quantity:
+            raise ItemNotConfiguredError(f"{field_name} 配置异常")
+        normalized.append(
+            {
+                "chance": chance,
+                "min_quantity": min_quantity,
+                "max_quantity": max_quantity,
+                "choices": choices,
+            }
+        )
+    return normalized
+
+
 def _apply_resource_pack(item: InventoryItem) -> Dict[str, Any]:
     """使用资源包，发放资源奖励。"""
     normalized_payload = _normalize_resource_reward_mapping(
@@ -411,7 +447,42 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
             )
             skipped_bonus_items.append(item_key)
 
-    # 3. 随机银两（可选）
+    # 3. 独立概率物品组（每组命中后按权重选择一种物品）
+    random_item_groups = _normalize_random_item_groups(
+        payload.get("random_item_groups"),
+        field_name="random_item_groups",
+    )
+    for group in random_item_groups:
+        if inventory_random.random() >= float(group["chance"]):
+            continue
+        choices = group["choices"]
+        item_key = weighted_random_choice(
+            [str(choice["item_key"]) for choice in choices],
+            [float(choice["weight"]) for choice in choices],
+            inventory_random,
+        )
+        quantity = inventory_random.randint(
+            int(group["min_quantity"]),
+            int(group["max_quantity"]),
+        )
+        if quantity <= 0:
+            continue
+        try:
+            add_item_to_inventory(manor, item_key, quantity)
+            reward_template = ItemTemplate.objects.filter(key=item_key).first()
+            reward_name = reward_template.name if reward_template else item_key
+            rewards.append(f"物品【{reward_name}】x{quantity}")
+        except ItemNotFoundError as exc:
+            logger.warning(
+                "loot box random item group grant skipped: manor_id=%s loot_box_item_id=%s reward_item_key=%s error=%s",
+                manor.id,
+                item.id,
+                item_key,
+                exc,
+            )
+            skipped_bonus_items.append(item_key)
+
+    # 4. 随机银两（可选）
     silver_min_raw = payload.get("silver_min")
     silver_max_raw = payload.get("silver_max")
     if silver_min_raw is not None or silver_max_raw is not None:
@@ -435,7 +506,7 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
             if granted_silver > 0:
                 rewards.append(f"银两+{granted_silver}")
 
-    # 4. 装备掉落（概率，随机一件）
+    # 5. 装备掉落（概率，随机一件）
     gear_keys_raw = payload.get("gear_keys")
     gear_keys: list[str] = []
     if gear_keys_raw is not None:
@@ -469,7 +540,7 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
             else:
                 skipped_bonus_items.append(gear_key)
 
-    # 5. 技能书掉落（概率，随机一本）
+    # 6. 技能书掉落（概率，随机一本）
     skill_book_chance = _normalize_probability(payload.get("skill_book_chance"), field_name="skill_book_chance")
     skill_book_keys_raw = payload.get("skill_book_keys")
     skill_book_keys: list[str] = []

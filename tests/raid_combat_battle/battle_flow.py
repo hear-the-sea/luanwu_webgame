@@ -14,7 +14,7 @@ from gameplay.models import PlayerTechnology, PlayerTroop, RaidRun
 from gameplay.services.raid.combat import battle as combat_battle
 from gameplay.services.raid.combat import runs as combat_runs
 from guests.models import Guest, GuestStatus, GuestTemplate
-from tests.raid_combat_battle.support import build_attacker_defender
+from tests.raid_combat_battle.support import build_attacker_defender, build_run, stub_process_raid_battle_happy_path
 
 
 def test_dispatch_complete_raid_task_uses_remaining_return_time(monkeypatch):
@@ -88,6 +88,28 @@ def test_dispatch_complete_raid_task_nested_import_error_bubbles_up(monkeypatch)
 
     with pytest.raises(ModuleNotFoundError, match="redis"):
         combat_battle._dispatch_complete_raid_task(run, now=now)
+
+
+def test_process_raid_battle_recovers_missing_return_deadline(monkeypatch):
+    now = timezone.now()
+    attacker = SimpleNamespace(id=1)
+    defender = SimpleNamespace(id=2)
+    run = build_run(run_id=90, attacker=attacker, defender=defender)
+    run.return_at = None
+    run.travel_time = 60
+    report = SimpleNamespace(winner="defender")
+    stub_process_raid_battle_happy_path(monkeypatch, run, attacker, defender, report)
+    monkeypatch.setattr(combat_battle, "_send_raid_battle_messages", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_battle, "_dismiss_marching_raids_if_protected", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_battle, "safe_apply_async", lambda *_args, **_kwargs: False)
+    finalized = []
+    monkeypatch.setattr(combat_runs, "finalize_raid", lambda *_args, **_kwargs: finalized.append(run.id))
+
+    combat_battle.process_raid_battle(run, now=now)
+
+    assert run.status == RaidRun.Status.RETURNING
+    assert run.return_at == now + timedelta(seconds=60)
+    assert finalized == []
 
 
 @pytest.mark.django_db

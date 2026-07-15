@@ -4,6 +4,7 @@ import logging
 import math
 
 from celery import shared_task
+from django.db.models import Q
 from django.utils import timezone
 
 from common.utils.celery import safe_apply_async_with_dedup
@@ -319,11 +320,11 @@ def scan_raid_runs(limit: int = 200):
     now = timezone.now()
     count = 0
 
-    # Handle marching but battle time arrived
+    # A missing battle deadline is an invalid durable state; recover it immediately.
     marching_qs = (
         RaidRun.objects.select_related("attacker", "defender")
         .prefetch_related("guests")
-        .filter(status=RaidRun.Status.MARCHING, battle_at__lte=now)
+        .filter(Q(battle_at__lte=now) | Q(battle_at__isnull=True), status=RaidRun.Status.MARCHING)
         .order_by("battle_at")[:limit]
     )
     for run in marching_qs:
@@ -337,7 +338,7 @@ def scan_raid_runs(limit: int = 200):
     returning_qs = (
         RaidRun.objects.select_related("attacker", "defender", "battle_report")
         .prefetch_related("guests")
-        .filter(status=RaidRun.Status.RETURNING, return_at__lte=now)
+        .filter(Q(return_at__lte=now) | Q(return_at__isnull=True), status=RaidRun.Status.RETURNING)
         .order_by("return_at")[:limit]
     )
     for run in returning_qs:
@@ -351,7 +352,7 @@ def scan_raid_runs(limit: int = 200):
     retreated_qs = (
         RaidRun.objects.select_related("attacker", "defender")
         .prefetch_related("guests")
-        .filter(status=RaidRun.Status.RETREATED, return_at__lte=now)
+        .filter(Q(return_at__lte=now) | Q(return_at__isnull=True), status=RaidRun.Status.RETREATED)
         .order_by("return_at")[:limit]
     )
     for run in retreated_qs:

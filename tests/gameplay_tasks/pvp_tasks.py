@@ -7,6 +7,8 @@ import pytest
 from django.utils import timezone
 
 import gameplay.tasks as tasks
+from gameplay.models import RaidRun
+from gameplay.services.manor.core import ensure_manor
 from tests.gameplay_tasks.support import Chain
 
 
@@ -163,3 +165,54 @@ def test_scan_raid_runs_programming_error_bubbles_up(monkeypatch):
 
     with pytest.raises(AssertionError, match="broken raid scan contract"):
         tasks.scan_raid_runs()
+
+
+@pytest.mark.django_db
+def test_scan_raid_runs_recovers_marching_run_without_battle_deadline(monkeypatch, django_user_model):
+    attacker_user = django_user_model.objects.create_user(username="raid_null_deadline_attacker", password="pass123")
+    defender_user = django_user_model.objects.create_user(username="raid_null_deadline_defender", password="pass123")
+    attacker = ensure_manor(attacker_user)
+    defender = ensure_manor(defender_user)
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.MARCHING,
+        travel_time=60,
+        battle_at=None,
+    )
+    processed = []
+    monkeypatch.setattr(
+        "gameplay.services.raid.process_raid_battle",
+        lambda due_run, now=None: processed.append(due_run.pk),
+    )
+
+    assert tasks.scan_raid_runs(limit=1) == 1
+    assert processed == [run.pk]
+
+
+@pytest.mark.parametrize("status", [RaidRun.Status.RETURNING, RaidRun.Status.RETREATED])
+@pytest.mark.django_db
+def test_scan_raid_runs_recovers_finished_travel_without_return_deadline(monkeypatch, django_user_model, status):
+    attacker_user = django_user_model.objects.create_user(
+        username=f"raid_null_return_attacker_{status}", password="pass123"
+    )
+    defender_user = django_user_model.objects.create_user(
+        username=f"raid_null_return_defender_{status}", password="pass123"
+    )
+    attacker = ensure_manor(attacker_user)
+    defender = ensure_manor(defender_user)
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=status,
+        travel_time=60,
+        return_at=None,
+    )
+    finalized = []
+    monkeypatch.setattr(
+        "gameplay.services.raid.finalize_raid",
+        lambda due_run, now=None: finalized.append(due_run.pk),
+    )
+
+    assert tasks.scan_raid_runs(limit=1) == 1
+    assert finalized == [run.pk]

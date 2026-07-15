@@ -486,6 +486,13 @@ def test_recruit_prisoner_allows_duplicate_repeatable_standard_guest(mock_manor_
     prisoner.original_guest_name = ""
 
     created_guest = MagicMock()
+    auto_training_guests = []
+    monkeypatch.setattr(
+        jail_service,
+        "ensure_auto_training",
+        lambda guest: auto_training_guests.append(guest),
+        raising=False,
+    )
 
     with patch.object(jail_service.JailPrisoner, "objects") as mock_qs:
         mock_qs.select_for_update.return_value.select_related.return_value.filter.return_value.first.return_value = (
@@ -508,6 +515,7 @@ def test_recruit_prisoner_allows_duplicate_repeatable_standard_guest(mock_manor_
 
     assert result is created_guest
     mock_consume.assert_called_once()
+    assert auto_training_guests == [created_guest]
 
 
 @pytest.mark.parametrize(
@@ -518,7 +526,9 @@ def test_recruit_prisoner_allows_duplicate_repeatable_standard_guest(mock_manor_
     ],
 )
 @patch("gameplay.services.jail.Manor")
-def test_recruit_prisoner_allows_duplicate_configured_repeatable_guest(mock_manor_model, template_key, template_name):
+def test_recruit_prisoner_allows_duplicate_configured_repeatable_guest(
+    mock_manor_model, template_key, template_name, monkeypatch
+):
     manor = MagicMock()
     manor.guest_capacity = 10
     manor.guests.count.return_value = 2
@@ -545,6 +555,12 @@ def test_recruit_prisoner_allows_duplicate_configured_repeatable_guest(mock_mano
     prisoner.original_guest_name = ""
 
     created_guest = MagicMock()
+    auto_training_guests = []
+    monkeypatch.setattr(
+        jail_service,
+        "ensure_auto_training",
+        lambda guest: auto_training_guests.append(guest),
+    )
 
     with patch.object(jail_service.JailPrisoner, "objects") as mock_qs:
         mock_qs.select_for_update.return_value.select_related.return_value.filter.return_value.first.return_value = (
@@ -567,6 +583,7 @@ def test_recruit_prisoner_allows_duplicate_configured_repeatable_guest(mock_mano
 
     assert result is created_guest
     mock_consume.assert_called_once()
+    assert auto_training_guests == [created_guest]
 
 
 @patch("gameplay.services.jail.Manor")

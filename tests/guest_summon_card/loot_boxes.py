@@ -516,3 +516,55 @@ def test_loot_box_malformed_silver_grant_result_raises_assertion_error(monkeypat
 
     item.refresh_from_db()
     assert item.quantity == 1
+
+
+@pytest.mark.django_db
+def test_loot_box_rolls_random_item_groups_independently(monkeypatch, django_user_model):
+    user = django_user_model.objects.create_user(username="loot_box_random_groups", password="pass123")
+    manor = ensure_manor(user)
+    for key, name in [("random_group_a", "奖励甲"), ("random_group_b", "奖励乙")]:
+        ItemTemplate.objects.create(
+            key=key,
+            name=name,
+            effect_type=ItemTemplate.EffectType.RESOURCE,
+            is_usable=False,
+        )
+    template = ItemTemplate.objects.create(
+        key="loot_box_random_groups_test",
+        name="独立概率组宝箱",
+        effect_type=ItemTemplate.EffectType.LOOT_BOX,
+        is_usable=True,
+        effect_payload={
+            "random_item_groups": [
+                {
+                    "chance": 0.5,
+                    "min_quantity": 2,
+                    "max_quantity": 3,
+                    "choices": [{"item_key": "random_group_a", "weight": 3}],
+                },
+                {
+                    "chance": 0.5,
+                    "min_quantity": 1,
+                    "max_quantity": 1,
+                    "choices": [{"item_key": "random_group_b", "weight": 1}],
+                },
+            ]
+        },
+    )
+    item = InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    rolls = iter([0.2, 0.8])
+    monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.random", lambda: next(rolls))
+    monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.uniform", lambda _a, _b: 0.0)
+    monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.randint", lambda _a, _b: 3)
+
+    result = use_inventory_item(item)
+
+    assert InventoryItem.objects.get(manor=manor, template__key="random_group_a").quantity == 3
+    assert not InventoryItem.objects.filter(manor=manor, template__key="random_group_b").exists()
+    assert "物品【奖励甲】x3" in result["rewards"]
+    assert not InventoryItem.objects.filter(pk=item.pk).exists()
