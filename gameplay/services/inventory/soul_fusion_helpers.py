@@ -4,10 +4,14 @@ Soul Fusion calculations and template generation helpers.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from django.conf import settings
+
 from core.config import GUEST
+from core.utils.image_utils import compress_and_resize_image
 from gameplay.models import ItemTemplate
 from guests.models import Guest, GuestArchetype, GuestRarity, GuestStatus
 
@@ -37,6 +41,7 @@ SOUL_FUSION_ARCHETYPE_BASE_WEIGHTS: dict[str, dict[str, float]] = {
 SOUL_FUSION_RESULT_CONFIG: dict[str, dict[str, object]] = {
     GuestRarity.GREEN: {
         "name": "玉海棠",
+        "image": "yuhaitang.png",
         "description": "南方苗人的圣物，融合顶级绿色门客的灵魂，能给佩戴者带来不可思议的能力。",
         "rarity": GuestRarity.GREEN,
         "price": 36000,
@@ -46,6 +51,7 @@ SOUL_FUSION_RESULT_CONFIG: dict[str, dict[str, object]] = {
     },
     GuestRarity.BLUE: {
         "name": "北冥冰链",
+        "image": "beiming.png",
         "description": "由北冥永不融化的冰珠串起来，并融合了蓝色精英门客的灵魂，拥有冰封十里的威能。",
         "rarity": GuestRarity.BLUE,
         "price": 98000,
@@ -55,6 +61,7 @@ SOUL_FUSION_RESULT_CONFIG: dict[str, dict[str, object]] = {
     },
     GuestRarity.PURPLE: {
         "name": "龙纹赤血佩",
+        "image": "chixue.png",
         "description": (
             "传闻由天外陨铁与昆仑暖玉合铸而成，玉身天生血纹，隐约有龙吟之声。"
             "唯有融合了紫色门客的坚韧灵魂，才能镇压住佩玉中暴戾的气血。"
@@ -227,7 +234,14 @@ def _create_soul_fusion_ornament_template(guest: Guest, config: dict[str, Any], 
         f"{config['description']} 此器由{guest.display_name}之魂淬炼而成，{spirit_tone}，"
         "因此属性会随原主底蕴而波动。"
     )
-    return ItemTemplate.objects.create(
+    image_path = Path(settings.BASE_DIR) / "data" / "images" / "items" / str(config["image"])
+    compressed_image, image_filename = compress_and_resize_image(
+        image_path,
+        max_size=(200, 200),
+        quality=85,
+        convert_to_webp=True,
+    )
+    template = ItemTemplate.objects.create(
         key=key,
         name=str(config["name"]),
         description=description,
@@ -239,6 +253,8 @@ def _create_soul_fusion_ornament_template(guest: Guest, config: dict[str, Any], 
         storage_space=100,
         is_usable=False,
     )
+    template.image.save(image_filename, compressed_image, save=True)
+    return template
 
 
 def _format_soul_fusion_stat_summary(stats: dict[str, int]) -> str:

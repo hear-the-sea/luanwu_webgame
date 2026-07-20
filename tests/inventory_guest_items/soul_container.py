@@ -1,4 +1,5 @@
 import pytest
+from PIL import Image
 
 from core.exceptions import GuestItemConfigurationError, GuestNotRequirementError
 from gameplay.models import InventoryItem
@@ -11,6 +12,11 @@ from tests.inventory_guest_items.support_upgrade import (
     _prepare_soul_container_case,
     _SoulFusionFixedRng,
 )
+
+
+@pytest.fixture(autouse=True)
+def _use_temporary_media_root(settings, tmp_path):
+    settings.MEDIA_ROOT = tmp_path
 
 
 def test_soul_fusion_ornament_balance_ranges_are_raised_for_each_rarity():
@@ -42,6 +48,42 @@ def test_soul_fusion_ornament_balance_ranges_are_raised_for_each_rarity():
     }
 
     assert actual == expected
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("guest_rarity", "expected_image"),
+    [
+        ("green", "items/yuhaitang.webp"),
+        ("blue", "items/beiming.webp"),
+        ("purple", "items/chixue.webp"),
+    ],
+)
+def test_soul_fusion_ornament_saves_configured_image(
+    django_user_model,
+    guest_rarity,
+    expected_image,
+):
+    manor, guest, item = _prepare_soul_container_case(
+        django_user_model,
+        f"image_{guest_rarity}",
+        guest_rarity=guest_rarity,
+        archetype="military",
+        level=30,
+        force=180,
+        intellect=120,
+        defense=150,
+        agility=140,
+        luck=80,
+    )
+
+    result = use_soul_container(manor, item, guest.id)
+
+    template = InventoryItem.objects.select_related("template").get(pk=result["generated_item_id"]).template
+    assert template.image.name == expected_image
+    with Image.open(template.image.path) as saved_image:
+        assert saved_image.format == "WEBP"
+        assert saved_image.size == (200, 200)
 
 
 @pytest.mark.django_db
