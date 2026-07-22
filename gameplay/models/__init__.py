@@ -45,7 +45,7 @@ from .progression import (
     WorkAssignment,
     WorkTemplate,
 )
-from .pvp import JailPrisoner, OathBond, RaidRun, ScoutCooldown, ScoutRecord
+from .pvp import JailInteractionLog, JailPrisoner, OathBond, RaidRun, ScoutCooldown, ScoutRecord
 
 __all__ = [
     # manor/buildings
@@ -110,4 +110,5 @@ __all__ = [
     "RaidRun",
     "OathBond",
     "JailPrisoner",
+    "JailInteractionLog",
 ]

@@ -4,6 +4,12 @@ from typing import Any
 
 
 def build_jail_status_payload(manor: Any, prisoners: list[Any]) -> dict[str, object]:
+    if prisoners and isinstance(prisoners[0], dict):
+        return {
+            "capacity": int(getattr(manor, "jail_capacity", 0) or 0),
+            "count": len(prisoners),
+            "prisoners": prisoners,
+        }
     return {
         "capacity": int(getattr(manor, "jail_capacity", 0) or 0),
         "count": len(prisoners),

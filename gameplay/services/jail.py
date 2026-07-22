@@ -34,9 +34,12 @@ from guests.services.training import ensure_auto_training
 from guests.utils.recruitment_variance import apply_recruitment_variance
 from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 
-from ..constants import PVPConstants
 from ..models import JailPrisoner, Manor, OathBond
 from .inventory.core import get_item_quantity
+from .jail_persuasion.eligibility import RECRUIT_NEGOTIATED, RECRUIT_STANDARD, recruitment_offer
+from .jail_persuasion.interactions import interact_prisoner
+from .jail_persuasion.milestones import pending_milestone_stage
+from .jail_persuasion.profiles import METHOD_BRIBE, load_jail_persuasion_profiles, render_copy, stable_seed
 
 GOLD_BAR_ITEM_KEY = "gold_bar"
 
@@ -142,38 +145,21 @@ def release_prisoner(manor: Manor, prisoner_id: int) -> JailPrisoner:
 
 @transaction.atomic
 def draw_pie(manor: Manor, prisoner_id: int) -> JailPrisoner:
-    """
-    画饼：消耗1金条，随机降低囚徒5-10点忠诚度
-    """
-    prisoner = (
-        JailPrisoner.objects.select_for_update()
-        .filter(pk=prisoner_id, captor=manor, status=JailPrisoner.Status.HELD)
-        .first()
+    """兼容旧“画饼”入口，按新的许以重利规则结算。"""
+    result = interact_prisoner(
+        manor,
+        prisoner_id,
+        method=METHOD_BRIBE,
+        lazy_observe=True,
     )
-    if not prisoner:
-        raise PrisonerUnavailableError()
-
-    cost = int(getattr(PVPConstants, "JAIL_PERSUADE_GOLD_BAR_COST", 1) or 1)
-    try:
-        consume_available_gold_bars_locked(manor, cost)
-    except (ItemInsufficientError, ItemNotFoundError) as exc:
-        have = exc.context.get("available", get_item_quantity(manor, GOLD_BAR_ITEM_KEY))
-        raise JailError(f"金条不足，需要 {cost} 个（当前 {have} 个）")
-
-    # 随机降低忠诚度
-    loyalty_min = int(getattr(PVPConstants, "JAIL_PERSUADE_LOYALTY_MIN", 5) or 5)
-    loyalty_max = int(getattr(PVPConstants, "JAIL_PERSUADE_LOYALTY_MAX", 10) or 10)
-    loyalty_reduction = random.randint(loyalty_min, loyalty_max)
-    prisoner.loyalty = max(0, prisoner.loyalty - loyalty_reduction)
-    prisoner.save(update_fields=["loyalty"])
-    # 存储减少值供视图使用
-    setattr(prisoner, "_reduction", loyalty_reduction)
-
+    prisoner = result.prisoner
+    setattr(prisoner, "_reduction", max(0, -int(result.heart_delta)))
+    setattr(prisoner, "_persuasion_result", result)
     return prisoner
 
 
 @transaction.atomic
-def recruit_prisoner(manor: Manor, prisoner_id: int) -> Guest:
+def recruit_prisoner(manor: Manor, prisoner_id: int, *, mode: str = RECRUIT_STANDARD) -> Guest:
     # 死锁/并发预防：先锁定 Manor，确保容量检查原子化
     # 必须使用锁定后的对象来检查容量，防止陈旧读
     locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
@@ -181,7 +167,7 @@ def recruit_prisoner(manor: Manor, prisoner_id: int) -> Guest:
     prisoner = (
         JailPrisoner.objects.select_for_update()
         .select_related("guest_template")
-        .filter(pk=prisoner_id, captor=manor)
+        .filter(pk=prisoner_id, captor=locked_manor)
         .first()
     )
     if not prisoner:
@@ -189,9 +175,15 @@ def recruit_prisoner(manor: Manor, prisoner_id: int) -> Guest:
     if prisoner.status != JailPrisoner.Status.HELD:
         raise PrisonerAlreadyHandledError()
 
-    threshold = int(getattr(PVPConstants, "JAIL_RECRUIT_LOYALTY_THRESHOLD", 30) or 30)
-    if int(prisoner.loyalty) > threshold:
-        raise JailError("忠诚度过高，无法招募")
+    if pending_milestone_stage(prisoner):
+        raise JailError("请先处理当前归心事件")
+    offer = recruitment_offer(prisoner, mode)
+    if not offer.eligible:
+        if offer.mode == RECRUIT_STANDARD:
+            raise JailError("忠诚度过高，无法招募")
+        if offer.mode == RECRUIT_NEGOTIATED:
+            raise JailError("尚未满足权宜归附条件")
+        raise JailError("尚未满足心悦诚服条件")
 
     # 使用锁定后的 manor 对象检查容量
     capacity = locked_manor.guest_capacity
@@ -209,7 +201,7 @@ def recruit_prisoner(manor: Manor, prisoner_id: int) -> Guest:
     ):
         raise JailError(f"庄园已拥有门客「{template.name}」，不可重复招募")
 
-    cost = int(getattr(PVPConstants, "JAIL_RECRUIT_GOLD_BAR_COST", 1) or 1)
+    cost = int(offer.gold_cost)
     if cost > 0:
         try:
             consume_available_gold_bars_locked(locked_manor, cost)
@@ -262,7 +254,7 @@ def recruit_prisoner(manor: Manor, prisoner_id: int) -> Guest:
         initial_intellect=varied_attrs["intellect"],
         initial_defense=varied_attrs["defense"],
         initial_agility=varied_attrs["agility"],
-        loyalty=60,
+        loyalty=int(offer.initial_loyalty),
         gender=gender_choice,
         morality=morality_value,
         current_hp=initial_hp,
@@ -272,4 +264,15 @@ def recruit_prisoner(manor: Manor, prisoner_id: int) -> Guest:
 
     prisoner.status = JailPrisoner.Status.RECRUITED
     prisoner.save(update_fields=["status"])
+    copy_pool = load_jail_persuasion_profiles()["recruitment_copy"][offer.mode]
+    copy_entry = copy_pool[stable_seed(prisoner.id, offer.mode, "recruitment-copy") % len(copy_pool)]
+    copy_params = {
+        "prisoner_name": prisoner.display_name,
+        "new_loyalty": int(offer.initial_loyalty),
+    }
+    setattr(guest, "_recruitment_mode", offer.mode)
+    setattr(guest, "_recruitment_gold_cost", cost)
+    setattr(guest, "_recruitment_copy_key", copy_entry["key"])
+    setattr(guest, "_recruitment_copy_params", copy_params)
+    setattr(guest, "_recruitment_copy_text", render_copy(copy_entry["key"], copy_params))
     return guest

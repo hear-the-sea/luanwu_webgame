@@ -45,6 +45,28 @@ def test_reload_runtime_configs_command_renders_summary(monkeypatch):
     assert "will not reflect the new values until the process is restarted" not in rendered
 
 
+def test_reload_runtime_configs_refreshes_jail_persuasion_profiles(monkeypatch):
+    import gameplay.services.jail_persuasion.profiles as profiles_module
+
+    calls: list[str] = []
+    monkeypatch.setattr(
+        profiles_module,
+        "clear_jail_persuasion_profiles_cache",
+        lambda: calls.append("clear"),
+    )
+    monkeypatch.setattr(
+        profiles_module,
+        "load_jail_persuasion_profiles",
+        lambda: calls.append("load") or {"methods": {"a": {}, "b": {}, "c": {}, "d": {}}},
+    )
+
+    summary = reload_runtime_configs()
+
+    assert calls == ["clear", "load"]
+    assert summary["jail_persuasion_methods"] == 4
+    assert "jail_persuasion_methods=4" in format_runtime_config_summary(summary)
+
+
 def test_reload_runtime_configs_updates_arena_module_constants(monkeypatch):
     """reload_runtime_configs() must propagate fresh values into arena/core.py module globals."""
     import gameplay.services.arena.core as arena_core

@@ -9,3 +9,4 @@ pytest commands and CI references.
 from tests.jail_views.api_actions import *  # noqa: F401,F403
 from tests.jail_views.form_views import *  # noqa: F401,F403
 from tests.jail_views.page_context import *  # noqa: F401,F403
+from tests.jail_views.persuasion_api import *  # noqa: F401,F403

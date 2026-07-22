@@ -18,6 +18,7 @@ from django.test import Client
 from battle.models import TroopTemplate
 from gameplay.models import PlayerTroop
 from gameplay.services.manor.core import ensure_manor
+from tests.jail_persuasion.conftest import persuasion_world as persuasion_world  # noqa: F401
 
 # 获取项目根目录
 PROJECT_ROOT = Path(__file__).parent.parent

@@ -144,6 +144,7 @@ def _try_capture_guest(run: RaidRun, report: Any, is_attacker_victory: bool) -> 
         original_guest_name=captured_name,
         original_level=target.level,
         loyalty=target.loyalty,
+        captured_loyalty=target.loyalty,
         status=JailPrisoner.Status.HELD,
         raid_run=run,
     )

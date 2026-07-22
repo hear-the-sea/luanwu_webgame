@@ -252,6 +252,17 @@ class JailPrisoner(models.Model):
     original_guest_name = models.CharField("原门客名", max_length=64, blank=True, default="")
     original_level = models.PositiveIntegerField("原等级", default=1)
     loyalty = models.PositiveIntegerField("忠诚度", default=25)
+    captured_loyalty = models.PositiveSmallIntegerField("被俘时忠诚")
+    affinity = models.PositiveSmallIntegerField("归心", default=0)
+    stance_method = models.CharField("招降突破口", max_length=16, blank=True, default="")
+    taboo_method = models.CharField("招降忌讳", max_length=16, blank=True, default="")
+    revealed_level = models.PositiveSmallIntegerField("线索揭示等级", default=0)
+    milestone_stage = models.PositiveSmallIntegerField("里程碑阶段", default=0)
+    interaction_date = models.DateField("招降次数日期", null=True, blank=True, db_index=True)
+    interactions_today = models.PositiveSmallIntegerField("今日招降次数", default=0)
+    last_method = models.CharField("最近招降手段", max_length=16, blank=True, default="")
+    same_method_streak = models.PositiveSmallIntegerField("连续同手段次数", default=0)
+    observed_at = models.DateTimeField("察言时间", null=True, blank=True)
     status = models.CharField("状态", max_length=16, choices=Status.choices, default=Status.HELD, db_index=True)
     captured_at = models.DateTimeField("俘获时间", auto_now_add=True, db_index=True)
     raid_run = models.ForeignKey(
@@ -271,6 +282,24 @@ class JailPrisoner(models.Model):
             models.Index(fields=["captor", "status", "-captured_at"], name="jail_captor_status_ca_idx"),
             models.Index(fields=["original_manor", "-captured_at"], name="jail_orig_ca_idx"),
         ]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(captured_loyalty__gte=0, captured_loyalty__lte=100),
+                name="jail_captured_loyalty_0_100",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(affinity__gte=0, affinity__lte=100),
+                name="jail_affinity_0_100",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(revealed_level__gte=0, revealed_level__lte=3),
+                name="jail_revealed_level_0_3",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(milestone_stage__gte=0, milestone_stage__lte=2),
+                name="jail_milestone_stage_0_2",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"{self.captor.display_name} 囚徒 {self.original_guest_name or self.guest_template.name}"
@@ -278,3 +307,70 @@ class JailPrisoner(models.Model):
     @property
     def display_name(self) -> str:
         return self.original_guest_name or self.guest_template.name
+
+
+class JailInteractionLog(models.Model):
+    """囚徒招降交互的只追加审计日志。"""
+
+    class Outcome(models.TextChoices):
+        MATCHED = "matched", "契合"
+        NEUTRAL = "neutral", "普通"
+        TABOO = "taboo", "犯忌"
+        FAILED = "failed", "失败"
+        BACKFIRE = "backfire", "反噬"
+        EVENT = "event", "事件"
+
+    prisoner = models.ForeignKey(
+        JailPrisoner,
+        on_delete=models.CASCADE,
+        related_name="interaction_logs",
+        verbose_name="囚徒",
+    )
+    captor = models.ForeignKey(
+        "gameplay.Manor",
+        on_delete=models.CASCADE,
+        related_name="jail_interaction_logs",
+        verbose_name="庄园",
+    )
+    method = models.CharField("招降手段", max_length=24)
+    speaker = models.ForeignKey(
+        "guests.Guest",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="jail_persuasion_logs",
+        verbose_name="说客",
+    )
+    speaker_name_snapshot = models.CharField("说客姓名快照", max_length=64, blank=True, default="")
+    speaker_template_key_snapshot = models.CharField("说客模板快照", max_length=64, blank=True, default="")
+    speaker_base_value_snapshot = models.PositiveIntegerField("说客基础值快照", null=True, blank=True)
+    speaker_loyalty_before = models.PositiveSmallIntegerField("说客忠诚变化前", null=True, blank=True)
+    speaker_loyalty_after = models.PositiveSmallIntegerField("说客忠诚变化后", null=True, blank=True)
+    usage_date = models.DateField("使用日期", db_index=True)
+    heart_before = models.PositiveSmallIntegerField("心防变化前")
+    heart_after = models.PositiveSmallIntegerField("心防变化后")
+    affinity_before = models.PositiveSmallIntegerField("归心变化前")
+    affinity_after = models.PositiveSmallIntegerField("归心变化后")
+    outcome = models.CharField("结果", max_length=16, choices=Outcome.choices)
+    copy_key = models.CharField("文案键", max_length=128)
+    copy_params = models.JSONField("文案参数", default=dict, blank=True)
+    resource_cost = models.JSONField("资源消耗", default=dict, blank=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = "监牢招降日志"
+        verbose_name_plural = "监牢招降日志"
+        ordering = ["-created_at", "-id"]
+        indexes = [
+            models.Index(fields=["prisoner", "-created_at"], name="jail_log_prisoner_created_idx"),
+            models.Index(fields=["captor", "usage_date"], name="jail_log_captor_date_idx"),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["speaker", "usage_date"],
+                name="uniq_jail_speaker_usage_date",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.prisoner.display_name} - {self.method} - {self.outcome}"

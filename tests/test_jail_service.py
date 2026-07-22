@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import random
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -188,115 +187,36 @@ def test_release_prisoner_sets_status_to_released():
 # ============ draw_pie tests ============
 
 
-def test_draw_pie_raises_when_prisoner_not_found():
-    """Test that PrisonerUnavailableError is raised when prisoner doesn't exist."""
-    manor = SimpleNamespace(pk=1)
-
-    with patch.object(jail_service.JailPrisoner, "objects") as mock_qs:
-        mock_qs.select_for_update.return_value.filter.return_value.first.return_value = None
-
-        with pytest.raises(jail_service.PrisonerUnavailableError, match="囚徒不存在或已处理"):
-            jail_service.draw_pie(manor, prisoner_id=999)
-
-
-def test_draw_pie_raises_when_gold_insufficient():
-    """Test that JailError is raised when gold bars are insufficient."""
+def test_draw_pie_maps_to_lazy_bribe_interaction():
     manor = SimpleNamespace(pk=1)
     prisoner = MagicMock()
-    prisoner.loyalty = 80
+    result = SimpleNamespace(prisoner=prisoner, heart_delta=-7)
 
-    with patch.object(jail_service.JailPrisoner, "objects") as mock_qs:
-        mock_qs.select_for_update.return_value.filter.return_value.first.return_value = prisoner
+    with patch.object(jail_service, "interact_prisoner", return_value=result) as mock_interact:
+        returned = jail_service.draw_pie(manor, prisoner_id=1)
 
-        with patch.object(
-            jail_service,
-            "consume_available_gold_bars_locked",
-            side_effect=ItemInsufficientError("金条", 1, 0),
-        ):
-            with patch.object(jail_service, "get_item_quantity", return_value=0):
-                with pytest.raises(jail_service.JailError, match="金条不足"):
-                    jail_service.draw_pie(manor, prisoner_id=1)
+    mock_interact.assert_called_once_with(manor, 1, method="bribe", lazy_observe=True)
+    assert returned is prisoner
+    assert returned._reduction == 7
+    assert returned._persuasion_result is result
 
 
-@patch("gameplay.services.jail.Manor")
-def test_draw_pie_reduces_loyalty_and_consumes_gold(mock_manor_model):
-    """Test that draw_pie reduces loyalty and consumes gold bar."""
+def test_draw_pie_does_not_report_negative_reduction_for_bad_outcome():
     manor = SimpleNamespace(pk=1)
-    mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
-
     prisoner = MagicMock()
-    prisoner.loyalty = 80
+    result = SimpleNamespace(prisoner=prisoner, heart_delta=3)
 
-    with patch.object(jail_service.JailPrisoner, "objects") as mock_prisoner_qs:
-        mock_prisoner_qs.select_for_update.return_value.filter.return_value.first.return_value = prisoner
+    with patch.object(jail_service, "interact_prisoner", return_value=result):
+        returned = jail_service.draw_pie(manor, prisoner_id=1)
 
-        with patch.object(jail_service, "consume_available_gold_bars_locked") as mock_consume_gold:
-            # Fix random for deterministic test
-            with patch.object(random, "randint", return_value=7):
-                result = jail_service.draw_pie(manor, prisoner_id=1)
-
-                mock_consume_gold.assert_called_once_with(manor, 1)
-                assert result.loyalty == 73
-                assert result._reduction == 7
+    assert returned._reduction == 0
 
 
-@patch("gameplay.services.jail.Manor")
-def test_draw_pie_loyalty_cannot_go_below_zero(mock_manor_model):
-    """Test that loyalty cannot go below zero."""
+def test_draw_pie_propagates_new_interaction_business_errors():
     manor = SimpleNamespace(pk=1)
-    mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
-
-    prisoner = MagicMock()
-    prisoner.loyalty = 3  # Low loyalty
-
-    with patch.object(jail_service.JailPrisoner, "objects") as mock_prisoner_qs:
-        mock_prisoner_qs.select_for_update.return_value.filter.return_value.first.return_value = prisoner
-
-        with patch.object(jail_service, "consume_available_gold_bars_locked"):
-            with patch.object(random, "randint", return_value=10):
-                result = jail_service.draw_pie(manor, prisoner_id=1)
-                assert result.loyalty == 0
-
-
-@patch("gameplay.services.jail.Manor")
-def test_draw_pie_uses_configured_gold_cost(mock_manor_model, monkeypatch):
-    manor = SimpleNamespace(pk=1)
-    mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
-    monkeypatch.setattr(jail_service.PVPConstants, "JAIL_PERSUADE_GOLD_BAR_COST", 2)
-
-    prisoner = MagicMock()
-    prisoner.loyalty = 80
-
-    with patch.object(jail_service.JailPrisoner, "objects") as mock_prisoner_qs:
-        mock_prisoner_qs.select_for_update.return_value.filter.return_value.first.return_value = prisoner
-
-        with patch.object(jail_service, "consume_available_gold_bars_locked") as mock_consume_gold:
-            with patch.object(random, "randint", return_value=7):
-                jail_service.draw_pie(manor, prisoner_id=1)
-
-            mock_consume_gold.assert_called_once_with(manor, 2)
-
-
-@patch("gameplay.services.jail.Manor")
-def test_draw_pie_raises_when_gold_insufficient_with_manor_lock(mock_manor_model):
-    """Test that JailError is raised when gold bars are insufficient."""
-    manor = SimpleNamespace(pk=1)
-    mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
-
-    prisoner = MagicMock()
-    prisoner.loyalty = 80
-
-    with patch.object(jail_service.JailPrisoner, "objects") as mock_qs:
-        mock_qs.select_for_update.return_value.filter.return_value.first.return_value = prisoner
-
-        with patch.object(
-            jail_service,
-            "consume_available_gold_bars_locked",
-            side_effect=ItemInsufficientError("金条", 1, 0),
-        ):
-            with patch.object(jail_service, "get_item_quantity", return_value=0):
-                with pytest.raises(jail_service.JailError, match="金条不足"):
-                    jail_service.draw_pie(manor, prisoner_id=1)
+    with patch.object(jail_service, "interact_prisoner", side_effect=jail_service.JailError("金条不足")):
+        with pytest.raises(jail_service.JailError, match="金条不足"):
+            jail_service.draw_pie(manor, prisoner_id=1)
 
 
 # ============ recruit_prisoner tests ============

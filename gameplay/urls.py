@@ -35,14 +35,17 @@ from .views.jail import (
     add_oath_bond_view,
     draw_pie_api,
     draw_pie_view,
+    interact_prisoner_api,
     jail_status_api,
     oath_status_api,
+    observe_prisoner_api,
     recruit_prisoner_api,
     recruit_prisoner_view,
     release_prisoner_api,
     release_prisoner_view,
     remove_oath_bond_api,
     remove_oath_bond_view,
+    resolve_jail_milestone_api,
 )
 from .views.map import (
     MapView,
@@ -193,6 +196,13 @@ urlpatterns = [
     path("api/map/protection/", protection_status_api, name="protection_status_api"),
     # 监牢 / 结义林
     path("api/jail/status/", jail_status_api, name="jail_status_api"),
+    path("api/jail/prisoner/<int:prisoner_id>/observe/", observe_prisoner_api, name="observe_prisoner_api"),
+    path("api/jail/prisoner/<int:prisoner_id>/interact/", interact_prisoner_api, name="interact_prisoner_api"),
+    path(
+        "api/jail/prisoner/<int:prisoner_id>/milestone/",
+        resolve_jail_milestone_api,
+        name="resolve_jail_milestone_api",
+    ),
     path("api/jail/prisoner/<int:prisoner_id>/recruit/", recruit_prisoner_api, name="recruit_prisoner_api"),
     path("api/jail/prisoner/<int:prisoner_id>/draw-pie/", draw_pie_api, name="draw_pie_api"),
     path("api/jail/prisoner/<int:prisoner_id>/release/", release_prisoner_api, name="release_prisoner_api"),

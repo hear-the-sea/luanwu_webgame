@@ -1,0 +1,590 @@
+methods:
+  kindness:
+    label: 礼贤下士
+    cost:
+      silver: 80000
+      grain: 5000
+    heart_delta: -4
+    affinity_delta: 12
+  bribe:
+    label: 许以重利
+    cost:
+      gold_bar: 1
+    heart_delta: -10
+    affinity_delta: 5
+  reason:
+    label: 陈明大势
+    cost: {}
+    heart_delta: -6
+    affinity_delta: 10
+  might:
+    label: 以武慑服
+    cost: {}
+    heart_delta: -9
+    affinity_delta: 6
+
+daily_actions_by_jail_level:
+  1: 1
+  2: 1
+  3: 2
+  4: 2
+  5: 3
+
+difficulty:
+  factor_per_point: 0.04
+  minimum_factor: 0.68
+  rarity:
+    black: 0
+    gray: 0
+    green: 1
+    red: 2
+    blue: 3
+    purple: 4
+    orange: 5
+  black_hermit: 5
+
+recruitment:
+  standard:
+    heart_max: 30
+    affinity_min: 0
+    base_gold_cost: 1
+    initial_loyalty: 60
+  negotiated:
+    heart_max: 45
+    affinity_min: 60
+    base_gold_cost: 1
+    initial_loyalty: 65
+  heartfelt:
+    heart_max: 100
+    affinity_min: 100
+    base_gold_cost: 1
+    initial_loyalty: 75
+    heart_cost_step: 20
+    milestone_discount: 1
+  rarity_surcharge:
+    black: 0
+    gray: 0
+    green: 0
+    red: 1
+    blue: 1
+    purple: 2
+    orange: 3
+  black_hermit_surcharge: 4
+
+clues:
+  kindness:
+    subtle:
+      - key: clue.kindness.subtle.1
+        text: >-
+          {prisoner_name}很少碰送来的饭食，却会留意看守对送饭杂役是否苛刻。
+      - key: clue.kindness.subtle.2
+        text: >-
+          换班时起了几句争执，{prisoner_name}没有插话，只在有人以礼相劝后抬眼看了一次。
+    explicit:
+      - key: clue.kindness.explicit.1
+        text: >-
+          {prisoner_name}对赏赐与威吓都不接话，提到“以礼待人”时，神色才稍有松动。
+      - key: clue.kindness.explicit.2
+        text: >-
+          {prisoner_name}低声说道：“若连阶下之人也肯以礼相待，才看得出一方气度。”
+  bribe:
+    subtle:
+      - key: clue.bribe.subtle.1
+        text: >-
+          {prisoner_name}对空泛的劝词兴致寥寥，目光却在送来的器物与衣食上停留许久。
+      - key: clue.bribe.subtle.2
+        text: >-
+          听见看守谈起庄园近来的收成，{prisoner_name}不动声色地追问了两句。
+    explicit:
+      - key: clue.bribe.explicit.1
+        text: >-
+          {prisoner_name}没有拒绝归附，只反复问道：“事成之后，凭什么兑现？”
+      - key: clue.bribe.explicit.2
+        text: >-
+          {prisoner_name}用指节轻叩案面：“忠义是说给旁人听的，你能拿出什么，才是说给我听的。”
+  reason:
+    subtle:
+      - key: clue.reason.subtle.1
+        text: >-
+          {prisoner_name}常在巡夜交谈时闭目静听，尤其留意外面的战况与庄园动向。
+      - key: clue.reason.subtle.2
+        text: >-
+          地上的几粒碎石被{prisoner_name}排成阵势，天亮前又被悄然抹去。
+    explicit:
+      - key: clue.reason.explicit.1
+        text: >-
+          {prisoner_name}对金银不置可否，却要求把眼下局势从头讲清。
+      - key: clue.reason.explicit.2
+        text: >-
+          {prisoner_name}说道：“要我另择其主，可以。先说清这条路为何走得通。”
+  might:
+    subtle:
+      - key: clue.might.subtle.1
+        text: >-
+          {prisoner_name}不理会看守的喝问，却会留神远处校场传来的操练声。
+      - key: clue.might.subtle.2
+        text: >-
+          每逢佩刀门客经过，{prisoner_name}都会先看步伐，再看握刀的手。
+    explicit:
+      - key: clue.might.explicit.1
+        text: >-
+          {prisoner_name}听完利害分析只是冷笑：“说得再多，也要有本事守得住。”
+      - key: clue.might.explicit.2
+        text: >-
+          {prisoner_name}直视来人：“让我见识你麾下真正的强者，再谈去留。”
+
+feedback:
+  kindness:
+    matched:
+      - key: feedback.kindness.matched.1
+        text: >-
+          {prisoner_name}接过温热的饭食，沉默良久，终于把一直紧绷的肩背放松了些。
+      - key: feedback.kindness.matched.2
+        text: >-
+          听说这份礼遇并不以降书为条件，{prisoner_name}第一次认真打量起牢门外的人。
+      - key: feedback.kindness.matched.3
+        text: >-
+          {prisoner_name}将整洁衣物叠在膝上，轻声道：“身在囹圄仍肯留三分体面，这份情我记下了。”
+      - key: feedback.kindness.matched.4
+        text: >-
+          看守退下后，{prisoner_name}没有像往常一样背过身去，反而问起庄园如何安置战败之人。话题虽远，态度却已悄然转变。
+      - key: feedback.kindness.matched.5
+        text: >-
+          {prisoner_name}原以为这份礼数只会维持一日，数次试探后才低声说道：“肯把人当人看，比许多豪言都难得。”
+    neutral:
+      - key: feedback.kindness.neutral.1
+        text: >-
+          {prisoner_name}接受了送来的物品，礼数周全，言辞间却仍留着明显的距离。
+      - key: feedback.kindness.neutral.2
+        text: >-
+          饭食没有被退回，但{prisoner_name}只道了一声谢，随后便不再谈归附之事。
+      - key: feedback.kindness.neutral.3
+        text: >-
+          {prisoner_name}的态度缓和了一些，不过这份善意还不足以换来真正信任。
+      - key: feedback.kindness.neutral.4
+        text: >-
+          新换的被褥被仔细铺好，{prisoner_name}也坦然领受，只是谈及去留时仍以一句“容后再议”轻轻带过。
+      - key: feedback.kindness.neutral.5
+        text: >-
+          {prisoner_name}谢过照拂，神色比先前温和，却始终分得很清楚：礼遇是礼遇，归附是归附。
+    taboo:
+      - key: feedback.kindness.taboo.1
+        text: >-
+          {prisoner_name}将饭食原样推回：“先困我于此，再来施恩，这份人情未免太重。”
+      - key: feedback.kindness.taboo.2
+        text: >-
+          看着刻意备下的礼数，{prisoner_name}反而神色转冷，认定这只是另一种逼迫。
+      - key: feedback.kindness.taboo.3
+        text: >-
+          {prisoner_name}拒绝受礼：“若要我低头，直说便是，不必拿温情遮掩牢门。”
+      - key: feedback.kindness.taboo.4
+        text: >-
+          送来的衣食越是周全，{prisoner_name}越觉其中另有所图：“今日待我如客，莫非只为明日叫我忘了自己为何在此？”
+      - key: feedback.kindness.taboo.5
+        text: >-
+          {prisoner_name}将药碗放到门边，一口未动：“恩威并施也好，收买人心也罢，换个温和说法，终究还是要我认输。”
+  bribe:
+    matched:
+      - key: feedback.bribe.matched.1
+        text: >-
+          金条落在案上发出清响，{prisoner_name}终于坐直身体，开始逐条询问归附后的待遇。
+      - key: feedback.bribe.matched.2
+        text: >-
+          {prisoner_name}掂了掂筹码，脸上第一次有了笑意：“既然肯谈价码，事情便有得谈。”
+      - key: feedback.bribe.matched.3
+        text: >-
+          比起空口许诺，眼前实物显然更有分量；{prisoner_name}的语气很快松动下来。
+      - key: feedback.bribe.matched.4
+        text: >-
+          {prisoner_name}没有急着收下金条，而是先问清俸禄、差事与赏罚。每多得到一个确切答复，戒心便少去一分。
+      - key: feedback.bribe.matched.5
+        text: >-
+          看见筹码果真兑现，{prisoner_name}终于不再把这场谈话当作试探：“既然你肯先示诚意，我也不妨把条件说透。”
+    neutral:
+      - key: feedback.bribe.neutral.1
+        text: >-
+          {prisoner_name}没有拒绝这份筹码，却也没有立刻改口，只说还要再想一想。
+      - key: feedback.bribe.neutral.2
+        text: >-
+          金条被留在案边，{prisoner_name}的戒备稍减，但目光中仍有几分审视。
+      - key: feedback.bribe.neutral.3
+        text: >-
+          {prisoner_name}承认条件颇有诚意，谈到真正归附时却依旧避而不答。
+      - key: feedback.bribe.neutral.4
+        text: >-
+          {prisoner_name}把金条推到手边，却没有收入囊中：“价码可以谈，但我还没决定要不要做这桩买卖。”
+      - key: feedback.bribe.neutral.5
+        text: >-
+          条件听来并不苛刻，{prisoner_name}仍反复追问兑现之日。显然，筹码打动了心思，却尚未压过疑虑。
+    taboo:
+      - key: feedback.bribe.taboo.1
+        text: >-
+          {prisoner_name}看也不看金条：“你若以为万事皆有价，便从未真正看懂我。”
+      - key: feedback.bribe.taboo.2
+        text: >-
+          筹码才摆上桌，{prisoner_name}便拂袖转身，这番利诱反倒坐实了其心中的轻蔑。
+      - key: feedback.bribe.taboo.3
+        text: >-
+          {prisoner_name}冷声道：“以财帛试人，辱的不是我的清贫，是你的眼力。”
+      - key: feedback.bribe.taboo.4
+        text: >-
+          金条尚未落稳，{prisoner_name}便抬手将它拨开：“若我今日为利改旗，明日自然也能为更高的价钱背你而去。”
+      - key: feedback.bribe.taboo.5
+        text: >-
+          {prisoner_name}望着案上财物，眼中只剩失望：“你本可问我所守为何，却偏要先问我值多少。”
+  reason:
+    matched:
+      - key: feedback.reason.matched.1
+        text: >-
+          {speaker_name}将各方利害层层铺开，{prisoner_name}数次追问，语气已从反驳变成求证。
+      - key: feedback.reason.matched.2
+        text: >-
+          一番长谈后，{prisoner_name}望着案上的局势图久久不语，原先笃定的判断已有动摇。
+      - key: feedback.reason.matched.3
+        text: >-
+          {prisoner_name}听完{speaker_name}的推演，缓缓点头：“至少这条路，你们确实想明白了。”
+      - key: feedback.reason.matched.4
+        text: >-
+          {speaker_name}没有回避败局与风险，反而逐一说明应对。{prisoner_name}沉思良久，主动把话题转向归附后的用武之地。
+      - key: feedback.reason.matched.5
+        text: >-
+          两人推演数轮，{prisoner_name}终于挪动了代表自己的棋子：“若照你所说，我留下并非苟且，倒可能是另一条出路。”
+    neutral:
+      - key: feedback.reason.neutral.1
+        text: >-
+          {speaker_name}把局势说得清楚，{prisoner_name}虽未尽信，也承认其中并非全无道理。
+      - key: feedback.reason.neutral.2
+        text: >-
+          两人辩论许久，{prisoner_name}仍守着原来的立场，只是不再立刻驳回每一句话。
+      - key: feedback.reason.neutral.3
+        text: >-
+          {prisoner_name}听完分析后收起讥色，却只说：“道理尚可，是否可信还要看往后。”
+      - key: feedback.reason.neutral.4
+        text: >-
+          {speaker_name}的说辞经得起几次追问，却没能触及{prisoner_name}最在意的那一点。谈话有所进展，仍不足以定论。
+      - key: feedback.reason.neutral.5
+        text: >-
+          {prisoner_name}承认局势确已不同，却不肯把“形势有变”直接等同于“应当易主”，双方暂且停在这层分歧上。
+    taboo:
+      - key: feedback.reason.taboo.1
+        text: >-
+          {prisoner_name}打断{speaker_name}：“胜负未定便急着替天下下结论，这不是大势，是自欺。”
+      - key: feedback.reason.taboo.2
+        text: >-
+          越是陈说利害，{prisoner_name}越显不耐，最终闭目不言，不愿再听半句。
+      - key: feedback.reason.taboo.3
+        text: >-
+          {prisoner_name}将局势图推回：“拿几句成王败寇来压我，只会让我更看轻你们。”
+      - key: feedback.reason.taboo.4
+        text: >-
+          {speaker_name}每提一次利害，{prisoner_name}的神情便冷上一分：“若人人只问胜负，世上又何必还有信义二字？”
+      - key: feedback.reason.taboo.5
+        text: >-
+          {prisoner_name}不再争辩，只把代表旧主的棋子扶正：“你说的是如何活得容易，我守的是为何不能这样活。”
+    failed:
+      - key: feedback.reason.failed.1
+        text: >-
+          {speaker_name}讲清了来意，却没能回答{prisoner_name}接连抛出的几个关键问题，谈话最终无果而终。
+      - key: feedback.reason.failed.2
+        text: >-
+          {prisoner_name}耐心听完，逐处指出推演中的缺口；{speaker_name}一时找不到足以扭转判断的论据。
+      - key: feedback.reason.failed.3
+        text: >-
+          双方从午后谈到掌灯，谁也没有说服谁。{prisoner_name}仍维持原来的态度。
+      - key: feedback.reason.failed.4
+        text: >-
+          {speaker_name}的推断并无大错，{prisoner_name}却总能提出另一种解释。直到谈话结束，双方也没能找到足以撬动立场的关键。
+      - key: feedback.reason.failed.5
+        text: >-
+          几轮问答之后，{prisoner_name}只是平静摇头：“这些道理能解释天下，却还解释不了我为何该留下。”此次说服未能奏效。
+    backfire:
+      - key: feedback.reason.backfire.1
+        text: >-
+          {prisoner_name}顺着{speaker_name}的论点反问数句，便使整套说辞前后失据。牢门内外一时无人再言。
+      - key: feedback.reason.backfire.2
+        text: >-
+          {speaker_name}试图以大势相压，却被{prisoner_name}逐层拆穿；这场谈话反而让对方更加确信此处无人知其所想。
+      - key: feedback.reason.backfire.3
+        text: >-
+          {prisoner_name}合上局势图：“连自己为何能胜都说不明白，还要我把前程交给你们？”{speaker_name}只能沉默收场。
+      - key: feedback.reason.backfire.4
+        text: >-
+          {speaker_name}引用的几处战况被{prisoner_name}当场指出错漏，余下的结论顿时失去根基。对方不但没有动摇，反而更添轻视。
+      - key: feedback.reason.backfire.5
+        text: >-
+          {prisoner_name}借着{speaker_name}的话重新梳理局势，竟得出了截然相反的判断：“多谢提醒，我如今更确信不该投你。”
+  might:
+    matched:
+      - key: feedback.might.matched.1
+        text: >-
+          {speaker_name}只演一式便收势，{prisoner_name}盯着那道落痕看了片刻，神情郑重起来。
+      - key: feedback.might.matched.2
+        text: >-
+          面对{speaker_name}沉稳的威势，{prisoner_name}没有退让，却第一次收起了轻视。
+      - key: feedback.might.matched.3
+        text: >-
+          {prisoner_name}看完演武，抱拳道：“强弱做不得假。你们有这份本事，值得我重新考虑。”
+      - key: feedback.might.matched.4
+        text: >-
+          {speaker_name}收招之后，{prisoner_name}又追问了几处运劲关节。两人谈的已不再是谁压服谁，而是武道上的得失。
+      - key: feedback.might.matched.5
+        text: >-
+          一式过后，牢门前的尘土久久未落。{prisoner_name}凝视良久，终于承认：“能让我心服的不是声势，是这一招里的分寸。”
+    neutral:
+      - key: feedback.might.neutral.1
+        text: >-
+          {speaker_name}展露的实力让牢中安静了片刻，{prisoner_name}仍未松口，但语气谨慎了许多。
+      - key: feedback.might.neutral.2
+        text: >-
+          {prisoner_name}承认这一手颇有火候，随后退回席间，显然还没有被真正折服。
+      - key: feedback.might.neutral.3
+        text: >-
+          威势确实压下了几分锐气，{prisoner_name}眼中的戒备却没有完全消散。
+      - key: feedback.might.neutral.4
+        text: >-
+          {prisoner_name}看得认真，也给出了几句中肯评语，但最后仍道：“胜我未必难，叫我愿意追随却是另一回事。”
+      - key: feedback.might.neutral.5
+        text: >-
+          {speaker_name}的身手足以赢得尊重，却还不足以形成压倒性的震慑。{prisoner_name}的态度谨慎，立场并未改变。
+    taboo:
+      - key: feedback.might.taboo.1
+        text: >-
+          {prisoner_name}迎着威压站起身：“败而被囚是我技不如人，拿这个逼我低头，只会再添一笔旧账。”
+      - key: feedback.might.taboo.2
+        text: >-
+          这番示威没有换来畏惧，{prisoner_name}反而被激起怒意，牢中的气氛骤然紧绷。
+      - key: feedback.might.taboo.3
+        text: >-
+          {prisoner_name}冷笑道：“真正的强者不必对阶下之人反复逞威。”
+      - key: feedback.might.taboo.4
+        text: >-
+          {speaker_name}越是催动气势，{prisoner_name}越挺直脊背：“我可以败在刀下，却不会因为刀架得更近便改口。”
+      - key: feedback.might.taboo.5
+        text: >-
+          牢门被震得嗡嗡作响，{prisoner_name}却只看向别处：“用武力证明你能杀我容易，证明你值得我追随却难。”
+    failed:
+      - key: feedback.might.failed.1
+        text: >-
+          {speaker_name}展露身手，{prisoner_name}看完只微微点头；这份实力尚不足以改变其判断。
+      - key: feedback.might.failed.2
+        text: >-
+          演武声势不小，{prisoner_name}却始终神色平静，待招式结束后仍坐回原处。
+      - key: feedback.might.failed.3
+        text: >-
+          {prisoner_name}看出了{speaker_name}的长处，也看出了极限，最终只道：“还差些火候。”
+      - key: feedback.might.failed.4
+        text: >-
+          {speaker_name}演练完毕，{prisoner_name}依礼回了一揖：“招式扎实，只是尚未强到能叫我改换判断。”慑服未能成功。
+      - key: feedback.might.failed.5
+        text: >-
+          这一场较量没有露出明显破绽，也没有展现决定性的差距。{prisoner_name}认可实力，却仍不肯低头。
+    backfire:
+      - key: feedback.might.backfire.1
+        text: >-
+          {speaker_name}才起手，{prisoner_name}便点破重心与破绽；原本用于立威的一场演武，反倒成了笑谈。
+      - key: feedback.might.backfire.2
+        text: >-
+          {prisoner_name}迎着威势寸步不退，只用几句话便说尽招式短处。{speaker_name}收势时，已难掩挫败。
+      - key: feedback.might.backfire.3
+        text: >-
+          {prisoner_name}摇头道：“让这样的人来压我，是轻看我，还是无人可用了？”牢中的敌意比先前更重。
+      - key: feedback.might.backfire.4
+        text: >-
+          {speaker_name}蓄势未足便被{prisoner_name}看穿虚实，对方随口点出的应对之法令在场众人无从反驳。这次立威彻底适得其反。
+      - key: feedback.might.backfire.5
+        text: >-
+          {prisoner_name}只在关键处踏前半步，便逼得{speaker_name}仓促收势：“若这就是你们倚仗的强者，我反倒不必再担心了。”
+
+milestones:
+  kindness_35:
+    key: milestone.kindness.35.prompt
+    title: 寒夜送药
+    prompt: >-
+      {prisoner_name}夜里咳嗽不止，看守送来汤药，却问是否要趁机索取归附承诺。
+    options:
+      aligned:
+        key: milestone.kindness.35.aligned
+        label: 只送汤药，不问降意
+        heart_delta: 0
+        affinity_delta: 10
+        text: >-
+          {prisoner_name}喝下汤药，得知无人催问降书后久久无言。次日再开口时，语气已少了几分敌意。
+      alternative:
+        key: milestone.kindness.35.alternative
+        label: 借送药追问归期
+        heart_delta: 2
+        affinity_delta: 0
+        text: >-
+          {prisoner_name}放下药碗：“原来连一碗药也附带条件。”刚有松动的态度重新谨慎起来。
+  kindness_70:
+    key: milestone.kindness.70.prompt
+    title: 席前留位
+    prompt: >-
+      看守转达庄园设席之事，{prisoner_name}忽然问道：降者究竟会被当作门客，还是被当作战利品。
+    options:
+      aligned:
+        key: milestone.kindness.70.aligned
+        label: 以客礼相邀，容其自行赴席
+        heart_delta: 0
+        affinity_delta: 10
+        text: >-
+          {prisoner_name}赴席后发现座次与寻常门客无异，终于相信先前的礼遇并非一时做戏。
+      alternative:
+        key: milestone.kindness.70.alternative
+        label: 先写降书，才可入席
+        heart_delta: 0
+        affinity_delta: -3
+        text: >-
+          {prisoner_name}听罢不再追问，只让看守把话原样带回。那张空席反而成了一道新的隔阂。
+  bribe_35:
+    key: milestone.bribe.35.prompt
+    title: 赏格试探
+    prompt: >-
+      {prisoner_name}终于愿意谈条件，却把每项许诺问得极细，显然在判断这是不是另一张空头支票。
+    options:
+      aligned:
+        key: milestone.bribe.35.aligned
+        label: 将待遇逐条写明，交其核对
+        heart_delta: 0
+        affinity_delta: 10
+        text: >-
+          {prisoner_name}逐字看完，将约定折好收起：“肯把话落到纸上，才算真正的买卖。”
+      alternative:
+        key: milestone.bribe.35.alternative
+        label: 只说日后必有厚报
+        heart_delta: 0
+        affinity_delta: -3
+        text: >-
+          {prisoner_name}笑了一声：“原来筹码摆得响，承诺还是轻的。”谈判的热度很快冷了下去。
+  bribe_70:
+    key: milestone.bribe.70.prompt
+    title: 封赏之契
+    prompt: >-
+      临近抉择，{prisoner_name}要求确认归附后的身份与所得不会因一时喜怒被收回。
+    options:
+      aligned:
+        key: milestone.bribe.70.aligned
+        label: 立下契书，明确双方权责
+        heart_delta: 0
+        affinity_delta: 10
+        text: >-
+          契书落印后，{prisoner_name}收起反复权衡的神色：“所求既有凭据，我也该给出答复了。”
+      alternative:
+        key: milestone.bribe.70.alternative
+        label: 要其先表忠心，再谈兑现
+        heart_delta: 2
+        affinity_delta: 0
+        text: >-
+          {prisoner_name}将未落印的契书推回：“你要我先押上一切，却不肯押上一句话，这不公平。”
+  reason_35:
+    key: milestone.reason.35.prompt
+    title: 沙盘问势
+    prompt: >-
+      {prisoner_name}用碎石在地上摆出数方势力，请来人说明庄园下一步究竟要往哪里走。
+    options:
+      aligned:
+        key: milestone.reason.35.aligned
+        label: 展开地图，逐一说明取舍
+        heart_delta: 0
+        affinity_delta: 10
+        text: >-
+          推演结束后，{prisoner_name}亲手挪动了一枚代表庄园的棋子，第一次以“我们”谈起之后的局面。
+      alternative:
+        key: milestone.reason.35.alternative
+        label: 只答一句“胜者自成大势”
+        heart_delta: 0
+        affinity_delta: -3
+        text: >-
+          {prisoner_name}扫乱地上的碎石：“不知往何处去的胜者，也不过是走得更远的败军。”
+  reason_70:
+    key: milestone.reason.70.prompt
+    title: 去留一问
+    prompt: >-
+      {prisoner_name}已经认可局势判断，却仍追问：一个曾经的敌手，归附后凭什么得到真正信任。
+    options:
+      aligned:
+        key: milestone.reason.70.aligned
+        label: 说明职责边界，也坦言考察期限
+        heart_delta: 0
+        affinity_delta: 10
+        text: >-
+          {prisoner_name}听完没有索求虚假的推心置腹，只郑重应道：“肯把疑虑说在明处，反而可信。”
+      alternative:
+        key: milestone.reason.70.alternative
+        label: 避而不答，只催其尽快决定
+        heart_delta: 2
+        affinity_delta: 0
+        text: >-
+          {prisoner_name}看出了回避，原本接近出口的话又咽了回去：“既不肯谈信任，何必谈归附。”
+  might_35:
+    key: milestone.might.35.prompt
+    title: 隔栏观阵
+    prompt: >-
+      远处校场正在操练，{prisoner_name}提出亲眼看看庄园门客究竟只有个人勇武，还是确有章法。
+    options:
+      aligned:
+        key: milestone.might.35.aligned
+        label: 安排一场守纪有度的合练
+        heart_delta: 0
+        affinity_delta: 10
+        text: >-
+          号令落下，众人进退如一。{prisoner_name}看完整场操练，终于承认这里的强大并非虚张声势。
+      alternative:
+        key: milestone.might.35.alternative
+        label: 命人围住牢门高声示威
+        heart_delta: 2
+        affinity_delta: 0
+        text: >-
+          {prisoner_name}看着牢外的人群，神情反而冷了下来：“人多势众，不等于令行禁止。”
+  might_70:
+    key: milestone.might.70.prompt
+    title: 请较一式
+    prompt: >-
+      {prisoner_name}提出最后一个请求：不必生死相搏，只请最合适的人当面演一式，让其确认这份实力值得追随。
+    options:
+      aligned:
+        key: milestone.might.70.aligned
+        label: 允其近观，并请其点评得失
+        heart_delta: 0
+        affinity_delta: 10
+        text: >-
+          一式演罢，双方坦然谈起其中得失。{prisoner_name}抱拳还礼，最后那点争强之意化成了敬意。
+      alternative:
+        key: milestone.might.70.alternative
+        label: 借机逼其当众屈膝认输
+        heart_delta: 0
+        affinity_delta: -3
+        text: >-
+          {prisoner_name}拒绝屈膝：“我可以敬服强者，却不会追随以羞辱取乐之人。”
+
+recruitment_copy:
+  standard:
+    - key: recruitment.standard.1
+      text: >-
+        牢门开启时，{prisoner_name}没有回头，只淡淡说道：“既已无路可退，我暂且听命。”
+    - key: recruitment.standard.2
+      text: >-
+        {prisoner_name}走出牢门，神色依旧疏离：“今日归附是识时务，往后如何，还要看你怎么做。”
+    - key: recruitment.standard.3
+      text: >-
+        长久对峙终于结束。{prisoner_name}答应留下，但这份服从显然更多出于现实，而非认同。
+  negotiated:
+    - key: recruitment.negotiated.1
+      text: >-
+        {prisoner_name}认真看过约定，主动走出牢门：“你给了我一个选择，我便给彼此一次机会。”
+    - key: recruitment.negotiated.2
+      text: >-
+        正式归附之时，{prisoner_name}没有说什么效死之言，只郑重应下今后的职责。
+    - key: recruitment.negotiated.3
+      text: >-
+        {prisoner_name}愿意为庄园效力，仍保留几分审慎；这不是彻底折服，却已经是一份清醒的承诺。
+  heartfelt:
+    - key: recruitment.heartfelt.1
+      text: >-
+        {prisoner_name}推开牢门，在阶前郑重行礼：“困住我的从来不是这道门。今日所见，足以让我自愿留下。”
+    - key: recruitment.heartfelt.2
+      text: >-
+        归附名册落定后，{prisoner_name}第一次坦然笑道：“良主难逢。此后愿尽所长，不负今日知遇。”
+    - key: recruitment.heartfelt.3
+      text: >-
+        {prisoner_name}没有再谈旧日胜负，只主动请命：“既已同道，往后的路便让我也出一份力。”

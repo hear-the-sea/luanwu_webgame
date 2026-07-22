@@ -15,6 +15,7 @@ from .gear import (
     validate_shop_items,
     validate_smithy_production,
 )
+from .jail_persuasion import validate_jail_persuasion_profiles
 from .production import (
     validate_guest_growth_rules,
     validate_guest_skills,
@@ -71,6 +72,7 @@ SUPPORTED_YAML_CONFIGS = (
     "technology_templates.yaml",
     "guild_mission_templates.yaml",
     "virtual_players.yaml",
+    "jail_persuasion_profiles.yaml",
 )
 
 
@@ -117,6 +119,7 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
     tech_data = _load("technology_templates.yaml")
     guild_mission_data = _load("guild_mission_templates.yaml")
     virtual_players_data = _load("virtual_players.yaml")
+    jail_persuasion_data = _load("jail_persuasion_profiles.yaml")
 
     # Build cross-reference key sets for referential integrity checks
     item_keys: set[str] | None = None
@@ -224,6 +227,9 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
 
     if virtual_players_data is not None:
         result.merge(validate_virtual_players(virtual_players_data))
+
+    if jail_persuasion_data is not None:
+        result.merge(validate_jail_persuasion_profiles(jail_persuasion_data))
 
     return result
 

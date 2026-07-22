@@ -33,6 +33,7 @@ def test_supported_yaml_configs_include_recent_runtime_and_template_files():
     assert "arena_coop_rules.yaml" in supported
     assert "arena_coop_special_skills.yaml" in supported
     assert "guild_mission_templates.yaml" in supported
+    assert "jail_persuasion_profiles.yaml" in supported
 
 
 def test_validate_yaml_configs_strict_coverage_fails_for_unsupported_files(tmp_path):

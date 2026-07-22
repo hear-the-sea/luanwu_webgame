@@ -14,6 +14,7 @@ from core.utils.yaml_validators.gear import (
     validate_shop_items,
     validate_smithy_production,
 )
+from core.utils.yaml_validators.jail_persuasion import validate_jail_persuasion_profiles
 from core.utils.yaml_validators.production import (
     validate_guest_growth_rules,
     validate_guest_skills,
@@ -73,6 +74,7 @@ __all__ = [
     "validate_guest_skills",
     "validate_guest_growth_rules",
     "validate_technology_templates",
+    "validate_jail_persuasion_profiles",
     # registry
     "validate_all_configs",
     "get_supported_yaml_configs",

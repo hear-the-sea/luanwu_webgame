@@ -10,6 +10,7 @@ from .gear import (
     validate_shop_items,
     validate_smithy_production,
 )
+from .jail_persuasion import validate_jail_persuasion_profiles
 from .production import (
     validate_guest_growth_rules,
     validate_guest_skills,
@@ -51,6 +52,7 @@ __all__ = [
     "validate_forge_blueprints",
     "validate_forge_decompose",
     "validate_smithy_production",
+    "validate_jail_persuasion_profiles",
     # rules
     "validate_arena_rules",
     "validate_arena_rewards",

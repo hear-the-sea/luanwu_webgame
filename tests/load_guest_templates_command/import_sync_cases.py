@@ -324,6 +324,7 @@ def test_load_guest_templates_skips_removed_templates_with_protected_prisoners(
         original_manor=original_manor,
         guest_template=protected_template,
         original_guest_name="受保护囚徒",
+        captured_loyalty=25,
     )
 
     payload = {

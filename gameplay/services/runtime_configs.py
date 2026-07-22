@@ -20,6 +20,10 @@ def reload_runtime_configs() -> dict[str, int]:
     from gameplay.services.buildings.ranch import clear_ranch_production_cache, load_ranch_production_config
     from gameplay.services.buildings.smithy import clear_smithy_production_cache, load_smithy_production_config
     from gameplay.services.buildings.stable import clear_stable_production_cache, load_stable_production_config
+    from gameplay.services.jail_persuasion.profiles import (
+        clear_jail_persuasion_profiles_cache,
+        load_jail_persuasion_profiles,
+    )
     from gameplay.services.virtual_players import clear_virtual_player_config_cache, load_virtual_player_config
     from guests.growth_rules import clear_guest_growth_rules_cache, load_guest_growth_rules
     from guests.utils.recruitment_utils import refresh_recruitment_rarity_constants
@@ -81,6 +85,9 @@ def reload_runtime_configs() -> dict[str, int]:
     clear_virtual_player_config_cache()
     virtual_players = load_virtual_player_config()
 
+    clear_jail_persuasion_profiles_cache()
+    jail_persuasion = load_jail_persuasion_profiles()
+
     return {
         "shop_items": len(shop_items),
         "auction_items": len(getattr(auction_config, "items", [])),
@@ -99,6 +106,7 @@ def reload_runtime_configs() -> dict[str, int]:
         "trade_listing_durations": len((trade_market_rules.get("listing_fees") or {})),
         "guild_tech_rules": len((guild_rules.get("technology") or {}).get("upgrade_costs", {})),
         "virtual_players": len((virtual_players.get("prestige_bands") or {})),
+        "jail_persuasion_methods": len((jail_persuasion.get("methods") or {})),
     }
 
 
@@ -121,6 +129,7 @@ def format_runtime_config_summary(summary: dict[str, Any]) -> str:
         "trade_listing_durations",
         "guild_tech_rules",
         "virtual_players",
+        "jail_persuasion_methods",
     ]
     parts = [f"{key}={summary[key]}" for key in ordered_keys if key in summary]
     return ", ".join(parts)
