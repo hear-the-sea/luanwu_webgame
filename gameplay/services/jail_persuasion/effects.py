@@ -36,17 +36,17 @@ def _affinity_multiplier(score: int) -> Decimal:
 
 def _speaker_bonus(method: str, ratio: float, archetype: str) -> tuple[int, int]:
     if ratio >= 1.5:
-        heart_delta, affinity_delta = -8, 4
+        heart_delta, affinity_delta = -3, 1
     elif ratio >= 1.15:
-        heart_delta, affinity_delta = -4, 2
-    else:
         heart_delta, affinity_delta = -2, 1
+    else:
+        heart_delta, affinity_delta = -1, 0
 
     if method == METHOD_REASON and archetype == "civil":
-        affinity_delta += 2
+        affinity_delta += 1
     elif method == METHOD_MIGHT and archetype == "military":
-        heart_delta -= 3
-        affinity_delta += 2
+        heart_delta -= 1
+        affinity_delta += 1
     return heart_delta, affinity_delta
 
 

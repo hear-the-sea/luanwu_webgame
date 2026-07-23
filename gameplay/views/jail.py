@@ -22,8 +22,14 @@ from core.utils.locked_actions import (
     release_scoped_action_lock,
 )
 from core.utils.rate_limit import rate_limit_json
-from gameplay.selectors.jail import build_prisoner_state, get_jail_page_context, get_oath_grove_page_context
+from gameplay.selectors.jail import (
+    build_prisoner_state,
+    build_prisoner_states,
+    get_jail_page_context,
+    get_oath_grove_page_context,
+)
 from gameplay.services.jail import (
+    RecruitmentResult,
     add_oath_bond,
     draw_pie,
     list_held_prisoners,
@@ -109,6 +115,37 @@ def _milestone_result_payload(result: object) -> dict[str, object]:
     }
 
 
+def _recruitment_redirect_response(request: HttpRequest, result: RecruitmentResult) -> HttpResponse:
+    if not result.recruited or result.guest is None:
+        return message_redirect(
+            request,
+            "gameplay:jail",
+            level=messages.warning,
+            message=result.copy_text,
+        )
+    return message_redirect(
+        request,
+        "gameplay:jail",
+        level=messages.success,
+        message=(
+            f"{result.copy_text} " f"{result.guest.display_name} 已成为 1 级门客｜初始忠诚 {result.initial_loyalty}。"
+        ).strip(),
+    )
+
+
+def _recruitment_json_response(result: RecruitmentResult) -> JsonResponse:
+    return json_success(
+        recruited=result.recruited,
+        guest_id=result.guest.id if result.guest is not None else None,
+        mode=result.mode,
+        initial_loyalty=result.initial_loyalty,
+        gold_cost=result.gold_cost,
+        copy_key=result.copy_key,
+        copy_params=result.copy_params,
+        text=result.copy_text,
+    )
+
+
 class JailView(LoginRequiredMixin, TemplateView):
     template_name = "gameplay/jail.html"
 
@@ -145,7 +182,7 @@ class OathGroveView(LoginRequiredMixin, TemplateView):
 def jail_status_api(request: HttpRequest) -> JsonResponse:
     manor = get_manor(request.user)
     prisoners = list_held_prisoners(manor)
-    states = [build_prisoner_state(manor, prisoner) for prisoner in prisoners]
+    states = build_prisoner_states(manor, prisoners)
     return json_success(jail=build_jail_status_payload(manor, states))
 
 
@@ -167,15 +204,7 @@ def recruit_prisoner_view(request: HttpRequest, prisoner_id: int) -> HttpRespons
         action_name="recruit_view",
         scope=str(prisoner_id),
         operation=lambda: recruit_prisoner(manor, int(prisoner_id), mode=mode),
-        success_response=lambda guest: message_redirect(
-            request,
-            "gameplay:jail",
-            level=messages.success,
-            message=(
-                f"{getattr(guest, '_recruitment_copy_text', '')} "
-                f"{guest.display_name} 已成为 1 级门客｜初始忠诚 {guest.loyalty}。"
-            ).strip(),
-        ),
+        success_response=lambda result: _recruitment_redirect_response(request, result),
         redirect_name="gameplay:jail",
         log_message="Unexpected jail recruit error: manor_id=%s prisoner_id=%s",
         log_args=(getattr(manor, "id", None), prisoner_id),
@@ -309,16 +338,7 @@ def recruit_prisoner_api(request: HttpRequest, prisoner_id: int) -> JsonResponse
         action_name="recruit_api",
         scope=str(prisoner_id),
         operation=lambda: recruit_prisoner(manor, int(prisoner_id), mode=mode),
-        success_response=lambda guest: json_success(
-            message=f"已招募：{guest.display_name}",
-            guest_id=guest.id,
-            mode=str(getattr(guest, "_recruitment_mode", mode)),
-            initial_loyalty=int(guest.loyalty),
-            gold_cost=int(getattr(guest, "_recruitment_gold_cost", 0) or 0),
-            copy_key=str(getattr(guest, "_recruitment_copy_key", "") or ""),
-            copy_params=dict(getattr(guest, "_recruitment_copy_params", {}) or {}),
-            text=str(getattr(guest, "_recruitment_copy_text", "") or ""),
-        ),
+        success_response=_recruitment_json_response,
         log_message="Unexpected jail recruit API error: manor_id=%s prisoner_id=%s",
         log_args=(getattr(manor, "id", None), prisoner_id),
         acquire_lock_fn=_acquire_jail_action_lock,

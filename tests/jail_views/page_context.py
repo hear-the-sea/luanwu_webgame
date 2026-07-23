@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from bs4 import BeautifulSoup
 from django.contrib.messages import get_messages
 from django.urls import reverse
 
@@ -149,6 +150,37 @@ def test_oath_grove_page_uses_selector_context(monkeypatch, authenticated_client
     assert response.status_code == 200
     assert calls["selector"] == 1
     assert response.context["bonds"][0].guest.display_name == "bond-a"
+
+
+@pytest.mark.django_db
+def test_oath_grove_page_localizes_rarity_and_omits_jail_link(
+    monkeypatch,
+    authenticated_client_with_manor,
+    django_user_model,
+):
+    client = authenticated_client_with_manor
+    manor = build_manor(django_user_model, username="jail_view_user")
+    monkeypatch.setattr("gameplay.views.jail.get_prepared_manor_for_read", lambda request, **kwargs: manor)
+    monkeypatch.setattr(
+        "gameplay.views.jail.get_oath_grove_page_context",
+        lambda current_manor: {
+            "oath_capacity": 5,
+            "bonds": build_bond_context(),
+            "available_guests": build_available_guests(),
+        },
+    )
+
+    response = client.get(oath_url())
+
+    page = BeautifulSoup(response.content.decode("utf-8"), "html.parser")
+    guest_option = page.select_one('select[name="guest_id"] option[value="3"]')
+    bond_row = page.select_one(".tw-table tbody tr")
+    assert guest_option is not None
+    assert guest_option.get_text(strip=True) == "guest-a（绿，Lv 5）"
+    assert bond_row is not None
+    assert bond_row.select("td")[1].get_text(strip=True) == "蓝"
+    assert page.find("a", string="前往监牢") is None
+    assert "结义只影响" not in page.get_text()
 
 
 @pytest.mark.django_db

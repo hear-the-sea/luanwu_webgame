@@ -1,8 +1,9 @@
 import pytest
+from django.core.files.storage import FileSystemStorage
 from PIL import Image
 
 from core.exceptions import GuestItemConfigurationError, GuestNotRequirementError
-from gameplay.models import InventoryItem
+from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.inventory.guest_items import use_soul_container
 from gameplay.services.inventory.soul_fusion_helpers import SOUL_FUSION_RESULT_CONFIG
 from guests.models import GearItem, GearSlot, Guest, GuestStatus, GuestTemplate
@@ -14,9 +15,10 @@ from tests.inventory_guest_items.support_upgrade import (
 )
 
 
-@pytest.fixture(autouse=True)
-def _use_temporary_media_root(settings, tmp_path):
-    settings.MEDIA_ROOT = tmp_path
+@pytest.fixture
+def temporary_item_image_storage(tmp_path, monkeypatch):
+    image_field = ItemTemplate._meta.get_field("image")
+    monkeypatch.setattr(image_field, "storage", FileSystemStorage(location=tmp_path))
 
 
 def test_soul_fusion_ornament_balance_ranges_are_raised_for_each_rarity():
@@ -63,6 +65,7 @@ def test_soul_fusion_ornament_saves_configured_image(
     django_user_model,
     guest_rarity,
     expected_image,
+    temporary_item_image_storage,
 ):
     manor, guest, item = _prepare_soul_container_case(
         django_user_model,
@@ -88,7 +91,9 @@ def test_soul_fusion_ornament_saves_configured_image(
 
 @pytest.mark.django_db
 def test_use_soul_container_generates_green_ornament_with_military_bias_and_returns_gear(
-    monkeypatch, django_user_model
+    monkeypatch,
+    django_user_model,
+    temporary_item_image_storage,
 ):
     manor, guest, item = _prepare_soul_container_case(
         django_user_model,
@@ -136,7 +141,11 @@ def test_use_soul_container_generates_green_ornament_with_military_bias_and_retu
 
 
 @pytest.mark.django_db
-def test_use_soul_container_ignores_equipment_and_set_bonuses_when_rolling_stats(monkeypatch, django_user_model):
+def test_use_soul_container_ignores_equipment_and_set_bonuses_when_rolling_stats(
+    monkeypatch,
+    django_user_model,
+    temporary_item_image_storage,
+):
     base_kwargs = {
         "guest_rarity": "purple",
         "archetype": "military",
@@ -193,7 +202,11 @@ def test_use_soul_container_ignores_equipment_and_set_bonuses_when_rolling_stats
 
 
 @pytest.mark.django_db
-def test_use_soul_container_generated_ornament_can_be_equipped_and_unequipped(monkeypatch, django_user_model):
+def test_use_soul_container_generated_ornament_can_be_equipped_and_unequipped(
+    monkeypatch,
+    django_user_model,
+    temporary_item_image_storage,
+):
     manor, guest, item = _prepare_soul_container_case(
         django_user_model,
         "equip_cycle",
@@ -279,7 +292,11 @@ def test_use_soul_container_generated_ornament_can_be_equipped_and_unequipped(mo
 
 
 @pytest.mark.django_db
-def test_use_soul_container_generates_blue_ornament_with_civil_bias(monkeypatch, django_user_model):
+def test_use_soul_container_generates_blue_ornament_with_civil_bias(
+    monkeypatch,
+    django_user_model,
+    temporary_item_image_storage,
+):
     manor, guest, item = _prepare_soul_container_case(
         django_user_model,
         "civil_blue",

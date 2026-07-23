@@ -9,44 +9,6 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function createJailPageCore() {
   "use strict";
 
-  const classifySpeakerRatio = (rawRatio) => {
-    const ratio = Number.isFinite(Number(rawRatio)) ? Number(rawRatio) : 0;
-    if (ratio < 0.7) {
-      return { kind: "backfire", label: "压倒性劣势" };
-    }
-    if (ratio < 0.85) {
-      return { kind: "failed", label: "明显劣势" };
-    }
-    if (ratio < 1.15) {
-      return { kind: "even", label: "势均力敌" };
-    }
-    if (ratio < 1.5) {
-      return { kind: "advantage", label: "占据优势" };
-    }
-    return { kind: "dominant", label: "压倒性优势" };
-  };
-
-  const buildSpeakerWarning = (method, ratio, speakerName) => {
-    const tier = classifySpeakerRatio(ratio);
-    if (tier.kind === "backfire") {
-      const attribute = method === "might" ? "基础武力" : "基础智力";
-      const action = method === "might" ? "强行立威" : "强行辩说";
-      return {
-        ...tier,
-        requiresConfirmation: true,
-        message: `${speakerName || "该门客"}的${attribute}明显低于囚徒，${action}将使对方更加抵触，并使说客忠诚下降 1 点（最低为 0）。`,
-      };
-    }
-    if (tier.kind === "failed") {
-      return {
-        ...tier,
-        requiresConfirmation: true,
-        message: `${speakerName || "该门客"}与囚徒差距明显，本次必定无法奏效，但仍会消耗囚徒和说客的今日次数。`,
-      };
-    }
-    return { ...tier, requiresConfirmation: false, message: "" };
-  };
-
   const signed = (value) => {
     const normalized = Number(value) || 0;
     return normalized > 0 ? `+${normalized}` : String(normalized);
@@ -65,6 +27,9 @@
   };
 
   const formatRecruitmentSummary = (payload) => {
+    if (payload?.recruited !== true) {
+      return "";
+    }
     const loyalty = Number(payload?.initial_loyalty);
     if (!Number.isFinite(loyalty)) {
       return "";
@@ -83,11 +48,20 @@
     return payload;
   };
 
+  const formatHistoryEntries = (entries) => {
+    const normalized = (Array.isArray(entries) ? entries : [])
+      .map((entry) => String(entry || "").replace(/\s+/g, " ").trim())
+      .filter(Boolean);
+    if (!normalized.length) {
+      return "尚无招降记录。";
+    }
+    return normalized.map((entry, index) => `${index + 1}. ${entry}`).join("\n\n");
+  };
+
   return {
-    classifySpeakerRatio,
-    buildSpeakerWarning,
     formatDeltaSummary,
     formatRecruitmentSummary,
     buildInteractionPayload,
+    formatHistoryEntries,
   };
 });

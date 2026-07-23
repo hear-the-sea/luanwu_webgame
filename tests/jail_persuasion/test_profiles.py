@@ -127,10 +127,11 @@ def test_profile_catalog_contains_all_required_copy_groups():
     profiles = load_jail_persuasion_profiles()
 
     assert set(profiles["methods"]) == {METHOD_KINDNESS, METHOD_BRIBE, METHOD_REASON, METHOD_MIGHT}
-    assert all(len(profiles["clues"][method]["subtle"]) == 2 for method in profiles["methods"])
-    assert all(len(profiles["clues"][method]["explicit"]) == 2 for method in profiles["methods"])
+    assert all(len(profiles["clues"][method]["subtle"]) == 5 for method in profiles["methods"])
+    assert all(len(profiles["clues"][method]["explicit"]) == 3 for method in profiles["methods"])
     assert len(profiles["milestones"]) == 8
     assert all(len(profiles["recruitment_copy"][mode]) == 3 for mode in ("standard", "negotiated", "heartfelt"))
+    assert all(len(profiles["recruitment_failure_copy"][mode]) == 3 for mode in ("standard", "negotiated", "heartfelt"))
     assert all(
         len(profiles["feedback"][method][outcome]) >= 3
         for method in profiles["methods"]
@@ -183,6 +184,32 @@ def test_profile_rejects_removal_of_published_copy_key():
 
     with pytest.raises(ValueError, match="缺少兼容文案键"):
         normalize_profiles(raw)
+
+
+def test_profile_rejects_removal_of_recruitment_failure_copy():
+    raw = _raw_profiles()
+    raw["recruitment_failure_copy"]["standard"][0]["key"] = "recruitment.failure.standard.unpublished"
+
+    with pytest.raises(ValueError, match="缺少兼容文案键") as exc_info:
+        normalize_profiles(raw)
+    assert "recruitment.failure.standard.1" in str(exc_info.value)
+
+
+def test_profile_rejects_unknown_recruitment_failure_placeholder():
+    raw = _raw_profiles()
+    raw["recruitment_failure_copy"]["heartfelt"][0]["text"] = "{speaker_name} 未能说服 {prisoner_name}"
+
+    with pytest.raises(ValueError, match="未知占位符"):
+        normalize_profiles(raw)
+
+
+def test_profile_rejects_nested_recruitment_failure_placeholder():
+    raw = _raw_profiles()
+    raw["recruitment_failure_copy"]["heartfelt"][0]["text"] = "{prisoner_name:{success_percent}}"
+
+    with pytest.raises(ValueError, match="未知占位符") as exc_info:
+        normalize_profiles(raw)
+    assert "success_percent" in str(exc_info.value)
 
 
 def test_profile_rejects_empty_milestone_choice_label():

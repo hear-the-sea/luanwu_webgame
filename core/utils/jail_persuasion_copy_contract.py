@@ -3,7 +3,8 @@ from __future__ import annotations
 METHODS = ("kindness", "bribe", "reason", "might")
 
 PUBLISHED_COPY_KEYS = frozenset(
-    {f"clue.{method}.{kind}.{index}" for method in METHODS for kind in ("subtle", "explicit") for index in range(1, 3)}
+    {f"clue.{method}.subtle.{index}" for method in METHODS for index in range(1, 6)}
+    | {f"clue.{method}.explicit.{index}" for method in METHODS for index in range(1, 4)}
     | {
         f"feedback.{method}.{outcome}.{index}"
         for method in METHODS
@@ -21,4 +22,9 @@ PUBLISHED_COPY_KEYS = frozenset(
         for suffix in ("prompt", "aligned", "alternative")
     }
     | {f"recruitment.{mode}.{index}" for mode in ("standard", "negotiated", "heartfelt") for index in range(1, 4)}
+    | {
+        f"recruitment.failure.{mode}.{index}"
+        for mode in ("standard", "negotiated", "heartfelt")
+        for index in range(1, 4)
+    }
 )

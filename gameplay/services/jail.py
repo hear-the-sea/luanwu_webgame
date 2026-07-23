@@ -10,9 +10,11 @@
 from __future__ import annotations
 
 import random
-from typing import List
+from dataclasses import dataclass
+from typing import Any, List
 
 from django.db import transaction
+from django.utils import timezone
 
 from core.config import GUEST
 from core.exceptions import (
@@ -34,14 +36,33 @@ from guests.services.training import ensure_auto_training
 from guests.utils.recruitment_variance import apply_recruitment_variance
 from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 
-from ..models import JailPrisoner, Manor, OathBond
+from ..models import JailInteractionLog, JailPrisoner, Manor, OathBond
 from .inventory.core import get_item_quantity
-from .jail_persuasion.eligibility import RECRUIT_NEGOTIATED, RECRUIT_STANDARD, recruitment_offer
+from .jail_persuasion.eligibility import (
+    RECRUIT_NEGOTIATED,
+    RECRUIT_STANDARD,
+    recruitment_offer,
+    recruitment_success_percent,
+)
 from .jail_persuasion.interactions import interact_prisoner
 from .jail_persuasion.milestones import pending_milestone_stage
 from .jail_persuasion.profiles import METHOD_BRIBE, load_jail_persuasion_profiles, render_copy, stable_seed
 
 GOLD_BAR_ITEM_KEY = "gold_bar"
+
+
+@dataclass(frozen=True)
+class RecruitmentResult:
+    recruited: bool
+    mode: str
+    prisoner: JailPrisoner
+    guest: Guest | None
+    gold_cost: int
+    initial_loyalty: int | None
+    copy_key: str
+    copy_params: dict[str, object]
+    copy_text: str
+
 
 PRISONER_RECRUIT_DUPLICATE_TEMPLATE_GROUPS = {
     "hist_sljnbc_0589": ("hist_sljnbc_0589", "hist_sljnbc_0589_blue", "hist_sljnbc_0589_purple"),
@@ -159,7 +180,13 @@ def draw_pie(manor: Manor, prisoner_id: int) -> JailPrisoner:
 
 
 @transaction.atomic
-def recruit_prisoner(manor: Manor, prisoner_id: int, *, mode: str = RECRUIT_STANDARD) -> Guest:
+def recruit_prisoner(
+    manor: Manor,
+    prisoner_id: int,
+    *,
+    mode: str = RECRUIT_STANDARD,
+    rng: Any = None,
+) -> RecruitmentResult:
     # 死锁/并发预防：先锁定 Manor，确保容量检查原子化
     # 必须使用锁定后的对象来检查容量，防止陈旧读
     locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
@@ -201,78 +228,138 @@ def recruit_prisoner(manor: Manor, prisoner_id: int, *, mode: str = RECRUIT_STAN
     ):
         raise JailError(f"庄园已拥有门客「{template.name}」，不可重复招募")
 
+    usage_date = timezone.localdate()
+    if JailInteractionLog.objects.filter(
+        prisoner=prisoner,
+        usage_date=usage_date,
+        attempt_scope="recruitment",
+    ).exists():
+        raise JailError("该囚徒今日已尝试归附")
+
     cost = int(offer.gold_cost)
     if cost > 0:
         try:
             consume_available_gold_bars_locked(locked_manor, cost)
         except (ItemInsufficientError, ItemNotFoundError) as exc:
-            have = exc.context.get("available", get_item_quantity(manor, GOLD_BAR_ITEM_KEY))
+            have = exc.context.get("available", get_item_quantity(locked_manor, GOLD_BAR_ITEM_KEY))
             raise JailError(f"金条不足，需要 {cost} 个（当前 {have} 个）")
 
-    rng = random.Random()
-    gender_choice = template.default_gender
-    if not gender_choice or gender_choice == "unknown":
-        gender_choice = rng.choice(["male", "female"])
-    morality_value = template.default_morality or rng.randint(30, 100)
+    if rng is None:
+        rng = random.Random()
+    success_percent = recruitment_success_percent(prisoner, offer.mode)
+    roll = int(rng.randint(1, 100))
+    recruited = roll <= success_percent
+    heart_before = int(prisoner.loyalty)
+    affinity_before = int(prisoner.affinity)
+    guest: Guest | None = None
 
-    template_attrs = {
-        "force": template.base_attack,
-        "intellect": template.base_intellect,
-        "defense": template.base_defense,
-        "agility": template.base_agility,
-        "luck": template.base_luck,
-    }
-    varied_attrs = apply_recruitment_variance(
-        template_attrs,
-        rarity=template.rarity,
-        archetype=template.archetype,
-        rng=rng,
-    )
+    if recruited:
+        gender_choice = template.default_gender
+        if not gender_choice or gender_choice == "unknown":
+            gender_choice = rng.choice(["male", "female"])
+        morality_value = template.default_morality or rng.randint(30, 100)
 
-    initial_hp = max(
-        int(GUEST.MIN_HP_FLOOR),
-        template.base_hp + varied_attrs["defense"] * int(GUEST.DEFENSE_TO_HP_MULTIPLIER),
-    )
+        template_attrs = {
+            "force": template.base_attack,
+            "intellect": template.base_intellect,
+            "defense": template.base_defense,
+            "agility": template.base_agility,
+            "luck": template.base_luck,
+        }
+        varied_attrs = apply_recruitment_variance(
+            template_attrs,
+            rarity=template.rarity,
+            archetype=template.archetype,
+            rng=rng,
+        )
 
-    custom_name = ""
-    prisoner_name = (prisoner.original_guest_name or "").strip()
-    if prisoner_name and prisoner_name != template.name:
-        custom_name = prisoner_name
+        initial_hp = max(
+            int(GUEST.MIN_HP_FLOOR),
+            template.base_hp + varied_attrs["defense"] * int(GUEST.DEFENSE_TO_HP_MULTIPLIER),
+        )
 
-    guest = Guest.objects.create(
-        manor=manor,
-        template=template,
-        level=1,
-        experience=0,
-        custom_name=custom_name,
-        force=varied_attrs["force"],
-        intellect=varied_attrs["intellect"],
-        defense_stat=varied_attrs["defense"],
-        agility=varied_attrs["agility"],
-        luck=varied_attrs["luck"],
-        initial_force=varied_attrs["force"],
-        initial_intellect=varied_attrs["intellect"],
-        initial_defense=varied_attrs["defense"],
-        initial_agility=varied_attrs["agility"],
-        loyalty=int(offer.initial_loyalty),
-        gender=gender_choice,
-        morality=morality_value,
-        current_hp=initial_hp,
-    )
-    grant_template_skills(guest)
-    ensure_auto_training(guest)
+        custom_name = ""
+        prisoner_name = (prisoner.original_guest_name or "").strip()
+        if prisoner_name and prisoner_name != template.name:
+            custom_name = prisoner_name
 
-    prisoner.status = JailPrisoner.Status.RECRUITED
-    prisoner.save(update_fields=["status"])
-    copy_pool = load_jail_persuasion_profiles()["recruitment_copy"][offer.mode]
-    copy_entry = copy_pool[stable_seed(prisoner.id, offer.mode, "recruitment-copy") % len(copy_pool)]
-    copy_params = {
+        guest = Guest.objects.create(
+            manor=locked_manor,
+            template=template,
+            level=1,
+            experience=0,
+            custom_name=custom_name,
+            force=varied_attrs["force"],
+            intellect=varied_attrs["intellect"],
+            defense_stat=varied_attrs["defense"],
+            agility=varied_attrs["agility"],
+            luck=varied_attrs["luck"],
+            initial_force=varied_attrs["force"],
+            initial_intellect=varied_attrs["intellect"],
+            initial_defense=varied_attrs["defense"],
+            initial_agility=varied_attrs["agility"],
+            loyalty=int(offer.initial_loyalty),
+            gender=gender_choice,
+            morality=morality_value,
+            current_hp=initial_hp,
+        )
+        grant_template_skills(guest)
+        ensure_auto_training(guest)
+
+        prisoner.status = JailPrisoner.Status.RECRUITED
+        prisoner.save(update_fields=["status"])
+
+    copy_pool_name = "recruitment_copy" if recruited else "recruitment_failure_copy"
+    copy_pool = load_jail_persuasion_profiles()[copy_pool_name][offer.mode]
+    if recruited:
+        copy_seed = stable_seed(prisoner.id, offer.mode, "recruitment-copy")
+    else:
+        copy_seed = stable_seed(
+            prisoner.id,
+            offer.mode,
+            usage_date.isoformat(),
+            "recruitment-failure-copy",
+        )
+    copy_entry = copy_pool[copy_seed % len(copy_pool)]
+    public_copy_params: dict[str, object] = {
         "prisoner_name": prisoner.display_name,
-        "new_loyalty": int(offer.initial_loyalty),
+        "new_loyalty": int(offer.initial_loyalty) if recruited else 0,
     }
-    setattr(guest, "_recruitment_mode", offer.mode)
-    setattr(guest, "_recruitment_gold_cost", cost)
-    setattr(guest, "_recruitment_copy_key", copy_entry["key"])
-    setattr(guest, "_recruitment_copy_params", copy_params)
-    setattr(guest, "_recruitment_copy_text", render_copy(copy_entry["key"], copy_params))
-    return guest
+    audit_copy_params: dict[str, object] = {
+        **public_copy_params,
+        "mode": offer.mode,
+        "success_percent": success_percent,
+        "roll": roll,
+    }
+    JailInteractionLog.objects.create(
+        prisoner=prisoner,
+        captor=locked_manor,
+        method="recruitment",
+        speaker=None,
+        speaker_name_snapshot="",
+        speaker_template_key_snapshot="",
+        speaker_base_value_snapshot=None,
+        speaker_loyalty_before=None,
+        speaker_loyalty_after=None,
+        usage_date=usage_date,
+        attempt_scope="recruitment",
+        heart_before=heart_before,
+        heart_after=heart_before,
+        affinity_before=affinity_before,
+        affinity_after=affinity_before,
+        outcome=(JailInteractionLog.Outcome.RECRUITED if recruited else JailInteractionLog.Outcome.FAILED),
+        copy_key=copy_entry["key"],
+        copy_params=audit_copy_params,
+        resource_cost={GOLD_BAR_ITEM_KEY: cost},
+    )
+    return RecruitmentResult(
+        recruited=recruited,
+        mode=offer.mode,
+        prisoner=prisoner,
+        guest=guest,
+        gold_cost=cost,
+        initial_loyalty=int(offer.initial_loyalty) if recruited else None,
+        copy_key=copy_entry["key"],
+        copy_params=public_copy_params,
+        copy_text=render_copy(copy_entry["key"], public_copy_params),
+    )

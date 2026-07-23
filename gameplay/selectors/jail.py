@@ -7,7 +7,6 @@ from django.utils import timezone
 from gameplay.constants import PVPConstants, get_raid_capture_guest_rate
 from gameplay.models import JailInteractionLog
 from gameplay.services.jail import list_held_prisoners, list_oath_bonds
-from gameplay.services.jail_persuasion.effects import normalize_speaker_ratio, resolve_effect
 from gameplay.services.jail_persuasion.eligibility import RECRUITMENT_MODES, recruitment_offer
 from gameplay.services.jail_persuasion.interactions import daily_action_limit
 from gameplay.services.jail_persuasion.milestones import pending_milestone
@@ -15,12 +14,8 @@ from gameplay.services.jail_persuasion.profiles import (
     METHOD_MIGHT,
     METHOD_ORDER,
     METHOD_REASON,
-    calculate_affinities,
-    choose_taboo,
-    clamp,
     get_clue_keys,
     load_jail_persuasion_profiles,
-    rarity_difficulty,
     render_copy,
 )
 from guests.models import Guest, GuestStatus
@@ -44,76 +39,6 @@ def _format_method_cost(cost: dict[str, Any]) -> str:
     return " · ".join(parts) if parts else "无额外消耗"
 
 
-def _speaker_risk(ratio: float) -> tuple[str, str]:
-    if ratio < 0.70:
-        return "backfire", "压倒性劣势"
-    if ratio < 0.85:
-        return "failed", "明显劣势"
-    if ratio < 1.15:
-        return "even", "势均力敌"
-    if ratio < 1.50:
-        return "advantage", "占据优势"
-    return "dominant", "压倒性优势"
-
-
-def _effect_range(
-    prisoner: Any,
-    method: str,
-    *,
-    speaker_ratio: float | None = None,
-    speaker_archetype: str = "",
-) -> dict[str, Any]:
-    scores = calculate_affinities(
-        prisoner.guest_template,
-        captured_loyalty=int(prisoner.captured_loyalty),
-        original_level=int(prisoner.original_level),
-    )
-    use_hidden_state = int(prisoner.revealed_level or 0) >= 2
-    if use_hidden_state:
-        hidden_states = [
-            (str(prisoner.stance_method or ""), str(prisoner.taboo_method or "")),
-        ]
-    else:
-        ordered_methods = sorted(
-            METHOD_ORDER,
-            key=lambda item: (-scores[item], METHOD_ORDER.index(item)),
-        )
-        possible_taboo = choose_taboo(scores)
-        hidden_states = [("", possible_taboo)]
-        if method in ordered_methods[:2]:
-            hidden_states.append((method, possible_taboo))
-    next_streak = int(prisoner.same_method_streak or 0) + 1 if prisoner.last_method == method else 1
-    effects = [
-        resolve_effect(
-            method=method,
-            base_score=scores[method],
-            stance_method=stance_method,
-            taboo_method=taboo_method,
-            rarity_difficulty_value=rarity_difficulty(prisoner.guest_template),
-            original_level=int(prisoner.original_level),
-            same_method_streak=next_streak,
-            speaker_ratio=speaker_ratio,
-            speaker_archetype=speaker_archetype,
-            heart_variation=heart_variation,
-            affinity_variation=affinity_variation,
-        )
-        for stance_method, taboo_method in hidden_states
-        for heart_variation, affinity_variation in ((-1, -2), (1, 2))
-    ]
-    heart = int(prisoner.loyalty)
-    affinity = int(prisoner.affinity)
-    heart_deltas = [clamp(heart + item.heart_delta, 0, 100) - heart for item in effects]
-    affinity_deltas = [clamp(affinity + item.affinity_delta, 0, 100) - affinity for item in effects]
-    outcomes = {item.outcome for item in effects}
-    return {
-        "heart_min": min(heart_deltas),
-        "heart_max": max(heart_deltas),
-        "affinity_min": min(affinity_deltas),
-        "affinity_max": max(affinity_deltas),
-        "outcome": outcomes.pop() if len(outcomes) == 1 else "uncertain",
-    }
-
-
 def _speaker_options(manor: Any, prisoner: Any, *, today: Any) -> dict[str, list[dict[str, Any]]]:
     speakers = list(
         Guest.objects.filter(manor=manor, status=GuestStatus.IDLE).select_related("template").order_by("id")
@@ -132,36 +57,20 @@ def _speaker_options(manor: Any, prisoner: Any, *, today: Any) -> dict[str, list
     )
     result: dict[str, list[dict[str, Any]]] = {METHOD_REASON: [], METHOD_MIGHT: []}
     for method in (METHOD_REASON, METHOD_MIGHT):
-        if method == METHOD_REASON:
-            prisoner_value = max(1, int(prisoner.guest_template.base_intellect))
-        else:
-            prisoner_value = max(1, int(prisoner.guest_template.base_attack))
         for speaker in speakers:
             if method == METHOD_REASON:
                 speaker_value = int(speaker.template.base_intellect)
             else:
                 speaker_value = int(speaker.template.base_attack)
-            ratio = normalize_speaker_ratio(speaker_value / prisoner_value)
-            risk, risk_label = _speaker_risk(ratio)
             result[method].append(
                 {
                     "id": int(speaker.id),
                     "name": speaker.display_name,
                     "archetype": str(speaker.template.archetype),
                     "speaker_base_value": speaker_value,
-                    "prisoner_base_value": prisoner_value,
-                    "ratio": ratio,
-                    "risk": risk,
-                    "risk_label": risk_label,
                     "used_today": speaker.id in used_speaker_ids,
                     "method_used_today": method in used_methods,
                     "available": speaker.id not in used_speaker_ids and method not in used_methods,
-                    "effect_range": _effect_range(
-                        prisoner,
-                        method,
-                        speaker_ratio=ratio,
-                        speaker_archetype=str(speaker.template.archetype or ""),
-                    ),
                 }
             )
     return result
@@ -182,15 +91,19 @@ def _serialize_pending_milestone(prisoner: Any) -> dict[str, Any] | None:
             {
                 "key": choice.key,
                 "label": choice.label,
-                "heart_delta": choice.heart_delta,
-                "affinity_delta": choice.affinity_delta,
             }
             for choice in event.choices
         ],
     }
 
 
-def build_prisoner_state(manor: Any, prisoner: Any, *, today: Any | None = None) -> dict[str, Any]:
+def build_prisoner_state(
+    manor: Any,
+    prisoner: Any,
+    *,
+    today: Any | None = None,
+    known_recruitment_attempted_today: bool | None = None,
+) -> dict[str, Any]:
     local_date = today or timezone.localdate()
     profile = load_jail_persuasion_profiles()
     observed = prisoner.observed_at is not None
@@ -244,6 +157,13 @@ def build_prisoner_state(manor: Any, prisoner: Any, *, today: Any | None = None)
         for offer in [recruitment_offer(prisoner, mode)]
     }
     pending = _serialize_pending_milestone(prisoner)
+    recruitment_attempted_today = known_recruitment_attempted_today
+    if recruitment_attempted_today is None:
+        recruitment_attempted_today = JailInteractionLog.objects.filter(
+            prisoner=prisoner,
+            usage_date=local_date,
+            attempt_scope="recruitment",
+        ).exists()
     return {
         "id": int(prisoner.id),
         "name": prisoner.display_name,
@@ -270,23 +190,47 @@ def build_prisoner_state(manor: Any, prisoner: Any, *, today: Any | None = None)
                 "label": profile["methods"][method]["label"],
                 "cost": dict(profile["methods"][method]["cost"]),
                 "cost_text": _format_method_cost(dict(profile["methods"][method]["cost"])),
-                "effect_range": (
-                    _effect_range(prisoner, method) if method not in {METHOD_REASON, METHOD_MIGHT} else None
-                ),
             }
             for method in METHOD_ORDER
         },
         "speaker_options": _speaker_options(manor, prisoner, today=local_date),
         "pending_milestone": pending,
         "recruitment_offers": offers,
+        "recruitment_attempted_today": recruitment_attempted_today,
         "history": history,
         "can_interact": observed and pending is None and interactions_today < action_limit,
     }
 
 
+def build_prisoner_states(
+    manor: Any,
+    prisoners: list[Any],
+    *,
+    today: Any | None = None,
+) -> list[dict[str, Any]]:
+    local_date = today or timezone.localdate()
+    prisoner_ids = [int(prisoner.id) for prisoner in prisoners]
+    attempted_prisoner_ids = set(
+        JailInteractionLog.objects.filter(
+            prisoner_id__in=prisoner_ids,
+            usage_date=local_date,
+            attempt_scope="recruitment",
+        ).values_list("prisoner_id", flat=True)
+    )
+    return [
+        build_prisoner_state(
+            manor,
+            prisoner,
+            today=local_date,
+            known_recruitment_attempted_today=int(prisoner.id) in attempted_prisoner_ids,
+        )
+        for prisoner in prisoners
+    ]
+
+
 def get_jail_page_context(manor: Any) -> dict[str, Any]:
     prisoners = list_held_prisoners(manor)
-    prisoner_states = [build_prisoner_state(manor, prisoner) for prisoner in prisoners]
+    prisoner_states = build_prisoner_states(manor, prisoners)
     return {
         "jail_capacity": int(getattr(manor, "jail_capacity", 0) or 0),
         "prisoners": prisoners,

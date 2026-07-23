@@ -8,79 +8,65 @@
 {% endblock %}
 
 {% block content %}
-<section class="jail-workspace" data-jail-root="1">
+<section class="dashboard jail-workspace" data-jail-root="1">
   <form class="jail-csrf" aria-hidden="true">{% csrf_token %}</form>
 
-  <header class="jail-heading">
+  <div class="tw-section-header jail-page-header">
     <div>
-      <p class="jail-kicker">PRISONER DOSSIERS</p>
-      <h1>监牢案卷</h1>
-      <p class="jail-summary">
-        在押 <strong>{{ prisoner_states|length }}</strong> / {{ jail_capacity }}
-        <span aria-hidden="true">·</span>
-        俘获概率 {{ capture_rate_percent }}%
-      </p>
+      <h1>监牢</h1>
+      <p class="caption">在押 <strong>{{ prisoner_states|length }}</strong> / <strong>{{ jail_capacity }}</strong></p>
     </div>
-    <a class="tw-btn-secondary" href="{% url 'gameplay:oath_grove' %}">结义林</a>
-  </header>
+  </div>
 
   {% if prisoner_states %}
-  <div class="jail-dossier-list">
+  <div class="jail-prisoner-list">
     {% for p in prisoner_states %}
-    <article class="jail-dossier" data-prisoner-id="{{ p.id }}">
-      <header class="jail-dossier-header">
-        <div class="jail-identity">
-          <span class="jail-file-number">案卷 {{ forloop.counter|stringformat:"02d" }}</span>
+    <article class="jail-cell tw-panel jail-prisoner-panel" data-prisoner-id="{{ p.id }}">
+      <header class="jail-cell-header tw-panel-header jail-prisoner-header">
+        <div class="jail-prisoner-identity">
+          <span class="jail-slot-label">牢位 {{ forloop.counter }}</span>
           <h2>{{ p.name }}</h2>
-          <div class="jail-tags">
-            <span class="jail-tag jail-tag--rarity">{{ p.rarity_label }}</span>
-            <span class="jail-tag">{% if p.archetype == 'civil' %}文系{% else %}武系{% endif %}</span>
-            <span class="jail-tag">原等级 {{ p.original_level }}</span>
-          </div>
+          <p>原属：{{ p.original_manor }}</p>
         </div>
-        <dl class="jail-capture-facts">
-          <div><dt>原属</dt><dd>{{ p.original_manor }}</dd></div>
-          <div><dt>被俘忠诚</dt><dd>{{ p.captured_loyalty }}</dd></div>
-          <div><dt>今日行动</dt><dd>{{ p.remaining_actions }} / {{ p.daily_limit }}</dd></div>
-        </dl>
+        <div class="jail-prisoner-actions">
+          <button
+            type="button"
+            class="tw-btn-secondary tw-btn-sm"
+            data-jail-history-open
+            data-prisoner-name="{{ p.name }}"
+            aria-label="查看 {{ p.name }} 的招降记录"
+          >招降记录</button>
+          <form
+            method="post"
+            action="{% url 'gameplay:release_prisoner_view' p.id %}"
+            data-jail-release-form
+            data-release-prisoner-name="{{ p.name }}"
+          >
+            {% csrf_token %}
+            <button type="submit" class="tw-btn-secondary tw-btn-sm" aria-label="释放 {{ p.name }}">释放</button>
+          </form>
+        </div>
       </header>
 
-      <div class="jail-progress-grid">
-        <div class="jail-meter">
-          <div class="jail-meter-label"><span>心防</span><strong>{{ p.heart }}</strong></div>
-          <div class="jail-meter-track" role="progressbar" aria-label="{{ p.name }}心防" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ p.heart }}">
-            <span class="jail-meter-fill jail-meter-fill--heart" style="width: {{ p.heart }}%"></span>
+      <div class="jail-cell-content tw-panel-content jail-prisoner-content">
+        <div class="jail-status-grid">
+          <div class="jail-status-item">
+            <div class="jail-status-label"><span>心防</span><strong>{{ p.heart }}</strong></div>
+            <div class="jail-meter-track" role="progressbar" aria-label="{{ p.name }}心防" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ p.heart }}">
+              <span class="jail-meter-fill jail-meter-fill--heart" style="width: {{ p.heart }}%"></span>
+            </div>
+          </div>
+          <div class="jail-status-item">
+            <div class="jail-status-label"><span>归心</span><strong>{{ p.affinity }}</strong></div>
+            <div class="jail-meter-track" role="progressbar" aria-label="{{ p.name }}归心" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ p.affinity }}">
+              <span class="jail-meter-fill jail-meter-fill--affinity" style="width: {{ p.affinity }}%"></span>
+            </div>
+          </div>
+          <div class="jail-status-item jail-status-item--actions">
+            <span>今日剩余行动</span>
+            <strong>{{ p.remaining_actions }} / {{ p.daily_limit }}</strong>
           </div>
         </div>
-        <div class="jail-meter">
-          <div class="jail-meter-label"><span>归心</span><strong>{{ p.affinity }}</strong></div>
-          <div class="jail-meter-track" role="progressbar" aria-label="{{ p.name }}归心" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ p.affinity }}">
-            <span class="jail-meter-fill jail-meter-fill--affinity" style="width: {{ p.affinity }}%"></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="jail-dossier-body">
-        <section class="jail-observation" aria-labelledby="observation-{{ p.id }}">
-          <div class="jail-section-title">
-            <h3 id="observation-{{ p.id }}">察言记录</h3>
-            <span>品性 {{ p.morality }} · 线索 {{ p.revealed_level }}/3</span>
-          </div>
-          {% if p.observed %}
-            {% if p.clues %}
-            <ol class="jail-clue-list">
-              {% for clue in p.clues %}<li>{{ clue.text }}</li>{% endfor %}
-            </ol>
-            {% endif %}
-          {% else %}
-            <button
-              type="button"
-              class="tw-btn-primary jail-observe-btn"
-              data-jail-action="observe"
-              data-action-url="{% url 'gameplay:observe_prisoner_api' p.id %}"
-            >察言观色</button>
-          {% endif %}
-        </section>
 
         {% if p.pending_milestone %}
         <section class="jail-milestone" aria-labelledby="milestone-{{ p.id }}">
@@ -103,112 +89,130 @@
         </section>
         {% endif %}
 
-        <section class="jail-methods" aria-labelledby="methods-{{ p.id }}">
-          <div class="jail-section-title">
-            <h3 id="methods-{{ p.id }}">招降手段</h3>
-            <span>剩余 {{ p.remaining_actions }} 次</span>
-          </div>
-          <div class="jail-method-grid">
-            <div class="jail-method">
-              <div>
-                <strong>{{ p.methods.kindness.label }}</strong>
-                <span>{{ p.methods.kindness.cost_text }}</span>
-                <span>预计 心防 {% if p.methods.kindness.effect_range.heart_min > 0 %}+{% endif %}{{ p.methods.kindness.effect_range.heart_min }}~{% if p.methods.kindness.effect_range.heart_max > 0 %}+{% endif %}{{ p.methods.kindness.effect_range.heart_max }} · 归心 {% if p.methods.kindness.effect_range.affinity_min > 0 %}+{% endif %}{{ p.methods.kindness.effect_range.affinity_min }}~{% if p.methods.kindness.effect_range.affinity_max > 0 %}+{% endif %}{{ p.methods.kindness.effect_range.affinity_max }}</span>
-              </div>
+        <div class="jail-operation-grid">
+          <section class="jail-subsection jail-observation" aria-labelledby="observation-{{ p.id }}">
+            <div class="jail-section-title">
+              <h3 id="observation-{{ p.id }}">察言记录</h3>
+              <span>线索 {{ p.revealed_level }}/3</span>
+            </div>
+            {% if p.observed %}
+              {% if p.clues %}
+              <ol class="jail-clue-list">
+                {% for clue in p.clues %}<li>{{ clue.text }}</li>{% endfor %}
+              </ol>
+              {% else %}
+              <p class="jail-muted">暂未发现新的线索。</p>
+              {% endif %}
+            {% else %}
+              <p class="jail-muted">先观察其言行，再决定采用何种手段。</p>
               <button
                 type="button"
-                class="tw-btn-secondary tw-btn-sm"
-                data-jail-action="interact"
-                data-method="kindness"
-                data-action-url="{% url 'gameplay:interact_prisoner_api' p.id %}"
-                {% if not p.can_interact %}disabled{% endif %}
-              >礼待</button>
+                class="tw-btn-primary jail-observe-btn"
+                data-jail-action="observe"
+                data-action-url="{% url 'gameplay:observe_prisoner_api' p.id %}"
+              >察言观色</button>
+            {% endif %}
+          </section>
+
+          <section class="jail-subsection jail-methods" aria-labelledby="methods-{{ p.id }}">
+            <div class="jail-section-title">
+              <h3 id="methods-{{ p.id }}">招降手段</h3>
+              <span>剩余 {{ p.remaining_actions }} 次</span>
             </div>
-            <div class="jail-method">
-              <div>
-                <strong>{{ p.methods.bribe.label }}</strong>
-                <span>{{ p.methods.bribe.cost_text }}</span>
-                <span>预计 心防 {% if p.methods.bribe.effect_range.heart_min > 0 %}+{% endif %}{{ p.methods.bribe.effect_range.heart_min }}~{% if p.methods.bribe.effect_range.heart_max > 0 %}+{% endif %}{{ p.methods.bribe.effect_range.heart_max }} · 归心 {% if p.methods.bribe.effect_range.affinity_min > 0 %}+{% endif %}{{ p.methods.bribe.effect_range.affinity_min }}~{% if p.methods.bribe.effect_range.affinity_max > 0 %}+{% endif %}{{ p.methods.bribe.effect_range.affinity_max }}</span>
-              </div>
-              <form method="post" action="{% url 'gameplay:draw_pie_view' p.id %}">
-                {% csrf_token %}
+            <div class="jail-method-grid">
+              <div class="jail-method">
+                <div>
+                  <strong>{{ p.methods.kindness.label }}</strong>
+                  <span>{{ p.methods.kindness.cost_text }}</span>
+                </div>
                 <button
-                  type="submit"
+                  type="button"
                   class="tw-btn-secondary tw-btn-sm"
                   data-jail-action="interact"
-                  data-method="bribe"
+                  data-method="kindness"
                   data-action-url="{% url 'gameplay:interact_prisoner_api' p.id %}"
                   {% if not p.can_interact %}disabled{% endif %}
-                >利诱</button>
-              </form>
-            </div>
-            <div class="jail-method jail-method--speaker">
-              <div>
-                <strong>{{ p.methods.reason.label }}</strong>
-                <span>{{ p.methods.reason.cost_text }}</span>
-                <span>比较双方模板基础智力</span>
+                >礼待</button>
               </div>
-              <label class="jail-speaker-select">
-                <span>基础智力</span>
-                <select data-speaker-select="reason" aria-label="陈明大势说客" {% if not p.can_interact %}disabled{% endif %}>
-                  <option value="">选择说客</option>
-                  {% for speaker in p.speaker_options.reason %}
-                  <option
-                    value="{{ speaker.id }}"
-                    data-ratio="{{ speaker.ratio }}"
-                    data-speaker-name="{{ speaker.name }}"
-                    data-risk="{{ speaker.risk }}"
-                    {% if not speaker.available %}disabled{% endif %}
-                  >{{ speaker.name }} · {{ speaker.speaker_base_value }}/{{ speaker.prisoner_base_value }} · {{ speaker.risk_label }} · 心防 {{ speaker.effect_range.heart_min }}~{{ speaker.effect_range.heart_max }} / 归心 {{ speaker.effect_range.affinity_min }}~{{ speaker.effect_range.affinity_max }}{% if speaker.used_today %} · 今日已用{% endif %}</option>
-                  {% endfor %}
-                </select>
-              </label>
-              <button
-                type="button"
-                class="tw-btn-secondary tw-btn-sm"
-                data-jail-action="interact"
-                data-method="reason"
-                data-action-url="{% url 'gameplay:interact_prisoner_api' p.id %}"
-                {% if not p.can_interact %}disabled{% endif %}
-              >说服</button>
-            </div>
-            <div class="jail-method jail-method--speaker">
-              <div>
-                <strong>{{ p.methods.might.label }}</strong>
-                <span>{{ p.methods.might.cost_text }}</span>
-                <span>比较双方模板基础武力</span>
+              <div class="jail-method">
+                <div>
+                  <strong>{{ p.methods.bribe.label }}</strong>
+                  <span>{{ p.methods.bribe.cost_text }}</span>
+                </div>
+                <form method="post" action="{% url 'gameplay:draw_pie_view' p.id %}">
+                  {% csrf_token %}
+                  <button
+                    type="submit"
+                    class="tw-btn-secondary tw-btn-sm"
+                    data-jail-action="interact"
+                    data-method="bribe"
+                    data-action-url="{% url 'gameplay:interact_prisoner_api' p.id %}"
+                    {% if not p.can_interact %}disabled{% endif %}
+                  >利诱</button>
+                </form>
               </div>
-              <label class="jail-speaker-select">
-                <span>基础武力</span>
-                <select data-speaker-select="might" aria-label="以武慑服说客" {% if not p.can_interact %}disabled{% endif %}>
-                  <option value="">选择说客</option>
-                  {% for speaker in p.speaker_options.might %}
-                  <option
-                    value="{{ speaker.id }}"
-                    data-ratio="{{ speaker.ratio }}"
-                    data-speaker-name="{{ speaker.name }}"
-                    data-risk="{{ speaker.risk }}"
-                    {% if not speaker.available %}disabled{% endif %}
-                  >{{ speaker.name }} · {{ speaker.speaker_base_value }}/{{ speaker.prisoner_base_value }} · {{ speaker.risk_label }} · 心防 {{ speaker.effect_range.heart_min }}~{{ speaker.effect_range.heart_max }} / 归心 {{ speaker.effect_range.affinity_min }}~{{ speaker.effect_range.affinity_max }}{% if speaker.used_today %} · 今日已用{% endif %}</option>
-                  {% endfor %}
-                </select>
-              </label>
-              <button
-                type="button"
-                class="tw-btn-secondary tw-btn-sm"
-                data-jail-action="interact"
-                data-method="might"
-                data-action-url="{% url 'gameplay:interact_prisoner_api' p.id %}"
-                {% if not p.can_interact %}disabled{% endif %}
-              >慑服</button>
+              <div class="jail-method jail-method--speaker">
+                <div>
+                  <strong>{{ p.methods.reason.label }}</strong>
+                  <span>{{ p.methods.reason.cost_text }}</span>
+                </div>
+                <label class="jail-speaker-select">
+                  <span>选择说客</span>
+                  <select data-speaker-select="reason" aria-label="陈明大势说客" {% if not p.can_interact %}disabled{% endif %}>
+                    <option value="">请选择</option>
+                    {% for speaker in p.speaker_options.reason %}
+                    <option
+                      value="{{ speaker.id }}"
+                      data-speaker-name="{{ speaker.name }}"
+                      {% if not speaker.available %}disabled{% endif %}
+                    >{{ speaker.name }} · 智力 {{ speaker.speaker_base_value }}{% if speaker.used_today %} · 今日已用{% endif %}</option>
+                    {% endfor %}
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  class="tw-btn-secondary tw-btn-sm"
+                  data-jail-action="interact"
+                  data-method="reason"
+                  data-action-url="{% url 'gameplay:interact_prisoner_api' p.id %}"
+                  {% if not p.can_interact %}disabled{% endif %}
+                >说服</button>
+              </div>
+              <div class="jail-method jail-method--speaker">
+                <div>
+                  <strong>{{ p.methods.might.label }}</strong>
+                  <span>{{ p.methods.might.cost_text }}</span>
+                </div>
+                <label class="jail-speaker-select">
+                  <span>选择说客</span>
+                  <select data-speaker-select="might" aria-label="以武慑服说客" {% if not p.can_interact %}disabled{% endif %}>
+                    <option value="">请选择</option>
+                    {% for speaker in p.speaker_options.might %}
+                    <option
+                      value="{{ speaker.id }}"
+                      data-speaker-name="{{ speaker.name }}"
+                      {% if not speaker.available %}disabled{% endif %}
+                    >{{ speaker.name }} · 武力 {{ speaker.speaker_base_value }}{% if speaker.used_today %} · 今日已用{% endif %}</option>
+                    {% endfor %}
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  class="tw-btn-secondary tw-btn-sm"
+                  data-jail-action="interact"
+                  data-method="might"
+                  data-action-url="{% url 'gameplay:interact_prisoner_api' p.id %}"
+                  {% if not p.can_interact %}disabled{% endif %}
+                >慑服</button>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
 
-        <section class="jail-recruitment" aria-labelledby="recruitment-{{ p.id }}">
+        <section class="jail-subsection jail-recruitment" aria-labelledby="recruitment-{{ p.id }}">
           <div class="jail-section-title">
             <h3 id="recruitment-{{ p.id }}">归附决断</h3>
-            <span>招募后重置为 1 级</span>
+            <span>归附后成为 1 级门客{% if p.recruitment_attempted_today %} · 今日已尝试{% endif %}</span>
           </div>
           <div class="jail-offer-grid">
             <button
@@ -217,7 +221,7 @@
               data-jail-action="recruit"
               data-mode="standard"
               data-action-url="{% url 'gameplay:recruit_prisoner_api' p.id %}"
-              {% if not p.recruitment_offers.standard.eligible or p.pending_milestone %}disabled{% endif %}
+              {% if not p.recruitment_offers.standard.eligible or p.pending_milestone or p.recruitment_attempted_today %}disabled{% endif %}
             ><strong>{{ p.recruitment_offers.standard.label }}</strong><span>心防 ≤ {{ p.recruitment_offers.standard.heart_max }} · {{ p.recruitment_offers.standard.gold_cost }} 金条 · 忠诚 {{ p.recruitment_offers.standard.initial_loyalty }}</span></button>
             <button
               type="button"
@@ -225,7 +229,7 @@
               data-jail-action="recruit"
               data-mode="negotiated"
               data-action-url="{% url 'gameplay:recruit_prisoner_api' p.id %}"
-              {% if not p.recruitment_offers.negotiated.eligible or p.pending_milestone %}disabled{% endif %}
+              {% if not p.recruitment_offers.negotiated.eligible or p.pending_milestone or p.recruitment_attempted_today %}disabled{% endif %}
             ><strong>{{ p.recruitment_offers.negotiated.label }}</strong><span>心防 ≤ {{ p.recruitment_offers.negotiated.heart_max }} · 归心 ≥ {{ p.recruitment_offers.negotiated.affinity_min }} · {{ p.recruitment_offers.negotiated.gold_cost }} 金条 · 忠诚 {{ p.recruitment_offers.negotiated.initial_loyalty }}</span></button>
             <button
               type="button"
@@ -233,38 +237,28 @@
               data-jail-action="recruit"
               data-mode="heartfelt"
               data-action-url="{% url 'gameplay:recruit_prisoner_api' p.id %}"
-              {% if not p.recruitment_offers.heartfelt.eligible or p.pending_milestone %}disabled{% endif %}
+              {% if not p.recruitment_offers.heartfelt.eligible or p.pending_milestone or p.recruitment_attempted_today %}disabled{% endif %}
             ><strong>{{ p.recruitment_offers.heartfelt.label }}</strong><span>归心 ≥ {{ p.recruitment_offers.heartfelt.affinity_min }} · {{ p.recruitment_offers.heartfelt.gold_cost }} 金条 · 忠诚 {{ p.recruitment_offers.heartfelt.initial_loyalty }}</span></button>
           </div>
         </section>
 
-        <footer class="jail-dossier-footer">
-          <div class="jail-history">
-            <h3>最近记录</h3>
-            {% if p.history %}
-            <ol>
-              {% for item in p.history %}
-              <li><span>{{ item.text }}</span><small>心防 {% if item.heart_delta > 0 %}+{% endif %}{{ item.heart_delta }} · 归心 {% if item.affinity_delta > 0 %}+{% endif %}{{ item.affinity_delta }}{% if item.speaker_loyalty_delta %} · {{ item.speaker_name }}忠诚 {{ item.speaker_loyalty_delta }}{% endif %}</small></li>
-              {% endfor %}
-            </ol>
-            {% else %}
-            <p>尚无招降记录。</p>
-            {% endif %}
+        <div class="jail-history-data" hidden aria-hidden="true">
+          {% for item in p.history %}
+          <div data-jail-history-item>
+            {{ item.text }}｜心防 {% if item.heart_delta > 0 %}+{% endif %}{{ item.heart_delta }} · 归心 {% if item.affinity_delta > 0 %}+{% endif %}{{ item.affinity_delta }}{% if item.speaker_loyalty_delta %} · {{ item.speaker_name }}忠诚 {{ item.speaker_loyalty_delta }}{% endif %}
           </div>
-          <form method="post" action="{% url 'gameplay:release_prisoner_view' p.id %}">
-            {% csrf_token %}
-            <button type="submit" class="tw-btn-secondary tw-btn-sm">释放</button>
-          </form>
-        </footer>
+          {% endfor %}
+        </div>
       </div>
     </article>
     {% endfor %}
   </div>
   {% else %}
-  <div class="jail-empty">
-    <strong>当前没有在押门客</strong>
-    <span>监牢空置，踢馆获胜后可能俘获对方出战门客。</span>
-  </div>
+  <section class="tw-panel">
+    <div class="tw-panel-content tw-empty-state">
+      当前没有在押门客，踢馆获胜后可能俘获对方出战门客。
+    </div>
+  </section>
   {% endif %}
 </section>
 {% endblock %}

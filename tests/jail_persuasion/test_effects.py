@@ -87,7 +87,7 @@ def test_reason_speaker_applies_ratio_and_matching_archetype_bonuses():
         **{**BASE_ARGS, "stance_method": METHOD_REASON, "speaker_archetype": "civil"},
     )
     assert result.outcome == "matched"
-    assert (result.heart_delta, result.affinity_delta) == (-11, 16)
+    assert (result.heart_delta, result.affinity_delta) == (-6, 9)
 
 
 def test_might_speaker_applies_ratio_and_matching_archetype_bonuses():
@@ -96,7 +96,24 @@ def test_might_speaker_applies_ratio_and_matching_archetype_bonuses():
         speaker_ratio=1.2,
         **{**BASE_ARGS, "speaker_archetype": "military"},
     )
-    assert (result.heart_delta, result.affinity_delta) == (-16, 10)
+    assert (result.heart_delta, result.affinity_delta) == (-8, 5)
+
+
+@pytest.mark.parametrize(
+    ("method", "speaker_archetype", "expected"),
+    [
+        (METHOD_REASON, "civil", (-7, 9)),
+        (METHOD_MIGHT, "military", (-10, 6)),
+    ],
+)
+def test_dominant_matching_speaker_effect_is_bounded_after_rebalance(method, speaker_archetype, expected):
+    result = resolve_effect(
+        method=method,
+        speaker_ratio=1.5,
+        **{**BASE_ARGS, "stance_method": method, "speaker_archetype": speaker_archetype},
+    )
+
+    assert (result.heart_delta, result.affinity_delta) == expected
 
 
 def test_difficulty_factor_is_bounded_at_point_sixty_eight():

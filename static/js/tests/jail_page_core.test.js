@@ -3,27 +3,9 @@ const assert = require("node:assert/strict");
 
 const core = require("../jail_page_core.js");
 
-test("classifySpeakerRatio uses gap-free design thresholds", () => {
-  assert.equal(core.classifySpeakerRatio(0.6999).kind, "backfire");
-  assert.equal(core.classifySpeakerRatio(0.7).kind, "failed");
-  assert.equal(core.classifySpeakerRatio(0.8499).kind, "failed");
-  assert.equal(core.classifySpeakerRatio(0.85).kind, "even");
-  assert.equal(core.classifySpeakerRatio(1.15).kind, "advantage");
-  assert.equal(core.classifySpeakerRatio(1.5).kind, "dominant");
-});
-
-test("buildSpeakerWarning explains deterministic failure and backfire", () => {
-  const failed = core.buildSpeakerWarning("reason", 0.8, "年轻辩士");
-  assert.equal(failed.requiresConfirmation, true);
-  assert.match(failed.message, /无法奏效/);
-  assert.match(failed.message, /今日次数/);
-
-  const backfire = core.buildSpeakerWarning("might", 0.5, "新卒");
-  assert.equal(backfire.requiresConfirmation, true);
-  assert.match(backfire.message, /基础武力/);
-  assert.match(backfire.message, /忠诚下降 1 点/);
-
-  assert.equal(core.buildSpeakerWarning("reason", 1.0, "纵横客").requiresConfirmation, false);
+test("speaker outcome classifications are not exposed to the page", () => {
+  assert.equal(core.classifySpeakerRatio, undefined);
+  assert.equal(core.buildSpeakerWarning, undefined);
 });
 
 test("formatDeltaSummary omits zero speaker change and keeps signs", () => {
@@ -45,8 +27,18 @@ test("buildInteractionPayload includes speaker only for speaker methods", () => 
 
 test("formatRecruitmentSummary reports the generated level and loyalty", () => {
   assert.equal(
-    core.formatRecruitmentSummary({ initial_loyalty: 75 }),
+    core.formatRecruitmentSummary({ recruited: true, initial_loyalty: 75 }),
     "已成为 1 级门客｜初始忠诚 75"
   );
+  assert.equal(core.formatRecruitmentSummary({ recruited: false, initial_loyalty: 75 }), "");
+  assert.equal(core.formatRecruitmentSummary({ recruited: false, initial_loyalty: null }), "");
   assert.equal(core.formatRecruitmentSummary({}), "");
+});
+
+test("formatHistoryEntries prepares readable text for the shared dialog", () => {
+  assert.equal(
+    core.formatHistoryEntries(["第一次交涉  心防 -6", "第二次交涉\n归心 +10"]),
+    "1. 第一次交涉 心防 -6\n\n2. 第二次交涉 归心 +10"
+  );
+  assert.equal(core.formatHistoryEntries([]), "尚无招降记录。");
 });

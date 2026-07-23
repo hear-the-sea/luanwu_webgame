@@ -6,12 +6,87 @@ import pytest
 from django.db import connection
 
 from core.exceptions import JailError
-from gameplay.models import JailInteractionLog, JailPrisoner, Manor
+from gameplay.models import InventoryItem, JailInteractionLog, JailPrisoner, Manor
 from gameplay.services.jail import recruit_prisoner
 from gameplay.services.jail_persuasion.interactions import interact_prisoner, observe_prisoner
 from gameplay.services.jail_persuasion.profiles import METHOD_KINDNESS, METHOD_REASON
+from guests.models import Guest
 
 pytestmark = [pytest.mark.integration]
+
+
+class _SuccessfulRng:
+    def __init__(self):
+        self._first_randint = True
+
+    def randint(self, start: int, end: int) -> int:
+        if self._first_randint:
+            self._first_randint = False
+            assert (start, end) == (1, 100)
+            return 1
+        if start <= 0 <= end:
+            return 0
+        return start
+
+    def choice(self, values):
+        return values[0]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_concurrent_cross_mode_recruitment_succeeds_only_once(persuasion_world):
+    if connection.vendor == "sqlite":
+        pytest.skip("SQLite does not provide row-level select_for_update semantics for this concurrency scenario")
+
+    prisoner = persuasion_world.prisoner
+    persuasion_world.captor.guests.all().delete()
+    prisoner.loyalty = 30
+    prisoner.affinity = 100
+    prisoner.milestone_stage = 2
+    prisoner.save(update_fields=["loyalty", "affinity", "milestone_stage"])
+
+    barrier = threading.Barrier(2)
+    results = []
+    errors: list[Exception] = []
+
+    def _worker(mode: str) -> None:
+        try:
+            local_manor = Manor.objects.get(pk=persuasion_world.captor.pk)
+            barrier.wait(timeout=5)
+            results.append(recruit_prisoner(local_manor, prisoner.id, mode=mode, rng=_SuccessfulRng()))
+        except Exception as exc:  # pragma: no cover - validated by assertions below
+            errors.append(exc)
+
+    threads = [
+        threading.Thread(target=_worker, args=("standard",)),
+        threading.Thread(target=_worker, args=("heartfelt",)),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=10)
+
+    assert all(not thread.is_alive() for thread in threads)
+    assert len(results) == 1
+    assert results[0].recruited is True
+    assert results[0].guest is not None
+    assert len(errors) == 1
+    assert isinstance(errors[0], JailError)
+
+    prisoner.refresh_from_db()
+    gold_quantity = InventoryItem.objects.get(
+        manor=persuasion_world.captor,
+        template=persuasion_world.gold_template,
+    ).quantity
+    assert prisoner.status == JailPrisoner.Status.RECRUITED
+    assert gold_quantity == 9
+    assert Guest.objects.filter(manor=persuasion_world.captor).count() == 1
+    assert (
+        JailInteractionLog.objects.filter(
+            prisoner=prisoner,
+            attempt_scope="recruitment",
+        ).count()
+        == 1
+    )
 
 
 @pytest.mark.django_db(transaction=True)
@@ -102,8 +177,10 @@ def test_recruitment_completing_first_makes_concurrent_interaction_fail(persuasi
     def _recruit_worker() -> None:
         try:
             local_manor = Manor.objects.get(pk=persuasion_world.captor.pk)
-            guest = recruit_prisoner(local_manor, prisoner.id)
-            recruited.append(guest.pk)
+            result = recruit_prisoner(local_manor, prisoner.id, rng=_SuccessfulRng())
+            assert result.recruited is True
+            assert result.guest is not None
+            recruited.append(result.guest.pk)
         except Exception as exc:  # pragma: no cover - validated by assertions below
             errors.append(exc)
 
@@ -137,4 +214,11 @@ def test_recruitment_completing_first_makes_concurrent_interaction_fail(persuasi
     assert "囚徒不存在或已处理" in str(errors[0])
     prisoner.refresh_from_db()
     assert prisoner.status == JailPrisoner.Status.RECRUITED
-    assert JailInteractionLog.objects.filter(prisoner=prisoner).count() == 0
+    assert (
+        JailInteractionLog.objects.filter(
+            prisoner=prisoner,
+            attempt_scope="recruitment",
+            outcome=JailInteractionLog.Outcome.RECRUITED,
+        ).count()
+        == 1
+    )

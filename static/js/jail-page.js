@@ -32,14 +32,52 @@
     return Promise.resolve();
   };
 
-  const confirmAction = (message, title) => {
+  const confirmAction = (message, title, okText = "确认执行") => {
     if (window.gameConfirm) {
-      return window.gameConfirm(message, { title, okText: "确认执行" });
+      return window.gameConfirm(message, { title, okText });
     }
     if (window.gameDialog?.confirm) {
-      return window.gameDialog.confirm(message, { title, okText: "确认执行" });
+      return window.gameDialog.confirm(message, { title, okText });
     }
     return Promise.resolve(window.confirm(message));
+  };
+
+  const confirmRelease = async (form) => {
+    const dossier = form.closest("[data-prisoner-id]");
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (form.dataset.releaseConfirmPending === "1" || dossier?.dataset.jailActionPending === "1") {
+      return;
+    }
+    form.dataset.releaseConfirmPending = "1";
+    if (dossier) {
+      dossier.dataset.jailActionPending = "1";
+    }
+
+    let submitted = false;
+    try {
+      const prisonerName = form.dataset.releasePrisonerName || "该俘虏";
+      const accepted = await confirmAction(
+        `确定释放“${prisonerName}”吗？释放后无法撤回。`,
+        "确认释放",
+        "确认释放"
+      );
+      if (!accepted) {
+        return;
+      }
+
+      form.submit();
+      submitted = true;
+    } catch (error) {
+      await showError(error instanceof Error ? error.message : "操作失败，请稍后重试");
+    } finally {
+      if (!submitted) {
+        delete form.dataset.releaseConfirmPending;
+        if (dossier) {
+          delete dossier.dataset.jailActionPending;
+        }
+        submitButton?.focus();
+      }
+    }
   };
 
   const postJson = async (url, payload) => {
@@ -67,9 +105,11 @@
       : core.formatRecruitmentSummary(payload);
     const title = result?.outcome === "event"
       ? "归心事件"
-      : payload?.initial_loyalty != null
+      : payload?.recruited === true
         ? "归附完成"
-        : "招降结果";
+        : payload?.recruited === false
+          ? "归附未成"
+          : "招降结果";
     await showSuccess(summary ? `${story}\n${summary}` : story, title);
     window.location.reload();
   };
@@ -83,62 +123,119 @@
     return {
       id: select.value,
       name: option.dataset.speakerName || option.textContent.trim(),
-      ratio: Number(option.dataset.ratio || 0),
+    };
+  };
+
+  const showHistory = async (button) => {
+    const dossier = button.closest("[data-prisoner-id]");
+    if (!dossier) {
+      return;
+    }
+    const entries = Array.from(dossier.querySelectorAll("[data-jail-history-item]"), (item) => item.textContent || "");
+    const message = core.formatHistoryEntries(entries);
+    const title = `${button.dataset.prisonerName || "俘虏"} · 招降记录`;
+    if (window.gameDialog?.alert) {
+      await window.gameDialog.alert(message, { title });
+      return;
+    }
+    window.alert(`${title}\n\n${message}`);
+  };
+
+  const setDossierPending = (dossier) => {
+    const controls = Array.from(dossier.querySelectorAll("button"));
+    const disabledStates = controls.map((control) => [control, control.disabled]);
+    dossier.classList.add("jail-action-pending");
+    controls.forEach((control) => {
+      control.disabled = true;
+    });
+    return () => {
+      dossier.classList.remove("jail-action-pending");
+      disabledStates.forEach(([control, disabled]) => {
+        control.disabled = disabled;
+      });
     };
   };
 
   const runAction = async (button) => {
     const action = button.dataset.jailAction;
     const dossier = button.closest("[data-prisoner-id]");
-    if (!action || !dossier || !button.dataset.actionUrl) {
+    if (!action || !dossier || !button.dataset.actionUrl || dossier.dataset.jailActionPending === "1") {
       return;
     }
+    dossier.dataset.jailActionPending = "1";
 
-    let payload = {};
-    let speakerName = "";
-    if (action === "interact") {
-      const method = button.dataset.method || "";
-      const speaker = method === "reason" || method === "might" ? selectedSpeaker(dossier, method) : null;
-      if ((method === "reason" || method === "might") && !speaker) {
-        await showError("请选择一名可用说客");
-        return;
-      }
-      payload = core.buildInteractionPayload(method, speaker?.id || "");
-      speakerName = speaker?.name || "";
-      if (speaker) {
-        const warning = core.buildSpeakerWarning(method, speaker.ratio, speaker.name);
-        if (warning.requiresConfirmation && !(await confirmAction(warning.message, warning.label))) {
+    let restoreControls = null;
+    let completed = false;
+    try {
+      let payload = {};
+      let speakerName = "";
+      if (action === "interact") {
+        const method = button.dataset.method || "";
+        const speaker = method === "reason" || method === "might" ? selectedSpeaker(dossier, method) : null;
+        if ((method === "reason" || method === "might") && !speaker) {
+          await showError("请选择一名可用说客");
+          return;
+        }
+        payload = core.buildInteractionPayload(method, speaker?.id || "");
+        speakerName = speaker?.name || "";
+      } else if (action === "milestone") {
+        payload = { choice: button.dataset.choice || "" };
+      } else if (action === "recruit") {
+        payload = { mode: button.dataset.mode || "standard" };
+        const accepted = await confirmAction(
+          "无论成败都会消耗所示金条，并占用该囚徒今日的归附尝试。",
+          "确认归附"
+        );
+        if (!accepted) {
           return;
         }
       }
-    } else if (action === "milestone") {
-      payload = { choice: button.dataset.choice || "" };
-    } else if (action === "recruit") {
-      payload = { mode: button.dataset.mode || "standard" };
-      const accepted = await confirmAction("归附后将按当前方式生成 1 级门客，并消耗所示金条。", "确认归附");
-      if (!accepted) {
-        return;
-      }
-    }
 
-    dossier.classList.add("jail-action-pending");
-    button.disabled = true;
-    try {
+      restoreControls = setDossierPending(dossier);
       const result = await postJson(button.dataset.actionUrl, payload);
       await finishAndReload(result, speakerName);
+      completed = true;
     } catch (error) {
-      dossier.classList.remove("jail-action-pending");
-      button.disabled = false;
       await showError(error instanceof Error ? error.message : "操作失败，请稍后重试");
+    } finally {
+      if (!completed) {
+        restoreControls?.();
+        delete dossier.dataset.jailActionPending;
+        button.focus();
+      }
     }
   };
 
   root.addEventListener("click", (event) => {
+    const historyButton = event.target.closest("button[data-jail-history-open]");
+    if (historyButton) {
+      event.preventDefault();
+      const dossier = historyButton.closest("[data-prisoner-id]");
+      if (dossier?.dataset.jailActionPending === "1") {
+        return;
+      }
+      void showHistory(historyButton);
+      return;
+    }
+
     const button = event.target.closest("button[data-jail-action]");
     if (!button || button.disabled) {
       return;
     }
     event.preventDefault();
     void runAction(button);
+  });
+
+  root.addEventListener("submit", (event) => {
+    const form = event.target.closest("form[data-jail-release-form]");
+    if (!form) {
+      return;
+    }
+    event.preventDefault();
+    const dossier = form.closest("[data-prisoner-id]");
+    if (dossier?.dataset.jailActionPending === "1") {
+      return;
+    }
+    void confirmRelease(form);
   });
 })();

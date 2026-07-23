@@ -319,6 +319,7 @@ class JailInteractionLog(models.Model):
         FAILED = "failed", "失败"
         BACKFIRE = "backfire", "反噬"
         EVENT = "event", "事件"
+        RECRUITED = "recruited", "归附成功"
 
     prisoner = models.ForeignKey(
         JailPrisoner,
@@ -347,6 +348,7 @@ class JailInteractionLog(models.Model):
     speaker_loyalty_before = models.PositiveSmallIntegerField("说客忠诚变化前", null=True, blank=True)
     speaker_loyalty_after = models.PositiveSmallIntegerField("说客忠诚变化后", null=True, blank=True)
     usage_date = models.DateField("使用日期", db_index=True)
+    attempt_scope = models.CharField("尝试范围", max_length=24, null=True, blank=True, default=None)
     heart_before = models.PositiveSmallIntegerField("心防变化前")
     heart_after = models.PositiveSmallIntegerField("心防变化后")
     affinity_before = models.PositiveSmallIntegerField("归心变化前")
@@ -369,7 +371,11 @@ class JailInteractionLog(models.Model):
             models.UniqueConstraint(
                 fields=["speaker", "usage_date"],
                 name="uniq_jail_speaker_usage_date",
-            )
+            ),
+            models.UniqueConstraint(
+                fields=["prisoner", "usage_date", "attempt_scope"],
+                name="uniq_jail_attempt_scope_date",
+            ),
         ]
 
     def __str__(self) -> str:

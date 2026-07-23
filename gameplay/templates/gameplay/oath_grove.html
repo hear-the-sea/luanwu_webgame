@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static guest_extras %}
 
 {% block title %}结义林{% endblock %}
 
@@ -13,9 +13,6 @@
         | 结义门客不可被俘获
       </p>
     </div>
-    <div class="tw-section-actions">
-      <a class="tw-btn-secondary" href="{% url 'gameplay:jail' %}">前往监牢</a>
-    </div>
   </div>
 
   <section class="tw-panel mb-6">
@@ -26,12 +23,11 @@
         <select name="guest_id" class="tw-form-select flex-1 min-w-[200px]" required>
           <option value="">请选择门客</option>
           {% for g in available_guests %}
-          <option value="{{ g.id }}">{{ g.display_name }}（{{ g.template.rarity }}，Lv {{ g.level }}）</option>
+          <option value="{{ g.id }}">{{ g.display_name }}（{{ g.template.rarity|rarity_label }}，Lv {{ g.level }}）</option>
           {% endfor %}
         </select>
         <button type="submit" class="tw-btn-primary">结义</button>
       </form>
-      <p class="tw-muted text-sm mt-3">提示：结义只影响"是否可被俘获"，不影响任何俘获概率。</p>
     </div>
   </section>
 
@@ -53,7 +49,7 @@
               {% for b in bonds %}
               <tr>
                 <td class="font-semibold">{{ b.guest.display_name }}</td>
-                <td>{{ b.guest.template.rarity }}</td>
+                <td>{{ b.guest.template.rarity|rarity_label }}</td>
                 <td>Lv {{ b.guest.level }}</td>
                 <td class="text-text-muted text-sm">{% if b.created_at %}{{ b.created_at|date:"Y-m-d H:i" }}{% endif %}</td>
                 <td>

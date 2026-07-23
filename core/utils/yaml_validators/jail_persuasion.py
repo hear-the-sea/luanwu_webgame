@@ -30,6 +30,16 @@ def _mapping(value: Any, *, result: ValidationResult, file: str, path: str) -> T
     return True
 
 
+def _collect_format_fields(text: str) -> set[str]:
+    fields: set[str] = set()
+    for _, field, format_spec, _ in Formatter().parse(text):
+        if field:
+            fields.add(field)
+        if format_spec:
+            fields.update(_collect_format_fields(format_spec))
+    return fields
+
+
 def _copy_list(
     value: Any,
     *,
@@ -39,6 +49,7 @@ def _copy_list(
     minimum: int | None = None,
     exact: int | None = None,
     copy_keys: set[str],
+    allowed_placeholders: set[str] | frozenset[str] | None = None,
 ) -> None:
     if not isinstance(value, list):
         result.add(file, path, "expected a list")
@@ -65,11 +76,11 @@ def _copy_list(
             result.add(file, entry_path, "field 'text' expected a non-empty string")
             continue
         try:
-            fields = {field for _, field, _, _ in Formatter().parse(text) if field}
+            fields = _collect_format_fields(text)
         except ValueError as exc:
             result.add(file, entry_path, f"invalid format string: {exc}")
             continue
-        unknown = fields - ALLOWED_PLACEHOLDERS
+        unknown = fields - (ALLOWED_PLACEHOLDERS if allowed_placeholders is None else allowed_placeholders)
         if unknown:
             result.add(file, entry_path, f"unknown placeholders: {', '.join(sorted(unknown))}")
 
@@ -204,27 +215,99 @@ def validate_jail_persuasion_profiles(
                     minimum=0,
                     maximum=100,
                 )
-        surcharge = recruitment.get("rarity_surcharge")
-        if _mapping(surcharge, result=result, file=file, path="recruitment.rarity_surcharge"):
-            for rarity in RARITIES:
+        probability_path = "recruitment.success_probability"
+        probability = recruitment.get("success_probability")
+        if _mapping(probability, result=result, file=file, path=probability_path):
+            standard_path = f"{probability_path}.standard"
+            standard = probability.get("standard")
+            if _mapping(standard, result=result, file=file, path=standard_path):
+                for field in ("minimum", "maximum"):
+                    _int_field(
+                        standard.get(field),
+                        result=result,
+                        file=file,
+                        path=standard_path,
+                        field=field,
+                        minimum=0,
+                        maximum=100,
+                    )
+                if (
+                    isinstance(standard.get("minimum"), int)
+                    and not isinstance(standard.get("minimum"), bool)
+                    and isinstance(standard.get("maximum"), int)
+                    and not isinstance(standard.get("maximum"), bool)
+                    and standard["minimum"] > standard["maximum"]
+                ):
+                    result.add(file, standard_path, "field 'minimum' cannot exceed 'maximum'")
+
+            negotiated_path = f"{probability_path}.negotiated"
+            negotiated = probability.get("negotiated")
+            if _mapping(negotiated, result=result, file=file, path=negotiated_path):
+                for field in ("base", "heart_bonus_max", "affinity_bonus_max"):
+                    _int_field(
+                        negotiated.get(field),
+                        result=result,
+                        file=file,
+                        path=negotiated_path,
+                        field=field,
+                        minimum=0,
+                        maximum=100,
+                    )
+
+            heartfelt_path = f"{probability_path}.heartfelt"
+            heartfelt = probability.get("heartfelt")
+            if _mapping(heartfelt, result=result, file=file, path=heartfelt_path):
+                for field in ("minimum", "maximum"):
+                    _int_field(
+                        heartfelt.get(field),
+                        result=result,
+                        file=file,
+                        path=heartfelt_path,
+                        field=field,
+                        minimum=0,
+                        maximum=100,
+                    )
+                if (
+                    isinstance(heartfelt.get("minimum"), int)
+                    and not isinstance(heartfelt.get("minimum"), bool)
+                    and isinstance(heartfelt.get("maximum"), int)
+                    and not isinstance(heartfelt.get("maximum"), bool)
+                    and heartfelt["minimum"] > heartfelt["maximum"]
+                ):
+                    result.add(file, heartfelt_path, "field 'minimum' cannot exceed 'maximum'")
+
+            rarity_path = f"{probability_path}.rarity_penalty"
+            rarity_penalty = probability.get("rarity_penalty")
+            if _mapping(rarity_penalty, result=result, file=file, path=rarity_path):
+                for rarity in RARITIES:
+                    _int_field(
+                        rarity_penalty.get(rarity),
+                        result=result,
+                        file=file,
+                        path=rarity_path,
+                        field=rarity,
+                        minimum=0,
+                        maximum=100,
+                    )
+
+            for field in ("black_hermit_penalty", "final_minimum", "final_maximum"):
                 _int_field(
-                    surcharge.get(rarity),
+                    probability.get(field),
                     result=result,
                     file=file,
-                    path="recruitment.rarity_surcharge",
-                    field=rarity,
+                    path=probability_path,
+                    field=field,
                     minimum=0,
                     maximum=100,
                 )
-        _int_field(
-            recruitment.get("black_hermit_surcharge"),
-            result=result,
-            file=file,
-            path="recruitment",
-            field="black_hermit_surcharge",
-            minimum=0,
-            maximum=100,
-        )
+            if (
+                isinstance(probability.get("final_minimum"), int)
+                and not isinstance(probability.get("final_minimum"), bool)
+                and isinstance(probability.get("final_maximum"), int)
+                and not isinstance(probability.get("final_maximum"), bool)
+                and probability["final_minimum"] > probability["final_maximum"]
+            ):
+                result.add(file, probability_path, "field 'final_minimum' cannot exceed 'final_maximum'")
 
     clues = data.get("clues")
     if _mapping(clues, result=result, file=file, path="clues"):
@@ -239,7 +322,7 @@ def validate_jail_persuasion_profiles(
                     result=result,
                     file=file,
                     path=f"clues.{method}.{kind}",
-                    exact=2,
+                    exact=5 if kind == "subtle" else 3,
                     copy_keys=copy_keys,
                 )
 
@@ -321,6 +404,19 @@ def validate_jail_persuasion_profiles(
                 path=f"recruitment_copy.{mode}",
                 exact=3,
                 copy_keys=copy_keys,
+            )
+
+    recruitment_failure_copy = data.get("recruitment_failure_copy")
+    if _mapping(recruitment_failure_copy, result=result, file=file, path="recruitment_failure_copy"):
+        for mode in RECRUITMENT_MODES:
+            _copy_list(
+                recruitment_failure_copy.get(mode),
+                result=result,
+                file=file,
+                path=f"recruitment_failure_copy.{mode}",
+                exact=3,
+                copy_keys=copy_keys,
+                allowed_placeholders={"prisoner_name"},
             )
 
     for key in sorted(PUBLISHED_COPY_KEYS - copy_keys):

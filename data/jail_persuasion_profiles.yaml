@@ -15,13 +15,13 @@ methods:
   reason:
     label: 陈明大势
     cost: {}
-    heart_delta: -6
-    affinity_delta: 10
+    heart_delta: -3
+    affinity_delta: 6
   might:
     label: 以武慑服
     cost: {}
-    heart_delta: -9
-    affinity_delta: 6
+    heart_delta: -5
+    affinity_delta: 3
 
 daily_actions_by_jail_level:
   1: 1
@@ -48,28 +48,41 @@ recruitment:
     heart_max: 30
     affinity_min: 0
     base_gold_cost: 1
-    initial_loyalty: 60
+    initial_loyalty: 35
   negotiated:
     heart_max: 45
     affinity_min: 60
     base_gold_cost: 1
-    initial_loyalty: 65
+    initial_loyalty: 50
   heartfelt:
     heart_max: 100
     affinity_min: 100
     base_gold_cost: 1
-    initial_loyalty: 75
+    initial_loyalty: 65
     heart_cost_step: 20
     milestone_discount: 1
-  rarity_surcharge:
-    black: 0
-    gray: 0
-    green: 0
-    red: 1
-    blue: 1
-    purple: 2
-    orange: 3
-  black_hermit_surcharge: 4
+  success_probability:
+    standard:
+      minimum: 25
+      maximum: 45
+    negotiated:
+      base: 55
+      heart_bonus_max: 10
+      affinity_bonus_max: 10
+    heartfelt:
+      minimum: 90
+      maximum: 100
+    rarity_penalty:
+      black: 0
+      gray: 0
+      green: 0
+      red: 5
+      blue: 5
+      purple: 10
+      orange: 15
+    black_hermit_penalty: 20
+    final_minimum: 5
+    final_maximum: 100
 
 clues:
   kindness:
@@ -80,6 +93,15 @@ clues:
       - key: clue.kindness.subtle.2
         text: >-
           换班时起了几句争执，{prisoner_name}没有插话，只在有人以礼相劝后抬眼看了一次。
+      - key: clue.kindness.subtle.3
+        text: >-
+          {prisoner_name}接过旧衣时先替送来的人道了声谢，随后才低头查看衣物是否合身。
+      - key: clue.kindness.subtle.4
+        text: >-
+          看守抱怨杂役笨手笨脚，{prisoner_name}没有附和，只把被打翻的水碗扶正。
+      - key: clue.kindness.subtle.5
+        text: >-
+          牢门外有人候见，{prisoner_name}先让年长者说完，自己始终垂手站在一旁。
     explicit:
       - key: clue.kindness.explicit.1
         text: >-
@@ -87,6 +109,9 @@ clues:
       - key: clue.kindness.explicit.2
         text: >-
           {prisoner_name}低声说道：“若连阶下之人也肯以礼相待，才看得出一方气度。”
+      - key: clue.kindness.explicit.3
+        text: >-
+          {prisoner_name}说道：“你若真想请我出牢，先让手下把这里的人都当作客人。”
   bribe:
     subtle:
       - key: clue.bribe.subtle.1
@@ -95,6 +120,15 @@ clues:
       - key: clue.bribe.subtle.2
         text: >-
           听见看守谈起庄园近来的收成，{prisoner_name}不动声色地追问了两句。
+      - key: clue.bribe.subtle.3
+        text: >-
+          {prisoner_name}把玩过送来的玉佩，问的却是出处和市价。
+      - key: clue.bribe.subtle.4
+        text: >-
+          听到庄园新设商路，{prisoner_name}默算片刻，才问每月能分多少。
+      - key: clue.bribe.subtle.5
+        text: >-
+          看守提及赏银迟发，{prisoner_name}皱眉追问“迟发”是否有凭据可查。
     explicit:
       - key: clue.bribe.explicit.1
         text: >-
@@ -102,6 +136,9 @@ clues:
       - key: clue.bribe.explicit.2
         text: >-
           {prisoner_name}用指节轻叩案面：“忠义是说给旁人听的，你能拿出什么，才是说给我听的。”
+      - key: clue.bribe.explicit.3
+        text: >-
+          {prisoner_name}直截了当地说：“归附可以，先把金银、田产和分成写进契书。”
   reason:
     subtle:
       - key: clue.reason.subtle.1
@@ -110,6 +147,15 @@ clues:
       - key: clue.reason.subtle.2
         text: >-
           地上的几粒碎石被{prisoner_name}排成阵势，天亮前又被悄然抹去。
+      - key: clue.reason.subtle.3
+        text: >-
+          {prisoner_name}在墙上划下几道日期，听完战报后又逐一抹去。
+      - key: clue.reason.subtle.4
+        text: >-
+          送饭时有人说起邻郡易主，{prisoner_name}把筷子停在半空，追问消息从何处传来。
+      - key: clue.reason.subtle.5
+        text: >-
+          {prisoner_name}常把不同来人的说辞反复对照，偶尔低声指出其中一处不合。
     explicit:
       - key: clue.reason.explicit.1
         text: >-
@@ -117,6 +163,9 @@ clues:
       - key: clue.reason.explicit.2
         text: >-
           {prisoner_name}说道：“要我另择其主，可以。先说清这条路为何走得通。”
+      - key: clue.reason.explicit.3
+        text: >-
+          {prisoner_name}说道：“拿出兵力、粮道与人心的实据，我才会判断这局该站哪边。”
   might:
     subtle:
       - key: clue.might.subtle.1
@@ -125,6 +174,15 @@ clues:
       - key: clue.might.subtle.2
         text: >-
           每逢佩刀门客经过，{prisoner_name}都会先看步伐，再看握刀的手。
+      - key: clue.might.subtle.3
+        text: >-
+          夜里铁器相击，{prisoner_name}侧耳分辨声响远近，直到操练结束才躺下。
+      - key: clue.might.subtle.4
+        text: >-
+          新来的看守故意拍刀示威，{prisoner_name}只扫一眼他的站姿，便移开目光。
+      - key: clue.might.subtle.5
+        text: >-
+          牢门加锁时，{prisoner_name}留意锁扣磨损与守卫交接，像是在记一张无形的图。
     explicit:
       - key: clue.might.explicit.1
         text: >-
@@ -132,6 +190,9 @@ clues:
       - key: clue.might.explicit.2
         text: >-
           {prisoner_name}直视来人：“让我见识你麾下真正的强者，再谈去留。”
+      - key: clue.might.explicit.3
+        text: >-
+          {prisoner_name}说道：“少拿身份压我；让最能打的人来，我只认他手上的胜负。”
 
 feedback:
   kindness:
@@ -588,3 +649,35 @@ recruitment_copy:
     - key: recruitment.heartfelt.3
       text: >-
         {prisoner_name}没有再谈旧日胜负，只主动请命：“既已同道，往后的路便让我也出一份力。”
+
+recruitment_failure_copy:
+  standard:
+    - key: recruitment.failure.standard.1
+      text: >-
+        牢门再次合拢，{prisoner_name}冷冷转身：“这点诚意，还不足以让我把命交出去。”
+    - key: recruitment.failure.standard.2
+      text: >-
+        交涉没有结果。{prisoner_name}仍守着自己的立场，只留下一句：“下次带来真正的筹码。”
+    - key: recruitment.failure.standard.3
+      text: >-
+        {prisoner_name}拒绝了招揽，退回阴影中；这次相见只让彼此的距离更清楚。
+  negotiated:
+    - key: recruitment.failure.negotiated.1
+      text: >-
+        {prisoner_name}逐条看完约定，摇头道：“条件还不够，我不能拿余生去赌一个空诺。”
+    - key: recruitment.failure.negotiated.2
+      text: >-
+        账目与承诺始终对不上。{prisoner_name}收起文书：“等你准备好公平的契约，再来谈归附。”
+    - key: recruitment.failure.negotiated.3
+      text: >-
+        {prisoner_name}没有撕破脸，却也没有迈出牢门：“这份交易，暂时还做不成。”
+  heartfelt:
+    - key: recruitment.failure.heartfelt.1
+      text: >-
+        {prisoner_name}听完肺腑之言仍沉默良久，最后轻声说：“我还没有看见值得托付的明天。”
+    - key: recruitment.failure.heartfelt.2
+      text: >-
+        那份动容只停在一瞬。{prisoner_name}别开目光：“感激不等于归附，请容我继续旁观。”
+    - key: recruitment.failure.heartfelt.3
+      text: >-
+        {prisoner_name}谢过来人的诚意，却仍留在牢中；信任尚未生根，承诺便无从谈起。

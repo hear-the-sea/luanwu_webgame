@@ -3,13 +3,54 @@ from __future__ import annotations
 from datetime import timedelta
 
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
+from gameplay.models import JailInteractionLog, JailPrisoner
 from gameplay.selectors.jail import build_prisoner_state, get_jail_page_context
 from gameplay.services.jail_persuasion.interactions import interact_prisoner, observe_prisoner
 from gameplay.views.jail_payloads import build_jail_status_payload
 
 pytestmark = pytest.mark.django_db
+
+FORBIDDEN_PUBLIC_KEYS = {
+    "effect_range",
+    "prisoner_base_value",
+    "ratio",
+    "risk",
+    "risk_label",
+    "success_percent",
+    "probability",
+    "roll",
+}
+
+
+def _assert_no_forbidden_public_keys(value, *, path="state"):
+    if isinstance(value, dict):
+        forbidden = FORBIDDEN_PUBLIC_KEYS.intersection(value)
+        assert not forbidden, f"{path} exposes forbidden keys: {sorted(forbidden)}"
+        for key, item in value.items():
+            _assert_no_forbidden_public_keys(item, path=f"{path}.{key}")
+    elif isinstance(value, (list, tuple)):
+        for index, item in enumerate(value):
+            _assert_no_forbidden_public_keys(item, path=f"{path}[{index}]")
+
+
+def _create_interaction_log(prisoner, *, usage_date, attempt_scope):
+    return JailInteractionLog.objects.create(
+        prisoner=prisoner,
+        captor=prisoner.captor,
+        method="recruitment" if attempt_scope else "kindness",
+        usage_date=usage_date,
+        attempt_scope=attempt_scope,
+        heart_before=prisoner.loyalty,
+        heart_after=prisoner.loyalty,
+        affinity_before=prisoner.affinity,
+        affinity_after=prisoner.affinity,
+        outcome=JailInteractionLog.Outcome.NEUTRAL,
+        copy_key="feedback.reason.neutral.1",
+    )
 
 
 def test_selector_does_not_initialize_unobserved_prisoner(persuasion_world):
@@ -59,13 +100,6 @@ def test_selector_builds_clues_history_methods_and_recruitment_offers(persuasion
     assert len(state["clues"]) == 2
     assert state["methods"]["kindness"]["cost"] == {"silver": 80_000, "grain": 5_000}
     assert state["methods"]["kindness"]["cost_text"] == "80,000 银两 · 5,000 粮食"
-    assert set(state["methods"]["kindness"]["effect_range"]) == {
-        "heart_min",
-        "heart_max",
-        "affinity_min",
-        "affinity_max",
-        "outcome",
-    }
     assert len(state["history"]) == 1
     assert state["history"][0]["text"]
     assert set(state["recruitment_offers"]) == {"standard", "negotiated", "heartfelt"}
@@ -74,26 +108,29 @@ def test_selector_builds_clues_history_methods_and_recruitment_offers(persuasion
     assert state["recruitment_offers"]["negotiated"]["heart_max"] == 45
     assert state["recruitment_offers"]["negotiated"]["affinity_min"] == 60
     assert state["recruitment_offers"]["heartfelt"]["affinity_min"] == 100
+    _assert_no_forbidden_public_keys(state)
 
 
-def test_selector_builds_speaker_base_value_ratios_and_risk_labels(persuasion_world):
+def test_selector_speaker_options_only_expose_actionable_facts(persuasion_world):
     state = build_prisoner_state(persuasion_world.captor, persuasion_world.prisoner)
     reason_options = {item["id"]: item for item in state["speaker_options"]["reason"]}
     might_options = {item["id"]: item for item in state["speaker_options"]["might"]}
 
     weak_reason = reason_options[persuasion_world.weak_civil.id]
-    failed_reason = reason_options[persuasion_world.failed_civil.id]
     strong_reason = reason_options[persuasion_world.strong_civil.id]
-    assert (weak_reason["speaker_base_value"], weak_reason["prisoner_base_value"], weak_reason["risk"]) == (
-        50,
-        100,
-        "backfire",
-    )
-    assert failed_reason["risk"] == "failed"
-    assert strong_reason["risk"] == "advantage"
-    assert might_options[persuasion_world.strong_military.id]["risk"] == "advantage"
-    assert strong_reason["effect_range"]["heart_max"] < 0
-    assert strong_reason["effect_range"]["affinity_min"] > 0
+    assert set(weak_reason) == {
+        "id",
+        "name",
+        "archetype",
+        "speaker_base_value",
+        "used_today",
+        "method_used_today",
+        "available",
+    }
+    assert weak_reason["speaker_base_value"] == 50
+    assert strong_reason["speaker_base_value"] == 130
+    assert might_options[persuasion_world.strong_military.id]["speaker_base_value"] == 130
+    _assert_no_forbidden_public_keys(state)
 
 
 def test_selector_history_keeps_speaker_loyalty_delta(persuasion_world, monkeypatch):
@@ -118,52 +155,6 @@ def test_selector_history_keeps_speaker_loyalty_delta(persuasion_world, monkeypa
     assert history[0]["speaker_loyalty_delta"] == -1
 
 
-def test_selector_clamps_ratio_without_changing_base_value_snapshots(persuasion_world):
-    persuasion_world.strong_civil.template.base_intellect = 300
-    persuasion_world.strong_civil.template.save(update_fields=["base_intellect"])
-
-    state = build_prisoner_state(persuasion_world.captor, persuasion_world.prisoner)
-    reason_options = {item["id"]: item for item in state["speaker_options"]["reason"]}
-    option = reason_options[persuasion_world.strong_civil.id]
-
-    assert option["ratio"] == 1.5
-    assert option["speaker_base_value"] == 300
-    assert option["prisoner_base_value"] == 100
-
-
-def test_level_one_preview_uses_a_layer_before_hidden_state_is_confirmed(persuasion_world):
-    observe_prisoner(persuasion_world.captor, persuasion_world.prisoner.id)
-    prisoner = persuasion_world.prisoner
-    prisoner.refresh_from_db()
-    prisoner.taboo_method = "kindness"
-
-    level_one = build_prisoner_state(persuasion_world.captor, prisoner)
-    assert level_one["methods"]["kindness"]["effect_range"]["affinity_min"] >= 0
-
-    prisoner.revealed_level = 2
-    level_two = build_prisoner_state(persuasion_world.captor, prisoner)
-    assert level_two["methods"]["kindness"]["effect_range"]["outcome"] == "taboo"
-    assert level_two["methods"]["kindness"]["effect_range"]["heart_min"] == 3
-
-
-def test_hidden_stance_preview_is_wide_then_narrows_after_second_clue(persuasion_world):
-    observe_prisoner(persuasion_world.captor, persuasion_world.prisoner.id)
-    prisoner = persuasion_world.prisoner
-    prisoner.refresh_from_db()
-    prisoner.stance_method = "kindness"
-    prisoner.revealed_level = 1
-
-    wide = build_prisoner_state(persuasion_world.captor, prisoner)["methods"]["kindness"]["effect_range"]
-
-    prisoner.revealed_level = 2
-    narrow = build_prisoner_state(persuasion_world.captor, prisoner)["methods"]["kindness"]["effect_range"]
-
-    assert wide["heart_min"] <= narrow["heart_min"] <= narrow["heart_max"] <= wide["heart_max"]
-    assert wide["affinity_min"] <= narrow["affinity_min"] <= narrow["affinity_max"] <= wide["affinity_max"]
-    assert wide["heart_max"] - wide["heart_min"] > narrow["heart_max"] - narrow["heart_min"]
-    assert wide["affinity_max"] - wide["affinity_min"] > narrow["affinity_max"] - narrow["affinity_min"]
-
-
 def test_selector_exposes_pending_milestone_without_writing(persuasion_world):
     observe_prisoner(persuasion_world.captor, persuasion_world.prisoner.id)
     prisoner = persuasion_world.prisoner
@@ -175,8 +166,80 @@ def test_selector_exposes_pending_milestone_without_writing(persuasion_world):
 
     assert state["pending_milestone"]["stage"] == 1
     assert len(state["pending_milestone"]["choices"]) == 2
+    assert all(set(choice) == {"key", "label"} for choice in state["pending_milestone"]["choices"])
+    _assert_no_forbidden_public_keys(state)
     prisoner.refresh_from_db()
     assert prisoner.milestone_stage == 0
+
+
+def test_selector_reports_no_recruitment_attempt_without_log(persuasion_world):
+    today = timezone.localdate()
+
+    state = build_prisoner_state(persuasion_world.captor, persuasion_world.prisoner, today=today)
+
+    assert state["recruitment_attempted_today"] is False
+
+
+def test_selector_reports_scoped_recruitment_attempt_for_today(persuasion_world):
+    today = timezone.localdate()
+    _create_interaction_log(persuasion_world.prisoner, usage_date=today, attempt_scope="recruitment")
+
+    state = build_prisoner_state(persuasion_world.captor, persuasion_world.prisoner, today=today)
+
+    assert state["recruitment_attempted_today"] is True
+
+
+def test_selector_ignores_unscoped_interaction_for_recruitment_attempt(persuasion_world):
+    today = timezone.localdate()
+    _create_interaction_log(persuasion_world.prisoner, usage_date=today, attempt_scope=None)
+
+    state = build_prisoner_state(persuasion_world.captor, persuasion_world.prisoner, today=today)
+
+    assert state["recruitment_attempted_today"] is False
+
+
+def test_selector_ignores_recruitment_attempt_from_other_date(persuasion_world):
+    today = timezone.localdate()
+    _create_interaction_log(
+        persuasion_world.prisoner,
+        usage_date=today - timedelta(days=1),
+        attempt_scope="recruitment",
+    )
+
+    state = build_prisoner_state(persuasion_world.captor, persuasion_world.prisoner, today=today)
+
+    assert state["recruitment_attempted_today"] is False
+
+
+def test_page_context_batches_recruitment_attempt_lookup(persuasion_world):
+    today = timezone.localdate()
+    second_prisoner = JailPrisoner.objects.create(
+        captor=persuasion_world.captor,
+        original_manor=persuasion_world.original,
+        guest_template=persuasion_world.prisoner_template,
+        original_guest_name="另一名囚徒",
+        original_level=10,
+        loyalty=60,
+        captured_loyalty=60,
+    )
+    _create_interaction_log(persuasion_world.prisoner, usage_date=today, attempt_scope="recruitment")
+
+    with CaptureQueriesContext(connection) as captured:
+        context = get_jail_page_context(persuasion_world.captor)
+
+    attempt_queries = [
+        query
+        for query in captured.captured_queries
+        if "jailinteractionlog" in query["sql"].lower() and '"attempt_scope" =' in query["sql"].lower()
+    ]
+    attempted_by_prisoner_id = {
+        state["id"]: state["recruitment_attempted_today"] for state in context["prisoner_states"]
+    }
+    assert len(attempt_queries) == 1
+    assert attempted_by_prisoner_id == {
+        persuasion_world.prisoner.id: True,
+        second_prisoner.id: False,
+    }
 
 
 def test_page_context_and_status_payload_include_full_persuasion_state(persuasion_world):
@@ -187,3 +250,4 @@ def test_page_context_and_status_payload_include_full_persuasion_state(persuasio
     payload = build_jail_status_payload(persuasion_world.captor, context["prisoner_states"])
     state = payload["prisoners"][0]
     assert {"heart", "affinity", "revealed_level", "remaining_actions", "recruitment_offers"} <= set(state)
+    _assert_no_forbidden_public_keys(payload, path="jail")

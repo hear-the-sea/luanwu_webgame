@@ -53,7 +53,7 @@ def jail_entities(django_user_model):
     return captor, prisoner, speaker
 
 
-def _log(prisoner, speaker, **overrides):
+def _log(prisoner, speaker, attempt_scope=None, **overrides):
     speaker_name = speaker.display_name if speaker is not None else ""
     speaker_template_key = speaker.template.key if speaker is not None else ""
     speaker_base_value = speaker.template.base_intellect if speaker is not None else None
@@ -69,6 +69,7 @@ def _log(prisoner, speaker, **overrides):
         "speaker_loyalty_before": speaker_loyalty,
         "speaker_loyalty_after": speaker_loyalty,
         "usage_date": date(2026, 7, 20),
+        "attempt_scope": attempt_scope,
         "heart_before": prisoner.loyalty,
         "heart_after": prisoner.loyalty - 6,
         "affinity_before": prisoner.affinity,
@@ -142,12 +143,77 @@ def test_non_speaker_interactions_do_not_share_unique_limit(jail_entities):
     assert JailInteractionLog.objects.filter(speaker__isnull=True).count() == 2
 
 
+@pytest.mark.django_db
+def test_null_attempt_scopes_do_not_share_unique_limit(jail_entities):
+    _captor, prisoner, _speaker = jail_entities
+    first = _log(prisoner, None, method="kindness")
+    second = _log(prisoner, None, method="bribe")
+
+    assert first.attempt_scope is None
+    assert second.attempt_scope is None
+
+
+@pytest.mark.django_db
+def test_recruitment_attempt_scope_is_unique_per_prisoner_and_date(jail_entities):
+    _captor, prisoner, _speaker = jail_entities
+    _log(prisoner, None, attempt_scope="recruitment")
+
+    with pytest.raises(IntegrityError):
+        with transaction.atomic():
+            _log(prisoner, None, attempt_scope="recruitment", method="might")
+
+
+@pytest.mark.django_db
+def test_recruitment_attempt_scope_can_be_reused_on_another_date(jail_entities):
+    _captor, prisoner, _speaker = jail_entities
+    _log(prisoner, None, attempt_scope="recruitment")
+    _log(
+        prisoner,
+        None,
+        attempt_scope="recruitment",
+        usage_date=date(2026, 7, 21),
+    )
+
+    assert JailInteractionLog.objects.filter(attempt_scope="recruitment").count() == 2
+
+
+@pytest.mark.django_db
+def test_recruitment_attempt_scope_can_be_reused_by_another_prisoner(jail_entities):
+    captor, prisoner, _speaker = jail_entities
+    second_prisoner = JailPrisoner.objects.create(
+        captor=captor,
+        original_manor=prisoner.original_manor,
+        guest_template=prisoner.guest_template,
+        original_guest_name="另一名阶下之客",
+        original_level=18,
+        loyalty=75,
+        captured_loyalty=75,
+    )
+    _log(prisoner, None, attempt_scope="recruitment")
+    _log(second_prisoner, None, attempt_scope="recruitment")
+
+    assert JailInteractionLog.objects.filter(attempt_scope="recruitment").count() == 2
+
+
 def test_speaker_daily_unique_constraint_is_portable_to_mysql():
     constraint = next(
         item for item in JailInteractionLog._meta.constraints if item.name == "uniq_jail_speaker_usage_date"
     )
 
     assert constraint.condition is None
+
+
+def test_attempt_scope_daily_unique_constraint_is_portable_to_mysql():
+    constraint = next(
+        item for item in JailInteractionLog._meta.constraints if item.name == "uniq_jail_attempt_scope_date"
+    )
+
+    assert constraint.condition is None
+
+
+def test_recruited_outcome_is_available():
+    assert JailInteractionLog.Outcome.RECRUITED == "recruited"
+    assert JailInteractionLog.Outcome.RECRUITED.label == "归附成功"
 
 
 @pytest.mark.django_db

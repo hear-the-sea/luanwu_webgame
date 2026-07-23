@@ -106,30 +106,53 @@ def rarity_difficulty(template: Any) -> int:
     return int(rules["rarity"].get(rarity, 0))
 
 
-def validate_copy_placeholders(copy_key: str, text: str) -> None:
+def _collect_format_fields(text: str) -> set[str]:
+    fields: set[str] = set()
+    for _, field, format_spec, _ in Formatter().parse(text):
+        if field:
+            fields.add(field)
+        if format_spec:
+            fields.update(_collect_format_fields(format_spec))
+    return fields
+
+
+def validate_copy_placeholders(
+    copy_key: str, text: str, *, allowed_placeholders: set[str] | frozenset[str] | None = None
+) -> None:
     if not isinstance(text, str) or not text.strip():
         raise ValueError(f"文案 {copy_key} 不能为空")
-    fields = {field for _, field, _, _ in Formatter().parse(text) if field}
-    unknown = fields - ALLOWED_COPY_PLACEHOLDERS
+    fields = _collect_format_fields(text)
+    unknown = fields - (ALLOWED_COPY_PLACEHOLDERS if allowed_placeholders is None else allowed_placeholders)
     if unknown:
         raise ValueError(f"文案 {copy_key} 存在未知占位符: {', '.join(sorted(unknown))}")
 
 
-def _validate_copy_entry(entry: Any, *, context: str) -> dict[str, str]:
+def _validate_copy_entry(
+    entry: Any, *, context: str, allowed_placeholders: set[str] | frozenset[str] | None = None
+) -> dict[str, str]:
     if not isinstance(entry, dict):
         raise ValueError(f"{context} 必须是文案对象")
     key = str(entry.get("key") or "").strip()
     text = str(entry.get("text") or "").strip()
     if not key:
         raise ValueError(f"{context} 缺少文案键")
-    validate_copy_placeholders(key, text)
+    validate_copy_placeholders(key, text, allowed_placeholders=allowed_placeholders)
     return {"key": key, "text": text}
 
 
-def _validate_copy_list(value: Any, *, context: str, expected_count: int | None = None) -> list[dict[str, str]]:
+def _validate_copy_list(
+    value: Any,
+    *,
+    context: str,
+    expected_count: int | None = None,
+    allowed_placeholders: set[str] | frozenset[str] | None = None,
+) -> list[dict[str, str]]:
     if not isinstance(value, list):
         raise ValueError(f"{context} 必须是文案列表")
-    normalized = [_validate_copy_entry(item, context=f"{context}[{index}]") for index, item in enumerate(value)]
+    normalized = [
+        _validate_copy_entry(item, context=f"{context}[{index}]", allowed_placeholders=allowed_placeholders)
+        for index, item in enumerate(value)
+    ]
     if expected_count is not None and len(normalized) != expected_count:
         raise ValueError(f"{context} 必须配置 {expected_count} 条文案")
     if len({item["key"] for item in normalized}) != len(normalized):
@@ -227,8 +250,8 @@ def normalize_profiles(raw: Any) -> dict[str, Any]:
     for method in METHOD_ORDER:
         item = _require_mapping(clues_raw.get(method), context=f"clues.{method}")
         clues[method] = {
-            "subtle": _validate_copy_list(item.get("subtle"), context=f"clues.{method}.subtle", expected_count=2),
-            "explicit": _validate_copy_list(item.get("explicit"), context=f"clues.{method}.explicit", expected_count=2),
+            "subtle": _validate_copy_list(item.get("subtle"), context=f"clues.{method}.subtle", expected_count=5),
+            "explicit": _validate_copy_list(item.get("explicit"), context=f"clues.{method}.explicit", expected_count=3),
         }
 
     feedback_raw = _require_mapping(root.get("feedback"), context="feedback")
@@ -292,6 +315,16 @@ def normalize_profiles(raw: Any) -> dict[str, Any]:
     recruitment_raw = _require_mapping(root.get("recruitment_copy"), context="recruitment_copy")
     recruitment_copy = {
         mode: _validate_copy_list(recruitment_raw.get(mode), context=f"recruitment_copy.{mode}", expected_count=3)
+        for mode in ("standard", "negotiated", "heartfelt")
+    }
+    recruitment_failure_raw = _require_mapping(root.get("recruitment_failure_copy"), context="recruitment_failure_copy")
+    recruitment_failure_copy = {
+        mode: _validate_copy_list(
+            recruitment_failure_raw.get(mode),
+            context=f"recruitment_failure_copy.{mode}",
+            expected_count=3,
+            allowed_placeholders={"prisoner_name"},
+        )
         for mode in ("standard", "negotiated", "heartfelt")
     }
 
@@ -373,26 +406,107 @@ def normalize_profiles(raw: Any) -> dict[str, Any]:
             ),
         }
     )
-    surcharge_raw = _require_mapping(
-        recruitment_rules_raw.get("rarity_surcharge"), context="recruitment.rarity_surcharge"
+    success_probability_raw = _require_mapping(
+        recruitment_rules_raw.get("success_probability"), context="recruitment.success_probability"
     )
-    recruitment_rules["rarity_surcharge"] = {
-        rarity: _require_int(
-            surcharge_raw.get(rarity),
-            context=f"recruitment.rarity_surcharge.{rarity}",
+    standard_probability_raw = _require_mapping(
+        success_probability_raw.get("standard"), context="recruitment.success_probability.standard"
+    )
+    negotiated_probability_raw = _require_mapping(
+        success_probability_raw.get("negotiated"), context="recruitment.success_probability.negotiated"
+    )
+    heartfelt_probability_raw = _require_mapping(
+        success_probability_raw.get("heartfelt"), context="recruitment.success_probability.heartfelt"
+    )
+    rarity_penalty_raw = _require_mapping(
+        success_probability_raw.get("rarity_penalty"), context="recruitment.success_probability.rarity_penalty"
+    )
+    success_probability: dict[str, Any] = {
+        "standard": {
+            "minimum": _require_int(
+                standard_probability_raw.get("minimum"),
+                context="recruitment.success_probability.standard.minimum",
+                minimum=0,
+                maximum=100,
+            ),
+            "maximum": _require_int(
+                standard_probability_raw.get("maximum"),
+                context="recruitment.success_probability.standard.maximum",
+                minimum=0,
+                maximum=100,
+            ),
+        },
+        "negotiated": {
+            "base": _require_int(
+                negotiated_probability_raw.get("base"),
+                context="recruitment.success_probability.negotiated.base",
+                minimum=0,
+                maximum=100,
+            ),
+            "heart_bonus_max": _require_int(
+                negotiated_probability_raw.get("heart_bonus_max"),
+                context="recruitment.success_probability.negotiated.heart_bonus_max",
+                minimum=0,
+                maximum=100,
+            ),
+            "affinity_bonus_max": _require_int(
+                negotiated_probability_raw.get("affinity_bonus_max"),
+                context="recruitment.success_probability.negotiated.affinity_bonus_max",
+                minimum=0,
+                maximum=100,
+            ),
+        },
+        "heartfelt": {
+            "minimum": _require_int(
+                heartfelt_probability_raw.get("minimum"),
+                context="recruitment.success_probability.heartfelt.minimum",
+                minimum=0,
+                maximum=100,
+            ),
+            "maximum": _require_int(
+                heartfelt_probability_raw.get("maximum"),
+                context="recruitment.success_probability.heartfelt.maximum",
+                minimum=0,
+                maximum=100,
+            ),
+        },
+        "rarity_penalty": {
+            rarity: _require_int(
+                rarity_penalty_raw.get(rarity),
+                context=f"recruitment.success_probability.rarity_penalty.{rarity}",
+                minimum=0,
+                maximum=100,
+            )
+            for rarity in ("black", "gray", "green", "red", "blue", "purple", "orange")
+        },
+        "black_hermit_penalty": _require_int(
+            success_probability_raw.get("black_hermit_penalty"),
+            context="recruitment.success_probability.black_hermit_penalty",
             minimum=0,
             maximum=100,
-        )
-        for rarity in ("black", "gray", "green", "red", "blue", "purple", "orange")
+        ),
+        "final_minimum": _require_int(
+            success_probability_raw.get("final_minimum"),
+            context="recruitment.success_probability.final_minimum",
+            minimum=0,
+            maximum=100,
+        ),
+        "final_maximum": _require_int(
+            success_probability_raw.get("final_maximum"),
+            context="recruitment.success_probability.final_maximum",
+            minimum=0,
+            maximum=100,
+        ),
     }
-    recruitment_rules["black_hermit_surcharge"] = _require_int(
-        recruitment_rules_raw.get("black_hermit_surcharge"),
-        context="recruitment.black_hermit_surcharge",
-        minimum=0,
-        maximum=100,
-    )
+    if success_probability["standard"]["minimum"] > success_probability["standard"]["maximum"]:
+        raise ValueError("recruitment.success_probability.standard.minimum 不能大于 maximum")
+    if success_probability["heartfelt"]["minimum"] > success_probability["heartfelt"]["maximum"]:
+        raise ValueError("recruitment.success_probability.heartfelt.minimum 不能大于 maximum")
+    if success_probability["final_minimum"] > success_probability["final_maximum"]:
+        raise ValueError("recruitment.success_probability.final_minimum 不能大于 final_maximum")
+    recruitment_rules["success_probability"] = success_probability
 
-    _validate_global_copy_keys(clues, feedback, milestones, recruitment_copy)
+    _validate_global_copy_keys(clues, feedback, milestones, recruitment_copy, recruitment_failure_copy)
 
     return {
         "methods": methods,
@@ -403,6 +517,7 @@ def normalize_profiles(raw: Any) -> dict[str, Any]:
         "feedback": feedback,
         "milestones": milestones,
         "recruitment_copy": recruitment_copy,
+        "recruitment_failure_copy": recruitment_failure_copy,
     }
 
 
@@ -435,12 +550,19 @@ def get_clue_keys(
         return []
     clues = load_jail_persuasion_profiles()["clues"][stance_method]
     subtle = clues["subtle"]
-    first_index = stable_seed(prisoner_id, template_key, _captured_at_seed(captured_at), "clue-subtle") % 2
+    first_index = stable_seed(prisoner_id, template_key, _captured_at_seed(captured_at), "clue-subtle") % len(subtle)
     keys = [subtle[first_index]["key"]]
     if level >= 2:
-        keys.append(subtle[1 - first_index]["key"])
+        second_index = stable_seed(prisoner_id, template_key, _captured_at_seed(captured_at), "clue-subtle-second") % (
+            len(subtle) - 1
+        )
+        if second_index >= first_index:
+            second_index += 1
+        keys.append(subtle[second_index]["key"])
     if level >= 3:
-        explicit_index = stable_seed(prisoner_id, template_key, _captured_at_seed(captured_at), "clue-explicit") % 2
+        explicit_index = stable_seed(prisoner_id, template_key, _captured_at_seed(captured_at), "clue-explicit") % len(
+            clues["explicit"]
+        )
         keys.append(clues["explicit"][explicit_index]["key"])
     return keys
 

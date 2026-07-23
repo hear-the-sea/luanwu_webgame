@@ -13,6 +13,20 @@ from core.exceptions import ItemInsufficientError
 pytestmark = pytest.mark.django_db
 
 
+class _SuccessfulRecruitmentRng:
+    def __init__(self):
+        self.first_randint = True
+
+    def randint(self, start, end):
+        if self.first_randint:
+            self.first_randint = False
+            return 1
+        return 0 if start <= 0 <= end else start
+
+    def choice(self, values):
+        return values[0]
+
+
 # ============ list_held_prisoners tests ============
 
 
@@ -313,14 +327,16 @@ def test_recruit_prisoner_raises_when_gold_insufficient(mock_manor_model):
             prisoner
         )
 
-        with patch.object(
-            jail_service,
-            "consume_available_gold_bars_locked",
-            side_effect=ItemInsufficientError("金条", 1, 0),
-        ):
-            with patch.object(jail_service, "get_item_quantity", return_value=0):
-                with pytest.raises(jail_service.JailError, match="金条不足"):
-                    jail_service.recruit_prisoner(manor, prisoner_id=1)
+        with patch.object(jail_service.JailInteractionLog, "objects") as mock_logs:
+            mock_logs.filter.return_value.exists.return_value = False
+            with patch.object(
+                jail_service,
+                "consume_available_gold_bars_locked",
+                side_effect=ItemInsufficientError("金条", 1, 0),
+            ):
+                with patch.object(jail_service, "get_item_quantity", return_value=0):
+                    with pytest.raises(jail_service.JailError, match="金条不足"):
+                        jail_service.recruit_prisoner(manor, prisoner_id=1)
 
 
 @patch("gameplay.services.jail.Manor")
@@ -431,9 +447,16 @@ def test_recruit_prisoner_allows_duplicate_repeatable_standard_guest(mock_manor_
                 with patch.object(jail_service.Guest.objects, "create", return_value=created_guest):
                     with patch.object(jail_service, "grant_template_skills"):
                         with patch.object(jail_service, "consume_available_gold_bars_locked") as mock_consume:
-                            result = jail_service.recruit_prisoner(manor, prisoner_id=1)
+                            with patch.object(jail_service.JailInteractionLog, "objects") as mock_logs:
+                                mock_logs.filter.return_value.exists.return_value = False
+                                result = jail_service.recruit_prisoner(
+                                    manor,
+                                    prisoner_id=1,
+                                    rng=_SuccessfulRecruitmentRng(),
+                                )
 
-    assert result is created_guest
+    assert result.recruited is True
+    assert result.guest is created_guest
     mock_consume.assert_called_once()
     assert auto_training_guests == [created_guest]
 
@@ -499,9 +522,16 @@ def test_recruit_prisoner_allows_duplicate_configured_repeatable_guest(
                 with patch.object(jail_service.Guest.objects, "create", return_value=created_guest):
                     with patch.object(jail_service, "grant_template_skills"):
                         with patch.object(jail_service, "consume_available_gold_bars_locked") as mock_consume:
-                            result = jail_service.recruit_prisoner(manor, prisoner_id=1)
+                            with patch.object(jail_service.JailInteractionLog, "objects") as mock_logs:
+                                mock_logs.filter.return_value.exists.return_value = False
+                                result = jail_service.recruit_prisoner(
+                                    manor,
+                                    prisoner_id=1,
+                                    rng=_SuccessfulRecruitmentRng(),
+                                )
 
-    assert result is created_guest
+    assert result.recruited is True
+    assert result.guest is created_guest
     mock_consume.assert_called_once()
     assert auto_training_guests == [created_guest]
 
