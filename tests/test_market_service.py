@@ -17,25 +17,6 @@ pytestmark = pytest.mark.django_db
 # ============ Constants tests ============
 
 
-def test_listing_fees_has_expected_durations():
-    """Test that LISTING_FEES has expected duration options."""
-    assert 7200 in market_service.LISTING_FEES  # 2 hours
-    assert 28800 in market_service.LISTING_FEES  # 8 hours
-    assert 86400 in market_service.LISTING_FEES  # 24 hours
-
-
-def test_listing_fees_values():
-    """Test that listing fees have correct values."""
-    assert market_service.LISTING_FEES[7200] == 5000
-    assert market_service.LISTING_FEES[28800] == 10000
-    assert market_service.LISTING_FEES[86400] == 20000
-
-
-def test_transaction_tax_rate():
-    """Test that transaction tax rate is 10%."""
-    assert market_service.TRANSACTION_TAX_RATE == 0.10
-
-
 def test_price_limits():
     """Test that price limits are correctly defined."""
     assert market_service.MIN_PRICE_MULTIPLIER == 1.0

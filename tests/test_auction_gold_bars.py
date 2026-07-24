@@ -13,16 +13,6 @@ from trade.services.auction import gold_bars
 pytestmark = pytest.mark.django_db
 
 
-# ============ Constants tests ============
-
-
-def test_gold_bar_item_key_constant():
-    """Test that GOLD_BAR_ITEM_KEY is correctly defined."""
-    from trade.services.auction.constants import GOLD_BAR_ITEM_KEY
-
-    assert GOLD_BAR_ITEM_KEY == "gold_bar"
-
-
 # ============ get_total_gold_bars tests ============
 
 

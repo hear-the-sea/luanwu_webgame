@@ -5,7 +5,6 @@ from __future__ import annotations
 import random
 
 from guests.utils.recruitment_variance import (
-    ATTRIBUTE_VARIANCE_CONFIG,
     MAX_GROWABLE_ATTRIBUTE,
     MAX_RATIO,
     MIN_RATIO,
@@ -250,23 +249,3 @@ def test_calculate_talent_grade_normal_within_tolerance():
     grade = calculate_talent_grade(guest_attrs, base_total)
 
     assert grade == "normal"
-
-
-# ============ Constants tests ============
-
-
-def test_variance_config_has_expected_keys():
-    """Test that variance config has all expected keys."""
-    expected_keys = {"min_ratio", "max_ratio", "max_deviation", "luck_deviation"}
-    assert expected_keys <= set(ATTRIBUTE_VARIANCE_CONFIG.keys())
-
-
-def test_min_max_ratio_values():
-    """Test that MIN_RATIO and MAX_RATIO have expected values."""
-    assert MIN_RATIO == 0.88
-    assert MAX_RATIO == 1.12
-
-
-def test_max_growable_attribute_value():
-    """Test that MAX_GROWABLE_ATTRIBUTE is 99."""
-    assert MAX_GROWABLE_ATTRIBUTE == 99

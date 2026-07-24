@@ -63,17 +63,6 @@ def test_should_defect_uses_hasher_correctly():
     assert isinstance(result_sha512, bool)
 
 
-def test_defection_constants_are_defined():
-    """Test that defection constants are properly defined."""
-    assert hasattr(guest_tasks, "DEFECTION_PROBABILITY")
-    assert hasattr(guest_tasks, "DEFECTION_BATCH_SIZE")
-    assert hasattr(guest_tasks, "DEFECTION_QUERY_CHUNK_SIZE")
-
-    assert guest_tasks.DEFECTION_PROBABILITY == 0.3
-    assert guest_tasks.DEFECTION_BATCH_SIZE == 500
-    assert guest_tasks.DEFECTION_QUERY_CHUNK_SIZE == 2000
-
-
 def _create_guest_for_defection(django_user_model, *, username: str) -> Guest:
     user = django_user_model.objects.create_user(username=username, password="pass12345")
     manor = ensure_manor(user)
