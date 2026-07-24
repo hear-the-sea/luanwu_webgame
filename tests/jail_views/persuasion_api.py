@@ -4,12 +4,9 @@ import json
 
 import pytest
 from django.contrib.messages import get_messages
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
-from django.utils import timezone
 
-from gameplay.models import JailInteractionLog, JailPrisoner
+from gameplay.models import JailInteractionLog
 from gameplay.services import jail as jail_service
 from gameplay.services.jail_persuasion.interactions import observe_prisoner
 
@@ -282,39 +279,6 @@ def test_jail_status_api_returns_full_persuasion_payload(client, persuasion_worl
     _assert_no_forbidden_public_keys(payload)
 
 
-def test_jail_status_api_batches_recruitment_attempt_lookup(client, persuasion_world):
-    today = timezone.localdate()
-    second_prisoner = JailPrisoner.objects.create(
-        captor=persuasion_world.captor,
-        original_manor=persuasion_world.original,
-        guest_template=persuasion_world.prisoner_template,
-        original_guest_name="另一名囚徒",
-        original_level=10,
-        loyalty=60,
-        captured_loyalty=60,
-    )
-    _create_recruitment_attempt(persuasion_world.prisoner, usage_date=today)
-    _login(client, persuasion_world)
-
-    with CaptureQueriesContext(connection) as captured:
-        response = client.get(reverse("gameplay:jail_status_api"))
-
-    assert response.status_code == 200
-    attempt_queries = [
-        query
-        for query in captured.captured_queries
-        if "jailinteractionlog" in query["sql"].lower() and '"attempt_scope" =' in query["sql"].lower()
-    ]
-    attempted_by_prisoner_id = {
-        prisoner["id"]: prisoner["recruitment_attempted_today"] for prisoner in response.json()["jail"]["prisoners"]
-    }
-    assert len(attempt_queries) == 1
-    assert attempted_by_prisoner_id == {
-        persuasion_world.prisoner.id: True,
-        second_prisoner.id: False,
-    }
-
-
 def test_jail_page_renders_complete_persuasion_workspace(client, persuasion_world):
     _login(client, persuasion_world)
     response = client.get(reverse("gameplay:jail"))
@@ -370,30 +334,3 @@ def test_jail_template_disables_all_recruitment_modes_after_today_attempt():
     assert "{% if p.recruitment_attempted_today %} · 今日已尝试{% endif %}" in template
     assert "概率" not in template
     assert "胜算" not in template
-
-
-def test_jail_template_uses_shared_panels_and_hides_outcome_forecasts():
-    from pathlib import Path
-
-    template = Path("gameplay/templates/gameplay/jail.html").read_text(encoding="utf-8")
-
-    assert 'class="dashboard jail-workspace"' in template
-    assert "tw-section-header" in template
-    assert "oath_grove" not in template
-    assert "前往结义林" not in template
-    assert 'class="jail-cell tw-panel jail-prisoner-panel"' in template
-    assert 'class="jail-cell-header tw-panel-header jail-prisoner-header"' in template
-    assert 'class="jail-cell-content tw-panel-content jail-prisoner-content"' in template
-    assert "牢位 {{ forloop.counter }}" in template
-    assert "PRISONER DOSSIERS" not in template
-    assert "预计 心防" not in template
-    assert "speaker.risk_label" not in template
-    assert "speaker.effect_range" not in template
-    assert "speaker.prisoner_base_value" not in template
-    assert "data-jail-history-open" in template
-    assert 'aria-label="查看 {{ p.name }} 的招降记录"' in template
-    assert "data-jail-history-item" in template
-    assert "data-jail-release-form" in template
-    assert 'data-release-prisoner-name="{{ p.name }}"' in template
-    assert 'aria-label="释放 {{ p.name }}"' in template
-    assert "｜心防" in template

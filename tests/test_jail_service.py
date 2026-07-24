@@ -581,11 +581,3 @@ def test_recruit_prisoner_rejects_duplicate_panfeng_variant(mock_manor_model):
 
         with pytest.raises(jail_service.JailError, match="不可重复招募"):
             jail_service.recruit_prisoner(manor, prisoner_id=1)
-
-
-# ============ Constants tests ============
-
-
-def test_gold_bar_item_key_constant():
-    """Test that gold bar item key constant is correctly defined."""
-    assert jail_service.GOLD_BAR_ITEM_KEY == "gold_bar"

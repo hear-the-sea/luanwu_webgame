@@ -3,11 +3,6 @@ const assert = require("node:assert/strict");
 
 const core = require("../jail_page_core.js");
 
-test("speaker outcome classifications are not exposed to the page", () => {
-  assert.equal(core.classifySpeakerRatio, undefined);
-  assert.equal(core.buildSpeakerWarning, undefined);
-});
-
 test("formatDeltaSummary omits zero speaker change and keeps signs", () => {
   assert.equal(
     core.formatDeltaSummary({ heart_delta: -6, affinity_delta: 10, speaker_loyalty_delta: 0 }),

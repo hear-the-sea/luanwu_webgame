@@ -381,23 +381,15 @@ test("recruit confirmation explains both costs without exposing odds", async () 
   assert.equal(harness.fetchCalls.length, 0);
 });
 
-test("delayed recruit confirmation ignores repeated clicks", async () => {
+test("cancelled recruit confirmation ignores repeats and restores focus", async () => {
   const harness = createHarness({ deferred: true });
   const click = createRecruitClick();
 
   harness.listeners.click(click.event);
   harness.listeners.click(click.event);
-
   assert.equal(harness.confirmCalls.length, 1);
+
   harness.resolveConfirmation(false);
-  await flushPromises();
-});
-
-test("cancelled recruit confirmation restores focus to its trigger", async () => {
-  const harness = createHarness({ confirmed: false });
-  const click = createRecruitClick();
-
-  harness.listeners.click(click.event);
   await flushPromises();
 
   assert.equal(click.focusCalls(), 1);
