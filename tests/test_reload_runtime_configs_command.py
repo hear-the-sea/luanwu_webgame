@@ -280,8 +280,11 @@ def test_reload_runtime_configs_updates_guild_module_constants(monkeypatch):
                     "pagination": {"guild_list_page_size": 55, "guild_hall_display_limit": 33},
                     "creation": {"guild_creation_cost": {"gold_bar": 9}, "guild_upgrade_base_cost": 12},
                     "contribution": {
+                        "units": {"silver": 1000, "grain": 2000, "gold_bar": 1},
                         "rates": {"silver": 3, "grain": 4},
                         "daily_limits": {"silver": 200000, "grain": 80000},
+                        "troop_rates": {0: 1, 1: 1, 3: 3, 5: 6, 7: 12},
+                        "daily_troop_contribution_limit": 321,
                         "min_donation_amount": 500,
                     },
                     "technology": {
@@ -306,6 +309,9 @@ def test_reload_runtime_configs_updates_guild_module_constants(monkeypatch):
             assert guild_constants.GUILD_HALL_DISPLAY_LIMIT == 33
             assert guild_constants.GUILD_CREATION_COST == {"gold_bar": 9}
             assert guild_constants.GUILD_UPGRADE_BASE_COST == 12
+            assert guild_constants.CONTRIBUTION_UNITS == {"silver": 1000, "grain": 2000, "gold_bar": 1}
+            assert guild_constants.TROOP_CONTRIBUTION_RATES == {"0": 1, "1": 1, "3": 3, "5": 6, "7": 12}
+            assert guild_constants.DAILY_TROOP_CONTRIBUTION_LIMIT == 321
             assert guild_constants.MIN_DONATION_AMOUNT == 500
             assert guild_constants.DAILY_EXCHANGE_LIMIT == 15
             assert guild_constants.GUILD_HERO_POOL_SLOT_LIMIT == 2

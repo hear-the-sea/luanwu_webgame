@@ -87,6 +87,9 @@ CELERY_TASK_ROUTES = {
     "gameplay.scan_scout_records": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.scan_arena_tournaments": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.scan_arena_coop_events": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.reconcile_arena_virtual_reserve": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.scan_arena_virtual_reserves": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.grow_arena_virtual_reserves": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.process_raid_battle": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.complete_raid": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.scan_raid_runs": {"queue": CELERY_TIMER_QUEUE},
@@ -211,6 +214,14 @@ CELERY_BEAT_SCHEDULE = {
         "task": "gameplay.scan_arena_coop_events",
         "schedule": crontab(minute="*/1"),
     },
+    "scan-arena-virtual-reserves": {
+        "task": "gameplay.scan_arena_virtual_reserves",
+        "schedule": crontab(minute="*/5"),
+    },
+    "grow-arena-virtual-reserves": {
+        "task": "gameplay.grow_arena_virtual_reserves",
+        "schedule": crontab(hour="*", minute=37),
+    },
     "process-expired-market-listings": {
         "task": "trade.process_expired_listings",
         "schedule": crontab(minute="*/2"),
@@ -250,6 +261,6 @@ CELERY_BEAT_SCHEDULE = {
     },
     "roll-virtual-players": {
         "task": "gameplay.roll_virtual_players",
-        "schedule": crontab(minute="*/15"),
+        "schedule": crontab(hour="*", minute=7),
     },
 }

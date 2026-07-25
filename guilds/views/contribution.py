@@ -2,6 +2,7 @@
 帮会贡献视图：捐献、排名、资源日志
 """
 
+from dataclasses import dataclass
 from typing import Any
 
 from django.contrib.auth.decorators import login_required
@@ -12,6 +13,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 import guilds.constants as guild_constants
+from battle.models import TroopTemplate
 from core.utils import safe_int, sanitize_error_message
 from core.utils.rate_limit import rate_limit_redirect
 from gameplay.models import InventoryItem, Manor, PlayerTroop
@@ -19,8 +21,17 @@ from gameplay.models import InventoryItem, Manor, PlayerTroop
 from ..decorators import require_guild_member
 from ..models import GuildTroopStorage, GuildWarehouse
 from ..services import contribution as contribution_service
+from ..services import guild_troops as guild_troop_service
 from ..services.warehouse import get_guild_material_balances
 from .helpers import build_guild_member_context, execute_guild_action, load_donation_logs, load_resource_logs
+
+
+@dataclass(frozen=True)
+class TroopDonationOption:
+    troop_template: TroopTemplate
+    count: int
+    donation_rate: int
+    max_donation_quantity: int
 
 
 def _load_red_ruby_count(guild: Any) -> int:
@@ -51,7 +62,7 @@ def _load_gold_bar_inventory(manor: Manor) -> int:
 def _build_resource_page_context(member: Any, *, manor: Manor, page_mode: str) -> dict[str, Any]:
     guild = member.guild
     troop_storages = _load_troop_storages(guild)
-    player_troops = list(
+    player_troop_rows = list(
         PlayerTroop.objects.filter(manor=manor, count__gt=0).select_related("troop_template").order_by("-count", "id")
     )
     today = timezone.localdate()
@@ -66,6 +77,7 @@ def _build_resource_page_context(member: Any, *, manor: Manor, page_mode: str) -
     donation_entries = {
         "silver": {
             "label": "银两",
+            "unit": int(guild_constants.CONTRIBUTION_UNITS.get("silver", 1)),
             "rate": guild_constants.CONTRIBUTION_RATES.get("silver", 0),
             "available": int(manor.silver),
             "donated_today": display_daily_donation_silver,
@@ -74,6 +86,7 @@ def _build_resource_page_context(member: Any, *, manor: Manor, page_mode: str) -
         },
         "grain": {
             "label": "粮食",
+            "unit": int(guild_constants.CONTRIBUTION_UNITS.get("grain", 1)),
             "rate": guild_constants.CONTRIBUTION_RATES.get("grain", 0),
             "available": int(manor.grain),
             "donated_today": display_daily_donation_grain,
@@ -82,6 +95,7 @@ def _build_resource_page_context(member: Any, *, manor: Manor, page_mode: str) -
         },
         "gold_bar": {
             "label": "金条",
+            "unit": int(guild_constants.CONTRIBUTION_UNITS.get("gold_bar", 1)),
             "rate": guild_constants.CONTRIBUTION_RATES.get("gold_bar", 0),
             "available": _load_gold_bar_inventory(manor),
             "donated_today": display_daily_donation_gold_bar,
@@ -92,8 +106,28 @@ def _build_resource_page_context(member: Any, *, manor: Manor, page_mode: str) -
 
     for key, entry in donation_entries.items():
         entry["remaining_today"] = max(0, int(entry["daily_limit"]) - int(entry["donated_today"]))
-        entry["max_amount"] = max(0, min(int(entry["remaining_today"]), int(entry["available"])))
+        raw_max_amount = max(0, min(int(entry["remaining_today"]), int(entry["available"])))
+        unit = max(1, int(entry["unit"]))
+        entry["max_amount"] = (raw_max_amount // unit) * unit
         entry["input_id"] = f"{key}_amount"
+
+    troop_donated_today = guild_troop_service.get_today_troop_contribution(member)
+    troop_daily_limit = int(guild_constants.DAILY_TROOP_CONTRIBUTION_LIMIT)
+    troop_remaining_today = max(0, troop_daily_limit - troop_donated_today)
+    player_troops: list[TroopDonationOption] = []
+    for player_troop in player_troop_rows:
+        donation_rate = guild_troop_service.get_troop_donation_rate(player_troop.troop_template.key)
+        max_donation_quantity = (
+            min(int(player_troop.count), troop_remaining_today // donation_rate) if donation_rate > 0 else 0
+        )
+        player_troops.append(
+            TroopDonationOption(
+                troop_template=player_troop.troop_template,
+                count=int(player_troop.count),
+                donation_rate=donation_rate,
+                max_donation_quantity=max_donation_quantity,
+            )
+        )
 
     troop_total_count = sum(storage.count for storage in troop_storages)
     troop_preview = troop_storages[:3]
@@ -106,6 +140,12 @@ def _build_resource_page_context(member: Any, *, manor: Manor, page_mode: str) -
         red_ruby_count=_load_red_ruby_count(guild),
         troop_storages=troop_storages,
         player_troops=player_troops,
+        can_donate_troops=any(troop.max_donation_quantity > 0 for troop in player_troops),
+        troop_donation_entry={
+            "donated_today": troop_donated_today,
+            "daily_limit": troop_daily_limit,
+            "remaining_today": troop_remaining_today,
+        },
         troop_overview={
             "total_count": troop_total_count,
             "kinds_count": len(troop_storages),

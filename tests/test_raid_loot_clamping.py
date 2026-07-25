@@ -142,6 +142,81 @@ def test_calculate_loot_items_reduces_item_capacity_after_troop_losses(monkeypat
 
 
 @pytest.mark.django_db
+def test_calculate_loot_items_allows_small_inventory_to_use_global_minimum(monkeypatch):
+    user = User.objects.create_user(username="raid_small_inventory", password="pass123")
+    defender = ensure_manor(user)
+    template = ItemTemplate.objects.create(
+        key="raid_small_inventory_item",
+        name="小库存战利品",
+        tradeable=True,
+        rarity="black",
+    )
+    InventoryItem.objects.create(
+        manor=defender,
+        template=template,
+        quantity=4,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    monkeypatch.setattr("gameplay.services.raid.combat.loot.random.shuffle", lambda _rows: None)
+    monkeypatch.setattr("gameplay.services.raid.combat.loot.random.random", lambda: 0.0)
+    monkeypatch.setattr("gameplay.services.raid.combat.loot.random.randint", lambda _a, b: b)
+
+    loot_items = _calculate_loot_items(_build_loot_item_queryset(defender))
+
+    assert loot_items == {"raid_small_inventory_item": 1}
+
+
+@pytest.mark.django_db
+def test_calculate_loot_items_shares_total_inventory_limit_across_types(monkeypatch):
+    user = User.objects.create_user(username="raid_shared_inventory_limit", password="pass123")
+    defender = ensure_manor(user)
+    for index in range(3):
+        template = ItemTemplate.objects.create(
+            key=f"raid_shared_inventory_item_{index}",
+            name=f"零散战利品{index}",
+            tradeable=True,
+            rarity="black",
+        )
+        InventoryItem.objects.create(
+            manor=defender,
+            template=template,
+            quantity=4,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+    monkeypatch.setattr("gameplay.services.raid.combat.loot.random.shuffle", lambda _rows: None)
+    monkeypatch.setattr("gameplay.services.raid.combat.loot.random.random", lambda: 0.0)
+    monkeypatch.setattr("gameplay.services.raid.combat.loot.random.randint", lambda _a, b: b)
+
+    loot_items = _calculate_loot_items(_build_loot_item_queryset(defender))
+
+    assert sum(loot_items.values()) == 2
+
+
+@pytest.mark.django_db
+def test_calculate_loot_items_can_still_miss_with_nonempty_inventory(monkeypatch):
+    user = User.objects.create_user(username="raid_inventory_chance_miss", password="pass123")
+    defender = ensure_manor(user)
+    template = ItemTemplate.objects.create(
+        key="raid_inventory_chance_miss_item",
+        name="未命中战利品",
+        tradeable=True,
+        rarity="black",
+    )
+    InventoryItem.objects.create(
+        manor=defender,
+        template=template,
+        quantity=4,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    monkeypatch.setattr("gameplay.services.raid.combat.loot.random.shuffle", lambda _rows: None)
+    monkeypatch.setattr("gameplay.services.raid.combat.loot.random.random", lambda: 1.0)
+
+    loot_items = _calculate_loot_items(_build_loot_item_queryset(defender))
+
+    assert loot_items == {}
+
+
+@pytest.mark.django_db
 def test_apply_loot_clamps_to_available_resources():
     user = User.objects.create_user(username="raid_defender", password="pass123")
     defender = ensure_manor(user)

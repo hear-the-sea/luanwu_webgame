@@ -15,11 +15,27 @@ from core.exceptions import (
     ArenaParticipationLimitError,
     InsufficientSilverError,
 )
-from gameplay.models import ArenaEntry, ArenaEntryGuest, ArenaMatch, ArenaTournament, Message
-from gameplay.services.arena.core import cancel_arena_entry, register_arena_entry, run_due_arena_rounds
+from gameplay.models import (
+    ArenaCoopEntry,
+    ArenaCoopEvent,
+    ArenaEntry,
+    ArenaEntryGuest,
+    ArenaMatch,
+    ArenaTournament,
+    ArenaVirtualDemand,
+    ArenaVirtualReserveMember,
+    Message,
+)
+from gameplay.services.arena.core import (
+    cancel_arena_entry,
+    register_arena_entry,
+    run_due_arena_rounds,
+    start_tournament_if_ready,
+)
 from gameplay.services.manor.core import ensure_manor
 from guests.models import GuestStatus
 from tests.arena_services.support import User, create_guest, create_guest_template, fund_manor
+from tests.arena_services.test_virtual_backfill import _create_bot_profile
 
 
 @pytest.mark.django_db
@@ -146,27 +162,149 @@ def test_register_arena_entry_auto_starts_when_reaching_player_limit():
 
 
 @pytest.mark.django_db
-def test_refresh_arena_activity_runs_due_virtual_backfill_for_current_manor(monkeypatch):
+def test_refresh_arena_activity_consumes_only_prepared_virtual_reserves_for_current_manor(monkeypatch):
     user = User.objects.create_user(username="arena_refresh_backfill", password="pass123")
     manor = ensure_manor(user)
     now = timezone.now()
-    calls: list[tuple[str, int, int]] = []
+    tournament = ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RECRUITING,
+        player_limit=3,
+        virtual_fill_at=now,
+    )
+    ArenaEntry.objects.create(tournament=tournament, manor=manor)
+    event = ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.RECRUITING,
+        player_limit=3,
+        guest_limit_per_entry=1,
+        virtual_fill_at=now,
+    )
+    ArenaCoopEntry.objects.create(event=event, manor=manor)
+    calls: list[tuple[str, int]] = []
 
     monkeypatch.setattr(
         arena_core,
         "start_due_virtual_backfill_tournaments",
-        lambda *, now, limit, manor: calls.append(("tournament", manor.id, limit)) or 2,
+        lambda **_kwargs: pytest.fail("页面刷新不应补充后备池"),
     )
     monkeypatch.setattr(
         arena_coop_core,
         "start_due_virtual_backfill_coop_events",
-        lambda *, now, limit, manor: calls.append(("coop", manor.id, limit)) or 3,
+        lambda **_kwargs: pytest.fail("页面刷新不应补充共斗后备池"),
+    )
+    monkeypatch.setattr(
+        "gameplay.services.arena.virtual_reserve.fill_due_tournament_reserve",
+        lambda tournament_id, *, now: calls.append(("tournament", tournament_id)) or 2,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.arena.virtual_reserve.fill_due_coop_reserve",
+        lambda event_id, *, now: calls.append(("coop", event_id)) or 3,
     )
 
     processed = arena_core.refresh_arena_activity(manor, now=now, limit=7)
 
     assert processed == 5
-    assert calls == [("tournament", manor.id, 7), ("coop", manor.id, 7)]
+    assert calls == [("tournament", tournament.id), ("coop", event.id)]
+
+
+@pytest.mark.django_db
+def test_refresh_arena_activity_ignores_cancelled_coop_entry(monkeypatch):
+    user = User.objects.create_user(username="arena_refresh_cancelled_coop", password="pass123")
+    manor = ensure_manor(user)
+    other_user = User.objects.create_user(username="arena_refresh_active_coop", password="pass123")
+    other_manor = ensure_manor(other_user)
+    now = timezone.now()
+    event = ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.RECRUITING,
+        player_limit=3,
+        guest_limit_per_entry=1,
+        virtual_fill_at=now,
+    )
+    ArenaCoopEntry.objects.create(
+        event=event,
+        manor=manor,
+        status=ArenaCoopEntry.Status.CANCELLED,
+    )
+    ArenaCoopEntry.objects.create(event=event, manor=other_manor)
+    calls: list[int] = []
+    monkeypatch.setattr(
+        "gameplay.services.arena.virtual_reserve.fill_due_coop_reserve",
+        lambda event_id, *, now: calls.append(event_id) or 1,
+    )
+
+    assert arena_core.refresh_arena_activity(manor, now=now, limit=7) == 0
+    assert calls == []
+
+
+@pytest.mark.django_db
+def test_registration_persists_demand_and_queues_reconcile(
+    monkeypatch,
+    django_capture_on_commit_callbacks,
+):
+    user = User.objects.create_user(username="arena_reserve_hook_register", password="pass123")
+    manor = ensure_manor(user)
+    fund_manor(manor)
+    template = create_guest_template("arena_reserve_hook_register_tpl")
+    guest = create_guest(manor, template, "A")
+    queued: list[tuple[str, int]] = []
+    monkeypatch.setattr(
+        arena_core,
+        "queue_virtual_reserve_reconcile",
+        lambda mode, event_id: queued.append((mode, event_id)),
+    )
+
+    with django_capture_on_commit_callbacks(execute=True):
+        result = register_arena_entry(manor, [guest.id])
+
+    assert ArenaVirtualDemand.objects.filter(tournament=result.tournament).exists()
+    assert queued == [("tournament", result.tournament.id)]
+
+
+@pytest.mark.django_db
+def test_cancellation_updates_existing_demand(monkeypatch, django_capture_on_commit_callbacks):
+    user = User.objects.create_user(username="arena_reserve_hook_cancel", password="pass123")
+    manor = ensure_manor(user)
+    fund_manor(manor)
+    template = create_guest_template("arena_reserve_hook_cancel_tpl")
+    guest = create_guest(manor, template, "A")
+    queued: list[tuple[str, int]] = []
+    monkeypatch.setattr(
+        arena_core,
+        "queue_virtual_reserve_reconcile",
+        lambda mode, event_id: queued.append((mode, event_id)),
+    )
+
+    with django_capture_on_commit_callbacks(execute=True):
+        result = register_arena_entry(manor, [guest.id])
+    queued.clear()
+    with django_capture_on_commit_callbacks(execute=True):
+        cancel_arena_entry(manor)
+
+    assert queued == [("tournament", result.tournament.id)]
+
+
+@pytest.mark.django_db
+def test_full_real_start_closes_and_releases_reserve():
+    tournament = ArenaTournament.objects.create(player_limit=1)
+    real_user = User.objects.create_user(username="arena_reserve_hook_full", password="pass123")
+    real_manor = ensure_manor(real_user)
+    ArenaEntry.objects.create(tournament=tournament, manor=real_manor)
+    demand = ArenaVirtualDemand.objects.create(
+        tournament=tournament,
+        missing_entry_count=1,
+        reserve_target_count=6,
+        max_reserve_target_count=6,
+    )
+    profile = _create_bot_profile("arena_reserve_hook_full_bot")
+    ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=profile,
+        state=ArenaVirtualReserveMember.State.READY,
+    )
+
+    assert start_tournament_if_ready(tournament) is True
+    demand.refresh_from_db()
+    assert demand.status == ArenaVirtualDemand.Status.CLOSED
+    assert demand.reserve_members.count() == 0
 
 
 @pytest.mark.django_db

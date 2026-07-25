@@ -22,7 +22,13 @@ from gameplay.services.manor.core import finalize_building_upgrade
 from gameplay.services.technology import finalize_technology_upgrade
 
 # Arena
-from gameplay.tasks.arena import scan_arena_coop_events, scan_arena_tournaments
+from gameplay.tasks.arena import (
+    grow_arena_virtual_reserves,
+    reconcile_arena_virtual_reserve,
+    scan_arena_coop_events,
+    scan_arena_tournaments,
+    scan_arena_virtual_reserves,
+)
 
 # Buildings
 from gameplay.tasks.buildings import complete_building_upgrade, scan_building_upgrades
@@ -90,6 +96,9 @@ __all__ = [
     # Arena
     "scan_arena_coop_events",
     "scan_arena_tournaments",
+    "reconcile_arena_virtual_reserve",
+    "scan_arena_virtual_reserves",
+    "grow_arena_virtual_reserves",
     # Global mail
     "backfill_global_mail_campaign_task",
     "enqueue_global_mail_backfill",

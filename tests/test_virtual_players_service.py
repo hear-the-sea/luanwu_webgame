@@ -1913,8 +1913,358 @@ def test_population_plan_and_roll_use_active_player_multiplier(settings, django_
     assert plan["attackable_bots"] == 0
     assert plan["config_summary"]["cell_active_multiplier"] == 4
     assert json.loads(json.dumps(plan))["cells"] == plan["cells"]
-    assert any(getattr(record, "event", None) == "virtual_player_population_planned" for record in caplog.records)
+    record = next(
+        record for record in caplog.records if getattr(record, "event", None) == "virtual_player_population_planned"
+    )
+    assert record.region_targets == plan["region_targets"]
+    assert record.hard_cap == plan["hard_cap"]
+    assert record.maintained_count == 0
+    assert record.reactivated_count == 0
+    assert record.created_count == 0
+    assert record.retired_count == 0
     assert roll_virtual_player_population(limit=20, now=timezone.now()) == 12
+
+
+@pytest.mark.django_db
+def test_population_plan_uses_region_targets_and_dynamic_global_cap(settings, django_user_model):
+    from gameplay.services.virtual_players import plan_virtual_player_population
+
+    for idx in range(3):
+        user = django_user_model.objects.create_user(username=_unique(f"dynamic_region_real_{idx}"), password="pass123")
+        manor = ensure_manor(user)
+        manor.region = "north"
+        manor.last_active_at = timezone.now()
+        manor.save(update_fields=["region", "last_active_at"])
+
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "active_window_days": 7,
+            "region_floor": 8,
+            "region_active_multiplier": 8,
+            "global_floor": 32,
+            "global_active_multiplier": 20,
+        },
+        "prestige_bands": {"newbie": [0, 500]},
+    }
+
+    plan = plan_virtual_player_population(now=timezone.now())
+
+    assert plan["target_bot_total"] == 48
+    assert plan["hard_cap"] == 60
+    assert plan["region_targets"] == {"east": 8, "north": 24, "south": 8, "west": 8}
+
+
+@pytest.mark.django_db
+def test_virtual_player_capacity_uses_dynamic_plan_and_maintained_count(settings):
+    from gameplay.services import virtual_players
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "region_floor": 8,
+            "region_active_multiplier": 8,
+            "global_floor": 32,
+            "global_active_multiplier": 20,
+        },
+        "prestige_bands": {"newbie": [0, 500]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+    }
+    virtual_players.create_virtual_player(
+        region="north",
+        prestige_band="newbie",
+        growth_seed=99_104,
+        projection=virtual_players.BotProjectionConfig(0, 1, 0, 1),
+        start_from_zero=True,
+    )
+
+    assert virtual_players.get_virtual_player_capacity(now=timezone.now()) == (32, 1)
+
+
+@pytest.mark.django_db
+def test_runtime_batch_size_override_keeps_dynamic_population_capacity(settings):
+    from gameplay.services import virtual_players
+
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {"rolling_batch_size": [1, 1]},
+    }
+
+    assert virtual_players.get_virtual_player_capacity(now=timezone.now()) == (32, 0)
+
+
+@pytest.mark.django_db
+def test_capacity_owned_creation_stops_at_dynamic_cap(settings):
+    from gameplay.models import BotProfile
+    from gameplay.services import virtual_players
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "region_floor": 0,
+            "region_active_multiplier": 0,
+            "global_floor": 1,
+            "global_active_multiplier": 0,
+        },
+        "prestige_bands": {"newbie": [0, 500]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+    }
+    now = timezone.now()
+    virtual_players.create_virtual_player(
+        region="north",
+        prestige_band="newbie",
+        growth_seed=99_105,
+        projection=virtual_players.BotProjectionConfig(0, 1, 0, 1),
+        start_from_zero=True,
+        now=now,
+    )
+
+    result = virtual_players.create_virtual_player_with_capacity(
+        region="north",
+        prestige_band="newbie",
+        growth_seed=99_106,
+        projection=virtual_players.BotProjectionConfig(0, 1, 0, 1),
+        start_from_zero=True,
+        now=now,
+    )
+
+    assert result.status is virtual_players.PopulationMutationStatus.CAP_REACHED
+    assert result.profile is None
+    assert result.hard_cap == 1
+    assert result.maintained_count == 1
+    assert BotProfile.objects.count() == 1
+
+
+@pytest.mark.django_db
+def test_capacity_owned_reactivation_stops_at_dynamic_cap(settings):
+    from gameplay.models import BotProfile
+    from gameplay.services import virtual_players
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "region_floor": 0,
+            "region_active_multiplier": 0,
+            "global_floor": 1,
+            "global_active_multiplier": 0,
+        },
+        "prestige_bands": {"newbie": [0, 500]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+    }
+    now = timezone.now()
+    virtual_players.create_virtual_player(
+        region="north",
+        prestige_band="newbie",
+        growth_seed=99_107,
+        projection=virtual_players.BotProjectionConfig(0, 1, 0, 1),
+        start_from_zero=True,
+        now=now,
+    )
+    retired = virtual_players.create_virtual_player(
+        region="north",
+        prestige_band="newbie",
+        growth_seed=99_108,
+        projection=virtual_players.BotProjectionConfig(0, 1, 0, 1),
+        start_from_zero=True,
+        now=now,
+    )
+    BotProfile.objects.filter(pk=retired.pk).update(
+        state=BotProfile.State.RETIRED,
+        maintenance_stopped_at=now,
+    )
+
+    result = virtual_players.reactivate_retired_virtual_player_with_capacity(retired.pk, now=now)
+
+    assert result.status is virtual_players.PopulationMutationStatus.CAP_REACHED
+    assert result.profile is None
+    assert result.hard_cap == 1
+    assert result.maintained_count == 1
+    retired.refresh_from_db()
+    assert retired.state == BotProfile.State.RETIRED
+
+
+@pytest.mark.django_db
+def test_population_provisioning_cannot_bypass_capacity_owner(settings, monkeypatch):
+    from gameplay.models import BotProfile
+    from gameplay.services import virtual_players
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "region_floor": 0,
+            "region_active_multiplier": 0,
+            "global_floor": 1,
+            "global_active_multiplier": 0,
+        },
+        "prestige_bands": {"newbie": [0, 500]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+    }
+    monkeypatch.setattr(
+        virtual_players,
+        "_lock_population_capacity",
+        lambda *, now: (1, 1),
+    )
+
+    result = virtual_players._reactivate_or_create_virtual_player(
+        region="north",
+        prestige_band="newbie",
+        low=0,
+        high=500,
+        archetype=BotProfile.Archetype.BALANCED,
+        growth_seed=99_109,
+        now=timezone.now(),
+        config=virtual_players.load_virtual_player_config(),
+        projection_factory=lambda: virtual_players.BotProjectionConfig(0, 1, 0, 1),
+        evaluated_profile_ids=set(),
+    )
+
+    assert result.status is virtual_players.PopulationMutationStatus.CAP_REACHED
+    assert result.profile is None
+    assert BotProfile.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_regional_population_retirement_uses_target_band(settings):
+    from gameplay.models import BotProfile
+    from gameplay.services import virtual_players
+    from gameplay.services.virtual_player_population import PlannedPopulationCell, PopulationPlan
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "region_floor": 0,
+            "region_active_multiplier": 1,
+            "global_floor": 2,
+            "global_active_multiplier": 1,
+        },
+        "prestige_bands": {"newbie": [0, 500], "junior": [500, 2000]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+    }
+    now = timezone.now()
+    newbie = virtual_players.create_virtual_player(
+        region="north",
+        prestige_band="newbie",
+        growth_seed=99_110,
+        projection=virtual_players.BotProjectionConfig(0, 1, 0, 1),
+        start_from_zero=True,
+        now=now,
+    )
+    junior = virtual_players.create_virtual_player(
+        region="north",
+        prestige_band="junior",
+        growth_seed=99_111,
+        projection=virtual_players.BotProjectionConfig(500, 1, 0, 1),
+        start_from_zero=True,
+        now=now,
+    )
+    plan = PopulationPlan(
+        cells=(
+            PlannedPopulationCell("north", "newbie", 1, 1, 1, 0, 1),
+            PlannedPopulationCell("north", "junior", 0, 1, 0, 0, 0),
+        ),
+        hard_cap=2,
+        region_target_rows=(("north", 1),),
+    )
+
+    retired_count = virtual_players._retire_excess_population_cells(
+        plan,
+        config=virtual_players.load_virtual_player_config(),
+        now=now,
+    )
+
+    assert retired_count == 1
+    newbie.refresh_from_db()
+    junior.refresh_from_db()
+    assert newbie.state == BotProfile.State.ACTIVE
+    assert junior.state == BotProfile.State.RETIRED
+    assert newbie.manor.prestige == junior.manor.prestige == 0
+
+
+@pytest.mark.django_db
+def test_population_retargets_existing_profile_without_changing_actual_prestige(settings, django_user_model):
+    from gameplay.services import virtual_players
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "region_floor": 0,
+            "region_active_multiplier": 1,
+            "global_floor": 1,
+            "global_active_multiplier": 1,
+            "rolling_batch_size": [1, 1],
+        },
+        "prestige_bands": {"newbie": [0, 500], "junior": [500, 2000]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+    }
+    real = ensure_manor(
+        django_user_model.objects.create_user(
+            username=_unique("trajectory_real"),
+            password="pass123",
+        )
+    )
+    real.region = "north"
+    real.prestige = 900
+    real.last_active_at = timezone.now()
+    real.save(update_fields=["region", "prestige", "last_active_at"])
+    profile = virtual_players.create_virtual_player(
+        region="north",
+        prestige_band="newbie",
+        growth_seed=99_201,
+        projection=virtual_players.BotProjectionConfig(0, 1, 0, 1),
+        start_from_zero=True,
+    )
+
+    plan = virtual_players._build_population_plan(
+        virtual_players.load_virtual_player_config(),
+        now=timezone.now(),
+    )
+    assert virtual_players.rebalance_virtual_player_target_bands(plan, limit=1) == 1
+
+    profile.refresh_from_db()
+    assert profile.target_prestige_band == "junior"
+    assert profile.manor.prestige == 0
+
+
+@pytest.mark.django_db
+def test_population_roll_retargets_before_retiring_or_creating(settings, django_user_model):
+    from gameplay.models import BotProfile
+    from gameplay.services import virtual_players
+
+    _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "region_floor": 0,
+            "region_active_multiplier": 1,
+            "global_floor": 1,
+            "global_active_multiplier": 1,
+            "rolling_batch_size": [1, 1],
+        },
+        "prestige_bands": {"newbie": [0, 500], "junior": [500, 2000]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+    }
+    real = ensure_manor(
+        django_user_model.objects.create_user(
+            username=_unique("trajectory_roll_real"),
+            password="pass123",
+        )
+    )
+    real.region = "north"
+    real.prestige = 900
+    real.last_active_at = timezone.now()
+    real.save(update_fields=["region", "prestige", "last_active_at"])
+    profile = virtual_players.create_virtual_player(
+        region="north",
+        prestige_band="newbie",
+        growth_seed=99_202,
+        projection=virtual_players.BotProjectionConfig(0, 1, 0, 1),
+        start_from_zero=True,
+    )
+
+    assert virtual_players.roll_virtual_player_population(limit=1, now=timezone.now()) == 0
+
+    profile.refresh_from_db()
+    assert BotProfile.objects.count() == 1
+    assert profile.state == BotProfile.State.ACTIVE
+    assert profile.target_prestige_band == "junior"
+    assert profile.manor.prestige == 0
 
 
 @pytest.mark.django_db

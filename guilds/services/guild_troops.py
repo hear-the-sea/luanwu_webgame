@@ -3,14 +3,17 @@ from __future__ import annotations
 from typing import Any
 
 from django.db import IntegrityError, transaction
-from django.db.models import F
+from django.db.models import F, Sum
 from django.utils import timezone
 
+import guilds.constants as guild_constants
 from battle.models import TroopTemplate
 from core.exceptions import GuildMembershipError, GuildValidationError
 from gameplay.models import Manor, PlayerTroop
+from gameplay.services.recruitment.templates import get_recruit_config
 
 from ..models import Guild, GuildMember, GuildTroopDonationLog, GuildTroopStorage
+from .contribution import MAX_CONTRIBUTION
 from .technology import build_guild_troop_tech_levels
 
 
@@ -70,6 +73,29 @@ def _get_or_create_locked_storage(*, guild: Guild, troop_template: TroopTemplate
             guild=guild,
             troop_template=troop_template,
         )
+
+
+def get_troop_donation_rate(troop_key: str) -> int:
+    """返回护院招募科技档位对应的单名贡献。"""
+    recruit_config = get_recruit_config(str(troop_key or "").strip()) or {}
+    tech_level = int(recruit_config.get("tech_level", 0) or 0)
+    fallback_rate = int(guild_constants.TROOP_CONTRIBUTION_RATES.get("0", 0) or 0)
+    return max(0, int(guild_constants.TROOP_CONTRIBUTION_RATES.get(str(tech_level), fallback_rate) or 0))
+
+
+def get_today_troop_contribution(member: GuildMember) -> int:
+    """根据今日护院捐赠日志统计已获得贡献。"""
+    rows = (
+        GuildTroopDonationLog.objects.filter(
+            member=member,
+            donated_at__date=timezone.localdate(),
+        )
+        .values("troop_template__key")
+        .annotate(total_quantity=Sum("quantity"))
+    )
+    return sum(
+        get_troop_donation_rate(str(row["troop_template__key"])) * int(row["total_quantity"] or 0) for row in rows
+    )
 
 
 def _extract_troops_lost(*, loadout: dict[str, int], report: object | None, side: str) -> dict[str, int]:
@@ -240,7 +266,7 @@ def add_guild_troops(*, guild: Guild, loadout: dict[str, int]) -> dict[str, int]
 
 
 @transaction.atomic
-def donate_troops(*, member: GuildMember, troop_key: str, quantity: int) -> None:
+def donate_troops(*, member: GuildMember, troop_key: str, quantity: int) -> int:
     """
     捐赠玩家护院到帮会公共护院池。
 
@@ -257,6 +283,14 @@ def donate_troops(*, member: GuildMember, troop_key: str, quantity: int) -> None
         raise GuildValidationError("护院参数错误")
 
     locked_member = _lock_active_member(member)
+
+    contribution_gained = get_troop_donation_rate(normalized_key) * quantity
+    donated_today = get_today_troop_contribution(locked_member)
+    daily_limit = int(guild_constants.DAILY_TROOP_CONTRIBUTION_LIMIT)
+    if donated_today + contribution_gained > daily_limit:
+        raise GuildValidationError(f"今日护院捐赠贡献已达上限（{daily_limit}）")
+    if locked_member.total_contribution + contribution_gained > MAX_CONTRIBUTION:
+        raise GuildValidationError(f"贡献度已达上限（{MAX_CONTRIBUTION:,}）")
 
     player_troop = (
         PlayerTroop.objects.select_for_update()
@@ -279,9 +313,16 @@ def donate_troops(*, member: GuildMember, troop_key: str, quantity: int) -> None
 
     GuildTroopStorage.objects.filter(pk=storage.pk).update(count=F("count") + quantity, updated_at=timezone.now())
 
+    GuildMember.objects.filter(pk=locked_member.pk).update(
+        total_contribution=F("total_contribution") + contribution_gained,
+        current_contribution=F("current_contribution") + contribution_gained,
+        weekly_contribution=F("weekly_contribution") + contribution_gained,
+    )
+
     GuildTroopDonationLog.objects.create(
         guild=locked_member.guild,
         member=locked_member,
         troop_template=player_troop.troop_template,
         quantity=quantity,
     )
+    return contribution_gained

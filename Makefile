@@ -14,6 +14,7 @@ CRITICAL_INTEGRATION_TESTS ?= \
 	tests/test_work_service_concurrency.py \
 	tests/test_manor_coordinate_concurrency_integration.py \
 	tests/test_virtual_player_lock_integration.py \
+	tests/test_arena_virtual_population_concurrency_integration.py \
 	tests/test_message_claim_delete_concurrency_integration.py
 
 ifdef DJANGO_DB_PORT

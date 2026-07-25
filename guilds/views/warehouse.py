@@ -52,7 +52,8 @@ def exchange_item(request, item_key):
         return redirect("guilds:warehouse")
 
     member = request.guild_member
-    quantity = safe_int(request.POST.get("quantity", 1), default=1, min_val=1, max_val=100)
+    max_quantity = 100_000_000 if warehouse_service.is_resource_exchange_item(item_key) else 100
+    quantity = safe_int(request.POST.get("quantity", 1), default=1, min_val=1, max_val=max_quantity)
 
     execute_guild_action(
         request,

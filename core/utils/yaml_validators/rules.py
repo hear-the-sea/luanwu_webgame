@@ -571,6 +571,19 @@ def validate_guild_rules(data: dict, *, file: str = "guild_rules.yaml") -> Valid
 
     contribution = data.get("contribution")
     if isinstance(contribution, dict):
+        contribution_units = contribution.get("units")
+        if contribution_units is not None:
+            if not isinstance(contribution_units, dict):
+                result.add(file, "contribution.units", "expected a mapping")
+            else:
+                for resource, unit in contribution_units.items():
+                    if not isinstance(unit, int) or isinstance(unit, bool) or unit <= 0:
+                        result.add(
+                            file,
+                            f"contribution.units.{resource}",
+                            f"expected a positive integer, got {unit!r}",
+                        )
+
         min_donation = contribution.get("min_donation_amount")
         if min_donation is not None:
             _check_type(
@@ -602,6 +615,28 @@ def validate_guild_rules(data: dict, *, file: str = "guild_rules.yaml") -> Valid
                             f"contribution.daily_limits.{resource}",
                             f"expected a non-negative number, got {limit!r}",
                         )
+
+        troop_rates = contribution.get("troop_rates")
+        if troop_rates is not None:
+            if not isinstance(troop_rates, dict):
+                result.add(file, "contribution.troop_rates", "expected a mapping")
+            else:
+                for level, rate in troop_rates.items():
+                    if not isinstance(rate, int) or isinstance(rate, bool) or rate < 0:
+                        result.add(
+                            file,
+                            f"contribution.troop_rates.{level}",
+                            f"expected a non-negative integer, got {rate!r}",
+                        )
+
+        troop_daily_limit = contribution.get("daily_troop_contribution_limit")
+        if troop_daily_limit is not None:
+            if not isinstance(troop_daily_limit, int) or isinstance(troop_daily_limit, bool) or troop_daily_limit < 0:
+                result.add(
+                    file,
+                    "contribution.daily_troop_contribution_limit",
+                    f"expected a non-negative integer, got {troop_daily_limit!r}",
+                )
 
     hero_pool = data.get("hero_pool")
     if hero_pool is not None:

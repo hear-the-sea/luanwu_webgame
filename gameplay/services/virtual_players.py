@@ -6,6 +6,7 @@ import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import timedelta
+from enum import Enum
 from functools import lru_cache
 from hashlib import blake2b, sha256
 from pathlib import Path
@@ -26,8 +27,14 @@ from core.utils.cache_lock import acquire_best_effort_lock, release_best_effort_
 from core.utils.yaml_loader import load_yaml_data
 from gameplay.constants import REGION_CHOICES, BuildingKeys, PVPConstants
 from gameplay.models import (
+    ArenaCoopEntry,
+    ArenaCoopEvent,
+    ArenaEntry,
+    ArenaTournament,
+    ArenaVirtualReserveMember,
     BotBackfillDemand,
     BotInventoryDailyCounter,
+    BotPopulationControl,
     BotProfile,
     Building,
     BuildingType,
@@ -80,18 +87,37 @@ class BotProjectionConfig:
     troop_count: int = 50
 
 
+class PopulationMutationStatus(str, Enum):
+    CREATED = "created"
+    REACTIVATED = "reactivated"
+    CAP_REACHED = "cap_reached"
+    UNAVAILABLE = "unavailable"
+
+
+class AcceleratedGrowthOutcome(str, Enum):
+    GROWN = "grown"
+    BUSY = "busy"
+    INELIGIBLE = "ineligible"
+
+
+@dataclass(frozen=True)
+class PopulationMutationResult:
+    status: PopulationMutationStatus
+    profile: BotProfile | None
+    hard_cap: int
+    maintained_count: int
+
+
 DEFAULT_VIRTUAL_PLAYER_CONFIG: dict[str, Any] = {
     "enabled": True,
     "population": {
-        "active_player_multiplier": 2,
         "active_window_days": 7,
-        "cell_floor": 4,
-        "cell_active_multiplier": 2,
+        "region_floor": 8,
+        "region_active_multiplier": 8,
+        "global_floor": 32,
+        "global_active_multiplier": 20,
         "exploration_supply": 0,
-        "min_per_region": 0,
         "min_attackable_per_band": 4,
-        "retired_reactivation_chance": 0.70,
-        "hard_cap": 2000,
         "rolling_batch_size": [3, 12],
     },
     "prestige_bands": {
@@ -702,6 +728,18 @@ def _target_band_filter(prestige_band: str) -> Q:
     return Q(target_prestige_band=str(prestige_band)) | Q(target_prestige_band="", prestige_band=str(prestige_band))
 
 
+def _population_cell_membership_filter(
+    prestige_band: str,
+    *,
+    config: dict[str, Any],
+    target_based: bool,
+) -> Q:
+    if target_based:
+        return _target_band_filter(prestige_band)
+    low, high = _prestige_bands(config)[prestige_band]
+    return Q(**_band_filter_kwargs(low, high, prefix="manor__"))
+
+
 def record_virtual_player_backfill_demand(*, region: str, prestige_band: str, needed: int) -> None:
     """Reconcile the current async bot backfill shortage for one population cell."""
     needed = max(0, int(needed or 0))
@@ -770,56 +808,19 @@ def _should_reactivate_retired_player(
     return value < normalized_chance
 
 
-@transaction.atomic
-def _try_reactivate_retired_player(
-    *,
-    region: str,
-    prestige_band: str,
-    low: int,
-    high: int | None,
-    now,
-    config: dict[str, Any],
-    evaluated_profile_ids: set[int],
-    ownership_guard: Callable[[], None] | None = None,
-) -> BotProfile | None:
-    queryset = (
-        BotProfile.objects.select_for_update(skip_locked=True)
-        .select_related("manor")
-        .filter(
-            state=BotProfile.State.RETIRED,
-            manor__region=str(region),
-            **_band_filter_kwargs(low, high, prefix="manor__"),
-        )
-        .exclude(id__in=evaluated_profile_ids)
-        .order_by("-maintenance_stopped_at", "-updated_at", "id")
-    )
-    profile = queryset.first()
-    if profile is None:
-        return None
-    evaluated_profile_ids.add(int(profile.id))
-    population = config.get("population") or {}
-    chance = max(0.0, min(1.0, float(population.get("retired_reactivation_chance", 0.70))))
-    if not _should_reactivate_retired_player(
-        now=now,
-        region=str(region),
-        prestige_band=str(prestige_band),
-        profile_id=int(profile.id),
-        chance=chance,
-    ):
-        return None
-    if ownership_guard is not None:
-        ownership_guard()
-
-    local_date = timezone.localtime(now).date() if timezone.is_aware(now) else now.date()
+def _reactivate_locked_virtual_player_profile(profile: BotProfile, *, now) -> BotProfile:
+    current_time = now
+    local_date = timezone.localtime(current_time).date() if timezone.is_aware(current_time) else current_time.date()
+    config = load_virtual_player_config()
     lifecycle_rng = random.Random(f"reactivate:{local_date.isoformat()}:{profile.id}")
-    _next_growth_at, abandon_at, retire_at = _lifecycle_dates(now, lifecycle_rng, config)
+    _next_growth_at, abandon_at, retire_at = _lifecycle_dates(current_time, lifecycle_rng, config)
     profile.state = BotProfile.State.ACTIVE
-    profile.next_growth_at = now
+    profile.next_growth_at = current_time
     profile.abandon_at = abandon_at
     profile.retire_at = retire_at
-    profile.maintenance_started_at = now
+    profile.maintenance_started_at = current_time
     profile.maintenance_stopped_at = None
-    profile.last_planned_at = now
+    profile.last_planned_at = current_time
     profile.save(
         update_fields=[
             "state",
@@ -833,24 +834,125 @@ def _try_reactivate_retired_player(
         ]
     )
     logger.info(
-        "Virtual player reactivated: profile_id=%s manor_id=%s region=%s prestige_band=%s chance=%s",
+        "Virtual player reactivated: profile_id=%s manor_id=%s region=%s prestige_band=%s",
         profile.id,
         profile.manor_id,
-        region,
-        prestige_band,
-        chance,
+        profile.manor.region,
+        _profile_target_prestige_band(profile),
         extra={
             "event": "virtual_player_reactivated",
             "profile_id": profile.id,
             "manor_id": profile.manor_id,
-            "region": str(region),
-            "current_prestige_band": str(prestige_band),
-            "reactivation_chance": chance,
+            "region": profile.manor.region,
+            "current_prestige_band": profile.current_prestige_band,
+            "target_prestige_band": _profile_target_prestige_band(profile),
         },
     )
     return profile
 
 
+@transaction.atomic
+def reactivate_retired_virtual_player_with_capacity(
+    profile_id: int,
+    *,
+    now=None,
+) -> PopulationMutationResult:
+    current_time = now or timezone.now()
+    hard_cap, maintained_count = _lock_population_capacity(now=current_time)
+    profile = (
+        BotProfile.objects.select_for_update(skip_locked=True)
+        .select_related("manor")
+        .filter(pk=profile_id, state=BotProfile.State.RETIRED)
+        .first()
+    )
+    if profile is None:
+        return PopulationMutationResult(
+            status=PopulationMutationStatus.UNAVAILABLE,
+            profile=None,
+            hard_cap=hard_cap,
+            maintained_count=maintained_count,
+        )
+    if not _population_has_room(hard_cap, maintained_count):
+        return PopulationMutationResult(
+            status=PopulationMutationStatus.CAP_REACHED,
+            profile=None,
+            hard_cap=hard_cap,
+            maintained_count=maintained_count,
+        )
+    reactivated = _reactivate_locked_virtual_player_profile(profile, now=current_time)
+    return PopulationMutationResult(
+        status=PopulationMutationStatus.REACTIVATED,
+        profile=reactivated,
+        hard_cap=hard_cap,
+        maintained_count=maintained_count,
+    )
+
+
+@transaction.atomic
+def reactivate_virtual_player_profile(profile_id: int, *, now=None) -> BotProfile | None:
+    current_time = now or timezone.now()
+    state = BotProfile.objects.filter(pk=profile_id).values_list("state", flat=True).first()
+    if state == BotProfile.State.RETIRED:
+        return reactivate_retired_virtual_player_with_capacity(
+            profile_id,
+            now=current_time,
+        ).profile
+
+    profile = (
+        BotProfile.objects.select_for_update(skip_locked=True)
+        .select_related("manor")
+        .filter(pk=profile_id, state=BotProfile.State.ABANDONED)
+        .first()
+    )
+    if profile is None:
+        return None
+    return _reactivate_locked_virtual_player_profile(profile, now=current_time)
+
+
+@transaction.atomic
+def _try_reactivate_retired_player(
+    *,
+    region: str,
+    prestige_band: str,
+    low: int,
+    high: int | None,
+    now,
+    config: dict[str, Any],
+    evaluated_profile_ids: set[int],
+    ownership_guard: Callable[[], None] | None = None,
+) -> BotProfile | None:
+    if ownership_guard is not None:
+        ownership_guard()
+    hard_cap, maintained_count = _lock_population_capacity(now=now)
+    if not _population_has_room(hard_cap, maintained_count):
+        return None
+    queryset = (
+        BotProfile.objects.select_for_update(skip_locked=True)
+        .select_related("manor")
+        .filter(
+            _population_cell_membership_filter(
+                prestige_band,
+                config=config,
+                target_based=_uses_regional_population_planning(),
+            )
+        )
+        .filter(
+            state=BotProfile.State.RETIRED,
+            manor__region=str(region),
+        )
+        .exclude(id__in=evaluated_profile_ids)
+        .order_by("-maintenance_stopped_at", "-updated_at", "id")
+    )
+    profile = queryset.first()
+    if profile is None:
+        return None
+    evaluated_profile_ids.add(int(profile.id))
+    if ownership_guard is not None:
+        ownership_guard()
+    return _reactivate_locked_virtual_player_profile(profile, now=now)
+
+
+@transaction.atomic
 def _reactivate_or_create_virtual_player(
     *,
     region: str,
@@ -864,31 +966,85 @@ def _reactivate_or_create_virtual_player(
     projection_factory: Callable[[], BotProjectionConfig],
     evaluated_profile_ids: set[int],
     ownership_guard: Callable[[], None] | None = None,
-) -> tuple[BotProfile, bool]:
-    reactivated = _try_reactivate_retired_player(
-        region=region,
-        prestige_band=prestige_band,
-        low=low,
-        high=high,
-        now=now,
-        config=config,
-        evaluated_profile_ids=evaluated_profile_ids,
-        ownership_guard=ownership_guard,
-    )
-    if reactivated is not None:
-        return reactivated, True
+    require_population_deficit: bool = False,
+    include_target_pipeline: bool = False,
+) -> PopulationMutationResult:
     if ownership_guard is not None:
         ownership_guard()
-    return (
-        create_virtual_player(
-            region=region,
-            prestige_band=prestige_band,
-            archetype=archetype,
-            growth_seed=growth_seed,
-            now=now,
-            projection=projection_factory(),
-        ),
-        False,
+    hard_cap, maintained_count = _lock_population_capacity(now=now)
+    if not _population_has_room(hard_cap, maintained_count):
+        return PopulationMutationResult(
+            status=PopulationMutationStatus.CAP_REACHED,
+            profile=None,
+            hard_cap=hard_cap,
+            maintained_count=maintained_count,
+        )
+    if require_population_deficit:
+        current_cell = _build_population_plan(config, now=now).by_key.get((str(region), str(prestige_band)))
+        current_deficit = 0 if current_cell is None else current_cell.structural_deficit
+        if current_cell is not None and include_target_pipeline:
+            current_band_filter = Q(**_band_filter_kwargs(low, high, prefix="manor__"))
+            pipeline_supply = (
+                _maintained_bot_queryset()
+                .filter(manor__region=str(region))
+                .filter(_target_band_filter(prestige_band) | current_band_filter)
+                .count()
+            )
+            current_deficit = max(0, int(current_cell.target) - pipeline_supply)
+        if current_deficit <= 0:
+            return PopulationMutationResult(
+                status=PopulationMutationStatus.UNAVAILABLE,
+                profile=None,
+                hard_cap=hard_cap,
+                maintained_count=maintained_count,
+            )
+
+    retired = (
+        BotProfile.objects.select_for_update(skip_locked=True)
+        .select_related("manor")
+        .filter(
+            _population_cell_membership_filter(
+                prestige_band,
+                config=config,
+                target_based=_uses_regional_population_planning(),
+            )
+        )
+        .filter(
+            state=BotProfile.State.RETIRED,
+            manor__region=str(region),
+        )
+        .exclude(id__in=evaluated_profile_ids)
+        .order_by("-maintenance_stopped_at", "-updated_at", "id")
+        .first()
+    )
+    if retired is not None:
+        evaluated_profile_ids.add(int(retired.id))
+        if ownership_guard is not None:
+            ownership_guard()
+        reactivated = _reactivate_locked_virtual_player_profile(retired, now=now)
+        return PopulationMutationResult(
+            status=PopulationMutationStatus.REACTIVATED,
+            profile=reactivated,
+            hard_cap=hard_cap,
+            maintained_count=maintained_count,
+        )
+
+    if ownership_guard is not None:
+        ownership_guard()
+    profile = create_virtual_player(
+        region=region,
+        prestige_band=prestige_band,
+        archetype=archetype,
+        growth_seed=growth_seed,
+        now=now,
+        projection=projection_factory(),
+        start_from_zero=True,
+    )
+    return PopulationMutationResult(
+        status=PopulationMutationStatus.CREATED,
+        profile=profile,
+        hard_cap=hard_cap,
+        maintained_count=maintained_count,
     )
 
 
@@ -966,6 +1122,29 @@ def _maintained_bot_count() -> int:
     return _maintained_bot_queryset().count()
 
 
+def _arena_protected_bot_manor_ids() -> set[int]:
+    protected = set(
+        ArenaEntry.objects.filter(
+            status=ArenaEntry.Status.REGISTERED,
+            tournament__status__in=[
+                ArenaTournament.Status.RECRUITING,
+                ArenaTournament.Status.RUNNING,
+            ],
+        ).values_list("manor_id", flat=True)
+    )
+    protected.update(
+        ArenaCoopEntry.objects.filter(
+            status=ArenaCoopEntry.Status.REGISTERED,
+            event__status__in=[
+                ArenaCoopEvent.Status.RECRUITING,
+                ArenaCoopEvent.Status.PREPARING,
+                ArenaCoopEvent.Status.RUNNING,
+            ],
+        ).values_list("manor_id", flat=True)
+    )
+    return protected
+
+
 def _configured_population_value(
     population: dict[str, Any],
     field: str,
@@ -983,8 +1162,36 @@ def _configured_population_value(
     return int(population.get(field, population.get(legacy_field, default)) or 0)
 
 
+def _uses_regional_population_planning() -> bool:
+    runtime = getattr(settings, "VIRTUAL_PLAYER_CONFIG", None) or {}
+    runtime_population = runtime.get("population") if isinstance(runtime, dict) else None
+    if not isinstance(runtime_population, dict) or not runtime_population:
+        return True
+    regional_fields = {
+        "region_floor",
+        "region_active_multiplier",
+        "global_floor",
+        "global_active_multiplier",
+    }
+    if regional_fields.intersection(runtime_population):
+        return True
+    legacy_planning_fields = {
+        "active_player_multiplier",
+        "cell_floor",
+        "cell_active_multiplier",
+        "min_per_region",
+    }
+    return not bool(legacy_planning_fields.intersection(runtime_population))
+
+
+def _population_config_int(population: dict[str, Any], field: str, default: int) -> int:
+    value = population.get(field, default)
+    return int(default if value is None else value)
+
+
 def _build_population_plan(config: dict[str, Any], *, now) -> PopulationPlan:
     population = config.get("population") or {}
+    uses_regional_planning = _uses_regional_population_planning()
     active_days = max(1, int(population.get("active_window_days") or 7))
     active_after = now - timedelta(days=active_days)
     recent_after = now - timedelta(hours=24)
@@ -1023,11 +1230,32 @@ def _build_population_plan(config: dict[str, Any], *, now) -> PopulationPlan:
                         last_active_at__gte=active_after,
                         **real_filter,
                     ).count(),
-                    maintained_supply=maintained.filter(manor__region=region, **band_filter).count(),
+                    maintained_supply=maintained.filter(manor__region=region)
+                    .filter(
+                        _population_cell_membership_filter(
+                            band_name,
+                            config=config,
+                            target_based=uses_regional_planning,
+                        )
+                    )
+                    .count(),
                     attackable_supply=attackable.filter(manor__region=region, **band_filter).count(),
                     search_demand=demands.get((region, band_name), 0),
                 )
             )
+
+    if uses_regional_planning:
+        entry_band = _prestige_band_for_value(0, config) or next(iter(_prestige_bands(config)), "newbie")
+        hard_cap_override = int(population.get("hard_cap") or 0) if "hard_cap" in population else None
+        return plan_population_cells(
+            cells,
+            region_floor=max(0, _population_config_int(population, "region_floor", 8)),
+            region_multiplier=max(0, _population_config_int(population, "region_active_multiplier", 8)),
+            global_floor=max(0, _population_config_int(population, "global_floor", 32)),
+            global_multiplier=max(0, _population_config_int(population, "global_active_multiplier", 20)),
+            entry_band=entry_band,
+            hard_cap_override=hard_cap_override,
+        )
 
     return plan_population_cells(
         cells,
@@ -1052,6 +1280,96 @@ def _build_population_plan(config: dict[str, Any], *, now) -> PopulationPlan:
         exploration_supply=max(0, int(population.get("exploration_supply") or 0)),
         hard_cap=max(0, int(population.get("hard_cap") or 0)),
     )
+
+
+def get_virtual_player_capacity(*, now=None) -> tuple[int, int]:
+    current_time = now or timezone.now()
+    population_plan = _build_population_plan(load_virtual_player_config(), now=current_time)
+    return population_plan.hard_cap, _maintained_bot_count()
+
+
+def _select_virtual_player_creation_region(*, now) -> str | None:
+    population_plan = _build_population_plan(load_virtual_player_config(), now=now)
+    region_targets = population_plan.region_targets
+    if not region_targets:
+        return None
+    maintained_by_region = {
+        str(row["manor__region"]): int(row["count"] or 0)
+        for row in _maintained_bot_queryset().values("manor__region").annotate(count=Count("id"))
+    }
+    return min(
+        region_targets,
+        key=lambda region: (
+            -(int(region_targets[region]) - maintained_by_region.get(region, 0)),
+            region,
+        ),
+    )
+
+
+def _lock_population_capacity(*, now) -> tuple[int, int]:
+    BotPopulationControl.objects.select_for_update().get_or_create(
+        key=BotPopulationControl.GLOBAL_KEY,
+    )
+    return get_virtual_player_capacity(now=now)
+
+
+def _population_has_room(hard_cap: int, maintained_count: int) -> bool:
+    return hard_cap <= 0 or maintained_count < hard_cap
+
+
+def rebalance_virtual_player_target_bands(population_plan: PopulationPlan, *, limit: int) -> int:
+    remaining = max(0, int(limit))
+    updated = 0
+    protected_manor_ids = _arena_protected_bot_manor_ids()
+    for region in sorted(population_plan.region_targets):
+        desired = {cell.prestige_band: cell.target for cell in population_plan.cells if cell.region == region}
+        current = {
+            band: _maintained_bot_queryset().filter(manor__region=region).filter(_target_band_filter(band)).count()
+            for band in desired
+        }
+        deficits = [band for band in desired if desired[band] > current.get(band, 0)]
+        for target_band in sorted(
+            deficits,
+            key=lambda band: (-(desired[band] - current.get(band, 0)), band),
+        ):
+            needed = desired[target_band] - current.get(target_band, 0)
+            donor_bands = [band for band in desired if current.get(band, 0) > desired[band]]
+            for donor_band in sorted(donor_bands):
+                if remaining <= 0 or needed <= 0:
+                    return updated
+                with transaction.atomic():
+                    profile_ids = list(
+                        _maintained_bot_queryset()
+                        .select_for_update(skip_locked=True)
+                        .filter(
+                            manor__region=region,
+                            arena_virtual_reserve__isnull=True,
+                        )
+                        .exclude(manor_id__in=protected_manor_ids)
+                        .filter(_target_band_filter(donor_band))
+                        .order_by("last_planned_at", "id")
+                        .values_list("id", flat=True)[: min(remaining, needed)]
+                    )
+                    changed = (
+                        _maintained_bot_queryset()
+                        .filter(
+                            id__in=profile_ids,
+                            manor__region=region,
+                            arena_virtual_reserve__isnull=True,
+                        )
+                        .exclude(manor_id__in=_arena_protected_bot_manor_ids())
+                        .filter(_target_band_filter(donor_band))
+                        .update(
+                            target_prestige_band=target_band,
+                            prestige_band=target_band,
+                        )
+                    )
+                updated += changed
+                remaining -= changed
+                needed -= changed
+                current[donor_band] -= changed
+                current[target_band] = current.get(target_band, 0) + changed
+    return updated
 
 
 def _projection_from_real_players(
@@ -2084,6 +2402,7 @@ def create_virtual_player(
     growth_seed: int | None = None,
     now=None,
     projection: BotProjectionConfig | None = None,
+    start_from_zero: bool = False,
 ) -> BotProfile:
     now = now or timezone.now()
     seed = int(growth_seed or random.randint(1, 2_147_483_647))
@@ -2104,7 +2423,15 @@ def create_virtual_player(
     target_band = _prestige_bands(config).get(prestige_band)
     target_low = target_band[0] if target_band is not None else 0
     stage_cap = _growth_stage_cap_for_band(prestige_band, config)
-    if target_low > 0:
+    if start_from_zero:
+        starting_projection = BotProjectionConfig(
+            prestige=0,
+            building_level=INITIAL_BOT_BUILDING_LEVEL,
+            guest_count=min(max(0, int(projection.guest_count)), INITIAL_BOT_GUEST_COUNT),
+            guest_level=INITIAL_BOT_GUEST_LEVEL,
+            troop_count=max(0, min(int(projection.troop_count), 50)),
+        )
+    elif target_low > 0:
         target_high = target_band[1] if target_band is not None else None
         projected_prestige = max(target_low, int(projection.prestige))
         if target_high is not None:
@@ -2203,6 +2530,55 @@ def create_virtual_player(
         },
     )
     return profile
+
+
+@transaction.atomic
+def create_virtual_player_with_capacity(
+    *,
+    region: str | None,
+    prestige_band: str,
+    archetype: str | None = None,
+    growth_seed: int | None = None,
+    now=None,
+    projection: BotProjectionConfig | None = None,
+    start_from_zero: bool = False,
+) -> PopulationMutationResult:
+    current_time = now or timezone.now()
+    hard_cap, maintained_count = _lock_population_capacity(now=current_time)
+    if not _population_has_room(hard_cap, maintained_count):
+        return PopulationMutationResult(
+            status=PopulationMutationStatus.CAP_REACHED,
+            profile=None,
+            hard_cap=hard_cap,
+            maintained_count=maintained_count,
+        )
+
+    selected_region = region or _select_virtual_player_creation_region(now=current_time)
+    if selected_region is None:
+        return PopulationMutationResult(
+            status=PopulationMutationStatus.UNAVAILABLE,
+            profile=None,
+            hard_cap=hard_cap,
+            maintained_count=maintained_count,
+        )
+
+    seed = int(growth_seed or random.randint(1, 2_147_483_647))
+    selected_archetype = archetype or _weighted_archetype(random.Random(seed))
+    profile = create_virtual_player(
+        region=selected_region,
+        prestige_band=prestige_band,
+        archetype=selected_archetype,
+        growth_seed=seed,
+        now=current_time,
+        projection=projection,
+        start_from_zero=start_from_zero,
+    )
+    return PopulationMutationResult(
+        status=PopulationMutationStatus.CREATED,
+        profile=profile,
+        hard_cap=hard_cap,
+        maintained_count=maintained_count,
+    )
 
 
 def is_bot_manor(manor: Manor) -> bool:
@@ -2416,6 +2792,37 @@ def _maintain_active_profile(profile: BotProfile, *, now, config: dict[str, Any]
     )
 
 
+@transaction.atomic
+def accelerate_virtual_player_growth(
+    profile_id: int,
+    *,
+    now=None,
+) -> AcceleratedGrowthOutcome:
+    current_time = now or timezone.now()
+    profile = (
+        BotProfile.objects.select_for_update(skip_locked=True)
+        .select_related("manor")
+        .filter(
+            pk=profile_id,
+            state__in=[BotProfile.State.ACTIVE, BotProfile.State.SLOWING],
+        )
+        .first()
+    )
+    if profile is None:
+        state = BotProfile.objects.filter(pk=profile_id).values_list("state", flat=True).first()
+        if state in [BotProfile.State.ACTIVE, BotProfile.State.SLOWING]:
+            return AcceleratedGrowthOutcome.BUSY
+        return AcceleratedGrowthOutcome.INELIGIBLE
+
+    original_next_growth_at = profile.next_growth_at
+    _maintain_active_profile(profile, now=current_time, config=load_virtual_player_config())
+    profile.refresh_from_db(fields=["next_growth_at"])
+    if original_next_growth_at != profile.next_growth_at:
+        profile.next_growth_at = original_next_growth_at
+        profile.save(update_fields=["next_growth_at", "updated_at"])
+    return AcceleratedGrowthOutcome.GROWN
+
+
 def _loot_resource_total(loot_resources: Any) -> int:
     if not isinstance(loot_resources, dict):
         return 0
@@ -2473,11 +2880,33 @@ def _has_long_no_interaction(profile: BotProfile, *, now, config: dict[str, Any]
     )
 
 
-def _mark_profile_retired(profile: BotProfile, *, now) -> None:
+def _mark_profile_retired(profile: BotProfile, *, now) -> bool:
+    if (
+        ArenaVirtualReserveMember.objects.filter(profile_id=profile.id).exists()
+        or profile.manor_id in _arena_protected_bot_manor_ids()
+    ):
+        profile.next_growth_at = now + timedelta(hours=1)
+        profile.save(update_fields=["next_growth_at", "updated_at"])
+        return False
     profile.state = BotProfile.State.RETIRED
     profile.next_growth_at = now
     profile.maintenance_stopped_at = now
     profile.save(update_fields=["state", "next_growth_at", "maintenance_stopped_at", "updated_at"])
+    return True
+
+
+@transaction.atomic
+def retire_virtual_player_if_unprotected(profile_id: int, *, now=None) -> bool:
+    current_time = now or timezone.now()
+    profile = (
+        BotProfile.objects.select_for_update()
+        .filter(pk=profile_id)
+        .exclude(state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED])
+        .first()
+    )
+    if profile is None:
+        return False
+    return _mark_profile_retired(profile, now=current_time)
 
 
 def _maintain_profile(profile: BotProfile, *, now, config: dict[str, Any]) -> None:
@@ -2561,21 +2990,41 @@ def _retire_excess_virtual_players(
     excess = _maintained_bot_count() - target
     if excess <= 0:
         return 0
-    stale_ids = list(
-        _maintained_bot_queryset()
-        .filter(state__in=[BotProfile.State.ACTIVE, BotProfile.State.SLOWING, BotProfile.State.ABANDONED])
-        .order_by("last_planned_at", "created_at", "id")
-        .values_list("id", flat=True)[:excess]
-    )
-    if not stale_ids:
-        return 0
-    if ownership_guard is not None:
-        ownership_guard()
-    retired_count = BotProfile.objects.filter(id__in=stale_ids).update(
-        state=BotProfile.State.RETIRED,
-        next_growth_at=now,
-        maintenance_stopped_at=now,
-    )
+    eligible_states = [
+        BotProfile.State.ACTIVE,
+        BotProfile.State.SLOWING,
+        BotProfile.State.ABANDONED,
+    ]
+    with transaction.atomic():
+        protected_manor_ids = _arena_protected_bot_manor_ids()
+        stale_ids = list(
+            _maintained_bot_queryset()
+            .select_for_update(skip_locked=True)
+            .filter(
+                state__in=eligible_states,
+                arena_virtual_reserve__isnull=True,
+            )
+            .exclude(manor_id__in=protected_manor_ids)
+            .order_by("last_planned_at", "created_at", "id")
+            .values_list("id", flat=True)[:excess]
+        )
+        if not stale_ids:
+            return 0
+        if ownership_guard is not None:
+            ownership_guard()
+        retired_count = (
+            BotProfile.objects.filter(
+                id__in=stale_ids,
+                state__in=eligible_states,
+                arena_virtual_reserve__isnull=True,
+            )
+            .exclude(manor_id__in=_arena_protected_bot_manor_ids())
+            .update(
+                state=BotProfile.State.RETIRED,
+                next_growth_at=now,
+                maintenance_stopped_at=now,
+            )
+        )
     if retired_count > 0:
         logger.info(
             "Virtual player overpopulation retired: target=%s excess=%s retired_count=%s",
@@ -2602,31 +3051,55 @@ def _retire_excess_population_cells(
     retired_count = 0
     total_excess = 0
     bands = _prestige_bands(config)
+    target_based = _uses_regional_population_planning()
     for cell in population_plan.cells:
         excess = int(cell.excess)
-        band_range = bands.get(cell.prestige_band)
-        if excess <= 0 or band_range is None:
+        if excess <= 0 or cell.prestige_band not in bands:
             continue
-        low, high = band_range
-        stale_ids = list(
-            _maintained_bot_queryset()
-            .filter(
-                manor__region=cell.region,
-                state__in=[BotProfile.State.ACTIVE, BotProfile.State.SLOWING, BotProfile.State.ABANDONED],
-                **_band_filter_kwargs(low, high, prefix="manor__"),
+        membership_filter = _population_cell_membership_filter(
+            cell.prestige_band,
+            config=config,
+            target_based=target_based,
+        )
+        eligible_states = [
+            BotProfile.State.ACTIVE,
+            BotProfile.State.SLOWING,
+            BotProfile.State.ABANDONED,
+        ]
+        with transaction.atomic():
+            protected_manor_ids = _arena_protected_bot_manor_ids()
+            stale_ids = list(
+                _maintained_bot_queryset()
+                .select_for_update(skip_locked=True)
+                .filter(membership_filter)
+                .filter(
+                    manor__region=cell.region,
+                    state__in=eligible_states,
+                    arena_virtual_reserve__isnull=True,
+                )
+                .exclude(manor_id__in=protected_manor_ids)
+                .order_by("last_planned_at", "created_at", "id")
+                .values_list("id", flat=True)[:excess]
             )
-            .order_by("last_planned_at", "created_at", "id")
-            .values_list("id", flat=True)[:excess]
-        )
-        if not stale_ids:
-            continue
-        if ownership_guard is not None:
-            ownership_guard()
-        updated = BotProfile.objects.filter(id__in=stale_ids).update(
-            state=BotProfile.State.RETIRED,
-            next_growth_at=now,
-            maintenance_stopped_at=now,
-        )
+            if not stale_ids:
+                continue
+            if ownership_guard is not None:
+                ownership_guard()
+            updated = (
+                BotProfile.objects.filter(
+                    id__in=stale_ids,
+                    manor__region=cell.region,
+                    state__in=eligible_states,
+                    arena_virtual_reserve__isnull=True,
+                )
+                .filter(membership_filter)
+                .exclude(manor_id__in=_arena_protected_bot_manor_ids())
+                .update(
+                    state=BotProfile.State.RETIRED,
+                    next_growth_at=now,
+                    maintenance_stopped_at=now,
+                )
+            )
         retired_count += updated
         total_excess += excess
 
@@ -2682,10 +3155,21 @@ def plan_virtual_player_population(*, now=None) -> dict[str, Any]:
         "maintained_bots": maintained_bots,
         "attackable_bots": attackable_bots,
         "hard_cap": population_plan.hard_cap,
+        "region_targets": population_plan.region_targets,
         "config_summary": {
             "active_window_days": max(1, int(population.get("active_window_days") or 7)),
             "cell_floor": cell_floor,
             "cell_active_multiplier": cell_multiplier,
+            "region_floor": max(0, _population_config_int(population, "region_floor", 8)),
+            "region_active_multiplier": max(
+                0,
+                _population_config_int(population, "region_active_multiplier", 8),
+            ),
+            "global_floor": max(0, _population_config_int(population, "global_floor", 32)),
+            "global_active_multiplier": max(
+                0,
+                _population_config_int(population, "global_active_multiplier", 20),
+            ),
             "exploration_supply": max(0, int(population.get("exploration_supply") or 0)),
         },
         "cells": [
@@ -2717,9 +3201,14 @@ def plan_virtual_player_population(*, now=None) -> dict[str, Any]:
             "event": "virtual_player_population_planned",
             "active_real_players": active_real_players,
             "maintained_bots": maintained_bots,
+            "maintained_count": maintained_bots,
             "attackable_bots": attackable_bots,
             "target_bot_total": population_plan.target_total,
             "hard_cap": population_plan.hard_cap,
+            "region_targets": population_plan.region_targets,
+            "reactivated_count": 0,
+            "created_count": 0,
+            "retired_count": 0,
             "cells": payload["cells"],
         },
     )
@@ -2771,7 +3260,7 @@ def _create_backfill_demanded_players(
         created_before_demand = created
         reactivated_before_demand = reactivated_count
         cap_reached = False
-        while created < limit:
+        while created < limit and created - created_before_demand < needed:
             seed = rng.randint(1, 2_147_483_647)
             selected_archetype = _weighted_archetype(rng)
             if ownership_guard is not None:
@@ -2786,7 +3275,7 @@ def _create_backfill_demanded_players(
                     break
                 if ownership_guard is not None:
                     ownership_guard()
-                _profile, was_reactivated = _reactivate_or_create_virtual_player(
+                mutation = _reactivate_or_create_virtual_player(
                     region=region,
                     prestige_band=band_name,
                     low=low,
@@ -2797,6 +3286,8 @@ def _create_backfill_demanded_players(
                     config=config,
                     evaluated_profile_ids=evaluated_profile_ids,
                     ownership_guard=ownership_guard,
+                    require_population_deficit=True,
+                    include_target_pipeline=True,
                     projection_factory=lambda: _projection_for_band(
                         band_name,
                         low,
@@ -2808,26 +3299,26 @@ def _create_backfill_demanded_players(
                         archetype=selected_archetype,
                     ),
                 )
-                if was_reactivated:
+                if mutation.status is PopulationMutationStatus.CAP_REACHED:
+                    cap_reached = True
+                    break
+                if mutation.profile is None:
+                    break
+                if mutation.status is PopulationMutationStatus.REACTIVATED:
                     reactivated_count += 1
-                locked_demand.needed = max(0, int(locked_demand.needed or 0) - 1)
-                if locked_demand.needed <= 0:
-                    locked_demand.delete()
-                else:
-                    locked_demand.save(update_fields=["needed", "updated_at"])
             created += 1
         if needed > 0:
             created_for_demand = created - created_before_demand
             reactivated_for_demand = reactivated_count - reactivated_before_demand
             newly_created_for_demand = created_for_demand - reactivated_for_demand
             logger.info(
-                "Virtual player backfill demand consumed: region=%s prestige_band=%s processed=%s needed=%s",
+                "Virtual player backfill demand provisioned: region=%s prestige_band=%s processed=%s needed=%s",
                 region,
                 band_name,
                 created_for_demand,
                 needed,
                 extra={
-                    "event": "virtual_player_backfill_demand_consumed",
+                    "event": "virtual_player_backfill_demand_provisioned",
                     "region": region,
                     "prestige_band": band_name,
                     "processed_count": created_for_demand,
@@ -2925,9 +3416,16 @@ def _roll_virtual_player_population_unlocked(
 
     now = now or timezone.now()
     population = config.get("population") or {}
-    hard_cap = int(population.get("hard_cap", 0) or 0)
     bands = _prestige_bands(config)
+    rng = random.Random(int(now.timestamp()))
+    if limit is None:
+        limit = _range_value(rng, population.get("rolling_batch_size"), default=(3, 12))
+    limit = max(0, int(limit))
     population_plan = _build_population_plan(config, now=now)
+    if _uses_regional_population_planning() and limit > 0:
+        rebalance_virtual_player_target_bands(population_plan, limit=limit)
+        population_plan = _build_population_plan(config, now=now)
+    hard_cap = population_plan.hard_cap
     retired_for_capacity = _retire_excess_population_cells(
         population_plan,
         config=config,
@@ -2938,10 +3436,6 @@ def _roll_virtual_player_population_unlocked(
     if hard_cap > 0 and active_bot_count >= hard_cap:
         return 0
 
-    rng = random.Random(int(now.timestamp()))
-    if limit is None:
-        limit = _range_value(rng, population.get("rolling_batch_size"), default=(3, 12))
-    limit = max(0, int(limit))
     if limit <= 0:
         return 0
 
@@ -2977,6 +3471,7 @@ def _roll_virtual_player_population_unlocked(
             "low": bands[cell.prestige_band][0],
             "high": bands[cell.prestige_band][1],
             "deficit": cell.deficit,
+            "search_demand": cell.search_demand,
         }
         for cell in refreshed_plan.cells
         if cell.prestige_band in bands and cell.deficit > 0
@@ -2995,7 +3490,7 @@ def _roll_virtual_player_population_unlocked(
             selected_archetype = _weighted_archetype(rng)
             if ownership_guard is not None:
                 ownership_guard()
-            _reactivate_or_create_virtual_player(
+            mutation = _reactivate_or_create_virtual_player(
                 region=str(cell["region"]),
                 prestige_band=str(cell["band_name"]),
                 low=int(cell["low"]),
@@ -3006,6 +3501,8 @@ def _roll_virtual_player_population_unlocked(
                 config=config,
                 evaluated_profile_ids=evaluated_profile_ids,
                 ownership_guard=ownership_guard,
+                require_population_deficit=True,
+                include_target_pipeline=int(cell["search_demand"]) > 0,
                 projection_factory=lambda: _projection_for_band(
                     str(cell["band_name"]),
                     int(cell["low"]),
@@ -3017,6 +3514,10 @@ def _roll_virtual_player_population_unlocked(
                     archetype=selected_archetype,
                 ),
             )
+            if mutation.status is PopulationMutationStatus.CAP_REACHED:
+                return created
+            if mutation.profile is None:
+                continue
             cell["deficit"] = int(cell["deficit"]) - 1
             created += 1
             progressed = True

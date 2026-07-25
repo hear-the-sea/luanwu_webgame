@@ -12,7 +12,15 @@ from django.utils import timezone
 
 from core.exceptions import ArenaBusyError, ArenaEntryStateError, ArenaParticipationLimitError
 from core.utils.cache_lock import acquire_best_effort_lock, release_best_effort_lock
-from gameplay.models import ArenaEntry, ArenaEntryGuest, ArenaMatch, ArenaTournament, Manor
+from gameplay.models import (
+    ArenaCoopEntry,
+    ArenaCoopEvent,
+    ArenaEntry,
+    ArenaEntryGuest,
+    ArenaMatch,
+    ArenaTournament,
+    Manor,
+)
 from guests.models import Guest, GuestStatus
 from guests.services.loyalty import increase_guest_loyalty_by_ids
 
@@ -32,7 +40,6 @@ from .rules import load_arena_rules
 from .snapshots import build_entry_guest_snapshot
 from .state_helpers import sync_daily_participation_counter_locked as _sync_daily_participation_counter_locked
 from .state_helpers import update_daily_participation_counter_locked as _update_daily_participation_counter_locked
-from .virtual_backfill import backfill_tournament_locked
 
 logger = logging.getLogger(__name__)
 
@@ -165,6 +172,12 @@ def _get_or_create_recruiting_tournament_locked() -> ArenaTournament:
         )
 
 
+def queue_virtual_reserve_reconcile(mode: str, event_id: int) -> bool:
+    from .virtual_reserve import queue_virtual_reserve_reconcile as queue_reconcile
+
+    return queue_reconcile(mode, event_id)
+
+
 def _start_tournament_locked(tournament: ArenaTournament, *, now: datetime | None = None) -> bool:
     if tournament.status != ArenaTournament.Status.RECRUITING:
         return False
@@ -173,6 +186,9 @@ def _start_tournament_locked(tournament: ArenaTournament, *, now: datetime | Non
         return False
 
     current_time = now or timezone.now()
+    from .virtual_reserve import reconcile_tournament_demand_locked
+
+    reconcile_tournament_demand_locked(tournament, now=current_time)
     tournament.status = ArenaTournament.Status.RUNNING
     tournament.virtual_fill_completed = True
     tournament.started_at = current_time
@@ -233,6 +249,11 @@ def register_arena_entry(manor: Manor, guest_ids: Iterable[int]) -> ArenaRegistr
     auto_started = False
     if entry_count >= tournament.player_limit:
         auto_started = _start_tournament_locked(tournament)
+    from .virtual_reserve import reconcile_tournament_demand_locked
+
+    demand = reconcile_tournament_demand_locked(tournament, now=timezone.now())
+    if demand is not None and tournament.status == ArenaTournament.Status.RECRUITING:
+        transaction.on_commit(partial(queue_virtual_reserve_reconcile, "tournament", tournament.id))
     _update_daily_participation_counter_locked(locked_manor, delta=1)
 
     return ArenaRegistrationResult(
@@ -249,6 +270,7 @@ def cancel_arena_entry(manor: Manor) -> int:
     recruiting_entries, participant_guest_ids = collect_cancelable_recruiting_entries_locked(locked_manor)
 
     entry_ids = [entry.id for entry in recruiting_entries]
+    tournament_ids = sorted({entry.tournament_id for entry in recruiting_entries})
     ArenaEntry.objects.filter(id__in=entry_ids).delete()
     if participant_guest_ids:
         Guest.objects.filter(
@@ -257,6 +279,15 @@ def cancel_arena_entry(manor: Manor) -> int:
         ).update(status=GuestStatus.IDLE)
 
     _update_daily_participation_counter_locked(locked_manor, delta=-len(entry_ids))
+    from .virtual_reserve import reconcile_tournament_demand_locked
+
+    current_time = timezone.now()
+    for tournament in ArenaTournament.objects.select_for_update().filter(
+        id__in=tournament_ids,
+        status=ArenaTournament.Status.RECRUITING,
+    ):
+        reconcile_tournament_demand_locked(tournament, now=current_time)
+        transaction.on_commit(partial(queue_virtual_reserve_reconcile, "tournament", tournament.id))
     return len(entry_ids)
 
 
@@ -286,6 +317,8 @@ def start_ready_tournaments(limit: int = 20) -> int:
 def start_due_virtual_backfill_tournaments(
     *, now: datetime | None = None, limit: int = 20, manor: Manor | None = None
 ) -> int:
+    from .virtual_reserve import fill_due_tournament_reserve, reconcile_tournament_demand, replenish_virtual_reserve
+
     now = now or timezone.now()
     candidates = ArenaTournament.objects.filter(
         status=ArenaTournament.Status.RECRUITING,
@@ -299,17 +332,11 @@ def start_due_virtual_backfill_tournaments(
     )
     started = 0
     for tournament_id in candidate_ids:
-        with transaction.atomic():
-            tournament = ArenaTournament.objects.select_for_update().filter(pk=tournament_id).first()
-            if not tournament or tournament.status != ArenaTournament.Status.RECRUITING:
-                continue
-            if tournament.virtual_fill_completed or not tournament.virtual_fill_at or tournament.virtual_fill_at > now:
-                continue
-            if backfill_tournament_locked(tournament) <= 0:
-                continue
-            tournament.virtual_fill_completed = True
-            tournament.save(update_fields=["virtual_fill_completed", "updated_at"])
-            started += int(_start_tournament_locked(tournament, now=now))
+        demand = reconcile_tournament_demand(tournament_id, now=now)
+        if demand is None:
+            continue
+        replenish_virtual_reserve(demand.id, now=now)
+        started += int(fill_due_tournament_reserve(tournament_id, now=now) > 0)
     return started
 
 
@@ -459,16 +486,53 @@ def _release_orphaned_arena_guests(manor: Manor) -> int:
     )
 
 
+def _collect_due_virtual_event_ids_for_manor(
+    manor: Manor,
+    *,
+    now: datetime,
+    limit: int,
+) -> tuple[list[int], list[int]]:
+    normalized_limit = max(1, int(limit))
+    tournament_ids = list(
+        ArenaTournament.objects.filter(
+            status=ArenaTournament.Status.RECRUITING,
+            virtual_fill_completed=False,
+            virtual_fill_at__lte=now,
+            entries__manor=manor,
+            entries__status=ArenaEntry.Status.REGISTERED,
+        )
+        .distinct()
+        .order_by("virtual_fill_at", "id")
+        .values_list("id", flat=True)[:normalized_limit]
+    )
+    coop_event_ids = list(
+        ArenaCoopEvent.objects.filter(
+            status=ArenaCoopEvent.Status.RECRUITING,
+            virtual_fill_completed=False,
+            virtual_fill_at__lte=now,
+            entries__manor=manor,
+            entries__status=ArenaCoopEntry.Status.REGISTERED,
+        )
+        .distinct()
+        .order_by("virtual_fill_at", "id")
+        .values_list("id", flat=True)[:normalized_limit]
+    )
+    return tournament_ids, coop_event_ids
+
+
 def refresh_arena_activity(manor: Manor, *, now: datetime | None = None, limit: int = 20) -> int:
     current_time = now or timezone.now()
-    virtual_started = start_due_virtual_backfill_tournaments(now=current_time, limit=limit, manor=manor)
-    from . import coop_core as arena_coop_core
+    from .virtual_reserve import fill_due_coop_reserve, fill_due_tournament_reserve
 
-    virtual_coop_prepared = arena_coop_core.start_due_virtual_backfill_coop_events(
+    tournament_fill_ids, coop_fill_ids = _collect_due_virtual_event_ids_for_manor(
+        manor,
         now=current_time,
         limit=limit,
-        manor=manor,
     )
+    virtual_filled = sum(
+        fill_due_tournament_reserve(tournament_id, now=current_time) for tournament_id in tournament_fill_ids
+    )
+    virtual_filled += sum(fill_due_coop_reserve(event_id, now=current_time) for event_id in coop_fill_ids)
     recruiting_ids, running_ids = _collect_due_arena_tournament_ids_for_manor(
         manor,
         now=current_time,
@@ -485,7 +549,7 @@ def refresh_arena_activity(manor: Manor, *, now: datetime | None = None, limit: 
             processed_count += 1
 
     _release_orphaned_arena_guests(manor)
-    return virtual_started + virtual_coop_prepared + started_count + processed_count
+    return virtual_filled + started_count + processed_count
 
 
 def run_due_arena_rounds(*, now: datetime | None = None, limit: int = 20) -> int:

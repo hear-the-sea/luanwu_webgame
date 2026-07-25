@@ -24,6 +24,17 @@ DONATION_RESOURCE_LABELS = {
 }
 
 
+def calculate_resource_contribution(resource_type: str, amount: int) -> int:
+    """按配置的完整资源单位计算贡献，拒绝会造成取整损失的数量。"""
+    unit = int(guild_constants.CONTRIBUTION_UNITS.get(resource_type, 0) or 0)
+    if unit <= 0:
+        raise GuildContributionError("捐赠配置无效", resource_type=resource_type)
+    if amount % unit:
+        label = DONATION_RESOURCE_LABELS.get(resource_type, resource_type)
+        raise GuildContributionError(f"{label}捐赠数量必须是{unit}的整数倍")
+    return (amount // unit) * int(guild_constants.CONTRIBUTION_RATES[resource_type])
+
+
 def donate_resource(member, resource_type, amount):
     """
     捐赠资源获得贡献（并发安全版本）
@@ -57,6 +68,8 @@ def donate_resource(member, resource_type, amount):
     MAX_DONATION_AMOUNT = 100_000_000  # 1亿上限
     if amount > MAX_DONATION_AMOUNT:
         raise GuildContributionError(f"单次捐赠最多{MAX_DONATION_AMOUNT:,}单位")
+
+    contribution = calculate_resource_contribution(resource_type, amount)
 
     # 获取今日日期，用于重置每日统计
     today = timezone.localdate()
@@ -105,9 +118,6 @@ def donate_resource(member, resource_type, amount):
             new_daily_silver = current_daily_silver
             new_daily_grain = current_daily_grain
             new_daily_gold_bar = current_daily_gold_bar + amount
-
-        # 计算获得的贡献
-        contribution = amount * guild_constants.CONTRIBUTION_RATES[resource_type]
 
         # 安全修复：检查贡献度累积上限，防止整数溢出
         if member_locked.total_contribution + contribution > MAX_CONTRIBUTION:

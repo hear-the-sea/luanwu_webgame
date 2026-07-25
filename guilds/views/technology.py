@@ -60,7 +60,7 @@ def _build_tech_display_meta(tech: Any) -> dict[str, str]:
         return {"description": "每日生产资源礼包", "upgrade_cost": _format_upgrade_cost(tech)}
     if tech.tech_key == "troop_tactics":
         return {
-            "description": "帮会科技一发功，兵种科技就跟着胡乱长个儿",
+            "description": "可以增强帮会战斗中护院的能力",
             "current_effect": _format_troop_tactics_effect(tech.level, max_level) if tech.level > 0 else "未激活",
             "next_effect": _format_troop_tactics_effect(min(max_level, tech.level + 1), max_level),
             "upgrade_cost": _format_upgrade_cost(tech),

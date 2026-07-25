@@ -41,6 +41,8 @@ class BotProfile(models.Model):
     maintenance_started_at = models.DateTimeField("维护开始时间", null=True, blank=True)
     maintenance_stopped_at = models.DateTimeField("维护停止时间", null=True, blank=True)
     last_planned_at = models.DateTimeField("最近规划时间", null=True, blank=True)
+    last_arena_participated_at = models.DateTimeField("最近竞技场参赛时间", null=True, blank=True, db_index=True)
+    arena_participation_count = models.PositiveIntegerField("竞技场累计参赛次数", default=0)
     created_at = models.DateTimeField("创建时间", auto_now_add=True)
     updated_at = models.DateTimeField("更新时间", auto_now=True)
 
@@ -56,6 +58,28 @@ class BotProfile(models.Model):
 
     def __str__(self) -> str:
         return f"{self.manor.display_name} ({self.archetype}/{self.state})"
+
+
+class BotPopulationControl(models.Model):
+    """Singleton row used to serialize automatic virtual-player expansion."""
+
+    GLOBAL_KEY = "global"
+
+    key = models.CharField(max_length=16, primary_key=True, default=GLOBAL_KEY, editable=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "虚拟玩家人口协调"
+        verbose_name_plural = "虚拟玩家人口协调"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(key="global"),
+                name="bot_population_control_global_only",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return self.key
 
 
 class BotInventoryDailyCounter(models.Model):

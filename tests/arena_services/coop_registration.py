@@ -7,7 +7,7 @@ from django.utils import timezone
 
 import gameplay.services.arena.coop_core as arena_coop_core
 from core.exceptions import ArenaCancellationError
-from gameplay.models import ArenaCoopEntry, ArenaCoopEvent
+from gameplay.models import ArenaCoopEntry, ArenaCoopEvent, ArenaVirtualDemand
 from gameplay.services.arena.coop_core import cancel_arena_coop_entry, register_arena_coop_entry
 from gameplay.services.manor.core import ensure_manor
 from guests.models import GuestStatus
@@ -172,3 +172,72 @@ def test_cancel_arena_coop_entry_rejects_preparing_event():
     event.refresh_from_db()
     assert event.status == ArenaCoopEvent.Status.PREPARING
     assert event.prepare_ends_at is not None
+
+
+@pytest.mark.django_db
+def test_coop_registration_persists_demand_and_queues_reconcile(
+    monkeypatch,
+    django_capture_on_commit_callbacks,
+):
+    user = User.objects.create_user(username="coop_reserve_hook_register", password="pass123")
+    manor = ensure_manor(user)
+    fund_manor(manor)
+    template = create_guest_template("coop_reserve_hook_register_tpl")
+    guests = [create_guest(manor, template, suffix) for suffix in ["A", "B", "C"]]
+    queued: list[tuple[str, int]] = []
+    monkeypatch.setattr(
+        arena_coop_core,
+        "queue_virtual_reserve_reconcile",
+        lambda mode, event_id: queued.append((mode, event_id)),
+    )
+
+    with django_capture_on_commit_callbacks(execute=True):
+        result = register_arena_coop_entry(manor, [guest.id for guest in guests])
+
+    assert ArenaVirtualDemand.objects.filter(coop_event=result.event).exists()
+    assert queued == [("coop", result.event.id)]
+
+
+@pytest.mark.django_db
+def test_coop_cancellation_requeues_existing_demand(monkeypatch, django_capture_on_commit_callbacks):
+    user = User.objects.create_user(username="coop_reserve_hook_cancel", password="pass123")
+    manor = ensure_manor(user)
+    fund_manor(manor)
+    template = create_guest_template("coop_reserve_hook_cancel_tpl")
+    guests = [create_guest(manor, template, suffix) for suffix in ["A", "B", "C"]]
+    queued: list[tuple[str, int]] = []
+    monkeypatch.setattr(
+        arena_coop_core,
+        "queue_virtual_reserve_reconcile",
+        lambda mode, event_id: queued.append((mode, event_id)),
+    )
+
+    with django_capture_on_commit_callbacks(execute=True):
+        result = register_arena_coop_entry(manor, [guest.id for guest in guests])
+    queued.clear()
+    with django_capture_on_commit_callbacks(execute=True):
+        cancel_arena_coop_entry(manor)
+
+    assert queued == [("coop", result.event.id)]
+
+
+@pytest.mark.django_db
+def test_coop_full_real_registration_closes_reserve(django_capture_on_commit_callbacks):
+    template = create_guest_template("coop_reserve_hook_full_tpl")
+    event_id = None
+    demand = None
+    for index in range(arena_coop_core.ARENA_COOP_PLAYER_LIMIT):
+        user = User.objects.create_user(username=f"coop_reserve_hook_full_{index}", password="pass123")
+        manor = ensure_manor(user)
+        fund_manor(manor)
+        guests = [create_guest(manor, template, f"{index}_{slot}") for slot in ["A", "B", "C"]]
+        with django_capture_on_commit_callbacks(execute=True):
+            result = register_arena_coop_entry(manor, [guest.id for guest in guests])
+        event_id = result.event.id
+        demand = ArenaVirtualDemand.objects.get(coop_event_id=event_id)
+
+    assert demand is not None
+    demand.refresh_from_db()
+    assert ArenaCoopEvent.objects.get(pk=event_id).status == ArenaCoopEvent.Status.PREPARING
+    assert demand.status == ArenaVirtualDemand.Status.CLOSED
+    assert demand.reserve_members.count() == 0

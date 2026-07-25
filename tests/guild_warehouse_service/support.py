@@ -34,11 +34,11 @@ def guild_member_with_projected_resources(django_user_model):
         name="投影资源帮",
         founder=user,
         is_active=True,
-        silver=120,
-        grain=45,
+        silver=2_000,
+        grain=4_000,
         gold_bar=3,
     )
-    member = GuildMember.objects.create(guild=guild, user=user, position="member", current_contribution=500)
+    member = GuildMember.objects.create(guild=guild, user=user, position="member", current_contribution=5_000)
     ItemTemplate.objects.update_or_create(
         key="gold_bar",
         defaults={
@@ -71,7 +71,7 @@ def guild_with_mixed_warehouse_resources(django_user_model):
 def guild_member_ready_for_grain_donation(django_user_model):
     user = django_user_model.objects.create_user(username="guild_grain_donor", password="pass123")
     manor = ensure_manor(user)
-    manor.grain = 500
+    manor.grain = 5_000
     manor.save(update_fields=["grain"])
     guild = Guild.objects.create(name="粮仓帮", founder=user, is_active=True, grain=0, gold_bar=0, silver=0)
     member = GuildMember.objects.create(guild=guild, user=user, position="member", current_contribution=0)
@@ -93,7 +93,7 @@ def guild_member_with_real_warehouse_resources(django_user_model):
         grain=0,
         gold_bar=0,
     )
-    member = GuildMember.objects.create(guild=guild, user=user, position="member", current_contribution=500)
+    member = GuildMember.objects.create(guild=guild, user=user, position="member", current_contribution=5_000)
     gold_bar_template, _created = ItemTemplate.objects.get_or_create(
         key="gold_bar",
         defaults={
@@ -108,6 +108,6 @@ def guild_member_with_real_warehouse_resources(django_user_model):
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
         defaults={"quantity": 5},
     )
-    GuildWarehouse.objects.create(guild=guild, item_key="grain", quantity=25, contribution_cost=2)
+    GuildWarehouse.objects.create(guild=guild, item_key="grain", quantity=4_000, contribution_cost=2)
     GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=4, contribution_cost=61)
     return guild, member, manor

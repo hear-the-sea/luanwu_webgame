@@ -269,3 +269,13 @@ def test_virtual_players_rejects_invalid_data_driven_configuration():
         "positive lifecycle weight",
     ):
         assert any(field in error for error in errors), field
+
+
+@pytest.mark.parametrize(
+    "field", ["region_floor", "region_active_multiplier", "global_floor", "global_active_multiplier"]
+)
+def test_virtual_players_rejects_invalid_dynamic_population_fields(field):
+    result = validate_virtual_players({"population": {field: True}})
+
+    assert not result.is_valid
+    assert any(f"population.{field}" in str(error) for error in result.errors)

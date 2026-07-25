@@ -7,11 +7,14 @@ from django.utils import timezone
 
 import gameplay.services.arena.coop_core as arena_coop_core
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
-from gameplay.services.arena.core import (
-    cleanup_expired_tournaments,
-    run_due_arena_rounds,
-    start_due_virtual_backfill_tournaments,
-    start_ready_tournaments,
+from gameplay.services.arena.core import cleanup_expired_tournaments, run_due_arena_rounds, start_ready_tournaments
+from gameplay.services.arena.virtual_reserve import (
+    create_due_virtual_reserve_profiles,
+    grow_due_virtual_reserves,
+    reconcile_coop_demand,
+    reconcile_tournament_demand,
+    replenish_virtual_reserve,
+    scan_virtual_reserve_demands,
 )
 
 logger = logging.getLogger(__name__)
@@ -21,7 +24,6 @@ logger = logging.getLogger(__name__)
 def scan_arena_tournaments(limit: int = 20) -> dict[str, int]:
     started = 0
     processed = 0
-    virtual_started = 0
     cleaned = 0
     failed_stages: list[str] = []
 
@@ -30,12 +32,6 @@ def scan_arena_tournaments(limit: int = 20) -> dict[str, int]:
     except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
         logger.exception("arena tournament start scan failed")
         failed_stages.append("start_ready_tournaments")
-
-    try:
-        virtual_started = start_due_virtual_backfill_tournaments(limit=limit)
-    except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
-        logger.exception("arena virtual tournament backfill scan failed")
-        failed_stages.append("start_due_virtual_backfill_tournaments")
 
     try:
         processed = run_due_arena_rounds(limit=limit)
@@ -54,7 +50,6 @@ def scan_arena_tournaments(limit: int = 20) -> dict[str, int]:
 
     return {
         "started": int(started),
-        "virtual_started": int(virtual_started),
         "processed_rounds": int(processed),
         "cleaned_tournaments": int(cleaned),
     }
@@ -62,16 +57,9 @@ def scan_arena_tournaments(limit: int = 20) -> dict[str, int]:
 
 @shared_task(name="gameplay.scan_arena_coop_events")
 def scan_arena_coop_events(limit: int = 20) -> dict[str, int]:
-    virtual_coop_prepared = 0
     processed_coop = 0
     cleaned_coop = 0
     failed_stages: list[str] = []
-
-    try:
-        virtual_coop_prepared = arena_coop_core.start_due_virtual_backfill_coop_events(limit=limit)
-    except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
-        logger.exception("arena virtual coop backfill scan failed")
-        failed_stages.append("start_due_virtual_backfill_coop_events")
 
     try:
         processed_coop = arena_coop_core.run_due_arena_coop_events(limit=limit)
@@ -93,7 +81,36 @@ def scan_arena_coop_events(limit: int = 20) -> dict[str, int]:
         raise RuntimeError(f"arena coop scan failed stages: {', '.join(failed_stages)}")
 
     return {
-        "virtual_coop_prepared": int(virtual_coop_prepared),
         "processed_coop_events": int(processed_coop),
         "cleaned_coop_events": int(cleaned_coop),
     }
+
+
+@shared_task(name="gameplay.reconcile_arena_virtual_reserve")
+def reconcile_arena_virtual_reserve(mode: str, event_id: int) -> dict[str, int]:
+    if mode == "tournament":
+        demand = reconcile_tournament_demand(event_id)
+    elif mode == "coop":
+        demand = reconcile_coop_demand(event_id)
+    else:
+        raise ValueError(f"unsupported arena virtual reserve mode: {mode}")
+    if demand is None:
+        return {"reconciled": 0, "ready": 0, "training": 0}
+    result = replenish_virtual_reserve(demand.id)
+    return {
+        "reconciled": 1,
+        "ready": int(result.ready_count),
+        "training": int(result.training_count),
+    }
+
+
+@shared_task(name="gameplay.scan_arena_virtual_reserves")
+def scan_arena_virtual_reserves(limit: int = 20) -> dict[str, int]:
+    return scan_virtual_reserve_demands(limit=limit)
+
+
+@shared_task(name="gameplay.grow_arena_virtual_reserves")
+def grow_arena_virtual_reserves(limit: int = 100) -> dict[str, int]:
+    grown = grow_due_virtual_reserves(limit=limit)
+    created = create_due_virtual_reserve_profiles(limit=limit)
+    return {"grown": int(grown), "created": int(created)}

@@ -12,7 +12,7 @@ from core.exceptions import GuildWarehouseError
 from gameplay.models import InventoryItem, ItemTemplate, PlayerTroop
 from gameplay.services.manor.core import ensure_manor
 from guilds.constants import DAILY_DONATION_LIMITS
-from guilds.models import Guild, GuildApplication, GuildMember, GuildTroopStorage, GuildWarehouse
+from guilds.models import Guild, GuildApplication, GuildMember, GuildTroopDonationLog, GuildTroopStorage, GuildWarehouse
 from guilds.services.warehouse import exchange_item
 
 
@@ -62,10 +62,10 @@ def test_guild_detail_page_shows_red_ruby_and_troop_overview(guild_member_client
 def test_guild_detail_page_has_unified_four_donation_entries(guild_member_client):
     client, guild, member, manor = guild_member_client
     GuildWarehouse.objects.create(guild=guild, item_key="red_ruby", quantity=1, contribution_cost=0)
-    manor.silver = 23
-    manor.grain = 40
+    manor.silver = 2_345
+    manor.grain = 6_400
     manor.save(update_fields=["silver", "grain"])
-    member.daily_donation_grain = max(0, int(DAILY_DONATION_LIMITS["grain"]) - 3)
+    member.daily_donation_grain = max(0, int(DAILY_DONATION_LIMITS["grain"]) - 3_000)
     member.save(update_fields=["daily_donation_grain"])
 
     player_troop_template = TroopTemplate.objects.create(key="my_archer", name="我的弓兵")
@@ -76,8 +76,10 @@ def test_guild_detail_page_has_unified_four_donation_entries(guild_member_client
     response = client.get(reverse("guilds:detail", args=[guild.id]))
 
     assert response.status_code == 200
-    assert response.context["donation_entries"]["silver"]["max_amount"] == 23
-    assert response.context["donation_entries"]["grain"]["max_amount"] == 3
+    assert response.context["donation_entries"]["silver"]["unit"] == 1_000
+    assert response.context["donation_entries"]["grain"]["unit"] == 2_000
+    assert response.context["donation_entries"]["silver"]["max_amount"] == 2_000
+    assert response.context["donation_entries"]["grain"]["max_amount"] == 2_000
     body = response.content.decode("utf-8")
     assert 'id="guild-donation-modal"' in body
     assert 'id="guild-donation-kind"' in body
@@ -88,10 +90,13 @@ def test_guild_detail_page_has_unified_four_donation_entries(guild_member_client
     assert f'action="{reverse("guilds:donate_troops")}"' in body
     assert '<select id="troop_key"' in body
     assert 'name="quantity"' in body
-    assert 'id="silver_amount"' in body and 'max="23"' in body
-    assert 'id="grain_amount"' in body and 'max="3"' in body
-    assert '<option value="my_archer">' in body
-    assert '<option value="guild_only_guard">' not in body
+    assert 'id="silver_amount"' in body and 'min="1000"' in body and 'step="1000"' in body
+    assert 'id="grain_amount"' in body and 'min="2000"' in body and 'step="2000"' in body
+    assert 'max="2000"' in body
+    assert "1000 银两 = 1 贡献度" in body
+    assert "2000 粮食 = 1 贡献度" in body
+    assert 'value="my_archer"' in body
+    assert 'value="guild_only_guard"' not in body
 
 
 @pytest.mark.django_db
@@ -136,6 +141,7 @@ def test_guild_detail_page_reads_latest_runtime_contribution_rules(guild_member_
     manor.silver = 23
     manor.grain = 40
     manor.save(update_fields=["silver", "grain"])
+    monkeypatch.setattr("guilds.constants.CONTRIBUTION_UNITS", {"silver": 2, "grain": 4, "gold_bar": 1})
     monkeypatch.setattr("guilds.constants.CONTRIBUTION_RATES", {"silver": 9, "grain": 8, "gold_bar": 7})
     monkeypatch.setattr("guilds.constants.DAILY_DONATION_LIMITS", {"silver": 5, "grain": 7, "gold_bar": 2})
 
@@ -143,12 +149,45 @@ def test_guild_detail_page_reads_latest_runtime_contribution_rules(guild_member_
 
     assert response.status_code == 200
     donation_entries = response.context["donation_entries"]
+    assert donation_entries["silver"]["unit"] == 2
     assert donation_entries["silver"]["rate"] == 9
     assert donation_entries["silver"]["daily_limit"] == 5
+    assert donation_entries["silver"]["max_amount"] == 4
+    assert donation_entries["grain"]["unit"] == 4
     assert donation_entries["grain"]["rate"] == 8
     assert donation_entries["grain"]["daily_limit"] == 7
+    assert donation_entries["grain"]["max_amount"] == 4
+    assert donation_entries["gold_bar"]["unit"] == 1
     assert donation_entries["gold_bar"]["rate"] == 7
     assert donation_entries["gold_bar"]["daily_limit"] == 2
+
+
+@pytest.mark.django_db
+def test_guild_detail_page_shows_troop_contribution_allowance_and_tier_rate(guild_member_client):
+    client, guild, member, manor = guild_member_client
+    troop_template, _created = TroopTemplate.objects.get_or_create(key="dao_sheng", defaults={"name": "刀圣"})
+    PlayerTroop.objects.create(manor=manor, troop_template=troop_template, count=30)
+    GuildTroopDonationLog.objects.create(
+        guild=guild,
+        member=member,
+        troop_template=troop_template,
+        quantity=2,
+    )
+
+    response = client.get(reverse("guilds:detail", args=[guild.id]))
+
+    assert response.status_code == 200
+    troop_entry = response.context["troop_donation_entry"]
+    assert troop_entry == {"donated_today": 24, "daily_limit": 300, "remaining_today": 276}
+    troop = next(entry for entry in response.context["player_troops"] if entry.troop_template.key == "dao_sheng")
+    assert troop.donation_rate == 12
+    assert troop.max_donation_quantity == 23
+
+    body = response.content.decode("utf-8")
+    assert "今日护院贡献" in body
+    assert "24 / 300" in body
+    assert 'data-contribution-rate="12"' in body
+    assert 'data-max-quantity="23"' in body
 
 
 @pytest.mark.django_db
@@ -179,6 +218,35 @@ def test_guild_warehouse_page_projects_guild_resources_without_writing_guild_war
     assert projected_entries["grain"].is_projected is True
     assert projected_entries["gold_bar"].display_quantity == guild.gold_bar
     assert projected_entries["gold_bar"].is_projected is True
+
+    body = response.content.decode("utf-8")
+    assert "1000 银两 / 1 贡献" in body
+    assert "2000 粮食 / 1 贡献" in body
+    assert "1 金条 / 1200 贡献" in body
+
+
+@pytest.mark.django_db
+def test_guild_resource_exchange_view_accepts_quantity_larger_than_ordinary_item_limit(guild_member_client):
+    client, guild, member, manor = guild_member_client
+    manor.grain = 0
+    manor.save(update_fields=["grain"])
+    member.current_contribution = 10
+    member.save(update_fields=["current_contribution"])
+    GuildWarehouse.objects.create(guild=guild, item_key="grain", quantity=4_000, contribution_cost=1)
+
+    response = client.post(
+        reverse("guilds:exchange_item", args=["grain"]),
+        {"quantity": "2000"},
+        follow=False,
+    )
+
+    assert response.status_code == 302
+    member.refresh_from_db()
+    manor.refresh_from_db()
+    grain_row = GuildWarehouse.objects.get(guild=guild, item_key="grain")
+    assert grain_row.quantity == 2_000
+    assert manor.grain == 2_000
+    assert member.current_contribution == 9
 
 
 @pytest.mark.django_db

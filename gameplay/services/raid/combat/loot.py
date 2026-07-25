@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, Iterable, Sequence, Tuple
 
 from django.db import IntegrityError
-from django.db.models import F, QuerySet
+from django.db.models import Count, F, QuerySet, Sum
 
 from core.utils import safe_positive_int
 
@@ -147,12 +147,19 @@ def _parse_loot_candidate(row: Dict[str, Any], loot_items: Dict[str, int]) -> Tu
     return template_key, quantity, loot_chance, max(1, storage_space)
 
 
-def _roll_loot_quantity(quantity: int, *, remaining_capacity: int, storage_space: int) -> int:
-    if remaining_capacity <= 0 or storage_space <= 0:
+def _roll_loot_quantity(
+    quantity: int,
+    *,
+    remaining_capacity: int,
+    remaining_quantity: int,
+    storage_space: int,
+) -> int:
+    if remaining_capacity <= 0 or remaining_quantity <= 0 or storage_space <= 0:
         return 0
     max_qty = min(
-        int(quantity * PVPConstants.LOOT_ITEM_MAX_QUANTITY_PERCENT),
+        quantity,
         PVPConstants.LOOT_ITEM_MAX_QUANTITY,
+        remaining_quantity,
         remaining_capacity // storage_space,
     )
     if max_qty <= 0:
@@ -162,7 +169,11 @@ def _roll_loot_quantity(quantity: int, *, remaining_capacity: int, storage_space
 
 
 def _try_loot_from_row(
-    row: Dict[str, Any], loot_items: Dict[str, int], *, remaining_capacity: int
+    row: Dict[str, Any],
+    loot_items: Dict[str, int],
+    *,
+    remaining_capacity: int,
+    remaining_quantity: int,
 ) -> Tuple[str, int, int] | None:
     candidate = _parse_loot_candidate(row, loot_items)
     if candidate is None:
@@ -172,7 +183,12 @@ def _try_loot_from_row(
     if random.random() >= loot_chance:
         return None
 
-    loot_qty = _roll_loot_quantity(quantity, remaining_capacity=remaining_capacity, storage_space=storage_space)
+    loot_qty = _roll_loot_quantity(
+        quantity,
+        remaining_capacity=remaining_capacity,
+        remaining_quantity=remaining_quantity,
+        storage_space=storage_space,
+    )
     if loot_qty <= 0:
         return None
     return template_key, loot_qty, storage_space * loot_qty
@@ -185,14 +201,20 @@ def _collect_loot_from_rows(
     items_looted: int,
     max_loot_items: int,
     remaining_capacity: int,
-) -> tuple[int, int]:
+    remaining_quantity: int,
+) -> tuple[int, int, int]:
     for row in rows:
         if items_looted >= max_loot_items:
             break
-        if remaining_capacity <= 0:
+        if remaining_capacity <= 0 or remaining_quantity <= 0:
             break
 
-        looted = _try_loot_from_row(row, loot_items, remaining_capacity=remaining_capacity)
+        looted = _try_loot_from_row(
+            row,
+            loot_items,
+            remaining_capacity=remaining_capacity,
+            remaining_quantity=remaining_quantity,
+        )
         if looted is None:
             continue
 
@@ -200,8 +222,9 @@ def _collect_loot_from_rows(
         loot_items[template_key] = loot_qty
         items_looted += 1
         remaining_capacity -= capacity_used
+        remaining_quantity -= loot_qty
 
-    return items_looted, remaining_capacity
+    return items_looted, remaining_capacity, remaining_quantity
 
 
 def _build_small_inventory_rows(base_qs: QuerySet[InventoryItem]) -> list[Dict[str, Any]]:
@@ -259,7 +282,16 @@ def _calculate_loot_items(
         battle_report=battle_report,
     )
 
-    total_candidates = base_qs.count()
+    inventory_totals = base_qs.aggregate(
+        total_candidates=Count("id"),
+        total_quantity=Sum("quantity"),
+    )
+    total_candidates = int(inventory_totals["total_candidates"] or 0)
+    total_quantity = int(inventory_totals["total_quantity"] or 0)
+    remaining_quantity = (
+        max(1, int(total_quantity * PVPConstants.LOOT_ITEM_MAX_QUANTITY_PERCENT)) if total_quantity > 0 else 0
+    )
+
     if total_candidates <= LOOT_ITEM_SMALL_INVENTORY_THRESHOLD:
         rows = _build_small_inventory_rows(base_qs)
         _collect_loot_from_rows(
@@ -268,18 +300,20 @@ def _calculate_loot_items(
             items_looted=items_looted,
             max_loot_items=max_loot_items,
             remaining_capacity=remaining_capacity,
+            remaining_quantity=remaining_quantity,
         )
         return loot_items
 
     for batch_rows in _iter_sample_batches(base_qs):
-        items_looted, remaining_capacity = _collect_loot_from_rows(
+        items_looted, remaining_capacity, remaining_quantity = _collect_loot_from_rows(
             batch_rows,
             loot_items,
             items_looted=items_looted,
             max_loot_items=max_loot_items,
             remaining_capacity=remaining_capacity,
+            remaining_quantity=remaining_quantity,
         )
-        if items_looted >= max_loot_items or remaining_capacity <= 0:
+        if items_looted >= max_loot_items or remaining_capacity <= 0 or remaining_quantity <= 0:
             break
 
     return loot_items

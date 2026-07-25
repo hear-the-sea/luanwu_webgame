@@ -1,15 +1,13 @@
 enabled: true
 
 population:
-  active_player_multiplier: 4
   active_window_days: 7
-  cell_floor: 8
-  cell_active_multiplier: 4
+  region_floor: 8
+  region_active_multiplier: 8
+  global_floor: 32
+  global_active_multiplier: 20
   exploration_supply: 0
-  min_per_region: 0
   min_attackable_per_band: 6
-  retired_reactivation_chance: 0.70
-  hard_cap: 300
   rolling_batch_size: [4, 12]
 
 prestige_bands:

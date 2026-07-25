@@ -7,6 +7,7 @@ from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
 
+import guilds.constants as guild_constants
 from battle.models import TroopTemplate
 from core.exceptions import GuildValidationError
 from gameplay.models import PlayerTroop
@@ -32,10 +33,19 @@ def test_donate_troops_success_moves_from_player_to_guild_and_logs(guild_member_
 
     from guilds.services import guild_troops as guild_troop_service
 
-    guild_troop_service.donate_troops(member=member, troop_key=troop_template.key, quantity=4)
+    contribution_gained = guild_troop_service.donate_troops(
+        member=member,
+        troop_key=troop_template.key,
+        quantity=4,
+    )
 
     player_troop.refresh_from_db()
+    member.refresh_from_db()
     assert player_troop.count == 6
+    assert contribution_gained == 4
+    assert member.current_contribution == 4
+    assert member.weekly_contribution == 4
+    assert member.total_contribution == 4
 
     storage = GuildTroopStorage.objects.get(guild=member.guild, troop_template=troop_template)
     assert storage.count == 4
@@ -46,6 +56,89 @@ def test_donate_troops_success_moves_from_player_to_guild_and_logs(guild_member_
         troop_template=troop_template,
         quantity=4,
     ).exists()
+
+
+def test_troop_donation_rates_follow_recruitment_technology_tiers():
+    from guilds.services import guild_troops as guild_troop_service
+
+    assert guild_constants.DAILY_TROOP_CONTRIBUTION_LIMIT == 300
+    assert guild_troop_service.get_troop_donation_rate("scout") == 1
+    assert guild_troop_service.get_troop_donation_rate("dao_ke") == 1
+    assert guild_troop_service.get_troop_donation_rate("dao_jie") == 3
+    assert guild_troop_service.get_troop_donation_rate("dao_ba") == 6
+    assert guild_troop_service.get_troop_donation_rate("dao_sheng") == 12
+    assert guild_troop_service.get_troop_donation_rate("custom_unknown_guard") == 1
+
+
+@pytest.mark.django_db
+def test_donate_troops_rejects_batch_exceeding_daily_contribution_limit(
+    guild_member_with_troops,
+    monkeypatch,
+):
+    _guild, member, troop_template, player_troop = guild_member_with_troops
+
+    from guilds.services import guild_troops as guild_troop_service
+
+    monkeypatch.setattr("guilds.constants.DAILY_TROOP_CONTRIBUTION_LIMIT", 5)
+    guild_troop_service.donate_troops(member=member, troop_key=troop_template.key, quantity=4)
+
+    with pytest.raises(GuildValidationError, match="今日护院捐赠贡献已达上限"):
+        guild_troop_service.donate_troops(member=member, troop_key=troop_template.key, quantity=2)
+
+    player_troop.refresh_from_db()
+    member.refresh_from_db()
+    storage = GuildTroopStorage.objects.get(guild=member.guild, troop_template=troop_template)
+    assert player_troop.count == 6
+    assert storage.count == 4
+    assert member.current_contribution == 4
+    assert member.weekly_contribution == 4
+    assert member.total_contribution == 4
+    assert GuildTroopDonationLog.objects.filter(member=member).count() == 1
+
+
+@pytest.mark.django_db
+def test_yesterdays_troop_donation_does_not_use_todays_limit(guild_member_with_troops, monkeypatch):
+    _guild, member, troop_template, player_troop = guild_member_with_troops
+
+    from guilds.services import guild_troops as guild_troop_service
+
+    monkeypatch.setattr("guilds.constants.DAILY_TROOP_CONTRIBUTION_LIMIT", 5)
+    guild_troop_service.donate_troops(member=member, troop_key=troop_template.key, quantity=4)
+    GuildTroopDonationLog.objects.filter(member=member).update(donated_at=timezone.now() - timezone.timedelta(days=1))
+
+    assert guild_troop_service.get_today_troop_contribution(member) == 0
+    gained = guild_troop_service.donate_troops(member=member, troop_key=troop_template.key, quantity=5)
+
+    player_troop.refresh_from_db()
+    member.refresh_from_db()
+    assert gained == 5
+    assert player_troop.count == 1
+    assert member.current_contribution == 9
+    assert member.weekly_contribution == 9
+    assert member.total_contribution == 9
+    assert guild_troop_service.get_today_troop_contribution(member) == 5
+
+
+@pytest.mark.django_db
+def test_donate_troops_rejects_contribution_overflow(guild_member_with_troops):
+    _guild, member, troop_template, player_troop = guild_member_with_troops
+
+    from guilds.services import contribution as contribution_service
+    from guilds.services import guild_troops as guild_troop_service
+
+    GuildMember.objects.filter(pk=member.pk).update(
+        current_contribution=contribution_service.MAX_CONTRIBUTION,
+        weekly_contribution=contribution_service.MAX_CONTRIBUTION,
+        total_contribution=contribution_service.MAX_CONTRIBUTION,
+    )
+
+    with pytest.raises(GuildValidationError, match="贡献度已达上限"):
+        guild_troop_service.donate_troops(member=member, troop_key=troop_template.key, quantity=1)
+
+    player_troop.refresh_from_db()
+    assert player_troop.count == 10
+    assert not GuildTroopStorage.objects.filter(guild=member.guild, troop_template=troop_template).exists()
+    assert not GuildTroopDonationLog.objects.filter(member=member).exists()
 
 
 @pytest.mark.django_db
@@ -175,8 +268,8 @@ def test_donate_troops_view_success_redirects_back_to_guild_detail_and_sets_mess
     assert response.redirect_chain
     assert response.redirect_chain[-1][0].endswith(reverse("guilds:detail", args=[guild.id]))
     messages = [str(message) for message in get_messages(response.wsgi_request)]
-    assert messages[-1] == "护院已捐赠到帮会护院池"
-    assert "护院已捐赠到帮会护院池" in response.content.decode("utf-8")
+    assert messages[-1] == "护院已捐赠到帮会护院池，获得2贡献"
+    assert "护院已捐赠到帮会护院池，获得2贡献" in response.content.decode("utf-8")
 
     storage = GuildTroopStorage.objects.get(guild=guild, troop_template=troop_template)
     assert storage.count == 2

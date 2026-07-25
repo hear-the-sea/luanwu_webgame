@@ -133,7 +133,12 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
         if not isinstance(population, dict):
             result.add(file, "population", "expected a mapping")
         else:
-            for field_name in ("active_player_multiplier", "min_per_region", "min_attackable_per_band", "hard_cap"):
+            for field_name in (
+                "active_player_multiplier",
+                "min_per_region",
+                "min_attackable_per_band",
+                "hard_cap",
+            ):
                 value = population.get(field_name)
                 if value is None:
                     continue
@@ -143,6 +148,10 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                 ("active_window_days", 1),
                 ("cell_floor", 0),
                 ("cell_active_multiplier", 0),
+                ("region_floor", 0),
+                ("region_active_multiplier", 0),
+                ("global_floor", 0),
+                ("global_active_multiplier", 0),
                 ("exploration_supply", 0),
             ):
                 if field_name in population:

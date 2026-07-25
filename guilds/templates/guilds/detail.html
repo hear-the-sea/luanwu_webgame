@@ -254,7 +254,7 @@
                         </div>
                         <div>
                             <dt>转换比例</dt>
-                            <dd>1 {{ entry.label }} = {{ entry.rate }} 贡献度</dd>
+                            <dd>{{ entry.unit|floatformat:0 }} {{ entry.label }} = {{ entry.rate|floatformat:0 }} 贡献度</dd>
                         </div>
                     </dl>
                     <div class="tw-form-field mt-4">
@@ -263,7 +263,8 @@
                             type="number"
                             id="{{ entry.input_id }}"
                             name="amount"
-                            min="1"
+                            min="{{ entry.unit }}"
+                            step="{{ entry.unit }}"
                             max="{{ entry.max_amount|default:0 }}"
                             class="tw-input"
                             {% if key == "silver" %}required{% else %}disabled{% endif %}>
@@ -284,12 +285,26 @@
                         <dt>帮会护院种类</dt>
                         <dd>{{ troop_overview.kinds_count }}</dd>
                     </div>
+                    <div>
+                        <dt>今日护院贡献</dt>
+                        <dd>{{ troop_donation_entry.donated_today }} / {{ troop_donation_entry.daily_limit }}</dd>
+                    </div>
+                    <div>
+                        <dt>今日剩余额度</dt>
+                        <dd>{{ troop_donation_entry.remaining_today }}</dd>
+                    </div>
                 </dl>
                 <div class="tw-form-field mt-4">
                     <label for="troop_key">护院类型</label>
                     <select id="troop_key" name="troop_key" class="tw-input" disabled>
                         {% for troop in player_troops %}
-                        <option value="{{ troop.troop_template.key }}">{{ troop.troop_template.name }}（可用 {{ troop.count }}）</option>
+                        <option
+                            value="{{ troop.troop_template.key }}"
+                            data-contribution-rate="{{ troop.donation_rate }}"
+                            data-max-quantity="{{ troop.max_donation_quantity }}"
+                            data-available="{{ troop.count }}">
+                            {{ troop.troop_template.name }}（每名 {{ troop.donation_rate }} 贡献，可捐 {{ troop.max_donation_quantity }}）
+                        </option>
                         {% endfor %}
                     </select>
                     {% if not player_troops %}
@@ -299,8 +314,9 @@
                 <div class="tw-form-field">
                     <label for="troop_quantity">数量</label>
                     <input type="number" id="troop_quantity" name="quantity" min="1" class="tw-input" disabled>
+                    <small class="tw-muted" id="troop-contribution-preview"></small>
                 </div>
-                <button type="submit" class="tw-btn-secondary w-full mt-2" {% if not player_troops %}disabled{% endif %}>确认捐赠护院</button>
+                <button type="submit" id="troop-donation-submit" class="tw-btn-secondary w-full mt-2" {% if not can_donate_troops %}disabled{% endif %}>确认捐赠护院</button>
             </form>
         </div>
     </div>
@@ -320,6 +336,8 @@
         const resourcePanels = Array.from(document.querySelectorAll('[data-resource-panel]'));
         const troopKeyInput = document.getElementById('troop_key');
         const troopQuantityInput = document.getElementById('troop_quantity');
+        const troopContributionPreview = document.getElementById('troop-contribution-preview');
+        const troopDonationSubmit = document.getElementById('troop-donation-submit');
 
         if (modal) {
             modal.addEventListener('click', (event) => {
@@ -327,6 +345,28 @@
                     modal.style.display = 'none';
                 }
             });
+        }
+
+        function syncTroopDonationLimit() {
+            if (!troopKeyInput || !troopQuantityInput) return;
+            const selected = troopKeyInput.selectedOptions[0];
+            const rate = Number.parseInt(selected?.dataset.contributionRate || '0', 10);
+            const maxQuantity = Number.parseInt(selected?.dataset.maxQuantity || '0', 10);
+            troopQuantityInput.max = String(Math.max(0, maxQuantity));
+            if (maxQuantity <= 0) {
+                troopQuantityInput.value = '';
+            } else {
+                const currentQuantity = Number.parseInt(troopQuantityInput.value || '1', 10);
+                troopQuantityInput.value = String(Math.min(Math.max(1, currentQuantity), maxQuantity));
+            }
+            if (troopContributionPreview) {
+                troopContributionPreview.textContent = maxQuantity > 0
+                    ? `每名 ${rate} 贡献，本次最多可捐 ${maxQuantity} 名`
+                    : '今日护院贡献额度不足';
+            }
+            if (troopDonationSubmit) {
+                troopDonationSubmit.disabled = maxQuantity <= 0;
+            }
         }
 
         function syncGuildDonationForms() {
@@ -342,6 +382,9 @@
             if (troopQuantityInput) {
                 troopQuantityInput.disabled = !isTroops;
                 troopQuantityInput.required = isTroops;
+            }
+            if (isTroops) {
+                syncTroopDonationLimit();
             }
             resourcePanels.forEach((panel) => {
                 const active = !isTroops && panel.dataset.resourcePanel === kind;
@@ -368,6 +411,7 @@
         };
 
         donationKindSelect?.addEventListener('change', syncGuildDonationForms);
+        troopKeyInput?.addEventListener('change', syncTroopDonationLimit);
         guildDonationModal?.addEventListener('click', (event) => {
             if (event.target === guildDonationModal) {
                 window.closeGuildDonationModal();

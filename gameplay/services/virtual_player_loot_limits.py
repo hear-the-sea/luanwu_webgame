@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from gameplay.models import BotProfile, Manor, RaidRun
 from gameplay.services.pvp_runtime.loot import normalize_positive_int_mapping
-from gameplay.services.virtual_players import load_virtual_player_config
+from gameplay.services.virtual_players import load_virtual_player_config, retire_virtual_player_if_unprotected
 
 
 def _resource_total(resources: dict[str, int]) -> int:
@@ -91,11 +91,7 @@ def clamp_bot_loot_resources(
             BotProfile.State.RETIRED,
         }
     ):
-        BotProfile.objects.filter(pk=profile.pk).update(
-            state=BotProfile.State.RETIRED,
-            next_growth_at=now,
-            maintenance_stopped_at=now,
-        )
+        retire_virtual_player_if_unprotected(profile.pk, now=now)
 
     if not _is_bot_manor(attacker):
         real_cap = _real_attacker_daily_resource_cap()
@@ -108,10 +104,6 @@ def clamp_bot_loot_resources(
         and remaining_bot_budget > 0
         and profile.state not in {BotProfile.State.STALE, BotProfile.State.RETIRED}
     ):
-        BotProfile.objects.filter(pk=profile.pk).update(
-            state=BotProfile.State.RETIRED,
-            next_growth_at=now,
-            maintenance_stopped_at=now,
-        )
+        retire_virtual_player_if_unprotected(profile.pk, now=now)
 
     return clamped

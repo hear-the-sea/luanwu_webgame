@@ -63,7 +63,7 @@ def test_technology_page_uses_category_switches_and_removes_caption(guild_tech_c
     assert "战斗类科技" in content
     assert "福利类科技" in content
     assert "每日生产装备道具" in content
-    assert "帮会科技一发功，兵种科技就跟着胡乱长个儿" not in content
+    assert "可以增强帮会战斗中护院的能力" not in content
     assert "提升庄园资源产出" not in content
 
 
@@ -80,7 +80,7 @@ def test_technology_page_filters_to_selected_category(guild_tech_client):
 
     content = response.content.decode("utf-8")
     assert response.status_code == 200
-    assert "帮会科技一发功，兵种科技就跟着胡乱长个儿" in content
+    assert "可以增强帮会战斗中护院的能力" in content
     assert "每日生产装备道具" not in content
     assert "提升庄园资源产出" not in content
 
@@ -156,7 +156,7 @@ def test_technology_page_projects_legacy_troop_tactics_to_runtime_max_and_mappin
 
     content = response.content.decode("utf-8")
     assert response.status_code == 200
-    assert "帮会科技一发功，兵种科技就跟着胡乱长个儿" in content
+    assert "可以增强帮会战斗中护院的能力" in content
     assert "5 / 10" in content
     assert "按 5 / 10 级线性映射个人兵种科技" in content
     assert "按 6 / 10 级线性映射个人兵种科技" in content

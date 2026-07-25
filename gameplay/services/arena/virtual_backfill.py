@@ -4,6 +4,7 @@ import logging
 import random
 from collections.abc import Iterable, Sequence
 from copy import deepcopy
+from dataclasses import dataclass
 from itertools import combinations
 from math import comb
 
@@ -28,6 +29,20 @@ MAX_LINEUP_POWER_PERCENT = 120
 MAX_RANDOM_LINEUP_COMBINATIONS = 64
 CANDIDATE_SCAN_CHUNK_SIZE = 100
 CANDIDATE_LOCK_BATCH_SIZE = 100
+
+
+@dataclass(frozen=True)
+class ArenaReferenceTarget:
+    guest_count: int
+    team_power: int
+    prestige_band: str
+
+
+@dataclass(frozen=True)
+class BotLineupEvaluation:
+    snapshots: tuple[dict, ...]
+    selected_power: int
+    is_ready: bool
 
 
 def _snapshot_power(snapshot: dict) -> int:
@@ -107,8 +122,12 @@ def _log_backfill_deferred(
     )
 
 
-def _candidates(excluded_manor_ids: Iterable[int]):
-    return (
+def _candidates(
+    excluded_manor_ids: Iterable[int],
+    *,
+    profile_ids: Sequence[int] | None = None,
+):
+    queryset = (
         BotProfile.objects.filter(state__in=[BotProfile.State.ACTIVE, BotProfile.State.SLOWING])
         .exclude(manor_id__in=set(excluded_manor_ids))
         .select_related("manor")
@@ -121,6 +140,9 @@ def _candidates(excluded_manor_ids: Iterable[int]):
         )
         .order_by("id")
     )
+    if profile_ids is not None:
+        queryset = queryset.filter(id__in=list(dict.fromkeys(int(profile_id) for profile_id in profile_ids)))
+    return queryset
 
 
 def _lock_candidates(
@@ -175,6 +197,53 @@ def _random_lineup_indexes(
     return indexes
 
 
+def evaluate_bot_lineup(
+    profile: BotProfile,
+    *,
+    mode: str,
+    event_id: int,
+    target_guest_count: int,
+    target_team_power: int,
+) -> BotLineupEvaluation:
+    if target_guest_count <= 0 or target_team_power <= 0:
+        return BotLineupEvaluation((), 0, False)
+    prefetched_guests = getattr(profile.manor, "arena_idle_guests", None)
+    guests = (
+        list(prefetched_guests)
+        if prefetched_guests is not None
+        else list(profile.manor.guests.filter(status=GuestStatus.IDLE).select_related("template").order_by("id"))
+    )
+    if not guests:
+        return BotLineupEvaluation((), 0, False)
+
+    snapshots = [build_entry_guest_snapshot(guest) for guest in guests]
+    lineup_size = min(target_guest_count, len(snapshots))
+    rng = random.Random(f"{mode}:{event_id}:{profile.id}")
+    rows: list[tuple[tuple[dict, ...], int]] = []
+    for indexes in _random_lineup_indexes(
+        guest_count=len(snapshots),
+        lineup_size=lineup_size,
+        rng=rng,
+    ):
+        lineup = tuple(deepcopy(snapshots[index]) for index in indexes)
+        rows.append((lineup, _lineup_power(lineup)))
+
+    ready = [
+        row
+        for row in rows
+        if target_team_power * MIN_LINEUP_POWER_PERCENT <= row[1] * 100 <= target_team_power * MAX_LINEUP_POWER_PERCENT
+    ]
+    if ready:
+        lineup, power = rng.choice(ready)
+        return BotLineupEvaluation(lineup, power, True)
+
+    below = [row for row in rows if row[1] * 100 < target_team_power * MIN_LINEUP_POWER_PERCENT]
+    if not below:
+        return BotLineupEvaluation((), 0, False)
+    lineup, power = max(below, key=lambda row: row[1])
+    return BotLineupEvaluation(lineup, power, False)
+
+
 def _select_bot_lineup(
     profile: BotProfile,
     *,
@@ -183,31 +252,14 @@ def _select_bot_lineup(
     target_guest_count: int,
     target_team_power: int,
 ) -> list[dict]:
-    if target_guest_count <= 0 or target_team_power <= 0:
-        return []
-    prefetched_guests = getattr(profile.manor, "arena_idle_guests", None)
-    guests = (
-        list(prefetched_guests)
-        if prefetched_guests is not None
-        else list(profile.manor.guests.filter(status=GuestStatus.IDLE).select_related("template").order_by("id"))
+    evaluation = evaluate_bot_lineup(
+        profile,
+        mode=mode,
+        event_id=event_id,
+        target_guest_count=target_guest_count,
+        target_team_power=target_team_power,
     )
-    if not guests:
-        return []
-
-    snapshots = [build_entry_guest_snapshot(guest) for guest in guests]
-    lineup_size = min(target_guest_count, len(snapshots))
-    rng = random.Random(f"{mode}:{event_id}:{profile.id}")
-    eligible_indexes = [
-        indexes
-        for indexes in _random_lineup_indexes(guest_count=len(snapshots), lineup_size=lineup_size, rng=rng)
-        if target_team_power * MIN_LINEUP_POWER_PERCENT
-        <= _lineup_power([snapshots[index] for index in indexes]) * 100
-        <= target_team_power * MAX_LINEUP_POWER_PERCENT
-    ]
-    if not eligible_indexes:
-        return []
-    selected_indexes = rng.choice(eligible_indexes)
-    return [deepcopy(snapshots[index]) for index in selected_indexes]
+    return list(evaluation.snapshots) if evaluation.is_ready else []
 
 
 def _eligible_bot_profile_ids(
@@ -217,9 +269,13 @@ def _eligible_bot_profile_ids(
     event_id: int,
     target_guest_count: int,
     target_team_power: int,
+    candidate_profile_ids: Sequence[int] | None = None,
 ) -> list[int]:
     selected: list[int] = []
-    for profile in _candidates(excluded_manor_ids).iterator(chunk_size=CANDIDATE_SCAN_CHUNK_SIZE):
+    for profile in _candidates(
+        excluded_manor_ids,
+        profile_ids=candidate_profile_ids,
+    ).iterator(chunk_size=CANDIDATE_SCAN_CHUNK_SIZE):
         lineup = _select_bot_lineup(
             profile,
             mode=mode,
@@ -311,7 +367,11 @@ def _coop_excluded_manor_ids(event: ArenaCoopEvent) -> set[int]:
     return excluded
 
 
-def backfill_tournament_locked(tournament: ArenaTournament) -> int:
+def backfill_tournament_locked(
+    tournament: ArenaTournament,
+    *,
+    candidate_profile_ids: Sequence[int] | None = None,
+) -> int:
     registered_entries = tournament.entries.filter(status=ArenaEntry.Status.REGISTERED)
     real_entries = list(registered_entries.filter(source=ArenaEntry.Source.PLAYER).prefetch_related("entry_guests"))
     needed = max(0, tournament.player_limit - registered_entries.count())
@@ -345,6 +405,7 @@ def backfill_tournament_locked(tournament: ArenaTournament) -> int:
         event_id=tournament.id,
         target_guest_count=len(snapshots),
         target_team_power=target_team_power,
+        candidate_profile_ids=candidate_profile_ids,
     )
     candidates = _lock_eligible_bot_lineups(
         profile_ids=eligible_profile_ids,
@@ -380,7 +441,11 @@ def backfill_tournament_locked(tournament: ArenaTournament) -> int:
     return len(candidates)
 
 
-def backfill_coop_event_locked(event: ArenaCoopEvent) -> int:
+def backfill_coop_event_locked(
+    event: ArenaCoopEvent,
+    *,
+    candidate_profile_ids: Sequence[int] | None = None,
+) -> int:
     registered_entries = event.entries.filter(status=ArenaCoopEntry.Status.REGISTERED)
     real_entries = list(registered_entries.filter(source=ArenaCoopEntry.Source.PLAYER).prefetch_related("entry_guests"))
     needed = max(0, event.player_limit - registered_entries.count())
@@ -414,6 +479,7 @@ def backfill_coop_event_locked(event: ArenaCoopEvent) -> int:
         event_id=event.id,
         target_guest_count=len(snapshots),
         target_team_power=target_team_power,
+        candidate_profile_ids=candidate_profile_ids,
     )
     candidates = _lock_eligible_bot_lineups(
         profile_ids=eligible_profile_ids,

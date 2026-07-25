@@ -21,4 +21,5 @@ def test_virtual_player_planning_and_rolling_are_scheduled_separately():
     assert planning["schedule"]._orig_hour == 4
     assert planning["schedule"]._orig_minute == 17
     assert rolling["task"] == "gameplay.roll_virtual_players"
-    assert rolling["schedule"]._orig_minute == "*/15"
+    assert rolling["schedule"]._orig_minute == 7
+    assert rolling["schedule"]._orig_hour == "*"

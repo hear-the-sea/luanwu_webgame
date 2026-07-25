@@ -48,6 +48,8 @@ class BotProfileAdmin(admin.ModelAdmin):
         "retire_at",
         "maintenance_started_at",
         "maintenance_stopped_at",
+        "last_arena_participated_at",
+        "arena_participation_count",
     )
     list_filter = (
         "state",
@@ -61,6 +63,7 @@ class BotProfileAdmin(admin.ModelAdmin):
         ("retire_at", admin.DateFieldListFilter),
         ("maintenance_started_at", admin.DateFieldListFilter),
         ("maintenance_stopped_at", admin.DateFieldListFilter),
+        ("last_arena_participated_at", admin.DateFieldListFilter),
     )
     search_fields = (
         "manor__name",
@@ -75,6 +78,8 @@ class BotProfileAdmin(admin.ModelAdmin):
         "last_planned_at",
         "maintenance_started_at",
         "maintenance_stopped_at",
+        "last_arena_participated_at",
+        "arena_participation_count",
         "created_at",
         "updated_at",
     )

@@ -194,8 +194,25 @@ class TestMapViews:
                 },
                 "can_attack": True,
                 "attack_reason": "",
-                "available_guests": [],
-                "player_troops": [],
+                "available_guests": [
+                    SimpleNamespace(
+                        id=7,
+                        display_name="测试门客",
+                        level=12,
+                        current_hp=80,
+                        max_hp=100,
+                        troop_capacity=230,
+                        template=SimpleNamespace(avatar=None),
+                    )
+                ],
+                "player_troops": [
+                    {
+                        "key": "guard",
+                        "name": "测试护院",
+                        "count": 320,
+                        "avatar": "",
+                    }
+                ],
                 "max_squad_size": 3,
             },
         )
@@ -204,6 +221,14 @@ class TestMapViews:
 
         assert response.status_code == 200
         body = response.content.decode("utf-8")
+        assert "data-raid-config-page" in body
+        assert 'class="tw-panel tw-raid-intel"' in body
+        assert 'class="tw-raid-loadout-grid"' in body
+        assert 'data-troop-capacity="230"' in body
+        assert "data-raid-select-max" in body
+        assert "data-raid-clear-guests" in body
+        assert "data-raid-clear-troops" in body
+        assert "data-raid-capacity-status" in body
         assert "js/raid-config-page.js" in body
         assert f'data-raid-api-url="{reverse("gameplay:start_raid_api")}"' in body
         assert f'data-map-url="{reverse("gameplay:map")}"' in body

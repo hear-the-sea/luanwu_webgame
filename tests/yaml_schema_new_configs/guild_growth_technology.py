@@ -35,6 +35,39 @@ def test_guild_rules_rejects_negative_daily_limit():
     assert_invalid(result, substring="non-negative")
 
 
+def test_guild_rules_rejects_zero_contribution_unit():
+    data = {
+        "pagination": {"guild_list_page_size": 20, "guild_hall_display_limit": 20},
+        "creation": {},
+        "contribution": {"units": {"silver": 0}},
+    }
+    result = validate_guild_rules(data)
+    assert_invalid(result, substring="positive integer")
+    assert result.errors[0].path == "contribution.units.silver"
+
+
+def test_guild_rules_rejects_negative_troop_rate():
+    data = {
+        "pagination": {"guild_list_page_size": 20, "guild_hall_display_limit": 20},
+        "creation": {},
+        "contribution": {"troop_rates": {7: -1}},
+    }
+    result = validate_guild_rules(data)
+    assert_invalid(result, substring="non-negative integer")
+    assert result.errors[0].path == "contribution.troop_rates.7"
+
+
+def test_guild_rules_rejects_negative_daily_troop_contribution_limit():
+    data = {
+        "pagination": {"guild_list_page_size": 20, "guild_hall_display_limit": 20},
+        "creation": {},
+        "contribution": {"daily_troop_contribution_limit": -1},
+    }
+    result = validate_guild_rules(data)
+    assert_invalid(result, substring="non-negative integer")
+    assert result.errors[0].path == "contribution.daily_troop_contribution_limit"
+
+
 def test_guest_growth_rules_rejects_non_dict_root():
     result = validate_guest_growth_rules([])
     assert_invalid(result)

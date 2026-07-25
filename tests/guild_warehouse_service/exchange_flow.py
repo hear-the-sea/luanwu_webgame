@@ -47,6 +47,38 @@ def test_exchange_item_rejects_non_positive_quantity(guild_member_with_warehouse
         exchange_item(member, "guild_wh_item", -3)
 
 
+@pytest.mark.django_db
+def test_exchange_item_rejects_partial_projected_resource_bundle(guild_member_with_projected_resources):
+    guild, member, manor = guild_member_with_projected_resources
+
+    with pytest.raises(GuildWarehouseError, match="银两兑换数量必须是1000的整数倍"):
+        exchange_item(member, "silver", 999)
+
+    guild.refresh_from_db()
+    member.refresh_from_db()
+    manor.refresh_from_db()
+    assert guild.silver == 2_000
+    assert member.current_contribution == 5_000
+    assert manor.silver == 0
+    assert not GuildExchangeLog.objects.filter(member=member).exists()
+
+
+@pytest.mark.django_db
+def test_exchange_item_rejects_partial_real_resource_bundle(guild_member_with_real_warehouse_resources):
+    guild, member, manor = guild_member_with_real_warehouse_resources
+
+    with pytest.raises(GuildWarehouseError, match="粮食兑换数量必须是2000的整数倍"):
+        exchange_item(member, "grain", 1_999)
+
+    member.refresh_from_db()
+    manor.refresh_from_db()
+    grain_row = GuildWarehouse.objects.get(guild=guild, item_key="grain")
+    assert grain_row.quantity == 4_000
+    assert member.current_contribution == 5_000
+    assert manor.grain == 0
+    assert not GuildExchangeLog.objects.filter(member=member).exists()
+
+
 def test_exchange_item_locks_manor_before_member_for_non_projected_items(monkeypatch):
     events: list[str] = []
 
@@ -202,37 +234,42 @@ def test_exchange_item_locks_manor_before_member_for_non_projected_items(monkeyp
 def test_exchange_item_grants_projected_silver_to_member_manor(guild_member_with_projected_resources):
     guild, member, manor = guild_member_with_projected_resources
 
-    exchange_item(member, "silver", 7)
+    exchange_item(member, "silver", 1_000)
 
     guild.refresh_from_db()
     member.refresh_from_db()
     manor.refresh_from_db()
 
-    assert guild.silver == 113
-    assert manor.silver == 7
-    assert member.current_contribution == 500 - (7 * CONTRIBUTION_RATES["silver"])
+    assert guild.silver == 1_000
+    assert manor.silver == 1_000
+    assert member.current_contribution == 5_000 - CONTRIBUTION_RATES["silver"]
     assert member.daily_exchange_count == 1
-    assert GuildExchangeLog.objects.filter(member=member, item_key="silver", quantity=7).exists()
+    assert GuildExchangeLog.objects.filter(
+        member=member,
+        item_key="silver",
+        quantity=1_000,
+        contribution_cost=1,
+    ).exists()
 
 
 @pytest.mark.django_db
 def test_exchange_item_rejects_member_moved_to_another_guild(guild_member_with_projected_resources):
     old_guild, stale_member, manor = guild_member_with_projected_resources
     new_guild = Guild.objects.create(name="新帮会", founder=stale_member.user, is_active=True, silver=999)
-    GuildMember.objects.filter(pk=stale_member.pk).update(guild=new_guild, current_contribution=500)
+    GuildMember.objects.filter(pk=stale_member.pk).update(guild=new_guild, current_contribution=5_000)
 
     with pytest.raises(GuildWarehouseError, match="您不在帮会中"):
-        exchange_item(stale_member, "silver", 7)
+        exchange_item(stale_member, "silver", 1_000)
 
     old_guild.refresh_from_db()
     new_guild.refresh_from_db()
     manor.refresh_from_db()
     current_member = GuildMember.objects.get(pk=stale_member.pk)
 
-    assert old_guild.silver == 120
+    assert old_guild.silver == 2_000
     assert new_guild.silver == 999
     assert manor.silver == 0
-    assert current_member.current_contribution == 500
+    assert current_member.current_contribution == 5_000
     assert GuildExchangeLog.objects.filter(member=current_member).exists() is False
 
 
@@ -241,15 +278,15 @@ def test_exchange_item_uses_latest_runtime_projected_resource_cost(guild_member_
     guild, member, manor = guild_member_with_projected_resources
     monkeypatch.setattr("guilds.constants.CONTRIBUTION_RATES", {"silver": 11, "grain": 2, "gold_bar": 50})
 
-    exchange_item(member, "silver", 7)
+    exchange_item(member, "silver", 1_000)
 
     guild.refresh_from_db()
     member.refresh_from_db()
     manor.refresh_from_db()
 
-    assert guild.silver == 113
-    assert manor.silver == 7
-    assert member.current_contribution == 500 - 77
+    assert guild.silver == 1_000
+    assert manor.silver == 1_000
+    assert member.current_contribution == 5_000 - 11
     assert member.daily_exchange_count == 1
 
 
@@ -259,7 +296,7 @@ def test_exchange_item_uses_latest_runtime_daily_exchange_limit(guild_member_wit
     monkeypatch.setattr("guilds.constants.DAILY_EXCHANGE_LIMIT", 0)
 
     with pytest.raises(GuildWarehouseError, match="今日兑换次数已达上限（0次）"):
-        exchange_item(member, "silver", 1)
+        exchange_item(member, "silver", 1_000)
 
 
 @pytest.mark.django_db
@@ -312,18 +349,23 @@ def test_exchange_item_rejects_when_weekly_item_limit_is_exhausted(
 def test_exchange_item_grants_projected_legacy_grain_to_member_manor(guild_member_with_projected_resources):
     guild, member, manor = guild_member_with_projected_resources
 
-    exchange_item(member, "grain", 5)
+    exchange_item(member, "grain", 2_000)
 
     guild.refresh_from_db()
     member.refresh_from_db()
     manor.refresh_from_db()
 
-    assert guild.grain == 40
-    assert manor.grain == 5
-    assert member.current_contribution == 500 - (5 * CONTRIBUTION_RATES["grain"])
+    assert guild.grain == 2_000
+    assert manor.grain == 2_000
+    assert member.current_contribution == 5_000 - CONTRIBUTION_RATES["grain"]
     assert member.daily_exchange_count == 1
     assert GuildWarehouse.objects.filter(guild=guild, item_key="grain").exists() is False
-    assert GuildExchangeLog.objects.filter(member=member, item_key="grain", quantity=5).exists()
+    assert GuildExchangeLog.objects.filter(
+        member=member,
+        item_key="grain",
+        quantity=2_000,
+        contribution_cost=1,
+    ).exists()
 
 
 @pytest.mark.django_db
@@ -342,7 +384,7 @@ def test_exchange_item_grants_projected_legacy_gold_bar_to_member_inventory(guil
 
     assert guild.gold_bar == 1
     assert gold_bar_item.quantity == 2
-    assert member.current_contribution == 500 - (2 * CONTRIBUTION_RATES["gold_bar"])
+    assert member.current_contribution == 5_000 - (2 * CONTRIBUTION_RATES["gold_bar"])
     assert member.daily_exchange_count == 1
     assert GuildWarehouse.objects.filter(guild=guild, item_key="gold_bar").exists() is False
     assert GuildExchangeLog.objects.filter(member=member, item_key="gold_bar", quantity=2).exists()
@@ -352,7 +394,7 @@ def test_exchange_item_grants_projected_legacy_gold_bar_to_member_inventory(guil
 def test_exchange_item_grants_real_warehouse_grain_to_member_manor(guild_member_with_real_warehouse_resources):
     guild, member, manor = guild_member_with_real_warehouse_resources
 
-    exchange_item(member, "grain", 5)
+    exchange_item(member, "grain", 2_000)
 
     guild.refresh_from_db()
     member.refresh_from_db()
@@ -360,12 +402,17 @@ def test_exchange_item_grants_real_warehouse_grain_to_member_manor(guild_member_
     grain_row = GuildWarehouse.objects.get(guild=guild, item_key="grain")
 
     assert guild.grain == 0
-    assert grain_row.quantity == 20
-    assert grain_row.total_exchanged == 5
-    assert manor.grain == 5
-    assert member.current_contribution == 500 - 10
+    assert grain_row.quantity == 2_000
+    assert grain_row.total_exchanged == 2_000
+    assert manor.grain == 2_000
+    assert member.current_contribution == 4_999
     assert member.daily_exchange_count == 1
-    assert GuildExchangeLog.objects.filter(member=member, item_key="grain", quantity=5, contribution_cost=10).exists()
+    assert GuildExchangeLog.objects.filter(
+        member=member,
+        item_key="grain",
+        quantity=2_000,
+        contribution_cost=1,
+    ).exists()
 
 
 @pytest.mark.django_db
@@ -387,13 +434,13 @@ def test_exchange_item_grants_real_warehouse_gold_bar_to_member_inventory(guild_
     assert gold_bar_row.quantity == 2
     assert gold_bar_row.total_exchanged == 2
     assert gold_bar_item.quantity == 7
-    assert member.current_contribution == 500 - 122
+    assert member.current_contribution == 2_600
     assert member.daily_exchange_count == 1
     assert GuildExchangeLog.objects.filter(
         member=member,
         item_key="gold_bar",
         quantity=2,
-        contribution_cost=122,
+        contribution_cost=2_400,
     ).exists()
 
 
@@ -412,5 +459,5 @@ def test_exchange_item_rejects_when_real_warehouse_resource_stock_is_insufficien
 
     assert guild.gold_bar == 0
     assert GuildWarehouse.objects.get(guild=guild, item_key="gold_bar").quantity == 4
-    assert member.current_contribution == 500
+    assert member.current_contribution == 5_000
     assert InventoryItem.objects.get(manor=manor, template__key="gold_bar").quantity == 5

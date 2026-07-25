@@ -218,6 +218,9 @@ def move_event_to_preparing_locked(event: ArenaCoopEvent, *, now: datetime | Non
         return False
 
     current_time = now or timezone.now()
+    from .virtual_reserve import reconcile_coop_demand_locked
+
+    reconcile_coop_demand_locked(event, now=current_time)
     event.status = ArenaCoopEvent.Status.PREPARING
     event.virtual_fill_completed = True
     event.prepare_ends_at = current_time + timedelta(seconds=event.prepare_duration_seconds)

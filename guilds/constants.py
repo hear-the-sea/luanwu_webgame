@@ -27,8 +27,11 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
         "guild_upgrade_base_cost": 5,
     },
     "contribution": {
-        "rates": {"silver": 1, "grain": 2, "gold_bar": 50},
-        "daily_limits": {"silver": 100000, "grain": 50000, "gold_bar": 20},
+        "units": {"silver": 1000, "grain": 2000, "gold_bar": 1},
+        "rates": {"silver": 1, "grain": 1, "gold_bar": 1200},
+        "daily_limits": {"silver": 100000, "grain": 50000, "gold_bar": 5},
+        "troop_rates": {"0": 1, "1": 1, "3": 3, "5": 6, "7": 12},
+        "daily_troop_contribution_limit": 300,
         "min_donation_amount": 1,
     },
     "technology": {
@@ -187,6 +190,11 @@ def normalize_guild_rules(raw: Any) -> dict[str, Any]:
             ),
         },
         "contribution": {
+            "units": _normalize_int_map(
+                config["contribution"].get("units"),
+                DEFAULT_GUILD_RULES["contribution"]["units"],
+                minimum=1,
+            ),
             "rates": _normalize_int_map(
                 config["contribution"].get("rates"),
                 DEFAULT_GUILD_RULES["contribution"]["rates"],
@@ -195,6 +203,16 @@ def normalize_guild_rules(raw: Any) -> dict[str, Any]:
             "daily_limits": _normalize_int_map(
                 config["contribution"].get("daily_limits"),
                 DEFAULT_GUILD_RULES["contribution"]["daily_limits"],
+                minimum=0,
+            ),
+            "troop_rates": _normalize_int_map(
+                config["contribution"].get("troop_rates"),
+                DEFAULT_GUILD_RULES["contribution"]["troop_rates"],
+                minimum=0,
+            ),
+            "daily_troop_contribution_limit": _to_positive_int(
+                config["contribution"].get("daily_troop_contribution_limit"),
+                DEFAULT_GUILD_RULES["contribution"]["daily_troop_contribution_limit"],
                 minimum=0,
             ),
             "min_donation_amount": _to_positive_int(
@@ -341,7 +359,8 @@ def refresh_guild_constants() -> None:
     global _GUILD_RULES
     global GUILD_LIST_PAGE_SIZE, GUILD_HALL_DISPLAY_LIMIT
     global GUILD_CREATION_COST, GUILD_UPGRADE_BASE_COST
-    global CONTRIBUTION_RATES, DAILY_DONATION_LIMITS, MIN_DONATION_AMOUNT
+    global CONTRIBUTION_UNITS, CONTRIBUTION_RATES, DAILY_DONATION_LIMITS, MIN_DONATION_AMOUNT
+    global TROOP_CONTRIBUTION_RATES, DAILY_TROOP_CONTRIBUTION_LIMIT
     global TECH_UPGRADE_COSTS, TECH_NAMES
     global EXCHANGE_COSTS, DAILY_EXCHANGE_LIMIT
     global GUILD_HERO_POOL_SLOT_LIMIT, GUILD_BATTLE_LINEUP_LIMIT, GUILD_DISPATCH_GUEST_BASE_LIMIT
@@ -361,8 +380,11 @@ def refresh_guild_constants() -> None:
     GUILD_CREATION_COST = _GUILD_RULES["creation"]["guild_creation_cost"]
     GUILD_UPGRADE_BASE_COST = _GUILD_RULES["creation"]["guild_upgrade_base_cost"]
 
+    CONTRIBUTION_UNITS = _GUILD_RULES["contribution"]["units"]
     CONTRIBUTION_RATES = _GUILD_RULES["contribution"]["rates"]
     DAILY_DONATION_LIMITS = _GUILD_RULES["contribution"]["daily_limits"]
+    TROOP_CONTRIBUTION_RATES = _GUILD_RULES["contribution"]["troop_rates"]
+    DAILY_TROOP_CONTRIBUTION_LIMIT = _GUILD_RULES["contribution"]["daily_troop_contribution_limit"]
     MIN_DONATION_AMOUNT = _GUILD_RULES["contribution"]["min_donation_amount"]
 
     TECH_UPGRADE_COSTS = _GUILD_RULES["technology"]["upgrade_costs"]
@@ -404,8 +426,11 @@ GUILD_NAME_MAX_LENGTH = 12
 GUILD_NAME_PATTERN = re.compile(r"^[\u4e00-\u9fa5a-zA-Z0-9_]+$")
 
 # ============ 捐赠系统 ============
+CONTRIBUTION_UNITS = _GUILD_RULES["contribution"]["units"]
 CONTRIBUTION_RATES = _GUILD_RULES["contribution"]["rates"]
 DAILY_DONATION_LIMITS = _GUILD_RULES["contribution"]["daily_limits"]
+TROOP_CONTRIBUTION_RATES = _GUILD_RULES["contribution"]["troop_rates"]
+DAILY_TROOP_CONTRIBUTION_LIMIT = _GUILD_RULES["contribution"]["daily_troop_contribution_limit"]
 MIN_DONATION_AMOUNT = _GUILD_RULES["contribution"]["min_donation_amount"]
 
 # ============ 帮会科技 ============

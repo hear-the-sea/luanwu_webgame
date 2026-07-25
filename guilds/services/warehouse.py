@@ -166,6 +166,24 @@ def _get_projected_resource_exchange_cost(item_key: str) -> int:
     return max(0, int(guild_constants.CONTRIBUTION_RATES.get(item_key, 0) or 0))
 
 
+def is_resource_exchange_item(item_key: str) -> bool:
+    return item_key in WAREHOUSE_LIST_PROJECTED_RESOURCE_KEYS
+
+
+def get_resource_exchange_unit(item_key: str) -> int:
+    if not is_resource_exchange_item(item_key):
+        return 1
+    return max(1, int(guild_constants.CONTRIBUTION_UNITS.get(item_key, 1) or 1))
+
+
+def calculate_resource_exchange_cost(item_key: str, quantity: int) -> int:
+    unit = get_resource_exchange_unit(item_key)
+    if quantity % unit:
+        label = PROJECTED_RESOURCE_LABELS.get(item_key, item_key)
+        raise GuildWarehouseError(f"{label}兑换数量必须是{unit}的整数倍")
+    return (quantity // unit) * _get_projected_resource_exchange_cost(item_key)
+
+
 def _is_projected_warehouse_listing_item(item_key: str) -> bool:
     return item_key in WAREHOUSE_LIST_PROJECTED_RESOURCE_KEYS
 
@@ -292,7 +310,7 @@ def _exchange_projected_resource_item(member: GuildMember, item_key: str, quanti
         if available_quantity < quantity:
             raise GuildWarehouseError(f"库存不足，剩余{available_quantity}件")
 
-        total_cost = _get_projected_resource_exchange_cost(item_key) * quantity
+        total_cost = calculate_resource_exchange_cost(item_key, quantity)
         if member_locked.current_contribution < total_cost:
             raise GuildWarehouseError(f"贡献度不足，需要{total_cost}贡献")
 
@@ -399,6 +417,9 @@ def exchange_item(member: GuildMember, item_key: str, quantity: int = 1) -> None
     if quantity <= 0:
         raise GuildWarehouseError("兑换数量必须为正整数")
 
+    if is_resource_exchange_item(item_key):
+        calculate_resource_exchange_cost(item_key, quantity)
+
     if _should_exchange_projected_resource_item(guild=member.guild, item_key=item_key):
         _exchange_projected_resource_item(member, item_key, quantity)
         return
@@ -438,7 +459,11 @@ def exchange_item(member: GuildMember, item_key: str, quantity: int = 1) -> None
             raise GuildWarehouseError(f"库存不足，剩余{warehouse_item.quantity}件")
 
         # 计算总成本并验证贡献度
-        total_cost = warehouse_item.contribution_cost * quantity
+        total_cost = (
+            calculate_resource_exchange_cost(item_key, quantity)
+            if is_resource_exchange_item(item_key)
+            else warehouse_item.contribution_cost * quantity
+        )
         if member_locked.current_contribution < total_cost:
             raise GuildWarehouseError(f"贡献度不足，需要{total_cost}贡献")
 
@@ -651,6 +676,15 @@ def get_warehouse_items(
         if getattr(item, "is_projected", False):
             item.display_quantity = _get_projected_resource_quantity(guild, item.item_key)
             item.contribution_cost = _get_projected_resource_exchange_cost(item.item_key)
+        item.is_resource_exchange = is_resource_exchange_item(item.item_key)
+        item.exchange_unit = get_resource_exchange_unit(item.item_key)
+        item.exchange_unit_cost = (
+            _get_projected_resource_exchange_cost(item.item_key)
+            if item.is_resource_exchange
+            else int(item.contribution_cost)
+        )
+        item.max_exchange_quantity = (item.display_quantity // item.exchange_unit) * item.exchange_unit
+        if getattr(item, "is_projected", False):
             item.is_usable = True
             continue
         if _is_real_guild_resource_item(item.item_key):

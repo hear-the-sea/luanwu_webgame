@@ -11,8 +11,11 @@ def test_normalize_guild_rules_merges_and_clamps_values():
             "pagination": {"guild_list_page_size": "30"},
             "creation": {"guild_creation_cost": {"gold_bar": "3"}, "guild_upgrade_base_cost": "8"},
             "contribution": {
+                "units": {"silver": "1000", "grain": "2000", "gold_bar": "1"},
                 "rates": {"silver": "2", "gold_bar": "50"},
                 "daily_limits": {"grain": "60000", "gold_bar": "20"},
+                "troop_rates": {0: "1", 1: "1", 3: "3", 5: "6", 7: "12"},
+                "daily_troop_contribution_limit": "300",
                 "min_donation_amount": "1",
             },
             "technology": {
@@ -34,10 +37,13 @@ def test_normalize_guild_rules_merges_and_clamps_values():
     assert loaded["pagination"]["guild_list_page_size"] == 30
     assert loaded["creation"]["guild_creation_cost"]["gold_bar"] == 3
     assert loaded["creation"]["guild_upgrade_base_cost"] == 8
+    assert loaded["contribution"]["units"] == {"silver": 1000, "grain": 2000, "gold_bar": 1}
     assert loaded["contribution"]["rates"]["silver"] == 2
     assert loaded["contribution"]["rates"]["gold_bar"] == 50
     assert loaded["contribution"]["daily_limits"]["grain"] == 60000
     assert loaded["contribution"]["daily_limits"]["gold_bar"] == 20
+    assert loaded["contribution"]["troop_rates"] == {"0": 1, "1": 1, "3": 3, "5": 6, "7": 12}
+    assert loaded["contribution"]["daily_troop_contribution_limit"] == 300
     assert loaded["contribution"]["min_donation_amount"] == 1
     assert loaded["technology"]["upgrade_costs"]["equipment_forge"]["silver"] == 6000
     assert loaded["technology"]["upgrade_costs"]["equipment_forge"]["grain"] == 2500

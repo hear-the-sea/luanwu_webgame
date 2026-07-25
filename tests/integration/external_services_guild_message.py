@@ -9,7 +9,7 @@ from gameplay.models import InventoryItem, ItemTemplate, Message, ResourceEvent,
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.utils.cache import CacheKeys
 from gameplay.services.utils.messages import claim_message_attachments
-from guilds.constants import CONTRIBUTION_RATES, GUILD_CREATION_COST
+from guilds.constants import CONTRIBUTION_RATES, CONTRIBUTION_UNITS, GUILD_CREATION_COST
 from guilds.models import GuildAnnouncement, GuildDonationLog, GuildMember, GuildResourceLog
 from guilds.services.contribution import donate_resource
 from guilds.services.guild import create_guild
@@ -54,7 +54,8 @@ def test_integration_guild_application_approval_and_donation_flow(require_env_se
     approve_application(application, founder_user)
 
     applicant_member = GuildMember.objects.get(user=applicant_user)
-    donate_resource(applicant_member, "silver", 1000)
+    donation_amount = CONTRIBUTION_UNITS["silver"]
+    donate_resource(applicant_member, "silver", donation_amount)
 
     guild.refresh_from_db()
     applicant_member.refresh_from_db()
@@ -62,20 +63,20 @@ def test_integration_guild_application_approval_and_donation_flow(require_env_se
 
     assert application.status == "approved"
     assert applicant_member.is_active is True
-    assert applicant_member.current_contribution == 1000 * CONTRIBUTION_RATES["silver"]
-    assert guild.silver == 1000
+    assert applicant_member.current_contribution == CONTRIBUTION_RATES["silver"]
+    assert guild.silver == donation_amount
     assert Message.objects.filter(manor=applicant_manor, title="入帮申请通过").exists()
     assert GuildAnnouncement.objects.filter(guild=guild, content__contains=applicant_manor.display_name).exists()
     assert GuildDonationLog.objects.filter(
         guild=guild,
         member=applicant_member,
         resource_type="silver",
-        amount=1000,
+        amount=donation_amount,
     ).exists()
     assert GuildResourceLog.objects.filter(
         guild=guild,
         action="donation",
-        silver_change=1000,
+        silver_change=donation_amount,
         related_user=applicant_user,
     ).exists()
     assert ResourceEvent.objects.filter(

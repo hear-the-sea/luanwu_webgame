@@ -116,7 +116,7 @@ def donate_troops(request: Any) -> HttpResponse:
             troop_key=troop_key,
             quantity=resolved_quantity,
         ),
-        success_message="护院已捐赠到帮会护院池",
+        success_message=lambda gained: f"护院已捐赠到帮会护院池，获得{gained}贡献",
         error_message_formatter=sanitize_error_message,
     )
     return redirect("guilds:detail", guild_id=member.guild_id)

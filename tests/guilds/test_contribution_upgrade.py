@@ -26,15 +26,17 @@ class TestGuildContribution:
         member = GuildMember.objects.get(user=user_with_gold_bars, guild=guild)
         initial_contribution = member.total_contribution
 
-        contribution_service.donate_resource(member, "silver", 10000)
+        contribution_service.donate_resource(member, "silver", 10_000)
 
         member.refresh_from_db()
         guild.refresh_from_db()
         manor.refresh_from_db()
 
-        assert member.total_contribution > initial_contribution
-        assert guild.silver == 10000
-        assert manor.silver == 90000
+        assert member.total_contribution == initial_contribution + 10
+        assert member.current_contribution == 10
+        assert member.weekly_contribution == 10
+        assert guild.silver == 10_000
+        assert manor.silver == 90_000
 
     def test_donate_exceeds_daily_limit(self, user_with_gold_bars):
         guild = guild_service.create_guild(user=user_with_gold_bars, name="限制帮会", description="")
@@ -47,7 +49,58 @@ class TestGuildContribution:
         daily_limit = guild_constants.DAILY_DONATION_LIMITS.get("silver", 100000)
 
         with pytest.raises(GuildContributionError, match="已达上限"):
-            contribution_service.donate_resource(member, "silver", daily_limit + 1)
+            contribution_service.donate_resource(
+                member,
+                "silver",
+                daily_limit + guild_constants.CONTRIBUTION_UNITS["silver"],
+            )
+
+    @pytest.mark.parametrize(
+        ("resource_type", "amount", "resource_field"),
+        [("silver", 999, "silver"), ("grain", 1999, "grain")],
+    )
+    def test_donate_resource_rejects_partial_contribution_bundle(
+        self,
+        user_with_gold_bars,
+        resource_type,
+        amount,
+        resource_field,
+    ):
+        guild = guild_service.create_guild(user=user_with_gold_bars, name=f"{resource_type}整包帮会", description="")
+        member = GuildMember.objects.get(user=user_with_gold_bars, guild=guild)
+        manor = Manor.objects.get(user=user_with_gold_bars)
+        setattr(manor, resource_field, 10_000)
+        manor.save(update_fields=[resource_field])
+
+        with pytest.raises(GuildContributionError, match="整数倍"):
+            contribution_service.donate_resource(member, resource_type, amount)
+
+        member.refresh_from_db()
+        manor.refresh_from_db()
+        assert getattr(manor, resource_field) == 10_000
+        assert member.total_contribution == 0
+        assert member.current_contribution == 0
+        assert member.weekly_contribution == 0
+        assert not GuildDonationLog.objects.filter(member=member).exists()
+
+    def test_donate_grain_uses_approved_bundle_rate(self, user_with_gold_bars):
+        guild = guild_service.create_guild(user=user_with_gold_bars, name="粮食整包帮会", description="")
+        member = GuildMember.objects.get(user=user_with_gold_bars, guild=guild)
+        manor = Manor.objects.get(user=user_with_gold_bars)
+        manor.grain = 4_000
+        manor.save(update_fields=["grain"])
+
+        contribution_service.donate_resource(member, "grain", 2_000)
+
+        member.refresh_from_db()
+        manor.refresh_from_db()
+        warehouse_row = GuildWarehouse.objects.get(guild=guild, item_key="grain")
+        assert member.total_contribution == 1
+        assert member.current_contribution == 1
+        assert member.weekly_contribution == 1
+        assert manor.grain == 2_000
+        assert warehouse_row.quantity == 2_000
+        assert warehouse_row.contribution_cost == 1
 
     def test_donate_resource_uses_latest_runtime_min_amount(self, user_with_gold_bars, monkeypatch):
         guild = guild_service.create_guild(user=user_with_gold_bars, name="动态下限帮会", description="")
@@ -73,16 +126,16 @@ class TestGuildContribution:
         member = GuildMember.objects.get(user=user_with_gold_bars, guild=guild)
         monkeypatch.setattr("guilds.constants.CONTRIBUTION_RATES", {"silver": 7, "grain": 2, "gold_bar": 50})
 
-        contribution_service.donate_resource(member, "silver", 50)
+        contribution_service.donate_resource(member, "silver", 1_000)
 
         member.refresh_from_db()
         guild.refresh_from_db()
         manor.refresh_from_db()
 
-        assert member.total_contribution == 350
-        assert member.current_contribution == 350
-        assert guild.silver == 50
-        assert manor.silver == 99950
+        assert member.total_contribution == 7
+        assert member.current_contribution == 7
+        assert guild.silver == 1_000
+        assert manor.silver == 99_000
 
     def test_donate_resource_rejects_member_moved_to_another_guild(self, user_with_gold_bars):
         old_guild = guild_service.create_guild(user=user_with_gold_bars, name="旧捐献帮会", description="")

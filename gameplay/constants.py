@@ -146,8 +146,8 @@ class PVPConstants:
     LOOT_SURVIVAL_BASE_RATIO = 0.35  # 战损后最低可带回比例
     LOOT_SURVIVAL_SCALING_RATIO = 0.65  # 护院存活率影响的可带回比例
     LOOT_ITEM_BASE_CHANCE = 0.20  # 物品掠夺基础概率20%
-    LOOT_ITEM_MAX_COUNT = 3  # 每次最多掠夺3件物品
-    LOOT_ITEM_MAX_QUANTITY_PERCENT = 0.20  # 每件物品最多掠夺20%
+    LOOT_ITEM_MAX_COUNT = 3  # 每次最多掠夺3种物品
+    LOOT_ITEM_MAX_QUANTITY_PERCENT = 0.20  # 全部可掠夺道具总件数最多掠夺20%
     LOOT_ITEM_MAX_QUANTITY = 5  # 每件物品最多掠夺5个
 
     # 装备回收

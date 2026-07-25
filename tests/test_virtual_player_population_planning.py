@@ -3,6 +3,50 @@ from __future__ import annotations
 from gameplay.services.virtual_player_population import PopulationCell, plan_population_cells
 
 
+def test_region_floor_is_shared_across_prestige_bands():
+    cells = [
+        PopulationCell("north", "newbie", 0, 0, 0, 0),
+        PopulationCell("north", "veteran", 0, 0, 0, 0),
+        PopulationCell("south", "newbie", 0, 0, 0, 0),
+    ]
+
+    result = plan_population_cells(
+        cells,
+        region_floor=8,
+        region_multiplier=8,
+        global_floor=32,
+        global_multiplier=20,
+        entry_band="newbie",
+    )
+
+    assert result.region_targets == {"north": 8, "south": 8}
+    assert result.by_key[("north", "newbie")].target == 8
+    assert result.by_key[("north", "veteran")].target == 0
+    assert result.hard_cap == 32
+
+
+def test_active_real_players_scale_region_target_and_global_cap():
+    cells = [
+        PopulationCell("north", "newbie", 2, 0, 0, 0),
+        PopulationCell("north", "junior", 1, 0, 0, 0),
+        PopulationCell("south", "newbie", 1, 0, 0, 0),
+    ]
+
+    result = plan_population_cells(
+        cells,
+        region_floor=8,
+        region_multiplier=8,
+        global_floor=32,
+        global_multiplier=20,
+        entry_band="newbie",
+    )
+
+    assert result.region_targets == {"north": 24, "south": 8}
+    assert result.by_key[("north", "newbie")].target == 16
+    assert result.by_key[("north", "junior")].target == 8
+    assert result.hard_cap == 80
+
+
 def test_empty_cell_has_only_exploration_supply():
     cells = [PopulationCell("north", "veteran", 0, 0, 0, 0)]
 

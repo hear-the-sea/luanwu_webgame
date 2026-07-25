@@ -10,7 +10,8 @@ public model classes/constants here to preserve the historical import style:
 
 from .arena import ArenaEntry, ArenaEntryGuest, ArenaExchangeRecord, ArenaMatch, ArenaTournament
 from .arena_coop import ArenaCoopContribution, ArenaCoopEntry, ArenaCoopEntryGuest, ArenaCoopEvent
-from .bots import BotBackfillDemand, BotInventoryDailyCounter, BotProfile
+from .arena_virtual import ArenaVirtualDemand, ArenaVirtualReserveMember
+from .bots import BotBackfillDemand, BotInventoryDailyCounter, BotPopulationControl, BotProfile
 from .chat import WorldChatSendAttempt
 from .items import GlobalMailCampaign, GlobalMailDelivery, InventoryItem, ItemTemplate, Message, ResourceEvent
 from .manor import (
@@ -83,9 +84,12 @@ __all__ = [
     "ArenaCoopEntry",
     "ArenaCoopEntryGuest",
     "ArenaCoopContribution",
+    "ArenaVirtualDemand",
+    "ArenaVirtualReserveMember",
     # bots
     "BotBackfillDemand",
     "BotInventoryDailyCounter",
+    "BotPopulationControl",
     "BotProfile",
     # chat
     "WorldChatSendAttempt",

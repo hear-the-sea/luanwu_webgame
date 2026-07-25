@@ -4,8 +4,8 @@
 {% block title %}出征配置 - {{ target_manor.display_name }}{% endblock %}
 
 {% block content %}
-<section class="dashboard">
-    <div class="tw-section-header">
+<section class="dashboard tw-raid-page">
+    <div class="tw-section-header tw-raid-page-header">
         <div>
             <h1>出征配置</h1>
             <p class="caption">目标：{{ target_manor.display_name }}</p>
@@ -13,164 +13,216 @@
         <a href="{% url 'gameplay:map' %}" class="tw-btn-secondary">返回地图</a>
     </div>
 
-    <!-- 目标庄园信息 -->
-    <section class="tw-panel mb-6">
-        <div class="tw-panel-header">目标庄园</div>
-        <div class="tw-panel-content">
-            <div class="flex justify-between items-start flex-wrap gap-6">
-                <div class="flex flex-col gap-2">
-                    <div class="text-2xl font-bold text-text-primary">{{ target_manor.display_name }}</div>
-                    <div class="text-text-muted">{{ target_info.region_display }} ({{ target_manor.coordinate_x }}, {{ target_manor.coordinate_y }})</div>
-                </div>
-                <div class="flex gap-8 flex-wrap">
-                    <div class="flex flex-col gap-1">
-                        <span class="text-sm text-text-muted">声望</span>
-                        <span class="text-lg font-semibold {% if target_info.prestige_comparison == 'higher' %}text-accent-red{% elif target_info.prestige_comparison == 'lower' %}text-accent-green{% endif %}">
-                            {{ target_info.prestige }}
-                        </span>
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <span class="text-sm text-text-muted">距离</span>
-                        <span class="text-lg font-semibold">{{ target_info.distance|floatformat:1 }}</span>
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <span class="text-sm text-text-muted">预计行军时间</span>
-                        <span class="text-lg font-semibold">{{ target_info.travel_time }}秒</span>
-                    </div>
-                    {% if target_info.is_protected %}
-                    <div class="flex flex-col gap-1">
-                        <span class="text-sm text-text-muted">状态</span>
-                        <span class="tw-protection-badge">保护中</span>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+    <section class="tw-panel tw-raid-intel" aria-labelledby="raid-target-heading">
+        <div class="tw-raid-intel-main">
+            <h2 class="tw-raid-eyebrow" id="raid-target-heading">目标庄园</h2>
+            <strong class="tw-raid-target-name">{{ target_manor.display_name }}</strong>
+            <span class="tw-raid-target-location">
+                {{ target_info.region_display }} · 坐标 {{ target_manor.coordinate_x }}, {{ target_manor.coordinate_y }}
+            </span>
+        </div>
 
-            {% if not can_attack %}
-            <div class="tw-alert-danger mt-4">
-                <strong>无法进攻：</strong>{{ attack_reason }}
+        <dl class="tw-raid-intel-grid">
+            <div class="tw-raid-intel-item">
+                <dt>声望</dt>
+                <dd class="{% if target_info.prestige_comparison == 'higher' %}is-danger{% elif target_info.prestige_comparison == 'lower' %}is-positive{% endif %}">
+                    {{ target_info.prestige }}
+                </dd>
+            </div>
+            <div class="tw-raid-intel-item">
+                <dt>距离</dt>
+                <dd>{{ target_info.distance|floatformat:1 }}</dd>
+            </div>
+            <div class="tw-raid-intel-item">
+                <dt>预计行军</dt>
+                <dd>{{ target_info.travel_time }} 秒</dd>
+            </div>
+            {% if target_info.is_protected %}
+            <div class="tw-raid-intel-item">
+                <dt>状态</dt>
+                <dd><span class="tw-protection-badge">保护中</span></dd>
             </div>
             {% endif %}
+        </dl>
+
+        {% if not can_attack %}
+        <div class="tw-alert-danger tw-raid-intel-alert">
+            <strong>无法进攻：</strong>{{ attack_reason }}
         </div>
+        {% endif %}
     </section>
 
     {% if can_attack %}
-    <!-- 出征配置表单 -->
     <form id="raid-form"
+          data-raid-config-page
           data-raid-api-url="{% url 'gameplay:start_raid_api' %}"
           data-target-id="{{ target_manor.id }}"
           data-max-squad-size="{{ max_squad_size }}"
           data-map-url="{% url 'gameplay:map' %}">
-        <!-- 门客选择 -->
-        <section class="tw-panel mb-6">
-            <div class="tw-panel-header">选择出征门客 <span class="font-normal text-text-muted">(最多 {{ max_squad_size }} 人)</span></div>
-            <div class="tw-panel-content">
-                <p class="text-sm text-text-muted mb-4">选择要派遣出征的门客，他们将参与战斗。</p>
+        <div class="tw-raid-loadout-grid">
+            <section class="tw-panel tw-raid-guests-panel" aria-labelledby="raid-guests-heading">
+                <header class="tw-raid-panel-heading">
+                    <div>
+                        <h2 id="raid-guests-heading">出征门客</h2>
+                        <p>
+                            已选 <strong data-raid-selected-count>0</strong> / {{ max_squad_size }} 人
+                        </p>
+                    </div>
+                    {% if available_guests %}
+                    <div class="tw-raid-panel-actions">
+                        <button type="button" class="tw-btn-secondary tw-btn-sm" data-raid-select-max>选满</button>
+                        <button type="button" class="tw-btn-secondary tw-btn-sm" data-raid-clear-guests>清空</button>
+                    </div>
+                    {% endif %}
+                </header>
 
-                {% if available_guests %}
-                <div class="tw-guest-selection">
-                    {% for guest in available_guests %}
-                    <label class="tw-guest-checkbox">
-                        <input type="checkbox" name="guest_ids" value="{{ guest.id }}" class="guest-input">
-                        <div class="tw-guest-card">
-                            <div class="tw-guest-avatar">
-                                {% if guest.template.avatar %}
-                                <img src="{{ guest.template.avatar.url }}" alt="{{ guest.display_name }}" loading="lazy" decoding="async">
-                                {% else %}
-                                <div class="tw-avatar-placeholder">{{ guest.display_name|slice:":1" }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="tw-guest-details">
-                                <div class="tw-guest-info-row">
-                                    <span class="tw-guest-name-sm">{{ guest.display_name }}</span>
-                                    <span class="tw-guest-level-sm">等级 {{ guest.level }}</span>
+                <div class="tw-panel-content tw-raid-panel-body tw-raid-scroll-region">
+                    {% if available_guests %}
+                    <div class="tw-raid-guest-grid">
+                        {% for guest in available_guests %}
+                        <label class="tw-raid-guest-option">
+                            <input type="checkbox"
+                                   name="guest_ids"
+                                   value="{{ guest.id }}"
+                                   data-raid-guest
+                                   data-troop-capacity="{{ guest.troop_capacity }}">
+                            <span class="tw-raid-guest-card">
+                                <span class="tw-guest-avatar">
+                                    {% if guest.template.avatar %}
+                                    <img src="{{ guest.template.avatar.url }}" width="44" height="44" alt="{{ guest.display_name }}" loading="lazy" decoding="async">
+                                    {% else %}
+                                    <span class="tw-avatar-placeholder">{{ guest.display_name|slice:":1" }}</span>
+                                    {% endif %}
+                                </span>
+                                <span class="tw-guest-details">
+                                    <span class="tw-guest-info-row">
+                                        <span class="tw-guest-name-sm">{{ guest.display_name }}</span>
+                                        <span class="tw-guest-level-sm">等级 {{ guest.level }}</span>
+                                    </span>
+                                    <span class="tw-raid-guest-stats">
+                                        <span>生命 {{ guest.current_hp }}/{{ guest.max_hp }}</span>
+                                        <span>带兵 {{ guest.troop_capacity }}</span>
+                                    </span>
+                                </span>
+                                <span class="tw-raid-guest-check" aria-hidden="true">✓</span>
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="tw-empty-hint tw-raid-empty-state">
+                        <p>暂无可出征的门客</p>
+                        <p class="text-sm text-text-muted">请确保有闲置状态的门客</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="tw-panel tw-raid-troops-panel" aria-labelledby="raid-troops-heading">
+                <header class="tw-raid-panel-heading">
+                    <div>
+                        <h2 id="raid-troops-heading">携带护院</h2>
+                        <p>当前阵容上限 <strong data-raid-troop-capacity>0</strong> 人</p>
+                    </div>
+                    {% if player_troops %}
+                    <div class="tw-raid-panel-actions">
+                        <button type="button" class="tw-btn-secondary tw-btn-sm" data-raid-clear-troops>全部清零</button>
+                    </div>
+                    {% endif %}
+                </header>
+
+                <div class="tw-panel-content tw-raid-panel-body tw-raid-scroll-region">
+                    <p class="tw-raid-capacity-status" data-raid-capacity-status aria-live="polite">
+                        选择门客后计算带兵上限
+                    </p>
+
+                    {% if player_troops %}
+                    <div class="tw-raid-troop-list">
+                        {% for troop in player_troops %}
+                        <div class="tw-raid-troop-row">
+                            <div class="tw-troop-info">
+                                <div class="tw-troop-avatar">
+                                    {% if troop.avatar %}
+                                    <img src="{{ troop.avatar }}" width="40" height="40" alt="{{ troop.name }}" loading="lazy" decoding="async">
+                                    {% else %}
+                                    <div class="tw-avatar-placeholder">{{ troop.name|slice:":1" }}</div>
+                                    {% endif %}
                                 </div>
-                                <div class="tw-guest-stats-sm">
-                                    <span title="生命">生命 {{ guest.current_hp }}/{{ guest.max_hp }}</span>
+                                <div class="tw-troop-details">
+                                    <span class="tw-troop-name">{{ troop.name }}</span>
+                                    <span class="tw-troop-count">可用 {{ troop.count }}</span>
                                 </div>
                             </div>
-                        </div>
-                    </label>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="tw-empty-hint">
-                    <p>暂无可出征的门客</p>
-                    <p class="text-sm text-text-muted">请确保有闲置状态的门客</p>
-                </div>
-                {% endif %}
 
-                <div class="tw-selection-summary">
-                    已选择 <strong id="selected-count">0</strong> / {{ max_squad_size }} 人
-                </div>
-            </div>
-        </section>
-
-        <!-- 护院配置 -->
-        <section class="tw-panel mb-6">
-            <div class="tw-panel-header">携带护院</div>
-            <div class="tw-panel-content">
-                <p class="text-sm text-text-muted mb-4">选择要携带的护院数量，护院可以增强战斗力。</p>
-
-                {% if player_troops %}
-                <div class="tw-troop-selection">
-                    {% for troop in player_troops %}
-                    <div class="tw-troop-row">
-                        <div class="tw-troop-info">
-                            <div class="tw-troop-avatar">
-                                {% if troop.avatar %}
-                                <img src="{{ troop.avatar }}" alt="{{ troop.name }}" loading="lazy" decoding="async">
-                                {% else %}
-                                <div class="tw-avatar-placeholder">{{ troop.name|slice:":1" }}</div>
-                                {% endif %}
+                            <div class="tw-raid-troop-controls" aria-label="{{ troop.name }}数量">
+                                <button type="button"
+                                        class="tw-raid-step-btn"
+                                        data-raid-adjust="-10"
+                                        data-troop-key="{{ troop.key }}"
+                                        aria-label="减少十名{{ troop.name }}">-10</button>
+                                <button type="button"
+                                        class="tw-raid-step-btn"
+                                        data-raid-adjust="-1"
+                                        data-troop-key="{{ troop.key }}"
+                                        aria-label="减少一名{{ troop.name }}">−</button>
+                                <input type="number"
+                                       name="troop_{{ troop.key }}"
+                                       class="tw-raid-troop-input"
+                                       value="0"
+                                       min="0"
+                                       max="{{ troop.count }}"
+                                       inputmode="numeric"
+                                       autocomplete="off"
+                                       aria-label="{{ troop.name }}携带数量"
+                                       data-raid-troop
+                                       data-troop-key="{{ troop.key }}"
+                                       data-max="{{ troop.count }}">
+                                <button type="button"
+                                        class="tw-raid-step-btn"
+                                        data-raid-adjust="1"
+                                        data-troop-key="{{ troop.key }}"
+                                        aria-label="增加一名{{ troop.name }}">+</button>
+                                <button type="button"
+                                        class="tw-raid-step-btn"
+                                        data-raid-adjust="10"
+                                        data-troop-key="{{ troop.key }}"
+                                        aria-label="增加十名{{ troop.name }}">+10</button>
+                                <button type="button"
+                                        class="tw-raid-step-btn tw-raid-fill-btn"
+                                        data-raid-fill="{{ troop.key }}">全部</button>
                             </div>
-                            <div class="tw-troop-details">
-                                <span class="tw-troop-name">{{ troop.name }}</span>
-                                <span class="tw-troop-count">可用: {{ troop.count }}</span>
-                            </div>
                         </div>
-                        <div class="flex items-center gap-1">
-                            <button type="button" class="tw-btn-secondary tw-btn-sm btn-adjust" data-adjust="-10" data-troop="{{ troop.key }}">-10</button>
-                            <button type="button" class="tw-btn-secondary tw-btn-sm btn-adjust" data-adjust="-1" data-troop="{{ troop.key }}">-</button>
-                            <input type="number" name="troop_{{ troop.key }}" class="tw-troop-num-input troop-input"
-                                   value="0" min="0" max="{{ troop.count }}" data-troop-key="{{ troop.key }}" data-max="{{ troop.count }}">
-                            <button type="button" class="tw-btn-secondary tw-btn-sm btn-adjust" data-adjust="1" data-troop="{{ troop.key }}">+</button>
-                            <button type="button" class="tw-btn-secondary tw-btn-sm btn-adjust" data-adjust="10" data-troop="{{ troop.key }}">+10</button>
-                            <button type="button" class="tw-btn-secondary tw-btn-sm btn-max" data-troop="{{ troop.key }}">全部</button>
-                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
+                    {% else %}
+                    <div class="tw-empty-hint tw-raid-empty-state">
+                        <p>暂无可用护院</p>
+                        <p class="text-sm text-text-muted">请先在练功场招募护院</p>
+                    </div>
+                    {% endif %}
                 </div>
-                {% else %}
-                <div class="tw-empty-hint">
-                    <p>暂无可用护院</p>
-                    <p class="text-sm text-text-muted">请先在练功场招募护院</p>
-                </div>
-                {% endif %}
-            </div>
-        </section>
+            </section>
+        </div>
 
-        <!-- 提交按钮 -->
-        <section class="tw-panel">
-            <div class="tw-panel-content">
-                <div class="flex justify-center gap-12 mb-6 pb-6 border-b border-border-light flex-wrap">
-                    <div class="flex flex-col items-center gap-1">
-                        <span class="text-sm text-text-muted">出征门客</span>
-                        <span class="text-xl font-bold text-text-primary" id="summary-guests">0 人</span>
-                    </div>
-                    <div class="flex flex-col items-center gap-1">
-                        <span class="text-sm text-text-muted">携带护院</span>
-                        <span class="text-xl font-bold text-text-primary" id="summary-troops">0</span>
-                    </div>
-                    <div class="flex flex-col items-center gap-1">
-                        <span class="text-sm text-text-muted">预计到达</span>
-                        <span class="text-xl font-bold text-text-primary">{{ target_info.travel_time }} 秒后</span>
-                    </div>
+        <section class="tw-panel tw-raid-summary-bar" aria-label="出征汇总">
+            <div class="tw-raid-summary-content">
+                <div class="tw-raid-summary-stats" aria-live="polite">
+                    <span class="tw-raid-summary-stat">
+                        <small>出征门客</small>
+                        <strong data-raid-summary-guests>0 人</strong>
+                    </span>
+                    <span class="tw-raid-summary-stat">
+                        <small>携带护院</small>
+                        <strong data-raid-summary-troops>0</strong>
+                    </span>
+                    <span class="tw-raid-summary-stat">
+                        <small>预计到达</small>
+                        <strong>{{ target_info.travel_time }} 秒后</strong>
+                    </span>
                 </div>
-
-                <div class="flex justify-center gap-4">
+                <div class="tw-raid-summary-actions">
                     <a href="{% url 'gameplay:map' %}" class="tw-btn-secondary">取消</a>
-                    <button type="submit" class="tw-btn-primary px-8 py-3 text-lg" id="submit-btn" disabled>
+                    <button type="submit" class="tw-btn-primary tw-raid-submit-btn" data-raid-submit disabled>
                         发起进攻
                     </button>
                 </div>
@@ -178,12 +230,9 @@
         </section>
     </form>
     {% else %}
-    <!-- 无法进攻时显示返回按钮 -->
-    <section class="tw-panel">
-        <div class="tw-panel-content text-center">
-            <a href="{% url 'gameplay:map' %}" class="tw-btn-primary">返回地图</a>
-        </div>
-    </section>
+    <div class="tw-raid-blocked-actions">
+        <a href="{% url 'gameplay:map' %}" class="tw-btn-primary">返回地图</a>
+    </div>
     {% endif %}
 </section>
 {% endblock %}

@@ -25,6 +25,12 @@ def test_makefile_critical_gate_includes_arena_coop_concurrency_file():
     assert "tests/test_arena_coop_concurrency_integration.py" in makefile_content
 
 
+def test_makefile_critical_gate_includes_arena_virtual_population_concurrency_file():
+    makefile_content = (ROOT_DIR / "Makefile").read_text(encoding="utf-8")
+
+    assert "tests/test_arena_virtual_population_concurrency_integration.py" in makefile_content
+
+
 def test_makefile_critical_gate_includes_trade_auction_concurrency_file():
     makefile_content = (ROOT_DIR / "Makefile").read_text(encoding="utf-8")
 

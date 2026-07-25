@@ -6,7 +6,7 @@ import pytest
 from django.db import transaction
 from django.utils import timezone
 
-from gameplay.models import BotProfile, RaidRun
+from gameplay.models import ArenaTournament, ArenaVirtualDemand, ArenaVirtualReserveMember, BotProfile, RaidRun
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.raid.combat import battle as combat_battle
 
@@ -112,6 +112,52 @@ def test_bot_defender_retires_when_prior_loot_exhausted_budget(django_user_model
     assert clamped == {}
     assert profile.state == BotProfile.State.RETIRED
     assert profile.maintenance_stopped_at is not None
+
+
+@pytest.mark.django_db
+def test_exhausted_loot_budget_does_not_retire_active_reserve_member(django_user_model):
+    from gameplay.services.virtual_player_loot_limits import clamp_bot_loot_resources
+
+    now = timezone.now()
+    attacker = _create_manor(django_user_model, "reserved_budget_attacker")
+    defender = _create_manor(django_user_model, "reserved_budget_defender")
+    profile = _create_bot_profile(defender, budget=1_000)
+    tournament = ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RECRUITING,
+        player_limit=2,
+    )
+    demand = ArenaVirtualDemand.objects.create(
+        tournament=tournament,
+        missing_entry_count=1,
+        reserve_target_count=1,
+        max_reserve_target_count=1,
+        next_retry_at=now,
+    )
+    member = ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=profile,
+        state=ArenaVirtualReserveMember.State.READY,
+    )
+    prior = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.RETURNING,
+        is_attacker_victory=True,
+        loot_resources={"grain": 1_000},
+    )
+    RaidRun.objects.filter(pk=prior.pk).update(started_at=now - timedelta(hours=1))
+
+    clamped = clamp_bot_loot_resources(
+        attacker=attacker,
+        defender=defender,
+        loot_resources={"grain": 500},
+        now=now,
+    )
+
+    profile.refresh_from_db()
+    assert clamped == {}
+    assert profile.state == BotProfile.State.ACTIVE
+    assert ArenaVirtualReserveMember.objects.filter(pk=member.pk).exists()
 
 
 @pytest.mark.django_db

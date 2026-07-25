@@ -39,7 +39,13 @@
                         </div>
                         <div>
                             <dt>兑换成本</dt>
-                            <dd class="tw-guild-cost-value">{{ item.contribution_cost }} 贡献</dd>
+                            <dd class="tw-guild-cost-value">
+                                {% if item.is_resource_exchange %}
+                                    {{ item.exchange_unit }} {{ item.display_name }} / {{ item.exchange_unit_cost }} 贡献
+                                {% else %}
+                                    {{ item.exchange_unit_cost }} 贡献
+                                {% endif %}
+                            </dd>
                         </div>
                         {% if item.weekly_personal_limit %}
                         <div>
@@ -61,8 +67,8 @@
                             <button
                                 type="button"
                                 class="tw-btn-primary w-full"
-                                onclick="openExchangeModal('{{ item.item_key|escapejs }}', {{ item.contribution_cost }}, {{ item.display_quantity }}, '{{ item.display_name|default:'未知物品'|escapejs }}', {{ item.weekly_exchange_remaining|default:0 }}, {{ item.weekly_personal_limit|default:0 }})"
-                                {% if item.display_quantity <= 0 %}disabled title="库存不足"{% elif item.weekly_personal_limit and item.weekly_exchange_remaining <= 0 %}disabled title="本周限购已达上限"{% endif %}
+                                onclick="openExchangeModal('{{ item.item_key|escapejs }}', {{ item.exchange_unit_cost }}, {{ item.exchange_unit }}, {{ item.display_quantity }}, '{{ item.display_name|default:'未知物品'|escapejs }}', {{ item.weekly_exchange_remaining|default:0 }}, {{ item.weekly_personal_limit|default:0 }})"
+                                {% if item.max_exchange_quantity <= 0 %}disabled title="库存不足一个完整兑换单位"{% elif item.weekly_personal_limit and item.weekly_exchange_remaining <= 0 %}disabled title="本周限购已达上限"{% endif %}
                             >
                                 兑换
                             </button>
@@ -161,12 +167,20 @@
 
         const currentContribution = {{ member.current_contribution }};
 
-        function checkExchangeValidity(unitCost, stock, quantity, weeklyRemaining, weeklyLimit) {
-            const totalCost = unitCost * quantity;
+        function checkExchangeValidity(unitCost, exchangeUnit, stock, quantity, weeklyRemaining, weeklyLimit) {
+            const isCompleteUnit = quantity > 0 && quantity % exchangeUnit === 0;
+            const totalCost = isCompleteUnit ? unitCost * (quantity / exchangeUnit) : 0;
             const warningText = exchangeWarning.querySelector('p');
-            const maxQuantity = weeklyLimit > 0 ? Math.min(stock, weeklyRemaining) : stock;
+            const stockMax = Math.floor(stock / exchangeUnit) * exchangeUnit;
+            const rawMax = weeklyLimit > 0 ? Math.min(stockMax, weeklyRemaining) : stockMax;
+            const maxQuantity = Math.floor(rawMax / exchangeUnit) * exchangeUnit;
+            exchangeCost.textContent = String(totalCost);
 
-            if (quantity > maxQuantity) {
+            if (!isCompleteUnit) {
+                exchangeWarning.style.display = 'block';
+                warningText.textContent = `兑换数量必须是 ${exchangeUnit} 的整数倍`;
+                submitButton.disabled = true;
+            } else if (quantity > maxQuantity) {
                 exchangeWarning.style.display = 'block';
                 warningText.textContent = weeklyLimit > 0
                     ? `本周剩余可兑换 ${weeklyRemaining} 个`
@@ -182,17 +196,30 @@
             }
         }
 
-        window.openExchangeModal = function openExchangeModal(itemKey, cost, stock, itemName, weeklyRemaining, weeklyLimit) {
+        window.openExchangeModal = function openExchangeModal(
+            itemKey,
+            unitCost,
+            exchangeUnit,
+            stock,
+            itemName,
+            weeklyRemaining,
+            weeklyLimit
+        ) {
             exchangeForm.action = `/guilds/warehouse/${encodeURIComponent(itemKey)}/exchange/`;
             exchangeItemName.textContent = itemName || itemKey;
-            exchangeCost.textContent = cost;
             exchangeStock.textContent = stock;
+            quantityInput.dataset.unitCost = unitCost;
+            quantityInput.dataset.exchangeUnit = exchangeUnit;
             quantityInput.dataset.weeklyRemaining = weeklyRemaining;
             quantityInput.dataset.weeklyLimit = weeklyLimit;
-            quantityInput.max = weeklyLimit > 0 ? Math.min(stock, weeklyRemaining) : stock;
-            quantityInput.value = 1;
+            const stockMax = Math.floor(stock / exchangeUnit) * exchangeUnit;
+            const rawMax = weeklyLimit > 0 ? Math.min(stockMax, weeklyRemaining) : stockMax;
+            quantityInput.min = exchangeUnit;
+            quantityInput.step = exchangeUnit;
+            quantityInput.max = Math.floor(rawMax / exchangeUnit) * exchangeUnit;
+            quantityInput.value = exchangeUnit;
 
-            checkExchangeValidity(cost, stock, 1, weeklyRemaining, weeklyLimit);
+            checkExchangeValidity(unitCost, exchangeUnit, stock, exchangeUnit, weeklyRemaining, weeklyLimit);
 
             exchangeModal.style.display = 'flex';
         };
@@ -202,12 +229,13 @@
         };
 
         quantityInput?.addEventListener('input', function() {
-            const cost = parseInt(exchangeCost.textContent);
+            const unitCost = parseInt(this.dataset.unitCost) || 0;
+            const exchangeUnit = parseInt(this.dataset.exchangeUnit) || 1;
             const stock = parseInt(exchangeStock.textContent);
-            const quantity = parseInt(this.value) || 1;
+            const quantity = parseInt(this.value) || exchangeUnit;
             const weeklyRemaining = parseInt(this.dataset.weeklyRemaining) || 0;
             const weeklyLimit = parseInt(this.dataset.weeklyLimit) || 0;
-            checkExchangeValidity(cost, stock, quantity, weeklyRemaining, weeklyLimit);
+            checkExchangeValidity(unitCost, exchangeUnit, stock, quantity, weeklyRemaining, weeklyLimit);
         });
 
         exchangeModal?.addEventListener('click', (event) => {

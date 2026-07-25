@@ -16,6 +16,7 @@ from gameplay.models import (
     ArenaEntry,
     ArenaEntryGuest,
     ArenaTournament,
+    ArenaVirtualDemand,
     BotProfile,
 )
 from gameplay.services.arena.coop_core import start_due_virtual_backfill_coop_events
@@ -284,6 +285,75 @@ def test_tournament_backfill_skips_empty_and_out_of_range_bots_before_using_late
 
 
 @pytest.mark.django_db
+def test_bot_lineup_evaluation_distinguishes_ready_and_closest_below():
+    from gameplay.services.arena.virtual_backfill import evaluate_bot_lineup
+
+    ready = _create_bot_profile("reserve_ready", guest_stats=[(150, 150, 50)])
+    weak = _create_bot_profile("reserve_weak", guest_stats=[(150, 150, 25)])
+
+    ready_result = evaluate_bot_lineup(
+        ready,
+        mode="tournament",
+        event_id=10,
+        target_guest_count=1,
+        target_team_power=600,
+    )
+    weak_result = evaluate_bot_lineup(
+        weak,
+        mode="tournament",
+        event_id=10,
+        target_guest_count=1,
+        target_team_power=600,
+    )
+
+    assert ready_result.is_ready is True
+    assert ready_result.selected_power == 600
+    assert weak_result.is_ready is False
+    assert weak_result.selected_power == 450
+
+
+@pytest.mark.django_db
+def test_explicit_profile_ids_limit_atomic_tournament_backfill_candidates():
+    tournament = ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RECRUITING,
+        player_limit=2,
+    )
+    _add_real_arena_entry(
+        tournament,
+        "reserve_reference",
+        attack=200,
+        defense=200,
+        max_hp=2000,
+    )
+    first = _create_bot_profile("reserve_first")
+    second = _create_bot_profile("reserve_second")
+
+    assert backfill_tournament_locked(tournament, candidate_profile_ids=[second.id]) == 1
+
+    virtual_entry = tournament.entries.get(source=ArenaEntry.Source.VIRTUAL)
+    assert virtual_entry.manor_id == second.manor_id
+    assert virtual_entry.manor_id != first.manor_id
+
+
+@pytest.mark.django_db
+def test_explicit_profile_ids_limit_atomic_coop_backfill_candidates():
+    event = ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.RECRUITING,
+        player_limit=2,
+        guest_limit_per_entry=1,
+    )
+    _add_real_coop_entry(event, "reserve_coop_reference")
+    first = _create_bot_profile("reserve_coop_first")
+    second = _create_bot_profile("reserve_coop_second")
+
+    assert backfill_coop_event_locked(event, candidate_profile_ids=[first.id]) == 1
+
+    virtual_entry = event.entries.get(source=ArenaCoopEntry.Source.VIRTUAL)
+    assert virtual_entry.manor_id == first.manor_id
+    assert virtual_entry.manor_id != second.manor_id
+
+
+@pytest.mark.django_db
 def test_arena_candidate_discovery_does_not_lock_the_bot_pool():
     from gameplay.services.arena import virtual_backfill
 
@@ -501,6 +571,9 @@ def test_due_tournament_backfills_once_then_starts():
     assert tournament.status == ArenaTournament.Status.RUNNING
     assert tournament.virtual_fill_completed is True
     assert tournament.entries.filter(source=ArenaEntry.Source.VIRTUAL).count() == 2
+    demand = ArenaVirtualDemand.objects.get(tournament=tournament)
+    assert demand.status == ArenaVirtualDemand.Status.SATISFIED
+    assert BotProfile.objects.filter(arena_participation_count=1).count() == 2
 
 
 @pytest.mark.django_db
@@ -525,6 +598,9 @@ def test_due_coop_event_backfills_then_keeps_existing_prepare_period():
     assert event.virtual_fill_completed is True
     assert event.prepare_ends_at == now + timedelta(seconds=120)
     assert event.entries.filter(source=ArenaCoopEntry.Source.VIRTUAL).count() == 2
+    demand = ArenaVirtualDemand.objects.get(coop_event=event)
+    assert demand.status == ArenaVirtualDemand.Status.SATISFIED
+    assert BotProfile.objects.filter(arena_participation_count=1).count() == 2
 
 
 @pytest.mark.django_db

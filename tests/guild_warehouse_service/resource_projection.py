@@ -38,9 +38,21 @@ def test_get_warehouse_items_projects_legacy_grain_and_gold_bar_when_real_rows_m
     payload = warehouse_service.get_warehouse_items(guild, page=1, per_page=20)
     projected_items = {item.item_key: item for item in payload["items"] if getattr(item, "is_projected", False)}
 
-    assert projected_items["silver"].display_quantity == 120
-    assert projected_items["grain"].display_quantity == 45
+    assert projected_items["silver"].display_quantity == 2_000
+    assert projected_items["grain"].display_quantity == 4_000
     assert projected_items["gold_bar"].display_quantity == 3
+
+
+@pytest.mark.django_db
+def test_get_warehouse_items_exposes_resource_bundle_exchange_rules(guild_member_with_projected_resources):
+    guild, member, _manor = guild_member_with_projected_resources
+
+    payload = warehouse_service.get_warehouse_items(guild, page=1, per_page=20, member=member)
+    resources = {item.item_key: item for item in payload["items"] if item.item_key in {"silver", "grain", "gold_bar"}}
+
+    assert (resources["silver"].exchange_unit, resources["silver"].exchange_unit_cost) == (1_000, 1)
+    assert (resources["grain"].exchange_unit, resources["grain"].exchange_unit_cost) == (2_000, 1)
+    assert (resources["gold_bar"].exchange_unit, resources["gold_bar"].exchange_unit_cost) == (1, 1_200)
 
 
 @pytest.mark.django_db
@@ -49,14 +61,15 @@ def test_donate_grain_adds_real_guild_warehouse_item(guild_member_ready_for_grai
 
     member, manor = guild_member_ready_for_grain_donation
 
-    contribution_service.donate_resource(member, "grain", 200)
+    contribution_service.donate_resource(member, "grain", 2_000)
 
     warehouse_row = GuildWarehouse.objects.get(guild=member.guild, item_key="grain")
     member.refresh_from_db()
     member.guild.refresh_from_db()
     manor.refresh_from_db()
 
-    assert warehouse_row.quantity == 200
-    assert member.current_contribution == 400
+    assert warehouse_row.quantity == 2_000
+    assert warehouse_row.contribution_cost == 1
+    assert member.current_contribution == 1
     assert member.guild.grain == 0
-    assert manor.grain == 300
+    assert manor.grain == 3_000
