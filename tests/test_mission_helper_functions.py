@@ -175,7 +175,7 @@ def test_build_drop_lists_prefers_probability_drop_table_for_choice_pool_display
         {
             "key": "equip_nichangyuyi",
             "name": "霓裳羽衣",
-            "label": "霓裳羽衣 x1",
+            "label": "霓裳羽衣 ×1",
             "count": 1,
             "rarity": "green",
             "image_url": "",
@@ -183,7 +183,7 @@ def test_build_drop_lists_prefers_probability_drop_table_for_choice_pool_display
         {
             "key": "equip_nichangwuxie",
             "name": "霓裳舞鞋",
-            "label": "霓裳舞鞋 x1",
+            "label": "霓裳舞鞋 ×1",
             "count": 1,
             "rarity": "green",
             "image_url": "",
@@ -191,7 +191,7 @@ def test_build_drop_lists_prefers_probability_drop_table_for_choice_pool_display
         {
             "key": "equip_nichangjian",
             "name": "霓裳剑",
-            "label": "霓裳剑 x1",
+            "label": "霓裳剑 ×1",
             "count": 1,
             "rarity": "green",
             "image_url": "",
@@ -265,7 +265,7 @@ def test_build_drop_lists_includes_icon_display_data_for_non_silver_drops():
         {
             "key": "silver",
             "name": "银两",
-            "label": "银两 x2000",
+            "label": "银两 ×2000",
             "count": 2000,
             "rarity": "default",
             "image_url": "",
@@ -273,7 +273,7 @@ def test_build_drop_lists_includes_icon_display_data_for_non_silver_drops():
         {
             "key": "test_item",
             "name": "测试物品",
-            "label": "测试物品 x2",
+            "label": "测试物品 ×2",
             "count": 2,
             "rarity": "blue",
             "image_url": "/media/items/test.png",

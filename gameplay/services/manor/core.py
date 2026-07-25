@@ -230,7 +230,7 @@ def finalize_building_upgrade(building: Building, now: datetime | None = None, s
                 manor=building.manor,
                 kind=Message.Kind.SYSTEM,
                 title=f"{building.building_type.name} 升级完成",
-                body=f"等级 Lv{building.level - 1} → Lv{building.level}",
+                body=f"等级 {building.level - 1} → {building.level}",
             )
         except MANOR_MESSAGE_BEST_EFFORT_EXCEPTIONS as exc:
             logger.warning(

@@ -70,7 +70,7 @@ const initGuestRosterPage = () => {
 
     const itemName = option.dataset.itemName || option.textContent.replace(/（x\d+）/, "").trim();
     option.dataset.itemName = itemName;
-    option.textContent = `${itemName}（x${quantity}）`;
+    option.textContent = `${itemName}（×${quantity}）`;
     if (submitBtn) {
       submitBtn.disabled = false;
     }
@@ -84,13 +84,13 @@ const initGuestRosterPage = () => {
 
     const levelDiv = row.querySelector(".guest-level");
     if (levelDiv) {
-      levelDiv.textContent = `Lv ${newLevel}`;
+      levelDiv.textContent = `等级 ${newLevel}`;
     }
 
     if (currentHp !== undefined && maxHp !== undefined) {
       const hpDiv = row.querySelector(".guest-hp");
       if (hpDiv) {
-        hpDiv.textContent = `HP ${currentHp}/${maxHp}`;
+        hpDiv.textContent = `生命 ${currentHp}/${maxHp}`;
       }
     }
 
@@ -307,7 +307,7 @@ const initGuestRosterPage = () => {
           if (data.guest_id && data.current_hp !== undefined) {
             const hpCell = document.querySelector(`.guest-hp[data-guest-id="${data.guest_id}"]`);
             if (hpCell) {
-              hpCell.textContent = `HP ${data.current_hp}/${data.max_hp}`;
+              hpCell.textContent = `生命 ${data.current_hp}/${data.max_hp}`;
             }
           }
           if (data.guest_id && data.status_display) {

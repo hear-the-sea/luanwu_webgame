@@ -161,6 +161,7 @@ def can_attack_target(
     now: Optional[datetime] = None,
     use_cached_recent_attacks: bool = True,
     check_defeat_protection: bool = True,
+    check_stale_bot: bool = True,
 ) -> Tuple[bool, str]:
     """
     检查是否可以攻击目标庄园。
@@ -172,6 +173,7 @@ def can_attack_target(
         now: 可选的当前时间（用于批量计算时复用）
         use_cached_recent_attacks: 是否允许使用短TTL缓存读取被攻击次数
         check_defeat_protection: 是否检查防守方战败保护（侦察逻辑可关闭）
+        check_stale_bot: 是否查询目标的虚拟玩家过期状态
 
     Returns:
         (是否可攻击, 原因说明)
@@ -192,6 +194,7 @@ def can_attack_target(
         now=now,
         use_cached_recent_attacks=use_cached_recent_attacks,
         check_defeat_protection=check_defeat_protection,
+        check_stale_bot=check_stale_bot,
     )
     if target_block_reason:
         return False, target_block_reason
@@ -213,12 +216,16 @@ def get_target_attack_block_reason(
     now: Optional[datetime] = None,
     use_cached_recent_attacks: bool = True,
     check_defeat_protection: bool = True,
+    check_stale_bot: bool = True,
 ) -> str:
     """Return a blocker shared by every potential attacker for this target."""
-    if BotProfile.objects.filter(
-        manor_id=defender.id,
-        state=BotProfile.State.STALE,
-    ).exists():
+    if (
+        check_stale_bot
+        and BotProfile.objects.filter(
+            manor_id=defender.id,
+            state=BotProfile.State.STALE,
+        ).exists()
+    ):
         return "该虚拟玩家暂不可用"
     if defender.is_under_newbie_protection:
         return "对方处于新手保护期"

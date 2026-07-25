@@ -129,7 +129,7 @@ def start_equipment_forging(
     )
     required_level = config["required_forging"]
     equipment_name_map = _get_item_name_map({equipment_key})
-    equipment_name = equipment_name_map.get(equipment_key, equipment_key)
+    equipment_name = equipment_name_map.get(equipment_key, "未知装备")
 
     forging_level = technology_service.get_player_technology_level(manor, "forging")
     if forging_level < required_level:

@@ -7,14 +7,85 @@ import pytest
 from django.db import transaction
 from django.utils import timezone
 
-from battle.models import TroopTemplate
+from battle.deployment import collect_active_deployment_guest_ids
+from battle.models import BattleReport, TroopTemplate
 from core.config import BUILDING_KEYS
 from core.exceptions import BattlePreparationError
 from gameplay.models import PlayerTechnology, PlayerTroop, RaidRun
+from gameplay.services.battle_snapshots import build_guest_battle_snapshots
 from gameplay.services.raid.combat import battle as combat_battle
 from gameplay.services.raid.combat import runs as combat_runs
+from gameplay.services.raid.combat.travel import get_active_raid_count
 from guests.models import Guest, GuestStatus, GuestTemplate
 from tests.raid_combat_battle.support import build_attacker_defender, build_run, stub_process_raid_battle_happy_path
+
+
+def test_raid_run_failure_contract_is_explicit_and_constrained():
+    statuses = dict(RaidRun.Status.choices)
+    failure_reasons = dict(RaidRun.FailureReason.choices)
+
+    assert statuses[RaidRun.Status.FAILED] == "出征失败"
+    assert failure_reasons[RaidRun.FailureReason.MISSING_ATTACKER_LINEUP] == "缺少出征门客与快照"
+    field = RaidRun._meta.get_field("failure_reason")
+    assert field.default == ""
+    assert field.max_length == 64
+
+
+def test_raid_run_admin_exposes_failure_reason():
+    from django.contrib import admin
+
+    model_admin = admin.site._registry[RaidRun]
+    assert "failure_reason" in model_admin.readonly_fields
+
+
+@pytest.mark.django_db
+def test_failed_raid_is_terminal_and_excluded_from_active_deployments(django_user_model):
+    attacker, defender = build_attacker_defender(
+        django_user_model,
+        attacker_username="raid_failed_terminal_a",
+        defender_username="raid_failed_terminal_d",
+    )
+    template = GuestTemplate.objects.create(
+        key="raid_failed_terminal_tpl",
+        name="失败终态门客",
+        archetype="military",
+        rarity="green",
+        base_attack=100,
+        base_intellect=80,
+        base_defense=90,
+        base_agility=70,
+        base_luck=50,
+        base_hp=1200,
+    )
+    guest = Guest.objects.create(
+        manor=attacker,
+        template=template,
+        status=GuestStatus.DEPLOYED,
+        level=10,
+        force=100,
+        intellect=90,
+        defense_stat=95,
+        agility=80,
+        current_hp=template.base_hp,
+    )
+    now = timezone.now()
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.FAILED,
+        failure_reason=RaidRun.FailureReason.MISSING_ATTACKER_LINEUP,
+        battle_at=now + timedelta(minutes=1),
+        return_at=now + timedelta(minutes=2),
+        completed_at=now,
+    )
+    run.guests.add(guest)
+
+    assert run.time_remaining == 0
+    assert run.next_state_at is None
+    assert run.can_retreat is False
+    assert get_active_raid_count(attacker) == 0
+    assert combat_runs.get_active_raids(attacker) == []
+    assert collect_active_deployment_guest_ids([guest.id]) == set()
 
 
 def test_dispatch_complete_raid_task_uses_remaining_return_time(monkeypatch):
@@ -593,3 +664,176 @@ def test_process_raid_battle_cleans_up_run_when_manor_lock_fails(monkeypatch, dj
     assert run.is_attacker_victory is False
     assert guest.status == GuestStatus.IDLE
     assert troop.count == 5
+
+
+@pytest.mark.django_db(transaction=True)
+def test_process_raid_battle_accepts_snapshot_only_lineup(monkeypatch, django_user_model):
+    attacker, defender = build_attacker_defender(
+        django_user_model,
+        attacker_username="raid_snapshot_only_a",
+        defender_username="raid_snapshot_only_d",
+    )
+    template = GuestTemplate.objects.create(
+        key="raid_snapshot_only_tpl",
+        name="仅快照门客",
+        archetype="military",
+        rarity="green",
+        base_attack=120,
+        base_intellect=90,
+        base_defense=100,
+        base_agility=90,
+        base_luck=50,
+        base_hp=1500,
+    )
+    guest = Guest.objects.create(
+        manor=attacker,
+        template=template,
+        status=GuestStatus.DEPLOYED,
+        level=20,
+        force=300,
+        intellect=120,
+        defense_stat=130,
+        agility=110,
+        current_hp=900,
+    )
+    now = timezone.now()
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.MARCHING,
+        guest_snapshots=build_guest_battle_snapshots([guest], include_identity=True),
+        travel_time=60,
+        battle_at=now,
+        return_at=now + timedelta(minutes=1),
+    )
+    assert not run.guests.exists()
+
+    captured: dict[str, object] = {}
+
+    def _simulate_report(**kwargs):
+        attacker_guests = kwargs.get("attacker_guests") or []
+        captured["guest_ids"] = [snapshot_guest.id for snapshot_guest in attacker_guests]
+        captured["forces"] = [snapshot_guest.force for snapshot_guest in attacker_guests]
+        report = BattleReport.objects.create(
+            manor=attacker,
+            opponent_name=defender.display_name,
+            battle_type="raid",
+            attacker_team=[],
+            attacker_troops={},
+            defender_team=[],
+            defender_troops={},
+            rounds=[],
+            losses={},
+            drops={},
+            winner="defender",
+            starts_at=now,
+            completed_at=now,
+        )
+        captured["report_id"] = report.pk
+        return report
+
+    monkeypatch.setattr("battle.services.simulate_report", _simulate_report)
+    monkeypatch.setattr(combat_battle, "_get_defender_battle_block_reason", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_battle, "apply_defender_troop_losses", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_battle, "_apply_prestige_changes", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_battle, "_apply_capture_reward", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_battle, "_apply_salvage_reward", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_battle, "_send_raid_battle_messages", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_battle, "_dismiss_marching_raids_if_protected", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(combat_battle, "_dispatch_complete_raid_task", lambda *_args, **_kwargs: None)
+
+    combat_battle.process_raid_battle(run, now=now)
+
+    run.refresh_from_db()
+    assert captured["guest_ids"] == [guest.id]
+    assert captured["forces"] == [300]
+    assert run.status == RaidRun.Status.RETURNING
+    assert run.failure_reason == ""
+    assert run.battle_report_id == captured["report_id"]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_process_raid_battle_marks_missing_attacker_lineup_failed_without_compensation(
+    monkeypatch,
+    django_user_model,
+    caplog,
+):
+    attacker, defender = build_attacker_defender(
+        django_user_model,
+        attacker_username="raid_invalid_lineup_a",
+        defender_username="raid_invalid_lineup_d",
+    )
+    now = timezone.now()
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.MARCHING,
+        troop_loadout={"untrusted_guard": 7},
+        guest_snapshots=[],
+        battle_at=now - timedelta(seconds=1),
+    )
+    monkeypatch.setattr(combat_battle, "_get_defender_battle_block_reason", lambda *_args, **_kwargs: None)
+    caplog.set_level("ERROR", logger="gameplay.services.raid.combat.battle")
+
+    combat_battle.process_raid_battle(run, now=now)
+
+    run.refresh_from_db()
+    assert run.status == RaidRun.Status.FAILED
+    assert run.failure_reason == RaidRun.FailureReason.MISSING_ATTACKER_LINEUP
+    assert run.completed_at == now
+    assert run.is_attacker_victory is None
+    assert run.battle_report_id is None
+    assert run.troop_loadout == {"untrusted_guard": 7}
+    assert not PlayerTroop.objects.filter(manor=attacker).exists()
+    assert any(getattr(record, "component", None) == "raid_invalid_state_recovery" for record in caplog.records)
+
+
+@pytest.mark.django_db(transaction=True)
+def test_process_raid_battle_invalid_lineup_recovery_is_idempotent(monkeypatch, django_user_model):
+    attacker, defender = build_attacker_defender(
+        django_user_model,
+        attacker_username="raid_invalid_idempotent_a",
+        defender_username="raid_invalid_idempotent_d",
+    )
+    first_now = timezone.now()
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.MARCHING,
+        guest_snapshots=[],
+        battle_at=first_now - timedelta(seconds=1),
+    )
+    monkeypatch.setattr(combat_battle, "_get_defender_battle_block_reason", lambda *_args, **_kwargs: None)
+
+    combat_battle.process_raid_battle(run, now=first_now)
+    combat_battle.process_raid_battle(run, now=first_now + timedelta(minutes=1))
+
+    run.refresh_from_db()
+    assert run.status == RaidRun.Status.FAILED
+    assert run.completed_at == first_now
+    assert run.failure_reason == RaidRun.FailureReason.MISSING_ATTACKER_LINEUP
+
+
+@pytest.mark.django_db(transaction=True)
+def test_process_raid_battle_invalid_snapshot_payload_still_bubbles(monkeypatch, django_user_model):
+    attacker, defender = build_attacker_defender(
+        django_user_model,
+        attacker_username="raid_invalid_snapshot_a",
+        defender_username="raid_invalid_snapshot_d",
+    )
+    now = timezone.now()
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.MARCHING,
+        guest_snapshots={"unexpected": "mapping"},
+        battle_at=now - timedelta(seconds=1),
+    )
+    monkeypatch.setattr(combat_battle, "_get_defender_battle_block_reason", lambda *_args, **_kwargs: None)
+
+    with pytest.raises(AssertionError, match="invalid raid guest_snapshots payload"):
+        combat_battle.process_raid_battle(run, now=now)
+
+    run.refresh_from_db()
+    assert run.status == RaidRun.Status.MARCHING
+    assert run.failure_reason == ""

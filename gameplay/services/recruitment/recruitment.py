@@ -211,7 +211,7 @@ def check_recruitment_requirements(
             if item:
                 result["errors"].append(f"{item.name}不足（需要{required}，拥有{have}）")
             else:
-                result["errors"].append(f"装备{item_key}不足")
+                result["errors"].append("所需装备不足")
 
     result["equipment_satisfied"] = all_equipment_satisfied
 
@@ -233,7 +233,7 @@ def _get_tech_name(tech_key: str) -> str:
     from ..technology import get_technology_template
 
     template = get_technology_template(tech_key)
-    return template["name"] if template else tech_key
+    return template["name"] if template else "未知科技"
 
 
 def get_recruitment_options(manor: Manor) -> List[Dict[str, Any]]:
@@ -315,7 +315,7 @@ def get_recruitment_options(manor: Manor) -> List[Dict[str, Any]]:
         for item_key in equipment_list:
             have = item_quantities.get(item_key, 0)
             item = item_templates.get(item_key)
-            item_name = item.name if item else item_key
+            item_name = item.name if item else "未知装备"
 
             equipment_status.append(
                 {
@@ -465,7 +465,7 @@ def _consume_equipment_for_recruitment(manor: Manor, equipment_list: list[str], 
     for item_key in equipment_list:
         item = locked_items.get(item_key)
         if not item or item.quantity < quantity:
-            raise TroopRecruitmentError(f"装备不足: {item_key}")
+            raise TroopRecruitmentError("所需装备不足", item_key=item_key)
 
         item.quantity -= quantity
         if item.quantity <= 0:

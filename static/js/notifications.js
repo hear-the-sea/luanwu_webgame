@@ -216,7 +216,7 @@
       updateUnreadCount(1);
       showToast({
         title: field("title") || "建筑升级完成",
-        body: `当前等级 Lv${field("level") ?? "?"}`,
+        body: `当前等级 ${field("level") ?? "?"}`,
         kind: "system",
       });
       // 如果在庄园页面，自动刷新
@@ -229,7 +229,7 @@
       updateUnreadCount(1);
       showToast({
         title: field("title") || "技术研究完成",
-        body: `当前等级 Lv${field("level") ?? "?"}`,
+        body: `当前等级 ${field("level") ?? "?"}`,
         kind: "system",
       });
       // 如果在技术页面，自动刷新
@@ -262,7 +262,7 @@
       if (!field("body") && kind === "auction_won") {
         const quantity = field("quantity");
         const price = field("price");
-        const quantityText = quantity ? ` x${quantity}` : "";
+        const quantityText = quantity ? ` ×${quantity}` : "";
         const priceText = price != null ? `，成交价 ${price} 金条` : "";
         auctionBody = `${itemName}${quantityText}${priceText}`;
       } else if (!field("body")) {

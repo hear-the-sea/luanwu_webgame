@@ -160,7 +160,10 @@ def normalize_mission_loadout(raw: Dict[str, int] | None, troop_templates: Dict[
             k: v for k, v in raw.items() if k in invalid_keys and (safe_int(v, default=0, min_val=0) or 0) > 0
         }
         if invalid_nonzero:
-            raise TroopLoadoutError(f"护院配置包含不存在的类型: {', '.join(invalid_nonzero.keys())}")
+            raise TroopLoadoutError(
+                "护院配置包含无效类型",
+                invalid_troop_keys=sorted(invalid_nonzero),
+            )
 
     loadout: Dict[str, int] = {}
     for key in troop_templates.keys():

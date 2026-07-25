@@ -32,10 +32,10 @@
                 <article class="tw-building-card">
                     <header>
                         <div>
-                            <h3>{{ tech_names|get_item:tech.tech_key|default:tech.tech_key }}</h3>
+                            <h3>{{ tech_names|get_item:tech.tech_key|default:"未知科技" }}</h3>
                             <p class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'description' }}</p>
                         </div>
-                        <span class="tw-badge-gold">Lv {{ tech.level }}</span>
+                        <span class="tw-badge-gold">等级 {{ tech.level }}</span>
                     </header>
                     <dl class="tw-guild-dl">
                         <div>
@@ -86,10 +86,10 @@
                 <article class="tw-building-card">
                     <header>
                         <div>
-                            <h3>{{ tech_names|get_item:tech.tech_key|default:tech.tech_key }}</h3>
+                            <h3>{{ tech_names|get_item:tech.tech_key|default:"未知科技" }}</h3>
                             <p class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'description' }}</p>
                         </div>
-                        <span class="tw-badge-gold">Lv {{ tech.level }}</span>
+                        <span class="tw-badge-gold">等级 {{ tech.level }}</span>
                     </header>
                     <dl class="tw-guild-dl">
                         <div>
@@ -146,10 +146,10 @@
                 <article class="tw-building-card">
                     <header>
                         <div>
-                            <h3>{{ tech_names|get_item:tech.tech_key|default:tech.tech_key }}</h3>
+                            <h3>{{ tech_names|get_item:tech.tech_key|default:"未知科技" }}</h3>
                             <p class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'description' }}</p>
                         </div>
-                        <span class="tw-badge-gold">Lv {{ tech.level }}</span>
+                        <span class="tw-badge-gold">等级 {{ tech.level }}</span>
                     </header>
                     <dl class="tw-guild-dl">
                         <div>

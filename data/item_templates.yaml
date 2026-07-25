@@ -73,7 +73,7 @@ items:
     description: 纯金炼制的金条，价值连城。
     effect_type: resource
     tradeable: true
-    price: 1000000
+    price: 800000
     image: golden.png
     rarity: green
     storage_space: 250
@@ -89,6 +89,17 @@ items:
     storage_space: 150
     is_usable: false
     image: red_ruby.png
+
+  - key: chunqiu_coin
+    name: 春秋币
+    description: 流传于春秋旧世的珍稀货币，价值非凡，是少数势力才能掌握的高级资源。
+    effect_type: resource
+    rarity: blue
+    tradeable: true
+    price: 500000
+    storage_space: 150
+    is_usable: false
+    image: chunqiu_coin.png
 
   - key: haorenka
     name: 好人卡
@@ -419,7 +430,7 @@ items:
     storage_space: 2
     effect_payload:
       hp: 100
-    image: zhixuesan.png
+    image: jinchuangyao.png
 
   - key: baijiwan
     name: 白芨丸
@@ -1484,7 +1495,7 @@ items:
 
   - key: work_chest_small
     name: 打工宝箱（小）
-    description: 打工获得的小型宝箱，打开后可获得随机白银，有小概率获得基础或绿色装备、技能书。
+    description: 打工获得的小型宝箱，打开后可获得随机白银和锻造材料，有小概率获得基础或绿色装备、技能书。
     effect_type: loot_box
     image: small.png
     rarity: green
@@ -1502,6 +1513,29 @@ items:
         - item_key: mission_card
           min_quantity: 0
           max_quantity: 1
+      random_item_groups:
+        - chance: 0.80
+          min_quantity: 1
+          max_quantity: 2
+          choices:
+            - item_key: shuiqumu
+              weight: 5
+            - item_key: paozi
+              weight: 3
+            - item_key: zaozi
+              weight: 3
+        - chance: 0.20
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: tiemu
+              weight: 4
+            - item_key: zitanmu
+              weight: 3
+            - item_key: heiyuanshi
+              weight: 3
+            - item_key: jingangmei
+              weight: 2
       # 10%概率获得基础或绿色装备（随机一件）
       gear_chance: 0.1
       gear_keys:
@@ -1536,7 +1570,7 @@ items:
 
   - key: work_chest_medium
     name: 打工宝箱（中）
-    description: 打工获得的中型宝箱，打开后可获得随机黄金，有小概率获得蓝色装备或技能书。
+    description: 打工获得的中型宝箱，打开后可获得随机黄金和锻造材料，有小概率获得蓝色装备或技能书。
     effect_type: loot_box
     rarity: blue
     image: middle.png
@@ -1554,6 +1588,35 @@ items:
         - item_key: mission_card
           min_quantity: 0
           max_quantity: 2
+      random_item_groups:
+        - chance: 1.00
+          min_quantity: 1
+          max_quantity: 2
+          choices:
+            - item_key: shuiqumu
+              weight: 5
+            - item_key: paozi
+              weight: 3
+            - item_key: zaozi
+              weight: 3
+        - chance: 0.70
+          min_quantity: 1
+          max_quantity: 2
+          choices:
+            - item_key: tiemu
+              weight: 4
+            - item_key: zitanmu
+              weight: 3
+            - item_key: heiyuanshi
+              weight: 3
+            - item_key: jingangmei
+              weight: 2
+        - chance: 0.03
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: gaolu
+              weight: 1
       gear_chance: 0.1
       gear_keys:
         - equip_caomao
@@ -1605,7 +1668,7 @@ items:
 
   - key: work_chest_large
     name: 打工宝箱（大）
-    description: 打工获得的大型宝箱，打开后可获得随机铂金，有小概率获得紫色装备或技能书。
+    description: 打工获得的大型宝箱，打开后可获得随机铂金和锻造材料，有小概率获得紫色装备或技能书。
     effect_type: loot_box
     rarity: purple
     image: large.png
@@ -1623,6 +1686,35 @@ items:
         - item_key: mission_card
           min_quantity: 1
           max_quantity: 3
+      random_item_groups:
+        - chance: 1.00
+          min_quantity: 2
+          max_quantity: 3
+          choices:
+            - item_key: shuiqumu
+              weight: 5
+            - item_key: paozi
+              weight: 3
+            - item_key: zaozi
+              weight: 3
+        - chance: 1.00
+          min_quantity: 1
+          max_quantity: 2
+          choices:
+            - item_key: tiemu
+              weight: 4
+            - item_key: zitanmu
+              weight: 3
+            - item_key: heiyuanshi
+              weight: 3
+            - item_key: jingangmei
+              weight: 2
+        - chance: 0.12
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: gaolu
+              weight: 1
       gear_chance: 0.2
       gear_keys:
         - equip_caomao

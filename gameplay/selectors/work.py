@@ -1,13 +1,62 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
 from django.core.paginator import Paginator
 
 from gameplay.models import WorkAssignment, WorkTemplate
+from gameplay.services.work_requirements import (
+    WorkEligibility,
+    WorkRequirementResult,
+    evaluate_work_requirements,
+    get_enabled_work_requirements,
+)
 from guests.models import GuestStatus
 
 WORKS_PER_PAGE = 4
+
+
+@dataclass(frozen=True, slots=True)
+class WorkGuestOption:
+    guest: Any
+    eligibility: WorkEligibility
+
+    @property
+    def guest_id(self) -> int:
+        return int(self.guest.pk)
+
+    @property
+    def relevant_requirements(self) -> tuple[WorkRequirementResult, ...]:
+        return tuple(requirement for requirement in self.eligibility.requirements if requirement.key != "level")
+
+    @property
+    def missing_requirements(self) -> tuple[WorkRequirementResult, ...]:
+        return self.eligibility.missing_requirements
+
+
+def _eligible_guest_sort_key(option: WorkGuestOption) -> tuple[int, int, str, int]:
+    return (
+        option.eligibility.attribute_surplus,
+        int(option.guest.level),
+        str(option.guest.display_name),
+        option.guest_id,
+    )
+
+
+def _ineligible_guest_sort_key(option: WorkGuestOption) -> tuple[int, int, int, int, str, int]:
+    eligibility = option.eligibility
+    if eligibility.level_missing:
+        gap_key = (1, eligibility.level_missing, eligibility.attribute_missing)
+    else:
+        gap_key = (0, eligibility.attribute_missing, 0)
+    return (
+        *gap_key,
+        int(option.guest.level),
+        str(option.guest.display_name),
+        option.guest_id,
+    )
+
 
 WORK_TIERS = [
     {
@@ -69,15 +118,20 @@ def get_work_page_context(manor: Any, *, current_tier: str, page: int) -> dict[s
         work.claimable_assignment = claimable_assignment_by_work_template_id.get(work.id)
         work.working_assignment = working_assignment_by_work_template_id.get(work.id)
         work.active_assignment = work.claimable_assignment or work.working_assignment
-        work.eligible_idle_guests = [
-            guest
-            for guest in idle_guests
-            if (
-                guest.level >= work.required_level
-                and guest.force >= work.required_force
-                and guest.intellect >= work.required_intellect
-            )
+        options = [
+            WorkGuestOption(guest=guest, eligibility=evaluate_work_requirements(guest, work)) for guest in idle_guests
         ]
+        work.requirements = get_enabled_work_requirements(work)
+        work.eligible_guest_options = sorted(
+            (option for option in options if option.eligibility.requirements_met),
+            key=_eligible_guest_sort_key,
+        )
+        work.ineligible_guest_options = sorted(
+            (option for option in options if not option.eligibility.requirements_met),
+            key=_ineligible_guest_sort_key,
+        )
+        work.closest_ineligible_guests = work.ineligible_guest_options[:3]
+        work.eligible_idle_guests = [option.guest for option in work.eligible_guest_options]
 
     return {
         "work_tiers": list(WORK_TIERS),

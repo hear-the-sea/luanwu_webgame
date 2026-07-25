@@ -6,6 +6,27 @@ import yaml
 
 ITEM_TEMPLATES_PATH = Path(__file__).resolve().parent.parent / "data" / "item_templates.yaml"
 FORGE_EQUIPMENT_PATH = Path(__file__).resolve().parent.parent / "data" / "forge_equipment.yaml"
+FORGE_BLUEPRINTS_PATH = Path(__file__).resolve().parent.parent / "data" / "forge_blueprints.yaml"
+FORGE_MATERIAL_KEYS = {
+    "zitanmu",
+    "heiyuanshi",
+    "jingangmei",
+    "tiemu",
+    "shuiqumu",
+    "paozi",
+    "zaozi",
+    "gaolu",
+}
+ELEMENT_STONE_KEYS = {"air_stone", "earth_stone", "fire_stone", "water_stone"}
+MIN_FORGE_MATERIAL_TOTAL = {
+    ("green", "device"): 14,
+    ("blue", "set"): 13,
+    ("blue", "device"): 21,
+    ("purple", "set"): 24,
+    ("purple", "device"): 49,
+    ("orange", "device"): 90,
+}
+MIN_ELEMENT_STONE_TOTAL = {"green": 1, "blue": 1, "purple": 2, "orange": 5}
 SUPPORTED_EQUIPMENT_STATS = {"hp", "force", "intellect", "defense", "agility", "luck", "troop_capacity"}
 RARITY_ORDER = ("black", "green", "blue", "purple", "orange")
 MIN_RARITY_SCORE_RATIO = 1.10
@@ -38,6 +59,7 @@ RESOURCE_STORAGE = {
     "tie": 5,
     "gold_bar": 250,
     "red_ruby": 150,
+    "chunqiu_coin": 150,
     "haorenka": 100,
     "wood_essence": 5,
     "copper_essence": 5,
@@ -88,6 +110,11 @@ def _load_forge_equipment() -> dict[str, dict]:
     return payload["equipment"]
 
 
+def _load_forge_blueprints() -> list[dict]:
+    payload = yaml.safe_load(FORGE_BLUEPRINTS_PATH.read_text(encoding="utf-8"))
+    return payload["recipes"]
+
+
 def _expected_storage_space(key: str, item: dict) -> int:
     if key in RESOURCE_STORAGE:
         return RESOURCE_STORAGE[key]
@@ -128,6 +155,12 @@ def _iter_loot_box_item_keys(item: dict) -> list[tuple[str, str]]:
     for reward in payload.get("item_rewards") or []:
         if isinstance(reward, dict) and reward.get("item_key"):
             refs.append(("item_rewards", str(reward["item_key"])))
+    for group in payload.get("random_item_groups") or []:
+        if not isinstance(group, dict):
+            continue
+        for choice in group.get("choices") or []:
+            if isinstance(choice, dict) and choice.get("item_key"):
+                refs.append(("random_item_groups", str(choice["item_key"])))
     return refs
 
 
@@ -248,6 +281,46 @@ def test_work_chests_include_tool_item_reward_ranges():
     assert actual == expected
 
 
+def test_work_chests_include_forge_material_random_groups():
+    items = _load_item_templates()
+    expected = {
+        "work_chest_small": [
+            (0.80, 1, 2, {"shuiqumu": 5, "paozi": 3, "zaozi": 3}),
+            (0.20, 1, 1, {"tiemu": 4, "zitanmu": 3, "heiyuanshi": 3, "jingangmei": 2}),
+        ],
+        "work_chest_medium": [
+            (1.00, 1, 2, {"shuiqumu": 5, "paozi": 3, "zaozi": 3}),
+            (0.70, 1, 2, {"tiemu": 4, "zitanmu": 3, "heiyuanshi": 3, "jingangmei": 2}),
+            (0.03, 1, 1, {"gaolu": 1}),
+        ],
+        "work_chest_large": [
+            (1.00, 2, 3, {"shuiqumu": 5, "paozi": 3, "zaozi": 3}),
+            (1.00, 1, 2, {"tiemu": 4, "zitanmu": 3, "heiyuanshi": 3, "jingangmei": 2}),
+            (0.12, 1, 1, {"gaolu": 1}),
+        ],
+    }
+
+    actual = {}
+    for chest_key in expected:
+        groups = items[chest_key]["effect_payload"].get("random_item_groups") or []
+        actual[chest_key] = [
+            (
+                float(group["chance"]),
+                int(group["min_quantity"]),
+                int(group["max_quantity"]),
+                {str(choice["item_key"]): int(choice["weight"]) for choice in group["choices"]},
+            )
+            for group in groups
+        ]
+
+    assert actual == expected
+    assert all(
+        "chunqiu_coin" not in choices
+        for chest_groups in actual.values()
+        for _chance, _minimum, _maximum, choices in chest_groups
+    )
+
+
 def test_work_chests_include_starter_equipment_rewards():
     items = _load_item_templates()
     expected_gear_keys = {
@@ -265,6 +338,91 @@ def test_work_chests_include_starter_equipment_rewards():
     for chest_key in ("work_chest_small", "work_chest_medium", "work_chest_large"):
         actual_gear_keys = set(items[chest_key]["effect_payload"].get("gear_keys") or [])
         assert expected_gear_keys <= actual_gear_keys, chest_key
+
+
+def test_blueprint_material_costs_enforce_collection_gates():
+    items = _load_item_templates()
+    recipes = _load_forge_blueprints()
+    assert len(recipes) == 36
+
+    orange_gaolu_costs = {
+        "blueprint_feiyuan": 7,
+        "blueprint_chixiaojifeng": 8,
+        "blueprint_mojiajiguanren": 10,
+    }
+    for recipe in recipes:
+        blueprint_key = str(recipe["blueprint_key"])
+        result_item = items[str(recipe["result_item_key"])]
+        rarity = str(result_item["rarity"])
+        kind = "device" if result_item["effect_type"] == "equip_device" else "set"
+        costs = recipe["costs"]
+        material_costs = {key: int(costs[key]) for key in FORGE_MATERIAL_KEYS if key in costs}
+        stone_costs = {key: int(costs[key]) for key in ELEMENT_STONE_KEYS if key in costs}
+
+        assert len(material_costs) >= 2, blueprint_key
+        assert sum(material_costs.values()) >= MIN_FORGE_MATERIAL_TOTAL[(rarity, kind)], blueprint_key
+        assert sum(stone_costs.values()) >= MIN_ELEMENT_STONE_TOTAL[rarity], blueprint_key
+        assert "chunqiu_coin" not in costs, blueprint_key
+
+        if rarity in {"green", "blue"}:
+            assert "gaolu" not in costs, blueprint_key
+        elif rarity == "purple":
+            assert int(costs.get("gaolu", 0)) >= 1, blueprint_key
+        else:
+            assert int(costs["gaolu"]) == orange_gaolu_costs[blueprint_key], blueprint_key
+
+    representative_costs = {
+        "blueprint_xiaoweikaijia": {
+            "tiemu": 5,
+            "heiyuanshi": 7,
+            "jingangmei": 5,
+            "zaozi": 5,
+            "earth_stone": 2,
+        },
+        "blueprint_huxianpao": {
+            "zitanmu": 9,
+            "shuiqumu": 10,
+            "tiemu": 3,
+            "jingangmei": 3,
+            "paozi": 6,
+            "zaozi": 2,
+            "gaolu": 2,
+            "water_stone": 2,
+        },
+        "blueprint_taotieding": {
+            "tiemu": 10,
+            "heiyuanshi": 15,
+            "jingangmei": 12,
+            "paozi": 2,
+            "zaozi": 10,
+            "gaolu": 4,
+            "water_stone": 1,
+            "earth_stone": 2,
+            "fire_stone": 2,
+        },
+        "blueprint_mojiajiguanren": {
+            "zitanmu": 12,
+            "shuiqumu": 8,
+            "tiemu": 22,
+            "heiyuanshi": 24,
+            "jingangmei": 22,
+            "paozi": 10,
+            "zaozi": 16,
+            "gaolu": 10,
+            "earth_stone": 2,
+            "fire_stone": 2,
+            "water_stone": 2,
+        },
+    }
+    recipes_by_key = {str(recipe["blueprint_key"]): recipe for recipe in recipes}
+    balanced_cost_keys = FORGE_MATERIAL_KEYS | ELEMENT_STONE_KEYS
+    for blueprint_key, expected_costs in representative_costs.items():
+        actual_costs = {
+            key: int(value)
+            for key, value in recipes_by_key[blueprint_key]["costs"].items()
+            if key in balanced_cost_keys
+        }
+        assert actual_costs == expected_costs, blueprint_key
 
 
 def test_forgeable_equipment_progresses_with_recipe_tier():

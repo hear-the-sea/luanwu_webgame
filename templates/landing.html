@@ -264,7 +264,7 @@
                 <tr>
                     <td>
                         <strong>建筑升级：{{ building.building_type.name }}</strong>
-                        <div class="muted-text">Lv {{ building.level }} → Lv {{ building.level|add:1 }}</div>
+                        <div class="muted-text">等级 {{ building.level }} → 等级 {{ building.level|add:1 }}</div>
                     </td>
                     <td>
                         <span class="countdown"
@@ -286,8 +286,8 @@
                 {% for tech in upgrading_technologies %}
                 <tr>
                     <td>
-                        <strong>科技升级：{{ tech.display_name|default:tech.tech_key }}</strong>
-                        <div class="muted-text">Lv {{ tech.level }} → Lv {{ tech.level|add:1 }}</div>
+                        <strong>科技升级：{{ tech.display_name|default:"未知科技" }}</strong>
+                        <div class="muted-text">等级 {{ tech.level }} → 等级 {{ tech.level|add:1 }}</div>
                     </td>
                     <td>
                         <span class="countdown"
@@ -385,7 +385,7 @@
                         {% if player_troops %}
                         {% for troop in player_troops %}
                         <div class="troop-status-item">
-                            <span class="name">{{ troop.troop_template.name }}</span><span class="count">x{{ troop.count }}</span>
+                            <span class="name">{{ troop.troop_template.name }}</span><span class="count">×{{ troop.count }}</span>
                         </div>
                         {% endfor %}
                         {% else %}

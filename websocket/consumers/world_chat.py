@@ -139,7 +139,7 @@ class WorldChatConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsumer)
         if not allowed:
             tip = "发送太快，请稍候再试"
             if retry_after:
-                tip = f"发送太快，请 {retry_after}s 后再试"
+                tip = f"发送太快，请 {retry_after} 秒后再试"
             await self.send_json(
                 {
                     "type": "error",
@@ -300,7 +300,7 @@ class WorldChatConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsumer)
     @database_sync_to_async
     def _create_world_chat_attempt(self, *, operation_id: str, raw_text: str) -> dict:
         if self.user_id is None:
-            raise WorldChatValidationError("user_id 必须是正整数")
+            raise WorldChatValidationError("用户编号必须是正整数")
         with transaction.atomic():
             attempt, created = create_world_chat_attempt(
                 user_id=self.user_id,

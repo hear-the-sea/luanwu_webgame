@@ -7,6 +7,8 @@ from itertools import count
 
 import pytest
 from django.core.cache import cache
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from common.constants.resources import ResourceType
@@ -74,9 +76,8 @@ def _clear_backfill_cache():
 
 
 @pytest.mark.django_db
-def test_region_search_records_aggregated_backfill_demand_without_creating_bots(settings, django_user_model):
+def test_region_search_is_read_only_and_does_not_create_bots(settings, django_user_model):
     from gameplay.services.raid.map_search import search_manors_by_region
-    from gameplay.services.virtual_players import consume_virtual_player_backfill_demands
 
     settings.VIRTUAL_PLAYER_CONFIG = {
         "population": {
@@ -96,6 +97,32 @@ def test_region_search_records_aggregated_backfill_demand_without_creating_bots(
     assert total == 1
     assert [row["id"] for row in rows] == [searcher.id]
     assert BotProfile.objects.count() == 0
+    assert not BotBackfillDemand.objects.exists()
+
+
+@pytest.mark.django_db
+def test_region_backfill_request_records_aggregated_demand_without_creating_bots(settings, django_user_model):
+    from gameplay.services.virtual_players import (
+        consume_virtual_player_backfill_demands,
+        request_virtual_player_backfill_for_region_search,
+    )
+
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "active_player_multiplier": 0,
+            "min_per_region": 0,
+            "min_attackable_per_band": 2,
+            "hard_cap": 10,
+        },
+        "prestige_bands": {"junior": [500, 2000]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": []},
+    }
+    searcher = _create_real_manor(django_user_model, username="backfill_requester", region="north", prestige=900)
+
+    request_virtual_player_backfill_for_region_search(searcher=searcher, region="north")
+    request_virtual_player_backfill_for_region_search(searcher=searcher, region="north")
+
+    assert BotProfile.objects.count() == 0
     assert consume_virtual_player_backfill_demands(limit=10) == [
         {"region": "north", "prestige_band": "junior", "needed": 2}
     ]
@@ -103,12 +130,13 @@ def test_region_search_records_aggregated_backfill_demand_without_creating_bots(
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("protection_field", ["newbie_protection_until", "peace_shield_until"])
-def test_region_search_does_not_record_false_demand_from_searcher_protection(
+def test_region_backfill_request_does_not_record_false_demand_from_searcher_protection(
     settings,
     django_user_model,
     protection_field,
 ):
     from gameplay.services.raid.map_search import search_manors_by_region
+    from gameplay.services.virtual_players import request_virtual_player_backfill_for_region_search
 
     settings.VIRTUAL_PLAYER_CONFIG = {
         "population": {"min_attackable_per_band": 2},
@@ -122,6 +150,7 @@ def test_region_search_does_not_record_false_demand_from_searcher_protection(
     searcher.save(update_fields=[protection_field])
 
     rows, _total = search_manors_by_region(searcher, "north", page=1, page_size=20)
+    request_virtual_player_backfill_for_region_search(searcher=searcher, region="north")
 
     assert not any(row["can_attack"] for row in rows)
     assert not BotBackfillDemand.objects.exists()
@@ -139,6 +168,109 @@ def test_record_backfill_demand_reconciles_down_and_clears_zero():
     record_virtual_player_backfill_demand(region="north", prestige_band="junior", needed=0)
 
     assert not BotBackfillDemand.objects.filter(region="north", prestige_band="junior").exists()
+
+
+@pytest.mark.django_db
+def test_record_backfill_demand_handles_racing_first_insert(monkeypatch):
+    from django.db.models.query import QuerySet
+
+    from gameplay.services.virtual_players import record_virtual_player_backfill_demand
+
+    BotBackfillDemand.objects.create(region="north", prestige_band="junior", needed=5)
+    original_first = QuerySet.first
+    hidden_once = False
+
+    def hide_existing_demand_once(queryset):
+        nonlocal hidden_once
+        if not hidden_once and queryset.model is BotBackfillDemand:
+            hidden_once = True
+            return None
+        return original_first(queryset)
+
+    monkeypatch.setattr(QuerySet, "first", hide_existing_demand_once)
+
+    record_virtual_player_backfill_demand(region="north", prestige_band="junior", needed=2)
+
+    assert BotBackfillDemand.objects.get(region="north", prestige_band="junior").needed == 2
+
+
+@pytest.mark.django_db
+def test_region_backfill_request_counts_candidates_beyond_first_page(settings, django_user_model):
+    from gameplay.services.virtual_players import request_virtual_player_backfill_for_region_search
+
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "active_player_multiplier": 0,
+            "min_per_region": 0,
+            "min_attackable_per_band": 2,
+            "hard_cap": 10,
+        },
+        "prestige_bands": {"junior": [500, 2000]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": []},
+    }
+    searcher = _create_real_manor(django_user_model, username="paged_searcher", region="north", prestige=900)
+    _create_real_manor(django_user_model, username="paged_target_a", region="north", prestige=950)
+    _create_real_manor(django_user_model, username="paged_target_b", region="north", prestige=1000)
+
+    request_virtual_player_backfill_for_region_search(searcher=searcher, region="north")
+
+    assert not BotBackfillDemand.objects.exists()
+
+
+@pytest.mark.django_db
+def test_region_backfill_request_uses_full_attack_check(settings, django_user_model):
+    from gameplay.services.virtual_players import request_virtual_player_backfill_for_region_search
+
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "active_player_multiplier": 0,
+            "min_per_region": 0,
+            "min_attackable_per_band": 1,
+            "hard_cap": 10,
+        },
+        "prestige_bands": {"junior": [500, 2000]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": []},
+    }
+    searcher = _create_real_manor(django_user_model, username="target_protected_searcher", region="north", prestige=900)
+    target = _create_real_manor(django_user_model, username="target_protected_target", region="north", prestige=950)
+    target.newbie_protection_until = timezone.now() + timedelta(hours=1)
+    target.save(update_fields=["newbie_protection_until"])
+
+    request_virtual_player_backfill_for_region_search(searcher=searcher, region="north")
+
+    assert BotBackfillDemand.objects.get(region="north", prestige_band="junior").needed == 1
+
+
+@pytest.mark.django_db
+def test_region_backfill_request_avoids_per_candidate_bot_profile_queries(settings, django_user_model):
+    from gameplay.services.virtual_players import request_virtual_player_backfill_for_region_search
+
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "active_player_multiplier": 0,
+            "min_per_region": 0,
+            "min_attackable_per_band": 2,
+            "hard_cap": 10,
+        },
+        "prestige_bands": {"junior": [500, 2000]},
+        "projection": {"guest_template_keys": [], "gear_template_keys": []},
+    }
+    searcher = _create_real_manor(django_user_model, username="bounded_searcher", region="north", prestige=900)
+    for index in range(12):
+        _create_real_manor(
+            django_user_model,
+            username=f"bounded_target_{index}",
+            region="north",
+            prestige=950,
+        )
+
+    with CaptureQueriesContext(connection) as captured:
+        request_virtual_player_backfill_for_region_search(searcher=searcher, region="north")
+
+    bot_profile_queries = [
+        query for query in captured.captured_queries if 'from "gameplay_botprofile"' in query["sql"].lower()
+    ]
+    assert bot_profile_queries == []
 
 
 @pytest.mark.django_db

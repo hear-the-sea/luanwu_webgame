@@ -14,7 +14,7 @@
                     <label>选择药品</label>
                     <select name="item_id" class="tw-input">
                         {% for item in medicine_items %}
-                        <option value="{{ item.id }}" data-item-name="{{ item.template.name }}">{{ item.template.name }}（x{{ item.quantity }}）</option>
+                        <option value="{{ item.id }}" data-item-name="{{ item.template.name }}">{{ item.template.name }}（×{{ item.quantity }}）</option>
                         {% endfor %}
                     </select>
                 </div>

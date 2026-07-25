@@ -39,7 +39,7 @@ def add_item_to_inventory_locked(
     _require_atomic_block("add_item_to_inventory_locked")
     template = ItemTemplate.objects.filter(key=item_key).first()
     if not template:
-        raise ItemNotFoundError(f"物品模板不存在: {item_key}")
+        raise ItemNotFoundError("物品不存在", item_key=item_key)
 
     if quantity <= 0:
         raise AssertionError("add_item_to_inventory_locked requires positive quantity")

@@ -240,7 +240,7 @@ def _grant_item_resources(manor: Manor, payload: dict[str, int], note: str) -> d
 
 
 def _format_resource_parts(resources: dict[str, int]) -> list[str]:
-    return [f"{RESOURCE_LABELS.get(key, key)}+{value}" for key, value in resources.items()]
+    return [f"{RESOURCE_LABELS.get(key, '未知资源')}+{value}" for key, value in resources.items()]
 
 
 def _normalize_probability(value: Any, *, field_name: str) -> float:
@@ -435,8 +435,8 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
         try:
             add_item_to_inventory(manor, item_key, quantity)
             reward_template = ItemTemplate.objects.filter(key=item_key).first()
-            reward_name = reward_template.name if reward_template else item_key
-            rewards.append(f"物品【{reward_name}】x{quantity}")
+            reward_name = reward_template.name if reward_template else "未知物品"
+            rewards.append(f"物品【{reward_name}】×{quantity}")
         except ItemNotFoundError as exc:
             logger.warning(
                 "loot box item reward grant skipped: manor_id=%s loot_box_item_id=%s reward_item_key=%s error=%s",
@@ -470,8 +470,8 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
         try:
             add_item_to_inventory(manor, item_key, quantity)
             reward_template = ItemTemplate.objects.filter(key=item_key).first()
-            reward_name = reward_template.name if reward_template else item_key
-            rewards.append(f"物品【{reward_name}】x{quantity}")
+            reward_name = reward_template.name if reward_template else "未知物品"
+            rewards.append(f"物品【{reward_name}】×{quantity}")
         except ItemNotFoundError as exc:
             logger.warning(
                 "loot box random item group grant skipped: manor_id=%s loot_box_item_id=%s reward_item_key=%s error=%s",
@@ -564,7 +564,7 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
         try:
             add_item_to_inventory(manor, book_key, 1)
             book_template = ItemTemplate.objects.filter(key=book_key).first()
-            book_name = book_template.name if book_template else book_key
+            book_name = book_template.name if book_template else "未知技能书"
             rewards.append(f"技能书【{book_name}】")
         except ItemNotFoundError as exc:
             logger.warning(

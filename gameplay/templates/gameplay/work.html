@@ -5,7 +5,7 @@
 
 {% block content %}
 <section class="dashboard">
-    <div class="tw-section-header">
+    <div class="tw-section-header tw-work-section-header">
         <div>
             <h1>打工</h1>
             <p class="caption">派遣门客前往各处打工赚取银两，当前银两：<strong>{{ manor.silver }}</strong></p>
@@ -13,7 +13,7 @@
     </div>
 
     <!-- 工作区标签页 -->
-    <nav class="tw-troop-subtabs mb-6">
+    <nav class="tw-troop-subtabs tw-work-subtabs mb-3">
         {% for tier in work_tiers %}
         <a href="?tier={{ tier.key }}"
            class="tw-troop-subtab {% if current_tier == tier.key %}active{% endif %}">
@@ -28,7 +28,7 @@
             {% if works %}
             <div class="tw-building-grid tw-manor-building-grid">
                 {% for work in works %}
-                <article class="tw-building-card tw-building-card--manor tw-work-card" id="work-{{ work.pk }}">
+                <article class="tw-building-card tw-building-card--manor tw-work-card{% if not work.active_assignment and not work.eligible_guest_options and work.ineligible_guest_options %} tw-work-card--no-match{% endif %}" id="work-{{ work.pk }}">
                     {% with image_path=work.key|work_image %}
                     {% static image_path as work_image_url %}
                     <div class="tw-building-media">
@@ -45,10 +45,17 @@
                     <header>
                         <div class="tw-building-headline">
                             <h3>{{ work.name }}</h3>
-                            <span class="tw-level-badge">Lv {{ work.required_level }}</span>
+                            <span class="tw-level-badge">等级 {{ work.required_level }}</span>
                         </div>
                         <p class="tw-building-desc">{{ work.description }}</p>
                     </header>
+
+                    <div class="flex flex-wrap items-center gap-x-2 gap-y-1 px-4 py-0.5 mb-0.5 border-y border-border-light text-xs">
+                        <span class="font-semibold text-text-primary">要求：</span>
+                        {% for requirement in work.requirements %}
+                        <span class="text-text-secondary">{% if requirement.key == "level" %}等级 {{ requirement.required }}{% else %}{{ requirement.label }} ≥ {{ requirement.required }}{% endif %}</span>{% if not forloop.last %}<span class="text-text-muted" aria-hidden="true">·</span>{% endif %}
+                        {% endfor %}
+                    </div>
 
                     <dl class="m-0 p-0">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded bg-bg-secondary mb-4">
@@ -113,25 +120,47 @@
                                 <button type="submit" class="tw-btn-secondary tw-btn-sm">召回</button>
                             </form>
                         </section>
-                        {% elif work.eligible_idle_guests %}
+                        {% elif work.eligible_guest_options or work.ineligible_guest_options %}
                         <form method="post" action="{% url 'gameplay:assign_work' %}" class="tw-card-actions pt-2 pb-2 border-t border-border-light">
                             {% csrf_token %}
                             <input type="hidden" name="work_key" value="{{ work.key }}">
                             <input type="hidden" name="next" value="{{ request.get_full_path }}#work-{{ work.pk }}">
-                            <div class="flex gap-2 items-center">
+                            <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
                                 <select name="guest_id" class="tw-form-select flex-1" required>
                                     <option value="">选择门客</option>
-                                    {% for guest in work.eligible_idle_guests %}
-                                    <option value="{{ guest.id }}">
-                                        {{ guest.display_name }} (Lv{{ guest.level }})
-                                    </option>
-                                    {% endfor %}
+                                    {% if work.eligible_guest_options %}
+                                    <optgroup label="可派遣">
+                                        {% for option in work.eligible_guest_options %}
+                                        <option value="{{ option.guest_id }}">{{ option.guest.display_name }} (等级 {{ option.guest.level }}{% for requirement in option.relevant_requirements %} · {{ requirement.label }} {{ requirement.actual }}{% endfor %})</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                    {% endif %}
+                                    {% if work.ineligible_guest_options %}
+                                    <optgroup label="暂不符合">
+                                        {% for option in work.ineligible_guest_options %}
+                                        <option value="{{ option.guest_id }}" disabled>{{ option.guest.display_name }}：{% for requirement in option.missing_requirements %}{{ requirement.label }} {{ requirement.actual }}/{{ requirement.required }}，尚缺 {{ requirement.missing }}{% if not forloop.last %}；{% endif %}{% endfor %}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                    {% endif %}
                                 </select>
-                                <button type="submit" class="tw-btn-primary">派遣</button>
+                                <button type="submit" class="tw-btn-primary"{% if not work.eligible_guest_options %} disabled aria-disabled="true"{% endif %}>派遣</button>
                             </div>
+                            {% if not work.eligible_guest_options and work.closest_ineligible_guests %}
+                            <section data-closest-ineligible="true" class="mt-3 pt-3 border-t border-border-light">
+                                <p class="text-xs font-semibold text-text-secondary mb-2">最接近要求</p>
+                                <ul class="m-0 p-0 list-none space-y-1 text-xs text-text-muted">
+                                    {% for option in work.closest_ineligible_guests %}
+                                    <li class="flex flex-wrap justify-between gap-x-3 gap-y-1">
+                                        <span class="font-medium text-text-secondary">{{ option.guest.display_name }}</span>
+                                        <span>{% for requirement in option.missing_requirements %}{{ requirement.label }} {{ requirement.actual }}/{{ requirement.required }}，尚缺 {{ requirement.missing }}{% if not forloop.last %}；{% endif %}{% endfor %}</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </section>
+                            {% endif %}
                         </form>
                         {% else %}
-                        <p class="tw-muted text-sm mt-4 text-center">暂无符合条件的空闲门客</p>
+                        <p class="tw-muted text-sm mt-4 text-center">暂无空闲门客</p>
                         {% endif %}
                     {% endwith %}
                     </div>

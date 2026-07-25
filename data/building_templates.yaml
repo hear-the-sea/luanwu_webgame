@@ -26,7 +26,7 @@ buildings:
   - key: farm
     name: 农田
     category: resource
-    description: 兵马未动，粮草先行。江湖中人行走四方，腹中无粮可走不远。升级提升粮食产量
+    description: 兵马未动，粮草先行。江湖中人行走四方，腹中无粮可走不远。升级可提升粮食产量。
     resource_type: grain
     base_rate_per_hour: 850
     rate_growth: 0.1197551
@@ -40,7 +40,7 @@ buildings:
   - key: tax_office
     name: 税务司
     category: resource
-    description: 有道是"钱能通神"，行走江湖哪能没有银两傍身？此处便是生财之道。升级提升银两产量
+    description: 有道是"钱能通神"，行走江湖哪能没有银两傍身？此处便是生财之道。升级可提升银两产量。
     resource_type: silver
     base_rate_per_hour: 500
     rate_growth: 0.17
@@ -54,7 +54,7 @@ buildings:
   - key: bathhouse
     name: 澡堂
     category: resource
-    description: 刀光剑影之后，且来此处洗去一身风尘。热汤沐浴，疲惫尽消，内力恢复更快。升级提升银两产量和门客恢复速度
+    description: 刀光剑影之后，且来此处洗去一身风尘。热汤沐浴，疲惫尽消，内力恢复更快。升级可提升银两产量和门客恢复速度。
     resource_type: silver
     base_rate_per_hour: 345
     rate_growth: 0.1
@@ -68,7 +68,7 @@ buildings:
   - key: latrine
     name: 茅厕
     category: resource
-    description: 英雄也有三急时。此处虽不雅，却能化腐朽为神奇，肥水不流外人田。升级提升粮食和银两产量
+    description: 英雄也有三急时。此处虽不雅，却能化腐朽为神奇，肥水不流外人田。升级可提升粮食和银两产量。
     resource_type: grain
     base_rate_per_hour: 430
     rate_growth: 0.15
@@ -83,7 +83,7 @@ buildings:
   - key: granary
     name: 粮仓
     category: storage
-    description: 积谷防饥，乃立身之本。粮仓充盈，方能养得起三千门客。升级提升粮食存储上限
+    description: 积谷防饥，乃立身之本。粮仓充盈，方能养得起三千门客。升级可提升粮食存储上限。
     resource_type: grain
     base_rate_per_hour: 0
     rate_growth: 0.0
@@ -97,7 +97,7 @@ buildings:
   - key: silver_vault
     name: 银库
     category: storage
-    description: 千金散尽还复来，但总得有个地方存着不是？此库固若金汤，宵小莫近。升级提升银两存储上限
+    description: 千金散尽还复来，但总得有个地方存着不是？此库固若金汤，宵小莫近。升级可提升银两存储上限。
     resource_type: silver
     base_rate_per_hour: 0
     rate_growth: 0.0
@@ -111,7 +111,7 @@ buildings:
   - key: treasury
     name: 藏宝阁
     category: storage
-    description: 江湖奇珍，武林秘宝，尽藏于此。机关重重，纵是飞贼也难窥其中奥秘。升级提升物品存储上限
+    description: 江湖奇珍，武林秘宝，尽藏于此。机关重重，纵是飞贼也难窥其中奥秘。升级可提升物品存储上限。
     resource_type: silver
     base_rate_per_hour: 0
     rate_growth: 0.0
@@ -126,7 +126,7 @@ buildings:
   - key: ranch
     name: 畜牧场
     category: production
-    description: 六畜兴旺，庄园之福。鸡鸣犬吠，牛羊成群，好一派田园气象。升级提升制造速度
+    description: 六畜兴旺，庄园之福。鸡鸣犬吠，牛羊成群，好一派田园气象。升级可提升制造速度。
     resource_type: grain
     base_rate_per_hour: 0
     rate_growth: 0.0
@@ -154,7 +154,7 @@ buildings:
   - key: stable
     name: 马房
     category: production
-    description: 宝马配英雄，良驹值千金。此处所养皆是千里良驹，日行八百不在话下。升级提升驯马速度
+    description: 宝马配英雄，良驹值千金。此处所养皆是千里良驹，日行八百不在话下。
     resource_type: grain
     base_rate_per_hour: 0
     rate_growth: 0.0
@@ -168,7 +168,7 @@ buildings:
   - key: forge
     name: 铁匠铺
     category: production
-    description: 工欲善其事，必先利其器。名师出高徒，此处铸造的兵刃，削铁如泥。升级提升锻造速度
+    description: 工欲善其事，必先利其器。名师出高徒，此处铸造的兵刃，削铁如泥。
     resource_type: silver
     base_rate_per_hour: 0
     rate_growth: 0.0
@@ -184,7 +184,7 @@ buildings:
   - key: juxianzhuang
     name: 聚贤庄
     category: personnel
-    description: 天下英雄，入我彀中。广纳贤才，礼贤下士，方能成就一番霸业。升级提升门客容纳上限（14→15级需要1700W银两+340W粮食，成本略低于悠嘻宝塔）
+    description: 天下英雄，入我彀中。广纳贤才，礼贤下士，方能成就一番霸业。升级可提升门客容纳上限。
     resource_type: silver
     base_rate_per_hour: 0
     rate_growth: 0.0
@@ -199,7 +199,7 @@ buildings:
   - key: jiadingfang
     name: 家丁房
     category: personnel
-    description: 养兵千日，用兵一时。家丁虽非高手，却是庄园根基，不可或缺。升级提升家丁容纳上限
+    description: 养兵千日，用兵一时。家丁虽非高手，却是庄园根基，不可或缺。升级可提升家丁容纳上限。
     resource_type: grain
     base_rate_per_hour: 0
     rate_growth: 0.0
@@ -213,7 +213,7 @@ buildings:
   - key: lianggongchang
     name: 练功场
     category: personnel
-    description: 台上一分钟，台下十年功。此处挥汗如雨，只为他日扬名立万。升级提升训练速度
+    description: 台上一分钟，台下十年功。此处挥汗如雨，只为他日扬名立万。升级可提升训练速度。
     resource_type: grain
     base_rate_per_hour: 0
     rate_growth: 0.0
@@ -227,7 +227,7 @@ buildings:
   - key: tavern
     name: 酒馆
     category: personnel
-    description: 江湖儿女，把酒言欢。三杯两盏淡酒，道尽天下英雄事。消息灵通，人脉广博。升级提升银两收入和招募候选人数
+    description: 江湖儿女，把酒言欢。三杯两盏淡酒，道尽天下英雄事。消息灵通，人脉广博。升级可提升银两收入和招募候选人数。
     resource_type: silver
     base_rate_per_hour: 345
     rate_growth: 0.211
@@ -242,7 +242,7 @@ buildings:
   - key: citang
     name: 祠堂
     category: special
-    description: 慎终追远，不忘先祖。祠堂香火鼎盛，庇佑子孙，庄园气运加持。升级减少建筑时间并提升招募速度
+    description: 慎终追远，不忘先祖。祠堂香火鼎盛，庇佑子孙，庄园气运加持。升级可减少建筑时间并提升招募速度。
     resource_type: silver
     base_rate_per_hour: 0
     rate_growth: 0.0
@@ -257,7 +257,7 @@ buildings:
   - key: youxibaota
     name: 悠嘻宝塔
     category: special
-    description: 登高望远，运筹帷幄。立于塔顶，可观四方风云，调兵遣将，决胜千里。升级提升同时出征门客上限（0级3人，每级+1人，满级15级18人）
+    description: 登高望远，运筹帷幄。立于塔顶，可观四方风云，调兵遣将，决胜千里。升级可提升同时出征门客上限。
     resource_type: grain
     base_rate_per_hour: 0
     rate_growth: 0.0
@@ -272,7 +272,7 @@ buildings:
   - key: jail
     name: 监牢
     category: special
-    description: 牢门一闭，江湖恩怨自有去处。踢馆胜利后有概率俘获对方出战门客（单场最多1名）。升级提升可关押人数上限（满级5人）
+    description: 牢门一闭，江湖恩怨自有去处。踢馆胜利后有概率俘获对方出战门客。升级可提升可关押人数上限。
     resource_type: silver
     base_rate_per_hour: 0
     rate_growth: 0.0
@@ -287,7 +287,7 @@ buildings:
   - key: oath_grove
     name: 结义林
     category: special
-    description: 桃园结义，义薄云天。最多可与5名门客结义，结义门客不可被俘获。升级提升结义人数上限（满级5人）
+    description: 古木参天，清风拂面，此地曾是江湖豪杰焚香结义之所。相传升级可提升结义人数上限。
     resource_type: silver
     base_rate_per_hour: 0
     rate_growth: 0.0

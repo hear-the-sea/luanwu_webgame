@@ -219,8 +219,9 @@ def move_event_to_preparing_locked(event: ArenaCoopEvent, *, now: datetime | Non
 
     current_time = now or timezone.now()
     event.status = ArenaCoopEvent.Status.PREPARING
+    event.virtual_fill_completed = True
     event.prepare_ends_at = current_time + timedelta(seconds=event.prepare_duration_seconds)
-    event.save(update_fields=["status", "prepare_ends_at", "updated_at"])
+    event.save(update_fields=["status", "virtual_fill_completed", "prepare_ends_at", "updated_at"])
     return True
 
 

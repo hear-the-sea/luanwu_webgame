@@ -44,7 +44,7 @@
                         </a>
                     </td>
                     <td class="guest-col-level">
-                        <div class="guest-level">Lv {{ guest.level }}</div>
+                        <div class="guest-level">等级 {{ guest.level }}</div>
                         <div class="tw-muted guest-status" data-guest-id="{{ guest.id }}">{{ guest.get_status_display }}</div>
                     </td>
                     <td class="guest-col-loyalty">
@@ -69,7 +69,7 @@
                         {% endif %}
                     </td>
                     <td class="guest-col-hp">
-                        <div class="guest-hp" data-guest-id="{{ guest.id }}">HP {{ guest.current_hp }}/{{ guest.max_hp }}</div>
+                        <div class="guest-hp" data-guest-id="{{ guest.id }}">生命 {{ guest.current_hp }}/{{ guest.max_hp }}</div>
                     </td>
                     <td class="guest-col-upgrade">
                         {% if guest.training_complete_at %}

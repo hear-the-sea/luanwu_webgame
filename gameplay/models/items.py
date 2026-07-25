@@ -155,7 +155,7 @@ _ITEM_EFFECT_STAT_LABELS = {
 
 def _resource_pack_summary(payload: dict) -> str:
     labels = dict(ResourceType.choices)
-    parts = [f"{labels.get(key, key)} +{amount}" for key, amount in payload.items()]
+    parts = [f"{labels.get(key, '未知资源')} +{amount}" for key, amount in payload.items()]
     return "、".join(parts)
 
 
@@ -190,7 +190,7 @@ def _equipment_set_summary(payload: dict) -> str:
                 continue
             if value is None:
                 continue
-            bonus_parts.append(f"{_ITEM_EFFECT_STAT_LABELS.get(key, key)}+{value}")
+            bonus_parts.append(f"{_ITEM_EFFECT_STAT_LABELS.get(key, '未知属性')}+{value}")
         piece_text = f"（{pieces}件）" if pieces else ""
         if bonus_parts:
             tier_summaries.append(f"{desc_text}{piece_text}：" + "、".join(bonus_parts))
@@ -206,7 +206,7 @@ def _equipment_summary(payload: dict) -> str:
     for key, value in payload.items():
         if value is None or key in {"set_key", "set_bonus", "set_description"}:
             continue
-        parts.append(f"{_ITEM_EFFECT_STAT_LABELS.get(key, key)}+{value}")
+        parts.append(f"{_ITEM_EFFECT_STAT_LABELS.get(key, '未知属性')}+{value}")
 
     set_text = _equipment_set_summary(payload)
     if set_text:
@@ -416,7 +416,7 @@ class Message(models.Model):
 
         resource_labels = dict(ResourceType.choices)
         for key, amount in resources.items():
-            label = resource_labels.get(key, key)
+            label = resource_labels.get(key, "未知资源")
             parts.append(f"{label}×{amount}")
 
         # 物品数量统计

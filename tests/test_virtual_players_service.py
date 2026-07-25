@@ -11,7 +11,7 @@ from itertools import count
 
 import pytest
 from django.core.cache import cache
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, connection, transaction
 from django.db.models import Sum
 from django.utils import timezone
 
@@ -344,6 +344,60 @@ def _run_due_bot_maintenance(profile, *, now, growth_stage: int = 1) -> None:
     )
     assert maintain_due_virtual_players(now=now, limit=10) >= 1
     profile.refresh_from_db()
+
+
+@pytest.mark.django_db
+def test_project_technologies_is_repeatable_without_targeted_upsert(monkeypatch, django_user_model):
+    from gameplay.services.virtual_players import _project_technologies
+
+    manor = ensure_manor(django_user_model.objects.create_user(username=_unique("mysql_tech"), password="pass123"))
+    PlayerTechnology.objects.create(manor=manor, tech_key="dao_attack", level=1, is_upgrading=True)
+    config = {"projection": {"technology_keys": ["dao_attack", "dao_defense"]}}
+    monkeypatch.setattr(connection.features, "supports_update_conflicts_with_target", False)
+
+    _project_technologies(manor, level=7, config=config)
+    _project_technologies(manor, level=7, config=config)
+
+    assert dict(PlayerTechnology.objects.filter(manor=manor).values_list("tech_key", "level")) == {
+        "dao_attack": 7,
+        "dao_defense": 7,
+    }
+    assert not PlayerTechnology.objects.filter(manor=manor, is_upgrading=True).exists()
+
+
+@pytest.mark.django_db
+def test_create_virtual_player_projects_relations_without_targeted_upsert(settings, monkeypatch):
+    from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
+
+    templates = _bootstrap_projection_templates()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "projection": {
+            "guest_template_keys": [templates["guest_template"].key],
+            "gear_template_keys": [],
+            "troop_template_keys": [templates["troop_template"].key],
+            "technology_keys": ["dao_attack"],
+        }
+    }
+    monkeypatch.setattr(connection.features, "supports_update_conflicts_with_target", False)
+
+    profile = create_virtual_player(
+        region="north",
+        prestige_band="junior",
+        growth_seed=78,
+        projection=BotProjectionConfig(
+            prestige=1500,
+            building_level=6,
+            guest_count=2,
+            guest_level=8,
+            troop_count=75,
+        ),
+    )
+
+    assert set(profile.manor.technologies.values_list("tech_key", flat=True)) == {"dao_attack"}
+    assert profile.manor.guests.count() == 2
+    troops = dict(profile.manor.troops.values_list("troop_template__key", "count"))
+    assert set(troops) == {templates["troop_template"].key}
+    assert sum(troops.values()) > 0
 
 
 @pytest.mark.django_db

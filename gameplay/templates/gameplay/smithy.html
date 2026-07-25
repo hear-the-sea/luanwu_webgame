@@ -22,7 +22,7 @@
                 {% for production in active_productions %}
                 <article class="tw-card">
                     <header class="mb-3">
-                        <h3 class="text-base font-semibold text-text-primary mb-1">{{ production.metal_name }} x{{ production.quantity }}</h3>
+                        <h3 class="text-base font-semibold text-text-primary mb-1">{{ production.metal_name }} ×{{ production.quantity }}</h3>
                     </header>
                     <div class="flex gap-2 flex-wrap">
                         {% if production.time_remaining > 0 %}
@@ -48,7 +48,7 @@
         <div class="tw-panel-content">
             <p class="text-sm text-text-muted mb-4">
                 冶炼链：1银两→1铜，5铜→1锡，3锡→1铁
-                <br>药品解锁：冶炼坊Lv1止血散，Lv3金创药，Lv5白芨丸，Lv7白草丹，Lv8补血丹，Lv9丁香丹，Lv10天香玉露丸
+                <br>药品解锁：冶炼坊等级 1止血散，等级 3金创药，等级 5白芨丸，等级 7白草丹，等级 8补血丹，等级 9丁香丹，等级 10天香玉露丸
                 {% if is_producing %}<br><span class="text-accent-red font-medium">当前有物品正在制作中，同时只能制作一种物品</span>{% endif %}
             </p>
 

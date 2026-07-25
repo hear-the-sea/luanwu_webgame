@@ -215,7 +215,7 @@ def get_horse_options(manor: Manor) -> List[Dict[str, Any]]:
         actual_duration = calculate_production_duration(config["base_duration"], manor)
         required_level = config["required_horsemanship"]
         is_unlocked = horsemanship_level >= required_level
-        horse_name = horse_name_map.get(horse_key, horse_key)
+        horse_name = horse_name_map.get(horse_key, "未知马匹")
         options.append(
             {
                 "key": horse_key,
@@ -257,7 +257,7 @@ def start_horse_production(manor: Manor, horse_key: str, quantity: int = 1) -> H
     )
     required_level = config["required_horsemanship"]
     horse_name_map = _get_item_name_map({horse_key})
-    horse_name = horse_name_map.get(horse_key, horse_key)
+    horse_name = horse_name_map.get(horse_key, "未知马匹")
 
     # 检查驯马术等级
     from ..technology import get_player_technology_level
@@ -291,7 +291,7 @@ def start_horse_production(manor: Manor, horse_key: str, quantity: int = 1) -> H
             spend_resources_locked(
                 locked_manor,
                 {"grain": total_grain_cost},
-                note=f"生产{horse_name}x{quantity}",
+                note=f"生产{horse_name}×{quantity}",
                 reason=ResourceEvent.Reason.UPGRADE_COST,
             )
         except InsufficientResourceError as exc:
@@ -410,7 +410,7 @@ def finalize_horse_production(production: HorseProduction, send_notification: bo
     if send_notification:
         from ..utils.messages import create_message
 
-        quantity_text = f"x{completed_production.quantity}" if completed_production.quantity > 1 else ""
+        quantity_text = f"×{completed_production.quantity}" if completed_production.quantity > 1 else ""
         try:
             create_message(
                 manor=completed_production.manor,

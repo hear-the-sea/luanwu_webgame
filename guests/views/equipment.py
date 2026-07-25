@@ -183,7 +183,7 @@ def gear_options_view(request):
     slot = request.GET.get("slot")
     slot_label_map = dict(GearSlot.choices)
     if not slot or slot not in slot_label_map:
-        return JsonResponse({"error": "invalid_slot"}, status=400)
+        return JsonResponse({"error": "无效的装备槽位"}, status=400)
 
     cache_key = equipment_service.gear_options_cache_key(manor.id, slot)
     cached = _safe_cache_get(cache_key)

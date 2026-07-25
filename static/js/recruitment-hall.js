@@ -7,6 +7,9 @@
   let candidates = [];
   let candidateObserver = null;
 
+  const browserErrorMessage = (error, fallback = "请求失败，请重试") =>
+    window.PlayerFacingCopy?.browserErrorMessage(error, fallback) || fallback;
+
   const confirmDialog = async (message, options = {}) => {
     if (typeof window.gameConfirm === "function") {
       return window.gameConfirm(message, options);
@@ -361,7 +364,7 @@
       await showMessage(data.message, data.message_level || "success");
       return data;
     } catch (error) {
-      await showMessage(error?.message || "请求失败，请重试", "error");
+      await showMessage(browserErrorMessage(error), "error");
       return null;
     } finally {
       if (button && document.body.contains(button)) {

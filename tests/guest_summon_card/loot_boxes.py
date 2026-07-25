@@ -73,7 +73,7 @@ def test_resource_pack_non_dict_effect_payload_raises_config_error(django_user_m
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="effect_payload 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -99,7 +99,7 @@ def test_resource_pack_invalid_resource_amount_raises_config_error(django_user_m
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="effect_payload 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -287,7 +287,7 @@ def test_loot_box_grants_random_item_rewards_and_skips_zero_quantity(monkeypatch
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
     assert rewarded_entry.quantity == 2
-    assert "物品【测试任务卡】x2" in payload["rewards"]
+    assert "物品【测试任务卡】×2" in payload["rewards"]
     assert payload["skipped_bonus_items"] == []
     assert not InventoryItem.objects.filter(pk=chest.pk).exists()
 
@@ -566,5 +566,5 @@ def test_loot_box_rolls_random_item_groups_independently(monkeypatch, django_use
 
     assert InventoryItem.objects.get(manor=manor, template__key="random_group_a").quantity == 3
     assert not InventoryItem.objects.filter(manor=manor, template__key="random_group_b").exists()
-    assert "物品【奖励甲】x3" in result["rewards"]
+    assert "物品【奖励甲】×3" in result["rewards"]
     assert not InventoryItem.objects.filter(pk=item.pk).exists()

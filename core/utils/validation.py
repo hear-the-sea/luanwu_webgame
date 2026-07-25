@@ -142,14 +142,15 @@ def require_positive_int(value: Any, *, contract_name: str) -> int:
     Raises:
         GameError: 值无效或非正整数
     """
+    context = {"contract_name": contract_name, "invalid_value": value}
     if value is None or isinstance(value, bool):
-        raise GameError(f"invalid {contract_name}: {value!r}")
+        raise GameError("数据异常，请稍后重试", **context)
     try:
         parsed = int(value)
     except (TypeError, ValueError) as exc:
-        raise GameError(f"invalid {contract_name}: {value!r}") from exc
+        raise GameError("数据异常，请稍后重试", **context) from exc
     if parsed <= 0:
-        raise GameError(f"invalid {contract_name}: {value!r}")
+        raise GameError("数据异常，请稍后重试", **context)
     return parsed
 
 

@@ -219,12 +219,12 @@
         // 更新等级
         const levelDiv = row.querySelector(".guest-level");
         if (levelDiv) {
-          levelDiv.textContent = `Lv ${data.level}`;
+          levelDiv.textContent = `等级 ${data.level}`;
         }
-        // 更新 HP - 使用类名选择器代替硬编码索引
+        // 更新生命值 - 使用类名选择器代替硬编码索引
         const hpDiv = row.querySelector(".guest-hp");
         if (hpDiv) {
-          hpDiv.textContent = `HP ${data.current_hp}/${data.max_hp}`;
+          hpDiv.textContent = `生命 ${data.current_hp}/${data.max_hp}`;
         }
         // 更新训练倒计时 - 使用 el 的父元素
         const upgradeCell = el.closest("td");

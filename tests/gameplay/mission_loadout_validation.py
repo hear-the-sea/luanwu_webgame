@@ -11,7 +11,7 @@ from gameplay.utils.resource_calculator import calculate_travel_time, normalize_
 
 
 def test_normalize_mission_loadout_rejects_unknown_troop_keys():
-    with pytest.raises(TroopLoadoutError, match="不存在的类型"):
+    with pytest.raises(TroopLoadoutError, match="护院配置包含无效类型"):
         normalize_mission_loadout(
             {"nonexistent_troop_xxx": 1},
             troop_templates={"archer": {"label": "弓手"}},

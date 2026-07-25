@@ -45,7 +45,7 @@ def test_consume_equipment_insufficient_keeps_inventory_unchanged(recruit_manor)
     set_inventory(manor, spear, 5)
     set_inventory(manor, shield, 1)
 
-    with pytest.raises(TroopRecruitmentError, match="装备不足: equip_shield_short"):
+    with pytest.raises(TroopRecruitmentError, match="所需装备不足"):
         _consume_equipment_for_recruitment(manor, ["equip_spear_short", "equip_shield_short"], quantity=2)
 
     spear_item = InventoryItem.objects.get(
@@ -136,7 +136,7 @@ def test_start_troop_recruitment_rollback_on_insufficient_equipment(monkeypatch,
         lambda current_manor, troop_key, quantity: troop_data,
     )
 
-    with pytest.raises(TroopRecruitmentError, match="装备不足: equip_shield_rollback"):
+    with pytest.raises(TroopRecruitmentError, match="所需装备不足"):
         start_troop_recruitment(manor, "rollback_unit", quantity=2)
 
     manor.refresh_from_db()

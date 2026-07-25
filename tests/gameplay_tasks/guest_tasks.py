@@ -55,7 +55,7 @@ def test_guest_training_dispatch_false(monkeypatch, caplog):
     monkeypatch.setattr("guests.services.training.finalize_guest_training", lambda *_args, **_kwargs: False)
 
     with caplog.at_level(logging.WARNING):
-        with pytest.raises(TaskRescheduleError, match="complete_guest_training调度失败"):
+        with pytest.raises(TaskRescheduleError, match="任务需要重新调度，请稍后重试"):
             guest_tasks.complete_guest_training.run(102)
 
     assert "guest training reschedule dispatch returned False: guest_id=102" in caplog.text

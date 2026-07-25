@@ -107,7 +107,7 @@ troops:
     assert [troop["key"] for troop in loaded["troops"]] == ["spearman", "broken_recruit"]
 
     spearman = loaded["troops"][0]
-    assert spearman["name"] == "spearman"
+    assert spearman["name"] == "未知兵种"
     assert spearman["base_attack"] == 0
     assert spearman["recruit"]["tech_key"] == "123"
     assert spearman["recruit"]["tech_level"] == 0

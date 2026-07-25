@@ -54,7 +54,7 @@ def shop_buy_view(request: HttpRequest) -> HttpResponse:
         request,
         op="shop_buy",
         action_factory=lambda manor: buy_item(manor, parsed.item_key, parsed.quantity),
-        success_message=lambda result: f"成功购买 {result['item_name']} x{result['quantity']}，花费 {result['total_cost']} 银两",
+        success_message=lambda result: f"成功购买 {result['item_name']} ×{result['quantity']}，花费 {result['total_cost']} 银两",
         tab="shop",
         view="buy",
     )
@@ -73,7 +73,7 @@ def shop_sell_view(request: HttpRequest) -> HttpResponse:
         request,
         op="shop_sell",
         action_factory=lambda manor: sell_item(manor, parsed.item_key, parsed.quantity),
-        success_message=lambda result: f"成功出售 {result['item_name']} x{result['quantity']}，获得 {result['total_income']} 银两",
+        success_message=lambda result: f"成功出售 {result['item_name']} ×{result['quantity']}，获得 {result['total_income']} 银两",
         tab="shop",
         view="sell",
     )
@@ -152,7 +152,7 @@ def market_create_listing_view(request: HttpRequest) -> HttpResponse:
             manor, parsed.item_key, parsed.quantity, parsed.unit_price, parsed.duration
         ),
         success_message=lambda listing: (
-            f"成功上架 {listing.item_template.name} x{parsed.quantity}，单价 {parsed.unit_price} 银两，"
+            f"成功上架 {listing.item_template.name} ×{parsed.quantity}，单价 {parsed.unit_price} 银两，"
             f"总价 {listing.total_price:,} 银两。上架时长 {listing.get_duration_display()}。"
         ),
         tab="market",
@@ -182,7 +182,7 @@ def market_purchase_view(request: HttpRequest, listing_id: int) -> HttpResponse:
         op="market_purchase",
         action_factory=_purchase,
         success_message=lambda transaction: (
-            f"成功购买 {transaction.listing.item_template.name} x{transaction.listing.quantity}，"
+            f"成功购买 {transaction.listing.item_template.name} ×{transaction.listing.quantity}，"
             f"花费 {transaction.total_price:,} 银两。物品已直接存入仓库，请查收！"
         ),
         tab="market",
@@ -199,7 +199,7 @@ def market_cancel_view(request: HttpRequest, listing_id: int) -> HttpResponse:
         request,
         op="market_cancel",
         action_factory=lambda manor: cancel_listing(manor, listing_id),
-        success_message=lambda result: f"已取消挂单，{result['item_name']} x{result['quantity']} 已退回仓库。",
+        success_message=lambda result: f"已取消挂单，{result['item_name']} ×{result['quantity']} 已退回仓库。",
         tab="market",
         view="my_listings",
     )

@@ -47,13 +47,13 @@ def build_reward_rows(manor: Manor) -> list[dict]:
             blueprint_key = select_weekly_blueprint_key(reward.rotating_blueprint_pool)
             rotating_blueprint_row = {
                 "key": blueprint_key,
-                "label": item_labels.get(blueprint_key, blueprint_key),
+                "label": item_labels.get(blueprint_key, "未知图纸"),
                 "amount": 1,
             }
         resource_rows = [
             {
                 "key": key,
-                "label": resource_labels.get(key, key),
+                "label": resource_labels.get(key, "未知资源"),
                 "amount": amount,
             }
             for key, amount in reward.resources.items()
@@ -61,7 +61,7 @@ def build_reward_rows(manor: Manor) -> list[dict]:
         item_rows = [
             {
                 "key": key,
-                "label": item_labels.get(key, key),
+                "label": item_labels.get(key, "未知物品"),
                 "amount": amount,
             }
             for key, amount in reward.items.items()
@@ -75,7 +75,7 @@ def build_reward_rows(manor: Manor) -> list[dict]:
             random_item_rows.append(
                 {
                     "key": option.item_key,
-                    "label": item_labels.get(option.item_key, option.item_key),
+                    "label": item_labels.get(option.item_key, "未知物品"),
                     "amount": option.amount,
                     "weight": option.weight,
                     "chance_text": chance_text,

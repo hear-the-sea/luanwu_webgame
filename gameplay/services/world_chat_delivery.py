@@ -50,7 +50,7 @@ class WorldChatValidationError(GameError):
 
 class WorldChatOperationConflictError(GameError):
     error_code = "WORLD_CHAT_OPERATION_CONFLICT"
-    default_message = "世界聊天操作ID已用于其他消息"
+    default_message = "世界聊天操作编号已用于其他消息"
 
 
 def _is_expected_infrastructure_error(exc: Exception) -> bool:
@@ -368,7 +368,7 @@ def refund_world_chat_attempt(attempt_id: int) -> bool:
 
 def _validate_user_id(user_id: int) -> int:
     if isinstance(user_id, bool) or not isinstance(user_id, int) or user_id <= 0:
-        raise WorldChatValidationError("user_id 必须是正整数")
+        raise WorldChatValidationError("用户编号必须是正整数")
     return user_id
 
 
@@ -376,16 +376,16 @@ def _validate_operation_id(operation_id: UUID | str) -> UUID:
     if isinstance(operation_id, UUID):
         return operation_id
     if not isinstance(operation_id, str):
-        raise WorldChatValidationError("operation_id 必须是有效 UUID")
+        raise WorldChatValidationError("操作编号格式错误")
     try:
         return UUID(operation_id)
     except ValueError as exc:
-        raise WorldChatValidationError("operation_id 必须是有效 UUID") from exc
+        raise WorldChatValidationError("操作编号格式错误") from exc
 
 
 def _validate_text(text: str) -> str:
     if not isinstance(text, str):
-        raise WorldChatValidationError("text 必须是字符串")
+        raise WorldChatValidationError("消息内容格式错误")
     normalized_text = normalize_world_chat_text(text)
     if not normalized_text:
         raise WorldChatValidationError("世界聊天消息不能为空")

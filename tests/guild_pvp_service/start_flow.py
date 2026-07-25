@@ -326,7 +326,7 @@ def test_start_guild_raid_keeps_due_battle_processing_when_new_launch_validation
     monkeypatch.setattr("guilds.services.guild_raids.schedule_guild_raid_completion", lambda *_args, **_kwargs: None)
     monkeypatch.setattr("guilds.services.guild_raids.send_guild_raid_report_messages", lambda *_args, **_kwargs: None)
 
-    with pytest.raises(GuildValidationError, match="当前已有帮会 PVP 出征中"):
+    with pytest.raises(GuildValidationError, match="当前已有帮会对战队伍出征中"):
         start_guild_raid(
             guild=attacker_guild,
             defender_guild=defender_guild,

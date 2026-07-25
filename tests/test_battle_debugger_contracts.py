@@ -308,7 +308,7 @@ def test_result_detail_renders_passive_events_in_detailed_log(django_user_model,
     assert "九阳护体" in body
     assert "内息流转" in body
     assert "嗜血狂怒" in body
-    assert "损失 90 HP" in body
+    assert "损失 90 生命" in body
     assert "先手蓄劲" in body
     assert "追击再起" in body
     assert "乾坤留痕" in body

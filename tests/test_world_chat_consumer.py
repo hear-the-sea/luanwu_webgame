@@ -145,7 +145,7 @@ class WorldChatConsumerTests(SimpleTestCase):
         payload = consumer.send_json.await_args.args[0]
         self.assertEqual(payload["code"], "rate_limited")
         self.assertEqual(payload["operation_id"], operation_id)
-        self.assertIn("8s", payload["message"])
+        self.assertEqual(payload["message"], "发送太快，请 8 秒后再试")
         consumer._create_world_chat_attempt.assert_not_awaited()
 
     def test_receive_json_rate_limit_backend_failure_returns_chat_unavailable(self):

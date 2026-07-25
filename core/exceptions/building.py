@@ -29,7 +29,7 @@ class BuildingMaxLevelError(BuildingError):
 
     def __init__(self, building_name: str, max_level: int, message: str | None = None):
         if message is None:
-            message = f"{building_name}已达到最大等级（Lv{max_level}）"
+            message = f"{building_name}已达到最大等级（等级{max_level}）"
         super().__init__(message, building_name=building_name, max_level=max_level)
 
 
@@ -78,7 +78,7 @@ class BuildingNotFoundError(BuildingError):
             "juxianzhuang": "聚贤庄",
             "jiadingfang": "家丁房",
         }
-        building_name = building_names.get(building_key, building_key)
+        building_name = building_names.get(building_key, "该建筑")
         if message is None:
             message = f"{building_name}尚未建造"
         super().__init__(message, building_key=building_key)
@@ -100,7 +100,7 @@ class TechnologyNotFoundError(TechnologyError):
 
     def __init__(self, tech_key: str, message: str | None = None):
         if message is None:
-            message = f"未知技术: {tech_key}"
+            message = "未找到对应科技"
         super().__init__(message, tech_key=tech_key)
 
 

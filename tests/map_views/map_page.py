@@ -44,6 +44,7 @@ class TestMapViews:
         body = response.content.decode("utf-8")
         assert "js/map-page.js" in body
         assert f'data-map-api-base="{reverse("gameplay:map_search_api")}"' in body
+        assert f'data-map-backfill-api-url="{reverse("gameplay:map_backfill_request_api")}"' in body
         assert f'data-scout-api-url="{reverse("gameplay:start_scout_api")}"' in body
         assert f'data-raid-config-url-prefix="{reverse("gameplay:map")}raid/"' in body
         assert "const mapApiBase =" not in body

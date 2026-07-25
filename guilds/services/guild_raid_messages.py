@@ -6,6 +6,7 @@ from typing import Any
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.models import Manor
 from gameplay.services.utils.messages import bulk_create_messages
+from gameplay.utils.template_loader import get_item_template_names_by_keys
 
 from ..models import GuildMember, GuildRaidRun
 
@@ -29,7 +30,10 @@ def _format_duration(seconds: int) -> str:
 def _format_item_summary(items: dict[str, int]) -> str:
     if not items:
         return "无"
-    return "、".join(f"{item_key} x{quantity}" for item_key, quantity in sorted(items.items()))
+    item_names = get_item_template_names_by_keys(items.keys())
+    return "、".join(
+        f"{item_names.get(item_key, '未知物品')} ×{quantity}" for item_key, quantity in sorted(items.items())
+    )
 
 
 def send_guild_raid_warning_messages(run: GuildRaidRun) -> None:

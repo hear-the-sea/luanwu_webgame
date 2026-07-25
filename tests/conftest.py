@@ -333,16 +333,19 @@ def require_env_services():
     _require_external_celery_broker(celery_app, strict=True)
 
 
+@pytest.fixture(autouse=True)
+def _guard_integration_services(request):
+    """Route every integration-marked test through the external-service gate."""
+    if request.node.get_closest_marker("integration") is not None:
+        request.getfixturevalue("require_env_services")
+
+
 def pytest_collection_modifyitems(config, items):
-    """Ensure all integration tests run behind the same external-service gate."""
+    """Fail early when the selected test set explicitly requires external services."""
     if _should_fail_for_missing_env_services(config, items):
         raise pytest.UsageError(
             f"integration tests require DJANGO_TEST_USE_ENV_SERVICES=1. {_real_service_gate_hint()}"
         )
-
-    for item in items:
-        if item.get_closest_marker("integration") is not None:
-            item.add_marker(pytest.mark.usefixtures("require_env_services"))
 
 
 def pytest_report_header(config):

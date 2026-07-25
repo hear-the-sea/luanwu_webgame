@@ -62,6 +62,30 @@ def test_require_external_celery_broker_accepts_reachable_connection():
     assert ensured["count"] == 1
 
 
+def test_integration_service_guard_requests_env_services_for_integration_item():
+    requested_fixtures = []
+    request = SimpleNamespace(
+        node=SimpleNamespace(get_closest_marker=lambda name: object() if name == "integration" else None),
+        getfixturevalue=requested_fixtures.append,
+    )
+
+    conftest._guard_integration_services.__wrapped__(request)
+
+    assert requested_fixtures == ["require_env_services"]
+
+
+def test_integration_service_guard_ignores_non_integration_item():
+    requested_fixtures = []
+    request = SimpleNamespace(
+        node=SimpleNamespace(get_closest_marker=lambda name: None),
+        getfixturevalue=requested_fixtures.append,
+    )
+
+    conftest._guard_integration_services.__wrapped__(request)
+
+    assert requested_fixtures == []
+
+
 def test_should_fail_for_missing_env_services_when_only_integration_items_selected(monkeypatch):
     monkeypatch.delenv("DJANGO_TEST_USE_ENV_SERVICES", raising=False)
 

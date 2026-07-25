@@ -34,6 +34,7 @@ class RaidRunAdmin(admin.ModelAdmin):
         "battle_at",
         "return_at",
         "completed_at",
+        "failure_reason",
         "loot_resources",
         "loot_items",
         "attacker_prestige_change",

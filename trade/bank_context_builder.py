@@ -24,12 +24,12 @@ def _build_troop_bank_categories(available_classes: set[str]) -> list[dict[str, 
 
     for class_key in ordered:
         if class_key in available_classes:
-            categories.append({"key": class_key, "name": _TROOP_CATEGORY_LABELS.get(class_key, class_key)})
+            categories.append({"key": class_key, "name": _TROOP_CATEGORY_LABELS.get(class_key, "其他")})
             used.add(class_key)
 
     for class_key in sorted(available_classes):
         if class_key not in used:
-            categories.append({"key": class_key, "name": _TROOP_CATEGORY_LABELS.get(class_key, class_key)})
+            categories.append({"key": class_key, "name": _TROOP_CATEGORY_LABELS.get(class_key, "其他")})
     return categories
 
 

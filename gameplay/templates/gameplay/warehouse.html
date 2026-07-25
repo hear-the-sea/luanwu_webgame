@@ -256,7 +256,7 @@
                 <div class="tw-guest-option" data-guest-id="{{ guest.id }}">
                     <div class="tw-guest-info">
                         <span class="tw-guest-name rarity-text-{{ guest.template.rarity }}">{{ guest.display_name }}</span>
-                        <span class="tw-guest-level">Lv.{{ guest.level }}</span>
+                        <span class="tw-guest-level">等级 {{ guest.level }}</span>
                     </div>
                     <div class="tw-guest-stats">
                         <span>武:{{ guest.force }}</span>
@@ -279,7 +279,7 @@
                 >
                     <div class="tw-guest-info">
                         <span class="tw-guest-name rarity-text-{{ guest.template.rarity }}">{{ guest.display_name }}</span>
-                        <span class="tw-guest-level">Lv.{{ guest.level }}</span>
+                        <span class="tw-guest-level">等级 {{ guest.level }}</span>
                     </div>
                     <div class="tw-guest-stats">
                         <span>{{ guest.template.get_rarity_display }} / {{ guest.template.get_archetype_display }}</span>
@@ -300,7 +300,7 @@
                 <div class="tw-guest-option" data-guest-id="{{ guest.id }}">
                     <div class="tw-guest-info">
                         <span class="tw-guest-name rarity-text-{{ guest.template.rarity }}">{{ guest.display_name }}</span>
-                        <span class="tw-guest-level">Lv.{{ guest.level }}</span>
+                        <span class="tw-guest-level">等级 {{ guest.level }}</span>
                     </div>
                     <div class="tw-guest-stats">
                         <span>已用 {{ guest.xisuidan_used }}/10 次</span>
@@ -316,7 +316,7 @@
                 <div class="tw-guest-option" data-guest-id="{{ guest.id }}">
                     <div class="tw-guest-info">
                         <span class="tw-guest-name rarity-text-{{ guest.template.rarity }}">{{ guest.display_name }}</span>
-                        <span class="tw-guest-level">Lv.{{ guest.level }}</span>
+                        <span class="tw-guest-level">等级 {{ guest.level }}</span>
                     </div>
                     <div class="tw-guest-stats">
                         <span>已分配 {{ guest.allocated_force|add:guest.allocated_intellect|add:guest.allocated_defense|add:guest.allocated_agility }} 点</span>
@@ -332,7 +332,7 @@
                 <div class="tw-guest-option" data-guest-id="{{ guest.id }}">
                     <div class="tw-guest-info">
                         <span class="tw-guest-name rarity-text-{{ guest.template.rarity }}">{{ guest.display_name }}</span>
-                        <span class="tw-guest-level">Lv.{{ guest.level }}</span>
+                        <span class="tw-guest-level">等级 {{ guest.level }}</span>
                     </div>
                     <div class="tw-guest-stats">
                         <span>当前稀有度：{{ guest.template.get_rarity_display }}</span>

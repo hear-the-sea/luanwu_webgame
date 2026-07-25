@@ -27,7 +27,7 @@
                 <article class="tw-building-card">
                     <header>
                         <div>
-                            <h3>{{ item.display_name|default:item.item_key }}</h3>
+                            <h3>{{ item.display_name|default:"未知物品" }}</h3>
                             <p class="tw-muted">{{ item.display_description }}</p>
                         </div>
                         <span class="tw-badge-gold">{{ item.display_quantity }}</span>
@@ -61,7 +61,7 @@
                             <button
                                 type="button"
                                 class="tw-btn-primary w-full"
-                                onclick="openExchangeModal('{{ item.item_key|escapejs }}', {{ item.contribution_cost }}, {{ item.display_quantity }}, '{{ item.display_name|default:item.item_key|escapejs }}', {{ item.weekly_exchange_remaining|default:0 }}, {{ item.weekly_personal_limit|default:0 }})"
+                                onclick="openExchangeModal('{{ item.item_key|escapejs }}', {{ item.contribution_cost }}, {{ item.display_quantity }}, '{{ item.display_name|default:'未知物品'|escapejs }}', {{ item.weekly_exchange_remaining|default:0 }}, {{ item.weekly_personal_limit|default:0 }})"
                                 {% if item.display_quantity <= 0 %}disabled title="库存不足"{% elif item.weekly_personal_limit and item.weekly_exchange_remaining <= 0 %}disabled title="本周限购已达上限"{% endif %}
                             >
                                 兑换

@@ -224,5 +224,6 @@ def test_donate_troops_view_escapes_failure_message_html(django_user_model):
     body = response.content.decode("utf-8")
     assert response.redirect_chain
     assert response.redirect_chain[-1][0].endswith(reverse("guilds:detail", args=[guild.id]))
-    assert "&lt;b&gt;bad&lt;/b&gt;" in body
+    assert "护院数量不足" in body
+    assert "&lt;b&gt;bad&lt;/b&gt;" not in body
     assert "<b>bad</b>" not in body

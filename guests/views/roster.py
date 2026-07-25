@@ -365,7 +365,7 @@ def dismiss_guest_view(request, pk: int):
         return redirect("guests:detail", pk=pk)
 
     if result.gear_summary:
-        readable = "、".join(f"{name} x{count}" if count > 1 else name for name, count in result.gear_summary.items())
+        readable = "、".join(f"{name} ×{count}" if count > 1 else name for name, count in result.gear_summary.items())
         messages.success(request, f"已辞退 {result.guest_name}，装备已归还仓库（{readable}）")
     else:
         messages.info(request, f"已辞退 {result.guest_name}。")

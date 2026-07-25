@@ -5,6 +5,8 @@ import random
 from collections.abc import Callable
 from typing import TYPE_CHECKING, cast
 
+from django.db import transaction
+
 from battle.services import simulate_report
 from core.exceptions import BattlePreparationError, MessageError
 from core.utils.infrastructure import (
@@ -98,16 +100,30 @@ def save_resolved_match(
     now,
     note: str = "",
     report=None,
-) -> None:
-    match.winner_entry = winner_entry
-    match.status = status
-    match.notes = note[:255]
-    match.resolved_at = now
+) -> bool:
+    update_values = {
+        "winner_entry": winner_entry,
+        "status": status,
+        "notes": note[:255],
+        "resolved_at": now,
+    }
+    update_fields = ["winner_entry", "status", "notes", "resolved_at"]
     if report is not None:
-        match.battle_report = report
-        match.save(update_fields=["winner_entry", "status", "notes", "battle_report", "resolved_at"])
-        return
-    match.save(update_fields=["winner_entry", "status", "notes", "resolved_at"])
+        update_values["battle_report"] = report
+        update_fields.append("battle_report")
+
+    if getattr(match, "pk", None):
+        claimed = ArenaMatch.objects.filter(pk=match.pk, status=ArenaMatch.Status.SCHEDULED).update(**update_values)
+        if not claimed:
+            return False
+        for field in update_fields:
+            setattr(match, field, update_values[field])
+        return True
+
+    for field in update_fields:
+        setattr(match, field, update_values[field])
+    match.save(update_fields=update_fields)
+    return True
 
 
 def persist_forfeit_match_resolution(
@@ -195,6 +211,53 @@ def resolve_match_locked(
     arena_match_resolution_error: type[Exception],
     match: ArenaMatch | None = None,
     logger: logging.Logger,
+) -> ArenaEntry | None:
+    if match is None or not getattr(match, "pk", None):
+        return _resolve_match_locked(
+            tournament=tournament,
+            round_number=round_number,
+            match_index=match_index,
+            attacker_entry=attacker_entry,
+            defender_entry=defender_entry,
+            now=now,
+            max_guests_per_entry=max_guests_per_entry,
+            arena_match_resolution_error=arena_match_resolution_error,
+            match=match,
+            logger=logger,
+        )
+
+    with transaction.atomic():
+        locked_match = (
+            ArenaMatch.objects.select_for_update().filter(pk=match.pk, status=ArenaMatch.Status.SCHEDULED).first()
+        )
+        if locked_match is None:
+            return None
+        return _resolve_match_locked(
+            tournament=tournament,
+            round_number=round_number,
+            match_index=match_index,
+            attacker_entry=attacker_entry,
+            defender_entry=defender_entry,
+            now=now,
+            max_guests_per_entry=max_guests_per_entry,
+            arena_match_resolution_error=arena_match_resolution_error,
+            match=locked_match,
+            logger=logger,
+        )
+
+
+def _resolve_match_locked(
+    *,
+    tournament: ArenaTournament,
+    round_number: int,
+    match_index: int,
+    attacker_entry: ArenaEntry,
+    defender_entry: ArenaEntry,
+    now: datetime,
+    max_guests_per_entry: int,
+    arena_match_resolution_error: type[Exception],
+    match: ArenaMatch | None = None,
+    logger: logging.Logger,
 ) -> ArenaEntry:
     attacker_guests = load_entry_guests(attacker_entry, max_guests_per_entry=max_guests_per_entry)
     defender_guests = load_entry_guests(defender_entry, max_guests_per_entry=max_guests_per_entry)
@@ -239,7 +302,11 @@ def resolve_match_locked(
             attacker_entry.id,
             defender_entry.id,
         )
-        if match:
+        if match and getattr(match, "pk", None):
+            ArenaMatch.objects.filter(pk=match.pk, status=ArenaMatch.Status.SCHEDULED).update(
+                notes="战斗模拟异常，待系统重试"
+            )
+        elif match:
             match.notes = "战斗模拟异常，待系统重试"
             match.save(update_fields=["notes"])
         raise arena_match_resolution_error("战斗模拟异常，已保留待重试")
@@ -251,8 +318,9 @@ def resolve_match_locked(
     else:
         winner_entry = random.choice([attacker_entry, defender_entry])
 
+    saved = True
     if match:
-        save_resolved_match(
+        saved = save_resolved_match(
             match=match,
             winner_entry=winner_entry,
             status=ArenaMatch.Status.COMPLETED,
@@ -272,12 +340,20 @@ def resolve_match_locked(
             resolved_at=now,
         )
 
-    send_arena_battle_messages(
-        report=report,
-        round_number=round_number,
-        attacker_entry=attacker_entry,
-        defender_entry=defender_entry,
-        winner_entry=winner_entry,
-        logger=logger,
-    )
+    if saved:
+
+        def _send_messages() -> None:
+            send_arena_battle_messages(
+                report=report,
+                round_number=round_number,
+                attacker_entry=attacker_entry,
+                defender_entry=defender_entry,
+                winner_entry=winner_entry,
+                logger=logger,
+            )
+
+        if match is not None and getattr(match, "pk", None):
+            transaction.on_commit(_send_messages)
+        else:
+            _send_messages()
     return winner_entry

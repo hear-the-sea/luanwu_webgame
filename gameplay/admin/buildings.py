@@ -18,7 +18,18 @@ class BuildingAdmin(admin.ModelAdmin):
 
 @admin.register(WorkTemplate)
 class WorkTemplateAdmin(admin.ModelAdmin):
-    list_display = ("name", "tier", "required_level", "reward_silver", "work_duration", "display_order")
+    list_display = (
+        "name",
+        "tier",
+        "required_level",
+        "required_force",
+        "required_intellect",
+        "required_defense",
+        "required_agility",
+        "reward_silver",
+        "work_duration",
+        "display_order",
+    )
     list_filter = ("tier",)
     search_fields = ("name", "key")
     ordering = ("tier", "display_order", "required_level")

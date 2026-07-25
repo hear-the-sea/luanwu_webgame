@@ -35,4 +35,4 @@ def test_build_total_material_costs_multiplies_by_quantity():
 
 def test_build_forging_quantity_text_formats_plural_suffix():
     assert forge_flow_helpers.build_forging_quantity_text(1) == ""
-    assert forge_flow_helpers.build_forging_quantity_text(3) == "x3"
+    assert forge_flow_helpers.build_forging_quantity_text(3) == "×3"

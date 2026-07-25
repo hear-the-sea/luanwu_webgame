@@ -270,7 +270,7 @@ test("canonical data fields drive specialized notification toasts", () => {
         level: 99,
         data: { building_key: "granary", level: 2 },
       },
-      expectedBody: "当前等级 Lv2",
+      expectedBody: "当前等级 2",
     },
     {
       payload: {
@@ -279,7 +279,7 @@ test("canonical data fields drive specialized notification toasts", () => {
         building_key: "farm",
         level: 5,
       },
-      expectedBody: "当前等级 Lv5",
+      expectedBody: "当前等级 5",
     },
     {
       payload: {
@@ -289,7 +289,7 @@ test("canonical data fields drive specialized notification toasts", () => {
         body: "",
         data: { tech_key: "formation", level: 4 },
       },
-      expectedBody: "当前等级 Lv4",
+      expectedBody: "当前等级 4",
     },
     {
       payload: {
@@ -309,7 +309,7 @@ test("canonical data fields drive specialized notification toasts", () => {
         body: "",
         data: { item_name: "青铜剑", quantity: 2, price: 88 },
       },
-      expectedBody: "青铜剑 x2，成交价 88 金条",
+      expectedBody: "青铜剑 ×2，成交价 88 金条",
     },
     {
       payload: {

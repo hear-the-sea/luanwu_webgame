@@ -39,5 +39,9 @@ class TestPermissions:
 
     def test_post_api_requires_login(self, client):
         """受保护的 POST API 需要登录"""
-        response = client.post(reverse("gameplay:refresh_raid_activity_api"))
-        assert response.status_code == 302
+        for url in [
+            reverse("gameplay:map_backfill_request_api"),
+            reverse("gameplay:refresh_raid_activity_api"),
+        ]:
+            response = client.post(url)
+            assert response.status_code == 302

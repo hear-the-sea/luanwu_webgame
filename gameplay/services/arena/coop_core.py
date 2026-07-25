@@ -238,15 +238,18 @@ def cancel_arena_coop_entry(manor: Manor) -> int:
     return 1
 
 
-def start_due_virtual_backfill_coop_events(*, now: datetime | None = None, limit: int = 20) -> int:
+def start_due_virtual_backfill_coop_events(
+    *, now: datetime | None = None, limit: int = 20, manor: Manor | None = None
+) -> int:
     now = now or timezone.now()
-    event_ids = list(
-        ArenaCoopEvent.objects.filter(
-            status=ArenaCoopEvent.Status.RECRUITING,
-            virtual_fill_completed=False,
-            virtual_fill_at__lte=now,
-        ).values_list("id", flat=True)[: max(1, int(limit))]
+    candidates = ArenaCoopEvent.objects.filter(
+        status=ArenaCoopEvent.Status.RECRUITING,
+        virtual_fill_completed=False,
+        virtual_fill_at__lte=now,
     )
+    if manor is not None:
+        candidates = candidates.filter(entries__manor=manor).distinct()
+    event_ids = list(candidates.order_by("virtual_fill_at", "id").values_list("id", flat=True)[: max(1, int(limit))])
     prepared = 0
     for event_id in event_ids:
         with transaction.atomic():

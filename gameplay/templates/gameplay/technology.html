@@ -46,7 +46,7 @@
                             <div class="tw-building-headline">
                                 <h3>{{ tech.name }}</h3>
                                 <span class="tw-level-badge {% if tech.level >= tech.max_level %}tw-badge-maxed{% elif tech.is_upgrading %}tw-badge-upgrading{% endif %}">
-                                    Lv {{ tech.level }} / {{ tech.max_level }}
+                                    等级 {{ tech.level }} / {{ tech.max_level }}
                                 </span>
                             </div>
                             <p class="tw-building-desc">{{ tech.description }}</p>
@@ -124,7 +124,7 @@
                         <div class="tw-building-headline">
                             <h3>{{ tech.name }}</h3>
                             <span class="tw-level-badge {% if tech.level >= tech.max_level %}tw-badge-maxed{% elif tech.is_upgrading %}tw-badge-upgrading{% endif %}">
-                                Lv {{ tech.level }} / {{ tech.max_level }}
+                                等级 {{ tech.level }} / {{ tech.max_level }}
                             </span>
                         </div>
                         <p class="tw-building-desc">{{ tech.description }}</p>

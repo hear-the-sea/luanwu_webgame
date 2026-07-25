@@ -151,7 +151,7 @@ def upgrade_technology(guild, tech_key, operator):
                 guild=guild_locked,
                 action="tech_upgrade",
                 related_user=operator,
-                note=f"升级{guild_constants.TECH_NAMES.get(tech_key, tech_key)}至{tech_locked.level}级（消耗红宝石x{ruby_cost}）",
+                note=f"升级{guild_constants.TECH_NAMES.get(tech_key, '该科技')}至{tech_locked.level}级（消耗红宝石×{ruby_cost}）",
             )
         else:
             if guild_locked.silver < cost["silver"]:
@@ -184,12 +184,12 @@ def upgrade_technology(guild, tech_key, operator):
                 grain_change=-cost["grain"],
                 gold_bar_change=-cost["gold_bar"],
                 related_user=operator,
-                note=f"升级{guild_constants.TECH_NAMES.get(tech_key, tech_key)}至{tech_locked.level}级",
+                note=f"升级{guild_constants.TECH_NAMES.get(tech_key, '该科技')}至{tech_locked.level}级",
             )
 
         # 步骤6：获取操作者庄园名称（保存用于事务外使用）
         operator_user_id = operator.id
-        tech_name = guild_constants.TECH_NAMES.get(tech_key, tech_key)
+        tech_name = guild_constants.TECH_NAMES.get(tech_key, "该科技")
         tech_level = tech_locked.level
 
     # 事务外发布公告，减少锁持有时间。公告失败不应影响升级结果。

@@ -45,6 +45,13 @@ chance_rewards:
   green:
     wood_essence: 0.75
     copper_essence: 0.25
+    shuiqumu: 0.25
+    paozi: 0.12
+    zaozi: 0.12
+    tiemu: 0.06
+    zitanmu: 0.05
+    heiyuanshi: 0.06
+    jingangmei: 0.04
   blue:
     wood_essence: 0.8
     copper_essence: 0.75
@@ -54,6 +61,14 @@ chance_rewards:
     fire_stone: 0.12
     earth_stone: 0.12
     water_stone: 0.12
+    shuiqumu: 0.35
+    paozi: 0.20
+    zaozi: 0.20
+    tiemu: 0.14
+    zitanmu: 0.12
+    heiyuanshi: 0.15
+    jingangmei: 0.10
+    gaolu: 0.02
   purple:
     wood_essence: 0.88
     copper_essence: 0.88
@@ -62,6 +77,14 @@ chance_rewards:
     fire_stone: 0.22
     earth_stone: 0.22
     water_stone: 0.22
+    shuiqumu: 0.50
+    paozi: 0.30
+    zaozi: 0.30
+    tiemu: 0.24
+    zitanmu: 0.22
+    heiyuanshi: 0.26
+    jingangmei: 0.20
+    gaolu: 0.06
   orange:
     wood_essence: 0.95
     copper_essence: 0.95
@@ -70,3 +93,11 @@ chance_rewards:
     fire_stone: 0.35
     earth_stone: 0.35
     water_stone: 0.35
+    shuiqumu: 0.65
+    paozi: 0.42
+    zaozi: 0.42
+    tiemu: 0.36
+    zitanmu: 0.34
+    heiyuanshi: 0.40
+    jingangmei: 0.32
+    gaolu: 0.14

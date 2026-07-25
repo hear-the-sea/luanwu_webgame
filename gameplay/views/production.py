@@ -90,7 +90,7 @@ def _build_basic_production_success_message(
         getattr(raw_result, "actual_duration", None),
         contract_name="production result actual_duration",
     )
-    quantity_text = f"x{quantity}" if quantity > 1 else ""
+    quantity_text = f"×{quantity}" if quantity > 1 else ""
     return f"{item_name}{quantity_text} {action_label}，预计 {actual_duration} 秒后完成"
 
 

@@ -15,7 +15,7 @@ def test_extract_defender_tech_profile_rejects_invalid_technology_payload():
 
 
 def test_extract_defender_tech_profile_rejects_invalid_guest_level():
-    with pytest.raises(GameError, match="invalid battle defender guest_level"):
+    with pytest.raises(GameError, match="数据异常，请稍后重试"):
         _extract_defender_tech_profile({"technology": {"guest_level": "bad"}})
 
 

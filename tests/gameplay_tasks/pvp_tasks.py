@@ -216,3 +216,50 @@ def test_scan_raid_runs_recovers_finished_travel_without_return_deadline(monkeyp
 
     assert tasks.scan_raid_runs(limit=1) == 1
     assert finalized == [run.pk]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_scan_raid_runs_continues_after_invalid_durable_run(monkeypatch, django_user_model):
+    attacker_user = django_user_model.objects.create_user(username="raid_scan_invalid_a", password="pass123")
+    defender_user = django_user_model.objects.create_user(username="raid_scan_invalid_d", password="pass123")
+    attacker = ensure_manor(attacker_user)
+    defender = ensure_manor(defender_user)
+    now = timezone.now()
+    invalid_run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.MARCHING,
+        guest_snapshots=[],
+        battle_at=None,
+    )
+    later_run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.MARCHING,
+        guest_snapshots=[{"sentinel": True}],
+        battle_at=now - timedelta(seconds=1),
+    )
+
+    from gameplay.services import raid as raid_service
+    from gameplay.services.raid.combat import battle as combat_battle
+
+    real_process = raid_service.process_raid_battle
+    seen: list[int] = []
+
+    def _process(run, now=None):
+        seen.append(run.id)
+        if run.id == invalid_run.id:
+            monkeypatch.setattr(combat_battle, "_get_defender_battle_block_reason", lambda *_args, **_kwargs: None)
+            return real_process(run, now=now)
+        RaidRun.objects.filter(pk=run.pk).update(
+            status=RaidRun.Status.RETURNING,
+            return_at=now + timedelta(minutes=1),
+        )
+        return None
+
+    monkeypatch.setattr(raid_service, "process_raid_battle", _process)
+
+    assert tasks.scan_raid_runs(limit=10) == 2
+    invalid_run.refresh_from_db()
+    assert invalid_run.status == RaidRun.Status.FAILED
+    assert seen == [invalid_run.id, later_run.id]

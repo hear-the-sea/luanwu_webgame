@@ -315,13 +315,13 @@ def arena_exchange_view(request: HttpRequest) -> HttpResponse:
             item_names = get_item_template_names_by_keys(result.random_granted_items.keys())
             parts: list[str] = []
             for item_key in sorted(result.random_granted_items.keys()):
-                item_name = item_names.get(item_key, item_key)
+                item_name = item_names.get(item_key, "未知物品")
                 item_amount = result.random_granted_items[item_key]
-                parts.append(f"{item_name}x{item_amount}")
+                parts.append(f"{item_name}×{item_amount}")
             random_draw_summary = f" 本次抽到：{'、'.join(parts)}。"
         messages.success(
             request,
-            f"兑换成功：{result.reward.name} x{result.quantity}，消耗角斗币 {result.total_cost}。{random_draw_summary}",
+            f"兑换成功：{result.reward.name} ×{result.quantity}，消耗角斗币 {result.total_cost}。{random_draw_summary}",
         )
     except GameError as exc:
         _handle_known_arena_error(request, exc)

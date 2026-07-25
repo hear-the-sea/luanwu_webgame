@@ -56,7 +56,7 @@
                             <a href="{% url 'guilds:detail' guild.id %}" class="tw-guild-name-link">{{ guild.name }}</a>
                         </td>
                         <td>{{ guild.get_leader.user.manor.display_name }}</td>
-                        <td><span class="tw-badge-gold">Lv {{ guild.level }} / 10</span></td>
+                        <td><span class="tw-badge-gold">等级 {{ guild.level }} / 10</span></td>
                     </tr>
                     {% endfor %}
                 </tbody>

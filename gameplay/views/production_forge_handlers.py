@@ -75,7 +75,7 @@ def _build_decompose_reward_text(raw_result: object) -> str:
         template.key: template.name
         for template in ItemTemplate.objects.filter(key__in=reward_map.keys()).only("key", "name")
     }
-    reward_parts = [f"{reward_templates.get(key, key)}x{amount}" for key, amount in reward_map.items()]
+    reward_parts = [f"{reward_templates.get(key, '未知物品')}×{amount}" for key, amount in reward_map.items()]
     return f"，获得：{'、'.join(reward_parts)}" if reward_parts else ""
 
 
@@ -92,7 +92,7 @@ def _build_start_equipment_forging_success_message(raw_result: object) -> str:
         getattr(raw_result, "actual_duration", None),
         contract_name="forge production result actual_duration",
     )
-    quantity_text = f"x{quantity}" if quantity > 1 else ""
+    quantity_text = f"×{quantity}" if quantity > 1 else ""
     return f"{equipment_name}{quantity_text} 开始锻造，预计 {actual_duration} 秒后完成"
 
 
@@ -107,7 +107,7 @@ def _build_decompose_success_message(raw_result: object) -> str:
         raw_result.get("quantity"),
         contract_name="forge decompose result quantity",
     )
-    quantity_text = f"x{quantity}" if quantity > 1 else ""
+    quantity_text = f"×{quantity}" if quantity > 1 else ""
     return f"{equipment_name}{quantity_text} 分解完成{_build_decompose_reward_text(raw_result)}"
 
 
@@ -122,7 +122,7 @@ def _build_blueprint_synthesize_success_message(raw_result: object) -> str:
         raw_result.get("quantity"),
         contract_name="forge blueprint result quantity",
     )
-    quantity_text = f"x{quantity}" if quantity > 1 else ""
+    quantity_text = f"×{quantity}" if quantity > 1 else ""
     return f"{result_name}{quantity_text} 合成完成"
 
 

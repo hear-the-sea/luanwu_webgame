@@ -92,7 +92,7 @@ def process_auction_delivery(
                 kind="reward",
                 title="【拍卖行】恭喜您成功拍得物品",
                 body=(
-                    f"恭喜！您成功拍得 {delivery.item_template.name} x{delivery.quantity}！\n\n"
+                    f"恭喜！您成功拍得 {delivery.item_template.name} ×{delivery.quantity}！\n\n"
                     f"拍卖详情：\n"
                     f"- 物品：{delivery.item_template.name}\n"
                     f"- 数量：{delivery.quantity}\n"

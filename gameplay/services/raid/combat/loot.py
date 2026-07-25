@@ -389,8 +389,8 @@ def _format_loot_description(resources: Dict[str, int], items: Dict[str, int]) -
     if items:
         templates = {t.key: t.name for t in ItemTemplate.objects.filter(key__in=items.keys()).only("key", "name")}
         for key, qty in items.items():
-            name = templates.get(key, key)
-            parts.append(f"{name} x{qty}")
+            name = templates.get(key, "未知物品")
+            parts.append(f"{name} ×{qty}")
 
     return "\n".join(parts) if parts else "无"
 
@@ -406,13 +406,13 @@ def _format_battle_rewards_description(battle_rewards: Dict[str, Any]) -> str:
     equipment = normalize_positive_int_mapping(normalized_rewards.get("equipment"))
 
     if exp_fruit > 0:
-        parts.append(f"经验果 x{exp_fruit}")
+        parts.append(f"经验果 ×{exp_fruit}")
 
     if equipment:
         templates = {t.key: t.name for t in ItemTemplate.objects.filter(key__in=equipment.keys()).only("key", "name")}
         for key, qty in equipment.items():
-            name = templates.get(key, key)
-            parts.append(f"{name} x{qty}")
+            name = templates.get(key, "未知装备")
+            parts.append(f"{name} ×{qty}")
 
     return "\n".join(parts) if parts else ""
 

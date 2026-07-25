@@ -30,7 +30,7 @@
             <dl class="tw-guild-dl">
                 <div>
                     <dt>等级</dt>
-                    <dd><span class="tw-badge-gold">Lv {{ guild.level }} / 10</span></dd>
+                    <dd><span class="tw-badge-gold">等级 {{ guild.level }} / 10</span></dd>
                 </div>
                 <div>
                     <dt>帮主</dt>
@@ -114,7 +114,7 @@
                 <a href="{% url 'guilds:warehouse' %}" class="tw-btn-secondary">帮会仓库</a>
                 <a href="{% url 'guilds:hero_pool' %}" class="tw-btn-secondary">帮会门客池</a>
                 <a href="{% url 'guilds:missions' %}" class="tw-btn-secondary">帮会任务</a>
-                <a href="{% url 'guilds:pvp' %}" class="tw-btn-secondary">帮会PVP</a>
+                <a href="{% url 'guilds:pvp' %}" class="tw-btn-secondary">帮会对战</a>
                 <a href="{% url 'guilds:contribution_ranking' %}" class="tw-btn-secondary">贡献排行</a>
                 <a href="{% url 'guilds:announcements' %}" class="tw-btn-secondary">帮会公告</a>
                 {% if member.can_manage %}

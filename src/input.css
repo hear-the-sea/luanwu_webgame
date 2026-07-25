@@ -490,6 +490,21 @@
   }
 
   @media (max-width: 640px) {
+    .tw-building-card--manor.tw-work-card--no-match {
+      @apply flex-col;
+    }
+
+    .tw-building-card--manor.tw-work-card--no-match .tw-building-media {
+      flex: 0 0 auto;
+      width: 100%;
+      border-right: 0;
+      border-bottom: 2px solid var(--border-light);
+    }
+
+    .tw-building-card--manor.tw-work-card--no-match .tw-building-main {
+      width: 100%;
+    }
+
     .tw-building-card--manor .tw-building-media {
       flex: 0 0 176px;
       padding: 6px;
@@ -1555,6 +1570,19 @@
     background: linear-gradient(180deg, #8B4513 0%, #6B3410 100%);
     border-color: #5A2D0C;
     box-shadow: 0 2px 6px rgba(74, 38, 18, 0.25);
+  }
+
+  /* 打工页标签区紧凑间距 */
+  .tw-work-section-header {
+    @apply mb-3;
+  }
+
+  .tw-work-subtabs {
+    @apply py-1;
+  }
+
+  .tw-work-subtabs .tw-troop-subtab {
+    @apply py-1;
   }
 
   /* ========== 竞技场 ========== */

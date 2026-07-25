@@ -146,7 +146,7 @@ def start_troop_recruitment_view(request: HttpRequest) -> HttpResponse:
         from gameplay.services.recruitment.recruitment import start_troop_recruitment
 
         recruitment = start_troop_recruitment(manor, troop_key, quantity)
-        quantity_text = f"x{recruitment.quantity}" if recruitment.quantity > 1 else ""
+        quantity_text = f"×{recruitment.quantity}" if recruitment.quantity > 1 else ""
         messages.success(
             request, f"{recruitment.troop_name}{quantity_text} 开始募兵，预计 {recruitment.actual_duration} 秒后完成"
         )

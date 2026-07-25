@@ -167,7 +167,7 @@ def load_arena_reward_catalog() -> dict[str, ArenaRewardDefinition]:
 
         catalog[key] = ArenaRewardDefinition(
             key=key,
-            name=str(entry.get("name") or key),
+            name=str(entry.get("name") or "竞技奖励"),
             cost_coins=cost_coins,
             daily_limit=daily_limit,
             resources=resources,

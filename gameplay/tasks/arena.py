@@ -21,11 +21,8 @@ logger = logging.getLogger(__name__)
 def scan_arena_tournaments(limit: int = 20) -> dict[str, int]:
     started = 0
     processed = 0
-    processed_coop = 0
     virtual_started = 0
-    virtual_coop_prepared = 0
     cleaned = 0
-    cleaned_coop = 0
     failed_stages: list[str] = []
 
     try:
@@ -41,12 +38,6 @@ def scan_arena_tournaments(limit: int = 20) -> dict[str, int]:
         failed_stages.append("start_due_virtual_backfill_tournaments")
 
     try:
-        virtual_coop_prepared = arena_coop_core.start_due_virtual_backfill_coop_events(limit=limit)
-    except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
-        logger.exception("arena virtual coop backfill scan failed")
-        failed_stages.append("start_due_virtual_backfill_coop_events")
-
-    try:
         processed = run_due_arena_rounds(limit=limit)
     except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
         logger.exception("arena tournament round scan failed")
@@ -57,6 +48,30 @@ def scan_arena_tournaments(limit: int = 20) -> dict[str, int]:
     except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
         logger.exception("arena tournament cleanup failed")
         failed_stages.append("cleanup_expired_tournaments")
+
+    if failed_stages:
+        raise RuntimeError(f"arena scan failed stages: {', '.join(failed_stages)}")
+
+    return {
+        "started": int(started),
+        "virtual_started": int(virtual_started),
+        "processed_rounds": int(processed),
+        "cleaned_tournaments": int(cleaned),
+    }
+
+
+@shared_task(name="gameplay.scan_arena_coop_events")
+def scan_arena_coop_events(limit: int = 20) -> dict[str, int]:
+    virtual_coop_prepared = 0
+    processed_coop = 0
+    cleaned_coop = 0
+    failed_stages: list[str] = []
+
+    try:
+        virtual_coop_prepared = arena_coop_core.start_due_virtual_backfill_coop_events(limit=limit)
+    except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
+        logger.exception("arena virtual coop backfill scan failed")
+        failed_stages.append("start_due_virtual_backfill_coop_events")
 
     try:
         processed_coop = arena_coop_core.run_due_arena_coop_events(limit=limit)
@@ -75,14 +90,10 @@ def scan_arena_tournaments(limit: int = 20) -> dict[str, int]:
         failed_stages.append("cleanup_expired_arena_coop_events")
 
     if failed_stages:
-        raise RuntimeError(f"arena scan failed stages: {', '.join(failed_stages)}")
+        raise RuntimeError(f"arena coop scan failed stages: {', '.join(failed_stages)}")
 
     return {
-        "started": int(started),
-        "virtual_started": int(virtual_started),
         "virtual_coop_prepared": int(virtual_coop_prepared),
-        "processed_rounds": int(processed),
         "processed_coop_events": int(processed_coop),
-        "cleaned_tournaments": int(cleaned),
         "cleaned_coop_events": int(cleaned_coop),
     }

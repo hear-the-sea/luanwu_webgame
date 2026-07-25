@@ -45,7 +45,7 @@ def donate_resource(member, resource_type, amount):
     """
     # 验证资源类型
     if resource_type not in guild_constants.CONTRIBUTION_RATES:
-        raise GuildContributionError(f"不支持捐赠{resource_type}")
+        raise GuildContributionError("不支持该捐赠资源", resource_type=resource_type)
 
     # 验证捐赠数量
     if resource_type != GOLD_BAR_ITEM_KEY and amount < guild_constants.MIN_DONATION_AMOUNT:

@@ -8,9 +8,32 @@ from gameplay.models import InventoryItem
 from guilds.constants import CONTRIBUTION_RATES
 from guilds.models import Guild, GuildExchangeLog, GuildMember, GuildWarehouse
 from guilds.services import warehouse_config
-from guilds.services.warehouse import exchange_item, get_member_weekly_exchange_quantity
+from guilds.services.warehouse import exchange_item, get_exchange_logs, get_member_weekly_exchange_quantity
 
 pytest_plugins = ("tests.guild_warehouse_service.support",)
+
+
+@pytest.mark.django_db
+def test_exchange_logs_use_chinese_item_names_and_hide_unknown_keys(guild_member_with_warehouse_item):
+    guild, member = guild_member_with_warehouse_item
+    GuildExchangeLog.objects.create(
+        guild=guild,
+        member=member,
+        item_key="guild_wh_item",
+        quantity=2,
+        contribution_cost=10,
+    )
+    GuildExchangeLog.objects.create(
+        guild=guild,
+        member=member,
+        item_key="future_internal_item",
+        quantity=1,
+        contribution_cost=5,
+    )
+
+    logs = get_exchange_logs(guild)
+
+    assert [log.item_display_name for log in logs] == ["未知物品", "帮会仓库道具"]
 
 
 @pytest.mark.django_db

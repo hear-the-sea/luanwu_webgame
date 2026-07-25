@@ -190,7 +190,7 @@ def _start_guild_raid_atomic(
         )
         .exists()
     ):
-        raise GuildValidationError("当前已有帮会 PVP 出征中")
+        raise GuildValidationError("当前已有帮会对战队伍出征中")
 
     normalized_pool_entry_ids = normalize_positive_ids(pool_entry_ids)
     if not normalized_pool_entry_ids:

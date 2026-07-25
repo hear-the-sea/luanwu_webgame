@@ -214,7 +214,7 @@ def spend_exchange_cost_locked(
         spend_resources_locked(
             manor,
             {"silver": total_cost},
-            note=f"兑换金条 x{quantity}",
+            note=f"兑换金条 ×{quantity}",
             reason=bank_exchange_reason,
         )
     except InsufficientResourceError as exc:

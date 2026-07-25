@@ -28,7 +28,7 @@ def test_loot_box_invalid_probability_config_raises_config_error(django_user_mod
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="gear_chance 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -57,7 +57,7 @@ def test_loot_box_invalid_skill_book_probability_config_raises_config_error(djan
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="skill_book_chance 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -85,7 +85,7 @@ def test_loot_box_invalid_resources_payload_raises_config_error(django_user_mode
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="resources 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -113,7 +113,7 @@ def test_loot_box_false_resources_payload_raises_config_error(django_user_model)
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="resources 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -141,7 +141,7 @@ def test_loot_box_invalid_resource_amount_raises_config_error(django_user_model)
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="resources 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -170,7 +170,7 @@ def test_loot_box_invalid_gear_keys_payload_raises_config_error(django_user_mode
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="gear_keys 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -199,7 +199,7 @@ def test_loot_box_invalid_gear_key_entry_raises_config_error(django_user_model):
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="gear_keys 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -228,7 +228,7 @@ def test_loot_box_invalid_skill_book_keys_payload_raises_config_error(django_use
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="skill_book_keys 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -257,7 +257,7 @@ def test_loot_box_invalid_skill_book_key_entry_raises_config_error(django_user_m
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="skill_book_keys 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -286,7 +286,7 @@ def test_loot_box_negative_silver_range_raises_config_error(django_user_model):
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="silver_min/silver_max 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -315,7 +315,7 @@ def test_loot_box_reversed_silver_range_raises_config_error(django_user_model):
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="silver_min/silver_max 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -361,7 +361,7 @@ def test_loot_box_invalid_random_item_groups_raise_config_error(case, groups, dj
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="random_item_groups 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()

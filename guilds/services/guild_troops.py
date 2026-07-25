@@ -194,7 +194,7 @@ def deduct_guild_troops(*, guild: Guild, loadout: dict[str, int]) -> dict[str, i
     for troop_key, quantity in normalized_loadout.items():
         storage = storages.get(troop_key)
         if storage is None or storage.count < quantity:
-            raise GuildValidationError(f"帮会护院 {troop_key} 数量不足")
+            raise GuildValidationError("帮会护院数量不足", troop_key=troop_key)
 
     now = timezone.now()
     for storage in storages.values():
@@ -206,7 +206,10 @@ def deduct_guild_troops(*, guild: Guild, loadout: dict[str, int]) -> dict[str, i
             updated_at=now,
         )
         if updated_rows != 1:
-            raise GuildValidationError(f"帮会护院 {storage.troop_template.key} 数量不足")
+            raise GuildValidationError(
+                "帮会护院数量不足",
+                troop_key=storage.troop_template.key,
+            )
 
     return normalized_loadout
 
@@ -223,7 +226,7 @@ def add_guild_troops(*, guild: Guild, loadout: dict[str, int]) -> dict[str, int]
     }
     if len(templates) != len(normalized_loadout):
         invalid_keys = [key for key in normalized_loadout if key not in templates]
-        raise GuildValidationError(f"护院参数错误: {', '.join(invalid_keys)}")
+        raise GuildValidationError("护院参数错误", invalid_troop_keys=invalid_keys)
 
     now = timezone.now()
     for troop_key in sorted(normalized_loadout):
@@ -262,7 +265,7 @@ def donate_troops(*, member: GuildMember, troop_key: str, quantity: int) -> None
         .first()
     )
     if not player_troop or player_troop.count < quantity:
-        raise GuildValidationError(f"护院 {normalized_key} 数量不足")
+        raise GuildValidationError("护院数量不足", troop_key=normalized_key)
 
     updated_rows = PlayerTroop.objects.filter(pk=player_troop.pk, count__gte=quantity).update(
         count=F("count") - quantity,
@@ -270,7 +273,7 @@ def donate_troops(*, member: GuildMember, troop_key: str, quantity: int) -> None
     )
     if updated_rows != 1:
         # 理论上在行锁下不会发生；保底防并发/数据异常导致的负数。
-        raise GuildValidationError(f"护院 {normalized_key} 数量不足")
+        raise GuildValidationError("护院数量不足", troop_key=normalized_key)
 
     storage = _get_or_create_locked_storage(guild=locked_member.guild, troop_template=player_troop.troop_template)
 

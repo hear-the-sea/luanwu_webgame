@@ -210,7 +210,7 @@
                                         <img src="{{ troop.avatar.url }}" alt="{{ troop_labels|get_label:troop_key }}" class="tw-enemy-avatar" loading="lazy" decoding="async">
                                         <span class="tw-enemy-count">×{{ count }}</span>
                                     {% else %}
-                                        <span class="tw-badge">{{ troop_labels|get_label:troop_key }} x{{ count }}</span>
+                                        <span class="tw-badge">{{ troop_labels|get_label:troop_key }} ×{{ count }}</span>
                                     {% endif %}
                                 </div>
                                 {% endwith %}
@@ -234,7 +234,7 @@
                         <div class="flex flex-wrap gap-2">
                             {% for cost in selected_entry_cost_items %}
                                 <span class="tw-pill rarity-{{ cost.rarity|default:'default' }}">
-                                    {{ cost.label }} x{{ cost.required }}（持有 {{ cost.owned }}）
+                                    {{ cost.label }} ×{{ cost.required }}（持有 {{ cost.owned }}）
                                 </span>
                             {% endfor %}
                         </div>
@@ -279,10 +279,10 @@
                                                     <div class="tw-guest-details">
                                                         <div class="tw-guest-info-row">
                                                             <span class="tw-guest-name-sm rarity-text-{{ guest.template.rarity|lower }}">{{ guest.display_name }}</span>
-                                                            <span class="tw-guest-level-sm">Lv.{{ guest.level }}</span>
+                                                            <span class="tw-guest-level-sm">等级 {{ guest.level }}</span>
                                                         </div>
                                                         <div class="tw-guest-stats-sm">
-                                                            <span title="生命">HP {{ guest.current_hp }}/{{ guest.max_hp }}</span>
+                                                            <span title="生命">生命 {{ guest.current_hp }}/{{ guest.max_hp }}</span>
                                                         </div>
                                                     </div>
                                                 </div>

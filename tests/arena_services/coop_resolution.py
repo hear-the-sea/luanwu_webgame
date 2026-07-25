@@ -308,7 +308,7 @@ def test_run_due_arena_coop_events_sends_battle_and_settlement_messages(monkeypa
     assert "战报" in battle_message.title
     assert "围攻光明顶" in battle_message.body
     assert "总伤害 2000" in reward_message.body
-    assert "Boss伤害 2000" in reward_message.body
+    assert "首领伤害 2000" in reward_message.body
     assert "排名第 1" in reward_message.body
     assert "角斗币 170" in reward_message.body
     assert "屠龙刀" in reward_message.body

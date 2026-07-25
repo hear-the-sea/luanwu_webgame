@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from battle.combatants_pkg.core import Combatant
+from battle.combatants_pkg.guest_builder import assign_agility_based_priorities
 from battle.simulation.turn_order import determine_turn_order
 
 
@@ -61,3 +62,13 @@ def test_determine_turn_order_keeps_original_order_within_same_side_and_agility(
     )
 
     assert [unit.name for unit in ordered] == ["守一", "守二", "攻一", "攻二"]
+
+
+def test_assign_agility_based_priorities_prefers_defender_when_cutoff_ties():
+    attacker = make_combatant("攻方", "attacker", 120)
+    defender = make_combatant("守方", "defender", 120)
+
+    assign_agility_based_priorities([attacker], [defender])
+
+    assert defender.priority == -1
+    assert attacker.priority == 0

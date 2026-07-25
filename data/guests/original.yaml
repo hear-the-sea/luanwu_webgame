@@ -57,7 +57,7 @@ heroes:
     default_morality: 70
     growth_range:
     - 5
-    - 9
+    - 8
     recruitable: false
     avatar: pubayi.png
   - key: orig_liang_shanbo
@@ -84,7 +84,7 @@ heroes:
     default_morality: 68
     growth_range:
     - 5
-    - 9
+    - 8
     recruitable: false
     attribute_weights:
       force: 40
@@ -131,7 +131,7 @@ heroes:
     default_morality: 72
     growth_range:
     - 6
-    - 11
+    - 10
     recruitable: false
     attribute_weights:
       force: 45

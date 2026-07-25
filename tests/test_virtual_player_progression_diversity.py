@@ -4,6 +4,7 @@ import random
 from datetime import timedelta
 
 import pytest
+from django.db import connection
 from django.utils import timezone
 
 from battle.models import TroopTemplate
@@ -208,7 +209,7 @@ def test_real_projection_uses_summed_army_size(django_user_model):
 
 
 @pytest.mark.django_db
-def test_project_troops_preserves_total_across_multiple_types(settings, django_user_model):
+def test_project_troops_preserves_total_across_multiple_types(settings, django_user_model, monkeypatch):
     from gameplay.services.virtual_players import _project_troops
 
     user = django_user_model.objects.create_user(username="projection_total_army", password="pass123")
@@ -220,7 +221,9 @@ def test_project_troops_preserves_total_across_multiple_types(settings, django_u
     settings.VIRTUAL_PLAYER_CONFIG = {
         "projection": {"troop_template_keys": [second.key, first.key]},
     }
+    monkeypatch.setattr(connection.features, "supports_update_conflicts_with_target", False)
 
+    _project_troops(manor, count=251, config=settings.VIRTUAL_PLAYER_CONFIG)
     _project_troops(manor, count=251, config=settings.VIRTUAL_PLAYER_CONFIG)
 
     troops = dict(manor.troops.filter(count__gt=0).values_list("troop_template__key", "count"))

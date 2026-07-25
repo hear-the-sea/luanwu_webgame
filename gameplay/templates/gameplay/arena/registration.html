@@ -28,7 +28,7 @@
         <div class="mt-2 flex flex-wrap gap-2">
             {% for link in active_entry.entry_guests.all %}
             <span class="px-2 py-1 rounded text-xs border border-border-light bg-bg-secondary">
-                {{ link.guest.display_name }} Lv{{ link.guest.level }}
+                {{ link.guest.display_name }} 等级 {{ link.guest.level }}
             </span>
             {% empty %}
             <span class="text-text-muted">无报名门客</span>
@@ -59,7 +59,7 @@
         <div class="tw-arena-guest-grid mb-3" id="arena-guest-grid">
             {% for guest in available_guests %}
             <label class="tw-arena-guest-option">
-                <span class="text-sm truncate">{{ guest.display_name }} Lv{{ guest.level }}</span>
+                <span class="text-sm truncate">{{ guest.display_name }} 等级 {{ guest.level }}</span>
                 <input type="checkbox" name="guest_ids" value="{{ guest.id }}" class="arena-guest-checkbox"
                        {% if guest.id in selected_guest_ids %}checked{% endif %}>
             </label>
@@ -113,7 +113,7 @@
                 <div class="mt-2 flex flex-wrap gap-2">
                     {% for link in arena_coop_active_entry.entry_guests.all %}
                     <span class="px-2 py-1 rounded text-xs border border-border-light bg-bg-secondary">
-                        {{ link.guest.display_name }} Lv{{ link.guest.level }}
+                        {{ link.guest.display_name }} 等级 {{ link.guest.level }}
                     </span>
                     {% empty %}
                     <span class="text-text-muted">无报名门客</span>
@@ -141,7 +141,7 @@
                 <div class="tw-arena-guest-grid mb-3">
                     {% for guest in arena_coop_available_guests %}
                     <label class="tw-arena-guest-option">
-                        <span class="text-sm truncate">{{ guest.display_name }} Lv{{ guest.level }}</span>
+                        <span class="text-sm truncate">{{ guest.display_name }} 等级 {{ guest.level }}</span>
                         <input type="checkbox" name="guest_ids" value="{{ guest.id }}" class="arena-guest-checkbox"
                                {% if guest.id in arena_coop_selected_guest_ids %}checked{% endif %}>
                     </label>

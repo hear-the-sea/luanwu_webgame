@@ -32,7 +32,7 @@ def record_trade_issue(context: dict[str, Any], *, section: str, message: str) -
 
 def effect_type_category_options() -> list[dict[str, str]]:
     return [{"key": "all", "label": "全部"}] + [
-        {"key": category_key, "label": EFFECT_TYPE_CATEGORY.get(category_key, category_key)}
+        {"key": category_key, "label": EFFECT_TYPE_CATEGORY.get(category_key, "其他")}
         for category_key in sorted(EFFECT_TYPE_CATEGORY.keys())
     ]
 
@@ -63,7 +63,7 @@ def _build_shop_category_options(shop_items: Any, sellable_items: Any) -> list[d
     categories.update(normalize_effect_type(effect_type) for effect_type in _iter_sellable_effect_types(sellable_items))
 
     return [{"key": "all", "label": "全部"}] + [
-        {"key": category_key, "label": EFFECT_TYPE_CATEGORY.get(category_key, category_key)}
+        {"key": category_key, "label": EFFECT_TYPE_CATEGORY.get(category_key, "其他")}
         for category_key in sorted(key for key in categories if key and key != "all")
     ]
 

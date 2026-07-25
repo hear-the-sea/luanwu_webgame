@@ -8,6 +8,9 @@ const initGuestDetailPage = () => {
   }
   detailRoot.dataset.pageInitialized = "1";
 
+  const browserErrorMessage = (error, fallback) =>
+    window.PlayerFacingCopy?.browserErrorMessage(error, fallback) || fallback;
+
   const attributeResponseFieldMap = {
     force: "force",
     intellect: "intellect",
@@ -160,7 +163,9 @@ const initGuestDetailPage = () => {
           }
         } catch (error) {
           const message =
-            error?.name === "AbortError" ? "请求超时，请检查网络后重试" : error?.message || "请求失败，请重试";
+            error?.name === "AbortError"
+              ? "请求超时，请检查网络后重试"
+              : browserErrorMessage(error, "请求失败，请重试");
           if (window.gameDialog?.error) {
             window.gameDialog.error(message, { title: "加点失败" });
           } else {
@@ -244,7 +249,7 @@ const initGuestDetailPage = () => {
       options.forEach((entry) => {
         const option = document.createElement("option");
         option.value = entry.id;
-        option.textContent = `[${entry.rarity_label}] ${entry.name}（x${entry.count}）`;
+        option.textContent = `[${entry.rarity_label}] ${entry.name}（×${entry.count}）`;
         option.className = `rarity-text ${entry.rarity_class || ""}`.trim();
         if (entry.title) {
           option.title = entry.title;

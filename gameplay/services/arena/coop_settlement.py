@@ -48,7 +48,7 @@ def format_rare_drop_summary(rare_drop_item_key: str) -> str:
     item_key = str(rare_drop_item_key or "").strip()
     if not item_key:
         return "未掉落稀有奖励"
-    item_name = ItemTemplate.objects.filter(key=item_key).values_list("name", flat=True).first() or item_key
+    item_name = ItemTemplate.objects.filter(key=item_key).values_list("name", flat=True).first() or "未知物品"
     return f"掉落稀有奖励：{item_name}"
 
 
@@ -65,7 +65,7 @@ def send_coop_settlement_messages(
     reward_title = "围攻光明顶结算"
     reward_body = (
         f"总伤害 {contribution.total_damage}，"
-        f"Boss伤害 {contribution.boss_damage}，"
+        f"首领伤害 {contribution.boss_damage}，"
         f"排名第 {contribution.damage_rank}，"
         f"角斗币 {contribution.total_coins}。"
         f"{format_rare_drop_summary(contribution.rare_drop_item_key)}。"

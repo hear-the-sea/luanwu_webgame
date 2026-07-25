@@ -260,7 +260,14 @@ def assign_agility_based_priorities(
     if not guests:
         return
 
-    sorted_guests = sorted(guests, key=lambda g: g.agility, reverse=True)
+    sorted_guests = sorted(
+        guests,
+        key=lambda guest: (
+            guest.agility,
+            1 if guest.side == "defender" else 0,
+        ),
+        reverse=True,
+    )
     total = len(sorted_guests)
 
     cutoff = max(1, int(total * VANGUARD_RATIO))

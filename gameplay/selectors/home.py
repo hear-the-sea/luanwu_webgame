@@ -102,7 +102,7 @@ def get_home_context(manor) -> dict:
     building_income = []
     for res_type, rate in hourly_rates.items():
         if rate > 0:
-            label = resource_labels.get(res_type, res_type)
+            label = resource_labels.get(res_type, "未知资源")
             building_income.append({"resource": res_type, "label": label, "rate": rate})
 
     player_troops = list(

@@ -6,7 +6,7 @@
     <div class="tw-panel-content">
         <div class="mb-4 text-sm">
             <p>状态：{{ coop_event.get_status_display }}</p>
-            <p>Boss：{{ coop_event.boss_name }}</p>
+            <p>首领：{{ coop_event.boss_name }}</p>
             <p>剩余生命：{{ coop_event.boss_remaining_hp }}</p>
             {% if coop_event.battle_report_id %}
             <p class="mt-2">
@@ -20,7 +20,7 @@
             <p class="font-semibold mb-2">系统参赛者伤害</p>
             <div class="space-y-1 text-text-muted">
                 {% for row in virtual_contribution_rows %}
-                <p>{{ row.manor_name }}：总伤害 {{ row.total_damage }}，Boss 伤害 {{ row.boss_damage }}</p>
+                <p>{{ row.manor_name }}：总伤害 {{ row.total_damage }}，首领伤害 {{ row.boss_damage }}</p>
                 {% endfor %}
             </div>
         </div>
@@ -33,7 +33,7 @@
                         <th class="py-2 text-left">排名</th>
                         <th class="py-2 text-left">玩家</th>
                         <th class="py-2 text-right">总伤害</th>
-                        <th class="py-2 text-right">Boss 伤害</th>
+                        <th class="py-2 text-right">首领伤害</th>
                         <th class="py-2 text-right">奖励</th>
                     </tr>
                 </thead>

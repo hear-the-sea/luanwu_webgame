@@ -48,7 +48,7 @@ def test_summon_card_invalid_choice_payload_raises_config_error(django_user_mode
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="choices 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -87,7 +87,7 @@ def test_summon_card_invalid_required_items_payload_raises_config_error(monkeypa
 
     monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.random", lambda: 0.0)
 
-    with pytest.raises(ItemNotConfiguredError, match="required_items 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -119,7 +119,7 @@ def test_summon_card_non_string_choice_template_key_raises_config_error(django_u
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="choices 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -152,7 +152,7 @@ def test_summon_card_invalid_action_type_raises_config_error(django_user_model):
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="action 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -186,7 +186,7 @@ def test_summon_card_non_positive_required_items_amount_raises_config_error(monk
 
     monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.random", lambda: 0.0)
 
-    with pytest.raises(ItemNotConfiguredError, match="required_items 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -220,7 +220,7 @@ def test_summon_card_false_required_items_payload_raises_config_error(monkeypatc
 
     monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.random", lambda: 0.0)
 
-    with pytest.raises(ItemNotConfiguredError, match="required_items 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -247,7 +247,7 @@ def test_summon_card_non_dict_effect_payload_raises_config_error(django_user_mod
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="effect_payload 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -281,7 +281,7 @@ def test_summon_card_invalid_exclusive_template_keys_payload_raises_config_error
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="exclusive_template_keys 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -315,7 +315,7 @@ def test_summon_card_invalid_exclusive_template_key_entry_raises_config_error(dj
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="exclusive_template_keys 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()

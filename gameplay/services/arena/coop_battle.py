@@ -102,7 +102,7 @@ def build_defender_guest_pool(locked_event: ArenaCoopEvent) -> list[Guest]:
         defender_guest_keys.append(
             {
                 "key": template_key,
-                "label": str(guard.get("display_name") or template_key),
+                "label": str(guard.get("display_name") or "守卫"),
             }
         )
 

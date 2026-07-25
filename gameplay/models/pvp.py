@@ -109,6 +109,10 @@ class RaidRun(models.Model):
         RETURNING = "returning", "返程中"
         COMPLETED = "completed", "已完成"
         RETREATED = "retreated", "已撤退"
+        FAILED = "failed", "出征失败"
+
+    class FailureReason(models.TextChoices):
+        MISSING_ATTACKER_LINEUP = "missing_attacker_lineup", "缺少出征门客与快照"
 
     attacker = models.ForeignKey(
         "gameplay.Manor", on_delete=models.CASCADE, related_name="raid_runs_sent", verbose_name="进攻方"
@@ -120,6 +124,13 @@ class RaidRun(models.Model):
     guest_snapshots = models.JSONField("出征门客快照", default=list, blank=True)
     troop_loadout = models.JSONField("兵种配置", default=dict, blank=True)
     status = models.CharField("状态", max_length=16, choices=Status.choices, default=Status.MARCHING)
+    failure_reason = models.CharField(
+        "失败原因",
+        max_length=64,
+        choices=FailureReason.choices,
+        blank=True,
+        default="",
+    )
     battle_report = models.ForeignKey(
         "battle.BattleReport",
         null=True,

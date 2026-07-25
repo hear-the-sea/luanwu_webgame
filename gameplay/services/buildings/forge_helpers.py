@@ -109,7 +109,7 @@ def build_blueprint_synthesis_option(
         costs_info.append(
             {
                 "key": cost_key_str,
-                "name": getattr(cost_template, "name", cost_key_str),
+                "name": getattr(cost_template, "name", "未知材料"),
                 "required": cost_amount,
                 "current": current_amount,
             }
@@ -125,10 +125,10 @@ def build_blueprint_synthesis_option(
     result_template = template_map.get(result_key)
     return {
         "blueprint_key": blueprint_key,
-        "blueprint_name": getattr(blueprint_template, "name", blueprint_key),
+        "blueprint_name": getattr(blueprint_template, "name", "未知图纸"),
         "blueprint_count": blueprint_count,
         "result_key": result_key,
-        "result_name": getattr(result_template, "name", result_key),
+        "result_name": getattr(result_template, "name", "未知装备"),
         "result_effect_type": str(getattr(result_template, "effect_type", "") or ""),
         "result_quantity": quantity_out,
         "required_forging": required_forging,
@@ -162,13 +162,13 @@ def build_equipment_option(
     max_quantity: int,
     is_forging: bool,
 ) -> dict[str, Any]:
-    equipment_name = item_name_map.get(equip_key, equip_key)
+    equipment_name = item_name_map.get(equip_key, "未知装备")
     materials = config.get("materials", {}) or {}
     material_info: list[dict[str, Any]] = []
     can_afford = True
     for mat_key, mat_amount in materials.items():
         current_amount = material_quantities.get(mat_key, 0)
-        mat_name = item_name_map.get(mat_key, material_name_fallback_map.get(mat_key, mat_key))
+        mat_name = item_name_map.get(mat_key, material_name_fallback_map.get(mat_key, "未知材料"))
         material_info.append(
             {
                 "key": mat_key,
@@ -184,7 +184,7 @@ def build_equipment_option(
         "key": equip_key,
         "name": equipment_name,
         "category": config["category"],
-        "category_name": equipment_categories.get(config["category"], config["category"]),
+        "category_name": equipment_categories.get(config["category"], "其他装备"),
         "materials": material_info,
         "base_duration": config["base_duration"],
         "actual_duration": actual_duration,

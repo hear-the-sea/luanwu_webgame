@@ -34,7 +34,7 @@ class InsufficientResourceError(ResourceError):
         self.available = available
         if message is None:
             labels = dict(ResourceType.choices)
-            label = labels.get(resource_type, resource_type)
+            label = labels.get(resource_type, "资源")
             message = f"{label}不足，需要 {required}，当前 {available}"
         super().__init__(
             message,
@@ -130,7 +130,7 @@ class InsufficientSpaceError(CapacityError):
             "treasury": "藏宝阁",
             "warehouse": "仓库",
         }
-        location_name = location_names.get(location, location)
+        location_name = location_names.get(location, "对应位置")
         if message is None:
             message = f"{location_name}空间不足，剩余空间：{available}，需要空间：{required}"
         super().__init__(

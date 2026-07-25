@@ -302,8 +302,8 @@ def get_metal_options(manor: Manor) -> List[Dict[str, Any]]:
         cost_type = config["cost_type"]
         cost_amount = config["cost_amount"]
         category = config["category"]
-        metal_name = item_name_map.get(metal_key, metal_key)
-        cost_type_name = "银两" if cost_type == "silver" else item_name_map.get(cost_type, cost_type)
+        metal_name = item_name_map.get(metal_key, "未知物品")
+        cost_type_name = "银两" if cost_type == "silver" else item_name_map.get(cost_type, "未知材料")
 
         # 检查是否有足够的材料
         if cost_type == "silver":
@@ -365,7 +365,7 @@ def start_smelting_production(manor: Manor, metal_key: str, quantity: int = 1) -
     is_unlocked, required_level, required_type_label = _get_unlock_requirement(config, smelting_level, smithy_level)
     if not is_unlocked:
         item_name_map_for_level = _get_item_name_map({metal_key})
-        metal_name_for_level = item_name_map_for_level.get(metal_key, metal_key)
+        metal_name_for_level = item_name_map_for_level.get(metal_key, "未知物品")
         raise ProductionStartError(f"需要{required_type_label}{required_level}级才能制作{metal_name_for_level}")
 
     # 验证制作数量
@@ -382,8 +382,8 @@ def start_smelting_production(manor: Manor, metal_key: str, quantity: int = 1) -
     total_cost = cost_amount * quantity
 
     item_name_map = _get_item_name_map({metal_key, cost_type} - {"silver"})
-    metal_name = item_name_map.get(metal_key, metal_key)
-    cost_name = "银两" if cost_type == "silver" else item_name_map.get(cost_type, cost_type)
+    metal_name = item_name_map.get(metal_key, "未知物品")
+    cost_name = "银两" if cost_type == "silver" else item_name_map.get(cost_type, "未知材料")
 
     with transaction.atomic():
         from gameplay.models import Manor as ManorModel
@@ -404,7 +404,7 @@ def start_smelting_production(manor: Manor, metal_key: str, quantity: int = 1) -
                 spend_resources_locked(
                     locked_manor,
                     {"silver": total_cost},
-                    note=f"制作{metal_name}x{quantity}",
+                    note=f"制作{metal_name}×{quantity}",
                     reason=ResourceEvent.Reason.UPGRADE_COST,
                 )
             except InsufficientResourceError as exc:
@@ -538,7 +538,7 @@ def finalize_smelting_production(production: SmeltingProduction, send_notificati
     if send_notification:
         from ..utils.messages import create_message
 
-        quantity_text = f"x{completed_production.quantity}" if completed_production.quantity > 1 else ""
+        quantity_text = f"×{completed_production.quantity}" if completed_production.quantity > 1 else ""
         try:
             create_message(
                 manor=completed_production.manor,

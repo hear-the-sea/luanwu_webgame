@@ -72,7 +72,7 @@ def test_arena_coop_detail_view_renders(arena_client):
     assert response.status_code == 200
     body = response.content.decode("utf-8")
     assert "围攻光明顶" in body
-    assert "Boss" in body
+    assert "首领" in body
     assert "1234" in body
 
 
@@ -94,7 +94,7 @@ def test_arena_events_view_running_coop_summary_has_no_detail_action(arena_clien
     assert f"共斗 #{event.id}" not in body
     assert "查看共斗详情" not in body
     assert f"围攻光明顶 #{event.id}" not in body
-    assert "Boss：张无忌" not in body
+    assert "首领：张无忌" not in body
 
 
 @pytest.mark.django_db

@@ -211,7 +211,7 @@ def claim_work_reward_view(request: HttpRequest, pk: int) -> HttpResponse:
     try:
         reward = claim_work_reward_with_refresh(manor=manor, assignment=assignment)
         chest_name = reward.get("item_name")
-        chest_text = f"，获得{chest_name} x1" if chest_name else ""
+        chest_text = f"，获得{chest_name} ×1" if chest_name else ""
         messages.success(request, f"{assignment.guest.display_name} 完成打工，获得银两 {reward['silver']}{chest_text}")
     except GameError as exc:
         _handle_known_work_error(request, exc)

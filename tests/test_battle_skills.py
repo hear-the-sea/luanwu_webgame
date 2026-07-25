@@ -222,7 +222,7 @@ def test_effective_attack_value_rejects_invalid_current_troop_strength():
     troop = make_unit(kind="troop", unit_attack=40, troop_strength="bad", initial_troop_strength=120)
     enemy = make_unit(kind="troop")
 
-    with pytest.raises(GameError, match="invalid battle current troop strength"):
+    with pytest.raises(GameError, match="战斗数据异常，请稍后重试"):
         effective_attack_value(troop, enemy)
 
 
@@ -230,14 +230,14 @@ def test_effective_defense_value_rejects_invalid_unit_defense():
     troop = make_unit(kind="troop", defense=360, troop_strength=180, initial_troop_strength=180, unit_defense="bad")
     attacker = make_unit(kind="troop", troop_strength=120, initial_troop_strength=120)
 
-    with pytest.raises(GameError, match="invalid battle unit_defense"):
+    with pytest.raises(GameError, match="数据异常，请稍后重试"):
         effective_defense_value(troop, attacker)
 
 
 def test_troop_unit_hp_rejects_invalid_max_hp():
     troop = make_unit(kind="troop", unit_hp=None, max_hp="bad", troop_strength=50, initial_troop_strength=50)
 
-    with pytest.raises(GameError, match="invalid battle max_hp"):
+    with pytest.raises(GameError, match="数据异常，请稍后重试"):
         troop_unit_hp(troop)
 
 

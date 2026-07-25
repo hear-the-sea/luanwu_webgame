@@ -19,6 +19,11 @@ recipes:
       tie: 10
       wood_essence: 1
       copper_essence: 1
+      tiemu: 3
+      heiyuanshi: 4
+      jingangmei: 3
+      zaozi: 3
+      earth_stone: 1
 
   - blueprint_key: blueprint_xiaoweikaijia
     result_item_key: equip_xiaoweikaijia
@@ -31,6 +36,11 @@ recipes:
       tie: 14
       wood_essence: 1
       copper_essence: 2
+      tiemu: 5
+      heiyuanshi: 7
+      jingangmei: 5
+      zaozi: 5
+      earth_stone: 2
 
   - blueprint_key: blueprint_xiaoweichangxue
     result_item_key: equip_xiaoweichangxue
@@ -43,6 +53,10 @@ recipes:
       tie: 8
       wood_essence: 1
       copper_essence: 1
+      shuiqumu: 6
+      tiemu: 3
+      paozi: 4
+      air_stone: 1
 
   - blueprint_key: blueprint_xiaoweichangjian
     result_item_key: equip_xiaoweichangjian
@@ -55,6 +69,11 @@ recipes:
       tie: 12
       wood_essence: 1
       copper_essence: 2
+      tiemu: 4
+      heiyuanshi: 6
+      jingangmei: 4
+      zaozi: 4
+      fire_stone: 1
 
   - blueprint_key: blueprint_qinglongkui
     result_item_key: equip_qinglongkui
@@ -67,6 +86,12 @@ recipes:
       tie: 10
       wood_essence: 2
       copper_essence: 1
+      zitanmu: 4
+      heiyuanshi: 3
+      jingangmei: 2
+      paozi: 2
+      zaozi: 2
+      air_stone: 1
 
   - blueprint_key: blueprint_qinglongjia
     result_item_key: equip_qinglongjia
@@ -79,6 +104,13 @@ recipes:
       tie: 14
       wood_essence: 2
       copper_essence: 2
+      zitanmu: 3
+      tiemu: 5
+      heiyuanshi: 5
+      jingangmei: 3
+      zaozi: 4
+      water_stone: 1
+      earth_stone: 1
 
   - blueprint_key: blueprint_qinglongxue
     result_item_key: equip_qinglongxue
@@ -91,6 +123,10 @@ recipes:
       tie: 8
       wood_essence: 2
       copper_essence: 1
+      zitanmu: 3
+      shuiqumu: 7
+      paozi: 4
+      air_stone: 1
 
   - blueprint_key: blueprint_qinglongdao
     result_item_key: equip_qinglongdao
@@ -103,6 +139,13 @@ recipes:
       tie: 12
       wood_essence: 2
       copper_essence: 2
+      zitanmu: 3
+      tiemu: 4
+      heiyuanshi: 5
+      jingangmei: 4
+      zaozi: 3
+      air_stone: 1
+      water_stone: 1
 
   - blueprint_key: blueprint_huxianpao
     result_item_key: equip_huxianpao
@@ -116,7 +159,14 @@ recipes:
       wood_essence: 3
       copper_essence: 2
       xuan_tie_essence: 1
-      water_stone: 1
+      zitanmu: 9
+      shuiqumu: 10
+      tiemu: 3
+      jingangmei: 3
+      paozi: 6
+      zaozi: 2
+      gaolu: 2
+      water_stone: 2
 
   - blueprint_key: blueprint_huxianxie
     result_item_key: equip_huxianxie
@@ -130,7 +180,14 @@ recipes:
       wood_essence: 2
       copper_essence: 2
       xuan_tie_essence: 1
-      air_stone: 1
+      zitanmu: 5
+      shuiqumu: 10
+      tiemu: 2
+      jingangmei: 1
+      paozi: 6
+      zaozi: 1
+      gaolu: 1
+      air_stone: 2
 
   - blueprint_key: blueprint_huxianjian
     result_item_key: equip_huxianjian
@@ -144,8 +201,15 @@ recipes:
       wood_essence: 2
       copper_essence: 2
       xuan_tie_essence: 1
+      zitanmu: 5
+      tiemu: 5
+      heiyuanshi: 8
+      jingangmei: 6
+      paozi: 2
+      zaozi: 5
+      gaolu: 2
       air_stone: 1
-      water_stone: 1
+      water_stone: 2
 
   - blueprint_key: blueprint_qilinkui
     result_item_key: equip_qilinkui
@@ -157,7 +221,13 @@ recipes:
       xi: 24
       tie: 18
       xuan_tie_essence: 1
-      fire_stone: 1
+      zitanmu: 3
+      tiemu: 6
+      heiyuanshi: 7
+      jingangmei: 5
+      zaozi: 5
+      gaolu: 2
+      fire_stone: 2
 
   - blueprint_key: blueprint_qilinjia
     result_item_key: equip_qilinjia
@@ -169,8 +239,14 @@ recipes:
       xi: 30
       tie: 24
       xuan_tie_essence: 2
-      fire_stone: 1
-      earth_stone: 1
+      tiemu: 10
+      heiyuanshi: 12
+      jingangmei: 8
+      paozi: 2
+      zaozi: 8
+      gaolu: 3
+      fire_stone: 2
+      earth_stone: 2
 
   - blueprint_key: blueprint_qilinxue
     result_item_key: equip_qilinxue
@@ -182,7 +258,14 @@ recipes:
       xi: 18
       tie: 14
       xuan_tie_essence: 1
+      shuiqumu: 8
+      tiemu: 5
+      jingangmei: 3
+      paozi: 5
+      zaozi: 2
+      gaolu: 1
       fire_stone: 1
+      air_stone: 1
 
   - blueprint_key: blueprint_qilindao
     result_item_key: equip_qilindao
@@ -194,7 +277,13 @@ recipes:
       xi: 26
       tie: 20
       xuan_tie_essence: 2
-      fire_stone: 1
+      tiemu: 8
+      heiyuanshi: 10
+      jingangmei: 7
+      paozi: 2
+      zaozi: 6
+      gaolu: 2
+      fire_stone: 3
 
   - blueprint_key: blueprint_xuanwukui
     result_item_key: equip_xuanwukui
@@ -206,7 +295,12 @@ recipes:
       xi: 26
       tie: 20
       xuan_tie_essence: 1
-      water_stone: 1
+      tiemu: 7
+      heiyuanshi: 9
+      jingangmei: 5
+      zaozi: 6
+      gaolu: 2
+      water_stone: 2
 
   - blueprint_key: blueprint_xuanwujia
     result_item_key: equip_xuanwujia
@@ -218,8 +312,14 @@ recipes:
       xi: 32
       tie: 26
       xuan_tie_essence: 2
-      water_stone: 1
-      earth_stone: 1
+      tiemu: 12
+      heiyuanshi: 14
+      jingangmei: 9
+      paozi: 2
+      zaozi: 9
+      gaolu: 3
+      water_stone: 2
+      earth_stone: 2
 
   - blueprint_key: blueprint_xuanwuxue
     result_item_key: equip_xuanwuxue
@@ -231,7 +331,14 @@ recipes:
       xi: 20
       tie: 16
       xuan_tie_essence: 1
-      earth_stone: 1
+      shuiqumu: 6
+      tiemu: 7
+      heiyuanshi: 4
+      jingangmei: 3
+      paozi: 4
+      zaozi: 3
+      gaolu: 1
+      earth_stone: 2
 
   - blueprint_key: blueprint_xuanwuchui
     result_item_key: equip_xuanwuchui
@@ -243,8 +350,15 @@ recipes:
       xi: 28
       tie: 22
       xuan_tie_essence: 2
+      tiemu: 10
+      heiyuanshi: 12
+      jingangmei: 9
+      paozi: 2
+      zaozi: 8
+      gaolu: 3
       water_stone: 1
-      earth_stone: 1
+      earth_stone: 2
+      fire_stone: 1
 
   - blueprint_key: blueprint_fenglingguan
     result_item_key: equip_fenglingguan
@@ -257,7 +371,14 @@ recipes:
       tie: 14
       wood_essence: 2
       copper_essence: 3
-      air_stone: 1
+      zitanmu: 7
+      shuiqumu: 5
+      tiemu: 2
+      jingangmei: 2
+      paozi: 5
+      zaozi: 2
+      gaolu: 1
+      air_stone: 2
 
   - blueprint_key: blueprint_fenglingshan
     result_item_key: equip_fenglingshan
@@ -270,7 +391,14 @@ recipes:
       tie: 16
       wood_essence: 2
       copper_essence: 3
-      air_stone: 1
+      zitanmu: 9
+      shuiqumu: 8
+      tiemu: 2
+      jingangmei: 2
+      paozi: 7
+      zaozi: 2
+      gaolu: 1
+      air_stone: 2
       water_stone: 1
 
   - blueprint_key: blueprint_fenghuangyu
@@ -284,7 +412,13 @@ recipes:
       tie: 10
       wood_essence: 3
       copper_essence: 3
-      air_stone: 1
+      zitanmu: 8
+      shuiqumu: 9
+      jingangmei: 1
+      paozi: 6
+      zaozi: 1
+      gaolu: 1
+      air_stone: 2
       water_stone: 1
 
   - blueprint_key: blueprint_xiaoxingjiguanshu
@@ -298,6 +432,11 @@ recipes:
       tie: 14
       wood_essence: 2
       copper_essence: 1
+      shuiqumu: 6
+      tiemu: 2
+      jingangmei: 1
+      paozi: 3
+      zaozi: 2
       air_stone: 1
 
   - blueprint_key: blueprint_tongchanjiguan
@@ -311,6 +450,12 @@ recipes:
       tie: 16
       wood_essence: 1
       copper_essence: 2
+      zitanmu: 2
+      shuiqumu: 4
+      heiyuanshi: 2
+      jingangmei: 1
+      paozi: 2
+      zaozi: 3
       water_stone: 1
 
   - blueprint_key: blueprint_jixiemao
@@ -325,6 +470,12 @@ recipes:
       wood_essence: 2
       copper_essence: 2
       xuan_tie_essence: 1
+      zitanmu: 3
+      tiemu: 5
+      heiyuanshi: 5
+      jingangmei: 3
+      paozi: 3
+      zaozi: 3
       air_stone: 1
 
   - blueprint_key: blueprint_jiguanchuniao
@@ -339,6 +490,13 @@ recipes:
       wood_essence: 2
       copper_essence: 2
       xuan_tie_essence: 1
+      zitanmu: 3
+      shuiqumu: 6
+      tiemu: 2
+      heiyuanshi: 3
+      jingangmei: 2
+      paozi: 4
+      zaozi: 2
       air_stone: 1
       water_stone: 1
 
@@ -354,7 +512,13 @@ recipes:
       wood_essence: 2
       copper_essence: 3
       xuan_tie_essence: 1
-      earth_stone: 1
+      shuiqumu: 5
+      tiemu: 8
+      heiyuanshi: 2
+      jingangmei: 3
+      paozi: 5
+      zaozi: 3
+      earth_stone: 2
 
   - blueprint_key: blueprint_qingji
     result_item_key: equip_qingji
@@ -368,6 +532,12 @@ recipes:
       wood_essence: 2
       copper_essence: 2
       xuan_tie_essence: 1
+      zitanmu: 5
+      tiemu: 2
+      heiyuanshi: 5
+      jingangmei: 3
+      paozi: 2
+      zaozi: 4
       air_stone: 1
 
   - blueprint_key: blueprint_taotieding
@@ -382,9 +552,15 @@ recipes:
       wood_essence: 2
       copper_essence: 3
       xuan_tie_essence: 2
+      tiemu: 10
+      heiyuanshi: 15
+      jingangmei: 12
+      paozi: 2
+      zaozi: 10
+      gaolu: 4
       water_stone: 1
-      earth_stone: 1
-      fire_stone: 1
+      earth_stone: 2
+      fire_stone: 2
 
   - blueprint_key: blueprint_jiguanxiong
     result_item_key: equip_jiguanxiong
@@ -398,7 +574,14 @@ recipes:
       wood_essence: 2
       copper_essence: 3
       xuan_tie_essence: 2
-      earth_stone: 1
+      zitanmu: 3
+      tiemu: 12
+      heiyuanshi: 10
+      jingangmei: 8
+      paozi: 6
+      zaozi: 7
+      gaolu: 3
+      earth_stone: 2
       fire_stone: 1
 
   - blueprint_key: blueprint_muniuliuma
@@ -413,7 +596,15 @@ recipes:
       wood_essence: 3
       copper_essence: 3
       xuan_tie_essence: 2
-      earth_stone: 1
+      zitanmu: 6
+      shuiqumu: 10
+      tiemu: 14
+      heiyuanshi: 4
+      jingangmei: 6
+      paozi: 9
+      zaozi: 6
+      gaolu: 3
+      earth_stone: 2
       water_stone: 1
 
   - blueprint_key: blueprint_kuileiren
@@ -428,7 +619,15 @@ recipes:
       wood_essence: 2
       copper_essence: 3
       xuan_tie_essence: 2
-      earth_stone: 1
+      zitanmu: 5
+      shuiqumu: 4
+      tiemu: 13
+      heiyuanshi: 10
+      jingangmei: 7
+      paozi: 7
+      zaozi: 9
+      gaolu: 3
+      earth_stone: 2
       air_stone: 1
 
   - blueprint_key: blueprint_xuanwujigui
@@ -443,8 +642,15 @@ recipes:
       wood_essence: 2
       copper_essence: 3
       xuan_tie_essence: 2
-      water_stone: 1
-      earth_stone: 1
+      zitanmu: 2
+      tiemu: 11
+      heiyuanshi: 14
+      jingangmei: 9
+      paozi: 4
+      zaozi: 9
+      gaolu: 4
+      water_stone: 2
+      earth_stone: 2
 
   - blueprint_key: blueprint_feiyuan
     result_item_key: equip_feiyuan
@@ -456,8 +662,16 @@ recipes:
       xi: 56
       tie: 44
       xuan_tie_essence: 3
-      air_stone: 2
-      fire_stone: 1
+      zitanmu: 14
+      shuiqumu: 18
+      tiemu: 12
+      heiyuanshi: 10
+      jingangmei: 10
+      paozi: 12
+      zaozi: 7
+      gaolu: 7
+      air_stone: 3
+      fire_stone: 2
 
   - blueprint_key: blueprint_chixiaojifeng
     result_item_key: equip_chixiaojifeng
@@ -469,8 +683,16 @@ recipes:
       xi: 58
       tie: 46
       xuan_tie_essence: 3
-      fire_stone: 2
-      air_stone: 1
+      zitanmu: 12
+      shuiqumu: 8
+      tiemu: 16
+      heiyuanshi: 18
+      jingangmei: 18
+      paozi: 7
+      zaozi: 12
+      gaolu: 8
+      fire_stone: 4
+      air_stone: 2
 
   - blueprint_key: blueprint_mojiajiguanren
     result_item_key: equip_mojiajiguanren
@@ -482,6 +704,14 @@ recipes:
       xi: 64
       tie: 52
       xuan_tie_essence: 4
-      earth_stone: 1
-      fire_stone: 1
-      water_stone: 1
+      zitanmu: 12
+      shuiqumu: 8
+      tiemu: 22
+      heiyuanshi: 24
+      jingangmei: 22
+      paozi: 10
+      zaozi: 16
+      gaolu: 10
+      earth_stone: 2
+      fire_stone: 2
+      water_stone: 2

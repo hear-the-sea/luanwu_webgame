@@ -52,11 +52,7 @@ def build_inventory_use_success_message(payload: Mapping[str, Any], *, item_name
             contract_name="inventory use_item success message",
         )
     else:
-        raw_summary = "、".join(f"{key}+{value}" for key, value in payload.items() if not key.startswith("_"))
-        summary = normalize_inventory_success_message(
-            raw_summary or "效果已生效",
-            contract_name="inventory use_item success fallback message",
-        )
+        summary = "效果已生效"
     return f"{item_name} 使用成功：{summary}"
 
 

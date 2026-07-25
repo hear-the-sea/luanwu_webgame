@@ -31,7 +31,7 @@ def _normalize_troop_template_item(raw: Any) -> tuple[str, dict] | None:
     return (
         key,
         {
-            "label": str(item.get("name") or key),
+            "label": str(item.get("name") or "未知兵种"),
             "description": str(item.get("description") or ""),
             "base_attack": safe_non_negative_int(item.get("base_attack"), 30),
             "base_defense": safe_non_negative_int(item.get("base_defense"), 20),

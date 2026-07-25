@@ -145,6 +145,13 @@ def test_get_blueprint_synthesis_options_reads_device_blueprint_from_runtime_con
     wood_essence = _create_item_template("wood_essence", "木质精华", "resource", "black")
     copper_essence = _create_item_template("copper_essence", "铜质精华", "resource", "black")
     air_stone = _create_item_template("air_stone", "空气之石", "resource", "black")
+    forge_materials = [
+        _create_item_template("shuiqumu", "水曲木", "resource", "black"),
+        _create_item_template("tiemu", "铁木", "resource", "green"),
+        _create_item_template("jingangmei", "金刚煤", "resource", "green"),
+        _create_item_template("paozi", "刨子", "resource", "black"),
+        _create_item_template("zaozi", "凿子", "resource", "black"),
+    ]
 
     InventoryItem.objects.create(manor=manor, template=blueprint, quantity=2)
     InventoryItem.objects.create(manor=manor, template=tong, quantity=99)
@@ -153,6 +160,8 @@ def test_get_blueprint_synthesis_options_reads_device_blueprint_from_runtime_con
     InventoryItem.objects.create(manor=manor, template=wood_essence, quantity=99)
     InventoryItem.objects.create(manor=manor, template=copper_essence, quantity=99)
     InventoryItem.objects.create(manor=manor, template=air_stone, quantity=99)
+    for material in forge_materials:
+        InventoryItem.objects.create(manor=manor, template=material, quantity=99)
 
     try:
         forge_service.clear_forge_blueprint_cache()

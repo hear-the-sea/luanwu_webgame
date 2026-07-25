@@ -106,7 +106,7 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         "guest_labels": guest_labels,
         "guest_templates": guest_templates,
         "troop_templates_objs": troop_templates_objs,
-        "troop_labels": {key: data.get("label", key) for key, data in troop_templates.items()},
+        "troop_labels": {key: data.get("label", "未知兵种") for key, data in troop_templates.items()},
         "max_squad": getattr(manor, "max_squad_size", 5),
     }
 

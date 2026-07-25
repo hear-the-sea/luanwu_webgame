@@ -45,8 +45,12 @@ def _load_guild_raid_run_for_report(report: "BattleReport"):
 
 
 def _load_report_message_for_manor(report: "BattleReport", *, manor_id: int):
+    report_id = getattr(report, "pk", None)
+    if not report_id:
+        return None
+
     Message = apps.get_model("gameplay", "Message")
-    return Message.objects.filter(battle_report=report, manor_id=manor_id).order_by("-created_at", "-id").first()
+    return Message.objects.filter(battle_report_id=report_id, manor_id=manor_id).order_by("-created_at", "-id").first()
 
 
 def _resolve_guild_raid_player_side(guild_raid_run: Any, *, report: "BattleReport", manor_id: int) -> str | None:
@@ -233,7 +237,7 @@ def serialize_troops(troops_raw: dict[str, int], troop_definitions: dict[str, di
     return [
         {
             "key": key,
-            "label": troop_definitions.get(key, {}).get("label", key),
+            "label": troop_definitions.get(key, {}).get("label", "未知兵种"),
             "count": count,
             "avatar": troop_definitions.get(key, {}).get("avatar"),
         }
@@ -319,7 +323,7 @@ def build_drop_items(
             "label": _RESOURCE_LABELS.get(key)
             or item_template_names_by_key.get(key)
             or skill_book_names_by_key.get(key)
-            or key,
+            or "未知奖励",
             "amount": amount,
         }
         for key, amount in drops.items()
@@ -327,11 +331,16 @@ def build_drop_items(
 
 
 def build_report_title(report: "BattleReport", *, player_side: str, viewer_manor_id: int) -> str:
+    report_message = _load_report_message_for_manor(report, manor_id=viewer_manor_id)
+    message_title = str(getattr(report_message, "title", "") or "").strip()
+    if message_title:
+        return message_title
+
     is_spectator = player_side == "spectator"
     if is_spectator:
         left_name = getattr(report.manor, "display_name", "") or "进攻方"
         right_name = (report.opponent_name or "").strip() or "防守方"
-        return f"{left_name} vs {right_name} 战报"
+        return f"{left_name} 对阵 {right_name} 战报"
     if player_side == "defender" and report.manor_id != viewer_manor_id:
         attacker_name = getattr(report.manor, "display_name", "") or ""
         return f"{attacker_name or report.opponent_name} 战报"

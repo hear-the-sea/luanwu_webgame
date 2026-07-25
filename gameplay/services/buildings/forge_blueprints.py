@@ -186,7 +186,7 @@ def synthesize_equipment_with_blueprint(
         for need_key, need_amount in consume_requirements.items():
             item = locked_items.get(need_key)
             if not item or item.quantity < need_amount:
-                need_name = template_names.get(need_key, need_key)
+                need_name = template_names.get(need_key, "所需材料")
                 raise ForgeOperationError(f"{need_name}不足")
 
         for need_key, need_amount in consume_requirements.items():

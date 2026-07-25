@@ -1,7 +1,7 @@
 {% if passive_event.healed or passive_event.lost or passive_event.message %}
     <span class="event-passive-extra">
-        {% if passive_event.healed %}<span class="heal-text">恢复 +{{ passive_event.healed }} HP</span>{% endif %}
-        {% if passive_event.lost %}<span class="loss-text">损失 {{ passive_event.lost }} HP</span>{% endif %}
+        {% if passive_event.healed %}<span class="heal-text">恢复 +{{ passive_event.healed }} 生命</span>{% endif %}
+        {% if passive_event.lost %}<span class="loss-text">损失 {{ passive_event.lost }} 生命</span>{% endif %}
         {% if passive_event.message %}<span class="status-pill">{{ passive_event.message }}</span>{% endif %}
     </span>
 {% endif %}

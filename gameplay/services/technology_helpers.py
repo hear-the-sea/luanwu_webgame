@@ -130,7 +130,7 @@ def build_technology_upgrade_response(*, template_name: str, duration: int) -> D
 
 
 def resolve_technology_name(template: Dict[str, Any] | None, tech_key: str) -> str:
-    return str(template.get("name") or tech_key) if template else tech_key
+    return str(template.get("name") or "未知科技") if template else "未知科技"
 
 
 def send_technology_completion_notification(
@@ -148,7 +148,7 @@ def send_technology_completion_notification(
             manor=tech.manor,
             kind=Message.Kind.SYSTEM,
             title=f"{tech_name} 研究完成",
-            body=f"当前等级 Lv{tech.level}",
+            body=f"当前等级 {tech.level}",
         )
     except TECHNOLOGY_MESSAGE_BEST_EFFORT_EXCEPTIONS as exc:
         logger.warning(

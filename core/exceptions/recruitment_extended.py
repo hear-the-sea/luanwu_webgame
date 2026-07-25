@@ -16,7 +16,7 @@ class TroopRecruitmentNotFoundError(TroopRecruitmentError):
 
     def __init__(self, recruitment_id: int | None = None, message: str | None = None):
         if message is None:
-            message = f"募兵记录不存在: recruitment_id={recruitment_id}"
+            message = "募兵记录不存在"
         super().__init__(message, recruitment_id=recruitment_id)
 
 
@@ -27,7 +27,7 @@ class TroopRecruitmentNotReadyError(TroopRecruitmentError):
 
     def __init__(self, complete_at: str | None = None, message: str | None = None):
         if message is None:
-            message = f"募兵尚未完成，预计完成时间: {complete_at}"
+            message = "募兵尚未完成"
         super().__init__(message, complete_at=complete_at)
 
 
@@ -38,5 +38,5 @@ class TroopTemplateNotFoundError(TroopRecruitmentError):
 
     def __init__(self, troop_key: str, message: str | None = None):
         if message is None:
-            message = f"战斗兵种模板不存在: troop_key={troop_key}"
+            message = "战斗兵种配置不存在"
         super().__init__(message, troop_key=troop_key)

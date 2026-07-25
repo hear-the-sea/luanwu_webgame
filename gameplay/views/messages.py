@@ -73,7 +73,7 @@ def _build_attachment_details(message: Any) -> dict[str, list[dict[str, Any]]]:
         attachment_details["resources"].append(
             {
                 "key": key,
-                "name": resource_labels.get(key, key),
+                "name": resource_labels.get(key, "未知资源"),
                 "amount": amount,
             }
         )
@@ -90,7 +90,7 @@ def _build_attachment_details(message: Any) -> dict[str, list[dict[str, Any]]]:
         attachment_details["items"].append(
             {
                 "key": item_key,
-                "name": item_template.name if item_template else item_key,
+                "name": item_template.name if item_template else "未知物品",
                 "icon": item_template.icon if item_template else None,
                 "image": item_template.image if item_template else None,
                 "quantity": quantity,
@@ -226,11 +226,11 @@ def _format_claimed_summary(claimed_summary: dict[str, int]) -> tuple[str, list[
         if key.startswith("item_"):
             item_key = key[5:]  # 移除 "item_" 前缀
             item_template = item_templates_map.get(item_key)
-            item_name = item_template.name if item_template else item_key
+            item_name = item_template.name if item_template else "未知物品"
             parts.append(f"{item_name}×{value}")
             claimed_payload.append({"kind": "item", "key": item_key, "name": item_name, "amount": value})
         else:
-            label = resource_labels.get(key, key)
+            label = resource_labels.get(key, "未知资源")
             parts.append(f"{label}×{value}")
             claimed_payload.append({"kind": "resource", "key": key, "name": label, "amount": value})
 

@@ -53,7 +53,7 @@
                                         <img src="{{ troop.avatar.url }}" alt="{{ troop_labels|get_label:troop_key }}" class="tw-enemy-avatar" loading="lazy" decoding="async">
                                         <span class="tw-enemy-count">×{{ count }}</span>
                                     {% else %}
-                                        <span class="tw-badge">{{ troop_labels|get_label:troop_key }} x{{ count }}</span>
+                                        <span class="tw-badge">{{ troop_labels|get_label:troop_key }} ×{{ count }}</span>
                                     {% endif %}
                                 </div>
                                 {% endwith %}
@@ -89,7 +89,7 @@
                                             <div class="tw-guest-details">
                                                 <div class="tw-guest-info-row">
                                                     <span class="tw-guest-name-sm rarity-text-{{ lineup.pool_entry.source_guest.template.rarity|lower }}">{{ lineup.pool_entry.source_guest.display_name }}</span>
-                                                    <span class="tw-guest-level-sm">Lv.{{ lineup.pool_entry.source_guest.level }}</span>
+                                                    <span class="tw-guest-level-sm">等级 {{ lineup.pool_entry.source_guest.level }}</span>
                                                 </div>
                                                 <div class="tw-guest-stats-sm">
                                                     <span>{{ lineup.pool_entry.owner_member.user.manor.display_name }}</span>

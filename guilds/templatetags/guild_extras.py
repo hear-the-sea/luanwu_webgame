@@ -11,7 +11,7 @@ def get_item(dictionary, key):
     """
     if dictionary is None:
         return None
-    return dictionary.get(key, key)
+    return dictionary.get(key, "未知项目")
 
 
 @register.filter(name="mul")

@@ -373,7 +373,7 @@ def test_expire_listings_queryset_returns_zero_when_limit_negative():
 def test_expire_listings_queryset_rejects_non_integer_limit():
     queryset = MagicMock()
 
-    with pytest.raises(TradeValidationError, match="limit 必须是整数"):
+    with pytest.raises(TradeValidationError, match="数量上限必须是整数"):
         market_service._expire_listings_queryset(queryset, "test", limit=cast(int, "abc"))
 
 

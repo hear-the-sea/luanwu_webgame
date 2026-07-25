@@ -497,7 +497,7 @@ class TestCoreViews:
         )
         assert response.status_code == 200
         body = response.content.decode("utf-8")
-        assert f"Lv {max_level} / {max_level} 满级" in body
+        assert f"等级 {max_level} / {max_level} 满级" in body
         assert "<span>/</span>" in body
         assert "disabled>已满级</button>" in body
 

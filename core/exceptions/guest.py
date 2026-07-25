@@ -28,9 +28,10 @@ class GuestNotIdleError(GuestError):
                 "idle": "空闲",
                 "working": "打工中",
                 "deployed": "出征中",
+                "arena": "竞技中",
                 "injured": "重伤",
             }
-            status_label = status_labels.get(guest_status, guest_status)
+            status_label = status_labels.get(guest_status, "未知状态")
             message = f"{guest_name} 当前状态为「{status_label}」，无法执行此操作"
         super().__init__(message, guest_name=guest_name, guest_status=guest_status)
 
@@ -112,7 +113,7 @@ class GuestNotRequirementError(GuestError):
                 "defense": "防御",
                 "agility": "敏捷",
             }
-            label = labels.get(requirement_type, requirement_type)
+            label = labels.get(requirement_type, "相关属性")
             message = f"{guest_name} {label}不足，需要 {required}，当前 {actual}"
         super().__init__(
             message,

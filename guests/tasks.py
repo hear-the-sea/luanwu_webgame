@@ -337,7 +337,7 @@ def _build_defection_message_payload(guest) -> dict:
         "kind": "system",
         "title": "【门客叛逃】门客离开了庄园",
         "body": (
-            f"由于长期未支付工资，您的门客 {guest.display_name} (Lv{guest.level}) "
+            f"由于长期未支付工资，您的门客 {guest.display_name}（等级{guest.level}）"
             f"对您失去了信任，已经离开了庄园。\n\n"
             f"门客信息：\n"
             f"- 名称：{guest.display_name}\n"

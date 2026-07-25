@@ -70,7 +70,14 @@ class ItemNotConfiguredError(ItemError):
     """物品未配置奖励"""
 
     error_code = "ITEM_NOT_CONFIGURED"
-    default_message = "物品未配置奖励"
+    default_message = "物品配置异常，请联系管理员"
+
+    def __init__(self, detail: str | None = None, *, message: str | None = None):
+        public_message = message
+        if public_message is None:
+            has_english = any("A" <= char <= "Z" or "a" <= char <= "z" for char in detail) if detail else False
+            public_message = detail if detail and not has_english else self.default_message
+        super().__init__(public_message, detail=detail)
 
 
 class ItemNotUsableError(ItemError):

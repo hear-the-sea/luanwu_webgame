@@ -276,7 +276,7 @@ def buy_item(manor: Manor, item_key: str, quantity: int) -> Dict:
         spend_resources_locked(
             locked_manor,
             {"silver": total_cost},
-            f"购买 {template.name} x{quantity}",
+            f"购买 {template.name} ×{quantity}",
             ResourceEvent.Reason.SHOP_PURCHASE,
         )
     except InsufficientResourceError as exc:
@@ -375,7 +375,7 @@ def sell_item(manor: Manor, item_key: str, quantity: int) -> Dict:
     _credited, overflow = grant_resources_locked(
         locked_manor,
         {"silver": total_income},
-        f"出售 {template.name} x{quantity}",
+        f"出售 {template.name} ×{quantity}",
         ResourceEvent.Reason.SHOP_SELL,
         sync_production=False,
     )

@@ -32,7 +32,7 @@ def send_winning_notification_vickrey_impl(
             kind="reward",
             title="【拍卖行】恭喜您成功拍得物品",
             body=(
-                f"恭喜！您成功拍得 {slot.item_template.name} x1！\n\n"
+                f"恭喜！您成功拍得 {slot.item_template.name} ×1！\n\n"
                 f"拍卖详情：\n"
                 f"- 物品：{slot.item_template.name}\n"
                 f"- 数量：1\n"

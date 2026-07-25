@@ -174,9 +174,10 @@ def _start_tournament_locked(tournament: ArenaTournament, *, now: datetime | Non
 
     current_time = now or timezone.now()
     tournament.status = ArenaTournament.Status.RUNNING
+    tournament.virtual_fill_completed = True
     tournament.started_at = current_time
     tournament.current_round = 0
-    tournament.save(update_fields=["status", "started_at", "current_round", "updated_at"])
+    tournament.save(update_fields=["status", "virtual_fill_completed", "started_at", "current_round", "updated_at"])
     _schedule_round_locked(tournament, round_number=1, now=current_time)
     return True
 
@@ -282,14 +283,19 @@ def start_ready_tournaments(limit: int = 20) -> int:
     return started_count
 
 
-def start_due_virtual_backfill_tournaments(*, now: datetime | None = None, limit: int = 20) -> int:
+def start_due_virtual_backfill_tournaments(
+    *, now: datetime | None = None, limit: int = 20, manor: Manor | None = None
+) -> int:
     now = now or timezone.now()
+    candidates = ArenaTournament.objects.filter(
+        status=ArenaTournament.Status.RECRUITING,
+        virtual_fill_completed=False,
+        virtual_fill_at__lte=now,
+    )
+    if manor is not None:
+        candidates = candidates.filter(entries__manor=manor).distinct()
     candidate_ids = list(
-        ArenaTournament.objects.filter(
-            status=ArenaTournament.Status.RECRUITING,
-            virtual_fill_completed=False,
-            virtual_fill_at__lte=now,
-        ).values_list("id", flat=True)[: max(1, int(limit))]
+        candidates.order_by("virtual_fill_at", "id").values_list("id", flat=True)[: max(1, int(limit))]
     )
     started = 0
     for tournament_id in candidate_ids:
@@ -455,6 +461,14 @@ def _release_orphaned_arena_guests(manor: Manor) -> int:
 
 def refresh_arena_activity(manor: Manor, *, now: datetime | None = None, limit: int = 20) -> int:
     current_time = now or timezone.now()
+    virtual_started = start_due_virtual_backfill_tournaments(now=current_time, limit=limit, manor=manor)
+    from . import coop_core as arena_coop_core
+
+    virtual_coop_prepared = arena_coop_core.start_due_virtual_backfill_coop_events(
+        now=current_time,
+        limit=limit,
+        manor=manor,
+    )
     recruiting_ids, running_ids = _collect_due_arena_tournament_ids_for_manor(
         manor,
         now=current_time,
@@ -471,7 +485,7 @@ def refresh_arena_activity(manor: Manor, *, now: datetime | None = None, limit: 
             processed_count += 1
 
     _release_orphaned_arena_guests(manor)
-    return started_count + processed_count
+    return virtual_started + virtual_coop_prepared + started_count + processed_count
 
 
 def run_due_arena_rounds(*, now: datetime | None = None, limit: int = 20) -> int:

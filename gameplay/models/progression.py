@@ -67,6 +67,8 @@ class WorkTemplate(models.Model):
     required_level = models.PositiveIntegerField(default=1, verbose_name="等级要求")
     required_force = models.PositiveIntegerField(default=0, verbose_name="武力要求")
     required_intellect = models.PositiveIntegerField(default=0, verbose_name="智力要求")
+    required_defense = models.PositiveIntegerField(default=0, verbose_name="防御要求")
+    required_agility = models.PositiveIntegerField(default=0, verbose_name="敏捷要求")
 
     # 工作报酬
     reward_silver = models.PositiveIntegerField(default=0, verbose_name="银两报酬")

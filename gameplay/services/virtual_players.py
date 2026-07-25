@@ -723,10 +723,10 @@ def record_virtual_player_backfill_demand(*, region: str, prestige_band: str, ne
                 demand.delete()
             return
         if demand is None:
-            BotBackfillDemand.objects.create(
+            BotBackfillDemand.objects.select_for_update().update_or_create(
                 region=normalized_region,
                 prestige_band=normalized_band,
-                needed=needed,
+                defaults={"needed": needed},
             )
         elif needed != int(demand.needed or 0):
             demand.needed = needed
@@ -910,6 +910,40 @@ def record_virtual_player_backfill_demand_for_search(
         return
     deficit = max(0, min_per_band - max(0, int(candidate_count or 0)))
     record_virtual_player_backfill_demand(region=region, prestige_band=prestige_band, needed=deficit)
+
+
+def get_virtual_player_backfill_search_limit() -> int:
+    """Return the attackable-target threshold needed by a region search."""
+    config = load_virtual_player_config()
+    if not bool(config.get("enabled", True)):
+        return 0
+    population = config.get("population") or {}
+    return max(0, int(population.get("min_attackable_per_band", 0) or 0))
+
+
+def request_virtual_player_backfill_for_region_search(*, searcher: Manor, region: str) -> bool:
+    """Record an explicit region-search shortage for a later population roll."""
+    if region not in _regions():
+        return False
+    candidate_limit = get_virtual_player_backfill_search_limit()
+    if candidate_limit <= 0:
+        return False
+    if searcher.is_under_newbie_protection or searcher.is_under_peace_shield:
+        return False
+
+    from gameplay.services.raid.map_search import count_attackable_manors_by_region
+
+    candidate_count = count_attackable_manors_by_region(
+        searcher,
+        region,
+        limit=candidate_limit,
+    )
+    record_virtual_player_backfill_demand_for_search(
+        searcher=searcher,
+        region=region,
+        candidate_count=candidate_count,
+    )
+    return True
 
 
 def _active_real_player_count(now) -> int:
@@ -1266,13 +1300,16 @@ def _project_technologies(manor: Manor, *, level: int, config: dict[str, Any]) -
     keys = _configured_technology_keys(config)
     if not keys:
         return
-    rows = [PlayerTechnology(manor=manor, tech_key=key, level=max(0, int(level)), is_upgrading=False) for key in keys]
+    target_level = max(0, int(level))
     PlayerTechnology.objects.bulk_create(
-        rows,
-        update_conflicts=True,
-        update_fields=["level", "is_upgrading"],
-        unique_fields=["manor", "tech_key"],
+        [PlayerTechnology(manor=manor, tech_key=key, level=target_level, is_upgrading=False) for key in keys],
+        ignore_conflicts=True,
     )
+    technologies = list(PlayerTechnology.objects.filter(manor=manor, tech_key__in=keys))
+    for technology in technologies:
+        technology.level = target_level
+        technology.is_upgrading = False
+    PlayerTechnology.objects.bulk_update(technologies, ["level", "is_upgrading"])
 
 
 def _grant_extra_template_skills(guest: Guest) -> None:
@@ -1626,20 +1663,17 @@ def _project_troops(manor: Manor, *, count: int, config: dict[str, Any]) -> None
         return
     PlayerTroop.objects.filter(manor=manor).exclude(troop_template__in=templates).update(count=0)
     per_type, remainder = divmod(max(0, int(count)), len(templates))
-    rows = [
-        PlayerTroop(
-            manor=manor,
-            troop_template=template,
-            count=per_type + (1 if index < remainder else 0),
-        )
-        for index, template in enumerate(templates)
-    ]
+    target_counts = {
+        template.id: per_type + (1 if index < remainder else 0) for index, template in enumerate(templates)
+    }
     PlayerTroop.objects.bulk_create(
-        rows,
-        update_conflicts=True,
-        update_fields=["count"],
-        unique_fields=["manor", "troop_template"],
+        [PlayerTroop(manor=manor, troop_template=template, count=target_counts[template.id]) for template in templates],
+        ignore_conflicts=True,
     )
+    troops = list(PlayerTroop.objects.filter(manor=manor, troop_template_id__in=target_counts))
+    for troop in troops:
+        troop.count = target_counts[troop.troop_template_id]
+    PlayerTroop.objects.bulk_update(troops, ["count"])
 
 
 def _inventory_quantity_multiplier(archetype: str, config: dict[str, Any]) -> float:

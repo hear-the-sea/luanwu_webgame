@@ -7,7 +7,8 @@
 from __future__ import annotations
 
 import math
-from datetime import timedelta
+from datetime import datetime, timedelta
+from itertools import islice
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from django.db.models import Count, QuerySet
@@ -17,12 +18,20 @@ from core.utils.time_scale import scale_duration
 
 from ...constants import PVPConstants
 from ...models import BotProfile, Manor, RaidRun
-from .utils import (
-    calculate_distance,
-    can_attack_target,
-    get_prestige_color,
-    is_same_region,
-    is_target_globally_attackable,
+from .utils import calculate_distance, can_attack_target, get_prestige_color, is_same_region
+
+_SEARCH_BATCH_SIZE = 200
+_SEARCH_MANOR_FIELDS = (
+    "id",
+    "name",
+    "prestige",
+    "region",
+    "coordinate_x",
+    "coordinate_y",
+    "newbie_protection_until",
+    "defeat_protection_until",
+    "peace_shield_until",
+    "user__username",
 )
 
 
@@ -47,7 +56,7 @@ def search_manors_by_name(searcher: Manor, name_query: str, limit: int = 20) -> 
         .filter(name__icontains=name_query)
         .exclude(id=searcher.id)
         .select_related("user")
-        .only("id", "name", "prestige", "region", "coordinate_x", "coordinate_y", "user__username")[:limit]
+        .only(*_SEARCH_MANOR_FIELDS)[:limit]
     )
 
     return _format_manor_list(searcher, manors)
@@ -69,55 +78,13 @@ def search_manors_by_region(
         (庄园列表, 总数)
     """
     # 地区列表应包含自己庄园；当某地区仅有自己时，也能看到对应条目，避免误判“该地区无人”。
-    queryset = (
-        _visible_manors()
-        .filter(region=region)
-        .select_related("user")
-        .only(
-            "id",
-            "name",
-            "prestige",
-            "region",
-            "coordinate_x",
-            "coordinate_y",
-            "user__username",
-        )
-    )
+    queryset = _visible_manors().filter(region=region).select_related("user").only(*_SEARCH_MANOR_FIELDS)
 
     total = queryset.count()
     offset = (page - 1) * page_size
     manors = list(queryset[offset : offset + page_size])
 
-    rows = _format_manor_list(searcher, manors)
-    if page == 1:
-        from gameplay.services.virtual_players import record_virtual_player_backfill_demand_for_search
-
-        now = timezone.now()
-        cutoff = now - timedelta(hours=24)
-        target_ids = [manor.id for manor in manors if manor.id != searcher.id]
-        recent_attack_counts = {
-            row["defender_id"]: row["cnt"]
-            for row in (
-                RaidRun.objects.filter(defender_id__in=target_ids, started_at__gte=cutoff)
-                .values("defender_id")
-                .annotate(cnt=Count("id"))
-            )
-        }
-        record_virtual_player_backfill_demand_for_search(
-            searcher=searcher,
-            region=region,
-            candidate_count=sum(
-                1
-                for manor in manors
-                if manor.id != searcher.id
-                and is_target_globally_attackable(
-                    manor,
-                    recent_attacks=int(recent_attack_counts.get(manor.id, 0) or 0),
-                    now=now,
-                )
-            ),
-        )
-    return rows, total
+    return _format_manor_list(searcher, manors), total
 
 
 def search_manors_by_coordinate(
@@ -202,6 +169,7 @@ def _format_manor_list(searcher: Manor, manors: Iterable[Manor]) -> List[Dict[st
             manor,
             recent_attacks=int(recent_attack_counts.get(manor.id, 0) or 0),
             now=now,
+            check_stale_bot=False,
         )
 
         result.append(
@@ -225,6 +193,56 @@ def _format_manor_list(searcher: Manor, manors: Iterable[Manor]) -> List[Dict[st
     # 按距离排序
     result.sort(key=lambda x: x["distance"])
     return result
+
+
+def _count_attackable_manors(queryset: QuerySet[Manor], searcher: Manor, *, now: datetime, limit: int) -> int:
+    """Count attackable targets in bounded batches, stopping at the needed threshold."""
+    if limit <= 0:
+        return 0
+
+    cutoff = now - timedelta(hours=24)
+    candidates = queryset.exclude(id=searcher.id).only(*_SEARCH_MANOR_FIELDS).iterator(chunk_size=_SEARCH_BATCH_SIZE)
+    count = 0
+    while count < limit:
+        batch = list(islice(candidates, _SEARCH_BATCH_SIZE))
+        if not batch:
+            break
+        recent_attack_counts = {
+            row["defender_id"]: row["cnt"]
+            for row in (
+                RaidRun.objects.filter(
+                    defender_id__in=[manor.id for manor in batch],
+                    started_at__gte=cutoff,
+                )
+                .values("defender_id")
+                .annotate(cnt=Count("id"))
+            )
+        }
+        for manor in batch:
+            if can_attack_target(
+                searcher,
+                manor,
+                recent_attacks=int(recent_attack_counts.get(manor.id, 0) or 0),
+                now=now,
+                check_stale_bot=False,
+            )[0]:
+                count += 1
+                if count >= limit:
+                    break
+    return count
+
+
+def count_attackable_manors_by_region(searcher: Manor, region: str, *, limit: int) -> int:
+    """Count currently attackable targets in one region without mutating state."""
+    if limit <= 0:
+        return 0
+    queryset = _visible_manors().filter(region=region).select_related("user").only(*_SEARCH_MANOR_FIELDS)
+    return _count_attackable_manors(
+        queryset,
+        searcher,
+        now=timezone.now(),
+        limit=limit,
+    )
 
 
 def get_manor_public_info(manor: Manor, viewer: Optional[Manor] = None) -> Dict[str, Any]:

@@ -157,7 +157,7 @@ def test_arena_events_view_lists_recent_completed_coop_event(arena_client):
     assert f"共斗 #{event.id}" not in body
     assert f"围攻光明顶 #{event.id}" not in body
     assert "最近结束的共斗" not in body
-    assert "Boss：张无忌" not in body
+    assert "首领：张无忌" not in body
 
 
 @pytest.mark.django_db
@@ -338,4 +338,23 @@ def test_arena_exchange_view_shows_drawn_gladiator_item(arena_client, monkeypatc
 
     assert response.status_code == 200
     body = response.content.decode("utf-8")
-    assert "本次抽到：角斗士头盔x1" in body
+    assert "本次抽到：角斗士头盔×1" in body
+
+
+@pytest.mark.django_db
+def test_arena_exchange_view_hides_unknown_reward_item_key(arena_client, monkeypatch):
+    client, manor = arena_client
+    _ensure_gladiator_item_templates()
+    manor.arena_coins = 600
+    manor.save(update_fields=["arena_coins"])
+    monkeypatch.setattr("gameplay.services.arena.helpers.random.random", lambda: 0.0)
+    monkeypatch.setattr("gameplay.views.arena.get_item_template_names_by_keys", lambda _keys: {})
+
+    response = client.post(
+        reverse("gameplay:arena_exchange"),
+        {"reward_key": "gladiator_chest", "quantity": "1"},
+        follow=True,
+    )
+
+    assert response.status_code == 200
+    assert "本次抽到：未知物品×1" in response.content.decode("utf-8")

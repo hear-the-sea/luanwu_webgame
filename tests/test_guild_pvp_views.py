@@ -75,7 +75,7 @@ def test_guild_pvp_page_lists_attackable_targets(guild_member_client, django_use
     body = response.content.decode("utf-8")
 
     assert response.status_code == 200
-    assert "帮会PVP" in body
+    assert "帮会对战" in body
     assert "可攻打目标帮" in body
     assert "选择目标帮会" in body
     assert "选择门客" in body
@@ -234,7 +234,7 @@ def test_guild_pvp_page_does_not_process_due_runs_on_get(guild_member_client, mo
     response = client.get(reverse("guilds:pvp"))
 
     assert response.status_code == 200
-    assert "帮会PVP" in response.content.decode("utf-8")
+    assert "帮会对战" in response.content.decode("utf-8")
     assert captured_calls == []
 
 

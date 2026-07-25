@@ -5,6 +5,7 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
+import gameplay.services.arena.coop_core as arena_coop_core
 import gameplay.services.arena.core as arena_core
 import gameplay.services.arena.match_helpers as arena_match_helpers
 from core.exceptions import (
@@ -131,6 +132,7 @@ def test_register_arena_entry_auto_starts_when_reaching_player_limit():
 
     tournament = ArenaTournament.objects.get(pk=tournament_id)
     assert tournament.status == ArenaTournament.Status.RUNNING
+    assert tournament.virtual_fill_completed is True
     assert tournament.current_round == 1
     assert tournament.entries.count() == arena_core.ARENA_TOURNAMENT_PLAYER_LIMIT
     assert (
@@ -141,6 +143,30 @@ def test_register_arena_entry_auto_starts_when_reaching_player_limit():
         ).count()
         == (arena_core.ARENA_TOURNAMENT_PLAYER_LIMIT + 1) // 2
     )
+
+
+@pytest.mark.django_db
+def test_refresh_arena_activity_runs_due_virtual_backfill_for_current_manor(monkeypatch):
+    user = User.objects.create_user(username="arena_refresh_backfill", password="pass123")
+    manor = ensure_manor(user)
+    now = timezone.now()
+    calls: list[tuple[str, int, int]] = []
+
+    monkeypatch.setattr(
+        arena_core,
+        "start_due_virtual_backfill_tournaments",
+        lambda *, now, limit, manor: calls.append(("tournament", manor.id, limit)) or 2,
+    )
+    monkeypatch.setattr(
+        arena_coop_core,
+        "start_due_virtual_backfill_coop_events",
+        lambda *, now, limit, manor: calls.append(("coop", manor.id, limit)) or 3,
+    )
+
+    processed = arena_core.refresh_arena_activity(manor, now=now, limit=7)
+
+    assert processed == 5
+    assert calls == [("tournament", manor.id, 7), ("coop", manor.id, 7)]
 
 
 @pytest.mark.django_db
@@ -207,7 +233,7 @@ def test_cancel_arena_entry_requires_recruiting_entry():
         cancel_arena_entry(manor)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_run_due_arena_rounds_completes_tournament_and_grants_coins():
     template = create_guest_template("arena_round_tpl")
 
@@ -270,7 +296,7 @@ def test_run_due_arena_rounds_completes_tournament_and_grants_coins():
     assert Message.objects.filter(manor=manor_b).exists()
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_run_due_arena_rounds_recovers_when_round_finalize_was_skipped_after_match_message_error(monkeypatch):
     template = create_guest_template("arena_round_recovery_tpl")
 
@@ -339,6 +365,85 @@ def test_run_due_arena_rounds_recovers_when_round_finalize_was_skipped_after_mat
     assert tournament.status == ArenaTournament.Status.COMPLETED
     assert tournament.winner_entry_id in {entry_a.id, entry_b.id}
     assert ArenaMatch.objects.filter(tournament=tournament, round_number=2).count() == 0
+
+
+@pytest.mark.django_db(transaction=True)
+def test_run_due_arena_rounds_skips_snapshot_only_winner_loyalty():
+    template = create_guest_template("arena_snapshot_winner_tpl")
+    user_loser = User.objects.create_user(username="arena_snapshot_loser", password="pass123")
+    user_snapshot = User.objects.create_user(username="arena_snapshot_virtual", password="pass123")
+    user_live = User.objects.create_user(username="arena_snapshot_live", password="pass123")
+    manor_loser = ensure_manor(user_loser)
+    manor_snapshot = ensure_manor(user_snapshot)
+    manor_live = ensure_manor(user_live)
+    guest_loser = create_guest(manor_loser, template, "Loser")
+    guest_live = create_guest(manor_live, template, "LiveWinner")
+
+    now = timezone.now()
+    tournament = ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RUNNING,
+        player_limit=3,
+        round_interval_seconds=600,
+        current_round=1,
+        started_at=now,
+        next_round_at=now - timedelta(seconds=1),
+    )
+    loser = ArenaEntry.objects.create(tournament=tournament, manor=manor_loser)
+    snapshot_winner = ArenaEntry.objects.create(
+        tournament=tournament,
+        manor=manor_snapshot,
+        source=ArenaEntry.Source.VIRTUAL,
+    )
+    live_winner = ArenaEntry.objects.create(tournament=tournament, manor=manor_live)
+    ArenaEntryGuest.objects.create(entry=loser, guest=guest_loser)
+    ArenaEntryGuest.objects.create(entry=snapshot_winner, guest=None, snapshot={"name": "SnapshotWinner"})
+    ArenaEntryGuest.objects.create(entry=live_winner, guest=guest_live)
+    ArenaMatch.objects.create(
+        tournament=tournament,
+        round_number=1,
+        match_index=0,
+        attacker_entry=loser,
+        defender_entry=snapshot_winner,
+        winner_entry=snapshot_winner,
+        status=ArenaMatch.Status.COMPLETED,
+        resolved_at=now,
+    )
+    ArenaMatch.objects.create(
+        tournament=tournament,
+        round_number=1,
+        match_index=1,
+        attacker_entry=live_winner,
+        defender_entry=None,
+        winner_entry=live_winner,
+        status=ArenaMatch.Status.BYE,
+        resolved_at=now,
+    )
+
+    processed = run_due_arena_rounds(now=now, limit=10)
+
+    tournament.refresh_from_db()
+    loser.refresh_from_db()
+    snapshot_winner.refresh_from_db()
+    live_winner.refresh_from_db()
+    guest_loser.refresh_from_db(fields=["loyalty"])
+    guest_live.refresh_from_db(fields=["loyalty"])
+    assert processed == 1
+    assert tournament.status == ArenaTournament.Status.RUNNING
+    assert tournament.current_round == 2
+    assert loser.status == ArenaEntry.Status.ELIMINATED
+    assert loser.eliminated_round == 1
+    assert snapshot_winner.matches_won == 1
+    assert live_winner.matches_won == 1
+    assert guest_loser.loyalty == 80
+    assert guest_live.loyalty == 81
+    assert (
+        ArenaMatch.objects.filter(
+            tournament=tournament,
+            round_number=2,
+            status=ArenaMatch.Status.SCHEDULED,
+        ).count()
+        == 1
+    )
 
 
 @pytest.mark.django_db

@@ -74,6 +74,7 @@ def test_register_arena_coop_entry_fifth_player_moves_event_to_preparing():
 
     event = ArenaCoopEvent.objects.get(pk=event_id)
     assert event.status == ArenaCoopEvent.Status.PREPARING
+    assert event.virtual_fill_completed is True
     assert event.prepare_ends_at is not None
 
 

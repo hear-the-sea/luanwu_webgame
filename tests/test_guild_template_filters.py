@@ -5,7 +5,7 @@ from guilds.templatetags import guild_extras
 
 def test_get_item_returns_dictionary_value_or_fallback_key():
     assert guild_extras.get_item({"gold": 12}, "gold") == 12
-    assert guild_extras.get_item({"gold": 12}, "wood") == "wood"
+    assert guild_extras.get_item({"gold": 12}, "wood") == "未知项目"
     assert guild_extras.get_item(None, "wood") is None
 
 

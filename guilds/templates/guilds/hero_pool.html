@@ -73,7 +73,7 @@
                             </div>
                             <div class="ghp-guest-cell">
                                 <span class="ghp-guest-name rarity-text-{{ row.guest_rarity }}">{{ row.guest_name }}</span>
-                                <span class="ghp-guest-meta">Lv{{ row.guest_level }}</span>
+                                <span class="ghp-guest-meta">等级 {{ row.guest_level }}</span>
                             </div>
                             <div class="ghp-owner-cell">{{ row.owner_name }}</div>
                             <div class="ghp-status-cell">{{ row.status_label }}</div>
@@ -149,7 +149,7 @@
                                 {% endif %}
                                 <div class="tw-guild-guest-mini-meta">
                                     <p class="tw-guild-guest-name rarity-text-{{ slot.entry.source_guest.rarity }}">{{ slot.entry.source_guest.display_name }}</p>
-                                    <p class="tw-guild-guest-sub">Lv{{ slot.entry.source_guest.level }} · {{ slot.entry.source_guest.get_gender_display }}</p>
+                                    <p class="tw-guild-guest-sub">等级 {{ slot.entry.source_guest.level }} · {{ slot.entry.source_guest.get_gender_display }}</p>
                                 </div>
                             </div>
                             <p class="m-0 text-sm">
@@ -173,12 +173,12 @@
                                 {% for guest in available_guests %}
                                     {% if guest.id in my_guest_ids %}
                                         {% if slot.entry and guest.id == slot.entry.source_guest_id %}
-                                        <option value="{{ guest.id }}">{{ guest.display_name }} (Lv{{ guest.level }})</option>
+                                        <option value="{{ guest.id }}">{{ guest.display_name }} (等级 {{ guest.level }})</option>
                                         {% else %}
-                                        <option value="{{ guest.id }}" disabled>{{ guest.display_name }} (Lv{{ guest.level }}) - 已在其他槽位</option>
+                                        <option value="{{ guest.id }}" disabled>{{ guest.display_name }} (等级 {{ guest.level }}) - 已在其他槽位</option>
                                         {% endif %}
                                     {% else %}
-                                        <option value="{{ guest.id }}">{{ guest.display_name }} (Lv{{ guest.level }})</option>
+                                        <option value="{{ guest.id }}">{{ guest.display_name }} (等级 {{ guest.level }})</option>
                                     {% endif %}
                                 {% endfor %}
                             </select>

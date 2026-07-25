@@ -183,7 +183,7 @@ def test_report_view_renders_passive_event(client, django_user_model):
     body = response.content.decode("utf-8")
     assert response.status_code == 200
     assert "九阳护体" in body
-    assert "恢复 +15000 HP" in body
+    assert "恢复 +15000 生命" in body
     assert "event-passive-layout" in body
     assert "event-passive-tag" in body
 
@@ -225,7 +225,7 @@ def test_report_view_renders_passive_hp_loss(client, django_user_model):
     body = response.content.decode("utf-8")
     assert response.status_code == 200
     assert "嗜血狂怒" in body
-    assert "损失 90 HP" in body
+    assert "损失 90 生命" in body
 
 
 @pytest.mark.django_db

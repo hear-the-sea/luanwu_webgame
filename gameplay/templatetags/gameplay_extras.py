@@ -21,6 +21,8 @@ _BUILDING_IMAGE_PATHS = {
     "youxibaota": "images/buildings/悠嘻宝塔.webp",
     "jail": "images/buildings/监牢.webp",
     "oath_grove": "images/buildings/结义林.webp",
+    "wall": "images/buildings/城墙.webp",
+    "arrow_tower": "images/buildings/箭塔.webp",
 }
 _DEFAULT_WORK_IMAGE = "images/works/酒楼.webp"
 _WORK_IMAGE_PATHS = {
@@ -46,8 +48,8 @@ register = template.Library()
 @register.filter
 def get_label(mapping, key):
     if isinstance(mapping, dict):
-        return mapping.get(key, key)
-    return key
+        return mapping.get(key, "未知项目")
+    return "未知项目"
 
 
 @register.filter
@@ -107,8 +109,8 @@ def guest_label(entry, labels):
     elif isinstance(entry, str):
         key = entry
     if isinstance(labels, dict):
-        return labels.get(key, key)
-    return key
+        return labels.get(key, "未知门客")
+    return "未知门客"
 
 
 @register.filter

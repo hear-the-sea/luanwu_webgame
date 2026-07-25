@@ -287,15 +287,15 @@ def resolve_drop_label(
     item_templates: dict[str, Any],
     book_labels: dict[str, str],
 ) -> str:
-    label = drop_labels.get(key, key)
-    if label != key:
+    label = drop_labels.get(key)
+    if label:
         return label
     tpl = item_templates.get(key)
     if tpl:
         return tpl.name
     if key in book_labels:
         return book_labels[key]
-    return key
+    return "未知奖励"
 
 
 def resolve_drop_pool_label(
@@ -426,7 +426,7 @@ def build_drop_lists(
                 label = resolve_drop_label(choice_key, drop_labels, item_templates, book_labels)
                 _, count = parse_drop_value(probability_drop_table.get(choice_key))
                 rarity = loot_rarities.get(choice_key) or "default"
-                display_label = f"{label} x{count}" if (count is not None and count >= 1) else label
+                display_label = f"{label} ×{count}" if (count is not None and count >= 1) else label
                 probability_drops.append(
                     build_drop_display_item(
                         key=choice_key,
@@ -451,7 +451,7 @@ def build_drop_lists(
         choice_keys = iter_choice_pool_keys(val) if is_choice_pool else []
         display_key = choice_keys[0] if len(choice_keys) == 1 else key
         if count is not None and count >= 1 and not (is_choice_pool and count == 1):
-            display_label = f"{label} x{count}"
+            display_label = f"{label} ×{count}"
         else:
             display_label = label
         drop_item = build_drop_display_item(
@@ -472,7 +472,7 @@ def build_drop_lists(
             continue
         label = resolve_drop_label(key, drop_labels, item_templates, book_labels)
         _, count = parse_drop_value(val)
-        display_label = f"{label} x{count}" if (count is not None and count >= 1) else label
+        display_label = f"{label} ×{count}" if (count is not None and count >= 1) else label
         rarity = loot_rarities.get(key) or "default"
         probability_drops.append(
             build_drop_display_item(
@@ -532,7 +532,7 @@ def build_entry_cost_list(
         entries.append(
             {
                 "key": item_key,
-                "label": getattr(template, "name", item_key),
+                "label": getattr(template, "name", "未知物品"),
                 "required": raw_amount,
                 "owned": owned,
                 "rarity": getattr(template, "rarity", "default") or "default",
@@ -590,7 +590,7 @@ def build_troop_config() -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]
     config_items = [
         {
             "key": key,
-            "label": data.get("label", key),
+            "label": data.get("label", "未知兵种"),
             "description": data.get("description", "") or "",
             "value": 0,
         }

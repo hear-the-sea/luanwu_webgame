@@ -38,7 +38,7 @@
             <div class="stat-rows">
                 <div class="stat-row"><span>姓名</span><strong class="rarity-text {{ guest.rarity|rarity_class }}">{{ guest.display_name }}</strong></div>
                 <div class="stat-row"><span>性别</span><strong>{{ guest.get_gender_display }}</strong></div>
-                <div class="stat-row"><span>等级</span><strong>Lv {{ guest.level }}</strong></div>
+                <div class="stat-row"><span>等级</span><strong>等级 {{ guest.level }}</strong></div>
                 <div class="stat-row"><span>生命值</span><strong>{{ guest.current_hp }}/{{ guest.max_hp }}</strong></div>
                 <div class="stat-row"><span>忠诚度</span><strong>{{ guest.loyalty }}</strong></div>
                 <div class="stat-row"><span>品性</span><strong>{{ guest.morality }}</strong></div>

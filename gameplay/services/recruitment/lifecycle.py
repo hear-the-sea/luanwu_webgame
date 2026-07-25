@@ -129,7 +129,7 @@ def finalize_troop_recruitment(recruitment: TroopRecruitment, send_notification:
         if locked_recruitment.status != TroopRecruitment.Status.RECRUITING:
             raise TroopRecruitmentNotReadyError(
                 complete_at=str(locked_recruitment.complete_at),
-                message=f"募兵状态不正确: status={locked_recruitment.status}",
+                message="募兵状态不正确，无法完成",
             )
 
         if locked_recruitment.complete_at > timezone.now():
@@ -171,7 +171,7 @@ def finalize_troop_recruitment(recruitment: TroopRecruitment, send_notification:
         from ..utils.messages import create_message
         from ..utils.notifications import notify_user
 
-        quantity_text = f"x{recruitment.quantity}" if recruitment.quantity > 1 else ""
+        quantity_text = f"×{recruitment.quantity}" if recruitment.quantity > 1 else ""
         try:
             create_message(
                 manor=recruitment.manor,

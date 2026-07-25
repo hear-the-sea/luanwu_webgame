@@ -176,7 +176,7 @@ def test_oath_grove_page_localizes_rarity_and_omits_jail_link(
     guest_option = page.select_one('select[name="guest_id"] option[value="3"]')
     bond_row = page.select_one(".tw-table tbody tr")
     assert guest_option is not None
-    assert guest_option.get_text(strip=True) == "guest-a（绿，Lv 5）"
+    assert guest_option.get_text(strip=True) == "guest-a（绿，等级 5）"
     assert bond_row is not None
     assert bond_row.select("td")[1].get_text(strip=True) == "蓝"
     assert page.find("a", string="前往监牢") is None

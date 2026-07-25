@@ -54,7 +54,7 @@ def _load_item_display_catalog() -> dict[str, dict[str, Any]]:
         if not key:
             continue
         catalog[key] = {
-            "name": str(entry.get("name") or key).strip() or key,
+            "name": str(entry.get("name") or "未知物品").strip() or "未知物品",
             "description": str(entry.get("description") or "").strip(),
             "effect_type": str(entry.get("effect_type") or ItemTemplate.EffectType.RESOURCE_PACK).strip(),
             "effect_payload": entry.get("effect_payload") or {},
@@ -359,7 +359,7 @@ def spend_guild_warehouse_items_locked(
     for item_key, quantity in normalized_costs.items():
         available = int(getattr(warehouse_rows.get(item_key), "quantity", 0) or 0)
         if available < quantity:
-            item_label = WAREHOUSE_ITEM_LABELS.get(item_key, item_key)
+            item_label = WAREHOUSE_ITEM_LABELS.get(item_key, "对应物品")
             raise GuildWarehouseError(f"{error_prefix}{item_label}不足，需要{quantity}")
 
     for item_key, quantity in normalized_costs.items():
@@ -369,7 +369,7 @@ def spend_guild_warehouse_items_locked(
             total_exchanged=F("total_exchanged") + quantity,
         )
         if not updated:
-            item_label = WAREHOUSE_ITEM_LABELS.get(item_key, item_key)
+            item_label = WAREHOUSE_ITEM_LABELS.get(item_key, "对应物品")
             raise GuildWarehouseError(f"{error_prefix}{item_label}不足，需要{quantity}")
         GuildWarehouse.objects.filter(pk=warehouse_row.pk, quantity=0).delete()
 
@@ -554,10 +554,10 @@ def _build_projected_resource_item(guild: Guild, item_key: str, template: Any) -
     )
     projected_item.template = template or ItemTemplate(
         key=item_key,
-        name=PROJECTED_RESOURCE_LABELS.get(item_key, item_key),
+        name=PROJECTED_RESOURCE_LABELS.get(item_key, "未知资源"),
         is_usable=True,
     )
-    projected_item.display_name = PROJECTED_RESOURCE_LABELS.get(item_key, item_key)
+    projected_item.display_name = PROJECTED_RESOURCE_LABELS.get(item_key, "未知资源")
     projected_item.is_usable = True
     projected_item.display_quantity = quantity
     projected_item.is_projected = True
@@ -637,7 +637,7 @@ def get_warehouse_items(
             "display_name",
             PROJECTED_RESOURCE_LABELS.get(
                 item.item_key,
-                display_meta.get("name") or template_name or item.item_key,
+                display_meta.get("name") or template_name or "未知物品",
             ),
         )
         item.display_description = getattr(
@@ -671,7 +671,7 @@ def get_warehouse_items(
     }
 
 
-def get_exchange_logs(guild: Guild, limit: int = 50) -> Any:
+def get_exchange_logs(guild: Guild, limit: int = 50) -> list[GuildExchangeLog]:
     """
     获取兑换日志
 
@@ -680,10 +680,33 @@ def get_exchange_logs(guild: Guild, limit: int = 50) -> Any:
         limit: 返回数量
 
     Returns:
-        QuerySet
+        list[GuildExchangeLog]
     """
-    return (
+    logs = list(
         GuildExchangeLog.objects.filter(guild=guild)
         .select_related("member__user__manor")
         .order_by("-exchanged_at")[:limit]
     )
+    item_keys = {str(log.item_key or "").strip() for log in logs}
+    template_names = dict(ItemTemplate.objects.filter(key__in=item_keys).values_list("key", "name"))
+    for log in logs:
+        item_key = str(log.item_key or "").strip()
+        display_meta = _get_item_display_meta(item_key)
+        candidates = (
+            WAREHOUSE_ITEM_LABELS.get(item_key),
+            display_meta.get("name"),
+            template_names.get(item_key),
+        )
+        setattr(
+            log,
+            "item_display_name",
+            next(
+                (
+                    str(candidate).strip()
+                    for candidate in candidates
+                    if candidate and str(candidate).strip() and str(candidate).strip() != item_key
+                ),
+                "未知物品",
+            ),
+        )
+    return logs

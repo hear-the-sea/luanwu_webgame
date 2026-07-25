@@ -574,7 +574,7 @@ def test_upgrade_new_guild_capacity_tech_consumes_red_ruby(monkeypatch, django_u
     assert GuildResourceLog.objects.filter(
         guild=guild,
         action="tech_upgrade",
-        note__contains="红宝石x1",
+        note__contains="红宝石×1",
     ).exists()
 
 

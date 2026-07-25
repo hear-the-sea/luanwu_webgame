@@ -57,7 +57,7 @@ class TestProductionViews:
             assert len(response.context["horse_options"]) == 1
             option = response.context["horse_options"][0]
             assert option["key"] == "runtime_horse"
-            assert option["name"] == "runtime_horse"
+            assert option["name"] == "未知马匹"
             assert option["grain_cost"] == 321
             assert option["base_duration"] == 180
             assert option["required_horsemanship"] == 1
@@ -134,7 +134,7 @@ class TestProductionViews:
             assert len(response.context["livestock_options"]) == 1
             option = response.context["livestock_options"][0]
             assert option["key"] == "runtime_livestock"
-            assert option["name"] == "runtime_livestock"
+            assert option["name"] == "未知家畜"
             assert option["grain_cost"] == 222
             assert option["base_duration"] == 240
             assert option["required_animal_husbandry"] == 1
@@ -295,7 +295,7 @@ class TestProductionViews:
             assert len(response.context["metal_options"]) == 1
             option = response.context["metal_options"][0]
             assert option["key"] == "runtime_medicine"
-            assert option["name"] == "runtime_medicine"
+            assert option["name"] == "未知物品"
             assert option["cost_type"] == "silver"
             assert option["cost_amount"] == 77
             assert option["base_duration"] == 150

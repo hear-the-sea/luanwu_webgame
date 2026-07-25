@@ -260,6 +260,30 @@ def map_search_api(request: HttpRequest) -> JsonResponse:
 
 
 @login_required
+@require_POST
+@rate_limit_json("map_backfill", limit=30, window_seconds=60, error_message="补位请求过于频繁，请稍后再试")
+def map_backfill_request_api(request: HttpRequest) -> JsonResponse:
+    """显式记录一次地区地图搜索的虚拟玩家补位需求。"""
+    data, error = _request_json_object_or_error(request)
+    if error is not None:
+        return error
+    if data is None:
+        return json_error("无效的请求数据")
+
+    region = data.get("region")
+    if not isinstance(region, str) or region not in dict(REGION_CHOICES):
+        return json_error("地区参数无效")
+
+    from gameplay.services.virtual_players import request_virtual_player_backfill_for_region_search
+
+    requested = request_virtual_player_backfill_for_region_search(
+        searcher=get_manor(request.user),
+        region=region,
+    )
+    return json_success(requested=requested)
+
+
+@login_required
 def manor_detail_api(request: HttpRequest, manor_id: int) -> JsonResponse:
     """获取庄园详情API"""
     viewer_manor = get_manor(request.user)

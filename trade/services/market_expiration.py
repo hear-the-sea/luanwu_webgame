@@ -17,7 +17,7 @@ def normalize_expire_limit(limit: int | None) -> int | None:
     try:
         parsed = int(limit)
     except (TypeError, ValueError):
-        raise TradeValidationError("limit 必须是整数")
+        raise TradeValidationError("数量上限必须是整数")
     if parsed <= 0:
         return 0
     return parsed
@@ -87,7 +87,7 @@ def expire_listings_queryset(
                     "kind": "system",
                     "title": "【交易过期】您的物品已退回",
                     "body": (
-                        f"您上架的 {item_name} x{quantity} 已过期，物品已直接退回仓库。\n\n"
+                        f"您上架的 {item_name} ×{quantity} 已过期，物品已直接退回仓库。\n\n"
                         f"挂单信息：\n"
                         f"- 物品：{item_name}\n"
                         f"- 数量：{quantity}\n"

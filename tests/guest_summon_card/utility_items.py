@@ -25,7 +25,7 @@ def test_peace_shield_invalid_duration_type_raises_config_error(django_user_mode
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="duration 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()
@@ -51,7 +51,7 @@ def test_peace_shield_non_positive_duration_raises_config_error(django_user_mode
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    with pytest.raises(ItemNotConfiguredError, match="duration 配置异常"):
+    with pytest.raises(ItemNotConfiguredError, match="物品配置异常，请联系管理员"):
         use_inventory_item(item)
 
     item.refresh_from_db()

@@ -51,7 +51,7 @@ def _normalize_troop_templates_payload(raw: Any) -> dict[str, Any]:
 
         normalized = dict(troop)
         normalized["key"] = key
-        normalized["name"] = str(troop.get("name") or key)
+        normalized["name"] = str(troop.get("name") or "未知兵种")
         normalized["description"] = str(troop.get("description") or "")
         normalized["base_attack"] = safe_non_negative_int(troop.get("base_attack"), 0)
         normalized["base_defense"] = safe_non_negative_int(troop.get("base_defense"), 0)

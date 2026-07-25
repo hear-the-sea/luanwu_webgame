@@ -174,6 +174,13 @@ def test_decompose_equipment_consumes_gear_and_grants_rewards(django_user_model,
         ("tie", "铁"),
         ("wood_essence", "木质精华"),
         ("copper_essence", "铜质精华"),
+        ("shuiqumu", "水曲木"),
+        ("paozi", "刨子"),
+        ("zaozi", "凿子"),
+        ("tiemu", "铁木"),
+        ("zitanmu", "紫檀木"),
+        ("heiyuanshi", "黑原石"),
+        ("jingangmei", "金刚煤"),
     ]:
         _create_item_template(key, name, "resource", "black")
 
@@ -194,6 +201,8 @@ def test_decompose_equipment_consumes_gear_and_grants_rewards(django_user_model,
     # random.random=0 时，绿色概率奖励全部触发
     assert result["rewards"]["wood_essence"] == 2
     assert result["rewards"]["copper_essence"] == 2
+    for material_key in ["shuiqumu", "paozi", "zaozi", "tiemu", "zitanmu", "heiyuanshi", "jingangmei"]:
+        assert result["rewards"][material_key] == 2
 
     assert get_item_quantity(manor, "equip_green_decompose") == 0
     assert get_item_quantity(manor, "tong") == 4
@@ -201,6 +210,8 @@ def test_decompose_equipment_consumes_gear_and_grants_rewards(django_user_model,
     assert get_item_quantity(manor, "tie") == 2
     assert get_item_quantity(manor, "wood_essence") == 2
     assert get_item_quantity(manor, "copper_essence") == 2
+    for material_key in ["shuiqumu", "paozi", "zaozi", "tiemu", "zitanmu", "heiyuanshi", "jingangmei"]:
+        assert get_item_quantity(manor, material_key) == 2
 
 
 @pytest.mark.django_db
@@ -241,6 +252,59 @@ def test_decompose_equipment_rejects_malformed_reward_contract(django_user_model
     assert get_item_quantity(manor, "equip_bad_rewards") == 1
 
 
+def test_decompose_forge_material_probabilities_match_balance():
+    forge_service.clear_forge_decompose_cache()
+    config = forge_service.load_forge_decompose_config()
+    expected = {
+        "green": {
+            "shuiqumu": 0.25,
+            "paozi": 0.12,
+            "zaozi": 0.12,
+            "tiemu": 0.06,
+            "zitanmu": 0.05,
+            "heiyuanshi": 0.06,
+            "jingangmei": 0.04,
+        },
+        "blue": {
+            "shuiqumu": 0.35,
+            "paozi": 0.20,
+            "zaozi": 0.20,
+            "tiemu": 0.14,
+            "zitanmu": 0.12,
+            "heiyuanshi": 0.15,
+            "jingangmei": 0.10,
+            "gaolu": 0.02,
+        },
+        "purple": {
+            "shuiqumu": 0.50,
+            "paozi": 0.30,
+            "zaozi": 0.30,
+            "tiemu": 0.24,
+            "zitanmu": 0.22,
+            "heiyuanshi": 0.26,
+            "jingangmei": 0.20,
+            "gaolu": 0.06,
+        },
+        "orange": {
+            "shuiqumu": 0.65,
+            "paozi": 0.42,
+            "zaozi": 0.42,
+            "tiemu": 0.36,
+            "zitanmu": 0.34,
+            "heiyuanshi": 0.40,
+            "jingangmei": 0.32,
+            "gaolu": 0.14,
+        },
+    }
+
+    for rarity, expected_rewards in expected.items():
+        rewards = config["chance_rewards"][rarity]
+        actual = {key: rewards[key] for key in expected_rewards if key in rewards}
+        assert actual == expected_rewards, rarity
+        assert "chunqiu_coin" not in rewards
+        assert "chunqiu_coin" not in config["base_materials"][rarity]
+
+
 def test_decompose_probabilities_increase_for_higher_rarity():
     forge_service.clear_forge_decompose_cache()
     config = forge_service.load_forge_decompose_config()
@@ -259,6 +323,21 @@ def test_decompose_probabilities_increase_for_higher_rarity():
     ]:
         assert purple[reward_key] >= blue[reward_key]
         assert orange[reward_key] >= purple[reward_key]
+
+    for reward_key in [
+        "shuiqumu",
+        "paozi",
+        "zaozi",
+        "tiemu",
+        "zitanmu",
+        "heiyuanshi",
+        "jingangmei",
+        "gaolu",
+    ]:
+        probabilities = [
+            config["chance_rewards"][rarity].get(reward_key, 0.0) for rarity in config["supported_rarities"]
+        ]
+        assert probabilities == sorted(probabilities), reward_key
 
 
 def test_get_recruitment_equipment_keys_does_not_fail_open(monkeypatch):

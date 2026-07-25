@@ -2,8 +2,12 @@
 地图状态与详情 API 测试
 """
 
+import json
+
 import pytest
 from django.urls import reverse
+
+from gameplay.models import BotBackfillDemand
 
 
 @pytest.mark.django_db
@@ -24,6 +28,88 @@ class TestMapStatusAPI:
         assert data["success"] is True
         ids = {row.get("id") for row in data.get("results", [])}
         assert manor.id in ids
+
+    def test_map_search_by_region_is_read_only(self, manor_with_user, settings):
+        manor, client = manor_with_user
+        manor.newbie_protection_until = None
+        manor.peace_shield_until = None
+        manor.save(update_fields=["newbie_protection_until", "peace_shield_until"])
+        settings.VIRTUAL_PLAYER_CONFIG = {
+            "population": {"min_attackable_per_band": 1},
+            "prestige_bands": {"newbie": [0, None]},
+            "projection": {"guest_template_keys": [], "gear_template_keys": []},
+        }
+
+        response = client.get(reverse("gameplay:map_search_api"), {"type": "region", "region": manor.region})
+
+        assert response.status_code == 200
+        assert not BotBackfillDemand.objects.exists()
+
+    def test_region_backfill_request_records_demand_via_post(self, manor_with_user, settings):
+        manor, client = manor_with_user
+        manor.region = "north"
+        manor.newbie_protection_until = None
+        manor.peace_shield_until = None
+        manor.save(update_fields=["region", "newbie_protection_until", "peace_shield_until"])
+        settings.VIRTUAL_PLAYER_CONFIG = {
+            "population": {"min_attackable_per_band": 1},
+            "prestige_bands": {"newbie": [0, None]},
+            "projection": {"guest_template_keys": [], "gear_template_keys": []},
+        }
+
+        response = client.post(
+            reverse("gameplay:map_backfill_request_api"),
+            data=json.dumps({"region": manor.region}),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+        assert response.json()["success"] is True
+        assert response.json()["requested"] is True
+        assert BotBackfillDemand.objects.filter(region=manor.region, prestige_band="newbie", needed=1).exists()
+
+    def test_region_backfill_request_skips_unsupported_overseas_region(self, manor_with_user, settings):
+        manor, client = manor_with_user
+        manor.region = "overseas"
+        manor.newbie_protection_until = None
+        manor.peace_shield_until = None
+        manor.save(update_fields=["region", "newbie_protection_until", "peace_shield_until"])
+        settings.VIRTUAL_PLAYER_CONFIG = {
+            "population": {"min_attackable_per_band": 1},
+            "prestige_bands": {"newbie": [0, None]},
+            "projection": {"guest_template_keys": [], "gear_template_keys": []},
+        }
+
+        response = client.post(
+            reverse("gameplay:map_backfill_request_api"),
+            data=json.dumps({"region": "overseas"}),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+        assert response.json() == {"success": True, "requested": False}
+        assert not BotBackfillDemand.objects.exists()
+
+    def test_region_backfill_request_rejects_get(self, manor_with_user):
+        _manor, client = manor_with_user
+
+        response = client.get(reverse("gameplay:map_backfill_request_api"))
+
+        assert response.status_code == 405
+        assert not BotBackfillDemand.objects.exists()
+
+    def test_region_backfill_request_rejects_invalid_region(self, manor_with_user):
+        _manor, client = manor_with_user
+
+        response = client.post(
+            reverse("gameplay:map_backfill_request_api"),
+            data=json.dumps({"region": "unknown"}),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 400
+        assert response.json()["error"] == "地区参数无效"
+        assert not BotBackfillDemand.objects.exists()
 
     def test_map_search_by_name(self, manor_with_user):
         _manor, client = manor_with_user

@@ -199,4 +199,4 @@ def test_grant_loot_items_normalizes_quantities():
 def test_formatters_tolerate_invalid_mapping_shapes():
     assert _format_loot_description(["bad"], ["shape"]) == "无"
     assert _format_battle_rewards_description(["bad"]) == ""
-    assert "经验果 x3" in _format_battle_rewards_description({"exp_fruit": "3", "equipment": ["bad"]})
+    assert "经验果 ×3" in _format_battle_rewards_description({"exp_fruit": "3", "equipment": ["bad"]})

@@ -51,11 +51,11 @@ def _current_strength(unit: Any) -> int:
         strength = getattr(unit, "initial_troop_strength", 0)
         return require_positive_int(strength, contract_name="battle current troop strength")
     if isinstance(strength, bool):
-        raise GameError(f"invalid battle current troop strength: {strength!r}")
+        raise GameError("战斗数据异常，请稍后重试", invalid_strength=strength)
     try:
         parsed_strength = int(strength)
     except (TypeError, ValueError):
-        raise GameError(f"invalid battle current troop strength: {strength!r}")
+        raise GameError("战斗数据异常，请稍后重试", invalid_strength=strength)
     if parsed_strength > 0:
         return parsed_strength
     return require_positive_int(

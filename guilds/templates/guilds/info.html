@@ -12,7 +12,7 @@
         </div>
         <div class="flex gap-2">
             <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
-            <a href="{% url 'guilds:pvp' %}" class="tw-btn-secondary">帮会PVP</a>
+            <a href="{% url 'guilds:pvp' %}" class="tw-btn-secondary">帮会对战</a>
         </div>
     </div>
 
@@ -50,7 +50,7 @@
             </div>
             <div>
                 <dt>帮会等级</dt>
-                <dd><span class="tw-badge-gold">Lv {{ guild.level }} / 10</span></dd>
+                <dd><span class="tw-badge-gold">等级 {{ guild.level }} / 10</span></dd>
             </div>
             <div>
                 <dt>成员容量</dt>

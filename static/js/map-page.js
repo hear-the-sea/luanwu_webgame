@@ -5,6 +5,7 @@
   }
 
   const mapApiBase = page.dataset.mapApiBase || "";
+  const mapBackfillApiUrl = page.dataset.mapBackfillApiUrl || "";
   const scoutApiUrl = page.dataset.scoutApiUrl || "";
   const raidConfigUrlPrefix = page.dataset.raidConfigUrlPrefix || "";
   const currentManorId = Number(page.dataset.currentManorId || "");
@@ -127,6 +128,28 @@
     }
   }
 
+  async function requestRegionBackfill(region) {
+    if (!mapBackfillApiUrl || !region) {
+      return;
+    }
+
+    try {
+      const response = await fetch(mapBackfillApiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCSRFToken(),
+        },
+        body: JSON.stringify({ region }),
+      });
+      if (!response.ok) {
+        console.warn("Map backfill request was rejected:", response.status);
+      }
+    } catch (error) {
+      console.error("Map backfill request failed:", error);
+    }
+  }
+
   function renderManorList(manors) {
     if (!Array.isArray(manors) || manors.length === 0) {
       setListHint("暂无庄园数据", "tw-empty-state");
@@ -226,9 +249,11 @@
     currentPage = pageNumber;
     setListHint("正在加载...", "tw-loading-hint");
 
-    let url = `${mapApiBase}?type=region&region=${encodeURIComponent(currentRegion)}&page=${pageNumber}`;
-    if (currentSearchQuery) {
-      url = `${mapApiBase}?type=name&q=${encodeURIComponent(currentSearchQuery)}`;
+    const requestedRegion = currentRegion;
+    const requestedSearchQuery = currentSearchQuery;
+    let url = `${mapApiBase}?type=region&region=${encodeURIComponent(requestedRegion)}&page=${pageNumber}`;
+    if (requestedSearchQuery) {
+      url = `${mapApiBase}?type=name&q=${encodeURIComponent(requestedSearchQuery)}`;
     }
 
     try {
@@ -239,11 +264,15 @@
         return;
       }
 
+      if (!requestedSearchQuery && pageNumber === 1) {
+        void requestRegionBackfill(requestedRegion);
+      }
+
       renderManorList(data.results);
       manorCount.textContent = `共 ${data.total} 个庄园`;
 
-      if (currentSearchQuery) {
-        listTitle.textContent = `搜索结果: "${currentSearchQuery}"`;
+      if (requestedSearchQuery) {
+        listTitle.textContent = `搜索结果: "${requestedSearchQuery}"`;
         pagination.style.display = "none";
         return;
       }

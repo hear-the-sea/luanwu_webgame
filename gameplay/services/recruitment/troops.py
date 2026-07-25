@@ -160,7 +160,7 @@ def _deduct_troops_batch(manor: "Manor", loadout: Dict[str, int]) -> None:
         if not troop:
             # 护院类型不存在 - 必须抛出异常，否则会造成护院复制漏洞
             # 场景：出征时扣除A但跳过B → 战斗结束归还会创建B → 凭空生成护院
-            raise TroopLoadoutError(f"护院配置包含不存在的类型: {troop_key}")
+            raise TroopLoadoutError("护院配置包含无效类型", troop_key=troop_key)
         if troop.count < count:
             raise TroopLoadoutError(f"护院 {troop.troop_template.name} 数量不足")
         troop.count -= count

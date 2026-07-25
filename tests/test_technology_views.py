@@ -22,7 +22,7 @@ class TestTechnologyViews:
         assert "technologies" in response.context
         content = response.content.decode("utf-8")
         assert 'class="tw-building-headline"' in content
-        assert "Lv 0 /" in content
+        assert "等级 0 /" in content
 
     def test_technology_martial_tab(self, manor_with_user):
         """武艺科技标签页"""

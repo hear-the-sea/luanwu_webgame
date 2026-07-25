@@ -109,7 +109,7 @@ class TestTaskBoardPage:
         assert 'class="tw-drop-icon rarity-blue"' in body
         assert '<span class="tw-drop-count">×2</span>' in body
         assert '<span class="tw-drop-placeholder" aria-hidden="true">占</span>' in body
-        assert ">银两 x500<" in body
+        assert ">银两 ×500<" in body
 
     def test_task_board_displays_fixed_and_probability_drops_in_one_preview_grid(self, manor_with_user):
         _manor, client = manor_with_user
@@ -130,8 +130,8 @@ class TestTaskBoardPage:
 
         assert response.status_code == 200
         body = response.content.decode("utf-8")
-        assert ">银两 x500<" in body
-        assert 'title="概率预览物品 x1"' in body
+        assert ">银两 ×500<" in body
+        assert 'title="概率预览物品 ×1"' in body
         assert "概率掉落：" not in body
         assert body.count('class="tw-drop-grid"') == 1
 
@@ -295,7 +295,7 @@ class TestTaskBoardPage:
         assert response.status_code == 200
         body = response.content.decode("utf-8")
         assert "入场消耗" in body
-        assert "任务入场令 x2" in body
+        assert "任务入场令 ×2" in body
         assert "持有 0" in body
         assert "信物不足" in body
 

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
+from itertools import count
 
 import pytest
-from django.db import connection
+from django.db import connection, transaction
 from django.db.migrations.executor import MigrationExecutor
 from django.utils import timezone
 
@@ -21,17 +22,25 @@ from gameplay.services.arena.coop_core import start_due_virtual_backfill_coop_ev
 from gameplay.services.arena.core import start_due_virtual_backfill_tournaments
 from gameplay.services.arena.virtual_backfill import backfill_coop_event_locked, backfill_tournament_locked
 from gameplay.services.manor.core import ensure_manor
-from tests.arena_services.support import User
+from guests.models import Guest, GuestStatus
+from tests.arena_services.support import User, create_guest, create_guest_template
+
+_BOT_GUEST_COUNTER = count(1)
 
 
 def _create_manor(username: str):
     return ensure_manor(User.objects.create_user(username=username, password="pass123"))
 
 
-def _create_bot_profile(username: str, *, state: str = BotProfile.State.ACTIVE):
+def _create_bot_profile(
+    username: str,
+    *,
+    state: str = BotProfile.State.ACTIVE,
+    guest_stats: list[tuple[int, int, int]] | None = None,
+):
     manor = _create_manor(username)
     now = timezone.now()
-    return BotProfile.objects.create(
+    profile = BotProfile.objects.create(
         manor=manor,
         state=state,
         prestige_band="newbie",
@@ -41,6 +50,26 @@ def _create_bot_profile(username: str, *, state: str = BotProfile.State.ACTIVE):
         next_growth_at=now,
         abandon_at=now,
         retire_at=now,
+    )
+    for index, (force, intellect, defense) in enumerate([(100, 100, 70)] if guest_stats is None else guest_stats):
+        template = create_guest_template(f"arena_bot_{next(_BOT_GUEST_COUNTER)}")
+        Guest.objects.create(
+            manor=manor,
+            template=template,
+            custom_name=f"{username}-门客-{index}",
+            level=30,
+            force=force,
+            intellect=intellect,
+            defense_stat=defense,
+            agility=100,
+        )
+    return profile
+
+
+def _snapshot_power(snapshots: list[dict]) -> int:
+    return sum(
+        int(snapshot.get("attack") or 0) + int(snapshot.get("defense") or 0) + int(snapshot.get("max_hp") or 0) // 10
+        for snapshot in snapshots
     )
 
 
@@ -178,7 +207,7 @@ def test_arena_coop_entry_defaults_to_player_and_persists_snapshot_only_virtual_
 
 
 @pytest.mark.django_db
-def test_tournament_backfill_uses_median_snapshot_and_skips_bot_in_other_live_tournament():
+def test_tournament_backfill_uses_bot_owned_balanced_lineups_and_skips_reserved_bots():
     tournament = ArenaTournament.objects.create(status=ArenaTournament.Status.RECRUITING, player_limit=5)
     _add_real_arena_entry(tournament, "arena_backfill_low", attack=100, defense=100, max_hp=1000)
     _add_real_arena_entry(tournament, "arena_backfill_median", attack=200, defense=200, max_hp=2000)
@@ -208,9 +237,174 @@ def test_tournament_backfill_uses_median_snapshot_and_skips_bot_in_other_live_to
         links = list(entry.entry_guests.all())
         assert len(links) == 1
         assert links[0].guest_id is None
-        assert links[0].snapshot["attack"] == 200
-        assert links[0].snapshot["defense"] == 200
-        assert links[0].snapshot["max_hp"] == 2000
+        bot_template_keys = set(entry.manor.guests.values_list("template__key", flat=True))
+        assert links[0].snapshot["template_key"] in bot_template_keys
+        assert 600 * 80 <= _snapshot_power([links[0].snapshot]) * 100 <= 600 * 120
+        assert not entry.manor.guests.exclude(status=GuestStatus.IDLE).exists()
+
+
+@pytest.mark.django_db
+def test_tournament_backfill_uses_all_bot_guests_when_roster_is_smaller_than_reference():
+    tournament = ArenaTournament.objects.create(status=ArenaTournament.Status.RECRUITING, player_limit=2)
+    real_entry = _add_real_arena_entry(
+        tournament,
+        "arena_backfill_two_guest_reference",
+        attack=200,
+        defense=200,
+        max_hp=2000,
+    )
+    ArenaEntryGuest.objects.create(
+        entry=real_entry,
+        snapshot={"display_name": "第二名真人门客", "attack": 200, "defense": 200, "max_hp": 2000},
+    )
+    profile = _create_bot_profile("arena_backfill_short_roster", guest_stats=[(180, 120, 150)])
+
+    assert backfill_tournament_locked(tournament) == 1
+
+    virtual_entry = tournament.entries.get(source=ArenaEntry.Source.VIRTUAL)
+    snapshots = [link.snapshot for link in virtual_entry.entry_guests.all()]
+    assert len(snapshots) == 1
+    assert snapshots[0]["template_key"] == profile.manor.guests.get().template.key
+    assert 1200 * 80 <= _snapshot_power(snapshots) * 100 <= 1200 * 120
+
+
+@pytest.mark.django_db
+def test_tournament_backfill_skips_empty_and_out_of_range_bots_before_using_later_candidate():
+    tournament = ArenaTournament.objects.create(status=ArenaTournament.Status.RECRUITING, player_limit=2)
+    _add_real_arena_entry(tournament, "arena_backfill_scan_reference", attack=200, defense=200, max_hp=2000)
+    empty = _create_bot_profile("arena_backfill_empty", guest_stats=[])
+    weak = _create_bot_profile("arena_backfill_weak", guest_stats=[(10, 10, 10)])
+    eligible = _create_bot_profile("arena_backfill_eligible")
+
+    assert backfill_tournament_locked(tournament) == 1
+
+    virtual_entry = tournament.entries.get(source=ArenaEntry.Source.VIRTUAL)
+    assert virtual_entry.manor_id == eligible.manor_id
+    assert virtual_entry.manor_id not in {empty.manor_id, weak.manor_id}
+
+
+@pytest.mark.django_db
+def test_arena_candidate_discovery_does_not_lock_the_bot_pool():
+    from gameplay.services.arena import virtual_backfill
+
+    first = _create_bot_profile("arena_discovery_unlocked_one")
+    second = _create_bot_profile("arena_discovery_unlocked_two")
+
+    candidates = virtual_backfill._candidates(excluded_manor_ids=set())
+
+    assert candidates.query.select_for_update is False
+    assert list(candidates.values_list("id", flat=True)) == [first.id, second.id]
+
+
+@pytest.mark.django_db
+def test_arena_candidate_lock_is_limited_to_the_remaining_shortfall():
+    from gameplay.services.arena import virtual_backfill
+
+    first = _create_bot_profile("arena_lock_limit_one")
+    second = _create_bot_profile("arena_lock_limit_two")
+
+    with transaction.atomic():
+        locked = virtual_backfill._lock_candidates(
+            profile_ids=[first.id, second.id],
+            excluded_manor_ids=set(),
+            limit=1,
+        )
+
+        assert locked.query.select_for_update is True
+        assert locked.query.select_for_update_skip_locked is True
+        assert list(locked.values_list("id", flat=True)) == [first.id]
+
+
+@pytest.mark.django_db
+def test_tournament_backfill_locks_only_profiles_with_eligible_lineups(monkeypatch):
+    from gameplay.services.arena import virtual_backfill
+
+    tournament = ArenaTournament.objects.create(status=ArenaTournament.Status.RECRUITING, player_limit=2)
+    _add_real_arena_entry(tournament, "arena_lock_pipeline_reference", attack=200, defense=200, max_hp=2000)
+    weak = _create_bot_profile("arena_lock_pipeline_weak", guest_stats=[(10, 10, 10)])
+    eligible = _create_bot_profile("arena_lock_pipeline_eligible")
+    original_lock_candidates = virtual_backfill._lock_candidates
+    lock_calls = []
+
+    def track_lock_candidates(**kwargs):
+        lock_calls.append(kwargs)
+        return original_lock_candidates(**kwargs)
+
+    monkeypatch.setattr(virtual_backfill, "_lock_candidates", track_lock_candidates)
+
+    assert backfill_tournament_locked(tournament) == 1
+    assert len(lock_calls) == 1
+    assert lock_calls[0]["profile_ids"] == [eligible.id]
+    assert weak.id not in lock_calls[0]["profile_ids"]
+    assert lock_calls[0]["limit"] == 1
+
+
+@pytest.mark.django_db
+def test_candidate_lock_tries_the_next_profile_when_locked_lineup_is_stale(monkeypatch):
+    from gameplay.services.arena import virtual_backfill
+
+    first = _create_bot_profile("arena_lock_stale_first")
+    second = _create_bot_profile("arena_lock_stale_second")
+
+    def select_after_lock(profile, **_kwargs):
+        if profile.id == first.id:
+            return []
+        return [{"attack": 200, "defense": 200, "max_hp": 2000}]
+
+    monkeypatch.setattr(virtual_backfill, "_select_bot_lineup", select_after_lock)
+
+    with transaction.atomic():
+        selected = virtual_backfill._lock_eligible_bot_lineups(
+            profile_ids=[first.id, second.id],
+            excluded_manor_ids=set(),
+            needed=1,
+            mode="tournament",
+            event_id=1,
+            target_guest_count=1,
+            target_team_power=600,
+        )
+
+    assert [profile.id for profile, _lineup in selected] == [second.id]
+
+
+@pytest.mark.django_db
+def test_bot_lineup_selection_is_stable_per_event_and_varies_across_events():
+    from gameplay.services.arena import virtual_backfill
+
+    profile = _create_bot_profile(
+        "arena_backfill_stable_random",
+        guest_stats=[(100, 100, 70), (100, 100, 70), (100, 100, 70), (100, 100, 70)],
+    )
+
+    first = virtual_backfill._select_bot_lineup(
+        profile,
+        mode="tournament",
+        event_id=101,
+        target_guest_count=2,
+        target_team_power=1340,
+    )
+    repeated = virtual_backfill._select_bot_lineup(
+        profile,
+        mode="tournament",
+        event_id=101,
+        target_guest_count=2,
+        target_team_power=1340,
+    )
+    event_results = [
+        virtual_backfill._select_bot_lineup(
+            profile,
+            mode="tournament",
+            event_id=event_id,
+            target_guest_count=2,
+            target_team_power=1340,
+        )
+        for event_id in range(101, 121)
+    ]
+    event_lineups = {tuple(snapshot["template_key"] for snapshot in lineup) for lineup in event_results}
+
+    assert first == repeated
+    assert len(event_lineups) > 1
+    assert all(1340 * 80 <= _snapshot_power(lineup) * 100 <= 1340 * 120 for lineup in event_results)
 
 
 @pytest.mark.django_db
@@ -235,6 +429,57 @@ def test_coop_backfill_replaces_only_registered_entry_shortfall():
     assert created == 2
     assert {entry.manor_id for entry in virtual_entries} == {first_available.manor_id, second_available.manor_id}
     assert all(entry.entry_guests.get().guest_id is None for entry in virtual_entries)
+
+
+@pytest.mark.django_db
+def test_coop_backfill_does_not_reserve_cancelled_entry_from_other_live_event():
+    event = ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.RECRUITING,
+        player_limit=2,
+        guest_limit_per_entry=1,
+    )
+    _add_real_coop_entry(event, "arena_coop_backfill_current_real")
+    cancelled_profile = _create_bot_profile("arena_coop_backfill_other_cancelled")
+    other_event = ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.RUNNING,
+        player_limit=2,
+        guest_limit_per_entry=1,
+    )
+    ArenaCoopEntry.objects.create(
+        event=other_event,
+        manor=cancelled_profile.manor,
+        status=ArenaCoopEntry.Status.CANCELLED,
+    )
+
+    created = backfill_coop_event_locked(event)
+
+    virtual_entry = event.entries.get(source=ArenaCoopEntry.Source.VIRTUAL)
+    assert created == 1
+    assert virtual_entry.manor_id == cancelled_profile.manor_id
+
+
+@pytest.mark.django_db
+def test_coop_backfill_builds_reference_snapshot_from_live_guest_when_snapshot_is_empty():
+    event = ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.RECRUITING,
+        player_limit=2,
+        guest_limit_per_entry=1,
+    )
+    real_manor = _create_manor("arena_coop_backfill_live_guest_manor")
+    guest = create_guest(real_manor, create_guest_template("arena_coop_backfill_live_guest_tpl"), "A")
+    real_entry = ArenaCoopEntry.objects.create(event=event, manor=real_manor)
+    ArenaCoopEntryGuest.objects.create(entry=real_entry, guest=guest, slot_index=0, snapshot={})
+    profile = _create_bot_profile("arena_coop_backfill_live_guest_bot", guest_stats=[(180, 120, 150)])
+
+    created = backfill_coop_event_locked(event)
+
+    virtual_entry = event.entries.get(source=ArenaCoopEntry.Source.VIRTUAL)
+    virtual_guest = virtual_entry.entry_guests.get()
+    assert created == 1
+    assert virtual_guest.guest_id is None
+    assert virtual_guest.snapshot["display_name"] != guest.display_name
+    assert virtual_guest.snapshot["template_key"] == profile.manor.guests.get().template.key
+    assert virtual_guest.snapshot["template_key"] != guest.template.key
 
 
 @pytest.mark.django_db
@@ -325,6 +570,17 @@ def test_tournament_backfill_requires_all_missing_bots():
     tournament = ArenaTournament.objects.create(status=ArenaTournament.Status.RECRUITING, player_limit=3)
     _add_real_arena_entry(tournament, "arena_shortage_real", attack=200, defense=200, max_hp=2000)
     _create_bot_profile("arena_shortage_only_bot")
+
+    assert backfill_tournament_locked(tournament) == 0
+    assert tournament.entries.filter(source=ArenaEntry.Source.VIRTUAL).count() == 0
+
+
+@pytest.mark.django_db
+def test_tournament_backfill_writes_nothing_when_only_one_of_two_bots_has_balanced_lineup():
+    tournament = ArenaTournament.objects.create(status=ArenaTournament.Status.RECRUITING, player_limit=3)
+    _add_real_arena_entry(tournament, "arena_partial_reference", attack=200, defense=200, max_hp=2000)
+    _create_bot_profile("arena_partial_eligible")
+    _create_bot_profile("arena_partial_weak", guest_stats=[(10, 10, 10)])
 
     assert backfill_tournament_locked(tournament) == 0
     assert tournament.entries.filter(source=ArenaEntry.Source.VIRTUAL).count() == 0

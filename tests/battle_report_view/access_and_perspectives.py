@@ -66,7 +66,7 @@ def _round_with_side_states():
 
 
 @pytest.mark.django_db
-def test_arena_coop_report_is_visible_to_participant(client, django_user_model):
+def test_arena_coop_report_uses_participant_message_title(client, django_user_model):
     owner_user = django_user_model.objects.create_user(username="arena_coop_report_owner", password="pass123")
     user = django_user_model.objects.create_user(username="arena_coop_report_user", password="pass123")
     owner_manor = ensure_manor(owner_user)
@@ -87,11 +87,19 @@ def test_arena_coop_report_is_visible_to_participant(client, django_user_model):
     )
     ArenaCoopEntry.objects.create(event=event, manor=owner_manor, status=ArenaCoopEntry.Status.COMPLETED)
     ArenaCoopEntry.objects.create(event=event, manor=manor, status=ArenaCoopEntry.Status.COMPLETED)
+    message = Message.objects.create(
+        manor=manor,
+        kind=Message.Kind.BATTLE,
+        title="围攻光明顶战报",
+        battle_report=report,
+    )
 
     assert client.login(username="arena_coop_report_user", password="pass123")
-    response = client.get(reverse("battle:report_detail", kwargs={"pk": report.pk}))
+    response = client.get(reverse("gameplay:view_message", kwargs={"pk": message.pk}), follow=True)
 
     assert response.status_code == 200
+    assert response.request["PATH_INFO"] == reverse("battle:report_detail", kwargs={"pk": report.pk})
+    assert response.context["report_title"] == "围攻光明顶战报"
 
 
 @pytest.mark.django_db
@@ -241,7 +249,7 @@ def test_arena_report_without_match_relation_uses_defender_perspective_from_mess
     assert response.context["my_side"] == "defender"
     assert response.context["attacker_team_display"][0]["name"] == "D"
     assert response.context["defender_team_display"][0]["name"] == "A"
-    assert response.context["report_title"] == f"{attacker_manor.display_name} 战报"
+    assert response.context["report_title"] == "竞技场战报"
 
 
 @pytest.mark.django_db
@@ -542,7 +550,8 @@ def test_guild_raid_report_shows_defender_losses_for_defender_message_recipient(
     assert response.status_code == 200
     assert "战斗损失" in body
     assert "银两 -321" in body
-    assert "mysterious_stone -2" in body
+    assert "未知奖励 -2" in body
+    assert "mysterious_stone" not in body
     assert "门客被俘（赵云）" in body
 
 
@@ -610,6 +619,9 @@ def test_guild_raid_report_shows_attacker_rewards_for_attacker_message_recipient
     assert response.status_code == 200
     assert "战斗掉落" in body
     assert "银两 +456" in body
-    assert "mysterious_stone +3" in body
-    assert "experience_fruit +2" in body
-    assert "bronze_sword +1" in body
+    assert "未知奖励 +3" in body
+    assert "未知奖励 +2" in body
+    assert "未知奖励 +1" in body
+    assert "mysterious_stone" not in body
+    assert "experience_fruit" not in body
+    assert "bronze_sword" not in body

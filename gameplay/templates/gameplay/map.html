@@ -7,6 +7,7 @@
 <section class="dashboard"
          id="map-page"
          data-map-api-base="{% url 'gameplay:map_search_api' %}"
+         data-map-backfill-api-url="{% url 'gameplay:map_backfill_request_api' %}"
          data-scout-api-url="{% url 'gameplay:start_scout_api' %}"
          data-current-manor-id="{{ manor.id }}"
          data-raid-config-url-prefix="{% url 'gameplay:map' %}raid/">

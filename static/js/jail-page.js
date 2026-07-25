@@ -8,6 +8,9 @@
   }
   root.dataset.bound = "1";
 
+  const browserErrorMessage = (error, fallback = "操作失败，请稍后重试") =>
+    window.PlayerFacingCopy?.browserErrorMessage(error, fallback) || fallback;
+
   const csrfToken = () => {
     const meta = document.querySelector('meta[name="csrf-token"]');
     if (meta?.content) {
@@ -68,7 +71,7 @@
       form.submit();
       submitted = true;
     } catch (error) {
-      await showError(error instanceof Error ? error.message : "操作失败，请稍后重试");
+      await showError(browserErrorMessage(error));
     } finally {
       if (!submitted) {
         delete form.dataset.releaseConfirmPending;
@@ -196,7 +199,7 @@
       await finishAndReload(result, speakerName);
       completed = true;
     } catch (error) {
-      await showError(error instanceof Error ? error.message : "操作失败，请稍后重试");
+      await showError(browserErrorMessage(error));
     } finally {
       if (!completed) {
         restoreControls?.();

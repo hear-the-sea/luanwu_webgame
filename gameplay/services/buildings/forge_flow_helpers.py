@@ -120,7 +120,7 @@ def consume_forging_materials_locked(
             )
             .first()
         )
-        mat_name = material_name_map.get(mat_key, material_name_fallback_map.get(mat_key, mat_key))
+        mat_name = material_name_map.get(mat_key, material_name_fallback_map.get(mat_key, "所需材料"))
         if not item or item.quantity < total_amount:
             raise ForgeOperationError(f"{mat_name}不足")
         consume_inventory_item_locked(item, total_amount)
@@ -210,7 +210,7 @@ def finalize_equipment_production_locked(
 
 
 def build_forging_quantity_text(quantity: int) -> str:
-    return f"x{quantity}" if int(quantity) > 1 else ""
+    return f"×{quantity}" if int(quantity) > 1 else ""
 
 
 def send_equipment_forging_completion_notification(

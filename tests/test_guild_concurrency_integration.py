@@ -240,7 +240,7 @@ def test_concurrent_guild_raid_launch_allows_only_one_active_run(monkeypatch, dj
     assert len(successes) == 1
     assert len(errors) == 1
     assert isinstance(errors[0], GuildValidationError)
-    assert "当前已有帮会 PVP 出征中" in str(errors[0])
+    assert "当前已有帮会对战队伍出征中" in str(errors[0])
     assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key="experience_fruit").exists() is False
     assert Guild.objects.get(pk=attacker_guild.pk).pvp_attack_count_today == 1
     assert GuildRaidRun.objects.filter(attacker_guild=attacker_guild, status=GuildRaidRun.Status.MARCHING).count() == 1

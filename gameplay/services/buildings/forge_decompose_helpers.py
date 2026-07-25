@@ -54,7 +54,7 @@ def roll_decompose_rewards(
     base_materials = base_materials_map.get(rarity)
     chance_rewards = chance_rewards_map.get(rarity)
     if not base_materials or chance_rewards is None:
-        raise ForgeOperationError(f"分解配置缺失：{rarity}")
+        raise ForgeOperationError("分解配置缺失，请联系管理员", rarity=rarity)
 
     roll_int = randint_func or random.randint
     roll_float = random_func or random.random

@@ -69,7 +69,7 @@ def send_purchase_notifications(
         kind="system",
         title="【交易成功】您购买的物品已送达",
         body=(
-            f"恭喜！您成功购买了 {listing.item_template.name} x{listing.quantity}，"
+            f"恭喜！您成功购买了 {listing.item_template.name} ×{listing.quantity}，"
             f"花费 {listing.total_price:,} 银两。\n\n"
             f"物品已直接存入您的仓库，请前往查看。\n\n"
             f"交易详情：\n"
@@ -89,7 +89,7 @@ def send_purchase_notifications(
             kind="system",
             title="【交易成功】您的物品已售出",
             body=(
-                f"恭喜！您上架的 {listing.item_template.name} x{listing.quantity} 已成功售出！\n\n"
+                f"恭喜！您上架的 {listing.item_template.name} ×{listing.quantity} 已成功售出！\n\n"
                 f"银两已直接存入您的账户。\n\n"
                 f"交易详情：\n"
                 f"- 物品：{listing.item_template.name}\n"

@@ -86,6 +86,7 @@ CELERY_TASK_ROUTES = {
     "gameplay.complete_scout_return": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.scan_scout_records": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.scan_arena_tournaments": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.scan_arena_coop_events": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.process_raid_battle": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.complete_raid": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.scan_raid_runs": {"queue": CELERY_TIMER_QUEUE},
@@ -204,6 +205,10 @@ CELERY_BEAT_SCHEDULE = {
     },
     "scan-arena-tournaments": {
         "task": "gameplay.scan_arena_tournaments",
+        "schedule": crontab(minute="*/1"),
+    },
+    "scan-arena-coop-events": {
+        "task": "gameplay.scan_arena_coop_events",
         "schedule": crontab(minute="*/1"),
     },
     "process-expired-market-listings": {

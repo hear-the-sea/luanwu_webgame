@@ -209,6 +209,123 @@ class TestWorkViews:
         assert "打工模板page_4" in second_body
         assert "打工模板page_0" not in second_body
 
+    def test_work_page_shows_requirements_and_qualification_options(self, manor_with_user):
+        manor, client = manor_with_user
+        eligible, work_template = self._create_work_data(manor, "requirements")
+        eligible.custom_name = "恰好胜任"
+        eligible.level = 16
+        eligible.intellect = 105
+        eligible.agility = 60
+        eligible.save(update_fields=["custom_name", "level", "intellect", "agility"])
+        ineligible = Guest.objects.create(
+            manor=manor,
+            template=eligible.template,
+            custom_name="仍需培养",
+            level=16,
+            intellect=100,
+            agility=55,
+            status=GuestStatus.IDLE,
+        )
+        work_template.required_level = 16
+        work_template.required_intellect = 105
+        work_template.required_agility = 60
+        work_template.save(update_fields=["required_level", "required_intellect", "required_agility"])
+
+        response = client.get(reverse("gameplay:work"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "要求：" in body
+        assert "等级 16" in body
+        assert "智力 ≥ 105" in body
+        assert "敏捷 ≥ 60" in body
+        assert "可派遣" in body
+        assert "暂不符合" in body
+        assert "tw-work-card--no-match" not in body
+        assert f'<option value="{eligible.pk}">' in body
+        assert f'<option value="{ineligible.pk}" disabled>' in body
+        assert "智力 100/105，尚缺 5" in body
+        assert "敏捷 55/60，尚缺 5" in body
+
+    def test_work_page_shows_only_three_closest_guests_when_none_are_eligible(self, manor_with_user):
+        manor, client = manor_with_user
+        first_guest, work_template = self._create_work_data(manor, "closest")
+        first_guest.custom_name = "等级不足"
+        first_guest.save(update_fields=["custom_name"])
+        work_template.required_level = 10
+        work_template.required_force = 100
+        work_template.save(update_fields=["required_level", "required_force"])
+        for name, force in (("缺一", 99), ("缺二", 98), ("缺三", 97), ("缺十", 90)):
+            Guest.objects.create(
+                manor=manor,
+                template=first_guest.template,
+                custom_name=name,
+                level=10,
+                force=force,
+                status=GuestStatus.IDLE,
+            )
+
+        response = client.get(reverse("gameplay:work"))
+
+        body = response.content.decode("utf-8")
+        closest_block = body.split('data-closest-ineligible="true"', maxsplit=1)[1].split("</section>", maxsplit=1)[0]
+        assert "最接近要求" in closest_block
+        assert "缺一" in closest_block
+        assert "缺二" in closest_block
+        assert "缺三" in closest_block
+        assert "缺十" not in closest_block
+        assert "等级不足" not in closest_block
+        assert "tw-work-card--no-match" in body
+        assert 'type="submit" class="tw-btn-primary" disabled' in body
+
+    def test_work_page_keeps_requirements_visible_for_active_assignment(self, manor_with_user):
+        manor, client = manor_with_user
+        guest, work_template = self._create_work_data(manor, "active_requirements")
+        work_template.required_force = 100
+        work_template.required_defense = 75
+        work_template.save(update_fields=["required_force", "required_defense"])
+        guest.status = GuestStatus.WORKING
+        guest.save(update_fields=["status"])
+        WorkAssignment.objects.create(
+            manor=manor,
+            guest=guest,
+            work_template=work_template,
+            status=WorkAssignment.Status.WORKING,
+            complete_at=timezone.now() + timezone.timedelta(minutes=30),
+        )
+
+        response = client.get(reverse("gameplay:work"))
+
+        body = response.content.decode("utf-8")
+        assert "执行门客" in body
+        assert "武力 ≥ 100" in body
+        assert "防御 ≥ 75" in body
+
+    def test_assign_work_post_cannot_bypass_attribute_requirements(self, manor_with_user):
+        manor, client = manor_with_user
+        guest, work_template = self._create_work_data(manor, "post_requirements")
+        manor.action_points = 321
+        manor.action_points_updated_at = timezone.now()
+        manor.save(update_fields=["action_points", "action_points_updated_at"])
+        guest.level = 10
+        guest.agility = 99
+        guest.save(update_fields=["level", "agility"])
+        work_template.required_level = 10
+        work_template.required_agility = 100
+        work_template.save(update_fields=["required_level", "required_agility"])
+
+        response = client.post(
+            reverse("gameplay:assign_work"),
+            {"guest_id": guest.pk, "work_key": work_template.key},
+        )
+
+        assert response.status_code == 302
+        messages = [str(message) for message in get_messages(response.wsgi_request)]
+        assert any("敏捷不足，需要 100，当前 99" in message for message in messages)
+        manor.refresh_from_db()
+        assert manor.action_points == 321
+        assert WorkAssignment.objects.filter(guest=guest).exists() is False
+
     def test_assign_work_redirects_back_to_current_page_when_next_provided(self, manor_with_user):
         manor, client = manor_with_user
         guest, work_template = self._create_work_data(manor, "assign_next", tier=WorkTemplate.Tier.SENIOR)

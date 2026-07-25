@@ -23,7 +23,7 @@
         <select name="guest_id" class="tw-form-select flex-1 min-w-[200px]" required>
           <option value="">请选择门客</option>
           {% for g in available_guests %}
-          <option value="{{ g.id }}">{{ g.display_name }}（{{ g.template.rarity|rarity_label }}，Lv {{ g.level }}）</option>
+          <option value="{{ g.id }}">{{ g.display_name }}（{{ g.template.rarity|rarity_label }}，等级 {{ g.level }}）</option>
           {% endfor %}
         </select>
         <button type="submit" class="tw-btn-primary">结义</button>
@@ -50,7 +50,7 @@
               <tr>
                 <td class="font-semibold">{{ b.guest.display_name }}</td>
                 <td>{{ b.guest.template.rarity|rarity_label }}</td>
-                <td>Lv {{ b.guest.level }}</td>
+                <td>等级 {{ b.guest.level }}</td>
                 <td class="text-text-muted text-sm">{% if b.created_at %}{{ b.created_at|date:"Y-m-d H:i" }}{% endif %}</td>
                 <td>
                   <form method="post" action="{% url 'gameplay:remove_oath_bond_view' b.guest_id %}">

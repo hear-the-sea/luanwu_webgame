@@ -44,7 +44,7 @@ def test_raid_report_without_run_relation_uses_defender_perspective_from_message
     assert response.context["my_side"] == "defender"
     assert response.context["attacker_team_display"][0]["name"] == "D"
     assert response.context["defender_team_display"][0]["name"] == "A"
-    assert response.context["report_title"] == f"{attacker_manor.display_name} 战报"
+    assert response.context["report_title"] == "踢馆战报 - 防守失败"
 
 
 @pytest.mark.django_db
@@ -131,7 +131,8 @@ def test_raid_defender_failure_shows_pvp_loss_items(client, django_user_model):
     assert "战斗损失" in body
     assert "银两 -321" in body
     assert "粮食 -123" in body
-    assert "mysterious_stone -2" in body
+    assert "未知奖励 -2" in body
+    assert "mysterious_stone" not in body
     assert "门客被俘（赵云）" in body
     assert "战斗失败不获得奖励" not in body
 

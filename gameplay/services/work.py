@@ -20,6 +20,7 @@ from gameplay.models import Manor, ResourceEvent, ResourceType, WorkAssignment, 
 from gameplay.services.action_points import consume_action_points_for_expedition
 from gameplay.services.inventory.core import add_item_to_inventory_locked
 from gameplay.services.resources import grant_resources_locked
+from gameplay.services.work_requirements import evaluate_work_requirements
 from guests.models import Guest, GuestStatus
 
 MAX_CONCURRENT_WORKERS = 3  # 最多同时打工人数
@@ -33,12 +34,10 @@ WORK_TIER_CHEST_KEYS: dict[str, str] = {
 
 def _ensure_guest_meets_work_requirements(guest: Guest, work_template: WorkTemplate) -> None:
     """校验门客满足打工要求。"""
-    if guest.level < work_template.required_level:
-        raise GuestNotRequirementError(guest, "level", work_template.required_level, guest.level)
-    if guest.force < work_template.required_force:
-        raise GuestNotRequirementError(guest, "force", work_template.required_force, guest.force)
-    if guest.intellect < work_template.required_intellect:
-        raise GuestNotRequirementError(guest, "intellect", work_template.required_intellect, guest.intellect)
+    eligibility = evaluate_work_requirements(guest, work_template)
+    if eligibility.missing_requirements:
+        missing = eligibility.missing_requirements[0]
+        raise GuestNotRequirementError(guest, missing.key, missing.required, missing.actual)
 
 
 def get_available_works_for_guest(guest: Guest) -> List[WorkTemplate]:
@@ -48,6 +47,8 @@ def get_available_works_for_guest(guest: Guest) -> List[WorkTemplate]:
             required_level__lte=guest.level,
             required_force__lte=guest.force,
             required_intellect__lte=guest.intellect,
+            required_defense__lte=guest.defense_stat,
+            required_agility__lte=guest.agility,
         ).order_by("tier", "display_order")
     )
 

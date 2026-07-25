@@ -17,7 +17,7 @@ class TaskDispatchError(GameError):
     def __init__(self, reason: str = "未知原因", message: str | None = None):
         self.reason = reason
         if message is None:
-            message = f"任务调度失败：{reason}"
+            message = "任务调度失败，请稍后重试"
         super().__init__(message, reason=reason)
 
 
@@ -29,5 +29,5 @@ class TaskRescheduleError(TaskDispatchError):
     def __init__(self, reason: str = "调度服务暂时不可用", message: str | None = None):
         self.reason = reason
         if message is None:
-            message = f"任务需要重新调度：{reason}"
+            message = "任务需要重新调度，请稍后重试"
         super().__init__(reason, message)

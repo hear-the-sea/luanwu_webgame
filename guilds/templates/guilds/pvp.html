@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}帮会PVP{% endblock %}
+{% block title %}帮会对战{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/guild-pvp.css' %}">
@@ -11,7 +11,7 @@
 <section class="dashboard gpvp-page">
     <div class="tw-section-header">
         <div>
-            <h1>帮会PVP</h1>
+            <h1>帮会对战</h1>
         </div>
         <div class="flex gap-2">
             <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
@@ -151,7 +151,7 @@
                             >
                             <div class="gpvp-target-row-main">
                                 <strong>{{ target.guild.name }}</strong>
-                                <span class="gpvp-target-badge">Lv {{ target.guild.level }}</span>
+                                <span class="gpvp-target-badge">等级 {{ target.guild.level }}</span>
                             </div>
                             <div class="gpvp-target-row-meta">
                                 <span>{{ target.region_display }} · {{ target.travel_projection_label }}</span>
@@ -209,7 +209,7 @@
                                 <div class="tw-guest-details">
                                     <div class="tw-guest-info-row">
                                         <span class="tw-guest-name-sm rarity-text-{{ guest.rarity|lower }}">{{ guest.display_name }}</span>
-                                        <span class="tw-guest-level-sm">Lv.{{ guest.level }}</span>
+                                        <span class="tw-guest-level-sm">等级 {{ guest.level }}</span>
                                     </div>
                                     <div class="tw-guest-stats-sm">
                                         <span>槽位 {{ entry.slot_index }}</span>

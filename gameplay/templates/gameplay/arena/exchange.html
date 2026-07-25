@@ -22,13 +22,13 @@
                     <p class="tw-arena-reward-subtitle">奖励</p>
                     <ul class="tw-arena-reward-list">
                         {% for resource in reward.resource_rows %}
-                        <li class="tw-arena-reward-item">{{ resource.label }} x{{ resource.amount }}</li>
+                        <li class="tw-arena-reward-item">{{ resource.label }} ×{{ resource.amount }}</li>
                         {% endfor %}
                         {% for item in reward.item_rows %}
-                        <li class="tw-arena-reward-item">{{ item.label }} x{{ item.amount }}</li>
+                        <li class="tw-arena-reward-item">{{ item.label }} ×{{ item.amount }}</li>
                         {% endfor %}
                         {% if reward.rotating_blueprint_row %}
-                        <li class="tw-arena-reward-item">本周图纸：{{ reward.rotating_blueprint_row.label }} x{{ reward.rotating_blueprint_row.amount }}</li>
+                        <li class="tw-arena-reward-item">本周图纸：{{ reward.rotating_blueprint_row.label }} ×{{ reward.rotating_blueprint_row.amount }}</li>
                         {% endif %}
                         {% if reward.random_item_rows %}
                         {% if reward.key == "gladiator_chest" %}

@@ -214,7 +214,7 @@ def test_finalize_troop_recruitment_raises_when_troop_template_not_found(monkeyp
         lambda _key: None,
     )
 
-    with pytest.raises(TroopTemplateNotFoundError, match="nonexistent_troop"):
+    with pytest.raises(TroopTemplateNotFoundError, match="战斗兵种配置不存在"):
         finalize_troop_recruitment(recruitment, send_notification=False)
 
 

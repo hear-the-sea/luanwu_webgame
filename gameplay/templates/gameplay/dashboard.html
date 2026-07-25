@@ -42,7 +42,7 @@
                         <div class="tw-building-headline">
                             <h3>{{ building.building_type.name }}</h3>
                             <span class="tw-level-badge {% if building.is_max_level %}tw-badge-maxed{% endif %}">
-                                Lv {{ building.level }}{% if building.max_level %} / {{ building.max_level }}{% endif %}{% if building.is_max_level %} 满级{% endif %}
+                                等级 {{ building.level }}{% if building.max_level %} / {{ building.max_level }}{% endif %}{% if building.is_max_level %} 满级{% endif %}
                             </span>
                         </div>
                         <p class="tw-building-desc">{{ building.building_type.key|building_desc }}</p>

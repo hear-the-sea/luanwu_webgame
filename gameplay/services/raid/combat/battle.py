@@ -36,6 +36,7 @@ from .battle_guest_damage import extract_side_guest_state as _extract_side_guest
 
 # Re-export messaging helpers.
 from .battle_post_actions import dispatch_complete_raid_task as _dispatch_complete_raid_task_impl
+from .battle_post_actions import fail_raid_run_due_invalid_state as _fail_raid_run_due_invalid_state_impl
 from .battle_post_actions import fail_raid_run_due_missing_manor as _fail_raid_run_due_missing_manor_impl
 from .capture import (  # noqa: F401
     _can_attempt_capture,
@@ -95,6 +96,33 @@ def _prepare_run_for_battle(run_pk: int, now: datetime) -> Optional[RaidRun]:
         return None
 
     if locked_run.status != RaidRun.Status.MARCHING:
+        return None
+
+    snapshots = locked_run.guest_snapshots
+    if not isinstance(snapshots, list):
+        raise AssertionError("invalid raid guest_snapshots payload")
+
+    if not snapshots and not locked_run.guests.exists():
+        failure_reason = RaidRun.FailureReason.MISSING_ATTACKER_LINEUP
+        _fail_raid_run_due_invalid_state_impl(
+            locked_run,
+            now=now,
+            failure_reason=failure_reason,
+        )
+        logger.error(
+            "raid run moved to failed due to invalid durable state: " "run_id=%s attacker=%s defender=%s reason=%s",
+            locked_run.id,
+            locked_run.attacker_id,
+            locked_run.defender_id,
+            failure_reason,
+            extra={
+                "component": "raid_invalid_state_recovery",
+                "run_id": locked_run.id,
+                "attacker_id": locked_run.attacker_id,
+                "defender_id": locked_run.defender_id,
+                "failure_reason": failure_reason,
+            },
+        )
         return None
 
     locked_run.status = RaidRun.Status.BATTLING

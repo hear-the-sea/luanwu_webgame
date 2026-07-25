@@ -88,7 +88,7 @@ def test_mission_launch_with_invalid_troop_type(game_data, mission_templates, ma
     with pytest.raises(MissionTroopLoadoutError) as exc:
         launch_mission(manor, mission, [guest.id], {fake_troop_key: 100})
 
-    assert "不存在的类型" in str(exc.value)
+    assert str(exc.value) == "护院配置包含无效类型"
     assert not PlayerTroop.objects.filter(manor=manor, troop_template__key=fake_troop_key).exists()
 
 

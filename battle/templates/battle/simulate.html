@@ -42,7 +42,7 @@
                         <h3 class="rarity-text {{ guest.rarity|rarity_class }}">{{ guest.template.name }}</h3>
                         <p class="tw-muted">{{ guest.template.flavor }}</p>
                     </div>
-                    <span class="tw-badge-gold">Lv {{ guest.level }}</span>
+                    <span class="tw-badge-gold">等级 {{ guest.level }}</span>
                 </header>
                 <p>状态：{{ guest.get_status_display }}</p>
                 <p>武 {{ guest.force }} / 智 {{ guest.intellect }} / 防 {{ guest.defense_stat }} / 敏 {{ guest.agility }}</p>

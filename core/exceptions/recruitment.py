@@ -26,7 +26,7 @@ class NoTemplateAvailableError(RecruitmentError):
     """没有可用模板"""
 
     error_code = "NO_TEMPLATE_AVAILABLE"
-    default_message = "缺少可用的门客模板，请更新 guest_templates.yaml 并重新加载"
+    default_message = "缺少可用的门客模板，请联系管理员"
 
 
 class RecruitmentAlreadyInProgressError(RecruitmentError):

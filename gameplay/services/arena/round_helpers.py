@@ -36,7 +36,7 @@ def resolve_pending_round_matches(
     now,
     bye_status: str,
     forfeit_status: str,
-    save_resolved_match: Callable[..., None],
+    save_resolved_match: Callable[..., bool | None],
     resolve_match_locked: Callable[..., Any],
     arena_match_resolution_error: type[Exception],
 ) -> bool:
@@ -134,7 +134,12 @@ def finalize_round_state_locked(
     )
 
     winner_guest_ids = list(
-        arena_entry_guest_model.objects.filter(entry_id__in=winner_ids).values_list("guest_id", flat=True).distinct()
+        arena_entry_guest_model.objects.filter(
+            entry_id__in=winner_ids,
+            guest_id__isnull=False,
+        )
+        .values_list("guest_id", flat=True)
+        .distinct()
     )
     if winner_guest_ids:
         increase_guest_loyalty_by_ids(winner_guest_ids)

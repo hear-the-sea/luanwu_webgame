@@ -216,7 +216,7 @@ def get_livestock_options(manor: Manor) -> List[Dict[str, Any]]:
         actual_duration = calculate_livestock_duration(config["base_duration"], manor)
         required_level = config["required_animal_husbandry"]
         is_unlocked = animal_husbandry_level >= required_level
-        livestock_name = livestock_name_map.get(livestock_key, livestock_key)
+        livestock_name = livestock_name_map.get(livestock_key, "未知家畜")
         options.append(
             {
                 "key": livestock_key,
@@ -258,7 +258,7 @@ def start_livestock_production(manor: Manor, livestock_key: str, quantity: int =
     )
     required_level = config["required_animal_husbandry"]
     livestock_name_map = _get_item_name_map({livestock_key})
-    livestock_name = livestock_name_map.get(livestock_key, livestock_key)
+    livestock_name = livestock_name_map.get(livestock_key, "未知家畜")
 
     # 检查养殖术等级
     from ..technology import get_player_technology_level
@@ -291,7 +291,7 @@ def start_livestock_production(manor: Manor, livestock_key: str, quantity: int =
             spend_resources_locked(
                 locked_manor,
                 {"grain": total_grain_cost},
-                note=f"养殖{livestock_name}x{quantity}",
+                note=f"养殖{livestock_name}×{quantity}",
                 reason=ResourceEvent.Reason.UPGRADE_COST,
             )
         except InsufficientResourceError as exc:
@@ -415,7 +415,7 @@ def finalize_livestock_production(production: LivestockProduction, send_notifica
     if send_notification:
         from ..utils.messages import create_message
 
-        quantity_text = f"x{completed_production.quantity}" if completed_production.quantity > 1 else ""
+        quantity_text = f"×{completed_production.quantity}" if completed_production.quantity > 1 else ""
         try:
             create_message(
                 manor=completed_production.manor,

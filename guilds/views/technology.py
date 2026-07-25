@@ -35,9 +35,7 @@ def _format_upgrade_cost(tech: Any) -> str:
         "gold_bar": "金条",
         "red_ruby": "红宝石",
     }
-    parts = [
-        f"{labels.get(resource_key, resource_key)} x{amount}" for resource_key, amount in cost.items() if amount > 0
-    ]
+    parts = [f"{labels.get(resource_key, '未知资源')} ×{amount}" for resource_key, amount in cost.items() if amount > 0]
     return "、".join(parts) if parts else "无"
 
 
@@ -153,7 +151,7 @@ def upgrade_technology(request: Any, tech_key: str) -> HttpResponse:
     execute_guild_action(
         request,
         action=lambda: technology_service.upgrade_technology(member.guild, tech_key, request.user),
-        success_message=lambda _result: f"{guild_constants.TECH_NAMES.get(tech_key, tech_key)}升级成功！",
+        success_message=lambda _result: f"{guild_constants.TECH_NAMES.get(tech_key, '该科技')}升级成功！",
     )
 
     current_category = str(request.GET.get("category") or "").strip()

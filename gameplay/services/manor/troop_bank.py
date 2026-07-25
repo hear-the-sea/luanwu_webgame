@@ -16,13 +16,13 @@ from ...models import Manor, PlayerTroop, TroopBankStorage
 TROOP_BANK_CAPACITY = 5000
 
 
-def _normalize_positive_quantity(quantity: int, *, action: str) -> int:
+def _normalize_positive_quantity(quantity: int, *, action_label: str) -> int:
     try:
         normalized = int(quantity)
     except (TypeError, ValueError) as exc:
-        raise TradeValidationError(f"{action}数量必须是正整数") from exc
+        raise TradeValidationError(f"{action_label}数量必须是正整数") from exc
     if normalized <= 0:
-        raise TradeValidationError(f"{action}数量必须大于0")
+        raise TradeValidationError(f"{action_label}数量必须大于0")
     return normalized
 
 
@@ -102,7 +102,7 @@ def _lock_manor(manor: Manor) -> Manor:
 
 @transaction.atomic
 def deposit_troops_to_bank(manor: Manor, troop_key: str, quantity: int) -> dict[str, Any]:
-    quantity = _normalize_positive_quantity(quantity, action="存入")
+    quantity = _normalize_positive_quantity(quantity, action_label="存入")
 
     locked_manor = _lock_manor(manor)
 
@@ -142,7 +142,7 @@ def deposit_troops_to_bank(manor: Manor, troop_key: str, quantity: int) -> dict[
 
 @transaction.atomic
 def withdraw_troops_from_bank(manor: Manor, troop_key: str, quantity: int) -> dict[str, Any]:
-    quantity = _normalize_positive_quantity(quantity, action="取出")
+    quantity = _normalize_positive_quantity(quantity, action_label="取出")
 
     locked_manor = _lock_manor(manor)
 
