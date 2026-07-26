@@ -14,10 +14,60 @@ from gameplay.services.virtual_players import (
     BotProjectionConfig,
     _projection_for_band,
     _projection_from_real_players,
+    accelerate_virtual_player_growth,
     create_virtual_player,
     maintain_due_virtual_players,
 )
 from guests.models import GearItem, GearSlot, GearTemplate, GuestArchetype, GuestRarity, GuestTemplate, Skill, SkillKind
+
+
+def test_rarity_caps_keep_highest_value_after_partial_config_merge(settings):
+    from gameplay.services.virtual_players import (
+        GEAR_RARITY_RANK,
+        GUEST_RARITY_RANK,
+        _gear_max_rarity_for_stage,
+        _guest_max_rarity_for_stage,
+        load_virtual_player_config,
+    )
+
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "projection": {
+            "guest_max_rarity_by_stage": {1: "blue"},
+            "gear_max_rarity_by_stage": {1: "purple"},
+        }
+    }
+
+    config = load_virtual_player_config()
+
+    assert config["projection"]["guest_max_rarity_by_stage"][4] == "red"
+    assert config["projection"]["gear_max_rarity_by_stage"][7] == "blue"
+    assert _guest_max_rarity_for_stage(4, config) == GUEST_RARITY_RANK["blue"]
+    assert _gear_max_rarity_for_stage(7, config) == GEAR_RARITY_RANK["purple"]
+
+
+@pytest.mark.parametrize(
+    ("field_name", "cap_function_name", "rank_mapping_name"),
+    [
+        (
+            "guest_max_rarity_by_stage",
+            "_guest_max_rarity_for_stage",
+            "GUEST_RARITY_RANK",
+        ),
+        (
+            "gear_max_rarity_by_stage",
+            "_gear_max_rarity_for_stage",
+            "GEAR_RARITY_RANK",
+        ),
+    ],
+)
+def test_rarity_caps_ignore_boolean_stage_keys(field_name, cap_function_name, rank_mapping_name):
+    from gameplay.services import virtual_players
+
+    cap_function = getattr(virtual_players, cap_function_name)
+    rank_mapping = getattr(virtual_players, rank_mapping_name)
+    config = {"projection": {field_name: {True: "orange"}}}
+
+    assert cap_function(1, config) == rank_mapping["green"]
 
 
 @pytest.mark.django_db
@@ -41,7 +91,9 @@ def test_bot_profile_starts_with_an_empty_inventory_template_pool(django_user_mo
 
 
 @pytest.mark.django_db
-def test_real_player_projection_uses_median_prestige_not_a_single_random_manor(django_user_model):
+def test_real_player_projection_uses_median_prestige_not_a_single_random_manor(
+    django_user_model,
+):
     for index, prestige in enumerate([600, 1_000, 1_800]):
         user = django_user_model.objects.create_user(username=f"projection_median_{index}", password="pass123")
         manor = ensure_manor(user)
@@ -103,7 +155,13 @@ def test_real_player_projection_excludes_players_outside_active_sample_window(se
 def test_real_player_projection_falls_back_when_regional_sample_is_too_small(settings, django_user_model):
     now = timezone.now()
     for index, (region, prestige) in enumerate(
-        [("north", 600), ("north", 650), ("south", 1_400), ("east", 1_450), ("west", 1_500)]
+        [
+            ("north", 600),
+            ("north", 650),
+            ("south", 1_400),
+            ("east", 1_450),
+            ("west", 1_500),
+        ]
     ):
         user = django_user_model.objects.create_user(username=f"projection_fallback_{index}", password="pass123")
         manor = ensure_manor(user)
@@ -135,7 +193,9 @@ def test_real_player_projection_falls_back_when_regional_sample_is_too_small(set
 
 
 @pytest.mark.django_db
-def test_population_projection_uses_configured_seed_stable_strength_quantiles(django_user_model):
+def test_population_projection_uses_configured_seed_stable_strength_quantiles(
+    django_user_model,
+):
     now = timezone.now()
     for index, prestige in enumerate([600, 1_000, 1_800]):
         user = django_user_model.objects.create_user(username=f"projection_quantile_{index}", password="pass123")
@@ -157,7 +217,12 @@ def test_population_projection_uses_configured_seed_stable_strength_quantiles(dj
         2_000,
         random.Random(1),
         region="north",
-        config={"projection": {**base_projection, "strength_quantile_weights": {"p25": 1, "p50": 0, "p75": 0}}},
+        config={
+            "projection": {
+                **base_projection,
+                "strength_quantile_weights": {"p25": 1, "p50": 0, "p75": 0},
+            }
+        },
         sample_seed=101,
     )
     strong = _projection_for_band(
@@ -166,7 +231,12 @@ def test_population_projection_uses_configured_seed_stable_strength_quantiles(dj
         2_000,
         random.Random(1),
         region="north",
-        config={"projection": {**base_projection, "strength_quantile_weights": {"p25": 0, "p50": 0, "p75": 1}}},
+        config={
+            "projection": {
+                **base_projection,
+                "strength_quantile_weights": {"p25": 0, "p50": 0, "p75": 1},
+            }
+        },
         sample_seed=202,
     )
 
@@ -266,7 +336,11 @@ def test_target_band_growth_stage_is_initialized_and_capped(settings):
     settings.VIRTUAL_PLAYER_CONFIG = {
         "prestige_bands": {"newbie": [0, 500], "junior": [500, 2_000]},
         "growth": {"stage_caps": {"newbie": 3, "junior": 6}},
-        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+        },
     }
     now = timezone.now()
     profile = create_virtual_player(
@@ -347,7 +421,11 @@ def test_abandoned_profile_never_resumes_combat_growth_when_dates_are_future(set
     settings.VIRTUAL_PLAYER_CONFIG = {
         "prestige_bands": {"junior": [500, 2_000]},
         "growth": {"stage_caps": {"junior": 10}},
-        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+        },
     }
     profile = create_virtual_player(
         region="north",
@@ -372,12 +450,18 @@ def test_abandoned_profile_never_resumes_combat_growth_when_dates_are_future(set
 
 
 @pytest.mark.django_db
-def test_abandoned_combat_persona_does_not_grow_while_lifecycle_state_is_active(settings):
+def test_abandoned_combat_persona_does_not_grow_while_lifecycle_state_is_active(
+    settings,
+):
     now = timezone.now()
     settings.VIRTUAL_PLAYER_CONFIG = {
         "prestige_bands": {"junior": [500, 2_000]},
         "growth": {"stage_caps": {"junior": 10}},
-        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+        },
     }
     profile = create_virtual_player(
         region="north",
@@ -398,16 +482,34 @@ def test_abandoned_combat_persona_does_not_grow_while_lifecycle_state_is_active(
 
 
 @pytest.mark.django_db
-def test_lifecycle_persona_controls_profile_dates_independently_from_combat_archetype(settings):
+def test_lifecycle_persona_controls_profile_dates_independently_from_combat_archetype(
+    settings,
+):
     now = timezone.now()
     settings.VIRTUAL_PLAYER_CONFIG = {
         "prestige_bands": {"junior": [500, 2_000]},
-        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+        },
         "lifecycle_personas": {
             "tourist": {"weight": 1, "active_days": [7, 7], "abandoned_days": [10, 10]},
-            "casual": {"weight": 0, "active_days": [30, 30], "abandoned_days": [20, 20]},
-            "committed": {"weight": 0, "active_days": [90, 90], "abandoned_days": [30, 30]},
-            "veteran": {"weight": 0, "active_days": [180, 180], "abandoned_days": [60, 60]},
+            "casual": {
+                "weight": 0,
+                "active_days": [30, 30],
+                "abandoned_days": [20, 20],
+            },
+            "committed": {
+                "weight": 0,
+                "active_days": [90, 90],
+                "abandoned_days": [30, 30],
+            },
+            "veteran": {
+                "weight": 0,
+                "active_days": [180, 180],
+                "abandoned_days": [60, 60],
+            },
         },
     }
 
@@ -517,7 +619,9 @@ def test_virtual_player_inventory_uses_a_small_persistent_archetype_pool(setting
 
 
 @pytest.mark.django_db
-def test_virtual_player_inventory_pool_removes_only_stale_owned_loot_candidates(settings):
+def test_virtual_player_inventory_pool_removes_only_stale_owned_loot_candidates(
+    settings,
+):
     from gameplay.services.virtual_players import _replenish_inventory_stock
 
     pool_template = ItemTemplate.objects.create(
@@ -578,7 +682,12 @@ def test_virtual_player_inventory_pool_removes_only_stale_owned_loot_candidates(
     )
     profile.inventory_template_keys = [pool_template.key]
     profile.save(update_fields=["inventory_template_keys", "updated_at"])
-    for template in (pool_template, stale_template, nontradeable_template, special_template):
+    for template in (
+        pool_template,
+        stale_template,
+        nontradeable_template,
+        special_template,
+    ):
         InventoryItem.objects.create(
             manor=profile.manor,
             template=template,
@@ -601,7 +710,143 @@ def test_virtual_player_inventory_pool_removes_only_stale_owned_loot_candidates(
     remaining_keys = set(
         InventoryItem.objects.filter(manor=profile.manor, quantity__gt=0).values_list("template__key", flat=True)
     )
-    assert remaining_keys == {pool_template.key, nontradeable_template.key, special_template.key}
+    assert remaining_keys == {
+        pool_template.key,
+        nontradeable_template.key,
+        special_template.key,
+    }
+
+
+@pytest.mark.django_db
+def test_virtual_player_growth_completes_guest_count_before_progressive_quality(settings, monkeypatch):
+    gray_guest = GuestTemplate.objects.create(
+        key="virtual_quantity_first_gray",
+        name="数量优先灰门客",
+        archetype=GuestArchetype.MILITARY,
+        rarity=GuestRarity.GRAY,
+        base_attack=80,
+        base_defense=80,
+        base_hp=800,
+    )
+    blue_guest = GuestTemplate.objects.create(
+        key="virtual_quantity_first_blue",
+        name="质量成长蓝门客",
+        archetype=GuestArchetype.MILITARY,
+        rarity=GuestRarity.BLUE,
+        base_attack=180,
+        base_defense=180,
+        base_hp=1_800,
+    )
+    weapon = GearTemplate.objects.create(
+        key="virtual_quantity_first_weapon",
+        name="渐进武器",
+        slot=GearSlot.WEAPON,
+        rarity=GuestRarity.GREEN,
+        attack_bonus=20,
+    )
+    skill = Skill.objects.create(
+        key="virtual_quantity_first_skill",
+        name="渐进技能",
+        kind=SkillKind.ACTIVE,
+        required_level=1,
+    )
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "prestige_bands": {"newbie": [0, 500]},
+        "growth": {
+            "stage_caps": {"newbie": 6},
+            "catch_up_ratio": 0.25,
+            "max_guest_level_step": 3,
+        },
+        "projection": {
+            "guest_template_keys": [gray_guest.key, blue_guest.key],
+            "guest_max_rarity_by_stage": {1: "blue"},
+            "gear_template_keys": [weapon.key],
+            "gear_max_rarity_by_stage": {1: "green"},
+            "extra_skill_keys": [skill.key],
+            "extra_skills_per_guest": [1, 1],
+            "early_stage_skill_max": 1,
+            "early_stage_skill_count": [1, 1],
+            "troop_template_keys": [],
+            "technology_keys": [],
+            "item_template_keys": [],
+        },
+    }
+    projected = BotProjectionConfig(
+        prestige=400,
+        building_level=5,
+        guest_count=3,
+        guest_level=10,
+        troop_count=50,
+    )
+    ordinary_projection = BotProjectionConfig(
+        prestige=0,
+        building_level=1,
+        guest_count=1,
+        guest_level=1,
+        troop_count=50,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.virtual_players._maintenance_projection_from_real_players",
+        lambda *_args, **_kwargs: ordinary_projection,
+    )
+    now = timezone.now()
+    profile = create_virtual_player(
+        region="north",
+        prestige_band="newbie",
+        growth_seed=50_401,
+        now=now,
+        projection=projected,
+        start_from_zero=True,
+    )
+
+    assert profile.manor.guests.count() == 1
+    assert set(profile.manor.guests.values_list("template__rarity", flat=True)) == {GuestRarity.GRAY}
+    assert not GearItem.objects.filter(guest__manor=profile.manor).exists()
+    assert not profile.manor.guests.filter(guest_skills__isnull=False).exists()
+
+    assert (
+        accelerate_virtual_player_growth(
+            profile.id,
+            now=now + timedelta(minutes=1),
+            minimum_guest_count=3,
+            minimum_guest_level=10,
+            guest_rarity_cap=GuestRarity.BLUE,
+            max_guest_level_step=3,
+        ).value
+        == "grown"
+    )
+
+    quantity_guests = list(profile.manor.guests.select_related("template").order_by("id"))
+    assert len(quantity_guests) == 3
+    assert {guest.template.rarity for guest in quantity_guests} == {GuestRarity.GRAY}
+    assert {guest.level for guest in quantity_guests} == {1}
+    assert not GearItem.objects.filter(guest__manor=profile.manor).exists()
+    assert not profile.manor.guests.filter(guest_skills__isnull=False).exists()
+    attributes_before_quality = {
+        guest.id: guest.force + guest.intellect + guest.defense_stat + guest.agility for guest in quantity_guests
+    }
+
+    assert (
+        accelerate_virtual_player_growth(
+            profile.id,
+            now=now + timedelta(hours=1, minutes=1),
+            minimum_guest_count=3,
+            minimum_guest_level=10,
+            guest_rarity_cap=GuestRarity.BLUE,
+            max_guest_level_step=3,
+        ).value
+        == "grown"
+    )
+
+    quality_guests = list(profile.manor.guests.select_related("template").order_by("id"))
+    assert [guest.template.rarity for guest in quality_guests].count(GuestRarity.BLUE) == 1
+    assert {guest.level for guest in quality_guests} == {4}
+    assert all(
+        guest.force + guest.intellect + guest.defense_stat + guest.agility > attributes_before_quality[guest.id]
+        for guest in quality_guests
+    )
+    assert GearItem.objects.filter(guest__manor=profile.manor).count() == 3
+    assert sum(guest.guest_skills.count() for guest in quality_guests) == 3
 
 
 @pytest.mark.django_db
@@ -708,7 +953,9 @@ def test_virtual_guest_gear_replaces_weaker_template_after_stage_growth(settings
 
 
 @pytest.mark.django_db
-def test_virtual_guest_skills_follow_stage_targets_and_prefer_one_active_two_passive(settings):
+def test_virtual_guest_skills_follow_stage_targets_and_prefer_one_active_two_passive(
+    settings,
+):
     guest_template = GuestTemplate.objects.create(
         key="virtual_skill_growth_guest",
         name="技能成长门客",
@@ -757,8 +1004,17 @@ def test_virtual_guest_skills_follow_stage_targets_and_prefer_one_active_two_pas
     guest = profile.manor.guests.get()
     assert guest.guest_skills.count() <= 1
 
-    BotProfile.objects.filter(pk=profile.pk).update(growth_stage=10, next_growth_at=now - timedelta(seconds=1))
-    assert maintain_due_virtual_players(now=now, limit=1) == 1
+    BotProfile.objects.filter(pk=profile.pk).update(growth_stage=10)
+    previous_count = guest.guest_skills.count()
+    for offset in range(3):
+        if previous_count >= 3:
+            break
+        cycle_time = now + timedelta(hours=offset)
+        BotProfile.objects.filter(pk=profile.pk).update(next_growth_at=cycle_time - timedelta(seconds=1))
+        assert maintain_due_virtual_players(now=cycle_time, limit=1) == 1
+        current_count = guest.guest_skills.count()
+        assert current_count - previous_count <= 1
+        previous_count = current_count
 
     kinds = list(guest.guest_skills.order_by("skill__kind").values_list("skill__kind", flat=True))
     assert kinds.count(SkillKind.ACTIVE) == 1

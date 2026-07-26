@@ -5,7 +5,7 @@ import pytest
 from core.exceptions import ArenaExchangeError, ArenaRewardLimitError, MessageError
 from gameplay.models import ArenaExchangeRecord, InventoryItem, ItemTemplate
 from gameplay.services.arena.core import exchange_arena_reward
-from gameplay.services.arena.rewards import get_arena_reward_definition, select_weekly_blueprint_key
+from gameplay.services.arena.rewards import get_arena_reward_definition
 from gameplay.services.buildings.blueprint_catalog import BlueprintCatalogEntry
 from gameplay.services.manor.core import ensure_manor
 from tests.arena_services.support import User, ensure_gladiator_item_templates, ensure_sanguoyanyi_arena_item_templates
@@ -73,7 +73,7 @@ def test_exchange_arena_reward_gladiator_chest_respects_daily_limit():
 
 
 @pytest.mark.django_db
-def test_exchange_arena_reward_rejects_rotating_blueprint_absent_from_catalog(monkeypatch):
+def test_exchange_arena_reward_rejects_random_blueprint_when_rarity_pool_is_empty(monkeypatch):
     user = User.objects.create_user(
         username="arena_exchange_blueprint_invalid",
         password="pass123",
@@ -82,15 +82,6 @@ def test_exchange_arena_reward_rejects_rotating_blueprint_absent_from_catalog(mo
     manor = ensure_manor(user)
     manor.arena_coins = 600
     manor.save(update_fields=["arena_coins"])
-    ItemTemplate.objects.create(
-        key="blueprint_xiaoweitoukie",
-        name="校尉头盔图纸",
-        effect_type=ItemTemplate.EffectType.TOOL,
-        rarity="blue",
-        tradeable=True,
-        is_usable=False,
-    )
-
     monkeypatch.setattr("gameplay.services.arena.exchange_helpers.load_blueprint_catalog", lambda: {})
 
     with pytest.raises(ArenaExchangeError, match="图纸兑换配置无效"):
@@ -98,11 +89,11 @@ def test_exchange_arena_reward_rejects_rotating_blueprint_absent_from_catalog(mo
 
     manor.refresh_from_db()
     assert manor.arena_coins == 600
-    assert not InventoryItem.objects.filter(manor=manor, template__key="blueprint_xiaoweitoukie").exists()
+    assert not InventoryItem.objects.filter(manor=manor).exists()
 
 
 @pytest.mark.django_db
-def test_exchange_arena_reward_grants_current_rotating_blueprint_after_catalog_validation(monkeypatch):
+def test_exchange_arena_reward_randomly_grants_from_all_matching_blueprints(monkeypatch):
     user = User.objects.create_user(
         username="arena_exchange_blueprint_valid",
         password="pass123",
@@ -113,11 +104,13 @@ def test_exchange_arena_reward_grants_current_rotating_blueprint_after_catalog_v
     manor.save(update_fields=["arena_coins"])
     reward = get_arena_reward_definition("blueprint_blue_exchange")
     assert reward is not None
-    assert reward.rotating_blueprint_pool is not None
-    blueprint_key = select_weekly_blueprint_key(reward.rotating_blueprint_pool)
+    assert reward.name == "随机蓝色装备图纸"
+    assert reward.random_blueprint_pool is not None
+    assert reward.random_blueprint_pool.rarity == "blue"
+    blueprint_key = "blueprint_random_blue_b"
     ItemTemplate.objects.create(
         key=blueprint_key,
-        name="本周蓝色图纸",
+        name="随机蓝色图纸B",
         effect_type=ItemTemplate.EffectType.TOOL,
         rarity="blue",
         tradeable=True,
@@ -126,14 +119,27 @@ def test_exchange_arena_reward_grants_current_rotating_blueprint_after_catalog_v
     monkeypatch.setattr(
         "gameplay.services.arena.exchange_helpers.load_blueprint_catalog",
         lambda: {
+            "blueprint_random_blue_a": BlueprintCatalogEntry(
+                key="blueprint_random_blue_a",
+                rarity="blue",
+                result_key="equip_test_blueprint_result_a",
+                result_rarity="blue",
+            ),
             blueprint_key: BlueprintCatalogEntry(
                 key=blueprint_key,
                 rarity="blue",
-                result_key="equip_test_blueprint_result",
+                result_key="equip_test_blueprint_result_b",
                 result_rarity="blue",
-            )
+            ),
+            "blueprint_random_purple": BlueprintCatalogEntry(
+                key="blueprint_random_purple",
+                rarity="purple",
+                result_key="equip_test_blueprint_result_purple",
+                result_rarity="purple",
+            ),
         },
     )
+    monkeypatch.setattr("gameplay.services.arena.helpers.random.random", lambda: 0.999)
 
     result = exchange_arena_reward(manor, reward.key, quantity=1)
 
@@ -141,7 +147,84 @@ def test_exchange_arena_reward_grants_current_rotating_blueprint_after_catalog_v
     assert manor.arena_coins == 0
     assert result.total_cost == 600
     assert result.granted_items == {blueprint_key: 1}
+    assert result.random_granted_items == {blueprint_key: 1}
     assert InventoryItem.objects.filter(manor=manor, template__key=blueprint_key, quantity=1).exists()
+
+
+def test_wulin_chest_config_has_requested_rewards_and_probability_tiers():
+    reward = get_arena_reward_definition("wulin_chest")
+
+    assert reward is not None
+    assert reward.cost_coins == 1000
+    assert reward.weekly_limit == 2
+    options = {option.item_key: option for option in reward.random_items}
+    purple_keys = {
+        "equip_duoqinghuan",
+        "equip_libiegou",
+        "equip_duomingfeidao",
+        "equip_tulongdao",
+        "equip_biyudao",
+        "equip_ziweiruanjian",
+        "equip_xiuhuazhen",
+        "equip_xuedao",
+        "equip_jinshejian",
+        "equip_yuanyangdao",
+        "equip_shenghuoling",
+    }
+    orange_keys = {
+        "equip_ruanweijia",
+        "equip_yitianjian",
+        "equip_yuanyuewandao",
+        "equip_tianyamingyuedao",
+        "equip_kongquelin",
+        "equip_dagoubang",
+        "equip_xuantiechongjian",
+        "equip_shangshanfaeling",
+    }
+
+    assert set(options) == {"chunqiu_coin", *purple_keys, *orange_keys}
+    assert sum(option.weight for option in options.values()) == 100
+    assert (options["chunqiu_coin"].weight, options["chunqiu_coin"].amount) == (48, 10)
+    assert all(options[key].weight == 4 and options[key].amount == 1 for key in purple_keys)
+    assert all(options[key].weight == 1 and options[key].amount == 1 for key in orange_keys)
+
+
+@pytest.mark.django_db
+def test_exchange_arena_reward_wulin_chest_respects_weekly_limit(monkeypatch):
+    user = User.objects.create_user(
+        username="arena_exchange_wulin_limit",
+        password="pass123",
+        email="arena_exchange_wulin_limit@test.local",
+    )
+    manor = ensure_manor(user)
+    ItemTemplate.objects.get_or_create(
+        key="chunqiu_coin",
+        defaults={
+            "name": "春秋币",
+            "effect_type": ItemTemplate.EffectType.RESOURCE,
+            "rarity": "blue",
+            "tradeable": True,
+            "is_usable": False,
+        },
+    )
+    manor.arena_coins = 3000
+    manor.save(update_fields=["arena_coins"])
+    monkeypatch.setattr("gameplay.services.arena.helpers.random.random", lambda: 0.0)
+
+    result = exchange_arena_reward(manor, "wulin_chest", quantity=2)
+
+    manor.refresh_from_db()
+    assert result.total_cost == 2000
+    assert manor.arena_coins == 1000
+    assert result.granted_items == {"chunqiu_coin": 20}
+    assert InventoryItem.objects.filter(manor=manor, template__key="chunqiu_coin", quantity=20).exists()
+
+    with pytest.raises(ArenaRewardLimitError, match="武林宝箱 本周最多可兑换 2 次"):
+        exchange_arena_reward(manor, "wulin_chest", quantity=1)
+
+    manor.refresh_from_db()
+    assert manor.arena_coins == 1000
+    assert InventoryItem.objects.get(manor=manor, template__key="chunqiu_coin").quantity == 20
 
 
 @pytest.mark.django_db

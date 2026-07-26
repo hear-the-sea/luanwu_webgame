@@ -206,6 +206,24 @@ def test_train_view_success_message_uses_updated_eta(django_user_model, monkeypa
 
 
 @pytest.mark.django_db
+def test_check_training_view_returns_guest_status_as_payload(django_user_model):
+    client, manor = login_client(django_user_model, prefix="training_check_success")
+    guest = create_guest(manor, prefix="training_check_success")
+
+    response = client.post(
+        reverse("guests:check_training", args=[guest.pk]),
+        **ajax_headers(),
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["success"] is True
+    assert payload["guest_id"] == guest.pk
+    assert payload["guest_status"] == guest.status
+    assert "status" not in payload
+
+
+@pytest.mark.django_db
 def test_use_experience_item_view_database_error_returns_generic_json(django_user_model, monkeypatch):
     client, manor = login_client(django_user_model, prefix="exp_db")
     guest = create_guest(manor, prefix="exp_db")

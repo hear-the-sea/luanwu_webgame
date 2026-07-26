@@ -84,6 +84,23 @@
     return window.confirm(confirmText);
   };
 
+  const confirmResourceOverflow = async (data) => {
+    const message = data.confirmation_message || data.error || "部分资源将因容量上限无法获得，是否仍要使用？";
+    const options = {
+      title: data.confirmation_title || "资源溢出确认",
+      okText: data.confirmation_ok_text || "仍然使用",
+      cancelText: "先不使用",
+      danger: true,
+    };
+    if (window.gameConfirm) {
+      return window.gameConfirm(message, options);
+    }
+    if (window.gameDialog?.confirm) {
+      return window.gameDialog.confirm(message, options);
+    }
+    return window.confirm(message);
+  };
+
   const saveScrollPosition = () => {
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const tableWrapper = document.querySelector(".tw-table-wrapper");
@@ -292,12 +309,43 @@
         }
 
         try {
-          const response = await fetch(form.action, {
+          const formData = new FormData(form);
+          let response = await fetch(form.action, {
             method: "POST",
-            body: new FormData(form),
+            body: formData,
             headers: { "X-Requested-With": "XMLHttpRequest" },
           });
-          const data = await response.json();
+          let data = await response.json();
+
+          while (data.requires_confirmation && data.confirmation_type === "resource_overflow") {
+            const confirmationToken = data.confirmation_token;
+            if (typeof confirmationToken !== "string" || !confirmationToken) {
+              await showErrorDialog("资源确认信息已失效，请重新操作");
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+              }
+              return;
+            }
+
+            const overflowConfirmed = await confirmResourceOverflow(data);
+            if (!overflowConfirmed) {
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+              }
+              return;
+            }
+
+            formData.set("resource_overflow_confirmation", confirmationToken);
+            response = await fetch(form.action, {
+              method: "POST",
+              body: formData,
+              headers: { "X-Requested-With": "XMLHttpRequest" },
+            });
+            data = await response.json();
+          }
+
           if (data.success) {
             saveScrollPosition();
             if (data.message) {

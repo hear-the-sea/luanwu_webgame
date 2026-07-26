@@ -68,6 +68,85 @@ def test_guild_rules_rejects_negative_daily_troop_contribution_limit():
     assert result.errors[0].path == "contribution.daily_troop_contribution_limit"
 
 
+def test_guild_rules_rejects_empty_technology_description():
+    data = {
+        "pagination": {"guild_list_page_size": 20, "guild_hall_display_limit": 20},
+        "creation": {},
+        "contribution": {},
+        "technology": {"descriptions": {"equipment_forge": ""}},
+    }
+    result = validate_guild_rules(data)
+    assert_invalid(result, substring="non-empty string")
+    assert result.errors[0].path == "technology.descriptions.equipment_forge"
+
+
+def test_guild_rules_accepts_target_level_upgrade_cost_overrides():
+    data = {
+        "pagination": {"guild_list_page_size": 20, "guild_hall_display_limit": 20},
+        "creation": {},
+        "contribution": {},
+        "technology": {
+            "upgrade_cost_overrides": {
+                "mysticism": {2: {"red_ruby": 300, "gold_bar": 150}},
+            },
+        },
+    }
+
+    result = validate_guild_rules(data)
+
+    assert result.is_valid, result.errors
+
+
+def test_guild_rules_accepts_non_exponential_upgrade_cost_curve():
+    data = {
+        "pagination": {"guild_list_page_size": 20, "guild_hall_display_limit": 20},
+        "creation": {},
+        "contribution": {},
+        "technology": {
+            "upgrade_cost_curves": {"staged": {2: 2, 3: 5, 4: 12}},
+            "upgrade_cost_curve_by_tech": {"equipment_forge": "staged"},
+        },
+    }
+
+    result = validate_guild_rules(data)
+
+    assert result.is_valid, result.errors
+
+
+def test_guild_rules_rejects_unknown_upgrade_cost_curve_reference():
+    data = {
+        "pagination": {"guild_list_page_size": 20, "guild_hall_display_limit": 20},
+        "creation": {},
+        "contribution": {},
+        "technology": {
+            "upgrade_cost_curves": {"staged": {2: 2}},
+            "upgrade_cost_curve_by_tech": {"equipment_forge": "missing"},
+        },
+    }
+
+    result = validate_guild_rules(data)
+
+    assert_invalid(result, substring="unknown upgrade cost curve")
+
+
+def test_guild_rules_rejects_negative_target_level_upgrade_cost():
+    data = {
+        "pagination": {"guild_list_page_size": 20, "guild_hall_display_limit": 20},
+        "creation": {},
+        "contribution": {},
+        "technology": {
+            "upgrade_cost_overrides": {
+                "mysticism": {2: {"red_ruby": 300, "gold_bar": -1}},
+            },
+        },
+    }
+
+    result = validate_guild_rules(data)
+
+    assert_invalid(result, substring="non-negative integer")
+    assert result.errors[0].path == "technology.upgrade_cost_overrides.mysticism.2.gold_bar"
+
+
 def test_guest_growth_rules_rejects_non_dict_root():
     result = validate_guest_growth_rules([])
     assert_invalid(result)

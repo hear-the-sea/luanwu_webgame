@@ -34,6 +34,7 @@ def test_virtual_players_accepts_lifecycle_and_inventory_cap_fields():
             "early_stage_skill_max": 6,
             "early_stage_skill_count": [0, 1],
             "multi_skill_passive_focus_chance": 0.75,
+            "guest_max_rarity_by_stage": {1: "green", 7: "blue", 11: "purple"},
             "gear_max_rarity_by_stage": {1: "green", 7: "blue", 11: "purple"},
             "loot_item_quantity": [1, 3],
             "loot_limits": {"real_attacker_daily_resource_cap": 1000000},
@@ -46,6 +47,28 @@ def test_virtual_players_accepts_lifecycle_and_inventory_cap_fields():
     }
 
     assert validate_virtual_players(data).is_valid
+
+
+@pytest.mark.parametrize(
+    "field_name",
+    ["guest_max_rarity_by_stage", "gear_max_rarity_by_stage"],
+)
+def test_virtual_players_rejects_boolean_rarity_stage_keys(field_name):
+    result = validate_virtual_players({"projection": {field_name: {True: "blue"}}})
+
+    assert not result.is_valid
+    assert any("stage must be a positive integer" in error.message for error in result.errors)
+
+
+@pytest.mark.parametrize(
+    "field_name",
+    ["guest_max_rarity_by_stage", "gear_max_rarity_by_stage"],
+)
+def test_virtual_players_rejects_decreasing_rarity_stages(field_name):
+    result = validate_virtual_players({"projection": {field_name: {1: "blue", 4: "red"}}})
+
+    assert not result.is_valid
+    assert any("rarity must not decrease as stage increases" in error.message for error in result.errors)
 
 
 def test_virtual_players_rejects_negative_inventory_cap_fields():
@@ -83,6 +106,7 @@ def test_virtual_players_rejects_invalid_inventory_projection_fields():
             "early_stage_skill_max": -1,
             "early_stage_skill_count": [0, 2],
             "multi_skill_passive_focus_chance": 2,
+            "guest_max_rarity_by_stage": {0: "rainbow"},
             "gear_max_rarity_by_stage": {0: "rainbow"},
             "loot_item_quantity": [3, "bad"],
             "rare_item_daily_global_cap": "20",
@@ -109,6 +133,7 @@ def test_virtual_players_rejects_invalid_inventory_projection_fields():
     assert any("early_stage_skill_max" in message for message in messages)
     assert any("early_stage_skill_count" in message for message in messages)
     assert any("multi_skill_passive_focus_chance" in message for message in messages)
+    assert any("guest_max_rarity_by_stage" in message for message in messages)
     assert any("gear_max_rarity_by_stage" in message for message in messages)
     assert any("loot_item_quantity" in message for message in messages)
     assert any("rare_item_daily_global_cap" in message for message in messages)
@@ -197,8 +222,16 @@ def test_virtual_players_accepts_data_driven_population_and_persona_fields():
                 },
             },
             "lifecycle_personas": {
-                "tourist": {"weight": 15, "active_days": [7, 21], "abandoned_days": [7, 14]},
-                "casual": {"weight": 45, "active_days": [30, 90], "abandoned_days": [14, 45]},
+                "tourist": {
+                    "weight": 15,
+                    "active_days": [7, 21],
+                    "abandoned_days": [7, 14],
+                },
+                "casual": {
+                    "weight": 45,
+                    "active_days": [30, 90],
+                    "abandoned_days": [14, 45],
+                },
             },
         }
     )
@@ -240,8 +273,16 @@ def test_virtual_players_rejects_invalid_data_driven_configuration():
                 "guard": {"troop_multiplier": True},
             },
             "lifecycle_personas": {
-                "tourist": {"weight": 0, "active_days": [21, 7], "abandoned_days": [-1, 14]},
-                "unknown": {"weight": 0, "active_days": [1, 2], "abandoned_days": [1, 2]},
+                "tourist": {
+                    "weight": 0,
+                    "active_days": [21, 7],
+                    "abandoned_days": [-1, 14],
+                },
+                "unknown": {
+                    "weight": 0,
+                    "active_days": [1, 2],
+                    "abandoned_days": [1, 2],
+                },
             },
         }
     )
@@ -272,7 +313,13 @@ def test_virtual_players_rejects_invalid_data_driven_configuration():
 
 
 @pytest.mark.parametrize(
-    "field", ["region_floor", "region_active_multiplier", "global_floor", "global_active_multiplier"]
+    "field",
+    [
+        "region_floor",
+        "region_active_multiplier",
+        "global_floor",
+        "global_active_multiplier",
+    ],
 )
 def test_virtual_players_rejects_invalid_dynamic_population_fields(field):
     result = validate_virtual_players({"population": {field: True}})

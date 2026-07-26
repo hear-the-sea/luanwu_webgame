@@ -100,6 +100,35 @@ class ItemNotUsableError(ItemError):
         super().__init__(message, item_name=item_name, reason=reason)
 
 
+class ItemResourceOverflowConfirmationRequired(ItemError):
+    """使用物品会丢失超出容量的资源，需要玩家再次确认。"""
+
+    error_code = "ITEM_RESOURCE_OVERFLOW_CONFIRMATION_REQUIRED"
+
+    def __init__(
+        self,
+        item_name: str,
+        requested_resources: dict[str, int],
+        credited_resources: dict[str, int],
+        overflow_resources: dict[str, int],
+        confirmation_snapshot: dict[str, object],
+        *,
+        message: str,
+    ):
+        self.item_name = item_name
+        self.requested_resources = dict(requested_resources)
+        self.credited_resources = dict(credited_resources)
+        self.overflow_resources = dict(overflow_resources)
+        self.confirmation_snapshot = dict(confirmation_snapshot)
+        super().__init__(
+            message,
+            item_name=item_name,
+            requested_resources=self.requested_resources,
+            credited_resources=self.credited_resources,
+            overflow_resources=self.overflow_resources,
+        )
+
+
 # ============ 装备相关异常 ============
 
 

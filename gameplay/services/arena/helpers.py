@@ -63,6 +63,14 @@ def today_bounds(*, now=None):
     return start, end
 
 
+def current_week_bounds(*, now=None):
+    current_time = timezone.localtime(now or timezone.now())
+    day_start = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
+    start = day_start - timedelta(days=day_start.weekday())
+    end = start + timedelta(days=7)
+    return start, end
+
+
 def today_local_date(*, now=None):
     return timezone.localdate(now or timezone.now())
 

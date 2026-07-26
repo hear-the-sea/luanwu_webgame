@@ -1,108 +1,266 @@
+# 帮会系统运行时规则。
+# 修改后需让各 Web/Worker 进程自行重载或重启；管理命令只刷新其所在进程。
+# 常用资源键：silver=银两、grain=粮食、gold_bar=金条、red_ruby=红宝石。
+
+# 帮会列表分页与首页展示数量。
 pagination:
+  # 帮会列表每页显示的帮会数量。
   guild_list_page_size: 20
+  # 帮会大厅排行榜最多显示的帮会数量。
   guild_hall_display_limit: 20
+
+# 创建帮会及提升帮会等级的费用。
 creation:
+  # 创建一个帮会所需资源；当前仅消耗金条。
   guild_creation_cost:
     gold_bar: 2
+  # 帮会升级基础金条费用；实际费用 = 此值 × 2^(当前等级 - 1)。
   guild_upgrade_base_cost: 5
+
+# 成员向帮会捐赠资源或护院时的贡献度规则。
 contribution:
+  # 每获得一次 rates 中配置的贡献度，需要完整捐赠的资源数量。
   units:
+    # 每 1000 银两为一个贡献计算单位。
     silver: 1000
+    # 每 2000 粮食为一个贡献计算单位。
     grain: 2000
+    # 每 1 根金条为一个贡献计算单位。
     gold_bar: 1
+  # 每个完整捐赠单位奖励的个人贡献度。
   rates:
+    # 每 1000 银两奖励 1 点贡献度。
     silver: 1
+    # 每 2000 粮食奖励 1 点贡献度。
     grain: 1
+    # 每 1 根金条奖励 1200 点贡献度。
     gold_bar: 1200
+  # 单个成员每天可捐赠的资源数量上限，按资源原始数量计。
   daily_limits:
+    # 每日最多捐赠 100000 银两。
     silver: 100000
+    # 每日最多捐赠 50000 粮食。
     grain: 50000
+    # 每日最多捐赠 5 根金条。
     gold_bar: 5
+  # 护院招募所需科技等级 -> 每捐赠 1 名该类护院获得的贡献度。
   troop_rates:
+    # 无科技要求的护院。
     0: 1
+    # 需要 1 级招募科技的护院。
     1: 1
+    # 需要 3 级招募科技的护院。
     3: 3
+    # 需要 5 级招募科技的护院。
     5: 6
+    # 需要 7 级招募科技的护院。
     7: 12
+  # 单个成员每天通过捐赠护院可获得的贡献度上限。
   daily_troop_contribution_limit: 300
+  # 银两、粮食的单次最小捐赠数量；完整单位规则仍由 units 约束。
   min_donation_amount: 1
+
+# 帮会科技的1级费用、后续等级曲线、页面名称和页面简介。
 technology:
+  # 各科技从0级升到1级的费用；后续等级按 upgrade_cost_curves 的离散倍率计算。
   upgrade_costs:
+    # 装备锻造：消耗帮会银两，以及帮会仓库中的粮食和金条。
     equipment_forge:
       silver: 5000
       grain: 2000
       gold_bar: 1
+    # 护院军备：消耗帮会银两，以及帮会仓库中的粮食和金条。
     guard_armory:
       silver: 5000
       grain: 2500
       gold_bar: 1
+    # 武学研习：消耗帮会银两，以及帮会仓库中的粮食和金条。
     experience_refine:
       silver: 5000
       grain: 2000
       gold_bar: 1
+    # 资源补给：消耗帮会银两，以及帮会仓库中的粮食和金条。
     resource_supply:
       silver: 4000
       grain: 3000
       gold_bar: 1
+    # 神秘学：1级从帮会仓库消耗红宝石；后续等级使用下方指定成本。
+    mysticism:
+      red_ruby: 200
+    # 强兵战术：消耗帮会银两，以及帮会仓库中的粮食和金条。
     troop_tactics:
       silver: 8000
       grain: 3000
       gold_bar: 2
+    # 资源增产：消耗帮会银两，以及帮会仓库中的粮食和金条。
     resource_boost:
       silver: 10000
       grain: 5000
       gold_bar: 3
+    # 行军加速：消耗帮会银两，以及帮会仓库中的粮食和金条。
     march_speed:
       silver: 10000
       grain: 5000
       gold_bar: 3
+    # 出战位扩容：从帮会仓库消耗红宝石。
     guild_lineup_capacity:
-      red_ruby: 1
+      red_ruby: 5
+    # 出征位扩容：从帮会仓库消耗红宝石。
     guild_dispatch_capacity:
-      red_ruby: 1
+      red_ruby: 5
+  # 非指数升级曲线；等级键表示升级后的目标等级，值为1级费用的倍率。
+  upgrade_cost_curves:
+    standard_10:
+      2: 2
+      3: 4
+      4: 7
+      5: 12
+      6: 20
+      7: 35
+      8: 70
+      9: 150
+      10: 350
+    welfare_5:
+      2: 3
+      3: 8
+      4: 20
+      5: 60
+    capacity_20:
+      2: 2
+      3: 3
+      4: 4
+      5: 5
+      6: 6
+      7: 7
+      8: 8
+      9: 9
+      10: 10
+      11: 11
+      12: 12
+      13: 13
+      14: 14
+      15: 15
+      16: 16
+      17: 17
+      18: 18
+      19: 19
+      20: 20
+  # 科技与离散曲线的对应关系；神秘学使用下方逐级指定成本。
+  upgrade_cost_curve_by_tech:
+    equipment_forge: standard_10
+    guard_armory: standard_10
+    experience_refine: standard_10
+    resource_supply: standard_10
+    troop_tactics: standard_10
+    resource_boost: welfare_5
+    march_speed: welfare_5
+    guild_lineup_capacity: capacity_20
+    guild_dispatch_capacity: capacity_20
+  # 无法由基础费用与曲线表达的逐级指定成本；等级键表示升级后的目标等级。
+  upgrade_cost_overrides:
+    mysticism:
+      2:
+        red_ruby: 300
+        gold_bar: 150
+      3:
+        red_ruby: 300
+        gold_bar: 200
+  # 科技卡片标题；键必须与 upgrade_costs 中的科技键一致。
   names:
     equipment_forge: 装备锻造
     guard_armory: 护院军备
     experience_refine: 武学研习
     resource_supply: 资源补给
+    mysticism: 神秘学
     troop_tactics: 强兵战术
     resource_boost: 资源增产
     march_speed: 行军加速
     guild_lineup_capacity: 出战位扩容
     guild_dispatch_capacity: 出征位扩容
+  # 科技卡片标题下方显示的简介；动态等级效果仍由业务代码计算。
+  descriptions:
+    equipment_forge: 每日生产装备道具
+    guard_armory: 每日生产护院招募装备箱
+    experience_refine: 每日生产技能书箱
+    resource_supply: 每日生产资源礼包
+    mysticism: 每日生产灵魂容器，2级新增门客重生卡和洗点卡，3级新增洗髓丹
+    troop_tactics: 可以增强帮会战斗中护院的能力
+    resource_boost: 提升庄园资源产出
+    march_speed: 减少行军时间
+    guild_lineup_capacity: 提升帮会已上阵名单总容量
+    guild_dispatch_capacity: 提升单次帮会任务最多可派出的门客人数
+
+# 帮会仓库兑换规则。
 warehouse:
+  # 成员兑换 1 件对应物品所需的个人当前贡献度。
   exchange_costs:
+    # 绿色装备箱。
     gear_green: 50
-    gear_blue: 150
+    # 蓝色装备箱。
+    gear_blue: 200
+    # 紫色装备箱。
     gear_purple: 500
+    # 橙色装备箱。
     gear_orange: 2000
+    # 小型经验类道具。
     exp_small: 30
+    # 中型经验类道具。
     exp_medium: 100
+    # 大型经验类道具。
     exp_large: 400
+    # 普通资源礼包。
     resource_pack_common: 20
+    # 高级资源礼包。
     resource_pack_advanced: 80
+  # 单个成员每天可执行的仓库兑换次数上限。
   daily_exchange_limit: 10
+
+# 帮会蓝图奖励按品质提供的可选蓝图物品键。
 blueprint_rewards:
   choices:
+    # 蓝色品质蓝图候选列表。
     blue: [blueprint_xiaoweitoukie, blueprint_xiaoweikaijia, blueprint_qinglongkui, blueprint_qinglongjia]
+    # 紫色品质蓝图候选列表。
     purple: [blueprint_huxianpao, blueprint_huxianxie, blueprint_qilinkui, blueprint_qilinjia]
+    # 橙色品质蓝图候选列表。
     orange: [blueprint_feiyuan, blueprint_chixiaojifeng, blueprint_mojiajiguanren]
+
+# 帮会门客池、上阵名单和任务派遣的基础容量。
 hero_pool:
+  # 帮会门客池可使用的槽位数，代码上限为 2。
   slot_limit: 2
+  # 未计算科技加成时，帮会已上阵名单的基础人数上限。
   battle_lineup_limit: 20
+  # 未计算科技加成时，单次帮会任务的基础派遣人数上限。
   dispatch_guest_base_limit: 5
+  # 门客池槽位更换冷却时间，单位为秒（1800 秒 = 30 分钟）。
   replace_cooldown_seconds: 1800
+
+# 帮会 PVP 的保护、挑战次数、消耗和战利品规则。
 pvp:
+  # 新建帮会免战保护时长，单位为秒（172800 秒 = 48 小时）。
   newbie_protection_seconds: 172800
+  # 防守失败后的保护时长，单位为秒（43200 秒 = 12 小时）。
   defeat_protection_seconds: 43200
+  # 每个帮会每天可主动发起的 PVP 次数上限。
   max_daily_attack_count: 2
+  # 每个帮会每天可被其他帮会挑战的次数上限。
   max_daily_defense_count: 3
+  # 攻守双方允许的最大帮会等级差。
   max_target_level_gap: 3
+  # 计算银两战利品前，为防守方保留的最低银两余额。
   silver_floor: 20000
-  silver_loot_percent: 10
-  warehouse_loot_percent: 10
+  # 可掠夺银两的百分比，取值范围 0~100。
+  silver_loot_percent: 20
+  # 可掠夺白名单仓库物品的百分比，取值范围 0~100。
+  warehouse_loot_percent: 20
+  # 主动发起一次 PVP 固定消耗的帮会银两。
   fixed_attack_cost_silver: 10000
+  # PVP 胜利时允许掠夺的基础仓库物品键；帮会科技产出的兑换物品会自动加入。
   warehouse_loot_whitelist:
+    # 粮食。
     - grain
+    # 金条。
     - gold_bar
+    # 红宝石。
     - red_ruby

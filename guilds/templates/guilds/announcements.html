@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}帮会公告 - {{ guild.name }}{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
@@ -16,42 +16,67 @@
                     发布公告
                 </button>
             {% endif %}
-            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
         </div>
     </div>
 
-    <section class="tw-card">
-        <h2>公告列表（最近30条）</h2>
+    <section class="tw-guild-section">
+        <h2>公告列表</h2>
         {% if announcements %}
-            <div class="flex flex-col gap-3">
+            <div class="tw-guild-announcement-list">
                 {% for announcement in announcements %}
-                <div class="tw-guild-announcement {% if announcement.type == 'leader' %}announcement-leader{% elif announcement.type == 'system' %}announcement-system{% endif %}">
-                    <div class="tw-guild-announcement-header">
-                        <div>
-                            <h3 class="tw-guild-announcement-title">
-                                {% if announcement.type == 'leader' %}
-                                    帮主公告
-                                {% elif announcement.type == 'system' %}
-                                    系统公告
-                                {% else %}
-                                    普通公告
-                                {% endif %}
-                            </h3>
-                            <p class="tw-muted m-0">{{ announcement.created_at|date:"Y-m-d H:i:s" }}</p>
-                        </div>
+                <article class="tw-guild-announcement {% if announcement.type == 'leader' %}announcement-leader{% elif announcement.type == 'system' %}announcement-system{% endif %}">
+                    <header class="tw-guild-announcement-header">
+                        <h3 class="tw-guild-announcement-title">
+                            {% if announcement.type == 'leader' %}
+                                帮主公告
+                            {% elif announcement.type == 'system' %}
+                                系统公告
+                            {% else %}
+                                普通公告
+                            {% endif %}
+                        </h3>
+                        <div class="tw-guild-announcement-meta">
+                            <time datetime="{{ announcement.created_at|date:'c' }}">{{ announcement.created_at|date:"Y-m-d H:i:s" }}</time>
                         {% if announcement.author %}
-                            <div class="text-right">
-                                <p class="tw-muted m-0">发布者</p>
-                                <p class="m-0 font-bold">{{ announcement.author.username }}</p>
-                            </div>
+                            <span class="tw-guild-announcement-publisher">
+                                发布者：<strong class="tw-guild-announcement-author">{{ announcement.author.manor.display_name|default:"未知庄园" }}</strong>
+                            </span>
                         {% endif %}
-                    </div>
+                        </div>
+                    </header>
                     <div class="tw-guild-announcement-content">{{ announcement.content }}</div>
-                </div>
+                </article>
                 {% endfor %}
             </div>
         {% else %}
-            <p class="tw-muted">暂无公告</p>
+            <div class="tw-guild-empty-state">
+                <strong>暂无公告</strong>
+                <p>帮会动态将在这里留档。</p>
+            </div>
+        {% endif %}
+
+        {% if announcement_page.paginator.num_pages > 1 %}
+        <nav class="tw-pagination mt-4" aria-label="公告分页">
+            {% if announcement_page.has_previous %}
+                <a href="?page=1" class="tw-btn-secondary tw-btn-sm">首页</a>
+                <a href="?page={{ announcement_page.previous_page_number }}" class="tw-btn-secondary tw-btn-sm">上一页</a>
+            {% else %}
+                <span class="tw-btn-secondary tw-btn-sm disabled">首页</span>
+                <span class="tw-btn-secondary tw-btn-sm disabled">上一页</span>
+            {% endif %}
+
+            <span class="tw-pagination-info">
+                {{ announcement_page.number }} / {{ announcement_page.paginator.num_pages }}
+            </span>
+
+            {% if announcement_page.has_next %}
+                <a href="?page={{ announcement_page.next_page_number }}" class="tw-btn-secondary tw-btn-sm">下一页</a>
+                <a href="?page={{ announcement_page.paginator.num_pages }}" class="tw-btn-secondary tw-btn-sm">末页</a>
+            {% else %}
+                <span class="tw-btn-secondary tw-btn-sm disabled">下一页</span>
+                <span class="tw-btn-secondary tw-btn-sm disabled">末页</span>
+            {% endif %}
+        </nav>
         {% endif %}
     </section>
 
@@ -59,11 +84,11 @@
 
 <!-- 发布公告模态框 -->
 {% if member.is_leader %}
-<div class="tw-modal-overlay" id="create-modal" style="display: none;">
+<div class="tw-modal-overlay" id="create-modal" style="display: none;" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="create-announcement-title">
     <div class="tw-modal-content">
         <div class="tw-modal-header">
-            <h3>发布公告</h3>
-            <button type="button" class="tw-modal-close" onclick="document.getElementById('create-modal').style.display='none'">
+            <h3 id="create-announcement-title">发布公告</h3>
+            <button type="button" class="tw-modal-close" onclick="document.getElementById('create-modal').style.display='none'" aria-label="关闭发布公告窗口">
                 &times;
             </button>
         </div>
@@ -96,6 +121,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{{ block.super }}
 <script>
     const modal = document.getElementById('create-modal');
     if (modal) {

@@ -1,10 +1,22 @@
 from __future__ import annotations
 
-import random
+from typing import Any, Sequence
 
 from django.db.models import F
 
+from core.utils import safe_positive_int
+from gameplay.constants import PVPConstants
+from gameplay.models import ItemTemplate
+from gameplay.services.pvp_runtime.loot import (
+    WeightedLootCandidate,
+    calculate_item_loot_capacity,
+    calculate_item_loot_draw_count,
+    draw_weighted_item_loot,
+    normalize_positive_int_mapping,
+)
+
 from ..models import Guild, GuildWarehouse
+from . import guild_troops
 from .guild_raid_rules import get_guild_raid_rules
 from .warehouse import add_item_to_warehouse
 
@@ -20,35 +32,54 @@ def grant_guild_raid_battle_rewards(*, guild: Guild, rewards: dict[str, int]) ->
     return normalized_rewards
 
 
-def _draw_weighted_item_loot(rows: list[GuildWarehouse], *, draw_count: int) -> dict[str, int]:
-    total_quantity = sum(int(row.quantity or 0) for row in rows)
-    resolved_draw_count = min(max(0, int(draw_count or 0)), total_quantity)
-    if resolved_draw_count <= 0 or total_quantity <= 0:
-        return {}
-
-    selected_positions = sorted(random.sample(range(total_quantity), resolved_draw_count))
-    loot_items: dict[str, int] = {}
-    cursor = 0
-    selection_index = 0
-
-    for row in rows:
-        row_quantity = int(row.quantity or 0)
-        if row_quantity <= 0:
-            continue
-
-        next_cursor = cursor + row_quantity
-        selected_count = 0
-        while selection_index < len(selected_positions) and selected_positions[selection_index] < next_cursor:
-            selected_count += 1
-            selection_index += 1
-        if selected_count > 0:
-            loot_items[row.item_key] = selected_count
-        cursor = next_cursor
-
-    return loot_items
+def _calculate_guild_item_loot_capacity(
+    *,
+    guests: Sequence[Any],
+    troop_loadout: dict[str, int],
+    battle_report: Any,
+) -> int:
+    normalized_loadout = normalize_positive_int_mapping(troop_loadout)
+    surviving_troops = guild_troops.calculate_surviving_guild_troops(normalized_loadout, battle_report)
+    return calculate_item_loot_capacity(
+        max_capacity=PVPConstants.LOOT_ITEM_CAPACITY_MAX,
+        guest_count=len(guests),
+        troop_loadout=normalized_loadout,
+        surviving_troop_count=sum(surviving_troops.values()),
+        full_guest_count=PVPConstants.LOOT_FULL_GUEST_COUNT,
+        full_troop_count=PVPConstants.LOOT_FULL_TROOP_COUNT,
+        min_cap_ratio=PVPConstants.LOOT_MIN_CAP_RATIO,
+        survival_base_ratio=PVPConstants.LOOT_SURVIVAL_BASE_RATIO,
+        survival_scaling_ratio=PVPConstants.LOOT_SURVIVAL_SCALING_RATIO,
+    )
 
 
-def transfer_guild_raid_loot(*, attacker_guild: Guild, defender_guild: Guild) -> tuple[int, dict[str, int]]:
+def _build_weighted_loot_candidates(rows: list[GuildWarehouse]) -> list[WeightedLootCandidate]:
+    item_keys = [str(row.item_key) for row in rows]
+    storage_spaces = {
+        str(item_key): safe_positive_int(storage_space, 1)
+        for item_key, storage_space in ItemTemplate.objects.filter(key__in=item_keys).values_list(
+            "key", "storage_space"
+        )
+    }
+    return [
+        {
+            "item_key": str(row.item_key),
+            "remaining_quantity": safe_positive_int(row.quantity, 0),
+            "storage_space": storage_spaces.get(str(row.item_key), 1),
+        }
+        for row in rows
+        if safe_positive_int(row.quantity, 0) > 0
+    ]
+
+
+def transfer_guild_raid_loot(
+    *,
+    attacker_guild: Guild,
+    defender_guild: Guild,
+    guests: Sequence[Any],
+    troop_loadout: dict[str, int],
+    battle_report: Any,
+) -> tuple[int, dict[str, int]]:
     from .guild_raid_support import lock_guild_pair
 
     rules = get_guild_raid_rules()
@@ -77,8 +108,17 @@ def transfer_guild_raid_loot(*, attacker_guild: Guild, defender_guild: Guild) ->
         .order_by("item_key", "id")
     )
     total_quantity = sum(int(row.quantity or 0) for row in locked_rows)
-    draw_count = total_quantity * warehouse_percent // 100
-    loot_items = _draw_weighted_item_loot(locked_rows, draw_count=draw_count)
+    draw_count = calculate_item_loot_draw_count(total_quantity, warehouse_percent / 100)
+    capacity = _calculate_guild_item_loot_capacity(
+        guests=guests,
+        troop_loadout=troop_loadout,
+        battle_report=battle_report,
+    )
+    loot_items = draw_weighted_item_loot(
+        _build_weighted_loot_candidates(locked_rows),
+        draw_count=draw_count,
+        capacity=capacity,
+    )
 
     for row in locked_rows:
         loot_quantity = int(loot_items.get(row.item_key, 0) or 0)

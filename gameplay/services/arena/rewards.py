@@ -31,16 +31,23 @@ class ArenaRotatingBlueprintPool:
 
 
 @dataclass(frozen=True)
+class ArenaRandomBlueprintPool:
+    rarity: str
+
+
+@dataclass(frozen=True)
 class ArenaRewardDefinition:
     key: str
     name: str
     cost_coins: int
     daily_limit: int | None
+    weekly_limit: int | None
     resources: dict[str, int]
     items: dict[str, int]
     random_items: tuple[ArenaRandomItemOption, ...]
     description: str = ""
     rotating_blueprint_pool: ArenaRotatingBlueprintPool | None = None
+    random_blueprint_pool: ArenaRandomBlueprintPool | None = None
 
 
 def _to_positive_int(raw: Any, *, default: int = 0) -> int:
@@ -90,6 +97,19 @@ def _normalize_rotating_blueprint_pool(payload: dict[str, Any], *, context: str)
         logger.warning("skip invalid rotating blueprint pool: %s", context)
         return None
     return ArenaRotatingBlueprintPool(rarity=rarity, blueprint_keys=blueprint_keys)
+
+
+def _normalize_random_blueprint_pool(payload: dict[str, Any], *, context: str) -> ArenaRandomBlueprintPool | None:
+    raw_pool = payload.get("random_blueprint_pool")
+    if raw_pool is None:
+        return None
+
+    pool = ensure_mapping(raw_pool, logger=logger, context=f"{context}.random_blueprint_pool")
+    rarity = str(pool.get("rarity") or "").strip()
+    if not rarity:
+        logger.warning("skip invalid random blueprint pool: %s", context)
+        return None
+    return ArenaRandomBlueprintPool(rarity=rarity)
 
 
 def select_weekly_blueprint_key(pool: ArenaRotatingBlueprintPool, *, today=None) -> str:
@@ -158,23 +178,37 @@ def load_arena_reward_catalog() -> dict[str, ArenaRewardDefinition]:
 
         resources, items, random_items = _normalize_reward_payload(entry, context=context)
         rotating_blueprint_pool = _normalize_rotating_blueprint_pool(entry, context=context)
-        if not resources and not items and not random_items and rotating_blueprint_pool is None:
+        random_blueprint_pool = _normalize_random_blueprint_pool(entry, context=context)
+        if rotating_blueprint_pool is not None and random_blueprint_pool is not None:
+            logger.warning("skip arena reward with conflicting blueprint pools: %s", key)
+            continue
+        if (
+            not resources
+            and not items
+            and not random_items
+            and rotating_blueprint_pool is None
+            and random_blueprint_pool is None
+        ):
             logger.warning("skip arena reward without payload: %s", key)
             continue
 
         daily_limit_value = _to_positive_int(entry.get("daily_limit"))
         daily_limit = daily_limit_value if daily_limit_value > 0 else None
+        weekly_limit_value = _to_positive_int(entry.get("weekly_limit"))
+        weekly_limit = weekly_limit_value if weekly_limit_value > 0 else None
 
         catalog[key] = ArenaRewardDefinition(
             key=key,
             name=str(entry.get("name") or "竞技奖励"),
             cost_coins=cost_coins,
             daily_limit=daily_limit,
+            weekly_limit=weekly_limit,
             resources=resources,
             items=items,
             random_items=random_items,
             description=str(entry.get("description") or ""),
             rotating_blueprint_pool=rotating_blueprint_pool,
+            random_blueprint_pool=random_blueprint_pool,
         )
 
     return catalog

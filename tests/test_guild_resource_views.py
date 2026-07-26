@@ -220,9 +220,11 @@ def test_guild_warehouse_page_projects_guild_resources_without_writing_guild_war
     assert projected_entries["gold_bar"].is_projected is True
 
     body = response.content.decode("utf-8")
-    assert "1000 银两 / 1 贡献" in body
-    assert "2000 粮食 / 1 贡献" in body
-    assert "1 金条 / 1200 贡献" in body
+    assert "每份 1000 银两" in body
+    assert "每份 2000 粮食" in body
+    assert "每份 1 金条" in body
+    assert '<span class="tw-guild-exchange-cost">1 贡献</span>' in body
+    assert '<span class="tw-guild-exchange-cost">1200 贡献</span>' in body
 
 
 @pytest.mark.django_db
@@ -263,7 +265,12 @@ def test_guild_warehouse_page_renders_production_items_without_item_templates(gu
     assert "帮会宗师秘匣" in body
     assert "帮会满阶锻造工坊出品的秘匣，可开出一件高质量紫装。" in body
     assert "<h3>guild_gear_box_master</h3>" not in body
-    assert "openExchangeModal('guild_gear_box_master'" in body
+    assert 'class="tw-guild-exchange-grid"' in body
+    assert 'class="tw-guild-exchange-card' in body
+    assert f'action="{reverse("guilds:exchange_item", args=["guild_gear_box_master"])}"' in body
+    assert "历史产出" not in body
+    assert "历史兑换" not in body
+    assert "openExchangeModal" not in body
 
 
 @pytest.mark.django_db

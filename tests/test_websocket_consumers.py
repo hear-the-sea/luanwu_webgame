@@ -12,6 +12,7 @@ from django_redis.exceptions import ConnectionInterrupted
 from redis.exceptions import RedisError
 
 from websocket.backends.connection_limiter import ConnectionCapacityDecision
+from websocket.close_codes import SERVICE_UNAVAILABLE_CLOSE_CODE
 from websocket.consumers import NotificationConsumer, OnlineStatsConsumer, WorldChatConsumer
 from websocket.consumers.session_guard import WebSocketSessionValidationResult, WebSocketSessionValidationUnavailable
 from websocket.exceptions import WebSocketConnectionLimitUnavailable
@@ -67,6 +68,7 @@ class NotificationConsumerTests(SimpleTestCase):
 
     def test_user_capacity_heartbeat_interval_stays_below_configured_ttl(self):
         consumer = NotificationConsumer()
+        consumer.scope = {"path": "/ws/notifications/"}
         consumer.close = AsyncMock()
         consumer._refresh_connection_slot = AsyncMock(return_value=False)
         sleep = AsyncMock()
@@ -78,7 +80,40 @@ class NotificationConsumerTests(SimpleTestCase):
             asyncio.run(consumer._connection_slot_heartbeat_loop(7, "connection", "a" * 32))
 
         sleep.assert_awaited_once_with(2)
-        consumer.close.assert_awaited_once_with(code=1013)
+        consumer.close.assert_awaited_once_with(code=SERVICE_UNAVAILABLE_CLOSE_CODE)
+
+    def test_release_user_capacity_slot_survives_heartbeat_failure(self):
+        class _User:
+            id = 7
+
+        consumer = NotificationConsumer()
+        consumer.scope = {"user": _User(), "path": "/ws/notifications/"}
+        consumer.channel_name = "capacity-cleanup-failure"
+        consumer._connection_slot_acquired = True
+        consumer._connection_slot_worker_id = "a" * 32
+        consumer._release_connection_slot_backend = AsyncMock()
+
+        async def _scenario():
+            async def _failed_heartbeat():
+                raise RuntimeError("heartbeat close failed")
+
+            heartbeat = asyncio.create_task(_failed_heartbeat())
+            await asyncio.sleep(0)
+            consumer._connection_slot_heartbeat_task = heartbeat
+            await consumer._release_connection_slot()
+
+        with patch("websocket.consumers.session_guard.logger.exception") as exception_log:
+            asyncio.run(_scenario())
+
+        consumer._release_connection_slot_backend.assert_awaited_once_with(
+            7,
+            "capacity-cleanup-failure",
+            "a" * 32,
+        )
+        assert consumer._connection_slot_acquired is False
+        assert consumer._connection_slot_heartbeat_task is None
+        assert consumer._connection_slot_worker_id is None
+        exception_log.assert_called_once()
 
     def test_dispatch_rejects_connection_when_user_capacity_is_full(self):
         class _User:
@@ -129,9 +164,9 @@ class NotificationConsumerTests(SimpleTestCase):
         asyncio.run(consumer.dispatch({"type": "websocket.connect"}))
 
         consumer.accept.assert_awaited_once_with()
-        consumer.close.assert_awaited_once_with(code=1013)
+        consumer.close.assert_awaited_once_with(code=SERVICE_UNAVAILABLE_CLOSE_CODE)
 
-    def test_asgi_connect_accepts_then_closes_1013_when_session_validation_is_unavailable(self):
+    def test_asgi_connect_accepts_then_closes_with_service_unavailable_code(self):
         async def _scenario():
             communicator = WebsocketCommunicator(NotificationConsumer.as_asgi(), "/ws/notifications/")
             validation = AsyncMock(return_value=WebSocketSessionValidationResult.UNAVAILABLE)
@@ -147,11 +182,11 @@ class NotificationConsumerTests(SimpleTestCase):
                     connected, _subprotocol = await communicator.connect(timeout=1)
                     assert connected is True
                     output = await communicator.receive_output(timeout=1)
-                    assert output == {"type": "websocket.close", "code": 1013}
-                    await communicator.disconnect(code=1013, timeout=1)
+                    assert output == {"type": "websocket.close", "code": SERVICE_UNAVAILABLE_CLOSE_CODE}
+                    await communicator.disconnect(code=SERVICE_UNAVAILABLE_CLOSE_CODE, timeout=1)
                 finally:
                     if not communicator.future.done():
-                        await communicator.disconnect(code=1013, timeout=1)
+                        await communicator.disconnect(code=SERVICE_UNAVAILABLE_CLOSE_CODE, timeout=1)
 
                 assert close_connections.await_count >= 1
                 assert websocket_close_connections.await_count >= 1
@@ -250,7 +285,7 @@ class NotificationConsumerTests(SimpleTestCase):
                 _User(),
                 WebSocketSessionValidationResult.UNAVAILABLE,
                 "websocket.connect",
-                1013,
+                SERVICE_UNAVAILABLE_CLOSE_CODE,
             )
         )
 
@@ -264,7 +299,7 @@ class NotificationConsumerTests(SimpleTestCase):
                 _User(),
                 WebSocketSessionValidationResult.UNAVAILABLE,
                 "websocket.receive",
-                1013,
+                SERVICE_UNAVAILABLE_CLOSE_CODE,
             )
         )
 
@@ -348,7 +383,7 @@ class NotificationConsumerTests(SimpleTestCase):
         consumer.close.assert_awaited_once_with(code=4403)
         consumer.accept.assert_not_awaited()
 
-    def test_connect_closes_1013_when_session_validation_is_unavailable(self):
+    def test_connect_closes_with_service_unavailable_code_when_session_validation_is_unavailable(self):
         class _User:
             id = 7
             is_authenticated = True
@@ -362,7 +397,7 @@ class NotificationConsumerTests(SimpleTestCase):
 
         asyncio.run(consumer.connect())
 
-        consumer.close.assert_awaited_once_with(code=1013)
+        consumer.close.assert_awaited_once_with(code=SERVICE_UNAVAILABLE_CLOSE_CODE)
         consumer.accept.assert_not_awaited()
 
     def test_connect_rejects_unknown_validation_result_without_side_effects(self):
@@ -442,7 +477,7 @@ class WorldChatSessionValidationTests(SimpleTestCase):
         async def _scenario():
             unavailable = self._build_consumer(WebSocketSessionValidationResult.UNAVAILABLE)
             await unavailable.connect()
-            unavailable.close.assert_awaited_once_with(code=1013)
+            unavailable.close.assert_awaited_once_with(code=SERVICE_UNAVAILABLE_CLOSE_CODE)
             unavailable.accept.assert_not_awaited()
 
             invalid = self._build_consumer(WebSocketSessionValidationResult.INVALID)
@@ -463,7 +498,7 @@ class WorldChatSessionValidationTests(SimpleTestCase):
             unavailable = self._build_consumer(WebSocketSessionValidationResult.UNAVAILABLE)
             unavailable._process_send_message = AsyncMock()
             await unavailable.receive_json({"type": "send", "text": "hello"})
-            unavailable.close.assert_awaited_once_with(code=1013)
+            unavailable.close.assert_awaited_once_with(code=SERVICE_UNAVAILABLE_CLOSE_CODE)
             unavailable._process_send_message.assert_not_awaited()
 
             invalid = self._build_consumer(WebSocketSessionValidationResult.INVALID)
@@ -601,7 +636,7 @@ class OnlineStatsConsumerTests(SimpleTestCase):
         consumer.close.assert_awaited_once_with()
         consumer.accept.assert_not_awaited()
 
-    def test_connect_closes_1013_when_session_validation_is_unavailable(self):
+    def test_connect_closes_with_service_unavailable_code_when_session_validation_is_unavailable(self):
         class _User:
             id = 11
             is_authenticated = True
@@ -614,7 +649,7 @@ class OnlineStatsConsumerTests(SimpleTestCase):
 
         asyncio.run(consumer.connect())
 
-        consumer.close.assert_awaited_once_with(code=1013)
+        consumer.close.assert_awaited_once_with(code=SERVICE_UNAVAILABLE_CLOSE_CODE)
         consumer.accept.assert_not_awaited()
 
     def test_connect_rejects_unknown_validation_result_without_side_effects(self):

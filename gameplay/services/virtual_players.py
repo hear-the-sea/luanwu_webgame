@@ -59,6 +59,7 @@ from gameplay.services.virtual_player_rules import (
     choose_strength_quantile,
     nearest_rank_quantile,
 )
+from guests.growth_engine import allocate_level_up_attributes, apply_training_completion
 from guests.models import (
     GearItem,
     GearSlot,
@@ -175,6 +176,13 @@ DEFAULT_VIRTUAL_PLAYER_CONFIG: dict[str, Any] = {
             11: "purple",
             16: "orange",
         },
+        "guest_max_rarity_by_stage": {
+            1: "green",
+            4: "red",
+            7: "blue",
+            11: "purple",
+            16: "orange",
+        },
         "real_projection_sample_size": 25,
         "active_sample_days": 30,
         "regional_min_sample_size": 5,
@@ -188,11 +196,41 @@ DEFAULT_VIRTUAL_PLAYER_CONFIG: dict[str, Any] = {
             "abandoned": 4,
         },
         "inventory_effect_type_weights": {
-            "balanced": {"resource_pack": 3, "resource": 3, "experience_items": 2, "medicine": 2, "tool": 1},
-            "rich": {"resource_pack": 4, "resource": 5, "experience_items": 1, "medicine": 1, "tool": 1},
-            "dojo": {"resource_pack": 1, "resource": 1, "experience_items": 4, "medicine": 2, "tool": 1},
-            "guard": {"resource_pack": 2, "resource": 2, "experience_items": 1, "medicine": 4, "tool": 1},
-            "abandoned": {"resource_pack": 3, "resource": 3, "experience_items": 1, "medicine": 1, "tool": 1},
+            "balanced": {
+                "resource_pack": 3,
+                "resource": 3,
+                "experience_items": 2,
+                "medicine": 2,
+                "tool": 1,
+            },
+            "rich": {
+                "resource_pack": 4,
+                "resource": 5,
+                "experience_items": 1,
+                "medicine": 1,
+                "tool": 1,
+            },
+            "dojo": {
+                "resource_pack": 1,
+                "resource": 1,
+                "experience_items": 4,
+                "medicine": 2,
+                "tool": 1,
+            },
+            "guard": {
+                "resource_pack": 2,
+                "resource": 2,
+                "experience_items": 1,
+                "medicine": 4,
+                "tool": 1,
+            },
+            "abandoned": {
+                "resource_pack": 3,
+                "resource": 3,
+                "experience_items": 1,
+                "medicine": 1,
+                "tool": 1,
+            },
         },
         "loot_budget_daily": 2_000_000,
         "loot_limits": {
@@ -212,17 +250,45 @@ DEFAULT_VIRTUAL_PLAYER_CONFIG: dict[str, Any] = {
         ],
     },
     "combat_personas": {
-        "balanced": {"guest_level_multiplier": 1.0, "guest_count_multiplier": 1.0, "troop_multiplier": 1.0},
-        "rich": {"guest_level_multiplier": 0.85, "guest_count_multiplier": 0.85, "troop_multiplier": 0.8},
-        "dojo": {"guest_level_multiplier": 1.15, "guest_count_multiplier": 1.0, "troop_multiplier": 0.75},
-        "guard": {"guest_level_multiplier": 0.85, "guest_count_multiplier": 0.85, "troop_multiplier": 1.35},
-        "abandoned": {"guest_level_multiplier": 0.75, "guest_count_multiplier": 0.75, "troop_multiplier": 0.6},
+        "balanced": {
+            "guest_level_multiplier": 1.0,
+            "guest_count_multiplier": 1.0,
+            "troop_multiplier": 1.0,
+        },
+        "rich": {
+            "guest_level_multiplier": 0.85,
+            "guest_count_multiplier": 0.85,
+            "troop_multiplier": 0.8,
+        },
+        "dojo": {
+            "guest_level_multiplier": 1.15,
+            "guest_count_multiplier": 1.0,
+            "troop_multiplier": 0.75,
+        },
+        "guard": {
+            "guest_level_multiplier": 0.85,
+            "guest_count_multiplier": 0.85,
+            "troop_multiplier": 1.35,
+        },
+        "abandoned": {
+            "guest_level_multiplier": 0.75,
+            "guest_count_multiplier": 0.75,
+            "troop_multiplier": 0.6,
+        },
     },
     "lifecycle_personas": {
         "tourist": {"weight": 15, "active_days": [7, 21], "abandoned_days": [7, 14]},
         "casual": {"weight": 45, "active_days": [30, 90], "abandoned_days": [14, 45]},
-        "committed": {"weight": 30, "active_days": [90, 180], "abandoned_days": [30, 60]},
-        "veteran": {"weight": 10, "active_days": [180, 360], "abandoned_days": [45, 90]},
+        "committed": {
+            "weight": 30,
+            "active_days": [90, 180],
+            "abandoned_days": [30, 60],
+        },
+        "veteran": {
+            "weight": 10,
+            "active_days": [180, 360],
+            "abandoned_days": [45, 90],
+        },
     },
 }
 
@@ -234,6 +300,7 @@ RARE_ITEM_RARITIES = {"purple", "orange", "red", "legendary"}
 ALL_TEMPLATE_SENTINEL = "__all__"
 ALL_TRADEABLE_TEMPLATE_SENTINEL = "__all_tradeable__"
 GEAR_RARITY_RANK = {rarity.value: index for index, rarity in enumerate(GuestRarity)}
+GUEST_RARITY_RANK = {rarity.value: index for index, rarity in enumerate(GuestRarity)}
 
 _MANOR_NAME_SURNAMES = (
     "沈",
@@ -485,7 +552,12 @@ def _deep_merge_config(base: dict[str, Any], override: dict[str, Any]) -> dict[s
 
 @lru_cache(maxsize=1)
 def _load_virtual_player_config_from_disk() -> dict[str, Any]:
-    raw = load_yaml_data(VIRTUAL_PLAYER_CONFIG_PATH, logger=logger, context="virtual player config", default={})
+    raw = load_yaml_data(
+        VIRTUAL_PLAYER_CONFIG_PATH,
+        logger=logger,
+        context="virtual player config",
+        default={},
+    )
     if not isinstance(raw, dict):
         raw = {}
     return _deep_merge_config(DEFAULT_VIRTUAL_PLAYER_CONFIG, raw)
@@ -531,7 +603,11 @@ def _create_bot_user(*, region: str, growth_seed: int) -> Any:
         user = User(username=username, is_active=False)
         user.set_unusable_password()
         setattr(user, "_signup_region", region)
-        setattr(user, "_signup_manor_name", _generate_bot_manor_name(growth_seed=growth_seed, salt=attempt))
+        setattr(
+            user,
+            "_signup_manor_name",
+            _generate_bot_manor_name(growth_seed=growth_seed, salt=attempt),
+        )
         try:
             with transaction.atomic():
                 user.save()
@@ -781,7 +857,11 @@ def consume_virtual_player_backfill_demands(*, limit: int | None = None) -> list
         if not rows:
             return []
         consumed = [
-            {"region": row.region, "prestige_band": row.prestige_band, "needed": int(row.needed or 0)}
+            {
+                "region": row.region,
+                "prestige_band": row.prestige_band,
+                "needed": int(row.needed or 0),
+            }
             for row in rows
             if int(row.needed or 0) > 0
         ]
@@ -1424,7 +1504,13 @@ def _projection_from_real_players(
             sampled_guest_count=Count("guests", distinct=True),
             sampled_guest_level=Max("guests__level"),
         )
-        .values("id", "prestige", "sampled_building_level", "sampled_guest_count", "sampled_guest_level")
+        .values(
+            "id",
+            "prestige",
+            "sampled_building_level",
+            "sampled_guest_count",
+            "sampled_guest_level",
+        )
     )
     troop_totals = {
         row["manor_id"]: int(row["total"] or 0)
@@ -1438,7 +1524,10 @@ def _projection_from_real_players(
     )
     guest_count = max(
         1,
-        min(8, nearest_rank_quantile([int(row["sampled_guest_count"] or 1) for row in samples], quantile)),
+        min(
+            8,
+            nearest_rank_quantile([int(row["sampled_guest_count"] or 1) for row in samples], quantile),
+        ),
     )
     guest_level = max(
         1,
@@ -1564,7 +1653,9 @@ def _weighted_archetype(rng: random.Random) -> str:
     return BotProfile.Archetype.BALANCED
 
 
-def virtual_player_prestige_bands(config: dict[str, Any] | None = None) -> dict[str, tuple[int, int | None]]:
+def virtual_player_prestige_bands(
+    config: dict[str, Any] | None = None,
+) -> dict[str, tuple[int, int | None]]:
     return _prestige_bands(config or load_virtual_player_config())
 
 
@@ -1630,13 +1721,22 @@ def _project_technologies(manor: Manor, *, level: int, config: dict[str, Any]) -
     PlayerTechnology.objects.bulk_update(technologies, ["level", "is_upgrading"])
 
 
-def _grant_extra_template_skills(guest: Guest) -> None:
+def _grant_extra_template_skills(guest: Guest, *, limit: int | None = None) -> int:
     existing = set(guest.guest_skills.values_list("skill_id", flat=True))
+    remaining_slots = max(0, int(GUEST.MAX_SKILL_SLOTS) - len(existing))
+    if limit is not None:
+        remaining_slots = min(remaining_slots, max(0, int(limit)))
+    if remaining_slots <= 0:
+        return 0
+
     rows: list[GuestSkill] = []
     for skill in guest.template.initial_skills.exclude(id__in=existing):
+        if len(rows) >= remaining_slots:
+            break
         rows.append(GuestSkill(guest=guest, skill=skill, source=GuestSkill.Source.TEMPLATE))
     if rows:
         GuestSkill.objects.bulk_create(rows, ignore_conflicts=True)
+    return len(rows)
 
 
 def _guest_meets_skill_requirements(guest: Guest, skill: Skill) -> bool:
@@ -1712,12 +1812,18 @@ def _grant_skills_to_target(
 
     selected: list[Skill] = []
     if prefer_passive_focus and int(target_total) >= 2:
-        desired_kinds = [SkillKind.ACTIVE, *([SkillKind.PASSIVE] * (min(int(target_total), 3) - 1))]
+        desired_kinds = [
+            SkillKind.ACTIVE,
+            *([SkillKind.PASSIVE] * (min(int(target_total), 3) - 1)),
+        ]
         existing_kinds = [record.skill.kind for record in existing_records]
         for kind in desired_kinds:
             if existing_kinds.count(kind) + sum(skill.kind == kind for skill in selected) >= desired_kinds.count(kind):
                 continue
-            candidate = next((skill for skill in candidates if skill.kind == kind and skill not in selected), None)
+            candidate = next(
+                (skill for skill in candidates if skill.kind == kind and skill not in selected),
+                None,
+            )
             if candidate is not None:
                 selected.append(candidate)
                 if len(selected) >= needed:
@@ -1740,11 +1846,19 @@ def _grant_configured_extra_skills(
     growth_stage: int,
     rng: random.Random,
     config: dict[str, Any],
+    max_new_skills: int | None = None,
 ) -> None:
     projection = config.get("projection") or {}
+    existing_count = guest.guest_skills.count()
+
+    def _bounded_target(target: int) -> int:
+        if max_new_skills is None:
+            return target
+        return min(target, existing_count + max(0, int(max_new_skills)))
+
     early_stage_max = max(0, int(projection.get("early_stage_skill_max") or 6))
     if int(growth_stage) <= early_stage_max:
-        target_total = _range_value(rng, projection.get("early_stage_skill_count"), default=(0, 1))
+        target_total = _bounded_target(_range_value(rng, projection.get("early_stage_skill_count"), default=(0, 1)))
         _grant_skills_to_target(
             guest,
             rng=rng,
@@ -1760,11 +1874,13 @@ def _grant_configured_extra_skills(
     granted_high_tier_count = 0
     if high_tier_chance > 0 and rng.random() < high_tier_chance:
         granted_high_tier_count = _range_value(rng, projection.get("high_tier_skills_per_guest"), default=(1, 1))
-    target_total = min(
-        int(GUEST.MAX_SKILL_SLOTS),
-        guest.guest_skills.count()
-        + granted_high_tier_count
-        + _range_value(rng, projection.get("extra_skills_per_guest"), default=(0, 0)),
+    target_total = _bounded_target(
+        min(
+            int(GUEST.MAX_SKILL_SLOTS),
+            existing_count
+            + granted_high_tier_count
+            + _range_value(rng, projection.get("extra_skills_per_guest"), default=(0, 0)),
+        )
     )
     _grant_skills_to_target(
         guest,
@@ -1797,25 +1913,44 @@ def _gear_template_power(template: GearTemplate) -> int:
     )
 
 
-def _gear_max_rarity_for_stage(growth_stage: int, config: dict[str, Any]) -> int:
-    projection = config.get("projection") or {}
-    configured = projection.get("gear_max_rarity_by_stage") or {}
+def _max_configured_rarity_rank(
+    growth_stage: int,
+    configured: Any,
+    rarity_ranks: dict[str, int],
+) -> int:
     if not isinstance(configured, dict):
-        configured = {}
+        return -1
+
     selected_rank = -1
-    selected_stage = -1
     for raw_stage, rarity in configured.items():
+        if isinstance(raw_stage, bool):
+            continue
         try:
             stage = int(raw_stage)
         except (TypeError, ValueError):
             continue
-        rank = GEAR_RARITY_RANK.get(str(rarity), -1)
-        if stage <= int(growth_stage) and stage >= selected_stage and rank >= 0:
-            selected_stage = stage
-            selected_rank = rank
+        rank = rarity_ranks.get(str(rarity), -1)
+        if 0 < stage <= int(growth_stage) and rank >= 0:
+            selected_rank = max(selected_rank, rank)
+    return selected_rank
+
+
+def _gear_max_rarity_for_stage(growth_stage: int, config: dict[str, Any]) -> int:
+    projection = config.get("projection") or {}
+    configured = projection.get("gear_max_rarity_by_stage") or {}
+    selected_rank = _max_configured_rarity_rank(growth_stage, configured, GEAR_RARITY_RANK)
     if selected_rank >= 0:
         return selected_rank
     return GEAR_RARITY_RANK[GuestRarity.GREEN]
+
+
+def _guest_max_rarity_for_stage(growth_stage: int, config: dict[str, Any]) -> int:
+    projection = config.get("projection") or {}
+    configured = projection.get("guest_max_rarity_by_stage") or {}
+    selected_rank = _max_configured_rarity_rank(growth_stage, configured, GUEST_RARITY_RANK)
+    if selected_rank >= 0:
+        return selected_rank
+    return GUEST_RARITY_RANK[GuestRarity.GREEN]
 
 
 def _remove_virtual_gear(guest: Guest, gear: GearItem, *, updates: set[str]) -> None:
@@ -1829,14 +1964,15 @@ def _reconcile_guest_gear(
     growth_stage: int,
     rng: random.Random,
     config: dict[str, Any],
-) -> None:
+    max_changes: int | None = None,
+) -> int:
     templates = [
         template
         for template in _configured_gear_templates(config)
         if _gear_rarity_rank(template) <= _gear_max_rarity_for_stage(growth_stage, config)
     ]
     if not templates:
-        return
+        return 0
 
     templates_by_slot: dict[str, list[GearTemplate]] = {}
     for template in templates:
@@ -1844,7 +1980,11 @@ def _reconcile_guest_gear(
     for candidates in templates_by_slot.values():
         rng.shuffle(candidates)
         candidates.sort(
-            key=lambda template: (_gear_rarity_rank(template), _gear_template_power(template)), reverse=True
+            key=lambda template: (
+                _gear_rarity_rank(template),
+                _gear_template_power(template),
+            ),
+            reverse=True,
         )
 
     existing_by_slot: dict[str, list[GearItem]] = {}
@@ -1852,7 +1992,10 @@ def _reconcile_guest_gear(
         existing_by_slot.setdefault(str(gear.template.slot), []).append(gear)
 
     updates = {"attack_bonus", "defense_bonus"}
+    changed = 0
     for slot in GearSlot:
+        if max_changes is not None and changed >= max(0, int(max_changes)):
+            break
         slot_key = slot.value
         capacity = slot_capacity(slot_key)
         candidates = templates_by_slot.get(slot_key, [])
@@ -1861,7 +2004,11 @@ def _reconcile_guest_gear(
         desired = candidates[:capacity]
         current = existing_by_slot.get(slot_key, [])
         current.sort(
-            key=lambda gear: (_gear_rarity_rank(gear.template), _gear_template_power(gear.template)), reverse=True
+            key=lambda gear: (
+                _gear_rarity_rank(gear.template),
+                _gear_template_power(gear.template),
+            ),
+            reverse=True,
         )
 
         kept: list[GearItem] = []
@@ -1874,12 +2021,18 @@ def _reconcile_guest_gear(
             kept.append(gear)
 
         for candidate in desired:
+            if max_changes is not None and changed >= max(0, int(max_changes)):
+                break
             if any(gear.template_id == candidate.id for gear in kept):
                 continue
             weaker = [gear for gear in kept if _gear_rarity_rank(gear.template) < _gear_rarity_rank(candidate)]
             if weaker:
                 replaced = min(
-                    weaker, key=lambda gear: (_gear_rarity_rank(gear.template), _gear_template_power(gear.template))
+                    weaker,
+                    key=lambda gear: (
+                        _gear_rarity_rank(gear.template),
+                        _gear_template_power(gear.template),
+                    ),
                 )
                 _remove_virtual_gear(guest, replaced, updates=updates)
                 kept.remove(replaced)
@@ -1887,12 +2040,14 @@ def _reconcile_guest_gear(
                 continue
             _equip_template(guest, candidate)
             kept.append(guest.gear_items.select_related("template").get(template=candidate))
+            changed += 1
 
     guest.save(update_fields=list(updates))
     apply_set_bonuses(guest)
     if guest.current_hp > guest.max_hp:
         guest.current_hp = guest.max_hp
         guest.save(update_fields=["current_hp"])
+    return changed
 
 
 def _configured_gear_templates(config: dict[str, Any]) -> list[GearTemplate]:
@@ -1940,6 +2095,100 @@ def _diverse_guest_templates(templates: list[GuestTemplate], *, rng: random.Rand
     return diversified
 
 
+def _configured_guest_templates(config: dict[str, Any]) -> list[GuestTemplate]:
+    guest_keys = _configured_model_keys(config, "guest_template_keys", GuestTemplate)
+    if not guest_keys:
+        return []
+    return list(GuestTemplate.objects.filter(key__in=guest_keys).order_by("key").prefetch_related("initial_skills"))
+
+
+def _promote_one_virtual_guest_rarity(
+    manor: Manor,
+    *,
+    growth_stage: int,
+    rng: random.Random,
+    config: dict[str, Any],
+    guest_rarity_cap: str | None = None,
+) -> bool:
+    templates = _configured_guest_templates(config)
+    if not templates:
+        return False
+    max_rank = _guest_max_rarity_for_stage(growth_stage, config)
+    if guest_rarity_cap is not None:
+        max_rank = GUEST_RARITY_RANK.get(str(guest_rarity_cap), max_rank)
+    owned_template_ids = set(manor.guests.values_list("template_id", flat=True))
+    guests = list(manor.guests.select_related("template").order_by("id"))
+    guests.sort(
+        key=lambda guest: (
+            GUEST_RARITY_RANK.get(str(guest.template.rarity), -1),
+            int(guest.level),
+            int(guest.id),
+        )
+    )
+    for guest in guests:
+        current_rank = GUEST_RARITY_RANK.get(str(guest.template.rarity), -1)
+        eligible = [
+            template
+            for template in templates
+            if current_rank < GUEST_RARITY_RANK.get(str(template.rarity), -1) <= max_rank
+        ]
+        if not eligible:
+            continue
+        next_rank = min(GUEST_RARITY_RANK[str(template.rarity)] for template in eligible)
+        candidates = [template for template in eligible if GUEST_RARITY_RANK[str(template.rarity)] == next_rank]
+        rng.shuffle(candidates)
+        candidates.sort(
+            key=lambda template: (
+                template.archetype != guest.template.archetype,
+                template.id in owned_template_ids,
+            )
+        )
+        target_template = candidates[0]
+        projected = create_guest_from_template(
+            manor=manor,
+            template=target_template,
+            rng=rng,
+            grant_skills=False,
+            save=False,
+        )
+        guest.template = target_template
+        for field_name in ("force", "intellect", "defense_stat", "agility", "luck"):
+            setattr(
+                guest,
+                field_name,
+                max(int(getattr(guest, field_name)), int(getattr(projected, field_name))),
+            )
+        for field_name in (
+            "initial_force",
+            "initial_intellect",
+            "initial_defense",
+            "initial_agility",
+        ):
+            setattr(
+                guest,
+                field_name,
+                max(int(getattr(guest, field_name)), int(getattr(projected, field_name))),
+            )
+        guest.save(
+            update_fields=[
+                "template",
+                "force",
+                "intellect",
+                "defense_stat",
+                "agility",
+                "luck",
+                "initial_force",
+                "initial_intellect",
+                "initial_defense",
+                "initial_agility",
+            ]
+        )
+        guest.current_hp = guest.max_hp
+        guest.save(update_fields=["current_hp"])
+        return True
+    return False
+
+
 def _project_guests_and_gear(
     manor: Manor,
     *,
@@ -1950,26 +2199,42 @@ def _project_guests_and_gear(
     archetype: str,
     growth_stage: int,
     grant_configured_skills: bool = True,
+    quality_enabled: bool = True,
 ) -> None:
-    guest_keys = _configured_model_keys(config, "guest_template_keys", GuestTemplate)
-    if not guest_keys or count <= 0:
+    if count <= 0:
         return
-    templates = list(
-        GuestTemplate.objects.filter(key__in=guest_keys).order_by("key").prefetch_related("initial_skills")
-    )
+    templates = _configured_guest_templates(config)
     if not templates:
         return
+    max_rarity_rank = _guest_max_rarity_for_stage(growth_stage, config)
+    templates = [
+        template for template in templates if GUEST_RARITY_RANK.get(str(template.rarity), -1) <= max_rarity_rank
+    ]
+    if not templates:
+        return
+    if not quality_enabled:
+        lowest_rank = min(GUEST_RARITY_RANK.get(str(template.rarity), -1) for template in templates)
+        templates = [
+            template for template in templates if GUEST_RARITY_RANK.get(str(template.rarity), -1) == lowest_rank
+        ]
     templates = _diverse_guest_templates(templates, rng=rng)
     for idx in range(max(0, int(count))):
         template = templates[idx % len(templates)]
-        guest = create_guest_from_template(manor=manor, template=template, rng=rng, grant_skills=True)
+        guest = create_guest_from_template(
+            manor=manor,
+            template=template,
+            rng=rng,
+            grant_skills=quality_enabled,
+        )
         guest.level = max(1, int(level))
         guest.current_hp = guest.max_hp
         guest.save(update_fields=["level", "current_hp"])
-        _grant_extra_template_skills(guest)
-        if grant_configured_skills:
+        if quality_enabled:
+            _grant_extra_template_skills(guest)
+        if quality_enabled and grant_configured_skills:
             _grant_configured_extra_skills(guest, growth_stage=growth_stage, rng=rng, config=config)
-        _reconcile_guest_gear(guest, growth_stage=growth_stage, rng=rng, config=config)
+        if quality_enabled:
+            _reconcile_guest_gear(guest, growth_stage=growth_stage, rng=rng, config=config)
 
 
 def _project_troops(manor: Manor, *, count: int, config: dict[str, Any]) -> None:
@@ -2014,7 +2279,10 @@ def _inventory_template_slot_count(archetype: str, config: dict[str, Any]) -> in
     if isinstance(configured, dict) and archetype in configured:
         return max(1, int(configured[archetype] or 1))
     default_slots = DEFAULT_VIRTUAL_PLAYER_CONFIG["projection"]["inventory_template_slots_by_archetype"]
-    return max(1, int(default_slots.get(archetype, default_slots[BotProfile.Archetype.BALANCED.value])))
+    return max(
+        1,
+        int(default_slots.get(archetype, default_slots[BotProfile.Archetype.BALANCED.value])),
+    )
 
 
 def _inventory_effect_weight(template: ItemTemplate, *, archetype: str, config: dict[str, Any]) -> int:
@@ -2493,6 +2761,7 @@ def create_virtual_player(
         config=config,
         archetype=str(archetype),
         growth_stage=int(starting_projection.building_level),
+        quality_enabled=not start_from_zero,
     )
     _project_troops(manor, count=max(0, int(starting_projection.troop_count)), config=config)
 
@@ -2652,7 +2921,16 @@ def _pay_maintained_bot_salaries(profile: BotProfile, *, now) -> None:
         )
 
 
-def _maintain_active_profile(profile: BotProfile, *, now, config: dict[str, Any]) -> None:
+def _maintain_active_profile(
+    profile: BotProfile,
+    *,
+    now,
+    config: dict[str, Any],
+    minimum_guest_count: int | None = None,
+    minimum_guest_level: int | None = None,
+    guest_rarity_cap: str | None = None,
+    max_guest_level_step: int | None = None,
+) -> None:
     rng = random.Random(profile.growth_seed + profile.growth_stage)
     manor = profile.manor
     before_building_level = max(1, int(profile.growth_stage))
@@ -2684,18 +2962,17 @@ def _maintain_active_profile(profile: BotProfile, *, now, config: dict[str, Any]
             max_step=max(1, int(growth.get("max_building_step") or 2)),
         ),
     )
-    target_guest_count = manor.guests.count()
-    current_guest_level = max([int(level) for level in manor.guests.values_list("level", flat=True)] or [1])
-    target_guest_level = current_guest_level
+    current_guest_count = manor.guests.count()
+    target_guest_count = current_guest_count
+    projected_guest_level = max([int(level) for level in manor.guests.values_list("level", flat=True)] or [1])
     if projection is not None:
-        target_guest_count = min(max(target_guest_count + 1, 1), max(target_guest_count, int(projection.guest_count)))
-        target_guest_level = bounded_approach(
-            current_guest_level,
-            max(current_guest_level, int(projection.guest_level)),
-            ratio=catch_up_ratio,
-            min_step=1,
-            max_step=max(1, int(growth.get("max_guest_level_step") or 3)),
-        )
+        target_guest_count = max(current_guest_count, int(projection.guest_count))
+        projected_guest_level = max(projected_guest_level, int(projection.guest_level))
+    if minimum_guest_count is not None:
+        target_guest_count = max(target_guest_count, max(0, int(minimum_guest_count)))
+    if minimum_guest_level is not None:
+        projected_guest_level = max(projected_guest_level, max(1, int(minimum_guest_level)))
+    quantity_phase = current_guest_count < target_guest_count
 
     _project_buildings(manor, level=target_building_level)
     _project_resources(manor, archetype=profile.archetype, rng=rng, config=config)
@@ -2710,7 +2987,14 @@ def _maintain_active_profile(profile: BotProfile, *, now, config: dict[str, Any]
     )
     manor.resource_updated_at = now
     manor.save(
-        update_fields=["silver_capacity", "grain_capacity", "silver", "grain", "prestige", "resource_updated_at"]
+        update_fields=[
+            "silver_capacity",
+            "grain_capacity",
+            "silver",
+            "grain",
+            "prestige",
+            "resource_updated_at",
+        ]
     )
     _sync_profile_prestige_band(profile, config=config)
     _project_technologies(manor, level=max(1, target_building_level // 2), config=config)
@@ -2719,19 +3003,74 @@ def _maintain_active_profile(profile: BotProfile, *, now, config: dict[str, Any]
         _project_guests_and_gear(
             manor,
             count=missing_guests,
-            level=target_guest_level,
+            level=INITIAL_BOT_GUEST_LEVEL,
             rng=rng,
             config=config,
             archetype=str(profile.archetype),
             growth_stage=target_building_level,
+            quality_enabled=False,
         )
-    for guest in manor.guests.all():
-        if guest.level < target_guest_level:
-            guest.level = target_guest_level
-            guest.current_hp = guest.max_hp
-            guest.save(update_fields=["level", "current_hp"])
-        _grant_configured_extra_skills(guest, growth_stage=target_building_level, rng=rng, config=config)
-        _reconcile_guest_gear(guest, growth_stage=target_building_level, rng=rng, config=config)
+    if not quantity_phase:
+        _promote_one_virtual_guest_rarity(
+            manor,
+            growth_stage=target_building_level,
+            rng=rng,
+            config=config,
+            guest_rarity_cap=guest_rarity_cap,
+        )
+        guest_level_step = (
+            max(1, int(growth.get("max_guest_level_step") or 3))
+            if max_guest_level_step is None
+            else max(1, int(max_guest_level_step))
+        )
+        for guest in manor.guests.select_related("template").order_by("id"):
+            target_level = bounded_approach(
+                int(guest.level),
+                max(int(guest.level), projected_guest_level),
+                ratio=catch_up_ratio,
+                min_step=1,
+                max_step=guest_level_step,
+            )
+            if guest.level < target_level:
+                levels_gained = target_level - int(guest.level)
+                apply_training_completion(
+                    guest,
+                    levels_gained=levels_gained,
+                    allocate_level_up_attributes_func=lambda current_guest, levels, _rng: allocate_level_up_attributes(
+                        current_guest,
+                        levels,
+                        rng,
+                    ),
+                )
+                guest.save(
+                    update_fields=[
+                        "level",
+                        "force",
+                        "intellect",
+                        "defense_stat",
+                        "agility",
+                        "attribute_points",
+                        "experience",
+                        "current_hp",
+                    ]
+                )
+            template_skills_added = _grant_extra_template_skills(guest, limit=1)
+            if template_skills_added == 0:
+                _grant_configured_extra_skills(
+                    guest,
+                    growth_stage=target_building_level,
+                    rng=rng,
+                    config=config,
+                    max_new_skills=1,
+                )
+            _reconcile_guest_gear(
+                guest,
+                growth_stage=target_building_level,
+                rng=rng,
+                config=config,
+                max_changes=1,
+            )
+    after_guest_level = max([int(level) for level in manor.guests.values_list("level", flat=True)] or [0])
     _pay_maintained_bot_salaries(profile, now=now)
     current_troop_count = int(manor.troops.aggregate(total=Sum("count"))["total"] or 0)
     projected_troop_count = (
@@ -2762,7 +3101,14 @@ def _maintain_active_profile(profile: BotProfile, *, now, config: dict[str, Any]
     profile.growth_stage = target_building_level
     profile.next_growth_at = _next_growth_time(now, profile, rng, config)
     profile.last_planned_at = now
-    profile.save(update_fields=["growth_stage", "next_growth_at", "last_planned_at", "updated_at"])
+    profile.save(
+        update_fields=[
+            "growth_stage",
+            "next_growth_at",
+            "last_planned_at",
+            "updated_at",
+        ]
+    )
     logger.info(
         "Virtual player maintained: manor_id=%s region=%s archetype=%s building=%s->%s prestige=%s->%s",
         manor.id,
@@ -2783,7 +3129,8 @@ def _maintain_active_profile(profile: BotProfile, *, now, config: dict[str, Any]
             "before_building_level": before_building_level,
             "after_building_level": target_building_level,
             "before_guest_level": before_guest_level,
-            "after_guest_level": target_guest_level,
+            "after_guest_level": after_guest_level,
+            "guest_growth_phase": "quantity" if quantity_phase else "quality",
             "before_troop_count": before_troop_count,
             "after_troop_count": target_troop_count,
             "before_prestige": before_prestige,
@@ -2797,6 +3144,10 @@ def accelerate_virtual_player_growth(
     profile_id: int,
     *,
     now=None,
+    minimum_guest_count: int | None = None,
+    minimum_guest_level: int | None = None,
+    guest_rarity_cap: str | None = None,
+    max_guest_level_step: int | None = None,
 ) -> AcceleratedGrowthOutcome:
     current_time = now or timezone.now()
     profile = (
@@ -2815,7 +3166,15 @@ def accelerate_virtual_player_growth(
         return AcceleratedGrowthOutcome.INELIGIBLE
 
     original_next_growth_at = profile.next_growth_at
-    _maintain_active_profile(profile, now=current_time, config=load_virtual_player_config())
+    _maintain_active_profile(
+        profile,
+        now=current_time,
+        config=load_virtual_player_config(),
+        minimum_guest_count=minimum_guest_count,
+        minimum_guest_level=minimum_guest_level,
+        guest_rarity_cap=guest_rarity_cap,
+        max_guest_level_step=max_guest_level_step,
+    )
     profile.refresh_from_db(fields=["next_growth_at"])
     if original_next_growth_at != profile.next_growth_at:
         profile.next_growth_at = original_next_growth_at
@@ -2891,7 +3250,14 @@ def _mark_profile_retired(profile: BotProfile, *, now) -> bool:
     profile.state = BotProfile.State.RETIRED
     profile.next_growth_at = now
     profile.maintenance_stopped_at = now
-    profile.save(update_fields=["state", "next_growth_at", "maintenance_stopped_at", "updated_at"])
+    profile.save(
+        update_fields=[
+            "state",
+            "next_growth_at",
+            "maintenance_stopped_at",
+            "updated_at",
+        ]
+    )
     return True
 
 
@@ -3242,7 +3608,14 @@ def _create_backfill_demanded_players(
             if demand_id > 0:
                 invalid_demand_ids.append(demand_id)
             continue
-        normalized_demands.append({"id": demand_id, "region": region, "prestige_band": band_name, "needed": needed})
+        normalized_demands.append(
+            {
+                "id": demand_id,
+                "region": region,
+                "prestige_band": band_name,
+                "needed": needed,
+            }
+        )
 
     if invalid_demand_ids:
         if ownership_guard is not None:

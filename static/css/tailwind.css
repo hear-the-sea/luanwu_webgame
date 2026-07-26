@@ -1816,7 +1816,7 @@
 .tw-modal-overlay {
   position: fixed;
   inset: 0px;
-  z-index: 1000;
+  z-index: 9500;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4661,6 +4661,9 @@
 }
 
 .tw-trade-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 0.375rem;
   border-width: 2px;
   background-color: var(--bg-card);
@@ -4668,12 +4671,16 @@
   padding-right: 1.25rem;
   padding-top: 0.625rem;
   padding-bottom: 0.625rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
   font-weight: 600;
+  line-height: 1;
   color: var(--text-secondary);
   text-decoration-line: none;
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+  min-height: 2.625rem;
   border-color: var(--border-light);
   box-shadow: 0 1px 3px rgba(74, 38, 18, 0.1);
 }
@@ -6323,6 +6330,10 @@
 
 .z-\[1000\] {
   z-index: 1000;
+}
+
+.z-\[9500\] {
+  z-index: 9500;
 }
 
 .col-span-full {

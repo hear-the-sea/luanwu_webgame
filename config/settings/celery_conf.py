@@ -220,7 +220,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "grow-arena-virtual-reserves": {
         "task": "gameplay.grow_arena_virtual_reserves",
-        "schedule": crontab(hour="*", minute=37),
+        "schedule": crontab(minute="1-59/5"),
     },
     "process-expired-market-listings": {
         "task": "trade.process_expired_listings",

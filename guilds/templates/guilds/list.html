@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}帮会列表{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
@@ -12,7 +12,6 @@
         </div>
         <div class="flex gap-2">
             <a href="{% url 'guilds:create' %}" class="tw-btn-primary">创建帮会</a>
-            <a href="{% url 'guilds:hall' %}" class="tw-btn-primary">返回大厅</a>
         </div>
     </div>
 
@@ -41,17 +40,18 @@
     <section class="tw-card tw-guild-section-spacing">
         <h2>帮会（{{ guilds.count }}）</h2>
         {% if guilds %}
-            <table class="tw-table">
+            <div class="tw-guild-table-wrap tw-guild-table-wrap--cards">
+            <table class="tw-table tw-guild-directory-table">
                 <thead>
                     <tr>
-                        <th>帮会名称</th>
-                        <th>帮主</th>
-                        <th>等级</th>
+                        <th scope="col">帮会名称</th>
+                        <th scope="col">帮主</th>
+                        <th scope="col">等级</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for guild in guilds %}
-                    <tr class="tw-guild-table-row-clickable" onclick="window.location.href='{% url 'guilds:detail' guild.id %}'">
+                    <tr>
                         <td>
                             <a href="{% url 'guilds:detail' guild.id %}" class="tw-guild-name-link">{{ guild.name }}</a>
                         </td>
@@ -61,8 +61,12 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
         {% else %}
-            <p class="tw-muted">未找到符合条件的帮会</p>
+            <div class="tw-guild-empty-state">
+                <strong>未找到符合条件的帮会</strong>
+                <p>调整搜索名称或排序方式后再试。</p>
+            </div>
         {% endif %}
     </section>
 </section>

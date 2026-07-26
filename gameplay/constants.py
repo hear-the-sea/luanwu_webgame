@@ -145,10 +145,7 @@ class PVPConstants:
     LOOT_MIN_CAP_RATIO = 0.08  # 低配出征最低搬运上限比例
     LOOT_SURVIVAL_BASE_RATIO = 0.35  # 战损后最低可带回比例
     LOOT_SURVIVAL_SCALING_RATIO = 0.65  # 护院存活率影响的可带回比例
-    LOOT_ITEM_BASE_CHANCE = 0.20  # 物品掠夺基础概率20%
-    LOOT_ITEM_MAX_COUNT = 3  # 每次最多掠夺3种物品
     LOOT_ITEM_MAX_QUANTITY_PERCENT = 0.20  # 全部可掠夺道具总件数最多掠夺20%
-    LOOT_ITEM_MAX_QUANTITY = 5  # 每件物品最多掠夺5个
 
     # 装备回收
     EQUIPMENT_RECOVERY_CHANCE = 0.20  # 装备回收概率20%
@@ -170,17 +167,6 @@ class PVPConstants:
     RELOCATION_COST_NORMAL = 3  # 一般
     RELOCATION_COST_RICH = 6  # 充裕
     RELOCATION_COST_WEALTHY = 10  # 富足
-
-    # 物品稀有度掠夺系数
-    RARITY_LOOT_MULTIPLIER = {
-        "black": 1.0,
-        "gray": 0.8,
-        "green": 0.5,
-        "red": 0.35,
-        "blue": 0.2,
-        "purple": 0.1,
-        "orange": 0.05,
-    }
 
     # 经验果稀有度系数
     RARITY_EXP_MULTIPLIER = {

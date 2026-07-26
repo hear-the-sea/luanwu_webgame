@@ -13,6 +13,7 @@ function createWarehouseTestEnv({
   confirmResult = true,
   useGameConfirm = true,
   useGameDialogConfirm = true,
+  fetchPayloads = [{ success: true, message: "操作成功" }],
 } = {}) {
   const source = readScript("warehouse-page.js");
   const listeners = new Map();
@@ -137,11 +138,17 @@ function createWarehouseTestEnv({
     sessionStorage,
     FormData: function FakeFormData(target) {
       this.target = target;
+      this.values = new Map();
+      this.set = (key, value) => this.values.set(key, String(value));
+      this.get = (key) => this.values.get(key) ?? null;
+      this.append = (key, value) => this.values.set(key, String(value));
     },
     fetch(url, options) {
+      const responseIndex = calls.fetch.length;
       calls.fetch.push({ url, options });
+      const payload = fetchPayloads[responseIndex] || fetchPayloads[fetchPayloads.length - 1];
       return Promise.resolve({
-        json: () => Promise.resolve({ success: true, message: "操作成功" }),
+        json: () => Promise.resolve(payload),
       });
     },
     alert() {},
@@ -230,4 +237,96 @@ test("warehouse page falls back to gameDialog.confirm when gameConfirm is unavai
   assert.equal(env.calls.gameConfirm.length, 0);
   assert.equal(env.calls.dialogConfirm.length, 1);
   assert.equal(env.calls.fetch.length, 1);
+});
+
+test("warehouse page retries with explicit confirmation when resources would overflow", async () => {
+  const env = createWarehouseTestEnv({
+    confirmText: "",
+    confirmResult: true,
+    fetchPayloads: [
+      {
+        success: false,
+        requires_confirmation: true,
+        confirmation_type: "resource_overflow",
+        confirmation_title: "资源溢出确认",
+        confirmation_message: "银两+500将因容量上限无法获得，道具仍会消耗1个。",
+        confirmation_ok_text: "仍然使用",
+        confirmation_token: "signed-snapshot-1",
+      },
+      { success: true, message: "实际获得：无；因容量上限未获得：银两+500" },
+    ],
+  });
+
+  env.runWarehouseScript();
+  await env.dispatchSubmit();
+
+  assert.equal(env.calls.gameConfirm.length, 1);
+  assert.equal(env.calls.gameConfirm[0].options.title, "资源溢出确认");
+  assert.equal(env.calls.gameConfirm[0].options.okText, "仍然使用");
+  assert.equal(env.calls.gameConfirm[0].options.danger, true);
+  assert.equal(env.calls.fetch.length, 2);
+  assert.equal(env.calls.fetch[1].options.body.get("resource_overflow_confirmation"), "signed-snapshot-1");
+  assert.equal(env.calls.success.length, 1);
+  assert.equal(env.calls.reload, 1);
+});
+
+test("warehouse page keeps the resource pack when overflow confirmation is cancelled", async () => {
+  const env = createWarehouseTestEnv({
+    confirmText: "",
+    confirmResult: false,
+    fetchPayloads: [
+      {
+        success: false,
+        requires_confirmation: true,
+        confirmation_type: "resource_overflow",
+        confirmation_message: "资源将溢出。",
+        confirmation_token: "signed-snapshot-1",
+      },
+    ],
+  });
+
+  env.runWarehouseScript();
+  await env.dispatchSubmit();
+
+  assert.equal(env.calls.gameConfirm.length, 1);
+  assert.equal(env.calls.fetch.length, 1);
+  assert.equal(env.calls.success.length, 0);
+  assert.equal(env.calls.error.length, 0);
+  assert.equal(env.calls.reload, 0);
+  assert.equal(env.submitButton.disabled, false);
+  assert.equal(env.submitButton.textContent, "使用");
+});
+
+test("warehouse page asks again when the server refreshes a stale overflow snapshot", async () => {
+  const env = createWarehouseTestEnv({
+    confirmText: "",
+    confirmResult: true,
+    fetchPayloads: [
+      {
+        success: false,
+        requires_confirmation: true,
+        confirmation_type: "resource_overflow",
+        confirmation_message: "将损失银两+300。",
+        confirmation_token: "signed-snapshot-1",
+      },
+      {
+        success: false,
+        requires_confirmation: true,
+        confirmation_type: "resource_overflow",
+        confirmation_message: "资源状态已变化，将损失银两+400。",
+        confirmation_token: "signed-snapshot-2",
+      },
+      { success: true, message: "实际获得：银两+100；因容量上限未获得：银两+400" },
+    ],
+  });
+
+  env.runWarehouseScript();
+  await env.dispatchSubmit();
+
+  assert.equal(env.calls.gameConfirm.length, 2);
+  assert.equal(env.calls.gameConfirm[1].message, "资源状态已变化，将损失银两+400。");
+  assert.equal(env.calls.fetch.length, 3);
+  assert.equal(env.calls.fetch[2].options.body.get("resource_overflow_confirmation"), "signed-snapshot-2");
+  assert.equal(env.calls.success.length, 1);
+  assert.equal(env.calls.reload, 1);
 });

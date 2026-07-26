@@ -45,8 +45,8 @@ SOUL_FUSION_RESULT_CONFIG: dict[str, dict[str, object]] = {
         "description": "南方苗人的圣物，融合顶级绿色门客的灵魂，能给佩戴者带来不可思议的能力。",
         "rarity": GuestRarity.GREEN,
         "price": 36000,
-        "stat_total_range": (47, 59),
-        "hp_range": (135, 215),
+        "stat_total_range": (48, 65),
+        "hp_range": (800, 1600),
         "stat_floor": {"force": 13, "intellect": 12, "agility": 13, "luck": 10},
     },
     GuestRarity.BLUE: {
@@ -55,8 +55,8 @@ SOUL_FUSION_RESULT_CONFIG: dict[str, dict[str, object]] = {
         "description": "由北冥永不融化的冰珠串起来，并融合了蓝色精英门客的灵魂，拥有冰封十里的威能。",
         "rarity": GuestRarity.BLUE,
         "price": 98000,
-        "stat_total_range": (65, 81),
-        "hp_range": (215, 325),
+        "stat_total_range": (67, 85),
+        "hp_range": (1500, 2500),
         "stat_floor": {"force": 15, "intellect": 13, "agility": 15, "luck": 11},
     },
     GuestRarity.PURPLE: {
@@ -68,8 +68,8 @@ SOUL_FUSION_RESULT_CONFIG: dict[str, dict[str, object]] = {
         ),
         "rarity": GuestRarity.PURPLE,
         "price": 220000,
-        "stat_total_range": (87, 105),
-        "hp_range": (305, 425),
+        "stat_total_range": (87, 110),
+        "hp_range": (2600, 3500),
         "stat_floor": {"force": 17, "intellect": 15, "agility": 17, "luck": 13},
     },
 }

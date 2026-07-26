@@ -743,7 +743,7 @@ missions:
       experience_pineapple:
         chance: 0.99
         count: 20  # TODO: 替换为经验西瓜
-      equip_huxianjian: 0.1
+      equip_huxianjian: 0.05
       equip_huxianpao: 0.1
       equip_huxianxie: 0.1
 

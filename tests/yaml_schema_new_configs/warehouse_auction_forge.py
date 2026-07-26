@@ -37,6 +37,12 @@ def test_warehouse_production_accepts_guard_tech_key():
     assert result.is_valid, result.errors
 
 
+def test_warehouse_production_accepts_mysticism_tech_key():
+    data = {"mysticism": {"levels": {1: [{"item_key": "soul_container", "quantity": 1, "contribution_cost": 1000}]}}}
+    result = validate_warehouse_production(data)
+    assert result.is_valid, result.errors
+
+
 def test_warehouse_production_rejects_negative_weekly_personal_limit():
     data = {
         "equipment": {

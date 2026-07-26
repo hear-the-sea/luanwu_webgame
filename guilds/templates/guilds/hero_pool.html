@@ -1,20 +1,17 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static guest_extras %}
 
 {% block title %}帮会门客池 - {{ guild.name }}{% endblock %}
 
-{% block extra_head %}
+{% block guild_extra_head %}
 <link rel="stylesheet" href="{% static 'css/guild-hero-pool.css' %}">
 {% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard ghp-page">
     <div class="tw-section-header">
         <div>
             <h1>帮会门客池</h1>
-        </div>
-        <div class="flex gap-2">
-            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
         </div>
     </div>
 
@@ -237,5 +234,6 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{{ block.super }}
 <script src="{% static 'js/guild-hero-pool.js' %}"></script>
 {% endblock %}

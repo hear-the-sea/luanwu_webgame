@@ -45,7 +45,7 @@ def test_guild_mission_page_renders_tabbed_task_list_without_troop_pool(guild_me
     assert "帮会护院池" not in body
     assert "当前帮会出征" not in body
     assert "当前上阵门客" not in body
-    assert "门客池" not in body
+    assert 'class="ghp-layout"' not in body
     assert "详情" in body
     assert "门客" in body
 

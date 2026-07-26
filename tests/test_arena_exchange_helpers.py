@@ -1,7 +1,8 @@
-from datetime import date
+from datetime import date, datetime, timedelta
 
 import pytest
 from django.db import DatabaseError
+from django.utils import timezone
 
 from core.exceptions import ArenaExchangeError, MessageError
 from gameplay.services.arena.exchange_helpers import (
@@ -15,6 +16,7 @@ from gameplay.services.arena.exchange_helpers import (
     select_weekly_blueprint_key,
     send_exchange_success_message,
 )
+from gameplay.services.arena.helpers import current_week_bounds
 from gameplay.services.arena.rewards import ArenaRotatingBlueprintPool
 
 
@@ -80,6 +82,17 @@ def test_select_weekly_blueprint_key_uses_iso_week_rotation():
     assert select_weekly_blueprint_key(pool, today=date.fromisocalendar(2026, 2, 1)) == "blueprint_rotation_b"
     assert select_weekly_blueprint_key(pool, today=date.fromisocalendar(2026, 4, 1)) == "blueprint_rotation_d"
     assert select_weekly_blueprint_key(pool, today=date.fromisocalendar(2026, 5, 1)) == "blueprint_rotation_a"
+
+
+def test_current_week_bounds_use_local_monday_boundary():
+    now = timezone.make_aware(datetime(2026, 7, 22, 15, 30), timezone.get_current_timezone())
+
+    start, end = current_week_bounds(now=now)
+
+    assert start.date() == date(2026, 7, 20)
+    assert end.date() == date(2026, 7, 27)
+    assert (start.hour, start.minute, start.second) == (0, 0, 0)
+    assert end - start == timedelta(days=7)
 
 
 def test_grant_exchange_items_locked_merges_grants_and_calls_inventory_writer():

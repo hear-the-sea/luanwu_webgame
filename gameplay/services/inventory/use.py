@@ -19,9 +19,10 @@ from core.exceptions import (
     ItemNotConfiguredError,
     ItemNotFoundError,
     ItemNotUsableError,
+    ItemResourceOverflowConfirmationRequired,
 )
 from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent, ResourceType
-from gameplay.services.resources import grant_resources, grant_resources_locked
+from gameplay.services.resources import grant_resources, grant_resources_locked, preview_resource_grant
 
 from .core import add_item_to_inventory, consume_inventory_item_for_manor_locked, consume_inventory_item_locked
 from .guest_items import (  # noqa: F401
@@ -219,16 +220,22 @@ def _consume_required_items_locked(manor: Manor, payload: dict[str, Any]) -> Non
         consume_inventory_item_for_manor_locked(manor, normalized_key, amount)
 
 
-def _grant_item_resources(manor: Manor, payload: dict[str, int], note: str) -> dict[str, int]:
+def _grant_item_resources(
+    manor: Manor,
+    payload: dict[str, int],
+    note: str,
+) -> tuple[dict[str, int], dict[str, int]]:
     if transaction.get_connection().in_atomic_block:
-        credited_raw, _overflow = grant_resources_locked(
+        credited_raw, overflow_raw = grant_resources_locked(
             manor,
             payload,
             note,
             ResourceEvent.Reason.ITEM_USE,
             sync_production=False,
         )
-        return _normalize_granted_resource_mapping(credited_raw, contract_name="inventory resource grant result")
+        credited = _normalize_granted_resource_mapping(credited_raw, contract_name="inventory resource grant result")
+        overflow = _normalize_granted_resource_mapping(overflow_raw, contract_name="inventory resource overflow result")
+        return credited, overflow
     credited_raw = grant_resources(
         manor,
         payload,
@@ -236,11 +243,58 @@ def _grant_item_resources(manor: Manor, payload: dict[str, int], note: str) -> d
         ResourceEvent.Reason.ITEM_USE,
         sync_production=False,
     )
-    return _normalize_granted_resource_mapping(credited_raw, contract_name="inventory resource grant result")
+    credited = _normalize_granted_resource_mapping(credited_raw, contract_name="inventory resource grant result")
+    overflow = {
+        resource: amount - credited.get(resource, 0)
+        for resource, amount in payload.items()
+        if amount > credited.get(resource, 0)
+    }
+    return credited, overflow
 
 
 def _format_resource_parts(resources: dict[str, int]) -> list[str]:
     return [f"{RESOURCE_LABELS.get(key, '未知资源')}+{value}" for key, value in resources.items()]
+
+
+def _format_resource_grant_message(credited: dict[str, int], overflow: dict[str, int]) -> str:
+    credited_text = "、".join(_format_resource_parts(credited)) if credited else "无"
+    message = f"实际获得：{credited_text}"
+    if overflow:
+        message += f"；因容量上限未获得：{'、'.join(_format_resource_parts(overflow))}"
+    return message
+
+
+def _build_resource_overflow_confirmation_message(
+    *,
+    item_name: str,
+    requested: dict[str, int],
+    credited: dict[str, int],
+    overflow: dict[str, int],
+) -> str:
+    requested_text = "、".join(_format_resource_parts(requested))
+    credited_text = "、".join(_format_resource_parts(credited)) if credited else "无"
+    overflow_text = "、".join(_format_resource_parts(overflow))
+    return (
+        f"「{item_name}」包含：{requested_text}。"
+        f"当前可实际获得：{credited_text}；因容量上限将无法获得：{overflow_text}。"
+        "道具仍会消耗1个，是否继续使用？"
+    )
+
+
+def _build_resource_overflow_confirmation_snapshot(
+    item: InventoryItem,
+    requested: dict[str, int],
+    credited: dict[str, int],
+    overflow: dict[str, int],
+) -> dict[str, object]:
+    return {
+        "item_id": item.pk,
+        "manor_id": item.manor_id,
+        "item_quantity": item.quantity,
+        "requested_resources": requested,
+        "credited_resources": credited,
+        "overflow_resources": overflow,
+    }
 
 
 def _normalize_probability(value: Any, *, field_name: str) -> float:
@@ -311,11 +365,16 @@ def _apply_resource_pack(item: InventoryItem) -> Dict[str, Any]:
     )
     if not normalized_payload:
         raise ItemNotConfiguredError()
-    granted_resources = _grant_item_resources(item.manor, normalized_payload, item.template.name)
-    parts = _format_resource_parts(granted_resources)
+    granted_resources, overflow_resources = _grant_item_resources(
+        item.manor,
+        normalized_payload,
+        item.template.name,
+    )
     return {
         **granted_resources,
-        "_message": f"获得 {'、'.join(parts)}",
+        "credited_resources": granted_resources,
+        "overflow_resources": overflow_resources,
+        "_message": _format_resource_grant_message(granted_resources, overflow_resources),
     }
 
 
@@ -421,7 +480,7 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
     # 1. 固定资源掉落（可选）
     resources = _normalize_resource_reward_mapping(payload.get("resources"), field_name="resources")
     if resources:
-        result = _grant_item_resources(manor, resources, item.template.name)
+        result, _overflow = _grant_item_resources(manor, resources, item.template.name)
         parts = _format_resource_parts(result)
         rewards.append("资源：" + "、".join(parts))
 
@@ -501,7 +560,11 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
 
         rolled_silver = inventory_random.randint(silver_min, silver_max)
         if rolled_silver > 0:
-            silver_result = _grant_item_resources(manor, {"silver": rolled_silver}, item.template.name)
+            silver_result, _overflow = _grant_item_resources(
+                manor,
+                {"silver": rolled_silver},
+                item.template.name,
+            )
             granted_silver = silver_result.get("silver", 0)
             if granted_silver > 0:
                 rewards.append(f"银两+{granted_silver}")
@@ -592,13 +655,19 @@ ITEM_EFFECT_HANDLERS: dict[str, ItemEffectHandler] = {
 
 
 @transaction.atomic
-def use_inventory_item(item: InventoryItem, manor: Manor | None = None) -> Dict[str, Any]:
+def use_inventory_item(
+    item: InventoryItem,
+    manor: Manor | None = None,
+    *,
+    resource_overflow_confirmation: dict[str, object] | None = None,
+) -> Dict[str, Any]:
     """
     使用背包物品（仓库可用）。
 
     Args:
         item: 要使用的物品实例
         manor: 庄园实例（可选，用于安全校验）
+        resource_overflow_confirmation: 已确认的资源发放快照
 
     Returns:
         使用效果摘要字典
@@ -641,6 +710,38 @@ def use_inventory_item(item: InventoryItem, manor: Manor | None = None) -> Dict[
 
     handler = ITEM_EFFECT_HANDLERS.get(template.effect_type)
     if handler:
+        if template.effect_type == ItemTemplate.EffectType.RESOURCE_PACK:
+            requested_resources = _normalize_resource_reward_mapping(
+                _require_effect_payload_dict(locked_item),
+                field_name="effect_payload",
+            )
+            if not requested_resources:
+                raise ItemNotConfiguredError()
+            credited_resources, overflow_resources = preview_resource_grant(
+                locked_item.manor,
+                requested_resources,
+            )
+            if overflow_resources:
+                confirmation_snapshot = _build_resource_overflow_confirmation_snapshot(
+                    locked_item,
+                    requested_resources,
+                    credited_resources,
+                    overflow_resources,
+                )
+                if resource_overflow_confirmation != confirmation_snapshot:
+                    raise ItemResourceOverflowConfirmationRequired(
+                        template.name,
+                        requested_resources,
+                        credited_resources,
+                        overflow_resources,
+                        confirmation_snapshot,
+                        message=_build_resource_overflow_confirmation_message(
+                            item_name=template.name,
+                            requested=requested_resources,
+                            credited=credited_resources,
+                            overflow=overflow_resources,
+                        ),
+                    )
         effect_summary = handler(locked_item)
     else:
         effect_type = template.effect_type or ""

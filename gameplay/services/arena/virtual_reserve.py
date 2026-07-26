@@ -32,7 +32,7 @@ from gameplay.services.virtual_players import (
     reactivate_virtual_player_profile,
     virtual_player_prestige_bands,
 )
-from guests.models import Guest, GuestStatus
+from guests.models import Guest, GuestRarity, GuestStatus
 
 from .virtual_backfill import (
     _lineup_power,
@@ -48,7 +48,11 @@ logger = logging.getLogger(__name__)
 RESERVE_MULTIPLIER = 3
 RESERVE_MINIMUM = 6
 PARTICIPATION_COOLDOWN = timedelta(hours=24)
-MAX_ACCELERATED_GROWTH_ROUNDS = 6
+MAX_ACCELERATED_GROWTH_ROUNDS = 8
+ARENA_MAX_GUEST_LEVEL_STEP = 20
+PRE_FILL_GROWTH_INTERVAL = timedelta(hours=1)
+POST_FILL_GROWTH_INTERVAL = timedelta(minutes=15)
+_GUEST_RARITY_RANK = {rarity.value: index for index, rarity in enumerate(GuestRarity)}
 
 
 @dataclass(frozen=True)
@@ -58,6 +62,13 @@ class ReserveReplenishmentResult:
     recovered_abandoned: int
     recovered_retired: int
     creation_needed: int
+
+
+@dataclass(frozen=True)
+class ArenaVirtualGrowthTarget:
+    minimum_guest_count: int
+    minimum_guest_level: int
+    guest_rarity_cap: str | None
 
 
 class _AtomicFillAborted(RuntimeError):
@@ -130,6 +141,64 @@ def _reserve_target(missing: int) -> int:
     return 0 if normalized == 0 else max(normalized * RESERVE_MULTIPLIER, RESERVE_MINIMUM)
 
 
+def _reference_snapshots_for_demand(demand: ArenaVirtualDemand) -> list[dict]:
+    real_entries: Sequence[ArenaEntry | ArenaCoopEntry]
+    if demand.tournament_id is not None:
+        real_entries = list(
+            ArenaEntry.objects.filter(
+                tournament_id=demand.tournament_id,
+                status=ArenaEntry.Status.REGISTERED,
+                source=ArenaEntry.Source.PLAYER,
+            ).prefetch_related("entry_guests")
+        )
+    else:
+        real_entries = list(
+            ArenaCoopEntry.objects.filter(
+                event_id=demand.coop_event_id,
+                status=ArenaCoopEntry.Status.REGISTERED,
+                source=ArenaCoopEntry.Source.PLAYER,
+            ).prefetch_related("entry_guests")
+        )
+    if not real_entries:
+        return []
+    snapshots = _reference_snapshots(_median_entry(real_entries))
+    return snapshots[: max(0, int(demand.target_guest_count))]
+
+
+def _growth_target_for_demand(demand: ArenaVirtualDemand) -> ArenaVirtualGrowthTarget:
+    snapshots = _reference_snapshots_for_demand(demand)
+    guest_levels: list[int] = []
+    guest_rarities: list[str] = []
+    for snapshot in snapshots:
+        try:
+            guest_levels.append(max(1, int(snapshot.get("level") or 1)))
+        except (TypeError, ValueError):
+            guest_levels.append(1)
+        rarity = str(snapshot.get("rarity") or "")
+        if rarity in _GUEST_RARITY_RANK:
+            guest_rarities.append(rarity)
+    rarity_cap = max(guest_rarities, key=_GUEST_RARITY_RANK.__getitem__) if guest_rarities else None
+    return ArenaVirtualGrowthTarget(
+        minimum_guest_count=max(int(demand.target_guest_count), len(snapshots)),
+        minimum_guest_level=max(guest_levels, default=1),
+        guest_rarity_cap=rarity_cap,
+    )
+
+
+def _demand_fill_at(demand: ArenaVirtualDemand):
+    event = demand.tournament if demand.tournament_id is not None else demand.coop_event
+    return event.virtual_fill_at if event is not None else None
+
+
+def _demand_fill_is_due(demand: ArenaVirtualDemand, *, now) -> bool:
+    fill_at = _demand_fill_at(demand)
+    return fill_at is not None and fill_at <= now
+
+
+def _growth_interval_for_demand(demand: ArenaVirtualDemand, *, now) -> timedelta:
+    return POST_FILL_GROWTH_INTERVAL if _demand_fill_is_due(demand, now=now) else PRE_FILL_GROWTH_INTERVAL
+
+
 def close_virtual_demand_locked(demand: ArenaVirtualDemand, *, status: str) -> None:
     demand.reserve_members.all().delete()
     demand.status = status
@@ -165,7 +234,10 @@ def _reevaluate_existing_members(demand: ArenaVirtualDemand, *, now) -> None:
             continue
         member.evaluated_version = demand.version
         member.last_checked_at = now
-        if member.state == ArenaVirtualReserveMember.State.EXHAUSTED:
+        if (
+            member.state == ArenaVirtualReserveMember.State.EXHAUSTED
+            and member.accelerated_growth_rounds >= MAX_ACCELERATED_GROWTH_ROUNDS
+        ):
             member.save(update_fields=["evaluated_version", "last_checked_at", "updated_at"])
             continue
 
@@ -183,6 +255,8 @@ def _reevaluate_existing_members(demand: ArenaVirtualDemand, *, now) -> None:
         elif evaluation.snapshots and member.accelerated_growth_rounds < MAX_ACCELERATED_GROWTH_ROUNDS:
             member.state = ArenaVirtualReserveMember.State.TRAINING
             member.next_acceleration_at = member.next_acceleration_at or now
+            if _demand_fill_is_due(demand, now=now) and member.next_acceleration_at > now + POST_FILL_GROWTH_INTERVAL:
+                member.next_acceleration_at = now
         elif evaluation.snapshots:
             member.state = ArenaVirtualReserveMember.State.EXHAUSTED
             member.next_acceleration_at = None
@@ -469,11 +543,18 @@ def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
         .values_list("id", flat=True)[: max(0, int(limit))]
     )
     processed = 0
+    growth_targets: dict[int, ArenaVirtualGrowthTarget] = {}
     for member_id in member_ids:
         with transaction.atomic():
             member = (
                 ArenaVirtualReserveMember.objects.select_for_update(skip_locked=True)
-                .select_related("demand", "profile", "profile__manor")
+                .select_related(
+                    "demand",
+                    "demand__tournament",
+                    "demand__coop_event",
+                    "profile",
+                    "profile__manor",
+                )
                 .filter(
                     pk=member_id,
                     state=ArenaVirtualReserveMember.State.TRAINING,
@@ -487,9 +568,17 @@ def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
 
             power_before = int(member.current_lineup_power)
             exhausted_reason = ""
+            growth_target = growth_targets.get(member.demand_id)
+            if growth_target is None:
+                growth_target = _growth_target_for_demand(member.demand)
+                growth_targets[member.demand_id] = growth_target
             growth_outcome = accelerate_virtual_player_growth(
                 member.profile_id,
                 now=current_time,
+                minimum_guest_count=growth_target.minimum_guest_count,
+                minimum_guest_level=growth_target.minimum_guest_level,
+                guest_rarity_cap=growth_target.guest_rarity_cap,
+                max_guest_level_step=ARENA_MAX_GUEST_LEVEL_STEP,
             )
             if growth_outcome is AcceleratedGrowthOutcome.BUSY:
                 member.next_acceleration_at = current_time + timedelta(minutes=5)
@@ -564,7 +653,10 @@ def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
                 member.next_acceleration_at = None
                 exhausted_reason = "growth_round_limit"
             else:
-                member.next_acceleration_at = current_time + timedelta(hours=1)
+                member.next_acceleration_at = current_time + _growth_interval_for_demand(
+                    member.demand,
+                    now=current_time,
+                )
             member.last_checked_at = current_time
             member.save(
                 update_fields=[

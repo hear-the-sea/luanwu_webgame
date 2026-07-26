@@ -19,9 +19,22 @@ pytestmark = pytest.mark.django_db
 
 def test_price_limits():
     """Test that price limits are correctly defined."""
+    assert market_service.MARKET_MIN_PRESTIGE == 300
     assert market_service.MIN_PRICE_MULTIPLIER == 1.0
     assert market_service.MAX_PRICE == 10000000
     assert market_service.MAX_TOTAL_PRICE == 2000000000
+
+
+def test_market_prestige_requirement_includes_exact_threshold():
+    below_threshold = SimpleNamespace(prestige=market_service.MARKET_MIN_PRESTIGE - 1)
+    at_threshold = SimpleNamespace(prestige=market_service.MARKET_MIN_PRESTIGE)
+
+    assert market_service.can_buy_or_list_on_market(below_threshold) is False
+    with pytest.raises(TradeValidationError, match="声望达到 300"):
+        market_service.validate_market_buy_or_list_access(below_threshold)
+
+    assert market_service.can_buy_or_list_on_market(at_threshold) is True
+    market_service.validate_market_buy_or_list_access(at_threshold)
 
 
 def test_allowed_listing_order_by_fields():

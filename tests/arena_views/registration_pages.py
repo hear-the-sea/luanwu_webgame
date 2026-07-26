@@ -14,7 +14,9 @@ from gameplay.models import (
     ArenaEntry,
     ArenaEntryGuest,
     ArenaTournament,
+    ItemTemplate,
 )
+from gameplay.services.buildings.blueprint_catalog import BlueprintCatalogEntry
 from gameplay.services.manor.core import ensure_manor
 from guests.models import GuestStatus
 from tests.arena_views.helpers import _build_guest, _build_guest_template, _ensure_gladiator_item_templates
@@ -53,6 +55,37 @@ def test_arena_registration_page_lists_guangming_top_card(arena_client):
     assert quote("images/buildings/竞技场.webp") in body
     assert quote("images/buildings/围攻光明顶.webp") in body
     assert "报名围攻光明顶" not in body
+
+
+@pytest.mark.django_db
+def test_arena_registration_page_labels_future_coop_fill_as_estimated(arena_client):
+    client, _manor = arena_client
+    ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.RECRUITING,
+        virtual_fill_at=timezone.now() + timedelta(hours=1),
+    )
+
+    response = client.get(reverse("gameplay:arena"))
+
+    body = response.content.decode("utf-8")
+    assert "预计系统补位：" in body
+    assert "系统补位截止" not in body
+
+
+@pytest.mark.django_db
+def test_arena_registration_page_labels_due_coop_fill_as_in_progress(arena_client):
+    client, _manor = arena_client
+    ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.RECRUITING,
+        virtual_fill_at=timezone.now() - timedelta(minutes=1),
+    )
+
+    response = client.get(reverse("gameplay:arena"))
+
+    body = response.content.decode("utf-8")
+    assert "系统正在补位" in body
+    assert "系统补位截止" not in body
+    assert "data-countdown" not in body
 
 
 @pytest.mark.django_db
@@ -166,7 +199,15 @@ def test_arena_exchange_page_view_renders(arena_client):
     response = client.get(reverse("gameplay:arena_exchange_page"))
 
     assert response.status_code == 200
-    assert "奖励兑换" in response.content.decode("utf-8")
+    body = response.content.decode("utf-8")
+    assert "奖励兑换" in body
+    assert "随机蓝色装备图纸" in body
+    assert "随机紫色装备图纸" in body
+    assert "武林宝箱" in body
+    assert "周限 2" in body
+    assert "查看随机奖励概率" not in body
+    assert "48%" not in body
+    assert "30%" not in body
 
 
 @pytest.mark.django_db
@@ -207,7 +248,9 @@ def test_arena_coop_register_view_creates_entry(arena_client):
 
 
 @pytest.mark.django_db
-def test_arena_registration_page_shows_preparing_coop_without_cancel_action(arena_client):
+def test_arena_registration_page_shows_preparing_coop_without_cancel_action(
+    arena_client,
+):
     client, manor = arena_client
     event = ArenaCoopEvent.objects.create(
         status=ArenaCoopEvent.Status.PREPARING,
@@ -339,6 +382,42 @@ def test_arena_exchange_view_shows_drawn_gladiator_item(arena_client, monkeypatc
     assert response.status_code == 200
     body = response.content.decode("utf-8")
     assert "本次抽到：角斗士头盔×1" in body
+
+
+@pytest.mark.django_db
+def test_arena_exchange_view_shows_drawn_random_blueprint(arena_client, monkeypatch):
+    client, manor = arena_client
+    blueprint_key = "blueprint_arena_view_random_blue"
+    ItemTemplate.objects.create(
+        key=blueprint_key,
+        name="随机青锋剑图纸",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        rarity="blue",
+        tradeable=True,
+        is_usable=False,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.arena.exchange_helpers.load_blueprint_catalog",
+        lambda: {
+            blueprint_key: BlueprintCatalogEntry(
+                key=blueprint_key,
+                rarity="blue",
+                result_key="equip_arena_view_random_blue",
+                result_rarity="blue",
+            )
+        },
+    )
+    manor.arena_coins = 600
+    manor.save(update_fields=["arena_coins"])
+
+    response = client.post(
+        reverse("gameplay:arena_exchange"),
+        {"reward_key": "blueprint_blue_exchange", "quantity": "1"},
+        follow=True,
+    )
+
+    assert response.status_code == 200
+    assert "本次抽到：随机青锋剑图纸×1" in response.content.decode("utf-8")
 
 
 @pytest.mark.django_db

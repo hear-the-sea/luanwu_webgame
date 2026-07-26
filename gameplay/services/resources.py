@@ -91,7 +91,7 @@ def _handle_unknown_resource(manor: Manor, resource: str, amount: int) -> None:
     )
 
 
-def _credit_resource(manor: Manor, resource: str, amount: int) -> Tuple[int, int] | None:
+def _calculate_resource_credit(manor: Manor, resource: str, amount: int) -> Tuple[int, int] | None:
     if amount <= 0:
         return None
 
@@ -101,12 +101,40 @@ def _credit_resource(manor: Manor, resource: str, amount: int) -> Tuple[int, int
         return None
 
     current_value = getattr(manor, resource, 0)
-    new_value = min(capacity, current_value + amount)
-    added = max(0, new_value - current_value)
+    available_capacity = max(0, capacity - current_value)
+    added = min(amount, available_capacity)
     overflowed = amount - added
-    if added > 0:
-        setattr(manor, resource, new_value)
     return added, overflowed
+
+
+def _credit_resource(manor: Manor, resource: str, amount: int) -> Tuple[int, int] | None:
+    credit_result = _calculate_resource_credit(manor, resource, amount)
+    if credit_result is None:
+        return None
+
+    added, overflowed = credit_result
+    if added > 0:
+        setattr(manor, resource, getattr(manor, resource, 0) + added)
+    return added, overflowed
+
+
+def preview_resource_grant(manor: Manor, rewards: Dict[str, int]) -> Tuple[Dict[str, int], Dict[str, int]]:
+    """预览资源奖励的实际入账与溢出数量，不修改庄园状态。"""
+    normalized_rewards = _normalize_resource_mapping(rewards, field_name="resource rewards")
+    credited: Dict[str, int] = {}
+    overflow: Dict[str, int] = {}
+
+    for resource, amount in normalized_rewards.items():
+        credit_result = _calculate_resource_credit(manor, resource, amount)
+        if credit_result is None:
+            continue
+        added, overflowed = credit_result
+        if added > 0:
+            credited[resource] = added
+        if overflowed > 0:
+            overflow[resource] = overflowed
+
+    return credited, overflow
 
 
 def _require_atomic_block(name: str) -> None:

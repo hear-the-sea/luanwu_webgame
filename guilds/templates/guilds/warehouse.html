@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}帮会仓库 - {{ guild.name }}{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
@@ -12,82 +12,66 @@
         </div>
         <div class="flex gap-2">
             <a href="{% url 'guilds:exchange_logs' %}" class="tw-btn-secondary">兑换记录</a>
-            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
         </div>
     </div>
 
-    <section class="tw-card">
+    <section class="tw-guild-section tw-guild-collection">
         <h2>可兑换物品</h2>
         {% if pagination.total_count > 0 %}
-            <p class="tw-muted mb-4">共 {{ pagination.total_count }} 件物品，第 {{ pagination.page }}/{{ pagination.total_pages }} 页</p>
+            <p class="tw-muted mb-4">共 {{ pagination.total_count }} 件物品 · 第 {{ pagination.page }}/{{ pagination.total_pages }} 页</p>
         {% endif %}
         {% if warehouse_items %}
-            <div class="tw-building-grid">
+            <div class="tw-guild-exchange-grid">
                 {% for item in warehouse_items %}
-                <article class="tw-building-card">
-                    <header>
-                        <div>
-                            <h3>{{ item.display_name|default:"未知物品" }}</h3>
-                            <p class="tw-muted">{{ item.display_description }}</p>
-                        </div>
-                        <span class="tw-badge-gold">{{ item.display_quantity }}</span>
-                    </header>
-                    <dl class="tw-guild-dl">
-                        <div>
-                            <dt>库存数量</dt>
-                            <dd>{{ item.display_quantity }}</dd>
-                        </div>
-                        <div>
-                            <dt>兑换成本</dt>
-                            <dd class="tw-guild-cost-value">
-                                {% if item.is_resource_exchange %}
-                                    {{ item.exchange_unit }} {{ item.display_name }} / {{ item.exchange_unit_cost }} 贡献
-                                {% else %}
-                                    {{ item.exchange_unit_cost }} 贡献
-                                {% endif %}
-                            </dd>
-                        </div>
-                        {% if item.weekly_personal_limit %}
-                        <div>
-                            <dt>本周限购</dt>
-                            <dd>{{ item.weekly_exchanged_quantity }}/{{ item.weekly_personal_limit }}，剩余 {{ item.weekly_exchange_remaining }}</dd>
-                        </div>
-                        {% endif %}
-                        <div>
-                            <dt>历史产出</dt>
-                            <dd>{{ item.total_produced }}</dd>
-                        </div>
-                        <div>
-                            <dt>历史兑换</dt>
-                            <dd>{{ item.total_exchanged }}</dd>
-                        </div>
-                    </dl>
-                    <div class="tw-guild-card-divider">
-                        {% if item.is_usable %}
-                            <button
-                                type="button"
-                                class="tw-btn-primary w-full"
-                                onclick="openExchangeModal('{{ item.item_key|escapejs }}', {{ item.exchange_unit_cost }}, {{ item.exchange_unit }}, {{ item.display_quantity }}, '{{ item.display_name|default:'未知物品'|escapejs }}', {{ item.weekly_exchange_remaining|default:0 }}, {{ item.weekly_personal_limit|default:0 }})"
-                                {% if item.max_exchange_quantity <= 0 %}disabled title="库存不足一个完整兑换单位"{% elif item.weekly_personal_limit and item.weekly_exchange_remaining <= 0 %}disabled title="本周限购已达上限"{% endif %}
-                            >
-                                兑换
-                            </button>
-                        {% else %}
-                            <button
-                                type="button"
-                                class="tw-btn-secondary w-full"
-                                disabled
-                                title="此物品不可在仓库使用"
-                            >
-                                不可使用
-                            </button>
-                        {% endif %}
+                <article class="tw-guild-exchange-card{% if not item.can_exchange %} tw-guild-exchange-card--disabled{% endif %}">
+                    <div class="tw-guild-exchange-head">
+                        <h3 class="tw-guild-exchange-name">{{ item.display_name|default:"未知物品" }}</h3>
+                        <span class="tw-guild-exchange-cost">{{ item.exchange_unit_cost }} 贡献</span>
                     </div>
+
+                    <p class="tw-guild-exchange-desc">{{ item.display_description }}</p>
+
+                    <ul class="tw-guild-exchange-facts" aria-label="兑换信息">
+                        <li>库存 ×{{ item.display_quantity }}</li>
+                        {% if item.is_resource_exchange %}
+                            <li>每份 {{ item.exchange_unit }} {{ item.display_name }}</li>
+                        {% endif %}
+                        {% if item.weekly_personal_limit %}
+                            <li>本周剩余 ×{{ item.weekly_exchange_remaining }}</li>
+                        {% endif %}
+                    </ul>
+
+                    <form method="post" action="{% url 'guilds:exchange_item' item.item_key %}" class="tw-guild-exchange-form">
+                        {% csrf_token %}
+                        <label for="exchange-quantity-{{ forloop.counter }}">数量</label>
+                        <input
+                            type="number"
+                            id="exchange-quantity-{{ forloop.counter }}"
+                            name="quantity"
+                            value="{{ item.exchange_unit }}"
+                            min="{{ item.exchange_unit }}"
+                            step="{{ item.exchange_unit }}"
+                            max="{{ item.exchange_max_quantity }}"
+                            class="tw-guild-exchange-quantity"
+                            required
+                            {% if not item.can_exchange %}disabled{% endif %}
+                        >
+                        <button
+                            type="submit"
+                            class="tw-btn-secondary tw-btn-sm"
+                            {% if not item.can_exchange %}disabled title="{{ item.exchange_disabled_reason }}"{% endif %}
+                        >
+                            兑换
+                        </button>
+                    </form>
                 </article>
                 {% endfor %}
             </div>
         {% else %}
-            <p class="tw-muted">仓库暂无物品，请等待帮会科技每日产出</p>
+            <div class="tw-guild-empty-state">
+                <strong>仓库暂无物品</strong>
+                <p>帮会科技产出的物品会存入这里。</p>
+            </div>
         {% endif %}
 
         {% if pagination.total_pages > 1 %}
@@ -113,136 +97,4 @@
         {% endif %}
     </section>
 </section>
-
-<!-- 兑换确认模态框 -->
-<div class="tw-modal-overlay" id="exchange-modal" style="display: none;">
-    <div class="tw-modal-content">
-        <div class="tw-modal-header">
-            <h3>兑换物品</h3>
-            <button type="button" class="tw-modal-close" onclick="closeExchangeModal()">&times;</button>
-        </div>
-        <div class="tw-modal-body">
-            <form method="post" id="exchange-form" action="">
-                {% csrf_token %}
-                <div class="tw-guild-cost-card">
-                    <h4 id="exchange-item-name"></h4>
-                    <p>
-                        <strong>兑换成本：</strong><span id="exchange-cost" class="tw-guild-cost-value"></span> 贡献度
-                    </p>
-                    <p>
-                        <strong>当前拥有：</strong><span class="tw-guild-resource-value resource-blue">{{ member.current_contribution|floatformat:0 }}</span> 贡献度
-                    </p>
-                </div>
-
-                <div class="tw-form-field mt-4">
-                    <label for="quantity">兑换数量</label>
-                    <input type="number" id="quantity" name="quantity" min="1" value="1" required class="tw-input">
-                    <small class="tw-muted">库存：<span id="exchange-stock"></span></small>
-                </div>
-
-                <div id="exchange-warning" class="tw-guild-warning" style="display: none;">
-                    <p></p>
-                </div>
-
-                <div class="flex justify-end gap-2 mt-4">
-                    <button type="submit" class="tw-btn-primary" id="exchange-submit">确认兑换</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_scripts %}
-<script>
-    (() => {
-        const exchangeModal = document.getElementById('exchange-modal');
-        const exchangeForm = document.getElementById('exchange-form');
-        const exchangeItemName = document.getElementById('exchange-item-name');
-        const exchangeCost = document.getElementById('exchange-cost');
-        const exchangeStock = document.getElementById('exchange-stock');
-        const exchangeWarning = document.getElementById('exchange-warning');
-        const quantityInput = document.getElementById('quantity');
-        const submitButton = document.getElementById('exchange-submit');
-
-        const currentContribution = {{ member.current_contribution }};
-
-        function checkExchangeValidity(unitCost, exchangeUnit, stock, quantity, weeklyRemaining, weeklyLimit) {
-            const isCompleteUnit = quantity > 0 && quantity % exchangeUnit === 0;
-            const totalCost = isCompleteUnit ? unitCost * (quantity / exchangeUnit) : 0;
-            const warningText = exchangeWarning.querySelector('p');
-            const stockMax = Math.floor(stock / exchangeUnit) * exchangeUnit;
-            const rawMax = weeklyLimit > 0 ? Math.min(stockMax, weeklyRemaining) : stockMax;
-            const maxQuantity = Math.floor(rawMax / exchangeUnit) * exchangeUnit;
-            exchangeCost.textContent = String(totalCost);
-
-            if (!isCompleteUnit) {
-                exchangeWarning.style.display = 'block';
-                warningText.textContent = `兑换数量必须是 ${exchangeUnit} 的整数倍`;
-                submitButton.disabled = true;
-            } else if (quantity > maxQuantity) {
-                exchangeWarning.style.display = 'block';
-                warningText.textContent = weeklyLimit > 0
-                    ? `本周剩余可兑换 ${weeklyRemaining} 个`
-                    : `库存不足，最多只能兑换 ${stock} 个`;
-                submitButton.disabled = true;
-            } else if (totalCost > currentContribution) {
-                exchangeWarning.style.display = 'block';
-                warningText.textContent = `贡献度不足，需要 ${totalCost} 贡献度`;
-                submitButton.disabled = true;
-            } else {
-                exchangeWarning.style.display = 'none';
-                submitButton.disabled = false;
-            }
-        }
-
-        window.openExchangeModal = function openExchangeModal(
-            itemKey,
-            unitCost,
-            exchangeUnit,
-            stock,
-            itemName,
-            weeklyRemaining,
-            weeklyLimit
-        ) {
-            exchangeForm.action = `/guilds/warehouse/${encodeURIComponent(itemKey)}/exchange/`;
-            exchangeItemName.textContent = itemName || itemKey;
-            exchangeStock.textContent = stock;
-            quantityInput.dataset.unitCost = unitCost;
-            quantityInput.dataset.exchangeUnit = exchangeUnit;
-            quantityInput.dataset.weeklyRemaining = weeklyRemaining;
-            quantityInput.dataset.weeklyLimit = weeklyLimit;
-            const stockMax = Math.floor(stock / exchangeUnit) * exchangeUnit;
-            const rawMax = weeklyLimit > 0 ? Math.min(stockMax, weeklyRemaining) : stockMax;
-            quantityInput.min = exchangeUnit;
-            quantityInput.step = exchangeUnit;
-            quantityInput.max = Math.floor(rawMax / exchangeUnit) * exchangeUnit;
-            quantityInput.value = exchangeUnit;
-
-            checkExchangeValidity(unitCost, exchangeUnit, stock, exchangeUnit, weeklyRemaining, weeklyLimit);
-
-            exchangeModal.style.display = 'flex';
-        };
-
-        window.closeExchangeModal = function closeExchangeModal() {
-            exchangeModal.style.display = 'none';
-        };
-
-        quantityInput?.addEventListener('input', function() {
-            const unitCost = parseInt(this.dataset.unitCost) || 0;
-            const exchangeUnit = parseInt(this.dataset.exchangeUnit) || 1;
-            const stock = parseInt(exchangeStock.textContent);
-            const quantity = parseInt(this.value) || exchangeUnit;
-            const weeklyRemaining = parseInt(this.dataset.weeklyRemaining) || 0;
-            const weeklyLimit = parseInt(this.dataset.weeklyLimit) || 0;
-            checkExchangeValidity(unitCost, exchangeUnit, stock, quantity, weeklyRemaining, weeklyLimit);
-        });
-
-        exchangeModal?.addEventListener('click', (event) => {
-            if (event.target === exchangeModal) {
-                window.closeExchangeModal();
-            }
-        });
-    })();
-</script>
 {% endblock %}

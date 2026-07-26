@@ -21,6 +21,14 @@ from .warehouse import spend_guild_warehouse_items_locked
 
 logger = logging.getLogger(__name__)
 CAPACITY_TECH_KEYS = {"guild_lineup_capacity", "guild_dispatch_capacity"}
+WAREHOUSE_FUNDED_TECH_KEYS = CAPACITY_TECH_KEYS | {"mysticism"}
+WAREHOUSE_TECH_RESOURCE_KEYS = ("red_ruby", "grain", "gold_bar")
+TECH_RESOURCE_LABELS = {
+    "silver": "银两",
+    "grain": "粮食",
+    "gold_bar": "金条",
+    "red_ruby": "红宝石",
+}
 MAX_GUILD_LINEUP_CAPACITY = 40
 MAX_GUILD_DISPATCH_CAPACITY = 25
 GUEST_BONUS_TYPES = {"guest_force", "guest_intellect", "guest_defense"}
@@ -72,10 +80,31 @@ def calculate_tech_upgrade_cost(tech_key, current_level):
     Returns:
         dict: {'silver': xxx, 'grain': xxx, 'gold_bar': xxx}
     """
+    current_level = int(current_level)
+    target_level = str(current_level + 1)
     base = guild_constants.TECH_UPGRADE_COSTS.get(tech_key, {"silver": 5000, "grain": 2000, "gold_bar": 1})
-    multiplier = 2**current_level  # 指数增长
+    override = guild_constants.TECH_UPGRADE_COST_OVERRIDES.get(tech_key, {}).get(target_level)
+    if override is not None:
+        return dict(override)
+    if current_level == 0:
+        return dict(base)
 
-    return {resource_key: int(resource_cost) * multiplier for resource_key, resource_cost in base.items()}
+    curve_key = guild_constants.TECH_UPGRADE_COST_CURVE_BY_TECH.get(tech_key)
+    multiplier = guild_constants.TECH_UPGRADE_COST_CURVES.get(curve_key, {}).get(target_level)
+    if multiplier is None:
+        tech_name = guild_constants.TECH_NAMES.get(tech_key, tech_key or "该科技")
+        raise GuildTechnologyError(f"{tech_name}缺少升至{target_level}级的费用配置")
+
+    return {resource_key: int(resource_cost) * int(multiplier) for resource_key, resource_cost in base.items()}
+
+
+def _format_tech_resource_cost(cost: dict[str, int]) -> str:
+    parts = [
+        f"{TECH_RESOURCE_LABELS.get(resource_key, resource_key)}×{amount}"
+        for resource_key, amount in cost.items()
+        if int(amount) > 0
+    ]
+    return "、".join(parts) if parts else "无"
 
 
 def upgrade_technology(guild, tech_key, operator):
@@ -127,20 +156,24 @@ def upgrade_technology(guild, tech_key, operator):
         if not membership.can_manage:
             raise GuildTechnologyError("只有帮主和管理员可以升级科技")
 
-        # 成本必须基于锁内的当前等级计算，避免并发下低价升级
-        cost = calculate_tech_upgrade_cost(tech_key, tech_locked.level)
-
         # 步骤2：在锁内重新验证条件，防止并发穿透
         if not _can_upgrade_guild_technology(tech_locked):
             raise GuildTechnologyError("科技已达最高等级")
 
-        if tech_key in CAPACITY_TECH_KEYS:
-            ruby_cost = int(cost.get("red_ruby", 0))
-            if ruby_cost > 0:
+        # 成本必须基于锁内的当前等级计算，避免并发下低价升级
+        cost = calculate_tech_upgrade_cost(tech_key, tech_locked.level)
+
+        if tech_key in WAREHOUSE_FUNDED_TECH_KEYS:
+            warehouse_cost = {
+                item_key: int(cost.get(item_key, 0) or 0)
+                for item_key in WAREHOUSE_TECH_RESOURCE_KEYS
+                if int(cost.get(item_key, 0) or 0) > 0
+            }
+            if warehouse_cost:
                 try:
                     spend_guild_warehouse_items_locked(
                         guild_locked,
-                        {"red_ruby": ruby_cost},
+                        warehouse_cost,
                         error_prefix="帮会仓库",
                     )
                 except GuildWarehouseError as exc:
@@ -150,8 +183,13 @@ def upgrade_technology(guild, tech_key, operator):
             GuildResourceLog.objects.create(
                 guild=guild_locked,
                 action="tech_upgrade",
+                grain_change=-warehouse_cost.get("grain", 0),
+                gold_bar_change=-warehouse_cost.get("gold_bar", 0),
                 related_user=operator,
-                note=f"升级{guild_constants.TECH_NAMES.get(tech_key, '该科技')}至{tech_locked.level}级（消耗红宝石×{ruby_cost}）",
+                note=(
+                    f"升级{guild_constants.TECH_NAMES.get(tech_key, '该科技')}至{tech_locked.level}级"
+                    f"（消耗{_format_tech_resource_cost(cost)}）"
+                ),
             )
         else:
             if guild_locked.silver < cost["silver"]:

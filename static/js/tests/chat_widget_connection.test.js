@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 
 global.WorldChatWidgetCore = require("../chat_widget_core.js");
 global.WebSocketReconnectPolicy = require("../websocket_reconnect.js");
+const SERVICE_UNAVAILABLE_CLOSE_CODE = global.WebSocketReconnectPolicy.CLOSE_CODES.SERVICE_UNAVAILABLE;
 const chatWidgetConnection = require("../chat_widget_connection.js");
 
 class FakeWebSocket {
@@ -530,12 +531,12 @@ test("opening a chat socket does not reset transient backoff", () => {
   const harness = createLifecycleHarness();
   harness.controller.connect();
   harness.sockets[0].open();
-  harness.sockets[0].emitClose(1013);
+  harness.sockets[0].emitClose(SERVICE_UNAVAILABLE_CLOSE_CODE);
   assert.equal(harness.reconnectTimers()[0].delay, 2000);
   harness.runTimer(harness.reconnectTimers()[0]);
 
   harness.sockets[1].open();
-  harness.sockets[1].emitClose(1013);
+  harness.sockets[1].emitClose(SERVICE_UNAVAILABLE_CLOSE_CODE);
 
   assert.equal(harness.reconnectTimers()[0].delay, 4000);
 });
@@ -543,15 +544,15 @@ test("opening a chat socket does not reset transient backoff", () => {
 test("valid chat messages reset transient backoff", () => {
   const harness = createLifecycleHarness();
   harness.controller.connect();
-  harness.sockets[0].emitClose(1013);
+  harness.sockets[0].emitClose(SERVICE_UNAVAILABLE_CLOSE_CODE);
   harness.runTimer(harness.reconnectTimers()[0]);
-  harness.sockets[1].emitClose(1013);
+  harness.sockets[1].emitClose(SERVICE_UNAVAILABLE_CLOSE_CODE);
   harness.runTimer(harness.reconnectTimers()[0]);
 
   const socket = harness.sockets[2];
   socket.open();
   socket.emitMessage({ type: "message", id: "valid" });
-  socket.emitClose(1013);
+  socket.emitClose(SERVICE_UNAVAILABLE_CLOSE_CODE);
 
   assert.equal(harness.reconnectTimers()[0].delay, 2000);
 });
@@ -559,14 +560,14 @@ test("valid chat messages reset transient backoff", () => {
 test("thirty stable seconds reset chat transient backoff", () => {
   const harness = createLifecycleHarness();
   harness.controller.connect();
-  harness.sockets[0].emitClose(1013);
+  harness.sockets[0].emitClose(SERVICE_UNAVAILABLE_CLOSE_CODE);
   harness.runTimer(harness.reconnectTimers()[0]);
 
   const socket = harness.sockets[1];
   socket.open();
   const stabilityTimer = harness.activeTimeouts().find((timer) => timer.delay === 30000);
   harness.runTimer(stabilityTimer);
-  socket.emitClose(1013);
+  socket.emitClose(SERVICE_UNAVAILABLE_CLOSE_CODE);
 
   assert.equal(harness.reconnectTimers()[0].delay, 2000);
 });

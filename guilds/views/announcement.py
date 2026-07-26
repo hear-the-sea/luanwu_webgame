@@ -6,6 +6,7 @@ from typing import Any
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
@@ -14,7 +15,9 @@ from core.utils.rate_limit import rate_limit_redirect
 
 from ..decorators import require_guild_leader, require_guild_member
 from ..services import guild as guild_service
-from .helpers import build_guild_member_context, execute_guild_action, load_recent_announcements
+from .helpers import build_guild_member_context, execute_guild_action
+
+ANNOUNCEMENTS_PER_PAGE = 3
 
 
 @login_required
@@ -22,9 +25,12 @@ from .helpers import build_guild_member_context, execute_guild_action, load_rece
 def announcement_list(request: Any) -> HttpResponse:
     """公告列表"""
     member = request.guild_member
+    announcement_queryset = member.guild.announcements.select_related("author__manor").order_by("-created_at", "-id")
+    announcement_page = Paginator(announcement_queryset, ANNOUNCEMENTS_PER_PAGE).get_page(request.GET.get("page"))
     context = build_guild_member_context(
         member,
-        announcements=load_recent_announcements(member.guild, limit=30),
+        announcements=list(announcement_page.object_list),
+        announcement_page=announcement_page,
     )
 
     return render(request, "guilds/announcements.html", context)

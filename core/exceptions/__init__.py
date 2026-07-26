@@ -114,6 +114,7 @@ from .item import (
     ItemNotConfiguredError,
     ItemNotFoundError,
     ItemNotUsableError,
+    ItemResourceOverflowConfirmationRequired,
 )
 from .message import (
     AttachmentAlreadyClaimedError,
@@ -205,6 +206,7 @@ __all__ = [
     "InsufficientStockError",
     "ItemNotConfiguredError",
     "ItemNotUsableError",
+    "ItemResourceOverflowConfirmationRequired",
     "EquipmentError",
     "EquipmentAlreadyEquippedError",
     "EquipmentNotEquippedError",

@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}资源流水 - {{ guild.name }}{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
@@ -11,7 +11,6 @@
             <p class="caption">{{ guild.name }}</p>
         </div>
         <div class="flex gap-2">
-            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-secondary">帮会主页</a>
             <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-secondary">返回帮会</a>
         </div>
     </div>
@@ -19,6 +18,7 @@
     <section class="tw-card">
         <h2>资源变动记录（最近50条）</h2>
         {% if logs %}
+            <div class="tw-guild-table-wrap">
             <table class="tw-table">
                 <thead>
                     <tr>
@@ -36,15 +36,15 @@
                     <tr {% if log.related_user == user %}class="tw-guild-table-highlight"{% endif %}>
                         <td>
                             {% if log.action == 'donation' %}
-                                <span class="tw-guild-action-donation">📥 捐赠</span>
+                                <span class="tw-guild-action-donation">捐赠</span>
                             {% elif log.action == 'guild_upgrade' or log.action == 'upgrade_guild' %}
-                                <span class="tw-guild-action-upgrade">⬆️ 升级</span>
+                                <span class="tw-guild-action-upgrade">升级</span>
                             {% elif log.action == 'tech_upgrade' or log.action == 'upgrade_tech' %}
-                                <span class="tw-guild-action-tech">🔬 科技</span>
+                                <span class="tw-guild-action-tech">科技</span>
                             {% elif log.action == 'production' %}
-                                <span class="tw-guild-action-production">🏭 生产</span>
+                                <span class="tw-guild-action-production">生产</span>
                             {% elif log.action == 'exchange' %}
-                                <span class="tw-guild-action-exchange">📤 兑换</span>
+                                <span class="tw-guild-action-exchange">兑换</span>
                             {% else %}
                                 {{ log.action }}
                             {% endif %}
@@ -96,8 +96,12 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
         {% else %}
-            <p class="tw-muted">暂无资源流水记录</p>
+            <div class="tw-guild-empty-state">
+                <strong>暂无资源流水</strong>
+                <p>帮会资源发生变化后会记录在这里。</p>
+            </div>
         {% endif %}
     </section>
 
@@ -106,15 +110,15 @@
         <div class="tw-guild-log-help">
             <h4>操作类型</h4>
             <ul class="tw-guild-info-list">
-                <li><strong>📥 捐赠：</strong>成员捐赠资源</li>
-                <li><strong>⬆️ 升级：</strong>升级帮会等级消耗资源</li>
-                <li><strong>🔬 科技：</strong>升级帮会科技消耗资源</li>
-                <li><strong>🏭 生产：</strong>科技每日产出（暂未影响资源）</li>
-                <li><strong>📤 兑换：</strong>成员兑换物品（暂未影响资源）</li>
+                <li><strong>捐赠：</strong>成员捐赠资源</li>
+                <li><strong>升级：</strong>升级帮会等级消耗资源</li>
+                <li><strong>科技：</strong>升级帮会科技消耗资源</li>
+                <li><strong>生产：</strong>科技每日产出（暂未影响资源）</li>
+                <li><strong>兑换：</strong>成员兑换物品（暂未影响资源）</li>
             </ul>
 
             <div class="tw-guild-info-card tw-guild-log-tip mt-4">
-                <strong>💡 提示：</strong>红宝石等非银粮金条类消耗会记录在备注中；资源流水记录保留最近30天，超过30天的记录会自动清理。
+                <strong>提示：</strong>红宝石等非银粮金条类消耗会记录在备注中；资源流水记录保留最近30天，超过30天的记录会自动清理。
             </div>
         </div>
     </section>

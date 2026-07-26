@@ -2,7 +2,7 @@ import logging
 
 import pytest
 
-from core.exceptions import ItemNotConfiguredError, ItemNotFoundError
+from core.exceptions import ItemNotConfiguredError, ItemNotFoundError, ItemResourceOverflowConfirmationRequired
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.inventory.use import use_inventory_item
 from gameplay.services.manor.core import ensure_manor
@@ -127,8 +127,137 @@ def test_resource_pack_message_uses_resource_labels(django_user_model):
 
     payload = use_inventory_item(item)
 
-    assert payload["_message"] == "获得 银两+100、粮食+50"
+    assert payload["_message"] == "实际获得：银两+100、粮食+50"
     assert "silver+100" not in payload["_message"]
+
+
+@pytest.mark.django_db
+def test_resource_pack_requires_confirmation_before_partial_overflow(django_user_model):
+    user = django_user_model.objects.create_user(username="resource_pack_partial_overflow", password="pass123")
+    manor = ensure_manor(user)
+    manor.silver = 90
+    manor.silver_capacity = 100
+    manor.grain = 100
+    manor.grain_capacity = 100
+    manor.save(update_fields=["silver", "silver_capacity", "grain", "grain_capacity"])
+
+    template = ItemTemplate.objects.create(
+        key="resource_pack_partial_overflow_test",
+        name="混合测试资源包",
+        effect_type=ItemTemplate.EffectType.RESOURCE_PACK,
+        is_usable=True,
+        effect_payload={"silver": 20, "grain": 50},
+    )
+    item = InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    with pytest.raises(ItemResourceOverflowConfirmationRequired) as exc_info:
+        use_inventory_item(item)
+
+    assert exc_info.value.credited_resources == {"silver": 10}
+    assert exc_info.value.overflow_resources == {"silver": 10, "grain": 50}
+    assert "当前可实际获得：银两+10" in str(exc_info.value)
+    assert "因容量上限将无法获得：银两+10、粮食+50" in str(exc_info.value)
+    item.refresh_from_db()
+    assert item.quantity == 1
+
+    payload = use_inventory_item(
+        item,
+        resource_overflow_confirmation=exc_info.value.confirmation_snapshot,
+    )
+
+    manor.refresh_from_db()
+    assert manor.silver == 100
+    assert manor.grain == 100
+    assert payload["credited_resources"] == {"silver": 10}
+    assert payload["overflow_resources"] == {"silver": 10, "grain": 50}
+    assert payload["_message"] == "实际获得：银两+10；因容量上限未获得：银两+10、粮食+50"
+    assert not InventoryItem.objects.filter(pk=item.pk).exists()
+
+
+@pytest.mark.django_db
+def test_resource_pack_fully_capped_result_never_renders_empty_reward(django_user_model):
+    user = django_user_model.objects.create_user(username="resource_pack_full_overflow", password="pass123")
+    manor = ensure_manor(user)
+    manor.silver = manor.silver_capacity
+    manor.save(update_fields=["silver"])
+
+    template = ItemTemplate.objects.create(
+        key="resource_pack_full_overflow_test",
+        name="满额测试资源包",
+        effect_type=ItemTemplate.EffectType.RESOURCE_PACK,
+        is_usable=True,
+        effect_payload={"silver": 100},
+    )
+    item = InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    with pytest.raises(ItemResourceOverflowConfirmationRequired) as exc_info:
+        use_inventory_item(item)
+
+    payload = use_inventory_item(
+        item,
+        resource_overflow_confirmation=exc_info.value.confirmation_snapshot,
+    )
+
+    assert payload["credited_resources"] == {}
+    assert payload["overflow_resources"] == {"silver": 100}
+    assert payload["_message"] == "实际获得：无；因容量上限未获得：银两+100"
+
+
+@pytest.mark.django_db
+def test_resource_pack_rejects_stale_overflow_confirmation(django_user_model):
+    user = django_user_model.objects.create_user(username="resource_pack_stale_confirmation", password="pass123")
+    manor = ensure_manor(user)
+    manor.silver = 80
+    manor.silver_capacity = 100
+    manor.save(update_fields=["silver", "silver_capacity"])
+    template = ItemTemplate.objects.create(
+        key="resource_pack_stale_confirmation_test",
+        name="并发测试资源包",
+        effect_type=ItemTemplate.EffectType.RESOURCE_PACK,
+        is_usable=True,
+        effect_payload={"silver": 50},
+    )
+    item = InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    with pytest.raises(ItemResourceOverflowConfirmationRequired) as first_confirmation:
+        use_inventory_item(item)
+
+    manor.silver = 90
+    manor.save(update_fields=["silver"])
+    with pytest.raises(ItemResourceOverflowConfirmationRequired) as refreshed_confirmation:
+        use_inventory_item(
+            item,
+            resource_overflow_confirmation=first_confirmation.value.confirmation_snapshot,
+        )
+
+    assert refreshed_confirmation.value.credited_resources == {"silver": 10}
+    assert refreshed_confirmation.value.overflow_resources == {"silver": 40}
+    item.refresh_from_db()
+    assert item.quantity == 1
+
+    payload = use_inventory_item(
+        item,
+        resource_overflow_confirmation=refreshed_confirmation.value.confirmation_snapshot,
+    )
+
+    assert payload["credited_resources"] == {"silver": 10}
+    assert payload["overflow_resources"] == {"silver": 40}
+    assert not InventoryItem.objects.filter(pk=item.pk).exists()
 
 
 @pytest.mark.django_db

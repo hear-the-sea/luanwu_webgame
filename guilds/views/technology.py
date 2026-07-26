@@ -25,9 +25,16 @@ TECH_CATEGORY_TABS = (
 )
 
 VALID_TECH_CATEGORIES = frozenset(key for key, _label in TECH_CATEGORY_TABS)
+MYSTICISM_DAILY_OUTPUTS = {
+    1: "灵魂容器 ×1",
+    2: "灵魂容器 ×1、门客重生卡 ×1、洗点卡 ×1",
+    3: "灵魂容器 ×1、门客重生卡 ×1、洗点卡 ×1、洗髓丹 ×1",
+}
 
 
 def _format_upgrade_cost(tech: Any) -> str:
+    if getattr(tech, "can_upgrade", True) is False:
+        return "已满级"
     cost = technology_service.calculate_tech_upgrade_cost(tech.tech_key, tech.level)
     labels = {
         "silver": "银两",
@@ -47,20 +54,32 @@ def _format_troop_tactics_effect(level: int, max_level: int) -> str:
     return f"按 {level} / {max_level} 级线性映射个人兵种科技"
 
 
+def _format_mysticism_daily_output(level: int) -> str:
+    output_level = max(1, min(int(level), max(MYSTICISM_DAILY_OUTPUTS)))
+    return MYSTICISM_DAILY_OUTPUTS[output_level]
+
+
 def _build_tech_display_meta(tech: Any) -> dict[str, str]:
     max_level = _resolve_display_max_level(tech)
+    description = guild_constants.TECH_DESCRIPTIONS.get(tech.tech_key, "科技效果")
 
     if tech.tech_key == "equipment_forge":
-        return {"description": "每日生产装备道具", "upgrade_cost": _format_upgrade_cost(tech)}
+        return {"description": description, "upgrade_cost": _format_upgrade_cost(tech)}
     if tech.tech_key == "guard_armory":
-        return {"description": "每日生产护院招募装备箱", "upgrade_cost": _format_upgrade_cost(tech)}
+        return {"description": description, "upgrade_cost": _format_upgrade_cost(tech)}
     if tech.tech_key == "experience_refine":
-        return {"description": "每日生产技能书箱", "upgrade_cost": _format_upgrade_cost(tech)}
+        return {"description": description, "upgrade_cost": _format_upgrade_cost(tech)}
     if tech.tech_key == "resource_supply":
-        return {"description": "每日生产资源礼包", "upgrade_cost": _format_upgrade_cost(tech)}
+        return {"description": description, "upgrade_cost": _format_upgrade_cost(tech)}
+    if tech.tech_key == "mysticism":
+        return {
+            "description": description,
+            "daily_output": _format_mysticism_daily_output(tech.level),
+            "upgrade_cost": _format_upgrade_cost(tech),
+        }
     if tech.tech_key == "troop_tactics":
         return {
-            "description": "可以增强帮会战斗中护院的能力",
+            "description": description,
             "current_effect": _format_troop_tactics_effect(tech.level, max_level) if tech.level > 0 else "未激活",
             "next_effect": _format_troop_tactics_effect(min(max_level, tech.level + 1), max_level),
             "upgrade_cost": _format_upgrade_cost(tech),
@@ -71,7 +90,7 @@ def _build_tech_display_meta(tech: Any) -> dict[str, str]:
             int(guild_constants.GUILD_BATTLE_LINEUP_LIMIT) + min(max_level, tech.level + 1),
         )
         return {
-            "description": "提升帮会已上阵名单总容量",
+            "description": description,
             "current_effect": f"{technology_service.get_guild_lineup_capacity(tech.guild)} 名",
             "next_effect": f"{next_capacity} 名",
             "upgrade_cost": _format_upgrade_cost(tech),
@@ -82,26 +101,26 @@ def _build_tech_display_meta(tech: Any) -> dict[str, str]:
             int(guild_constants.GUILD_DISPATCH_GUEST_BASE_LIMIT) + min(max_level, tech.level + 1),
         )
         return {
-            "description": "提升单次帮会任务最多可派出的门客人数",
+            "description": description,
             "current_effect": f"{technology_service.get_guild_dispatch_capacity(tech.guild)} 名",
             "next_effect": f"{next_capacity} 名",
             "upgrade_cost": _format_upgrade_cost(tech),
         }
     if tech.tech_key == "resource_boost":
         return {
-            "description": "提升庄园资源产出",
+            "description": description,
             "current_effect": f"+{tech.level * 10}%" if tech.level > 0 else "未激活",
             "next_effect": f"+{(tech.level + 1) * 10}%",
             "upgrade_cost": _format_upgrade_cost(tech),
         }
     if tech.tech_key == "march_speed":
         return {
-            "description": "减少行军时间",
+            "description": description,
             "current_effect": f"-{tech.level * 5}%" if tech.level > 0 else "未激活",
             "next_effect": f"-{(tech.level + 1) * 5}%",
             "upgrade_cost": _format_upgrade_cost(tech),
         }
-    return {"description": "科技效果", "upgrade_cost": _format_upgrade_cost(tech)}
+    return {"description": description, "upgrade_cost": _format_upgrade_cost(tech)}
 
 
 @login_required

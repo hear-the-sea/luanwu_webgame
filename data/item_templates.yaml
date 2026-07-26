@@ -117,7 +117,7 @@ items:
 
   - key: resource_pack_silver
     name: 帮会银两补给包
-    description: 帮会资源补给科技生产的银两包，使用后获得银两。
+    description: 帮会资源补给科技生产的银两包，使用后获得5000银两，超出银库上限的部分不会入账。
     effect_type: resource_pack
     rarity: green
     tradeable: false
@@ -130,7 +130,7 @@ items:
 
   - key: resource_pack_grain
     name: 帮会粮食补给包
-    description: 帮会资源补给科技生产的粮食包，使用后获得粮食。
+    description: 帮会资源补给科技生产的粮食包，使用后获得5000粮食，超出粮仓上限的部分不会入账。
     effect_type: resource_pack
     rarity: green
     tradeable: false
@@ -143,7 +143,7 @@ items:
 
   - key: resource_pack_mixed
     name: 帮会混合补给包
-    description: 帮会资源补给科技生产的混合资源包，使用后获得银两和粮食。
+    description: 帮会资源补给科技生产的混合资源包，使用后获得5000银两和5000粮食，超出容量上限的部分不会入账。
     effect_type: resource_pack
     rarity: blue
     tradeable: false
@@ -157,7 +157,7 @@ items:
 
   - key: resource_pack_advanced
     name: 帮会高级补给包
-    description: 帮会资源补给科技生产的高级资源包，使用后获得更多银两和粮食。
+    description: 帮会资源补给科技生产的高级资源包，使用后获得12000银两和8000粮食，超出容量上限的部分不会入账。
     effect_type: resource_pack
     rarity: purple
     tradeable: false
@@ -2158,6 +2158,10 @@ items:
           weight: 13
         - item_key: equip_qilinzui
           weight: 13
+        - item_key: equip_huxianjian
+          weight: 13
+        - item_key: equip_huxianpao
+          weight: 13
 
   - key: guild_gear_box_refined_purple
     name: 帮会精铸紫装箱
@@ -2183,6 +2187,8 @@ items:
         - item_key: equip_bawangqiang
           weight: 13
         - item_key: equip_qilindao
+          weight: 13
+        - item_key: equip_huxianxie
           weight: 13
 
   - key: guild_gear_box_master

@@ -35,7 +35,13 @@ from .services.contribution import reset_weekly_contributions
 from .services.guild_missions import finalize_guild_mission_run
 from .services.guild_raids import finalize_guild_raid, process_due_guild_raid, process_guild_raid_battle
 from .services.hero_pool import cleanup_invalid_hero_pool_entries
-from .services.warehouse import produce_equipment, produce_experience_items, produce_guard_items, produce_resource_packs
+from .services.warehouse import (
+    produce_equipment,
+    produce_experience_items,
+    produce_guard_items,
+    produce_resource_packs,
+    produce_soul_containers,
+)
 
 logger = logging.getLogger(__name__)
 GUILD_PRODUCTION_PARTIAL_RETRY_LIMIT = 1
@@ -379,6 +385,19 @@ def _process_guild_production_once(guild_id: int) -> tuple[str, bool]:
             producer=produce_resource_packs,
             produced_items=produced_items,
             item_label="resource",
+            now=now,
+        )
+        or partial_failure
+    )
+
+    # 神秘学
+    partial_failure = (
+        _run_guild_production_step(
+            guild,
+            tech_key="mysticism",
+            producer=produce_soul_containers,
+            produced_items=produced_items,
+            item_label="soul_container",
             now=now,
         )
         or partial_failure

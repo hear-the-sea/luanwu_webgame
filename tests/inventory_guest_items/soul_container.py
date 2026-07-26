@@ -24,18 +24,18 @@ def temporary_item_image_storage(tmp_path, monkeypatch):
 def test_soul_fusion_ornament_balance_ranges_are_raised_for_each_rarity():
     expected = {
         "green": {
-            "stat_total_range": (47, 59),
-            "hp_range": (135, 215),
+            "stat_total_range": (48, 65),
+            "hp_range": (800, 1600),
             "stat_floor": {"force": 13, "intellect": 12, "agility": 13, "luck": 10},
         },
         "blue": {
-            "stat_total_range": (65, 81),
-            "hp_range": (215, 325),
+            "stat_total_range": (67, 85),
+            "hp_range": (1500, 2500),
             "stat_floor": {"force": 15, "intellect": 13, "agility": 15, "luck": 11},
         },
         "purple": {
-            "stat_total_range": (87, 105),
-            "hp_range": (305, 425),
+            "stat_total_range": (87, 110),
+            "hp_range": (2600, 3500),
             "stat_floor": {"force": 17, "intellect": 15, "agility": 17, "luck": 13},
         },
     }
@@ -128,8 +128,8 @@ def test_use_soul_container_generates_green_ornament_with_military_bias_and_retu
     assert generated_item.template.rarity == "green"
     assert generated_item.template.effect_type == "equip_ornament"
     assert set(payload.keys()) == {"hp", "force", "intellect", "agility", "luck"}
-    assert 47 <= payload["force"] + payload["intellect"] + payload["agility"] + payload["luck"] <= 59
-    assert 135 <= payload["hp"] <= 215
+    assert 48 <= payload["force"] + payload["intellect"] + payload["agility"] + payload["luck"] <= 65
+    assert 800 <= payload["hp"] <= 1600
     assert payload["force"] > payload["intellect"]
     assert payload["agility"] >= payload["luck"]
     assert not Guest.objects.filter(pk=guest.pk).exists()
@@ -320,8 +320,8 @@ def test_use_soul_container_generates_blue_ornament_with_civil_bias(
 
     assert generated_item.template.name == "北冥冰链"
     assert generated_item.template.rarity == "blue"
-    assert 65 <= payload["force"] + payload["intellect"] + payload["agility"] + payload["luck"] <= 81
-    assert 215 <= payload["hp"] <= 325
+    assert 67 <= payload["force"] + payload["intellect"] + payload["agility"] + payload["luck"] <= 85
+    assert 1500 <= payload["hp"] <= 2500
     assert payload["intellect"] > payload["force"]
     assert payload["intellect"] >= payload["agility"]
     assert all(payload[stat] > 0 for stat in ["force", "intellect", "agility", "luck"])

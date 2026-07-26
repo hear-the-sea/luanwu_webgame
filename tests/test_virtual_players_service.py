@@ -115,7 +115,11 @@ def _bootstrap_projection_templates() -> dict[str, object]:
         name="虚拟玩家测试护院",
         default_count=120,
     )
-    return {"guest_template": guest_template, "gear_template": gear_template, "troop_template": troop_template}
+    return {
+        "guest_template": guest_template,
+        "gear_template": gear_template,
+        "troop_template": troop_template,
+    }
 
 
 @pytest.mark.django_db
@@ -582,7 +586,65 @@ def test_create_virtual_player_guests_learn_configured_extra_skills(settings):
 
 
 @pytest.mark.django_db
-def test_create_virtual_player_guests_rarely_learn_configured_high_tier_skills(settings):
+def test_extra_template_skills_respect_existing_skill_capacity(django_user_model):
+    from core.config import GUEST
+    from gameplay.services.virtual_players import _grant_extra_template_skills
+    from guests.services.recruitment_guests import create_guest_from_template
+
+    user = django_user_model.objects.create_user(username=_unique("bot_full_skill_slots"), password="pass123")
+    template = GuestTemplate.objects.create(
+        key=_unique("bot_full_skill_template"),
+        name="虚拟玩家满技能位门客",
+        archetype=GuestArchetype.MILITARY,
+        rarity=GuestRarity.GREEN,
+    )
+    skills = [
+        Skill.objects.create(
+            key=_unique("bot_full_skill"),
+            name=f"虚拟玩家满技能位技能{index}",
+        )
+        for index in range(int(GUEST.MAX_SKILL_SLOTS) + 1)
+    ]
+    template.initial_skills.add(*skills)
+    guest = create_guest_from_template(manor=ensure_manor(user), template=template, grant_skills=False)
+    for skill in skills[: int(GUEST.MAX_SKILL_SLOTS)]:
+        GuestSkill.objects.create(guest=guest, skill=skill)
+
+    assert _grant_extra_template_skills(guest) == 0
+    assert guest.guest_skills.count() == int(GUEST.MAX_SKILL_SLOTS)
+
+
+@pytest.mark.django_db
+def test_extra_template_skills_cap_oversized_initial_skill_set(django_user_model):
+    from core.config import GUEST
+    from gameplay.services.virtual_players import _grant_extra_template_skills
+    from guests.services.recruitment_guests import create_guest_from_template
+
+    user = django_user_model.objects.create_user(username=_unique("bot_oversized_skill_set"), password="pass123")
+    template = GuestTemplate.objects.create(
+        key=_unique("bot_oversized_skill_template"),
+        name="虚拟玩家超量模板技能门客",
+        archetype=GuestArchetype.MILITARY,
+        rarity=GuestRarity.GREEN,
+    )
+    skills = [
+        Skill.objects.create(
+            key=_unique("bot_oversized_skill"),
+            name=f"虚拟玩家超量模板技能{index}",
+        )
+        for index in range(int(GUEST.MAX_SKILL_SLOTS) + 2)
+    ]
+    template.initial_skills.add(*skills)
+    guest = create_guest_from_template(manor=ensure_manor(user), template=template, grant_skills=False)
+
+    assert _grant_extra_template_skills(guest) == int(GUEST.MAX_SKILL_SLOTS)
+    assert guest.guest_skills.count() == int(GUEST.MAX_SKILL_SLOTS)
+
+
+@pytest.mark.django_db
+def test_create_virtual_player_guests_rarely_learn_configured_high_tier_skills(
+    settings,
+):
     from gameplay.models import BotProfile
     from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
 
@@ -667,16 +729,19 @@ def test_configured_high_tier_skills_get_priority_over_regular_extra_skills(sett
         growth_seed=273,
         projection=BotProjectionConfig(prestige=2200, building_level=6, guest_count=1, guest_level=8),
     )
+    guest = profile.manor.guests.get()
+    before_skill_count = guest.guest_skills.count()
     _run_due_bot_maintenance(profile, now=timezone.now(), growth_stage=7)
 
-    guest = profile.manor.guests.get()
     learned_keys = set(guest.guest_skills.values_list("skill__key", flat=True))
     assert high_tier_skill.key in learned_keys
-    assert guest.guest_skills.count() == 3
+    assert guest.guest_skills.count() == before_skill_count + 1
 
 
 @pytest.mark.django_db
-def test_create_virtual_player_projects_tradeable_inventory_and_skips_untradeable(settings):
+def test_create_virtual_player_projects_tradeable_inventory_and_skips_untradeable(
+    settings,
+):
     from gameplay.models import BotProfile
     from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
 
@@ -757,28 +822,52 @@ def test_bot_archetype_changes_inventory_and_gear_projection(settings):
         prestige_band="junior",
         archetype=BotProfile.Archetype.BALANCED,
         growth_seed=301,
-        projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=1, guest_level=10, troop_count=100),
+        projection=BotProjectionConfig(
+            prestige=1200,
+            building_level=4,
+            guest_count=1,
+            guest_level=10,
+            troop_count=100,
+        ),
     )
     rich = create_virtual_player(
         region="north",
         prestige_band="junior",
         archetype=BotProfile.Archetype.RICH,
         growth_seed=302,
-        projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=1, guest_level=10, troop_count=100),
+        projection=BotProjectionConfig(
+            prestige=1200,
+            building_level=4,
+            guest_count=1,
+            guest_level=10,
+            troop_count=100,
+        ),
     )
     dojo = create_virtual_player(
         region="north",
         prestige_band="junior",
         archetype=BotProfile.Archetype.DOJO,
         growth_seed=303,
-        projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=1, guest_level=10, troop_count=100),
+        projection=BotProjectionConfig(
+            prestige=1200,
+            building_level=4,
+            guest_count=1,
+            guest_level=10,
+            troop_count=100,
+        ),
     )
     guard = create_virtual_player(
         region="north",
         prestige_band="junior",
         archetype=BotProfile.Archetype.GUARD,
         growth_seed=304,
-        projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=1, guest_level=10, troop_count=100),
+        projection=BotProjectionConfig(
+            prestige=1200,
+            building_level=4,
+            guest_count=1,
+            guest_level=10,
+            troop_count=100,
+        ),
     )
 
     assert dojo.manor.guests.get().level > balanced.manor.guests.get().level > rich.manor.guests.get().level
@@ -804,7 +893,9 @@ def test_bot_archetype_changes_inventory_and_gear_projection(settings):
 
 
 @pytest.mark.django_db
-def test_create_virtual_player_materializes_configured_item_equipment_templates(settings):
+def test_create_virtual_player_materializes_configured_item_equipment_templates(
+    settings,
+):
     from gameplay.models import BotProfile
     from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
 
@@ -888,6 +979,7 @@ def test_virtual_player_all_projection_pools_use_available_templates(settings):
     settings.VIRTUAL_PLAYER_CONFIG = {
         "projection": {
             "guest_template_keys": "__all__",
+            "guest_max_rarity_by_stage": {1: "blue"},
             "gear_template_keys": "__all__",
             "gear_slots_by_archetype": {"balanced": 2},
             "gear_max_rarity_by_stage": {1: "blue"},
@@ -906,10 +998,14 @@ def test_virtual_player_all_projection_pools_use_available_templates(settings):
         growth_seed=8181,
         projection=BotProjectionConfig(prestige=1200, building_level=4, guest_count=2, guest_level=4),
     )
+    initial_guest_keys = set(profile.manor.guests.values_list("template__key", flat=True))
+    assert len(initial_guest_keys) == 2
+    assert "__all__" not in initial_guest_keys
+    assert initial_guest_keys <= set(GuestTemplate.objects.values_list("key", flat=True))
+
     _run_due_bot_maintenance(profile, now=timezone.now(), growth_stage=3)
 
     guest_keys = set(profile.manor.guests.values_list("template__key", flat=True))
-    assert len(guest_keys) == 2
     assert "__all__" not in guest_keys
     assert guest_keys <= set(GuestTemplate.objects.values_list("key", flat=True))
     gear_keys = set(GearItem.objects.filter(manor=profile.manor).values_list("template__key", flat=True))
@@ -1034,9 +1130,15 @@ def test_real_player_can_scout_virtual_player_and_receive_normal_intel(settings,
     bot_profile.manor.coordinate_y = 35
     bot_profile.manor.save(update_fields=["coordinate_x", "coordinate_y"])
 
-    monkeypatch.setattr(scout_service.scout_followups, "schedule_scout_completion", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
-        scout_service.scout_followups, "schedule_scout_return_completion", lambda *_args, **_kwargs: None
+        scout_service.scout_followups,
+        "schedule_scout_completion",
+        lambda *_args, **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        scout_service.scout_followups,
+        "schedule_scout_return_completion",
+        lambda *_args, **_kwargs: None,
     )
     monkeypatch.setattr(scout_service, "_roll_scout_success", lambda: 0.0)
 
@@ -1157,7 +1259,9 @@ def test_due_virtual_player_maintenance_grows_or_marks_stale(settings):
 
 
 @pytest.mark.django_db
-def test_virtual_player_maintenance_pays_salaries_only_for_active_and_slowing_profiles(settings):
+def test_virtual_player_maintenance_pays_salaries_only_for_active_and_slowing_profiles(
+    settings,
+):
     from gameplay.models import BotProfile
     from gameplay.services.virtual_players import (
         BotProjectionConfig,
@@ -1180,7 +1284,12 @@ def test_virtual_player_maintenance_pays_salaries_only_for_active_and_slowing_pr
     now = timezone.now()
     profiles = {}
     for index, state in enumerate(
-        (BotProfile.State.ACTIVE, BotProfile.State.SLOWING, BotProfile.State.ABANDONED, BotProfile.State.RETIRED)
+        (
+            BotProfile.State.ACTIVE,
+            BotProfile.State.SLOWING,
+            BotProfile.State.ABANDONED,
+            BotProfile.State.RETIRED,
+        )
     ):
         profile = create_virtual_player(
             region="east",
@@ -1276,7 +1385,7 @@ def test_due_virtual_player_maintenance_samples_real_player_projection(settings,
     assert profile.growth_stage == 5
     assert profile.manor.buildings.get(building_type__key=BuildingKeys.SILVER_VAULT).level == 5
     assert profile.manor.guests.count() == 2
-    assert set(profile.manor.guests.values_list("level", flat=True)) == {6}
+    assert set(profile.manor.guests.values_list("level", flat=True)) == {1, 4}
     assert PlayerTechnology.objects.get(manor=profile.manor, tech_key="dao_attack").level == 2
     maintained_log = next(
         record for record in caplog.records if getattr(record, "event", None) == "virtual_player_maintained"
@@ -1284,6 +1393,12 @@ def test_due_virtual_player_maintenance_samples_real_player_projection(settings,
     assert maintained_log.manor_id == profile.manor_id
     assert maintained_log.before_building_level == 3
     assert maintained_log.after_building_level == 5
+    assert maintained_log.guest_growth_phase == "quantity"
+
+    next_cycle = now + timedelta(hours=1)
+    BotProfile.objects.filter(pk=profile.pk).update(next_growth_at=next_cycle - timedelta(minutes=1))
+    assert maintain_due_virtual_players(now=next_cycle, limit=10) == 1
+    assert set(profile.manor.guests.values_list("level", flat=True)) == {4, 6}
 
 
 @pytest.mark.django_db
@@ -1378,7 +1493,9 @@ def test_virtual_player_rare_and_powerful_inventory_respects_daily_global_caps(s
 
 
 @pytest.mark.django_db
-def test_virtual_player_inventory_cap_counter_rolls_back_with_failed_generation(settings):
+def test_virtual_player_inventory_cap_counter_rolls_back_with_failed_generation(
+    settings,
+):
     from gameplay.models import BotInventoryDailyCounter, BotProfile
     from gameplay.services.virtual_players import (
         BotProjectionConfig,
@@ -1426,7 +1543,9 @@ def test_virtual_player_inventory_cap_counter_rolls_back_with_failed_generation(
 
 
 @pytest.mark.django_db(transaction=True)
-def test_virtual_player_inventory_daily_counter_caps_repeated_creates_in_one_transaction(settings):
+def test_virtual_player_inventory_daily_counter_caps_repeated_creates_in_one_transaction(
+    settings,
+):
     from gameplay.models import BotInventoryDailyCounter, BotProfile
     from gameplay.services.virtual_players import (
         BotProjectionConfig,
@@ -1967,7 +2086,11 @@ def test_virtual_player_capacity_uses_dynamic_plan_and_maintained_count(settings
             "global_active_multiplier": 20,
         },
         "prestige_bands": {"newbie": [0, 500]},
-        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+        },
     }
     virtual_players.create_virtual_player(
         region="north",
@@ -2005,7 +2128,11 @@ def test_capacity_owned_creation_stops_at_dynamic_cap(settings):
             "global_active_multiplier": 0,
         },
         "prestige_bands": {"newbie": [0, 500]},
-        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+        },
     }
     now = timezone.now()
     virtual_players.create_virtual_player(
@@ -2047,7 +2174,11 @@ def test_capacity_owned_reactivation_stops_at_dynamic_cap(settings):
             "global_active_multiplier": 0,
         },
         "prestige_bands": {"newbie": [0, 500]},
-        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+        },
     }
     now = timezone.now()
     virtual_players.create_virtual_player(
@@ -2095,7 +2226,11 @@ def test_population_provisioning_cannot_bypass_capacity_owner(settings, monkeypa
             "global_active_multiplier": 0,
         },
         "prestige_bands": {"newbie": [0, 500]},
-        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+        },
     }
     monkeypatch.setattr(
         virtual_players,
@@ -2136,7 +2271,11 @@ def test_regional_population_retirement_uses_target_band(settings):
             "global_active_multiplier": 1,
         },
         "prestige_bands": {"newbie": [0, 500], "junior": [500, 2000]},
-        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+        },
     }
     now = timezone.now()
     newbie = virtual_players.create_virtual_player(
@@ -2192,7 +2331,11 @@ def test_population_retargets_existing_profile_without_changing_actual_prestige(
             "rolling_batch_size": [1, 1],
         },
         "prestige_bands": {"newbie": [0, 500], "junior": [500, 2000]},
-        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+        },
     }
     real = ensure_manor(
         django_user_model.objects.create_user(
@@ -2238,7 +2381,11 @@ def test_population_roll_retargets_before_retiring_or_creating(settings, django_
             "rolling_batch_size": [1, 1],
         },
         "prestige_bands": {"newbie": [0, 500], "junior": [500, 2000]},
-        "projection": {"guest_template_keys": [], "gear_template_keys": [], "troop_template_keys": []},
+        "projection": {
+            "guest_template_keys": [],
+            "gear_template_keys": [],
+            "troop_template_keys": [],
+        },
     }
     real = ensure_manor(
         django_user_model.objects.create_user(
@@ -2438,7 +2585,11 @@ def test_population_roll_release_does_not_delete_reacquired_owner_lock(monkeypat
         "_release_cache_lock_atomic_if_owner",
         lambda *_a, **_k: cache_lock._AtomicCacheLockReleaseResult.NOT_OWNER,
     )
-    monkeypatch.setattr(virtual_players, "_roll_virtual_player_population_unlocked", _replace_expired_lock)
+    monkeypatch.setattr(
+        virtual_players,
+        "_roll_virtual_player_population_unlocked",
+        _replace_expired_lock,
+    )
 
     assert virtual_players.roll_virtual_player_population(limit=4, now=timezone.now()) == 4
     assert acquired_tokens and acquired_tokens[0] != replacement_token
@@ -2658,7 +2809,11 @@ def test_population_roll_returns_zero_when_lock_is_held(settings):
     from gameplay.services.virtual_players import roll_virtual_player_population
 
     settings.VIRTUAL_PLAYER_CONFIG = {
-        "population": {"min_per_region": 20, "min_attackable_per_band": 10, "hard_cap": 20},
+        "population": {
+            "min_per_region": 20,
+            "min_attackable_per_band": 10,
+            "hard_cap": 20,
+        },
         "projection": {"guest_template_keys": [], "gear_template_keys": []},
     }
     cache.add("virtual_players:roll_lock", "1", timeout=60)
@@ -2679,7 +2834,11 @@ def test_due_maintenance_keeps_target_prestige_band_while_bot_grows(settings):
 
     _bootstrap_projection_templates()
     settings.VIRTUAL_PLAYER_CONFIG = {
-        "population": {"min_per_region": 0, "min_attackable_per_band": 0, "hard_cap": 10},
+        "population": {
+            "min_per_region": 0,
+            "min_attackable_per_band": 0,
+            "hard_cap": 10,
+        },
         "prestige_bands": {"newbie": [0, 500], "junior": [500, 2000]},
         "projection": {"guest_template_keys": [], "gear_template_keys": []},
     }
@@ -2713,8 +2872,16 @@ def test_virtual_player_tracks_target_and_current_prestige_bands_separately(sett
 
     _bootstrap_projection_templates()
     settings.VIRTUAL_PLAYER_CONFIG = {
-        "population": {"min_per_region": 0, "min_attackable_per_band": 0, "hard_cap": 10},
-        "prestige_bands": {"newbie": [0, 500], "junior": [500, 2000], "middle": [2000, 8000]},
+        "population": {
+            "min_per_region": 0,
+            "min_attackable_per_band": 0,
+            "hard_cap": 10,
+        },
+        "prestige_bands": {
+            "newbie": [0, 500],
+            "junior": [500, 2000],
+            "middle": [2000, 8000],
+        },
         "projection": {"guest_template_keys": [], "gear_template_keys": []},
     }
     now = timezone.now()
@@ -2750,7 +2917,11 @@ def test_due_maintenance_keeps_current_band_until_bounded_growth_crosses_band(se
 
     _bootstrap_projection_templates()
     settings.VIRTUAL_PLAYER_CONFIG = {
-        "population": {"min_per_region": 0, "min_attackable_per_band": 0, "hard_cap": 10},
+        "population": {
+            "min_per_region": 0,
+            "min_attackable_per_band": 0,
+            "hard_cap": 10,
+        },
         "prestige_bands": {"newbie": [0, 500], "junior": [500, 2000]},
         "projection": {"guest_template_keys": [], "gear_template_keys": []},
     }
@@ -2796,7 +2967,11 @@ def test_due_maintenance_syncs_profile_prestige_band_after_growth(settings):
 
     _bootstrap_projection_templates()
     settings.VIRTUAL_PLAYER_CONFIG = {
-        "population": {"min_per_region": 0, "min_attackable_per_band": 0, "hard_cap": 10},
+        "population": {
+            "min_per_region": 0,
+            "min_attackable_per_band": 0,
+            "hard_cap": 10,
+        },
         "prestige_bands": {"junior": [500, 2000], "middle": [2000, 8000]},
         "projection": {"guest_template_keys": [], "gear_template_keys": []},
     }

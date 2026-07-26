@@ -21,6 +21,13 @@
         </button>
     </div>
 
+    {% if not market_can_buy_or_list %}
+    <div class="tw-alert-warning mb-4" role="status">
+        <strong>购买与上架未解锁</strong>
+        <span>当前声望 {{ manor.prestige }}，达到 {{ market_min_prestige }} 后可在集市购买或上架道具。</span>
+    </div>
+    {% endif %}
+
     {% if market_view == 'buy' or not market_view %}
     <!-- 购买区 -->
     <div id="market-buy-section" class="tw-trade-card">
@@ -121,12 +128,16 @@
                                 {% csrf_token %}
                                 <button type="submit"
                                         class="tw-btn-trade"
-                                        {% if listing.seller == manor %}
+                                        {% if not market_can_buy_or_list %}
+                                        disabled title="声望达到 {{ market_min_prestige }} 后可购买"
+                                        {% elif listing.seller == manor %}
                                         disabled title="不能购买自己的商品"
                                         {% elif manor.silver < listing.total_price %}
                                         disabled title="银两不足"
                                         {% endif %}>
-                                    {% if listing.seller == manor %}
+                                    {% if not market_can_buy_or_list %}
+                                    声望不足
+                                    {% elif listing.seller == manor %}
                                     无法购买
                                     {% else %}
                                     购买
@@ -227,8 +238,9 @@
                                     data-available="{{ item.quantity }}"
                                     data-min-price="{{ item.template.price }}"
                                     data-rarity="{{ item.template.rarity|default:'gray' }}"
-                                    data-image-url="{% if item.template.image %}{{ item.template.image.url }}{% endif %}">
-                                上架
+                                    data-image-url="{% if item.template.image %}{{ item.template.image.url }}{% endif %}"
+                                    {% if not market_can_buy_or_list %}disabled title="声望达到 {{ market_min_prestige }} 后可上架"{% endif %}>
+                                {% if market_can_buy_or_list %}上架{% else %}声望不足{% endif %}
                             </button>
                         </td>
                     </tr>
@@ -478,7 +490,11 @@
 
             <div class="tw-modal-footer">
                 <button type="button" class="tw-btn-secondary" data-trade-close-modal="listing">取消</button>
-                <button type="submit" class="tw-btn-primary">确认上架</button>
+                <button type="submit"
+                        class="tw-btn-primary"
+                        {% if not market_can_buy_or_list %}disabled title="声望达到 {{ market_min_prestige }} 后可上架"{% endif %}>
+                    确认上架
+                </button>
             </div>
         </form>
     </div>

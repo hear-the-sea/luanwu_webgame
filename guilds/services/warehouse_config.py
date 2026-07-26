@@ -124,6 +124,17 @@ def get_production_items(tech_key: str, level: int) -> List[ProductionItem]:
     return []
 
 
+def get_warehouse_production_item_keys() -> frozenset[str]:
+    """获取所有帮会科技会产出的仓库物品键。"""
+    return frozenset(
+        item.item_key
+        for production in get_warehouse_production().values()
+        for items in production.levels.values()
+        for item in items
+        if item.item_key
+    )
+
+
 def get_weekly_personal_limit(item_key: str) -> int:
     """获取物品每周个人兑换上限；0 表示不限购。"""
     normalized_key = str(item_key or "").strip()

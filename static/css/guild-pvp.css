@@ -115,7 +115,7 @@
   width: 100%;
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border-light);
-  border-radius: 0.62rem;
+  border-radius: 0.375rem;
   background: linear-gradient(180deg, var(--bg-panel), var(--bg-hover));
   color: var(--text-primary);
   text-align: left;
@@ -289,7 +289,7 @@
   gap: 0.7rem;
   padding: 0.56rem 0.62rem;
   border: 1px solid var(--border-light);
-  border-radius: 0.56rem;
+  border-radius: 0.375rem;
   background: linear-gradient(180deg, var(--bg-panel), var(--bg-hover));
 }
 
@@ -359,7 +359,7 @@
 .gpvp-page .gpvp-empty-state {
   padding: 0.85rem;
   border: 1px dashed var(--border-light);
-  border-radius: 0.72rem;
+  border-radius: 0.375rem;
   text-align: center;
   background: rgba(255, 248, 231, 0.6);
 }
@@ -397,6 +397,12 @@
     flex-basis: auto;
   }
 
+  .gpvp-page .gpvp-search-input {
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 2.5rem;
+  }
+
   .gpvp-page .gpvp-troop-controls {
     justify-content: flex-start;
     flex-wrap: wrap;
@@ -404,6 +410,6 @@
 
   .gpvp-page .gpvp-scroll-panel,
   .gpvp-page .gpvp-target-list {
-    max-height: none;
+    max-height: 32rem;
   }
 }

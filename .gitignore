@@ -58,6 +58,7 @@ celerybeat.pid
 *.swp
 *.swo
 *~
+~$*.xlsx
 .DS_Store
 .claude/
 .omc/

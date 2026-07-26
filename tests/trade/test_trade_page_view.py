@@ -23,6 +23,23 @@ def test_trade_view_renders(monkeypatch, client, django_user_model):
 
 
 @pytest.mark.django_db
+def test_market_page_disables_listing_for_low_prestige_user(client, django_user_model):
+    user = django_user_model.objects.create_user(username="trade_market_low_prestige", password="pass12345")
+    manor = ensure_manor(user)
+    manor.prestige = 299
+    manor.save(update_fields=["prestige"])
+    client.force_login(user)
+
+    resp = client.get(reverse("trade:trade"), {"tab": "market", "view": "buy"})
+
+    assert resp.status_code == 200
+    content = resp.content.decode("utf-8")
+    assert "购买与上架未解锁" in content
+    assert "当前声望 299，达到 300" in content
+    assert 'disabled title="声望达到 300 后可上架"' in content
+
+
+@pytest.mark.django_db
 def test_trade_view_creates_manor_when_missing(monkeypatch, client, django_user_model):
     monkeypatch.setattr("trade.views.build_trade_page_context", lambda *_args, **_kwargs: {"current_tab": "shop"})
 

@@ -212,6 +212,73 @@ class TestInventoryGuestItemActions:
         assert payload["success"] is False
         assert "use blocked" in payload["error"]
 
+    def test_use_resource_pack_ajax_requires_and_accepts_overflow_confirmation(self, manor_with_user):
+        manor, client = manor_with_user
+        manor.silver = manor.silver_capacity
+        manor.save(update_fields=["silver"])
+        template = ItemTemplate.objects.create(
+            key="view_resource_pack_overflow_confirmation",
+            name="满额银两包",
+            effect_type=ItemTemplate.EffectType.RESOURCE_PACK,
+            is_usable=True,
+            effect_payload={"silver": 500},
+        )
+        item = InventoryItem.objects.create(manor=manor, template=template, quantity=1)
+        url = reverse("gameplay:use_item", kwargs={"pk": item.pk})
+
+        response = client.post(url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+
+        assert response.status_code == 409
+        payload = response.json()
+        assert payload["success"] is False
+        assert payload["requires_confirmation"] is True
+        assert payload["confirmation_type"] == "resource_overflow"
+        assert payload["confirmation_title"] == "资源溢出确认"
+        assert payload["credited_resources"] == {}
+        assert payload["overflow_resources"] == {"silver": 500}
+        assert isinstance(payload["confirmation_token"], str)
+        assert "道具仍会消耗1个" in payload["confirmation_message"]
+        item.refresh_from_db()
+        assert item.quantity == 1
+
+        first_confirmation_token = payload["confirmation_token"]
+        response = client.post(
+            url,
+            {"resource_overflow_confirmation": f"{first_confirmation_token}tampered"},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        assert response.status_code == 409
+        item.refresh_from_db()
+        assert item.quantity == 1
+
+        manor.silver = manor.silver_capacity - 100
+        manor.save(update_fields=["silver"])
+        response = client.post(
+            url,
+            {"resource_overflow_confirmation": first_confirmation_token},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        assert response.status_code == 409
+        payload = response.json()
+        assert payload["credited_resources"] == {"silver": 100}
+        assert payload["overflow_resources"] == {"silver": 400}
+        assert payload["confirmation_token"] != first_confirmation_token
+        item.refresh_from_db()
+        assert item.quantity == 1
+
+        response = client.post(
+            url,
+            {"resource_overflow_confirmation": payload["confirmation_token"]},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["success"] is True
+        assert payload["message"] == "满额银两包 使用成功：实际获得：银两+100；因容量上限未获得：银两+400"
+        assert not InventoryItem.objects.filter(pk=item.pk).exists()
+
     def test_use_item_allows_fifty_requests_per_minute(self, manor_with_user, monkeypatch):
         cache.clear()
         manor, client = manor_with_user

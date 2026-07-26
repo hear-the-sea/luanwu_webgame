@@ -2,23 +2,24 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, Sequence, Tuple
+from typing import Any, Dict, Sequence, Tuple
 
 from django.db import IntegrityError
-from django.db.models import Count, F, QuerySet, Sum
+from django.db.models import F, QuerySet
 
 from core.utils import safe_positive_int
 
 from ....models import InventoryItem, ItemTemplate, Manor, ResourceEvent
-from ...pvp_runtime.loot import normalize_positive_int_mapping
-from ...resources import log_resource_gain
-from .config import (
-    LOOT_ITEM_SAMPLE_BATCH_SIZE,
-    LOOT_ITEM_SAMPLE_MAX_BATCHES,
-    LOOT_ITEM_SMALL_INVENTORY_THRESHOLD,
-    PVPConstants,
-    random,
+from ...inventory.core import GRAIN_ITEM_KEY, sync_warehouse_grain_item_locked
+from ...pvp_runtime.loot import (
+    WeightedLootCandidate,
+    calculate_item_loot_capacity,
+    calculate_item_loot_draw_count,
+    draw_weighted_item_loot,
+    normalize_positive_int_mapping,
 )
+from ...resources import log_resource_gain
+from .config import PVPConstants, random
 from .troops import _extract_raid_troops_lost, _normalize_mapping
 
 
@@ -80,12 +81,21 @@ def _calculate_item_loot_capacity(
     if resource_max <= 0:
         return max_capacity
 
-    resource_cap = _calculate_resource_loot_cap(
-        guests=guests,
-        troop_loadout=troop_loadout,
-        battle_report=battle_report,
+    normalized_loadout = normalize_positive_int_mapping(troop_loadout)
+    deployed_troops = sum(normalized_loadout.values())
+    troop_losses = _extract_raid_troops_lost(normalized_loadout, battle_report)
+    surviving_troop_count = max(0, deployed_troops - sum(troop_losses.values()))
+    return calculate_item_loot_capacity(
+        max_capacity=max_capacity,
+        guest_count=len(guests or []),
+        troop_loadout=normalized_loadout,
+        surviving_troop_count=surviving_troop_count,
+        full_guest_count=PVPConstants.LOOT_FULL_GUEST_COUNT,
+        full_troop_count=PVPConstants.LOOT_FULL_TROOP_COUNT,
+        min_cap_ratio=PVPConstants.LOOT_MIN_CAP_RATIO,
+        survival_base_ratio=PVPConstants.LOOT_SURVIVAL_BASE_RATIO,
+        survival_scaling_ratio=PVPConstants.LOOT_SURVIVAL_SCALING_RATIO,
     )
-    return int(max_capacity * min(resource_cap / resource_max, 1.0))
 
 
 def _calculate_resource_loot(
@@ -102,11 +112,6 @@ def _calculate_resource_loot(
         troop_loadout=troop_loadout,
         battle_report=battle_report,
     )
-
-    if defender.grain > 0:
-        loot_grain = min(int(defender.grain * loot_percent), loot_cap)
-        if loot_grain > 0:
-            loot_resources["grain"] = loot_grain
 
     if defender.silver > 0:
         loot_silver = min(int(defender.silver * loot_percent), loot_cap)
@@ -125,145 +130,22 @@ def _build_loot_item_queryset(defender: Manor) -> QuerySet[InventoryItem]:
     )
 
 
-def _parse_loot_candidate(row: Dict[str, Any], loot_items: Dict[str, int]) -> Tuple[str, int, float, int] | None:
-    quantity = int(row.get("quantity", 0) or 0)
-    if quantity <= 0:
-        return None
-
-    template_key = row.get("template__key")
-    if not template_key:
-        return None
-    template_key = str(template_key)
-    if template_key in loot_items:
-        return None
-
-    rarity = row.get("template__rarity") or "gray"
-    if not isinstance(rarity, str):
-        rarity = str(rarity)
-
-    rarity_mult = PVPConstants.RARITY_LOOT_MULTIPLIER.get(rarity, 1.0)
-    loot_chance = PVPConstants.LOOT_ITEM_BASE_CHANCE * rarity_mult
-    storage_space = safe_positive_int(row.get("template__storage_space", 1), 1)
-    return template_key, quantity, loot_chance, max(1, storage_space)
-
-
-def _roll_loot_quantity(
-    quantity: int,
-    *,
-    remaining_capacity: int,
-    remaining_quantity: int,
-    storage_space: int,
-) -> int:
-    if remaining_capacity <= 0 or remaining_quantity <= 0 or storage_space <= 0:
-        return 0
-    max_qty = min(
-        quantity,
-        PVPConstants.LOOT_ITEM_MAX_QUANTITY,
-        remaining_quantity,
-        remaining_capacity // storage_space,
-    )
-    if max_qty <= 0:
-        return 0
-    loot_qty = random.randint(1, max(1, max_qty))
-    return min(loot_qty, quantity)
-
-
-def _try_loot_from_row(
-    row: Dict[str, Any],
-    loot_items: Dict[str, int],
-    *,
-    remaining_capacity: int,
-    remaining_quantity: int,
-) -> Tuple[str, int, int] | None:
-    candidate = _parse_loot_candidate(row, loot_items)
-    if candidate is None:
-        return None
-
-    template_key, quantity, loot_chance, storage_space = candidate
-    if random.random() >= loot_chance:
-        return None
-
-    loot_qty = _roll_loot_quantity(
-        quantity,
-        remaining_capacity=remaining_capacity,
-        remaining_quantity=remaining_quantity,
-        storage_space=storage_space,
-    )
-    if loot_qty <= 0:
-        return None
-    return template_key, loot_qty, storage_space * loot_qty
-
-
-def _collect_loot_from_rows(
-    rows: Iterable[Dict[str, Any]],
-    loot_items: Dict[str, int],
-    *,
-    items_looted: int,
-    max_loot_items: int,
-    remaining_capacity: int,
-    remaining_quantity: int,
-) -> tuple[int, int, int]:
+def _build_weighted_loot_candidates(base_qs: QuerySet[InventoryItem]) -> list[WeightedLootCandidate]:
+    candidates: list[WeightedLootCandidate] = []
+    rows = base_qs.order_by("id").values("quantity", "template__key", "template__storage_space")
     for row in rows:
-        if items_looted >= max_loot_items:
-            break
-        if remaining_capacity <= 0 or remaining_quantity <= 0:
-            break
-
-        looted = _try_loot_from_row(
-            row,
-            loot_items,
-            remaining_capacity=remaining_capacity,
-            remaining_quantity=remaining_quantity,
-        )
-        if looted is None:
+        item_key = str(row.get("template__key") or "").strip()
+        quantity = safe_positive_int(row.get("quantity"), 0)
+        if not item_key or quantity <= 0:
             continue
-
-        template_key, loot_qty, capacity_used = looted
-        loot_items[template_key] = loot_qty
-        items_looted += 1
-        remaining_capacity -= capacity_used
-        remaining_quantity -= loot_qty
-
-    return items_looted, remaining_capacity, remaining_quantity
-
-
-def _build_small_inventory_rows(base_qs: QuerySet[InventoryItem]) -> list[Dict[str, Any]]:
-    rows: list[Dict[str, Any]] = list(
-        base_qs.values("quantity", "template__key", "template__rarity", "template__storage_space")  # type: ignore[arg-type]
-    )
-    random.shuffle(rows)
-    return rows
-
-
-def _iter_sample_batches(base_qs: QuerySet[InventoryItem]) -> Iterable[list[Dict[str, Any]]]:
-    seen_ids: set[int] = set()
-    for _ in range(LOOT_ITEM_SAMPLE_MAX_BATCHES):
-        remaining_qs = base_qs.exclude(id__in=seen_ids) if seen_ids else base_qs
-        remaining_count = remaining_qs.count()
-        if remaining_count <= 0:
-            break
-
-        batch_size = min(LOOT_ITEM_SAMPLE_BATCH_SIZE, remaining_count)
-        max_offset = max(0, remaining_count - batch_size)
-        offset = random.randint(0, max_offset) if max_offset else 0
-
-        batch_rows: list[Dict[str, Any]] = list(
-            remaining_qs.order_by("id").values(  # type: ignore[arg-type]
-                "id",
-                "quantity",
-                "template__key",
-                "template__rarity",
-                "template__storage_space",
-            )[offset : offset + batch_size]
+        candidates.append(
+            {
+                "item_key": item_key,
+                "remaining_quantity": quantity,
+                "storage_space": safe_positive_int(row.get("template__storage_space"), 1),
+            }
         )
-        if not batch_rows:
-            continue
-
-        for row in batch_rows:
-            seen_ids.add(int(row["id"]))
-
-        random.shuffle(batch_rows)
-        yield batch_rows
+    return candidates
 
 
 def _calculate_loot_items(
@@ -273,50 +155,18 @@ def _calculate_loot_items(
     troop_loadout: Dict[str, int] | None = None,
     battle_report: Any = None,
 ) -> Dict[str, int]:
-    loot_items: Dict[str, int] = {}
-    items_looted = 0
-    max_loot_items = PVPConstants.LOOT_ITEM_MAX_COUNT
-    remaining_capacity = _calculate_item_loot_capacity(
+    capacity = _calculate_item_loot_capacity(
         guests=guests,
         troop_loadout=troop_loadout,
         battle_report=battle_report,
     )
-
-    inventory_totals = base_qs.aggregate(
-        total_candidates=Count("id"),
-        total_quantity=Sum("quantity"),
+    candidates = _build_weighted_loot_candidates(base_qs)
+    total_quantity = sum(int(candidate["remaining_quantity"]) for candidate in candidates)
+    draw_count = calculate_item_loot_draw_count(
+        total_quantity,
+        PVPConstants.LOOT_ITEM_MAX_QUANTITY_PERCENT,
     )
-    total_candidates = int(inventory_totals["total_candidates"] or 0)
-    total_quantity = int(inventory_totals["total_quantity"] or 0)
-    remaining_quantity = (
-        max(1, int(total_quantity * PVPConstants.LOOT_ITEM_MAX_QUANTITY_PERCENT)) if total_quantity > 0 else 0
-    )
-
-    if total_candidates <= LOOT_ITEM_SMALL_INVENTORY_THRESHOLD:
-        rows = _build_small_inventory_rows(base_qs)
-        _collect_loot_from_rows(
-            rows,
-            loot_items,
-            items_looted=items_looted,
-            max_loot_items=max_loot_items,
-            remaining_capacity=remaining_capacity,
-            remaining_quantity=remaining_quantity,
-        )
-        return loot_items
-
-    for batch_rows in _iter_sample_batches(base_qs):
-        items_looted, remaining_capacity, remaining_quantity = _collect_loot_from_rows(
-            batch_rows,
-            loot_items,
-            items_looted=items_looted,
-            max_loot_items=max_loot_items,
-            remaining_capacity=remaining_capacity,
-            remaining_quantity=remaining_quantity,
-        )
-        if items_looted >= max_loot_items or remaining_capacity <= 0 or remaining_quantity <= 0:
-            break
-
-    return loot_items
+    return draw_weighted_item_loot(candidates, draw_count=draw_count, capacity=capacity)
 
 
 def _calculate_loot(
@@ -363,6 +213,8 @@ def _apply_loot(
     manor = locked_manor or Manor.objects.select_for_update().get(pk=defender.pk)
     actual_resources: Dict[str, int] = {}
     actual_items: Dict[str, int] = {}
+    legacy_grain_requested = loot_resources.pop(GRAIN_ITEM_KEY, 0)
+    item_grain_requested = loot_items.pop(GRAIN_ITEM_KEY, 0)
 
     # 扣除资源（按当前可用量裁剪，避免不足导致回滚）
     for resource_key, amount in loot_resources.items():
@@ -375,11 +227,34 @@ def _apply_loot(
         setattr(manor, resource_key, current_value - deducted)
         actual_resources[resource_key] = deducted
 
-    if actual_resources:
-        manor.save(update_fields=list(actual_resources.keys()))
+    # 粮食虽然来自物品池，但 Manor.grain 是唯一账本；兼容旧记录中的资源粮食字段。
+    current_grain = max(0, int(manor.grain or 0))
+    legacy_grain_deducted = min(current_grain, legacy_grain_requested)
+    remaining_grain = current_grain - legacy_grain_deducted
+    item_grain_deducted = min(remaining_grain, item_grain_requested)
+    total_grain_deducted = legacy_grain_deducted + item_grain_deducted
+    if legacy_grain_deducted > 0:
+        actual_resources[GRAIN_ITEM_KEY] = legacy_grain_deducted
+    if item_grain_deducted > 0:
+        actual_items[GRAIN_ITEM_KEY] = item_grain_deducted
+    if total_grain_deducted > 0:
+        manor.grain = current_grain - total_grain_deducted
+
+    resource_deductions = dict(actual_resources)
+    if item_grain_deducted > 0:
+        resource_deductions[GRAIN_ITEM_KEY] = resource_deductions.get(GRAIN_ITEM_KEY, 0) + item_grain_deducted
+
+    update_fields = set(actual_resources.keys())
+    if total_grain_deducted > 0:
+        update_fields.add(GRAIN_ITEM_KEY)
+    if update_fields:
+        manor.save(update_fields=sorted(update_fields))
+    if total_grain_deducted > 0:
+        sync_warehouse_grain_item_locked(manor)
+    if resource_deductions:
         log_resource_gain(
             manor,
-            {key: -val for key, val in actual_resources.items()},
+            {key: -val for key, val in resource_deductions.items()},
             ResourceEvent.Reason.ADMIN_ADJUST,
             note="踢馆被掠夺",
         )
@@ -390,7 +265,7 @@ def _apply_loot(
             continue
         try:
             item = InventoryItem.objects.select_for_update().get(
-                manor=defender,
+                manor=manor,
                 template__key=item_key,
                 storage_location=InventoryItem.StorageLocation.WAREHOUSE,
             )

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import uuid
 from unittest.mock import AsyncMock, Mock
 
@@ -14,6 +15,7 @@ from websocket.backends.ip_capacity import (
     release_ip_capacity_slot,
 )
 from websocket.backends.worker_lease import worker_lease_key
+from websocket.close_codes import SERVICE_UNAVAILABLE_CLOSE_CODE
 from websocket.exceptions import WebSocketConnectionLimitUnavailable
 from websocket.middleware.ip_capacity import WebSocketIPCapacityMiddleware
 
@@ -238,6 +240,47 @@ async def test_ip_capacity_middleware_runs_inner_app_and_releases(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_ip_capacity_releases_slot_without_masking_app_error_when_heartbeat_failed(monkeypatch):
+    heartbeat_failed = asyncio.Event()
+
+    async def failed_heartbeat(*_args):
+        heartbeat_failed.set()
+        raise RuntimeError("heartbeat close failed")
+
+    async def failed_inner(*_args):
+        await heartbeat_failed.wait()
+        raise ValueError("inner application failed")
+
+    middleware = WebSocketIPCapacityMiddleware(failed_inner)
+    middleware._worker_lease_manager = AsyncMock()
+    middleware._worker_lease_manager.ensure_started.return_value = WORKER_ID
+    monkeypatch.setattr(
+        middleware,
+        "_acquire_capacity",
+        AsyncMock(return_value=IPCapacityDecision(IPCapacityResult.ACQUIRED, 1, 0, 0, 0)),
+    )
+    monkeypatch.setattr(middleware, "_release_capacity", AsyncMock())
+    monkeypatch.setattr(middleware, "_run_slot_heartbeat", failed_heartbeat)
+    exception_log = Mock()
+    monkeypatch.setattr("websocket.middleware.ip_capacity.logger.exception", exception_log)
+
+    with pytest.raises(ValueError, match="inner application failed"):
+        await middleware(
+            {
+                "type": "websocket",
+                "path": "/ws/online-stats/",
+                "client": ("203.0.113.8", 53100),
+                "headers": [],
+            },
+            AsyncMock(),
+            AsyncMock(),
+        )
+
+    middleware._release_capacity.assert_awaited_once()
+    exception_log.assert_called_once()
+
+
+@pytest.mark.asyncio
 async def test_ip_capacity_middleware_logs_dead_worker_cleanup_without_full_ip(monkeypatch):
     inner = AsyncMock()
     middleware = WebSocketIPCapacityMiddleware(inner)
@@ -291,7 +334,7 @@ async def test_ip_capacity_heartbeat_closes_when_slot_cannot_be_refreshed(monkey
 
     await middleware._run_slot_heartbeat("203.0.113.8", "connection", WORKER_ID, send)
 
-    send.assert_awaited_once_with({"type": "websocket.close", "code": 1013})
+    send.assert_awaited_once_with({"type": "websocket.close", "code": SERVICE_UNAVAILABLE_CLOSE_CODE})
 
 
 @pytest.mark.asyncio
@@ -350,7 +393,7 @@ async def test_ip_capacity_middleware_fails_closed_when_redis_is_unavailable(mon
         send,
     )
 
-    send.assert_awaited_once_with({"type": "websocket.close", "code": 1013})
+    send.assert_awaited_once_with({"type": "websocket.close", "code": SERVICE_UNAVAILABLE_CLOSE_CODE})
     inner.assert_not_awaited()
 
 
@@ -370,7 +413,7 @@ async def test_ip_capacity_middleware_fails_closed_when_worker_lease_is_unavaila
         send,
     )
 
-    send.assert_awaited_once_with({"type": "websocket.close", "code": 1013})
+    send.assert_awaited_once_with({"type": "websocket.close", "code": SERVICE_UNAVAILABLE_CLOSE_CODE})
     acquire.assert_not_awaited()
     inner.assert_not_awaited()
 

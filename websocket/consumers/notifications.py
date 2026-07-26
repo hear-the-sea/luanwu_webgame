@@ -5,6 +5,8 @@ import logging
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from gameplay.services.utils.notifications import CANONICAL_NOTIFICATION_FIELDS, normalize_notification_payload
+from websocket.close_codes import AUTHENTICATION_REQUIRED_CLOSE_CODE
+from websocket.close_codes import INVALID_SESSION_CLOSE_CODE as STALE_SESSION_CLOSE_CODE
 
 from ..utils import filter_payload
 from .session_guard import SingleSessionWebSocketMixin, WebSocketSessionValidationResult
@@ -15,8 +17,8 @@ logger = logging.getLogger(__name__)
 class NotificationConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsumer):
     """WebSocket consumer for per-user notifications."""
 
-    UNAUTHENTICATED_CLOSE_CODE = 4401
-    INVALID_SESSION_CLOSE_CODE = 4403
+    UNAUTHENTICATED_CLOSE_CODE = AUTHENTICATION_REQUIRED_CLOSE_CODE
+    INVALID_SESSION_CLOSE_CODE = STALE_SESSION_CLOSE_CODE
 
     group_name: str | None = None
 

@@ -5,6 +5,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const reconnectPolicyApi = require("../websocket_reconnect.js");
+const SERVICE_UNAVAILABLE_CLOSE_CODE = reconnectPolicyApi.CLOSE_CODES.SERVICE_UNAVAILABLE;
 
 function createOnlineStatsHarness({ random = 0.5 } = {}) {
   const scriptPath = path.resolve(__dirname, "..", "online_stats.js");
@@ -159,12 +160,12 @@ test("opening a new socket does not reset transient backoff", () => {
   const harness = createOnlineStatsHarness({ random: 0.5 });
 
   harness.sockets[0].open();
-  harness.sockets[0].closeWith(1013);
+  harness.sockets[0].closeWith(SERVICE_UNAVAILABLE_CLOSE_CODE);
   assert.equal(harness.reconnectTimers()[0].delay, 2000);
   harness.runTimer(harness.reconnectTimers()[0]);
 
   harness.sockets[1].open();
-  harness.sockets[1].closeWith(1013);
+  harness.sockets[1].closeWith(SERVICE_UNAVAILABLE_CLOSE_CODE);
   assert.equal(harness.reconnectTimers()[0].delay, 4000);
 });
 
@@ -193,15 +194,15 @@ test("reconnect attempts log the disconnected transition only once", () => {
 test("valid statistics update the DOM and reset transient backoff", () => {
   const harness = createOnlineStatsHarness({ random: 0.5 });
 
-  harness.sockets[0].closeWith(1013);
+  harness.sockets[0].closeWith(SERVICE_UNAVAILABLE_CLOSE_CODE);
   harness.runTimer(harness.reconnectTimers()[0]);
-  harness.sockets[1].closeWith(1013);
+  harness.sockets[1].closeWith(SERVICE_UNAVAILABLE_CLOSE_CODE);
   harness.runTimer(harness.reconnectTimers()[0]);
 
   const socket = harness.sockets[2];
   socket.open();
   socket.message({ online_count: 7, total_count: 19 });
-  socket.closeWith(1013);
+  socket.closeWith(SERVICE_UNAVAILABLE_CLOSE_CODE);
 
   assert.equal(harness.elements["online-user-count"].textContent, 7);
   assert.equal(harness.elements["total-user-count"].textContent, 19);

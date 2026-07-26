@@ -40,22 +40,93 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
             "guard_armory": {"silver": 5000, "grain": 2500, "gold_bar": 1},
             "experience_refine": {"silver": 5000, "grain": 2000, "gold_bar": 1},
             "resource_supply": {"silver": 4000, "grain": 3000, "gold_bar": 1},
+            "mysticism": {"red_ruby": 200},
             "troop_tactics": {"silver": 8000, "grain": 3000, "gold_bar": 2},
             "resource_boost": {"silver": 10000, "grain": 5000, "gold_bar": 3},
             "march_speed": {"silver": 10000, "grain": 5000, "gold_bar": 3},
-            "guild_lineup_capacity": {"red_ruby": 1},
-            "guild_dispatch_capacity": {"red_ruby": 1},
+            "guild_lineup_capacity": {"red_ruby": 5},
+            "guild_dispatch_capacity": {"red_ruby": 5},
+        },
+        "upgrade_cost_curves": {
+            "standard_10": {
+                "2": 2,
+                "3": 4,
+                "4": 7,
+                "5": 12,
+                "6": 20,
+                "7": 35,
+                "8": 70,
+                "9": 150,
+                "10": 350,
+            },
+            "welfare_5": {
+                "2": 3,
+                "3": 8,
+                "4": 20,
+                "5": 60,
+            },
+            "capacity_20": {
+                "2": 2,
+                "3": 3,
+                "4": 4,
+                "5": 5,
+                "6": 6,
+                "7": 7,
+                "8": 8,
+                "9": 9,
+                "10": 10,
+                "11": 11,
+                "12": 12,
+                "13": 13,
+                "14": 14,
+                "15": 15,
+                "16": 16,
+                "17": 17,
+                "18": 18,
+                "19": 19,
+                "20": 20,
+            },
+        },
+        "upgrade_cost_curve_by_tech": {
+            "equipment_forge": "standard_10",
+            "guard_armory": "standard_10",
+            "experience_refine": "standard_10",
+            "resource_supply": "standard_10",
+            "troop_tactics": "standard_10",
+            "resource_boost": "welfare_5",
+            "march_speed": "welfare_5",
+            "guild_lineup_capacity": "capacity_20",
+            "guild_dispatch_capacity": "capacity_20",
+        },
+        "upgrade_cost_overrides": {
+            "mysticism": {
+                "2": {"red_ruby": 300, "gold_bar": 150},
+                "3": {"red_ruby": 300, "gold_bar": 200},
+            },
         },
         "names": {
             "equipment_forge": "装备锻造",
             "guard_armory": "护院军备",
             "experience_refine": "武学研习",
             "resource_supply": "资源补给",
+            "mysticism": "神秘学",
             "troop_tactics": "强兵战术",
             "resource_boost": "资源增产",
             "march_speed": "行军加速",
             "guild_lineup_capacity": "出战位扩容",
             "guild_dispatch_capacity": "出征位扩容",
+        },
+        "descriptions": {
+            "equipment_forge": "每日生产装备道具",
+            "guard_armory": "每日生产护院招募装备箱",
+            "experience_refine": "每日生产技能书箱",
+            "resource_supply": "每日生产资源礼包",
+            "mysticism": "每日生产灵魂容器，2级新增门客重生卡和洗点卡，3级新增洗髓丹",
+            "troop_tactics": "可以增强帮会战斗中护院的能力",
+            "resource_boost": "提升庄园资源产出",
+            "march_speed": "减少行军时间",
+            "guild_lineup_capacity": "提升帮会已上阵名单总容量",
+            "guild_dispatch_capacity": "提升单次帮会任务最多可派出的门客人数",
         },
     },
     "warehouse": {
@@ -87,7 +158,7 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
         "max_target_level_gap": 3,
         "silver_floor": 20000,
         "silver_loot_percent": 10,
-        "warehouse_loot_percent": 10,
+        "warehouse_loot_percent": 20,
         "fixed_attack_cost_silver": 10000,
         "warehouse_loot_whitelist": ["grain", "gold_bar", "red_ruby"],
     },
@@ -98,6 +169,7 @@ GUILD_TECHNOLOGY_CONFIGS: tuple[tuple[str, str, int], ...] = (
     ("guard_armory", "production", 10),
     ("experience_refine", "production", 10),
     ("resource_supply", "production", 10),
+    ("mysticism", "production", 3),
     ("troop_tactics", "combat", 10),
     ("resource_boost", "welfare", 5),
     ("march_speed", "welfare", 5),
@@ -142,6 +214,51 @@ def _normalize_nested_int_map(raw: Any, default: dict[str, dict[str, int]]) -> d
     return result
 
 
+def _normalize_upgrade_cost_overrides(
+    raw: Any,
+    default: dict[str, dict[str, dict[str, int]]],
+) -> dict[str, dict[str, dict[str, int]]]:
+    result = {
+        str(tech_key): {str(level): dict(costs) for level, costs in levels.items()}
+        for tech_key, levels in default.items()
+    }
+    if not isinstance(raw, dict):
+        return result
+
+    for raw_tech_key, raw_levels in raw.items():
+        tech_key = str(raw_tech_key).strip()
+        if not tech_key or not isinstance(raw_levels, dict):
+            continue
+        normalized_levels = dict(result.get(tech_key, {}))
+        for raw_level, raw_costs in raw_levels.items():
+            try:
+                level = int(raw_level)
+            except (TypeError, ValueError):
+                continue
+            if level < 1:
+                continue
+            level_key = str(level)
+            normalized_levels[level_key] = _normalize_int_map(
+                raw_costs,
+                normalized_levels.get(level_key, {}),
+                minimum=0,
+            )
+        result[tech_key] = normalized_levels
+    return result
+
+
+def _normalize_string_map(raw: Any, default: dict[str, str]) -> dict[str, str]:
+    result = dict(default)
+    if not isinstance(raw, dict):
+        return result
+    for raw_key, raw_value in raw.items():
+        key = str(raw_key).strip()
+        if not key:
+            continue
+        result[key] = str(raw_value).strip()
+    return result
+
+
 def normalize_guild_rules(raw: Any) -> dict[str, Any]:
     root = ensure_mapping(raw, logger=logger, context="guild rules root") if raw is not None else {}
     config = {
@@ -157,14 +274,14 @@ def normalize_guild_rules(raw: Any) -> dict[str, Any]:
         "pvp": ensure_mapping(root.get("pvp"), logger=logger, context="guild rules.pvp"),
     }
 
-    technology_names = dict(DEFAULT_GUILD_RULES["technology"]["names"])
-    technology_names_raw = config["technology"].get("names")
-    if isinstance(technology_names_raw, dict):
-        for raw_key, raw_value in technology_names_raw.items():
-            key = str(raw_key).strip()
-            if not key:
-                continue
-            technology_names[key] = str(raw_value).strip()
+    technology_names = _normalize_string_map(
+        config["technology"].get("names"),
+        DEFAULT_GUILD_RULES["technology"]["names"],
+    )
+    technology_descriptions = _normalize_string_map(
+        config["technology"].get("descriptions"),
+        DEFAULT_GUILD_RULES["technology"]["descriptions"],
+    )
 
     return {
         "pagination": {
@@ -226,7 +343,20 @@ def normalize_guild_rules(raw: Any) -> dict[str, Any]:
                 config["technology"].get("upgrade_costs"),
                 DEFAULT_GUILD_RULES["technology"]["upgrade_costs"],
             ),
+            "upgrade_cost_curves": _normalize_nested_int_map(
+                config["technology"].get("upgrade_cost_curves"),
+                DEFAULT_GUILD_RULES["technology"]["upgrade_cost_curves"],
+            ),
+            "upgrade_cost_curve_by_tech": _normalize_string_map(
+                config["technology"].get("upgrade_cost_curve_by_tech"),
+                DEFAULT_GUILD_RULES["technology"]["upgrade_cost_curve_by_tech"],
+            ),
+            "upgrade_cost_overrides": _normalize_upgrade_cost_overrides(
+                config["technology"].get("upgrade_cost_overrides"),
+                DEFAULT_GUILD_RULES["technology"]["upgrade_cost_overrides"],
+            ),
             "names": technology_names,
+            "descriptions": technology_descriptions,
         },
         "warehouse": {
             "exchange_costs": _normalize_int_map(
@@ -361,7 +491,8 @@ def refresh_guild_constants() -> None:
     global GUILD_CREATION_COST, GUILD_UPGRADE_BASE_COST
     global CONTRIBUTION_UNITS, CONTRIBUTION_RATES, DAILY_DONATION_LIMITS, MIN_DONATION_AMOUNT
     global TROOP_CONTRIBUTION_RATES, DAILY_TROOP_CONTRIBUTION_LIMIT
-    global TECH_UPGRADE_COSTS, TECH_NAMES
+    global TECH_UPGRADE_COSTS, TECH_UPGRADE_COST_CURVES, TECH_UPGRADE_COST_CURVE_BY_TECH
+    global TECH_UPGRADE_COST_OVERRIDES, TECH_NAMES, TECH_DESCRIPTIONS
     global EXCHANGE_COSTS, DAILY_EXCHANGE_LIMIT
     global GUILD_HERO_POOL_SLOT_LIMIT, GUILD_BATTLE_LINEUP_LIMIT, GUILD_DISPATCH_GUEST_BASE_LIMIT
     global GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS
@@ -388,7 +519,11 @@ def refresh_guild_constants() -> None:
     MIN_DONATION_AMOUNT = _GUILD_RULES["contribution"]["min_donation_amount"]
 
     TECH_UPGRADE_COSTS = _GUILD_RULES["technology"]["upgrade_costs"]
+    TECH_UPGRADE_COST_CURVES = _GUILD_RULES["technology"]["upgrade_cost_curves"]
+    TECH_UPGRADE_COST_CURVE_BY_TECH = _GUILD_RULES["technology"]["upgrade_cost_curve_by_tech"]
+    TECH_UPGRADE_COST_OVERRIDES = _GUILD_RULES["technology"]["upgrade_cost_overrides"]
     TECH_NAMES = _GUILD_RULES["technology"]["names"]
+    TECH_DESCRIPTIONS = _GUILD_RULES["technology"]["descriptions"]
 
     EXCHANGE_COSTS = _GUILD_RULES["warehouse"]["exchange_costs"]
     DAILY_EXCHANGE_LIMIT = _GUILD_RULES["warehouse"]["daily_exchange_limit"]
@@ -435,7 +570,11 @@ MIN_DONATION_AMOUNT = _GUILD_RULES["contribution"]["min_donation_amount"]
 
 # ============ 帮会科技 ============
 TECH_UPGRADE_COSTS = _GUILD_RULES["technology"]["upgrade_costs"]
+TECH_UPGRADE_COST_CURVES = _GUILD_RULES["technology"]["upgrade_cost_curves"]
+TECH_UPGRADE_COST_CURVE_BY_TECH = _GUILD_RULES["technology"]["upgrade_cost_curve_by_tech"]
+TECH_UPGRADE_COST_OVERRIDES = _GUILD_RULES["technology"]["upgrade_cost_overrides"]
 TECH_NAMES = _GUILD_RULES["technology"]["names"]
+TECH_DESCRIPTIONS = _GUILD_RULES["technology"]["descriptions"]
 
 # ============ 帮会仓库 ============
 EXCHANGE_COSTS = _GUILD_RULES["warehouse"]["exchange_costs"]

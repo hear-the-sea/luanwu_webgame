@@ -12,6 +12,12 @@
   const AUTO_REFRESH_GRACE_MS = 800;
   const SHORT_COUNTDOWN_WINDOW_MS = 5000;
   const SHORT_COUNTDOWN_GRACE_MS = 1200;
+  const TRAINING_CHECK_TIMEOUT_MS = 10000;
+  const TRAINING_CHECK_RETRY_BASE_MS = 2000;
+  const TRAINING_CHECK_RETRY_MAX_MS = 30000;
+  const trainingCheckInFlight = new WeakSet();
+  const trainingCheckRetryAttempts = new WeakMap();
+  const trainingCheckRetryTimers = new WeakMap();
 
   function schedulePageReload() {
     if (reloadTimerId !== null) return;
@@ -197,56 +203,107 @@
     return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
   }
 
+  function clearTrainingCheckRetry(el) {
+    const retryTimerId = trainingCheckRetryTimers.get(el);
+    if (retryTimerId !== undefined) {
+      window.clearTimeout(retryTimerId);
+      trainingCheckRetryTimers.delete(el);
+    }
+    trainingCheckRetryAttempts.delete(el);
+  }
+
+  function scheduleTrainingCheckRetry(el) {
+    if (!document.body.contains(el)) return;
+
+    const attempt = (trainingCheckRetryAttempts.get(el) || 0) + 1;
+    const retryDelay = Math.min(
+      TRAINING_CHECK_RETRY_BASE_MS * (2 ** (attempt - 1)),
+      TRAINING_CHECK_RETRY_MAX_MS,
+    );
+    trainingCheckRetryAttempts.set(el, attempt);
+    el.textContent = "检查失败，重试中...";
+    el.classList.remove("countdown-finished");
+
+    const previousTimerId = trainingCheckRetryTimers.get(el);
+    if (previousTimerId !== undefined) {
+      window.clearTimeout(previousTimerId);
+    }
+    const retryTimerId = window.setTimeout(() => {
+      trainingCheckRetryTimers.delete(el);
+      if (document.body.contains(el)) {
+        checkTrainingAndUpdate(el);
+      }
+    }, retryDelay);
+    trainingCheckRetryTimers.set(el, retryTimerId);
+  }
+
   // 调用检查训练完成的 API 并更新行数据
   async function checkTrainingAndUpdate(el) {
     const checkUrl = el.getAttribute("data-check-url");
     if (!checkUrl) return false;
 
     const row = el.closest("tr[data-guest-id]");
-    if (!row) return false;
+    if (!row || trainingCheckInFlight.has(el)) return false;
+
+    trainingCheckInFlight.add(el);
+    const abortController = typeof window.AbortController === "function" ? new window.AbortController() : null;
+    const requestTimerId = abortController
+      ? window.setTimeout(() => abortController.abort(), TRAINING_CHECK_TIMEOUT_MS)
+      : null;
 
     try {
       el.textContent = "检查中...";
       const resp = await fetch(checkUrl, {
         method: "POST",
+        credentials: "same-origin",
         headers: {
           "X-Requested-With": "XMLHttpRequest",
           "X-CSRFToken": getCSRFToken(),
         },
+        signal: abortController ? abortController.signal : undefined,
       });
       const data = await resp.json();
-      if (data.success) {
-        // 更新等级
-        const levelDiv = row.querySelector(".guest-level");
-        if (levelDiv) {
-          levelDiv.textContent = `等级 ${data.level}`;
-        }
-        // 更新生命值 - 使用类名选择器代替硬编码索引
-        const hpDiv = row.querySelector(".guest-hp");
-        if (hpDiv) {
-          hpDiv.textContent = `生命 ${data.current_hp}/${data.max_hp}`;
-        }
-        // 更新训练倒计时 - 使用 el 的父元素
-        const upgradeCell = el.closest("td");
-        if (data.training_eta) {
-          el.setAttribute("data-countdown", data.training_eta);
-          el.classList.remove("countdown-finished");
-          el.textContent = "计算中";
-        } else {
-          // 已完成，显示"自动升级"
-          // 安全修复：使用 DOM API 替代 innerHTML，防止 XSS
-          if (upgradeCell) {
-            upgradeCell.textContent = '';
-            const span = document.createElement('span');
-            span.className = 'muted-text';
-            span.textContent = '自动升级';
-            upgradeCell.appendChild(span);
-          }
-        }
-        return true;
+      if (resp.ok === false || !data || data.success !== true) {
+        throw new Error((data && (data.error || data.message)) || `训练状态检查失败 (${resp.status})`);
       }
+
+      clearTrainingCheckRetry(el);
+      // 更新等级
+      const levelDiv = row.querySelector(".guest-level");
+      if (levelDiv) {
+        levelDiv.textContent = `等级 ${data.level}`;
+      }
+      // 更新生命值 - 使用类名选择器代替硬编码索引
+      const hpDiv = row.querySelector(".guest-hp");
+      if (hpDiv) {
+        hpDiv.textContent = `生命 ${data.current_hp}/${data.max_hp}`;
+      }
+      // 更新训练倒计时 - 使用 el 的父元素
+      const upgradeCell = el.closest("td");
+      if (data.training_eta) {
+        el.setAttribute("data-countdown", data.training_eta);
+        el.classList.remove("countdown-finished");
+        el.textContent = "计算中";
+      } else {
+        // 已完成，显示"自动升级"
+        // 安全修复：使用 DOM API 替代 innerHTML，防止 XSS
+        if (upgradeCell) {
+          upgradeCell.textContent = '';
+          const span = document.createElement('span');
+          span.className = 'muted-text';
+          span.textContent = '自动升级';
+          upgradeCell.appendChild(span);
+        }
+      }
+      return true;
     } catch (err) {
       console.error("检查训练状态失败:", err);
+      scheduleTrainingCheckRetry(el);
+    } finally {
+      if (requestTimerId !== null) {
+        window.clearTimeout(requestTimerId);
+      }
+      trainingCheckInFlight.delete(el);
     }
     return false;
   }

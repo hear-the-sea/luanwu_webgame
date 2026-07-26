@@ -54,6 +54,8 @@ def _base_trade_context(tab: str, manor: Any) -> dict[str, Any]:
             {"key": "market", "name": "集市"},
         ],
         "manor": manor,
+        "market_can_buy_or_list": market_service.can_buy_or_list_on_market(manor),
+        "market_min_prestige": market_service.MARKET_MIN_PRESTIGE,
         "market_duration_options": _build_market_duration_options(),
     }
 

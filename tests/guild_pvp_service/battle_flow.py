@@ -4,11 +4,15 @@ from datetime import timedelta
 from types import SimpleNamespace
 
 import pytest
+from django.db import transaction
 from django.utils import timezone
 
 from battle.models import BattleReport, TroopTemplate
+from gameplay.models import ItemTemplate
 from gameplay.services.battle_snapshots import build_guest_battle_snapshots
+from guilds import constants as guild_constants
 from guilds.models import GuildRaidRun, GuildTroopStorage, GuildWarehouse
+from guilds.services import guild_raid_rules
 from tests.guild_pvp_service.support import create_guest, create_guild_with_leader, create_template
 
 
@@ -84,14 +88,11 @@ def test_process_guild_raid_battle_transfers_silver_and_random_whitelist_loot_to
         lambda: {
             "silver_floor": 20000,
             "silver_loot_percent": 10,
-            "warehouse_loot_percent": 10,
+            "warehouse_loot_percent": 20,
             "warehouse_loot_whitelist": ["grain", "gold_bar", "red_ruby"],
         },
     )
-    monkeypatch.setattr(
-        "guilds.services.guild_raid_loot.random.sample",
-        lambda population, sample_size: [5, 15],
-    )
+    monkeypatch.setattr("gameplay.services.pvp_runtime.loot.random.randrange", lambda _stop: 0)
 
     from guilds.services.guild_raids import process_guild_raid_battle
 
@@ -103,20 +104,160 @@ def test_process_guild_raid_battle_transfers_silver_and_random_whitelist_loot_to
 
     assert attacker_guild.silver == 8000
     assert defender_guild.silver == 92000
-    assert GuildWarehouse.objects.get(guild=attacker_guild, item_key="grain").quantity == 1
-    assert GuildWarehouse.objects.get(guild=attacker_guild, item_key="red_ruby").quantity == 1
-    assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key="gold_bar").exists() is False
+    assert GuildWarehouse.objects.get(guild=attacker_guild, item_key="gold_bar").quantity == 4
+    assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key="grain").exists() is False
+    assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key="red_ruby").exists() is False
     assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key="guild_badge").exists() is False
-    assert GuildWarehouse.objects.get(guild=defender_guild, item_key="grain").quantity == 9
-    assert GuildWarehouse.objects.get(guild=defender_guild, item_key="gold_bar").quantity == 5
-    assert GuildWarehouse.objects.get(guild=defender_guild, item_key="red_ruby").quantity == 4
+    assert GuildWarehouse.objects.get(guild=defender_guild, item_key="grain").quantity == 10
+    assert GuildWarehouse.objects.get(guild=defender_guild, item_key="gold_bar").quantity == 1
+    assert GuildWarehouse.objects.get(guild=defender_guild, item_key="red_ruby").quantity == 5
     assert GuildWarehouse.objects.get(guild=defender_guild, item_key="guild_badge").quantity == 9
     assert run.status == GuildRaidRun.Status.RETURNING
     assert run.is_attacker_victory is True
     assert run.loot_silver == 8000
-    assert run.loot_items == {"grain": 1, "red_ruby": 1}
+    assert run.loot_items == {"gold_bar": 4}
     assert run.battle_report_id == report.id
     assert run.completed_at is None
+
+
+@pytest.mark.django_db(transaction=True)
+def test_transfer_guild_raid_loot_clamps_twenty_percent_draw_by_item_capacity(
+    django_user_model,
+    monkeypatch,
+):
+    attacker_guild, _attacker_member, _attacker_manor = create_guild_with_leader(django_user_model, "运力进攻帮")
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(django_user_model, "运力防守帮")
+    item_key = "guild_capacity_loot_item"
+    ItemTemplate.objects.create(
+        key=item_key,
+        name="帮会重型战利品",
+        tradeable=True,
+        storage_space=1000,
+    )
+    GuildWarehouse.objects.create(guild=defender_guild, item_key=item_key, quantity=100)
+    monkeypatch.setattr(
+        "guilds.services.guild_raid_loot.get_guild_raid_rules",
+        lambda: {
+            "silver_floor": 20000,
+            "silver_loot_percent": 10,
+            "warehouse_loot_percent": 20,
+            "warehouse_loot_whitelist": [item_key],
+        },
+    )
+    monkeypatch.setattr("gameplay.services.pvp_runtime.loot.random.randrange", lambda _stop: 0)
+
+    from guilds.services.guild_raid_loot import transfer_guild_raid_loot
+
+    with transaction.atomic():
+        loot_silver, loot_items = transfer_guild_raid_loot(
+            attacker_guild=attacker_guild,
+            defender_guild=defender_guild,
+            guests=[SimpleNamespace()],
+            troop_loadout={},
+            battle_report=None,
+        )
+
+    assert loot_silver == 0
+    assert loot_items == {item_key: 2}
+    assert GuildWarehouse.objects.get(guild=attacker_guild, item_key=item_key).quantity == 2
+    assert GuildWarehouse.objects.get(guild=defender_guild, item_key=item_key).quantity == 98
+
+
+@pytest.mark.django_db(transaction=True)
+def test_transfer_guild_raid_loot_uses_fractional_grain_capacity(
+    django_user_model,
+    monkeypatch,
+):
+    attacker_guild, _attacker_member, _attacker_manor = create_guild_with_leader(django_user_model, "粮食运力进攻帮")
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(django_user_model, "粮食运力防守帮")
+    ItemTemplate.objects.create(
+        key="grain",
+        name="粮食",
+        tradeable=True,
+        storage_space=1,
+    )
+    GuildWarehouse.objects.create(guild=defender_guild, item_key="grain", quantity=10_000)
+    monkeypatch.setattr(
+        "guilds.services.guild_raid_loot.get_guild_raid_rules",
+        lambda: {
+            "silver_floor": 20_000,
+            "silver_loot_percent": 10,
+            "warehouse_loot_percent": 20,
+            "warehouse_loot_whitelist": ["grain"],
+        },
+    )
+    monkeypatch.setattr(
+        "guilds.services.guild_raid_loot._calculate_guild_item_loot_capacity",
+        lambda **_kwargs: 1,
+    )
+
+    from guilds.services.guild_raid_loot import transfer_guild_raid_loot
+
+    with transaction.atomic():
+        loot_silver, loot_items = transfer_guild_raid_loot(
+            attacker_guild=attacker_guild,
+            defender_guild=defender_guild,
+            guests=[],
+            troop_loadout={},
+            battle_report=None,
+        )
+
+    assert loot_silver == 0
+    assert loot_items == {"grain": 1_000}
+    assert GuildWarehouse.objects.get(guild=attacker_guild, item_key="grain").quantity == 1_000
+    assert GuildWarehouse.objects.get(guild=defender_guild, item_key="grain").quantity == 9_000
+
+
+@pytest.mark.django_db(transaction=True)
+def test_transfer_guild_raid_loot_includes_technology_production_items(
+    django_user_model,
+    monkeypatch,
+):
+    attacker_guild, _attacker_member, _attacker_manor = create_guild_with_leader(django_user_model, "科技库存进攻帮")
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(django_user_model, "科技库存防守帮")
+    production_item_key = "guild_dynamic_tech_box"
+    unrelated_item_key = "guild_unrelated_stock"
+    ItemTemplate.objects.create(key=production_item_key, name="科技兑换箱", storage_space=1)
+    GuildWarehouse.objects.create(
+        guild=defender_guild,
+        item_key=production_item_key,
+        quantity=1,
+        contribution_cost=100,
+    )
+    GuildWarehouse.objects.create(
+        guild=defender_guild,
+        item_key=unrelated_item_key,
+        quantity=1,
+        contribution_cost=100,
+    )
+    monkeypatch.setattr(guild_constants, "GUILD_PVP_SILVER_LOOT_PERCENT", 0)
+    monkeypatch.setattr(guild_constants, "GUILD_PVP_WAREHOUSE_LOOT_PERCENT", 100)
+    monkeypatch.setattr(
+        guild_constants,
+        "GUILD_PVP_WAREHOUSE_LOOT_WHITELIST",
+        ["grain", "gold_bar", "red_ruby"],
+    )
+    monkeypatch.setattr(
+        guild_raid_rules,
+        "get_warehouse_production_item_keys",
+        lambda: frozenset({production_item_key}),
+    )
+
+    from guilds.services.guild_raid_loot import transfer_guild_raid_loot
+
+    with transaction.atomic():
+        _loot_silver, loot_items = transfer_guild_raid_loot(
+            attacker_guild=attacker_guild,
+            defender_guild=defender_guild,
+            guests=[SimpleNamespace()],
+            troop_loadout={},
+            battle_report=None,
+        )
+
+    assert loot_items == {production_item_key: 1}
+    assert GuildWarehouse.objects.get(guild=attacker_guild, item_key=production_item_key).quantity == 1
+    assert not GuildWarehouse.objects.filter(guild=defender_guild, item_key=production_item_key).exists()
+    assert GuildWarehouse.objects.get(guild=defender_guild, item_key=unrelated_item_key).quantity == 1
 
 
 @pytest.mark.django_db(transaction=True)

@@ -1,17 +1,14 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}帮会任务{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
             <h1>帮会任务</h1>
             <p class="caption">管理员/帮主可选择帮会可派遣门客发起帮会出征，完成后红宝石会进入帮会仓库。</p>
-        </div>
-        <div class="flex gap-2">
-            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
         </div>
     </div>
 
@@ -170,6 +167,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{{ block.super }}
 <script src="{% static 'js/dashboard.js' %}"></script>
 <script src="{% static 'js/tasks-page.js' %}"></script>
 {% endblock %}

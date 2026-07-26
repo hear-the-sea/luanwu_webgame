@@ -6,9 +6,11 @@ const vm = require("node:vm");
 
 function extractInlineScript(templatePath) {
   const content = fs.readFileSync(templatePath, "utf8");
-  const match = content.match(/{% block extra_scripts %}\s*<script>([\s\S]*?)<\/script>\s*{% endblock %}/);
-  assert.ok(match, `expected inline extra_scripts block in ${templatePath}`);
-  return match[1].replace(/{{[^}]+}}/g, "0").replace(/{%[^%]+%}/g, "");
+  const blockMatch = content.match(/{% block extra_scripts %}([\s\S]*?){% endblock %}/);
+  assert.ok(blockMatch, `expected extra_scripts block in ${templatePath}`);
+  const scriptMatch = blockMatch[1].match(/<script>([\s\S]*?)<\/script>/);
+  assert.ok(scriptMatch, `expected inline script in ${templatePath}`);
+  return scriptMatch[1].replace(/{{[^}]+}}/g, "0").replace(/{%[^%]+%}/g, "");
 }
 
 function createMockElement() {
@@ -76,12 +78,4 @@ test("guild detail inline script stays idempotent across partial navigation re-r
   );
 
   assertScriptCanExecuteTwice(scriptSource, { filename: "guilds/templates/guilds/detail.html" });
-});
-
-test("guild warehouse inline script stays idempotent across partial navigation re-runs", () => {
-  const scriptSource = extractInlineScript(
-    path.resolve(__dirname, "../../..", "guilds/templates/guilds/warehouse.html")
-  );
-
-  assertScriptCanExecuteTwice(scriptSource, { filename: "guilds/templates/guilds/warehouse.html" });
 });

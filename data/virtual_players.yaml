@@ -53,6 +53,12 @@ projection:
     7: blue
     11: purple
     16: orange
+  guest_max_rarity_by_stage:
+    1: green
+    4: red
+    7: blue
+    11: purple
+    16: orange
   extra_skill_keys:
     - endless_chatter
     - ice_curse

@@ -207,10 +207,11 @@ class ArenaRewardLimitError(ArenaExchangeError):
 
     error_code = "ARENA_REWARD_LIMIT"
 
-    def __init__(self, reward_name: str, daily_limit: int, message: str | None = None):
+    def __init__(self, reward_name: str, limit: int, message: str | None = None, *, period: str = "今日"):
         if message is None:
-            message = f"{reward_name} 今日最多可兑换 {daily_limit} 次"
-        super().__init__(message, reward_name=reward_name, daily_limit=daily_limit)
+            message = f"{reward_name} {period}最多可兑换 {limit} 次"
+        limit_context = {"daily_limit": limit} if period == "今日" else {"weekly_limit": limit}
+        super().__init__(message, reward_name=reward_name, limit=limit, period=period, **limit_context)
 
 
 # ============ 监牢 / 结义相关异常 ============

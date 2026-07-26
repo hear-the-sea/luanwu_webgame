@@ -4,7 +4,7 @@ import pytest
 from django.utils import timezone
 
 from core.exceptions import TradeValidationError
-from gameplay.models import InventoryItem, ItemTemplate
+from gameplay.models import InventoryItem, ItemTemplate, Manor
 from trade.models import MarketListing
 from trade.services import market_service
 
@@ -13,6 +13,32 @@ pytest_plugins = ("tests.trade_service.fixtures",)
 
 @pytest.mark.django_db
 class TestMarketListing:
+    def test_create_listing_checks_latest_locked_prestige(self, seller_manor, tradeable_item_template):
+        Manor.objects.filter(pk=seller_manor.pk).update(prestige=market_service.MARKET_MIN_PRESTIGE - 1)
+        assert seller_manor.prestige == market_service.MARKET_MIN_PRESTIGE
+        silver_before = seller_manor.silver
+        inventory = InventoryItem.objects.get(
+            manor=seller_manor,
+            template=tradeable_item_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+        quantity_before = inventory.quantity
+
+        with pytest.raises(TradeValidationError, match="声望达到 300"):
+            market_service.create_listing(
+                manor=seller_manor,
+                item_key="test_tradeable_item",
+                quantity=10,
+                unit_price=2000,
+                duration=7200,
+            )
+
+        seller_manor.refresh_from_db()
+        inventory.refresh_from_db()
+        assert seller_manor.silver == silver_before
+        assert inventory.quantity == quantity_before
+        assert not MarketListing.objects.filter(seller=seller_manor).exists()
+
     def test_create_listing_success(self, seller_manor, tradeable_item_template):
         initial_silver = seller_manor.silver
         initial_quantity = InventoryItem.objects.get(

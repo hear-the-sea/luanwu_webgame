@@ -227,6 +227,22 @@ def test_arena_rewards_rejects_zero_cost_coins():
     assert_invalid(result, substring="cost_coins")
 
 
+def test_arena_rewards_rejects_non_positive_weekly_limit():
+    data = {"rewards": [{"key": "weekly_reward", "name": "Weekly Reward", "cost_coins": 100, "weekly_limit": 0}]}
+
+    result = validate_arena_rewards(data)
+
+    assert_invalid(result, substring="weekly_limit")
+
+
+def test_arena_rewards_rejects_boolean_weekly_limit():
+    data = {"rewards": [{"key": "weekly_reward", "name": "Weekly Reward", "cost_coins": 100, "weekly_limit": True}]}
+
+    result = validate_arena_rewards(data)
+
+    assert_invalid(result, substring="weekly_limit")
+
+
 def test_arena_rewards_rejects_duplicate_keys():
     data = {
         "rewards": [
@@ -256,3 +272,37 @@ def test_arena_rewards_rejects_rotating_blueprint_pool_without_four_unique_bluep
     result = validate_arena_rewards(data, item_keys={"blueprint_a", "blueprint_c"})
 
     assert_invalid(result, substring="exactly four unique")
+
+
+def test_arena_rewards_rejects_random_blueprint_pool_without_rarity():
+    data = {
+        "rewards": [
+            {
+                "key": "random_blueprint_exchange",
+                "name": "随机图纸",
+                "cost_coins": 600,
+                "random_blueprint_pool": {"rarity": ""},
+            }
+        ]
+    }
+
+    result = validate_arena_rewards(data)
+
+    assert_invalid(result, substring="rarity")
+
+
+def test_arena_rewards_rejects_random_blueprint_pool_without_matching_forge_blueprints():
+    data = {
+        "rewards": [
+            {
+                "key": "random_blueprint_exchange",
+                "name": "随机图纸",
+                "cost_coins": 600,
+                "random_blueprint_pool": {"rarity": "purple"},
+            }
+        ]
+    }
+
+    result = validate_arena_rewards(data, forge_blueprint_rarities={"blue"})
+
+    assert_invalid(result, substring="no valid forge blueprint")

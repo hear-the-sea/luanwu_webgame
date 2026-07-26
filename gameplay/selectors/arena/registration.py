@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.db.models import Count, Q
+from django.utils import timezone
 
 import gameplay.services.arena.coop_core as arena_coop_core
 from gameplay.models import ArenaCoopEntry, ArenaCoopEvent, ArenaEntry, ArenaExchangeRecord, ArenaTournament, Manor
@@ -13,7 +14,13 @@ def get_active_entry(manor: Manor) -> ArenaEntry | None:
     return (
         ArenaEntry.objects.select_related("tournament")
         .prefetch_related("entry_guests__guest")
-        .filter(manor=manor, tournament__status__in=[ArenaTournament.Status.RECRUITING, ArenaTournament.Status.RUNNING])
+        .filter(
+            manor=manor,
+            tournament__status__in=[
+                ArenaTournament.Status.RECRUITING,
+                ArenaTournament.Status.RUNNING,
+            ],
+        )
         .order_by("-joined_at")
         .first()
     )
@@ -50,6 +57,17 @@ def get_arena_coop_summary_context(manor: Manor) -> dict:
             manor.guests.select_related("template").filter(status=GuestStatus.IDLE).order_by("-level", "id")
         )
 
+    recruiting_event = (
+        ArenaCoopEvent.objects.filter(status=ArenaCoopEvent.Status.RECRUITING)
+        .annotate(
+            registered_entry_count=Count(
+                "entries",
+                filter=Q(entries__status=ArenaCoopEntry.Status.REGISTERED),
+            )
+        )
+        .first()
+    )
+
     return {
         "arena_coop_today_participations": coop_today_participations,
         "arena_coop_remaining_daily": coop_remaining_daily,
@@ -68,20 +86,23 @@ def get_arena_coop_summary_context(manor: Manor) -> dict:
             "registration_hint": "武林高手齐聚光明顶，请派遣3名主力门客参战",
             "summary_metrics": build_summary_metrics(
                 ("报名人数", f"{arena_coop_core.ARENA_COOP_PLAYER_LIMIT} 人满员开战"),
-                ("上阵人数", f"每人 {arena_coop_core.ARENA_COOP_MAX_GUESTS_PER_ENTRY} 名主力"),
-                ("每日次数", f"{arena_coop_core.ARENA_COOP_DAILY_PARTICIPATION_LIMIT} 次"),
+                (
+                    "上阵人数",
+                    f"每人 {arena_coop_core.ARENA_COOP_MAX_GUESTS_PER_ENTRY} 名主力",
+                ),
+                (
+                    "每日次数",
+                    f"{arena_coop_core.ARENA_COOP_DAILY_PARTICIPATION_LIMIT} 次",
+                ),
             ),
         },
         "arena_coop_active_entry": active_entry,
-        "arena_coop_recruiting_event": (
-            ArenaCoopEvent.objects.filter(status=ArenaCoopEvent.Status.RECRUITING)
-            .annotate(
-                registered_entry_count=Count(
-                    "entries",
-                    filter=Q(entries__status=ArenaCoopEntry.Status.REGISTERED),
-                )
-            )
-            .first()
+        "arena_coop_recruiting_event": recruiting_event,
+        "arena_coop_virtual_fill_due": bool(
+            recruiting_event
+            and recruiting_event.virtual_fill_at
+            and recruiting_event.virtual_fill_at <= timezone.now()
+            and not recruiting_event.virtual_fill_completed
         ),
         "arena_coop_available_guests": available_guests,
         "arena_coop_selected_guest_ids": selected_guest_ids,
@@ -94,11 +115,18 @@ def get_arena_registration_context(manor: Manor) -> dict:
     active_entry = get_active_entry(manor)
 
     context["active_entry"] = active_entry
-    context["recruiting_tournament"] = (
+    recruiting_tournament = (
         ArenaTournament.objects.filter(status=ArenaTournament.Status.RECRUITING)
         .annotate(entry_count=Count("entries"))
         .order_by("created_at")
         .first()
+    )
+    context["recruiting_tournament"] = recruiting_tournament
+    context["recruiting_tournament_virtual_fill_due"] = bool(
+        recruiting_tournament
+        and recruiting_tournament.virtual_fill_at
+        and recruiting_tournament.virtual_fill_at <= timezone.now()
+        and not recruiting_tournament.virtual_fill_completed
     )
     selected_guest_ids: set[int] = set()
     available_guests = manor.guests.none()

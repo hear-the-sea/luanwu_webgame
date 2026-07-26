@@ -154,7 +154,7 @@ def guild_detail(request: Any, guild_id: int) -> HttpResponse:
             member = user.guild_membership
 
     leader = load_guild_leader(guild)
-    announcements = load_recent_announcements(guild, limit=5)
+    announcements = load_recent_announcements(guild, limit=1)
 
     context = {
         "guild": guild,
@@ -204,6 +204,7 @@ def guild_info(request: Any, guild_id: int) -> HttpResponse:
 
     context = {
         "guild": guild,
+        "member": member,
         "guild_material_balances": get_guild_material_balances(guild),
     }
 

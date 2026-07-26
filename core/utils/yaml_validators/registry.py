@@ -76,6 +76,42 @@ SUPPORTED_YAML_CONFIGS = (
 )
 
 
+def _derive_forge_blueprint_rarities(
+    blueprints_data: dict | None,
+    item_metadata: dict[str, tuple[str, str, bool]] | None,
+) -> set[str] | None:
+    if not isinstance(blueprints_data, dict) or item_metadata is None:
+        return None
+
+    recipes = blueprints_data.get("recipes")
+    if not isinstance(recipes, list):
+        return None
+
+    rarities: set[str] = set()
+    for recipe in recipes:
+        if not isinstance(recipe, dict):
+            continue
+        blueprint_key = recipe.get("blueprint_key")
+        result_item_key = recipe.get("result_item_key")
+        if not isinstance(blueprint_key, str) or not blueprint_key.startswith("blueprint_"):
+            continue
+        if not isinstance(result_item_key, str):
+            continue
+
+        blueprint_metadata = item_metadata.get(blueprint_key)
+        result_metadata = item_metadata.get(result_item_key)
+        if blueprint_metadata is None or result_metadata is None:
+            continue
+        blueprint_effect_type, blueprint_rarity, blueprint_tradeable = blueprint_metadata
+        result_effect_type, result_rarity, _result_tradeable = result_metadata
+        if blueprint_effect_type != "tool" or not blueprint_tradeable:
+            continue
+        if not result_effect_type.startswith("equip_") or blueprint_rarity != result_rarity:
+            continue
+        rarities.add(blueprint_rarity)
+    return rarities
+
+
 def validate_all_configs(data_dir: str | Path) -> ValidationResult:
     """Load and validate all YAML config files from the data directory."""
     data_path = Path(data_dir)
@@ -145,6 +181,8 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
                 if isinstance(item, dict) and item.get("key")
             }
 
+    forge_blueprint_rarities = _derive_forge_blueprint_rarities(blueprints_data, item_metadata)
+
     troop_keys: set[str] | None = None
     if troop_data is not None:
         result.merge(validate_troop_templates(troop_data))
@@ -202,7 +240,13 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
         result.merge(validate_recruitment_rarity_weights(rarity_weights_data))
 
     if arena_rewards_data is not None:
-        result.merge(validate_arena_rewards(arena_rewards_data, item_keys=item_keys))
+        result.merge(
+            validate_arena_rewards(
+                arena_rewards_data,
+                item_keys=item_keys,
+                forge_blueprint_rarities=forge_blueprint_rarities,
+            )
+        )
 
     if smithy_data is not None:
         result.merge(validate_smithy_production(smithy_data))

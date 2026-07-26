@@ -9,6 +9,7 @@ from typing import Any, Callable, Mapping
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core import signing
 from django.db import DatabaseError
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
@@ -16,8 +17,8 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
-from core.exceptions import GameError
-from core.utils import is_ajax_request, safe_int, safe_positive_int
+from core.exceptions import GameError, ItemResourceOverflowConfirmationRequired
+from core.utils import is_ajax_request, json_error, safe_int, safe_positive_int
 from core.utils.rate_limit import rate_limit_json, rate_limit_redirect
 from gameplay.constants import UIConstants
 from gameplay.models import InventoryItem
@@ -50,6 +51,23 @@ from guests.services.recruitment import refresh_guest_recruitments
 from .runtime_refresh_support import run_refresh_api
 
 logger = logging.getLogger(__name__)
+
+RESOURCE_OVERFLOW_CONFIRMATION_SALT = "gameplay.inventory.resource-overflow"
+RESOURCE_OVERFLOW_CONFIRMATION_MAX_AGE_SECONDS = 300
+
+
+def _load_resource_overflow_confirmation(token: str) -> dict[str, object] | None:
+    if not token:
+        return None
+    try:
+        snapshot = signing.loads(
+            token,
+            salt=RESOURCE_OVERFLOW_CONFIRMATION_SALT,
+            max_age=RESOURCE_OVERFLOW_CONFIRMATION_MAX_AGE_SECONDS,
+        )
+    except signing.BadSignature:
+        return None
+    return snapshot if isinstance(snapshot, dict) else None
 
 
 def _refresh_recruitment_hall_runtime(manor: Any) -> int:
@@ -216,12 +234,36 @@ def use_item_view(request: HttpRequest, pk: int) -> HttpResponse:
     item = _warehouse_item(manor, pk)
     is_ajax = is_ajax_request(request)
     try:
-        payload = use_inventory_item(item, manor=manor)
+        payload = use_inventory_item(
+            item,
+            manor=manor,
+            resource_overflow_confirmation=_load_resource_overflow_confirmation(
+                request.POST.get("resource_overflow_confirmation", "")
+            ),
+        )
         return success_response(
             request,
             is_ajax=is_ajax,
             message=build_inventory_use_success_message(payload, item_name=item.template.name),
         )
+    except ItemResourceOverflowConfirmationRequired as exc:
+        if is_ajax:
+            return json_error(
+                str(exc),
+                status=409,
+                requires_confirmation=True,
+                confirmation_type="resource_overflow",
+                confirmation_title="资源溢出确认",
+                confirmation_message=str(exc),
+                confirmation_ok_text="仍然使用",
+                confirmation_token=signing.dumps(
+                    exc.confirmation_snapshot,
+                    salt=RESOURCE_OVERFLOW_CONFIRMATION_SALT,
+                ),
+                credited_resources=exc.credited_resources,
+                overflow_resources=exc.overflow_resources,
+            )
+        return known_inventory_error_response(request, is_ajax, exc)
     except GameError as exc:
         return known_inventory_error_response(request, is_ajax, exc)
     except DatabaseError as exc:

@@ -29,6 +29,21 @@ def test_get_trade_context_includes_market_duration_options(monkeypatch, django_
 
 
 @pytest.mark.django_db
+def test_get_trade_context_exposes_market_prestige_requirement(django_user_model):
+    manor = create_manor(django_user_model, username="trade_ctx_market_prestige")
+    request = RequestFactory().get("/trade", {"tab": "market"})
+
+    manor.prestige = 299
+    context = get_trade_context(manor=manor, params=build_trade_request_params(request))
+    assert context["market_min_prestige"] == 300
+    assert context["market_can_buy_or_list"] is False
+
+    manor.prestige = 300
+    context = get_trade_context(manor=manor, params=build_trade_request_params(request))
+    assert context["market_can_buy_or_list"] is True
+
+
+@pytest.mark.django_db
 def test_get_trade_context_reads_latest_market_service_listing_fees(monkeypatch, django_user_model):
     monkeypatch.setattr(
         "trade.services.market_service.load_trade_market_rules",

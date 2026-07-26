@@ -7,6 +7,7 @@ from django.utils import timezone
 from gameplay.services.missions_impl.loadout import travel_time_seconds
 
 from .. import constants as guild_constants
+from .warehouse_config import get_warehouse_production_item_keys
 
 DEFAULT_GUILD_RAID_BASE_TRAVEL_TIME = 600
 
@@ -85,11 +86,23 @@ def can_attack_guild(*, attacker_guild, defender_guild, now=None) -> tuple[bool,
 
 
 def get_guild_raid_rules() -> GuildRaidRules:
+    configured_item_keys = list(
+        dict.fromkeys(
+            str(item_key).strip()
+            for item_key in (guild_constants.GUILD_PVP_WAREHOUSE_LOOT_WHITELIST or [])
+            if str(item_key).strip()
+        )
+    )
+    production_item_keys = get_warehouse_production_item_keys()
+    warehouse_loot_item_keys = [
+        *configured_item_keys,
+        *sorted(production_item_keys.difference(configured_item_keys)),
+    ]
     return {
         "silver_floor": int(guild_constants.GUILD_PVP_SILVER_FLOOR or 0),
         "silver_loot_percent": int(guild_constants.GUILD_PVP_SILVER_LOOT_PERCENT or 0),
         "warehouse_loot_percent": int(guild_constants.GUILD_PVP_WAREHOUSE_LOOT_PERCENT or 0),
-        "warehouse_loot_whitelist": list(guild_constants.GUILD_PVP_WAREHOUSE_LOOT_WHITELIST or []),
+        "warehouse_loot_whitelist": warehouse_loot_item_keys,
     }
 
 

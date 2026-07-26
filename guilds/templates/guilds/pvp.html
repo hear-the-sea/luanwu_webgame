@@ -1,20 +1,17 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}帮会对战{% endblock %}
 
-{% block extra_head %}
+{% block guild_extra_head %}
 <link rel="stylesheet" href="{% static 'css/guild-pvp.css' %}">
 {% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard gpvp-page">
     <div class="tw-section-header">
         <div>
             <h1>帮会对战</h1>
-        </div>
-        <div class="flex gap-2">
-            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
         </div>
     </div>
 
@@ -79,7 +76,7 @@
     </section>
     {% endif %}
 
-    <section class="tw-card gpvp-shell">
+    <section class="gpvp-shell">
         {% if not member.can_manage %}
         <p class="tw-muted m-0">仅帮主或管理员可配置帮会出征。</p>
         {% elif active_run %}
@@ -286,6 +283,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{{ block.super }}
 <script src="{% static 'js/dashboard.js' %}"></script>
 <script src="{% static 'js/guild-pvp-page.js' %}"></script>
 {% endblock %}

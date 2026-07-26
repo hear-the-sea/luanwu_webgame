@@ -416,7 +416,7 @@ def test_reserve_slot_count_is_ready_plus_training_not_exhausted(reserve_demand)
         demand=reserve_demand,
         profile=exhausted_profile,
         state=ArenaVirtualReserveMember.State.EXHAUSTED,
-        accelerated_growth_rounds=6,
+        accelerated_growth_rounds=8,
     )
     available = _create_bot_profile("reserve_after_exhausted")
 
@@ -424,6 +424,26 @@ def test_reserve_slot_count_is_ready_plus_training_not_exhausted(reserve_demand)
 
     assert result.ready_count + result.training_count == reserve_demand.reserve_target_count
     assert reserve_demand.reserve_members.filter(profile=available).exists()
+
+
+@pytest.mark.django_db
+def test_reevaluation_resumes_member_exhausted_by_previous_round_limit(reserve_demand):
+    from gameplay.services.arena.virtual_reserve import _reevaluate_existing_members
+
+    profile = _create_bot_profile("reserve_previous_round_limit", guest_stats=[(150, 150, 25)])
+    member = ArenaVirtualReserveMember.objects.create(
+        demand=reserve_demand,
+        profile=profile,
+        state=ArenaVirtualReserveMember.State.EXHAUSTED,
+        accelerated_growth_rounds=6,
+    )
+    now = timezone.now()
+
+    _reevaluate_existing_members(reserve_demand, now=now)
+
+    member.refresh_from_db()
+    assert member.state == ArenaVirtualReserveMember.State.TRAINING
+    assert member.next_acceleration_at == now
 
 
 @pytest.mark.django_db
@@ -588,12 +608,34 @@ def test_member_reevaluation_releases_profile_that_is_no_longer_active(reserve_d
 
 
 @pytest.mark.django_db
-def test_hourly_growth_runs_one_normal_round_and_marks_ready(monkeypatch, training_member, caplog):
-    calls: list[int] = []
+def test_overdue_member_reevaluation_pulls_distant_growth_schedule_forward(training_member):
+    from gameplay.services.arena.virtual_reserve import _reevaluate_existing_members
+
+    now = timezone.now()
+    training_member.next_acceleration_at = now + timedelta(hours=1)
+    training_member.save(update_fields=["next_acceleration_at"])
+
+    _reevaluate_existing_members(training_member.demand, now=now)
+
+    training_member.refresh_from_db()
+    assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
+    assert training_member.next_acceleration_at == now
+
+
+@pytest.mark.django_db
+def test_growth_uses_reference_targets_and_marks_member_ready(monkeypatch, training_member, caplog):
+    now = timezone.now()
+    reference_guest = ArenaEntryGuest.objects.get(
+        entry__tournament_id=training_member.demand.tournament_id,
+        entry__source=ArenaEntry.Source.PLAYER,
+    )
+    reference_guest.snapshot = {**reference_guest.snapshot, "level": 100, "rarity": "purple"}
+    reference_guest.save(update_fields=["snapshot"])
+    calls: list[tuple[int, dict]] = []
     caplog.set_level(logging.INFO, logger="gameplay.services.arena.virtual_reserve")
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve.accelerate_virtual_player_growth",
-        lambda profile_id, now: calls.append(profile_id) or AcceleratedGrowthOutcome.GROWN,
+        lambda profile_id, **kwargs: calls.append((profile_id, kwargs)) or AcceleratedGrowthOutcome.GROWN,
     )
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve.evaluate_bot_lineup",
@@ -604,11 +646,22 @@ def test_hourly_growth_runs_one_normal_round_and_marks_ready(monkeypatch, traini
         ),
     )
 
-    result = grow_due_virtual_reserves(now=timezone.now(), limit=10)
+    result = grow_due_virtual_reserves(now=now, limit=10)
 
     training_member.refresh_from_db()
     assert result == 1
-    assert calls == [training_member.profile_id]
+    assert calls == [
+        (
+            training_member.profile_id,
+            {
+                "now": now,
+                "minimum_guest_count": 1,
+                "minimum_guest_level": 100,
+                "guest_rarity_cap": "purple",
+                "max_guest_level_step": 20,
+            },
+        )
+    ]
     assert training_member.accelerated_growth_rounds == 1
     assert training_member.state == ArenaVirtualReserveMember.State.READY
     assert training_member.next_acceleration_at is None
@@ -623,13 +676,13 @@ def test_hourly_growth_runs_one_normal_round_and_marks_ready(monkeypatch, traini
 
 
 @pytest.mark.django_db
-def test_sixth_failed_growth_marks_member_exhausted(monkeypatch, training_member, caplog):
-    training_member.accelerated_growth_rounds = 5
+def test_eighth_failed_growth_marks_member_exhausted(monkeypatch, training_member, caplog):
+    training_member.accelerated_growth_rounds = 7
     training_member.save(update_fields=["accelerated_growth_rounds"])
     caplog.set_level(logging.INFO, logger="gameplay.services.arena.virtual_reserve")
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve.accelerate_virtual_player_growth",
-        lambda profile_id, now: AcceleratedGrowthOutcome.GROWN,
+        lambda profile_id, **kwargs: AcceleratedGrowthOutcome.GROWN,
     )
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve.evaluate_bot_lineup",
@@ -643,7 +696,7 @@ def test_sixth_failed_growth_marks_member_exhausted(monkeypatch, training_member
     assert grow_due_virtual_reserves(now=timezone.now(), limit=10) == 1
 
     training_member.refresh_from_db()
-    assert training_member.accelerated_growth_rounds == 6
+    assert training_member.accelerated_growth_rounds == 8
     assert training_member.state == ArenaVirtualReserveMember.State.EXHAUSTED
     assert training_member.next_acceleration_at is None
     exhausted_record = next(
@@ -651,16 +704,16 @@ def test_sixth_failed_growth_marks_member_exhausted(monkeypatch, training_member
     )
     assert exhausted_record.profile_id == training_member.profile_id
     assert exhausted_record.failure_reason == "growth_round_limit"
-    assert exhausted_record.growth_rounds == 6
+    assert exhausted_record.growth_rounds == 8
 
 
 @pytest.mark.django_db
-def test_hourly_growth_does_not_repeat_before_next_acceleration(monkeypatch, training_member):
+def test_post_fill_growth_waits_fifteen_minutes_before_repeating(monkeypatch, training_member):
     now = timezone.now()
     calls: list[int] = []
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve.accelerate_virtual_player_growth",
-        lambda profile_id, now: calls.append(profile_id) or AcceleratedGrowthOutcome.GROWN,
+        lambda profile_id, **kwargs: calls.append(profile_id) or AcceleratedGrowthOutcome.GROWN,
     )
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve.evaluate_bot_lineup",
@@ -674,6 +727,33 @@ def test_hourly_growth_does_not_repeat_before_next_acceleration(monkeypatch, tra
     assert grow_due_virtual_reserves(now=now, limit=10) == 1
     assert grow_due_virtual_reserves(now=now, limit=10) == 0
     assert calls == [training_member.profile_id]
+    training_member.refresh_from_db()
+    assert training_member.next_acceleration_at == now + timedelta(minutes=15)
+
+
+@pytest.mark.django_db
+def test_pre_fill_growth_waits_one_hour_before_repeating(monkeypatch, training_member):
+    now = timezone.now()
+    tournament = training_member.demand.tournament
+    tournament.virtual_fill_at = now + timedelta(hours=2)
+    tournament.save(update_fields=["virtual_fill_at"])
+    monkeypatch.setattr(
+        "gameplay.services.arena.virtual_reserve.accelerate_virtual_player_growth",
+        lambda *_args, **_kwargs: AcceleratedGrowthOutcome.GROWN,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.arena.virtual_reserve.evaluate_bot_lineup",
+        lambda profile, **kwargs: BotLineupEvaluation(
+            ({"attack": 10, "defense": 10, "max_hp": 100},),
+            30,
+            False,
+        ),
+    )
+
+    assert grow_due_virtual_reserves(now=now, limit=10) == 1
+
+    training_member.refresh_from_db()
+    assert training_member.next_acceleration_at == now + timedelta(hours=1)
 
 
 @pytest.mark.django_db

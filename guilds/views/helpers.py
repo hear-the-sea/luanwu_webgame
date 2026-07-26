@@ -93,7 +93,7 @@ def load_guild_leader(guild: Guild) -> GuildMember | None:
 
 
 def load_recent_announcements(guild: Guild, *, limit: int = 5) -> list[GuildAnnouncement]:
-    return list(guild.announcements.select_related("author__manor").order_by("-created_at")[:limit])
+    return list(guild.announcements.select_related("author__manor").order_by("-created_at", "-id")[:limit])
 
 
 def load_ordered_technologies(guild: Guild) -> list[Any]:

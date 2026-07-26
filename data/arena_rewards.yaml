@@ -19,7 +19,7 @@ rewards:
 
   - key: gladiator_chest
     name: 角斗士宝箱
-    description: 兑换后可获得10000银两，并随机获得1件角斗士装备（头盔30%、胸甲20%、之靴35%、之锤15%）。
+    description: 兑换后可获得10000银两，并随机获得1件角斗士装备。
     cost_coins: 500
     daily_limit: 2
     rewards:
@@ -36,30 +36,69 @@ rewards:
           weight: 15
 
   - key: blueprint_blue_exchange
-    name: 本周蓝色图纸
-    description: 每周轮换1张完整蓝色装备图纸，每日限兑1张。
+    name: 随机蓝色装备图纸
+    description: 从全部蓝色装备图纸中随机获得1张，每日限兑1张。
     cost_coins: 600
     daily_limit: 1
-    rotating_blueprint_pool:
+    random_blueprint_pool:
       rarity: blue
-      blueprint_keys:
-        - blueprint_xiaoweitoukie
-        - blueprint_xiaoweikaijia
-        - blueprint_xiaoweichangxue
-        - blueprint_xiaoweichangjian
 
   - key: blueprint_purple_exchange
-    name: 本周紫色图纸
-    description: 每周轮换1张完整紫色装备图纸，每日限兑1张。
+    name: 随机紫色装备图纸
+    description: 从全部紫色装备图纸中随机获得1张，每日限兑1张。
     cost_coins: 1800
     daily_limit: 1
-    rotating_blueprint_pool:
+    random_blueprint_pool:
       rarity: purple
-      blueprint_keys:
-        - blueprint_huxianpao
-        - blueprint_huxianxie
-        - blueprint_huxianjian
-        - blueprint_fenglingguan
+
+  - key: wulin_chest
+    name: 武林宝箱
+    description: 武林风云百载，无数神兵辗转其中。
+    cost_coins: 1000
+    weekly_limit: 2
+    rewards:
+      random_items:
+        - item_key: chunqiu_coin
+          weight: 48
+          amount: 10
+        - item_key: equip_duoqinghuan
+          weight: 4
+        - item_key: equip_libiegou
+          weight: 4
+        - item_key: equip_duomingfeidao
+          weight: 4
+        - item_key: equip_tulongdao
+          weight: 4
+        - item_key: equip_biyudao
+          weight: 4
+        - item_key: equip_ziweiruanjian
+          weight: 4
+        - item_key: equip_xiuhuazhen
+          weight: 4
+        - item_key: equip_xuedao
+          weight: 4
+        - item_key: equip_jinshejian
+          weight: 4
+        - item_key: equip_yuanyangdao
+          weight: 4
+        - item_key: equip_shenghuoling
+          weight: 4
+        - item_key: equip_ruanweijia
+          weight: 1
+        - item_key: equip_yitianjian
+          weight: 1
+        - item_key: equip_yuanyuewandao
+          weight: 1
+        - item_key: equip_tianyamingyuedao
+          weight: 1
+        - item_key: equip_kongquelin
+          weight: 1
+        - item_key: equip_dagoubang
+          weight: 1
+        - item_key: equip_xuantiechongjian
+          weight: 1
+        - item_key: equip_shangshanfaeling
+          weight: 1
 
   - key: panfeng_guest_exchange
     name: 潘凤门客兑换

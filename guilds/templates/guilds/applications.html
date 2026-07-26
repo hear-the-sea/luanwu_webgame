@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}成员申请 - {{ guild.name }}{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
@@ -12,11 +12,10 @@
         </div>
         <div class="flex gap-2">
             <a href="{% url 'guilds:members' %}" class="tw-btn-secondary">成员列表</a>
-            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
         </div>
     </div>
 
-    <section class="tw-card">
+    <section class="tw-guild-section">
         <h2>待审批申请</h2>
         {% if applications %}
             <div class="flex flex-col gap-4">
@@ -66,11 +65,11 @@
 </section>
 
 <!-- 拒绝申请模态框 -->
-<div class="tw-modal-overlay" id="reject-modal" style="display: none;">
+<div class="tw-modal-overlay" id="reject-modal" style="display: none;" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="reject-modal-title">
     <div class="tw-modal-content">
         <div class="tw-modal-header">
-            <h3>拒绝申请</h3>
-            <button type="button" class="tw-modal-close" onclick="closeRejectModal()">&times;</button>
+            <h3 id="reject-modal-title">拒绝申请</h3>
+            <button type="button" class="tw-modal-close" onclick="closeRejectModal()" aria-label="关闭拒绝申请窗口">&times;</button>
         </div>
         <div class="tw-modal-body">
             <form method="post" id="reject-form" action="">
@@ -90,6 +89,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{{ block.super }}
 <script>
     const rejectModal = document.getElementById('reject-modal');
     const rejectForm = document.getElementById('reject-form');

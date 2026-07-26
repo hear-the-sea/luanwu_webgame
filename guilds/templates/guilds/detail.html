@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}{{ guild.name }}{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
@@ -13,12 +13,11 @@
         <div class="flex gap-2">
             {% if is_member %}
                 {% if member.is_leader %}
-                    <a href="{% url 'guilds:info' guild.id %}" class="tw-btn-primary">帮会设置</a>
+                    <a href="{% url 'guilds:info' guild.id %}" class="tw-btn-secondary">帮会设置</a>
                 {% endif %}
-                <a href="{% url 'guilds:hall' %}" class="tw-btn-primary">返回大厅</a>
             {% else %}
                 <a href="{% url 'guilds:apply' guild.id %}" class="tw-btn-primary">申请加入</a>
-                <a href="{% url 'guilds:hall' %}" class="tw-btn-primary">返回大厅</a>
+                <a href="{% url 'guilds:list' %}" class="tw-btn-secondary">返回名录</a>
             {% endif %}
         </div>
     </div>
@@ -127,18 +126,18 @@
 
     <!-- 最新公告 -->
     {% if announcements %}
-    <section class="tw-card tw-guild-section-spacing">
-        <div class="flex justify-between items-center">
+    <section class="tw-card tw-guild-section-spacing tw-guild-latest-section">
+        <div class="tw-guild-latest-header">
             <h2 class="m-0">最新公告</h2>
             {% if is_member %}
                 <a href="{% url 'guilds:announcements' %}" class="tw-btn-secondary tw-btn-sm">查看全部</a>
             {% endif %}
         </div>
-        <div class="mt-4">
-            {% for announcement in announcements %}
-            <div class="tw-guild-announcement {% if announcement.type == 'leader' %}announcement-leader{% elif announcement.type == 'system' %}announcement-system{% endif %}">
-                <div class="tw-guild-announcement-header">
-                    <span class="tw-guild-announcement-title">
+        {% with announcement=announcements.0 %}
+        <div class="tw-guild-latest-list">
+            <article class="tw-guild-announcement {% if announcement.type == 'leader' %}announcement-leader{% elif announcement.type == 'system' %}announcement-system{% endif %}">
+                <header class="tw-guild-announcement-header">
+                    <h3 class="tw-guild-announcement-title">
                         {% if announcement.type == 'leader' %}
                             帮主公告
                         {% elif announcement.type == 'system' %}
@@ -146,18 +145,20 @@
                         {% else %}
                             普通公告
                         {% endif %}
-                    </span>
-                    <span class="tw-muted">{{ announcement.created_at|date:"m-d H:i" }}</span>
-                </div>
-                <p class="m-0">{{ announcement.content }}</p>
-                {% if announcement.author %}
-                <div class="mt-2 text-right">
-                    <small class="tw-muted">发布者：{{ announcement.author.manor.display_name }}</small>
-                </div>
-                {% endif %}
-            </div>
-            {% endfor %}
+                    </h3>
+                    <div class="tw-guild-announcement-meta">
+                        <time datetime="{{ announcement.created_at|date:'c' }}">{{ announcement.created_at|date:"m-d H:i" }}</time>
+                        {% if announcement.author %}
+                            <span class="tw-guild-announcement-publisher">
+                                发布者：<strong class="tw-guild-announcement-author">{{ announcement.author.manor.display_name|default:"未知庄园" }}</strong>
+                            </span>
+                        {% endif %}
+                    </div>
+                </header>
+                <div class="tw-guild-announcement-content">{{ announcement.content }}</div>
+            </article>
         </div>
+        {% endwith %}
     </section>
     {% endif %}
 
@@ -172,7 +173,7 @@
 
             {% if member.is_leader %}
                 <button type="button" class="tw-btn-secondary"
-                    onclick="document.getElementById('disband-modal').classList.add('visible')">
+                    onclick="document.getElementById('disband-modal').style.display='flex'">
                     解散帮会
                 </button>
             {% else %}
@@ -188,12 +189,12 @@
 
 <!-- 解散帮会确认模态框 -->
 {% if is_member and member.is_leader %}
-<div class="tw-modal-overlay" id="disband-modal" style="display: none;">
+<div class="tw-modal-overlay" id="disband-modal" style="display: none;" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="detail-disband-title">
     <div class="tw-modal-content">
         <div class="tw-modal-header">
-            <h3>解散帮会</h3>
+            <h3 id="detail-disband-title">解散帮会</h3>
             <button type="button" class="tw-modal-close"
-                onclick="document.getElementById('disband-modal').style.display='none'">&times;</button>
+                onclick="document.getElementById('disband-modal').style.display='none'" aria-label="关闭解散帮会窗口">&times;</button>
         </div>
         <div class="tw-modal-body">
             <div class="tw-guild-warning" style="margin-top: 0;">
@@ -217,11 +218,11 @@
 {% endif %}
 
 {% if is_member %}
-<div class="tw-modal-overlay" id="guild-donation-modal" style="display: none;">
+<div class="tw-modal-overlay" id="guild-donation-modal" style="display: none;" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="guild-donation-title">
     <div class="tw-modal-content">
         <div class="tw-modal-header">
-            <h3>资源捐赠</h3>
-            <button type="button" class="tw-modal-close" onclick="closeGuildDonationModal()">&times;</button>
+            <h3 id="guild-donation-title">资源捐赠</h3>
+            <button type="button" class="tw-modal-close" onclick="closeGuildDonationModal()" aria-label="关闭资源捐赠窗口">&times;</button>
         </div>
         <div class="tw-modal-body">
             <div class="tw-form-field">
@@ -325,6 +326,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{{ block.super }}
 <script>
     (() => {
         const modal = document.getElementById('disband-modal');
@@ -417,6 +419,13 @@
                 window.closeGuildDonationModal();
             }
         });
+
+        if (typeof URLSearchParams !== 'undefined') {
+            const params = new URLSearchParams(window.location?.search || '');
+            if (params.get('donate') === '1') {
+                window.openGuildDonationModal();
+            }
+        }
 
         document.getElementById('leave-guild-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();

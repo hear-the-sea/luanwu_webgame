@@ -25,6 +25,8 @@ from websocket.backends.connection_limiter import (
     release_connection_slot,
 )
 from websocket.backends.worker_lease import get_websocket_worker_lease_manager
+from websocket.close_codes import CONNECTION_LIMIT_REACHED_CLOSE_CODE as CAPACITY_LIMIT_CLOSE_CODE
+from websocket.close_codes import SERVICE_UNAVAILABLE_CLOSE_CODE
 from websocket.exceptions import WebSocketConnectionLimitUnavailable
 
 logger = logging.getLogger(__name__)
@@ -88,8 +90,8 @@ def is_websocket_session_valid(scope: dict) -> bool:
 
 class SingleSessionWebSocketMixin:
     SESSION_VALIDATION_CACHE_SECONDS = 5.0
-    SESSION_VALIDATION_UNAVAILABLE_CLOSE_CODE = 1013
-    CONNECTION_LIMIT_REACHED_CLOSE_CODE = 4429
+    SESSION_VALIDATION_UNAVAILABLE_CLOSE_CODE = SERVICE_UNAVAILABLE_CLOSE_CODE
+    CONNECTION_LIMIT_REACHED_CLOSE_CODE = CAPACITY_LIMIT_CLOSE_CODE
     _single_session_valid_until: float = 0.0
     _single_session_checked_by_dispatch: bool = False
     _connection_slot_acquired: bool = False
@@ -252,6 +254,14 @@ class SingleSessionWebSocketMixin:
                 await asyncio.sleep(interval)
                 refreshed = await self._refresh_connection_slot(user_id, connection_id, worker_id)
                 if not refreshed:
+                    logger.warning(
+                        "WebSocket connection slot missing or expired; closing connection",
+                        extra={
+                            "user_id": user_id,
+                            "path": getattr(self, "scope", {}).get("path"),
+                            "close_code": self.SESSION_VALIDATION_UNAVAILABLE_CLOSE_CODE,
+                        },
+                    )
                     await self.close(code=self.SESSION_VALIDATION_UNAVAILABLE_CLOSE_CODE)  # type: ignore[attr-defined]
                     return
         except asyncio.CancelledError:
@@ -267,33 +277,39 @@ class SingleSessionWebSocketMixin:
     async def _release_connection_slot(self) -> None:
         heartbeat = self._connection_slot_heartbeat_task
         self._connection_slot_heartbeat_task = None
-        if heartbeat is not None:
-            heartbeat.cancel()
-            try:
-                await heartbeat
-            except asyncio.CancelledError:
-                pass
-        if not self._connection_slot_acquired:
-            return
-
-        self._connection_slot_acquired = False
-        worker_id = self._connection_slot_worker_id
-        self._connection_slot_worker_id = None
-        if worker_id is None:
-            return
-        user = self.scope.get("user")  # type: ignore[attr-defined]
         try:
-            await self._release_connection_slot_backend(
-                int(user.id),
-                str(self.channel_name),  # type: ignore[attr-defined]
-                worker_id,
-            )
-        except WebSocketConnectionLimitUnavailable:
-            logger.warning(
-                "WebSocket connection slot release unavailable: user_id=%s",
-                getattr(user, "id", None),
-                exc_info=True,
-            )
+            if heartbeat is not None:
+                heartbeat.cancel()
+                try:
+                    await heartbeat
+                except asyncio.CancelledError:
+                    current_task = asyncio.current_task()
+                    if current_task is not None and current_task.cancelling():
+                        raise
+                except Exception:
+                    logger.exception(
+                        "WebSocket connection slot heartbeat failed during cleanup: user_id=%s",
+                        getattr(self.scope.get("user"), "id", None),  # type: ignore[attr-defined]
+                    )
+        finally:
+            slot_acquired = self._connection_slot_acquired
+            self._connection_slot_acquired = False
+            worker_id = self._connection_slot_worker_id
+            self._connection_slot_worker_id = None
+            if slot_acquired and worker_id is not None:
+                user = self.scope.get("user")  # type: ignore[attr-defined]
+                try:
+                    await self._release_connection_slot_backend(
+                        int(user.id),
+                        str(self.channel_name),  # type: ignore[attr-defined]
+                        worker_id,
+                    )
+                except WebSocketConnectionLimitUnavailable:
+                    logger.warning(
+                        "WebSocket connection slot release unavailable: user_id=%s",
+                        getattr(user, "id", None),
+                        exc_info=True,
+                    )
 
     async def _guard_single_session(self, message: dict) -> bool:
         message_type = str(message.get("type", ""))

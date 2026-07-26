@@ -1,17 +1,14 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}搜索帮会{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
             <h1>搜索帮会</h1>
             <p class="caption">快速查找想要加入的帮会</p>
-        </div>
-        <div class="flex gap-2">
-            <a href="{% url 'guilds:hall' %}" class="tw-btn-primary">返回大厅</a>
         </div>
     </div>
 
@@ -29,7 +26,7 @@
     </section>
 
     {% if query %}
-    <section class="tw-card tw-guild-section-spacing">
+    <section class="tw-guild-section tw-guild-section-spacing">
         <h2>搜索结果</h2>
         {% if guilds %}
             <div class="tw-building-grid">
@@ -62,7 +59,10 @@
                 {% endfor %}
             </div>
         {% else %}
-            <p class="tw-muted">未找到名称包含 "{{ query }}" 的帮会</p>
+            <div class="tw-guild-empty-state">
+                <strong>没有匹配的帮会</strong>
+                <p>未找到名称包含“{{ query }}”的帮会。</p>
+            </div>
         {% endif %}
     </section>
     {% endif %}

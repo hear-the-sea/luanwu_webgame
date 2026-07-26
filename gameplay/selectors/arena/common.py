@@ -50,6 +50,12 @@ def build_reward_rows(manor: Manor) -> list[dict]:
                 "label": item_labels.get(blueprint_key, "未知图纸"),
                 "amount": 1,
             }
+        random_blueprint_row = None
+        if reward.random_blueprint_pool is not None:
+            random_blueprint_row = {
+                "label": reward.name,
+                "amount": 1,
+            }
         resource_rows = [
             {
                 "key": key,
@@ -88,12 +94,14 @@ def build_reward_rows(manor: Manor) -> list[dict]:
                 "description": reward.description,
                 "cost_coins": reward.cost_coins,
                 "daily_limit": reward.daily_limit,
+                "weekly_limit": reward.weekly_limit,
                 "resources": reward.resources,
                 "items": reward.items,
                 "resource_rows": resource_rows,
                 "item_rows": item_rows,
                 "random_item_rows": random_item_rows,
                 "rotating_blueprint_row": rotating_blueprint_row,
+                "random_blueprint_row": random_blueprint_row,
                 "can_afford": manor.arena_coins >= reward.cost_coins,
             }
         )

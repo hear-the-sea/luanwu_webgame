@@ -13,11 +13,18 @@ from common.constants.virtual_players import (
 from .base import ValidationResult, _check_positive, _check_type
 
 _SELECTION_SENTINELS = {"__all__", "__all_tradeable__"}
-_GEAR_RARITIES = {"black", "gray", "green", "red", "blue", "purple", "orange"}
+_RARITY_RANKS = {
+    rarity: rank for rank, rarity in enumerate(("black", "gray", "green", "red", "blue", "purple", "orange"))
+}
+_GEAR_RARITIES = set(_RARITY_RANKS)
 _COMBAT_PERSONAS = VIRTUAL_PLAYER_ARCHETYPES
 _LIFECYCLE_PERSONAS = {"tourist", "casual", "committed", "veteran"}
 _STRENGTH_QUANTILES = {"p25", "p50", "p75"}
-_PERSONA_MULTIPLIERS = {"guest_level_multiplier", "guest_count_multiplier", "troop_multiplier"}
+_PERSONA_MULTIPLIERS = {
+    "guest_level_multiplier",
+    "guest_count_multiplier",
+    "troop_multiplier",
+}
 
 
 def _validate_int(
@@ -86,6 +93,30 @@ def _validate_ratio(value: Any, *, result: ValidationResult, file: str, path: st
         result.add(file, path, "must be between 0 and 1")
 
 
+def _validate_rarity_stage_mapping(value: Any, *, result: ValidationResult, file: str, path: str) -> None:
+    if not isinstance(value, dict):
+        result.add(file, path, "expected a mapping")
+        return
+
+    valid_entries: list[tuple[int, int, str]] = []
+    for raw_stage, rarity in value.items():
+        entry_path = f"{path}.{raw_stage}"
+        valid_stage = isinstance(raw_stage, int) and not isinstance(raw_stage, bool) and raw_stage > 0
+        if not valid_stage:
+            result.add(file, entry_path, "stage must be a positive integer")
+        valid_rarity = isinstance(rarity, str) and rarity in _GEAR_RARITIES
+        if not valid_rarity:
+            result.add(file, entry_path, "expected a supported rarity")
+        if valid_stage and valid_rarity:
+            valid_entries.append((raw_stage, _RARITY_RANKS[rarity], entry_path))
+
+    highest_rank = -1
+    for _, rarity_rank, entry_path in sorted(valid_entries):
+        if rarity_rank < highest_rank:
+            result.add(file, entry_path, "rarity must not decrease as stage increases")
+        highest_rank = max(highest_rank, rarity_rank)
+
+
 def _validate_string_list(value: Any, *, result: ValidationResult, file: str, path: str, field_name: str) -> None:
     if isinstance(value, str):
         allowed_sentinels = {"__all__"}
@@ -95,7 +126,11 @@ def _validate_string_list(value: Any, *, result: ValidationResult, file: str, pa
             result.add(file, path, f"field '{field_name}' expected list or supported selector")
         return
     if not isinstance(value, list):
-        result.add(file, path, f"field '{field_name}' expected list, got {type(value).__name__}")
+        result.add(
+            file,
+            path,
+            f"field '{field_name}' expected list, got {type(value).__name__}",
+        )
         return
     for idx, item in enumerate(value):
         if not isinstance(item, str):
@@ -104,7 +139,11 @@ def _validate_string_list(value: Any, *, result: ValidationResult, file: str, pa
 
 def _validate_prestige_chance_table(value: Any, *, result: ValidationResult, file: str, path: str) -> None:
     if not isinstance(value, list):
-        result.add(file, path, "powerful_item_prestige_chance expected a list of prestige chance entries")
+        result.add(
+            file,
+            path,
+            "powerful_item_prestige_chance expected a list of prestige chance entries",
+        )
         return
     for idx, row in enumerate(value):
         row_path = f"{path}[{idx}]"
@@ -142,8 +181,21 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                 value = population.get(field_name)
                 if value is None:
                     continue
-                _check_type(value, int, result=result, file=file, path="population", field_name=field_name)
-                _check_positive(value, result=result, file=file, path="population", field_name=field_name)
+                _check_type(
+                    value,
+                    int,
+                    result=result,
+                    file=file,
+                    path="population",
+                    field_name=field_name,
+                )
+                _check_positive(
+                    value,
+                    result=result,
+                    file=file,
+                    path="population",
+                    field_name=field_name,
+                )
             for field_name, minimum in (
                 ("active_window_days", 1),
                 ("cell_floor", 0),
@@ -204,12 +256,29 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                         file=file,
                         path=f"lifecycle.{field_name}",
                     )
-            for field_name in ("empty_hit_stale_threshold", "empty_hit_window_hours", "stale_no_interaction_days"):
+            for field_name in (
+                "empty_hit_stale_threshold",
+                "empty_hit_window_hours",
+                "stale_no_interaction_days",
+            ):
                 value = lifecycle.get(field_name)
                 if value is None:
                     continue
-                _check_type(value, int, result=result, file=file, path="lifecycle", field_name=field_name)
-                _check_positive(value, result=result, file=file, path="lifecycle", field_name=field_name)
+                _check_type(
+                    value,
+                    int,
+                    result=result,
+                    file=file,
+                    path="lifecycle",
+                    field_name=field_name,
+                )
+                _check_positive(
+                    value,
+                    result=result,
+                    file=file,
+                    path="lifecycle",
+                    field_name=field_name,
+                )
 
     growth = data.get("growth")
     if growth is not None:
@@ -228,11 +297,26 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                     )
                     for band, value in stage_caps.items():
                         if band not in supported_bands:
-                            result.add(file, f"growth.stage_caps.{band}", "expected a configured prestige band")
+                            result.add(
+                                file,
+                                f"growth.stage_caps.{band}",
+                                "expected a configured prestige band",
+                            )
                         _check_type(
-                            value, int, result=result, file=file, path="growth.stage_caps", field_name=str(band)
+                            value,
+                            int,
+                            result=result,
+                            file=file,
+                            path="growth.stage_caps",
+                            field_name=str(band),
                         )
-                        _check_positive(value, result=result, file=file, path="growth.stage_caps", field_name=str(band))
+                        _check_positive(
+                            value,
+                            result=result,
+                            file=file,
+                            path="growth.stage_caps",
+                            field_name=str(band),
+                        )
             for field_name in ("catch_up_ratio", "slowing_ratio_multiplier"):
                 if field_name in growth:
                     _validate_ratio(
@@ -241,7 +325,11 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                         file=file,
                         path=f"growth.{field_name}",
                     )
-            for field_name in ("max_building_step", "max_guest_level_step", "max_prestige_step"):
+            for field_name in (
+                "max_building_step",
+                "max_guest_level_step",
+                "max_prestige_step",
+            ):
                 if field_name in growth:
                     _validate_int(
                         growth[field_name],
@@ -301,7 +389,11 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                 if isinstance(values, list) and len(values) == 2:
                     for index, value in enumerate(values):
                         if isinstance(value, int) and value > 1:
-                            result.add(file, f"projection.early_stage_skill_count[{index}]", "must be <= 1")
+                            result.add(
+                                file,
+                                f"projection.early_stage_skill_count[{index}]",
+                                "must be <= 1",
+                            )
             if "high_tier_skill_chance" in projection:
                 _validate_ratio(
                     projection["high_tier_skill_chance"],
@@ -346,12 +438,28 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                     file=file,
                     path="projection.powerful_item_prestige_chance",
                 )
-            for field_name in ("real_projection_sample_size", "real_projection_jitter_bps"):
+            for field_name in (
+                "real_projection_sample_size",
+                "real_projection_jitter_bps",
+            ):
                 value = projection.get(field_name)
                 if value is None:
                     continue
-                _check_type(value, int, result=result, file=file, path="projection", field_name=field_name)
-                _check_positive(value, result=result, file=file, path="projection", field_name=field_name)
+                _check_type(
+                    value,
+                    int,
+                    result=result,
+                    file=file,
+                    path="projection",
+                    field_name=field_name,
+                )
+                _check_positive(
+                    value,
+                    result=result,
+                    file=file,
+                    path="projection",
+                    field_name=field_name,
+                )
             for field_name in ("active_sample_days", "regional_min_sample_size"):
                 if field_name in projection:
                     _validate_int(
@@ -364,7 +472,11 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
             quantile_weights = projection.get("strength_quantile_weights")
             if quantile_weights is not None:
                 if not isinstance(quantile_weights, dict):
-                    result.add(file, "projection.strength_quantile_weights", "expected a mapping")
+                    result.add(
+                        file,
+                        "projection.strength_quantile_weights",
+                        "expected a mapping",
+                    )
                 else:
                     for key, value in quantile_weights.items():
                         path = f"projection.strength_quantile_weights.{key}"
@@ -382,20 +494,30 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                         )
             if "early_stage_skill_max" in projection:
                 value = projection["early_stage_skill_max"]
-                _check_type(value, int, result=result, file=file, path="projection", field_name="early_stage_skill_max")
+                _check_type(
+                    value,
+                    int,
+                    result=result,
+                    file=file,
+                    path="projection",
+                    field_name="early_stage_skill_max",
+                )
                 if isinstance(value, int) and value < 0:
                     result.add(file, "projection.early_stage_skill_max", "must be >= 0")
-            gear_max_rarity = projection.get("gear_max_rarity_by_stage")
-            if gear_max_rarity is not None:
-                if not isinstance(gear_max_rarity, dict):
-                    result.add(file, "projection.gear_max_rarity_by_stage", "expected a mapping")
-                else:
-                    for raw_stage, rarity in gear_max_rarity.items():
-                        path = f"projection.gear_max_rarity_by_stage.{raw_stage}"
-                        if not isinstance(raw_stage, int) or raw_stage <= 0:
-                            result.add(file, path, "stage must be a positive integer")
-                        if not isinstance(rarity, str) or rarity not in _GEAR_RARITIES:
-                            result.add(file, path, "expected a supported gear rarity")
+            for rarity_mapping_name in (
+                "guest_max_rarity_by_stage",
+                "gear_max_rarity_by_stage",
+            ):
+                rarity_mapping = projection.get(rarity_mapping_name)
+                if rarity_mapping is None:
+                    continue
+                mapping_path = f"projection.{rarity_mapping_name}"
+                _validate_rarity_stage_mapping(
+                    rarity_mapping,
+                    result=result,
+                    file=file,
+                    path=mapping_path,
+                )
             for mapping_name, value_type in (
                 ("gear_slots_by_archetype", int),
                 ("inventory_quantity_multipliers", (int, float)),
@@ -421,28 +543,49 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
             effect_weights = projection.get("inventory_effect_type_weights")
             if effect_weights is not None:
                 if not isinstance(effect_weights, dict):
-                    result.add(file, "projection.inventory_effect_type_weights", "expected a mapping")
+                    result.add(
+                        file,
+                        "projection.inventory_effect_type_weights",
+                        "expected a mapping",
+                    )
                 else:
                     for archetype, weights in effect_weights.items():
                         weights_path = f"projection.inventory_effect_type_weights.{archetype}"
                         if archetype not in _COMBAT_PERSONAS:
-                            result.add(file, weights_path, "expected a supported combat archetype")
+                            result.add(
+                                file,
+                                weights_path,
+                                "expected a supported combat archetype",
+                            )
                         if not isinstance(weights, dict):
                             result.add(file, weights_path, "expected a mapping")
                             continue
                         for effect_type, weight in weights.items():
                             weight_path = f"{weights_path}.{effect_type}"
                             if effect_type not in VIRTUAL_PLAYER_INVENTORY_EFFECT_TYPES:
-                                result.add(file, weight_path, "expected a supported inventory effect type")
+                                result.add(
+                                    file,
+                                    weight_path,
+                                    "expected a supported inventory effect type",
+                                )
                             if not isinstance(weight, int) or weight <= 0:
                                 result.add(file, weight_path, "expected a positive integer")
             loot_budget = projection.get("loot_budget_daily")
             if loot_budget is not None:
                 _check_type(
-                    loot_budget, int, result=result, file=file, path="projection", field_name="loot_budget_daily"
+                    loot_budget,
+                    int,
+                    result=result,
+                    file=file,
+                    path="projection",
+                    field_name="loot_budget_daily",
                 )
                 _check_positive(
-                    loot_budget, result=result, file=file, path="projection", field_name="loot_budget_daily"
+                    loot_budget,
+                    result=result,
+                    file=file,
+                    path="projection",
+                    field_name="loot_budget_daily",
                 )
             loot_limits = projection.get("loot_limits")
             if loot_limits is not None:
@@ -475,12 +618,25 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                 value = projection.get(field_name)
                 if value is None:
                     continue
-                _check_type(value, int, result=result, file=file, path="projection", field_name=field_name)
+                _check_type(
+                    value,
+                    int,
+                    result=result,
+                    file=file,
+                    path="projection",
+                    field_name=field_name,
+                )
                 if field_name == "powerful_item_min_growth_stage":
                     if isinstance(value, int) and value < 0:
                         result.add(file, "projection", f"field '{field_name}' must be >= 0")
                 else:
-                    _check_positive(value, result=result, file=file, path="projection", field_name=field_name)
+                    _check_positive(
+                        value,
+                        result=result,
+                        file=file,
+                        path="projection",
+                        field_name=field_name,
+                    )
 
     combat_personas = data.get("combat_personas")
     if combat_personas is not None:
@@ -518,7 +674,13 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                     result.add(file, persona_path, "expected a mapping")
                     continue
                 weight = values.get("weight")
-                _validate_int(weight, result=result, file=file, path=f"{persona_path}.weight", minimum=0)
+                _validate_int(
+                    weight,
+                    result=result,
+                    file=file,
+                    path=f"{persona_path}.weight",
+                    minimum=0,
+                )
                 positive_weight = positive_weight or (
                     isinstance(weight, int) and not isinstance(weight, bool) and weight > 0
                 )

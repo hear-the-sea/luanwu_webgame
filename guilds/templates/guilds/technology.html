@@ -1,16 +1,13 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static guild_extras %}
 
 {% block title %}科技研究 - {{ guild.name }}{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
             <h1>科技研究</h1>
-        </div>
-        <div class="flex gap-2">
-            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
         </div>
     </div>
 
@@ -25,7 +22,7 @@
 
     <!-- 生产类科技 -->
     {% if current_tech_category == 'production' %}
-    <section class="tw-card">
+    <section class="tw-guild-section tw-guild-tech-board">
         <p class="tw-muted">每日自动生产道具，存入帮会仓库供成员兑换</p>
         <div class="tw-building-grid">
             {% for tech in filtered_technologies %}
@@ -44,7 +41,9 @@
                         </div>
                         <div>
                             <dt>每日产出</dt>
-                            <dd>{{ tech.level|add:"1" }} 件</dd>
+                            {% with daily_output=tech_display_meta|get_item:tech.tech_key|get_item:'daily_output' %}
+                            <dd>{% if daily_output %}{{ daily_output }}{% else %}{{ tech.level|add:"1" }} 件{% endif %}</dd>
+                            {% endwith %}
                         </div>
                         {% if tech.last_production_at %}
                         <div>
@@ -79,7 +78,7 @@
 
     <!-- 战斗类科技 -->
     {% if current_tech_category == 'combat' %}
-    <section class="tw-card">
+    <section class="tw-guild-section tw-guild-tech-board">
         <p class="tw-muted">提升全体成员门客的战斗属性</p>
         <div class="tw-building-grid">
             {% for tech in filtered_technologies %}
@@ -139,7 +138,7 @@
 
     <!-- 福利类科技 -->
     {% if current_tech_category == 'welfare' %}
-    <section class="tw-card">
+    <section class="tw-guild-section tw-guild-tech-board">
         <p class="tw-muted">提升全体成员的资源产出和行动效率</p>
         <div class="tw-building-grid">
             {% for tech in filtered_technologies %}
@@ -200,6 +199,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{{ block.super }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 可以添加一些交互效果，如确认升级提示等

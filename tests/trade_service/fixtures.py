@@ -1,5 +1,6 @@
 import pytest
 
+from core.config import TRADE
 from gameplay.models import InventoryItem, ItemTemplate
 
 
@@ -39,6 +40,7 @@ def seller_manor(django_user_model, tradeable_item_template):
     manor = ensure_manor(user)
     manor.silver = 100000
     manor.silver_capacity = 200000
+    manor.prestige = TRADE.MARKET_MIN_PRESTIGE
     manor.save()
     InventoryItem.objects.create(
         manor=manor,
@@ -57,5 +59,6 @@ def buyer_manor(django_user_model):
     manor = ensure_manor(user)
     manor.silver = 500000
     manor.silver_capacity = 1000000
+    manor.prestige = TRADE.MARKET_MIN_PRESTIGE
     manor.save()
     return manor

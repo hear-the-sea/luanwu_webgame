@@ -519,7 +519,7 @@ def _produce_items_from_config(guild: Guild, tech_key: str, tech_level: int) -> 
 
     Args:
         guild: Guild对象
-        tech_key: 科技标识符（equipment/experience/resource）
+        tech_key: 仓库产出配置中的科技标识符
         tech_level: 科技等级
     """
     items = get_production_items(tech_key, tech_level)
@@ -563,6 +563,11 @@ def produce_resource_packs(guild: Guild, tech_level: int) -> None:
         tech_level: 科技等级
     """
     _produce_items_from_config(guild, "resource", tech_level)
+
+
+def produce_soul_containers(guild: Guild, tech_level: int) -> None:
+    """生产当前神秘学等级解锁的每日道具。"""
+    _produce_items_from_config(guild, "mysticism", tech_level)
 
 
 def _build_projected_resource_item(guild: Guild, item_key: str, template: Any) -> Any | None:
@@ -686,12 +691,40 @@ def get_warehouse_items(
         item.max_exchange_quantity = (item.display_quantity // item.exchange_unit) * item.exchange_unit
         if getattr(item, "is_projected", False):
             item.is_usable = True
-            continue
-        if _is_real_guild_resource_item(item.item_key):
+        elif _is_real_guild_resource_item(item.item_key):
             item.is_usable = True
-            continue
-        # 如果找不到模板，标记为不可用（防止幽灵物品被兑换）
-        item.is_usable = item.template.is_usable if item.template else bool(display_meta.get("is_usable", False))
+        else:
+            # 如果找不到模板，标记为不可用（防止幽灵物品被兑换）
+            item.is_usable = item.template.is_usable if item.template else bool(display_meta.get("is_usable", False))
+
+        available_quantity = item.max_exchange_quantity
+        if item.weekly_personal_limit > 0:
+            available_quantity = min(available_quantity, item.weekly_exchange_remaining)
+        available_quantity = (available_quantity // item.exchange_unit) * item.exchange_unit
+
+        exchange_max_quantity = available_quantity
+        if member and item.exchange_unit_cost > 0:
+            affordable_quantity = (
+                max(0, int(member.current_contribution or 0)) // item.exchange_unit_cost
+            ) * item.exchange_unit
+            exchange_max_quantity = min(exchange_max_quantity, affordable_quantity)
+
+        item.exchange_max_quantity = exchange_max_quantity
+        item.can_exchange = bool(item.is_usable and exchange_max_quantity > 0)
+        if not item.is_usable:
+            item.exchange_disabled_reason = "此物品暂不可兑换"
+        elif (
+            available_quantity <= 0
+            and item.weekly_personal_limit > 0
+            and item.weekly_exchange_remaining < item.exchange_unit
+        ):
+            item.exchange_disabled_reason = "本周限购已达上限"
+        elif available_quantity <= 0:
+            item.exchange_disabled_reason = "库存不足一个完整兑换单位"
+        elif exchange_max_quantity <= 0:
+            item.exchange_disabled_reason = "贡献度不足"
+        else:
+            item.exchange_disabled_reason = ""
 
     return {
         "items": page_items,

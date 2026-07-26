@@ -8,6 +8,37 @@
 #   - contribution_cost: 兑换所需贡献度
 #   - weekly_personal_limit: 每名成员每周兑换上限，省略表示不限购
 
+# 神秘学科技
+mysticism:
+  levels:
+    1:
+      - item_key: soul_container
+        quantity: 1
+        contribution_cost: 1000
+    2:
+      - item_key: soul_container
+        quantity: 1
+        contribution_cost: 1000
+      - item_key: guest_rebirth_card
+        quantity: 1
+        contribution_cost: 1000
+      - item_key: xidianka
+        quantity: 1
+        contribution_cost: 1000
+    3:
+      - item_key: soul_container
+        quantity: 1
+        contribution_cost: 1000
+      - item_key: guest_rebirth_card
+        quantity: 1
+        contribution_cost: 1000
+      - item_key: xidianka
+        quantity: 1
+        contribution_cost: 1000
+      - item_key: xisuidan
+        quantity: 1
+        contribution_cost: 1000
+
 # 装备锻造科技
 equipment:
   levels:
@@ -27,7 +58,7 @@ equipment:
         contribution_cost: 180
         weekly_personal_limit: 3
       - item_key: guild_gear_box_green
-        quantity: 1
+        quantity: 2
         contribution_cost: 70
         weekly_personal_limit: 4
     4:
@@ -36,7 +67,7 @@ equipment:
         contribution_cost: 180
         weekly_personal_limit: 3
       - item_key: guild_gear_box_green
-        quantity: 1
+        quantity: 2
         contribution_cost: 70
         weekly_personal_limit: 4
     5:
@@ -45,54 +76,102 @@ equipment:
         contribution_cost: 500
         weekly_personal_limit: 1
       - item_key: guild_gear_box_blue
-        quantity: 1
+        quantity: 2
         contribution_cost: 180
         weekly_personal_limit: 3
+      - item_key: guild_gear_box_green
+        quantity: 2
+        contribution_cost: 70
+        weekly_personal_limit: 4
     6:
       - item_key: guild_gear_box_purple
         quantity: 2
         contribution_cost: 500
         weekly_personal_limit: 1
       - item_key: guild_gear_box_blue
-        quantity: 1
+        quantity: 2
         contribution_cost: 180
         weekly_personal_limit: 3
+      - item_key: guild_gear_box_green
+        quantity: 2
+        contribution_cost: 70
+        weekly_personal_limit: 4
     7:
       - item_key: guild_gear_box_refined_purple
         quantity: 1
         contribution_cost: 650
         weekly_personal_limit: 1
       - item_key: guild_gear_box_purple
-        quantity: 1
+        quantity: 2
         contribution_cost: 500
         weekly_personal_limit: 1
+      - item_key: guild_gear_box_blue
+        quantity: 2
+        contribution_cost: 180
+        weekly_personal_limit: 3
+      - item_key: guild_gear_box_green
+        quantity: 2
+        contribution_cost: 70
+        weekly_personal_limit: 4
     8:
       - item_key: guild_gear_box_refined_purple
         quantity: 3
         contribution_cost: 650
         weekly_personal_limit: 1
       - item_key: guild_gear_box_purple
-        quantity: 1
+        quantity: 2
         contribution_cost: 500
         weekly_personal_limit: 1
+      - item_key: guild_gear_box_blue
+        quantity: 2
+        contribution_cost: 180
+        weekly_personal_limit: 3
+      - item_key: guild_gear_box_green
+        quantity: 2
+        contribution_cost: 70
+        weekly_personal_limit: 4
     9:
       - item_key: guild_gear_box_master
         quantity: 1
         contribution_cost: 800
         weekly_personal_limit: 1
       - item_key: guild_gear_box_refined_purple
-        quantity: 1
+        quantity: 3
         contribution_cost: 650
         weekly_personal_limit: 1
+      - item_key: guild_gear_box_purple
+        quantity: 2
+        contribution_cost: 500
+        weekly_personal_limit: 1
+      - item_key: guild_gear_box_blue
+        quantity: 2
+        contribution_cost: 180
+        weekly_personal_limit: 3
+      - item_key: guild_gear_box_green
+        quantity: 2
+        contribution_cost: 70
+        weekly_personal_limit: 4
     10:
       - item_key: guild_gear_box_master
         quantity: 2
         contribution_cost: 800
         weekly_personal_limit: 1
       - item_key: guild_gear_box_refined_purple
-        quantity: 1
+        quantity: 3
         contribution_cost: 650
         weekly_personal_limit: 1
+      - item_key: guild_gear_box_purple
+        quantity: 2
+        contribution_cost: 500
+        weekly_personal_limit: 1
+      - item_key: guild_gear_box_blue
+        quantity: 2
+        contribution_cost: 180
+        weekly_personal_limit: 3
+      - item_key: guild_gear_box_green
+        quantity: 2
+        contribution_cost: 70
+        weekly_personal_limit: 4
 
 # 护院军备科技
 guard:
@@ -199,7 +278,7 @@ experience:
         contribution_cost: 180
         weekly_personal_limit: 3
       - item_key: guild_skill_book_box_green
-        quantity: 1
+        quantity: 2
         contribution_cost: 80
         weekly_personal_limit: 4
     4:
@@ -208,7 +287,7 @@ experience:
         contribution_cost: 180
         weekly_personal_limit: 3
       - item_key: guild_skill_book_box_green
-        quantity: 1
+        quantity: 2
         contribution_cost: 80
         weekly_personal_limit: 4
     5:
@@ -217,54 +296,102 @@ experience:
         contribution_cost: 400
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_blue
-        quantity: 1
+        quantity: 2
         contribution_cost: 180
         weekly_personal_limit: 3
+      - item_key: guild_skill_book_box_green
+        quantity: 2
+        contribution_cost: 80
+        weekly_personal_limit: 4
     6:
       - item_key: guild_skill_book_box_purple
         quantity: 2
         contribution_cost: 400
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_blue
-        quantity: 1
+        quantity: 2
         contribution_cost: 180
         weekly_personal_limit: 3
+      - item_key: guild_skill_book_box_green
+        quantity: 2
+        contribution_cost: 80
+        weekly_personal_limit: 4
     7:
       - item_key: guild_skill_book_box_refined
         quantity: 1
         contribution_cost: 500
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_purple
-        quantity: 1
+        quantity: 2
         contribution_cost: 400
         weekly_personal_limit: 1
+      - item_key: guild_skill_book_box_blue
+        quantity: 2
+        contribution_cost: 180
+        weekly_personal_limit: 3
+      - item_key: guild_skill_book_box_green
+        quantity: 2
+        contribution_cost: 80
+        weekly_personal_limit: 4
     8:
       - item_key: guild_skill_book_box_refined
         quantity: 2
         contribution_cost: 500
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_purple
-        quantity: 1
+        quantity: 2
         contribution_cost: 400
         weekly_personal_limit: 1
+      - item_key: guild_skill_book_box_blue
+        quantity: 2
+        contribution_cost: 180
+        weekly_personal_limit: 3
+      - item_key: guild_skill_book_box_green
+        quantity: 2
+        contribution_cost: 80
+        weekly_personal_limit: 4
     9:
       - item_key: guild_skill_book_box_master
         quantity: 1
         contribution_cost: 650
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_refined
-        quantity: 1
+        quantity: 2
         contribution_cost: 500
         weekly_personal_limit: 1
+      - item_key: guild_skill_book_box_purple
+        quantity: 2
+        contribution_cost: 400
+        weekly_personal_limit: 1
+      - item_key: guild_skill_book_box_blue
+        quantity: 2
+        contribution_cost: 180
+        weekly_personal_limit: 3
+      - item_key: guild_skill_book_box_green
+        quantity: 2
+        contribution_cost: 80
+        weekly_personal_limit: 4
     10:
       - item_key: guild_skill_book_box_master
         quantity: 2
         contribution_cost: 650
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_refined
-        quantity: 1
+        quantity: 2
         contribution_cost: 500
         weekly_personal_limit: 1
+      - item_key: guild_skill_book_box_purple
+        quantity: 2
+        contribution_cost: 400
+        weekly_personal_limit: 1
+      - item_key: guild_skill_book_box_blue
+        quantity: 2
+        contribution_cost: 180
+        weekly_personal_limit: 3
+      - item_key: guild_skill_book_box_green
+        quantity: 2
+        contribution_cost: 80
+        weekly_personal_limit: 4
 
 # 资源补给科技
 resource:

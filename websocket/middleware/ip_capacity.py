@@ -21,6 +21,7 @@ from websocket.backends.ip_capacity import (
     release_ip_capacity_slot,
 )
 from websocket.backends.worker_lease import get_websocket_worker_lease_manager
+from websocket.close_codes import CONNECTION_LIMIT_REACHED_CLOSE_CODE, SERVICE_UNAVAILABLE_CLOSE_CODE
 from websocket.exceptions import WebSocketConnectionLimitUnavailable
 
 logger = logging.getLogger(__name__)
@@ -36,8 +37,8 @@ def _client_ip_log_id(client_ip: str) -> str:
 
 
 class WebSocketIPCapacityMiddleware:
-    CAPACITY_CLOSE_CODE = 4429
-    UNAVAILABLE_CLOSE_CODE = 1013
+    CAPACITY_CLOSE_CODE = CONNECTION_LIMIT_REACHED_CLOSE_CODE
+    UNAVAILABLE_CLOSE_CODE = SERVICE_UNAVAILABLE_CLOSE_CODE
 
     def __init__(self, app) -> None:
         self.app = app
@@ -105,8 +106,12 @@ class WebSocketIPCapacityMiddleware:
                 await asyncio.sleep(interval)
                 if not await self._refresh_capacity(client_ip, connection_id, worker_id):
                     logger.warning(
-                        "WebSocket IP capacity slot expired; closing connection",
-                        extra={"client_ip_id": _client_ip_log_id(client_ip), "path": path},
+                        "WebSocket IP capacity slot missing or expired; closing connection",
+                        extra={
+                            "client_ip_id": _client_ip_log_id(client_ip),
+                            "path": path,
+                            "close_code": self.UNAVAILABLE_CLOSE_CODE,
+                        },
                     )
                     await send({"type": "websocket.close", "code": self.UNAVAILABLE_CLOSE_CODE})
                     return
@@ -181,12 +186,20 @@ class WebSocketIPCapacityMiddleware:
             try:
                 await heartbeat
             except asyncio.CancelledError:
-                pass
-            try:
-                await self._release_capacity(client_ip, connection_id, worker_id)
-            except WebSocketConnectionLimitUnavailable:
-                logger.warning(
-                    "WebSocket IP capacity release unavailable",
+                current_task = asyncio.current_task()
+                if current_task is not None and current_task.cancelling():
+                    raise
+            except Exception:
+                logger.exception(
+                    "WebSocket IP capacity heartbeat failed during cleanup",
                     extra={"client_ip_id": _client_ip_log_id(client_ip), "path": scope.get("path")},
-                    exc_info=True,
                 )
+            finally:
+                try:
+                    await self._release_capacity(client_ip, connection_id, worker_id)
+                except WebSocketConnectionLimitUnavailable:
+                    logger.warning(
+                        "WebSocket IP capacity release unavailable",
+                        extra={"client_ip_id": _client_ip_log_id(client_ip), "path": scope.get("path")},
+                        exc_info=True,
+                    )

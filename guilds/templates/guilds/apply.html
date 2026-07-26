@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}申请加入 - {{ guild.name }}{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
@@ -11,7 +11,7 @@
             <p class="caption">{{ guild.name }}</p>
         </div>
         <div class="flex gap-2">
-            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
+            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-secondary">返回帮会</a>
         </div>
     </div>
 
@@ -42,9 +42,9 @@
                 <dt>审批方式</dt>
                 <dd>
                     {% if guild.auto_accept %}
-                        <span class="text-accent-green">✓ 自动通过</span>
+                        <span class="tw-guild-status-positive">自动通过</span>
                     {% else %}
-                        <span class="tw-guild-cost-value">⏳ 需审批</span>
+                        <span class="tw-guild-status-waiting">需审批</span>
                     {% endif %}
                 </dd>
             </div>
@@ -53,7 +53,7 @@
 
     {% if guild.current_member_count >= guild.member_capacity %}
         <section class="tw-card tw-guild-section-spacing tw-guild-error-card">
-            <h2 class="tw-guild-error-title">⚠️ 成员已满</h2>
+            <h2 class="tw-guild-error-title">成员已满</h2>
             <p>该帮会当前成员数已达上限，暂时无法接受新成员申请。</p>
             <a href="{% url 'guilds:hall' %}" class="tw-btn-primary">返回帮会大厅</a>
         </section>

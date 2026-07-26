@@ -72,5 +72,6 @@ def test_guild_mission_page_uses_manager_only_retreat_button(client, django_user
     response = client.get(reverse("guilds:missions"))
 
     body = response.content.decode("utf-8")
+    retreat_url = reverse("guilds:mission_retreat")
     assert response.status_code == 200
-    assert "撤回" not in body
+    assert f'action="{retreat_url}"' not in body

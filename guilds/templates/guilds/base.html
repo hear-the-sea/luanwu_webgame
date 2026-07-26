@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/guild.css' %}">
+{% block guild_extra_head %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+{% with url_name=request.resolver_match.url_name %}
+<div class="tw-guild-frame">
+    <header class="tw-guild-context-bar">
+        <div class="tw-guild-context-art" aria-hidden="true">
+            <img src="{% static 'buildings/guild-residence.webp' %}" alt="" width="84" height="64" loading="eager" decoding="async">
+        </div>
+        <div class="tw-guild-context-copy">
+            <span class="tw-guild-context-kicker">{% if guild %}帮会驻地{% else %}武林会盟{% endif %}</span>
+            <strong class="tw-guild-context-name">{% if guild %}{{ guild.name }}{% else %}天下帮会{% endif %}</strong>
+            <span class="tw-guild-context-meta">
+                {% if member %}
+                    {{ member.get_position_display }} · 帮会等级 {{ guild.level }}
+                {% elif guild %}
+                    等级 {{ guild.level }} · {{ guild.current_member_count }} / {{ guild.member_capacity }} 人
+                {% else %}
+                    四海豪杰 · 会盟名录
+                {% endif %}
+            </span>
+        </div>
+
+        <nav class="tw-guild-subnav" aria-label="帮会导航">
+            {% if member %}
+                <a href="{% url 'guilds:detail' guild.id %}" class="tw-guild-subnav-link{% if url_name == 'detail' or url_name == 'info' or url_name == 'donation_logs' or url_name == 'resource_logs' %} is-active{% endif %}">总览</a>
+                <a href="{% url 'guilds:members' %}" class="tw-guild-subnav-link{% if url_name == 'members' or url_name == 'applications' %} is-active{% endif %}">成员</a>
+                <a href="{% url 'guilds:technology' %}" class="tw-guild-subnav-link{% if url_name == 'technology' %} is-active{% endif %}">科技</a>
+                <a href="{% url 'guilds:warehouse' %}" class="tw-guild-subnav-link{% if url_name == 'warehouse' or url_name == 'exchange_logs' %} is-active{% endif %}">仓库</a>
+                <a href="{% url 'guilds:hero_pool' %}" class="tw-guild-subnav-link{% if url_name == 'hero_pool' %} is-active{% endif %}">门客池</a>
+                <a href="{% url 'guilds:missions' %}" class="tw-guild-subnav-link{% if url_name == 'missions' %} is-active{% endif %}">任务</a>
+                <a href="{% url 'guilds:pvp' %}" class="tw-guild-subnav-link{% if url_name == 'pvp' %} is-active{% endif %}">对战</a>
+                <a href="{% url 'guilds:contribution_ranking' %}" class="tw-guild-subnav-link{% if url_name == 'contribution_ranking' %} is-active{% endif %}">排行</a>
+                <a href="{% url 'guilds:announcements' %}" class="tw-guild-subnav-link{% if url_name == 'announcements' %} is-active{% endif %}">公告</a>
+            {% else %}
+                <a href="{% url 'guilds:hall' %}" class="tw-guild-subnav-link{% if url_name == 'hall' %} is-active{% endif %}">帮会大厅</a>
+                <a href="{% url 'guilds:list' %}" class="tw-guild-subnav-link{% if url_name == 'list' or url_name == 'detail' or url_name == 'apply' %} is-active{% endif %}">帮会名录</a>
+                <a href="{% url 'guilds:search' %}" class="tw-guild-subnav-link{% if url_name == 'search' %} is-active{% endif %}">搜索</a>
+                <a href="{% url 'guilds:create' %}" class="tw-guild-subnav-link{% if url_name == 'create' %} is-active{% endif %}">创建帮会</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <div class="tw-guild-page">
+        {% block guild_content %}{% endblock %}
+    </div>
+</div>
+{% endwith %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/guild-modal.js' %}"></script>
+{% block guild_extra_scripts %}{% endblock %}
+{% endblock %}

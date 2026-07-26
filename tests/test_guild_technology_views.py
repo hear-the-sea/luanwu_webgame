@@ -39,7 +39,8 @@ def test_technology_page_renders_capacity_tech_with_count_effect_and_ruby_cost(g
     assert "提升单次帮会任务最多可派出的门客人数" in content
     assert "20 名" in content
     assert "6 名" in content
-    assert "红宝石 ×1" in content
+    assert "红宝石 ×5" in content
+    assert "红宝石 ×10" in content
 
 
 @pytest.mark.django_db
@@ -86,6 +87,24 @@ def test_technology_page_filters_to_selected_category(guild_tech_client):
 
 
 @pytest.mark.django_db
+def test_technology_page_uses_runtime_description_config(guild_tech_client, monkeypatch):
+    client, _user, guild = guild_tech_client
+    GuildTechnology.objects.create(
+        guild=guild, tech_key="equipment_forge", category="production", level=1, max_level=10
+    )
+    monkeypatch.setitem(
+        __import__("guilds.constants", fromlist=["TECH_DESCRIPTIONS"]).TECH_DESCRIPTIONS,
+        "equipment_forge",
+        "运行时配置的科技简介",
+    )
+
+    response = client.get(reverse("guilds:technology") + "?category=production")
+
+    assert response.status_code == 200
+    assert "运行时配置的科技简介" in response.content.decode("utf-8")
+
+
+@pytest.mark.django_db
 def test_technology_page_uses_unified_card_style_without_section_title(guild_tech_client):
     client, _user, guild = guild_tech_client
     GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", category="combat", level=1, max_level=10)
@@ -101,6 +120,45 @@ def test_technology_page_uses_unified_card_style_without_section_title(guild_tec
     assert 'class="building-card"' not in content
     assert 'class="tw-building-grid"' in content
     assert 'class="tw-building-card"' in content
+
+
+@pytest.mark.parametrize(
+    ("level", "expected_output", "expected_cost"),
+    [
+        (0, "灵魂容器 ×1", "红宝石 ×200"),
+        (1, "灵魂容器 ×1", "红宝石 ×300、金条 ×150"),
+        (2, "灵魂容器 ×1、门客重生卡 ×1、洗点卡 ×1", "红宝石 ×300、金条 ×200"),
+        (3, "灵魂容器 ×1、门客重生卡 ×1、洗点卡 ×1、洗髓丹 ×1", None),
+    ],
+)
+@pytest.mark.django_db
+def test_technology_page_renders_mysticism_cost_cap_and_daily_output(
+    guild_tech_client,
+    level,
+    expected_output,
+    expected_cost,
+):
+    client, _user, guild = guild_tech_client
+    GuildTechnology.objects.create(
+        guild=guild,
+        tech_key="mysticism",
+        category="production",
+        level=level,
+        max_level=3,
+    )
+
+    response = client.get(reverse("guilds:technology") + "?category=production")
+
+    content = response.content.decode("utf-8")
+    assert response.status_code == 200
+    assert "神秘学" in content
+    assert "2级新增门客重生卡和洗点卡，3级新增洗髓丹" in content
+    assert f"{level} / 3" in content
+    assert expected_output in content
+    if expected_cost is None:
+        assert "已满级" in content
+    else:
+        assert expected_cost in content
 
 
 @pytest.mark.django_db

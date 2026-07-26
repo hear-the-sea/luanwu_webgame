@@ -42,6 +42,12 @@ def finalize_raid(
         if locked_run.is_attacker_victory:
             attacker_locked = load_locked_attacker(locked_run.attacker_id)
             loot_resources = normalize_positive_int_mapping(locked_run.loot_resources)
+            loot_items = normalize_positive_int_mapping(locked_run.loot_items)
+
+            # 新记录的粮食来自物品池；旧记录可能在两个字段中都有粮食，统一合并后入资源账本。
+            grain_loot = loot_resources.pop("grain", 0) + loot_items.pop("grain", 0)
+            if grain_loot > 0:
+                loot_resources["grain"] = grain_loot
             if loot_resources:
                 grant_resources_locked(
                     attacker_locked,
@@ -50,7 +56,6 @@ def finalize_raid(
                     reason=battle_reward_reason,
                     sync_production=False,
                 )
-            loot_items = normalize_positive_int_mapping(locked_run.loot_items)
             if loot_items:
                 grant_loot_items(attacker_locked, loot_items)
 

@@ -188,6 +188,29 @@ class TestInventoryPageContext:
         assert "爱德华召唤卷轴" in body
         assert "消耗 50 根金条" in body
 
+    def test_warehouse_page_shows_exact_resource_pack_reward(self, manor_with_user):
+        manor, client = manor_with_user
+        template = ItemTemplate.objects.create(
+            key="view_resource_pack_reward_summary",
+            name="银两测试包",
+            effect_type=ItemTemplate.EffectType.RESOURCE_PACK,
+            is_usable=True,
+            effect_payload={"silver": 1234},
+        )
+        InventoryItem.objects.create(
+            manor=manor,
+            template=template,
+            quantity=1,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+
+        response = client.get(reverse("gameplay:warehouse"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "使用获得" in body
+        assert "银两 +1234" in body
+
     def test_recruitment_hall_page(self, manor_with_user):
         _manor, client = manor_with_user
         response = client.get(reverse("gameplay:recruitment_hall"))

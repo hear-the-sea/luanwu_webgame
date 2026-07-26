@@ -874,7 +874,7 @@
 
   /* ========== 通用模态框 ========== */
   .tw-modal-overlay {
-    @apply fixed inset-0 flex items-center justify-center z-[1000];
+    @apply fixed inset-0 flex items-center justify-center z-[9500];
     background: rgba(0, 0, 0, 0.6);
   }
 
@@ -2320,9 +2320,11 @@
   }
 
   .tw-trade-tab {
-    @apply px-5 py-2.5 no-underline font-semibold
+    @apply inline-flex items-center justify-center px-5 py-2.5 no-underline
+           text-base font-semibold leading-none
            border-2 rounded-md transition-all
            bg-bg-card text-text-secondary;
+    min-height: 2.625rem;
     border-color: var(--border-light);
     box-shadow: 0 1px 3px rgba(74, 38, 18, 0.1);
   }

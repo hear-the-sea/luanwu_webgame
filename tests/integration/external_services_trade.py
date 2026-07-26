@@ -14,7 +14,7 @@ from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
 from trade.models import AuctionBid, AuctionRound, AuctionSlot, MarketListing
 from trade.services.auction_service import place_bid, settle_auction_round
-from trade.services.market_service import cancel_listing, create_listing, purchase_listing
+from trade.services.market_service import MARKET_MIN_PRESTIGE, cancel_listing, create_listing, purchase_listing
 from trade.services.shop_service import sell_item
 
 pytestmark = [pytest.mark.integration, pytest.mark.usefixtures("load_guest_data", "load_troop_data")]
@@ -33,10 +33,12 @@ def test_integration_market_purchase_flow(require_env_services, django_user_mode
 
     seller.silver = 100000
     seller.silver_capacity = 300000
+    seller.prestige = MARKET_MIN_PRESTIGE
     buyer.silver = 200000
     buyer.silver_capacity = 300000
-    seller.save(update_fields=["silver", "silver_capacity"])
-    buyer.save(update_fields=["silver", "silver_capacity"])
+    buyer.prestige = MARKET_MIN_PRESTIGE
+    seller.save(update_fields=["silver", "silver_capacity", "prestige"])
+    buyer.save(update_fields=["silver", "silver_capacity", "prestige"])
 
     item_key = f"intg_market_item_{uuid.uuid4().hex[:8]}"
     template = ItemTemplate.objects.create(
@@ -79,8 +81,9 @@ def test_integration_grain_cancel_and_shop_sale_keep_lock_order_and_balances(req
     manor.grain = 20
     manor.silver = 100000
     manor.silver_capacity = 300000
+    manor.prestige = MARKET_MIN_PRESTIGE
     manor.resource_updated_at = timezone.now()
-    manor.save(update_fields=["grain", "silver", "silver_capacity", "resource_updated_at"])
+    manor.save(update_fields=["grain", "silver", "silver_capacity", "prestige", "resource_updated_at"])
     grain_template, _ = ItemTemplate.objects.get_or_create(
         key="grain",
         defaults={

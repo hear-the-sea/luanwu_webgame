@@ -53,6 +53,10 @@ def test_get_warehouse_items_exposes_resource_bundle_exchange_rules(guild_member
     assert (resources["silver"].exchange_unit, resources["silver"].exchange_unit_cost) == (1_000, 1)
     assert (resources["grain"].exchange_unit, resources["grain"].exchange_unit_cost) == (2_000, 1)
     assert (resources["gold_bar"].exchange_unit, resources["gold_bar"].exchange_unit_cost) == (1, 1_200)
+    assert resources["silver"].exchange_max_quantity == 2_000
+    assert resources["grain"].exchange_max_quantity == 4_000
+    assert resources["gold_bar"].exchange_max_quantity == 3
+    assert all(item.can_exchange for item in resources.values())
 
 
 @pytest.mark.django_db

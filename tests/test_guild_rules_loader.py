@@ -20,7 +20,13 @@ def test_normalize_guild_rules_merges_and_clamps_values():
             },
             "technology": {
                 "upgrade_costs": {"equipment_forge": {"silver": "6000", "grain": 2500, "gold_bar": 2}},
+                "upgrade_cost_curves": {"standard_10": {2: "3"}},
+                "upgrade_cost_curve_by_tech": {"equipment_forge": "standard_10"},
+                "upgrade_cost_overrides": {
+                    "mysticism": {2: {"red_ruby": "333", "gold_bar": "155"}},
+                },
                 "names": {"equipment_forge": "新装备锻造"},
+                "descriptions": {"equipment_forge": "新的科技简介"},
             },
             "warehouse": {
                 "exchange_costs": {"gear_green": "60"},
@@ -50,8 +56,19 @@ def test_normalize_guild_rules_merges_and_clamps_values():
     assert loaded["technology"]["upgrade_costs"]["equipment_forge"]["gold_bar"] == 2
     assert loaded["technology"]["names"]["equipment_forge"] == "新装备锻造"
     assert loaded["technology"]["names"]["guild_lineup_capacity"] == "出战位扩容"
-    assert loaded["technology"]["upgrade_costs"]["guild_lineup_capacity"] == {"red_ruby": 1}
-    assert loaded["technology"]["upgrade_costs"]["guild_dispatch_capacity"] == {"red_ruby": 1}
+    assert loaded["technology"]["descriptions"]["equipment_forge"] == "新的科技简介"
+    assert loaded["technology"]["descriptions"]["guild_lineup_capacity"] == "提升帮会已上阵名单总容量"
+    assert loaded["technology"]["upgrade_costs"]["guild_lineup_capacity"] == {"red_ruby": 5}
+    assert loaded["technology"]["upgrade_costs"]["guild_dispatch_capacity"] == {"red_ruby": 5}
+    assert loaded["technology"]["upgrade_costs"]["mysticism"] == {"red_ruby": 200}
+    assert loaded["technology"]["upgrade_cost_curves"]["standard_10"]["2"] == 3
+    assert loaded["technology"]["upgrade_cost_curves"]["standard_10"]["10"] == 350
+    assert loaded["technology"]["upgrade_cost_curve_by_tech"]["equipment_forge"] == "standard_10"
+    assert loaded["technology"]["upgrade_cost_overrides"]["mysticism"] == {
+        "2": {"red_ruby": 333, "gold_bar": 155},
+        "3": {"red_ruby": 300, "gold_bar": 200},
+    }
+    assert loaded["technology"]["names"]["mysticism"] == "神秘学"
     assert loaded["warehouse"]["exchange_costs"]["gear_green"] == 60
     assert loaded["warehouse"]["daily_exchange_limit"] == 12
     assert loaded["hero_pool"]["slot_limit"] == 2
@@ -89,7 +106,7 @@ def test_load_guild_rules_normalizes_pvp_section():
                 "max_target_level_gap": 3,
                 "silver_floor": 20000,
                 "silver_loot_percent": 10,
-                "warehouse_loot_percent": 10,
+                "warehouse_loot_percent": 20,
                 "fixed_attack_cost_silver": 10000,
                 "warehouse_loot_whitelist": ["grain", "gold_bar", "red_ruby"],
             }
@@ -97,4 +114,5 @@ def test_load_guild_rules_normalizes_pvp_section():
     )
 
     assert rules["pvp"]["fixed_attack_cost_silver"] == 10000
+    assert rules["pvp"]["warehouse_loot_percent"] == 20
     assert rules["pvp"]["warehouse_loot_whitelist"] == ["grain", "gold_bar", "red_ruby"]

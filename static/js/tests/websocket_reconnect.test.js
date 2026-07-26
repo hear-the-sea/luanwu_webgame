@@ -2,6 +2,17 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const policyApi = require("../websocket_reconnect.js");
+const SERVICE_UNAVAILABLE_CLOSE_CODE = policyApi.CLOSE_CODES.SERVICE_UNAVAILABLE;
+
+test("shared reconnect close-code contract stays synchronized", () => {
+  assert.deepEqual(policyApi.CLOSE_CODES, {
+    AUTHENTICATION_REQUIRED: 4401,
+    INVALID_SESSION: 4403,
+    CAPACITY_LIMIT_REACHED: 4429,
+    SERVICE_UNAVAILABLE: 4503,
+    ABNORMAL_CLOSURE: 1006,
+  });
+});
 
 test("authentication close codes are terminal", () => {
   const policy = policyApi.createReconnectPolicy({ randomFn: () => 0.5 });
@@ -9,7 +20,7 @@ test("authentication close codes are terminal", () => {
   assert.equal(policy.shouldReconnect(4401), false);
   assert.equal(policy.shouldReconnect(4403), false);
   assert.equal(policy.shouldReconnect(1006), true);
-  assert.equal(policy.shouldReconnect(1013), true);
+  assert.equal(policy.shouldReconnect(SERVICE_UNAVAILABLE_CLOSE_CODE), true);
   assert.equal(policy.shouldReconnect(4429), true);
 });
 
@@ -67,11 +78,11 @@ test("transient delay grows exponentially and stays capped", () => {
 
   assert.deepEqual(
     [
-      policy.nextDelay(1013),
-      policy.nextDelay(1013),
-      policy.nextDelay(1013),
-      policy.nextDelay(1013),
-      policy.nextDelay(1013),
+      policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE),
+      policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE),
+      policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE),
+      policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE),
+      policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE),
     ],
     [2000, 4000, 8000, 15000, 15000],
   );
@@ -82,11 +93,11 @@ test("positive transient jitter does not exceed the delay cap", () => {
 
   assert.deepEqual(
     [
-      policy.nextDelay(1013),
-      policy.nextDelay(1013),
-      policy.nextDelay(1013),
-      policy.nextDelay(1013),
-      policy.nextDelay(1013),
+      policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE),
+      policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE),
+      policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE),
+      policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE),
+      policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE),
     ],
     [2200, 4400, 8800, 15000, 15000],
   );
@@ -112,7 +123,10 @@ test("markStable resets both the fast retry budget and exponential delay", () =>
 test("transient delay resets only when marked stable", () => {
   const policy = policyApi.createReconnectPolicy({ randomFn: () => 0.5 });
 
-  assert.deepEqual([policy.nextDelay(1013), policy.nextDelay(1013)], [2000, 4000]);
+  assert.deepEqual(
+    [policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE), policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE)],
+    [2000, 4000],
+  );
   policy.markStable();
-  assert.equal(policy.nextDelay(1013), 2000);
+  assert.equal(policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE), 2000);
 });

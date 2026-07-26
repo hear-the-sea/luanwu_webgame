@@ -289,6 +289,26 @@ class TestRealConfigsPassValidation:
         result = validate_all_configs(data_dir)
         assert_valid(result)
 
+    def test_validate_all_configs_rejects_random_blueprint_rarity_without_forge_pool(
+        self,
+        data_dir,
+        tmp_path,
+    ):
+        shutil.copytree(data_dir, tmp_path, dirs_exist_ok=True)
+        rewards_path = tmp_path / "arena_rewards.yaml"
+        rewards_data = yaml.safe_load(rewards_path.read_text(encoding="utf-8"))
+        reward = next(row for row in rewards_data["rewards"] if row.get("random_blueprint_pool"))
+        reward["random_blueprint_pool"]["rarity"] = "missing-rarity"
+        rewards_path.write_text(
+            yaml.safe_dump(rewards_data, allow_unicode=True, sort_keys=False),
+            encoding="utf-8",
+        )
+
+        result = validate_all_configs(tmp_path)
+
+        assert result.is_valid is False
+        assert any("no valid forge blueprint" in error.message for error in result.errors)
+
     @pytest.mark.parametrize(
         ("mutation", "expected_error"),
         [

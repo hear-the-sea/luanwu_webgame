@@ -5,6 +5,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const reconnectPolicyApi = require("../websocket_reconnect.js");
+const SERVICE_UNAVAILABLE_CLOSE_CODE = reconnectPolicyApi.CLOSE_CODES.SERVICE_UNAVAILABLE;
 
 function createElement(tagName) {
   const listeners = new Map();
@@ -404,8 +405,8 @@ test("transient service closes schedule only one backoff reconnect", () => {
   const harness = createNotificationsHarness();
   const firstSocket = harness.sockets[0];
 
-  firstSocket.onclose({ code: 1013 });
-  firstSocket.onclose({ code: 1013 });
+  firstSocket.onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
+  firstSocket.onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
 
   assert.equal(harness.activeTimers().length, 1);
   assert.equal(harness.sockets.length, 1);
@@ -425,7 +426,7 @@ test("capacity closes use a short retry without consuming transient backoff", ()
   assert.deepEqual(harness.activeTimers().map((timer) => timer.delay), [1000]);
   harness.runTimer(harness.activeTimers()[0]);
 
-  harness.sockets[1].onclose({ code: 1013 });
+  harness.sockets[1].onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
 
   assert.deepEqual(harness.activeTimers().map((timer) => timer.delay), [1800]);
 });
@@ -437,7 +438,7 @@ test("transient closes after open use capped exponential backoff", () => {
   for (const expectedDelay of [2000, 4000, 8000, 15000, 15000]) {
     const socket = harness.sockets.at(-1);
     socket.onopen();
-    socket.onclose({ code: 1013 });
+    socket.onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
 
     const reconnectTimer = harness.activeTimers().find((timer) => timer.delay !== 30000);
     assert.ok(reconnectTimer);
@@ -456,7 +457,7 @@ test("positive reconnect jitter never exceeds the actual delay cap", () => {
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const socket = harness.sockets.at(-1);
     socket.onopen();
-    socket.onclose({ code: 1013 });
+    socket.onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
 
     const reconnectTimer = harness.activeTimers().find((timer) => timer.delay !== 30000);
     assert.ok(reconnectTimer);
@@ -474,7 +475,7 @@ test("negative reconnect jitter follows the exact lower-bound sequence", () => {
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const socket = harness.sockets.at(-1);
     socket.onopen();
-    socket.onclose({ code: 1013 });
+    socket.onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
 
     const reconnectTimer = harness.activeTimers().find((timer) => timer.delay !== 30000);
     assert.ok(reconnectTimer);
@@ -492,7 +493,7 @@ test("stale socket handlers cannot mutate the current connection generation", ()
   firstSocket.onopen();
   const firstStabilityTimer = harness.activeTimers().find((timer) => timer.delay === 30000);
   assert.ok(firstStabilityTimer);
-  firstSocket.onclose({ code: 1013 });
+  firstSocket.onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
   const firstReconnectTimer = harness.activeTimers().find((timer) => timer.delay === 2000);
   assert.ok(firstReconnectTimer);
   harness.runTimer(firstReconnectTimer);
@@ -506,7 +507,7 @@ test("stale socket handlers cannot mutate the current connection generation", ()
   firstReconnectTimer.fn();
   firstSocket.onopen();
   firstSocket.onmessage({ data: JSON.stringify({ kind: "system", title: "过期通知", body: "忽略" }) });
-  firstSocket.onclose({ code: 1013 });
+  firstSocket.onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
   firstSocket.onerror();
 
   assert.equal(harness.sockets.length, 2);
@@ -524,7 +525,7 @@ test("stale socket handlers cannot mutate the current connection generation", ()
     0,
   );
 
-  secondSocket.onclose({ code: 1013 });
+  secondSocket.onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
   const reconnectTimers = harness.activeTimers().filter((timer) => ![5000, 30000].includes(timer.delay));
   assert.deepEqual(reconnectTimers.map((timer) => timer.delay), [4000]);
 });
@@ -532,9 +533,9 @@ test("stale socket handlers cannot mutate the current connection generation", ()
 test("a connection stable for 30 seconds resets reconnect backoff", () => {
   const harness = createNotificationsHarness({ random: 0.5 });
 
-  harness.sockets.at(-1).onclose({ code: 1013 });
+  harness.sockets.at(-1).onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
   harness.runTimer(harness.activeTimers()[0]);
-  harness.sockets.at(-1).onclose({ code: 1013 });
+  harness.sockets.at(-1).onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
   harness.runTimer(harness.activeTimers()[0]);
 
   const stableSocket = harness.sockets.at(-1);
@@ -542,7 +543,7 @@ test("a connection stable for 30 seconds resets reconnect backoff", () => {
   const stabilityTimer = harness.activeTimers().find((timer) => timer.delay === 30000);
   assert.ok(stabilityTimer);
   harness.runTimer(stabilityTimer);
-  stableSocket.onclose({ code: 1013 });
+  stableSocket.onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
 
   assert.equal(harness.activeTimers()[0].delay, 2000);
 });
@@ -550,9 +551,9 @@ test("a connection stable for 30 seconds resets reconnect backoff", () => {
 test("a parseable message resets backoff and cancels the stability timer", () => {
   const harness = createNotificationsHarness({ random: 0.5 });
 
-  harness.sockets.at(-1).onclose({ code: 1013 });
+  harness.sockets.at(-1).onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
   harness.runTimer(harness.activeTimers()[0]);
-  harness.sockets.at(-1).onclose({ code: 1013 });
+  harness.sockets.at(-1).onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
   harness.runTimer(harness.activeTimers()[0]);
 
   const socket = harness.sockets.at(-1);
@@ -563,7 +564,7 @@ test("a parseable message resets backoff and cancels the stability timer", () =>
 
   assert.equal(stabilityTimer.active, false);
   assert.ok(harness.clearedTimerIds.includes(stabilityTimer.id));
-  socket.onclose({ code: 1013 });
+  socket.onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
   const reconnectTimer = harness.activeTimers().find((timer) => timer.delay === 2000);
   assert.ok(reconnectTimer);
 });
@@ -571,7 +572,7 @@ test("a parseable message resets backoff and cancels the stability timer", () =>
 test("malformed JSON does not reset backoff or clear the stability timer", () => {
   const harness = createNotificationsHarness({ random: 0.5 });
 
-  harness.sockets.at(-1).onclose({ code: 1013 });
+  harness.sockets.at(-1).onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
   harness.runTimer(harness.activeTimers()[0]);
 
   const socket = harness.sockets.at(-1);
@@ -583,7 +584,7 @@ test("malformed JSON does not reset backoff or clear the stability timer", () =>
 
   assert.equal(stabilityTimer.active, true);
   assert.ok(!harness.clearedTimerIds.includes(stabilityTimer.id));
-  socket.onclose({ code: 1013 });
+  socket.onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
   const reconnectTimer = harness.activeTimers().find((timer) => timer.delay === 4000);
   assert.ok(reconnectTimer);
 });

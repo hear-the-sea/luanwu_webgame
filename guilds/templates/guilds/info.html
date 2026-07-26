@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}帮会设置 - {{ guild.name }}{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
@@ -11,7 +11,6 @@
             <p class="caption">{{ guild.name }}</p>
         </div>
         <div class="flex gap-2">
-            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
             <a href="{% url 'guilds:pvp' %}" class="tw-btn-secondary">帮会对战</a>
         </div>
     </div>
@@ -93,15 +92,15 @@
 </section>
 
 <!-- 解散帮会确认模态框 -->
-<div class="tw-modal-overlay" id="disband-modal" style="display: none;">
+<div class="tw-modal-overlay" id="disband-modal" style="display: none;" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="settings-disband-title">
     <div class="tw-modal-content">
         <div class="tw-modal-header">
-            <h3>解散帮会</h3>
-            <button type="button" class="tw-modal-close" onclick="document.getElementById('disband-modal').style.display='none'">&times;</button>
+            <h3 id="settings-disband-title">解散帮会</h3>
+            <button type="button" class="tw-modal-close" onclick="document.getElementById('disband-modal').style.display='none'" aria-label="关闭解散帮会窗口">&times;</button>
         </div>
         <div class="tw-modal-body">
             <div class="tw-guild-warning tw-guild-warning-severe">
-                <p class="font-bold m-0">⚠️ 警告：此操作不可撤销</p>
+                <p class="font-bold m-0">警告：此操作不可撤销</p>
                 <p class="mt-2 m-0">解散帮会后，所有成员将被移除，帮会资源将被清空，帮会数据将被永久删除。</p>
             </div>
             <form method="post" action="{% url 'guilds:disband' %}">
@@ -121,6 +120,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{{ block.super }}
 <script>
     const modal = document.getElementById('disband-modal');
     if (modal) {

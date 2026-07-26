@@ -15,6 +15,36 @@ pytest_plugins = ("tests.trade_service.fixtures",)
 
 @pytest.mark.django_db
 class TestMarketPurchase:
+    def test_purchase_listing_checks_latest_locked_prestige(self, seller_manor, buyer_manor, tradeable_item_template):
+        listing = market_service.create_listing(
+            manor=seller_manor,
+            item_key="test_tradeable_item",
+            quantity=10,
+            unit_price=2000,
+            duration=7200,
+        )
+        Manor.objects.filter(pk=buyer_manor.pk).update(prestige=market_service.MARKET_MIN_PRESTIGE - 1)
+        assert buyer_manor.prestige == market_service.MARKET_MIN_PRESTIGE
+        seller_manor.refresh_from_db()
+        buyer_silver_before = buyer_manor.silver
+        seller_silver_before = seller_manor.silver
+
+        with pytest.raises(TradeValidationError, match="声望达到 300"):
+            market_service.purchase_listing(buyer_manor, listing.id)
+
+        buyer_manor.refresh_from_db()
+        seller_manor.refresh_from_db()
+        listing.refresh_from_db()
+        assert buyer_manor.silver == buyer_silver_before
+        assert seller_manor.silver == seller_silver_before
+        assert listing.status == MarketListing.Status.ACTIVE
+        assert not MarketTransaction.objects.filter(listing=listing).exists()
+        assert not InventoryItem.objects.filter(
+            manor=buyer_manor,
+            template=tradeable_item_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        ).exists()
+
     def test_purchase_listing_success(self, seller_manor, buyer_manor, tradeable_item_template):
         listing = market_service.create_listing(
             manor=seller_manor,

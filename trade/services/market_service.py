@@ -81,6 +81,7 @@ def get_allowed_listing_durations() -> frozenset[int]:
 LISTING_FEES = get_listing_fees()
 
 # 从 core.config 导入配置
+MARKET_MIN_PRESTIGE = TRADE.MARKET_MIN_PRESTIGE
 TRANSACTION_TAX_RATE = TRADE.TRANSACTION_TAX_RATE
 MIN_PRICE_MULTIPLIER = TRADE.MIN_PRICE_MULTIPLIER
 MAX_PRICE = TRADE.MAX_PRICE
@@ -100,6 +101,20 @@ ALLOWED_LISTING_ORDER_BY = {
     "expires_at",
     "-expires_at",
 }
+
+
+def get_market_prestige(manor: Manor) -> int:
+    return safe_int(getattr(manor, "prestige", 0), 0, min_val=0)
+
+
+def can_buy_or_list_on_market(manor: Manor) -> bool:
+    return get_market_prestige(manor) >= MARKET_MIN_PRESTIGE
+
+
+def validate_market_buy_or_list_access(manor: Manor) -> None:
+    current_prestige = get_market_prestige(manor)
+    if current_prestige < MARKET_MIN_PRESTIGE:
+        raise TradeValidationError(f"集市购买和上架需要声望达到 {MARKET_MIN_PRESTIGE}，当前声望为 {current_prestige}")
 
 
 def charge_listing_fee(locked_manor: Manor, silver_amount: int) -> None:
@@ -251,6 +266,7 @@ def create_listing(
         listing_fees=get_listing_fees(),
         load_market_item_template=load_market_item_template,
         validate_listing_price=validate_listing_price,
+        validate_market_buy_or_list_access=validate_market_buy_or_list_access,
         manor_model=Manor,
         get_listing_fee=get_listing_fee,
         charge_listing_fee=charge_listing_fee,
@@ -350,6 +366,7 @@ def purchase_listing(buyer: Manor, listing_id: int) -> MarketTransaction:
         get_locked_listing_for_purchase=_market_purchase_helpers.get_locked_listing_for_purchase,
         validate_listing_for_purchase=_market_purchase_helpers.validate_listing_for_purchase,
         lock_purchase_parties=_market_purchase_helpers.lock_purchase_parties,
+        validate_market_buy_or_list_access=validate_market_buy_or_list_access,
         pay_market_purchase=pay_market_purchase,
         settle_market_sale_proceeds=settle_market_sale_proceeds,
         grant_listing_item_to_buyer_locked=_market_purchase_helpers.grant_listing_item_to_buyer_locked,

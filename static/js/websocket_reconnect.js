@@ -9,9 +9,18 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  const TERMINAL_CLOSE_CODES = new Set([4401, 4403]);
-  const CAPACITY_CLOSE_CODE = 4429;
-  const ABNORMAL_CLOSE_CODE = 1006;
+  const CLOSE_CODES = Object.freeze({
+    AUTHENTICATION_REQUIRED: 4401,
+    INVALID_SESSION: 4403,
+    CAPACITY_LIMIT_REACHED: 4429,
+    SERVICE_UNAVAILABLE: 4503,
+    // Browser-observed only; servers must never send reserved code 1006.
+    ABNORMAL_CLOSURE: 1006,
+  });
+  const TERMINAL_CLOSE_CODES = new Set([
+    CLOSE_CODES.AUTHENTICATION_REQUIRED,
+    CLOSE_CODES.INVALID_SESSION,
+  ]);
   const FAST_RETRY_LIMIT = 5;
   const DEFAULT_TRANSIENT_BASE_MS = 2000;
   const DEFAULT_TRANSIENT_MAX_MS = 15000;
@@ -43,7 +52,7 @@
 
     function nextDelay(closeCode) {
       if (
-        [CAPACITY_CLOSE_CODE, ABNORMAL_CLOSE_CODE].includes(Number(closeCode)) &&
+        [CLOSE_CODES.CAPACITY_LIMIT_REACHED, CLOSE_CODES.ABNORMAL_CLOSURE].includes(Number(closeCode)) &&
         fastRetryCount < FAST_RETRY_LIMIT
       ) {
         fastRetryCount += 1;
@@ -71,6 +80,7 @@
   }
 
   return {
+    CLOSE_CODES,
     createReconnectPolicy,
   };
 });

@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}成员列表 - {{ guild.name }}{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
@@ -14,23 +14,23 @@
             {% if member.can_manage %}
                 <a href="{% url 'guilds:applications' %}" class="tw-btn-primary">审批申请</a>
             {% endif %}
-            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
         </div>
     </div>
 
     <section class="tw-card">
         <h2>成员管理</h2>
-        <table class="tw-table">
+        <div class="tw-guild-table-wrap tw-guild-table-wrap--cards">
+        <table class="tw-table tw-guild-member-table">
             <thead>
                 <tr>
-                    <th>玩家</th>
-                    <th>职位</th>
-                    <th>总贡献</th>
-                    <th>当前贡献</th>
-                    <th>加入时间</th>
-                    <th>最后活跃</th>
+                    <th scope="col">玩家</th>
+                    <th scope="col">职位</th>
+                    <th scope="col">总贡献</th>
+                    <th scope="col">当前贡献</th>
+                    <th scope="col">加入时间</th>
+                    <th scope="col">最后活跃</th>
                     {% if member.can_manage %}
-                        <th>操作</th>
+                        <th scope="col">操作</th>
                     {% endif %}
                 </tr>
             </thead>
@@ -108,6 +108,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
     </section>
 
     <section class="tw-card tw-guild-section-spacing">
@@ -139,6 +140,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{{ block.super }}
 <script>
 // 转让帮主确认
 document.querySelectorAll('.transfer-form').forEach(form => {

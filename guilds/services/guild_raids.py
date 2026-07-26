@@ -419,6 +419,9 @@ def _process_guild_raid_battle_atomic(
         loot_silver, loot_items = transfer_guild_raid_loot(
             attacker_guild=attacker_locked,
             defender_guild=defender_locked,
+            guests=battle_guest_models,
+            troop_loadout=locked_run.troop_loadout,
+            battle_report=report,
         )
         _apply_guild_defeat_protection(defender_locked, now=processed_at)
 

@@ -17,6 +17,7 @@ def create_market_listing(
     listing_fees,
     load_market_item_template,
     validate_listing_price,
+    validate_market_buy_or_list_access,
     manor_model,
     get_listing_fee,
     charge_listing_fee,
@@ -44,6 +45,7 @@ def create_market_listing(
 
     with transaction.atomic():
         locked_manor = manor_model.objects.select_for_update().get(pk=manor.pk)
+        validate_market_buy_or_list_access(locked_manor)
         listing_fee = get_listing_fee(duration)
         charge_listing_fee(locked_manor, listing_fee)
 
@@ -86,6 +88,7 @@ def purchase_market_listing(
     get_locked_listing_for_purchase,
     validate_listing_for_purchase,
     lock_purchase_parties,
+    validate_market_buy_or_list_access,
     pay_market_purchase,
     settle_market_sale_proceeds,
     grant_listing_item_to_buyer_locked,
@@ -108,6 +111,7 @@ def purchase_market_listing(
             buyer_pk=buyer.pk,
             seller_pk=listing.seller_id,
         )
+        validate_market_buy_or_list_access(buyer_locked)
 
         pay_market_purchase(
             buyer_locked,

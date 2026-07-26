@@ -1,23 +1,22 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}贡献排行 - {{ guild.name }}{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
             <h1>贡献排行榜</h1>
             <p class="caption">{{ guild.name }}</p>
         </div>
-        <div class="flex gap-2">
+        <div class="tw-guild-segmented" aria-label="排行周期">
             <a href="{% url 'guilds:contribution_ranking' %}?type=total" class="tw-btn-{% if ranking_type == 'total' %}primary{% else %}secondary{% endif %}">
                 总贡献
             </a>
             <a href="{% url 'guilds:contribution_ranking' %}?type=weekly" class="tw-btn-{% if ranking_type == 'weekly' %}primary{% else %}secondary{% endif %}">
                 本周贡献
             </a>
-            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
         </div>
     </div>
 
@@ -35,9 +34,9 @@
                     {% endif %}
                 </p>
             </div>
-            <div class="guild-stat-item">
+            <div class="tw-guild-stat-item">
                 <h4>{% if ranking_type == 'total' %}总贡献{% else %}本周贡献{% endif %}</h4>
-                <p class="guild-stat-value">
+                <p class="tw-guild-stat-value">
                     {% if my_rank.contribution %}
                         {{ my_rank.contribution|floatformat:0 }}
                     {% else %}
@@ -58,6 +57,7 @@
             {% endif %}
         </h2>
         {% if rankings %}
+            <div class="tw-guild-table-wrap">
             <table class="tw-table">
                 <thead>
                     <tr>
@@ -115,6 +115,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
 
             <!-- 分页导航 -->
             {% if rankings.has_other_pages %}
@@ -142,7 +143,10 @@
             </div>
             {% endif %}
         {% else %}
-            <p class="tw-muted">暂无数据</p>
+            <div class="tw-guild-empty-state">
+                <strong>暂无排行数据</strong>
+                <p>成员贡献产生后会显示在这里。</p>
+            </div>
         {% endif %}
     </section>
 </section>

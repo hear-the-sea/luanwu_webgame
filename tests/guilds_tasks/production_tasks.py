@@ -188,6 +188,37 @@ def test_process_single_guild_production_programming_error_bubbles_up(monkeypatc
     assert tech.last_production_at is None
 
 
+@pytest.mark.django_db
+def test_process_single_guild_production_runs_mysticism_once_per_day(monkeypatch, django_user_model):
+    from guilds.models import Guild, GuildTechnology
+    from guilds.tasks import process_single_guild_production
+
+    calls: list[tuple[int, int]] = []
+    monkeypatch.setattr(
+        "guilds.tasks.produce_soul_containers",
+        lambda guild, level: calls.append((guild.id, int(level))),
+    )
+
+    founder = django_user_model.objects.create_user(username="g_mysticism_founder", password="pass")
+    guild = Guild.objects.create(name="G-mysticism", founder=founder, is_active=True)
+    tech = GuildTechnology.objects.create(
+        guild=guild,
+        tech_key="mysticism",
+        category="production",
+        level=3,
+        max_level=3,
+    )
+
+    first_result = process_single_guild_production.run(guild.id)
+    second_result = process_single_guild_production.run(guild.id)
+
+    assert first_result == f"processed guild {guild.id}: soul_container"
+    assert second_result == f"processed guild {guild.id}: "
+    assert calls == [(guild.id, 3)]
+    tech.refresh_from_db()
+    assert tech.last_production_at is not None
+
+
 def test_process_single_guild_production_missing_guild_id_bubbles_up():
     from guilds.tasks import process_single_guild_production
 
@@ -199,7 +230,7 @@ def test_persist_failed_guild_ids_cache_infrastructure_error_is_best_effort(monk
     from guilds.tasks import _persist_failed_guild_ids
 
     monkeypatch.setattr(
-        "guilds.tasks.cache.get",
+        "guilds.tasks.merge_int_id_set",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(ConnectionError("cache unavailable")),
     )
 
@@ -210,7 +241,7 @@ def test_persist_failed_guild_ids_cache_programming_error_bubbles_up(monkeypatch
     from guilds.tasks import _persist_failed_guild_ids
 
     monkeypatch.setattr(
-        "guilds.tasks.cache.get",
+        "guilds.tasks.merge_int_id_set",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("broken failed-id cache contract")),
     )
 

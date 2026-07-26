@@ -256,6 +256,7 @@ def validate_arena_rewards(
     *,
     file: str = "arena_rewards.yaml",
     item_keys: set[str] | None = None,
+    forge_blueprint_rarities: set[str] | None = None,
 ) -> ValidationResult:
     result = ValidationResult()
 
@@ -293,6 +294,16 @@ def validate_arena_rewards(
             _check_positive(
                 daily_limit, result=result, file=file, path=path, field_name="daily_limit", allow_zero=False
             )
+
+        weekly_limit = entry.get("weekly_limit")
+        if weekly_limit is not None:
+            if isinstance(weekly_limit, bool):
+                result.add(file, path, "field 'weekly_limit' expected int, got bool")
+            else:
+                _check_type(weekly_limit, int, result=result, file=file, path=path, field_name="weekly_limit")
+                _check_positive(
+                    weekly_limit, result=result, file=file, path=path, field_name="weekly_limit", allow_zero=False
+                )
 
         reward_data = entry.get("rewards")
         if reward_data is not None and not isinstance(reward_data, dict):
@@ -348,6 +359,30 @@ def validate_arena_rewards(
                 if item_keys is not None and blueprint_key not in item_keys:
                     result.add(file, blueprint_path, f"item_key '{blueprint_key}' not found in item_templates.yaml")
 
+        random_pool = entry.get("random_blueprint_pool")
+        if random_pool is not None:
+            pool_path = f"{path}.random_blueprint_pool"
+            if not isinstance(random_pool, dict):
+                result.add(file, pool_path, "expected a mapping")
+                continue
+
+            rarity = random_pool.get("rarity")
+            if not isinstance(rarity, str) or not rarity.strip():
+                result.add(file, pool_path, "field 'rarity' expected a non-empty string")
+            elif forge_blueprint_rarities is not None and rarity.strip() not in forge_blueprint_rarities:
+                result.add(
+                    file,
+                    pool_path,
+                    f"random blueprint rarity '{rarity.strip()}' has no valid forge blueprint",
+                )
+
+        if rotating_pool is not None and random_pool is not None:
+            result.add(
+                file,
+                path,
+                "fields 'rotating_blueprint_pool' and 'random_blueprint_pool' are mutually exclusive",
+            )
+
     return result
 
 
@@ -386,7 +421,7 @@ def validate_trade_market_rules(data: dict, *, file: str = "trade_market_rules.y
 # Schema: warehouse_production.yaml
 # ---------------------------------------------------------------------------
 
-VALID_WAREHOUSE_TECH_KEYS = {"equipment", "experience", "guard", "resource"}
+VALID_WAREHOUSE_TECH_KEYS = {"equipment", "experience", "guard", "mysticism", "resource"}
 
 
 def validate_warehouse_production(data: dict, *, file: str = "warehouse_production.yaml") -> ValidationResult:
@@ -637,6 +672,80 @@ def validate_guild_rules(data: dict, *, file: str = "guild_rules.yaml") -> Valid
                     "contribution.daily_troop_contribution_limit",
                     f"expected a non-negative integer, got {troop_daily_limit!r}",
                 )
+
+    technology = data.get("technology")
+    if technology is not None:
+        if not isinstance(technology, dict):
+            result.add(file, "technology", "expected a mapping")
+        else:
+            for text_map_field in ("names", "descriptions"):
+                text_map = technology.get(text_map_field)
+                if text_map is None:
+                    continue
+                if not isinstance(text_map, dict):
+                    result.add(file, f"technology.{text_map_field}", "expected a mapping")
+                    continue
+                for tech_key, text_value in text_map.items():
+                    if not isinstance(text_value, str) or not text_value.strip():
+                        result.add(
+                            file,
+                            f"technology.{text_map_field}.{tech_key}",
+                            f"expected a non-empty string, got {text_value!r}",
+                        )
+
+            cost_curves = technology.get("upgrade_cost_curves")
+            if cost_curves is not None:
+                if not isinstance(cost_curves, dict):
+                    result.add(file, "technology.upgrade_cost_curves", "expected a mapping")
+                else:
+                    for curve_key, levels in cost_curves.items():
+                        curve_path = f"technology.upgrade_cost_curves.{curve_key}"
+                        if not isinstance(levels, dict):
+                            result.add(file, curve_path, "expected a mapping of target levels")
+                            continue
+                        for target_level, multiplier in levels.items():
+                            level_path = f"{curve_path}.{target_level}"
+                            if not isinstance(target_level, int) or isinstance(target_level, bool) or target_level < 2:
+                                result.add(file, level_path, "target level must be an integer of at least 2")
+                            if not isinstance(multiplier, int) or isinstance(multiplier, bool) or multiplier < 1:
+                                result.add(file, level_path, "multiplier must be a positive integer")
+
+            curve_by_tech = technology.get("upgrade_cost_curve_by_tech")
+            if curve_by_tech is not None:
+                if not isinstance(curve_by_tech, dict):
+                    result.add(file, "technology.upgrade_cost_curve_by_tech", "expected a mapping")
+                else:
+                    for tech_key, curve_key in curve_by_tech.items():
+                        path = f"technology.upgrade_cost_curve_by_tech.{tech_key}"
+                        if not isinstance(curve_key, str) or not curve_key.strip():
+                            result.add(file, path, f"expected a non-empty string, got {curve_key!r}")
+                        elif isinstance(cost_curves, dict) and curve_key not in cost_curves:
+                            result.add(file, path, f"unknown upgrade cost curve '{curve_key}'")
+
+            cost_overrides = technology.get("upgrade_cost_overrides")
+            if cost_overrides is not None:
+                if not isinstance(cost_overrides, dict):
+                    result.add(file, "technology.upgrade_cost_overrides", "expected a mapping")
+                else:
+                    for tech_key, levels in cost_overrides.items():
+                        tech_path = f"technology.upgrade_cost_overrides.{tech_key}"
+                        if not isinstance(levels, dict):
+                            result.add(file, tech_path, "expected a mapping of target levels")
+                            continue
+                        for target_level, costs in levels.items():
+                            level_path = f"{tech_path}.{target_level}"
+                            if not isinstance(target_level, int) or isinstance(target_level, bool) or target_level < 1:
+                                result.add(file, level_path, "target level must be a positive integer")
+                            if not isinstance(costs, dict):
+                                result.add(file, level_path, "expected a mapping of resource costs")
+                                continue
+                            for resource_key, amount in costs.items():
+                                if not isinstance(amount, int) or isinstance(amount, bool) or amount < 0:
+                                    result.add(
+                                        file,
+                                        f"{level_path}.{resource_key}",
+                                        f"expected a non-negative integer, got {amount!r}",
+                                    )
 
     hero_pool = data.get("hero_pool")
     if hero_pool is not None:

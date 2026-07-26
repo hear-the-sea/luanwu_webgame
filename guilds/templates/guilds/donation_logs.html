@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}捐赠记录 - {{ guild.name }}{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
@@ -11,14 +11,14 @@
             <p class="caption">{{ guild.name }}</p>
         </div>
         <div class="flex gap-2">
-            <a href="{% url 'guilds:donate' %}" class="tw-btn-secondary">捐赠资源</a>
-            <a href="{% url 'guilds:detail' guild.id %}" class="tw-btn-primary">返回帮会</a>
+            <a href="{% url 'guilds:detail' guild.id %}?donate=1" class="tw-btn-primary">捐赠资源</a>
         </div>
     </div>
 
     <section class="tw-card">
         <h2>最近捐赠（50条）</h2>
         {% if logs %}
+            <div class="tw-guild-table-wrap">
             <table class="tw-table">
                 <thead>
                     <tr>
@@ -58,8 +58,12 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
         {% else %}
-            <p class="tw-muted">暂无捐赠记录</p>
+            <div class="tw-guild-empty-state">
+                <strong>暂无捐赠记录</strong>
+                <p>成员完成资源捐赠后会记录在这里。</p>
+            </div>
         {% endif %}
     </section>
 </section>

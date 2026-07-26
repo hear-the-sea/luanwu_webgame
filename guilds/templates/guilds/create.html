@@ -1,17 +1,14 @@
-{% extends "base.html" %}
+{% extends "guilds/base.html" %}
 {% load static %}
 
 {% block title %}创建帮会{% endblock %}
 
-{% block content %}
+{% block guild_content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
             <h1>创建帮会</h1>
             <p class="caption">招贤纳士，建立属于自己的帮会</p>
-        </div>
-        <div class="flex gap-2">
-            <a href="{% url 'guilds:hall' %}" class="tw-btn-primary">返回大厅</a>
         </div>
     </div>
 
