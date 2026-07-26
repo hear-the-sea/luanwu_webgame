@@ -4,7 +4,7 @@ from typing import Any, Sequence
 
 from django.db.models import F
 
-from core.utils import safe_positive_int
+from core.utils import safe_non_negative_int, safe_positive_int
 from gameplay.constants import PVPConstants
 from gameplay.models import ItemTemplate
 from gameplay.services.pvp_runtime.loot import (
@@ -28,7 +28,7 @@ def grant_guild_raid_battle_rewards(*, guild: Guild, rewards: dict[str, int]) ->
         if str(item_key).strip() and int(quantity or 0) > 0
     }
     for item_key, quantity in normalized_rewards.items():
-        add_item_to_warehouse(guild, item_key, quantity, 0)
+        add_item_to_warehouse(guild, item_key, quantity, 0, count_as_production=False)
     return normalized_rewards
 
 
@@ -72,18 +72,18 @@ def _build_weighted_loot_candidates(rows: list[GuildWarehouse]) -> list[Weighted
     ]
 
 
-def transfer_guild_raid_loot(
+def reserve_guild_raid_loot(
     *,
     attacker_guild: Guild,
     defender_guild: Guild,
     guests: Sequence[Any],
     troop_loadout: dict[str, int],
     battle_report: Any,
-) -> tuple[int, dict[str, int]]:
+) -> tuple[int, dict[str, int], dict[str, int]]:
     from .guild_raid_support import lock_guild_pair
 
     rules = get_guild_raid_rules()
-    attacker_locked, defender_locked = lock_guild_pair(
+    _attacker_locked, defender_locked = lock_guild_pair(
         attacker_guild_id=attacker_guild.pk,
         defender_guild_id=defender_guild.pk,
     )
@@ -94,13 +94,13 @@ def transfer_guild_raid_loot(
     loot_silver = silver_available * silver_percent // 100
     if loot_silver > 0:
         Guild.objects.filter(pk=defender_locked.pk, silver__gte=loot_silver).update(silver=F("silver") - loot_silver)
-        Guild.objects.filter(pk=attacker_locked.pk).update(silver=F("silver") + loot_silver)
 
     whitelist = list(rules["warehouse_loot_whitelist"] or [])
     warehouse_percent = int(rules["warehouse_loot_percent"] or 0)
     loot_items: dict[str, int] = {}
+    loot_item_contribution_costs: dict[str, int] = {}
     if warehouse_percent <= 0 or not whitelist:
-        return loot_silver, loot_items
+        return loot_silver, loot_items, loot_item_contribution_costs
 
     locked_rows = list(
         GuildWarehouse.objects.select_for_update()
@@ -126,11 +126,47 @@ def transfer_guild_raid_loot(
             continue
         updated = GuildWarehouse.objects.filter(pk=row.pk, quantity__gte=loot_quantity).update(
             quantity=F("quantity") - loot_quantity,
-            total_exchanged=F("total_exchanged") + loot_quantity,
         )
         if updated != 1:
             continue
-        add_item_to_warehouse(attacker_locked, row.item_key, loot_quantity, row.contribution_cost)
+        loot_item_contribution_costs[row.item_key] = max(0, int(row.contribution_cost or 0))
 
     GuildWarehouse.objects.filter(guild=defender_locked, quantity=0).delete()
-    return loot_silver, loot_items
+    return loot_silver, loot_items, loot_item_contribution_costs
+
+
+def grant_reserved_guild_raid_loot(
+    *,
+    attacker_guild: Guild,
+    loot_silver: int,
+    loot_items: dict[str, int],
+    loot_item_contribution_costs: dict[str, int],
+) -> tuple[int, dict[str, int]]:
+    normalized_silver = safe_positive_int(loot_silver, 0)
+    normalized_items = normalize_positive_int_mapping(loot_items)
+    normalized_costs = {
+        str(item_key).strip(): safe_non_negative_int(contribution_cost)
+        for item_key, contribution_cost in (loot_item_contribution_costs or {}).items()
+        if str(item_key).strip()
+    }
+    existing_costs = {
+        str(item_key): max(0, int(contribution_cost or 0))
+        for item_key, contribution_cost in GuildWarehouse.objects.filter(
+            guild=attacker_guild,
+            item_key__in=normalized_items,
+        ).values_list("item_key", "contribution_cost")
+    }
+
+    if normalized_silver > 0:
+        Guild.objects.filter(pk=attacker_guild.pk).update(silver=F("silver") + normalized_silver)
+
+    for item_key, quantity in normalized_items.items():
+        contribution_cost = existing_costs.get(item_key, normalized_costs.get(item_key, 0))
+        add_item_to_warehouse(
+            attacker_guild,
+            item_key,
+            quantity,
+            contribution_cost,
+            count_as_production=False,
+        )
+    return normalized_silver, normalized_items

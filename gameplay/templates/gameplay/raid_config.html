@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static l10n %}
 
 {% block title %}出征配置 - {{ target_manor.display_name }}{% endblock %}
 
@@ -35,7 +35,7 @@
             </div>
             <div class="tw-raid-intel-item">
                 <dt>预计行军</dt>
-                <dd>{{ target_info.travel_time }} 秒</dd>
+                <dd data-raid-intel-travel>{{ target_info.travel_time }} 秒</dd>
             </div>
             {% if target_info.is_protected %}
             <div class="tw-raid-intel-item">
@@ -58,6 +58,9 @@
           data-raid-api-url="{% url 'gameplay:start_raid_api' %}"
           data-target-id="{{ target_manor.id }}"
           data-max-squad-size="{{ max_squad_size }}"
+          data-pvp-route-seconds="{{ target_info.travel_route_seconds|unlocalize }}"
+          data-pvp-region-factor="{{ target_info.travel_region_factor|unlocalize }}"
+          data-pvp-time-scale="{{ pvp_time_scale_multiplier|unlocalize }}"
           data-map-url="{% url 'gameplay:map' %}">
         <div class="tw-raid-loadout-grid">
             <section class="tw-panel tw-raid-guests-panel" aria-labelledby="raid-guests-heading">
@@ -85,6 +88,7 @@
                                    name="guest_ids"
                                    value="{{ guest.id }}"
                                    data-raid-guest
+                                   data-agility="{{ guest.agility }}"
                                    data-troop-capacity="{{ guest.troop_capacity }}">
                             <span class="tw-raid-guest-card">
                                 <span class="tw-guest-avatar">
@@ -217,7 +221,11 @@
                     </span>
                     <span class="tw-raid-summary-stat">
                         <small>预计到达</small>
-                        <strong>{{ target_info.travel_time }} 秒后</strong>
+                        <strong data-raid-summary-arrival>{{ target_info.travel_time }} 秒</strong>
+                    </span>
+                    <span class="tw-raid-summary-stat">
+                        <small>预计归队</small>
+                        <strong data-raid-summary-return>{{ target_info.travel_time|add:target_info.travel_time }} 秒</strong>
                     </span>
                 </div>
                 <div class="tw-raid-summary-actions">
@@ -238,5 +246,6 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="{% static 'js/pvp-travel.js' %}"></script>
 <script src="{% static 'js/raid-config-page.js' %}"></script>
 {% endblock %}

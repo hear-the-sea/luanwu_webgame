@@ -14,10 +14,9 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 from django.db.models import Count, QuerySet
 from django.utils import timezone
 
-from core.utils.time_scale import scale_duration
-
 from ...constants import PVPConstants
 from ...models import BotProfile, Manor, RaidRun
+from ..pvp_runtime.travel import calculate_pvp_travel_time
 from .utils import calculate_distance, can_attack_target, get_prestige_color, is_same_region
 
 _SEARCH_BATCH_SIZE = 200
@@ -279,12 +278,18 @@ def get_manor_public_info(manor: Manor, viewer: Optional[Manor] = None) -> Dict[
         else:
             info["prestige_comparison"] = "equal"
 
-        # 提供一个"基础行军时间"估算（不包含敏捷等动态加成）
-        base_time = PVPConstants.RAID_BASE_TRAVEL_TIME + distance * PVPConstants.RAID_TRAVEL_TIME_PER_DISTANCE
-        if not is_same_region(viewer, manor):
-            base_time *= PVPConstants.RAID_CROSS_REGION_MULTIPLIER
-        base_time = min(PVPConstants.RAID_MAX_TRAVEL_TIME, base_time)
-        info["travel_time"] = scale_duration(max(60, int(base_time)), minimum=1)
+        # 基础估算采用160敏捷、1名门客、0护院；配置页会按实际阵容实时修正。
+        route_seconds = PVPConstants.RAID_BASE_TRAVEL_TIME + distance * PVPConstants.RAID_TRAVEL_TIME_PER_DISTANCE
+        region_factor = 1.0 if is_same_region(viewer, manor) else PVPConstants.RAID_CROSS_REGION_MULTIPLIER
+        estimate = calculate_pvp_travel_time(
+            route_seconds=route_seconds,
+            guests=[],
+            troop_loadout={},
+            external_factor=region_factor,
+        )
+        info["travel_route_seconds"] = route_seconds
+        info["travel_region_factor"] = region_factor
+        info["travel_time"] = estimate.scaled_seconds
         can_attack, reason = can_attack_target(viewer, manor)
         info["can_attack"] = can_attack
         info["attack_reason"] = reason

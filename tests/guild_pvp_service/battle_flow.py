@@ -17,7 +17,7 @@ from tests.guild_pvp_service.support import create_guest, create_guild_with_lead
 
 
 @pytest.mark.django_db(transaction=True)
-def test_process_guild_raid_battle_transfers_silver_and_random_whitelist_loot_to_winner_guild(
+def test_process_guild_raid_battle_reserves_loot_until_the_winner_returns(
     django_user_model,
     monkeypatch,
 ):
@@ -94,7 +94,7 @@ def test_process_guild_raid_battle_transfers_silver_and_random_whitelist_loot_to
     )
     monkeypatch.setattr("gameplay.services.pvp_runtime.loot.random.randrange", lambda _stop: 0)
 
-    from guilds.services.guild_raids import process_guild_raid_battle
+    from guilds.services.guild_raids import finalize_guild_raid, process_guild_raid_battle
 
     assert process_guild_raid_battle(run, now=now) is True
 
@@ -102,9 +102,9 @@ def test_process_guild_raid_battle_transfers_silver_and_random_whitelist_loot_to
     defender_guild.refresh_from_db()
     run.refresh_from_db()
 
-    assert attacker_guild.silver == 8000
+    assert attacker_guild.silver == 0
     assert defender_guild.silver == 92000
-    assert GuildWarehouse.objects.get(guild=attacker_guild, item_key="gold_bar").quantity == 4
+    assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key="gold_bar").exists() is False
     assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key="grain").exists() is False
     assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key="red_ruby").exists() is False
     assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key="guild_badge").exists() is False
@@ -116,12 +116,26 @@ def test_process_guild_raid_battle_transfers_silver_and_random_whitelist_loot_to
     assert run.is_attacker_victory is True
     assert run.loot_silver == 8000
     assert run.loot_items == {"gold_bar": 4}
+    assert run.loot_item_contribution_costs == {"gold_bar": 50}
+    assert run.loot_settled is False
     assert run.battle_report_id == report.id
     assert run.completed_at is None
 
+    assert finalize_guild_raid(run, now=run.return_at) is True
+
+    attacker_guild.refresh_from_db()
+    run.refresh_from_db()
+    attacker_gold = GuildWarehouse.objects.get(guild=attacker_guild, item_key="gold_bar")
+    assert attacker_guild.silver == 8000
+    assert attacker_gold.quantity == 4
+    assert attacker_gold.contribution_cost == 50
+    assert attacker_gold.total_produced == 0
+    assert run.status == GuildRaidRun.Status.COMPLETED
+    assert run.loot_settled is True
+
 
 @pytest.mark.django_db(transaction=True)
-def test_transfer_guild_raid_loot_clamps_twenty_percent_draw_by_item_capacity(
+def test_reserve_guild_raid_loot_clamps_twenty_percent_draw_by_item_capacity(
     django_user_model,
     monkeypatch,
 ):
@@ -134,7 +148,14 @@ def test_transfer_guild_raid_loot_clamps_twenty_percent_draw_by_item_capacity(
         tradeable=True,
         storage_space=1000,
     )
-    GuildWarehouse.objects.create(guild=defender_guild, item_key=item_key, quantity=100)
+    defender_item = GuildWarehouse.objects.create(
+        guild=defender_guild,
+        item_key=item_key,
+        quantity=100,
+        contribution_cost=17,
+        total_produced=120,
+        total_exchanged=20,
+    )
     monkeypatch.setattr(
         "guilds.services.guild_raid_loot.get_guild_raid_rules",
         lambda: {
@@ -146,10 +167,10 @@ def test_transfer_guild_raid_loot_clamps_twenty_percent_draw_by_item_capacity(
     )
     monkeypatch.setattr("gameplay.services.pvp_runtime.loot.random.randrange", lambda _stop: 0)
 
-    from guilds.services.guild_raid_loot import transfer_guild_raid_loot
+    from guilds.services.guild_raid_loot import reserve_guild_raid_loot
 
     with transaction.atomic():
-        loot_silver, loot_items = transfer_guild_raid_loot(
+        loot_silver, loot_items, loot_item_costs = reserve_guild_raid_loot(
             attacker_guild=attacker_guild,
             defender_guild=defender_guild,
             guests=[SimpleNamespace()],
@@ -159,12 +180,16 @@ def test_transfer_guild_raid_loot_clamps_twenty_percent_draw_by_item_capacity(
 
     assert loot_silver == 0
     assert loot_items == {item_key: 2}
-    assert GuildWarehouse.objects.get(guild=attacker_guild, item_key=item_key).quantity == 2
-    assert GuildWarehouse.objects.get(guild=defender_guild, item_key=item_key).quantity == 98
+    assert loot_item_costs == {item_key: 17}
+    assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key=item_key).exists() is False
+    defender_item.refresh_from_db()
+    assert defender_item.quantity == 98
+    assert defender_item.total_produced == 120
+    assert defender_item.total_exchanged == 20
 
 
 @pytest.mark.django_db(transaction=True)
-def test_transfer_guild_raid_loot_uses_fractional_grain_capacity(
+def test_reserve_guild_raid_loot_uses_fractional_grain_capacity(
     django_user_model,
     monkeypatch,
 ):
@@ -191,10 +216,10 @@ def test_transfer_guild_raid_loot_uses_fractional_grain_capacity(
         lambda **_kwargs: 1,
     )
 
-    from guilds.services.guild_raid_loot import transfer_guild_raid_loot
+    from guilds.services.guild_raid_loot import reserve_guild_raid_loot
 
     with transaction.atomic():
-        loot_silver, loot_items = transfer_guild_raid_loot(
+        loot_silver, loot_items, loot_item_costs = reserve_guild_raid_loot(
             attacker_guild=attacker_guild,
             defender_guild=defender_guild,
             guests=[],
@@ -204,12 +229,13 @@ def test_transfer_guild_raid_loot_uses_fractional_grain_capacity(
 
     assert loot_silver == 0
     assert loot_items == {"grain": 1_000}
-    assert GuildWarehouse.objects.get(guild=attacker_guild, item_key="grain").quantity == 1_000
+    assert loot_item_costs == {"grain": 0}
+    assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key="grain").exists() is False
     assert GuildWarehouse.objects.get(guild=defender_guild, item_key="grain").quantity == 9_000
 
 
 @pytest.mark.django_db(transaction=True)
-def test_transfer_guild_raid_loot_includes_technology_production_items(
+def test_reserve_guild_raid_loot_includes_technology_production_items(
     django_user_model,
     monkeypatch,
 ):
@@ -243,10 +269,10 @@ def test_transfer_guild_raid_loot_includes_technology_production_items(
         lambda: frozenset({production_item_key}),
     )
 
-    from guilds.services.guild_raid_loot import transfer_guild_raid_loot
+    from guilds.services.guild_raid_loot import reserve_guild_raid_loot
 
     with transaction.atomic():
-        _loot_silver, loot_items = transfer_guild_raid_loot(
+        _loot_silver, loot_items, loot_item_costs = reserve_guild_raid_loot(
             attacker_guild=attacker_guild,
             defender_guild=defender_guild,
             guests=[SimpleNamespace()],
@@ -255,7 +281,8 @@ def test_transfer_guild_raid_loot_includes_technology_production_items(
         )
 
     assert loot_items == {production_item_key: 1}
-    assert GuildWarehouse.objects.get(guild=attacker_guild, item_key=production_item_key).quantity == 1
+    assert loot_item_costs == {production_item_key: 100}
+    assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key=production_item_key).exists() is False
     assert not GuildWarehouse.objects.filter(guild=defender_guild, item_key=production_item_key).exists()
     assert GuildWarehouse.objects.get(guild=defender_guild, item_key=unrelated_item_key).quantity == 1
 
@@ -325,8 +352,14 @@ def test_process_guild_raid_battle_grants_salvage_to_defender_warehouse_on_defen
     assert run.status == GuildRaidRun.Status.RETURNING
     assert run.is_attacker_victory is False
     assert run.battle_rewards == {"experience_fruit": 3, "iron_sword": 2}
-    assert GuildWarehouse.objects.get(guild=defender_guild, item_key="experience_fruit").quantity == 3
-    assert GuildWarehouse.objects.get(guild=defender_guild, item_key="iron_sword").quantity == 2
+    experience_fruit = GuildWarehouse.objects.get(guild=defender_guild, item_key="experience_fruit")
+    recovered_equipment = GuildWarehouse.objects.get(guild=defender_guild, item_key="iron_sword")
+    assert experience_fruit.quantity == 3
+    assert experience_fruit.contribution_cost == 0
+    assert experience_fruit.total_produced == 0
+    assert recovered_equipment.quantity == 2
+    assert recovered_equipment.contribution_cost == 0
+    assert recovered_equipment.total_produced == 0
 
 
 @pytest.mark.django_db(transaction=True)
@@ -355,7 +388,7 @@ def test_process_guild_raid_battle_uses_and_applies_defender_troops(django_user_
     )
 
     defender_troop_template = TroopTemplate.objects.create(key="guild_defense_archer", name="守方弓手")
-    GuildTroopStorage.objects.create(guild=defender_guild, troop_template=defender_troop_template, count=8)
+    GuildTroopStorage.objects.create(guild=defender_guild, troop_template=defender_troop_template, count=500)
     report = BattleReport.objects.create(
         manor=attacker_manor,
         opponent_name=defender_guild.name,
@@ -363,7 +396,7 @@ def test_process_guild_raid_battle_uses_and_applies_defender_troops(django_user_
         attacker_team=[],
         attacker_troops={},
         defender_team=[],
-        defender_troops={"guild_defense_archer": 8},
+        defender_troops={"guild_defense_archer": 500},
         rounds=[],
         losses={
             "attacker": {"casualties": []},
@@ -421,10 +454,10 @@ def test_process_guild_raid_battle_uses_and_applies_defender_troops(django_user_
     defender_storage = GuildTroopStorage.objects.get(guild=defender_guild, troop_template=defender_troop_template)
     assert captured["attacker_tech_levels"] == {"archer_attack": 4, "archer_hp": 2}
     assert captured["defender_setup"] == {
-        "troop_loadout": {"guild_defense_archer": 8},
+        "troop_loadout": {"guild_defense_archer": 500},
         "technology": {"levels": {"archer_attack": 1, "archer_hp": 1}},
     }
-    assert defender_storage.count == 5
+    assert defender_storage.count == 497
 
 
 @pytest.mark.django_db(transaction=True)
@@ -768,6 +801,10 @@ def test_finalize_guild_raid_marks_returning_run_completed_and_returns_surviving
         battle_at=now - timedelta(seconds=300),
         return_at=now,
         is_attacker_victory=True,
+        loot_silver=321,
+        loot_items={"guild_return_reward": 2},
+        loot_item_contribution_costs={"guild_return_reward": 45},
+        loot_settled=False,
     )
     report = BattleReport.objects.create(
         manor=attacker_manor,
@@ -798,7 +835,111 @@ def test_finalize_guild_raid_marks_returning_run_completed_and_returns_surviving
     assert finalize_guild_raid(run, now=now) is True
 
     run.refresh_from_db()
+    attacker_guild.refresh_from_db()
     storage = GuildTroopStorage.objects.get(guild=attacker_guild, troop_template=troop_template)
+    loot_item = GuildWarehouse.objects.get(guild=attacker_guild, item_key="guild_return_reward")
     assert run.status == GuildRaidRun.Status.COMPLETED
     assert run.completed_at == now
+    assert run.loot_settled is True
     assert storage.count == 6
+    assert attacker_guild.silver == 321
+    assert loot_item.quantity == 2
+    assert loot_item.contribution_cost == 45
+    assert loot_item.total_produced == 0
+
+    assert finalize_guild_raid(run, now=now) is False
+    attacker_guild.refresh_from_db()
+    loot_item.refresh_from_db()
+    assert attacker_guild.silver == 321
+    assert loot_item.quantity == 2
+
+
+@pytest.mark.django_db(transaction=True)
+def test_finalize_guild_raid_preserves_existing_warehouse_contribution_cost(django_user_model):
+    attacker_guild, attacker_member, _attacker_manor = create_guild_with_leader(
+        django_user_model,
+        "已有库存返程帮",
+    )
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(
+        django_user_model,
+        "已有库存终点帮",
+    )
+    existing_item = GuildWarehouse.objects.create(
+        guild=attacker_guild,
+        item_key="existing_guild_return_reward",
+        quantity=7,
+        contribution_cost=12,
+        total_produced=100,
+        total_exchanged=20,
+    )
+    now = timezone.now()
+    run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.RETURNING,
+        troop_loadout={},
+        return_at=now,
+        is_attacker_victory=True,
+        loot_items={"existing_guild_return_reward": 2},
+        loot_item_contribution_costs={"existing_guild_return_reward": 45},
+        loot_settled=False,
+    )
+
+    from guilds.services.guild_raids import finalize_guild_raid
+
+    assert finalize_guild_raid(run, now=now) is True
+
+    existing_item.refresh_from_db()
+    run.refresh_from_db()
+    assert existing_item.quantity == 9
+    assert existing_item.contribution_cost == 12
+    assert existing_item.total_produced == 100
+    assert existing_item.total_exchanged == 20
+    assert run.loot_settled is True
+
+
+@pytest.mark.django_db(transaction=True)
+def test_finalize_guild_raid_does_not_duplicate_historical_already_settled_loot(django_user_model):
+    attacker_guild, attacker_member, _attacker_manor = create_guild_with_leader(
+        django_user_model,
+        "历史返程帮",
+    )
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(
+        django_user_model,
+        "历史终点帮",
+    )
+    attacker_guild.silver = 500
+    attacker_guild.save(update_fields=["silver"])
+    historical_item = GuildWarehouse.objects.create(
+        guild=attacker_guild,
+        item_key="historical_guild_loot",
+        quantity=2,
+        contribution_cost=30,
+    )
+    now = timezone.now()
+    run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.RETURNING,
+        troop_loadout={},
+        return_at=now,
+        is_attacker_victory=True,
+        loot_silver=500,
+        loot_items={"historical_guild_loot": 2},
+        loot_item_contribution_costs={},
+        loot_settled=True,
+    )
+
+    from guilds.services.guild_raids import finalize_guild_raid
+
+    assert finalize_guild_raid(run, now=now) is True
+
+    attacker_guild.refresh_from_db()
+    historical_item.refresh_from_db()
+    run.refresh_from_db()
+    assert attacker_guild.silver == 500
+    assert historical_item.quantity == 2
+    assert run.status == GuildRaidRun.Status.COMPLETED
+    assert run.loot_settled is True

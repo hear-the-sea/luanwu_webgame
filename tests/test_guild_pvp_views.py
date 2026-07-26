@@ -404,6 +404,52 @@ def test_get_guild_pvp_page_context_returns_projected_target_card_and_runs(djang
 
 
 @pytest.mark.django_db
+def test_get_guild_pvp_page_context_reuses_one_march_projection_for_all_targets(
+    django_user_model,
+    monkeypatch,
+):
+    user, _manor = _create_user_with_manor(django_user_model, "guild_pvp_projection_reuse_leader")
+    guild = Guild.objects.create(name="行军复用帮", founder=user, is_active=True, level=5, silver=50000)
+    member = GuildMember.objects.create(guild=guild, user=user, position="leader", is_active=True)
+    for index in range(2):
+        target_user, _target_manor = _create_user_with_manor(
+            django_user_model,
+            f"guild_pvp_projection_reuse_target_{index}",
+        )
+        target_guild = Guild.objects.create(
+            name=f"行军目标帮{index}",
+            founder=target_user,
+            is_active=True,
+            level=5,
+            silver=50000,
+        )
+        GuildMember.objects.create(guild=target_guild, user=target_user, position="leader", is_active=True)
+
+    factor_calls: list[int] = []
+    travel_calls: list[tuple[int, float | None]] = []
+
+    def _march_factor(current_guild):
+        factor_calls.append(current_guild.pk)
+        return 0.85
+
+    def _travel_time(current_guild, _guests, _troops, *, march_factor=None):
+        travel_calls.append((current_guild.pk, march_factor))
+        return 432
+
+    monkeypatch.setattr("guilds.services.guild_pvp_queries.get_guild_raid_march_factor", _march_factor)
+    monkeypatch.setattr("guilds.services.guild_pvp_queries.calculate_guild_raid_travel_time", _travel_time)
+
+    from guilds.services.guild_pvp_queries import get_guild_pvp_page_context
+
+    context = get_guild_pvp_page_context(member)
+
+    assert factor_calls == [guild.pk]
+    assert travel_calls == [(guild.pk, 0.85)]
+    assert [target.travel_time_seconds for target in context["targets"]] == [432, 432]
+    assert context["pvp_march_factor"] == 0.85
+
+
+@pytest.mark.django_db
 def test_non_manager_cannot_launch_guild_raid(django_user_model):
     leader, _leader_manor = _create_user_with_manor(django_user_model, "guild_pvp_launch_guard_leader")
     member_user, _member_manor = _create_user_with_manor(django_user_model, "guild_pvp_launch_guard_member")

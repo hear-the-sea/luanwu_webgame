@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 
-const { initGuildPvpPage } = require("../guild-pvp-page.js");
+const { initGuildPvpPage, summarizeGuildPvpConfig } = require("../guild-pvp-page.js");
 
 function createClassList() {
   const classes = new Set();
@@ -80,12 +80,14 @@ function createTargetOption({
   };
 }
 
-function createInput({ value = "", checked = false, disabled = false, dataset = {} } = {}) {
+function createInput({ value = "", checked = false, disabled = false, dataset = {}, max = "" } = {}) {
   return {
     value,
     checked,
     disabled,
-    dataset,
+    dataset: { ...dataset },
+    max,
+    classList: createClassList(),
     addEventListener(type, listener) {
       this[`on_${type}`] = listener;
     },
@@ -107,24 +109,39 @@ function createRoot({
   targetSearchValue = "",
   regionValue = "",
   guestOptions = [],
+  troopInputs = [],
   filterButtons = [],
+  baseTravelSeconds = "28800",
+  marchFactor = "1",
+  timeScale = "1",
 }) {
   const targetSearch = createInput({ value: targetSearchValue });
   const targetRegionFilter = createInput({ value: regionValue });
   const targetEmpty = { hidden: true };
   const guestCountNode = { textContent: "" };
+  const capacityStatusNode = { textContent: "", classList: createClassList() };
+  const troopSummaryNode = { textContent: "" };
+  const travelArrivalNode = { textContent: "" };
+  const travelReturnNode = { textContent: "" };
   const submitButton = { disabled: false };
 
   return {
     dataset: {
       dispatchLimit: "2",
       defaultTargetId: targetOptions[0]?.dataset.targetId || "",
+      pvpBaseSeconds: baseTravelSeconds,
+      pvpMarchFactor: marchFactor,
+      pvpTimeScale: timeScale,
     },
     querySelector(selector) {
       if (selector === "[data-target-search]") return targetSearch;
       if (selector === "[data-target-region-filter]") return targetRegionFilter;
       if (selector === "[data-target-empty]") return targetEmpty;
       if (selector === "[data-selected-guest-count]") return guestCountNode;
+      if (selector === "[data-guild-capacity-status]") return capacityStatusNode;
+      if (selector === "[data-guild-troop-summary]") return troopSummaryNode;
+      if (selector === "[data-guild-travel-arrival]") return travelArrivalNode;
+      if (selector === "[data-guild-travel-return]") return travelReturnNode;
       if (selector === "[data-launch-submit]") return submitButton;
       return null;
     },
@@ -132,12 +149,17 @@ function createRoot({
       if (selector === "[data-target-option]") return targetOptions;
       if (selector === "[data-target-radio]") return targetOptions.map((option) => option.radio);
       if (selector === "[data-guest-option]") return guestOptions;
+      if (selector === "[data-troop-input]") return troopInputs;
       if (selector === "[data-target-filter]") return filterButtons;
       return [];
     },
     _submitButton: submitButton,
     _targetEmpty: targetEmpty,
     _guestCountNode: guestCountNode,
+    _capacityStatusNode: capacityStatusNode,
+    _troopSummaryNode: troopSummaryNode,
+    _travelArrivalNode: travelArrivalNode,
+    _travelReturnNode: travelReturnNode,
     _targetSearch: targetSearch,
   };
 }
@@ -295,4 +317,56 @@ test("submit button stays disabled when no guest is selected", () => {
   assert.equal(attackable.radio.checked, true);
   assert.equal(root._submitButton.disabled, true);
   assert.equal(root._guestCountNode.textContent, "0");
+});
+
+test("guild PVP summary enforces capacity and previews one-way and return time", () => {
+  const attackable = createTargetOption({
+    id: "41",
+    status: "attackable",
+    search: "capacity",
+    checked: true,
+  });
+  const guest = createInput({
+    checked: true,
+    dataset: { agility: "160", troopCapacity: "200" },
+  });
+  const troop = createInput({
+    value: "200",
+    max: "201",
+    dataset: { troopKey: "guard" },
+  });
+  const root = createRoot({
+    targetOptions: [attackable],
+    guestOptions: [guest],
+    troopInputs: [troop],
+  });
+
+  const page = initGuildPvpPage(createDocument(root));
+
+  assert.deepEqual(page.readConfigurationState(), {
+    selectedGuests: 1,
+    troopCapacity: 200,
+    totalTroops: 200,
+    isOverCapacity: false,
+  });
+  assert.equal(root._troopSummaryNode.textContent, "200 / 200");
+  assert.equal(root._travelArrivalNode.textContent, "8小时12分钟");
+  assert.equal(root._travelReturnNode.textContent, "16小时24分钟");
+  assert.equal(root._submitButton.disabled, false);
+
+  troop.value = "201";
+  troop.on_input();
+
+  assert.equal(root._capacityStatusNode.textContent, "已超出带兵上限 1 人。");
+  assert.equal(root._capacityStatusNode.classList.contains("is-over-limit"), true);
+  assert.equal(root._submitButton.disabled, true);
+});
+
+test("guild PVP exports a capacity summary helper", () => {
+  assert.deepEqual(summarizeGuildPvpConfig([200, 250], [451]), {
+    selectedGuests: 2,
+    troopCapacity: 450,
+    totalTroops: 451,
+    isOverCapacity: true,
+  });
 });

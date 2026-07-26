@@ -1,6 +1,10 @@
 (function (globalScope) {
   "use strict";
 
+  const pvpTravel =
+    globalScope.PvpTravel ||
+    (typeof module !== "undefined" && module.exports ? require("./pvp-travel.js") : null);
+
   function parseNonNegativeInt(value) {
     const parsed = Number.parseInt(value, 10);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
@@ -53,6 +57,9 @@
     const mapUrl = form.dataset.mapUrl || "";
     const targetId = Number.parseInt(form.dataset.targetId || "", 10);
     const maxSquadSize = parseNonNegativeInt(form.dataset.maxSquadSize);
+    const routeSeconds = Number(form.dataset.pvpRouteSeconds || 0);
+    const regionFactor = Number(form.dataset.pvpRegionFactor || 1);
+    const timeScale = Number(form.dataset.pvpTimeScale || 1);
 
     const guestInputs = Array.from(form.querySelectorAll("[data-raid-guest]"));
     const troopInputs = Array.from(form.querySelectorAll("[data-raid-troop]"));
@@ -63,6 +70,9 @@
     const summaryTroops = form.querySelector("[data-raid-summary-troops]");
     const troopCapacity = form.querySelector("[data-raid-troop-capacity]");
     const capacityStatus = form.querySelector("[data-raid-capacity-status]");
+    const intelTravel = form.querySelector("[data-raid-intel-travel]");
+    const summaryArrival = form.querySelector("[data-raid-summary-arrival]");
+    const summaryReturn = form.querySelector("[data-raid-summary-return]");
     const submitBtn = form.querySelector("[data-raid-submit]");
     const selectMaxBtn = form.querySelector("[data-raid-select-max]");
     const clearGuestsBtn = form.querySelector("[data-raid-clear-guests]");
@@ -128,12 +138,32 @@
       );
     }
 
+    function readTravelEstimate() {
+      if (!pvpTravel) return null;
+      return pvpTravel.calculatePvpTravelTime({
+        routeSeconds,
+        guestAgilities: checkedGuests().map((input) => input.dataset.agility),
+        troopCounts: troopInputs.map((input) => input.value),
+        externalFactor: regionFactor,
+        timeScale,
+      });
+    }
+
     function updateSummary() {
       const state = readState();
       selectedCount.textContent = String(state.selectedGuests);
       summaryGuests.textContent = `${state.selectedGuests} 人`;
       summaryTroops.textContent = String(state.totalTroops);
       troopCapacity.textContent = String(state.troopCapacity);
+
+      const travelEstimate = readTravelEstimate();
+      if (travelEstimate) {
+        const arrivalText = pvpTravel.formatDuration(travelEstimate.scaledSeconds);
+        const returnText = pvpTravel.formatDuration(travelEstimate.scaledSeconds * 2);
+        if (intelTravel) intelTravel.textContent = arrivalText;
+        if (summaryArrival) summaryArrival.textContent = arrivalText;
+        if (summaryReturn) summaryReturn.textContent = returnText;
+      }
 
       if (state.selectedGuests === 0) {
         capacityStatus.textContent = "选择门客后计算带兵上限";
@@ -324,7 +354,7 @@
     });
 
     updateSummary();
-    return { readState, updateSummary };
+    return { readState, readTravelEstimate, updateSummary };
   }
 
   if (typeof module !== "undefined" && module.exports) {

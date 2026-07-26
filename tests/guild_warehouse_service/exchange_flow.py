@@ -4,11 +4,16 @@ import pytest
 from django.db import transaction
 
 from core.exceptions import GuildWarehouseError
-from gameplay.models import InventoryItem
+from gameplay.models import InventoryItem, ItemTemplate
 from guilds.constants import CONTRIBUTION_RATES
 from guilds.models import Guild, GuildExchangeLog, GuildMember, GuildWarehouse
 from guilds.services import warehouse_config
-from guilds.services.warehouse import exchange_item, get_exchange_logs, get_member_weekly_exchange_quantity
+from guilds.services.warehouse import (
+    exchange_item,
+    get_exchange_logs,
+    get_member_weekly_exchange_quantity,
+    get_warehouse_items,
+)
 
 pytest_plugins = ("tests.guild_warehouse_service.support",)
 
@@ -45,6 +50,68 @@ def test_exchange_item_rejects_non_positive_quantity(guild_member_with_warehouse
 
     with pytest.raises(GuildWarehouseError, match="兑换数量必须为正整数"):
         exchange_item(member, "guild_wh_item", -3)
+
+
+@pytest.mark.parametrize(
+    ("item_key", "effect_type"),
+    [
+        ("experience_fruit", ItemTemplate.EffectType.EXPERIENCE_ITEM),
+        ("equip_guild_battle_salvage", "equip_weapon"),
+    ],
+)
+@pytest.mark.django_db
+def test_exchange_item_allows_free_guild_battle_salvage(
+    guild_member_with_warehouse_item,
+    item_key,
+    effect_type,
+):
+    guild, member = guild_member_with_warehouse_item
+    template = ItemTemplate.objects.create(
+        key=item_key,
+        name="帮会战斗回收物",
+        effect_type=effect_type,
+        is_usable=False,
+    )
+    GuildWarehouse.objects.create(guild=guild, item_key=item_key, quantity=2, contribution_cost=0)
+
+    warehouse_data = get_warehouse_items(guild, member=member)
+    projected_item = next(item for item in warehouse_data["items"] if item.item_key == item_key)
+    assert projected_item.can_exchange is True
+    assert projected_item.exchange_unit_cost == 0
+
+    exchange_item(member, item_key, 2)
+
+    member.refresh_from_db()
+    inventory_item = InventoryItem.objects.get(
+        manor=member.user.manor,
+        template=template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    assert inventory_item.quantity == 2
+    assert member.current_contribution == 100
+    assert member.daily_exchange_count == 1
+    assert GuildExchangeLog.objects.filter(
+        member=member,
+        item_key=item_key,
+        quantity=2,
+        contribution_cost=0,
+    ).exists()
+
+
+@pytest.mark.django_db
+def test_exchange_item_still_rejects_other_free_unusable_items(guild_member_with_warehouse_item):
+    guild, member = guild_member_with_warehouse_item
+    item_key = "guild_internal_free_resource"
+    ItemTemplate.objects.create(
+        key=item_key,
+        name="帮会内部资源",
+        effect_type=ItemTemplate.EffectType.RESOURCE,
+        is_usable=False,
+    )
+    GuildWarehouse.objects.create(guild=guild, item_key=item_key, quantity=1, contribution_cost=0)
+
+    with pytest.raises(GuildWarehouseError, match="此物品不可在仓库使用"):
+        exchange_item(member, item_key, 1)
 
 
 @pytest.mark.django_db

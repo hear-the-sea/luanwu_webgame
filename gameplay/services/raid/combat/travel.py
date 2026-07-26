@@ -19,13 +19,13 @@ from core.utils.infrastructure import (
     combine_infrastructure_exceptions,
 )
 from core.utils.side_effects import schedule_best_effort_after_commit
-from core.utils.time_scale import scale_duration
 from guests.models import Guest
 
 from ....models import Manor, RaidRun
 from ...pvp_runtime.lifecycle import compute_symmetric_return_seconds
 from ...pvp_runtime.messages import build_blocked_target_body
 from ...pvp_runtime.protection import build_daily_cap_result
+from ...pvp_runtime.travel import calculate_pvp_travel_time
 from ...utils.messages import create_message
 from ..utils import calculate_distance, is_same_region
 from .config import PVPConstants
@@ -120,7 +120,7 @@ def calculate_raid_travel_time(
     计算踢馆行军时间（单程，秒）。
 
     公式：
-    单程时间 = (基础时间 + 距离 × 速度系数) × 跨区系数 × 敏捷修正
+    单程时间 = (30分钟 + 距离 × 15秒) × 敏捷系数 × 规模系数 × 跨区系数
     """
     distance = calculate_distance(attacker, defender)
     base_time = PVPConstants.RAID_BASE_TRAVEL_TIME
@@ -131,15 +131,13 @@ def calculate_raid_travel_time(
     if not is_same_region(attacker, defender):
         cross_region_mult = PVPConstants.RAID_CROSS_REGION_MULTIPLIER
 
-    total_time = min(PVPConstants.RAID_MAX_TRAVEL_TIME, (base_time + distance_time) * cross_region_mult)
-
-    # 敏捷加成：每10点平均敏捷减少1%时间
-    if guests:
-        avg_agility = sum(g.agility for g in guests) / len(guests)
-        agility_reduction = min(PVPConstants.RAID_AGILITY_REDUCTION_CAP, avg_agility / 1000)
-        total_time *= 1 - agility_reduction
-
-    return scale_duration(max(60, int(total_time)), minimum=1)  # 最少1分钟（游戏时间）
+    estimate = calculate_pvp_travel_time(
+        route_seconds=base_time + distance_time,
+        guests=guests,
+        troop_loadout=troop_loadout,
+        external_factor=cross_region_mult,
+    )
+    return estimate.scaled_seconds
 
 
 def get_active_raid_count(manor: Manor) -> int:

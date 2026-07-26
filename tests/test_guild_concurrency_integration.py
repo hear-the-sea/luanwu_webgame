@@ -5,6 +5,7 @@ import uuid
 
 import pytest
 from django.db import connection
+from django.utils import timezone
 
 from core.exceptions import GuildContributionError, GuildValidationError, GuildWarehouseError
 from gameplay.models import InventoryItem, ItemTemplate
@@ -13,7 +14,7 @@ from guests.models import Guest, GuestArchetype, GuestRarity, GuestTemplate
 from guilds.models import Guild, GuildDonationLog, GuildExchangeLog, GuildMember, GuildRaidRun, GuildWarehouse
 from guilds.services import hero_pool as hero_pool_service
 from guilds.services.contribution import donate_resource
-from guilds.services.guild_raids import start_guild_raid
+from guilds.services.guild_raids import finalize_guild_raid, start_guild_raid
 from guilds.services.warehouse import exchange_item
 
 pytestmark = [pytest.mark.integration]
@@ -244,3 +245,86 @@ def test_concurrent_guild_raid_launch_allows_only_one_active_run(monkeypatch, dj
     assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key="experience_fruit").exists() is False
     assert Guild.objects.get(pk=attacker_guild.pk).pvp_attack_count_today == 1
     assert GuildRaidRun.objects.filter(attacker_guild=attacker_guild, status=GuildRaidRun.Status.MARCHING).count() == 1
+
+
+@pytest.mark.django_db(transaction=True)
+def test_concurrent_guild_raid_finalization_settles_loot_once(django_user_model):
+    if connection.vendor == "sqlite":
+        pytest.skip("SQLite does not provide row-level select_for_update semantics for this concurrency scenario")
+
+    attacker_user = django_user_model.objects.create_user(
+        username=f"guild_raid_return_attacker_{uuid.uuid4().hex[:8]}",
+        password="pass123",
+    )
+    ensure_manor(attacker_user)
+    defender_user = django_user_model.objects.create_user(
+        username=f"guild_raid_return_defender_{uuid.uuid4().hex[:8]}",
+        password="pass123",
+    )
+    ensure_manor(defender_user)
+    attacker_guild = Guild.objects.create(
+        name=f"并发返程进攻帮{uuid.uuid4().hex[:6]}",
+        founder=attacker_user,
+        is_active=True,
+        silver=0,
+    )
+    attacker_member = GuildMember.objects.create(
+        guild=attacker_guild,
+        user=attacker_user,
+        position="leader",
+        is_active=True,
+    )
+    defender_guild = Guild.objects.create(
+        name=f"并发返程防守帮{uuid.uuid4().hex[:6]}",
+        founder=defender_user,
+        is_active=True,
+    )
+    GuildMember.objects.create(
+        guild=defender_guild,
+        user=defender_user,
+        position="leader",
+        is_active=True,
+    )
+    run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.RETURNING,
+        troop_loadout={},
+        return_at=timezone.now(),
+        is_attacker_victory=True,
+        loot_silver=700,
+        loot_items={"concurrent_return_loot": 3},
+        loot_item_contribution_costs={"concurrent_return_loot": 25},
+        loot_settled=False,
+    )
+
+    barrier = threading.Barrier(2)
+    results: list[bool] = []
+    errors: list[Exception] = []
+
+    def _worker() -> None:
+        try:
+            local_run = GuildRaidRun.objects.get(pk=run.pk)
+            barrier.wait(timeout=5)
+            results.append(finalize_guild_raid(local_run, now=run.return_at))
+        except Exception as exc:  # pragma: no cover - validated by assertions below
+            errors.append(exc)
+
+    threads = [threading.Thread(target=_worker) for _ in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=10)
+
+    attacker_guild.refresh_from_db()
+    run.refresh_from_db()
+    loot_item = GuildWarehouse.objects.get(guild=attacker_guild, item_key="concurrent_return_loot")
+    assert errors == []
+    assert sorted(results) == [False, True]
+    assert attacker_guild.silver == 700
+    assert loot_item.quantity == 3
+    assert loot_item.contribution_cost == 25
+    assert loot_item.total_produced == 0
+    assert run.status == GuildRaidRun.Status.COMPLETED
+    assert run.loot_settled is True

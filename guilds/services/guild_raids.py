@@ -10,8 +10,9 @@ from django.db.models import Q
 from django.utils import timezone
 
 from battle.execution import BattleOptions, execute_battle
+from battle.services import validate_troop_capacity
 from common.utils.celery import safe_apply_async
-from core.exceptions import GuildValidationError
+from core.exceptions import BattlePreparationError, GuildValidationError
 from gameplay.models import Manor
 from gameplay.services.battle_salvage import calculate_battle_salvage
 from gameplay.services.battle_snapshots import build_guest_battle_snapshots, build_guest_snapshot_proxies
@@ -21,7 +22,7 @@ from .. import constants as guild_constants
 from ..models import Guild, GuildRaidRun
 from . import guild_troops
 from .guild_dispatch import load_dispatch_lineup_rows, lock_manage_member, normalize_positive_ids
-from .guild_raid_loot import grant_guild_raid_battle_rewards, transfer_guild_raid_loot
+from .guild_raid_loot import grant_guild_raid_battle_rewards, grant_reserved_guild_raid_loot, reserve_guild_raid_loot
 from .guild_raid_messages import send_guild_raid_report_messages, send_guild_raid_warning_messages
 from .guild_raid_rules import (
     calculate_guild_raid_travel_time,
@@ -204,8 +205,13 @@ def _start_guild_raid_atomic(
     guests = [row.pool_entry.source_guest for row in lineup_rows if row.pool_entry.source_guest is not None]
     guest_snapshots = build_guest_battle_snapshots(guests, include_identity=True)
     attacker_troop_tech_snapshot = build_guild_troop_tech_levels(locked_guild)
-    normalized_troops = guild_troops.deduct_guild_troops(guild=locked_guild, loadout=troop_loadout or {})
-    travel_time = calculate_guild_raid_travel_time(guests, normalized_troops)
+    normalized_troops = guild_troops.normalize_guild_troop_loadout(troop_loadout or {})
+    try:
+        validate_troop_capacity(guests, normalized_troops)
+    except BattlePreparationError as exc:
+        raise GuildValidationError(str(exc)) from exc
+    normalized_troops = guild_troops.deduct_guild_troops(guild=locked_guild, loadout=normalized_troops)
+    travel_time = calculate_guild_raid_travel_time(locked_guild, guests, normalized_troops)
     now = timezone.now()
     run = GuildRaidRun.objects.create(
         attacker_guild=locked_guild,
@@ -415,8 +421,9 @@ def _process_guild_raid_battle_atomic(
     is_attacker_victory = getattr(report, "winner", "") == "attacker"
     loot_silver = 0
     loot_items: dict[str, int] = {}
+    loot_item_contribution_costs: dict[str, int] = {}
     if is_attacker_victory:
-        loot_silver, loot_items = transfer_guild_raid_loot(
+        loot_silver, loot_items, loot_item_contribution_costs = reserve_guild_raid_loot(
             attacker_guild=attacker_locked,
             defender_guild=defender_locked,
             guests=battle_guest_models,
@@ -437,6 +444,8 @@ def _process_guild_raid_battle_atomic(
     locked_run.battle_rewards = battle_rewards
     locked_run.loot_silver = loot_silver
     locked_run.loot_items = loot_items
+    locked_run.loot_item_contribution_costs = loot_item_contribution_costs
+    locked_run.loot_settled = not is_attacker_victory
     locked_run.is_attacker_victory = is_attacker_victory
     locked_run.blocked_reason = ""
     locked_run.battle_at = locked_run.battle_at or processed_at
@@ -447,6 +456,8 @@ def _process_guild_raid_battle_atomic(
             "battle_rewards",
             "loot_silver",
             "loot_items",
+            "loot_item_contribution_costs",
+            "loot_settled",
             "is_attacker_victory",
             "blocked_reason",
             "battle_at",
@@ -493,9 +504,18 @@ def finalize_guild_raid(run: GuildRaidRun, *, now=None) -> bool:
     locked_run.defender_guild = defender_locked
     guild_troops.add_guild_troops(guild=attacker_locked, loadout=surviving_troops)
 
+    if locked_run.is_attacker_victory and not locked_run.loot_settled:
+        grant_reserved_guild_raid_loot(
+            attacker_guild=attacker_locked,
+            loot_silver=locked_run.loot_silver,
+            loot_items=dict(locked_run.loot_items or {}),
+            loot_item_contribution_costs=dict(locked_run.loot_item_contribution_costs or {}),
+        )
+
     locked_run.status = GuildRaidRun.Status.COMPLETED
+    locked_run.loot_settled = True
     locked_run.completed_at = finalized_at
-    locked_run.save(update_fields=["status", "completed_at"])
+    locked_run.save(update_fields=["status", "loot_settled", "completed_at"])
     return True
 
 

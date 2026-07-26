@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import math
 from datetime import timedelta
 
 import pytest
 from django.db import DatabaseError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from core.exceptions import MessageError
@@ -15,7 +16,8 @@ from tests.raid_combat_battle.support import build_attacker_defender, build_lock
 
 
 @pytest.mark.django_db
-def test_raid_travel_time_ignores_scout_and_fast_troop_speed_bonus(django_user_model, monkeypatch):
+@override_settings(GAME_TIME_MULTIPLIER=1)
+def test_raid_travel_time_counts_all_troop_types_equally_without_speed_bonus(django_user_model):
     attacker, defender = build_attacker_defender(
         django_user_model,
         attacker_username="raid_travel_no_cavalry_bonus_attacker",
@@ -30,27 +32,25 @@ def test_raid_travel_time_ignores_scout_and_fast_troop_speed_bonus(django_user_m
     defender.coordinate_y = 0
     defender.save(update_fields=["region", "coordinate_x", "coordinate_y"])
 
-    monkeypatch.setattr(combat_travel, "scale_duration", lambda seconds, minimum=1: max(minimum, int(seconds)))
-
     guest = type("_Guest", (), {"agility": 100})()
-    expected = int((PVPConstants.RAID_BASE_TRAVEL_TIME + 10 * PVPConstants.RAID_TRAVEL_TIME_PER_DISTANCE) * 0.9)
 
     baseline = combat_travel.calculate_raid_travel_time(attacker, defender, [guest], {})
-    with_scout = combat_travel.calculate_raid_travel_time(attacker, defender, [guest], {"scout": 1})
+    with_scout = combat_travel.calculate_raid_travel_time(attacker, defender, [guest], {"scout": 200})
     with_fast_troop = combat_travel.calculate_raid_travel_time(
         attacker,
         defender,
         [guest],
-        {"fast_horse": 1},
+        {"fast_horse": 200},
     )
 
-    assert baseline == expected
-    assert with_scout == baseline
-    assert with_fast_troop == baseline
+    assert baseline == 2220
+    assert with_scout == 2280
+    assert with_fast_troop == with_scout
 
 
 @pytest.mark.django_db
-def test_raid_travel_time_caps_at_eight_hours_and_agility_reduction_at_thirty_percent(django_user_model, monkeypatch):
+@override_settings(GAME_TIME_MULTIPLIER=1)
+def test_raid_travel_time_has_no_final_cap_and_bounds_agility_factor(django_user_model):
     attacker, defender = build_attacker_defender(
         django_user_model,
         attacker_username="raid_travel_cap_attacker",
@@ -64,14 +64,51 @@ def test_raid_travel_time_caps_at_eight_hours_and_agility_reduction_at_thirty_pe
     defender.coordinate_x = 999
     defender.coordinate_y = 999
     defender.save(update_fields=["region", "coordinate_x", "coordinate_y"])
-    monkeypatch.setattr(combat_travel, "scale_duration", lambda seconds, minimum=1: max(minimum, int(seconds)))
-
-    no_agility = combat_travel.calculate_raid_travel_time(attacker, defender, [], {})
+    neutral = combat_travel.calculate_raid_travel_time(attacker, defender, [], {})
     high_agility_guest = type("_Guest", (), {"agility": 9999})()
     high_agility = combat_travel.calculate_raid_travel_time(attacker, defender, [high_agility_guest], {})
+    low_agility_guest = type("_Guest", (), {"agility": -9999})()
+    low_agility = combat_travel.calculate_raid_travel_time(attacker, defender, [low_agility_guest], {})
 
-    assert no_agility == 8 * 60 * 60
-    assert high_agility == int((8 * 60 * 60) * 0.7)
+    distance = math.sqrt(998**2 + 998**2)
+    cross_region_route = (
+        PVPConstants.RAID_BASE_TRAVEL_TIME + distance * PVPConstants.RAID_TRAVEL_TIME_PER_DISTANCE
+    ) * PVPConstants.RAID_CROSS_REGION_MULTIPLIER
+
+    assert neutral == math.ceil(cross_region_route / 60) * 60
+    assert high_agility == math.ceil(cross_region_route * 0.7 / 60) * 60
+    assert low_agility == math.ceil(cross_region_route * 1.2 / 60) * 60
+    assert neutral > 8 * 60 * 60
+
+
+@pytest.mark.django_db
+@override_settings(GAME_TIME_MULTIPLIER=1)
+@pytest.mark.parametrize(
+    ("distance", "cross_region", "expected_seconds"),
+    [
+        (0, False, 1800),
+        (100, False, 3300),
+        (300, False, 6300),
+        (100, True, 4980),
+    ],
+)
+def test_raid_travel_time_uses_continuous_distance_and_cross_region_penalty(
+    django_user_model, distance, cross_region, expected_seconds
+):
+    attacker, defender = build_attacker_defender(
+        django_user_model,
+        attacker_username=f"raid_distance_attacker_{distance}_{cross_region}",
+        defender_username=f"raid_distance_defender_{distance}_{cross_region}",
+    )
+    attacker.region = "north"
+    attacker.coordinate_x = 1
+    attacker.coordinate_y = 1
+    defender.region = "south" if cross_region else "north"
+    defender.coordinate_x = 1 + distance
+    defender.coordinate_y = 1
+    guest = type("_Guest", (), {"agility": 160})()
+
+    assert combat_travel.calculate_raid_travel_time(attacker, defender, [guest], {}) == expected_seconds
 
 
 @pytest.mark.django_db

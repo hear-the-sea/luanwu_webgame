@@ -51,6 +51,8 @@ class GuildRaidRun(models.Model):
     )
     loot_silver = models.PositiveIntegerField("掠夺银两", default=0)
     loot_items = models.JSONField("掠夺物品", default=dict, blank=True)
+    loot_item_contribution_costs = models.JSONField("掠夺物品兑换成本", default=dict, blank=True)
+    loot_settled = models.BooleanField("战利品已到账", default=False)
     battle_rewards = models.JSONField("战斗奖励", default=dict, blank=True)
     blocked_reason = models.CharField("阻塞原因", max_length=64, blank=True, default="")
     is_attacker_victory = models.BooleanField("进攻方是否胜利", null=True, blank=True)

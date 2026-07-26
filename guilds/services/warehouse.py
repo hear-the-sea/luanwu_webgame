@@ -72,7 +72,14 @@ def _get_item_display_meta(item_key: str) -> dict[str, Any]:
     return _load_item_display_catalog().get(str(item_key or "").strip(), {})
 
 
-def add_item_to_warehouse(guild: Guild, item_key: str, quantity: int, contribution_cost: int) -> None:
+def add_item_to_warehouse(
+    guild: Guild,
+    item_key: str,
+    quantity: int,
+    contribution_cost: int,
+    *,
+    count_as_production: bool = True,
+) -> None:
     """
     添加物品到帮会仓库
 
@@ -87,15 +94,19 @@ def add_item_to_warehouse(guild: Guild, item_key: str, quantity: int, contributi
     if contribution_cost < 0:
         raise GuildWarehouseError("兑换成本不能为负数")
 
-    warehouse_item, created = GuildWarehouse.objects.get_or_create(
+    warehouse_item, _created = GuildWarehouse.objects.get_or_create(
         guild=guild, item_key=item_key, defaults={"contribution_cost": contribution_cost}
     )
 
     # 使用 F() 表达式避免并发下读-改-写丢失更新
+    updates: dict[str, Any] = {
+        "quantity": F("quantity") + quantity,
+        "contribution_cost": contribution_cost,
+    }
+    if count_as_production:
+        updates["total_produced"] = F("total_produced") + quantity
     GuildWarehouse.objects.filter(pk=warehouse_item.pk).update(
-        quantity=F("quantity") + quantity,
-        contribution_cost=contribution_cost,
-        total_produced=F("total_produced") + quantity,
+        **updates,
     )
 
 
@@ -190,6 +201,13 @@ def _is_projected_warehouse_listing_item(item_key: str) -> bool:
 
 def _is_real_guild_resource_item(item_key: str) -> bool:
     return item_key in REAL_GUILD_RESOURCE_ITEM_KEYS
+
+
+def _is_free_guild_battle_reward_item(*, template: Any, contribution_cost: int) -> bool:
+    if template is None or max(0, int(contribution_cost or 0)) != 0:
+        return False
+    effect_type = str(getattr(template, "effect_type", "") or "")
+    return str(getattr(template, "key", "") or "") == "experience_fruit" or effect_type.startswith("equip_")
 
 
 def _should_exchange_projected_resource_item(*, guild: Guild, item_key: str) -> bool:
@@ -472,7 +490,15 @@ def exchange_item(member: GuildMember, item_key: str, quantity: int = 1) -> None
             template = _get_or_create_item_template_for_exchange(item_key)
             if template is None:
                 raise GuildWarehouseError("物品不存在")
-            if not _is_real_guild_resource_item(item_key) and not template.is_usable:
+            can_claim_free_battle_reward = _is_free_guild_battle_reward_item(
+                template=template,
+                contribution_cost=warehouse_item.contribution_cost,
+            )
+            if (
+                not _is_real_guild_resource_item(item_key)
+                and not template.is_usable
+                and not can_claim_free_battle_reward
+            ):
                 raise GuildWarehouseError("此物品不可在仓库使用")
 
         # 步骤3：使用F()表达式扣除贡献度和增加兑换次数
@@ -692,6 +718,11 @@ def get_warehouse_items(
         if getattr(item, "is_projected", False):
             item.is_usable = True
         elif _is_real_guild_resource_item(item.item_key):
+            item.is_usable = True
+        elif _is_free_guild_battle_reward_item(
+            template=item.template,
+            contribution_cost=item.contribution_cost,
+        ):
             item.is_usable = True
         else:
             # 如果找不到模板，标记为不可用（防止幽灵物品被兑换）

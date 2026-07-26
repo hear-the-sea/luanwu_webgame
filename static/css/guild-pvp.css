@@ -33,6 +33,11 @@
   line-height: 1.35;
 }
 
+.gpvp-page [data-guild-capacity-status].is-over-limit {
+  color: var(--accent-red);
+  font-weight: 600;
+}
+
 .gpvp-page .gpvp-panel-head {
   display: flex;
   justify-content: space-between;
@@ -346,8 +351,43 @@
 
 .gpvp-page .gpvp-submit-actions {
   display: flex;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   padding-top: 0.1rem;
+}
+
+.gpvp-page .gpvp-launch-summary {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  min-width: 0;
+}
+
+.gpvp-page .gpvp-launch-summary > span {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 7rem;
+  padding: 0.2rem 1rem;
+  border-right: 1px solid var(--border-light);
+}
+
+.gpvp-page .gpvp-launch-summary > span:first-child {
+  padding-left: 0;
+}
+
+.gpvp-page .gpvp-launch-summary > span:last-child {
+  border-right: 0;
+}
+
+.gpvp-page .gpvp-launch-summary small {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.gpvp-page .gpvp-launch-summary strong {
+  font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .gpvp-page .gpvp-submit-actions .tw-btn-primary {
@@ -406,6 +446,25 @@
   .gpvp-page .gpvp-troop-controls {
     justify-content: flex-start;
     flex-wrap: wrap;
+  }
+
+  .gpvp-page .gpvp-submit-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .gpvp-page .gpvp-launch-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .gpvp-page .gpvp-launch-summary > span {
+    min-width: 0;
+    padding: 0.2rem 0.6rem;
+  }
+
+  .gpvp-page .gpvp-submit-actions .tw-btn-primary {
+    width: 100%;
   }
 
   .gpvp-page .gpvp-scroll-panel,

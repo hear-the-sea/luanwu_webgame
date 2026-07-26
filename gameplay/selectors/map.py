@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from core.utils.time_scale import get_time_scale
 from guests.models import GuestStatus
 
 from ..services.raid import (
@@ -54,4 +55,5 @@ def get_raid_config_context(manor, target_manor) -> dict:
         "player_troops": get_player_troops(manor),
         "scout_count": get_scout_count(manor),
         "max_squad_size": manor.max_squad_size,
+        "pvp_time_scale_multiplier": get_time_scale().multiplier,
     }

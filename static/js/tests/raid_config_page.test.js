@@ -52,9 +52,9 @@ function createInteractiveElement({ checked = false, dataset = {}, value = "" } 
 
 function createRaidHarness() {
   const guestInputs = [
-    createInteractiveElement({ dataset: { troopCapacity: "120" }, value: "1" }),
-    createInteractiveElement({ dataset: { troopCapacity: "180" }, value: "2" }),
-    createInteractiveElement({ dataset: { troopCapacity: "300" }, value: "3" }),
+    createInteractiveElement({ dataset: { agility: "160", troopCapacity: "120" }, value: "1" }),
+    createInteractiveElement({ dataset: { agility: "160", troopCapacity: "180" }, value: "2" }),
+    createInteractiveElement({ dataset: { agility: "310", troopCapacity: "300" }, value: "3" }),
   ];
   const troopInput = createInteractiveElement({
     dataset: { troopKey: "guard", previousValue: "0", max: "500" },
@@ -67,6 +67,9 @@ function createRaidHarness() {
   const summaryTroops = createInteractiveElement();
   const troopCapacity = createInteractiveElement();
   const capacityStatus = createInteractiveElement();
+  const intelTravel = createInteractiveElement();
+  const summaryArrival = createInteractiveElement();
+  const summaryReturn = createInteractiveElement();
   const submitButton = createInteractiveElement();
   const selectMaxButton = createInteractiveElement();
   const clearGuestsButton = createInteractiveElement();
@@ -79,6 +82,9 @@ function createRaidHarness() {
     ["[data-raid-summary-troops]", summaryTroops],
     ["[data-raid-troop-capacity]", troopCapacity],
     ["[data-raid-capacity-status]", capacityStatus],
+    ["[data-raid-intel-travel]", intelTravel],
+    ["[data-raid-summary-arrival]", summaryArrival],
+    ["[data-raid-summary-return]", summaryReturn],
     ["[data-raid-submit]", submitButton],
     ["[data-raid-select-max]", selectMaxButton],
     ["[data-raid-clear-guests]", clearGuestsButton],
@@ -94,6 +100,9 @@ function createRaidHarness() {
     dataset: {
       mapUrl: "/manor/map/",
       maxSquadSize: "2",
+      pvpRouteSeconds: "1800",
+      pvpRegionFactor: "1",
+      pvpTimeScale: "1",
       raidApiUrl: "/manor/api/map/raid/",
       targetId: "9",
     },
@@ -113,11 +122,14 @@ function createRaidHarness() {
     documentObj,
     fillTroopButton,
     guestInputs,
+    intelTravel,
     root,
     selectMaxButton,
     selectedCount,
     submitButton,
     summaryGuests,
+    summaryArrival,
+    summaryReturn,
     summaryTroops,
     troopCapacity,
     troopInput,
@@ -197,6 +209,19 @@ test("quick actions select the squad, fill remaining capacity, and clear troops"
   assert.equal(harness.summaryTroops.textContent, "0");
 });
 
+test("raid configuration previews the actual one-way and return time", () => {
+  const harness = createRaidHarness();
+  const page = raidConfigPage.initRaidConfigPage(harness.documentObj, {});
+
+  harness.selectMaxButton.on_click();
+  harness.fillTroopButton.on_click();
+
+  assert.equal(page.readTravelEstimate().scaledSeconds, 1920);
+  assert.equal(harness.intelTravel.textContent, "32分钟");
+  assert.equal(harness.summaryArrival.textContent, "32分钟");
+  assert.equal(harness.summaryReturn.textContent, "1小时4分钟");
+});
+
 test("raid config submission exposes a typographic loading state", async () => {
   const harness = createRaidHarness();
   let resolveFetch;
@@ -232,6 +257,10 @@ test("raid config template keeps controls and images accessible and layout-stabl
   assert.match(template, /<img[^>]+width="44"[^>]+height="44"[^>]+alt="{{ guest\.display_name }}"/);
   assert.match(template, /<img[^>]+width="40"[^>]+height="40"[^>]+alt="{{ troop\.name }}"/);
   assert.match(template, /<input type="number"[\s\S]*?autocomplete="off"[\s\S]*?data-raid-troop/);
+  assert.match(template, /data-agility="{{ guest\.agility }}"/);
+  assert.match(template, /data-pvp-route-seconds=/);
+  assert.match(template, /data-pvp-region-factor=/);
+  assert.match(template, /data-raid-summary-return/);
 });
 
 test("raid config motion scopes transitions and honors reduced-motion preferences", () => {
@@ -259,6 +288,11 @@ test("raid config layout uses page-scoped desktop and mobile rules", () => {
   );
   assert.match(styles, /@media \(max-width:\s*899px\)/);
   assert.match(styles, /@media \(max-width:\s*640px\)/);
+  assert.match(styles, /\.tw-raid-summary-stats\s*\{[\s\S]*?repeat\(4,\s*minmax\(90px,\s*1fr\)\)/);
+  assert.match(
+    styles,
+    /@media \(max-width:\s*640px\)[\s\S]*?\.tw-raid-summary-stats\s*\{[\s\S]*?repeat\(2,\s*minmax\(0,\s*1fr\)\)/
+  );
 });
 
 test("mobile raid loadout keeps long lists bounded and troop actions clear", () => {

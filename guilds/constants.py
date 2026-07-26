@@ -151,6 +151,7 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
         "replace_cooldown_seconds": 30 * 60,
     },
     "pvp": {
+        "base_travel_time_seconds": 8 * 3600,
         "newbie_protection_seconds": 48 * 3600,
         "defeat_protection_seconds": 12 * 3600,
         "max_daily_attack_count": 2,
@@ -400,6 +401,11 @@ def normalize_guild_rules(raw: Any) -> dict[str, Any]:
             ),
         },
         "pvp": {
+            "base_travel_time_seconds": _to_positive_int(
+                config["pvp"].get("base_travel_time_seconds"),
+                DEFAULT_GUILD_RULES["pvp"]["base_travel_time_seconds"],
+                minimum=60,
+            ),
             "newbie_protection_seconds": _to_positive_int(
                 config["pvp"].get("newbie_protection_seconds"),
                 DEFAULT_GUILD_RULES["pvp"]["newbie_protection_seconds"],
@@ -497,6 +503,7 @@ def refresh_guild_constants() -> None:
     global GUILD_HERO_POOL_SLOT_LIMIT, GUILD_BATTLE_LINEUP_LIMIT, GUILD_DISPATCH_GUEST_BASE_LIMIT
     global GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS
     global GUILD_PVP_RULES
+    global GUILD_PVP_BASE_TRAVEL_TIME_SECONDS
     global GUILD_PVP_NEWBIE_PROTECTION_SECONDS, GUILD_PVP_DEFEAT_PROTECTION_SECONDS
     global GUILD_PVP_MAX_DAILY_ATTACK_COUNT, GUILD_PVP_MAX_DAILY_DEFENSE_COUNT
     global GUILD_PVP_MAX_TARGET_LEVEL_GAP, GUILD_PVP_SILVER_FLOOR
@@ -533,6 +540,7 @@ def refresh_guild_constants() -> None:
     GUILD_DISPATCH_GUEST_BASE_LIMIT = _GUILD_RULES["hero_pool"]["dispatch_guest_base_limit"]
     GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS = _GUILD_RULES["hero_pool"]["replace_cooldown_seconds"]
     GUILD_PVP_RULES = _GUILD_RULES["pvp"]
+    GUILD_PVP_BASE_TRAVEL_TIME_SECONDS = GUILD_PVP_RULES["base_travel_time_seconds"]
     GUILD_PVP_NEWBIE_PROTECTION_SECONDS = GUILD_PVP_RULES["newbie_protection_seconds"]
     GUILD_PVP_DEFEAT_PROTECTION_SECONDS = GUILD_PVP_RULES["defeat_protection_seconds"]
     GUILD_PVP_MAX_DAILY_ATTACK_COUNT = GUILD_PVP_RULES["max_daily_attack_count"]
@@ -588,6 +596,7 @@ GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS = _GUILD_RULES["hero_pool"]["replace_co
 
 # ============ 帮会 PVP ============
 GUILD_PVP_RULES = _GUILD_RULES["pvp"]
+GUILD_PVP_BASE_TRAVEL_TIME_SECONDS = GUILD_PVP_RULES["base_travel_time_seconds"]
 GUILD_PVP_NEWBIE_PROTECTION_SECONDS = GUILD_PVP_RULES["newbie_protection_seconds"]
 GUILD_PVP_DEFEAT_PROTECTION_SECONDS = GUILD_PVP_RULES["defeat_protection_seconds"]
 GUILD_PVP_MAX_DAILY_ATTACK_COUNT = GUILD_PVP_RULES["max_daily_attack_count"]

@@ -1,5 +1,5 @@
 {% extends "guilds/base.html" %}
-{% load static %}
+{% load static l10n %}
 
 {% block title %}帮会对战{% endblock %}
 
@@ -92,6 +92,9 @@
             data-guild-pvp-page
             data-default-target-id="{{ default_target_id|default:'' }}"
             data-dispatch-limit="{{ dispatch_limit }}"
+            data-pvp-base-seconds="{{ pvp_base_travel_time_seconds }}"
+            data-pvp-march-factor="{{ pvp_march_factor|unlocalize }}"
+            data-pvp-time-scale="{{ pvp_time_scale_multiplier|unlocalize }}"
         >
             {% csrf_token %}
 
@@ -100,7 +103,7 @@
                     <div class="gpvp-panel-head">
                         <div>
                             <h2>选择目标帮会</h2>
-                            <p class="caption m-0">按名称、区域和状态筛选后，点击帮会即可选中。目标时间按当前门客基础阵容预估，未计入右侧护院调整。</p>
+                            <p class="caption m-0">目标列表显示基础时间，实际单程与归队时间随出征阵容更新。</p>
                         </div>
                     </div>
 
@@ -194,6 +197,8 @@
                                 data-guest-option
                                 data-avatar-url="{% if guest.template.avatar %}{{ guest.template.avatar.url }}{% endif %}"
                                 data-guest-name="{{ guest.display_name }}"
+                                data-agility="{{ guest.agility }}"
+                                data-troop-capacity="{{ guest.troop_capacity }}"
                             >
                             <div class="tw-guest-card">
                                 <div class="tw-guest-avatar">
@@ -209,7 +214,7 @@
                                         <span class="tw-guest-level-sm">等级 {{ guest.level }}</span>
                                     </div>
                                     <div class="tw-guest-stats-sm">
-                                        <span>槽位 {{ entry.slot_index }}</span>
+                                        <span>敏捷 {{ guest.agility }} · 带兵 {{ guest.troop_capacity }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -226,7 +231,7 @@
                     <div class="gpvp-panel-head">
                         <div>
                             <h2>配置护院</h2>
-                            <p class="caption m-0">按需填写携带数量，确认阵容后即可直接发起出征。</p>
+                            <p class="caption m-0" data-guild-capacity-status>选择门客后计算带兵上限。</p>
                         </div>
                     </div>
 
@@ -274,6 +279,11 @@
             </div>
 
             <section class="gpvp-submit-actions">
+                <div class="gpvp-launch-summary" aria-live="polite">
+                    <span><small>护院</small><strong data-guild-troop-summary>0 / 0</strong></span>
+                    <span><small>预计到达</small><strong data-guild-travel-arrival>8小时</strong></span>
+                    <span><small>预计归队</small><strong data-guild-travel-return>16小时</strong></span>
+                </div>
                 <button type="submit" class="tw-btn-primary" data-launch-submit>发起帮会出征</button>
             </section>
         </form>
@@ -285,5 +295,6 @@
 {% block extra_scripts %}
 {{ block.super }}
 <script src="{% static 'js/dashboard.js' %}"></script>
+<script src="{% static 'js/pvp-travel.js' %}"></script>
 <script src="{% static 'js/guild-pvp-page.js' %}"></script>
 {% endblock %}

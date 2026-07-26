@@ -56,6 +56,11 @@ def _normalize_positive_int_mapping(raw: Any) -> dict[str, int]:
     return normalized
 
 
+def normalize_guild_troop_loadout(raw: Any) -> dict[str, int]:
+    """Normalize a requested guild troop loadout without mutating storage."""
+    return _normalize_positive_int_mapping(raw)
+
+
 def _get_or_create_locked_storage(*, guild: Guild, troop_template: TroopTemplate) -> GuildTroopStorage:
     storage = GuildTroopStorage.objects.select_for_update().filter(guild=guild, troop_template=troop_template).first()
     if storage is not None:

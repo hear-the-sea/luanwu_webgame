@@ -3,11 +3,13 @@ from __future__ import annotations
 from datetime import timedelta
 
 import pytest
+from django.test import override_settings
 from django.utils import timezone
 
+from battle.models import TroopTemplate
 from core.exceptions import GuildValidationError
 from gameplay.services.battle_snapshots import build_guest_battle_snapshots
-from guilds.models import Guild, GuildRaidRun
+from guilds.models import Guild, GuildRaidRun, GuildTroopStorage
 from tests.guild_pvp_service.support import (
     create_guest,
     create_guild_with_leader,
@@ -147,6 +149,79 @@ def test_start_guild_raid_generates_guest_snapshots_and_travel_time(django_user_
     assert int((run.battle_at - run.started_at).total_seconds()) == 321
     assert int((run.return_at - run.started_at).total_seconds()) == 642
     assert scheduled_run_ids == [run.id]
+
+
+@pytest.mark.django_db(transaction=True)
+@override_settings(GAME_TIME_MULTIPLIER=1)
+def test_start_guild_raid_accepts_troops_at_exact_guest_capacity(django_user_model, monkeypatch):
+    attacker_guild, leader, _attacker_manor = create_guild_with_leader(django_user_model, "容量刚好攻方")
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(django_user_model, "容量刚好守方")
+    attacker_guild.silver = 50000
+    attacker_guild.save(update_fields=["silver"])
+    guest = create_guest(
+        manor=leader.user.manor,
+        template=create_template("guild_pvp_exact_capacity_tpl"),
+        name="容量门客",
+    )
+    guest.agility = 160
+    guest.save(update_fields=["agility"])
+    pool_entry_id = seed_attacker_lineup(guild=attacker_guild, leader=leader, guest=guest)
+    troop_template = TroopTemplate.objects.create(key="guild_pvp_exact_guard", name="容量护院")
+    storage = GuildTroopStorage.objects.create(guild=attacker_guild, troop_template=troop_template, count=200)
+    monkeypatch.setattr("guilds.services.guild_raids.schedule_guild_raid_completion", lambda _run: None)
+    monkeypatch.setattr("guilds.services.guild_raids.send_guild_raid_warning_messages", lambda _run: None)
+
+    from guilds.services.guild_raids import start_guild_raid
+
+    run = start_guild_raid(
+        guild=attacker_guild,
+        defender_guild=defender_guild,
+        operator=leader.user,
+        pool_entry_ids=[pool_entry_id],
+        troop_loadout={troop_template.key: 200},
+    )
+
+    storage.refresh_from_db()
+    assert guest.troop_capacity == 200
+    assert run.troop_loadout == {troop_template.key: 200}
+    assert run.travel_time == 29520
+    assert int((run.battle_at - run.started_at).total_seconds()) == 29520
+    assert int((run.return_at - run.started_at).total_seconds()) == 59040
+    assert storage.count == 0
+
+
+@pytest.mark.django_db(transaction=True)
+def test_start_guild_raid_rejects_one_troop_over_capacity_without_deducting_storage(django_user_model, monkeypatch):
+    attacker_guild, leader, _attacker_manor = create_guild_with_leader(django_user_model, "容量超限攻方")
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(django_user_model, "容量超限守方")
+    attacker_guild.silver = 50000
+    attacker_guild.save(update_fields=["silver"])
+    guest = create_guest(
+        manor=leader.user.manor,
+        template=create_template("guild_pvp_over_capacity_tpl"),
+        name="超限门客",
+    )
+    pool_entry_id = seed_attacker_lineup(guild=attacker_guild, leader=leader, guest=guest)
+    troop_template = TroopTemplate.objects.create(key="guild_pvp_over_guard", name="超限护院")
+    storage = GuildTroopStorage.objects.create(guild=attacker_guild, troop_template=troop_template, count=201)
+    monkeypatch.setattr("guilds.services.guild_raids.schedule_guild_raid_completion", lambda _run: None)
+
+    from guilds.services.guild_raids import start_guild_raid
+
+    with pytest.raises(GuildValidationError, match="总带兵上限为200，实际兵力为201"):
+        start_guild_raid(
+            guild=attacker_guild,
+            defender_guild=defender_guild,
+            operator=leader.user,
+            pool_entry_ids=[pool_entry_id],
+            troop_loadout={troop_template.key: 201},
+        )
+
+    storage.refresh_from_db()
+    attacker_guild.refresh_from_db()
+    assert storage.count == 201
+    assert attacker_guild.silver == 50000
+    assert not GuildRaidRun.objects.filter(attacker_guild=attacker_guild).exists()
 
 
 @pytest.mark.django_db(transaction=True)

@@ -1735,7 +1735,7 @@
 
   .tw-raid-summary-stats {
     @apply grid flex-1 min-w-0;
-    grid-template-columns: repeat(3, minmax(90px, 1fr));
+    grid-template-columns: repeat(4, minmax(90px, 1fr));
   }
 
   .tw-raid-summary-stat {
@@ -1848,11 +1848,15 @@
     }
 
     .tw-raid-summary-stats {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .tw-raid-summary-stat {
       @apply px-1;
+    }
+
+    .tw-raid-summary-stat:nth-child(even) {
+      @apply border-r-0;
     }
 
     .tw-raid-summary-stat strong {

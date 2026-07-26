@@ -1,4 +1,28 @@
 (function (globalScope) {
+  "use strict";
+
+  const pvpTravel =
+    globalScope.PvpTravel ||
+    (typeof module !== "undefined" && module.exports ? require("./pvp-travel.js") : null);
+
+  function parseNonNegativeInt(value) {
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  }
+
+  function summarizeGuildPvpConfig(guestCapacities, troopCounts) {
+    const capacities = Array.from(guestCapacities || []).map(parseNonNegativeInt);
+    const troops = Array.from(troopCounts || []).map(parseNonNegativeInt);
+    const troopCapacity = capacities.reduce((total, value) => total + value, 0);
+    const totalTroops = troops.reduce((total, value) => total + value, 0);
+    return {
+      selectedGuests: capacities.length,
+      troopCapacity,
+      totalTroops,
+      isOverCapacity: totalTroops > troopCapacity,
+    };
+  }
+
   function initGuildPvpPage(doc) {
     const currentDocument = doc || globalScope.document;
     if (!currentDocument) return null;
@@ -7,10 +31,17 @@
     if (!root) return null;
 
     const dispatchLimit = Number(root.dataset.dispatchLimit || 0);
+    const baseTravelSeconds = Number(root.dataset.pvpBaseSeconds || 0);
+    const marchFactor = Number(root.dataset.pvpMarchFactor || 1);
+    const timeScale = Number(root.dataset.pvpTimeScale || 1);
     const targetSearch = root.querySelector("[data-target-search]");
     const targetRegionFilter = root.querySelector("[data-target-region-filter]");
     const targetEmpty = root.querySelector("[data-target-empty]");
     const guestCountNode = root.querySelector("[data-selected-guest-count]");
+    const capacityStatusNode = root.querySelector("[data-guild-capacity-status]");
+    const troopSummaryNode = root.querySelector("[data-guild-troop-summary]");
+    const travelArrivalNode = root.querySelector("[data-guild-travel-arrival]");
+    const travelReturnNode = root.querySelector("[data-guild-travel-return]");
     const submitButton = root.querySelector("[data-launch-submit]");
 
     const targetOptions = Array.from(root.querySelectorAll("[data-target-option]"));
@@ -81,24 +112,76 @@
     }
 
     function updateGuestCount() {
-      const checked = guestOptions.filter((input) => input.checked);
+      return updateConfigurationSummary();
+    }
+
+    function checkedGuests() {
+      return guestOptions.filter((input) => input.checked);
+    }
+
+    function readConfigurationState() {
+      return summarizeGuildPvpConfig(
+        checkedGuests().map((input) => input.dataset.troopCapacity),
+        troopInputs.map((input) => input.value)
+      );
+    }
+
+    function readTravelEstimate() {
+      if (!pvpTravel) return null;
+      return pvpTravel.calculatePvpTravelTime({
+        routeSeconds: baseTravelSeconds,
+        guestAgilities: checkedGuests().map((input) => input.dataset.agility),
+        troopCounts: troopInputs.map((input) => input.value),
+        externalFactor: marchFactor,
+        timeScale,
+      });
+    }
+
+    function updateConfigurationSummary() {
+      const state = readConfigurationState();
       if (guestCountNode) {
-        guestCountNode.textContent = String(checked.length);
+        guestCountNode.textContent = String(state.selectedGuests);
       }
-      updateSubmitState();
+      if (troopSummaryNode) {
+        troopSummaryNode.textContent = `${state.totalTroops} / ${state.troopCapacity}`;
+      }
+      if (capacityStatusNode) {
+        if (state.selectedGuests === 0) {
+          capacityStatusNode.textContent = "选择门客后计算带兵上限。";
+        } else if (state.isOverCapacity) {
+          capacityStatusNode.textContent = `已超出带兵上限 ${state.totalTroops - state.troopCapacity} 人。`;
+        } else {
+          capacityStatusNode.textContent = `当前阵容还可携带 ${state.troopCapacity - state.totalTroops} 人。`;
+        }
+        capacityStatusNode.classList?.toggle("is-over-limit", state.isOverCapacity);
+        capacityStatusNode.setAttribute?.("role", state.isOverCapacity ? "alert" : "status");
+      }
+
+      const travelEstimate = readTravelEstimate();
+      if (travelEstimate) {
+        if (travelArrivalNode) {
+          travelArrivalNode.textContent = pvpTravel.formatDuration(travelEstimate.scaledSeconds);
+        }
+        if (travelReturnNode) {
+          travelReturnNode.textContent = pvpTravel.formatDuration(travelEstimate.scaledSeconds * 2);
+        }
+      }
+      updateSubmitState(state);
+      return state;
     }
 
     function clampTroopValue(input, nextValue) {
       const max = Number(input.max || 0);
-      const value = Math.max(0, Math.min(max, Number(nextValue || 0)));
+      const value = Math.max(0, Math.min(max, parseNonNegativeInt(nextValue)));
       input.value = String(value);
     }
 
-    function updateSubmitState() {
+    function updateSubmitState(configurationState) {
       const hasTarget = targetRadios.some((radio) => radio.checked && !radio.disabled);
       const hasGuests = guestOptions.some((input) => input.checked);
+      const state = configurationState || readConfigurationState();
       if (submitButton) {
-        submitButton.disabled = !(hasTarget && hasGuests);
+        submitButton.disabled = !(hasTarget && hasGuests && !state.isOverCapacity);
       }
     }
 
@@ -136,7 +219,6 @@
           const checkedCount = guestOptions.filter((node) => node.checked).length;
           if (checkedCount > dispatchLimit) {
             input.checked = false;
-            return;
           }
         }
         updateGuestCount();
@@ -146,6 +228,7 @@
     troopInputs.forEach((input) => {
       input.addEventListener("input", () => {
         clampTroopValue(input, input.value);
+        updateConfigurationSummary();
       });
     });
 
@@ -155,6 +238,7 @@
         const input = troopInputs.find((node) => node.dataset.troopKey === key);
         if (!input) return;
         clampTroopValue(input, Number(input.value || 0) + Number(button.dataset.adjustTroop || 0));
+        updateConfigurationSummary();
       });
     });
 
@@ -164,6 +248,7 @@
         const input = troopInputs.find((node) => node.dataset.troopKey === key);
         if (!input) return;
         clampTroopValue(input, Number(input.max || 0));
+        updateConfigurationSummary();
       });
     });
 
@@ -172,12 +257,15 @@
 
     return {
       updateGuestCount,
+      readConfigurationState,
+      readTravelEstimate,
+      updateConfigurationSummary,
       updateTargetVisibility,
     };
   }
 
   if (typeof module !== "undefined" && module.exports) {
-    module.exports = { initGuildPvpPage };
+    module.exports = { initGuildPvpPage, summarizeGuildPvpConfig };
   }
 
   if (globalScope.document) {

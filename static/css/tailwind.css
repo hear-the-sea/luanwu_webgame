@@ -3713,7 +3713,7 @@
   display: grid;
   min-width: 0px;
   flex: 1 1 0%;
-  grid-template-columns: repeat(3, minmax(90px, 1fr));
+  grid-template-columns: repeat(4, minmax(90px, 1fr));
 }
 
 @media (max-width: 640px) {
@@ -3880,12 +3880,16 @@
   }
 
   .tw-raid-summary-stats {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .tw-raid-summary-stat {
     padding-left: 0.25rem;
     padding-right: 0.25rem;
+  }
+
+  .tw-raid-summary-stat:nth-child(even) {
+    border-right-width: 0px;
   }
 
   .tw-raid-summary-stat strong {

@@ -4,15 +4,17 @@ from typing import TypedDict
 
 from django.utils import timezone
 
-from gameplay.services.missions_impl.loadout import travel_time_seconds
+from gameplay.services.pvp_runtime.travel import calculate_pvp_travel_time
 
 from .. import constants as guild_constants
+from .technology import get_tech_bonus
 from .warehouse_config import get_warehouse_production_item_keys
 
-DEFAULT_GUILD_RAID_BASE_TRAVEL_TIME = 600
+GUILD_RAID_MARCH_FACTOR_MIN = 0.75
 
 
 class GuildRaidRules(TypedDict):
+    base_travel_time_seconds: int
     silver_floor: int
     silver_loot_percent: int
     warehouse_loot_percent: int
@@ -99,6 +101,7 @@ def get_guild_raid_rules() -> GuildRaidRules:
         *sorted(production_item_keys.difference(configured_item_keys)),
     ]
     return {
+        "base_travel_time_seconds": int(guild_constants.GUILD_PVP_BASE_TRAVEL_TIME_SECONDS),
         "silver_floor": int(guild_constants.GUILD_PVP_SILVER_FLOOR or 0),
         "silver_loot_percent": int(guild_constants.GUILD_PVP_SILVER_LOOT_PERCENT or 0),
         "warehouse_loot_percent": int(guild_constants.GUILD_PVP_WAREHOUSE_LOOT_PERCENT or 0),
@@ -106,5 +109,22 @@ def get_guild_raid_rules() -> GuildRaidRules:
     }
 
 
-def calculate_guild_raid_travel_time(guests, troop_loadout: dict[str, int]) -> int:
-    return travel_time_seconds(DEFAULT_GUILD_RAID_BASE_TRAVEL_TIME, guests, troop_loadout or {})
+def get_guild_raid_march_factor(guild) -> float:
+    return max(GUILD_RAID_MARCH_FACTOR_MIN, 1.0 - get_tech_bonus(guild, "march_speed"))
+
+
+def calculate_guild_raid_travel_time(
+    guild,
+    guests,
+    troop_loadout: dict[str, int],
+    *,
+    march_factor: float | None = None,
+) -> int:
+    resolved_march_factor = get_guild_raid_march_factor(guild) if march_factor is None else float(march_factor)
+    estimate = calculate_pvp_travel_time(
+        route_seconds=guild_constants.GUILD_PVP_BASE_TRAVEL_TIME_SECONDS,
+        guests=guests,
+        troop_loadout=troop_loadout or {},
+        external_factor=resolved_march_factor,
+    )
+    return estimate.scaled_seconds

@@ -99,6 +99,7 @@ def test_load_guild_rules_normalizes_pvp_section():
     rules = normalize_guild_rules(
         {
             "pvp": {
+                "base_travel_time_seconds": 28800,
                 "newbie_protection_seconds": 172800,
                 "defeat_protection_seconds": 43200,
                 "max_daily_attack_count": 2,
@@ -114,5 +115,6 @@ def test_load_guild_rules_normalizes_pvp_section():
     )
 
     assert rules["pvp"]["fixed_attack_cost_silver"] == 10000
+    assert rules["pvp"]["base_travel_time_seconds"] == 28800
     assert rules["pvp"]["warehouse_loot_percent"] == 20
     assert rules["pvp"]["warehouse_loot_whitelist"] == ["grain", "gold_bar", "red_ruby"]

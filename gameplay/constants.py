@@ -109,10 +109,8 @@ class PVPConstants:
     )
     RAID_PRESTIGE_PROTECTION_CUTOFF = 20000  # 双方声望均达到该值后，不再受声望差保护
     RAID_MAX_CONCURRENT = 3  # 同时最多3次出征
-    RAID_MAX_TRAVEL_TIME = 8 * 60 * 60  # 踢馆最长单程行军时间8小时
-    RAID_AGILITY_REDUCTION_CAP = 0.30  # 门客平均敏捷最多减少30%踢馆行军时间
-    RAID_BASE_TRAVEL_TIME = 300  # 基础行军时间300秒（5分钟）
-    RAID_TRAVEL_TIME_PER_DISTANCE = 14  # 每单位距离14秒（地图对角跨区触发8小时上限）
+    RAID_BASE_TRAVEL_TIME = 30 * 60  # 基础单程行军时间30分钟
+    RAID_TRAVEL_TIME_PER_DISTANCE = 15  # 每单位距离增加15秒
     RAID_CROSS_REGION_MULTIPLIER = 1.5  # 跨区系数
     RAID_MAX_DAILY_ATTACKS_RECEIVED = 8  # 每个庄园每24小时最多被攻击次数（防小号集群）
     RAID_DEFEAT_PROTECTION_SECONDS = 1800  # 防守失败后战败保护时长（30分钟）
