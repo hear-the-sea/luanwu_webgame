@@ -5,30 +5,38 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from gameplay.services.battle_snapshots import build_guest_battle_snapshot, build_guest_snapshot_proxies
+from core.exceptions import InvalidBattleSnapshotError
+from gameplay.services.battle_snapshots import (
+    build_guest_battle_snapshot,
+    build_guest_snapshot_proxies,
+    validate_battle_troop_loadout,
+)
 from tests.battle.support import build_snapshot_payload
 
 
 def test_build_guest_snapshot_proxies_rejects_empty_snapshot_payload():
-    with pytest.raises(AssertionError, match="invalid battle guest snapshot payload"):
+    with pytest.raises(InvalidBattleSnapshotError, match="门客战斗快照数据无效") as exc_info:
         build_guest_snapshot_proxies([{}], include_guest_identity=True)
+    assert exc_info.value.field_name == "guest_snapshots"
 
 
 def test_build_guest_snapshot_proxies_rejects_non_mapping_snapshot_payload():
-    with pytest.raises(AssertionError, match="invalid battle guest snapshot payload"):
+    with pytest.raises(InvalidBattleSnapshotError, match="门客战斗快照数据无效") as exc_info:
         build_guest_snapshot_proxies(["bad-snapshot"], include_guest_identity=True)
+    assert exc_info.value.field_name == "guest_snapshots"
 
 
 @pytest.mark.parametrize("field_name", ["display_name", "rarity", "status"])
 def test_build_guest_snapshot_proxies_rejects_blank_required_text_fields(field_name):
     payload = build_snapshot_payload(**{field_name: "  "})
 
-    with pytest.raises(AssertionError, match=rf"invalid battle guest snapshot {field_name}"):
+    with pytest.raises(InvalidBattleSnapshotError, match="门客战斗快照数据无效") as exc_info:
         build_guest_snapshot_proxies([payload], include_guest_identity=True)
+    assert exc_info.value.field_name == field_name
 
 
 def test_build_guest_snapshot_proxies_rejects_missing_template_key():
-    with pytest.raises(AssertionError, match="invalid battle guest snapshot template_key"):
+    with pytest.raises(InvalidBattleSnapshotError, match="门客战斗快照数据无效") as exc_info:
         build_guest_snapshot_proxies(
             [
                 {
@@ -49,39 +57,69 @@ def test_build_guest_snapshot_proxies_rejects_missing_template_key():
             ],
             include_guest_identity=True,
         )
+    assert exc_info.value.field_name == "template_key"
 
 
 def test_build_guest_snapshot_proxies_rejects_invalid_skill_keys_payload():
-    with pytest.raises(AssertionError, match="invalid battle guest snapshot skill_keys"):
+    with pytest.raises(InvalidBattleSnapshotError, match="门客战斗快照数据无效") as exc_info:
         build_guest_snapshot_proxies([build_snapshot_payload(skill_keys="bad-skills")], include_guest_identity=True)
+    assert exc_info.value.field_name == "skill_keys"
 
 
 def test_build_guest_snapshot_proxies_rejects_missing_guest_id_when_identity_requested():
     payload = build_snapshot_payload()
     payload.pop("guest_id")
 
-    with pytest.raises(AssertionError, match="invalid battle guest snapshot guest_id"):
+    with pytest.raises(InvalidBattleSnapshotError, match="门客战斗快照数据无效") as exc_info:
         build_guest_snapshot_proxies([payload], include_guest_identity=True)
+    assert exc_info.value.field_name == "guest_id"
 
 
 def test_build_guest_snapshot_proxies_rejects_invalid_manor_id_when_present():
-    with pytest.raises(AssertionError, match="invalid battle guest snapshot manor_id"):
+    with pytest.raises(InvalidBattleSnapshotError, match="门客战斗快照数据无效") as exc_info:
         build_guest_snapshot_proxies([build_snapshot_payload(manor_id=0)], include_guest_identity=True)
+    assert exc_info.value.field_name == "manor_id"
 
 
 def test_build_guest_snapshot_proxies_rejects_invalid_level():
-    with pytest.raises(AssertionError, match="invalid battle guest snapshot level"):
+    with pytest.raises(InvalidBattleSnapshotError, match="门客战斗快照数据无效") as exc_info:
         build_guest_snapshot_proxies([build_snapshot_payload(level=0)], include_guest_identity=True)
+    assert exc_info.value.field_name == "level"
 
 
 def test_build_guest_snapshot_proxies_rejects_invalid_current_hp():
-    with pytest.raises(AssertionError, match="invalid battle guest snapshot current_hp"):
+    with pytest.raises(InvalidBattleSnapshotError, match="门客战斗快照数据无效") as exc_info:
         build_guest_snapshot_proxies([build_snapshot_payload(current_hp=0)], include_guest_identity=True)
+    assert exc_info.value.field_name == "current_hp"
 
 
 def test_build_guest_snapshot_proxies_rejects_negative_troop_capacity():
-    with pytest.raises(AssertionError, match="invalid battle guest snapshot troop_capacity"):
+    with pytest.raises(InvalidBattleSnapshotError, match="门客战斗快照数据无效") as exc_info:
         build_guest_snapshot_proxies([build_snapshot_payload(troop_capacity=-1)], include_guest_identity=True)
+    assert exc_info.value.field_name == "troop_capacity"
+
+
+def test_build_guest_snapshot_proxies_rejects_non_list_container():
+    with pytest.raises(InvalidBattleSnapshotError, match="门客战斗快照数据无效") as exc_info:
+        build_guest_snapshot_proxies({"unexpected": "mapping"}, include_guest_identity=True)
+    assert exc_info.value.field_name == "guest_snapshots"
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        "bad-loadout",
+        {"archer": True},
+        {"archer": "not-a-number"},
+        {"archer": 0},
+        {"": 1},
+    ],
+)
+def test_validate_battle_troop_loadout_rejects_corrupt_payload(payload):
+    with pytest.raises(InvalidBattleSnapshotError) as exc_info:
+        validate_battle_troop_loadout(payload)
+
+    assert exc_info.value.snapshot_kind == "troop_loadout"
 
 
 def test_build_guest_battle_snapshot_rejects_non_string_skill_values():

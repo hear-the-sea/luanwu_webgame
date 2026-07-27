@@ -10,6 +10,7 @@ from typing import Any, TypeVar, cast
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q, QuerySet
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
@@ -26,7 +27,6 @@ from core.utils.locked_actions import (
 from core.utils.rate_limit import rate_limit_json
 from core.utils.view_error_mapping import json_error_response_for_exception
 from gameplay.constants import REGION_CHOICES, UIConstants
-from gameplay.models import BotProfile
 from gameplay.models import Manor as ManorModel
 from gameplay.models import RaidRun
 from gameplay.selectors.map import get_map_context, get_raid_config_context
@@ -45,6 +45,7 @@ from gameplay.services.raid import (
 from gameplay.services.raid.map_search import get_manor_public_info
 from gameplay.services.raid.protection import get_protection_status
 from gameplay.services.raid.utils import can_attack_target
+from gameplay.services.virtual_player_state_policy import VIRTUAL_PROFILE_MAP_VISIBLE_STATES
 from gameplay.views.map_action_support import run_locked_map_json_action
 from gameplay.views.map_payloads import build_raid_status_response_payload, resolve_attack_fields_from_info
 from gameplay.views.map_request_parsing import (
@@ -66,6 +67,12 @@ MAP_ACTION_LOCK_SPEC = ActionLockSpec(
 
 
 MapActionResult = TypeVar("MapActionResult")
+
+
+def _map_visible_manors() -> QuerySet[ManorModel]:
+    return ManorModel.objects.filter(
+        Q(bot_profile__isnull=True) | Q(bot_profile__state__in=VIRTUAL_PROFILE_MAP_VISIBLE_STATES)
+    )
 
 
 def _map_action_conflict_response() -> JsonResponse:
@@ -223,7 +230,7 @@ class RaidConfigView(LoginRequiredMixin, TemplateView):
 
         # 获取目标庄园
         target_manor = get_object_or_404(
-            ManorModel.objects.exclude(bot_profile__state=BotProfile.State.STALE),
+            _map_visible_manors(),
             pk=target_id,
         )
 
@@ -290,11 +297,7 @@ def manor_detail_api(request: HttpRequest, manor_id: int) -> JsonResponse:
 
     try:
         # 优化：使用 select_related 预加载用户信息
-        target_manor = (
-            ManorModel.objects.select_related("user")
-            .exclude(bot_profile__state=BotProfile.State.STALE)
-            .get(pk=manor_id)
-        )
+        target_manor = _map_visible_manors().select_related("user").get(pk=manor_id)
     except ManorModel.DoesNotExist:
         return json_error("庄园不存在", status=404)
 

@@ -20,6 +20,9 @@ class ArenaCoopEvent(models.Model):
     prepare_ends_at = models.DateTimeField(null=True, blank=True, db_index=True)
     virtual_fill_at = models.DateTimeField(null=True, blank=True, db_index=True)
     virtual_fill_completed = models.BooleanField(default=False)
+    base_seed = models.PositiveIntegerField(default=0)
+    rng_version = models.PositiveSmallIntegerField(default=0)
+    battle_engine_version = models.CharField(max_length=16, default="legacy")
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     battle_report = models.ForeignKey(

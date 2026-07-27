@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from core.utils.yaml_schema import validate_arena_rewards, validate_guest_skills, validate_recruitment_rarity_weights
 from tests.yaml_schema_new_configs.support import assert_invalid
 
@@ -59,6 +61,128 @@ def test_guest_skills_rejects_invalid_passive_effect_target_scope():
     }
     result = validate_guest_skills(data)
     assert_invalid(result, substring="target_scope")
+
+
+def test_guest_skills_rejects_invalid_modifier_scope():
+    data = {
+        "skills": [
+            {
+                "key": "passive_signal",
+                "name": "被动信号",
+                "rarity": "purple",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "battle_start",
+                            "effects": [{"type": "modify_outgoing_damage", "value": 1.1, "scope": "forever"}],
+                        }
+                    ]
+                },
+            }
+        ]
+    }
+
+    assert_invalid(validate_guest_skills(data), substring="scope")
+
+
+@pytest.mark.parametrize("scope", ["", "   ", False, 0, ["battle"], {"value": "battle"}])
+def test_guest_skills_rejects_non_string_or_blank_modifier_scope(scope):
+    data = {
+        "skills": [
+            {
+                "key": "passive_signal",
+                "name": "被动信号",
+                "rarity": "purple",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "battle_start",
+                            "effects": [{"type": "modify_outgoing_damage", "value": 1.1, "scope": scope}],
+                        }
+                    ]
+                },
+            }
+        ]
+    }
+
+    assert_invalid(validate_guest_skills(data), substring="expected non-empty string")
+
+
+@pytest.mark.parametrize(
+    ("timing", "scope"),
+    [
+        ("battle_start", None),
+        ("battle_start", "battle"),
+        ("round_start", "round"),
+        ("hit_taken", "action"),
+    ],
+)
+def test_guest_skills_accepts_inferred_or_valid_modifier_scope(timing, scope):
+    effect = {"type": "modify_outgoing_damage", "value": 1.1}
+    if scope is not None:
+        effect["scope"] = scope
+    data = {
+        "skills": [
+            {
+                "key": "passive_signal",
+                "name": "被动信号",
+                "rarity": "purple",
+                "kind": "passive",
+                "passive_config": {"triggers": [{"timing": timing, "effects": [effect]}]},
+            }
+        ]
+    }
+
+    result = validate_guest_skills(data)
+    assert result.is_valid, result.errors
+
+
+def test_guest_skills_rejects_scope_on_non_modifier_effect():
+    data = {
+        "skills": [
+            {
+                "key": "passive_signal",
+                "name": "被动信号",
+                "rarity": "purple",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "battle_start",
+                            "effects": [{"type": "heal_ratio", "value": 0.1, "scope": "battle"}],
+                        }
+                    ]
+                },
+            }
+        ]
+    }
+
+    assert_invalid(validate_guest_skills(data), substring="does not support modifier scope")
+
+
+def test_guest_skills_rejects_action_scope_for_battle_start_modifier():
+    data = {
+        "skills": [
+            {
+                "key": "passive_signal",
+                "name": "被动信号",
+                "rarity": "purple",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "battle_start",
+                            "effects": [{"type": "modify_outgoing_damage", "value": 1.1, "scope": "action"}],
+                        }
+                    ]
+                },
+            }
+        ]
+    }
+
+    assert_invalid(validate_guest_skills(data), substring="not supported")
 
 
 def test_guest_skills_rejects_blank_passive_effect_target_kind_is():

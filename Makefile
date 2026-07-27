@@ -10,6 +10,8 @@ CRITICAL_INTEGRATION_TESTS ?= \
 	tests/test_guest_recruitment_concurrency_integration.py \
 	tests/test_guest_equipment_concurrency_integration.py \
 	tests/test_arena_coop_concurrency_integration.py \
+	tests/test_arena_resolution_concurrency_integration.py \
+	tests/test_guild_raid_failure_concurrency_integration.py \
 	tests/test_trade_auction_concurrency_integration.py \
 	tests/test_work_service_concurrency.py \
 	tests/test_manor_coordinate_concurrency_integration.py \

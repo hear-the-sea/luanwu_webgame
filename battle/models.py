@@ -51,6 +51,8 @@ class BattleReport(models.Model):
     completed_at = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     seed = models.PositiveIntegerField(default=0)
+    rng_version = models.PositiveSmallIntegerField(default=0)
+    battle_engine_version = models.CharField(max_length=16, default="legacy")
 
     class Meta:
         verbose_name = "战报"

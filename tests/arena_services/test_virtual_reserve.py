@@ -591,16 +591,20 @@ def test_overpopulation_retirement_skips_bot_in_live_arena_entry():
 
 
 @pytest.mark.django_db
-def test_member_reevaluation_releases_profile_that_is_no_longer_active(reserve_demand):
+@pytest.mark.parametrize(
+    "state",
+    [BotProfile.State.ABANDONED, BotProfile.State.RETIRED, BotProfile.State.STALE],
+)
+def test_member_reevaluation_releases_profile_that_is_not_arena_eligible(reserve_demand, state):
     from gameplay.services.arena.virtual_reserve import _reevaluate_existing_members
 
-    profile = _create_bot_profile("reserve_reevaluation_retired")
+    profile = _create_bot_profile("reserve_reevaluation_ineligible")
     member = ArenaVirtualReserveMember.objects.create(
         demand=reserve_demand,
         profile=profile,
         state=ArenaVirtualReserveMember.State.READY,
     )
-    BotProfile.objects.filter(pk=profile.pk).update(state=BotProfile.State.RETIRED)
+    BotProfile.objects.filter(pk=profile.pk).update(state=state)
 
     _reevaluate_existing_members(reserve_demand, now=timezone.now())
 

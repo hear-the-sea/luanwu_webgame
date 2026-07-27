@@ -263,6 +263,29 @@ def test_retreat_raid_run_due_to_blocked_target_programming_error_bubbles_up(mon
         callbacks[0]()
 
 
+def test_retreat_raid_run_due_to_blocked_target_clamps_delayed_processing_to_one_way_travel(monkeypatch):
+    now = timezone.now()
+    saved = {"fields": None}
+    locked_run = build_locked_run(
+        run_id=24,
+        now=now,
+        save_fields=saved,
+        elapsed_seconds=95,
+        travel_time=60,
+    )
+    monkeypatch.setattr(combat_travel, "schedule_best_effort_after_commit", lambda *_args, **_kwargs: None)
+
+    return_time = combat_travel._retreat_raid_run_due_to_blocked_target(
+        locked_run,
+        now=now,
+        reason="战败保护",
+    )
+
+    assert return_time == 60
+    assert locked_run.return_at == now + timedelta(seconds=60)
+    assert saved["fields"] == ["status", "return_at"]
+
+
 def test_retreat_raid_run_due_to_blocked_target_explicit_message_error_degrades(monkeypatch):
     now = timezone.now()
     saved = {"fields": None}

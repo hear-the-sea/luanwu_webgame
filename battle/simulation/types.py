@@ -60,6 +60,17 @@ class AttackLogEntry(TypedDict):
     target_is_boss: NotRequired[bool]
     actor_state: NotRequired[dict[str, Any]]
     target_state: NotRequired[dict[str, Any]]
+    raw_damage: NotRequired[int]
+    applied_damage: NotRequired[int]
+    overkill_damage: NotRequired[int]
+    target_hp_before: NotRequired[int]
+    target_hp_after: NotRequired[int]
+    target_strength_before: NotRequired[int]
+    target_strength_after: NotRequired[int]
+    reflect_applied_damage: NotRequired[int]
+    reflect_overkill_damage: NotRequired[int]
+    counter_applied_damage: NotRequired[int]
+    counter_overkill_damage: NotRequired[int]
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,16 +91,66 @@ class _DamageCalculation:
 
 
 @dataclass(frozen=True, slots=True)
-class _DamageApplication:
-    """将伤害应用到单位后产生的结算结果（击杀、反伤、反击等）。"""
+class _UnitDamageApplication:
+    """单个单位的一次伤害状态转换。"""
 
-    display_damage: int
+    raw_damage: int
+    applied_damage: int
+    overkill_damage: int
     kills: int
-    target_defeated: bool
-    actor_defeated: bool
-    reflect_damage: int
-    reflect_kills: int
-    reflect_defeated: bool
-    counter_damage: int
-    counter_kills: int
-    counter_defeated: bool
+    defeated: bool
+    hp_before: int
+    hp_after: int
+    strength_before: int
+    strength_after: int
+
+
+@dataclass(frozen=True, slots=True)
+class _DamageApplication:
+    """一次攻击及其反伤、反击产生的完整状态转换。"""
+
+    target: _UnitDamageApplication
+    reflect: _UnitDamageApplication
+    counter: _UnitDamageApplication
+
+    @property
+    def display_damage(self) -> int:
+        """兼容旧战报：`damage` 继续展示理论伤害。"""
+
+        return self.target.raw_damage
+
+    @property
+    def kills(self) -> int:
+        return self.target.kills
+
+    @property
+    def target_defeated(self) -> bool:
+        return self.target.defeated
+
+    @property
+    def actor_defeated(self) -> bool:
+        return self.reflect.defeated or self.counter.defeated
+
+    @property
+    def reflect_damage(self) -> int:
+        return self.reflect.raw_damage
+
+    @property
+    def reflect_kills(self) -> int:
+        return self.reflect.kills
+
+    @property
+    def reflect_defeated(self) -> bool:
+        return self.reflect.defeated
+
+    @property
+    def counter_damage(self) -> int:
+        return self.counter.raw_damage
+
+    @property
+    def counter_kills(self) -> int:
+        return self.counter.kills
+
+    @property
+    def counter_defeated(self) -> bool:
+        return self.counter.defeated

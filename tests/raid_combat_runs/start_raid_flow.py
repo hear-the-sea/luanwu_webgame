@@ -13,6 +13,34 @@ from core.exceptions import MessageError, RaidStartError
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.raid import utils as raid_utils
 from gameplay.services.raid.combat import runs as combat_runs
+from guests.models import Guest, GuestStatus, GuestTemplate
+
+
+@pytest.mark.django_db
+def test_create_raid_run_record_persists_server_replay_metadata(django_user_model):
+    attacker = ensure_manor(django_user_model.objects.create_user(username="raid_replay_metadata_attacker"))
+    defender = ensure_manor(django_user_model.objects.create_user(username="raid_replay_metadata_defender"))
+    template = GuestTemplate.objects.create(
+        key="raid_replay_metadata_guest",
+        name="重放元数据门客",
+        archetype="military",
+        rarity="green",
+        base_attack=100,
+        base_intellect=80,
+        base_defense=90,
+        base_agility=70,
+        base_luck=50,
+        base_hp=1200,
+    )
+    guest = Guest.objects.create(manor=attacker, template=template)
+
+    run = combat_runs._create_raid_run_record(attacker, defender, [guest], {}, 30)
+
+    guest.refresh_from_db(fields=["status"])
+    assert run.base_seed > 0
+    assert run.rng_version > 0
+    assert run.battle_engine_version != "legacy"
+    assert guest.status == GuestStatus.DEPLOYED
 
 
 def test_start_raid_rechecks_attack_constraints_inside_transaction(monkeypatch):

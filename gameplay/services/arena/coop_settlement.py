@@ -7,6 +7,7 @@ from typing import Callable
 from django.db.models import F
 
 from battle.models import BattleReport
+from battle.random_context import RNG_STREAM_RARE_DROP
 from core.exceptions import MessageError
 from core.utils.infrastructure import (
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
@@ -21,6 +22,7 @@ from .coop_battle import extract_boss_hp_snapshot, load_runtime_rules_for_event
 from .coop_damage import aggregate_event_damage
 from .coop_lifecycle import release_entry_guest_statuses
 from .coop_rewards import build_reward_breakdown, rank_contribution_rows
+from .replay import replay_context
 
 ARENA_COOP_SETTLEMENT_MESSAGE_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
     MessageError,
@@ -121,6 +123,7 @@ def settle_coop_event_locked(
 
     boss_defeated = report.winner == "attacker"
     ranked_rows = rank_contribution_rows(ranked_rows)
+    rare_drop_rng = replay_context(locked_event).rng(RNG_STREAM_RARE_DROP)
     ranked_entry_ids = [entry.id for entry in registered_entries]
     entry_map = {entry.id: entry for entry in registered_entries}
 
@@ -128,7 +131,12 @@ def settle_coop_event_locked(
     contribution_rows: list[ArenaCoopContribution] = []
     for rank, row in enumerate(ranked_rows, start=1):
         row["damage_rank"] = rank
-        reward_breakdown = build_reward_breakdown(row, rules=rules, boss_defeated=boss_defeated)
+        reward_breakdown = build_reward_breakdown(
+            row,
+            rules=rules,
+            boss_defeated=boss_defeated,
+            rng=rare_drop_rng,
+        )
         entry = entry_map[row["entry_id"]]
         contribution_rows.append(
             ArenaCoopContribution(

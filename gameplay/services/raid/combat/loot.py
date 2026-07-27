@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import random
 from typing import Any, Dict, Sequence, Tuple
 
 from django.db import IntegrityError
@@ -19,7 +20,7 @@ from ...pvp_runtime.loot import (
     normalize_positive_int_mapping,
 )
 from ...resources import log_resource_gain
-from .config import PVPConstants, random
+from .config import PVPConstants
 from .troops import _extract_raid_troops_lost, _normalize_mapping
 
 
@@ -151,6 +152,7 @@ def _build_weighted_loot_candidates(base_qs: QuerySet[InventoryItem]) -> list[We
 def _calculate_loot_items(
     base_qs: QuerySet[InventoryItem],
     *,
+    rng: random.Random,
     guests: Sequence[Any] | None = None,
     troop_loadout: Dict[str, int] | None = None,
     battle_report: Any = None,
@@ -166,12 +168,18 @@ def _calculate_loot_items(
         total_quantity,
         PVPConstants.LOOT_ITEM_MAX_QUANTITY_PERCENT,
     )
-    return draw_weighted_item_loot(candidates, draw_count=draw_count, capacity=capacity)
+    return draw_weighted_item_loot(
+        candidates,
+        draw_count=draw_count,
+        capacity=capacity,
+        rng=rng,
+    )
 
 
 def _calculate_loot(
     defender: Manor,
     *,
+    rng: random.Random,
     guests: Sequence[Any] | None = None,
     troop_loadout: Dict[str, int] | None = None,
     battle_report: Any = None,
@@ -182,7 +190,7 @@ def _calculate_loot(
     Returns:
         (掠夺的资源, 掠夺的物品)
     """
-    loot_percent = random.uniform(
+    loot_percent = rng.uniform(
         PVPConstants.LOOT_RESOURCE_MIN_PERCENT,
         PVPConstants.LOOT_RESOURCE_MAX_PERCENT,
     )
@@ -195,6 +203,7 @@ def _calculate_loot(
     )
     loot_items = _calculate_loot_items(
         _build_loot_item_queryset(defender),
+        rng=rng,
         guests=guests,
         troop_loadout=troop_loadout,
         battle_report=battle_report,

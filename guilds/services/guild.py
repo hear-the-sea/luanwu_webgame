@@ -2,7 +2,7 @@ import logging
 from datetime import timedelta
 
 from django.db import IntegrityError, transaction
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils import timezone
 
 from core.exceptions import (
@@ -19,7 +19,7 @@ from gameplay.services.utils.messages import bulk_create_messages
 from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 
 from .. import constants as guild_constants
-from ..models import Guild, GuildAnnouncement, GuildHeroPoolEntry, GuildMember, GuildTechnology
+from ..models import Guild, GuildAnnouncement, GuildHeroPoolEntry, GuildMember, GuildRaidRun, GuildTechnology
 from .utils import get_active_membership, lock_active_member_for_guild
 from .warehouse import spend_guild_warehouse_items_locked
 
@@ -283,6 +283,23 @@ def disband_guild(guild, operator):
             membership = lock_active_member_for_guild(membership, error_msg="只有帮主可以解散帮会")
         if not membership.is_leader:
             raise GuildPermissionError("只有帮主可以解散帮会")
+
+        in_flight_statuses = [
+            GuildRaidRun.Status.MARCHING,
+            GuildRaidRun.Status.BATTLING,
+            GuildRaidRun.Status.RETURNING,
+            GuildRaidRun.Status.RETREATED,
+        ]
+        has_in_flight_raid = (
+            GuildRaidRun.objects.select_for_update()
+            .filter(
+                Q(attacker_guild=guild_locked) | Q(defender_guild=guild_locked),
+                status__in=in_flight_statuses,
+            )
+            .exists()
+        )
+        if has_in_flight_raid:
+            raise GuildValidationError("存在进行中的帮会对战，请先撤回或等待出征完成后再解散")
 
         # 预加载成员 user_id，确保通知对象来自锁内的当前活跃成员集合。
         member_user_ids = list(guild_locked.members.filter(is_active=True).values_list("user_id", flat=True))

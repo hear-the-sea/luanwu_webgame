@@ -19,6 +19,7 @@ from gameplay.services.virtual_players import (
     BotProjectionConfig,
     PopulationMutationStatus,
     create_virtual_player_with_capacity,
+    retire_virtual_player_if_unprotected,
 )
 from tests.arena_services.test_virtual_backfill import _create_bot_profile
 from tests.test_virtual_player_backfill import _bootstrap_building_types
@@ -180,3 +181,97 @@ def test_concurrent_capacity_owned_creation_rechecks_region_shortage(settings):
     assert errors == []
     assert len(regions) == 2
     assert len(set(regions)) == 2
+
+
+@pytest.mark.django_db(transaction=True)
+def test_reserve_replenishment_racing_retirement_never_leases_retired_profile(settings):
+    if connection.vendor != "mysql":
+        pytest.skip("arena reserve retirement concurrency requires MySQL select_for_update semantics")
+
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "region_floor": 0,
+            "region_active_multiplier": 0,
+            "global_floor": 1,
+            "global_active_multiplier": 0,
+        },
+        "prestige_bands": {"newbie": [0, 500]},
+    }
+    now = timezone.now()
+    BotPopulationControl.objects.get_or_create()
+    profile = _create_bot_profile("arena_reserve_retirement_race")
+    tournament = ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RECRUITING,
+        player_limit=2,
+    )
+    probe = evaluate_bot_lineup(
+        profile,
+        mode="tournament",
+        event_id=tournament.id,
+        target_guest_count=1,
+        target_team_power=10**12,
+    )
+    assert probe.snapshots
+    demand = ArenaVirtualDemand.objects.create(
+        tournament=tournament,
+        target_guest_count=1,
+        target_team_power=probe.selected_power,
+        missing_entry_count=1,
+        reserve_target_count=1,
+        max_reserve_target_count=1,
+        next_retry_at=now,
+    )
+
+    start = threading.Barrier(2)
+    replenishments = []
+    retirement_results: list[bool] = []
+    errors: list[BaseException] = []
+    results_guard = threading.Lock()
+
+    def _replenish_worker() -> None:
+        close_old_connections()
+        try:
+            start.wait(timeout=10)
+            result = replenish_virtual_reserve(demand.id, now=now)
+            with results_guard:
+                replenishments.append(result)
+        except BaseException as exc:  # pragma: no cover - asserted below
+            with results_guard:
+                errors.append(exc)
+        finally:
+            close_old_connections()
+
+    def _retire_worker() -> None:
+        close_old_connections()
+        try:
+            start.wait(timeout=10)
+            result = retire_virtual_player_if_unprotected(profile.pk, now=now)
+            with results_guard:
+                retirement_results.append(result)
+        except BaseException as exc:  # pragma: no cover - asserted below
+            with results_guard:
+                errors.append(exc)
+        finally:
+            close_old_connections()
+
+    threads = [
+        threading.Thread(target=_replenish_worker, daemon=True),
+        threading.Thread(target=_retire_worker, daemon=True),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=30)
+
+    profile.refresh_from_db()
+    member_exists = ArenaVirtualReserveMember.objects.filter(
+        demand=demand,
+        profile=profile,
+    ).exists()
+    assert all(not thread.is_alive() for thread in threads)
+    assert errors == []
+    assert len(replenishments) == 1
+    assert len(retirement_results) == 1
+    assert not (member_exists and profile.state == BotProfile.State.RETIRED)
+    if member_exists:
+        assert profile.state == BotProfile.State.ACTIVE

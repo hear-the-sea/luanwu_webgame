@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import random
-from collections.abc import Sequence
+from collections.abc import Collection, Sequence
 from dataclasses import dataclass
 from datetime import timedelta
 from hashlib import blake2b
@@ -20,6 +20,10 @@ from gameplay.models import (
     ArenaVirtualDemand,
     ArenaVirtualReserveMember,
     BotProfile,
+)
+from gameplay.services.virtual_player_state_policy import (
+    VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES,
+    is_virtual_profile_arena_eligible,
 )
 from gameplay.services.virtual_players import (
     AcceleratedGrowthOutcome,
@@ -226,10 +230,7 @@ def _reevaluate_existing_members(demand: ArenaVirtualDemand, *, now) -> None:
         demand.reserve_members.select_for_update().select_related("profile", "profile__manor").order_by("id")
     )
     for member in members:
-        if member.profile.state not in {
-            BotProfile.State.ACTIVE,
-            BotProfile.State.SLOWING,
-        }:
+        if not is_virtual_profile_arena_eligible(member.profile):
             member.delete()
             continue
         member.evaluated_version = demand.version
@@ -298,7 +299,7 @@ def _occupied_arena_manor_ids() -> set[int]:
     return occupied
 
 
-def _candidate_queryset(states: Sequence[str]):
+def _candidate_queryset(states: Collection[str]):
     return (
         BotProfile.objects.filter(
             state__in=list(states),
@@ -349,7 +350,7 @@ def _lease_candidate(
     *,
     demand: ArenaVirtualDemand,
     profile_id: int,
-    allowed_states: Sequence[str],
+    allowed_states: Collection[str],
     member_state: str,
     now,
     recover: bool = False,
@@ -437,7 +438,7 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
     recovered_retired = 0
     training_candidates: list[tuple[int, int]] = []
 
-    for profile in _candidate_queryset([BotProfile.State.ACTIVE, BotProfile.State.SLOWING]).iterator(chunk_size=100):
+    for profile in _candidate_queryset(VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES).iterator(chunk_size=100):
         if slots_needed <= 0:
             break
         evaluation = _evaluate_profile_for_demand(demand, profile)
@@ -445,7 +446,7 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
             member = _lease_candidate(
                 demand=demand,
                 profile_id=profile.id,
-                allowed_states=[BotProfile.State.ACTIVE, BotProfile.State.SLOWING],
+                allowed_states=VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES,
                 member_state=ArenaVirtualReserveMember.State.READY,
                 now=current_time,
             )
@@ -498,7 +499,7 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
         member = _lease_candidate(
             demand=demand,
             profile_id=profile_id,
-            allowed_states=[BotProfile.State.ACTIVE, BotProfile.State.SLOWING],
+            allowed_states=VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES,
             member_state=ArenaVirtualReserveMember.State.TRAINING,
             now=current_time,
         )
@@ -937,7 +938,7 @@ def _lock_selected_ready_profiles(
         BotProfile.objects.select_for_update(skip_locked=True)
         .filter(
             id__in=list(profile_ids),
-            state__in=[BotProfile.State.ACTIVE, BotProfile.State.SLOWING],
+            state__in=VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES,
             arena_virtual_reserve__demand=demand,
             arena_virtual_reserve__state=ArenaVirtualReserveMember.State.READY,
         )

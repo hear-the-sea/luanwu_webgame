@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import Any
 
+from battle.random_context import current_replay_metadata
 from core.exceptions import RaidStartError
 
 
@@ -49,6 +50,7 @@ def create_raid_run_record(
 
     now = now_func()
     guest_snapshots = build_guest_battle_snapshots(guests, include_identity=True)
+    replay_metadata = current_replay_metadata()
     run = raid_run_model.objects.create(
         attacker=attacker,
         defender=defender,
@@ -58,6 +60,7 @@ def create_raid_run_record(
         travel_time=travel_time,
         battle_at=now + timedelta(seconds=travel_time),
         return_at=now + timedelta(seconds=travel_time * 2),
+        **replay_metadata,
     )
     run.guests.set(guests)
     return run

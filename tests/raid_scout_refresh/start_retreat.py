@@ -107,8 +107,14 @@ def test_request_scout_retreat_recreates_missing_scout_troop_row(django_user_mod
     )
 
     request_time = timezone.now()
+    ScoutRecord.objects.filter(pk=record.pk).update(started_at=request_time - timedelta(seconds=90))
+    scheduled: list[int] = []
     monkeypatch.setattr(scout_service.timezone, "now", lambda: request_time)
-    monkeypatch.setattr(scout_service.scout_followups, "safe_apply_async", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(
+        scout_service.scout_followups,
+        "safe_apply_async",
+        lambda *_args, countdown, **_kwargs: scheduled.append(countdown) or True,
+    )
 
     scout_service.request_scout_retreat(record)
 
@@ -116,7 +122,9 @@ def test_request_scout_retreat_recreates_missing_scout_troop_row(django_user_mod
     troop = PlayerTroop.objects.get(manor=attacker, troop_template=scout_template)
     assert record.status == ScoutRecord.Status.RETURNING
     assert record.was_retreated is True
+    assert record.return_at == request_time + timedelta(seconds=60)
     assert troop.count == 2
+    assert scheduled == [60]
 
 
 @pytest.mark.django_db(transaction=True)

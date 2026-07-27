@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from typing import Any, Sequence
 
 from django.db.models import F
@@ -79,6 +80,7 @@ def reserve_guild_raid_loot(
     guests: Sequence[Any],
     troop_loadout: dict[str, int],
     battle_report: Any,
+    rng: random.Random,
 ) -> tuple[int, dict[str, int], dict[str, int]]:
     from .guild_raid_support import lock_guild_pair
 
@@ -118,6 +120,7 @@ def reserve_guild_raid_loot(
         _build_weighted_loot_candidates(locked_rows),
         draw_count=draw_count,
         capacity=capacity,
+        rng=rng,
     )
 
     for row in locked_rows:

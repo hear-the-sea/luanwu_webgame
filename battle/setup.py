@@ -95,6 +95,8 @@ def build_battle_options(
     *,
     battle_type: str,
     seed: int | None,
+    rng_version: int,
+    battle_engine_version: str,
     troop_loadout: dict[str, int] | None,
     fill_default_troops: bool,
     defender_setup: dict[str, Any] | None,
@@ -119,6 +121,8 @@ def build_battle_options(
     return BattleOptions(
         battle_type=battle_type,
         seed=seed,
+        rng_version=rng_version,
+        battle_engine_version=battle_engine_version,
         troop_loadout=troop_loadout,
         fill_default_troops=fill_default_troops,
         defender_setup=defender_setup,

@@ -65,7 +65,11 @@ def build_defender_guest_and_loadout(
 
     if normalized_setup:
         defender_guest_keys = _normalize_guest_configs(normalized_setup.get("guest_keys"))
-        defender_templates = build_named_ai_guests_fn(defender_guest_keys, level=defender_guest_level)
+        defender_templates = build_named_ai_guests_fn(
+            defender_guest_keys,
+            level=defender_guest_level,
+            rng=rng,
+        )
         defender_guests_comb = build_guest_combatants_fn(
             defender_templates,
             side="defender",

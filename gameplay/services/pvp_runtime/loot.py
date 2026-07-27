@@ -34,8 +34,10 @@ def _calculate_item_capacity_cost(item_key: str, storage_space: Any) -> int:
 def _select_weighted_candidate(
     candidates: list[_NormalizedWeightedLootCandidate],
     total_weight: int,
+    *,
+    rng: random.Random,
 ) -> _NormalizedWeightedLootCandidate | None:
-    selected_position = random.randrange(total_weight)
+    selected_position = rng.randrange(total_weight)
     for candidate in candidates:
         if selected_position < candidate["remaining_quantity"]:
             return candidate
@@ -43,14 +45,19 @@ def _select_weighted_candidate(
     return None
 
 
-def _sample_dominant_run_length(dominant_quantity: int, other_quantity: int) -> int:
+def _sample_dominant_run_length(
+    dominant_quantity: int,
+    other_quantity: int,
+    *,
+    rng: random.Random,
+) -> int:
     """抽取下一件其他物品前连续命中主导物品的数量。"""
     if other_quantity == 1:
-        return random.randrange(dominant_quantity + 1)
+        return rng.randrange(dominant_quantity + 1)
 
     # 该等待次数服从 beta-binomial(D, 1, O)，等价于随机排列中的首张其他物品位置。
-    dominant_probability = random.betavariate(1.0, float(other_quantity))
-    return random.binomialvariate(dominant_quantity, dominant_probability)
+    dominant_probability = rng.betavariate(1.0, float(other_quantity))
+    return rng.binomialvariate(dominant_quantity, dominant_probability)
 
 
 def normalize_positive_int_mapping(raw: Any) -> dict[str, int]:
@@ -122,6 +129,7 @@ def draw_weighted_item_loot(
     *,
     draw_count: int,
     capacity: int,
+    rng: random.Random,
 ) -> dict[str, int]:
     pool: list[_NormalizedWeightedLootCandidate] = []
     for raw_candidate in candidates:
@@ -188,7 +196,11 @@ def draw_weighted_item_loot(
                 draws_until_ineligible = ((remaining_capacity - candidate["capacity_cost"]) // dominant_cost) + 1
                 batch_limit = min(batch_limit, draws_until_ineligible)
 
-            dominant_run_length = _sample_dominant_run_length(dominant_quantity, other_quantity)
+            dominant_run_length = _sample_dominant_run_length(
+                dominant_quantity,
+                other_quantity,
+                rng=rng,
+            )
             selected_quantity = min(dominant_run_length, batch_limit)
             if selected_quantity > 0:
                 item_key = dominant_candidate["item_key"]
@@ -201,9 +213,17 @@ def draw_weighted_item_loot(
                 continue
 
             other_candidates = [candidate for candidate in eligible_candidates if candidate is not dominant_candidate]
-            selected_candidate = _select_weighted_candidate(other_candidates, other_quantity)
+            selected_candidate = _select_weighted_candidate(
+                other_candidates,
+                other_quantity,
+                rng=rng,
+            )
         else:
-            selected_candidate = _select_weighted_candidate(eligible_candidates, total_weight)
+            selected_candidate = _select_weighted_candidate(
+                eligible_candidates,
+                total_weight,
+                rng=rng,
+            )
 
         if selected_candidate is None:
             break

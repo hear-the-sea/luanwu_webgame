@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from datetime import timedelta
 from typing import Any, Callable
 
 from django.db import transaction
 from django.utils import timezone
 
 from core.exceptions import RaidRetreatStateError
+from gameplay.services.pvp_runtime.lifecycle import TravelTimeline
 
 
 def request_raid_retreat(
@@ -22,8 +22,6 @@ def request_raid_retreat(
         raise RaidRetreatStateError("retreating")
 
     now = timezone.now()
-    elapsed = max(0, int((now - run.started_at).total_seconds()))
-
     with transaction.atomic():
         locked_run = raid_run_model.objects.select_for_update().filter(pk=run.pk).first()
         if not locked_run or locked_run.status != raid_run_model.Status.MARCHING:
@@ -31,12 +29,13 @@ def request_raid_retreat(
         if locked_run.is_retreating:
             raise RaidRetreatStateError("retreating")
 
+        retreat_schedule = TravelTimeline.from_activity(locked_run).retreat_schedule(now=now)
         locked_run.is_retreating = True
         locked_run.status = raid_run_model.Status.RETREATED
-        locked_run.return_at = now + timedelta(seconds=max(1, elapsed))
+        locked_run.return_at = retreat_schedule.return_at
         locked_run.save(update_fields=["is_retreating", "status", "return_at"])
 
-    schedule_retreat_completion(run.id, max(1, elapsed))
+    schedule_retreat_completion(run.id, retreat_schedule.elapsed_seconds)
 
 
 def finalize_raid_retreat(

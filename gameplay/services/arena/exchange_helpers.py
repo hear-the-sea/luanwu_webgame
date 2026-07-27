@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from random import Random, SystemRandom
 
 from django.db import transaction
 from django.db.models import F, Sum
 
+from battle.random_context import RNG_STREAM_LOOT, BattleRandomContext
 from core.exceptions import ArenaExchangeError, ArenaInsufficientCoinsError, ArenaRewardLimitError, MessageError
 from core.utils.infrastructure import (
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
@@ -30,6 +32,9 @@ ARENA_MESSAGE_DELIVERY_EXCEPTIONS: InfrastructureExceptions = combine_infrastruc
     MessageError,
     infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
 )
+
+ARENA_EXCHANGE_RANDOM_ITEMS_DISCRIMINATOR = "arena_exchange:random_items"
+ARENA_EXCHANGE_RANDOM_BLUEPRINTS_DISCRIMINATOR = "arena_exchange:random_blueprints"
 
 
 def normalize_exchange_quantity(quantity: int) -> int:
@@ -76,6 +81,8 @@ def resolve_rotating_blueprint_grants(
 def resolve_random_blueprint_grants(
     reward: ArenaRewardDefinition,
     quantity: int,
+    *,
+    rng: Random | SystemRandom,
 ) -> dict[str, int]:
     pool = reward.random_blueprint_pool
     if pool is None:
@@ -85,7 +92,7 @@ def resolve_random_blueprint_grants(
     if not blueprint_keys:
         raise ArenaExchangeError("图纸兑换配置无效")
     options = tuple(ArenaRandomItemOption(item_key=key, weight=1, amount=1) for key in blueprint_keys)
-    return _arena_helpers.resolve_random_reward_items(options, quantity)
+    return _arena_helpers.resolve_random_reward_items(options, quantity, rng=rng)
 
 
 def build_exchange_payload(
@@ -93,11 +100,17 @@ def build_exchange_payload(
     credited_resources: dict[str, int],
     overflow_resources: dict[str, int],
     granted_items: dict[str, int],
-) -> dict[str, dict[str, int]]:
+    base_seed: int,
+    rng_version: int,
+) -> dict[str, object]:
     return {
         "resources": credited_resources,
         "resources_overflow": overflow_resources,
         "items": granted_items,
+        "replay": {
+            "base_seed": int(base_seed),
+            "rng_version": int(rng_version),
+        },
     }
 
 
@@ -165,7 +178,7 @@ def create_exchange_record(
     reward,
     total_cost: int,
     normalized_quantity: int,
-    payload: dict[str, dict[str, int]],
+    payload: dict[str, object],
 ):
     return arena_exchange_record_model.objects.create(
         manor=locked_manor,
@@ -256,8 +269,16 @@ def exchange_arena_reward(manor: Manor, reward_key: str, quantity: int = 1) -> A
         period_end=week_end,
     )
 
+    random_context = BattleRandomContext.create()
     rotating_blueprint_grants = resolve_rotating_blueprint_grants(reward, normalized_quantity)
-    random_blueprint_grants = resolve_random_blueprint_grants(reward, normalized_quantity)
+    random_blueprint_grants = resolve_random_blueprint_grants(
+        reward,
+        normalized_quantity,
+        rng=random_context.rng(
+            RNG_STREAM_LOOT,
+            discriminator=ARENA_EXCHANGE_RANDOM_BLUEPRINTS_DISCRIMINATOR,
+        ),
+    )
 
     locked_manor.arena_coins = F("arena_coins") - total_cost
     locked_manor.save(update_fields=["arena_coins"])
@@ -275,7 +296,14 @@ def exchange_arena_reward(manor: Manor, reward_key: str, quantity: int = 1) -> A
         rotating_blueprint_grants,
     )
     random_item_grants = merge_item_grants(
-        _arena_helpers.resolve_random_reward_items(reward.random_items, normalized_quantity),
+        _arena_helpers.resolve_random_reward_items(
+            reward.random_items,
+            normalized_quantity,
+            rng=random_context.rng(
+                RNG_STREAM_LOOT,
+                discriminator=ARENA_EXCHANGE_RANDOM_ITEMS_DISCRIMINATOR,
+            ),
+        ),
         random_blueprint_grants,
     )
     granted_items = grant_exchange_items_locked(
@@ -289,6 +317,8 @@ def exchange_arena_reward(manor: Manor, reward_key: str, quantity: int = 1) -> A
         credited_resources=credited_resources,
         overflow_resources=overflow_resources,
         granted_items=granted_items,
+        base_seed=random_context.base_seed,
+        rng_version=random_context.rng_version,
     )
     create_exchange_record(
         arena_exchange_record_model=ArenaExchangeRecord,

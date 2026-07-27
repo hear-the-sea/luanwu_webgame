@@ -24,7 +24,10 @@ def finalize_raid(
 
     with transaction.atomic():
         locked_run = load_locked_raid_run(run.pk)
-        if not locked_run or locked_run.status == locked_run.Status.COMPLETED:
+        if not locked_run or locked_run.status not in {
+            locked_run.Status.RETURNING,
+            locked_run.Status.RETREATED,
+        }:
             return
 
         guests = list(locked_run.guests.select_for_update())

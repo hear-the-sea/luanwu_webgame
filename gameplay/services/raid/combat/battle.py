@@ -10,8 +10,16 @@ from typing import Any, Dict, Optional
 from django.db import transaction
 from django.utils import timezone
 
+from battle.random_context import (
+    LEGACY_BATTLE_ENGINE_VERSION,
+    RNG_STREAM_CAPTURE,
+    RNG_STREAM_LOOT,
+    BattleRandomContext,
+    current_replay_metadata,
+)
+from battle.replay_audit import audit_battle_replay_metadata
 from common.utils.celery import safe_apply_async
-from core.exceptions import BattlePreparationError, MessageError
+from core.exceptions import BattlePreparationError, InvalidBattleSnapshotError, MessageError
 from core.utils import safe_positive_int
 from core.utils.imports import is_missing_target_import
 from core.utils.infrastructure import (
@@ -20,11 +28,15 @@ from core.utils.infrastructure import (
     InfrastructureExceptions,
     combine_infrastructure_exceptions,
 )
-from gameplay.services.battle_snapshots import build_guest_battle_snapshots, build_guest_snapshot_proxies
+from gameplay.services.battle_snapshots import (
+    build_guest_battle_snapshots,
+    build_guest_snapshot_proxies,
+    validate_battle_troop_loadout,
+)
+from gameplay.services.pvp_runtime.lineups import select_player_defender_lineup
 from gameplay.services.technology import build_player_battle_technology_payload
 from gameplay.services.virtual_player_loot_limits import clamp_bot_loot_resources
 from guests.models import Guest, GuestStatus
-from guests.query_utils import guest_template_rarity_rank_case
 
 from ....models import Manor, PlayerTroop, RaidRun
 from ...recruitment.troops import apply_defender_troop_losses
@@ -36,7 +48,6 @@ from .battle_guest_damage import extract_side_guest_state as _extract_side_guest
 
 # Re-export messaging helpers.
 from .battle_post_actions import dispatch_complete_raid_task as _dispatch_complete_raid_task_impl
-from .battle_post_actions import fail_raid_run_due_invalid_state as _fail_raid_run_due_invalid_state_impl
 from .battle_post_actions import fail_raid_run_due_missing_manor as _fail_raid_run_due_missing_manor_impl
 from .capture import (  # noqa: F401
     _can_attempt_capture,
@@ -49,6 +60,7 @@ from .capture import (  # noqa: F401
     _try_capture_guest,
 )
 from .config import PVPConstants
+from .failure import fail_raid_run_and_release_resources
 from .loot import _apply_loot, _calculate_loot
 from .messaging import _send_raid_battle_messages  # noqa: F401
 from .travel import (
@@ -57,6 +69,7 @@ from .travel import (
     _retreat_raid_run_due_to_blocked_target,
 )
 from .troops import _normalize_mapping, _normalize_positive_int_mapping
+from .validation import raid_failure_reason_for_snapshot_error, validate_raid_run_battle_payload
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +80,14 @@ RAID_BATTLE_MESSAGE_EXCEPTIONS: InfrastructureExceptions = combine_infrastructur
     infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
 )
 RAID_CAPTURE_DEGRADED_EXCEPTIONS: InfrastructureExceptions = INFRASTRUCTURE_EXCEPTIONS
+
+
+def _has_raid_replay_metadata(run: Any) -> bool:
+    return (
+        int(getattr(run, "base_seed", 0) or 0) > 0
+        and int(getattr(run, "rng_version", 0) or 0) > 0
+        and str(getattr(run, "battle_engine_version", "") or "") != LEGACY_BATTLE_ENGINE_VERSION
+    )
 
 
 def _load_locked_raid_run(run_pk: int) -> Optional[RaidRun]:
@@ -84,6 +105,22 @@ def _load_locked_raid_run(run_pk: int) -> Optional[RaidRun]:
     )
 
 
+def _ensure_raid_replay_metadata(run_pk: int) -> None:
+    """Persist replay metadata before the battle transaction can roll back."""
+
+    with transaction.atomic():
+        locked_run = _load_locked_raid_run(run_pk)
+        if locked_run is None or locked_run.status != RaidRun.Status.MARCHING:
+            return
+        if _has_raid_replay_metadata(locked_run):
+            return
+        metadata = current_replay_metadata()
+        locked_run.base_seed = int(metadata["base_seed"])
+        locked_run.rng_version = int(metadata["rng_version"])
+        locked_run.battle_engine_version = str(metadata["battle_engine_version"])
+        locked_run.save(update_fields=["base_seed", "rng_version", "battle_engine_version"])
+
+
 def _prepare_run_for_battle(run_pk: int, now: datetime) -> Optional[RaidRun]:
     locked_run = _load_locked_raid_run(run_pk)
     if not locked_run:
@@ -98,32 +135,7 @@ def _prepare_run_for_battle(run_pk: int, now: datetime) -> Optional[RaidRun]:
     if locked_run.status != RaidRun.Status.MARCHING:
         return None
 
-    snapshots = locked_run.guest_snapshots
-    if not isinstance(snapshots, list):
-        raise AssertionError("invalid raid guest_snapshots payload")
-
-    if not snapshots and not locked_run.guests.exists():
-        failure_reason = RaidRun.FailureReason.MISSING_ATTACKER_LINEUP
-        _fail_raid_run_due_invalid_state_impl(
-            locked_run,
-            now=now,
-            failure_reason=failure_reason,
-        )
-        logger.error(
-            "raid run moved to failed due to invalid durable state: " "run_id=%s attacker=%s defender=%s reason=%s",
-            locked_run.id,
-            locked_run.attacker_id,
-            locked_run.defender_id,
-            failure_reason,
-            extra={
-                "component": "raid_invalid_state_recovery",
-                "run_id": locked_run.id,
-                "attacker_id": locked_run.attacker_id,
-                "defender_id": locked_run.defender_id,
-                "failure_reason": failure_reason,
-            },
-        )
-        return None
+    validate_raid_run_battle_payload(locked_run)
 
     locked_run.status = RaidRun.Status.BATTLING
     locked_run.save(update_fields=["status"])
@@ -145,8 +157,13 @@ def _apply_raid_loot_if_needed(locked_run: RaidRun, is_attacker_victory: bool) -
         return
 
     locked_defender = Manor.objects.select_for_update().get(pk=locked_run.defender_id)
+    random_context = BattleRandomContext.create(
+        locked_run.base_seed,
+        rng_version=locked_run.rng_version,
+    )
     loot_resources, loot_items = _calculate_loot(
         locked_defender,
+        rng=random_context.rng(RNG_STREAM_LOOT),
         guests=list(locked_run.guests.all()),
         troop_loadout=locked_run.troop_loadout,
         battle_report=locked_run.battle_report,
@@ -186,7 +203,16 @@ def _apply_defeat_protection(run: RaidRun, is_attacker_victory: bool, *, now: Op
 
 def _apply_capture_reward(locked_run: RaidRun, report: Any, is_attacker_victory: bool) -> None:
     try:
-        capture_info = _try_capture_guest(locked_run, report, is_attacker_victory)
+        random_context = BattleRandomContext.create(
+            locked_run.base_seed,
+            rng_version=locked_run.rng_version,
+        )
+        capture_info = _try_capture_guest(
+            locked_run,
+            report,
+            is_attacker_victory,
+            rng=random_context.rng(RNG_STREAM_CAPTURE),
+        )
         if capture_info:
             battle_rewards = _normalize_mapping(locked_run.battle_rewards)
             locked_run.battle_rewards = {**battle_rewards, "capture": capture_info}
@@ -269,47 +295,64 @@ def process_raid_battle(run: RaidRun, now: Optional[datetime] = None) -> None:
     """
     now = now or timezone.now()
     blocked_reason: str | None = None
+    if not _has_raid_replay_metadata(run):
+        _ensure_raid_replay_metadata(run.pk)
 
-    with transaction.atomic():
-        locked_run = _prepare_run_for_battle(run.pk, now)
-        if locked_run is None:
-            return
+    try:
+        with transaction.atomic():
+            locked_run = _prepare_run_for_battle(run.pk, now)
+            if locked_run is None:
+                return
 
-        try:
-            attacker_locked, defender_locked = _lock_battle_manors(locked_run.attacker_id, locked_run.defender_id)
-        except BattlePreparationError:
-            logger.warning(
-                "raid battle aborted due to missing manor: run_id=%s attacker=%s defender=%s",
-                locked_run.id,
-                locked_run.attacker_id,
-                locked_run.defender_id,
-            )
-            _fail_raid_run_due_missing_manor(locked_run, now=now)
-            return
-        locked_run.attacker = attacker_locked
-        locked_run.defender = defender_locked
-        blocked_reason = _get_defender_battle_block_reason(defender_locked, now=now)
-        if blocked_reason:
-            _retreat_raid_run_due_to_blocked_target(locked_run, now=now, reason=blocked_reason)
-        else:
-            report = _execute_raid_battle(locked_run)
-            apply_defender_troop_losses(locked_run.defender, report)
+            try:
+                attacker_locked, defender_locked = _lock_battle_manors(locked_run.attacker_id, locked_run.defender_id)
+            except BattlePreparationError:
+                logger.warning(
+                    "raid battle aborted due to missing manor: run_id=%s attacker=%s defender=%s",
+                    locked_run.id,
+                    locked_run.attacker_id,
+                    locked_run.defender_id,
+                )
+                _fail_raid_run_due_missing_manor(locked_run, now=now)
+                return
+            locked_run.attacker = attacker_locked
+            locked_run.defender = defender_locked
+            blocked_reason = _get_defender_battle_block_reason(defender_locked, now=now)
+            if blocked_reason:
+                _retreat_raid_run_due_to_blocked_target(locked_run, now=now, reason=blocked_reason)
+            else:
+                report = _execute_raid_battle(locked_run)
+                audit_battle_replay_metadata(
+                    locked_run,
+                    report,
+                    logger=logger,
+                    activity_kind="raid_run",
+                )
+                apply_defender_troop_losses(locked_run.defender, report)
 
-            is_attacker_victory = report.winner == "attacker"
-            locked_run.is_attacker_victory = is_attacker_victory
-            locked_run.battle_report = report
+                is_attacker_victory = report.winner == "attacker"
+                locked_run.is_attacker_victory = is_attacker_victory
+                locked_run.battle_report = report
 
-            _apply_raid_loot_if_needed(locked_run, is_attacker_victory)
-            _apply_prestige_changes(locked_run, is_attacker_victory)
-            _apply_defeat_protection(locked_run, is_attacker_victory, now=now)
-            _apply_capture_reward(locked_run, report, is_attacker_victory)
-            _apply_salvage_reward(locked_run, report, is_attacker_victory)
+                _apply_raid_loot_if_needed(locked_run, is_attacker_victory)
+                _apply_prestige_changes(locked_run, is_attacker_victory)
+                _apply_defeat_protection(locked_run, is_attacker_victory, now=now)
+                _apply_capture_reward(locked_run, report, is_attacker_victory)
+                _apply_salvage_reward(locked_run, report, is_attacker_victory)
 
-            if locked_run.return_at is None:
-                return_seconds = max(0, int(locked_run.travel_time or 0))
-                locked_run.return_at = now + timedelta(seconds=return_seconds)
-            locked_run.status = RaidRun.Status.RETURNING
-            locked_run.save()
+                if locked_run.return_at is None:
+                    return_seconds = max(0, int(locked_run.travel_time or 0))
+                    locked_run.return_at = now + timedelta(seconds=return_seconds)
+                locked_run.status = RaidRun.Status.RETURNING
+                locked_run.save()
+    except InvalidBattleSnapshotError as exc:
+        fail_raid_run_and_release_resources(
+            run.pk,
+            failure_reason=raid_failure_reason_for_snapshot_error(exc),
+            now=now,
+            failure_detail=str(exc),
+        )
+        return
 
     if blocked_reason:
         _dispatch_complete_raid_task(locked_run, now=now)
@@ -382,24 +425,17 @@ def _execute_raid_battle(run: RaidRun) -> Any:
     attacker = run.attacker
     defender = run.defender
     attacker_guests = list(run.guests.select_for_update().select_related("template").prefetch_related("skills"))
-    loadout = _normalize_positive_int_mapping(run.troop_loadout)
+    loadout = validate_battle_troop_loadout(run.troop_loadout)
     attacker_guest_ids = {guest.id for guest in attacker_guests}
 
-    attacker_snapshots = list(run.guest_snapshots or [])
+    attacker_snapshots = run.guest_snapshots
     if not attacker_snapshots and attacker_guests:
         attacker_snapshots = build_guest_battle_snapshots(attacker_guests, include_identity=True)
     attacker_combat_guests: list[Any] = build_guest_snapshot_proxies(attacker_snapshots, include_guest_identity=True)
     if not attacker_combat_guests:
         attacker_combat_guests = attacker_guests  # type: ignore[assignment]
 
-    defender_guests = list(
-        defender.guests.select_for_update()
-        .filter(status=GuestStatus.IDLE)
-        .select_related("template")
-        .prefetch_related("skills")
-        .annotate(_template_rarity_rank=guest_template_rarity_rank_case("template__rarity"))
-        .order_by("-_template_rarity_rank", "-level", "id")
-    )
+    defender_guests = select_player_defender_lineup(defender)
 
     defender_troops: Dict[str, int] = {}
     for troop in (
@@ -415,13 +451,16 @@ def _execute_raid_battle(run: RaidRun) -> Any:
     report = simulate_report(
         manor=attacker,
         battle_type="raid",
+        seed=run.base_seed,
+        rng_version=run.rng_version,
+        battle_engine_version=run.battle_engine_version,
         troop_loadout=loadout,
         fill_default_troops=False,
         attacker_guests=attacker_combat_guests,
         defender_setup=defender_setup,
         defender_guests=defender_guests,  # type: ignore[arg-type]
         defender_manor=defender,
-        defender_max_squad=len(defender_guests) if defender_guests else None,
+        defender_max_squad=defender.max_squad_size,
         opponent_name=defender.display_name,
         travel_seconds=0,
         send_message=False,

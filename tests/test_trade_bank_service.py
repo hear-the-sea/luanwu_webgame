@@ -24,6 +24,14 @@ def _ensure_gold_bar_template() -> ItemTemplate:
     return template
 
 
+def _fund_manor_for_exchange(manor, *, silver: int = 1_000_000_000) -> None:
+    """Fund exchange tests without creating an over-capacity resource state."""
+
+    manor.silver_capacity = silver
+    manor.silver = silver
+    manor.save(update_fields=["silver_capacity", "silver"])
+
+
 @pytest.mark.django_db
 def test_calculate_progressive_factor_caps():
     assert bank_service.calculate_progressive_factor(-5) == 1.0
@@ -110,8 +118,7 @@ def test_exchange_gold_bar_deducts_silver_and_creates_inventory(monkeypatch, dja
 
     user = django_user_model.objects.create_user(username="bank_exchange", password="pass12345")
     manor = ensure_manor(user)
-    manor.silver = 1_000_000_000
-    manor.save(update_fields=["silver"])
+    _fund_manor_for_exchange(manor)
 
     _ = _ensure_gold_bar_template()
 
@@ -185,8 +192,7 @@ def test_get_effective_gold_supply_handles_corrupted_stale_cache(monkeypatch):
 def test_exchange_gold_bar_tolerates_cache_delete_failure(monkeypatch, django_user_model):
     user = django_user_model.objects.create_user(username="bank_cache_delete", password="pass12345")
     manor = ensure_manor(user)
-    manor.silver = 1_000_000_000
-    manor.save(update_fields=["silver"])
+    _fund_manor_for_exchange(manor)
 
     _ = _ensure_gold_bar_template()
 
@@ -238,8 +244,7 @@ def test_exchange_gold_bar_rejects_invalid_quantity(django_user_model):
 def test_exchange_gold_bar_translates_missing_gold_bar_template(monkeypatch, django_user_model):
     user = django_user_model.objects.create_user(username="bank_exchange_missing_gold_tpl", password="pass12345")
     manor = ensure_manor(user)
-    manor.silver = 1_000_000_000
-    manor.save(update_fields=["silver"])
+    _fund_manor_for_exchange(manor)
 
     monkeypatch.setattr(
         bank_service,
@@ -266,8 +271,7 @@ def test_exchange_gold_bar_translates_missing_gold_bar_template(monkeypatch, dja
 def test_exchange_gold_bar_fails_closed_when_pricing_falls_back_to_stale_cache(monkeypatch, django_user_model):
     user = django_user_model.objects.create_user(username="bank_exchange_fail_closed", password="pass12345")
     manor = ensure_manor(user)
-    manor.silver = 1_000_000_000
-    manor.save(update_fields=["silver"])
+    _fund_manor_for_exchange(manor)
     _ = _ensure_gold_bar_template()
 
     def fake_get(key, default=None):

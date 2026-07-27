@@ -11,12 +11,13 @@ from datetime import datetime, timedelta
 from itertools import islice
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-from django.db.models import Count, QuerySet
+from django.db.models import Count, Q, QuerySet
 from django.utils import timezone
 
 from ...constants import PVPConstants
-from ...models import BotProfile, Manor, RaidRun
+from ...models import Manor, RaidRun
 from ..pvp_runtime.travel import calculate_pvp_travel_time
+from ..virtual_player_state_policy import VIRTUAL_PROFILE_MAP_VISIBLE_STATES
 from .utils import calculate_distance, can_attack_target, get_prestige_color, is_same_region
 
 _SEARCH_BATCH_SIZE = 200
@@ -35,7 +36,9 @@ _SEARCH_MANOR_FIELDS = (
 
 
 def _visible_manors() -> QuerySet[Manor]:
-    return Manor.objects.exclude(bot_profile__state=BotProfile.State.STALE)
+    return Manor.objects.filter(
+        Q(bot_profile__isnull=True) | Q(bot_profile__state__in=VIRTUAL_PROFILE_MAP_VISIBLE_STATES)
+    )
 
 
 def search_manors_by_name(searcher: Manor, name_query: str, limit: int = 20) -> List[Dict[str, Any]]:

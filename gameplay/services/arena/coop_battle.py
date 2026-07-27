@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 import copy
+import random
 from datetime import datetime
 from typing import Any
 
 from battle.arena_coop import ARENA_COOP_ENEMY_FINAL_STATS, configure_arena_coop_enemy_guest
 from battle.combatants_pkg import build_named_ai_guests
 from battle.models import BattleReport
+from battle.random_context import RNG_STREAM_AI_GROWTH
 from battle.services import simulate_report
 from gameplay.models import ArenaCoopEntry, ArenaCoopEvent
 from guests.models import Guest
 
+from .replay import replay_context
 from .snapshots import load_entry_guests
 
 
@@ -78,7 +81,7 @@ def build_attacker_guest_pool(registered_entries: list[ArenaCoopEntry], *, guest
     return attacker_guests
 
 
-def build_defender_guest_pool(locked_event: ArenaCoopEvent) -> list[Guest]:
+def build_defender_guest_pool(locked_event: ArenaCoopEvent, *, rng: random.Random) -> list[Guest]:
     enemy_snapshot = locked_event.enemy_snapshot if isinstance(locked_event.enemy_snapshot, dict) else {}
     raw_boss = enemy_snapshot.get("boss")
     boss: dict[str, object] = raw_boss if isinstance(raw_boss, dict) else {}
@@ -106,7 +109,7 @@ def build_defender_guest_pool(locked_event: ArenaCoopEvent) -> list[Guest]:
             }
         )
 
-    defender_guests = build_named_ai_guests(defender_guest_keys, level=90)
+    defender_guests = build_named_ai_guests(defender_guest_keys, level=90, rng=rng)
     for slot_index, guest in enumerate(defender_guests):
         configure_arena_coop_enemy_guest(guest)
         apply_combatant_metadata(guest, owner_entry_id=None, combatant_slot=slot_index, is_boss=slot_index == 0)
@@ -114,6 +117,8 @@ def build_defender_guest_pool(locked_event: ArenaCoopEvent) -> list[Guest]:
 
 
 def run_coop_battle_locked(locked_event: ArenaCoopEvent, now: datetime) -> BattleReport:
+    del now
+    random_context = replay_context(locked_event)
     registered_entries = list(
         locked_event.entries.filter(status=ArenaCoopEntry.Status.REGISTERED)
         .select_related("manor")
@@ -123,11 +128,17 @@ def run_coop_battle_locked(locked_event: ArenaCoopEvent, now: datetime) -> Battl
         registered_entries,
         guest_limit_per_entry=locked_event.guest_limit_per_entry,
     )
-    defender_guests = build_defender_guest_pool(locked_event)
+    defender_guests = build_defender_guest_pool(
+        locked_event,
+        rng=random_context.rng(RNG_STREAM_AI_GROWTH),
+    )
     report_manor = registered_entries[0].manor
     return simulate_report(
         report_manor,
         battle_type="arena_coop",
+        seed=locked_event.base_seed,
+        rng_version=locked_event.rng_version,
+        battle_engine_version=locked_event.battle_engine_version,
         troop_loadout={},
         fill_default_troops=False,
         attacker_guests=attacker_guests,

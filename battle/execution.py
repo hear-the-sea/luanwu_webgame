@@ -31,14 +31,24 @@ from .combatants_pkg.troop_device_bonuses import build_troop_device_bonuses
 from .constants import DEFAULT_BATTLE_TYPE, MAX_SQUAD, get_battle_config
 from .defender_setup import build_defender_guest_and_loadout as _build_defender_guest_and_loadout_from_sources
 from .models import BattleReport
+from .random_context import (
+    CURRENT_BATTLE_ENGINE_VERSION,
+    CURRENT_RNG_VERSION,
+    MAX_PERSISTED_SEED,
+    RNG_STREAM_AI_GROWTH,
+    RNG_STREAM_COMBAT,
+    BattleRandomContext,
+)
 from .rewards import dispatch_battle_message, grant_battle_rewards
-from .simulation_core import build_rng, simulate_battle
+from .simulation_core import simulate_battle
 
 
 @dataclass
 class BattleOptions:
     battle_type: str = DEFAULT_BATTLE_TYPE
     seed: int | None = None
+    rng_version: int = CURRENT_RNG_VERSION
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION
     troop_loadout: Dict[str, int] | None = None
     fill_default_troops: bool = True
     defender_setup: Dict[str, Any] | None = None
@@ -88,9 +98,19 @@ def _recover_guest_hp_batch(guests: List[Any], now) -> None:
             recover_guest_hp(guest, now=now)
 
 
-def _resolve_battle_rng(seed: int | None, rng_source: random.Random | None) -> tuple[int, random.Random]:
-    final_seed, rng_fallback = build_rng(seed)
-    return final_seed, (rng_source or rng_fallback)
+def _resolve_battle_rng(
+    seed: int | None,
+    rng_source: random.Random | None,
+    *,
+    rng_version: int,
+) -> tuple[BattleRandomContext, random.Random]:
+    # Compatibility contract: rng_source supplies a base seed only when seed is absent.
+    # The battle itself always uses versioned substreams so the persisted seed can replay it.
+    resolved_seed = seed
+    if resolved_seed is None and rng_source is not None:
+        resolved_seed = rng_source.randrange(1, MAX_PERSISTED_SEED + 1)
+    context = BattleRandomContext.create(resolved_seed, rng_version=rng_version)
+    return context, context.rng(RNG_STREAM_COMBAT)
 
 
 def _extract_defender_tech_profile(defender_setup: Dict[str, Any] | None) -> tuple[dict, int, dict, List[str] | None]:
@@ -303,7 +323,12 @@ def _finalize_battle_results(
     defender_loadout: Dict[str, int],
     options: BattleOptions,
     opponent_label: str,
+    random_context: BattleRandomContext | None = None,
 ) -> BattleReport:
+    resolved_random_context = random_context or BattleRandomContext.create(
+        simulation.seed,
+        rng_version=options.rng_version,
+    )
     with transaction.atomic():
         grant_battle_rewards(
             manor,
@@ -352,6 +377,8 @@ def _finalize_battle_results(
             starts_at=simulation.starts_at,
             completed_at=simulation.completed_at,
             seed=simulation.seed,
+            rng_version=resolved_random_context.rng_version,
+            battle_engine_version=options.battle_engine_version,
         )
 
         if options.send_message:
@@ -367,7 +394,11 @@ def execute_battle(
 ) -> BattleReport:
     config = get_battle_config(options.battle_type)
     normalized_loadout = _prepare_battle_environment(active_guests, options)
-    final_seed, rng = _resolve_battle_rng(options.seed, options.rng_source)
+    random_context, rng = _resolve_battle_rng(
+        options.seed,
+        options.rng_source,
+        rng_version=options.rng_version,
+    )
     attacker_guests_comb, attacker_troops = _build_attacker_units(
         guests,
         active_guests,
@@ -377,11 +408,18 @@ def execute_battle(
     )
     now = timezone.now()
     defender_guests_comb, defender_troops, defender_city_defenses, defender_loadout = _build_defender_units(
-        options, rng, now
+        options, random_context.rng(RNG_STREAM_AI_GROWTH), now
     )
     attacker_units = attacker_guests_comb + attacker_troops
     defender_units = defender_guests_comb + defender_troops + defender_city_defenses
-    simulation, opponent_label = _execute_simulation(attacker_units, defender_units, options, config, rng, final_seed)
+    simulation, opponent_label = _execute_simulation(
+        attacker_units,
+        defender_units,
+        options,
+        config,
+        rng,
+        random_context.base_seed,
+    )
     return _finalize_battle_results(
         manor,
         simulation,
@@ -393,6 +431,7 @@ def execute_battle(
         defender_loadout,
         options,
         opponent_label,
+        random_context,
     )
 
 

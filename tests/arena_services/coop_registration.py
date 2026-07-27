@@ -30,6 +30,9 @@ def test_register_arena_coop_entry_creates_recruiting_event_and_snapshots():
     assert result.entry_count == 1
     assert result.event.boss_initial_hp == 300000
     assert result.event.boss_remaining_hp == 300000
+    assert result.event.base_seed > 0
+    assert result.event.rng_version > 0
+    assert result.event.battle_engine_version != "legacy"
     assert result.event.daily_rule_snapshot["contribution"]["minimum_share_bps"] > 0
 
 

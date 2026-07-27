@@ -20,6 +20,7 @@ from gameplay.models import (
     BotProfile,
 )
 from gameplay.services.arena.snapshots import build_entry_guest_snapshot
+from gameplay.services.virtual_player_state_policy import VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES
 from guests.models import Guest, GuestStatus
 
 logger = logging.getLogger(__name__)
@@ -128,7 +129,7 @@ def _candidates(
     profile_ids: Sequence[int] | None = None,
 ):
     queryset = (
-        BotProfile.objects.filter(state__in=[BotProfile.State.ACTIVE, BotProfile.State.SLOWING])
+        BotProfile.objects.filter(state__in=VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES)
         .exclude(manor_id__in=set(excluded_manor_ids))
         .select_related("manor")
         .prefetch_related(
@@ -155,7 +156,7 @@ def _lock_candidates(
         BotProfile.objects.select_for_update(skip_locked=True)
         .filter(
             id__in=profile_ids,
-            state__in=[BotProfile.State.ACTIVE, BotProfile.State.SLOWING],
+            state__in=VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES,
         )
         .exclude(manor_id__in=set(excluded_manor_ids))
         .select_related("manor")

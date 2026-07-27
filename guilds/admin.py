@@ -13,6 +13,7 @@ from .models import (
     GuildMember,
     GuildMissionRun,
     GuildMissionTemplate,
+    GuildRaidRun,
     GuildResourceLog,
     GuildTechnology,
     GuildTroopDonationLog,
@@ -30,6 +31,7 @@ apply_common_field_labels(
     GuildAnnouncement,
     GuildDonationLog,
     GuildResourceLog,
+    GuildRaidRun,
     GuildHeroPoolEntry,
     GuildBattleLineupEntry,
     GuildMissionTemplate,
@@ -199,3 +201,45 @@ class GuildTroopDonationLogAdmin(admin.ModelAdmin):
     list_filter = ["donated_at", "troop_template"]
     search_fields = ["guild__name", "member__user__username", "troop_template__key", "troop_template__name"]
     readonly_fields = ["donated_at"]
+
+
+@admin.register(GuildRaidRun)
+class GuildRaidRunAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "attacker_guild",
+        "defender_guild",
+        "status",
+        "failure_reason",
+        "resources_released",
+        "base_seed",
+        "rng_version",
+        "battle_engine_version",
+        "started_at",
+        "battle_at",
+        "return_at",
+    )
+    list_filter = ("status", "failure_reason", "resources_released", "loot_settled")
+    search_fields = ("=id", "attacker_guild__name", "defender_guild__name", "started_by__user__username")
+    readonly_fields = (
+        "failure_reason",
+        "resources_released",
+        "base_seed",
+        "rng_version",
+        "battle_engine_version",
+        "guest_ids",
+        "guest_snapshots",
+        "troop_loadout",
+        "attacker_troop_tech_snapshot",
+        "battle_report",
+        "loot_silver",
+        "loot_items",
+        "loot_item_contribution_costs",
+        "loot_settled",
+        "battle_rewards",
+        "blocked_reason",
+        "started_at",
+        "battle_at",
+        "return_at",
+        "completed_at",
+    )

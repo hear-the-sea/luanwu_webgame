@@ -234,3 +234,33 @@ class TestMapViews:
         assert f'data-map-url="{reverse("gameplay:map")}"' in body
         assert "const raidApiUrl =" not in body
         assert "fetch(raidApiUrl" not in body
+
+    def test_raid_config_page_hides_stale_virtual_player(self, manor_with_user, django_user_model):
+        _manor, client = manor_with_user
+        target_user = django_user_model.objects.create_user(username="raid_config_stale_target", password="pass123")
+        target_manor = ensure_manor(target_user)
+        now = timezone.now()
+        BotProfile.objects.create(
+            manor=target_manor,
+            state=BotProfile.State.STALE,
+            prestige_band="newbie",
+            target_prestige_band="newbie",
+            current_prestige_band="newbie",
+            growth_seed=target_manor.id,
+            next_growth_at=now,
+            abandon_at=now,
+            retire_at=now,
+            maintenance_stopped_at=now,
+        )
+
+        response = client.get(reverse("gameplay:raid_config", kwargs={"target_id": target_manor.id}))
+
+        assert response.status_code == 404
+
+    def test_map_visibility_queryset_keeps_real_player(self, django_user_model):
+        from gameplay.views.map import _map_visible_manors
+
+        target_user = django_user_model.objects.create_user(username="map_visible_real_target", password="pass123")
+        target_manor = ensure_manor(target_user)
+
+        assert _map_visible_manors().filter(pk=target_manor.pk).exists()

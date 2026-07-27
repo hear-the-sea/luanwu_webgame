@@ -223,6 +223,7 @@ def test_tournament_backfill_uses_bot_owned_balanced_lineups_and_skips_reserved_
     )
     stale_profile = _create_bot_profile("arena_backfill_stale", state=BotProfile.State.STALE)
     retired_profile = _create_bot_profile("arena_backfill_retired", state=BotProfile.State.RETIRED)
+    abandoned_profile = _create_bot_profile("arena_backfill_abandoned", state=BotProfile.State.ABANDONED)
     first_available = _create_bot_profile("arena_backfill_available_one")
     second_available = _create_bot_profile("arena_backfill_available_two")
 
@@ -234,6 +235,7 @@ def test_tournament_backfill_uses_bot_owned_balanced_lineups_and_skips_reserved_
     assert reserved_profile.manor_id not in {entry.manor_id for entry in virtual_entries}
     assert stale_profile.manor_id not in {entry.manor_id for entry in virtual_entries}
     assert retired_profile.manor_id not in {entry.manor_id for entry in virtual_entries}
+    assert abandoned_profile.manor_id not in {entry.manor_id for entry in virtual_entries}
     for entry in virtual_entries:
         links = list(entry.entry_guests.all())
         assert len(links) == 1

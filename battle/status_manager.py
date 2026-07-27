@@ -5,6 +5,7 @@ from itertools import chain
 from typing import Any, Dict, Iterable, List
 
 from .combat_math import troop_unit_hp
+from .modifier_lifecycle import clear_round_and_action_modifiers
 from .simulation.report_state import snapshot_unit_state
 from .utils.status_effects import cleanup_status_effects
 
@@ -14,15 +15,6 @@ from .utils.status_effects import cleanup_status_effects
 DEFAULT_BATTLE_HEAL_RATIO = 0.10
 # 防守方拳系【五气朝元】恢复比例（当前生命的13%）
 DEFENDER_QUAN_BATTLE_HEAL_RATIO = 0.13
-
-PERSISTENT_BATTLE_MODIFIER_KEYS = frozenset(
-    {
-        "city_defense_attack_targets",
-        "fixed_first",
-        "skip_turn",
-        "wall_intercept_chance",
-    }
-)
 
 
 def prepare_combatants_for_round(
@@ -37,12 +29,7 @@ def prepare_combatants_for_round(
     for unit in chain(attacker_team, defender_team):
         unit.has_acted_this_round = False
         unit.current_round = round_no
-        if isinstance(getattr(unit, "battle_modifiers", None), dict):
-            persistent_modifiers = {
-                key: value for key, value in unit.battle_modifiers.items() if key in PERSISTENT_BATTLE_MODIFIER_KEYS
-            }
-            unit.battle_modifiers.clear()
-            unit.battle_modifiers.update(persistent_modifiers)
+        clear_round_and_action_modifiers(unit)
         if not getattr(unit, "status_effects", None):
             continue
         for status, payload in list(unit.status_effects.items()):

@@ -3,8 +3,8 @@ from __future__ import annotations
 import pytest
 from django.db.utils import DatabaseError
 
-from core.exceptions import GuildPermissionError
-from guilds.models import GuildMember
+from core.exceptions import GuildPermissionError, GuildValidationError
+from guilds.models import Guild, GuildMember, GuildRaidRun
 from guilds.services import guild as guild_service
 
 pytest_plugins = ("tests.guilds.fixtures",)
@@ -88,3 +88,38 @@ class TestGuildDisband:
 
         with pytest.raises(GuildPermissionError, match="帮主"):
             guild_service.disband_guild(guild, second_user)
+
+    @pytest.mark.parametrize(
+        "run_status",
+        [
+            GuildRaidRun.Status.MARCHING,
+            GuildRaidRun.Status.BATTLING,
+            GuildRaidRun.Status.RETURNING,
+            GuildRaidRun.Status.RETREATED,
+        ],
+    )
+    def test_disband_guild_rejects_all_in_flight_raid_states(
+        self,
+        user_with_gold_bars,
+        second_user,
+        run_status,
+    ):
+        guild = guild_service.create_guild(user=user_with_gold_bars, name="出征门禁帮会", description="")
+        attacker_guild = Guild.objects.create(name="关联进攻帮会", founder=second_user)
+        attacker_member = GuildMember.objects.create(
+            guild=attacker_guild,
+            user=second_user,
+            position="leader",
+        )
+        GuildRaidRun.objects.create(
+            attacker_guild=attacker_guild,
+            defender_guild=guild,
+            started_by=attacker_member,
+            status=run_status,
+        )
+
+        with pytest.raises(GuildValidationError, match="存在进行中的帮会对战"):
+            guild_service.disband_guild(guild, user_with_gold_bars)
+
+        guild.refresh_from_db()
+        assert guild.is_active is True

@@ -1,3 +1,4 @@
+import random
 from types import SimpleNamespace
 
 import pytest
@@ -88,10 +89,9 @@ def test_calculate_loot_items_clamps_quantity_by_item_capacity(monkeypatch):
         quantity=100,
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
-    monkeypatch.setattr("gameplay.services.raid.combat.loot.random.randrange", lambda _stop: 0)
-
     loot_items = _calculate_loot_items(
         _build_loot_item_queryset(defender),
+        rng=random.Random(1),
         guests=[_guest(1) for _ in range(18)],
         troop_loadout={"dao_ke": 3600},
         battle_report=SimpleNamespace(losses={}),
@@ -126,10 +126,9 @@ def test_calculate_loot_items_reduces_item_capacity_after_troop_losses(monkeypat
             }
         }
     )
-    monkeypatch.setattr("gameplay.services.raid.combat.loot.random.randrange", lambda _stop: 0)
-
     loot_items = _calculate_loot_items(
         _build_loot_item_queryset(defender),
+        rng=random.Random(2),
         guests=[_guest(1) for _ in range(18)],
         troop_loadout={"dao_ke": 3600},
         battle_report=battle_report,
@@ -157,7 +156,10 @@ def test_calculate_loot_items_uses_fractional_grain_capacity(monkeypatch):
     )
     monkeypatch.setattr("gameplay.services.raid.combat.loot._calculate_item_loot_capacity", lambda **_kwargs: 1)
 
-    loot_items = _calculate_loot_items(_build_loot_item_queryset(defender))
+    loot_items = _calculate_loot_items(
+        _build_loot_item_queryset(defender),
+        rng=random.Random(3),
+    )
 
     assert loot_items == {"grain": 1_000}
 
@@ -178,7 +180,10 @@ def test_calculate_loot_items_keeps_strict_twenty_percent_limit_for_small_invent
         quantity=4,
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
-    loot_items = _calculate_loot_items(_build_loot_item_queryset(defender))
+    loot_items = _calculate_loot_items(
+        _build_loot_item_queryset(defender),
+        rng=random.Random(4),
+    )
 
     assert loot_items == {}
 
@@ -200,9 +205,10 @@ def test_calculate_loot_items_shares_total_inventory_limit_across_types(monkeypa
             quantity=4,
             storage_location=InventoryItem.StorageLocation.WAREHOUSE,
         )
-    monkeypatch.setattr("gameplay.services.raid.combat.loot.random.randrange", lambda _stop: 0)
-
-    loot_items = _calculate_loot_items(_build_loot_item_queryset(defender))
+    loot_items = _calculate_loot_items(
+        _build_loot_item_queryset(defender),
+        rng=random.Random(5),
+    )
 
     assert sum(loot_items.values()) == 2
 
@@ -223,9 +229,10 @@ def test_calculate_loot_items_ignores_item_rarity(monkeypatch):
         quantity=5,
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
-    monkeypatch.setattr("gameplay.services.raid.combat.loot.random.randrange", lambda _stop: 0)
-
-    loot_items = _calculate_loot_items(_build_loot_item_queryset(defender))
+    loot_items = _calculate_loot_items(
+        _build_loot_item_queryset(defender),
+        rng=random.Random(6),
+    )
 
     assert loot_items == {"raid_inventory_chance_miss_item": 1}
 

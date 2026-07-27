@@ -14,8 +14,10 @@ if TYPE_CHECKING:
 
 
 def build_rng(seed: int | None = None) -> Tuple[int, random.Random]:
-    final_seed = seed if seed is not None else random.randint(1, 999_999_999)
-    return final_seed, random.Random(final_seed)
+    from ..random_context import RNG_STREAM_COMBAT, BattleRandomContext
+
+    context = BattleRandomContext.create(seed)
+    return context.base_seed, context.rng(RNG_STREAM_COMBAT)
 
 
 def calculate_crit_chance(actor: "Combatant") -> float:

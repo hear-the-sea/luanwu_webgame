@@ -194,6 +194,8 @@ def _resolve_boss_phase(boss: Any) -> int:
 def sync_arena_coop_combat_state(
     attacker_team: list[Any], defender_team: list[Any], round_no: int
 ) -> list[dict[str, Any]]:
+    from .modifier_lifecycle import clear_round_and_action_modifiers
+
     del attacker_team, round_no
 
     defenders = [unit for unit in defender_team if is_arena_coop_enemy_template(_template_key(unit))]
@@ -201,7 +203,7 @@ def sync_arena_coop_combat_state(
         return []
 
     for unit in defenders:
-        _combat_modifiers(unit).clear()
+        clear_round_and_action_modifiers(unit)
         _clear_arena_coop_guard_state(unit)
 
     boss = next((unit for unit in defenders if _template_key(unit) == ARENA_COOP_BOSS_TEMPLATE_KEY), None)

@@ -2,22 +2,26 @@ from __future__ import annotations
 
 import logging
 import random
-from collections.abc import Callable
+from fractions import Fraction
 from typing import TYPE_CHECKING, cast
 
 from django.db import transaction
 
+from battle.random_context import RNG_STREAM_TIE_BREAK, BattleRandomContext, current_replay_metadata
+from battle.replay_audit import audit_battle_replay_metadata
+from battle.report_events import iter_damage_events
 from battle.services import simulate_report
-from core.exceptions import BattlePreparationError, MessageError
+from core.exceptions import BattlePreparationError, InvalidBattleSnapshotError, MessageError
 from core.utils.infrastructure import (
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
     InfrastructureExceptions,
     combine_infrastructure_exceptions,
 )
-from gameplay.models import ArenaEntry, ArenaMatch, ArenaTournament, Message
+from gameplay.models import ArenaEntry, ArenaMatch, ArenaTournament, ArenaVirtualReserveMember, Message
 from gameplay.services.utils.messages import create_message
 from guests.models import Guest
 
+from .replay import derive_match_replay_metadata, ensure_match_replay_metadata
 from .snapshots import ArenaGuestSnapshotProxy, load_entry_guests
 
 if TYPE_CHECKING:
@@ -28,6 +32,34 @@ ARENA_BATTLE_MESSAGE_EXCEPTIONS: InfrastructureExceptions = combine_infrastructu
     MessageError,
     infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
 )
+
+
+def create_scheduled_match(
+    *,
+    tournament: ArenaTournament,
+    round_number: int,
+    match_index: int,
+    attacker_entry: ArenaEntry,
+    defender_entry: ArenaEntry | None,
+) -> ArenaMatch:
+    """Single write owner for new arena match slots."""
+
+    match = ArenaMatch(
+        tournament=tournament,
+        round_number=round_number,
+        match_index=match_index,
+        attacker_entry=attacker_entry,
+        defender_entry=defender_entry,
+        status=ArenaMatch.Status.SCHEDULED,
+        **derive_match_replay_metadata(
+            tournament,
+            round_number=round_number,
+            match_index=match_index,
+        ),
+    )
+    match.full_clean()
+    match.save(force_insert=True)
+    return match
 
 
 def send_arena_battle_messages(
@@ -79,17 +111,21 @@ def create_forfeit_match(
     note: str,
     now,
 ) -> ArenaMatch:
-    return ArenaMatch.objects.create(
+    match = create_scheduled_match(
         tournament=tournament,
         round_number=round_number,
         match_index=match_index,
         attacker_entry=attacker_entry,
         defender_entry=defender_entry,
+    )
+    save_resolved_match(
+        match=match,
         winner_entry=winner_entry,
         status=status,
-        notes=note[:255],
-        resolved_at=now,
+        note=note,
+        now=now,
     )
+    return match
 
 
 def save_resolved_match(
@@ -101,6 +137,22 @@ def save_resolved_match(
     note: str = "",
     report=None,
 ) -> bool:
+    candidate = ArenaMatch(
+        tournament=match.tournament,
+        round_number=match.round_number,
+        match_index=match.match_index,
+        attacker_entry=match.attacker_entry,
+        defender_entry=match.defender_entry,
+        winner_entry=winner_entry,
+        status=status,
+        base_seed=getattr(match, "base_seed", 0),
+        rng_version=getattr(match, "rng_version", 0),
+        battle_engine_version=getattr(match, "battle_engine_version", "legacy"),
+        battle_report=report,
+        notes=note[:255],
+        resolved_at=now,
+    )
+    candidate.full_clean(validate_unique=False, validate_constraints=False)
     update_values = {
         "winner_entry": winner_entry,
         "status": status,
@@ -171,11 +223,22 @@ def resolve_forfeit_winner(
     defender_guests: list[ArenaGuestSnapshotProxy],
     now,
     match: ArenaMatch | None,
-    random_choice: Callable[[list[ArenaEntry]], ArenaEntry],
+    rng: random.Random,
+    attacker_snapshot_invalid: bool = False,
+    defender_snapshot_invalid: bool = False,
 ) -> ArenaEntry | None:
-    if not attacker_guests and not defender_guests:
-        winner_entry = random_choice([attacker_entry, defender_entry])
-        note = "双方均无可用门客，随机判定胜者"
+    if attacker_snapshot_invalid and defender_snapshot_invalid:
+        winner_entry = rng.choice([attacker_entry, defender_entry])
+        note = "双方报名快照均无效，使用对局 tie_break 子流裁决"
+    elif attacker_snapshot_invalid:
+        winner_entry = defender_entry
+        note = "攻击方报名快照无效，判定防守方晋级"
+    elif defender_snapshot_invalid:
+        winner_entry = attacker_entry
+        note = "防守方报名快照无效，判定攻击方晋级"
+    elif not attacker_guests and not defender_guests:
+        winner_entry = rng.choice([attacker_entry, defender_entry])
+        note = "双方均无可用门客，使用对局 tie_break 子流裁决"
     elif not attacker_guests:
         winner_entry = defender_entry
         note = "攻击方无可用门客，判负"
@@ -199,6 +262,74 @@ def resolve_forfeit_winner(
     return winner_entry
 
 
+def _team_hp_ratio(team: object) -> Fraction:
+    members = team if isinstance(team, list) else []
+    initial_hp = 0
+    remaining_hp = 0
+    for member in members:
+        if not isinstance(member, dict):
+            continue
+        initial = max(0, int(member.get("initial_hp") or member.get("max_hp") or member.get("hp") or 0))
+        remaining = max(0, min(initial, int(member.get("remaining_hp") or 0)))
+        initial_hp += initial
+        remaining_hp += remaining
+    return Fraction(remaining_hp, initial_hp) if initial_hp > 0 else Fraction(0, 1)
+
+
+def _side_combat_metrics(report, side: str) -> tuple[int, int]:
+    applied_damage = 0
+    kills = 0
+    for event in iter_damage_events(getattr(report, "rounds", None)):
+        if event.get("side") != side:
+            continue
+        applied_damage += max(0, int(event.get("applied_damage", event.get("damage", 0)) or 0))
+        kills += max(0, int(event.get("kills", 0) or 0))
+    return applied_damage, kills
+
+
+def _remaining_unit_count(team: object) -> int:
+    members = team if isinstance(team, list) else []
+    return sum(1 for member in members if isinstance(member, dict) and max(0, int(member.get("remaining_hp") or 0)) > 0)
+
+
+def resolve_report_winner(
+    report,
+    *,
+    attacker_entry: ArenaEntry,
+    defender_entry: ArenaEntry,
+    rng: random.Random,
+) -> tuple[ArenaEntry, str]:
+    if report.winner == "attacker":
+        return attacker_entry, "战报裁决：攻击方胜利"
+    if report.winner == "defender":
+        return defender_entry, "战报裁决：防守方胜利"
+
+    attacker_hp_ratio = _team_hp_ratio(getattr(report, "attacker_team", None))
+    defender_hp_ratio = _team_hp_ratio(getattr(report, "defender_team", None))
+    if attacker_hp_ratio != defender_hp_ratio:
+        winner = attacker_entry if attacker_hp_ratio > defender_hp_ratio else defender_entry
+        return winner, f"平局裁决：剩余有效HP比例 {attacker_hp_ratio} : {defender_hp_ratio}"
+
+    attacker_damage, attacker_kills = _side_combat_metrics(report, "attacker")
+    defender_damage, defender_kills = _side_combat_metrics(report, "defender")
+    if attacker_damage != defender_damage:
+        winner = attacker_entry if attacker_damage > defender_damage else defender_entry
+        return winner, f"平局裁决：有效伤害 {attacker_damage} : {defender_damage}"
+
+    attacker_units = _remaining_unit_count(getattr(report, "attacker_team", None))
+    defender_units = _remaining_unit_count(getattr(report, "defender_team", None))
+    attacker_stage_three = (attacker_kills, attacker_units)
+    defender_stage_three = (defender_kills, defender_units)
+    if attacker_stage_three != defender_stage_three:
+        winner = attacker_entry if attacker_stage_three > defender_stage_three else defender_entry
+        return winner, (
+            "平局裁决：击杀/剩余单位 " f"{attacker_kills}/{attacker_units} : {defender_kills}/{defender_units}"
+        )
+
+    winner = rng.choice([attacker_entry, defender_entry])
+    return winner, "平局裁决：全部确定性指标相同，使用对局 tie_break 子流"
+
+
 def resolve_match_locked(
     *,
     tournament: ArenaTournament,
@@ -212,7 +343,21 @@ def resolve_match_locked(
     match: ArenaMatch | None = None,
     logger: logging.Logger,
 ) -> ArenaEntry | None:
-    if match is None or not getattr(match, "pk", None):
+    if match is None:
+        match = create_scheduled_match(
+            tournament=tournament,
+            round_number=round_number,
+            match_index=match_index,
+            attacker_entry=attacker_entry,
+            defender_entry=defender_entry,
+        )
+    elif not getattr(match, "pk", None):
+        # Compatibility shim for isolated callers with an unsaved test adapter.
+        # Remove once every caller passes a persisted match created by create_scheduled_match.
+        if not int(getattr(match, "base_seed", 0) or 0) or not int(getattr(match, "rng_version", 0) or 0):
+            metadata = current_replay_metadata()
+            for field_name, value in metadata.items():
+                setattr(match, field_name, value)
         return _resolve_match_locked(
             tournament=tournament,
             round_number=round_number,
@@ -226,6 +371,7 @@ def resolve_match_locked(
             logger=logger,
         )
 
+    ensure_match_replay_metadata(match.pk)
     with transaction.atomic():
         locked_match = (
             ArenaMatch.objects.select_for_update().filter(pk=match.pk, status=ArenaMatch.Status.SCHEDULED).first()
@@ -259,8 +405,64 @@ def _resolve_match_locked(
     match: ArenaMatch | None = None,
     logger: logging.Logger,
 ) -> ArenaEntry:
-    attacker_guests = load_entry_guests(attacker_entry, max_guests_per_entry=max_guests_per_entry)
-    defender_guests = load_entry_guests(defender_entry, max_guests_per_entry=max_guests_per_entry)
+    if match is None:
+        raise AssertionError("arena match resolution requires a match write owner")
+    random_context = BattleRandomContext.create(
+        match.base_seed,
+        rng_version=match.rng_version,
+    )
+    tie_break_rng = random_context.rng(RNG_STREAM_TIE_BREAK)
+
+    attacker_snapshot_invalid = False
+    defender_snapshot_invalid = False
+    try:
+        attacker_guests = load_entry_guests(attacker_entry, max_guests_per_entry=max_guests_per_entry)
+    except InvalidBattleSnapshotError as exc:
+        attacker_guests = []
+        attacker_snapshot_invalid = True
+        if attacker_entry.source == ArenaEntry.Source.VIRTUAL:
+            ArenaVirtualReserveMember.objects.filter(profile__manor_id=attacker_entry.manor_id).delete()
+        logger.warning(
+            "arena_entry_forfeited_invalid_snapshot: match_id=%s entry_id=%s side=attacker error=%s",
+            getattr(match, "pk", None),
+            attacker_entry.pk,
+            exc,
+            extra={
+                "event": "arena_entry_forfeited_invalid_snapshot",
+                "match_id": getattr(match, "pk", None),
+                "tournament_id": tournament.pk,
+                "entry_id": attacker_entry.pk,
+                "side": "attacker",
+                "failure_reason": "invalid_guest_snapshot",
+                "base_seed": match.base_seed,
+                "rng_version": match.rng_version,
+                "battle_engine_version": match.battle_engine_version,
+            },
+        )
+    try:
+        defender_guests = load_entry_guests(defender_entry, max_guests_per_entry=max_guests_per_entry)
+    except InvalidBattleSnapshotError as exc:
+        defender_guests = []
+        defender_snapshot_invalid = True
+        if defender_entry.source == ArenaEntry.Source.VIRTUAL:
+            ArenaVirtualReserveMember.objects.filter(profile__manor_id=defender_entry.manor_id).delete()
+        logger.warning(
+            "arena_entry_forfeited_invalid_snapshot: match_id=%s entry_id=%s side=defender error=%s",
+            getattr(match, "pk", None),
+            defender_entry.pk,
+            exc,
+            extra={
+                "event": "arena_entry_forfeited_invalid_snapshot",
+                "match_id": getattr(match, "pk", None),
+                "tournament_id": tournament.pk,
+                "entry_id": defender_entry.pk,
+                "side": "defender",
+                "failure_reason": "invalid_guest_snapshot",
+                "base_seed": match.base_seed,
+                "rng_version": match.rng_version,
+                "battle_engine_version": match.battle_engine_version,
+            },
+        )
 
     forfeit_winner = resolve_forfeit_winner(
         tournament=tournament,
@@ -272,7 +474,9 @@ def _resolve_match_locked(
         defender_guests=defender_guests,
         now=now,
         match=match,
-        random_choice=random.choice,
+        rng=tie_break_rng,
+        attacker_snapshot_invalid=attacker_snapshot_invalid,
+        defender_snapshot_invalid=defender_snapshot_invalid,
     )
     if forfeit_winner is not None:
         return forfeit_winner
@@ -283,6 +487,9 @@ def _resolve_match_locked(
         report = simulate_report(
             manor=attacker_entry.manor,
             battle_type="arena",
+            seed=match.base_seed,
+            rng_version=match.rng_version,
+            battle_engine_version=match.battle_engine_version,
             troop_loadout={},
             fill_default_troops=False,
             attacker_guests=attacker_battle_guests,
@@ -311,12 +518,19 @@ def _resolve_match_locked(
             match.save(update_fields=["notes"])
         raise arena_match_resolution_error("战斗模拟异常，已保留待重试")
 
-    if report.winner == "attacker":
-        winner_entry = attacker_entry
-    elif report.winner == "defender":
-        winner_entry = defender_entry
-    else:
-        winner_entry = random.choice([attacker_entry, defender_entry])
+    audit_battle_replay_metadata(
+        match,
+        report,
+        logger=logger,
+        activity_kind="arena_match",
+    )
+
+    winner_entry, resolution_note = resolve_report_winner(
+        report,
+        attacker_entry=attacker_entry,
+        defender_entry=defender_entry,
+        rng=tie_break_rng,
+    )
 
     saved = True
     if match:
@@ -326,19 +540,10 @@ def _resolve_match_locked(
             status=ArenaMatch.Status.COMPLETED,
             report=report,
             now=now,
+            note=resolution_note,
         )
     else:
-        ArenaMatch.objects.create(
-            tournament=tournament,
-            round_number=round_number,
-            match_index=match_index,
-            attacker_entry=attacker_entry,
-            defender_entry=defender_entry,
-            winner_entry=winner_entry,
-            battle_report=report,
-            status=ArenaMatch.Status.COMPLETED,
-            resolved_at=now,
-        )
+        raise AssertionError("arena match resolution cannot persist outside create_scheduled_match")
 
     if saved:
 

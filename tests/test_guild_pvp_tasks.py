@@ -285,3 +285,61 @@ def test_complete_guild_raid_task_finalizes_due_returning_run(monkeypatch, djang
 
     assert complete_guild_raid_task.run(run.id) == "completed"
     assert finalized == [(run.id, now)]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_scan_due_guild_raids_continues_after_invalid_snapshot(monkeypatch, django_user_model):
+    from guilds import tasks
+    from guilds.services.guild_raids import process_due_guild_raid as real_process_due
+
+    now = timezone.now()
+    attacker_guild, attacker_member, _attacker_manor = _create_guild_with_leader(
+        django_user_model,
+        "毒记录攻",
+    )
+    defender_guild, _defender_member, _defender_manor = _create_guild_with_leader(
+        django_user_model,
+        "毒记录守",
+    )
+    invalid_run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        guest_snapshots="bad-snapshots",
+        troop_loadout={},
+        battle_at=now - timedelta(seconds=2),
+        return_at=now + timedelta(minutes=1),
+    )
+    later_run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        guest_snapshots=[{"sentinel": True}],
+        troop_loadout={},
+        battle_at=now - timedelta(seconds=1),
+        return_at=now + timedelta(minutes=1),
+    )
+    seen: list[int] = []
+
+    def _process(run, now=None):
+        seen.append(run.id)
+        if run.id == invalid_run.id:
+            return real_process_due(run, now=now)
+        GuildRaidRun.objects.filter(pk=run.pk).update(
+            status=GuildRaidRun.Status.COMPLETED,
+            completed_at=now,
+        )
+        return True
+
+    monkeypatch.setattr(tasks, "process_due_guild_raid", _process)
+
+    assert tasks.scan_due_guild_raids(limit=10) == 2
+    invalid_run.refresh_from_db()
+    assert invalid_run.status == GuildRaidRun.Status.FAILED
+    assert invalid_run.failure_reason == GuildRaidRun.FailureReason.INVALID_GUEST_SNAPSHOT
+    assert invalid_run.resources_released is True
+    assert seen == [invalid_run.id, later_run.id]

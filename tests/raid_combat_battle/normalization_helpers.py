@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 from django.db import DatabaseError
 
+from battle.random_context import CURRENT_RNG_VERSION
 from core.utils import safe_positive_int
 from gameplay.services.raid.combat import battle as combat_battle
 
@@ -141,7 +142,14 @@ def test_delete_captured_guest_gear_programming_error_bubbles_up(monkeypatch):
 
 
 def test_apply_capture_reward_runtime_marker_infrastructure_error_degrades(monkeypatch):
-    run = SimpleNamespace(id=51, attacker_id=1, defender_id=2, battle_rewards={"existing": True})
+    run = SimpleNamespace(
+        id=51,
+        attacker_id=1,
+        defender_id=2,
+        battle_rewards={"existing": True},
+        base_seed=101,
+        rng_version=CURRENT_RNG_VERSION,
+    )
     monkeypatch.setattr(
         combat_battle,
         "_try_capture_guest",
@@ -154,7 +162,14 @@ def test_apply_capture_reward_runtime_marker_infrastructure_error_degrades(monke
 
 
 def test_apply_capture_reward_runtime_marker_error_bubbles_up(monkeypatch):
-    run = SimpleNamespace(id=53, attacker_id=1, defender_id=2, battle_rewards={"existing": True})
+    run = SimpleNamespace(
+        id=53,
+        attacker_id=1,
+        defender_id=2,
+        battle_rewards={"existing": True},
+        base_seed=101,
+        rng_version=CURRENT_RNG_VERSION,
+    )
     monkeypatch.setattr(
         combat_battle,
         "_try_capture_guest",
@@ -166,7 +181,14 @@ def test_apply_capture_reward_runtime_marker_error_bubbles_up(monkeypatch):
 
 
 def test_apply_capture_reward_programming_error_bubbles_up(monkeypatch):
-    run = SimpleNamespace(id=52, attacker_id=1, defender_id=2, battle_rewards={"existing": True})
+    run = SimpleNamespace(
+        id=52,
+        attacker_id=1,
+        defender_id=2,
+        battle_rewards={"existing": True},
+        base_seed=101,
+        rng_version=CURRENT_RNG_VERSION,
+    )
     monkeypatch.setattr(
         combat_battle,
         "_try_capture_guest",

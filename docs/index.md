@@ -24,6 +24,7 @@
 | [数据流边界](domain_boundaries.md) | 关键领域的数据来源、缓存、补偿与失败语义 |
 | [第二阶段统一写模型基线](write_model_boundaries.md) | `mission / raid / guest recruitment` 写路径基线 |
 | [技术审计（2026-03）](technical_audit_2026-03.md) | 当前治理基线、约束与验证记录 |
+| [PVP、竞技场与战斗系统审计（2026-07-26）](pvp_arena_battle_audit_2026-07-26.md) | 虚拟玩家、竞技场、玩家/帮会 PVP 与战斗系统问题及整改方案 |
 | [优化计划](optimization_plan.md) | 与技术审计配套的执行路线图 |
 | [兼容入口清单（2026-03）](compatibility_inventory_2026-03.md) | 当前仍明确保留的兼容入口 |
 
@@ -41,4 +42,4 @@
 4. 涉及 YAML、导库或热刷新，先看 [配置数据](config_data.md)
 5. 涉及镜像构建、服务器更新、Redis 认证或 Docker 清理，先看 [Docker 部署运行手册](runbook_deploy_docker.md)
 
-*最近校正：2026-04-06*
+*最近校正：2026-07-26*

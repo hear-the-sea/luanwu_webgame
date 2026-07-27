@@ -17,6 +17,7 @@ from django.db.models import F, Sum
 from django.utils import timezone
 
 from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
+from gameplay.services.virtual_player_state_policy import VIRTUAL_PROFILE_ATTACKABLE_STATES
 
 from ...constants import PVPConstants
 from ...models import BotProfile, InventoryItem, Manor, RaidRun
@@ -221,10 +222,9 @@ def get_target_attack_block_reason(
     """Return a blocker shared by every potential attacker for this target."""
     if (
         check_stale_bot
-        and BotProfile.objects.filter(
-            manor_id=defender.id,
-            state=BotProfile.State.STALE,
-        ).exists()
+        and BotProfile.objects.filter(manor_id=defender.id)
+        .exclude(state__in=VIRTUAL_PROFILE_ATTACKABLE_STATES)
+        .exists()
     ):
         return "该虚拟玩家暂不可用"
     if defender.is_under_newbie_protection:

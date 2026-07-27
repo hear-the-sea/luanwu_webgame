@@ -12,19 +12,6 @@ from guests.models import Guest, GuestStatus
 from ....models import Manor
 
 
-def fail_raid_run_due_invalid_state(
-    locked_run: Any,
-    *,
-    now: datetime | None,
-    failure_reason: str,
-) -> None:
-    current_time = now or timezone.now()
-    locked_run.status = locked_run.Status.FAILED
-    locked_run.failure_reason = failure_reason
-    locked_run.completed_at = current_time
-    locked_run.save(update_fields=["status", "failure_reason", "completed_at"])
-
-
 def fail_raid_run_due_missing_manor(
     locked_run: Any,
     *,

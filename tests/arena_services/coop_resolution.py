@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import random
+from datetime import timedelta
+
 import pytest
 from django.db import DatabaseError
 from django.test import TestCase
@@ -7,12 +10,21 @@ from django.utils import timezone
 
 from battle.models import BattleReport
 from core.exceptions import MessageError
-from gameplay.models import ArenaCoopContribution, ArenaCoopEvent, ItemTemplate, Message
+from gameplay.models import (
+    ArenaCoopContribution,
+    ArenaCoopEntry,
+    ArenaCoopEvent,
+    ArenaVirtualDemand,
+    ArenaVirtualReserveMember,
+    ItemTemplate,
+    Message,
+)
 from gameplay.services.arena.coop_core import run_due_arena_coop_events
 from gameplay.services.arena.coop_rewards import build_reward_breakdown
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestStatus
 from tests.arena_services.support import User, create_guest, create_guest_template, fund_manor
+from tests.arena_services.test_virtual_backfill import _create_bot_profile
 
 
 def _build_coop_message_fixture(label: str) -> tuple[ArenaCoopEvent, list, BattleReport]:
@@ -45,7 +57,7 @@ def _build_coop_message_fixture(label: str) -> tuple[ArenaCoopEvent, list, Battl
             },
             "rare_drop": {
                 "item_key": "equip_tulongdao",
-                "chance_bps": 10,
+                "chance_bps": 10000,
                 "enabled": True,
                 "requires_clear": True,
                 "requires_minimum_contribution": True,
@@ -154,7 +166,7 @@ def test_run_due_arena_coop_events_creates_contributions_and_rewards(monkeypatch
             },
             "rare_drop": {
                 "item_key": "equip_tulongdao",
-                "chance_bps": 10,
+                "chance_bps": 10000,
                 "enabled": True,
                 "requires_clear": True,
                 "requires_minimum_contribution": True,
@@ -260,8 +272,6 @@ def test_run_due_arena_coop_events_creates_contributions_and_rewards(monkeypatch
         "gameplay.services.arena.coop_core._run_coop_battle_locked",
         lambda locked_event, now: report,
     )
-    monkeypatch.setattr("gameplay.services.arena.coop_rewards.random.random", lambda: 0.0)
-
     processed = run_due_arena_coop_events(limit=10)
 
     assert processed == 1
@@ -287,8 +297,6 @@ def test_run_due_arena_coop_events_sends_battle_and_settlement_messages(monkeypa
         "gameplay.services.arena.coop_core._run_coop_battle_locked",
         lambda locked_event, now: report,
     )
-    monkeypatch.setattr("gameplay.services.arena.coop_rewards.random.random", lambda: 0.0)
-
     with TestCase.captureOnCommitCallbacks(execute=False) as callbacks:
         processed = run_due_arena_coop_events(limit=10)
 
@@ -322,7 +330,6 @@ def test_run_due_arena_coop_events_degrades_expected_message_error(monkeypatch):
         "gameplay.services.arena.coop_core._run_coop_battle_locked",
         lambda locked_event, now: report,
     )
-    monkeypatch.setattr("gameplay.services.arena.coop_rewards.random.random", lambda: 0.0)
     monkeypatch.setattr(
         "gameplay.services.arena.coop_core.create_message",
         lambda **kwargs: (_ for _ in ()).throw(MessageError("message backend down")),
@@ -349,7 +356,6 @@ def test_run_due_arena_coop_events_db_message_failure_keeps_completion(monkeypat
         "gameplay.services.arena.coop_core._run_coop_battle_locked",
         lambda locked_event, now: report,
     )
-    monkeypatch.setattr("gameplay.services.arena.coop_rewards.random.random", lambda: 0.0)
     monkeypatch.setattr(
         "gameplay.services.arena.coop_core.create_message",
         lambda **kwargs: (_ for _ in ()).throw(DatabaseError("db message write failed")),
@@ -377,7 +383,6 @@ def test_run_due_arena_coop_events_runtime_message_error_bubbles_up_after_commit
         "gameplay.services.arena.coop_core._run_coop_battle_locked",
         lambda locked_event, now: report,
     )
-    monkeypatch.setattr("gameplay.services.arena.coop_rewards.random.random", lambda: 0.0)
     monkeypatch.setattr(
         "gameplay.services.arena.coop_core.create_message",
         lambda **kwargs: (_ for _ in ()).throw(RuntimeError("message backend down")),
@@ -394,6 +399,57 @@ def test_run_due_arena_coop_events_runtime_message_error_bubbles_up_after_commit
     with pytest.raises(RuntimeError, match="message backend down"):
         for callback in callbacks:
             callback()
+
+
+@pytest.mark.django_db
+def test_invalid_virtual_coop_entry_releases_lease_and_does_not_block_next_event(monkeypatch):
+    now = timezone.now()
+    invalid_event = ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.PREPARING,
+        player_limit=1,
+        guest_limit_per_entry=1,
+        prepare_duration_seconds=120,
+        prepare_ends_at=now - timedelta(minutes=1),
+    )
+    profile = _create_bot_profile("arena_coop_invalid_virtual_lease")
+    guest = Guest.objects.get(manor=profile.manor)
+    guest.status = GuestStatus.ARENA
+    guest.save(update_fields=["status"])
+    invalid_entry = ArenaCoopEntry.objects.create(
+        event=invalid_event,
+        manor=profile.manor,
+        source=ArenaCoopEntry.Source.VIRTUAL,
+    )
+    invalid_entry.entry_guests.create(
+        guest=guest,
+        slot_index=0,
+        snapshot={"display_name": "损坏的虚拟报名快照"},
+    )
+    demand = ArenaVirtualDemand.objects.create(coop_event=invalid_event)
+    lease = ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=profile,
+        state=ArenaVirtualReserveMember.State.READY,
+    )
+
+    valid_event, _manors, report = _build_coop_message_fixture("arena_coop_after_invalid_virtual")
+    monkeypatch.setattr(
+        "gameplay.services.arena.coop_core._run_coop_battle_locked",
+        lambda locked_event, current_time: report,
+    )
+
+    processed = run_due_arena_coop_events(now=timezone.now(), limit=10)
+
+    invalid_event.refresh_from_db()
+    invalid_entry.refresh_from_db()
+    valid_event.refresh_from_db()
+    guest.refresh_from_db(fields=["status"])
+    assert processed == 1
+    assert invalid_event.status == ArenaCoopEvent.Status.CANCELLED
+    assert invalid_entry.status == ArenaCoopEntry.Status.CANCELLED
+    assert valid_event.status == ArenaCoopEvent.Status.COMPLETED
+    assert guest.status == GuestStatus.IDLE
+    assert not ArenaVirtualReserveMember.objects.filter(pk=lease.pk).exists()
 
 
 @pytest.mark.django_db
@@ -502,8 +558,6 @@ def test_run_due_arena_coop_events_updates_boss_remaining_hp_on_failed_attempt(m
 
 
 def test_build_reward_breakdown_respects_optional_rare_drop_gates(monkeypatch):
-    monkeypatch.setattr("gameplay.services.arena.coop_rewards.random.random", lambda: 0.0)
-
     rewards = build_reward_breakdown(
         {
             "damage_rank": 1,
@@ -526,6 +580,7 @@ def test_build_reward_breakdown_respects_optional_rare_drop_gates(monkeypatch):
             },
         },
         boss_defeated=False,
+        rng=random.Random(0),
     )
 
     assert rewards["rare_drop_granted"] is True

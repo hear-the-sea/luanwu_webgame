@@ -185,11 +185,15 @@ class BattleSimulator:
             - combat_log: 战斗日志
         """
         from battle.combatants import assign_agility_based_priorities
-        from battle.simulation_core import build_rng, simulate_battle
+        from battle.random_context import RNG_STREAM_AI_GROWTH, RNG_STREAM_COMBAT, BattleRandomContext
+        from battle.simulation_core import simulate_battle
+
+        random_context = BattleRandomContext.create(seed)
+        ai_rng = random_context.rng(RNG_STREAM_AI_GROWTH)
 
         # 构造双方战斗单位
-        attacker_guests, attacker_troops = self._build_party(self.config.attacker, "attacker")
-        defender_guests, defender_troops = self._build_party(self.config.defender, "defender")
+        attacker_guests, attacker_troops = self._build_party(self.config.attacker, "attacker", ai_rng)
+        defender_guests, defender_troops = self._build_party(self.config.defender, "defender", ai_rng)
 
         # 合并单位列表
         attacker_units = attacker_guests + attacker_troops
@@ -199,7 +203,8 @@ class BattleSimulator:
         assign_agility_based_priorities(attacker_units, defender_units)
 
         # 生成随机数生成器
-        actual_seed, rng = build_rng(seed)
+        actual_seed = random_context.base_seed
+        rng = random_context.rng(RNG_STREAM_COMBAT)
 
         # 在参数覆盖上下文中运行战斗
         with patch_battle_params(self.config.tunable_params):
@@ -223,7 +228,7 @@ class BattleSimulator:
             "combat_log": result.rounds,  # 详细战斗日志
         }
 
-    def _build_party(self, party_cfg: PartyConfig, side: str) -> Tuple[List, List]:
+    def _build_party(self, party_cfg: PartyConfig, side: str, rng) -> Tuple[List, List]:
         """
         构造阵营的战斗单位
 
@@ -239,7 +244,7 @@ class BattleSimulator:
 
         # 构造门客
         if party_cfg.guests:
-            guest_combatants = self._build_guests(party_cfg.guests, side)
+            guest_combatants = self._build_guests(party_cfg.guests, side, rng)
 
         # 构造小兵
         if party_cfg.troops:
@@ -249,7 +254,7 @@ class BattleSimulator:
 
         return guest_combatants, troop_combatants
 
-    def _build_guests(self, guests_cfg: List[GuestConfig], side: str) -> List:
+    def _build_guests(self, guests_cfg: List[GuestConfig], side: str, rng) -> List:
         """构造门客战斗单位"""
         from battle.combatants import Combatant, build_named_ai_guests
         from guests.models import Skill
@@ -257,8 +262,11 @@ class BattleSimulator:
         guest_combatants = []
 
         for guest_cfg in guests_cfg:
-            # 使用AI门客构造器（只接受 guest_keys 和 level 参数）
-            ai_guests = build_named_ai_guests(guest_keys=[guest_cfg.template], level=guest_cfg.level)
+            ai_guests = build_named_ai_guests(
+                guest_keys=[guest_cfg.template],
+                level=guest_cfg.level,
+                rng=rng,
+            )
 
             if not ai_guests:
                 logger.warning(f"无法创建门客 {guest_cfg.template}")

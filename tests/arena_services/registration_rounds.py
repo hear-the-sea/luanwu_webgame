@@ -148,6 +148,9 @@ def test_register_arena_entry_auto_starts_when_reaching_player_limit():
 
     tournament = ArenaTournament.objects.get(pk=tournament_id)
     assert tournament.status == ArenaTournament.Status.RUNNING
+    assert tournament.base_seed > 0
+    assert tournament.rng_version > 0
+    assert tournament.battle_engine_version != "legacy"
     assert tournament.virtual_fill_completed is True
     assert tournament.current_round == 1
     assert tournament.entries.count() == arena_core.ARENA_TOURNAMENT_PLAYER_LIMIT

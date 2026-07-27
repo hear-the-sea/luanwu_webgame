@@ -49,6 +49,42 @@ def _finalize_attack_round(actor: "Combatant", action_logs: list[AttackLogEntry]
     return primary
 
 
+def _read_damage_contract(application: Any, target: "Combatant") -> dict[str, int]:
+    """Read the extended damage contract while tolerating legacy test/adaptor results."""
+
+    target_application = getattr(application, "target", None)
+    raw_damage = int(getattr(target_application, "raw_damage", getattr(application, "display_damage", 0)) or 0)
+    hp_after = max(0, int(getattr(target_application, "hp_after", getattr(target, "hp", 0)) or 0))
+    applied_damage = int(getattr(target_application, "applied_damage", raw_damage) or 0)
+    strength_after = max(
+        0,
+        int(getattr(target_application, "strength_after", getattr(target, "troop_strength", 0)) or 0),
+    )
+    kills = max(0, int(getattr(application, "kills", 0) or 0))
+    return {
+        "raw_damage": raw_damage,
+        "applied_damage": applied_damage,
+        "overkill_damage": int(
+            getattr(target_application, "overkill_damage", max(0, raw_damage - applied_damage)) or 0
+        ),
+        "hp_before": min(
+            max(0, int(getattr(target, "max_hp", hp_after + applied_damage) or 0)),
+            int(getattr(target_application, "hp_before", hp_after + applied_damage) or 0),
+        ),
+        "hp_after": hp_after,
+        "strength_before": int(getattr(target_application, "strength_before", strength_after + kills) or 0),
+        "strength_after": strength_after,
+    }
+
+
+def _read_secondary_damage(application: Any, name: str) -> tuple[int, int]:
+    nested = getattr(application, name, None)
+    raw_damage = int(getattr(nested, "raw_damage", getattr(application, f"{name}_damage", 0)) or 0)
+    applied_damage = int(getattr(nested, "applied_damage", raw_damage) or 0)
+    overkill_damage = int(getattr(nested, "overkill_damage", max(0, raw_damage - applied_damage)) or 0)
+    return applied_damage, overkill_damage
+
+
 def perform_attack(
     actor: "Combatant",
     attacker_team: list["Combatant"],
@@ -102,6 +138,13 @@ def perform_attack(
                 "index": idx,
                 "kills": 0,
                 "target_defeated": False,
+                "raw_damage": 0,
+                "applied_damage": 0,
+                "overkill_damage": 0,
+                "target_hp_before": max(0, int(current_target.hp)),
+                "target_hp_after": max(0, int(current_target.hp)),
+                "target_strength_before": max(0, int(current_target.troop_strength)),
+                "target_strength_after": max(0, int(current_target.troop_strength)),
                 "actor_guest_id": actor.guest_id,
                 "actor_owner_entry_id": actor.owner_entry_id,
                 "actor_combatant_slot": actor.combatant_slot,
@@ -127,6 +170,9 @@ def perform_attack(
         )
 
         applied = apply_damage_results(actor, current_target, damage_calc.damage, rng)
+        damage_contract = _read_damage_contract(applied, current_target)
+        reflect_applied_damage, reflect_overkill_damage = _read_secondary_damage(applied, "reflect")
+        counter_applied_damage, counter_overkill_damage = _read_secondary_damage(applied, "counter")
         actor_state = snapshot_unit_state(actor)
         target_state = snapshot_unit_state(current_target)
         actor_defeated = actor_defeated or applied.actor_defeated
@@ -158,11 +204,22 @@ def perform_attack(
             "index": idx,
             "kills": applied.kills,
             "target_defeated": applied.target_defeated,
+            "raw_damage": damage_contract["raw_damage"],
+            "applied_damage": damage_contract["applied_damage"],
+            "overkill_damage": damage_contract["overkill_damage"],
+            "target_hp_before": damage_contract["hp_before"],
+            "target_hp_after": damage_contract["hp_after"],
+            "target_strength_before": damage_contract["strength_before"],
+            "target_strength_after": damage_contract["strength_after"],
             "is_double_strike": damage_calc.is_double_strike,
             "reflect_damage": applied.reflect_damage,
+            "reflect_applied_damage": reflect_applied_damage,
+            "reflect_overkill_damage": reflect_overkill_damage,
             "reflect_kills": applied.reflect_kills,
             "reflect_defeated": applied.reflect_defeated,
             "counter_damage": applied.counter_damage,
+            "counter_applied_damage": counter_applied_damage,
+            "counter_overkill_damage": counter_overkill_damage,
             "counter_kills": applied.counter_kills,
             "counter_defeated": applied.counter_defeated,
             "attack_type": attack_type,

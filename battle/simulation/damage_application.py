@@ -5,36 +5,82 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING
+from math import ceil
+from typing import TYPE_CHECKING, Any, cast
 
-from .types import _DamageApplication
+from .types import _DamageApplication, _UnitDamageApplication
 
 if TYPE_CHECKING:
     from ..combatants_pkg.core import Combatant
 
 
-def _mark_actor_troop_damage(
-    actor: "Combatant",
-    damage: int,
-    source: "Combatant",
-    troop_unit_hp_fn,
-    calculate_slaughter_multiplier_fn,
-) -> tuple[int, bool]:
-    per_unit_hp_actor = troop_unit_hp_fn(actor)
-    slaughter_mult = calculate_slaughter_multiplier_fn(source, actor)
-    kills = int(damage * slaughter_mult / per_unit_hp_actor)
-    kills = max(0, min(actor.troop_strength, kills))
-    actor.troop_strength = max(0, actor.troop_strength - kills)
-    defeated = actor.troop_strength <= 0
-    if defeated:
-        actor.hp = min(actor.hp, 0)
-    return kills, defeated
+def _normalize_non_negative_int(value: object) -> int:
+    if isinstance(value, bool):
+        return 0
+    try:
+        return max(0, int(cast(Any, value)))
+    except (TypeError, ValueError):
+        return 0
 
 
-def _mark_actor_guest_damage(actor: "Combatant") -> tuple[int, bool]:
-    if actor.hp <= 0:
-        return 1, True
-    return 0, False
+def _strength_for_hp(unit: "Combatant", hp: int, troop_unit_hp_fn) -> int:
+    if unit.kind != "troop" or hp <= 0:
+        return 0
+    per_unit_hp = troop_unit_hp_fn(unit)
+    initial_strength = _normalize_non_negative_int(getattr(unit, "initial_troop_strength", 0))
+    derived_strength = ceil(hp / per_unit_hp)
+    return min(initial_strength, derived_strength) if initial_strength > 0 else derived_strength
+
+
+def _snapshot_zero_damage(unit: "Combatant", troop_unit_hp_fn) -> _UnitDamageApplication:
+    maximum_hp = _normalize_non_negative_int(getattr(unit, "max_hp", 0))
+    hp = min(maximum_hp, _normalize_non_negative_int(getattr(unit, "hp", 0)))
+    strength = _strength_for_hp(unit, hp, troop_unit_hp_fn)
+    return _UnitDamageApplication(
+        raw_damage=0,
+        applied_damage=0,
+        overkill_damage=0,
+        kills=0,
+        defeated=hp <= 0,
+        hp_before=hp,
+        hp_after=hp,
+        strength_before=strength,
+        strength_after=strength,
+    )
+
+
+def _apply_unit_damage(unit: "Combatant", damage: int, troop_unit_hp_fn) -> _UnitDamageApplication:
+    """Apply one damage transition while keeping HP and troop strength consistent.
+
+    Damage multipliers belong to the calculation that produced ``damage``. This
+    state-transition boundary deliberately does not infer attack semantics or
+    apply the guest-vs-troop slaughter multiplier.
+    """
+
+    raw_damage = _normalize_non_negative_int(damage)
+    maximum_hp = _normalize_non_negative_int(getattr(unit, "max_hp", 0))
+    hp_before = min(maximum_hp, _normalize_non_negative_int(getattr(unit, "hp", 0)))
+    strength_before = _strength_for_hp(unit, hp_before, troop_unit_hp_fn)
+    applied_damage = min(raw_damage, hp_before)
+    hp_after = hp_before - applied_damage
+    strength_after = _strength_for_hp(unit, hp_after, troop_unit_hp_fn)
+
+    unit.hp = hp_after
+    if unit.kind == "troop":
+        unit.troop_strength = strength_after
+
+    kills = strength_before - strength_after if unit.kind == "troop" else int(hp_before > 0 and hp_after == 0)
+    return _UnitDamageApplication(
+        raw_damage=raw_damage,
+        applied_damage=applied_damage,
+        overkill_damage=max(0, raw_damage - applied_damage),
+        kills=max(0, kills),
+        defeated=hp_after <= 0,
+        hp_before=hp_before,
+        hp_after=hp_after,
+        strength_before=strength_before,
+        strength_after=strength_after,
+    )
 
 
 def _apply_reflect(
@@ -42,8 +88,9 @@ def _apply_reflect(
     target: "Combatant",
     damage: int,
     troop_unit_hp_fn,
-    calculate_slaughter_multiplier_fn,
-) -> tuple[int, int, bool]:
+) -> _UnitDamageApplication:
+    """Apply reflected secondary damage without normal-attack multipliers."""
+
     from ..arena_coop import get_arena_coop_reflect_values
 
     reflect_ratio = target.tech_effects.get("damage_reflect", 0)
@@ -51,24 +98,11 @@ def _apply_reflect(
     if reflect_ratio <= 0 or target.troop_class != "jian":
         reflect_ratio, special_cap = get_arena_coop_reflect_values(target)
         if reflect_ratio <= 0:
-            return 0, 0, False
+            return _snapshot_zero_damage(actor, troop_unit_hp_fn)
         max_reflect = special_cap if special_cap > 0 else max_reflect
 
     reflect_damage = min(int(damage * reflect_ratio), max_reflect)
-    actor.hp -= reflect_damage
-
-    if actor.kind == "troop":
-        reflect_kills, reflect_defeated = _mark_actor_troop_damage(
-            actor,
-            reflect_damage,
-            target,
-            troop_unit_hp_fn,
-            calculate_slaughter_multiplier_fn,
-        )
-    else:
-        reflect_kills, reflect_defeated = _mark_actor_guest_damage(actor)
-
-    return reflect_damage, reflect_kills, reflect_defeated
+    return _apply_unit_damage(actor, reflect_damage, troop_unit_hp_fn)
 
 
 def _apply_counter(
@@ -77,47 +111,17 @@ def _apply_counter(
     rng: random.Random,
     effective_attack_value_fn,
     troop_unit_hp_fn,
-    calculate_slaughter_multiplier_fn,
-) -> tuple[int, int, bool]:
+) -> _UnitDamageApplication:
+    """Apply counter secondary damage without normal-attack multipliers."""
+
     counter_chance = target.tech_effects.get("counter_attack_chance", 0)
     if counter_chance <= 0 or target.hp <= 0 or rng.random() >= counter_chance:
-        return 0, 0, False
+        return _snapshot_zero_damage(actor, troop_unit_hp_fn)
 
     counter_mult = target.tech_effects.get("counter_attack_damage", 0.30)
     counter_attack_value = effective_attack_value_fn(target, actor)
     counter_damage = int(counter_attack_value * counter_mult)
-    actor.hp -= counter_damage
-
-    if actor.kind == "troop":
-        counter_kills, counter_defeated = _mark_actor_troop_damage(
-            actor,
-            counter_damage,
-            target,
-            troop_unit_hp_fn,
-            calculate_slaughter_multiplier_fn,
-        )
-    else:
-        counter_kills, counter_defeated = _mark_actor_guest_damage(actor)
-
-    return counter_damage, counter_kills, counter_defeated
-
-
-def _apply_target_damage(target: "Combatant", damage: int, troop_unit_hp_fn) -> tuple[int, bool, int]:
-    target.hp -= damage
-    target_defeated = target.hp <= 0
-
-    if target.kind == "troop":
-        per_unit_hp = troop_unit_hp_fn(target)
-        kills = int(damage / per_unit_hp)
-        kills = max(0, min(target.troop_strength, kills))
-        target.troop_strength = max(0, target.troop_strength - kills)
-        if target_defeated or target.troop_strength <= 0:
-            target_defeated = True
-            target.hp = min(target.hp, 0)
-        return kills, target_defeated, damage
-
-    kills = 1 if target_defeated else 0
-    return kills, target_defeated, damage
+    return _apply_unit_damage(actor, counter_damage, troop_unit_hp_fn)
 
 
 def apply_damage_results(
@@ -134,38 +138,25 @@ def apply_damage_results(
 
     该函数会直接修改 `actor` 和 `target` 的状态（HP、兵力等）。
     """
-    from ..combat_math import calculate_slaughter_multiplier, effective_attack_value, troop_unit_hp
+    from ..combat_math import effective_attack_value, troop_unit_hp
 
-    kills, target_defeated, display_damage = _apply_target_damage(target, damage, troop_unit_hp)
-    reflect_damage, reflect_kills, reflect_defeated = _apply_reflect(
+    target_application = _apply_unit_damage(target, damage, troop_unit_hp)
+    reflect_application = _apply_reflect(
         actor,
         target,
         damage,
         troop_unit_hp,
-        calculate_slaughter_multiplier,
     )
-    counter_damage, counter_kills, counter_defeated = _apply_counter(
+    counter_application = _apply_counter(
         actor,
         target,
         rng,
         effective_attack_value,
         troop_unit_hp,
-        calculate_slaughter_multiplier,
     )
 
-    actor_defeated = actor.hp <= 0
-    if actor_defeated:
-        actor.hp = min(actor.hp, 0)
-
     return _DamageApplication(
-        display_damage=display_damage,
-        kills=kills,
-        target_defeated=target_defeated,
-        actor_defeated=actor_defeated,
-        reflect_damage=reflect_damage,
-        reflect_kills=reflect_kills,
-        reflect_defeated=reflect_defeated,
-        counter_damage=counter_damage,
-        counter_kills=counter_kills,
-        counter_defeated=counter_defeated,
+        target=target_application,
+        reflect=reflect_application,
+        counter=counter_application,
     )

@@ -10,6 +10,7 @@ from django.db import transaction
 from django.db.models import Count, F, Q
 from django.utils import timezone
 
+from battle.random_context import RNG_STREAM_TIE_BREAK, current_replay_metadata
 from core.exceptions import ArenaBusyError, ArenaEntryStateError, ArenaParticipationLimitError
 from core.utils.cache_lock import acquire_best_effort_lock, release_best_effort_lock
 from gameplay.models import (
@@ -28,13 +29,14 @@ from . import helpers as _arena_helpers
 from .exchange_helpers import ArenaExchangeResult, exchange_arena_reward  # noqa: F401
 from .lifecycle_helpers import cleanup_expired_tournaments as _cleanup_expired_tournaments
 from .lifecycle_helpers import finalize_tournament_locked, schedule_round_locked
-from .match_helpers import resolve_match_locked, save_resolved_match
+from .match_helpers import create_scheduled_match, resolve_match_locked, save_resolved_match
 from .registration_helpers import (
     collect_cancelable_recruiting_entries_locked,
     create_arena_entry_with_guests_locked,
     deduct_registration_silver_locked,
     load_selected_registration_guests_locked,
 )
+from .replay import ensure_tournament_replay_metadata, initialize_replay_metadata_locked, replay_context
 from .round_helpers import finalize_round_state_locked, load_round_entries_for_matches, resolve_pending_round_matches
 from .rules import load_arena_rules
 from .snapshots import build_entry_guest_snapshot
@@ -161,6 +163,7 @@ def _get_or_create_recruiting_tournament_locked() -> ArenaTournament:
             player_limit=ARENA_TOURNAMENT_PLAYER_LIMIT,
             round_interval_seconds=_round_interval_seconds(),
             virtual_fill_at=timezone.now() + timedelta(seconds=ARENA_VIRTUAL_FILL_WAIT_SECONDS),
+            **current_replay_metadata(),
         )
     finally:
         release_best_effort_lock(
@@ -186,6 +189,7 @@ def _start_tournament_locked(tournament: ArenaTournament, *, now: datetime | Non
         return False
 
     current_time = now or timezone.now()
+    initialize_replay_metadata_locked(tournament)
     from .virtual_reserve import reconcile_tournament_demand_locked
 
     reconcile_tournament_demand_locked(tournament, now=current_time)
@@ -202,7 +206,19 @@ def _round_interval_delta(tournament: ArenaTournament) -> timedelta:
     return _arena_helpers.round_interval_delta(tournament.round_interval_seconds)
 
 
-_build_round_pairings = _arena_helpers.build_round_pairings
+def _build_round_pairings(
+    tournament: ArenaTournament,
+    entry_ids: list[int],
+    round_number: int,
+) -> list[tuple[int, int | None]]:
+    random_context = replay_context(tournament)
+    return _arena_helpers.build_round_pairings(
+        entry_ids,
+        rng=random_context.rng(
+            RNG_STREAM_TIE_BREAK,
+            discriminator=f"pairings:round:{int(round_number)}",
+        ),
+    )
 
 
 def _schedule_round_locked(tournament: ArenaTournament, *, round_number: int, now: datetime) -> bool:
@@ -211,6 +227,7 @@ def _schedule_round_locked(tournament: ArenaTournament, *, round_number: int, no
         round_number=round_number,
         now=now,
         build_round_pairings=_build_round_pairings,
+        create_scheduled_match=create_scheduled_match,
         round_interval_delta=_round_interval_delta,
         finalize_tournament_locked=partial(
             finalize_tournament_locked,
@@ -358,6 +375,8 @@ _collect_round_outcome_entry_ids = _arena_helpers.collect_round_outcome_entry_id
 
 
 def _run_tournament_round(tournament_id: int, *, now: datetime) -> bool:
+    if not ensure_tournament_replay_metadata(tournament_id):
+        return False
     with transaction.atomic():
         tournament = ArenaTournament.objects.select_for_update().filter(pk=tournament_id).first()
         if not tournament:

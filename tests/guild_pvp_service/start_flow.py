@@ -105,7 +105,7 @@ def test_start_guild_raid_requires_active_guild_pair_lock(django_user_model, mon
 @pytest.mark.django_db
 def test_guild_raid_run_status_choices():
     statuses = {choice for choice, _label in GuildRaidRun.Status.choices}
-    assert statuses == {"marching", "battling", "returning", "completed", "retreated"}
+    assert statuses == {"marching", "battling", "returning", "completed", "retreated", "failed"}
 
 
 @pytest.mark.django_db(transaction=True)
@@ -145,6 +145,9 @@ def test_start_guild_raid_generates_guest_snapshots_and_travel_time(django_user_
     assert run.selected_guest_count == 1
     assert run.guest_ids == [guest.id]
     assert len(run.guest_snapshots) == 1
+    assert run.base_seed > 0
+    assert run.rng_version > 0
+    assert run.battle_engine_version != "legacy"
     assert run.travel_time == 321
     assert int((run.battle_at - run.started_at).total_seconds()) == 321
     assert int((run.return_at - run.started_at).total_seconds()) == 642
@@ -413,6 +416,48 @@ def test_start_guild_raid_keeps_due_battle_processing_when_new_launch_validation
     due_run.refresh_from_db()
     assert due_run.status == GuildRaidRun.Status.RETURNING
     assert due_run.battle_report_id == report.id
+
+
+@pytest.mark.django_db(transaction=True)
+def test_request_retreat_uses_elapsed_outbound_time_for_guild_return(django_user_model, monkeypatch):
+    attacker_guild, attacker_member, _attacker_manor = create_guild_with_leader(
+        django_user_model,
+        "主动撤回计时攻方",
+    )
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(
+        django_user_model,
+        "主动撤回计时守方",
+    )
+    now = timezone.now()
+    run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=0,
+        guest_ids=[],
+        guest_snapshots=[],
+        troop_loadout={},
+        travel_time=60,
+        started_at=now - timedelta(seconds=20),
+        battle_at=now + timedelta(seconds=40),
+        return_at=now + timedelta(seconds=100),
+    )
+    scheduled: list[int] = []
+    monkeypatch.setattr("guilds.services.guild_raids.timezone.now", lambda: now)
+    monkeypatch.setattr(
+        "guilds.services.guild_raids.schedule_guild_raid_completion",
+        lambda locked_run: scheduled.append(locked_run.id),
+    )
+
+    from guilds.services.guild_raids import request_retreat
+
+    request_retreat(run=run, operator=attacker_member.user)
+
+    run.refresh_from_db()
+    assert run.status == GuildRaidRun.Status.RETREATED
+    assert run.return_at == now + timedelta(seconds=20)
+    assert scheduled == [run.id]
 
 
 @pytest.mark.django_db(transaction=True)

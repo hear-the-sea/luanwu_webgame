@@ -105,6 +105,29 @@ def get_damage_penalty(actor: "Combatant") -> float:
     return min(0.9, total_penalty)  # 最多降低90%
 
 
+def capture_active_status_effects(actor: "Combatant") -> Dict[str, int]:
+    """Capture statuses that were active when an action opportunity began."""
+
+    captured: Dict[str, int] = {}
+    for status, payload in actor.status_effects.items():
+        active = max(0, int((payload or {}).get("active", 0)))
+        if active > 0:
+            captured[status] = active
+    return captured
+
+
+def consume_active_status_effects(actor: "Combatant", active_at_start: Dict[str, int]) -> None:
+    """Consume each status active at action start exactly once."""
+
+    for status in list(active_at_start):
+        payload = actor.status_effects.get(status)
+        if not payload:
+            continue
+        payload["active"] = max(0, int(payload.get("active", 0)) - 1)
+    active_at_start.clear()
+    cleanup_status_effects(actor)
+
+
 def handle_pre_action_status(actor: "Combatant", events: List[Dict[str, Any]]) -> bool:
     """
     处理行动前的状态效果（如眩晕跳过回合）。
@@ -124,11 +147,8 @@ def handle_pre_action_status(actor: "Combatant", events: List[Dict[str, Any]]) -
         if not definition or not definition.get("skip_action"):
             continue
 
-        # 消耗一回合持续时间
-        payload["active"] = max(0, active - 1)
         actor.has_acted_this_round = True
         actor.last_round_acted = actor.current_round
-        cleanup_status_effects(actor)
 
         events.append(
             {

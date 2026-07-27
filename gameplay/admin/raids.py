@@ -26,7 +26,20 @@ class ScoutCooldownAdmin(admin.ModelAdmin):
 
 @admin.register(RaidRun)
 class RaidRunAdmin(admin.ModelAdmin):
-    list_display = ("attacker", "defender", "status", "is_attacker_victory", "started_at", "battle_at", "return_at")
+    list_display = (
+        "id",
+        "attacker",
+        "defender",
+        "status",
+        "failure_reason",
+        "base_seed",
+        "rng_version",
+        "battle_engine_version",
+        "is_attacker_victory",
+        "started_at",
+        "battle_at",
+        "return_at",
+    )
     list_filter = ("status", "is_attacker_victory")
     search_fields = ("attacker__user__username", "defender__user__username")
     readonly_fields = (
@@ -35,6 +48,10 @@ class RaidRunAdmin(admin.ModelAdmin):
         "return_at",
         "completed_at",
         "failure_reason",
+        "resources_released",
+        "base_seed",
+        "rng_version",
+        "battle_engine_version",
         "loot_resources",
         "loot_items",
         "attacker_prestige_change",

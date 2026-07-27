@@ -17,5 +17,17 @@ class TroopTemplateAdmin(admin.ModelAdmin):
 
 @admin.register(BattleReport)
 class BattleReportAdmin(admin.ModelAdmin):
-    list_display = ("manor", "opponent_name", "battle_type", "winner", "starts_at", "completed_at")
+    list_display = (
+        "id",
+        "manor",
+        "opponent_name",
+        "battle_type",
+        "winner",
+        "seed",
+        "rng_version",
+        "battle_engine_version",
+        "starts_at",
+        "completed_at",
+    )
     list_filter = ("winner", "battle_type")
+    readonly_fields = ("seed", "rng_version", "battle_engine_version", "starts_at", "completed_at")

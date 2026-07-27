@@ -113,6 +113,8 @@ class RaidRun(models.Model):
 
     class FailureReason(models.TextChoices):
         MISSING_ATTACKER_LINEUP = "missing_attacker_lineup", "缺少出征门客与快照"
+        INVALID_GUEST_SNAPSHOT = "invalid_guest_snapshot", "门客战斗快照无效"
+        INVALID_TROOP_LOADOUT = "invalid_troop_loadout", "护院编队快照无效"
 
     attacker = models.ForeignKey(
         "gameplay.Manor", on_delete=models.CASCADE, related_name="raid_runs_sent", verbose_name="进攻方"
@@ -131,6 +133,10 @@ class RaidRun(models.Model):
         blank=True,
         default="",
     )
+    resources_released = models.BooleanField("失败资源已释放", default=False)
+    base_seed = models.PositiveIntegerField(default=0)
+    rng_version = models.PositiveSmallIntegerField(default=0)
+    battle_engine_version = models.CharField(max_length=16, default="legacy")
     battle_report = models.ForeignKey(
         "battle.BattleReport",
         null=True,

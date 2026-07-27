@@ -172,7 +172,7 @@ def start_raid(
         defender: 防守方庄园
         guest_ids: 出征门客ID列表
         troop_loadout: 兵种配置
-        seed: 随机数种子（可选）
+        seed: 已弃用且始终忽略；业务随机种子由服务端生成
 
     Returns:
         踢馆记录
@@ -180,6 +180,7 @@ def start_raid(
     Raises:
         GameError: 无法发起踢馆时
     """
+    # 兼容旧调用签名；不得让玩家输入影响业务随机结果。
     del seed
     return _start_raid_command(
         attacker,

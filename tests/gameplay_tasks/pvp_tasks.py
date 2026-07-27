@@ -229,7 +229,7 @@ def test_scan_raid_runs_continues_after_invalid_durable_run(monkeypatch, django_
         attacker=attacker,
         defender=defender,
         status=RaidRun.Status.MARCHING,
-        guest_snapshots=[],
+        guest_snapshots={"unexpected": "mapping"},
         battle_at=None,
     )
     later_run = RaidRun.objects.create(
@@ -262,4 +262,6 @@ def test_scan_raid_runs_continues_after_invalid_durable_run(monkeypatch, django_
     assert tasks.scan_raid_runs(limit=10) == 2
     invalid_run.refresh_from_db()
     assert invalid_run.status == RaidRun.Status.FAILED
+    assert invalid_run.failure_reason == RaidRun.FailureReason.INVALID_GUEST_SNAPSHOT
+    assert invalid_run.resources_released is True
     assert seen == [invalid_run.id, later_run.id]

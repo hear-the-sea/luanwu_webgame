@@ -384,6 +384,7 @@ def test_full_arena_coop_simulation_runs_phase_mechanics_end_to_end():
             {"key": "arena_gl_top_five_flags_elite_rear", "label": "五行旗后阵"},
         ],
         level=90,
+        rng=random.Random(90),
     )
     for idx, guest in enumerate(defender_guests):
         configure_arena_coop_enemy_guest(guest)

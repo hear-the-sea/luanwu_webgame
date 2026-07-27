@@ -78,3 +78,72 @@ def test_build_defender_guest_and_loadout_rejects_invalid_nested_fields(monkeypa
         )
 
     assert state == {}
+
+
+def test_build_defender_guest_and_loadout_keeps_pve_default_ai_when_sources_are_omitted(monkeypatch):
+    state = {"generated_loadout": 0, "generated_guests": 0}
+
+    def _generate_loadout(_rng):
+        state["generated_loadout"] += 1
+        return {"archer": 3}
+
+    def _generate_guests(_rng):
+        state["generated_guests"] += 1
+        return ["ai-guest"]
+
+    monkeypatch.setattr("battle.services.generate_ai_loadout", _generate_loadout)
+    monkeypatch.setattr("battle.services.build_ai_guests", _generate_guests)
+    monkeypatch.setattr(
+        "battle.services.build_guest_combatants",
+        lambda guests, **_kwargs: [f"combat:{guest}" for guest in guests],
+    )
+
+    defender_guests, defender_loadout = _build_defender_guest_and_loadout(
+        defender_guests=None,
+        defender_setup=None,
+        defender_limit=3,
+        fill_default_troops=True,
+        rng=random.Random(1),
+        now=timezone.now(),
+        defender_guest_level=50,
+        defender_guest_bonuses={},
+        defender_guest_skills=None,
+    )
+
+    assert defender_guests == ["combat:ai-guest"]
+    assert defender_loadout == {"archer": 3}
+    assert state == {"generated_loadout": 1, "generated_guests": 1}
+
+
+def test_build_defender_guest_and_loadout_treats_empty_sources_as_explicit_empty_defense(monkeypatch):
+    monkeypatch.setattr(
+        "battle.services.generate_ai_loadout",
+        lambda _rng: (_ for _ in ()).throw(AssertionError("explicit defense must not generate troops")),
+    )
+    monkeypatch.setattr(
+        "battle.services.build_ai_guests",
+        lambda _rng: (_ for _ in ()).throw(AssertionError("explicit defense must not generate guests")),
+    )
+    monkeypatch.setattr(
+        "battle.services.build_guest_combatants",
+        lambda guests, **_kwargs: list(guests),
+    )
+    monkeypatch.setattr(
+        "battle.services.normalize_troop_loadout",
+        lambda loadout, *, default_if_empty: {} if loadout is None and not default_if_empty else {"unexpected": 1},
+    )
+
+    defender_guests, defender_loadout = _build_defender_guest_and_loadout(
+        defender_guests=[],
+        defender_setup={},
+        defender_limit=3,
+        fill_default_troops=False,
+        rng=random.Random(1),
+        now=timezone.now(),
+        defender_guest_level=50,
+        defender_guest_bonuses={},
+        defender_guest_skills=None,
+    )
+
+    assert defender_guests == []
+    assert defender_loadout == {}

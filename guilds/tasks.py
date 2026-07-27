@@ -270,6 +270,8 @@ def complete_guild_raid_task(self, run_id: int):
             return "not_found"
         if run.status == GuildRaidRun.Status.COMPLETED:
             return "already_completed"
+        if run.status == GuildRaidRun.Status.FAILED:
+            return "already_failed"
 
         rescheduled, now = _reschedule_guild_raid_if_needed(run, run_id=run_id)
         if rescheduled is not None:

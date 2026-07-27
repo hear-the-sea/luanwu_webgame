@@ -7,6 +7,7 @@ from types import SimpleNamespace
 from django.utils import timezone
 
 from battle.models import TroopTemplate
+from battle.random_context import CURRENT_BATTLE_ENGINE_VERSION, CURRENT_RNG_VERSION
 from gameplay.models import PlayerTroop, RaidRun
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.raid.combat import battle as combat_battle
@@ -41,20 +42,35 @@ def build_run(*, run_id: int, attacker, defender, save_counter: dict[str, int] |
         attacker=attacker,
         defender=defender,
         status=RaidRun.Status.MARCHING,
+        base_seed=101,
+        rng_version=CURRENT_RNG_VERSION,
+        battle_engine_version=CURRENT_BATTLE_ENGINE_VERSION,
         travel_time=0,
         return_at=None,
         save=save_fn,
     )
 
 
-def build_locked_run(*, run_id: int, now, save_fields: dict[str, object], reason_target="守方"):
+def build_locked_run(
+    *,
+    run_id: int,
+    now,
+    save_fields: dict[str, object],
+    reason_target="守方",
+    elapsed_seconds: int = 15,
+    travel_time: int = 60,
+):
+    started_at = now - timedelta(seconds=elapsed_seconds)
     return SimpleNamespace(
         id=run_id,
         attacker_id=1,
         defender_id=2,
         attacker=SimpleNamespace(id=1),
         defender=SimpleNamespace(display_name=reason_target),
-        started_at=now - timedelta(seconds=15),
+        started_at=started_at,
+        battle_at=started_at + timedelta(seconds=travel_time),
+        travel_time=travel_time,
+        return_at=None,
         save=lambda *, update_fields: save_fields.__setitem__("fields", update_fields),
     )
 
@@ -107,6 +123,7 @@ def build_real_raid_cleanup_fixture(django_user_model):
 
 def stub_process_raid_battle_happy_path(monkeypatch, run, attacker, defender, report):
     monkeypatch.setattr(combat_battle.transaction, "atomic", contextlib.nullcontext)
+    monkeypatch.setattr(combat_battle, "_ensure_raid_replay_metadata", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_prepare_run_for_battle", lambda *_args, **_kwargs: run)
     monkeypatch.setattr(combat_battle, "_lock_battle_manors", lambda *_args, **_kwargs: (attacker, defender))
     monkeypatch.setattr(combat_battle, "_execute_raid_battle", lambda *_args, **_kwargs: report)

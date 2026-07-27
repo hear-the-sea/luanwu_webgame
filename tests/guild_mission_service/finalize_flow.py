@@ -292,10 +292,10 @@ def test_finalize_guild_mission_forwards_expanded_battle_limits(django_user_mode
 
     original_build_named = battle_execution.build_named_ai_guests
 
-    def _wrapped_build_named_ai_guests(guest_keys, level):
+    def _wrapped_build_named_ai_guests(guest_keys, level, *, rng):
         captured["raw_guest_keys"] = [dict(entry) if isinstance(entry, dict) else entry for entry in guest_keys]
         captured["enemy_level"] = level
-        return original_build_named(guest_keys, level=level)
+        return original_build_named(guest_keys, level=level, rng=rng)
 
     monkeypatch.setattr(
         "battle.execution.build_named_ai_guests",

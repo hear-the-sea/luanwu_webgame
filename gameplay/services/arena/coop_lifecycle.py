@@ -8,6 +8,7 @@ from datetime import date, datetime, timedelta
 from django.db.models import Count, F, Q
 from django.utils import timezone
 
+from battle.random_context import current_replay_metadata
 from core.exceptions import ArenaBusyError, ArenaEntryStateError
 from core.utils.cache_lock import acquire_best_effort_lock, release_best_effort_lock
 from gameplay.models import ArenaCoopEntry, ArenaCoopEntryGuest, ArenaCoopEvent, Manor, ResourceEvent
@@ -198,6 +199,7 @@ def get_or_create_recruiting_event_locked(
             enemy_snapshot=enemy_snapshot,
             reward_snapshot=reward_snapshot,
             daily_rule_snapshot=daily_rule_snapshot,
+            **current_replay_metadata(),
         )
     finally:
         release_best_effort_lock(

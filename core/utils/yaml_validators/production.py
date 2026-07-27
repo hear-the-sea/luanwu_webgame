@@ -139,11 +139,30 @@ VALID_PASSIVE_EFFECT_TYPES = {
     "emit_log",
 }
 VALID_PASSIVE_TARGET_SCOPES = {"self", "allies"}
+VALID_PASSIVE_MODIFIER_SCOPES = {"battle", "round", "action"}
+PASSIVE_MODIFIER_EFFECT_TYPES = {
+    "add_true_damage",
+    "modify_outgoing_damage",
+    "modify_incoming_damage",
+    "modify_target_weight",
+    "set_softcap",
+    "set_reflect",
+}
+PASSIVE_ALLOWED_MODIFIER_SCOPES_BY_TIMING = {
+    "battle_start": {"battle"},
+    "round_start": {"battle", "round"},
+    "action_before": VALID_PASSIVE_MODIFIER_SCOPES,
+    "action_end": VALID_PASSIVE_MODIFIER_SCOPES,
+    "attack_before": VALID_PASSIVE_MODIFIER_SCOPES,
+    "hit_taken": VALID_PASSIVE_MODIFIER_SCOPES,
+    "attack_after": VALID_PASSIVE_MODIFIER_SCOPES,
+}
 
 
 def _validate_passive_effects(
     effects: list[dict],
     *,
+    timing: str | None,
     result: ValidationResult,
     file: str,
     path: str,
@@ -166,6 +185,29 @@ def _validate_passive_effects(
                 path=effect_path,
                 field_name="type",
             )
+
+        modifier_scope = effect.get("scope")
+        if modifier_scope is not None:
+            if not isinstance(modifier_scope, str) or not modifier_scope.strip():
+                result.add(file, effect_path, "field 'scope' expected non-empty string")
+            else:
+                _check_in(
+                    modifier_scope,
+                    VALID_PASSIVE_MODIFIER_SCOPES,
+                    result=result,
+                    file=file,
+                    path=effect_path,
+                    field_name="scope",
+                )
+                if effect_type not in PASSIVE_MODIFIER_EFFECT_TYPES:
+                    result.add(file, effect_path, f"effect '{effect_type}' does not support modifier scope")
+                allowed_scopes = PASSIVE_ALLOWED_MODIFIER_SCOPES_BY_TIMING.get(timing or "")
+                if allowed_scopes is not None and modifier_scope not in allowed_scopes:
+                    result.add(
+                        file,
+                        effect_path,
+                        f"scope '{modifier_scope}' is not supported for timing '{timing}'",
+                    )
 
         target_scope = effect.get("target_scope")
         if target_scope is not None:
@@ -245,7 +287,13 @@ def _validate_passive_config(passive_config: dict, *, result: ValidationResult, 
         if not isinstance(effects, list):
             result.add(file, f"{trigger_path}.effects", "expected a list")
             continue
-        _validate_passive_effects(effects, result=result, file=file, path=trigger_path)
+        _validate_passive_effects(
+            effects,
+            timing=timing if isinstance(timing, str) else None,
+            result=result,
+            file=file,
+            path=trigger_path,
+        )
 
 
 def validate_guest_skills(data: dict, *, file: str = "guest_skills.yaml") -> ValidationResult:

@@ -10,18 +10,31 @@ from django.db.models import Q
 from django.utils import timezone
 
 from battle.execution import BattleOptions, execute_battle
+from battle.random_context import (
+    LEGACY_BATTLE_ENGINE_VERSION,
+    RNG_STREAM_LOOT,
+    BattleRandomContext,
+    current_replay_metadata,
+)
+from battle.replay_audit import audit_battle_replay_metadata
 from battle.services import validate_troop_capacity
 from common.utils.celery import safe_apply_async
-from core.exceptions import BattlePreparationError, GuildValidationError
+from core.exceptions import BattlePreparationError, GuildValidationError, InvalidBattleSnapshotError
 from gameplay.models import Manor
 from gameplay.services.battle_salvage import calculate_battle_salvage
-from gameplay.services.battle_snapshots import build_guest_battle_snapshots, build_guest_snapshot_proxies
+from gameplay.services.battle_snapshots import (
+    build_guest_battle_snapshots,
+    build_guest_snapshot_proxies,
+    validate_battle_troop_loadout,
+)
 from gameplay.services.manor.core import ensure_manor
+from gameplay.services.pvp_runtime.lifecycle import TravelTimeline
 
 from .. import constants as guild_constants
 from ..models import Guild, GuildRaidRun
 from . import guild_troops
 from .guild_dispatch import load_dispatch_lineup_rows, lock_manage_member, normalize_positive_ids
+from .guild_raid_failure import fail_guild_raid_and_release_resources
 from .guild_raid_loot import grant_guild_raid_battle_rewards, grant_reserved_guild_raid_loot, reserve_guild_raid_loot
 from .guild_raid_messages import send_guild_raid_report_messages, send_guild_raid_warning_messages
 from .guild_raid_rules import (
@@ -37,6 +50,12 @@ from .guild_raid_support import lock_guild_pair as _lock_guild_pair
 from .technology import build_guild_troop_tech_levels, get_guild_dispatch_capacity
 
 logger = logging.getLogger(__name__)
+
+
+class _InactiveAttackerGuildError(RuntimeError):
+    pass
+
+
 IN_FLIGHT_GUILD_RAID_STATUSES = (
     GuildRaidRun.Status.MARCHING,
     GuildRaidRun.Status.BATTLING,
@@ -213,6 +232,7 @@ def _start_guild_raid_atomic(
     normalized_troops = guild_troops.deduct_guild_troops(guild=locked_guild, loadout=normalized_troops)
     travel_time = calculate_guild_raid_travel_time(locked_guild, guests, normalized_troops)
     now = timezone.now()
+    replay_metadata = current_replay_metadata()
     run = GuildRaidRun.objects.create(
         attacker_guild=locked_guild,
         defender_guild=locked_defender,
@@ -227,6 +247,7 @@ def _start_guild_raid_atomic(
         started_at=now,
         battle_at=now + timedelta(seconds=travel_time),
         return_at=now + timedelta(seconds=travel_time * 2),
+        **replay_metadata,
     )
     locked_guild.silver = max(0, int(locked_guild.silver or 0) - guild_constants.GUILD_PVP_FIXED_ATTACK_COST_SILVER)
     locked_guild.pvp_attack_count_today = int(locked_guild.pvp_attack_count_today or 0) + 1
@@ -247,6 +268,29 @@ def _lock_guild_roots_for_raid_run(run_id: int) -> tuple[Guild, Guild] | None:
     if guild_ids is None:
         return None
     return _lock_guild_pair(attacker_guild_id=guild_ids[0], defender_guild_id=guild_ids[1])
+
+
+def _ensure_guild_raid_replay_metadata(run_id: int) -> None:
+    """Persist replay metadata independently from the battle transaction."""
+
+    with transaction.atomic():
+        locked_guilds = _lock_guild_roots_for_raid_run(run_id)
+        if locked_guilds is None:
+            return
+        locked_run = GuildRaidRun.objects.select_for_update().filter(pk=run_id).first()
+        if locked_run is None or locked_run.status != GuildRaidRun.Status.MARCHING:
+            return
+        if (
+            int(locked_run.base_seed or 0) > 0
+            and int(locked_run.rng_version or 0) > 0
+            and locked_run.battle_engine_version != LEGACY_BATTLE_ENGINE_VERSION
+        ):
+            return
+        metadata = current_replay_metadata()
+        locked_run.base_seed = int(metadata["base_seed"])
+        locked_run.rng_version = int(metadata["rng_version"])
+        locked_run.battle_engine_version = str(metadata["battle_engine_version"])
+        locked_run.save(update_fields=["base_seed", "rng_version", "battle_engine_version"])
 
 
 def _report_owner_user_id_for_raid_run(run_id: int) -> int | None:
@@ -309,9 +353,11 @@ def request_retreat(*, run: GuildRaidRun, operator) -> None:
         if locked_run.battle_at is not None and locked_run.battle_at <= now:
             overdue_guild = locked_run.attacker_guild
         else:
+            retreat_schedule = TravelTimeline.from_activity(locked_run).retreat_schedule(now=now)
             locked_run.status = GuildRaidRun.Status.RETREATED
             locked_run.blocked_reason = "主动撤回"
-            locked_run.save(update_fields=["status", "blocked_reason"])
+            locked_run.return_at = retreat_schedule.return_at
+            locked_run.save(update_fields=["status", "blocked_reason", "return_at"])
             schedule_guild_raid_completion(locked_run)
             return
 
@@ -321,10 +367,38 @@ def request_retreat(*, run: GuildRaidRun, operator) -> None:
 
 
 def process_guild_raid_battle(run: GuildRaidRun, *, now=None) -> bool:
+    _ensure_guild_raid_replay_metadata(run.pk)
     owner_user_id = _ensure_report_owner_for_raid_run(run.pk)
     if owner_user_id is None:
         return False
-    return _process_guild_raid_battle_atomic(run, now=now, expected_report_owner_user_id=owner_user_id)
+    processed_at = now or timezone.now()
+    try:
+        return _process_guild_raid_battle_atomic(
+            run,
+            now=processed_at,
+            expected_report_owner_user_id=owner_user_id,
+        )
+    except InvalidBattleSnapshotError as exc:
+        if exc.snapshot_kind == "troop_loadout":
+            failure_reason = GuildRaidRun.FailureReason.INVALID_TROOP_LOADOUT
+        elif exc.snapshot_kind == "attacker_lineup":
+            failure_reason = GuildRaidRun.FailureReason.MISSING_ATTACKER_LINEUP
+        else:
+            failure_reason = GuildRaidRun.FailureReason.INVALID_GUEST_SNAPSHOT
+        return fail_guild_raid_and_release_resources(
+            run.pk,
+            failure_reason=failure_reason,
+            now=processed_at,
+            failure_detail=str(exc),
+        )
+    except _InactiveAttackerGuildError:
+        return fail_guild_raid_and_release_resources(
+            run.pk,
+            failure_reason=GuildRaidRun.FailureReason.INACTIVE_ATTACKER_GUILD,
+            now=processed_at,
+            failure_detail="attacker guild is inactive before battle",
+            audit_event="inactive_guild_raid_blocked",
+        )
 
 
 @transaction.atomic
@@ -370,13 +444,54 @@ def _process_guild_raid_battle_atomic(
 
     locked_run.attacker_guild = attacker_locked
     locked_run.defender_guild = defender_locked
-    blocked_reason = get_guild_battle_block_reason(defender_guild=defender_locked, now=processed_at)
-    if blocked_reason:
+    if not attacker_locked.is_active:
+        raise _InactiveAttackerGuildError
+    if not defender_locked.is_active:
+        retreat_schedule = TravelTimeline.from_activity(locked_run).retreat_schedule(now=processed_at)
         locked_run.status = GuildRaidRun.Status.RETREATED
-        locked_run.blocked_reason = blocked_reason
-        locked_run.save(update_fields=["status", "blocked_reason"])
+        locked_run.blocked_reason = "防守帮会已失效"
+        locked_run.return_at = retreat_schedule.return_at
+        locked_run.save(update_fields=["status", "blocked_reason", "return_at"])
+        logger.warning(
+            "inactive_guild_raid_blocked: run_id=%s inactive_guild_id=%s role=defender",
+            locked_run.pk,
+            defender_locked.pk,
+            extra={
+                "event": "inactive_guild_raid_blocked",
+                "run_id": locked_run.pk,
+                "guild_id": defender_locked.pk,
+                "guild_role": "defender",
+                "source_status": GuildRaidRun.Status.MARCHING,
+                "target_status": GuildRaidRun.Status.RETREATED,
+                "base_seed": locked_run.base_seed,
+                "rng_version": locked_run.rng_version,
+                "battle_engine_version": locked_run.battle_engine_version,
+            },
+        )
         schedule_guild_raid_completion(locked_run)
         return True
+    blocked_reason = get_guild_battle_block_reason(defender_guild=defender_locked, now=processed_at)
+    if blocked_reason:
+        retreat_schedule = TravelTimeline.from_activity(locked_run).retreat_schedule(now=processed_at)
+        locked_run.status = GuildRaidRun.Status.RETREATED
+        locked_run.blocked_reason = blocked_reason
+        locked_run.return_at = retreat_schedule.return_at
+        locked_run.save(update_fields=["status", "blocked_reason", "return_at"])
+        schedule_guild_raid_completion(locked_run)
+        return True
+
+    if not isinstance(locked_run.guest_snapshots, list):
+        raise InvalidBattleSnapshotError(
+            "帮会出征门客快照数据无效",
+            field_name="guest_snapshots",
+        )
+    if not locked_run.guest_snapshots:
+        raise InvalidBattleSnapshotError(
+            "帮会出征队伍缺少有效门客快照",
+            snapshot_kind="attacker_lineup",
+            field_name="guest_snapshots",
+        )
+    validated_troop_loadout = validate_battle_troop_loadout(locked_run.troop_loadout)
 
     locked_run.status = GuildRaidRun.Status.BATTLING
     locked_run.save(update_fields=["status"])
@@ -396,10 +511,13 @@ def _process_guild_raid_battle_atomic(
         battle_guest_models,
         BattleOptions(
             battle_type="guild_raid",
-            troop_loadout=locked_run.troop_loadout,
+            seed=locked_run.base_seed,
+            rng_version=locked_run.rng_version,
+            battle_engine_version=locked_run.battle_engine_version,
+            troop_loadout=validated_troop_loadout,
             fill_default_troops=False,
-            defender_guests=defender_guests or None,
-            defender_setup=defender_setup or None,
+            defender_guests=defender_guests,
+            defender_setup=defender_setup,
             opponent_name=defender_locked.name,
             auto_reward=False,
             send_message=False,
@@ -409,6 +527,12 @@ def _process_guild_raid_battle_atomic(
             defender_limit=defender_limit,
             attacker_tech_levels=attacker_tech_levels,
         ),
+    )
+    audit_battle_replay_metadata(
+        locked_run,
+        report,
+        logger=logger,
+        activity_kind="guild_raid_run",
     )
     if defender_setup:
         guild_troops.apply_guild_troop_losses(
@@ -423,12 +547,17 @@ def _process_guild_raid_battle_atomic(
     loot_items: dict[str, int] = {}
     loot_item_contribution_costs: dict[str, int] = {}
     if is_attacker_victory:
+        random_context = BattleRandomContext.create(
+            locked_run.base_seed,
+            rng_version=locked_run.rng_version,
+        )
         loot_silver, loot_items, loot_item_contribution_costs = reserve_guild_raid_loot(
             attacker_guild=attacker_locked,
             defender_guild=defender_locked,
             guests=battle_guest_models,
             troop_loadout=locked_run.troop_loadout,
             battle_report=report,
+            rng=random_context.rng(RNG_STREAM_LOOT),
         )
         _apply_guild_defeat_protection(defender_locked, now=processed_at)
 
@@ -492,6 +621,15 @@ def finalize_guild_raid(run: GuildRaidRun, *, now=None) -> bool:
         return False
     if locked_run.return_at is not None and locked_run.return_at > finalized_at:
         return False
+
+    if not attacker_locked.is_active:
+        return fail_guild_raid_and_release_resources(
+            locked_run.pk,
+            failure_reason=GuildRaidRun.FailureReason.INACTIVE_ATTACKER_GUILD,
+            now=finalized_at,
+            failure_detail="attacker guild is inactive before final settlement",
+            audit_event="inactive_guild_raid_blocked",
+        )
 
     if locked_run.status == GuildRaidRun.Status.RETREATED:
         surviving_troops = dict(locked_run.troop_loadout or {})

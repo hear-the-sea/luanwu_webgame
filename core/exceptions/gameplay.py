@@ -107,6 +107,28 @@ class BattlePreparationError(GameError):
     error_code = "BATTLE_PREPARATION_ERROR"
 
 
+class InvalidBattleSnapshotError(GameError):
+    """持久化战斗快照不满足读取契约。"""
+
+    error_code = "INVALID_BATTLE_SNAPSHOT"
+    default_message = "战斗快照数据无效"
+
+    def __init__(
+        self,
+        message: str | None = None,
+        *,
+        snapshot_kind: str = "guest_snapshots",
+        field_name: str = "",
+    ):
+        self.snapshot_kind = str(snapshot_kind or "guest_snapshots")
+        self.field_name = str(field_name or "")
+        super().__init__(
+            message,
+            snapshot_kind=self.snapshot_kind,
+            field_name=self.field_name,
+        )
+
+
 class TroopLoadoutError(GameError):
     """护院配置或库存错误"""
 

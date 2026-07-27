@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import pytest
 
+from battle.random_context import RNG_STREAM_LOOT, BattleRandomContext
 from core.exceptions import ArenaExchangeError, ArenaRewardLimitError, MessageError
 from gameplay.models import ArenaExchangeRecord, InventoryItem, ItemTemplate
 from gameplay.services.arena.core import exchange_arena_reward
+from gameplay.services.arena.exchange_helpers import ARENA_EXCHANGE_RANDOM_ITEMS_DISCRIMINATOR
+from gameplay.services.arena.helpers import resolve_random_reward_items
 from gameplay.services.arena.rewards import get_arena_reward_definition
 from gameplay.services.buildings.blueprint_catalog import BlueprintCatalogEntry
 from gameplay.services.manor.core import ensure_manor
@@ -25,7 +28,9 @@ def test_exchange_arena_reward_deducts_coins_and_creates_record():
     assert result.total_cost == 160
     assert manor.arena_coins == 840
     assert manor.grain > initial_grain
-    assert ArenaExchangeRecord.objects.filter(manor=manor, reward_key="grain_pack_small").count() == 1
+    record = ArenaExchangeRecord.objects.get(manor=manor, reward_key="grain_pack_small")
+    assert record.payload["replay"]["base_seed"] > 0
+    assert record.payload["replay"]["rng_version"] > 0
 
 
 @pytest.mark.django_db
@@ -41,7 +46,7 @@ def test_exchange_arena_reward_gladiator_chest_grants_silver_and_weighted_item(m
     manor.save(update_fields=["arena_coins"])
     initial_silver = manor.silver
 
-    monkeypatch.setattr("gameplay.services.arena.helpers.random.random", lambda: 0.0)
+    monkeypatch.setattr("battle.random_context.generate_base_seed", lambda: 9)
     result = exchange_arena_reward(manor, "gladiator_chest", quantity=1)
 
     manor.refresh_from_db()
@@ -52,6 +57,20 @@ def test_exchange_arena_reward_gladiator_chest_grants_silver_and_weighted_item(m
     assert result.granted_items == {"equip_jiaodoushitoukui": 1}
     assert result.random_granted_items == {"equip_jiaodoushitoukui": 1}
     assert InventoryItem.objects.filter(manor=manor, template__key="equip_jiaodoushitoukui", quantity=1).exists()
+    record = ArenaExchangeRecord.objects.get(manor=manor, reward_key="gladiator_chest")
+    replay = record.payload["replay"]
+    replay_context = BattleRandomContext.create(replay["base_seed"], rng_version=replay["rng_version"])
+    assert (
+        resolve_random_reward_items(
+            result.reward.random_items,
+            result.quantity,
+            rng=replay_context.rng(
+                RNG_STREAM_LOOT,
+                discriminator=ARENA_EXCHANGE_RANDOM_ITEMS_DISCRIMINATOR,
+            ),
+        )
+        == result.random_granted_items
+    )
 
 
 @pytest.mark.django_db
@@ -139,7 +158,7 @@ def test_exchange_arena_reward_randomly_grants_from_all_matching_blueprints(monk
             ),
         },
     )
-    monkeypatch.setattr("gameplay.services.arena.helpers.random.random", lambda: 0.999)
+    monkeypatch.setattr("battle.random_context.generate_base_seed", lambda: 2)
 
     result = exchange_arena_reward(manor, reward.key, quantity=1)
 
@@ -209,7 +228,7 @@ def test_exchange_arena_reward_wulin_chest_respects_weekly_limit(monkeypatch):
     )
     manor.arena_coins = 3000
     manor.save(update_fields=["arena_coins"])
-    monkeypatch.setattr("gameplay.services.arena.helpers.random.random", lambda: 0.0)
+    monkeypatch.setattr("battle.random_context.generate_base_seed", lambda: 10)
 
     result = exchange_arena_reward(manor, "wulin_chest", quantity=2)
 

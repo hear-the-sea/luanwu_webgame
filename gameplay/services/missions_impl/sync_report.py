@@ -115,9 +115,11 @@ def generate_sync_battle_report(
 ):
     """Sync battle report helper used when Celery is unavailable."""
 
+    from battle.random_context import RNG_STREAM_AI_GROWTH, BattleRandomContext
     from battle.services import simulate_report
 
     normalized_loadout = _normalize_troop_loadout(loadout)
+    random_context = BattleRandomContext.create(seed)
 
     if mission.is_defense:
         from battle.combatants_pkg import build_named_ai_guests
@@ -130,7 +132,9 @@ def generate_sync_battle_report(
         tech_conf = _normalize_enemy_technology_config(mission.enemy_technology)
         attacker_guest_level = _coerce_enemy_guest_level(tech_conf)
         attacker_guests = build_named_ai_guests(
-            _normalize_guest_configs(mission.enemy_guests), level=attacker_guest_level
+            _normalize_guest_configs(mission.enemy_guests),
+            level=attacker_guest_level,
+            rng=random_context.rng(RNG_STREAM_AI_GROWTH),
         )
         attacker_tech_levels = resolve_enemy_tech_levels(tech_conf)
         attacker_guest_bonuses = get_guest_stat_bonuses(tech_conf)
@@ -139,7 +143,8 @@ def generate_sync_battle_report(
         return simulate_report(
             manor=manor,
             battle_type=mission.battle_type or "task",
-            seed=seed,
+            seed=random_context.base_seed,
+            rng_version=random_context.rng_version,
             troop_loadout=enemy_troops,
             fill_default_troops=False,
             attacker_guests=attacker_guests,
@@ -169,7 +174,8 @@ def generate_sync_battle_report(
     return simulate_report(
         manor=manor,
         battle_type=mission.battle_type or "task",
-        seed=seed,
+        seed=random_context.base_seed,
+        rng_version=random_context.rng_version,
         troop_loadout=normalized_loadout,
         fill_default_troops=False,
         attacker_guests=guests,

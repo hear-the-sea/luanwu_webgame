@@ -32,7 +32,8 @@ def schedule_round_locked(
     *,
     round_number: int,
     now,
-    build_round_pairings: Callable[[list[int]], list[tuple[int, int | None]]],
+    build_round_pairings: Callable[[ArenaTournament, list[int], int], list[tuple[int, int | None]]],
+    create_scheduled_match: Callable[..., ArenaMatch],
     round_interval_delta: Callable[[ArenaTournament], timedelta],
     finalize_tournament_locked: Callable[..., None],
 ) -> bool:
@@ -58,20 +59,19 @@ def schedule_round_locked(
         finalize_tournament_locked(tournament, winner_entry=winner, now=now)
         return False
 
-    pairings = build_round_pairings(active_entry_ids)
-    ArenaMatch.objects.bulk_create(
-        [
-            ArenaMatch(
-                tournament=tournament,
-                round_number=round_number,
-                match_index=match_index,
-                attacker_entry_id=attacker_id,
-                defender_entry_id=defender_id,
-                status=ArenaMatch.Status.SCHEDULED,
-            )
-            for match_index, (attacker_id, defender_id) in enumerate(pairings)
-        ]
-    )
+    entry_map = {
+        entry.pk: entry
+        for entry in ArenaEntry.objects.select_for_update().filter(pk__in=active_entry_ids).order_by("pk")
+    }
+    pairings = build_round_pairings(tournament, active_entry_ids, round_number)
+    for match_index, (attacker_id, defender_id) in enumerate(pairings):
+        create_scheduled_match(
+            tournament=tournament,
+            round_number=round_number,
+            match_index=match_index,
+            attacker_entry=entry_map[attacker_id],
+            defender_entry=entry_map.get(defender_id) if defender_id is not None else None,
+        )
 
     tournament.current_round = round_number
     tournament.next_round_at = now + round_interval_delta(tournament)

@@ -22,7 +22,7 @@ from core.utils.side_effects import schedule_best_effort_after_commit
 from guests.models import Guest
 
 from ....models import Manor, RaidRun
-from ...pvp_runtime.lifecycle import compute_symmetric_return_seconds
+from ...pvp_runtime.lifecycle import TravelTimeline
 from ...pvp_runtime.messages import build_blocked_target_body
 from ...pvp_runtime.protection import build_daily_cap_result
 from ...pvp_runtime.travel import calculate_pvp_travel_time
@@ -85,10 +85,11 @@ def _retreat_raid_run_due_to_blocked_target(
         Countdown seconds until the run finishes returning.
     """
     now = now or timezone.now()
-    return_time = compute_symmetric_return_seconds(started_at=locked_run.started_at, now=now)
+    retreat_schedule = TravelTimeline.from_activity(locked_run).retreat_schedule(now=now)
+    return_time = retreat_schedule.elapsed_seconds
 
     locked_run.status = RaidRun.Status.RETREATED
-    locked_run.return_at = now + timedelta(seconds=return_time)
+    locked_run.return_at = retreat_schedule.return_at
     locked_run.save(update_fields=["status", "return_at"])
 
     def _send_blocked_target_message() -> None:

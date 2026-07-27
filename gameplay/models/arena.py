@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -19,6 +20,9 @@ class ArenaTournament(models.Model):
     next_round_at = models.DateTimeField(null=True, blank=True, db_index=True)
     virtual_fill_at = models.DateTimeField(null=True, blank=True, db_index=True)
     virtual_fill_completed = models.BooleanField(default=False)
+    base_seed = models.PositiveIntegerField(default=0)
+    rng_version = models.PositiveSmallIntegerField(default=0)
+    battle_engine_version = models.CharField(max_length=16, default="legacy")
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     winner_entry = models.ForeignKey(
@@ -148,7 +152,10 @@ class ArenaMatch(models.Model):
         null=True,
         blank=True,
     )
-    status = models.CharField(max_length=16, choices=Status.choices, default=Status.COMPLETED)
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.SCHEDULED)
+    base_seed = models.PositiveIntegerField(default=0)
+    rng_version = models.PositiveSmallIntegerField(default=0)
+    battle_engine_version = models.CharField(max_length=16, default="legacy")
     battle_report = models.ForeignKey(
         "battle.BattleReport",
         on_delete=models.SET_NULL,
@@ -168,6 +175,44 @@ class ArenaMatch(models.Model):
             models.Index(fields=["tournament", "round_number"], name="arena_match_tour_round_idx"),
             models.Index(fields=["tournament", "match_index"], name="arena_match_tour_index_idx"),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tournament", "round_number", "match_index"],
+                name="unique_arena_match_slot",
+            ),
+        ]
+
+    def clean(self) -> None:
+        super().clean()
+        errors: dict[str, str] = {}
+        if self.attacker_entry_id and self.tournament_id:
+            attacker_tournament_id = getattr(self.attacker_entry, "tournament_id", None)
+            if attacker_tournament_id != self.tournament_id:
+                errors["attacker_entry"] = "攻击方报名必须属于当前赛事"
+        if self.defender_entry_id and self.tournament_id:
+            defender_tournament_id = getattr(self.defender_entry, "tournament_id", None)
+            if defender_tournament_id != self.tournament_id:
+                errors["defender_entry"] = "防守方报名必须属于当前赛事"
+        participant_ids = {self.attacker_entry_id, self.defender_entry_id}
+        if self.winner_entry_id and self.winner_entry_id not in participant_ids:
+            errors["winner_entry"] = "胜者必须是本场攻方或守方"
+
+        if self.status == self.Status.SCHEDULED:
+            if self.winner_entry_id is not None:
+                errors["winner_entry"] = "待结算对局不能预设胜者"
+            if self.battle_report_id is not None:
+                errors["battle_report"] = "待结算对局不能预设战报"
+            if self.resolved_at is not None:
+                errors["resolved_at"] = "待结算对局不能预设结算时间"
+        else:
+            if self.winner_entry_id is None:
+                errors["winner_entry"] = "已结算对局必须有胜者"
+            if self.resolved_at is None:
+                errors["resolved_at"] = "已结算对局必须有结算时间"
+        if self.status == self.Status.BYE and self.defender_entry_id is not None:
+            errors["defender_entry"] = "轮空对局不能有防守方"
+        if errors:
+            raise ValidationError(errors)
 
     def __str__(self) -> str:
         return f"T{self.tournament_id}-R{self.round_number}-M{self.match_index}"

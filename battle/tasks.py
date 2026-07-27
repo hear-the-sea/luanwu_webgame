@@ -12,6 +12,7 @@ from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.services.missions_impl.enemy_guest_configs import EnemyGuestConfig, normalize_enemy_guest_configs
 from guests.models import Guest
 
+from .random_context import RNG_STREAM_AI_GROWTH, BattleRandomContext
 from .services import simulate_report
 
 logger = logging.getLogger(__name__)
@@ -272,6 +273,8 @@ def generate_report_task(
             )
         battle_guests = cast(list[Guest], guests)
 
+        random_context = BattleRandomContext.create(seed)
+
         if mission and mission.is_defense:
             from battle.combatants_pkg import build_named_ai_guests
             from core.game_data.technology import get_guest_stat_bonuses, resolve_enemy_tech_levels
@@ -280,7 +283,9 @@ def generate_report_task(
             tech_conf = _normalize_enemy_technology_config(mission.enemy_technology)
             attacker_guest_level = _coerce_enemy_guest_level(tech_conf)
             attacker_guests = build_named_ai_guests(
-                _normalize_guest_configs(mission.enemy_guests), level=attacker_guest_level
+                _normalize_guest_configs(mission.enemy_guests),
+                level=attacker_guest_level,
+                rng=random_context.rng(RNG_STREAM_AI_GROWTH),
             )
             attacker_tech_levels = resolve_enemy_tech_levels(tech_conf)
             attacker_guest_bonuses = get_guest_stat_bonuses(tech_conf)
@@ -289,7 +294,8 @@ def generate_report_task(
             report = simulate_report(
                 manor=manor,
                 battle_type=normalized_battle_type,
-                seed=seed,
+                seed=random_context.base_seed,
+                rng_version=random_context.rng_version,
                 troop_loadout=enemy_troops,
                 fill_default_troops=False,
                 attacker_guests=attacker_guests,
@@ -319,7 +325,8 @@ def generate_report_task(
             report = simulate_report(
                 manor=manor,
                 battle_type=normalized_battle_type,
-                seed=seed,
+                seed=random_context.base_seed,
+                rng_version=random_context.rng_version,
                 troop_loadout=normalized_troop_loadout,
                 fill_default_troops=fill_default_troops,
                 attacker_guests=battle_guests,

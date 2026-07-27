@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from types import SimpleNamespace
 
 import pytest
 from django.db import transaction
 from django.utils import timezone
 
+from battle.random_context import current_replay_metadata
 from gameplay.models import ArenaTournament, ArenaVirtualDemand, ArenaVirtualReserveMember, BotProfile, RaidRun
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.raid.combat import battle as combat_battle
@@ -33,6 +35,41 @@ def _create_bot_profile(manor, *, budget: int, state: str = BotProfile.State.ACT
     )
 
 
+@pytest.mark.parametrize(
+    ("state", "should_retire"),
+    [
+        (BotProfile.State.ACTIVE, True),
+        (BotProfile.State.SLOWING, True),
+        (BotProfile.State.ABANDONED, True),
+        (BotProfile.State.RETIRED, False),
+        (BotProfile.State.STALE, False),
+    ],
+)
+def test_exhausted_loot_budget_retires_only_maintained_profiles(monkeypatch, state, should_retire):
+    from gameplay.services import virtual_player_loot_limits
+
+    profile = SimpleNamespace(loot_budget_daily=100, state=state, pk=7)
+    profile_lookup = SimpleNamespace(first=lambda: profile)
+    retired_profile_ids = []
+    monkeypatch.setattr(virtual_player_loot_limits.BotProfile.objects, "filter", lambda **_kwargs: profile_lookup)
+    monkeypatch.setattr(virtual_player_loot_limits, "_spent_from_bot_defender_today", lambda *_args, **_kwargs: 100)
+    monkeypatch.setattr(virtual_player_loot_limits, "_is_bot_manor", lambda _manor: True)
+    monkeypatch.setattr(
+        virtual_player_loot_limits,
+        "retire_virtual_player_if_unprotected",
+        lambda profile_id, **_kwargs: retired_profile_ids.append(profile_id),
+    )
+
+    clamped = virtual_player_loot_limits.clamp_bot_loot_resources(
+        attacker=object(),
+        defender=object(),
+        loot_resources={"grain": 50},
+    )
+
+    assert clamped == {}
+    assert retired_profile_ids == ([profile.pk] if should_retire else [])
+
+
 @pytest.mark.django_db
 def test_apply_raid_loot_clamps_bot_defender_resources_to_daily_budget(monkeypatch, django_user_model):
     attacker = _create_manor(django_user_model, "bot_budget_attacker")
@@ -42,7 +79,12 @@ def test_apply_raid_loot_clamps_bot_defender_resources_to_daily_budget(monkeypat
     defender.silver = 10_000
     defender.save(update_fields=["grain", "silver"])
 
-    run = RaidRun.objects.create(attacker=attacker, defender=defender, status=RaidRun.Status.BATTLING)
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.BATTLING,
+        **current_replay_metadata(101),
+    )
     monkeypatch.setattr(combat_battle, "_calculate_loot", lambda *_args, **_kwargs: ({"grain": 700, "silver": 600}, {}))
 
     with transaction.atomic():
@@ -238,7 +280,12 @@ def test_normal_player_defender_is_not_clamped_by_bot_budget(monkeypatch, django
     defender.silver = 10_000
     defender.save(update_fields=["grain", "silver"])
 
-    run = RaidRun.objects.create(attacker=attacker, defender=defender, status=RaidRun.Status.BATTLING)
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.BATTLING,
+        **current_replay_metadata(101),
+    )
     monkeypatch.setattr(combat_battle, "_calculate_loot", lambda *_args, **_kwargs: ({"grain": 700, "silver": 600}, {}))
 
     with transaction.atomic():

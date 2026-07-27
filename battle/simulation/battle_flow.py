@@ -169,9 +169,14 @@ def _resolve_standard_round(
     round_no: int,
 ) -> Dict[str, Any]:
     from ..arena_coop import sync_arena_coop_combat_state, try_trigger_arena_coop_pre_action_heal
+    from ..modifier_lifecycle import clear_action_modifiers
     from ..passives import run_passives_for_timing
     from ..status_manager import prepare_combatants_for_round, try_trigger_battle_heal_on_action
-    from ..utils.status_effects import handle_pre_action_status
+    from ..utils.status_effects import (
+        capture_active_status_effects,
+        consume_active_status_effects,
+        handle_pre_action_status,
+    )
 
     prepare_combatants_for_round(attacker_units, defender_units, round_no, promote_pending=True)
     events: List[Dict[str, Any]] = []
@@ -194,7 +199,10 @@ def _resolve_standard_round(
     for actor in determine_turn_order(attacker_units, defender_units, rng):
         if actor.hp <= 0:
             continue
+        active_statuses = capture_active_status_effects(actor)
         if handle_pre_action_status(actor, events):
+            consume_active_status_effects(actor, active_statuses)
+            clear_action_modifiers(attacker_units + defender_units)
             continue
         passive_events = []
         run_passives_for_timing(
@@ -224,6 +232,8 @@ def _resolve_standard_round(
             rng=rng,
         )
         _append_passive_events(events, passive_events)
+        consume_active_status_effects(actor, active_statuses)
+        clear_action_modifiers(attacker_units + defender_units)
 
         if not alive(defender_units) or not alive(attacker_units):
             break
@@ -237,9 +247,14 @@ def resolve_priority_phases(
     rng: random.Random,
 ) -> Tuple[List[Dict[str, Any]], int]:
     from ..arena_coop import sync_arena_coop_combat_state, try_trigger_arena_coop_pre_action_heal
+    from ..modifier_lifecycle import clear_action_modifiers
     from ..passives import run_passives_for_timing
     from ..status_manager import prepare_combatants_for_round, try_trigger_battle_heal_on_action
-    from ..utils.status_effects import handle_pre_action_status
+    from ..utils.status_effects import (
+        capture_active_status_effects,
+        consume_active_status_effects,
+        handle_pre_action_status,
+    )
 
     participants = alive(attacker_team) + alive(defender_team)
     priority_values = sorted({c.priority for c in participants if c.priority < 0})
@@ -273,8 +288,11 @@ def resolve_priority_phases(
         for actor in phase_attackers:
             if actor.hp <= 0:
                 continue
+            active_statuses = capture_active_status_effects(actor)
             # 先判定控制状态（眩晕/冻结等）
             if handle_pre_action_status(actor, events):
+                consume_active_status_effects(actor, active_statuses)
+                clear_action_modifiers(attacker_team + defender_team)
                 continue
             passive_events = []
             run_passives_for_timing(
@@ -308,6 +326,8 @@ def resolve_priority_phases(
                 rng=rng,
             )
             _append_passive_events(events, passive_events)
+            consume_active_status_effects(actor, active_statuses)
+            clear_action_modifiers(attacker_team + defender_team)
         _append_waiting_units(events, attacker_team, defender_team, priority)
         rounds.append({"round": next_round_no, "events": events, "priority": priority})
         next_round_no += 1

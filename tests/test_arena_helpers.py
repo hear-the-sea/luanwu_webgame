@@ -6,7 +6,12 @@ from types import SimpleNamespace
 import pytest
 from django.utils import timezone
 
+from battle.random_context import RNG_STREAM_LOOT, BattleRandomContext
 from core.exceptions import ArenaGuestSelectionError
+from gameplay.services.arena.exchange_helpers import (
+    ARENA_EXCHANGE_RANDOM_BLUEPRINTS_DISCRIMINATOR,
+    ARENA_EXCHANGE_RANDOM_ITEMS_DISCRIMINATOR,
+)
 from gameplay.services.arena.helpers import (
     build_round_pairings,
     calculate_ranked_entries,
@@ -64,17 +69,56 @@ def test_today_bounds_and_local_date_use_same_day():
     assert day_start.date() == today_local_date(now=now)
 
 
-def test_resolve_random_reward_items_aggregates_weighted_rolls(monkeypatch):
+def test_resolve_random_reward_items_aggregates_weighted_rolls():
     options = (
         ArenaRandomItemOption(item_key="item_a", weight=3, amount=1),
         ArenaRandomItemOption(item_key="item_b", weight=1, amount=2),
     )
-    rolls = iter([0.1, 0.9, 0.05])
-    monkeypatch.setattr("gameplay.services.arena.helpers.random.random", lambda: next(rolls))
 
-    grants = resolve_random_reward_items(options, 3)
+    class StubRng(random.Random):
+        def __init__(self) -> None:
+            self._rolls = iter([0.1, 0.9, 0.05])
+
+        def random(self) -> float:
+            return next(self._rolls)
+
+    grants = resolve_random_reward_items(options, 3, rng=StubRng())
 
     assert grants == {"item_a": 2, "item_b": 2}
+
+
+def test_arena_exchange_random_streams_replay_and_remain_isolated():
+    options = (
+        ArenaRandomItemOption(item_key="item_a", weight=1, amount=1),
+        ArenaRandomItemOption(item_key="item_b", weight=1, amount=1),
+    )
+    first_context = BattleRandomContext.create(20260726)
+    expected = resolve_random_reward_items(
+        options,
+        20,
+        rng=first_context.rng(
+            RNG_STREAM_LOOT,
+            discriminator=ARENA_EXCHANGE_RANDOM_ITEMS_DISCRIMINATOR,
+        ),
+    )
+
+    replay_context = BattleRandomContext.create(20260726)
+    blueprint_rng = replay_context.rng(
+        RNG_STREAM_LOOT,
+        discriminator=ARENA_EXCHANGE_RANDOM_BLUEPRINTS_DISCRIMINATOR,
+    )
+    for _ in range(100):
+        blueprint_rng.random()
+    replayed = resolve_random_reward_items(
+        options,
+        20,
+        rng=replay_context.rng(
+            RNG_STREAM_LOOT,
+            discriminator=ARENA_EXCHANGE_RANDOM_ITEMS_DISCRIMINATOR,
+        ),
+    )
+
+    assert replayed == expected
 
 
 def test_build_round_pairings_uses_shuffled_order():

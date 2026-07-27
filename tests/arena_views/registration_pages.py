@@ -371,7 +371,7 @@ def test_arena_exchange_view_shows_drawn_gladiator_item(arena_client, monkeypatc
     _ensure_gladiator_item_templates()
     manor.arena_coins = 600
     manor.save(update_fields=["arena_coins"])
-    monkeypatch.setattr("gameplay.services.arena.helpers.random.random", lambda: 0.0)
+    monkeypatch.setattr("battle.random_context.generate_base_seed", lambda: 9)
 
     response = client.post(
         reverse("gameplay:arena_exchange"),
@@ -426,7 +426,7 @@ def test_arena_exchange_view_hides_unknown_reward_item_key(arena_client, monkeyp
     _ensure_gladiator_item_templates()
     manor.arena_coins = 600
     manor.save(update_fields=["arena_coins"])
-    monkeypatch.setattr("gameplay.services.arena.helpers.random.random", lambda: 0.0)
+    monkeypatch.setattr("battle.random_context.generate_base_seed", lambda: 9)
     monkeypatch.setattr("gameplay.views.arena.get_item_template_names_by_keys", lambda _keys: {})
 
     response = client.post(

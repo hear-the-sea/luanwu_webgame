@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Callable
 
 from django.db import transaction
@@ -9,6 +9,7 @@ from django.utils import timezone
 from core.exceptions import ScoutRetreatStateError
 
 from ...models import ScoutRecord
+from ..pvp_runtime.lifecycle import TravelTimeline
 
 
 def finalize_scout_return_command(
@@ -66,8 +67,6 @@ def request_scout_retreat_command(
         raise ScoutRetreatStateError()
 
     current_time = now_fn()
-    elapsed = max(0, int((current_time - record.started_at).total_seconds()))
-    countdown = max(1, elapsed)
 
     with transaction.atomic():
         locked_record = (
@@ -77,14 +76,15 @@ def request_scout_retreat_command(
         if not locked_record or locked_record.status != scout_record_model.Status.SCOUTING:
             raise ScoutRetreatStateError()
 
+        retreat_schedule = TravelTimeline.from_activity(locked_record).retreat_schedule(now=current_time)
         locked_record.status = scout_record_model.Status.RETURNING
         locked_record.is_success = None
         locked_record.was_retreated = True
-        locked_record.return_at = current_time + timedelta(seconds=countdown)
+        locked_record.return_at = retreat_schedule.return_at
         locked_record.save(update_fields=["status", "is_success", "was_retreated", "return_at"])
 
         restore_scout_troops_fn(locked_record.attacker, locked_record.scout_cost, now=current_time)
         if schedule_return_completion_fn is not None:
-            schedule_return_completion_fn(locked_record, countdown)
+            schedule_return_completion_fn(locked_record, retreat_schedule.elapsed_seconds)
 
-    return locked_record, countdown
+    return locked_record, retreat_schedule.elapsed_seconds

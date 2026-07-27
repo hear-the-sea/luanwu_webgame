@@ -75,13 +75,17 @@ def today_local_date(*, now=None):
     return timezone.localdate(now or timezone.now())
 
 
-def choose_random_item_option(options: tuple[ArenaRandomItemOption, ...]) -> ArenaRandomItemOption | None:
+def choose_random_item_option(
+    options: tuple[ArenaRandomItemOption, ...],
+    *,
+    rng: random.Random | random.SystemRandom,
+) -> ArenaRandomItemOption | None:
     if not options:
         return None
     total_weight = sum(max(0, int(option.weight)) for option in options)
     if total_weight <= 0:
         return None
-    roll = random.random() * total_weight
+    roll = rng.random() * total_weight
     chosen = options[-1]
     cumulative = 0
     for option in options:
@@ -92,11 +96,16 @@ def choose_random_item_option(options: tuple[ArenaRandomItemOption, ...]) -> Are
     return chosen
 
 
-def resolve_random_reward_items(options: tuple[ArenaRandomItemOption, ...], quantity: int) -> dict[str, int]:
+def resolve_random_reward_items(
+    options: tuple[ArenaRandomItemOption, ...],
+    quantity: int,
+    *,
+    rng: random.Random | random.SystemRandom,
+) -> dict[str, int]:
     grants: dict[str, int] = {}
     rounds = max(0, int(quantity or 0))
     for _ in range(rounds):
-        chosen = choose_random_item_option(options)
+        chosen = choose_random_item_option(options, rng=rng)
         if chosen is None:
             break
         grants[chosen.item_key] = grants.get(chosen.item_key, 0) + chosen.amount

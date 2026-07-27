@@ -43,9 +43,11 @@ skills:
             - type: set_reflect
               ratio: 0.1
               cap: 8000
+              scope: round
             - type: set_softcap
               threshold: 16000
               overflow_ratio: 0.35
+              scope: round
 
   - key: gl_top_mingjiao_command
     name: 明教号令

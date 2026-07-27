@@ -50,7 +50,7 @@ from gameplay.services.manor.coordinates import is_occupied_manor_location_confl
 from gameplay.services.manor.core import calculate_building_capacity, generate_unique_coordinate
 from gameplay.services.manor.naming import ManorNameConflictError
 from gameplay.services.technology_catalog import build_technology_index
-from gameplay.services.virtual_player_population import PopulationCell, PopulationPlan, plan_population_cells
+from gameplay.services.virtual_player_core.population import PopulationCell, PopulationPlan, plan_population_cells
 from gameplay.services.virtual_player_rules import (
     apply_combat_persona,
     apply_stable_troop_variation,
@@ -59,6 +59,7 @@ from gameplay.services.virtual_player_rules import (
     choose_strength_quantile,
     nearest_rank_quantile,
 )
+from gameplay.services.virtual_player_state_policy import VIRTUAL_PROFILE_MAINTAINED_STATES
 from guests.growth_engine import allocate_level_up_attributes, apply_training_completion
 from guests.models import (
     GearItem,
@@ -1195,7 +1196,7 @@ def _active_real_player_count(now) -> int:
 
 
 def _maintained_bot_queryset():
-    return BotProfile.objects.exclude(state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED])
+    return BotProfile.objects.filter(state__in=VIRTUAL_PROFILE_MAINTAINED_STATES)
 
 
 def _maintained_bot_count() -> int:
@@ -2078,11 +2079,7 @@ def _diverse_guest_templates(templates: list[GuestTemplate], *, rng: random.Rand
         row["template_id"]: row["count"]
         for row in (
             Guest.objects.filter(
-                manor__bot_profile__state__in=[
-                    BotProfile.State.ACTIVE,
-                    BotProfile.State.SLOWING,
-                    BotProfile.State.ABANDONED,
-                ],
+                manor__bot_profile__state__in=VIRTUAL_PROFILE_MAINTAINED_STATES,
                 template__in=templates,
             )
             .values("template_id")
@@ -2317,11 +2314,7 @@ def _select_inventory_template_pool(
         row["template_id"]: row["manor_count"]
         for row in (
             InventoryItem.objects.filter(
-                manor__bot_profile__state__in=[
-                    BotProfile.State.ACTIVE,
-                    BotProfile.State.SLOWING,
-                    BotProfile.State.ABANDONED,
-                ],
+                manor__bot_profile__state__in=VIRTUAL_PROFILE_MAINTAINED_STATES,
                 template__in=templates,
             )
             .values("template_id")
@@ -3266,8 +3259,7 @@ def retire_virtual_player_if_unprotected(profile_id: int, *, now=None) -> bool:
     current_time = now or timezone.now()
     profile = (
         BotProfile.objects.select_for_update()
-        .filter(pk=profile_id)
-        .exclude(state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED])
+        .filter(pk=profile_id, state__in=VIRTUAL_PROFILE_MAINTAINED_STATES)
         .first()
     )
     if profile is None:
@@ -3324,7 +3316,7 @@ def maintain_due_virtual_players(*, now=None, limit: int = 100) -> int:
     if not bool(config.get("enabled", True)):
         return 0
     profile_ids = list(
-        BotProfile.objects.exclude(state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED])
+        BotProfile.objects.filter(state__in=VIRTUAL_PROFILE_MAINTAINED_STATES)
         .filter(next_growth_at__lte=now)
         .order_by("next_growth_at", "id")[: max(0, int(limit))]
         .values_list("id", flat=True)
@@ -3335,8 +3327,11 @@ def maintain_due_virtual_players(*, now=None, limit: int = 100) -> int:
             profile = (
                 BotProfile.objects.select_for_update(skip_locked=True)
                 .select_related("manor")
-                .exclude(state__in=[BotProfile.State.STALE, BotProfile.State.RETIRED])
-                .filter(id=profile_id, next_growth_at__lte=now)
+                .filter(
+                    id=profile_id,
+                    state__in=VIRTUAL_PROFILE_MAINTAINED_STATES,
+                    next_growth_at__lte=now,
+                )
                 .first()
             )
             if profile is None:
@@ -3356,11 +3351,7 @@ def _retire_excess_virtual_players(
     excess = _maintained_bot_count() - target
     if excess <= 0:
         return 0
-    eligible_states = [
-        BotProfile.State.ACTIVE,
-        BotProfile.State.SLOWING,
-        BotProfile.State.ABANDONED,
-    ]
+    eligible_states = VIRTUAL_PROFILE_MAINTAINED_STATES
     with transaction.atomic():
         protected_manor_ids = _arena_protected_bot_manor_ids()
         stale_ids = list(
@@ -3427,11 +3418,7 @@ def _retire_excess_population_cells(
             config=config,
             target_based=target_based,
         )
-        eligible_states = [
-            BotProfile.State.ACTIVE,
-            BotProfile.State.SLOWING,
-            BotProfile.State.ABANDONED,
-        ]
+        eligible_states = VIRTUAL_PROFILE_MAINTAINED_STATES
         with transaction.atomic():
             protected_manor_ids = _arena_protected_bot_manor_ids()
             stale_ids = list(

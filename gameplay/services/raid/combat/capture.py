@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import random
 from typing import Any, Dict, List, Optional
 
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
@@ -10,7 +11,6 @@ from gameplay.constants import get_raid_capture_guest_rate
 from guests.models import Guest
 
 from ....models import JailPrisoner, Manor, OathBond, RaidRun
-from .config import random
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ def _resolve_capture_sides(run: RaidRun, is_attacker_victory: bool) -> tuple[Man
     return winner, loser
 
 
-def _can_attempt_capture(winner: Manor) -> bool:
+def _can_attempt_capture(winner: Manor, *, rng: random.Random) -> bool:
     capacity = int(getattr(winner, "jail_capacity", 0) or 0)
     if capacity <= 0:
         return False
@@ -33,7 +33,7 @@ def _can_attempt_capture(winner: Manor) -> bool:
     capture_rate = get_raid_capture_guest_rate()
     if capture_rate <= 0:
         return False
-    if random.random() >= capture_rate:
+    if rng.random() >= capture_rate:
         return False
 
     return True
@@ -60,8 +60,13 @@ def _filter_capture_candidates(losing_guest_ids: List[int]) -> List[int]:
     return [guest_id for guest_id in losing_guest_ids if guest_id not in oathed_ids]
 
 
-def _select_capture_target(candidates: List[int], loser: Manor) -> Optional[Guest]:
-    target_guest_id = random.choice(candidates)
+def _select_capture_target(
+    candidates: List[int],
+    loser: Manor,
+    *,
+    rng: random.Random,
+) -> Optional[Guest]:
+    target_guest_id = rng.choice(candidates)
     target = (
         Guest.objects.select_for_update()
         .select_related("template", "manor")
@@ -104,7 +109,13 @@ def _capture_guest_payload(
     }
 
 
-def _try_capture_guest(run: RaidRun, report: Any, is_attacker_victory: bool) -> Optional[Dict[str, Any]]:
+def _try_capture_guest(
+    run: RaidRun,
+    report: Any,
+    is_attacker_victory: bool,
+    *,
+    rng: random.Random,
+) -> Optional[Dict[str, Any]]:
     """
     尝试俘获失败方出战门客（单场最多1名）。
 
@@ -116,7 +127,7 @@ def _try_capture_guest(run: RaidRun, report: Any, is_attacker_victory: bool) -> 
     - 俘获成功：门客从失败方列表移除，装备自动消失，进入胜利方监牢
     """
     winner, loser = _resolve_capture_sides(run, is_attacker_victory)
-    if not _can_attempt_capture(winner):
+    if not _can_attempt_capture(winner, rng=rng):
         return None
 
     losing_guest_ids = _collect_losing_guest_ids(report, is_attacker_victory)
@@ -127,7 +138,7 @@ def _try_capture_guest(run: RaidRun, report: Any, is_attacker_victory: bool) -> 
     if not candidates:
         return None
 
-    target = _select_capture_target(candidates, loser)
+    target = _select_capture_target(candidates, loser, rng=rng)
     if not target:
         return None
 

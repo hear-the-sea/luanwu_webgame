@@ -13,6 +13,13 @@ class GuildRaidRun(models.Model):
         RETURNING = "returning", "返程中"
         COMPLETED = "completed", "已完成"
         RETREATED = "retreated", "已撤退"
+        FAILED = "failed", "出征失败"
+
+    class FailureReason(models.TextChoices):
+        MISSING_ATTACKER_LINEUP = "missing_attacker_lineup", "缺少出征门客快照"
+        INVALID_GUEST_SNAPSHOT = "invalid_guest_snapshot", "门客战斗快照无效"
+        INVALID_TROOP_LOADOUT = "invalid_troop_loadout", "护院编队快照无效"
+        INACTIVE_ATTACKER_GUILD = "inactive_attacker_guild", "进攻帮会已失效"
 
     attacker_guild = models.ForeignKey(
         "guilds.Guild",
@@ -36,6 +43,17 @@ class GuildRaidRun(models.Model):
     )
     selected_guest_count = models.PositiveIntegerField("出征门客数量", default=0)
     status = models.CharField("状态", max_length=16, choices=Status.choices, default=Status.MARCHING)
+    failure_reason = models.CharField(
+        "失败原因",
+        max_length=64,
+        choices=FailureReason.choices,
+        blank=True,
+        default="",
+    )
+    resources_released = models.BooleanField("失败资源已释放", default=False)
+    base_seed = models.PositiveIntegerField(default=0)
+    rng_version = models.PositiveSmallIntegerField(default=0)
+    battle_engine_version = models.CharField(max_length=16, default="legacy")
     guest_ids = models.JSONField("出征门客ID", default=list, blank=True)
     guest_snapshots = models.JSONField("出征门客快照", default=list, blank=True)
     troop_loadout = models.JSONField("护院编队", default=dict, blank=True)

@@ -8,8 +8,14 @@ from datetime import datetime, timedelta
 from django.db import transaction
 from django.utils import timezone
 
-from core.exceptions import ArenaCancellationError, ArenaEntryStateError, ArenaParticipationLimitError
-from gameplay.models import ArenaCoopEntry, ArenaCoopEvent, Manor
+from battle.replay_audit import audit_battle_replay_metadata
+from core.exceptions import (
+    ArenaCancellationError,
+    ArenaEntryStateError,
+    ArenaParticipationLimitError,
+    InvalidBattleSnapshotError,
+)
+from gameplay.models import ArenaCoopEntry, ArenaCoopEvent, ArenaVirtualReserveMember, Manor
 from gameplay.services.utils.messages import create_message
 
 from . import helpers as _arena_helpers
@@ -27,6 +33,8 @@ from .coop_lifecycle import (
 )
 from .coop_rules import load_arena_coop_rules
 from .coop_settlement import settle_coop_event_locked
+from .replay import ensure_coop_event_replay_metadata
+from .snapshots import load_entry_guests
 
 logger = logging.getLogger(__name__)
 
@@ -240,6 +248,8 @@ def cancel_arena_coop_entry(manor: Manor) -> int:
     entry.cancelled_at = current_time
     entry.save(update_fields=["status", "cancelled_at"])
     release_entry_guest_statuses(entry)
+    if entry.source == ArenaCoopEntry.Source.VIRTUAL:
+        ArenaVirtualReserveMember.objects.filter(profile__manor_id=entry.manor_id).delete()
     update_daily_counter_locked(
         locked_manor,
         delta=-1,
@@ -277,6 +287,121 @@ def start_due_virtual_backfill_coop_events(
     return prepared
 
 
+def _cancel_invalid_coop_entry_locked(
+    entry: ArenaCoopEntry,
+    *,
+    event: ArenaCoopEvent,
+    now: datetime,
+    error: InvalidBattleSnapshotError,
+) -> None:
+    entry.status = ArenaCoopEntry.Status.CANCELLED
+    entry.cancelled_at = now
+    entry.save(update_fields=["status", "cancelled_at"])
+    release_entry_guest_statuses(entry)
+    if entry.source == ArenaCoopEntry.Source.VIRTUAL:
+        ArenaVirtualReserveMember.objects.filter(profile__manor_id=entry.manor_id).delete()
+    if entry.source == ArenaCoopEntry.Source.PLAYER:
+        update_daily_counter_locked(
+            entry.manor,
+            delta=-1,
+            today_local_date_fn=_today_local_date,
+            today_bounds_fn=_today_bounds,
+        )
+    logger.warning(
+        "arena_coop_entry_cancelled_invalid_snapshot: event_id=%s entry_id=%s error=%s",
+        event.pk,
+        entry.pk,
+        error,
+        extra={
+            "event": "arena_coop_entry_cancelled_invalid_snapshot",
+            "event_id": event.pk,
+            "entry_id": entry.pk,
+            "entry_source": entry.source,
+            "failure_reason": "invalid_guest_snapshot",
+            "source_status": ArenaCoopEntry.Status.REGISTERED,
+            "target_status": ArenaCoopEntry.Status.CANCELLED,
+            "base_seed": event.base_seed,
+            "rng_version": event.rng_version,
+            "battle_engine_version": event.battle_engine_version,
+        },
+    )
+
+
+def _validate_coop_entries_locked(
+    event: ArenaCoopEvent,
+    entries: list[ArenaCoopEntry],
+    *,
+    now: datetime,
+) -> list[ArenaCoopEntry]:
+    valid_entries: list[ArenaCoopEntry] = []
+    for entry in entries:
+        try:
+            guests = load_entry_guests(
+                entry,
+                max_guests_per_entry=event.guest_limit_per_entry,
+            )
+            if not guests:
+                raise InvalidBattleSnapshotError(
+                    "共斗报名缺少有效门客快照",
+                    snapshot_kind="arena_guest_snapshot",
+                    field_name="entry_guests",
+                )
+        except InvalidBattleSnapshotError as exc:
+            _cancel_invalid_coop_entry_locked(entry, event=event, now=now, error=exc)
+            continue
+        valid_entries.append(entry)
+    return valid_entries
+
+
+def _handle_insufficient_coop_entries_locked(
+    event: ArenaCoopEvent,
+    entries: list[ArenaCoopEntry],
+    *,
+    now: datetime,
+) -> None:
+    recruiting_conflict = (
+        ArenaCoopEvent.objects.filter(status=ArenaCoopEvent.Status.RECRUITING).exclude(pk=event.pk).exists()
+    )
+    if recruiting_conflict or not entries:
+        for entry in entries:
+            entry.status = ArenaCoopEntry.Status.CANCELLED
+            entry.cancelled_at = now
+            entry.save(update_fields=["status", "cancelled_at"])
+            release_entry_guest_statuses(entry)
+            if entry.source == ArenaCoopEntry.Source.VIRTUAL:
+                ArenaVirtualReserveMember.objects.filter(profile__manor_id=entry.manor_id).delete()
+            if entry.source == ArenaCoopEntry.Source.PLAYER:
+                update_daily_counter_locked(
+                    entry.manor,
+                    delta=-1,
+                    today_local_date_fn=_today_local_date,
+                    today_bounds_fn=_today_bounds,
+                )
+        event.status = ArenaCoopEvent.Status.CANCELLED
+        event.prepare_ends_at = None
+        event.ended_at = now
+        event.save(update_fields=["status", "prepare_ends_at", "ended_at", "updated_at"])
+        return
+
+    event.status = ArenaCoopEvent.Status.RECRUITING
+    event.prepare_ends_at = None
+    event.virtual_fill_completed = False
+    event.virtual_fill_at = now + timedelta(seconds=max(1, ARENA_COOP_VIRTUAL_FILL_WAIT_SECONDS))
+    event.save(
+        update_fields=[
+            "status",
+            "prepare_ends_at",
+            "virtual_fill_completed",
+            "virtual_fill_at",
+            "updated_at",
+        ]
+    )
+    from .virtual_reserve import reconcile_coop_demand_locked
+
+    reconcile_coop_demand_locked(event, now=now)
+    transaction.on_commit(lambda: queue_virtual_reserve_reconcile("coop", event.pk))
+
+
 def run_due_arena_coop_events(*, now: datetime | None = None, limit: int = 20) -> int:
     current_time = now or timezone.now()
     candidate_ids = list(
@@ -290,6 +415,8 @@ def run_due_arena_coop_events(*, now: datetime | None = None, limit: int = 20) -
     processed = 0
 
     for event_id in candidate_ids:
+        if not ensure_coop_event_replay_metadata(event_id):
+            continue
         with transaction.atomic():
             manor_ids = list(
                 ArenaCoopEntry.objects.filter(
@@ -314,10 +441,17 @@ def run_due_arena_coop_events(*, now: datetime | None = None, limit: int = 20) -
                 .select_related("manor")
                 .order_by("joined_at", "id")
             )
+            registered_entries = _validate_coop_entries_locked(
+                locked_event,
+                registered_entries,
+                now=current_time,
+            )
             if len(registered_entries) < locked_event.player_limit:
-                locked_event.status = ArenaCoopEvent.Status.RECRUITING
-                locked_event.prepare_ends_at = None
-                locked_event.save(update_fields=["status", "prepare_ends_at", "updated_at"])
+                _handle_insufficient_coop_entries_locked(
+                    locked_event,
+                    registered_entries,
+                    now=current_time,
+                )
                 continue
 
             locked_event.status = ArenaCoopEvent.Status.RUNNING
@@ -325,6 +459,12 @@ def run_due_arena_coop_events(*, now: datetime | None = None, limit: int = 20) -
             locked_event.save(update_fields=["status", "started_at", "updated_at"])
 
             report = _run_coop_battle_locked(locked_event, current_time)
+            audit_battle_replay_metadata(
+                locked_event,
+                report,
+                logger=logger,
+                activity_kind="arena_coop_event",
+            )
             settle_coop_event_locked(
                 locked_event,
                 report,

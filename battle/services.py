@@ -215,6 +215,8 @@ def simulate_report(
     manor,
     battle_type: str = DEFAULT_BATTLE_TYPE,
     seed: int | None = None,
+    rng_version: int = 1,
+    battle_engine_version: str = "2",
     troop_loadout: Dict[str, int] | None = None,
     fill_default_troops: bool = True,
     attacker_guests: List[Guest] | None = None,
@@ -244,7 +246,9 @@ def simulate_report(
     Args:
         manor: 庄园实例
         battle_type: 战斗类型
-        seed: 随机种子
+        seed: 基础随机种子
+        rng_version: 随机派生算法版本
+        battle_engine_version: 战斗引擎版本
         troop_loadout: 兵种配置
         fill_default_troops: troop_loadout 为空/全0时是否填充默认兵力
         attacker_guests: 攻击方门客列表
@@ -256,7 +260,7 @@ def simulate_report(
         travel_seconds: 行军时间（秒）
         auto_reward: 是否自动发放奖励
         drop_handler: 自定义掉落处理函数
-        rng_source: 自定义随机数生成器
+        rng_source: 兼容种子来源；仅在 seed 为空时抽取一次基础种子，显式 seed 优先
         send_message: 是否发送战报消息
         max_squad: 最大出战人数
         apply_damage: 是否应用伤害到门客
@@ -278,6 +282,8 @@ def simulate_report(
     options = _build_battle_options(
         battle_type=battle_type,
         seed=seed,
+        rng_version=rng_version,
+        battle_engine_version=battle_engine_version,
         troop_loadout=troop_loadout,
         fill_default_troops=fill_default_troops,
         defender_setup=defender_setup,

@@ -3,6 +3,12 @@ from __future__ import annotations
 from typing import Any
 
 from .combatants_pkg.core import BattleModifiers
+from .modifier_lifecycle import (
+    refresh_modifier_projections,
+    register_modifier_source,
+    resolve_modifier_scope,
+    resolve_scoped_source_key,
+)
 from .simulation.report_state import snapshot_unit_state
 
 
@@ -79,23 +85,6 @@ def _resolve_effect_targets(effect: dict[str, Any], context: dict[str, Any]) -> 
     return [unit for unit in candidates if _matches_effect_target(unit, effect)]
 
 
-def _refresh_multiplier_modifier(
-    modifiers: BattleModifiers,
-    *,
-    flat_key: str,
-    sources_key: str,
-) -> None:
-    sources = modifiers.get(sources_key)
-    if not isinstance(sources, dict) or not sources:
-        modifiers.pop(flat_key, None)
-        return
-
-    total = 1.0
-    for value in sources.values():
-        total *= float(value or 1.0)
-    modifiers[flat_key] = total
-
-
 def _record_multiplier_source(
     target_unit: Any,
     *,
@@ -103,11 +92,19 @@ def _record_multiplier_source(
     sources_key: str,
     source_key: str,
     value: float,
+    scope: str,
 ) -> None:
     modifiers = _modifier_payload(target_unit)
     sources = _modifier_source_payload(modifiers, sources_key)
-    sources[source_key] = float(value)
-    _refresh_multiplier_modifier(modifiers, flat_key=flat_key, sources_key=sources_key)
+    scoped_source_key = resolve_scoped_source_key(
+        target_unit,
+        scope=scope,
+        container_key=sources_key,
+        source_key=source_key,
+    )
+    sources[scoped_source_key] = float(value)
+    register_modifier_source(target_unit, scope=scope, container_key=sources_key, source_key=scoped_source_key)
+    refresh_modifier_projections(modifiers)
 
 
 def _record_softcap_source(
@@ -116,13 +113,26 @@ def _record_softcap_source(
     source_key: str,
     threshold: float,
     overflow_ratio: float,
+    scope: str,
 ) -> None:
     modifiers = _modifier_payload(target_unit)
     sources = _modifier_source_payload(modifiers, "burst_softcap_sources")
-    sources[source_key] = {
+    scoped_source_key = resolve_scoped_source_key(
+        target_unit,
+        scope=scope,
+        container_key="burst_softcap_sources",
+        source_key=source_key,
+    )
+    sources[scoped_source_key] = {
         "threshold": float(threshold),
         "overflow_ratio": float(overflow_ratio),
     }
+    register_modifier_source(
+        target_unit,
+        scope=scope,
+        container_key="burst_softcap_sources",
+        source_key=scoped_source_key,
+    )
 
 
 def _record_true_damage_source(
@@ -131,13 +141,26 @@ def _record_true_damage_source(
     source_key: str,
     value: float,
     troop_value_multiplier: float,
+    scope: str,
 ) -> None:
     modifiers = _modifier_payload(target_unit)
     sources = _modifier_source_payload(modifiers, "true_damage_ratio_sources")
-    sources[source_key] = {
+    scoped_source_key = resolve_scoped_source_key(
+        target_unit,
+        scope=scope,
+        container_key="true_damage_ratio_sources",
+        source_key=source_key,
+    )
+    sources[scoped_source_key] = {
         "value": float(value),
         "troop_value_multiplier": float(troop_value_multiplier),
     }
+    register_modifier_source(
+        target_unit,
+        scope=scope,
+        container_key="true_damage_ratio_sources",
+        source_key=scoped_source_key,
+    )
 
 
 def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
@@ -146,6 +169,11 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
     effect_type = str(effect.get("type") or "").strip()
     targets = _resolve_effect_targets(effect, context)
     source_key = _effect_source_key(context)
+    modifier_scope = resolve_modifier_scope(
+        timing=str(context.get("timing") or ""),
+        effect_type=effect_type,
+        explicit_scope=effect.get("scope"),
+    )
 
     if effect_type == "heal_ratio":
         for target_unit in targets:
@@ -207,6 +235,7 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
                 sources_key="outgoing_damage_multiplier_sources",
                 source_key=source_key,
                 value=float(effect.get("value") or 0),
+                scope=str(modifier_scope),
             )
         return
 
@@ -218,6 +247,7 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
                 sources_key="incoming_damage_multiplier_sources",
                 source_key=source_key,
                 value=float(effect.get("value") or 0),
+                scope=str(modifier_scope),
             )
         return
 
@@ -229,6 +259,7 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
                 sources_key="target_weight_multiplier_sources",
                 source_key=source_key,
                 value=float(effect.get("value") or 0),
+                scope=str(modifier_scope),
             )
         return
 
@@ -239,6 +270,7 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
                 source_key=source_key,
                 value=float(effect.get("value") or 0),
                 troop_value_multiplier=float(effect.get("troop_value_multiplier") or 1.0),
+                scope=str(modifier_scope),
             )
         return
 
@@ -249,14 +281,32 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
                 source_key=source_key,
                 threshold=float(effect.get("threshold") or 0),
                 overflow_ratio=float(effect.get("overflow_ratio") or 1.0),
+                scope=str(modifier_scope),
             )
         return
 
     if effect_type == "set_reflect":
         for target_unit in targets:
             modifiers = _modifier_payload(target_unit)
-            modifiers["reflect_ratio"] = float(effect.get("ratio") or 0)
-            modifiers["reflect_cap"] = float(effect.get("cap") or 0)
+            sources = _modifier_source_payload(modifiers, "reflect_sources")
+            scoped_source_key = resolve_scoped_source_key(
+                target_unit,
+                scope=str(modifier_scope),
+                container_key="reflect_sources",
+                source_key=source_key,
+            )
+            sources.pop(scoped_source_key, None)
+            sources[scoped_source_key] = {
+                "ratio": float(effect.get("ratio") or 0),
+                "cap": float(effect.get("cap") or 0),
+            }
+            register_modifier_source(
+                target_unit,
+                scope=str(modifier_scope),
+                container_key="reflect_sources",
+                source_key=scoped_source_key,
+            )
+            refresh_modifier_projections(modifiers)
         return
 
     if effect_type == "set_state":

@@ -9,6 +9,12 @@ from battle.simulation.constants import GUEST_SKILL_VS_TROOP_MULTIPLIER
 from battle.simulation.damage_calculation import calculate_attack_damage, process_status_effects
 from battle.skills import apply_skill_statuses, skill_damage_bonus, trigger_skills
 from battle.status_manager import prepare_combatants_for_round
+from battle.utils.status_effects import (
+    capture_active_status_effects,
+    consume_active_status_effects,
+    get_damage_penalty,
+    handle_pre_action_status,
+)
 from core.exceptions import GameError
 
 
@@ -169,6 +175,56 @@ def test_prepare_combatants_for_round_promotes_pending():
     assert enemy.current_round == 3
     assert ally.status_effects["stunned"]["active"] == 2
     assert ally.status_effects["stunned"]["pending"] == 0
+
+
+def test_weakened_duration_one_affects_exactly_one_action_opportunity():
+    actor = make_unit(status_effects={"weakened": {"active": 1, "pending": 0}})
+
+    active_at_start = capture_active_status_effects(actor)
+
+    assert get_damage_penalty(actor) == pytest.approx(0.3)
+    consume_active_status_effects(actor, active_at_start)
+    assert get_damage_penalty(actor) == 0
+    assert "weakened" not in actor.status_effects
+
+
+def test_weakened_duration_two_affects_two_action_opportunities():
+    actor = make_unit(status_effects={"weakened": {"active": 2, "pending": 0}})
+
+    first_action = capture_active_status_effects(actor)
+    consume_active_status_effects(actor, first_action)
+    assert actor.status_effects["weakened"]["active"] == 1
+
+    second_action = capture_active_status_effects(actor)
+    consume_active_status_effects(actor, second_action)
+    assert "weakened" not in actor.status_effects
+
+
+def test_pending_status_only_starts_consuming_on_next_action():
+    actor = make_unit(status_effects={"weakened": {"active": 0, "pending": 1}})
+
+    current_action = capture_active_status_effects(actor)
+    consume_active_status_effects(actor, current_action)
+    assert actor.status_effects["weakened"]["pending"] == 1
+
+    prepare_combatants_for_round([actor], [], round_no=2, promote_pending=True)
+    next_action = capture_active_status_effects(actor)
+    assert get_damage_penalty(actor) == pytest.approx(0.3)
+    consume_active_status_effects(actor, next_action)
+    assert "weakened" not in actor.status_effects
+
+
+def test_control_status_is_consumed_once_when_action_is_skipped():
+    actor = make_unit(status_effects={"stunned": {"active": 2, "pending": 0}}, current_round=1)
+    events = []
+    active_at_start = capture_active_status_effects(actor)
+
+    assert handle_pre_action_status(actor, events) is True
+    assert actor.status_effects["stunned"]["active"] == 2
+
+    consume_active_status_effects(actor, active_at_start)
+    consume_active_status_effects(actor, active_at_start)
+    assert actor.status_effects["stunned"]["active"] == 1
 
 
 def test_effective_defense_value_guest_vs_troop_uses_unit_stat():

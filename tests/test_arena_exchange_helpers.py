@@ -48,6 +48,8 @@ def test_build_exchange_payload_and_summary_cover_all_sections():
         credited_resources={"grain": 100},
         overflow_resources={"silver": 50},
         granted_items={"item_a": 2},
+        base_seed=123,
+        rng_version=1,
     )
     summary = build_exchange_summary(
         credited_resources={"grain": 100},
@@ -59,6 +61,7 @@ def test_build_exchange_payload_and_summary_cover_all_sections():
         "resources": {"grain": 100},
         "resources_overflow": {"silver": 50},
         "items": {"item_a": 2},
+        "replay": {"base_seed": 123, "rng_version": 1},
     }
     assert summary == "资源已发放，道具已入库，部分资源因容量上限溢出"
 

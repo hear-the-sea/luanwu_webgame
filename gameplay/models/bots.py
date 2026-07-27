@@ -18,7 +18,7 @@ class BotProfile(models.Model):
         SLOWING = "slowing", "成长放缓"
         ABANDONED = "abandoned", "弃坑"
         STALE = "stale", "停滞"
-        RETIRED = "retired", "退场"
+        RETIRED = "retired", "休眠"
 
     manor = models.OneToOneField(
         "gameplay.Manor",

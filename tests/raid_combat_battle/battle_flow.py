@@ -26,6 +26,8 @@ def test_raid_run_failure_contract_is_explicit_and_constrained():
 
     assert statuses[RaidRun.Status.FAILED] == "出征失败"
     assert failure_reasons[RaidRun.FailureReason.MISSING_ATTACKER_LINEUP] == "缺少出征门客与快照"
+    assert failure_reasons[RaidRun.FailureReason.INVALID_GUEST_SNAPSHOT] == "门客战斗快照无效"
+    assert failure_reasons[RaidRun.FailureReason.INVALID_TROOP_LOADOUT] == "护院编队快照无效"
     field = RaidRun._meta.get_field("failure_reason")
     assert field.default == ""
     assert field.max_length == 64
@@ -219,10 +221,13 @@ def test_apply_raid_loot_passes_raid_context_to_loot_calculation(monkeypatch, dj
         battle_report=report,
         loot_resources={},
         loot_items={},
+        base_seed=101,
+        rng_version=1,
     )
     captured: dict[str, object] = {}
 
-    def _fake_calculate_loot(locked_defender, *, guests, troop_loadout, battle_report):
+    def _fake_calculate_loot(locked_defender, *, rng, guests, troop_loadout, battle_report):
+        captured["rng"] = rng
         captured["defender_id"] = locked_defender.id
         captured["guests"] = guests
         captured["troop_loadout"] = troop_loadout
@@ -239,12 +244,11 @@ def test_apply_raid_loot_passes_raid_context_to_loot_calculation(monkeypatch, dj
     with transaction.atomic():
         combat_battle._apply_raid_loot_if_needed(locked_run, is_attacker_victory=True)
 
-    assert captured == {
-        "defender_id": defender.id,
-        "guests": [guest],
-        "troop_loadout": {"dao_ke": 20},
-        "battle_report": report,
-    }
+    assert captured["defender_id"] == defender.id
+    assert captured["guests"] == [guest]
+    assert captured["troop_loadout"] == {"dao_ke": 20}
+    assert captured["battle_report"] is report
+    assert hasattr(captured["rng"], "random")
     assert locked_run.loot_resources == {"grain": 12}
     assert locked_run.loot_items == {}
 
@@ -358,7 +362,10 @@ def test_execute_raid_battle_uses_attacker_snapshot(monkeypatch, django_user_mod
 
 
 @pytest.mark.django_db
-def test_execute_raid_battle_uses_all_idle_defenders_even_when_max_squad_is_lower(monkeypatch, django_user_model):
+def test_execute_raid_battle_caps_and_orders_idle_defenders_and_only_applies_selected_damage(
+    monkeypatch,
+    django_user_model,
+):
     attacker, defender = build_attacker_defender(
         django_user_model,
         attacker_username="raid_defender_all_idle_a",
@@ -366,9 +373,9 @@ def test_execute_raid_battle_uses_all_idle_defenders_even_when_max_squad_is_lowe
     )
     monkeypatch.setattr(defender, "get_building_level", lambda _key: 0)
 
-    template = GuestTemplate.objects.create(
-        key="raid_defender_all_idle_tpl",
-        name="踢馆守方门客",
+    green_template = GuestTemplate.objects.create(
+        key="raid_defender_limit_green_tpl",
+        name="踢馆绿色守方门客",
         archetype="military",
         rarity="green",
         base_attack=120,
@@ -378,9 +385,33 @@ def test_execute_raid_battle_uses_all_idle_defenders_even_when_max_squad_is_lowe
         base_luck=50,
         base_hp=1500,
     )
+    blue_template = GuestTemplate.objects.create(
+        key="raid_defender_limit_blue_tpl",
+        name="踢馆蓝色守方门客",
+        archetype="military",
+        rarity="blue",
+        base_attack=120,
+        base_intellect=90,
+        base_defense=100,
+        base_agility=90,
+        base_luck=50,
+        base_hp=1500,
+    )
+    purple_template = GuestTemplate.objects.create(
+        key="raid_defender_limit_purple_tpl",
+        name="踢馆紫色守方门客",
+        archetype="military",
+        rarity="purple",
+        base_attack=120,
+        base_intellect=90,
+        base_defense=100,
+        base_agility=90,
+        base_luck=50,
+        base_hp=1500,
+    )
     attacker_guest = Guest.objects.create(
         manor=attacker,
-        template=template,
+        template=green_template,
         status=GuestStatus.DEPLOYED,
         level=20,
         force=300,
@@ -391,9 +422,9 @@ def test_execute_raid_battle_uses_all_idle_defenders_even_when_max_squad_is_lowe
     )
     defender_guest_1 = Guest.objects.create(
         manor=defender,
-        template=template,
+        template=green_template,
         status=GuestStatus.IDLE,
-        level=20,
+        level=99,
         force=180,
         intellect=90,
         defense_stat=100,
@@ -402,7 +433,7 @@ def test_execute_raid_battle_uses_all_idle_defenders_even_when_max_squad_is_lowe
     )
     defender_guest_2 = Guest.objects.create(
         manor=defender,
-        template=template,
+        template=blue_template,
         status=GuestStatus.IDLE,
         level=18,
         force=170,
@@ -413,9 +444,9 @@ def test_execute_raid_battle_uses_all_idle_defenders_even_when_max_squad_is_lowe
     )
     defender_guest_3 = Guest.objects.create(
         manor=defender,
-        template=template,
+        template=purple_template,
         status=GuestStatus.IDLE,
-        level=16,
+        level=1,
         force=160,
         intellect=85,
         defense_stat=96,
@@ -424,9 +455,9 @@ def test_execute_raid_battle_uses_all_idle_defenders_even_when_max_squad_is_lowe
     )
     defender_guest_4 = Guest.objects.create(
         manor=defender,
-        template=template,
+        template=blue_template,
         status=GuestStatus.IDLE,
-        level=14,
+        level=18,
         force=150,
         intellect=84,
         defense_stat=94,
@@ -435,7 +466,7 @@ def test_execute_raid_battle_uses_all_idle_defenders_even_when_max_squad_is_lowe
     )
     excluded_guest = Guest.objects.create(
         manor=defender,
-        template=template,
+        template=purple_template,
         status=GuestStatus.WORKING,
         level=30,
         force=250,
@@ -460,20 +491,39 @@ def test_execute_raid_battle_uses_all_idle_defenders_even_when_max_squad_is_lowe
     def _fake_simulate_report(**kwargs):
         captured["defender_guest_ids"] = [guest.id for guest in kwargs["defender_guests"]]
         captured["defender_max_squad"] = kwargs["defender_max_squad"]
-        return SimpleNamespace(winner="attacker")
+        return SimpleNamespace(
+            winner="attacker",
+            attacker_team=[],
+            defender_team=[
+                {"guest_id": defender_guest_1.id, "remaining_hp": 101},
+                {"guest_id": defender_guest_2.id, "remaining_hp": 202},
+                {"guest_id": defender_guest_3.id, "remaining_hp": 303},
+                {"guest_id": defender_guest_4.id, "remaining_hp": 404},
+                {"guest_id": excluded_guest.id, "remaining_hp": 505},
+            ],
+            losses={"attacker": {}, "defender": {}},
+        )
 
     monkeypatch.setattr("battle.services.simulate_report", _fake_simulate_report)
-    monkeypatch.setattr(combat_battle, "_apply_guest_damage_from_report", lambda *_args, **_kwargs: None)
 
     combat_battle._execute_raid_battle(run)
 
     assert captured["defender_guest_ids"] == [
-        defender_guest_1.id,
-        defender_guest_2.id,
         defender_guest_3.id,
+        defender_guest_2.id,
         defender_guest_4.id,
     ]
-    assert captured["defender_max_squad"] == 4
+    assert captured["defender_max_squad"] == 3
+    defender_guest_1.refresh_from_db()
+    defender_guest_2.refresh_from_db()
+    defender_guest_3.refresh_from_db()
+    defender_guest_4.refresh_from_db()
+    excluded_guest.refresh_from_db()
+    assert defender_guest_1.current_hp == 1200
+    assert defender_guest_2.current_hp == 202
+    assert defender_guest_3.current_hp == 303
+    assert defender_guest_4.current_hp == 404
+    assert excluded_guest.current_hp == 1300
     assert excluded_guest.id not in captured["defender_guest_ids"]
 
 
@@ -753,7 +803,7 @@ def test_process_raid_battle_accepts_snapshot_only_lineup(monkeypatch, django_us
 
 
 @pytest.mark.django_db(transaction=True)
-def test_process_raid_battle_marks_missing_attacker_lineup_failed_without_compensation(
+def test_process_raid_battle_marks_missing_attacker_lineup_failed_and_returns_troops(
     monkeypatch,
     django_user_model,
     caplog,
@@ -764,11 +814,13 @@ def test_process_raid_battle_marks_missing_attacker_lineup_failed_without_compen
         defender_username="raid_invalid_lineup_d",
     )
     now = timezone.now()
+    troop_template = TroopTemplate.objects.create(key="raid_missing_lineup_guard", name="缺阵护院")
+    troop = PlayerTroop.objects.create(manor=attacker, troop_template=troop_template, count=0)
     run = RaidRun.objects.create(
         attacker=attacker,
         defender=defender,
         status=RaidRun.Status.MARCHING,
-        troop_loadout={"untrusted_guard": 7},
+        troop_loadout={troop_template.key: 7},
         guest_snapshots=[],
         battle_at=now - timedelta(seconds=1),
     )
@@ -780,12 +832,17 @@ def test_process_raid_battle_marks_missing_attacker_lineup_failed_without_compen
     run.refresh_from_db()
     assert run.status == RaidRun.Status.FAILED
     assert run.failure_reason == RaidRun.FailureReason.MISSING_ATTACKER_LINEUP
+    assert run.base_seed > 0
+    assert run.rng_version > 0
+    assert run.battle_engine_version != "legacy"
     assert run.completed_at == now
     assert run.is_attacker_victory is None
     assert run.battle_report_id is None
-    assert run.troop_loadout == {"untrusted_guard": 7}
-    assert not PlayerTroop.objects.filter(manor=attacker).exists()
-    assert any(getattr(record, "component", None) == "raid_invalid_state_recovery" for record in caplog.records)
+    assert run.troop_loadout == {troop_template.key: 7}
+    assert run.resources_released is True
+    troop.refresh_from_db()
+    assert troop.count == 7
+    assert any(getattr(record, "component", None) == "raid_failed_and_resources_released" for record in caplog.records)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -815,25 +872,69 @@ def test_process_raid_battle_invalid_lineup_recovery_is_idempotent(monkeypatch, 
 
 
 @pytest.mark.django_db(transaction=True)
-def test_process_raid_battle_invalid_snapshot_payload_still_bubbles(monkeypatch, django_user_model):
+def test_process_raid_battle_invalid_snapshot_payload_fails_and_releases_resources_once(
+    monkeypatch,
+    django_user_model,
+):
     attacker, defender = build_attacker_defender(
         django_user_model,
         attacker_username="raid_invalid_snapshot_a",
         defender_username="raid_invalid_snapshot_d",
     )
     now = timezone.now()
+    troop_template = TroopTemplate.objects.create(key="raid_invalid_snapshot_guard", name="坏快照护院")
+    troop = PlayerTroop.objects.create(manor=attacker, troop_template=troop_template, count=0)
     run = RaidRun.objects.create(
         attacker=attacker,
         defender=defender,
         status=RaidRun.Status.MARCHING,
         guest_snapshots={"unexpected": "mapping"},
+        troop_loadout={troop_template.key: 4},
         battle_at=now - timedelta(seconds=1),
     )
     monkeypatch.setattr(combat_battle, "_get_defender_battle_block_reason", lambda *_args, **_kwargs: None)
 
-    with pytest.raises(AssertionError, match="invalid raid guest_snapshots payload"):
-        combat_battle.process_raid_battle(run, now=now)
+    combat_battle.process_raid_battle(run, now=now)
+    combat_battle.process_raid_battle(run, now=now + timedelta(minutes=1))
 
     run.refresh_from_db()
-    assert run.status == RaidRun.Status.MARCHING
-    assert run.failure_reason == ""
+    troop.refresh_from_db()
+    assert run.status == RaidRun.Status.FAILED
+    assert run.failure_reason == RaidRun.FailureReason.INVALID_GUEST_SNAPSHOT
+    assert run.resources_released is True
+    assert run.completed_at == now
+    assert troop.count == 4
+
+
+@pytest.mark.parametrize("bad_snapshot_kind", ["empty", "string", "invalid_numeric"])
+@pytest.mark.django_db(transaction=True)
+def test_process_raid_battle_isolates_invalid_snapshot_entries(
+    monkeypatch,
+    django_user_model,
+    bad_snapshot_kind,
+):
+    from tests.raid_combat_battle.support import build_real_raid_cleanup_fixture
+
+    _attacker, _defender, troop, guest, run, now = build_real_raid_cleanup_fixture(django_user_model)
+    if bad_snapshot_kind == "empty":
+        snapshots = [{}]
+    elif bad_snapshot_kind == "string":
+        snapshots = ["bad-snapshot"]
+    else:
+        payload = build_guest_battle_snapshots([guest], include_identity=True)[0]
+        payload["level"] = 0
+        snapshots = [payload]
+    run.guest_snapshots = snapshots
+    run.save(update_fields=["guest_snapshots"])
+    monkeypatch.setattr(combat_battle, "_get_defender_battle_block_reason", lambda *_args, **_kwargs: None)
+
+    combat_battle.process_raid_battle(run, now=now)
+
+    run.refresh_from_db()
+    guest.refresh_from_db()
+    troop.refresh_from_db()
+    assert run.status == RaidRun.Status.FAILED
+    assert run.failure_reason == RaidRun.FailureReason.INVALID_GUEST_SNAPSHOT
+    assert run.resources_released is True
+    assert guest.status == GuestStatus.IDLE
+    assert troop.count == 5

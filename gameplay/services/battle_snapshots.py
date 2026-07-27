@@ -6,6 +6,7 @@ from typing import Any
 
 from django.utils import timezone
 
+from core.exceptions import InvalidBattleSnapshotError
 from guests.guest_combat_stats import resolve_guest_combat_stats
 from guests.guest_rules import compute_guest_troop_capacity
 from guests.models import Guest
@@ -17,44 +18,59 @@ class _EmptySkillSet:
         return []
 
 
+def _invalid_guest_snapshot(field_name: str) -> InvalidBattleSnapshotError:
+    return InvalidBattleSnapshotError(
+        "门客战斗快照数据无效",
+        field_name=field_name,
+    )
+
+
+def _invalid_troop_loadout() -> InvalidBattleSnapshotError:
+    return InvalidBattleSnapshotError(
+        "护院编队快照数据无效",
+        snapshot_kind="troop_loadout",
+        field_name="troop_loadout",
+    )
+
+
 def _resolve_snapshot_text_field(raw: Any, *, field_name: str) -> str:
     if not isinstance(raw, str) or not raw.strip():
-        raise AssertionError(f"invalid battle guest snapshot {field_name}: {raw!r}")
+        raise _invalid_guest_snapshot(field_name)
     return raw.strip()
 
 
 def _resolve_snapshot_identity_int(raw: Any, *, field_name: str, required: bool) -> int | None:
     if raw is None:
         if required:
-            raise AssertionError(f"invalid battle guest snapshot {field_name}: {raw!r}")
+            raise _invalid_guest_snapshot(field_name)
         return None
     if isinstance(raw, bool):
-        raise AssertionError(f"invalid battle guest snapshot {field_name}: {raw!r}")
+        raise _invalid_guest_snapshot(field_name)
     try:
         value = int(raw)
     except (TypeError, ValueError) as exc:
-        raise AssertionError(f"invalid battle guest snapshot {field_name}: {raw!r}") from exc
+        raise _invalid_guest_snapshot(field_name) from exc
     if value <= 0:
-        raise AssertionError(f"invalid battle guest snapshot {field_name}: {raw!r}")
+        raise _invalid_guest_snapshot(field_name)
     return value
 
 
 def _resolve_snapshot_stat_int(raw: Any, *, field_name: str, minimum: int = 0) -> int:
     if raw is None or isinstance(raw, bool):
-        raise AssertionError(f"invalid battle guest snapshot {field_name}: {raw!r}")
+        raise _invalid_guest_snapshot(field_name)
     try:
         value = int(raw)
     except (TypeError, ValueError) as exc:
-        raise AssertionError(f"invalid battle guest snapshot {field_name}: {raw!r}") from exc
+        raise _invalid_guest_snapshot(field_name) from exc
     if value < minimum:
-        raise AssertionError(f"invalid battle guest snapshot {field_name}: {raw!r}")
+        raise _invalid_guest_snapshot(field_name)
     return value
 
 
 def _resolve_snapshot_template_key(snapshot: dict[str, Any]) -> str:
     raw_key = snapshot.get("template_key")
     if not isinstance(raw_key, str) or not raw_key.strip():
-        raise AssertionError(f"invalid battle guest snapshot template_key: {raw_key!r}")
+        raise _invalid_guest_snapshot("template_key")
     return raw_key.strip()
 
 
@@ -63,11 +79,11 @@ def _normalize_snapshot_skill_keys(snapshot: dict[str, Any]) -> list[str]:
     if raw_skill_keys is None:
         return []
     if not isinstance(raw_skill_keys, (list, tuple, set)):
-        raise AssertionError(f"invalid battle guest snapshot skill_keys: {raw_skill_keys!r}")
+        raise _invalid_guest_snapshot("skill_keys")
     normalized: list[str] = []
     for key in raw_skill_keys:
         if not isinstance(key, str) or not key.strip():
-            raise AssertionError(f"invalid battle guest snapshot skill_key entry: {key!r}")
+            raise _invalid_guest_snapshot("skill_keys")
         normalized.append(key.strip())
     return normalized
 
@@ -243,14 +259,41 @@ def build_guest_battle_snapshots(
 
 
 def build_guest_snapshot_proxies(
-    snapshots: Iterable[dict[str, Any]],
+    snapshots: Any,
     *,
     include_guest_identity: bool = False,
 ) -> list[BattleGuestSnapshotProxy]:
+    if not isinstance(snapshots, list):
+        raise _invalid_guest_snapshot("guest_snapshots")
     proxies: list[BattleGuestSnapshotProxy] = []
     for snapshot in snapshots:
         if not isinstance(snapshot, dict) or not snapshot:
-            raise AssertionError(f"invalid battle guest snapshot payload: {snapshot!r}")
+            raise _invalid_guest_snapshot("guest_snapshots")
         payload = dict(snapshot)
         proxies.append(BattleGuestSnapshotProxy(payload, include_guest_identity=include_guest_identity))
     return proxies
+
+
+def validate_battle_troop_loadout(raw: Any) -> dict[str, int]:
+    """Validate a persisted troop loadout without silently discarding corrupt entries."""
+
+    if not isinstance(raw, dict):
+        raise _invalid_troop_loadout()
+
+    normalized: dict[str, int] = {}
+    for raw_key, raw_value in raw.items():
+        if not isinstance(raw_key, str) or not raw_key.strip():
+            raise _invalid_troop_loadout()
+        key = raw_key.strip()
+        if key in normalized:
+            raise _invalid_troop_loadout()
+        if raw_value is None or isinstance(raw_value, bool):
+            raise _invalid_troop_loadout()
+        try:
+            value = int(raw_value)
+        except (TypeError, ValueError) as exc:
+            raise _invalid_troop_loadout() from exc
+        if value <= 0:
+            raise _invalid_troop_loadout()
+        normalized[key] = value
+    return normalized

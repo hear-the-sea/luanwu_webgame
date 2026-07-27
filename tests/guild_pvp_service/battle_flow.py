@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from datetime import timedelta
 from types import SimpleNamespace
 
@@ -50,6 +51,9 @@ def test_process_guild_raid_battle_reserves_loot_until_the_winner_returns(
         travel_time=300,
         battle_at=now,
         return_at=now + timedelta(seconds=300),
+        base_seed=910,
+        rng_version=1,
+        battle_engine_version="2",
     )
     report = BattleReport.objects.create(
         manor=attacker_manor,
@@ -92,8 +96,6 @@ def test_process_guild_raid_battle_reserves_loot_until_the_winner_returns(
             "warehouse_loot_whitelist": ["grain", "gold_bar", "red_ruby"],
         },
     )
-    monkeypatch.setattr("gameplay.services.pvp_runtime.loot.random.randrange", lambda _stop: 0)
-
     from guilds.services.guild_raids import finalize_guild_raid, process_guild_raid_battle
 
     assert process_guild_raid_battle(run, now=now) is True
@@ -165,8 +167,6 @@ def test_reserve_guild_raid_loot_clamps_twenty_percent_draw_by_item_capacity(
             "warehouse_loot_whitelist": [item_key],
         },
     )
-    monkeypatch.setattr("gameplay.services.pvp_runtime.loot.random.randrange", lambda _stop: 0)
-
     from guilds.services.guild_raid_loot import reserve_guild_raid_loot
 
     with transaction.atomic():
@@ -176,6 +176,7 @@ def test_reserve_guild_raid_loot_clamps_twenty_percent_draw_by_item_capacity(
             guests=[SimpleNamespace()],
             troop_loadout={},
             battle_report=None,
+            rng=random.Random(0),
         )
 
     assert loot_silver == 0
@@ -225,6 +226,7 @@ def test_reserve_guild_raid_loot_uses_fractional_grain_capacity(
             guests=[],
             troop_loadout={},
             battle_report=None,
+            rng=random.Random(1),
         )
 
     assert loot_silver == 0
@@ -278,6 +280,7 @@ def test_reserve_guild_raid_loot_includes_technology_production_items(
             guests=[SimpleNamespace()],
             troop_loadout={},
             battle_report=None,
+            rng=random.Random(2),
         )
 
     assert loot_items == {production_item_key: 1}
@@ -360,6 +363,115 @@ def test_process_guild_raid_battle_grants_salvage_to_defender_warehouse_on_defen
     assert recovered_equipment.quantity == 2
     assert recovered_equipment.contribution_cost == 0
     assert recovered_equipment.total_produced == 0
+
+
+@pytest.mark.django_db(transaction=True)
+def test_process_guild_raid_battle_clamps_system_retreat_to_one_way_travel(django_user_model, monkeypatch):
+    attacker_guild, attacker_member, _attacker_manor = create_guild_with_leader(
+        django_user_model,
+        "系统撤回计时攻方",
+    )
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(
+        django_user_model,
+        "系统撤回计时守方",
+    )
+    now = timezone.now()
+    run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=0,
+        guest_ids=[],
+        guest_snapshots=[],
+        troop_loadout={},
+        travel_time=60,
+        started_at=now - timedelta(seconds=90),
+        battle_at=now - timedelta(seconds=30),
+        return_at=now + timedelta(seconds=30),
+    )
+    scheduled: list[int] = []
+    monkeypatch.setattr(
+        "guilds.services.guild_raids.get_guild_battle_block_reason",
+        lambda **_kwargs: "防守方处于保护期",
+    )
+    monkeypatch.setattr(
+        "guilds.services.guild_raids.schedule_guild_raid_completion",
+        lambda locked_run: scheduled.append(locked_run.id),
+    )
+
+    from guilds.services.guild_raids import process_guild_raid_battle
+
+    assert process_guild_raid_battle(run, now=now) is True
+    run.refresh_from_db()
+    assert run.status == GuildRaidRun.Status.RETREATED
+    assert run.return_at == now + timedelta(seconds=60)
+    assert scheduled == [run.id]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_process_guild_raid_battle_preserves_explicit_empty_defense(django_user_model, monkeypatch):
+    attacker_guild, attacker_member, attacker_manor = create_guild_with_leader(
+        django_user_model,
+        "空防守进攻方",
+    )
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(
+        django_user_model,
+        "空防守防守方",
+    )
+    attacker_guest = create_guest(
+        manor=attacker_manor,
+        template=create_template("guild_pvp_explicit_empty_defense_tpl"),
+        name="空防守主攻门客",
+    )
+    now = timezone.now()
+    run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        guest_ids=[attacker_guest.id],
+        guest_snapshots=build_guest_battle_snapshots([attacker_guest], include_identity=True),
+        troop_loadout={},
+        attacker_troop_tech_snapshot={"archer_attack": 0},
+        travel_time=300,
+        battle_at=now,
+        return_at=now + timedelta(seconds=300),
+    )
+    report = BattleReport.objects.create(
+        manor=attacker_manor,
+        opponent_name=defender_guild.name,
+        battle_type="guild_raid",
+        attacker_team=[],
+        attacker_troops={},
+        defender_team=[],
+        defender_troops={},
+        rounds=[],
+        losses={"attacker": {}, "defender": {}},
+        drops={},
+        winner="attacker",
+        starts_at=now,
+        completed_at=now,
+    )
+    captured: dict[str, object] = {}
+
+    def _fake_execute_battle(_manor, _guests, _active_guests, options):
+        captured["defender_guests"] = options.defender_guests
+        captured["defender_setup"] = options.defender_setup
+        return report
+
+    monkeypatch.setattr("guilds.services.guild_raids.execute_battle", _fake_execute_battle)
+    monkeypatch.setattr("guilds.services.guild_raids.reserve_guild_raid_loot", lambda **_kwargs: (0, {}, {}))
+    monkeypatch.setattr("guilds.services.guild_raids.calculate_battle_salvage", lambda *_args, **_kwargs: (0, {}))
+    monkeypatch.setattr("guilds.services.guild_raids.grant_guild_raid_battle_rewards", lambda **_kwargs: {})
+    monkeypatch.setattr("guilds.services.guild_raids.schedule_guild_raid_completion", lambda *_args: None)
+    monkeypatch.setattr("guilds.services.guild_raids.send_guild_raid_report_messages", lambda *_args: None)
+
+    from guilds.services.guild_raids import process_guild_raid_battle
+
+    assert process_guild_raid_battle(run, now=now) is True
+    assert captured == {"defender_guests": [], "defender_setup": {}}
 
 
 @pytest.mark.django_db(transaction=True)
@@ -943,3 +1055,255 @@ def test_finalize_guild_raid_does_not_duplicate_historical_already_settled_loot(
     assert historical_item.quantity == 2
     assert run.status == GuildRaidRun.Status.COMPLETED
     assert run.loot_settled is True
+
+
+@pytest.mark.django_db(transaction=True)
+def test_invalid_guild_raid_snapshot_fails_and_returns_troops_once(django_user_model):
+    attacker_guild, attacker_member, _attacker_manor = create_guild_with_leader(
+        django_user_model,
+        "坏快照补偿攻方",
+    )
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(
+        django_user_model,
+        "坏快照补偿守方",
+    )
+    troop_template = TroopTemplate.objects.create(key="guild_invalid_snapshot_guard", name="坏快照护院")
+    storage = GuildTroopStorage.objects.create(guild=attacker_guild, troop_template=troop_template, count=0)
+    now = timezone.now()
+    run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        guest_ids=[1],
+        guest_snapshots=["bad-snapshot"],
+        troop_loadout={troop_template.key: 6},
+        battle_at=now,
+        return_at=now + timedelta(minutes=1),
+    )
+
+    from guilds.services.guild_raids import process_guild_raid_battle
+
+    assert process_guild_raid_battle(run, now=now) is True
+    assert process_guild_raid_battle(run, now=now + timedelta(seconds=1)) is False
+
+    run.refresh_from_db()
+    storage.refresh_from_db()
+    assert run.status == GuildRaidRun.Status.FAILED
+    assert run.failure_reason == GuildRaidRun.FailureReason.INVALID_GUEST_SNAPSHOT
+    assert run.resources_released is True
+    assert run.loot_settled is True
+    assert run.completed_at == now
+    assert storage.count == 6
+
+
+@pytest.mark.django_db(transaction=True)
+def test_invalid_guild_raid_troop_loadout_has_deterministic_failed_state(django_user_model):
+    attacker_guild, attacker_member, attacker_manor = create_guild_with_leader(
+        django_user_model,
+        "坏编队攻方",
+    )
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(
+        django_user_model,
+        "坏编队守方",
+    )
+    attacker_guest = create_guest(
+        manor=attacker_manor,
+        template=create_template("guild_invalid_loadout_guest"),
+        name="坏编队门客",
+    )
+    now = timezone.now()
+    run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        guest_ids=[attacker_guest.id],
+        guest_snapshots=build_guest_battle_snapshots([attacker_guest], include_identity=True),
+        troop_loadout="bad-loadout",
+        battle_at=now,
+        return_at=now + timedelta(minutes=1),
+    )
+
+    from guilds.services.guild_raids import process_guild_raid_battle
+
+    assert process_guild_raid_battle(run, now=now) is True
+
+    run.refresh_from_db()
+    assert run.status == GuildRaidRun.Status.FAILED
+    assert run.failure_reason == GuildRaidRun.FailureReason.INVALID_TROOP_LOADOUT
+    assert run.resources_released is True
+
+
+@pytest.mark.django_db(transaction=True)
+def test_inactive_defender_system_retreats_without_battle_or_loot_and_returns_all_troops(
+    django_user_model,
+    monkeypatch,
+):
+    attacker_guild, attacker_member, attacker_manor = create_guild_with_leader(
+        django_user_model,
+        "失效守方撤回攻方",
+    )
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(
+        django_user_model,
+        "失效守方撤回守方",
+    )
+    attacker_guest = create_guest(
+        manor=attacker_manor,
+        template=create_template("guild_inactive_defender_guest"),
+        name="失效守方撤回门客",
+    )
+    troop_template = TroopTemplate.objects.create(key="guild_inactive_defender_guard", name="撤回护院")
+    storage = GuildTroopStorage.objects.create(guild=attacker_guild, troop_template=troop_template, count=0)
+    now = timezone.now()
+    run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        guest_ids=[attacker_guest.id],
+        guest_snapshots=build_guest_battle_snapshots([attacker_guest], include_identity=True),
+        troop_loadout={troop_template.key: 6},
+        travel_time=60,
+        started_at=now - timedelta(seconds=20),
+        battle_at=now,
+        return_at=now + timedelta(seconds=60),
+    )
+    defender_guild.is_active = False
+    defender_guild.save(update_fields=["is_active"])
+    monkeypatch.setattr("guilds.services.guild_raids.schedule_guild_raid_completion", lambda *_args: None)
+
+    from guilds.services.guild_raids import finalize_guild_raid, process_guild_raid_battle
+
+    assert process_guild_raid_battle(run, now=now) is True
+
+    run.refresh_from_db()
+    storage.refresh_from_db()
+    assert run.status == GuildRaidRun.Status.RETREATED
+    assert run.blocked_reason == "防守帮会已失效"
+    assert run.return_at == now + timedelta(seconds=20)
+    assert run.battle_report_id is None
+    assert run.loot_silver == 0
+    assert run.loot_items == {}
+    assert storage.count == 0
+
+    assert finalize_guild_raid(run, now=run.return_at) is True
+    run.refresh_from_db()
+    storage.refresh_from_db()
+    assert run.status == GuildRaidRun.Status.COMPLETED
+    assert storage.count == 6
+
+
+@pytest.mark.django_db(transaction=True)
+def test_inactive_attacker_fails_before_battle_and_releases_troops_once(django_user_model):
+    attacker_guild, attacker_member, attacker_manor = create_guild_with_leader(
+        django_user_model,
+        "失效攻方失败攻方",
+    )
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(
+        django_user_model,
+        "失效攻方失败守方",
+    )
+    attacker_guest = create_guest(
+        manor=attacker_manor,
+        template=create_template("guild_inactive_attacker_guest"),
+        name="失效攻方门客",
+    )
+    troop_template = TroopTemplate.objects.create(key="guild_inactive_attacker_guard", name="失败返还护院")
+    storage = GuildTroopStorage.objects.create(guild=attacker_guild, troop_template=troop_template, count=0)
+    now = timezone.now()
+    run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.MARCHING,
+        selected_guest_count=1,
+        guest_ids=[attacker_guest.id],
+        guest_snapshots=build_guest_battle_snapshots([attacker_guest], include_identity=True),
+        troop_loadout={troop_template.key: 7},
+        battle_at=now,
+    )
+    attacker_guild.is_active = False
+    attacker_guild.save(update_fields=["is_active"])
+
+    from guilds.services.guild_raids import process_guild_raid_battle
+
+    assert process_guild_raid_battle(run, now=now) is True
+    assert process_guild_raid_battle(run, now=now + timedelta(seconds=1)) is False
+
+    run.refresh_from_db()
+    storage.refresh_from_db()
+    assert run.status == GuildRaidRun.Status.FAILED
+    assert run.failure_reason == GuildRaidRun.FailureReason.INACTIVE_ATTACKER_GUILD
+    assert run.resources_released is True
+    assert run.loot_settled is True
+    assert run.battle_report_id is None
+    assert storage.count == 7
+
+
+@pytest.mark.django_db(transaction=True)
+def test_inactive_attacker_during_return_gets_survivors_but_no_reserved_loot(django_user_model):
+    attacker_guild, attacker_member, attacker_manor = create_guild_with_leader(
+        django_user_model,
+        "返程失效攻方",
+    )
+    defender_guild, _defender_member, _defender_manor = create_guild_with_leader(
+        django_user_model,
+        "返程失效守方",
+    )
+    troop_template = TroopTemplate.objects.create(key="guild_inactive_return_guard", name="返程幸存护院")
+    storage = GuildTroopStorage.objects.create(guild=attacker_guild, troop_template=troop_template, count=0)
+    now = timezone.now()
+    report = BattleReport.objects.create(
+        manor=attacker_manor,
+        opponent_name=defender_guild.name,
+        battle_type="guild_raid",
+        attacker_team=[],
+        attacker_troops={troop_template.key: 10},
+        defender_team=[],
+        defender_troops={},
+        rounds=[],
+        losses={
+            "attacker": {"casualties": [{"key": troop_template.key, "lost": 4}]},
+            "defender": {"casualties": []},
+        },
+        drops={},
+        winner="attacker",
+        starts_at=now - timedelta(minutes=1),
+        completed_at=now - timedelta(minutes=1),
+    )
+    run = GuildRaidRun.objects.create(
+        attacker_guild=attacker_guild,
+        defender_guild=defender_guild,
+        started_by=attacker_member,
+        status=GuildRaidRun.Status.RETURNING,
+        troop_loadout={troop_template.key: 10},
+        battle_report=report,
+        return_at=now,
+        is_attacker_victory=True,
+        loot_silver=900,
+        loot_items={"inactive_reserved_loot": 2},
+        loot_item_contribution_costs={"inactive_reserved_loot": 10},
+        loot_settled=False,
+    )
+    attacker_guild.is_active = False
+    attacker_guild.save(update_fields=["is_active"])
+
+    from guilds.services.guild_raids import finalize_guild_raid
+
+    assert finalize_guild_raid(run, now=now) is True
+    assert finalize_guild_raid(run, now=now + timedelta(seconds=1)) is False
+
+    run.refresh_from_db()
+    storage.refresh_from_db()
+    attacker_guild.refresh_from_db()
+    assert run.status == GuildRaidRun.Status.FAILED
+    assert run.failure_reason == GuildRaidRun.FailureReason.INACTIVE_ATTACKER_GUILD
+    assert run.resources_released is True
+    assert run.loot_settled is True
+    assert storage.count == 6
+    assert attacker_guild.silver == 0
+    assert not GuildWarehouse.objects.filter(guild=attacker_guild, item_key="inactive_reserved_loot").exists()

@@ -34,7 +34,7 @@ def _get_max_squad() -> int:
         return 5
 
 
-def allocate_ai_attribute_points(guest: Guest, total_points: int) -> Dict[str, int]:
+def allocate_ai_attribute_points(guest: Guest, total_points: int, *, rng: random.Random) -> Dict[str, int]:
     """
     Allocate attribute points for AI guest (by archetype weights).
 
@@ -58,13 +58,18 @@ def allocate_ai_attribute_points(guest: Guest, total_points: int) -> Dict[str, i
 
     allocation = {"force": 0, "intellect": 0, "defense": 0, "agility": 0}
     for _ in range(total_points):
-        attr = random.choice(choices)
+        attr = rng.choice(choices)
         allocation[attr] += 1
 
     return allocation
 
 
-def build_named_ai_guests(guest_keys: Sequence[str | Mapping[str, Any]], level: int = 50) -> List[Guest]:
+def build_named_ai_guests(
+    guest_keys: Sequence[str | Mapping[str, Any]],
+    level: int = 50,
+    *,
+    rng: random.Random | None = None,
+) -> List[Guest]:
     """
     Build AI guests from specified templates with random attribute growth.
 
@@ -123,6 +128,8 @@ def build_named_ai_guests(guest_keys: Sequence[str | Mapping[str, Any]], level: 
         template = templates.get(template_key)
         if not template:
             raise AssertionError(f"unknown ai guest template key: {template_key!r}")
+        if rng is None:
+            raise AssertionError("build_named_ai_guests requires an explicit rng")
         dummy_guest = Guest(
             template=template,
             level=normalized_level,
@@ -140,7 +147,7 @@ def build_named_ai_guests(guest_keys: Sequence[str | Mapping[str, Any]], level: 
         if normalized_level > 1:
             growth_levels = normalized_level - 1
 
-            growth = allocate_level_up_attributes(dummy_guest, levels=growth_levels)
+            growth = allocate_level_up_attributes(dummy_guest, levels=growth_levels, rng=rng)
             dummy_guest.force += growth.get("force", 0)
             dummy_guest.intellect += growth.get("intellect", 0)
             dummy_guest.defense_stat += growth.get("defense", 0)
@@ -149,7 +156,7 @@ def build_named_ai_guests(guest_keys: Sequence[str | Mapping[str, Any]], level: 
             total_attribute_points = per_level_points * growth_levels
 
             if total_attribute_points > 0:
-                attr_allocation = allocate_ai_attribute_points(dummy_guest, total_attribute_points)
+                attr_allocation = allocate_ai_attribute_points(dummy_guest, total_attribute_points, rng=rng)
                 dummy_guest.force += attr_allocation.get("force", 0)
                 dummy_guest.intellect += attr_allocation.get("intellect", 0)
                 dummy_guest.defense_stat += attr_allocation.get("defense", 0)

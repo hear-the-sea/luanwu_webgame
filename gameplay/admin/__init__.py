@@ -1,6 +1,7 @@
 from core.admin_i18n import apply_common_field_labels
 
 from ..models import (
+    ArenaCoopEvent,
     ArenaEntry,
     ArenaEntryGuest,
     ArenaExchangeRecord,
@@ -44,6 +45,7 @@ apply_common_field_labels(
     ArenaTournament,
     ArenaEntry,
     ArenaEntryGuest,
+    ArenaCoopEvent,
     ArenaMatch,
     ArenaExchangeRecord,
     ArenaVirtualDemand,
@@ -72,6 +74,7 @@ from .arena import (  # noqa: E402, F401
     ArenaMatchAdmin,
     ArenaTournamentAdmin,
 )
+from .arena_coop import ArenaCoopEventAdmin  # noqa: E402, F401
 from .arena_virtual import ArenaVirtualDemandAdmin, ArenaVirtualReserveMemberAdmin  # noqa: E402, F401
 from .bots import BotBackfillDemandAdmin, BotInventoryDailyCounterAdmin, BotProfileAdmin  # noqa: E402, F401
 from .buildings import BuildingAdmin, BuildingTypeAdmin, WorkAssignmentAdmin, WorkTemplateAdmin  # noqa: E402, F401
@@ -113,6 +116,7 @@ __all__ = [
     "ArenaEntryGuestAdmin",
     "ArenaMatchAdmin",
     "ArenaExchangeRecordAdmin",
+    "ArenaCoopEventAdmin",
     "ArenaVirtualDemandAdmin",
     "ArenaVirtualReserveMemberAdmin",
     # raids

@@ -1,6 +1,32 @@
 from __future__ import annotations
 
-from gameplay.services.virtual_player_population import PopulationCell, plan_population_cells
+import ast
+import inspect
+
+import gameplay.services.virtual_player_core.population as population_module
+from gameplay.services.virtual_player_core.population import PopulationCell, plan_population_cells
+
+
+def test_population_planner_module_has_no_django_or_orm_imports():
+    tree = ast.parse(inspect.getsource(population_module))
+    imported_modules: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported_modules.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            imported_modules.add(node.module)
+
+    assert not any(name == "django" or name.startswith("django.") for name in imported_modules)
+    assert not any(name == "gameplay.models" or name.startswith("gameplay.models.") for name in imported_modules)
+
+
+def test_legacy_population_import_path_reexports_new_implementation():
+    from gameplay.services import virtual_player_population as legacy_module
+
+    assert legacy_module.PopulationCell is population_module.PopulationCell
+    assert legacy_module.PlannedPopulationCell is population_module.PlannedPopulationCell
+    assert legacy_module.PopulationPlan is population_module.PopulationPlan
+    assert legacy_module.plan_population_cells is population_module.plan_population_cells
 
 
 def test_region_floor_is_shared_across_prestige_bands():
