@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from django.db import IntegrityError, transaction
@@ -24,7 +25,7 @@ from core.utils import safe_int, safe_non_negative_int, safe_positive_int
 from core.utils.imports import is_missing_target_import
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS, NOTIFICATION_INFRASTRUCTURE_EXCEPTIONS
 
-from ...models import PlayerTroop, TroopRecruitment
+from ...models import Manor, PlayerTroop, TroopRecruitment
 
 if TYPE_CHECKING:
     from battle.models import TroopTemplate
@@ -46,7 +47,10 @@ def schedule_recruitment_completion(recruitment: TroopRecruitment, eta_seconds: 
     except ImportError as exc:
         if not is_missing_target_import(exc, "gameplay.tasks"):
             raise
-        logger.warning("Unable to import complete_troop_recruitment task; skip scheduling", exc_info=True)
+        logger.warning(
+            "Unable to import complete_troop_recruitment task; skip scheduling",
+            exc_info=True,
+        )
         return
 
     def _dispatch_completion() -> None:
@@ -71,7 +75,9 @@ def schedule_recruitment_completion(recruitment: TroopRecruitment, eta_seconds: 
     db_transaction.on_commit(_dispatch_completion)
 
 
-def _get_or_create_battle_troop_template(recruitment: TroopRecruitment) -> TroopTemplate | None:
+def _get_or_create_battle_troop_template(
+    recruitment: TroopRecruitment,
+) -> TroopTemplate | None:
     """获取战斗兵种模板，缺失时按募兵配置自动补建。"""
     from battle.models import TroopTemplate
 
@@ -107,6 +113,55 @@ def _get_or_create_battle_troop_template(recruitment: TroopRecruitment) -> Troop
     return troop_template
 
 
+def apply_troop_recruitment_result_locked(
+    recruitment: TroopRecruitment,
+    *,
+    now: datetime | None = None,
+    require_due: bool = True,
+) -> PlayerTroop:
+    """在调用方已锁 Manor 和募兵记录的事务内完成护院入账。"""
+    if not transaction.get_connection().in_atomic_block:
+        raise RuntimeError("apply_troop_recruitment_result_locked must be called inside transaction.atomic()")
+    current_time = now or timezone.now()
+    if recruitment.status != TroopRecruitment.Status.RECRUITING:
+        raise TroopRecruitmentNotReadyError(
+            complete_at=str(recruitment.complete_at),
+            message="募兵状态不正确，无法完成",
+        )
+    if require_due and recruitment.complete_at > current_time:
+        raise TroopRecruitmentNotReadyError(complete_at=str(recruitment.complete_at))
+
+    troop_template = _get_or_create_battle_troop_template(recruitment)
+    if not troop_template:
+        raise TroopTemplateNotFoundError(troop_key=recruitment.troop_key)
+
+    troop_lookup = {
+        "manor_id": recruitment.manor_id,
+        "troop_template": troop_template,
+    }
+    updated = PlayerTroop.objects.filter(**troop_lookup).update(
+        count=F("count") + recruitment.quantity,
+        updated_at=current_time,
+    )
+    if not updated:
+        try:
+            with transaction.atomic():
+                PlayerTroop.objects.create(
+                    **troop_lookup,
+                    count=recruitment.quantity,
+                )
+        except IntegrityError:
+            PlayerTroop.objects.filter(**troop_lookup).update(
+                count=F("count") + recruitment.quantity,
+                updated_at=current_time,
+            )
+
+    recruitment.status = TroopRecruitment.Status.COMPLETED
+    recruitment.finished_at = current_time
+    recruitment.save(update_fields=["status", "finished_at"])
+    return PlayerTroop.objects.get(**troop_lookup)
+
+
 def finalize_troop_recruitment(recruitment: TroopRecruitment, send_notification: bool = False) -> None:
     """
     完成募兵，将护院添加到玩家存储。
@@ -116,54 +171,25 @@ def finalize_troop_recruitment(recruitment: TroopRecruitment, send_notification:
         TroopRecruitmentNotReadyError: 募兵尚未完成或状态不正确
         TroopTemplateNotFoundError: 战斗兵种模板不存在
     """
+    raw_recruitment_id = getattr(recruitment, "pk", None)
+    if isinstance(raw_recruitment_id, bool) or not isinstance(raw_recruitment_id, int):
+        raise TroopRecruitmentNotFoundError(recruitment_id=raw_recruitment_id)
+    recruitment_id = raw_recruitment_id
+    manor_id = TroopRecruitment.objects.filter(pk=recruitment_id).values_list("manor_id", flat=True).first()
+    if manor_id is None:
+        raise TroopRecruitmentNotFoundError(recruitment_id=recruitment_id)
+
     with transaction.atomic():
+        locked_manor = Manor.objects.select_for_update().get(pk=manor_id)
         locked_recruitment = (
             TroopRecruitment.objects.select_for_update()
             .select_related("manor", "manor__user")
-            .filter(pk=recruitment.pk)
+            .filter(pk=recruitment_id, manor_id=locked_manor.pk)
             .first()
         )
         if not locked_recruitment:
-            raise TroopRecruitmentNotFoundError(recruitment_id=recruitment.pk)
-
-        if locked_recruitment.status != TroopRecruitment.Status.RECRUITING:
-            raise TroopRecruitmentNotReadyError(
-                complete_at=str(locked_recruitment.complete_at),
-                message="募兵状态不正确，无法完成",
-            )
-
-        if locked_recruitment.complete_at > timezone.now():
-            raise TroopRecruitmentNotReadyError(complete_at=str(locked_recruitment.complete_at))
-
-        troop_template = _get_or_create_battle_troop_template(locked_recruitment)
-        if not troop_template:
-            raise TroopTemplateNotFoundError(troop_key=locked_recruitment.troop_key)
-
-        troop_lookup = {
-            "manor": locked_recruitment.manor,
-            "troop_template": troop_template,
-        }
-        inventory_updated_at = timezone.now()
-        updated = PlayerTroop.objects.filter(**troop_lookup).update(
-            count=F("count") + locked_recruitment.quantity,
-            updated_at=inventory_updated_at,
-        )
-        if not updated:
-            try:
-                with transaction.atomic():
-                    PlayerTroop.objects.create(
-                        **troop_lookup,
-                        count=locked_recruitment.quantity,
-                    )
-            except IntegrityError:
-                PlayerTroop.objects.filter(**troop_lookup).update(
-                    count=F("count") + locked_recruitment.quantity,
-                    updated_at=inventory_updated_at,
-                )
-
-        locked_recruitment.status = TroopRecruitment.Status.COMPLETED
-        locked_recruitment.finished_at = timezone.now()
-        locked_recruitment.save(update_fields=["status", "finished_at"])
+            raise TroopRecruitmentNotFoundError(recruitment_id=recruitment_id)
+        apply_troop_recruitment_result_locked(locked_recruitment)
         recruitment = locked_recruitment
 
     if send_notification:

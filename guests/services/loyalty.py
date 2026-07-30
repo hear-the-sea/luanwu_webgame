@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from datetime import datetime, timedelta
 from typing import Any
 
+from django.db import transaction
 from django.db.models import F
 from django.db.models.functions import Least
 
-from guests.models import Guest
+from guests.models import Guest, GuestStatus
 
 MAX_GUEST_LOYALTY = 100
+INJURY_LOYALTY_DECAY_INTERVAL = timedelta(hours=3)
 
 
 def _normalize_positive_int(raw: Any, *, field_name: str) -> int:
@@ -60,3 +63,39 @@ def increase_guest_loyalty_by_ids(guest_ids: Iterable[int], *, amount: int = 1) 
 
 def grant_battle_victory_loyalty(guests: Iterable[Any], *, amount: int = 1) -> int:
     return increase_guest_loyalty_by_ids(extract_guest_ids(guests), amount=amount)
+
+
+def start_injury_loyalty_decay(guest: Any, *, now: datetime) -> None:
+    guest.injury_loyalty_processed_at = now
+
+
+def clear_injury_loyalty_decay(guest: Any) -> None:
+    guest.injury_loyalty_processed_at = None
+
+
+def apply_injury_loyalty_decay(guest: Any, *, now: datetime) -> int:
+    """按完整重伤周期扣减忠诚度，并推进持久化结算点。"""
+    processed_at = getattr(guest, "injury_loyalty_processed_at", None)
+    if getattr(guest, "status", None) != GuestStatus.INJURED or processed_at is None:
+        return 0
+
+    elapsed = now - processed_at
+    intervals = int(elapsed // INJURY_LOYALTY_DECAY_INTERVAL)
+    if intervals <= 0:
+        return 0
+
+    guest.loyalty = max(0, int(guest.loyalty) - intervals)
+    guest.injury_loyalty_processed_at = processed_at + INJURY_LOYALTY_DECAY_INTERVAL * intervals
+    return intervals
+
+
+@transaction.atomic
+def process_injury_loyalty_decay_for_guest(guest_id: int, *, now: datetime) -> int:
+    guest = Guest.objects.select_for_update().filter(pk=guest_id).first()
+    if guest is None:
+        return 0
+
+    intervals = apply_injury_loyalty_decay(guest, now=now)
+    if intervals > 0:
+        guest.save(update_fields=["loyalty", "injury_loyalty_processed_at"])
+    return intervals

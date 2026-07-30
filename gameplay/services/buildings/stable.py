@@ -29,6 +29,7 @@ from core.utils.yaml_loader import load_yaml_data
 
 from ...constants import BuildingKeys
 from ...models import HorseProduction, Manor
+from .production_cancel import cancel_active_production
 
 logger = logging.getLogger(__name__)
 STABLE_MESSAGE_BEST_EFFORT_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
@@ -321,6 +322,17 @@ def start_horse_production(manor: Manor, horse_key: str, quantity: int = 1) -> H
         _schedule_production_completion(production, actual_duration)
 
     return production
+
+
+def cancel_horse_production(manor: Manor, production_id: int) -> HorseProduction:
+    """取消仍在进行的马匹生产，已消耗的粮食不返还。"""
+    return cancel_active_production(
+        production_model=HorseProduction,
+        manor=manor,
+        production_id=production_id,
+        active_status=HorseProduction.Status.PRODUCING,
+        cancelled_status=HorseProduction.Status.CANCELLED,
+    )
 
 
 def _schedule_production_completion(production: HorseProduction, eta_seconds: int) -> None:

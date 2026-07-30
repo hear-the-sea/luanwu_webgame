@@ -47,7 +47,7 @@ def test_virtual_player_retries_real_coordinate_conflict_inside_savepoint(
     if connection.vendor != "mysql":
         pytest.skip("virtual player coordinate retry requires MySQL unique-index semantics")
 
-    from gameplay.services import virtual_players
+    from gameplay.services.virtual_player_core import bootstrap as virtual_players
 
     _configure_minimal_virtual_player_projection(settings)
     occupied_coordinate = (981, 982)
@@ -100,7 +100,7 @@ def test_virtual_player_real_coordinate_conflicts_exhaust_and_roll_back_outer_tr
     if connection.vendor != "mysql":
         pytest.skip("virtual player coordinate retry requires MySQL unique-index semantics")
 
-    from gameplay.services import virtual_players
+    from gameplay.services.virtual_player_core import bootstrap as virtual_players
 
     _configure_minimal_virtual_player_projection(settings)
     occupied_coordinate = (985, 986)

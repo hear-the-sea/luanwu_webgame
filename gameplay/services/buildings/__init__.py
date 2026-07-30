@@ -25,6 +25,7 @@ from .base import (
 # 锻造房（forge.py）
 from .forge import (
     calculate_forging_duration,
+    cancel_equipment_forging,
     finalize_equipment_forging,
     get_equipment_by_category,
     get_equipment_options,
@@ -38,6 +39,7 @@ from .forge import (
 # 牧场（ranch.py）
 from .ranch import (
     calculate_livestock_duration,
+    cancel_livestock_production,
     finalize_livestock_production,
     get_active_livestock_productions,
     get_livestock_options,
@@ -51,6 +53,7 @@ from .ranch import (
 # 铁匠铺（smithy.py）
 from .smithy import (
     calculate_smelting_duration,
+    cancel_smelting_production,
     finalize_smelting_production,
     get_active_smelting_productions,
     get_max_smelting_quantity,
@@ -65,6 +68,7 @@ from .smithy import (
 # 马厩（stable.py）
 from .stable import (
     calculate_production_duration,
+    cancel_horse_production,
     finalize_horse_production,
     get_active_productions,
     get_horse_options,
@@ -86,6 +90,7 @@ __all__ = [
     "load_building_templates",
     # forge
     "calculate_forging_duration",
+    "cancel_equipment_forging",
     "finalize_equipment_forging",
     "get_equipment_by_category",
     "get_equipment_options",
@@ -96,6 +101,7 @@ __all__ = [
     "start_equipment_forging",
     # smithy
     "calculate_smelting_duration",
+    "cancel_smelting_production",
     "finalize_smelting_production",
     "get_active_smelting_productions",
     "get_max_smithy_medicine_quantity",
@@ -107,6 +113,7 @@ __all__ = [
     "start_smelting_production",
     # stable
     "calculate_production_duration",
+    "cancel_horse_production",
     "finalize_horse_production",
     "get_active_productions",
     "get_horse_options",
@@ -117,6 +124,7 @@ __all__ = [
     "start_horse_production",
     # ranch
     "calculate_livestock_duration",
+    "cancel_livestock_production",
     "finalize_livestock_production",
     "get_active_livestock_productions",
     "get_livestock_options",

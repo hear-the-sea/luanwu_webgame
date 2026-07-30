@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import ast
 from datetime import timedelta
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -45,29 +47,63 @@ def _create_bot_profile(manor, *, budget: int, state: str = BotProfile.State.ACT
         (BotProfile.State.STALE, False),
     ],
 )
-def test_exhausted_loot_budget_retires_only_maintained_profiles(monkeypatch, state, should_retire):
+def test_exhausted_loot_budget_recommends_retirement_only_for_maintained_profiles(
+    monkeypatch,
+    state,
+    should_retire,
+):
     from gameplay.services import virtual_player_loot_limits
 
     profile = SimpleNamespace(loot_budget_daily=100, state=state, pk=7)
     profile_lookup = SimpleNamespace(first=lambda: profile)
-    retired_profile_ids = []
     monkeypatch.setattr(virtual_player_loot_limits.BotProfile.objects, "filter", lambda **_kwargs: profile_lookup)
     monkeypatch.setattr(virtual_player_loot_limits, "_spent_from_bot_defender_today", lambda *_args, **_kwargs: 100)
     monkeypatch.setattr(virtual_player_loot_limits, "_is_bot_manor", lambda _manor: True)
-    monkeypatch.setattr(
-        virtual_player_loot_limits,
-        "retire_virtual_player_if_unprotected",
-        lambda profile_id, **_kwargs: retired_profile_ids.append(profile_id),
-    )
 
-    clamped = virtual_player_loot_limits.clamp_bot_loot_resources(
+    decision = virtual_player_loot_limits.clamp_bot_loot_resources(
         attacker=object(),
         defender=object(),
         loot_resources={"grain": 50},
     )
 
-    assert clamped == {}
-    assert retired_profile_ids == ([profile.pk] if should_retire else [])
+    assert dict(decision.resources) == {}
+    assert decision.bot_profile_id == profile.pk
+    assert decision.bot_budget_exhausted is True
+    assert decision.retirement_recommended is should_retire
+
+
+def test_loot_limit_module_has_no_profile_write_dependency():
+    from gameplay.services import virtual_player_loot_limits
+
+    source = Path(virtual_player_loot_limits.__file__).read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    forbidden_symbols = {
+        "bulk_create",
+        "bulk_update",
+        "create",
+        "delete",
+        "mark_profile_retired",
+        "profile_store",
+        "retire_locked_virtual_player_if_unprotected",
+        "retire_virtual_player_if_unprotected",
+        "save",
+        "update",
+        "update_or_create",
+    }
+    imported_symbols = {
+        alias.asname or alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, (ast.Import, ast.ImportFrom))
+        for alias in node.names
+    }
+    called_symbols = {
+        node.func.id if isinstance(node.func, ast.Name) else node.func.attr
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call) and isinstance(node.func, (ast.Name, ast.Attribute))
+    }
+
+    assert imported_symbols.isdisjoint(forbidden_symbols)
+    assert called_symbols.isdisjoint(forbidden_symbols)
 
 
 @pytest.mark.django_db
@@ -88,7 +124,7 @@ def test_apply_raid_loot_clamps_bot_defender_resources_to_daily_budget(monkeypat
     monkeypatch.setattr(combat_battle, "_calculate_loot", lambda *_args, **_kwargs: ({"grain": 700, "silver": 600}, {}))
 
     with transaction.atomic():
-        combat_battle._apply_raid_loot_if_needed(run, is_attacker_victory=True)
+        decision = combat_battle._apply_raid_loot_if_needed(run, is_attacker_victory=True)
 
     profile.refresh_from_db()
     defender.refresh_from_db()
@@ -97,8 +133,12 @@ def test_apply_raid_loot_clamps_bot_defender_resources_to_daily_budget(monkeypat
     assert run.loot_resources == {"grain": 500}
     assert defender.grain == 9_500
     assert defender.silver == 10_000
-    assert profile.state == BotProfile.State.RETIRED
-    assert profile.maintenance_stopped_at is not None
+    assert profile.state == BotProfile.State.ACTIVE
+    assert profile.maintenance_stopped_at is None
+    assert dict(decision.resources) == {"grain": 500}
+    assert decision.bot_profile_id == profile.pk
+    assert decision.bot_budget_exhausted is True
+    assert decision.retirement_recommended is True
 
 
 @pytest.mark.django_db
@@ -117,18 +157,20 @@ def test_bot_defender_daily_budget_accounts_for_prior_loot(django_user_model):
     )
     RaidRun.objects.filter(pk=prior.pk).update(started_at=timezone.now() - timedelta(hours=1))
 
-    clamped = clamp_bot_loot_resources(
+    decision = clamp_bot_loot_resources(
         attacker=attacker,
         defender=defender,
         loot_resources={"grain": 500, "silver": 500},
         now=timezone.now(),
     )
 
-    assert clamped == {"grain": 200}
+    assert dict(decision.resources) == {"grain": 200}
+    assert decision.bot_budget_exhausted is True
+    assert decision.retirement_recommended is True
 
 
 @pytest.mark.django_db
-def test_bot_defender_retires_when_prior_loot_exhausted_budget(django_user_model):
+def test_bot_defender_prior_loot_exhaustion_returns_retirement_recommendation(django_user_model):
     from gameplay.services.virtual_player_loot_limits import clamp_bot_loot_resources
 
     attacker = _create_manor(django_user_model, "bot_budget_exhausted_attacker")
@@ -143,7 +185,7 @@ def test_bot_defender_retires_when_prior_loot_exhausted_budget(django_user_model
     )
     RaidRun.objects.filter(pk=prior.pk).update(started_at=timezone.now() - timedelta(hours=1))
 
-    clamped = clamp_bot_loot_resources(
+    decision = clamp_bot_loot_resources(
         attacker=attacker,
         defender=defender,
         loot_resources={"grain": 500},
@@ -151,9 +193,12 @@ def test_bot_defender_retires_when_prior_loot_exhausted_budget(django_user_model
     )
 
     profile.refresh_from_db()
-    assert clamped == {}
-    assert profile.state == BotProfile.State.RETIRED
-    assert profile.maintenance_stopped_at is not None
+    assert dict(decision.resources) == {}
+    assert decision.bot_profile_id == profile.pk
+    assert decision.bot_budget_exhausted is True
+    assert decision.retirement_recommended is True
+    assert profile.state == BotProfile.State.ACTIVE
+    assert profile.maintenance_stopped_at is None
 
 
 @pytest.mark.django_db
@@ -189,15 +234,19 @@ def test_exhausted_loot_budget_does_not_retire_active_reserve_member(django_user
     )
     RaidRun.objects.filter(pk=prior.pk).update(started_at=now - timedelta(hours=1))
 
-    clamped = clamp_bot_loot_resources(
+    decision = clamp_bot_loot_resources(
         attacker=attacker,
         defender=defender,
         loot_resources={"grain": 500},
         now=now,
     )
 
+    assert dict(decision.resources) == {}
+    assert decision.retirement_recommended is True
+
+    combat_battle._process_bot_loot_retirement(decision, now=now)
+
     profile.refresh_from_db()
-    assert clamped == {}
     assert profile.state == BotProfile.State.ACTIVE
     assert ArenaVirtualReserveMember.objects.filter(pk=member.pk).exists()
 
@@ -227,15 +276,15 @@ def test_real_attacker_daily_bot_resource_limit_spans_multiple_bots(settings, dj
     )
     RaidRun.objects.filter(pk=prior.pk).update(started_at=timezone.now() - timedelta(hours=1))
 
-    clamped = clamp_bot_loot_resources(
+    decision = clamp_bot_loot_resources(
         attacker=attacker,
         defender=second_defender,
         loot_resources={"grain": 500, "silver": 500},
         now=timezone.now(),
     )
 
-    assert sum(clamped.values()) == 300
-    assert clamped == {"grain": 300}
+    assert sum(decision.resources.values()) == 300
+    assert dict(decision.resources) == {"grain": 300}
 
 
 @pytest.mark.django_db
@@ -262,14 +311,14 @@ def test_bot_attacker_does_not_consume_real_attacker_daily_limit(settings, djang
     )
     RaidRun.objects.filter(pk=prior.pk).update(started_at=timezone.now() - timedelta(hours=1))
 
-    clamped = clamp_bot_loot_resources(
+    decision = clamp_bot_loot_resources(
         attacker=bot_attacker,
         defender=defender,
         loot_resources={"grain": 800, "silver": 800},
         now=timezone.now(),
     )
 
-    assert clamped == {"grain": 800, "silver": 800}
+    assert dict(decision.resources) == {"grain": 800, "silver": 800}
 
 
 @pytest.mark.django_db

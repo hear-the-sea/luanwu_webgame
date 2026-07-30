@@ -27,5 +27,13 @@ def _lock_targets_in_order(function_name: str) -> list[str]:
     return targets
 
 
-def test_unequip_guest_item_locks_guest_before_gear():
-    assert _lock_targets_in_order("unequip_guest_item")[:2] == ["guest", "gear"]
+def test_unequip_guest_item_locks_manor_before_guest_and_gear():
+    assert _lock_targets_in_order("unequip_guest_item")[:3] == [
+        "locked_manor",
+        "guest",
+        "gear",
+    ]
+
+
+def test_equip_guest_locks_manor_before_guest():
+    assert _lock_targets_in_order("equip_guest")[:2] == ["locked_manor", "locked_guest"]

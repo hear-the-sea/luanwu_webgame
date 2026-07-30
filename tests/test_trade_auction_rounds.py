@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 Compatibility entrypoint for the auction rounds test suite.
 
@@ -7,6 +5,8 @@ The original file grew beyond the audit line budget. The tests now live under
 `tests/trade_auction_rounds/`, while this file remains the stable pytest
 entrypoint for existing commands and CI references.
 """
+
+from __future__ import annotations
 
 import pytest
 

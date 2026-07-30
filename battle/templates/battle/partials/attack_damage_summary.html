@@ -1,0 +1,12 @@
+<div class="event-target-summary event-damage-summary">
+    <span class="event-target-arrow" aria-hidden="true">→</span>
+    <span class="event-target-detail">
+        {% if is_secondary %}
+            波及<strong class="event-target-name">{{ attack.target }}</strong>，造成伤害<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% if attack.target_defeated %}，敌方全军覆没{% endif %}
+        {% elif attack.skills %}
+            <span class="event-active-skill">爆发技能：{{ attack.skills|join:"、" }}</span>，对<strong class="event-target-name">{{ attack.target }}</strong>造成伤害<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% if attack.target_defeated %}，敌方全军覆没{% endif %}
+        {% else %}
+            普通攻击：对<strong class="event-target-name">{{ attack.target }}</strong>造成伤害<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% if attack.target_defeated %}，敌方全军覆没{% endif %}
+        {% endif %}
+    </span>
+</div>

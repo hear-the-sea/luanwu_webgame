@@ -1,12 +1,20 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 import pytest
 from django.contrib.auth import get_user_model
 
 import gameplay.services.missions_impl.attempts as mission_attempts_service
-from gameplay.models import MissionTemplate
+from core.exceptions import MissionDailyLimitError
+from gameplay.models import MissionExtraAttempt, MissionTemplate
 from gameplay.services.manor.core import ensure_manor
-from gameplay.services.missions_impl.attempts import add_mission_extra_attempt, get_mission_daily_limit
+from gameplay.services.missions_impl.attempts import (
+    MISSION_CARD_DAILY_LIMIT_PER_MISSION,
+    add_mission_extra_attempt,
+    get_mission_daily_limit,
+)
+from gameplay.services.missions_impl.time_utils import get_today_date_range
 
 
 @pytest.mark.django_db
@@ -27,6 +35,36 @@ def test_add_mission_extra_attempt_rejects_bool_count():
 
     with pytest.raises(AssertionError, match="invalid mission extra attempt count"):
         add_mission_extra_attempt(manor, mission, True)
+
+
+@pytest.mark.django_db
+def test_add_mission_extra_attempt_caps_each_mission_at_five_per_day():
+    user = get_user_model().objects.create_user(username="mission_extra_attempt_limit", password="pass123")
+    manor = ensure_manor(user)
+    mission = MissionTemplate.objects.create(key="mission_attempt_limit", name="任务卡每日上限")
+
+    assert add_mission_extra_attempt(manor, mission, MISSION_CARD_DAILY_LIMIT_PER_MISSION) == 5
+
+    with pytest.raises(MissionDailyLimitError, match="该任务今日最多使用 5 张任务卡"):
+        add_mission_extra_attempt(manor, mission, 1)
+
+    assert mission_attempts_service.get_mission_extra_attempts(manor, mission) == 5
+
+
+@pytest.mark.django_db
+def test_add_mission_extra_attempt_limit_is_scoped_to_natural_day():
+    user = get_user_model().objects.create_user(username="mission_extra_attempt_new_day", password="pass123")
+    manor = ensure_manor(user)
+    mission = MissionTemplate.objects.create(key="mission_attempt_new_day", name="任务卡跨日重置")
+    _, _, today = get_today_date_range()
+    MissionExtraAttempt.objects.create(
+        manor=manor,
+        mission=mission,
+        date=today - timedelta(days=1),
+        extra_count=MISSION_CARD_DAILY_LIMIT_PER_MISSION,
+    )
+
+    assert add_mission_extra_attempt(manor, mission, 1) == 1
 
 
 def test_get_mission_daily_limit_rejects_non_positive_daily_limit(monkeypatch):

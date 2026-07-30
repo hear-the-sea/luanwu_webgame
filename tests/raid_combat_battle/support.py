@@ -11,6 +11,7 @@ from battle.random_context import CURRENT_BATTLE_ENGINE_VERSION, CURRENT_RNG_VER
 from gameplay.models import PlayerTroop, RaidRun
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.raid.combat import battle as combat_battle
+from gameplay.services.virtual_player_core.contracts import BotLootClampDecision
 from guests.models import Guest, GuestStatus, GuestTemplate
 
 
@@ -126,9 +127,18 @@ def stub_process_raid_battle_happy_path(monkeypatch, run, attacker, defender, re
     monkeypatch.setattr(combat_battle, "_ensure_raid_replay_metadata", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_prepare_run_for_battle", lambda *_args, **_kwargs: run)
     monkeypatch.setattr(combat_battle, "_lock_battle_manors", lambda *_args, **_kwargs: (attacker, defender))
+    monkeypatch.setattr(
+        combat_battle,
+        "capture_external_reconciliation_anchors",
+        lambda *_args, **_kwargs: {},
+    )
     monkeypatch.setattr(combat_battle, "_execute_raid_battle", lambda *_args, **_kwargs: report)
     monkeypatch.setattr(combat_battle, "apply_defender_troop_losses", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(combat_battle, "_apply_raid_loot_if_needed", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        combat_battle,
+        "_apply_raid_loot_if_needed",
+        lambda *_args, **_kwargs: BotLootClampDecision(resources={}),
+    )
     monkeypatch.setattr(combat_battle, "_apply_prestige_changes", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_apply_defeat_protection", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_apply_capture_reward", lambda *_args, **_kwargs: None)

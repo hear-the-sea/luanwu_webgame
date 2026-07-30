@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Iterable, Mapping
 from typing import TYPE_CHECKING, Any, DefaultDict, Dict
 
 from core.exceptions import TroopLoadoutError
@@ -29,6 +30,21 @@ RESOURCE_FIELDS = [
 RETAINER_GRAIN_COST_PER_HOUR = 1
 TROOP_GRAIN_COST_PER_HOUR = 1
 GUEST_GRAIN_COST_PER_HOUR = 100
+
+
+def calculate_personnel_grain_cost_per_hour(
+    *,
+    retainer_count: int,
+    guest_count: int,
+    troop_count: int,
+    bank_troop_count: int,
+) -> int:
+    total_troops = max(0, int(troop_count)) + max(0, int(bank_troop_count))
+    return int(
+        max(0, int(retainer_count)) * RETAINER_GRAIN_COST_PER_HOUR
+        + total_troops * TROOP_GRAIN_COST_PER_HOUR
+        + max(0, int(guest_count)) * GUEST_GRAIN_COST_PER_HOUR
+    )
 
 
 def get_personnel_grain_cost_per_hour(manor: "Manor") -> int:
@@ -62,11 +78,11 @@ def get_personnel_grain_cost_per_hour(manor: "Manor") -> int:
         or 0
     )
 
-    total_troops = troop_count + bank_troop_count
-    return int(
-        retainer_count * RETAINER_GRAIN_COST_PER_HOUR
-        + total_troops * TROOP_GRAIN_COST_PER_HOUR
-        + guest_count * GUEST_GRAIN_COST_PER_HOUR
+    return calculate_personnel_grain_cost_per_hour(
+        retainer_count=retainer_count,
+        guest_count=guest_count,
+        troop_count=troop_count,
+        bank_troop_count=bank_troop_count,
     )
 
 
@@ -91,6 +107,28 @@ def has_resources(manor: "Manor", cost: Dict[str, int]) -> bool:
     return all(getattr(manor, resource) >= amount for resource, amount in cost.items())
 
 
+def calculate_hourly_rates(
+    buildings: Iterable[Any],
+    technology_levels: Mapping[str, int],
+) -> Dict[str, float]:
+    from ..services.technology import get_resource_production_bonus_from_levels
+
+    rates: DefaultDict[str, float] = defaultdict(float)
+    for building in buildings:
+        base_rate = building.hourly_rate()
+        resource_type = building.building_type.resource_type
+        bonus = get_resource_production_bonus_from_levels(
+            dict(technology_levels),
+            resource_type,
+            building_key=building.building_type.key,
+        )
+        rate = base_rate * (1.0 + bonus)
+        rates[resource_type] += rate
+        if building.building_type.key == BuildingKeys.LATRINE:
+            rates[ResourceType.SILVER] += rate
+    return dict(rates)
+
+
 def get_hourly_rates(manor: "Manor") -> Dict[str, float]:
     """
     计算庄园每小时的资源产量。
@@ -105,25 +143,13 @@ def get_hourly_rates(manor: "Manor") -> Dict[str, float]:
     Returns:
         资源产量字典 {"grain": 120.0, "silver": 95.0, ...}
     """
-    from ..services.technology import get_player_technologies, get_resource_production_bonus_from_levels
+    from ..services.technology import get_player_technologies
 
-    rates: DefaultDict[str, float] = defaultdict(float)
     tech_levels = get_player_technologies(manor)
-    for building in manor.buildings.select_related("building_type"):
-        base_rate = building.hourly_rate()
-        resource_type = building.building_type.resource_type
-        bonus = get_resource_production_bonus_from_levels(
-            tech_levels,
-            resource_type,
-            building_key=building.building_type.key,
-        )
-        rate = base_rate * (1.0 + bonus)
-        rates[resource_type] += rate
-
-        # 茅厕特殊效果：额外产出等量银两
-        if building.building_type.key == BuildingKeys.LATRINE:
-            rates[ResourceType.SILVER] += rate
-    return dict(rates)
+    return calculate_hourly_rates(
+        manor.buildings.select_related("building_type"),
+        tech_levels,
+    )
 
 
 def normalize_mission_loadout(raw: Dict[str, int] | None, troop_templates: Dict[str, Dict]) -> Dict[str, int]:

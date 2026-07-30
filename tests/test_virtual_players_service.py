@@ -8,6 +8,7 @@ import time
 from collections import Counter
 from datetime import timedelta
 from itertools import count
+from types import SimpleNamespace
 
 import pytest
 from django.core.cache import cache
@@ -30,6 +31,10 @@ from gameplay.models import (
     ScoutRecord,
 )
 from gameplay.services.manor.core import calculate_building_capacity, ensure_manor
+from gameplay.services.virtual_player_core import backfill as virtual_player_backfill
+from gameplay.services.virtual_player_core import bootstrap as virtual_player_bootstrap
+from gameplay.services.virtual_player_core import inventory_budget as virtual_player_inventory_budget
+from gameplay.services.virtual_player_core import population_runtime as virtual_player_population
 from guests.models import (
     GearItem,
     GearSlot,
@@ -129,7 +134,6 @@ def test_create_virtual_player_retries_coordinate_conflict_without_duplicate_sid
     django_user_model,
 ):
     from gameplay.models import BotProfile
-    from gameplay.services import virtual_players
     from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
 
     _bootstrap_projection_templates()
@@ -150,7 +154,7 @@ def test_create_virtual_player_retries_coordinate_conflict_without_duplicate_sid
     final_save_attempts = 0
     projection_calls = 0
     original_save = Manor.save
-    original_project_buildings = virtual_players._project_buildings
+    original_project_buildings = virtual_player_bootstrap._project_buildings
 
     def _next_coordinate(_region):
         nonlocal coordinate_calls
@@ -171,9 +175,9 @@ def test_create_virtual_player_retries_coordinate_conflict_without_duplicate_sid
         projection_calls += 1
         return original_project_buildings(*args, **kwargs)
 
-    monkeypatch.setattr(virtual_players, "generate_unique_coordinate", _next_coordinate)
+    monkeypatch.setattr(virtual_player_bootstrap, "generate_unique_coordinate", _next_coordinate)
     monkeypatch.setattr(Manor, "save", _save_with_one_coordinate_conflict)
-    monkeypatch.setattr(virtual_players, "_project_buildings", _count_project_buildings)
+    monkeypatch.setattr(virtual_player_bootstrap, "_project_buildings", _count_project_buildings)
 
     profile = create_virtual_player(
         region="north",
@@ -200,7 +204,6 @@ def test_create_virtual_player_rolls_back_after_coordinate_retry_exhaustion(
     django_user_model,
 ):
     from gameplay.models import BotProfile
-    from gameplay.services import virtual_players
     from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
 
     _bootstrap_projection_templates()
@@ -232,7 +235,7 @@ def test_create_virtual_player_rolls_back_after_coordinate_retry_exhaustion(
             raise conflict
         return original_save(self, *args, **kwargs)
 
-    monkeypatch.setattr(virtual_players, "generate_unique_coordinate", _next_coordinate)
+    monkeypatch.setattr(virtual_player_bootstrap, "generate_unique_coordinate", _next_coordinate)
     monkeypatch.setattr(Manor, "save", _save_with_coordinate_conflict)
 
     with pytest.raises(IntegrityError) as exc_info:
@@ -278,8 +281,6 @@ def test_virtual_player_coordinate_retry_propagates_non_coordinate_integrity_err
     monkeypatch,
     django_user_model,
 ):
-    from gameplay.services import virtual_players
-
     manor = django_user_model.objects.create_user(
         username=_unique("bot_coordinate_non_target"),
         password="pass123",
@@ -298,10 +299,10 @@ def test_virtual_player_coordinate_retry_propagates_non_coordinate_integrity_err
         coordinate_calls += 1
 
     monkeypatch.setattr(manor, "save", _raise_non_coordinate_error)
-    monkeypatch.setattr(virtual_players, "_set_unique_location", _track_coordinate_change)
+    monkeypatch.setattr(virtual_player_bootstrap, "_set_unique_location", _track_coordinate_change)
 
     with pytest.raises(IntegrityError) as exc_info:
-        virtual_players._save_virtual_player_manor_with_coordinate_retry(
+        virtual_player_bootstrap._save_virtual_player_manor_with_coordinate_retry(
             manor,
             region="north",
             update_fields=["region", "coordinate_x", "coordinate_y"],
@@ -352,7 +353,7 @@ def _run_due_bot_maintenance(profile, *, now, growth_stage: int = 1) -> None:
 
 @pytest.mark.django_db
 def test_project_technologies_is_repeatable_without_targeted_upsert(monkeypatch, django_user_model):
-    from gameplay.services.virtual_players import _project_technologies
+    from gameplay.services.virtual_player_core.legacy.roster import _project_technologies
 
     manor = ensure_manor(django_user_model.objects.create_user(username=_unique("mysql_tech"), password="pass123"))
     PlayerTechnology.objects.create(manor=manor, tech_key="dao_attack", level=1, is_upgrading=True)
@@ -588,7 +589,7 @@ def test_create_virtual_player_guests_learn_configured_extra_skills(settings):
 @pytest.mark.django_db
 def test_extra_template_skills_respect_existing_skill_capacity(django_user_model):
     from core.config import GUEST
-    from gameplay.services.virtual_players import _grant_extra_template_skills
+    from gameplay.services.virtual_player_core.legacy.roster import _grant_extra_template_skills
     from guests.services.recruitment_guests import create_guest_from_template
 
     user = django_user_model.objects.create_user(username=_unique("bot_full_skill_slots"), password="pass123")
@@ -617,7 +618,7 @@ def test_extra_template_skills_respect_existing_skill_capacity(django_user_model
 @pytest.mark.django_db
 def test_extra_template_skills_cap_oversized_initial_skill_set(django_user_model):
     from core.config import GUEST
-    from gameplay.services.virtual_players import _grant_extra_template_skills
+    from gameplay.services.virtual_player_core.legacy.roster import _grant_extra_template_skills
     from guests.services.recruitment_guests import create_guest_from_template
 
     user = django_user_model.objects.create_user(username=_unique("bot_oversized_skill_set"), password="pass123")
@@ -979,7 +980,7 @@ def test_virtual_player_all_projection_pools_use_available_templates(settings):
     settings.VIRTUAL_PLAYER_CONFIG = {
         "projection": {
             "guest_template_keys": "__all__",
-            "guest_max_rarity_by_stage": {1: "blue"},
+            "guest_max_rarity_by_stage": {1: "blue", 4: "blue"},
             "gear_template_keys": "__all__",
             "gear_slots_by_archetype": {"balanced": 2},
             "gear_max_rarity_by_stage": {1: "blue"},
@@ -1767,13 +1768,10 @@ def test_high_value_inventory_projection_scales_by_bot_prestige(settings):
 
 
 @pytest.mark.django_db
-def test_invalid_prestige_chance_config_does_not_open_high_value_inventory(settings):
+def test_invalid_prestige_chance_config_fails_before_population_mutation(settings):
     from gameplay.models import BotProfile
-    from gameplay.services.virtual_players import (
-        BotProjectionConfig,
-        create_virtual_player,
-        maintain_due_virtual_players,
-    )
+    from gameplay.services.virtual_player_core.config import VirtualPlayerConfigError
+    from gameplay.services.virtual_players import BotProjectionConfig, create_virtual_player
 
     _bootstrap_projection_templates()
     powerful = ItemTemplate.objects.create(
@@ -1798,25 +1796,23 @@ def test_invalid_prestige_chance_config_does_not_open_high_value_inventory(setti
         }
     }
     now = timezone.now()
-    profile = create_virtual_player(
-        region="north",
-        prestige_band="veteran",
-        archetype=BotProfile.Archetype.BALANCED,
-        growth_seed=6170,
-        now=now - timedelta(days=1),
-        projection=BotProjectionConfig(prestige=40000, building_level=8, guest_count=0, guest_level=1),
-    )
-    profile.manor.prestige = 40000
-    profile.manor.save(update_fields=["prestige"])
-    InventoryItem.objects.filter(manor=profile.manor).delete()
-    BotProfile.objects.filter(pk=profile.pk).update(
-        next_growth_at=now - timedelta(minutes=1),
-        growth_stage=5,
-    )
+    with pytest.raises(VirtualPlayerConfigError, match="powerful_item_prestige_chance"):
+        create_virtual_player(
+            region="north",
+            prestige_band="veteran",
+            archetype=BotProfile.Archetype.BALANCED,
+            growth_seed=6170,
+            now=now - timedelta(days=1),
+            projection=BotProjectionConfig(
+                prestige=40000,
+                building_level=8,
+                guest_count=0,
+                guest_level=1,
+            ),
+        )
 
-    assert maintain_due_virtual_players(now=now, limit=10) == 1
-
-    assert not InventoryItem.objects.filter(manor=profile.manor, template=powerful).exists()
+    assert not BotProfile.objects.filter(growth_seed=6170).exists()
+    assert not InventoryItem.objects.filter(template=powerful).exists()
 
 
 @pytest.mark.django_db
@@ -1881,8 +1877,6 @@ def test_limited_rare_inventory_projection_uses_a_bounded_persistent_pool(settin
 
 
 def test_inventory_daily_cap_reservation_recovers_from_counter_create_race(monkeypatch):
-    from gameplay.services import virtual_players
-
     class Counter:
         quantity = 1
 
@@ -1913,9 +1907,9 @@ def test_inventory_daily_cap_reservation_recovers_from_counter_create_race(monke
     class CounterModel:
         objects = CounterManager()
 
-    monkeypatch.setattr(virtual_players, "BotInventoryDailyCounter", CounterModel)
+    monkeypatch.setattr(virtual_player_inventory_budget, "BotInventoryDailyCounter", CounterModel)
 
-    allowed = virtual_players._reserve_inventory_daily_cap(
+    allowed = virtual_player_inventory_budget.reserve_inventory_daily_cap(
         category="rare",
         requested=2,
         cap=3,
@@ -1959,11 +1953,9 @@ def test_virtual_player_names_stay_unique_for_reused_growth_seed(settings):
 
 
 def test_virtual_player_name_style_distribution_matches_mixed_online_game_profile():
-    from gameplay.services import virtual_players
+    from gameplay.services.virtual_player_core.identity import select_manor_name_style
 
-    style_counts = Counter(
-        virtual_players._select_bot_manor_name_style(random.Random(f"{seed}:0:0").random()) for seed in range(1, 1001)
-    )
+    style_counts = Counter(select_manor_name_style(random.Random(f"{seed}:0:0").random()) for seed in range(1, 1001))
 
     assert 450 <= style_counts["modern"] <= 550
     assert 250 <= style_counts["classical"] <= 350
@@ -1971,11 +1963,11 @@ def test_virtual_player_name_style_distribution_matches_mixed_online_game_profil
 
 
 def test_virtual_player_name_candidates_cover_all_styles_without_specific_memes():
-    from gameplay.services import virtual_players
+    from gameplay.services.virtual_player_core.identity import build_manor_name_candidate
 
     candidates_by_style = {
         style: [
-            virtual_players._build_bot_manor_name_candidate(
+            build_manor_name_candidate(
                 random.Random(f"{style}:{seed}"),
                 style=style,
                 variant=seed,
@@ -1993,7 +1985,7 @@ def test_virtual_player_name_candidates_cover_all_styles_without_specific_memes(
     assert all("虚拟玩家" not in name for name in all_candidates)
     assert all(not any(char in "0123456789" for char in name) for name in all_candidates)
     with pytest.raises(ValueError, match="Unsupported bot manor name style"):
-        virtual_players._build_bot_manor_name_candidate(
+        build_manor_name_candidate(
             random.Random("unsupported"),
             style="unsupported",
             variant=0,
@@ -2233,12 +2225,12 @@ def test_population_provisioning_cannot_bypass_capacity_owner(settings, monkeypa
         },
     }
     monkeypatch.setattr(
-        virtual_players,
+        virtual_player_population,
         "_lock_population_capacity",
         lambda *, now: (1, 1),
     )
 
-    result = virtual_players._reactivate_or_create_virtual_player(
+    result = virtual_player_population._reactivate_or_create_virtual_player(
         region="north",
         prestige_band="newbie",
         low=0,
@@ -2303,7 +2295,7 @@ def test_regional_population_retirement_uses_target_band(settings):
         region_target_rows=(("north", 1),),
     )
 
-    retired_count = virtual_players._retire_excess_population_cells(
+    retired_count = virtual_player_population._retire_excess_population_cells(
         plan,
         config=virtual_players.load_virtual_player_config(),
         now=now,
@@ -2355,11 +2347,11 @@ def test_population_retargets_existing_profile_without_changing_actual_prestige(
         start_from_zero=True,
     )
 
-    plan = virtual_players._build_population_plan(
+    plan = virtual_player_population._build_population_plan(
         virtual_players.load_virtual_player_config(),
         now=timezone.now(),
     )
-    assert virtual_players.rebalance_virtual_player_target_bands(plan, limit=1) == 1
+    assert virtual_player_population.rebalance_virtual_player_target_bands(plan, limit=1) == 1
 
     profile.refresh_from_db()
     assert profile.target_prestige_band == "junior"
@@ -2489,8 +2481,7 @@ def test_population_roll_counts_actual_current_prestige_band(settings):
 @pytest.mark.django_db
 def test_population_roll_continues_after_one_coordinate_conflict(settings, monkeypatch, django_user_model):
     from gameplay.models import BotProfile
-    from gameplay.services import virtual_players
-    from gameplay.services.virtual_players import record_virtual_player_backfill_demand, roll_virtual_player_population
+    from gameplay.services.virtual_players import roll_virtual_player_population
 
     _bootstrap_projection_templates()
     settings.VIRTUAL_PLAYER_CONFIG = {
@@ -2530,9 +2521,13 @@ def test_population_roll_continues_after_one_coordinate_conflict(settings, monke
                 raise IntegrityError(SQLITE_OCCUPIED_MANOR_LOCATION_CONFLICT)
         return original_save(self, *args, **kwargs)
 
-    monkeypatch.setattr(virtual_players, "generate_unique_coordinate", _next_coordinate)
+    monkeypatch.setattr(virtual_player_bootstrap, "generate_unique_coordinate", _next_coordinate)
     monkeypatch.setattr(Manor, "save", _save_with_one_coordinate_conflict)
-    record_virtual_player_backfill_demand(region="north", prestige_band="newbie", needed=2)
+    virtual_player_backfill.record_virtual_player_backfill_demand(
+        region="north",
+        prestige_band="newbie",
+        needed=2,
+    )
 
     assert roll_virtual_player_population(limit=2, now=timezone.now()) == 2
     assert final_save_attempts == 3
@@ -2541,9 +2536,23 @@ def test_population_roll_continues_after_one_coordinate_conflict(settings, monke
     assert BotProfile.objects.count() == initial_profile_count + 2
 
 
+def _use_legacy_population_routing(monkeypatch, virtual_players) -> None:
+    from gameplay.services.virtual_player_core.config import BootstrapMode
+
+    monkeypatch.setattr(
+        virtual_players,
+        "read_virtual_player_routing",
+        lambda: SimpleNamespace(
+            bootstrap_mode=BootstrapMode.LEGACY_BEFORE_GATE,
+        ),
+    )
+
+
 def test_population_roll_release_does_not_delete_reacquired_owner_lock(monkeypatch):
     from core.utils import cache_lock
-    from gameplay.services import virtual_players
+    from gameplay.services.virtual_player_core import population_runtime as virtual_players
+
+    _use_legacy_population_routing(monkeypatch, virtual_players)
 
     class _FakeCache:
         def __init__(self):
@@ -2598,7 +2607,9 @@ def test_population_roll_release_does_not_delete_reacquired_owner_lock(monkeypat
 
 
 def test_population_roll_renews_periodically_and_stops_heartbeat(monkeypatch):
-    from gameplay.services import virtual_players
+    from gameplay.services.virtual_player_core import population_runtime as virtual_players
+
+    _use_legacy_population_routing(monkeypatch, virtual_players)
 
     renew_calls: list[tuple[str, bool, str | None, int]] = []
     renewed_twice = threading.Event()
@@ -2642,7 +2653,9 @@ def test_population_roll_renews_periodically_and_stops_heartbeat(monkeypatch):
 
 
 def test_population_roll_raises_precise_error_when_heartbeat_loses_lock(monkeypatch):
-    from gameplay.services import virtual_players
+    from gameplay.services.virtual_player_core import population_runtime as virtual_players
+
+    _use_legacy_population_routing(monkeypatch, virtual_players)
 
     renew_attempted = threading.Event()
     released = threading.Event()
@@ -2685,7 +2698,9 @@ def test_population_roll_raises_precise_error_when_heartbeat_loses_lock(monkeypa
 
 
 def test_population_roll_re_raises_heartbeat_programming_error_unchanged(monkeypatch):
-    from gameplay.services import virtual_players
+    from gameplay.services.virtual_player_core import population_runtime as virtual_players
+
+    _use_legacy_population_routing(monkeypatch, virtual_players)
 
     programming_error = TypeError("broken renew contract")
     heartbeat_caught_error = threading.Event()
@@ -2745,7 +2760,7 @@ def test_population_roll_re_raises_heartbeat_programming_error_unchanged(monkeyp
 @pytest.mark.django_db
 def test_population_roll_guard_preserves_first_create_and_stops_before_second(settings):
     from gameplay.models import BotProfile
-    from gameplay.services import virtual_players
+    from gameplay.services.virtual_player_core import population_runtime as virtual_players
 
     _bootstrap_projection_templates()
     settings.VIRTUAL_PLAYER_CONFIG = {
@@ -2771,7 +2786,11 @@ def test_population_roll_guard_preserves_first_create_and_stops_before_second(se
                 "virtual player population roll lock ownership was lost"
             )
 
-    virtual_players.record_virtual_player_backfill_demand(region="north", prestige_band="newbie", needed=2)
+    virtual_player_backfill.record_virtual_player_backfill_demand(
+        region="north",
+        prestige_band="newbie",
+        needed=2,
+    )
     with pytest.raises(virtual_players.VirtualPlayerPopulationLockLostError):
         virtual_players._roll_virtual_player_population_unlocked(
             limit=2,
@@ -2786,7 +2805,9 @@ def test_population_roll_fails_closed_when_cache_is_unavailable(monkeypatch):
     from django_redis.exceptions import ConnectionInterrupted
 
     from core.utils import cache_lock
-    from gameplay.services import virtual_players
+    from gameplay.services.virtual_player_core import population_runtime as virtual_players
+
+    _use_legacy_population_routing(monkeypatch, virtual_players)
 
     class _BrokenCache:
         def add(self, *_args, **_kwargs):

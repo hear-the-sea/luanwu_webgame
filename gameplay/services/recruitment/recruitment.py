@@ -11,7 +11,8 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from django.db import IntegrityError, transaction
@@ -26,7 +27,7 @@ from ...constants import BuildingKeys
 from ...models import Manor, TroopRecruitment
 from ..inventory.core import get_item_quantity
 from ..technology import get_player_technology_level, get_technology_template
-from .lifecycle import finalize_troop_recruitment
+from .lifecycle import apply_troop_recruitment_result_locked, finalize_troop_recruitment
 from .lifecycle import schedule_recruitment_completion as _schedule_recruitment_completion
 from .queries import get_active_recruitments, get_player_troops, refresh_troop_recruitments
 from .templates import clear_troop_cache, get_recruit_config, get_troop_template, load_troop_templates
@@ -45,9 +46,52 @@ __all__ = [
     "get_troop_template",
     "has_active_recruitment",
     "load_troop_templates",
+    "quote_troop_recruitment",
+    "recruit_troops_locked",
     "refresh_troop_recruitments",
     "start_troop_recruitment",
+    "TroopRecruitmentQuote",
 ]
+
+
+@dataclass(frozen=True, slots=True)
+class TroopRecruitmentQuote:
+    manor_id: int
+    troop_key: str
+    troop_name: str
+    quantity: int
+    equipment_costs: tuple[tuple[str, int], ...]
+    equipment_stock: tuple[tuple[str, int], ...]
+    retainer_cost: int
+    retainer_count: int
+    tech_key: str | None
+    tech_level_required: int
+    tech_level: int
+    max_quantity: int
+    training_ground_level: int
+    ancestral_hall_level: int
+    base_duration: int
+    actual_duration: int
+
+    def to_payload(self) -> dict[str, Any]:
+        return {
+            "manor_id": self.manor_id,
+            "troop_key": self.troop_key,
+            "troop_name": self.troop_name,
+            "quantity": self.quantity,
+            "equipment_costs": dict(self.equipment_costs),
+            "equipment_stock": dict(self.equipment_stock),
+            "retainer_cost": self.retainer_cost,
+            "retainer_count": self.retainer_count,
+            "tech_key": self.tech_key,
+            "tech_level_required": self.tech_level_required,
+            "tech_level": self.tech_level,
+            "max_quantity": self.max_quantity,
+            "training_ground_level": self.training_ground_level,
+            "ancestral_hall_level": self.ancestral_hall_level,
+            "base_duration": self.base_duration,
+            "actual_duration": self.actual_duration,
+        }
 
 
 def calculate_recruitment_duration(base_duration: int, manor: Manor) -> int:
@@ -441,10 +485,75 @@ def _validate_start_recruitment_inputs(manor: Manor, troop_key: str, quantity: i
     return troop
 
 
-def _consume_equipment_for_recruitment(manor: Manor, equipment_list: list[str], quantity: int) -> Dict[str, int]:
+def _equipment_costs(equipment_list: list[str], quantity: int) -> tuple[tuple[str, int], ...]:
+    costs: dict[str, int] = {}
+    for item_key in equipment_list:
+        costs[item_key] = costs.get(item_key, 0) + quantity
+    return tuple(sorted(costs.items()))
+
+
+def quote_troop_recruitment(
+    manor: Manor,
+    troop_key: str,
+    quantity: int = 1,
+) -> TroopRecruitmentQuote:
+    """按当前正式规则生成募兵报价，不写入数据库。"""
+    if not getattr(manor, "pk", None):
+        raise AssertionError("quote_troop_recruitment requires a persisted manor")
+
+    troop = _validate_start_recruitment_inputs(manor, troop_key, quantity)
+    recruit_config = troop.get("recruit") or {}
+    equipment_costs = _equipment_costs(recruit_config.get("equipment", []), quantity)
+    equipment_stock = _batch_get_item_quantities(
+        manor,
+        {item_key for item_key, _cost in equipment_costs},
+    )
+    tech_key = recruit_config.get("tech_key")
+    tech_level = get_player_technology_level(manor, tech_key) if tech_key else 0
+    base_duration = safe_positive_int(recruit_config.get("base_duration"), 120)
+    actual_duration = calculate_recruitment_duration(base_duration, manor) * quantity
+    retainer_cost = safe_positive_int(recruit_config.get("retainer_cost"), 1) * quantity
+
+    for item_key, required in equipment_costs:
+        if safe_non_negative_int(equipment_stock.get(item_key, 0)) < required:
+            raise TroopRecruitmentError("所需装备不足", item_key=item_key)
+    if safe_non_negative_int(manor.retainer_count) < retainer_cost:
+        raise TroopRecruitmentError(f"家丁不足，需要{retainer_cost}")
+
+    return TroopRecruitmentQuote(
+        manor_id=int(manor.pk),
+        troop_key=troop_key,
+        troop_name=str(troop["name"]),
+        quantity=quantity,
+        equipment_costs=equipment_costs,
+        equipment_stock=tuple(
+            (item_key, safe_non_negative_int(equipment_stock.get(item_key, 0))) for item_key, _cost in equipment_costs
+        ),
+        retainer_cost=retainer_cost,
+        retainer_count=safe_non_negative_int(manor.retainer_count),
+        tech_key=tech_key,
+        tech_level_required=safe_non_negative_int(recruit_config.get("tech_level"), 0),
+        tech_level=tech_level,
+        max_quantity=get_max_recruit_quantity(
+            manor,
+            troop_key,
+            recruit_config,
+            tech_level=tech_level if tech_key else None,
+        ),
+        training_ground_level=manor.get_building_level(BuildingKeys.LIANGGONG_CHANG),
+        ancestral_hall_level=manor.get_building_level(BuildingKeys.CITANG),
+        base_duration=base_duration,
+        actual_duration=actual_duration,
+    )
+
+
+def _consume_equipment_costs_for_recruitment(
+    manor: Manor,
+    equipment_costs: dict[str, int],
+) -> Dict[str, int]:
     from ...models import InventoryItem
 
-    if not equipment_list:
+    if not equipment_costs:
         return {}
 
     locked_items = {
@@ -452,27 +561,26 @@ def _consume_equipment_for_recruitment(manor: Manor, equipment_list: list[str], 
         for item in InventoryItem.objects.select_for_update()
         .filter(
             manor=manor,
-            template__key__in=equipment_list,
+            template__key__in=equipment_costs,
             storage_location=InventoryItem.StorageLocation.WAREHOUSE,
         )
         .select_related("template")
+        .order_by("id")
     }
 
-    equipment_costs: Dict[str, int] = {}
     to_update: list[InventoryItem] = []
     delete_ids: list[int] = []
 
-    for item_key in equipment_list:
+    for item_key, required in equipment_costs.items():
         item = locked_items.get(item_key)
-        if not item or item.quantity < quantity:
+        if not item or item.quantity < required:
             raise TroopRecruitmentError("所需装备不足", item_key=item_key)
 
-        item.quantity -= quantity
+        item.quantity -= required
         if item.quantity <= 0:
             delete_ids.append(item.id)
         else:
             to_update.append(item)
-        equipment_costs[item_key] = quantity
 
     if delete_ids:
         InventoryItem.objects.filter(id__in=delete_ids).delete()
@@ -480,6 +588,17 @@ def _consume_equipment_for_recruitment(manor: Manor, equipment_list: list[str], 
         InventoryItem.objects.bulk_update(to_update, ["quantity"])
 
     return equipment_costs
+
+
+def _consume_equipment_for_recruitment(
+    manor: Manor,
+    equipment_list: list[str],
+    quantity: int,
+) -> Dict[str, int]:
+    return _consume_equipment_costs_for_recruitment(
+        manor,
+        dict(_equipment_costs(equipment_list, quantity)),
+    )
 
 
 def _consume_retainers_for_recruitment(manor: Manor, retainer_cost: int) -> None:
@@ -513,9 +632,12 @@ def _create_troop_recruitment_record(
     equipment_costs: Dict[str, int],
     retainer_cost: int,
     base_duration: int,
+    *,
+    now: datetime | None = None,
+    complete_at: datetime | None = None,
 ) -> tuple[TroopRecruitment, int]:
-    unit_duration = calculate_recruitment_duration(base_duration, manor)
-    actual_duration = unit_duration * quantity
+    current_time = now or timezone.now()
+    actual_duration = calculate_recruitment_duration(base_duration, manor) * quantity
     recruitment = TroopRecruitment.objects.create(
         manor=manor,
         troop_key=troop_key,
@@ -525,9 +647,77 @@ def _create_troop_recruitment_record(
         retainer_cost=retainer_cost,
         base_duration=base_duration,
         actual_duration=actual_duration,
-        complete_at=timezone.now() + timedelta(seconds=actual_duration),
+        complete_at=complete_at or current_time + timedelta(seconds=actual_duration),
     )
     return recruitment, actual_duration
+
+
+def _assert_current_recruitment_quote(
+    manor: Manor,
+    expected_quote: TroopRecruitmentQuote,
+) -> TroopRecruitmentQuote:
+    if not isinstance(expected_quote, TroopRecruitmentQuote):
+        raise TypeError("expected_quote must be TroopRecruitmentQuote")
+    if expected_quote.manor_id != manor.pk:
+        raise TroopRecruitmentError("募兵报价不属于该庄园")
+    _ensure_no_active_recruitment_locked(manor)
+    current_quote = quote_troop_recruitment(
+        manor,
+        expected_quote.troop_key,
+        expected_quote.quantity,
+    )
+    if current_quote != expected_quote:
+        raise TroopRecruitmentError("募兵报价已失效，请重试")
+    return current_quote
+
+
+def _consume_recruitment_quote_locked(
+    manor: Manor,
+    quote: TroopRecruitmentQuote,
+) -> Dict[str, int]:
+    equipment_costs = _consume_equipment_costs_for_recruitment(
+        manor,
+        dict(quote.equipment_costs),
+    )
+    if tuple(sorted(equipment_costs.items())) != quote.equipment_costs:
+        raise TroopRecruitmentError("募兵报价已失效，请重试")
+    _consume_retainers_for_recruitment(manor, quote.retainer_cost)
+    return equipment_costs
+
+
+def recruit_troops_locked(
+    manor: Manor,
+    expected_quote: TroopRecruitmentQuote,
+    *,
+    now: datetime | None = None,
+) -> TroopRecruitment:
+    """在调用方已锁 Manor 的事务内同步完成募兵并保留审计记录。"""
+    if not transaction.get_connection().in_atomic_block:
+        raise RuntimeError("recruit_troops_locked must be called inside transaction.atomic()")
+
+    quote = _assert_current_recruitment_quote(manor, expected_quote)
+    equipment_costs = _consume_recruitment_quote_locked(manor, quote)
+    current_time = now or timezone.now()
+    try:
+        recruitment, _actual_duration = _create_troop_recruitment_record(
+            manor,
+            {"name": quote.troop_name},
+            quote.troop_key,
+            quote.quantity,
+            equipment_costs,
+            quote.retainer_cost,
+            quote.base_duration,
+            now=current_time,
+            complete_at=current_time,
+        )
+    except IntegrityError:
+        raise TroopRecruitmentAlreadyInProgressError()
+    apply_troop_recruitment_result_locked(
+        recruitment,
+        now=current_time,
+        require_due=True,
+    )
+    return recruitment
 
 
 def start_troop_recruitment(
@@ -549,28 +739,21 @@ def start_troop_recruitment(
     Raises:
         TroopRecruitmentError: 参数错误、条件不满足或已有募兵进行中
     """
-    troop = _validate_start_recruitment_inputs(manor, troop_key, quantity)
-    recruit_config = troop.get("recruit") or {}
-
-    # 获取配置
-    equipment_list = recruit_config.get("equipment", [])
-    retainer_cost = recruit_config.get("retainer_cost", 1) * quantity
-    base_duration = recruit_config.get("base_duration", 120)
+    expected_quote = quote_troop_recruitment(manor, troop_key, quantity)
 
     with transaction.atomic():
         locked_manor = _lock_manor_for_recruitment(manor)
-        _ensure_no_active_recruitment_locked(locked_manor)
-        equipment_costs = _consume_equipment_for_recruitment(locked_manor, equipment_list, quantity)
-        _consume_retainers_for_recruitment(locked_manor, retainer_cost)
+        quote = _assert_current_recruitment_quote(locked_manor, expected_quote)
+        equipment_costs = _consume_recruitment_quote_locked(locked_manor, quote)
         try:
             recruitment, actual_duration = _create_troop_recruitment_record(
                 locked_manor,
-                troop,
-                troop_key,
-                quantity,
+                {"name": quote.troop_name},
+                quote.troop_key,
+                quote.quantity,
                 equipment_costs,
-                retainer_cost,
-                base_duration,
+                quote.retainer_cost,
+                quote.base_duration,
             )
         except IntegrityError:
             raise TroopRecruitmentAlreadyInProgressError()

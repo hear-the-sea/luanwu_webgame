@@ -281,7 +281,7 @@ def map_backfill_request_api(request: HttpRequest) -> JsonResponse:
     if not isinstance(region, str) or region not in dict(REGION_CHOICES):
         return json_error("地区参数无效")
 
-    from gameplay.services.virtual_players import request_virtual_player_backfill_for_region_search
+    from gameplay.services.virtual_player_core.backfill import request_virtual_player_backfill_for_region_search
 
     requested = request_virtual_player_backfill_for_region_search(
         searcher=get_manor(request.user),

@@ -4,8 +4,12 @@ from typing import Any, Dict, List
 
 from django.db import IntegrityError, transaction
 
+from core.exceptions import MissionDailyLimitError
+
 from ...models import Manor, MissionTemplate
 from .time_utils import get_today_date_range
+
+MISSION_CARD_DAILY_LIMIT_PER_MISSION = 5
 
 
 def _resolve_non_negative_int(raw: Any, *, field_name: str) -> int:
@@ -18,6 +22,14 @@ def _resolve_non_negative_int(raw: Any, *, field_name: str) -> int:
     if value < 0:
         raise AssertionError(f"invalid mission {field_name}: {raw!r}")
     return value
+
+
+def _resolve_incremented_extra_attempts(current: Any, increment: int) -> int:
+    current_count = _resolve_non_negative_int(current, field_name="extra attempts")
+    next_count = current_count + increment
+    if next_count > MISSION_CARD_DAILY_LIMIT_PER_MISSION:
+        raise MissionDailyLimitError(f"该任务今日最多使用 {MISSION_CARD_DAILY_LIMIT_PER_MISSION} 张任务卡")
+    return next_count
 
 
 def get_mission_extra_attempts(manor: Manor, mission: MissionTemplate) -> int:
@@ -55,6 +67,8 @@ def add_mission_extra_attempt(manor: Manor, mission: MissionTemplate, count: int
     if resolved_count <= 0:
         raise AssertionError(f"invalid mission extra attempt count: {count!r}")
 
+    _resolve_incremented_extra_attempts(0, resolved_count)
+
     _, _, today_date = get_today_date_range()
     with transaction.atomic():
         extra = (
@@ -63,7 +77,7 @@ def add_mission_extra_attempt(manor: Manor, mission: MissionTemplate, count: int
             .first()
         )
         if extra:
-            extra.extra_count += resolved_count
+            extra.extra_count = _resolve_incremented_extra_attempts(extra.extra_count, resolved_count)
             extra.save(update_fields=["extra_count", "updated_at"])
             return extra.extra_count
 
@@ -79,7 +93,7 @@ def add_mission_extra_attempt(manor: Manor, mission: MissionTemplate, count: int
     except IntegrityError:
         with transaction.atomic():
             extra = MissionExtraAttempt.objects.select_for_update().get(manor=manor, mission=mission, date=today_date)
-            extra.extra_count += resolved_count
+            extra.extra_count = _resolve_incremented_extra_attempts(extra.extra_count, resolved_count)
             extra.save(update_fields=["extra_count", "updated_at"])
             return extra.extra_count
 

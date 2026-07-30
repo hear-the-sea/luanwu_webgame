@@ -1,0 +1,8 @@
+<div class="event-unit-summary event-passive-layout">
+    <strong class="event-unit-name event-passive-name">{{ passive_event.unit }}</strong>
+    {% include "battle/partials/unit_state_bar.html" with state=passive_event.unit_state visible_side=visible_side spectator=spectator %}
+    <span class="event-unit-skills event-passive-tag">
+        <span class="tech-tag heal">被动技能：{{ passive_event.effect|default:"触发" }}</span>
+        {% include "battle/partials/passive_event_extra.html" with passive_event=passive_event %}
+    </span>
+</div>

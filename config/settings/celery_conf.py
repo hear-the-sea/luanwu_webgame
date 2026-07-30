@@ -81,6 +81,7 @@ CELERY_TASK_ROUTES = {
     "guests.complete_recruitment": {"queue": CELERY_TIMER_QUEUE},
     "guests.scan_recruitments": {"queue": CELERY_TIMER_QUEUE},
     "guests.scan_passive_hp_recovery": {"queue": CELERY_TIMER_QUEUE},
+    "guests.scan_injury_loyalty_decay": {"queue": CELERY_TIMER_QUEUE},
     "guests.process_daily_loyalty": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.complete_scout": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.complete_scout_return": {"queue": CELERY_TIMER_QUEUE},
@@ -95,6 +96,17 @@ CELERY_TASK_ROUTES = {
     "gameplay.scan_raid_runs": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.plan_virtual_players": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.roll_virtual_players": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.reconcile_external_strength_reconciliation": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.scan_external_strength_reconciliations": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.reconcile_virtual_player_population_cell": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.scan_virtual_player_population_demands": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.heartbeat_virtual_player_maintenance_attempt_emitter": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.heartbeat_virtual_player_h01_callback_attempt_emitter": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.heartbeat_virtual_player_arena_shortage_emitter": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.aggregate_virtual_player_safety": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.monitor_virtual_player_safety": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.cleanup_virtual_player_safety_metrics": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.cleanup_virtual_player_jail": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.backfill_global_mail_campaign": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.cleanup_old_data": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.decay_prisoner_loyalty": {"queue": CELERY_TIMER_QUEUE},
@@ -141,6 +153,10 @@ CELERY_BEAT_SCHEDULE = {
     "scan-passive-guest-hp-recovery": {
         "task": "guests.scan_passive_hp_recovery",
         "schedule": crontab(minute="*/5"),
+    },
+    "scan-injury-loyalty-decay": {
+        "task": "guests.scan_injury_loyalty_decay",
+        "schedule": crontab(minute="*/1"),
     },
     "process-daily-guest-loyalty": {
         "task": "guests.process_daily_loyalty",
@@ -262,5 +278,41 @@ CELERY_BEAT_SCHEDULE = {
     "roll-virtual-players": {
         "task": "gameplay.roll_virtual_players",
         "schedule": crontab(hour="*", minute=7),
+    },
+    "scan-virtual-player-population-demands": {
+        "task": "gameplay.scan_virtual_player_population_demands",
+        "schedule": crontab(minute="*/1"),
+    },
+    "scan-external-strength-reconciliations": {
+        "task": "gameplay.scan_external_strength_reconciliations",
+        "schedule": crontab(minute="*"),
+    },
+    "heartbeat-virtual-player-maintenance-attempt-emitter": {
+        "task": "gameplay.heartbeat_virtual_player_maintenance_attempt_emitter",
+        "schedule": crontab(minute="*"),
+    },
+    "heartbeat-virtual-player-h01-callback-attempt-emitter": {
+        "task": "gameplay.heartbeat_virtual_player_h01_callback_attempt_emitter",
+        "schedule": crontab(minute="*"),
+    },
+    "heartbeat-virtual-player-arena-shortage-emitter": {
+        "task": "gameplay.heartbeat_virtual_player_arena_shortage_emitter",
+        "schedule": crontab(minute="*"),
+    },
+    "aggregate-virtual-player-safety": {
+        "task": "gameplay.aggregate_virtual_player_safety",
+        "schedule": crontab(minute="*"),
+    },
+    "monitor-virtual-player-safety": {
+        "task": "gameplay.monitor_virtual_player_safety",
+        "schedule": crontab(minute="*"),
+    },
+    "cleanup-virtual-player-safety-metrics": {
+        "task": "gameplay.cleanup_virtual_player_safety_metrics",
+        "schedule": crontab(hour=5, minute=43),
+    },
+    "cleanup-virtual-player-jail": {
+        "task": "gameplay.cleanup_virtual_player_jail",
+        "schedule": crontab(hour=0, minute=20),
     },
 }

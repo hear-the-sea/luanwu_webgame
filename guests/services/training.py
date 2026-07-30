@@ -5,6 +5,9 @@
 from __future__ import annotations
 
 import logging
+import random
+from copy import copy
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Dict, TypedDict
 
@@ -24,13 +27,13 @@ from core.exceptions import (
 )
 from core.utils.imports import is_missing_target_import
 from gameplay.services.inventory import core as inventory_core
-from gameplay.services.resources import spend_resources
+from gameplay.services.resources import spend_resources_locked
 
 if TYPE_CHECKING:
-    from gameplay.models import InventoryItem
+    from gameplay.models import InventoryItem, ItemTemplate
     from gameplay.models import Manor
 
-from ..growth_engine import apply_training_completion
+from ..growth_engine import GrowthAllocator, allocate_level_up_attributes, apply_training_completion
 from ..models import Guest, GuestStatus, TrainingLog
 from ..utils.training_calculator import get_level_up_cost, get_training_duration
 from ..utils.training_timer import ensure_training_timer, remaining_training_seconds
@@ -43,6 +46,194 @@ class GuestTrainingReductionResult(TypedDict):
     time_reduced: int
     applied_levels: int
     next_eta: datetime | None
+
+
+@dataclass(frozen=True, slots=True)
+class TrainingQuote:
+    guest_id: int
+    current_level: int
+    target_level: int
+    levels: int
+    resource_cost: dict[str, int]
+
+
+@dataclass(frozen=True, slots=True)
+class TrainingCompletionProjection:
+    quote: TrainingQuote
+    level: int
+    force: int
+    intellect: int
+    defense_stat: int
+    agility: int
+    attribute_points: int
+    experience: int
+    current_hp: int
+
+
+def quote_training(guest: Guest, levels: int = 1) -> TrainingQuote:
+    """按当前领域规则计算培养资格与成本，不写入状态。"""
+    if not getattr(guest, "pk", None):
+        raise AssertionError("quote_training requires a persisted guest")
+    normalized_levels = _normalize_positive_training_seconds(
+        levels,
+        contract_name="guest training levels",
+    )
+    if guest.status != GuestStatus.IDLE:
+        raise GuestNotIdleError(guest)
+    if guest.level >= MAX_GUEST_LEVEL:
+        raise GuestMaxLevelError(guest, max_level=MAX_GUEST_LEVEL)
+    if guest.training_complete_at:
+        raise GuestTrainingInProgressError(guest)
+    levels_to_apply = min(normalized_levels, MAX_GUEST_LEVEL - int(guest.level))
+    return TrainingQuote(
+        guest_id=int(guest.id),
+        current_level=int(guest.level),
+        target_level=int(guest.level) + levels_to_apply,
+        levels=levels_to_apply,
+        resource_cost=get_level_up_cost(guest, levels_to_apply),
+    )
+
+
+def project_training_completion(
+    guest: Guest,
+    *,
+    levels: int = 1,
+    rng: random.Random,
+    allocate_level_up_attributes_func: GrowthAllocator = allocate_level_up_attributes,
+) -> TrainingCompletionProjection:
+    """使用正式培养规则预测同步完成结果，不修改传入实例或数据库。"""
+    if not isinstance(rng, random.Random):
+        raise TypeError("rng must be random.Random")
+    quote = quote_training(guest, levels=levels)
+    projected_guest = copy(guest)
+    projected_guest._state = copy(guest._state)
+    apply_training_completion(
+        projected_guest,
+        levels_gained=quote.levels,
+        allocate_level_up_attributes_func=lambda current, gained, _rng: (
+            allocate_level_up_attributes_func(current, gained, rng)
+        ),
+    )
+    if int(projected_guest.level) != quote.target_level:
+        raise RuntimeError("training projection did not reach its quoted target level")
+    return TrainingCompletionProjection(
+        quote=quote,
+        level=int(projected_guest.level),
+        force=int(projected_guest.force),
+        intellect=int(projected_guest.intellect),
+        defense_stat=int(projected_guest.defense_stat),
+        agility=int(projected_guest.agility),
+        attribute_points=int(projected_guest.attribute_points),
+        experience=int(projected_guest.experience),
+        current_hp=int(projected_guest.current_hp),
+    )
+
+
+def apply_training_locked(
+    manor: Manor,
+    guest_id: int,
+    *,
+    levels: int = 1,
+    rng: random.Random,
+    sync_production: bool = True,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
+    allocate_level_up_attributes_func: GrowthAllocator = allocate_level_up_attributes,
+    _locked_guest: Guest | None = None,
+) -> Guest:
+    """在调用方已锁定 Manor 的事务内同步完成一次培养。"""
+    if not transaction.get_connection().in_atomic_block:
+        raise RuntimeError("apply_training_locked must be called inside transaction.atomic()")
+    if not isinstance(rng, random.Random):
+        raise TypeError("rng must be random.Random")
+    locked_guest = (
+        _locked_guest
+        if _locked_guest is not None
+        else Guest.objects.select_for_update().select_related("template").filter(pk=guest_id, manor=manor).first()
+    )
+    if locked_guest is None or int(locked_guest.id) != int(guest_id) or int(locked_guest.manor_id) != int(manor.id):
+        raise GuestOwnershipError(message="门客不存在或不属于该庄园")
+
+    return _apply_training_to_locked_guest(
+        manor,
+        locked_guest,
+        levels=levels,
+        rng=rng,
+        sync_production=sync_production,
+        grain_template=grain_template,
+        grain_template_resolved=grain_template_resolved,
+        allocate_level_up_attributes_func=allocate_level_up_attributes_func,
+    )
+
+
+def _apply_training_to_locked_guest(
+    manor: Manor,
+    locked_guest: Guest,
+    *,
+    levels: int = 1,
+    rng: random.Random,
+    sync_production: bool = True,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
+    allocate_level_up_attributes_func: GrowthAllocator = allocate_level_up_attributes,
+) -> Guest:
+    """同步培养由调用方锁定且属于已锁定 Manor 的门客。"""
+    if not transaction.get_connection().in_atomic_block:
+        raise RuntimeError("_apply_training_to_locked_guest must be called inside transaction.atomic()")
+    if not isinstance(rng, random.Random):
+        raise TypeError("rng must be random.Random")
+    if not getattr(locked_guest, "pk", None) or int(locked_guest.manor_id) != int(manor.pk):
+        raise GuestOwnershipError(message="门客不存在或不属于该庄园")
+
+    projection = project_training_completion(
+        locked_guest,
+        levels=levels,
+        rng=rng,
+        allocate_level_up_attributes_func=allocate_level_up_attributes_func,
+    )
+    quote = projection.quote
+    from gameplay.models import ResourceEvent
+
+    spend_resources_locked(
+        manor,
+        quote.resource_cost,
+        note=f"培养 {locked_guest.template.name}",
+        reason=ResourceEvent.Reason.TRAINING_COST,
+        sync_production=sync_production,
+        grain_template=grain_template,
+        grain_template_resolved=grain_template_resolved,
+    )
+    TrainingLog.objects.create(
+        manor=manor,
+        guest=locked_guest,
+        delta_level=quote.levels,
+        resource_cost=quote.resource_cost,
+    )
+    locked_guest.level = projection.level
+    locked_guest.force = projection.force
+    locked_guest.intellect = projection.intellect
+    locked_guest.defense_stat = projection.defense_stat
+    locked_guest.agility = projection.agility
+    locked_guest.attribute_points = projection.attribute_points
+    locked_guest.experience = projection.experience
+    locked_guest.current_hp = projection.current_hp
+    locked_guest.training_target_level = 0
+    locked_guest.training_complete_at = None
+    locked_guest.save(
+        update_fields=[
+            "level",
+            "force",
+            "intellect",
+            "defense_stat",
+            "agility",
+            "attribute_points",
+            "experience",
+            "current_hp",
+            "training_target_level",
+            "training_complete_at",
+        ]
+    )
+    return locked_guest
 
 
 def _normalize_positive_training_seconds(raw_value: Any, *, contract_name: str) -> int:
@@ -329,7 +520,12 @@ def reduce_training_time(manor: Manor, seconds: int) -> Dict[str, int]:
 
         locked_guests_qs = (
             Guest.objects.select_related("template")
-            .filter(id__in=candidate_ids, manor=manor, level__lt=MAX_GUEST_LEVEL, status=GuestStatus.IDLE)
+            .filter(
+                id__in=candidate_ids,
+                manor=manor,
+                level__lt=MAX_GUEST_LEVEL,
+                status=GuestStatus.IDLE,
+            )
             .order_by("id")
         )
         if connection.features.has_select_for_update_of:
@@ -421,33 +617,28 @@ def train_guest(guest: Guest, levels: int = 1) -> Guest:
         # 全局规则是先锁 Manor (资源扣除) 再锁 Guest (状态变更)
         from gameplay.models import Manor
 
-        Manor.objects.select_for_update().get(pk=guest.manor_id)
+        locked_manor = Manor.objects.select_for_update().get(pk=guest.manor_id)
 
         locked_guest = Guest.objects.select_for_update().select_related("manor", "template").get(pk=guest.pk)
-        if locked_guest.status != GuestStatus.IDLE:
-            raise GuestNotIdleError(locked_guest)
-        if locked_guest.level >= MAX_GUEST_LEVEL:
-            raise GuestMaxLevelError(locked_guest, max_level=MAX_GUEST_LEVEL)
-        if locked_guest.training_complete_at:
-            raise GuestTrainingInProgressError(locked_guest)
-        levels_to_apply = normalized_levels
-        if locked_guest.level + levels_to_apply > MAX_GUEST_LEVEL:
-            levels_to_apply = MAX_GUEST_LEVEL - locked_guest.level
-        manor = locked_guest.manor
-        cost = get_level_up_cost(locked_guest, levels_to_apply)
+        quote = quote_training(locked_guest, levels=normalized_levels)
         from gameplay.models import ResourceEvent
 
-        spend_resources(
-            manor,
-            cost,
+        spend_resources_locked(
+            locked_manor,
+            quote.resource_cost,
             note=f"培养 {guest.template.name}",
             reason=ResourceEvent.Reason.TRAINING_COST,
         )
-        duration = get_training_duration(locked_guest, levels_to_apply)
-        locked_guest.training_target_level = locked_guest.level + levels_to_apply
+        duration = get_training_duration(locked_guest, quote.levels)
+        locked_guest.training_target_level = quote.target_level
         locked_guest.training_complete_at = timezone.now() + timedelta(seconds=duration)
         locked_guest.save(update_fields=["training_target_level", "training_complete_at"])
-        TrainingLog.objects.create(manor=manor, guest=locked_guest, delta_level=levels_to_apply, resource_cost=cost)
+        TrainingLog.objects.create(
+            manor=locked_manor,
+            guest=locked_guest,
+            delta_level=quote.levels,
+            resource_cost=quote.resource_cost,
+        )
 
     # Celery 不可用时直接完成训练，确保调用方立即看到等级变更（测试/开发环境友好）。
     def enqueue_training() -> None:

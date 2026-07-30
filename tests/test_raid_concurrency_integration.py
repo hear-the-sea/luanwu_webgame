@@ -7,5 +7,6 @@ stable for existing pytest commands and CI references.
 """
 
 from tests.raid_concurrency_integration.finalize_races import *  # noqa: F401,F403
+from tests.raid_concurrency_integration.h01_cross_races import *  # noqa: F401,F403
 from tests.raid_concurrency_integration.process_races import *  # noqa: F401,F403
 from tests.raid_concurrency_integration.start_and_retreat import *  # noqa: F401,F403

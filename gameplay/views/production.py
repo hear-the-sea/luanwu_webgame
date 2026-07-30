@@ -7,6 +7,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from typing import Any
+from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -14,6 +15,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
@@ -161,6 +163,37 @@ def _run_basic_production_start(
     return redirect(redirect_name)
 
 
+def _run_production_cancel(
+    request: HttpRequest,
+    *,
+    production_id: int,
+    redirect_target: str,
+    cancel_operation: Callable[[Manor, int], Any],
+    success_message: str,
+    log_message: str,
+) -> HttpResponse:
+    manor = get_manor(request.user)
+
+    try:
+        cancel_operation(manor, production_id)
+        messages.success(request, success_message)
+    except GameError as exc:
+        messages.error(request, sanitize_error_message(exc))
+    except DatabaseError as exc:
+        _handle_unexpected_production_error(
+            request,
+            exc,
+            log_message=log_message,
+            log_args=(
+                getattr(manor, "id", None),
+                getattr(request.user, "id", None),
+                production_id,
+            ),
+        )
+
+    return redirect(redirect_target)
+
+
 def _refresh_all_active_productions(manor: Manor) -> int:
     return (
         int(stable_service.refresh_horse_productions(manor))
@@ -224,6 +257,21 @@ def start_horse_production_view(request: HttpRequest) -> HttpResponse:
     )
 
 
+@login_required
+@require_POST
+@rate_limit_redirect("horse_production_cancel", limit=10, window_seconds=60)
+def cancel_horse_production_view(request: HttpRequest, production_id: int) -> HttpResponse:
+    """取消马匹生产，已消耗的粮食不返还。"""
+    return _run_production_cancel(
+        request,
+        production_id=production_id,
+        redirect_target="gameplay:stable",
+        cancel_operation=stable_service.cancel_horse_production,
+        success_message="马匹生产已取消，已消耗的粮食不予返还",
+        log_message="Unexpected horse production cancel error: manor_id=%s user_id=%s production_id=%s",
+    )
+
+
 class RanchView(LoginRequiredMixin, TemplateView):
     """畜牧场页面"""
 
@@ -260,6 +308,21 @@ def start_livestock_production_view(request: HttpRequest) -> HttpResponse:
     )
 
 
+@login_required
+@require_POST
+@rate_limit_redirect("livestock_production_cancel", limit=10, window_seconds=60)
+def cancel_livestock_production_view(request: HttpRequest, production_id: int) -> HttpResponse:
+    """取消家畜养殖，已消耗的粮食不返还。"""
+    return _run_production_cancel(
+        request,
+        production_id=production_id,
+        redirect_target="gameplay:ranch",
+        cancel_operation=ranch_service.cancel_livestock_production,
+        success_message="家畜养殖已取消，已消耗的粮食不予返还",
+        log_message="Unexpected livestock production cancel error: manor_id=%s user_id=%s production_id=%s",
+    )
+
+
 class SmithyView(LoginRequiredMixin, TemplateView):
     """冶炼坊页面"""
 
@@ -293,6 +356,21 @@ def start_smelting_production_view(request: HttpRequest) -> HttpResponse:
             action_label="开始制作",
         ),
         log_message="Unexpected smelting production start error: manor_id=%s user_id=%s metal_key=%s quantity=%s",
+    )
+
+
+@login_required
+@require_POST
+@rate_limit_redirect("smelting_production_cancel", limit=10, window_seconds=60)
+def cancel_smelting_production_view(request: HttpRequest, production_id: int) -> HttpResponse:
+    """取消冶炼坊制作，已消耗的材料不返还。"""
+    return _run_production_cancel(
+        request,
+        production_id=production_id,
+        redirect_target="gameplay:smithy",
+        cancel_operation=smithy_service.cancel_smelting_production,
+        success_message="物品制作已取消，已消耗的材料不予返还",
+        log_message="Unexpected smelting production cancel error: manor_id=%s user_id=%s production_id=%s",
     )
 
 
@@ -342,6 +420,23 @@ def start_equipment_forging_view(request: HttpRequest) -> HttpResponse:
                 request.POST.get("quantity"),
             ),
         ),
+    )
+
+
+@login_required
+@require_POST
+@rate_limit_redirect("equipment_forging_cancel", limit=10, window_seconds=60)
+def cancel_equipment_forging_view(request: HttpRequest, production_id: int) -> HttpResponse:
+    """取消装备锻造，已消耗的材料不返还。"""
+    category = (request.POST.get("category") or "all").strip() or "all"
+    redirect_target = f"{reverse('gameplay:forge')}?{urlencode({'mode': 'synthesize', 'category': category})}"
+    return _run_production_cancel(
+        request,
+        production_id=production_id,
+        redirect_target=redirect_target,
+        cancel_operation=forge_service.cancel_equipment_forging,
+        success_message="装备锻造已取消，已消耗的材料不予返还",
+        log_message="Unexpected equipment forging cancel error: manor_id=%s user_id=%s production_id=%s",
     )
 
 

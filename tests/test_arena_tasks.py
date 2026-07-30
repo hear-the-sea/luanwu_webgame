@@ -15,11 +15,6 @@ def test_scan_arena_tournaments_returns_only_tournament_counts(monkeypatch):
     monkeypatch.setattr(arena_tasks, "cleanup_expired_tournaments", lambda *, limit: limit // 4)
     monkeypatch.setattr(
         arena_tasks.arena_coop_core,
-        "start_due_virtual_backfill_coop_events",
-        lambda *, limit: coop_calls.append("backfill") or 0,
-    )
-    monkeypatch.setattr(
-        arena_tasks.arena_coop_core,
         "run_due_arena_coop_events",
         lambda *, limit: coop_calls.append("run") or 0,
     )
@@ -83,11 +78,6 @@ def test_scan_arena_tournaments_aggregates_database_failures(monkeypatch):
 
     monkeypatch.setattr(arena_tasks, "run_due_arena_rounds", _rounds)
     monkeypatch.setattr(arena_tasks, "cleanup_expired_tournaments", _cleanup)
-    monkeypatch.setattr(
-        arena_tasks.arena_coop_core,
-        "start_due_virtual_backfill_coop_events",
-        lambda *, limit: 0,
-    )
     monkeypatch.setattr(arena_tasks.arena_coop_core, "run_due_arena_coop_events", lambda *, limit: 0)
     monkeypatch.setattr(
         arena_tasks.arena_coop_core,

@@ -1,0 +1,1039 @@
+schema_version: 13
+status: gate_a_approved
+last_revised_on: "2026-07-28"
+
+scope:
+  acceptance_only: true
+  runtime_routing_enabled_by_this_file: false
+  project_stage: development
+  current_environment: test
+  current_environment_class: non_production
+  current_environment_is_production: false
+  production_rollout_in_current_scope: false
+  gate_c_schema_authorized_by_this_file: false
+  gate_c_runtime_authorized_by_this_file: false
+  non_production_direct_v2_after_gate_exit: true
+  automatic_relaxation_allowed: false
+  evaluate_each_prestige_band_independently: true
+  fail_closed_on_missing_metric: true
+  gate_a_environment: test
+  gate_a_requires_live_player_data: false
+  gate_a_requires_existing_database_access: false
+
+evidence_stages:
+  gate_a:
+    required:
+      - deterministic_fixture_contract_tests
+      - read_only_audit_contract_tests
+      - real_service_concurrency_tests_on_isolated_test_database
+  gate_d1_bootstrap_activation:
+    required:
+      - conservative_cold_start_strength_guard_tests
+      - hard_constraint_and_economy_tests
+      - per_band_zero_sample_fallback_tests
+      - prestige_band_growth_policy_and_bootstrap_history_tests
+      - prestige_band_boundary_and_high_tier_population_tests
+      - prestige_band_transition_reconcile_tests
+    blocks_gate_b: false
+    blocks_bootstrap_v2_activation_until_required_evidence_passes: true
+    representative_sample_shortage_blocks_bootstrap_v2_activation: false
+    allows_conservative_cold_start_bootstrap: true
+    current_environment_percent_after_gate_exit: 100
+    authorizes_production_rollout: false
+
+  gate_d2_reference_calibrated_policy:
+    required:
+      - representative_anonymized_distribution_baseline
+      - per_prestige_band_sample_gate
+    blocks_population_creation: false
+    required_for_bootstrap_v2_activation: false
+    blocks_reference_calibrated_policy_activation: true
+    activation_unit: policy_version_reference_snapshot_version_and_prestige_band
+    per_prestige_band_activation: true
+    all_bands_pass_required: false
+    qualified_band_may_activate_while_other_bands_remain_cold_start: true
+    failed_or_missing_band_mode: conservative_cold_start
+    failed_band_does_not_disable_bootstrap_or_maintenance: true
+    global_aggregate_may_not_mask_failed_band: true
+    evidence_aggregation_owner: gate_d2_acceptance_workflow
+    routing_state_owner: BotRuntimeRoutingState.calibration_routes
+    routing_transition_owner: gameplay.services.runtime_configs
+    caller_supplies_only_activation_unit: true
+    persisted_activation_proof_is_derived_by_workflow: true
+    bootstrap_consumer_mode: reference_calibrated
+    maintenance_consumer_activation_gate: gate_e_maintenance_activation
+    required_per_band:
+      - representative_anonymized_distribution_baseline
+      - minimum_reference_profiles
+      - matching_policy_and_reference_snapshot_versions
+      - all_distribution_thresholds
+      - complete_metrics
+    independently_activatable_bands:
+      - newbie
+      - junior
+      - middle
+      - senior
+      - veteran
+      - elite
+      - legend
+      - mythic
+  gate_e_maintenance_activation:
+    required:
+      - disposable_database_maintenance_benchmark
+      - lock_wait_and_failure_injection_results
+      - prestige_band_growth_cadence_and_transition_tests
+    blocks_gate_b: false
+    blocks_maintenance_v2_activation: true
+    readiness_pass_is_gate_exit: false
+    cutover_order:
+      - pass_disposable_database_readiness_evidence
+      - enter_v2_cutover_mode_and_stop_v1_and_v2_development_writes
+      - obtain_explicit_confirmation_for_destructive_test_data_rebuild
+      - recreate_disposable_v1_data_and_enroll_retained_test_data
+      - verify_runtime_eligible_v1_profiles_equal_zero
+      - activate_maintenance_v2_for_all_eligible_profiles
+      - exit_gate_e
+    gate_exit_requires_runtime_eligible_v1_profiles: 0
+    current_environment_percent_after_gate_exit: 100
+    authorizes_production_rollout: false
+
+arena_reserve:
+  max_no_action_lease_age_hours: 12
+  activation_gate: gate_e_maintenance_activation
+  deadline_source: reserve_member_created_at
+  retry_may_extend_deadline: false
+  busy_result_may_extend_deadline: false
+  version_change_may_extend_deadline: false
+  revalidation_may_extend_deadline: false
+
+maintenance_result_contract:
+  committed_outcomes:
+    - applied
+    - no_action
+  sequence_increment_per_committed_cycle: 1
+  non_advancing_outcomes:
+    - busy
+    - paused
+    - ineligible
+  schedule_disposition_applies_to_outcomes:
+    - applied
+    - no_action
+  triggers:
+    scheduled:
+      requires_due: true
+      committed_schedule_disposition: advance_normal_schedule
+      committed_deadline_rule: strictly_later_than_non_null_previous_deadline
+    arena_acceleration:
+      requires_due: false
+      committed_schedule_disposition: preserve_normal_schedule
+      committed_deadline_rule: exact_previous_value
+    admin:
+      requires_explicit_due_semantics: true
+      requires_explicit_schedule_disposition: true
+      committed_advance_deadline_rule: non_null_and_different_may_be_earlier_than_previous
+      committed_preserve_deadline_rule: exact_previous_value
+  non_committed_schedule_rules:
+    busy: exact_previous_value
+    paused: lifecycle_or_safety_pause_contract
+    ineligible: lifecycle_contract
+  outcome_payloads:
+    applied:
+      action_kind: required_non_empty
+      reason: forbidden
+    no_action:
+      action_kind: forbidden
+      reason: required_non_empty
+    busy:
+      action_kind: forbidden
+      reason: required_non_empty
+    paused:
+      action_kind: forbidden
+      reason: required_non_empty
+    ineligible:
+      action_kind: forbidden
+      reason: required_non_empty
+  no_action_reasons:
+    values:
+      - domain_constraint
+      - strength_cap
+      - band_spacing
+      - band_action_cap
+      - multi_band_transition
+    priority:
+      - domain_constraint
+      - strength_cap
+      - band_spacing
+      - band_action_cap
+      - multi_band_transition
+    daily_action_or_growth_budget_reason: strength_cap
+    skipped_action_reasons_semantics: all_applicable_reasons_in_priority_order
+    primary_reason_semantics: first_skipped_action_reason
+
+sampling:
+  sample_limit_per_cohort: 1000
+  minimum_real_profiles_for_v2_creation: 0
+  minimum_real_profiles_for_reference_calibration: 30
+  minimum_v1_fixture_profiles: 30
+  requires_runtime_v1_population: false
+  minimum_reference_profiles_per_prestige_band: 30
+  preferred_reference_profiles_per_prestige_band: 100
+  deterministic_sampling_required: true
+  fail_on_unclassified_profiles: true
+
+prestige_segmentation:
+  band_schema_version: 2
+  activation_gate: gate_d1_bootstrap_activation
+  current_v1_runtime_source: data/virtual_players.yaml
+  current_v1_runtime_config_changed_by_this_document: false
+  activate_atomically_with_v2_bootstrap_and_strength_guards: true
+  boundary_semantics: lower_inclusive_upper_exclusive
+  configured_band_count: 8
+  v2_bands:
+    newbie: [0, 500]
+    junior: [500, 2000]
+    middle: [2000, 8000]
+    senior: [8000, 30000]
+    veteran: [30000, 60000]
+    elite: [60000, 120000]
+    legend: [120000, 240000]
+    mythic: [240000, null]
+  bands_must_be_gapless_and_non_overlapping: true
+  exactly_one_open_ended_terminal_band_required: true
+  high_band_activation:
+    first_high_band: veteran
+    inactive_without_active_real_or_explicit_demand_target_supply: 0
+    activation_sources:
+      - active_real_player_presence
+      - explicit_map_search_demand
+      - explicit_arena_demand
+    lower_band_supply_counts_for_higher_band: false
+    cross_band_reactivation_allowed: false
+    cross_band_instant_strength_promotion_allowed: false
+    prefer_new_v2_or_same_band_reactivation: true
+  supply_membership:
+    attackable_supply_source: current_prestige_band
+    current_prestige_band_resolution_source: persisted_manor_prestige
+    read_paths_may_repair_current_prestige_band: false
+    in_flight_materialization_source: target_prestige_band
+    in_flight_supply_may_suppress_duplicate_materialization_only: true
+  transition_reconcile:
+    trigger_sources:
+      - committed_public_real_player_prestige_band_transition
+      - committed_virtual_player_prestige_band_transition
+    trigger_timing: post_commit_async_profile_sync_then_population_reconcile
+    coalesced_and_idempotent: true
+    one_transition_does_not_imply_one_bot: true
+    reconcile_old_and_new_band: true
+    virtual_profile_current_band_sync_owner: profile_store
+    virtual_profile_current_band_sync_precedes_population_reconcile: true
+    virtual_profile_transition_changes_target_band: false
+  existing_profile_reclassification:
+    source_of_truth: persisted_manor_prestige
+    changes_assets_or_prestige: false
+    explicit_idempotent_command_required: true
+    hot_reload_may_change_band_boundaries: false
+
+availability:
+  sample_shortage_blocks_virtual_player_creation: false
+  signup_trigger_source: explicit_public_real_user_registration_event
+  signup_commit_trigger: post_commit_async_population_reconcile
+  signup_transaction_waits_for_materialization: false
+  signup_reconcile_is_coalesced_and_idempotent: true
+  one_signup_does_not_imply_one_bot: true
+  bot_user_creation_retriggers_signup_reconcile: false
+  signup_reconcile_runs_maintenance: false
+  prestige_band_transition_reconcile_runs_maintenance: false
+  materialize_only_when_population_deficit_exists: true
+  periodic_population_reconciliation_fallback: true
+  generator_before_gate_d1_exit: v1_compatibility_only
+  generator_after_gate_d1_exit_in_current_environment: v2
+  v2_mode_without_sufficient_samples: conservative_cold_start
+  event_trigger_requires_active_generator_strength_guard: true
+
+strength_safety:
+  active_reference_window_days: 30
+  reference_scope:
+    primary: same_region_same_prestige_band
+    sample_tier_count_source: same_region_same_prestige_band_only
+    sparse_local_sample_must_not_be_overridden_by_global: true
+    when_local_sample_is_empty: discounted_global_same_prestige_band
+    borrowed_global_reference_usage: composition_anchor_only
+    borrowed_global_may_raise_sample_tier: false
+    borrowed_global_may_raise_strength_cap: false
+    versioned_starter_snapshot_scope: per_prestige_band_conservative_entry_fixture
+    versioned_starter_snapshot_requires_live_player_data: false
+    post_ratio_starter_snapshot_must_remain_in_target_band: true
+    zero_local_sample_final_strength_cap: minimum_of_versioned_starter_snapshot_90_percent_and_discounted_global_cap
+    zero_local_sample_cap_applies_to_composite_and_components: true
+    final_fallback: versioned_starter_snapshot
+  score:
+    composite: versioned_policy_score
+    strength_increasing_action: any_development_command_with_positive_composite_or_component_delta
+    positive_growth_ratio_denominator_floor: 1.0
+    component_hard_caps:
+      - prestige
+      - core_building_level
+      - max_guest_level
+      - guest_count
+      - arena_lineup_power
+      - troop_total
+  sample_tiers:
+    no_reference:
+      minimum_profiles: 0
+      maximum_profiles: 0
+      target_ratio_to_versioned_starter_snapshot: 0.90
+      positive_jitter_bps_max: 0
+      strength_increasing_actions_per_24h_max: 0
+      composite_strength_growth_ratio_per_24h_max: 0.00
+    sparse:
+      minimum_profiles: 1
+      maximum_profiles: 4
+      anchor_quantile: p50
+      composite_cap_ratio_to_reference: 1.05
+      component_cap_ratio_to_reference: 1.10
+      positive_jitter_bps_max: 0
+      strength_increasing_actions_per_24h_max: 1
+      composite_strength_growth_ratio_per_24h_max: 0.03
+    limited:
+      minimum_profiles: 5
+      maximum_profiles: 29
+      allowed_anchor_quantiles:
+        - p25
+        - p50
+      cap_reference_quantile: p75
+      composite_cap_ratio_to_reference: 1.10
+      component_cap_ratio_to_reference: 1.15
+      positive_jitter_bps_max: 200
+      strength_increasing_actions_per_24h_max: 2
+      composite_strength_growth_ratio_per_24h_max: 0.05
+    sufficient:
+      minimum_profiles: 30
+      allowed_anchor_quantiles:
+        - p25
+        - p50
+        - p75
+      cap_reference_quantile: p95
+      composite_cap_ratio_to_reference: 1.15
+      component_cap_ratio_to_reference: 1.20
+      positive_jitter_bps_max: 500
+      strength_increasing_actions_per_24h_max: 4
+      composite_strength_growth_ratio_per_24h_max: 0.10
+  borrowed_global_reference_discount_ratio: 0.90
+  budget_window:
+    duration_hours: 24
+    semantics: trailing_window
+    storage: bot_profile_bounded_entries
+    maximum_persisted_entries: 4
+    positive_growth_delta_rounding: ceil_basis_points
+    prune_and_consume_under_profile_lock: true
+  maintenance:
+    recheck_reference_and_caps_inside_transaction: true
+    at_or_above_cap_result: no_strength_growth
+    lifecycle_and_mandatory_settlement_continue: true
+    arena_acceleration_may_bypass_caps: false
+    admin_may_bypass_caps: false
+    force_asset_downgrade: false
+    over_cap_profile_eligible_for_automatic_matchmaking: false
+
+reference_snapshot_versioning:
+  calibration_snapshot_catalog_source: bot_development_v2.reference_snapshot_catalog
+  catalog_key: canonical_positive_integer_version_string
+  catalog_entry_required_fields:
+    - schema_version
+    - digest
+    - artifact_path
+  gate_d2_evidence_catalog_path: reference_snapshot_catalog.snapshot_version.gate_d2_evidence.policy_version.prestige_band
+  gate_d2_evidence_catalog_entry_required_fields:
+    - schema_version
+    - digest
+  candidate_report_path_is_derived_from_activation_unit: true
+  candidate_report_schema_version: 3
+  candidate_report_digest_algorithm: sha256_canonical_json
+  candidate_report_must_match_cataloged_schema_and_digest: true
+  candidate_snapshot_digest_is_report_identity_only: false
+  candidate_snapshot_artifact_contract_defined: true
+  candidate_artifact_schema_version: 2
+  candidate_metric_algorithm_version: 2
+  candidate_artifact_path_is_derived_from_activation_unit: true
+  candidate_artifact_required_cohorts:
+    - reference_profiles
+    - candidate_profiles
+    - v1_profiles
+    - inactive_reference_profiles
+  candidate_artifact_raw_records_required: true
+  candidate_metrics_recomputed_from_candidate_artifact: true
+  candidate_metrics_recomputed_by_versioned_algorithm: true
+  candidate_metrics_correctness_status: implementation_verified
+  candidate_generator_provenance_required: true
+  candidate_generator_provenance_source_bundle_bound: true
+  candidate_generator_provenance_input_cohort_digests_bound: true
+  candidate_generator_attestation_required: true
+  candidate_generator_attestation_scheme: hmac_sha256_v1
+  candidate_generator_attestation_trusted_key_source: runtime_secret_settings_only
+  candidate_generator_attestation_key_may_come_from_artifact_report_or_catalog: false
+  candidate_generator_attestation_default_trusted_keys: 0
+  candidate_generator_attestation_payload_binds:
+    - activation_unit
+    - policy_checksum
+    - reference_snapshot_digest
+    - generator_identity_and_versions
+    - root_seed_digest
+    - source_bundle
+    - template_catalog
+    - all_raw_cohorts
+  candidate_generator_attestation_future_production_scheme: separate_prelaunch_review
+  candidate_report_metrics_must_equal_recomputed_metrics: true
+  gate_d2_exit_requires_metric_recomputation_or_approved_equivalent_provenance: true
+  artifact_path_scope: project_relative_data_path
+  artifact_digest_algorithm: sha256_canonical_json
+  artifact_is_loaded_only_for_an_activated_calibration_route: true
+  activated_calibration_unit:
+    - policy_version
+    - reference_snapshot_version
+    - prestige_band
+  calibration_snapshot_requires_representative_anonymized_real_profiles: true
+  missing_or_invalid_catalog_entry_result: conservative_cold_start
+  conservative_starter_snapshot_version_source: BotPolicyRelease.payload.starter_snapshots.snapshot_version
+  conservative_starter_snapshot_requires_live_player_data: false
+  conservative_starter_snapshot_version_is_reference_snapshot_version: false
+  policy_version_may_imply_reference_snapshot_version: false
+  schema_or_runtime_authorized_by_this_file: false
+
+prestige_band_growth:
+  policy_owner: BotDevelopmentPolicy
+  current_v1_runtime_growth_config_changed_by_this_document: false
+  bootstrap_history_activation_gate: gate_d1_bootstrap_activation
+  live_growth_activation_gate: gate_e_maintenance_activation
+  effective_limit_rule: strictest_of_sample_tier_band_profile_and_domain_constraints
+  direct_prestige_grant_by_maintenance_allowed: false
+  profiles:
+    newbie:
+      bootstrap_history_age_days: [1, 14]
+      preferred_strength_check_interval_hours: [4, 8]
+      minimum_positive_strength_action_spacing_hours: 4
+      composite_growth_bps_per_controlled_action_max: 400
+    junior:
+      bootstrap_history_age_days: [14, 45]
+      preferred_strength_check_interval_hours: [6, 12]
+      minimum_positive_strength_action_spacing_hours: 6
+      composite_growth_bps_per_controlled_action_max: 300
+    middle:
+      bootstrap_history_age_days: [45, 120]
+      preferred_strength_check_interval_hours: [8, 16]
+      minimum_positive_strength_action_spacing_hours: 8
+      composite_growth_bps_per_controlled_action_max: 250
+    senior:
+      bootstrap_history_age_days: [120, 240]
+      preferred_strength_check_interval_hours: [12, 24]
+      minimum_positive_strength_action_spacing_hours: 12
+      composite_growth_bps_per_controlled_action_max: 200
+    veteran:
+      bootstrap_history_age_days: [240, 360]
+      preferred_strength_check_interval_hours: [14, 24]
+      minimum_positive_strength_action_spacing_hours: 14
+      composite_growth_bps_per_controlled_action_max: 200
+    elite:
+      bootstrap_history_age_days: [360, 540]
+      preferred_strength_check_interval_hours: [18, 30]
+      minimum_positive_strength_action_spacing_hours: 18
+      composite_growth_bps_per_controlled_action_max: 175
+    legend:
+      bootstrap_history_age_days: [540, 720]
+      preferred_strength_check_interval_hours: [24, 36]
+      minimum_positive_strength_action_spacing_hours: 24
+      composite_growth_bps_per_controlled_action_max: 150
+    mythic:
+      bootstrap_history_age_days: [720, 1080]
+      preferred_strength_check_interval_hours: [30, 48]
+      minimum_positive_strength_action_spacing_hours: 30
+      composite_growth_bps_per_controlled_action_max: 125
+  monotonicity:
+    history_age_and_spacing_must_not_decrease_for_higher_bands: true
+    per_action_growth_cap_must_not_increase_for_higher_bands: true
+  maintenance:
+    last_strength_increase_at_required: true
+    last_strength_increase_at_update_under_profile_lock: true
+    arena_acceleration_may_bypass_band_spacing: false
+    admin_may_bypass_band_spacing: false
+    next_check_deadline: earliest_of_band_preference_mandatory_settlement_and_lifecycle_deadline
+    non_strength_settlement_may_run_before_strength_spacing_elapses: true
+  controlled_cross_band_action:
+    configured_boundaries_crossed_per_action_max: 1
+    validate_post_state_against_source_and_destination_band: true
+    use_stricter_source_or_destination_limit: true
+    next_spacing_uses_destination_band: true
+  external_domain_prestige_change:
+    combat_or_other_player_driven_result_may_be_rejected_by_bot_growth_policy: false
+    record_strength_delta_and_transition_after_commit: true
+    over_cap_result: freeze_controlled_strength_growth_and_exit_automatic_matchmaking
+    recovery_protocol:
+      durability_boundary: reconciliation_intent_persisted_in_originating_domain_transaction
+      wakeup_transport: transaction_on_commit
+      recovery_transport: periodic_pending_intent_scan
+      intent_owner: virtual_player_core.external_reconciliation
+      bot_profile_write_owner: virtual_player_core.profile_store
+      idempotency_key: domain_event_kind_domain_event_id_profile_id
+      processing_order: persisted_origin_commit_order_then_intent_id
+      retry_is_idempotent: true
+      pending_intent_excludes_profile_from_automatic_matchmaking: true
+      domain_result_waits_for_reconciliation: false
+      domain_result_may_be_rolled_back_by_reconciliation: false
+      read_paths_may_repair_reconciliation_state: false
+      activation_gate: gate_e_maintenance_activation
+      schema_or_runtime_authorized_by_this_file: false
+  bootstrap:
+    history_projection_is_not_live_growth_action: true
+    fake_per_action_history_records: false
+    final_blueprint_still_obeys_strength_caps: true
+
+distribution:
+  threshold_source: BotPolicyRelease.payload.reference_calibration_thresholds
+  threshold_payload_covered_by_policy_checksum: true
+  policy_release_thresholds_may_be_stricter_than_gate_a_baseline: true
+  threshold_relaxation_requires_acceptance_contract_revision: true
+  threshold_payload_required_fields:
+    - normalized_wasserstein_max
+    - normalized_quantile_deviation_p10_max
+    - normalized_quantile_deviation_p50_max
+    - normalized_quantile_deviation_p90_max
+    - js_divergence_max_bits
+    - hard_constraint_violations_max
+    - robust_joint_outlier_rate_max
+    - robust_joint_outlier_rate_above_real_max
+    - component_fingerprint_collision_rate_max
+    - joint_fingerprint_collision_rate_max
+    - fingerprint_collision_rate_above_v1_max
+    - archetype_standardized_effect_min_absolute
+    - archetype_standardized_effect_max_absolute
+    - archetype_effect_direction_must_match
+    - abandoned_rate_deviation_max
+  continuous_normalization: real_cohort_iqr_with_1_unit_floor
+  normalized_wasserstein_max: 0.25
+  normalized_quantile_deviation_max:
+    p10: 0.35
+    p50: 0.25
+    p90: 0.35
+  js_divergence:
+    log_base: 2
+    max_bits: 0.10
+  hard_constraint_violations_max: 0
+  robust_joint_outlier_rate:
+    absolute_max: 0.15
+    max_above_real_cohort: 0.05
+  fingerprint_collision_rate:
+    component_absolute_max: 0.35
+    joint_absolute_max: 0.15
+    must_not_exceed_v1: true
+  archetype_standardized_effect:
+    minimum_absolute: 0.20
+    maximum_absolute: 0.80
+    must_match_declared_direction: true
+  abandoned_rate_deviation_from_inactive_real_max: 0.10
+
+economy:
+  max_development_actions_per_cycle: 1
+  unbacked_resource_creation_per_development_action_max: 0
+  forced_settlement_positive_resource_delta:
+    resource_keys:
+      - silver
+      - grain
+    per_resource_capacity_ratio_per_cycle_max: 0.10
+    per_resource_capacity_ratio_per_day_max: 0.50
+    combined_units_per_profile_per_day_max: 2000000
+    use_stricter_ratio_or_absolute_cap: true
+    persistent_budget:
+      window: utc_calendar_day
+      stored_fields:
+        - utc_date
+        - silver_units
+        - grain_units
+        - combined_units
+        - silver_capacity_snapshot
+        - grain_capacity_snapshot
+      capacity_snapshot_timing: first_positive_forced_settlement_in_utc_day
+      lazy_reset_under_profile_lock: true
+      decision_owner: virtual_player_core.economy
+      persistence_owner: virtual_player_core.profile_store
+      resource_delta_owner: gameplay.services.resources
+      reserve_and_apply_in_same_transaction: true
+      rollback_releases_budget: true
+      read_paths_may_reset_budget: false
+      activation_gate: gate_e_maintenance_activation
+      schema_or_runtime_authorized_by_this_file: false
+  rare_item_global_daily_cap: 8
+  powerful_item_global_daily_cap: 2
+  salary_audit: salary_payment_only
+  resource_event_salary_enabled: false
+  cap_violations_max: 0
+
+benchmark:
+  warmup_runs: 5
+  measured_runs: 30
+  batch_sizes:
+    - 1
+    - 10
+    - 100
+  worker_concurrency:
+    - 1
+    - 2
+  v1_comparison:
+    source: deterministic_v1_fixture_on_same_disposable_database
+    requires_live_player_data: false
+    purpose: diagnostic_comparison_only
+    may_override_frozen_absolute_thresholds: false
+
+performance:
+  bootstrap_single_profile:
+    planning_duration_p95_ms: 250
+    materialization_duration_p95_ms: 2000
+    sql_queries_max: 80
+    write_queries_max: 25
+  maintenance_single_profile:
+    duration_p95_ms: 750
+    duration_p99_ms: 2000
+    sql_queries_max: 60
+    write_queries_max: 12
+  maintenance_batch_100:
+    duration_p95_ms: 60000
+    duration_p99_ms: 120000
+    sql_queries_max: 2500
+    write_queries_max: 1200
+  database_lock_wait:
+    p95_ms: 100
+    p99_ms: 1000
+  candidate_scoring_orm_queries_max: 0
+  deadlocks_max: 0
+  lock_timeouts_max: 0
+
+runtime_eligible_v1:
+  exact_predicate: engine_version_equals_1_and_state_in_active_slowing_abandoned_retired
+  engine_version: 1
+  state_basis: maintained_states_union_reactivatable_states
+  included_states:
+    - active
+    - slowing
+    - abandoned
+    - retired
+  excluded_states:
+    - stale
+  due_time_changes_eligibility: false
+  routing_mode_changes_eligibility: false
+  fixture_label_changes_eligibility: false
+  arena_membership_changes_eligibility: false
+  retained_v1_fixture_must_be_stale: true
+  retained_v1_fixture_may_have_live_arena_or_task_reference: false
+  count_query_owner: virtual_player_core.profile_store
+  cutover_verification_owner: gate_e_cutover_workflow
+  count_snapshot: transactionally_consistent
+  gate_e_exit_required_count: 0
+
+policy_release_lifecycle:
+  immutable_fields:
+    - version
+    - checksum
+    - payload
+    - released_at
+  monotonic_lifecycle_fields:
+    - retire_not_before
+  retired_at_transition: null_to_timestamp_only
+  retired_at_write_owner: virtual_player_core.policy_registry.retire_policy_release
+  command_owner: gameplay.management.commands.retire_virtual_player_policy
+  requires_expected_checksum: true
+  requires_zero_profile_references: true
+  requires_no_routing_or_rollout_reference: true
+  requires_observation_and_replay_window_elapsed: true
+  current_environment_observation_window_hours: 168
+  current_environment_replay_window_hours: 720
+  retirement_guard_window_hours: 720
+  retirement_deadline_field: BotPolicyRelease.retire_not_before
+  retirement_deadline_initialization: released_at_plus_retirement_guard_window
+  retirement_deadline_extension_events:
+    - last_profile_reference_removed
+    - routing_reference_removed
+    - rollout_reference_removed
+  retirement_deadline_extension: monotonic_max_existing_and_event_time_plus_guard_window
+  retirement_time_source: database_utc_now
+  requires_now_gte_retire_not_before: true
+  config_change_may_shorten_existing_deadline: false
+  retired_payload_remains_replay_readable: true
+  assignment_and_retirement_share_policy_version_lock: true
+  unretire_allowed: false
+  delete_allowed: false
+  admin_write_allowed: false
+  schema_or_runtime_authorized_by_this_file: false
+
+external_strength_reconciliation:
+  statuses:
+    - pending_profile
+    - claimed_profile
+    - pending_population
+    - claimed_population
+    - applied
+    - quarantined
+  terminal_statuses:
+    - applied
+    - quarantined
+  unresolved_statuses:
+    - pending_profile
+    - claimed_profile
+    - pending_population
+    - claimed_population
+    - quarantined
+  claim_lease_seconds: 300
+  max_attempts_per_phase: 12
+  retry_backoff:
+    initial_seconds: 60
+    multiplier: 2
+    maximum_seconds: 21600
+  claim_fencing:
+    token_field: claim_token
+    claimed_at_field: claimed_at
+    lease_expires_at_field: claim_expires_at
+    finalize_requires_locked_status_and_matching_token: true
+    expired_claim_worker_may_finalize: false
+  classified_permanent_error_transition: quarantined
+  retry_exhaustion_transition: quarantined
+  unexpected_error_semantics: re_raise_and_recover_only_after_claim_lease_expiry
+  quarantine_fields:
+    - quarantined_at
+    - quarantined_phase
+    - failure_code
+    - last_error_digest
+  quarantine_blocks_automatic_matching: true
+  quarantine_blocks_positive_maintenance: true
+  profile_identity_storage: indexed_positive_big_integer_without_foreign_key
+  profile_identity_fk_allowed: false
+  profile_identity_lock_rationale: avoid_domain_manor_to_profile_fk_lock_inversion
+  canonical_execution_lock_order:
+    - reconciliation
+    - profile
+    - manor
+  same_profile_ordering: origin_committed_at_then_id
+  later_intent_may_pass_unresolved_earlier_intent: false
+  profile_phase_commit_status_when_population_handoff_required: pending_population
+  profile_phase_commit_status_when_population_handoff_not_required: applied
+  population_phase_claim_status: claimed_population
+  population_phase_attempt_count_is_independent: true
+  cross_band_population_handoff_is_durable: true
+  cross_band_population_handoff_recovered_by_periodic_scan: true
+  applied_requires_population_handoff_complete_or_not_required: true
+  completion_timestamp_fields:
+    profile_completed_at: profile_phase_committed
+    population_handoff_completed_at: all_required_population_demands_merged
+    applied_at: final_applied_transition
+  ambiguous_processed_at_field_allowed: false
+  applied_timestamp_invariants:
+    applied_at_non_null_iff_status_applied: true
+    population_handoff_completed_at_requires_profile_completed_at: true
+    population_handoff_completed_at_requires_applied_at: true
+    no_handoff_keeps_population_handoff_completed_at_null: true
+    timestamps_are_monotonic_profile_then_population_then_applied: true
+  applied_retention_days: 30
+  quarantined_automatic_cleanup_allowed: false
+  manual_requeue_owner: gameplay.management.commands.requeue_virtual_player_reconciliation
+  manual_requeue_target_is_pending_status_for_quarantined_phase: true
+  schema_or_runtime_authorized_by_this_file: false
+
+population_recompute_demand:
+  model: BotPopulationRecomputeDemand
+  activation_gate: gate_d1_bootstrap_activation
+  owner: gameplay.services.virtual_player_core.population_runtime
+  unique_coalescing_key:
+    - region
+    - prestige_band
+  canonical_multi_row_lock_order: region_then_prestige_band_ordinal
+  required_fields:
+    - requested_revision
+    - completed_revision
+    - claimed_revision
+    - claim_token
+    - claimed_at
+    - claim_expires_at
+    - available_at
+    - consecutive_failure_count
+    - last_error_digest
+  initial_revision_values:
+    requested_revision: 0
+    completed_revision: 0
+  database_revision_constraints:
+    - completed_revision_lte_requested_revision
+    - claimed_revision_is_null_or_gt_completed_revision_and_lte_requested_revision
+    - claim_fields_are_all_null_or_all_non_null
+  merge_semantics: locked_increment_requested_revision
+  invalid_region_or_prestige_band_may_be_merged: false
+  merge_may_shorten_existing_failure_backoff: false
+  pending_predicate: requested_revision_gt_completed_revision
+  claimable_predicate: pending_and_available_at_lte_database_now_and_no_unexpired_claim
+  claim_order: available_at_then_region_then_prestige_band_ordinal
+  claim_lease_seconds: 300
+  claim_snapshot_semantics: claimed_revision_equals_requested_revision_at_claim
+  claim_fencing:
+    finalize_requires_locked_matching_token_and_claimed_revision: true
+    finalize_requires_unexpired_lease: true
+    expired_claim_worker_may_finalize: false
+  completion_semantics: completed_revision_advances_to_claimed_revision_only
+  consumer_scope: exactly_claimed_region_and_prestige_band
+  consumer_entrypoint: reconcile_virtual_player_population_cell
+  consumer_may_call_global_population_roll_before_finalize: false
+  finalize_rechecks_targeted_cell_deficit: true
+  bounded_batch_continuation:
+    required_when_executable_deficit_remains: true
+    mechanism: locked_increment_requested_revision_before_finalize
+    continuation_available_at: database_now
+    completion_still_advances_only_to_claimed_revision: true
+  merge_during_claim_remains_pending_after_claim_finalize: true
+  newer_revision_after_finalize_becomes_immediately_available: true
+  failure_does_not_advance_completed_revision: true
+  failure_backoff:
+    initial_seconds: 60
+    multiplier: 2
+    maximum_seconds: 3600
+  successful_completion_resets_consecutive_failure_count: true
+  retry_exhaustion_discards_demand: false
+  external_reconciliation_applied_requires_all_required_rows_merged_in_same_transaction: true
+  task_delivery_role: acceleration_only
+  periodic_scan_recovers_pending_or_expired_claim: true
+  row_deletion_allowed: false
+  schema_or_runtime_authorized_by_this_file: false
+
+runtime_routing_state:
+  current_state_owner: BotRuntimeRoutingState
+  configuration_file_role: allowed_modes_and_initial_defaults_only
+  configuration_file_may_mutate_current_state: false
+  singleton_key: virtual_players
+  transition_owner: gameplay.services.runtime_configs
+  transition_semantics: database_row_lock_and_revision_compare_and_set
+  required_fields:
+    - bootstrap_mode
+    - maintenance_mode
+    - calibration_routes
+    - policy_rollout_target_version
+    - policy_rollout_enabled
+    - policy_rollout_percent
+    - revision
+    - last_hourly_safety_window_end_at
+    - last_daily_safety_window_end_at
+    - last_pause_window_id
+    - pause_reason
+  safety_window_processing_order: strict_monotonic_per_window_kind
+  replayed_or_older_window_result: idempotent_noop
+  missing_intermediate_window_result: pause_fail_closed
+  calibration_routes:
+    storage: strict_json_list
+    caller_supplied_item_fields:
+      - policy_version
+      - reference_snapshot_version
+      - prestige_band
+    item_fields:
+      - policy_version
+      - reference_snapshot_version
+      - prestige_band
+      - policy_checksum
+      - reference_snapshot_digest
+      - evidence_schema_version
+      - evidence_digest
+    proof_fields:
+      - policy_checksum
+      - reference_snapshot_digest
+      - evidence_schema_version
+      - evidence_digest
+    proof_owner: gate_d2_acceptance_workflow
+    canonical_order: policy_version_then_reference_snapshot_version_then_prestige_band_ordinal
+    duplicate_items_allowed: false
+    unknown_fields_allowed: false
+    activation_requires_matching_passed_gate_d2_evidence_and_catalog_entry: true
+    artifact_and_report_preflight_before_routing_row_lock: true
+    routing_lock_rechecks_policy_release_checksum_and_retirement: true
+    mutation_uses_same_revision_compare_and_set: true
+    runtime_resolver_is_read_only: true
+    runtime_resolver_rechecks_persisted_proof_against_current_config_catalog_and_snapshot: true
+    missing_unit_result: conservative_cold_start
+    invalid_or_drifted_unit_new_plan_result: conservative_cold_start
+    invalid_or_drifted_unit_inflight_calibrated_plan_result: reject_before_materialization_and_require_replan
+  policy_rollout:
+    current_state_source: persisted_routing_row
+    configuration_role: validated_initial_and_transition_input_only
+    target_version_field: policy_rollout_target_version
+    enabled_field: policy_rollout_enabled
+    rollout_percent_field: policy_rollout_percent
+    enabled_percent_range: [1, 100]
+    disabled_percent: 0
+    mutation_uses_same_revision_compare_and_set: true
+    enabled_target_is_policy_retirement_reference: true
+    target_change_or_disable_extends_removed_reference_deadline: true
+    selection_bucket_owner: virtual_player_core.random_context.policy_rollout_bucket
+    selection_bucket_inputs:
+      - profile_id
+      - target_policy_version
+    selection_bucket_count: 100
+    lowering_percent_does_not_downgrade_existing_assignments: true
+  cache_is_source_of_truth: false
+  missing_state_before_any_v2_enrollment: legacy_before_gate
+  missing_state_after_any_v2_enrollment: pause_fail_closed
+  schema_or_runtime_authorized_by_this_file: false
+
+environment_activation:
+  current:
+    environment: test
+    environment_class: non_production
+    production: false
+    percentage_rollout_required: false
+    routing_state_model: explicit_modes_not_boolean_pairs
+    bootstrap_routing:
+      allowed_modes:
+        - legacy_before_gate
+        - v2_active
+        - v2_paused
+      initial_mode: legacy_before_gate
+      mode_after_gate_d1_exit: v2_active
+      failure_mode_after_gate_d1_exit: v2_paused
+      v2_paused_allows_v1_fallback: false
+      transition_back_to_legacy_after_gate_d1_exit_allowed: false
+    maintenance_routing:
+      allowed_modes:
+        - legacy_before_gate
+        - v2_cutover
+        - v2_active
+        - v2_paused
+      initial_mode: legacy_before_gate
+      cutover_mode: v2_cutover
+      mode_after_gate_e_exit: v2_active
+      failure_mode_after_gate_e_exit: v2_paused
+      v2_cutover_allows_v1_or_v2_development_writes: false
+      v2_paused_allows_v1_fallback: false
+      transition_back_to_legacy_after_gate_e_exit_allowed: false
+    bootstrap_v2_percent_after_gate_d1_exit: 100
+    maintenance_v2_percent_after_gate_e_exit: 100
+    new_virtual_player_engine_after_gate_d1_exit: 2
+    runtime_eligible_v1_profiles_after_gate_e_exit: 0
+    v1_runtime_role: temporary_compatibility_and_behavior_oracle
+    disposable_v1_test_data_strategy: recreate_as_v2
+    non_disposable_test_v1_data_strategy: explicit_one_time_rebuild_or_enrollment
+    retained_stale_v1_test_records_may_remain_until_explicit_cleanup: true
+    retained_stale_v1_test_records_are_runtime_eligible: false
+    retired_v1_profiles_are_runtime_eligible: true
+    automatic_destructive_rebuild_allowed: false
+  future_production:
+    authorized_by_this_document: false
+    status: deferred_until_prelaunch_review
+    rollout_stages_frozen: false
+    requires_separate_data_migration_and_rollback_plan: true
+  pause_conditions:
+    hard_constraint_violation_count_gte: 1
+    economy_cap_breach_count_gte: 1
+    duplicate_or_partial_commit_count_gte: 1
+    maintenance_failure_rate_gt: 0.01
+    maintenance_failure_consecutive_hourly_windows: 2
+    h01_post_commit_attempt_degraded_rate_gt: 0.001
+    h01_post_commit_attempt_degraded_consecutive_hourly_windows: 1
+    performance_breach_consecutive_hourly_windows: 3
+    distribution_breach_consecutive_daily_windows: 2
+    arena_shortage_absolute_increase_gt: 0.02
+  pause_evaluation:
+    aggregation_owner: shared_observability_backend
+    decision_owner: virtual_player_safety_monitor
+    execution_owner: gameplay.services.runtime_configs
+    routing_transition: compare_and_set_active_or_cutover_to_v2_paused
+    execution_is_idempotent_by_closed_window_id: true
+    current_implementation_status: implemented_readiness_verified_not_activated
+    schema_or_runtime_authorized_by_this_file: false
+    clock_timezone: UTC
+    hourly_window_semantics: fixed_tumbling_closed_windows
+    daily_window_semantics: fixed_tumbling_closed_windows
+    late_event_grace_minutes: 5
+    event_deduplication_key: event_id
+    missing_required_metric_result: pause_fail_closed
+    zero_denominator_with_complete_heartbeat_result: no_rate_breach
+    provider:
+      current_environment_backend: durable_database_event_ledger
+      event_model: BotSafetyMetricEvent
+      closed_window_model: BotSafetyMetricWindow
+      event_id_unique: true
+      finalized_window_id_unique: true
+      finalized_window_snapshot_immutable: true
+      finalization_requires_window_end_plus_grace: true
+      late_event_after_finalization_result: hard_constraint_violation_and_pause
+      required_heartbeat_streams:
+        - maintenance_attempt_emitter
+        - h01_callback_attempt_emitter
+        - arena_shortage_emitter
+        - safety_aggregator
+        - safety_monitor
+      heartbeat_interval_seconds: 60
+      heartbeat_max_gap_seconds: 120
+      raw_event_retention_days: 35
+      closed_window_retention_days: 90
+      core_task_monitoring_may_supply_safety_truth: false
+      in_process_fallback_allowed: false
+      activation_without_healthy_provider_allowed: false
+      business_transaction_rolls_back_on_metric_failure: false
+      v2_development_write_preflight:
+        owner: every_v2_development_write_entrypoint
+        source: persisted_provider_and_safety_monitor_heartbeat
+        required_before_business_transaction: true
+        stale_or_unreadable_result: pause_without_waiting_for_routing_cas
+        in_process_cache_may_authorize_write: false
+      event_and_window_locking:
+        event_writer_locks_open_hourly_and_daily_window_rows: true
+        finalizer_uses_the_same_window_row_locks: true
+        canonical_lock_order: window_end_then_window_kind
+        event_insert_after_window_finalized_allowed: false
+        finalization_and_late_event_race_is_serialized: true
+      cleanup:
+        raw_event_requires_hourly_and_daily_windows_finalized: true
+        raw_event_requires_hourly_and_daily_decision_cursors_past_window: true
+        raw_event_retention_days: 35
+        closed_window_requires_decision_cursor_past_window: true
+        closed_window_retention_days: 90
+        last_pause_window_id_referenced_window_may_be_deleted: false
+      current_implementation_status: implemented_readiness_verified_not_activated
+    maintenance_failure_rate:
+      event_namespace: virtual_player_maintenance_attempt
+      event_id_components:
+        - operation_id
+        - attempt_ordinal
+        - terminal_event
+      domain_maintenance_result_contains_failed: false
+      failed_is_observability_attempt_result_only: true
+      started_event_persisted_before_business_execution: true
+      attempt_window_owner: utc_window_containing_started_event
+      terminal_attempt_results:
+        - applied
+        - no_action
+        - failed
+        - commit_uncertain
+      failed_means_business_commit_definitely_did_not_happen: true
+      commit_uncertain_is_hard_violation: true
+      started_without_terminal_or_commit_uncertain_at_finalize_result: duplicate_or_partial_commit
+      incomplete_attempt_may_count_as_failed: false
+      numerator: virtual_player_maintenance_total_result_failed
+      denominator: virtual_player_maintenance_total_result_applied_no_action_or_failed
+      excluded_results:
+        - busy
+        - paused
+        - ineligible
+    h01_post_commit_attempt_degraded_rate:
+      delivery_semantics: non_persistent_at_most_once
+      numerator: virtual_player_loot_retirement_post_commit_attempt_total_result_degraded
+      denominator: virtual_player_loot_retirement_post_commit_attempt_total_all_results
+      recommendation_metric: virtual_player_loot_retirement_recommendation_total
+      callback_attempt_metric: virtual_player_loot_retirement_post_commit_attempt_total
+      may_be_named_delivery_success_rate: false
+      pre_callback_process_loss_is_observable_as_attempt_failure: false
+      accepted_unobservable_windows:
+        - inner_commit_before_callback_registration
+        - outer_commit_after_registration_before_callback_start
+    distribution_scope: policy_version_reference_snapshot_version_and_prestige_band
+    distribution_global_average_may_mask_band_breach: false
+    arena_shortage_baseline: frozen_pre_activation_ratio_for_same_mode_and_prestige_band
+
+evidence_manifest:
+  path: docs/virtual_player_gate_evidence_manifest_2026-07-30.yaml
+  schema_version: 1
+  checksum_algorithm: sha256
+  checksum_input: sorted_pytest_nodeids_joined_with_lf_and_terminal_lf
+  exact_environment_required: true
+  exact_collection_count_required: true
+  exact_checksum_required: true
+  evidence_timestamp_required: true
+  authorizes_gate_c_schema_or_runtime: false

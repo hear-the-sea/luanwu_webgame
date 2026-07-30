@@ -72,7 +72,21 @@ from gameplay.tasks.recruitment import complete_troop_recruitment, scan_troop_re
 from gameplay.tasks.technology import complete_technology_upgrade, scan_technology_upgrades
 
 # Virtual players
-from gameplay.tasks.virtual_players import plan_virtual_players_task, roll_virtual_players_task
+from gameplay.tasks.virtual_players import (
+    aggregate_virtual_player_safety_task,
+    cleanup_virtual_player_jail_task,
+    cleanup_virtual_player_safety_metrics_task,
+    heartbeat_virtual_player_arena_shortage_emitter_task,
+    heartbeat_virtual_player_h01_callback_attempt_emitter_task,
+    heartbeat_virtual_player_maintenance_attempt_emitter_task,
+    monitor_virtual_player_safety_task,
+    plan_virtual_players_task,
+    reconcile_external_strength_reconciliation_task,
+    reconcile_virtual_player_population_cell_task,
+    roll_virtual_players_task,
+    scan_external_strength_reconciliations_task,
+    scan_virtual_player_population_demands_task,
+)
 
 # World chat
 from gameplay.tasks.world_chat import (
@@ -130,7 +144,18 @@ __all__ = [
     "decay_prisoner_loyalty_task",
     # Virtual players
     "plan_virtual_players_task",
+    "aggregate_virtual_player_safety_task",
+    "cleanup_virtual_player_jail_task",
+    "cleanup_virtual_player_safety_metrics_task",
+    "heartbeat_virtual_player_arena_shortage_emitter_task",
+    "heartbeat_virtual_player_h01_callback_attempt_emitter_task",
+    "heartbeat_virtual_player_maintenance_attempt_emitter_task",
+    "monitor_virtual_player_safety_task",
+    "reconcile_external_strength_reconciliation_task",
+    "reconcile_virtual_player_population_cell_task",
     "roll_virtual_players_task",
+    "scan_external_strength_reconciliations_task",
+    "scan_virtual_player_population_demands_task",
     # World chat
     "publish_world_chat_attempt_task",
     "refund_world_chat_attempt_task",

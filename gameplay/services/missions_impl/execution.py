@@ -15,6 +15,7 @@ from guests.query_utils import guest_template_rarity_rank_case
 
 from ...models import Manor, MissionRun, MissionTemplate
 from ..battle_snapshots import build_guest_battle_snapshots, build_guest_snapshot_proxies
+from ..city_defense import apply_city_defense_battle_damage
 from ..recruitment.troops import apply_defender_troop_losses
 from ..utils.messages import create_message
 from ..utils.notifications import notify_user
@@ -117,6 +118,7 @@ def finalize_mission_run(run: MissionRun, now=None) -> None:
             select_guests_for_finalize=select_guests_for_finalize,
             prepare_guest_updates_for_finalize=prepare_guest_updates_for_finalize,
             mark_run_completed=_mark_run_completed,
+            apply_city_defense_battle_damage=apply_city_defense_battle_damage,
             apply_defender_troop_losses=apply_defender_troop_losses,
             return_attacker_troops_after_mission=return_attacker_troops_after_mission,
             logger=logger,

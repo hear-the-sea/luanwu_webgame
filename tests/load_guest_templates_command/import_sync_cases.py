@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 from django.core.management import call_command
+from django.utils import timezone
 
 from gameplay.models import JailPrisoner
 from gameplay.services.manor.core import ensure_manor
@@ -518,6 +519,7 @@ def test_load_guest_templates_reimport_clears_injured_status_when_hp_sync_reache
         defense_stat=80,
         current_hp=5200,
         status=GuestStatus.INJURED,
+        injury_loyalty_processed_at=timezone.now(),
     )
 
     call_command(
@@ -534,3 +536,4 @@ def test_load_guest_templates_reimport_clears_injured_status_when_hp_sync_reache
     assert guest.max_hp == 5000
     assert guest.current_hp == 5000
     assert guest.status == GuestStatus.IDLE
+    assert guest.injury_loyalty_processed_at is None

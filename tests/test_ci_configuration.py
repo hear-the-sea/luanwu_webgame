@@ -43,6 +43,20 @@ def test_real_service_gate_uses_dedicated_database_creation_credentials():
     assert "DJANGO_DB_ROOT_PASSWORD=$(DJANGO_DB_ROOT_PASSWORD)" in assignments["REAL_SERVICE_COMPOSE_ENV"]
 
 
+def test_integration_ci_uses_database_creation_credentials():
+    workflow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
+    integration_job = workflow["jobs"]["integration-tests"]
+    mysql_environment = integration_job["services"]["mysql"]["env"]
+    test_step = next(
+        step for step in integration_job["steps"] if step.get("name") == "Integration Tests (MySQL + Redis)"
+    )
+
+    assert test_step["env"]["DJANGO_DB_USER"] == "root"
+    assert test_step["env"]["DJANGO_DB_PASSWORD"] == mysql_environment["MYSQL_ROOT_PASSWORD"]
+    assert mysql_environment["MYSQL_DATABASE"] == "webgame"
+    assert test_step["env"]["DJANGO_DB_NAME"] == "webgame"
+
+
 def test_package_script_builds_css_and_rejects_artifact_drift():
     package = json.loads((REPO_ROOT / "package.json").read_text(encoding="utf-8"))
 

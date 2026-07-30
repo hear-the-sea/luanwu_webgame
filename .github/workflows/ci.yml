@@ -50,6 +50,9 @@ jobs:
           DJANGO_DB_NAME: ":memory:"
         run: python manage.py makemigrations --check --dry-run
 
+      - name: Check Python formatting
+        run: make format-check
+
       - name: Frontend Unit Tests
         run: npm run test:js
 
@@ -99,7 +102,9 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_DATABASE: webgame_test
+          # Django prefixes the configured name with `test_`; keep the base
+          # name aligned with the guarded integration database `test_webgame`.
+          MYSQL_DATABASE: webgame
           MYSQL_USER: webgame
           MYSQL_PASSWORD: webgame
           MYSQL_ROOT_PASSWORD: root
@@ -151,9 +156,11 @@ jobs:
           DJANGO_SECRET_KEY: "ci-only-not-a-real-secret-key-change-me-1234567890"
           DJANGO_TEST_USE_ENV_SERVICES: "1"
           DJANGO_DB_ENGINE: "django.db.backends.mysql"
-          DJANGO_DB_NAME: "webgame_test"
-          DJANGO_DB_USER: "webgame"
-          DJANGO_DB_PASSWORD: "webgame"
+          DJANGO_DB_NAME: "webgame"
+          # Django creates and drops an isolated test database, so CI must use
+          # the service's dedicated database-creation credentials.
+          DJANGO_DB_USER: "root"
+          DJANGO_DB_PASSWORD: "root"
           DJANGO_DB_HOST: "127.0.0.1"
           DJANGO_DB_PORT: "3306"
           REDIS_URL: "redis://127.0.0.1:6379"
@@ -164,6 +171,7 @@ jobs:
         run: |
           python manage.py migrate --noinput
           REDIS_PASSWORD=ci-test-dummy python manage.py check --deploy
+          python -m pytest tests/test_virtual_player_baseline_audit.py -q
           python -m coverage run -m pytest -m integration -q
           python -m coverage report -m
           python -m coverage xml -o coverage-integration.xml

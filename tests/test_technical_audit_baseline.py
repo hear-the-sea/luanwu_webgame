@@ -75,6 +75,17 @@ def test_compatibility_inventory_records_current_public_shims() -> None:
     assert "`gameplay/services/technology.py`" in inventory_text
 
 
+def test_compatibility_inventory_assigns_ownership_and_review_deadlines() -> None:
+    inventory_text = COMPATIBILITY_INVENTORY_DOC.read_text(encoding="utf-8")
+    sections = inventory_text.split("### `")[1:]
+
+    assert sections
+    for section in sections:
+        assert "- 责任人：" in section
+        assert "- 外部消费者登记：" in section
+        assert "- 下次复核日期：" in section
+
+
 def test_audit_doc_hot_test_baseline_matches_current_repo_state() -> None:
     audit_text = AUDIT_DOC.read_text(encoding="utf-8")
 

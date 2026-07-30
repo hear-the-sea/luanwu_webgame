@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
+from django.contrib.auth.models import AnonymousUser
+from django.core.paginator import Paginator
 from django.db import DatabaseError
+from django.template.loader import render_to_string
 from django.test import RequestFactory
 from django.urls import reverse
 
@@ -138,3 +143,82 @@ def test_trade_page_context_passes_normalized_params_to_selector(monkeypatch, dj
         "manor": manor,
         "params": {"tab": "market", "view": "sell", "page": "3"},
     }
+
+
+@pytest.mark.django_db
+def test_shop_tooltips_render_direct_stats_and_multi_tier_set_bonuses():
+    buy_payload = {
+        "attack": 7,
+        "troop_capacity": 11,
+        "set_key": "buy_set",
+        "set_description": "买入套装",
+        "set_bonus": [
+            {"pieces": 2, "bonus": {"attack": 30, "troop_capacity": 40}},
+            {"pieces": 4, "bonus": {"attack": 50, "troop_capacity": 80}},
+        ],
+    }
+    sell_payload = {
+        "attack": 9,
+        "troop_capacity": 13,
+        "set_key": "sell_set",
+        "set_description": "回收套装",
+        "set_bonus": [
+            {"pieces": 2, "bonus": {"attack": 33, "troop_capacity": 44}},
+            {"pieces": 4, "bonus": {"attack": 55, "troop_capacity": 88}},
+        ],
+    }
+    shop_item = SimpleNamespace(
+        key="buy_gear",
+        name="买入装备",
+        description="买入描述",
+        price=100,
+        stock_display="无限",
+        available=True,
+        image_url="",
+        category="装备",
+        rarity="blue",
+        effect_payload=buy_payload,
+    )
+    sell_template = SimpleNamespace(
+        key="sell_gear",
+        name="回收装备",
+        description="回收描述",
+        image=None,
+        rarity="blue",
+        effect_payload=sell_payload,
+    )
+    sell_item = SimpleNamespace(
+        inventory_item=SimpleNamespace(template=sell_template, quantity=1),
+        sell_price=50,
+    )
+    request = RequestFactory().get("/trade")
+    request.user = AnonymousUser()
+    html = render_to_string(
+        "trade/partials/_shop.html",
+        {
+            "shop_view": "buy",
+            "shop_items": [shop_item],
+            "inventory": [sell_item],
+            "categories": [],
+            "selected_category": "all",
+            "shop_buy_page_obj": Paginator([shop_item], 20).page(1),
+            "shop_sell_page_obj": Paginator([sell_item], 20).page(1),
+            "manor": SimpleNamespace(silver=1000),
+        },
+        request=request,
+    )
+
+    assert '<span class="tw-attr-label">攻击</span><span class="tw-attr-value">+7</span>' in html
+    assert '<span class="tw-attr-label">可携带护院人数</span><span class="tw-attr-value">+11</span>' in html
+    assert "2 件套" in html
+    assert "4 件套" in html
+    assert "攻击+30" in html
+    assert "可携带护院人数+40" in html
+    assert "攻击+50" in html
+    assert "可携带护院人数+80" in html
+    assert '<span class="tw-attr-label">攻击</span><span class="tw-attr-value">+9</span>' in html
+    assert '<span class="tw-attr-label">可携带护院人数</span><span class="tw-attr-value">+13</span>' in html
+    assert "攻击+33" in html
+    assert "可携带护院人数+44" in html
+    assert "攻击+55" in html
+    assert "可携带护院人数+88" in html

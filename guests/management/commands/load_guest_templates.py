@@ -458,7 +458,12 @@ class Command(BaseCommand):
         defense_to_hp = int(GUEST.DEFENSE_TO_HP_MULTIPLIER)
         dirty_guests: list[Guest] = []
         guest_qs = Guest.objects.filter(template=template).only(
-            "id", "current_hp", "hp_bonus", "defense_stat", "status"
+            "id",
+            "current_hp",
+            "hp_bonus",
+            "defense_stat",
+            "status",
+            "injury_loyalty_processed_at",
         )
 
         for guest in guest_qs:
@@ -481,19 +486,29 @@ class Command(BaseCommand):
                 target_hp = max(1, min(new_max_hp, int(new_max_hp * current_hp / old_max_hp)))
 
             target_status = guest.status
+            target_injury_loyalty_processed_at = guest.injury_loyalty_processed_at
             if target_hp >= new_max_hp and target_status == GuestStatus.INJURED:
                 target_status = GuestStatus.IDLE
+                target_injury_loyalty_processed_at = None
 
-            if target_hp == current_hp and target_status == guest.status:
+            if (
+                target_hp == current_hp
+                and target_status == guest.status
+                and target_injury_loyalty_processed_at == guest.injury_loyalty_processed_at
+            ):
                 continue
             guest.current_hp = target_hp
             guest.status = target_status
+            guest.injury_loyalty_processed_at = target_injury_loyalty_processed_at
             dirty_guests.append(guest)
 
         if not dirty_guests:
             return 0
 
-        Guest.objects.bulk_update(dirty_guests, ["current_hp", "status"])
+        Guest.objects.bulk_update(
+            dirty_guests,
+            ["current_hp", "status", "injury_loyalty_processed_at"],
+        )
         return len(dirty_guests)
 
     def _sync_template_skills(

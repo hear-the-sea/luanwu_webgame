@@ -1320,6 +1320,14 @@
     @apply text-bg-primary bg-accent-gold scale-110;
   }
 
+  .tw-btn-add:disabled {
+    @apply cursor-not-allowed opacity-40;
+  }
+
+  .tw-btn-add:disabled:hover {
+    @apply text-accent-gold bg-bg-secondary scale-100;
+  }
+
   /* ========== 敌人情报网格 ========== */
   .tw-task-detail-stack {
     @apply flex flex-col gap-4;

@@ -7,6 +7,7 @@ from django.db import transaction
 
 from core.config import GUEST
 from core.exceptions import (
+    GuestItemConfigurationError,
     GuestItemOwnershipError,
     GuestNotFoundError,
     GuestNotIdleError,
@@ -20,7 +21,7 @@ from core.exceptions import (
 from ..models import Guest, GuestSkill, GuestStatus, Skill
 
 if TYPE_CHECKING:
-    from gameplay.models import InventoryItem
+    from gameplay.models import InventoryItem, Manor
 
 MAX_GUEST_SKILL_SLOTS = int(GUEST.MAX_SKILL_SLOTS)
 SKILL_REQUIREMENT_FIELDS = (
@@ -63,37 +64,96 @@ def assert_guest_meets_skill_requirements(guest: Guest, skill: Skill) -> None:
             raise GuestNotRequirementError(guest, requirement_type, required, actual)
 
 
-def learn_guest_skill(guest: Guest, skill: Skill, inventory_item: "InventoryItem") -> None:
-    from gameplay.models import InventoryItem
+def _require_atomic_block(name: str) -> None:
+    if not transaction.get_connection().in_atomic_block:
+        raise RuntimeError(f"{name} must be called inside transaction.atomic()")
+
+
+def learn_guest_skill_locked(
+    manor: "Manor",
+    locked_guest: Guest,
+    inventory_item_id: int,
+    *,
+    expected_skill_id: int | None = None,
+) -> GuestSkill:
+    """在已锁 Manor -> Guest 的事务内学习并消费一本仓库技能书。"""
+    from gameplay.models import InventoryItem, ItemTemplate
     from gameplay.services.inventory.core import consume_inventory_item_locked
 
+    _require_atomic_block("learn_guest_skill_locked")
+    if not manor.pk or not locked_guest.pk or locked_guest.manor_id != manor.pk:
+        raise GuestItemOwnershipError(message="门客或技能书不属于您的庄园")
+    if locked_guest.status != GuestStatus.IDLE:
+        raise GuestNotIdleError(
+            locked_guest,
+            message=f"{locked_guest.display_name} 当前非空闲状态，无法学习技能",
+        )
+
+    locked_item = (
+        InventoryItem.objects.select_for_update()
+        .select_related("template")
+        .filter(
+            pk=inventory_item_id,
+            manor_id=manor.pk,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            template__effect_type=ItemTemplate.EffectType.SKILL_BOOK,
+        )
+        .first()
+    )
+    if locked_item is None:
+        raise GuestItemOwnershipError(message="技能书不存在或不属于您的庄园")
+    if locked_item.quantity < 1:
+        raise InsufficientStockError(
+            locked_item.template.name,
+            1,
+            locked_item.quantity,
+        )
+
+    payload = locked_item.template.effect_payload
+    if not isinstance(payload, dict):
+        raise GuestItemConfigurationError("技能书配置有误")
+    raw_skill_key = payload.get("skill_key")
+    if not isinstance(raw_skill_key, str) or not raw_skill_key.strip():
+        raise GuestItemConfigurationError("技能书配置有误")
+    skill = Skill.objects.filter(key=raw_skill_key.strip()).first()
+    if skill is None or (expected_skill_id is not None and skill.pk != expected_skill_id):
+        raise GuestItemConfigurationError("技能书配置有误")
+
+    if locked_guest.guest_skills.count() >= MAX_GUEST_SKILL_SLOTS:
+        raise SkillSlotFullError("技能位已满")
+    if locked_guest.guest_skills.filter(skill=skill).exists():
+        raise GuestSkillAlreadyLearnedError(locked_guest, skill)
+    assert_guest_meets_skill_requirements(locked_guest, skill)
+
+    guest_skill = GuestSkill.objects.create(
+        guest=locked_guest,
+        skill=skill,
+        source=GuestSkill.Source.BOOK,
+    )
+    consume_inventory_item_locked(locked_item)
+    return guest_skill
+
+
+def learn_guest_skill(
+    guest: Guest,
+    skill: Skill,
+    inventory_item: "InventoryItem",
+) -> GuestSkill:
+    from gameplay.models import Manor
+
     with transaction.atomic():
-        locked_guest = Guest.objects.select_for_update().filter(pk=guest.pk).first()
+        locked_manor = Manor.objects.select_for_update().filter(pk=guest.manor_id).first()
+        if locked_manor is None:
+            raise GuestNotFoundError()
+        locked_guest = Guest.objects.select_for_update().filter(pk=guest.pk, manor_id=locked_manor.pk).first()
         if locked_guest is None:
             raise GuestNotFoundError()
-        if locked_guest.status != GuestStatus.IDLE:
-            raise GuestNotIdleError(locked_guest, message=f"{locked_guest.display_name} 当前非空闲状态，无法学习技能")
-
-        if locked_guest.guest_skills.count() >= MAX_GUEST_SKILL_SLOTS:
-            raise SkillSlotFullError("技能位已满")
-
-        if locked_guest.guest_skills.filter(skill=skill).exists():
-            raise GuestSkillAlreadyLearnedError(locked_guest, skill)
-
-        assert_guest_meets_skill_requirements(locked_guest, skill)
-
-        locked_item = InventoryItem.objects.select_for_update().filter(pk=inventory_item.pk).first()
-        if locked_item is None:
-            raise GuestItemOwnershipError(message="技能书不存在或不属于您的庄园")
-        if locked_item.quantity < 1:
-            raise InsufficientStockError(locked_item.template.name, 1, locked_item.quantity)
-
-        GuestSkill.objects.create(
-            guest=locked_guest,
-            skill=skill,
-            source=GuestSkill.Source.BOOK,
+        return learn_guest_skill_locked(
+            locked_manor,
+            locked_guest,
+            inventory_item.pk,
+            expected_skill_id=skill.pk,
         )
-        consume_inventory_item_locked(locked_item)
 
 
 def forget_guest_skill(guest: Guest, guest_skill_id: int) -> str:
@@ -102,7 +162,10 @@ def forget_guest_skill(guest: Guest, guest_skill_id: int) -> str:
         if locked_guest is None:
             raise GuestNotFoundError()
         if locked_guest.status != GuestStatus.IDLE:
-            raise GuestNotIdleError(locked_guest, message=f"{locked_guest.display_name} 当前非空闲状态，无法遗忘技能")
+            raise GuestNotIdleError(
+                locked_guest,
+                message=f"{locked_guest.display_name} 当前非空闲状态，无法遗忘技能",
+            )
 
         locked_guest_skill = locked_guest.guest_skills.select_related("skill").filter(pk=guest_skill_id).first()
         if locked_guest_skill is None:

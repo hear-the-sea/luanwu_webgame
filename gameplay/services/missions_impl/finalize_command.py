@@ -16,6 +16,7 @@ def finalize_mission_run(
     select_guests_for_finalize,
     prepare_guest_updates_for_finalize,
     mark_run_completed,
+    apply_city_defense_battle_damage,
     apply_defender_troop_losses,
     return_attacker_troops_after_mission,
     apply_mission_rewards_if_won,
@@ -45,6 +46,13 @@ def finalize_mission_run(
 
         if guests_to_update:
             Guest.objects.bulk_update(guests_to_update, update_fields)
+
+        if report and locked_run.mission.is_defense and not locked_run.is_retreating:
+            apply_city_defense_battle_damage(
+                locked_run.manor,
+                getattr(report, "defender_city_defenses", []) or [],
+                now=now,
+            )
 
         mark_run_completed(locked_run, now)
 

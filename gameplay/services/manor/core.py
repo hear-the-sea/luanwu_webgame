@@ -7,14 +7,14 @@ from __future__ import annotations
 import logging
 import math
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from threading import Lock
 
 from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import F
 from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
@@ -53,6 +53,72 @@ from . import refresh as _refresh
 CAPACITY_BASE = 20000
 CAPACITY_GROWTH_SILVER = 1.299657
 CAPACITY_GROWTH_GRAIN = 1.3905
+
+
+class BuildingUpgradeQuoteStaleError(ValueError):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
+class BuildingUpgradeQuote:
+    manor_id: int
+    building_id: int
+    building_type_id: int
+    building_key: str
+    building_name: str
+    current_level: int
+    target_level: int
+    max_level: int | None
+    base_cost: tuple[tuple[str, int], ...]
+    resource_cost: tuple[tuple[str, int], ...]
+    cost_reduction: float
+    base_duration: int
+    duration_seconds: int
+    upgrading_count: int
+
+    def to_payload(self) -> dict[str, object]:
+        return {
+            "base_cost": dict(self.base_cost),
+            "base_duration": self.base_duration,
+            "building_id": self.building_id,
+            "building_key": self.building_key,
+            "building_name": self.building_name,
+            "building_type_id": self.building_type_id,
+            "cost_reduction": self.cost_reduction,
+            "current_level": self.current_level,
+            "duration_seconds": self.duration_seconds,
+            "manor_id": self.manor_id,
+            "max_level": self.max_level,
+            "resource_cost": dict(self.resource_cost),
+            "target_level": self.target_level,
+            "upgrading_count": self.upgrading_count,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class BuildingUpgradeResult:
+    manor_id: int
+    building_id: int
+    building_key: str
+    previous_level: int
+    level: int
+    resource_cost: tuple[tuple[str, int], ...]
+    prestige_gained: int
+    silver_capacity: int
+    grain_capacity: int
+
+    def to_payload(self) -> dict[str, object]:
+        return {
+            "building_id": self.building_id,
+            "building_key": self.building_key,
+            "grain_capacity": self.grain_capacity,
+            "level": self.level,
+            "manor_id": self.manor_id,
+            "prestige_gained": self.prestige_gained,
+            "previous_level": self.previous_level,
+            "resource_cost": dict(self.resource_cost),
+            "silver_capacity": self.silver_capacity,
+        }
 
 
 def calculate_building_capacity(level: int, is_silver_vault: bool = False) -> int:
@@ -192,36 +258,291 @@ def project_manor_activity_for_read(
     project_resource_production_for_read(manor)
 
 
-def finalize_building_upgrade(building: Building, now: datetime | None = None, send_notification: bool = True) -> bool:
-    now = now or timezone.now()
-    if not building.pk:
-        return False
+def _require_building_upgrade_atomic() -> None:
+    if not transaction.get_connection().in_atomic_block:
+        raise RuntimeError("apply_building_upgrade_locked must be called inside transaction.atomic()")
 
-    updated = Building.objects.filter(
-        pk=building.pk,
-        is_upgrading=True,
-        upgrade_complete_at__isnull=False,
-        upgrade_complete_at__lte=now,
-    ).update(
-        level=F("level") + 1,
-        is_upgrading=False,
-        upgrade_complete_at=None,
+
+def _validate_building_upgrade_ownership(manor: Manor, building: Building) -> None:
+    manor_id = getattr(manor, "pk", None)
+    building_id = getattr(building, "pk", None)
+    if (
+        isinstance(manor_id, bool)
+        or not isinstance(manor_id, int)
+        or manor_id < 1
+        or isinstance(building_id, bool)
+        or not isinstance(building_id, int)
+        or building_id < 1
+    ):
+        raise ValueError("building upgrade requires persisted Manor and Building rows")
+    if int(building.manor_id) != manor_id:
+        raise ValueError("building does not belong to the supplied Manor")
+
+
+def quote_building_upgrade(
+    manor: Manor,
+    building: Building,
+    *,
+    buildings: Sequence[Building] | None = None,
+    technology_levels: Mapping[str, int] | None = None,
+) -> BuildingUpgradeQuote:
+    """Validate and freeze the current one-level building upgrade inputs."""
+
+    from ..technology import get_building_cost_reduction, get_tech_bonus_from_levels
+
+    _validate_building_upgrade_ownership(manor, building)
+    if building.is_upgrading:
+        raise BuildingUpgradingError()
+
+    building_key = str(building.building_type.key)
+    building_name = str(building.building_type.name)
+    current_level = int(building.level)
+    max_level = BUILDING_MAX_LEVELS.get(building_key)
+    if max_level is not None and current_level >= max_level:
+        raise BuildingMaxLevelError(building_name, max_level)
+
+    if buildings is None:
+        upgrading_count = Building.objects.filter(
+            manor_id=manor.pk,
+            is_upgrading=True,
+        ).count()
+    else:
+        building_snapshot = tuple(buildings)
+        if any(int(candidate.manor_id) != int(manor.pk) for candidate in building_snapshot):
+            raise ValueError("building snapshot contains a row from another Manor")
+        if not any(int(candidate.pk) == int(building.pk) for candidate in building_snapshot):
+            raise BuildingUpgradeQuoteStaleError("building snapshot does not contain the quoted building")
+        upgrading_count = sum(bool(candidate.is_upgrading) for candidate in building_snapshot)
+    if upgrading_count >= MAX_CONCURRENT_BUILDING_UPGRADES:
+        raise BuildingConcurrentUpgradeLimitError(MAX_CONCURRENT_BUILDING_UPGRADES)
+
+    base_cost = {str(resource): int(amount) for resource, amount in building.next_level_cost().items()}
+    cost_reduction = float(
+        get_building_cost_reduction(manor)
+        if technology_levels is None
+        else get_tech_bonus_from_levels(
+            dict(technology_levels),
+            "building_cost_reduction",
+        )
     )
-    if updated != 1:
+    reduction_multiplier = max(0.0, 1.0 - cost_reduction)
+    resource_cost = {
+        resource: max(1, math.ceil(amount * reduction_multiplier)) for resource, amount in base_cost.items()
+    }
+    base_duration = int(building.next_level_duration())
+    duration_seconds = max(
+        1,
+        int(base_duration * (1.0 - float(manor.citang_building_time_reduction))),
+    )
+    duration_seconds = scale_duration(duration_seconds, minimum=1)
+    return BuildingUpgradeQuote(
+        manor_id=int(manor.pk),
+        building_id=int(building.pk),
+        building_type_id=int(building.building_type_id),
+        building_key=building_key,
+        building_name=building_name,
+        current_level=current_level,
+        target_level=current_level + 1,
+        max_level=max_level,
+        base_cost=tuple(sorted(base_cost.items())),
+        resource_cost=tuple(sorted(resource_cost.items())),
+        cost_reduction=cost_reduction,
+        base_duration=base_duration,
+        duration_seconds=duration_seconds,
+        upgrading_count=upgrading_count,
+    )
+
+
+def _assert_current_building_upgrade_quote_locked(
+    manor: Manor,
+    building: Building,
+    expected_quote: BuildingUpgradeQuote,
+    *,
+    buildings: Sequence[Building] | None = None,
+    technology_levels: Mapping[str, int] | None = None,
+) -> BuildingUpgradeQuote:
+    _require_building_upgrade_atomic()
+    if not isinstance(expected_quote, BuildingUpgradeQuote):
+        raise TypeError("expected_quote must be BuildingUpgradeQuote")
+    _validate_building_upgrade_ownership(manor, building)
+    if (
+        expected_quote.manor_id != manor.pk
+        or expected_quote.building_id != building.pk
+        or expected_quote.building_type_id != building.building_type_id
+    ):
+        raise BuildingUpgradeQuoteStaleError("building upgrade quote does not match the locked rows")
+    current_quote = quote_building_upgrade(
+        manor,
+        building,
+        buildings=buildings,
+        technology_levels=technology_levels,
+    )
+    if current_quote != expected_quote:
+        raise BuildingUpgradeQuoteStaleError("building upgrade quote is stale; retry with current state")
+    return current_quote
+
+
+def _consume_building_upgrade_quote_locked(
+    manor: Manor,
+    quote: BuildingUpgradeQuote,
+    *,
+    sync_production: bool,
+) -> int:
+    _require_building_upgrade_atomic()
+    from ..resources import spend_resources_locked
+    from .prestige import add_prestige_silver_locked
+
+    spend_resources_locked(
+        manor,
+        dict(quote.resource_cost),
+        quote.building_name,
+        ResourceEvent.Reason.UPGRADE_COST,
+        sync_production=sync_production,
+    )
+    return add_prestige_silver_locked(
+        manor,
+        dict(quote.resource_cost).get("silver", 0),
+    )
+
+
+def _schedule_building_cache_invalidation(manor: Manor) -> None:
+    manor.invalidate_building_cache()
+    manor_id = int(manor.pk)
+
+    def _invalidate_after_commit() -> None:
+        invalidate_home_stats_cache(manor_id)
+
+    transaction.on_commit(_invalidate_after_commit, robust=True)
+
+
+def _apply_building_upgrade_result_locked(
+    manor: Manor,
+    building: Building,
+    *,
+    completed_at: datetime,
+) -> tuple[int, int]:
+    _require_building_upgrade_atomic()
+    _validate_building_upgrade_ownership(manor, building)
+    previous_level = int(building.level)
+
+    building_update_fields = ["level", "is_upgrading", "upgrade_complete_at"]
+    building_key = str(building.building_type.key)
+    from ..city_defense_rules import is_city_defense_key, project_city_defense_upgrade
+
+    if is_city_defense_key(building_key):
+        upgraded_state = project_city_defense_upgrade(
+            building_key,
+            previous_level,
+            building.current_hp,
+            building.hp_updated_at,
+            completed_at=completed_at,
+        )
+        building.current_hp = upgraded_state.current_hp
+        building.hp_updated_at = completed_at
+        building_update_fields.extend(["current_hp", "hp_updated_at"])
+
+    building.level = previous_level + 1
+    building.is_upgrading = False
+    building.upgrade_complete_at = None
+    building.save(update_fields=building_update_fields)
+
+    capacity_update_fields: list[str] = []
+    if building_key == BuildingKeys.SILVER_VAULT:
+        manor.silver_capacity = calculate_building_capacity(
+            int(building.level),
+            is_silver_vault=True,
+        )
+        capacity_update_fields.append("silver_capacity")
+    elif building_key == BuildingKeys.GRANARY:
+        manor.grain_capacity = calculate_building_capacity(
+            int(building.level),
+            is_silver_vault=False,
+        )
+        capacity_update_fields.append("grain_capacity")
+    if capacity_update_fields:
+        manor.save(update_fields=capacity_update_fields)
+
+    building.manor = manor
+    _schedule_building_cache_invalidation(manor)
+    return previous_level, int(building.level)
+
+
+def apply_building_upgrade_locked(
+    manor: Manor,
+    building: Building,
+    expected_quote: BuildingUpgradeQuote,
+    *,
+    sync_production: bool = True,
+    buildings: Sequence[Building] | None = None,
+    technology_levels: Mapping[str, int] | None = None,
+) -> BuildingUpgradeResult:
+    """Synchronously complete one level with caller-held Manor -> Building locks."""
+
+    quote = _assert_current_building_upgrade_quote_locked(
+        manor,
+        building,
+        expected_quote,
+        buildings=buildings,
+        technology_levels=technology_levels,
+    )
+    prestige_gained = _consume_building_upgrade_quote_locked(
+        manor,
+        quote,
+        sync_production=sync_production,
+    )
+    previous_level, level = _apply_building_upgrade_result_locked(
+        manor,
+        building,
+        completed_at=timezone.now(),
+    )
+    return BuildingUpgradeResult(
+        manor_id=int(manor.pk),
+        building_id=int(building.pk),
+        building_key=quote.building_key,
+        previous_level=previous_level,
+        level=level,
+        resource_cost=quote.resource_cost,
+        prestige_gained=prestige_gained,
+        silver_capacity=int(manor.silver_capacity),
+        grain_capacity=int(manor.grain_capacity),
+    )
+
+
+def finalize_building_upgrade(
+    building: Building,
+    now: datetime | None = None,
+    send_notification: bool = True,
+) -> bool:
+    current_time = now or timezone.now()
+    building_id = getattr(building, "pk", None)
+    if isinstance(building_id, bool) or not isinstance(building_id, int):
+        return False
+    manor_id = Building.objects.filter(pk=building_id).values_list("manor_id", flat=True).first()
+    if manor_id is None:
         return False
 
-    building = Building.objects.select_related("manor", "building_type").get(pk=building.pk)
+    with transaction.atomic():
+        locked_manor = Manor.objects.select_for_update().get(pk=manor_id)
+        locked_building = (
+            Building.objects.select_for_update()
+            .select_related("building_type")
+            .filter(pk=building_id, manor_id=locked_manor.pk)
+            .first()
+        )
+        if (
+            locked_building is None
+            or not locked_building.is_upgrading
+            or locked_building.upgrade_complete_at is None
+            or locked_building.upgrade_complete_at > current_time
+        ):
+            return False
+        _apply_building_upgrade_result_locked(
+            locked_manor,
+            locked_building,
+            completed_at=current_time,
+        )
+        building = locked_building
 
-    building_key = building.building_type.key
-    if building_key == BuildingKeys.SILVER_VAULT:
-        new_capacity = calculate_building_capacity(building.level, is_silver_vault=True)
-        Manor.objects.filter(pk=building.manor_id).update(silver_capacity=new_capacity)
-    elif building_key == BuildingKeys.GRANARY:
-        new_capacity = calculate_building_capacity(building.level, is_silver_vault=False)
-        Manor.objects.filter(pk=building.manor_id).update(grain_capacity=new_capacity)
-
-    building.manor.invalidate_building_cache()
-    invalidate_home_stats_cache(building.manor_id)
     if send_notification:
         from ..utils.messages import create_message
 
@@ -282,7 +603,10 @@ def schedule_building_completion(building: Building, eta_seconds: int) -> None:
     except ImportError as exc:
         if not is_missing_target_import(exc, "gameplay.tasks"):
             raise
-        logger.warning("Unable to import complete_building_upgrade task; skip scheduling", exc_info=True)
+        logger.warning(
+            "Unable to import complete_building_upgrade task; skip scheduling",
+            exc_info=True,
+        )
         return
 
     def _dispatch_completion() -> None:
@@ -307,55 +631,33 @@ def schedule_building_completion(building: Building, eta_seconds: int) -> None:
 
 
 def start_upgrade(building: Building) -> None:
-    from ..technology import get_building_cost_reduction
-
     manor = building.manor
     finalize_upgrades(manor)
+    manor.invalidate_building_cache()
     building.refresh_from_db(fields=["level", "is_upgrading", "upgrade_complete_at"])
 
-    if building.is_upgrading:
-        raise BuildingUpgradingError()
-
-    building_key = building.building_type.key
-    max_level = BUILDING_MAX_LEVELS.get(building_key)
-    if max_level is not None and building.level >= max_level:
-        raise BuildingMaxLevelError(building.building_type.name, max_level)
-
-    upgrading_count = Building.objects.filter(manor=manor, is_upgrading=True).count()
-    if upgrading_count >= MAX_CONCURRENT_BUILDING_UPGRADES:
-        raise BuildingConcurrentUpgradeLimitError(MAX_CONCURRENT_BUILDING_UPGRADES)
-
-    base_cost = building.next_level_cost()
-    cost_reduction = get_building_cost_reduction(manor)
-    reduction_multiplier = max(0, 1 - cost_reduction)
-    cost = {resource: max(1, math.ceil(amount * reduction_multiplier)) for resource, amount in base_cost.items()}
-
-    base_duration = building.next_level_duration()
-    time_reduction = manor.citang_building_time_reduction
-    duration_seconds = max(1, int(base_duration * (1 - time_reduction)))
-    duration_seconds = scale_duration(duration_seconds, minimum=1)
-
     with transaction.atomic():
-        manor = Manor.objects.select_for_update().get(pk=manor.pk)
-        building = Building.objects.select_for_update().get(pk=building.pk)
-        if building.is_upgrading:
-            raise BuildingUpgradingError()
+        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+        locked_building = (
+            Building.objects.select_for_update()
+            .select_related("building_type")
+            .get(pk=building.pk, manor_id=locked_manor.pk)
+        )
+        quote = quote_building_upgrade(
+            locked_manor,
+            locked_building,
+        )
+        _consume_building_upgrade_quote_locked(
+            locked_manor,
+            quote,
+            sync_production=True,
+        )
 
-        upgrading_count = Building.objects.filter(manor=manor, is_upgrading=True).count()
-        if upgrading_count >= MAX_CONCURRENT_BUILDING_UPGRADES:
-            raise BuildingConcurrentUpgradeLimitError(MAX_CONCURRENT_BUILDING_UPGRADES)
+        locked_building.upgrade_complete_at = timezone.now() + timedelta(seconds=quote.duration_seconds)
+        locked_building.is_upgrading = True
+        locked_building.save(update_fields=["upgrade_complete_at", "is_upgrading"])
+        schedule_building_completion(locked_building, quote.duration_seconds)
 
-        from ..resources import spend_resources_locked
-
-        spend_resources_locked(manor, cost, building.building_type.name, ResourceEvent.Reason.UPGRADE_COST)
-
-        silver_spent = cost.get("silver", 0)
-        if silver_spent > 0:
-            from .prestige import add_prestige_silver_locked
-
-            add_prestige_silver_locked(manor, silver_spent)
-
-        building.upgrade_complete_at = timezone.now() + timedelta(seconds=duration_seconds)
-        building.is_upgrading = True
-        building.save(update_fields=["upgrade_complete_at", "is_upgrading"])
-        schedule_building_completion(building, duration_seconds)
+    building.level = locked_building.level
+    building.is_upgrading = locked_building.is_upgrading
+    building.upgrade_complete_at = locked_building.upgrade_complete_at

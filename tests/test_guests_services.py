@@ -12,6 +12,7 @@ from gameplay.services.manor.core import ensure_manor
 from guests.constants import TimeConstants
 from guests.models import Guest, GuestArchetype, GuestRarity, GuestStatus, GuestTemplate
 from guests.rarity import GUEST_RARITY_ORDER
+from guests.services import health as health_service
 from guests.services.health import recover_guest_hp
 from guests.services.recruitment_guests import allocate_attribute_points
 from guests.services.recruitment_queries import available_guests, list_pools
@@ -246,6 +247,49 @@ def test_scan_passive_hp_recovery_clears_full_hp_injured_status():
     assert processed == 1
     assert guest.current_hp == guest.max_hp
     assert guest.status == GuestStatus.IDLE
+
+
+@pytest.mark.django_db
+def test_scan_passive_hp_recovery_passes_ordered_ids_and_counts_changed_guests(
+    monkeypatch,
+):
+    user = User.objects.create_user(username="testuser_hp_scan_ids", password="test123")
+    manor = ensure_manor(user)
+    template = GuestTemplate.objects.create(
+        key="test_guest_scan_ids",
+        name="测试门客扫描ID",
+        rarity=GuestRarity.GRAY,
+        base_attack=50,
+        base_defense=50,
+    )
+    now = timezone.now()
+    last = now - timezone.timedelta(seconds=TimeConstants.HP_RECOVERY_INTERVAL)
+    first_guest = Guest.objects.create(
+        manor=manor,
+        template=template,
+        current_hp=1,
+        last_hp_recovery_at=last,
+    )
+    second_guest = Guest.objects.create(
+        manor=manor,
+        template=template,
+        current_hp=1,
+        last_hp_recovery_at=last,
+    )
+    seen_guest_ids: list[int] = []
+
+    def _recover_by_id(guest_id: int, *, now) -> bool:
+        assert isinstance(guest_id, int)
+        seen_guest_ids.append(guest_id)
+        return guest_id == first_guest.id
+
+    monkeypatch.setattr(health_service, "recover_guest_hp_for_guest", _recover_by_id)
+    monkeypatch.setattr("guests.tasks.timezone.now", lambda: now)
+
+    processed = scan_passive_hp_recovery(limit=10)
+
+    assert processed == 1
+    assert seen_guest_ids == [first_guest.id, second_guest.id]
 
 
 @pytest.mark.django_db

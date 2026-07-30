@@ -5,8 +5,7 @@ from datetime import timedelta
 from typing import Any
 
 from celery import shared_task
-from django.db.models import F
-from django.db.models.functions import Greatest
+from django.db.models import Case, F, Value, When
 from django.utils import timezone
 
 from core.config import MESSAGE
@@ -101,10 +100,18 @@ def decay_prisoner_loyalty_task():
 
     decay_amount = int(getattr(PVPConstants, "JAIL_LOYALTY_DAILY_DECAY", 5) or 5)
 
-    # Batch update all held prisoners, reduce loyalty but not below 0
+    # Keep the subtraction out of the low-loyalty branch. MySQL evaluates
+    # unsigned arithmetic before Greatest(), which can underflow below zero.
     updated = JailPrisoner.objects.filter(status=JailPrisoner.Status.HELD).update(
-        loyalty=Greatest(F("loyalty") - decay_amount, 0)
+        loyalty=Case(
+            When(loyalty__lte=decay_amount, then=Value(0)),
+            default=F("loyalty") - decay_amount,
+        )
     )
 
-    logger.info("Prisoner loyalty daily decay: updated %d prisoners, each reduced by %d", updated, decay_amount)
+    logger.info(
+        "Prisoner loyalty daily decay: updated %d prisoners, each reduced by %d",
+        updated,
+        decay_amount,
+    )
     return updated

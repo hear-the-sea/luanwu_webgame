@@ -16,12 +16,23 @@ from django.db import transaction
 from django.test import Client
 
 from battle.models import TroopTemplate
-from gameplay.models import PlayerTroop
+from gameplay.constants import BuildingKeys
+from gameplay.models import BuildingType, PlayerTroop
 from gameplay.services.manor.core import ensure_manor
 from tests.jail_persuasion.conftest import persuasion_world as persuasion_world  # noqa: F401
 
 # 获取项目根目录
 PROJECT_ROOT = Path(__file__).parent.parent
+
+_REQUIRED_BUILDING_KEYS = (
+    BuildingKeys.SILVER_VAULT,
+    BuildingKeys.GRANARY,
+    BuildingKeys.JUXIAN_ZHUANG,
+    BuildingKeys.JIADING_FANG,
+    BuildingKeys.YOUXIA_BAOTA,
+    BuildingKeys.LIANGGONG_CHANG,
+    BuildingKeys.FORGE,
+)
 
 
 def _run_project_command(command: str, /, **kwargs) -> None:
@@ -54,8 +65,17 @@ def ensure_guest_data_loaded() -> None:
     _run_project_command("load_guest_templates", verbosity=0, skip_images=True)
 
 
+def ensure_building_data_loaded() -> None:
+    """Restore required building templates after transaction-isolated test flushes."""
+    loaded_keys = set(BuildingType.objects.filter(key__in=_REQUIRED_BUILDING_KEYS).values_list("key", flat=True))
+    if loaded_keys == set(_REQUIRED_BUILDING_KEYS):
+        return
+    _run_project_command("load_building_templates", verbosity=0)
+
+
 def ensure_game_data_loaded() -> None:
     ensure_test_schema_ready()
+    ensure_building_data_loaded()
     ensure_troop_data_loaded()
     ensure_guest_data_loaded()
 
@@ -157,10 +177,16 @@ def _require_external_cache_backend(settings, cache, *, strict: bool) -> None:
     try:
         cache.set(probe_key, "1", timeout=5)
         if cache.get(probe_key) != "1":
-            _gate_outcome("integration tests require a writable external cache backend", strict=strict)
+            _gate_outcome(
+                "integration tests require a writable external cache backend",
+                strict=strict,
+            )
         cache.delete(probe_key)
     except Exception as exc:
-        _gate_outcome(f"integration tests require reachable external cache backend: {exc}", strict=strict)
+        _gate_outcome(
+            f"integration tests require reachable external cache backend: {exc}",
+            strict=strict,
+        )
 
 
 def _require_external_channel_layer(settings, channel_layer, *, strict: bool) -> None:
@@ -177,9 +203,15 @@ def _require_external_channel_layer(settings, channel_layer, *, strict: bool) ->
         async_to_sync(channel_layer.send)(channel_name, payload)
         received = async_to_sync(channel_layer.receive)(channel_name)
         if received != payload:
-            _gate_outcome("integration tests require reliable external channel layer backend", strict=strict)
+            _gate_outcome(
+                "integration tests require reliable external channel layer backend",
+                strict=strict,
+            )
     except Exception as exc:
-        _gate_outcome(f"integration tests require reachable external channel layer backend: {exc}", strict=strict)
+        _gate_outcome(
+            f"integration tests require reachable external channel layer backend: {exc}",
+            strict=strict,
+        )
 
 
 def _require_external_celery_broker(celery_app, *, strict: bool) -> None:
@@ -250,14 +282,22 @@ def manor_with_troops(django_user_model, django_db_blocker):
             call_command("load_troop_templates", verbosity=0, skip_images=True)
 
         # 在事务外创建护院（使用 transaction.atomic 确保提交）
-        common_troop_types = ["archer", "dao_jie", "qiang_ling", "jian_shi", "fist_master"]
+        common_troop_types = [
+            "archer",
+            "dao_jie",
+            "qiang_ling",
+            "jian_shi",
+            "fist_master",
+        ]
 
         with transaction.atomic():
             for troop_key in common_troop_types:
                 troop_template = TroopTemplate.objects.filter(key=troop_key).first()
                 if troop_template:
                     PlayerTroop.objects.get_or_create(
-                        manor=manor, troop_template=troop_template, defaults={"count": 1000}
+                        manor=manor,
+                        troop_template=troop_template,
+                        defaults={"count": 1000},
                     )
 
         # 确保至少有一个门客模板（用于测试）
@@ -299,7 +339,10 @@ def auth_client_factory(user_factory):
     def _create_client(**user_overrides):
         user = user_factory(**user_overrides)
         client = Client()
-        assert client.login(username=user.username, password=user_overrides.get("password", "testpass123"))
+        assert client.login(
+            username=user.username,
+            password=user_overrides.get("password", "testpass123"),
+        )
         client.user = user
         return client, user
 
@@ -309,6 +352,7 @@ def auth_client_factory(user_factory):
 @pytest.fixture
 def manor_factory(user_factory):
     def _create_manor(**user_overrides):
+        ensure_building_data_loaded()
         user = user_factory(**user_overrides)
         manor = ensure_manor(user)
         return manor, user

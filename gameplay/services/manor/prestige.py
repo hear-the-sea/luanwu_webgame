@@ -7,11 +7,59 @@
 from __future__ import annotations
 
 from django.db import transaction
+from django.dispatch import Signal
 
 from ...models import Manor
 
 # 每增加1点声望需要花费的银两
 PRESTIGE_SILVER_THRESHOLD = 1000
+
+# 领域写入只发布提交后的声望事实；虚拟人口接线由 gameplay.signals 消费。
+prestige_change_committed = Signal()
+
+
+def _emit_prestige_change_committed(
+    *,
+    manor_id: int,
+    region: str,
+    before_prestige: int,
+    after_prestige: int,
+) -> None:
+    prestige_change_committed.send(
+        sender=Manor,
+        manor_id=manor_id,
+        region=region,
+        before_prestige=before_prestige,
+        after_prestige=after_prestige,
+    )
+
+
+def schedule_prestige_change_on_commit(
+    *,
+    manor: Manor,
+    before_prestige: int,
+    after_prestige: int,
+) -> bool:
+    """Publish a committed prestige change without coupling the domain owner to consumers."""
+    before = int(before_prestige)
+    after = int(after_prestige)
+    if before == after:
+        return False
+    if manor.pk is None:
+        raise ValueError("manor must be persisted before scheduling a prestige change")
+    manor_id = int(manor.pk)
+    region = str(manor.region)
+
+    def _emit_after_commit() -> None:
+        _emit_prestige_change_committed(
+            manor_id=manor_id,
+            region=region,
+            before_prestige=before,
+            after_prestige=after,
+        )
+
+    transaction.on_commit(_emit_after_commit, robust=True)
+    return True
 
 
 def add_prestige_silver_locked(manor: Manor, silver_spent: int) -> int:
@@ -23,6 +71,7 @@ def add_prestige_silver_locked(manor: Manor, silver_spent: int) -> int:
     if not transaction.get_connection().in_atomic_block:
         raise RuntimeError("add_prestige_silver_locked must be called inside transaction.atomic()")
 
+    before_total = int(manor.prestige)
     before_spent = manor.prestige_silver_spent
     before_spending_prestige = before_spent // PRESTIGE_SILVER_THRESHOLD
 
@@ -35,6 +84,11 @@ def add_prestige_silver_locked(manor: Manor, silver_spent: int) -> int:
 
     manor.prestige = after_spending_prestige + current_pvp_prestige
     manor.save(update_fields=["prestige_silver_spent", "prestige"])
+    schedule_prestige_change_on_commit(
+        manor=manor,
+        before_prestige=before_total,
+        after_prestige=int(manor.prestige),
+    )
 
     gained = after_spending_prestige - before_spending_prestige
     return max(0, gained)

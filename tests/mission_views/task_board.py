@@ -9,7 +9,7 @@ from django.db import DatabaseError
 from django.urls import reverse
 from django.utils import timezone
 
-from gameplay.models import InventoryItem, ItemTemplate, MissionRun, MissionTemplate
+from gameplay.models import InventoryItem, ItemTemplate, MissionExtraAttempt, MissionRun, MissionTemplate
 from guests.models import GuestTemplate
 
 
@@ -75,6 +75,77 @@ class TestTaskBoardPage:
         _manor, client = manor_with_user
         response = client.get(reverse("gameplay:tasks") + "?mission=huashan_lunjian")
         assert response.status_code == 200
+
+    def test_task_board_renders_mission_card_confirmation_metadata(self, manor_with_user):
+        manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key=f"task_board_card_confirm_{manor.id}",
+            name="任务卡确认任务",
+            difficulty=MissionTemplate.Difficulty.JUNIOR,
+            daily_limit=3,
+        )
+        card_template, _ = ItemTemplate.objects.get_or_create(
+            key="mission_card",
+            defaults={"name": "任务卡", "effect_type": ItemTemplate.EffectType.TOOL},
+        )
+        InventoryItem.objects.update_or_create(
+            manor=manor,
+            template=card_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            defaults={"quantity": 3},
+        )
+        MissionExtraAttempt.objects.create(
+            manor=manor,
+            mission=mission,
+            date=timezone.localdate(),
+            extra_count=2,
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        assert response.context["selected_mission_card_uses"] == 2
+        assert response.context["mission_card_daily_limit"] == 5
+        body = response.content.decode("utf-8")
+        assert "任务卡 2 / 5" in body
+        assert 'class="inline js-mission-card-form"' in body
+        assert 'data-mission-name="任务卡确认任务"' in body
+        assert 'data-card-count="3"' in body
+        assert 'data-used-count="2"' in body
+        assert 'data-daily-limit="5"' in body
+
+    def test_task_board_disables_mission_card_button_at_daily_limit(self, manor_with_user):
+        manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key=f"task_board_card_limit_{manor.id}",
+            name="任务卡满额任务",
+            difficulty=MissionTemplate.Difficulty.JUNIOR,
+            daily_limit=3,
+        )
+        card_template, _ = ItemTemplate.objects.get_or_create(
+            key="mission_card",
+            defaults={"name": "任务卡", "effect_type": ItemTemplate.EffectType.TOOL},
+        )
+        InventoryItem.objects.update_or_create(
+            manor=manor,
+            template=card_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            defaults={"quantity": 1},
+        )
+        MissionExtraAttempt.objects.create(
+            manor=manor,
+            mission=mission,
+            date=timezone.localdate(),
+            extra_count=5,
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "任务卡 5 / 5" in body
+        assert re.search(r'class="tw-btn-add"[^>]+disabled', body)
+        assert "该任务今日最多使用5张任务卡" in body
 
     def test_task_board_renders_non_silver_drops_as_drop_icons(self, manor_with_user, settings, tmp_path):
         _manor, client = manor_with_user

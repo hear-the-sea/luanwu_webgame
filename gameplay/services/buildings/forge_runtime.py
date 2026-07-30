@@ -25,6 +25,7 @@ from .forge_flow_helpers import (
     send_equipment_forging_completion_notification,
     validate_forging_quantity,
 )
+from .production_cancel import cancel_active_production
 
 logger = logging.getLogger(__name__)
 
@@ -172,6 +173,17 @@ def start_equipment_forging(
         schedule_forging_completion(production, actual_duration)
 
     return production
+
+
+def cancel_equipment_forging(manor: Any, production_id: int) -> EquipmentProduction:
+    """取消仍在进行的装备锻造，已消耗的材料不返还。"""
+    return cancel_active_production(
+        production_model=EquipmentProduction,
+        manor=manor,
+        production_id=production_id,
+        active_status=EquipmentProduction.Status.FORGING,
+        cancelled_status=EquipmentProduction.Status.CANCELLED,
+    )
 
 
 def finalize_equipment_forging(

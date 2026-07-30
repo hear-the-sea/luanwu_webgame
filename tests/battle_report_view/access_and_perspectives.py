@@ -154,7 +154,7 @@ def test_arena_report_uses_defender_perspective_for_defender_viewer(client, djan
     assert response.context["defender_team_display"][0]["name"] == "A"
     assert response.context["report_title"] == f"{attacker_manor.display_name} 战报"
     body = response.content.decode("utf-8")
-    assert body.count('data-unit-state-side="defender"') == 2
+    assert body.count('data-unit-state-side="defender"') == 1
     assert 'data-unit-state-side="attacker"' not in body
 
 

@@ -1,6 +1,7 @@
 import logging
 
 import pytest
+from django.db import transaction
 from django.test import override_settings
 from django.utils import timezone
 
@@ -8,7 +9,12 @@ from battle.models import TroopTemplate
 from core.exceptions import InsufficientResourceError
 from gameplay.models import InventoryItem, PlayerTroop, ResourceEvent, ResourceType, TroopBankStorage
 from gameplay.services.manor.core import ensure_manor
-from gameplay.services.resources import grant_resources, spend_resources, sync_resource_production
+from gameplay.services.resources import (
+    grant_resources,
+    settle_resource_production_locked,
+    spend_resources,
+    sync_resource_production,
+)
 from gameplay.utils.resource_calculator import get_personnel_grain_cost_per_hour
 from guests.models import Guest, GuestTemplate
 from tests.gameplay_services.support import User, ensure_grain_template
@@ -224,7 +230,10 @@ def test_sync_resource_production_persist_false_projects_without_db_write(monkey
         "gameplay.services.resources.get_hourly_rates",
         lambda _manor: {ResourceType.SILVER: 120, ResourceType.GRAIN: 0},
     )
-    monkeypatch.setattr("gameplay.services.resources.get_personnel_grain_cost_per_hour", lambda _manor: 0)
+    monkeypatch.setattr(
+        "gameplay.services.resources.get_personnel_grain_cost_per_hour",
+        lambda _manor: 0,
+    )
     monkeypatch.setattr("gameplay.services.resources.scale_value", lambda value: value)
 
     sync_resource_production(manor, persist=False)
@@ -247,7 +256,10 @@ def test_spend_resources_applies_offline_production_before_balance_check(monkeyp
         "gameplay.services.resources.get_hourly_rates",
         lambda _manor: {ResourceType.SILVER: 100, ResourceType.GRAIN: 0},
     )
-    monkeypatch.setattr("gameplay.services.resources.get_personnel_grain_cost_per_hour", lambda _manor: 0)
+    monkeypatch.setattr(
+        "gameplay.services.resources.get_personnel_grain_cost_per_hour",
+        lambda _manor: 0,
+    )
     monkeypatch.setattr("gameplay.services.resources.scale_value", lambda value: value)
 
     spend_resources(manor, {"silver": 100}, "离线产出后扣费")
@@ -280,7 +292,9 @@ def test_get_personnel_grain_cost_per_hour_counts_all_personnel():
 
 
 @pytest.mark.django_db
-def test_sync_resource_production_allows_negative_grain_delta_and_clamps_to_zero(monkeypatch):
+def test_sync_resource_production_allows_negative_grain_delta_and_clamps_to_zero(
+    monkeypatch,
+):
     user = User.objects.create_user(username="negative_grain_user", password="test123", email="p2@test.local")
     manor = ensure_manor(user)
     grain_template = ensure_grain_template()
@@ -325,3 +339,66 @@ def test_sync_resource_production_allows_negative_grain_delta_and_clamps_to_zero
     )
     assert event is not None
     assert event.delta == -90
+
+
+@pytest.mark.django_db
+def test_locked_resource_settlement_caps_positive_delta_and_preserves_upkeep(
+    monkeypatch,
+):
+    user = User.objects.create_user(
+        username="bounded_resource_settlement_user",
+        password="test123",
+    )
+    manor = ensure_manor(user)
+    ensure_grain_template()
+    settled_at = timezone.now()
+    manor.silver = 0
+    manor.grain = 90
+    manor.resource_updated_at = settled_at - timezone.timedelta(hours=1)
+    manor.save(update_fields=["silver", "grain", "resource_updated_at"])
+
+    monkeypatch.setattr(
+        "gameplay.services.resources.get_hourly_rates",
+        lambda _manor: {
+            ResourceType.SILVER: 1_000,
+            ResourceType.GRAIN: 50,
+        },
+    )
+    monkeypatch.setattr(
+        "gameplay.services.resources.get_personnel_grain_cost_per_hour",
+        lambda _manor: 200,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.resources.scale_value",
+        lambda value: value,
+    )
+
+    with transaction.atomic():
+        locked_manor = type(manor).objects.select_for_update().get(pk=manor.pk)
+        settled = settle_resource_production_locked(
+            locked_manor,
+            now=settled_at,
+            positive_limits={
+                ResourceType.SILVER: 25,
+                ResourceType.GRAIN: 10,
+            },
+            note="有界产出测试",
+        )
+
+    manor.refresh_from_db(fields=["silver", "grain", "resource_updated_at"])
+    assert settled == {
+        ResourceType.GRAIN: -90,
+        ResourceType.SILVER: 25,
+    }
+    assert (manor.silver, manor.grain) == (25, 0)
+    assert manor.resource_updated_at == settled_at
+    assert set(
+        ResourceEvent.objects.filter(
+            manor=manor,
+            reason=ResourceEvent.Reason.PRODUCE,
+            note="有界产出测试",
+        ).values_list("resource_type", "delta")
+    ) == {
+        (ResourceType.GRAIN, -90),
+        (ResourceType.SILVER, 25),
+    }

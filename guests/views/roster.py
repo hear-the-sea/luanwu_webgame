@@ -21,7 +21,7 @@ from core.exceptions import GameError
 from core.utils import sanitize_error_message
 
 from ..forms import AllocateSkillPointsForm
-from ..models import GearItem, GearSlot, GearTemplate, GuestSkill, Skill
+from ..models import GearItem, GearSlot, GuestSkill, Skill
 from ..services.recruitment_queries import available_guests
 from ..services.roster import dismiss_guest
 from ..services.skills import collect_skill_requirements, collect_unmet_skill_requirements
@@ -73,6 +73,7 @@ def _load_guest_detail(manor, guest_pk: int):
                     "id",
                     "guest_id",
                     "template_id",
+                    "template__key",
                     "template__slot",
                     "template__name",
                     "template__rarity",
@@ -102,6 +103,8 @@ def _load_guest_detail(manor, guest_pk: int):
 
 
 def _build_gear_set_context(gear_items):
+    from gameplay.models import ItemTemplate
+
     equipped_templates = [item.template for item in gear_items]
     set_keys = {tpl.set_key for tpl in equipped_templates if getattr(tpl, "set_key", "")}
     gear_sets = []
@@ -109,20 +112,27 @@ def _build_gear_set_context(gear_items):
     if not set_keys:
         return gear_sets, gear_set_map
 
-    templates = list(
-        GearTemplate.objects.filter(set_key__in=set_keys)
-        .only("id", "name", "set_key", "set_description", "set_bonus", "rarity", "slot")
-        .order_by("set_key", "slot", "id")
+    catalog_templates = list(
+        ItemTemplate.objects.filter(effect_type__startswith="equip_", effect_payload__set_key__in=set_keys)
+        .only("id", "key", "name", "effect_type", "effect_payload", "rarity")
+        .order_by("effect_type", "key")
     )
     templates_by_set = {}
-    for tpl in templates:
-        templates_by_set.setdefault(tpl.set_key, []).append(tpl)
-    equipped_ids = {tpl.id for tpl in equipped_templates}
+    for tpl in catalog_templates:
+        payload = tpl.effect_payload
+        if not isinstance(payload, dict):
+            continue
+        set_key = payload.get("set_key")
+        if set_key in set_keys:
+            templates_by_set.setdefault(set_key, []).append((tpl, payload))
+    equipped_keys = {tpl.key for tpl in equipped_templates}
+    slot_labels = dict(GearSlot.choices)
     for set_key in sorted(templates_by_set):
         members = templates_by_set.get(set_key, [])
         if not members:
             continue
-        bonus = members[0].set_bonus or {}
+        first_payload = members[0][1]
+        bonus = first_payload.get("set_bonus") or {}
         pieces = None
         if isinstance(bonus, dict):
             pieces = bonus.get("pieces")
@@ -131,14 +141,15 @@ def _build_gear_set_context(gear_items):
         members_payload = [
             {
                 "id": tpl.id,
+                "key": tpl.key,
                 "name": tpl.name,
-                "slot": tpl.get_slot_display() if hasattr(tpl, "get_slot_display") else tpl.slot,
+                "slot": slot_labels.get(tpl.effect_type.removeprefix("equip_"), tpl.effect_type),
                 "rarity": tpl.rarity,
-                "equipped": tpl.id in equipped_ids,
+                "equipped": tpl.key in equipped_keys,
             }
-            for tpl in members
+            for tpl, _payload in members
         ]
-        set_desc = members[0].set_description if hasattr(members[0], "set_description") else ""
+        set_desc = first_payload.get("set_description") or ""
         payload = {
             "description": set_desc,
             "pieces": pieces,

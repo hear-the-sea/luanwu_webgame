@@ -222,36 +222,61 @@ def scan_passive_hp_recovery(limit: int = 200) -> int:
     """
     from guests.constants import TimeConstants
     from guests.models import Guest, GuestStatus
-    from guests.services.health import recover_guest_hp
+    from guests.services.health import recover_guest_hp_for_guest
 
     now = timezone.now()
+    batch_limit = max(0, int(limit))
     cutoff = now - timedelta(seconds=TimeConstants.HP_RECOVERY_INTERVAL)
     max_hp_expr = Greatest(
         F("template__base_hp") + F("hp_bonus") + F("defense_stat") * int(GUEST.DEFENSE_TO_HP_MULTIPLIER),
         Value(int(GUEST.MIN_HP_FLOOR)),
         output_field=IntegerField(),
     )
-    qs = (
-        Guest.objects.select_related("manor", "template")
-        .filter(
+    guest_ids = list(
+        Guest.objects.filter(
             last_hp_recovery_at__lte=cutoff,
             status__in=[GuestStatus.IDLE, GuestStatus.INJURED],
         )
         .filter(Q(current_hp__lt=max_hp_expr) | Q(status=GuestStatus.INJURED, current_hp__gte=max_hp_expr))
-        .order_by("last_hp_recovery_at")[:limit]
+        .order_by("last_hp_recovery_at", "id")
+        .values_list("id", flat=True)[:batch_limit]
     )
     count = 0
-    for guest in qs:
-        before_state = (guest.current_hp, guest.last_hp_recovery_at, guest.status)
+    for guest_id in guest_ids:
         try:
-            recover_guest_hp(guest, now=now)
-            after_state = (guest.current_hp, guest.last_hp_recovery_at, guest.status)
-            if after_state != before_state:
+            if recover_guest_hp_for_guest(int(guest_id), now=now):
                 count += 1
         except GUEST_TASK_RETRY_EXCEPTIONS:
             # Per-guest HP recovery failure should not abort the scan.
-            logger.exception("Failed to recover passive HP for guest %d", guest.id)
+            logger.exception("Failed to recover passive HP for guest %d", guest_id)
     return count
+
+
+@shared_task(name="guests.scan_injury_loyalty_decay")
+def scan_injury_loyalty_decay(limit: int = 200) -> int:
+    """结算战斗重伤门客每满三小时产生的忠诚度损失。"""
+    from guests.models import Guest, GuestStatus
+    from guests.services.loyalty import INJURY_LOYALTY_DECAY_INTERVAL, process_injury_loyalty_decay_for_guest
+
+    now = timezone.now()
+    cutoff = now - INJURY_LOYALTY_DECAY_INTERVAL
+    guest_ids = list(
+        Guest.objects.filter(
+            status=GuestStatus.INJURED,
+            injury_loyalty_processed_at__lte=cutoff,
+        )
+        .order_by("injury_loyalty_processed_at", "id")
+        .values_list("id", flat=True)[: max(0, int(limit))]
+    )
+
+    processed_count = 0
+    for guest_id in guest_ids:
+        try:
+            if process_injury_loyalty_decay_for_guest(int(guest_id), now=now) > 0:
+                processed_count += 1
+        except GUEST_TASK_RETRY_EXCEPTIONS:
+            logger.exception("Failed to process injury loyalty decay for guest %d", guest_id)
+    return processed_count
 
 
 @shared_task(name="guests.process_daily_loyalty", bind=True, max_retries=2, default_retry_delay=60)
@@ -350,6 +375,7 @@ def _build_defection_message_payload(guest) -> dict:
 
 
 def _process_defection_batch(guest_ids: list[int], *, create_message: Callable) -> int:
+    from gameplay.models import Manor
     from guests.models import Guest, GuestDefection
 
     defection_count = 0
@@ -359,19 +385,22 @@ def _process_defection_batch(guest_ids: list[int], *, create_message: Callable) 
             processed = False
 
             with transaction.atomic():
-                guest = (
-                    Guest.objects.select_for_update()
-                    .select_related("manor__user", "template")
-                    .filter(id=guest_id)
-                    .first()
-                )
+                # 先只读定位父行，持有 Manor 锁前不得锁 Guest。
+                manor_id = Guest.objects.filter(id=guest_id).values_list("manor_id", flat=True).first()
+                if manor_id is None:
+                    continue
+                locked_manor = Manor.objects.select_for_update().filter(pk=manor_id).first()
+                if locked_manor is None:
+                    continue
+                guest = Guest.objects.select_for_update().filter(id=guest_id, manor_id=locked_manor.pk).first()
                 if guest is None:
                     continue
+                guest.manor = locked_manor
 
                 defection, created = GuestDefection.objects.get_or_create(
                     guest_id=guest.id,
                     defaults={
-                        "manor": guest.manor,
+                        "manor": locked_manor,
                         "guest_name": guest.display_name,
                         "guest_level": guest.level,
                         "guest_rarity": guest.rarity,

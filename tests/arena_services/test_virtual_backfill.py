@@ -19,9 +19,18 @@ from gameplay.models import (
     ArenaVirtualDemand,
     BotProfile,
 )
-from gameplay.services.arena.coop_core import start_due_virtual_backfill_coop_events
-from gameplay.services.arena.core import start_due_virtual_backfill_tournaments
-from gameplay.services.arena.virtual_backfill import backfill_coop_event_locked, backfill_tournament_locked
+from gameplay.services.arena.virtual_backfill import backfill_coop_event_locked as persist_coop_backfill_locked
+from gameplay.services.arena.virtual_backfill import backfill_tournament_locked as persist_tournament_backfill_locked
+from gameplay.services.arena.virtual_lineups import InvalidVirtualLineupSnapshot
+from gameplay.services.arena.virtual_reserve_fill import prepare_coop_backfill_locked as backfill_coop_event_locked
+from gameplay.services.arena.virtual_reserve_fill import (
+    prepare_tournament_backfill_locked as backfill_tournament_locked,
+)
+from gameplay.services.arena.virtual_reserve_fill import (
+    start_due_virtual_backfill_coop_events,
+    start_due_virtual_backfill_tournaments,
+)
+from gameplay.services.arena.virtual_reserve_pool import evaluate_bot_lineup
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestStatus
 from tests.arena_services.support import User, create_guest, create_guest_template
@@ -240,10 +249,82 @@ def test_tournament_backfill_uses_bot_owned_balanced_lineups_and_skips_reserved_
         links = list(entry.entry_guests.all())
         assert len(links) == 1
         assert links[0].guest_id is None
+        assert links[0].snapshot["current_hp"] == links[0].snapshot["max_hp"]
         bot_template_keys = set(entry.manor.guests.values_list("template__key", flat=True))
         assert links[0].snapshot["template_key"] in bot_template_keys
         assert 600 * 80 <= _snapshot_power([links[0].snapshot]) * 100 <= 600 * 120
         assert not entry.manor.guests.exclude(status=GuestStatus.IDLE).exists()
+
+
+@pytest.mark.django_db
+def test_virtual_backfill_full_health_snapshot_does_not_heal_persisted_guest():
+    tournament = ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RECRUITING,
+        player_limit=2,
+    )
+    _add_real_arena_entry(
+        tournament,
+        "arena_backfill_injured_reference",
+        attack=200,
+        defense=200,
+        max_hp=2_000,
+    )
+    profile = _create_bot_profile("arena_backfill_injured_bot")
+    guest = profile.manor.guests.get()
+    injured_hp = max(1, guest.max_hp // 4)
+    Guest.objects.filter(pk=guest.pk).update(current_hp=injured_hp)
+
+    assert backfill_tournament_locked(tournament) == 1
+
+    snapshot = tournament.entries.get(source=ArenaEntry.Source.VIRTUAL).entry_guests.get().snapshot
+    guest.refresh_from_db()
+    assert snapshot["current_hp"] == snapshot["max_hp"]
+    assert guest.current_hp == injured_hp
+
+
+@pytest.mark.django_db
+def test_locked_virtual_backfill_rejects_non_full_health_before_any_write():
+    tournament = ArenaTournament.objects.create(player_limit=2)
+    _add_real_arena_entry(
+        tournament,
+        "arena_backfill_invalid_tournament_reference",
+        attack=200,
+        defense=200,
+        max_hp=2_000,
+    )
+    tournament_profile = _create_bot_profile("arena_backfill_invalid_tournament_bot")
+    event = ArenaCoopEvent.objects.create(player_limit=2, guest_limit_per_entry=1)
+    _add_real_coop_entry(event, "arena_backfill_invalid_coop_reference")
+    coop_profile = _create_bot_profile("arena_backfill_invalid_coop_bot")
+    residual_snapshot = {
+        "display_name": "residual virtual guest",
+        "attack": 200,
+        "defense": 200,
+        "max_hp": 2_000,
+        "current_hp": 1_999,
+    }
+
+    with pytest.raises(
+        InvalidVirtualLineupSnapshot,
+        match="must be normalized to full health",
+    ):
+        persist_tournament_backfill_locked(
+            tournament,
+            locked_lineups=[(tournament_profile, [residual_snapshot])],
+            target_team_power=600,
+        )
+    with pytest.raises(
+        InvalidVirtualLineupSnapshot,
+        match="must be normalized to full health",
+    ):
+        persist_coop_backfill_locked(
+            event,
+            locked_lineups=[(coop_profile, [residual_snapshot])],
+            target_team_power=600,
+        )
+
+    assert not tournament.entries.filter(source=ArenaEntry.Source.VIRTUAL).exists()
+    assert not event.entries.filter(source=ArenaCoopEntry.Source.VIRTUAL).exists()
 
 
 @pytest.mark.django_db
@@ -288,8 +369,6 @@ def test_tournament_backfill_skips_empty_and_out_of_range_bots_before_using_late
 
 @pytest.mark.django_db
 def test_bot_lineup_evaluation_distinguishes_ready_and_closest_below():
-    from gameplay.services.arena.virtual_backfill import evaluate_bot_lineup
-
     ready = _create_bot_profile("reserve_ready", guest_stats=[(150, 150, 50)])
     weak = _create_bot_profile("reserve_weak", guest_stats=[(150, 150, 25)])
 
@@ -357,12 +436,12 @@ def test_explicit_profile_ids_limit_atomic_coop_backfill_candidates():
 
 @pytest.mark.django_db
 def test_arena_candidate_discovery_does_not_lock_the_bot_pool():
-    from gameplay.services.arena import virtual_backfill
+    from gameplay.services.arena import virtual_reserve_fill
 
     first = _create_bot_profile("arena_discovery_unlocked_one")
     second = _create_bot_profile("arena_discovery_unlocked_two")
 
-    candidates = virtual_backfill._candidates(excluded_manor_ids=set())
+    candidates = virtual_reserve_fill._candidates(excluded_manor_ids=set())
 
     assert candidates.query.select_for_update is False
     assert list(candidates.values_list("id", flat=True)) == [first.id, second.id]
@@ -370,13 +449,13 @@ def test_arena_candidate_discovery_does_not_lock_the_bot_pool():
 
 @pytest.mark.django_db
 def test_arena_candidate_lock_is_limited_to_the_remaining_shortfall():
-    from gameplay.services.arena import virtual_backfill
+    from gameplay.services.arena import virtual_reserve_fill
 
     first = _create_bot_profile("arena_lock_limit_one")
     second = _create_bot_profile("arena_lock_limit_two")
 
     with transaction.atomic():
-        locked = virtual_backfill._lock_candidates(
+        locked = virtual_reserve_fill._lock_candidates(
             profile_ids=[first.id, second.id],
             excluded_manor_ids=set(),
             limit=1,
@@ -389,20 +468,20 @@ def test_arena_candidate_lock_is_limited_to_the_remaining_shortfall():
 
 @pytest.mark.django_db
 def test_tournament_backfill_locks_only_profiles_with_eligible_lineups(monkeypatch):
-    from gameplay.services.arena import virtual_backfill
+    from gameplay.services.arena import virtual_reserve_fill
 
     tournament = ArenaTournament.objects.create(status=ArenaTournament.Status.RECRUITING, player_limit=2)
     _add_real_arena_entry(tournament, "arena_lock_pipeline_reference", attack=200, defense=200, max_hp=2000)
     weak = _create_bot_profile("arena_lock_pipeline_weak", guest_stats=[(10, 10, 10)])
     eligible = _create_bot_profile("arena_lock_pipeline_eligible")
-    original_lock_candidates = virtual_backfill._lock_candidates
+    original_lock_candidates = virtual_reserve_fill._lock_candidates
     lock_calls = []
 
     def track_lock_candidates(**kwargs):
         lock_calls.append(kwargs)
         return original_lock_candidates(**kwargs)
 
-    monkeypatch.setattr(virtual_backfill, "_lock_candidates", track_lock_candidates)
+    monkeypatch.setattr(virtual_reserve_fill, "_lock_candidates", track_lock_candidates)
 
     assert backfill_tournament_locked(tournament) == 1
     assert len(lock_calls) == 1
@@ -413,7 +492,7 @@ def test_tournament_backfill_locks_only_profiles_with_eligible_lineups(monkeypat
 
 @pytest.mark.django_db
 def test_candidate_lock_tries_the_next_profile_when_locked_lineup_is_stale(monkeypatch):
-    from gameplay.services.arena import virtual_backfill
+    from gameplay.services.arena import virtual_reserve_fill
 
     first = _create_bot_profile("arena_lock_stale_first")
     second = _create_bot_profile("arena_lock_stale_second")
@@ -423,10 +502,10 @@ def test_candidate_lock_tries_the_next_profile_when_locked_lineup_is_stale(monke
             return []
         return [{"attack": 200, "defense": 200, "max_hp": 2000}]
 
-    monkeypatch.setattr(virtual_backfill, "_select_bot_lineup", select_after_lock)
+    monkeypatch.setattr(virtual_reserve_fill, "_select_bot_lineup", select_after_lock)
 
     with transaction.atomic():
-        selected = virtual_backfill._lock_eligible_bot_lineups(
+        selected = virtual_reserve_fill._lock_eligible_bot_lineups(
             profile_ids=[first.id, second.id],
             excluded_manor_ids=set(),
             needed=1,
@@ -441,21 +520,21 @@ def test_candidate_lock_tries_the_next_profile_when_locked_lineup_is_stale(monke
 
 @pytest.mark.django_db
 def test_bot_lineup_selection_is_stable_per_event_and_varies_across_events():
-    from gameplay.services.arena import virtual_backfill
+    from gameplay.services.arena import virtual_reserve_fill
 
     profile = _create_bot_profile(
         "arena_backfill_stable_random",
         guest_stats=[(100, 100, 70), (100, 100, 70), (100, 100, 70), (100, 100, 70)],
     )
 
-    first = virtual_backfill._select_bot_lineup(
+    first = virtual_reserve_fill._select_bot_lineup(
         profile,
         mode="tournament",
         event_id=101,
         target_guest_count=2,
         target_team_power=1340,
     )
-    repeated = virtual_backfill._select_bot_lineup(
+    repeated = virtual_reserve_fill._select_bot_lineup(
         profile,
         mode="tournament",
         event_id=101,
@@ -463,7 +542,7 @@ def test_bot_lineup_selection_is_stable_per_event_and_varies_across_events():
         target_team_power=1340,
     )
     event_results = [
-        virtual_backfill._select_bot_lineup(
+        virtual_reserve_fill._select_bot_lineup(
             profile,
             mode="tournament",
             event_id=event_id,
@@ -501,6 +580,10 @@ def test_coop_backfill_replaces_only_registered_entry_shortfall():
     assert created == 2
     assert {entry.manor_id for entry in virtual_entries} == {first_available.manor_id, second_available.manor_id}
     assert all(entry.entry_guests.get().guest_id is None for entry in virtual_entries)
+    assert all(
+        entry.entry_guests.get().snapshot["current_hp"] == entry.entry_guests.get().snapshot["max_hp"]
+        for entry in virtual_entries
+    )
 
 
 @pytest.mark.django_db
@@ -688,7 +771,7 @@ def test_tournament_backfill_logs_when_eligible_bots_are_insufficient(caplog):
     tournament = ArenaTournament.objects.create(status=ArenaTournament.Status.RECRUITING, player_limit=3)
     _add_real_arena_entry(tournament, "arena_audit_shortage_real", attack=200, defense=200, max_hp=2000)
     _create_bot_profile("arena_audit_shortage_bot")
-    caplog.set_level(logging.WARNING, logger="gameplay.services.arena.virtual_backfill")
+    caplog.set_level(logging.WARNING, logger="gameplay.services.arena.virtual_reserve_fill")
 
     assert backfill_tournament_locked(tournament) == 0
 

@@ -205,7 +205,7 @@ def test_virtual_player_slow_roll_heartbeat_keeps_competing_worker_out(monkeypat
     if os.environ.get("DJANGO_TEST_USE_ENV_SERVICES", "0") != "1":
         pytest.skip("virtual player lock integration requires DJANGO_TEST_USE_ENV_SERVICES=1")
 
-    from gameplay.services import virtual_players
+    from gameplay.services.virtual_player_core import population_runtime as virtual_players
 
     lock_key = f"integration:virtual-player-slow-roll:{uuid.uuid4().hex}"
     logger = logging.getLogger(__name__)

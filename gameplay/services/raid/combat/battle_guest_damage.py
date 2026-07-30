@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from guests.services.loyalty import start_injury_loyalty_decay
+
 
 def extract_side_guest_state(report: Any, side: str) -> tuple[dict[int, int], set[int]]:
     hp_updates: dict[int, int] = {}
@@ -74,7 +76,11 @@ def apply_guest_damage_from_report(
         guest.last_hp_recovery_at = now
         if is_defeated:
             guest.status = guest_status.INJURED
+            start_injury_loyalty_decay(guest, now=now)
         dirty_guests.append(guest)
 
     if dirty_guests:
-        guest_model.objects.bulk_update(dirty_guests, ["current_hp", "last_hp_recovery_at", "status"])
+        guest_model.objects.bulk_update(
+            dirty_guests,
+            ["current_hp", "last_hp_recovery_at", "status", "injury_loyalty_processed_at"],
+        )

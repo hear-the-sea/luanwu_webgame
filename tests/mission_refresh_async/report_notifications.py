@@ -130,6 +130,7 @@ def test_finalize_mission_run_defers_report_message_until_after_commit(monkeypat
         select_guests_for_finalize=lambda *_args, **_kwargs: [],
         prepare_guest_updates_for_finalize=lambda *_args, **_kwargs: ([], []),
         mark_run_completed=lambda current_run, _now: setattr(current_run, "status", current_run.Status.COMPLETED),
+        apply_city_defense_battle_damage=lambda *_args, **_kwargs: None,
         apply_defender_troop_losses=lambda *_args, **_kwargs: None,
         return_attacker_troops_after_mission=lambda *_args, **_kwargs: None,
         apply_mission_rewards_if_won=lambda *_args, **_kwargs: None,

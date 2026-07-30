@@ -5,10 +5,10 @@ import time
 import uuid
 
 import pytest
-from django.db import connection
+from django.db import connection, transaction
 
-from core.exceptions import EquipmentNotEquippedError
-from gameplay.models import InventoryItem, ItemTemplate
+from core.exceptions import EquipmentNotEquippedError, ItemNotFoundError
+from gameplay.models import InventoryItem, ItemTemplate, Manor
 from gameplay.services.manor.core import ensure_manor
 from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestArchetype, GuestRarity, GuestTemplate
 from guests.services import equipment as equipment_service
@@ -170,3 +170,104 @@ def test_equip_and_unequip_same_guest_slot_complete_without_deadlock(django_user
         ).exists()
         is False
     )
+
+
+@pytest.mark.django_db(transaction=True)
+def test_locked_and_public_equip_serialize_on_manor_and_consume_one_inventory_item(django_user_model, monkeypatch):
+    if connection.vendor == "sqlite":
+        pytest.skip("SQLite does not provide row-level select_for_update semantics for this concurrency scenario")
+
+    user = django_user_model.objects.create_user(
+        username=f"guest_equipment_locked_concurrent_{uuid.uuid4().hex[:8]}",
+        password="pass123",
+    )
+    manor = ensure_manor(user)
+    guest_template = GuestTemplate.objects.create(
+        key=f"guest_equipment_locked_concurrent_tpl_{uuid.uuid4().hex[:8]}",
+        name="锁内并发装备门客",
+        archetype=GuestArchetype.MILITARY,
+        rarity=GuestRarity.GREEN,
+        base_hp=1000,
+    )
+    first_guest = Guest.objects.create(manor=manor, template=guest_template, force=100)
+    second_guest = Guest.objects.create(manor=manor, template=guest_template, force=100)
+    item_template = ItemTemplate.objects.create(
+        key=f"guest_equipment_locked_weapon_{uuid.uuid4().hex[:8]}",
+        name="唯一库存佩刀",
+        effect_type="equip_weapon",
+        effect_payload={"force": 9},
+        rarity=GuestRarity.GREEN,
+    )
+    inventory_item = InventoryItem.objects.create(
+        manor=manor,
+        template=item_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        quantity=1,
+    )
+
+    inventory_locked = threading.Event()
+    allow_locked_equip_to_continue = threading.Event()
+    public_equip_started = threading.Event()
+    original_slot_capacity = equipment_service.slot_capacity
+    successes: list[str] = []
+    errors: list[Exception] = []
+
+    def _slot_capacity_with_pause(slot: str) -> int:
+        if threading.current_thread().name == "locked-equipment-worker" and slot == GearSlot.WEAPON:
+            inventory_locked.set()
+            allow_locked_equip_to_continue.wait(timeout=5)
+        return original_slot_capacity(slot)
+
+    monkeypatch.setattr(equipment_service, "slot_capacity", _slot_capacity_with_pause)
+
+    def _locked_worker() -> None:
+        try:
+            with transaction.atomic():
+                locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+                locked_guest = Guest.objects.select_for_update().get(pk=first_guest.pk)
+                equipment_service.equip_guest_from_inventory_locked(
+                    locked_manor,
+                    locked_guest,
+                    inventory_item.pk,
+                    expected_template_key=item_template.key,
+                    expected_slot=GearSlot.WEAPON,
+                )
+            successes.append("locked")
+        except Exception as exc:  # pragma: no cover - validated by assertions below
+            errors.append(exc)
+
+    def _public_worker() -> None:
+        try:
+            public_equip_started.set()
+            local_guest = Guest.objects.get(pk=second_guest.pk)
+            equipment_service.equip_guest(item_template.key, local_guest, slot=GearSlot.WEAPON)
+            successes.append("public")
+        except Exception as exc:  # pragma: no cover - validated by assertions below
+            errors.append(exc)
+
+    locked_thread = threading.Thread(target=_locked_worker, name="locked-equipment-worker", daemon=True)
+    public_thread = threading.Thread(target=_public_worker, name="public-equipment-worker", daemon=True)
+
+    locked_thread.start()
+    assert inventory_locked.wait(timeout=5)
+    public_thread.start()
+    assert public_equip_started.wait(timeout=5)
+    time.sleep(0.2)
+    assert public_thread.is_alive() is True
+    allow_locked_equip_to_continue.set()
+
+    locked_thread.join(timeout=5)
+    public_thread.join(timeout=5)
+
+    assert locked_thread.is_alive() is False
+    assert public_thread.is_alive() is False
+    assert successes == ["locked"]
+    assert len(errors) == 1
+    assert isinstance(errors[0], ItemNotFoundError)
+    assert not InventoryItem.objects.filter(pk=inventory_item.pk).exists()
+    first_guest.refresh_from_db()
+    second_guest.refresh_from_db()
+    assert first_guest.force == 109
+    assert second_guest.force == 100
+    assert first_guest.gear_items.filter(template__key=item_template.key).count() == 1
+    assert not second_guest.gear_items.exists()

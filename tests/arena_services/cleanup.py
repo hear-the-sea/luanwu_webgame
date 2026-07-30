@@ -7,7 +7,14 @@ from django.utils import timezone
 
 import gameplay.services.arena.core as arena_core
 from core.exceptions import ArenaParticipationLimitError
-from gameplay.models import ArenaCoopEntry, ArenaCoopEvent, ArenaEntry, ArenaEntryGuest, ArenaTournament
+from gameplay.models import (
+    ArenaCoopEntry,
+    ArenaCoopEvent,
+    ArenaEntry,
+    ArenaEntryGuest,
+    ArenaTournament,
+    ArenaVirtualDemand,
+)
 from gameplay.services.arena.coop_core import cleanup_expired_arena_coop_events
 from gameplay.services.arena.core import cleanup_expired_tournaments, register_arena_entry
 from gameplay.services.manor.core import ensure_manor
@@ -38,6 +45,10 @@ def test_cleanup_expired_tournaments_removes_old_finished_data():
         status=ArenaEntry.Status.ELIMINATED,
     )
     ArenaEntryGuest.objects.create(entry=stale_entry, guest=guest, snapshot=snapshot_from_guest(guest))
+    stale_demand = ArenaVirtualDemand.objects.create(
+        tournament=stale_tournament,
+        status=ArenaVirtualDemand.Status.CLOSED,
+    )
 
     fresh_tournament = ArenaTournament.objects.create(
         status=ArenaTournament.Status.COMPLETED,
@@ -54,6 +65,7 @@ def test_cleanup_expired_tournaments_removes_old_finished_data():
     cleaned = cleanup_expired_tournaments(now=now, grace_seconds=600, limit=20)
     assert cleaned == 1
     assert not ArenaTournament.objects.filter(id=stale_tournament.id).exists()
+    assert not ArenaVirtualDemand.objects.filter(id=stale_demand.id).exists()
     assert ArenaTournament.objects.filter(id=fresh_tournament.id).exists()
 
 
@@ -116,6 +128,10 @@ def test_cleanup_expired_arena_coop_events_removes_old_finished_data():
         manor=manor,
         status=ArenaCoopEntry.Status.COMPLETED,
     )
+    stale_demand = ArenaVirtualDemand.objects.create(
+        coop_event=stale_event,
+        status=ArenaVirtualDemand.Status.CLOSED,
+    )
 
     fresh_event = ArenaCoopEvent.objects.create(
         status=ArenaCoopEvent.Status.COMPLETED,
@@ -133,4 +149,5 @@ def test_cleanup_expired_arena_coop_events_removes_old_finished_data():
 
     assert cleaned == 1
     assert not ArenaCoopEvent.objects.filter(id=stale_event.id).exists()
+    assert not ArenaVirtualDemand.objects.filter(id=stale_demand.id).exists()
     assert ArenaCoopEvent.objects.filter(id=fresh_event.id).exists()

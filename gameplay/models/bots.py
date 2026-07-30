@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from django.db import models
+from django.db.models import F, Q
+from django.utils import timezone
 
 
 class BotProfile(models.Model):
@@ -38,6 +40,17 @@ class BotProfile(models.Model):
     retire_at = models.DateTimeField("退场时间", db_index=True)
     loot_budget_daily = models.PositiveIntegerField("每日资源预算", default=0)
     inventory_template_keys = models.JSONField("库存模板池", default=list, blank=True)
+    engine_version = models.PositiveSmallIntegerField("执行器版本", default=1, db_index=True)
+    rng_version = models.PositiveSmallIntegerField("随机算法版本", default=0)
+    plan_schema_version = models.PositiveSmallIntegerField("发展画像版本", default=0)
+    policy_version = models.PositiveSmallIntegerField("策略版本", default=0)
+    policy_checksum = models.CharField("策略校验和", max_length=64, default="", blank=True)
+    development_profile = models.JSONField("发展画像", default=dict, blank=True)
+    maintenance_sequence = models.PositiveIntegerField("维护序号", default=0)
+    strength_budget_entries = models.JSONField("强度预算窗口", default=list, blank=True)
+    last_strength_increase_at = models.DateTimeField("最近强度提升时间", null=True, blank=True)
+    forced_settlement_daily_budget = models.JSONField("强制结算日预算", default=dict, blank=True)
+    v2_enrolled_at = models.DateTimeField("V2 入组时间", null=True, blank=True)
     maintenance_started_at = models.DateTimeField("维护开始时间", null=True, blank=True)
     maintenance_stopped_at = models.DateTimeField("维护停止时间", null=True, blank=True)
     last_planned_at = models.DateTimeField("最近规划时间", null=True, blank=True)
@@ -52,12 +65,499 @@ class BotProfile(models.Model):
         indexes = [
             models.Index(fields=["state", "next_growth_at"], name="bot_state_next_growth_idx"),
             models.Index(fields=["prestige_band", "state"], name="bot_band_state_idx"),
-            models.Index(fields=["target_prestige_band", "state"], name="bot_target_band_state_idx"),
-            models.Index(fields=["current_prestige_band", "state"], name="bot_current_band_state_idx"),
+            models.Index(
+                fields=["target_prestige_band", "state"],
+                name="bot_target_band_state_idx",
+            ),
+            models.Index(
+                fields=["current_prestige_band", "state"],
+                name="bot_current_band_state_idx",
+            ),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(engine_version__gte=1),
+                name="bot_profile_engine_version_gte_1",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    ~Q(engine_version=2)
+                    | (
+                        Q(rng_version__gte=1)
+                        & Q(plan_schema_version__gte=1)
+                        & Q(policy_version__gte=1)
+                        & ~Q(policy_checksum="")
+                        & Q(last_strength_increase_at__isnull=False)
+                        & Q(v2_enrolled_at__isnull=False)
+                    )
+                ),
+                name="bot_profile_v2_required_fields",
+            ),
         ]
 
     def __str__(self) -> str:
         return f"{self.manor.display_name} ({self.archetype}/{self.state})"
+
+
+class BotPolicyRelease(models.Model):
+    """Immutable, versioned virtual-player development policy payload."""
+
+    version = models.PositiveSmallIntegerField("策略版本", primary_key=True)
+    checksum = models.CharField("策略校验和", max_length=64, unique=True)
+    payload = models.JSONField("策略快照")
+    released_at = models.DateTimeField("发布时间")
+    retire_not_before = models.DateTimeField("最早退役时间")
+    retired_at = models.DateTimeField("退役时间", null=True, blank=True)
+
+    class Meta:
+        verbose_name = "虚拟玩家策略发布"
+        verbose_name_plural = "虚拟玩家策略发布"
+        constraints = [
+            models.CheckConstraint(
+                condition=~Q(checksum=""),
+                name="bot_policy_checksum_nonempty",
+            ),
+            models.CheckConstraint(
+                condition=Q(retire_not_before__gte=F("released_at")),
+                name="bot_policy_retire_deadline_gte_release",
+            ),
+            models.CheckConstraint(
+                condition=Q(retired_at__isnull=True) | Q(retired_at__gte=F("released_at")),
+                name="bot_policy_retired_at_gte_release",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"policy-v{self.version}:{self.checksum[:12]}"
+
+
+class BotExternalStrengthReconciliation(models.Model):
+    """Durable two-phase reconciliation intent for externally committed Bot changes."""
+
+    class Status(models.TextChoices):
+        PENDING_PROFILE = "pending_profile", "待档案对账"
+        CLAIMED_PROFILE = "claimed_profile", "档案对账中"
+        PENDING_POPULATION = "pending_population", "待人口交接"
+        CLAIMED_POPULATION = "claimed_population", "人口交接中"
+        APPLIED = "applied", "已完成"
+        QUARANTINED = "quarantined", "已隔离"
+
+    class Phase(models.TextChoices):
+        PROFILE = "profile", "档案"
+        POPULATION = "population", "人口"
+
+    profile_id = models.PositiveBigIntegerField("虚拟玩家档案 ID", db_index=True)
+    domain_event_kind = models.CharField("领域事件类型", max_length=64)
+    domain_event_id = models.CharField("领域事件 ID", max_length=128)
+    origin_committed_at = models.DateTimeField("原事件提交时间", db_index=True)
+    pre_strength_summary = models.JSONField("提交前强度摘要", default=dict)
+    pre_prestige_band = models.CharField("提交前声望段", max_length=32)
+    status = models.CharField(
+        "状态",
+        max_length=24,
+        choices=Status.choices,
+        default=Status.PENDING_PROFILE,
+    )
+    profile_attempt_count = models.PositiveSmallIntegerField("档案阶段尝试次数", default=0)
+    population_attempt_count = models.PositiveSmallIntegerField("人口阶段尝试次数", default=0)
+    available_at = models.DateTimeField("下次可处理时间", db_index=True)
+    claim_token = models.UUIDField("认领令牌", null=True, blank=True)
+    claimed_at = models.DateTimeField("认领时间", null=True, blank=True)
+    claim_expires_at = models.DateTimeField("认领过期时间", null=True, blank=True)
+    profile_completed_at = models.DateTimeField("档案阶段完成时间", null=True, blank=True)
+    population_handoff_completed_at = models.DateTimeField("人口交接完成时间", null=True, blank=True)
+    applied_at = models.DateTimeField("最终完成时间", null=True, blank=True)
+    result_summary = models.JSONField("结果摘要", default=dict, blank=True)
+    quarantined_at = models.DateTimeField("隔离时间", null=True, blank=True)
+    quarantined_phase = models.CharField("隔离阶段", max_length=16, choices=Phase.choices, default="", blank=True)
+    failure_code = models.CharField("失败代码", max_length=64, default="", blank=True)
+    last_error_digest = models.CharField("最近错误摘要", max_length=64, default="", blank=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    updated_at = models.DateTimeField("更新时间", auto_now=True)
+
+    class Meta:
+        verbose_name = "虚拟玩家外部强度对账"
+        verbose_name_plural = "虚拟玩家外部强度对账"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["profile_id", "domain_event_kind", "domain_event_id"],
+                name="bot_ext_reconcile_domain_event_uniq",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    (Q(claim_token__isnull=True) & Q(claimed_at__isnull=True) & Q(claim_expires_at__isnull=True))
+                    | (Q(claim_token__isnull=False) & Q(claimed_at__isnull=False) & Q(claim_expires_at__isnull=False))
+                ),
+                name="bot_ext_reconcile_claim_fields_together",
+            ),
+            models.CheckConstraint(
+                condition=Q(profile_attempt_count__lte=12),
+                name="bot_ext_reconcile_profile_attempt_lte_12",
+            ),
+            models.CheckConstraint(
+                condition=Q(population_attempt_count__lte=12),
+                name="bot_ext_reconcile_pop_attempt_lte_12",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    (Q(status="applied") & Q(applied_at__isnull=False))
+                    | (~Q(status="applied") & Q(applied_at__isnull=True))
+                ),
+                name="bot_ext_reconcile_applied_timestamp",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(population_handoff_completed_at__isnull=True)
+                    | (
+                        Q(profile_completed_at__isnull=False)
+                        & Q(applied_at__isnull=False)
+                        & Q(population_handoff_completed_at__gte=F("profile_completed_at"))
+                        & Q(applied_at__gte=F("population_handoff_completed_at"))
+                    )
+                ),
+                name="bot_ext_reconcile_handoff_timestamps",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    (
+                        Q(status="quarantined")
+                        & Q(quarantined_at__isnull=False)
+                        & ~Q(quarantined_phase="")
+                        & ~Q(failure_code="")
+                    )
+                    | (~Q(status="quarantined") & Q(quarantined_at__isnull=True))
+                ),
+                name="bot_ext_reconcile_quarantine_fields",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["status", "available_at"], name="bot_ext_status_avail_idx"),
+            models.Index(
+                fields=["profile_id", "origin_committed_at", "id"],
+                name="bot_ext_profile_order_idx",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.profile_id}:{self.domain_event_kind}:{self.domain_event_id} ({self.status})"
+
+
+class BotRuntimeRoutingState(models.Model):
+    """Database-owned singleton for current virtual-player runtime routing."""
+
+    GLOBAL_KEY = "virtual_players"
+
+    class BootstrapMode(models.TextChoices):
+        LEGACY_BEFORE_GATE = "legacy_before_gate", "Gate 前 V1"
+        V2_ACTIVE = "v2_active", "V2 已启用"
+        V2_PAUSED = "v2_paused", "V2 已暂停"
+
+    class MaintenanceMode(models.TextChoices):
+        LEGACY_BEFORE_GATE = "legacy_before_gate", "Gate 前 V1"
+        V2_CUTOVER = "v2_cutover", "V2 切换中"
+        V2_ACTIVE = "v2_active", "V2 已启用"
+        V2_PAUSED = "v2_paused", "V2 已暂停"
+
+    key = models.CharField(max_length=32, primary_key=True, default=GLOBAL_KEY, editable=False)
+    bootstrap_mode = models.CharField(
+        "Bootstrap 模式",
+        max_length=24,
+        choices=BootstrapMode.choices,
+        default=BootstrapMode.LEGACY_BEFORE_GATE,
+    )
+    maintenance_mode = models.CharField(
+        "Maintenance 模式",
+        max_length=24,
+        choices=MaintenanceMode.choices,
+        default=MaintenanceMode.LEGACY_BEFORE_GATE,
+    )
+    calibration_routes = models.JSONField("参考校准路由", default=list, blank=True)
+    policy_rollout_target_version = models.PositiveSmallIntegerField(
+        "策略 rollout 目标版本",
+        default=1,
+    )
+    policy_rollout_enabled = models.BooleanField("策略 rollout 已启用", default=False)
+    policy_rollout_percent = models.PositiveSmallIntegerField(
+        "策略 rollout 百分比",
+        default=0,
+    )
+    revision = models.PositiveBigIntegerField("修订号", default=0)
+    last_hourly_safety_window_end_at = models.DateTimeField("最近小时安全窗口", null=True, blank=True)
+    last_daily_safety_window_end_at = models.DateTimeField("最近日安全窗口", null=True, blank=True)
+    last_pause_window_id = models.CharField("最近暂停窗口 ID", max_length=128, default="", blank=True)
+    pause_reason = models.TextField("暂停原因", default="", blank=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    updated_at = models.DateTimeField("更新时间", auto_now=True)
+
+    class Meta:
+        verbose_name = "虚拟玩家运行路由"
+        verbose_name_plural = "虚拟玩家运行路由"
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(key="virtual_players"),
+                name="bot_runtime_routing_singleton_key",
+            ),
+            models.CheckConstraint(
+                condition=Q(bootstrap_mode__in=["legacy_before_gate", "v2_active", "v2_paused"]),
+                name="bot_runtime_bootstrap_mode_valid",
+            ),
+            models.CheckConstraint(
+                condition=Q(
+                    maintenance_mode__in=[
+                        "legacy_before_gate",
+                        "v2_cutover",
+                        "v2_active",
+                        "v2_paused",
+                    ]
+                ),
+                name="bot_runtime_maintenance_mode_valid",
+            ),
+            models.CheckConstraint(
+                condition=Q(policy_rollout_target_version__gte=1),
+                name="bot_runtime_policy_target_gte_1",
+            ),
+            models.CheckConstraint(
+                condition=Q(policy_rollout_percent__lte=100),
+                name="bot_runtime_policy_percent_lte_100",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(policy_rollout_enabled=True, policy_rollout_percent__gte=1)
+                    | Q(policy_rollout_enabled=False, policy_rollout_percent=0)
+                ),
+                name="bot_runtime_policy_rollout_valid",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.key}@{self.revision}"
+
+
+class BotPopulationRecomputeDemand(models.Model):
+    """Durable, coalesced request to recompute one virtual-player population cell."""
+
+    region = models.CharField("地区", max_length=32)
+    prestige_band = models.CharField("声望段", max_length=32)
+    requested_revision = models.PositiveBigIntegerField("请求修订号", default=0)
+    completed_revision = models.PositiveBigIntegerField("完成修订号", default=0)
+    claimed_revision = models.PositiveBigIntegerField("认领修订号", null=True, blank=True)
+    claim_token = models.UUIDField("认领令牌", null=True, blank=True)
+    claimed_at = models.DateTimeField("认领时间", null=True, blank=True)
+    claim_expires_at = models.DateTimeField("认领过期时间", null=True, blank=True)
+    available_at = models.DateTimeField("下次可处理时间", default=timezone.now, db_index=True)
+    consecutive_failure_count = models.PositiveIntegerField("连续失败次数", default=0)
+    last_error_digest = models.CharField("最近错误摘要", max_length=64, default="", blank=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    updated_at = models.DateTimeField("更新时间", auto_now=True)
+
+    class Meta:
+        verbose_name = "虚拟玩家人口重算需求"
+        verbose_name_plural = "虚拟玩家人口重算需求"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["region", "prestige_band"],
+                name="bot_pop_recompute_cell_uniq",
+            ),
+            models.CheckConstraint(
+                condition=Q(completed_revision__lte=F("requested_revision")),
+                name="bot_pop_req_completed_lte",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    (
+                        Q(claimed_revision__isnull=True)
+                        & Q(claim_token__isnull=True)
+                        & Q(claimed_at__isnull=True)
+                        & Q(claim_expires_at__isnull=True)
+                    )
+                    | (
+                        Q(claimed_revision__isnull=False)
+                        & Q(claim_token__isnull=False)
+                        & Q(claimed_at__isnull=False)
+                        & Q(claim_expires_at__isnull=False)
+                    )
+                ),
+                name="bot_pop_claim_fields_together",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(claimed_revision__isnull=True)
+                    | (
+                        Q(claimed_revision__gt=F("completed_revision"))
+                        & Q(claimed_revision__lte=F("requested_revision"))
+                    )
+                ),
+                name="bot_pop_claim_revision_range",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["available_at", "claim_expires_at"],
+                name="bot_pop_recompute_avail_idx",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.region}:{self.prestige_band} " f"({self.completed_revision}/{self.requested_revision})"
+
+
+class BotArenaShortageBaseline(models.Model):
+    """Frozen pre-activation Arena shortage ratio for one monitored scope."""
+
+    class Mode(models.TextChoices):
+        TOURNAMENT = "tournament", "普通竞技场"
+        COOP = "coop", "共斗竞技场"
+
+    mode = models.CharField("竞技场模式", max_length=16, choices=Mode.choices)
+    prestige_band = models.CharField("声望段", max_length=32)
+    baseline_ratio = models.DecimalField(
+        "短缺基线比例",
+        max_digits=13,
+        decimal_places=12,
+    )
+    frozen_at = models.DateTimeField("冻结时间")
+    evidence_id = models.CharField("证据 ID", max_length=128)
+    evidence_checksum = models.CharField("证据校验和", max_length=64)
+    payload_digest = models.CharField("载荷摘要", max_length=64)
+    created_at = models.DateTimeField("写入时间", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "竞技场短缺基线"
+        verbose_name_plural = "竞技场短缺基线"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["mode", "prestige_band"],
+                name="bot_arena_shortage_scope_uniq",
+            ),
+            models.CheckConstraint(
+                condition=Q(mode__in=["tournament", "coop"]),
+                name="bot_arena_shortage_mode_valid",
+            ),
+            models.CheckConstraint(
+                condition=(Q(baseline_ratio__gte=0) & Q(baseline_ratio__lte=1)),
+                name="bot_arena_shortage_ratio_range",
+            ),
+            models.CheckConstraint(
+                condition=~Q(prestige_band=""),
+                name="bot_arena_shortage_band_nonempty",
+            ),
+            models.CheckConstraint(
+                condition=~Q(evidence_id=""),
+                name="bot_arena_shortage_evid_nonempty",
+            ),
+            models.CheckConstraint(
+                condition=~Q(evidence_checksum=""),
+                name="bot_arena_shortage_cksum_nonempty",
+            ),
+            models.CheckConstraint(
+                condition=~Q(payload_digest=""),
+                name="bot_arena_shortage_digest_nonempty",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.mode}:{self.prestige_band}={self.baseline_ratio}"
+
+
+class BotSafetyMetricEvent(models.Model):
+    """Append-only safety metric event with a canonical immutable payload."""
+
+    event_id = models.CharField("事件 ID", max_length=128, unique=True)
+    metric_name = models.CharField("指标名", max_length=128)
+    occurred_at = models.DateTimeField("发生时间")
+    dimensions = models.JSONField("规范维度", default=dict)
+    value = models.DecimalField(
+        "指标值",
+        max_digits=32,
+        decimal_places=12,
+    )
+    payload_digest = models.CharField("载荷摘要", max_length=64)
+    created_at = models.DateTimeField("写入时间", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "虚拟玩家安全指标事件"
+        verbose_name_plural = "虚拟玩家安全指标事件"
+        constraints = [
+            models.CheckConstraint(
+                condition=~Q(event_id=""),
+                name="bot_safety_event_id_nonempty",
+            ),
+            models.CheckConstraint(
+                condition=~Q(metric_name=""),
+                name="bot_safety_metric_nonempty",
+            ),
+            models.CheckConstraint(
+                condition=~Q(payload_digest=""),
+                name="bot_safety_event_digest_nonempty",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["occurred_at"], name="bot_safe_evt_occ_idx"),
+            models.Index(
+                fields=["metric_name", "occurred_at"],
+                name="bot_safe_evt_metric_occ_idx",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.metric_name}:{self.event_id}"
+
+
+class BotSafetyMetricWindow(models.Model):
+    """Open lock row or immutable finalized safety metric window snapshot."""
+
+    class Kind(models.TextChoices):
+        HOURLY = "hourly", "小时"
+        DAILY = "daily", "日"
+
+    window_id = models.CharField("窗口 ID", max_length=128, unique=True)
+    kind = models.CharField("窗口类型", max_length=8, choices=Kind.choices)
+    window_start_at = models.DateTimeField("窗口开始时间")
+    window_end_at = models.DateTimeField("窗口结束时间", db_index=True)
+    snapshot = models.JSONField("最终快照", default=dict, blank=True)
+    snapshot_digest = models.CharField("快照摘要", max_length=64, default="", blank=True)
+    finalized_at = models.DateTimeField("冻结时间", null=True, blank=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    updated_at = models.DateTimeField("更新时间", auto_now=True)
+
+    class Meta:
+        verbose_name = "虚拟玩家安全指标窗口"
+        verbose_name_plural = "虚拟玩家安全指标窗口"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["kind", "window_start_at"],
+                name="bot_safety_window_kind_start_uniq",
+            ),
+            models.CheckConstraint(
+                condition=Q(window_end_at__gt=F("window_start_at")),
+                name="bot_safety_window_end_gt_start",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(finalized_at__isnull=True, snapshot_digest="")
+                    | (Q(finalized_at__isnull=False) & ~Q(snapshot_digest=""))
+                ),
+                name="bot_safety_window_finalize_fields",
+            ),
+            models.CheckConstraint(
+                condition=(Q(finalized_at__isnull=True) | Q(finalized_at__gte=F("window_end_at"))),
+                name="bot_safety_window_final_gte_end",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["window_end_at", "kind"],
+                name="bot_safe_win_end_kind_idx",
+            ),
+            models.Index(
+                fields=["finalized_at", "window_end_at"],
+                name="bot_safe_win_final_end_idx",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        state = "finalized" if self.finalized_at is not None else "open"
+        return f"{self.window_id} ({state})"
 
 
 class BotPopulationControl(models.Model):

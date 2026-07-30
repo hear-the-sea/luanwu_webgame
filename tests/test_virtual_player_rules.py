@@ -5,13 +5,13 @@ from random import Random
 
 import pytest
 
-from gameplay.services.virtual_player_rules import (
+from gameplay.services.virtual_player_core.legacy.projection import (
     apply_combat_persona,
     bounded_approach,
-    choose_lifecycle,
     choose_strength_quantile,
     nearest_rank_quantile,
 )
+from gameplay.services.virtual_player_core.lifecycle import choose_lifecycle
 
 
 def test_nearest_rank_quantile_is_deterministic_for_small_samples():

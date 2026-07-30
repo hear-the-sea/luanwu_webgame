@@ -63,7 +63,12 @@ def _iter_set_bonus_entries(set_bonus) -> list[tuple[int | None, dict]]:
     return [(set_bonus.get("pieces"), bonus_map)]
 
 
-def _build_set_bonus_summary(set_key: str, set_bonus) -> str:
+@register.filter
+def set_bonus_entries(set_bonus) -> list[tuple[int | None, dict]]:
+    return _iter_set_bonus_entries(set_bonus)
+
+
+def _build_set_bonus_summary(set_description: str, set_bonus) -> str:
     set_texts = []
     for pieces, bonus_map in _iter_set_bonus_entries(set_bonus):
         bonus_parts = []
@@ -74,13 +79,13 @@ def _build_set_bonus_summary(set_key: str, set_bonus) -> str:
                 continue
             bonus_parts.append(f"{_GEAR_STAT_LABELS.get(key, '未知属性')}+{value}")
         piece_text = f"{pieces}件" if pieces else "套装"
-        set_text = f"{set_key or '套装'}（{piece_text}）"
+        set_text = f"{set_description or '套装'}（{piece_text}）"
         if bonus_parts:
             set_text += "：" + "、".join(bonus_parts)
         set_texts.append(set_text)
     if set_texts:
         return "；".join(set_texts)
-    return set_key or "套装"
+    return set_description or "套装"
 
 
 def _render_set_members(lines: list, members: list, set_desc: str, esc) -> None:
@@ -174,9 +179,10 @@ def gear_summary(template) -> str:
         parts.append("、".join(stats))
 
     set_key = getattr(template, "set_key", "") or ""
+    set_description = getattr(template, "set_description", "") or ""
     set_bonus = getattr(template, "set_bonus", {}) or {}
-    if set_key or set_bonus:
-        parts.append(_build_set_bonus_summary(set_key, set_bonus))
+    if set_key or set_description or set_bonus:
+        parts.append(_build_set_bonus_summary(set_description, set_bonus))
     return "；".join(parts)
 
 

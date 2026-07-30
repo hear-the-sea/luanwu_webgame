@@ -7,7 +7,9 @@ existing pytest commands and CI references.
 """
 
 from tests.raid_combat_battle.battle_flow import *  # noqa: F401,F403
+from tests.raid_combat_battle.bot_loot_retirement import *  # noqa: F401,F403
 from tests.raid_combat_battle.execution_cleanup import *  # noqa: F401,F403
+from tests.raid_combat_battle.external_reconciliation import *  # noqa: F401,F403
 from tests.raid_combat_battle.messaging import *  # noqa: F401,F403
 from tests.raid_combat_battle.normalization_helpers import *  # noqa: F401,F403
 from tests.raid_combat_battle.travel_blocking import *  # noqa: F401,F403

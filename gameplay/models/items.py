@@ -58,6 +58,7 @@ class ResourceEvent(models.Model):
         MARKET_SOLD = "market_sold", "交易行出售"
         ITEM_SOLD = "item_sold", "物品出售"
         TECH_UPGRADE = "tech_upgrade", "科技升级"
+        CITY_DEFENSE_REPAIR = "city_defense_repair", "城防修复"
 
     manor = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="resource_events")
     resource_type = models.CharField(max_length=16, choices=ResourceType.choices)

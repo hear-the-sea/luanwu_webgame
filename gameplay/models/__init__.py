@@ -11,7 +11,19 @@ public model classes/constants here to preserve the historical import style:
 from .arena import ArenaEntry, ArenaEntryGuest, ArenaExchangeRecord, ArenaMatch, ArenaTournament
 from .arena_coop import ArenaCoopContribution, ArenaCoopEntry, ArenaCoopEntryGuest, ArenaCoopEvent
 from .arena_virtual import ArenaVirtualDemand, ArenaVirtualReserveMember
-from .bots import BotBackfillDemand, BotInventoryDailyCounter, BotPopulationControl, BotProfile
+from .bots import (
+    BotArenaShortageBaseline,
+    BotBackfillDemand,
+    BotExternalStrengthReconciliation,
+    BotInventoryDailyCounter,
+    BotPolicyRelease,
+    BotPopulationControl,
+    BotPopulationRecomputeDemand,
+    BotProfile,
+    BotRuntimeRoutingState,
+    BotSafetyMetricEvent,
+    BotSafetyMetricWindow,
+)
 from .chat import WorldChatSendAttempt
 from .items import GlobalMailCampaign, GlobalMailDelivery, InventoryItem, ItemTemplate, Message, ResourceEvent
 from .manor import (
@@ -47,6 +59,7 @@ from .progression import (
     WorkTemplate,
 )
 from .pvp import JailInteractionLog, JailPrisoner, OathBond, RaidRun, ScoutCooldown, ScoutRecord
+from .virtual_player_maintenance import BotMaintenanceExecution
 
 __all__ = [
     # manor/buildings
@@ -87,10 +100,18 @@ __all__ = [
     "ArenaVirtualDemand",
     "ArenaVirtualReserveMember",
     # bots
+    "BotArenaShortageBaseline",
     "BotBackfillDemand",
+    "BotExternalStrengthReconciliation",
     "BotInventoryDailyCounter",
+    "BotMaintenanceExecution",
+    "BotPolicyRelease",
     "BotPopulationControl",
+    "BotPopulationRecomputeDemand",
     "BotProfile",
+    "BotRuntimeRoutingState",
+    "BotSafetyMetricEvent",
+    "BotSafetyMetricWindow",
     # chat
     "WorldChatSendAttempt",
     # missions

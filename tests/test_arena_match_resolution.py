@@ -12,7 +12,8 @@ import gameplay.services.arena.match_helpers as arena_match_helpers
 from battle.models import BattleReport
 from gameplay.models import ArenaEntry, ArenaEntryGuest, ArenaMatch, ArenaTournament
 from gameplay.services.arena.core import run_due_arena_rounds
-from gameplay.services.arena.match_helpers import create_scheduled_match, resolve_match_locked, resolve_report_winner
+from gameplay.services.arena.match_helpers import resolve_match_locked, resolve_report_winner
+from gameplay.services.arena.match_store import create_scheduled_match
 from gameplay.services.manor.core import ensure_manor
 from tests.arena_services.support import User, create_guest, create_guest_template, snapshot_from_guest
 

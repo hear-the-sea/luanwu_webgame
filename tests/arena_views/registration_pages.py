@@ -58,7 +58,23 @@ def test_arena_registration_page_lists_guangming_top_card(arena_client):
 
 
 @pytest.mark.django_db
-def test_arena_registration_page_labels_future_coop_fill_as_estimated(arena_client):
+def test_arena_registration_page_hides_future_tournament_fill_estimate(arena_client):
+    client, _manor = arena_client
+    ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RECRUITING,
+        virtual_fill_at=timezone.now() + timedelta(hours=1),
+    )
+
+    response = client.get(reverse("gameplay:arena"))
+
+    body = response.content.decode("utf-8")
+    assert "当前报名池：赛事" in body
+    assert "预计系统补位" not in body
+    assert "系统正在补位" not in body
+
+
+@pytest.mark.django_db
+def test_arena_registration_page_hides_future_coop_fill_estimate(arena_client):
     client, _manor = arena_client
     ArenaCoopEvent.objects.create(
         status=ArenaCoopEvent.Status.RECRUITING,
@@ -68,8 +84,9 @@ def test_arena_registration_page_labels_future_coop_fill_as_estimated(arena_clie
     response = client.get(reverse("gameplay:arena"))
 
     body = response.content.decode("utf-8")
-    assert "预计系统补位：" in body
-    assert "系统补位截止" not in body
+    assert "当前共斗池：场次" in body
+    assert "预计系统补位" not in body
+    assert "系统正在补位" not in body
 
 
 @pytest.mark.django_db

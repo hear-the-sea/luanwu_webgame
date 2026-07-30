@@ -188,7 +188,12 @@ def sync_manor_grain(manor: Manor) -> None:
         manor.grain = grain_quantity
 
 
-def sync_warehouse_grain_item_locked(manor: Manor) -> None:
+def sync_warehouse_grain_item_locked(
+    manor: Manor,
+    *,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
+) -> None:
     """
     同步仓库中的粮食物品数量，使其与 Manor.grain 一致。
 
@@ -199,7 +204,12 @@ def sync_warehouse_grain_item_locked(manor: Manor) -> None:
     """
     _require_atomic_block("sync_warehouse_grain_item_locked")
 
-    grain_template = ItemTemplate.objects.filter(key=GRAIN_ITEM_KEY).only("id").first()
+    if grain_template is None:
+        if grain_template_resolved:
+            return
+        grain_template = ItemTemplate.objects.filter(key=GRAIN_ITEM_KEY).only("id").first()
+    elif not grain_template.pk or grain_template.key != GRAIN_ITEM_KEY:
+        raise AssertionError("grain_template must be the persisted grain template")
     if not grain_template:
         return
 

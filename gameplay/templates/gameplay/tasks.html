@@ -164,11 +164,22 @@
                 <span class="tw-chip">
                     {% if selected_mission.is_defense %}防守任务{% elif selected_mission.guest_only %}门客任务{% else %}护院任务{% endif %}
                 </span>
+                <span class="tw-chip">任务卡 {{ selected_mission_card_uses }} / {{ mission_card_daily_limit }}</span>
                 {% if mission_card_count > 0 %}
-                <form method="post" action="{% url 'gameplay:use_mission_card' %}" class="inline">
+                <form method="post"
+                      action="{% url 'gameplay:use_mission_card' %}"
+                      class="inline js-mission-card-form"
+                      data-mission-name="{{ selected_mission.name }}"
+                      data-card-count="{{ mission_card_count }}"
+                      data-used-count="{{ selected_mission_card_uses }}"
+                      data-daily-limit="{{ mission_card_daily_limit }}">
                     {% csrf_token %}
                     <input type="hidden" name="mission_key" value="{{ selected_mission.key }}">
-                    <button type="submit" class="tw-btn-add" title="使用任务卡增加次数（剩余{{ mission_card_count }}张）">+</button>
+                    <button type="submit"
+                            class="tw-btn-add"
+                            aria-label="{% if selected_mission_card_uses >= mission_card_daily_limit %}任务卡使用次数已达上限{% else %}使用任务卡增加任务次数{% endif %}"
+                            title="{% if selected_mission_card_uses >= mission_card_daily_limit %}该任务今日最多使用{{ mission_card_daily_limit }}张任务卡{% else %}使用任务卡增加次数（剩余{{ mission_card_count }}张）{% endif %}"
+                            {% if selected_mission_card_uses >= mission_card_daily_limit %}disabled{% endif %}>+</button>
                 </form>
                 {% endif %}
                 {% if selected_mission.is_defense %}

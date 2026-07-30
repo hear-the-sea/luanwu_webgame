@@ -4,6 +4,7 @@ Base Django settings - core configuration.
 
 from __future__ import annotations
 
+import json
 import math
 import os
 import sys
@@ -34,6 +35,19 @@ def env_float(key: str, default: float) -> float:
     return parsed
 
 
+def env_json_string_mapping(key: str) -> dict[str, str]:
+    raw_value = env(key, "{}")
+    try:
+        parsed = json.loads(raw_value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{key} must be a JSON object") from exc
+    if not isinstance(parsed, dict) or any(
+        not isinstance(item_key, str) or not isinstance(item_value, str) for item_key, item_value in parsed.items()
+    ):
+        raise ValueError(f"{key} must map string key IDs to string secrets")
+    return parsed
+
+
 def _production_default_flag(*, debug: bool, running_tests: bool) -> str:
     return "0" if debug or running_tests else "1"
 
@@ -48,6 +62,9 @@ DEBUG = env("DJANGO_DEBUG", "0") == "1"
 
 # Battle debugger is a development-only tool and should be explicitly enabled.
 ENABLE_BATTLE_DEBUGGER = DEBUG and env("DJANGO_ENABLE_DEBUGGER", "0") == "1"
+
+# Gate D2 stays fail-closed unless an out-of-band generator attestation key is set.
+VIRTUAL_PLAYER_GATE_D2_ATTESTATION_KEYS = env_json_string_mapping("DJANGO_VIRTUAL_PLAYER_GATE_D2_ATTESTATION_KEYS_JSON")
 
 INSTALLED_APPS = [
     "django.contrib.admin",

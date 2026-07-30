@@ -50,6 +50,12 @@ class ProductionStartError(BuildingError):
     error_code = "PRODUCTION_START_ERROR"
 
 
+class ProductionCancelError(BuildingError):
+    """生产/制作取消错误"""
+
+    error_code = "PRODUCTION_CANCEL_ERROR"
+
+
 class ForgeOperationError(BuildingError):
     """铁匠铺锻造 / 合成 / 分解错误"""
 

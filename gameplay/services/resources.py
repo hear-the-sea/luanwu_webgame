@@ -5,21 +5,173 @@
 from __future__ import annotations
 
 import logging
+from collections import defaultdict
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, Tuple
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import F
+from django.db.models import Count, F, Sum
 from django.utils import timezone
 
 from core.exceptions import InsufficientResourceError, InsufficientSilverError
 from core.utils.time_scale import scale_value
 
-from ..models import Manor, ResourceEvent, ResourceType
-from ..utils.resource_calculator import RESOURCE_FIELDS, get_hourly_rates, get_personnel_grain_cost_per_hour
+from ..models import (
+    Building,
+    ItemTemplate,
+    Manor,
+    PlayerTechnology,
+    PlayerTroop,
+    ResourceEvent,
+    ResourceType,
+    TroopBankStorage,
+)
+from ..utils.resource_calculator import (
+    RESOURCE_FIELDS,
+    calculate_hourly_rates,
+    calculate_personnel_grain_cost_per_hour,
+    get_hourly_rates,
+    get_personnel_grain_cost_per_hour,
+)
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True, slots=True)
+class ResourceProductionBasis:
+    hourly_rates: tuple[tuple[str, float], ...]
+    personnel_grain_cost_per_hour: int
+
+
+def load_resource_production_bases(
+    manors: Sequence[Manor],
+    *,
+    guest_counts: Mapping[int, int] | None = None,
+    troop_counts: Mapping[int, int] | None = None,
+    buildings_by_manor: Mapping[int, Sequence[Building]] | None = None,
+    technology_levels: Mapping[int, Mapping[str, int]] | None = None,
+) -> dict[int, ResourceProductionBasis]:
+    """Load immutable production inputs for multiple persisted Manors."""
+
+    manor_by_id: dict[int, Manor] = {}
+    for manor in manors:
+        if not getattr(manor, "pk", None):
+            raise AssertionError("production basis requires persisted manors")
+        manor_by_id[int(manor.pk)] = manor
+    manor_ids = tuple(manor_by_id)
+    if not manor_ids:
+        return {}
+
+    if technology_levels is None:
+        resolved_technology_levels: dict[int, dict[str, int]] = defaultdict(dict)
+        for manor_id, tech_key, level in PlayerTechnology.objects.filter(manor_id__in=manor_ids).values_list(
+            "manor_id", "tech_key", "level"
+        ):
+            resolved_technology_levels[int(manor_id)][str(tech_key)] = int(level)
+    else:
+        resolved_technology_levels = {
+            int(manor_id): {str(tech_key): int(level) for tech_key, level in levels.items()}
+            for manor_id, levels in technology_levels.items()
+            if int(manor_id) in manor_by_id
+        }
+
+    if buildings_by_manor is None:
+        resolved_buildings_by_manor: dict[int, list[Building]] = defaultdict(list)
+        for building in Building.objects.filter(manor_id__in=manor_ids).select_related("building_type"):
+            resolved_buildings_by_manor[int(building.manor_id)].append(building)
+    else:
+        resolved_buildings_by_manor = {
+            int(manor_id): list(buildings)
+            for manor_id, buildings in buildings_by_manor.items()
+            if int(manor_id) in manor_by_id
+        }
+        if any(
+            int(building.manor_id) != manor_id
+            for manor_id, buildings in resolved_buildings_by_manor.items()
+            for building in buildings
+        ):
+            raise AssertionError("production basis building belongs to another manor")
+
+    if guest_counts is None:
+        from guests.models import Guest
+
+        resolved_guest_counts = {
+            int(row["manor_id"]): int(row["total"])
+            for row in Guest.objects.filter(manor_id__in=manor_ids).values("manor_id").annotate(total=Count("id"))
+        }
+    else:
+        resolved_guest_counts = {
+            int(manor_id): max(0, int(count))
+            for manor_id, count in guest_counts.items()
+            if int(manor_id) in manor_by_id
+        }
+
+    if troop_counts is None:
+        troop_totals = {
+            int(row["manor_id"]): int(row["total"] or 0)
+            for row in PlayerTroop.objects.filter(manor_id__in=manor_ids)
+            .values("manor_id")
+            .annotate(total=Sum("count"))
+        }
+    else:
+        troop_totals = {
+            int(manor_id): max(0, int(count))
+            for manor_id, count in troop_counts.items()
+            if int(manor_id) in manor_by_id
+        }
+    bank_troop_totals = {
+        int(row["manor_id"]): int(row["total"] or 0)
+        for row in TroopBankStorage.objects.filter(manor_id__in=manor_ids)
+        .values("manor_id")
+        .annotate(total=Sum("count"))
+    }
+
+    return {
+        manor_id: ResourceProductionBasis(
+            hourly_rates=tuple(
+                sorted(
+                    calculate_hourly_rates(
+                        resolved_buildings_by_manor.get(manor_id, ()),
+                        resolved_technology_levels.get(manor_id, {}),
+                    ).items()
+                )
+            ),
+            personnel_grain_cost_per_hour=calculate_personnel_grain_cost_per_hour(
+                retainer_count=int(manor.retainer_count or 0),
+                guest_count=resolved_guest_counts.get(manor_id, 0),
+                troop_count=troop_totals.get(manor_id, 0),
+                bank_troop_count=bank_troop_totals.get(manor_id, 0),
+            ),
+        )
+        for manor_id, manor in manor_by_id.items()
+    }
+
+
+def load_resource_production_basis(
+    manor: Manor,
+    *,
+    guest_count: int | None = None,
+    troop_count: int | None = None,
+    buildings: Sequence[Building] | None = None,
+    technology_levels: Mapping[str, int] | None = None,
+) -> ResourceProductionBasis:
+    if not getattr(manor, "pk", None):
+        raise AssertionError("production basis requires a persisted manor")
+    if guest_count is not None and troop_count is not None:
+        return load_resource_production_bases(
+            (manor,),
+            guest_counts={int(manor.pk): guest_count},
+            troop_counts={int(manor.pk): troop_count},
+            buildings_by_manor=(None if buildings is None else {int(manor.pk): tuple(buildings)}),
+            technology_levels=(None if technology_levels is None else {int(manor.pk): dict(technology_levels)}),
+        )[int(manor.pk)]
+    return ResourceProductionBasis(
+        hourly_rates=tuple(sorted(get_hourly_rates(manor).items())),
+        personnel_grain_cost_per_hour=get_personnel_grain_cost_per_hour(manor),
+    )
 
 
 def _require_resource_key(raw: Any) -> str:
@@ -51,12 +203,21 @@ def _normalize_resource_mapping(raw: Any, *, field_name: str, allow_negative: bo
     return normalized
 
 
-def _sync_warehouse_grain_item_locked(manor: Manor) -> None:
+def _sync_warehouse_grain_item_locked(
+    manor: Manor,
+    *,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
+) -> None:
     # Delay import to avoid circular dependency:
     # resources -> inventory package -> inventory.use -> resources.
     from .inventory.core import sync_warehouse_grain_item_locked
 
-    sync_warehouse_grain_item_locked(manor)
+    sync_warehouse_grain_item_locked(
+        manor,
+        grain_template=grain_template,
+        grain_template_resolved=grain_template_resolved,
+    )
 
 
 def _get_resource_capacity(manor: Manor, resource: str) -> Tuple[int, bool]:
@@ -156,14 +317,23 @@ def _raise_insufficient_resource_error(manor: Manor, cost: Dict[str, int]) -> No
     raise InsufficientResourceError("unknown", 0, 0, message="资源不足")
 
 
-def _build_production_snapshot(manor: Manor, *, now: datetime) -> tuple[Dict[str, int], Dict[str, int], bool]:
+def _build_production_snapshot(
+    manor: Manor,
+    *,
+    now: datetime,
+    production_basis: ResourceProductionBasis | None = None,
+) -> tuple[Dict[str, int], Dict[str, int], bool]:
     elapsed_seconds = (now - manor.resource_updated_at).total_seconds()
     if elapsed_seconds <= 0:
         return {}, {}, False
 
     scaled_elapsed_seconds = scale_value(elapsed_seconds)
-    hourly_rates = get_hourly_rates(manor)
-    personnel_grain_cost = get_personnel_grain_cost_per_hour(manor)
+    if production_basis is None:
+        hourly_rates = get_hourly_rates(manor)
+        personnel_grain_cost = get_personnel_grain_cost_per_hour(manor)
+    else:
+        hourly_rates = dict(production_basis.hourly_rates)
+        personnel_grain_cost = production_basis.personnel_grain_cost_per_hour
     hourly_rates[ResourceType.GRAIN] = hourly_rates.get(ResourceType.GRAIN, 0) - personnel_grain_cost
 
     projected_values: Dict[str, int] = {}
@@ -193,40 +363,102 @@ def _build_production_snapshot(manor: Manor, *, now: datetime) -> tuple[Dict[str
     return projected_values, produced, True
 
 
+def preview_resource_production(
+    manor: Manor,
+    *,
+    now: datetime | None = None,
+    production_basis: ResourceProductionBasis | None = None,
+) -> Dict[str, int]:
+    """只读计算截至 ``now`` 的资源产出增量。"""
+    current_time = now or timezone.now()
+    _projected_values, produced, _should_advance_timestamp = _build_production_snapshot(
+        manor,
+        now=current_time,
+        production_basis=production_basis,
+    )
+    return dict(produced)
+
+
 def _apply_resource_projection(manor: Manor, projected_values: Dict[str, int], *, now: datetime) -> None:
     for resource, value in projected_values.items():
         setattr(manor, resource, value)
     manor.resource_updated_at = now
 
 
-def _sync_resource_production_locked(manor: Manor, *, now: datetime | None = None) -> Dict[str, int]:
-    _require_atomic_block("sync_resource_production_locked")
-    now = now or timezone.now()
+def settle_resource_production_locked(
+    manor: Manor,
+    *,
+    now: datetime | None = None,
+    positive_limits: Dict[str, int] | None = None,
+    note: str = "离线产出",
+    production_basis: ResourceProductionBasis | None = None,
+) -> Dict[str, int]:
+    """在 Manor 锁内结算产出，可按资源限制正向增量。"""
+    _require_atomic_block("settle_resource_production_locked")
+    current_time = now or timezone.now()
+    normalized_limits = (
+        None
+        if positive_limits is None
+        else _normalize_resource_mapping(
+            positive_limits,
+            field_name="resource production positive limits",
+        )
+    )
+    if normalized_limits is not None:
+        unknown = set(normalized_limits) - set(RESOURCE_FIELDS)
+        if unknown:
+            raise AssertionError(f"invalid resource production positive limit keys: {sorted(unknown)!r}")
 
-    projected_values, produced, should_advance_timestamp = _build_production_snapshot(manor, now=now)
+    _projected_values, produced, should_advance_timestamp = _build_production_snapshot(
+        manor,
+        now=current_time,
+        production_basis=production_basis,
+    )
     if not should_advance_timestamp:
         return {}
 
-    _apply_resource_projection(manor, projected_values, now=now)
+    settled: Dict[str, int] = {}
+    projected_values: Dict[str, int] = {}
+    for resource, delta in produced.items():
+        applied_delta = int(delta)
+        if applied_delta > 0 and normalized_limits is not None:
+            applied_delta = min(applied_delta, normalized_limits.get(resource, 0))
+        if applied_delta == 0:
+            continue
+        projected_values[resource] = int(getattr(manor, resource)) + applied_delta
+        settled[resource] = applied_delta
+
+    _apply_resource_projection(manor, projected_values, now=current_time)
 
     update_fields = list(projected_values.keys()) + ["resource_updated_at"]
     manor.save(update_fields=update_fields)
-    if int(produced.get(ResourceType.GRAIN, 0) or 0) != 0:
+    if int(settled.get(ResourceType.GRAIN, 0) or 0) != 0:
         _sync_warehouse_grain_item_locked(manor)
 
-    if produced:
+    if settled:
         log_resource_gain(
             manor,
-            {str(k): int(v) for k, v in produced.items()},
+            {str(k): int(v) for k, v in settled.items()},
             ResourceEvent.Reason.PRODUCE,
-            note="离线产出",
+            note=note,
         )
 
-    return produced
+    return settled
+
+
+def _sync_resource_production_locked(manor: Manor, *, now: datetime | None = None) -> Dict[str, int]:
+    return settle_resource_production_locked(manor, now=now)
 
 
 def spend_resources_locked(
-    manor: Manor, cost: Dict[str, int], note: str, reason: str = ResourceEvent.Reason.UPGRADE_COST
+    manor: Manor,
+    cost: Dict[str, int],
+    note: str,
+    reason: str = ResourceEvent.Reason.UPGRADE_COST,
+    *,
+    sync_production: bool = True,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
 ) -> None:
     """
     消耗庄园资源（假设调用方已在 transaction.atomic 中完成所需的并发控制）。
@@ -238,7 +470,8 @@ def spend_resources_locked(
     if not normalized_cost:
         return
     _require_atomic_block("spend_resources_locked")
-    _sync_resource_production_locked(manor)
+    if sync_production:
+        _sync_resource_production_locked(manor)
 
     filters = {f"{key}__gte": value for key, value in normalized_cost.items()}
     updates = {key: F(key) - value for key, value in normalized_cost.items()}
@@ -246,9 +479,14 @@ def spend_resources_locked(
     if not updated:
         _raise_insufficient_resource_error(manor, normalized_cost)
 
-    manor.refresh_from_db(fields=RESOURCE_FIELDS + ["resource_updated_at"])
+    for resource, amount in normalized_cost.items():
+        setattr(manor, resource, int(getattr(manor, resource)) - amount)
     if normalized_cost.get(ResourceType.GRAIN, 0) > 0:
-        _sync_warehouse_grain_item_locked(manor)
+        _sync_warehouse_grain_item_locked(
+            manor,
+            grain_template=grain_template,
+            grain_template_resolved=grain_template_resolved,
+        )
     negative = {key: -val for key, val in normalized_cost.items()}
     log_resource_gain(manor, negative, reason, note)
 
@@ -376,7 +614,10 @@ def log_resource_gain(manor: Manor, payload: Dict[str, int], reason: str, note: 
 
 
 def spend_resources(
-    manor: Manor, cost: Dict[str, int], note: str, reason: str = ResourceEvent.Reason.UPGRADE_COST
+    manor: Manor,
+    cost: Dict[str, int],
+    note: str,
+    reason: str = ResourceEvent.Reason.UPGRADE_COST,
 ) -> None:
     """
     消耗庄园资源。

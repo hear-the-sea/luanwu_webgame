@@ -7,8 +7,9 @@ from django.utils import timezone
 
 from gameplay.models import BotProfile, Manor, RaidRun
 from gameplay.services.pvp_runtime.loot import normalize_positive_int_mapping
+from gameplay.services.virtual_player_core.config import load_virtual_player_config
+from gameplay.services.virtual_player_core.contracts import BotLootClampDecision
 from gameplay.services.virtual_player_state_policy import is_virtual_profile_maintained
-from gameplay.services.virtual_players import load_virtual_player_config, retire_virtual_player_if_unprotected
 
 
 def _resource_total(resources: dict[str, int]) -> int:
@@ -69,22 +70,20 @@ def clamp_bot_loot_resources(
     defender: Manor,
     loot_resources: dict[str, int],
     now: Any = None,
-) -> dict[str, int]:
-    """Apply Bot defender and real-player-from-Bot daily resource caps."""
+) -> BotLootClampDecision:
+    """Calculate Bot loot caps without mutating the defender profile."""
     now = now or timezone.now()
     normalized = normalize_positive_int_mapping(loot_resources)
     if not normalized:
-        return {}
+        return BotLootClampDecision(resources={})
 
     profile = BotProfile.objects.filter(manor=defender).first()
     if profile is None:
-        return normalized
+        return BotLootClampDecision(resources=normalized)
 
     bot_budget = max(0, int(profile.loot_budget_daily or 0))
     remaining_bot_budget = max(0, bot_budget - _spent_from_bot_defender_today(defender, now=now))
     clamped = _clamp_resources_to_budget(normalized, remaining_bot_budget)
-    if remaining_bot_budget <= 0 and bot_budget > 0 and is_virtual_profile_maintained(profile):
-        retire_virtual_player_if_unprotected(profile.pk, now=now)
 
     if not _is_bot_manor(attacker):
         real_cap = _real_attacker_daily_resource_cap()
@@ -92,11 +91,12 @@ def clamp_bot_loot_resources(
             remaining_for_attacker = max(0, real_cap - _spent_from_bots_today(attacker, now=now))
             clamped = _clamp_resources_to_budget(clamped, remaining_for_attacker)
 
-    if (
-        _resource_total(clamped) >= remaining_bot_budget
-        and remaining_bot_budget > 0
-        and is_virtual_profile_maintained(profile)
-    ):
-        retire_virtual_player_if_unprotected(profile.pk, now=now)
-
-    return clamped
+    budget_exhausted = bot_budget > 0 and (
+        remaining_bot_budget <= 0 or _resource_total(clamped) >= remaining_bot_budget
+    )
+    return BotLootClampDecision(
+        resources=clamped,
+        bot_profile_id=profile.pk,
+        bot_budget_exhausted=budget_exhausted,
+        retirement_recommended=budget_exhausted and is_virtual_profile_maintained(profile),
+    )

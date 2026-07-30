@@ -9,4 +9,5 @@ existing pytest commands and CI references.
 from tests.yaml_schema_new_configs.guest_arena_rules import *  # noqa: F401,F403
 from tests.yaml_schema_new_configs.guild_growth_technology import *  # noqa: F401,F403
 from tests.yaml_schema_new_configs.production_rules import *  # noqa: F401,F403
+from tests.yaml_schema_new_configs.virtual_players import *  # noqa: F401,F403
 from tests.yaml_schema_new_configs.warehouse_auction_forge import *  # noqa: F401,F403

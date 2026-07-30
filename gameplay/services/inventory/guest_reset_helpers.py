@@ -32,6 +32,8 @@ GUEST_RESET_UPDATE_FIELDS = [
     "attack_bonus",
     "defense_bonus",
     "hp_bonus",
+    "troop_capacity_bonus",
+    "gear_set_bonus",
     "training_target_level",
     "training_complete_at",
     "status",
@@ -228,6 +230,8 @@ def apply_guest_template_reset(
     guest.attack_bonus = 0
     guest.defense_bonus = 0
     guest.hp_bonus = 0
+    guest.troop_capacity_bonus = 0
+    guest.gear_set_bonus = {}
     guest.training_target_level = 0
     guest.training_complete_at = None
     guest.status = GuestStatus.IDLE

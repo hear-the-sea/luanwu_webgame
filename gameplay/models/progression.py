@@ -203,6 +203,7 @@ class HorseProduction(models.Model):
     class Status(models.TextChoices):
         PRODUCING = "producing", "生产中"
         COMPLETED = "completed", "已完成"
+        CANCELLED = "cancelled", "已取消"
 
     manor = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="horse_productions")
     horse_key = models.CharField("马匹key", max_length=64)
@@ -242,6 +243,7 @@ class LivestockProduction(models.Model):
     class Status(models.TextChoices):
         PRODUCING = "producing", "养殖中"
         COMPLETED = "completed", "已完成"
+        CANCELLED = "cancelled", "已取消"
 
     manor = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="livestock_productions")
     livestock_key = models.CharField("家畜key", max_length=64)
@@ -281,6 +283,7 @@ class SmeltingProduction(models.Model):
     class Status(models.TextChoices):
         PRODUCING = "producing", "冶炼中"
         COMPLETED = "completed", "已完成"
+        CANCELLED = "cancelled", "已取消"
 
     manor = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="smelting_productions")
     metal_key = models.CharField("金属key", max_length=64)
@@ -321,6 +324,7 @@ class EquipmentProduction(models.Model):
     class Status(models.TextChoices):
         FORGING = "forging", "锻造中"
         COMPLETED = "completed", "已完成"
+        CANCELLED = "cancelled", "已取消"
 
     manor = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="equipment_productions")
     equipment_key = models.CharField("装备key", max_length=64)

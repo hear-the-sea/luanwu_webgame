@@ -5,7 +5,7 @@ from itertools import count
 import pytest
 
 from core.exceptions import GuestNotFoundError, GuestNotIdleError
-from gameplay.models import InventoryItem, ItemTemplate
+from gameplay.models import InventoryItem, ItemTemplate, Manor
 from gameplay.services.manor.core import ensure_manor
 from guests.models import (
     GearItem,
@@ -68,6 +68,36 @@ def test_dismiss_guest_allows_injured_guest_and_returns_equipment(django_user_mo
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
     assert returned_item.quantity == 1
+
+
+@pytest.mark.django_db
+def test_dismiss_guest_locks_manor_before_guest(django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(
+        username=_unique("roster_service_lock_order_user"),
+        password="pass123",
+    )
+    manor = ensure_manor(user)
+    guest = _create_guest(manor)
+    lock_order: list[str] = []
+    manor_manager = Manor.objects
+    guest_manager = Guest.objects
+    original_manor_lock = manor_manager.select_for_update
+    original_guest_lock = guest_manager.select_for_update
+
+    def _lock_manor(*args, **kwargs):
+        lock_order.append("manor")
+        return original_manor_lock(*args, **kwargs)
+
+    def _lock_guest(*args, **kwargs):
+        lock_order.append("guest")
+        return original_guest_lock(*args, **kwargs)
+
+    monkeypatch.setattr(manor_manager, "select_for_update", _lock_manor)
+    monkeypatch.setattr(guest_manager, "select_for_update", _lock_guest)
+
+    dismiss_guest(guest)
+
+    assert lock_order[:2] == ["manor", "guest"]
 
 
 @pytest.mark.django_db

@@ -261,7 +261,7 @@ def serialize_city_defense_rows(rows: list[dict[str, Any]]) -> list[dict[str, An
             return "崭新的"
         if hp < max_hp / 2:
             return "破烂的"
-        return ""
+        return "受损的"
 
     def _display_name(row: dict[str, Any], name: str, level: int, hp: int, max_hp: int) -> str:
         key = str(row.get("key") or "")

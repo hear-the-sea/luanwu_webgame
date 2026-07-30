@@ -5,8 +5,6 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Final
 
-from gameplay.models import BotProfile
-
 __all__ = [
     "VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES",
     "VIRTUAL_PROFILE_ATTACKABLE_STATES",
@@ -38,37 +36,43 @@ _NO_CAPABILITIES: Final = _VirtualProfileCapabilities(
     reactivatable=False,
 )
 
+ACTIVE_STATE: Final = "active"
+SLOWING_STATE: Final = "slowing"
+ABANDONED_STATE: Final = "abandoned"
+RETIRED_STATE: Final = "retired"
+STALE_STATE: Final = "stale"
+
 _CAPABILITIES_BY_STATE: Final[Mapping[str, _VirtualProfileCapabilities]] = MappingProxyType(
     {
-        BotProfile.State.ACTIVE: _VirtualProfileCapabilities(
+        ACTIVE_STATE: _VirtualProfileCapabilities(
             map_visible=True,
             attackable=True,
             maintained=True,
             arena_eligible=True,
             reactivatable=False,
         ),
-        BotProfile.State.SLOWING: _VirtualProfileCapabilities(
+        SLOWING_STATE: _VirtualProfileCapabilities(
             map_visible=True,
             attackable=True,
             maintained=True,
             arena_eligible=True,
             reactivatable=False,
         ),
-        BotProfile.State.ABANDONED: _VirtualProfileCapabilities(
+        ABANDONED_STATE: _VirtualProfileCapabilities(
             map_visible=True,
             attackable=True,
             maintained=True,
             arena_eligible=False,
             reactivatable=True,
         ),
-        BotProfile.State.RETIRED: _VirtualProfileCapabilities(
+        RETIRED_STATE: _VirtualProfileCapabilities(
             map_visible=True,
             attackable=True,
             maintained=False,
             arena_eligible=False,
             reactivatable=True,
         ),
-        BotProfile.State.STALE: _NO_CAPABILITIES,
+        STALE_STATE: _NO_CAPABILITIES,
     }
 )
 

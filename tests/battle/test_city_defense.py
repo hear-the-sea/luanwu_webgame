@@ -130,6 +130,54 @@ def test_build_city_defense_combatants_use_persisted_current_hp(django_user_mode
 
 
 @pytest.mark.django_db
+def test_build_city_defense_combatants_projects_recovery_without_persisting(django_user_model):
+    manor = ensure_manor(django_user_model.objects.create_user(username="city_defense_projection", password="pass123"))
+    _create_city_defense_building(manor, BUILDING_KEYS.WALL, "城墙", 10)
+    wall = manor.buildings.select_related("building_type").get(building_type__key=BUILDING_KEYS.WALL)
+    now = timezone.now()
+    updated_at = now - timezone.timedelta(hours=1)
+    wall.current_hp = 12_345
+    wall.hp_updated_at = updated_at
+    wall.save(update_fields=["current_hp", "hp_updated_at"])
+
+    units = build_city_defense_combatants(manor, side="defender", now=now)
+    wall_unit = next(unit for unit in units if unit.template_key == BUILDING_KEYS.WALL)
+
+    assert wall_unit.hp == 13_845
+    assert wall_unit.battle_modifiers["recovered_before_battle"] == 1_500
+    wall.refresh_from_db()
+    assert wall.current_hp == 12_345
+    assert wall.hp_updated_at == updated_at
+
+
+def test_serialize_city_defense_report_v2_keeps_settlement_metadata():
+    wall = _unit("城墙", side="defender", kind="city_defense", hp=3_000)
+    wall.template_key = BUILDING_KEYS.WALL
+    wall.level = 1
+    wall.max_hp = 3_000
+    wall.initial_hp = 2_500
+    wall.hp = 0
+    wall.battle_modifiers["recovered_before_battle"] = 150
+
+    row = serialize_city_defenses_for_report([wall])[0]
+
+    assert row == {
+        "schema_version": 2,
+        "key": BUILDING_KEYS.WALL,
+        "name": "城墙",
+        "level": 1,
+        "initial_hp": 2_500,
+        "hp": 0,
+        "max_hp": 3_000,
+        "recovered_before_battle": 150,
+        "settled_hp": 1,
+        "destroyed": True,
+        "attack": 100,
+        "defense": 10,
+    }
+
+
+@pytest.mark.django_db
 def test_finalize_battle_results_persists_defender_city_defense_hp(django_user_model):
     attacker = ensure_manor(django_user_model.objects.create_user(username="city_defense_attacker", password="pass123"))
     defender = ensure_manor(django_user_model.objects.create_user(username="city_defense_defender", password="pass123"))
@@ -434,11 +482,16 @@ def test_serialize_city_defenses_for_report_keeps_level_and_stats():
 
     assert serialize_city_defenses_for_report([wall]) == [
         {
+            "schema_version": 2,
             "key": BUILDING_KEYS.WALL,
             "name": "城墙",
             "level": 10,
+            "initial_hp": 30000,
             "hp": 30000,
             "max_hp": 30000,
+            "recovered_before_battle": 0,
+            "settled_hp": 30000,
+            "destroyed": False,
             "attack": 0,
             "defense": 300,
         }

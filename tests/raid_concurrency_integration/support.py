@@ -10,6 +10,7 @@ from gameplay.models import RaidRun
 from gameplay.services.battle_snapshots import build_guest_battle_snapshots
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.raid.combat import battle as combat_battle
+from gameplay.services.virtual_player_core.contracts import BotLootClampDecision
 from guests.models import Guest, GuestStatus, GuestTemplate
 
 
@@ -68,7 +69,11 @@ def configure_battle_side_effects(monkeypatch, *, attacker, defender):
     monkeypatch.setattr(combat_battle, "_lock_battle_manors", lambda *_args, **_kwargs: (attacker, defender))
     monkeypatch.setattr(combat_battle, "_get_defender_battle_block_reason", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "apply_defender_troop_losses", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(combat_battle, "_apply_raid_loot_if_needed", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        combat_battle,
+        "_apply_raid_loot_if_needed",
+        lambda *_args, **_kwargs: BotLootClampDecision(resources={}),
+    )
     monkeypatch.setattr(combat_battle, "_apply_prestige_changes", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_apply_defeat_protection", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_apply_capture_reward", lambda *_args, **_kwargs: None)

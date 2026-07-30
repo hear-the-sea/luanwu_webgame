@@ -11,14 +11,16 @@ def ensure_manor_provisioning(
     ensure_buildings_exist_func,
     grant_initial_peace_shield_func,
     deliver_active_global_mail_campaigns_func,
+    provision_rewards: bool = True,
 ) -> None:
     if created:
         bootstrap_buildings_func(manor)
     else:
         ensure_buildings_exist_func(manor)
 
-    grant_initial_peace_shield_func(manor)
-    deliver_active_global_mail_campaigns_func(manor)
+    if provision_rewards:
+        grant_initial_peace_shield_func(manor)
+        deliver_active_global_mail_campaigns_func(manor)
 
 
 def assign_manor_location_and_name(

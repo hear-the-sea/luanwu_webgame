@@ -10,6 +10,7 @@ from django.core.management.base import BaseCommand, CommandError
 from core.utils.image_utils import compress_and_resize_image
 from core.utils.yaml_loader import ensure_mapping, load_yaml_data
 from gameplay.models import ItemTemplate
+from gameplay.services.equipment_template_sync import synchronize_equipment_templates
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +98,7 @@ class Command(BaseCommand):
             return
 
         image_source_dir = Path(settings.BASE_DIR) / "data" / "images" / "items"
+        imported_keys: list[str] = []
 
         for entry in items:
             key = entry.get("key")
@@ -106,7 +108,19 @@ class Command(BaseCommand):
                 continue
 
             obj, created = ItemTemplate.objects.update_or_create(key=key, defaults=_build_item_defaults(entry))
+            imported_keys.append(obj.key)
             _load_item_image(self, obj, entry, image_source_dir)
 
             action = "Created" if created else "Updated"
             self.stdout.write(f"{action} item template {obj.key}")
+
+        sync_report = synchronize_equipment_templates(imported_keys)
+        if sync_report.changed:
+            self.stdout.write(
+                self.style.SUCCESS(
+                    "Synchronized equipment templates "
+                    f"(updated={sync_report.gear_templates_updated}, "
+                    f"aliases={sync_report.item_aliases_merged}, "
+                    f"guests={sync_report.guests_reconciled})"
+                )
+            )

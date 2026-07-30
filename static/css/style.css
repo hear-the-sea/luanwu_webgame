@@ -1366,16 +1366,12 @@ table.table tbody tr+tr {
   gap: 0.4rem;
 }
 
-.event-line > .event-passive-layout {
-  display: grid;
-  grid-template-columns: clamp(5.5rem, 18vw, 9rem) auto minmax(0, 1fr);
-  justify-content: normal;
-  align-items: center;
-  gap: 0.6rem;
-}
-
 .event-passive-entry {
-  margin-bottom: 0.2rem;
+  margin: 0.25rem 0;
+  padding: 0.35rem 0.45rem;
+  border-left: 2px solid rgba(39, 174, 96, 0.45);
+  border-radius: 0 4px 4px 0;
+  background: rgba(39, 174, 96, 0.06);
 }
 
 .event-passive-layout {
@@ -1390,45 +1386,60 @@ table.table tbody tr+tr {
 }
 
 .event-passive-tag {
-  white-space: nowrap;
+  white-space: normal;
 }
 
-.event-passive-tag .tech-tag {
+.event-unit-skills .tech-tag {
   margin-left: 0;
 }
 
-.event-passive-extra {
+.event-unit-skills > .event-passive-extra {
   display: flex;
-  flex-wrap: nowrap;
-  gap: 0.4rem;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.4rem;
   align-items: center;
   min-width: 0;
-  overflow: hidden;
-  width: 100%;
+  width: auto;
+  overflow: visible;
 }
 
 .event-passive-extra .heal-text,
 .event-passive-extra .loss-text {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .event-passive-extra .status-pill {
-  margin-left: auto;
-  flex-shrink: 0;
+  margin-left: 0;
+  flex: 0 1 auto;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .event-line > .event-unit-summary,
-.event-line > .event-unit-summary.event-passive-layout {
+.event-passive-entry > .event-unit-summary {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-wrap: nowrap;
+  width: 100%;
+  display: grid;
+  grid-template-columns: clamp(4.75rem, 24%, 8rem) minmax(0, 1fr);
+  grid-template-areas:
+    "unit-name skills"
+    "unit-state skills";
   align-items: center;
-  justify-content: flex-start;
-  gap: 0.4rem;
+  column-gap: 0.65rem;
+  row-gap: 0.25rem;
+}
+
+.event-unit-summary.event-status-layout:not(:has(> .battle-unit-state)) {
+  grid-template-areas: "unit-name skills";
+}
+
+.event-unit-summary.event-status-layout:not(:has(> .battle-unit-state)) > .event-unit-name {
+  align-self: center;
 }
 
 .event-unit-name {
@@ -1440,7 +1451,14 @@ table.table tbody tr+tr {
   white-space: nowrap;
 }
 
-.event-unit-summary > .event-unit-name,
+.event-unit-summary > .event-unit-name {
+  grid-area: unit-name;
+  align-self: end;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
 .event-actor-settlement-summary > .event-unit-name {
   flex: 0 1 9rem;
   width: 9rem;
@@ -1449,6 +1467,8 @@ table.table tbody tr+tr {
 }
 
 .battle-unit-state {
+  display: block;
+  box-sizing: border-box;
   flex: 0 1 72px;
   width: 72px;
   min-width: 40px;
@@ -1458,6 +1478,14 @@ table.table tbody tr+tr {
   border-radius: 2px;
   background: #eadfd2;
   box-shadow: inset 0 1px 2px rgba(50, 25, 10, 0.18);
+}
+
+.event-unit-summary > .battle-unit-state {
+  grid-area: unit-state;
+  align-self: start;
+  width: 100%;
+  min-width: 0;
+  max-width: 7.5rem;
 }
 
 .battle-unit-state-fill {
@@ -1477,26 +1505,37 @@ table.table tbody tr+tr {
 }
 
 .event-unit-skills {
-  flex: 1 1 3.5rem;
   min-width: 0;
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.25rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  align-content: center;
+  gap: 0.3rem 0.4rem;
+  overflow: visible;
+  white-space: normal;
 }
 
 .event-unit-skills > * {
-  flex-shrink: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
 }
 
-.event-unit-skills .skill-tag {
+.event-unit-summary > .event-unit-skills {
+  grid-area: skills;
+  align-self: center;
+  width: 100%;
+}
+
+.event-unit-skills .skill-tag,
+.event-unit-skills .tech-tag,
+.event-unit-skills > .heal-text,
+.event-unit-skills > .status-pill {
+  margin-top: 0;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .event-target-summary {
@@ -1507,6 +1546,45 @@ table.table tbody tr+tr {
   gap: 0.4rem;
 }
 
+.event-target-summary.event-damage-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.4rem;
+}
+
+.event-target-arrow {
+  color: var(--accent-gold);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.event-damage-summary .event-target-detail {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+.event-active-skill {
+  color: var(--accent-gold);
+  font-weight: 700;
+}
+
+.event-target-name {
+  color: var(--text-primary);
+}
+
+.event-damage-value {
+  color: var(--accent-red);
+  font-variant-numeric: tabular-nums;
+}
+
+.event-kill-count {
+  font-variant-numeric: tabular-nums;
+}
+
 .event-target-detail {
   min-width: 0;
   overflow: hidden;
@@ -1515,6 +1593,17 @@ table.table tbody tr+tr {
 }
 
 @media (max-width: 640px) {
+  .event-line {
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .event-line > .event-unit-summary,
+  .event-passive-entry > .event-unit-summary {
+    grid-template-columns: minmax(3.75rem, 4.5rem) minmax(0, 1fr);
+    column-gap: 0.45rem;
+  }
+
   .battle-unit-state {
     flex: 0 1 clamp(40px, 16vw, 52px);
     width: clamp(40px, 16vw, 52px);
@@ -1524,7 +1613,6 @@ table.table tbody tr+tr {
     max-width: 30%;
   }
 
-  .event-unit-summary > .event-unit-name,
   .event-actor-settlement-summary > .event-unit-name {
     flex: 0 1 clamp(3.5rem, 20vw, 4.5rem);
     width: clamp(3.5rem, 20vw, 4.5rem);
@@ -1533,6 +1621,7 @@ table.table tbody tr+tr {
 }
 
 .event-order {
+  flex: 0 0 1.8rem;
   width: 1.8rem;
   height: 1.8rem;
   border-radius: 50%;

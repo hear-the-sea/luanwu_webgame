@@ -14,27 +14,14 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from core.exceptions import GameError, GuestItemConfigurationError
+from core.exceptions import GameError
 from core.utils import is_ajax_request, json_error, json_success, safe_positive_int
 from core.utils.validation import safe_redirect_url, sanitize_error_message
 
 from ..models import Guest
-from ..services.health import use_medicine_item_for_guest
+from ..services.health import resolve_medicine_heal_amount, use_medicine_item_for_guest
 
 logger = logging.getLogger(__name__)
-
-
-def _normalize_positive_medicine_int(raw_value: object, *, contract_name: str) -> int:
-    if raw_value is None or isinstance(raw_value, bool):
-        raise GuestItemConfigurationError("道具未配置有效恢复值")
-    raw_for_int: Any = raw_value
-    try:
-        parsed_value = int(raw_for_int)
-    except (TypeError, ValueError) as exc:
-        raise GuestItemConfigurationError("道具未配置有效恢复值") from exc
-    if parsed_value <= 0:
-        raise GuestItemConfigurationError("道具未配置有效恢复值")
-    return parsed_value
 
 
 def _normalize_medicine_view_result(raw_result: object) -> dict[str, object]:
@@ -63,10 +50,7 @@ def _normalize_medicine_view_result_string(raw_value: object, *, contract_name: 
 
 
 def _resolve_medicine_heal_amount(item) -> int:
-    payload = item.template.effect_payload
-    if not isinstance(payload, dict):
-        raise GuestItemConfigurationError("道具未配置有效恢复值")
-    return _normalize_positive_medicine_int(payload.get("hp"), contract_name="medicine heal amount")
+    return resolve_medicine_heal_amount(item)
 
 
 @login_required
@@ -103,8 +87,8 @@ def use_medicine_item_view(request, pk: int):
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
     try:
-        heal_amount = _resolve_medicine_heal_amount(item)
-        result = _normalize_medicine_view_result(use_medicine_item_for_guest(manor, guest, item.pk, heal_amount))
+        _resolve_medicine_heal_amount(item)
+        result = _normalize_medicine_view_result(use_medicine_item_for_guest(manor, guest, item.pk))
         new_quantity = _normalize_medicine_view_result_int(
             result.get("remaining_item_quantity"),
             contract_name="medicine item view result remaining_item_quantity",

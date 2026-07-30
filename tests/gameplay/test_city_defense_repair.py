@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from core.config import BUILDING_KEYS
+from gameplay.models import ResourceEvent
 from gameplay.services.city_defense import (
     CITY_DEFENSE_HP_RECOVERY_SECONDS,
     apply_city_defense_battle_damage,
@@ -38,6 +39,29 @@ def test_city_defense_dashboard_displays_hp_and_repair_action(manor_with_user):
 
 
 @pytest.mark.django_db
+def test_city_defense_dashboard_projects_recovery_without_writing(manor_with_user):
+    manor, client = manor_with_user
+    wall = _get_city_defense_building(manor, BUILDING_KEYS.WALL)
+    max_hp = city_defense_max_hp(BUILDING_KEYS.WALL, wall.level)
+    updated_at = timezone.now() - timezone.timedelta(hours=1)
+    wall.current_hp = max_hp // 2
+    wall.hp_updated_at = updated_at
+    wall.save(update_fields=["current_hp", "hp_updated_at"])
+
+    response = client.get(reverse("gameplay:buildings_category", kwargs={"category": "city_defense"}))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert f"{max_hp // 2 + int(max_hp * 0.05)} / {max_hp}" in body
+    assert f"{int(max_hp * 0.05)} / 小时（5%）" in body
+    assert "预计满耐久" in body
+
+    wall.refresh_from_db()
+    assert wall.current_hp == max_hp // 2
+    assert wall.hp_updated_at == updated_at
+
+
+@pytest.mark.django_db
 def test_repair_city_defense_spends_silver_and_restores_hp(manor_with_user):
     manor, client = manor_with_user
     wall = _get_city_defense_building(manor, BUILDING_KEYS.WALL)
@@ -46,8 +70,10 @@ def test_repair_city_defense_spends_silver_and_restores_hp(manor_with_user):
     wall.hp_updated_at = timezone.now()
     wall.save(update_fields=["current_hp", "hp_updated_at"])
     manor.silver = 1000
+    manor.prestige = 7
+    manor.prestige_silver_spent = 999
     manor.resource_updated_at = timezone.now() + timezone.timedelta(seconds=10)
-    manor.save(update_fields=["silver", "resource_updated_at"])
+    manor.save(update_fields=["silver", "prestige", "prestige_silver_spent", "resource_updated_at"])
 
     response = client.post(reverse("gameplay:repair_city_defense", kwargs={"pk": wall.pk}))
 
@@ -56,6 +82,14 @@ def test_repair_city_defense_spends_silver_and_restores_hp(manor_with_user):
     manor.refresh_from_db()
     assert wall.current_hp == max_hp
     assert manor.silver == 650
+    assert manor.prestige == 7
+    assert manor.prestige_silver_spent == 999
+    event = ResourceEvent.objects.get(
+        manor=manor,
+        resource_type="silver",
+        delta=-350,
+    )
+    assert event.reason == ResourceEvent.Reason.CITY_DEFENSE_REPAIR
     messages = [str(message) for message in get_messages(response.wsgi_request)]
     assert any("修复完成" in message and "350" in message for message in messages)
 
@@ -81,6 +115,31 @@ def test_repair_city_defense_requires_enough_silver(manor_with_user):
     assert manor.silver == 100
     messages = [str(message) for message in get_messages(response.wsgi_request)]
     assert any("银两不足" in message for message in messages)
+
+
+@pytest.mark.django_db
+def test_repair_city_defense_persists_natural_recovery_when_already_full(manor_with_user):
+    manor, client = manor_with_user
+    wall = _get_city_defense_building(manor, BUILDING_KEYS.WALL)
+    max_hp = city_defense_max_hp(BUILDING_KEYS.WALL, wall.level)
+    wall.current_hp = max_hp - 100
+    wall.hp_updated_at = timezone.now() - timezone.timedelta(hours=1)
+    wall.save(update_fields=["current_hp", "hp_updated_at"])
+    manor.silver = 1_000
+    manor.resource_updated_at = timezone.now() + timezone.timedelta(seconds=10)
+    manor.save(update_fields=["silver", "resource_updated_at"])
+
+    response = client.post(reverse("gameplay:repair_city_defense", kwargs={"pk": wall.pk}))
+
+    assert response.status_code == 302
+    wall.refresh_from_db()
+    manor.refresh_from_db()
+    assert wall.current_hp == max_hp
+    assert manor.silver == 1_000
+    assert not ResourceEvent.objects.filter(
+        manor=manor,
+        reason=ResourceEvent.Reason.CITY_DEFENSE_REPAIR,
+    ).exists()
 
 
 @pytest.mark.django_db
@@ -150,3 +209,32 @@ def test_city_defense_battle_damage_never_raises_existing_lower_hp(manor_with_us
 
     wall.refresh_from_db()
     assert wall.current_hp == 10
+
+
+@pytest.mark.django_db
+def test_city_defense_v2_damage_settlement_keeps_recovery_before_battle(manor_with_user):
+    manor, _client = manor_with_user
+    wall = _get_city_defense_building(manor, BUILDING_KEYS.WALL)
+    wall.current_hp = 2_500
+    wall.hp_updated_at = timezone.now() - timezone.timedelta(hours=1)
+    wall.save(update_fields=["current_hp", "hp_updated_at"])
+
+    apply_city_defense_battle_damage(
+        manor,
+        [
+            {
+                "schema_version": 2,
+                "key": BUILDING_KEYS.WALL,
+                "initial_hp": 2_650,
+                "hp": 2_000,
+                "max_hp": 3_000,
+                "recovered_before_battle": 150,
+                "settled_hp": 2_000,
+                "destroyed": False,
+            }
+        ],
+        now=timezone.now(),
+    )
+
+    wall.refresh_from_db()
+    assert wall.current_hp == 2_000

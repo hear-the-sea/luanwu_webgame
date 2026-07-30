@@ -9,7 +9,8 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from django.conf import settings
 from django.core.cache import cache
@@ -35,7 +36,13 @@ from . import technology_runtime as _technology_runtime
 from .utils import notifications as _notifications
 from .utils.cache import invalidate_home_stats_cache
 
+if TYPE_CHECKING:
+    from ..models import PlayerTechnology
+
 logger = logging.getLogger(__name__)
+
+TechnologyUpgradeQuote = _technology_runtime.TechnologyUpgradeQuote
+TechnologyUpgradeQuoteStaleError = _technology_runtime.TechnologyUpgradeQuoteStaleError
 
 
 def _should_skip_tech_refresh_by_local_fallback(manor_id: int, min_interval: int) -> bool:
@@ -167,6 +174,53 @@ def upgrade_technology(manor: Any, tech_key: str) -> Dict[str, Any]:
         technology_max_level_error_cls=TechnologyMaxLevelError,
         technology_concurrent_upgrade_limit_error_cls=TechnologyConcurrentUpgradeLimitError,
         insufficient_resource_error_cls=InsufficientResourceError,
+    )
+
+
+def quote_technology_upgrade(
+    manor: Any,
+    tech_key: str,
+    *,
+    technologies: Sequence[Any] | None = None,
+) -> TechnologyUpgradeQuote:
+    return _technology_runtime.quote_technology_upgrade(
+        manor,
+        tech_key,
+        get_technology_template_func=get_technology_template,
+        calculate_upgrade_cost_func=calculate_upgrade_cost,
+        max_concurrent_tech_upgrades=MAX_CONCURRENT_TECH_UPGRADES,
+        technology_not_found_error_cls=TechnologyNotFoundError,
+        technology_upgrade_in_progress_error_cls=TechnologyUpgradeInProgressError,
+        technology_max_level_error_cls=TechnologyMaxLevelError,
+        technology_concurrent_upgrade_limit_error_cls=TechnologyConcurrentUpgradeLimitError,
+        technologies=technologies,
+    )
+
+
+def apply_technology_upgrade_locked(
+    manor: Any,
+    quote: TechnologyUpgradeQuote,
+    *,
+    sync_production: bool = True,
+    technologies: Sequence[Any] | None = None,
+    technologies_locked: bool = False,
+) -> PlayerTechnology:
+    return _technology_runtime.apply_technology_upgrade_locked(
+        manor,
+        quote,
+        get_technology_template_func=get_technology_template,
+        calculate_upgrade_cost_func=calculate_upgrade_cost,
+        max_concurrent_tech_upgrades=MAX_CONCURRENT_TECH_UPGRADES,
+        transaction_module=transaction,
+        invalidate_home_stats_cache_func=invalidate_home_stats_cache,
+        technology_not_found_error_cls=TechnologyNotFoundError,
+        technology_upgrade_in_progress_error_cls=TechnologyUpgradeInProgressError,
+        technology_max_level_error_cls=TechnologyMaxLevelError,
+        technology_concurrent_upgrade_limit_error_cls=TechnologyConcurrentUpgradeLimitError,
+        insufficient_resource_error_cls=InsufficientResourceError,
+        sync_production=sync_production,
+        technologies=technologies,
+        technologies_locked=technologies_locked,
     )
 
 

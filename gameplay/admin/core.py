@@ -22,7 +22,13 @@ class ManorAdmin(admin.ModelAdmin):
     list_filter = ("region",)
     search_fields = ("user__username", "user__email", "name")
     autocomplete_fields = ("user",)
-    readonly_fields = ("created_at", "resource_updated_at", "last_active_at")
+    readonly_fields = (
+        "prestige",
+        "prestige_silver_spent",
+        "created_at",
+        "resource_updated_at",
+        "last_active_at",
+    )
     fieldsets = (
         (
             "基本信息",
@@ -37,7 +43,10 @@ class ManorAdmin(admin.ModelAdmin):
                 )
             },
         ),
-        ("位置信息", {"fields": ("region", "coordinate_x", "coordinate_y", "last_active_at")}),
+        (
+            "位置信息",
+            {"fields": ("region", "coordinate_x", "coordinate_y", "last_active_at")},
+        ),
         (
             "资源",
             {
@@ -64,7 +73,10 @@ class ManorAdmin(admin.ModelAdmin):
                 "classes": ("collapse",),
             },
         ),
-        ("时间", {"fields": ("created_at", "resource_updated_at"), "classes": ("collapse",)}),
+        (
+            "时间",
+            {"fields": ("created_at", "resource_updated_at"), "classes": ("collapse",)},
+        ),
     )
 
 
@@ -85,7 +97,14 @@ class ResourceEventAdmin(admin.ModelAdmin):
         ("created_at", admin.DateFieldListFilter),
     )
     search_fields = ("manor__user__username", "manor__name", "note")
-    readonly_fields = ("manor", "resource_type", "delta", "reason", "note", "created_at")
+    readonly_fields = (
+        "manor",
+        "resource_type",
+        "delta",
+        "reason",
+        "note",
+        "created_at",
+    )
     date_hierarchy = "created_at"
     list_per_page = 50
     ordering = ("-created_at",)

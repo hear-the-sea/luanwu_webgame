@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import pytest
+from bs4 import BeautifulSoup
 from django.urls import reverse
+from django.utils.html import strip_tags
 
 from gameplay.services.manor.core import ensure_manor
 from tests.battle_report_view.support import create_report
+
+
+def _normalized_report_text(body: str) -> str:
+    return "".join(strip_tags(body).split())
 
 
 @pytest.mark.django_db
@@ -87,8 +93,11 @@ def test_report_view_renders_only_friendly_round_state_between_name_and_skills(c
     body = response.content.decode("utf-8")
 
     assert response.status_code == 200
-    assert body.count('data-unit-state-side="attacker"') == 2
+    assert body.count('data-unit-state-side="attacker"') == 1
     assert 'data-unit-state-side="defender"' not in body
+    damage_summaries = BeautifulSoup(body, "html.parser").select(".event-damage-summary")
+    assert len(damage_summaries) == 2
+    assert all(summary.select_one(".battle-unit-state") is None for summary in damage_summaries)
     event_start = body.index('class="event-unit-summary"')
     event_end = body.index("</div>", event_start)
     event_markup = body[event_start:event_end]
@@ -125,7 +134,21 @@ def test_report_view_renders_charging_actor_state(client, django_user_model):
                             "status": "healthy",
                             "status_label": "状态充足",
                         },
-                    }
+                    },
+                    {
+                        "side": "defender",
+                        "order": 2,
+                        "actor": "敌方冲锋门客",
+                        "status": "charging",
+                        "message": "冲锋中",
+                        "actor_state": {
+                            "kind": "guest",
+                            "side": "defender",
+                            "percent": 75,
+                            "status": "healthy",
+                            "status_label": "状态充足",
+                        },
+                    },
                 ],
             }
         ],
@@ -144,6 +167,10 @@ def test_report_view_renders_charging_actor_state(client, django_user_model):
     assert "冲锋中" in status_markup
     assert status_markup.index("event-unit-name") < status_markup.index("battle-unit-state")
     assert status_markup.index("battle-unit-state") < status_markup.index("status-pill")
+    status_summaries = BeautifulSoup(body, "html.parser").select(".event-status-layout")
+    enemy_summary = next(summary for summary in status_summaries if "敌方冲锋门客" in summary.get_text())
+    assert "冲锋中" in enemy_summary.get_text()
+    assert enemy_summary.select_one(".battle-unit-state") is None
 
 
 @pytest.mark.django_db
@@ -186,6 +213,7 @@ def test_report_view_renders_passive_event(client, django_user_model):
     assert "恢复 +15000 生命" in body
     assert "event-passive-layout" in body
     assert "event-passive-tag" in body
+    assert "被动技能：九阳护体" in _normalized_report_text(body)
 
 
 @pytest.mark.django_db
@@ -305,6 +333,10 @@ def test_report_view_renders_attack_embedded_passive_events(client, django_user_
     assert "蓄势待发" in body
     assert "乾坤留痕" in body
     assert "卸力反震" in body
+    normalized_text = _normalized_report_text(body)
+    assert "普通攻击：对张无忌造成伤害1000，伤害人数0" in normalized_text
+    assert "被动技能：先手蓄劲" in normalized_text
+    assert "被动技能：乾坤留痕" in normalized_text
     assert body.count('data-unit-state-side="attacker"') == 1
     assert 'data-unit-state-side="defender"' not in body
 
@@ -396,6 +428,12 @@ def test_report_view_renders_additional_target_embedded_passive_events(client, d
     assert "追击再起" in body
     assert "乾坤留痕" in body
     assert "卸力反震" in body
+    normalized_text = _normalized_report_text(body)
+    assert "爆发技能：乾坤圣火印，对杨逍造成伤害1000，伤害人数0" in normalized_text
+    assert "波及张无忌，造成伤害800，伤害人数0" in normalized_text
+    actor_summary_start = body.index('class="event-unit-summary"')
+    actor_summary_end = body.index("</div>", actor_summary_start)
+    assert "乾坤圣火印" not in body[actor_summary_start:actor_summary_end]
     settlement_start = body.index('class="event-target-summary event-actor-settlement-summary reflect-text"')
     settlement_end = body.index("</div>", settlement_start)
     settlement_markup = body[settlement_start:settlement_end]

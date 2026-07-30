@@ -8,10 +8,12 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import date
-from typing import TYPE_CHECKING, Dict, List, Set
+from typing import TYPE_CHECKING, Dict, List, Sequence, Set
 
 from django.db import transaction
+from django.db.models import prefetch_related_objects
 from django.utils import timezone
 
 from core.exceptions import GuestOwnershipError, InsufficientResourceError, NoGuestsError, SalaryAlreadyPaidError
@@ -20,6 +22,14 @@ from guests.models import Guest, SalaryPayment
 
 if TYPE_CHECKING:
     from gameplay.models import Manor
+
+
+@dataclass(frozen=True, slots=True)
+class SalaryBatchQuote:
+    for_date: date
+    guest_ids: tuple[int, ...]
+    unpaid_guest_ids: tuple[int, ...]
+    total_amount: int
 
 
 def get_guest_salary(guest: Guest) -> int:
@@ -79,6 +89,56 @@ def bulk_check_salary_paid(guest_ids: List[int], for_date: date = None) -> Set[i
     return set(paid_guest_ids)
 
 
+def _quote_salary_batch(
+    guests: list[Guest],
+    *,
+    for_date: date,
+    paid_guest_ids: Set[int] | None = None,
+) -> SalaryBatchQuote:
+    guest_ids = tuple(int(guest.id) for guest in guests)
+    paid_ids = bulk_check_salary_paid(list(guest_ids), for_date) if paid_guest_ids is None else set(paid_guest_ids)
+    unpaid_guests = [guest for guest in guests if guest.id not in paid_ids]
+    return SalaryBatchQuote(
+        for_date=for_date,
+        guest_ids=guest_ids,
+        unpaid_guest_ids=tuple(int(guest.id) for guest in unpaid_guests),
+        total_amount=sum(get_guest_salary(guest) for guest in unpaid_guests),
+    )
+
+
+def quote_all_salaries(
+    manor: Manor,
+    for_date: date | None = None,
+    *,
+    guests: Sequence[Guest] | None = None,
+    paid_guest_ids: Set[int] | None = None,
+) -> SalaryBatchQuote:
+    """只读计算指定日期的整庄园工资。"""
+    salary_date = for_date or timezone.localdate()
+    resolved_guests = (
+        list(guests)
+        if guests is not None
+        else list(Guest.objects.filter(manor=manor).select_related("template").order_by("id"))
+    )
+    if any(int(guest.manor_id) != int(manor.id) for guest in resolved_guests):
+        raise GuestOwnershipError(message="门客不存在或不属于该庄园")
+    return _quote_salary_batch(
+        resolved_guests,
+        for_date=salary_date,
+        paid_guest_ids=paid_guest_ids,
+    )
+
+
+def _load_locked_salary_roster(manor: Manor) -> list[Guest]:
+    """在 Manor 父行已锁后，按 ID 锁定当前完整门客名单。
+
+    Manor 锁通过外键校验串行化新增，Guest 行锁串行化已有成员的删除与变更。
+    """
+    guests = list(Guest.objects.select_for_update().filter(manor_id=manor.pk).order_by("id"))
+    prefetch_related_objects(guests, "template")
+    return guests
+
+
 @transaction.atomic
 def pay_guest_salary(manor: Manor, guest: Guest, for_date: date = None) -> SalaryPayment:
     """
@@ -134,6 +194,80 @@ def pay_guest_salary(manor: Manor, guest: Guest, for_date: date = None) -> Salar
     return payment
 
 
+def pay_all_salaries_locked(
+    manor: Manor,
+    for_date: date = None,
+    *,
+    _guests: Sequence[Guest] | None = None,
+    _quote: SalaryBatchQuote | None = None,
+    _locked_guests: Sequence[Guest] | None = None,
+) -> Dict:
+    """在调用方已锁定 Manor 行的事务内支付全部到期工资。"""
+    if not transaction.get_connection().in_atomic_block:
+        raise RuntimeError("pay_all_salaries_locked must be called inside transaction.atomic()")
+
+    if for_date is None:
+        for_date = timezone.localdate()
+
+    if _guests is not None and _locked_guests is not None:
+        raise ValueError("expected guests and locked guests are mutually exclusive")
+    locked_guests = list(_locked_guests) if _locked_guests is not None else _load_locked_salary_roster(manor)
+    if not locked_guests:
+        raise NoGuestsError()
+
+    locked_guest_ids = tuple(int(guest.id) for guest in locked_guests)
+    if _guests is not None:
+        expected_guests = list(_guests)
+        if any(int(guest.manor_id) != int(manor.id) for guest in expected_guests):
+            raise GuestOwnershipError(message="门客不存在或不属于该庄园")
+        expected_guest_ids = tuple(int(guest.id) for guest in expected_guests)
+        if expected_guest_ids != locked_guest_ids:
+            raise ValueError("expected salary roster does not match locked roster")
+
+    paid_guest_ids = (
+        set(_quote.guest_ids) - set(_quote.unpaid_guest_ids)
+        if _locked_guests is not None and _quote is not None
+        else None
+    )
+    quote = _quote_salary_batch(
+        locked_guests,
+        for_date=for_date,
+        paid_guest_ids=paid_guest_ids,
+    )
+    if _quote is not None and _quote != quote:
+        raise ValueError("frozen salary quote does not match locked salary state")
+    unpaid_ids = set(quote.unpaid_guest_ids)
+    unpaid_guests = [guest for guest in locked_guests if guest.id in unpaid_ids]
+
+    if not unpaid_guests:
+        raise SalaryAlreadyPaidError()
+
+    total_salary = quote.total_amount
+    available_silver = int(manor.silver or 0)
+    if available_silver < total_salary:
+        raise InsufficientResourceError("silver", total_salary, available_silver)
+
+    SalaryPayment.objects.bulk_create(
+        [
+            SalaryPayment(
+                manor=manor,
+                guest=guest,
+                amount=get_guest_salary(guest),
+                for_date=for_date,
+            )
+            for guest in unpaid_guests
+        ]
+    )
+    manor.silver = available_silver - total_salary
+    manor.save(update_fields=["silver"])
+
+    return {
+        "paid_count": len(unpaid_guests),
+        "total_amount": total_salary,
+        "guest_names": [guest.display_name for guest in unpaid_guests],
+    }
+
+
 @transaction.atomic
 def pay_all_salaries(manor: Manor, for_date: date = None) -> Dict:
     """
@@ -149,56 +283,12 @@ def pay_all_salaries(manor: Manor, for_date: date = None) -> Dict:
     Raises:
         GameError: 业务验证失败时抛出显式异常
     """
-    if for_date is None:
-        for_date = timezone.localdate()
-
-    from django.db.models import F
-
     from gameplay.models import Manor
 
     manor_locked = Manor.objects.select_for_update().get(pk=manor.pk)
-
-    # 获取所有门客
-    guests = list(Guest.objects.filter(manor=manor_locked).select_related("template"))
-
-    if not guests:
-        raise NoGuestsError()
-
-    # 批量查询已支付记录（优化 N+1）
-    guest_ids = [g.id for g in guests]
-    paid_ids = bulk_check_salary_paid(guest_ids, for_date)
-
-    # 筛选未支付工资的门客
-    unpaid_guests = [g for g in guests if g.id not in paid_ids]
-
-    if not unpaid_guests:
-        raise SalaryAlreadyPaidError()
-
-    # 计算总工资
-    total_salary = sum(get_guest_salary(guest) for guest in unpaid_guests)
-
-    # 验证银两是否足够（锁内，避免并发透支）
-    if manor_locked.silver < total_salary:
-        raise InsufficientResourceError("silver", total_salary, manor_locked.silver)
-
-    # 批量支付
-    payments = []
-    for guest in unpaid_guests:
-        salary_amount = get_guest_salary(guest)
-        payment = SalaryPayment(manor=manor, guest=guest, amount=salary_amount, for_date=for_date)
-        payments.append(payment)
-
-    # 批量创建记录
-    SalaryPayment.objects.bulk_create(payments)
-
-    Manor.objects.filter(pk=manor_locked.pk).update(silver=F("silver") - total_salary)
-    manor.silver = manor_locked.silver - total_salary
-
-    return {
-        "paid_count": len(unpaid_guests),
-        "total_amount": total_salary,
-        "guest_names": [guest.display_name for guest in unpaid_guests],
-    }
+    result = pay_all_salaries_locked(manor_locked, for_date=for_date)
+    manor.silver = manor_locked.silver
+    return result
 
 
 def get_unpaid_guests(manor: Manor, for_date: date = None) -> List[Guest]:

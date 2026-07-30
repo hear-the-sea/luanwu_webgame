@@ -30,6 +30,7 @@ from core.utils.yaml_loader import load_yaml_data
 from ...constants import BuildingKeys
 from ...models import LivestockProduction, Manor
 from ..utils.notifications import notify_user
+from .production_cancel import cancel_active_production
 
 logger = logging.getLogger(__name__)
 RANCH_MESSAGE_BEST_EFFORT_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
@@ -321,6 +322,17 @@ def start_livestock_production(manor: Manor, livestock_key: str, quantity: int =
         _schedule_livestock_completion(production, actual_duration)
 
     return production
+
+
+def cancel_livestock_production(manor: Manor, production_id: int) -> LivestockProduction:
+    """取消仍在进行的家畜养殖，已消耗的粮食不返还。"""
+    return cancel_active_production(
+        production_model=LivestockProduction,
+        manor=manor,
+        production_id=production_id,
+        active_status=LivestockProduction.Status.PRODUCING,
+        cancelled_status=LivestockProduction.Status.CANCELLED,
+    )
 
 
 def _schedule_livestock_completion(production: LivestockProduction, eta_seconds: int) -> None:

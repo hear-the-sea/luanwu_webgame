@@ -13,7 +13,7 @@ from guests.guest_combat_stats import is_live_guest_model
 from guests.guest_rules import compute_guest_troop_capacity
 from guests.models import Guest, GuestStatus
 from guests.services.health import recover_guest_hp
-from guests.services.loyalty import grant_battle_victory_loyalty
+from guests.services.loyalty import grant_battle_victory_loyalty, start_injury_loyalty_decay
 
 from .city_defense import build_city_defense_combatants, serialize_city_defenses_for_report
 from .combatants_pkg import (
@@ -306,9 +306,13 @@ def apply_guest_hp_updates(
             guest.last_hp_recovery_at = now
             if defeated:
                 guest.status = GuestStatus.INJURED
+                start_injury_loyalty_decay(guest, now=now)
             dirty_guests.append(guest)
     if apply_damage and dirty_guests:
-        Guest.objects.bulk_update(dirty_guests, ["current_hp", "last_hp_recovery_at", "status"])
+        Guest.objects.bulk_update(
+            dirty_guests,
+            ["current_hp", "last_hp_recovery_at", "status", "injury_loyalty_processed_at"],
+        )
     return hp_updates
 
 

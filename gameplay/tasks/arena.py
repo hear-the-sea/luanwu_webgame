@@ -8,14 +8,13 @@ from django.utils import timezone
 import gameplay.services.arena.coop_core as arena_coop_core
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.services.arena.core import cleanup_expired_tournaments, run_due_arena_rounds, start_ready_tournaments
-from gameplay.services.arena.virtual_reserve import (
+from gameplay.services.arena.virtual_reserve_pool import (
     create_due_virtual_reserve_profiles,
     grow_due_virtual_reserves,
-    reconcile_coop_demand,
-    reconcile_tournament_demand,
     replenish_virtual_reserve,
-    scan_virtual_reserve_demands,
 )
+from gameplay.services.arena.virtual_reserve_reconcile import reconcile_coop_demand, reconcile_tournament_demand
+from gameplay.services.arena.virtual_reserve_scan import scan_virtual_reserve_demands
 
 logger = logging.getLogger(__name__)
 

@@ -76,7 +76,15 @@ from .arena import (  # noqa: E402, F401
 )
 from .arena_coop import ArenaCoopEventAdmin  # noqa: E402, F401
 from .arena_virtual import ArenaVirtualDemandAdmin, ArenaVirtualReserveMemberAdmin  # noqa: E402, F401
-from .bots import BotBackfillDemandAdmin, BotInventoryDailyCounterAdmin, BotProfileAdmin  # noqa: E402, F401
+from .bots import (  # noqa: E402, F401
+    BotBackfillDemandAdmin,
+    BotExternalStrengthReconciliationAdmin,
+    BotInventoryDailyCounterAdmin,
+    BotPolicyReleaseAdmin,
+    BotPopulationRecomputeDemandAdmin,
+    BotProfileAdmin,
+    BotRuntimeRoutingStateAdmin,
+)
 from .buildings import BuildingAdmin, BuildingTypeAdmin, WorkAssignmentAdmin, WorkTemplateAdmin  # noqa: E402, F401
 from .core import ManorAdmin, ResourceEventAdmin  # noqa: E402, F401
 from .inventory import InventoryItemAdmin, ItemTemplateAdmin  # noqa: E402, F401
@@ -102,8 +110,12 @@ __all__ = [
     "WorkAssignmentAdmin",
     # bots
     "BotBackfillDemandAdmin",
+    "BotExternalStrengthReconciliationAdmin",
     "BotInventoryDailyCounterAdmin",
+    "BotPolicyReleaseAdmin",
+    "BotPopulationRecomputeDemandAdmin",
     "BotProfileAdmin",
+    "BotRuntimeRoutingStateAdmin",
     # missions
     "MissionTemplateAdmin",
     "MissionRunAdmin",

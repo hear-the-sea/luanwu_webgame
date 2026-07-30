@@ -95,6 +95,47 @@ class ArenaVirtualReserveMember(models.Model):
     accelerated_growth_rounds = models.PositiveSmallIntegerField("加速成长轮次", default=0)
     next_acceleration_at = models.DateTimeField("下次加速时间", null=True, blank=True, db_index=True)
     last_checked_at = models.DateTimeField("最近检查时间", null=True, blank=True)
+    growth_operation_id = models.CharField("成长操作 ID", max_length=64, default="", blank=True)
+    growth_attempt_ordinal = models.PositiveIntegerField("成长尝试序号", default=0)
+    growth_claim_token = models.UUIDField("成长认领令牌", null=True, blank=True)
+    growth_claimed_at = models.DateTimeField("成长认领时间", null=True, blank=True)
+    growth_claim_expires_at = models.DateTimeField(
+        "成长认领过期时间",
+        null=True,
+        blank=True,
+    )
+    growth_requested_at = models.DateTimeField("成长请求时间", null=True, blank=True)
+    growth_demand_version = models.PositiveIntegerField(
+        "成长需求版本",
+        null=True,
+        blank=True,
+    )
+    growth_member_version = models.PositiveIntegerField(
+        "成长成员版本",
+        null=True,
+        blank=True,
+    )
+    growth_power_before = models.PositiveBigIntegerField(
+        "成长前阵容战力",
+        null=True,
+        blank=True,
+    )
+    growth_minimum_guest_count = models.PositiveSmallIntegerField(
+        "成长最低门客数",
+        null=True,
+        blank=True,
+    )
+    growth_minimum_guest_level = models.PositiveIntegerField(
+        "成长最低门客等级",
+        null=True,
+        blank=True,
+    )
+    growth_guest_rarity_cap = models.CharField(
+        "成长门客稀有度上限",
+        max_length=16,
+        default="",
+        blank=True,
+    )
     created_at = models.DateTimeField("创建时间", auto_now_add=True)
     updated_at = models.DateTimeField("更新时间", auto_now=True)
 
@@ -106,10 +147,53 @@ class ArenaVirtualReserveMember(models.Model):
                 fields=["demand", "profile"],
                 name="arena_virtual_member_demand_profile",
             ),
+            models.CheckConstraint(
+                condition=(
+                    (
+                        models.Q(growth_claim_token__isnull=True)
+                        & models.Q(growth_claimed_at__isnull=True)
+                        & models.Q(growth_claim_expires_at__isnull=True)
+                        & models.Q(growth_requested_at__isnull=True)
+                        & models.Q(growth_operation_id="")
+                        & models.Q(growth_attempt_ordinal=0)
+                        & models.Q(growth_demand_version__isnull=True)
+                        & models.Q(growth_member_version__isnull=True)
+                        & models.Q(growth_power_before__isnull=True)
+                        & models.Q(growth_minimum_guest_count__isnull=True)
+                        & models.Q(growth_minimum_guest_level__isnull=True)
+                        & models.Q(growth_guest_rarity_cap="")
+                    )
+                    | (
+                        models.Q(growth_claim_token__isnull=False)
+                        & models.Q(growth_claimed_at__isnull=False)
+                        & models.Q(growth_claim_expires_at__isnull=False)
+                        & models.Q(growth_requested_at__isnull=False)
+                        & ~models.Q(growth_operation_id="")
+                        & models.Q(growth_attempt_ordinal__gte=1)
+                        & models.Q(growth_demand_version__isnull=False)
+                        & models.Q(growth_member_version__isnull=False)
+                        & models.Q(growth_power_before__isnull=False)
+                        & models.Q(growth_minimum_guest_count__isnull=False)
+                        & models.Q(growth_minimum_guest_level__isnull=False)
+                    )
+                ),
+                name="arena_vm_growth_claim_fields_together",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(growth_claim_expires_at__isnull=True)
+                    | models.Q(growth_claim_expires_at__gt=models.F("growth_claimed_at"))
+                ),
+                name="arena_vm_growth_claim_expiry_gt_claim",
+            ),
         ]
         indexes = [
             models.Index(fields=["demand", "state"], name="arena_vm_demand_state_idx"),
             models.Index(fields=["state", "next_acceleration_at"], name="arena_vm_state_accel_idx"),
+            models.Index(
+                fields=["growth_claim_expires_at"],
+                name="arena_vm_growth_claim_exp_idx",
+            ),
         ]
 
     def __str__(self) -> str:

@@ -20,7 +20,7 @@ from gameplay.models import (
 )
 from gameplay.services.arena.coop_core import cancel_arena_coop_entry, run_due_arena_coop_events
 from gameplay.services.arena.core import run_due_arena_rounds
-from gameplay.services.arena.match_helpers import create_scheduled_match
+from gameplay.services.arena.match_store import create_scheduled_match
 from gameplay.services.arena.snapshots import build_entry_guest_snapshot
 from gameplay.services.manor.core import ensure_manor
 from guests.models import GuestStatus

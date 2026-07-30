@@ -75,9 +75,9 @@ def _collect_set_info(gear_items) -> Dict[str, Dict[str, object]]:
             continue
 
         info = sets.setdefault(set_key, {"count": 0, "definitions": bonus_definitions})
+        if info.get("definitions") != bonus_definitions:
+            raise AssertionError(f"inconsistent equipment set bonus definition: {set_key!r}")
         info["count"] = int(info.get("count") or 0) + 1  # type: ignore[arg-type, call-overload]
-        if not info.get("definitions"):
-            info["definitions"] = bonus_definitions
     return sets
 
 

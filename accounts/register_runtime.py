@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
+PUBLIC_REAL_USER_REGISTRATION_MARKER = "_public_real_user_registration"
+
 
 def prepare_signup_user(*, form: Any) -> Any:
     user = form.save(commit=False)
     user._signup_region = form.cleaned_data.get("region", "overseas")
     user._signup_manor_name = (form.cleaned_data.get("manor_name") or "").strip()
+    setattr(user, PUBLIC_REAL_USER_REGISTRATION_MARKER, True)
     return user
 
 

@@ -211,25 +211,6 @@ def get_or_create_recruiting_event_locked(
         )
 
 
-def move_event_to_preparing_locked(event: ArenaCoopEvent, *, now: datetime | None = None) -> bool:
-    if event.status != ArenaCoopEvent.Status.RECRUITING:
-        return False
-
-    registered_count = event.entries.filter(status=ArenaCoopEntry.Status.REGISTERED).count()
-    if registered_count < event.player_limit:
-        return False
-
-    current_time = now or timezone.now()
-    from .virtual_reserve import reconcile_coop_demand_locked
-
-    reconcile_coop_demand_locked(event, now=current_time)
-    event.status = ArenaCoopEvent.Status.PREPARING
-    event.virtual_fill_completed = True
-    event.prepare_ends_at = current_time + timedelta(seconds=event.prepare_duration_seconds)
-    event.save(update_fields=["status", "virtual_fill_completed", "prepare_ends_at", "updated_at"])
-    return True
-
-
 def upsert_entry_with_snapshots_locked(
     event: ArenaCoopEvent,
     locked_manor: Manor,

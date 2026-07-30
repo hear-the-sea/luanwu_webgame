@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from django.core.management import call_command
@@ -77,3 +78,30 @@ def test_load_item_templates_imports_edward_scroll_confirm_payload():
     )
     assert purple_scroll.effect_payload["confirm_ok_text"] == "确认使用"
     assert purple_scroll.effect_payload["choices"] == [{"template_key": "orig_edward_purple", "weight": 100}]
+
+
+@pytest.mark.django_db
+def test_load_item_templates_synchronizes_imported_equipment(monkeypatch, tmp_path: Path):
+    payload_path = tmp_path / "items.yaml"
+    payload_path.write_text(
+        """
+items:
+  - key: sync_hook_helmet
+    name: 同步钩子头盔
+    effect_type: equip_helmet
+    rarity: blue
+    effect_payload:
+      hp: 120
+""".strip(),
+        encoding="utf-8",
+    )
+    captured: list[list[str]] = []
+
+    monkeypatch.setattr(
+        "gameplay.management.commands.load_item_templates.synchronize_equipment_templates",
+        lambda keys: captured.append(list(keys)) or SimpleNamespace(changed=False),
+    )
+
+    call_command("load_item_templates", file=str(payload_path), verbosity=0)
+
+    assert captured == [["sync_hook_helmet"]]

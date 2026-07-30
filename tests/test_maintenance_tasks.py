@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from battle.models import BattleReport
 from core.config import MESSAGE
-from gameplay.models import ArenaExchangeRecord, Message, ResourceEvent, ResourceType
+from gameplay.models import ArenaExchangeRecord, JailPrisoner, Message, ResourceEvent, ResourceType
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.utils.cache import CacheKeys
 from gameplay.tasks.maintenance import (
@@ -17,7 +17,9 @@ from gameplay.tasks.maintenance import (
     BATTLE_REPORT_RETENTION_DAYS,
     RESOURCE_EVENT_RETENTION_DAYS,
     cleanup_old_data_task,
+    decay_prisoner_loyalty_task,
 )
+from guests.models import GuestTemplate
 
 
 def _create_battle_report(manor, *, opponent_name: str = "test-opponent") -> BattleReport:
@@ -133,7 +135,9 @@ def test_cleanup_old_data_task_cleans_old_rows_and_keeps_recent(django_user_mode
 
 
 @pytest.mark.django_db
-def test_cleanup_old_data_task_invalidates_unread_cache_for_each_deleted_message_manor(django_user_model):
+def test_cleanup_old_data_task_invalidates_unread_cache_for_each_deleted_message_manor(
+    django_user_model,
+):
     cache_keys = []
     for index in range(2):
         user = django_user_model.objects.create_user(
@@ -155,3 +159,47 @@ def test_cleanup_old_data_task_invalidates_unread_cache_for_each_deleted_message
         assert [cache.get(cache_key) for cache_key in cache_keys] == [None, None]
     finally:
         cache.delete_many(cache_keys)
+
+
+@pytest.mark.django_db
+def test_decay_prisoner_loyalty_floors_unsigned_values_without_underflow(
+    django_user_model,
+):
+    captor = ensure_manor(django_user_model.objects.create_user(username="loyalty_decay_captor"))
+    original = ensure_manor(django_user_model.objects.create_user(username="loyalty_decay_original"))
+    template = GuestTemplate.objects.create(
+        key="loyalty_decay_prisoner",
+        name="忠诚衰减囚徒",
+        rarity="gray",
+        archetype="civil",
+        base_attack=10,
+        base_intellect=10,
+    )
+
+    prisoners = [
+        JailPrisoner.objects.create(
+            captor=captor,
+            original_manor=original,
+            guest_template=template,
+            original_guest_name=f"衰减测试{index}",
+            original_level=1,
+            loyalty=loyalty,
+            captured_loyalty=loyalty,
+            status=status,
+        )
+        for index, (loyalty, status) in enumerate(
+            (
+                (3, JailPrisoner.Status.HELD),
+                (5, JailPrisoner.Status.HELD),
+                (8, JailPrisoner.Status.HELD),
+                (3, JailPrisoner.Status.RELEASED),
+            )
+        )
+    ]
+
+    assert decay_prisoner_loyalty_task.run() == 3
+    assert list(
+        JailPrisoner.objects.filter(pk__in=[prisoner.pk for prisoner in prisoners])
+        .order_by("pk")
+        .values_list("loyalty", flat=True)
+    ) == [0, 0, 3, 3]

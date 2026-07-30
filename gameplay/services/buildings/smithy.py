@@ -30,6 +30,7 @@ from core.utils.yaml_loader import load_yaml_data
 from ...constants import BuildingKeys
 from ...models import Manor, SmeltingProduction
 from ..utils.notifications import notify_user
+from .production_cancel import cancel_active_production
 
 logger = logging.getLogger(__name__)
 SMITHY_MESSAGE_BEST_EFFORT_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
@@ -450,6 +451,17 @@ def start_smelting_production(manor: Manor, metal_key: str, quantity: int = 1) -
         _schedule_smelting_completion(production, actual_duration)
 
     return production
+
+
+def cancel_smelting_production(manor: Manor, production_id: int) -> SmeltingProduction:
+    """取消仍在进行的冶炼坊制作，已消耗的材料不返还。"""
+    return cancel_active_production(
+        production_model=SmeltingProduction,
+        manor=manor,
+        production_id=production_id,
+        active_status=SmeltingProduction.Status.PRODUCING,
+        cancelled_status=SmeltingProduction.Status.CANCELLED,
+    )
 
 
 def _schedule_smelting_completion(production: SmeltingProduction, eta_seconds: int) -> None:

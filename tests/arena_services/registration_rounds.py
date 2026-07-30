@@ -5,7 +5,6 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
-import gameplay.services.arena.coop_core as arena_coop_core
 import gameplay.services.arena.core as arena_core
 import gameplay.services.arena.match_helpers as arena_match_helpers
 from core.exceptions import (
@@ -185,21 +184,11 @@ def test_refresh_arena_activity_consumes_only_prepared_virtual_reserves_for_curr
     calls: list[tuple[str, int]] = []
 
     monkeypatch.setattr(
-        arena_core,
-        "start_due_virtual_backfill_tournaments",
-        lambda **_kwargs: pytest.fail("页面刷新不应补充后备池"),
-    )
-    monkeypatch.setattr(
-        arena_coop_core,
-        "start_due_virtual_backfill_coop_events",
-        lambda **_kwargs: pytest.fail("页面刷新不应补充共斗后备池"),
-    )
-    monkeypatch.setattr(
-        "gameplay.services.arena.virtual_reserve.fill_due_tournament_reserve",
+        "gameplay.services.arena.virtual_reserve_fill.fill_due_tournament_reserve",
         lambda tournament_id, *, now: calls.append(("tournament", tournament_id)) or 2,
     )
     monkeypatch.setattr(
-        "gameplay.services.arena.virtual_reserve.fill_due_coop_reserve",
+        "gameplay.services.arena.virtual_reserve_fill.fill_due_coop_reserve",
         lambda event_id, *, now: calls.append(("coop", event_id)) or 3,
     )
 
@@ -230,7 +219,7 @@ def test_refresh_arena_activity_ignores_cancelled_coop_entry(monkeypatch):
     ArenaCoopEntry.objects.create(event=event, manor=other_manor)
     calls: list[int] = []
     monkeypatch.setattr(
-        "gameplay.services.arena.virtual_reserve.fill_due_coop_reserve",
+        "gameplay.services.arena.virtual_reserve_fill.fill_due_coop_reserve",
         lambda event_id, *, now: calls.append(event_id) or 1,
     )
 

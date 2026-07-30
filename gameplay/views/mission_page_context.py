@@ -8,7 +8,11 @@ from django.http import HttpRequest
 from gameplay.models import MissionTemplate, ResourceType
 from gameplay.services.inventory.core import get_item_quantity
 from gameplay.services.manor.core import project_manor_activity_for_read
-from gameplay.services.missions_impl.attempts import bulk_get_mission_extra_attempts, bulk_mission_attempts_today
+from gameplay.services.missions_impl.attempts import (
+    MISSION_CARD_DAILY_LIMIT_PER_MISSION,
+    bulk_get_mission_extra_attempts,
+    bulk_mission_attempts_today,
+)
 from gameplay.services.recruitment.recruitment import get_player_troops
 from gameplay.utils.template_loader import get_item_templates_by_keys, get_troop_templates_by_keys
 from gameplay.views.read_helpers import get_prepared_manor_for_read
@@ -82,6 +86,7 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
     )
 
     mission_card_count = get_item_quantity(manor, mission_helpers.MISSION_CARD_KEY)
+    selected_mission_card_uses = extra_attempts.get(selected_mission.key, 0) if selected_mission else 0
     troop_templates, config_items = build_troop_config()
 
     context: dict[str, Any] = {
@@ -96,6 +101,8 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         "active_tab": active_tab,
         "task_board_close_url": f"{request.path}?tab={active_tab}",
         "mission_card_count": mission_card_count,
+        "selected_mission_card_uses": selected_mission_card_uses,
+        "mission_card_daily_limit": MISSION_CARD_DAILY_LIMIT_PER_MISSION,
         "selected_drop_items": [],
         "selected_probability_drop_items": [],
         "selected_entry_cost_items": [],

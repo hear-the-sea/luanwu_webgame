@@ -57,6 +57,22 @@
                                 <dd>{{ building.hourly_rate|floatformat:0 }} / 小时</dd>
                             {% endif %}
                         </div>
+                        {% if building.is_city_defense %}
+                            <div>
+                                <dt>自然恢复</dt>
+                                <dd>{{ building.city_defense_recovery_per_hour }} / 小时（{{ building.city_defense_recovery_percent_per_hour }}%）</dd>
+                            </div>
+                            {% if building.city_defense_full_at %}
+                                <div>
+                                    <dt>预计满耐久</dt>
+                                    <dd>
+                                        <time datetime="{{ building.city_defense_full_at|date:'c' }}">
+                                            {{ building.city_defense_full_at|date:"m-d H:i" }}
+                                        </time>
+                                    </dd>
+                                </div>
+                            {% endif %}
+                        {% endif %}
                         {% if building.is_upgrading %}
                             <div>
                                 <dt>升级完成</dt>

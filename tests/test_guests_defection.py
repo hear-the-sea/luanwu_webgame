@@ -8,6 +8,7 @@ from datetime import date
 import pytest
 
 from core.exceptions import MessageError
+from gameplay.models import Manor
 from gameplay.services.manor.core import ensure_manor
 from guests import tasks as guest_tasks
 from guests.models import Guest, GuestDefection, GuestTemplate
@@ -99,6 +100,41 @@ def test_process_defection_batch_records_once_and_deletes_guest(django_user_mode
     assert defections[0].guest_name == "韩信"
     assert len(calls) == 1
     assert "韩信" in calls[0]["body"]
+
+
+@pytest.mark.django_db
+def test_process_defection_batch_locks_manor_before_guest(
+    django_user_model,
+    monkeypatch,
+):
+    guest = _create_guest_for_defection(
+        django_user_model,
+        username="defection_lock_order",
+    )
+    lock_order: list[str] = []
+    manor_manager = Manor.objects
+    guest_manager = Guest.objects
+    original_manor_lock = manor_manager.select_for_update
+    original_guest_lock = guest_manager.select_for_update
+
+    def _lock_manor(*args, **kwargs):
+        lock_order.append("manor")
+        return original_manor_lock(*args, **kwargs)
+
+    def _lock_guest(*args, **kwargs):
+        lock_order.append("guest")
+        return original_guest_lock(*args, **kwargs)
+
+    monkeypatch.setattr(manor_manager, "select_for_update", _lock_manor)
+    monkeypatch.setattr(guest_manager, "select_for_update", _lock_guest)
+
+    count = guest_tasks._process_defection_batch(
+        [guest.id],
+        create_message=lambda **_kwargs: None,
+    )
+
+    assert count == 1
+    assert lock_order[:2] == ["manor", "guest"]
 
 
 @pytest.mark.django_db

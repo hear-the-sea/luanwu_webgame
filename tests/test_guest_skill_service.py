@@ -3,12 +3,20 @@ from __future__ import annotations
 from itertools import count
 
 import pytest
+from django.db import transaction
 
-from core.exceptions import GuestNotFoundError, GuestNotIdleError, GuestNotRequirementError, GuestSkillNotFoundError
+from core.exceptions import (
+    GuestItemConfigurationError,
+    GuestItemOwnershipError,
+    GuestNotFoundError,
+    GuestNotIdleError,
+    GuestNotRequirementError,
+    GuestSkillNotFoundError,
+)
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestSkill, GuestStatus, GuestTemplate, Skill
-from guests.services.skills import forget_guest_skill, learn_guest_skill
+from guests.services.skills import forget_guest_skill, learn_guest_skill, learn_guest_skill_locked
 
 _COUNTER = count(1)
 
@@ -68,11 +76,92 @@ def test_learn_guest_skill_creates_guest_skill_and_consumes_book(django_user_mod
     guest = _create_guest(manor)
     skill, item = _create_skill_book_item(manor)
 
-    learn_guest_skill(guest, skill, item)
+    learned = learn_guest_skill(guest, skill, item)
 
     item.refresh_from_db(fields=["quantity"])
     assert item.quantity == 1
+    assert learned.guest_id == guest.id
+    assert learned.skill_id == skill.id
     assert GuestSkill.objects.filter(guest=guest, skill=skill, source=GuestSkill.Source.BOOK).exists()
+
+
+@pytest.mark.django_db
+def test_learn_guest_skill_rejects_book_from_another_manor(django_user_model):
+    owner = django_user_model.objects.create_user(username=_unique("skill_service_owner"), password="pass123")
+    other = django_user_model.objects.create_user(username=_unique("skill_service_other"), password="pass123")
+    owner_manor = ensure_manor(owner)
+    other_manor = ensure_manor(other)
+    guest = _create_guest(owner_manor)
+    skill, item = _create_skill_book_item(other_manor)
+
+    with pytest.raises(GuestItemOwnershipError, match="不属于您的庄园"):
+        learn_guest_skill(guest, skill, item)
+
+    item.refresh_from_db(fields=["quantity"])
+    assert item.quantity == 2
+    assert not GuestSkill.objects.filter(guest=guest, skill=skill).exists()
+
+
+@pytest.mark.django_db
+def test_learn_guest_skill_rejects_mismatched_skill_identity(django_user_model):
+    user = django_user_model.objects.create_user(username=_unique("skill_service_identity_user"), password="pass123")
+    manor = ensure_manor(user)
+    guest = _create_guest(manor)
+    book_skill, item = _create_skill_book_item(manor)
+    other_skill = Skill.objects.create(
+        key=_unique("skill_service_other_skill"),
+        name="另一个技能",
+    )
+
+    with pytest.raises(GuestItemConfigurationError, match="技能书配置有误"):
+        learn_guest_skill(guest, other_skill, item)
+
+    item.refresh_from_db(fields=["quantity"])
+    assert item.quantity == 2
+    assert not GuestSkill.objects.filter(
+        guest=guest,
+        skill__in=(book_skill, other_skill),
+    ).exists()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_learn_guest_skill_locked_requires_atomic_block(django_user_model):
+    user = django_user_model.objects.create_user(username=_unique("skill_service_atomic_user"), password="pass123")
+    manor = ensure_manor(user)
+    guest = _create_guest(manor)
+    skill, item = _create_skill_book_item(manor)
+
+    with pytest.raises(RuntimeError, match="transaction.atomic"):
+        learn_guest_skill_locked(
+            manor,
+            guest,
+            item.id,
+            expected_skill_id=skill.id,
+        )
+
+
+@pytest.mark.django_db
+def test_learn_guest_skill_locked_revalidates_warehouse_location(django_user_model):
+    user = django_user_model.objects.create_user(username=_unique("skill_service_location_user"), password="pass123")
+    manor = ensure_manor(user)
+    guest = _create_guest(manor)
+    skill, item = _create_skill_book_item(manor)
+    InventoryItem.objects.filter(pk=item.pk).update(storage_location=InventoryItem.StorageLocation.TREASURY)
+
+    with pytest.raises(GuestItemOwnershipError, match="不属于您的庄园"):
+        with transaction.atomic():
+            locked_manor = type(manor).objects.select_for_update().get(pk=manor.pk)
+            locked_guest = Guest.objects.select_for_update().get(pk=guest.pk)
+            learn_guest_skill_locked(
+                locked_manor,
+                locked_guest,
+                item.id,
+                expected_skill_id=skill.id,
+            )
+
+    item.refresh_from_db(fields=["quantity"])
+    assert item.quantity == 2
+    assert not GuestSkill.objects.filter(guest=guest, skill=skill).exists()
 
 
 @pytest.mark.django_db
@@ -108,7 +197,9 @@ def test_learn_guest_skill_rejects_low_level_without_consuming_book(django_user_
 
 
 @pytest.mark.django_db
-def test_learn_guest_skill_rejects_low_attribute_without_consuming_book(django_user_model):
+def test_learn_guest_skill_rejects_low_attribute_without_consuming_book(
+    django_user_model,
+):
     user = django_user_model.objects.create_user(username=_unique("skill_service_attr_user"), password="pass123")
     manor = ensure_manor(user)
     guest = _create_guest(manor, agility=84)

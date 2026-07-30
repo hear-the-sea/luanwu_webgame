@@ -3,8 +3,9 @@ from __future__ import annotations
 import pytest
 from django.db import DatabaseError
 from django.urls import reverse
+from django.utils import timezone
 
-from gameplay.models import MissionTemplate
+from gameplay.models import InventoryItem, ItemTemplate, MissionExtraAttempt, MissionTemplate
 from tests.mission_views.support import assert_redirect, response_messages
 
 
@@ -122,3 +123,35 @@ class TestMissionCardView:
             "item_key": "mission_card",
             "count": 1,
         }
+
+    def test_use_mission_card_rejects_sixth_card_without_consuming_inventory(self, manor_with_user):
+        manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key=f"view_use_card_daily_limit_{manor.id}",
+            name="任务卡每日上限任务",
+        )
+        card_template, _ = ItemTemplate.objects.get_or_create(
+            key="mission_card",
+            defaults={"name": "任务卡", "effect_type": ItemTemplate.EffectType.TOOL},
+        )
+        card_item, _ = InventoryItem.objects.update_or_create(
+            manor=manor,
+            template=card_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            defaults={"quantity": 2},
+        )
+        extra = MissionExtraAttempt.objects.create(
+            manor=manor,
+            mission=mission,
+            date=timezone.localdate(),
+            extra_count=5,
+        )
+
+        response = client.post(reverse("gameplay:use_mission_card"), {"mission_key": mission.key})
+
+        assert_redirect(response, f"{reverse('gameplay:tasks')}?mission={mission.key}")
+        assert any("该任务今日最多使用 5 张任务卡" in message for message in response_messages(response))
+        card_item.refresh_from_db()
+        extra.refresh_from_db()
+        assert card_item.quantity == 2
+        assert extra.extra_count == 5

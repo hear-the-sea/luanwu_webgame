@@ -10,10 +10,12 @@ from django.utils import timezone
 from battle.models import TroopTemplate
 from gameplay.models import BotProfile, InventoryItem, ItemTemplate, PlayerTroop
 from gameplay.services.manor.core import ensure_manor
+from gameplay.services.virtual_player_core.reference_snapshots import projection_for_band as _projection_for_band
+from gameplay.services.virtual_player_core.reference_snapshots import (
+    projection_from_real_players as _projection_from_real_players,
+)
 from gameplay.services.virtual_players import (
     BotProjectionConfig,
-    _projection_for_band,
-    _projection_from_real_players,
     accelerate_virtual_player_growth,
     create_virtual_player,
     maintain_due_virtual_players,
@@ -22,25 +24,25 @@ from guests.models import GearItem, GearSlot, GearTemplate, GuestArchetype, Gues
 
 
 def test_rarity_caps_keep_highest_value_after_partial_config_merge(settings):
-    from gameplay.services.virtual_players import (
+    from gameplay.services.virtual_player_core.config import load_virtual_player_config
+    from gameplay.services.virtual_player_core.legacy.roster import (
         GEAR_RARITY_RANK,
         GUEST_RARITY_RANK,
         _gear_max_rarity_for_stage,
         _guest_max_rarity_for_stage,
-        load_virtual_player_config,
     )
 
     settings.VIRTUAL_PLAYER_CONFIG = {
         "projection": {
-            "guest_max_rarity_by_stage": {1: "blue"},
-            "gear_max_rarity_by_stage": {1: "purple"},
+            "guest_max_rarity_by_stage": {1: "blue", 4: "blue"},
+            "gear_max_rarity_by_stage": {1: "purple", 7: "purple"},
         }
     }
 
     config = load_virtual_player_config()
 
-    assert config["projection"]["guest_max_rarity_by_stage"][4] == "red"
-    assert config["projection"]["gear_max_rarity_by_stage"][7] == "blue"
+    assert config["projection"]["guest_max_rarity_by_stage"][4] == "blue"
+    assert config["projection"]["gear_max_rarity_by_stage"][7] == "purple"
     assert _guest_max_rarity_for_stage(4, config) == GUEST_RARITY_RANK["blue"]
     assert _gear_max_rarity_for_stage(7, config) == GEAR_RARITY_RANK["purple"]
 
@@ -61,10 +63,10 @@ def test_rarity_caps_keep_highest_value_after_partial_config_merge(settings):
     ],
 )
 def test_rarity_caps_ignore_boolean_stage_keys(field_name, cap_function_name, rank_mapping_name):
-    from gameplay.services import virtual_players
+    from gameplay.services.virtual_player_core.legacy import roster
 
-    cap_function = getattr(virtual_players, cap_function_name)
-    rank_mapping = getattr(virtual_players, rank_mapping_name)
+    cap_function = getattr(roster, cap_function_name)
+    rank_mapping = getattr(roster, rank_mapping_name)
     config = {"projection": {field_name: {True: "orange"}}}
 
     assert cap_function(1, config) == rank_mapping["green"]
@@ -280,7 +282,7 @@ def test_real_projection_uses_summed_army_size(django_user_model):
 
 @pytest.mark.django_db
 def test_project_troops_preserves_total_across_multiple_types(settings, django_user_model, monkeypatch):
-    from gameplay.services.virtual_players import _project_troops
+    from gameplay.services.virtual_player_core.legacy.roster import _project_troops
 
     user = django_user_model.objects.create_user(username="projection_total_army", password="pass123")
     manor = ensure_manor(user)
@@ -303,7 +305,10 @@ def test_project_troops_preserves_total_across_multiple_types(settings, django_u
 
 
 def test_troop_projection_variation_is_stable_bounded_and_diverse():
-    from gameplay.services.virtual_players import BotProjectionConfig, _apply_persona_to_projection
+    from gameplay.services.virtual_player_core.reference_snapshots import (
+        apply_persona_to_projection as _apply_persona_to_projection,
+    )
+    from gameplay.services.virtual_players import BotProjectionConfig
 
     projection = BotProjectionConfig(900, 3, 0, 3, troop_count=1000)
     config = {"combat_personas": {"balanced": {"troop_multiplier": 1.0}}}
@@ -622,7 +627,7 @@ def test_virtual_player_inventory_uses_a_small_persistent_archetype_pool(setting
 def test_virtual_player_inventory_pool_removes_only_stale_owned_loot_candidates(
     settings,
 ):
-    from gameplay.services.virtual_players import _replenish_inventory_stock
+    from gameplay.services.virtual_player_core.legacy.inventory import _replenish_inventory_stock
 
     pool_template = ItemTemplate.objects.create(
         key="virtual_pool_kept",
@@ -759,7 +764,7 @@ def test_virtual_player_growth_completes_guest_count_before_progressive_quality(
         },
         "projection": {
             "guest_template_keys": [gray_guest.key, blue_guest.key],
-            "guest_max_rarity_by_stage": {1: "blue"},
+            "guest_max_rarity_by_stage": {1: "blue", 4: "blue"},
             "gear_template_keys": [weapon.key],
             "gear_max_rarity_by_stage": {1: "green"},
             "extra_skill_keys": [skill.key],
@@ -786,7 +791,7 @@ def test_virtual_player_growth_completes_guest_count_before_progressive_quality(
         troop_count=50,
     )
     monkeypatch.setattr(
-        "gameplay.services.virtual_players._maintenance_projection_from_real_players",
+        "gameplay.services.virtual_player_core.maintenance._maintenance_projection_from_real_players",
         lambda *_args, **_kwargs: ordinary_projection,
     )
     now = timezone.now()

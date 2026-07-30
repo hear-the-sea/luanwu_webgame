@@ -11,9 +11,11 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any, List
 
-from django.db import transaction
+from django.db import connection, transaction
+from django.db.models import QuerySet
 from django.utils import timezone
 
 from core.config import GUEST
@@ -36,7 +38,7 @@ from guests.services.training import ensure_auto_training
 from guests.utils.recruitment_variance import apply_recruitment_variance
 from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 
-from ..models import JailInteractionLog, JailPrisoner, Manor, OathBond
+from ..models import BotProfile, JailInteractionLog, JailPrisoner, Manor, OathBond
 from .inventory.core import get_item_quantity
 from .jail_persuasion.eligibility import (
     RECRUIT_NEGOTIATED,
@@ -49,6 +51,51 @@ from .jail_persuasion.milestones import pending_milestone_stage
 from .jail_persuasion.profiles import METHOD_BRIBE, load_jail_persuasion_profiles, render_copy, stable_seed
 
 GOLD_BAR_ITEM_KEY = "gold_bar"
+VIRTUAL_JAIL_CLEANUP_DEFAULT_BATCH_SIZE = 100
+VIRTUAL_JAIL_CLEANUP_MAX_BATCH_SIZE = 1_000
+VIRTUAL_JAIL_CLEANUP_DEFAULT_MAX_BATCHES = 100
+VIRTUAL_JAIL_CLEANUP_MAX_BATCHES = 1_000
+
+
+class VirtualJailCleanupError(ValueError):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
+class VirtualJailCleanupResult:
+    cutoff: datetime
+    batch_size: int
+    batch_count: int
+    scanned: int
+    locked: int
+    released: int
+    skipped: int
+    failed: int
+    oldest_remaining_age_seconds: int | None
+    batch_limit_reached: bool
+
+    def to_payload(self) -> dict[str, object]:
+        return {
+            "cutoff": self.cutoff.isoformat(),
+            "batch_size": self.batch_size,
+            "batch_count": self.batch_count,
+            "scanned": self.scanned,
+            "locked": self.locked,
+            "released": self.released,
+            "skipped": self.skipped,
+            "failed": self.failed,
+            "oldest_remaining_age_seconds": self.oldest_remaining_age_seconds,
+            "batch_limit_reached": self.batch_limit_reached,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class _VirtualJailCleanupBatchResult:
+    scanned: int
+    locked: int
+    released: int
+    skipped: int
+    failed: int = 0
 
 
 @dataclass(frozen=True)
@@ -106,6 +153,140 @@ def list_held_prisoners(manor: Manor) -> List[JailPrisoner]:
 
 def list_oath_bonds(manor: Manor) -> List[OathBond]:
     return list(OathBond.objects.filter(manor=manor).select_related("guest", "guest__template").order_by("-created_at"))
+
+
+def _normalize_virtual_jail_cleanup_cutoff(cutoff: datetime) -> datetime:
+    if not isinstance(cutoff, datetime) or timezone.is_naive(cutoff):
+        raise VirtualJailCleanupError("cutoff must be a timezone-aware datetime")
+    return cutoff.astimezone(UTC)
+
+
+def _normalize_virtual_jail_cleanup_limit(
+    value: int,
+    *,
+    field: str,
+    maximum: int,
+) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= maximum:
+        raise VirtualJailCleanupError(f"{field} must be between 1 and {maximum}")
+    return value
+
+
+def _eligible_virtual_jail_prisoners(*, cutoff: datetime) -> QuerySet[JailPrisoner]:
+    virtual_manor_ids = BotProfile.objects.values_list("manor_id", flat=True)
+    return JailPrisoner.objects.filter(
+        captor_id__in=virtual_manor_ids,
+        status=JailPrisoner.Status.HELD,
+        captured_at__lte=cutoff,
+    )
+
+
+@transaction.atomic
+def _release_virtual_jail_prisoners_batch(
+    *,
+    cutoff: datetime,
+    batch_size: int,
+) -> _VirtualJailCleanupBatchResult:
+    candidates = _eligible_virtual_jail_prisoners(cutoff=cutoff)
+    if connection.features.has_select_for_update_skip_locked:
+        candidates = candidates.select_for_update(skip_locked=True)
+    else:
+        candidates = candidates.select_for_update()
+
+    prisoner_ids = list(candidates.order_by("captured_at", "id").values_list("id", flat=True)[:batch_size])
+    locked = len(prisoner_ids)
+    if not prisoner_ids:
+        return _VirtualJailCleanupBatchResult(
+            scanned=0,
+            locked=0,
+            released=0,
+            skipped=0,
+        )
+
+    virtual_manor_ids = BotProfile.objects.values_list("manor_id", flat=True)
+    released = JailPrisoner.objects.filter(
+        id__in=prisoner_ids,
+        captor_id__in=virtual_manor_ids,
+        status=JailPrisoner.Status.HELD,
+        captured_at__lte=cutoff,
+    ).update(status=JailPrisoner.Status.RELEASED)
+    return _VirtualJailCleanupBatchResult(
+        scanned=locked,
+        locked=locked,
+        released=released,
+        skipped=locked - released,
+    )
+
+
+def cleanup_virtual_player_jail(
+    *,
+    cutoff: datetime,
+    batch_size: int = VIRTUAL_JAIL_CLEANUP_DEFAULT_BATCH_SIZE,
+    max_batches: int = VIRTUAL_JAIL_CLEANUP_DEFAULT_MAX_BATCHES,
+) -> VirtualJailCleanupResult:
+    """Release a bounded daily slice of prisoners held by virtual-player captors.
+
+    Database failures roll back their current batch and propagate to the caller, so
+    every successfully returned summary has ``failed=0``.
+    """
+
+    normalized_cutoff = _normalize_virtual_jail_cleanup_cutoff(cutoff)
+    normalized_batch_size = _normalize_virtual_jail_cleanup_limit(
+        batch_size,
+        field="batch_size",
+        maximum=VIRTUAL_JAIL_CLEANUP_MAX_BATCH_SIZE,
+    )
+    normalized_max_batches = _normalize_virtual_jail_cleanup_limit(
+        max_batches,
+        field="max_batches",
+        maximum=VIRTUAL_JAIL_CLEANUP_MAX_BATCHES,
+    )
+
+    batch_count = 0
+    scanned = 0
+    locked = 0
+    released = 0
+    skipped = 0
+    failed = 0
+    for _batch_index in range(normalized_max_batches):
+        batch = _release_virtual_jail_prisoners_batch(
+            cutoff=normalized_cutoff,
+            batch_size=normalized_batch_size,
+        )
+        scanned += batch.scanned
+        locked += batch.locked
+        released += batch.released
+        skipped += batch.skipped
+        failed += batch.failed
+        if batch.locked == 0:
+            break
+        batch_count += 1
+
+    oldest_remaining_at = (
+        _eligible_virtual_jail_prisoners(cutoff=normalized_cutoff)
+        .order_by("captured_at", "id")
+        .values_list("captured_at", flat=True)
+        .first()
+    )
+    oldest_remaining_age_seconds = None
+    if oldest_remaining_at is not None:
+        oldest_remaining_age_seconds = max(
+            0,
+            int((normalized_cutoff - oldest_remaining_at.astimezone(UTC)).total_seconds()),
+        )
+
+    return VirtualJailCleanupResult(
+        cutoff=normalized_cutoff,
+        batch_size=normalized_batch_size,
+        batch_count=batch_count,
+        scanned=scanned,
+        locked=locked,
+        released=released,
+        skipped=skipped,
+        failed=failed,
+        oldest_remaining_age_seconds=oldest_remaining_age_seconds,
+        batch_limit_reached=(oldest_remaining_at is not None and batch_count >= normalized_max_batches),
+    )
 
 
 @transaction.atomic

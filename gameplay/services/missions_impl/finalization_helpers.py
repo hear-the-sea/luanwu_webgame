@@ -136,20 +136,30 @@ def prepare_guest_updates_for_finalize(
     now: Any,
 ) -> Tuple[List[Any], List[str]]:
     from guests.models import GuestStatus
+    from guests.services.loyalty import clear_injury_loyalty_decay, start_injury_loyalty_decay
 
     guests_to_update: List[Any] = []
     for guest in guests:
         if is_retreating:
             guest.status = GuestStatus.IDLE
+            clear_injury_loyalty_decay(guest)
         else:
             guest.status = GuestStatus.INJURED if guest.id in defeated_guest_ids else GuestStatus.IDLE
+            if guest.status == GuestStatus.INJURED:
+                start_injury_loyalty_decay(guest, now=now)
+            else:
+                clear_injury_loyalty_decay(guest)
             target_hp = hp_updates.get(guest.id)
             if target_hp is not None:
                 guest.current_hp = max(1, min(guest.max_hp, target_hp))
                 guest.last_hp_recovery_at = now
         guests_to_update.append(guest)
 
-    fields = ["status"] if is_retreating else ["status", "current_hp", "last_hp_recovery_at"]
+    fields = (
+        ["status", "injury_loyalty_processed_at"]
+        if is_retreating
+        else ["status", "current_hp", "last_hp_recovery_at", "injury_loyalty_processed_at"]
+    )
     return guests_to_update, fields
 
 

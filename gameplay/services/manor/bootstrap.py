@@ -49,7 +49,11 @@ def bootstrap_manor(user, region: str = "overseas", initial_name: str | None = N
                 Manor.objects.filter(pk=manor.pk, user=user, coordinate_x=0, coordinate_y=0).delete()
             raise RuntimeError("Failed to allocate a unique manor coordinate after multiple attempts")
         manor.refresh_from_db(fields=["region", "coordinate_x", "coordinate_y", "name"])
-    _ensure_manor_provisioning(manor, created=created)
+    _ensure_manor_provisioning(
+        manor,
+        created=created,
+        provision_rewards=not bool(getattr(user, "_virtual_player_internal", False)),
+    )
     return manor
 
 
@@ -57,7 +61,12 @@ def ensure_manor(user, region: str = "overseas", initial_name: str | None = None
     return bootstrap_manor(user, region=region, initial_name=initial_name)
 
 
-def _ensure_manor_provisioning(manor: Manor, *, created: bool) -> None:
+def _ensure_manor_provisioning(
+    manor: Manor,
+    *,
+    created: bool,
+    provision_rewards: bool = True,
+) -> None:
     _provisioning.ensure_manor_provisioning(
         manor,
         created=created,
@@ -65,6 +74,7 @@ def _ensure_manor_provisioning(manor: Manor, *, created: bool) -> None:
         ensure_buildings_exist_func=ensure_buildings_exist,
         grant_initial_peace_shield_func=_grant_initial_peace_shield,
         deliver_active_global_mail_campaigns_func=_deliver_active_global_mail_campaigns,
+        provision_rewards=provision_rewards,
     )
 
 

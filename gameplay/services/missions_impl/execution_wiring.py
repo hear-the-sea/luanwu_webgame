@@ -14,6 +14,7 @@ def build_finalize_mission_dependencies(
     select_guests_for_finalize: Callable[..., Any],
     prepare_guest_updates_for_finalize: Callable[..., Any],
     mark_run_completed: Callable[..., Any],
+    apply_city_defense_battle_damage: Callable[..., Any],
     apply_defender_troop_losses: Callable[..., Any],
     return_attacker_troops_after_mission: Callable[..., Any],
     logger: Any,
@@ -36,6 +37,7 @@ def build_finalize_mission_dependencies(
         "select_guests_for_finalize": select_guests_for_finalize,
         "prepare_guest_updates_for_finalize": prepare_guest_updates_for_finalize,
         "mark_run_completed": mark_run_completed,
+        "apply_city_defense_battle_damage": apply_city_defense_battle_damage,
         "apply_defender_troop_losses": apply_defender_troop_losses,
         "return_attacker_troops_after_mission": partial(return_attacker_troops_after_mission, logger=logger),
         "apply_mission_rewards_if_won": partial(

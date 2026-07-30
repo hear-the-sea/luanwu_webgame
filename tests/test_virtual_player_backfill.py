@@ -15,6 +15,12 @@ from common.constants.resources import ResourceType
 from gameplay.constants import BuildingKeys
 from gameplay.models import BotBackfillDemand, BotProfile, BuildingType, Manor, RaidRun, ScoutRecord
 from gameplay.services.manor.core import ensure_manor
+from gameplay.services.virtual_player_core import maintenance as virtual_player_maintenance
+from gameplay.services.virtual_player_core import population_runtime as virtual_player_population
+from gameplay.services.virtual_player_core.backfill import (
+    consume_virtual_player_backfill_demands,
+    record_virtual_player_backfill_demand,
+)
 
 _COUNTER = count(1)
 
@@ -102,10 +108,7 @@ def test_region_search_is_read_only_and_does_not_create_bots(settings, django_us
 
 @pytest.mark.django_db
 def test_region_backfill_request_records_aggregated_demand_without_creating_bots(settings, django_user_model):
-    from gameplay.services.virtual_players import (
-        consume_virtual_player_backfill_demands,
-        request_virtual_player_backfill_for_region_search,
-    )
+    from gameplay.services.virtual_players import request_virtual_player_backfill_for_region_search
 
     settings.VIRTUAL_PLAYER_CONFIG = {
         "population": {
@@ -158,8 +161,6 @@ def test_region_backfill_request_does_not_record_false_demand_from_searcher_prot
 
 @pytest.mark.django_db
 def test_record_backfill_demand_reconciles_down_and_clears_zero():
-    from gameplay.services.virtual_players import record_virtual_player_backfill_demand
-
     record_virtual_player_backfill_demand(region="north", prestige_band="junior", needed=3)
     record_virtual_player_backfill_demand(region="north", prestige_band="junior", needed=1)
 
@@ -173,8 +174,6 @@ def test_record_backfill_demand_reconciles_down_and_clears_zero():
 @pytest.mark.django_db
 def test_record_backfill_demand_handles_racing_first_insert(monkeypatch):
     from django.db.models.query import QuerySet
-
-    from gameplay.services.virtual_players import record_virtual_player_backfill_demand
 
     BotBackfillDemand.objects.create(region="north", prestige_band="junior", needed=5)
     original_first = QuerySet.first
@@ -243,6 +242,7 @@ def test_region_backfill_request_uses_full_attack_check(settings, django_user_mo
 
 @pytest.mark.django_db
 def test_region_backfill_request_avoids_per_candidate_bot_profile_queries(settings, django_user_model):
+    from gameplay.models import BotRuntimeRoutingState
     from gameplay.services.virtual_players import request_virtual_player_backfill_for_region_search
 
     settings.VIRTUAL_PLAYER_CONFIG = {
@@ -263,6 +263,10 @@ def test_region_backfill_request_avoids_per_candidate_bot_profile_queries(settin
             region="north",
             prestige=950,
         )
+    BotRuntimeRoutingState.objects.create(
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.LEGACY_BEFORE_GATE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.LEGACY_BEFORE_GATE,
+    )
 
     with CaptureQueriesContext(connection) as captured:
         request_virtual_player_backfill_for_region_search(searcher=searcher, region="north")
@@ -335,7 +339,6 @@ def test_population_plan_distinguishes_maintained_and_attackable_supply(settings
 @pytest.mark.django_db
 def test_public_manor_info_does_not_record_backfill_demand_from_read_path(settings, django_user_model):
     from gameplay.services.raid.map_search import get_manor_public_info
-    from gameplay.services.virtual_players import consume_virtual_player_backfill_demands
 
     settings.VIRTUAL_PLAYER_CONFIG = {
         "population": {
@@ -360,7 +363,6 @@ def test_public_manor_info_does_not_record_backfill_demand_from_read_path(settin
 @pytest.mark.django_db
 def test_start_scout_does_not_record_population_backfill_demand(settings, django_user_model, monkeypatch):
     from gameplay.services.raid.scout import start_scout
-    from gameplay.services.virtual_players import consume_virtual_player_backfill_demands
 
     settings.VIRTUAL_PLAYER_CONFIG = {
         "population": {
@@ -448,11 +450,7 @@ def test_retired_virtual_player_remains_listed_and_attackable_while_stale_is_hid
 
 @pytest.mark.django_db
 def test_population_roll_provisions_backfill_demand_for_region_and_band(settings, caplog):
-    from gameplay.services.virtual_players import (
-        consume_virtual_player_backfill_demands,
-        record_virtual_player_backfill_demand,
-        roll_virtual_player_population,
-    )
+    from gameplay.services.virtual_players import roll_virtual_player_population
 
     _bootstrap_building_types()
     settings.VIRTUAL_PLAYER_CONFIG = {
@@ -492,12 +490,7 @@ def test_population_roll_provisions_backfill_demand_for_region_and_band(settings
 
 @pytest.mark.django_db
 def test_population_roll_requeues_backfill_demand_when_creation_fails(settings, monkeypatch):
-    from gameplay.services import virtual_players
-    from gameplay.services.virtual_players import (
-        consume_virtual_player_backfill_demands,
-        record_virtual_player_backfill_demand,
-        roll_virtual_player_population,
-    )
+    from gameplay.services.virtual_players import roll_virtual_player_population
 
     settings.VIRTUAL_PLAYER_CONFIG = {
         "population": {
@@ -515,7 +508,11 @@ def test_population_roll_requeues_backfill_demand_when_creation_fails(settings, 
     def fail_create(*args, **kwargs):
         raise RuntimeError("creation failed")
 
-    monkeypatch.setattr(virtual_players, "create_virtual_player", fail_create)
+    monkeypatch.setattr(
+        virtual_player_population,
+        "_create_virtual_player_v1",
+        fail_create,
+    )
 
     with pytest.raises(RuntimeError, match="creation failed"):
         roll_virtual_player_population(limit=5, now=timezone.now())
@@ -527,11 +524,7 @@ def test_population_roll_requeues_backfill_demand_when_creation_fails(settings, 
 
 @pytest.mark.django_db
 def test_population_roll_keeps_observed_backfill_demand_after_partial_provisioning(settings):
-    from gameplay.services.virtual_players import (
-        consume_virtual_player_backfill_demands,
-        record_virtual_player_backfill_demand,
-        roll_virtual_player_population,
-    )
+    from gameplay.services.virtual_players import roll_virtual_player_population
 
     _bootstrap_building_types()
     settings.VIRTUAL_PLAYER_CONFIG = {
@@ -556,7 +549,7 @@ def test_population_roll_keeps_observed_backfill_demand_after_partial_provisioni
 
 @pytest.mark.django_db
 def test_repeated_high_band_shortage_does_not_duplicate_zero_prestige_pipeline(settings):
-    from gameplay.services.virtual_players import record_virtual_player_backfill_demand, roll_virtual_player_population
+    from gameplay.services.virtual_players import roll_virtual_player_population
 
     _bootstrap_building_types()
     settings.VIRTUAL_PLAYER_CONFIG = {
@@ -585,17 +578,15 @@ def test_repeated_high_band_shortage_does_not_duplicate_zero_prestige_pipeline(s
 
 @pytest.mark.django_db
 def test_lost_population_lock_preserves_invalid_backfill_demand():
-    from gameplay.services import virtual_players
-
     demand = BotBackfillDemand.objects.create(region="north", prestige_band="junior", needed=1)
 
     def _lost_ownership():
-        raise virtual_players.VirtualPlayerPopulationLockLostError(
+        raise virtual_player_population.VirtualPlayerPopulationLockLostError(
             "virtual player population roll lock ownership was lost"
         )
 
-    with pytest.raises(virtual_players.VirtualPlayerPopulationLockLostError):
-        virtual_players._create_backfill_demanded_players(
+    with pytest.raises(virtual_player_population.VirtualPlayerPopulationLockLostError):
+        virtual_player_population._create_backfill_demanded_players(
             demands=[
                 {
                     "id": demand.id,
@@ -617,17 +608,15 @@ def test_lost_population_lock_preserves_invalid_backfill_demand():
 
 @pytest.mark.django_db
 def test_lost_population_lock_stops_before_backfill_create_transaction():
-    from gameplay.services import virtual_players
-
     demand = BotBackfillDemand.objects.create(region="north", prestige_band="junior", needed=1)
 
     def _lost_ownership():
-        raise virtual_players.VirtualPlayerPopulationLockLostError(
+        raise virtual_player_population.VirtualPlayerPopulationLockLostError(
             "virtual player population roll lock ownership was lost"
         )
 
-    with pytest.raises(virtual_players.VirtualPlayerPopulationLockLostError):
-        virtual_players._create_backfill_demanded_players(
+    with pytest.raises(virtual_player_population.VirtualPlayerPopulationLockLostError):
+        virtual_player_population._create_backfill_demanded_players(
             demands=[
                 {
                     "id": demand.id,
@@ -650,8 +639,6 @@ def test_lost_population_lock_stops_before_backfill_create_transaction():
 
 @pytest.mark.django_db
 def test_backfill_rechecks_lost_lock_after_transaction_reads(settings):
-    from gameplay.services import virtual_players
-
     _bootstrap_building_types()
     settings.VIRTUAL_PLAYER_CONFIG = {
         "population": {
@@ -670,12 +657,12 @@ def test_backfill_rechecks_lost_lock_after_transaction_reads(settings):
         nonlocal guard_checks
         guard_checks += 1
         if guard_checks >= 2:
-            raise virtual_players.VirtualPlayerPopulationLockLostError(
+            raise virtual_player_population.VirtualPlayerPopulationLockLostError(
                 "virtual player population roll lock ownership was lost"
             )
 
-    with pytest.raises(virtual_players.VirtualPlayerPopulationLockLostError):
-        virtual_players._create_backfill_demanded_players(
+    with pytest.raises(virtual_player_population.VirtualPlayerPopulationLockLostError):
+        virtual_player_population._create_backfill_demanded_players(
             demands=[
                 {
                     "id": demand.id,
@@ -825,15 +812,15 @@ def test_lost_population_lock_stops_before_overpopulation_bulk_retire(settings):
     )
 
     def _lost_ownership():
-        raise virtual_players.VirtualPlayerPopulationLockLostError(
+        raise virtual_player_population.VirtualPlayerPopulationLockLostError(
             "virtual player population roll lock ownership was lost"
         )
 
     now = timezone.now()
     config = virtual_players.load_virtual_player_config()
-    population_plan = virtual_players._build_population_plan(config, now=now)
-    with pytest.raises(virtual_players.VirtualPlayerPopulationLockLostError):
-        virtual_players._retire_excess_population_cells(
+    population_plan = virtual_player_population._build_population_plan(config, now=now)
+    with pytest.raises(virtual_player_population.VirtualPlayerPopulationLockLostError):
+        virtual_player_population._retire_excess_population_cells(
             population_plan,
             config=config,
             now=now,
@@ -975,8 +962,6 @@ def test_due_maintenance_marks_bot_stale_after_long_no_interaction(settings):
 
 
 def test_retired_reactivation_decision_is_stable_and_honors_probability_boundaries():
-    from gameplay.services import virtual_players
-
     now = timezone.now()
     kwargs = {
         "region": "north",
@@ -984,12 +969,12 @@ def test_retired_reactivation_decision_is_stable_and_honors_probability_boundari
         "profile_id": 42,
     }
 
-    first = virtual_players._should_reactivate_retired_player(now=now, chance=0.70, **kwargs)
-    assert virtual_players._should_reactivate_retired_player(now=now, chance=0.70, **kwargs) is first
-    assert virtual_players._should_reactivate_retired_player(now=now, chance=0.0, **kwargs) is False
-    assert virtual_players._should_reactivate_retired_player(now=now, chance=1.0, **kwargs) is True
+    first = virtual_player_maintenance._should_reactivate_retired_player(now=now, chance=0.70, **kwargs)
+    assert virtual_player_maintenance._should_reactivate_retired_player(now=now, chance=0.70, **kwargs) is first
+    assert virtual_player_maintenance._should_reactivate_retired_player(now=now, chance=0.0, **kwargs) is False
+    assert virtual_player_maintenance._should_reactivate_retired_player(now=now, chance=1.0, **kwargs) is True
     decisions = {
-        virtual_players._should_reactivate_retired_player(
+        virtual_player_maintenance._should_reactivate_retired_player(
             now=now + timedelta(days=offset),
             chance=0.50,
             **kwargs,
@@ -1177,7 +1162,7 @@ def test_reactivated_bot_ignores_empty_raids_from_previous_maintenance_cycle(set
         )
         RaidRun.objects.filter(pk=run.pk).update(started_at=now - timedelta(hours=hours_ago))
 
-    reactivated = virtual_players._try_reactivate_retired_player(
+    reactivated = virtual_player_population._try_reactivate_retired_player(
         region="north",
         prestige_band="junior",
         low=500,
@@ -1189,7 +1174,7 @@ def test_reactivated_bot_ignores_empty_raids_from_previous_maintenance_cycle(set
     assert reactivated is not None
     assert reactivated.maintenance_started_at == now
     assert (
-        virtual_players._has_repeated_empty_raids(
+        virtual_player_maintenance._has_repeated_empty_raids(
             reactivated,
             now=now,
             config=virtual_players.load_virtual_player_config(),
@@ -1230,7 +1215,7 @@ def test_reactivated_bot_starts_a_new_no_interaction_period(settings):
         maintenance_stopped_at=now - timedelta(days=1),
     )
 
-    reactivated = virtual_players._try_reactivate_retired_player(
+    reactivated = virtual_player_population._try_reactivate_retired_player(
         region="north",
         prestige_band="junior",
         low=500,
@@ -1242,7 +1227,7 @@ def test_reactivated_bot_starts_a_new_no_interaction_period(settings):
     assert reactivated is not None
     assert reactivated.maintenance_started_at == now
     assert (
-        virtual_players._has_long_no_interaction(
+        virtual_player_maintenance._has_long_no_interaction(
             reactivated,
             now=now,
             config=virtual_players.load_virtual_player_config(),
@@ -1260,7 +1245,6 @@ def test_backfill_reactivates_most_recent_retired_player_in_matching_cell(settin
     from gameplay.services.virtual_players import (
         BotProjectionConfig,
         create_virtual_player,
-        record_virtual_player_backfill_demand,
         roll_virtual_player_population,
     )
 
@@ -1347,7 +1331,6 @@ def test_backfill_reactivates_retired_even_when_legacy_probability_is_zero(setti
     from gameplay.services.virtual_players import (
         BotProjectionConfig,
         create_virtual_player,
-        record_virtual_player_backfill_demand,
         roll_virtual_player_population,
     )
 

@@ -4,6 +4,7 @@ from core.exceptions import GameError, GuestAllocationResetError, GuestNotIdleEr
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.inventory.guest_items import use_guest_rebirth_card, use_xidianka, use_xisuidan
 from guests.models import GearItem, GearSlot, GearTemplate, GuestSkill, GuestStatus, Skill
+from guests.services.equipment import apply_set_bonuses
 from tests.inventory_guest_items.support_reset import (
     _prepare_rebirth_case,
     _prepare_xidianka_case,
@@ -143,6 +144,9 @@ def test_use_guest_rebirth_card_force_detach_fallback_keeps_success_on_known_une
         rarity="green",
     )
     GearItem.objects.create(manor=manor, template=gear_template, guest=guest)
+    guest.troop_capacity_bonus = 45
+    guest.gear_set_bonus = {"troop_capacity": 45}
+    guest.save(update_fields=["troop_capacity_bonus", "gear_set_bonus"])
 
     monkeypatch.setattr(
         "guests.services.equipment.unequip_guest_item",
@@ -153,10 +157,16 @@ def test_use_guest_rebirth_card_force_detach_fallback_keeps_success_on_known_une
 
     guest.refresh_from_db()
     assert guest.gear_items.count() == 0
+    assert guest.troop_capacity_bonus == 0
+    assert guest.gear_set_bonus == {}
     assert result["unequipped_count"] == 1
     returned_weapon = InventoryItem.objects.get(manor=manor, template=returned_item_template)
     assert returned_weapon.quantity == 1
     assert not InventoryItem.objects.filter(pk=item.pk).exists()
+
+    apply_set_bonuses(guest)
+    guest.refresh_from_db()
+    assert guest.troop_capacity_bonus == 0
 
 
 @pytest.mark.django_db

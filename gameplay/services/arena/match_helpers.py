@@ -17,12 +17,14 @@ from core.utils.infrastructure import (
     InfrastructureExceptions,
     combine_infrastructure_exceptions,
 )
-from gameplay.models import ArenaEntry, ArenaMatch, ArenaTournament, ArenaVirtualReserveMember, Message
+from gameplay.models import ArenaEntry, ArenaMatch, ArenaTournament, Message
 from gameplay.services.utils.messages import create_message
 from guests.models import Guest
 
-from .replay import derive_match_replay_metadata, ensure_match_replay_metadata
+from .match_store import create_scheduled_match
+from .replay import ensure_match_replay_metadata
 from .snapshots import ArenaGuestSnapshotProxy, load_entry_guests
+from .virtual_reserve_pool import release_virtual_reserve_member_for_manor
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -32,34 +34,6 @@ ARENA_BATTLE_MESSAGE_EXCEPTIONS: InfrastructureExceptions = combine_infrastructu
     MessageError,
     infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
 )
-
-
-def create_scheduled_match(
-    *,
-    tournament: ArenaTournament,
-    round_number: int,
-    match_index: int,
-    attacker_entry: ArenaEntry,
-    defender_entry: ArenaEntry | None,
-) -> ArenaMatch:
-    """Single write owner for new arena match slots."""
-
-    match = ArenaMatch(
-        tournament=tournament,
-        round_number=round_number,
-        match_index=match_index,
-        attacker_entry=attacker_entry,
-        defender_entry=defender_entry,
-        status=ArenaMatch.Status.SCHEDULED,
-        **derive_match_replay_metadata(
-            tournament,
-            round_number=round_number,
-            match_index=match_index,
-        ),
-    )
-    match.full_clean()
-    match.save(force_insert=True)
-    return match
 
 
 def send_arena_battle_messages(
@@ -421,7 +395,7 @@ def _resolve_match_locked(
         attacker_guests = []
         attacker_snapshot_invalid = True
         if attacker_entry.source == ArenaEntry.Source.VIRTUAL:
-            ArenaVirtualReserveMember.objects.filter(profile__manor_id=attacker_entry.manor_id).delete()
+            release_virtual_reserve_member_for_manor(attacker_entry.manor_id)
         logger.warning(
             "arena_entry_forfeited_invalid_snapshot: match_id=%s entry_id=%s side=attacker error=%s",
             getattr(match, "pk", None),
@@ -445,7 +419,7 @@ def _resolve_match_locked(
         defender_guests = []
         defender_snapshot_invalid = True
         if defender_entry.source == ArenaEntry.Source.VIRTUAL:
-            ArenaVirtualReserveMember.objects.filter(profile__manor_id=defender_entry.manor_id).delete()
+            release_virtual_reserve_member_for_manor(defender_entry.manor_id)
         logger.warning(
             "arena_entry_forfeited_invalid_snapshot: match_id=%s entry_id=%s side=defender error=%s",
             getattr(match, "pk", None),

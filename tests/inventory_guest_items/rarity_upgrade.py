@@ -22,6 +22,8 @@ def test_use_guest_rarity_upgrade_item_switches_template_and_uses_blue_standard_
     guest.allocated_intellect = 8
     guest.allocated_defense = 9
     guest.allocated_agility = 10
+    guest.troop_capacity_bonus = 45
+    guest.gear_set_bonus = {"troop_capacity": 45}
     guest.save(
         update_fields=[
             "level",
@@ -31,6 +33,8 @@ def test_use_guest_rarity_upgrade_item_switches_template_and_uses_blue_standard_
             "allocated_intellect",
             "allocated_defense",
             "allocated_agility",
+            "troop_capacity_bonus",
+            "gear_set_bonus",
         ]
     )
     gear_template = GearTemplate.objects.create(
@@ -55,6 +59,8 @@ def test_use_guest_rarity_upgrade_item_switches_template_and_uses_blue_standard_
     assert guest.allocated_intellect == 0
     assert guest.allocated_defense == 0
     assert guest.allocated_agility == 0
+    assert guest.troop_capacity_bonus == 0
+    assert guest.gear_set_bonus == {}
     assert guest.gear_items.count() == 0
     assert guest.guest_skills.count() == 0
     assert result["new_rarity"] == "蓝"

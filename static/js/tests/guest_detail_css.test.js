@@ -39,3 +39,14 @@ test("guest detail equipment rows keep title and item spacing compact", () => {
   assertDeclaration(lineRule, "gap:\\s*0");
   assertDeclaration(lineRule, "padding:\\s*0");
 });
+
+test("guest detail equipment tooltip wraps long set content inside the viewport", () => {
+  const css = fs.readFileSync(path.join(__dirname, "../../css/guest-detail.css"), "utf8");
+  const tooltipRule = cssRuleBody(css, ".guest-detail .guest-equip-tooltip-bubble");
+
+  assertDeclaration(tooltipRule, "box-sizing:\\s*border-box");
+  assertDeclaration(tooltipRule, "white-space:\\s*normal");
+  assertDeclaration(tooltipRule, "overflow-wrap:\\s*anywhere");
+  assert.match(tooltipRule, /min-width:\s*min\(240px,\s*calc\(100vw\s*-\s*40px\)\)\s*;/);
+  assert.match(tooltipRule, /max-width:\s*min\(320px,\s*calc\(100vw\s*-\s*40px\)\)\s*;/);
+});

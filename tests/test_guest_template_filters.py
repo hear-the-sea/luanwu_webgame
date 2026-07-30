@@ -19,11 +19,15 @@ def test_gear_summary_combines_description_stats_and_set_bonus():
         attack_bonus=12,
         defense_bonus=5,
         extra_stats={"luck": 3},
-        set_key="青龙",
+        set_key="qinglong_set",
+        set_description="青龙套装",
         set_bonus={"pieces": 2, "bonus": {"attack": 8}},
     )
 
-    assert guest_extras.gear_summary(template) == ("佩剑；攻击+12、防御+5、运势+3；青龙（2件）：攻击+8")
+    summary = guest_extras.gear_summary(template)
+
+    assert summary == "佩剑；攻击+12、防御+5、运势+3；青龙套装（2件）：攻击+8"
+    assert "qinglong_set" not in summary
 
 
 def test_gear_summary_renders_multi_tier_set_bonus():
@@ -32,7 +36,8 @@ def test_gear_summary_renders_multi_tier_set_bonus():
         attack_bonus=0,
         defense_bonus=0,
         extra_stats={"hp": 260},
-        set_key="春日部防卫队",
+        set_key="kasukabe_defense_set",
+        set_description="春日部防卫队",
         set_bonus=[
             {"pieces": 2, "bonus": {"attack": 40, "defense": 30}},
             {"pieces": 4, "bonus": {"hp": 600, "agility": 25, "luck": 20}},

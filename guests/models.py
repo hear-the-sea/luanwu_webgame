@@ -197,6 +197,13 @@ class Guest(models.Model):
         db_index=True,
         help_text="记录最近一次每日忠诚度结算的日期，用于避免重复执行",
     )
+    injury_loyalty_processed_at = models.DateTimeField(
+        "重伤忠诚度结算时间",
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="记录战斗重伤期间最近一次忠诚度结算边界",
+    )
     hp_bonus = models.IntegerField(default=0)
     troop_capacity_bonus = models.IntegerField(default=0)
     current_hp = models.PositiveIntegerField(default=0)
@@ -266,12 +273,23 @@ class Guest(models.Model):
         return _guest_rules.compute_guest_max_hp(self)
 
     def restore_full_hp(self) -> None:
-        update_fields = _guest_rules.restore_guest_full_hp(
-            self,
-            injured_status=GuestStatus.INJURED,
-            idle_status=GuestStatus.IDLE,
+        from .services.loyalty import apply_injury_loyalty_decay
+
+        update_fields: list[str] = []
+        if apply_injury_loyalty_decay(self, now=timezone.now()) > 0:
+            update_fields.extend(["loyalty", "injury_loyalty_processed_at"])
+        update_fields = (
+            _guest_rules.restore_guest_full_hp(
+                self,
+                injured_status=GuestStatus.INJURED,
+                idle_status=GuestStatus.IDLE,
+            )
+            + update_fields
         )
-        self.save(update_fields=update_fields)
+        if self.injury_loyalty_processed_at is not None:
+            self.injury_loyalty_processed_at = None
+            update_fields.append("injury_loyalty_processed_at")
+        self.save(update_fields=list(dict.fromkeys(update_fields)))
 
     # 成长倍率相关方法已移除，改用直接数值成长
     # 升级时直接增加门客的实际属性值

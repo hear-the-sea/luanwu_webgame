@@ -46,7 +46,7 @@
                             <h3 class="text-base font-semibold text-text-primary mb-1">{{ production.equipment_name }} ×{{ production.quantity }}</h3>
                             <p class="text-sm text-text-muted">材料已消耗</p>
                         </header>
-                        <div class="flex gap-2 flex-wrap">
+                        <div class="flex items-center justify-between gap-3 flex-wrap">
                             {% if production.time_remaining > 0 %}
                                 <span class="tw-chip">
                                     剩余时间：
@@ -54,6 +54,16 @@
                                         {{ production.time_remaining }} 秒
                                     </span>
                                 </span>
+                                <form method="post"
+                                      action="{% url 'gameplay:cancel_equipment_forging' production.id %}"
+                                      class="js-production-cancel-form m-0"
+                                      data-confirm-title="取消锻造"
+                                      data-confirm-message="取消后不会获得产物，已消耗的材料不会返还。确定取消吗？"
+                                      data-confirm-ok-text="确认取消">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="category" value="{{ current_category }}">
+                                    <button type="submit" class="tw-btn-danger tw-btn-sm">取消锻造</button>
+                                </form>
                             {% else %}
                                 <span class="tw-badge-green">已完成！</span>
                             {% endif %}
@@ -270,4 +280,5 @@
 {% block extra_scripts %}
 <script src="{% static 'js/dashboard.js' %}"></script>
 <script src="{% static 'js/forge-page.js' %}"></script>
+<script src="{% static 'js/production-cancel.js' %}"></script>
 {% endblock %}

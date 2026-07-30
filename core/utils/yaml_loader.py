@@ -8,7 +8,14 @@ from typing import Any
 import yaml
 
 
-def load_yaml_data(path: str | Path, *, logger: logging.Logger, context: str, default: Any) -> Any:
+def load_yaml_data(
+    path: str | Path,
+    *,
+    logger: logging.Logger,
+    context: str,
+    default: Any,
+    raise_on_error: bool = False,
+) -> Any:
     """
     Safely load YAML data from disk.
 
@@ -20,9 +27,13 @@ def load_yaml_data(path: str | Path, *, logger: logging.Logger, context: str, de
         with resolved_path.open("r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
     except FileNotFoundError:
+        if raise_on_error:
+            raise
         logger.warning("%s file not found: %s", context, resolved_path)
         return copy.deepcopy(default)
     except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        if raise_on_error:
+            raise
         logger.exception("Failed to load %s from %s: %s", context, resolved_path, exc)
         return copy.deepcopy(default)
 

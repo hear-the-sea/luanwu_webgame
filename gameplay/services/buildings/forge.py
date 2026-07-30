@@ -371,6 +371,11 @@ def start_equipment_forging(manor: Manor, equipment_key: str, quantity: int = 1)
     )
 
 
+def cancel_equipment_forging(manor: Manor, production_id: int) -> EquipmentProduction:
+    """取消仍在进行的装备锻造，已消耗的材料不返还。"""
+    return _forge_runtime.cancel_equipment_forging(manor, production_id)
+
+
 def _schedule_forging_completion(production: EquipmentProduction, eta_seconds: int) -> None:
     """
     调度锻造完成任务。

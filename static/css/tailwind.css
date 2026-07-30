@@ -2789,6 +2789,19 @@
   color: var(--bg-primary);
 }
 
+.tw-btn-add:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.tw-btn-add:disabled:hover {
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  background-color: var(--bg-secondary);
+  color: var(--accent-gold);
+}
+
 /* ========== 敌人情报网格 ========== */
 
 @media (max-width: 640px) {

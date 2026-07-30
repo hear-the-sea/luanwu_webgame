@@ -139,3 +139,185 @@ lifecycle_personas:
   casual: {weight: 45, active_days: [30, 90], abandoned_days: [14, 45]}
   committed: {weight: 30, active_days: [90, 180], abandoned_days: [30, 60]}
   veteran: {weight: 10, active_days: [180, 360], abandoned_days: [45, 90]}
+
+bot_development_v2:
+  environment_mode: test
+  engine_version: 2
+  rng_version: 1
+  plan_schema_version: 1
+  prestige_segmentation:
+    band_schema_version: 2
+    boundary_semantics: lower_inclusive_upper_exclusive
+    configured_band_count: 8
+    v2_bands:
+      newbie: [0, 500]
+      junior: [500, 2000]
+      middle: [2000, 8000]
+      senior: [8000, 30000]
+      veteran: [30000, 60000]
+      elite: [60000, 120000]
+      legend: [120000, 240000]
+      mythic: [240000, null]
+    first_high_band: veteran
+    empty_high_band_target_supply: 0
+    high_band_activation_sources:
+      - active_real_player_presence
+      - explicit_map_search_demand
+      - explicit_arena_demand
+    lower_band_supply_counts_for_higher_band: false
+    cross_band_reactivation_allowed: false
+    cross_band_instant_strength_promotion_allowed: false
+  routing:
+    activation_mode: direct_after_gate
+    bootstrap_mode: legacy_before_gate
+    maintenance_mode: legacy_before_gate
+  policy_rollout:
+    target_version: 1
+    enabled: false
+    rollout_percent: 0
+  reference_snapshot_catalog: {}
+  policies:
+    "1":
+      checksum: "8404f5e1318c366cc53690727f2384d6d1063fe3210eb1b6508b610abd7b26a6"
+      max_development_actions: 1
+      reference_calibration_min_profiles_per_band: 30
+      reference_calibration_thresholds:
+        normalized_wasserstein_max: 0.25
+        normalized_quantile_deviation_p10_max: 0.35
+        normalized_quantile_deviation_p50_max: 0.25
+        normalized_quantile_deviation_p90_max: 0.35
+        js_divergence_max_bits: 0.10
+        hard_constraint_violations_max: 0
+        robust_joint_outlier_rate_max: 0.15
+        robust_joint_outlier_rate_above_real_max: 0.05
+        component_fingerprint_collision_rate_max: 0.35
+        joint_fingerprint_collision_rate_max: 0.15
+        fingerprint_collision_rate_above_v1_max: 0.0
+        archetype_standardized_effect_min_absolute: 0.20
+        archetype_standardized_effect_max_absolute: 0.80
+        archetype_effect_direction_must_match: true
+        abandoned_rate_deviation_max: 0.10
+      reference_calibration_archetype_effects:
+        rich: {metric: mean_building_level, direction: higher}
+        dojo: {metric: arena_lineup_power, direction: higher}
+        guard: {metric: troop_total, direction: higher}
+        abandoned: {metric: composite_strength, direction: lower}
+      reference_calibration_abandoned_features:
+        underfilled_roster_guest_count_max: 2
+        stale_gear_level_ratio_max: 0.50
+        growth_gap_days_min: 30
+      use_local_reference_when_profiles_gte: 1
+      borrowed_global_reference_discount_ratio: 0.90
+      borrowed_global_reference_usage: composition_anchor_only
+      borrowed_global_may_raise_sample_tier: false
+      borrowed_global_may_raise_strength_cap: false
+      starter_snapshot_scope: per_prestige_band_conservative_entry_fixture
+      starter_snapshot_requires_live_player_data: false
+      zero_local_sample_cap_strategy: stricter_of_starter_90_percent_and_discounted_global
+      anchor_k: 5
+      strength_safety:
+        no_reference:
+          starter_snapshot_ratio: 0.90
+          positive_jitter_bps_max: 0
+          actions_per_24h_max: 0
+          growth_bps_per_24h_max: 0
+        sparse_1_4:
+          cap_quantile: p50
+          composite_cap_ratio: 1.05
+          component_cap_ratio: 1.10
+          positive_jitter_bps_max: 0
+          actions_per_24h_max: 1
+          growth_bps_per_24h_max: 300
+        limited_5_29:
+          cap_quantile: p75
+          composite_cap_ratio: 1.10
+          component_cap_ratio: 1.15
+          positive_jitter_bps_max: 200
+          actions_per_24h_max: 2
+          growth_bps_per_24h_max: 500
+        sufficient_30_plus:
+          cap_quantile: p95
+          composite_cap_ratio: 1.15
+          component_cap_ratio: 1.20
+          positive_jitter_bps_max: 500
+          actions_per_24h_max: 4
+          growth_bps_per_24h_max: 1000
+        arena_acceleration_may_bypass: false
+        admin_may_bypass: false
+      prestige_band_growth:
+        effective_limit_rule: strictest_of_sample_tier_band_profile_and_domain_constraints
+        direct_prestige_grant_by_maintenance_allowed: false
+        profiles:
+          newbie:
+            bootstrap_history_age_days: [1, 14]
+            preferred_strength_check_interval_hours: [4, 8]
+            minimum_positive_strength_action_spacing_hours: 4
+            composite_growth_bps_per_controlled_action_max: 400
+          junior:
+            bootstrap_history_age_days: [14, 45]
+            preferred_strength_check_interval_hours: [6, 12]
+            minimum_positive_strength_action_spacing_hours: 6
+            composite_growth_bps_per_controlled_action_max: 300
+          middle:
+            bootstrap_history_age_days: [45, 120]
+            preferred_strength_check_interval_hours: [8, 16]
+            minimum_positive_strength_action_spacing_hours: 8
+            composite_growth_bps_per_controlled_action_max: 250
+          senior:
+            bootstrap_history_age_days: [120, 240]
+            preferred_strength_check_interval_hours: [12, 24]
+            minimum_positive_strength_action_spacing_hours: 12
+            composite_growth_bps_per_controlled_action_max: 200
+          veteran:
+            bootstrap_history_age_days: [240, 360]
+            preferred_strength_check_interval_hours: [14, 24]
+            minimum_positive_strength_action_spacing_hours: 14
+            composite_growth_bps_per_controlled_action_max: 200
+          elite:
+            bootstrap_history_age_days: [360, 540]
+            preferred_strength_check_interval_hours: [18, 30]
+            minimum_positive_strength_action_spacing_hours: 18
+            composite_growth_bps_per_controlled_action_max: 175
+          legend:
+            bootstrap_history_age_days: [540, 720]
+            preferred_strength_check_interval_hours: [24, 36]
+            minimum_positive_strength_action_spacing_hours: 24
+            composite_growth_bps_per_controlled_action_max: 150
+          mythic:
+            bootstrap_history_age_days: [720, 1080]
+            preferred_strength_check_interval_hours: [30, 48]
+            minimum_positive_strength_action_spacing_hours: 30
+            composite_growth_bps_per_controlled_action_max: 125
+        last_strength_increase_at_required: true
+        arena_acceleration_may_bypass_band_spacing: false
+        admin_may_bypass_band_spacing: false
+        configured_boundaries_crossed_per_controlled_action_max: 1
+        cross_band_uses_stricter_source_or_destination_limit: true
+        external_domain_result_may_be_rejected_by_bot_growth_policy: false
+        bootstrap_fake_per_action_history_records: false
+      starter_snapshots:
+        snapshot_version: 1
+        profiles:
+          newbie: {prestige: 400, core_building_level: 2, max_guest_level: 5, guest_count: 2, arena_lineup_power: 1000, troop_total: 500, composite_strength: 2000}
+          junior: {prestige: 1000, core_building_level: 3, max_guest_level: 10, guest_count: 3, arena_lineup_power: 2000, troop_total: 1000, composite_strength: 4000}
+          middle: {prestige: 3000, core_building_level: 4, max_guest_level: 15, guest_count: 4, arena_lineup_power: 3000, troop_total: 1500, composite_strength: 6000}
+          senior: {prestige: 10000, core_building_level: 5, max_guest_level: 20, guest_count: 5, arena_lineup_power: 4000, troop_total: 2000, composite_strength: 8000}
+          veteran: {prestige: 40000, core_building_level: 6, max_guest_level: 25, guest_count: 6, arena_lineup_power: 5000, troop_total: 2500, composite_strength: 10000}
+          elite: {prestige: 70000, core_building_level: 7, max_guest_level: 30, guest_count: 7, arena_lineup_power: 6000, troop_total: 3000, composite_strength: 12000}
+          legend: {prestige: 140000, core_building_level: 8, max_guest_level: 35, guest_count: 8, arena_lineup_power: 7000, troop_total: 3500, composite_strength: 14000}
+          mythic: {prestige: 270000, core_building_level: 9, max_guest_level: 40, guest_count: 9, arena_lineup_power: 8000, troop_total: 4000, composite_strength: 16000}
+      gear_upgrade_threshold: [0.08, 0.15]
+      roster_tiers:
+        core: [0.85, 1.00]
+        secondary: [0.65, 0.85]
+        bench: [0.35, 0.65]
+      troop_mix:
+        primary: [0.55, 0.75]
+        secondary: [0.15, 0.30]
+        scout: [0.03, 0.10]
+      personas:
+        balanced: {}
+        rich: {}
+        dojo: {}
+        guard: {}
+        abandoned: {}

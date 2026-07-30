@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import threading
+from datetime import timedelta
 
 import pytest
 from django.db import close_old_connections, connection
@@ -13,8 +14,13 @@ from gameplay.models import (
     BotPopulationControl,
     BotProfile,
 )
-from gameplay.services.arena.virtual_backfill import evaluate_bot_lineup
-from gameplay.services.arena.virtual_reserve import replenish_virtual_reserve
+from gameplay.services.arena import virtual_reserve_pool
+from gameplay.services.arena.virtual_reserve_pool import (
+    evaluate_bot_lineup,
+    grow_due_virtual_reserves,
+    replenish_virtual_reserve,
+)
+from gameplay.services.virtual_player_core.contracts import AcceleratedGrowthOutcome
 from gameplay.services.virtual_players import (
     BotProjectionConfig,
     PopulationMutationStatus,
@@ -25,6 +31,101 @@ from tests.arena_services.test_virtual_backfill import _create_bot_profile
 from tests.test_virtual_player_backfill import _bootstrap_building_types
 
 pytestmark = [pytest.mark.integration]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_two_growth_workers_issue_one_claim_and_execute_without_arena_locks(
+    monkeypatch,
+) -> None:
+    if connection.vendor != "mysql":
+        pytest.skip("arena growth claim concurrency requires MySQL row locks")
+
+    now = timezone.now()
+    profile = _create_bot_profile("arena_growth_single_claim")
+    tournament = ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RECRUITING,
+        player_limit=2,
+    )
+    demand = ArenaVirtualDemand.objects.create(
+        tournament=tournament,
+        status=ArenaVirtualDemand.Status.ACTIVE,
+        target_guest_count=1,
+        target_team_power=10**12,
+        missing_entry_count=1,
+        reserve_target_count=1,
+        max_reserve_target_count=1,
+        next_retry_at=now,
+    )
+    member = ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=profile,
+        state=ArenaVirtualReserveMember.State.TRAINING,
+        evaluated_version=demand.version,
+        current_lineup_power=1,
+        next_acceleration_at=now - timedelta(seconds=1),
+    )
+    start = threading.Barrier(2)
+    execution_started = threading.Event()
+    no_work_finished = threading.Event()
+    release_execution = threading.Event()
+    calls: list[tuple[str, int, bool]] = []
+    results: list[int] = []
+    errors: list[BaseException] = []
+    results_guard = threading.Lock()
+
+    def blocked_maintenance(_profile_id: int, **kwargs):
+        with results_guard:
+            calls.append(
+                (
+                    str(kwargs["operation_id"]),
+                    int(kwargs["attempt_ordinal"]),
+                    connection.in_atomic_block,
+                )
+            )
+        execution_started.set()
+        if not release_execution.wait(timeout=10):
+            raise TimeoutError("growth maintenance was not released")
+        return AcceleratedGrowthOutcome.BUSY
+
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "accelerate_virtual_player_growth",
+        blocked_maintenance,
+    )
+
+    def worker() -> None:
+        close_old_connections()
+        try:
+            start.wait(timeout=10)
+            result = grow_due_virtual_reserves(now=now, limit=1)
+            with results_guard:
+                results.append(result)
+            if result == 0:
+                no_work_finished.set()
+        except BaseException as exc:  # pragma: no cover - asserted below
+            with results_guard:
+                errors.append(exc)
+        finally:
+            close_old_connections()
+
+    threads = [threading.Thread(target=worker, daemon=True) for _index in range(2)]
+    for thread in threads:
+        thread.start()
+    assert execution_started.wait(timeout=10)
+    assert no_work_finished.wait(timeout=10)
+    release_execution.set()
+    for thread in threads:
+        thread.join(timeout=30)
+
+    member.refresh_from_db()
+    assert all(not thread.is_alive() for thread in threads)
+    assert errors == []
+    assert sorted(results) == [0, 1]
+    assert len(calls) == 1
+    assert calls[0][0].startswith("arena-growth-")
+    assert calls[0][1:] == (1, False)
+    assert member.growth_claim_token is None
+    assert member.next_acceleration_at == now + timedelta(minutes=5)
 
 
 @pytest.mark.django_db(transaction=True)

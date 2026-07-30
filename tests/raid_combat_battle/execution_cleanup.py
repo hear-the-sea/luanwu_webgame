@@ -9,6 +9,7 @@ from django.utils import timezone
 from core.exceptions import MessageError
 from gameplay.models import RaidRun
 from gameplay.services.raid.combat import battle as combat_battle
+from gameplay.services.virtual_player_core.contracts import BotLootClampDecision
 from tests.raid_combat_battle.support import build_run
 
 
@@ -24,9 +25,14 @@ def test_process_raid_battle_known_post_commit_failures_degrade_and_continue(mon
     monkeypatch.setattr(combat_battle.transaction, "atomic", contextlib.nullcontext)
     monkeypatch.setattr(combat_battle, "_prepare_run_for_battle", lambda *_args, **_kwargs: run)
     monkeypatch.setattr(combat_battle, "_lock_battle_manors", lambda *_args, **_kwargs: (attacker, defender))
+    monkeypatch.setattr(combat_battle, "capture_external_reconciliation_anchors", lambda *_args: {})
     monkeypatch.setattr(combat_battle, "_execute_raid_battle", lambda *_args, **_kwargs: report)
     monkeypatch.setattr(combat_battle, "apply_defender_troop_losses", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(combat_battle, "_apply_raid_loot_if_needed", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        combat_battle,
+        "_apply_raid_loot_if_needed",
+        lambda *_args, **_kwargs: BotLootClampDecision(resources={}),
+    )
     monkeypatch.setattr(combat_battle, "_apply_prestige_changes", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_apply_defeat_protection", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_apply_capture_reward", lambda *_args, **_kwargs: None)
@@ -72,9 +78,14 @@ def test_process_raid_battle_cleanup_runtime_marker_error_bubbles_after_dispatch
     monkeypatch.setattr(combat_battle.transaction, "atomic", contextlib.nullcontext)
     monkeypatch.setattr(combat_battle, "_prepare_run_for_battle", lambda *_args, **_kwargs: run)
     monkeypatch.setattr(combat_battle, "_lock_battle_manors", lambda *_args, **_kwargs: (attacker, defender))
+    monkeypatch.setattr(combat_battle, "capture_external_reconciliation_anchors", lambda *_args: {})
     monkeypatch.setattr(combat_battle, "_execute_raid_battle", lambda *_args, **_kwargs: report)
     monkeypatch.setattr(combat_battle, "apply_defender_troop_losses", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(combat_battle, "_apply_raid_loot_if_needed", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        combat_battle,
+        "_apply_raid_loot_if_needed",
+        lambda *_args, **_kwargs: BotLootClampDecision(resources={}),
+    )
     monkeypatch.setattr(combat_battle, "_apply_prestige_changes", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_apply_defeat_protection", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_apply_capture_reward", lambda *_args, **_kwargs: None)
@@ -113,9 +124,14 @@ def test_process_raid_battle_message_programming_error_bubbles_after_dispatch(mo
     monkeypatch.setattr(combat_battle.transaction, "atomic", contextlib.nullcontext)
     monkeypatch.setattr(combat_battle, "_prepare_run_for_battle", lambda *_args, **_kwargs: run)
     monkeypatch.setattr(combat_battle, "_lock_battle_manors", lambda *_args, **_kwargs: (attacker, defender))
+    monkeypatch.setattr(combat_battle, "capture_external_reconciliation_anchors", lambda *_args: {})
     monkeypatch.setattr(combat_battle, "_execute_raid_battle", lambda *_args, **_kwargs: report)
     monkeypatch.setattr(combat_battle, "apply_defender_troop_losses", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(combat_battle, "_apply_raid_loot_if_needed", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        combat_battle,
+        "_apply_raid_loot_if_needed",
+        lambda *_args, **_kwargs: BotLootClampDecision(resources={}),
+    )
     monkeypatch.setattr(combat_battle, "_apply_prestige_changes", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_apply_defeat_protection", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_apply_capture_reward", lambda *_args, **_kwargs: None)
@@ -159,9 +175,14 @@ def test_process_raid_battle_cleanup_programming_error_bubbles_after_dispatch(mo
     monkeypatch.setattr(combat_battle.transaction, "atomic", contextlib.nullcontext)
     monkeypatch.setattr(combat_battle, "_prepare_run_for_battle", lambda *_args, **_kwargs: run)
     monkeypatch.setattr(combat_battle, "_lock_battle_manors", lambda *_args, **_kwargs: (attacker, defender))
+    monkeypatch.setattr(combat_battle, "capture_external_reconciliation_anchors", lambda *_args: {})
     monkeypatch.setattr(combat_battle, "_execute_raid_battle", lambda *_args, **_kwargs: report)
     monkeypatch.setattr(combat_battle, "apply_defender_troop_losses", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(combat_battle, "_apply_raid_loot_if_needed", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        combat_battle,
+        "_apply_raid_loot_if_needed",
+        lambda *_args, **_kwargs: BotLootClampDecision(resources={}),
+    )
     monkeypatch.setattr(combat_battle, "_apply_prestige_changes", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_apply_defeat_protection", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_apply_capture_reward", lambda *_args, **_kwargs: None)

@@ -74,6 +74,7 @@ REGION_CHOICES = [
 ]
 
 REGION_DICT = dict(REGION_CHOICES)
+VIRTUAL_PLAYER_REGION_KEYS = tuple(key for key, _label in REGION_CHOICES if key != "overseas")
 
 
 # ============ PVP 系统常量 ============

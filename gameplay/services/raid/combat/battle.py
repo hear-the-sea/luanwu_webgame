@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from datetime import datetime, timedelta
 from importlib import import_module
 from typing import Any, Dict, Optional
+from uuid import uuid4
 
 from django.db import transaction
 from django.utils import timezone
@@ -35,6 +37,18 @@ from gameplay.services.battle_snapshots import (
 )
 from gameplay.services.pvp_runtime.lineups import select_player_defender_lineup
 from gameplay.services.technology import build_player_battle_technology_payload
+from gameplay.services.virtual_player_core.contracts import BotLootClampDecision
+from gameplay.services.virtual_player_core.external_reconciliation import (
+    ExternalReconciliationAnchor,
+    capture_external_reconciliation_anchors,
+    create_external_reconciliation_intent,
+)
+from gameplay.services.virtual_player_core.maintenance import retire_virtual_player_if_unprotected
+from gameplay.services.virtual_player_core.safety_metrics import (
+    log_safety_metric_failure,
+    record_h01_callback_attempt,
+    record_h01_retirement_recommendation,
+)
 from gameplay.services.virtual_player_loot_limits import clamp_bot_loot_resources
 from guests.models import Guest, GuestStatus
 
@@ -152,9 +166,14 @@ def _lock_battle_manors(attacker_id: int, defender_id: int) -> tuple[Manor, Mano
     return attacker, defender
 
 
-def _apply_raid_loot_if_needed(locked_run: RaidRun, is_attacker_victory: bool) -> None:
+def _apply_raid_loot_if_needed(
+    locked_run: RaidRun,
+    is_attacker_victory: bool,
+    *,
+    now: Optional[datetime] = None,
+) -> BotLootClampDecision:
     if not is_attacker_victory:
-        return
+        return BotLootClampDecision(resources={})
 
     locked_defender = Manor.objects.select_for_update().get(pk=locked_run.defender_id)
     random_context = BattleRandomContext.create(
@@ -168,19 +187,93 @@ def _apply_raid_loot_if_needed(locked_run: RaidRun, is_attacker_victory: bool) -
         troop_loadout=locked_run.troop_loadout,
         battle_report=locked_run.battle_report,
     )
-    loot_resources = clamp_bot_loot_resources(
+    loot_decision = clamp_bot_loot_resources(
         attacker=locked_run.attacker,
         defender=locked_defender,
         loot_resources=loot_resources,
+        now=now,
     )
     applied_resources, applied_items = _apply_loot(
         locked_defender,
-        loot_resources,
+        dict(loot_decision.resources),
         loot_items,
         locked_manor=locked_defender,
     )
     locked_run.loot_resources = applied_resources
     locked_run.loot_items = applied_items
+    return loot_decision
+
+
+def _record_h01_metric_best_effort(
+    operation: str,
+    callback: Callable[..., object],
+    /,
+    **kwargs: object,
+) -> None:
+    try:
+        callback(**kwargs)
+    except Exception as exc:
+        log_safety_metric_failure(operation=operation, exc=exc)
+
+
+def _process_bot_loot_retirement(
+    decision: BotLootClampDecision,
+    *,
+    now: datetime,
+    operation_id: str | None = None,
+) -> None:
+    if not decision.retirement_recommended or decision.bot_profile_id is None:
+        return
+    resolved_operation_id = operation_id or (f"profile-{decision.bot_profile_id}-{uuid4().hex}")
+    callback_started_at = timezone.now()
+    _record_h01_metric_best_effort(
+        "h01_callback_attempt_all",
+        record_h01_callback_attempt,
+        operation_id=resolved_operation_id,
+        result="all",
+        occurred_at=callback_started_at,
+    )
+    try:
+        retired = retire_virtual_player_if_unprotected(decision.bot_profile_id, now=now)
+    except RAID_BATTLE_INFRASTRUCTURE_EXCEPTIONS as exc:
+        _record_h01_metric_best_effort(
+            "h01_callback_attempt_degraded",
+            record_h01_callback_attempt,
+            operation_id=resolved_operation_id,
+            result="degraded",
+            occurred_at=callback_started_at,
+        )
+        logger.warning(
+            "Bot loot retirement failed after committed raid; recommendation dropped: profile_id=%s error=%s",
+            decision.bot_profile_id,
+            exc,
+            exc_info=True,
+            extra={
+                "degraded": True,
+                "component": "virtual_player_loot_retirement",
+                "profile_id": decision.bot_profile_id,
+            },
+        )
+        return
+    except Exception:
+        _record_h01_metric_best_effort(
+            "h01_callback_attempt_degraded",
+            record_h01_callback_attempt,
+            operation_id=resolved_operation_id,
+            result="degraded",
+            occurred_at=callback_started_at,
+        )
+        raise
+    logger.info(
+        "Processed Bot loot retirement recommendation: profile_id=%s retired=%s",
+        decision.bot_profile_id,
+        retired,
+        extra={
+            "component": "virtual_player_loot_retirement",
+            "profile_id": decision.bot_profile_id,
+            "retired": retired,
+        },
+    )
 
 
 def _apply_defeat_protection(run: RaidRun, is_attacker_victory: bool, *, now: Optional[datetime] = None) -> None:
@@ -251,6 +344,27 @@ def _apply_salvage_reward(locked_run: RaidRun, report: Any, is_attacker_victory:
     }
 
 
+def _persist_raid_external_reconciliation_intents(
+    run: RaidRun,
+    *,
+    anchors: dict[int, ExternalReconciliationAnchor],
+    origin_committed_at: datetime,
+) -> None:
+    for side, manor_id in (
+        ("attacker", int(run.attacker_id)),
+        ("defender", int(run.defender_id)),
+    ):
+        anchor = anchors.get(manor_id)
+        if anchor is None:
+            continue
+        create_external_reconciliation_intent(
+            anchor=anchor,
+            domain_event_kind="raid_result",
+            domain_event_id=f"{int(run.id)}:{side}",
+            origin_committed_at=origin_committed_at,
+        )
+
+
 def _fail_raid_run_due_missing_manor(locked_run: RaidRun, *, now: Optional[datetime] = None) -> None:
     _fail_raid_run_due_missing_manor_impl(
         locked_run,
@@ -295,6 +409,7 @@ def process_raid_battle(run: RaidRun, now: Optional[datetime] = None) -> None:
     """
     now = now or timezone.now()
     blocked_reason: str | None = None
+    loot_decision = BotLootClampDecision(resources={})
     if not _has_raid_replay_metadata(run):
         _ensure_raid_replay_metadata(run.pk)
 
@@ -321,6 +436,9 @@ def process_raid_battle(run: RaidRun, now: Optional[datetime] = None) -> None:
             if blocked_reason:
                 _retreat_raid_run_due_to_blocked_target(locked_run, now=now, reason=blocked_reason)
             else:
+                reconciliation_anchors = capture_external_reconciliation_anchors(
+                    [locked_run.attacker_id, locked_run.defender_id]
+                )
                 report = _execute_raid_battle(locked_run)
                 audit_battle_replay_metadata(
                     locked_run,
@@ -334,11 +452,16 @@ def process_raid_battle(run: RaidRun, now: Optional[datetime] = None) -> None:
                 locked_run.is_attacker_victory = is_attacker_victory
                 locked_run.battle_report = report
 
-                _apply_raid_loot_if_needed(locked_run, is_attacker_victory)
+                loot_decision = _apply_raid_loot_if_needed(locked_run, is_attacker_victory, now=now)
                 _apply_prestige_changes(locked_run, is_attacker_victory)
                 _apply_defeat_protection(locked_run, is_attacker_victory, now=now)
                 _apply_capture_reward(locked_run, report, is_attacker_victory)
                 _apply_salvage_reward(locked_run, report, is_attacker_victory)
+                _persist_raid_external_reconciliation_intents(
+                    locked_run,
+                    anchors=reconciliation_anchors,
+                    origin_committed_at=now,
+                )
 
                 if locked_run.return_at is None:
                     return_seconds = max(0, int(locked_run.travel_time or 0))
@@ -359,6 +482,24 @@ def process_raid_battle(run: RaidRun, now: Optional[datetime] = None) -> None:
         return
 
     try:
+        if loot_decision.retirement_recommended:
+            h01_operation_id = f"raid-{locked_run.pk}-retirement"
+            recommendation_recorded_at = timezone.now()
+            _record_h01_metric_best_effort(
+                "h01_retirement_recommendation",
+                record_h01_retirement_recommendation,
+                operation_id=h01_operation_id,
+                occurred_at=recommendation_recorded_at,
+            )
+
+            def _process_retirement_after_commit() -> None:
+                _process_bot_loot_retirement(
+                    loot_decision,
+                    now=now,
+                    operation_id=h01_operation_id,
+                )
+
+            transaction.on_commit(_process_retirement_after_commit)
         try:
             _send_raid_battle_messages(locked_run)
         except RAID_BATTLE_MESSAGE_EXCEPTIONS as exc:
@@ -484,7 +625,7 @@ def _apply_prestige_changes(run: RaidRun, is_attacker_victory: bool) -> None:
     """应用声望变化"""
     from gameplay.models import Manor as ManorModel
 
-    from ...manor.prestige import PRESTIGE_SILVER_THRESHOLD
+    from ...manor.prestige import PRESTIGE_SILVER_THRESHOLD, schedule_prestige_change_on_commit
 
     if is_attacker_victory:
         attacker_change = PVPConstants.RAID_ATTACKER_WIN_PRESTIGE
@@ -501,6 +642,11 @@ def _apply_prestige_changes(run: RaidRun, is_attacker_victory: bool) -> None:
         after_total = spending_prestige + after_pvp
         manor.prestige = after_total
         manor.save(update_fields=["prestige"])
+        schedule_prestige_change_on_commit(
+            manor=manor,
+            before_prestige=before_total,
+            after_prestige=after_total,
+        )
         return after_total - before_total
 
     ids = [run.attacker_id] if run.attacker_id == run.defender_id else sorted([run.attacker_id, run.defender_id])

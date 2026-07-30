@@ -28,6 +28,12 @@ class ResolvedEquippableGear:
     consumed_inventory: bool
 
 
+@dataclass(frozen=True)
+class ResolvedWarehouseGear:
+    gear: GearItem
+    inventory_item: InventoryItem
+
+
 def list_free_gear_options(manor: Manor, *, slot: str) -> list[dict[str, Any]]:
     rows = (
         manor.gears.filter(guest__isnull=True, template__slot=slot)
@@ -215,10 +221,30 @@ def resolve_equippable_gear_locked(
     if inventory_item is None:
         raise ItemNotFoundError("未找到可用装备")
 
+    resolved = _materialize_warehouse_gear_locked(
+        manor,
+        inventory_item,
+        expected_slot=slot,
+    )
+    InventoryItem.objects.filter(pk=inventory_item.pk).update(quantity=F("quantity") - 1)
+    InventoryItem.objects.filter(pk=inventory_item.pk, quantity__lte=0).delete()
+    return ResolvedEquippableGear(gear=resolved.gear, consumed_inventory=True)
+
+
+def _materialize_warehouse_gear_locked(
+    manor: Manor,
+    inventory_item: InventoryItem,
+    *,
+    expected_template_key: str | None = None,
+    expected_slot: str | None = None,
+) -> ResolvedWarehouseGear:
+    if expected_template_key is not None and inventory_item.template.key != expected_template_key:
+        raise EquipmentError("装备库存已发生变化，请刷新后重试")
+
     resolved_slot = EQUIP_SLOT_MAP.get(inventory_item.template.effect_type)
     if not resolved_slot:
         raise ItemNotFoundError("未找到可用装备")
-    if slot and resolved_slot != slot:
+    if expected_slot and resolved_slot != expected_slot:
         raise EquipmentError("装备槽位不匹配")
 
     gear_template, _ = GearTemplate.objects.update_or_create(
@@ -228,15 +254,47 @@ def resolve_equippable_gear_locked(
     gear = (
         manor.gears.select_for_update()
         .select_related("template")
-        .filter(template=gear_template, guest__isnull=True, inventory_backed=True)
+        .filter(
+            template=gear_template,
+            guest__isnull=True,
+            inventory_backed=True,
+        )
+        .order_by("id")
         .first()
     )
     if gear is None:
         gear = GearItem.objects.create(manor=manor, template=gear_template, inventory_backed=True)
 
-    InventoryItem.objects.filter(pk=inventory_item.pk).update(quantity=F("quantity") - 1)
-    InventoryItem.objects.filter(pk=inventory_item.pk, quantity__lte=0).delete()
-    return ResolvedEquippableGear(gear=gear, consumed_inventory=True)
+    return ResolvedWarehouseGear(gear=gear, inventory_item=inventory_item)
+
+
+def resolve_inventory_equippable_gear_locked(
+    manor: Manor,
+    inventory_item_id: int,
+    *,
+    expected_template_key: str | None = None,
+    expected_slot: str | None = None,
+) -> ResolvedWarehouseGear:
+    """锁定精确仓库装备行，并物化可装备实例；库存消费由调用方提交。"""
+    inventory_item = (
+        InventoryItem.objects.select_for_update()
+        .select_related("template")
+        .filter(
+            pk=inventory_item_id,
+            manor=manor,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            quantity__gt=0,
+        )
+        .first()
+    )
+    if inventory_item is None:
+        raise ItemNotFoundError("未找到可用装备")
+    return _materialize_warehouse_gear_locked(
+        manor,
+        inventory_item,
+        expected_template_key=expected_template_key,
+        expected_slot=expected_slot,
+    )
 
 
 def ensure_inventory_gears(manor: Manor, *, slot: str | None = None) -> None:

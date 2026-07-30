@@ -1,0 +1,70 @@
+from __future__ import annotations
+
+from copy import deepcopy
+
+import pytest
+
+from gameplay.services.arena.virtual_lineups import (
+    InvalidVirtualLineupSnapshot,
+    LineupSelectionContext,
+    evaluate_lineup_snapshots,
+    normalize_virtual_lineup_snapshots,
+    validate_full_health_virtual_lineup_snapshots,
+)
+
+
+def _snapshot(*, current_hp: int = 250, max_hp: int = 1_000) -> dict:
+    return {
+        "display_name": "virtual guest",
+        "attack": 100,
+        "defense": 100,
+        "current_hp": current_hp,
+        "max_hp": max_hp,
+    }
+
+
+def test_virtual_lineup_normalization_only_changes_output_health() -> None:
+    source = [_snapshot()]
+    before = deepcopy(source)
+
+    normalized = normalize_virtual_lineup_snapshots(source)
+
+    assert source == before
+    assert normalized[0] is not source[0]
+    assert normalized[0] | {"current_hp": 250} == source[0]
+    assert normalized[0]["current_hp"] == normalized[0]["max_hp"] == 1_000
+
+
+@pytest.mark.parametrize("max_hp", (None, True, 0, -1, 1.5, "100"))
+def test_virtual_lineup_normalization_rejects_invalid_max_hp(max_hp) -> None:
+    with pytest.raises(
+        InvalidVirtualLineupSnapshot,
+        match="max_hp must be a positive integer",
+    ):
+        normalize_virtual_lineup_snapshots([_snapshot(max_hp=max_hp)])
+
+
+def test_lineup_selection_normalizes_health_without_changing_power_or_input() -> None:
+    snapshots = [_snapshot(current_hp=100), _snapshot(current_hp=200)]
+    before = deepcopy(snapshots)
+
+    result = evaluate_lineup_snapshots(
+        snapshots,
+        context=LineupSelectionContext(mode="tournament", event_id=1, profile_id=2),
+        target_guest_count=1,
+        target_team_power=300,
+    )
+
+    assert snapshots == before
+    assert result.is_ready is True
+    assert result.selected_power == 300
+    assert result.snapshots[0]["current_hp"] == result.snapshots[0]["max_hp"]
+
+
+@pytest.mark.parametrize("current_hp", (True, 1.0, "1", 0, 2))
+def test_locked_write_validation_rejects_noncanonical_health(current_hp) -> None:
+    with pytest.raises(
+        InvalidVirtualLineupSnapshot,
+        match="must be normalized to full health",
+    ):
+        validate_full_health_virtual_lineup_snapshots([_snapshot(current_hp=current_hp, max_hp=1)])

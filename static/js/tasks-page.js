@@ -69,6 +69,55 @@
       });
     });
 
+    document.querySelectorAll(".js-mission-card-form").forEach((form) => {
+      if (form.dataset.submitBound === "1") {
+        return;
+      }
+      form.dataset.submitBound = "1";
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (form.dataset.confirmPending === "1") {
+          return;
+        }
+
+        const submitButton = form.querySelector('button[type="submit"]');
+        const wasDisabled = Boolean(submitButton?.disabled);
+        form.dataset.confirmPending = "1";
+        if (submitButton) {
+          submitButton.disabled = true;
+        }
+
+        let submitted = false;
+        try {
+          const message = window.TasksPageCore?.buildMissionCardConfirmation
+            ? window.TasksPageCore.buildMissionCardConfirmation({
+                missionName: form.dataset.missionName,
+                cardCount: form.dataset.cardCount,
+                usedCount: form.dataset.usedCount,
+                dailyLimit: form.dataset.dailyLimit,
+              })
+            : "确定消耗 1 张任务卡，增加 1 次今日挑战次数吗？";
+          const options = { title: "使用任务卡", okText: "确认使用" };
+          const confirmed = typeof window.gameConfirm === "function"
+            ? await window.gameConfirm(message, options)
+            : window.gameDialog?.confirm
+              ? await window.gameDialog.confirm(message, options)
+              : window.confirm(message);
+          if (!confirmed) {
+            return;
+          }
+
+          form.submit();
+          submitted = true;
+        } finally {
+          delete form.dataset.confirmPending;
+          if (!submitted && submitButton) {
+            submitButton.disabled = wasDisabled;
+          }
+        }
+      });
+    });
+
     document.querySelectorAll(".tw-troop-slider").forEach((slider) => {
       if (slider.dataset.inputBound === "1") {
         return;
