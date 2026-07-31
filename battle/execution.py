@@ -9,8 +9,7 @@ from django.utils import timezone
 
 from core.exceptions import BattlePreparationError
 from core.utils import require_positive_int
-from guests.guest_combat_stats import is_live_guest_model
-from guests.guest_rules import compute_guest_troop_capacity
+from guests.guest_combat_stats import is_live_guest_model, resolve_guest_combat_stats
 from guests.models import Guest, GuestStatus
 from guests.services.health import recover_guest_hp
 from guests.services.loyalty import grant_battle_victory_loyalty, start_injury_loyalty_decay
@@ -179,11 +178,11 @@ def _build_defender_guest_and_loadout(
     )
 
 
-def validate_troop_capacity(guests: List[Guest], troop_loadout: Dict[str, int]) -> None:
+def validate_troop_capacity(guests: List[Any], troop_loadout: Dict[str, int]) -> None:
     if not guests:
         return
 
-    total_capacity = sum(compute_guest_troop_capacity(guest) for guest in guests)
+    total_capacity = sum(resolve_guest_combat_stats(guest).troop_capacity for guest in guests)
     total_troops = sum(troop_loadout.values())
     if total_troops > total_capacity:
         guest_count = len(guests)
@@ -316,6 +315,15 @@ def apply_guest_hp_updates(
     return hp_updates
 
 
+def _guests_in_combatants(guests: List[Any], combatants: List[Combatant]) -> list[Any]:
+    combatant_guest_ids = {combatant.guest_id for combatant in combatants if combatant.guest_id}
+    if not combatant_guest_ids:
+        return []
+    return [
+        guest for guest in guests if (getattr(guest, "pk", None) or getattr(guest, "id", None)) in combatant_guest_ids
+    ]
+
+
 def _finalize_battle_results(
     manor,
     simulation: Any,
@@ -343,9 +351,9 @@ def _finalize_battle_results(
         )
 
         if simulation.winner == "attacker":
-            grant_battle_victory_loyalty(guests)
+            grant_battle_victory_loyalty(_guests_in_combatants(guests, attacker_guests_comb))
         elif simulation.winner == "defender" and options.defender_guests is not None:
-            grant_battle_victory_loyalty(options.defender_guests)
+            grant_battle_victory_loyalty(_guests_in_combatants(options.defender_guests, defender_guests_comb))
 
         hp_updates = apply_guest_hp_updates(guests, attacker_guests_comb, apply_damage=options.apply_damage)
         simulation.losses["attacker"]["hp_updates"] = hp_updates

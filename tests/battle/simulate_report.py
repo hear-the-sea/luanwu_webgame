@@ -88,6 +88,54 @@ def test_simulate_report_rejects_foreign_attacker_guests(game_data, django_user_
 
 
 @pytest.mark.django_db
+def test_simulate_report_rejects_attacker_lineup_over_limit_before_rewards(game_data, django_user_model):
+    user = django_user_model.objects.create_user(username="battle_attacker_limit", password="pass123")
+    manor = ensure_manor(user)
+    manor.silver = 5000
+    manor.save(update_fields=["silver"])
+    recruit_frontline(manor, draws=2)
+    guests = list(manor.guests.all())
+    manor.guests.update(loyalty=50)
+
+    with pytest.raises(BattlePreparationError, match="最多只能派出 1 名门客出征"):
+        simulate_report(
+            manor,
+            attacker_guests=guests,
+            max_squad=1,
+            troop_loadout={},
+            fill_default_troops=False,
+            auto_reward=False,
+            send_message=False,
+            use_lock=False,
+        )
+
+    assert set(manor.guests.values_list("loyalty", flat=True)) == {50}
+
+
+@pytest.mark.django_db
+def test_simulate_report_rejects_defender_lineup_over_limit(game_data, django_user_model):
+    user = django_user_model.objects.create_user(username="battle_defender_limit", password="pass123")
+    manor = ensure_manor(user)
+    manor.silver = 5000
+    manor.save(update_fields=["silver"])
+    recruit_frontline(manor, draws=2)
+    guests = list(manor.guests.all())
+
+    with pytest.raises(BattlePreparationError, match="最多只能派出 1 名门客出征"):
+        simulate_report(
+            manor,
+            attacker_guests=[guests[0]],
+            defender_guests=guests,
+            defender_max_squad=1,
+            troop_loadout={},
+            fill_default_troops=False,
+            auto_reward=False,
+            send_message=False,
+            use_lock=False,
+        )
+
+
+@pytest.mark.django_db
 def test_simulate_report_rejects_invalid_defender_setup(game_data, django_user_model):
     user = django_user_model.objects.create_user(username="battle_bad_defender_setup", password="pass123")
     manor = ensure_manor(user)

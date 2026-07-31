@@ -3,9 +3,10 @@ from __future__ import annotations
 import pytest
 
 from battle.combatants_pkg import build_troop_combatants
-from battle.combatants_pkg.troop_device_bonuses import build_troop_device_bonuses
+from battle.combatants_pkg.troop_device_bonuses import apply_troop_device_bonus, build_troop_device_bonuses
 from battle.execution import BattleOptions, _build_attacker_units
 from gameplay.models import InventoryItem, ItemTemplate
+from gameplay.services.battle_snapshots import build_guest_battle_snapshots, build_guest_snapshot_proxies
 from gameplay.services.manor.core import ensure_manor
 from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestArchetype, GuestRarity, GuestTemplate
 from guests.services.equipment import ensure_inventory_gears, equip_guest
@@ -183,6 +184,19 @@ def test_build_troop_combatants_applies_device_bonus_before_tech():
     assert troop.unit_attack == 7
 
 
+@pytest.mark.parametrize("invalid_value", [float("inf"), float("nan"), 10**1000])
+def test_apply_troop_device_bonus_ignores_non_finite_or_overflowing_values(invalid_value):
+    assert (
+        apply_troop_device_bonus(
+            base_value=80,
+            troop_class="gong",
+            stat="hp",
+            device_bonuses={"gong": {"hp": {"flat": invalid_value, "pct": 0}}},
+        )
+        == 80
+    )
+
+
 @pytest.mark.django_db
 def test_real_device_inventory_equip_flow_applies_troop_stat_bonus_in_battle(django_user_model):
     user = django_user_model.objects.create_user(username="device_bonus_real_flow", password="pass123")
@@ -304,3 +318,35 @@ def test_build_attacker_units_ignores_device_bonuses_from_benched_guests(django_
     assert troop.template_key == "fast_archer"
     assert troop.unit_hp == expected_troop.unit_hp
     assert troop.max_hp == expected_troop.max_hp
+
+
+@pytest.mark.django_db
+def test_battle_snapshots_preserve_each_guests_device_bonus_for_replay(django_user_model):
+    user = django_user_model.objects.create_user(username="device_bonus_snapshot", password="pass123")
+    manor = ensure_manor(user)
+    guest_a = _create_guest(manor, suffix="snapshot_a")
+    guest_b = _create_guest(manor, suffix="snapshot_b")
+
+    _attach_gear(
+        guest_a,
+        key="equip_device_bonus_snapshot_a",
+        slot=GearSlot.DEVICE,
+        effect_type="equip_device",
+        payload={"troop_stat_bonus": {"gong": {"hp_flat": 20}}},
+    )
+    _attach_gear(
+        guest_b,
+        key="equip_device_bonus_snapshot_b",
+        slot=GearSlot.DEVICE,
+        effect_type="equip_device",
+        payload={"troop_stat_bonus": {"gong": {"hp_pct": 0.5}}},
+    )
+
+    snapshots = build_guest_battle_snapshots([guest_a, guest_b], include_identity=True)
+
+    assert snapshots[0]["troop_device_bonuses"] == {"gong": {"hp": {"flat": 20, "pct": 0.0}}}
+    assert snapshots[1]["troop_device_bonuses"] == {"gong": {"hp": {"flat": 0, "pct": 0.5}}}
+
+    proxies = build_guest_snapshot_proxies(snapshots, include_guest_identity=True)
+
+    assert build_troop_device_bonuses(proxies) == {"gong": {"hp": {"flat": 20, "pct": 0.5}}}

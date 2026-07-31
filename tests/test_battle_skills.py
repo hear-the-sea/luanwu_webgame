@@ -122,6 +122,7 @@ def test_serialize_skills_preserves_passive_config_for_template_skills():
     payload = serialize_skills(guest)
 
     assert payload[0]["kind"] == "passive"
+    assert "probability" not in payload[0]
     assert payload[0]["passive_config"]["triggers"][0]["timing"] == "action_before"
 
 

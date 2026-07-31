@@ -87,6 +87,8 @@ def resolve_attacker_guests_for_battle(
         guests = attacker_guests
         if not guests:
             raise BattlePreparationError("请选择可出征的门客")
+        if len(guests) > limit:
+            raise BattlePreparationError(f"最多只能派出 {limit} 名门客出征")
         validate_attacker_guest_ownership_fn(manor, guests)
     return guests, guests[:limit]
 

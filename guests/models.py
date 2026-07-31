@@ -137,6 +137,7 @@ class Skill(models.Model):
     rarity = models.CharField(max_length=16, choices=GuestRarity.choices, default=GuestRarity.GRAY)
     description = models.TextField(blank=True)
     base_power = models.PositiveIntegerField(default=100)
+    # Deprecated legacy field; battle runtime uses luck and passive trigger chance instead.
     base_probability = models.FloatField(default=0.1)
     kind = models.CharField(max_length=16, choices=SkillKind.choices, default=SkillKind.ACTIVE)
     status_effect = models.CharField(max_length=32, blank=True)

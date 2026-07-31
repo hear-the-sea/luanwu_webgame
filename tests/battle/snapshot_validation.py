@@ -5,7 +5,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from core.exceptions import InvalidBattleSnapshotError
+from battle.execution import validate_troop_capacity
+from core.exceptions import BattlePreparationError, InvalidBattleSnapshotError
 from gameplay.services.battle_snapshots import (
     build_guest_battle_snapshot,
     build_guest_snapshot_proxies,
@@ -97,6 +98,43 @@ def test_build_guest_snapshot_proxies_rejects_negative_troop_capacity():
     with pytest.raises(InvalidBattleSnapshotError, match="门客战斗快照数据无效") as exc_info:
         build_guest_snapshot_proxies([build_snapshot_payload(troop_capacity=-1)], include_guest_identity=True)
     assert exc_info.value.field_name == "troop_capacity"
+
+
+def test_build_guest_snapshot_proxies_accepts_legacy_payload_without_device_bonuses():
+    proxy = build_guest_snapshot_proxies([build_snapshot_payload()], include_guest_identity=True)[0]
+
+    assert proxy.troop_device_bonuses == {}
+
+
+@pytest.mark.parametrize(
+    "troop_device_bonuses",
+    [
+        "bad-bonuses",
+        {"bad_class": {"hp": {"flat": 1, "pct": 0}}},
+        {"gong": {"bad_stat": {"flat": 1, "pct": 0}}},
+        {"gong": {"hp": {"flat": -1, "pct": 0}}},
+        {"gong": {"hp": {"flat": float("inf"), "pct": 0}}},
+        {"gong": {"hp": {"flat": float("nan"), "pct": 0}}},
+        {"gong": {"hp": {"flat": 10**1000, "pct": 0}}},
+    ],
+)
+def test_build_guest_snapshot_proxies_rejects_invalid_device_bonuses(troop_device_bonuses):
+    with pytest.raises(InvalidBattleSnapshotError) as exc_info:
+        build_guest_snapshot_proxies(
+            [build_snapshot_payload(troop_device_bonuses=troop_device_bonuses)],
+            include_guest_identity=True,
+        )
+
+    assert exc_info.value.field_name == "troop_device_bonuses"
+
+
+def test_validate_troop_capacity_uses_snapshot_capacity_without_recomputing_guest_model_rules():
+    proxy = build_guest_snapshot_proxies([build_snapshot_payload(troop_capacity=230)], include_guest_identity=True)[0]
+
+    validate_troop_capacity([proxy], {"archer": 230})
+
+    with pytest.raises(BattlePreparationError, match="总带兵上限为230"):
+        validate_troop_capacity([proxy], {"archer": 231})
 
 
 def test_build_guest_snapshot_proxies_rejects_non_list_container():

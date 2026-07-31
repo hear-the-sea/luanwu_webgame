@@ -42,7 +42,6 @@ def _serialize_skill(skill: Skill) -> dict:
         "key": skill.key,
         "name": skill.name,
         "power": skill.base_power,
-        "probability": skill.base_probability,
         "kind": getattr(skill, "kind", SkillKind.ACTIVE),
         "status_effect": getattr(skill, "status_effect", ""),
         "status_probability": getattr(skill, "status_probability", 0.0),

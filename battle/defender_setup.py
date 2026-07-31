@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from core.exceptions import BattlePreparationError
 from gameplay.services.missions_impl.enemy_guest_configs import EnemyGuestConfig, normalize_enemy_guest_configs
 
 
@@ -53,6 +54,8 @@ def build_defender_guest_and_loadout(
     )
 
     if defender_guests is not None:
+        if len(defender_guests) > defender_limit:
+            raise BattlePreparationError(f"最多只能派出 {defender_limit} 名门客出征")
         for guest in defender_guests[:defender_limit]:
             if is_live_guest_model_fn(guest) and getattr(guest, "pk", None):
                 recover_guest_hp_fn(guest, now=now)
