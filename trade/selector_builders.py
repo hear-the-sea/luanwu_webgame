@@ -255,6 +255,8 @@ def build_market_trade_context(
     get_my_listings: Callable[..., Any],
 ) -> None:
     market_view = params.get("view", "buy")
+    if market_view not in {"buy", "sell", "my_listings"}:
+        market_view = "buy"
     context["market_view"] = market_view
 
     if market_view == "buy":
@@ -263,7 +265,7 @@ def build_market_trade_context(
         order_by = safe_ordering(
             params.get("order_by", "-listed_at"),
             "-listed_at",
-            {"-listed_at", "listed_at", "-price", "price", "-expires_at", "expires_at"},
+            {"-listed_at", "listed_at", "-unit_price", "unit_price", "-expires_at", "expires_at"},
         )
         listings = _safe_call(
             get_active_listings,

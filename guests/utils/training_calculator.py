@@ -28,7 +28,8 @@ RARITY_TIME_COEFFICIENT = {
 }
 
 # 基础训练时间（秒）
-BASE_TRAINING_TIME = 120  # 黑色品质1→2级需要120秒
+BASE_TRAINING_TIME = 1800  # 黑色品质1→2级需要1800秒
+TRAINING_LEVEL_GROWTH_RATE = 0.07  # 每提升一级，训练时间指数增长7%
 
 # 成本配置
 GRAIN_COST_PER_LEVEL = 120  # 每级粮食基础消耗
@@ -84,9 +85,9 @@ def calculate_training_duration(current_level: int, rarity: str, levels: int = 1
 
     训练时间受稀有度和等级影响：
     - 稀有度越高，训练时间越长（通过系数调整）
-    - 等级越高，训练时间越长（每级增长5%）
+    - 等级越高，训练时间越长（每级指数增长7%）
 
-    基准：黑色品质1→2级需要120秒
+    基准：黑色品质1→2级需要1800秒
 
     Args:
         current_level: 当前等级
@@ -101,11 +102,11 @@ def calculate_training_duration(current_level: int, rarity: str, levels: int = 1
 
     Examples:
         >>> calculate_training_duration(1, 'black', 1)
-        120
+        1800
         >>> calculate_training_duration(1, 'purple', 1)
-        180
+        2700
         >>> calculate_training_duration(10, 'black', 1)
-        174
+        3309
     """
     if current_level < 1:
         raise AssertionError(f"当前等级必须>=1，收到: {current_level}")
@@ -121,8 +122,8 @@ def calculate_training_duration(current_level: int, rarity: str, levels: int = 1
         level = current_level + i
         # 基础时间 * 稀有度系数
         base = BASE_TRAINING_TIME * rarity_coeff
-        # 等级成长系数（每级增加5%）
-        growth = 1 + 0.05 * max(0, level - 1)
+        # 等级成长系数：从1级到当前等级按7%指数增长
+        growth = (1 + TRAINING_LEVEL_GROWTH_RATE) ** max(0, level - 1)
         total += int(base * growth)
 
     return scale_duration(total, minimum=1)

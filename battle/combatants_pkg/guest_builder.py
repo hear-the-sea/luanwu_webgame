@@ -196,8 +196,9 @@ def build_guest_combatants(
         hp_mult = 1.0 + bonuses.get("hp", 0)
         agility_mult = 1.0 + bonuses.get("agility", 0)
 
-        attack = min(MAX_STAT_VALUE, int(stats.attack * attack_mult))
-        defense = min(MAX_STAT_VALUE, int(stats.defense * defense_mult))
+        # Keep combat attributes fractional until the damage formula consumes them.
+        attack = min(MAX_STAT_VALUE, stats.attack * attack_mult)
+        defense = min(MAX_STAT_VALUE, stats.defense * defense_mult)
         max_hp = min(MAX_STAT_VALUE, int(stats.max_hp * hp_mult))
 
         if stats.current_hp is not None:
@@ -209,7 +210,7 @@ def build_guest_combatants(
         base_agility = getattr(guest, "agility", DEFAULT_GUEST_AGILITY)
         intellect_value = stats.intellect or getattr(guest, "intellect", DEFAULT_GUEST_AGILITY)
         troop_speed = max(MIN_SPEED_BONUS, intellect_value // INTELLECT_TO_SPEED_DIVISOR)
-        agility = int((base_agility + troop_speed) * agility_mult)
+        agility = (base_agility + troop_speed) * agility_mult
 
         priority = 0
         team.append(

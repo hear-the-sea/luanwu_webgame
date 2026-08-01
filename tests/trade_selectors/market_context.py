@@ -94,6 +94,33 @@ def test_get_trade_context_market_buy_lists_page(monkeypatch, django_user_model)
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("requested_order", "expected_order"),
+    [("unit_price", "unit_price"), ("price", "-listed_at")],
+)
+def test_get_trade_context_market_ordering_uses_real_listing_fields(
+    monkeypatch, django_user_model, requested_order, expected_order
+):
+    captured: dict[str, object] = {}
+
+    def _get_active_listings(**kwargs):
+        captured.update(kwargs)
+        return []
+
+    monkeypatch.setattr("trade.selectors.get_active_listings", _get_active_listings)
+
+    manor = create_manor(django_user_model, username=f"trade_ctx_market_order_{requested_order}")
+    request = RequestFactory().get(
+        "/trade",
+        {"tab": "market", "view": "buy", "order_by": requested_order},
+    )
+
+    get_trade_context(manor=manor, params=build_trade_request_params(request))
+
+    assert captured["order_by"] == expected_order
+
+
+@pytest.mark.django_db
 def test_get_trade_context_market_buy_negative_page_clamped(monkeypatch, django_user_model):
     monkeypatch.setattr("trade.selectors.get_active_listings", lambda **_kwargs: list(range(1, 22)))
 

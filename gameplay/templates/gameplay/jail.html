@@ -165,7 +165,7 @@
                       value="{{ speaker.id }}"
                       data-speaker-name="{{ speaker.name }}"
                       {% if not speaker.available %}disabled{% endif %}
-                    >{{ speaker.name }} · 智力 {{ speaker.speaker_base_value }}{% if speaker.used_today %} · 今日已用{% endif %}</option>
+                    >{{ speaker.name }}{% if speaker.used_today %} · 今日已用{% endif %}</option>
                     {% endfor %}
                   </select>
                 </label>
@@ -192,7 +192,7 @@
                       value="{{ speaker.id }}"
                       data-speaker-name="{{ speaker.name }}"
                       {% if not speaker.available %}disabled{% endif %}
-                    >{{ speaker.name }} · 武力 {{ speaker.speaker_base_value }}{% if speaker.used_today %} · 今日已用{% endif %}</option>
+                    >{{ speaker.name }}{% if speaker.used_today %} · 今日已用{% endif %}</option>
                     {% endfor %}
                   </select>
                 </label>

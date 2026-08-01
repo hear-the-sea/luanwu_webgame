@@ -173,18 +173,22 @@ def settle_auction_round_impl(
     active_exception: BaseException | None = None
     try:
         with transaction.atomic():
-            if round_id:
+            settlement_cutoff = timezone.now()
+            if round_id is not None:
                 auction_round = (
                     AuctionRound.objects.select_for_update()
                     .filter(id=round_id, status__in=[AuctionRound.Status.ACTIVE, AuctionRound.Status.SETTLING])
                     .first()
                 )
+                if auction_round and auction_round.end_at > settlement_cutoff:
+                    logger.info("指定拍卖轮次 #%s 尚未结束，跳过结算", auction_round.round_number)
+                    return stats
             else:
                 auction_round = (
                     AuctionRound.objects.select_for_update()
                     .filter(
                         status__in=[AuctionRound.Status.ACTIVE, AuctionRound.Status.SETTLING],
-                        end_at__lte=timezone.now(),
+                        end_at__lte=settlement_cutoff,
                     )
                     .order_by("end_at", "id")
                     .first()

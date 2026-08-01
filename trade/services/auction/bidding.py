@@ -66,11 +66,16 @@ def _safe_notify_user(user_id: int, payload: dict, *, log_context: str) -> None:
         )
 
 
+def _get_min_increment(slot: AuctionSlot) -> int:
+    return max(1, safe_int(getattr(slot, "min_increment", 1), default=1))
+
+
 def _validate_bid_raise_or_increment(slot: AuctionSlot, amount: int, current_amount: int) -> None:
+    min_increment = _get_min_increment(slot)
     if amount <= current_amount:
         raise TradeValidationError(f"加价金额必须高于您之前的出价 {current_amount} 金条")
-    if amount < current_amount + slot.min_increment:
-        raise TradeValidationError(f"加价幅度至少为 {slot.min_increment} 金条")
+    if amount < current_amount + min_increment:
+        raise TradeValidationError(f"加价幅度至少为 {min_increment} 金条")
 
 
 def _get_player_active_bid(ranking: list[AuctionBid], manor: Manor) -> AuctionBid | None:
@@ -89,7 +94,10 @@ def _validate_slot_active(slot: AuctionSlot) -> None:
         raise TradeValidationError("该拍卖位已结束")
     if slot.round.status != AuctionRound.Status.ACTIVE:
         raise TradeValidationError("该拍卖轮次已结束")
-    if slot.round.end_at <= timezone.now():
+    now = timezone.now()
+    if slot.round.start_at > now:
+        raise TradeValidationError("拍卖尚未开始")
+    if slot.round.end_at <= now:
         raise TradeValidationError("拍卖时间已结束")
 
 
@@ -176,7 +184,7 @@ def get_slot_ranking(slot: AuctionSlot) -> List[AuctionBid]:
             status=AuctionBid.Status.ACTIVE,
         )
         .select_related("manor")
-        .order_by("-amount", "created_at")  # 金额相同时，先出价者排前面
+        .order_by("-amount", "created_at", "id")  # 金额相同时，先出价者排前面；id 保证全序
     )
 
 
@@ -207,7 +215,7 @@ def is_in_winning_range(slot: AuctionSlot, manor: Manor) -> bool:
     rank = get_my_rank(slot, manor)
     if rank is None:
         return False
-    return rank <= slot.quantity
+    return rank <= _safe_winner_count(slot)
 
 
 def validate_bid_amount(
@@ -245,8 +253,14 @@ def validate_bid_amount(
     cutoff = get_cutoff_price(slot, ranking=ranking)
     winner_count = _safe_winner_count(slot)
 
-    if len(ranking) >= winner_count and amount <= cutoff:
-        raise TradeValidationError(f"出价金额需要高于当前最低中标价 {cutoff} 金条才能进入前 {winner_count} 名")
+    if len(ranking) >= winner_count:
+        min_increment = _get_min_increment(slot)
+        minimum_bid = cutoff + min_increment
+        if amount < minimum_bid:
+            raise TradeValidationError(
+                f"出价金额至少需要 {minimum_bid} 金条（当前最低中标价 {cutoff} 金条，"
+                f"最小加价幅度 {min_increment} 金条），才能进入前 {winner_count} 名"
+            )
 
 
 def place_bid(

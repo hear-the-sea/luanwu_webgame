@@ -62,7 +62,7 @@ def resolve_stat(combatant: "Combatant", stat: str) -> float:
     return float(getattr(combatant, attr, 0))
 
 
-def calculate_skill_bonus(skill: dict, actor: "Combatant", target: "Combatant") -> int:
+def calculate_skill_bonus(skill: dict, actor: "Combatant", target: "Combatant") -> float:
     """
     计算技能带来的额外伤害/治疗加成。
 
@@ -74,11 +74,11 @@ def calculate_skill_bonus(skill: dict, actor: "Combatant", target: "Combatant") 
         target: 目标
 
     Returns:
-        加成数值（整数）
+        加成数值（浮点数，最终伤害结算时再取整）
     """
     formula = skill.get("damage_formula") or {}
     if not formula:
-        return int(skill.get("power", 0) * 0.2)
+        return float(skill.get("power", 0) or 0) * 0.2
 
     total = float(formula.get("base", 0))
 
@@ -90,7 +90,7 @@ def calculate_skill_bonus(skill: dict, actor: "Combatant", target: "Combatant") 
     for stat, coeff in (formula.get("enemy") or {}).items():
         total -= float(coeff) * resolve_stat(target, stat)
 
-    return int(total)
+    return total
 
 
 def casualty_modifier(team: List["Combatant"], is_winner: bool) -> float:

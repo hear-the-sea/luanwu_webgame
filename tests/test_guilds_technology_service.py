@@ -294,6 +294,30 @@ def test_apply_guild_bonus_to_troop_uses_mapped_personal_tech_levels(monkeypatch
 
 
 @pytest.mark.django_db
+def test_apply_guild_bonus_to_troop_preserves_fractional_tech_bonuses(monkeypatch, django_user_model):
+    from guilds.models import Guild
+    from guilds.services.technology import apply_guild_bonus_to_troop
+
+    founder = django_user_model.objects.create_user(username="tech_founder_fractional_troop_stats", password="pass")
+    guild = Guild.objects.create(name="TechFractionalTroopStatsGuild", founder=founder)
+    user_in_guild = SimpleNamespace(guild_membership=SimpleNamespace(is_active=True, guild=guild))
+
+    monkeypatch.setattr(
+        "guilds.services.technology.get_troop_stat_bonuses_from_levels",
+        lambda _levels, _troop_key: {"attack": 0.05, "defense": 0.07, "hp": 0.03},
+    )
+
+    result = apply_guild_bonus_to_troop(
+        {"troop_key": "archer", "attack": 7, "defense": 2, "hp": 20},
+        user_in_guild,
+    )
+
+    assert result["attack"] == pytest.approx(7.35)
+    assert result["defense"] == pytest.approx(2.14)
+    assert result["hp"] == pytest.approx(20.6)
+
+
+@pytest.mark.django_db
 def test_normalize_guild_technology_rows_migration_backfills_troop_tactics_and_removes_military_study(
     django_user_model,
 ):

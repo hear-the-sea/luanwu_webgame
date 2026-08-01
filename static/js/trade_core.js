@@ -66,6 +66,7 @@
     const winnerCount = parseInteger(rawState && rawState.winnerCount, 0);
     const bidderCount = parseInteger(rawState && rawState.bidderCount, 0);
     const startingPrice = Math.max(1, parseInteger(rawState && rawState.startingPrice, 1));
+    const minIncrement = Math.max(1, parseInteger(rawState && rawState.minIncrement, 1));
     const myBidAmount = parseInteger(rawState && rawState.myBidAmount, 0);
 
     let minBid = startingPrice;
@@ -74,11 +75,11 @@
 
     if (myBidAmount > 0) {
       myBidVisible = true;
-      minBid = myBidAmount + 1;
-      hintText = `需要高于您当前出价 ${myBidAmount} 金条`;
+      minBid = myBidAmount + minIncrement;
+      hintText = `最低出价为 ${minBid} 金条（需在您当前出价 ${myBidAmount} 金条基础上至少加价 ${minIncrement} 金条）`;
     } else if (winnerCount > 0 && bidderCount >= winnerCount) {
-      minBid = cutoffPrice + 1;
-      hintText = `名额已满，需要高于最低中标价 ${cutoffPrice} 金条才能进入前 ${winnerCount} 名`;
+      minBid = cutoffPrice + minIncrement;
+      hintText = `名额已满，最低出价为 ${minBid} 金条（当前最低中标价 ${cutoffPrice} 金条，需至少加价 ${minIncrement} 金条）才能进入前 ${winnerCount} 名`;
     }
 
     return {
@@ -88,6 +89,7 @@
       winnerCount,
       bidderCount,
       startingPrice,
+      minIncrement,
       myBidAmount,
       myBidVisible,
       myBidText: `${myBidAmount} 金条`,

@@ -9,6 +9,11 @@ const template = fs.readFileSync(
 );
 const styles = fs.readFileSync(path.resolve(__dirname, "../../../src/input.css"), "utf8");
 
+test("work location headings do not repeat the required level as a badge", () => {
+  assert.doesNotMatch(template, /<span class="tw-level-badge">等级 \{\{ work\.required_level \}\}<\/span>/);
+  assert.match(template, /requirement\.key == "level"/);
+});
+
 test("work requirements align with card content and use compact typography and spacing", () => {
   const match = template.match(/<div class="([^"]*)">\s*<span[^>]*>要求：<\/span>/);
 

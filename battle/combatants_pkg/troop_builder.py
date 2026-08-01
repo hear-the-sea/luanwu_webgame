@@ -103,14 +103,17 @@ def build_troop_combatants(
         hp_mult = 1.0 + bonuses.get("hp", 0)
         agility_mult = 1.0 + bonuses.get("agility", 0)
 
-        unit_attack = int(base_attack * attack_mult)
-        unit_defense = int(base_defense * defense_mult)
-        unit_hp = int(base_hp * hp_mult)
-        agility = int(base_agility * agility_mult) if base_agility > 0 else int(base_agility)
+        # Keep fractional unit stats until the aggregate combat calculation.
+        # This lets low-base-value device and technology bonuses affect a full troop group.
+        unit_attack = base_attack * attack_mult
+        unit_defense = base_defense * defense_mult
+        unit_hp = base_hp * hp_mult
+        agility = base_agility * agility_mult
 
         attack = unit_attack * count
         defense = unit_defense * count
-        hp = unit_hp * count
+        # HP is a stateful integer, so round only after all per-unit bonuses are applied.
+        hp = max(1, int(unit_hp * count))
 
         tech_effects_dict: Dict[str, float] = {}
         if effective_levels is not None and troop_class:

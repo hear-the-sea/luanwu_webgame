@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
 from types import SimpleNamespace
 from typing import cast
 from unittest.mock import MagicMock, patch
 
 import pytest
+from django.utils import timezone
 
 from core.exceptions import TradeValidationError
+from gameplay.models import ItemTemplate
+from gameplay.services.manor.core import ensure_manor
+from trade.models import MarketListing
 from trade.services import market_service
 
 pytestmark = pytest.mark.django_db
@@ -44,8 +49,6 @@ def test_allowed_listing_order_by_fields():
         "-listed_at",
         "unit_price",
         "-unit_price",
-        "price",
-        "-price",
         "total_price",
         "-total_price",
         "quantity",
@@ -80,6 +83,13 @@ def test_validate_listing_price_rejects_below_minimum():
 
     with pytest.raises(TradeValidationError, match="单价不能低于"):
         market_service.validate_listing_price(item_template, 500)
+
+
+def test_validate_listing_price_rejects_zero_price_for_zero_reference_items():
+    item_template = SimpleNamespace(price=0)
+
+    with pytest.raises(TradeValidationError, match="单价必须大于 0 银两"):
+        market_service.validate_listing_price(item_template, 0)
 
 
 def test_validate_listing_price_rejects_above_maximum():
@@ -212,7 +222,7 @@ def test_get_active_listings_uses_safe_order_by():
 
         # Valid order by
         market_service.get_active_listings(order_by="-listed_at")
-        mock_filter.order_by.assert_called_with("-listed_at")
+        mock_filter.order_by.assert_called_with("-listed_at", "-id")
 
 
 def test_get_active_listings_rejects_unsafe_order_by():
@@ -225,7 +235,36 @@ def test_get_active_listings_rejects_unsafe_order_by():
 
         # Invalid order by should fall back to default
         market_service.get_active_listings(order_by="sql_injection_attempt")
-        mock_filter.order_by.assert_called_with("-listed_at")
+        mock_filter.order_by.assert_called_with("-listed_at", "-id")
+
+
+@pytest.mark.django_db
+def test_get_active_listings_executes_real_ordering_fields_without_field_error(django_user_model):
+    user = django_user_model.objects.create_user(username="market_ordering_real_query", password="pass12345")
+    manor = ensure_manor(user)
+    template = ItemTemplate.objects.create(
+        key="market_ordering_real_query_item",
+        name="交易排序测试物品",
+        tradeable=True,
+        price=100,
+    )
+    MarketListing.objects.create(
+        seller=manor,
+        item_template=template,
+        quantity=1,
+        unit_price=200,
+        total_price=200,
+        duration=MarketListing.Duration.SHORT,
+        listing_fee=5000,
+        expires_at=timezone.now() + timedelta(hours=1),
+        status=MarketListing.Status.ACTIVE,
+    )
+
+    for order_by in market_service.ALLOWED_LISTING_ORDER_BY:
+        assert list(market_service.get_active_listings(order_by=order_by))
+
+    # `price` belongs to ItemTemplate, not MarketListing; it must safely fall back.
+    assert list(market_service.get_active_listings(order_by="price"))
 
 
 def test_get_active_listings_treats_loot_box_as_tool_category():

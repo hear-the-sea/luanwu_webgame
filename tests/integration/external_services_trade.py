@@ -192,6 +192,7 @@ def test_integration_auction_bid_and_settlement_flow(require_env_services, djang
     )
 
     bid, _is_first = place_bid(bidder, slot.id, 5)
+    AuctionRound.objects.filter(pk=auction_round.pk).update(end_at=timezone.now() - timedelta(seconds=1))
     stats = settle_auction_round(round_id=auction_round.id)
 
     bid.refresh_from_db()

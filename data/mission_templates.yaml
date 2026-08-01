@@ -646,8 +646,8 @@ missions:
 
     enemy_technology:
       level: 4
-      guest_level: 45
-      guest_bonus: 0.08
+      guest_level: 80
+      guest_bonus: 0.2
 
     drop_table:
       silver: 20000

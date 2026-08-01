@@ -18,7 +18,7 @@ DEFAULT_ARENA_COOP_RULES: dict[str, Any] = {
     "registration": {
         "player_limit": 5,
         "guest_limit_per_entry": 3,
-        "daily_participation_limit": 2,
+        "daily_participation_limit": 3,
         "prepare_duration_seconds": 120,
         "registration_silver_cost": 0,
         "recruiting_lock_key": "arena:coop:recruiting_event:create",

@@ -32,7 +32,8 @@ def get_active_listings_queryset(
         queryset = queryset.filter(item_template__rarity=rarity)
 
     safe_order_by = order_by if order_by in allowed_order_by else "-listed_at"
-    return queryset.order_by(safe_order_by)
+    # Keep pagination deterministic when multiple listings share the same sort timestamp/value.
+    return queryset.order_by(safe_order_by, "-id")
 
 
 def get_user_expired_listings_queryset(*, market_listing_model: Any, manor: Any, now: Any):
@@ -56,7 +57,7 @@ def get_my_listings_queryset(*, market_listing_model: Any, manor: Any, status: s
     if status and status != "all":
         queryset = queryset.filter(status=status)
 
-    return queryset.order_by("-listed_at")
+    return queryset.order_by("-listed_at", "-id")
 
 
 def get_market_stats_payload(*, market_listing_model: Any, market_transaction_model: Any, now: Any) -> dict[str, int]:

@@ -282,6 +282,23 @@ def test_apply_effect_combines_distinct_skill_sources_for_damage_multiplier():
     assert adjust_arena_coop_damage(ally, enemy, 1000) == 1298
 
 
+def test_adjust_arena_coop_damage_keeps_fractional_modifiers_until_finalization():
+    actor = make_unit(
+        name="守将",
+        side="defender",
+        battle_modifiers={"outgoing_damage_multiplier": 1.15},
+    )
+    target = make_unit(
+        name="目标",
+        side="attacker",
+        battle_modifiers={"incoming_damage_multiplier": 0.85},
+    )
+
+    adjusted = adjust_arena_coop_damage(actor, target, 1000.5)
+
+    assert adjusted == pytest.approx(1000.5 * 1.15 * 0.85)
+
+
 def test_run_passives_for_timing_deduplicates_same_group_aura_and_combines_distinct_ones():
     general = make_unit(
         name="守将",

@@ -164,6 +164,7 @@
       winnerCount: trigger.dataset.winnerCount,
       bidderCount: trigger.dataset.bidderCount,
       startingPrice: trigger.dataset.startingPrice,
+      minIncrement: trigger.dataset.minIncrement,
       myBidAmount: trigger.dataset.myBidAmount,
     });
 
@@ -242,7 +243,8 @@
     const itemKey = trigger.dataset.itemKey || "";
     const itemName = trigger.dataset.itemName || "";
     const available = tradeCore.parseInteger(trigger.dataset.available, 0);
-    const minPrice = tradeCore.parseInteger(trigger.dataset.minPrice, 0);
+    const referencePrice = Math.max(0, tradeCore.parseInteger(trigger.dataset.minPrice, 0));
+    const minPrice = Math.max(1, referencePrice);
     const rarity = trigger.dataset.rarity || "gray";
     const imageUrl = trigger.dataset.imageUrl || "";
 
@@ -250,7 +252,7 @@
     itemNameElement.textContent = itemName;
     itemNameElement.className = `tw-item-name rarity-text-${rarity}`;
     availableElement.textContent = String(available);
-    minPriceElement.textContent = minPrice.toLocaleString();
+    minPriceElement.textContent = referencePrice.toLocaleString();
 
     itemIconElement.className = `tw-item-icon rarity-${rarity}`;
     itemIconElement.textContent = "";

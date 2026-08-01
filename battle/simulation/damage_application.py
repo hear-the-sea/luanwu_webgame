@@ -23,6 +23,12 @@ def _normalize_non_negative_int(value: object) -> int:
         return 0
 
 
+def _finalize_damage(value: int | float) -> int:
+    """Convert damage to an integer only when it reaches the HP state boundary."""
+
+    return _normalize_non_negative_int(value)
+
+
 def _strength_for_hp(unit: "Combatant", hp: int, troop_unit_hp_fn) -> int:
     if unit.kind != "troop" or hp <= 0:
         return 0
@@ -49,7 +55,7 @@ def _snapshot_zero_damage(unit: "Combatant", troop_unit_hp_fn) -> _UnitDamageApp
     )
 
 
-def _apply_unit_damage(unit: "Combatant", damage: int, troop_unit_hp_fn) -> _UnitDamageApplication:
+def _apply_unit_damage(unit: "Combatant", damage: int | float, troop_unit_hp_fn) -> _UnitDamageApplication:
     """Apply one damage transition while keeping HP and troop strength consistent.
 
     Damage multipliers belong to the calculation that produced ``damage``. This
@@ -57,7 +63,7 @@ def _apply_unit_damage(unit: "Combatant", damage: int, troop_unit_hp_fn) -> _Uni
     apply the guest-vs-troop slaughter multiplier.
     """
 
-    raw_damage = _normalize_non_negative_int(damage)
+    raw_damage = _finalize_damage(damage)
     maximum_hp = _normalize_non_negative_int(getattr(unit, "max_hp", 0))
     hp_before = min(maximum_hp, _normalize_non_negative_int(getattr(unit, "hp", 0)))
     strength_before = _strength_for_hp(unit, hp_before, troop_unit_hp_fn)
@@ -86,7 +92,7 @@ def _apply_unit_damage(unit: "Combatant", damage: int, troop_unit_hp_fn) -> _Uni
 def _apply_reflect(
     actor: "Combatant",
     target: "Combatant",
-    damage: int,
+    damage: float,
     troop_unit_hp_fn,
 ) -> _UnitDamageApplication:
     """Apply reflected secondary damage without normal-attack multipliers."""
@@ -94,14 +100,14 @@ def _apply_reflect(
     from ..arena_coop import get_arena_coop_reflect_values
 
     reflect_ratio = target.tech_effects.get("damage_reflect", 0)
-    max_reflect = int(actor.attack * 1.0)
+    max_reflect = float(actor.attack)
     if reflect_ratio <= 0 or target.troop_class != "jian":
         reflect_ratio, special_cap = get_arena_coop_reflect_values(target)
         if reflect_ratio <= 0:
             return _snapshot_zero_damage(actor, troop_unit_hp_fn)
         max_reflect = special_cap if special_cap > 0 else max_reflect
 
-    reflect_damage = min(int(damage * reflect_ratio), max_reflect)
+    reflect_damage = min(damage * reflect_ratio, max_reflect)
     return _apply_unit_damage(actor, reflect_damage, troop_unit_hp_fn)
 
 
@@ -120,14 +126,14 @@ def _apply_counter(
 
     counter_mult = target.tech_effects.get("counter_attack_damage", 0.30)
     counter_attack_value = effective_attack_value_fn(target, actor)
-    counter_damage = int(counter_attack_value * counter_mult)
+    counter_damage = counter_attack_value * counter_mult
     return _apply_unit_damage(actor, counter_damage, troop_unit_hp_fn)
 
 
 def apply_damage_results(
     actor: "Combatant",
     target: "Combatant",
-    damage: int,
+    damage: int | float,
     rng: random.Random,
 ) -> _DamageApplication:
     """

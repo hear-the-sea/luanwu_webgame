@@ -6,6 +6,7 @@ import logging
 from typing import Any, Callable, Dict, List, Optional
 
 from django.core.cache import cache
+from django.utils import timezone
 
 from core.utils import safe_int
 from core.utils.infrastructure import (
@@ -74,7 +75,16 @@ def _safe_notify_user(user_id: int, payload: dict, *, log_context: str) -> None:
 
 def get_current_round() -> Optional[AuctionRound]:
     """获取当前进行中的拍卖轮次。"""
-    return AuctionRound.objects.filter(status=AuctionRound.Status.ACTIVE).first()
+    now = timezone.now()
+    return (
+        AuctionRound.objects.filter(
+            status=AuctionRound.Status.ACTIVE,
+            start_at__lte=now,
+            end_at__gt=now,
+        )
+        .order_by("end_at", "id")
+        .first()
+    )
 
 
 def get_next_round_number() -> int:

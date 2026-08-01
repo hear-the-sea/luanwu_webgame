@@ -91,6 +91,42 @@ def test_distinct_effect_types_clears_order_by_for_distinct():
 
 
 @pytest.mark.django_db
+def test_warehouse_categories_prioritize_equipment_then_common_items():
+    user = User.objects.create_user(username="warehouse_category_order", password="pass123")
+    manor = ensure_manor(user)
+    effect_types = (
+        ItemTemplate.EffectType.RESOURCE,
+        ItemTemplate.EffectType.SKILL_BOOK,
+        "equip_helmet",
+        ItemTemplate.EffectType.MEDICINE,
+        "equip_weapon",
+        ItemTemplate.EffectType.EXPERIENCE_ITEM,
+        "equip_armor",
+        ItemTemplate.EffectType.TOOL,
+    )
+    for index, effect_type in enumerate(effect_types):
+        template = ItemTemplate.objects.create(
+            key=f"warehouse_category_order_{index}",
+            name=f"分类排序物品{index}",
+            effect_type=effect_type,
+        )
+        InventoryItem.objects.create(manor=manor, template=template, quantity=1)
+
+    context = get_warehouse_context(manor, current_tab="warehouse", selected_category="all", page=1)
+
+    assert [category["key"] for category in context["categories"]] == [
+        "equip_weapon",
+        "equip_armor",
+        "equip_helmet",
+        ItemTemplate.EffectType.MEDICINE,
+        ItemTemplate.EffectType.EXPERIENCE_ITEM,
+        ItemTemplate.EffectType.SKILL_BOOK,
+        "tool",
+        ItemTemplate.EffectType.RESOURCE,
+    ]
+
+
+@pytest.mark.django_db
 def test_get_warehouse_context_queries_guest_table_once():
     user = User.objects.create_user(username="warehouse_query_user", password="pass123")
     manor = ensure_manor(user)
@@ -335,7 +371,7 @@ def test_get_warehouse_context_paginates_items_to_twenty(current_tab, storage_lo
 
 
 @pytest.mark.django_db
-def test_get_warehouse_context_groups_loot_box_under_tool_category():
+def test_get_warehouse_context_groups_loot_box_and_resource_pack_under_tool_category():
     user = User.objects.create_user(username="warehouse_loot_box_tool_category", password="pass123")
     manor = ensure_manor(user)
 
@@ -345,11 +381,28 @@ def test_get_warehouse_context_groups_loot_box_under_tool_category():
         effect_type=ItemTemplate.EffectType.LOOT_BOX,
         is_usable=True,
     )
+    resource_pack = ItemTemplate.objects.create(
+        key="warehouse_resource_pack",
+        name="资源包",
+        effect_type=ItemTemplate.EffectType.RESOURCE_PACK,
+        is_usable=True,
+    )
     InventoryItem.objects.create(manor=manor, template=loot_box, quantity=1)
+    InventoryItem.objects.create(manor=manor, template=resource_pack, quantity=1)
 
-    context = get_warehouse_context(manor, current_tab="warehouse", selected_category="tool", page=1)
+    context = get_warehouse_context(
+        manor,
+        current_tab="warehouse",
+        selected_category=ItemTemplate.EffectType.RESOURCE_PACK,
+        page=1,
+    )
 
-    assert [item.template.key for item in context["inventory_items"]] == ["warehouse_work_chest"]
-    assert context["inventory_items"][0].category_display == "道具"
+    assert [item.template.key for item in context["inventory_items"]] == [
+        "warehouse_work_chest",
+        "warehouse_resource_pack",
+    ]
+    assert all(item.category_display == "道具" for item in context["inventory_items"])
+    assert context["selected_category"] == "tool"
     assert any(category["key"] == "tool" for category in context["categories"])
     assert all(category["key"] != ItemTemplate.EffectType.LOOT_BOX for category in context["categories"])
+    assert all(category["key"] != ItemTemplate.EffectType.RESOURCE_PACK for category in context["categories"])

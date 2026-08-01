@@ -1,6 +1,7 @@
 # guilds/services/technology.py
 
 import logging
+import math
 from typing import SupportsInt, cast
 
 from django.db import transaction
@@ -360,9 +361,9 @@ def apply_guild_bonus_to_troop(troop_stats, user):
     troop_key = str(troop_stats.get("troop_key") or troop_stats.get("key") or "").strip()
     if not troop_key:
         return {
-            "attack": int(troop_stats.get("attack", 0)),
-            "defense": int(troop_stats.get("defense", 0)),
-            "hp": int(troop_stats.get("hp", 0)),
+            "attack": troop_stats.get("attack", 0),
+            "defense": troop_stats.get("defense", 0),
+            "hp": troop_stats.get("hp", 0),
         }
 
     bonuses = get_troop_stat_bonuses_from_levels(build_guild_troop_tech_levels(guild), troop_key)
@@ -370,8 +371,12 @@ def apply_guild_bonus_to_troop(troop_stats, user):
     defense_bonus = float(bonuses.get("defense", 0.0) or 0.0)
     hp_bonus = float(bonuses.get("hp", 0.0) or 0.0)
 
+    def apply_bonus(base_value, bonus):
+        # Compensated addition avoids representation noise without rounding the result.
+        return math.fsum((base_value, base_value * bonus))
+
     return {
-        "attack": int(troop_stats.get("attack", 0) * (1 + attack_bonus)),
-        "defense": int(troop_stats.get("defense", 0) * (1 + defense_bonus)),
-        "hp": int(troop_stats.get("hp", 0) * (1 + hp_bonus)),
+        "attack": apply_bonus(troop_stats.get("attack", 0), attack_bonus),
+        "defense": apply_bonus(troop_stats.get("defense", 0), defense_bonus),
+        "hp": apply_bonus(troop_stats.get("hp", 0), hp_bonus),
     }

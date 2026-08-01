@@ -28,8 +28,10 @@ def test_calculate_training_duration_requires_positive_levels():
         calculate_training_duration(1, "black", 0)
 
 
-def test_calculate_training_duration_keeps_existing_formula(monkeypatch):
+def test_calculate_training_duration_uses_exponential_growth(monkeypatch):
     monkeypatch.setattr("guests.utils.training_calculator.scale_duration", lambda total, minimum=1: total)
 
-    assert calculate_training_duration(1, "black", 1) == 120
-    assert calculate_training_duration(1, "purple", 1) == 180
+    assert calculate_training_duration(1, "black", 1) == 1800
+    assert calculate_training_duration(1, "purple", 1) == 2700
+    assert calculate_training_duration(30, "green", 1) == 15366
+    assert calculate_training_duration(99, "green", 1) == 1637057

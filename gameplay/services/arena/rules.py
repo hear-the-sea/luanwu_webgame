@@ -18,8 +18,8 @@ DEFAULT_ARENA_RULES: dict[str, Any] = {
     "registration": {
         "max_guests_per_entry": 10,
         "registration_silver_cost": 5000,
-        "daily_participation_limit": 100,
-        "tournament_player_limit": 3,
+        "daily_participation_limit": 5,
+        "tournament_player_limit": 10,
     },
     "runtime": {
         "round_interval_seconds": 600,

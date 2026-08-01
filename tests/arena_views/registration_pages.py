@@ -31,6 +31,10 @@ def test_arena_view_renders(arena_client):
 
     assert response.status_code == 200
     body = response.content.decode("utf-8")
+    assert "天下布武" in body
+    assert "10 人满员开赛" in body
+    assert "10 人门客淘汰赛" not in body
+    assert response.context["daily_limit"] == 5
     assert "竞技场" in body
     assert "参与 <strong>天下布武</strong>，赢取角斗币并兑换奖励。" not in body
     assert "js/arena-registration.js" in body
@@ -46,7 +50,8 @@ def test_arena_registration_page_lists_guangming_top_card(arena_client):
     assert response.status_code == 200
     body = response.content.decode("utf-8")
     assert "围攻光明顶" in body
-    assert "5 人共斗" in body
+    assert "5 人共斗" not in body
+    assert response.context["arena_coop_daily_limit"] == 3
     assert "武林高手齐聚光明顶，请派遣3名主力门客参战" in body
     assert "查看共斗详情" not in body
     assert body.count("tw-building-card tw-building-card--manor tw-arena-hero-card") >= 2

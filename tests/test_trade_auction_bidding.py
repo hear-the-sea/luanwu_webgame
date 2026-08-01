@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 import pytest
+from django.utils import timezone
 
 from core.exceptions import MessageError, TradeValidationError
 from gameplay.models import InventoryItem
@@ -30,6 +33,43 @@ def test_validate_bid_amount_rejects_below_starting_price(django_user_model):
 
     with pytest.raises(TradeValidationError, match="起拍价"):
         auction_service.validate_bid_amount(slot, 1)
+
+
+@pytest.mark.django_db
+def test_place_bid_rejects_future_round_before_freezing_gold(django_user_model):
+    user = django_user_model.objects.create_user(username="auction_future_round", password="pass12345")
+    manor = ensure_manor(user)
+    slot = create_active_round_slot(item_key="auction_future_round_item")
+    slot.round.start_at = timezone.now() + timedelta(minutes=5)
+    slot.round.save(update_fields=["start_at"])
+
+    with pytest.raises(TradeValidationError, match="尚未开始"):
+        auction_service.place_bid(manor, slot.id, 10)
+
+
+@pytest.mark.django_db
+def test_new_bidder_must_respect_min_increment_when_slot_is_full(monkeypatch, django_user_model):
+    monkeypatch.setattr(auction_service, "_notify_outbid_vickrey", lambda *args, **kwargs: None)
+
+    user1 = django_user_model.objects.create_user(username="auction_min_increment_first", password="pass12345")
+    user2 = django_user_model.objects.create_user(username="auction_min_increment_second", password="pass12345")
+    manor1 = ensure_manor(user1)
+    manor2 = ensure_manor(user2)
+    _set_gold_bars(manor1, 30)
+    _set_gold_bars(manor2, 30)
+
+    slot = create_active_round_slot(
+        item_key="auction_min_increment_full_slot",
+        starting_price=10,
+        min_increment=5,
+    )
+    auction_service.place_bid(manor1, slot.id, 10)
+
+    with pytest.raises(TradeValidationError, match="最小加价幅度 5"):
+        auction_service.place_bid(manor2, slot.id, 14)
+
+    bid, _ = auction_service.place_bid(manor2, slot.id, 15)
+    assert bid.amount == 15
 
 
 @pytest.mark.django_db

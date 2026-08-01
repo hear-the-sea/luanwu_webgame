@@ -74,7 +74,7 @@ def get_arena_coop_summary_context(manor: Manor) -> dict:
         "arena_coop_daily_limit": arena_coop_core.ARENA_COOP_DAILY_PARTICIPATION_LIMIT,
         "arena_coop_event": {
             "name": "围攻光明顶",
-            "subtitle": "5 人共斗",
+            "subtitle": "",
             "description": (
                 "江湖告急！魔教教主不仅深夜在山头高唱跑调山歌严重扰民，还拒不缴纳今年的武林卫生管理费！各大门派彻底怒了，誓要荡平这破山头！ "
                 "别装大侠讲究什么单挑了，这年头流行并肩子群殴！请立刻揪出你院子里最能打（或最能抗揍）的3名门客，出门左拐与其他路过的暴躁老哥临时结拜、强行组队！大家凑成一个乌合之众，啊不，正义联盟，浩浩荡荡杀向光明顶！ "

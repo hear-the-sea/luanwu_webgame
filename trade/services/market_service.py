@@ -92,8 +92,6 @@ ALLOWED_LISTING_ORDER_BY = {
     "-listed_at",
     "unit_price",
     "-unit_price",
-    "price",
-    "-price",
     "total_price",
     "-total_price",
     "quantity",
@@ -223,6 +221,8 @@ def validate_listing_price(item_template: ItemTemplate, unit_price: int) -> None
     min_price = int(template_price * MIN_PRICE_MULTIPLIER)
     if normalized_unit_price < min_price:
         raise TradeValidationError(f"单价不能低于 {min_price} 银两")
+    if normalized_unit_price <= 0:
+        raise TradeValidationError("单价必须大于 0 银两")
 
     if normalized_unit_price > MAX_PRICE:
         raise TradeValidationError(f"单价不能超过 {MAX_PRICE:,} 银两")

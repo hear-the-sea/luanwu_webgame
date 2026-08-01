@@ -93,7 +93,8 @@ def apply_battle_heal(
                     unit.troop_strength = current_strength + heal_strength
 
                     # 同时恢复对应的HP
-                    healed_hp = heal_strength * per_unit_hp
+                    # HP 状态保持整数，单兵小数生命只用于换算恢复量。
+                    healed_hp = int(heal_strength * per_unit_hp)
                     max_hp = getattr(unit, "max_hp", unit.hp)
                     unit.hp = min(max_hp, unit.hp + healed_hp)
 

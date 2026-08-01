@@ -6,6 +6,7 @@ from typing import Dict, List
 
 from django.db.models import QuerySet
 
+from core.utils import safe_int
 from gameplay.models import Manor
 from gameplay.models.items import LEGACY_TOOL_EFFECT_TYPES
 from trade.models import AuctionBid, AuctionSlot
@@ -13,6 +14,10 @@ from trade.services.auction.bidding import get_cutoff_price, get_slot_ranking, i
 from trade.services.auction.constants import ALLOWED_AUCTION_ORDER_BY
 from trade.services.auction.gold_bars import get_available_gold_bars, get_frozen_gold_bars
 from trade.services.auction.rounds import get_current_round
+
+
+def _get_winner_count(slot: AuctionSlot) -> int:
+    return max(1, safe_int(getattr(slot, "quantity", 1), 1))
 
 
 def get_active_slots(
@@ -52,7 +57,7 @@ def get_active_slots(
             if order_by not in ALLOWED_AUCTION_ORDER_BY:
                 order_by = "-current_price"
 
-    return queryset.order_by(order_by)
+    return queryset.order_by(order_by, "-id")
 
 
 def get_my_bids(manor: Manor, include_history: bool = False) -> QuerySet:
@@ -68,7 +73,7 @@ def get_my_bids(manor: Manor, include_history: bool = False) -> QuerySet:
         else:
             return AuctionBid.objects.none()
 
-    return queryset.order_by("-created_at")
+    return queryset.order_by("-created_at", "-id")
 
 
 def get_my_leading_bids(manor: Manor) -> List[AuctionSlot]:
@@ -92,12 +97,12 @@ def get_my_leading_bids(manor: Manor) -> List[AuctionSlot]:
     # Batch fetch rankings to avoid N+1
     slot_ids = [bid.slot_id for bid in my_active_bids]
 
-    # We need to sort by amount DESC, created_at ASC to determine rank
+    # We need to sort by amount DESC, created_at ASC, id ASC to determine rank.
     # Fetching slot_id and manor_id is enough to determine position
     competitor_bids = (
         AuctionBid.objects.filter(slot_id__in=slot_ids, status=AuctionBid.Status.ACTIVE)
         .values_list("slot_id", "manor_id")
-        .order_by("slot_id", "-amount", "created_at")
+        .order_by("slot_id", "-amount", "created_at", "id")
     )
 
     # Build first-occurrence rank map in one pass to avoid list.index() scans.
@@ -116,7 +121,7 @@ def get_my_leading_bids(manor: Manor) -> List[AuctionSlot]:
     for bid in my_active_bids:
         slot = bid.slot
         rank = rank_map.get((slot.id, manor.id))
-        if rank is not None and rank <= slot.quantity:
+        if rank is not None and rank <= _get_winner_count(slot):
             result.append(slot)
 
     return result
@@ -130,7 +135,7 @@ def get_my_safe_slots_count(manor: Manor) -> int:
 def get_slot_bid_info(slot: AuctionSlot, manor: Manor = None) -> Dict:
     """获取拍卖位的出价信息（维克里拍卖，不含具体排名）。"""
     ranking = get_slot_ranking(slot)
-    winner_count = slot.quantity
+    winner_count = _get_winner_count(slot)
     bidder_count = len(ranking)
     cutoff_price = get_cutoff_price(slot, ranking=ranking)
 
@@ -160,7 +165,7 @@ def get_slots_bid_info_batch(slots: List[AuctionSlot], manor: Manor = None) -> D
     slot_ids = [slot.id for slot in slots]
     all_bids = list(
         AuctionBid.objects.filter(slot_id__in=slot_ids, status=AuctionBid.Status.ACTIVE)
-        .order_by("slot_id", "-amount", "created_at")
+        .order_by("slot_id", "-amount", "created_at", "id")
         .select_related("manor")
     )
 
@@ -171,7 +176,7 @@ def get_slots_bid_info_batch(slots: List[AuctionSlot], manor: Manor = None) -> D
     result: Dict[int, Dict] = {}
     for slot in slots:
         ranking = bids_by_slot.get(slot.id, [])
-        winner_count = slot.quantity
+        winner_count = _get_winner_count(slot)
         bidder_count = len(ranking)
         if len(ranking) >= winner_count:
             cutoff_price = ranking[winner_count - 1].amount

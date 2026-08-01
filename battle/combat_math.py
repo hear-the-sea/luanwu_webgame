@@ -63,39 +63,53 @@ def _current_strength(unit: Any) -> int:
     )
 
 
-def _unit_attack_value(unit: Any) -> int:
+def _require_positive_number(value: Any, *, contract_name: str) -> float:
+    if value is None or isinstance(value, bool):
+        raise GameError("数据异常，请稍后重试", contract_name=contract_name, invalid_value=value)
+    try:
+        parsed = float(value)
+    except (OverflowError, TypeError, ValueError) as exc:
+        raise GameError("数据异常，请稍后重试", contract_name=contract_name, invalid_value=value) from exc
+    if not math.isfinite(parsed) or parsed <= 0:
+        raise GameError("数据异常，请稍后重试", contract_name=contract_name, invalid_value=value)
+    return parsed
+
+
+def _unit_attack_value(unit: Any) -> float:
     unit_attack = getattr(unit, "unit_attack", None)
     if unit_attack is not None:
-        return require_positive_int(unit_attack, contract_name="battle unit_attack")
+        return _require_positive_number(unit_attack, contract_name="battle unit_attack")
     strength = max(1, _unit_strength(unit))
-    attack = require_positive_int(getattr(unit, "attack", None), contract_name="battle attack")
-    return max(1, int(attack / strength))
+    attack = _require_positive_number(getattr(unit, "attack", None), contract_name="battle attack")
+    return max(1.0, attack / strength)
 
 
-def _unit_defense_value(unit: Any) -> int:
+def _unit_defense_value(unit: Any) -> float:
     unit_defense = getattr(unit, "unit_defense", None)
     if unit_defense is not None:
-        return require_positive_int(unit_defense, contract_name="battle unit_defense")
+        return _require_positive_number(unit_defense, contract_name="battle unit_defense")
     strength = max(1, _unit_strength(unit))
-    defense = require_positive_int(getattr(unit, "defense", None), contract_name="battle defense")
-    return max(1, int(defense / strength))
+    defense = _require_positive_number(getattr(unit, "defense", None), contract_name="battle defense")
+    return max(1.0, defense / strength)
 
 
-def troop_unit_hp(unit: Any) -> int:
+def troop_unit_hp(unit: Any) -> float:
     unit_hp = getattr(unit, "unit_hp", None)
     # 忽略无效/未初始化的 unit_hp（0 或负数），回退到平均血量计算
     if unit_hp is not None:
         if isinstance(unit_hp, bool):
             raise AssertionError(f"invalid battle unit_hp: {unit_hp!r}")
         try:
-            parsed_unit_hp = int(unit_hp)
-        except (TypeError, ValueError) as exc:
+            parsed_unit_hp = float(unit_hp)
+        except (OverflowError, TypeError, ValueError) as exc:
             raise AssertionError(f"invalid battle unit_hp: {unit_hp!r}") from exc
+        if not math.isfinite(parsed_unit_hp):
+            raise AssertionError(f"invalid battle unit_hp: {unit_hp!r}")
         if parsed_unit_hp > 0:
             return parsed_unit_hp
     strength = max(1, _unit_strength(unit))
-    max_hp = require_positive_int(getattr(unit, "max_hp", strength), contract_name="battle max_hp")
-    return max(1, int(max_hp / strength))
+    max_hp = _require_positive_number(getattr(unit, "max_hp", strength), contract_name="battle max_hp")
+    return max(1.0, max_hp / strength)
 
 
 def calculate_slaughter_multiplier(attacker: Any, target: Any) -> float:
@@ -131,7 +145,7 @@ def calculate_slaughter_multiplier(attacker: Any, target: Any) -> float:
     return SLAUGHTER_MULTIPLIER
 
 
-def effective_attack_value(actor: Any, target: Any | None = None) -> int:
+def effective_attack_value(actor: Any, target: Any | None = None) -> float:
     """
     计算有效攻击值，小兵攻击时根据当前兵力数量和目标类型使用不同的倍率。
 
@@ -147,7 +161,7 @@ def effective_attack_value(actor: Any, target: Any | None = None) -> int:
     **平衡调整**: 小兵对门客倍率从/2.0改为/1.5，进一步提高伤害
     """
     if getattr(actor, "kind", "") != "troop":
-        return int(getattr(actor, "attack", 0))
+        return float(getattr(actor, "attack", 0) or 0)
     strength = _current_strength(actor)  # 使用当前兵力而非初始兵力
     unit_attack = _unit_attack_value(actor)
     if target is not None and getattr(target, "kind", "") != "troop":
@@ -156,10 +170,10 @@ def effective_attack_value(actor: Any, target: Any | None = None) -> int:
     else:
         # 小兵打小兵：极限倍率（直接×兵力）
         multiplier = max(1.0, strength / TROOP_VS_TROOP_ATTACK_DIVISOR)
-    return max(1, int(unit_attack * multiplier))
+    return max(1.0, unit_attack * multiplier)
 
 
-def effective_defense_value(target: Any, attacker: Any | None = None) -> int:
+def effective_defense_value(target: Any, attacker: Any | None = None) -> float:
     """
     小兵防御按当前兵力缩放，与攻击系统对齐，提升防御性价比。
     门客防御直接使用属性值。
@@ -173,9 +187,9 @@ def effective_defense_value(target: Any, attacker: Any | None = None) -> int:
     - 10000兵力 → 倍率 50.0 （防御10 → 500）
     """
     if getattr(target, "kind", "") != "troop":
-        return int(getattr(target, "defense", 0))
+        return float(getattr(target, "defense", 0) or 0)
     unit_defense = _unit_defense_value(target)
     strength = _current_strength(target)  # 使用当前兵力而非初始兵力
     # 使用平方根缩放，避免线性增长导致的防御过高问题
     multiplier = max(1.0, math.sqrt(strength) / TROOP_DEFENSE_SQRT_DIVISOR)
-    return max(1, int(unit_defense * multiplier))
+    return max(1.0, unit_defense * multiplier)

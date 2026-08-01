@@ -151,7 +151,7 @@ def build_common_context(manor: Manor) -> dict:
         "max_guests_per_entry": arena_core.ARENA_MAX_GUESTS_PER_ENTRY,
         "arena_event": {
             **ARENA_PRIMARY_EVENT_BASE,
-            "subtitle": f"{arena_core.ARENA_TOURNAMENT_PLAYER_LIMIT} 人门客淘汰赛",
+            "subtitle": "",
             "player_limit": arena_core.ARENA_TOURNAMENT_PLAYER_LIMIT,
             "round_interval_seconds": round_interval_seconds,
             "round_interval_label": round_interval_label,

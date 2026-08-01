@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from copy import deepcopy
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from django.conf import settings
@@ -11,6 +12,7 @@ from django.http import HttpResponse
 from django.test import RequestFactory, override_settings
 
 from battle_debugger.config import BattleConfig, ConfigLoader, InvalidPresetError, PartyConfig
+from battle_debugger.simulator import BattleSimulator, patch_battle_params
 from battle_debugger.views import custom_config, result_detail, simulate, tune
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -41,6 +43,29 @@ def test_load_preset_invalid_name_raises_explicit_error():
 
     with pytest.raises(InvalidPresetError, match="预设名称无效"):
         loader.load_preset("../bad")
+
+
+def test_battle_debugger_defense_override_preserves_fractional_value():
+    import battle.combat_math as combat_math
+
+    troop = SimpleNamespace(
+        kind="troop",
+        unit_defense=2.5,
+        troop_strength=9,
+        initial_troop_strength=9,
+        defense=22.5,
+    )
+
+    with patch_battle_params({"troop_defense_divisor": 2.0}):
+        assert combat_math.effective_defense_value(troop) == pytest.approx(3.75)
+
+
+def test_battle_debugger_guest_attack_preserves_fractional_weighted_value():
+    guest = SimpleNamespace(force=1, intellect=2)
+
+    attack = BattleSimulator(_valid_config())._calculate_attack(guest, "military")
+
+    assert attack == pytest.approx(1.3)
 
 
 @pytest.mark.django_db

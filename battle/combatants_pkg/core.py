@@ -15,6 +15,7 @@ class SoftcapSource(TypedDict):
 
 
 BattleModifiers: TypeAlias = dict[str, Any]
+CombatValue: TypeAlias = int | float
 
 
 @dataclass(slots=True)
@@ -31,22 +32,22 @@ class BattleSimulationResult:
 @dataclass(slots=True)
 class Combatant:
     name: str
-    attack: int
-    defense: int
+    attack: CombatValue
+    defense: CombatValue
     hp: int
     max_hp: int
     side: str
     rarity: str
     luck: int
-    agility: int
+    agility: CombatValue
     priority: int
     kind: str
     troop_strength: int
     initial_troop_strength: int = 0
     initial_hp: int = 0
-    unit_attack: int = 0
-    unit_defense: int = 0
-    unit_hp: int = 0
+    unit_attack: CombatValue = 0
+    unit_defense: CombatValue = 0
+    unit_hp: CombatValue = 0
     skills: list = field(default_factory=list)
     template_key: str | None = None
     force_attr: int = 0

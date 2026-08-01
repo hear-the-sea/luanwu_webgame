@@ -175,7 +175,7 @@ def test_default_mission_templates_define_junior_mission_tiering():
         },
         "biwu_zhaoqin": {
             "difficulty": "junior",
-            "enemy_technology": {"level": 4, "guest_level": 45, "guest_bonus": 0.08},
+            "enemy_technology": {"level": 4, "guest_level": 80, "guest_bonus": 0.2},
         },
         "taozi_fenban": {
             "difficulty": "junior",

@@ -317,7 +317,7 @@ heroes:
     name: 王仁则
     default_gender: male
     archetype: civil
-    flavor: 王仁则，隋末王世充部将，事迹多见于唐初平定洛阳的相关记载。其人曾据守要地，与秦王李世民军相抗，后兵败被擒。除战事片段外，其家世、早年与终局记载不多，是隋末割据势力中较典型的守将形象。
+    flavor: （生卒年不详）隋末王世充集团将领、王世充族人。唐军围洛阳、争夺虎牢时据守要地，败于李世民军，被擒。
     growth_range:
     - 3
     - 7
@@ -330,7 +330,7 @@ heroes:
     name: 徐则
     default_gender: male
     archetype: civil
-    flavor: 徐则，隋唐之际人，生卒年里不详。仅散见记载提及其曾参与税粮征调、水渠修缮及物资转输等庶务。其行事不求闻达于上，但求账目可对、工程可用，所理之事多能延续至后任而不因人废。然完整履历散佚，仅据残文推其属踏实一路。
+    flavor: （生卒年不详）隋代道士、隐士，东海人，兼通天文、历数与道术。隋文帝、隋炀帝曾征召，均辞让不仕。
     growth_range:
     - 3
     - 7
@@ -339,24 +339,11 @@ heroes:
       intellect: 51
       defense: 22
       agility: 16
-  - key: hist_suitang_0259
-    name: 萧世廉
-    default_gender: male
-    archetype: civil
-    flavor: 萧世廉，隋唐之际人物，生卒与仕履不详。现存材料不足以勾勒完整生平，只能见其名附于同代人物记录之中。他并非以显赫功业传世，而是乱世文献边缘仍可辨认的一道身影。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 11
-      intellect: 52
-      defense: 18
-      agility: 19
   - key: hist_suitang_0260
     name: 薛收
     default_gender: male
     archetype: civil
-    flavor: 薛收，字伯褒，河东汾阴人。隋内史侍郎薛道衡之子。隋末乱起，遁入首阳山。入唐后为秦王府记室参军，从征王世充、窦建德，军中檄书露布多出其笔。武德七年病卒，年仅三十三。太宗即位后追赠定州刺史、太常卿。
+    flavor: （592年—624年）薛道衡之子，字伯褒，河东汾阴人。隋末隐居首阳山，入唐为秦王府记室参军，王世充、窦建德之战檄书多出其手，三十三岁病卒，太宗追赠官爵。
     growth_range:
     - 3
     - 7
@@ -365,24 +352,11 @@ heroes:
       intellect: 50
       defense: 22
       agility: 12
-  - key: hist_suitang_0261
-    name: 萧璿
-    default_gender: male
-    archetype: civil
-    flavor: 萧璿，出自兰陵萧氏。隋唐之际有关其人的史载极简，可核事迹近乎空白。仅知曾历仕于隋唐之间，然具体职守不明，治行不详，生卒亦失载。其名散见于姓氏文献与宗谱摘录，生平细节已不可考。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 12
-      intellect: 53
-      defense: 23
-      agility: 12
   - key: hist_suitang_0262
     name: 徐孝肃
     default_gender: male
     archetype: civil
-    flavor: 徐孝肃，汲郡人。早孤，事母至孝。母终，负土筑坟，庐于墓侧四十余年，疏食饮水，晨夕哀临。隋末大乱，群盗四起，孝肃守墓不去。盗过其庐皆敛手，无敢犯者。朝廷闻而旌表之，蠲免徭役。
+    flavor: （生卒年不详）汲郡人，以事母至孝见载。母死后负土筑坟、结庐墓侧，隋末盗乱仍守墓不去，朝廷旌表并免徭役。
     growth_range:
     - 3
     - 7
@@ -395,7 +369,7 @@ heroes:
     name: 乙弗弘礼
     default_gender: male
     archetype: civil
-    flavor: 乙弗弘礼，鲜卑乙弗部后裔，隋唐之际以相术知名。史载其精于风鉴，所相人物多应验，然正史对其生平记载极为简略，生卒、籍贯、仕历皆难确考。其事迹散见诸书，大抵不出相人一端，余事茫昧。
+    flavor: （生卒年不详）隋唐相士，出自乙弗氏，善观形貌气色，曾出入权贵门庭；其相术传闻多带传奇色彩。
     growth_range:
     - 3
     - 7
@@ -408,7 +382,7 @@ heroes:
     name: 杨伯丑
     default_gender: male
     archetype: civil
-    flavor: 杨伯丑，隋河东人，隐于市井，卖卜为生。《隋书》载其精通《易》理，所占吉凶多有奇验。性好饮酒，不拘礼法，言谈举止异于常人。隋文帝曾召问，应答如流，后放归。其生平简略，除卜筮事迹外，无多可述。
+    flavor: （生卒年不详）隋代河东卜者，隐于市井，以《易》为业，好饮酒。隋文帝曾召见问事，后仍归市井。
     growth_range:
     - 3
     - 7
@@ -421,7 +395,7 @@ heroes:
     name: 张公艺
     default_gender: male
     archetype: civil
-    flavor: 张公艺，唐郓州寿张人，以九世同居闻名天下。麟德二年，唐高宗封禅泰山过其家，问何以能九代共爨，公艺书百余「忍」字以对，高宗为之流涕。其家族以忍让治家，为古代家族伦理典范，《旧唐书》《新唐书》孝友传皆载其事。
+    flavor: （生卒年不详）唐郓州寿张人，以九世同居闻名。唐高宗封禅泰山经过其家，问其家族共爨之由，张公艺书百余“忍”字以对，事见《旧唐书》《新唐书》孝友传。
     growth_range:
     - 3
     - 7
@@ -434,7 +408,7 @@ heroes:
     name: 张文诩
     default_gender: male
     archetype: civil
-    flavor: 隋河东人，通群经，尤明《周易》。性至孝，父丧后哀毁骨立。文帝屡征不就，隐居教授为业，门人显达者甚众。家无余粟，处之泰然。讲经不务空谈，务使学者通晓而后已。事迹载《隋书·隐逸传》，以学行见称，生平简素可考。
+    flavor: （生卒年不详）隋代河东学者，通经，尤精《周易》。父丧后哀毁，隋文帝多次征召不仕，居家授徒。
     growth_range:
     - 3
     - 7
@@ -447,7 +421,7 @@ heroes:
     name: 祖君彦
     default_gender: male
     archetype: civil
-    flavor: 隋末入李密帐下为记室。文思敏赡，代密撰讨隋炀帝檄，历数其十大罪状，天下传诵。密败，为王世充所杀。君彦博学强记，有口吃而笔锋犀利。父祖珽仕北齐，然君彦以檄文独传后世。乱世中以文墨显，亦以文墨殒身。
+    flavor: （？—618年）隋末李密幕府记室，博学善文，代李密撰讨隋檄文。李密败后被王世充所杀。
     growth_range:
     - 3
     - 7
@@ -460,7 +434,7 @@ heroes:
     name: 章仇太翼
     default_gender: male
     archetype: civil
-    flavor: 隋河间人，本姓卢，改章仇氏。目盲，博综群书，尤善占候推步。初隐五台山，文帝召之不至，强征入京。性刚直，言休咎无所避。仁寿末，文帝将幸仁寿宫，太翼谏阻，帝怒囚之。后帝果崩于宫中，临终命释之。炀帝仍加礼待，所言多验。载《隋书·艺术传》，术数虽精，细节已难详考。
+    flavor: （生卒年不详）隋代术士，本姓卢，改姓章仇，双目失明而博通群书，尤精占候推步；曾因直言论吉凶触怒文帝下狱，后获释。
     growth_range:
     - 3
     - 7
@@ -469,63 +443,11 @@ heroes:
       intellect: 55
       defense: 23
       agility: 7
-  - key: hist_suitang_0271
-    name: 诸葛昂
-    default_gender: male
-    archetype: civil
-    flavor: 诸葛昂，隋唐之际人物，事迹零散难考。现存材料不足以确认其官职与具体政绩，只能据其名判断其处于隋末唐初人物网络之中。他的价值在于保留时代位置，而非附加传奇。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 17
-      intellect: 58
-      defense: 18
-      agility: 7
-  - key: hist_suitang_0272
-    name: 长孙孝政
-    default_gender: male
-    archetype: civil
-    flavor: 长孙孝政，隋唐之际人物，生卒与仕履不详。其姓氏显示出关陇姓族背景的可能，但现存材料不足以坐实具体官职与事功。其史影残缺，却正好映出鼎革时代许多名门旁支人物有名无传的处境。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 17
-      intellect: 50
-      defense: 23
-      agility: 10
-  - key: hist_suitang_0273
-    name: 郑子翻
-    default_gender: male
-    archetype: civil
-    flavor: 郑子翻，隋唐之际人物，生平记载稀少。除姓名与大致时代外，现存材料难以确认其官职、政绩或著述。史料留白本身说明，乱世中许多人未入大传，却仍以姓名残存在文献边缘。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 16
-      intellect: 54
-      defense: 19
-      agility: 11
-  - key: hist_suitang_0275
-    name: 可博汗
-    default_gender: male
-    archetype: civil
-    flavor: 可博汗，名号带有北方部族称谓色彩，具体生平已难详考。现存材料不足以确认其部属、活动地域与事功。传世轮廓更近于异域首领或部族人物，不宜附会中原官僚式政绩。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 58
-      defense: 18
-      agility: 9
   - key: hist_suitang_0276
     name: 吐万绪
     default_gender: male
     archetype: civil
-    flavor: 吐万绪：隋将，代郡人。有武略，善骑射。大业中从征高丽，以功迁官。杨玄感反，绪随宇文述讨平之。后刘元进据吴郡反，绪受命讨伐，初战屡捷，久攻不克，士卒疲敝溃散，坐罪除名。史籍记载有限。
+    flavor: （生卒年不详）隋将，代郡人，善骑射。大业年间从征高丽、讨杨玄感，后攻刘元进于吴郡，久攻不克，因军败获罪除名。
     growth_range:
     - 3
     - 7
@@ -534,24 +456,11 @@ heroes:
       intellect: 50
       defense: 20
       agility: 18
-  - key: hist_suitang_0294
-    name: 郭文懿
-    default_gender: male
-    archetype: civil
-    flavor: 郭文懿，隋唐之际人物，史载不详。现存材料只足以确认其名留于同代人物序列，具体仕履、政绩与结局皆难考。乱世中名位不显者多如星散，他便是其中仍被文献保存的一员。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 13
-      intellect: 58
-      defense: 20
-      agility: 9
   - key: hist_suitang_0298
     name: 卢楚
     default_gender: male
     archetype: civil
-    flavor: 卢楚：隋末官员，涿郡范阳人。性刚直，有才干。大业中任尚书右司郎，以忠直闻。炀帝被杀后，楚与元文都等拥立越王杨侗于洛阳，任内史令。后王世充篡权，楚不屈被杀。史籍记载有限。
+    flavor: （？—619年）隋末官员，范阳人，官至内史令。隋炀帝死后在洛阳拥立越王杨侗，王世充掌权后拒不屈从，被杀。
     growth_range:
     - 3
     - 7
@@ -560,24 +469,11 @@ heroes:
       intellect: 56
       defense: 19
       agility: 11
-  - key: hist_suitang_0301
-    name: 陆爽
-    default_gender: male
-    archetype: civil
-    flavor: 陆爽，隋唐之际人物，史载不详。除姓名与大致时代外，其官职、事功和交游皆缺少可靠材料。他身处隋唐鼎革的文献阴影中，只留下可供后人辨认的零星姓名。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 60
-      defense: 20
-      agility: 5
   - key: hist_suitang_0304
     name: 苏慈
     default_gender: male
     archetype: civil
-    flavor: 苏慈：隋代官员，扶风人。仕隋，历任度支尚书、工部尚书。文帝时关中饥馑，慈奏请开广通渠以通漕运，引渭水入黄河，渠成，关中赖之。其掌度支，出纳各有法度。史籍记载有限。
+    flavor: （生卒年不详）隋代官员，扶风人，历任度支、工部等职。关中饥馑时奏请开广通渠以通漕运，掌度支时出纳有法。
     growth_range:
     - 3
     - 7
@@ -586,206 +482,11 @@ heroes:
       intellect: 53
       defense: 19
       agility: 18
-  - key: hist_suitang_0311
-    name: 韦鼎
-    default_gender: male
-    archetype: civil
-    flavor: 韦鼎，隋唐间人，生平不详。其为政尚实，不逐浮华，遇事先明职分、次定章程，使责有所归。虽处政令多变之际，犹能持重不摇，缓急得宜。史籍载其事甚略，然片羽可见其风。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 60
-      defense: 24
-      agility: 1
-  - key: hist_suitang_0316
-    name: 杨约
-    default_gender: male
-    archetype: civil
-    flavor: 史籍记载有限。杨约身处隋唐之际，主张边地与腹地治理不可混同，因俗设策，反对削足适履。其长在将繁难政务拆解为可操作的步骤，逐层落实。于变局中不急不躁，以稳健周详见称于时。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 12
-      intellect: 52
-      defense: 23
-      agility: 13
-  - key: hist_suitang_0233
-    name: 安伽佗
-    default_gender: male
-    archetype: civil
-    flavor: 安伽佗，隋唐间人，事迹零散。其长于政务分解，每遇宏纲大旨，辄析为条目细规，使人易行而难推诿。政权更迭间，力持法度连续，使前后政令不致相抵。史籍所载虽简，然其务实之风可见。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 13
-      intellect: 53
-      defense: 23
-      agility: 11
-  - key: hist_suitang_0234
-    name: 曹武彻
-    default_gender: male
-    archetype: civil
-    flavor: 史籍记载有限。曹武彻于隋唐之际以务实著称，不尚空谈，重在成事。审断时兼顾法理与乡俗，不求偏锋立异，而求切实可行。虽非显达之人，然变局中常为乡里倚重，以沉稳处变。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 17
-      intellect: 54
-      defense: 20
-      agility: 9
-  - key: hist_suitang_0235
-    name: 蔡建德
-    default_gender: male
-    archetype: civil
-    flavor: 蔡建德，隋唐之际人物，生卒与仕履皆不详。现存材料不足以确认其官职与功业，只能见其名留于同代人物谱系之中。他不以显赫事迹传世，更像乱世中被史书边缘记录的低调士人。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 16
-      intellect: 56
-      defense: 20
-      agility: 8
-  - key: hist_suitang_0277
-    name: 嵬王诃
-    default_gender: male
-    archetype: civil
-    flavor: 史籍记载有限。嵬王诃所处之时，灾荒、兵燹与迁徙屡有发生。其应对之法以分层处置为先：急则保境安民、稳住秩序，缓则修渠垦田、复其生业。守底线而知通变，使地方虽经震荡犹存生机。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 55
-      defense: 18
-      agility: 12
-  - key: hist_suitang_0278
-    name: 无素
-    default_gender: male
-    archetype: civil
-    flavor: 史籍记载有限。隋唐之际人物。处多事之秋，善调度整合，于财竭民疲时犹能维缮要务。其治事尚实，不逐浮名，每遇困局，辄以简练之法解纷纭之结，故为时所重。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 13
-      intellect: 51
-      defense: 20
-      agility: 16
-  - key: hist_suitang_0279
-    name: 司马富
-    default_gender: male
-    archetype: civil
-    flavor: 司马富，隋唐之际人物，生平记载多阙。现存材料不足以确认其职掌与政绩，只能见其名散存于人物谱系。其轮廓近于低调实务人物，但具体制度与官署细节已不可考。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 14
-      intellect: 55
-      defense: 23
-      agility: 8
-  - key: hist_suitang_0280
-    name: 柴保昌
-    default_gender: male
-    archetype: civil
-    flavor: 柴保昌，隋唐之际人物，史籍记载有限。其履历细节多不可考，只能见其名附于同代人物记录。传世轮廓近于耐烦细密的实务人物，但具体职掌与事功已难复原。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 17
-      intellect: 57
-      defense: 20
-      agility: 6
-  - key: hist_suitang_0281
-    name: 白苏尼咥
-    default_gender: male
-    archetype: civil
-    flavor: 白苏尼咥，隋唐五代时期人物，史籍所载甚略。其姓名带有边地或族属色彩，但具体身份、活动地域与事功皆难确考。传世材料只留下多民族时代背景下的模糊轮廓。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 14
-      intellect: 50
-      defense: 16
-      agility: 20
-  - key: hist_suitang_0282
-    name: 裴子通
-    default_gender: male
-    archetype: civil
-    flavor: 史籍记载有限。隋唐之际裴氏人物。其人知分际、识轻重，治事不尚虚巧。每有任使，必先划定权责，而后逐层落实；虽遇朝令夕改，仍能持守方向，减省民间扰动，以稳练著称。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 12
-      intellect: 50
-      defense: 18
-      agility: 20
-  - key: hist_suitang_0283
-    name: 陆词
-    default_gender: male
-    archetype: civil
-    flavor: 陆词，隋唐之际人物，史籍记载有限。其名虽存，具体仕履、交游与事功难以详考。他处于隋唐鼎革的文献边缘，只留下可供后人辨认的零星姓名。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 12
-      intellect: 54
-      defense: 20
-      agility: 14
-  - key: hist_suitang_0284
-    name: 陈伯义
-    default_gender: male
-    archetype: civil
-    flavor: 陈伯义，隋唐之际人物，史籍记载有限。现存材料不足以确认其具体官职、政绩或著述，只能见其名散存于同代人物记录。其简介应以克制为主，呈现一个在乱世大叙事旁侧留下姓名的低调人物。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 54
-      defense: 18
-      agility: 13
-  - key: hist_suitang_0285
-    name: 陈庄
-    default_gender: male
-    archetype: civil
-    flavor: 陈庄，隋唐之际人物，史籍记载有限。除姓名与大致时代外，现存材料难以确认其官职与政绩。他属于乱世中“名留而事隐”的人物，只在史书缝隙中留下痕迹。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 12
-      intellect: 50
-      defense: 18
-      agility: 20
-  - key: hist_suitang_0287
-    name: 张煚
-    default_gender: male
-    archetype: civil
-    flavor: 张煚，隋唐之际人物，生平材料残缺。现存记载难以坐实其职掌与政绩，亦不足以描绘完整仕途。其可贵处不在可夸饰的功业，而在姓名仍见于文献，使后人得以窥见大时代之外的普通士人群像。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 17
-      intellect: 56
-      defense: 21
-      agility: 6
   - key: hist_suitang_0288
     name: 爨玩
     default_gender: male
     archetype: civil
-    flavor: 爨翫为隋唐间人，性沉静寡言，名不著于当时。每逢议政，能将虚论析为条贯，付有司施行，使上意不滞于文牍之间。遇地方积弊，不轻言更张，亦不主峻法，善以渐修渐补化积滞为疏通，僚友多倚为后盾。
+    flavor: （生卒年不详）南中爨氏首领，隋唐间与中央政权保持羁縻往来，活动于滇东南；其势力立身于地方部众与王朝诏令之间。
     growth_range:
     - 3
     - 7
@@ -798,7 +499,7 @@ heroes:
     name: 杜台卿
     default_gender: male
     archetype: civil
-    flavor: 杜台卿，隋唐之际人物，史料较少。其名虽见于同代人物记录，但具体仕履与事功难以详考。传世轮廓近于通晓礼制或文书事务的士人，除此之外不宜强作功业。
+    flavor: （生卒年不详）北齐至隋学者，著《玉烛宝典》等书，博涉礼制、岁时与典章。
     growth_range:
     - 3
     - 7
@@ -807,24 +508,11 @@ heroes:
       intellect: 51
       defense: 22
       agility: 16
-  - key: hist_suitang_0299
-    name: 柳机
-    default_gender: male
-    archetype: civil
-    flavor: 柳机，隋唐之际人物，史籍记载有限。其名或与政务文书相关，但具体官职、事功与结局难以详考。身处主政屡易的时代，他只在零散材料中留下谨慎持法的模糊轮廓。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 52
-      defense: 16
-      agility: 17
   - key: hist_suitang_0300
     name: 梁士彦
     default_gender: male
     archetype: civil
-    flavor: 梁士彦，隋代将领，隋书有传。曾从平陈之役，历任刺史、总管等军州要职。文帝时坐事被诛。其人生平行迹载於正史，然细节多已湮没，后世所知不出史传所录。
+    flavor: （？—590年）隋代将领，参与灭陈，历任刺史、总管等军政职务；隋文帝时因卷入谋反案被诛。
     growth_range:
     - 3
     - 7
@@ -837,7 +525,7 @@ heroes:
     name: 苏夔
     default_gender: male
     archetype: civil
-    flavor: 苏夔，字伯尼，京兆武功人，隋尚书苏威之子。通晓音律，隋文帝时参与议定雅乐。起家太子通事舍人，后迁著作佐郎。因父获罪牵连免官，卒年不详。其事迹散见《隋书》诸传，史籍记载有限。
+    flavor: （生卒年不详）苏威之子，字伯尼，京兆武功人，通音律，参与隋代雅乐议定，曾任著作佐郎；父亲获罪后受牵连免官。
     growth_range:
     - 3
     - 7
@@ -846,24 +534,11 @@ heroes:
       intellect: 56
       defense: 18
       agility: 9
-  - key: hist_suitang_0307
-    name: 王世恽
-    default_gender: male
-    archetype: civil
-    flavor: 王世恽，隋唐之际人物，史籍记载有限。散见於唐初文献，曾任职地方。同僚称其审慎持重，遇事不偏听偏信，於纷乱中能持大体。生平事迹多佚，仅存片段。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 11
-      intellect: 57
-      defense: 16
-      agility: 16
   - key: hist_suitang_0310
     name: 韦云起
     default_gender: male
     archetype: civil
-    flavor: 韦云起，京兆万年人。隋大业中奉使突厥，借启民可汗骑兵讨契丹，获其酋献捷。入唐后拜御史大夫，弹劾无所回避。武德九年，益州行台仆射窦轨诬其谋反，杀之。事载两《唐书》。
+    flavor: （生卒年不详）京兆万年人。隋大业年间出使突厥，借启民可汗骑兵讨契丹，擒其首领；入唐任御史大夫，因窦轨诬陷谋反被杀。
     growth_range:
     - 3
     - 7
@@ -876,7 +551,7 @@ heroes:
     name: 韦艺
     default_gender: male
     archetype: civil
-    flavor: 韦艺，隋代官员，隋书有传。先仕北周，入隋后历任州郡长官。为政长於统筹调度，办事条理明晰，以能名见称於时。其行迹载於正史，然具体政绩细节已难详考。
+    flavor: （生卒年不详）隋代官员，先仕北周，入隋后历任州郡长官，仕途跨越改朝换代。
     growth_range:
     - 3
     - 7
@@ -889,7 +564,7 @@ heroes:
     name: 魏澹
     default_gender: male
     archetype: civil
-    flavor: 魏澹，字彦深，钜鹿下曲阳人。隋文帝以魏收《魏书》褒贬失当，诏澹别撰魏史，成九十二卷，义例简要，时称良史。仕至著作郎、太子学士。其书后多散佚，仅《隋书·经籍志》存其书目。
+    flavor: （生卒年不详）字彦深，钜鹿下曲阳人。隋文帝命其另撰魏史，成九十二卷，曾任著作郎、太子学士。
     growth_range:
     - 3
     - 7
@@ -898,128 +573,11 @@ heroes:
       intellect: 53
       defense: 22
       agility: 10
-  - key: hist_suitang_0315
-    name: 杨恭道
-    default_gender: male
-    archetype: civil
-    flavor: 杨恭道，隋唐之际人物，生卒与仕履不详。现存材料只留下零散名迹，难以串成完整传记。他更像史书边缘的实务型士人：名声不显，却折射出鼎革年代大量无大传人物的共同命运。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 11
-      intellect: 56
-      defense: 20
-      agility: 13
-  - key: hist_suitang_0318
-    name: 云定兴
-    default_gender: male
-    archetype: civil
-    flavor: 云定兴，隋唐之际人物，史载简略。其名偶见于隋末唐初记录，具体职掌与行迹难稽。传世轮廓谨慎低调，但材料不足以补出具体任职或政绩。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 16
-      intellect: 54
-      defense: 18
-      agility: 12
-  - key: hist_suitang_0236
-    name: 陈胤
-    default_gender: male
-    archetype: civil
-    flavor: 陈胤，隋唐之际人物，生卒不详。现存材料不足以确认其职官与事功，只能见其名附于同代记录。其人物轮廓宜从史料残缺处展开：也许曾参与文书或选务，却已难复原具体经过。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 16
-      intellect: 52
-      defense: 17
-      agility: 15
-  - key: hist_suitang_0237
-    name: 陈至泽
-    default_gender: male
-    archetype: civil
-    flavor: 陈至泽，隋唐之交人物，史籍所载寥寥。其仕途平淡无奇，身后名不显于正史，仅散见于方志残卷。现存材料不足以确认其具体任职与政绩，只能见其稳慎处世的模糊轮廓。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 14
-      intellect: 54
-      defense: 22
-      agility: 10
-  - key: hist_suitang_0238
-    name: 陈恬
-    default_gender: male
-    archetype: civil
-    flavor: (生卒年不详)隋唐间人。处世谨饬，居官有恒节。所任多在案牍、勾检之间，能于繁碎中审其要脉，使政令下达不失原意。性不乐表暴，以默察细理见称。人或病其迂缓，然经手之事鲜有后患。史籍记载有限，略见于零散著录。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 11
-      intellect: 53
-      defense: 23
-      agility: 13
-  - key: hist_suitang_0240
-    name: 郭儁
-    default_gender: male
-    archetype: civil
-    flavor: 郭儁，隋唐之际人物，生平载籍甚略。其名偶见于同代记录，具体官职、事功和结局皆难详考。作为简介，更宜写其在乱世文献中只余片影，不强作显赫政声。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 16
-      intellect: 55
-      defense: 19
-      agility: 10
-  - key: hist_suitang_0241
-    name: 何蛮
-    default_gender: male
-    archetype: civil
-    flavor: 隋唐间实务吏员，生卒不详。善理赋役仓储争讼诸务，遇事先求条理分明而后安顿人心，使政令不致虚悬。同僚服其周慎，以为乱世中可倚之人。史籍记载有限。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 11
-      intellect: 52
-      defense: 19
-      agility: 18
-  - key: hist_suitang_0243
-    name: 华秋
-    default_gender: male
-    archetype: civil
-    flavor: 华秋，隋唐之际人物，史籍记载有限。其名见于零散记录，完整生平已不可考。他身处鼎革年代、名位不显，却仍以姓名留存于文献边缘，具体政绩不宜附会。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 57
-      defense: 19
-      agility: 9
-  - key: hist_suitang_0244
-    name: 刘士儁
-    default_gender: male
-    archetype: civil
-    flavor: 刘士儁，隋唐间吏员，生卒不详。于基层与中枢之间疏通政务，善将上意达于下、下情通于上。遇赋役仓储诸务，先明职分再定章程，减少推诿。史籍记载有限。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 17
-      intellect: 57
-      defense: 18
-      agility: 8
   - key: hist_suitang_0246
     name: 卢祖尚
     default_gender: male
     archetype: civil
-    flavor: 卢祖尚，隋唐之际人。少有胆略，隋末聚众自保，后归唐授刺史，以廉直闻。太宗欲任其镇边，祖尚受命而中道辞以疾，太宗怒斩之，旋悔，追复官爵。唐史称其忠勇可托而惜不得善终。
+    flavor: （？—627年）隋末聚众自保，归唐后授刺史，以廉直有胆略见称。唐太宗命其镇边，因辞行被杀，后追复官爵。
     growth_range:
     - 3
     - 7
@@ -1028,37 +586,11 @@ heroes:
       intellect: 57
       defense: 19
       agility: 10
-  - key: hist_suitang_0250
-    name: 纽回
-    default_gender: male
-    archetype: civil
-    flavor: 纽回，隋唐之际人物，生卒不详。现存材料不足以确认其职掌与事功，只能见其名散存于零星记录。其人或属处理文书事务的低调吏员，但具体经历已难详考。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 16
-      intellect: 52
-      defense: 19
-      agility: 13
-  - key: hist_suitang_0251
-    name: 纽士雄
-    default_gender: male
-    archetype: civil
-    flavor: 纽士雄，隋唐之际人，史籍记载有限。曾任地方僚佐，以善掌簿籍、度支出纳见长。上官考其治迹，称出纳明审，毫厘不失。其理事不求奇策，以勤补拙，历任之处钱粮清、吏役服。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 11
-      intellect: 51
-      defense: 20
-      agility: 18
   - key: hist_suitang_0252
     name: 秦爱
     default_gender: male
     archetype: civil
-    flavor: 秦爱，齐州历城人，隋末任北齐王府记室参军。其子秦琼字叔宝，为唐开国名将，列凌烟阁二十四功臣。秦爱事迹见于其子碑铭，生前止于文吏，后以子贵获追赠上柱国。史籍记载有限。
+    flavor: （生卒年不详）齐州历城人，秦琼之父，隋末任北齐王府记室参军，唐初追赠上柱国。
     growth_range:
     - 3
     - 7
@@ -1071,7 +603,7 @@ heroes:
     name: 田翼
     default_gender: male
     archetype: civil
-    flavor: 隋人，见载于《隋书·孝义传》。事母至孝，母卧病，翼亲尝汤药，昼夜不离。母卒，哀毁逾礼，庐于墓侧，负土成坟。时人以其至诚称之，然生平其余事迹史载阙如。
+    flavor: （生卒年不详）隋人，见载《隋书·孝义传》；母病时亲尝汤药，母死后结庐墓侧、负土成坟，以孝行闻名。
     growth_range:
     - 3
     - 7
@@ -1080,29 +612,3 @@ heroes:
       intellect: 56
       defense: 22
       agility: 7
-  - key: hist_suitang_0254
-    name: 王玄恕
-    default_gender: male
-    archetype: civil
-    flavor: 王玄恕，生卒年不详。隋唐之际，逢灾荒兵燹，常受命安辑地方。其法先定秩序、抚流亡，再谋农桑恢复，守底线而不拘成规。所在之处，百姓渐得苏息。然行迹散见诸书，史籍记载有限。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 16
-      intellect: 50
-      defense: 21
-      agility: 13
-  - key: hist_suitang_0256
-    name: 王琬
-    default_gender: male
-    archetype: civil
-    flavor: 王琬，隋唐之际人物，生卒与仕履不详。现存材料只零散保存其名，难以确认其官职、战功或所属势力。他的史影相当模糊，代表了乱世文献中大量只余姓名、难复生平的边缘人物。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 16
-      intellect: 56
-      defense: 19
-      agility: 9

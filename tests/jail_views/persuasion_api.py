@@ -292,8 +292,10 @@ def test_jail_page_renders_complete_persuasion_workspace(client, persuasion_worl
     assert "许以重利" in html
     assert "陈明大势" in html
     assert "以武慑服" in html
-    assert "智力" in html
-    assert "武力" in html
+    assert f">{persuasion_world.strong_civil.display_name}</option>" in html
+    assert f">{persuasion_world.strong_military.display_name}</option>" in html
+    assert f"智力 {persuasion_world.strong_civil.template.base_intellect}" not in html
+    assert f"武力 {persuasion_world.strong_military.template.base_attack}" not in html
     assert "普通收编" in html
     assert "权宜归附" in html
     assert "心悦诚服" in html

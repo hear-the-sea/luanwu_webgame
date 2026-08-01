@@ -54,7 +54,7 @@ def _patch_attack_value(cm, params: Dict[str, Any], originals: Dict[str, Any]) -
             multiplier = max(1.0, strength / div_guest)
         else:
             multiplier = max(1.0, strength / div_troop)
-        return max(1, int(unit_attack * multiplier))
+        return max(1.0, unit_attack * multiplier)
 
     cm.effective_attack_value = custom_attack
 
@@ -74,7 +74,7 @@ def _patch_defense_value(cm, params: Dict[str, Any], originals: Dict[str, Any]) 
         unit_defense = cm._unit_defense_value(target)
         strength = cm._current_strength(target)
         multiplier = max(1.0, math.sqrt(strength) / divisor)
-        return max(1, int(unit_defense * multiplier))
+        return max(1.0, unit_defense * multiplier)
 
     cm.effective_defense_value = custom_defense
 
@@ -389,7 +389,7 @@ class BattleSimulator:
 
         return {}
 
-    def _calculate_attack(self, guest, archetype: Optional[str] = None) -> int:
+    def _calculate_attack(self, guest, archetype: Optional[str] = None) -> float:
         """
         计算门客攻击力
 
@@ -409,10 +409,10 @@ class BattleSimulator:
 
         if archetype == "civil":
             # 文官：40%武力 + 60%智力
-            return int(force * 0.4 + intellect * 0.6)
+            return force * 0.4 + intellect * 0.6
         else:
             # 武将：70%武力 + 30%智力
-            return int(force * 0.7 + intellect * 0.3)
+            return force * 0.7 + intellect * 0.3
 
     def _calculate_hp(self, guest) -> int:
         """

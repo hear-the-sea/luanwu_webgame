@@ -108,7 +108,14 @@ class ItemTemplate(models.Model):
         return self.name
 
 
-LEGACY_TOOL_EFFECT_TYPES = {"tool", "loot_box", "magnifying_glass", "peace_shield", "manor_rename"}
+LEGACY_TOOL_EFFECT_TYPES = {
+    "tool",
+    "loot_box",
+    "magnifying_glass",
+    "peace_shield",
+    "manor_rename",
+    ItemTemplate.EffectType.RESOURCE_PACK,
+}
 
 ITEM_EFFECT_TYPE_LABELS = {
     ItemTemplate.EffectType.RESOURCE_PACK: "资源包",

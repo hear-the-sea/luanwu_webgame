@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import math
+
 import pytest
 
+from battle.combat_math import effective_attack_value, effective_defense_value, troop_unit_hp
 from battle.combatants_pkg import build_troop_combatants
 from battle.combatants_pkg.troop_device_bonuses import apply_troop_device_bonus, build_troop_device_bonuses
 from battle.execution import BattleOptions, _build_attacker_units
@@ -182,6 +185,42 @@ def test_build_troop_combatants_applies_device_bonus_before_tech():
     assert troop.unit_hp == 75
     assert troop.max_hp == 750
     assert troop.unit_attack == 7
+
+
+@pytest.mark.django_db
+def test_build_troop_combatants_keeps_device_and_tech_fractional_stats_until_boundaries():
+    troop = build_troop_combatants(
+        {"fast_archer": 201},
+        side="attacker",
+        tech_levels={
+            "gong_attack": 1,
+            "gong_defense": 1,
+            "gong_agility": 1,
+            "gong_hp": 1,
+        },
+        device_bonuses={
+            "gong": {
+                "attack": {"flat": 0, "pct": 0.05},
+                "defense": {"flat": 0, "pct": 0.05},
+                "agility": {"flat": 0, "pct": 0.05},
+                "hp": {"flat": 0, "pct": 0.07},
+            }
+        },
+    )[0]
+
+    assert troop.unit_attack == pytest.approx(7 * 1.05 * 1.10)
+    assert troop.unit_defense == pytest.approx(2 * 1.05 * 1.10)
+    assert troop.unit_hp == pytest.approx(20 * 1.07 * 1.10)
+    assert troop.agility == pytest.approx(4 * 1.05 * 1.10)
+    assert troop.attack == pytest.approx(troop.unit_attack * 201)
+    assert troop.defense == pytest.approx(troop.unit_defense * 201)
+    assert troop.max_hp == troop.hp == troop.initial_hp == int(troop.unit_hp * 201)
+    assert isinstance(troop.max_hp, int)
+    assert troop_unit_hp(troop) == pytest.approx(troop.unit_hp)
+
+    enemy = build_troop_combatants({"fast_archer": 1}, side="defender")[0]
+    assert effective_attack_value(troop, enemy) == pytest.approx(troop.unit_attack * 201)
+    assert effective_defense_value(troop, enemy) == pytest.approx(troop.unit_defense * max(1.0, math.sqrt(201) / 2.0))
 
 
 @pytest.mark.parametrize("invalid_value", [float("inf"), float("nan"), 10**1000])

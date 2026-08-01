@@ -138,8 +138,8 @@ def test_skill_damage_bonus_uses_calculator(monkeypatch):
         },
     }
     bonus = skill_damage_bonus([skill], attacker, target)
-    expected = int(10 + 0.1 * attacker.force_attr - 0.05 * target.defense)
-    assert bonus == expected
+    expected = 10 + 0.1 * attacker.force_attr - 0.05 * target.defense
+    assert bonus == pytest.approx(expected)
 
 
 def test_apply_skill_statuses_respects_pending(monkeypatch):
@@ -234,8 +234,8 @@ def test_effective_defense_value_guest_vs_troop_uses_unit_stat():
     value = effective_defense_value(troop, guest)
     import math
 
-    expected = max(1, int(30 * max(1.0, math.sqrt(180) / 2.0)))
-    assert value == expected
+    expected = max(1.0, 30 * max(1.0, math.sqrt(180) / 2.0))
+    assert value == pytest.approx(expected)
 
 
 def test_effective_defense_value_troop_vs_troop_scales():
@@ -244,24 +244,24 @@ def test_effective_defense_value_troop_vs_troop_scales():
     value = effective_defense_value(troop, attacker)
     import math
 
-    expected = max(1, int(30 * max(1.0, math.sqrt(180) / 2.0)))
-    assert value == expected
+    expected = max(1.0, 30 * max(1.0, math.sqrt(180) / 2.0))
+    assert value == pytest.approx(expected)
 
 
 def test_effective_attack_value_troop_vs_guest_uses_smaller_multiplier():
     troop = make_unit(kind="troop", unit_attack=50, troop_strength=100, initial_troop_strength=100)
     guest = make_unit(kind="guest")
     value = effective_attack_value(troop, guest)
-    expected = max(1, int(50 * max(1.0, 100 / 1.5)))
-    assert value == expected
+    expected = max(1.0, 50 * max(1.0, 100 / 1.5))
+    assert value == pytest.approx(expected)
 
 
 def test_effective_attack_value_troop_vs_troop_uses_standard_multiplier():
     troop = make_unit(kind="troop", unit_attack=40, troop_strength=120, initial_troop_strength=120)
     enemy = make_unit(kind="troop")
     value = effective_attack_value(troop, enemy)
-    expected = max(1, int(40 * max(1.0, 120 / 1.0)))
-    assert value == expected
+    expected = max(1.0, 40 * max(1.0, 120 / 1.0))
+    assert value == pytest.approx(expected)
 
 
 def test_troop_unit_hp_prefers_explicit_unit_hp():
@@ -306,9 +306,21 @@ def test_guest_vs_troop_normal_attack_uses_increased_slaughter_multiplier():
     result = calculate_attack_damage(actor, target, skills=[], rng=rng, round_priority=0)
 
     reduction = target.unit_defense / (target.unit_defense + 50)
-    base_damage = max(1, int(actor.attack * (1 - reduction)))
+    base_damage = actor.attack * (1 - reduction)
     expected = int(base_damage * 12)
     assert result.damage == expected
+
+
+def test_guest_vs_troop_damage_keeps_fractional_unit_defense_until_damage_rounding():
+    actor = make_unit(kind="guest", attack=1000, priority=0)
+    target = make_unit(kind="troop", side="defender", unit_defense=2.5, troop_strength=200, unit_hp=10)
+    rng = FixedRng()
+
+    result = calculate_attack_damage(actor, target, skills=[], rng=rng, round_priority=0)
+
+    reduction = target.unit_defense / (target.unit_defense + 50)
+    base_damage = actor.attack * (1 - reduction)
+    assert result.damage == int(base_damage * SLAUGHTER_MULTIPLIER)
 
 
 def test_guest_vs_troop_skill_damage_uses_reduced_skill_multiplier():
@@ -320,7 +332,7 @@ def test_guest_vs_troop_skill_damage_uses_reduced_skill_multiplier():
     result = calculate_attack_damage(actor, target, skills=[skill], rng=rng, round_priority=0)
 
     reduction = target.unit_defense / (target.unit_defense + 50)
-    base_damage = max(1, int(actor.attack * (1 - reduction)))
+    base_damage = actor.attack * (1 - reduction)
     expected = int(base_damage * SLAUGHTER_MULTIPLIER + 2000 * GUEST_SKILL_VS_TROOP_MULTIPLIER)
     assert result.damage == expected
 
@@ -350,3 +362,14 @@ def test_process_status_effects_damage_penalty_applies_penalty_without_rng(monke
 
     assert damage == 75
     assert calls["random"] == 0
+
+
+def test_process_status_effects_keeps_fractional_damage_until_finalization(monkeypatch):
+    actor = make_unit(status_effects={"morale_down": {"active": 2, "pending": 0}})
+    target = make_unit(side="defender")
+
+    monkeypatch.setattr("battle.utils.status_effects.get_damage_penalty", lambda _actor: 0.25)
+
+    damage = process_status_effects(actor, target, [], FixedRng(), phase="damage_penalty", damage=101.5)
+
+    assert damage == pytest.approx(76.125)

@@ -50,8 +50,8 @@ def trigger_skills(attacker, rng: random.Random) -> List[Dict]:
     return triggered
 
 
-def skill_damage_bonus(skills: List[Dict], attacker, target) -> int:
-    return sum(calculate_skill_bonus(skill, attacker, target) for skill in skills)
+def skill_damage_bonus(skills: List[Dict], attacker, target) -> float:
+    return sum((calculate_skill_bonus(skill, attacker, target) for skill in skills), 0.0)
 
 
 def apply_skill_statuses(skills: List[Dict], target, rng: random.Random) -> List[str]:

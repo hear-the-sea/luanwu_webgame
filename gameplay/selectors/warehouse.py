@@ -12,6 +12,22 @@ from ..services.manor.treasury import get_treasury_capacity, get_treasury_used_s
 # 每页显示的物品数量
 WAREHOUSE_PAGE_SIZE = 20
 GRAIN_ITEM_KEY = "grain"
+WAREHOUSE_CATEGORY_ORDER = (
+    "equip_weapon",
+    "equip_armor",
+    "equip_helmet",
+    "equip_shoes",
+    "equip_ornament",
+    "equip_mount",
+    "equip_device",
+    ItemTemplate.EffectType.MEDICINE,
+    ItemTemplate.EffectType.EXPERIENCE_ITEM,
+    ItemTemplate.EffectType.SKILL_BOOK,
+    "tool",
+    ItemTemplate.EffectType.RESOURCE,
+    "other",
+)
+WAREHOUSE_CATEGORY_RANK = {key: rank for rank, key in enumerate(WAREHOUSE_CATEGORY_ORDER)}
 
 
 def _distinct_effect_types(items):
@@ -167,7 +183,13 @@ def get_warehouse_context(manor, current_tab: str, selected_category: str, page:
             tool_effect_types=tool_effect_types,
             tool_category_key=tool_category_key,
         )
-    categories.sort(key=lambda x: x["label"])
+    categories.sort(
+        key=lambda category: (
+            WAREHOUSE_CATEGORY_RANK.get(category["key"], len(WAREHOUSE_CATEGORY_RANK)),
+            category["label"],
+            category["key"],
+        )
+    )
 
     paginator = Paginator(projected_items, WAREHOUSE_PAGE_SIZE)
     page_obj = paginator.get_page(page)

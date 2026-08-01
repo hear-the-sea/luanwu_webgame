@@ -26,6 +26,7 @@ test("buildBidModalState keeps starting price when quota is not full", () => {
     winnerCount: "3",
     bidderCount: "2",
     startingPrice: "6",
+    minIncrement: "5",
     myBidAmount: "0",
   });
 
@@ -36,6 +37,7 @@ test("buildBidModalState keeps starting price when quota is not full", () => {
     winnerCount: 3,
     bidderCount: 2,
     startingPrice: 6,
+    minIncrement: 5,
     myBidAmount: 0,
     myBidVisible: false,
     myBidText: "0 金条",
@@ -50,13 +52,14 @@ test("buildBidModalState raises threshold when quota is already full", () => {
     winnerCount: "2",
     bidderCount: "2",
     startingPrice: "6",
+    minIncrement: "5",
     myBidAmount: "0",
   });
 
-  assert.equal(state.minBid, 19);
+  assert.equal(state.minBid, 23);
   assert.equal(
     state.hintText,
-    "名额已满，需要高于最低中标价 18 金条才能进入前 2 名"
+    "名额已满，最低出价为 23 金条（当前最低中标价 18 金条，需至少加价 5 金条）才能进入前 2 名"
   );
   assert.equal(state.myBidVisible, false);
 });
@@ -67,13 +70,17 @@ test("buildBidModalState prefers the current bidder amount when user already bid
     winnerCount: "2",
     bidderCount: "8",
     startingPrice: "6",
+    minIncrement: "5",
     myBidAmount: "21",
   });
 
-  assert.equal(state.minBid, 22);
+  assert.equal(state.minBid, 26);
   assert.equal(state.myBidVisible, true);
   assert.equal(state.myBidText, "21 金条");
-  assert.equal(state.hintText, "需要高于您当前出价 21 金条");
+  assert.equal(
+    state.hintText,
+    "最低出价为 26 金条（需在您当前出价 21 金条基础上至少加价 5 金条）"
+  );
 });
 
 test("calculateListingTotal multiplies normalized integer inputs", () => {

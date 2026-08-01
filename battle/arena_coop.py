@@ -140,15 +140,15 @@ def _multiplier_from_sources(modifiers: BattleModifiers, *, flat_key: str, sourc
     return float(modifiers.get(flat_key, 1.0) or 1.0)
 
 
-def _apply_softcap_once(damage: int, payload: dict[str, Any]) -> int:
+def _apply_softcap_once(damage: float, payload: dict[str, Any]) -> float:
     threshold = int(payload.get("threshold", 0) or 0)
     overflow_ratio = float(payload.get("overflow_ratio", 1.0) or 1.0)
     if threshold <= 0 or damage <= threshold:
         return damage
-    return threshold + int((damage - threshold) * overflow_ratio)
+    return threshold + (damage - threshold) * overflow_ratio
 
 
-def _apply_softcaps(damage: int, modifiers: BattleModifiers) -> int:
+def _apply_softcaps(damage: float, modifiers: BattleModifiers) -> float:
     sources = modifiers.get("burst_softcap_sources")
     if isinstance(sources, dict) and sources:
         adjusted_values = [damage]
@@ -270,36 +270,30 @@ def try_trigger_arena_coop_pre_action_heal(actor: Any) -> dict[str, Any] | None:
     }
 
 
-def adjust_arena_coop_damage(actor: Any, target: Any, damage: int) -> int:
+def adjust_arena_coop_damage(actor: Any, target: Any, damage: float) -> float:
     if damage <= 0:
-        return 0
+        return 0.0
 
     actor_modifiers = _combat_modifiers(actor)
     target_modifiers = _combat_modifiers(target)
 
-    adjusted = int(
-        damage
-        * _multiplier_from_sources(
-            actor_modifiers,
-            flat_key="outgoing_damage_multiplier",
-            sources_key="outgoing_damage_multiplier_sources",
-        )
+    adjusted = damage * _multiplier_from_sources(
+        actor_modifiers,
+        flat_key="outgoing_damage_multiplier",
+        sources_key="outgoing_damage_multiplier_sources",
     )
     adjusted = _apply_softcaps(adjusted, target_modifiers)
 
-    adjusted = int(
-        adjusted
-        * _multiplier_from_sources(
-            target_modifiers,
-            flat_key="incoming_damage_multiplier",
-            sources_key="incoming_damage_multiplier_sources",
-        )
+    adjusted = adjusted * _multiplier_from_sources(
+        target_modifiers,
+        flat_key="incoming_damage_multiplier",
+        sources_key="incoming_damage_multiplier_sources",
     )
-    return max(1, adjusted)
+    return adjusted
 
 
-def get_arena_coop_reflect_values(target: Any) -> tuple[float, int]:
+def get_arena_coop_reflect_values(target: Any) -> tuple[float, float]:
     modifiers = _combat_modifiers(target)
     reflect_ratio = float(modifiers.get("reflect_ratio", 0.0) or 0.0)
-    reflect_cap = int(modifiers.get("reflect_cap", 0) or 0)
+    reflect_cap = float(modifiers.get("reflect_cap", 0) or 0)
     return reflect_ratio, reflect_cap

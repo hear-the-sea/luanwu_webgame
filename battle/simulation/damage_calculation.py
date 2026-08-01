@@ -35,48 +35,50 @@ if TYPE_CHECKING:
     from ..combatants_pkg.core import Combatant
 
 
-def _at_least_one(value: int) -> int:
-    return max(1, value)
+def _finalize_damage(value: float) -> int:
+    """Round once at the boundary where damage becomes an HP state change."""
+
+    return max(1, int(value))
 
 
 def _calculate_defense_value(
     actor: "Combatant",
     target: "Combatant",
-    effective_defense_value_fn: Callable[["Combatant", "Combatant"], int],
-) -> int:
+    effective_defense_value_fn: Callable[["Combatant", "Combatant"], float],
+) -> float:
     if target.kind != "troop":
-        return int(target.defense)
+        return float(target.defense)
     if actor.kind == "guest":
-        return int(target.unit_defense)
-    return int(effective_defense_value_fn(target, actor))
+        return float(target.unit_defense)
+    return effective_defense_value_fn(target, actor)
 
 
 def _apply_attack_and_defense_tech_effects(
     actor: "Combatant",
     target: "Combatant",
     round_priority: int,
-    attack_value: int,
-    defense_value: int,
-) -> tuple[int, int]:
+    attack_value: float,
+    defense_value: float,
+) -> tuple[float, float]:
     ranged_attack = is_ranged_attack(actor, round_priority)
 
     if ranged_attack:
         ranged_def = target.tech_effects.get("ranged_defense", 0)
         if ranged_def > 0:
-            defense_value = int(defense_value * (1 + ranged_def))
+            defense_value = defense_value * (1 + ranged_def)
 
     if actor.troop_class == "gong" and not ranged_attack:
         melee_bonus = actor.tech_effects.get("melee_attack_bonus", 0)
         if melee_bonus > 0:
-            attack_value = int(attack_value * (1 + melee_bonus))
+            attack_value = attack_value * (1 + melee_bonus)
 
     return attack_value, defense_value
 
 
-def _apply_troop_counter_bonus(actor: "Combatant", target: "Combatant", attack_value: int) -> int:
+def _apply_troop_counter_bonus(actor: "Combatant", target: "Combatant", attack_value: float) -> float:
     countered_class = TROOP_COUNTERS.get(actor.troop_class)
     if countered_class and target.troop_class == countered_class:
-        return int(attack_value * COUNTER_DAMAGE_MULTIPLIER)
+        return attack_value * COUNTER_DAMAGE_MULTIPLIER
     return attack_value
 
 
@@ -87,7 +89,7 @@ def _apply_softcap(base_reduction: float) -> float:
     return base_reduction
 
 
-def _calculate_damage_reduction(actor: "Combatant", target: "Combatant", defense_value: int) -> float:
+def _calculate_damage_reduction(actor: "Combatant", target: "Combatant", defense_value: float) -> float:
     pair = (actor.kind, target.kind)
     if pair == ("guest", "troop"):
         base_reduction = defense_value / (defense_value + GUEST_VS_TROOP_DEFENSE_CONSTANT)
@@ -105,7 +107,7 @@ def _calculate_damage_reduction(actor: "Combatant", target: "Combatant", defense
 def _calculate_base_damage(
     actor: "Combatant",
     target: "Combatant",
-    attack_value: int,
+    attack_value: float,
     damage_reduction: float,
     attack_multiplier: float,
 ) -> float:
@@ -133,19 +135,19 @@ def _city_defense_damage_multiplier(actor: "Combatant", target: "Combatant") -> 
     return 1.0
 
 
-def _apply_round_and_tech_damage_modifiers(actor: "Combatant", round_priority: int, damage: int) -> int:
+def _apply_round_and_tech_damage_modifiers(actor: "Combatant", round_priority: int, damage: float) -> float:
     if actor.kind == "guest" and actor.priority == -1:
-        damage = _at_least_one(int(damage * PREEMPTIVE_DAMAGE_REDUCTION))
+        damage = damage * PREEMPTIVE_DAMAGE_REDUCTION
 
     if actor.troop_class == "jian" and round_priority == -1:
         preempt_mult = actor.tech_effects.get("preemptive_damage", 0)
         if preempt_mult > 0:
-            damage = _at_least_one(int(damage * preempt_mult))
+            damage = damage * preempt_mult
 
     if actor.troop_class == "gong" and round_priority == -2:
         extra_range_mult = actor.tech_effects.get("extra_range_damage", 0)
         if extra_range_mult > 0:
-            damage = _at_least_one(int(damage * extra_range_mult))
+            damage = damage * extra_range_mult
 
     return damage
 
@@ -163,10 +165,10 @@ def _apply_post_damage_modifiers(
     skills: List[AttackSkill],
     *,
     round_priority: int,
-    damage: int,
+    damage: float,
     is_double_strike: bool,
     rng: random.Random,
-) -> int:
+) -> float:
     damage = _apply_round_and_tech_damage_modifiers(actor, round_priority, damage)
     if is_double_strike:
         damage *= 2
@@ -176,35 +178,34 @@ def _apply_post_damage_modifiers(
 def _apply_slaughter_multiplier(
     actor: "Combatant",
     target: "Combatant",
-    damage: int,
+    damage: float,
     calculate_slaughter_multiplier_fn: Callable[["Combatant", "Combatant"], float],
-) -> int:
+) -> float:
     if target.kind != "troop":
         return damage
     slaughter_mult = calculate_slaughter_multiplier_fn(actor, target)
     if slaughter_mult == 1.0:
         return damage
-    return _at_least_one(int(damage * slaughter_mult))
+    return damage * slaughter_mult
 
 
 def _apply_guest_vs_troop_split_scaling(
     actor: "Combatant",
     target: "Combatant",
     *,
-    base_damage: int,
-    total_damage: int,
+    base_damage: float,
+    total_damage: float,
     calculate_slaughter_multiplier_fn: Callable[["Combatant", "Combatant"], float],
-) -> int:
+) -> float:
     slaughter_mult = calculate_slaughter_multiplier_fn(actor, target)
     if slaughter_mult == 1.0:
         return total_damage
 
     skill_damage = total_damage - base_damage
-    scaled = int(base_damage * slaughter_mult + skill_damage * GUEST_SKILL_VS_TROOP_MULTIPLIER)
-    return _at_least_one(scaled)
+    return base_damage * slaughter_mult + skill_damage * GUEST_SKILL_VS_TROOP_MULTIPLIER
 
 
-def _apply_passive_true_damage(actor: "Combatant", target: "Combatant", damage: int) -> int:
+def _apply_passive_true_damage(actor: "Combatant", target: "Combatant", damage: float) -> float:
     modifiers = getattr(actor, "battle_modifiers", None)
     if not isinstance(modifiers, dict):
         return damage
@@ -216,7 +217,7 @@ def _apply_passive_true_damage(actor: "Combatant", target: "Combatant", damage: 
     if max_hp <= 0:
         return damage
 
-    extra_damage = 0
+    extra_damage = 0.0
     for payload in sources.values():
         if not isinstance(payload, dict):
             continue
@@ -224,11 +225,11 @@ def _apply_passive_true_damage(actor: "Combatant", target: "Combatant", damage: 
         if ratio <= 0:
             continue
         multiplier = float(payload.get("troop_value_multiplier") or 1.0) if target.kind == "troop" else 1.0
-        extra_damage += max(0, int(max_hp * ratio * multiplier))
+        extra_damage += max(0.0, max_hp * ratio * multiplier)
 
     if extra_damage <= 0:
         return damage
-    return _at_least_one(damage + extra_damage)
+    return damage + extra_damage
 
 
 @overload
@@ -239,8 +240,8 @@ def process_status_effects(
     rng: random.Random,
     *,
     phase: Literal["damage_penalty"],
-    damage: int,
-) -> int: ...
+    damage: float,
+) -> float: ...
 
 
 @overload
@@ -262,8 +263,8 @@ def process_status_effects(
     rng: random.Random,
     *,
     phase: Literal["damage_penalty", "inflict"],
-    damage: int | None = None,
-) -> int | List[str]:
+    damage: float | None = None,
+) -> float | List[str]:
     """
     状态效果处理（保持战斗日志与 RNG 调用顺序向后兼容）。
 
@@ -282,8 +283,7 @@ def process_status_effects(
             raise AssertionError("damage_penalty phase requires 'damage'")
         damage_penalty = get_damage_penalty(actor)
         if damage_penalty > 0:
-            damage = int(damage * (1 - damage_penalty))
-            damage = max(1, damage)
+            damage = damage * (1 - damage_penalty)
         return damage
 
     return apply_skill_statuses(skills, target, rng)
@@ -320,7 +320,7 @@ def calculate_attack_damage(
     from ..combat_math import calculate_slaughter_multiplier, effective_attack_value, effective_defense_value
     from ..skills import skill_damage_bonus
 
-    attack_value = effective_attack_value(actor, target)
+    attack_value: float = effective_attack_value(actor, target)
 
     defense_value = _calculate_defense_value(actor, target, effective_defense_value)
     attack_value, defense_value = _apply_attack_and_defense_tech_effects(
@@ -338,8 +338,8 @@ def calculate_attack_damage(
         base_damage *= CRIT_DAMAGE_MULTIPLIER
 
     bonus = skill_damage_bonus(skills, actor, target)
-    base_damage_value = _at_least_one(int(base_damage))
-    total_damage_value = _at_least_one(int(base_damage + bonus))
+    base_damage_value = base_damage
+    total_damage_value = base_damage + bonus
 
     is_double_strike = _roll_double_strike(actor, rng)
     base_damage_value = _apply_post_damage_modifiers(
@@ -374,11 +374,12 @@ def calculate_attack_damage(
 
     city_defense_multiplier = _city_defense_damage_multiplier(actor, target)
     if city_defense_multiplier != 1.0:
-        damage = _at_least_one(int(damage * city_defense_multiplier))
+        damage = damage * city_defense_multiplier
 
     from ..arena_coop import adjust_arena_coop_damage
 
     damage = adjust_arena_coop_damage(actor, target, damage)
     damage = _apply_passive_true_damage(actor, target, damage)
+    damage = _finalize_damage(damage)
 
     return _DamageCalculation(damage=damage, is_crit=is_crit, is_double_strike=is_double_strike)

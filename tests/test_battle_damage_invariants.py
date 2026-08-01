@@ -6,7 +6,7 @@ from battle.combatants_pkg.core import Combatant
 from battle.simulation.damage_application import apply_damage_results
 
 
-def _make_guest(*, name: str, side: str, hp: int = 1000, attack: int = 300) -> Combatant:
+def _make_guest(*, name: str, side: str, hp: int = 1000, attack: int | float = 300) -> Combatant:
     return Combatant(
         name=name,
         attack=attack,
@@ -104,6 +104,22 @@ def test_reflect_and_counter_skip_slaughter_but_preserve_troop_hp_strength_invar
     assert application.counter.strength_before == 10
     assert application.counter.strength_after == 8
     assert application.reflect.kills + application.counter.kills == 2
+
+
+def test_counter_damage_rounds_only_when_applied_to_hp():
+    actor = _make_troop(name="进攻护院", side="attacker")
+    target = _make_guest(name="反击者", side="defender", attack=401.9)
+    target.troop_class = "jian"
+    target.tech_effects = {
+        "damage_reflect": 0.0,
+        "counter_attack_chance": 1.0,
+        "counter_attack_damage": 0.99,
+    }
+
+    application = apply_damage_results(actor, target, 100, random.Random(1))
+
+    assert application.counter.raw_damage == 397
+    assert actor.hp == 603
 
 
 def test_every_damage_transition_keeps_hp_and_strength_within_bounds():

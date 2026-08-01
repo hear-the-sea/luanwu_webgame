@@ -297,6 +297,54 @@ def test_rounds_module_settle_auction_round_marks_completed_when_no_slots():
 
 
 @pytest.mark.django_db
+def test_settle_auction_round_with_explicit_id_skips_future_active_round():
+    auction_round = AuctionRound.objects.create(
+        round_number=10023,
+        status=AuctionRound.Status.ACTIVE,
+        start_at=timezone.now() - timedelta(minutes=1),
+        end_at=timezone.now() + timedelta(hours=1),
+    )
+
+    stats = auction_service.settle_auction_round(round_id=auction_round.id)
+
+    auction_round.refresh_from_db()
+    assert stats["settled"] == 0
+    assert auction_round.status == AuctionRound.Status.ACTIVE
+
+
+@pytest.mark.django_db
+def test_settle_auction_round_with_explicit_id_skips_future_settling_round():
+    auction_round = AuctionRound.objects.create(
+        round_number=10025,
+        status=AuctionRound.Status.SETTLING,
+        start_at=timezone.now() - timedelta(minutes=1),
+        end_at=timezone.now() + timedelta(hours=1),
+    )
+
+    stats = auction_service.settle_auction_round(round_id=auction_round.id)
+
+    auction_round.refresh_from_db()
+    assert stats["settled"] == 0
+    assert auction_round.status == AuctionRound.Status.SETTLING
+
+
+@pytest.mark.django_db
+def test_settle_auction_round_zero_id_does_not_fallback_to_expired_round():
+    auction_round = AuctionRound.objects.create(
+        round_number=10024,
+        status=AuctionRound.Status.ACTIVE,
+        start_at=timezone.now() - timedelta(days=1),
+        end_at=timezone.now() - timedelta(minutes=1),
+    )
+
+    stats = auction_service.settle_auction_round(round_id=0)
+
+    auction_round.refresh_from_db()
+    assert stats["settled"] == 0
+    assert auction_round.status == AuctionRound.Status.ACTIVE
+
+
+@pytest.mark.django_db
 def test_settle_auction_round_without_round_id_resumes_settling_round():
     auction_round = AuctionRound.objects.create(
         round_number=10011,
