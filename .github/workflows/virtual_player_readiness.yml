@@ -45,7 +45,7 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
-        command: ["redis-server", "--requirepass", "ci-test-dummy"]
+        command: redis-server --requirepass ci-test-dummy
 
     env:
       DJANGO_DEBUG: "0"
