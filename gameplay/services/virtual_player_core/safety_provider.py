@@ -413,14 +413,14 @@ def _select_locked_window_rows(
             .order_by("window_end_at", "kind")
         )
 
-    table = connection.ops.quote_name(BotSafetyMetricWindow._meta.db_table)
-    window_id_column = connection.ops.quote_name(BotSafetyMetricWindow._meta.get_field("window_id").column)
-    end_column = connection.ops.quote_name(BotSafetyMetricWindow._meta.get_field("window_end_at").column)
-    kind_column = connection.ops.quote_name(BotSafetyMetricWindow._meta.get_field("kind").column)
+    table = connection.ops.quote_name(BotSafetyMetricWindow._meta.db_table or "")
+    window_id_column = connection.ops.quote_name(BotSafetyMetricWindow._meta.get_field("window_id").column or "")
+    end_column = connection.ops.quote_name(BotSafetyMetricWindow._meta.get_field("window_end_at").column or "")
+    kind_column = connection.ops.quote_name(BotSafetyMetricWindow._meta.get_field("kind").column or "")
     placeholders = ", ".join(["%s"] * len(window_ids))
-    kind_db_column = connection.ops.quote_name(BotSafetyMetricWindow._meta.get_field("kind").column)
-    start_column = connection.ops.quote_name(BotSafetyMetricWindow._meta.get_field("window_start_at").column)
-    finalized_column = connection.ops.quote_name(BotSafetyMetricWindow._meta.get_field("finalized_at").column)
+    kind_db_column = connection.ops.quote_name(BotSafetyMetricWindow._meta.get_field("kind").column or "")
+    start_column = connection.ops.quote_name(BotSafetyMetricWindow._meta.get_field("window_start_at").column or "")
+    finalized_column = connection.ops.quote_name(BotSafetyMetricWindow._meta.get_field("finalized_at").column or "")
     with connection.cursor() as cursor:
         cursor.execute(
             f"SELECT {window_id_column}, {kind_db_column}, {start_column}, "

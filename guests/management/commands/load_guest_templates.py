@@ -341,9 +341,9 @@ class Command(BaseCommand):
                 quality=85,
                 convert_to_webp=True,
             )
-            old_name = obj.avatar.name if obj.avatar else ""
+            old_name = obj.avatar.name if obj.avatar and obj.avatar.name else ""
             obj.avatar.save(new_filename, compressed_file, save=True)
-            stored_name = obj.avatar.name
+            stored_name = obj.avatar.name if obj.avatar and obj.avatar.name else new_filename
             self._safe_delete_old_avatar(obj, old_name, stored_name)
             if verbosity >= 1:
                 self.stdout.write(
@@ -393,7 +393,7 @@ class Command(BaseCommand):
                 verbosity,
             )
             if not saved_now:
-                old_name = obj.avatar.name if obj.avatar else ""
+                old_name = obj.avatar.name if obj.avatar and obj.avatar.name else ""
                 if old_name != stored_name:
                     obj.avatar.name = stored_name
                     obj.save(update_fields=["avatar"])
