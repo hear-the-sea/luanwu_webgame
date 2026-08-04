@@ -137,14 +137,21 @@ def prepare_guest_updates_for_finalize(
 ) -> Tuple[List[Any], List[str]]:
     from guests.models import GuestStatus
     from guests.services.loyalty import clear_injury_loyalty_decay, start_injury_loyalty_decay
+    from guests.services.status import (
+        GUEST_STATUS_UPDATE_FIELDS,
+        prepare_guest_status_transition,
+        schedule_resumed_guest_trainings,
+    )
 
     guests_to_update: List[Any] = []
+    resumed_guests: List[Any] = []
     for guest in guests:
         if is_retreating:
-            guest.status = GuestStatus.IDLE
+            transition = prepare_guest_status_transition(guest, GuestStatus.IDLE, now=now)
             clear_injury_loyalty_decay(guest)
         else:
-            guest.status = GuestStatus.INJURED if guest.id in defeated_guest_ids else GuestStatus.IDLE
+            target_status = GuestStatus.INJURED if guest.id in defeated_guest_ids else GuestStatus.IDLE
+            transition = prepare_guest_status_transition(guest, target_status, now=now)
             if guest.status == GuestStatus.INJURED:
                 start_injury_loyalty_decay(guest, now=now)
             else:
@@ -153,13 +160,21 @@ def prepare_guest_updates_for_finalize(
             if target_hp is not None:
                 guest.current_hp = max(1, min(guest.max_hp, target_hp))
                 guest.last_hp_recovery_at = now
+        if transition.resumed_training:
+            resumed_guests.append(guest)
         guests_to_update.append(guest)
 
     fields = (
-        ["status", "injury_loyalty_processed_at"]
+        [*GUEST_STATUS_UPDATE_FIELDS, "injury_loyalty_processed_at"]
         if is_retreating
-        else ["status", "current_hp", "last_hp_recovery_at", "injury_loyalty_processed_at"]
+        else [
+            *GUEST_STATUS_UPDATE_FIELDS,
+            "current_hp",
+            "last_hp_recovery_at",
+            "injury_loyalty_processed_at",
+        ]
     )
+    schedule_resumed_guest_trainings(resumed_guests, source="mission_release")
     return guests_to_update, fields
 
 

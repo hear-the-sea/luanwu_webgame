@@ -265,7 +265,9 @@ def get_asset_level(manor: Manor) -> Tuple[str, int]:
         (资产等级名称, 总资产值)
     """
     # 计算总资产 = 粮食 + 银两 + 仓库物品总价值
-    total_assets = manor.grain + manor.silver
+    from ..inventory.core import get_warehouse_grain_quantity
+
+    total_assets = get_warehouse_grain_quantity(manor) + manor.silver
 
     # 使用聚合查询计算仓库物品总价值（优化：避免循环查询）
     item_value = (

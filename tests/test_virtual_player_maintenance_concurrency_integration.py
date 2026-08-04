@@ -484,7 +484,9 @@ def test_same_profile_double_worker_has_one_committed_winner(
     assert errors == []
     assert sorted(result.outcome.value for result in results) == ["applied", "busy"]
     assert profile.maintenance_sequence == 1
-    assert TrainingLog.objects.filter(manor_id=profile.manor_id).count() == 1
+    applied_results = [result for result in results if result.outcome is MaintenanceOutcome.APPLIED]
+    assert len(applied_results) == 1
+    assert applied_results[0].action_kind
 
 
 @pytest.mark.django_db(transaction=True)

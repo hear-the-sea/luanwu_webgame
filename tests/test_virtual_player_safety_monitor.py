@@ -7,8 +7,14 @@ from hashlib import sha256
 from pathlib import Path
 
 import pytest
+from django.utils import timezone
 
-from gameplay.models import BotRuntimeRoutingState, BotSafetyMetricEvent, BotSafetyMetricWindow
+from gameplay.models import (
+    BotArenaShortageBaseline,
+    BotRuntimeRoutingState,
+    BotSafetyMetricEvent,
+    BotSafetyMetricWindow,
+)
 from gameplay.services import runtime_configs
 from gameplay.services.virtual_player_core import safety_baselines, safety_monitor
 from gameplay.services.virtual_player_core.safety_metrics import (
@@ -44,6 +50,7 @@ def _snapshot(
     arena: list[dict] | None = None,
     baselines: list[dict] | None = None,
     aggregation_errors: list[str] | None = None,
+    schema_version: int = safety_monitor.SAFETY_SNAPSHOT_SCHEMA_VERSION,
 ) -> dict:
     end_at = start_at + (timedelta(hours=1) if kind == "hourly" else timedelta(days=1))
     metric_values: dict[str, int | float | None] = {
@@ -71,7 +78,7 @@ def _snapshot(
         for stream in REQUIRED_HEARTBEAT_STREAMS
     }
     return {
-        "schema_version": 1,
+        "schema_version": schema_version,
         "window_kind": kind,
         "window_start_at": _timestamp(start_at),
         "window_end_at": _timestamp(end_at),
@@ -107,6 +114,10 @@ def _arena_baseline(
     kind: str = "coop",
     prestige_band: str = "junior",
     baseline_ratio: str = "0.1",
+    source: str = safety_baselines.BASELINE_SOURCE_PRE_ACTIVATION,
+    expires_at: datetime | None = None,
+    max_real_entry_count: int | None = None,
+    schema_version: int = safety_monitor.SAFETY_SNAPSHOT_SCHEMA_VERSION,
 ) -> dict:
     request = safety_baselines.normalize_arena_shortage_baseline_request(
         mode=kind,
@@ -115,7 +126,7 @@ def _arena_baseline(
         evidence_id="arena-shortage-evidence-20260728",
         evidence_checksum="a" * 64,
     )
-    return {
+    baseline = {
         "kind": request.mode,
         "prestige_band": request.prestige_band,
         "baseline_ratio": float(request.baseline_ratio),
@@ -124,6 +135,15 @@ def _arena_baseline(
         "evidence_checksum": request.evidence_checksum,
         "payload_digest": request.payload_digest,
     }
+    if schema_version >= 3:
+        baseline.update(
+            {
+                "source": source,
+                "expires_at": _timestamp(expires_at) if expires_at is not None else None,
+                "max_real_entry_count": max_real_entry_count,
+            }
+        )
+    return baseline
 
 
 def _window(
@@ -427,6 +447,18 @@ def test_arena_shortage_requires_persisted_baseline_and_strict_increase() -> Non
             }
         ],
     )
+    cold_start_missing = _window(
+        start_at=HOURLY_START + timedelta(hours=3),
+        arena=[
+            {
+                "kind": "tournament",
+                "prestige_band": "newbie",
+                "sample_count": 1,
+                "current_ratio_max": 0.9,
+                "real_entry_count_min": 1,
+            }
+        ],
+    )
 
     assert not any(
         reason.startswith("arena_shortage_absolute_increase")
@@ -440,6 +472,242 @@ def test_arena_shortage_requires_persisted_baseline_and_strict_increase() -> Non
         reason.startswith("arena_shortage_baseline_missing")
         for reason in evaluate_finalized_safety_window(missing).pause_reasons
     )
+    assert not any(
+        reason.startswith("arena_shortage_baseline_missing")
+        for reason in evaluate_finalized_safety_window(cold_start_missing).pause_reasons
+    )
+
+
+@pytest.mark.django_db
+def test_expired_runtime_baseline_is_fail_closed() -> None:
+    expires_at = HOURLY_START - timedelta(hours=1)
+    window = _window(
+        arena=[
+            {
+                "kind": "coop",
+                "prestige_band": "junior",
+                "sample_count": 1,
+                "current_ratio_max": 0.01,
+                "real_entry_count_min": 3,
+            }
+        ],
+        baselines=[
+            _arena_baseline(
+                source=safety_baselines.BASELINE_SOURCE_RUNTIME_BOOTSTRAP,
+                expires_at=expires_at,
+                max_real_entry_count=3,
+            )
+        ],
+    )
+
+    decision = evaluate_finalized_safety_window(
+        window,
+        now=HOURLY_START + timedelta(minutes=5),
+    )
+
+    assert any(reason == "arena_shortage_baseline_expired:coop:junior" for reason in decision.pause_reasons)
+
+
+@pytest.mark.django_db
+def test_runtime_baseline_population_exceeded_is_fail_closed() -> None:
+    expires_at = HOURLY_START + timedelta(days=30)
+    window = _window(
+        arena=[
+            {
+                "kind": "coop",
+                "prestige_band": "junior",
+                "sample_count": 1,
+                "current_ratio_max": 0.01,
+                "real_entry_count_min": 5,
+            }
+        ],
+        baselines=[
+            _arena_baseline(
+                source=safety_baselines.BASELINE_SOURCE_RUNTIME_BOOTSTRAP,
+                expires_at=expires_at,
+                max_real_entry_count=3,
+            )
+        ],
+    )
+
+    decision = evaluate_finalized_safety_window(
+        window,
+        now=HOURLY_START + timedelta(hours=1),
+    )
+
+    assert any(reason == "arena_shortage_baseline_population_exceeded:coop:junior" for reason in decision.pause_reasons)
+
+
+@pytest.mark.django_db
+def test_runtime_baseline_bootstrap_requires_repeated_mature_reserve_observations() -> None:
+    _routing_state()
+    arena = [
+        {
+            "kind": "tournament",
+            "prestige_band": "newbie",
+            "sample_count": 1,
+            "current_ratio_max": 0.1,
+            "real_entry_count_min": 3,
+            "reserve_ready_count_min": 1,
+            "reserve_training_count_max": 1,
+        }
+    ]
+    windows = [_window(start_at=HOURLY_START + timedelta(hours=index), arena=arena) for index in range(3)]
+
+    overrides = safety_monitor._bootstrap_missing_arena_baselines(
+        windows[-1],
+        history=windows[:-1],
+    )
+
+    scope = safety_monitor._ArenaScope("tournament", "newbie")
+    assert overrides[scope].ratio == Decimal("0.1")
+    baseline = BotArenaShortageBaseline.objects.get(mode="tournament", prestige_band="newbie")
+    assert baseline.baseline_ratio == Decimal("0.100000000000")
+    assert baseline.evidence_id.startswith("auto-bootstrap/tournament/newbie/")
+    assert baseline.source == safety_baselines.BASELINE_SOURCE_RUNTIME_BOOTSTRAP
+    assert baseline.expires_at is not None
+    assert baseline.max_real_entry_count == 3
+
+    decision = evaluate_finalized_safety_window(
+        windows[-1],
+        history=windows[:-1],
+        baseline_overrides=overrides,
+    )
+    assert not any(reason.startswith("arena_shortage_baseline_missing") for reason in decision.pause_reasons)
+
+
+@pytest.mark.django_db
+def test_runtime_baseline_bootstrap_replaces_expired_persisted_baseline() -> None:
+    _routing_state()
+    safety_baselines.freeze_arena_shortage_baseline_runtime(
+        mode="tournament",
+        prestige_band="newbie",
+        baseline_ratio="0.09",
+        evidence_id="auto-bootstrap/tournament/newbie/20260701T000000Z",
+        evidence_checksum="a" * 64,
+        max_real_entry_count=2,
+    )
+    now = timezone.now()
+    stored = BotArenaShortageBaseline.objects.get(mode="tournament", prestige_band="newbie")
+    stored.frozen_at = now - timedelta(hours=2)
+    stored.expires_at = now - timedelta(hours=1)
+    stored.save(update_fields=["frozen_at", "expires_at"])
+
+    arena = [
+        {
+            "kind": "tournament",
+            "prestige_band": "newbie",
+            "sample_count": 1,
+            "current_ratio_max": 0.1,
+            "real_entry_count_min": 3,
+            "reserve_ready_count_min": 1,
+            "reserve_training_count_max": 1,
+        }
+    ]
+    windows = [_window(start_at=HOURLY_START + timedelta(hours=index), arena=arena) for index in range(3)]
+
+    overrides = safety_monitor._bootstrap_missing_arena_baselines(
+        windows[-1],
+        history=windows[:-1],
+    )
+
+    scope = safety_monitor._ArenaScope("tournament", "newbie")
+    assert overrides[scope].ratio == Decimal("0.1")
+    baselines = list(BotArenaShortageBaseline.objects.all())
+    assert len(baselines) == 1
+    baseline = baselines[0]
+    assert baseline.source == safety_baselines.BASELINE_SOURCE_RUNTIME_BOOTSTRAP
+    assert baseline.baseline_ratio == Decimal("0.100000000000")
+    assert baseline.evidence_id.startswith("auto-bootstrap/tournament/newbie/")
+    assert baseline.evidence_id != "auto-bootstrap/tournament/newbie/20260701T000000Z"
+    assert baseline.max_real_entry_count == 3
+    assert baseline.expires_at > baseline.frozen_at
+
+
+@pytest.mark.django_db
+def test_runtime_baseline_bootstrap_allows_stable_early_game_shortage_ratio() -> None:
+    _routing_state()
+    arena = [
+        {
+            "kind": "tournament",
+            "prestige_band": "newbie",
+            "sample_count": 1,
+            "current_ratio_max": 0.7,
+            "real_entry_count_min": 3,
+            "reserve_ready_count_min": 1,
+            "reserve_training_count_max": 1,
+        }
+    ]
+    windows = [_window(start_at=HOURLY_START + timedelta(hours=index), arena=arena) for index in range(3)]
+
+    overrides = safety_monitor._bootstrap_missing_arena_baselines(
+        windows[-1],
+        history=windows[:-1],
+    )
+
+    scope = safety_monitor._ArenaScope("tournament", "newbie")
+    assert overrides[scope].ratio == Decimal("0.7")
+    baseline = BotArenaShortageBaseline.objects.get(mode="tournament", prestige_band="newbie")
+    assert baseline.baseline_ratio == Decimal("0.700000000000")
+    assert baseline.source == safety_baselines.BASELINE_SOURCE_RUNTIME_BOOTSTRAP
+    assert baseline.expires_at is not None
+    assert baseline.max_real_entry_count == 3
+
+
+@pytest.mark.django_db
+def test_runtime_baseline_bootstrap_allows_stable_cold_start_shortage_ratio() -> None:
+    _routing_state()
+    arena = [
+        {
+            "kind": "tournament",
+            "prestige_band": "newbie",
+            "sample_count": 1,
+            "current_ratio_max": 0.9,
+            "real_entry_count_min": 1,
+            "reserve_ready_count_min": 3,
+            "reserve_training_count_max": 24,
+        }
+    ]
+    windows = [_window(start_at=HOURLY_START + timedelta(hours=index), arena=arena) for index in range(3)]
+
+    overrides = safety_monitor._bootstrap_missing_arena_baselines(
+        windows[-1],
+        history=windows[:-1],
+    )
+
+    scope = safety_monitor._ArenaScope("tournament", "newbie")
+    assert overrides[scope].ratio == Decimal("0.9")
+    baseline = BotArenaShortageBaseline.objects.get(mode="tournament", prestige_band="newbie")
+    assert baseline.baseline_ratio == Decimal("0.900000000000")
+    assert baseline.max_real_entry_count == 1
+
+
+@pytest.mark.django_db
+def test_runtime_baseline_bootstrap_does_not_relax_for_mixed_population_history() -> None:
+    _routing_state()
+    early_game = {
+        "kind": "tournament",
+        "prestige_band": "newbie",
+        "sample_count": 1,
+        "current_ratio_max": 0.7,
+        "real_entry_count_min": 3,
+        "reserve_ready_count_min": 1,
+        "reserve_training_count_max": 1,
+    }
+    mature_population = {**early_game, "real_entry_count_min": 11}
+    windows = [
+        _window(start_at=HOURLY_START, arena=early_game),
+        _window(start_at=HOURLY_START + timedelta(hours=1), arena=mature_population),
+        _window(start_at=HOURLY_START + timedelta(hours=2), arena=early_game),
+    ]
+
+    overrides = safety_monitor._bootstrap_missing_arena_baselines(
+        windows[-1],
+        history=windows[:-1],
+    )
+
+    assert overrides == {}
+    assert not BotArenaShortageBaseline.objects.exists()
 
 
 @pytest.mark.django_db
@@ -451,6 +719,79 @@ def test_arena_shortage_rejects_invalid_baseline_provenance() -> None:
     with pytest.raises(
         safety_monitor.InvalidSafetySnapshotError,
         match="arena baseline payload digest differs",
+    ):
+        evaluate_finalized_safety_window(window)
+
+
+def test_builder_writes_v3_safety_window_snapshot() -> None:
+    snapshot = build_safety_window_snapshot(
+        window_kind="hourly",
+        window_start_at=HOURLY_START,
+        _events=[],
+    )
+
+    assert snapshot["schema_version"] == safety_monitor.SAFETY_SNAPSHOT_SCHEMA_VERSION == 3
+
+
+@pytest.mark.django_db
+def test_v1_legacy_arena_snapshot_without_sample_count_parses() -> None:
+    window = _window(
+        schema_version=1,
+        arena=[
+            {
+                "kind": "coop",
+                "prestige_band": "junior",
+                "current_ratio_max": 0.1,
+            }
+        ],
+        baselines=[_arena_baseline(schema_version=1)],
+    )
+
+    facts = safety_monitor._parse_window_facts(window)
+    scope = safety_monitor._ArenaScope("coop", "junior")
+    assert facts.arena_ratios[scope].sample_count == 1
+
+    decision = evaluate_finalized_safety_window(window)
+    assert not any(reason.startswith("arena_shortage") for reason in decision.pause_reasons)
+
+
+@pytest.mark.django_db
+def test_v1_legacy_arena_snapshot_still_rejects_invalid_sample_count() -> None:
+    window = _window(
+        schema_version=1,
+        arena=[
+            {
+                "kind": "coop",
+                "prestige_band": "junior",
+                "sample_count": 0,
+                "current_ratio_max": 0.1,
+            }
+        ],
+    )
+
+    with pytest.raises(
+        safety_monitor.InvalidSafetySnapshotError,
+        match="arena sample_count must be a positive integer",
+    ):
+        evaluate_finalized_safety_window(window)
+
+
+@pytest.mark.django_db
+def test_v2_arena_snapshot_without_sample_count_is_rejected() -> None:
+    window = _window(
+        schema_version=2,
+        arena=[
+            {
+                "kind": "coop",
+                "prestige_band": "junior",
+                "current_ratio_max": 0.1,
+            }
+        ],
+    )
+
+    with pytest.raises(
+        safety_monitor.InvalidSafetySnapshotError,
+        match="arena sample_count must be a positive integer",
     ):
         evaluate_finalized_safety_window(window)
 

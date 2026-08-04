@@ -23,6 +23,7 @@ from .bots import (
     BotRuntimeRoutingState,
     BotSafetyMetricEvent,
     BotSafetyMetricWindow,
+    BotVirtualPlayerHealth,
 )
 from .chat import WorldChatSendAttempt
 from .items import GlobalMailCampaign, GlobalMailDelivery, InventoryItem, ItemTemplate, Message, ResourceEvent
@@ -112,6 +113,7 @@ __all__ = [
     "BotRuntimeRoutingState",
     "BotSafetyMetricEvent",
     "BotSafetyMetricWindow",
+    "BotVirtualPlayerHealth",
     # chat
     "WorldChatSendAttempt",
     # missions

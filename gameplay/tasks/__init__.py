@@ -25,6 +25,7 @@ from gameplay.services.technology import finalize_technology_upgrade
 from gameplay.tasks.arena import (
     grow_arena_virtual_reserves,
     reconcile_arena_virtual_reserve,
+    retry_arena_shortage_metric,
     scan_arena_coop_events,
     scan_arena_tournaments,
     scan_arena_virtual_reserves,
@@ -67,6 +68,9 @@ from gameplay.tasks.pvp import (
 
 # Recruitment
 from gameplay.tasks.recruitment import complete_troop_recruitment, scan_troop_recruitments
+
+# Resources
+from gameplay.tasks.resources import sync_resource_production_task
 
 # Technology
 from gameplay.tasks.technology import complete_technology_upgrade, scan_technology_upgrades
@@ -111,6 +115,7 @@ __all__ = [
     "scan_arena_coop_events",
     "scan_arena_tournaments",
     "reconcile_arena_virtual_reserve",
+    "retry_arena_shortage_metric",
     "scan_arena_virtual_reserves",
     "grow_arena_virtual_reserves",
     # Global mail
@@ -129,6 +134,8 @@ __all__ = [
     "complete_equipment_forging",
     "scan_equipment_forgings",
     "complete_work_assignments_task",
+    # Resources
+    "sync_resource_production_task",
     # Recruitment
     "complete_troop_recruitment",
     "scan_troop_recruitments",

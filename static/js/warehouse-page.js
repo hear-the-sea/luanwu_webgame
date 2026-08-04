@@ -27,7 +27,7 @@
     },
     rarity_upgrade: {
       title: "选择要升阶的门客",
-      hint: "升阶后门客将重置为1级，自动卸下装备，技能将被清空，并重置洗髓丹等计数；具体升阶目标由当前使用的残卷决定。",
+      hint: "升阶后门客将重置为1级，自动卸下装备，技能将被清空，并重置洗髓丹等计数；具体目标品质由当前道具决定。",
       confirmText: "确认升阶",
       listId: "guest-list-rarity-upgrade",
     },
@@ -45,6 +45,7 @@
     currentActionUrl: null,
     currentItemId: null,
     selectedGuestId: null,
+    lastTriggerElement: null,
   };
 
   const showErrorDialog = (message, title = "错误") => {
@@ -184,11 +185,17 @@
     const modal = document.getElementById("guest-select-modal");
     if (modal) {
       modal.style.display = "none";
+      modal.setAttribute("aria-hidden", "true");
     }
     warehouseModalState.currentItemId = null;
     warehouseModalState.currentActionType = null;
     warehouseModalState.currentActionUrl = null;
     warehouseModalState.selectedGuestId = null;
+    const lastTriggerElement = warehouseModalState.lastTriggerElement;
+    warehouseModalState.lastTriggerElement = null;
+    if (lastTriggerElement && lastTriggerElement.isConnected && typeof lastTriggerElement.focus === "function") {
+      lastTriggerElement.focus();
+    }
     resetSoulFusionGuestFilter();
   };
 
@@ -202,6 +209,7 @@
     warehouseModalState.currentActionType = actionType;
     warehouseModalState.currentActionUrl = triggerElement?.dataset?.actionUrl || null;
     warehouseModalState.selectedGuestId = null;
+    warehouseModalState.lastTriggerElement = triggerElement;
 
     const modalTitle = document.getElementById("modal-title");
     const modalHint = document.getElementById("modal-hint");
@@ -236,6 +244,50 @@
     const modal = document.getElementById("guest-select-modal");
     if (modal) {
       modal.style.display = "flex";
+      modal.setAttribute("aria-hidden", "false");
+      const visibleOption = activeList
+        ? [...activeList.querySelectorAll(".tw-guest-option")].find((option) => option.getClientRects().length > 0)
+        : null;
+      if (visibleOption) {
+        visibleOption.focus();
+      } else {
+        modal.focus();
+      }
+    }
+  };
+
+  const getVisibleModalFocusables = () => {
+    const modal = document.getElementById("guest-select-modal");
+    if (!modal) {
+      return [];
+    }
+    return [...modal.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )].filter((element) => element.getClientRects().length > 0);
+  };
+
+  const handleGuestModalKeydown = (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeGuestSelectModal();
+      return;
+    }
+    if (event.key !== "Tab") {
+      return;
+    }
+
+    const focusable = getVisibleModalFocusables();
+    if (focusable.length === 0) {
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
     }
   };
 
@@ -410,6 +462,10 @@
       return;
     }
     modal.dataset.boundClick = "1";
+    if (modal.dataset.boundKeyboard !== "1") {
+      modal.dataset.boundKeyboard = "1";
+      modal.addEventListener("keydown", handleGuestModalKeydown);
+    }
     modal.addEventListener("click", (event) => {
       if (event.target === modal) {
         closeGuestSelectModal();

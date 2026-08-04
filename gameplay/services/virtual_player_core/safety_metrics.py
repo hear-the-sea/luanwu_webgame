@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -284,6 +285,10 @@ def record_arena_shortage(
     prestige_band: str,
     missing_count: int,
     capacity: int,
+    real_entry_count: int | None = None,
+    virtual_entry_count: int | None = None,
+    reserve_ready_count: int | None = None,
+    reserve_training_count: int | None = None,
     occurred_at: datetime | None = None,
 ):
     normalized_operation_id = _normalize_operation_id(operation_id)
@@ -298,19 +303,78 @@ def record_arena_shortage(
         raise ValueError("capacity must be a positive integer")
     if missing_count > capacity:
         raise ValueError("missing_count cannot exceed capacity")
+    context_values = {
+        "real_entry_count": real_entry_count,
+        "virtual_entry_count": virtual_entry_count,
+        "reserve_ready_count": reserve_ready_count,
+        "reserve_training_count": reserve_training_count,
+    }
+    for field, value in context_values.items():
+        if value is not None and (isinstance(value, bool) or not isinstance(value, int) or value < 0):
+            raise ValueError(f"{field} must be a non-negative integer when provided")
+    if real_entry_count is not None and real_entry_count > capacity:
+        raise ValueError("real_entry_count cannot exceed capacity")
+    if virtual_entry_count is not None and virtual_entry_count > capacity:
+        raise ValueError("virtual_entry_count cannot exceed capacity")
+    if (
+        real_entry_count is not None
+        and virtual_entry_count is not None
+        and real_entry_count + virtual_entry_count > capacity
+    ):
+        raise ValueError("real_entry_count and virtual_entry_count cannot exceed capacity together")
     ratio = (Decimal(missing_count) / Decimal(capacity)).quantize(
         Decimal("0.000000000001"),
         rounding=ROUND_HALF_UP,
     )
+    dimensions: dict[str, str | int] = {
+        "kind": mode,
+        "prestige_band": prestige_band,
+    }
+    dimensions.update({field: value for field, value in context_values.items() if value is not None})
     return record_safety_metric_event(
         event_id=f"arena-shortage:{normalized_operation_id}",
         metric_name=ARENA_SHORTAGE_METRIC,
         occurred_at=normalized_occurred_at,
-        dimensions={
-            "kind": mode,
-            "prestige_band": prestige_band,
-        },
+        dimensions=dimensions,
         value=ratio,
+    )
+
+
+def record_safety_metric_failure(
+    *,
+    operation: UUID | str,
+    source_metric: str,
+    exc: Exception,
+    occurred_at: datetime | None = None,
+):
+    """Persist a hard safety event for a metric write that could not complete.
+
+    The event ID is stable for one operation/source pair so repeated retries
+    remain idempotent without allowing different source metrics to collide.
+    If the provider is available, the closed-window evaluator will see this as
+    a hard constraint violation; if it is unavailable, the provider exception
+    is intentionally allowed to propagate to the caller.
+    """
+
+    normalized_operation = _normalize_operation_id(operation)
+    normalized_source_metric = str(source_metric).strip()
+    if not normalized_source_metric:
+        raise ValueError("source_metric must not be blank")
+    source_metric_digest = hashlib.sha256(normalized_source_metric.encode("utf-8")).hexdigest()[:16]
+    # Keep the event ID well below the database's 128-character limit even
+    # when callers use the full operation-id budget.
+    failure_event_id = f"safety-metric-failure:{normalized_operation}:{source_metric_digest}"
+    return record_safety_metric_event(
+        event_id=failure_event_id,
+        metric_name=HARD_CONSTRAINT_METRIC,
+        occurred_at=_aware_utc_now(occurred_at),
+        dimensions={
+            "operation": normalized_operation,
+            "reason": "safety_metric_write_failed",
+            "failure_code": "safety_metric_write_failure",
+            "source_metric": normalized_source_metric,
+        },
+        value=1,
     )
 
 
@@ -353,6 +417,7 @@ __all__ = [
     "record_arena_shortage",
     "record_h01_callback_attempt",
     "record_h01_retirement_recommendation",
+    "record_safety_metric_failure",
     "record_safety_heartbeat",
     "start_maintenance_attempt",
     "start_maintenance_attempts",

@@ -47,6 +47,7 @@ from .views.jail import (
     remove_oath_bond_view,
     resolve_jail_milestone_api,
 )
+from .views.luanwu_shop import LuanwuShopView, purchase_luanwu_shop_item_view
 from .views.map import (
     MapView,
     RaidConfigView,
@@ -143,6 +144,8 @@ urlpatterns = [
     path("warehouse/use-xidianka/<int:pk>/", use_xidianka_view, name="use_xidianka"),
     path("warehouse/move-to-treasury/<int:pk>/", move_item_to_treasury_view, name="move_to_treasury"),
     path("warehouse/move-to-warehouse/<int:pk>/", move_item_to_warehouse_view, name="move_to_warehouse"),
+    path("luanwu-shop/", LuanwuShopView.as_view(), name="luanwu_shop"),
+    path("luanwu-shop/purchase/", purchase_luanwu_shop_item_view, name="purchase_luanwu_shop_item"),
     path("recruitment/", RecruitmentHallView.as_view(), name="recruitment_hall"),
     path("api/recruitment/refresh/", refresh_recruitment_hall_api, name="refresh_recruitment_hall_api"),
     path("building/<int:pk>/upgrade/", UpgradeBuildingView.as_view(), name="upgrade_building"),

@@ -12,6 +12,7 @@ from urllib.parse import urlencode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.db import DatabaseError
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect
@@ -52,6 +53,17 @@ logger = logging.getLogger(__name__)
 
 def _parse_positive_quantity(raw_quantity: str | None) -> int | None:
     return safe_positive_int(raw_quantity, default=None)
+
+
+def _add_production_page(
+    context: dict[str, Any],
+    *,
+    options_key: str,
+    page_key: str,
+    page: str | int,
+) -> None:
+    options = list(context.get(options_key) or [])
+    context[page_key] = Paginator(options, UIConstants.PRODUCTION_ITEMS_PER_PAGE).get_page(page)
 
 
 def _normalize_production_result_non_empty_string(raw_value: object, *, contract_name: str) -> str:
@@ -213,6 +225,12 @@ class StableView(LoginRequiredMixin, TemplateView):
         manor = _get_prepared_production_manor(self.request, source="stable_view")
         context["manor"] = manor
         context.update(get_stable_page_context(manor))
+        _add_production_page(
+            context,
+            options_key="horse_options",
+            page_key="horse_page_obj",
+            page=self.request.GET.get("page", 1),
+        )
         return context
 
 
@@ -282,6 +300,12 @@ class RanchView(LoginRequiredMixin, TemplateView):
         manor = _get_prepared_production_manor(self.request, source="ranch_view")
         context["manor"] = manor
         context.update(get_ranch_page_context(manor))
+        _add_production_page(
+            context,
+            options_key="livestock_options",
+            page_key="livestock_page_obj",
+            page=self.request.GET.get("page", 1),
+        )
         return context
 
 
@@ -333,6 +357,12 @@ class SmithyView(LoginRequiredMixin, TemplateView):
         manor = _get_prepared_production_manor(self.request, source="smithy_view")
         context["manor"] = manor
         context.update(get_smithy_page_context(manor, current_category=self.request.GET.get("category")))
+        _add_production_page(
+            context,
+            options_key="selected_metal_options",
+            page_key="smithy_page_obj",
+            page=self.request.GET.get("page", 1),
+        )
         return context
 
 
@@ -380,6 +410,7 @@ class ForgeView(LoginRequiredMixin, TemplateView):
     template_name = "gameplay/forge.html"
     ITEMS_PER_PAGE = UIConstants.FORGE_ITEMS_PER_PAGE
     DECOMPOSE_ITEMS_PER_PAGE = 9
+    BLUEPRINT_ITEMS_PER_PAGE = UIConstants.FORGE_BLUEPRINTS_PER_PAGE
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -393,6 +424,8 @@ class ForgeView(LoginRequiredMixin, TemplateView):
                 page=self.request.GET.get("page", 1),
                 items_per_page=self.ITEMS_PER_PAGE,
                 decompose_items_per_page=self.DECOMPOSE_ITEMS_PER_PAGE,
+                blueprint_page=self.request.GET.get("blueprint_page", 1),
+                blueprint_items_per_page=self.BLUEPRINT_ITEMS_PER_PAGE,
             )
         )
         return context

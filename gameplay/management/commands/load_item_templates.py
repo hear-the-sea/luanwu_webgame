@@ -5,12 +5,14 @@ import logging
 from pathlib import Path
 
 from django.conf import settings
+from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 
 from core.utils.image_utils import compress_and_resize_image
 from core.utils.yaml_loader import ensure_mapping, load_yaml_data
 from gameplay.models import ItemTemplate
 from gameplay.services.equipment_template_sync import synchronize_equipment_templates
+from gameplay.services.inventory.core import GRAIN_ITEM_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +87,11 @@ class Command(BaseCommand):
             default=str(Path(settings.BASE_DIR) / "data" / "item_templates.yaml"),
             help="Path to YAML/JSON file containing item templates.",
         )
+        parser.add_argument(
+            "--repair-grain-ledger",
+            action="store_true",
+            help="同步模板后补建缺失的庄园仓库粮食账本。",
+        )
 
     def handle(self, *args, **options):
         file_path = Path(options["file"])
@@ -124,3 +131,8 @@ class Command(BaseCommand):
                     f"guests={sync_report.guests_reconciled})"
                 )
             )
+
+        # 默认不隐式执行全库修复；bootstrap_game_data 会显式开启该参数，
+        # 保持一键部署的既有行为。
+        if options.get("repair_grain_ledger") and GRAIN_ITEM_KEY in imported_keys:
+            call_command("repair_grain_warehouse_ledger", verbosity=0)

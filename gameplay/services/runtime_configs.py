@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import BooleanField, Exists, Value
 
@@ -89,6 +90,7 @@ class RuntimeRoutingSnapshot:
     last_daily_safety_window_end_at: datetime | None
     last_pause_window_id: str
     pause_reason: str
+    paused_from_maintenance_mode: str
     persisted: bool
 
 
@@ -133,6 +135,7 @@ class SafetyRoutingDecisionResult:
     paused: bool
     window_id: str
     window_kind: str
+    resumed: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -362,6 +365,7 @@ def _snapshot(state: BotRuntimeRoutingState) -> RuntimeRoutingSnapshot:
         last_daily_safety_window_end_at=state.last_daily_safety_window_end_at,
         last_pause_window_id=state.last_pause_window_id,
         pause_reason=state.pause_reason,
+        paused_from_maintenance_mode=state.paused_from_maintenance_mode,
         persisted=True,
     )
 
@@ -444,6 +448,7 @@ def _missing_virtual_player_routing_snapshot() -> RuntimeRoutingSnapshot:
         last_daily_safety_window_end_at=None,
         last_pause_window_id="",
         pause_reason="",
+        paused_from_maintenance_mode="",
         persisted=False,
     )
 
@@ -576,6 +581,7 @@ def _transition_virtual_player_routing(
                 last_daily_safety_window_end_at=None,
                 last_pause_window_id="",
                 pause_reason=str(pause_reason),
+                paused_from_maintenance_mode="",
                 persisted=False,
             )
         return RuntimeRoutingTransitionResult(
@@ -703,6 +709,7 @@ def _transition_virtual_player_routing(
         state.maintenance_mode = proposed_maintenance.value
         state.calibration_routes = proposed_payload
         state.pause_reason = normalized_pause_reason
+        state.paused_from_maintenance_mode = ""
         state.revision += 1
         state.save(
             update_fields=[
@@ -710,6 +717,7 @@ def _transition_virtual_player_routing(
                 "maintenance_mode",
                 "calibration_routes",
                 "pause_reason",
+                "paused_from_maintenance_mode",
                 "revision",
                 "updated_at",
             ]
@@ -725,6 +733,7 @@ def _transition_virtual_player_routing(
             last_daily_safety_window_end_at=current.last_daily_safety_window_end_at,
             last_pause_window_id=current.last_pause_window_id,
             pause_reason=normalized_pause_reason,
+            paused_from_maintenance_mode="",
             persisted=True,
         )
     return RuntimeRoutingTransitionResult(
@@ -800,7 +809,9 @@ def _normalize_safety_window_contract(
     window_end_at: datetime,
     should_pause: bool,
     pause_reason: str,
-) -> tuple[int, str, str, datetime, str]:
+    resume_if_healthy: bool = False,
+    expected_pause_reason: str = "",
+) -> tuple[int, str, str, datetime, str, bool, str]:
     if isinstance(expected_revision, bool) or not isinstance(expected_revision, int) or expected_revision < 0:
         raise RuntimeRoutingError("expected_revision must be a non-negative integer")
     if not isinstance(window_id, str) or not window_id.strip():
@@ -829,20 +840,49 @@ def _normalize_safety_window_contract(
         raise RuntimeRoutingError("daily safety window end must be aligned to UTC midnight")
     if not isinstance(should_pause, bool):
         raise RuntimeRoutingError("should_pause must be a boolean")
+    if not isinstance(resume_if_healthy, bool):
+        raise RuntimeRoutingError("resume_if_healthy must be a boolean")
     if not isinstance(pause_reason, str):
         raise RuntimeRoutingError("pause_reason must be a string")
+    if not isinstance(expected_pause_reason, str):
+        raise RuntimeRoutingError("expected_pause_reason must be a string")
     normalized_reason = pause_reason.strip()
+    normalized_expected_pause_reason = expected_pause_reason.strip()
     if should_pause and not normalized_reason:
         raise RuntimeRoutingError("pause_reason is required when should_pause is true")
     if not should_pause and normalized_reason:
         raise RuntimeRoutingError("pause_reason requires should_pause=true")
+    if should_pause and resume_if_healthy:
+        raise RuntimeRoutingError("resume_if_healthy cannot be combined with should_pause=true")
+    if resume_if_healthy and not normalized_expected_pause_reason:
+        raise RuntimeRoutingError("expected_pause_reason is required when resume_if_healthy is true")
     return (
         expected_revision,
         normalized_window_id,
         window_kind,
         normalized_window_end,
         normalized_reason,
+        resume_if_healthy,
+        normalized_expected_pause_reason,
     )
+
+
+def is_recoverable_safety_pause_reason(reason: str) -> bool:
+    """Return whether a pause can recover after consecutive complete safety windows."""
+    normalized = str(reason).strip()
+    if "," in normalized:
+        return False
+    return normalized.startswith(
+        ("arena_shortage_baseline_missing:", "arena_shortage_baseline_expired:")
+    ) or normalized in {
+        "missing_finalized_hourly_window",
+        "missing_finalized_daily_window",
+    }
+
+
+def _is_recoverable_safety_pause_reason(reason: str) -> bool:
+    """Compatibility wrapper for the routing transition implementation."""
+    return is_recoverable_safety_pause_reason(reason)
 
 
 @transaction.atomic
@@ -854,6 +894,8 @@ def apply_virtual_player_safety_decision(
     window_end_at: datetime,
     should_pause: bool,
     pause_reason: str = "",
+    resume_if_healthy: bool = False,
+    expected_pause_reason: str = "",
 ) -> SafetyRoutingDecisionResult:
     """Consume one finalized safety window and atomically apply its routing decision."""
     (
@@ -862,6 +904,8 @@ def apply_virtual_player_safety_decision(
         normalized_kind,
         normalized_window_end,
         normalized_reason,
+        normalized_resume_if_healthy,
+        normalized_expected_pause_reason,
     ) = _normalize_safety_window_contract(
         expected_revision=expected_revision,
         window_id=window_id,
@@ -869,6 +913,8 @@ def apply_virtual_player_safety_decision(
         window_end_at=window_end_at,
         should_pause=should_pause,
         pause_reason=pause_reason,
+        resume_if_healthy=resume_if_healthy,
+        expected_pause_reason=expected_pause_reason,
     )
     state = BotRuntimeRoutingState.objects.select_for_update().filter(key=BotRuntimeRoutingState.GLOBAL_KEY).first()
     if state is None:
@@ -900,16 +946,59 @@ def apply_virtual_player_safety_decision(
     )
     setattr(state, cursor_field, normalized_window_end)
     update_fields = [cursor_field, "revision", "updated_at"]
+    resumed = False
     if should_pause:
+        state.safety_clean_window_streak = 0
+        state.safety_clean_window_kind = normalized_kind
         if state.maintenance_mode in {
             MaintenanceMode.V2_ACTIVE.value,
             MaintenanceMode.V2_CUTOVER.value,
         }:
+            state.paused_from_maintenance_mode = state.maintenance_mode
             state.maintenance_mode = MaintenanceMode.V2_PAUSED.value
             update_fields.append("maintenance_mode")
         state.last_pause_window_id = normalized_window_id
         state.pause_reason = normalized_reason
-        update_fields.extend(["last_pause_window_id", "pause_reason"])
+        update_fields.extend(
+            [
+                "last_pause_window_id",
+                "pause_reason",
+                "safety_clean_window_streak",
+                "safety_clean_window_kind",
+                "paused_from_maintenance_mode",
+            ]
+        )
+    elif normalized_resume_if_healthy:
+        if (
+            state.maintenance_mode == MaintenanceMode.V2_PAUSED.value
+            and state.pause_reason == normalized_expected_pause_reason
+            and _is_recoverable_safety_pause_reason(state.pause_reason)
+            and state.safety_clean_window_kind == normalized_kind
+            and state.paused_from_maintenance_mode == MaintenanceMode.V2_ACTIVE.value
+        ):
+            state.safety_clean_window_streak = min(255, int(state.safety_clean_window_streak) + 1)
+            if state.safety_clean_window_streak >= int(settings.VIRTUAL_PLAYER_SAFETY_AUTO_RESUME_CLEAN_WINDOWS):
+                state.maintenance_mode = MaintenanceMode.V2_ACTIVE.value
+                state.pause_reason = ""
+                state.safety_clean_window_streak = 0
+                state.safety_clean_window_kind = ""
+                state.paused_from_maintenance_mode = ""
+                resumed = True
+                update_fields.extend(
+                    [
+                        "maintenance_mode",
+                        "pause_reason",
+                        "safety_clean_window_kind",
+                        "paused_from_maintenance_mode",
+                    ]
+                )
+            update_fields.append("safety_clean_window_streak")
+        else:
+            state.safety_clean_window_streak = 0
+            update_fields.append("safety_clean_window_streak")
+    else:
+        state.safety_clean_window_streak = 0
+        update_fields.append("safety_clean_window_streak")
     state.revision += 1
     state.save(update_fields=update_fields)
     snapshot = _snapshot(state)
@@ -919,6 +1008,7 @@ def apply_virtual_player_safety_decision(
         paused=(should_pause and snapshot.maintenance_mode is MaintenanceMode.V2_PAUSED),
         window_id=normalized_window_id,
         window_kind=normalized_kind,
+        resumed=resumed,
     )
 
 

@@ -6,7 +6,12 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
-from core.exceptions import GuestItemOwnershipError, GuestOwnershipError
+from core.exceptions import (
+    GuestItemConfigurationError,
+    GuestItemOwnershipError,
+    GuestOwnershipError,
+    GuestTrainingInProgressError,
+)
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
 from guests.models import RecruitmentPool
@@ -119,12 +124,66 @@ def test_use_experience_item_for_guest_rejects_missing_item(game_data, django_us
 
 
 @pytest.mark.django_db
+def test_use_experience_item_for_guest_rejects_paused_training_without_consuming_item(
+    game_data,
+    django_user_model,
+):
+    manor, guest = _bootstrap_training_guest(
+        game_data,
+        django_user_model,
+        username="exp_item_paused_training",
+    )
+    item = _create_experience_item(manor, seconds=120)
+    guest.training_remaining_seconds = 600
+    guest.training_complete_at = None
+    guest.save(update_fields=["training_remaining_seconds", "training_complete_at"])
+
+    with pytest.raises(GuestTrainingInProgressError, match="训练已暂停"):
+        use_experience_item_for_guest(manor, guest, item.pk, 120)
+
+    guest.refresh_from_db()
+    item.refresh_from_db()
+    assert guest.training_remaining_seconds == 600
+    assert guest.training_complete_at is None
+    assert item.quantity == 1
+
+
+@pytest.mark.django_db
 def test_use_experience_item_for_guest_rejects_invalid_reduce_seconds(game_data, django_user_model):
     manor, guest = _bootstrap_training_guest(game_data, django_user_model, username="exp_item_invalid_seconds")
     item = _create_experience_item(manor, seconds=120)
 
     with pytest.raises(AssertionError, match="invalid guest training reduce_seconds"):
         use_experience_item_for_guest(manor, guest, item.pk, 0)
+
+
+@pytest.mark.django_db
+def test_use_experience_fruit_rejects_guest_level_50_or_above(game_data, django_user_model):
+    manor, guest = _bootstrap_training_guest(game_data, django_user_model, username="exp_fruit_level_limit")
+    guest.level = 50
+    guest.save(update_fields=["level"])
+    fruit_template = ItemTemplate.objects.create(
+        key="experience_fruit",
+        name="经验果",
+        effect_type=ItemTemplate.EffectType.EXPERIENCE_ITEM,
+        is_usable=False,
+        effect_payload={"time": 60},
+    )
+    item = InventoryItem.objects.create(
+        manor=manor,
+        template=fruit_template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    before_eta = guest.training_complete_at
+
+    with pytest.raises(GuestItemConfigurationError, match="50级以上门客不能使用经验果"):
+        use_experience_item_for_guest(manor, guest, item.pk, 60)
+
+    guest.refresh_from_db()
+    item.refresh_from_db()
+    assert guest.training_complete_at == before_eta
+    assert item.quantity == 1
 
 
 @pytest.mark.django_db

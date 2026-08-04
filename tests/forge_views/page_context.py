@@ -196,6 +196,31 @@ class TestForgePageContext:
         assert len(decompose_page_obj.object_list) == 9
         assert decompose_page_obj.has_next()
 
+    def test_forge_synthesis_blueprints_paginate_to_three_items(self, manor_with_user, monkeypatch):
+        _manor, client = manor_with_user
+
+        monkeypatch.setattr("gameplay.services.buildings.forge.get_equipment_options", lambda *_a, **_k: [])
+        monkeypatch.setattr(
+            "gameplay.services.buildings.forge.get_blueprint_synthesis_options",
+            lambda *_a, **_k: [],
+        )
+        monkeypatch.setattr(
+            "gameplay.selectors.production.annotate_blueprint_synthesis_options",
+            lambda *_a, **_k: [{"blueprint_key": f"bp_{index}"} for index in range(4)],
+        )
+        monkeypatch.setattr(
+            "gameplay.services.buildings.forge.get_decomposable_equipment_options",
+            lambda *_a, **_k: [],
+        )
+
+        response = client.get(reverse("gameplay:forge") + "?mode=synthesize&blueprint_page=2")
+
+        assert response.status_code == 200
+        blueprint_page_obj = response.context["blueprint_page_obj"]
+        assert blueprint_page_obj.paginator.per_page == 3
+        assert blueprint_page_obj.number == 2
+        assert len(blueprint_page_obj.object_list) == 1
+
     def test_forge_synthesize_mode_merges_weapon_categories(self, manor_with_user, monkeypatch):
         _manor, client = manor_with_user
 

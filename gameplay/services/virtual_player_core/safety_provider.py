@@ -44,8 +44,11 @@ _ALLOWED_DIMENSION_KEYS = frozenset(
         "phase",
         "policy_version",
         "prestige_band",
+        "real_entry_count",
         "reason",
         "reference_snapshot_version",
+        "reserve_ready_count",
+        "reserve_training_count",
         "result",
         "schedule_disposition",
         "source_metric",
@@ -53,7 +56,16 @@ _ALLOWED_DIMENSION_KEYS = frozenset(
         "to_band",
         "to_mode",
         "trigger",
+        "virtual_entry_count",
         "window_kind",
+    }
+)
+_INTEGER_DIMENSION_KEYS = frozenset(
+    {
+        "real_entry_count",
+        "reserve_ready_count",
+        "reserve_training_count",
+        "virtual_entry_count",
     }
 )
 
@@ -119,7 +131,7 @@ class SafetyMetricEventRecord:
     event_id: str
     metric_name: str
     occurred_at: datetime
-    dimensions: Mapping[str, str]
+    dimensions: Mapping[str, str | int]
     value: Decimal
 
 
@@ -145,7 +157,7 @@ class _CanonicalEvent:
     event_id: str
     metric_name: str
     occurred_at: datetime
-    dimensions: dict[str, str]
+    dimensions: dict[str, str | int]
     value: Decimal
     canonical_value: str
     payload_digest: str
@@ -192,17 +204,22 @@ def _normalize_metric_name(value: object) -> str:
     return value
 
 
-def _normalize_dimensions(value: object) -> dict[str, str]:
+def _normalize_dimensions(value: object) -> dict[str, str | int]:
     if value is None:
         return {}
     if not isinstance(value, Mapping):
         raise InvalidSafetyMetricError("dimensions must be a mapping")
     if len(value) > SAFETY_MAX_DIMENSIONS:
         raise InvalidSafetyMetricError(f"dimensions may contain at most {SAFETY_MAX_DIMENSIONS} entries")
-    normalized: dict[str, str] = {}
+    normalized: dict[str, str | int] = {}
     for key, raw_dimension in value.items():
         if not isinstance(key, str) or key not in _ALLOWED_DIMENSION_KEYS:
             raise InvalidSafetyMetricError(f"unsupported safety dimension: {key!r}")
+        if key in _INTEGER_DIMENSION_KEYS:
+            if isinstance(raw_dimension, bool) or not isinstance(raw_dimension, int) or raw_dimension < 0:
+                raise InvalidSafetyMetricError(f"dimensions.{key} must be a non-negative integer")
+            normalized[key] = raw_dimension
+            continue
         if not isinstance(raw_dimension, str) or not _DIMENSION_VALUE_RE.fullmatch(raw_dimension):
             raise InvalidSafetyMetricError(f"dimensions.{key} must be a canonical bounded ASCII string")
         normalized[key] = raw_dimension
@@ -236,7 +253,7 @@ def _event_payload_digest(
     *,
     metric_name: str,
     occurred_at: datetime,
-    dimensions: Mapping[str, str],
+    dimensions: Mapping[str, str | int],
     canonical_value: str,
 ) -> str:
     payload = {
@@ -661,7 +678,7 @@ def record_safety_metric_event(
     event_id: str,
     metric_name: str,
     occurred_at: datetime,
-    dimensions: Mapping[str, str] | None,
+    dimensions: Mapping[str, str | int] | None,
     value: int | float | Decimal,
 ) -> SafetyMetricEventWriteResult:
     """Persist one canonical event, or durably record and raise a hard violation."""

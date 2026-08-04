@@ -84,6 +84,7 @@ from .bots import (  # noqa: E402, F401
     BotPopulationRecomputeDemandAdmin,
     BotProfileAdmin,
     BotRuntimeRoutingStateAdmin,
+    BotVirtualPlayerHealthAdmin,
 )
 from .buildings import BuildingAdmin, BuildingTypeAdmin, WorkAssignmentAdmin, WorkTemplateAdmin  # noqa: E402, F401
 from .core import ManorAdmin, ResourceEventAdmin  # noqa: E402, F401
@@ -116,6 +117,7 @@ __all__ = [
     "BotPopulationRecomputeDemandAdmin",
     "BotProfileAdmin",
     "BotRuntimeRoutingStateAdmin",
+    "BotVirtualPlayerHealthAdmin",
     # missions
     "MissionTemplateAdmin",
     "MissionRunAdmin",

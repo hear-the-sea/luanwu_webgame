@@ -8,7 +8,8 @@ from typing import Any, Dict, List, Optional
 
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.constants import get_raid_capture_guest_rate
-from guests.models import Guest
+from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
+from guests.models import Guest, GuestRarity, GuestTemplate
 
 from ....models import JailPrisoner, Manor, OathBond, RaidRun
 
@@ -97,6 +98,28 @@ def _delete_captured_guest_gear(run: RaidRun, target: Guest) -> None:
         )
 
 
+def _resolve_capture_template(template: GuestTemplate) -> GuestTemplate:
+    """Store the original template when a dynamically converted guest is captured."""
+    if template.rarity != GuestRarity.BLUE:
+        return template
+
+    template_key = str(template.key or "").strip()
+    if not template_key.startswith(RARITY_CONVERSION_TEMPLATE_KEY_PREFIX):
+        return template
+
+    conversion_suffix = template_key[len(RARITY_CONVERSION_TEMPLATE_KEY_PREFIX) :]
+    target_rarity, separator, source_template_id_text = conversion_suffix.rpartition("_")
+    if target_rarity != GuestRarity.BLUE or not separator:
+        return template
+
+    try:
+        source_template_id = int(source_template_id_text)
+    except (TypeError, ValueError):
+        return template
+
+    return GuestTemplate.objects.filter(pk=source_template_id, rarity=GuestRarity.GREEN).first() or template
+
+
 def _capture_guest_payload(
     captured_name: str, captured_rarity: str, captured_template_key: str, is_attacker_victory: bool
 ) -> Dict[str, Any]:
@@ -143,15 +166,16 @@ def _try_capture_guest(
         return None
 
     captured_name = target.display_name
-    captured_rarity = getattr(getattr(target, "template", None), "rarity", "") or ""
-    captured_template_key = getattr(getattr(target, "template", None), "key", "") or ""
+    captured_template = _resolve_capture_template(target.template)
+    captured_rarity = captured_template.rarity
+    captured_template_key = captured_template.key
 
     _delete_captured_guest_gear(run, target)
 
     JailPrisoner.objects.create(
         captor=winner,
         original_manor=loser,
-        guest_template=target.template,
+        guest_template=captured_template,
         original_guest_name=captured_name,
         original_level=target.level,
         loyalty=target.loyalty,

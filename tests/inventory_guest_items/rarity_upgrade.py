@@ -1,8 +1,9 @@
 import pytest
 
 from core.exceptions import GuestItemConfigurationError
-from gameplay.models import InventoryItem
+from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.inventory.guest_items import use_guest_rarity_upgrade_item
+from gameplay.services.manor.core import ensure_manor
 from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestSkill, GuestStatus, GuestTemplate, Skill
 from guests.utils.attribute_growth import allocate_level_up_attributes
 from tests.inventory_guest_items.support_upgrade import (
@@ -54,6 +55,8 @@ def test_use_guest_rarity_upgrade_item_switches_template_and_uses_blue_standard_
     assert guest.rarity == "blue"
     assert guest.level == 1
     assert guest.experience == 0
+    assert guest.training_target_level == 2
+    assert guest.training_complete_at is not None
     assert guest.xisuidan_used == 0
     assert guest.allocated_force == 0
     assert guest.allocated_intellect == 0
@@ -112,3 +115,74 @@ def test_use_guest_rarity_upgrade_item_switches_blue_to_purple_and_uses_purple_s
     spy_rng = _RangeSpyRng()
     allocate_level_up_attributes(guest, levels=1, rng=spy_rng)
     assert spy_rng.last_range == (6, 11)
+
+
+@pytest.mark.django_db
+def test_green_to_blue_pill_creates_reusable_blue_template_and_uses_blue_standard_growth_range(django_user_model):
+    user = django_user_model.objects.create_user(username="green_to_blue_pill", password="pass123")
+    manor = ensure_manor(user)
+    green_template = GuestTemplate.objects.create(
+        key="green_to_blue_pill_guest",
+        name="待转化门客",
+        archetype="civil",
+        rarity="green",
+        base_attack=120,
+        base_intellect=160,
+        base_defense=100,
+        base_agility=90,
+        base_luck=50,
+        base_hp=1200,
+        growth_range=[3, 7],
+        attribute_weights={"force": 20, "intellect": 40, "defense": 20, "agility": 20},
+    )
+    guest = Guest.objects.create(
+        manor=manor,
+        template=green_template,
+        level=36,
+        experience=999,
+        force=220,
+        intellect=280,
+        defense_stat=180,
+        agility=170,
+        luck=60,
+        status=GuestStatus.IDLE,
+    )
+    item_template = ItemTemplate.objects.create(
+        key="green_to_blue_pill_item",
+        name="绿转蓝丸子",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=True,
+        effect_payload={
+            "action": "upgrade_guest_rarity",
+            "source_rarity": "green",
+            "target_rarity": "blue",
+        },
+    )
+    item = InventoryItem.objects.create(manor=manor, template=item_template, quantity=2)
+
+    result = use_guest_rarity_upgrade_item(manor, item, guest.id)
+
+    guest.refresh_from_db()
+    converted_template = guest.template
+    assert converted_template.rarity == "blue"
+    assert converted_template.name == green_template.name
+    assert converted_template.growth_range == []
+    assert converted_template.attribute_weights == green_template.attribute_weights
+    assert guest.level == 1
+    assert guest.experience == 0
+    assert guest.training_target_level == 2
+    assert guest.training_complete_at is not None
+    assert result["old_rarity"] == "绿"
+    assert result["new_rarity"] == "蓝"
+    assert item_template.inventory_entries.get(manor=manor).quantity == 1
+
+    spy_rng = _RangeSpyRng()
+    allocate_level_up_attributes(guest, levels=1, rng=spy_rng)
+    assert spy_rng.last_range == (5, 9)
+
+    second_guest = Guest.objects.create(manor=manor, template=green_template, status=GuestStatus.IDLE)
+    second_item = item_template.inventory_entries.get(manor=manor)
+    second_result = use_guest_rarity_upgrade_item(manor, second_item, second_guest.id)
+    second_guest.refresh_from_db()
+    assert second_guest.template_id == converted_template.id
+    assert second_result["new_rarity"] == "蓝"

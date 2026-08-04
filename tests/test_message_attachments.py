@@ -10,7 +10,7 @@ from django.utils import timezone
 from django_redis.exceptions import ConnectionInterrupted
 
 from core.exceptions import NoAttachmentError
-from gameplay.models import ItemTemplate, Message, ResourceEvent, ResourceType
+from gameplay.models import InventoryItem, ItemTemplate, Message, ResourceEvent, ResourceType
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.utils import messages as message_service
 from gameplay.services.utils.cache import CacheKeys
@@ -25,6 +25,7 @@ from gameplay.services.utils.messages import (
     delete_messages,
     unread_message_count,
 )
+from tests.gameplay_services.support import ensure_grain_template
 
 User = get_user_model()
 
@@ -300,6 +301,34 @@ def test_claim_message_attachments_records_actual_and_stores_claimed():
     assert event.delta == 5
 
     assert message.get_attachment_summary() == "银两×5、1种道具"
+
+
+@pytest.mark.django_db
+def test_claim_message_attachments_routes_legacy_grain_item_to_warehouse_ledger():
+    user = User.objects.create_user(username="mail_legacy_grain", password="pass123")
+    manor = ensure_manor(user)
+    grain_template = ensure_grain_template()
+    manor.grain = 5
+    manor.save(update_fields=["grain"])
+
+    message = Message.objects.create(
+        manor=manor,
+        kind=Message.Kind.REWARD,
+        title="旧格式粮食附件",
+        attachments={"items": {"grain": 7}},
+    )
+
+    claimed = claim_message_attachments(message)
+
+    manor.refresh_from_db(fields=["grain"])
+    warehouse_grain = InventoryItem.objects.get(
+        manor=manor,
+        template=grain_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    assert claimed["item_grain"] == 7
+    assert manor.grain == 12
+    assert warehouse_grain.quantity == 12
 
 
 @pytest.mark.django_db

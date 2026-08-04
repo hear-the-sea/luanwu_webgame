@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from core.exceptions import BattlePreparationError
 from guests.models import Guest, GuestStatus
+from guests.services.status import persist_guest_status_transitions
 
 
 def _coerce_positive_id(raw_id, *, contract_name: str) -> int:
@@ -87,10 +88,11 @@ def load_locked_battle_participants(
 
 
 def mark_locked_guests_deployed(locked_guests: list[Guest]) -> None:
-    for guest in locked_guests:
-        guest.status = GuestStatus.DEPLOYED
-    if locked_guests:
-        Guest.objects.bulk_update(locked_guests, ["status"])
+    persist_guest_status_transitions(
+        locked_guests,
+        GuestStatus.DEPLOYED,
+        source="battle_deploy",
+    )
 
 
 def refresh_guest_instances(guests: list[Guest]) -> None:
@@ -100,4 +102,11 @@ def refresh_guest_instances(guests: list[Guest]) -> None:
 
 
 def release_deployed_guests(guest_ids: list[int]) -> None:
-    Guest.objects.filter(id__in=guest_ids, status=GuestStatus.DEPLOYED).update(status=GuestStatus.IDLE)
+    locked_guests = list(
+        Guest.objects.select_for_update().filter(id__in=guest_ids, status=GuestStatus.DEPLOYED).order_by("id")
+    )
+    persist_guest_status_transitions(
+        locked_guests,
+        GuestStatus.IDLE,
+        source="battle_release",
+    )

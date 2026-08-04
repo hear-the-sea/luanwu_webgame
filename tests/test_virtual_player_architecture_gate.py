@@ -807,6 +807,12 @@ def test_arena_task_reverse_dependency_debt_is_explicit() -> None:
             "reconcile_tournament_demand",
         },
         "gameplay.services.arena.virtual_reserve_scan": {"scan_virtual_reserve_demands"},
+        "gameplay.services.arena.virtual_reserve_observability": {
+            "ARENA_SHORTAGE_METRIC_RETRY_MAX_ATTEMPTS",
+            "queue_arena_shortage_metric_retry",
+            "record_arena_shortage_metric_failure",
+            "record_arena_shortage_observation",
+        },
     }
 
     reserve_tree = ast.parse(reserve_path.read_text(encoding="utf-8"), filename=str(reserve_path))

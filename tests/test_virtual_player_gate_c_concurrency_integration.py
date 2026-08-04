@@ -37,7 +37,7 @@ def verified_gate_evidence(monkeypatch) -> None:
     monkeypatch.setattr(
         gate_e_cutover_workflow,
         "verify_gate_e_readiness",
-        lambda: E_PROOF,
+        lambda **_kwargs: E_PROOF,
     )
     monkeypatch.setattr(
         gate_e_cutover_workflow,

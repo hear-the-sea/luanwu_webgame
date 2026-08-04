@@ -498,7 +498,7 @@ items:
 
   - key: experience_fruit
     name: 经验果
-    description: 使用后可减少指定门客1分钟的升级时间。
+    description: 使用后可减少指定门客1小时的升级时间。
     effect_type: experience_items
     rarity: green
     tradeable: true
@@ -506,16 +506,16 @@ items:
     storage_space: 5
     is_usable: false
     effect_payload:
-      time: 60  # 减少60秒
+      time: 3600  # 减少1小时
     image: experience_fruit.png
 
   - key: experience_peach
     name: 经验桃子
-    description: 减少门客升级时间2小时。
+    description: 减少门客升级时间8小时。
     effect_type: experience_items
     rarity: green
     effect_payload:
-      time: 7200
+      time: 28800
     tradeable: true
     price: 1000
     storage_space: 5
@@ -523,11 +523,11 @@ items:
 
   - key: experience_pineapple
     name: 经验菠萝
-    description: 减少门客升级时间6小时。
+    description: 减少门客升级时间16小时。
     effect_type: experience_items
     rarity: blue
     effect_payload:
-      time: 28800
+      time: 57600
     tradeable: true
     price: 3000
     storage_space: 10
@@ -1227,7 +1227,7 @@ items:
     effect_type: tool
     rarity: purple
     tradeable: true
-    price: 6000
+    price: 6000000
     storage_space: 150
     is_usable: true
     image: zhuyingtai_guest_scroll.png
@@ -1360,6 +1360,21 @@ items:
       target_template_map:
         hist_sljnbc_0589_blue: hist_sljnbc_0589_purple
         hist_sljnbc_0590_blue: hist_sljnbc_0590_purple
+
+  - key: green_to_blue_pill
+    name: 绿转蓝丸子
+    description: 使用后可将指定绿色门客转化为蓝色品质，并重置回1级；后续成长按照标准蓝色门客成长区间计算。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 50000
+    storage_space: 25
+    is_usable: true
+    image: green_to_blue_pill.png
+    effect_payload:
+      action: upgrade_guest_rarity
+      source_rarity: green
+      target_rarity: blue
 
   - key: small_trumpet
     name: 小喇叭

@@ -17,6 +17,7 @@ from battle.models import TroopTemplate
 from core.utils import safe_int, sanitize_error_message
 from core.utils.rate_limit import rate_limit_redirect
 from gameplay.models import InventoryItem, Manor, PlayerTroop
+from gameplay.services.inventory.core import get_warehouse_grain_quantity
 
 from ..decorators import require_guild_member
 from ..models import GuildTroopStorage, GuildWarehouse
@@ -88,7 +89,7 @@ def _build_resource_page_context(member: Any, *, manor: Manor, page_mode: str) -
             "label": "粮食",
             "unit": int(guild_constants.CONTRIBUTION_UNITS.get("grain", 1)),
             "rate": guild_constants.CONTRIBUTION_RATES.get("grain", 0),
-            "available": int(manor.grain),
+            "available": get_warehouse_grain_quantity(manor),
             "donated_today": display_daily_donation_grain,
             "daily_limit": int(guild_constants.DAILY_DONATION_LIMITS.get("grain", 0)),
             "resource_type": "grain",

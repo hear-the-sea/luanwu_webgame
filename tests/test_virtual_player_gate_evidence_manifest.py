@@ -10,10 +10,12 @@ from pathlib import Path
 
 import yaml
 
+from gameplay.services.virtual_player_core import gate_evidence
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MAKEFILE_PATH = PROJECT_ROOT / "Makefile"
 ACCEPTANCE_CONFIG_PATH = PROJECT_ROOT / "docs" / "virtual_player_gate_a_acceptance_config_2026-07-27.yaml"
-MANIFEST_PATH = PROJECT_ROOT / "docs" / "virtual_player_gate_evidence_manifest_2026-07-30.yaml"
+MANIFEST_PATH = gate_evidence.GATE_A_MANIFEST_PATH
 CANONICAL_COMMAND = "DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-a"
 CONTRACT_TESTS_VARIABLE = "VIRTUAL_PLAYER_GATE_A_CONTRACT_TESTS"
 REAL_SERVICE_TESTS_VARIABLE = "VIRTUAL_PLAYER_GATE_A_REAL_SERVICE_TESTS"
@@ -57,7 +59,7 @@ def test_manifest_identity_scope_and_canonical_command_match_acceptance() -> Non
     manifest = _load_yaml(MANIFEST_PATH)
     acceptance_manifest = acceptance["evidence_manifest"]
 
-    assert PROJECT_ROOT / acceptance_manifest["path"] == MANIFEST_PATH
+    assert PROJECT_ROOT / acceptance_manifest["path"].format(artifact_date=gate_evidence.ARTIFACT_DATE) == MANIFEST_PATH
     assert acceptance_manifest["schema_version"] == manifest["schema_version"] == 1
     assert acceptance_manifest["authorizes_gate_c_schema_or_runtime"] is False
     assert acceptance_manifest["checksum_algorithm"] == manifest["collection"]["nodeid_checksum"]["algorithm"]

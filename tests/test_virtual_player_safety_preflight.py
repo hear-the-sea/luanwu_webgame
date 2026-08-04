@@ -13,6 +13,7 @@ from gameplay.services.virtual_player_core.contracts import MaintenanceOutcome, 
 from gameplay.services.virtual_player_core.safety_metrics import SAFETY_HEARTBEAT_METRIC
 from gameplay.services.virtual_player_core.safety_preflight import (
     SAFETY_MONITOR_MAX_AGE,
+    SAFETY_MONITOR_MAX_FUTURE_SKEW,
     SAFETY_MONITOR_STREAM,
     check_v2_development_write_preflight,
 )
@@ -102,6 +103,20 @@ def test_preflight_rejects_untrusted_monitor_heartbeat(
     assert result.allowed is False
     assert result.reason == reason
     assert result.checked_at == CHECKED_AT
+    assert result.monitor_heartbeat_at == heartbeat_at
+
+
+@pytest.mark.django_db
+def test_preflight_allows_bounded_application_database_clock_skew() -> None:
+    heartbeat_at = CHECKED_AT + timedelta(minutes=1)
+    checked_at = heartbeat_at - SAFETY_MONITOR_MAX_FUTURE_SKEW + timedelta(seconds=1)
+    _seed_monitor_heartbeat(occurred_at=heartbeat_at)
+
+    result = check_v2_development_write_preflight(now=checked_at)
+
+    assert result.allowed is True
+    assert result.reason == ""
+    assert result.checked_at == checked_at
     assert result.monitor_heartbeat_at == heartbeat_at
 
 

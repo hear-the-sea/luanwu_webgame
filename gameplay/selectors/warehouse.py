@@ -6,8 +6,9 @@ from guests.models import GuestStatus
 
 from ..models import InventoryItem, ItemTemplate
 from ..models.items import LEGACY_TOOL_EFFECT_TYPES, get_item_effect_type_label
+from ..services.inventory.core import get_warehouse_grain_quantity
 from ..services.inventory.guest_item_selector import build_guest_item_selection_context
-from ..services.manor.treasury import get_treasury_capacity, get_treasury_used_space
+from ..services.manor.treasury import get_treasury_capacity, get_treasury_deposit_block_reason, get_treasury_used_space
 
 # 每页显示的物品数量
 WAREHOUSE_PAGE_SIZE = 20
@@ -35,47 +36,41 @@ def _distinct_effect_types(items):
     return items.order_by().values_list("template__effect_type", flat=True).distinct()
 
 
-def _build_projected_grain_item(manor):
+def _build_legacy_grain_item(manor, quantity: int):
     grain_template = ItemTemplate.objects.filter(key=GRAIN_ITEM_KEY).first()
     if not grain_template:
         return None
 
-    projected_item = InventoryItem(
+    legacy_item = InventoryItem(
         manor=manor,
         template=grain_template,
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-        quantity=0,
+        quantity=quantity,
     )
-    projected_item.display_quantity = max(0, int(getattr(manor, "grain", 0) or 0))
-    projected_item.is_projected = True
-    projected_item.projected_display_hint = "实时产出待后台同步，当前不可操作"
-    return projected_item
+    setattr(legacy_item, "display_quantity", quantity)
+    return legacy_item
 
 
-def _project_warehouse_grain_item(items, manor, *, current_tab: str, selected_category: str):
+def _ensure_warehouse_grain_item(items, manor, *, current_tab: str, selected_category: str):
     items_list = list(items)
     if current_tab != "warehouse":
         return items_list, None
 
-    projected_grain = max(0, int(getattr(manor, "grain", 0) or 0))
     grain_item = next((item for item in items_list if item.template.key == GRAIN_ITEM_KEY), None)
-    if grain_item is None and projected_grain > 0:
-        projected_item = _build_projected_grain_item(manor)
-        if projected_item is not None:
-            effect_type = projected_item.template.effect_type
-            if selected_category in {"all", effect_type}:
-                items_list.append(projected_item)
-                items_list.sort(key=lambda item: (item.template.name, item.id or 0))
-                grain_item = projected_item
-
+    if grain_item is None:
+        warehouse_grain = get_warehouse_grain_quantity(manor)
+        if warehouse_grain > 0:
+            legacy_item = _build_legacy_grain_item(manor, warehouse_grain)
+            if legacy_item is not None:
+                effect_type = legacy_item.template.effect_type
+                if selected_category in {"all", effect_type}:
+                    items_list.append(legacy_item)
+                    items_list.sort(key=lambda item: (item.template.name, item.id or 0))
+                    grain_item = legacy_item
     if grain_item is None:
         return items_list, None
 
-    actual_quantity = max(0, int(getattr(grain_item, "quantity", 0) or 0))
-    grain_item.display_quantity = projected_grain
-    grain_item.is_projected = projected_grain != actual_quantity or not getattr(grain_item, "pk", None)
-    if grain_item.is_projected:
-        grain_item.projected_display_hint = "实时产出待后台同步，当前不可操作"
+    setattr(grain_item, "display_quantity", max(0, int(getattr(grain_item, "quantity", 0) or 0)))
     return items_list, grain_item
 
 
@@ -170,16 +165,21 @@ def get_warehouse_context(manor, current_tab: str, selected_category: str, page:
     frozen_gold = context["frozen_gold_bars"] if current_tab == "warehouse" else 0
 
     # 分页处理
-    projected_items, projected_grain_item = _project_warehouse_grain_item(
+    warehouse_items, warehouse_grain_item = _ensure_warehouse_grain_item(
         items,
         manor,
         current_tab=current_tab,
         selected_category=selected_category,
     )
-    if projected_grain_item is not None:
+    for item in warehouse_items:
+        deposit_block_reason = get_treasury_deposit_block_reason(item.template)
+        item.treasury_deposit_blocked = deposit_block_reason is not None
+        item.treasury_deposit_hint = deposit_block_reason
+
+    if warehouse_grain_item is not None:
         _append_missing_category_option(
             categories,
-            effect_type=projected_grain_item.template.effect_type,
+            effect_type=warehouse_grain_item.template.effect_type,
             tool_effect_types=tool_effect_types,
             tool_category_key=tool_category_key,
         )
@@ -191,19 +191,18 @@ def get_warehouse_context(manor, current_tab: str, selected_category: str, page:
         )
     )
 
-    paginator = Paginator(projected_items, WAREHOUSE_PAGE_SIZE)
+    paginator = Paginator(warehouse_items, WAREHOUSE_PAGE_SIZE)
     page_obj = paginator.get_page(page)
     items_list = list(page_obj)
 
     for item in items_list:
-        if item.template.key == GRAIN_ITEM_KEY:
-            item.display_quantity = max(0, int(getattr(manor, "grain", 0) or 0))
-        elif item.template.key == "gold_bar" and frozen_gold > 0:
-            item.display_quantity = max(0, item.quantity - frozen_gold)
+        if item.template.key == "gold_bar" and frozen_gold > 0:
+            setattr(item, "display_quantity", max(0, item.quantity - frozen_gold))
         else:
             item.display_quantity = item.quantity
 
     context["inventory_items"] = items_list
+    context["warehouse_grain_quantity"] = get_warehouse_grain_quantity(manor)
     context["categories"] = categories
     context["selected_category"] = selected_category
 

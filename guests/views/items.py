@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 from typing import Any
 
 from django.contrib import messages
@@ -45,6 +46,12 @@ def _normalize_medicine_view_result_int(raw_value: object, *, contract_name: str
 
 def _normalize_medicine_view_result_string(raw_value: object, *, contract_name: str) -> str:
     if not isinstance(raw_value, str) or not raw_value.strip():
+        raise AssertionError(f"invalid {contract_name}: {raw_value!r}")
+    return raw_value
+
+
+def _normalize_medicine_view_result_datetime(raw_value: object, *, contract_name: str) -> datetime | None:
+    if raw_value is not None and not isinstance(raw_value, datetime):
         raise AssertionError(f"invalid {contract_name}: {raw_value!r}")
     return raw_value
 
@@ -117,6 +124,10 @@ def use_medicine_item_view(request, pk: int):
             result.get("status_display"),
             contract_name="medicine item view result status_display",
         )
+        training_eta = _normalize_medicine_view_result_datetime(
+            result.get("training_eta"),
+            contract_name="medicine item view result training_eta",
+        )
         msg = f"{guest.display_name} 恢复生命 {healed} 点"
         if bool(result.get("injury_cured")):
             msg += "，重伤状态已解除"
@@ -130,6 +141,8 @@ def use_medicine_item_view(request, pk: int):
                 max_hp=max_hp,
                 guest_status=guest_status,
                 status_display=status_display,
+                training_eta=training_eta.isoformat() if training_eta else None,
+                training_paused=bool(result.get("training_paused", False)),
             )
         messages.success(request, msg)
     except GameError as exc:

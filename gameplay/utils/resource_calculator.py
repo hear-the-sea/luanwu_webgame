@@ -104,7 +104,19 @@ def has_resources(manor: "Manor", cost: Dict[str, int]) -> bool:
         >>> has_resources(manor, {"silver": 250})
         False
     """
-    return all(getattr(manor, resource) >= amount for resource, amount in cost.items())
+    grain_quantity = None
+    for resource, amount in cost.items():
+        if resource == ResourceType.GRAIN:
+            if grain_quantity is None:
+                from ..services.inventory.core import get_warehouse_grain_quantity
+
+                grain_quantity = get_warehouse_grain_quantity(manor)
+            available = grain_quantity
+        else:
+            available = getattr(manor, resource)
+        if available < amount:
+            return False
+    return True
 
 
 def calculate_hourly_rates(

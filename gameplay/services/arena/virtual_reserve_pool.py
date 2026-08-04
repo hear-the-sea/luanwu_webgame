@@ -52,6 +52,8 @@ ARENA_MAX_GUEST_LEVEL_STEP = 20
 PRE_FILL_GROWTH_INTERVAL = timedelta(hours=1)
 POST_FILL_GROWTH_INTERVAL = timedelta(minutes=15)
 GROWTH_CLAIM_LEASE = timedelta(minutes=5)
+DEMAND_RETRY_INITIAL = timedelta(minutes=5)
+DEMAND_RETRY_MAX = timedelta(hours=1)
 _GUEST_RARITY_RANK = {rarity.value: index for index, rarity in enumerate(GuestRarity)}
 
 
@@ -62,6 +64,57 @@ class ReserveReplenishmentResult:
     recovered_abandoned: int
     recovered_retired: int
     creation_needed: int
+
+
+def _demand_retry_delay(failure_count: int) -> timedelta:
+    exponent = min(max(0, int(failure_count) - 1), 6)
+    return min(DEMAND_RETRY_MAX, DEMAND_RETRY_INITIAL * (2**exponent))
+
+
+def record_demand_failure_locked(
+    demand: ArenaVirtualDemand,
+    *,
+    reason: str,
+    now,
+) -> None:
+    """Persist bounded backoff without allowing reconciliation to erase it."""
+    failure_count = min(255, int(demand.consecutive_failure_count) + 1)
+    demand.consecutive_failure_count = failure_count
+    demand.last_failure_reason = str(reason)[:64]
+    demand.last_checked_at = now
+    demand.next_retry_at = now + _demand_retry_delay(failure_count)
+    demand.save(
+        update_fields=[
+            "consecutive_failure_count",
+            "last_failure_reason",
+            "last_checked_at",
+            "next_retry_at",
+            "updated_at",
+        ]
+    )
+
+
+def record_demand_progress_locked(
+    demand: ArenaVirtualDemand,
+    *,
+    now,
+) -> None:
+    """Clear backoff after any successful reserve progress in the locked demand."""
+    demand.consecutive_failure_count = 0
+    demand.last_failure_reason = ""
+    demand.last_checked_at = now
+    demand.last_progress_at = now
+    demand.next_retry_at = None
+    demand.save(
+        update_fields=[
+            "consecutive_failure_count",
+            "last_failure_reason",
+            "last_checked_at",
+            "last_progress_at",
+            "next_retry_at",
+            "updated_at",
+        ]
+    )
 
 
 @dataclass(frozen=True)
@@ -396,6 +449,8 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
     )
     if demand is None:
         return ReserveReplenishmentResult(0, 0, 0, 0, 0)
+    if demand.next_retry_at is not None and demand.next_retry_at > current_time + timedelta(seconds=1):
+        return ReserveReplenishmentResult(0, 0, 0, 0, 0)
 
     reevaluate_existing_members(demand, now=current_time)
     _trim_surplus_members(demand)
@@ -403,6 +458,7 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
     slots_needed = max(0, int(demand.reserve_target_count) - active_member_count)
     recovered_abandoned = 0
     recovered_retired = 0
+    made_progress = False
     training_candidates: list[tuple[int, int]] = []
 
     for profile in _candidate_queryset(VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES).iterator(chunk_size=100):
@@ -420,6 +476,7 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
                 now=current_time,
             )
             if member is not None:
+                made_progress = True
                 slots_needed -= 1
         elif evaluation.snapshots:
             training_candidates.append((evaluation.selected_power, profile.id))
@@ -441,6 +498,7 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
                 recover=True,
             )
             if member is not None:
+                made_progress = True
                 recovered_abandoned += 1
                 slots_needed -= 1
 
@@ -462,6 +520,7 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
                 recover=True,
             )
             if member is not None:
+                made_progress = True
                 recovered_retired += 1
                 maintained_count += 1
                 slots_needed -= 1
@@ -477,7 +536,11 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
             now=current_time,
         )
         if member is not None:
+            made_progress = True
             slots_needed -= 1
+
+    if made_progress:
+        record_demand_progress_locked(demand, now=current_time)
 
     ready_count = demand.reserve_members.filter(state=ArenaVirtualReserveMember.State.READY).count()
     training_count = demand.reserve_members.filter(state=ArenaVirtualReserveMember.State.TRAINING).count()
@@ -724,18 +787,37 @@ def _finalize_virtual_reserve_growth(
             member_state=str(member.state),
         )
         return True
-    if growth_outcome in {
-        AcceleratedGrowthOutcome.INELIGIBLE,
-        AcceleratedGrowthOutcome.PAUSED,
-    }:
+    if growth_outcome is AcceleratedGrowthOutcome.PAUSED:
+        member.next_acceleration_at = handled_at + timedelta(minutes=5)
+        member.last_checked_at = handled_at
+        _clear_growth_claim(member)
+        member.save(
+            update_fields=[
+                "next_acceleration_at",
+                "last_checked_at",
+                *_GROWTH_CLAIM_FIELDS,
+                "updated_at",
+            ]
+        )
+        log_demand_event(
+            "arena_virtual_profile_growth_deferred",
+            demand,
+            message="arena virtual profile growth deferred",
+            failure_reason="growth_paused",
+            profile_id=claim.profile_id,
+            power_before=power_before,
+            growth_rounds=int(member.accelerated_growth_rounds),
+            member_state=str(member.state),
+        )
+        return True
+    if growth_outcome is AcceleratedGrowthOutcome.INELIGIBLE:
         growth_rounds = int(member.accelerated_growth_rounds)
-        failure_reason = "growth_paused" if growth_outcome is AcceleratedGrowthOutcome.PAUSED else "growth_ineligible"
         member.delete()
         log_demand_event(
             "arena_virtual_profile_released",
             demand,
             message="arena virtual profile released from training",
-            failure_reason=failure_reason,
+            failure_reason="growth_ineligible",
             profile_id=claim.profile_id,
             power_before=power_before,
             power_after=power_before,
@@ -859,6 +941,7 @@ def _finalize_virtual_reserve_growth(
             growth_rounds=int(member.accelerated_growth_rounds),
             member_state=str(member.state),
         )
+    record_demand_progress_locked(demand, now=handled_at)
     return True
 
 
@@ -947,14 +1030,17 @@ def _target_prestige_band_for_demand(demand: ArenaVirtualDemand) -> str:
 
 def create_due_virtual_reserve_profiles(*, now=None, limit: int = 100) -> int:
     current_time = now or timezone.now()
+    due_cutoff = current_time + timedelta(seconds=1)
     remaining_limit = max(0, int(limit))
     if remaining_limit <= 0:
         return 0
-    demand_ids = list(
+    demand_ids = (
         ArenaVirtualDemand.objects.filter(status=ArenaVirtualDemand.Status.ACTIVE)
         .filter(created_profile_count__lt=F("max_reserve_target_count"))
+        .filter(Q(next_retry_at__isnull=True) | Q(next_retry_at__lte=due_cutoff))
         .order_by("next_retry_at", "id")
         .values_list("id", flat=True)
+        .iterator(chunk_size=100)
     )
     created = 0
     for demand_id in demand_ids:
@@ -1000,6 +1086,11 @@ def create_due_virtual_reserve_profiles(*, now=None, limit: int = 100) -> int:
                     start_from_zero=True,
                 )
                 if mutation.status is PopulationMutationStatus.CAP_REACHED:
+                    record_demand_failure_locked(
+                        claimed_demand,
+                        reason="dynamic_population_cap_reached",
+                        now=current_time,
+                    )
                     log_demand_event(
                         "arena_virtual_fill_deferred",
                         claimed_demand,
@@ -1011,6 +1102,11 @@ def create_due_virtual_reserve_profiles(*, now=None, limit: int = 100) -> int:
                     )
                     return created
                 if mutation.status is PopulationMutationStatus.UNAVAILABLE:
+                    record_demand_failure_locked(
+                        claimed_demand,
+                        reason="population_region_unavailable",
+                        now=current_time,
+                    )
                     log_demand_event(
                         "arena_virtual_fill_deferred",
                         claimed_demand,
@@ -1024,6 +1120,7 @@ def create_due_virtual_reserve_profiles(*, now=None, limit: int = 100) -> int:
                     continue
                 claimed_demand.created_profile_count = claim_ordinal
                 claimed_demand.save(update_fields=["created_profile_count", "updated_at"])
+                record_demand_progress_locked(claimed_demand, now=current_time)
 
                 active_slots = claimed_demand.reserve_members.exclude(
                     state=ArenaVirtualReserveMember.State.EXHAUSTED

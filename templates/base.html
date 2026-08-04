@@ -90,7 +90,7 @@
                             <li><label>您的声望:</label> <span>{{ sidebar_prestige|default:0 }}</span></li>
                             <li><label>庄园排名:</label> <span>{% if sidebar_rank %}{{ sidebar_rank }}{% else %}未上榜{% endif %}</span></li>
                             <li><label>行动力:</label> <span>{{ sidebar_action_points_label }}</span></li>
-                            <li><label>粮食储量:</label> <span>{{ user.manor.grain }}/{{ user.manor.grain_capacity }}</span></li>
+                            <li><label>粮食储量:</label> <span>{{ sidebar_grain_quantity|default:0 }}/{{ user.manor.grain_capacity }}</span></li>
                             <li><label>白银储量:</label> <span>{{ user.manor.silver }}/{{ user.manor.silver_capacity }}</span></li>
                             <li><label>家丁人数:</label> <span>{{ user.manor.retainer_count }}/{{ user.manor.retainer_capacity }} 人</span></li>
                             <li><label>当前贡献:</label> <span>{{ sidebar_current_contribution_label }}</span></li>
@@ -110,6 +110,7 @@
                             {% if message_unread_count > 0 %}({{ message_unread_count }}){% endif %}
                         </a>
                         <a href="{% url 'gameplay:settings' %}" class="btn-menu">设置</a>
+                        <a href="{% url 'gameplay:luanwu_shop' %}" class="btn-menu btn-menu--shop">乱舞商城</a>
                         <form method="post" action="{% url 'accounts:logout' %}" class="menu-form">
                             {% csrf_token %}
                             <button type="submit" class="btn-menu btn-menu--logout">退出</button>

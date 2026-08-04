@@ -155,11 +155,14 @@ def mark_guests_deployed_if_needed(mission: MissionTemplate, guests: list[Any]) 
     if mission.is_defense or not guests:
         return
 
-    from guests.models import Guest, GuestStatus
+    from guests.models import GuestStatus
+    from guests.services.status import persist_guest_status_transitions
 
-    for guest in guests:
-        guest.status = GuestStatus.DEPLOYED
-    Guest.objects.bulk_update(guests, ["status"])
+    persist_guest_status_transitions(
+        guests,
+        GuestStatus.DEPLOYED,
+        source="mission_deploy",
+    )
 
 
 def create_mission_run_record(

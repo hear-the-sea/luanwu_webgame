@@ -4,10 +4,16 @@ from dataclasses import replace
 from datetime import timedelta
 
 import pytest
-from django.db import transaction
+from django.db import DatabaseError, transaction
+from django.test import override_settings
 from django.utils import timezone
 
-from gameplay.models import BotExternalStrengthReconciliation, BotPopulationRecomputeDemand, BotProfile
+from gameplay.models import (
+    BotExternalStrengthReconciliation,
+    BotPopulationRecomputeDemand,
+    BotProfile,
+    BotVirtualPlayerHealth,
+)
 from gameplay.services.arena import virtual_reserve_fill, virtual_reserve_pool
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.virtual_player_core import external_reconciliation
@@ -394,7 +400,8 @@ def test_expired_claim_is_reclaimed_and_stale_token_cannot_finalize(
     assert intent.profile_attempt_count == 2
 
 
-def test_retryable_failure_uses_bounded_backoff_then_quarantines(
+@override_settings(VIRTUAL_PLAYER_HEALTH_FAILURE_THRESHOLD=100)
+def test_retryable_failure_resets_attempt_budget_instead_of_quarantining(
     django_user_model,
     monkeypatch,
 ) -> None:
@@ -425,19 +432,159 @@ def test_retryable_failure_uses_bounded_backoff_then_quarantines(
     for expected_attempt in range(1, 13):
         result = reconcile_external_reconciliation(intent.id, now=attempt_at)
         intent.refresh_from_db()
-        assert intent.profile_attempt_count == expected_attempt
         if expected_attempt < 12:
+            assert intent.profile_attempt_count == expected_attempt
             expected_backoff = min(21_600, 60 * (2 ** (expected_attempt - 1)))
             assert result.status == BotExternalStrengthReconciliation.Status.PENDING_PROFILE
             assert intent.available_at == attempt_at + timedelta(seconds=expected_backoff)
             attempt_at = intent.available_at
         else:
-            assert result.status == BotExternalStrengthReconciliation.Status.QUARANTINED
+            assert result.status == BotExternalStrengthReconciliation.Status.PENDING_PROFILE
+            assert intent.profile_attempt_count == 0
 
-    assert intent.quarantined_phase == BotExternalStrengthReconciliation.Phase.PROFILE
+    assert intent.quarantined_phase == ""
     assert intent.failure_code == "profile_dependency_unavailable"
     assert len(intent.last_error_digest) == 64
     assert "temporary dependency failure" not in str(intent.result_summary)
+
+
+def test_retryable_dependency_opens_health_circuit_without_consuming_more_attempts(
+    django_user_model,
+    monkeypatch,
+) -> None:
+    profile = _create_profile(
+        django_user_model,
+        username="external_reconciliation_health_circuit",
+    )
+    start = timezone.now()
+    intent = _create_intent(
+        profile,
+        event_id="health-circuit",
+        origin_committed_at=start,
+    )
+
+    def fail_profile_phase(*args, **kwargs):
+        raise ExternalReconciliationRetryableError(
+            "profile_dependency_unavailable",
+            "temporary dependency failure",
+        )
+
+    monkeypatch.setattr(
+        external_reconciliation,
+        "_apply_claimed_profile_phase",
+        fail_profile_phase,
+    )
+
+    attempt_at = start
+    for _expected_attempt in range(1, 4):
+        reconcile_external_reconciliation(intent.id, now=attempt_at)
+        intent.refresh_from_db()
+        attempt_at = intent.available_at
+
+    health = BotVirtualPlayerHealth.objects.get(key=BotVirtualPlayerHealth.GLOBAL_KEY)
+    assert health.status == BotVirtualPlayerHealth.Status.DEGRADED
+    assert health.next_probe_at is not None
+    assert intent.profile_attempt_count == 3
+
+    reconcile_external_reconciliation(intent.id, now=attempt_at)
+    intent.refresh_from_db()
+    health.refresh_from_db()
+    assert intent.profile_attempt_count == 3
+    assert intent.status == BotExternalStrengthReconciliation.Status.PENDING_PROFILE
+    assert intent.available_at == health.next_probe_at
+
+
+def test_database_failure_is_requeued_as_retryable_instead_of_reraised(
+    django_user_model,
+    monkeypatch,
+) -> None:
+    profile = _create_profile(
+        django_user_model,
+        username="external_reconciliation_database_failure",
+    )
+    start = timezone.now()
+    intent = _create_intent(
+        profile,
+        event_id="database-failure",
+        origin_committed_at=start,
+    )
+
+    def fail_profile_phase(*args, **kwargs):
+        raise DatabaseError("database temporarily unavailable")
+
+    monkeypatch.setattr(
+        external_reconciliation,
+        "_apply_claimed_profile_phase",
+        fail_profile_phase,
+    )
+
+    result = reconcile_external_reconciliation(intent.id, now=start)
+
+    intent.refresh_from_db()
+    assert result.status == BotExternalStrengthReconciliation.Status.PENDING_PROFILE
+    assert intent.status == BotExternalStrengthReconciliation.Status.PENDING_PROFILE
+    assert intent.failure_code == "infrastructure_unavailable"
+    assert intent.quarantined_at is None
+    assert intent.profile_attempt_count == 1
+
+
+@override_settings(VIRTUAL_PLAYER_HEALTH_FAILURE_THRESHOLD=100)
+def test_repeated_expired_claims_reset_budget_without_quarantine(
+    django_user_model,
+) -> None:
+    profile = _create_profile(
+        django_user_model,
+        username="external_reconciliation_expired_claims",
+    )
+    start = timezone.now()
+    intent = _create_intent(
+        profile,
+        event_id="expired-claims",
+        origin_committed_at=start,
+    )
+
+    claim = claim_external_reconciliation(intent.id, now=start)
+    assert claim is not None
+    for _index in range(12):
+        claim = claim_external_reconciliation(
+            intent.id,
+            now=claim.claim_expires_at + timedelta(seconds=1),
+        )
+        if claim is None:
+            break
+
+    intent.refresh_from_db()
+    assert claim is None
+    assert intent.status == BotExternalStrengthReconciliation.Status.PENDING_PROFILE
+    assert intent.profile_attempt_count == 0
+    assert intent.quarantined_at is None
+
+
+def test_exhausted_retryable_intent_is_requeued_without_quarantine(
+    django_user_model,
+) -> None:
+    profile = _create_profile(
+        django_user_model,
+        username="external_reconciliation_stale_budget",
+    )
+    start = timezone.now()
+    intent = _create_intent(
+        profile,
+        event_id="stale-budget",
+        origin_committed_at=start,
+    )
+    intent.profile_attempt_count = 12
+    intent.failure_code = "profile_dependency_unavailable"
+    intent.available_at = start
+    intent.save(update_fields=["profile_attempt_count", "failure_code", "available_at", "updated_at"])
+
+    assert claim_external_reconciliation(intent.id, now=start) is None
+
+    intent.refresh_from_db()
+    assert intent.status == BotExternalStrengthReconciliation.Status.PENDING_PROFILE
+    assert intent.profile_attempt_count == 0
+    assert intent.quarantined_at is None
+    assert intent.available_at >= start + timedelta(hours=6)
 
 
 def test_permanent_payload_error_is_quarantined_without_retry(

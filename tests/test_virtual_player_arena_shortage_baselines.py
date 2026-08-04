@@ -118,6 +118,158 @@ def test_cutover_remains_a_pre_activation_freeze_boundary() -> None:
 
 
 @pytest.mark.django_db
+def test_runtime_bootstrap_writes_lifecycle_metadata() -> None:
+    _routing_state(maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE)
+
+    result = safety_baselines.freeze_arena_shortage_baseline_runtime(
+        mode="coop",
+        prestige_band="junior",
+        baseline_ratio="0.1",
+        evidence_id="auto-bootstrap/coop/junior/20260728T030000Z",
+        evidence_checksum=EVIDENCE_CHECKSUM,
+        max_real_entry_count=3,
+    )
+
+    assert result.created is True
+    assert result.baseline.source == safety_baselines.BASELINE_SOURCE_RUNTIME_BOOTSTRAP
+    assert result.baseline.expires_at is not None
+    assert result.baseline.expires_at > result.baseline.frozen_at
+    assert result.baseline.max_real_entry_count == 3
+    stored = BotArenaShortageBaseline.objects.get()
+    assert stored.source == safety_baselines.BASELINE_SOURCE_RUNTIME_BOOTSTRAP
+    assert stored.expires_at > stored.frozen_at
+    assert stored.max_real_entry_count == 3
+
+
+@pytest.mark.django_db
+def test_runtime_bootstrap_replaces_expired_runtime_baseline_with_new_payload() -> None:
+    _routing_state(maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE)
+    original = safety_baselines.freeze_arena_shortage_baseline_runtime(
+        mode="coop",
+        prestige_band="junior",
+        baseline_ratio="0.1",
+        evidence_id="auto-bootstrap/coop/junior/20260728T030000Z",
+        evidence_checksum=EVIDENCE_CHECKSUM,
+        max_real_entry_count=3,
+    )
+    now = timezone.now()
+    stored = BotArenaShortageBaseline.objects.get()
+    stored.frozen_at = now - timedelta(hours=2)
+    stored.expires_at = now - timedelta(hours=1)
+    stored.save(update_fields=["frozen_at", "expires_at"])
+
+    replaced = safety_baselines.freeze_arena_shortage_baseline_runtime(
+        mode="coop",
+        prestige_band="junior",
+        baseline_ratio="0.2",
+        evidence_id="auto-bootstrap/coop/junior/20260728T040000Z",
+        evidence_checksum=EVIDENCE_CHECKSUM,
+        max_real_entry_count=4,
+    )
+
+    assert replaced.created is True
+    assert replaced.baseline.baseline_ratio == Decimal("0.200000000000")
+    assert replaced.baseline.max_real_entry_count == 4
+    assert replaced.baseline.expires_at is not None
+    assert replaced.baseline.expires_at > replaced.baseline.frozen_at
+    assert replaced.baseline.evidence_id != original.baseline.evidence_id
+    assert BotArenaShortageBaseline.objects.count() == 1
+
+    stored = BotArenaShortageBaseline.objects.get()
+    assert stored.source == safety_baselines.BASELINE_SOURCE_RUNTIME_BOOTSTRAP
+    assert stored.baseline_ratio == Decimal("0.200000000000")
+    assert stored.evidence_id == "auto-bootstrap/coop/junior/20260728T040000Z"
+    assert stored.max_real_entry_count == 4
+    assert stored.expires_at > stored.frozen_at
+
+    replay = safety_baselines.freeze_arena_shortage_baseline_runtime(
+        mode="coop",
+        prestige_band="junior",
+        baseline_ratio="0.2",
+        evidence_id="auto-bootstrap/coop/junior/20260728T040000Z",
+        evidence_checksum=EVIDENCE_CHECKSUM,
+        max_real_entry_count=4,
+    )
+    assert replay.created is False
+    assert BotArenaShortageBaseline.objects.count() == 1
+
+
+@pytest.mark.django_db
+def test_runtime_bootstrap_does_not_replace_pre_activation_baseline() -> None:
+    state = _routing_state(maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.LEGACY_BEFORE_GATE)
+    _freeze()
+    state.maintenance_mode = BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+    state.save(update_fields=["maintenance_mode", "updated_at"])
+
+    with pytest.raises(
+        safety_baselines.ArenaShortageBaselineConflict,
+        match="different frozen content",
+    ):
+        safety_baselines.freeze_arena_shortage_baseline_runtime(
+            mode="coop",
+            prestige_band="junior",
+            baseline_ratio="0.2",
+            evidence_id="auto-bootstrap/coop/junior/20260728T040000Z",
+            evidence_checksum=EVIDENCE_CHECKSUM,
+            max_real_entry_count=4,
+        )
+
+    stored = BotArenaShortageBaseline.objects.get()
+    assert stored.source == safety_baselines.BASELINE_SOURCE_PRE_ACTIVATION
+    assert stored.baseline_ratio == Decimal("0.100000000000")
+    assert stored.expires_at is None
+
+
+@pytest.mark.django_db
+def test_runtime_bootstrap_rejects_invalid_population_bound() -> None:
+    _routing_state(maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE)
+
+    with pytest.raises(safety_baselines.ArenaShortageBaselineError, match="positive integer"):
+        safety_baselines.freeze_arena_shortage_baseline_runtime(
+            mode="coop",
+            prestige_band="junior",
+            baseline_ratio="0.1",
+            evidence_id="auto-bootstrap/coop/junior/20260728T030000Z",
+            evidence_checksum=EVIDENCE_CHECKSUM,
+            max_real_entry_count=0,
+        )
+    assert not BotArenaShortageBaseline.objects.exists()
+
+
+@pytest.mark.django_db
+def test_cleanup_expired_runtime_baselines_is_dry_run_then_apply() -> None:
+    _routing_state(maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE)
+    safety_baselines.freeze_arena_shortage_baseline_runtime(
+        mode="coop",
+        prestige_band="junior",
+        baseline_ratio="0.1",
+        evidence_id="auto-bootstrap/coop/junior/20260728T030000Z",
+        evidence_checksum=EVIDENCE_CHECKSUM,
+        max_real_entry_count=3,
+    )
+    now = timezone.now()
+    stored = BotArenaShortageBaseline.objects.get()
+    stored.frozen_at = now - timedelta(hours=2)
+    stored.expires_at = now - timedelta(hours=1)
+    stored.save(update_fields=["frozen_at", "expires_at"])
+
+    dry_run = safety_baselines.cleanup_expired_arena_shortage_baselines()
+    assert dry_run.expired == 1
+    assert dry_run.deleted == 0
+    assert BotArenaShortageBaseline.objects.count() == 1
+
+    stdout = StringIO()
+    call_command(
+        "cleanup_expired_virtual_player_arena_baselines",
+        stdout=stdout,
+        apply=True,
+        verbosity=0,
+    )
+    assert "deleted=1" in stdout.getvalue()
+    assert not BotArenaShortageBaseline.objects.exists()
+
+
+@pytest.mark.django_db
 def test_new_freeze_requires_persisted_routing_state() -> None:
     with pytest.raises(
         safety_baselines.ArenaShortageBaselineActivationBlocked,
@@ -224,9 +376,9 @@ def test_finalizer_locks_and_embeds_sorted_frozen_baselines(monkeypatch) -> None
     original_lock = safety_baselines.lock_frozen_arena_shortage_baselines
     lock_states: list[bool] = []
 
-    def lock_with_assertion():
+    def lock_with_assertion(*, now=None):
         lock_states.append(connection.in_atomic_block)
-        return original_lock()
+        return original_lock(now=now)
 
     monkeypatch.setattr(
         safety_baselines,
@@ -251,6 +403,9 @@ def test_finalizer_locks_and_embeds_sorted_frozen_baselines(monkeypatch) -> None
             "evidence_id": "coop-evidence",
             "evidence_checksum": EVIDENCE_CHECKSUM,
             "payload_digest": coop.payload_digest,
+            "source": safety_baselines.BASELINE_SOURCE_PRE_ACTIVATION,
+            "expires_at": None,
+            "max_real_entry_count": None,
         },
         {
             "kind": "tournament",
@@ -260,6 +415,9 @@ def test_finalizer_locks_and_embeds_sorted_frozen_baselines(monkeypatch) -> None
             "evidence_id": "tournament-evidence",
             "evidence_checksum": EVIDENCE_CHECKSUM,
             "payload_digest": tournament.payload_digest,
+            "source": safety_baselines.BASELINE_SOURCE_PRE_ACTIVATION,
+            "expires_at": None,
+            "max_real_entry_count": None,
         },
     ]
 

@@ -78,7 +78,10 @@ def _resource_fill_for(archetype: str, rng: random.Random, config: dict[str, Any
 def _project_resources(manor: Manor, *, archetype: str, rng: random.Random, config: dict[str, Any]) -> None:
     fill = _resource_fill_for(archetype, rng, config)
     manor.silver = max(1, min(manor.silver_capacity, int(manor.silver_capacity * fill)))
-    manor.grain = max(1, min(manor.grain_capacity, int(manor.grain_capacity * fill)))
+    grain_quantity = max(1, min(manor.grain_capacity, int(manor.grain_capacity * fill)))
+    from gameplay.services.inventory.core import set_warehouse_grain_quantity_locked
+
+    set_warehouse_grain_quantity_locked(manor, grain_quantity)
 
 
 def _project_technologies(manor: Manor, *, level: int, config: dict[str, Any]) -> None:

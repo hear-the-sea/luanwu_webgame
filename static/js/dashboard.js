@@ -280,7 +280,15 @@
       }
       // 更新训练倒计时 - 使用 el 的父元素
       const upgradeCell = el.closest("td");
-      if (data.training_eta) {
+      if (data.training_paused) {
+        if (upgradeCell) {
+          upgradeCell.textContent = '';
+          const span = document.createElement('span');
+          span.className = 'muted-text';
+          span.textContent = '已暂停';
+          upgradeCell.appendChild(span);
+        }
+      } else if (data.training_eta) {
         el.setAttribute("data-countdown", data.training_eta);
         el.classList.remove("countdown-finished");
         el.textContent = "计算中";

@@ -1,6 +1,6 @@
 schema_version: 1
 manifest_id: virtual_player_gate_a_evidence_2026_07_30
-recorded_at_utc: '2026-07-30T18:18:43Z'
+recorded_at_utc: '2026-08-03T23:16:09Z'
 scope:
   evidence_governance_only: true
   project_stage: development
@@ -28,9 +28,9 @@ canonical_gate:
     credentials_recorded: false
   execution:
     status: passed
-    execution_timestamp_utc: '2026-07-30T18:18:43Z'
+    execution_timestamp_utc: '2026-08-03T23:16:09Z'
     timestamp_status: captured
-    result_summary: 172 passed (160 contract in 13.77s; 12 real-service in 102.88s)
+    result_summary: 175 passed (163 contract in 14.79s; 12 real-service in 112.78s)
     reason: canonical_target_completed_successfully
 suite_selection:
   source: Makefile
@@ -52,7 +52,7 @@ suite_selection:
 collection:
   status: collected
   tests_executed: false
-  collected_at_utc: '2026-07-30T18:16:44Z'
+  collected_at_utc: '2026-08-03T23:13:55Z'
   selection: union_of_makefile_suite_variables
   pytest_arguments:
   - --collect-only
@@ -61,10 +61,10 @@ collection:
     DJANGO_TEST_USE_ENV_SERVICES: '1'
   service_preflight_run: false
   external_services_contacted: false
-  expected_nodeid_count: 172
+  expected_nodeid_count: 175
   nodeid_checksum:
     algorithm: sha256
-    value: e51bb7b8cfc1d4b97ff6c480c29a826bac85d0d251d55c9011d20342324422cc
+    value: 1b49981c64eb302022145e908dc6521189075f92d637f475085d8f36c9cc40bb
     input: sorted_pytest_nodeids_joined_with_lf_and_terminal_lf
     encoding: utf-8
 historical_evidence:

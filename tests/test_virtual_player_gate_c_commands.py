@@ -50,6 +50,7 @@ def _routing_summary() -> SimpleNamespace:
         last_daily_safety_window_end_at=None,
         last_pause_window_id="",
         pause_reason="",
+        paused_from_maintenance_mode="",
         persisted=False,
     )
     return summary
@@ -304,6 +305,11 @@ def test_routing_command_rejects_duplicate_json_keys() -> None:
             gate_e_cutover_workflow,
             "exit_gate_e_operation",
         ),
+        (
+            "resume_virtual_player_gate_e_cutover",
+            gate_e_cutover_workflow,
+            "resume_gate_e_cutover_operation",
+        ),
     ),
 )
 def test_gate_transition_commands_delegate_explicit_authorization(
@@ -341,6 +347,60 @@ def test_gate_transition_commands_delegate_explicit_authorization(
     assert "evidence_digest=" + "a" * 64 in output
     assert "authorization_basis_digest=" + "b" * 64 in output
     assert "approved-change-record-42" not in output
+
+
+@pytest.mark.parametrize(
+    ("command_name", "service_module", "service_name"),
+    (
+        (
+            "enter_virtual_player_gate_e_cutover",
+            gate_e_cutover_workflow,
+            "enter_gate_e_cutover_operation",
+        ),
+        (
+            "exit_virtual_player_gate_e",
+            gate_e_cutover_workflow,
+            "exit_gate_e_operation",
+        ),
+        (
+            "resume_virtual_player_gate_e_cutover",
+            gate_e_cutover_workflow,
+            "resume_gate_e_cutover_operation",
+        ),
+    ),
+)
+def test_gate_e_commands_forward_an_explicit_expected_git_commit(
+    command_name: str,
+    service_module,
+    service_name: str,
+    monkeypatch,
+) -> None:
+    calls: list[dict[str, Any]] = []
+    expected_git_commit = "c" * 40
+
+    monkeypatch.setattr(
+        service_module,
+        service_name,
+        lambda **kwargs: calls.append(kwargs) or _gate_summary(),
+    )
+
+    call_command(
+        command_name,
+        expected_revision=9,
+        authorization_basis="approved-change-record-42",
+        expected_git_commit=expected_git_commit,
+        apply=False,
+        verbosity=0,
+    )
+
+    assert calls == [
+        {
+            "expected_revision": 9,
+            "authorization_basis": "approved-change-record-42",
+            "apply": False,
+            "expected_git_commit": expected_git_commit,
+        }
+    ]
 
 
 @pytest.mark.parametrize(

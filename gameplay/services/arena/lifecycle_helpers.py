@@ -27,6 +27,7 @@ from gameplay.models import (
 )
 from gameplay.services.utils.messages import create_message
 from guests.models import Guest, GuestStatus
+from guests.services.status import persist_guest_status_transitions
 
 from . import helpers as _arena_helpers
 from .match_store import create_scheduled_match
@@ -187,10 +188,19 @@ def finalize_tournament_locked(
         ArenaEntryGuest.objects.filter(entry_id__in=[entry.id for entry in entries]).values_list("guest_id", flat=True)
     )
     if participating_guest_ids:
-        Guest.objects.filter(
-            id__in=participating_guest_ids,
-            status__in=[GuestStatus.ARENA, GuestStatus.DEPLOYED],
-        ).update(status=GuestStatus.IDLE)
+        guests = list(
+            Guest.objects.select_for_update()
+            .filter(
+                id__in=participating_guest_ids,
+                status__in=[GuestStatus.ARENA, GuestStatus.DEPLOYED],
+            )
+            .order_by("id")
+        )
+        persist_guest_status_transitions(
+            guests,
+            GuestStatus.IDLE,
+            source="arena_settlement",
+        )
 
     winner = ranked_entries[0]
     tournament.status = ArenaTournament.Status.COMPLETED

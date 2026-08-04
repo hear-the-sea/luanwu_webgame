@@ -5,15 +5,25 @@
 from __future__ import annotations
 
 from django.db import transaction
-from django.db.models import F
 
-from core.exceptions import BuildingNotFoundError, InsufficientSpaceError, InsufficientStockError, ItemNotFoundError
+from core.exceptions import (
+    BuildingNotFoundError,
+    GameError,
+    InsufficientSpaceError,
+    InsufficientStockError,
+    ItemNotFoundError,
+)
 
 from ...constants import BUILDING_MAX_LEVELS, BuildingKeys
-from ...models import InventoryItem, Manor
+from ...models import InventoryItem, ItemTemplate, Manor
+from ..inventory.core import GRAIN_ITEM_KEY, TREASURY_BLOCKED_ITEM_KEYS, add_item_to_inventory_locked
 
-# 粮食物品模板 key
-GRAIN_ITEM_KEY = "grain"
+
+def get_treasury_deposit_block_reason(template: ItemTemplate) -> str | None:
+    """Return the user-facing reason when an item cannot enter the treasury."""
+    if template.key not in TREASURY_BLOCKED_ITEM_KEYS:
+        return None
+    return f"{template.name}不可存入藏宝阁"
 
 
 def get_treasury_capacity(manor: Manor) -> int:
@@ -112,6 +122,10 @@ def move_item_to_treasury(manor: Manor, item_id: int, quantity: int) -> None:
     if not warehouse_item:
         raise ItemNotFoundError("物品不存在或不在仓库中")
 
+    deposit_block_reason = get_treasury_deposit_block_reason(warehouse_item.template)
+    if deposit_block_reason:
+        raise GameError(deposit_block_reason)
+
     # 金条需要特殊检查：考虑拍卖冻结的金条
     if warehouse_item.template.key == "gold_bar":
         from trade.services.auction_service import get_frozen_gold_bars
@@ -129,9 +143,6 @@ def move_item_to_treasury(manor: Manor, item_id: int, quantity: int) -> None:
 
     if treasury_used + item_space > treasury_capacity:
         raise InsufficientSpaceError("treasury", treasury_capacity - treasury_used, item_space)
-
-    # 检查是否是粮食物品
-    is_grain = warehouse_item.template.key == GRAIN_ITEM_KEY
 
     # 减少仓库中的物品数量
     warehouse_item.quantity -= quantity
@@ -153,11 +164,6 @@ def move_item_to_treasury(manor: Manor, item_id: int, quantity: int) -> None:
 
     treasury_item.quantity += quantity
     treasury_item.save(update_fields=["quantity"])
-
-    # 粮食移入藏宝阁时，减少 Manor.grain
-    if is_grain:
-        Manor.objects.filter(pk=manor.pk).update(grain=F("grain") - quantity)
-        manor.grain = max(0, getattr(manor, "grain", 0) - quantity)
 
 
 @transaction.atomic
@@ -201,21 +207,19 @@ def move_item_to_warehouse(manor: Manor, item_id: int, quantity: int) -> None:
     else:
         treasury_item.save(update_fields=["quantity"])
 
-    # 增加仓库中的物品数量
-    warehouse_item, created = InventoryItem.objects.get_or_create(
-        manor=manor,
-        template=treasury_item.template,
-        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-        defaults={"quantity": 0},
-    )
-
-    if not created:
-        warehouse_item = InventoryItem.objects.select_for_update().get(pk=warehouse_item.pk)
-
-    warehouse_item.quantity += quantity
-    warehouse_item.save(update_fields=["quantity"])
-
-    # 粮食移回仓库时，增加 Manor.grain
+    # 增加仓库中的物品数量；粮食必须走唯一账本接口。
     if is_grain:
-        Manor.objects.filter(pk=manor.pk).update(grain=F("grain") + quantity)
-        manor.grain = getattr(manor, "grain", 0) + quantity
+        add_item_to_inventory_locked(manor, GRAIN_ITEM_KEY, quantity)
+    else:
+        warehouse_item, created = InventoryItem.objects.get_or_create(
+            manor=manor,
+            template=treasury_item.template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            defaults={"quantity": 0},
+        )
+
+        if not created:
+            warehouse_item = InventoryItem.objects.select_for_update().get(pk=warehouse_item.pk)
+
+        warehouse_item.quantity += quantity
+        warehouse_item.save(update_fields=["quantity"])

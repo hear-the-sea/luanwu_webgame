@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from common.constants.virtual_players import VIRTUAL_PLAYER_MANAGED_STOCK_EFFECT_TYPES
 from gameplay.models import BotProfile, InventoryItem, ItemTemplate, Manor
+from gameplay.services.inventory.core import GRAIN_ITEM_KEY
 from gameplay.services.virtual_player_state_policy import VIRTUAL_PROFILE_MAINTAINED_STATES
 
 from .. import profile_store
@@ -211,7 +212,9 @@ def _replenish_inventory_stock(
         return
 
     unique_keys = list(dict.fromkeys(keys))
-    candidate_templates = list(ItemTemplate.objects.filter(key__in=unique_keys, tradeable=True).order_by("key"))
+    candidate_templates = list(
+        ItemTemplate.objects.filter(key__in=unique_keys, tradeable=True).exclude(key=GRAIN_ITEM_KEY).order_by("key")
+    )
     if not candidate_templates:
         return
     templates = _select_inventory_template_pool(

@@ -53,6 +53,18 @@ def _collect_rarity_upgrade_source_keys(payloads: Iterable[object]) -> set[str]:
     return source_keys
 
 
+def _collect_rarity_upgrade_source_rarities(payloads: Iterable[object]) -> set[str]:
+    source_rarities: set[str] = set()
+    for payload in payloads:
+        if not isinstance(payload, dict) or payload.get("action") != "upgrade_guest_rarity":
+            continue
+
+        source_rarity = payload.get("source_rarity")
+        if isinstance(source_rarity, str) and source_rarity.strip():
+            source_rarities.add(source_rarity.strip())
+    return source_rarities
+
+
 def _collect_soul_fusion_requirements(payloads: Iterable[object]) -> tuple[int, set[str]]:
     min_level: int | None = None
     allowed_rarities: set[str] = set()
@@ -74,6 +86,7 @@ def build_guest_item_selection_context(manor, *, eligible_guests: list[Guest]) -
     payloads = _load_guest_tool_payloads(manor)
     soul_fusion_min_level, soul_fusion_allowed_rarities = _collect_soul_fusion_requirements(payloads)
     rarity_upgrade_source_keys = _collect_rarity_upgrade_source_keys(payloads)
+    rarity_upgrade_source_rarities = _collect_rarity_upgrade_source_rarities(payloads)
 
     guests_for_xisuidan = [guest for guest in eligible_guests if guest.level == 100 and guest.xisuidan_used < 10]
     guests_for_xisuidan.sort(key=lambda guest: (guest.xisuidan_used, guest.template.name, guest.id))
@@ -102,7 +115,10 @@ def build_guest_item_selection_context(manor, *, eligible_guests: list[Guest]) -
     guests_for_rarity_upgrade = [
         guest
         for guest in eligible_guests
-        if guest.status == GuestStatus.IDLE and guest.template.key in rarity_upgrade_source_keys
+        if guest.status == GuestStatus.IDLE
+        and (
+            guest.template.key in rarity_upgrade_source_keys or guest.template.rarity in rarity_upgrade_source_rarities
+        )
     ]
 
     return GuestItemSelectionContext(

@@ -31,9 +31,17 @@ def _project_prestige_after(manor: Manor, *, silver_cost: int) -> int:
 
 
 def _has_resources(manor: Manor, costs: tuple[tuple[str, int], ...]) -> bool:
+    from gameplay.services.inventory.core import get_warehouse_grain_quantity
+
+    grain_quantity = None
     for resource, amount in costs:
-        available = getattr(manor, resource, None)
-        if available is None:
+        if resource == "grain":
+            if grain_quantity is None:
+                grain_quantity = get_warehouse_grain_quantity(manor)
+            available = grain_quantity
+        elif resource == "silver":
+            available = manor.silver
+        else:
             raise MaintenanceUpgradeCandidateError(f"unsupported upgrade resource: {resource}")
         if int(available or 0) < int(amount):
             return False

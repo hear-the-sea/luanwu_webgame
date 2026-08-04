@@ -18,6 +18,7 @@ from guilds.services.guild_pvp_display import (
 )
 
 from ..models import MissionRun, ResourceType
+from ..services.inventory.core import get_warehouse_grain_quantity
 from ..services.missions import can_retreat
 from ..services.technology import get_technology_template
 from ..services.utils.cache import CacheKeys
@@ -55,8 +56,9 @@ def _safe_cache_set(key: str, value, timeout: int) -> None:
 
 
 def get_home_context(manor) -> dict:
+    warehouse_grain_quantity = get_warehouse_grain_quantity(manor)
     resources = [
-        ("grain", "粮食", manor.grain),
+        ("grain", "粮食", warehouse_grain_quantity),
         ("silver", "银两", manor.silver),
         ("retainer", "家丁", f"{manor.retainer_count} / {manor.retainer_capacity}"),
     ]
@@ -178,6 +180,7 @@ def get_home_context(manor) -> dict:
 
     return {
         "manor": manor,
+        "warehouse_grain_quantity": warehouse_grain_quantity,
         "resources": resources,
         "resource_labels": resource_labels,
         "guests": guests,

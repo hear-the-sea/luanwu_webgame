@@ -14,6 +14,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from gameplay.models import BotProfile, Building, InventoryItem, Manor
+from gameplay.services.inventory.core import set_warehouse_grain_quantity_locked
 from gameplay.services.manor.coordinates import is_occupied_manor_location_conflict
 from gameplay.services.manor.core import generate_unique_coordinate
 from gameplay.services.manor.naming import ManorNameConflictError
@@ -565,7 +566,7 @@ def _materialize_virtual_player(
     manor.peace_shield_until = None
     _project_buildings(manor, level=max(1, int(projection.building_level)))
     manor.silver = 5000
-    manor.grain = 1200
+    initial_grain = 1200
     manor.resource_updated_at = now
     if historical_age_days is None:
         manor.last_active_at = now - timedelta(days=rng.randint(3, 180), hours=rng.randint(0, 23))
@@ -586,11 +587,11 @@ def _materialize_virtual_player(
             "silver_capacity",
             "grain_capacity",
             "silver",
-            "grain",
             "resource_updated_at",
             "last_active_at",
         ],
     )
+    set_warehouse_grain_quantity_locked(manor, initial_grain)
 
     _project_technologies(manor, level=0, config=config)
     _project_guests_and_gear(

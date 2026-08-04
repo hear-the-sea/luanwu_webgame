@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 
+from django.db import transaction
 from django.utils import timezone
 
 from core.exceptions import GameError
@@ -54,6 +55,10 @@ def bootstrap_manor(user, region: str = "overseas", initial_name: str | None = N
         created=created,
         provision_rewards=not bool(getattr(user, "_virtual_player_internal", False)),
     )
+    # 历史庄园由迁移/显式修复命令统一补账；热路径只为新建庄园初始化一次，
+    # 避免每次 ensure_manor 都额外查询粮食模板和库存行。
+    if created and int(getattr(manor, "grain", 0) or 0) > 0:
+        _ensure_warehouse_grain_ledger(manor)
     return manor
 
 
@@ -76,6 +81,16 @@ def _ensure_manor_provisioning(
         deliver_active_global_mail_campaigns_func=_deliver_active_global_mail_campaigns,
         provision_rewards=provision_rewards,
     )
+
+
+def _ensure_warehouse_grain_ledger(manor: Manor) -> None:
+    """为新建且已有粮食的庄园初始化仓库粮食行。"""
+    from ..inventory.core import set_warehouse_grain_quantity_locked
+
+    with transaction.atomic():
+        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+        set_warehouse_grain_quantity_locked(locked_manor, int(locked_manor.grain or 0))
+        manor.grain = locked_manor.grain
 
 
 def _assign_manor_location_and_name(manor: Manor, *, region: str, normalized_name: str | None) -> bool:

@@ -27,6 +27,7 @@ from .. import guest_health_rules as _guest_health_rules
 from ..constants import TimeConstants
 from ..models import Guest, GuestStatus
 from .loyalty import apply_injury_loyalty_decay, clear_injury_loyalty_decay
+from .status import GUEST_STATUS_UPDATE_FIELDS, prepare_guest_status_transition, schedule_resumed_guest_training
 
 if TYPE_CHECKING:
     from gameplay.models import InventoryItem, Manor
@@ -216,18 +217,22 @@ def recover_guest_hp(guest: Guest, now: datetime | None = None) -> None:
     loyalty_update_fields = ["loyalty", "injury_loyalty_processed_at"] if injury_decay_intervals > 0 else []
     if guest.current_hp >= guest.max_hp:
         update_fields = list(loyalty_update_fields)
+        resumed_training = False
         if last != now:
             guest.last_hp_recovery_at = now
             update_fields.append("last_hp_recovery_at")
         # 修复：满血时不应继续显示重伤状态
         if guest.status == GuestStatus.INJURED:
-            guest.status = GuestStatus.IDLE
-            update_fields.append("status")
+            transition = prepare_guest_status_transition(guest, GuestStatus.IDLE, now=now)
+            resumed_training = transition.resumed_training
+            update_fields.extend(GUEST_STATUS_UPDATE_FIELDS)
             clear_injury_loyalty_decay(guest)
             if "injury_loyalty_processed_at" not in update_fields:
                 update_fields.append("injury_loyalty_processed_at")
         if update_fields:
-            guest.save(update_fields=update_fields)
+            guest.save(update_fields=list(dict.fromkeys(update_fields)))
+        if resumed_training:
+            schedule_resumed_guest_training(guest, source="injury_recovery")
         return
     elapsed = (now - last).total_seconds()
     if elapsed < TimeConstants.HP_RECOVERY_INTERVAL:
@@ -254,13 +259,17 @@ def recover_guest_hp(guest: Guest, now: datetime | None = None) -> None:
         return
     guest.last_hp_recovery_at = last + timedelta(seconds=intervals * TimeConstants.HP_RECOVERY_INTERVAL)
     update_fields = ["current_hp", "last_hp_recovery_at", *loyalty_update_fields]
+    resumed_training = False
     if guest.status == GuestStatus.INJURED and guest.current_hp >= guest.max_hp:
-        guest.status = GuestStatus.IDLE
-        update_fields.append("status")
+        transition = prepare_guest_status_transition(guest, GuestStatus.IDLE, now=now)
+        resumed_training = transition.resumed_training
+        update_fields.extend(GUEST_STATUS_UPDATE_FIELDS)
         clear_injury_loyalty_decay(guest)
         if "injury_loyalty_processed_at" not in update_fields:
             update_fields.append("injury_loyalty_processed_at")
     guest.save(update_fields=list(dict.fromkeys(update_fields)))
+    if resumed_training:
+        schedule_resumed_guest_training(guest, source="injury_recovery")
 
 
 @transaction.atomic
@@ -344,16 +353,20 @@ def heal_guest(guest: Guest, heal_amount: int) -> dict:
     injury_cured = False
 
     # 检查是否解除重伤状态
+    resumed_training = False
     if guest.status == GuestStatus.INJURED:
         if _guest_health_rules.should_clear_injured_status(current_hp=new_hp, max_hp=guest.max_hp):
-            guest.status = GuestStatus.IDLE
-            update_fields.append("status")
+            transition = prepare_guest_status_transition(guest, GuestStatus.IDLE, now=now)
+            resumed_training = transition.resumed_training
+            update_fields.extend(GUEST_STATUS_UPDATE_FIELDS)
             clear_injury_loyalty_decay(guest)
             if "injury_loyalty_processed_at" not in update_fields:
                 update_fields.append("injury_loyalty_processed_at")
             injury_cured = True
 
     guest.save(update_fields=list(dict.fromkeys(update_fields)))
+    if resumed_training:
+        schedule_resumed_guest_training(guest, source="injury_heal")
 
     return {
         "healed": healed,
@@ -459,6 +472,8 @@ def apply_medicine_item_for_guest_locked(
         "status": locked_guest.status,
         "status_display": locked_guest.get_status_display(),
         "injury_cured": quote.injury_cured,
+        "training_eta": locked_guest.training_complete_at,
+        "training_paused": locked_guest.training_is_paused,
         "remaining_item_quantity": remaining_quantity,
     }
 

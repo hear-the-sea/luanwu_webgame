@@ -28,7 +28,7 @@ from .virtual_backfill import backfill_coop_event_locked, backfill_tournament_lo
 from .virtual_lineups import lineup_power
 from .virtual_protection import is_virtual_profile_arena_match_eligible, with_arena_reconciliation_state
 from .virtual_reserve_observability import log_demand_event
-from .virtual_reserve_pool import evaluate_bot_lineup, replenish_virtual_reserve
+from .virtual_reserve_pool import evaluate_bot_lineup, record_demand_failure_locked, replenish_virtual_reserve
 from .virtual_reserve_reconcile import (
     reconcile_coop_demand,
     reconcile_coop_demand_locked,
@@ -523,17 +523,7 @@ def _record_fill_deferred(*, demand_id: int, reason: str, now) -> None:
         )
         if demand is None:
             return
-        demand.last_failure_reason = reason[:64]
-        demand.last_checked_at = now
-        demand.next_retry_at = now + timedelta(minutes=5)
-        demand.save(
-            update_fields=[
-                "last_failure_reason",
-                "last_checked_at",
-                "next_retry_at",
-                "updated_at",
-            ]
-        )
+        record_demand_failure_locked(demand, reason=reason, now=now)
         log_demand_event(
             "arena_virtual_fill_deferred",
             demand,
@@ -559,6 +549,8 @@ def _complete_demand_fill(
     demand.next_retry_at = None
     demand.last_checked_at = now
     demand.last_failure_reason = ""
+    demand.consecutive_failure_count = 0
+    demand.last_progress_at = now
     demand.save(
         update_fields=[
             "status",
@@ -567,6 +559,8 @@ def _complete_demand_fill(
             "next_retry_at",
             "last_checked_at",
             "last_failure_reason",
+            "consecutive_failure_count",
+            "last_progress_at",
             "updated_at",
         ]
     )
@@ -605,23 +599,15 @@ def _fill_due_reserve(
     if demand is None:
         return 0
     demand = ArenaVirtualDemand.objects.select_for_update().select_related("tournament", "coop_event").get(pk=demand.pk)
+    if demand.next_retry_at is not None and demand.next_retry_at > now + timedelta(seconds=1):
+        return 0
     gap = max(0, int(demand.missing_entry_count))
     if gap <= 0:
         return 0
 
     ordered_members = _ordered_ready_members(demand, now=now)
     if len(ordered_members) < gap:
-        demand.last_failure_reason = "insufficient_ready_members"
-        demand.last_checked_at = now
-        demand.next_retry_at = now + timedelta(minutes=5)
-        demand.save(
-            update_fields=[
-                "last_failure_reason",
-                "last_checked_at",
-                "next_retry_at",
-                "updated_at",
-            ]
-        )
+        record_demand_failure_locked(demand, reason="insufficient_ready_members", now=now)
         log_demand_event(
             "arena_virtual_fill_deferred",
             demand,

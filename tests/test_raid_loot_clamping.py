@@ -17,6 +17,7 @@ from gameplay.services.raid.combat.loot import (
     _format_loot_description,
     _grant_loot_items,
 )
+from tests.gameplay_services.support import ensure_grain_template
 
 User = get_user_model()
 
@@ -388,6 +389,26 @@ def test_grant_loot_items_normalizes_quantities():
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
     assert item.quantity == 2
+
+
+@pytest.mark.django_db
+def test_grant_loot_items_routes_grain_to_warehouse_ledger():
+    user = User.objects.create_user(username="raid_grain_grant", password="pass123")
+    manor = ensure_manor(user)
+    grain_template = ensure_grain_template()
+    manor.grain = 4
+    manor.save(update_fields=["grain"])
+
+    _grant_loot_items(manor, {"grain": 3})
+
+    manor.refresh_from_db(fields=["grain"])
+    warehouse_grain = InventoryItem.objects.get(
+        manor=manor,
+        template=grain_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    assert manor.grain == 7
+    assert warehouse_grain.quantity == 7
 
 
 def test_formatters_tolerate_invalid_mapping_shapes():

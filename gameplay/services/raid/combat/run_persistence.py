@@ -5,6 +5,7 @@ from typing import Any
 
 from battle.random_context import current_replay_metadata
 from core.exceptions import RaidStartError
+from guests.services.status import GUEST_STATUS_UPDATE_FIELDS, prepare_guest_status_transition
 
 
 def lock_manor_pair(attacker_id: int, defender_id: int, *, manor_model: Any) -> tuple[Any, Any]:
@@ -44,11 +45,11 @@ def create_raid_run_record(
     raid_run_model: Any,
     now_func: Any,
 ) -> Any:
-    for guest in guests:
-        guest.status = deployed_status
-    guest_model.objects.bulk_update(guests, ["status"])
-
     now = now_func()
+    for guest in guests:
+        prepare_guest_status_transition(guest, deployed_status, now=now)
+    guest_model.objects.bulk_update(guests, GUEST_STATUS_UPDATE_FIELDS)
+
     guest_snapshots = build_guest_battle_snapshots(guests, include_identity=True)
     replay_metadata = current_replay_metadata()
     run = raid_run_model.objects.create(

@@ -18,7 +18,12 @@ from gameplay.models.manor import (
     RETAINER_CAPACITY_BASE,
     RETAINER_CAPACITY_PER_LEVEL,
 )
-from gameplay.services.inventory.core import add_item_to_inventory_locked
+from gameplay.services.inventory.core import (
+    GRAIN_ITEM_KEY,
+    TREASURY_BLOCKED_ITEM_KEYS,
+    add_item_to_inventory_locked,
+    set_warehouse_grain_quantity_locked,
+)
 from gameplay.services.manor.core import calculate_building_capacity
 from guests.models import GearItem, GearTemplate, Guest, GuestSkill, GuestTemplate, Skill
 from guests.services.equipment_stats import apply_set_bonuses, apply_template_stats_to_guest, slot_capacity
@@ -61,11 +66,17 @@ def _gear_link_identity(row: GearItem) -> tuple[int, int]:
     return int(row.guest_id), int(row.template_id)
 
 
-def _load_exact_templates(model, keys: set[str], *, label: str) -> dict[str, Any]:
+def _load_exact_templates(
+    model,
+    keys: set[str],
+    *,
+    label: str,
+    allow_missing: frozenset[str] = frozenset(),
+) -> dict[str, Any]:
     if not keys:
         return {}
     values = {str(value.key): value for value in model.objects.filter(key__in=sorted(keys)).order_by("key")}
-    missing = sorted(keys - set(values))
+    missing = sorted(keys - set(values) - set(allow_missing))
     if missing:
         raise BootstrapMaterializationError(f"bootstrap {label} templates disappeared: {', '.join(missing)}")
     return values
@@ -515,8 +526,9 @@ def _materialize_inventory(
     catalog_by_key = {entry.key: entry for entry in catalog.inventory}
     item_templates = _load_exact_templates(
         ItemTemplate,
-        {target.template_key for target in assets.inventory},
+        {target.template_key for target in assets.inventory} | {GRAIN_ITEM_KEY},
         label="inventory",
+        allow_missing=frozenset({GRAIN_ITEM_KEY}),
     )
     rows: list[InventoryItem] = []
     for target in sorted(
@@ -526,6 +538,11 @@ def _materialize_inventory(
         catalog_entry = catalog_by_key.get(target.template_key)
         if catalog_entry is None or not catalog_entry.tradeable:
             raise BootstrapMaterializationError("bootstrap inventory template is not available or tradeable")
+        if (
+            target.storage_location == InventoryItem.StorageLocation.TREASURY
+            and target.template_key in TREASURY_BLOCKED_ITEM_KEYS
+        ):
+            raise BootstrapMaterializationError("bootstrap inventory cannot place protected resources in the treasury")
         template = item_templates[target.template_key]
         allowed = apply_inventory_daily_caps(
             template,
@@ -549,6 +566,12 @@ def _materialize_inventory(
         rows.append(item)
     if rows:
         InventoryItem.objects.bulk_update(rows, ["created_at", "updated_at"])
+    set_warehouse_grain_quantity_locked(
+        manor,
+        int(assets.grain),
+        grain_template=item_templates.get(GRAIN_ITEM_KEY),
+        grain_template_resolved=True,
+    )
     if int(manor.grain) != int(assets.grain):
         raise BootstrapMaterializationError("materialized grain balance does not match the blueprint")
     return tuple(rows)

@@ -14,6 +14,9 @@ from .safety_metrics import SAFETY_HEARTBEAT_METRIC
 
 SAFETY_MONITOR_STREAM: Final = "safety_monitor"
 SAFETY_MONITOR_MAX_AGE: Final = timedelta(seconds=120)
+# Heartbeats are minute-bucketed by the application clock. Allow one bounded
+# minute of application/database clock skew, but keep larger future values fail-closed.
+SAFETY_MONITOR_MAX_FUTURE_SKEW: Final = timedelta(minutes=1)
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,7 +117,7 @@ def check_v2_development_write_preflight(
             monitor_heartbeat_at=heartbeat_at,
         )
     age = checked_at - heartbeat_at
-    if age < timedelta(0):
+    if age <= -SAFETY_MONITOR_MAX_FUTURE_SKEW:
         return SafetyWritePreflightResult(
             allowed=False,
             reason="safety_monitor_heartbeat_from_future",
@@ -138,6 +141,7 @@ def check_v2_development_write_preflight(
 
 __all__ = [
     "SAFETY_MONITOR_MAX_AGE",
+    "SAFETY_MONITOR_MAX_FUTURE_SKEW",
     "SAFETY_MONITOR_STREAM",
     "SafetyWritePreflightResult",
     "check_v2_development_write_preflight",

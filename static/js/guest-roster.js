@@ -76,6 +76,40 @@ const initGuestRosterPage = () => {
     }
   };
 
+  const updateGuestTrainingState = (guestId, trainingEta, trainingPaused) => {
+    const row = document.querySelector(`tr[data-guest-id="${guestId}"]`);
+    const upgradeCell = row?.querySelector(".guest-col-upgrade");
+    if (!upgradeCell) {
+      return;
+    }
+
+    upgradeCell.textContent = "";
+    if (trainingPaused) {
+      const span = document.createElement("span");
+      span.className = "tw-muted";
+      span.title = "门客恢复空闲后继续训练";
+      span.textContent = "已暂停";
+      upgradeCell.appendChild(span);
+      return;
+    }
+
+    if (trainingEta) {
+      const span = document.createElement("span");
+      span.className = "countdown";
+      span.setAttribute("data-countdown", trainingEta);
+      span.setAttribute("data-format", "zh");
+      span.setAttribute("data-check-url", `/guests/${guestId}/check-training/`);
+      span.textContent = "计算中";
+      upgradeCell.appendChild(span);
+      return;
+    }
+
+    const span = document.createElement("span");
+    span.className = "tw-muted";
+    span.textContent = "自动升级";
+    upgradeCell.appendChild(span);
+  };
+
   const updateGuestRow = (guestId, newLevel, trainingEta, currentHp, maxHp) => {
     const row = document.querySelector(`tr[data-guest-id="${guestId}"]`);
     if (!row) {
@@ -94,30 +128,7 @@ const initGuestRosterPage = () => {
       }
     }
 
-    const upgradeCell = row.querySelector(".guest-col-upgrade");
-    const countdownSpan = upgradeCell?.querySelector(".countdown");
-    if (trainingEta) {
-      if (countdownSpan) {
-        countdownSpan.setAttribute("data-countdown", trainingEta);
-        countdownSpan.classList.remove("countdown-finished");
-      } else if (upgradeCell) {
-        const checkUrl = `/guests/${guestId}/check-training/`;
-        upgradeCell.textContent = "";
-        const span = document.createElement("span");
-        span.className = "countdown";
-        span.setAttribute("data-countdown", trainingEta);
-        span.setAttribute("data-format", "zh");
-        span.setAttribute("data-check-url", checkUrl);
-        span.textContent = "计算中";
-        upgradeCell.appendChild(span);
-      }
-    } else if (upgradeCell && countdownSpan) {
-      upgradeCell.textContent = "";
-      const span = document.createElement("span");
-      span.className = "tw-muted";
-      span.textContent = "自动升级";
-      upgradeCell.appendChild(span);
-    }
+    updateGuestTrainingState(guestId, trainingEta, false);
   };
 
   const salaryModal = document.getElementById("salary-modal");
@@ -315,6 +326,9 @@ const initGuestRosterPage = () => {
             if (statusCell) {
               statusCell.textContent = data.status_display;
             }
+          }
+          if (data.guest_id) {
+            updateGuestTrainingState(data.guest_id, data.training_eta, data.training_paused);
           }
         }
       } catch (_error) {

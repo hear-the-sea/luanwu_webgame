@@ -11,6 +11,7 @@ from urllib.parse import urlencode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.db import DatabaseError
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect
@@ -22,6 +23,7 @@ from core.decorators import flash_unexpected_view_error
 from core.exceptions import GameError
 from core.utils import safe_positive_int, sanitize_error_message
 from core.utils.rate_limit import rate_limit_json, rate_limit_redirect
+from gameplay.constants import UIConstants
 from gameplay.selectors.troop_recruitment import get_troop_recruitment_context
 from gameplay.services.manor.core import get_manor
 from gameplay.services.recruitment.recruitment import refresh_troop_recruitments
@@ -78,6 +80,10 @@ class TroopRecruitmentView(LoginRequiredMixin, TemplateView):
 
         context["manor"] = manor
         context.update(get_troop_recruitment_context(manor, selected_category=selected_category))
+        context["recruitment_page_obj"] = Paginator(
+            list(context.get("recruitment_options") or []),
+            UIConstants.RECRUITMENT_ITEMS_PER_PAGE,
+        ).get_page(self.request.GET.get("page", 1))
         return context
 
 

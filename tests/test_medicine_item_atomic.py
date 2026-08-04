@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import FrozenInstanceError
+from datetime import timedelta
 from threading import Barrier, Lock, Thread
 
 import pytest
 from django.db import close_old_connections, connection
+from django.utils import timezone
 
 from core.exceptions import GuestItemOwnershipError, GuestNotIdleError, GuestOwnershipError
 from gameplay.models import InventoryItem, ItemTemplate
@@ -14,6 +16,7 @@ from guests.models import GuestStatus, RecruitmentPool
 from guests.services.health import quote_medicine_item_for_guest, use_medicine_item_for_guest
 from guests.services.recruitment import recruit_guest
 from guests.services.recruitment_guests import finalize_candidate
+from guests.services.status import prepare_guest_status_transition
 
 
 def _bootstrap_injured_guest(game_data, django_user_model, *, username: str):
@@ -81,6 +84,10 @@ def test_use_medicine_item_for_guest_is_atomic_success(game_data, django_user_mo
     heal_amount = max(1, int(guest.max_hp * 0.3))
     item = _create_medicine_item(manor, heal_amount=heal_amount)
 
+    guest.training_complete_at = timezone.now() + timedelta(seconds=90)
+    prepare_guest_status_transition(guest, GuestStatus.INJURED)
+    guest.save(update_fields=["status", "training_complete_at", "training_remaining_seconds"])
+
     before_hp = guest.current_hp
     result = use_medicine_item_for_guest(manor, guest, item.pk, heal_amount)
 
@@ -88,6 +95,8 @@ def test_use_medicine_item_for_guest_is_atomic_success(game_data, django_user_mo
     assert guest.current_hp > before_hp
     assert guest.status == GuestStatus.IDLE
     assert bool(result["injury_cured"]) is True
+    assert result["training_eta"] is not None
+    assert result["training_paused"] is False
     assert int(result["remaining_item_quantity"]) == 0
     assert InventoryItem.objects.filter(pk=item.pk).exists() is False
 

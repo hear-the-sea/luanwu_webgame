@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import re
-from collections.abc import Mapping
+import subprocess
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -12,12 +14,21 @@ import yaml
 from django.db import connection
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-GATE_A_MANIFEST_PATH = PROJECT_ROOT / "docs" / "virtual_player_gate_evidence_manifest_2026-07-30.yaml"
-GATE_D1_EVIDENCE_PATH = PROJECT_ROOT / "docs" / "virtual_player_gate_d1_evidence_2026-07-30.yaml"
-GATE_E_EVIDENCE_PATH = PROJECT_ROOT / "docs" / "virtual_player_gate_e_readiness_evidence_2026-07-30.yaml"
+DEFAULT_ARTIFACT_DATE = "2026-07-30"
+ARTIFACT_DATE = os.environ.get("VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE", DEFAULT_ARTIFACT_DATE).strip()
+try:
+    if datetime.strptime(ARTIFACT_DATE, "%Y-%m-%d").strftime("%Y-%m-%d") != ARTIFACT_DATE:
+        raise ValueError
+except (TypeError, ValueError) as exc:
+    raise ValueError("VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE must use YYYY-MM-DD") from exc
+
+GATE_A_MANIFEST_PATH = PROJECT_ROOT / f"docs/virtual_player_gate_evidence_manifest_{ARTIFACT_DATE}.yaml"
+GATE_D1_EVIDENCE_PATH = PROJECT_ROOT / f"docs/virtual_player_gate_d1_evidence_{ARTIFACT_DATE}.yaml"
+GATE_E_EVIDENCE_PATH = PROJECT_ROOT / f"docs/virtual_player_gate_e_readiness_evidence_{ARTIFACT_DATE}.yaml"
 _MAX_EVIDENCE_BYTES = 1_000_000
-_MAX_SOURCE_FILES = 160
+_MAX_SOURCE_FILES = 220
 _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
+_GIT_OBJECT_PATTERN = re.compile(r"[0-9a-f]{40,64}\Z")
 
 
 # Readiness evidence must bind the governance inputs and the owners that can
@@ -25,12 +36,19 @@ _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 # when an artifact was recorded.
 _COMMON_REQUIRED_SOURCE_FILES = frozenset(
     {
+        ".flake8",
+        ".github/workflows/ci.yml",
+        ".github/workflows/virtual_player_readiness.yml",
         "Makefile",
+        "config/settings/base.py",
         "data/virtual_players.yaml",
         "docs/virtual_player_gate_a_acceptance_config_2026-07-27.yaml",
-        "docs/virtual_player_gate_evidence_manifest_2026-07-30.yaml",
+        f"docs/virtual_player_gate_evidence_manifest_{ARTIFACT_DATE}.yaml",
         "gameplay/migrations/0139_botprofile_v2_fields.py",
         "gameplay/migrations/0141_bot_runtime_policy_rollout.py",
+        "gameplay/migrations/0145_alter_resourceevent_reason.py",
+        "gameplay/migrations/0146_virtual_player_health_and_recovery.py",
+        "gameplay/models/__init__.py",
         "gameplay/models/bots.py",
         "gameplay/services/runtime_configs.py",
         "gameplay/services/virtual_players.py",
@@ -42,18 +60,34 @@ _COMMON_REQUIRED_SOURCE_FILES = frozenset(
         "gameplay/services/virtual_player_core/profile_store.py",
         "gameplay/services/virtual_player_core/random_context.py",
         "gameplay/services/virtual_player_core/reference_snapshots.py",
+        "gameplay/services/virtual_player_core/health.py",
         "gameplay/signals.py",
+        "gameplay/tasks/__init__.py",
+        "gameplay/tasks/arena.py",
         "gameplay/tasks/virtual_players.py",
+        "package-lock.json",
+        "package.json",
+        "pyproject.toml",
+        "pytest.ini",
+        "requirements-dev.txt",
+        "requirements.lock.txt",
+        "requirements.txt",
         "scripts/record_virtual_player_evidence.py",
+        "scripts/check_env_services_ready.py",
         "tests/conftest.py",
         "tests/raid_concurrency_integration/h01_cross_races.py",
         "tests/test_pytest_configuration.py",
+        "tests/test_arena_schedule.py",
+        "tests/test_arena_tasks.py",
         "tests/test_virtual_player_architecture_gate.py",
         "tests/test_virtual_player_baseline_audit.py",
         "tests/test_virtual_player_gate_acceptance_config.py",
         "tests/test_virtual_player_gate_activation_evidence.py",
         "tests/test_virtual_player_gate_evidence_manifest.py",
         "tests/test_virtual_player_evidence_recorder.py",
+        "tests/test_virtual_player_gate_e_automation.py",
+        "tests/test_virtual_player_health.py",
+        "tests/test_virtual_player_health_mysql_integration.py",
         "tests/test_virtual_player_maintenance_contracts.py",
         "tests/test_virtual_player_random_context.py",
     }
@@ -102,8 +136,10 @@ GATE_D1_REQUIRED_SOURCE_FILES = _COMMON_REQUIRED_SOURCE_FILES | frozenset(
         "tests/test_virtual_player_config.py",
         "tests/test_virtual_player_economy.py",
         "tests/test_virtual_player_gate_d1_concurrency_integration.py",
+        "tests/test_virtual_player_gate_d1_automation.py",
         "tests/test_virtual_player_gate_d1_evidence.py",
         "tests/test_virtual_player_gate_exit_workflows.py",
+        "tests/test_virtual_player_maintenance_rules.py",
         "tests/test_virtual_player_population_consumer.py",
         "tests/test_virtual_player_population_demand.py",
         "tests/test_virtual_player_prestige_transitions.py",
@@ -116,27 +152,60 @@ GATE_D1_REQUIRED_SOURCE_FILES = _COMMON_REQUIRED_SOURCE_FILES | frozenset(
 
 GATE_E_REQUIRED_SOURCE_FILES = _COMMON_REQUIRED_SOURCE_FILES | frozenset(
     {
+        "battle/deployment.py",
+        "battle/execution.py",
+        "battle/locking.py",
         "config/settings/celery_conf.py",
+        "gameplay/admin/__init__.py",
         "gameplay/admin/bots.py",
         "gameplay/migrations/0140_bot_population_recompute_demand.py",
         "gameplay/migrations/0142_botsafetymetricevent_botsafetymetricwindow.py",
         "gameplay/migrations/0143_botarenashortagebaseline.py",
         "gameplay/migrations/0144_arena_growth_claims.py",
+        "gameplay/migrations/0147_backfill_grain_warehouse_ledger.py",
+        "gameplay/migrations/0148_bot_runtime_safety_window_kind.py",
+        "gameplay/migrations/0149_botruntimeroutingstate_paused_from_maintenance_mode_and_more.py",
+        "gameplay/migrations/0150_botarenashortagebaseline_expires_at_and_more.py",
+        "gameplay/management/commands/cleanup_expired_virtual_player_arena_baselines.py",
+        "gameplay/management/commands/resume_virtual_player_gate_e_cutover.py",
         "gameplay/models/arena_virtual.py",
         "gameplay/models/virtual_player_maintenance.py",
         "gameplay/services/arena/coop_core.py",
+        "gameplay/services/arena/coop_lifecycle.py",
         "gameplay/services/arena/core.py",
         "gameplay/services/arena/lifecycle_helpers.py",
+        "gameplay/services/arena/registration_helpers.py",
         "gameplay/services/arena/virtual_backfill.py",
         "gameplay/services/arena/virtual_lineups.py",
         "gameplay/services/arena/virtual_protection.py",
+        "gameplay/services/arena/virtual_reserve.py",
         "gameplay/services/arena/virtual_reserve_demand.py",
+        "gameplay/services/arena/virtual_reserve_fill.py",
         "gameplay/services/arena/virtual_reserve_observability.py",
         "gameplay/services/arena/virtual_reserve_pool.py",
+        "gameplay/services/arena/virtual_reserve_reconcile.py",
+        "gameplay/services/arena/virtual_reserve_references.py",
+        "gameplay/services/arena/virtual_reserve_scan.py",
         "gameplay/services/inventory/core.py",
+        "gameplay/services/inventory/guest_item_selector.py",
+        "gameplay/services/inventory/guest_items.py",
+        "gameplay/services/inventory/guest_reset_helpers.py",
         "gameplay/services/jail.py",
+        "gameplay/services/manor/bootstrap.py",
         "gameplay/services/manor/core.py",
+        "gameplay/services/manor/treasury.py",
+        "gameplay/services/missions_impl/finalization_helpers.py",
+        "gameplay/services/missions_impl/launch_command.py",
+        "gameplay/services/raid/combat/battle_guest_damage.py",
+        "gameplay/services/raid/combat/battle_post_actions.py",
         "gameplay/services/resources.py",
+        "gameplay/services/raid/combat/capture.py",
+        "gameplay/services/raid/combat/failure.py",
+        "gameplay/services/raid/combat/finalize.py",
+        "gameplay/services/raid/combat/loot.py",
+        "gameplay/services/raid/combat/retreat.py",
+        "gameplay/services/raid/combat/run_persistence.py",
+        "gameplay/services/raid/utils.py",
         "gameplay/services/technology.py",
         "gameplay/services/technology_runtime.py",
         "gameplay/services/raid/combat/battle.py",
@@ -159,11 +228,18 @@ GATE_E_REQUIRED_SOURCE_FILES = _COMMON_REQUIRED_SOURCE_FILES | frozenset(
         "gameplay/services/virtual_player_core/safety_provider.py",
         "gameplay/services/virtual_player_core/selectors.py",
         "gameplay/services/virtual_player_core/strategy.py",
+        "gameplay/services/utils/messages.py",
+        "gameplay/services/work.py",
+        "gameplay/tasks/resources.py",
+        "guests/constants.py",
+        "guests/migrations/0067_guest_training_remaining_seconds.py",
+        "guests/models.py",
         "guests/services/equipment.py",
         "guests/services/health.py",
         "guests/services/roster.py",
         "guests/services/salary.py",
         "guests/services/skills.py",
+        "guests/services/status.py",
         "guests/services/training.py",
         "guests/tasks.py",
         "gameplay/services/recruitment/recruitment.py",
@@ -296,12 +372,16 @@ def _verify_source_state(
     evidence: Mapping[str, Any],
     *,
     required_files: frozenset[str],
+    expected_git_commit: str | None = None,
+    extra_allowed_dirty_paths: Sequence[str] = (),
 ) -> None:
     source_state = _mapping(evidence.get("source_state"), field="source_state")
     if source_state.get("digest_algorithm") != "sha256":
         raise GateEvidenceError("source_state.digest_algorithm must be sha256")
     if source_state.get("evidence_applies_to_exact_file_hashes") is not True:
         raise GateEvidenceError("source evidence must apply to exact file hashes")
+    if expected_git_commit is not None and source_state.get("git_commit") != expected_git_commit:
+        raise GateEvidenceError("source_state.git_commit does not match the expected build commit")
     files = _mapping(source_state.get("files"), field="source_state.files")
     if not 1 <= len(files) <= _MAX_SOURCE_FILES:
         raise GateEvidenceError("source_state.files has an invalid size")
@@ -323,6 +403,83 @@ def _verify_source_state(
         observed = hashlib.sha256(candidate.read_bytes()).hexdigest()
         if observed != expected_digest:
             raise GateEvidenceError(f"source digest changed: {relative_path}")
+
+    raw_tree = source_state.get("git_tree")
+    if raw_tree is not None:
+        if _GIT_OBJECT_PATTERN.fullmatch(str(raw_tree)) is None:
+            raise GateEvidenceError("source_state.git_tree must be a canonical Git object id")
+        observed_tree = _current_git_tree()
+        if observed_tree != raw_tree:
+            raise GateEvidenceError("source_state.git_tree does not match the current Git tree")
+
+    if source_state.get("worktree_clean") is not True:
+        raise GateEvidenceError("source_state.worktree_clean must be true")
+    allowed_dirty_paths = _normalize_allowed_dirty_paths(source_state.get("allowed_dirty_paths"))
+    if extra_allowed_dirty_paths:
+        allowed_dirty_paths |= _normalize_allowed_dirty_paths(tuple(extra_allowed_dirty_paths))
+    unclean_paths = _current_unclean_paths(allowed_dirty_paths)
+    if unclean_paths:
+        shown = ", ".join(unclean_paths[:5])
+        raise GateEvidenceError(f"source worktree is dirty outside allowed evidence artifacts: {shown}")
+
+
+def _current_git_tree() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD^{tree}"],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise GateEvidenceError("cannot resolve the current Git tree") from exc
+    tree = result.stdout.strip()
+    if _GIT_OBJECT_PATTERN.fullmatch(tree) is None:
+        raise GateEvidenceError("current Git tree is not a canonical object id")
+    return tree
+
+
+def _normalize_allowed_dirty_paths(value: object) -> frozenset[str]:
+    if value is None:
+        return frozenset()
+    if not isinstance(value, (list, tuple)):
+        raise GateEvidenceError("source_state.allowed_dirty_paths must be a list")
+    normalized: set[str] = set()
+    for raw_path in value:
+        if not isinstance(raw_path, str) or not raw_path.strip():
+            raise GateEvidenceError("source_state.allowed_dirty_paths entries must be non-empty strings")
+        candidate = (PROJECT_ROOT / raw_path.strip()).resolve()
+        try:
+            candidate.relative_to(PROJECT_ROOT)
+        except ValueError as exc:
+            raise GateEvidenceError(f"allowed dirty path escapes project root: {raw_path}") from exc
+        normalized.add(str(candidate.relative_to(PROJECT_ROOT)))
+    return frozenset(normalized)
+
+
+def _current_unclean_paths(allowed_dirty_paths: frozenset[str]) -> tuple[str, ...]:
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=all"],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise GateEvidenceError("cannot inspect the current Git worktree") from exc
+
+    unclean: set[str] = set()
+    for line in result.stdout.splitlines():
+        if len(line) < 4:
+            continue
+        entry = line[3:].strip()
+        if " -> " in entry:
+            entry = entry.split(" -> ", 1)[1]
+        if entry and entry not in allowed_dirty_paths:
+            unclean.add(entry)
+    return tuple(sorted(unclean))
 
 
 def _proof(
@@ -410,8 +567,33 @@ def _verify_canonical_gate_a(evidence: Mapping[str, Any]) -> None:
         raise GateEvidenceError("canonical Gate A evidence does not match its manifest")
 
 
-def verify_gate_d1_readiness() -> GateReadinessProof:
-    evidence, payload = _read_evidence(GATE_D1_EVIDENCE_PATH)
+def _verify_recorded_canonical_gate_a_execution(evidence: Mapping[str, Any]) -> None:
+    recorded = evidence.get("canonical_gate_a_execution")
+    if recorded is None:
+        return
+    execution = _mapping(recorded, field="canonical_gate_a_execution")
+    if execution.get("command") != "DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-a":
+        raise GateEvidenceError("recorded canonical Gate A command is invalid")
+    if execution.get("status") != "passed":
+        raise GateEvidenceError("recorded canonical Gate A execution did not pass")
+    _utc_timestamp(
+        execution.get("execution_timestamp_utc"),
+        field="canonical_gate_a_execution.execution_timestamp_utc",
+    )
+    _positive_int(execution.get("contract_passed"), field="canonical_gate_a_execution.contract_passed")
+    _positive_int(execution.get("real_service_passed"), field="canonical_gate_a_execution.real_service_passed")
+    duration_seconds = execution.get("duration_seconds")
+    if isinstance(duration_seconds, bool) or not isinstance(duration_seconds, (int, float)) or duration_seconds < 0:
+        raise GateEvidenceError("canonical_gate_a_execution.duration_seconds is invalid")
+
+
+def verify_gate_d1_readiness(
+    *,
+    evidence_path: Path | None = None,
+    expected_git_commit: str | None = None,
+    extra_allowed_dirty_paths: Sequence[str] = (),
+) -> GateReadinessProof:
+    evidence, payload = _read_evidence(evidence_path or GATE_D1_EVIDENCE_PATH)
     if evidence.get("schema_version") != 1:
         raise GateEvidenceError("Gate D1 evidence schema is unsupported")
     if evidence.get("gate") != "gate_d1_bootstrap_activation":
@@ -427,6 +609,7 @@ def verify_gate_d1_readiness() -> GateReadinessProof:
     )
     if activation.get("canonical_gate_a_execution_status") != "passed":
         raise GateEvidenceError("canonical Gate A evidence has not passed")
+    _verify_recorded_canonical_gate_a_execution(evidence)
     scope = _mapping(evidence.get("scope"), field="scope")
     if scope.get("environment") != "test" or scope.get("production") is not False:
         raise GateEvidenceError("Gate D1 evidence is not scoped to the test environment")
@@ -434,7 +617,12 @@ def verify_gate_d1_readiness() -> GateReadinessProof:
         evidence,
         business_contact_field="business_database_touched",
     )
-    _verify_source_state(evidence, required_files=GATE_D1_REQUIRED_SOURCE_FILES)
+    _verify_source_state(
+        evidence,
+        required_files=GATE_D1_REQUIRED_SOURCE_FILES,
+        expected_git_commit=expected_git_commit,
+        extra_allowed_dirty_paths=extra_allowed_dirty_paths,
+    )
     return _proof(
         gate="d1",
         evidence=evidence,
@@ -443,7 +631,10 @@ def verify_gate_d1_readiness() -> GateReadinessProof:
     )
 
 
-def verify_gate_e_readiness() -> GateReadinessProof:
+def verify_gate_e_readiness(
+    *,
+    expected_git_commit: str | None = None,
+) -> GateReadinessProof:
     evidence, payload = _read_evidence(GATE_E_EVIDENCE_PATH)
     if evidence.get("schema_version") != 1:
         raise GateEvidenceError("Gate E evidence schema is unsupported")
@@ -501,7 +692,11 @@ def verify_gate_e_readiness() -> GateReadinessProof:
         evidence,
         business_contact_field="business_database_contacted",
     )
-    _verify_source_state(evidence, required_files=GATE_E_REQUIRED_SOURCE_FILES)
+    _verify_source_state(
+        evidence,
+        required_files=GATE_E_REQUIRED_SOURCE_FILES,
+        expected_git_commit=expected_git_commit,
+    )
     return _proof(
         gate="e",
         evidence=evidence,

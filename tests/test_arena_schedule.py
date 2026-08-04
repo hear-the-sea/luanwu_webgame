@@ -19,10 +19,12 @@ def test_arena_reserve_tasks_have_stable_exports_and_routes():
     assert tasks.reconcile_arena_virtual_reserve.name == "gameplay.reconcile_arena_virtual_reserve"
     assert tasks.scan_arena_virtual_reserves.name == "gameplay.scan_arena_virtual_reserves"
     assert tasks.grow_arena_virtual_reserves.name == "gameplay.grow_arena_virtual_reserves"
+    assert tasks.retry_arena_shortage_metric.name == "gameplay.retry_arena_shortage_metric"
     for task_name in [
         "gameplay.reconcile_arena_virtual_reserve",
         "gameplay.scan_arena_virtual_reserves",
         "gameplay.grow_arena_virtual_reserves",
+        "gameplay.retry_arena_shortage_metric",
     ]:
         assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": settings.CELERY_TIMER_QUEUE}
 

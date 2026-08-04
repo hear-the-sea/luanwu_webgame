@@ -201,11 +201,13 @@ def get_livestock_options(manor: Manor) -> List[Dict[str, Any]]:
     Returns:
         家畜选项列表
     """
+    from ..inventory.core import get_warehouse_grain_quantity
     from ..technology import get_player_technology_level
 
     animal_husbandry_level = get_player_technology_level(manor, "animal_husbandry")
     max_quantity = get_max_livestock_quantity(manor)
     is_producing = has_active_livestock_production(manor)
+    warehouse_grain_quantity = get_warehouse_grain_quantity(manor)
     livestock_name_map = _get_item_name_map(set(LIVESTOCK_CONFIG.keys()))
 
     options = []
@@ -225,7 +227,7 @@ def get_livestock_options(manor: Manor) -> List[Dict[str, Any]]:
                 "grain_cost": config["grain_cost"],
                 "base_duration": config["base_duration"],
                 "actual_duration": actual_duration,
-                "can_afford": manor.grain >= config["grain_cost"],
+                "can_afford": warehouse_grain_quantity >= config["grain_cost"],
                 "required_animal_husbandry": required_level,
                 "is_unlocked": is_unlocked,
                 "max_quantity": max_quantity,

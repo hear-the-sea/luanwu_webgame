@@ -27,8 +27,8 @@
 | [PVP、竞技场与战斗系统审计（2026-07-26）](pvp_arena_battle_audit_2026-07-26.md) | 虚拟玩家、竞技场、玩家/帮会 PVP 与战斗系统问题及整改方案 |
 | [虚拟玩家架构重构与自然化优化方案（2026-07-27）](virtual_player_refactor_plan_2026-07-27.md) | 虚拟玩家模块拆分、发展画像、自然化生成与增量维护实施方案 |
 | [虚拟玩家重构 Gate A 事实档案（2026-07-27）](virtual_player_gate_a_dossier_2026-07-27.md) | 阶段 0 边界、锁图、领域 command、基线缺口与审批状态 |
-| [虚拟玩家 Gate D1 证据（2026-07-28）](virtual_player_gate_d1_evidence_2026-07-28.yaml) | Bootstrap V2 固定契约、真实 MySQL/Redis 竞态与 P95 证据；不构成运行时授权 |
-| [虚拟玩家 Gate E readiness 证据（2026-07-28）](virtual_player_gate_e_readiness_evidence_2026-07-28.yaml) | Maintenance 六档矩阵、真实锁语义、回归与静态门禁；不构成 cutover 或启用授权 |
+| [虚拟玩家 Gate D1 证据（2026-07-30）](virtual_player_gate_d1_evidence_2026-07-30.yaml) | Bootstrap V2 固定契约、真实 MySQL/Redis 竞态与 P95 证据；不构成运行时授权 |
+| [虚拟玩家 Gate E readiness 证据（2026-07-30）](virtual_player_gate_e_readiness_evidence_2026-07-30.yaml) | Maintenance 六档矩阵、真实锁语义、回归与静态门禁；不构成 cutover 或启用授权 |
 | [虚拟玩家重构完成度审计（2026-07-28）](virtual_player_refactor_completion_audit_2026-07-28.md) | Gate A-E 实现、证据、授权边界与剩余顺序 |
 | [优化计划](optimization_plan.md) | 与技术审计配套的执行路线图 |
 | [兼容入口清单（2026-03）](compatibility_inventory_2026-03.md) | 当前仍明确保留的兼容入口 |
@@ -47,4 +47,4 @@
 4. 涉及 YAML、导库或热刷新，先看 [配置数据](config_data.md)
 5. 涉及镜像构建、服务器更新、Redis 认证或 Docker 清理，先看 [Docker 部署运行手册](runbook_deploy_docker.md)
 
-*最近校正：2026-07-28*
+*最近校正：2026-08-03*

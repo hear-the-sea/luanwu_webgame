@@ -58,7 +58,7 @@ class TestInventoryPageContext:
         assert "剩余 -100" not in body
         assert 'style="width: 100%;"' in body
 
-    def test_warehouse_page_projects_grain_item_without_writing_inventory(self, manor_with_user):
+    def test_warehouse_page_reads_grain_item_as_the_authoritative_quantity(self, manor_with_user):
         manor, client = manor_with_user
         grain_template, _ = ItemTemplate.objects.get_or_create(
             key="grain",
@@ -68,31 +68,29 @@ class TestInventoryPageContext:
             grain_template.name = "粮食"
             grain_template.save(update_fields=["name"])
 
-        manor.grain = 777
+        manor.grain = 999
         manor.resource_updated_at = timezone.now()
         manor.save(update_fields=["grain", "resource_updated_at"])
-        InventoryItem.objects.filter(
+        warehouse_grain, _created = InventoryItem.objects.update_or_create(
             manor=manor,
             template=grain_template,
             storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-        ).delete()
+            defaults={"quantity": 777},
+        )
 
         response = client.get(reverse("gameplay:warehouse"))
         assert response.status_code == 200
 
-        warehouse_grain = InventoryItem.objects.filter(
-            manor=manor,
-            template=grain_template,
-            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-        ).first()
-        assert warehouse_grain is None
+        warehouse_grain.refresh_from_db()
+        assert warehouse_grain.quantity == 777
         projected_entry = next(
             (entry for entry in response.context["inventory_items"] if entry.template.key == "grain"),
             None,
         )
         assert projected_entry is not None
         assert projected_entry.display_quantity == 777
-        assert projected_entry.is_projected is True
+        assert response.context["warehouse_grain_quantity"] == 777
+        assert "实时产出待后台同步" not in response.content.decode("utf-8")
 
     def test_warehouse_page_renders_soul_fusion_requirements_for_current_item(self, manor_with_user):
         manor, client = manor_with_user

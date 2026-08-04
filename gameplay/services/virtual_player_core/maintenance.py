@@ -11,7 +11,7 @@ from typing import Any
 from uuid import UUID
 
 from django.db import DatabaseError, connection, transaction
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.utils import timezone
 
 from core.exceptions import (
@@ -59,7 +59,7 @@ from gameplay.models import (
     ScoutRecord,
 )
 from gameplay.services.arena.virtual_protection import is_virtual_profile_arena_protected
-from gameplay.services.inventory.core import GRAIN_ITEM_KEY, add_item_to_inventory_locked
+from gameplay.services.inventory.core import GRAIN_ITEM_KEY, add_item_to_inventory_locked, get_warehouse_grain_quantity
 from gameplay.services.manor.core import (
     BuildingUpgradeQuote,
     BuildingUpgradeQuoteStaleError,
@@ -683,6 +683,8 @@ def _apply_due_resource_production_settlement_locked(
     expected_production_deltas: tuple[tuple[str, int], ...],
     expected_decision: ForcedSettlementDecision,
     production_basis: ResourceProductionBasis,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
 ) -> ForcedSettlementDecision:
     """按冻结产出和预算在 Profile -> Manor 锁内完成到期结算。"""
     current_production_deltas = tuple(
@@ -727,6 +729,8 @@ def _apply_due_resource_production_settlement_locked(
         },
         note="虚拟玩家强制资源结算",
         production_basis=production_basis,
+        grain_template=grain_template,
+        grain_template_resolved=grain_template_resolved,
     )
     applied_positive = (
         max(0, int(settled.get(ResourceType.SILVER, 0))),
@@ -855,7 +859,8 @@ def _maintain_active_profile(
     max_guest_level_step: int | None = None,
 ) -> None:
     rng = random.Random(profile.growth_seed + profile.growth_stage)
-    manor = profile.manor
+    manor = Manor.objects.select_for_update().get(pk=profile.manor_id)
+    profile.manor = manor
     before_building_level = max(1, int(profile.growth_stage))
     before_guest_level = max([int(level) for level in manor.guests.values_list("level", flat=True)] or [0])
     before_troop_count = int(manor.troops.aggregate(total=Sum("count"))["total"] or 0)
@@ -914,7 +919,6 @@ def _maintain_active_profile(
             "silver_capacity",
             "grain_capacity",
             "silver",
-            "grain",
             "prestige",
             "resource_updated_at",
         ]
@@ -1192,6 +1196,7 @@ def _guest_precondition_payload(guest: Guest | None) -> dict[str, Any] | None:
             "rarity": str(guest.template.rarity),
         },
         "training_complete_at": _datetime_payload(guest.training_complete_at),
+        "training_remaining_seconds": guest.training_remaining_seconds,
         "training_target_level": int(guest.training_target_level),
         "troop_capacity_bonus": int(guest.troop_capacity_bonus),
     }
@@ -1631,12 +1636,26 @@ def _available_warehouse_items(manor_id: int) -> tuple[InventoryItem, ...]:
     return tuple(
         InventoryItem.objects.filter(
             manor_id=manor_id,
-            quantity__gt=0,
             storage_location=InventoryItem.StorageLocation.WAREHOUSE,
         )
+        .filter(Q(quantity__gt=0) | Q(template__key=GRAIN_ITEM_KEY))
         .select_related("template")
         .order_by("template__key", "id")
     )
+
+
+def _prime_warehouse_grain_projection(manor: Manor, warehouse_items: tuple[InventoryItem, ...]) -> None:
+    """Reuse the already-loaded grain row, or the legacy field when no row exists."""
+    grain_item = next((item for item in warehouse_items if item.template.key == GRAIN_ITEM_KEY), None)
+    quantity = (
+        max(0, int(grain_item.quantity or 0))
+        if grain_item is not None
+        else max(0, int(getattr(manor, "grain", 0) or 0))
+    )
+    # The query above deliberately includes zero-quantity grain rows, so a missing
+    # row is a complete read of the ledger state rather than an assumption.
+    manor.grain = quantity
+    setattr(manor, "warehouse_grain_quantity", quantity)
 
 
 def _equipped_gear_items(
@@ -1689,7 +1708,13 @@ def _skills_for_warehouse_items(
 def _inventory_template_query_keys(value: object) -> tuple[str, ...]:
     if not isinstance(value, list):
         return ()
-    return tuple(dict.fromkeys(entry.strip() for entry in value if isinstance(entry, str) and entry.strip()))
+    return tuple(
+        dict.fromkeys(
+            entry.strip()
+            for entry in value
+            if isinstance(entry, str) and entry.strip() and entry.strip() != GRAIN_ITEM_KEY
+        )
+    )
 
 
 def _inventory_templates_for_profile(profile: BotProfile) -> tuple[ItemTemplate, ...]:
@@ -2279,6 +2304,7 @@ def _build_v2_maintenance_plan_from_profile(
         skills = planning_snapshot.skills
         warehouse_items = planning_snapshot.warehouse_items
         inventory_templates = planning_snapshot.inventory_templates
+    _prime_warehouse_grain_projection(manor, warehouse_items)
     budget_entries = parse_strength_budget_entries(
         profile.strength_budget_entries,
         now=planned_at,
@@ -2995,6 +3021,8 @@ def execute_virtual_player_v2_maintenance_plan(
         expected_production_deltas=plan.resource_production_deltas,
         expected_decision=plan.forced_settlement_decision,
         production_basis=production_basis,
+        grain_template=(revalidation_grain_template if revalidation_grain_template is not None else _grain_template),
+        grain_template_resolved=(revalidation_grain_template is not None or _grain_template_resolved),
     )
     salary_blocks_development = False
     if plan.salary_quote.unpaid_guest_ids:
@@ -3834,7 +3862,7 @@ def _loot_resource_total(loot_resources: Any) -> int:
 
 
 def _is_resource_empty(manor: Manor) -> bool:
-    return int(manor.silver or 0) <= 0 and int(manor.grain or 0) <= 0
+    return int(manor.silver or 0) <= 0 and get_warehouse_grain_quantity(manor) <= 0
 
 
 def _maintenance_cycle_started_at(profile: BotProfile):
@@ -4049,9 +4077,9 @@ def _scheduled_planning_snapshots(
         for item in (
             InventoryItem.objects.filter(
                 manor_id__in=manor_ids,
-                quantity__gt=0,
                 storage_location=InventoryItem.StorageLocation.WAREHOUSE,
             )
+            .filter(Q(quantity__gt=0) | Q(template__key=GRAIN_ITEM_KEY))
             .select_related("template")
             .order_by("manor_id", "template__key", "id")
         ):

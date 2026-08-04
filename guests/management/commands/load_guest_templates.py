@@ -9,12 +9,15 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.db.models import ForeignKey, OneToOneField
 from django.db.models.deletion import ProtectedError
+from django.utils import timezone
 
 from battle.combatants_pkg.cache import clear_guest_template_cache
 from core.config import GUEST
 from core.utils.image_utils import compress_and_resize_image
 from core.utils.yaml_loader import ensure_mapping, load_yaml_data
+from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
 from guests.growth_rules import RARITY_HP_PROFILES
 from guests.models import (
     Guest,
@@ -28,6 +31,11 @@ from guests.models import (
     SkillKind,
 )
 from guests.services.recruitment_templates import clear_template_cache
+from guests.services.status import (
+    GUEST_STATUS_UPDATE_FIELDS,
+    prepare_guest_status_transition,
+    schedule_resumed_guest_trainings,
+)
 
 logger = logging.getLogger(__name__)
 AVATAR_LOAD_RECOVERABLE_EXCEPTIONS = (OSError,)
@@ -464,8 +472,12 @@ class Command(BaseCommand):
             "defense_stat",
             "status",
             "injury_loyalty_processed_at",
+            "training_complete_at",
+            "training_remaining_seconds",
         )
 
+        now = timezone.now()
+        resumed_guests: list[Guest] = []
         for guest in guest_qs:
             old_max_hp = max(
                 hp_floor,
@@ -491,14 +503,22 @@ class Command(BaseCommand):
                 target_status = GuestStatus.IDLE
                 target_injury_loyalty_processed_at = None
 
+            transition = None
+            if target_status != guest.status:
+                transition = prepare_guest_status_transition(guest, target_status, now=now)
+                if transition.resumed_training:
+                    resumed_guests.append(guest)
+
             if (
                 target_hp == current_hp
                 and target_status == guest.status
                 and target_injury_loyalty_processed_at == guest.injury_loyalty_processed_at
+                and not (transition and transition.changed)
             ):
                 continue
             guest.current_hp = target_hp
-            guest.status = target_status
+            if transition is None:
+                guest.status = target_status
             guest.injury_loyalty_processed_at = target_injury_loyalty_processed_at
             dirty_guests.append(guest)
 
@@ -507,7 +527,19 @@ class Command(BaseCommand):
 
         Guest.objects.bulk_update(
             dirty_guests,
-            ["current_hp", "status", "injury_loyalty_processed_at"],
+            list(
+                dict.fromkeys(
+                    [
+                        "current_hp",
+                        "injury_loyalty_processed_at",
+                        *GUEST_STATUS_UPDATE_FIELDS,
+                    ]
+                )
+            ),
+        )
+        schedule_resumed_guest_trainings(
+            resumed_guests,
+            source="template_hp_sync",
         )
         return len(dirty_guests)
 
@@ -632,9 +664,14 @@ class Command(BaseCommand):
         return desired_skill_keys
 
     def _cleanup_removed_templates(self, template_keys: set[str]) -> None:
-        queryset = (
+        base_queryset = (
             GuestTemplate.objects.exclude(key__in=template_keys) if template_keys else GuestTemplate.objects.all()
         )
+        conversion_ids = list(
+            base_queryset.filter(key__startswith=RARITY_CONVERSION_TEMPLATE_KEY_PREFIX).values_list("pk", flat=True)
+        )
+        referenced_conversion_ids = self._referenced_guest_template_ids(conversion_ids)
+        queryset = base_queryset.exclude(pk__in=referenced_conversion_ids)
         try:
             removed, _ = queryset.delete()
         except ProtectedError as exc:
@@ -653,6 +690,26 @@ class Command(BaseCommand):
             )
         if removed:
             self.stdout.write(self.style.WARNING(f"Removed {removed} templates not defined in payload"))
+
+    def _referenced_guest_template_ids(self, template_ids: list[int]) -> set[int]:
+        if not template_ids:
+            return set()
+        referenced_ids: set[int] = set()
+        for related in GuestTemplate._meta.related_objects:
+            field = getattr(related, "field", None)
+            if not isinstance(field, (ForeignKey, OneToOneField)):
+                continue
+            related_model = getattr(related, "related_model", None)
+            if related_model is None:
+                continue
+            filter_name = field.attname
+            referenced_ids.update(
+                related_model.objects.filter(**{f"{filter_name}__in": template_ids}).values_list(
+                    filter_name,
+                    flat=True,
+                )
+            )
+        return referenced_ids
 
     def _protected_guest_templates_from_error(self, exc: ProtectedError):
         template_ids = {

@@ -93,6 +93,7 @@ def test_lock_maintained_profile_rejects_unpersisted_routing_guard(
         last_daily_safety_window_end_at=None,
         last_pause_window_id="",
         pause_reason="",
+        paused_from_maintenance_mode="",
         persisted=False,
     )
 

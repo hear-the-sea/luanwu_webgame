@@ -1,0 +1,369 @@
+/* 乱舞商城：复用项目的米黄、深棕面板体系，以鎏金突出商城信息。 */
+
+.luanwu-shop {
+  --luanwu-gold: #b8860b;
+  --luanwu-gold-dark: #8b5f0b;
+  --luanwu-gold-soft: #f8e9b9;
+  --luanwu-shadow: rgba(74, 38, 18, 0.12);
+  color: var(--text-primary);
+}
+
+.luanwu-shop__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 3px solid var(--border-decorative);
+  background:
+    linear-gradient(90deg, rgba(218, 165, 32, 0.11), transparent 46%),
+    var(--bg-panel);
+  box-shadow: 0 3px 10px var(--luanwu-shadow);
+}
+
+.luanwu-shop__heading {
+  min-width: 0;
+}
+
+.luanwu-shop__eyebrow {
+  display: block;
+  color: var(--luanwu-gold-dark);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.luanwu-shop__heading h1 {
+  margin: 0.25rem 0 0;
+  color: var(--text-primary);
+  font-family: "STKaiti", "KaiTi", serif;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+}
+
+.luanwu-shop__heading p {
+  max-width: 38rem;
+  margin: 0.45rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.luanwu-wallet {
+  display: flex;
+  min-width: 15rem;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.9rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border-light);
+  border-radius: 0.375rem;
+  background: linear-gradient(135deg, #fffdf4 0%, var(--luanwu-gold-soft) 100%);
+  box-shadow: 0 2px 7px var(--luanwu-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.luanwu-wallet__balance {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.luanwu-coin-mark {
+  display: inline-grid;
+  place-items: center;
+  font-family: "STKaiti", "KaiTi", serif;
+  font-weight: 700;
+}
+
+.luanwu-wallet__icon {
+  display: block;
+  width: 2.45rem;
+  height: 2.45rem;
+  flex: 0 0 2.45rem;
+  border: 2px solid var(--luanwu-gold);
+  border-radius: 50%;
+  background: #fff8df;
+  object-fit: contain;
+  padding: 0.2rem;
+  box-shadow: inset 0 0 0 2px rgba(184, 134, 11, 0.12);
+}
+
+.luanwu-wallet__text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.luanwu-wallet__label {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.luanwu-wallet__text strong {
+  color: var(--luanwu-gold-dark);
+  font-size: 1.45rem;
+  line-height: 1.1;
+}
+
+.luanwu-shop__layout {
+  display: block;
+  margin-top: 0.75rem;
+}
+
+.luanwu-products {
+  min-width: 0;
+  overflow: hidden;
+  box-shadow: 0 3px 10px var(--luanwu-shadow);
+}
+
+.luanwu-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+.luanwu-product-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: 0;
+  border-width: 1px;
+  border-radius: 0.375rem;
+  background: var(--bg-card);
+  box-shadow: 0 2px 7px var(--luanwu-shadow);
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.luanwu-product-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--luanwu-gold);
+  box-shadow: 0 5px 13px rgba(74, 38, 18, 0.17);
+}
+
+.luanwu-product-card--featured {
+  border-color: #c19a6b;
+  background: linear-gradient(160deg, #fbf3dc 0%, var(--bg-card) 62%);
+}
+
+.luanwu-product-card__topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 2rem;
+  padding: 0.55rem 0.7rem 0.25rem;
+}
+
+.luanwu-product-card__tag,
+.luanwu-product-card__spark {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.3rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.luanwu-product-card__spark {
+  border-color: #d5ad3e;
+  background: #fff2bd;
+  color: #765116;
+}
+
+.luanwu-product-card__body {
+  display: flex;
+  flex: 1;
+  gap: 0.7rem;
+  padding: 0.7rem;
+}
+
+.luanwu-product-art {
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  flex: 0 0 4rem;
+  place-items: center;
+  overflow: hidden;
+  border: 2px solid var(--border-primary);
+  border-radius: 0.375rem;
+  background: linear-gradient(145deg, #fff8df 0%, #ead4a5 100%);
+  color: var(--luanwu-gold-dark);
+  font-family: "STKaiti", "KaiTi", serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55);
+}
+
+.luanwu-product-art.rarity-green {
+  border-color: #2e8b57;
+}
+
+.luanwu-product-art.rarity-blue {
+  border-color: #4169e1;
+}
+
+.luanwu-product-art.rarity-purple {
+  border-color: #9932cc;
+}
+
+.luanwu-product-art.rarity-orange {
+  border-color: #ff8c00;
+}
+
+.luanwu-product-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.luanwu-product-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.luanwu-product-copy h3 {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  line-height: 1.3;
+}
+
+.luanwu-product-copy h3 small {
+  color: var(--luanwu-gold-dark);
+  font-size: 0.78rem;
+}
+
+.luanwu-product-copy p {
+  margin: 0.35rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.luanwu-product-card__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: auto;
+  padding: 0.65rem 0.7rem 0.7rem;
+  border-top: 1px solid var(--border-light);
+  background: rgba(255, 248, 231, 0.54);
+}
+
+.luanwu-price-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.luanwu-price-line strong {
+  color: var(--luanwu-gold-dark);
+  font-size: 1.35rem;
+}
+
+.luanwu-coin-mark {
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 1px solid var(--luanwu-gold);
+  border-radius: 50%;
+  background: #fff8df;
+  color: var(--luanwu-gold-dark);
+  font-size: 0.7rem;
+}
+
+.luanwu-purchase-form {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+.luanwu-purchase-form label {
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.luanwu-purchase-form__controls {
+  display: grid;
+  grid-template-columns: 4.2rem minmax(0, 1fr);
+  gap: 0.45rem;
+}
+
+.luanwu-purchase-form input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.45rem 0.25rem;
+  border: 1px solid var(--border-light);
+  border-radius: 0.375rem;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: center;
+}
+
+.luanwu-purchase-form input:focus-visible {
+  outline: 2px solid rgba(184, 134, 11, 0.35);
+  outline-offset: 1px;
+}
+
+.luanwu-buy-button {
+  width: 100%;
+}
+
+.luanwu-unavailable {
+  padding: 0.45rem 0.55rem;
+  border: 1px dashed var(--border-light);
+  border-radius: 0.375rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .luanwu-shop__header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .luanwu-wallet {
+    min-width: 0;
+  }
+
+  .luanwu-products .tw-panel-content {
+    padding: 0.75rem;
+  }
+
+  .luanwu-product-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 380px) {
+  .luanwu-wallet {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .luanwu-product-card,
+  .luanwu-product-card:hover {
+    transform: none;
+    transition: none;
+  }
+}

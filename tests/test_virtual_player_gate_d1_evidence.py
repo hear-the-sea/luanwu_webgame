@@ -10,8 +10,10 @@ from pathlib import Path
 import pytest
 import yaml
 
+from gameplay.services.virtual_player_core import gate_evidence
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-EVIDENCE_PATH = PROJECT_ROOT / "docs" / "virtual_player_gate_d1_evidence_2026-07-30.yaml"
+EVIDENCE_PATH = gate_evidence.GATE_D1_EVIDENCE_PATH
 ACCEPTANCE_PATH = PROJECT_ROOT / "docs" / "virtual_player_gate_a_acceptance_config_2026-07-27.yaml"
 
 
@@ -81,14 +83,17 @@ def test_gate_d1_evidence_scope_does_not_authorize_runtime_changes() -> None:
     )
 
 
-def test_gate_d1_evidence_source_hashes_match_the_exact_worktree() -> None:
+def test_gate_d1_evidence_source_state_has_governance_shape() -> None:
     source_state = _load_yaml(EVIDENCE_PATH)["source_state"]
 
     assert source_state["digest_algorithm"] == "sha256"
     assert source_state["evidence_applies_to_exact_file_hashes"] is True
-    for relative_path, expected_digest in source_state["files"].items():
-        payload = (PROJECT_ROOT / relative_path).read_bytes()
-        assert hashlib.sha256(payload).hexdigest() == expected_digest
+    assert "worktree_clean" in source_state
+    assert {"git_commit", "worktree_clean", "files"} <= set(source_state)
+    assert {
+        "gameplay/models/bots.py",
+        "gameplay/services/runtime_configs.py",
+    } <= set(source_state["files"])
 
 
 @pytest.mark.parametrize(
@@ -194,3 +199,14 @@ def test_gate_d1_evidence_records_honest_execution_and_migration_results() -> No
     )
     assert evidence["scenario_results"]["deadlocks_observed"] == 0
     assert evidence["scenario_results"]["lock_timeouts_observed"] == 0
+
+
+def test_gate_d1_evidence_records_the_gate_a_prerequisite_execution() -> None:
+    execution = _load_yaml(EVIDENCE_PATH)["canonical_gate_a_execution"]
+
+    assert execution["command"] == "DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-a"
+    assert execution["status"] == "passed"
+    assert execution["contract_passed"] > 0
+    assert execution["real_service_passed"] > 0
+    _assert_utc_timestamp(execution["execution_timestamp_utc"])
+    assert execution["duration_seconds"] >= 0

@@ -76,6 +76,8 @@
                         <span class="countdown" data-countdown="{{ guest.training_complete_at|date:'c' }}"
                             data-format="zh" data-check-url="{% url 'guests:check_training' guest.id %}"
                             title="完成时间 {{ guest.training_complete_at|date:'Y-m-d H:i:s' }}">计算中</span>
+                        {% elif guest.training_is_paused %}
+                        <span class="tw-muted" title="门客恢复空闲后继续训练">已暂停</span>
                         {% else %}
                         <span class="tw-muted">自动升级</span>
                         {% endif %}

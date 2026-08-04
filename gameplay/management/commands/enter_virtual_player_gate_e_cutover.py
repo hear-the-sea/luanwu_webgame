@@ -18,16 +18,20 @@ class Command(BaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument("--expected-revision", type=int, required=True)
         parser.add_argument("--authorization-basis", default="")
+        parser.add_argument("--expected-git-commit", default=None)
         parser.add_argument("--apply", action="store_true")
 
     def handle(self, *args: Any, **options: Any) -> None:
         apply = bool(options["apply"])
+        operation_kwargs: dict[str, Any] = {
+            "expected_revision": non_negative_int(options["expected_revision"], option_name="--expected-revision"),
+            "authorization_basis": str(options["authorization_basis"]),
+            "apply": apply,
+        }
+        if options["expected_git_commit"] is not None:
+            operation_kwargs["expected_git_commit"] = options["expected_git_commit"]
         summary = invoke_application_service(
-            lambda: gate_e_cutover_workflow.enter_gate_e_cutover_operation(
-                expected_revision=non_negative_int(options["expected_revision"], option_name="--expected-revision"),
-                authorization_basis=str(options["authorization_basis"]),
-                apply=apply,
-            )
+            lambda: gate_e_cutover_workflow.enter_gate_e_cutover_operation(**operation_kwargs)
         )
         write_operation_summary(
             self,

@@ -237,6 +237,7 @@ class Guest(models.Model):
     )
     training_target_level = models.PositiveIntegerField(default=0)
     training_complete_at = models.DateTimeField(null=True, blank=True)
+    training_remaining_seconds = models.PositiveIntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects: "GuestManagerType" = GuestManager()
@@ -270,15 +271,24 @@ class Guest(models.Model):
         return self.status == GuestStatus.IDLE
 
     @property
+    def training_is_paused(self) -> bool:
+        return self.training_remaining_seconds is not None
+
+    @property
     def max_hp(self) -> int:
         return _guest_rules.compute_guest_max_hp(self)
 
     def restore_full_hp(self) -> None:
         from .services.loyalty import apply_injury_loyalty_decay
+        from .services.status import GUEST_STATUS_UPDATE_FIELDS, prepare_guest_status_transition
 
         update_fields: list[str] = []
-        if apply_injury_loyalty_decay(self, now=timezone.now()) > 0:
+        now = timezone.now()
+        transition = None
+        if apply_injury_loyalty_decay(self, now=now) > 0:
             update_fields.extend(["loyalty", "injury_loyalty_processed_at"])
+        if self.status == GuestStatus.INJURED:
+            transition = prepare_guest_status_transition(self, GuestStatus.IDLE, now=now)
         update_fields = (
             _guest_rules.restore_guest_full_hp(
                 self,
@@ -287,10 +297,16 @@ class Guest(models.Model):
             )
             + update_fields
         )
+        if transition and transition.changed:
+            update_fields.extend(GUEST_STATUS_UPDATE_FIELDS)
         if self.injury_loyalty_processed_at is not None:
             self.injury_loyalty_processed_at = None
             update_fields.append("injury_loyalty_processed_at")
         self.save(update_fields=list(dict.fromkeys(update_fields)))
+        if transition and transition.resumed_training:
+            from .services.status import schedule_resumed_guest_training
+
+            schedule_resumed_guest_training(self, source="full_hp_recovery")
 
     # 成长倍率相关方法已移除，改用直接数值成长
     # 升级时直接增加门客的实际属性值

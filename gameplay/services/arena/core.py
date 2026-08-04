@@ -24,6 +24,7 @@ from gameplay.models import (
 )
 from guests.models import Guest, GuestStatus
 from guests.services.loyalty import increase_guest_loyalty_by_ids
+from guests.services.status import persist_guest_status_transitions
 
 from . import helpers as _arena_helpers
 from . import virtual_reserve_fill
@@ -243,10 +244,19 @@ def cancel_arena_entry(manor: Manor) -> int:
     tournament_ids = sorted({entry.tournament_id for entry in recruiting_entries})
     ArenaEntry.objects.filter(id__in=entry_ids).delete()
     if participant_guest_ids:
-        Guest.objects.filter(
-            id__in=participant_guest_ids,
-            status__in=[GuestStatus.ARENA, GuestStatus.DEPLOYED],
-        ).update(status=GuestStatus.IDLE)
+        guests = list(
+            Guest.objects.select_for_update()
+            .filter(
+                id__in=participant_guest_ids,
+                status__in=[GuestStatus.ARENA, GuestStatus.DEPLOYED],
+            )
+            .order_by("id")
+        )
+        persist_guest_status_transitions(
+            guests,
+            GuestStatus.IDLE,
+            source="arena_cancel",
+        )
 
     _update_daily_participation_counter_locked(locked_manor, delta=-len(entry_ids))
     current_time = timezone.now()
@@ -419,6 +429,7 @@ def _collect_due_arena_tournament_ids_for_manor(
     return recruiting_ids, running_ids
 
 
+@transaction.atomic
 def _release_orphaned_arena_guests(manor: Manor) -> int:
     active_guest_ids = ArenaEntryGuest.objects.filter(
         guest__manor=manor,
@@ -428,10 +439,16 @@ def _release_orphaned_arena_guests(manor: Manor) -> int:
             ArenaTournament.Status.RUNNING,
         ],
     ).values_list("guest_id", flat=True)
-    return (
-        Guest.objects.filter(manor=manor, status=GuestStatus.ARENA)
+    guests = list(
+        Guest.objects.select_for_update()
+        .filter(manor=manor, status=GuestStatus.ARENA)
         .exclude(id__in=active_guest_ids)
-        .update(status=GuestStatus.IDLE)
+        .order_by("id")
+    )
+    return persist_guest_status_transitions(
+        guests,
+        GuestStatus.IDLE,
+        source="arena_orphan_release",
     )
 
 

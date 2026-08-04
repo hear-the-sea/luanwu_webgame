@@ -105,3 +105,59 @@ items:
     call_command("load_item_templates", file=str(payload_path), verbosity=0)
 
     assert captured == [["sync_hook_helmet"]]
+
+
+@pytest.mark.django_db
+def test_load_item_templates_does_not_repair_grain_ledger_by_default(monkeypatch, tmp_path: Path):
+    payload_path = tmp_path / "items.yaml"
+    payload_path.write_text(
+        """
+items:
+  - key: grain
+    name: 粮食
+    effect_type: resource
+""".strip(),
+        encoding="utf-8",
+    )
+    calls: list[tuple[str, dict]] = []
+
+    monkeypatch.setattr(
+        "gameplay.management.commands.load_item_templates.call_command",
+        lambda name, **kwargs: calls.append((name, kwargs)),
+    )
+    monkeypatch.setattr(
+        "gameplay.management.commands.load_item_templates.synchronize_equipment_templates",
+        lambda keys: SimpleNamespace(changed=False),
+    )
+
+    call_command("load_item_templates", file=str(payload_path), verbosity=0)
+
+    assert calls == []
+
+
+@pytest.mark.django_db
+def test_load_item_templates_repairs_grain_ledger_when_requested(monkeypatch, tmp_path: Path):
+    payload_path = tmp_path / "items.yaml"
+    payload_path.write_text(
+        """
+items:
+  - key: grain
+    name: 粮食
+    effect_type: resource
+""".strip(),
+        encoding="utf-8",
+    )
+    calls: list[tuple[str, dict]] = []
+
+    monkeypatch.setattr(
+        "gameplay.management.commands.load_item_templates.call_command",
+        lambda name, **kwargs: calls.append((name, kwargs)),
+    )
+    monkeypatch.setattr(
+        "gameplay.management.commands.load_item_templates.synchronize_equipment_templates",
+        lambda keys: SimpleNamespace(changed=False),
+    )
+
+    call_command("load_item_templates", file=str(payload_path), verbosity=0, repair_grain_ledger=True)
+
+    assert calls == [("repair_grain_warehouse_ledger", {"verbosity": 0})]

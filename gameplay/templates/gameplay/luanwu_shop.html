@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/luanwu-shop.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="dashboard luanwu-shop" aria-labelledby="luanwu-shop-title">
+    <header class="tw-panel luanwu-shop__header">
+        <div class="luanwu-shop__heading">
+            <span class="luanwu-shop__eyebrow">乱世珍藏 · 春秋秘市</span>
+            <h1 id="luanwu-shop-title">乱舞商城</h1>
+            <p>以春秋币换取行走乱世所需的稀罕物件，兑换后道具会直接送入仓库。</p>
+        </div>
+
+        <div class="luanwu-wallet" aria-label="春秋币余额">
+            <div class="luanwu-wallet__balance">
+                <img class="luanwu-wallet__icon" src="{% static 'items/chunqiu_coin.png' %}" alt="春秋币" width="40" height="40" decoding="async">
+                <span class="luanwu-wallet__text">
+                    <span class="luanwu-wallet__label">仓库春秋币</span>
+                    <strong>{{ chunqiu_coin_quantity }}</strong>
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <div class="luanwu-shop__layout">
+        <section class="tw-panel luanwu-products" aria-label="商城商品">
+            <div class="tw-panel-content">
+                <div class="luanwu-product-grid">
+                    {% for product in luanwu_shop_products %}
+                    <article class="tw-card luanwu-product-card {% if product.is_random_device_blueprint %}luanwu-product-card--featured{% endif %}">
+                        <div class="luanwu-product-card__topline">
+                            <span class="luanwu-product-card__tag">{{ product.category }}</span>
+                            {% if product.is_random_device_blueprint %}
+                            <span class="luanwu-product-card__spark">随机</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="luanwu-product-card__body">
+                            <div class="luanwu-product-art rarity-{{ product.rarity }}" aria-hidden="true">
+                                {% if product.is_random_device_blueprint %}
+                                <img src="{% static 'items/large.png' %}" alt="" width="64" height="64" loading="lazy" decoding="async">
+                                {% elif product.template and product.template.image %}
+                                <img src="{{ product.template.image.url }}" alt="" width="64" height="64" loading="lazy" decoding="async">
+                                {% else %}
+                                <span>{{ product.mark }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="luanwu-product-copy">
+                                <h3>
+                                    <span>{{ product.name }}</span>
+                                    {% if not product.is_random_device_blueprint %}
+                                    <small>×{{ product.reward_quantity }}</small>
+                                    {% endif %}
+                                </h3>
+                                <p>{{ product.description }}</p>
+
+                            </div>
+                        </div>
+
+                        <div class="luanwu-product-card__footer">
+                            <div class="luanwu-price-line">
+                                <span>兑换价</span>
+                                <span class="luanwu-coin-mark" aria-hidden="true">币</span>
+                                <strong>{{ product.price }}</strong>
+                                <span>春秋币 / 份</span>
+                            </div>
+
+                            {% if product.can_purchase %}
+                            <form method="post" action="{% url 'gameplay:purchase_luanwu_shop_item' %}" class="luanwu-purchase-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_key" value="{{ product.key }}">
+                                <label for="luanwu-quantity-{{ product.key }}">兑换数量</label>
+                                <div class="luanwu-purchase-form__controls">
+                                    <input id="luanwu-quantity-{{ product.key }}" name="quantity" type="number" min="1" max="{{ product.max_quantity }}" value="1" inputmode="numeric" autocomplete="off">
+                                    <button type="submit" class="tw-btn-primary luanwu-buy-button">立即兑换</button>
+                                </div>
+                            </form>
+                            {% else %}
+                            <div class="luanwu-unavailable" role="status">{{ product.unavailable_reason }}</div>
+                            {% endif %}
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+    </div>
+</section>
+{% endblock %}

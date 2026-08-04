@@ -36,7 +36,7 @@ def verified_gate_evidence(monkeypatch) -> None:
     monkeypatch.setattr(
         gate_e_cutover_workflow,
         "verify_gate_e_readiness",
-        lambda: E_PROOF,
+        lambda **_kwargs: E_PROOF,
     )
     monkeypatch.setattr(
         gate_d1_exit_workflow,
@@ -199,3 +199,54 @@ def test_gate_e_exit_requires_transactional_zero_v1_count(
     assert applied.runtime_eligible_v1_profiles == 0
     assert routing.maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
     assert routing.revision == 8
+
+
+@pytest.mark.django_db
+def test_gate_e_cutover_resume_requires_cutover_origin_and_uses_revision_cas(
+    verified_gate_evidence,
+) -> None:
+    routing = BotRuntimeRoutingState.objects.create(
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        paused_from_maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_CUTOVER,
+        revision=9,
+    )
+
+    preview = gate_e_cutover_workflow.resume_gate_e_cutover_operation(
+        expected_revision=9,
+    )
+    routing.refresh_from_db()
+    assert preview.snapshot.maintenance_mode is runtime_configs.MaintenanceMode.V2_CUTOVER
+    assert routing.maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED
+    assert routing.revision == 9
+
+    applied = gate_e_cutover_workflow.resume_gate_e_cutover_operation(
+        expected_revision=9,
+        authorization_basis="approved test Gate E resume",
+        apply=True,
+    )
+    routing.refresh_from_db()
+    assert applied.snapshot.maintenance_mode is runtime_configs.MaintenanceMode.V2_CUTOVER
+    assert routing.maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_CUTOVER
+    assert routing.paused_from_maintenance_mode == ""
+    assert routing.revision == 10
+
+
+@pytest.mark.django_db
+def test_gate_e_cutover_resume_rejects_pause_originating_from_v2_active(
+    verified_gate_evidence,
+) -> None:
+    BotRuntimeRoutingState.objects.create(
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        paused_from_maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        revision=11,
+    )
+
+    with pytest.raises(
+        gate_e_cutover_workflow.GateECutoverError,
+        match="safety pause originating from V2_CUTOVER",
+    ):
+        gate_e_cutover_workflow.resume_gate_e_cutover_operation(
+            expected_revision=11,
+        )

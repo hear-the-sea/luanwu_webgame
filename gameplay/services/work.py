@@ -22,6 +22,7 @@ from gameplay.services.inventory.core import add_item_to_inventory_locked
 from gameplay.services.resources import grant_resources_locked
 from gameplay.services.work_requirements import evaluate_work_requirements
 from guests.models import Guest, GuestStatus
+from guests.services.status import persist_guest_status_transition, persist_guest_status_transitions
 
 MAX_CONCURRENT_WORKERS = 3  # 最多同时打工人数
 
@@ -113,8 +114,11 @@ def assign_guest_to_work(guest: Guest, work_template: WorkTemplate) -> WorkAssig
             raise WorkError(f"{work_template.name} 当前已有门客在打工")
 
         # 更新门客状态
-        guest.status = GuestStatus.WORKING
-        guest.save(update_fields=["status"])
+        persist_guest_status_transition(
+            guest,
+            GuestStatus.WORKING,
+            source="work_assign",
+        )
 
     return assignment
 
@@ -138,7 +142,16 @@ def _complete_assignment_batch(assignment_ids: List[int], now) -> int:
         .distinct()
     )
     if completed_guest_ids:
-        Guest.objects.filter(id__in=completed_guest_ids, status=GuestStatus.WORKING).update(status=GuestStatus.IDLE)
+        locked_guests = list(
+            Guest.objects.select_for_update()
+            .filter(id__in=completed_guest_ids, status=GuestStatus.WORKING)
+            .order_by("id")
+        )
+        persist_guest_status_transitions(
+            locked_guests,
+            GuestStatus.IDLE,
+            source="work_complete",
+        )
 
     return updated_count
 
@@ -188,13 +201,19 @@ def recall_guest_from_work(assignment: WorkAssignment) -> bool:
         locked_assignment.save(update_fields=["status", "finished_at"])
 
         # 更新门客状态
-        locked_assignment.guest.status = GuestStatus.IDLE
-        locked_assignment.guest.save(update_fields=["status"])
+        locked_guest = Guest.objects.select_for_update().get(pk=locked_assignment.guest_id)
+        persist_guest_status_transition(
+            locked_guest,
+            GuestStatus.IDLE,
+            source="work_recall",
+        )
 
     # 同步传入对象状态，避免调用方使用旧值
     assignment.status = WorkAssignment.Status.RECALLED
     assignment.finished_at = finished_at
     assignment.guest.status = GuestStatus.IDLE
+    assignment.guest.training_complete_at = locked_guest.training_complete_at
+    assignment.guest.training_remaining_seconds = locked_guest.training_remaining_seconds
 
     return True
 

@@ -3,8 +3,15 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 
+from django.db import transaction
+
 from core.utils.task_monitoring import increment_degraded_counter
 from guests.models import Guest, GuestStatus
+from guests.services.status import (
+    GUEST_STATUS_UPDATE_FIELDS,
+    prepare_guest_status_transition,
+    schedule_resumed_guest_trainings,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -83,19 +90,33 @@ def recover_orphaned_deployed_guests(
     find_orphaned_deployed_guest_ids_fn: Callable[[list[int]], list[int]] = find_orphaned_deployed_guest_ids,
     record_orphaned_guest_recovery_fn: Callable[[list[int], int], None],
 ) -> int:
-    deployed_guests = guest_model.objects.filter(status=deployed_status)
-    if guest_ids is not None:
-        deployed_guests = deployed_guests.filter(id__in=guest_ids)
+    with transaction.atomic():
+        deployed_guests = guest_model.objects.filter(status=deployed_status)
+        if guest_ids is not None:
+            deployed_guests = deployed_guests.filter(id__in=guest_ids)
 
-    candidate_ids = list(deployed_guests.order_by("id").values_list("id", flat=True))
-    if not candidate_ids:
-        return 0
+        locked_deployed_guests = list(deployed_guests.select_for_update().order_by("id"))
+        candidate_ids = [guest.id for guest in locked_deployed_guests]
+        if not candidate_ids:
+            return 0
 
-    orphaned_ids = find_orphaned_deployed_guest_ids_fn(candidate_ids)
-    if not orphaned_ids:
-        return 0
+        orphaned_ids = find_orphaned_deployed_guest_ids_fn(candidate_ids)
+        if not orphaned_ids:
+            return 0
 
-    recovered_count = guest_model.objects.filter(id__in=orphaned_ids, status=deployed_status).update(status=idle_status)
+        orphaned_id_set = set(orphaned_ids)
+        guests_to_release = [
+            guest for guest in locked_deployed_guests if guest.id in orphaned_id_set and guest.status == deployed_status
+        ]
+        resumed_guests = []
+        for guest in guests_to_release:
+            transition = prepare_guest_status_transition(guest, idle_status)
+            if transition.resumed_training:
+                resumed_guests.append(guest)
+        if guests_to_release:
+            guest_model.objects.bulk_update(guests_to_release, GUEST_STATUS_UPDATE_FIELDS)
+        recovered_count = len(guests_to_release)
+        schedule_resumed_guest_trainings(resumed_guests, source="battle_orphan_release")
     record_orphaned_guest_recovery_fn(orphaned_ids, recovered_count)
     return recovered_count
 
@@ -116,10 +137,19 @@ def recover_orphaned_locked_guest_statuses(
     if not orphaned_ids:
         return 0
 
-    recovered_count = guest_model.objects.filter(id__in=orphaned_ids, status=deployed_status).update(status=idle_status)
+    guests_to_release = [
+        guest
+        for guest in locked_guests
+        if guest.id in orphaned_ids and getattr(guest, "status", None) == deployed_status
+    ]
+    resumed_guests = []
+    for guest in guests_to_release:
+        transition = prepare_guest_status_transition(guest, idle_status)
+        if transition.resumed_training:
+            resumed_guests.append(guest)
+    if guests_to_release:
+        guest_model.objects.bulk_update(guests_to_release, GUEST_STATUS_UPDATE_FIELDS)
+    recovered_count = len(guests_to_release)
     record_orphaned_guest_recovery_fn(sorted(orphaned_ids), recovered_count)
-
-    for guest in locked_guests:
-        if guest.id in orphaned_ids and getattr(guest, "status", None) == deployed_status:
-            guest.status = idle_status
+    schedule_resumed_guest_trainings(resumed_guests, source="battle_orphan_release")
     return recovered_count

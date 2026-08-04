@@ -15,6 +15,7 @@ from gameplay.services.virtual_player_core.external_reconciliation import (
     ExternalReconciliationConflict,
     requeue_quarantined_reconciliation_operation,
 )
+from gameplay.services.virtual_player_core.gate_evidence import GateReadinessProof
 from gameplay.services.virtual_player_core.policy_registry import (
     PolicyAssignmentError,
     PolicyReleaseConflict,
@@ -497,6 +498,16 @@ def test_routing_transition_preview_is_write_free_and_apply_uses_revision_cas(mo
             maintenance_mode="legacy_before_gate",
         )
 
+    monkeypatch.setattr(
+        gate_d1_exit_workflow,
+        "verify_gate_d1_readiness",
+        lambda: GateReadinessProof(
+            gate="d1",
+            evidence_id="test-gate-d1-evidence",
+            evidence_digest="0" * 64,
+            recorded_at_utc="2026-08-04T00:00:00Z",
+        ),
+    )
     activation_preview = gate_d1_exit_workflow.exit_gate_d1_operation(
         expected_revision=0,
     )

@@ -45,6 +45,8 @@ _PYTEST_SUMMARY_PATTERN = re.compile(
     r"^(?P<outcomes>\d+ [a-z]+(?:, \d+ [a-z]+)*) in " r"(?P<seconds>\d+(?:\.\d+)?)s(?: \(\d+:\d{2}:\d{2}\))?$"
 )
 _MYPY_SOURCE_PATTERN = re.compile(r"Success: no issues found in (?P<count>\d+) source files")
+_GIT_COMMIT_PATTERN = re.compile(r"[0-9a-f]{40,64}\Z")
+_ARTIFACT_ID_PATTERN = re.compile(r"[A-Za-z0-9_]+\Z")
 _SHA256_INPUT = "sorted_pytest_nodeids_joined_with_lf_and_terminal_lf"
 _FINAL_VERIFIER_FILES = (
     "tests/test_virtual_player_gate_evidence_manifest.py",
@@ -84,8 +86,81 @@ class SuiteCollection:
     collected_at_utc: str
 
 
+@dataclass(frozen=True, slots=True)
+class GateD1Execution:
+    gate_a_contract_files: tuple[str, ...]
+    gate_a_real_files: tuple[str, ...]
+    gate_a_contract_collection: SuiteCollection
+    gate_a_real_collection: SuiteCollection
+    gate_a_result: CommandResult
+    gate_a_contract_summary: PytestSummary
+    gate_a_real_summary: PytestSummary
+    d1_collections: dict[str, SuiteCollection]
+    d1_result: CommandResult
+    d1_summaries: dict[str, PytestSummary]
+    d1_benchmark: dict[str, float | int]
+    migration: dict[str, Any]
+
+
 def _utc_now() -> str:
     return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _current_git_commit() -> str:
+    try:
+        commit = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise EvidenceRecordingError("cannot resolve the current Git commit") from exc
+    if _GIT_COMMIT_PATTERN.fullmatch(commit) is None:
+        raise EvidenceRecordingError("current Git commit is not a canonical hexadecimal object id")
+    return commit
+
+
+def _current_git_tree() -> str:
+    try:
+        tree = subprocess.run(
+            ["git", "rev-parse", "HEAD^{tree}"],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise EvidenceRecordingError("cannot resolve the current Git tree") from exc
+    if _GIT_COMMIT_PATTERN.fullmatch(tree) is None:
+        raise EvidenceRecordingError("current Git tree is not a canonical hexadecimal object id")
+    return tree
+
+
+def _expected_git_commit(value: str | None) -> str:
+    commit = value or _current_git_commit()
+    if _GIT_COMMIT_PATTERN.fullmatch(commit) is None:
+        raise EvidenceRecordingError("--expected-git-commit must be a canonical hexadecimal object id")
+    return commit
+
+
+def _assert_expected_source_commit(source_state: Mapping[str, Any], expected_commit: str | None) -> None:
+    if expected_commit is None:
+        return
+    observed_commit = source_state.get("git_commit")
+    if observed_commit != expected_commit:
+        raise EvidenceRecordingError(
+            "expected build commit does not match the current Git commit: "
+            f"expected {expected_commit}, observed {observed_commit}"
+        )
+
+
+def _artifact_id_suffix(value: str) -> str:
+    suffix = value.replace("-", "_")
+    if not suffix or _ARTIFACT_ID_PATTERN.fullmatch(suffix) is None:
+        raise EvidenceRecordingError("artifact id may contain only letters, digits, underscores, and hyphens")
+    return suffix
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -361,6 +436,7 @@ def _source_state(
     required_files: frozenset[str],
     *,
     content_overrides: Mapping[str, bytes],
+    allowed_dirty_paths: frozenset[str] = frozenset(),
 ) -> dict[str, Any]:
     digests: dict[str, str] = {}
     for relative_path in sorted(required_files):
@@ -371,27 +447,41 @@ def _source_state(
                 raise EvidenceRecordingError(f"required evidence source is missing: {relative_path}")
             payload = path.read_bytes()
         digests[relative_path] = hashlib.sha256(payload).hexdigest()
-    commit = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout.strip()
-    status = subprocess.run(
-        ["git", "status", "--porcelain"],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout
+    normalized_allowed = {str(Path(relative_path)) for relative_path in allowed_dirty_paths}
+    dirty_paths = _git_status_paths()
+    worktree_clean = not bool(dirty_paths - normalized_allowed)
     return {
-        "git_commit": commit,
-        "worktree_clean": not bool(status.strip()),
+        "git_commit": _current_git_commit(),
+        "git_tree": _current_git_tree(),
+        "worktree_clean": worktree_clean,
+        "allowed_dirty_paths": sorted(normalized_allowed),
         "evidence_applies_to_exact_file_hashes": True,
         "digest_algorithm": "sha256",
         "files": digests,
     }
+
+
+def _git_status_paths() -> set[str]:
+    try:
+        status = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=all"],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise EvidenceRecordingError("cannot inspect the current Git worktree") from exc
+    paths: set[str] = set()
+    for line in status.splitlines():
+        if len(line) < 4:
+            continue
+        entry = line[3:].strip()
+        if " -> " in entry:
+            entry = entry.split(" -> ", 1)[1]
+        if entry:
+            paths.add(str(Path(entry)))
+    return paths
 
 
 def _environment_evidence(environment: Mapping[str, str], *, gate: str) -> dict[str, Any]:
@@ -593,9 +683,11 @@ def _build_d1_evidence(
     benchmark: Mapping[str, float | int],
     migration: Mapping[str, Any],
     source_state: Mapping[str, Any],
+    artifact_id: str | None = None,
+    canonical_gate_a_execution: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     evidence = deepcopy(dict(template))
-    date_id = artifact_date.replace("-", "_")
+    date_id = _artifact_id_suffix(artifact_id or artifact_date)
     frozen = acceptance["performance"]["bootstrap_single_profile"]
     evidence.update(
         {
@@ -648,6 +740,8 @@ def _build_d1_evidence(
         }
     )
     evidence["activation_preconditions_outside_this_evidence"]["canonical_gate_a_execution_status"] = "passed"
+    if canonical_gate_a_execution is not None:
+        evidence["canonical_gate_a_execution"] = dict(canonical_gate_a_execution)
     evidence["scenario_results"]["deadlocks_observed"] = 0
     evidence["scenario_results"]["lock_timeouts_observed"] = 0
     return evidence
@@ -767,6 +861,7 @@ def _artifact_paths(artifact_date: str) -> tuple[Path, Path, Path]:
 
 def _assert_active_artifact_paths(
     *,
+    artifact_date: str,
     manifest_path: Path,
     d1_path: Path,
     gate_e_path: Path,
@@ -782,16 +877,36 @@ def _assert_active_artifact_paths(
     for attribute, output_path in expected.items():
         if Path(getattr(gate_evidence, attribute)).resolve() != output_path.resolve():
             raise EvidenceRecordingError(f"{attribute} must point to {output_path.name} before recording")
-    configured_manifest = PROJECT_ROOT / acceptance["evidence_manifest"]["path"]
+    configured_manifest_template = str(acceptance["evidence_manifest"]["path"])
+    try:
+        configured_manifest = PROJECT_ROOT / configured_manifest_template.format(artifact_date=artifact_date)
+    except (KeyError, ValueError) as exc:
+        raise EvidenceRecordingError("Gate A acceptance config has an invalid manifest path template") from exc
     if configured_manifest.resolve() != manifest_path.resolve():
         raise EvidenceRecordingError("Gate A acceptance config must point to the requested manifest output")
     source_references = {
-        PROJECT_ROOT / "tests" / "test_virtual_player_gate_evidence_manifest.py": manifest_path.name,
-        PROJECT_ROOT / "tests" / "test_virtual_player_gate_d1_evidence.py": d1_path.name,
-        PROJECT_ROOT / "tests" / "test_virtual_player_gate_e_readiness_evidence.py": gate_e_path.name,
+        PROJECT_ROOT
+        / "tests"
+        / "test_virtual_player_gate_evidence_manifest.py": (
+            manifest_path.name,
+            "GATE_A_MANIFEST_PATH",
+        ),
+        PROJECT_ROOT
+        / "tests"
+        / "test_virtual_player_gate_d1_evidence.py": (
+            d1_path.name,
+            "GATE_D1_EVIDENCE_PATH",
+        ),
+        PROJECT_ROOT
+        / "tests"
+        / "test_virtual_player_gate_e_readiness_evidence.py": (
+            gate_e_path.name,
+            "GATE_E_EVIDENCE_PATH",
+        ),
     }
-    for source_path, required_name in source_references.items():
-        if required_name not in source_path.read_text(encoding="utf-8"):
+    for source_path, (required_name, required_reference) in source_references.items():
+        source_text = source_path.read_text(encoding="utf-8")
+        if required_name not in source_text and required_reference not in source_text:
             raise EvidenceRecordingError(f"{source_path.name} must point to {required_name} before recording")
 
 
@@ -852,48 +967,7 @@ def _restore_artifacts(state: Mapping[Path, bytes | None]) -> None:
             raise EvidenceRecordingError(f"cannot remove staged evidence: {path.name}") from exc
 
 
-def _record(args: argparse.Namespace) -> tuple[Path, Path, Path]:
-    try:
-        parsed_date = datetime.strptime(args.artifact_date, "%Y-%m-%d")
-    except ValueError as exc:
-        raise EvidenceRecordingError("--artifact-date must use YYYY-MM-DD") from exc
-    if parsed_date.strftime("%Y-%m-%d") != args.artifact_date:
-        raise EvidenceRecordingError("--artifact-date must be canonical")
-
-    manifest_path, d1_path, gate_e_path = _artifact_paths(args.artifact_date)
-    acceptance = _load_yaml(ACCEPTANCE_PATH)
-    _assert_active_artifact_paths(
-        manifest_path=manifest_path,
-        d1_path=d1_path,
-        gate_e_path=gate_e_path,
-        acceptance=acceptance,
-    )
-    artifact_state = _capture_artifact_state(
-        (manifest_path, d1_path, gate_e_path),
-        replace=bool(args.replace),
-    )
-    manifest_template = _load_yaml(Path(args.manifest_template))
-    d1_template = _load_yaml(Path(args.d1_template))
-    gate_e_template = _load_yaml(Path(args.gate_e_template))
-    real_environment = _real_service_environment()
-
-    _run_command(
-        [sys.executable, "scripts/check_env_services_ready.py"],
-        env=real_environment,
-        label="real-service preflight",
-        timeout_seconds=30,
-    )
-    static_result = _run_command(
-        ["make", "static-check"],
-        env=_hermetic_environment(),
-        label="canonical static checks",
-        timeout_seconds=1800,
-    )
-    mypy_matches = _MYPY_SOURCE_PATTERN.findall(static_result.stdout + "\n" + static_result.stderr)
-    if len(mypy_matches) != 1:
-        raise EvidenceRecordingError("static-check output must contain one full mypy source count")
-    mypy_source_files = int(mypy_matches[0])
-
+def _run_gate_a_and_d1(real_environment: Mapping[str, str]) -> GateD1Execution:
     gate_a_contract_files = _read_makefile_paths(GATE_A_CONTRACT_VARIABLE)
     gate_a_real_files = _read_makefile_paths(GATE_A_REAL_VARIABLE)
     d1_files = {
@@ -901,14 +975,10 @@ def _record(args: argparse.Namespace) -> tuple[Path, Path, Path]:
         "core_real_service": _read_makefile_paths(GATE_D1_CORE_VARIABLE),
         "adjacent_real_service": _read_makefile_paths(GATE_D1_ADJACENT_VARIABLE),
     }
-    gate_e_contract_files = _read_makefile_paths(GATE_E_CONTRACT_VARIABLE)
-    gate_e_real_files = _read_makefile_paths(GATE_E_REAL_VARIABLE)
 
     gate_a_contract_collection = _collect_suite(gate_a_contract_files, real_services=True)
     gate_a_real_collection = _collect_suite(gate_a_real_files, real_services=True)
     d1_collections = {name: _collect_suite(files, real_services=name != "contract") for name, files in d1_files.items()}
-    gate_e_contract_collection = _collect_suite(gate_e_contract_files, real_services=False)
-    gate_e_real_collection = _collect_suite(gate_e_real_files, real_services=True)
 
     gate_a_result = _run_command(
         ["make", "test-virtual-player-gate-a"],
@@ -948,20 +1018,233 @@ def _record(args: argparse.Namespace) -> tuple[Path, Path, Path]:
         for index, name in enumerate(d1_collections)
     }
     d1_benchmark = _parse_d1_benchmark(d1_result.stdout + "\n" + d1_result.stderr)
-
     migration = _read_test_database_state(real_environment)
+
+    return GateD1Execution(
+        gate_a_contract_files=gate_a_contract_files,
+        gate_a_real_files=gate_a_real_files,
+        gate_a_contract_collection=gate_a_contract_collection,
+        gate_a_real_collection=gate_a_real_collection,
+        gate_a_result=gate_a_result,
+        gate_a_contract_summary=gate_a_contract_summary,
+        gate_a_real_summary=gate_a_real_summary,
+        d1_collections=d1_collections,
+        d1_result=d1_result,
+        d1_summaries=d1_summaries,
+        d1_benchmark=d1_benchmark,
+        migration=migration,
+    )
+
+
+def _gate_a_execution_payload(execution: GateD1Execution) -> dict[str, Any]:
+    return {
+        "command": GATE_A_COMMAND,
+        "status": "passed",
+        "execution_timestamp_utc": execution.gate_a_result.completed_at_utc,
+        "contract_passed": execution.gate_a_contract_summary.passed,
+        "real_service_passed": execution.gate_a_real_summary.passed,
+        "duration_seconds": execution.gate_a_result.duration_seconds,
+    }
+
+
+def _project_path(path: Path) -> Path:
+    return path if path.is_absolute() else PROJECT_ROOT / path
+
+
+def _validate_generated_artifact_path(path: Path) -> Path:
+    resolved = path.resolve()
+    try:
+        resolved.relative_to(PROJECT_ROOT.resolve())
+    except ValueError as exc:
+        raise EvidenceRecordingError(f"refusing to write evidence outside the project: {path}") from exc
+    if resolved.suffix != ".yaml":
+        raise EvidenceRecordingError(f"generated Gate D1 evidence must use a .yaml path: {path}")
+    return resolved
+
+
+def _prepare_generated_artifact_path(path: Path, *, replace: bool) -> Path:
+    destination = _validate_generated_artifact_path(path)
+    if destination.exists() and not replace:
+        raise EvidenceRecordingError(f"refusing to overwrite existing generated evidence: {destination}")
+    try:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise EvidenceRecordingError(f"cannot create generated evidence directory: {destination.parent}") from exc
+    return destination
+
+
+def _verify_gate_d1_artifact(
+    *,
+    evidence_path: Path,
+    expected_git_commit: str,
+    allowed_dirty_paths: tuple[str, ...] = (),
+) -> None:
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+    from gameplay.services.virtual_player_core.gate_evidence import GateEvidenceError, verify_gate_d1_readiness
+
+    try:
+        verify_gate_d1_readiness(
+            evidence_path=evidence_path,
+            expected_git_commit=expected_git_commit,
+            extra_allowed_dirty_paths=allowed_dirty_paths,
+        )
+    except GateEvidenceError as exc:
+        raise EvidenceRecordingError(f"Gate D1 evidence verification failed: {exc}") from exc
+
+
+def _write_verified_d1_artifact(
+    *,
+    destination: Path,
+    payload: bytes,
+    expected_git_commit: str,
+    replace: bool,
+) -> None:
+    destination = _prepare_generated_artifact_path(destination, replace=replace)
+    temporary_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="wb",
+            dir=destination.parent,
+            prefix=f".{destination.name}.",
+            delete=False,
+        ) as temporary:
+            temporary.write(payload)
+            temporary.flush()
+            os.fsync(temporary.fileno())
+            temporary_path = Path(temporary.name)
+        _verify_gate_d1_artifact(
+            evidence_path=temporary_path,
+            expected_git_commit=expected_git_commit,
+            allowed_dirty_paths=(str(temporary_path.relative_to(PROJECT_ROOT)),),
+        )
+        os.replace(temporary_path, destination)
+        temporary_path = None
+    except OSError as exc:
+        raise EvidenceRecordingError(f"cannot write generated Gate D1 evidence: {destination}") from exc
+    finally:
+        if temporary_path is not None:
+            try:
+                temporary_path.unlink(missing_ok=True)
+            except OSError as exc:
+                raise EvidenceRecordingError(f"cannot clean temporary Gate D1 evidence: {temporary_path}") from exc
+
+
+def _record_gate_d1(args: argparse.Namespace) -> Path:
+    if args.output is None:
+        raise EvidenceRecordingError("--output is required when --gate d1 is selected")
+    expected_commit = _expected_git_commit(args.expected_git_commit)
+    destination = _prepare_generated_artifact_path(
+        _project_path(args.output),
+        replace=bool(args.replace),
+    )
+    artifact_id = args.artifact_id or f"commit_{expected_commit}"
+    acceptance = _load_yaml(ACCEPTANCE_PATH)
+    d1_template = _load_yaml(_project_path(args.d1_template))
+    real_environment = _real_service_environment()
+
+    _run_command(
+        [sys.executable, "scripts/check_env_services_ready.py"],
+        env=real_environment,
+        label="real-service preflight",
+        timeout_seconds=30,
+    )
+    execution = _run_gate_a_and_d1(real_environment)
+    from gameplay.services.virtual_player_core.gate_evidence import GATE_D1_REQUIRED_SOURCE_FILES
+
+    source_state = _source_state(
+        GATE_D1_REQUIRED_SOURCE_FILES,
+        content_overrides={},
+        allowed_dirty_paths=frozenset({str(destination.relative_to(PROJECT_ROOT))}),
+    )
+    if source_state["git_commit"] != expected_commit:
+        raise EvidenceRecordingError(
+            "expected build commit does not match the current Git commit: "
+            f"expected {expected_commit}, observed {source_state['git_commit']}"
+        )
+    evidence = _build_d1_evidence(
+        template=d1_template,
+        artifact_date=artifact_id,
+        environment=real_environment,
+        acceptance=acceptance,
+        collections=execution.d1_collections,
+        summaries=execution.d1_summaries,
+        completed_at_utc=execution.d1_result.completed_at_utc,
+        benchmark=execution.d1_benchmark,
+        migration=execution.migration,
+        artifact_id=artifact_id,
+        canonical_gate_a_execution=_gate_a_execution_payload(execution),
+        source_state=source_state,
+    )
+    _write_verified_d1_artifact(
+        destination=destination,
+        payload=_yaml_bytes(evidence),
+        expected_git_commit=expected_commit,
+        replace=bool(args.replace),
+    )
+    return destination
+
+
+def _record(args: argparse.Namespace) -> tuple[Path, Path, Path]:
+    try:
+        parsed_date = datetime.strptime(args.artifact_date, "%Y-%m-%d")
+    except ValueError as exc:
+        raise EvidenceRecordingError("--artifact-date must use YYYY-MM-DD") from exc
+    if parsed_date.strftime("%Y-%m-%d") != args.artifact_date:
+        raise EvidenceRecordingError("--artifact-date must be canonical")
+
+    expected_commit = _expected_git_commit(args.expected_git_commit) if args.expected_git_commit else None
+    manifest_path, d1_path, gate_e_path = _artifact_paths(args.artifact_date)
+    acceptance = _load_yaml(ACCEPTANCE_PATH)
+    _assert_active_artifact_paths(
+        artifact_date=args.artifact_date,
+        manifest_path=manifest_path,
+        d1_path=d1_path,
+        gate_e_path=gate_e_path,
+        acceptance=acceptance,
+    )
+    artifact_state = _capture_artifact_state(
+        (manifest_path, d1_path, gate_e_path),
+        replace=bool(args.replace),
+    )
+    manifest_template = _load_yaml(Path(args.manifest_template))
+    d1_template = _load_yaml(Path(args.d1_template))
+    gate_e_template = _load_yaml(Path(args.gate_e_template))
+    real_environment = _real_service_environment()
+
+    _run_command(
+        [sys.executable, "scripts/check_env_services_ready.py"],
+        env=real_environment,
+        label="real-service preflight",
+        timeout_seconds=30,
+    )
+    static_result = _run_command(
+        ["make", "static-check"],
+        env=_hermetic_environment(),
+        label="canonical static checks",
+        timeout_seconds=1800,
+    )
+    mypy_matches = _MYPY_SOURCE_PATTERN.findall(static_result.stdout + "\n" + static_result.stderr)
+    if len(mypy_matches) != 1:
+        raise EvidenceRecordingError("static-check output must contain one full mypy source count")
+    mypy_source_files = int(mypy_matches[0])
+
+    gate_e_contract_files = _read_makefile_paths(GATE_E_CONTRACT_VARIABLE)
+    gate_e_real_files = _read_makefile_paths(GATE_E_REAL_VARIABLE)
+    gate_e_contract_collection = _collect_suite(gate_e_contract_files, real_services=False)
+    gate_e_real_collection = _collect_suite(gate_e_real_files, real_services=True)
+    d1_execution = _run_gate_a_and_d1(real_environment)
 
     manifest = _build_manifest(
         template=manifest_template,
         artifact_date=args.artifact_date,
         environment=real_environment,
-        contract_files=gate_a_contract_files,
-        real_files=gate_a_real_files,
-        contract_collection=gate_a_contract_collection,
-        real_collection=gate_a_real_collection,
-        contract_summary=gate_a_contract_summary,
-        real_summary=gate_a_real_summary,
-        completed_at_utc=gate_a_result.completed_at_utc,
+        contract_files=d1_execution.gate_a_contract_files,
+        real_files=d1_execution.gate_a_real_files,
+        contract_collection=d1_execution.gate_a_contract_collection,
+        real_collection=d1_execution.gate_a_real_collection,
+        contract_summary=d1_execution.gate_a_contract_summary,
+        real_summary=d1_execution.gate_a_real_summary,
+        completed_at_utc=d1_execution.gate_a_result.completed_at_utc,
     )
     manifest_bytes = _yaml_bytes(manifest)
     manifest_relative_path = str(manifest_path.relative_to(PROJECT_ROOT))
@@ -977,16 +1260,21 @@ def _record(args: argparse.Namespace) -> tuple[Path, Path, Path]:
         artifact_date=args.artifact_date,
         environment=real_environment,
         acceptance=acceptance,
-        collections=d1_collections,
-        summaries=d1_summaries,
-        completed_at_utc=d1_result.completed_at_utc,
-        benchmark=d1_benchmark,
-        migration=migration,
+        collections=d1_execution.d1_collections,
+        summaries=d1_execution.d1_summaries,
+        completed_at_utc=d1_execution.d1_result.completed_at_utc,
+        benchmark=d1_execution.d1_benchmark,
+        migration=d1_execution.migration,
+        canonical_gate_a_execution=_gate_a_execution_payload(d1_execution),
         source_state=_source_state(
             GATE_D1_REQUIRED_SOURCE_FILES,
             content_overrides=source_overrides,
+            allowed_dirty_paths=frozenset(
+                str(path.relative_to(PROJECT_ROOT)) for path in (manifest_path, d1_path, gate_e_path)
+            ),
         ),
     )
+    _assert_expected_source_commit(d1_evidence["source_state"], expected_commit)
     try:
         _write_artifacts(
             {
@@ -1031,8 +1319,12 @@ def _record(args: argparse.Namespace) -> tuple[Path, Path, Path]:
             source_state=_source_state(
                 GATE_E_REQUIRED_SOURCE_FILES,
                 content_overrides=source_overrides,
+                allowed_dirty_paths=frozenset(
+                    str(path.relative_to(PROJECT_ROOT)) for path in (manifest_path, d1_path, gate_e_path)
+                ),
             ),
         )
+        _assert_expected_source_commit(gate_e_evidence["source_state"], expected_commit)
         _write_artifacts(
             {gate_e_path: _yaml_bytes(gate_e_evidence)},
             replace=True,
@@ -1054,11 +1346,41 @@ def _record(args: argparse.Namespace) -> tuple[Path, Path, Path]:
     return manifest_path, d1_path, gate_e_path
 
 
+def _verify_gate_all_artifacts(*, artifact_date: str, expected_git_commit: str) -> None:
+    from gameplay.services.virtual_player_core import gate_evidence
+
+    manifest_path, d1_path, gate_e_path = _artifact_paths(artifact_date)
+    acceptance = _load_yaml(ACCEPTANCE_PATH)
+    _assert_active_artifact_paths(
+        artifact_date=artifact_date,
+        manifest_path=manifest_path,
+        d1_path=d1_path,
+        gate_e_path=gate_e_path,
+        acceptance=acceptance,
+    )
+    gate_evidence.verify_gate_d1_readiness(expected_git_commit=expected_git_commit)
+    gate_evidence.verify_gate_e_readiness(expected_git_commit=expected_git_commit)
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Run canonical virtual-player gates and record content-bound readiness evidence."
     )
-    parser.add_argument("--artifact-date", required=True, help="Artifact filename date in YYYY-MM-DD format.")
+    parser.add_argument(
+        "--gate",
+        choices=("all", "d1"),
+        default="all",
+        help="Record or verify the complete historical bundle, or handle the commit-bound Gate D1 artifact.",
+    )
+    parser.add_argument("--artifact-date", help="Artifact filename date in YYYY-MM-DD format for --gate all.")
+    parser.add_argument("--artifact-id", help="Stable suffix for a generated Gate D1 evidence_id.")
+    parser.add_argument("--output", type=Path, help="Output path for a generated or verified Gate D1 artifact.")
+    parser.add_argument("--expected-git-commit", help="Require generated evidence to bind to this Git commit.")
+    parser.add_argument(
+        "--verify",
+        action="store_true",
+        help="Verify existing evidence instead of running the test gates.",
+    )
     parser.add_argument("--manifest-template", type=Path, default=DEFAULT_MANIFEST_TEMPLATE)
     parser.add_argument("--d1-template", type=Path, default=DEFAULT_D1_TEMPLATE)
     parser.add_argument("--gate-e-template", type=Path, default=DEFAULT_GATE_E_TEMPLATE)
@@ -1073,6 +1395,32 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
+        if args.gate == "d1":
+            if args.output is None:
+                raise EvidenceRecordingError("--output is required when --gate d1 is selected")
+            expected_commit = _expected_git_commit(args.expected_git_commit)
+            output_path = _project_path(args.output)
+            if args.verify:
+                output_path = _validate_generated_artifact_path(output_path)
+                _verify_gate_d1_artifact(
+                    evidence_path=output_path,
+                    expected_git_commit=expected_commit,
+                )
+                print(f"verified Gate D1 evidence: {output_path.relative_to(PROJECT_ROOT)}")
+                return 0
+            path = _record_gate_d1(args)
+            print(f"recorded and verified Gate D1 evidence: {path.relative_to(PROJECT_ROOT)}")
+            return 0
+        if not args.artifact_date:
+            raise EvidenceRecordingError("--artifact-date is required when --gate all is selected")
+        if args.verify:
+            expected_commit = _expected_git_commit(args.expected_git_commit)
+            _verify_gate_all_artifacts(
+                artifact_date=args.artifact_date,
+                expected_git_commit=expected_commit,
+            )
+            print(f"verified Gate E readiness evidence: {args.artifact_date}")
+            return 0
         paths = _record(args)
     except EvidenceRecordingError as exc:
         print(f"evidence recording failed: {exc}", file=sys.stderr)

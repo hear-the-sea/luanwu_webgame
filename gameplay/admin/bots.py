@@ -24,6 +24,7 @@ from ..models import (
     BotPopulationRecomputeDemand,
     BotProfile,
     BotRuntimeRoutingState,
+    BotVirtualPlayerHealth,
 )
 
 
@@ -397,6 +398,9 @@ class BotRuntimeRoutingStateAdmin(_ReadOnlyAdmin):
         "last_hourly_safety_window_end_at",
         "last_daily_safety_window_end_at",
         "last_pause_window_identifier",
+        "safety_clean_window_streak",
+        "safety_clean_window_kind",
+        "paused_from_maintenance_mode",
         "pause_reason",
         "updated_at",
     )
@@ -417,6 +421,58 @@ class BotRuntimeRoutingStateAdmin(_ReadOnlyAdmin):
     @admin.display(description="最近暂停窗口编号", ordering="last_pause_window_id")
     def last_pause_window_identifier(self, obj: BotRuntimeRoutingState) -> str:
         return obj.last_pause_window_id
+
+
+@admin.register(BotVirtualPlayerHealth)
+class BotVirtualPlayerHealthAdmin(_ReadOnlyAdmin):
+    list_display = (
+        "health_key",
+        "status_label",
+        "retryable_failure_streak_value",
+        "clean_success_streak_value",
+        "next_probe_at_value",
+        "last_failure_code_value",
+        "last_recovered_at_value",
+        "revision_value",
+        "updated_at_value",
+    )
+    readonly_fields = tuple(field.name for field in BotVirtualPlayerHealth._meta.fields)
+
+    @admin.display(description="键", ordering="key")
+    def health_key(self, obj: BotVirtualPlayerHealth) -> str:
+        return obj.key
+
+    @admin.display(description="状态", ordering="status")
+    def status_label(self, obj: BotVirtualPlayerHealth) -> str:
+        return obj.get_status_display()
+
+    @admin.display(description="连续可重试失败次数", ordering="retryable_failure_streak")
+    def retryable_failure_streak_value(self, obj: BotVirtualPlayerHealth) -> int:
+        return int(obj.retryable_failure_streak)
+
+    @admin.display(description="连续成功次数", ordering="clean_success_streak")
+    def clean_success_streak_value(self, obj: BotVirtualPlayerHealth) -> int:
+        return int(obj.clean_success_streak)
+
+    @admin.display(description="下次探测时间", ordering="next_probe_at")
+    def next_probe_at_value(self, obj: BotVirtualPlayerHealth) -> datetime | None:
+        return obj.next_probe_at
+
+    @admin.display(description="最近失败代码", ordering="last_failure_code")
+    def last_failure_code_value(self, obj: BotVirtualPlayerHealth) -> str:
+        return obj.last_failure_code or "—"
+
+    @admin.display(description="最近恢复时间", ordering="last_recovered_at")
+    def last_recovered_at_value(self, obj: BotVirtualPlayerHealth) -> datetime | None:
+        return obj.last_recovered_at
+
+    @admin.display(description="修订号", ordering="revision")
+    def revision_value(self, obj: BotVirtualPlayerHealth) -> int:
+        return int(obj.revision)
+
+    @admin.display(description="更新时间", ordering="updated_at")
+    def updated_at_value(self, obj: BotVirtualPlayerHealth) -> datetime:
+        return obj.updated_at
 
 
 @admin.register(BotPopulationRecomputeDemand)

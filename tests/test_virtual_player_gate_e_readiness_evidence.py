@@ -4,9 +4,11 @@ from pathlib import Path
 
 import yaml
 
+from gameplay.services.virtual_player_core import gate_evidence
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-EVIDENCE_PATH = PROJECT_ROOT / "docs" / "virtual_player_gate_e_readiness_evidence_2026-07-30.yaml"
-MANIFEST_PATH = PROJECT_ROOT / "docs" / "virtual_player_gate_evidence_manifest_2026-07-30.yaml"
+EVIDENCE_PATH = gate_evidence.GATE_E_EVIDENCE_PATH
+MANIFEST_PATH = gate_evidence.GATE_A_MANIFEST_PATH
 ACCEPTANCE_PATH = PROJECT_ROOT / "docs" / "virtual_player_gate_a_acceptance_config_2026-07-27.yaml"
 
 

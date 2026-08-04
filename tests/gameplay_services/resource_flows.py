@@ -8,6 +8,7 @@ from django.utils import timezone
 from battle.models import TroopTemplate
 from core.exceptions import InsufficientResourceError
 from gameplay.models import InventoryItem, PlayerTroop, ResourceEvent, ResourceType, TroopBankStorage
+from gameplay.services.inventory.core import get_warehouse_grain_quantity
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.resources import (
     grant_resources,
@@ -198,8 +199,8 @@ def test_spend_resources_syncs_warehouse_grain_item():
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
 
-    assert manor.grain == 180
-    assert warehouse_grain.quantity == 180
+    assert manor.grain == 380
+    assert warehouse_grain.quantity == 380
 
 
 @pytest.mark.django_db
@@ -242,6 +243,49 @@ def test_sync_resource_production_persist_false_projects_without_db_write(monkey
     manor.refresh_from_db(fields=["silver", "resource_updated_at"])
     assert manor.silver == initial_silver
     assert manor.resource_updated_at == original_updated_at
+
+
+@pytest.mark.django_db
+def test_sync_resource_production_persist_false_projects_grain_ledger_without_db_write(monkeypatch):
+    user = User.objects.create_user(username="grain_projection_user", password="test123")
+    manor = ensure_manor(user)
+    grain_template = ensure_grain_template()
+    original_updated_at = timezone.now() - timezone.timedelta(hours=1)
+    manor.grain = 100
+    manor.resource_updated_at = original_updated_at
+    manor.save(update_fields=["grain", "resource_updated_at"])
+    InventoryItem.objects.update_or_create(
+        manor=manor,
+        template=grain_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        defaults={"quantity": 100},
+    )
+
+    monkeypatch.setattr(
+        "gameplay.services.resources.get_hourly_rates",
+        lambda _manor: {ResourceType.SILVER: 0, ResourceType.GRAIN: 120},
+    )
+    monkeypatch.setattr(
+        "gameplay.services.resources.get_personnel_grain_cost_per_hour",
+        lambda _manor: 0,
+    )
+    monkeypatch.setattr("gameplay.services.resources.scale_value", lambda value: value)
+
+    sync_resource_production(manor, persist=False)
+
+    assert manor.grain == 220
+    assert get_warehouse_grain_quantity(manor) == 220
+    manor.refresh_from_db(fields=["grain", "resource_updated_at"])
+    assert manor.grain == 100
+    assert manor.resource_updated_at == original_updated_at
+    assert (
+        InventoryItem.objects.get(
+            manor=manor,
+            template=grain_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        ).quantity
+        == 100
+    )
 
 
 @pytest.mark.django_db

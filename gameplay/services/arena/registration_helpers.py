@@ -10,6 +10,7 @@ from core.exceptions import (
 )
 from gameplay.models import ArenaEntry, ArenaEntryGuest, ArenaTournament, Manor, ResourceEvent
 from guests.models import Guest, GuestStatus
+from guests.services.status import persist_guest_status_transitions
 
 
 def load_selected_registration_guests_locked(locked_manor: Manor, selected_guest_ids: Iterable[int]) -> list[Guest]:
@@ -62,9 +63,11 @@ def create_arena_entry_with_guests_locked(
             for guest in selected_guests
         ]
     )
-    for guest in selected_guests:
-        guest.status = GuestStatus.ARENA
-    Guest.objects.bulk_update(selected_guests, ["status"])
+    persist_guest_status_transitions(
+        selected_guests,
+        GuestStatus.ARENA,
+        source="arena_register",
+    )
     return entry
 
 

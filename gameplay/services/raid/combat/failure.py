@@ -6,7 +6,8 @@ from datetime import datetime
 from django.db import transaction
 from django.utils import timezone
 
-from guests.models import Guest, GuestStatus
+from guests.models import GuestStatus
+from guests.services.status import persist_guest_status_transitions
 
 from ....models import Manor, RaidRun
 from .troop_ops import _add_troops_batch
@@ -75,15 +76,12 @@ def fail_raid_run_and_release_resources(
     returned_troops: dict[str, int] = {}
     if not locked_run.resources_released:
         guests = list(locked_run.guests.select_for_update())
-        guests_to_update: list[Guest] = []
-        for guest in guests:
-            if guest.status != GuestStatus.DEPLOYED:
-                continue
-            guest.status = GuestStatus.IDLE
-            guests_to_update.append(guest)
-        if guests_to_update:
-            Guest.objects.bulk_update(guests_to_update, ["status"])
-            returned_guests = len(guests_to_update)
+        guests_to_release = [guest for guest in guests if guest.status == GuestStatus.DEPLOYED]
+        returned_guests = persist_guest_status_transitions(
+            guests_to_release,
+            GuestStatus.IDLE,
+            source="raid_failure",
+        )
 
         returned_troops = _normalize_positive_int_mapping(locked_run.troop_loadout)
         if returned_troops:

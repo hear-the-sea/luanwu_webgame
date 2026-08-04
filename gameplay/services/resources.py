@@ -203,21 +203,54 @@ def _normalize_resource_mapping(raw: Any, *, field_name: str, allow_negative: bo
     return normalized
 
 
-def _sync_warehouse_grain_item_locked(
+def _load_warehouse_grain_quantity_locked(
     manor: Manor,
     *,
     grain_template: ItemTemplate | None = None,
     grain_template_resolved: bool = False,
-) -> None:
+) -> int:
     # Delay import to avoid circular dependency:
     # resources -> inventory package -> inventory.use -> resources.
-    from .inventory.core import sync_warehouse_grain_item_locked
+    from .inventory.core import get_warehouse_grain_quantity_locked
 
-    sync_warehouse_grain_item_locked(
+    return get_warehouse_grain_quantity_locked(
         manor,
         grain_template=grain_template,
         grain_template_resolved=grain_template_resolved,
     )
+
+
+def _set_warehouse_grain_quantity_locked(
+    manor: Manor,
+    quantity: int,
+    *,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
+) -> int:
+    from .inventory.core import set_warehouse_grain_quantity_locked
+
+    return set_warehouse_grain_quantity_locked(
+        manor,
+        quantity,
+        grain_template=grain_template,
+        grain_template_resolved=grain_template_resolved,
+    )
+
+
+def _load_warehouse_grain_quantity_for_read(manor: Manor) -> int:
+    from .inventory.core import get_warehouse_grain_quantity
+
+    quantity = get_warehouse_grain_quantity(manor)
+    # Read paths may update the in-memory compatibility value only; no database write.
+    manor.grain = quantity
+    setattr(manor, "warehouse_grain_quantity", quantity)
+    return quantity
+
+
+def _clear_warehouse_grain_projection(manor: Manor) -> None:
+    from .inventory.core import clear_warehouse_grain_projection
+
+    clear_warehouse_grain_projection(manor)
 
 
 def _get_resource_capacity(manor: Manor, resource: str) -> Tuple[int, bool]:
@@ -281,6 +314,7 @@ def _credit_resource(manor: Manor, resource: str, amount: int) -> Tuple[int, int
 
 def preview_resource_grant(manor: Manor, rewards: Dict[str, int]) -> Tuple[Dict[str, int], Dict[str, int]]:
     """预览资源奖励的实际入账与溢出数量，不修改庄园状态。"""
+    _load_warehouse_grain_quantity_for_read(manor)
     normalized_rewards = _normalize_resource_mapping(rewards, field_name="resource rewards")
     credited: Dict[str, int] = {}
     overflow: Dict[str, int] = {}
@@ -322,6 +356,7 @@ def _build_production_snapshot(
     *,
     now: datetime,
     production_basis: ResourceProductionBasis | None = None,
+    resource_fields: Sequence[str] | None = None,
 ) -> tuple[Dict[str, int], Dict[str, int], bool]:
     elapsed_seconds = (now - manor.resource_updated_at).total_seconds()
     if elapsed_seconds <= 0:
@@ -338,7 +373,8 @@ def _build_production_snapshot(
 
     projected_values: Dict[str, int] = {}
     produced: Dict[str, int] = {}
-    for resource in RESOURCE_FIELDS:
+    fields = RESOURCE_FIELDS if resource_fields is None else tuple(resource_fields)
+    for resource in fields:
         per_hour = hourly_rates.get(resource, 0)
         delta = int(per_hour * (scaled_elapsed_seconds / 3600))
         if delta == 0:
@@ -370,6 +406,7 @@ def preview_resource_production(
     production_basis: ResourceProductionBasis | None = None,
 ) -> Dict[str, int]:
     """只读计算截至 ``now`` 的资源产出增量。"""
+    _load_warehouse_grain_quantity_for_read(manor)
     current_time = now or timezone.now()
     _projected_values, produced, _should_advance_timestamp = _build_production_snapshot(
         manor,
@@ -382,6 +419,8 @@ def preview_resource_production(
 def _apply_resource_projection(manor: Manor, projected_values: Dict[str, int], *, now: datetime) -> None:
     for resource, value in projected_values.items():
         setattr(manor, resource, value)
+        if resource == ResourceType.GRAIN:
+            setattr(manor, "warehouse_grain_quantity", value)
     manor.resource_updated_at = now
 
 
@@ -392,6 +431,8 @@ def settle_resource_production_locked(
     positive_limits: Dict[str, int] | None = None,
     note: str = "离线产出",
     production_basis: ResourceProductionBasis | None = None,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
 ) -> Dict[str, int]:
     """在 Manor 锁内结算产出，可按资源限制正向增量。"""
     _require_atomic_block("settle_resource_production_locked")
@@ -408,6 +449,12 @@ def settle_resource_production_locked(
         unknown = set(normalized_limits) - set(RESOURCE_FIELDS)
         if unknown:
             raise AssertionError(f"invalid resource production positive limit keys: {sorted(unknown)!r}")
+
+    _load_warehouse_grain_quantity_locked(
+        manor,
+        grain_template=grain_template,
+        grain_template_resolved=grain_template_resolved,
+    )
 
     _projected_values, produced, should_advance_timestamp = _build_production_snapshot(
         manor,
@@ -433,7 +480,7 @@ def settle_resource_production_locked(
     update_fields = list(projected_values.keys()) + ["resource_updated_at"]
     manor.save(update_fields=update_fields)
     if int(settled.get(ResourceType.GRAIN, 0) or 0) != 0:
-        _sync_warehouse_grain_item_locked(manor)
+        _set_warehouse_grain_quantity_locked(manor, int(manor.grain))
 
     if settled:
         log_resource_gain(
@@ -446,8 +493,19 @@ def settle_resource_production_locked(
     return settled
 
 
-def _sync_resource_production_locked(manor: Manor, *, now: datetime | None = None) -> Dict[str, int]:
-    return settle_resource_production_locked(manor, now=now)
+def _sync_resource_production_locked(
+    manor: Manor,
+    *,
+    now: datetime | None = None,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
+) -> Dict[str, int]:
+    return settle_resource_production_locked(
+        manor,
+        now=now,
+        grain_template=grain_template,
+        grain_template_resolved=grain_template_resolved,
+    )
 
 
 def spend_resources_locked(
@@ -471,7 +529,17 @@ def spend_resources_locked(
         return
     _require_atomic_block("spend_resources_locked")
     if sync_production:
-        _sync_resource_production_locked(manor)
+        _sync_resource_production_locked(
+            manor,
+            grain_template=grain_template,
+            grain_template_resolved=grain_template_resolved,
+        )
+    elif ResourceType.GRAIN in normalized_cost:
+        _load_warehouse_grain_quantity_locked(
+            manor,
+            grain_template=grain_template,
+            grain_template_resolved=grain_template_resolved,
+        )
 
     filters = {f"{key}__gte": value for key, value in normalized_cost.items()}
     updates = {key: F(key) - value for key, value in normalized_cost.items()}
@@ -482,8 +550,9 @@ def spend_resources_locked(
     for resource, amount in normalized_cost.items():
         setattr(manor, resource, int(getattr(manor, resource)) - amount)
     if normalized_cost.get(ResourceType.GRAIN, 0) > 0:
-        _sync_warehouse_grain_item_locked(
+        _set_warehouse_grain_quantity_locked(
             manor,
+            int(manor.grain),
             grain_template=grain_template,
             grain_template_resolved=grain_template_resolved,
         )
@@ -512,6 +581,7 @@ def grant_resources_locked(
     if not normalized_rewards:
         return {}, {}
     _require_atomic_block("grant_resources_locked")
+    _load_warehouse_grain_quantity_locked(manor)
     if sync_production:
         _sync_resource_production_locked(manor)
 
@@ -535,7 +605,7 @@ def grant_resources_locked(
     if credited:
         manor.save(update_fields=list(credited.keys()))
         if credited.get(ResourceType.GRAIN, 0) > 0:
-            _sync_warehouse_grain_item_locked(manor)
+            _set_warehouse_grain_quantity_locked(manor, int(manor.grain))
         log_resource_gain(manor, credited, reason, note)
 
     # 记录溢出情况便于调试
@@ -549,7 +619,11 @@ def grant_resources_locked(
     return credited, overflow
 
 
-def sync_resource_production(manor: Manor, *, persist: bool = True) -> None:
+def sync_resource_production(
+    manor: Manor,
+    *,
+    persist: bool = True,
+) -> None:
     """
     同步庄园资源产出，根据离线时间计算并发放资源。
 
@@ -564,14 +638,24 @@ def sync_resource_production(manor: Manor, *, persist: bool = True) -> None:
         persist: 是否持久化到数据库
     """
     now = timezone.now()
+    if not persist:
+        _load_warehouse_grain_quantity_for_read(manor)
+
     min_interval = getattr(settings, "RESOURCE_SYNC_MIN_INTERVAL_SECONDS", 0)
     if min_interval > 0:
         elapsed_hint = (now - manor.resource_updated_at).total_seconds()
         if elapsed_hint < min_interval:
+            if persist:
+                manor.refresh_from_db(fields=RESOURCE_FIELDS + ["resource_updated_at"])
+                _clear_warehouse_grain_projection(manor)
             return
 
     if not persist:
-        projected_values, _produced, should_advance_timestamp = _build_production_snapshot(manor, now=now)
+        projected_values, _produced, should_advance_timestamp = _build_production_snapshot(
+            manor,
+            now=now,
+            resource_fields=(ResourceType.SILVER, ResourceType.GRAIN),
+        )
         if should_advance_timestamp:
             _apply_resource_projection(manor, projected_values, now=now)
         return
@@ -581,6 +665,7 @@ def sync_resource_production(manor: Manor, *, persist: bool = True) -> None:
         _sync_resource_production_locked(locked_manor, now=now)
 
     manor.refresh_from_db(fields=RESOURCE_FIELDS + ["resource_updated_at"])
+    _clear_warehouse_grain_projection(manor)
 
 
 def project_resource_production_for_read(manor: Manor) -> None:
@@ -642,6 +727,7 @@ def spend_resources(
 
     # 刷新原始 manor 对象以反映最新状态
     manor.refresh_from_db(fields=RESOURCE_FIELDS + ["resource_updated_at"])
+    _clear_warehouse_grain_projection(manor)
 
 
 def grant_resources(
@@ -683,4 +769,5 @@ def grant_resources(
         )
 
     manor.refresh_from_db(fields=RESOURCE_FIELDS + ["resource_updated_at"])
+    _clear_warehouse_grain_projection(manor)
     return credited

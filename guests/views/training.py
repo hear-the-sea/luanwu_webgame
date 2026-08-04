@@ -250,6 +250,7 @@ def check_training_view(request, pk: int):
         current_hp=guest.current_hp,
         max_hp=guest.max_hp,
         training_eta=guest.training_complete_at.isoformat() if guest.training_complete_at else None,
+        training_paused=guest.training_is_paused,
         guest_status=guest.status,
         attribute_points=guest.attribute_points,
     )

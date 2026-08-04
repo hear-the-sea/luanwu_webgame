@@ -200,11 +200,13 @@ def get_horse_options(manor: Manor) -> List[Dict[str, Any]]:
     Returns:
         马匹选项列表
     """
+    from ..inventory.core import get_warehouse_grain_quantity
     from ..technology import get_player_technology_level
 
     horsemanship_level = get_player_technology_level(manor, "horsemanship")
     max_quantity = get_max_production_quantity(manor)
     is_producing = has_active_production(manor)
+    warehouse_grain_quantity = get_warehouse_grain_quantity(manor)
     horse_name_map = _get_item_name_map(set(HORSE_CONFIG.keys()))
 
     options = []
@@ -224,7 +226,7 @@ def get_horse_options(manor: Manor) -> List[Dict[str, Any]]:
                 "grain_cost": config["grain_cost"],
                 "base_duration": config["base_duration"],
                 "actual_duration": actual_duration,
-                "can_afford": manor.grain >= config["grain_cost"],
+                "can_afford": warehouse_grain_quantity >= config["grain_cost"],
                 "required_horsemanship": required_level,
                 "is_unlocked": is_unlocked,
                 "max_quantity": max_quantity,

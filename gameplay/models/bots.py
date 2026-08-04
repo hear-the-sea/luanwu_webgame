@@ -242,6 +242,51 @@ class BotExternalStrengthReconciliation(models.Model):
         return f"{self.profile_id}:{self.domain_event_kind}:{self.domain_event_id} ({self.status})"
 
 
+class BotVirtualPlayerHealth(models.Model):
+    """Self-healing circuit state for transient virtual-player dependencies."""
+
+    GLOBAL_KEY = "virtual_players"
+
+    class Status(models.TextChoices):
+        HEALTHY = "healthy", "健康"
+        DEGRADED = "degraded", "降级"
+        RECOVERING = "recovering", "恢复中"
+
+    key = models.CharField(max_length=32, primary_key=True, default=GLOBAL_KEY, editable=False)
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.HEALTHY)
+    retryable_failure_streak = models.PositiveSmallIntegerField(default=0)
+    clean_success_streak = models.PositiveSmallIntegerField(default=0)
+    next_probe_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    last_failure_code = models.CharField(max_length=64, default="", blank=True)
+    last_error_digest = models.CharField(max_length=64, default="", blank=True)
+    last_failure_at = models.DateTimeField(null=True, blank=True)
+    last_recovered_at = models.DateTimeField(null=True, blank=True)
+    revision = models.PositiveBigIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "虚拟玩家健康状态"
+        verbose_name_plural = "虚拟玩家健康状态"
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(key="virtual_players"),
+                name="bot_vp_health_singleton_key",
+            ),
+            models.CheckConstraint(
+                condition=Q(status__in=["healthy", "degraded", "recovering"]),
+                name="bot_vp_health_status_valid",
+            ),
+            models.CheckConstraint(
+                condition=Q(retryable_failure_streak__lte=255) & Q(clean_success_streak__lte=255),
+                name="bot_vp_health_streaks_lte_255",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.key}:{self.status}@{self.revision}"
+
+
 class BotRuntimeRoutingState(models.Model):
     """Database-owned singleton for current virtual-player runtime routing."""
 
@@ -286,6 +331,14 @@ class BotRuntimeRoutingState(models.Model):
     last_daily_safety_window_end_at = models.DateTimeField("最近日安全窗口", null=True, blank=True)
     last_pause_window_id = models.CharField("最近暂停窗口 ID", max_length=128, default="", blank=True)
     pause_reason = models.TextField("暂停原因", default="", blank=True)
+    paused_from_maintenance_mode = models.CharField(
+        "暂停前运行模式",
+        max_length=24,
+        default="",
+        blank=True,
+    )
+    safety_clean_window_streak = models.PositiveSmallIntegerField("连续安全窗口数", default=0)
+    safety_clean_window_kind = models.CharField("连续安全窗口类型", max_length=16, default="", blank=True)
     created_at = models.DateTimeField("创建时间", auto_now_add=True)
     updated_at = models.DateTimeField("更新时间", auto_now=True)
 
@@ -311,6 +364,18 @@ class BotRuntimeRoutingState(models.Model):
                     ]
                 ),
                 name="bot_runtime_maintenance_mode_valid",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(paused_from_maintenance_mode="")
+                    | Q(
+                        paused_from_maintenance_mode__in=[
+                            "v2_cutover",
+                            "v2_active",
+                        ]
+                    )
+                ),
+                name="bot_runtime_paused_from_maintenance_mode_valid",
             ),
             models.CheckConstraint(
                 condition=Q(policy_rollout_target_version__gte=1),
@@ -402,11 +467,15 @@ class BotPopulationRecomputeDemand(models.Model):
 
 
 class BotArenaShortageBaseline(models.Model):
-    """Frozen pre-activation Arena shortage ratio for one monitored scope."""
+    """Immutable Arena shortage ratio baseline for one monitored scope."""
 
     class Mode(models.TextChoices):
         TOURNAMENT = "tournament", "普通竞技场"
         COOP = "coop", "共斗竞技场"
+
+    class Source(models.TextChoices):
+        PRE_ACTIVATION = "pre_activation", "上线前冻结"
+        RUNTIME_BOOTSTRAP = "runtime_bootstrap", "运行时自动基线"
 
     mode = models.CharField("竞技场模式", max_length=16, choices=Mode.choices)
     prestige_band = models.CharField("声望段", max_length=32)
@@ -415,6 +484,14 @@ class BotArenaShortageBaseline(models.Model):
         max_digits=13,
         decimal_places=12,
     )
+    source = models.CharField(
+        "来源",
+        max_length=24,
+        choices=Source.choices,
+        default=Source.PRE_ACTIVATION,
+    )
+    expires_at = models.DateTimeField("过期时间", null=True, blank=True, db_index=True)
+    max_real_entry_count = models.PositiveIntegerField("最大真实参赛人数", null=True, blank=True)
     frozen_at = models.DateTimeField("冻结时间")
     evidence_id = models.CharField("证据 ID", max_length=128)
     evidence_checksum = models.CharField("证据校验和", max_length=64)
@@ -432,6 +509,27 @@ class BotArenaShortageBaseline(models.Model):
             models.CheckConstraint(
                 condition=Q(mode__in=["tournament", "coop"]),
                 name="bot_arena_shortage_mode_valid",
+            ),
+            models.CheckConstraint(
+                condition=Q(source__in=["pre_activation", "runtime_bootstrap"]),
+                name="bot_arena_shortage_source_valid",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(
+                        source="pre_activation",
+                        expires_at__isnull=True,
+                        max_real_entry_count__isnull=True,
+                    )
+                    | Q(
+                        source="runtime_bootstrap",
+                        expires_at__isnull=False,
+                        expires_at__gt=F("frozen_at"),
+                        max_real_entry_count__isnull=False,
+                        max_real_entry_count__gte=1,
+                    )
+                ),
+                name="bot_arena_shortage_source_meta_shape",
             ),
             models.CheckConstraint(
                 condition=(Q(baseline_ratio__gte=0) & Q(baseline_ratio__lte=1)),

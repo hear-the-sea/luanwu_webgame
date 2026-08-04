@@ -200,6 +200,12 @@ def test_load_guest_templates_pool_cooldown_defaults_to_zero_when_missing(tmp_pa
 
 @pytest.mark.django_db
 def test_load_guest_templates_removes_records_not_in_latest_payload(tmp_path: Path) -> None:
+    GuestTemplate.objects.create(
+        key="guest_rarity_conversion_blue_987654",
+        name="绿转蓝后的模板",
+        archetype="civil",
+        rarity="blue",
+    )
     payload_v1 = {
         "templates": [
             {
@@ -293,10 +299,66 @@ def test_load_guest_templates_removes_records_not_in_latest_payload(tmp_path: Pa
         verbosity=0,
     )
 
-    assert set(GuestTemplate.objects.values_list("key", flat=True)) == {"tpl_loader_keep"}
+    assert set(GuestTemplate.objects.values_list("key", flat=True)) == {
+        "tpl_loader_keep",
+    }
     assert set(Skill.objects.values_list("key", flat=True)) == {"skill_loader_keep"}
     assert set(SkillBook.objects.values_list("key", flat=True)) == {"book_loader_keep"}
     assert set(RecruitmentPool.objects.values_list("key", flat=True)) == {"pool_loader_keep"}
+
+
+@pytest.mark.django_db
+def test_load_guest_templates_keeps_referenced_conversion_template(
+    tmp_path: Path,
+    django_user_model,
+) -> None:
+    user = django_user_model.objects.create_user(
+        username="loader_referenced_conversion",
+        password="pass12345",
+    )
+    manor = ensure_manor(user)
+    conversion_template = GuestTemplate.objects.create(
+        key="guest_rarity_conversion_green_654321",
+        name="灰转绿后的模板",
+        archetype="military",
+        rarity="green",
+    )
+    Guest.objects.create(
+        manor=manor,
+        template=conversion_template,
+        current_hp=1,
+    )
+    payload = {
+        "templates": [
+            {
+                "key": "tpl_loader_keep",
+                "name": "保留模板",
+                "archetype": "civil",
+                "rarity": "gray",
+            }
+        ],
+        "skills": [],
+        "skill_books": [],
+        "pools": [],
+    }
+    main_file = tmp_path / "guest_templates_referenced_conversion.json"
+    main_file.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    skills_file = tmp_path / "skills_empty.json"
+    skills_file.write_text("{}", encoding="utf-8")
+    heroes_dir = tmp_path / "heroes"
+    heroes_dir.mkdir()
+
+    call_command(
+        "load_guest_templates",
+        file=str(main_file),
+        skills_file=str(skills_file),
+        heroes_dir=str(heroes_dir),
+        skip_images=True,
+        verbosity=0,
+    )
+
+    assert GuestTemplate.objects.filter(pk=conversion_template.pk).exists()
+    assert Guest.objects.filter(template=conversion_template).count() == 1
 
 
 @pytest.mark.django_db

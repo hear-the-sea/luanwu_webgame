@@ -40,6 +40,80 @@ def test_gate_e_evidence_sources_cover_all_canonical_suite_files() -> None:
     assert canonical_suite_files <= gate_evidence.GATE_E_REQUIRED_SOURCE_FILES
 
 
+def test_gate_d1_evidence_sources_cover_all_canonical_suite_files() -> None:
+    canonical_suite_files = set(recorder._read_makefile_paths(recorder.GATE_D1_CONTRACT_VARIABLE))
+    canonical_suite_files.update(recorder._read_makefile_paths(recorder.GATE_D1_CORE_VARIABLE))
+    canonical_suite_files.update(recorder._read_makefile_paths(recorder.GATE_D1_ADJACENT_VARIABLE))
+
+    assert canonical_suite_files <= gate_evidence.GATE_D1_REQUIRED_SOURCE_FILES
+
+
+def test_gate_evidence_binds_virtual_player_health_and_arena_owner_files() -> None:
+    common_runtime_files = {
+        "config/settings/base.py",
+        "gameplay/migrations/0145_alter_resourceevent_reason.py",
+        "gameplay/migrations/0146_virtual_player_health_and_recovery.py",
+        "gameplay/models/__init__.py",
+        "gameplay/services/virtual_player_core/health.py",
+        "gameplay/tasks/__init__.py",
+        "gameplay/tasks/arena.py",
+        "tests/test_arena_schedule.py",
+        "tests/test_arena_tasks.py",
+        "tests/test_virtual_player_health.py",
+    }
+    for required_files in (
+        gate_evidence.GATE_D1_REQUIRED_SOURCE_FILES,
+        gate_evidence.GATE_E_REQUIRED_SOURCE_FILES,
+    ):
+        assert common_runtime_files <= required_files
+
+    assert {
+        "gameplay/admin/__init__.py",
+        "gameplay/services/arena/coop_lifecycle.py",
+        "gameplay/services/arena/registration_helpers.py",
+        "gameplay/services/arena/virtual_reserve.py",
+        "gameplay/services/arena/virtual_reserve_fill.py",
+        "gameplay/services/arena/virtual_reserve_reconcile.py",
+        "gameplay/services/arena/virtual_reserve_references.py",
+        "gameplay/services/arena/virtual_reserve_scan.py",
+    } <= gate_evidence.GATE_E_REQUIRED_SOURCE_FILES
+
+
+def test_gate_e_evidence_binds_guest_status_and_resource_ledger_runtime_files() -> None:
+    runtime_files = {
+        "battle/deployment.py",
+        "battle/execution.py",
+        "battle/locking.py",
+        "gameplay/migrations/0147_backfill_grain_warehouse_ledger.py",
+        "gameplay/migrations/0149_botruntimeroutingstate_paused_from_maintenance_mode_and_more.py",
+        "gameplay/migrations/0150_botarenashortagebaseline_expires_at_and_more.py",
+        "gameplay/management/commands/cleanup_expired_virtual_player_arena_baselines.py",
+        "gameplay/management/commands/resume_virtual_player_gate_e_cutover.py",
+        "gameplay/services/inventory/guest_items.py",
+        "gameplay/services/inventory/guest_reset_helpers.py",
+        "gameplay/services/manor/bootstrap.py",
+        "gameplay/services/manor/treasury.py",
+        "gameplay/services/missions_impl/finalization_helpers.py",
+        "gameplay/services/missions_impl/launch_command.py",
+        "gameplay/services/raid/combat/capture.py",
+        "gameplay/services/raid/combat/failure.py",
+        "gameplay/services/raid/combat/finalize.py",
+        "gameplay/services/raid/combat/loot.py",
+        "gameplay/services/raid/combat/retreat.py",
+        "gameplay/services/raid/combat/run_persistence.py",
+        "gameplay/services/raid/utils.py",
+        "gameplay/services/utils/messages.py",
+        "gameplay/services/work.py",
+        "gameplay/tasks/resources.py",
+        "guests/constants.py",
+        "guests/migrations/0067_guest_training_remaining_seconds.py",
+        "guests/models.py",
+        "guests/services/status.py",
+    }
+
+    assert runtime_files <= gate_evidence.GATE_E_REQUIRED_SOURCE_FILES
+
+
 def test_recorder_parses_pytest_summaries_without_hardcoded_counts() -> None:
     summaries = recorder._parse_pytest_summaries("159 passed in 12.34s\n10 passed, 2 warnings in 103.01s (0:01:43)\n")
 

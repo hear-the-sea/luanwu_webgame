@@ -306,7 +306,7 @@ def test_gate_e_exit_waits_for_raw_public_bootstrap_guard_without_v1_dml(
     monkeypatch.setattr(
         gate_e_cutover_workflow,
         "verify_gate_e_readiness",
-        lambda: E_PROOF,
+        lambda **_kwargs: E_PROOF,
     )
     monkeypatch.setattr(
         gate_e_cutover_workflow,

@@ -14,9 +14,10 @@ from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
+from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.models import BotExternalStrengthReconciliation, BotProfile
 
-from . import population_runtime, profile_store
+from . import health, population_runtime, profile_store
 from .config import V2_PRESTIGE_BAND_NAMES, load_virtual_player_v2_config
 from .projection import ProjectionRuleError, StrengthSummary
 
@@ -406,6 +407,56 @@ def _clear_claim(reconciliation: BotExternalStrengthReconciliation) -> None:
     reconciliation.claim_expires_at = None
 
 
+def _retry_backoff_seconds(attempt_count: int) -> int:
+    exponent = min(max(0, int(attempt_count) - 1), 30)
+    return min(
+        EXTERNAL_RECONCILIATION_RETRY_MAX_SECONDS,
+        EXTERNAL_RECONCILIATION_RETRY_INITIAL_SECONDS * (2**exponent),
+    )
+
+
+def _requeue_expired_claim_locked(
+    reconciliation: BotExternalStrengthReconciliation,
+    *,
+    phase: str,
+    pending_status: str,
+    attempt_field: str,
+    now: datetime,
+    reset_attempts: bool,
+) -> health.VirtualPlayerHealthSnapshot:
+    failure_code = f"{phase}_claim_lease_expired"
+    health_snapshot = health.retryable_failure(
+        failure_code=failure_code,
+        error="external reconciliation claim lease expired before completion",
+        now=now,
+    )
+    attempt_count = 0 if reset_attempts else int(getattr(reconciliation, attempt_field))
+    setattr(reconciliation, attempt_field, attempt_count)
+    reconciliation.status = pending_status
+    backoff_seconds = EXTERNAL_RECONCILIATION_RETRY_MAX_SECONDS if reset_attempts else 0
+    retry_at = now + timedelta(seconds=backoff_seconds)
+    if health_snapshot.next_probe_at is not None:
+        retry_at = max(retry_at, health_snapshot.next_probe_at)
+    reconciliation.available_at = retry_at
+    _clear_claim(reconciliation)
+    reconciliation.failure_code = failure_code
+    reconciliation.last_error_digest = _failure_digest("external reconciliation claim lease expired before completion")
+    reconciliation.save(
+        update_fields=[
+            attempt_field,
+            "status",
+            "available_at",
+            "claim_token",
+            "claimed_at",
+            "claim_expires_at",
+            "failure_code",
+            "last_error_digest",
+            "updated_at",
+        ]
+    )
+    return health_snapshot
+
+
 def _quarantine_locked(
     reconciliation: BotExternalStrengthReconciliation,
     *,
@@ -520,11 +571,14 @@ def _claim_locked_reconciliation(
         )
         return None
 
+    health_probe_at = health.reconciliation_deferred_until(now=now)
+
     claim_values = (
         reconciliation.claim_token,
         reconciliation.claimed_at,
         reconciliation.claim_expires_at,
     )
+    claim_expired = False
     if reconciliation.status == pending_status:
         if reconciliation.available_at > now:
             return None
@@ -551,15 +605,69 @@ def _claim_locked_reconciliation(
         assert claim_expires_at is not None
         if claim_expires_at > now:
             return None
+        claim_expired = True
+
+    if health_probe_at is not None:
+        if reconciliation.status == claimed_status:
+            reconciliation.status = pending_status
+            _clear_claim(reconciliation)
+        reconciliation.available_at = max(reconciliation.available_at, health_probe_at)
+        reconciliation.save(
+            update_fields=[
+                "status",
+                "available_at",
+                "claim_token",
+                "claimed_at",
+                "claim_expires_at",
+                "updated_at",
+            ]
+        )
+        return None
 
     attempt_count = int(getattr(reconciliation, attempt_field))
-    if attempt_count >= EXTERNAL_RECONCILIATION_MAX_ATTEMPTS_PER_PHASE:
-        _quarantine_locked(
+    if claim_expired:
+        health_snapshot = _requeue_expired_claim_locked(
             reconciliation,
             phase=phase,
-            failure_code=f"{phase}_attempts_exhausted",
-            error="external reconciliation claim attempts are exhausted",
+            pending_status=pending_status,
+            attempt_field=attempt_field,
             now=now,
+            reset_attempts=attempt_count >= EXTERNAL_RECONCILIATION_MAX_ATTEMPTS_PER_PHASE,
+        )
+        if health_snapshot.next_probe_at is not None and health_snapshot.next_probe_at > now:
+            return None
+        if attempt_count >= EXTERNAL_RECONCILIATION_MAX_ATTEMPTS_PER_PHASE:
+            return None
+        return _claim_locked_reconciliation(reconciliation, now=now)
+
+    if attempt_count >= EXTERNAL_RECONCILIATION_MAX_ATTEMPTS_PER_PHASE:
+        if reconciliation.failure_code:
+            setattr(reconciliation, attempt_field, 0)
+            reconciliation.status = pending_status
+            reconciliation.available_at = max(
+                reconciliation.available_at,
+                now + timedelta(seconds=EXTERNAL_RECONCILIATION_RETRY_MAX_SECONDS),
+            )
+            _clear_claim(reconciliation)
+            reconciliation.save(
+                update_fields=[
+                    attempt_field,
+                    "status",
+                    "available_at",
+                    "claim_token",
+                    "claimed_at",
+                    "claim_expires_at",
+                    "updated_at",
+                ]
+            )
+            return None
+        _requeue_expired_claim_locked(
+            reconciliation,
+            phase=phase,
+            pending_status=pending_status,
+            attempt_field=attempt_field,
+            now=now,
+            reset_attempts=True,
         )
         return None
 
@@ -768,6 +876,11 @@ def _apply_claimed_profile_phase(
             except profile_store.ProfileStateConflict as exc:
                 raise ExternalReconciliationPermanentError(
                     "profile_missing",
+                    str(exc),
+                ) from exc
+            except profile_store.ProfileLockUnavailable as exc:
+                raise ExternalReconciliationRetryableError(
+                    "profile_lock_unavailable",
                     str(exc),
                 ) from exc
             except profile_store.ProfileStoreError as exc:
@@ -990,8 +1103,15 @@ def _finalize_claim_failure(
         now=current_time,
     ):
         return _process_result(claim, status=CLAIM_LOST_STATUS)
+    health_snapshot = None
+    if not permanent:
+        health_snapshot = health.retryable_failure(
+            failure_code=error.failure_code,
+            error=error,
+            now=current_time,
+        )
     exhausted = claim.attempt_count >= EXTERNAL_RECONCILIATION_MAX_ATTEMPTS_PER_PHASE
-    if permanent or exhausted:
+    if permanent:
         _quarantine_locked(
             reconciliation,
             phase=claim.phase,
@@ -1005,20 +1125,50 @@ def _finalize_claim_failure(
             failure_code=error.failure_code,
         )
 
-    exponent = min(claim.attempt_count - 1, 30)
-    backoff_seconds = min(
-        EXTERNAL_RECONCILIATION_RETRY_MAX_SECONDS,
-        EXTERNAL_RECONCILIATION_RETRY_INITIAL_SECONDS * (2**exponent),
-    )
     pending_status = (
         BotExternalStrengthReconciliation.Status.PENDING_PROFILE
         if claim.phase == BotExternalStrengthReconciliation.Phase.PROFILE
         else BotExternalStrengthReconciliation.Status.PENDING_POPULATION
     )
+    attempt_field = (
+        "profile_attempt_count"
+        if claim.phase == BotExternalStrengthReconciliation.Phase.PROFILE
+        else "population_attempt_count"
+    )
+    if exhausted:
+        setattr(reconciliation, attempt_field, 0)
+        reconciliation.status = pending_status
+        retry_at = current_time + timedelta(seconds=EXTERNAL_RECONCILIATION_RETRY_MAX_SECONDS)
+        if health_snapshot is not None and health_snapshot.next_probe_at is not None:
+            retry_at = max(retry_at, health_snapshot.next_probe_at)
+        reconciliation.available_at = retry_at
+        _clear_claim(reconciliation)
+        reconciliation.failure_code = error.failure_code
+        reconciliation.last_error_digest = _failure_digest(error)
+        reconciliation.save(
+            update_fields=[
+                attempt_field,
+                "status",
+                "available_at",
+                "claim_token",
+                "claimed_at",
+                "claim_expires_at",
+                "failure_code",
+                "last_error_digest",
+                "updated_at",
+            ]
+        )
+        return _process_result(
+            claim,
+            status=pending_status,
+            failure_code=error.failure_code,
+        )
+
+    backoff_seconds = _retry_backoff_seconds(claim.attempt_count)
     reconciliation.status = pending_status
     reconciliation.available_at = current_time + timedelta(seconds=backoff_seconds)
     _clear_claim(reconciliation)
-    reconciliation.failure_code = ""
+    reconciliation.failure_code = error.failure_code
     reconciliation.last_error_digest = _failure_digest(error)
     reconciliation.save(
         update_fields=[
@@ -1048,13 +1198,20 @@ def reconcile_claimed_external_reconciliation(
         raise ExternalReconciliationError("claim must be an ExternalReconciliationClaim")
     try:
         if claim.phase == BotExternalStrengthReconciliation.Phase.PROFILE:
-            return _apply_claimed_profile_phase(claim, now=now)
-        if claim.phase == BotExternalStrengthReconciliation.Phase.POPULATION:
-            return _apply_claimed_population_phase(claim, now=now)
-        raise ExternalReconciliationPermanentError(
-            "claim_phase_invalid",
-            "external reconciliation claim phase is invalid",
-        )
+            result = _apply_claimed_profile_phase(claim, now=now)
+        elif claim.phase == BotExternalStrengthReconciliation.Phase.POPULATION:
+            result = _apply_claimed_population_phase(claim, now=now)
+        else:
+            raise ExternalReconciliationPermanentError(
+                "claim_phase_invalid",
+                "external reconciliation claim phase is invalid",
+            )
+        if result.status in {
+            BotExternalStrengthReconciliation.Status.PENDING_POPULATION,
+            BotExternalStrengthReconciliation.Status.APPLIED,
+        }:
+            health.reconciliation_success(now=_reconciliation_now(now))
+        return result
     except ExternalReconciliationPermanentError as exc:
         return _finalize_claim_failure(
             claim,
@@ -1066,6 +1223,17 @@ def reconcile_claimed_external_reconciliation(
         return _finalize_claim_failure(
             claim,
             error=exc,
+            permanent=False,
+            now=now,
+        )
+    except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
+        retryable = ExternalReconciliationRetryableError(
+            "infrastructure_unavailable",
+            f"external reconciliation infrastructure failure: {exc}",
+        )
+        return _finalize_claim_failure(
+            claim,
+            error=retryable,
             permanent=False,
             now=now,
         )

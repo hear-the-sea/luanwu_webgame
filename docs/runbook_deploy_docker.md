@@ -198,6 +198,50 @@ curl --fail --show-error --silent "https://${CADDY_SITE_ADDRESS}/health/live"
 
 Caddy 日志首次出现证书签发成功后，后续续期由 Caddy 自动完成。排查证书问题时重点检查域名解析、端口占用、防火墙以及 `caddy_data` 卷是否被误删。
 
+## Gate D1 证据自动化
+
+每次推送到仓库的提交，CI 会在真实 MySQL/Redis 服务上依次重跑 Gate A 前置和 Gate D1 三段测试，生成绑定当前提交的 YAML，并上传为
+`gate-d1-evidence-<commit>` 构建产物。证据生成器会在写入前校验源码摘要、测试集合、执行结果、性能基准和只读测试数据库状态；生成失败不会产出半成品。
+
+因此，常规部署不需要手动改写 `docs/virtual_player_gate_d1_evidence_*.yaml`。部署前应使用与镜像相同提交的 CI 构建产物进行审阅；该产物只证明测试环境的 Gate D1 readiness，不会自动执行 Gate exit、修改 Bootstrap routing 或授权生产发布。
+
+本地需要复现时，可以执行：
+
+```bash
+make gate-d1-evidence \
+  GATE_D1_EVIDENCE_OUTPUT="test-results/gate-d1/local.yaml"
+make verify-gate-d1-evidence \
+  GATE_D1_EVIDENCE_OUTPUT="test-results/gate-d1/local.yaml"
+```
+
+## Gate E 就绪证据自动化
+
+完整 Gate E 不是每次普通 push 都执行的快速检查，而是发布前的 MySQL/Redis 真实服务门禁。`.github/workflows/virtual_player_readiness.yml` 会在以下时机自动执行：
+
+- 推送 `v*` 发布标签时
+- 每天 UTC `02:17` 定时检查默认分支
+- 通过 GitHub Actions `workflow_dispatch` 手动重跑
+
+该流程使用隔离的 MySQL/Redis 服务，先执行静态门禁，再依次执行 Gate A、Gate D1 和 Gate E；只有全部通过才会上传绑定当前提交的 manifest、D1 和 E 三份 YAML 证据，失败时不会上传半成品。任务使用并发锁避免同一 ref 上的两次昂贵验证重叠运行。
+
+Gate E 证据只证明测试环境的 readiness，不会执行 Gate exit、切换 Bootstrap routing、启用 Maintenance 或连接生产业务库。生产发布仓库设置应将 `gate-e-readiness` 配置为发布所需检查；工作流文件本身不能替代 GitHub 仓库的保护规则配置。
+
+本地需要完整复现时，先确保隔离服务已启动，再执行：
+
+```bash
+DJANGO_TEST_USE_ENV_SERVICES=1 make gate-e-readiness-evidence \
+  GATE_E_EXPECTED_COMMIT="$(git rev-parse HEAD)"
+make verify-gate-e-readiness-evidence
+```
+
+证据生成器会校验提交号、源码逐文件 SHA-256、测试集合、静态检查、真实服务结果和六格性能矩阵；代码或质量门禁配置变化后，旧证据会 fail-closed，必须由该流程重新生成。
+
+虚拟玩家竞技场自愈使用配置默认值即可运行，不需要手动写入 `tournament:newbie` 基线。新服在真人数量较少时允许稳定的高短缺比例经过连续成熟窗口自动建立临时基线；只有检测到 reserve 供给和其他安全指标正常时才会接受该基线。需要调节时，优先调整 `DJANGO_ARENA_SHORTAGE_BASELINE_BOOTSTRAP_EARLY_GAME_MAX_REAL_ENTRIES` 和 `DJANGO_ARENA_SHORTAGE_BASELINE_BOOTSTRAP_EARLY_GAME_MAX_RATIO`，并保留 `DJANGO_ARENA_SHORTAGE_BASELINE_BOOTSTRAP_MIN_MATURE_WINDOWS` 的连续窗口约束。
+
+相关健康熔断参数是 `DJANGO_VIRTUAL_PLAYER_HEALTH_FAILURE_THRESHOLD`、`DJANGO_VIRTUAL_PLAYER_HEALTH_COOLDOWN_SECONDS`、`DJANGO_VIRTUAL_PLAYER_HEALTH_RECOVERY_PROBE_SECONDS` 和 `DJANGO_VIRTUAL_PLAYER_HEALTH_RECOVERY_SUCCESS_THRESHOLD`。这些参数只影响运行期自愈节奏，不需要额外迁移或人工恢复操作。
+
+只有在明确进行 Gate D1 退出评审并取得相应授权时，才继续执行现有的显式状态转换流程。
+
 ## WebSocket 重启恢复
 
 认证页面每页会建立通知、在线统计和世界聊天三条 WebSocket。生产默认每用户上限为 `9`，支持同一账号三个标签页。Daphne Worker 租约 TTL 为 `8` 秒、每 `2` 秒续期；实例异常退出或滚动替换后，新连接会清理死亡 Worker 的用户级和 IP 级槽位，目标恢复时间不超过 `10` 秒。

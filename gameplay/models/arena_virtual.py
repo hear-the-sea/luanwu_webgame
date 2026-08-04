@@ -38,6 +38,8 @@ class ArenaVirtualDemand(models.Model):
     created_profile_count = models.PositiveIntegerField("已创建虚拟玩家数", default=0)
     next_retry_at = models.DateTimeField("下次重试时间", null=True, blank=True, db_index=True)
     last_checked_at = models.DateTimeField("最近检查时间", null=True, blank=True)
+    consecutive_failure_count = models.PositiveSmallIntegerField("连续失败次数", default=0)
+    last_progress_at = models.DateTimeField("最近取得进展时间", null=True, blank=True)
     last_failure_reason = models.CharField("最近失败原因", max_length=64, blank=True, default="")
     created_at = models.DateTimeField("创建时间", auto_now_add=True)
     updated_at = models.DateTimeField("更新时间", auto_now=True)

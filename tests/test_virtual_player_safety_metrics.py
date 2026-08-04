@@ -21,6 +21,7 @@ from gameplay.services.virtual_player_core.safety_metrics import (
     ARENA_SHORTAGE_METRIC,
     H01_CALLBACK_ATTEMPT_METRIC,
     H01_RECOMMENDATION_METRIC,
+    HARD_CONSTRAINT_METRIC,
     MAINTENANCE_ATTEMPT_METRIC,
     SAFETY_HEARTBEAT_METRIC,
     finish_maintenance_attempt,
@@ -29,6 +30,7 @@ from gameplay.services.virtual_player_core.safety_metrics import (
     record_h01_callback_attempt,
     record_h01_retirement_recommendation,
     record_safety_heartbeat,
+    record_safety_metric_failure,
     start_maintenance_attempt,
     start_maintenance_attempts,
 )
@@ -150,6 +152,71 @@ def test_arena_shortage_records_bounded_quantized_ratio_per_scope() -> None:
         "prestige_band": "newbie",
     }
     assert event.value == Decimal("0.333333333333")
+
+
+@pytest.mark.django_db
+def test_arena_shortage_can_record_population_context_without_changing_ratio() -> None:
+    record_arena_shortage(
+        operation_id="tournament-7-v4",
+        mode="tournament",
+        prestige_band="newbie",
+        missing_count=9,
+        capacity=10,
+        real_entry_count=1,
+        virtual_entry_count=0,
+        reserve_ready_count=3,
+        reserve_training_count=24,
+        occurred_at=NOW,
+    )
+
+    event = BotSafetyMetricEvent.objects.get(metric_name=ARENA_SHORTAGE_METRIC)
+    assert event.dimensions == {
+        "kind": "tournament",
+        "prestige_band": "newbie",
+        "real_entry_count": 1,
+        "virtual_entry_count": 0,
+        "reserve_ready_count": 3,
+        "reserve_training_count": 24,
+    }
+    assert event.value == Decimal("0.900000000000")
+
+
+@pytest.mark.django_db
+def test_metric_write_failure_persists_idempotent_hard_constraint_event() -> None:
+    result = record_safety_metric_failure(
+        operation="arena-coop-12-v3-20260728T080123456789Z",
+        source_metric=ARENA_SHORTAGE_METRIC,
+        exc=RuntimeError("provider unavailable"),
+        occurred_at=NOW,
+    )
+
+    event = BotSafetyMetricEvent.objects.get(event_id=result.event_id)
+    assert event.metric_name == HARD_CONSTRAINT_METRIC
+    assert event.dimensions == {
+        "failure_code": "safety_metric_write_failure",
+        "operation": "arena-coop-12-v3-20260728T080123456789Z",
+        "reason": "safety_metric_write_failed",
+        "source_metric": ARENA_SHORTAGE_METRIC,
+    }
+    assert event.value == Decimal("1.000000000000")
+
+    duplicate = record_safety_metric_failure(
+        operation="arena-coop-12-v3-20260728T080123456789Z",
+        source_metric=ARENA_SHORTAGE_METRIC,
+        exc=RuntimeError("provider unavailable"),
+        occurred_at=NOW,
+    )
+    assert duplicate.created is False
+    assert BotSafetyMetricEvent.objects.filter(metric_name=HARD_CONSTRAINT_METRIC).count() == 1
+
+    other_source = record_safety_metric_failure(
+        operation="arena-coop-12-v3-20260728T080123456789Z",
+        source_metric="virtual_player_h01_callback_attempt",
+        exc=RuntimeError("provider unavailable"),
+        occurred_at=NOW,
+    )
+    assert other_source.event_id != event.event_id
+    assert BotSafetyMetricEvent.objects.filter(metric_name=HARD_CONSTRAINT_METRIC).count() == 2
 
 
 @pytest.mark.django_db

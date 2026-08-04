@@ -1028,7 +1028,7 @@ environment_activation:
     arena_shortage_baseline: frozen_pre_activation_ratio_for_same_mode_and_prestige_band
 
 evidence_manifest:
-  path: docs/virtual_player_gate_evidence_manifest_2026-07-30.yaml
+  path: docs/virtual_player_gate_evidence_manifest_{artifact_date}.yaml
   schema_version: 1
   checksum_algorithm: sha256
   checksum_input: sorted_pytest_nodeids_joined_with_lf_and_terminal_lf

@@ -44,6 +44,8 @@ SMITHY_CATEGORIES = (
 
 
 def get_stable_page_context(manor: Any) -> dict[str, Any]:
+    from gameplay.services.inventory.core import get_warehouse_grain_quantity
+
     speed_bonus = get_stable_speed_bonus(manor)
     return {
         "horse_options": get_horse_options(manor),
@@ -53,10 +55,13 @@ def get_stable_page_context(manor: Any) -> dict[str, Any]:
         "horsemanship_level": get_player_technology_level(manor, "horsemanship"),
         "max_production_quantity": get_max_production_quantity(manor),
         "is_producing": has_active_production(manor),
+        "warehouse_grain_quantity": get_warehouse_grain_quantity(manor),
     }
 
 
 def get_ranch_page_context(manor: Any) -> dict[str, Any]:
+    from gameplay.services.inventory.core import get_warehouse_grain_quantity
+
     speed_bonus = get_ranch_speed_bonus(manor)
     return {
         "livestock_options": get_livestock_options(manor),
@@ -66,6 +71,7 @@ def get_ranch_page_context(manor: Any) -> dict[str, Any]:
         "animal_husbandry_level": get_player_technology_level(manor, "animal_husbandry"),
         "max_livestock_quantity": get_max_livestock_quantity(manor),
         "is_producing": has_active_livestock_production(manor),
+        "warehouse_grain_quantity": get_warehouse_grain_quantity(manor),
     }
 
 
@@ -108,6 +114,8 @@ def get_forge_page_context(
     page: str | int,
     items_per_page: int = UIConstants.FORGE_ITEMS_PER_PAGE,
     decompose_items_per_page: int = 9,
+    blueprint_items_per_page: int = UIConstants.FORGE_BLUEPRINTS_PER_PAGE,
+    blueprint_page: str | int = 1,
 ) -> dict[str, Any]:
     forging_level = get_player_technology_level(manor, "forging")
     max_quantity = forge_service.get_max_forging_quantity(manor)
@@ -136,6 +144,8 @@ def get_forge_page_context(
         infer_equipment_category=forge_service.infer_equipment_category,
         to_decompose_category=forge_service.to_decompose_category,
     )
+    blueprint_paginator = Paginator(blueprint_synthesis_options, blueprint_items_per_page)
+    blueprint_page_obj = blueprint_paginator.get_page(blueprint_page)
 
     decompose_category = resolve_decompose_category(normalized_category)
     decomposable_equipment = forge_service.get_decomposable_equipment_options(manor, category=decompose_category)
@@ -152,6 +162,7 @@ def get_forge_page_context(
         "decompose_page_obj": decompose_page_obj,
         "active_forgings": forge_service.get_active_forgings(manor),
         "blueprint_synthesis_options": blueprint_synthesis_options,
+        "blueprint_page_obj": blueprint_page_obj,
         "decomposable_equipment": decompose_page_obj,
         "speed_bonus": speed_bonus,
         "speed_bonus_percent": int(speed_bonus * 100),

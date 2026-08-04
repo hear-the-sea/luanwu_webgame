@@ -4,45 +4,51 @@
 {% block title %}冶炼坊{% endblock %}
 
 {% block content %}
-<section class="dashboard">
-    <div class="tw-section-header">
+<section class="dashboard production-page">
+    <header class="production-page-header">
         <div>
-            <h1>冶炼坊</h1>
-            <p class="caption">冶炼坊能够冶炼金属和制作药品。当前银两：<strong>{{ manor.silver }}</strong>{% if speed_bonus_percent > 0 %}，冶炼坊加成：<span class="text-accent-green font-semibold">-{{ speed_bonus_percent }}%</span> 制作时间{% endif %}</p>
-            <p class="caption">冶炼技等级：{{ smelting_level }}，单次最大制作数量：<strong>{{ max_smelting_quantity }}</strong> 个</p>
+            <div class="production-page-title-row">
+                <h1>冶炼坊</h1>
+                <span class="production-page-level">冶炼技 等级{{ smelting_level }}</span>
+            </div>
+            <div class="production-page-meta">
+                <span class="production-meta-item">银两 <strong>{{ manor.silver }}</strong></span>
+                <span class="production-meta-item">单次上限 <strong>{{ max_smelting_quantity }}</strong></span>
+                {% if speed_bonus_percent > 0 %}
+                <span class="production-meta-item production-meta-item--accent">速度 -{{ speed_bonus_percent }}%</span>
+                {% endif %}
+            </div>
         </div>
-        <a class="tw-btn-secondary" href="{% url 'gameplay:smithy' %}">刷新</a>
-    </div>
+    </header>
 
     {% if active_productions %}
-    <section class="tw-panel mb-6">
-        <div class="tw-panel-header">制作中</div>
-        <div class="tw-panel-content">
-            <div class="flex flex-col gap-4">
+    <section class="production-panel production-queue-panel">
+        <div class="production-panel-heading">
+            <h2>制作中</h2>
+        </div>
+        <div class="production-panel-body">
+            <div class="production-queue-list">
                 {% for production in active_productions %}
-                <article class="tw-card">
-                    <header class="mb-3">
-                        <h3 class="text-base font-semibold text-text-primary mb-1">{{ production.metal_name }} ×{{ production.quantity }}</h3>
-                    </header>
-                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                <article class="production-queue-card">
+                    <div class="production-queue-main">
+                        <h3>{{ production.metal_name }} <span>×{{ production.quantity }}</span></h3>
+                    </div>
+                    <div class="production-queue-actions">
                         {% if production.time_remaining > 0 %}
-                            <span class="tw-chip">
-                                剩余时间：
-                                <span class="countdown" data-countdown="{{ production.complete_at|date:'c' }}" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_production_runtime_api' %}" data-refresh-method="post">
-                                    {{ production.time_remaining }} 秒
-                                </span>
-                            </span>
-                            <form method="post"
-                                  action="{% url 'gameplay:cancel_smelting_production' production.id %}"
-                                  class="js-production-cancel-form m-0"
-                                  data-confirm-title="取消制作"
-                                  data-confirm-message="取消后不会获得产物，已消耗的材料不会返还。确定取消吗？"
-                                  data-confirm-ok-text="确认取消">
-                                {% csrf_token %}
-                                <button type="submit" class="tw-btn-danger tw-btn-sm">取消制作</button>
-                            </form>
+                        <span class="production-status production-status--active">
+                            剩余 <span class="countdown" data-countdown="{{ production.complete_at|date:'c' }}" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_production_runtime_api' %}" data-refresh-method="post">{{ production.time_remaining }} 秒</span>
+                        </span>
+                        <form method="post"
+                              action="{% url 'gameplay:cancel_smelting_production' production.id %}"
+                              class="m-0 js-production-cancel-form"
+                              data-confirm-title="取消制作"
+                              data-confirm-message="取消后不会获得产物，已消耗的材料不会返还。确定取消吗？"
+                              data-confirm-ok-text="确认取消">
+                            {% csrf_token %}
+                            <button type="submit" class="tw-btn-danger tw-btn-sm">取消制作</button>
+                        </form>
                         {% else %}
-                            <span class="tw-badge-green">已完成！</span>
+                        <span class="tw-badge-green">已完成</span>
                         {% endif %}
                     </div>
                 </article>
@@ -52,16 +58,12 @@
     </section>
     {% endif %}
 
-    <section class="tw-panel">
-        <div class="tw-panel-header">可制作物品</div>
-        <div class="tw-panel-content">
-            <p class="text-sm text-text-muted mb-4">
-                冶炼链：1银两→1铜，5铜→1锡，3锡→1铁
-                <br>药品解锁：冶炼坊等级 1止血散，等级 3金创药，等级 5白芨丸，等级 7白草丹，等级 8补血丹，等级 9丁香丹，等级 10天香玉露丸
-                {% if is_producing %}<br><span class="text-accent-red font-medium">当前有物品正在制作中，同时只能制作一种物品</span>{% endif %}
-            </p>
-
-            <nav class="tw-category-tabs" aria-label="冶炼坊制作分类">
+    <section class="production-panel">
+        <div class="production-panel-heading">
+            <h2>可制作</h2>
+        </div>
+        <div class="production-panel-body">
+            <nav class="production-tabs" aria-label="冶炼坊制作分类">
                 {% for category in smithy_categories %}
                 <a href="?category={{ category.key }}"
                    class="tw-tab-item {% if category.key == current_smithy_category %}active{% endif %}">
@@ -70,72 +72,85 @@
                 {% endfor %}
             </nav>
 
-            <div class="tw-building-grid">
-                {% for metal in selected_metal_options %}
-                <article class="tw-building-card {% if not metal.is_unlocked %}opacity-60{% elif is_producing %}opacity-50{% endif %}">
-                    <header>
+            <div class="production-option-grid">
+                {% for metal in smithy_page_obj %}
+                <article class="production-option-card {% if not metal.is_unlocked %}is-locked{% elif is_producing %}is-disabled{% endif %}">
+                    <header class="production-option-card__header">
                         <div>
                             <h3>{{ metal.name }}</h3>
-                            <p class="text-xs text-text-muted mt-1">{{ metal.category_label }}</p>
                             {% if not metal.is_unlocked %}
-                            <p class="text-sm text-accent-red font-medium">需要{{ metal.required_type_label }} {{ metal.required_level }} 级</p>
+                            <p class="production-card-lock">{{ metal.required_type_label }} 等级{{ metal.required_level }}</p>
                             {% endif %}
                         </div>
+                        <span class="production-option-tag">{{ metal.category_label }}</span>
                     </header>
 
-                    <dl class="m-0 p-0">
-                        <div class="grid grid-cols-3 gap-3 p-3 rounded bg-bg-secondary mb-4">
-                            <div class="text-center">
-                                <dt class="text-xs text-text-muted mb-1">消耗材料</dt>
-                                <dd class="m-0 text-sm font-semibold text-accent-red">{{ metal.cost_amount }} {{ metal.cost_type_name }}</dd>
-                            </div>
-                            <div class="text-center">
-                                <dt class="text-xs text-text-muted mb-1">当前持有</dt>
-                                <dd class="m-0 text-sm font-semibold text-text-primary">{{ metal.current_amount }}</dd>
-                            </div>
-                            <div class="text-center">
-                                <dt class="text-xs text-text-muted mb-1">实际时间</dt>
-                                <dd class="m-0 text-sm font-semibold text-accent-green" id="duration-{{ metal.key }}">{{ metal.actual_duration }} 秒</dd>
-                            </div>
+                    <dl class="production-stats production-stats--three">
+                        <div>
+                            <dt>消耗</dt>
+                            <dd class="production-value production-value--cost">{{ metal.cost_amount }} {{ metal.cost_type_name }}</dd>
+                        </div>
+                        <div>
+                            <dt>持有</dt>
+                            <dd>{{ metal.current_amount }}</dd>
+                        </div>
+                        <div>
+                            <dt>耗时</dt>
+                            <dd id="duration-{{ metal.key }}">{{ metal.actual_duration }} 秒</dd>
                         </div>
                     </dl>
 
-                    <form method="post" action="{% url 'gameplay:start_smelting_production' %}" class="tw-card-actions pt-4 border-t border-border-light">
+                    <form method="post" action="{% url 'gameplay:start_smelting_production' %}" class="tw-card-actions production-option-card__actions">
                         {% csrf_token %}
                         <input type="hidden" name="metal_key" value="{{ metal.key }}">
                         {% if not metal.is_unlocked %}
-                            <button type="button" class="tw-btn-secondary w-full opacity-60" disabled>未解锁</button>
+                        <button type="button" class="tw-btn-secondary w-full" disabled>未解锁</button>
                         {% elif is_producing %}
-                            <button type="button" class="tw-btn-secondary w-full opacity-60" disabled>制作中</button>
-                        {% elif metal.is_unlocked %}
-                            <div class="flex items-center justify-center gap-2 mb-3 flex-wrap">
-                                <label for="quantity-{{ metal.key }}" class="text-sm text-text-secondary">数量：</label>
-                                <input type="number" name="quantity" id="quantity-{{ metal.key }}"
-                                       value="1" min="1" max="{{ metal.max_quantity }}" step="1" inputmode="numeric"
-                                       class="tw-quantity-input"
-                                       data-unit-cost="{{ metal.cost_amount }}"
-                                       data-unit-label="{{ metal.cost_type_name }}"
-                                       data-total-target="total-{{ metal.key }}"
-                                       data-unit-duration="{{ metal.actual_duration }}"
-                                       data-duration-target="duration-{{ metal.key }}">
-                                <span class="text-xs text-accent-red font-medium" id="total-{{ metal.key }}">总计：{{ metal.cost_amount }} {{ metal.cost_type_name }}</span>
-                            </div>
-                            {% if metal.can_afford %}
-                                <button type="submit" class="tw-btn-primary w-full">制作</button>
-                            {% else %}
-                                <button type="button" class="tw-btn-secondary w-full opacity-60" disabled>{{ metal.cost_type_name }}不足</button>
-                            {% endif %}
+                        <button type="button" class="tw-btn-secondary w-full" disabled>制作中</button>
+                        {% else %}
+                        <div class="production-quantity-row">
+                            <label for="quantity-{{ metal.key }}">数量</label>
+                            <input type="number" name="quantity" id="quantity-{{ metal.key }}"
+                                       value="1" min="1" max="{{ metal.max_quantity }}" step="1" inputmode="numeric" autocomplete="off"
+                                   class="tw-quantity-input"
+                                   data-unit-cost="{{ metal.cost_amount }}"
+                                   data-unit-label="{{ metal.cost_type_name }}"
+                                   data-total-target="total-{{ metal.key }}"
+                                   data-unit-duration="{{ metal.actual_duration }}"
+                                   data-duration-target="duration-{{ metal.key }}">
+                            <span id="total-{{ metal.key }}">{{ metal.cost_amount }} {{ metal.cost_type_name }}</span>
+                        </div>
+                        {% if metal.can_afford %}
+                        <button type="submit" class="tw-btn-primary w-full">制作</button>
+                        {% else %}
+                        <button type="button" class="tw-btn-secondary w-full" disabled>{{ metal.cost_type_name }}不足</button>
+                        {% endif %}
                         {% endif %}
                     </form>
                 </article>
                 {% empty %}
-                <div class="tw-empty-state">当前分类暂无可制作物品</div>
+                <div class="production-empty">当前分类暂无可制作物品</div>
                 {% endfor %}
             </div>
+
+            {% if smithy_page_obj.has_other_pages %}
+            <nav class="production-pagination" aria-label="冶炼坊制作分页">
+                {% if smithy_page_obj.has_previous %}
+                <a href="?category={{ current_smithy_category }}&page={{ smithy_page_obj.previous_page_number }}" class="tw-btn-secondary tw-btn-sm">上一页</a>
+                {% else %}
+                <span class="tw-btn-secondary tw-btn-sm disabled">上一页</span>
+                {% endif %}
+                <span class="production-page-info">{{ smithy_page_obj.number }} / {{ smithy_page_obj.paginator.num_pages }}</span>
+                {% if smithy_page_obj.has_next %}
+                <a href="?category={{ current_smithy_category }}&page={{ smithy_page_obj.next_page_number }}" class="tw-btn-secondary tw-btn-sm">下一页</a>
+                {% else %}
+                <span class="tw-btn-secondary tw-btn-sm disabled">下一页</span>
+                {% endif %}
+            </nav>
+            {% endif %}
         </div>
     </section>
 </section>
-
 {% endblock %}
 
 {% block extra_scripts %}

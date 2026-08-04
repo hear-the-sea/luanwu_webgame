@@ -91,6 +91,24 @@ def test_distinct_effect_types_clears_order_by_for_distinct():
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("item_key", "item_name"),
+    [("grain", "粮食"), ("chunqiu_coin", "春秋币")],
+)
+def test_warehouse_context_marks_protected_resource_items_as_not_depositable(django_user_model, item_key, item_name):
+    user = django_user_model.objects.create_user(username=f"warehouse_block_{item_key}", password="pass123")
+    manor = ensure_manor(user)
+    template, _created = ItemTemplate.objects.get_or_create(key=item_key, defaults={"name": item_name})
+    InventoryItem.objects.create(manor=manor, template=template, quantity=1)
+
+    context = get_warehouse_context(manor, current_tab="warehouse", selected_category="all", page=1)
+
+    entry = next(item for item in context["inventory_items"] if item.template.key == item_key)
+    assert entry.treasury_deposit_blocked is True
+    assert entry.treasury_deposit_hint == f"{item_name}不可存入藏宝阁"
+
+
+@pytest.mark.django_db
 def test_warehouse_categories_prioritize_equipment_then_common_items():
     user = User.objects.create_user(username="warehouse_category_order", password="pass123")
     manor = ensure_manor(user)
@@ -220,6 +238,44 @@ def test_get_warehouse_context_rarity_upgrade_reads_source_keys_from_item_templa
 
     context = get_warehouse_context(manor, current_tab="warehouse", selected_category="all", page=1)
     assert [guest.id for guest in context["guests_for_rarity_upgrade"]] == [supported_guest.id]
+
+
+@pytest.mark.django_db
+def test_get_warehouse_context_rarity_upgrade_reads_source_rarity_from_item_templates():
+    user = User.objects.create_user(username="warehouse_rarity_source_rarity_user", password="pass123")
+    manor = ensure_manor(user)
+    green_template = GuestTemplate.objects.create(
+        key="warehouse_rarity_source_rarity_green",
+        name="绿色门客",
+        rarity="green",
+        archetype="civil",
+    )
+    blue_template = GuestTemplate.objects.create(
+        key="warehouse_rarity_source_rarity_blue",
+        name="蓝色门客",
+        rarity="blue",
+        archetype="civil",
+    )
+    eligible_guest = Guest.objects.create(manor=manor, template=green_template, status=GuestStatus.IDLE, level=12)
+    Guest.objects.create(manor=manor, template=green_template, status=GuestStatus.INJURED, level=20)
+    Guest.objects.create(manor=manor, template=blue_template, status=GuestStatus.IDLE, level=20)
+
+    pill_template = ItemTemplate.objects.create(
+        key="warehouse_rarity_source_rarity_pill",
+        name="绿转蓝丸子",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=True,
+        effect_payload={
+            "action": "upgrade_guest_rarity",
+            "source_rarity": "green",
+            "target_rarity": "blue",
+        },
+    )
+    InventoryItem.objects.create(manor=manor, template=pill_template, quantity=1)
+
+    context = get_warehouse_context(manor, current_tab="warehouse", selected_category="all", page=1)
+
+    assert [guest.id for guest in context["guests_for_rarity_upgrade"]] == [eligible_guest.id]
 
 
 @pytest.mark.django_db

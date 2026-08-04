@@ -96,7 +96,7 @@ jobs:
   # ─────────────────────────────────────────────────────────────────────────
   integration-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     services:
       mysql:
@@ -175,6 +175,41 @@ jobs:
           python -m coverage run -m pytest -m integration -q
           python -m coverage report -m
           python -m coverage xml -o coverage-integration.xml
+
+      - name: Generate commit-bound Gate D1 evidence
+        if: github.event_name == 'push'
+        env:
+          DJANGO_DEBUG: "0"
+          DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
+          DJANGO_SECRET_KEY: "ci-only-not-a-real-secret-key-change-me-1234567890"
+          DJANGO_TEST_USE_ENV_SERVICES: "1"
+          DJANGO_DB_ENGINE: "django.db.backends.mysql"
+          DJANGO_DB_NAME: "webgame"
+          DJANGO_DB_USER: "root"
+          DJANGO_DB_PASSWORD: "root"
+          DJANGO_DB_HOST: "127.0.0.1"
+          DJANGO_DB_PORT: "3306"
+          REDIS_URL: "redis://127.0.0.1:6379"
+          REDIS_BROKER_URL: "redis://127.0.0.1:6379/0"
+          REDIS_RESULT_URL: "redis://127.0.0.1:6379/0"
+          REDIS_CHANNEL_URL: "redis://127.0.0.1:6379/1"
+          REDIS_CACHE_URL: "redis://127.0.0.1:6379/2"
+        run: |
+          make gate-d1-evidence \
+            GATE_D1_EVIDENCE_OUTPUT="test-results/gate-d1/gate-d1-${GITHUB_SHA}.yaml" \
+            GATE_D1_EXPECTED_COMMIT="${GITHUB_SHA}"
+          make verify-gate-d1-evidence \
+            GATE_D1_EVIDENCE_OUTPUT="test-results/gate-d1/gate-d1-${GITHUB_SHA}.yaml" \
+            GATE_D1_EXPECTED_COMMIT="${GITHUB_SHA}"
+
+      - name: Upload commit-bound Gate D1 evidence
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-d1-evidence-${{ github.sha }}
+          path: test-results/gate-d1/gate-d1-${{ github.sha }}.yaml
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Upload Integration Coverage
         uses: actions/upload-artifact@v4

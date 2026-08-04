@@ -296,6 +296,7 @@ heroes:
     - key: task_fox_spirit_keeper
       name: 小狐仙
       archetype: civil
+      avatar: xiaohuxian.png
       recruitable: false
       default_gender: female
       custom_stats:
@@ -1057,6 +1058,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig_wu_male8.png
       skills:
         - guild_blackwind_battle_standard
         - guild_blackwind_gate_breaker
@@ -1072,6 +1074,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pubayi.png
       custom_stats:
         force: 246
         intellect: 116

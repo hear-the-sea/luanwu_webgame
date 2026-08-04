@@ -24,6 +24,7 @@ def _build_default_context() -> dict[str, Any]:
         "total_user_count": 0,
         "header_protection_status": DEFAULT_PROTECTION_STATUS.copy(),
         "sidebar_action_points_label": f"0/{ACTION_POINTS_MAX}",
+        "sidebar_grain_quantity": 0,
     }
 
 
@@ -73,6 +74,13 @@ def _populate_authenticated_context(context: dict[str, Any], request) -> None:
             context["header_protection_status"] = protection_status
     except DatabaseError:
         logger.warning("Failed to load protection status", exc_info=True)
+
+    try:
+        from gameplay.services.inventory.core import get_warehouse_grain_quantity
+
+        context["sidebar_grain_quantity"] = get_warehouse_grain_quantity(manor)
+    except DatabaseError:
+        logger.warning("Failed to load warehouse grain quantity", exc_info=True)
 
     if not _should_include_home_sidebar(request):
         return

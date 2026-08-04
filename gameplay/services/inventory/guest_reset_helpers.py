@@ -4,6 +4,7 @@ import logging
 from dataclasses import dataclass
 from random import Random
 
+from django.db import IntegrityError, transaction
 from django.db.models import F
 
 from core.exceptions import (
@@ -16,7 +17,9 @@ from core.exceptions import (
     ItemNotFoundError,
 )
 from gameplay.models import InventoryItem, ItemTemplate, Manor
-from guests.models import Guest, GuestStatus, GuestTemplate
+from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
+from guests.models import Guest, GuestRarity, GuestStatus, GuestTemplate
+from guests.rarity import GUEST_RARITY_ORDER
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +39,7 @@ GUEST_RESET_UPDATE_FIELDS = [
     "gear_set_bonus",
     "training_target_level",
     "training_complete_at",
+    "training_remaining_seconds",
     "status",
     "initial_force",
     "initial_intellect",
@@ -161,27 +165,116 @@ def prepare_guest_for_reset(guest: Guest, *, action_label: str) -> GuestResetPre
     )
 
 
+def _normalize_guest_rarity(raw_value: object, *, field_name: str) -> str:
+    if not isinstance(raw_value, str) or not raw_value.strip():
+        raise GuestItemConfigurationError(f"{field_name}配置错误")
+
+    rarity = raw_value.strip()
+    valid_rarities = {value for value, _label in GuestRarity.choices}
+    if rarity not in valid_rarities:
+        raise GuestItemConfigurationError(f"{field_name}配置错误")
+    return rarity
+
+
+def _require_higher_rarity(source_rarity: str, target_rarity: str) -> None:
+    try:
+        source_rank = GUEST_RARITY_ORDER.index(source_rarity)
+        target_rank = GUEST_RARITY_ORDER.index(target_rarity)
+    except ValueError as exc:
+        raise GuestItemConfigurationError("稀有度配置错误") from exc
+    if source_rank >= target_rank:
+        raise GuestItemConfigurationError("目标稀有度必须高于来源稀有度")
+
+
+def _get_or_create_rarity_conversion_template(guest: Guest, *, target_rarity: str) -> GuestTemplate:
+    """Create one non-recruitable target template per source template and target rarity.
+
+    调用方必须已在事务内持有 Manor 行锁；同 source template 的并发创建会由
+    source template 行锁串行化，这里再补一层唯一约束冲突重试作为防御。
+    """
+    source_template = GuestTemplate.objects.select_for_update().get(pk=guest.template_id)
+    source_rarity = _normalize_guest_rarity(source_template.rarity, field_name="来源稀有度")
+    normalized_target_rarity = _normalize_guest_rarity(target_rarity, field_name="目标稀有度")
+    _require_higher_rarity(source_rarity, normalized_target_rarity)
+    conversion_key = f"{RARITY_CONVERSION_TEMPLATE_KEY_PREFIX}{normalized_target_rarity}_{source_template.pk}"
+    target_template = GuestTemplate.objects.select_for_update().filter(key=conversion_key).first()
+    if target_template:
+        if target_template.rarity != normalized_target_rarity:
+            raise GuestItemConfigurationError("目标稀有度模板配置错误")
+        return target_template
+
+    source_avatar = source_template.avatar.name if source_template.avatar else ""
+    source_attribute_weights = source_template.attribute_weights
+    if not isinstance(source_attribute_weights, dict):
+        source_attribute_weights = {}
+
+    try:
+        # 嵌套 atomic 提供 savepoint：唯一约束冲突回滚到 savepoint 后，
+        # 外层事务仍可继续查询，不会因 PG 事务中止而失败。
+        with transaction.atomic():
+            return GuestTemplate.objects.create(
+                key=conversion_key,
+                name=source_template.name,
+                archetype=source_template.archetype,
+                rarity=normalized_target_rarity,
+                base_attack=source_template.base_attack,
+                base_intellect=source_template.base_intellect,
+                base_defense=source_template.base_defense,
+                base_agility=source_template.base_agility,
+                base_luck=source_template.base_luck,
+                base_hp=source_template.base_hp,
+                avatar=source_avatar,
+                flavor=source_template.flavor,
+                default_gender=source_template.default_gender,
+                default_morality=source_template.default_morality,
+                recruitable=False,
+                is_hermit=source_template.is_hermit,
+                # Empty means the blue rarity default range is used by the growth engine.
+                growth_range=[],
+                attribute_weights=dict(source_attribute_weights),
+            )
+    except IntegrityError:
+        # 另一个事务先创建了同 key 模板；重新读取并返回，保持幂等。
+        existing = GuestTemplate.objects.select_for_update().filter(key=conversion_key).first()
+        if existing is None:
+            raise
+        if existing.rarity != normalized_target_rarity:
+            raise GuestItemConfigurationError("目标稀有度模板配置错误")
+        return existing
+
+
 def resolve_rarity_upgrade_target(guest: Guest, *, payload: object) -> GuestTemplate:
     if not isinstance(payload, dict):
-        raise GuestItemConfigurationError("升阶道具配置错误")
-
-    target_template_map = payload.get("target_template_map") or {}
-    if not isinstance(target_template_map, dict):
         raise GuestItemConfigurationError("升阶道具配置错误")
 
     source_template_key = str(getattr(getattr(guest, "template", None), "key", "") or "").strip()
     if not source_template_key:
         raise GuestItemConfigurationError("门客模板异常")
 
-    target_template_key = str(target_template_map.get(source_template_key) or "").strip()
-    if not target_template_key:
+    target_template_map = payload.get("target_template_map")
+    if target_template_map is not None:
+        if not isinstance(target_template_map, dict):
+            raise GuestItemConfigurationError("升阶道具配置错误")
+
+        target_template_key = str(target_template_map.get(source_template_key) or "").strip()
+        if not target_template_key:
+            raise GuestItemConfigurationError("该门客无法使用此升阶道具")
+
+        target_template = GuestTemplate.objects.select_for_update().filter(key=target_template_key).first()
+        if not target_template:
+            raise GuestItemConfigurationError("目标稀有度模板不存在")
+        source_rarity = _normalize_guest_rarity(guest.template.rarity, field_name="来源稀有度")
+        target_rarity = _normalize_guest_rarity(target_template.rarity, field_name="目标稀有度")
+        _require_higher_rarity(source_rarity, target_rarity)
+        return target_template
+
+    source_rarity = _normalize_guest_rarity(payload.get("source_rarity"), field_name="来源稀有度")
+    target_rarity = _normalize_guest_rarity(payload.get("target_rarity"), field_name="目标稀有度")
+    if guest.template.rarity != source_rarity:
         raise GuestItemConfigurationError("该门客无法使用此升阶道具")
+    _require_higher_rarity(source_rarity, target_rarity)
 
-    target_template = GuestTemplate.objects.select_for_update().filter(key=target_template_key).first()
-    if not target_template:
-        raise GuestItemConfigurationError("目标稀有度模板不存在")
-
-    return target_template
+    return _get_or_create_rarity_conversion_template(guest, target_rarity=target_rarity)
 
 
 def roll_guest_template_attributes(template: GuestTemplate, *, rng: Random) -> dict[str, int]:
@@ -234,6 +327,7 @@ def apply_guest_template_reset(
     guest.gear_set_bonus = {}
     guest.training_target_level = 0
     guest.training_complete_at = None
+    guest.training_remaining_seconds = None
     guest.status = GuestStatus.IDLE
     guest.initial_force = varied_attrs["force"]
     guest.initial_intellect = varied_attrs["intellect"]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
@@ -9,6 +10,7 @@ from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 from typing import Any, Final
 
+from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 
@@ -16,6 +18,7 @@ from gameplay.models import BotSafetyMetricEvent, BotSafetyMetricWindow
 from gameplay.services import runtime_configs
 
 from . import safety_baselines
+from .random_context import canonical_json_bytes
 from .safety_metrics import (
     ARENA_SHORTAGE_METRIC,
     DISTRIBUTION_BREACH_METRIC,
@@ -38,7 +41,15 @@ from .safety_provider import (
     aggregate_and_finalize_safety_metric_window,
 )
 
-SAFETY_SNAPSHOT_SCHEMA_VERSION: Final = 1
+logger = logging.getLogger(__name__)
+SAFETY_SNAPSHOT_SCHEMA_VERSION_V1: Final = 1
+SAFETY_SNAPSHOT_SCHEMA_VERSION_V2: Final = 2
+SAFETY_SNAPSHOT_SCHEMA_VERSION: Final = 3
+SUPPORTED_SAFETY_SNAPSHOT_SCHEMA_VERSIONS: Final = (
+    SAFETY_SNAPSHOT_SCHEMA_VERSION_V1,
+    SAFETY_SNAPSHOT_SCHEMA_VERSION_V2,
+    SAFETY_SNAPSHOT_SCHEMA_VERSION,
+)
 HEARTBEAT_MAX_GAP: Final = timedelta(seconds=120)
 MAINTENANCE_FAILURE_RATE_THRESHOLD: Final = Decimal("0.01")
 H01_DEGRADED_RATE_THRESHOLD: Final = Decimal("0.001")
@@ -128,14 +139,37 @@ class _ArenaScope:
 
 
 @dataclass(frozen=True, slots=True)
+class _ArenaRatioFacts:
+    ratio: Decimal
+    sample_count: int
+    real_entry_count_min: int | None = None
+    reserve_ready_count_min: int | None = None
+    reserve_training_count_max: int | None = None
+
+    @property
+    def is_cold_start(self) -> bool:
+        return self.real_entry_count_min is not None and self.real_entry_count_min <= int(
+            settings.ARENA_SHORTAGE_COLD_START_MAX_REAL_ENTRIES
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class _ArenaBaselineFacts:
+    ratio: Decimal
+    source: str
+    expires_at: datetime | None = None
+    max_real_entry_count: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class _WindowFacts:
     window: BotSafetyMetricWindow
     metrics: Mapping[str, Decimal]
     incomplete_heartbeat_streams: tuple[str, ...]
     aggregation_errors: tuple[str, ...]
     distribution_breaches: frozenset[_Scope]
-    arena_ratios: Mapping[_ArenaScope, Decimal]
-    arena_baselines: Mapping[_ArenaScope, Decimal]
+    arena_ratios: Mapping[_ArenaScope, _ArenaRatioFacts]
+    arena_baselines: Mapping[_ArenaScope, _ArenaBaselineFacts]
 
 
 def _aware_utc(value: datetime, *, field: str) -> datetime:
@@ -306,7 +340,7 @@ def build_safety_window_snapshot(
     maintenance_started: dict[str, Decimal] = defaultdict(Decimal)
     maintenance_terminal: dict[str, Decimal] = defaultdict(Decimal)
     distribution_breaches: dict[_Scope, Decimal] = defaultdict(Decimal)
-    arena_ratios: dict[_ArenaScope, list[Decimal]] = defaultdict(list)
+    arena_ratios: dict[_ArenaScope, list[tuple[Decimal, dict[str, int]]]] = defaultdict(list)
     aggregation_errors: set[str] = set()
 
     for event in events:
@@ -342,7 +376,25 @@ def build_safety_window_snapshot(
             if arena_scope is None or event.value > 1:
                 aggregation_errors.add("invalid_arena_shortage_ratio")
             else:
-                arena_ratios[arena_scope].append(event.value)
+                context: dict[str, int] = {}
+                invalid_context = False
+                for field in (
+                    "real_entry_count",
+                    "virtual_entry_count",
+                    "reserve_ready_count",
+                    "reserve_training_count",
+                ):
+                    value = dimensions.get(field)
+                    if value is None:
+                        continue
+                    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                        invalid_context = True
+                        break
+                    context[field] = value
+                if invalid_context:
+                    aggregation_errors.add("invalid_arena_population_context")
+                else:
+                    arena_ratios[arena_scope].append((event.value, context))
         elif event.metric_name == MAINTENANCE_ATTEMPT_METRIC:
             result = dimensions.get("result")
             if result == MaintenanceAttemptResult.STARTED:
@@ -416,15 +468,24 @@ def build_safety_window_snapshot(
         }
         for scope, count in sorted(distribution_breaches.items(), key=lambda item: item[0].label())
     ]
+    sorted_arena = sorted(arena_ratios.items(), key=lambda item: item[0].label())
     scoped_arena = [
         {
             "kind": scope.kind,
             "prestige_band": scope.prestige_band,
-            "sample_count": len(values),
-            "current_ratio_max": _snapshot_number(max(values)),
+            "sample_count": len(observations),
+            "current_ratio_max": _snapshot_number(max(ratio for ratio, _context in observations)),
         }
-        for scope, values in sorted(arena_ratios.items(), key=lambda item: item[0].label())
+        for scope, observations in sorted_arena
     ]
+    for item, (_scope, observations) in zip(scoped_arena, sorted_arena):
+        context_values = [context for _ratio, context in observations]
+        if context_values and all("real_entry_count" in context for context in context_values):
+            item["real_entry_count_min"] = min(context["real_entry_count"] for context in context_values)
+        if context_values and all("reserve_ready_count" in context for context in context_values):
+            item["reserve_ready_count_min"] = min(context["reserve_ready_count"] for context in context_values)
+        if context_values and all("reserve_training_count" in context for context in context_values):
+            item["reserve_training_count_max"] = max(context["reserve_training_count"] for context in context_values)
     frozen_arena_baselines = [
         {
             "kind": baseline.mode,
@@ -434,6 +495,9 @@ def build_safety_window_snapshot(
             "evidence_id": baseline.evidence_id,
             "evidence_checksum": baseline.evidence_checksum,
             "payload_digest": baseline.payload_digest,
+            "source": baseline.source,
+            "expires_at": (_canonical_timestamp(baseline.expires_at) if baseline.expires_at is not None else None),
+            "max_real_entry_count": baseline.max_real_entry_count,
         }
         for baseline in sorted(
             _arena_baselines,
@@ -462,7 +526,7 @@ def build_safety_window_snapshot(
 def _build_provider_snapshot(
     aggregation: SafetyMetricWindowAggregationInput,
 ) -> Mapping[str, Any]:
-    baselines = safety_baselines.lock_frozen_arena_shortage_baselines()
+    baselines = safety_baselines.lock_frozen_arena_shortage_baselines(now=timezone.now())
     return build_safety_window_snapshot(
         window_kind=aggregation.window_kind,
         window_start_at=aggregation.window_start_at,
@@ -545,10 +609,14 @@ def _parse_scope_list(value: object) -> frozenset[_Scope]:
     return frozenset(scopes)
 
 
-def _parse_arena_ratios(value: object) -> dict[_ArenaScope, Decimal]:
+def _parse_arena_ratios(
+    value: object,
+    *,
+    schema_version: int,
+) -> dict[_ArenaScope, _ArenaRatioFacts]:
     if not isinstance(value, list):
         raise InvalidSafetySnapshotError("scoped_arena_shortage_ratios must be a list")
-    ratios: dict[_ArenaScope, Decimal] = {}
+    ratios: dict[_ArenaScope, _ArenaRatioFacts] = {}
     for item in value:
         if not isinstance(item, Mapping):
             raise InvalidSafetySnapshotError("arena shortage scope must be a mapping")
@@ -558,28 +626,65 @@ def _parse_arena_ratios(value: object) -> dict[_ArenaScope, Decimal]:
         ratio = _snapshot_decimal(item.get("current_ratio_max"), field="arena current_ratio_max")
         if ratio > 1:
             raise InvalidSafetySnapshotError("arena current_ratio_max may not exceed 1")
+        sample_count = item.get("sample_count")
+        if sample_count is None:
+            if schema_version != SAFETY_SNAPSHOT_SCHEMA_VERSION_V1:
+                raise InvalidSafetySnapshotError("arena sample_count must be a positive integer")
+            sample_count = 1
+        elif isinstance(sample_count, bool) or not isinstance(sample_count, int) or sample_count < 1:
+            raise InvalidSafetySnapshotError("arena sample_count must be a positive integer")
+        optional_counts: dict[str, int | None] = {}
+        for field in (
+            "real_entry_count_min",
+            "reserve_ready_count_min",
+            "reserve_training_count_max",
+        ):
+            raw_count = item.get(field)
+            if raw_count is None:
+                optional_counts[field] = None
+                continue
+            if isinstance(raw_count, bool) or not isinstance(raw_count, int) or raw_count < 0:
+                raise InvalidSafetySnapshotError(f"arena {field} must be a non-negative integer")
+            optional_counts[field] = raw_count
         if scope in ratios:
             raise InvalidSafetySnapshotError("arena shortage scope is duplicated")
-        ratios[scope] = ratio
+        ratios[scope] = _ArenaRatioFacts(
+            ratio=ratio,
+            sample_count=sample_count,
+            real_entry_count_min=optional_counts["real_entry_count_min"],
+            reserve_ready_count_min=optional_counts["reserve_ready_count_min"],
+            reserve_training_count_max=optional_counts["reserve_training_count_max"],
+        )
     return ratios
 
 
-def _parse_arena_baselines(value: object) -> dict[_ArenaScope, Decimal]:
+def _parse_arena_baselines(
+    value: object,
+    *,
+    schema_version: int,
+) -> dict[_ArenaScope, _ArenaBaselineFacts]:
     if not isinstance(value, list):
         raise InvalidSafetySnapshotError("arena_shortage_baselines must be a list")
-    baselines: dict[_ArenaScope, Decimal] = {}
+    baselines: dict[_ArenaScope, _ArenaBaselineFacts] = {}
+    provenance_fields = {
+        "kind",
+        "prestige_band",
+        "baseline_ratio",
+        "frozen_at",
+        "evidence_id",
+        "evidence_checksum",
+        "payload_digest",
+    }
+    lifecycle_fields = {
+        "source",
+        "expires_at",
+        "max_real_entry_count",
+    }
+    expected_fields = provenance_fields | (lifecycle_fields if schema_version >= 3 else set())
     for item in value:
         if not isinstance(item, Mapping):
             raise InvalidSafetySnapshotError("arena baseline must be a mapping")
-        if set(item) != {
-            "kind",
-            "prestige_band",
-            "baseline_ratio",
-            "frozen_at",
-            "evidence_id",
-            "evidence_checksum",
-            "payload_digest",
-        }:
+        if set(item) != expected_fields:
             raise InvalidSafetySnapshotError("arena baseline must contain the canonical provenance fields")
         scope = _arena_scope_from_dimensions(item)
         if scope is None:
@@ -587,7 +692,7 @@ def _parse_arena_baselines(value: object) -> dict[_ArenaScope, Decimal]:
         baseline = _snapshot_decimal(item.get("baseline_ratio"), field="arena baseline_ratio")
         if baseline > 1:
             raise InvalidSafetySnapshotError("arena baseline_ratio may not exceed 1")
-        _snapshot_datetime(item.get("frozen_at"), field="arena frozen_at")
+        frozen_at = _snapshot_datetime(item.get("frozen_at"), field="arena frozen_at")
         try:
             request = safety_baselines.normalize_arena_shortage_baseline_request(
                 mode=scope.kind,
@@ -602,7 +707,33 @@ def _parse_arena_baselines(value: object) -> dict[_ArenaScope, Decimal]:
             raise InvalidSafetySnapshotError("arena baseline payload digest differs")
         if scope in baselines:
             raise InvalidSafetySnapshotError("arena baseline scope is duplicated")
-        baselines[scope] = baseline
+        source: str = safety_baselines.BASELINE_SOURCE_PRE_ACTIVATION
+        expires_at: datetime | None = None
+        max_real_entry_count: int | None = None
+        if schema_version >= 3:
+            raw_source = item.get("source")
+            if not isinstance(raw_source, str) or raw_source not in {
+                safety_baselines.BASELINE_SOURCE_PRE_ACTIVATION,
+                safety_baselines.BASELINE_SOURCE_RUNTIME_BOOTSTRAP,
+            }:
+                raise InvalidSafetySnapshotError("arena baseline source is invalid")
+            source = raw_source
+            if source == safety_baselines.BASELINE_SOURCE_RUNTIME_BOOTSTRAP:
+                expires_at = _snapshot_datetime(item.get("expires_at"), field="arena baseline expires_at")
+                if expires_at <= frozen_at:
+                    raise InvalidSafetySnapshotError("arena baseline expires_at must be after frozen_at")
+                raw_max = item.get("max_real_entry_count")
+                if isinstance(raw_max, bool) or not isinstance(raw_max, int) or raw_max < 1:
+                    raise InvalidSafetySnapshotError("arena baseline max_real_entry_count must be positive")
+                max_real_entry_count = raw_max
+            elif item.get("expires_at") is not None or item.get("max_real_entry_count") is not None:
+                raise InvalidSafetySnapshotError("pre-activation baseline must not have lifecycle metadata")
+        baselines[scope] = _ArenaBaselineFacts(
+            ratio=baseline,
+            source=source,
+            expires_at=expires_at,
+            max_real_entry_count=max_real_entry_count,
+        )
     return baselines
 
 
@@ -624,8 +755,14 @@ def _parse_window_facts(window: BotSafetyMetricWindow) -> _WindowFacts:
         raise InvalidSafetySnapshotError("safety window snapshot is not canonical JSON") from exc
     if sha256(encoded_snapshot).hexdigest() != window.snapshot_digest:
         raise InvalidSafetySnapshotError("safety window snapshot digest differs")
-    if snapshot.get("schema_version") != SAFETY_SNAPSHOT_SCHEMA_VERSION:
+    raw_schema_version = snapshot.get("schema_version")
+    if (
+        isinstance(raw_schema_version, bool)
+        or not isinstance(raw_schema_version, int)
+        or raw_schema_version not in SUPPORTED_SAFETY_SNAPSHOT_SCHEMA_VERSIONS
+    ):
         raise InvalidSafetySnapshotError("unsupported safety snapshot schema version")
+    schema_version = raw_schema_version
     if snapshot.get("window_kind") != window.kind:
         raise InvalidSafetySnapshotError("snapshot window_kind differs from window row")
     start_at = _snapshot_datetime(snapshot.get("window_start_at"), field="window_start_at")
@@ -691,8 +828,14 @@ def _parse_window_facts(window: BotSafetyMetricWindow) -> _WindowFacts:
         incomplete_heartbeat_streams=incomplete_streams,
         aggregation_errors=tuple(sorted(set(raw_errors))),
         distribution_breaches=_parse_scope_list(snapshot.get("scoped_distribution_breaches")),
-        arena_ratios=_parse_arena_ratios(snapshot.get("scoped_arena_shortage_ratios")),
-        arena_baselines=_parse_arena_baselines(snapshot.get("arena_shortage_baselines")),
+        arena_ratios=_parse_arena_ratios(
+            snapshot.get("scoped_arena_shortage_ratios"),
+            schema_version=schema_version,
+        ),
+        arena_baselines=_parse_arena_baselines(
+            snapshot.get("arena_shortage_baselines"),
+            schema_version=schema_version,
+        ),
     )
 
 
@@ -727,13 +870,10 @@ def _consecutive_facts(
     return tuple(facts)
 
 
-def evaluate_finalized_safety_window(
+def _parse_window_history(
     window: BotSafetyMetricWindow,
-    *,
-    history: Iterable[BotSafetyMetricWindow] = (),
-) -> SafetyWindowDecision:
-    """Evaluate one immutable snapshot without applying routing state changes."""
-
+    history: Iterable[BotSafetyMetricWindow],
+) -> tuple[_WindowFacts, dict[datetime, _WindowFacts]]:
     current = _parse_window_facts(window)
     history_facts: dict[datetime, _WindowFacts] = {}
     for previous_window in history:
@@ -746,6 +886,206 @@ def evaluate_finalized_safety_window(
         if previous_end in history_facts:
             raise InvalidSafetySnapshotError("history contains a duplicate window end")
         history_facts[previous_end] = previous
+    return current, history_facts
+
+
+_BASELINE_BOOTSTRAP_HEALTH_METRICS: Final = (
+    "hard_constraint_violation_count",
+    "economy_cap_breach_count",
+    "duplicate_or_partial_commit_count",
+    "maintenance_failure_count",
+    "h01_post_commit_attempt_degraded_count",
+    "performance_breach_count",
+)
+
+
+def _bootstrap_window_is_healthy(facts: _WindowFacts) -> bool:
+    return (
+        not facts.incomplete_heartbeat_streams
+        and not facts.aggregation_errors
+        and all(facts.metrics[name] == 0 for name in _BASELINE_BOOTSTRAP_HEALTH_METRICS)
+    )
+
+
+def _arena_baseline_facts_from_snapshot(
+    baseline: safety_baselines.ArenaShortageBaselineSnapshot,
+) -> _ArenaBaselineFacts:
+    return _ArenaBaselineFacts(
+        ratio=baseline.baseline_ratio,
+        source=baseline.source,
+        expires_at=baseline.expires_at,
+        max_real_entry_count=baseline.max_real_entry_count,
+    )
+
+
+def _arena_baseline_facts_active(
+    baseline: _ArenaBaselineFacts,
+    *,
+    now: datetime,
+) -> bool:
+    if baseline.source != safety_baselines.BASELINE_SOURCE_RUNTIME_BOOTSTRAP:
+        return True
+    return baseline.expires_at is not None and baseline.expires_at > now
+
+
+def _arena_baseline_facts_invalid_reason(
+    baseline: _ArenaBaselineFacts,
+    *,
+    arena_facts: _ArenaRatioFacts,
+    scope: _ArenaScope,
+    now: datetime,
+) -> str | None:
+    if baseline.source != safety_baselines.BASELINE_SOURCE_RUNTIME_BOOTSTRAP:
+        return None
+    if baseline.expires_at is None:
+        return f"arena_shortage_baseline_missing:{scope.label()}"
+    if baseline.expires_at <= now:
+        return f"arena_shortage_baseline_expired:{scope.label()}"
+    if baseline.max_real_entry_count is None:
+        return f"arena_shortage_baseline_missing:{scope.label()}"
+    if arena_facts.real_entry_count_min is None or arena_facts.real_entry_count_min > baseline.max_real_entry_count:
+        return f"arena_shortage_baseline_population_exceeded:{scope.label()}"
+    return None
+
+
+def _arena_baseline_bootstrap_ratio_cap(
+    arena_observations: Sequence[_ArenaRatioFacts],
+) -> Decimal:
+    configured_cap = Decimal(str(settings.ARENA_SHORTAGE_BASELINE_BOOTSTRAP_MAX_RATIO))
+    if not arena_observations:
+        return configured_cap
+    early_game_limit = int(settings.ARENA_SHORTAGE_BASELINE_BOOTSTRAP_EARLY_GAME_MAX_REAL_ENTRIES)
+    if any(
+        facts.real_entry_count_min is None
+        or facts.real_entry_count_min < 1
+        or facts.real_entry_count_min > early_game_limit
+        for facts in arena_observations
+    ):
+        return configured_cap
+    early_game_cap = Decimal(str(settings.ARENA_SHORTAGE_BASELINE_BOOTSTRAP_EARLY_GAME_MAX_RATIO))
+    return max(configured_cap, early_game_cap)
+
+
+def _bootstrap_missing_arena_baselines(
+    window: BotSafetyMetricWindow,
+    *,
+    history: Iterable[BotSafetyMetricWindow],
+    now: datetime | None = None,
+) -> dict[_ArenaScope, _ArenaBaselineFacts]:
+    """Freeze only conservative, repeated observations and return temporary overrides."""
+    try:
+        current, history_facts = _parse_window_history(window, history)
+    except InvalidSafetySnapshotError:
+        return {}
+
+    mature_windows = _consecutive_facts(
+        current,
+        history_facts,
+        count=int(settings.ARENA_SHORTAGE_BASELINE_BOOTSTRAP_MIN_MATURE_WINDOWS),
+    )
+    if mature_windows is None or not all(_bootstrap_window_is_healthy(facts) for facts in mature_windows):
+        return {}
+
+    reference_at = _aware_utc(timezone.now() if now is None else now, field="now")
+    existing_scopes = {
+        scope
+        for facts in mature_windows
+        for scope, baseline in facts.arena_baselines.items()
+        if _arena_baseline_facts_active(baseline, now=reference_at)
+    }
+    configured_max_ratio = Decimal(str(settings.ARENA_SHORTAGE_BASELINE_BOOTSTRAP_MAX_RATIO))
+    overrides: dict[_ArenaScope, _ArenaBaselineFacts] = {}
+    for scope in sorted(current.arena_ratios, key=lambda item: item.label()):
+        if scope in existing_scopes:
+            continue
+        observations: list[tuple[_WindowFacts, _ArenaRatioFacts]] = []
+        for facts in mature_windows:
+            arena_facts = facts.arena_ratios.get(scope)
+            if arena_facts is None or arena_facts.real_entry_count_min is None or arena_facts.real_entry_count_min < 1:
+                break
+            if (
+                arena_facts.reserve_ready_count_min is None
+                or arena_facts.reserve_training_count_max is None
+                or arena_facts.reserve_ready_count_min + arena_facts.reserve_training_count_max <= 0
+            ):
+                break
+            observations.append((facts, arena_facts))
+        if len(observations) != len(mature_windows):
+            continue
+
+        ratios = [arena_facts.ratio for _facts, arena_facts in observations]
+        candidate_ratio = max(ratios)
+        effective_max_ratio = _arena_baseline_bootstrap_ratio_cap([arena_facts for _facts, arena_facts in observations])
+        if candidate_ratio > effective_max_ratio or candidate_ratio - min(ratios) > ARENA_SHORTAGE_INCREASE_THRESHOLD:
+            continue
+        max_real_entry_count = max(int(arena_facts.real_entry_count_min or 0) for _facts, arena_facts in observations)
+
+        evidence_payload = {
+            "schema_version": 1,
+            "scope": {"mode": scope.kind, "prestige_band": scope.prestige_band},
+            "observations": [
+                {
+                    "window_id": facts.window.window_id,
+                    "ratio": format(arena_facts.ratio, ".12f"),
+                    "real_entry_count_min": arena_facts.real_entry_count_min,
+                    "reserve_ready_count_min": arena_facts.reserve_ready_count_min,
+                    "reserve_training_count_max": arena_facts.reserve_training_count_max,
+                }
+                for facts, arena_facts in observations
+            ],
+            "configured_max_ratio": format(configured_max_ratio, ".12f"),
+            "effective_max_ratio": format(effective_max_ratio, ".12f"),
+            "early_game_relaxation": effective_max_ratio > configured_max_ratio,
+            "max_real_entry_count": max_real_entry_count,
+            "max_spread": format(ARENA_SHORTAGE_INCREASE_THRESHOLD, ".12f"),
+        }
+        evidence_checksum = sha256(canonical_json_bytes(evidence_payload)).hexdigest()
+        last_window_end = observations[0][0].window.window_end_at.astimezone(UTC)
+        evidence_id = (
+            f"auto-bootstrap/{scope.kind}/{scope.prestige_band}/" f"{last_window_end.strftime('%Y%m%dT%H%M%SZ')}"
+        )
+        try:
+            result = safety_baselines.freeze_arena_shortage_baseline_runtime(
+                mode=scope.kind,
+                prestige_band=scope.prestige_band,
+                baseline_ratio=candidate_ratio,
+                evidence_id=evidence_id,
+                evidence_checksum=evidence_checksum,
+                max_real_entry_count=max_real_entry_count,
+            )
+        except (
+            safety_baselines.ArenaShortageBaselineActivationBlocked,
+            safety_baselines.ArenaShortageBaselineConflict,
+            safety_baselines.ArenaShortageBaselineCorrupt,
+        ):
+            continue
+        if result.created:
+            logger.info(
+                "arena shortage baseline bootstrapped from mature safety windows",
+                extra={
+                    "event": "arena_shortage_baseline_auto_bootstrapped",
+                    "mode": scope.kind,
+                    "prestige_band": scope.prestige_band,
+                    "baseline_ratio": str(result.baseline.baseline_ratio),
+                    "evidence_id": evidence_id,
+                    "window_ids": [facts.window.window_id for facts, _arena_facts in observations],
+                },
+            )
+        overrides[scope] = _arena_baseline_facts_from_snapshot(result.baseline)
+    return overrides
+
+
+def evaluate_finalized_safety_window(
+    window: BotSafetyMetricWindow,
+    *,
+    history: Iterable[BotSafetyMetricWindow] = (),
+    baseline_overrides: Mapping[_ArenaScope, _ArenaBaselineFacts] | None = None,
+    now: datetime | None = None,
+) -> SafetyWindowDecision:
+    """Evaluate one immutable snapshot without applying routing state changes."""
+
+    current, history_facts = _parse_window_history(window, history)
+    reference_at = timezone.now() if now is None else _aware_utc(now, field="now")
 
     reasons: list[str] = []
     reasons.extend(f"aggregation_error:{reason}" for reason in current.aggregation_errors)
@@ -815,17 +1155,41 @@ def evaluate_finalized_safety_window(
                 for scope in sorted(repeated_scopes, key=lambda item: item.label())
             )
 
-    baseline_values: dict[_ArenaScope, set[Decimal]] = defaultdict(set)
+    baseline_values: dict[_ArenaScope, set[_ArenaBaselineFacts]] = defaultdict(set)
     for facts in [current, *history_facts.values()]:
         for scope, baseline in facts.arena_baselines.items():
             baseline_values[scope].add(baseline)
-    for scope, current_ratio in sorted(current.arena_ratios.items(), key=lambda item: item[0].label()):
-        baselines = baseline_values.get(scope, set())
-        if not baselines:
+    for scope, arena_facts in sorted(current.arena_ratios.items(), key=lambda item: item[0].label()):
+        current_ratio = arena_facts.ratio
+        candidates = set(baseline_values.get(scope, ()))
+        if baseline_overrides is not None and scope in baseline_overrides:
+            candidates = {baseline_overrides[scope]}
+        invalid_reasons: list[str] = []
+        active_baselines: set[_ArenaBaselineFacts] = set()
+        for baseline in candidates:
+            invalid_reason = _arena_baseline_facts_invalid_reason(
+                baseline,
+                arena_facts=arena_facts,
+                scope=scope,
+                now=reference_at,
+            )
+            if invalid_reason is not None:
+                invalid_reasons.append(invalid_reason)
+                continue
+            active_baselines.add(baseline)
+        if invalid_reasons:
+            reasons.extend(sorted(set(invalid_reasons)))
+            continue
+        if not active_baselines:
+            if arena_facts.is_cold_start:
+                continue
             reasons.append(f"arena_shortage_baseline_missing:{scope.label()}")
-        elif len(baselines) > 1:
+            continue
+        if len(active_baselines) > 1:
             reasons.append(f"arena_shortage_baseline_conflict:{scope.label()}")
-        elif current_ratio - next(iter(baselines)) > ARENA_SHORTAGE_INCREASE_THRESHOLD:
+            continue
+        active_baseline = next(iter(active_baselines))
+        if current_ratio - active_baseline.ratio > ARENA_SHORTAGE_INCREASE_THRESHOLD:
             reasons.append(f"arena_shortage_absolute_increase:{scope.label()}")
 
     unique_reasons = tuple(dict.fromkeys(reasons))
@@ -890,6 +1254,13 @@ def _apply_with_cas_retry(
         routing = runtime_configs.read_virtual_player_routing()
         if not routing.persisted or routing.revision is None:
             raise SafetyMonitorError("persisted virtual-player routing is required by the safety monitor")
+        expected_pause_reason = (
+            routing.pause_reason
+            if not decision.should_pause
+            and routing.maintenance_mode is runtime_configs.MaintenanceMode.V2_PAUSED
+            and runtime_configs.is_recoverable_safety_pause_reason(routing.pause_reason)
+            else ""
+        )
         try:
             result = runtime_configs.apply_virtual_player_safety_decision(
                 expected_revision=routing.revision,
@@ -898,6 +1269,8 @@ def _apply_with_cas_retry(
                 window_end_at=decision.window_end_at,
                 should_pause=decision.should_pause,
                 pause_reason=decision.pause_reason,
+                resume_if_healthy=bool(expected_pause_reason),
+                expected_pause_reason=expected_pause_reason,
             )
         except runtime_configs.RuntimeRoutingConflict:
             conflicts += 1
@@ -969,7 +1342,12 @@ def monitor_finalized_safety_windows(
                 kind=window.kind,
                 finalized_at__isnull=False,
                 window_end_at__lt=window.window_end_at,
-            ).order_by("-window_end_at")[:_MAX_HISTORY_WINDOWS]
+            ).order_by("-window_end_at")[
+                : max(
+                    _MAX_HISTORY_WINDOWS,
+                    int(settings.ARENA_SHORTAGE_BASELINE_BOOTSTRAP_MIN_MATURE_WINDOWS) - 1,
+                )
+            ]
         )
         if gap:
             decision = _fail_closed_decision(
@@ -978,9 +1356,16 @@ def monitor_finalized_safety_windows(
             )
         else:
             try:
+                baseline_overrides = _bootstrap_missing_arena_baselines(
+                    window,
+                    history=history,
+                    now=resolved_now,
+                )
                 decision = evaluate_finalized_safety_window(
                     window,
                     history=history,
+                    baseline_overrides=baseline_overrides,
+                    now=resolved_now,
                 )
             except InvalidSafetySnapshotError as exc:
                 decision = _fail_closed_decision(
@@ -1073,6 +1458,9 @@ __all__ = [
     "HEARTBEAT_MAX_GAP",
     "MAINTENANCE_FAILURE_RATE_THRESHOLD",
     "SAFETY_SNAPSHOT_SCHEMA_VERSION",
+    "SAFETY_SNAPSHOT_SCHEMA_VERSION_V1",
+    "SAFETY_SNAPSHOT_SCHEMA_VERSION_V2",
+    "SUPPORTED_SAFETY_SNAPSHOT_SCHEMA_VERSIONS",
     "InvalidSafetySnapshotError",
     "SafetyDecisionConflictExhausted",
     "SafetyMonitorCycleResult",

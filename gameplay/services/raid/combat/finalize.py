@@ -5,7 +5,8 @@ from typing import Any, Callable
 from django.db import transaction
 from django.utils import timezone
 
-from guests.models import Guest, GuestStatus
+from guests.models import GuestStatus
+from guests.services.status import persist_guest_status_transitions
 
 
 def finalize_raid(
@@ -31,14 +32,11 @@ def finalize_raid(
             return
 
         guests = list(locked_run.guests.select_for_update())
-        guests_to_update = []
-        for guest in guests:
-            if guest.status == GuestStatus.DEPLOYED:
-                guest.status = GuestStatus.IDLE
-                guests_to_update.append(guest)
-
-        if guests_to_update:
-            Guest.objects.bulk_update(guests_to_update, ["status"])
+        persist_guest_status_transitions(
+            [guest for guest in guests if guest.status == GuestStatus.DEPLOYED],
+            GuestStatus.IDLE,
+            source="raid_finalize",
+        )
 
         return_surviving_troops(locked_run)
 

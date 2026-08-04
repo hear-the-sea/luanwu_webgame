@@ -76,6 +76,7 @@ CELERY_TASK_ROUTES = {
     "gameplay.complete_equipment_forging": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.scan_equipment_forgings": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.complete_work_assignments": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.sync_resource_production": {"queue": CELERY_TIMER_QUEUE},
     "guests.complete_training": {"queue": CELERY_TIMER_QUEUE},
     "guests.scan_training": {"queue": CELERY_TIMER_QUEUE},
     "guests.complete_recruitment": {"queue": CELERY_TIMER_QUEUE},
@@ -91,6 +92,7 @@ CELERY_TASK_ROUTES = {
     "gameplay.reconcile_arena_virtual_reserve": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.scan_arena_virtual_reserves": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.grow_arena_virtual_reserves": {"queue": CELERY_TIMER_QUEUE},
+    "gameplay.retry_arena_shortage_metric": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.process_raid_battle": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.complete_raid": {"queue": CELERY_TIMER_QUEUE},
     "gameplay.scan_raid_runs": {"queue": CELERY_TIMER_QUEUE},
@@ -184,6 +186,10 @@ CELERY_BEAT_SCHEDULE = {
     },
     "complete-work-assignments": {
         "task": "gameplay.complete_work_assignments",
+        "schedule": crontab(minute="*/1"),
+    },
+    "sync-resource-production": {
+        "task": "gameplay.sync_resource_production",
         "schedule": crontab(minute="*/1"),
     },
     "refresh-shop-stock": {

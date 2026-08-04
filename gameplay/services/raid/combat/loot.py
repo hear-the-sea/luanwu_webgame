@@ -5,13 +5,18 @@ from __future__ import annotations
 import random
 from typing import Any, Dict, Sequence, Tuple
 
-from django.db import IntegrityError
-from django.db.models import F, QuerySet
+from django.db import transaction
+from django.db.models import QuerySet
 
 from core.utils import safe_positive_int
 
 from ....models import InventoryItem, ItemTemplate, Manor, ResourceEvent
-from ...inventory.core import GRAIN_ITEM_KEY, sync_warehouse_grain_item_locked
+from ...inventory.core import (
+    GRAIN_ITEM_KEY,
+    add_item_to_inventory_locked,
+    get_warehouse_grain_quantity_locked,
+    set_warehouse_grain_quantity_locked,
+)
 from ...pvp_runtime.loot import (
     WeightedLootCandidate,
     calculate_item_loot_capacity,
@@ -236,8 +241,8 @@ def _apply_loot(
         setattr(manor, resource_key, current_value - deducted)
         actual_resources[resource_key] = deducted
 
-    # 粮食虽然来自物品池，但 Manor.grain 是唯一账本；兼容旧记录中的资源粮食字段。
-    current_grain = max(0, int(manor.grain or 0))
+    # 粮食虽然来自物品池，但仓库粮食行是唯一业务账本；兼容旧记录中的资源粮食字段。
+    current_grain = get_warehouse_grain_quantity_locked(manor)
     legacy_grain_deducted = min(current_grain, legacy_grain_requested)
     remaining_grain = current_grain - legacy_grain_deducted
     item_grain_deducted = min(remaining_grain, item_grain_requested)
@@ -247,19 +252,15 @@ def _apply_loot(
     if item_grain_deducted > 0:
         actual_items[GRAIN_ITEM_KEY] = item_grain_deducted
     if total_grain_deducted > 0:
-        manor.grain = current_grain - total_grain_deducted
+        set_warehouse_grain_quantity_locked(manor, current_grain - total_grain_deducted)
 
     resource_deductions = dict(actual_resources)
     if item_grain_deducted > 0:
         resource_deductions[GRAIN_ITEM_KEY] = resource_deductions.get(GRAIN_ITEM_KEY, 0) + item_grain_deducted
 
     update_fields = set(actual_resources.keys())
-    if total_grain_deducted > 0:
-        update_fields.add(GRAIN_ITEM_KEY)
     if update_fields:
         manor.save(update_fields=sorted(update_fields))
-    if total_grain_deducted > 0:
-        sync_warehouse_grain_item_locked(manor)
     if resource_deductions:
         log_resource_gain(
             manor,
@@ -346,6 +347,11 @@ def _format_capture_description(capture_payload: Any) -> str:
 
 def _grant_loot_items(manor: Manor, items: Dict[str, int]) -> None:
     """批量发放掠夺的物品"""
+    if not transaction.get_connection().in_atomic_block:
+        with transaction.atomic():
+            _grant_loot_items(manor, items)
+        return
+
     items = normalize_positive_int_mapping(items)
     if not items:
         return
@@ -357,34 +363,8 @@ def _grant_loot_items(manor: Manor, items: Dict[str, int]) -> None:
     if not templates:
         return
 
-    # 逐项 upsert：避免批量写入在并发创建下的 IntegrityError / 丢失更新问题
     for key, qty in items.items():
         template = templates.get(key)
         if not template:
             continue
-        existing = (
-            InventoryItem.objects.select_for_update()
-            .filter(
-                manor=manor,
-                template=template,
-                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-            )
-            .first()
-        )
-        if existing:
-            InventoryItem.objects.filter(pk=existing.pk).update(quantity=F("quantity") + qty)
-        else:
-            try:
-                InventoryItem.objects.create(
-                    manor=manor,
-                    template=template,
-                    storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-                    quantity=qty,
-                )
-            except IntegrityError:
-                # 并发创建时回退到原子性累加
-                InventoryItem.objects.filter(
-                    manor=manor,
-                    template=template,
-                    storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-                ).update(quantity=F("quantity") + qty)
+        add_item_to_inventory_locked(manor, key, qty, template=template)

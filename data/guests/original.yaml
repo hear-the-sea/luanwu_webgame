@@ -36,6 +36,7 @@ heroes:
   - key: myth_moon_jade_rabbit
     name: 玉兔
     archetype: civil
+    avatar: yutu.png
     flavor: （生卒年不详）中国古代月宫神话中的灵兔，常与嫦娥、桂树和广寒宫一同出现。传说它终日在月下持杵捣药，所制或为长生不死之药，或为济世仙丹，各地说法不尽相同。古人仰望月面的斑驳阴影，将其想象成白兔伏在药臼旁，玉兔遂成为月亮最鲜明的化身之一。此后它又融入中秋祭月等民间习俗，在诗词、绘画与器物中反复出现，寄托着人们对团圆、安宁与长生的朴素愿望。
     default_gender: female
     default_morality: 90
@@ -94,6 +95,7 @@ heroes:
   - key: myth_moon_wu_gang
     name: 吴刚
     archetype: military
+    avatar: wugang.png
     flavor: （生卒年不详）中国古代月宫神话人物，因触犯天规，被罚在月中砍伐桂树。那株桂树高大异常，斧痕方现便随即愈合，使他的劳作永无尽头。关于获罪缘由，古籍与后世传说说法不一，既有学仙有过之说，也有怠惰受罚之说。“吴刚伐桂”由此成为中秋月宫叙事的重要组成，也常被用来寄托世人对执念、惩戒与无尽劳作的想象。月色之下，桂影婆娑，而他始终停留在那棵永不倒下的树前。
     default_gender: male
     default_morality: 78

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from battle import deployment as battle_deployment
 from battle.combatants_pkg import serialize_skills
 from battle.services import BATTLE_ORPHANED_DEPLOYED_RECOVERY_COUNTER, recover_orphaned_deployed_guests
 from core.exceptions import GuestNotIdleError
@@ -111,6 +112,44 @@ def test_recover_orphaned_deployed_guests_resets_untracked_guest(game_data, djan
         "Recovered orphaned deployed guests before battle reuse" in record.getMessage() for record in caplog.records
     )
     assert any(BATTLE_ORPHANED_DEPLOYED_RECOVERY_COUNTER in record.getMessage() for record in caplog.records)
+
+
+@pytest.mark.django_db
+def test_recover_orphaned_deployed_guests_locks_before_active_reference_lookup() -> None:
+    calls: list[str] = []
+
+    class _FakeQuerySet:
+        def filter(self, **kwargs):
+            return self
+
+        def select_for_update(self):
+            calls.append("lock")
+            return self
+
+        def order_by(self, _field):
+            calls.append("order")
+            return self
+
+        def __iter__(self):
+            return iter((type("_FakeGuest", (), {"id": 1})(),))
+
+    class _FakeGuestModel:
+        objects = _FakeQuerySet()
+
+    def find_orphaned(_candidate_ids):
+        calls.append("find")
+        return []
+
+    recovered = battle_deployment.recover_orphaned_deployed_guests(
+        guest_model=_FakeGuestModel,
+        deployed_status=GuestStatus.DEPLOYED,
+        idle_status=GuestStatus.IDLE,
+        find_orphaned_deployed_guest_ids_fn=find_orphaned,
+        record_orphaned_guest_recovery_fn=lambda _ids, _count: None,
+    )
+
+    assert recovered == 0
+    assert calls == ["lock", "order", "find"]
 
 
 @pytest.mark.django_db

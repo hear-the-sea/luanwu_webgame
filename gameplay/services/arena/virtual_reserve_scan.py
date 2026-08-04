@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from django.db.models import F
+from datetime import timedelta
+
+from django.db.models import F, Q
 from django.utils import timezone
 
 from gameplay.models import ArenaCoopEntry, ArenaCoopEvent, ArenaEntry, ArenaTournament, ArenaVirtualDemand
@@ -22,6 +24,7 @@ def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]
     }
     if normalized_limit <= 0:
         return result
+    due_cutoff = current_time + timedelta(seconds=1)
 
     candidates: dict[tuple[str, int], float] = {}
 
@@ -31,6 +34,7 @@ def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]
 
     active_demands = list(
         ArenaVirtualDemand.objects.filter(status=ArenaVirtualDemand.Status.ACTIVE)
+        .filter(Q(next_retry_at__isnull=True) | Q(next_retry_at__lte=due_cutoff))
         .select_related("tournament", "coop_event")
         .order_by("next_retry_at", "id")[:normalized_limit]
     )
@@ -56,6 +60,11 @@ def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]
             entries__status=ArenaEntry.Status.REGISTERED,
             entries__source=ArenaEntry.Source.PLAYER,
         )
+        .filter(
+            Q(virtual_demand__isnull=True)
+            | Q(virtual_demand__next_retry_at__isnull=True)
+            | Q(virtual_demand__next_retry_at__lte=due_cutoff)
+        )
         .distinct()
         .order_by(F("virtual_fill_at").asc(nulls_last=True), "created_at", "id")
         .values_list("id", "virtual_fill_at", "created_at")[:normalized_limit]
@@ -68,6 +77,11 @@ def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]
             status=ArenaCoopEvent.Status.RECRUITING,
             entries__status=ArenaCoopEntry.Status.REGISTERED,
             entries__source=ArenaCoopEntry.Source.PLAYER,
+        )
+        .filter(
+            Q(virtual_demand__isnull=True)
+            | Q(virtual_demand__next_retry_at__isnull=True)
+            | Q(virtual_demand__next_retry_at__lte=due_cutoff)
         )
         .distinct()
         .order_by(F("virtual_fill_at").asc(nulls_last=True), "created_at", "id")

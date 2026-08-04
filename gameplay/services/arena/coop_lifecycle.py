@@ -13,6 +13,7 @@ from core.exceptions import ArenaBusyError, ArenaEntryStateError
 from core.utils.cache_lock import acquire_best_effort_lock, release_best_effort_lock
 from gameplay.models import ArenaCoopEntry, ArenaCoopEntryGuest, ArenaCoopEvent, Manor, ResourceEvent
 from guests.models import Guest, GuestStatus
+from guests.services.status import persist_guest_status_transitions
 
 from .snapshots import build_entry_guest_snapshot
 
@@ -246,9 +247,11 @@ def upsert_entry_with_snapshots_locked(
             for index, guest in enumerate(selected_guests)
         ]
     )
-    for guest in selected_guests:
-        guest.status = GuestStatus.ARENA
-    Guest.objects.bulk_update(selected_guests, ["status"])
+    persist_guest_status_transitions(
+        selected_guests,
+        GuestStatus.ARENA,
+        source="arena_coop_register",
+    )
     return entry
 
 
@@ -256,7 +259,16 @@ def release_entry_guest_statuses(entry: ArenaCoopEntry) -> None:
     guest_ids = list(entry.entry_guests.values_list("guest_id", flat=True))
     if not guest_ids:
         return
-    Guest.objects.filter(
-        id__in=guest_ids,
-        status__in=[GuestStatus.ARENA, GuestStatus.DEPLOYED],
-    ).update(status=GuestStatus.IDLE)
+    guests = list(
+        Guest.objects.select_for_update()
+        .filter(
+            id__in=guest_ids,
+            status__in=[GuestStatus.ARENA, GuestStatus.DEPLOYED],
+        )
+        .order_by("id")
+    )
+    persist_guest_status_transitions(
+        guests,
+        GuestStatus.IDLE,
+        source="arena_coop_release",
+    )

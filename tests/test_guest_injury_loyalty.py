@@ -139,6 +139,23 @@ def test_timely_healing_clears_injury_clock_without_loyalty_loss(monkeypatch, dj
 
 
 @pytest.mark.django_db
+def test_restore_full_hp_settles_due_injury_decay_before_status_transition(monkeypatch, django_user_model):
+    guest = _create_guest(django_user_model, username="injury_loyalty_full_hp_restore", loyalty=5)
+    now = timezone.now()
+    guest.status = GuestStatus.INJURED
+    guest.injury_loyalty_processed_at = now - timedelta(hours=3)
+    guest.save(update_fields=["status", "injury_loyalty_processed_at"])
+    monkeypatch.setattr("guests.models.timezone.now", lambda: now)
+
+    guest.restore_full_hp()
+
+    guest.refresh_from_db()
+    assert guest.status == GuestStatus.IDLE
+    assert guest.loyalty == 4
+    assert guest.injury_loyalty_processed_at is None
+
+
+@pytest.mark.django_db
 def test_regular_battle_defeat_starts_injury_loyalty_clock(django_user_model):
     guest = _create_guest(django_user_model, username="injury_loyalty_regular_battle")
 

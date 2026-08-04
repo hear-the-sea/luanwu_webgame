@@ -25,6 +25,7 @@ from gameplay.models import (
     BotSafetyMetricEvent,
 )
 from gameplay.services.arena import virtual_reserve_demand as reserve_demand_service
+from gameplay.services.arena import virtual_reserve_fill as reserve_fill_service
 from gameplay.services.arena import virtual_reserve_pool
 from gameplay.services.arena.virtual_lineups import BotLineupEvaluation
 from gameplay.services.arena.virtual_reserve_fill import fill_due_coop_reserve, fill_due_tournament_reserve
@@ -1308,7 +1309,7 @@ def test_reevaluation_does_not_reactivate_a_no_action_expired_member(monkeypatch
 
 
 @pytest.mark.django_db
-def test_paused_growth_releases_training_member(monkeypatch, training_member, caplog):
+def test_paused_growth_keeps_training_member_for_retry(monkeypatch, training_member, caplog):
     caplog.set_level(logging.INFO, logger="gameplay.services.arena.virtual_reserve_demand")
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
@@ -1317,9 +1318,36 @@ def test_paused_growth_releases_training_member(monkeypatch, training_member, ca
 
     assert grow_due_virtual_reserves(now=timezone.now(), limit=10) == 1
 
-    assert not ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).exists()
+    training_member.refresh_from_db()
+    assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
+    assert training_member.next_acceleration_at is not None
+    assert training_member.growth_claim_token is None
     record = next(record for record in caplog.records if getattr(record, "failure_reason", None) == "growth_paused")
     assert record.growth_rounds == 0
+
+
+@pytest.mark.django_db
+def test_demand_reconcile_preserves_failure_backoff_and_scan_skips_until_due():
+    now = timezone.now()
+    demand = _create_tournament_demand(player_limit=2)
+    reserve_fill_service._record_fill_deferred(
+        demand_id=demand.id,
+        reason="insufficient_ready_members",
+        now=now,
+    )
+    demand.refresh_from_db()
+    retry_at = demand.next_retry_at
+    assert retry_at is not None
+    assert demand.consecutive_failure_count == 1
+
+    reconciled = reconcile_tournament_demand(demand.tournament_id, now=now + timedelta(minutes=1))
+    assert reconciled is not None
+    reconciled.refresh_from_db()
+    assert reconciled.next_retry_at == retry_at
+    assert reconciled.consecutive_failure_count == 1
+
+    result = scan_virtual_reserve_demands(now=now + timedelta(minutes=1), limit=20)
+    assert result["scanned"] == 0
 
 
 @pytest.mark.django_db

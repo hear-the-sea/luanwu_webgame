@@ -34,6 +34,7 @@ def test_bootstrap_game_data_runs_expected_steps(monkeypatch):
         "seed_work_templates",
     ]
     kwargs_by_name = {name: kwargs for name, kwargs in calls}
+    assert kwargs_by_name["load_item_templates"]["repair_grain_ledger"] is True
     assert kwargs_by_name["load_troop_templates"]["skip_images"] is True
     assert kwargs_by_name["load_guest_templates"]["skip_images"] is True
     assert reloaded["count"] == 1

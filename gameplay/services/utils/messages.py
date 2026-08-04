@@ -14,7 +14,7 @@ from typing import Callable, Dict
 
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import F, QuerySet
+from django.db.models import QuerySet
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 
@@ -22,12 +22,13 @@ from core.config import MESSAGE
 from core.exceptions import AttachmentAlreadyClaimedError, MessageNotFoundError, NoAttachmentError
 from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
-from ...models import InventoryItem, ItemTemplate, Manor, Message, ResourceEvent
+from ...models import ItemTemplate, Manor, Message, ResourceEvent
 from ...models.items import (
     _allow_prevalidated_message_deletions,
     message_has_protected_attachments,
     normalize_message_attachment_buckets,
 )
+from ..inventory.core import add_item_to_inventory_locked
 from ..resources import grant_resources_locked
 from .cache import CACHE_TIMEOUT_SHORT, CacheKeys
 
@@ -485,19 +486,11 @@ def claim_message_attachments(message: Message) -> Dict:
             if not item_template:
                 continue
 
-            # 获取或创建库存记录（明确指定存储位置为仓库）
-            # Use select_for_update for get_or_create to prevent race conditions
-            # IMPORTANT: Must explicitly specify manor in get_or_create lookup to avoid NULL manor_id
-            inventory_item, _created = InventoryItem.objects.select_for_update().get_or_create(
-                manor=manor,
+            add_item_to_inventory_locked(
+                manor,
+                item_key,
+                quantity,
                 template=item_template,
-                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-                defaults={"quantity": 0},
-            )
-
-            # Atomic quantity update using F() expression
-            InventoryItem.objects.filter(pk=inventory_item.pk).update(
-                quantity=F("quantity") + quantity, updated_at=timezone.now()
             )
 
             claimed_summary[f"item_{item_key}"] = quantity

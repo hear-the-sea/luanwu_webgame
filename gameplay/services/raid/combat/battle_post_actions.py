@@ -7,7 +7,8 @@ from typing import Any, Callable
 
 from django.utils import timezone
 
-from guests.models import Guest, GuestStatus
+from guests.models import GuestStatus
+from guests.services.status import persist_guest_status_transitions
 
 from ....models import Manor
 
@@ -22,13 +23,11 @@ def fail_raid_run_due_missing_manor(
     now = now or timezone.now()
 
     guests = list(locked_run.guests.select_for_update())
-    guests_to_update = []
-    for guest in guests:
-        if guest.status == GuestStatus.DEPLOYED:
-            guest.status = GuestStatus.IDLE
-            guests_to_update.append(guest)
-    if guests_to_update:
-        Guest.objects.bulk_update(guests_to_update, ["status"])
+    persist_guest_status_transitions(
+        [guest for guest in guests if guest.status == GuestStatus.DEPLOYED],
+        GuestStatus.IDLE,
+        source="raid_battle_release",
+    )
 
     attacker_locked = Manor.objects.select_for_update().filter(pk=locked_run.attacker_id).first()
     if attacker_locked is not None:

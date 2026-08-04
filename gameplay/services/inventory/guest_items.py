@@ -173,6 +173,10 @@ def use_guest_rarity_upgrade_item(manor: Manor, item: InventoryItem, guest_id: i
         include_template=True,
     )
 
+    from guests.services.training import ensure_auto_training
+
+    ensure_auto_training(guest)
+
     consume_inventory_item_locked(locked_item, 1)
 
     extras = build_reset_extra_parts(

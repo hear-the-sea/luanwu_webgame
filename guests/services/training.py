@@ -17,6 +17,7 @@ from django.utils import timezone
 from common.utils.celery import safe_apply_async
 from core.config import GUEST
 from core.exceptions import (
+    GuestItemConfigurationError,
     GuestItemOwnershipError,
     GuestMaxLevelError,
     GuestNotIdleError,
@@ -37,9 +38,12 @@ from ..growth_engine import GrowthAllocator, allocate_level_up_attributes, apply
 from ..models import Guest, GuestStatus, TrainingLog
 from ..utils.training_calculator import get_level_up_cost, get_training_duration
 from ..utils.training_timer import ensure_training_timer, remaining_training_seconds
+from .status import pause_guest_training
 
 logger = logging.getLogger(__name__)
 MAX_GUEST_LEVEL = int(GUEST.MAX_LEVEL)
+EXPERIENCE_FRUIT_KEY = "experience_fruit"
+EXPERIENCE_FRUIT_MIN_BLOCKED_LEVEL = 50
 
 
 class GuestTrainingReductionResult(TypedDict):
@@ -82,7 +86,7 @@ def quote_training(guest: Guest, levels: int = 1) -> TrainingQuote:
         raise GuestNotIdleError(guest)
     if guest.level >= MAX_GUEST_LEVEL:
         raise GuestMaxLevelError(guest, max_level=MAX_GUEST_LEVEL)
-    if guest.training_complete_at:
+    if guest.training_complete_at or guest.training_remaining_seconds is not None:
         raise GuestTrainingInProgressError(guest)
     levels_to_apply = min(normalized_levels, MAX_GUEST_LEVEL - int(guest.level))
     return TrainingQuote(
@@ -219,6 +223,7 @@ def _apply_training_to_locked_guest(
     locked_guest.current_hp = projection.current_hp
     locked_guest.training_target_level = 0
     locked_guest.training_complete_at = None
+    locked_guest.training_remaining_seconds = None
     locked_guest.save(
         update_fields=[
             "level",
@@ -231,6 +236,7 @@ def _apply_training_to_locked_guest(
             "current_hp",
             "training_target_level",
             "training_complete_at",
+            "training_remaining_seconds",
         ]
     )
     return locked_guest
@@ -325,12 +331,13 @@ def ensure_auto_training(guest: Guest) -> bool:
         locked_guest = Guest.objects.select_for_update().select_related("template").get(pk=guest.pk)
         guest.training_target_level = locked_guest.training_target_level
         guest.training_complete_at = locked_guest.training_complete_at
+        guest.training_remaining_seconds = locked_guest.training_remaining_seconds
 
         if locked_guest.level >= MAX_GUEST_LEVEL:
             return False
         if locked_guest.status != GuestStatus.IDLE:
             return False
-        if locked_guest.training_complete_at:
+        if locked_guest.training_complete_at or locked_guest.training_remaining_seconds is not None:
             return False
 
         duration = get_training_duration(locked_guest, levels=1)
@@ -340,6 +347,7 @@ def ensure_auto_training(guest: Guest) -> bool:
 
         guest.training_target_level = locked_guest.training_target_level
         guest.training_complete_at = locked_guest.training_complete_at
+        guest.training_remaining_seconds = locked_guest.training_remaining_seconds
 
         def enqueue_training() -> None:
             _try_enqueue_complete_guest_training(
@@ -446,6 +454,13 @@ def use_experience_item_for_guest(manor: Manor, guest: Guest, item_id: int, redu
         raise GuestOwnershipError(message="门客不存在或不属于您的庄园")
     if locked_guest.status != GuestStatus.IDLE:
         raise GuestNotIdleError(locked_guest)
+    if locked_guest.training_remaining_seconds is not None:
+        raise GuestTrainingInProgressError(
+            locked_guest,
+            f"{locked_guest.display_name} 训练已暂停，请先恢复训练",
+        )
+    if locked_item.template.key == EXPERIENCE_FRUIT_KEY and locked_guest.level >= EXPERIENCE_FRUIT_MIN_BLOCKED_LEVEL:
+        raise GuestItemConfigurationError("50级以上门客不能使用经验果")
 
     result = reduce_training_time_for_guest(locked_guest, normalized_reduce_seconds)
     inventory_core.consume_inventory_item_locked(locked_item, 1)
@@ -632,7 +647,14 @@ def train_guest(guest: Guest, levels: int = 1) -> Guest:
         duration = get_training_duration(locked_guest, quote.levels)
         locked_guest.training_target_level = quote.target_level
         locked_guest.training_complete_at = timezone.now() + timedelta(seconds=duration)
-        locked_guest.save(update_fields=["training_target_level", "training_complete_at"])
+        locked_guest.training_remaining_seconds = None
+        locked_guest.save(
+            update_fields=[
+                "training_target_level",
+                "training_complete_at",
+                "training_remaining_seconds",
+            ]
+        )
         TrainingLog.objects.create(
             manor=locked_manor,
             guest=locked_guest,
@@ -669,9 +691,17 @@ def finalize_guest_training(guest: Guest, now: datetime | None = None) -> bool:
 
     with transaction.atomic():
         locked_guest = Guest.objects.select_for_update().select_related("manor", "template").get(pk=guest.pk)
-        if not locked_guest.training_complete_at or locked_guest.training_complete_at > now:
-            return False
         if locked_guest.status != GuestStatus.IDLE:
+            if locked_guest.training_complete_at:
+                pause_guest_training(locked_guest, now=now)
+                locked_guest.save(
+                    update_fields=[
+                        "training_complete_at",
+                        "training_remaining_seconds",
+                    ]
+                )
+            return False
+        if not locked_guest.training_complete_at or locked_guest.training_complete_at > now:
             return False
 
         target_level = max(locked_guest.level, locked_guest.training_target_level or locked_guest.level)
@@ -679,6 +709,7 @@ def finalize_guest_training(guest: Guest, now: datetime | None = None) -> bool:
 
         apply_training_completion(locked_guest, levels_gained=levels_gained)
         locked_guest.training_complete_at = None
+        locked_guest.training_remaining_seconds = None
         locked_guest.training_target_level = 0
 
         locked_guest.save(
@@ -689,6 +720,7 @@ def finalize_guest_training(guest: Guest, now: datetime | None = None) -> bool:
                 "defense_stat",  # 新增：属性会改变
                 "agility",  # 新增：属性会改变
                 "training_complete_at",
+                "training_remaining_seconds",
                 "training_target_level",
                 "attribute_points",
                 "experience",

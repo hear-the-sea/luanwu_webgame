@@ -110,12 +110,16 @@ def close_virtual_demand_state_locked(
     demand.missing_entry_count = 0
     demand.reserve_target_count = 0
     demand.next_retry_at = None
+    demand.consecutive_failure_count = 0
+    demand.last_failure_reason = ""
     demand.save(
         update_fields=[
             "status",
             "missing_entry_count",
             "reserve_target_count",
             "next_retry_at",
+            "consecutive_failure_count",
+            "last_failure_reason",
             "updated_at",
         ]
     )
@@ -164,6 +168,7 @@ def _upsert_demand_state_locked(
             reserve_target_count=reserve_target_count,
             max_reserve_target_count=reserve_target_count,
             next_retry_at=now,
+            last_progress_at=now,
             last_checked_at=now,
         )
         return DemandReconcileTransition(
@@ -187,24 +192,32 @@ def _upsert_demand_state_locked(
     demand.missing_entry_count = missing_entry_count
     demand.reserve_target_count = reserve_target_count
     demand.max_reserve_target_count = max(demand.max_reserve_target_count, reserve_target_count)
-    demand.next_retry_at = now
     demand.last_checked_at = now
-    demand.last_failure_reason = ""
-    demand.save(
-        update_fields=[
-            "status",
-            "version",
-            "target_guest_count",
-            "target_team_power",
-            "missing_entry_count",
-            "reserve_target_count",
-            "max_reserve_target_count",
-            "next_retry_at",
-            "last_checked_at",
-            "last_failure_reason",
-            "updated_at",
-        ]
-    )
+    update_fields = [
+        "status",
+        "version",
+        "target_guest_count",
+        "target_team_power",
+        "missing_entry_count",
+        "reserve_target_count",
+        "max_reserve_target_count",
+        "last_checked_at",
+        "updated_at",
+    ]
+    if changed:
+        demand.next_retry_at = now
+        demand.consecutive_failure_count = 0
+        demand.last_failure_reason = ""
+        demand.last_progress_at = now
+        update_fields.extend(
+            [
+                "next_retry_at",
+                "consecutive_failure_count",
+                "last_failure_reason",
+                "last_progress_at",
+            ]
+        )
+    demand.save(update_fields=update_fields)
     return DemandReconcileTransition(
         active_demand=demand,
         reevaluate_members=changed,

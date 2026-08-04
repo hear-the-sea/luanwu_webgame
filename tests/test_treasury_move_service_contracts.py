@@ -1,7 +1,7 @@
 import pytest
 from django.db import transaction
 
-from core.exceptions import InsufficientSpaceError
+from core.exceptions import GameError, InsufficientSpaceError
 from gameplay.models import Building, BuildingType, InventoryItem, ItemTemplate, Manor
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.manor.treasury import get_treasury_capacity, move_item_to_treasury, move_item_to_warehouse
@@ -58,6 +58,34 @@ def test_move_item_to_treasury_rejects_non_positive_quantity(django_user_model):
 
     with transaction.atomic(), pytest.raises(AssertionError, match="requires positive quantity"):
         move_item_to_treasury(manor, item.id, 0)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("item_key", "item_name"),
+    [("grain", "粮食"), ("chunqiu_coin", "春秋币")],
+)
+def test_move_item_to_treasury_rejects_protected_resource_items(django_user_model, item_key, item_name):
+    user = django_user_model.objects.create_user(username=f"treasury_block_{item_key}", password="pass123")
+    manor = ensure_manor(user)
+    template, _created = ItemTemplate.objects.get_or_create(key=item_key, defaults={"name": item_name})
+    item = InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        quantity=3,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    with transaction.atomic(), pytest.raises(GameError, match=f"{item_name}不可存入藏宝阁"):
+        move_item_to_treasury(manor, item.id, 1)
+
+    item.refresh_from_db()
+    assert item.quantity == 3
+    assert not InventoryItem.objects.filter(
+        manor=manor,
+        template=template,
+        storage_location=InventoryItem.StorageLocation.TREASURY,
+    ).exists()
 
 
 @pytest.mark.django_db

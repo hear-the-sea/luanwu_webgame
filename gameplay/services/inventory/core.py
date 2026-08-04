@@ -13,11 +13,13 @@ from django.db import IntegrityError, transaction
 from django.db.models import F, Sum
 from django.db.models.functions import Now
 
-from core.exceptions import InsufficientStockError, ItemNotFoundError
+from core.exceptions import GameError, InsufficientStockError, ItemNotFoundError
 from gameplay.models import InventoryItem, ItemTemplate, Manor
 
 # 粮食物品模板 key
 GRAIN_ITEM_KEY = "grain"
+TREASURY_BLOCKED_ITEM_KEYS = frozenset({GRAIN_ITEM_KEY, "chunqiu_coin"})
+_TRANSIENT_GRAIN_PROJECTION_UNSET = object()
 
 
 def _require_atomic_block(name: str) -> None:
@@ -25,11 +27,198 @@ def _require_atomic_block(name: str) -> None:
         raise RuntimeError(f"{name} must be called inside transaction.atomic()")
 
 
+def _resolve_grain_template(
+    grain_template: ItemTemplate | None,
+    *,
+    grain_template_resolved: bool,
+) -> ItemTemplate | None:
+    if grain_template is not None:
+        if not grain_template.pk or grain_template.key != GRAIN_ITEM_KEY:
+            raise AssertionError("grain_template must be the persisted grain template")
+        return grain_template
+    if grain_template_resolved:
+        # 调用方已经完成模板解析且结果为空时，明确表示当前环境没有粮食模板。
+        # 不能再次查库，否则会破坏批量规划路径的查询预算。
+        return None
+    return ItemTemplate.objects.filter(key=GRAIN_ITEM_KEY).only("id", "key").first()
+
+
+def get_warehouse_grain_quantity(manor: Manor) -> int:
+    """读取仓库粮食账本；旧庄园尚未建行时临时回退到兼容字段。"""
+    # 选择器单元测试及部分离线规划会传入轻量对象；这类对象没有可查询的
+    # 外键身份，只能使用已经注入的仓库值或兼容字段。
+    if not isinstance(manor, Manor):
+        return max(
+            0,
+            int(
+                getattr(
+                    manor,
+                    "warehouse_grain_quantity",
+                    getattr(manor, "grain", 0),
+                )
+                or 0
+            ),
+        )
+    projected_quantity = getattr(manor, "warehouse_grain_quantity", _TRANSIENT_GRAIN_PROJECTION_UNSET)
+    if projected_quantity is not _TRANSIENT_GRAIN_PROJECTION_UNSET:
+        if isinstance(projected_quantity, bool) or not isinstance(projected_quantity, int):
+            raise TypeError("warehouse grain projection must be an integer")
+        return max(0, projected_quantity)
+    quantity = (
+        InventoryItem.objects.filter(
+            manor=manor,
+            template__key=GRAIN_ITEM_KEY,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+        .values_list("quantity", flat=True)
+        .first()
+    )
+    if quantity is None:
+        return max(0, int(getattr(manor, "grain", 0) or 0))
+    return max(0, int(quantity or 0))
+
+
+def clear_warehouse_grain_projection(manor: Manor) -> None:
+    """Remove the in-memory read projection before the object is reused."""
+    manor.__dict__.pop("warehouse_grain_quantity", None)
+
+
+def get_warehouse_grain_quantity_locked(
+    manor: Manor,
+    *,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
+) -> int:
+    """在已锁定 Manor 的事务中读取并修复仓库粮食账本。
+
+    调用方必须已在当前事务内持有 Manor 行锁；兼容分支的 get_or_create
+    依赖该行锁串行化同一庄园的并发访问，避免重复创建粮食账本行。
+    """
+    _require_atomic_block("get_warehouse_grain_quantity_locked")
+    template = _resolve_grain_template(
+        grain_template,
+        grain_template_resolved=grain_template_resolved,
+    )
+    grain_item = None
+    if template is not None:
+        grain_item = (
+            InventoryItem.objects.select_for_update()
+            .filter(
+                manor=manor,
+                template=template,
+                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            )
+            .first()
+        )
+
+    if grain_item is not None:
+        quantity = max(0, int(grain_item.quantity or 0))
+    else:
+        # 仅用于一次性兼容旧数据；写路径会立即建立仓库账本行。
+        quantity = max(0, int(getattr(manor, "grain", 0) or 0))
+        if template is not None and quantity > 0:
+            grain_item, _created = InventoryItem.objects.get_or_create(
+                manor=manor,
+                template=template,
+                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+                defaults={"quantity": quantity},
+            )
+            grain_item = InventoryItem.objects.select_for_update().get(pk=grain_item.pk)
+            quantity = max(0, int(grain_item.quantity or 0))
+
+    _set_manor_grain_compatibility(manor, quantity)
+    return quantity
+
+
+def _set_manor_grain_compatibility(manor: Manor, quantity: int) -> None:
+    """在同一事务中更新旧字段，禁止它再成为独立业务账本。"""
+    normalized_quantity = max(0, int(quantity))
+    if int(getattr(manor, "grain", 0) or 0) != normalized_quantity:
+        Manor.objects.filter(pk=manor.pk).update(grain=normalized_quantity)
+    manor.grain = normalized_quantity
+    setattr(manor, "warehouse_grain_quantity", normalized_quantity)
+
+
+def set_warehouse_grain_quantity_locked(
+    manor: Manor,
+    quantity: int,
+    *,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
+) -> int:
+    """在 Manor 锁内设置仓库粮食数量，并原子维护旧兼容字段。
+
+    调用方必须已在当前事务内持有 Manor 行锁；本函数不会自行加锁。
+    """
+    _require_atomic_block("set_warehouse_grain_quantity_locked")
+    normalized_quantity = max(0, int(quantity))
+    template = _resolve_grain_template(
+        grain_template,
+        grain_template_resolved=grain_template_resolved,
+    )
+    if template is None:
+        _set_manor_grain_compatibility(manor, normalized_quantity)
+        return normalized_quantity
+
+    if normalized_quantity <= 0:
+        grain_item = (
+            InventoryItem.objects.select_for_update()
+            .filter(
+                manor=manor,
+                template=template,
+                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            )
+            .first()
+        )
+        if grain_item is not None:
+            grain_item.delete()
+    else:
+        grain_item, _created = InventoryItem.objects.select_for_update().get_or_create(
+            manor=manor,
+            template=template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            defaults={"quantity": normalized_quantity},
+        )
+        if int(grain_item.quantity or 0) != normalized_quantity:
+            InventoryItem.objects.filter(pk=grain_item.pk).update(quantity=normalized_quantity, updated_at=Now())
+            grain_item.quantity = normalized_quantity
+
+    _set_manor_grain_compatibility(manor, normalized_quantity)
+    return normalized_quantity
+
+
+def adjust_warehouse_grain_quantity_locked(
+    manor: Manor,
+    delta: int,
+    *,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
+) -> int:
+    """在同一锁内增减仓库粮食，禁止出现负数。"""
+    _require_atomic_block("adjust_warehouse_grain_quantity_locked")
+    current_quantity = get_warehouse_grain_quantity_locked(
+        manor,
+        grain_template=grain_template,
+        grain_template_resolved=grain_template_resolved,
+    )
+    target_quantity = current_quantity + int(delta)
+    if target_quantity < 0:
+        raise InsufficientStockError("粮食", abs(int(delta)), current_quantity)
+    return set_warehouse_grain_quantity_locked(
+        manor,
+        target_quantity,
+        grain_template=grain_template,
+        grain_template_resolved=grain_template_resolved,
+    )
+
+
 def add_item_to_inventory_locked(
     manor: Manor,
     item_key: str,
     quantity: int = 1,
     storage_location: str = InventoryItem.StorageLocation.WAREHOUSE,
+    *,
+    template: ItemTemplate | None = None,
 ) -> InventoryItem:
     """
     向庄园背包添加物品（假设调用方已在 transaction.atomic 中完成所需的并发控制）。
@@ -37,34 +226,46 @@ def add_item_to_inventory_locked(
     该函数不会创建新的事务块；适用于上层服务函数已处于事务中并希望避免嵌套事务的冗余开销。
     """
     _require_atomic_block("add_item_to_inventory_locked")
-    template = ItemTemplate.objects.filter(key=item_key).first()
+    if template is None:
+        template = ItemTemplate.objects.filter(key=item_key).first()
+    elif not template.pk or template.key != item_key:
+        raise AssertionError("template must match item_key")
     if not template:
         raise ItemNotFoundError("物品不存在", item_key=item_key)
+
+    if storage_location == InventoryItem.StorageLocation.TREASURY and item_key in TREASURY_BLOCKED_ITEM_KEYS:
+        raise GameError(f"{template.name}不可存入藏宝阁")
 
     if quantity <= 0:
         raise AssertionError("add_item_to_inventory_locked requires positive quantity")
 
-    # Atomic increment to avoid lost updates under concurrent requests.
-    updated = InventoryItem.objects.filter(
-        manor=manor,
-        template=template,
-        storage_location=storage_location,
-    ).update(quantity=F("quantity") + int(quantity), updated_at=Now())
-    if updated == 0:
-        try:
-            InventoryItem.objects.create(
-                manor=manor,
-                template=template,
-                storage_location=storage_location,
-                quantity=int(quantity),
-            )
-        except IntegrityError:
-            # Another request created the row concurrently; retry atomic increment.
-            InventoryItem.objects.filter(
-                manor=manor,
-                template=template,
-                storage_location=storage_location,
-            ).update(quantity=F("quantity") + int(quantity), updated_at=Now())
+    if item_key == GRAIN_ITEM_KEY and storage_location == InventoryItem.StorageLocation.WAREHOUSE:
+        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+        adjust_warehouse_grain_quantity_locked(locked_manor, int(quantity), grain_template=template)
+        manor.grain = locked_manor.grain
+        setattr(manor, "warehouse_grain_quantity", locked_manor.grain)
+    else:
+        # Atomic increment to avoid lost updates under concurrent requests.
+        updated = InventoryItem.objects.filter(
+            manor=manor,
+            template=template,
+            storage_location=storage_location,
+        ).update(quantity=F("quantity") + int(quantity), updated_at=Now())
+        if updated == 0:
+            try:
+                InventoryItem.objects.create(
+                    manor=manor,
+                    template=template,
+                    storage_location=storage_location,
+                    quantity=int(quantity),
+                )
+            except IntegrityError:
+                # Another request created the row concurrently; retry atomic increment.
+                InventoryItem.objects.filter(
+                    manor=manor,
+                    template=template,
+                    storage_location=storage_location,
+                ).update(quantity=F("quantity") + int(quantity), updated_at=Now())
 
     item = (
         InventoryItem.objects.select_related("template")
@@ -73,11 +274,6 @@ def add_item_to_inventory_locked(
     )
     if not item:
         raise RuntimeError("failed to create or update inventory item")
-
-    # 粮食存入仓库时，同步更新 Manor.grain
-    if item_key == GRAIN_ITEM_KEY and storage_location == InventoryItem.StorageLocation.WAREHOUSE:
-        Manor.objects.filter(pk=manor.pk).update(grain=F("grain") + quantity)
-        manor.grain = getattr(manor, "grain", 0) + quantity
 
     return item
 
@@ -89,7 +285,11 @@ def consume_inventory_item_locked(
     allow_frozen_gold_bars: bool = False,
 ) -> None:
     """
-    消耗背包物品（假设传入的 item 行已在当前事务中被锁定）。
+    消耗背包物品（调用方必须在当前事务内已按 Manor -> InventoryItem 顺序持锁）。
+
+    传入的 item 行必须已由调用方锁定。粮食仓库分支会额外保留 Manor 行锁，
+    这是既有兼容路径；新代码应优先使用 consume_inventory_item_for_manor_locked()
+    以统一先锁 Manor 再锁 InventoryItem 的顺序。
     """
     _require_atomic_block("consume_inventory_item_locked")
     consume_amount = int(amount or 1)
@@ -113,12 +313,30 @@ def consume_inventory_item_locked(
 
     new_qty = int(locked_item.quantity) - int(consume_amount)
 
-    # 粮食从仓库消耗时，同步更新 Manor.grain
     if (
         locked_item.template.key == GRAIN_ITEM_KEY
         and locked_item.storage_location == InventoryItem.StorageLocation.WAREHOUSE
     ):
-        Manor.objects.filter(pk=locked_item.manor_id).update(grain=F("grain") - int(consume_amount))
+        locked_manor = Manor.objects.select_for_update().get(pk=locked_item.manor_id)
+        current_quantity = get_warehouse_grain_quantity_locked(
+            locked_manor,
+            grain_template=locked_item.template,
+            grain_template_resolved=True,
+        )
+        if current_quantity < consume_amount:
+            raise InsufficientStockError(item_name, consume_amount, current_quantity)
+        set_warehouse_grain_quantity_locked(
+            locked_manor,
+            current_quantity - consume_amount,
+            grain_template=locked_item.template,
+            grain_template_resolved=True,
+        )
+        locked_item.quantity = max(0, current_quantity - consume_amount)
+        loaded_manor = getattr(locked_item, "manor", None)
+        if loaded_manor is not None and int(getattr(loaded_manor, "pk", 0) or 0) == int(locked_manor.pk):
+            loaded_manor.grain = locked_manor.grain
+            setattr(loaded_manor, "warehouse_grain_quantity", locked_manor.grain)
+        return
 
     if new_qty <= 0:
         locked_item.delete()
@@ -142,9 +360,10 @@ def consume_inventory_item_for_manor_locked(
     allow_frozen_gold_bars: bool = False,
 ) -> None:
     """
-    按物品 key 消耗庄园仓库物品（在事务内加锁该库存行，但不创建新的事务块）。
+    按物品 key 消耗庄园仓库物品（在事务内先锁 Manor，再锁库存行，不创建新事务块）。
     """
     _require_atomic_block("consume_inventory_item_for_manor_locked")
+    locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
     consume_amount = int(amount or 1)
     if consume_amount <= 0:
         return
@@ -152,7 +371,7 @@ def consume_inventory_item_for_manor_locked(
         InventoryItem.objects.select_for_update()
         .select_related("template", "manor")
         .filter(
-            manor=manor,
+            manor=locked_manor,
             template__key=str(item_key),
             storage_location=InventoryItem.StorageLocation.WAREHOUSE,
         )
@@ -162,104 +381,14 @@ def consume_inventory_item_for_manor_locked(
         template = ItemTemplate.objects.filter(key=str(item_key)).only("name").first()
         raise InsufficientStockError(template.name if template else str(item_key), consume_amount, 0)
     if str(item_key) == "gold_bar" and not allow_frozen_gold_bars:
-        frozen = _get_frozen_gold_bar_quantity(manor)
+        frozen = _get_frozen_gold_bar_quantity(locked_manor)
         available = max(0, int(locked.quantity or 0) - frozen)
         if available < consume_amount:
             raise InsufficientStockError(locked.template.name, consume_amount, available)
     consume_inventory_item_locked(locked, consume_amount, allow_frozen_gold_bars=allow_frozen_gold_bars)
-
-
-def sync_manor_grain(manor: Manor) -> None:
-    """
-    同步庄园粮食数量，使 Manor.grain 等于仓库中粮食物品的数量。
-
-    藏宝阁中的粮食不计入庄园粮食储量。
-    """
-    grain_item = InventoryItem.objects.filter(
-        manor=manor,
-        template__key=GRAIN_ITEM_KEY,
-        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-    ).first()
-
-    grain_quantity = grain_item.quantity if grain_item else 0
-
-    if manor.grain != grain_quantity:
-        Manor.objects.filter(pk=manor.pk).update(grain=grain_quantity)
-        manor.grain = grain_quantity
-
-
-def sync_warehouse_grain_item_locked(
-    manor: Manor,
-    *,
-    grain_template: ItemTemplate | None = None,
-    grain_template_resolved: bool = False,
-) -> None:
-    """
-    同步仓库中的粮食物品数量，使其与 Manor.grain 一致。
-
-    约束：
-    - 仅同步仓库（不处理藏宝阁）；
-    - 以 Manor.grain 为单一事实来源；
-    - 必须在事务中调用。
-    """
-    _require_atomic_block("sync_warehouse_grain_item_locked")
-
-    if grain_template is None:
-        if grain_template_resolved:
-            return
-        grain_template = ItemTemplate.objects.filter(key=GRAIN_ITEM_KEY).only("id").first()
-    elif not grain_template.pk or grain_template.key != GRAIN_ITEM_KEY:
-        raise AssertionError("grain_template must be the persisted grain template")
-    if not grain_template:
-        return
-
-    target_quantity = max(0, int(getattr(manor, "grain", 0) or 0))
-    storage_location = InventoryItem.StorageLocation.WAREHOUSE
-
-    grain_item = (
-        InventoryItem.objects.select_for_update()
-        .filter(
-            manor=manor,
-            template=grain_template,
-            storage_location=storage_location,
-        )
-        .first()
-    )
-
-    if target_quantity <= 0:
-        if grain_item:
-            grain_item.delete()
-        return
-
-    if grain_item:
-        if int(grain_item.quantity) != target_quantity:
-            InventoryItem.objects.filter(pk=grain_item.pk).update(quantity=target_quantity, updated_at=Now())
-            grain_item.quantity = target_quantity
-        return
-
-    try:
-        InventoryItem.objects.create(
-            manor=manor,
-            template=grain_template,
-            storage_location=storage_location,
-            quantity=target_quantity,
-        )
-    except IntegrityError:
-        InventoryItem.objects.filter(
-            manor=manor,
-            template=grain_template,
-            storage_location=storage_location,
-        ).update(quantity=target_quantity, updated_at=Now())
-
-
-def sync_warehouse_grain_item(manor: Manor) -> None:
-    """
-    同步仓库粮食物品数量（事务包装）。
-    """
-    with transaction.atomic():
-        locked_manor = Manor.objects.select_for_update().only("id", "grain").get(pk=manor.pk)
-        sync_warehouse_grain_item_locked(locked_manor)
-    manor.refresh_from_db(fields=["grain"])
+    if str(item_key) == GRAIN_ITEM_KEY:
+        manor.grain = locked_manor.grain
+        setattr(manor, "warehouse_grain_quantity", locked_manor.grain)
 
 
 def list_inventory_items(manor: Manor):
@@ -271,6 +400,8 @@ def get_item_quantity(manor: Manor, item_key: str) -> int:
     """
     获取庄园仓库中指定物品的数量（只统计仓库，不含藏宝阁）。
     """
+    if item_key == GRAIN_ITEM_KEY:
+        return get_warehouse_grain_quantity(manor)
     item = InventoryItem.objects.filter(
         manor=manor,
         template__key=item_key,
@@ -287,8 +418,9 @@ def add_item_to_inventory(
 ) -> InventoryItem:
     """向庄园背包添加物品。"""
     with transaction.atomic():
+        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
         return add_item_to_inventory_locked(
-            manor,
+            locked_manor,
             item_key=item_key,
             quantity=quantity,
             storage_location=storage_location,
@@ -318,6 +450,7 @@ def consume_inventory_item(item_or_manor, item_key_or_amount=1, amount: int = 1)
         if not item_id:
             raise ItemNotFoundError()
         with transaction.atomic():
+            Manor.objects.select_for_update().get(pk=item_or_manor.manor_id)
             try:
                 locked = InventoryItem.objects.select_for_update().select_related("template", "manor").get(pk=item_id)
             except InventoryItem.DoesNotExist:

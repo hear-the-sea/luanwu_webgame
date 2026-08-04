@@ -49,9 +49,15 @@ VIRTUAL_PLAYER_GATE_D1_CONTRACT_TESTS ?= \
 	tests/test_virtual_player_config.py \
 	tests/test_virtual_player_maintenance_rules.py \
 	tests/test_virtual_player_backfill.py \
-	tests/arena_services/test_virtual_reserve.py
+	tests/arena_services/test_virtual_reserve.py \
+	tests/test_arena_schedule.py \
+	tests/test_arena_tasks.py \
+	tests/test_virtual_player_health.py \
+	tests/test_virtual_player_gate_d1_automation.py \
+	tests/test_virtual_player_gate_e_automation.py
 VIRTUAL_PLAYER_GATE_D1_CORE_REAL_SERVICE_TESTS ?= \
-	tests/test_virtual_player_gate_d1_concurrency_integration.py
+	tests/test_virtual_player_gate_d1_concurrency_integration.py \
+	tests/test_virtual_player_health_mysql_integration.py
 VIRTUAL_PLAYER_GATE_D1_ADJACENT_REAL_SERVICE_TESTS ?= \
 	tests/test_virtual_player_bootstrap_routing_concurrency_integration.py \
 	tests/test_arena_virtual_population_concurrency_integration.py \
@@ -91,6 +97,10 @@ VIRTUAL_PLAYER_GATE_E_CONTRACT_TESTS ?= \
 	tests/test_virtual_player_bootstrap_routing.py \
 	tests/test_virtual_player_evidence_recorder.py \
 	tests/test_virtual_player_population_demand.py \
+	tests/test_arena_schedule.py \
+	tests/test_arena_tasks.py \
+	tests/test_virtual_player_health.py \
+	tests/test_virtual_player_gate_e_automation.py \
 	tests/test_virtual_player_prestige_transitions.py
 VIRTUAL_PLAYER_GATE_E_REAL_SERVICE_TESTS ?= \
 	tests/test_virtual_player_external_reconciliation_concurrency_integration.py \
@@ -98,6 +108,7 @@ VIRTUAL_PLAYER_GATE_E_REAL_SERVICE_TESTS ?= \
 	tests/test_virtual_player_jail_cleanup_concurrency_integration.py \
 	tests/test_virtual_player_maintenance_concurrency_integration.py \
 	tests/test_virtual_player_safety_real_service_integration.py \
+	tests/test_virtual_player_health_mysql_integration.py \
 	tests/test_virtual_player_bootstrap_routing_concurrency_integration.py \
 	tests/test_arena_virtual_population_concurrency_integration.py \
 	tests/test_building_upgrade_primitives_concurrency_integration.py \
@@ -105,6 +116,11 @@ VIRTUAL_PLAYER_GATE_E_REAL_SERVICE_TESTS ?= \
 	tests/test_guest_health_salary_concurrency_integration.py \
 	tests/test_manor_coordinate_concurrency_integration.py \
 	tests/test_technology_upgrade_concurrency_integration.py
+
+GATE_D1_EXPECTED_COMMIT ?= $(shell git rev-parse HEAD)
+GATE_D1_EVIDENCE_OUTPUT ?= test-results/gate-d1/gate-d1-$(GATE_D1_EXPECTED_COMMIT).yaml
+GATE_E_EXPECTED_COMMIT ?= $(shell git rev-parse HEAD)
+VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE ?= 2026-07-30
 
 ifdef DJANGO_DB_PORT
 REAL_SERVICES_MYSQL_PORT ?= $(DJANGO_DB_PORT)
@@ -130,7 +146,7 @@ REDIS_PASSWORD ?=
 REAL_SERVICE_TEST_ENV = DJANGO_TEST_USE_ENV_SERVICES=1 DJANGO_DB_ENGINE=django.db.backends.mysql DJANGO_DB_HOST=$(DJANGO_DB_HOST) DJANGO_DB_PORT=$(DJANGO_DB_PORT) DJANGO_DB_USER=$(REAL_SERVICES_TEST_DB_USER) DJANGO_DB_PASSWORD=$(REAL_SERVICES_TEST_DB_PASSWORD) DJANGO_DB_NAME=$(DJANGO_DB_NAME) REDIS_URL=$(REDIS_URL) REDIS_BROKER_URL=$(REDIS_BROKER_URL) REDIS_RESULT_URL=$(REDIS_RESULT_URL) REDIS_CHANNEL_URL=$(REDIS_CHANNEL_URL) REDIS_CACHE_URL=$(REDIS_CACHE_URL) REDIS_PASSWORD=$(REDIS_PASSWORD)
 REAL_SERVICE_COMPOSE_ENV = REAL_SERVICES_MYSQL_PORT=$(REAL_SERVICES_MYSQL_PORT) REAL_SERVICES_REDIS_PORT=$(REAL_SERVICES_REDIS_PORT) DJANGO_DB_USER=$(DJANGO_DB_USER) DJANGO_DB_PASSWORD=$(DJANGO_DB_PASSWORD) DJANGO_DB_ROOT_PASSWORD=$(DJANGO_DB_ROOT_PASSWORD) DJANGO_DB_NAME=$(DJANGO_DB_NAME) REDIS_PASSWORD=$(REDIS_PASSWORD)
 
-.PHONY: install install-unpinned install-lock install-dev-lock migrate bootstrap-data dev dev-ws worker beat test test-unit test-unit-cov test-critical test-integration test-all format format-check lint lint-js lint-strict static-check check clean lock lock-dev test-real-services-up test-real-services-down test-real-services test-real-services-preflight test-virtual-player-gate-a test-virtual-player-gate-d1 test-virtual-player-gate-e verify-virtual-player-gate-e test-gates cov cov-html
+.PHONY: install install-unpinned install-lock install-dev-lock migrate bootstrap-data dev dev-ws worker beat test test-unit test-unit-cov test-critical test-integration test-all format format-check lint lint-js lint-strict static-check check clean lock lock-dev test-real-services-up test-real-services-down test-real-services test-real-services-preflight test-virtual-player-gate-a test-virtual-player-gate-d1 gate-d1-evidence verify-gate-d1-evidence gate-e-readiness-evidence verify-gate-e-readiness-evidence test-virtual-player-gate-e verify-virtual-player-gate-e test-gates cov cov-html
 
 install:
 	@if [ -f requirements-dev.lock.txt ]; then \
@@ -242,6 +258,29 @@ test-virtual-player-gate-d1:
 	@$(REAL_SERVICE_TEST_ENV) $(PYTHON) scripts/check_env_services_ready.py
 	@$(REAL_SERVICE_TEST_ENV) PYTEST_ADDOPTS= $(PYTHON) -m pytest $(VIRTUAL_PLAYER_GATE_D1_CORE_REAL_SERVICE_TESTS) --reuse-db -q -s
 	@$(REAL_SERVICE_TEST_ENV) PYTEST_ADDOPTS= $(PYTHON) -m pytest $(VIRTUAL_PLAYER_GATE_D1_ADJACENT_REAL_SERVICE_TESTS) --reuse-db -q
+
+gate-d1-evidence:
+	$(PYTHON) scripts/record_virtual_player_evidence.py --gate d1 --output "$(GATE_D1_EVIDENCE_OUTPUT)" --expected-git-commit "$(GATE_D1_EXPECTED_COMMIT)"
+
+verify-gate-d1-evidence:
+	$(PYTHON) scripts/record_virtual_player_evidence.py --gate d1 --verify --output "$(GATE_D1_EVIDENCE_OUTPUT)" --expected-git-commit "$(GATE_D1_EXPECTED_COMMIT)"
+
+gate-e-readiness-evidence:
+	VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE="$(VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE)" $(PYTHON) scripts/record_virtual_player_evidence.py --gate all --artifact-date "$(VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE)" --expected-git-commit "$(GATE_E_EXPECTED_COMMIT)" --replace
+
+verify-gate-e-readiness-evidence:
+	VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE="$(VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE)" $(PYTHON) scripts/record_virtual_player_evidence.py \
+		--gate all --verify --artifact-date "$(VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE)" \
+		--expected-git-commit "$(GATE_E_EXPECTED_COMMIT)"
+	$(PYTHON) -m pytest \
+		tests/test_virtual_player_gate_evidence_manifest.py \
+		tests/test_virtual_player_gate_d1_evidence.py \
+		tests/test_virtual_player_gate_e_readiness_evidence.py \
+		tests/test_virtual_player_gate_activation_evidence.py \
+		tests/test_virtual_player_evidence_recorder.py \
+		tests/test_virtual_player_gate_d1_automation.py \
+		tests/test_virtual_player_gate_e_automation.py \
+		tests/test_pytest_configuration.py -q
 
 test-virtual-player-gate-e:
 	@if [ "$$DJANGO_TEST_USE_ENV_SERVICES" != "1" ]; then \

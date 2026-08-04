@@ -46,18 +46,17 @@ def finalize_raid_retreat(
     add_troops_batch: Callable[[Any, dict[str, int]], None],
     completed_status: Any,
 ) -> None:
-    from guests.models import Guest, GuestStatus
+    from guests.models import GuestStatus
+    from guests.services.status import persist_guest_status_transitions
 
     now = now or timezone.now()
 
     guests = list(run.guests.select_for_update())
-    guests_to_update = []
-    for guest in guests:
-        if guest.status == GuestStatus.DEPLOYED:
-            guest.status = GuestStatus.IDLE
-            guests_to_update.append(guest)
-    if guests_to_update:
-        Guest.objects.bulk_update(guests_to_update, ["status"])
+    persist_guest_status_transitions(
+        [guest for guest in guests if guest.status == GuestStatus.DEPLOYED],
+        GuestStatus.IDLE,
+        source="raid_retreat",
+    )
 
     loadout = normalize_positive_int_mapping(getattr(run, "troop_loadout", {}))
     if loadout:

@@ -13,6 +13,7 @@ from gameplay.models import (
     BotPopulationRecomputeDemand,
     BotProfile,
     BotRuntimeRoutingState,
+    BotVirtualPlayerHealth,
 )
 from gameplay.services.virtual_player_core.contracts import (
     MaintenanceOutcome,
@@ -32,6 +33,7 @@ def test_virtual_player_v2_admin_models_are_explicit_read_only_exports() -> None
         BotExternalStrengthReconciliation: (gameplay_admin.BotExternalStrengthReconciliationAdmin),
         BotRuntimeRoutingState: gameplay_admin.BotRuntimeRoutingStateAdmin,
         BotPopulationRecomputeDemand: (gameplay_admin.BotPopulationRecomputeDemandAdmin),
+        BotVirtualPlayerHealth: gameplay_admin.BotVirtualPlayerHealthAdmin,
     }
     for model, admin_class in expected.items():
         registered = admin.site._registry[model]
@@ -90,6 +92,9 @@ def test_virtual_player_v2_admin_list_columns_are_explicit_and_sortable() -> Non
         "last_hourly_safety_window_end_at",
         "last_daily_safety_window_end_at",
         "last_pause_window_identifier",
+        "safety_clean_window_streak",
+        "safety_clean_window_kind",
+        "paused_from_maintenance_mode",
         "pause_reason",
         "updated_at",
     )

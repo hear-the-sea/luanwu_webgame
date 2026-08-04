@@ -5,6 +5,7 @@ import os
 import threading
 import time
 import uuid
+from types import SimpleNamespace
 
 import pytest
 from django.core.cache import cache
@@ -230,6 +231,11 @@ def test_virtual_player_slow_roll_heartbeat_keeps_competing_worker_out(monkeypat
 
     monkeypatch.setattr(virtual_players, "ROLL_LOCK_KEY", lock_key)
     monkeypatch.setattr(virtual_players, "ROLL_LOCK_TIMEOUT_SECONDS", 2)
+    monkeypatch.setattr(
+        virtual_players,
+        "read_virtual_player_routing",
+        lambda: SimpleNamespace(bootstrap_mode=virtual_players.BootstrapMode.LEGACY_BEFORE_GATE),
+    )
     monkeypatch.setattr(virtual_players, "_roll_virtual_player_population_unlocked", _slow_roll)
 
     roll_thread = threading.Thread(target=_run_roll, daemon=True)

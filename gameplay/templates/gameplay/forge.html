@@ -4,68 +4,69 @@
 {% block title %}铁匠铺{% endblock %}
 
 {% block content %}
-<section class="dashboard">
-    <h1 class="text-xl font-bold text-text-primary mb-4">铁匠铺</h1>
-
-    <section class="tw-panel mb-6">
-        <div class="tw-panel-content">
-            <div class="tw-category-tabs mb-0">
-                <a href="{% url 'gameplay:forge' %}?mode=synthesize&category={{ current_category }}"
-                   class="tw-tab-item {% if current_mode == 'synthesize' %}active{% endif %}">
-                    合成
-                </a>
-                <a href="{% url 'gameplay:forge' %}?mode=decompose&category={{ current_category }}"
-                   class="tw-tab-item {% if current_mode == 'decompose' %}active{% endif %}">
-                    分解
-                </a>
+<section class="dashboard production-page">
+    <header class="production-page-header">
+        <div>
+            <div class="production-page-title-row">
+                <h1>铁匠铺</h1>
+                <span class="production-page-level">锻造技 等级{{ forging_level }}</span>
+            </div>
+            <div class="production-page-meta">
+                <span class="production-meta-item">单次上限 <strong>{{ max_forging_quantity }}</strong></span>
+                {% if speed_bonus_percent > 0 %}
+                <span class="production-meta-item production-meta-item--accent">速度 -{{ speed_bonus_percent }}%</span>
+                {% endif %}
             </div>
         </div>
-    </section>
+    </header>
 
-    <section class="tw-panel mb-6">
-        <div class="tw-panel-content">
-            <div class="tw-category-tabs mb-0">
+    <section class="production-panel production-nav-panel">
+        <div class="production-panel-body">
+            <nav class="production-tabs" aria-label="铁匠铺功能">
+                <a href="{% url 'gameplay:forge' %}?mode=synthesize&category={{ current_category }}"
+                   class="tw-tab-item {% if current_mode == 'synthesize' %}active{% endif %}">合成</a>
+                <a href="{% url 'gameplay:forge' %}?mode=decompose&category={{ current_category }}"
+                   class="tw-tab-item {% if current_mode == 'decompose' %}active{% endif %}">分解</a>
+            </nav>
+            <nav class="production-tabs production-tabs--secondary" aria-label="装备类别">
                 {% for cat_key, cat_name in equipment_categories.items %}
                 <a href="{% url 'gameplay:forge' %}?mode={{ current_mode }}&category={{ cat_key }}"
-                   class="tw-tab-item {% if cat_key == current_category %}active{% endif %}">
-                    {{ cat_name }}
-                </a>
+                   class="tw-tab-item {% if cat_key == current_category %}active{% endif %}">{{ cat_name }}</a>
                 {% endfor %}
-            </div>
+            </nav>
         </div>
     </section>
 
     {% if current_mode == 'synthesize' %}
         {% if active_forgings %}
-        <section class="tw-panel mb-6">
-            <div class="tw-panel-content">
-                <div class="flex flex-col gap-4">
+        <section class="production-panel production-queue-panel">
+            <div class="production-panel-heading">
+                <h2>锻造中</h2>
+            </div>
+            <div class="production-panel-body">
+                <div class="production-queue-list">
                     {% for production in active_forgings %}
-                    <article class="tw-card">
-                        <header class="mb-3">
-                            <h3 class="text-base font-semibold text-text-primary mb-1">{{ production.equipment_name }} ×{{ production.quantity }}</h3>
-                            <p class="text-sm text-text-muted">材料已消耗</p>
-                        </header>
-                        <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <article class="production-queue-card">
+                        <div class="production-queue-main">
+                            <h3>{{ production.equipment_name }} <span>×{{ production.quantity }}</span></h3>
+                        </div>
+                        <div class="production-queue-actions">
                             {% if production.time_remaining > 0 %}
-                                <span class="tw-chip">
-                                    剩余时间：
-                                    <span class="countdown" data-countdown="{{ production.complete_at|date:'c' }}" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_production_runtime_api' %}" data-refresh-method="post">
-                                        {{ production.time_remaining }} 秒
-                                    </span>
-                                </span>
-                                <form method="post"
-                                      action="{% url 'gameplay:cancel_equipment_forging' production.id %}"
-                                      class="js-production-cancel-form m-0"
-                                      data-confirm-title="取消锻造"
-                                      data-confirm-message="取消后不会获得产物，已消耗的材料不会返还。确定取消吗？"
-                                      data-confirm-ok-text="确认取消">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="category" value="{{ current_category }}">
-                                    <button type="submit" class="tw-btn-danger tw-btn-sm">取消锻造</button>
-                                </form>
+                            <span class="production-status production-status--active">
+                                剩余 <span class="countdown" data-countdown="{{ production.complete_at|date:'c' }}" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_production_runtime_api' %}" data-refresh-method="post">{{ production.time_remaining }} 秒</span>
+                            </span>
+                            <form method="post"
+                                  action="{% url 'gameplay:cancel_equipment_forging' production.id %}"
+                                  class="m-0 js-production-cancel-form"
+                                  data-confirm-title="取消锻造"
+                                  data-confirm-message="取消后不会获得产物，已消耗的材料不会返还。确定取消吗？"
+                                  data-confirm-ok-text="确认取消">
+                                {% csrf_token %}
+                                <input type="hidden" name="category" value="{{ current_category }}">
+                                <button type="submit" class="tw-btn-danger tw-btn-sm">取消锻造</button>
+                            </form>
                             {% else %}
-                                <span class="tw-badge-green">已完成！</span>
+                            <span class="tw-badge-green">已完成</span>
                             {% endif %}
                         </div>
                     </article>
@@ -76,198 +77,211 @@
         {% endif %}
 
         {% if blueprint_synthesis_options %}
-        <section class="tw-panel mb-6">
-            <div class="tw-panel-content">
-                <div class="tw-building-grid">
-                    {% for recipe in blueprint_synthesis_options %}
-                    <article class="tw-building-card {% if not recipe.can_synthesize %}opacity-80{% endif %}">
-                        <header>
+        <section class="production-panel">
+            <div class="production-panel-heading">
+                <h2>图纸合成</h2>
+            </div>
+            <div class="production-panel-body">
+                <div class="production-option-grid production-option-grid--recipe">
+                    {% for recipe in blueprint_page_obj %}
+                    <article class="production-option-card {% if not recipe.can_synthesize %}is-disabled{% endif %}">
+                        <header class="production-option-card__header">
                             <div>
                                 <h3>{{ recipe.result_name }}</h3>
-                                {% if current_category == 'all' and recipe.result_category_name %}
-                                <p class="text-xs text-blue-500 mb-1">{{ recipe.result_category_name }}</p>
-                                {% endif %}
-                                <p class="text-xs text-text-muted mb-1">
-                                    图纸：{{ recipe.blueprint_name }}（持有 {{ recipe.blueprint_count }}）
-                                </p>
-                                <p class="text-xs text-text-muted mb-1">
-                                    需要锻造技：{{ recipe.required_forging }} 级
-                                </p>
-                                {% if recipe.description %}
-                                <p class="text-xs text-text-muted">{{ recipe.description }}</p>
-                                {% endif %}
+                                <p class="production-option-detail">图纸 {{ recipe.blueprint_name }} · 持有 {{ recipe.blueprint_count }}</p>
+                                <p class="production-option-detail">锻造技 等级{{ recipe.required_forging }}</p>
                             </div>
+                            {% if current_category == 'all' and recipe.result_category_name %}
+                            <span class="production-option-tag">{{ recipe.result_category_name }}</span>
+                            {% endif %}
                         </header>
 
-                        <div class="p-3 mb-3 rounded bg-bg-secondary border border-border-light">
-                            <p class="text-xs text-text-muted mb-2">合成消耗（单次）</p>
-                            <div class="text-sm flex flex-wrap gap-2">
+                        <div class="production-requirements">
+                            <span class="production-requirements__label">合成消耗</span>
+                            <div class="production-requirements__items">
                                 {% for cost in recipe.costs %}
-                                <span class="{% if cost.current < cost.required %}text-accent-red font-semibold{% endif %}">
-                                    {{ cost.name }}×{{ cost.required }}({{ cost.current }})
-                                </span>
+                                <span class="{% if cost.current < cost.required %}is-insufficient{% endif %}">{{ cost.name }} {{ cost.current }}/{{ cost.required }}</span>
                                 {% endfor %}
                             </div>
                         </div>
 
-                        <form method="post" action="{% url 'gameplay:synthesize_blueprint_equipment' %}" class="tw-card-actions mt-4 pt-4 border-t border-border-light">
+                        <form method="post" action="{% url 'gameplay:synthesize_blueprint_equipment' %}" class="tw-card-actions production-option-card__actions">
                             {% csrf_token %}
                             <input type="hidden" name="blueprint_key" value="{{ recipe.blueprint_key }}">
                             <input type="hidden" name="category" value="{{ current_category }}">
                             <input type="hidden" name="mode" value="{{ current_mode }}">
                             {% if recipe.can_synthesize %}
-                                <div class="flex items-center justify-center gap-2 mb-3">
-                                    <label for="synthesize-quantity-{{ recipe.blueprint_key }}" class="text-sm text-text-secondary">次数：</label>
-                                    <input type="number" name="quantity" id="synthesize-quantity-{{ recipe.blueprint_key }}"
-                                           value="1" min="1" max="{{ recipe.max_synthesis_quantity }}"
-                                           class="tw-quantity-input">
-                                </div>
-                                <button type="submit" class="tw-btn-primary w-full">合成</button>
+                            <div class="production-quantity-row">
+                                <label for="synthesize-quantity-{{ recipe.blueprint_key }}">次数</label>
+                                <input type="number" name="quantity" id="synthesize-quantity-{{ recipe.blueprint_key }}"
+                                       value="1" min="1" max="{{ recipe.max_synthesis_quantity }}" inputmode="numeric" autocomplete="off" class="tw-quantity-input">
+                            </div>
+                            <button type="submit" class="tw-btn-primary w-full">合成</button>
                             {% elif not recipe.is_unlocked %}
-                                <button type="button" class="tw-btn-secondary w-full opacity-60" disabled>锻造技不足</button>
+                            <button type="button" class="tw-btn-secondary w-full" disabled>锻造技不足</button>
                             {% else %}
-                                <button type="button" class="tw-btn-secondary w-full opacity-60" disabled>材料不足</button>
+                            <button type="button" class="tw-btn-secondary w-full" disabled>材料不足</button>
                             {% endif %}
                         </form>
                     </article>
                     {% endfor %}
                 </div>
+
+                {% if blueprint_page_obj.has_other_pages %}
+                <nav class="production-pagination" aria-label="图纸合成分页">
+                    {% if blueprint_page_obj.has_previous %}
+                    <a href="{% url 'gameplay:forge' %}?mode={{ current_mode }}&category={{ current_category }}&page={{ page_obj.number }}&blueprint_page={{ blueprint_page_obj.previous_page_number }}" class="tw-btn-secondary tw-btn-sm">上一页</a>
+                    {% else %}
+                    <span class="tw-btn-secondary tw-btn-sm disabled">上一页</span>
+                    {% endif %}
+                    <span class="production-page-info">{{ blueprint_page_obj.number }} / {{ blueprint_page_obj.paginator.num_pages }}</span>
+                    {% if blueprint_page_obj.has_next %}
+                    <a href="{% url 'gameplay:forge' %}?mode={{ current_mode }}&category={{ current_category }}&page={{ page_obj.number }}&blueprint_page={{ blueprint_page_obj.next_page_number }}" class="tw-btn-secondary tw-btn-sm">下一页</a>
+                    {% else %}
+                    <span class="tw-btn-secondary tw-btn-sm disabled">下一页</span>
+                    {% endif %}
+                </nav>
+                {% endif %}
             </div>
         </section>
         {% endif %}
 
-        <section class="tw-panel">
-            <div class="tw-panel-content">
-                <div class="tw-building-grid">
+        <section class="production-panel">
+            <div class="production-panel-heading">
+                <h2>可锻造装备</h2>
+            </div>
+            <div class="production-panel-body">
+                <div class="production-option-grid">
                     {% for item in equipment_list %}
-                    <article class="tw-building-card {% if not item.is_unlocked %}opacity-60{% elif is_forging %}opacity-50{% endif %}">
-                        <header>
+                    <article class="production-option-card {% if not item.is_unlocked %}is-locked{% elif is_forging %}is-disabled{% endif %}">
+                        <header class="production-option-card__header">
                             <div>
                                 <h3>{{ item.name }}</h3>
-                                {% if current_category == 'all' %}
-                                <p class="text-xs text-blue-500 mb-1">{{ item.category_name }}</p>
-                                {% endif %}
                                 {% if not item.is_unlocked %}
-                                <p class="text-sm text-accent-red font-medium">需要锻造技 {{ item.required_forging }} 级</p>
+                                <p class="production-card-lock">锻造技 等级{{ item.required_forging }}</p>
                                 {% endif %}
                             </div>
+                            {% if current_category == 'all' %}
+                            <span class="production-option-tag">{{ item.category_name }}</span>
+                            {% endif %}
                         </header>
 
-                        <dl class="m-0 p-0">
-                            <div class="p-3 mb-3 rounded bg-yellow-50 border border-yellow-200">
-                                <dt class="text-xs text-yellow-700 font-medium mb-1">所需材料</dt>
-                                <dd class="m-0 text-sm text-yellow-800 flex flex-wrap gap-2">
-                                    {% for mat in item.materials %}
-                                    <span class="{% if mat.current < mat.required %}text-accent-red font-semibold{% endif %}">
-                                        {{ mat.name }}×{{ mat.required }}({{ mat.current }})
-                                    </span>
-                                    {% endfor %}
-                                </dd>
+                        <div class="production-requirements">
+                            <span class="production-requirements__label">所需材料</span>
+                            <div class="production-requirements__items">
+                                {% for mat in item.materials %}
+                                <span class="{% if mat.current < mat.required %}is-insufficient{% endif %}">{{ mat.name }} {{ mat.current }}/{{ mat.required }}</span>
+                                {% endfor %}
                             </div>
+                        </div>
 
-                            <div class="grid grid-cols-2 gap-3 p-3 rounded bg-bg-secondary">
-                                <div class="text-center">
-                                    <dt class="text-xs text-text-muted mb-1">基础时间</dt>
-                                    <dd class="m-0 text-sm font-semibold text-text-primary">{{ item.base_duration }} 秒</dd>
-                                </div>
-                                <div class="text-center">
-                                    <dt class="text-xs text-text-muted mb-1">实际时间</dt>
-                                    <dd class="m-0 text-sm font-semibold text-accent-green" id="duration-{{ item.key }}">{{ item.actual_duration }} 秒</dd>
-                                </div>
+                        <dl class="production-stats production-stats--two">
+                            <div>
+                                <dt>基础时间</dt>
+                                <dd>{{ item.base_duration }} 秒</dd>
+                            </div>
+                            <div>
+                                <dt>实际时间</dt>
+                                <dd id="duration-{{ item.key }}">{{ item.actual_duration }} 秒</dd>
                             </div>
                         </dl>
 
-                        <form method="post" action="{% url 'gameplay:start_equipment_forging' %}" class="tw-card-actions mt-4 pt-4 border-t border-border-light">
+                        <form method="post" action="{% url 'gameplay:start_equipment_forging' %}" class="tw-card-actions production-option-card__actions">
                             {% csrf_token %}
                             <input type="hidden" name="equipment_key" value="{{ item.key }}">
                             <input type="hidden" name="category" value="{{ current_category }}">
                             <input type="hidden" name="mode" value="{{ current_mode }}">
                             {% if not item.is_unlocked %}
-                                <button type="button" class="tw-btn-secondary w-full opacity-60" disabled>未解锁</button>
+                            <button type="button" class="tw-btn-secondary w-full" disabled>未解锁</button>
                             {% elif is_forging %}
-                                <button type="button" class="tw-btn-secondary w-full opacity-60" disabled>锻造中</button>
-                            {% elif item.is_unlocked %}
-                                <div class="flex items-center justify-center gap-2 mb-3">
-                                    <label for="quantity-{{ item.key }}" class="text-sm text-text-secondary">数量：</label>
-                                    <input type="number" name="quantity" id="quantity-{{ item.key }}"
-                                           value="1" min="1" max="{{ item.max_quantity }}"
-                                           class="tw-quantity-input"
-                                           data-unit-duration="{{ item.actual_duration }}"
-                                           data-duration-target="duration-{{ item.key }}">
-                                </div>
-                                {% if item.can_afford %}
-                                    <button type="submit" class="tw-btn-primary w-full">锻造</button>
-                                {% else %}
-                                    <button type="button" class="tw-btn-secondary w-full opacity-60" disabled>材料不足</button>
-                                {% endif %}
+                            <button type="button" class="tw-btn-secondary w-full" disabled>锻造中</button>
+                            {% else %}
+                            <div class="production-quantity-row">
+                                <label for="quantity-{{ item.key }}">数量</label>
+                                <input type="number" name="quantity" id="quantity-{{ item.key }}"
+                                       value="1" min="1" max="{{ item.max_quantity }}" inputmode="numeric" autocomplete="off" class="tw-quantity-input"
+                                       data-unit-duration="{{ item.actual_duration }}"
+                                       data-duration-target="duration-{{ item.key }}">
+                            </div>
+                            {% if item.can_afford %}
+                            <button type="submit" class="tw-btn-primary w-full">锻造</button>
+                            {% else %}
+                            <button type="button" class="tw-btn-secondary w-full" disabled>材料不足</button>
+                            {% endif %}
                             {% endif %}
                         </form>
                     </article>
                     {% empty %}
-                    <p class="tw-empty-hint">该类别暂无可锻造装备</p>
+                    <div class="production-empty">该类别暂无可锻造装备</div>
                     {% endfor %}
                 </div>
 
                 {% if page_obj.has_other_pages %}
-                <nav class="tw-pagination">
+                <nav class="production-pagination" aria-label="装备锻造分页">
                     {% if page_obj.has_previous %}
                     <a href="{% url 'gameplay:forge' %}?mode={{ current_mode }}&category={{ current_category }}&page={{ page_obj.previous_page_number }}" class="tw-btn-secondary tw-btn-sm">上一页</a>
+                    {% else %}
+                    <span class="tw-btn-secondary tw-btn-sm disabled">上一页</span>
                     {% endif %}
-
-                    <span class="tw-page-info">第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页</span>
-
+                    <span class="production-page-info">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
                     {% if page_obj.has_next %}
                     <a href="{% url 'gameplay:forge' %}?mode={{ current_mode }}&category={{ current_category }}&page={{ page_obj.next_page_number }}" class="tw-btn-secondary tw-btn-sm">下一页</a>
+                    {% else %}
+                    <span class="tw-btn-secondary tw-btn-sm disabled">下一页</span>
                     {% endif %}
                 </nav>
                 {% endif %}
             </div>
         </section>
     {% else %}
-        <section class="tw-panel">
-            <div class="tw-panel-content">
-                <div class="tw-building-grid">
+        <section class="production-panel">
+            <div class="production-panel-heading">
+                <h2>可分解装备</h2>
+            </div>
+            <div class="production-panel-body">
+                <div class="production-option-grid">
                     {% for equip in decomposable_equipment %}
-                    <article class="tw-building-card">
-                        <header>
+                    <article class="production-option-card">
+                        <header class="production-option-card__header">
                             <div>
                                 <h3>{{ equip.name }}</h3>
-                                {% if current_category == 'all' and equip.category_name %}
-                                <p class="text-xs text-blue-500 mb-1">{{ equip.category_name }}</p>
-                                {% endif %}
-                                <p class="text-xs text-text-muted mb-1">稀有度：{{ equip.rarity_label }} · 持有：{{ equip.quantity }}</p>
+                                <p class="production-option-detail">{{ equip.rarity_label }} · 持有 {{ equip.quantity }}</p>
                             </div>
+                            {% if current_category == 'all' and equip.category_name %}
+                            <span class="production-option-tag">{{ equip.category_name }}</span>
+                            {% endif %}
                         </header>
 
-                        <form method="post" action="{% url 'gameplay:decompose_equipment' %}" class="tw-card-actions mt-4 pt-4 border-t border-border-light js-decompose-form">
+                        <form method="post" action="{% url 'gameplay:decompose_equipment' %}" class="tw-card-actions production-option-card__actions js-decompose-form">
                             {% csrf_token %}
                             <input type="hidden" name="equipment_key" value="{{ equip.key }}">
                             <input type="hidden" name="category" value="{{ current_category }}">
                             <input type="hidden" name="mode" value="{{ current_mode }}">
-                            <div class="flex items-center justify-center gap-2 mb-3">
-                                <label for="decompose-quantity-{{ equip.key }}" class="text-sm text-text-secondary">数量：</label>
+                            <div class="production-quantity-row">
+                                <label for="decompose-quantity-{{ equip.key }}">数量</label>
                                 <input type="number" name="quantity" id="decompose-quantity-{{ equip.key }}"
-                                       value="1" min="1" max="{{ equip.quantity }}"
-                                       class="tw-quantity-input">
+                                       value="1" min="1" max="{{ equip.quantity }}" inputmode="numeric" autocomplete="off" class="tw-quantity-input">
                             </div>
                             <button type="submit" class="tw-btn-secondary w-full">分解</button>
                         </form>
                     </article>
                     {% empty %}
-                    <p class="tw-empty-hint">该类别暂无可分解装备</p>
+                    <div class="production-empty">该类别暂无可分解装备</div>
                     {% endfor %}
                 </div>
 
                 {% if decompose_page_obj.has_other_pages %}
-                <nav class="tw-pagination">
+                <nav class="production-pagination" aria-label="装备分解分页">
                     {% if decompose_page_obj.has_previous %}
                     <a href="{% url 'gameplay:forge' %}?mode={{ current_mode }}&category={{ current_category }}&page={{ decompose_page_obj.previous_page_number }}" class="tw-btn-secondary tw-btn-sm">上一页</a>
+                    {% else %}
+                    <span class="tw-btn-secondary tw-btn-sm disabled">上一页</span>
                     {% endif %}
-
-                    <span class="tw-page-info">第 {{ decompose_page_obj.number }} / {{ decompose_page_obj.paginator.num_pages }} 页</span>
-
+                    <span class="production-page-info">{{ decompose_page_obj.number }} / {{ decompose_page_obj.paginator.num_pages }}</span>
                     {% if decompose_page_obj.has_next %}
                     <a href="{% url 'gameplay:forge' %}?mode={{ current_mode }}&category={{ current_category }}&page={{ decompose_page_obj.next_page_number }}" class="tw-btn-secondary tw-btn-sm">下一页</a>
+                    {% else %}
+                    <span class="tw-btn-secondary tw-btn-sm disabled">下一页</span>
                     {% endif %}
                 </nav>
                 {% endif %}

@@ -145,8 +145,8 @@
                     <td>{{ entry.display_quantity }}</td>
                     <td class="tw-warehouse-actions">
                         {% if current_tab == 'warehouse' %}
-                        {% if entry.is_projected %}
-                        <span class="tw-muted text-sm">{{ entry.projected_display_hint|default:"实时投影，暂不可操作" }}</span>
+                        {% if entry.treasury_deposit_blocked %}
+                        <span class="tw-muted text-sm">{{ entry.treasury_deposit_hint }}</span>
                         {% else %}
                         <div class="tw-action-row">
                             <div class="tw-action-use">
@@ -242,29 +242,29 @@
     </section>
 </section>
 
-<!-- 门客选择弹窗（通用：重生卡/洗髓丹/洗点卡） -->
-<div id="guest-select-modal" class="tw-modal-overlay" style="display: none;">
+<!-- 门客选择弹窗（通用：重生卡/升阶道具/洗髓丹/洗点卡/灵魂容器） -->
+<div id="guest-select-modal" class="tw-modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modal-title" aria-describedby="modal-hint" tabindex="-1">
     <div class="tw-modal-content">
         <div class="tw-modal-header">
             <h3 id="modal-title">选择门客</h3>
-            <button type="button" class="tw-modal-close js-close-guest-select-modal">&times;</button>
+            <button type="button" class="tw-modal-close js-close-guest-select-modal" aria-label="关闭">&times;</button>
         </div>
         <div class="tw-modal-body">
             <p class="tw-modal-hint" id="modal-hint"></p>
             <!-- 重生卡门客列表 -->
             <div id="guest-list-rebirth" class="tw-guest-list" style="display: none;">
                 {% for guest in guests_for_rebirth %}
-                <div class="tw-guest-option" data-guest-id="{{ guest.id }}">
-                    <div class="tw-guest-info">
+                <button type="button" class="tw-guest-option" data-guest-id="{{ guest.id }}">
+                    <span class="tw-guest-info">
                         <span class="tw-guest-name rarity-text-{{ guest.template.rarity }}">{{ guest.display_name }}</span>
                         <span class="tw-guest-level">等级 {{ guest.level }}</span>
-                    </div>
-                    <div class="tw-guest-stats">
+                    </span>
+                    <span class="tw-guest-stats">
                         <span>武:{{ guest.force }}</span>
                         <span>智:{{ guest.intellect }}</span>
                         <span>防:{{ guest.defense_stat }}</span>
-                    </div>
-                </div>
+                    </span>
+                </button>
                 {% empty %}
                 <p class="tw-no-guests">没有可用的门客（门客需处于空闲或受伤状态）</p>
                 {% endfor %}
@@ -272,24 +272,25 @@
             <!-- 灵魂容器门客列表 -->
             <div id="guest-list-soul-fusion" class="tw-guest-list" style="display: none;">
                 {% for guest in guests_for_soul_fusion %}
-                <div
+                <button
+                    type="button"
                     class="tw-guest-option"
                     data-guest-id="{{ guest.id }}"
                     data-guest-level="{{ guest.level }}"
                     data-guest-rarity="{{ guest.template.rarity }}"
                 >
-                    <div class="tw-guest-info">
+                    <span class="tw-guest-info">
                         <span class="tw-guest-name rarity-text-{{ guest.template.rarity }}">{{ guest.display_name }}</span>
                         <span class="tw-guest-level">等级 {{ guest.level }}</span>
-                    </div>
-                    <div class="tw-guest-stats">
+                    </span>
+                    <span class="tw-guest-stats">
                         <span>{{ guest.template.get_rarity_display }} / {{ guest.template.get_archetype_display }}</span>
                         <span>武:{{ guest.force }}</span>
                         <span>智:{{ guest.intellect }}</span>
                         <span>敏:{{ guest.agility }}</span>
                         <span>运:{{ guest.luck }}</span>
-                    </div>
-                </div>
+                    </span>
+                </button>
                 {% empty %}
                 <p class="tw-no-guests">没有可融合的门客（需30级以上且为空闲的绿色/蓝色/紫色门客）</p>
                 {% endfor %}
@@ -298,15 +299,15 @@
             <!-- 洗髓丹门客列表 -->
             <div id="guest-list-xisuidan" class="tw-guest-list" style="display: none;">
                 {% for guest in guests_for_xisuidan %}
-                <div class="tw-guest-option" data-guest-id="{{ guest.id }}">
-                    <div class="tw-guest-info">
+                <button type="button" class="tw-guest-option" data-guest-id="{{ guest.id }}">
+                    <span class="tw-guest-info">
                         <span class="tw-guest-name rarity-text-{{ guest.template.rarity }}">{{ guest.display_name }}</span>
                         <span class="tw-guest-level">等级 {{ guest.level }}</span>
-                    </div>
-                    <div class="tw-guest-stats">
+                    </span>
+                    <span class="tw-guest-stats">
                         <span>已用 {{ guest.xisuidan_used }}/10 次</span>
-                    </div>
-                </div>
+                    </span>
+                </button>
                 {% empty %}
                 <p class="tw-no-guests">没有可用的门客（需满级100级且使用次数未满10次）</p>
                 {% endfor %}
@@ -314,15 +315,15 @@
             <!-- 洗点卡门客列表 -->
             <div id="guest-list-xidianka" class="tw-guest-list" style="display: none;">
                 {% for guest in guests_for_xidianka %}
-                <div class="tw-guest-option" data-guest-id="{{ guest.id }}">
-                    <div class="tw-guest-info">
+                <button type="button" class="tw-guest-option" data-guest-id="{{ guest.id }}">
+                    <span class="tw-guest-info">
                         <span class="tw-guest-name rarity-text-{{ guest.template.rarity }}">{{ guest.display_name }}</span>
                         <span class="tw-guest-level">等级 {{ guest.level }}</span>
-                    </div>
-                    <div class="tw-guest-stats">
+                    </span>
+                    <span class="tw-guest-stats">
                         <span>已分配 {{ guest.allocated_force|add:guest.allocated_intellect|add:guest.allocated_defense|add:guest.allocated_agility }} 点</span>
-                    </div>
-                </div>
+                    </span>
+                </button>
                 {% empty %}
                 <p class="tw-no-guests">没有可用的门客（需有分配过属性点且处于空闲或受伤状态）</p>
                 {% endfor %}
@@ -330,15 +331,15 @@
             <!-- 升稀有度门客列表 -->
             <div id="guest-list-rarity-upgrade" class="tw-guest-list" style="display: none;">
                 {% for guest in guests_for_rarity_upgrade %}
-                <div class="tw-guest-option" data-guest-id="{{ guest.id }}">
-                    <div class="tw-guest-info">
+                <button type="button" class="tw-guest-option" data-guest-id="{{ guest.id }}">
+                    <span class="tw-guest-info">
                         <span class="tw-guest-name rarity-text-{{ guest.template.rarity }}">{{ guest.display_name }}</span>
                         <span class="tw-guest-level">等级 {{ guest.level }}</span>
-                    </div>
-                    <div class="tw-guest-stats">
+                    </span>
+                    <span class="tw-guest-stats">
                         <span>当前稀有度：{{ guest.template.get_rarity_display }}</span>
-                    </div>
-                </div>
+                    </span>
+                </button>
                 {% empty %}
                 <p class="tw-no-guests">没有可升阶的门客（需为空闲状态且符合当前升阶道具条件）</p>
                 {% endfor %}

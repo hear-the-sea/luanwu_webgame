@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from datetime import datetime
+from datetime import timezone as dt_timezone
 from types import SimpleNamespace
 
 import pytest
 from django.db import DatabaseError
 
 import gameplay.tasks.arena as arena_tasks
+from gameplay.services.arena import virtual_reserve_observability as arena_observability
 
 
 def test_scan_arena_tournaments_returns_only_tournament_counts(monkeypatch):
@@ -195,6 +198,157 @@ def test_scan_arena_virtual_reserves_delegates_to_shared_coordinator(monkeypatch
     monkeypatch.setattr(arena_tasks, "scan_virtual_reserve_demands", lambda *, limit: expected)
 
     assert arena_tasks.scan_arena_virtual_reserves.run(limit=9) == expected
+
+
+def test_scan_arena_virtual_reserves_surfaces_database_failures(monkeypatch):
+    monkeypatch.setattr(
+        arena_tasks,
+        "scan_virtual_reserve_demands",
+        lambda *, limit: (_ for _ in ()).throw(DatabaseError("temporary database failure")),
+    )
+
+    with pytest.raises(RuntimeError, match="arena virtual reserve scan failed"):
+        arena_tasks.scan_arena_virtual_reserves.run(limit=9)
+
+
+def test_retry_arena_shortage_metric_delegates_and_returns_recorded(monkeypatch):
+    calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        arena_tasks,
+        "record_arena_shortage_observation",
+        lambda **kwargs: calls.append(kwargs),
+    )
+
+    result = arena_tasks.retry_arena_shortage_metric.run(
+        7,
+        "tournament",
+        9,
+        10,
+        2,
+        100,
+        "operation-1",
+        "2026-07-28T08:00:00Z",
+        1,
+        3,
+        2,
+        4,
+        1,
+    )
+
+    assert result == {"recorded": 1, "retry_scheduled": 0}
+    assert calls[0]["demand_id"] == 7
+    assert calls[0]["real_entry_count"] == 3
+    assert calls[0]["virtual_entry_count"] == 2
+    assert calls[0]["reserve_ready_count"] == 4
+    assert calls[0]["reserve_training_count"] == 1
+
+
+def test_retry_arena_shortage_metric_schedules_one_more_bounded_attempt(monkeypatch):
+    queued: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        arena_tasks,
+        "record_arena_shortage_observation",
+        lambda **kwargs: (_ for _ in ()).throw(RuntimeError("metric backend unavailable")),
+    )
+    monkeypatch.setattr(
+        arena_tasks,
+        "queue_arena_shortage_metric_retry",
+        lambda **kwargs: queued.append(kwargs) or True,
+    )
+    monkeypatch.setattr(arena_tasks, "record_arena_shortage_metric_failure", lambda **kwargs: None)
+
+    result = arena_tasks.retry_arena_shortage_metric.run(
+        7,
+        "tournament",
+        9,
+        10,
+        2,
+        100,
+        "operation-1",
+        "2026-07-28T08:00:00Z",
+        1,
+        3,
+        2,
+        4,
+        1,
+    )
+
+    assert result == {"recorded": 0, "retry_scheduled": 1}
+    assert queued[0]["retry_attempt"] == 2
+    assert queued[0]["real_entry_count"] == 3
+    assert queued[0]["virtual_entry_count"] == 2
+    assert queued[0]["reserve_ready_count"] == 4
+    assert queued[0]["reserve_training_count"] == 1
+
+
+def test_retry_arena_shortage_metric_fails_closed_after_last_attempt(monkeypatch):
+    failures: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        arena_tasks,
+        "record_arena_shortage_observation",
+        lambda **kwargs: (_ for _ in ()).throw(RuntimeError("metric backend unavailable")),
+    )
+    monkeypatch.setattr(
+        arena_tasks,
+        "record_arena_shortage_metric_failure",
+        lambda **kwargs: failures.append(kwargs),
+    )
+    monkeypatch.setattr(arena_tasks, "queue_arena_shortage_metric_retry", lambda **kwargs: False)
+
+    with pytest.raises(RuntimeError, match="arena shortage metric retry exhausted"):
+        arena_tasks.retry_arena_shortage_metric.run(
+            7,
+            "tournament",
+            9,
+            10,
+            2,
+            100,
+            "operation-1",
+            "2026-07-28T08:00:00Z",
+            2,
+            3,
+            2,
+            4,
+            1,
+        )
+
+    assert failures[0]["operation_id"] == "operation-1"
+    assert failures[0]["observed_at"].isoformat() == "2026-07-28T08:00:00+00:00"
+
+
+def test_queue_arena_shortage_metric_retry_defers_missing_context_capture(monkeypatch):
+    queued: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        arena_observability,
+        "_capture_arena_shortage_observation_context",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("context capture must be deferred")),
+    )
+    monkeypatch.setattr(
+        arena_observability,
+        "current_app",
+        SimpleNamespace(signature=lambda name: name),
+    )
+    monkeypatch.setattr(
+        arena_observability,
+        "safe_apply_async",
+        lambda task, **kwargs: queued.append({"task": task, **kwargs}) or True,
+    )
+
+    assert (
+        arena_observability.queue_arena_shortage_metric_retry(
+            demand_id=7,
+            mode="tournament",
+            event_id=9,
+            capacity=10,
+            missing_count=2,
+            population_prestige=100,
+            operation_id="operation-1",
+            observed_at=datetime(2026, 7, 28, 8, tzinfo=dt_timezone.utc),
+            retry_attempt=1,
+        )
+        is True
+    )
+    assert queued[0]["args"][-4:] == [None, None, None, None]
 
 
 def test_grow_arena_virtual_reserves_runs_growth_then_creation(monkeypatch):
