@@ -74,6 +74,7 @@ jobs:
           DJANGO_DEBUG: "0"
           DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
           DJANGO_SECRET_KEY: "ci-only-not-a-real-secret-key-change-me-1234567890"
+          DJANGO_SECURE_SSL_REDIRECT: "0"
         run: |
           DJANGO_DB_ENGINE=django.db.backends.mysql DJANGO_DB_NAME=ci_deploy_check REDIS_PASSWORD=ci-test-dummy python manage.py check --deploy
           python -m coverage run -m pytest -q -m "not integration"
@@ -160,6 +161,7 @@ jobs:
           DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
           DJANGO_SECRET_KEY: "ci-only-not-a-real-secret-key-change-me-1234567890"
           DJANGO_STRICT_INFRA_CONFIG: "0"
+          DJANGO_SECURE_SSL_REDIRECT: "0"
           DJANGO_TEST_USE_ENV_SERVICES: "1"
           DJANGO_DB_ENGINE: "django.db.backends.mysql"
           DJANGO_DB_NAME: "webgame"
