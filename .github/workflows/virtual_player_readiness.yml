@@ -127,26 +127,6 @@ jobs:
           name: gate-record-log-${{ github.run_id }}
           path: /tmp/gate-record.log
           if-no-files-found: ignore
-          retention-days: 7 \
-            2>&1 | tee /tmp/gate-record.log
-
-      - name: Upload gate recording log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gate-record-log-${{ github.run_id }}
-          path: /tmp/gate-record.log
-          if-no-files-found: ignore
-          retention-days: 7 \
-            2>&1 | tee /tmp/gate-record.log
-
-      - name: Upload gate recording log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gate-record-log-${{ github.run_id }}
-          path: /tmp/gate-record.log
-          if-no-files-found: ignore
           retention-days: 7
 
       - name: Verify Gate E evidence contracts
