@@ -41,10 +41,11 @@ jobs:
         ports:
           - 6379:6379
         options: >-
-          --health-cmd="redis-cli ping"
+          --health-cmd="redis-cli -a ci-test-dummy ping"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
+        command: ["redis-server", "--requirepass", "ci-test-dummy"]
 
     env:
       DJANGO_DEBUG: "0"
@@ -57,6 +58,7 @@ jobs:
       DJANGO_DB_PASSWORD: "root"
       DJANGO_DB_HOST: "127.0.0.1"
       DJANGO_DB_PORT: "3306"
+      REDIS_PASSWORD: "ci-test-dummy"
       REDIS_URL: "redis://127.0.0.1:6379"
       REDIS_BROKER_URL: "redis://127.0.0.1:6379/0"
       REDIS_RESULT_URL: "redis://127.0.0.1:6379/0"
@@ -101,8 +103,8 @@ jobs:
 
       - name: Prepare isolated test database
         run: |
-          REDIS_PASSWORD=ci-test-dummy python manage.py migrate --noinput
-          REDIS_PASSWORD=ci-test-dummy python manage.py check --deploy
+          python manage.py migrate --noinput
+          python manage.py check --deploy
 
       - name: Select evidence artifact date
         run: echo "VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
