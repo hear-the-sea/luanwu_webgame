@@ -101,7 +101,7 @@ jobs:
 
       - name: Prepare isolated test database
         run: |
-          python manage.py migrate --noinput
+          REDIS_PASSWORD=ci-test-dummy python manage.py migrate --noinput
           REDIS_PASSWORD=ci-test-dummy python manage.py check --deploy
 
       - name: Select evidence artifact date
