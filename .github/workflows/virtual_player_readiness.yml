@@ -94,6 +94,11 @@ jobs:
           pip install -r requirements-dev.txt
           pip install "mypy>=1.8" "django-stubs>=5.0" "django-stubs-ext>=5.0" "types-PyYAML"
 
+      - name: Install service probe CLI tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client redis-tools
+
       - name: Wait for MySQL and Redis
         run: |
           for i in {1..30}; do
