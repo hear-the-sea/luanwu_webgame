@@ -67,10 +67,16 @@ def test_non_repeatable_rarities_excludes_gray_and_black():
     assert GuestRarity.BLACK not in recruitment_shared.NON_REPEATABLE_RARITIES
 
 
-def test_recruitment_weights_raise_hermit_and_disable_red_for_testing():
+def test_recruitment_weights_match_production_rhythm_config():
+    # 正式配置节奏目标（按 ~170 抽/周估算）：
+    # 蓝一周一蓝、紫一月一紫、橙三月一橙、绿两天一绿，红色保持关闭
     weight_map = dict(RARITY_WEIGHTS)
-    assert weight_map[HERMIT_RARITY] == 6000
+    assert weight_map[HERMIT_RARITY] == 1000
     assert weight_map[GuestRarity.RED] == 0
+    assert weight_map[GuestRarity.BLUE] == 6000
+    assert weight_map[GuestRarity.PURPLE] == 1500
+    assert weight_map[GuestRarity.ORANGE] == 500
+    assert weight_map[GuestRarity.GREEN] == 20000
 
 
 def test_recruitment_rarity_distribution_keeps_total_weight():

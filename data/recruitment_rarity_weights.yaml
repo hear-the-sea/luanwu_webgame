@@ -4,12 +4,13 @@ total_weight: 1000000
 # 说明：
 # - 概率 = weight / total_weight
 # - black 不需要配置，系统会自动用剩余权重补齐
-# - 当前为测试配置：绿/蓝/紫/橙提升，红色关闭，隐士提升
+# - 正式配置，节奏目标（按 ~170 抽/周估算）：
+#   蓝一周一蓝、紫一月一紫、橙三月一橙、绿两天一绿，红色保持关闭
 weights:
-  orange: 4000
-  hermit: 6000
-  purple: 10000
+  orange: 500
+  hermit: 1000
+  purple: 1500
   red: 0
-  blue: 20000
-  green: 200000
-  gray: 50000
+  blue: 6000
+  green: 20000
+  gray: 90000
