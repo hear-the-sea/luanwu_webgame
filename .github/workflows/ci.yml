@@ -61,6 +61,11 @@ jobs:
           python -m flake8 --jobs=1 accounts battle gameplay guests guilds trade core websocket config tests
 
       - name: Type check (mypy)
+        env:
+          DJANGO_DEBUG: "0"
+          DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
+          DJANGO_SECRET_KEY: "ci-only-not-a-real-secret-key-change-me-1234567890"
+          DJANGO_STRICT_INFRA_CONFIG: "0"
         run: |
           python -m mypy accounts battle common config core gameplay guests guilds tasks trade websocket
 
@@ -154,6 +159,7 @@ jobs:
           DJANGO_DEBUG: "0"
           DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
           DJANGO_SECRET_KEY: "ci-only-not-a-real-secret-key-change-me-1234567890"
+          DJANGO_STRICT_INFRA_CONFIG: "0"
           DJANGO_TEST_USE_ENV_SERVICES: "1"
           DJANGO_DB_ENGINE: "django.db.backends.mysql"
           DJANGO_DB_NAME: "webgame"

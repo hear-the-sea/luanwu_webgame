@@ -55,6 +55,21 @@ def test_integration_ci_uses_database_creation_credentials():
     assert test_step["env"]["DJANGO_DB_PASSWORD"] == mysql_environment["MYSQL_ROOT_PASSWORD"]
     assert mysql_environment["MYSQL_DATABASE"] == "webgame"
     assert test_step["env"]["DJANGO_DB_NAME"] == "webgame"
+    assert test_step["env"]["DJANGO_STRICT_INFRA_CONFIG"] == "0"
+
+
+def test_mypy_ci_loads_non_production_django_settings():
+    workflow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
+    type_check_step = next(
+        step for step in workflow["jobs"]["tests"]["steps"] if step.get("name") == "Type check (mypy)"
+    )
+
+    assert type_check_step["env"] == {
+        "DJANGO_DEBUG": "0",
+        "DJANGO_ALLOWED_HOSTS": "localhost,127.0.0.1",
+        "DJANGO_SECRET_KEY": "ci-only-not-a-real-secret-key-change-me-1234567890",
+        "DJANGO_STRICT_INFRA_CONFIG": "0",
+    }
 
 
 def test_package_script_builds_css_and_rejects_artifact_drift():

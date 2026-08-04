@@ -30,7 +30,7 @@ jobs:
           MYSQL_PASSWORD: webgame
           MYSQL_ROOT_PASSWORD: root
         ports:
-          - 3306:3306
+          - 13306:3306
         options: >-
           --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
           --health-interval=10s
@@ -39,7 +39,7 @@ jobs:
       redis:
         image: redis:7-alpine
         ports:
-          - 6379:6379
+          - 16379:6379
         options: >-
           --health-cmd="redis-cli -a ci-test-dummy ping"
           --health-interval=10s
@@ -57,13 +57,13 @@ jobs:
       DJANGO_DB_USER: "root"
       DJANGO_DB_PASSWORD: "root"
       DJANGO_DB_HOST: "127.0.0.1"
-      DJANGO_DB_PORT: "3306"
+      DJANGO_DB_PORT: "13306"
       REDIS_PASSWORD: "ci-test-dummy"
-      REDIS_URL: "redis://127.0.0.1:6379"
-      REDIS_BROKER_URL: "redis://127.0.0.1:6379/0"
-      REDIS_RESULT_URL: "redis://127.0.0.1:6379/0"
-      REDIS_CHANNEL_URL: "redis://127.0.0.1:6379/1"
-      REDIS_CACHE_URL: "redis://127.0.0.1:6379/2"
+      REDIS_URL: "redis://127.0.0.1:16379"
+      REDIS_BROKER_URL: "redis://127.0.0.1:16379/0"
+      REDIS_RESULT_URL: "redis://127.0.0.1:16379/0"
+      REDIS_CHANNEL_URL: "redis://127.0.0.1:16379/1"
+      REDIS_CACHE_URL: "redis://127.0.0.1:16379/2"
 
     steps:
       - uses: actions/checkout@v4
@@ -102,7 +102,7 @@ jobs:
       - name: Wait for MySQL and Redis
         run: |
           for i in {1..30}; do
-            nc -z 127.0.0.1 3306 && nc -z 127.0.0.1 6379 && break
+            nc -z 127.0.0.1 13306 && nc -z 127.0.0.1 16379 && break
             sleep 2
           done
 
@@ -116,6 +116,7 @@ jobs:
 
       - name: Record and verify Gate E readiness evidence
         run: |
+          set -o pipefail
           VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE="${VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE}" \
             make gate-e-readiness-evidence GATE_E_EXPECTED_COMMIT="${GITHUB_SHA}" \
             2>&1 | tee /tmp/gate-record.log
