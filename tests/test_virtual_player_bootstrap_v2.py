@@ -21,7 +21,11 @@ from gameplay.models import (
     PlayerTroop,
 )
 from gameplay.services.virtual_player_core import bootstrap
-from gameplay.services.virtual_player_core.config import load_virtual_player_v2_config
+from gameplay.services.virtual_player_core.bootstrap_catalog import (
+    clear_bootstrap_catalog_cache,
+    load_bootstrap_catalog,
+)
+from gameplay.services.virtual_player_core.config import load_virtual_player_config, load_virtual_player_v2_config
 from gameplay.services.virtual_player_core.contracts import AcceleratedGrowthOutcome
 from gameplay.services.virtual_player_core.maintenance import (
     accelerate_virtual_player_growth,
@@ -292,6 +296,27 @@ def test_v2_bootstrap_planning_is_read_only_and_bounded(
     assert writes == []
     assert len(captured) <= 20
     assert plan.blueprint.assets.catalog_digest
+
+
+@pytest.mark.django_db
+def test_unlocked_bootstrap_catalog_is_cached_but_locked_reads_bypass_cache(game_data) -> None:
+    clear_bootstrap_catalog_cache()
+    config = load_virtual_player_config()
+    assert config is not None
+
+    with CaptureQueriesContext(connection) as first_read:
+        first = load_bootstrap_catalog(config)
+    with CaptureQueriesContext(connection) as cached_read:
+        cached = load_bootstrap_catalog(config)
+    with transaction.atomic(), CaptureQueriesContext(connection) as locked_read:
+        locked = load_bootstrap_catalog(config, lock=True)
+
+    assert first == cached
+    assert locked == first
+    assert len(first_read) > 0
+    assert len(cached_read) == 0
+    assert len(locked_read) > 0
+    clear_bootstrap_catalog_cache()
 
 
 @pytest.mark.django_db

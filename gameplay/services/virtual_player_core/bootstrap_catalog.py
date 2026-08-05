@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from functools import lru_cache
 from hashlib import sha256
 from typing import Any
 
@@ -217,7 +219,7 @@ def _catalog_payload(
     }
 
 
-def load_bootstrap_catalog(
+def _load_bootstrap_catalog_uncached(
     config: Mapping[str, Any],
     *,
     lock: bool = False,
@@ -501,6 +503,33 @@ def load_bootstrap_catalog(
     )
 
 
+@lru_cache(maxsize=2)
+def _load_bootstrap_catalog_cached(config_payload: bytes) -> BootstrapCatalog:
+    config = json.loads(config_payload.decode("utf-8"))
+    if not isinstance(config, Mapping):
+        raise BootstrapCatalogError("cached bootstrap catalog config must be a mapping")
+    return _load_bootstrap_catalog_uncached(config)
+
+
+def load_bootstrap_catalog(
+    config: Mapping[str, Any],
+    *,
+    lock: bool = False,
+) -> BootstrapCatalog:
+    """Load a catalog, caching only unlocked planning reads.
+
+    Locked materialization reads always bypass the cache and revalidate the
+    current catalog digest before writing assets.
+    """
+    if lock:
+        return _load_bootstrap_catalog_uncached(config, lock=True)
+    return _load_bootstrap_catalog_cached(canonical_json_bytes(config))
+
+
+def clear_bootstrap_catalog_cache() -> None:
+    _load_bootstrap_catalog_cached.cache_clear()
+
+
 __all__ = [
     "BootstrapCatalog",
     "BootstrapCatalogError",
@@ -511,5 +540,6 @@ __all__ = [
     "SkillCatalogEntry",
     "TechnologyCatalogEntry",
     "TroopCatalogEntry",
+    "clear_bootstrap_catalog_cache",
     "load_bootstrap_catalog",
 ]

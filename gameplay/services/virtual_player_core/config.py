@@ -542,6 +542,9 @@ def _load_virtual_player_config_from_disk() -> dict[str, Any]:
 
 def clear_virtual_player_config_cache() -> None:
     _load_virtual_player_config_from_disk.cache_clear()
+    from .bootstrap_catalog import clear_bootstrap_catalog_cache
+
+    clear_bootstrap_catalog_cache()
 
 
 def load_virtual_player_config() -> dict[str, Any]:

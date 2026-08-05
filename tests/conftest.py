@@ -24,6 +24,16 @@ from tests.jail_persuasion.conftest import persuasion_world as persuasion_world 
 # 获取项目根目录
 PROJECT_ROOT = Path(__file__).parent.parent
 
+
+@pytest.fixture(autouse=True)
+def _reset_bootstrap_catalog_cache():
+    from gameplay.services.virtual_player_core.bootstrap_catalog import clear_bootstrap_catalog_cache
+
+    clear_bootstrap_catalog_cache()
+    yield
+    clear_bootstrap_catalog_cache()
+
+
 _REQUIRED_BUILDING_KEYS = (
     BuildingKeys.SILVER_VAULT,
     BuildingKeys.GRANARY,
