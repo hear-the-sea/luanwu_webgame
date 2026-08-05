@@ -4,7 +4,9 @@
 
 from __future__ import annotations
 
-from ..models import GearSlot, GearTemplate, Guest
+from collections.abc import Iterable
+
+from ..models import GearItem, GearSlot, GearTemplate, Guest
 from ..utils.equipment_utils import SET_STAT_FIELD_MAP, compute_set_bonus
 from .equipment_payloads import GEAR_EXTRA_STAT_FIELDS, normalize_active_set_bonus, normalize_extra_stats, require_int
 
@@ -29,12 +31,17 @@ def apply_template_stats_to_guest(guest: Guest, template: GearTemplate, sign: in
             updates.add(field)
 
 
-def apply_set_bonuses(guest: Guest) -> dict[str, int]:
+def apply_set_bonuses(
+    guest: Guest,
+    *,
+    gear_items: Iterable[GearItem] | None = None,
+    persist: bool = True,
+) -> dict[str, int]:
     """
     重新计算套装效果，并将其数值写回门客属性。上一轮套装效果会被先撤销。
     """
     previous = normalize_active_set_bonus(guest.gear_set_bonus)
-    current = compute_set_bonus(guest.gear_items.select_related("template"))
+    current = compute_set_bonus(gear_items if gear_items is not None else guest.gear_items.select_related("template"))
     if previous == current:
         return current
 
@@ -56,6 +63,6 @@ def apply_set_bonuses(guest: Guest) -> dict[str, int]:
 
     guest.gear_set_bonus = current
     updates.add("gear_set_bonus")
-    if updates:
+    if updates and persist:
         guest.save(update_fields=list(updates))
     return current

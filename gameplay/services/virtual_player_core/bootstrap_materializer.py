@@ -28,6 +28,7 @@ from gameplay.services.manor.core import calculate_building_capacity
 from guests.models import GearItem, GearTemplate, Guest, GuestSkill, GuestTemplate, Skill
 from guests.services.equipment_stats import apply_set_bonuses, apply_template_stats_to_guest, slot_capacity
 from guests.services.recruitment_guests import create_guest_from_template
+from guests.utils.equipment_utils import SET_STAT_FIELD_MAP
 
 from .bootstrap_assets import RARITY_RANK, _configured_max_rarity, guest_random, guest_seed_attributes
 from .bootstrap_catalog import BootstrapCatalog
@@ -354,7 +355,7 @@ def _materialize_guests(
         expected_template_ids = tuple(int(guest.template_id) for guest in guests)
         guests = list(Guest.objects.bulk_create(guests))
         if any(guest.pk is None for guest in guests):
-            guests = list(Guest.objects.filter(manor=manor).order_by("id"))
+            guests = list(Guest.objects.filter(manor=manor).select_related("template").order_by("id"))
         if tuple(int(guest.template_id) for guest in guests) != expected_template_ids:
             raise BootstrapMaterializationError("materialized guest order does not match the blueprint")
         guest_by_ordinal = {target.ordinal: guest for target, guest in zip(assets.guests, guests, strict=True)}
@@ -399,14 +400,28 @@ def _materialize_guests(
         expected_gear_links = tuple(_gear_link_identity(row) for row in gear_rows)
         gear_rows = list(GearItem.objects.bulk_create(gear_rows))
         if any(row.pk is None for row in gear_rows):
-            gear_rows = list(GearItem.objects.filter(manor=manor).order_by("id"))
+            gear_rows = list(GearItem.objects.filter(manor=manor).select_related("template").order_by("id"))
         if tuple(_gear_link_identity(row) for row in gear_rows) != expected_gear_links:
             raise BootstrapMaterializationError("materialized gear order does not match the blueprint")
+    gear_by_guest_id: dict[int, list[GearItem]] = {}
+    for row in gear_rows:
+        if row.guest_id is None:
+            raise BootstrapMaterializationError("materialized gear is missing its guest identity")
+        gear_by_guest_id.setdefault(int(row.guest_id), []).append(row)
     if guests:
         Guest.objects.bulk_update(guests, sorted(guest_update_fields))
     for guest in guests:
-        apply_set_bonuses(guest)
+        apply_set_bonuses(
+            guest,
+            gear_items=gear_by_guest_id.get(int(guest.id), ()),
+            persist=False,
+        )
         guest.current_hp = guest.max_hp
+    if guests:
+        Guest.objects.bulk_update(
+            guests,
+            sorted({*SET_STAT_FIELD_MAP.values(), "gear_set_bonus"}),
+        )
 
     skill_rows: list[GuestSkill] = []
     for target in assets.guests:
@@ -460,7 +475,7 @@ def _materialize_guests(
         )
     for target in assets.guests:
         guest = guest_by_ordinal[target.ordinal]
-        target_gears = [row for row in gear_rows if row.guest_id == guest.id]
+        target_gears = gear_by_guest_id.get(int(guest.id), [])
         if len(target_gears) != len(target.gear_acquired_day_offsets):
             raise BootstrapMaterializationError("materialized gear history does not match the blueprint")
         for gear, offset in zip(

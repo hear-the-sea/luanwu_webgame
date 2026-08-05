@@ -9,22 +9,6 @@
 这是一个以春秋战国题材为背景的 Django 游戏项目。当前仓库已实现账号、庄园、门客、战斗、交易、帮会、地图、消息通知与部分实时功能，玩法模板主要由 `data/*.yaml` 驱动。
 <img width="1000" height="228" alt="image" src="https://github.com/user-attachments/assets/b3edb782-02c8-417f-8272-26d6dd8baac9" />
 
-## 虚拟玩家 V2 部署快照
-
-> 以下内容是 2026-07-29 17:09（Asia/Shanghai）的环境快照，不代表读取文档时的实时运行态。新环境仍需单独执行 migration、策略发布、档案迁移和 Gate 切换，不会仅因拉取代码而自动继承。
-
-| Gate | 能力 | 快照状态 |
-|------|------|----------|
-| Gate D1 | 新建虚拟玩家使用 V2 Bootstrap | 已开启 |
-| Gate D2 | 使用获批匿名真人快照进行参考分布校准 | 未开启，保持 `INTENTIONALLY_OFF` |
-| Gate E | 已有 V2 虚拟玩家执行自动 Maintenance | 已开启 |
-
-该快照的持久路由为 `bootstrap_mode=v2_active`、`maintenance_mode=v2_active`、`revision=10`；revision 会在安全监控消费新窗口时自动递增。快照内 44 个 `BotProfile` 均已保留式迁移为 `engine_version=2`，其中 32 个 active、12 个 retired；运行时可用的 V1 档案为 0，V2 必填字段、策略校验和及声望段复检均无异常。Policy v1 已发布，独立 policy rollout 仍关闭。`hourly:20260729T080000Z` 安全窗口已完整冻结并消费，五条心跳各 60 个采样点、最大间隔 60 秒，且没有维护失败、硬约束、经济上限、重复提交或性能违规。恢复后已处理 30 个到期档案，其中 2 个执行实际成长动作，28 个按强度上限或领域约束正常推进计划；快照采集时到期数为 0。人口状态为 32 maintained、32 planned、0 unplanned、32 attackable，目标总数为 32。
-
-Gate D2 在该快照中没有激活任何声望段：`calibration_routes=[]`，且 `reference_snapshot_catalog` 为空。V2 在没有获批代表性真人 artifact/report 时继续使用实时合格真人样本与版本化保守起点，不影响虚拟玩家创建和维护，也不得把 synthetic fixture 表述为可信真人校准。
-
-自动生成与培养由 Celery Worker 和 Beat 消费虚拟玩家人口及 Maintenance 任务；快照采集时两者均已启动且 Worker ping 正常。路由、档案和进程状态都会变化，排障或发布前必须以数据库和进程现场检查为准。路由处于 `v2_active` 只表示执行链已获准；未运行 Worker/Beat 时不会产生周期性自动执行，启动服务仍按下文 `make worker`、`make beat` 操作。
-
 ## 致我的童年回忆----乱舞春秋
 当前前端形态为：
 
