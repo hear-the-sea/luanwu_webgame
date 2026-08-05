@@ -114,7 +114,7 @@ def _test_gate_description(mode: str) -> str:
 def _markexpr_explicitly_selects_integration(markexpr: str) -> bool:
     """Return True when the marker expression positively selects integration tests.
 
-    `pytest -m "not integration"` must stay on the hermetic gate and should not
+    `pytest -m "not integration and not evidence"` must stay on the hermetic gate and should not
     be treated as an explicit request for real external services.
     """
     expression = (markexpr or "").strip()

@@ -145,7 +145,7 @@ make test
 等价于：
 
 ```bash
-python -m pytest -m "not integration"
+python -m pytest -m "not integration and not evidence"
 ```
 
 默认使用 hermetic 测试环境：

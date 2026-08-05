@@ -121,19 +121,23 @@ jobs:
             make gate-e-readiness-evidence GATE_E_EXPECTED_COMMIT="${GITHUB_SHA}" \
             2>&1 | tee /tmp/gate-record.log
 
-      - name: Upload gate recording log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gate-record-log-${{ github.run_id }}
-          path: /tmp/gate-record.log
-          if-no-files-found: ignore
-          retention-days: 7
-
       - name: Verify Gate E evidence contracts
         run: |
+          set -o pipefail
           VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE="${VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE}" \
-            make verify-gate-e-readiness-evidence GATE_E_EXPECTED_COMMIT="${GITHUB_SHA}"
+            make verify-gate-e-readiness-evidence GATE_E_EXPECTED_COMMIT="${GITHUB_SHA}" \
+            2>&1 | tee /tmp/gate-verify.log
+
+      - name: Upload Gate E Diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-e-diagnostics-${{ github.run_id }}
+          path: |
+            /tmp/gate-record.log
+            /tmp/gate-verify.log
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Upload Gate E readiness evidence
         uses: actions/upload-artifact@v4

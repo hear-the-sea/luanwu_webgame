@@ -47,16 +47,14 @@ def test_integration_ci_uses_database_creation_credentials():
     workflow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
     integration_job = workflow["jobs"]["integration-tests"]
     mysql_environment = integration_job["services"]["mysql"]["env"]
-    test_step = next(
-        step for step in integration_job["steps"] if step.get("name") == "Integration Tests (MySQL + Redis)"
-    )
+    integration_environment = integration_job["env"]
 
-    assert test_step["env"]["DJANGO_DB_USER"] == "root"
-    assert test_step["env"]["DJANGO_DB_PASSWORD"] == mysql_environment["MYSQL_ROOT_PASSWORD"]
+    assert integration_environment["DJANGO_DB_USER"] == "root"
+    assert integration_environment["DJANGO_DB_PASSWORD"] == mysql_environment["MYSQL_ROOT_PASSWORD"]
     assert mysql_environment["MYSQL_DATABASE"] == "webgame"
-    assert test_step["env"]["DJANGO_DB_NAME"] == "webgame"
-    assert test_step["env"]["DJANGO_STRICT_INFRA_CONFIG"] == "0"
-    assert test_step["env"]["DJANGO_SECURE_SSL_REDIRECT"] == "0"
+    assert integration_environment["DJANGO_DB_NAME"] == "webgame"
+    assert integration_environment["DJANGO_STRICT_INFRA_CONFIG"] == "0"
+    assert integration_environment["DJANGO_SECURE_SSL_REDIRECT"] == "0"
 
 
 def test_mypy_ci_loads_non_production_django_settings():
@@ -75,11 +73,10 @@ def test_mypy_ci_loads_non_production_django_settings():
 
 def test_unit_ci_disables_https_redirect_for_http_client_tests():
     workflow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
-    unit_step = next(
-        step for step in workflow["jobs"]["tests"]["steps"] if step.get("name") == "Unit Tests (pytest + coverage)"
-    )
+    unit_step = next(step for step in workflow["jobs"]["tests"]["steps"] if step.get("name") == "Unit Tests (pytest)")
 
     assert unit_step["env"]["DJANGO_SECURE_SSL_REDIRECT"] == "0"
+    assert "not integration and not evidence" in unit_step["run"]
 
 
 def test_package_script_builds_css_and_rejects_artifact_drift():

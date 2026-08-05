@@ -12,6 +12,8 @@ import yaml
 
 from gameplay.services.virtual_player_core import gate_evidence
 
+pytestmark = pytest.mark.evidence
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_PATH = gate_evidence.GATE_D1_EVIDENCE_PATH
 ACCEPTANCE_PATH = PROJECT_ROOT / "docs" / "virtual_player_gate_a_acceptance_config_2026-07-27.yaml"

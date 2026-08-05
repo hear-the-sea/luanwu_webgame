@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts import record_virtual_player_evidence as recorder
 
@@ -50,3 +51,14 @@ def test_make_and_ci_expose_commit_bound_gate_d1_artifact_flow() -> None:
     assert "Generate commit-bound Gate D1 evidence" in workflow_content
     assert 'GATE_D1_EXPECTED_COMMIT="${GITHUB_SHA}"' in workflow_content
     assert "gate-d1-evidence-${{ github.sha }}" in workflow_content
+
+
+def test_ci_runs_gate_d1_in_a_visible_job_after_integration() -> None:
+    workflow = yaml.safe_load((ROOT_DIR / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
+    gate_d1 = workflow["jobs"]["gate-d1"]
+
+    assert gate_d1["if"] == "always() && github.event_name == 'push'"
+    assert gate_d1["needs"] == "integration-tests"
+    assert gate_d1["timeout-minutes"] == 60
+    assert any(step.get("name") == "Generate commit-bound Gate D1 evidence" for step in gate_d1["steps"])
+    assert any(step.get("name") == "Upload Gate D1 Diagnostics" for step in gate_d1["steps"])

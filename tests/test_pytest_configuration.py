@@ -19,6 +19,14 @@ def test_pytest_testpaths_include_app_local_test_directories():
     assert {"tests", "guests/tests"}.issubset(testpaths)
 
 
+def test_pytest_registers_commit_bound_evidence_marker():
+    config = configparser.ConfigParser()
+    config.read(ROOT_DIR / "pytest.ini")
+
+    markers = config["pytest"]["markers"]
+    assert "evidence:" in markers
+
+
 def test_makefile_critical_gate_includes_arena_coop_concurrency_file():
     makefile_content = (ROOT_DIR / "Makefile").read_text(encoding="utf-8")
 

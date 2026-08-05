@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 import yaml
 
 from gameplay.services.virtual_player_core import gate_evidence
+
+pytestmark = pytest.mark.evidence
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_PATH = gate_evidence.GATE_E_EVIDENCE_PATH

@@ -40,6 +40,8 @@ def test_readiness_workflow_runs_only_on_release_tags_schedule_or_manual_dispatc
     assert "13306:3306" in workflow_content
     assert "16379:6379" in workflow_content
     assert "set -o pipefail" in workflow_content
+    assert "tee /tmp/gate-verify.log" in workflow_content
+    assert "Upload Gate E Diagnostics" in workflow_content
     assert "make verify-gate-e-readiness-evidence" in workflow_content
     assert "actions/upload-artifact@v4" in workflow_content
     assert "if-no-files-found: error" in workflow_content

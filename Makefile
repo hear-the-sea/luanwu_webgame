@@ -207,10 +207,10 @@ test:
 	@$(MAKE) test-unit
 
 test-unit:
-	$(PYTHON) -m pytest -m "not integration"
+	$(PYTHON) -m pytest -m "not integration and not evidence"
 
 test-unit-cov:
-	$(PYTHON) -m coverage run -m pytest -m "not integration"
+	$(PYTHON) -m coverage run -m pytest -m "not integration and not evidence"
 	$(PYTHON) -m coverage report -m
 
 test-critical:
@@ -320,11 +320,11 @@ test-all:
 	$(PYTHON) -m pytest
 
 cov:
-	$(PYTHON) -m coverage run -m pytest -m "not integration"
+	$(PYTHON) -m coverage run -m pytest -m "not integration and not evidence"
 	$(PYTHON) -m coverage report -m
 
 cov-html:
-	$(PYTHON) -m coverage run -m pytest -m "not integration"
+	$(PYTHON) -m coverage run -m pytest -m "not integration and not evidence"
 	$(PYTHON) -m coverage html
 	@echo "Open htmlcov/index.html"
 

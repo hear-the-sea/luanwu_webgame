@@ -8,6 +8,8 @@ import pytest
 from gameplay.services.virtual_player_core import gate_evidence
 from scripts import record_virtual_player_evidence as recorder
 
+pytestmark = pytest.mark.evidence
+
 
 def test_recorder_script_bootstraps_project_imports_outside_repository(tmp_path) -> None:
     result = subprocess.run(

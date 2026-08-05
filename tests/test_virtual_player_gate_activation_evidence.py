@@ -10,6 +10,8 @@ from django.db import connection
 
 from gameplay.services.virtual_player_core import gate_evidence
 
+pytestmark = pytest.mark.evidence
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
