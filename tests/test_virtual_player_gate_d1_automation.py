@@ -60,5 +60,6 @@ def test_ci_runs_gate_d1_in_a_visible_job_after_integration() -> None:
     assert gate_d1["if"] == "always() && github.event_name == 'push'"
     assert gate_d1["needs"] == "integration-tests"
     assert gate_d1["timeout-minutes"] == 60
+    assert any(step.get("name") == "Install service probe CLI tools" for step in gate_d1["steps"])
     assert any(step.get("name") == "Generate commit-bound Gate D1 evidence" for step in gate_d1["steps"])
     assert any(step.get("name") == "Upload Gate D1 Diagnostics" for step in gate_d1["steps"])
