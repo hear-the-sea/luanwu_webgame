@@ -75,6 +75,7 @@ def test_unit_ci_disables_https_redirect_for_http_client_tests():
     workflow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
     unit_step = next(step for step in workflow["jobs"]["tests"]["steps"] if step.get("name") == "Unit Tests (pytest)")
 
+    assert unit_step["id"] == "unit_tests"
     assert unit_step["env"]["DJANGO_SECURE_SSL_REDIRECT"] == "0"
     assert "not integration and not evidence" in unit_step["run"]
 
