@@ -70,8 +70,6 @@ jobs:
           python -m mypy accounts battle common config core gameplay guests guilds tasks trade websocket
 
       - name: Unit Tests (pytest)
-        id: unit_tests
-        continue-on-error: true
         env:
           DJANGO_DEBUG: "0"
           DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
@@ -85,8 +83,6 @@ jobs:
           } 2>&1 | tee /tmp/unit-pytest.log
 
       - name: Unit Coverage
-        id: unit_coverage
-        if: steps.unit_tests.outcome == 'success'
         run: |
           set -o pipefail
           # Coverage target: incrementally raise from 60% → 65% → 70% → 75%
@@ -94,7 +90,6 @@ jobs:
           python -m coverage xml -o coverage-unit.xml
 
       - name: Upload Unit Coverage
-        if: steps.unit_tests.outcome == 'success' && steps.unit_coverage.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-unit
@@ -110,18 +105,6 @@ jobs:
             /tmp/unit-coverage.log
           if-no-files-found: ignore
           retention-days: 7
-
-      - name: Unit Gate Result
-        if: always()
-        run: |
-          if [ "${{ steps.unit_tests.outcome }}" != "success" ]; then
-            echo "Unit pytest gate failed; inspect the unit-diagnostics artifact."
-            exit 1
-          fi
-          if [ "${{ steps.unit_coverage.outcome }}" != "success" ]; then
-            echo "Unit coverage gate failed; inspect the unit-diagnostics artifact."
-            exit 1
-          fi
 
   # ── 集成测试门禁 ──────────────────────────────────────────────────────────
   # 以下类型的 PR 改动必须通过本 job 才能合并（hermetic 单元测试无法覆盖真实语义）：
