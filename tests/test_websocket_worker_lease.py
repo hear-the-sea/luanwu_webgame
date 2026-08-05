@@ -264,6 +264,7 @@ def _run_base_settings_import(**overrides: str) -> subprocess.CompletedProcess[s
         "DJANGO_WEBSOCKET_WORKER_LEASE_HEARTBEAT_SECONDS",
     )
     child_env = os.environ.copy()
+    child_env["DJANGO_STRICT_INFRA_CONFIG"] = "0"
     for name in setting_names:
         child_env.pop(name, None)
     child_env.update(overrides)
