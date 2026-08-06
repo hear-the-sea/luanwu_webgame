@@ -95,7 +95,7 @@ def test_arena_registration_page_hides_future_coop_fill_estimate(arena_client):
 
 
 @pytest.mark.django_db
-def test_arena_registration_page_labels_due_coop_fill_as_in_progress(arena_client):
+def test_arena_registration_page_hides_due_coop_fill_prompt(arena_client):
     client, _manor = arena_client
     ArenaCoopEvent.objects.create(
         status=ArenaCoopEvent.Status.RECRUITING,
@@ -105,9 +105,24 @@ def test_arena_registration_page_labels_due_coop_fill_as_in_progress(arena_clien
     response = client.get(reverse("gameplay:arena"))
 
     body = response.content.decode("utf-8")
-    assert "系统正在补位" in body
+    assert "系统正在补位" not in body
     assert "系统补位截止" not in body
     assert "data-countdown" not in body
+
+
+@pytest.mark.django_db
+def test_arena_registration_page_hides_due_tournament_fill_prompt(arena_client):
+    client, _manor = arena_client
+    ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RECRUITING,
+        virtual_fill_at=timezone.now() - timedelta(minutes=1),
+    )
+
+    response = client.get(reverse("gameplay:arena"))
+
+    body = response.content.decode("utf-8")
+    assert "当前报名池：赛事" in body
+    assert "系统正在补位" not in body
 
 
 @pytest.mark.django_db

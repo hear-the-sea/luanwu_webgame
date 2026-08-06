@@ -5,14 +5,18 @@ from django.conf import settings
 
 def test_virtual_player_timer_tasks_are_routed_to_timer_queue():
     expected_timer_tasks = [
-        "gameplay.plan_virtual_players",
-        "gameplay.roll_virtual_players",
         "gameplay.reconcile_external_strength_reconciliation",
-        "gameplay.scan_external_strength_reconciliations",
     ]
 
     for task_name in expected_timer_tasks:
         assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": settings.CELERY_TIMER_QUEUE}
+
+    for task_name in [
+        "gameplay.plan_virtual_players",
+        "gameplay.roll_virtual_players",
+        "gameplay.scan_external_strength_reconciliations",
+    ]:
+        assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": settings.CELERY_TIMER_MAINTENANCE_QUEUE}
 
 
 def test_virtual_player_planning_and_rolling_are_scheduled_separately():

@@ -105,8 +105,8 @@ def _build_mission_drops_with_salvage(locked_run: MissionRun, report: Any, playe
     )
 
 
-def finalize_mission_run(run: MissionRun, now=None) -> None:
-    _finalize_mission_run_command(
+def finalize_mission_run(run: MissionRun, now=None) -> bool:
+    return _finalize_mission_run_command(
         run,
         now=now,
         **build_finalize_mission_dependencies(

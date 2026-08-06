@@ -20,7 +20,6 @@ from gameplay.services.online_presence_backend import (
     ONLINE_USERS_ZSET_KEY,
     ONLINE_WS_USERS_ZSET_KEY,
     count_online_users,
-    touch_ws_presence,
 )
 from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
@@ -107,7 +106,7 @@ class OnlineStatsConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsume
         stats = await self.get_stats()
         await self._broadcast_stats_best_effort(stats)
 
-    async def _broadcast_stats_best_effort(self, stats: dict) -> None:
+    def _acquire_broadcast_debounce(self) -> bool:
         if int(self.BROADCAST_DEBOUNCE_SECONDS) > 0:
             debounce_seconds = max(1, int(self.BROADCAST_DEBOUNCE_SECONDS))
             acquired, _from_cache, _lock_token = acquire_best_effort_lock(
@@ -117,8 +116,10 @@ class OnlineStatsConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsume
                 log_context="online stats broadcast debounce",
             )
             if not acquired:
-                return
+                return False
+        return True
 
+    async def _send_stats_update(self, stats: dict) -> None:
         await self.channel_layer.group_send(
             self.STATS_GROUP,
             {
@@ -126,6 +127,18 @@ class OnlineStatsConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsume
                 "stats": stats,
             },
         )
+
+    async def _broadcast_stats_best_effort(self, stats: dict) -> None:
+        if not self._acquire_broadcast_debounce():
+            return
+        await self._send_stats_update(stats)
+
+    async def _refresh_and_broadcast_stats_best_effort(self) -> None:
+        """Refresh and broadcast once per debounce window for heartbeat callers."""
+        if not self._acquire_broadcast_debounce():
+            return
+        stats = await self.get_stats()
+        await self._send_stats_update(stats)
 
     async def stats_update(self, event):
         await self.send_json(event["stats"])
@@ -155,9 +168,11 @@ class OnlineStatsConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsume
     def _touch_online_user_sync(self, user_id: int, now_ts: float) -> None:
         redis = self._get_redis()
         count_key = f"{self.ONLINE_USER_CONN_COUNT_KEY_PREFIX}{int(user_id)}"
-        touch_ws_presence(redis, user_id=int(user_id), now_ts=float(now_ts), ttl_seconds=self.ONLINE_USERS_TTL)
-        redis.expire(count_key, self.ONLINE_USERS_TTL * 2)
-        self._safe_cache_delete(self.ONLINE_COUNT_CACHE_KEY)
+        pipe = redis.pipeline()
+        pipe.zadd(self.ONLINE_WS_USERS_KEY, {int(user_id): float(now_ts)})
+        pipe.expire(self.ONLINE_WS_USERS_KEY, self.ONLINE_USERS_TTL * 2)
+        pipe.expire(count_key, self.ONLINE_USERS_TTL * 2)
+        pipe.execute()
 
     def _add_online_connection_sync(self, user_id: int, now_ts: float) -> None:
         redis = self._get_redis()
@@ -260,8 +275,7 @@ class OnlineStatsConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsume
                 if not self.is_real_user or not self.user_id:
                     return
                 await self.touch_online_user(self.user_id)
-                stats = await self.get_stats()
-                await self._broadcast_stats_best_effort(stats)
+                await self._refresh_and_broadcast_stats_best_effort()
             except asyncio.CancelledError:
                 return
             except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:

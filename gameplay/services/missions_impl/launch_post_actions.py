@@ -195,7 +195,7 @@ def schedule_mission_completion_task(
     *,
     safe_apply_async: Callable[..., bool],
     logger: Any,
-    finalize_mission_run: Callable[..., None],
+    finalize_mission_run: Callable[..., object],
     now_func: Callable[[], Any],
 ) -> None:
     countdown = _resolve_completion_countdown(run=run, now_func=now_func)

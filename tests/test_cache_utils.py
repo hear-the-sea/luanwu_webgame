@@ -95,6 +95,15 @@ def test_invalidate_recruitment_hall_cache_runtime_marker_bubbles_up(monkeypatch
         cache_utils.invalidate_recruitment_hall_cache(1)
 
 
+def test_invalidate_market_stats_cache_deletes_expected_key(monkeypatch):
+    deleted: list[str] = []
+    monkeypatch.setattr(cache_utils.cache, "delete", deleted.append)
+
+    cache_utils.invalidate_market_stats_cache()
+
+    assert deleted == [cache_utils.CacheKeys.market_stats()]
+
+
 def test_get_or_set_runtime_marker_bubbles_up(monkeypatch):
     monkeypatch.setattr(
         cache_utils.cache,

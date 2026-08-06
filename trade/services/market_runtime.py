@@ -50,6 +50,7 @@ def expire_listings_queryset_entry(
     create_message_func: Callable[..., Any],
     notify_user_func: Callable[..., Any],
     logger: Any,
+    schedule_market_stats_cache_invalidation: Callable[[], None],
     limit: int | None = None,
 ) -> int:
     return expire_listings_queryset_impl(
@@ -66,4 +67,5 @@ def expire_listings_queryset_entry(
         notify_user_func=notify_user_func,
         logger=logger,
         limit=limit,
+        schedule_market_stats_cache_invalidation=schedule_market_stats_cache_invalidation,
     )

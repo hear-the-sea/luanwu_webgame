@@ -6,6 +6,7 @@ The original file exceeded the audit size threshold. Tests now live in
 pytest commands and CI references.
 """
 
+from tests.trade_service.market_cache import *  # noqa: F401,F403
 from tests.trade_service.market_cancel import *  # noqa: F401,F403
 from tests.trade_service.market_expire import *  # noqa: F401,F403
 from tests.trade_service.market_listing import *  # noqa: F401,F403

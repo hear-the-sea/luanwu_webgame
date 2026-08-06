@@ -15,6 +15,7 @@ from websocket.backends.ip_capacity import (
     release_ip_capacity_slot,
 )
 from websocket.backends.worker_lease import worker_lease_key
+from websocket.capacity_state import get_websocket_ip_capacity_state
 from websocket.close_codes import SERVICE_UNAVAILABLE_CLOSE_CODE
 from websocket.exceptions import WebSocketConnectionLimitUnavailable
 from websocket.middleware.ip_capacity import WebSocketIPCapacityMiddleware
@@ -68,6 +69,10 @@ class _FakeRedis:
 
 
 WORKER_ID = "a" * 32
+
+
+def test_ip_capacity_state_reader_rejects_incomplete_scope_state():
+    assert get_websocket_ip_capacity_state({"_websocket_ip_capacity_state": {"refresh_pair": lambda: None}}) is None
 
 
 def test_ip_capacity_redis_translates_client_acquisition_failure(monkeypatch):
@@ -232,11 +237,56 @@ async def test_ip_capacity_middleware_runs_inner_app_and_releases(monkeypatch):
     await middleware(scope, AsyncMock(), send)
 
     inner.assert_awaited_once()
+    forwarded_scope = inner.await_args.args[0]
+    state = get_websocket_ip_capacity_state(forwarded_scope)
+    assert state is not None
+    assert state["managed_by_session_guard"] is False
+    assert callable(state["refresh_pair"])
+    ip_connection_id = middleware._acquire_capacity.await_args.args[1]
+    assert state["ip_connection_id"] == ip_connection_id
     middleware._acquire_capacity.assert_awaited_once()
     assert middleware._acquire_capacity.await_args.args[2] == WORKER_ID
     assert middleware._run_slot_heartbeat.call_args.args[2] == WORKER_ID
     assert middleware._release_capacity.await_args.args[2] == WORKER_ID
     send.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_ip_capacity_middleware_binds_ip_identity_for_combined_refresh(monkeypatch):
+    inner = AsyncMock()
+    middleware = WebSocketIPCapacityMiddleware(inner)
+    middleware._worker_lease_manager = AsyncMock()
+    middleware._worker_lease_manager.ensure_started.return_value = WORKER_ID
+    monkeypatch.setattr(
+        middleware,
+        "_acquire_capacity",
+        AsyncMock(return_value=IPCapacityDecision(IPCapacityResult.ACQUIRED, 1, 0, 0, 0)),
+    )
+    monkeypatch.setattr(middleware, "_release_capacity", AsyncMock())
+    monkeypatch.setattr(middleware, "_run_slot_heartbeat", AsyncMock())
+    pair_refresh = AsyncMock(return_value=(True, True))
+    monkeypatch.setattr(middleware, "_refresh_capacity_pair", pair_refresh)
+    send = AsyncMock()
+
+    await middleware(
+        {"type": "websocket", "client": ("203.0.113.8", 53100), "headers": []},
+        AsyncMock(),
+        send,
+    )
+
+    state = get_websocket_ip_capacity_state(inner.await_args.args[0])
+    assert state is not None
+    ip_connection_id = middleware._acquire_capacity.await_args.args[1]
+    await state["refresh_pair"](7, "user-channel", WORKER_ID, 30)
+
+    pair_refresh.assert_awaited_once_with(
+        "203.0.113.8",
+        ip_connection_id,
+        7,
+        "user-channel",
+        WORKER_ID,
+        30,
+    )
 
 
 @pytest.mark.asyncio

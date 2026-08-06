@@ -1,8 +1,9 @@
 import logging
 
 import pytest
-from django.db import transaction
+from django.db import connection, transaction
 from django.test import override_settings
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from battle.models import TroopTemplate
@@ -11,11 +12,13 @@ from gameplay.models import InventoryItem, PlayerTroop, ResourceEvent, ResourceT
 from gameplay.services.inventory.core import get_warehouse_grain_quantity
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.resources import (
+    ResourceProductionBasis,
     grant_resources,
     settle_resource_production_locked,
     spend_resources,
     sync_resource_production,
 )
+from gameplay.tasks.resources import sync_resource_production_task
 from gameplay.utils.resource_calculator import get_personnel_grain_cost_per_hour
 from guests.models import Guest, GuestTemplate
 from tests.gameplay_services.support import User, ensure_grain_template
@@ -216,6 +219,29 @@ def test_sync_resource_production():
     manor.refresh_from_db()
 
     assert manor.silver >= initial_silver
+
+
+@pytest.mark.django_db
+def test_sync_resource_production_can_skip_refresh_for_discarded_instance(monkeypatch):
+    user = User.objects.create_user(username="resource_refresh_opt_out_user", password="test123")
+    manor = ensure_manor(user)
+    manor.resource_updated_at = timezone.now() - timezone.timedelta(hours=1)
+    manor.save(update_fields=["resource_updated_at"])
+
+    monkeypatch.setattr(
+        "gameplay.services.resources.get_hourly_rates",
+        lambda _manor: {ResourceType.SILVER: 0, ResourceType.GRAIN: 0},
+    )
+    monkeypatch.setattr(
+        "gameplay.services.resources.get_personnel_grain_cost_per_hour",
+        lambda _manor: 0,
+    )
+
+    def fail_refresh(*_args, **_kwargs):
+        raise AssertionError("refresh_from_db should be skipped when refresh=False")
+
+    monkeypatch.setattr(manor, "refresh_from_db", fail_refresh)
+    sync_resource_production(manor, refresh=False)
 
 
 @pytest.mark.django_db
@@ -446,3 +472,54 @@ def test_locked_resource_settlement_caps_positive_delta_and_preserves_upkeep(
         (ResourceType.GRAIN, -90),
         (ResourceType.SILVER, 25),
     }
+
+
+@pytest.mark.django_db
+def test_resource_sync_task_reuses_resolved_grain_template(monkeypatch):
+    first_user = User.objects.create_user(username="resource_task_template_1", password="test123")
+    second_user = User.objects.create_user(username="resource_task_template_2", password="test123")
+    first_manor = ensure_manor(first_user)
+    second_manor = ensure_manor(second_user)
+    captured: list[tuple[int, dict]] = []
+
+    monkeypatch.setattr(
+        "gameplay.tasks.resources.sync_resource_production",
+        lambda manor, **kwargs: captured.append((int(manor.id), kwargs)),
+    )
+
+    assert sync_resource_production_task(limit=2) == 2
+    assert len(captured) == 2
+    assert {item[0] for item in captured} == {first_manor.id, second_manor.id}
+    assert all(item[1]["grain_template_resolved"] is True for item in captured)
+    assert captured[0][1]["grain_template"] is captured[1][1]["grain_template"]
+
+
+@pytest.mark.django_db
+def test_locked_resource_settlement_reuses_resolved_grain_template_for_ledger_write():
+    user = User.objects.create_user(username="resource_locked_template_reuse", password="test123")
+    manor = ensure_manor(user)
+    grain_template = ensure_grain_template()
+    settled_at = timezone.now()
+    manor.grain = 0
+    manor.resource_updated_at = settled_at - timezone.timedelta(hours=1)
+    manor.save(update_fields=["grain", "resource_updated_at"])
+
+    production_basis = ResourceProductionBasis(
+        hourly_rates=((ResourceType.GRAIN, 100.0),),
+        personnel_grain_cost_per_hour=0,
+    )
+
+    with transaction.atomic():
+        locked_manor = type(manor).objects.select_for_update().get(pk=manor.pk)
+        with CaptureQueriesContext(connection) as captured:
+            settled = settle_resource_production_locked(
+                locked_manor,
+                now=settled_at,
+                production_basis=production_basis,
+                grain_template=grain_template,
+                grain_template_resolved=True,
+            )
+
+    assert settled == {ResourceType.GRAIN: 100}
+    item_template_table = grain_template._meta.db_table.lower()
+    assert not any(item_template_table in query["sql"].lower() for query in captured.captured_queries)

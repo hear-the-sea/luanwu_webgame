@@ -130,6 +130,7 @@ class Manor(models.Model):
         indexes = [
             models.Index(fields=["region", "coordinate_x", "coordinate_y"]),
             models.Index(fields=["prestige"]),
+            models.Index(fields=["resource_updated_at", "id"], name="manor_resource_updated_idx"),
         ]
 
     def __str__(self) -> str:
@@ -432,6 +433,7 @@ class Building(models.Model):
         unique_together = ("manor", "building_type")
         indexes = [
             models.Index(fields=["manor", "is_upgrading", "upgrade_complete_at"], name="building_upgrade_idx"),
+            models.Index(fields=["is_upgrading", "upgrade_complete_at", "id"], name="building_due_scan_idx"),
         ]
 
     def __str__(self) -> str:

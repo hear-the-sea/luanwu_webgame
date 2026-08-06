@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Dict
 
 from django.conf import settings
+from django.db import transaction
 from django.db.models import QuerySet
 from django.utils import timezone
 
@@ -21,6 +22,7 @@ from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
 from gameplay.models.items import LEGACY_TOOL_EFFECT_TYPES
 from gameplay.services.inventory.core import add_item_to_inventory_locked
 from gameplay.services.resources import grant_resources_locked, spend_resources_locked
+from gameplay.services.utils.cache import CACHE_TIMEOUT_SHORT, CacheKeys, get_or_set, invalidate_market_stats_cache
 from gameplay.services.utils.messages import create_message
 from gameplay.services.utils.notifications import notify_user
 from trade.models import MarketListing, MarketTransaction
@@ -48,6 +50,11 @@ from trade.services.market_runtime import send_purchase_notifications_entry as _
 logger = logging.getLogger(__name__)
 
 TRADE_MARKET_RULES_PATH = Path(settings.BASE_DIR) / "data" / "trade_market_rules.yaml"
+
+
+def _schedule_market_stats_cache_invalidation() -> None:
+    """Invalidate market stats only after the surrounding write commits."""
+    transaction.on_commit(invalidate_market_stats_cache)
 
 
 @lru_cache(maxsize=1)
@@ -280,6 +287,7 @@ def create_listing(
         market_listing_model=MarketListing,
         max_total_price=MAX_TOTAL_PRICE,
         safe_int=safe_int,
+        schedule_market_stats_cache_invalidation=_schedule_market_stats_cache_invalidation,
     )
 
 
@@ -373,6 +381,7 @@ def purchase_listing(buyer: Manor, listing_id: int) -> MarketTransaction:
         grant_market_item_locked=grant_market_item_locked,
         transaction_tax_rate=TRANSACTION_TAX_RATE,
         send_purchase_notifications=_send_purchase_notifications,
+        schedule_market_stats_cache_invalidation=_schedule_market_stats_cache_invalidation,
     )
 
 
@@ -398,6 +407,7 @@ def cancel_listing(manor: Manor, listing_id: int) -> Dict:
         restore_cancelled_listing_inventory=_market_notification_helpers.restore_cancelled_listing_inventory,
         build_cancel_listing_result=_market_notification_helpers.build_cancel_listing_result,
         grant_market_item_locked=grant_market_item_locked,
+        schedule_market_stats_cache_invalidation=_schedule_market_stats_cache_invalidation,
     )
 
 
@@ -414,6 +424,7 @@ def _expire_listings_queryset(expired_listings: QuerySet, log_label: str, limit:
         notify_user_func=send_market_notification,
         logger=logger,
         limit=limit,
+        schedule_market_stats_cache_invalidation=_schedule_market_stats_cache_invalidation,
     )
 
 
@@ -477,10 +488,14 @@ def get_market_stats() -> Dict:
     Returns:
         统计信息字典
     """
-    return _market_queries.get_market_stats_payload(
-        market_listing_model=MarketListing,
-        market_transaction_model=MarketTransaction,
-        now=timezone.now(),
+    return get_or_set(
+        CacheKeys.market_stats(),
+        lambda: _market_queries.get_market_stats_payload(
+            market_listing_model=MarketListing,
+            market_transaction_model=MarketTransaction,
+            now=timezone.now(),
+        ),
+        timeout=CACHE_TIMEOUT_SHORT,
     )
 
 

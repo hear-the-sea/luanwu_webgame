@@ -39,6 +39,9 @@ class CacheKeys:
     # 庄园状态
     MANOR_STATS_PREFIX = "manor_stats"
 
+    # 交易行统计
+    MARKET_STATS = "market:stats"
+
     # 科技加成
     TECH_BONUS_PREFIX = "tech_bonus"
     HOME_HOURLY_RATES_PREFIX = "manor_home_hourly_rates"
@@ -62,6 +65,11 @@ class CacheKeys:
     def manor_stats(manor_id: int) -> str:
         """庄园统计数据缓存键"""
         return f"{CacheKeys.MANOR_STATS_PREFIX}:{manor_id}"
+
+    @staticmethod
+    def market_stats() -> str:
+        """交易行全局统计缓存键。"""
+        return CacheKeys.MARKET_STATS
 
     @staticmethod
     def tech_bonus(manor_id: int, tech_key: str) -> str:
@@ -93,6 +101,14 @@ def invalidate_home_stats_cache(manor_id: int) -> None:
         cache.delete(CacheKeys.home_hourly_rates(manor_id))
     except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
         logger.warning("cache.delete failed in invalidate_home_stats_cache(): manor_id=%s error=%s", manor_id, exc)
+
+
+def invalidate_market_stats_cache() -> None:
+    """清除交易行全局统计缓存。"""
+    try:
+        cache.delete(CacheKeys.market_stats())
+    except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
+        logger.warning("cache.delete failed in invalidate_market_stats_cache(): error=%s", exc)
 
 
 def invalidate_recruitment_hall_cache(manor_id: int) -> None:

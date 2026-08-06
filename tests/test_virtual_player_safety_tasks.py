@@ -154,7 +154,7 @@ def test_cleanup_safety_metric_task_is_exported_routed_and_scheduled() -> None:
         == "gameplay.cleanup_virtual_player_safety_metrics"
     )
     assert settings.CELERY_TASK_ROUTES["gameplay.cleanup_virtual_player_safety_metrics"] == {
-        "queue": settings.CELERY_TIMER_QUEUE
+        "queue": settings.CELERY_TIMER_MAINTENANCE_QUEUE
     }
     schedule = settings.CELERY_BEAT_SCHEDULE["cleanup-virtual-player-safety-metrics"]
     assert schedule["task"] == "gameplay.cleanup_virtual_player_safety_metrics"
@@ -174,7 +174,12 @@ def test_all_safety_tasks_are_exported_routed_and_scheduled() -> None:
     }
 
     for schedule_name, task_name in expected.items():
-        assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": settings.CELERY_TIMER_QUEUE}
+        expected_queue = (
+            settings.CELERY_TIMER_MAINTENANCE_QUEUE
+            if task_name in {"gameplay.aggregate_virtual_player_safety", "gameplay.monitor_virtual_player_safety"}
+            else settings.CELERY_TIMER_QUEUE
+        )
+        assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": expected_queue}
         entry = settings.CELERY_BEAT_SCHEDULE[schedule_name]
         assert entry["task"] == task_name
         assert entry["schedule"]._orig_minute == "*"

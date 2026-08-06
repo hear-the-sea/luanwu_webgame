@@ -82,6 +82,32 @@ class NotificationConsumerTests(SimpleTestCase):
         sleep.assert_awaited_once_with(2)
         consumer.close.assert_awaited_once_with(code=SERVICE_UNAVAILABLE_CLOSE_CODE)
 
+    def test_user_capacity_heartbeat_refreshes_ip_capacity_on_its_longer_interval(self):
+        consumer = NotificationConsumer()
+        consumer.scope = {"path": "/ws/notifications/"}
+        consumer.close = AsyncMock()
+        consumer._refresh_connection_slot = AsyncMock(return_value=True)
+        refresh_pair = AsyncMock(return_value=(True, False))
+        consumer._connection_capacity_state = {
+            "managed_by_session_guard": True,
+            "ip_connection_id": "ip-connection",
+            "refresh_pair": refresh_pair,
+        }
+        sleep = AsyncMock()
+
+        with (
+            patch("websocket.consumers.session_guard.settings.WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS", 6),
+            patch("websocket.consumers.session_guard.settings.WEBSOCKET_IP_CONNECTION_SLOT_TTL_SECONDS", 120),
+            patch("websocket.consumers.session_guard.asyncio.sleep", sleep),
+            patch.object(consumer, "_session_validation_now", side_effect=[0.0, 40.0]),
+        ):
+            asyncio.run(consumer._connection_slot_heartbeat_loop(7, "connection", "a" * 32))
+
+        sleep.assert_awaited_once_with(2)
+        refresh_pair.assert_awaited_once_with(7, "connection", "a" * 32, 6)
+        consumer._refresh_connection_slot.assert_not_awaited()
+        consumer.close.assert_awaited_once_with(code=SERVICE_UNAVAILABLE_CLOSE_CODE)
+
     def test_release_user_capacity_slot_survives_heartbeat_failure(self):
         class _User:
             id = 7

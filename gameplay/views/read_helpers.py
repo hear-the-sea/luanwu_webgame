@@ -7,6 +7,7 @@ from django.http import HttpRequest
 
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.models import Manor
+from gameplay.request_context import PREPARED_MANOR_REQUEST_ATTR, clear_prepared_manor, set_prepared_manor  # noqa: F401
 from gameplay.services.manor.core import get_manor
 
 EXPECTED_READ_PROJECTION_ERRORS = DATABASE_INFRASTRUCTURE_EXCEPTIONS
@@ -48,8 +49,9 @@ def get_prepared_manor_for_read(
     on_expected_failure: Callable[[Exception], None] | None = None,
 ) -> Manor:
     """Load the current manor and run the standard read projection flow."""
+    clear_prepared_manor(request)
     manor = get_manor(request.user)
-    prepare_manor_for_read(
+    projection_succeeded = prepare_manor_for_read(
         manor,
         project_fn=project_fn,
         logger=logger,
@@ -57,4 +59,8 @@ def get_prepared_manor_for_read(
         user_id=getattr(request.user, "id", None),
         on_expected_failure=on_expected_failure,
     )
+    if projection_succeeded:
+        set_prepared_manor(request, manor)
+    else:
+        clear_prepared_manor(request)
     return manor

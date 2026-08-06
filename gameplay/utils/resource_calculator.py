@@ -47,7 +47,13 @@ def calculate_personnel_grain_cost_per_hour(
     )
 
 
-def get_personnel_grain_cost_per_hour(manor: "Manor") -> int:
+def get_personnel_grain_cost_per_hour(
+    manor: "Manor",
+    *,
+    guest_count: int | None = None,
+    troop_count: int | None = None,
+    bank_troop_count: int | None = None,
+) -> int:
     """
     计算人员每小时耗粮。
 
@@ -60,23 +66,32 @@ def get_personnel_grain_cost_per_hour(manor: "Manor") -> int:
     from django.db.models.functions import Coalesce
 
     retainer_count = safe_int(getattr(manor, "retainer_count", 0), default=0, min_val=0) or 0
-    guest_count = safe_int(manor.guests.count(), default=0, min_val=0) or 0
-    troop_count = (
-        safe_int(
-            manor.troops.aggregate(total=Coalesce(Sum("count"), 0)).get("total"),
-            default=0,
-            min_val=0,
+    if guest_count is None:
+        guest_count = safe_int(manor.guests.count(), default=0, min_val=0) or 0
+    else:
+        guest_count = safe_int(guest_count, default=0, min_val=0) or 0
+    if troop_count is None:
+        troop_count = (
+            safe_int(
+                manor.troops.aggregate(total=Coalesce(Sum("count"), 0)).get("total"),
+                default=0,
+                min_val=0,
+            )
+            or 0
         )
-        or 0
-    )
-    bank_troop_count = (
-        safe_int(
-            manor.troop_bank_storages.aggregate(total=Coalesce(Sum("count"), 0)).get("total"),
-            default=0,
-            min_val=0,
+    else:
+        troop_count = safe_int(troop_count, default=0, min_val=0) or 0
+    if bank_troop_count is None:
+        bank_troop_count = (
+            safe_int(
+                manor.troop_bank_storages.aggregate(total=Coalesce(Sum("count"), 0)).get("total"),
+                default=0,
+                min_val=0,
+            )
+            or 0
         )
-        or 0
-    )
+    else:
+        bank_troop_count = safe_int(bank_troop_count, default=0, min_val=0) or 0
 
     return calculate_personnel_grain_cost_per_hour(
         retainer_count=retainer_count,

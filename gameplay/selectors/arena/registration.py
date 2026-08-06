@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from django.db.models import Count, Q
-from django.utils import timezone
 
 import gameplay.services.arena.coop_core as arena_coop_core
 from gameplay.models import ArenaCoopEntry, ArenaCoopEvent, ArenaEntry, ArenaExchangeRecord, ArenaTournament, Manor
@@ -98,12 +97,6 @@ def get_arena_coop_summary_context(manor: Manor) -> dict:
         },
         "arena_coop_active_entry": active_entry,
         "arena_coop_recruiting_event": recruiting_event,
-        "arena_coop_virtual_fill_due": bool(
-            recruiting_event
-            and recruiting_event.virtual_fill_at
-            and recruiting_event.virtual_fill_at <= timezone.now()
-            and not recruiting_event.virtual_fill_completed
-        ),
         "arena_coop_available_guests": available_guests,
         "arena_coop_selected_guest_ids": selected_guest_ids,
     }
@@ -122,12 +115,6 @@ def get_arena_registration_context(manor: Manor) -> dict:
         .first()
     )
     context["recruiting_tournament"] = recruiting_tournament
-    context["recruiting_tournament_virtual_fill_due"] = bool(
-        recruiting_tournament
-        and recruiting_tournament.virtual_fill_at
-        and recruiting_tournament.virtual_fill_at <= timezone.now()
-        and not recruiting_tournament.virtual_fill_completed
-    )
     selected_guest_ids: set[int] = set()
     available_guests = manor.guests.none()
 

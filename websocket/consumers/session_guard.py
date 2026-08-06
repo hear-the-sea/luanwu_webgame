@@ -25,6 +25,7 @@ from websocket.backends.connection_limiter import (
     release_connection_slot,
 )
 from websocket.backends.worker_lease import get_websocket_worker_lease_manager
+from websocket.capacity_state import WebSocketIPCapacityState, get_websocket_ip_capacity_state
 from websocket.close_codes import CONNECTION_LIMIT_REACHED_CLOSE_CODE as CAPACITY_LIMIT_CLOSE_CODE
 from websocket.close_codes import SERVICE_UNAVAILABLE_CLOSE_CODE
 from websocket.exceptions import WebSocketConnectionLimitUnavailable
@@ -97,6 +98,7 @@ class SingleSessionWebSocketMixin:
     _connection_slot_acquired: bool = False
     _connection_slot_heartbeat_task: asyncio.Task | None = None
     _connection_slot_worker_id: str | None = None
+    _connection_capacity_state: WebSocketIPCapacityState | None = None
 
     def _session_validation_now(self) -> float:
         return time.monotonic()
@@ -132,67 +134,67 @@ class SingleSessionWebSocketMixin:
             raise WebSocketConnectionLimitUnavailable("WebSocket connection limiter unavailable") from exc
 
     def _acquire_connection_slot_sync(
-        self, user_id: int, connection_id: str, worker_id: str
+        self, user_id: int, user_connection_id: str, worker_id: str
     ) -> ConnectionCapacityDecision:
         return acquire_connection_slot(
             self._connection_slot_redis(),
             user_id=user_id,
             worker_id=worker_id,
-            connection_id=connection_id,
+            connection_id=user_connection_id,
             limit=int(settings.WEBSOCKET_MAX_CONNECTIONS_PER_USER),
             ttl_seconds=int(settings.WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS),
         )
 
-    def _refresh_connection_slot_sync(self, user_id: int, connection_id: str, worker_id: str) -> bool:
+    def _refresh_connection_slot_sync(self, user_id: int, user_connection_id: str, worker_id: str) -> bool:
         return refresh_connection_slot(
             self._connection_slot_redis(),
             user_id=user_id,
             worker_id=worker_id,
-            connection_id=connection_id,
+            connection_id=user_connection_id,
             ttl_seconds=int(settings.WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS),
         )
 
-    def _release_connection_slot_sync(self, user_id: int, connection_id: str, worker_id: str) -> None:
+    def _release_connection_slot_sync(self, user_id: int, user_connection_id: str, worker_id: str) -> None:
         release_connection_slot(
             self._connection_slot_redis(),
             user_id=user_id,
             worker_id=worker_id,
-            connection_id=connection_id,
+            connection_id=user_connection_id,
         )
 
     async def _acquire_connection_slot(
-        self, user_id: int, connection_id: str, worker_id: str
+        self, user_id: int, user_connection_id: str, worker_id: str
     ) -> ConnectionCapacityDecision:
         return await sync_to_async(self._acquire_connection_slot_sync, thread_sensitive=True)(
             user_id,
-            connection_id,
+            user_connection_id,
             worker_id,
         )
 
-    async def _refresh_connection_slot(self, user_id: int, connection_id: str, worker_id: str) -> bool:
+    async def _refresh_connection_slot(self, user_id: int, user_connection_id: str, worker_id: str) -> bool:
         return await sync_to_async(self._refresh_connection_slot_sync, thread_sensitive=True)(
             user_id,
-            connection_id,
+            user_connection_id,
             worker_id,
         )
 
-    async def _release_connection_slot_backend(self, user_id: int, connection_id: str, worker_id: str) -> None:
+    async def _release_connection_slot_backend(self, user_id: int, user_connection_id: str, worker_id: str) -> None:
         await sync_to_async(self._release_connection_slot_sync, thread_sensitive=True)(
             user_id,
-            connection_id,
+            user_connection_id,
             worker_id,
         )
 
     async def _guard_connection_capacity(self) -> bool:
         user = self.scope.get("user")  # type: ignore[attr-defined]
         user_id = int(user.id)
-        connection_id = str(self.channel_name)  # type: ignore[attr-defined]
+        user_connection_id = str(self.channel_name)  # type: ignore[attr-defined]
         worker_lease_manager = getattr(self, "_worker_lease_manager", None)
         if worker_lease_manager is None:
             worker_lease_manager = get_websocket_worker_lease_manager()
         try:
             worker_id = await worker_lease_manager.ensure_started()
-            decision = await self._acquire_connection_slot(user_id, connection_id, worker_id)
+            decision = await self._acquire_connection_slot(user_id, user_connection_id, worker_id)
         except WEBSOCKET_CAPACITY_EXCEPTIONS:
             logger.error(
                 "WebSocket connection limiter unavailable; rejecting connection: user_id=%s path=%s",
@@ -242,20 +244,40 @@ class SingleSessionWebSocketMixin:
 
         self._connection_slot_acquired = True
         self._connection_slot_worker_id = worker_id
+        capacity_state = get_websocket_ip_capacity_state(self.scope)  # type: ignore[attr-defined]
+        self._connection_capacity_state = capacity_state
+        if capacity_state is not None:
+            capacity_state["managed_by_session_guard"] = True
         self._connection_slot_heartbeat_task = asyncio.create_task(
-            self._connection_slot_heartbeat_loop(user_id, connection_id, worker_id)
+            self._connection_slot_heartbeat_loop(user_id, user_connection_id, worker_id)
         )
         return True
 
-    async def _connection_slot_heartbeat_loop(self, user_id: int, connection_id: str, worker_id: str) -> None:
+    async def _connection_slot_heartbeat_loop(self, user_id: int, user_connection_id: str, worker_id: str) -> None:
         interval = max(1, int(settings.WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS) // 3)
+        ip_interval = max(10, int(settings.WEBSOCKET_IP_CONNECTION_SLOT_TTL_SECONDS) // 3)
+        next_ip_refresh = self._session_validation_now() + ip_interval
+        capacity_state = self._connection_capacity_state
         try:
             while True:
                 await asyncio.sleep(interval)
-                refreshed = await self._refresh_connection_slot(user_id, connection_id, worker_id)
-                if not refreshed:
+                refresh_now = self._session_validation_now()
+                refreshed = True
+                ip_refreshed = True
+                refresh_pair = capacity_state["refresh_pair"] if capacity_state else None
+                if refresh_now >= next_ip_refresh and refresh_pair is not None:
+                    refreshed, ip_refreshed = await refresh_pair(
+                        user_id,
+                        user_connection_id,
+                        worker_id,
+                        int(settings.WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS),
+                    )
+                    next_ip_refresh = refresh_now + ip_interval
+                else:
+                    refreshed = await self._refresh_connection_slot(user_id, user_connection_id, worker_id)
+                if not refreshed or not ip_refreshed:
                     logger.warning(
-                        "WebSocket connection slot missing or expired; closing connection",
+                        "WebSocket connection capacity slot missing or expired; closing connection",
                         extra={
                             "user_id": user_id,
                             "path": getattr(self, "scope", {}).get("path"),
@@ -296,6 +318,7 @@ class SingleSessionWebSocketMixin:
             self._connection_slot_acquired = False
             worker_id = self._connection_slot_worker_id
             self._connection_slot_worker_id = None
+            self._connection_capacity_state = None
             if slot_acquired and worker_id is not None:
                 user = self.scope.get("user")  # type: ignore[attr-defined]
                 try:

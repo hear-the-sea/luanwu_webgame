@@ -6,9 +6,6 @@
     {% if recruiting_tournament %}
     <p class="text-sm text-text-muted mb-3">
         当前报名池：赛事 #{{ recruiting_tournament.id }}（{{ recruiting_tournament.entry_count }}/{{ recruiting_tournament.player_limit }}）
-        {% if recruiting_tournament_virtual_fill_due %}
-        <span>系统正在补位</span>
-        {% endif %}
     </p>
     {% else %}
     <p class="text-sm text-text-muted mb-3">当前无报名池，首次报名将自动创建新赛事。</p>
@@ -101,9 +98,6 @@
             <p class="text-sm text-text-muted mb-3">
                 当前共斗池：场次 #{{ arena_coop_recruiting_event.id }}
                 （{{ arena_coop_recruiting_event.registered_entry_count|default:0 }}/{{ arena_coop_recruiting_event.player_limit }}）
-                {% if arena_coop_virtual_fill_due %}
-                <span>系统正在补位</span>
-                {% endif %}
             </p>
             {% endif %}
 

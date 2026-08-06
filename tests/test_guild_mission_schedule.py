@@ -11,7 +11,7 @@ from guilds.models import GuildMissionTemplate
 
 
 def test_scan_due_guild_missions_is_routed_to_timer_queue():
-    assert settings.CELERY_TASK_ROUTES["guilds.scan_due_missions"] == {"queue": settings.CELERY_TIMER_QUEUE}
+    assert settings.CELERY_TASK_ROUTES["guilds.scan_due_missions"] == {"queue": settings.CELERY_TIMER_SCAN_QUEUE}
 
 
 def test_scan_due_guild_missions_is_scheduled_every_minute():
@@ -24,18 +24,32 @@ def test_scan_due_guild_missions_is_scheduled_every_minute():
 def test_guild_timer_tasks_are_routed_to_timer_queue():
     expected_timer_tasks = [
         "guilds.complete_guild_mission",
-        "guilds.scan_due_missions",
         "guilds.complete_guild_raid",
+    ]
+
+    for task_name in expected_timer_tasks:
+        assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": settings.CELERY_TIMER_QUEUE}
+
+    for task_name in [
+        "guilds.scan_due_missions",
         "guilds.scan_due_raids",
         "guilds.process_single_guild_production",
         "guilds.tech_daily_production",
         "guilds.reset_weekly_stats",
         "guilds.cleanup_old_logs",
         "guilds.cleanup_invalid_hero_pool",
-    ]
-
-    for task_name in expected_timer_tasks:
-        assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": settings.CELERY_TIMER_QUEUE}
+    ]:
+        expected_queue = (
+            settings.CELERY_TIMER_MAINTENANCE_QUEUE
+            if task_name
+            in {
+                "guilds.reset_weekly_stats",
+                "guilds.cleanup_old_logs",
+                "guilds.cleanup_invalid_hero_pool",
+            }
+            else settings.CELERY_TIMER_SCAN_QUEUE
+        )
+        assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": expected_queue}
 
 
 def test_scan_due_guild_raids_is_scheduled_every_minute():

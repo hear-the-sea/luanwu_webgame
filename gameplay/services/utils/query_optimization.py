@@ -98,7 +98,9 @@ def optimize_guest_queryset(queryset: "QuerySet") -> "QuerySet":
     Returns:
         优化后的查询集
     """
-    return queryset.select_related("template", "manor").prefetch_related("gear_items__template", "guest_skills__skill")
+    # 首页只展示门客名称和状态；装备、技能属于详情/战斗读模型，
+    # 在这里预取会为每次首页访问额外加载两组关系。
+    return queryset.select_related("template", "manor")
 
 
 def optimize_mission_run_queryset(queryset: "QuerySet") -> "QuerySet":

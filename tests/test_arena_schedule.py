@@ -12,7 +12,7 @@ def test_arena_scan_tasks_have_stable_exports_and_timer_routes():
         "gameplay.scan_arena_tournaments",
         "gameplay.scan_arena_coop_events",
     ]:
-        assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": settings.CELERY_TIMER_QUEUE}
+        assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": settings.CELERY_TIMER_SCAN_QUEUE}
 
 
 def test_arena_reserve_tasks_have_stable_exports_and_routes():
@@ -26,7 +26,12 @@ def test_arena_reserve_tasks_have_stable_exports_and_routes():
         "gameplay.grow_arena_virtual_reserves",
         "gameplay.retry_arena_shortage_metric",
     ]:
-        assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": settings.CELERY_TIMER_QUEUE}
+        expected_queue = (
+            settings.CELERY_TIMER_MAINTENANCE_QUEUE
+            if task_name in {"gameplay.scan_arena_virtual_reserves", "gameplay.grow_arena_virtual_reserves"}
+            else settings.CELERY_TIMER_QUEUE
+        )
+        assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": expected_queue}
 
 
 def test_arena_reserve_and_lifecycle_schedules_are_separate():

@@ -32,7 +32,9 @@
 - `web`：`daphne`，负责 HTTP + WebSocket。
 - `worker`：默认队列。
 - `worker_battle`：`battle` 队列。
-- `worker_timer`：`timer` 队列。
+- `worker_timer`：`timer` 队列中的到期状态推进任务。
+- `worker_timer_scan`：`timer_scan` 队列中的用户相关批量扫描任务。
+- `worker_timer_maintenance`：`timer_maintenance` 队列中的虚拟玩家、竞技场储备、市场和清理维护任务。
 - `beat`：定时扫描与心跳。
 - `caddy`：自动 HTTPS、静态/媒体资源、HTTP 与 WebSocket 反向代理。
 - `db`：MySQL 8.4。
@@ -104,13 +106,15 @@ WebSocket 路由定义于 [`websocket/routing.py`](/home/daniel/code/web_game_v5
 
 Celery 配置位于 [`config/settings/celery_conf.py`](/home/daniel/code/web_game_v5/config/settings/celery_conf.py)。
 
-当前固定三类队列：
+当前固定五类队列：
 
 | 队列 | 用途 |
 |------|------|
 | `default` | 通用任务、站内维护、健康探针往返 |
 | `battle` | 战斗相关任务 |
-| `timer` | 定时完成类任务与扫描兜底 |
+| `timer` | 定时完成类任务与低延迟状态推进 |
+| `timer_scan` | 用户相关批量扫描与状态收口 |
+| `timer_maintenance` | 虚拟玩家、竞技场储备、市场和清理维护任务 |
 
 当前 beat 中的重要周期任务包括：
 
@@ -125,6 +129,7 @@ Celery 配置位于 [`config/settings/celery_conf.py`](/home/daniel/code/web_gam
 
 - 仓库没有依赖“单次精确延迟任务一定成功”的乐观假设，多个玩法都保留扫描兜底。
 - 拍卖轮次不是结束瞬间同步结算，而是由 `trade.settle_auction_round` 轮询到期轮次处理。
+- 交易行统计缓存键为 `market:stats`，短 TTL 只作为读侧优化；上架、购买、取消和过期写入均在事务提交后失效缓存，事务回滚不会清除旧值。
 - 真实多进程互斥、行锁与 Redis 共享语义不能靠 hermetic 测试替代。
 
 ## 战斗与玩法写路径

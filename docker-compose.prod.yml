@@ -219,6 +219,94 @@ services:
         max-file: "5"
     restart: unless-stopped
 
+  worker_timer_scan:
+    image: ${WEBGAME_IMAGE:-webgame:v1}
+    pull_policy: never
+    env_file: ${WEBGAME_ENV_FILE:-.env.docker}
+    environment:
+      DJANGO_COLLECTSTATIC: "0"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    command:
+      [
+        "bash",
+        "/app/docker/entrypoint.sh",
+        "celery",
+        "-A",
+        "config",
+        "worker",
+        "-l",
+        "info",
+        "-Q",
+        "${CELERY_TIMER_SCAN_QUEUE:-timer_scan}",
+        "--concurrency",
+        "${CELERY_TIMER_SCAN_CONCURRENCY:-2}",
+        "--prefetch-multiplier",
+        "${CELERY_PREFETCH_MULTIPLIER:-1}",
+        "--max-tasks-per-child",
+        "${CELERY_MAX_TASKS_PER_CHILD:-500}",
+      ]
+    volumes:
+      - ./runtime/media:/app/media
+    depends_on:
+      - db
+      - redis
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+    restart: unless-stopped
+
+  worker_timer_maintenance:
+    image: ${WEBGAME_IMAGE:-webgame:v1}
+    pull_policy: never
+    env_file: ${WEBGAME_ENV_FILE:-.env.docker}
+    environment:
+      DJANGO_COLLECTSTATIC: "0"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    command:
+      [
+        "bash",
+        "/app/docker/entrypoint.sh",
+        "celery",
+        "-A",
+        "config",
+        "worker",
+        "-l",
+        "info",
+        "-Q",
+        "${CELERY_TIMER_MAINTENANCE_QUEUE:-timer_maintenance}",
+        "--concurrency",
+        "${CELERY_TIMER_MAINTENANCE_CONCURRENCY:-1}",
+        "--prefetch-multiplier",
+        "${CELERY_PREFETCH_MULTIPLIER:-1}",
+        "--max-tasks-per-child",
+        "${CELERY_MAX_TASKS_PER_CHILD:-500}",
+      ]
+    volumes:
+      - ./runtime/media:/app/media
+    depends_on:
+      - db
+      - redis
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+    restart: unless-stopped
+
   beat:
     image: ${WEBGAME_IMAGE:-webgame:v1}
     pull_policy: never

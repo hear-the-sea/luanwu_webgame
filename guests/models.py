@@ -249,6 +249,14 @@ class Guest(models.Model):
             models.Index(fields=["manor", "status"], name="guest_manor_status_idx"),
             models.Index(fields=["manor", "-created_at"], name="guest_manor_created_idx"),
             models.Index(fields=["training_complete_at"], name="guest_training_idx"),
+            models.Index(
+                fields=["status", "last_hp_recovery_at", "id"],
+                name="guest_hp_recovery_scan_idx",
+            ),
+            models.Index(
+                fields=["status", "injury_loyalty_processed_at", "id"],
+                name="guest_injury_loyalty_idx",
+            ),
         ]
 
     def __str__(self) -> str:

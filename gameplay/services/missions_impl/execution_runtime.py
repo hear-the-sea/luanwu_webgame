@@ -32,7 +32,7 @@ def refresh_mission_runs_entry(
     logger: Any,
     now_func: Callable[[], Any],
     try_dispatch_mission_refresh_task: Callable[..., bool],
-    finalize_mission_run: Callable[..., None],
+    finalize_mission_run: Callable[..., object],
 ) -> None:
     refresh_mission_runs_command(
         manor,
@@ -53,7 +53,7 @@ def schedule_mission_completion_entry(
     logger: Any,
     now_func: Callable[[], Any],
     safe_apply_async: Callable[..., bool],
-    finalize_mission_run: Callable[..., None],
+    finalize_mission_run: Callable[..., object],
 ) -> None:
     schedule_mission_completion_command(
         run,

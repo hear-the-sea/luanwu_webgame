@@ -191,7 +191,11 @@ def get_home_context(manor) -> dict:
         "total_guest_salary": total_guest_salary,
         "building_income": building_income,
         "grain_production": hourly_rates.get("grain", 0),
-        "personnel_grain_cost": get_personnel_grain_cost_per_hour(manor),
+        "personnel_grain_cost": get_personnel_grain_cost_per_hour(
+            manor,
+            guest_count=len(guests),
+            troop_count=sum(int(getattr(troop, "count", 0) or 0) for troop in player_troops),
+        ),
         "player_troops": player_troops,
         "active_scouts": get_active_scouts(manor),
         "active_raids": get_active_raids(manor),

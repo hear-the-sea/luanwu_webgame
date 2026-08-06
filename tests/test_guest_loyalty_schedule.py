@@ -8,7 +8,9 @@ def test_process_daily_loyalty_is_routed_to_timer_queue():
 
 
 def test_injury_loyalty_decay_is_routed_to_timer_queue_and_scheduled_each_minute():
-    assert settings.CELERY_TASK_ROUTES["guests.scan_injury_loyalty_decay"] == {"queue": settings.CELERY_TIMER_QUEUE}
+    assert settings.CELERY_TASK_ROUTES["guests.scan_injury_loyalty_decay"] == {
+        "queue": settings.CELERY_TIMER_SCAN_QUEUE
+    }
 
     entry = settings.CELERY_BEAT_SCHEDULE["scan-injury-loyalty-decay"]
     assert entry["task"] == "guests.scan_injury_loyalty_decay"

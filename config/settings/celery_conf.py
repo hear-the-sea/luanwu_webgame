@@ -24,7 +24,26 @@ CELERY_TASK_STORE_EAGER_RESULT = False
 CELERY_DEFAULT_QUEUE = env("CELERY_DEFAULT_QUEUE", "default")
 CELERY_BATTLE_QUEUE = env("CELERY_BATTLE_QUEUE", "battle")
 CELERY_TIMER_QUEUE = env("CELERY_TIMER_QUEUE", "timer")
+CELERY_TIMER_SCAN_QUEUE = env("CELERY_TIMER_SCAN_QUEUE", "timer_scan")
+CELERY_TIMER_MAINTENANCE_QUEUE = env("CELERY_TIMER_MAINTENANCE_QUEUE", "timer_maintenance")
 CELERY_TASK_DEFAULT_QUEUE = CELERY_DEFAULT_QUEUE
+
+
+def _validate_celery_queue_names(queue_names: tuple[str, ...]) -> None:
+    if any(not isinstance(queue_name, str) or not queue_name.strip() for queue_name in queue_names):
+        raise RuntimeError("Celery queue names must be non-empty")
+    if len(queue_names) != len(set(queue_names)):
+        raise RuntimeError("Celery queue names must be unique")
+
+
+_CELERY_QUEUE_NAMES = (
+    CELERY_DEFAULT_QUEUE,
+    CELERY_BATTLE_QUEUE,
+    CELERY_TIMER_QUEUE,
+    CELERY_TIMER_SCAN_QUEUE,
+    CELERY_TIMER_MAINTENANCE_QUEUE,
+)
+_validate_celery_queue_names(_CELERY_QUEUE_NAMES)
 
 HEALTH_CHECK_CELERY_WORKERS = (
     env(
@@ -50,85 +69,111 @@ HEALTH_CHECK_CELERY_ROUNDTRIP = (
 HEALTH_CHECK_CELERY_BEAT_MAX_AGE_SECONDS = int(env("DJANGO_HEALTH_CHECK_CELERY_BEAT_MAX_AGE_SECONDS", "180"))
 HEALTH_CHECK_CELERY_ROUNDTRIP_TIMEOUT_SECONDS = float(env("DJANGO_HEALTH_CHECK_CELERY_ROUNDTRIP_TIMEOUT_SECONDS", "3"))
 
-CELERY_TASK_QUEUES = (
-    Queue(CELERY_DEFAULT_QUEUE),
-    Queue(CELERY_BATTLE_QUEUE),
-    Queue(CELERY_TIMER_QUEUE),
+CELERY_TASK_QUEUES = tuple(Queue(queue_name) for queue_name in _CELERY_QUEUE_NAMES)
+
+# 批量扫描/维护任务与单记录完成任务分开消费，避免一个慢扫描阻塞到期状态推进。
+CELERY_TIMER_SCAN_TASKS = frozenset(
+    {
+        "gameplay.scan_due_missions",
+        "gameplay.scan_building_upgrades",
+        "gameplay.scan_technology_upgrades",
+        "gameplay.scan_troop_recruitments",
+        "gameplay.scan_horse_productions",
+        "gameplay.scan_livestock_productions",
+        "gameplay.scan_smelting_productions",
+        "gameplay.scan_equipment_forgings",
+        "gameplay.complete_work_assignments",
+        "gameplay.sync_resource_production",
+        "guests.scan_training",
+        "guests.scan_recruitments",
+        "guests.scan_passive_hp_recovery",
+        "guests.scan_injury_loyalty_decay",
+        "gameplay.scan_scout_records",
+        "gameplay.scan_arena_tournaments",
+        "gameplay.scan_arena_coop_events",
+        "gameplay.scan_raid_runs",
+        "guilds.scan_due_raids",
+        "guilds.scan_due_missions",
+        "guilds.process_single_guild_production",
+        "guilds.tech_daily_production",
+    }
 )
 
+# Low-priority or potentially long-running maintenance is isolated so it cannot
+# consume the small timer-scan worker pool needed for user-facing state scans.
+CELERY_TIMER_MAINTENANCE_TASKS = frozenset(
+    {
+        "gameplay.scan_arena_virtual_reserves",
+        "gameplay.grow_arena_virtual_reserves",
+        "gameplay.plan_virtual_players",
+        "gameplay.roll_virtual_players",
+        "gameplay.scan_external_strength_reconciliations",
+        "gameplay.scan_virtual_player_population_demands",
+        "gameplay.aggregate_virtual_player_safety",
+        "gameplay.monitor_virtual_player_safety",
+        "gameplay.cleanup_virtual_player_safety_metrics",
+        "gameplay.cleanup_virtual_player_jail",
+        "gameplay.backfill_global_mail_campaign",
+        "gameplay.cleanup_old_data",
+        "gameplay.decay_prisoner_loyalty",
+        "gameplay.scan_world_chat_attempts",
+        "guilds.cleanup_invalid_hero_pool",
+        "guilds.reset_weekly_stats",
+        "guilds.cleanup_old_logs",
+        "trade.refresh_shop_stock",
+        "trade.process_expired_listings",
+        "trade.process_pending_auction_deliveries",
+        "trade.settle_auction_round",
+        "trade.create_auction_round",
+    }
+)
+
+# Keep every timer task in exactly one queue group. The route map is generated
+# below so adding a task cannot silently leave a stale second definition behind.
+CELERY_TIMER_DEFAULT_TASKS = frozenset(
+    {
+        "core.record_celery_beat_heartbeat",
+        "gameplay.complete_mission",
+        "gameplay.complete_building_upgrade",
+        "gameplay.complete_technology_upgrade",
+        "gameplay.complete_troop_recruitment",
+        "gameplay.complete_horse_production",
+        "gameplay.complete_livestock_production",
+        "gameplay.complete_smelting_production",
+        "gameplay.complete_equipment_forging",
+        "guests.complete_training",
+        "guests.complete_recruitment",
+        "guests.process_daily_loyalty",
+        "gameplay.complete_scout",
+        "gameplay.complete_scout_return",
+        "gameplay.reconcile_arena_virtual_reserve",
+        "gameplay.retry_arena_shortage_metric",
+        "gameplay.process_raid_battle",
+        "gameplay.complete_raid",
+        "gameplay.reconcile_external_strength_reconciliation",
+        "gameplay.reconcile_virtual_player_population_cell",
+        "gameplay.heartbeat_virtual_player_maintenance_attempt_emitter",
+        "gameplay.heartbeat_virtual_player_h01_callback_attempt_emitter",
+        "gameplay.heartbeat_virtual_player_arena_shortage_emitter",
+        "gameplay.publish_world_chat_attempt",
+        "gameplay.refund_world_chat_attempt",
+        "guilds.complete_guild_mission",
+        "guilds.complete_guild_raid",
+    }
+)
+
+CELERY_TASK_QUEUE_GROUPS = (
+    (CELERY_BATTLE_QUEUE, frozenset({"battle.generate_report"})),
+    (CELERY_TIMER_QUEUE, CELERY_TIMER_DEFAULT_TASKS),
+    (CELERY_TIMER_SCAN_QUEUE, CELERY_TIMER_SCAN_TASKS),
+    (CELERY_TIMER_MAINTENANCE_QUEUE, CELERY_TIMER_MAINTENANCE_TASKS),
+)
+_CELERY_TASK_NAMES = [task_name for _queue_name, task_names in CELERY_TASK_QUEUE_GROUPS for task_name in task_names]
+if len(_CELERY_TASK_NAMES) != len(set(_CELERY_TASK_NAMES)):
+    raise RuntimeError("Celery task queue groups must be disjoint")
+
 CELERY_TASK_ROUTES = {
-    "battle.generate_report": {"queue": CELERY_BATTLE_QUEUE},
-    "core.record_celery_beat_heartbeat": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.complete_mission": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_due_missions": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.complete_building_upgrade": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_building_upgrades": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.complete_technology_upgrade": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_technology_upgrades": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.complete_troop_recruitment": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_troop_recruitments": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.complete_horse_production": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_horse_productions": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.complete_livestock_production": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_livestock_productions": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.complete_smelting_production": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_smelting_productions": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.complete_equipment_forging": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_equipment_forgings": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.complete_work_assignments": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.sync_resource_production": {"queue": CELERY_TIMER_QUEUE},
-    "guests.complete_training": {"queue": CELERY_TIMER_QUEUE},
-    "guests.scan_training": {"queue": CELERY_TIMER_QUEUE},
-    "guests.complete_recruitment": {"queue": CELERY_TIMER_QUEUE},
-    "guests.scan_recruitments": {"queue": CELERY_TIMER_QUEUE},
-    "guests.scan_passive_hp_recovery": {"queue": CELERY_TIMER_QUEUE},
-    "guests.scan_injury_loyalty_decay": {"queue": CELERY_TIMER_QUEUE},
-    "guests.process_daily_loyalty": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.complete_scout": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.complete_scout_return": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_scout_records": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_arena_tournaments": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_arena_coop_events": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.reconcile_arena_virtual_reserve": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_arena_virtual_reserves": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.grow_arena_virtual_reserves": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.retry_arena_shortage_metric": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.process_raid_battle": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.complete_raid": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_raid_runs": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.plan_virtual_players": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.roll_virtual_players": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.reconcile_external_strength_reconciliation": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_external_strength_reconciliations": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.reconcile_virtual_player_population_cell": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_virtual_player_population_demands": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.heartbeat_virtual_player_maintenance_attempt_emitter": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.heartbeat_virtual_player_h01_callback_attempt_emitter": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.heartbeat_virtual_player_arena_shortage_emitter": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.aggregate_virtual_player_safety": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.monitor_virtual_player_safety": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.cleanup_virtual_player_safety_metrics": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.cleanup_virtual_player_jail": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.backfill_global_mail_campaign": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.cleanup_old_data": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.decay_prisoner_loyalty": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.publish_world_chat_attempt": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.refund_world_chat_attempt": {"queue": CELERY_TIMER_QUEUE},
-    "gameplay.scan_world_chat_attempts": {"queue": CELERY_TIMER_QUEUE},
-    "guilds.complete_guild_mission": {"queue": CELERY_TIMER_QUEUE},
-    "guilds.cleanup_invalid_hero_pool": {"queue": CELERY_TIMER_QUEUE},
-    "guilds.complete_guild_raid": {"queue": CELERY_TIMER_QUEUE},
-    "guilds.scan_due_raids": {"queue": CELERY_TIMER_QUEUE},
-    "guilds.scan_due_missions": {"queue": CELERY_TIMER_QUEUE},
-    "guilds.process_single_guild_production": {"queue": CELERY_TIMER_QUEUE},
-    "guilds.tech_daily_production": {"queue": CELERY_TIMER_QUEUE},
-    "guilds.reset_weekly_stats": {"queue": CELERY_TIMER_QUEUE},
-    "guilds.cleanup_old_logs": {"queue": CELERY_TIMER_QUEUE},
-    "trade.refresh_shop_stock": {"queue": CELERY_TIMER_QUEUE},
-    "trade.process_expired_listings": {"queue": CELERY_TIMER_QUEUE},
-    "trade.process_pending_auction_deliveries": {"queue": CELERY_TIMER_QUEUE},
-    "trade.settle_auction_round": {"queue": CELERY_TIMER_QUEUE},
-    "trade.create_auction_round": {"queue": CELERY_TIMER_QUEUE},
+    task_name: {"queue": queue_name} for queue_name, task_names in CELERY_TASK_QUEUE_GROUPS for task_name in task_names
 }
 
 CELERY_BEAT_SCHEDULE = {

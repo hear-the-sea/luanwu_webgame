@@ -113,6 +113,7 @@ class GuildMissionRun(models.Model):
         ]
         indexes = [
             models.Index(fields=["guild", "status", "-started_at"], name="gmr_guild_status_st_idx"),
+            models.Index(fields=["status", "return_at", "id"], name="gmr_due_scan_idx"),
         ]
 
     def __str__(self) -> str:

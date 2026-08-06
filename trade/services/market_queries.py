@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import Any, Collection
+
+from django.utils import timezone
 
 
 def get_active_listings_queryset(
@@ -62,7 +65,13 @@ def get_my_listings_queryset(*, market_listing_model: Any, manor: Any, status: s
 
 def get_market_stats_payload(*, market_listing_model: Any, market_transaction_model: Any, now: Any) -> dict[str, int]:
     active_count = market_listing_model.objects.filter(status=market_listing_model.Status.ACTIVE).count()
-    sold_today = market_transaction_model.objects.filter(transaction_at__date=now.date()).count()
+    local_now = timezone.localtime(now) if timezone.is_aware(now) else now
+    day_start = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_end = day_start + timedelta(days=1)
+    sold_today = market_transaction_model.objects.filter(
+        transaction_at__gte=day_start,
+        transaction_at__lt=day_end,
+    ).count()
     return {
         "active_count": active_count,
         "sold_today": sold_today,

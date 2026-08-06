@@ -369,8 +369,9 @@ def test_get_my_listings_ignores_all_status():
 # ============ get_market_stats tests ============
 
 
-def test_get_market_stats_returns_expected_keys():
+def test_get_market_stats_returns_expected_keys(monkeypatch):
     """Test that get_market_stats returns expected keys."""
+    monkeypatch.setattr(market_service, "get_or_set", lambda _key, default_func, timeout: default_func())
     with patch.object(market_service.MarketListing, "objects") as mock_listing_qs:
         with patch.object(market_service.MarketTransaction, "objects") as mock_tx_qs:
             mock_listing_qs.filter.return_value.count.return_value = 10
@@ -382,6 +383,29 @@ def test_get_market_stats_returns_expected_keys():
             assert "sold_today" in stats
             assert stats["active_count"] == 10
             assert stats["sold_today"] == 5
+
+
+def test_get_market_stats_uses_local_day_range_for_transaction_index():
+    now = timezone.make_aware(
+        timezone.datetime(2026, 8, 5, 12, 30),
+        timezone.get_current_timezone(),
+    )
+    expected_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    expected_end = expected_start + timedelta(days=1)
+
+    with patch.object(market_service, "get_or_set", lambda _key, default_func, timeout: default_func()):
+        with patch.object(market_service.timezone, "now", return_value=now):
+            with patch.object(market_service.MarketListing, "objects") as mock_listing_qs:
+                with patch.object(market_service.MarketTransaction, "objects") as mock_tx_qs:
+                    mock_listing_qs.filter.return_value.count.return_value = 0
+                    mock_tx_qs.filter.return_value.count.return_value = 0
+
+                    market_service.get_market_stats()
+
+    mock_tx_qs.filter.assert_called_once_with(
+        transaction_at__gte=expected_start,
+        transaction_at__lt=expected_end,
+    )
 
 
 # ============ get_tradeable_inventory tests ============

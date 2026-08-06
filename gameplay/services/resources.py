@@ -480,7 +480,12 @@ def settle_resource_production_locked(
     update_fields = list(projected_values.keys()) + ["resource_updated_at"]
     manor.save(update_fields=update_fields)
     if int(settled.get(ResourceType.GRAIN, 0) or 0) != 0:
-        _set_warehouse_grain_quantity_locked(manor, int(manor.grain))
+        _set_warehouse_grain_quantity_locked(
+            manor,
+            int(manor.grain),
+            grain_template=grain_template,
+            grain_template_resolved=grain_template_resolved,
+        )
 
     if settled:
         log_resource_gain(
@@ -623,19 +628,27 @@ def sync_resource_production(
     manor: Manor,
     *,
     persist: bool = True,
+    refresh: bool = True,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
 ) -> None:
     """
     同步庄园资源产出，根据离线时间计算并发放资源。
 
-    `persist=True` 时会在锁内落库并刷新传入对象。
+    `persist=True` 时会在锁内落库并默认刷新传入对象。
+    当调用方不会继续使用传入对象时，可传入 `refresh=False` 避免一次无用回读。
     `persist=False` 时仅将计算结果投影到传入对象本身，不写入数据库。
+    批量调用方可传入已解析的粮食模板，避免每个庄园重复查询同一模板。
 
     Uses row-level locking to prevent concurrent race conditions that could
     lead to duplicate resource awards when persistence is enabled.
 
     Args:
-        manor: 庄园对象（会被刷新以反映最新状态）
+        manor: 庄园对象；仅当 `refresh=True` 时会回读以反映最新状态
         persist: 是否持久化到数据库
+        refresh: 持久化后是否回读传入的庄园对象
+        grain_template: 可复用的粮食物品模板
+        grain_template_resolved: 是否已完成粮食模板解析（包括解析为空）
     """
     now = timezone.now()
     if not persist:
@@ -646,7 +659,8 @@ def sync_resource_production(
         elapsed_hint = (now - manor.resource_updated_at).total_seconds()
         if elapsed_hint < min_interval:
             if persist:
-                manor.refresh_from_db(fields=RESOURCE_FIELDS + ["resource_updated_at"])
+                if refresh:
+                    manor.refresh_from_db(fields=RESOURCE_FIELDS + ["resource_updated_at"])
                 _clear_warehouse_grain_projection(manor)
             return
 
@@ -662,9 +676,15 @@ def sync_resource_production(
 
     with transaction.atomic():
         locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
-        _sync_resource_production_locked(locked_manor, now=now)
+        _sync_resource_production_locked(
+            locked_manor,
+            now=now,
+            grain_template=grain_template,
+            grain_template_resolved=grain_template_resolved,
+        )
 
-    manor.refresh_from_db(fields=RESOURCE_FIELDS + ["resource_updated_at"])
+    if refresh:
+        manor.refresh_from_db(fields=RESOURCE_FIELDS + ["resource_updated_at"])
     _clear_warehouse_grain_projection(manor)
 
 

@@ -5,12 +5,14 @@ import uuid
 import pytest
 from django_redis import get_redis_connection
 
+from websocket.backends.capacity_heartbeat import refresh_connection_and_ip_capacity_slots
 from websocket.backends.connection_limiter import (
     ConnectionCapacityDecision,
     acquire_connection_slot,
     refresh_connection_slot,
     release_connection_slot,
 )
+from websocket.backends.ip_capacity import IPCapacityResult, acquire_ip_capacity, release_ip_capacity_slot
 from websocket.backends.worker_lease import encode_worker_owned_member, worker_lease_key
 from websocket.exceptions import WebSocketConnectionLimitUnavailable
 
@@ -188,6 +190,93 @@ def test_refresh_uses_the_redis_sorted_set_api_only():
         ttl_seconds=10,
         now_ts=105,
     )
+
+
+def test_combined_capacity_refresh_uses_distinct_members_for_both_slots():
+    class _Pipeline:
+        def __init__(self) -> None:
+            self.commands = []
+
+        def eval(self, *args):
+            self.commands.append(args)
+            return self
+
+        def execute(self):
+            return [1, 1]
+
+    class _PipelineRedis:
+        def __init__(self) -> None:
+            self.pipeline_instance = _Pipeline()
+
+        def pipeline(self, *, transaction):
+            assert transaction is True
+            return self.pipeline_instance
+
+    redis = _PipelineRedis()
+
+    assert refresh_connection_and_ip_capacity_slots(
+        redis,
+        user_id=10,
+        client_ip="203.0.113.10",
+        worker_id="a" * 32,
+        user_connection_id="user-channel",
+        ip_connection_id="ip-uuid",
+        user_ttl_seconds=30,
+        ip_ttl_seconds=120,
+    ) == (True, True)
+    assert len(redis.pipeline_instance.commands) == 2
+    assert redis.pipeline_instance.commands[0][3] == encode_worker_owned_member("a" * 32, "user-channel")
+    assert redis.pipeline_instance.commands[1][3] == encode_worker_owned_member("a" * 32, "ip-uuid")
+    assert redis.pipeline_instance.commands[0][3] != redis.pipeline_instance.commands[1][3]
+
+
+@pytest.mark.integration
+def test_combined_capacity_refresh_renews_distinct_acquired_slots_against_real_redis():
+    redis = get_redis_connection("default")
+    user_id = uuid.uuid4().int % 2_000_000_000
+    client_ip = f"203.0.113.{uuid.uuid4().int % 200 + 1}"
+    user_connection_id = f"user-{uuid.uuid4()}"
+    ip_connection_id = f"ip-{uuid.uuid4()}"
+    worker_id = uuid.uuid4().hex
+
+    try:
+        redis.set(worker_lease_key(worker_id), "1", ex=30)
+        assert acquire_connection_slot(
+            redis,
+            user_id=user_id,
+            worker_id=worker_id,
+            connection_id=user_connection_id,
+            limit=1,
+            ttl_seconds=30,
+        ).allowed
+        assert (
+            acquire_ip_capacity(
+                redis,
+                client_ip=client_ip,
+                worker_id=worker_id,
+                connection_id=ip_connection_id,
+                connection_limit=1,
+                rate_per_second=100,
+                burst=100,
+                ttl_seconds=30,
+            ).result
+            is IPCapacityResult.ACQUIRED
+        )
+
+        assert refresh_connection_and_ip_capacity_slots(
+            redis,
+            user_id=user_id,
+            client_ip=client_ip,
+            worker_id=worker_id,
+            user_connection_id=user_connection_id,
+            ip_connection_id=ip_connection_id,
+            user_ttl_seconds=30,
+            ip_ttl_seconds=30,
+        ) == (True, True)
+    finally:
+        release_connection_slot(redis, user_id=user_id, worker_id=worker_id, connection_id=user_connection_id)
+        release_ip_capacity_slot(redis, client_ip=client_ip, worker_id=worker_id, connection_id=ip_connection_id)
+        redis.delete(worker_lease_key(worker_id))
 
 
 @pytest.mark.integration

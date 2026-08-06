@@ -16,15 +16,19 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 READINESS_SCRIPT = PROJECT_ROOT / "scripts" / "check_web_readiness.py"
 
 
-def _read_env_example() -> dict[str, str]:
+def _read_env_file(path: Path) -> dict[str, str]:
     values: dict[str, str] = {}
-    for line in (PROJECT_ROOT / ".env.example").read_text(encoding="utf-8").splitlines():
+    for line in path.read_text(encoding="utf-8").splitlines():
         stripped = line.strip()
         if not stripped or stripped.startswith("#") or "=" not in stripped:
             continue
         key, value = stripped.split("=", 1)
         values[key] = value
     return values
+
+
+def _read_env_example() -> dict[str, str]:
+    return _read_env_file(PROJECT_ROOT / ".env.example")
 
 
 def _load_readiness_module():
@@ -312,7 +316,15 @@ def test_prod_compose_uses_caddy_as_the_only_public_ingress() -> None:
     assert "caddy_data" in compose["volumes"]
     assert "caddy_config" in compose["volumes"]
 
-    for service_name in ("web", "worker", "worker_battle", "worker_timer", "beat"):
+    for service_name in (
+        "web",
+        "worker",
+        "worker_battle",
+        "worker_timer",
+        "worker_timer_scan",
+        "worker_timer_maintenance",
+        "beat",
+    ):
         assert services[service_name]["env_file"] == "${WEBGAME_ENV_FILE:-.env.docker}"
 
 
@@ -365,6 +377,14 @@ def test_env_example_uses_local_development_defaults() -> None:
     assert values["DJANGO_SECURE_SSL_REDIRECT"] == "0"
 
 
+@pytest.mark.parametrize("filename", [".env.example", ".env.docker.example", ".env.docker.prod.example"])
+def test_env_examples_define_split_timer_concurrencies(filename: str) -> None:
+    values = _read_env_file(PROJECT_ROOT / filename)
+
+    assert values["CELERY_TIMER_SCAN_CONCURRENCY"] == "2"
+    assert values["CELERY_TIMER_MAINTENANCE_CONCURRENCY"] == "1"
+
+
 def test_prod_env_enables_full_async_readiness_checks() -> None:
     values: dict[str, str] = {}
     for line in (PROJECT_ROOT / ".env.docker.prod.example").read_text(encoding="utf-8").splitlines():
@@ -392,7 +412,15 @@ def test_prod_runbook_chowns_runtime_dirs_for_appuser_collectstatic() -> None:
 def test_prod_collectstatic_only_runs_where_staticfiles_volume_is_writable() -> None:
     compose = yaml.safe_load((PROJECT_ROOT / "docker-compose.prod.yml").read_text(encoding="utf-8"))
 
-    app_services = ["web", "worker", "worker_battle", "worker_timer", "beat"]
+    app_services = [
+        "web",
+        "worker",
+        "worker_battle",
+        "worker_timer",
+        "worker_timer_scan",
+        "worker_timer_maintenance",
+        "beat",
+    ]
     for service_name in app_services:
         service = compose["services"][service_name]
         volumes = service.get("volumes") or []

@@ -253,8 +253,7 @@ def scan_due_guild_missions(limit: int = 200) -> int:
     count = 0
     for run in qs:
         try:
-            finalize_guild_mission_run(run, now=now)
-            if not GuildMissionRun.objects.filter(pk=run.pk, status=GuildMissionRun.Status.ACTIVE).exists():
+            if finalize_guild_mission_run(run, now=now):
                 count += 1
         except GUILD_MISSION_TASK_RETRY_EXCEPTIONS:
             logger.exception("Failed to finalize guild mission run %d", run.id)

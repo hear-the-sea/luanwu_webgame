@@ -22,6 +22,7 @@ class PlayerTechnology(models.Model):
         unique_together = ("manor", "tech_key")
         indexes = [
             models.Index(fields=["manor", "is_upgrading", "upgrade_complete_at"], name="tech_upgrade_idx"),
+            models.Index(fields=["is_upgrading", "upgrade_complete_at", "id"], name="tech_due_scan_idx"),
         ]
 
     def __str__(self) -> str:

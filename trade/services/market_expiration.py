@@ -33,6 +33,7 @@ def expire_listings_queryset(
     create_message_func: Callable[..., object],
     notify_user_func: Callable[..., object],
     logger,
+    schedule_market_stats_cache_invalidation: Callable[[], None],
     limit: int | None = None,
 ) -> int:
     normalized_limit = normalize_expire_limit(limit)
@@ -107,6 +108,8 @@ def expire_listings_queryset(
 
                 listing.delete()
                 count += 1
+
+            schedule_market_stats_cache_invalidation()
 
             _market_notification_helpers.safe_send_market_message(
                 create_message_func=create_message_func,

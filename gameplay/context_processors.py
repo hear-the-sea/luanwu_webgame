@@ -8,6 +8,7 @@ from django.db import DatabaseError
 
 import gameplay.selectors.sidebar as sidebar_selector
 import gameplay.selectors.stats as stats_selector
+from gameplay.request_context import get_prepared_manor
 from gameplay.services.action_points import ACTION_POINTS_MAX
 from gameplay.services.utils.messages import unread_message_count
 
@@ -56,7 +57,7 @@ def _should_include_home_sidebar(request) -> bool:
 
 def _populate_authenticated_context(context: dict[str, Any], request) -> None:
     try:
-        manor = request.user.manor
+        manor = get_prepared_manor(request, user_id=getattr(request.user, "id", None)) or request.user.manor
     except (ObjectDoesNotExist, DatabaseError):
         logger.warning("Failed to resolve manor for sidebar context", exc_info=True)
         return

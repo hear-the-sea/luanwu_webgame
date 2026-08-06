@@ -1,6 +1,6 @@
 # Docker 部署运行手册
 
-> 最近校正：2026-07-13
+> 最近校正：2026-08-06
 
 本文档沉淀当前仓库在 WSL2 本地构建、导出镜像、传输到服务器、更新运行中容器与排查常见 Docker 发布问题的实操经验。
 
@@ -17,17 +17,29 @@
 
 当前生产 Docker 方案不是“单容器全包”，而是：
 
-- 应用业务镜像一张，同时供 `web`、`worker`、`worker_battle`、`worker_timer`、`beat` 复用
+- 应用业务镜像一张，同时供 `web`、`worker`、`worker_battle`、`worker_timer`、`worker_timer_scan`、`worker_timer_maintenance`、`beat` 复用
 - `db` 使用 MySQL 容器
 - `redis` 使用 Redis 容器
 - `caddy` 直接监听公网 `80/443`，自动管理 HTTPS、静态资源和反向代理
+
+生产 Compose 明确拆分了 Celery 队列：
+
+- `worker` 只消费 `default` 队列
+- `worker_battle` 只消费 `battle` 队列
+- `worker_timer` 只消费 `timer` 队列
+- `worker_timer_scan` 只消费 `timer_scan` 队列
+- `worker_timer_maintenance` 只消费 `timer_maintenance` 队列
+- `beat` 只负责发布定时任务，不消费业务任务
+
+因此，生产部署时必须把 `worker_timer_scan` 和 `worker_timer_maintenance` 一并启动。只启动
+`worker` 不会自动创建或启动这两个独立的定时 worker 容器。
 
 生产镜像内应用进程使用 UID/GID `10001:10001` 运行；`web` 容器在
 [`docker-compose.prod.yml`](/home/daniel/code/web_game_v5/docker-compose.prod.yml#L42)
 中启用了 `read_only: true`。因此 `DJANGO_COLLECTSTATIC=1` 依赖
 `./runtime/staticfiles:/app/staticfiles` 这个可写 volume，首次部署和由 root 创建
 runtime 目录后，都必须把 runtime 目录归属修正给 `10001:10001`。
-`worker`、`worker_battle`、`worker_timer`、`beat` 没有挂载 `/app/staticfiles`，
+`worker`、`worker_battle`、`worker_timer`、`worker_timer_scan`、`worker_timer_maintenance`、`beat` 没有挂载 `/app/staticfiles`，
 生产 Compose 已对这些服务设置 `DJANGO_COLLECTSTATIC=0`，避免只读容器在启动时写静态目录。
 
 这意味着发布时通常只需要传输业务镜像；数据库和 Redis 由服务器上的 Compose 编排直接启动。
@@ -42,6 +54,27 @@ Caddy 是唯一公网入口，直接监听 TCP `80/443`，并额外暴露 UDP `4
 - 公网入站 TCP `80/443` 已放行并转发到该服务器；UDP `443` 可选放行以启用 HTTP/3。
 - 服务器上没有其他进程占用 `80/443`。
 - `caddy_data` 和 `caddy_config` 命名卷必须保留；执行 `docker compose down -v` 会删除证书和 ACME 账户状态。
+
+## 服务器前置检查
+
+以下命令在生产服务器上执行。部署目录和镜像名可以按实际环境调整；本文后续命令默认使用
+`/opt/web_game_v5` 和 `webgame:v1`。
+
+```bash
+docker version
+docker compose version
+docker info >/dev/null
+```
+
+还需要确认：
+
+1. 服务器已经安装 Docker Engine 和 Docker Compose V2，当前用户有权访问 Docker daemon。
+2. 生产域名的 A/AAAA 记录已经指向服务器；没有可达 IPv6 时不要配置错误的 AAAA 记录。
+3. 防火墙或云安全组已放行 TCP `80`、`443`；UDP `443` 用于可选的 HTTP/3。
+4. 服务器上的 `80/443` 没有被其他 Web 服务占用。
+5. 应用镜像已经传到服务器，或者准备在服务器上完成镜像加载。
+6. `.env.docker` 中的 `CADDY_SITE_ADDRESS`、`DJANGO_ALLOWED_HOSTS` 和
+   `DJANGO_CSRF_TRUSTED_ORIGINS` 指向同一个生产域名。
 
 ## 本地构建镜像
 
@@ -105,50 +138,141 @@ Loaded image: webgame:v1
 
 后续 `WEBGAME_IMAGE`、`docker rmi`、`docker compose` 中引用的镜像名，都应以这里的实际输出为准。
 
-## 首次部署
+## 首次部署（完整流程）
 
-首次部署前准备目录和环境变量：
+以下流程适用于服务器第一次部署，或服务器上还没有这套生产 Compose 项目的情况。命令按顺序
+执行，不建议把迁移和业务容器启动合并成一个不可检查的长命令。
+
+### 1. 准备部署目录、镜像和运行目录
+
+先把仓库中的 `docker-compose.prod.yml`、`docker/`、`runtime/` 相关目录和镜像包传到服务器，
+然后执行：
 
 ```bash
 cd "/opt/web_game_v5"
-mkdir -p "runtime/media" "runtime/staticfiles" "runtime/celerybeat"
-chown -R "10001:10001" "runtime/staticfiles" "runtime/media" "runtime/celerybeat"
-cp ".env.docker.prod.example" ".env.docker"
+docker load -i "webgame_v1.tar.gz"
 ```
 
-编辑 `.env.docker`，至少替换数据库、Redis、Django 密钥，并确认
-`CADDY_SITE_ADDRESS`、`DJANGO_ALLOWED_HOSTS` 和 `DJANGO_CSRF_TRUSTED_ORIGINS`
-使用同一个生产域名。启动前验证 Compose 和 Caddy 配置：
+确认 `docker load` 输出的镜像名与 `.env.docker` 中的 `WEBGAME_IMAGE` 一致，例如：
+
+```text
+Loaded image: webgame:v1
+```
+
+准备可写运行目录。生产 `web` 容器启用了只读根文件系统，静态文件、媒体文件和 Celery Beat
+状态文件必须使用这些目录或卷：
+
+```bash
+mkdir -p "runtime/media" "runtime/staticfiles" "runtime/celerybeat"
+chown -R "10001:10001" "runtime/staticfiles" "runtime/media" "runtime/celerybeat"
+```
+
+### 2. 创建并填写生产环境变量
+
+只在第一次部署且 `.env.docker` 不存在时执行复制；已有生产环境变量文件不要重复覆盖：
+
+```bash
+cp ".env.docker.prod.example" ".env.docker"
+chmod 600 ".env.docker"
+```
+
+编辑 `.env.docker`，至少检查并修改以下内容：
+
+- `WEBGAME_IMAGE`：必须与 `docker load` 实际加载的镜像名一致，默认是 `webgame:v1`。
+- `DJANGO_SECRET_KEY`：使用新的随机生产密钥，不要沿用示例值。
+- `MYSQL_PASSWORD`、`MYSQL_ROOT_PASSWORD`：使用强密码。
+- `DJANGO_DB_PASSWORD`：必须与 `MYSQL_PASSWORD` 一致。
+- `REDIS_PASSWORD`：生产必填，且不能留空。
+- `CADDY_SITE_ADDRESS`、`DJANGO_ALLOWED_HOSTS`、`DJANGO_CSRF_TRUSTED_ORIGINS`：使用同一个生产域名。
+- `DJANGO_RUN_MIGRATIONS=0`：保持关闭，由发布步骤手动执行迁移。
+- `CELERY_TIMER_SCAN_QUEUE=timer_scan` 和 `CELERY_TIMER_SCAN_CONCURRENCY`：确认核心扫描队列配置符合容量规划。
+- `CELERY_TIMER_MAINTENANCE_QUEUE=timer_maintenance` 和 `CELERY_TIMER_MAINTENANCE_CONCURRENCY`：确认维护队列有独立 worker；默认并发为 1，避免低优先级任务争用核心扫描资源。
+
+### 3. 校验 Compose 和 Caddy 配置
+
+配置校验通过后再启动容器，可以提前发现环境变量缺失、YAML 错误和 Caddyfile 错误：
 
 ```bash
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" config >/dev/null
+
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm --no-deps "caddy" \
   caddy validate --config "/etc/caddy/Caddyfile" --adapter caddyfile
 ```
 
-先启动基础设施：
+确认 Compose 展开的服务名包含独立的扫描 worker：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" config --services
+```
+
+输出中应至少包含：`db`、`redis`、`web`、`worker`、`worker_battle`、`worker_timer`、
+`worker_timer_scan`、`worker_timer_maintenance`、`beat`、`caddy`。
+
+### 4. 启动基础设施并执行数据库迁移
+
+先启动 MySQL 和 Redis：
 
 ```bash
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d "db" "redis"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" ps "db" "redis"
 ```
 
-再手动执行迁移：
+然后使用同一份业务镜像手动执行迁移。不要把 `DJANGO_RUN_MIGRATIONS=1` 长期写进统一环境文件，
+否则多个服务可能在启动时并发执行迁移：
 
 ```bash
-docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" python manage.py migrate --noinput
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" \
+  python manage.py migrate --noinput
 ```
 
-如果需要导入模板数据：
+如果是新服并且需要导入模板数据，在迁移完成后执行一次：
 
 ```bash
-docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" python manage.py bootstrap_game_data --skip-images
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" \
+  python manage.py bootstrap_game_data --skip-images
 ```
 
-最后启动业务服务：
+### 5. 启动全部业务服务
+
+必须显式包含 `worker_timer_scan` 和 `worker_timer_maintenance`。前者以 `timer_scan` 队列和独立并发度运行
+用户相关的批量扫描，后者以 `timer_maintenance` 队列运行虚拟玩家、竞技场储备、市场和清理等维护任务：
 
 ```bash
-docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d "web" "worker" "worker_battle" "worker_timer" "beat" "caddy"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d \
+  "web" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_maintenance" "beat" "caddy"
 ```
+
+如果直接执行不带服务名的 `docker compose up -d`，Compose 也会启动文件中声明的全部服务；生产发布
+仍建议使用上面的显式服务列表，便于确认本次发布确实包含两个独立的定时 worker。
+
+### 6. 验证部署结果
+
+先查看所有服务状态：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" ps
+```
+
+重点确认以下服务处于 `running` 或健康状态：`web`、`worker`、`worker_battle`、`worker_timer`、
+`worker_timer_scan`、`worker_timer_maintenance`、`beat`、`caddy`、`db`、`redis`。
+
+分别查看应用和扫描 worker 的最近日志：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "web"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "worker_timer_scan"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "worker_timer_maintenance"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "beat"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "caddy"
+```
+
+最后使用实际生产域名检查健康接口；不要直接使用未导出的 `${CADDY_SITE_ADDRESS}` shell 变量：
+
+```bash
+curl --fail --show-error --silent "https://your-production-domain.example/health/live"
+```
+
+将 `your-production-domain.example` 替换为 `.env.docker` 中的 `CADDY_SITE_ADDRESS`。
 
 ## 更新已有旧版本容器
 
@@ -171,11 +295,24 @@ docker compose down -v
 ```bash
 cd "/opt/web_game_v5"
 docker load -i "webgame_v1.tar.gz"
-docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" stop "beat" "worker" "worker_battle" "worker_timer"
-docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" python manage.py migrate --noinput
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" config >/dev/null
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" stop "beat" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_maintenance"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" \
+  python manage.py migrate --noinput
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --force-recreate --no-deps \
-  "web" "worker" "worker_battle" "worker_timer" "beat"
+  "web" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_maintenance" "beat"
 ```
+
+如果本次发布包含模板数据变更，迁移完成后、重启业务服务前执行：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" \
+  python manage.py bootstrap_game_data --skip-images
+```
+
+如果只更新应用代码，通常不需要重建 `db`、`redis` 或 `caddy`。如果修改了
+`docker-compose.prod.yml`、队列名、并发度或 Caddy 配置，则应使用 `--force-recreate`，确保容器
+实际使用新配置。
 
 如果这次发布修改了 Caddy 配置，先校验再平滑加载：
 
@@ -192,9 +329,25 @@ docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec "caddy
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" ps
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "web"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "worker"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "worker_timer_scan"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "worker_timer_maintenance"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "caddy"
-curl --fail --show-error --silent "https://${CADDY_SITE_ADDRESS}/health/live"
+curl --fail --show-error --silent "https://your-production-domain.example/health/live"
 ```
+
+将健康检查命令中的 `your-production-domain.example` 替换为实际生产域名。
+
+### 发布失败时的处理顺序
+
+1. 先查看 `docker compose ps`，确认是容器未启动、健康检查失败，还是应用进程启动后退出。
+2. 查看对应服务日志，优先检查 `web`、`worker_timer_scan`、`worker_timer_maintenance`、`beat`、`db` 和 `redis`。
+3. 如果是镜像名错误，执行 `docker images`，确认 `WEBGAME_IMAGE` 与 `docker load` 输出完全一致。
+4. 如果是迁移失败，不要继续重启全部 worker；先保留错误日志，修复迁移或镜像后重新执行迁移。
+5. 如果只是业务容器异常，可重新执行对应服务的 `up -d --force-recreate`，不要删除数据卷。
+
+回滚应用镜像时，只回滚 `WEBGAME_IMAGE` 和业务容器，并重新执行与该镜像兼容的发布流程。数据库
+迁移通常不可自动回滚；如果新版本已经执行了不可逆迁移，不能仅靠切回旧镜像完成安全回滚，必须先
+根据项目的数据库备份和迁移策略评估。
 
 Caddy 日志首次出现证书签发成功后，后续续期由 Caddy 自动完成。排查证书问题时重点检查域名解析、端口占用、防火墙以及 `caddy_data` 卷是否被误删。
 
@@ -316,9 +469,9 @@ REDIS_PASSWORD=your-strong-password
 改完后不能只重启应用，必须重建 Redis 容器：
 
 ```bash
-docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" stop "web" "worker" "worker_battle" "worker_timer" "beat"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" stop "web" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_maintenance" "beat"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --force-recreate "redis"
-docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --force-recreate "web" "worker" "worker_battle" "worker_timer" "beat"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --force-recreate "web" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_maintenance" "beat"
 ```
 
 自检命令：

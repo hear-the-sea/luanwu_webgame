@@ -125,6 +125,24 @@ def test_scan_due_missions_programming_error_bubbles_up(monkeypatch):
 
 
 @pytest.mark.django_db
+def test_scan_due_missions_uses_finalizer_result_without_status_probe(monkeypatch):
+    now = timezone.now()
+    runs = [SimpleNamespace(id=1, pk=1), SimpleNamespace(id=2, pk=2)]
+
+    class _Status:
+        ACTIVE = "active"
+
+    patch_model(monkeypatch, "gameplay.tasks.missions.MissionRun", slice_result=runs, status_cls=_Status)
+    monkeypatch.setattr("gameplay.tasks.missions.timezone.now", lambda: now)
+    monkeypatch.setattr(
+        "gameplay.tasks.missions.finalize_mission_run",
+        lambda run, *, now=None: run.id == 1,
+    )
+
+    assert tasks.scan_due_missions() == 1
+
+
+@pytest.mark.django_db
 def test_complete_building_upgrade_completes_or_skips(monkeypatch):
     now = timezone.now()
     building = SimpleNamespace(upgrade_complete_at=now - timedelta(seconds=1), id=7)

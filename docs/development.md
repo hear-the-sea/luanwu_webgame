@@ -131,7 +131,7 @@ docker compose up --build
 生产 compose 在 `docker-compose.prod.yml`，默认形态为：
 
 - `web` 使用 `daphne`
-- `worker` / `worker_battle` / `worker_timer` 分队列运行
+- `worker` / `worker_battle` / `worker_timer` / `worker_timer_scan` / `worker_timer_maintenance` 分队列运行
 - `caddy` 负责自动 HTTPS、静态资源与 HTTP/WebSocket 反向代理
 
 ## 测试与门禁

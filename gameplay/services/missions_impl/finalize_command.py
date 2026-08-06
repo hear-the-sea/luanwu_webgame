@@ -21,7 +21,7 @@ def finalize_mission_run(
     return_attacker_troops_after_mission,
     apply_mission_rewards_if_won,
     send_mission_report_message,
-) -> None:
+) -> bool:
     from guests.models import Guest
 
     now = now or timezone.now()
@@ -29,7 +29,7 @@ def finalize_mission_run(
     with transaction.atomic():
         locked_run = load_locked_mission_run(run.pk)
         if not locked_run or locked_run.status == locked_run.Status.COMPLETED:
-            return
+            return False
 
         report = build_defense_report_if_needed(locked_run)
         player_side = "defender" if locked_run.mission.is_defense else "attacker"
@@ -66,3 +66,4 @@ def finalize_mission_run(
             send_mission_report_message(locked_run, report)
 
         transaction.on_commit(_send_report_message_after_commit)
+        return True

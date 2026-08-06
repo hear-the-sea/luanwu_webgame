@@ -230,26 +230,21 @@ class OnlineStatsConsumerInternalTests(SimpleTestCase):
             cache.get = original_get
             cache.set = original_set
 
-    def test_touch_online_user_sync_cache_delete_runtime_marker_bubbles_up(self):
+    def test_touch_online_user_sync_refreshes_redis_lease_without_invalidating_count_cache(self):
         consumer = self._build_consumer()
         fake = _FakeRedis()
         consumer._get_redis = lambda: fake
 
-        original_delete = cache.delete
-        cache.delete = lambda *_a, **_k: (_ for _ in ()).throw(RuntimeError("cache delete failed"))
-        try:
-            with pytest.raises(RuntimeError, match="cache delete failed"):
-                consumer._touch_online_user_sync(user_id=1, now_ts=time.time())
-        finally:
-            cache.delete = original_delete
+        consumer._touch_online_user_sync(user_id=1, now_ts=time.time())
+
+        assert 1 in fake._zsets[consumer.ONLINE_WS_USERS_KEY]
 
     def test_heartbeat_loop_refreshes_and_broadcasts_stats(self):
         consumer = self._build_consumer()
         consumer.is_real_user = True
         consumer.user_id = 9
         consumer.touch_online_user = AsyncMock()
-        consumer.get_stats = AsyncMock(return_value={"online_count": 4, "total_count": 12})
-        consumer._broadcast_stats_best_effort = AsyncMock()
+        consumer._refresh_and_broadcast_stats_best_effort = AsyncMock()
 
         sleep_calls = {"count": 0}
         original_sleep = asyncio.sleep
@@ -267,8 +262,30 @@ class OnlineStatsConsumerInternalTests(SimpleTestCase):
             asyncio.sleep = original_sleep
 
         consumer.touch_online_user.assert_awaited_once_with(9)
+        consumer._refresh_and_broadcast_stats_best_effort.assert_awaited_once_with()
+
+    def test_heartbeat_broadcast_lock_skips_duplicate_stats_refresh(self):
+        consumer = self._build_consumer()
+        consumer.get_stats = AsyncMock(return_value={"online_count": 4, "total_count": 12})
+        consumer._send_stats_update = AsyncMock()
+        consumer._acquire_broadcast_debounce = lambda: False
+
+        asyncio.run(consumer._refresh_and_broadcast_stats_best_effort())
+
+        consumer.get_stats.assert_not_awaited()
+        consumer._send_stats_update.assert_not_awaited()
+
+    def test_heartbeat_broadcast_refreshes_stats_after_lock_acquisition(self):
+        consumer = self._build_consumer()
+        stats = {"online_count": 4, "total_count": 12}
+        consumer.get_stats = AsyncMock(return_value=stats)
+        consumer._send_stats_update = AsyncMock()
+        consumer._acquire_broadcast_debounce = lambda: True
+
+        asyncio.run(consumer._refresh_and_broadcast_stats_best_effort())
+
         consumer.get_stats.assert_awaited_once_with()
-        consumer._broadcast_stats_best_effort.assert_awaited_once_with({"online_count": 4, "total_count": 12})
+        consumer._send_stats_update.assert_awaited_once_with(stats)
 
     def test_cleanup_expired_users_sync_handles_redis_error(self):
         consumer = self._build_consumer()

@@ -78,8 +78,7 @@ def scan_due_missions(limit: int = 200) -> int:
     count = 0
     for run in qs:
         try:
-            finalize_mission_run(run, now=now)
-            if not MissionRun.objects.filter(pk=run.pk, status=MissionRun.Status.ACTIVE).exists():
+            if finalize_mission_run(run, now=now):
                 count += 1
         except MISSION_TASK_RETRY_EXCEPTIONS:
             logger.exception("Failed to finalize mission run %d", run.id)

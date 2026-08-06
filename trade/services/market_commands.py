@@ -31,6 +31,7 @@ def create_market_listing(
     market_listing_model,
     max_total_price: int,
     safe_int,
+    schedule_market_stats_cache_invalidation,
 ):
     quantity, unit_price, duration = normalize_listing_inputs(quantity, unit_price, duration, safe_int=safe_int)
 
@@ -66,7 +67,7 @@ def create_market_listing(
             quantity=quantity,
             max_total_price=max_total_price,
         )
-        return create_listing_record(
+        listing = create_listing_record(
             market_listing_model=market_listing_model,
             locked_manor=locked_manor,
             item_template=item_template,
@@ -76,6 +77,8 @@ def create_market_listing(
             duration=duration,
             listing_fee=listing_fee,
         )
+        schedule_market_stats_cache_invalidation()
+        return listing
 
 
 def purchase_market_listing(
@@ -95,6 +98,7 @@ def purchase_market_listing(
     grant_market_item_locked,
     transaction_tax_rate: float,
     send_purchase_notifications,
+    schedule_market_stats_cache_invalidation,
 ):
     with transaction.atomic():
         listing = get_locked_listing_for_purchase(
@@ -149,6 +153,7 @@ def purchase_market_listing(
             quantity=listing.quantity,
             grant_item_locked=grant_market_item_locked,
         )
+        schedule_market_stats_cache_invalidation()
 
     buyer_mail_sent, seller_mail_sent = send_purchase_notifications(
         buyer=buyer,
@@ -171,6 +176,7 @@ def cancel_market_listing(
     restore_cancelled_listing_inventory,
     build_cancel_listing_result,
     grant_market_item_locked,
+    schedule_market_stats_cache_invalidation,
 ):
     with transaction.atomic():
         listing = market_listing_model.objects.select_for_update().filter(id=listing_id, seller=manor).first()
@@ -191,4 +197,5 @@ def cancel_market_listing(
             listing=listing,
             grant_item_locked=grant_market_item_locked,
         )
+        schedule_market_stats_cache_invalidation()
         return build_cancel_listing_result(listing=listing)

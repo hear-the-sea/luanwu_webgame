@@ -426,7 +426,7 @@ def test_cleanup_task_is_exported_routed_and_scheduled_once_daily() -> None:
     task = virtual_player_tasks.cleanup_virtual_player_jail_task
     assert gameplay_tasks.cleanup_virtual_player_jail_task is task
     assert task.name == "gameplay.cleanup_virtual_player_jail"
-    assert settings.CELERY_TASK_ROUTES[task.name] == {"queue": settings.CELERY_TIMER_QUEUE}
+    assert settings.CELERY_TASK_ROUTES[task.name] == {"queue": settings.CELERY_TIMER_MAINTENANCE_QUEUE}
 
     matching_entries = [entry for entry in settings.CELERY_BEAT_SCHEDULE.values() if entry["task"] == task.name]
     assert len(matching_entries) == 1
