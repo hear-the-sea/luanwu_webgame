@@ -8,7 +8,7 @@ import logging
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, Tuple
 
 from django.conf import settings
@@ -502,12 +502,14 @@ def _sync_resource_production_locked(
     manor: Manor,
     *,
     now: datetime | None = None,
+    production_basis: ResourceProductionBasis | None = None,
     grain_template: ItemTemplate | None = None,
     grain_template_resolved: bool = False,
 ) -> Dict[str, int]:
     return settle_resource_production_locked(
         manor,
         now=now,
+        production_basis=production_basis,
         grain_template=grain_template,
         grain_template_resolved=grain_template_resolved,
     )
@@ -679,6 +681,7 @@ def sync_resource_production(
         _sync_resource_production_locked(
             locked_manor,
             now=now,
+            production_basis=None,
             grain_template=grain_template,
             grain_template_resolved=grain_template_resolved,
         )
@@ -686,6 +689,61 @@ def sync_resource_production(
     if refresh:
         manor.refresh_from_db(fields=RESOURCE_FIELDS + ["resource_updated_at"])
     _clear_warehouse_grain_projection(manor)
+
+
+def sync_resource_production_batch(
+    manor_ids: Sequence[int],
+    *,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
+    now: datetime | None = None,
+) -> int:
+    """在一个受控分块事务内结算多个庄园的资源产出。
+
+    调用方只提供候选庄园 ID；锁、生产基准读取和逐庄园账本写入均由资源服务
+    负责。生产基准在庄园行锁建立后批量读取，避免每个庄园重复读取建筑、科技、
+    门客和兵力统计，同时保留 ``Manor`` 行锁防止重复发放资源。返回本次实际
+    进入锁内结算的庄园数量。
+    """
+    normalized_ids = tuple(dict.fromkeys(int(manor_id) for manor_id in manor_ids))
+    if not normalized_ids:
+        return 0
+
+    current_time = now or timezone.now()
+    min_interval = max(0, int(getattr(settings, "RESOURCE_SYNC_MIN_INTERVAL_SECONDS", 0)))
+    eligible_before = current_time - timedelta(seconds=min_interval)
+    with transaction.atomic():
+        eligible_queryset = Manor.objects.filter(pk__in=normalized_ids)
+        if min_interval > 0:
+            eligible_queryset = eligible_queryset.filter(resource_updated_at__lte=eligible_before)
+        locked_manors = list(
+            eligible_queryset.select_for_update(skip_locked=True).order_by("resource_updated_at", "id")
+        )
+        if not locked_manors:
+            return 0
+
+        if not grain_template_resolved:
+            from .inventory.core import GRAIN_ITEM_KEY
+
+            grain_template = ItemTemplate.objects.filter(key=GRAIN_ITEM_KEY).only("id", "key").first()
+            grain_template_resolved = True
+
+        production_bases = load_resource_production_bases(locked_manors)
+        processed = 0
+        for manor in locked_manors:
+            production_basis = production_bases.get(int(manor.pk))
+            if production_basis is None:
+                raise RuntimeError(f"missing resource production basis for manor_id={manor.pk}")
+            _sync_resource_production_locked(
+                manor,
+                now=current_time,
+                production_basis=production_basis,
+                grain_template=grain_template,
+                grain_template_resolved=grain_template_resolved,
+            )
+            processed += 1
+
+        return processed
 
 
 def project_resource_production_for_read(manor: Manor) -> None:

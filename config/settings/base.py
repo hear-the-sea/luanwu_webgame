@@ -212,6 +212,7 @@ if ACCESS_LOG_TRUST_PROXY and not TRUSTED_PROXY_IPS:
 
 # Minimum intervals for resource sync and manor state refresh
 RESOURCE_SYNC_MIN_INTERVAL_SECONDS = int(env("DJANGO_RESOURCE_SYNC_MIN_INTERVAL_SECONDS", "1" if DEBUG else "5"))
+RESOURCE_SYNC_TRANSACTION_BATCH_SIZE = int(env("DJANGO_RESOURCE_SYNC_TRANSACTION_BATCH_SIZE", "50"))
 MANOR_STATE_REFRESH_MIN_INTERVAL_SECONDS = int(
     env("DJANGO_MANOR_STATE_REFRESH_MIN_INTERVAL_SECONDS", "1" if DEBUG else "5")
 )
@@ -271,6 +272,12 @@ VIRTUAL_PLAYER_HEALTH_RECOVERY_SUCCESS_THRESHOLD = max(
 
 # Cache TTL for home/dashboard stats
 HOME_STATS_CACHE_TTL_SECONDS = int(env("DJANGO_HOME_STATS_CACHE_TTL_SECONDS", "15"))
+# Bounded wait for another worker to fill the market stats cache. Keep this
+# independently tunable because increasing it trades duplicate queries for tail latency.
+MARKET_STATS_CACHE_LOCK_WAIT_SECONDS = max(
+    0.0,
+    env_float("DJANGO_MARKET_STATS_CACHE_LOCK_WAIT_SECONDS", 0.2),
+)
 # Cache TTL for defender 24h raid-received counter in attack checks
 RAID_RECENT_ATTACKS_CACHE_TTL_SECONDS = int(env("DJANGO_RAID_RECENT_ATTACKS_CACHE_TTL_SECONDS", "5"))
 # Raid capture rate (0.0 ~ 1.0, clamped in gameplay.constants.get_raid_capture_guest_rate)

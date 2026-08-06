@@ -17,6 +17,7 @@ Key layout::
     metrics:celery:{task}:success         → int counter
     metrics:celery:{task}:failure         → int counter
     metrics:celery:{task}:retry           → int counter
+    metrics:celery:{task}:runtime_lt_* / runtime_gte_10s → int counters
 
 Usage::
 
@@ -51,12 +52,23 @@ _TASK_NAME_REGISTRY_KEY_PREFIX = "task_name_registry:"
 # Prefix for per-metric atomic counter keys.
 _TASK_METRIC_KEY_PREFIX = "metrics:celery:"
 
+_RUNTIME_BUCKETS = (
+    (10, "runtime_lt_10ms"),
+    (50, "runtime_lt_50ms"),
+    (100, "runtime_lt_100ms"),
+    (250, "runtime_lt_250ms"),
+    (500, "runtime_lt_500ms"),
+    (1000, "runtime_lt_1s"),
+    (5000, "runtime_lt_5s"),
+    (10000, "runtime_lt_10s"),
+)
+_RUNTIME_FIELDS = tuple(field for _upper_bound_ms, field in _RUNTIME_BUCKETS) + ("runtime_gte_10s",)
+_FIELDS = ("success", "failure", "retry", *_RUNTIME_FIELDS)
+
 # In-process fallback state (used only when cache is unavailable).
-_metrics: dict[str, dict[str, int]] = defaultdict(lambda: {"success": 0, "failure": 0, "retry": 0})
+_metrics: dict[str, dict[str, int]] = defaultdict(lambda: {field: 0 for field in _FIELDS})
 _metrics_lock = threading.Lock()
 _registry_lock = threading.Lock()
-
-_FIELDS = ("success", "failure", "retry")
 
 
 # ---------------------------------------------------------------------------
@@ -70,7 +82,7 @@ def _ensure_task_entry(task_name: str) -> dict[str, int]:
 
 
 def _empty_counts() -> dict[str, int]:
-    return {"success": 0, "failure": 0, "retry": 0}
+    return {field: 0 for field in _FIELDS}
 
 
 def _metric_key(task_name: str, field: str) -> str:
@@ -154,7 +166,7 @@ def _get_registry() -> set[str] | None:
         return None
 
 
-def _increment_metric_atomic(task_name: str, field: str) -> None:
+def _increment_metric_atomic(task_name: str, field: str, *, register: bool = True) -> None:
     """Atomically increment the cache counter for *task_name*/*field*.
 
     ``cache.incr()`` maps to Redis INCR (atomic) and is also lock-protected in
@@ -185,7 +197,8 @@ def _increment_metric_atomic(task_name: str, field: str) -> None:
         return
 
     # Persist the task name so get_task_metrics() can enumerate all tasks.
-    _register_task_name(task_name)
+    if register:
+        _register_task_name(task_name)
 
 
 # ---------------------------------------------------------------------------
@@ -213,6 +226,17 @@ def record_task_retry(task_name: str) -> None:
         detail=f"task {task_name} retried",
         task_name=task_name,
     )
+
+
+def record_task_runtime(task_name: str, runtime_seconds: float, *, ensure_registered: bool = True) -> None:
+    """Record task runtime in one bounded latency bucket."""
+    runtime_ms = max(0, int(round(float(runtime_seconds) * 1000)))
+    field = "runtime_gte_10s"
+    for upper_bound_ms, bucket_field in _RUNTIME_BUCKETS:
+        if runtime_ms < upper_bound_ms:
+            field = bucket_field
+            break
+    _increment_metric_atomic(task_name, field, register=ensure_registered)
 
 
 def get_task_metrics() -> dict[str, dict[str, int]]:

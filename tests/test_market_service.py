@@ -371,7 +371,11 @@ def test_get_my_listings_ignores_all_status():
 
 def test_get_market_stats_returns_expected_keys(monkeypatch):
     """Test that get_market_stats returns expected keys."""
-    monkeypatch.setattr(market_service, "get_or_set", lambda _key, default_func, timeout: default_func())
+    monkeypatch.setattr(
+        market_service,
+        "get_or_set",
+        lambda _key, default_func, timeout, **kwargs: default_func(),
+    )
     with patch.object(market_service.MarketListing, "objects") as mock_listing_qs:
         with patch.object(market_service.MarketTransaction, "objects") as mock_tx_qs:
             mock_listing_qs.filter.return_value.count.return_value = 10
@@ -393,7 +397,11 @@ def test_get_market_stats_uses_local_day_range_for_transaction_index():
     expected_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     expected_end = expected_start + timedelta(days=1)
 
-    with patch.object(market_service, "get_or_set", lambda _key, default_func, timeout: default_func()):
+    with patch.object(
+        market_service,
+        "get_or_set",
+        lambda _key, default_func, timeout, **kwargs: default_func(),
+    ):
         with patch.object(market_service.timezone, "now", return_value=now):
             with patch.object(market_service.MarketListing, "objects") as mock_listing_qs:
                 with patch.object(market_service.MarketTransaction, "objects") as mock_tx_qs:

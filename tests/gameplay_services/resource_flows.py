@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from battle.models import TroopTemplate
 from core.exceptions import InsufficientResourceError
-from gameplay.models import InventoryItem, PlayerTroop, ResourceEvent, ResourceType, TroopBankStorage
+from gameplay.models import InventoryItem, Manor, PlayerTroop, ResourceEvent, ResourceType, TroopBankStorage
 from gameplay.services.inventory.core import get_warehouse_grain_quantity
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.resources import (
@@ -17,6 +17,7 @@ from gameplay.services.resources import (
     settle_resource_production_locked,
     spend_resources,
     sync_resource_production,
+    sync_resource_production_batch,
 )
 from gameplay.tasks.resources import sync_resource_production_task
 from gameplay.utils.resource_calculator import get_personnel_grain_cost_per_hour
@@ -475,23 +476,156 @@ def test_locked_resource_settlement_caps_positive_delta_and_preserves_upkeep(
 
 
 @pytest.mark.django_db
+@override_settings(RESOURCE_SYNC_MIN_INTERVAL_SECONDS=0, RESOURCE_SYNC_TRANSACTION_BATCH_SIZE=1)
 def test_resource_sync_task_reuses_resolved_grain_template(monkeypatch):
     first_user = User.objects.create_user(username="resource_task_template_1", password="test123")
     second_user = User.objects.create_user(username="resource_task_template_2", password="test123")
     first_manor = ensure_manor(first_user)
     second_manor = ensure_manor(second_user)
-    captured: list[tuple[int, dict]] = []
+    captured: list[tuple[tuple[int, ...], dict]] = []
 
     monkeypatch.setattr(
-        "gameplay.tasks.resources.sync_resource_production",
-        lambda manor, **kwargs: captured.append((int(manor.id), kwargs)),
+        "gameplay.tasks.resources.sync_resource_production_batch",
+        lambda manor_ids, **kwargs: captured.append((tuple(int(manor_id) for manor_id in manor_ids), kwargs))
+        or len(manor_ids),
     )
 
     assert sync_resource_production_task(limit=2) == 2
     assert len(captured) == 2
-    assert {item[0] for item in captured} == {first_manor.id, second_manor.id}
+    assert {manor_id for item in captured for manor_id in item[0]} == {first_manor.id, second_manor.id}
     assert all(item[1]["grain_template_resolved"] is True for item in captured)
     assert captured[0][1]["grain_template"] is captured[1][1]["grain_template"]
+
+
+@pytest.mark.django_db
+@override_settings(RESOURCE_SYNC_MIN_INTERVAL_SECONDS=60)
+def test_resource_sync_task_filters_recent_manors_before_loading_template(monkeypatch):
+    user = User.objects.create_user(username="resource_task_recent", password="test123")
+    manor = ensure_manor(user)
+    manor.resource_updated_at = timezone.now()
+    manor.save(update_fields=["resource_updated_at"])
+
+    def fail_if_batch_called(*_args, **_kwargs):
+        raise AssertionError("recent manor must not enter the batch")
+
+    def fail_if_template_loaded(*_args, **_kwargs):
+        raise AssertionError("recent-only task must not load the grain template")
+
+    monkeypatch.setattr("gameplay.tasks.resources.sync_resource_production_batch", fail_if_batch_called)
+    monkeypatch.setattr("gameplay.tasks.resources.ItemTemplate.objects.filter", fail_if_template_loaded)
+
+    assert sync_resource_production_task(limit=1) == 0
+
+
+@pytest.mark.django_db
+@override_settings(RESOURCE_SYNC_MIN_INTERVAL_SECONDS=60)
+def test_sync_resource_production_batch_skips_recent_manors_before_loading_basis(monkeypatch):
+    first_user = User.objects.create_user(username="resource_batch_recent_1", password="test123")
+    second_user = User.objects.create_user(username="resource_batch_recent_2", password="test123")
+    first_manor = ensure_manor(first_user)
+    second_manor = ensure_manor(second_user)
+    settled_at = timezone.now()
+    for manor in (first_manor, second_manor):
+        manor.resource_updated_at = settled_at
+        manor.save(update_fields=["resource_updated_at"])
+
+    def fail_if_basis_loads(_manors):
+        raise AssertionError("recent manors must short-circuit before loading production bases")
+
+    monkeypatch.setattr("gameplay.services.resources.load_resource_production_bases", fail_if_basis_loads)
+
+    with CaptureQueriesContext(connection) as captured:
+        processed = sync_resource_production_batch(
+            [first_manor.id, second_manor.id],
+            grain_template_resolved=True,
+            now=settled_at,
+        )
+
+    assert processed == 0
+    manor_table = Manor._meta.db_table.lower()
+    manor_queries = [
+        query["sql"].lower()
+        for query in captured
+        if manor_table in query["sql"].lower() and "select" in query["sql"].lower()
+    ]
+    assert manor_queries
+    assert any("resource_updated_at" in query for query in manor_queries)
+    if connection.features.has_select_for_update:
+        assert any("for update" in query for query in manor_queries)
+
+
+@pytest.mark.django_db
+@override_settings(RESOURCE_SYNC_MIN_INTERVAL_SECONDS=60)
+def test_sync_resource_production_batch_includes_exact_interval_boundary(monkeypatch):
+    user = User.objects.create_user(username="resource_batch_boundary", password="test123")
+    manor = ensure_manor(user)
+    settled_at = timezone.now()
+    manor.resource_updated_at = settled_at - timezone.timedelta(seconds=60)
+    manor.save(update_fields=["resource_updated_at"])
+    called: list[int] = []
+
+    monkeypatch.setattr(
+        "gameplay.services.resources.load_resource_production_bases",
+        lambda manors: {int(current.pk): object() for current in manors},
+    )
+    monkeypatch.setattr(
+        "gameplay.services.resources._sync_resource_production_locked",
+        lambda current, **_kwargs: called.append(int(current.pk)),
+    )
+
+    assert (
+        sync_resource_production_batch(
+            [manor.id],
+            grain_template_resolved=True,
+            now=settled_at,
+        )
+        == 1
+    )
+    assert called == [manor.id]
+
+
+@pytest.mark.django_db
+@override_settings(RESOURCE_SYNC_MIN_INTERVAL_SECONDS=0)
+def test_sync_resource_production_batch_loads_one_shared_basis(monkeypatch):
+    first_user = User.objects.create_user(username="resource_batch_basis_1", password="test123")
+    second_user = User.objects.create_user(username="resource_batch_basis_2", password="test123")
+    first_manor = ensure_manor(first_user)
+    second_manor = ensure_manor(second_user)
+    first_initial_silver = first_manor.silver
+    second_initial_silver = second_manor.silver
+    settled_at = timezone.now()
+    for manor in (first_manor, second_manor):
+        manor.resource_updated_at = settled_at - timezone.timedelta(hours=1)
+        manor.save(update_fields=["resource_updated_at"])
+
+    grain_template = ensure_grain_template()
+    basis = ResourceProductionBasis(
+        hourly_rates=((ResourceType.SILVER, 120.0),),
+        personnel_grain_cost_per_hour=0,
+    )
+    loaded_batches: list[tuple[int, ...]] = []
+
+    def load_shared_basis(manors):
+        manor_ids = tuple(int(manor.pk) for manor in manors)
+        loaded_batches.append(manor_ids)
+        return {manor_id: basis for manor_id in manor_ids}
+
+    monkeypatch.setattr("gameplay.services.resources.load_resource_production_bases", load_shared_basis)
+
+    processed = sync_resource_production_batch(
+        [first_manor.id, second_manor.id],
+        grain_template=grain_template,
+        grain_template_resolved=True,
+        now=settled_at,
+    )
+
+    assert processed == 2
+    assert len(loaded_batches) == 1
+    assert set(loaded_batches[0]) == {first_manor.id, second_manor.id}
+    first_manor.refresh_from_db(fields=["silver"])
+    second_manor.refresh_from_db(fields=["silver"])
+    assert first_manor.silver > first_initial_silver
+    assert second_manor.silver > second_initial_silver
 
 
 @pytest.mark.django_db

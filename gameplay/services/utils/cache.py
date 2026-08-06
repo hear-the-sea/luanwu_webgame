@@ -8,10 +8,12 @@ from __future__ import annotations
 
 import logging
 from functools import wraps
+from time import monotonic, sleep
 from typing import Callable, TypeVar, cast
 
 from django.core.cache import cache
 
+from core.utils.cache_lock import acquire_best_effort_lock, release_best_effort_lock
 from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
 logger = logging.getLogger(__name__)
@@ -23,6 +25,9 @@ CACHE_TIMEOUT_LONG = 60  # 60秒 - 低实时性要求
 CACHE_TIMEOUT_RANKING = 60  # 排行榜缓存
 CACHE_TIMEOUT_CONFIG = 300  # 5分钟 - 配置类数据
 RECRUITMENT_HALL_CACHE_VERSION = 1  # 聚贤庄上下文缓存版本
+CACHE_GET_OR_SET_LOCK_TIMEOUT_SECONDS = 5
+CACHE_GET_OR_SET_LOCK_WAIT_SECONDS = 0.2
+CACHE_GET_OR_SET_LOCK_POLL_INTERVAL_SECONDS = 0.01
 
 
 class CacheKeys:
@@ -217,27 +222,84 @@ def cached(
     return decorator
 
 
-def get_or_set(key: str, default_func: Callable[[], T], timeout: int = CACHE_TIMEOUT_MEDIUM) -> T:
+def get_or_set(
+    key: str,
+    default_func: Callable[[], T],
+    timeout: int = CACHE_TIMEOUT_MEDIUM,
+    *,
+    lock_timeout: int | None = CACHE_GET_OR_SET_LOCK_TIMEOUT_SECONDS,
+    lock_wait_timeout: float = CACHE_GET_OR_SET_LOCK_WAIT_SECONDS,
+) -> T:
     """
     获取缓存值，如果不存在则计算并设置。
+
+    缓存 miss 时使用短生命周期的令牌锁，并在锁竞争期间短暂等待后再次读取，
+    避免热点 key 在过期瞬间被多个请求同时回源。传入 ``lock_timeout=None``
+    可为特殊场景关闭防击穿锁。
 
     Args:
         key: 缓存键
         default_func: 计算默认值的函数
         timeout: 缓存超时时间
+        lock_timeout: 防击穿锁超时时间；``None`` 表示关闭
+        lock_wait_timeout: 未抢到锁时等待其他请求写入缓存的最长时间
 
     Returns:
         缓存值或计算的默认值
     """
-    try:
-        result = cache.get(key)
-    except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
-        logger.warning("cache.get failed in get_or_set(): key=%s error=%s", key, exc, exc_info=True)
-        result = None
-    if result is None:
-        result = default_func()
+
+    def _read_cache(*, log_failure: bool = True) -> object:
         try:
-            cache.set(key, result, timeout=timeout)
+            return cache.get(key)
+        except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
+            if log_failure:
+                logger.warning("cache.get failed in get_or_set(): key=%s error=%s", key, exc, exc_info=True)
+            return None
+
+    def _compute_and_store() -> T:
+        computed = default_func()
+        try:
+            cache.set(key, computed, timeout=timeout)
         except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
             logger.warning("cache.set failed in get_or_set(): key=%s error=%s", key, exc, exc_info=True)
-    return cast(T, result)
+        return cast(T, computed)
+
+    result = _read_cache()
+    if result is not None:
+        return cast(T, result)
+    if lock_timeout is None:
+        return _compute_and_store()
+
+    lock_key = f"{key}:get_or_set:lock"
+    acquired, from_cache, lock_token = acquire_best_effort_lock(
+        lock_key,
+        timeout_seconds=max(1, int(lock_timeout)),
+        logger=logger,
+        log_context="get_or_set cache stampede protection",
+    )
+    if acquired:
+        try:
+            # The value may have been populated between the first read and lock acquisition.
+            result = _read_cache()
+            if result is not None:
+                return cast(T, result)
+            return _compute_and_store()
+        finally:
+            release_best_effort_lock(
+                lock_key,
+                from_cache=from_cache,
+                lock_token=lock_token,
+                logger=logger,
+                log_context="get_or_set cache stampede protection release",
+            )
+
+    deadline = monotonic() + max(0.0, float(lock_wait_timeout))
+    while monotonic() < deadline:
+        sleep(min(CACHE_GET_OR_SET_LOCK_POLL_INTERVAL_SECONDS, max(0.0, deadline - monotonic())))
+        result = _read_cache(log_failure=False)
+        if result is not None:
+            return cast(T, result)
+
+    # A slow or failed producer must not make the read path fail forever. The caller
+    # computes locally after the bounded wait, while the lock owner remains protected.
+    return _compute_and_store()

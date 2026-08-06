@@ -496,6 +496,7 @@ def get_market_stats() -> Dict:
             now=timezone.now(),
         ),
         timeout=CACHE_TIMEOUT_SHORT,
+        lock_wait_timeout=settings.MARKET_STATS_CACHE_LOCK_WAIT_SECONDS,
     )
 
 

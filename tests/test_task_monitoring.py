@@ -16,6 +16,7 @@ from core.utils.task_monitoring import (
     get_task_metrics,
     record_task_failure,
     record_task_retry,
+    record_task_runtime,
     record_task_success,
     reset_task_metrics,
 )
@@ -52,6 +53,14 @@ class TestTaskMonitoringCounters:
         assert metrics["trade.settle_auction_round"]["retry"] == 3
         assert metrics["trade.settle_auction_round"]["success"] == 0
         assert metrics["trade.settle_auction_round"]["failure"] == 0
+
+    def test_record_runtime_increments_expected_latency_bucket(self):
+        record_task_runtime("gameplay.sync_resource_production", 0.075)
+
+        metrics = get_task_metrics()
+
+        assert metrics["gameplay.sync_resource_production"]["runtime_lt_100ms"] == 1
+        assert metrics["gameplay.sync_resource_production"]["runtime_lt_250ms"] == 0
 
     def test_multiple_tasks_tracked_independently(self):
         record_task_success("task_a")

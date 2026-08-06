@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import pytest
 from django.core.cache import cache
 from django.db import transaction
@@ -103,3 +105,74 @@ def test_expire_listings_invalidates_market_stats_cache(seller_manor, tradeable_
 
     assert market_service.expire_listings() == 1
     assert cache.get(MARKET_STATS_CACHE_KEY) is None
+
+
+@pytest.mark.django_db(transaction=True)
+def test_expire_listings_coalesces_market_stats_invalidation(seller_manor, tradeable_item_template):
+    listings = [
+        market_service.create_listing(
+            manor=seller_manor,
+            item_key="test_tradeable_item",
+            quantity=1,
+            unit_price=2000,
+            duration=7200,
+        )
+        for _ in range(2)
+    ]
+    expired_at = timezone.now() - timezone.timedelta(minutes=1)
+    for listing in listings:
+        listing.expires_at = expired_at
+        listing.save(update_fields=["expires_at"])
+
+    with patch.object(market_service, "_schedule_market_stats_cache_invalidation") as invalidate:
+        assert market_service.expire_listings() == 2
+
+    invalidate.assert_called_once_with()
+
+
+def test_get_market_stats_uses_independent_cache_lock_wait_setting(monkeypatch):
+    captured = {}
+
+    def fake_get_or_set(key, default_func, timeout, **kwargs):
+        captured.update({"key": key, "default_func": default_func, "timeout": timeout, **kwargs})
+        return {"active_count": 1, "sold_today": 0}
+
+    monkeypatch.setattr(market_service, "get_or_set", fake_get_or_set)
+    monkeypatch.setattr(market_service.settings, "MARKET_STATS_CACHE_LOCK_WAIT_SECONDS", 0.75, raising=False)
+
+    assert market_service.get_market_stats() == {"active_count": 1, "sold_today": 0}
+    assert captured["key"] == MARKET_STATS_CACHE_KEY
+    assert captured["lock_wait_timeout"] == 0.75
+
+
+@pytest.mark.django_db(transaction=True)
+def test_expire_listings_invalidates_after_later_programming_error(seller_manor, tradeable_item_template):
+    listings = [
+        market_service.create_listing(
+            manor=seller_manor,
+            item_key="test_tradeable_item",
+            quantity=1,
+            unit_price=2000,
+            duration=7200,
+        )
+        for _ in range(2)
+    ]
+    expired_at = timezone.now() - timezone.timedelta(minutes=1)
+    for listing in listings:
+        listing.expires_at = expired_at
+        listing.save(update_fields=["expires_at"])
+
+    calls = 0
+
+    def restore_inventory(*_args, **_kwargs):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise RuntimeError("inventory restore bug")
+
+    with patch.object(market_service, "_schedule_market_stats_cache_invalidation") as invalidate:
+        with patch.object(market_service, "grant_market_item_locked", side_effect=restore_inventory):
+            with pytest.raises(RuntimeError, match="inventory restore bug"):
+                market_service.expire_listings()
+
+    invalidate.assert_called_once_with()
