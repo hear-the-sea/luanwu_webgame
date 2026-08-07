@@ -181,6 +181,20 @@ def start_maintenance_attempts(
     return attempts
 
 
+def _maintenance_terminal_dimensions(
+    attempt: MaintenanceAttempt,
+    normalized_result: MaintenanceAttemptResult,
+    result: MaintenanceResult | MaintenanceAttemptResult | str,
+) -> dict[str, str]:
+    dimensions = {
+        "result": normalized_result.value,
+        "trigger": attempt.trigger.value,
+    }
+    if isinstance(result, MaintenanceResult) and result.reason:
+        dimensions["reason"] = str(result.reason)
+    return dimensions
+
+
 def finish_maintenance_attempt(
     attempt: MaintenanceAttempt,
     *,
@@ -200,10 +214,7 @@ def finish_maintenance_attempt(
         event_id=f"{attempt.event_id_prefix}:terminal",
         metric_name=MAINTENANCE_ATTEMPT_METRIC,
         occurred_at=attempt.started_at,
-        dimensions={
-            "result": normalized_result.value,
-            "trigger": attempt.trigger.value,
-        },
+        dimensions=_maintenance_terminal_dimensions(attempt, normalized_result, result),
         value=1,
     )
 
@@ -233,10 +244,7 @@ def finish_maintenance_attempts(
                 event_id=f"{attempt.event_id_prefix}:terminal",
                 metric_name=MAINTENANCE_ATTEMPT_METRIC,
                 occurred_at=attempt.started_at,
-                dimensions={
-                    "result": normalized_result.value,
-                    "trigger": attempt.trigger.value,
-                },
+                dimensions=_maintenance_terminal_dimensions(attempt, normalized_result, result),
                 value=Decimal(1),
             )
         )

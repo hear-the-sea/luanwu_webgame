@@ -2,15 +2,16 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from typing import Any
 
-from django.db import IntegrityError, connection, transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from gameplay.models import BotPolicyRelease, BotProfile, BotRuntimeRoutingState
 
 from .config import canonical_policy_payload, load_virtual_player_v2_config, policy_checksum
+from .database_clock import database_utc_now as _database_utc_now
 
 POLICY_RETIREMENT_GUARD = timedelta(hours=720)
 
@@ -53,17 +54,6 @@ class PolicyOperationSummary:
 class _PolicyRetirementResult:
     release: BotPolicyRelease
     changed: bool
-
-
-def _database_utc_now() -> datetime:
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT CURRENT_TIMESTAMP")
-        value = cursor.fetchone()[0]
-    if isinstance(value, str):
-        value = datetime.fromisoformat(value)
-    if timezone.is_naive(value):
-        value = value.replace(tzinfo=UTC)
-    return value.astimezone(UTC)
 
 
 def _normalized_release_payload(payload: Mapping[str, Any]) -> dict[str, Any]:

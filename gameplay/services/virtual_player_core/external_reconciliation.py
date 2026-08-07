@@ -9,16 +9,18 @@ from typing import Any
 from uuid import UUID, uuid4
 
 from celery import current_app
-from django.db import IntegrityError, connection, transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
+from gameplay.constants import VIRTUAL_PLAYER_REGION_KEYS
 from gameplay.models import BotExternalStrengthReconciliation, BotProfile
 
 from . import health, population_runtime, profile_store
 from .config import V2_PRESTIGE_BAND_NAMES, load_virtual_player_v2_config
+from .database_clock import database_utc_now as _database_utc_now
 from .projection import ProjectionRuleError, StrengthSummary
 
 logger = logging.getLogger(__name__)
@@ -134,17 +136,6 @@ class ExternalReconciliationProcessResult:
             "attempt_count": self.attempt_count,
             "failure_code": self.failure_code,
         }
-
-
-def _database_utc_now() -> datetime:
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT CURRENT_TIMESTAMP")
-        value = cursor.fetchone()[0]
-    if isinstance(value, str):
-        value = datetime.fromisoformat(value)
-    if timezone.is_naive(value):
-        value = value.replace(tzinfo=UTC)
-    return value.astimezone(UTC)
 
 
 def _reconciliation_now(now: datetime | None) -> datetime:
@@ -894,9 +885,7 @@ def _apply_claimed_profile_phase(
                     "profile_band_invalid",
                     "profile reconciliation produced a non-canonical prestige band",
                 )
-            population_handoff_required = bool(
-                reconciliation.pre_prestige_band != sync_result.current_band and sync_result.region != "overseas"
-            )
+            population_handoff_required = bool(reconciliation.pre_prestige_band != sync_result.current_band)
             completion_time = _reconciliation_now(now)
             if not _claim_matches(
                 reconciliation,
@@ -974,7 +963,7 @@ def _validate_profile_result_summary(
         or current_band == pre_band
         or not isinstance(region, str)
         or not region
-        or region == "overseas"
+        or region not in VIRTUAL_PLAYER_REGION_KEYS
         or summary["population_handoff_required"] is not True
         or not isinstance(summary["strength_increased"], bool)
     ):

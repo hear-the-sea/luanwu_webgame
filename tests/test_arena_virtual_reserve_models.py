@@ -57,6 +57,19 @@ def test_arena_virtual_demand_requires_exactly_one_event():
 
 
 @pytest.mark.django_db
+def test_arena_virtual_demand_warm_target_cannot_exceed_replacement_target():
+    tournament = ArenaTournament.objects.create()
+    demand = ArenaVirtualDemand(
+        tournament=tournament,
+        reserve_target_count=2,
+        warm_target_count=3,
+    )
+
+    with pytest.raises(ValidationError):
+        demand.full_clean()
+
+
+@pytest.mark.django_db
 def test_bot_profile_arena_history_defaults_to_unused():
     profile = _create_profile()
 

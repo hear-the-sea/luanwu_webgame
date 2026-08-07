@@ -74,7 +74,10 @@ REGION_CHOICES = [
 ]
 
 REGION_DICT = dict(REGION_CHOICES)
-VIRTUAL_PLAYER_REGION_KEYS = tuple(key for key, _label in REGION_CHOICES if key != "overseas")
+# All playable regions are valid virtual-player population cells.  ``overseas``
+# is a real manor region, not a special no-bot area; keeping it out of this
+# list makes arena and map shortages depend on the human player's location.
+VIRTUAL_PLAYER_REGION_KEYS = tuple(key for key, _label in REGION_CHOICES)
 
 
 # ============ PVP 系统常量 ============

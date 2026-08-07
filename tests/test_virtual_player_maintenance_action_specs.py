@@ -9,6 +9,7 @@ from gameplay.services.virtual_player_core.inventory_budget import inventory_dai
 from gameplay.services.virtual_player_core.maintenance_action_specs import (
     BuildingUpgradeActionSpec,
     EquipmentEquipActionSpec,
+    GuestRecruitmentActionSpec,
     InventoryAcquisitionActionSpec,
     MaintenanceActionSpecError,
     SkillLearningActionSpec,
@@ -212,6 +213,50 @@ def test_skill_and_inventory_projection_must_be_strength_neutral() -> None:
                 strength_after=_strength(arena_lineup_power=101),
                 utility_score=1.0,
             )
+
+
+def test_guest_recruitment_projection_freezes_a_bounded_quantity_action() -> None:
+    spec = GuestRecruitmentActionSpec(
+        template_id=7,
+        template_key="gray_guest",
+        rarity="gray",
+        archetype="military",
+        quantity=2,
+        rng_seed=101,
+    )
+
+    intent = project_maintenance_action_intent(
+        spec=spec,
+        source_prestige_band="settler",
+        target_prestige_band="settler",
+        strength_before=BASE_STRENGTH,
+        strength_after=_strength(guest_count=4, arena_lineup_power=150),
+        utility_score=75.0,
+    )
+
+    assert intent.action_kind == "guest_recruitment"
+    assert spec.business_key == "guest_recruitment:gray_guest:quantity:2:seed:101"
+    assert spec.to_payload()["quantity"] == 2
+
+    with pytest.raises(MaintenanceActionSpecError, match="invalid guest count"):
+        project_maintenance_action_intent(
+            spec=spec,
+            source_prestige_band="settler",
+            target_prestige_band="settler",
+            strength_before=BASE_STRENGTH,
+            strength_after=_strength(guest_count=3, arena_lineup_power=150),
+            utility_score=75.0,
+        )
+
+    with pytest.raises(MaintenanceActionSpecError, match="must not reduce"):
+        project_maintenance_action_intent(
+            spec=spec,
+            source_prestige_band="settler",
+            target_prestige_band="settler",
+            strength_before=BASE_STRENGTH,
+            strength_after=_strength(guest_count=4, arena_lineup_power=99),
+            utility_score=75.0,
+        )
 
 
 def test_equipment_projection_only_allows_non_decreasing_lineup_power() -> None:

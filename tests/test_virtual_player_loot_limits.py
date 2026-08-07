@@ -217,6 +217,7 @@ def test_exhausted_loot_budget_does_not_retire_active_reserve_member(django_user
         tournament=tournament,
         missing_entry_count=1,
         reserve_target_count=1,
+        warm_target_count=1,
         max_reserve_target_count=1,
         next_retry_at=now,
     )

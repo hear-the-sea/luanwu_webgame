@@ -53,6 +53,7 @@ def test_two_growth_workers_issue_one_claim_and_execute_without_arena_locks(
         target_team_power=10**12,
         missing_entry_count=1,
         reserve_target_count=1,
+        warm_target_count=1,
         max_reserve_target_count=1,
         next_retry_at=now,
     )
@@ -173,6 +174,7 @@ def test_concurrent_arena_demands_share_last_population_slot(settings):
             target_team_power=probe.selected_power,
             missing_entry_count=1,
             reserve_target_count=1,
+            warm_target_count=1,
             max_reserve_target_count=1,
             next_retry_at=now,
         )
@@ -319,6 +321,7 @@ def test_reserve_replenishment_racing_retirement_never_leases_retired_profile(se
         target_team_power=probe.selected_power,
         missing_entry_count=1,
         reserve_target_count=1,
+        warm_target_count=1,
         max_reserve_target_count=1,
         next_retry_at=now,
     )

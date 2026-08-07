@@ -44,7 +44,7 @@
 - Gate D1 使用按地区/声望段唯一合并的持久 `BotPopulationRecomputeDemand`；请求、claim 和完成各有 revision 边界，Celery
   消息只负责加速唤醒，不能作为已交接或已完成人口重算的事实来源。
 - Arena `NO_ACTION` 租约绝对期限固定为 member `created_at + 12h`，retry、BUSY、version 和重验不得重置。
-- Maintenance V2 首版移除整个门客招募链；本次增补不修改 V1 门客招募、模板晋升或候选处置行为，工资只以
+- Maintenance V2 不接入真人招募候选、模板晋升或囚犯转化链；竞技场数量阶段允许受限的黑/灰门客模板扩容，工资只以
   `SalaryPayment` 审计，不新增 `ResourceEvent.SALARY`。
 - 虚拟玩家监牢由独立日任务清空：对任务 cutoff 前、俘获方为虚拟玩家且仍为 `HELD` 的囚犯批量执行既有
   `RELEASED` 状态迁移。该任务不自动招募、不删除囚犯记录、不重建或返还原门客，也不影响真人玩家监牢；它独立于
@@ -106,12 +106,12 @@
 - 为历史虚拟玩家伪造完整可见操作记录；
 - 未经确认删除兼容入口、生产数据或不可丢弃的测试数据；当前可丢弃测试 Bot 只可在 Gate E readiness 通过后、Gate E 退出前显式重建为 V2；
 - 首版 Maintenance V2 中的异步发展动作、通用 outbox 框架或无限增长的动作历史表。
-- 首版 Maintenance V2 中的门客招募、候选转正式门客和候选转家丁链。
+- 真人招募候选、候选转正式门客和候选转家丁链；V2 竞技场数量阶段的受限模板扩容不属于真人招募候选链。
 - 本轮不重写 V1 门客招募、模板晋升、稀有度选择或特殊模板资格规则；相关公平性风险保留为独立后续范围。
 - 本轮不改变俘获后原门客及装备的既有处置，也不实现赎回、自动归还或按囚犯快照重建门客；“每日清空监牢”仅指
   虚拟玩家囚犯从 `HELD` 幂等迁移到 `RELEASED`。
-- 不借本轮自然化重写竞技场后备倍率、租约、目标强度、阵容选择或随机算法；竞技场文件只做行为等价拆分、V2 调用契约适配，
-  以及本文明确批准的虚拟补位满血快照 `Surgical Fix`。
+- 不借本轮自然化重写竞技场后备倍率、租约或目标强度；竞技场拆分继续保持原有随机种子与强度区间，另按本文新增的
+  `roster_target_count` 允许合法人数差异化，并接入 V2 数量阶段扩容；其余竞技场行为保持兼容。
 
 这些能力只有在自然化生成与维护稳定后，才进入独立设计和产品风险评估。
 
@@ -502,7 +502,7 @@ Maintenance V2 若直接接入该文件，会把虚拟玩家执行器、竞技�
 
 **最小安全修复**
 
-Gate B 只做行为等价拆分：需求状态、对账协调、后备池、周期扫描、到期填充、reference 读取、观测、阵容纯规则和竞技场保护查询分别拥有模块；`virtual_reserve.py` 保留有限公共门面。赛事从招募态进入运行/准备态的 locked primitive 下沉到现有 `lifecycle_helpers.py`，它不调用 demand/reconcile/pool/fill/scan；调用方先完成 demand reconcile，再调用生命周期 primitive。本轮不改变后备倍率、冷却、租约或填充算法；`NO_ACTION` 的绝对租约上限属于 Gate E 新结果适配，不混入 Gate B 等价拆分。
+Gate B 只做行为等价拆分：需求状态、对账协调、后备池、周期扫描、到期填充、reference 读取、观测、阵容纯规则和竞技场保护查询分别拥有模块；`virtual_reserve.py` 保留有限公共门面。赛事从招募态进入运行/准备态的 locked primitive 下沉到现有 `lifecycle_helpers.py`，它不调用 demand/reconcile/pool/fill/scan；调用方先完成 demand reconcile，再调用生命周期 primitive。本轮不改变后备倍率、冷却、租约或填充算法；人数差异化是后续明确批准的版本化策略，`NO_ACTION` 的绝对租约上限属于 Gate E 新结果适配，不混入 Gate B 等价拆分。
 
 **完成证明**
 
@@ -569,7 +569,7 @@ V2 训练候选又会排除重伤门客。虚拟玩家当前没有使用自己�
 
 **完成证明**
 
-- 纯规则测试证明残血虚拟 snapshot 输出为 `current_hp == max_hp`、输入不变、阵容选择和 power 不变；非法 `max_hp` 明确拒绝。
+- 纯规则测试证明残血虚拟 snapshot 输出为 `current_hp == max_hp`、输入不变、人数选择仍在合法上限内且 power 区间不变；非法 `max_hp` 明确拒绝。
 - 普通赛和共斗服务测试逐条断言已物化虚拟 snapshot 满血，同时原 `Guest.current_hp`、状态和库存逐值不变。
 - 直接绕过 `virtual_lineups.py` 向 locked write primitive 传入残血 snapshot 时整笔填充回滚，不产生部分 Entry 或租约消费。
 - 真人报名回归测试证明共享 snapshot 仍保留并钳制实时 HP，不被虚拟补位规则改成满血。
@@ -624,7 +624,7 @@ V2 训练候选又会排除重伤门客。虚拟玩家当前没有使用自己�
 ### 4.4 可重放与兼容
 
 - 相同 seed、engine version、RNG version、plan schema、policy version、policy checksum、sequence 和输入快照必须得到相同计划。
-- V2 发展随机派生使用带命名字段的规范化编码；候选先按稳定业务 key 排序，独立 policy rollout 使用同一版本化摘要工具，不依赖 Python 内置 `hash()`；当前方案不实现 engine enrollment bucket。Gate B 的竞技场行为等价随机保持第 5.5 节规定的现有算法。
+- V2 发展随机派生使用带命名字段的规范化编码；候选先按稳定业务 key 排序，独立 policy rollout 使用同一版本化摘要工具，不依赖 Python 内置 `hash()`；当前方案不实现 engine enrollment bucket。竞技场基础抽样继续使用第 5.5 节的确定性种子，新增人数目标使用独立、可持久化的 roster policy。
 - 创建坐标冲突重试、名称唯一性和历史时间回填继续成立。
 - 现有管理命令和 Celery 任务名称保持不变；注册触发新增一个只执行人口重算的专用任务，不复用会先运行
   `maintain_due_virtual_players()` 的现有 `roll_virtual_players_task`。
@@ -640,7 +640,7 @@ V2 训练候选又会排除重伤门客。虚拟玩家当前没有使用自己�
 - 日清理独立于 Maintenance routing、sequence 和强度预算；V2 暂停或 cutover 不能停止该公平性 housekeeping。
 - 门客主动治疗一次只处理一名门客并消耗庄园已有的一件合法药品，治疗、库存扣减和重伤状态变化必须同事务提交。
 - 主动治疗占用 Maintenance V2 本周期唯一同步动作，但不属于永久强度增长；被动回血任务继续作为无药时的恢复兜底。
-- 本轮不新增或重写门客招募/候选处置动作，不让虚拟玩家自动招募监牢囚犯。
+- 本轮不接入真人招募候选或重写囚犯处置动作，不让虚拟玩家自动招募监牢囚犯；竞技场数量阶段仅允许受限黑/灰模板扩容。
 
 ### 4.6 竞技场虚拟补位生命值
 
@@ -903,7 +903,7 @@ virtual_reserve_pool -------> virtual_reserve_references + maintenance public co
 | 虚拟 `ArenaEntry/ArenaCoopEntry` 及其 snapshot links | `virtual_backfill.py` 的 locked write primitive | fill 负责选择和锁；lineups 提供满血副本，backfill 拒绝残血/非法 snapshot，且不决定候选、租约或 demand 状态 |
 | `BotProfile` 参与时间/次数及状态 | `profile_store.py` | demand/pool/fill 只调用显式 store command |
 
-Gate B 的竞技场拆分必须逐 seed 保持现有结果：lineup 组合仍复现当前 `random.Random(f"{mode}:{event_id}:{profile_id}")` 序列，ready member 排序仍复现当前 `blake2b` 结果，比例、冷却和扫描顺序也不变。显式 context 是为去除纯函数对 ORM/隐式状态的依赖，不是在结构迁移中替换算法；未来若升级竞技场随机算法，必须另立版本、持久化归属并独立验收，生产发布方式另行审批。
+Gate B 的竞技场拆分必须逐 seed 保持基础组合抽样：lineup 组合继续复现当前 `random.Random(f"{mode}:{event_id}:{profile_id}")` 序列，ready member 排序仍复现当前 `blake2b` 结果，比例、冷却和扫描顺序也不变；新增人数目标由持久化 `roster_target_count` 明确控制。显式 context 是为去除纯函数对 ORM/隐式状态的依赖，不是在结构迁移中替换基础随机算法；未来若再次升级人数策略，必须另立版本并独立验收，生产发布方式另行审批。
 
 M-14 是 Gate B 行为等价拆分完成后的独立 `Surgical Fix`：它只改变虚拟 Entry snapshot 的 `current_hp`，不重新抽取 lineup，
 不改变 power、seed、ready 排序、租约或赛事状态机。
@@ -2220,7 +2220,7 @@ gate，而不是为当前环境安排 0% 灰度。
 
 - expected sequence、precondition digest、锁内重验和事务提交协议。
 - 每周期最多一个门客治疗、门客训练、装备调整、技能学习、护院恢复、建筑、科技或库存同步 intent；治疗是非永久强度支持动作，
-  其余正向动作继续受强度预算约束；首版不含门客招募或候选转换链，本次不修改 V1 招募/模板晋升现状。
+  其余质量动作继续受强度预算约束；竞技场数量阶段另有每周期最多 2 名低稀有度门客的受限扩容动作，不接入 V1 招募候选或模板晋升。
 - `guest_healing` 复用生命与库存领域 command，一次只治疗一名门客、原子消耗一件已有药品并保持重伤解除语义；无药时不创造免费恢复。
 - 独立于 Maintenance/routing 的每日虚拟监牢清理 task，按固定 cutoff 分批把虚拟 captor 的 `HELD` 囚犯迁移为 `RELEASED`；
   不自动招募、不删除记录、不返还原门客、不影响真人监牢。

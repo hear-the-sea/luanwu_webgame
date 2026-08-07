@@ -265,6 +265,45 @@ def test_aggregator_uses_half_open_window_and_h01_all_as_denominator() -> None:
 
 
 @pytest.mark.django_db
+def test_aggregator_separates_safety_provider_failures_from_gameplay_hard_constraints() -> None:
+    events = _heartbeat_events()
+    events.extend(
+        [
+            _event(
+                "metric-write-failure",
+                metric_name=HARD_CONSTRAINT_METRIC,
+                occurred_at=HOURLY_START + timedelta(minutes=5),
+                dimensions={"reason": "safety_metric_write_failed"},
+            ),
+            _event(
+                "provider-hard-failure",
+                metric_name="virtual_player_safety_hard_violation",
+                occurred_at=HOURLY_START + timedelta(minutes=6),
+                dimensions={"reason": "event_id_payload_conflict"},
+            ),
+        ]
+    )
+
+    snapshot = build_safety_window_snapshot(
+        window_kind="hourly",
+        window_start_at=HOURLY_START,
+        _events=events,
+    )
+
+    assert snapshot["metrics"]["hard_constraint_violation_count"] == 0
+    assert snapshot["aggregation_errors"] == [
+        "safety_metric_write_failed",
+        "safety_provider_violation:event_id_payload_conflict",
+    ]
+    decision = evaluate_finalized_safety_window(_window(aggregation_errors=snapshot["aggregation_errors"]))
+    assert decision.should_pause is True
+    assert decision.pause_reasons == (
+        "aggregation_error:safety_metric_write_failed",
+        "aggregation_error:safety_provider_violation:event_id_payload_conflict",
+    )
+
+
+@pytest.mark.django_db
 def test_aggregator_marks_heartbeat_gap_over_120_seconds_incomplete() -> None:
     BotSafetyMetricEvent.objects.bulk_create(_heartbeat_events(gap_stream="safety_monitor"))
 

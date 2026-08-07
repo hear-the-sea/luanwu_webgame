@@ -358,7 +358,14 @@ def build_safety_window_snapshot(
             HARD_CONSTRAINT_METRIC,
             HARD_VIOLATION_METRIC_NAME,
         }:
-            metrics["hard_constraint_violation_count"] += event.value
+            if event.metric_name == HARD_VIOLATION_METRIC_NAME:
+                reason = dimensions.get("reason")
+                normalized_reason = reason if isinstance(reason, str) and reason else "unknown"
+                aggregation_errors.add(f"safety_provider_violation:{normalized_reason}")
+            elif dimensions.get("reason") == "safety_metric_write_failed":
+                aggregation_errors.add("safety_metric_write_failed")
+            else:
+                metrics["hard_constraint_violation_count"] += event.value
         elif event.metric_name == ECONOMY_CAP_BREACH_METRIC:
             metrics["economy_cap_breach_count"] += event.value
         elif event.metric_name == DUPLICATE_OR_PARTIAL_COMMIT_METRIC:

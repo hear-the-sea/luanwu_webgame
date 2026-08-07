@@ -138,6 +138,7 @@ def _create_demand() -> ArenaVirtualDemand:
         target_team_power=100,
         missing_entry_count=1,
         reserve_target_count=1,
+        warm_target_count=1,
         max_reserve_target_count=1,
     )
 

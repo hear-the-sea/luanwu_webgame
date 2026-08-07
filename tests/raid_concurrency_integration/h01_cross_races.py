@@ -316,6 +316,7 @@ def test_h01_raid_callback_racing_reserve_replenishment_never_leases_retired_pro
         target_team_power=evaluation.selected_power,
         missing_entry_count=1,
         reserve_target_count=1,
+        warm_target_count=1,
         max_reserve_target_count=1,
         next_retry_at=now,
     )

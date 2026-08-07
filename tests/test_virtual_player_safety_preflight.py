@@ -8,7 +8,7 @@ from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from gameplay.models import BotSafetyMetricEvent
-from gameplay.services.virtual_player_core import maintenance, safety_preflight
+from gameplay.services.virtual_player_core import database_clock, maintenance, safety_preflight
 from gameplay.services.virtual_player_core.contracts import MaintenanceOutcome, MaintenanceTrigger
 from gameplay.services.virtual_player_core.safety_metrics import SAFETY_HEARTBEAT_METRIC
 from gameplay.services.virtual_player_core.safety_preflight import (
@@ -41,6 +41,34 @@ def test_database_clock_returns_an_aware_current_utc_value() -> None:
     after = timezone.now().astimezone(UTC)
     assert database_now.tzinfo is UTC
     assert before - timedelta(seconds=1) <= database_now <= after
+
+
+def test_database_clock_uses_mysql_utc_timestamp_for_naive_values(monkeypatch) -> None:
+    queries: list[str] = []
+
+    class FakeCursor:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def execute(self, query: str) -> None:
+            queries.append(query)
+
+        def fetchone(self):
+            return (datetime(2026, 7, 28, 8, 0, 1, 123456),)
+
+    class FakeConnection:
+        vendor = "mysql"
+
+        def cursor(self):
+            return FakeCursor()
+
+    monkeypatch.setattr(database_clock, "connection", FakeConnection())
+
+    assert database_clock.database_utc_now() == datetime(2026, 7, 28, 8, 0, 1, 123456, tzinfo=UTC)
+    assert queries == ["SELECT UTC_TIMESTAMP(6)"]
 
 
 @pytest.mark.django_db

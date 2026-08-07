@@ -2060,9 +2060,9 @@ def test_population_plan_uses_region_targets_and_dynamic_global_cap(settings, dj
 
     plan = plan_virtual_player_population(now=timezone.now())
 
-    assert plan["target_bot_total"] == 48
+    assert plan["target_bot_total"] == 56
     assert plan["hard_cap"] == 60
-    assert plan["region_targets"] == {"east": 8, "north": 24, "south": 8, "west": 8}
+    assert plan["region_targets"] == {"east": 8, "north": 24, "overseas": 8, "south": 8, "west": 8}
 
 
 @pytest.mark.django_db

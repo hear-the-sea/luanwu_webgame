@@ -20,6 +20,7 @@ from core.exceptions import (
     BuildingUpgradingError,
     EquipmentError,
     EquipmentSlotFullError,
+    GuestCapacityFullError,
     GuestFullHpError,
     GuestItemConfigurationError,
     GuestItemOwnershipError,
@@ -96,9 +97,11 @@ from gameplay.services.technology import (
 )
 from gameplay.services.virtual_player_state_policy import VIRTUAL_PROFILE_MAINTAINED_STATES
 from guests.growth_engine import allocate_level_up_attributes, apply_training_completion
-from guests.models import GearItem, Guest, GuestSkill, GuestStatus, Skill
+from guests.models import GearItem, Guest, GuestRarity, GuestSkill, GuestStatus, GuestTemplate, Skill
 from guests.services.equipment import equip_guest_from_inventory_locked
 from guests.services.health import MedicineUseQuote, apply_medicine_item_for_guest_locked, quote_medicine_item_for_guest
+from guests.services.recruitment_finalize_helpers import remaining_guest_capacity
+from guests.services.recruitment_guests import create_guest_from_template
 from guests.services.salary import (
     SalaryBatchQuote,
     bulk_check_salary_paid,
@@ -153,12 +156,14 @@ from .legacy.roster import (
 from .maintenance_action_specs import (
     BuildingUpgradeActionSpec,
     EquipmentEquipActionSpec,
+    GuestRecruitmentActionSpec,
     InventoryAcquisitionActionSpec,
     MaintenanceActionSpec,
     MaintenanceActionSpecError,
     SkillLearningActionSpec,
     TechnologyUpgradeActionSpec,
     maintenance_action_spec_payload,
+    project_maintenance_action_intent,
 )
 from .maintenance_candidates import (
     MaintenanceCandidateError,
@@ -241,6 +246,10 @@ class MaintenanceExecutionConflict(V2MaintenanceError):
 
 
 class InventoryAcquisitionUnavailable(V2MaintenanceError):
+    pass
+
+
+class GuestRecruitmentTemplateChangedError(V2MaintenanceError):
     pass
 
 
@@ -506,6 +515,20 @@ class MaintenancePlan:
                     raise V2MaintenanceError("guest healing intent does not match its medicine quote")
                 if self.action_spec is not None:
                     raise V2MaintenanceError("guest healing must not carry an action spec")
+            elif self.action_kind == GuestRecruitmentActionSpec.action_kind:
+                spec = self.action_spec
+                if not isinstance(spec, GuestRecruitmentActionSpec):
+                    raise V2MaintenanceError("guest recruitment maintenance requires a typed action spec")
+                if self.intent.business_key != spec.business_key:
+                    raise V2MaintenanceError("guest recruitment intent does not match its action spec")
+                if (
+                    self.target_id is not None
+                    or self.training_levels != 0
+                    or self.rng_seed is not None
+                    or self.troop_recruitment_quote is not None
+                    or self.medicine_quote is not None
+                ):
+                    raise V2MaintenanceError("guest recruitment must not reuse another action's metadata")
             elif self.action_kind in {
                 BuildingUpgradeActionSpec.action_kind,
                 EquipmentEquipActionSpec.action_kind,
@@ -1859,6 +1882,140 @@ def _guest_healing_candidate(
     return intent, guest, quote
 
 
+_QUANTITY_PHASE_REPEATABLE_RARITIES = (GuestRarity.BLACK, GuestRarity.GRAY)
+
+
+def _quantity_phase_guest_template(
+    *,
+    manor: Manor,
+    development_plan: BotDevelopmentPlan,
+    context: RandomContext,
+    current_guest_count: int,
+) -> tuple[GuestTemplate, bool] | None:
+    """Select a low-rarity template without turning quantity growth into quality growth."""
+
+    base_queryset = GuestTemplate.objects.filter(recruitable=True, is_hermit=False).order_by(
+        "rarity",
+        "key",
+        "id",
+    )
+    repeatable = tuple(base_queryset.filter(rarity__in=_QUANTITY_PHASE_REPEATABLE_RARITIES))
+    candidates = repeatable
+    is_repeatable = True
+    if not candidates:
+        owned_template_ids = tuple(manor.guests.values_list("template_id", flat=True))
+        candidates = tuple(base_queryset.exclude(id__in=owned_template_ids))
+        is_repeatable = False
+    if not candidates:
+        return None
+
+    preferred = tuple(
+        candidate
+        for candidate in candidates
+        if str(candidate.archetype) in {str(value) for value in development_plan.preferred_guest_archetypes}
+    )
+    ranked = preferred or candidates
+    index = context.bucket(
+        domain="roster",
+        discriminator={
+            "current_guest_count": int(current_guest_count),
+            "purpose": "quantity-phase-template",
+            "template_keys": [candidate.key for candidate in ranked],
+        },
+        bucket_count=len(ranked),
+    )
+    return ranked[index], is_repeatable
+
+
+def _guest_recruitment_candidate(
+    *,
+    manor: Manor,
+    prestige_band: str,
+    strength_before: StrengthSummary,
+    context: RandomContext,
+    development_plan: BotDevelopmentPlan,
+    minimum_guest_count: int | None,
+    guests: tuple[Guest, ...],
+) -> tuple[DevelopmentIntent | None, GuestRecruitmentActionSpec | None]:
+    """Build a bounded V2 roster-expansion action for the quantity phase."""
+
+    if minimum_guest_count is None:
+        return None, None
+    current_guest_count = len(guests)
+    missing = max(0, int(minimum_guest_count) - current_guest_count)
+    if missing <= 0:
+        return None, None
+    remaining_capacity = remaining_guest_capacity(manor)
+    if remaining_capacity <= 0:
+        return None, None
+    selected = _quantity_phase_guest_template(
+        manor=manor,
+        development_plan=development_plan,
+        context=context,
+        current_guest_count=current_guest_count,
+    )
+    if selected is None:
+        return None, None
+    template, is_repeatable = selected
+    quantity = min(2, missing, remaining_capacity)
+    if not is_repeatable:
+        quantity = 1
+    rng_seed = context.seed(
+        domain="roster",
+        discriminator={
+            "current_guest_count": current_guest_count,
+            "minimum_guest_count": int(minimum_guest_count),
+            "purpose": "quantity-phase-recruitment",
+            "quantity": quantity,
+            "template_id": int(template.id),
+        },
+    )
+    projected_guests = list(guests)
+    added_power = 0
+    for ordinal in range(quantity):
+        projected = create_guest_from_template(
+            manor=manor,
+            template=template,
+            rarity=str(template.rarity),
+            archetype=str(template.archetype),
+            rng=random.Random(rng_seed + ordinal),
+            grant_skills=False,
+            save=False,
+        )
+        projected_guests.append(projected)
+        added_power += _guest_arena_power(
+            projected,
+            force=int(projected.force),
+            intellect=int(projected.intellect),
+            defense=int(projected.defense_stat),
+        )
+    components_after = dict(strength_before.components)
+    components_after["guest_count"] = int(components_after["guest_count"]) + quantity
+    components_after["max_guest_level"] = max(int(components_after["max_guest_level"]), 1)
+    components_after["arena_lineup_power"] = int(components_after["arena_lineup_power"]) + added_power
+    strength_after = StrengthSummary(
+        composite=float(components_after["arena_lineup_power"] + 2 * components_after["troop_total"]),
+        components=components_after,
+    )
+    spec = GuestRecruitmentActionSpec(
+        template_id=int(template.id),
+        template_key=str(template.key),
+        rarity=str(template.rarity),
+        archetype=str(template.archetype),
+        quantity=quantity,
+        rng_seed=rng_seed,
+    )
+    intent = project_maintenance_action_intent(
+        spec=spec,
+        source_prestige_band=prestige_band,
+        target_prestige_band=prestige_band,
+        strength_before=strength_before,
+        strength_after=strength_after,
+        utility_score=max(1.0, float(added_power) / max(1, quantity)),
+    )
+    return intent, spec
+
+
 def _training_candidates(
     *,
     manor: Manor,
@@ -2349,6 +2506,15 @@ def _build_v2_maintenance_plan_from_profile(
         guests=guests,
         medicine_items=medicine_items,
     )
+    guest_recruitment_intent, guest_recruitment_spec = _guest_recruitment_candidate(
+        manor=manor,
+        prestige_band=str(profile.current_prestige_band),
+        strength_before=strength_before,
+        context=context,
+        development_plan=development_plan,
+        minimum_guest_count=minimum_guest_count,
+        guests=guests,
+    )
     training_candidates, candidate_metadata = _training_candidates(
         manor=manor,
         prestige_band=str(profile.current_prestige_band),
@@ -2434,26 +2600,33 @@ def _build_v2_maintenance_plan_from_profile(
         development_plan=development_plan,
         troop_counts=troop_counts,
     )
-    intent = healing_intent or select_development_intent(
-        (
-            *training_candidates,
-            *building_candidates,
-            *technology_candidates,
-            *equipment_candidates,
-            *skill_candidates,
-            *troop_candidates,
-            *inventory_candidates,
-        ),
-        context=context,
-        optimization_bias=development_plan.optimization_bias,
+    quantity_phase = minimum_guest_count is not None and int(strength_before.components.get("guest_count", 0)) < int(
+        minimum_guest_count
     )
+    intent = healing_intent
+    if intent is None and quantity_phase:
+        intent = guest_recruitment_intent
+    if intent is None and not quantity_phase:
+        intent = select_development_intent(
+            (
+                *training_candidates,
+                *building_candidates,
+                *technology_candidates,
+                *equipment_candidates,
+                *skill_candidates,
+                *troop_candidates,
+                *inventory_candidates,
+            ),
+            context=context,
+            optimization_bias=development_plan.optimization_bias,
+        )
     action_kind = ""
     target_id = None
     training_levels = 0
     rng_seed = None
     target_guest = None
     troop_recruitment_quote = None
-    action_spec = None
+    action_spec: MaintenanceActionSpec | None = None
     typed_action_specs = {
         **building_specs,
         **technology_specs,
@@ -2473,6 +2646,10 @@ def _build_v2_maintenance_plan_from_profile(
             target_id = int(target_guest.id)
         elif action_kind == "troop_recruitment":
             troop_recruitment_quote = troop_quotes[intent.business_key]
+        elif action_kind == GuestRecruitmentActionSpec.action_kind:
+            if guest_recruitment_spec is None or intent.business_key != guest_recruitment_spec.business_key:
+                raise V2MaintenanceError("guest recruitment intent does not match its action spec")
+            action_spec = guest_recruitment_spec
         elif action_kind in {
             BuildingUpgradeActionSpec.action_kind,
             EquipmentEquipActionSpec.action_kind,
@@ -2537,6 +2714,7 @@ def _build_v2_maintenance_plan_from_profile(
                 None if target_reference_selection is None else target_reference_selection.local_sample_count
             ),
             target_strength_cap=(None if target_reference_selection is None else target_reference_selection.cap),
+            allow_roster_expansion=(action_kind == GuestRecruitmentActionSpec.action_kind),
         )
         if planning_decision.allowed and intent.target_prestige_band != str(profile.current_prestige_band):
             next_growth_at_after = _next_v2_growth_at(
@@ -3096,6 +3274,7 @@ def execute_virtual_player_v2_maintenance_plan(
                 source_strength_cap=plan.reference_strength_cap,
                 target_sample_count=plan.target_reference_sample_count,
                 target_strength_cap=plan.target_reference_strength_cap,
+                allow_roster_expansion=(plan.action_kind == GuestRecruitmentActionSpec.action_kind),
             )
             budget_entries_after = decision.budget_entries_after
             if not decision.allowed:
@@ -3142,6 +3321,40 @@ def execute_virtual_player_v2_maintenance_plan(
                                 now=plan.planned_at,
                             )
                             final_troop_total += int(plan.troop_recruitment_quote.quantity)
+                        elif plan.action_kind == GuestRecruitmentActionSpec.action_kind:
+                            assert isinstance(plan.action_spec, GuestRecruitmentActionSpec)
+                            recruitment_spec = plan.action_spec
+                            if remaining_guest_capacity(manor) < recruitment_spec.quantity:
+                                raise GuestCapacityFullError()
+                            template = (
+                                GuestTemplate.objects.select_for_update()
+                                .filter(
+                                    pk=recruitment_spec.template_id,
+                                    key=recruitment_spec.template_key,
+                                    recruitable=True,
+                                    is_hermit=False,
+                                )
+                                .first()
+                            )
+                            if template is None:
+                                raise GuestRecruitmentTemplateChangedError()
+                            if str(template.rarity) != recruitment_spec.rarity or str(template.archetype) != (
+                                recruitment_spec.archetype
+                            ):
+                                raise GuestRecruitmentTemplateChangedError()
+                            created_guests = tuple(
+                                create_guest_from_template(
+                                    manor=manor,
+                                    template=template,
+                                    rarity=recruitment_spec.rarity,
+                                    archetype=recruitment_spec.archetype,
+                                    rng=random.Random(recruitment_spec.rng_seed + ordinal),
+                                    grant_skills=False,
+                                    save=True,
+                                )
+                                for ordinal in range(recruitment_spec.quantity)
+                            )
+                            final_strength_guests = (*revalidation_guests, *created_guests)
                         elif plan.action_kind == BuildingUpgradeActionSpec.action_kind:
                             assert isinstance(
                                 plan.action_spec,
@@ -3255,6 +3468,7 @@ def execute_virtual_player_v2_maintenance_plan(
                             action_label = {
                                 BuildingUpgradeActionSpec.action_kind: ("building upgrade"),
                                 EquipmentEquipActionSpec.action_kind: "equipment equip",
+                                GuestRecruitmentActionSpec.action_kind: "guest recruitment",
                                 "training": "training",
                                 "troop_recruitment": "troop recruitment",
                                 SkillLearningActionSpec.action_kind: "skill learning",
@@ -3271,6 +3485,8 @@ def execute_virtual_player_v2_maintenance_plan(
                     BuildingUpgradingError,
                     EquipmentError,
                     EquipmentSlotFullError,
+                    GuestCapacityFullError,
+                    GuestRecruitmentTemplateChangedError,
                     GuestMaxLevelError,
                     GuestItemConfigurationError,
                     GuestItemOwnershipError,
@@ -3652,14 +3868,28 @@ def _committed_growth_outcome(
     ):
         raise MaintenanceExecutionConflict("maintenance operation_id already belongs to a different request")
     if receipt.outcome == BotMaintenanceExecution.Outcome.APPLIED:
-        terminal_result = MaintenanceAttemptResult.APPLIED
         growth_outcome = AcceleratedGrowthOutcome.GROWN
     elif receipt.outcome == BotMaintenanceExecution.Outcome.NO_ACTION:
-        terminal_result = MaintenanceAttemptResult.NO_ACTION
         growth_outcome = AcceleratedGrowthOutcome.NO_ACTION
     else:
         raise MaintenanceExecutionConflict("maintenance execution receipt has an unsupported outcome")
     if receipt.safety_started_at is not None:
+        # Rebuild the original structured result so the safety terminal event
+        # uses the same canonical payload as the committed execution. Passing
+        # only the enum outcome would drop fields such as ``reason`` and make
+        # an otherwise idempotent replay look like an event-id conflict.
+        terminal_result = MaintenanceResult(
+            outcome=MaintenanceOutcome(receipt.outcome),
+            trigger=MaintenanceTrigger(receipt.trigger),
+            profile_id=int(receipt.profile_id),
+            sequence_before=int(receipt.maintenance_sequence_before),
+            sequence_after=int(receipt.maintenance_sequence_after),
+            schedule_disposition=MaintenanceScheduleDisposition(receipt.schedule_disposition),
+            next_growth_at_before=receipt.next_growth_at_before,
+            next_growth_at_after=receipt.next_growth_at_after,
+            action_kind=str(receipt.action_kind or ""),
+            reason=str(receipt.reason or ""),
+        )
         attempt = MaintenanceAttempt(
             operation_id=receipt.operation_id,
             attempt_ordinal=int(receipt.attempt_ordinal),

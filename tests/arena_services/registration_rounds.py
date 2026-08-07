@@ -284,6 +284,7 @@ def test_full_real_start_closes_and_releases_reserve():
         tournament=tournament,
         missing_entry_count=1,
         reserve_target_count=6,
+        warm_target_count=6,
         max_reserve_target_count=6,
     )
     profile = _create_bot_profile("arena_reserve_hook_full_bot")

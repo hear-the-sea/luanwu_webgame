@@ -22,13 +22,19 @@ class ArenaVirtualDemandAdmin(ReadOnlyCoordinatorAdmin):
         "event_id",
         "status",
         "version",
-        "target_guest_count",
+        "guest_count_preference",
         "target_team_power",
         "missing_entry_count",
         "reserve_target_count",
+        "warm_target_count",
+        "max_reserve_target_count",
         "created_profile_count",
         "next_retry_at",
         "last_checked_at",
+        "last_progress_at",
+        "last_input_change_at",
+        "consecutive_failure_count",
+        "last_failure_reason",
     )
     list_filter = ("status",)
     readonly_fields = (
@@ -40,10 +46,14 @@ class ArenaVirtualDemandAdmin(ReadOnlyCoordinatorAdmin):
         "target_team_power",
         "missing_entry_count",
         "reserve_target_count",
+        "warm_target_count",
         "max_reserve_target_count",
         "created_profile_count",
         "next_retry_at",
         "last_checked_at",
+        "last_progress_at",
+        "last_input_change_at",
+        "consecutive_failure_count",
         "last_failure_reason",
         "created_at",
         "updated_at",
@@ -53,6 +63,10 @@ class ArenaVirtualDemandAdmin(ReadOnlyCoordinatorAdmin):
     @admin.display(description="模式")
     def event_mode(self, obj: ArenaVirtualDemand) -> str:
         return "普通" if obj.tournament_id is not None else "共斗"
+
+    @admin.display(description="门客数目标")
+    def guest_count_preference(self, obj: ArenaVirtualDemand) -> int:
+        return int(obj.target_guest_count)
 
     @admin.display(description="场次编号")
     def event_id(self, obj: ArenaVirtualDemand) -> int | None:
@@ -68,7 +82,10 @@ class ArenaVirtualReserveMemberAdmin(ReadOnlyCoordinatorAdmin):
         "state",
         "evaluated_version",
         "current_lineup_power",
+        "roster_target_count",
         "accelerated_growth_rounds",
+        "growth_retry_streak",
+        "growth_retry_reason",
         "next_acceleration_at",
         "last_checked_at",
     )
@@ -80,7 +97,10 @@ class ArenaVirtualReserveMemberAdmin(ReadOnlyCoordinatorAdmin):
         "state",
         "evaluated_version",
         "current_lineup_power",
+        "roster_target_count",
         "accelerated_growth_rounds",
+        "growth_retry_streak",
+        "growth_retry_reason",
         "next_acceleration_at",
         "last_checked_at",
         "created_at",

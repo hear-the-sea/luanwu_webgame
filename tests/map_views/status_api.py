@@ -68,7 +68,7 @@ class TestMapStatusAPI:
         assert response.json()["requested"] is True
         assert BotBackfillDemand.objects.filter(region=manor.region, prestige_band="newbie", needed=1).exists()
 
-    def test_region_backfill_request_skips_unsupported_overseas_region(self, manor_with_user, settings):
+    def test_region_backfill_request_records_overseas_region(self, manor_with_user, settings):
         manor, client = manor_with_user
         manor.region = "overseas"
         manor.newbie_protection_until = None
@@ -87,8 +87,8 @@ class TestMapStatusAPI:
         )
 
         assert response.status_code == 200
-        assert response.json() == {"success": True, "requested": False}
-        assert not BotBackfillDemand.objects.exists()
+        assert response.json() == {"success": True, "requested": True}
+        assert BotBackfillDemand.objects.filter(region="overseas", prestige_band="newbie", needed=1).exists()
 
     def test_region_backfill_request_rejects_get(self, manor_with_user):
         _manor, client = manor_with_user

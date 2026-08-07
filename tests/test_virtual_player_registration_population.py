@@ -119,15 +119,19 @@ def test_internal_admin_and_fixture_users_bootstrap_manor_without_population_eve
     assert not BotPopulationRecomputeDemand.objects.exists()
 
 
-def test_overseas_registration_has_no_virtual_population_cell() -> None:
+def test_overseas_registration_merges_virtual_population_cell() -> None:
     result = merge_real_player_population_recompute_demand(
         region="overseas",
         prestige=0,
         now=timezone.now(),
     )
 
-    assert result is None
-    assert not BotPopulationRecomputeDemand.objects.exists()
+    assert result is not None
+    assert (result.region, result.prestige_band) == ("overseas", "newbie")
+    assert BotPopulationRecomputeDemand.objects.filter(
+        region="overseas",
+        prestige_band="newbie",
+    ).exists()
 
 
 def test_periodic_roll_recovers_registration_when_post_commit_merge_fails(
@@ -164,9 +168,7 @@ def test_periodic_roll_recovers_registration_when_post_commit_merge_fails(
 
     assert population_runtime.roll_virtual_player_population(limit=0) == 0
 
-    expected_count = sum(
-        1 for region, _label in REGION_CHOICES if region != "overseas" for _prestige_band in V2_PRESTIGE_BAND_NAMES
-    )
+    expected_count = sum(1 for _region, _label in REGION_CHOICES for _prestige_band in V2_PRESTIGE_BAND_NAMES)
     assert BotPopulationRecomputeDemand.objects.count() == expected_count
     recovered = BotPopulationRecomputeDemand.objects.get(
         region="north",

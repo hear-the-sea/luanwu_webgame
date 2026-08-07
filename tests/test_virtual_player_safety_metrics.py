@@ -88,6 +88,8 @@ def test_maintenance_attempt_uses_started_window_for_one_terminal_result() -> No
         "started",
         "no_action",
     }
+    terminal = next(event for event in events if event.dimensions["result"] == "no_action")
+    assert terminal.dimensions["reason"] == "domain_constraint"
 
 
 @pytest.mark.django_db

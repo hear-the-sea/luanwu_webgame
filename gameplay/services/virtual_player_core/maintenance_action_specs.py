@@ -211,6 +211,47 @@ class InventoryAcquisitionActionSpec:
 
 
 @dataclass(frozen=True, slots=True)
+class GuestRecruitmentActionSpec:
+    """Deterministic, low-quality roster expansion for a V2 quantity phase."""
+
+    action_kind: ClassVar[str] = "guest_recruitment"
+
+    template_id: int
+    template_key: str
+    rarity: str
+    archetype: str
+    quantity: int
+    rng_seed: int
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "template_id", _positive_int(self.template_id, field="template_id"))
+        object.__setattr__(self, "template_key", _non_empty_string(self.template_key, field="template_key"))
+        object.__setattr__(self, "rarity", _non_empty_string(self.rarity, field="rarity"))
+        object.__setattr__(self, "archetype", _non_empty_string(self.archetype, field="archetype"))
+        quantity = _positive_int(self.quantity, field="quantity")
+        if quantity > 2:
+            raise MaintenanceActionSpecError("guest recruitment quantity must not exceed two guests per cycle")
+        object.__setattr__(self, "quantity", quantity)
+        object.__setattr__(self, "rng_seed", _non_negative_int(self.rng_seed, field="rng_seed"))
+
+    @property
+    def business_key(self) -> str:
+        return f"guest_recruitment:{self.template_key}:quantity:{self.quantity}:seed:{self.rng_seed}"
+
+    def to_payload(self) -> dict[str, Any]:
+        return {
+            "action_kind": self.action_kind,
+            "archetype": self.archetype,
+            "business_key": self.business_key,
+            "quantity": self.quantity,
+            "rarity": self.rarity,
+            "rng_seed": self.rng_seed,
+            "template_id": self.template_id,
+            "template_key": self.template_key,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class BuildingUpgradeActionSpec:
     action_kind: ClassVar[str] = "building_upgrade"
 
@@ -341,6 +382,7 @@ type MaintenanceActionSpec = (
     SkillLearningActionSpec
     | EquipmentEquipActionSpec
     | InventoryAcquisitionActionSpec
+    | GuestRecruitmentActionSpec
     | BuildingUpgradeActionSpec
     | TechnologyUpgradeActionSpec
 )
@@ -413,6 +455,18 @@ def project_maintenance_action_intent(
         )
         if strength_after.components["prestige"] != spec.prestige_after:
             raise MaintenanceActionSpecError("technology strength projection does not match its action spec")
+    elif isinstance(spec, GuestRecruitmentActionSpec):
+        _validate_component_changes(
+            strength_before,
+            strength_after,
+            allowed=frozenset({"arena_lineup_power", "guest_count", "max_guest_level"}),
+        )
+        if strength_after.components["guest_count"] != strength_before.components["guest_count"] + spec.quantity:
+            raise MaintenanceActionSpecError("guest recruitment strength projection has an invalid guest count")
+        if strength_after.components["max_guest_level"] < strength_before.components["max_guest_level"]:
+            raise MaintenanceActionSpecError("guest recruitment must not reduce the maximum guest level")
+        if strength_after.components["arena_lineup_power"] < strength_before.components["arena_lineup_power"]:
+            raise MaintenanceActionSpecError("guest recruitment must not reduce arena lineup power")
     else:
         raise MaintenanceActionSpecError(f"unsupported maintenance action spec: {type(spec).__name__}")
 
@@ -430,6 +484,7 @@ def project_maintenance_action_intent(
 __all__ = [
     "BuildingUpgradeActionSpec",
     "EquipmentEquipActionSpec",
+    "GuestRecruitmentActionSpec",
     "InventoryAcquisitionActionSpec",
     "MaintenanceActionSpec",
     "MaintenanceActionSpecError",

@@ -870,11 +870,21 @@ def _normalize_safety_window_contract(
 def is_recoverable_safety_pause_reason(reason: str) -> bool:
     """Return whether a pause can recover after consecutive complete safety windows."""
     normalized = str(reason).strip()
-    if "," in normalized:
+    reasons = tuple(part.strip() for part in normalized.split(","))
+    if not reasons or any(not part for part in reasons):
         return False
-    return normalized.startswith(
-        ("arena_shortage_baseline_missing:", "arena_shortage_baseline_expired:")
-    ) or normalized in {
+
+    # One scheduler outage can make every heartbeat stream incomplete in the
+    # same window. Keep that operational pause recoverable as a unit, while
+    # refusing to auto-resume when any independent safety reason is present.
+    if all(part.startswith("heartbeat_incomplete:") and bool(part.partition(":")[2].strip()) for part in reasons):
+        return True
+
+    if len(reasons) != 1:
+        return False
+    return reasons[0].startswith(("arena_shortage_baseline_missing:", "arena_shortage_baseline_expired:")) or reasons[
+        0
+    ] in {
         "missing_finalized_hourly_window",
         "missing_finalized_daily_window",
     }

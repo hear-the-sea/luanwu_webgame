@@ -47,7 +47,7 @@ def test_population_demand_merge_coalesces_cells_in_canonical_lock_order() -> No
 @pytest.mark.parametrize(
     ("region", "prestige_band"),
     [
-        ("overseas", "newbie"),
+        ("unknown", "newbie"),
         ("north", "missing"),
     ],
 )
@@ -63,6 +63,20 @@ def test_population_demand_merge_rejects_invalid_cells_without_creating_rows(
         )
 
     assert not BotPopulationRecomputeDemand.objects.exists()
+
+
+def test_population_demand_merge_accepts_overseas_cell() -> None:
+    demand = merge_population_recompute_demand(
+        region="overseas",
+        prestige_band="newbie",
+        now=timezone.now(),
+    )
+
+    assert (demand.region, demand.prestige_band) == ("overseas", "newbie")
+    assert BotPopulationRecomputeDemand.objects.filter(
+        region="overseas",
+        prestige_band="newbie",
+    ).exists()
 
 
 def test_merge_during_claim_remains_pending_after_fenced_finalize() -> None:

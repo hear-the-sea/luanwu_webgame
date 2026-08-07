@@ -62,8 +62,17 @@ def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]
         )
         .filter(
             Q(virtual_demand__isnull=True)
-            | Q(virtual_demand__next_retry_at__isnull=True)
-            | Q(virtual_demand__next_retry_at__lte=due_cutoff)
+            | (
+                Q(virtual_demand__status=ArenaVirtualDemand.Status.ACTIVE)
+                & (Q(virtual_demand__next_retry_at__isnull=True) | Q(virtual_demand__next_retry_at__lte=due_cutoff))
+            )
+            | (
+                Q(virtual_demand__status=ArenaVirtualDemand.Status.BLOCKED)
+                & (
+                    Q(virtual_demand__updated_at__isnull=True)
+                    | Q(entries__joined_at__gt=F("virtual_demand__updated_at"))
+                )
+            )
         )
         .distinct()
         .order_by(F("virtual_fill_at").asc(nulls_last=True), "created_at", "id")
@@ -80,8 +89,17 @@ def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]
         )
         .filter(
             Q(virtual_demand__isnull=True)
-            | Q(virtual_demand__next_retry_at__isnull=True)
-            | Q(virtual_demand__next_retry_at__lte=due_cutoff)
+            | (
+                Q(virtual_demand__status=ArenaVirtualDemand.Status.ACTIVE)
+                & (Q(virtual_demand__next_retry_at__isnull=True) | Q(virtual_demand__next_retry_at__lte=due_cutoff))
+            )
+            | (
+                Q(virtual_demand__status=ArenaVirtualDemand.Status.BLOCKED)
+                & (
+                    Q(virtual_demand__updated_at__isnull=True)
+                    | Q(entries__joined_at__gt=F("virtual_demand__updated_at"))
+                )
+            )
         )
         .distinct()
         .order_by(F("virtual_fill_at").asc(nulls_last=True), "created_at", "id")
@@ -113,11 +131,13 @@ def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]
             result["filled_entries"] += fill_due_tournament_reserve(
                 event_id,
                 now=current_time,
+                emit_shortage_observation=False,
             )
         else:
             result["filled_entries"] += fill_due_coop_reserve(
                 event_id,
                 now=current_time,
+                emit_shortage_observation=False,
             )
     return result
 

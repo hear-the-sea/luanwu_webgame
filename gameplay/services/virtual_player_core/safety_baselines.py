@@ -8,13 +8,14 @@ from hashlib import sha256
 from typing import Final
 
 from django.conf import settings
-from django.db import IntegrityError, connection, transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.utils import timezone
 
 from gameplay.models import BotArenaShortageBaseline, BotRuntimeRoutingState
 
 from .config import V2_PRESTIGE_BAND_NAMES, MaintenanceMode
+from .database_clock import database_utc_now as _database_utc_now
 from .random_context import canonical_json_bytes
 
 BASELINE_PAYLOAD_SCHEMA_VERSION: Final = 1
@@ -103,17 +104,6 @@ class ArenaShortageBaselineCleanupSummary:
     scanned: int
     expired: int
     deleted: int
-
-
-def _database_utc_now() -> datetime:
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT CURRENT_TIMESTAMP")
-        value = cursor.fetchone()[0]
-    if isinstance(value, str):
-        value = datetime.fromisoformat(value)
-    if timezone.is_naive(value):
-        value = value.replace(tzinfo=UTC)
-    return value.astimezone(UTC)
 
 
 def _normalize_mode(value: object) -> str:

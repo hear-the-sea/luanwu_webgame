@@ -6,6 +6,7 @@ from datetime import datetime
 
 from celery import current_app
 from django.db import transaction
+from django.db.models import Count
 
 from common.utils.celery import safe_apply_async
 from gameplay.models import ArenaCoopEntry, ArenaEntry, ArenaVirtualDemand, ArenaVirtualReserveMember
@@ -16,9 +17,16 @@ from gameplay.services.virtual_player_core.safety_metrics import (
     record_arena_shortage,
     record_safety_metric_failure,
 )
+from gameplay.services.virtual_player_core.safety_provider import SafetyProviderError
 
 logger = logging.getLogger("gameplay.services.arena.virtual_reserve_demand")
 ARENA_SHORTAGE_METRIC_RETRY_MAX_ATTEMPTS = 3
+
+
+def is_retryable_arena_shortage_metric_error(exc: Exception) -> bool:
+    """Retry infrastructure failures, but stop on provider-validated terminal errors."""
+
+    return not isinstance(exc, SafetyProviderError)
 
 
 @dataclass(frozen=True, slots=True)
@@ -334,7 +342,7 @@ def emit_arena_shortage_after_commit(
                     },
                 )
             retry_scheduled = False
-            if ARENA_SHORTAGE_METRIC_RETRY_MAX_ATTEMPTS > 0:
+            if ARENA_SHORTAGE_METRIC_RETRY_MAX_ATTEMPTS > 0 and is_retryable_arena_shortage_metric_error(exc):
                 try:
                     retry_scheduled = queue_arena_shortage_metric_retry(
                         demand_id=int(demand.id),
@@ -397,24 +405,42 @@ def log_demand_event(
     else:
         mode = "coop"
         event_id = int(demand.coop_event_id or 0)
-    ready_count = demand.reserve_members.filter(
-        state=ArenaVirtualReserveMember.State.READY,
-    ).count()
-    training_count = demand.reserve_members.filter(
-        state=ArenaVirtualReserveMember.State.TRAINING,
-    ).count()
+    member_counts = dict(
+        demand.reserve_members.values("state").annotate(count=Count("id")).values_list("state", "count")
+    )
+    ready_count = int(member_counts.get(ArenaVirtualReserveMember.State.READY, 0))
+    training_count = int(member_counts.get(ArenaVirtualReserveMember.State.TRAINING, 0))
+    exhausted_count = int(member_counts.get(ArenaVirtualReserveMember.State.EXHAUSTED, 0))
+    roster_target_distribution = {
+        str(target): int(count)
+        for target, count in (
+            demand.reserve_members.values("roster_target_count")
+            .annotate(count=Count("id"))
+            .values_list("roster_target_count", "count")
+        )
+        if target is not None
+    }
     extra = {
         "event": event_name,
         "mode": mode,
         "event_id": event_id,
         "demand_id": int(demand.id),
         "demand_version": int(demand.version),
+        "demand_status": str(demand.status),
+        "target_guest_count": int(demand.target_guest_count),
+        "target_team_power": int(demand.target_team_power),
         "missing_entry_count": int(demand.missing_entry_count),
         "reserve_target_count": int(demand.reserve_target_count),
+        "warm_target_count": int(demand.warm_target_count),
+        "max_reserve_target_count": int(demand.max_reserve_target_count),
+        "created_profile_count": int(demand.created_profile_count),
         "consecutive_failure_count": int(demand.consecutive_failure_count),
         "last_progress_at": demand.last_progress_at.isoformat() if demand.last_progress_at else None,
+        "last_input_change_at": demand.last_input_change_at.isoformat() if demand.last_input_change_at else None,
         "ready_count": int(ready_count),
         "training_count": int(training_count),
+        "exhausted_count": int(exhausted_count),
+        "roster_target_distribution": roster_target_distribution,
         "failure_reason": str(demand.last_failure_reason if failure_reason is None else failure_reason),
     }
     extra.update(details)
@@ -424,6 +450,7 @@ def log_demand_event(
 __all__ = [
     "ARENA_SHORTAGE_METRIC_RETRY_MAX_ATTEMPTS",
     "emit_arena_shortage_after_commit",
+    "is_retryable_arena_shortage_metric_error",
     "log_demand_event",
     "queue_arena_shortage_metric_retry",
     "record_arena_shortage_metric_failure",

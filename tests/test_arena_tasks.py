@@ -9,6 +9,7 @@ from django.db import DatabaseError
 
 import gameplay.tasks.arena as arena_tasks
 from gameplay.services.arena import virtual_reserve_observability as arena_observability
+from gameplay.services.virtual_player_core.safety_provider import SafetyMetricEventConflict
 
 
 def test_scan_arena_tournaments_returns_only_tournament_counts(monkeypatch):
@@ -279,6 +280,48 @@ def test_retry_arena_shortage_metric_schedules_one_more_bounded_attempt(monkeypa
     assert queued[0]["virtual_entry_count"] == 2
     assert queued[0]["reserve_ready_count"] == 4
     assert queued[0]["reserve_training_count"] == 1
+
+
+def test_retry_arena_shortage_metric_does_not_retry_provider_terminal_error(monkeypatch):
+    failures: list[dict[str, object]] = []
+    conflict = SafetyMetricEventConflict(
+        "canonical payload conflict",
+        hard_violation_event_id="hard-violation-1",
+    )
+    monkeypatch.setattr(
+        arena_tasks,
+        "record_arena_shortage_observation",
+        lambda **kwargs: (_ for _ in ()).throw(conflict),
+    )
+    monkeypatch.setattr(
+        arena_tasks,
+        "record_arena_shortage_metric_failure",
+        lambda **kwargs: failures.append(kwargs),
+    )
+    monkeypatch.setattr(
+        arena_tasks,
+        "queue_arena_shortage_metric_retry",
+        lambda **_kwargs: pytest.fail("provider terminal errors must not be retried"),
+    )
+
+    with pytest.raises(RuntimeError, match="arena shortage metric retry exhausted"):
+        arena_tasks.retry_arena_shortage_metric.run(
+            7,
+            "tournament",
+            9,
+            10,
+            2,
+            100,
+            "operation-1",
+            "2026-07-28T08:00:00Z",
+            1,
+            3,
+            2,
+            4,
+            1,
+        )
+
+    assert failures[0]["operation_id"] == "operation-1"
 
 
 def test_retry_arena_shortage_metric_fails_closed_after_last_attempt(monkeypatch):

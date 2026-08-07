@@ -11,6 +11,7 @@ from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.services.arena.core import cleanup_expired_tournaments, run_due_arena_rounds, start_ready_tournaments
 from gameplay.services.arena.virtual_reserve_observability import (
     ARENA_SHORTAGE_METRIC_RETRY_MAX_ATTEMPTS,
+    is_retryable_arena_shortage_metric_error,
     queue_arena_shortage_metric_retry,
     record_arena_shortage_metric_failure,
     record_arena_shortage_observation,
@@ -177,7 +178,9 @@ def retry_arena_shortage_metric(
                     "retry_attempt": int(retry_attempt),
                 },
             )
-        if int(retry_attempt) < ARENA_SHORTAGE_METRIC_RETRY_MAX_ATTEMPTS - 1:
+        if int(
+            retry_attempt
+        ) < ARENA_SHORTAGE_METRIC_RETRY_MAX_ATTEMPTS - 1 and is_retryable_arena_shortage_metric_error(exc):
             queued = queue_arena_shortage_metric_retry(
                 demand_id=int(demand_id),
                 mode=mode,

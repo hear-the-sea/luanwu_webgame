@@ -444,11 +444,14 @@ def evaluate_controlled_action(
     source_strength_cap: StrengthSummary,
     target_sample_count: int | None = None,
     target_strength_cap: StrengthSummary | None = None,
+    allow_roster_expansion: bool = False,
 ) -> ControlledActionDecision:
     if not isinstance(policy, PrestigeBandGrowthPolicy):
         raise MaintenanceRuleError("policy must be a PrestigeBandGrowthPolicy")
     if not isinstance(intent, DevelopmentIntent):
         raise MaintenanceRuleError("intent must be a DevelopmentIntent")
+    if type(allow_roster_expansion) is not bool:
+        raise MaintenanceRuleError("allow_roster_expansion must be a boolean")
     current_time = _aware_utc(now, field="now")
     normalized_policy_version = _positive_int(policy_version, field="policy_version")
     entries = prune_strength_budget_entries(
@@ -519,19 +522,25 @@ def evaluate_controlled_action(
     assert normalized_last is not None
     spacing_deadline = normalized_last + limits.minimum_positive_strength_action_spacing
     usage = strength_budget_usage(entries)
-    exceeds_strength_cap = (
-        any(_blocked_by_cap(intent, cap) for cap in caps)
-        or usage.action_count + 1 > limits.strength_increasing_actions_per_24h_max
-        or usage.positive_growth_bps + controlled_growth_bps > limits.composite_growth_bps_per_24h_max
+    # Roster expansion is a bounded quantity-phase action: the action spec
+    # limits each batch, while the reference component cap remains enforced.
+    # Its quality-growth budget is intentionally separate so a low-level bot
+    # is not permanently unable to reach the arena roster target.
+    exceeds_strength_cap = any(_blocked_by_cap(intent, cap) for cap in caps) or (
+        not allow_roster_expansion
+        and (
+            usage.action_count + 1 > limits.strength_increasing_actions_per_24h_max
+            or usage.positive_growth_bps + controlled_growth_bps > limits.composite_growth_bps_per_24h_max
+        )
     )
     blocked_reasons: set[MaintenanceNoActionReason] = set()
     if intent.constraint_violations:
         blocked_reasons.add(MaintenanceNoActionReason.DOMAIN_CONSTRAINT)
     if exceeds_strength_cap:
         blocked_reasons.add(MaintenanceNoActionReason.STRENGTH_CAP)
-    if current_time < spacing_deadline:
+    if not allow_roster_expansion and current_time < spacing_deadline:
         blocked_reasons.add(MaintenanceNoActionReason.BAND_SPACING)
-    if controlled_growth_bps > limits.composite_growth_bps_per_controlled_action_max:
+    if not allow_roster_expansion and controlled_growth_bps > limits.composite_growth_bps_per_controlled_action_max:
         blocked_reasons.add(MaintenanceNoActionReason.BAND_ACTION_CAP)
     if blocked_reasons:
         return _decision(
@@ -545,13 +554,17 @@ def evaluate_controlled_action(
             limits=limits,
         )
 
-    consumed = consume_strength_budget(
-        entries,
-        now=current_time,
-        positive_growth_bps=controlled_growth_bps,
-        policy_version=normalized_policy_version,
-        max_actions=limits.strength_increasing_actions_per_24h_max,
-        max_positive_growth_bps=limits.composite_growth_bps_per_24h_max,
+    consumed = (
+        entries
+        if allow_roster_expansion
+        else consume_strength_budget(
+            entries,
+            now=current_time,
+            positive_growth_bps=controlled_growth_bps,
+            policy_version=normalized_policy_version,
+            max_actions=limits.strength_increasing_actions_per_24h_max,
+            max_positive_growth_bps=limits.composite_growth_bps_per_24h_max,
+        )
     )
     return _decision(
         allowed=True,

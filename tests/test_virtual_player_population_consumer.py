@@ -69,6 +69,67 @@ def _patch_bootstrap_builder(monkeypatch) -> None:
     )
 
 
+def test_active_arena_shortage_expands_derived_v2_capacity_but_not_explicit_hard_cap(
+    monkeypatch,
+    settings,
+) -> None:
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "region_floor": 0,
+            "region_active_multiplier": 0,
+            "global_floor": 0,
+            "global_active_multiplier": 0,
+        },
+        "prestige_bands": {"newbie": [0, 500]},
+    }
+    _activate_consumer(monkeypatch)
+    monkeypatch.setattr(
+        population_runtime,
+        "active_arena_population_activations",
+        lambda: (SimpleNamespace(region="overseas", prestige=100, needed=4),),
+    )
+    config = population_runtime._v2_population_runtime_config()
+
+    derived = population_runtime._build_population_plan(
+        config,
+        now=timezone.now(),
+        target_based_membership=True,
+        required_engine_version=2,
+    )
+
+    assert derived.hard_cap == 4
+    assert derived.by_key[("overseas", "newbie")].target == 4
+
+    settings.VIRTUAL_PLAYER_CONFIG["population"]["hard_cap"] = 2
+    capped_config = population_runtime._v2_population_runtime_config()
+    capped = population_runtime._build_population_plan(
+        capped_config,
+        now=timezone.now(),
+        target_based_membership=True,
+        required_engine_version=2,
+    )
+
+    assert capped.hard_cap == 2
+
+
+def test_active_arena_population_recovery_creates_a_missing_overseas_cell_once(monkeypatch) -> None:
+    now = timezone.now()
+    _activate_consumer(monkeypatch)
+    monkeypatch.setattr(
+        population_runtime,
+        "active_arena_population_activations",
+        lambda: (SimpleNamespace(region="overseas", prestige=100, needed=4),),
+    )
+
+    created = population_runtime.ensure_active_arena_population_recompute_demands(now=now)
+    repeated = population_runtime.ensure_active_arena_population_recompute_demands(now=now)
+
+    assert [(row.region, row.prestige_band, row.requested_revision) for row in created] == [("overseas", "newbie", 1)]
+    assert repeated == ()
+    demand = BotPopulationRecomputeDemand.objects.get(region="overseas", prestige_band="newbie")
+    assert demand.requested_revision == 1
+
+
 def test_routing_inactive_preserves_pending_demand() -> None:
     now = timezone.now()
     merge_population_recompute_demand(
@@ -188,21 +249,28 @@ def test_consumer_revalidates_deficit_before_each_creation(monkeypatch) -> None:
     assert len(created) == 1
 
 
+@pytest.mark.parametrize("region", ["north", "overseas"])
 def test_population_consumer_materializes_a_real_v2_profile_from_durable_demand(
     released_v2_policy,
     game_data,
     monkeypatch,
+    region,
 ) -> None:
     now = timezone.now()
     _activate_consumer(monkeypatch)
+    arena_wakeup = Mock(return_value=1)
+    monkeypatch.setattr(
+        "gameplay.services.arena.virtual_reserve_demand.wake_active_arena_demands_for_population_region",
+        arena_wakeup,
+    )
     merge_population_recompute_demand(
-        region="north",
+        region=region,
         prestige_band="newbie",
         now=now,
     )
 
     result = population_runtime.reconcile_virtual_player_population_cell(
-        region="north",
+        region=region,
         prestige_band="newbie",
         limit=1,
         now=now,
@@ -212,9 +280,11 @@ def test_population_consumer_materializes_a_real_v2_profile_from_durable_demand(
     assert result.processed_count == 1
     assert result.created_count == 1
     profile = BotProfile.objects.get(engine_version=2)
-    assert profile.manor.region == "north"
+    assert profile.manor.region == region
     assert profile.current_prestige_band == "newbie"
     assert profile.target_prestige_band == "newbie"
+    arena_wakeup.assert_called_once()
+    assert arena_wakeup.call_args.kwargs["region"] == region
 
 
 def test_ownership_loss_after_materialization_rolls_back_the_cell_write(

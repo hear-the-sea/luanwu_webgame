@@ -10,6 +10,7 @@ class ArenaVirtualDemand(models.Model):
     class Status(models.TextChoices):
         ACTIVE = "active", "协调中"
         SATISFIED = "satisfied", "已完成补位"
+        BLOCKED = "blocked", "补位受阻"
         CLOSED = "closed", "已关闭"
 
     tournament = models.OneToOneField(
@@ -34,12 +35,14 @@ class ArenaVirtualDemand(models.Model):
     target_team_power = models.PositiveBigIntegerField("目标队伍战力", default=0)
     missing_entry_count = models.PositiveSmallIntegerField("缺少席位数", default=0)
     reserve_target_count = models.PositiveIntegerField("后备目标数", default=0)
+    warm_target_count = models.PositiveIntegerField("当前预热目标数", default=0)
     max_reserve_target_count = models.PositiveIntegerField("后备目标上限", default=0)
     created_profile_count = models.PositiveIntegerField("已创建虚拟玩家数", default=0)
     next_retry_at = models.DateTimeField("下次重试时间", null=True, blank=True, db_index=True)
     last_checked_at = models.DateTimeField("最近检查时间", null=True, blank=True)
     consecutive_failure_count = models.PositiveSmallIntegerField("连续失败次数", default=0)
     last_progress_at = models.DateTimeField("最近取得进展时间", null=True, blank=True)
+    last_input_change_at = models.DateTimeField("最近需求输入变化时间", null=True, blank=True)
     last_failure_reason = models.CharField("最近失败原因", max_length=64, blank=True, default="")
     created_at = models.DateTimeField("创建时间", auto_now_add=True)
     updated_at = models.DateTimeField("更新时间", auto_now=True)
@@ -54,6 +57,10 @@ class ArenaVirtualDemand(models.Model):
                     | models.Q(tournament__isnull=True, coop_event__isnull=False)
                 ),
                 name="arena_virtual_demand_one_event",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(warm_target_count__lte=models.F("reserve_target_count")),
+                name="arena_virtual_demand_warm_target_lte_reserve",
             ),
         ]
         indexes = [
@@ -94,7 +101,14 @@ class ArenaVirtualReserveMember(models.Model):
     state = models.CharField("后备状态", max_length=16, choices=State.choices, default=State.TRAINING, db_index=True)
     evaluated_version = models.PositiveIntegerField("已评估版本", default=1)
     current_lineup_power = models.PositiveBigIntegerField("当前阵容战力", default=0)
+    roster_target_count = models.PositiveSmallIntegerField(
+        "虚拟阵容目标门客数",
+        null=True,
+        blank=True,
+    )
     accelerated_growth_rounds = models.PositiveSmallIntegerField("加速成长轮次", default=0)
+    growth_retry_streak = models.PositiveSmallIntegerField("成长延期连续次数", default=0)
+    growth_retry_reason = models.CharField("最近延期原因", max_length=64, default="", blank=True)
     next_acceleration_at = models.DateTimeField("下次加速时间", null=True, blank=True, db_index=True)
     last_checked_at = models.DateTimeField("最近检查时间", null=True, blank=True)
     growth_operation_id = models.CharField("成长操作 ID", max_length=64, default="", blank=True)

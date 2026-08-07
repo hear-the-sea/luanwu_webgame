@@ -412,10 +412,7 @@ def test_v2_active_hourly_roll_merges_every_v2_cell_without_legacy_roll(
     )
 
     expected_cells = {
-        (region, prestige_band)
-        for region, _label in REGION_CHOICES
-        if region != "overseas"
-        for prestige_band in V2_PRESTIGE_BAND_NAMES
+        (region, prestige_band) for region, _label in REGION_CHOICES for prestige_band in V2_PRESTIGE_BAND_NAMES
     }
     actual_cells = set(BotPopulationRecomputeDemand.objects.values_list("region", "prestige_band"))
     assert processed == 0

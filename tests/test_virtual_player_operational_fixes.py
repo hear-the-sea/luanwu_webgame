@@ -69,7 +69,7 @@ def _owned_population():
     yield lambda: None
 
 
-def test_population_plan_reports_cap_count_and_unplanned_profiles(
+def test_population_plan_manages_all_supported_regions(
     django_user_model,
 ) -> None:
     _set_v2_routing()
@@ -80,18 +80,18 @@ def test_population_plan_reports_cap_count_and_unplanned_profiles(
     )
     _create_profile(
         django_user_model,
-        username="population_unplanned_overseas",
+        username="population_planned_overseas",
         region="overseas",
     )
 
     plan = population_runtime.plan_virtual_player_population(now=timezone.now())
 
     assert plan["maintained_bots"] == 2
-    assert plan["planned_bots"] == 1
-    assert plan["unplanned_bots"] == 1
+    assert plan["planned_bots"] == 2
+    assert plan["unplanned_bots"] == 0
 
 
-def test_v2_roll_retires_only_unprotected_unsupported_profiles(
+def test_v2_roll_keeps_profiles_in_all_supported_regions(
     django_user_model,
     monkeypatch,
     caplog,
@@ -99,12 +99,12 @@ def test_v2_roll_retires_only_unprotected_unsupported_profiles(
     _set_v2_routing()
     unprotected = _create_profile(
         django_user_model,
-        username="unsupported_unprotected",
+        username="overseas_unprotected",
         region="overseas",
     )
     protected = _create_profile(
         django_user_model,
-        username="unsupported_protected",
+        username="overseas_protected",
         region="overseas",
     )
     monkeypatch.setattr(
@@ -132,18 +132,15 @@ def test_v2_roll_retires_only_unprotected_unsupported_profiles(
     unprotected.refresh_from_db()
     protected.refresh_from_db()
     assert processed == 0
-    assert unprotected.state == BotProfile.State.RETIRED
+    assert unprotected.state == BotProfile.State.ACTIVE
     assert protected.state == BotProfile.State.ACTIVE
-    record = next(
-        record
-        for record in caplog.records
-        if getattr(record, "event", None) == "virtual_player_unsupported_region_retired"
+    assert not any(
+        getattr(record, "event", None) == "virtual_player_unsupported_region_retired" for record in caplog.records
     )
-    assert record.retired_count == 1
 
 
 @pytest.mark.parametrize("apply", [False, True])
-def test_v2_enrollment_rejects_unsupported_manor_region(
+def test_v2_enrollment_accepts_overseas_manor_region(
     django_user_model,
     apply: bool,
 ) -> None:
@@ -154,7 +151,7 @@ def test_v2_enrollment_rejects_unsupported_manor_region(
     release_configured_policy_operation(version=1, apply=True)
     profile = _create_profile(
         django_user_model,
-        username=f"unsupported_enrollment_{int(apply)}",
+        username=f"overseas_enrollment_{int(apply)}",
         region="overseas",
         engine_version=1,
     )
@@ -162,10 +159,9 @@ def test_v2_enrollment_rejects_unsupported_manor_region(
     summary = enroll_virtual_players_batch(batch_size=10, apply=apply)
 
     profile.refresh_from_db()
-    assert summary.changed == 0
-    assert summary.failed == 1
-    assert "region is not eligible" in summary.reasons[0]
-    assert profile.engine_version == 1
+    assert summary.changed == 1
+    assert summary.failed == 0
+    assert profile.engine_version == (2 if apply else 1)
 
 
 def test_scheduled_maintenance_logs_safety_preflight_rejection(

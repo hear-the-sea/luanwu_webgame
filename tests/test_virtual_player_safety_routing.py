@@ -127,9 +127,16 @@ def test_safety_decision_rejects_revision_conflict_for_new_window() -> None:
     [
         "arena_shortage_baseline_missing:tournament:newbie",
         "arena_shortage_baseline_expired:tournament:newbie",
+        (
+            "heartbeat_incomplete:maintenance_attempt_emitter,"
+            "heartbeat_incomplete:h01_callback_attempt_emitter,"
+            "heartbeat_incomplete:arena_shortage_emitter,"
+            "heartbeat_incomplete:safety_aggregator,"
+            "heartbeat_incomplete:safety_monitor"
+        ),
     ],
 )
-def test_recoverable_arena_pause_auto_resumes_after_clean_window_streak(pause_reason: str) -> None:
+def test_recoverable_safety_pause_auto_resumes_after_clean_window_streak(pause_reason: str) -> None:
     state = _routing_state(
         maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
         revision=4,
@@ -214,6 +221,8 @@ def test_daily_pause_is_not_resumed_by_hourly_clean_windows() -> None:
         "missing_finalized_daily_window",
         "arena_shortage_baseline_missing:tournament:newbie",
         "arena_shortage_baseline_expired:tournament:newbie",
+        "heartbeat_incomplete:maintenance_attempt_emitter",
+        ("heartbeat_incomplete:maintenance_attempt_emitter," "heartbeat_incomplete:h01_callback_attempt_emitter"),
     ],
 )
 def test_recoverable_pause_reasons_are_recoverable(reason: str) -> None:

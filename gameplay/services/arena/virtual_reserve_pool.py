@@ -19,9 +19,12 @@ from gameplay.models import (
     ArenaTournament,
     ArenaVirtualDemand,
     ArenaVirtualReserveMember,
+    BotMaintenanceExecution,
     BotProfile,
 )
 from gameplay.services.arena.snapshots import build_entry_guest_snapshot
+from gameplay.services.runtime_configs import RuntimeRoutingError, read_virtual_player_routing
+from gameplay.services.virtual_player_core.config import BootstrapMode, MaintenanceMode
 from gameplay.services.virtual_player_core.contracts import (
     AcceleratedGrowthOutcome,
     BotProjectionConfig,
@@ -41,17 +44,31 @@ from gameplay.services.virtual_player_state_policy import (
 )
 from guests.models import Guest, GuestRarity, GuestStatus
 
+from .coop_rules import load_arena_coop_rules
+from .rules import load_arena_rules
 from .virtual_lineups import BotLineupEvaluation, LineupSelectionContext, evaluate_lineup_snapshots
 from .virtual_protection import is_virtual_profile_arena_match_eligible, with_arena_reconciliation_state
 from .virtual_reserve_observability import log_demand_event
+from .virtual_reserve_policy import reserve_warm_target, virtual_roster_target_count
 from .virtual_reserve_references import median_entry, reference_snapshots_for_demand
 
+logger = logging.getLogger(__name__)
+
 MAX_ACCELERATED_GROWTH_ROUNDS = 8
-MAX_NO_ACTION_LEASE_AGE = timedelta(hours=12)
-ARENA_MAX_GUEST_LEVEL_STEP = 20
+MAX_RESERVE_MEMBER_LEASE_AGE = timedelta(hours=12)
+# Kept as a compatibility alias for the Gate A contract and existing callers.
+MAX_NO_ACTION_LEASE_AGE = MAX_RESERVE_MEMBER_LEASE_AGE
+EXHAUSTED_LEASE_GRACE = timedelta(minutes=30)
+# Arena reserve growth may catch up faster than ordinary V2 maintenance, but it
+# remains bounded so a reserve member cannot jump into the target band at once.
+ARENA_MAX_GUEST_LEVEL_STEP = 6
 PRE_FILL_GROWTH_INTERVAL = timedelta(hours=1)
 POST_FILL_GROWTH_INTERVAL = timedelta(minutes=15)
 GROWTH_CLAIM_LEASE = timedelta(minutes=5)
+GROWTH_RETRY_MAX_DELAY = timedelta(hours=1)
+BUSY_RETRY_INITIAL_DELAY = timedelta(minutes=5)
+MAX_STRENGTH_CAP_RETRIES = 3
+MAX_NEW_PROFILES_PER_DEMAND_PER_RUN = 2
 DEMAND_RETRY_INITIAL = timedelta(minutes=5)
 DEMAND_RETRY_MAX = timedelta(hours=1)
 _GUEST_RARITY_RANK = {rarity.value: index for index, rarity in enumerate(GuestRarity)}
@@ -64,6 +81,7 @@ class ReserveReplenishmentResult:
     recovered_abandoned: int
     recovered_retired: int
     creation_needed: int
+    warm_target_count: int = 0
 
 
 def _demand_retry_delay(failure_count: int) -> timedelta:
@@ -162,17 +180,35 @@ def evaluate_bot_lineup(
     event_id: int,
     target_guest_count: int,
     target_team_power: int,
+    max_lineup_size: int | None = None,
+    preferred_guest_count: int | None = None,
 ) -> BotLineupEvaluation:
+    if max_lineup_size is None:
+        if str(mode) == "tournament":
+            max_lineup_size = int(load_arena_rules()["registration"]["max_guests_per_entry"])
+        else:
+            max_lineup_size = int(load_arena_coop_rules()["registration"]["guest_limit_per_entry"])
     return evaluate_lineup_snapshots(
         _profile_lineup_snapshots(profile),
         context=LineupSelectionContext(
             mode=str(mode),
             event_id=int(event_id),
             profile_id=int(profile.id),
+            max_lineup_size=max_lineup_size,
         ),
         target_guest_count=int(target_guest_count),
         target_team_power=int(target_team_power),
+        preferred_guest_count=preferred_guest_count,
     )
+
+
+def _max_lineup_size_for_demand(demand: ArenaVirtualDemand) -> int:
+    if demand.tournament_id is not None:
+        return max(1, int(load_arena_rules()["registration"]["max_guests_per_entry"]))
+    event = demand.coop_event
+    if event is not None:
+        return max(1, int(event.guest_limit_per_entry))
+    return max(1, int(load_arena_coop_rules()["registration"]["guest_limit_per_entry"]))
 
 
 def release_virtual_reserve_member_for_manor(manor_id: int) -> int:
@@ -191,7 +227,135 @@ def release_virtual_reserve_members_for_demand(demand: ArenaVirtualDemand) -> in
     return int(deleted)
 
 
-def _growth_target_for_demand(demand: ArenaVirtualDemand) -> ArenaVirtualGrowthTarget:
+def release_expired_exhausted_virtual_reserve_members(*, now=None, limit: int = 100) -> int:
+    """Release only terminal-demand exhausted leases so they cannot re-enter the same demand."""
+    current_time = now or timezone.now()
+    cutoff = current_time - EXHAUSTED_LEASE_GRACE
+    candidate_ids = list(
+        ArenaVirtualReserveMember.objects.filter(
+            state=ArenaVirtualReserveMember.State.EXHAUSTED,
+            growth_claim_token__isnull=True,
+            demand__status__in=[
+                ArenaVirtualDemand.Status.SATISFIED,
+                ArenaVirtualDemand.Status.BLOCKED,
+                ArenaVirtualDemand.Status.CLOSED,
+            ],
+        )
+        .filter(
+            Q(last_checked_at__lte=cutoff) | Q(last_checked_at__isnull=True, created_at__lte=cutoff),
+        )
+        .order_by("last_checked_at", "id")
+        .values_list("id", flat=True)[: max(0, int(limit))]
+    )
+    if not candidate_ids:
+        return 0
+    deleted, _details = ArenaVirtualReserveMember.objects.filter(
+        id__in=candidate_ids,
+        state=ArenaVirtualReserveMember.State.EXHAUSTED,
+        growth_claim_token__isnull=True,
+        demand__status__in=[
+            ArenaVirtualDemand.Status.SATISFIED,
+            ArenaVirtualDemand.Status.BLOCKED,
+            ArenaVirtualDemand.Status.CLOSED,
+        ],
+    ).delete()
+    released = int(deleted)
+    if released:
+        logger.info(
+            "arena virtual exhausted reserve leases released",
+            extra={
+                "event": "arena_virtual_exhausted_leases_released",
+                "released_count": released,
+                "grace_period_seconds": int(EXHAUSTED_LEASE_GRACE.total_seconds()),
+            },
+        )
+    return released
+
+
+def _release_expired_terminal_virtual_reserve_claims(*, now, limit: int) -> int:
+    candidate_ids = list(
+        ArenaVirtualReserveMember.objects.filter(
+            demand__status__in=[
+                ArenaVirtualDemand.Status.SATISFIED,
+                ArenaVirtualDemand.Status.BLOCKED,
+                ArenaVirtualDemand.Status.CLOSED,
+            ],
+            growth_claim_token__isnull=False,
+            growth_claim_expires_at__lte=now,
+        )
+        .order_by("growth_claim_expires_at", "id")
+        .values_list("id", flat=True)[: max(0, int(limit))]
+    )
+    if not candidate_ids:
+        return 0
+    deleted, _details = ArenaVirtualReserveMember.objects.filter(
+        id__in=candidate_ids,
+        growth_claim_token__isnull=False,
+        growth_claim_expires_at__lte=now,
+        demand__status__in=[
+            ArenaVirtualDemand.Status.SATISFIED,
+            ArenaVirtualDemand.Status.BLOCKED,
+            ArenaVirtualDemand.Status.CLOSED,
+        ],
+    ).delete()
+    released = int(deleted)
+    if released:
+        logger.info(
+            "arena virtual expired terminal reserve claims released",
+            extra={
+                "event": "arena_virtual_terminal_claims_released",
+                "released_count": released,
+            },
+        )
+    return released
+
+
+def _roster_target_for_member(
+    demand: ArenaVirtualDemand,
+    *,
+    profile_id: int,
+    current_guest_count: int,
+) -> int:
+    mode = "tournament" if demand.tournament_id is not None else "coop"
+    event_id = int(demand.tournament_id or demand.coop_event_id or 0)
+    max_lineup_size = max(1, _max_lineup_size_for_demand(demand))
+    reference_guest_count = min(max_lineup_size, max(1, int(demand.target_guest_count)))
+    generated_target = virtual_roster_target_count(
+        reference_guest_count=reference_guest_count,
+        max_lineup_size=max_lineup_size,
+        mode=mode,
+        event_id=event_id,
+        profile_id=int(profile_id),
+    )
+    return max(
+        reference_guest_count,
+        min(max_lineup_size, max(int(current_guest_count), generated_target)),
+    )
+
+
+def _ensure_roster_targets_for_demand(demand: ArenaVirtualDemand) -> int:
+    """Initialize the persisted roster target without forcing a full re-evaluation."""
+
+    members = list(
+        demand.reserve_members.filter(roster_target_count__isnull=True)
+        .select_related("profile", "profile__manor")
+        .order_by("id")
+    )
+    for member in members:
+        member.roster_target_count = _roster_target_for_member(
+            demand,
+            profile_id=int(member.profile_id),
+            current_guest_count=member.profile.manor.guests.count(),
+        )
+        member.save(update_fields=["roster_target_count", "updated_at"])
+    return len(members)
+
+
+def _growth_target_for_demand(
+    demand: ArenaVirtualDemand,
+    *,
+    roster_target_count: int | None = None,
+) -> ArenaVirtualGrowthTarget:
     snapshots = reference_snapshots_for_demand(demand)
     guest_levels: list[int] = []
     guest_rarities: list[str] = []
@@ -205,7 +369,11 @@ def _growth_target_for_demand(demand: ArenaVirtualDemand) -> ArenaVirtualGrowthT
             guest_rarities.append(rarity)
     rarity_cap = max(guest_rarities, key=_GUEST_RARITY_RANK.__getitem__) if guest_rarities else None
     return ArenaVirtualGrowthTarget(
-        minimum_guest_count=max(int(demand.target_guest_count), len(snapshots)),
+        minimum_guest_count=max(
+            int(demand.target_guest_count),
+            len(snapshots),
+            int(roster_target_count or 0),
+        ),
         minimum_guest_level=max(guest_levels, default=1),
         guest_rarity_cap=rarity_cap,
     )
@@ -225,18 +393,157 @@ def _growth_interval_for_demand(demand: ArenaVirtualDemand, *, now) -> timedelta
     return POST_FILL_GROWTH_INTERVAL if _demand_fill_is_due(demand, now=now) else PRE_FILL_GROWTH_INTERVAL
 
 
+def _reserve_growth_runtime_available() -> bool:
+    try:
+        routing = read_virtual_player_routing()
+    except RuntimeRoutingError as exc:
+        logger.warning(
+            "arena virtual reserve growth paused because runtime routing is unavailable",
+            extra={"event": "arena_virtual_growth_routing_unavailable", "failure_reason": str(exc)[:64]},
+        )
+        return False
+    maintenance_mode = MaintenanceMode(routing.maintenance_mode)
+    if maintenance_mode in {MaintenanceMode.V2_CUTOVER, MaintenanceMode.V2_PAUSED}:
+        logger.info(
+            "arena virtual reserve growth deferred while maintenance routing is paused",
+            extra={
+                "event": "arena_virtual_growth_routing_paused",
+                "maintenance_mode": maintenance_mode.value,
+                "pause_reason": routing.pause_reason,
+            },
+        )
+        return False
+    return True
+
+
+def _reserve_legacy_creation_available() -> bool:
+    try:
+        routing = read_virtual_player_routing()
+    except RuntimeRoutingError as exc:
+        logger.warning(
+            "arena virtual reserve creation paused because runtime routing is unavailable",
+            extra={"event": "arena_virtual_creation_routing_unavailable", "failure_reason": str(exc)[:64]},
+        )
+        return False
+    return (
+        BootstrapMode(routing.bootstrap_mode) is BootstrapMode.LEGACY_BEFORE_GATE
+        and MaintenanceMode(routing.maintenance_mode) is MaintenanceMode.LEGACY_BEFORE_GATE
+    )
+
+
+def _reserve_creation_target(demand: ArenaVirtualDemand) -> int:
+    """Return the persisted active target, with a safe fallback for old rows."""
+    persisted_target = int(demand.warm_target_count or 0)
+    if persisted_target > 0 or int(demand.missing_entry_count or 0) == 0:
+        return persisted_target
+    return reserve_warm_target(
+        missing=demand.missing_entry_count,
+        reserve_target=demand.reserve_target_count,
+    )
+
+
 def _no_action_lease_deadline(member: ArenaVirtualReserveMember):
-    return member.created_at + MAX_NO_ACTION_LEASE_AGE
+    return member.created_at + MAX_RESERVE_MEMBER_LEASE_AGE
 
 
 def _no_action_lease_expired(member: ArenaVirtualReserveMember, *, now) -> bool:
     return now >= _no_action_lease_deadline(member)
 
 
+def _clear_growth_retry(member: ArenaVirtualReserveMember) -> None:
+    member.growth_retry_streak = 0
+    member.growth_retry_reason = ""
+
+
+def _schedule_growth_retry(
+    member: ArenaVirtualReserveMember,
+    *,
+    handled_at: datetime,
+    reason: str,
+    initial_delay: timedelta,
+) -> datetime:
+    normalized_reason = str(reason)[:64]
+    previous_reason = str(member.growth_retry_reason or "")
+    streak = int(member.growth_retry_streak) + 1 if previous_reason == normalized_reason else 1
+    streak = min(255, streak)
+    member.growth_retry_streak = streak
+    member.growth_retry_reason = normalized_reason
+    exponent = min(streak - 1, 6)
+    delay = min(GROWTH_RETRY_MAX_DELAY, initial_delay * (2**exponent))
+    return handled_at + delay
+
+
+def _growth_retry_reason(
+    *,
+    operation_id: str,
+    growth_outcome: AcceleratedGrowthOutcome,
+) -> str:
+    if growth_outcome is not AcceleratedGrowthOutcome.NO_ACTION:
+        return {
+            AcceleratedGrowthOutcome.BUSY: "profile_busy",
+            AcceleratedGrowthOutcome.PAUSED: "growth_paused",
+        }.get(growth_outcome, "")
+    reason = BotMaintenanceExecution.objects.filter(operation_id=operation_id).values_list("reason", flat=True).first()
+    return str(reason or "growth_no_action")[:64]
+
+
+def _release_training_members_for_runtime_pause(*, now: datetime, limit: int) -> int:
+    """Release safe training leases so a paused runtime cannot pin reserve capacity."""
+    candidate_rows = list(
+        ArenaVirtualReserveMember.objects.filter(
+            state=ArenaVirtualReserveMember.State.TRAINING,
+            demand__status=ArenaVirtualDemand.Status.ACTIVE,
+        )
+        .filter(Q(growth_claim_token__isnull=True) | Q(growth_claim_expires_at__lte=now))
+        .order_by("id")
+        .values_list("id", "demand_id")[: max(0, int(limit))]
+    )
+    released = 0
+    for member_id, demand_id in candidate_rows:
+        with transaction.atomic():
+            demand = (
+                ArenaVirtualDemand.objects.select_for_update()
+                .filter(pk=demand_id, status=ArenaVirtualDemand.Status.ACTIVE)
+                .first()
+            )
+            if demand is None:
+                continue
+            member = (
+                ArenaVirtualReserveMember.objects.select_for_update(skip_locked=True)
+                .filter(
+                    pk=member_id,
+                    demand=demand,
+                    state=ArenaVirtualReserveMember.State.TRAINING,
+                )
+                .filter(Q(growth_claim_token__isnull=True) | Q(growth_claim_expires_at__lte=now))
+                .first()
+            )
+            if member is None:
+                continue
+            profile_id = int(member.profile_id)
+            growth_rounds = int(member.accelerated_growth_rounds)
+            member.delete()
+            released += 1
+            log_demand_event(
+                "arena_virtual_profile_released",
+                demand,
+                message="arena virtual profile released while growth runtime was paused",
+                failure_reason="growth_runtime_paused",
+                profile_id=profile_id,
+                power_after=int(member.current_lineup_power),
+                growth_rounds=growth_rounds,
+                member_state="released",
+            )
+    if released:
+        logger.info(
+            "arena virtual training leases released while growth runtime was paused",
+            extra={"event": "arena_virtual_paused_training_released", "released_count": released},
+        )
+    return released
+
+
 def reevaluate_existing_members(demand: ArenaVirtualDemand, *, now) -> None:
-    mode = "tournament" if demand.tournament_id is not None else "coop"
-    event_id = demand.tournament_id or demand.coop_event_id
-    if event_id is None:
+    if demand.tournament_id is None and demand.coop_event_id is None:
         return
 
     members = list(
@@ -250,21 +557,52 @@ def reevaluate_existing_members(demand: ArenaVirtualDemand, *, now) -> None:
         ) or not is_virtual_profile_arena_eligible(member.profile):
             member.delete()
             continue
+        previous_state = member.state
+        previous_version = int(member.evaluated_version)
+        previous_power = int(member.current_lineup_power)
+        demand_version_changed = previous_version != int(demand.version)
         member.evaluated_version = demand.version
         member.last_checked_at = now
+        if member.roster_target_count is None:
+            member.roster_target_count = _roster_target_for_member(
+                demand,
+                profile_id=int(member.profile_id),
+                current_guest_count=member.profile.manor.guests.count(),
+            )
+        else:
+            member.roster_target_count = max(
+                int(member.roster_target_count),
+                int(demand.target_guest_count),
+            )
         if member.state == ArenaVirtualReserveMember.State.EXHAUSTED and (
             member.accelerated_growth_rounds >= MAX_ACCELERATED_GROWTH_ROUNDS
             or _no_action_lease_expired(member, now=now)
+            or (
+                member.growth_retry_reason in {"strength_cap_retry_limit", "growth_busy_lease_deadline"}
+                and not demand_version_changed
+            )
         ):
-            member.save(update_fields=["evaluated_version", "last_checked_at", "updated_at"])
+            if not member.growth_retry_reason:
+                member.growth_retry_reason = (
+                    "growth_round_limit"
+                    if member.accelerated_growth_rounds >= MAX_ACCELERATED_GROWTH_ROUNDS
+                    else "no_action_lease_deadline"
+                )
+            member.save(
+                update_fields=[
+                    "evaluated_version",
+                    "roster_target_count",
+                    "last_checked_at",
+                    "growth_retry_reason",
+                    "updated_at",
+                ]
+            )
             continue
 
-        evaluation = evaluate_bot_lineup(
+        evaluation = _evaluate_profile_for_demand(
+            demand,
             member.profile,
-            mode=mode,
-            event_id=int(event_id),
-            target_guest_count=demand.target_guest_count,
-            target_team_power=demand.target_team_power,
+            preferred_guest_count=int(member.roster_target_count),
         )
         member.current_lineup_power = evaluation.selected_power
         if evaluation.is_ready:
@@ -272,22 +610,37 @@ def reevaluate_existing_members(demand: ArenaVirtualDemand, *, now) -> None:
             member.next_acceleration_at = None
         elif evaluation.snapshots and member.accelerated_growth_rounds < MAX_ACCELERATED_GROWTH_ROUNDS:
             member.state = ArenaVirtualReserveMember.State.TRAINING
-            member.next_acceleration_at = member.next_acceleration_at or now
-            if _demand_fill_is_due(demand, now=now) and member.next_acceleration_at > now + POST_FILL_GROWTH_INTERVAL:
+            member.next_acceleration_at = now if demand_version_changed else (member.next_acceleration_at or now)
+            if (
+                _demand_fill_is_due(demand, now=now)
+                and not member.growth_retry_reason
+                and member.next_acceleration_at > now + POST_FILL_GROWTH_INTERVAL
+            ):
                 member.next_acceleration_at = now
         elif evaluation.snapshots:
             member.state = ArenaVirtualReserveMember.State.EXHAUSTED
             member.next_acceleration_at = None
+            member.growth_retry_reason = "growth_round_limit"
         else:
             member.delete()
             continue
+        if (
+            evaluation.is_ready
+            or previous_state != member.state
+            or demand_version_changed
+            or previous_power != int(evaluation.selected_power)
+        ) and member.state != ArenaVirtualReserveMember.State.EXHAUSTED:
+            _clear_growth_retry(member)
         member.save(
             update_fields=[
                 "state",
                 "evaluated_version",
                 "current_lineup_power",
+                "roster_target_count",
                 "next_acceleration_at",
                 "last_checked_at",
+                "growth_retry_streak",
+                "growth_retry_reason",
                 "updated_at",
             ]
         )
@@ -336,21 +689,34 @@ def _candidate_queryset(states: Collection[str]):
     return with_arena_reconciliation_state(queryset)
 
 
-def _evaluate_profile_for_demand(demand: ArenaVirtualDemand, profile: BotProfile):
+def _evaluate_profile_for_demand(
+    demand: ArenaVirtualDemand,
+    profile: BotProfile,
+    *,
+    preferred_guest_count: int | None = None,
+):
     mode = "tournament" if demand.tournament_id is not None else "coop"
     event_id = demand.tournament_id or demand.coop_event_id
+    if preferred_guest_count is None:
+        preferred_guest_count = _roster_target_for_member(
+            demand,
+            profile_id=int(profile.id),
+            current_guest_count=profile.manor.guests.count(),
+        )
     return evaluate_bot_lineup(
         profile,
         mode=mode,
         event_id=int(event_id or 0),
         target_guest_count=demand.target_guest_count,
         target_team_power=demand.target_team_power,
+        max_lineup_size=_max_lineup_size_for_demand(demand),
+        preferred_guest_count=preferred_guest_count,
     )
 
 
 def _trim_surplus_members(demand: ArenaVirtualDemand) -> None:
     members = list(demand.reserve_members.exclude(state=ArenaVirtualReserveMember.State.EXHAUSTED).order_by("id"))
-    surplus = len(members) - max(0, int(demand.reserve_target_count))
+    surplus = len(members) - _reserve_creation_target(demand)
     if surplus <= 0:
         return
     removable = sorted(
@@ -421,6 +787,11 @@ def _lease_candidate(
                 state=member_state,
                 evaluated_version=demand.version,
                 current_lineup_power=evaluation.selected_power,
+                roster_target_count=_roster_target_for_member(
+                    demand,
+                    profile_id=int(profile.id),
+                    current_guest_count=profile.manor.guests.count(),
+                ),
                 next_acceleration_at=(now if member_state == ArenaVirtualReserveMember.State.TRAINING else None),
                 last_checked_at=now,
             )
@@ -449,13 +820,15 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
     )
     if demand is None:
         return ReserveReplenishmentResult(0, 0, 0, 0, 0)
+    _ensure_roster_targets_for_demand(demand)
     if demand.next_retry_at is not None and demand.next_retry_at > current_time + timedelta(seconds=1):
         return ReserveReplenishmentResult(0, 0, 0, 0, 0)
 
     reevaluate_existing_members(demand, now=current_time)
     _trim_surplus_members(demand)
     active_member_count = demand.reserve_members.exclude(state=ArenaVirtualReserveMember.State.EXHAUSTED).count()
-    slots_needed = max(0, int(demand.reserve_target_count) - active_member_count)
+    creation_target = _reserve_creation_target(demand)
+    slots_needed = max(0, creation_target - active_member_count)
     recovered_abandoned = 0
     recovered_retired = 0
     made_progress = False
@@ -544,14 +917,19 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
 
     ready_count = demand.reserve_members.filter(state=ArenaVirtualReserveMember.State.READY).count()
     training_count = demand.reserve_members.filter(state=ArenaVirtualReserveMember.State.TRAINING).count()
+    active_member_count = ready_count + training_count
     creation_budget = max(0, int(demand.max_reserve_target_count) - int(demand.created_profile_count))
-    creation_needed = min(max(0, slots_needed), creation_budget)
+    creation_needed = min(
+        max(0, creation_target - active_member_count),
+        creation_budget,
+    )
     result = ReserveReplenishmentResult(
         ready_count=ready_count,
         training_count=training_count,
         recovered_abandoned=recovered_abandoned,
         recovered_retired=recovered_retired,
         creation_needed=creation_needed,
+        warm_target_count=creation_target,
     )
     log_demand_event(
         "arena_virtual_reserve_replenished",
@@ -560,6 +938,7 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
         recovered_abandoned=int(recovered_abandoned),
         recovered_retired=int(recovered_retired),
         creation_needed=int(creation_needed),
+        warm_target_count=int(creation_target),
     )
     return result
 
@@ -656,7 +1035,7 @@ def _claim_due_virtual_reserve_growth(
     member_id: int,
     demand_id: int,
     now: datetime,
-    growth_targets: dict[tuple[int, int], ArenaVirtualGrowthTarget],
+    growth_targets: dict[tuple[int, int, int], ArenaVirtualGrowthTarget],
 ) -> ArenaVirtualGrowthClaim | None:
     demand = (
         ArenaVirtualDemand.objects.select_for_update()
@@ -673,6 +1052,7 @@ def _claim_due_virtual_reserve_growth(
             demand_id=demand.id,
             state=ArenaVirtualReserveMember.State.TRAINING,
         )
+        .select_related("profile", "profile__manor")
         .first()
     )
     if member is None:
@@ -693,10 +1073,23 @@ def _claim_due_virtual_reserve_growth(
             return None
 
     if not has_existing_claim:
-        target_key = (int(demand.id), int(demand.version))
+        if member.roster_target_count is None:
+            member.roster_target_count = _roster_target_for_member(
+                demand,
+                profile_id=int(member.profile_id),
+                current_guest_count=member.profile.manor.guests.count(),
+            )
+        target_key = (
+            int(demand.id),
+            int(demand.version),
+            int(member.roster_target_count),
+        )
         growth_target = growth_targets.get(target_key)
         if growth_target is None:
-            growth_target = _growth_target_for_demand(demand)
+            growth_target = _growth_target_for_demand(
+                demand,
+                roster_target_count=int(member.roster_target_count),
+            )
             growth_targets[target_key] = growth_target
         member.growth_operation_id = f"arena-growth-{uuid4().hex}"
         member.growth_attempt_ordinal = 0
@@ -712,7 +1105,7 @@ def _claim_due_virtual_reserve_growth(
     member.growth_claim_token = uuid4()
     member.growth_claimed_at = now
     member.growth_claim_expires_at = now + GROWTH_CLAIM_LEASE
-    member.save(update_fields=[*_GROWTH_CLAIM_FIELDS, "updated_at"])
+    member.save(update_fields=["roster_target_count", *_GROWTH_CLAIM_FIELDS, "updated_at"])
     return _growth_claim_from_member(member)
 
 
@@ -737,6 +1130,7 @@ def _finalize_virtual_reserve_growth(
     claim: ArenaVirtualGrowthClaim,
     *,
     growth_outcome: AcceleratedGrowthOutcome,
+    retry_reason: str = "",
     now: datetime,
 ) -> bool:
     demand = (
@@ -765,49 +1159,65 @@ def _finalize_virtual_reserve_growth(
     handled_at = claim.claimed_at
     power_before = claim.power_before
     if growth_outcome is AcceleratedGrowthOutcome.BUSY:
-        member.next_acceleration_at = handled_at + timedelta(minutes=5)
+        deadline = _no_action_lease_deadline(member)
+        retry_at = _schedule_growth_retry(
+            member,
+            handled_at=handled_at,
+            reason="profile_busy",
+            initial_delay=BUSY_RETRY_INITIAL_DELAY,
+        )
         member.last_checked_at = handled_at
+        if max(handled_at, now) >= deadline:
+            member.state = ArenaVirtualReserveMember.State.EXHAUSTED
+            member.next_acceleration_at = None
+            member.growth_retry_reason = "growth_busy_lease_deadline"
+            event = "arena_virtual_profile_exhausted"
+            message = "arena virtual profile training exhausted"
+            busy_event_fields: dict[str, Any] = {
+                "failure_reason": "growth_busy_lease_deadline",
+                "lease_deadline": deadline.isoformat(),
+            }
+        else:
+            member.next_acceleration_at = min(deadline, retry_at)
+            event = "arena_virtual_profile_growth_deferred"
+            message = "arena virtual profile growth deferred"
+            busy_event_fields = {"failure_reason": "profile_busy", "lease_deadline": deadline.isoformat()}
         _clear_growth_claim(member)
         member.save(
             update_fields=[
+                "state",
                 "next_acceleration_at",
                 "last_checked_at",
+                "growth_retry_streak",
+                "growth_retry_reason",
                 *_GROWTH_CLAIM_FIELDS,
                 "updated_at",
             ]
         )
         log_demand_event(
-            "arena_virtual_profile_growth_deferred",
+            event,
             demand,
-            message="arena virtual profile growth deferred",
-            failure_reason="profile_busy",
+            message=message,
             profile_id=claim.profile_id,
             power_before=power_before,
             growth_rounds=int(member.accelerated_growth_rounds),
             member_state=str(member.state),
+            **busy_event_fields,
         )
         return True
     if growth_outcome is AcceleratedGrowthOutcome.PAUSED:
-        member.next_acceleration_at = handled_at + timedelta(minutes=5)
-        member.last_checked_at = handled_at
-        _clear_growth_claim(member)
-        member.save(
-            update_fields=[
-                "next_acceleration_at",
-                "last_checked_at",
-                *_GROWTH_CLAIM_FIELDS,
-                "updated_at",
-            ]
-        )
+        growth_rounds = int(member.accelerated_growth_rounds)
+        member.delete()
         log_demand_event(
-            "arena_virtual_profile_growth_deferred",
+            "arena_virtual_profile_released",
             demand,
-            message="arena virtual profile growth deferred",
+            message="arena virtual profile released while growth was paused",
             failure_reason="growth_paused",
             profile_id=claim.profile_id,
             power_before=power_before,
-            growth_rounds=int(member.accelerated_growth_rounds),
-            member_state=str(member.state),
+            power_after=power_before,
+            growth_rounds=growth_rounds,
+            member_state="released",
         )
         return True
     if growth_outcome is AcceleratedGrowthOutcome.INELIGIBLE:
@@ -828,24 +1238,34 @@ def _finalize_virtual_reserve_growth(
     if growth_outcome is AcceleratedGrowthOutcome.NO_ACTION:
         deadline = _no_action_lease_deadline(member)
         member.last_checked_at = handled_at
-        if handled_at >= deadline:
+        no_action_reason = str(retry_reason or "growth_no_action")[:64]
+        retry_at = _schedule_growth_retry(
+            member,
+            handled_at=handled_at,
+            reason=no_action_reason,
+            initial_delay=_growth_interval_for_demand(demand, now=handled_at),
+        )
+        strength_cap_exhausted = (
+            no_action_reason == "strength_cap" and int(member.growth_retry_streak) >= MAX_STRENGTH_CAP_RETRIES
+        )
+        if max(handled_at, now) >= deadline or strength_cap_exhausted:
             member.state = ArenaVirtualReserveMember.State.EXHAUSTED
             member.next_acceleration_at = None
+            exhausted_reason = "strength_cap_retry_limit" if strength_cap_exhausted else "no_action_lease_deadline"
+            member.growth_retry_reason = exhausted_reason
             event = "arena_virtual_profile_exhausted"
             message = "arena virtual profile training exhausted"
             event_fields: dict[str, Any] = {
-                "failure_reason": "no_action_lease_deadline",
+                "failure_reason": exhausted_reason,
                 "power_after": power_before,
+                "retry_reason": no_action_reason,
             }
         else:
-            member.next_acceleration_at = min(
-                deadline,
-                handled_at + _growth_interval_for_demand(demand, now=handled_at),
-            )
+            member.next_acceleration_at = min(deadline, retry_at)
             event = "arena_virtual_profile_growth_deferred"
             message = "arena virtual profile growth deferred"
             event_fields = {
-                "failure_reason": "growth_no_action",
+                "failure_reason": no_action_reason,
                 "lease_deadline": deadline.isoformat(),
             }
         _clear_growth_claim(member)
@@ -854,6 +1274,8 @@ def _finalize_virtual_reserve_growth(
                 "state",
                 "next_acceleration_at",
                 "last_checked_at",
+                "growth_retry_streak",
+                "growth_retry_reason",
                 *_GROWTH_CLAIM_FIELDS,
                 "updated_at",
             ]
@@ -892,6 +1314,7 @@ def _finalize_virtual_reserve_growth(
     member.current_lineup_power = evaluation.selected_power
     member.accelerated_growth_rounds += 1
     member.evaluated_version = demand.version
+    _clear_growth_retry(member)
     exhausted_reason = ""
     if evaluation.is_ready:
         member.state = ArenaVirtualReserveMember.State.READY
@@ -900,6 +1323,7 @@ def _finalize_virtual_reserve_growth(
         member.state = ArenaVirtualReserveMember.State.EXHAUSTED
         member.next_acceleration_at = None
         exhausted_reason = "growth_round_limit"
+        member.growth_retry_reason = exhausted_reason
     else:
         member.next_acceleration_at = handled_at + _growth_interval_for_demand(
             demand,
@@ -915,6 +1339,8 @@ def _finalize_virtual_reserve_growth(
             "accelerated_growth_rounds",
             "next_acceleration_at",
             "last_checked_at",
+            "growth_retry_streak",
+            "growth_retry_reason",
             *_GROWTH_CLAIM_FIELDS,
             "updated_at",
         ]
@@ -947,6 +1373,11 @@ def _finalize_virtual_reserve_growth(
 
 def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
     current_time = now or timezone.now()
+    _release_expired_terminal_virtual_reserve_claims(now=current_time, limit=limit)
+    release_expired_exhausted_virtual_reserve_members(now=current_time, limit=limit)
+    if not _reserve_growth_runtime_available():
+        _release_training_members_for_runtime_pause(now=current_time, limit=limit)
+        return 0
     member_rows = list(
         ArenaVirtualReserveMember.objects.filter(
             Q(
@@ -964,7 +1395,7 @@ def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
         .values_list("id", "demand_id")[: max(0, int(limit))]
     )
     processed = 0
-    growth_targets: dict[tuple[int, int], ArenaVirtualGrowthTarget] = {}
+    growth_targets: dict[tuple[int, int, int], ArenaVirtualGrowthTarget] = {}
     for member_id, demand_id in member_rows:
         claim = _claim_due_virtual_reserve_growth(
             member_id=int(member_id),
@@ -984,10 +1415,15 @@ def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
             operation_id=claim.operation_id,
             attempt_ordinal=claim.attempt_ordinal,
         )
+        retry_reason = _growth_retry_reason(
+            operation_id=claim.operation_id,
+            growth_outcome=growth_outcome,
+        )
         lease_check_at = max(timezone.now(), current_time)
         if _finalize_virtual_reserve_growth(
             claim,
             growth_outcome=growth_outcome,
+            retry_reason=retry_reason,
             now=lease_check_at,
         ):
             processed += 1
@@ -1030,6 +1466,8 @@ def _target_prestige_band_for_demand(demand: ArenaVirtualDemand) -> str:
 
 def create_due_virtual_reserve_profiles(*, now=None, limit: int = 100) -> int:
     current_time = now or timezone.now()
+    if not _reserve_legacy_creation_available():
+        return 0
     due_cutoff = current_time + timedelta(seconds=1)
     remaining_limit = max(0, int(limit))
     if remaining_limit <= 0:
@@ -1047,7 +1485,11 @@ def create_due_virtual_reserve_profiles(*, now=None, limit: int = 100) -> int:
         if created >= remaining_limit:
             break
         replenishment = replenish_virtual_reserve(demand_id, now=current_time)
-        needed = min(replenishment.creation_needed, remaining_limit - created)
+        needed = min(
+            replenishment.creation_needed,
+            MAX_NEW_PROFILES_PER_DEMAND_PER_RUN,
+            remaining_limit - created,
+        )
         if needed <= 0:
             continue
         for _ in range(needed):
@@ -1064,6 +1506,12 @@ def create_due_virtual_reserve_profiles(*, now=None, limit: int = 100) -> int:
                     claimed_demand is None
                     or claimed_demand.created_profile_count >= claimed_demand.max_reserve_target_count
                 ):
+                    break
+                creation_target = _reserve_creation_target(claimed_demand)
+                active_slots = claimed_demand.reserve_members.exclude(
+                    state=ArenaVirtualReserveMember.State.EXHAUSTED
+                ).count()
+                if active_slots >= creation_target:
                     break
                 target_band = _target_prestige_band_for_demand(claimed_demand)
                 bands = virtual_player_prestige_bands()
@@ -1122,13 +1570,7 @@ def create_due_virtual_reserve_profiles(*, now=None, limit: int = 100) -> int:
                 claimed_demand.save(update_fields=["created_profile_count", "updated_at"])
                 record_demand_progress_locked(claimed_demand, now=current_time)
 
-                active_slots = claimed_demand.reserve_members.exclude(
-                    state=ArenaVirtualReserveMember.State.EXHAUSTED
-                ).count()
-                if (
-                    claimed_demand.status != ArenaVirtualDemand.Status.ACTIVE
-                    or active_slots >= claimed_demand.reserve_target_count
-                ):
+                if claimed_demand.status != ArenaVirtualDemand.Status.ACTIVE or active_slots >= creation_target:
                     evaluation = None
                 else:
                     evaluation = _evaluate_profile_for_demand(claimed_demand, profile)
@@ -1144,6 +1586,11 @@ def create_due_virtual_reserve_profiles(*, now=None, limit: int = 100) -> int:
                         state=state,
                         evaluated_version=claimed_demand.version,
                         current_lineup_power=evaluation.selected_power,
+                        roster_target_count=_roster_target_for_member(
+                            claimed_demand,
+                            profile_id=int(profile.id),
+                            current_guest_count=profile.manor.guests.count(),
+                        ),
                         next_acceleration_at=(
                             current_time if state == ArenaVirtualReserveMember.State.TRAINING else None
                         ),
@@ -1164,7 +1611,10 @@ def create_due_virtual_reserve_profiles(*, now=None, limit: int = 100) -> int:
 
 __all__ = [
     "ArenaVirtualGrowthTarget",
+    "EXHAUSTED_LEASE_GRACE",
+    "MAX_RESERVE_MEMBER_LEASE_AGE",
     "MAX_NO_ACTION_LEASE_AGE",
+    "MAX_STRENGTH_CAP_RETRIES",
     "ReserveReplenishmentResult",
     "create_due_virtual_reserve_profiles",
     "evaluate_bot_lineup",
@@ -1173,4 +1623,5 @@ __all__ = [
     "release_virtual_reserve_member_for_manor",
     "release_virtual_reserve_members_for_demand",
     "replenish_virtual_reserve",
+    "release_expired_exhausted_virtual_reserve_members",
 ]

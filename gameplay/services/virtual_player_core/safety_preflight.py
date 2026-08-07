@@ -5,11 +5,12 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from typing import Final
 
-from django.db import DatabaseError, connection
+from django.db import DatabaseError
 from django.utils import timezone
 
 from gameplay.models import BotSafetyMetricEvent
 
+from .database_clock import database_utc_now as _database_utc_now
 from .safety_metrics import SAFETY_HEARTBEAT_METRIC
 
 SAFETY_MONITOR_STREAM: Final = "safety_monitor"
@@ -25,20 +26,6 @@ class SafetyWritePreflightResult:
     reason: str
     checked_at: datetime | None
     monitor_heartbeat_at: datetime | None
-
-
-def _database_utc_now() -> datetime:
-    with connection.cursor() as cursor:
-        clock_query = "SELECT UTC_TIMESTAMP(6)" if connection.vendor == "mysql" else "SELECT CURRENT_TIMESTAMP"
-        cursor.execute(clock_query)
-        value = cursor.fetchone()[0]
-    if isinstance(value, str):
-        value = datetime.fromisoformat(value)
-    if not isinstance(value, datetime):
-        raise DatabaseError("database clock returned a non-datetime value")
-    if timezone.is_naive(value):
-        value = value.replace(tzinfo=UTC)
-    return value.astimezone(UTC)
 
 
 def _normalize_now(value: datetime | None) -> datetime:

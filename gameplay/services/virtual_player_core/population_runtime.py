@@ -35,6 +35,8 @@ from . import profile_store
 from .bootstrap import _create_virtual_player_v1
 from .config import V2_PRESTIGE_BAND_NAMES, BootstrapMode, load_virtual_player_config, load_virtual_player_v2_config
 from .contracts import BotProjectionConfig, PopulationMutationStatus
+from .database_clock import database_utc_now as _database_utc_now
+from .database_clock import database_utc_sql_expression
 from .legacy.projection import range_value as _range_value
 from .legacy.projection import weighted_archetype as _weighted_archetype
 from .maintenance import reactivate_locked_virtual_player_profile
@@ -125,17 +127,6 @@ class VirtualPlayerPopulationLockLostError(RuntimeError):
 
 class PopulationRecomputeDemandError(ValueError):
     """Raised when a durable population-demand request is invalid."""
-
-
-def _database_utc_now() -> datetime:
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT CURRENT_TIMESTAMP")
-        value = cursor.fetchone()[0]
-    if isinstance(value, str):
-        value = datetime.fromisoformat(value)
-    if timezone.is_naive(value):
-        value = value.replace(tzinfo=UTC)
-    return value.astimezone(UTC)
 
 
 def _demand_now(now: datetime | None) -> datetime:
@@ -274,8 +265,6 @@ def merge_population_recompute_demand_for_prestige(
 ) -> BotPopulationRecomputeDemand | None:
     """Merge the canonical V2 population cell containing a persisted prestige value."""
     normalized_region = str(region)
-    if normalized_region == "overseas":
-        return None
     if isinstance(prestige, bool) or not isinstance(prestige, int) or prestige < 0:
         raise PopulationRecomputeDemandError("population reference prestige must be a non-negative integer")
     prestige_band = _prestige_band_for_value(
@@ -318,8 +307,6 @@ def try_merge_already_classified_mysql_prestige_transition_cells(
     if isinstance(manor_id, bool) or not isinstance(manor_id, int) or manor_id < 1:
         raise PopulationRecomputeDemandError("manor_id must be a positive integer")
     normalized_region = _validate_prestige_transition_region(region)
-    if normalized_region == "overseas":
-        return None
     before_band = _v2_prestige_band_for_transition(
         before_prestige,
         field="before_prestige",
@@ -340,6 +327,7 @@ def try_merge_already_classified_mysql_prestige_transition_cells(
     demand_table = connection.ops.quote_name(BotPopulationRecomputeDemand._meta.db_table)
     profile_table = connection.ops.quote_name(BotProfile._meta.db_table)
     manor_table = connection.ops.quote_name(Manor._meta.db_table)
+    database_now_sql = database_utc_sql_expression()
     sql = f"""
         INSERT INTO {demand_table} (
             `region`, `prestige_band`, `requested_revision`,
@@ -349,8 +337,8 @@ def try_merge_already_classified_mysql_prestige_transition_cells(
         )
         SELECT
             source.`region`, bands.`prestige_band`, 1,
-            0, CURRENT_TIMESTAMP, 0, '',
-            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            0, {database_now_sql}, 0, '',
+            {database_now_sql}, {database_now_sql}
         FROM (
             SELECT manor.`region` AS `region`
             FROM {profile_table} profile
@@ -368,7 +356,7 @@ def try_merge_already_classified_mysql_prestige_transition_cells(
         WHERE TRUE
         ON DUPLICATE KEY UPDATE
             `requested_revision` = `requested_revision` + 1,
-            `updated_at` = CURRENT_TIMESTAMP
+            `updated_at` = {database_now_sql}
     """
     with connection.cursor() as cursor:
         cursor.execute(
@@ -401,7 +389,7 @@ def _v2_prestige_band_for_transition(value: int, *, field: str) -> str:
 
 def _validate_prestige_transition_region(region: str) -> str:
     normalized = str(region)
-    if normalized != "overseas" and normalized not in frozenset(_regions()):
+    if normalized not in frozenset(_regions()):
         raise PopulationRecomputeDemandError(f"unknown virtual-player population region: {normalized}")
     return normalized
 
@@ -467,8 +455,6 @@ def merge_committed_prestige_transition_population_demands(
             return ()
         effective_region = _validate_prestige_transition_region(str(real_manor["region"]))
 
-    if effective_region == "overseas":
-        return ()
     normalized_cells = _normalize_population_demand_cells(
         [
             (effective_region, before_band),
@@ -770,13 +756,7 @@ def _build_population_plan(
     }
     arena_demands: dict[tuple[str, str], int] = {}
     if required_engine_version == 2:
-        valid_regions = frozenset(_regions())
-        for activation in active_arena_population_activations():
-            band_name = _prestige_band_for_value(activation.prestige, config)
-            if activation.region not in valid_regions or band_name is None:
-                continue
-            key = (activation.region, band_name)
-            arena_demands[key] = arena_demands.get(key, 0) + int(activation.needed)
+        arena_demands = _active_arena_population_demand_by_cell(config)
 
     cells: list[PopulationCell] = []
     for region in _regions():
@@ -815,12 +795,18 @@ def _build_population_plan(
     if uses_regional_planning:
         entry_band = _prestige_band_for_value(0, config) or next(iter(_prestige_bands(config)), "newbie")
         hard_cap_override = int(population.get("hard_cap") or 0) if "hard_cap" in population else None
+        configured_global_floor = max(0, _population_config_int(population, "global_floor", 32))
+        configured_global_multiplier = max(0, _population_config_int(population, "global_active_multiplier", 20))
+        arena_capacity_floor = sum(cell.maintained_supply for cell in cells) + sum(arena_demands.values())
+        # Arena shortages are explicit, short-lived supply commitments. Let
+        # them expand the derived cap while preserving an explicit hard_cap.
+        dynamic_global_floor = max(configured_global_floor, arena_capacity_floor)
         return plan_population_cells(
             cells,
             region_floor=max(0, _population_config_int(population, "region_floor", 8)),
             region_multiplier=max(0, _population_config_int(population, "region_active_multiplier", 8)),
-            global_floor=max(0, _population_config_int(population, "global_floor", 32)),
-            global_multiplier=max(0, _population_config_int(population, "global_active_multiplier", 20)),
+            global_floor=dynamic_global_floor,
+            global_multiplier=configured_global_multiplier,
             entry_band=entry_band,
             hard_cap_override=hard_cap_override,
         )
@@ -875,9 +861,11 @@ def _lock_population_mutation_bootstrap_mode(
 def get_virtual_player_capacity(*, now=None) -> tuple[int, int]:
     current_time = now or timezone.now()
     bootstrap_mode = read_virtual_player_routing().bootstrap_mode
+    required_engine_version = 1 if bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE else 2
     population_plan = _build_population_plan(
         _population_runtime_config_for_bootstrap_mode(bootstrap_mode),
         now=current_time,
+        required_engine_version=required_engine_version,
     )
     return population_plan.hard_cap, _maintained_bot_count()
 
@@ -928,6 +916,43 @@ def _v2_population_runtime_config() -> dict[str, Any]:
     config = dict(load_virtual_player_config())
     config["prestige_bands"] = {band.name: [band.lower_inclusive, band.upper_exclusive] for band in v2_config.bands}
     return config
+
+
+def _active_arena_population_demand_by_cell(
+    config: dict[str, Any],
+) -> dict[tuple[str, str], int]:
+    valid_regions = frozenset(_regions())
+    arena_demands: dict[tuple[str, str], int] = {}
+    for activation in active_arena_population_activations():
+        region = str(activation.region)
+        band_name = _prestige_band_for_value(activation.prestige, config)
+        if region not in valid_regions or band_name is None:
+            continue
+        key = (region, band_name)
+        arena_demands[key] = arena_demands.get(key, 0) + max(0, int(activation.needed))
+    return arena_demands
+
+
+def ensure_active_arena_population_recompute_demands(
+    *,
+    now: datetime | None = None,
+) -> tuple[BotPopulationRecomputeDemand, ...]:
+    """Recover missing durable population cells for active Arena shortages."""
+    if not _v2_bootstrap_routing_is_active():
+        return ()
+    arena_demands = _active_arena_population_demand_by_cell(_v2_population_runtime_config())
+    if not arena_demands:
+        return ()
+    existing = set(
+        BotPopulationRecomputeDemand.objects.filter(
+            region__in={region for region, _band in arena_demands},
+            prestige_band__in={band for _region, band in arena_demands},
+        ).values_list("region", "prestige_band")
+    )
+    missing = tuple(cell for cell in arena_demands if cell not in existing)
+    if not missing:
+        return ()
+    return merge_population_recompute_demands(missing, now=now)
 
 
 def _v2_bootstrap_routing_is_active() -> bool:
@@ -1037,6 +1062,8 @@ def _reconcile_claimed_virtual_player_population_cell(
                     claimed_revision=claim.claimed_revision,
                 )
 
+            from gameplay.services.arena.virtual_reserve_demand import wake_active_arena_demands_for_population_region
+
             from .bootstrap import build_virtual_player_v2_bootstrap_plan, create_virtual_player_v2
 
             while processed_count < limit:
@@ -1100,6 +1127,34 @@ def _reconcile_claimed_virtual_player_population_cell(
                     reactivated_count += 1
 
             ownership_guard()
+            if processed_count > 0:
+                try:
+                    woken_demands = wake_active_arena_demands_for_population_region(
+                        region=claim.region,
+                        now=_demand_now(now),
+                    )
+                except Exception:
+                    logger.exception(
+                        "Failed to wake Arena demands after population supply changed: region=%s",
+                        claim.region,
+                        extra={
+                            "event": "virtual_player_population_arena_wakeup_failed",
+                            "region": claim.region,
+                            "processed_count": processed_count,
+                        },
+                    )
+                else:
+                    if woken_demands:
+                        logger.info(
+                            "Woke Arena demands after population supply changed: region=%s demands=%s",
+                            claim.region,
+                            woken_demands,
+                            extra={
+                                "event": "virtual_player_population_arena_demands_woken",
+                                "region": claim.region,
+                                "woken_demand_count": woken_demands,
+                            },
+                        )
             if not _v2_bootstrap_routing_is_active():
                 fail_population_recompute_demand(
                     claim,
@@ -1204,6 +1259,7 @@ def scan_virtual_player_population_demands(
     if normalized_limit == 0 or not _v2_bootstrap_routing_is_active():
         return ()
 
+    ensure_active_arena_population_recompute_demands(now=fixed_time)
     results: list[PopulationCellReconcileResult] = []
     for _index in range(normalized_limit):
         claim = claim_next_population_recompute_demand(now=fixed_time)
@@ -2367,6 +2423,7 @@ __all__ = [
     "claim_population_recompute_demand",
     "create_virtual_player_with_capacity",
     "create_virtual_players_for_band",
+    "ensure_active_arena_population_recompute_demands",
     "fail_population_recompute_demand",
     "finalize_population_recompute_demand",
     "get_virtual_player_capacity",

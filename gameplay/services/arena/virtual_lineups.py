@@ -31,6 +31,7 @@ class LineupSelectionContext:
     mode: str
     event_id: int
     profile_id: int
+    max_lineup_size: int | None = None
 
     def random(self) -> random.Random:
         return random.Random(f"{self.mode}:{self.event_id}:{self.profile_id}")
@@ -81,24 +82,26 @@ def _random_lineup_indexes(
     guest_count: int,
     lineup_size: int,
     rng: random.Random,
+    max_combinations: int = MAX_RANDOM_LINEUP_COMBINATIONS,
 ) -> list[tuple[int, ...]]:
     total_combinations = comb(guest_count, lineup_size)
+    combination_budget = max(1, int(max_combinations))
     indexes: list[tuple[int, ...]]
-    if total_combinations <= MAX_RANDOM_LINEUP_COMBINATIONS:
+    if total_combinations <= combination_budget:
         indexes = list(combinations(range(guest_count), lineup_size))
         rng.shuffle(indexes)
         return indexes
 
     indexes = []
     seen: set[tuple[int, ...]] = set()
-    max_attempts = MAX_RANDOM_LINEUP_COMBINATIONS * 8
+    max_attempts = combination_budget * 8
     for _attempt in range(max_attempts):
         candidate = tuple(sorted(rng.sample(range(guest_count), lineup_size)))
         if candidate in seen:
             continue
         seen.add(candidate)
         indexes.append(candidate)
-        if len(indexes) >= MAX_RANDOM_LINEUP_COMBINATIONS:
+        if len(indexes) >= combination_budget:
             break
     return indexes
 
@@ -109,38 +112,89 @@ def evaluate_lineup_snapshots(
     context: LineupSelectionContext,
     target_guest_count: int,
     target_team_power: int,
+    preferred_guest_count: int | None = None,
 ) -> BotLineupEvaluation:
+    """Choose a deterministic, legal-size lineup, then normalize health.
+
+    ``target_guest_count`` is the real-player reference size, not a hard virtual
+    player size. When the arena allows more guests, larger sizes are tried first
+    and the reference size remains the safe fallback if no larger lineup fits
+    the target power band.
+    """
     if target_guest_count <= 0 or target_team_power <= 0 or not snapshots:
         return BotLineupEvaluation((), 0, False)
 
-    lineup_size = min(target_guest_count, len(snapshots))
-    rng = context.random()
-    rows: list[tuple[tuple[dict, ...], int]] = []
-    for indexes in _random_lineup_indexes(
-        guest_count=len(snapshots),
-        lineup_size=lineup_size,
-        rng=rng,
-    ):
-        lineup = tuple(deepcopy(snapshots[index]) for index in indexes)
-        rows.append((lineup, lineup_power(lineup)))
-
-    ready = [
-        row
-        for row in rows
-        if target_team_power * MIN_LINEUP_POWER_PERCENT <= row[1] * 100 <= target_team_power * MAX_LINEUP_POWER_PERCENT
-    ]
-    if ready:
-        lineup, power = rng.choice(ready)
-        return BotLineupEvaluation(
-            normalize_virtual_lineup_snapshots(lineup),
-            power,
-            True,
-        )
-
-    below = [row for row in rows if row[1] * 100 < target_team_power * MIN_LINEUP_POWER_PERCENT]
-    if not below:
+    maximum_lineup_size = len(snapshots)
+    if context.max_lineup_size is not None:
+        maximum_lineup_size = min(maximum_lineup_size, max(0, int(context.max_lineup_size)))
+    if maximum_lineup_size <= 0:
         return BotLineupEvaluation((), 0, False)
-    lineup, power = max(below, key=lambda row: row[1])
+
+    reference_size = min(max(1, int(target_guest_count)), maximum_lineup_size)
+    preferred_size = reference_size
+    if preferred_guest_count is not None:
+        preferred_size = min(
+            maximum_lineup_size,
+            max(reference_size, int(preferred_guest_count)),
+        )
+    lineup_sizes = list(range(reference_size, maximum_lineup_size + 1))
+    rng = context.random()
+    if len(lineup_sizes) > 1:
+        lineup_sizes.remove(reference_size)
+        if preferred_size != reference_size:
+            lineup_sizes.remove(preferred_size)
+        rng.shuffle(lineup_sizes)
+        if preferred_size != reference_size:
+            lineup_sizes.insert(0, preferred_size)
+        lineup_sizes.append(reference_size)
+
+    best_below: tuple[tuple[dict, ...], int] | None = None
+    reference_size_index = len(lineup_sizes) - 1
+    remaining_variable_budget = MAX_RANDOM_LINEUP_COMBINATIONS
+    for size_index, lineup_size in enumerate(lineup_sizes):
+        rows: list[tuple[tuple[dict, ...], int]] = []
+        if size_index == reference_size_index:
+            # Preserve the old fallback coverage for the real-player reference size.
+            size_budget = MAX_RANDOM_LINEUP_COMBINATIONS
+        else:
+            remaining_size_count = reference_size_index - size_index
+            size_budget = max(1, remaining_variable_budget // remaining_size_count)
+        sampled_indexes = _random_lineup_indexes(
+            guest_count=len(snapshots),
+            lineup_size=lineup_size,
+            rng=rng,
+            max_combinations=size_budget,
+        )
+        if size_index != reference_size_index:
+            remaining_variable_budget = max(0, remaining_variable_budget - len(sampled_indexes))
+        for indexes in sampled_indexes:
+            lineup = tuple(deepcopy(snapshots[index]) for index in indexes)
+            rows.append((lineup, lineup_power(lineup)))
+
+        ready = [
+            row
+            for row in rows
+            if target_team_power * MIN_LINEUP_POWER_PERCENT
+            <= row[1] * 100
+            <= target_team_power * MAX_LINEUP_POWER_PERCENT
+        ]
+        if ready:
+            lineup, power = rng.choice(ready)
+            return BotLineupEvaluation(
+                normalize_virtual_lineup_snapshots(lineup),
+                power,
+                True,
+            )
+
+        below = [row for row in rows if row[1] * 100 < target_team_power * MIN_LINEUP_POWER_PERCENT]
+        if below:
+            candidate = max(below, key=lambda row: row[1])
+            if best_below is None or candidate[1] > best_below[1]:
+                best_below = candidate
+
+    if best_below is None:
+        return BotLineupEvaluation((), 0, False)
+    lineup, power = best_below
     return BotLineupEvaluation(
         normalize_virtual_lineup_snapshots(lineup),
         power,

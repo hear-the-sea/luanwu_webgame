@@ -23,11 +23,14 @@ from gameplay.services.virtual_player_core.profile_store import record_arena_par
 from gameplay.services.virtual_player_state_policy import VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES
 from guests.models import Guest, GuestStatus
 
+from .coop_rules import load_arena_coop_rules
 from .lifecycle_helpers import move_coop_event_to_preparing_locked, start_tournament_locked
+from .rules import load_arena_rules
 from .virtual_backfill import backfill_coop_event_locked, backfill_tournament_locked
 from .virtual_lineups import lineup_power
 from .virtual_protection import is_virtual_profile_arena_match_eligible, with_arena_reconciliation_state
 from .virtual_reserve_observability import log_demand_event
+from .virtual_reserve_policy import virtual_roster_target_count
 from .virtual_reserve_pool import evaluate_bot_lineup, record_demand_failure_locked, replenish_virtual_reserve
 from .virtual_reserve_reconcile import (
     reconcile_coop_demand,
@@ -134,13 +137,30 @@ def _select_bot_lineup(
     event_id: int,
     target_guest_count: int,
     target_team_power: int,
+    max_lineup_size: int | None = None,
 ) -> list[dict]:
+    resolved_max_lineup_size = max_lineup_size
+    if resolved_max_lineup_size is None:
+        resolved_max_lineup_size = int(
+            load_arena_rules()["registration"]["max_guests_per_entry"]
+            if str(mode) == "tournament"
+            else load_arena_coop_rules()["registration"]["guest_limit_per_entry"]
+        )
+    preferred_guest_count = virtual_roster_target_count(
+        reference_guest_count=int(target_guest_count),
+        max_lineup_size=resolved_max_lineup_size,
+        mode=str(mode),
+        event_id=int(event_id),
+        profile_id=int(profile.id),
+    )
     evaluation = evaluate_bot_lineup(
         profile,
         mode=mode,
         event_id=event_id,
         target_guest_count=target_guest_count,
         target_team_power=target_team_power,
+        max_lineup_size=resolved_max_lineup_size,
+        preferred_guest_count=preferred_guest_count,
     )
     return list(evaluation.snapshots) if evaluation.is_ready else []
 
@@ -153,6 +173,7 @@ def _eligible_bot_profile_ids(
     target_guest_count: int,
     target_team_power: int,
     candidate_profile_ids: Sequence[int] | None = None,
+    max_lineup_size: int | None = None,
     now=None,
 ) -> list[int]:
     current_time = now or timezone.now()
@@ -172,6 +193,7 @@ def _eligible_bot_profile_ids(
             event_id=event_id,
             target_guest_count=target_guest_count,
             target_team_power=target_team_power,
+            max_lineup_size=max_lineup_size,
         )
         if not lineup:
             continue
@@ -188,6 +210,7 @@ def _lock_eligible_bot_lineups(
     event_id: int,
     target_guest_count: int,
     target_team_power: int,
+    max_lineup_size: int | None = None,
     now=None,
 ) -> list[tuple[BotProfile, list[dict]]]:
     current_time = now or timezone.now()
@@ -221,6 +244,7 @@ def _lock_eligible_bot_lineups(
                     event_id=event_id,
                     target_guest_count=target_guest_count,
                     target_team_power=target_team_power,
+                    max_lineup_size=max_lineup_size,
                 )
                 if lineup:
                     selected.append((profile, lineup))
@@ -300,12 +324,14 @@ def prepare_tournament_backfill_locked(
         return 0
     excluded_manor_ids = _tournament_excluded_manor_ids(tournament)
     target_team_power = lineup_power(snapshots)
+    max_lineup_size = int(load_arena_rules()["registration"]["max_guests_per_entry"])
     eligible_profile_ids = _eligible_bot_profile_ids(
         excluded_manor_ids=excluded_manor_ids,
         mode="tournament",
         event_id=tournament.id,
         target_guest_count=len(snapshots),
         target_team_power=target_team_power,
+        max_lineup_size=max_lineup_size,
         candidate_profile_ids=candidate_profile_ids,
         now=current_time,
     )
@@ -317,6 +343,7 @@ def prepare_tournament_backfill_locked(
         event_id=tournament.id,
         target_guest_count=len(snapshots),
         target_team_power=target_team_power,
+        max_lineup_size=max_lineup_size,
         now=current_time,
     )
     if len(candidates) < needed:
@@ -367,12 +394,14 @@ def prepare_coop_backfill_locked(
         )
         return 0
     target_team_power = lineup_power(snapshots)
+    max_lineup_size = max(1, int(event.guest_limit_per_entry))
     eligible_profile_ids = _eligible_bot_profile_ids(
         excluded_manor_ids=_coop_excluded_manor_ids(event),
         mode="coop",
         event_id=event.id,
         target_guest_count=len(snapshots),
         target_team_power=target_team_power,
+        max_lineup_size=max_lineup_size,
         candidate_profile_ids=candidate_profile_ids,
         now=current_time,
     )
@@ -384,6 +413,7 @@ def prepare_coop_backfill_locked(
         event_id=event.id,
         target_guest_count=len(snapshots),
         target_team_power=target_team_power,
+        max_lineup_size=max_lineup_size,
         now=current_time,
     )
     if len(candidates) < needed:
@@ -430,6 +460,7 @@ def _ordered_ready_members(
         for member in members
         if member.profile.last_arena_participated_at is not None and member.profile.last_arena_participated_at >= cutoff
     ]
+
     fresh.sort(
         key=lambda member: _stable_member_rank(
             mode=mode,
@@ -486,9 +517,11 @@ def _lock_ready_member_lineups(
     if mode == "tournament":
         assert demand.tournament is not None
         excluded_manor_ids = _tournament_excluded_manor_ids(demand.tournament)
+        max_lineup_size = int(load_arena_rules()["registration"]["max_guests_per_entry"])
     else:
         assert demand.coop_event is not None
         excluded_manor_ids = _coop_excluded_manor_ids(demand.coop_event)
+        max_lineup_size = max(1, int(demand.coop_event.guest_limit_per_entry))
 
     profile_ids = [int(member.profile_id) for member in members]
     eligible_profile_ids = _eligible_bot_profile_ids(
@@ -497,6 +530,7 @@ def _lock_ready_member_lineups(
         event_id=event_id,
         target_guest_count=int(demand.target_guest_count),
         target_team_power=int(demand.target_team_power),
+        max_lineup_size=max_lineup_size,
         candidate_profile_ids=profile_ids,
         now=current_time,
     )
@@ -510,6 +544,7 @@ def _lock_ready_member_lineups(
         event_id=event_id,
         target_guest_count=int(demand.target_guest_count),
         target_team_power=int(demand.target_team_power),
+        max_lineup_size=max_lineup_size,
         now=current_time,
     )
 
@@ -546,6 +581,7 @@ def _complete_demand_fill(
     demand.status = ArenaVirtualDemand.Status.SATISFIED
     demand.missing_entry_count = 0
     demand.reserve_target_count = 0
+    demand.warm_target_count = 0
     demand.next_retry_at = None
     demand.last_checked_at = now
     demand.last_failure_reason = ""
@@ -556,6 +592,7 @@ def _complete_demand_fill(
             "status",
             "missing_entry_count",
             "reserve_target_count",
+            "warm_target_count",
             "next_retry_at",
             "last_checked_at",
             "last_failure_reason",
@@ -579,6 +616,7 @@ def _fill_due_reserve(
     mode: str,
     event_id: int,
     now,
+    emit_shortage_observation: bool,
 ) -> int:
     event_model = ArenaTournament if mode == "tournament" else ArenaCoopEvent
     event = event_model.objects.select_for_update().filter(pk=event_id).first()
@@ -593,9 +631,17 @@ def _fill_due_reserve(
         return 0
 
     if mode == "tournament":
-        demand = reconcile_tournament_demand_locked(cast(ArenaTournament, event), now=now)
+        demand = reconcile_tournament_demand_locked(
+            cast(ArenaTournament, event),
+            now=now,
+            emit_shortage_observation=emit_shortage_observation,
+        )
     else:
-        demand = reconcile_coop_demand_locked(cast(ArenaCoopEvent, event), now=now)
+        demand = reconcile_coop_demand_locked(
+            cast(ArenaCoopEvent, event),
+            now=now,
+            emit_shortage_observation=emit_shortage_observation,
+        )
     if demand is None:
         return 0
     demand = ArenaVirtualDemand.objects.select_for_update().select_related("tournament", "coop_event").get(pk=demand.pk)
@@ -668,7 +714,12 @@ def _fill_due_reserve(
     return filled
 
 
-def fill_due_tournament_reserve(tournament_id: int, *, now=None) -> int:
+def fill_due_tournament_reserve(
+    tournament_id: int,
+    *,
+    now=None,
+    emit_shortage_observation: bool = True,
+) -> int:
     current_time = now or timezone.now()
     try:
         with transaction.atomic():
@@ -676,13 +727,19 @@ def fill_due_tournament_reserve(tournament_id: int, *, now=None) -> int:
                 mode="tournament",
                 event_id=int(tournament_id),
                 now=current_time,
+                emit_shortage_observation=emit_shortage_observation,
             )
     except _AtomicFillAborted as exc:
         _record_fill_deferred(demand_id=exc.demand_id, reason=exc.reason, now=current_time)
         return 0
 
 
-def fill_due_coop_reserve(event_id: int, *, now=None) -> int:
+def fill_due_coop_reserve(
+    event_id: int,
+    *,
+    now=None,
+    emit_shortage_observation: bool = True,
+) -> int:
     current_time = now or timezone.now()
     try:
         with transaction.atomic():
@@ -690,6 +747,7 @@ def fill_due_coop_reserve(event_id: int, *, now=None) -> int:
                 mode="coop",
                 event_id=int(event_id),
                 now=current_time,
+                emit_shortage_observation=emit_shortage_observation,
             )
     except _AtomicFillAborted as exc:
         _record_fill_deferred(demand_id=exc.demand_id, reason=exc.reason, now=current_time)
@@ -714,7 +772,14 @@ def start_due_virtual_backfill_tournaments(*, now: datetime | None = None, limit
         if demand is None:
             continue
         replenish_virtual_reserve(demand.id, now=current_time)
-        started += int(fill_due_tournament_reserve(tournament_id, now=current_time) > 0)
+        started += int(
+            fill_due_tournament_reserve(
+                tournament_id,
+                now=current_time,
+                emit_shortage_observation=False,
+            )
+            > 0
+        )
     return started
 
 
@@ -734,7 +799,14 @@ def start_due_virtual_backfill_coop_events(*, now: datetime | None = None, limit
         if demand is None:
             continue
         replenish_virtual_reserve(demand.id, now=current_time)
-        prepared += int(fill_due_coop_reserve(event_id, now=current_time) > 0)
+        prepared += int(
+            fill_due_coop_reserve(
+                event_id,
+                now=current_time,
+                emit_shortage_observation=False,
+            )
+            > 0
+        )
     return prepared
 
 

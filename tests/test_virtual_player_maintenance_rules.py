@@ -87,6 +87,7 @@ def _evaluate(
     source_strength_cap: StrengthSummary | None = None,
     target_sample_count: int | None = None,
     target_strength_cap: StrengthSummary | None = None,
+    allow_roster_expansion: bool = False,
 ):
     return evaluate_controlled_action(
         policy=_policy(),
@@ -99,6 +100,7 @@ def _evaluate(
         source_strength_cap=source_strength_cap or _strength(1_000, attack=1_000, defense=1_000),
         target_sample_count=target_sample_count,
         target_strength_cap=target_strength_cap,
+        allow_roster_expansion=allow_roster_expansion,
     )
 
 
@@ -259,6 +261,32 @@ def test_cross_band_effective_limits_take_the_strictest_source_target_and_sample
     assert limits.composite_growth_bps_per_controlled_action_max == 200
     assert limits.strength_increasing_actions_per_24h_max == 1
     assert limits.composite_growth_bps_per_24h_max == 300
+
+
+def test_roster_expansion_is_not_blocked_by_quality_growth_rate_but_keeps_reference_cap() -> None:
+    intent = _intent(after=_strength(140, attack=70, defense=70))
+    regular = _evaluate(
+        intent,
+        source_strength_cap=_strength(1_000, attack=1_000, defense=1_000),
+    )
+    roster_expansion = _evaluate(
+        intent,
+        source_strength_cap=_strength(1_000, attack=1_000, defense=1_000),
+        allow_roster_expansion=True,
+    )
+
+    assert regular.allowed is False
+    assert MaintenanceNoActionReason.BAND_ACTION_CAP in regular.skipped_action_reasons
+    assert roster_expansion.allowed is True
+    assert roster_expansion.budget_entries_after == ()
+    assert roster_expansion.last_strength_increase_at_after == NOW
+
+    capped = _evaluate(
+        intent,
+        source_strength_cap=_strength(120, attack=60, defense=60),
+        allow_roster_expansion=True,
+    )
+    assert capped.reason is MaintenanceNoActionReason.STRENGTH_CAP
 
 
 def test_spacing_rejects_the_instant_before_boundary_and_allows_the_boundary() -> None:

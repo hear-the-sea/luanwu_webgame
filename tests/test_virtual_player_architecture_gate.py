@@ -681,6 +681,7 @@ def test_arena_reverse_dependency_debt_is_explicit_and_cannot_grow() -> None:
         "gameplay.services.arena.virtual_reserve_demand",
         "gameplay.services.arena.virtual_reserve_fill",
         "gameplay.services.arena.virtual_reserve_observability",
+        "gameplay.services.arena.virtual_reserve_policy",
         "gameplay.services.arena.virtual_reserve_pool",
         "gameplay.services.arena.virtual_reserve_reconcile",
         "gameplay.services.arena.virtual_reserve_references",
@@ -748,12 +749,24 @@ def test_arena_reverse_dependency_debt_is_explicit_and_cannot_grow() -> None:
             "gameplay.services.arena.virtual_reserve_references",
         ),
         (
+            "gameplay.services.arena.virtual_reserve_fill",
+            "gameplay.services.arena.virtual_reserve_policy",
+        ),
+        (
             "gameplay.services.arena.virtual_reserve_pool",
             "gameplay.services.arena.virtual_reserve_observability",
         ),
         (
             "gameplay.services.arena.virtual_reserve_pool",
+            "gameplay.services.arena.virtual_reserve_policy",
+        ),
+        (
+            "gameplay.services.arena.virtual_reserve_pool",
             "gameplay.services.arena.virtual_reserve_references",
+        ),
+        (
+            "gameplay.services.arena.virtual_reserve_demand",
+            "gameplay.services.arena.virtual_reserve_policy",
         ),
         (
             "gameplay.services.arena.virtual_reserve_reconcile",
@@ -809,6 +822,7 @@ def test_arena_task_reverse_dependency_debt_is_explicit() -> None:
         "gameplay.services.arena.virtual_reserve_scan": {"scan_virtual_reserve_demands"},
         "gameplay.services.arena.virtual_reserve_observability": {
             "ARENA_SHORTAGE_METRIC_RETRY_MAX_ATTEMPTS",
+            "is_retryable_arena_shortage_metric_error",
             "queue_arena_shortage_metric_retry",
             "record_arena_shortage_metric_failure",
             "record_arena_shortage_observation",

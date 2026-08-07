@@ -61,6 +61,88 @@ def test_lineup_selection_normalizes_health_without_changing_power_or_input() ->
     assert result.snapshots[0]["current_hp"] == result.snapshots[0]["max_hp"]
 
 
+def test_lineup_selection_can_use_more_guests_when_reference_power_needs_them() -> None:
+    snapshots = [_snapshot(), _snapshot(), _snapshot()]
+
+    result = evaluate_lineup_snapshots(
+        snapshots,
+        context=LineupSelectionContext(
+            mode="tournament",
+            event_id=1,
+            profile_id=2,
+            max_lineup_size=10,
+        ),
+        target_guest_count=1,
+        target_team_power=600,
+    )
+
+    assert result.is_ready is True
+    assert len(result.snapshots) == 2
+    assert result.selected_power == 600
+
+
+def test_lineup_selection_varies_above_real_reference_until_arena_cap() -> None:
+    snapshots = [_snapshot() for _ in range(10)]
+
+    result = evaluate_lineup_snapshots(
+        snapshots,
+        context=LineupSelectionContext(
+            mode="tournament",
+            event_id=3,
+            profile_id=4,
+            max_lineup_size=10,
+        ),
+        target_guest_count=3,
+        target_team_power=1_200,
+    )
+
+    assert result.is_ready is True
+    assert len(result.snapshots) == 4
+    assert len(result.snapshots) <= 10
+    assert result.selected_power == 1_200
+
+
+def test_lineup_selection_prefers_persisted_virtual_roster_target() -> None:
+    snapshots = [_snapshot() for _ in range(6)]
+
+    result = evaluate_lineup_snapshots(
+        snapshots,
+        context=LineupSelectionContext(
+            mode="tournament",
+            event_id=8,
+            profile_id=9,
+            max_lineup_size=10,
+        ),
+        target_guest_count=3,
+        target_team_power=1_200,
+        preferred_guest_count=4,
+    )
+
+    assert result.is_ready is True
+    assert len(result.snapshots) == 4
+    assert result.selected_power == 1_200
+
+
+def test_lineup_selection_respects_arena_maximum_lineup_size() -> None:
+    snapshots = [_snapshot(), _snapshot(), _snapshot()]
+
+    result = evaluate_lineup_snapshots(
+        snapshots,
+        context=LineupSelectionContext(
+            mode="tournament",
+            event_id=1,
+            profile_id=2,
+            max_lineup_size=1,
+        ),
+        target_guest_count=1,
+        target_team_power=500,
+    )
+
+    assert result.is_ready is False
+    assert len(result.snapshots) == 1
+    assert result.selected_power == 300
+
+
 @pytest.mark.parametrize("current_hp", (True, 1.0, "1", 0, 2))
 def test_locked_write_validation_rejects_noncanonical_health(current_hp) -> None:
     with pytest.raises(

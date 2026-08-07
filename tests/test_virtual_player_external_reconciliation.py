@@ -38,10 +38,11 @@ def _create_profile(
     username: str,
     prestige: int = 100,
     current_band: str = "newbie",
+    region: str = "north",
 ) -> BotProfile:
     now = timezone.now()
     manor = ensure_manor(django_user_model.objects.create_user(username=username, password="pass123"))
-    manor.region = "north"
+    manor.region = region
     manor.prestige = prestige
     manor.save(update_fields=["region", "prestige"])
     return BotProfile.objects.create(
@@ -213,13 +214,16 @@ def test_intent_is_rolled_back_with_the_originating_domain_transaction(
     assert not BotExternalStrengthReconciliation.objects.exists()
 
 
+@pytest.mark.parametrize("region", ["north", "overseas"])
 def test_profile_and_population_phases_commit_cross_band_result_exactly_once(
     django_user_model,
+    region,
 ) -> None:
     profile = _create_profile(
         django_user_model,
         username="external_reconciliation_cross_band",
         prestige=499,
+        region=region,
     )
     anchor = _capture(profile)
     committed_at = timezone.now()
@@ -269,8 +273,8 @@ def test_profile_and_population_phases_commit_cross_band_result_exactly_once(
             "requested_revision",
         )
     ) == [
-        ("north", "junior", 1),
-        ("north", "newbie", 1),
+        (region, "junior", 1),
+        (region, "newbie", 1),
     ]
 
     repeated = reconcile_external_reconciliation(

@@ -15,6 +15,8 @@ from django.utils import timezone
 
 from gameplay.models import BotRuntimeRoutingState, BotSafetyMetricEvent, BotSafetyMetricWindow
 
+from .database_clock import database_utc_now as _database_utc_now
+
 SAFETY_EVENT_SCHEMA_VERSION = 1
 SAFETY_WINDOW_GRACE = timedelta(minutes=5)
 SAFETY_RAW_EVENT_RETENTION = timedelta(days=35)
@@ -169,17 +171,6 @@ class _WindowSpec:
     kind: str
     start_at: datetime
     end_at: datetime
-
-
-def _database_utc_now() -> datetime:
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT CURRENT_TIMESTAMP")
-        value = cursor.fetchone()[0]
-    if isinstance(value, str):
-        value = datetime.fromisoformat(value)
-    if timezone.is_naive(value):
-        value = value.replace(tzinfo=UTC)
-    return value.astimezone(UTC)
 
 
 def _aware_utc(value: object, *, field: str) -> datetime:

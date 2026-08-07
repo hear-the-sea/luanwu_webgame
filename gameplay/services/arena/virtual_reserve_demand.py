@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from datetime import timedelta
 
 from celery import current_app
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
@@ -14,12 +16,23 @@ from gameplay.services.virtual_player_core.config import BootstrapMode
 from gameplay.services.virtual_player_core.population_runtime import merge_population_recompute_demand_for_prestige
 
 from .virtual_lineups import lineup_power
+from .virtual_reserve_policy import RESERVE_MINIMUM as POLICY_RESERVE_MINIMUM
+from .virtual_reserve_policy import RESERVE_MULTIPLIER as POLICY_RESERVE_MULTIPLIER
+from .virtual_reserve_policy import reserve_target_for_missing, reserve_target_plan
 from .virtual_reserve_references import median_entry, reference_snapshots
 
 logger = logging.getLogger(__name__)
 
-RESERVE_MULTIPLIER = 3
-RESERVE_MINIMUM = 6
+RESERVE_MULTIPLIER = POLICY_RESERVE_MULTIPLIER
+RESERVE_MINIMUM = POLICY_RESERVE_MINIMUM
+MAX_DEMAND_NO_PROGRESS_AGE = timedelta(hours=12)
+_POPULATION_SUPPLY_RETRY_REASONS = frozenset(
+    {
+        "insufficient_ready_members",
+        "dynamic_population_cap_reached",
+        "population_region_unavailable",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -45,6 +58,41 @@ def queue_virtual_reserve_reconcile(mode: str, event_id: int) -> bool:
             "event_id": int(event_id),
         },
     )
+
+
+@transaction.atomic
+def wake_active_arena_demands_for_population_region(
+    *,
+    region: str,
+    now=None,
+) -> int:
+    """Wake supply-blocked Arena demands after a population cell gains supply."""
+    current_time = now or timezone.now()
+    normalized_region = str(region)
+    region_filter = Q(
+        tournament__entries__status=ArenaEntry.Status.REGISTERED,
+        tournament__entries__source=ArenaEntry.Source.PLAYER,
+        tournament__entries__manor__region=normalized_region,
+    ) | Q(
+        coop_event__entries__status=ArenaCoopEntry.Status.REGISTERED,
+        coop_event__entries__source=ArenaCoopEntry.Source.PLAYER,
+        coop_event__entries__manor__region=normalized_region,
+    )
+    demands = list(
+        ArenaVirtualDemand.objects.select_for_update()
+        .filter(
+            status=ArenaVirtualDemand.Status.ACTIVE,
+            missing_entry_count__gt=0,
+            last_failure_reason__in=_POPULATION_SUPPLY_RETRY_REASONS,
+            next_retry_at__gt=current_time,
+        )
+        .filter(region_filter)
+        .distinct()
+    )
+    for demand in demands:
+        demand.next_retry_at = current_time
+        demand.save(update_fields=["next_retry_at", "updated_at"])
+    return len(demands)
 
 
 def _queue_virtual_player_population_reconcile(
@@ -97,29 +145,35 @@ def merge_arena_population_activation(
 
 
 def _reserve_target(missing: int) -> int:
-    normalized = max(0, int(missing))
-    return 0 if normalized == 0 else max(normalized * RESERVE_MULTIPLIER, RESERVE_MINIMUM)
+    return reserve_target_for_missing(missing)
 
 
 def close_virtual_demand_state_locked(
     demand: ArenaVirtualDemand,
     *,
     status: str,
+    failure_reason: str = "",
+    checked_at=None,
 ) -> DemandReconcileTransition:
     demand.status = status
-    demand.missing_entry_count = 0
+    if status != ArenaVirtualDemand.Status.BLOCKED:
+        demand.missing_entry_count = 0
     demand.reserve_target_count = 0
+    demand.warm_target_count = 0
     demand.next_retry_at = None
     demand.consecutive_failure_count = 0
-    demand.last_failure_reason = ""
+    demand.last_failure_reason = str(failure_reason)[:64]
+    demand.last_checked_at = checked_at or timezone.now()
     demand.save(
         update_fields=[
             "status",
             "missing_entry_count",
             "reserve_target_count",
+            "warm_target_count",
             "next_retry_at",
             "consecutive_failure_count",
             "last_failure_reason",
+            "last_checked_at",
             "updated_at",
         ]
     )
@@ -157,7 +211,9 @@ def _upsert_demand_state_locked(
         {"tournament": tournament} if tournament is not None else {"coop_event": coop_event}
     )
     demand = ArenaVirtualDemand.objects.select_for_update().filter(**lookup).first()
-    reserve_target_count = _reserve_target(missing_entry_count)
+    target_plan = reserve_target_plan(missing_entry_count)
+    reserve_target_count = target_plan.replacement_target_count
+    warm_target_count = target_plan.warm_target_count
     if demand is None:
         demand = ArenaVirtualDemand.objects.create(
             **lookup,
@@ -166,9 +222,11 @@ def _upsert_demand_state_locked(
             target_team_power=target_team_power,
             missing_entry_count=missing_entry_count,
             reserve_target_count=reserve_target_count,
+            warm_target_count=warm_target_count,
             max_reserve_target_count=reserve_target_count,
             next_retry_at=now,
             last_progress_at=now,
+            last_input_change_at=now,
             last_checked_at=now,
         )
         return DemandReconcileTransition(
@@ -183,7 +241,25 @@ def _upsert_demand_state_locked(
         or demand.target_team_power != target_team_power
         or demand.missing_entry_count != missing_entry_count
         or demand.reserve_target_count != reserve_target_count
+        or demand.warm_target_count != warm_target_count
     )
+    was_blocked = demand.status == ArenaVirtualDemand.Status.BLOCKED
+    if demand.status == ArenaVirtualDemand.Status.BLOCKED and not changed:
+        return DemandReconcileTransition()
+    last_progress_at = demand.last_progress_at or demand.created_at
+    last_input_change_at = demand.last_input_change_at or demand.created_at
+    last_activity_at = max(last_progress_at, last_input_change_at)
+    if (
+        demand.status == ArenaVirtualDemand.Status.ACTIVE
+        and not changed
+        and now - last_activity_at >= MAX_DEMAND_NO_PROGRESS_AGE
+    ):
+        return close_virtual_demand_state_locked(
+            demand,
+            status=ArenaVirtualDemand.Status.BLOCKED,
+            failure_reason="no_progress_timeout",
+            checked_at=now,
+        )
     if changed:
         demand.version += 1
     demand.status = ArenaVirtualDemand.Status.ACTIVE
@@ -191,7 +267,12 @@ def _upsert_demand_state_locked(
     demand.target_team_power = target_team_power
     demand.missing_entry_count = missing_entry_count
     demand.reserve_target_count = reserve_target_count
-    demand.max_reserve_target_count = max(demand.max_reserve_target_count, reserve_target_count)
+    demand.warm_target_count = warm_target_count
+    if was_blocked:
+        demand.max_reserve_target_count = reserve_target_count
+        demand.created_profile_count = 0
+    else:
+        demand.max_reserve_target_count = max(demand.max_reserve_target_count, reserve_target_count)
     demand.last_checked_at = now
     update_fields = [
         "status",
@@ -200,21 +281,24 @@ def _upsert_demand_state_locked(
         "target_team_power",
         "missing_entry_count",
         "reserve_target_count",
+        "warm_target_count",
         "max_reserve_target_count",
         "last_checked_at",
         "updated_at",
     ]
+    if was_blocked:
+        update_fields.append("created_profile_count")
     if changed:
         demand.next_retry_at = now
         demand.consecutive_failure_count = 0
         demand.last_failure_reason = ""
-        demand.last_progress_at = now
+        demand.last_input_change_at = now
         update_fields.extend(
             [
                 "next_retry_at",
                 "consecutive_failure_count",
                 "last_failure_reason",
-                "last_progress_at",
+                "last_input_change_at",
             ]
         )
     demand.save(update_fields=update_fields)
@@ -316,4 +400,5 @@ __all__ = [
     "queue_virtual_reserve_reconcile",
     "reconcile_coop_demand_state_locked",
     "reconcile_tournament_demand_state_locked",
+    "wake_active_arena_demands_for_population_region",
 ]

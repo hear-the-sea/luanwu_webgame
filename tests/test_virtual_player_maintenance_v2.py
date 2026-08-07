@@ -13,6 +13,7 @@ from gameplay.models import (
     BotMaintenanceExecution,
     BotProfile,
     BotRuntimeRoutingState,
+    BotSafetyMetricEvent,
     Building,
     InventoryItem,
     ItemTemplate,
@@ -33,6 +34,7 @@ from gameplay.services.virtual_player_core.contracts import (
 from gameplay.services.virtual_player_core.maintenance_action_specs import (
     BuildingUpgradeActionSpec,
     EquipmentEquipActionSpec,
+    GuestRecruitmentActionSpec,
     TechnologyUpgradeActionSpec,
 )
 from gameplay.services.virtual_player_core.policy_registry import release_configured_policy_operation
@@ -44,8 +46,21 @@ from gameplay.services.virtual_player_core.projection import (
     StrengthSummary,
 )
 from gameplay.services.virtual_player_core.reference_snapshots import load_manor_strength_summary
-from gameplay.services.virtual_player_core.safety_metrics import record_safety_heartbeat
-from guests.models import GearItem, GearTemplate, Guest, GuestStatus, SalaryPayment, Skill, TrainingLog
+from gameplay.services.virtual_player_core.safety_metrics import MAINTENANCE_ATTEMPT_METRIC, record_safety_heartbeat
+from gameplay.services.virtual_player_core.safety_provider import HARD_VIOLATION_METRIC_NAME
+from guests.models import (
+    GearItem,
+    GearTemplate,
+    Guest,
+    GuestArchetype,
+    GuestRarity,
+    GuestSkill,
+    GuestStatus,
+    GuestTemplate,
+    SalaryPayment,
+    Skill,
+    TrainingLog,
+)
 
 FIXED_NOW = datetime(2026, 7, 28, 8, 0, tzinfo=UTC)
 
@@ -1032,6 +1047,57 @@ def test_v2_guest_healing_unexpected_failure_rolls_back_item_hp_and_sequence(
 
 
 @pytest.mark.django_db
+def test_v2_quantity_phase_recruits_before_quality_actions(
+    active_v2_profile,
+    permissive_reference,
+    monkeypatch,
+) -> None:
+    quantity_template = GuestTemplate.objects.create(
+        key=f"v2_quantity_phase_gray_{active_v2_profile.id}",
+        name="V2 数量阶段灰门客",
+        archetype=GuestArchetype.MILITARY,
+        rarity=GuestRarity.GRAY,
+        base_attack=80,
+        base_intellect=80,
+        base_defense=80,
+        base_hp=800,
+    )
+    monkeypatch.setattr(
+        maintenance,
+        "_quantity_phase_guest_template",
+        lambda **_kwargs: (quantity_template, True),
+    )
+    current_guest_count = Guest.objects.filter(manor_id=active_v2_profile.manor_id).count()
+    plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.ARENA_ACCELERATION,
+        now=FIXED_NOW,
+        minimum_guest_count=current_guest_count + 2,
+        minimum_guest_level=50,
+        guest_rarity_cap=GuestRarity.GRAY,
+        max_guest_level_step=3,
+    )
+
+    assert plan.action_kind == GuestRecruitmentActionSpec.action_kind
+    assert isinstance(plan.action_spec, GuestRecruitmentActionSpec)
+    assert plan.action_spec.quantity == 2
+    assert plan.action_spec.template_id == quantity_template.id
+
+    result = maintenance.execute_virtual_player_v2_maintenance_plan(plan)
+
+    assert result.outcome is MaintenanceOutcome.APPLIED
+    assert result.action_kind == GuestRecruitmentActionSpec.action_kind
+    created_guests = tuple(
+        Guest.objects.filter(manor_id=active_v2_profile.manor_id).exclude(template_id__isnull=True).order_by("-id")[:2]
+    )
+    assert len(created_guests) == 2
+    assert all(guest.template_id == quantity_template.id for guest in created_guests)
+    assert all(guest.level == 1 for guest in created_guests)
+    assert not GuestSkill.objects.filter(guest_id__in=[guest.id for guest in created_guests]).exists()
+    assert Guest.objects.filter(manor_id=active_v2_profile.manor_id).count() == current_guest_count + 2
+
+
+@pytest.mark.django_db
 def test_v2_damaged_guests_without_medicine_receive_no_free_recovery(
     active_v2_profile,
     permissive_reference,
@@ -1286,6 +1352,41 @@ def test_v2_arena_execution_receipt_prevents_duplicate_maintenance_sequence(
     assert receipt.attempt_ordinal == 1
     assert receipt.maintenance_sequence_before == 0
     assert receipt.maintenance_sequence_after == 1
+
+
+@pytest.mark.django_db
+def test_v2_arena_execution_receipt_replay_preserves_no_action_reason(
+    active_v2_profile,
+) -> None:
+    operation_id = "arena-growth-no-action-replay"
+    kwargs = {
+        "now": FIXED_NOW,
+        "operation_id": operation_id,
+        "attempt_ordinal": 1,
+        "minimum_guest_count": 1,
+        "minimum_guest_level": 2,
+        "guest_rarity_cap": "purple",
+        "max_guest_level_step": 20,
+    }
+
+    first = maintenance.accelerate_virtual_player_growth(active_v2_profile.id, **kwargs)
+    replay = maintenance.accelerate_virtual_player_growth(
+        active_v2_profile.id,
+        **{**kwargs, "attempt_ordinal": 2},
+    )
+
+    assert first is AcceleratedGrowthOutcome.NO_ACTION
+    assert replay is first
+    terminal = BotSafetyMetricEvent.objects.get(
+        event_id=f"maintenance:{operation_id}:1:terminal",
+        metric_name=MAINTENANCE_ATTEMPT_METRIC,
+    )
+    assert terminal.dimensions == {
+        "result": "no_action",
+        "trigger": "arena_acceleration",
+        "reason": "strength_cap",
+    }
+    assert not BotSafetyMetricEvent.objects.filter(metric_name=HARD_VIOLATION_METRIC_NAME).exists()
 
 
 @pytest.mark.django_db
