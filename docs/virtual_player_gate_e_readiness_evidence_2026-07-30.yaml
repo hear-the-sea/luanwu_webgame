@@ -1,6 +1,6 @@
 schema_version: 1
 evidence_id: virtual_player_gate_e_readiness_2026_07_30
-recorded_at_utc: '2026-08-07T06:11:41Z'
+recorded_at_utc: '2026-08-07T06:42:22Z'
 scope:
   project_stage: development
   environment: test
@@ -23,8 +23,8 @@ environment:
   database_role: isolated_disposable_test_database
   business_database_contacted: false
 source_state:
-  git_commit: ee8d8492ebe8aa3bc1285453400deb07a8f8a806
-  git_tree: b527e12d7ce734ad016c55840834ca11ca258aba
+  git_commit: 630e62f1b06e2b65a07881000808c1982355829e
+  git_tree: 240dadf19a8e69ec2b09244ee67b02b33fe0268b
   worktree_clean: true
   allowed_dirty_paths:
   - docs/virtual_player_gate_d1_evidence_2026-07-30.yaml
@@ -44,7 +44,7 @@ source_state:
     config/settings/celery_conf.py: d70aaba355bcf8a019ec0c9cdefd370ba9188481c735bfff9d2979c8940df91e
     data/virtual_players.yaml: 0b8ad6cd09bac22478b3a421ef96992e458e34fb36b271325266c47496dbced2
     docs/virtual_player_gate_a_acceptance_config_2026-07-27.yaml: 7203141131e4db01e0c614edbdd9fcd2ca57e65a24541bca4fb99594c4950438
-    docs/virtual_player_gate_evidence_manifest_2026-07-30.yaml: bedf336814768ada73150ebe53d259e46aca20faebec2821adb99ef3c4fe143b
+    docs/virtual_player_gate_evidence_manifest_2026-07-30.yaml: 28b3461fdb5e3126c2318f225d75f82cee939618a8092f8be26d5aa34d5e8ed5
     gameplay/admin/__init__.py: ddde01d3bd0dc20609699e6d0d96de2e1d0a7305d1ab372a3e5e70a93d9456c8
     gameplay/admin/bots.py: 69067bdb94a61c1fc9c59e41b7fcd6feab8f18a3528e6672a48e6c38bc203441
     gameplay/management/commands/cleanup_expired_virtual_player_arena_baselines.py: 7ba7b8225b78cf0b36c7dafeb8ee7814cb1fcb071c4b30687290a752ec605450
@@ -114,7 +114,7 @@ source_state:
     gameplay/services/virtual_player_core/economy.py: 796193aceb4bf07ea4bc203150e0cdf61b4be4b11cf0ef7a58d91c83aca0dfcc
     gameplay/services/virtual_player_core/external_reconciliation.py: b3734b197debb89f8440790be1c066353bd474117ce9ff525f495ee4a9be81d4
     gameplay/services/virtual_player_core/gate_e_cutover_workflow.py: 0947f2b0238b5ae0a0248bc84248c5dc46fa828516e2d03624e6be412b713532
-    gameplay/services/virtual_player_core/gate_evidence.py: 41e292e6e46a8ee56597928375c773ca438328b568f9a36bee3c8ba85ec51e0b
+    gameplay/services/virtual_player_core/gate_evidence.py: 61ba7838670840c0c792a7e38bdeb227fbead006c180c471137a2a5e4c2162dd
     gameplay/services/virtual_player_core/health.py: 4d1aa5ff36f86c626a7d11adaa70420affc062692e21adfb122debac5e11a7c8
     gameplay/services/virtual_player_core/inventory_budget.py: ffd8be98115cca944f5d02c6fa720379ebc23d8def0f768f9e24aab4e107fd17
     gameplay/services/virtual_player_core/maintenance.py: 3964ccd4bdca30d2e7e21293abe7833cf7fe4d16bb8feffb33268ecc20ab1525
@@ -199,7 +199,7 @@ source_state:
     tests/test_virtual_player_external_reconciliation.py: 5f9c07eec6641b9f1a326fc0d824ae54ab1fb4667a66e8dec7f036d3de6caf1e
     tests/test_virtual_player_external_reconciliation_concurrency_integration.py: 3b5d9cd197911ccab3b19301660318133fe57544e804201f997f0a675de490c7
     tests/test_virtual_player_gate_acceptance_config.py: ddf20c3d6d114f1e5db03b6fa5475eb3e37ff700fbbfdc90a3045ba09fb5913c
-    tests/test_virtual_player_gate_activation_evidence.py: c3088b54db06ac3c30489387461ea2aaeb82eed16080e35b467a58dbcda92230
+    tests/test_virtual_player_gate_activation_evidence.py: 071749fb80a29a3a7a00eb96bd0fde0c6a13e302963f28e6cb95345d015052ec
     tests/test_virtual_player_gate_c_concurrency_integration.py: 2ed060d10f0847b40a76ad84796d0fb4f2cc7bfd723248164131bb0ff9a8e004
     tests/test_virtual_player_gate_c_persistence.py: 1350f03f529c638e5d49d8bdf072c42d168b74ee0a4ccf880922be87c882a546
     tests/test_virtual_player_gate_c_reconciliation.py: 47d3725a1ed3f92f31668bd27eeb8cbb4c97f0b16bff60f7c92d417a831249ee
@@ -257,8 +257,8 @@ maintenance_benchmark:
   matrix:
   - batch_size: 1
     concurrency: 1
-    duration_p95_ms: 78.652
-    duration_p99_ms: 110.278
+    duration_p95_ms: 77.37
+    duration_p99_ms: 106.495
     queries_max: 60
     write_queries_max: 11
     lock_wait_p95_ms: 0.0
@@ -271,8 +271,8 @@ maintenance_benchmark:
     status: passed
   - batch_size: 1
     concurrency: 2
-    duration_p95_ms: 98.637
-    duration_p99_ms: 108.951
+    duration_p95_ms: 108.622
+    duration_p99_ms: 111.251
     queries_max: 60
     write_queries_max: 11
     lock_wait_p95_ms: 0.0
@@ -285,8 +285,8 @@ maintenance_benchmark:
     status: passed
   - batch_size: 10
     concurrency: 1
-    duration_p95_ms: 369.759
-    duration_p99_ms: 369.813
+    duration_p95_ms: 354.955
+    duration_p99_ms: 364.494
     queries_max: 276
     write_queries_max: 78
     lock_wait_p95_ms: 0.0
@@ -299,8 +299,8 @@ maintenance_benchmark:
     status: passed
   - batch_size: 10
     concurrency: 2
-    duration_p95_ms: 383.669
-    duration_p99_ms: 389.839
+    duration_p95_ms: 376.565
+    duration_p99_ms: 384.188
     queries_max: 276
     write_queries_max: 76
     lock_wait_p95_ms: 0.0
@@ -313,8 +313,8 @@ maintenance_benchmark:
     status: passed
   - batch_size: 100
     concurrency: 1
-    duration_p95_ms: 3050.206
-    duration_p99_ms: 3066.221
+    duration_p95_ms: 3005.288
+    duration_p99_ms: 3012.219
     queries_max: 2418
     write_queries_max: 714
     lock_wait_p95_ms: 0.0
@@ -327,8 +327,8 @@ maintenance_benchmark:
     status: passed
   - batch_size: 100
     concurrency: 2
-    duration_p95_ms: 3036.619
-    duration_p99_ms: 3057.395
+    duration_p95_ms: 3052.587
+    duration_p99_ms: 3178.246
     queries_max: 2421
     write_queries_max: 715
     lock_wait_p95_ms: 0.0
@@ -341,21 +341,21 @@ maintenance_benchmark:
     status: passed
   canonical_execution:
     command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-e
-    execution_timestamp_utc: '2026-08-07T06:11:41Z'
-    result_summary: 44 passed in 771.21s
+    execution_timestamp_utc: '2026-08-07T06:42:22Z'
+    result_summary: 44 passed in 769.41s
   all_six_cells_passed: true
 regression_evidence:
   gate_e_contract:
     command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-e
-    result: 735 passed in 94.66s
+    result: 735 passed in 95.29s
   gate_e_real_service:
     command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-e
-    result: 44 passed in 771.21s
+    result: 44 passed in 769.41s
   canonical_gate_a:
     status: passed
-    execution_timestamp_utc: '2026-08-07T05:49:01Z'
+    execution_timestamp_utc: '2026-08-07T06:19:41Z'
     result: 176 passed
-    detail: 164 contract in 14.51s; 12 real-service in 108.42s
+    detail: 164 contract in 14.11s; 12 real-service in 107.93s
 static_gates:
   full_mypy:
     status: passed
