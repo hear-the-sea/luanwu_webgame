@@ -408,9 +408,12 @@ def _verify_source_state(
     if raw_tree is not None:
         if _GIT_OBJECT_PATTERN.fullmatch(str(raw_tree)) is None:
             raise GateEvidenceError("source_state.git_tree must be a canonical Git object id")
-        observed_tree = _current_git_tree()
+        source_commit = source_state.get("git_commit")
+        if not isinstance(source_commit, str) or _GIT_OBJECT_PATTERN.fullmatch(source_commit) is None:
+            raise GateEvidenceError("source_state.git_commit must be a canonical Git object id")
+        observed_tree = _git_tree_for_commit(source_commit)
         if observed_tree != raw_tree:
-            raise GateEvidenceError("source_state.git_tree does not match the current Git tree")
+            raise GateEvidenceError("source_state.git_tree does not match the recorded source commit tree")
 
     if source_state.get("worktree_clean") is not True:
         raise GateEvidenceError("source_state.worktree_clean must be true")
@@ -423,20 +426,20 @@ def _verify_source_state(
         raise GateEvidenceError(f"source worktree is dirty outside allowed evidence artifacts: {shown}")
 
 
-def _current_git_tree() -> str:
+def _git_tree_for_commit(commit: str) -> str:
     try:
         result = subprocess.run(
-            ["git", "rev-parse", "HEAD^{tree}"],
+            ["git", "rev-parse", f"{commit}^{{tree}}"],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
             check=True,
         )
     except (OSError, subprocess.CalledProcessError) as exc:
-        raise GateEvidenceError("cannot resolve the current Git tree") from exc
+        raise GateEvidenceError("cannot resolve the recorded source commit tree") from exc
     tree = result.stdout.strip()
     if _GIT_OBJECT_PATTERN.fullmatch(tree) is None:
-        raise GateEvidenceError("current Git tree is not a canonical object id")
+        raise GateEvidenceError("recorded source commit tree is not a canonical object id")
     return tree
 
 

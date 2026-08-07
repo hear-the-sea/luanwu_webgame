@@ -134,6 +134,18 @@ def test_gate_d1_verifier_accepts_a_commit_bound_external_artifact(tmp_path, mon
         )
 
 
+def test_gate_evidence_rejects_a_source_commit_tree_mismatch(tmp_path, monkeypatch) -> None:
+    evidence = yaml.safe_load(gate_evidence.GATE_D1_EVIDENCE_PATH.read_text(encoding="utf-8"))
+    _refresh_source_state(evidence, gate_evidence.GATE_D1_REQUIRED_SOURCE_FILES)
+    evidence["source_state"]["git_commit"] = "0" * 40
+    evidence_path = tmp_path / "gate-d1-tree-mismatch.yaml"
+    evidence_path.write_text(yaml.safe_dump(evidence), encoding="utf-8")
+    monkeypatch.setattr(gate_evidence, "_current_unclean_paths", lambda _allowed: ())
+
+    with pytest.raises(gate_evidence.GateEvidenceError, match="cannot resolve the recorded source commit tree"):
+        gate_evidence.verify_gate_d1_readiness(evidence_path=evidence_path)
+
+
 def test_gate_e_verifier_checks_an_expected_build_commit(tmp_path, monkeypatch) -> None:
     evidence = yaml.safe_load(gate_evidence.GATE_E_EVIDENCE_PATH.read_text(encoding="utf-8"))
     _refresh_source_state(evidence, gate_evidence.GATE_E_REQUIRED_SOURCE_FILES)
