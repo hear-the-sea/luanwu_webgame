@@ -1,5 +1,5 @@
 amqp==5.3.1
-asgiref==3.10.0
+asgiref==3.11.1
 attrs==25.4.0
 autobahn==25.10.2
 Automat==25.4.16
