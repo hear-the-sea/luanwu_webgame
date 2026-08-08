@@ -3,7 +3,7 @@ asgiref==3.10.0
 attrs==25.4.0
 autobahn==25.10.2
 Automat==25.4.16
-billiard==4.2.2
+billiard==4.2.4
 celery==5.5.3
 cffi==2.0.0
 channels==4.3.1
