@@ -11,12 +11,9 @@ def database_utc_sql_expression() -> str:
     return "UTC_TIMESTAMP(6)" if connection.vendor == "mysql" else "CURRENT_TIMESTAMP"
 
 
-def database_utc_now() -> datetime:
-    """Read the database clock as an aware UTC datetime."""
+def normalize_database_utc(value: object) -> datetime:
+    """Normalize a value returned by a database-clock expression."""
 
-    with connection.cursor() as cursor:
-        cursor.execute(f"SELECT {database_utc_sql_expression()}")
-        value = cursor.fetchone()[0]
     if isinstance(value, str):
         value = datetime.fromisoformat(value)
     if not isinstance(value, datetime):
@@ -26,4 +23,13 @@ def database_utc_now() -> datetime:
     return value.astimezone(UTC)
 
 
-__all__ = ["database_utc_now", "database_utc_sql_expression"]
+def database_utc_now() -> datetime:
+    """Read the database clock as an aware UTC datetime."""
+
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT {database_utc_sql_expression()}")
+        value = cursor.fetchone()[0]
+    return normalize_database_utc(value)
+
+
+__all__ = ["database_utc_now", "database_utc_sql_expression", "normalize_database_utc"]

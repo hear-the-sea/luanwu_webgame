@@ -20,6 +20,15 @@ from core.utils.infrastructure import (
     InfrastructureExceptions,
     combine_infrastructure_exceptions,
 )
+from gameplay.models import BotMaintenanceRecovery
+from gameplay.services.virtual_player_core.maintenance_completion import record_virtual_player_maintenance_completion
+from gameplay.services.virtual_player_core.recovery import (
+    classify_failure,
+    clear_recovery_failure,
+    exclude_blocked_entity_recoveries,
+    record_recovery_failure,
+    recovery_circuit_is_open,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +47,28 @@ def _dedup_timeout_for_remaining(remaining: int) -> int:
     return max(int(remaining) + 60, 60)
 
 
+def _guest_recovery_key(guest_id: int) -> str:
+    return f"guest:{int(guest_id)}"
+
+
+def _record_guest_training_failure(
+    *,
+    guest_id: int,
+    error: BaseException,
+    now,
+    phase: str,
+) -> None:
+    record_recovery_failure(
+        scope=BotMaintenanceRecovery.Scope.GUEST,
+        entity_key=_guest_recovery_key(guest_id),
+        failure_code=classify_failure(error),
+        error=error,
+        operation_id=f"guest-training-{int(guest_id)}-{int(now.timestamp())}"[:64],
+        payload={"guest_id": int(guest_id), "phase": str(phase)},
+        now=now,
+    )
+
+
 @shared_task(name="guests.complete_training", bind=True, max_retries=2, default_retry_delay=30)
 def complete_guest_training(self, guest_id: int) -> str:
     from guests.models import Guest
@@ -49,6 +80,8 @@ def complete_guest_training(self, guest_id: int) -> str:
             logger.warning("Guest %d not found", guest_id)
             return "not_found"
         now = timezone.now()
+        if recovery_circuit_is_open(path="guest", now=now):
+            return "recovery_required"
         if guest.training_complete_at and guest.training_complete_at > now:
             remaining = math.ceil((guest.training_complete_at - now).total_seconds())
             if remaining > 0:
@@ -69,11 +102,31 @@ def complete_guest_training(self, guest_id: int) -> str:
                     )
                     raise TaskRescheduleError("complete_guest_training调度失败")
                 return "rescheduled"
+        origin_completed_at = guest.training_complete_at
         finalized = finalize_guest_training(guest, now=now)
+        if finalized:
+            record_virtual_player_maintenance_completion(
+                manor_id=getattr(guest, "manor_id", None),
+                domain_event_kind="guest_training",
+                domain_object_id=int(guest_id),
+                origin_completed_at=origin_completed_at,
+            )
         return "completed" if finalized else "skipped"
     except GUEST_TASK_RETRY_EXCEPTIONS as exc:
         logger.exception("Failed to complete guest training %d: %s", guest_id, exc)
         raise self.retry(exc=exc)
+    except TaskRescheduleError:
+        raise
+    except Exception as exc:
+        now = timezone.now()
+        _record_guest_training_failure(
+            guest_id=int(guest_id),
+            error=exc,
+            now=now,
+            phase="complete_task",
+        )
+        logger.exception("Guest training completion was quarantined for guest %d", guest_id)
+        return "recovery_required"
 
 
 @shared_task(name="guests.scan_training")
@@ -94,41 +147,95 @@ def scan_guest_training(limit: int = 200) -> int:
 
     now = timezone.now()
     batch_limit = max(0, int(limit))
-    due_guests = list(
+    if recovery_circuit_is_open(path="guest", now=now):
+        logger.warning("Guest training recovery circuit is open; preserving due training rows")
+        return 0
+    due_query = (
         Guest.objects.select_related("manor")
         .filter(training_complete_at__isnull=False, training_complete_at__lte=now)
-        .order_by("training_complete_at", "id")[:batch_limit]
+        .order_by("training_complete_at", "id")
+    )
+    due_guests = list(
+        exclude_blocked_entity_recoveries(
+            due_query,
+            scope=BotMaintenanceRecovery.Scope.GUEST,
+            now=now,
+        )[:batch_limit]
     )
     count = 0
     for guest in due_guests:
         try:
-            if finalize_guest_training(guest, now=now):
+            origin_completed_at = guest.training_complete_at
+            finalized = finalize_guest_training(guest, now=now)
+            if finalized:
                 count += 1
+                record_virtual_player_maintenance_completion(
+                    manor_id=getattr(guest, "manor_id", None),
+                    domain_event_kind="guest_training",
+                    domain_object_id=int(guest.id),
+                    origin_completed_at=origin_completed_at,
+                )
+            clear_recovery_failure(
+                scope=BotMaintenanceRecovery.Scope.GUEST,
+                entity_key=_guest_recovery_key(int(guest.id)),
+                now=now,
+            )
         except GUEST_TASK_RETRY_EXCEPTIONS:
-            # Per-guest failure should not abort the scan; the next scan cycle
-            # will retry any guests that were skipped.
+            # A database/broker outage is a scan-level infrastructure failure,
+            # not a poisoned Guest.  Let Celery retry the task; successful
+            # guests before this point are already committed and the
+            # finalize operation is idempotent.
             logger.exception("Failed to finalize guest training %d", guest.id)
+            raise
+        except Exception as exc:
+            _record_guest_training_failure(
+                guest_id=int(guest.id),
+                error=exc,
+                now=now,
+                phase="finalize_scan",
+            )
+            logger.exception("Guest training finalize was isolated for guest %d", guest.id)
 
     remaining = batch_limit - len(due_guests)
     if remaining <= 0:
         return count
 
-    orphan_guests = list(
+    orphan_query = (
         Guest.objects.select_related("template")
         .filter(
-            manor__bot_profile__isnull=True,
             status=GuestStatus.IDLE,
             level__lt=int(GUEST.MAX_LEVEL),
             training_complete_at__isnull=True,
         )
-        .order_by("id")[:remaining]
+        .order_by("id")
+    )
+    orphan_guests = list(
+        exclude_blocked_entity_recoveries(
+            orphan_query,
+            scope=BotMaintenanceRecovery.Scope.GUEST,
+            now=now,
+        )[:remaining]
     )
     for guest in orphan_guests:
         try:
             if ensure_auto_training(guest):
                 count += 1
+            clear_recovery_failure(
+                scope=BotMaintenanceRecovery.Scope.GUEST,
+                entity_key=_guest_recovery_key(int(guest.id)),
+                now=now,
+            )
         except GUEST_TASK_RETRY_EXCEPTIONS:
             logger.exception("Failed to reconcile guest training %d", guest.id)
+            raise
+        except Exception as exc:
+            _record_guest_training_failure(
+                guest_id=int(guest.id),
+                error=exc,
+                now=now,
+                phase="orphan_scan",
+            )
+            logger.exception("Guest training reconciliation was isolated for guest %d", guest.id)
     return count
 
 
@@ -167,7 +274,15 @@ def complete_guest_recruitment(self, recruitment_id: int) -> str:
                     raise TaskRescheduleError("complete_guest_recruitment调度失败")
                 return "rescheduled"
 
+        origin_completed_at = getattr(recruitment, "complete_at", None)
         finalized = finalize_guest_recruitment(recruitment, now=now, send_notification=True)
+        if finalized:
+            record_virtual_player_maintenance_completion(
+                manor_id=getattr(recruitment, "manor_id", None),
+                domain_event_kind="guest_recruitment",
+                domain_object_id=int(recruitment_id),
+                origin_completed_at=origin_completed_at,
+            )
         return "completed" if finalized else "skipped"
     except GUEST_TASK_RETRY_EXCEPTIONS as exc:
         logger.exception("Failed to complete guest recruitment %d: %s", recruitment_id, exc)
@@ -199,8 +314,16 @@ def scan_guest_recruitments(limit: int = 200) -> int:
     count = 0
     for recruitment in qs:
         try:
-            if finalize_guest_recruitment(recruitment, now=now, send_notification=True):
+            origin_completed_at = getattr(recruitment, "complete_at", None)
+            finalized = finalize_guest_recruitment(recruitment, now=now, send_notification=True)
+            if finalized:
                 count += 1
+                record_virtual_player_maintenance_completion(
+                    manor_id=getattr(recruitment, "manor_id", None),
+                    domain_event_kind="guest_recruitment",
+                    domain_object_id=int(recruitment.id),
+                    origin_completed_at=origin_completed_at,
+                )
         except GUEST_TASK_RETRY_EXCEPTIONS:
             # Per-recruitment failure should not abort the scan; the next cycle
             # will retry any recruitments that were skipped.
@@ -303,8 +426,14 @@ def process_daily_loyalty(self) -> str:
             Q(loyalty_processed_for_date__lt=today) | Q(loyalty_processed_for_date__isnull=True)
         )
 
-        paid_qs = base_qs.filter(id__in=paid_guest_ids_qs)
-        unpaid_qs = base_qs.exclude(id__in=paid_guest_ids_qs)
+        # A guest owes no salary on its creation date. The first loyalty
+        # settlement after recruitment therefore records processing without a
+        # gain or loss; normal salary-based settlement starts the next day.
+        creation_day_exempt_qs = base_qs.filter(created_at__date__gte=yesterday)
+        salary_eligible_qs = base_qs.filter(created_at__date__lt=yesterday)
+
+        paid_qs = salary_eligible_qs.filter(id__in=paid_guest_ids_qs)
+        unpaid_qs = salary_eligible_qs.exclude(id__in=paid_guest_ids_qs)
 
         increased_count = paid_qs.update(
             loyalty=Least(100, F("loyalty") + 1),
@@ -312,6 +441,9 @@ def process_daily_loyalty(self) -> str:
         )
         decreased_count = unpaid_qs.update(
             loyalty=Greatest(0, F("loyalty") - 1),
+            loyalty_processed_for_date=today,
+        )
+        exempt_count = creation_day_exempt_qs.update(
             loyalty_processed_for_date=today,
         )
 
@@ -325,7 +457,11 @@ def process_daily_loyalty(self) -> str:
         # those querysets would become empty if evaluated again.
         # So for defections we re-select candidates by `loyalty_processed_for_date=today`.
         defection_candidate_ids = (
-            Guest.objects.filter(loyalty_processed_for_date=today, loyalty__lt=30)
+            Guest.objects.filter(
+                created_at__date__lt=yesterday,
+                loyalty_processed_for_date=today,
+                loyalty__lt=30,
+            )
             .exclude(id__in=paid_guest_ids_qs)
             .values_list("id", flat=True)
         )
@@ -341,7 +477,7 @@ def process_daily_loyalty(self) -> str:
         if batch:
             defection_count += _process_defection_batch(batch, create_message=create_message)
 
-        updated_count = increased_count + decreased_count
+        updated_count = increased_count + decreased_count + exempt_count
         return f"处理了 {updated_count} 个门客的忠诚度，{defection_count} 个门客叛逃"
     except GUEST_TASK_RETRY_EXCEPTIONS as exc:
         logger.exception("Failed to process daily loyalty: %s", exc)

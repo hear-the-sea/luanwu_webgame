@@ -6,25 +6,37 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 import gameplay.tasks.virtual_players as virtual_player_tasks
-from gameplay.models import BotPopulationRecomputeDemand, BotProfile, BotRuntimeRoutingState
-from gameplay.services.virtual_player_core import bootstrap, population_runtime
+from gameplay.models import (
+    ArenaTournament,
+    ArenaVirtualDemand,
+    ArenaVirtualReserveMember,
+    BotPopulationRecomputeDemand,
+    BotProfile,
+    BotRuntimeRoutingState,
+)
+from gameplay.services.arena import virtual_reserve_pool
+from gameplay.services.virtual_player_core import arena_population, bootstrap, population_runtime, runtime_assessment
 from gameplay.services.virtual_player_core.contracts import PopulationMutationStatus
 from gameplay.services.virtual_player_core.policy_registry import release_configured_policy_operation
+from gameplay.services.virtual_player_core.population import ArenaHandoffSupply, arena_materialization_deficit
 from gameplay.services.virtual_player_core.population_runtime import (
     PopulationCellReconcileStatus,
     PopulationMutationResult,
     merge_population_recompute_demand,
 )
+from tests.arena_services.test_virtual_backfill import _add_real_arena_entry, _create_bot_profile
 
 pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture
 def released_v2_policy(db):
-    return release_configured_policy_operation(version=1, apply=True)
+    return release_configured_policy_operation(version=2, apply=True)
 
 
 @contextmanager
@@ -37,7 +49,7 @@ def _activate_consumer(monkeypatch) -> None:
         key=BotRuntimeRoutingState.GLOBAL_KEY,
         defaults={
             "bootstrap_mode": BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
-            "maintenance_mode": (BotRuntimeRoutingState.MaintenanceMode.LEGACY_BEFORE_GATE),
+            "maintenance_mode": BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
         },
     )
     monkeypatch.setattr(
@@ -69,6 +81,31 @@ def _patch_bootstrap_builder(monkeypatch) -> None:
     )
 
 
+def _enroll_test_profile_v2(profile: BotProfile, *, region: str) -> BotProfile:
+    now = timezone.now()
+    profile.manor.region = region
+    profile.manor.save(update_fields=["region"])
+    profile.engine_version = 2
+    profile.rng_version = 1
+    profile.plan_schema_version = 1
+    profile.policy_version = 2
+    profile.policy_checksum = "a" * 64
+    profile.last_strength_increase_at = now
+    profile.v2_enrolled_at = now
+    profile.save(
+        update_fields=[
+            "engine_version",
+            "rng_version",
+            "plan_schema_version",
+            "policy_version",
+            "policy_checksum",
+            "last_strength_increase_at",
+            "v2_enrolled_at",
+        ]
+    )
+    return profile
+
+
 def test_active_arena_shortage_expands_derived_v2_capacity_but_not_explicit_hard_cap(
     monkeypatch,
     settings,
@@ -84,11 +121,14 @@ def test_active_arena_shortage_expands_derived_v2_capacity_but_not_explicit_hard
     }
     _activate_consumer(monkeypatch)
     monkeypatch.setattr(
-        population_runtime,
+        arena_population,
         "active_arena_population_activations",
         lambda: (SimpleNamespace(region="overseas", prestige=100, needed=4),),
     )
     config = population_runtime._v2_population_runtime_config()
+    # Remove the repository deployment guard so this first half exercises the
+    # derived-capacity path; the second half below verifies an explicit cap.
+    config["population"].pop("hard_cap", None)
 
     derived = population_runtime._build_population_plan(
         config,
@@ -116,7 +156,7 @@ def test_active_arena_population_recovery_creates_a_missing_overseas_cell_once(m
     now = timezone.now()
     _activate_consumer(monkeypatch)
     monkeypatch.setattr(
-        population_runtime,
+        arena_population,
         "active_arena_population_activations",
         lambda: (SimpleNamespace(region="overseas", prestige=100, needed=4),),
     )
@@ -128,6 +168,432 @@ def test_active_arena_population_recovery_creates_a_missing_overseas_cell_once(m
     assert repeated == ()
     demand = BotPopulationRecomputeDemand.objects.get(region="overseas", prestige_band="newbie")
     assert demand.requested_revision == 1
+
+
+def test_paused_maintenance_suppresses_v2_population_activation_and_resume_requeues(
+    monkeypatch,
+    settings,
+) -> None:
+    now = timezone.now()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "region_floor": 0,
+            "region_active_multiplier": 0,
+            "global_floor": 0,
+            "global_active_multiplier": 0,
+        },
+        "prestige_bands": {"newbie": [0, 500]},
+    }
+    routing = BotRuntimeRoutingState.objects.create(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        calibration_routes=[],
+    )
+    monkeypatch.setattr(
+        arena_population,
+        "active_arena_population_activations",
+        lambda: (SimpleNamespace(region="overseas", prestige=100, needed=1),),
+    )
+
+    assert population_runtime.ensure_active_arena_population_recompute_demands(now=now) == ()
+    assert not BotPopulationRecomputeDemand.objects.exists()
+
+    routing.maintenance_mode = BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+    routing.save(update_fields=["maintenance_mode"])
+
+    resumed = population_runtime.ensure_active_arena_population_recompute_demands(now=now)
+    assert [(row.region, row.prestige_band) for row in resumed] == [("overseas", "newbie")]
+
+
+def test_routing_unavailable_suppresses_population_revision_and_periodic_scan_recovers(
+    monkeypatch,
+    settings,
+) -> None:
+    now = timezone.now()
+    settings.VIRTUAL_PLAYER_CONFIG = {
+        "population": {
+            "region_floor": 0,
+            "region_active_multiplier": 0,
+            "global_floor": 0,
+            "global_active_multiplier": 0,
+        },
+        "prestige_bands": {"newbie": [0, 500]},
+    }
+    BotRuntimeRoutingState.objects.create(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        calibration_routes=[],
+    )
+    monkeypatch.setattr(
+        arena_population,
+        "active_arena_population_activations",
+        lambda: (SimpleNamespace(region="overseas", prestige=100, needed=1),),
+    )
+    routing_available = False
+    read_routing = runtime_assessment.read_virtual_player_routing
+
+    def conditional_routing():
+        if not routing_available:
+            raise runtime_assessment.RuntimeRoutingError("routing unavailable")
+        return read_routing()
+
+    monkeypatch.setattr(runtime_assessment, "read_virtual_player_routing", conditional_routing)
+
+    assert population_runtime.ensure_active_arena_population_recompute_demands(now=now) == ()
+    assert not BotPopulationRecomputeDemand.objects.exists()
+
+    routing_available = True
+    resumed = population_runtime.ensure_active_arena_population_recompute_demands(now=now)
+
+    assert [(row.region, row.prestige_band, row.requested_revision) for row in resumed] == [("overseas", "newbie", 1)]
+
+
+def test_arena_admission_funnel_observation_is_cell_scoped(monkeypatch, caplog) -> None:
+    now = timezone.now()
+    monkeypatch.setattr(
+        arena_population,
+        "active_arena_population_funnel_snapshots",
+        lambda **_kwargs: (
+            SimpleNamespace(
+                region="overseas",
+                prestige=100,
+                demand_count=2,
+                materialization_need=3,
+                raw_materialization_need=5,
+                suppressed_materialization_need=2,
+                warm_target_count=8,
+                replacement_target_count=12,
+                admission_attempt_high_water=7,
+                admission_high_water_lag_count=0,
+                ready_count=1,
+                training_count=3,
+                exhausted_count=2,
+                growth_attempt_count=9,
+                growth_applied_count=4,
+                effective_progress_count=2,
+                selected_growth_bps_total=700,
+                selected_growth_bps_max=300,
+                invalid_growth_budget_count=0,
+                oldest_ready_member_age_seconds=60,
+                oldest_training_member_age_seconds=600,
+                oldest_exhausted_member_age_seconds=900,
+                guard_reason_counts=(("no_effective_progress", 1),),
+                retry_reason_counts=(("profile_busy", 2),),
+            ),
+        ),
+    )
+    monkeypatch.setattr(
+        arena_population,
+        "arena_handoff_supply_by_cell",
+        lambda *_args, **_kwargs: {
+            ("overseas", "newbie"): ArenaHandoffSupply(available=2),
+        },
+    )
+    caplog.set_level("INFO", logger=arena_population.logger.name)
+
+    observations = arena_population.observe_arena_population_funnel(
+        {"prestige_bands": {"newbie": [0, 500]}},
+        maintained=object(),
+        target_based=True,
+        now=now,
+    )
+
+    assert len(observations) == 1
+    observation = observations[0]
+    assert observation.population_materialization_additional == 1
+    assert observation.guard_reason_counts == (("no_effective_progress", 1),)
+    record = next(record for record in caplog.records if record.event == "arena_virtual_admission_funnel")
+    assert record.region == "overseas"
+    assert record.prestige_band == "newbie"
+    assert record.effective_progress_ratio == 0.5
+    assert not hasattr(record, "demand_id")
+    assert not hasattr(record, "profile_id")
+
+
+def test_arena_handoff_supply_counts_only_unleased_eligible_profiles(game_data) -> None:
+    tournament = ArenaTournament.objects.create(status=ArenaTournament.Status.RECRUITING, player_limit=2)
+    demand = ArenaVirtualDemand.objects.create(
+        tournament=tournament,
+        status=ArenaVirtualDemand.Status.ACTIVE,
+        missing_entry_count=1,
+        reserve_target_count=2,
+        warm_target_count=2,
+        max_reserve_target_count=2,
+    )
+    leased_profile = _enroll_test_profile_v2(
+        _create_bot_profile("population_pipeline_leased"),
+        region="overseas",
+    )
+    unleased_profile = _enroll_test_profile_v2(
+        _create_bot_profile("population_pipeline_unleased"),
+        region="overseas",
+    )
+    abandoned_profile = _enroll_test_profile_v2(
+        _create_bot_profile("population_pipeline_abandoned"),
+        region="overseas",
+    )
+    abandoned_profile.state = BotProfile.State.ABANDONED
+    abandoned_profile.save(update_fields=["state"])
+    ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=leased_profile,
+        state=ArenaVirtualReserveMember.State.TRAINING,
+    )
+    ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=abandoned_profile,
+        state=ArenaVirtualReserveMember.State.READY,
+    )
+    terminal_tournament = ArenaTournament.objects.create(status=ArenaTournament.Status.COMPLETED, player_limit=2)
+    terminal_demand = ArenaVirtualDemand.objects.create(
+        tournament=terminal_tournament,
+        status=ArenaVirtualDemand.Status.SATISFIED,
+        missing_entry_count=0,
+        reserve_target_count=0,
+        warm_target_count=0,
+        max_reserve_target_count=0,
+    )
+    terminal_profile = _enroll_test_profile_v2(
+        _create_bot_profile("population_pipeline_terminal"),
+        region="overseas",
+    )
+    ArenaVirtualReserveMember.objects.create(
+        demand=terminal_demand,
+        profile=terminal_profile,
+        state=ArenaVirtualReserveMember.State.READY,
+    )
+
+    config = {"prestige_bands": {"newbie": [0, 500]}}
+    with CaptureQueriesContext(connection) as captured:
+        supply = arena_population.arena_handoff_supply_by_cell(
+            BotProfile.objects.filter(
+                pk__in=[leased_profile.pk, unleased_profile.pk, abandoned_profile.pk, terminal_profile.pk]
+            ),
+            arena_demands={("overseas", "newbie"): 2},
+            config=config,
+            target_based=True,
+        )
+
+    # The handoff check validates active demand/member/reference data and two
+    # bounded guest prefetches in fixed-size batches. Keep this bound
+    # independent of the number of demands.
+    assert 1 <= len(captured) <= 11
+    assert supply[("overseas", "newbie")].available == 1
+
+
+def test_arena_handoff_supply_batches_demands_and_assigns_each_profile_once(
+    game_data,
+    monkeypatch,
+) -> None:
+    for index in range(2):
+        tournament = ArenaTournament.objects.create(
+            status=ArenaTournament.Status.RUNNING,
+            player_limit=2,
+        )
+        reference = _add_real_arena_entry(
+            tournament,
+            f"population_handoff_reference_{index}",
+            attack=200,
+            defense=200,
+            max_hp=2000,
+        )
+        reference.manor.region = "overseas"
+        reference.manor.save(update_fields=["region"])
+        ArenaVirtualDemand.objects.create(
+            tournament=tournament,
+            status=ArenaVirtualDemand.Status.ACTIVE,
+            target_guest_count=1,
+            target_team_power=600,
+            missing_entry_count=1,
+            reserve_target_count=1,
+            warm_target_count=1,
+            max_reserve_target_count=1,
+        )
+    eligible = _enroll_test_profile_v2(
+        _create_bot_profile(
+            "population_handoff_live_cap_eligible",
+            guest_stats=[(150, 150, 50)],
+        ),
+        region="overseas",
+    )
+    rejected = _enroll_test_profile_v2(
+        _create_bot_profile(
+            "population_handoff_live_cap_rejected",
+            guest_stats=[(150, 150, 50)],
+        ),
+        region="overseas",
+    )
+    monkeypatch.setattr(
+        arena_population,
+        "is_virtual_profile_arena_match_eligible",
+        lambda profile, **_kwargs: profile.id == eligible.id,
+    )
+
+    with CaptureQueriesContext(connection) as captured:
+        supply = arena_population.arena_handoff_supply_by_cell(
+            BotProfile.objects.filter(pk__in=[eligible.pk, rejected.pk]),
+            arena_demands={("overseas", "newbie"): 2},
+            config={"prestige_bands": {"newbie": [0, 500]}},
+            target_based=True,
+        )
+
+    assert len(captured) <= 11
+    assert supply[("overseas", "newbie")].available == 1
+
+
+@pytest.mark.parametrize(
+    ("guest_stats", "target_guest_count"),
+    (
+        ([(80, 80, 20)], 1),
+        ([(150, 150, 50)], 2),
+    ),
+    ids=("power-growth", "guest-recruitment"),
+)
+def test_arena_handoff_counts_reachable_training_without_materializing(
+    game_data,
+    monkeypatch,
+    guest_stats,
+    target_guest_count,
+) -> None:
+    tournament = ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RUNNING,
+        player_limit=2,
+    )
+    reference = _add_real_arena_entry(
+        tournament,
+        f"population_handoff_training_reference_{target_guest_count}",
+        attack=200,
+        defense=200,
+        max_hp=2000,
+    )
+    reference.manor.region = "overseas"
+    reference.manor.save(update_fields=["region"])
+    ArenaVirtualDemand.objects.create(
+        tournament=tournament,
+        status=ArenaVirtualDemand.Status.ACTIVE,
+        target_guest_count=target_guest_count,
+        target_team_power=600,
+        missing_entry_count=1,
+        reserve_target_count=1,
+        warm_target_count=1,
+        max_reserve_target_count=1,
+    )
+    profile = _enroll_test_profile_v2(
+        _create_bot_profile(
+            f"population_handoff_training_{target_guest_count}",
+            guest_stats=guest_stats,
+        ),
+        region="overseas",
+    )
+    monkeypatch.setattr(
+        arena_population,
+        "is_virtual_profile_arena_match_eligible",
+        lambda *_args, **_kwargs: True,
+    )
+
+    supply = arena_population.arena_handoff_supply_by_cell(
+        BotProfile.objects.filter(pk=profile.pk),
+        arena_demands={("overseas", "newbie"): 1},
+        config={"prestige_bands": {"newbie": [0, 500]}},
+        target_based=True,
+        candidate_engine_version=2,
+        training_admission_allowed=True,
+    )
+
+    assert supply[("overseas", "newbie")].available == 1
+    assert arena_materialization_deficit(required_handoff=1, handoff_supply=supply[("overseas", "newbie")]) == 0
+
+
+def test_arena_handoff_uses_maximum_matching_for_general_and_specialized_candidates(
+    game_data,
+    monkeypatch,
+) -> None:
+    demands: list[ArenaVirtualDemand] = []
+    for index in range(2):
+        tournament = ArenaTournament.objects.create(
+            status=ArenaTournament.Status.RUNNING,
+            player_limit=2,
+        )
+        reference = _add_real_arena_entry(
+            tournament,
+            f"population_handoff_matching_reference_{index}",
+            attack=200,
+            defense=200,
+            max_hp=2000,
+        )
+        reference.manor.region = "overseas"
+        reference.manor.save(update_fields=["region"])
+        demands.append(
+            ArenaVirtualDemand.objects.create(
+                tournament=tournament,
+                status=ArenaVirtualDemand.Status.ACTIVE,
+                target_guest_count=1,
+                target_team_power=600,
+                missing_entry_count=1,
+                reserve_target_count=1,
+                warm_target_count=1,
+                max_reserve_target_count=1,
+            )
+        )
+    general = _enroll_test_profile_v2(
+        _create_bot_profile("population_handoff_matching_general"),
+        region="overseas",
+    )
+    specialized = _enroll_test_profile_v2(
+        _create_bot_profile("population_handoff_matching_specialized"),
+        region="overseas",
+    )
+    first_demand_id = demands[0].id
+
+    def assess_candidate(demand, profile):
+        eligible = profile.id == general.id or demand.id == first_demand_id
+        return SimpleNamespace(
+            disposition=(
+                virtual_reserve_pool.ArenaReserveCandidateDisposition.READY
+                if eligible
+                else virtual_reserve_pool.ArenaReserveCandidateDisposition.REJECTED
+            )
+        )
+
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "assess_arena_reserve_candidate",
+        assess_candidate,
+    )
+    monkeypatch.setattr(
+        arena_population,
+        "is_virtual_profile_arena_match_eligible",
+        lambda *_args, **_kwargs: True,
+    )
+
+    supply = arena_population.arena_handoff_supply_by_cell(
+        BotProfile.objects.filter(pk__in=[general.pk, specialized.pk]),
+        arena_demands={("overseas", "newbie"): 2},
+        config={"prestige_bands": {"newbie": [0, 500]}},
+        target_based=True,
+        candidate_engine_version=2,
+    )
+
+    assert supply[("overseas", "newbie")].available == 2
+
+
+def test_arena_population_handoff_uses_region_scoped_deduplication(monkeypatch):
+    dispatch = Mock(return_value=True)
+    task = object()
+    monkeypatch.setattr(arena_population.current_app, "signature", lambda name: task)
+    monkeypatch.setattr(arena_population, "safe_apply_async_with_dedup", dispatch)
+
+    assert arena_population.queue_arena_population_handoff(region="overseas") is True
+    assert arena_population.queue_arena_population_handoff(region="overseas") is True
+
+    assert dispatch.call_count == 2
+    first_call = dispatch.call_args_list[0].kwargs
+    second_call = dispatch.call_args_list[1].kwargs
+    assert first_call["dedup_key"] == second_call["dedup_key"] == "virtual-player-arena-population-handoff:overseas"
+    assert first_call["dedup_timeout"] == arena_population.ARENA_POPULATION_HANDOFF_DEDUP_SECONDS
+    assert first_call["args"] == ["overseas"]
 
 
 def test_routing_inactive_preserves_pending_demand() -> None:
@@ -258,10 +724,11 @@ def test_population_consumer_materializes_a_real_v2_profile_from_durable_demand(
 ) -> None:
     now = timezone.now()
     _activate_consumer(monkeypatch)
-    arena_wakeup = Mock(return_value=1)
+    arena_handoff = Mock(return_value=True)
     monkeypatch.setattr(
-        "gameplay.services.arena.virtual_reserve_demand.wake_active_arena_demands_for_population_region",
-        arena_wakeup,
+        arena_population,
+        "queue_arena_population_handoff",
+        arena_handoff,
     )
     merge_population_recompute_demand(
         region=region,
@@ -283,8 +750,7 @@ def test_population_consumer_materializes_a_real_v2_profile_from_durable_demand(
     assert profile.manor.region == region
     assert profile.current_prestige_band == "newbie"
     assert profile.target_prestige_band == "newbie"
-    arena_wakeup.assert_called_once()
-    assert arena_wakeup.call_args.kwargs["region"] == region
+    arena_handoff.assert_called_once_with(region=region)
 
 
 def test_ownership_loss_after_materialization_rolls_back_the_cell_write(
@@ -630,7 +1096,7 @@ def _create_retired_profile(
             {
                 "rng_version": 1,
                 "plan_schema_version": 1,
-                "policy_version": 1,
+                "policy_version": 2,
                 "policy_checksum": "a" * 64,
                 "last_strength_increase_at": now,
                 "v2_enrolled_at": now,
@@ -798,7 +1264,7 @@ def test_periodic_current_band_sync_selects_only_mismatched_v2_profiles(
     now = timezone.now()
     BotRuntimeRoutingState.objects.create(
         bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
-        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.LEGACY_BEFORE_GATE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
     )
     correct = _create_retired_profile(
         django_user_model,

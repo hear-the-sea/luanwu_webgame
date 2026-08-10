@@ -99,6 +99,9 @@ def test_process_daily_loyalty_increases_paid_guests_and_decreases_unpaid_guests
     )
     paid_guest = Guest.objects.create(manor=manor, template=template, force=10, intellect=10, loyalty=50)
     unpaid_guest = Guest.objects.create(manor=manor, template=template, force=10, intellect=10, loyalty=50)
+    Guest.objects.filter(pk__in=[paid_guest.pk, unpaid_guest.pk]).update(
+        created_at=timezone.now() - timedelta(days=3),
+    )
 
     today = timezone.localdate()
     yesterday = today - timedelta(days=1)
@@ -113,3 +116,51 @@ def test_process_daily_loyalty_increases_paid_guests_and_decreases_unpaid_guests
     assert paid_guest.loyalty_processed_for_date == today
     assert unpaid_guest.loyalty_processed_for_date == today
     assert "处理了 2 个门客的忠诚度" in result
+
+
+@pytest.mark.django_db
+def test_process_daily_loyalty_exempts_guests_created_during_the_unpaid_period(
+    django_user_model,
+    monkeypatch,
+):
+    user = django_user_model.objects.create_user(username="daily_loyalty_new_guest", password="pass123")
+    manor = ensure_manor(user)
+    template = GuestTemplate.objects.create(
+        key="daily_loyalty_new_guest_tpl",
+        name="新招募免薪门客",
+        rarity=GuestRarity.GRAY,
+        base_attack=10,
+        base_defense=10,
+    )
+    recruited_yesterday = Guest.objects.create(
+        manor=manor,
+        template=template,
+        force=10,
+        intellect=10,
+        loyalty=20,
+    )
+    recruited_today = Guest.objects.create(
+        manor=manor,
+        template=template,
+        force=10,
+        intellect=10,
+        loyalty=20,
+    )
+    Guest.objects.filter(pk=recruited_yesterday.pk).update(
+        created_at=timezone.now() - timedelta(days=1),
+    )
+    monkeypatch.setattr(
+        guest_tasks,
+        "_should_defect",
+        lambda *_args, **_kwargs: pytest.fail("newly recruited guests must not enter defection sampling"),
+    )
+
+    result = guest_tasks.process_daily_loyalty.run()
+
+    today = timezone.localdate()
+    recruited_yesterday.refresh_from_db(fields=["loyalty", "loyalty_processed_for_date"])
+    recruited_today.refresh_from_db(fields=["loyalty", "loyalty_processed_for_date"])
+    assert recruited_yesterday.loyalty == recruited_today.loyalty == 20
+    assert recruited_yesterday.loyalty_processed_for_date == today
+    assert recruited_today.loyalty_processed_for_date == today
+    assert "处理了 2 个门客的忠诚度，0 个门客叛逃" == result

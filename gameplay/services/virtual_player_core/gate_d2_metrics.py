@@ -140,6 +140,9 @@ def _guest_arena_power(profile: GateD2RawProfile) -> int:
             force=guest.force,
             intellect=guest.intellect,
             defense=guest.defense,
+            # Gate D2 is a retired static artifact schema and does not carry
+            # the live guest agility field; current runtime paths pass it.
+            agility=0,
             hp_bonus=guest.hp_bonus,
             archetype=guest.archetype,
             base_hp=guest.base_hp,

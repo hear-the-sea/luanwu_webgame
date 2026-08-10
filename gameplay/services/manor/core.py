@@ -22,6 +22,7 @@ from core.exceptions import BuildingConcurrentUpgradeLimitError, BuildingMaxLeve
 from core.utils.imports import is_missing_target_import
 from core.utils.infrastructure import NOTIFICATION_INFRASTRUCTURE_EXCEPTIONS
 from core.utils.time_scale import scale_duration
+from gameplay.services.action_points import ACTION_POINT_BUILDING_UPGRADE_COST, consume_action_points
 from gameplay.services.manor.bootstrap import ManorNotFoundError as _ManorNotFoundError
 from gameplay.services.manor.bootstrap import (
     _deliver_active_global_mail_campaigns as __deliver_active_global_mail_campaigns,
@@ -508,6 +509,86 @@ def apply_building_upgrade_locked(
     )
 
 
+def apply_building_upgrade_free_locked(
+    manor: Manor,
+    building: Building,
+    expected_quote: BuildingUpgradeQuote,
+    *,
+    buildings: Sequence[Building] | None = None,
+    technology_levels: Mapping[str, int] | None = None,
+) -> BuildingUpgradeResult:
+    """Synchronously complete one explicitly subsidized upgrade.
+
+    This primitive deliberately has no normal-economy side effects.  Callers
+    must establish the business scope before entering it; currently the only
+    supported caller is the Arena replenishment path for Juxianzhuang.
+    """
+
+    quote = _assert_current_building_upgrade_quote_locked(
+        manor,
+        building,
+        expected_quote,
+        buildings=buildings,
+        technology_levels=technology_levels,
+    )
+    previous_level, level = _apply_building_upgrade_result_locked(
+        manor,
+        building,
+        completed_at=timezone.now(),
+    )
+    return BuildingUpgradeResult(
+        manor_id=int(manor.pk),
+        building_id=int(building.pk),
+        building_key=quote.building_key,
+        previous_level=previous_level,
+        level=level,
+        resource_cost=(),
+        prestige_gained=0,
+        silver_capacity=int(manor.silver_capacity),
+        grain_capacity=int(manor.grain_capacity),
+    )
+
+
+def start_building_upgrade_locked(
+    manor: Manor,
+    building: Building,
+    expected_quote: BuildingUpgradeQuote,
+    *,
+    sync_production: bool = True,
+    buildings: Sequence[Building] | None = None,
+    technology_levels: Mapping[str, int] | None = None,
+    now: datetime | None = None,
+) -> Building:
+    """Charge and start one building timer without completing its level.
+
+    This is the write-side primitive for automated maintenance.  The normal
+    user-facing ``start_upgrade`` flow has action-point semantics, while V2
+    maintenance already owns its action budget and therefore uses this
+    primitive directly.  The completion task remains the only owner of the
+    level increment.
+    """
+
+    quote = _assert_current_building_upgrade_quote_locked(
+        manor,
+        building,
+        expected_quote,
+        buildings=buildings,
+        technology_levels=technology_levels,
+    )
+    _consume_building_upgrade_quote_locked(
+        manor,
+        quote,
+        sync_production=sync_production,
+    )
+    current_time = now or timezone.now()
+    building.upgrade_complete_at = current_time + timedelta(seconds=quote.duration_seconds)
+    building.is_upgrading = True
+    building.save(update_fields=["upgrade_complete_at", "is_upgrading"])
+    schedule_building_completion(building, quote.duration_seconds)
+    building.manor = manor
+    return building
+
+
 def finalize_building_upgrade(
     building: Building,
     now: datetime | None = None,
@@ -646,6 +727,11 @@ def start_upgrade(building: Building) -> None:
         quote = quote_building_upgrade(
             locked_manor,
             locked_building,
+        )
+        consume_action_points(
+            locked_manor,
+            ACTION_POINT_BUILDING_UPGRADE_COST,
+            insufficient_message="行动力不足，无法升级建筑",
         )
         _consume_building_upgrade_quote_locked(
             locked_manor,

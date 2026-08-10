@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, Final
 
 from django.conf import settings
 from django.db import transaction
@@ -176,6 +176,7 @@ _CALIBRATION_ROUTE_FIELDS = frozenset(
 )
 _BAND_ORDINAL = {band: index for index, band in enumerate(V2_PRESTIGE_BAND_NAMES)}
 _SAFETY_WINDOW_KINDS = frozenset({"hourly", "daily"})
+PLANNED_RESTART_PAUSE_REASON: Final = "planned_restart"
 
 
 def _strict_positive_int(value: Any, *, field: str) -> int:
@@ -194,8 +195,12 @@ def normalize_policy_rollout(
         target_version,
         field="policy_rollout.target_version",
     )
+    if normalized_target != 2:
+        raise RuntimeRoutingError("policy rollout target_version=2 is the only supported release")
     if not isinstance(enabled, bool):
         raise RuntimeRoutingError("policy_rollout.enabled must be a boolean")
+    if enabled:
+        raise RuntimeRoutingError("multi-version policy rollout is retired")
     if (
         isinstance(rollout_percent, bool)
         or not isinstance(rollout_percent, int)
@@ -403,7 +408,7 @@ def read_virtual_player_policy_rollout() -> PolicyRolloutSnapshot:
         return _policy_rollout_snapshot(state)
     _missing_virtual_player_routing_snapshot()
     config = load_virtual_player_v2_config()
-    target_version = 1 if config is None else config.policy_rollout.target_version
+    target_version = 2 if config is None else config.policy_rollout.target_version
     return PolicyRolloutSnapshot(
         target_version=target_version,
         enabled=False,
@@ -432,6 +437,34 @@ def lock_virtual_player_policy_rollout() -> PolicyRolloutSnapshot:
         _missing_virtual_player_routing_snapshot()
         raise RuntimeRoutingUnavailable("routing state must be initialized before policy rollout")
     return _policy_rollout_snapshot(state)
+
+
+def _rearm_arena_demands_for_active_routing() -> None:
+    """Persist Arena retry state in the same transaction as routing activation."""
+
+    from gameplay.services.arena.virtual_reserve_demand import wake_arena_demands_after_routing_resume
+
+    wake_arena_demands_after_routing_resume()
+
+
+def _sync_arena_reserve_member_leases_for_routing_transition(
+    *,
+    entering_pause: bool,
+    resuming_active: bool,
+) -> None:
+    """Keep reserve lease clocks inside the routing transaction boundary."""
+
+    if not entering_pause and not resuming_active:
+        return
+    from gameplay.services.arena.virtual_reserve_pool import (
+        pause_virtual_reserve_member_leases,
+        resume_virtual_reserve_member_leases,
+    )
+
+    if entering_pause:
+        pause_virtual_reserve_member_leases()
+    else:
+        resume_virtual_reserve_member_leases()
 
 
 def _missing_virtual_player_routing_snapshot() -> RuntimeRoutingSnapshot:
@@ -478,6 +511,10 @@ def _preflight_new_calibration_routes(
     expected_revision: int | None,
 ) -> tuple[Any | None, dict[CalibrationRouteTarget, Any]]:
     """Validate content-addressed evidence before the routing row is locked."""
+    if proposed_targets:
+        raise RuntimeRoutingGateBlocked(
+            "static calibration routes are retired; use the daily aggregate growth-control snapshot"
+        )
     if not proposed_targets or expected_revision is None:
         return None, {}
     state = BotRuntimeRoutingState.objects.filter(key=BotRuntimeRoutingState.GLOBAL_KEY).first()
@@ -529,46 +566,91 @@ def _transition_virtual_player_routing(
     expected_revision: int | None,
     bootstrap_mode: BootstrapMode | str,
     maintenance_mode: MaintenanceMode | str,
-    calibration_routes: Iterable[CalibrationRoute | CalibrationRouteTarget | Mapping[str, Any]] = (),
+    calibration_routes: Iterable[CalibrationRoute | CalibrationRouteTarget | Mapping[str, Any]] | None = (),
     expected_bootstrap_mode: BootstrapMode | str | None = None,
     expected_maintenance_mode: MaintenanceMode | str | None = None,
     gate_d1_ready: bool = False,
     gate_e_ready: bool = False,
-    pause_reason: str = "",
+    pause_reason: str | None = None,
+    clear_pause_reason: bool = False,
+    expected_pause_reason: str | None = None,
+    resume_paused: bool = False,
     apply: bool,
 ) -> RuntimeRoutingTransitionResult:
     proposed_bootstrap = BootstrapMode(bootstrap_mode)
     proposed_maintenance = MaintenanceMode(maintenance_mode)
-    proposed_targets = normalize_calibration_routes(list(calibration_routes))
+    if calibration_routes is None:
+        # V2 no longer carries static calibration bindings.  A transition into
+        # the active V2 runtime therefore clears any stale persisted routes;
+        # only a legacy-to-legacy inspection may preserve them.
+        preserve_calibration_routes = not (
+            proposed_bootstrap in {BootstrapMode.V2_ACTIVE, BootstrapMode.V2_PAUSED}
+            or proposed_maintenance
+            in {
+                MaintenanceMode.V2_CUTOVER,
+                MaintenanceMode.V2_ACTIVE,
+                MaintenanceMode.V2_PAUSED,
+            }
+        )
+        proposed_targets: tuple[CalibrationRouteTarget, ...] = ()
+    else:
+        preserve_calibration_routes = False
+        proposed_targets = normalize_calibration_routes(list(calibration_routes))
     expected_bootstrap = None if expected_bootstrap_mode is None else BootstrapMode(expected_bootstrap_mode)
     expected_maintenance = None if expected_maintenance_mode is None else MaintenanceMode(expected_maintenance_mode)
+    if pause_reason is not None and not isinstance(pause_reason, str):
+        raise RuntimeRoutingError("pause_reason must be a string or None")
+    if expected_pause_reason is not None and not isinstance(expected_pause_reason, str):
+        raise RuntimeRoutingError("expected_pause_reason must be a string or None")
+    if not isinstance(clear_pause_reason, bool):
+        raise RuntimeRoutingError("clear_pause_reason must be a boolean")
+    if not isinstance(resume_paused, bool):
+        raise RuntimeRoutingError("resume_paused must be a boolean")
+    if clear_pause_reason and pause_reason is not None:
+        raise RuntimeRoutingError("clear_pause_reason cannot be combined with pause_reason")
     preflight_config, preflight_acceptances = _preflight_new_calibration_routes(
         proposed_targets,
         expected_revision=expected_revision,
     )
+    v2_config = load_virtual_player_v2_config()
+    if v2_config is None:
+        raise RuntimeRoutingUnavailable("bot_development_v2 configuration is required for routing")
 
     state = BotRuntimeRoutingState.objects.select_for_update().filter(key=BotRuntimeRoutingState.GLOBAL_KEY).first()
     if state is None:
+        if preserve_calibration_routes:
+            raise RuntimeRoutingConflict("cannot preserve calibration routes when routing state is absent")
         if expected_revision is not None:
             raise RuntimeRoutingConflict("routing state is absent")
-        if proposed_bootstrap is not BootstrapMode.LEGACY_BEFORE_GATE:
-            raise RuntimeRoutingGateBlocked("initial routing bootstrap mode must be legacy_before_gate")
-        if proposed_maintenance is not MaintenanceMode.LEGACY_BEFORE_GATE:
-            raise RuntimeRoutingGateBlocked("initial routing maintenance mode must be legacy_before_gate")
+        if proposed_bootstrap is not BootstrapMode.V2_ACTIVE:
+            raise RuntimeRoutingGateBlocked("initial routing bootstrap mode must be v2_active")
+        if proposed_maintenance is not MaintenanceMode.V2_ACTIVE:
+            raise RuntimeRoutingGateBlocked("initial routing maintenance mode must be v2_active")
+        if (
+            v2_config.routing.bootstrap_mode is not BootstrapMode.V2_ACTIVE
+            or v2_config.routing.maintenance_mode is not MaintenanceMode.V2_ACTIVE
+        ):
+            raise RuntimeRoutingGateBlocked("configured V2 routing must be v2_active before initialization")
         if proposed_targets:
             raise RuntimeRoutingGateBlocked("initial routing cannot enable calibration routes")
-        from gameplay.services.virtual_player_core.profile_store import any_v2_profiles_exist
+        if clear_pause_reason or expected_pause_reason is not None or resume_paused:
+            raise RuntimeRoutingGateBlocked("initial routing cannot use pause-resume controls")
+        from gameplay.services.virtual_player_core.profile_store import any_non_policy2_profiles_exist
 
-        if any_v2_profiles_exist():
-            raise RuntimeRoutingUnavailable("cannot initialize missing routing after V2 enrollment")
+        if any_non_policy2_profiles_exist():
+            raise RuntimeRoutingGateBlocked("cannot initialize V2 routing while legacy profiles remain")
+        normalized_pause_reason = "" if pause_reason is None else pause_reason
         if apply:
             state = BotRuntimeRoutingState.objects.create(
                 key=BotRuntimeRoutingState.GLOBAL_KEY,
                 bootstrap_mode=proposed_bootstrap.value,
                 maintenance_mode=proposed_maintenance.value,
                 calibration_routes=[],
+                policy_rollout_target_version=v2_config.policy_rollout.target_version,
+                policy_rollout_enabled=v2_config.policy_rollout.enabled,
+                policy_rollout_percent=v2_config.policy_rollout.rollout_percent,
                 revision=0,
-                pause_reason=str(pause_reason),
+                pause_reason=normalized_pause_reason,
             )
             snapshot = _snapshot(state)
         else:
@@ -580,7 +662,7 @@ def _transition_virtual_player_routing(
                 last_hourly_safety_window_end_at=None,
                 last_daily_safety_window_end_at=None,
                 last_pause_window_id="",
-                pause_reason=str(pause_reason),
+                pause_reason=normalized_pause_reason,
                 paused_from_maintenance_mode="",
                 persisted=False,
             )
@@ -599,6 +681,14 @@ def _transition_virtual_player_routing(
         expected_maintenance_mode=expected_maintenance,
     )
     current = _snapshot(state)
+    desired_rollout = v2_config.policy_rollout
+    current_rollout_matches = (
+        state.policy_rollout_target_version == desired_rollout.target_version
+        and state.policy_rollout_enabled is desired_rollout.enabled
+        and state.policy_rollout_percent == desired_rollout.rollout_percent
+    )
+    if preserve_calibration_routes:
+        proposed_targets = tuple(route.target for route in current.calibration_routes)
     validate_routing_transition(
         V2RoutingConfig(
             activation_mode="direct_after_gate",
@@ -611,33 +701,75 @@ def _transition_virtual_player_routing(
             maintenance_mode=proposed_maintenance,
         ),
     )
-    if (
-        current.bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE
-        and proposed_bootstrap is BootstrapMode.V2_ACTIVE
-        and not gate_d1_ready
-    ):
-        raise RuntimeRoutingGateBlocked("Gate D1 evidence is required before Bootstrap V2 activation")
-    if (
-        current.maintenance_mode is MaintenanceMode.LEGACY_BEFORE_GATE
-        and proposed_maintenance is MaintenanceMode.V2_CUTOVER
-        and not gate_e_ready
-    ):
-        raise RuntimeRoutingGateBlocked("Gate E readiness evidence is required before cutover")
+    if current.bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE and proposed_bootstrap is BootstrapMode.V2_ACTIVE:
+        from gameplay.services.virtual_player_core.profile_store import runtime_eligible_v1_profile_count
+
+        if runtime_eligible_v1_profile_count() != 0:
+            raise RuntimeRoutingGateBlocked("V2 activation requires zero eligible legacy profiles")
+    if current.maintenance_mode is MaintenanceMode.LEGACY_BEFORE_GATE and proposed_maintenance in {
+        MaintenanceMode.V2_CUTOVER,
+        MaintenanceMode.V2_ACTIVE,
+    }:
+        from gameplay.services.virtual_player_core.profile_store import runtime_eligible_v1_profile_count
+
+        if runtime_eligible_v1_profile_count() != 0:
+            raise RuntimeRoutingGateBlocked("Maintenance V2 activation requires zero eligible legacy profiles")
     if current.maintenance_mode is MaintenanceMode.V2_CUTOVER and proposed_maintenance is MaintenanceMode.V2_ACTIVE:
         from gameplay.services.virtual_player_core.profile_store import runtime_eligible_v1_profile_count
 
-        if not gate_e_ready or runtime_eligible_v1_profile_count() != 0:
-            raise RuntimeRoutingGateBlocked(
-                "Maintenance V2 activation requires Gate E evidence and zero eligible V1 profiles"
-            )
+        if runtime_eligible_v1_profile_count() != 0:
+            raise RuntimeRoutingGateBlocked("Maintenance V2 activation requires zero eligible legacy profiles")
 
-    normalized_pause_reason = str(pause_reason)
+    normalized_pause_reason = current.pause_reason if pause_reason is None else pause_reason
+    if clear_pause_reason:
+        normalized_pause_reason = ""
+    current_pause_origin = current.paused_from_maintenance_mode
+    leaving_pause = (
+        current.maintenance_mode is MaintenanceMode.V2_PAUSED and proposed_maintenance is not MaintenanceMode.V2_PAUSED
+    )
+    entering_pause = (
+        current.maintenance_mode is not MaintenanceMode.V2_PAUSED and proposed_maintenance is MaintenanceMode.V2_PAUSED
+    )
+    if entering_pause and not normalized_pause_reason.strip():
+        raise RuntimeRoutingGateBlocked("entering v2_paused requires a non-empty pause reason")
+    if current.maintenance_mode is MaintenanceMode.V2_PAUSED and proposed_maintenance is MaintenanceMode.V2_PAUSED:
+        if clear_pause_reason:
+            raise RuntimeRoutingGateBlocked("pause reason cannot be cleared while maintenance remains paused")
+        proposed_pause_origin = current_pause_origin
+    elif entering_pause:
+        proposed_pause_origin = current.maintenance_mode.value
+    else:
+        proposed_pause_origin = ""
+    if leaving_pause:
+        if current_pause_origin not in {
+            MaintenanceMode.V2_CUTOVER.value,
+            MaintenanceMode.V2_ACTIVE.value,
+        }:
+            raise RuntimeRoutingGateBlocked("paused maintenance routing has no valid origin")
+        if proposed_maintenance is not MaintenanceMode.V2_ACTIVE:
+            raise RuntimeRoutingGateBlocked("a paused maintenance route may only resume to v2_active")
+        if not resume_paused:
+            raise RuntimeRoutingGateBlocked("explicit resume_paused authorization is required")
+        if expected_pause_reason is None or expected_pause_reason != current.pause_reason:
+            raise RuntimeRoutingConflict("pause reason changed before routing resume")
+        from gameplay.services.virtual_player_core.safety_preflight import check_v2_development_write_preflight
+
+        safety_preflight = check_v2_development_write_preflight()
+        if not safety_preflight.allowed:
+            raise RuntimeRoutingGateBlocked(f"routing resume safety preflight failed: {safety_preflight.reason}")
+        normalized_pause_reason = ""
+    elif resume_paused:
+        raise RuntimeRoutingGateBlocked("resume_paused is only valid for a paused maintenance route")
+    elif expected_pause_reason is not None:
+        raise RuntimeRoutingGateBlocked("expected_pause_reason requires a paused routing resume")
     current_targets = tuple(route.target for route in current.calibration_routes)
     changed = (
         state.bootstrap_mode != proposed_bootstrap.value
         or state.maintenance_mode != proposed_maintenance.value
         or current_targets != proposed_targets
         or state.pause_reason != normalized_pause_reason
+        or state.paused_from_maintenance_mode != proposed_pause_origin
+        or not current_rollout_matches
     )
     if not changed:
         return RuntimeRoutingTransitionResult(
@@ -645,8 +777,8 @@ def _transition_virtual_player_routing(
             changed=False,
             initialized=False,
         )
-    current_policy_versions = {route.policy_version for route in current.calibration_routes}
-    proposed_policy_versions = {target.policy_version for target in proposed_targets}
+    current_policy_versions: set[int] = {route.policy_version for route in current.calibration_routes}
+    proposed_policy_versions: set[int] = {target.policy_version for target in proposed_targets}
     if current_policy_versions != proposed_policy_versions:
         from gameplay.services.virtual_player_core.policy_registry import (
             PolicyRegistryError,
@@ -662,7 +794,9 @@ def _transition_virtual_player_routing(
         except PolicyRegistryError as exc:
             raise RuntimeRoutingGateBlocked(str(exc)) from exc
     current_by_target = {route.target: route for route in current.calibration_routes}
-    newly_enabled = tuple(target for target in proposed_targets if target not in current_by_target)
+    newly_enabled: tuple[CalibrationRouteTarget, ...] = tuple(
+        target for target in proposed_targets if target not in current_by_target
+    )
     if newly_enabled:
         from gameplay.services.virtual_player_core.policy_registry import (
             PolicyRegistryError,
@@ -704,12 +838,25 @@ def _transition_virtual_player_routing(
         )
     )
     proposed_payload = [route.to_payload() for route in proposed_routes]
+    resuming_active = leaving_pause and proposed_maintenance is MaintenanceMode.V2_ACTIVE
     if apply:
+        if resuming_active:
+            # Reserve replenishment locks demand rows before member rows.  Keep
+            # the routing-resume transaction in that order so it cannot deadlock
+            # with a concurrent replenish that is repairing paused leases.
+            _rearm_arena_demands_for_active_routing()
+        _sync_arena_reserve_member_leases_for_routing_transition(
+            entering_pause=entering_pause,
+            resuming_active=resuming_active,
+        )
         state.bootstrap_mode = proposed_bootstrap.value
         state.maintenance_mode = proposed_maintenance.value
         state.calibration_routes = proposed_payload
         state.pause_reason = normalized_pause_reason
-        state.paused_from_maintenance_mode = ""
+        state.paused_from_maintenance_mode = proposed_pause_origin
+        state.policy_rollout_target_version = desired_rollout.target_version
+        state.policy_rollout_enabled = desired_rollout.enabled
+        state.policy_rollout_percent = desired_rollout.rollout_percent
         state.revision += 1
         state.save(
             update_fields=[
@@ -718,6 +865,9 @@ def _transition_virtual_player_routing(
                 "calibration_routes",
                 "pause_reason",
                 "paused_from_maintenance_mode",
+                "policy_rollout_target_version",
+                "policy_rollout_enabled",
+                "policy_rollout_percent",
                 "revision",
                 "updated_at",
             ]
@@ -733,7 +883,7 @@ def _transition_virtual_player_routing(
             last_daily_safety_window_end_at=current.last_daily_safety_window_end_at,
             last_pause_window_id=current.last_pause_window_id,
             pause_reason=normalized_pause_reason,
-            paused_from_maintenance_mode="",
+            paused_from_maintenance_mode=proposed_pause_origin,
             persisted=True,
         )
     return RuntimeRoutingTransitionResult(
@@ -751,7 +901,10 @@ def transition_virtual_player_routing(
     calibration_routes: Iterable[CalibrationRoute | Mapping[str, Any]] = (),
     expected_bootstrap_mode: BootstrapMode | str | None = None,
     expected_maintenance_mode: MaintenanceMode | str | None = None,
-    pause_reason: str = "",
+    pause_reason: str | None = None,
+    clear_pause_reason: bool = False,
+    expected_pause_reason: str | None = None,
+    resume_paused: bool = False,
 ) -> RuntimeRoutingSnapshot:
     return _transition_virtual_player_routing(
         expected_revision=expected_revision,
@@ -763,6 +916,9 @@ def transition_virtual_player_routing(
         gate_d1_ready=False,
         gate_e_ready=False,
         pause_reason=pause_reason,
+        clear_pause_reason=clear_pause_reason,
+        expected_pause_reason=expected_pause_reason,
+        resume_paused=resume_paused,
         apply=True,
     ).snapshot
 
@@ -772,10 +928,13 @@ def transition_virtual_player_routing_operation(
     expected_revision: int | None,
     bootstrap_mode: BootstrapMode | str,
     maintenance_mode: MaintenanceMode | str,
-    calibration_routes: Iterable[CalibrationRoute | Mapping[str, Any]] = (),
+    calibration_routes: Iterable[CalibrationRoute | Mapping[str, Any]] | None = (),
     expected_bootstrap_mode: BootstrapMode | str | None = None,
     expected_maintenance_mode: MaintenanceMode | str | None = None,
-    pause_reason: str = "",
+    pause_reason: str | None = None,
+    clear_pause_reason: bool = False,
+    expected_pause_reason: str | None = None,
+    resume_paused: bool = False,
     apply: bool = False,
 ) -> RuntimeRoutingOperationSummary:
     result = _transition_virtual_player_routing(
@@ -788,6 +947,9 @@ def transition_virtual_player_routing_operation(
         gate_d1_ready=False,
         gate_e_ready=False,
         pause_reason=pause_reason,
+        clear_pause_reason=clear_pause_reason,
+        expected_pause_reason=expected_pause_reason,
+        resume_paused=resume_paused,
         apply=apply,
     )
     return RuntimeRoutingOperationSummary(
@@ -798,6 +960,25 @@ def transition_virtual_player_routing_operation(
         failed=0,
         reasons=() if result.changed else ("routing_unchanged",),
         snapshot=result.snapshot,
+    )
+
+
+def prepare_virtual_player_planned_restart_operation(
+    *,
+    expected_revision: int,
+    apply: bool = False,
+) -> RuntimeRoutingOperationSummary:
+    """Fence V2 writes before an explicitly planned application restart."""
+
+    return transition_virtual_player_routing_operation(
+        expected_revision=expected_revision,
+        bootstrap_mode=BootstrapMode.V2_ACTIVE,
+        maintenance_mode=MaintenanceMode.V2_PAUSED,
+        calibration_routes=None,
+        expected_bootstrap_mode=BootstrapMode.V2_ACTIVE,
+        expected_maintenance_mode=MaintenanceMode.V2_ACTIVE,
+        pause_reason=PLANNED_RESTART_PAUSE_REASON,
+        apply=apply,
     )
 
 
@@ -882,12 +1063,21 @@ def is_recoverable_safety_pause_reason(reason: str) -> bool:
 
     if len(reasons) != 1:
         return False
-    return reasons[0].startswith(("arena_shortage_baseline_missing:", "arena_shortage_baseline_expired:")) or reasons[
-        0
-    ] in {
-        "missing_finalized_hourly_window",
-        "missing_finalized_daily_window",
-    }
+    return (
+        reasons[0] == PLANNED_RESTART_PAUSE_REASON
+        or reasons[0].startswith(("arena_shortage_baseline_missing:", "arena_shortage_baseline_expired:"))
+        or reasons[0]
+        in {
+            "missing_finalized_hourly_window",
+            "missing_finalized_daily_window",
+        }
+    )
+
+
+def is_planned_restart_pause_reason(reason: str) -> bool:
+    """Return whether a pause was explicitly fenced for a planned restart."""
+
+    return str(reason).strip() == PLANNED_RESTART_PAUSE_REASON
 
 
 def _is_recoverable_safety_pause_reason(reason: str) -> bool:
@@ -983,10 +1173,17 @@ def apply_virtual_player_safety_decision(
             state.maintenance_mode == MaintenanceMode.V2_PAUSED.value
             and state.pause_reason == normalized_expected_pause_reason
             and _is_recoverable_safety_pause_reason(state.pause_reason)
-            and state.safety_clean_window_kind == normalized_kind
             and state.paused_from_maintenance_mode == MaintenanceMode.V2_ACTIVE.value
         ):
-            state.safety_clean_window_streak = min(255, int(state.safety_clean_window_streak) + 1)
+            if state.safety_clean_window_kind == "":
+                state.safety_clean_window_kind = normalized_kind
+                state.safety_clean_window_streak = 1
+                update_fields.append("safety_clean_window_kind")
+            elif state.safety_clean_window_kind == normalized_kind:
+                state.safety_clean_window_streak = min(255, int(state.safety_clean_window_streak) + 1)
+            else:
+                state.safety_clean_window_streak = 0
+                update_fields.append("safety_clean_window_streak")
             if state.safety_clean_window_streak >= int(settings.VIRTUAL_PLAYER_SAFETY_AUTO_RESUME_CLEAN_WINDOWS):
                 state.maintenance_mode = MaintenanceMode.V2_ACTIVE.value
                 state.pause_reason = ""
@@ -1009,6 +1206,18 @@ def apply_virtual_player_safety_decision(
     else:
         state.safety_clean_window_streak = 0
         update_fields.append("safety_clean_window_streak")
+
+    if should_pause and state.maintenance_mode == MaintenanceMode.V2_PAUSED.value:
+        from gameplay.services.arena.virtual_reserve_pool import pause_virtual_reserve_member_leases
+
+        pause_virtual_reserve_member_leases()
+    if resumed:
+        # Match replenish's demand -> member lock order while the routing row
+        # remains protected by this outer transaction.
+        _rearm_arena_demands_for_active_routing()
+        from gameplay.services.arena.virtual_reserve_pool import resume_virtual_reserve_member_leases
+
+        resume_virtual_reserve_member_leases()
     state.revision += 1
     state.save(update_fields=update_fields)
     snapshot = _snapshot(state)

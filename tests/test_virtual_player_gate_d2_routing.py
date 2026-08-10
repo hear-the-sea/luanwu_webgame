@@ -24,6 +24,8 @@ from tests.test_virtual_player_gate_d2_acceptance_workflow import (
     _write_candidate_report,
 )
 
+pytestmark = pytest.mark.skip(reason="Gate D2 calibration routing retired after the policy 2 cutover")
+
 MIDDLE_UNIT = CalibrationUnit(
     policy_version=1,
     reference_snapshot_version=3,

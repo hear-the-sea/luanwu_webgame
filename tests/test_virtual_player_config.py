@@ -30,13 +30,16 @@ def test_repository_virtual_player_config_is_valid_at_runtime() -> None:
     config = load_virtual_player_config()
 
     assert config["enabled"] is True
+    assert config["population"]["hard_cap"] == 1000
     assert list(config["prestige_bands"]) == ["newbie", "junior", "middle", "senior", "veteran"]
     v2_config = parse_bot_development_v2(config["bot_development_v2"])
-    assert v2_config.routing.bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE
-    assert v2_config.routing.maintenance_mode is MaintenanceMode.LEGACY_BEFORE_GATE
+    assert v2_config.routing.bootstrap_mode is BootstrapMode.V2_ACTIVE
+    assert v2_config.routing.maintenance_mode is MaintenanceMode.V2_ACTIVE
     assert v2_config.policy_rollout.enabled is False
+    assert v2_config.policy_rollout.target_version == 2
     assert v2_config.policy_rollout.rollout_percent == 0
     assert dict(v2_config.reference_snapshot_catalog) == {}
+    assert tuple(v2_config.policies) == (2,)
 
 
 @override_settings(VIRTUAL_PLAYER_CONFIG={"population": {"region_floor": 11}})
@@ -87,11 +90,10 @@ def test_typed_v2_config_is_immutable_and_resolves_all_band_boundaries() -> None
     config = parse_bot_development_v2(raw)
 
     assert config.engine_version == 2
-    assert config.routing.bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE
-    assert config.routing.maintenance_mode is MaintenanceMode.LEGACY_BEFORE_GATE
-    assert config.policy().version == 1
-    assert config.policy().max_development_actions == 1
-    assert config.policy().reference_calibration_thresholds["normalized_wasserstein_max"] == pytest.approx(0.25)
+    assert config.routing.bootstrap_mode is BootstrapMode.V2_ACTIVE
+    assert config.routing.maintenance_mode is MaintenanceMode.V2_ACTIVE
+    assert config.policy().version == 2
+    assert config.policy().max_development_actions == 16
     assert dict(config.reference_snapshot_catalog) == {}
     assert [config.band_for_prestige(value).name for value in (0, 499, 500, 119999, 120000, 240000, 10**9)] == [
         "newbie",
@@ -110,7 +112,7 @@ def test_typed_v2_config_is_immutable_and_resolves_all_band_boundaries() -> None
         config.policy().payload["strength_safety"]["no_reference"] = {}  # type: ignore[index]
 
 
-def test_typed_v2_config_parses_and_freezes_gate_d2_evidence_registry() -> None:
+def test_typed_v2_config_retires_gate_d2_evidence_registry() -> None:
     raw = _minimal_v2_config()
     raw["reference_snapshot_catalog"] = {
         "3": {
@@ -128,21 +130,12 @@ def test_typed_v2_config_parses_and_freezes_gate_d2_evidence_registry() -> None:
         }
     }
 
-    config = parse_bot_development_v2(raw)
-    entry = config.reference_snapshot_catalog[3]
-    evidence = entry.gate_d2_evidence[(1, "junior")]
-
-    assert evidence.policy_version == 1
-    assert evidence.reference_snapshot_version == 3
-    assert evidence.prestige_band == "junior"
-    assert evidence.schema_version == 3
-    assert evidence.digest == "b" * 64
-    with pytest.raises(TypeError):
-        entry.gate_d2_evidence[(1, "middle")] = evidence  # type: ignore[index]
+    with pytest.raises(VirtualPlayerConfigError, match="reference_snapshot_catalog: unknown field"):
+        parse_bot_development_v2(raw)
 
 
 def test_typed_policy_checksum_matches_the_independent_validator_vector() -> None:
-    raw_policy = _minimal_v2_config()["policies"]["1"]
+    raw_policy = _minimal_v2_config()["policies"]["2"]
 
     assert policy_checksum(raw_policy) == _policy_checksum(raw_policy) == raw_policy["checksum"]
 
@@ -152,8 +145,9 @@ def test_typed_v2_config_rejects_negative_prestige_and_missing_policy() -> None:
 
     with pytest.raises(VirtualPlayerConfigError, match="prestige must be non-negative"):
         config.band_for_prestige(-1)
-    with pytest.raises(VirtualPlayerConfigError, match="policy 2 is not configured"):
-        config.policy(2)
+    assert config.policy(2).version == 2
+    with pytest.raises(VirtualPlayerConfigError, match="policy 1 is retired"):
+        config.policy(1)
 
 
 def _routing(bootstrap: BootstrapMode, maintenance: MaintenanceMode) -> V2RoutingConfig:
@@ -164,14 +158,10 @@ def _routing(bootstrap: BootstrapMode, maintenance: MaintenanceMode) -> V2Routin
     )
 
 
-def test_routing_transition_accepts_the_two_gate_forward_paths_and_pause_recovery() -> None:
+def test_routing_transition_accepts_v2_activation_and_pause_recovery() -> None:
     validate_routing_transition(
         _routing(BootstrapMode.LEGACY_BEFORE_GATE, MaintenanceMode.LEGACY_BEFORE_GATE),
-        _routing(BootstrapMode.V2_ACTIVE, MaintenanceMode.LEGACY_BEFORE_GATE),
-    )
-    validate_routing_transition(
-        _routing(BootstrapMode.V2_ACTIVE, MaintenanceMode.LEGACY_BEFORE_GATE),
-        _routing(BootstrapMode.V2_ACTIVE, MaintenanceMode.V2_CUTOVER),
+        _routing(BootstrapMode.V2_ACTIVE, MaintenanceMode.V2_ACTIVE),
     )
     validate_routing_transition(
         _routing(BootstrapMode.V2_ACTIVE, MaintenanceMode.V2_ACTIVE),
@@ -194,7 +184,7 @@ def test_routing_transition_accepts_the_two_gate_forward_paths_and_pause_recover
         (
             _routing(BootstrapMode.LEGACY_BEFORE_GATE, MaintenanceMode.LEGACY_BEFORE_GATE),
             _routing(BootstrapMode.LEGACY_BEFORE_GATE, MaintenanceMode.V2_ACTIVE),
-            "before Bootstrap exits Gate D1",
+            "before Bootstrap leaves legacy mode",
         ),
         (
             _routing(BootstrapMode.V2_ACTIVE, MaintenanceMode.V2_ACTIVE),

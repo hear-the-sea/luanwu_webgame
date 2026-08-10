@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
+from time import monotonic
 
 from celery import shared_task
 from django.utils import timezone
@@ -9,18 +10,16 @@ from django.utils import timezone
 import gameplay.services.arena.coop_core as arena_coop_core
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.services.arena.core import cleanup_expired_tournaments, run_due_arena_rounds, start_ready_tournaments
+from gameplay.services.arena.virtual_reserve_demand import wake_active_arena_demands_for_population_region
 from gameplay.services.arena.virtual_reserve_observability import (
     ARENA_SHORTAGE_METRIC_RETRY_MAX_ATTEMPTS,
     is_retryable_arena_shortage_metric_error,
+    prepare_arena_shortage_observation_snapshot,
     queue_arena_shortage_metric_retry,
     record_arena_shortage_metric_failure,
     record_arena_shortage_observation,
 )
-from gameplay.services.arena.virtual_reserve_pool import (
-    create_due_virtual_reserve_profiles,
-    grow_due_virtual_reserves,
-    replenish_virtual_reserve,
-)
+from gameplay.services.arena.virtual_reserve_pool import grow_due_virtual_reserves, replenish_virtual_reserve
 from gameplay.services.arena.virtual_reserve_reconcile import reconcile_coop_demand, reconcile_tournament_demand
 from gameplay.services.arena.virtual_reserve_scan import scan_virtual_reserve_demands
 
@@ -111,6 +110,13 @@ def reconcile_arena_virtual_reserve(mode: str, event_id: int) -> dict[str, int]:
     }
 
 
+@shared_task(name="gameplay.wake_active_arena_demands_for_population_region")
+def wake_active_arena_demands_for_population_region_task(region: str) -> dict[str, int]:
+    return {
+        "woken": int(wake_active_arena_demands_for_population_region(region=str(region))),
+    }
+
+
 @shared_task(name="gameplay.scan_arena_virtual_reserves")
 def scan_arena_virtual_reserves(limit: int = 20) -> dict[str, int]:
     try:
@@ -135,24 +141,31 @@ def retry_arena_shortage_metric(
     virtual_entry_count: int | None = None,
     reserve_ready_count: int | None = None,
     reserve_training_count: int | None = None,
+    prestige_band: str | None = None,
 ) -> dict[str, int]:
     parsed_observed_at = datetime.fromisoformat(observed_at.replace("Z", "+00:00"))
     if timezone.is_naive(parsed_observed_at):
         raise ValueError("observed_at must be timezone-aware")
+    snapshot = None
     try:
-        record_arena_shortage_observation(
+        snapshot = prepare_arena_shortage_observation_snapshot(
             demand_id=int(demand_id),
             mode=mode,
             event_id=int(event_id),
-            capacity=int(capacity),
-            missing_count=int(missing_count),
             population_prestige=int(population_prestige),
-            operation_id=operation_id,
-            observed_at=parsed_observed_at,
+            prestige_band=prestige_band,
             real_entry_count=real_entry_count,
             virtual_entry_count=virtual_entry_count,
             reserve_ready_count=reserve_ready_count,
             reserve_training_count=reserve_training_count,
+        )
+        record_arena_shortage_observation(
+            mode=mode,
+            capacity=int(capacity),
+            missing_count=int(missing_count),
+            operation_id=operation_id,
+            observed_at=parsed_observed_at,
+            snapshot=snapshot,
         )
     except Exception as exc:
         logger.exception(
@@ -191,10 +204,11 @@ def retry_arena_shortage_metric(
                 operation_id=operation_id,
                 observed_at=parsed_observed_at,
                 retry_attempt=int(retry_attempt) + 1,
-                real_entry_count=real_entry_count,
-                virtual_entry_count=virtual_entry_count,
-                reserve_ready_count=reserve_ready_count,
-                reserve_training_count=reserve_training_count,
+                real_entry_count=(snapshot.real_entry_count if snapshot else real_entry_count),
+                virtual_entry_count=(snapshot.virtual_entry_count if snapshot else virtual_entry_count),
+                reserve_ready_count=(snapshot.reserve_ready_count if snapshot else reserve_ready_count),
+                reserve_training_count=(snapshot.reserve_training_count if snapshot else reserve_training_count),
+                prestige_band=(snapshot.prestige_band if snapshot else prestige_band),
             )
             if queued:
                 return {"recorded": 0, "retry_scheduled": 1}
@@ -204,10 +218,22 @@ def retry_arena_shortage_metric(
 
 @shared_task(name="gameplay.grow_arena_virtual_reserves")
 def grow_arena_virtual_reserves(limit: int = 100) -> dict[str, int]:
+    started_at = monotonic()
+    grown = 0
+
     try:
         grown = grow_due_virtual_reserves(limit=limit)
-        created = create_due_virtual_reserve_profiles(limit=limit)
     except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
-        logger.exception("arena virtual reserve growth failed")
-        raise RuntimeError("arena virtual reserve growth failed")
-    return {"grown": int(grown), "created": int(created)}
+        logger.exception("arena virtual reserve growth stage failed")
+        raise RuntimeError("arena virtual reserve growth failed: grow_due_virtual_reserves")
+
+    logger.info(
+        "Completed arena virtual reserve growth task",
+        extra={
+            "event": "arena_virtual_growth_task_completed",
+            "requested_limit": int(limit),
+            "grown_count": int(grown),
+            "task_duration_seconds": max(0.0, monotonic() - started_at),
+        },
+    )
+    return {"grown": int(grown)}

@@ -92,6 +92,7 @@
                                         {% for key,val in building.next_level_cost_display.items %}
                                             <span>{{ resource_labels|get_label:key }} {{ val }}</span>
                                         {% endfor %}
+                                        <span>行动力 {{ building_upgrade_action_point_cost }}</span>
                                     {% endif %}
                                 </dd>
                             </div>

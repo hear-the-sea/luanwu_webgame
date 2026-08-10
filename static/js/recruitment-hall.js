@@ -403,6 +403,8 @@
         const baseCount = Number.parseInt(form.dataset.poolBase || "0", 10) || 0;
         const bonusCount = Number.parseInt(form.dataset.poolBonus || "0", 10) || 0;
         const durationSeconds = Number.parseInt(form.dataset.poolDuration || "0", 10) || 0;
+        const usedToday = Number.parseInt(form.dataset.poolUsed || "0", 10) || 0;
+        const dailyLimit = Number.parseInt(form.dataset.poolDailyLimit || "0", 10) || 0;
         const totalCount = baseCount + bonusCount;
         let countText = `${totalCount}人`;
         if (bonusCount > 0) {
@@ -410,7 +412,7 @@
         }
 
         const confirmed = await confirmDialog(
-          `确定要进行 ${poolName} 吗？\n预计招募候选：${countText}\n预计耗时：${formatDurationCN(durationSeconds)}\n本次消耗：${costText}`,
+          `确定要进行 ${poolName} 吗？\n今日已招募：${usedToday} / ${dailyLimit} 次\n预计招募候选：${countText}\n预计耗时：${formatDurationCN(durationSeconds)}\n本次消耗：${costText}`,
           { title: "招募确认" }
         );
         if (!confirmed) {
@@ -418,6 +420,30 @@
         }
 
         await submitAjaxForm(form, submitter, { loadingText: "招募中..." });
+      });
+    });
+  };
+
+  const bindRecruitmentCardForms = () => {
+    document.querySelectorAll(".recruitment-card-form").forEach((form) => {
+      if (form.dataset.ajaxBound === "1") {
+        return;
+      }
+      form.dataset.ajaxBound = "1";
+      bindSubmitterFallback(form);
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const submitter = resolveSubmitter(form, event);
+        const poolName = form.dataset.poolName || "当前卡池";
+        const cardCount = Number.parseInt(form.dataset.cardCount || "0", 10) || 0;
+        const message = recruitmentHallCore.buildRecruitmentCardConfirmation
+          ? recruitmentHallCore.buildRecruitmentCardConfirmation({ poolName, cardCount })
+          : `确定消耗 1 张招募卡，为「${poolName}」增加 1 次今日招募额度吗？\n当前持有：${cardCount} 张`;
+        const confirmed = await confirmDialog(message, { title: "使用招募卡" });
+        if (!confirmed) {
+          return;
+        }
+        await submitAjaxForm(form, submitter, { loadingText: "加额度中..." });
       });
     });
   };
@@ -464,6 +490,7 @@
     }
     initCandidateList();
     bindRecruitForms();
+    bindRecruitmentCardForms();
     bindMagnifyingGlassForms();
     bindCandidateActionForms();
   }

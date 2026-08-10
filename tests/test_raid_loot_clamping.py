@@ -166,6 +166,46 @@ def test_calculate_loot_items_uses_fractional_grain_capacity(monkeypatch):
 
 
 @pytest.mark.django_db
+def test_calculate_loot_items_excludes_grain_from_quota_and_fills_remaining_capacity(monkeypatch):
+    user = User.objects.create_user(username="raid_mixed_grain_capacity", password="pass123")
+    defender = ensure_manor(user)
+    grain_template = ItemTemplate.objects.create(
+        key="grain",
+        name="粮食",
+        tradeable=True,
+        rarity="black",
+        storage_space=1,
+    )
+    non_grain_template = ItemTemplate.objects.create(
+        key="raid_mixed_non_grain_item",
+        name="混合战利品",
+        tradeable=True,
+        rarity="black",
+        storage_space=1,
+    )
+    InventoryItem.objects.create(
+        manor=defender,
+        template=grain_template,
+        quantity=100_000,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    InventoryItem.objects.create(
+        manor=defender,
+        template=non_grain_template,
+        quantity=5,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    monkeypatch.setattr("gameplay.services.raid.combat.loot._calculate_item_loot_capacity", lambda **_kwargs: 10)
+
+    loot_items = _calculate_loot_items(
+        _build_loot_item_queryset(defender),
+        rng=random.Random(7),
+    )
+
+    assert loot_items == {"raid_mixed_non_grain_item": 1, "grain": 9_000}
+
+
+@pytest.mark.django_db
 def test_calculate_loot_items_keeps_strict_twenty_percent_limit_for_small_inventory(monkeypatch):
     user = User.objects.create_user(username="raid_small_inventory", password="pass123")
     defender = ensure_manor(user)

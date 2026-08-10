@@ -20,8 +20,7 @@ from ...inventory.core import (
 from ...pvp_runtime.loot import (
     WeightedLootCandidate,
     calculate_item_loot_capacity,
-    calculate_item_loot_draw_count,
-    draw_weighted_item_loot,
+    draw_weighted_item_loot_with_grain_fill,
     normalize_positive_int_mapping,
 )
 from ...resources import log_resource_gain
@@ -168,14 +167,10 @@ def _calculate_loot_items(
         battle_report=battle_report,
     )
     candidates = _build_weighted_loot_candidates(base_qs)
-    total_quantity = sum(int(candidate["remaining_quantity"]) for candidate in candidates)
-    draw_count = calculate_item_loot_draw_count(
-        total_quantity,
-        PVPConstants.LOOT_ITEM_MAX_QUANTITY_PERCENT,
-    )
-    return draw_weighted_item_loot(
+    return draw_weighted_item_loot_with_grain_fill(
         candidates,
-        draw_count=draw_count,
+        non_grain_ratio=PVPConstants.LOOT_ITEM_MAX_QUANTITY_PERCENT,
+        grain_ratio=PVPConstants.LOOT_ITEM_MAX_QUANTITY_PERCENT,
         capacity=capacity,
         rng=rng,
     )

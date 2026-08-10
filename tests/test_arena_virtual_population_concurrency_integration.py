@@ -13,13 +13,19 @@ from gameplay.models import (
     ArenaVirtualReserveMember,
     BotPopulationControl,
     BotProfile,
+    BotRuntimeRoutingState,
 )
 from gameplay.services.arena import virtual_reserve_pool
+from gameplay.services.arena.virtual_reserve_growth_budget import (
+    ARENA_GROWTH_BUDGET_MAX_ATTEMPTS,
+    ARENA_GROWTH_BUDGET_WINDOW,
+)
 from gameplay.services.arena.virtual_reserve_pool import (
     evaluate_bot_lineup,
     grow_due_virtual_reserves,
     replenish_virtual_reserve,
 )
+from gameplay.services.arena.virtual_reserve_reconcile import reconcile_tournament_demand
 from gameplay.services.virtual_player_core.contracts import AcceleratedGrowthOutcome
 from gameplay.services.virtual_players import (
     BotProjectionConfig,
@@ -27,10 +33,55 @@ from gameplay.services.virtual_players import (
     create_virtual_player_with_capacity,
     retire_virtual_player_if_unprotected,
 )
-from tests.arena_services.test_virtual_backfill import _create_bot_profile
-from tests.test_virtual_player_backfill import _bootstrap_building_types
+from tests.arena_services.test_virtual_backfill import _add_real_arena_entry
+from tests.arena_services.test_virtual_backfill import _create_bot_profile as _create_bot_profile_unenrolled
 
 pytestmark = [pytest.mark.integration]
+
+
+def _ensure_v2_runtime_routing() -> None:
+    """Give real-service concurrency tests the active V2 gate they exercise."""
+
+    BotRuntimeRoutingState.objects.update_or_create(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        defaults={
+            "bootstrap_mode": BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+            "maintenance_mode": BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+            "calibration_routes": [],
+            "policy_rollout_target_version": 2,
+            "policy_rollout_enabled": False,
+            "policy_rollout_percent": 0,
+            "pause_reason": "",
+            "paused_from_maintenance_mode": "",
+            "revision": 0,
+        },
+    )
+
+
+def _create_bot_profile(username: str, *, state: str = BotProfile.State.ACTIVE) -> BotProfile:
+    """Create an enrolled V2 profile for post-cutover concurrency tests."""
+
+    profile = _create_bot_profile_unenrolled(username, state=state)
+    now = timezone.now()
+    profile.engine_version = 2
+    profile.rng_version = 1
+    profile.plan_schema_version = 1
+    profile.policy_version = 2
+    profile.policy_checksum = "a" * 64
+    profile.last_strength_increase_at = now
+    profile.v2_enrolled_at = now
+    profile.save(
+        update_fields=[
+            "engine_version",
+            "rng_version",
+            "plan_schema_version",
+            "policy_version",
+            "policy_checksum",
+            "last_strength_increase_at",
+            "v2_enrolled_at",
+        ]
+    )
+    return profile
 
 
 @pytest.mark.django_db(transaction=True)
@@ -40,6 +91,7 @@ def test_two_growth_workers_issue_one_claim_and_execute_without_arena_locks(
     if connection.vendor != "mysql":
         pytest.skip("arena growth claim concurrency requires MySQL row locks")
 
+    _ensure_v2_runtime_routing()
     now = timezone.now()
     profile = _create_bot_profile("arena_growth_single_claim")
     tournament = ArenaTournament.objects.create(
@@ -50,7 +102,7 @@ def test_two_growth_workers_issue_one_claim_and_execute_without_arena_locks(
         tournament=tournament,
         status=ArenaVirtualDemand.Status.ACTIVE,
         target_guest_count=1,
-        target_team_power=10**12,
+        target_team_power=1_000,
         missing_entry_count=1,
         reserve_target_count=1,
         warm_target_count=1,
@@ -121,12 +173,13 @@ def test_two_growth_workers_issue_one_claim_and_execute_without_arena_locks(
     member.refresh_from_db()
     assert all(not thread.is_alive() for thread in threads)
     assert errors == []
-    assert sorted(results) == [0, 1]
-    assert len(calls) == 1
-    assert calls[0][0].startswith("arena-growth-")
-    assert calls[0][1:] == (1, False)
+    assert sorted(results) == [0, ARENA_GROWTH_BUDGET_MAX_ATTEMPTS]
+    assert len(calls) == ARENA_GROWTH_BUDGET_MAX_ATTEMPTS
+    assert len({operation_id for operation_id, _attempt, _in_atomic in calls}) == len(calls)
+    assert all(operation_id.startswith("arena-growth-") for operation_id, _attempt, _in_atomic in calls)
+    assert all((attempt, in_atomic) == (1, False) for _operation_id, attempt, in_atomic in calls)
     assert member.growth_claim_token is None
-    assert member.next_acceleration_at == now + timedelta(minutes=5)
+    assert member.next_acceleration_at == now + ARENA_GROWTH_BUDGET_WINDOW
 
 
 @pytest.mark.django_db(transaction=True)
@@ -134,12 +187,14 @@ def test_concurrent_arena_demands_share_last_population_slot(settings):
     if connection.vendor != "mysql":
         pytest.skip("arena virtual population concurrency requires MySQL select_for_update semantics")
 
+    _ensure_v2_runtime_routing()
     settings.VIRTUAL_PLAYER_CONFIG = {
         "population": {
             "region_floor": 0,
             "region_active_multiplier": 0,
             "global_floor": 1,
             "global_active_multiplier": 0,
+            "hard_cap": 1,
         },
         "prestige_bands": {"newbie": [0, 500]},
     }
@@ -159,27 +214,10 @@ def test_concurrent_arena_demands_share_last_population_slot(settings):
         )
         for _index in range(2)
     ]
-    probe = evaluate_bot_lineup(
-        profiles[0],
-        mode="tournament",
-        event_id=tournaments[0].id,
-        target_guest_count=1,
-        target_team_power=10**12,
-    )
-    assert probe.snapshots
-    demands = [
-        ArenaVirtualDemand.objects.create(
-            tournament=tournament,
-            target_guest_count=1,
-            target_team_power=probe.selected_power,
-            missing_entry_count=1,
-            reserve_target_count=1,
-            warm_target_count=1,
-            max_reserve_target_count=1,
-            next_retry_at=now,
-        )
-        for tournament in tournaments
-    ]
+    for index, tournament in enumerate(tournaments):
+        _add_real_arena_entry(tournament, f"arena_population_reference_{index}", attack=200, defense=200, max_hp=2_000)
+    demands = [reconcile_tournament_demand(tournament.id) for tournament in tournaments]
+    assert all(demand is not None for demand in demands)
     start = threading.Barrier(2)
     outcomes: list[int] = []
     errors: list[BaseException] = []
@@ -229,7 +267,7 @@ def test_concurrent_capacity_owned_creation_rechecks_region_shortage(settings):
     if connection.vendor != "mysql":
         pytest.skip("arena virtual population concurrency requires MySQL select_for_update semantics")
 
-    _bootstrap_building_types()
+    _ensure_v2_runtime_routing()
     settings.VIRTUAL_PLAYER_CONFIG = {
         "population": {
             "region_floor": 1,
@@ -248,7 +286,7 @@ def test_concurrent_capacity_owned_creation_rechecks_region_shortage(settings):
     now = timezone.now()
     BotPopulationControl.objects.get_or_create()
     start = threading.Barrier(2)
-    regions: list[str] = []
+    statuses: list[PopulationMutationStatus] = []
     errors: list[BaseException] = []
     results_guard = threading.Lock()
 
@@ -264,10 +302,10 @@ def test_concurrent_capacity_owned_creation_rechecks_region_shortage(settings):
                 projection=BotProjectionConfig(0, 1, 0, 1),
                 start_from_zero=True,
             )
-            assert mutation.status is PopulationMutationStatus.CREATED
-            assert mutation.profile is not None
+            assert mutation.status is PopulationMutationStatus.UNAVAILABLE
+            assert mutation.profile is None
             with results_guard:
-                regions.append(str(mutation.profile.manor.region))
+                statuses.append(mutation.status)
         except BaseException as exc:  # pragma: no cover - asserted below
             with results_guard:
                 errors.append(exc)
@@ -282,8 +320,7 @@ def test_concurrent_capacity_owned_creation_rechecks_region_shortage(settings):
 
     assert all(not thread.is_alive() for thread in threads)
     assert errors == []
-    assert len(regions) == 2
-    assert len(set(regions)) == 2
+    assert statuses == [PopulationMutationStatus.UNAVAILABLE] * 2
 
 
 @pytest.mark.django_db(transaction=True)

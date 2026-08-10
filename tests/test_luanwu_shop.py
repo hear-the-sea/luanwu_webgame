@@ -33,6 +33,7 @@ def test_luanwu_shop_page_shows_products_and_warehouse_coin_balance(django_user_
     coin = _create_item_template("chunqiu_coin", "春秋币", effect_type=ItemTemplate.EffectType.RESOURCE)
     _create_item_template("fangdajing", "放大镜")
     _create_item_template("mission_card", "任务卡")
+    _create_item_template("recruitment_card", "招募卡")
     blueprint = _create_item_template("blueprint_shop_device", "机关猫图纸", rarity="purple")
     InventoryItem.objects.create(manor=manor, template=coin, quantity=12)
     monkeypatch.setattr(luanwu_shop, "get_device_blueprint_templates", lambda: [blueprint])
@@ -47,6 +48,9 @@ def test_luanwu_shop_page_shows_products_and_warehouse_coin_balance(django_user_
     assert "乱舞商城" in response.content.decode()
     assert "放大镜" in response.content.decode()
     assert "任务卡" in response.content.decode()
+    assert "招募卡" in response.content.decode()
+    assert "×3" in response.content.decode()
+    assert "用于增加每日招募次数" in response.content.decode()
     assert "机关图纸宝箱" in response.content.decode()
     assert "随机池内共" not in response.content.decode()
     assert "查看可能获得的图纸" not in response.content.decode()
@@ -72,6 +76,22 @@ def test_luanwu_shop_fixed_purchase_consumes_warehouse_coins_and_grants_pack(dja
     assert result["granted_items"] == {"fangdajing": 10}
     assert InventoryItem.objects.get(manor=manor, template=coin).quantity == 2
     assert InventoryItem.objects.get(manor=manor, template=magnifying_glass).quantity == 10
+
+
+@pytest.mark.django_db
+def test_luanwu_shop_recruitment_card_purchase_grants_three_cards_per_coin(django_user_model):
+    user = django_user_model.objects.create_user(username="luanwu_shop_recruitment_card", password="pass123")
+    manor = ensure_manor(user)
+    coin = _create_item_template("chunqiu_coin", "春秋币", effect_type=ItemTemplate.EffectType.RESOURCE)
+    recruitment_card = _create_item_template("recruitment_card", "招募卡")
+    InventoryItem.objects.create(manor=manor, template=coin, quantity=2)
+
+    result = luanwu_shop.purchase_luanwu_shop_item(manor, "recruitment_card")
+
+    assert result["total_cost"] == 1
+    assert result["granted_items"] == {"recruitment_card": 3}
+    assert InventoryItem.objects.get(manor=manor, template=coin).quantity == 1
+    assert InventoryItem.objects.get(manor=manor, template=recruitment_card).quantity == 3
 
 
 @pytest.mark.django_db

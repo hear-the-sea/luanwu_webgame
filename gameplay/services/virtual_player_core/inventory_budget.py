@@ -4,13 +4,14 @@ import logging
 from typing import Any
 
 from django.db import IntegrityError
+from django.db.models import F
 from django.utils import timezone
 
 from gameplay.models import BotInventoryDailyCounter, ItemTemplate
 
 logger = logging.getLogger(__name__)
 
-RARE_ITEM_RARITIES = {"purple", "orange", "red", "legendary"}
+RARE_ITEM_RARITIES = {"purple", "orange", "red"}
 
 
 def inventory_daily_cap_limits(
@@ -22,14 +23,6 @@ def inventory_daily_cap_limits(
     checks: list[tuple[str, int]] = []
     if str(template.rarity or "").lower() in RARE_ITEM_RARITIES:
         checks.append(("rare", int(projection.get("rare_item_daily_global_cap") or 0)))
-    powerful_min_price = int(projection.get("powerful_item_min_price") or 100_000)
-    if int(template.price or 0) >= powerful_min_price:
-        checks.append(
-            (
-                "powerful",
-                int(projection.get("powerful_item_daily_global_cap") or 0),
-            )
-        )
     return tuple(sorted(checks))
 
 
@@ -40,6 +33,22 @@ def reserve_inventory_daily_cap(*, category: str, requested: int, cap: int, now)
         return requested
 
     counter_date = timezone.localtime(now).date()
+    # The normal path reserves the full request with one conditional UPDATE.
+    # It is both atomic under concurrent workers and avoids a read-before-write
+    # round trip for every virtual-player action.  Only a near-exhausted or
+    # missing counter needs the locked fallback below to calculate a partial
+    # reservation or materialize the daily row.
+    full_reservation = BotInventoryDailyCounter.objects.filter(
+        category=str(category),
+        counter_date=counter_date,
+        quantity__lte=cap - requested,
+    ).update(
+        quantity=F("quantity") + requested,
+        updated_at=timezone.now(),
+    )
+    if full_reservation:
+        return requested
+
     counter = lock_inventory_daily_counter(category=str(category), counter_date=counter_date)
     allowed = min(requested, max(0, cap - int(counter.quantity or 0)))
     if allowed > 0:
@@ -106,7 +115,10 @@ def apply_inventory_daily_caps(
 ) -> int:
     quantity = max(0, int(quantity or 0))
     reservations: list[tuple[str, int]] = []
-    for category, cap in inventory_daily_cap_limits(template, config=config):
+    for category, cap in inventory_daily_cap_limits(
+        template,
+        config=config,
+    ):
         previous_quantity = quantity
         quantity = reserve_inventory_daily_cap(category=category, requested=quantity, cap=cap, now=now)
         if previous_quantity > quantity:

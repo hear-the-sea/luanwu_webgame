@@ -6,6 +6,7 @@ population:
   region_active_multiplier: 8
   global_floor: 32
   global_active_multiplier: 20
+  hard_cap: 1000
   exploration_supply: 0
   min_attackable_per_band: 6
   rolling_batch_size: [4, 12]
@@ -107,25 +108,129 @@ projection:
     dojo: {resource_pack: 1, resource: 1, experience_items: 4, medicine: 2, tool: 1}
     guard: {resource_pack: 2, resource: 2, experience_items: 1, medicine: 4, tool: 1}
     abandoned: {resource_pack: 3, resource: 3, experience_items: 1, medicine: 1, tool: 1}
+  inventory_items_per_action:
+    balanced: 4
+    rich: 5
+    dojo: 3
+    guard: 3
+    abandoned: 4
+  inventory_batch_max_per_cycle: 1
+  inventory_rare_color_set: [red, purple, orange]
+  inventory_max_rarity_by_stage:
+    1: green
+    7: blue
+    11: purple
+    16: orange
+  inventory_color_weights_by_prestige_band:
+    newbie: {black: 55, gray: 30, green: 12, red: 3, blue: 0, purple: 0, orange: 0}
+    junior: {black: 45, gray: 32, green: 16, red: 5, blue: 2, purple: 0, orange: 0}
+    middle: {black: 35, gray: 30, green: 22, red: 9, blue: 3, purple: 1, orange: 0}
+    senior: {black: 28, gray: 28, green: 25, red: 12, blue: 5, purple: 1.5, orange: 0.5}
+    veteran: {black: 22, gray: 25, green: 26, red: 15, blue: 7, purple: 3.5, orange: 1.5}
+    elite: {black: 16, gray: 22, green: 27, red: 18, blue: 9, purple: 6, orange: 2}
+    legend: {black: 10, gray: 18, green: 26, red: 20, blue: 13, purple: 9, orange: 4}
+    mythic: {black: 6, gray: 14, green: 24, red: 22, blue: 16, purple: 12, orange: 6}
   loot_budget_daily: 2000000
   loot_limits:
     real_attacker_daily_resource_cap: 2000000
   rare_item_daily_global_cap: 8
-  powerful_item_daily_global_cap: 2
-  powerful_item_min_price: 100000
-  powerful_item_min_growth_stage: 5
-  powerful_item_prestige_chance:
-    - min_prestige: 0
-      chance: 0.0
-    - min_prestige: 500
-      chance: 0.01
-    - min_prestige: 2000
-      chance: 0.03
-    - min_prestige: 8000
-      chance: 0.06
-    - min_prestige: 30000
-      chance: 0.12
-  low_stage_powerful_item_chance: 0.03
+  virtual_troop_costs:
+    silver_base: 100
+    silver_per_tier: 75
+    grain_base: 50
+    grain_per_tier: 25
+  daily_action_bias:
+    balanced:
+      building_upgrade: 1.0
+      technology_upgrade: 1.0
+      training: 1.0
+      equipment_equip: 1.0
+      skill_learning: 1.0
+      inventory_acquisition: 1.0
+      troop_recruitment: 1.0
+    rich:
+      building_upgrade: 1.35
+      technology_upgrade: 1.15
+      training: 0.9
+      equipment_equip: 0.9
+      skill_learning: 0.9
+      inventory_acquisition: 1.1
+      troop_recruitment: 1.0
+    dojo:
+      building_upgrade: 0.9
+      technology_upgrade: 1.0
+      training: 1.35
+      equipment_equip: 1.25
+      skill_learning: 1.25
+      inventory_acquisition: 0.85
+      troop_recruitment: 0.9
+    guard:
+      building_upgrade: 1.1
+      technology_upgrade: 1.35
+      training: 1.0
+      equipment_equip: 1.05
+      skill_learning: 0.9
+      inventory_acquisition: 0.85
+      troop_recruitment: 1.3
+    abandoned:
+      building_upgrade: 0.65
+      technology_upgrade: 0.6
+      training: 0.7
+      equipment_equip: 0.8
+      skill_learning: 0.75
+      inventory_acquisition: 1.1
+      troop_recruitment: 0.55
+  archetype_pacing:
+    balanced:
+      schema_version: 1
+      slot_interval_minutes: [10, 15]
+      silver_budget_ratio: 0.60
+      grain_budget_ratio: 0.60
+      max_parallel_training: 1
+      high_cost_actions_per_cycle: 4
+      building_targets: [farm, granary, tax_office]
+      technology_targets: [architecture, farming]
+      recruitment_pool_weights: {dianshi: 1, xiangshi: 1, cunmu: 1}
+    rich:
+      schema_version: 1
+      slot_interval_minutes: [12, 15]
+      silver_budget_ratio: 0.80
+      grain_budget_ratio: 0.75
+      max_parallel_training: 1
+      high_cost_actions_per_cycle: 5
+      building_targets: [tax_office, silver_vault, tavern, treasury]
+      technology_targets: [architecture, farming]
+      recruitment_pool_weights: {dianshi: 3, xiangshi: 2, cunmu: 1}
+    dojo:
+      schema_version: 1
+      slot_interval_minutes: [10, 12]
+      silver_budget_ratio: 0.45
+      grain_budget_ratio: 0.45
+      max_parallel_training: 2
+      high_cost_actions_per_cycle: 5
+      building_targets: [forge, smithy]
+      technology_targets: [forging, smelting]
+      recruitment_pool_weights: {dianshi: 1, xiangshi: 3, cunmu: 2}
+    guard:
+      schema_version: 1
+      slot_interval_minutes: [11, 14]
+      silver_budget_ratio: 0.50
+      grain_budget_ratio: 0.65
+      max_parallel_training: 1
+      high_cost_actions_per_cycle: 5
+      building_targets: [wall, arrow_tower, jiadingfang]
+      technology_targets: [dao_defense, qiang_defense, gong_defense]
+      recruitment_pool_weights: {dianshi: 2, xiangshi: 1, cunmu: 3}
+    abandoned:
+      schema_version: 1
+      slot_interval_minutes: [14, 15]
+      silver_budget_ratio: 0.20
+      grain_budget_ratio: 0.20
+      max_parallel_training: 0
+      high_cost_actions_per_cycle: 1
+      building_targets: [farm, granary]
+      technology_targets: [farming]
+      recruitment_pool_weights: {dianshi: 1, xiangshi: 1, cunmu: 1}
 
 combat_personas:
   balanced: {guest_level_multiplier: 1.0, guest_count_multiplier: 1.0, troop_multiplier: 1.0}
@@ -169,51 +274,51 @@ bot_development_v2:
     cross_band_instant_strength_promotion_allowed: false
   routing:
     activation_mode: direct_after_gate
-    bootstrap_mode: legacy_before_gate
-    maintenance_mode: legacy_before_gate
+    bootstrap_mode: v2_active
+    maintenance_mode: v2_active
   policy_rollout:
-    target_version: 1
+    target_version: 2
     enabled: false
     rollout_percent: 0
-  reference_snapshot_catalog: {}
+  growth_control:
+    minimum_sample_count: 5
+    smoothing_alpha: 0.35
+    maximum_daily_delta_bps: 500
+    active_sample_days: 30
+    ttl_days: 2
+  arena_training_policy:
+    schema_version: 2
+    version: 2
+    checksum: "731a3e98ea38a7d9fec5b92df25cf486b0e6e27080ca02a0adc858ef93ebe7df"
+    envelopes:
+      newbie:
+        ready_power_range: [0, 1499]
+        supply_prestige_band_priority: [newbie, junior, middle, senior, veteran, elite, legend, mythic]
+      junior:
+        ready_power_range: [1500, 2499]
+        supply_prestige_band_priority: [junior, middle, newbie, senior, veteran, elite, legend, mythic]
+      middle:
+        ready_power_range: [2500, 3499]
+        supply_prestige_band_priority: [middle, senior, junior, veteran, newbie, elite, legend, mythic]
+      senior:
+        ready_power_range: [3500, 4499]
+        supply_prestige_band_priority: [senior, veteran, middle, elite, junior, legend, newbie, mythic]
+      veteran:
+        ready_power_range: [4500, 5499]
+        supply_prestige_band_priority: [veteran, elite, senior, legend, middle, mythic, junior, newbie]
+      elite:
+        ready_power_range: [5500, 6499]
+        supply_prestige_band_priority: [elite, legend, veteran, mythic, senior, middle, junior, newbie]
+      legend:
+        ready_power_range: [6500, 7499]
+        supply_prestige_band_priority: [legend, mythic, elite, veteran, senior, middle, junior, newbie]
+      mythic:
+        ready_power_range: [7500, null]
+        supply_prestige_band_priority: [mythic, legend, elite, veteran, senior, middle, junior, newbie]
   policies:
-    "1":
-      checksum: "8404f5e1318c366cc53690727f2384d6d1063fe3210eb1b6508b610abd7b26a6"
-      max_development_actions: 1
-      reference_calibration_min_profiles_per_band: 30
-      reference_calibration_thresholds:
-        normalized_wasserstein_max: 0.25
-        normalized_quantile_deviation_p10_max: 0.35
-        normalized_quantile_deviation_p50_max: 0.25
-        normalized_quantile_deviation_p90_max: 0.35
-        js_divergence_max_bits: 0.10
-        hard_constraint_violations_max: 0
-        robust_joint_outlier_rate_max: 0.15
-        robust_joint_outlier_rate_above_real_max: 0.05
-        component_fingerprint_collision_rate_max: 0.35
-        joint_fingerprint_collision_rate_max: 0.15
-        fingerprint_collision_rate_above_v1_max: 0.0
-        archetype_standardized_effect_min_absolute: 0.20
-        archetype_standardized_effect_max_absolute: 0.80
-        archetype_effect_direction_must_match: true
-        abandoned_rate_deviation_max: 0.10
-      reference_calibration_archetype_effects:
-        rich: {metric: mean_building_level, direction: higher}
-        dojo: {metric: arena_lineup_power, direction: higher}
-        guard: {metric: troop_total, direction: higher}
-        abandoned: {metric: composite_strength, direction: lower}
-      reference_calibration_abandoned_features:
-        underfilled_roster_guest_count_max: 2
-        stale_gear_level_ratio_max: 0.50
-        growth_gap_days_min: 30
-      use_local_reference_when_profiles_gte: 1
-      borrowed_global_reference_discount_ratio: 0.90
-      borrowed_global_reference_usage: composition_anchor_only
-      borrowed_global_may_raise_sample_tier: false
-      borrowed_global_may_raise_strength_cap: false
-      starter_snapshot_scope: per_prestige_band_conservative_entry_fixture
-      starter_snapshot_requires_live_player_data: false
-      zero_local_sample_cap_strategy: stricter_of_starter_90_percent_and_discounted_global
+    "2": &virtual_player_policy_v2
+      checksum: "016666aea476491e6089d192fd5e84b8fa8701c7f0ff8cca4912708d3c9571d9"
+      max_development_actions: 16
       anchor_k: 5
       strength_safety:
         no_reference:
@@ -247,7 +352,7 @@ bot_development_v2:
       prestige_band_growth:
         effective_limit_rule: strictest_of_sample_tier_band_profile_and_domain_constraints
         direct_prestige_grant_by_maintenance_allowed: false
-        profiles:
+        profiles: &virtual_player_growth_profiles_v2
           newbie:
             bootstrap_history_age_days: [1, 14]
             preferred_strength_check_interval_hours: [4, 8]
@@ -289,7 +394,14 @@ bot_development_v2:
             minimum_positive_strength_action_spacing_hours: 30
             composite_growth_bps_per_controlled_action_max: 125
         last_strength_increase_at_required: true
-        arena_acceleration_may_bypass_band_spacing: false
+        arena_acceleration_bypass:
+          due: true
+          band_spacing: true
+          daily_action: true
+          daily_growth: true
+          per_action: false
+          daily_control_cap: false
+          component_cap: false
         admin_may_bypass_band_spacing: false
         configured_boundaries_crossed_per_controlled_action_max: 1
         cross_band_uses_stricter_source_or_destination_limit: true

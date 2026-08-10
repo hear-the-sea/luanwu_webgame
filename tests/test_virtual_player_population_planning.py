@@ -4,7 +4,12 @@ import ast
 import inspect
 
 import gameplay.services.virtual_player_core.population as population_module
-from gameplay.services.virtual_player_core.population import PopulationCell, plan_population_cells
+from gameplay.services.virtual_player_core.population import (
+    ArenaHandoffSupply,
+    PopulationCell,
+    arena_materialization_deficit,
+    plan_population_cells,
+)
 
 
 def test_population_planner_module_has_no_django_or_orm_imports():
@@ -27,6 +32,35 @@ def test_legacy_population_import_path_reexports_new_implementation():
     assert legacy_module.PlannedPopulationCell is population_module.PlannedPopulationCell
     assert legacy_module.PopulationPlan is population_module.PopulationPlan
     assert legacy_module.plan_population_cells is population_module.plan_population_cells
+
+
+def test_arena_materialization_deficit_consumes_available_handoff():
+    empty_supply = ArenaHandoffSupply()
+
+    assert (
+        arena_materialization_deficit(
+            required_handoff=6,
+            handoff_supply=empty_supply,
+        )
+        == 6
+    )
+    assert (
+        arena_materialization_deficit(
+            required_handoff=6,
+            handoff_supply=ArenaHandoffSupply(available=2),
+        )
+        == 4
+    )
+
+
+def test_arena_materialization_deficit_normalizes_negative_supply_inputs():
+    assert (
+        arena_materialization_deficit(
+            required_handoff=2,
+            handoff_supply=ArenaHandoffSupply(available=-4),
+        )
+        == 2
+    )
 
 
 def test_region_floor_is_shared_across_prestige_bands():
@@ -175,6 +209,32 @@ def test_hard_cap_prioritizes_search_demand_then_active_cells():
     assert result.by_key[("south", "middle")].target == 7
     assert result.by_key[("north", "junior")].target == 1
     assert result.target_total == 8
+
+
+def test_hard_cap_prioritizes_arena_materialization_before_search_demand():
+    cells = [
+        PopulationCell(
+            "north",
+            "newbie",
+            0,
+            0,
+            0,
+            0,
+            arena_materialization_additional=6,
+        ),
+        PopulationCell("south", "middle", 0, 0, 0, 7),
+    ]
+
+    result = plan_population_cells(
+        cells,
+        cell_floor=0,
+        cell_multiplier=0,
+        exploration_supply=0,
+        hard_cap=5,
+    )
+
+    assert result.by_key[("north", "newbie")].target == 5
+    assert result.by_key[("south", "middle")].target == 0
 
 
 def test_zero_hard_cap_means_no_global_cap():

@@ -55,6 +55,7 @@ class MaintenanceAttempt:
     attempt_ordinal: int
     started_at: datetime
     trigger: MaintenanceTrigger
+    retention_reference_at: datetime | None = None
 
     @property
     def event_id_prefix(self) -> str:
@@ -124,12 +125,15 @@ def start_maintenance_attempt(
     operation_id: UUID | str | None = None,
     attempt_ordinal: int = 1,
     started_at: datetime | None = None,
+    retention_reference_at: datetime | None = None,
 ) -> MaintenanceAttempt:
+    normalized_retention_reference = None if retention_reference_at is None else _aware_utc_now(retention_reference_at)
     attempt = MaintenanceAttempt(
         operation_id=_normalize_operation_id(operation_id),
         attempt_ordinal=_normalize_attempt_ordinal(attempt_ordinal),
         started_at=_aware_utc_now(started_at),
         trigger=MaintenanceTrigger(trigger),
+        retention_reference_at=normalized_retention_reference,
     )
     record_safety_metric_event(
         event_id=f"{attempt.event_id_prefix}:started",
@@ -140,6 +144,7 @@ def start_maintenance_attempt(
             "trigger": attempt.trigger.value,
         },
         value=1,
+        retention_reference_at=normalized_retention_reference,
     )
     return attempt
 
@@ -150,16 +155,19 @@ def start_maintenance_attempts(
     operation_ids: Sequence[UUID | str | None],
     attempt_ordinal: int = 1,
     started_at: datetime | None = None,
+    retention_reference_at: datetime | None = None,
 ) -> tuple[MaintenanceAttempt, ...]:
     resolved_trigger = MaintenanceTrigger(trigger)
     resolved_ordinal = _normalize_attempt_ordinal(attempt_ordinal)
     resolved_started_at = _aware_utc_now(started_at)
+    resolved_retention_reference = None if retention_reference_at is None else _aware_utc_now(retention_reference_at)
     attempts = tuple(
         MaintenanceAttempt(
             operation_id=_normalize_operation_id(operation_id),
             attempt_ordinal=resolved_ordinal,
             started_at=resolved_started_at,
             trigger=resolved_trigger,
+            retention_reference_at=resolved_retention_reference,
         )
         for operation_id in operation_ids
     )
@@ -176,7 +184,8 @@ def start_maintenance_attempts(
                 value=Decimal(1),
             )
             for attempt in attempts
-        )
+        ),
+        retention_reference_at=resolved_retention_reference,
     )
     return attempts
 
@@ -190,8 +199,11 @@ def _maintenance_terminal_dimensions(
         "result": normalized_result.value,
         "trigger": attempt.trigger.value,
     }
-    if isinstance(result, MaintenanceResult) and result.reason:
-        dimensions["reason"] = str(result.reason)
+    if isinstance(result, MaintenanceResult):
+        if result.action_kind:
+            dimensions["action"] = str(result.action_kind)
+        if result.reason:
+            dimensions["reason"] = str(result.reason)
     return dimensions
 
 
@@ -216,6 +228,7 @@ def finish_maintenance_attempt(
         occurred_at=attempt.started_at,
         dimensions=_maintenance_terminal_dimensions(attempt, normalized_result, result),
         value=1,
+        retention_reference_at=attempt.retention_reference_at,
     )
 
 
@@ -248,7 +261,14 @@ def finish_maintenance_attempts(
                 value=Decimal(1),
             )
         )
-    return record_safety_metric_events(tuple(events))
+    retention_references = {attempt.retention_reference_at for attempt, _result in attempts}
+    if len(retention_references) > 1:
+        raise ValueError("maintenance attempts must share one retention reference")
+    retention_reference_at = next(iter(retention_references), None)
+    return record_safety_metric_events(
+        tuple(events),
+        retention_reference_at=retention_reference_at,
+    )
 
 
 def record_h01_retirement_recommendation(

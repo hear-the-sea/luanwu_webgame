@@ -134,6 +134,58 @@ def learn_guest_skill_locked(
     return guest_skill
 
 
+def learn_guest_skill_from_virtual_book_locked(
+    manor: "Manor",
+    locked_guest: Guest,
+    item_template_id: int,
+    *,
+    expected_skill_id: int | None = None,
+    expected_item_key: str | None = None,
+) -> GuestSkill:
+    """Learn from a validated virtual skill-book definition without inventory."""
+
+    from gameplay.models import ItemTemplate
+
+    _require_atomic_block("learn_guest_skill_from_virtual_book_locked")
+    if not manor.pk or not locked_guest.pk or locked_guest.manor_id != manor.pk:
+        raise GuestItemOwnershipError(message="门客不属于该庄园")
+    if locked_guest.status != GuestStatus.IDLE:
+        raise GuestNotIdleError(
+            locked_guest,
+            message=f"{locked_guest.display_name} 当前非空闲状态，无法学习技能",
+        )
+    template = (
+        ItemTemplate.objects.select_for_update()
+        .filter(
+            pk=int(item_template_id),
+            effect_type=ItemTemplate.EffectType.SKILL_BOOK,
+        )
+        .first()
+    )
+    if template is None or (expected_item_key is not None and str(template.key) != str(expected_item_key)):
+        raise GuestItemConfigurationError("虚拟技能书定义已发生变化")
+    payload = template.effect_payload
+    if (
+        not isinstance(payload, dict)
+        or not isinstance(payload.get("skill_key"), str)
+        or not payload["skill_key"].strip()
+    ):
+        raise GuestItemConfigurationError("技能书配置有误")
+    skill = Skill.objects.filter(key=payload["skill_key"].strip()).first()
+    if skill is None or (expected_skill_id is not None and int(skill.pk) != int(expected_skill_id)):
+        raise GuestItemConfigurationError("技能书配置有误")
+    if locked_guest.guest_skills.count() >= MAX_GUEST_SKILL_SLOTS:
+        raise SkillSlotFullError("技能位已满")
+    if locked_guest.guest_skills.filter(skill=skill).exists():
+        raise GuestSkillAlreadyLearnedError(locked_guest, skill)
+    assert_guest_meets_skill_requirements(locked_guest, skill)
+    return GuestSkill.objects.create(
+        guest=locked_guest,
+        skill=skill,
+        source=GuestSkill.Source.VIRTUAL,
+    )
+
+
 def learn_guest_skill(
     guest: Guest,
     skill: Skill,

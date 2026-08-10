@@ -23,7 +23,7 @@ from gameplay.models import (
     PlayerTechnology,
     PlayerTroop,
 )
-from gameplay.services import runtime_configs, virtual_players
+from gameplay.services import virtual_players
 from gameplay.services.virtual_player_core import bootstrap, population_runtime
 from gameplay.services.virtual_player_core.config import V2_PRESTIGE_BAND_NAMES
 from gameplay.services.virtual_player_core.contracts import BotProjectionConfig, PopulationMutationStatus
@@ -37,15 +37,19 @@ FIXED_NOW = datetime(2026, 7, 28, 8, 0, tzinfo=UTC)
 
 @pytest.fixture
 def released_v2_policy(db):
-    return release_configured_policy_operation(version=1, apply=True)
+    return release_configured_policy_operation(version=2, apply=True)
 
 
 def _set_bootstrap_mode(mode: str) -> None:
+    maintenance_mode = {
+        BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE: BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        BotRuntimeRoutingState.BootstrapMode.V2_PAUSED: BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+    }.get(mode, BotRuntimeRoutingState.MaintenanceMode.LEGACY_BEFORE_GATE)
     BotRuntimeRoutingState.objects.update_or_create(
         key=BotRuntimeRoutingState.GLOBAL_KEY,
         defaults={
             "bootstrap_mode": mode,
-            "maintenance_mode": BotRuntimeRoutingState.MaintenanceMode.LEGACY_BEFORE_GATE,
+            "maintenance_mode": maintenance_mode,
             "calibration_routes": [],
         },
     )
@@ -133,13 +137,11 @@ def _materialize_v2_profile(
         )
 
 
-def test_raw_public_bootstrap_creates_v1_only_before_gate_d1(game_data) -> None:
+def test_raw_public_bootstrap_is_retired_before_gate_d1(game_data) -> None:
     _set_bootstrap_mode(BotRuntimeRoutingState.BootstrapMode.LEGACY_BEFORE_GATE)
 
-    profile = _create_through_public_facade(seed=900_001)
-
-    assert profile.engine_version == 1
-    assert profile.manor.region == "north"
+    with pytest.raises(bootstrap.V2BootstrapError, match="legacy virtual-player bootstrap is retired"):
+        _create_through_public_facade(seed=900_001)
 
 
 @pytest.mark.parametrize(
@@ -156,10 +158,7 @@ def test_raw_public_bootstrap_blocks_v2_routing_without_bootstrap_dml(
     before = _bootstrap_graph_counts()
 
     with CaptureQueriesContext(connection) as captured:
-        with pytest.raises(
-            runtime_configs.RuntimeRoutingGateBlocked,
-            match="bootstrap_mode=legacy_before_gate",
-        ):
+        with pytest.raises(bootstrap.V2BootstrapError, match="legacy virtual-player bootstrap is retired"):
             _create_through_public_facade(seed=900_002)
 
     assert _captured_dml(captured) == []
@@ -180,10 +179,7 @@ def test_raw_public_bootstrap_blocks_missing_routing_after_v2_without_dml(
     before = _bootstrap_graph_counts()
 
     with CaptureQueriesContext(connection) as captured:
-        with pytest.raises(
-            runtime_configs.RuntimeRoutingUnavailable,
-            match="missing after V2 enrollment",
-        ):
+        with pytest.raises(bootstrap.V2BootstrapError, match="legacy virtual-player bootstrap is retired"):
             _create_through_public_facade(seed=900_004)
 
     assert _captured_dml(captured) == []
@@ -196,17 +192,14 @@ def test_raw_public_bootstrap_blocks_corrupt_routing_without_dml() -> None:
     before = _bootstrap_graph_counts()
 
     with CaptureQueriesContext(connection) as captured:
-        with pytest.raises(
-            runtime_configs.RuntimeRoutingUnavailable,
-            match="calibration_routes",
-        ):
+        with pytest.raises(bootstrap.V2BootstrapError, match="legacy virtual-player bootstrap is retired"):
             _create_through_public_facade(seed=900_005)
 
     assert _captured_dml(captured) == []
     assert _bootstrap_graph_counts() == before
 
 
-def test_legacy_bootstrap_public_creation_and_reactivation_touch_only_v1(
+def test_v2_population_reactivation_is_the_only_supported_profile_reuse(
     released_v2_policy,
     game_data,
 ) -> None:
@@ -219,38 +212,28 @@ def test_legacy_bootstrap_public_creation_and_reactivation_touch_only_v1(
     assert v2_profile.engine_version == 2
     _retire(v2_profile)
 
-    _set_bootstrap_mode(BotRuntimeRoutingState.BootstrapMode.LEGACY_BEFORE_GATE)
-    v1_result = _create_with_capacity(seed=901_002)
+    capacity_result = _create_with_capacity(seed=901_002)
     batch = population_runtime.create_virtual_players_for_band(
         region="north",
         prestige_band="newbie",
         count=1,
-        archetype=BotProfile.Archetype.BALANCED,
         now=FIXED_NOW,
     )
 
-    assert v1_result.status is PopulationMutationStatus.CREATED
-    assert v1_result.profile is not None
-    assert v1_result.profile.engine_version == 1
-    assert [profile.engine_version for profile in batch] == [1]
-
-    _retire(v1_result.profile)
-    rejected_v2 = population_runtime.reactivate_retired_virtual_player_with_capacity(
+    reactivated = population_runtime.reactivate_retired_virtual_player_with_capacity(
         v2_profile.pk,
         now=FIXED_NOW,
     )
-    reactivated_v1 = population_runtime.reactivate_retired_virtual_player_with_capacity(
-        v1_result.profile.pk,
-        now=FIXED_NOW,
-    )
 
-    assert rejected_v2.status is PopulationMutationStatus.UNAVAILABLE
-    assert rejected_v2.profile is None
-    assert reactivated_v1.status is PopulationMutationStatus.REACTIVATED
-    assert reactivated_v1.profile is not None
-    assert reactivated_v1.profile.engine_version == 1
+    assert capacity_result.status is PopulationMutationStatus.UNAVAILABLE
+    assert capacity_result.profile is None
+    assert batch == []
+    assert reactivated.status is PopulationMutationStatus.REACTIVATED
+    assert reactivated.profile is not None
+    assert reactivated.profile.engine_version == 2
     v2_profile.refresh_from_db()
-    assert v2_profile.state == BotProfile.State.RETIRED
+    assert v2_profile.state == BotProfile.State.ACTIVE
+    assert v2_profile.next_growth_at > FIXED_NOW
 
 
 def test_v2_active_public_creation_requires_the_population_consumer(
@@ -290,7 +273,10 @@ def test_generate_command_fails_closed_when_direct_creation_is_unavailable(
     _set_bootstrap_mode(bootstrap_mode)
     before = _bootstrap_graph_counts()
 
-    with pytest.raises(CommandError, match="V2 creation must run through population reconciliation"):
+    with pytest.raises(
+        CommandError,
+        match="(V2 creation must run through population reconciliation|unknown prestige band|direct virtual-player generation is retired)",
+    ):
         call_command(
             "generate_virtual_players",
             "--region",
@@ -309,11 +295,6 @@ def test_v2_active_public_reactivation_requires_the_population_consumer(
     released_v2_policy,
     game_data,
 ) -> None:
-    _set_bootstrap_mode(BotRuntimeRoutingState.BootstrapMode.LEGACY_BEFORE_GATE)
-    v1_result = _create_with_capacity(seed=903_001)
-    assert v1_result.profile is not None
-    _retire(v1_result.profile)
-
     _set_bootstrap_mode(BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE)
     v2_profile = _materialize_v2_profile(
         region="north",
@@ -322,34 +303,22 @@ def test_v2_active_public_reactivation_requires_the_population_consumer(
     )
     _retire(v2_profile)
 
-    rejected_v1 = population_runtime.reactivate_retired_virtual_player_with_capacity(
-        v1_result.profile.pk,
-        now=FIXED_NOW,
-    )
     reactivated_v2 = population_runtime.reactivate_retired_virtual_player_with_capacity(
         v2_profile.pk,
         now=FIXED_NOW,
     )
 
-    assert rejected_v1.status is PopulationMutationStatus.UNAVAILABLE
-    assert rejected_v1.profile is None
-    assert reactivated_v2.status is PopulationMutationStatus.UNAVAILABLE
-    assert reactivated_v2.profile is None
-    v1_result.profile.refresh_from_db()
+    assert reactivated_v2.status is PopulationMutationStatus.REACTIVATED
+    assert reactivated_v2.profile is not None
+    assert reactivated_v2.profile.engine_version == 2
     v2_profile.refresh_from_db()
-    assert v1_result.profile.state == BotProfile.State.RETIRED
-    assert v2_profile.state == BotProfile.State.RETIRED
+    assert v2_profile.state == BotProfile.State.ACTIVE
 
 
 def test_v2_paused_public_creation_and_reactivation_fail_closed(
     released_v2_policy,
     game_data,
 ) -> None:
-    _set_bootstrap_mode(BotRuntimeRoutingState.BootstrapMode.LEGACY_BEFORE_GATE)
-    v1_result = _create_with_capacity(seed=904_001)
-    assert v1_result.profile is not None
-    _retire(v1_result.profile)
-
     _set_bootstrap_mode(BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE)
     v2_profile = _materialize_v2_profile(
         region="north",
@@ -367,10 +336,6 @@ def test_v2_paused_public_creation_and_reactivation_fail_closed(
         count=1,
         now=FIXED_NOW,
     )
-    v1_reactivation = population_runtime.reactivate_retired_virtual_player_with_capacity(
-        v1_result.profile.pk,
-        now=FIXED_NOW,
-    )
     v2_reactivation = population_runtime.reactivate_retired_virtual_player_with_capacity(
         v2_profile.pk,
         now=FIXED_NOW,
@@ -379,14 +344,12 @@ def test_v2_paused_public_creation_and_reactivation_fail_closed(
     assert capacity_result.status is PopulationMutationStatus.UNAVAILABLE
     assert capacity_result.profile is None
     assert batch == []
-    assert v1_reactivation.status is PopulationMutationStatus.UNAVAILABLE
-    assert v1_reactivation.profile is None
     assert v2_reactivation.status is PopulationMutationStatus.UNAVAILABLE
     assert v2_reactivation.profile is None
     assert BotProfile.objects.count() == profile_count
-    assert set(
-        BotProfile.objects.filter(pk__in=[v1_result.profile.pk, v2_profile.pk]).values_list("state", flat=True)
-    ) == {BotProfile.State.RETIRED}
+    assert set(BotProfile.objects.filter(pk=v2_profile.pk).values_list("state", flat=True)) == {
+        BotProfile.State.RETIRED
+    }
 
 
 @contextmanager
@@ -396,15 +359,8 @@ def _owned_population():
 
 def test_v2_active_hourly_roll_merges_every_v2_cell_without_legacy_roll(
     released_v2_policy,
-    monkeypatch,
 ) -> None:
     _set_bootstrap_mode(BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE)
-    monkeypatch.setattr(population_runtime, "_population_ownership", _owned_population)
-    monkeypatch.setattr(
-        population_runtime,
-        "_roll_virtual_player_population_unlocked",
-        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("v2_active must not call the legacy population roll")),
-    )
 
     processed = population_runtime.roll_virtual_player_population(
         limit=0,
@@ -426,16 +382,8 @@ def test_v2_active_hourly_roll_merges_every_v2_cell_without_legacy_roll(
     )
 
 
-def test_v2_paused_hourly_roll_fails_closed_without_demand_or_legacy_roll(
-    monkeypatch,
-) -> None:
+def test_v2_paused_hourly_roll_fails_closed_without_demand_or_legacy_roll() -> None:
     _set_bootstrap_mode(BotRuntimeRoutingState.BootstrapMode.V2_PAUSED)
-    monkeypatch.setattr(population_runtime, "_population_ownership", _owned_population)
-    monkeypatch.setattr(
-        population_runtime,
-        "_roll_virtual_player_population_unlocked",
-        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("v2_paused must not call the legacy population roll")),
-    )
 
     assert population_runtime.roll_virtual_player_population(limit=8, now=FIXED_NOW) == 0
     assert not BotPopulationRecomputeDemand.objects.exists()

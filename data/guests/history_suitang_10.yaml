@@ -317,7 +317,7 @@ heroes:
     name: 王仁则
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）隋末王世充集团将领、王世充族人。唐军围洛阳、争夺虎牢时据守要地，败于李世民军，被擒。
+    flavor: 隋末王世充集团将领，王世充族人；唐军进攻洛阳、争夺虎牢时据守要地，后被李世民军俘获。
     growth_range:
     - 3
     - 7
@@ -330,7 +330,7 @@ heroes:
     name: 徐则
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）隋代道士、隐士，东海人，兼通天文、历数与道术。隋文帝、隋炀帝曾征召，均辞让不仕。
+    flavor: 隋代道士、隐士，东海郯县人，通晓三玄、天文与历数；隋文帝、隋炀帝先后征召，均辞不出仕。
     growth_range:
     - 3
     - 7
@@ -343,7 +343,7 @@ heroes:
     name: 薛收
     default_gender: male
     archetype: civil
-    flavor: （592年—624年）薛道衡之子，字伯褒，河东汾阴人。隋末隐居首阳山，入唐为秦王府记室参军，王世充、窦建德之战檄书多出其手，三十三岁病卒，太宗追赠官爵。
+    flavor: 薛道衡之子，字伯褒；隋末入唐，任秦王府记室参军，参与对王世充、窦建德的文书谋划，624年去世。
     growth_range:
     - 3
     - 7
@@ -356,7 +356,7 @@ heroes:
     name: 徐孝肃
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）汲郡人，以事母至孝见载。母死后负土筑坟、结庐墓侧，隋末盗乱仍守墓不去，朝廷旌表并免徭役。
+    flavor: 隋代孝子，汲郡人；侍奉母亲，母亡后负土筑墓、结庐守墓，事迹载入《隋书·孝义传》，获朝廷旌表。
     growth_range:
     - 3
     - 7
@@ -369,7 +369,7 @@ heroes:
     name: 乙弗弘礼
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）隋唐相士，出自乙弗氏，善观形貌气色，曾出入权贵门庭；其相术传闻多带传奇色彩。
+    flavor: 隋末唐初相士，曾为杨广相面并因直言获罪；入唐后又为薛大鼎相面，生平事迹主要见于相术传记。
     growth_range:
     - 3
     - 7
@@ -382,7 +382,7 @@ heroes:
     name: 杨伯丑
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）隋代河东卜者，隐于市井，以《易》为业，好饮酒。隋文帝曾召见问事，后仍归市井。
+    flavor: 隋代河东卜者，通晓天文、算术和占筮；隋文帝、隋炀帝曾召见询问，后仍以术业行于民间。
     growth_range:
     - 3
     - 7
@@ -395,7 +395,7 @@ heroes:
     name: 张公艺
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）唐郓州寿张人，以九世同居闻名。唐高宗封禅泰山经过其家，问其家族共爨之由，张公艺书百余“忍”字以对，事见《旧唐书》《新唐书》孝友传。
+    flavor: 唐代郓州寿张人，以九代同居著称；唐高宗封禅泰山时询问其家族和睦原因，张公艺书写百余“忍”字作答。
     growth_range:
     - 3
     - 7
@@ -408,7 +408,7 @@ heroes:
     name: 张文诩
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）隋代河东学者，通经，尤精《周易》。父丧后哀毁，隋文帝多次征召不仕，居家授徒。
+    flavor: 隋代河东学者，通经学，尤精《周易》；父丧后以孝闻，隋文帝多次征召不仕，居家授徒。
     growth_range:
     - 3
     - 7
@@ -421,7 +421,7 @@ heroes:
     name: 祖君彦
     default_gender: male
     archetype: civil
-    flavor: （？—618年）隋末李密幕府记室，博学善文，代李密撰讨隋檄文。李密败后被王世充所杀。
+    flavor: 隋末李密幕府文士，曾为李密撰写讨隋檄文；瓦岗失败后被王世充俘获并杀害。
     growth_range:
     - 3
     - 7
@@ -434,7 +434,7 @@ heroes:
     name: 章仇太翼
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）隋代术士，本姓卢，改姓章仇，双目失明而博通群书，尤精占候推步；曾因直言论吉凶触怒文帝下狱，后获释。
+    flavor: 隋代术士、学者，早年以博学和占候见称，曾因直言触怒隋文帝入狱，后获释并受隋炀帝任用。
     growth_range:
     - 3
     - 7
@@ -447,7 +447,7 @@ heroes:
     name: 吐万绪
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）隋将，代郡人，善骑射。大业年间从征高丽、讨杨玄感，后攻刘元进于吴郡，久攻不克，因军败获罪除名。
+    flavor: 隋朝将领，参与征高句丽、讨杨玄感及镇压刘元进；因吴郡战事久攻不克、军功失误，后来被除名。
     growth_range:
     - 3
     - 7
@@ -460,7 +460,7 @@ heroes:
     name: 卢楚
     default_gender: male
     archetype: civil
-    flavor: （？—619年）隋末官员，范阳人，官至内史令。隋炀帝死后在洛阳拥立越王杨侗，王世充掌权后拒不屈从，被杀。
+    flavor: 隋末官员，曾任内史令；江都兵变后在洛阳拥立越王杨侗，王世充掌权后拒绝屈从，619年被杀。
     growth_range:
     - 3
     - 7
@@ -473,7 +473,7 @@ heroes:
     name: 苏慈
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）隋代官员，扶风人，历任度支、工部等职。关中饥馑时奏请开广通渠以通漕运，掌度支时出纳有法。
+    flavor: 苏慈即苏孝慈，北周、隋朝官员，曾主持广通渠及度支事务；关中饥荒时主张疏通漕运，开皇末年去世。
     growth_range:
     - 3
     - 7
@@ -486,7 +486,7 @@ heroes:
     name: 爨玩
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）南中爨氏首领，隋唐间与中央政权保持羁縻往来，活动于滇东南；其势力立身于地方部众与王朝诏令之间。
+    flavor: 史籍所见隋唐间南中爨氏首领，活动于今云南东部，与中央政权保持羁縻关系；个人生平记载较为简略。
     growth_range:
     - 3
     - 7
@@ -499,7 +499,7 @@ heroes:
     name: 杜台卿
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）北齐至隋学者，著《玉烛宝典》等书，博涉礼制、岁时与典章。
+    flavor: 北齐、隋代学者，博涉礼制与岁时典章，著有《玉烛宝典》等书；隋廷曾征召其任著作郎并参与修史。
     growth_range:
     - 3
     - 7
@@ -512,7 +512,7 @@ heroes:
     name: 梁士彦
     default_gender: male
     archetype: civil
-    flavor: （？—590年）隋代将领，参与灭陈，历任刺史、总管等军政职务；隋文帝时因卷入谋反案被诛。
+    flavor: 隋朝将领，参与灭陈及平定尉迟迥之乱；隋文帝时期因卷入谋反案被诛。
     growth_range:
     - 3
     - 7
@@ -525,7 +525,7 @@ heroes:
     name: 苏夔
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）苏威之子，字伯尼，京兆武功人，通音律，参与隋代雅乐议定，曾任著作佐郎；父亲获罪后受牵连免官。
+    flavor: 苏威之子，隋朝官员、音乐家，参与讨论隋代雅乐和律制；曾任著作佐郎，后因父亲获罪受牵连。
     growth_range:
     - 3
     - 7
@@ -538,7 +538,7 @@ heroes:
     name: 韦云起
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）京兆万年人。隋大业年间出使突厥，借启民可汗骑兵讨契丹，擒其首领；入唐任御史大夫，因窦轨诬陷谋反被杀。
+    flavor: 隋朝官员，曾借突厥骑兵击败契丹；入唐后任治书侍御史等职，因被诬陷谋反而获罪。
     growth_range:
     - 3
     - 7
@@ -551,7 +551,7 @@ heroes:
     name: 韦艺
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）隋代官员，先仕北周，入隋后历任州郡长官，仕途跨越改朝换代。
+    flavor: 北周、隋朝官员，出身关中韦氏，曾参与北周末至隋初的军政事务；其生平记载主要见于家族与列传资料。
     growth_range:
     - 3
     - 7
@@ -564,7 +564,7 @@ heroes:
     name: 魏澹
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）字彦深，钜鹿下曲阳人。隋文帝命其另撰魏史，成九十二卷，曾任著作郎、太子学士。
+    flavor: 隋代史学家，字彦深；隋文帝认为魏收《魏书》失实，命其另撰《魏史》九十二卷，原书今已散佚。
     growth_range:
     - 3
     - 7
@@ -577,7 +577,7 @@ heroes:
     name: 卢祖尚
     default_gender: male
     archetype: civil
-    flavor: （？—627年）隋末聚众自保，归唐后授刺史，以廉直有胆略见称。唐太宗命其镇边，因辞行被杀，后追复官爵。
+    flavor: 隋末归唐将领，曾任刺史；唐太宗命其镇守边地，因辞行获罪被杀，后追复官爵。
     growth_range:
     - 3
     - 7
@@ -590,7 +590,7 @@ heroes:
     name: 秦爱
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）齐州历城人，秦琼之父，隋末任北齐王府记室参军，唐初追赠上柱国。
+    flavor: 北齐、隋代官员，秦琼之父，曾任北齐王府记室参军；隋大业年间去世，唐初获追赠。
     growth_range:
     - 3
     - 7
@@ -603,7 +603,7 @@ heroes:
     name: 田翼
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）隋人，见载《隋书·孝义传》；母病时亲尝汤药，母死后结庐墓侧、负土成坟，以孝行闻名。
+    flavor: 隋代孝子，事迹载于《隋书·孝义传》；奉养病母，母亡后守墓负土，因哀毁过度而死。
     growth_range:
     - 3
     - 7

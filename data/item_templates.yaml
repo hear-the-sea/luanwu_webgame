@@ -1441,6 +1441,19 @@ items:
     is_usable: false  # 不在仓库直接使用，在任务详情页使用
     image: mission_card.png
 
+  # ---------- 招募卡 ----------
+
+  - key: recruitment_card
+    name: 招募卡
+    description: 给聚贤庄递一张“再来一位”的请帖：使用后为指定招募卡池增加1次今日招募额度。不限使用张数，卡够就能继续招，至于庄里最后能塞下多少位豪杰——那是明天的烦恼。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 1000
+    storage_space: 25
+    is_usable: false  # 需要在聚贤庄选择具体卡池后使用
+    image: recruitment_card.png
+
   # ---------- 门客重生卡 ----------
 
   - key: guest_rebirth_card

@@ -108,6 +108,33 @@ class RecruitmentPool(models.Model):
         return self.name
 
 
+class RecruitmentExtraAttempt(models.Model):
+    """
+    招募卡增加的每日额外次数。
+
+    每条记录对应一个庄园、一个卡池和一个自然日；跨日后旧记录保留作审计，
+    读取时只取当天记录，因此无需定时任务清理或手动重置。
+    """
+
+    manor = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="recruitment_extra_attempts")
+    pool = models.ForeignKey(RecruitmentPool, on_delete=models.CASCADE, related_name="extra_attempts")
+    date = models.DateField("额外次数生效日期")
+    extra_count = models.PositiveIntegerField("额外招募次数", default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "招募额外次数"
+        verbose_name_plural = "招募额外次数"
+        unique_together = ("manor", "pool", "date")
+        indexes = [
+            models.Index(fields=["manor", "date"], name="recruit_extra_manor_date_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.manor} - {self.pool.name} - {self.date} (+{self.extra_count})"
+
+
 class RecruitmentPoolEntry(models.Model):
     pool = models.ForeignKey(RecruitmentPool, on_delete=models.CASCADE, related_name="entries")
     template = models.ForeignKey(GuestTemplate, on_delete=models.CASCADE, null=True, blank=True)
@@ -400,13 +427,37 @@ class RecruitmentRecord(models.Model):
 class GuestRecruitment(models.Model):
     """门客招募队列（异步倒计时）"""
 
+    class Source(models.TextChoices):
+        PLAYER = "player", "真人玩家"
+        VIRTUAL = "virtual", "虚拟玩家"
+
     class Status(models.TextChoices):
         PENDING = "pending", "招募中"
         COMPLETED = "completed", "已完成"
         FAILED = "failed", "失败"
 
     manor = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="guest_recruitments")
+    bot_profile = models.ForeignKey(
+        "gameplay.BotProfile",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="virtual_guest_recruitments",
+        verbose_name="虚拟玩家档案",
+    )
     pool = models.ForeignKey(RecruitmentPool, on_delete=models.SET_NULL, null=True)
+    source = models.CharField(
+        "招募来源",
+        max_length=16,
+        choices=Source.choices,
+        default=Source.PLAYER,
+        db_index=True,
+    )
+    operation_id = models.CharField("招募操作 ID", max_length=128, unique=True, null=True, blank=True)
+    quota_date = models.DateField("虚拟招募配额日期", null=True, blank=True, db_index=True)
+    quota_ordinal = models.PositiveSmallIntegerField("虚拟招募日计划序号", null=True, blank=True)
+    pool_snapshot = models.JSONField("卡池快照", default=dict, blank=True)
+    salary_commitment = models.PositiveIntegerField("新增工资承诺", default=0)
     cost = models.JSONField("招募消耗", default=dict)
     draw_count = models.PositiveIntegerField("候选数量", default=1)
     duration_seconds = models.PositiveIntegerField("招募时长(秒)", default=0)
@@ -425,12 +476,46 @@ class GuestRecruitment(models.Model):
         indexes = [
             models.Index(fields=["manor", "status", "complete_at"], name="guest_recruit_msc_idx"),
             models.Index(fields=["status", "complete_at"], name="guest_recruit_sc_idx"),
+            models.Index(
+                fields=["bot_profile", "source", "quota_date", "quota_ordinal"],
+                name="guest_recruit_vp_quota_idx",
+            ),
         ]
         constraints = [
             models.UniqueConstraint(
                 fields=["manor"],
                 condition=models.Q(status="pending"),
                 name="uniq_pending_guest_recruitment_per_manor",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    (
+                        models.Q(source="player")
+                        & models.Q(bot_profile__isnull=True)
+                        & models.Q(operation_id__isnull=True)
+                        & models.Q(quota_date__isnull=True)
+                        & models.Q(quota_ordinal__isnull=True)
+                    )
+                    | (
+                        models.Q(source="virtual")
+                        & models.Q(bot_profile__isnull=False)
+                        & models.Q(operation_id__isnull=False)
+                        & ~models.Q(operation_id="")
+                        & models.Q(quota_date__isnull=False)
+                        & models.Q(quota_ordinal__isnull=False)
+                    )
+                ),
+                name="guest_recruit_source_contract",
+            ),
+            models.UniqueConstraint(
+                fields=["bot_profile", "source", "quota_date", "quota_ordinal"],
+                condition=(
+                    models.Q(source="virtual")
+                    & models.Q(bot_profile__isnull=False)
+                    & models.Q(quota_date__isnull=False)
+                    & models.Q(quota_ordinal__isnull=False)
+                ),
+                name="uniq_virtual_guest_recruitment_quota_slot",
             ),
         ]
 
@@ -464,6 +549,7 @@ class GuestSkill(models.Model):
     class Source(models.TextChoices):
         TEMPLATE = "template", "模板"
         BOOK = "book", "技能书"
+        VIRTUAL = "virtual", "虚拟投影"
 
     guest = models.ForeignKey(Guest, on_delete=models.CASCADE, related_name="guest_skills")
     skill = models.ForeignKey(Skill, on_delete=models.CASCADE)

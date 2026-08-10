@@ -19,8 +19,6 @@ from guests.models import Guest
 
 from .config import load_virtual_player_config
 from .contracts import BotProjectionConfig
-from .legacy.projection import apply_combat_persona, apply_stable_troop_variation, choose_strength_quantile
-from .legacy.projection import nearest_rank_quantile as legacy_nearest_rank_quantile
 from .projection import (
     ProjectionRuleError,
     ReferenceCandidate,
@@ -31,6 +29,8 @@ from .projection import (
 from .projection import nearest_rank_quantile as strength_nearest_rank_quantile
 from .projection import select_reference
 from .random_context import RandomContext
+from .runtime_helpers import apply_combat_persona, apply_stable_troop_variation, choose_strength_quantile
+from .runtime_helpers import nearest_rank_quantile as legacy_nearest_rank_quantile
 from .selectors import band_filter_kwargs, prestige_bands, profile_target_prestige_band
 
 CORE_BUILDING_KEYS = (
@@ -211,6 +211,7 @@ def _guest_arena_power(row: Mapping[str, Any]) -> int:
         force=int(row["force"] or 0),
         intellect=int(row["intellect"] or 0),
         defense=int(row["defense_stat"] or 0),
+        agility=int(row["agility"] or 0),
         hp_bonus=int(row["hp_bonus"] or 0),
         archetype=str(row["template__archetype"] or ""),
         base_hp=int(row["template__base_hp"] or 0),
@@ -264,6 +265,7 @@ def _load_human_reference_snapshots(
         "force",
         "intellect",
         "defense_stat",
+        "agility",
         "hp_bonus",
         "template__archetype",
         "template__base_hp",
@@ -386,8 +388,14 @@ def select_policy_reference(
     now,
     calibrated_candidates: Sequence[ReferenceCandidate] | None = None,
     calibrated_sample_count: int | None = None,
+    use_real_player_data: bool = True,
 ) -> tuple[Mapping[str, Any], StrengthSummary, ReferenceSelection]:
-    """Load and select the shared Bootstrap/Maintenance reference contract."""
+    """Select the reference contract, optionally without live human-player reads.
+
+    Policy-2 bootstrap passes ``use_real_player_data=False`` and therefore
+    stays on the fixed starter envelope.  The daily aggregate control task is
+    the only runtime path allowed to scan real players.
+    """
     snapshot_version, snapshot = policy_starter_snapshot(
         policy_payload,
         prestige_band=prestige_band,
@@ -396,18 +404,24 @@ def select_policy_reference(
     if calibrated_candidates is None:
         if calibrated_sample_count is not None:
             raise ReferenceSnapshotError("calibrated_sample_count requires calibrated_candidates")
-        cohort = load_human_reference_cohort(
-            region=region,
-            prestige_band=prestige_band,
-            low=band_lower_inclusive,
-            high=band_upper_exclusive,
-            now=now,
-            snapshot_version=snapshot_version,
-        )
-        local_candidates = cohort.local_candidates
-        local_sample_count = cohort.local_sample_count
-        global_candidates = cohort.global_same_band_candidates
-        global_same_band_cap = cohort.global_same_band_cap
+        if use_real_player_data:
+            cohort = load_human_reference_cohort(
+                region=region,
+                prestige_band=prestige_band,
+                low=band_lower_inclusive,
+                high=band_upper_exclusive,
+                now=now,
+                snapshot_version=snapshot_version,
+            )
+            local_candidates = cohort.local_candidates
+            local_sample_count = cohort.local_sample_count
+            global_candidates = cohort.global_same_band_candidates
+            global_same_band_cap = cohort.global_same_band_cap
+        else:
+            local_candidates = ()
+            local_sample_count = 0
+            global_candidates = ()
+            global_same_band_cap = None
     else:
         if (
             isinstance(calibrated_sample_count, bool)
@@ -498,6 +512,7 @@ def load_manor_strength_summaries(
             "force",
             "intellect",
             "defense_stat",
+            "agility",
             "hp_bonus",
             "template__archetype",
             "template__base_hp",
@@ -527,6 +542,7 @@ def load_manor_strength_summaries(
                     force=int(guest.force or 0),
                     intellect=int(guest.intellect or 0),
                     defense=int(guest.defense_stat or 0),
+                    agility=int(guest.agility or 0),
                     hp_bonus=int(guest.hp_bonus or 0),
                     archetype=str(guest.template.archetype or ""),
                     base_hp=int(guest.template.base_hp or 0),

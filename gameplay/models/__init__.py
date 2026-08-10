@@ -10,12 +10,13 @@ public model classes/constants here to preserve the historical import style:
 
 from .arena import ArenaEntry, ArenaEntryGuest, ArenaExchangeRecord, ArenaMatch, ArenaTournament
 from .arena_coop import ArenaCoopContribution, ArenaCoopEntry, ArenaCoopEntryGuest, ArenaCoopEvent
-from .arena_virtual import ArenaVirtualDemand, ArenaVirtualReserveMember
+from .arena_virtual import ArenaReserveTrainingAssignment, ArenaVirtualDemand, ArenaVirtualReserveMember
 from .bots import (
     BotArenaShortageBaseline,
     BotBackfillDemand,
     BotExternalStrengthReconciliation,
     BotInventoryDailyCounter,
+    BotMaintenanceRecovery,
     BotPolicyRelease,
     BotPopulationControl,
     BotPopulationRecomputeDemand,
@@ -24,6 +25,9 @@ from .bots import (
     BotSafetyMetricEvent,
     BotSafetyMetricWindow,
     BotVirtualPlayerHealth,
+    VirtualPlayerGrowthControlPointer,
+    VirtualPlayerGrowthControlRun,
+    VirtualPlayerGrowthControlSnapshot,
 )
 from .chat import WorldChatSendAttempt
 from .items import GlobalMailCampaign, GlobalMailDelivery, InventoryItem, ItemTemplate, Message, ResourceEvent
@@ -60,7 +64,12 @@ from .progression import (
     WorkTemplate,
 )
 from .pvp import JailInteractionLog, JailPrisoner, OathBond, RaidRun, ScoutCooldown, ScoutRecord
-from .virtual_player_maintenance import BotMaintenanceExecution
+from .virtual_player_maintenance import (
+    BotMaintenanceAttempt,
+    BotMaintenanceCompletionEvent,
+    BotMaintenanceCycle,
+    BotMaintenanceExecution,
+)
 
 __all__ = [
     # manor/buildings
@@ -100,12 +109,20 @@ __all__ = [
     "ArenaCoopContribution",
     "ArenaVirtualDemand",
     "ArenaVirtualReserveMember",
+    "ArenaReserveTrainingAssignment",
     # bots
     "BotArenaShortageBaseline",
     "BotBackfillDemand",
     "BotExternalStrengthReconciliation",
     "BotInventoryDailyCounter",
     "BotMaintenanceExecution",
+    "BotMaintenanceAttempt",
+    "BotMaintenanceCycle",
+    "BotMaintenanceCompletionEvent",
+    "BotMaintenanceRecovery",
+    "VirtualPlayerGrowthControlSnapshot",
+    "VirtualPlayerGrowthControlRun",
+    "VirtualPlayerGrowthControlPointer",
     "BotPolicyRelease",
     "BotPopulationControl",
     "BotPopulationRecomputeDemand",

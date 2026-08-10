@@ -136,7 +136,7 @@ def test_technology_upgrade_candidate_is_pure_and_matches_committed_strength(
 
 
 @pytest.mark.django_db
-def test_upgrade_candidates_reject_unaffordable_quotes(manor_factory) -> None:
+def test_upgrade_candidates_preserve_unaffordable_quotes_for_shared_assessment(manor_factory) -> None:
     manor, _user = manor_factory(username="maintenance_upgrade_unaffordable")
     Manor.objects.filter(pk=manor.pk).update(silver=0, grain=0)
     manor.refresh_from_db()
@@ -165,5 +165,5 @@ def test_upgrade_candidates_reject_unaffordable_quotes(manor_factory) -> None:
         prestige_band_for=lambda _prestige: "newbie",
     )
 
-    assert building_candidates == ()
-    assert technology_candidates == ()
+    assert len(building_candidates) == 1
+    assert len(technology_candidates) == 1

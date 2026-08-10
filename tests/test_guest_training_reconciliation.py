@@ -71,7 +71,7 @@ def test_scan_guest_training_schedules_idle_real_player_orphan(django_user_model
 
 
 @pytest.mark.django_db
-def test_scan_guest_training_excludes_virtual_player_before_applying_limit(django_user_model):
+def test_scan_guest_training_reconciles_virtual_player_before_applying_limit(django_user_model):
     virtual_guest = _create_guest(django_user_model, suffix="virtual")
     _create_bot_profile(virtual_guest)
     real_guest = _create_guest(django_user_model, suffix="real_after_virtual")
@@ -80,8 +80,8 @@ def test_scan_guest_training_excludes_virtual_player_before_applying_limit(djang
 
     virtual_guest.refresh_from_db()
     real_guest.refresh_from_db()
-    assert virtual_guest.training_complete_at is None
-    assert real_guest.training_complete_at is not None
+    assert virtual_guest.training_complete_at is not None
+    assert real_guest.training_complete_at is None
 
 
 @pytest.mark.django_db

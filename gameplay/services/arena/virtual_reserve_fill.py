@@ -86,7 +86,11 @@ def _candidates(
     profile_ids: Sequence[int] | None = None,
 ):
     queryset = (
-        BotProfile.objects.filter(state__in=VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES)
+        BotProfile.objects.filter(
+            state__in=VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES,
+            engine_version=2,
+            policy_version=2,
+        )
         .exclude(manor_id__in=set(excluded_manor_ids))
         .select_related("manor")
         .prefetch_related(
@@ -115,6 +119,8 @@ def _lock_candidates(
         .filter(
             id__in=profile_ids,
             state__in=VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES,
+            engine_version=2,
+            policy_version=2,
         )
         .exclude(manor_id__in=set(excluded_manor_ids))
         .select_related("manor")
@@ -587,6 +593,9 @@ def _complete_demand_fill(
     demand.last_failure_reason = ""
     demand.consecutive_failure_count = 0
     demand.last_progress_at = now
+    demand.admission_paused_at = None
+    demand.admission_pause_reason = ""
+    demand.admission_probe_target_ordinal = None
     demand.save(
         update_fields=[
             "status",
@@ -598,6 +607,9 @@ def _complete_demand_fill(
             "last_failure_reason",
             "consecutive_failure_count",
             "last_progress_at",
+            "admission_paused_at",
+            "admission_pause_reason",
+            "admission_probe_target_ordinal",
             "updated_at",
         ]
     )

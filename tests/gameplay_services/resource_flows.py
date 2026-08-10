@@ -14,6 +14,8 @@ from gameplay.services.manor.core import ensure_manor
 from gameplay.services.resources import (
     ResourceProductionBasis,
     grant_resources,
+    preview_resource_grant,
+    preview_resource_production,
     settle_resource_production_locked,
     spend_resources,
     sync_resource_production,
@@ -313,6 +315,46 @@ def test_sync_resource_production_persist_false_projects_grain_ledger_without_db
         ).quantity
         == 100
     )
+
+
+@pytest.mark.django_db
+def test_resource_previews_do_not_mutate_manor_grain_projection(monkeypatch):
+    user = User.objects.create_user(username="pure_resource_preview_user", password="test123")
+    manor = ensure_manor(user)
+    grain_template = ensure_grain_template()
+    original_updated_at = timezone.now() - timezone.timedelta(hours=1)
+    manor.grain = 17
+    manor.resource_updated_at = original_updated_at
+    manor.save(update_fields=["grain", "resource_updated_at"])
+    InventoryItem.objects.update_or_create(
+        manor=manor,
+        template=grain_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        defaults={"quantity": 91},
+    )
+    manor.__dict__.pop("warehouse_grain_quantity", None)
+
+    monkeypatch.setattr(
+        "gameplay.services.resources.get_hourly_rates",
+        lambda _manor: {ResourceType.SILVER: 0, ResourceType.GRAIN: 12},
+    )
+    monkeypatch.setattr(
+        "gameplay.services.resources.get_personnel_grain_cost_per_hour",
+        lambda _manor: 0,
+    )
+    monkeypatch.setattr("gameplay.services.resources.scale_value", lambda value: value)
+
+    credited, overflow = preview_resource_grant(manor, {ResourceType.GRAIN: 5})
+    produced = preview_resource_production(
+        manor,
+        now=original_updated_at + timezone.timedelta(hours=1),
+    )
+
+    assert credited == {ResourceType.GRAIN: 5}
+    assert overflow == {}
+    assert produced == {ResourceType.GRAIN: 12}
+    assert manor.grain == 17
+    assert "warehouse_grain_quantity" not in manor.__dict__
 
 
 @pytest.mark.django_db

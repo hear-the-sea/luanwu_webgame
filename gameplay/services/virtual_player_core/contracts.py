@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from decimal import ROUND_CEILING, Decimal, InvalidOperation
 from enum import Enum
@@ -49,6 +49,98 @@ class MaintenanceOutcome(str, Enum):
     BUSY = "busy"
     PAUSED = "paused"
     INELIGIBLE = "ineligible"
+
+
+@dataclass(frozen=True, slots=True)
+class ArenaGrowthObjective:
+    """Pure arena target consumed by maintenance without arena ORM access."""
+
+    critical_guest_count: int
+    preferred_guest_count: int
+    selected_power_lower_bound: int
+    selected_power_upper_bound: int
+    selected_power_before: int
+    target_team_power: int
+    lineup_mode: str
+    lineup_event_id: int
+    lineup_max_size: int
+    minimum_guest_level: int
+    recruitment_rarity_cap: str | None
+    max_guest_level_step: int
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "critical_guest_count",
+            "preferred_guest_count",
+            "selected_power_lower_bound",
+            "selected_power_upper_bound",
+            "selected_power_before",
+            "target_team_power",
+            "lineup_event_id",
+        ):
+            value = getattr(self, field_name)
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError(f"{field_name} must be a non-negative integer")
+        for field_name in ("lineup_max_size", "minimum_guest_level", "max_guest_level_step"):
+            value = getattr(self, field_name)
+            if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+                raise ValueError(f"{field_name} must be a positive integer")
+        if self.preferred_guest_count < self.critical_guest_count:
+            raise ValueError("preferred_guest_count must not be below critical_guest_count")
+        if self.selected_power_upper_bound < self.selected_power_lower_bound:
+            raise ValueError("selected power upper bound must not be below the lower bound")
+        if self.target_team_power < 1:
+            raise ValueError("target_team_power must be positive")
+        if self.lineup_mode not in {"tournament", "coop"}:
+            raise ValueError("lineup_mode must be tournament or coop")
+        if self.lineup_event_id < 1:
+            raise ValueError("lineup_event_id must be positive")
+        if self.recruitment_rarity_cap is not None and (
+            not isinstance(self.recruitment_rarity_cap, str) or not self.recruitment_rarity_cap.strip()
+        ):
+            raise ValueError("recruitment_rarity_cap must be a non-empty string or None")
+
+    @property
+    def selected_lineup_gap(self) -> int:
+        return max(0, self.selected_power_lower_bound - self.selected_power_before)
+
+    def to_payload(self) -> dict[str, int | str | None]:
+        return {
+            "critical_guest_count": self.critical_guest_count,
+            "preferred_guest_count": self.preferred_guest_count,
+            "selected_power_lower_bound": self.selected_power_lower_bound,
+            "selected_power_upper_bound": self.selected_power_upper_bound,
+            "selected_power_before": self.selected_power_before,
+            "target_team_power": self.target_team_power,
+            "lineup_mode": self.lineup_mode,
+            "lineup_event_id": self.lineup_event_id,
+            "lineup_max_size": self.lineup_max_size,
+            "minimum_guest_level": self.minimum_guest_level,
+            "recruitment_rarity_cap": self.recruitment_rarity_cap,
+            "max_guest_level_step": self.max_guest_level_step,
+        }
+
+    @classmethod
+    def from_payload(cls, value: object) -> "ArenaGrowthObjective":
+        """Parse the exact persisted arena-growth request schema."""
+
+        expected_fields = {
+            "critical_guest_count",
+            "preferred_guest_count",
+            "selected_power_lower_bound",
+            "selected_power_upper_bound",
+            "selected_power_before",
+            "target_team_power",
+            "lineup_mode",
+            "lineup_event_id",
+            "lineup_max_size",
+            "minimum_guest_level",
+            "recruitment_rarity_cap",
+            "max_guest_level_step",
+        }
+        if not isinstance(value, dict) or set(value) != expected_fields:
+            raise ValueError("arena growth objective payload must contain exactly the objective fields")
+        return cls(**value)
 
 
 STRENGTH_BUDGET_WINDOW = timedelta(hours=24)
@@ -284,7 +376,21 @@ class MaintenanceTriggerPolicy:
         object.__setattr__(self, "schedule_disposition", disposition)
         object.__setattr__(self, "sequence_advancing_outcomes", outcomes)
 
-    def is_due(self, *, next_growth_at: datetime | None, now: datetime) -> bool:
+    def is_due(
+        self,
+        *,
+        next_growth_at: datetime | None,
+        now: datetime,
+        arena_bypass_due: bool | None = None,
+    ) -> bool:
+        if arena_bypass_due is not None:
+            if self.trigger is not MaintenanceTrigger.ARENA_ACCELERATION:
+                raise ValueError("arena_bypass_due is only valid for arena acceleration")
+            if type(arena_bypass_due) is not bool:
+                raise ValueError("arena_bypass_due must be a boolean")
+            if arena_bypass_due:
+                return True
+            return next_growth_at is not None and next_growth_at <= now
         if not self.requires_due:
             return True
         return next_growth_at is not None and next_growth_at <= now
@@ -305,6 +411,9 @@ class MaintenanceResult:
     next_growth_at_after: datetime | None
     action_kind: str = ""
     reason: str = ""
+    shadow_cost: Mapping[str, int] = field(default_factory=dict)
+    target_id: int | None = None
+    scheduled_cycle_slot_due: bool = False
 
     def __post_init__(self) -> None:
         outcome = MaintenanceOutcome(self.outcome)
@@ -330,6 +439,8 @@ class MaintenanceResult:
             MaintenanceOutcome.APPLIED,
             MaintenanceOutcome.NO_ACTION,
         }
+        if type(self.scheduled_cycle_slot_due) is not bool:
+            raise ValueError("scheduled_cycle_slot_due must be a boolean")
         expected_sequence_after = self.sequence_before + int(committed)
         if self.sequence_after != expected_sequence_after:
             raise ValueError("maintenance sequence must advance exactly once only for APPLIED or NO_ACTION")
@@ -339,7 +450,7 @@ class MaintenanceResult:
             if trigger is MaintenanceTrigger.SCHEDULED:
                 if disposition is not MaintenanceScheduleDisposition.ADVANCE_NORMAL_SCHEDULE:
                     raise ValueError("scheduled committed maintenance must use advance_normal_schedule")
-                if before is None or after is None or after <= before:
+                if before is None or after is None or (not self.scheduled_cycle_slot_due and after <= before):
                     raise ValueError(
                         "scheduled committed maintenance must move next_growth_at "
                         "forward from a non-null due deadline"
@@ -358,14 +469,29 @@ class MaintenanceResult:
                 )
         if not isinstance(self.action_kind, str) or not isinstance(self.reason, str):
             raise ValueError("action_kind and reason must be strings")
+        if self.target_id is not None and (
+            isinstance(self.target_id, bool) or not isinstance(self.target_id, int) or self.target_id < 1
+        ):
+            raise ValueError("target_id must be a positive integer or None")
+        if not isinstance(self.shadow_cost, Mapping):
+            raise ValueError("shadow_cost must be a mapping")
+        normalized_shadow_cost: dict[str, int] = {}
+        for raw_key, raw_value in self.shadow_cost.items():
+            key = str(raw_key).strip()
+            if not key or isinstance(raw_value, bool) or not isinstance(raw_value, int) or raw_value < 0:
+                raise ValueError("shadow_cost must contain non-negative integer values")
+            normalized_shadow_cost[key] = int(raw_value)
         if outcome is MaintenanceOutcome.APPLIED:
             if not self.action_kind.strip():
                 raise ValueError("APPLIED maintenance requires a non-empty action_kind")
             if self.reason:
                 raise ValueError("APPLIED maintenance must not include a reason")
+        elif outcome is MaintenanceOutcome.NO_ACTION:
+            if not self.reason.strip():
+                raise ValueError("NO_ACTION maintenance requires a non-empty reason")
         else:
             if self.action_kind:
-                raise ValueError("non-APPLIED maintenance must not include an action_kind")
+                raise ValueError("uncommitted maintenance must not include an action_kind")
             if not self.reason.strip():
                 raise ValueError("non-APPLIED maintenance requires a non-empty reason")
         object.__setattr__(self, "outcome", outcome)
@@ -373,6 +499,7 @@ class MaintenanceResult:
         object.__setattr__(self, "schedule_disposition", disposition)
         object.__setattr__(self, "next_growth_at_before", before)
         object.__setattr__(self, "next_growth_at_after", after)
+        object.__setattr__(self, "shadow_cost", MappingProxyType(normalized_shadow_cost))
 
 
 @dataclass(frozen=True, slots=True)
@@ -435,6 +562,7 @@ def maintenance_trigger_policy(
 
 __all__ = [
     "AcceleratedGrowthOutcome",
+    "ArenaGrowthObjective",
     "BotLootClampDecision",
     "BotProjectionConfig",
     "MaintenanceOutcome",

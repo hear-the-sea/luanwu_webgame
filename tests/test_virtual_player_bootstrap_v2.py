@@ -40,7 +40,7 @@ FIXED_NOW = datetime(2026, 7, 28, 8, 0, tzinfo=UTC)
 
 @pytest.fixture
 def released_v2_policy(db):
-    return release_configured_policy_operation(version=1, apply=True)
+    return release_configured_policy_operation(version=2, apply=True)
 
 
 def _materialize_v2_plan(
@@ -94,7 +94,7 @@ def test_build_v2_bootstrap_plan_is_deterministic_and_stays_in_all_eight_bands(
         )
 
         assert first == second
-        assert first.bootstrap_mode == bootstrap.V2_BOOTSTRAP_MODE_CONSERVATIVE_COLD_START
+        assert first.bootstrap_mode == bootstrap.V2_BOOTSTRAP_MODE_POLICY_2_DEFAULT
         lower_age, upper_age = expected_age_ranges[band.name]
         assert lower_age <= first.blueprint.historical_age_days <= upper_age
         assert band.contains(first.projection.prestige)
@@ -263,7 +263,7 @@ def test_legacy_maintenance_never_falls_back_for_v2_profile(
     )
 
     assert maintain_due_virtual_players(now=FIXED_NOW, limit=10) == 0
-    assert accelerate_virtual_player_growth(profile.id, now=FIXED_NOW) is AcceleratedGrowthOutcome.INELIGIBLE
+    assert accelerate_virtual_player_growth(profile.id, now=FIXED_NOW) is AcceleratedGrowthOutcome.PAUSED
 
     profile.refresh_from_db()
     profile.manor.refresh_from_db()
@@ -317,6 +317,28 @@ def test_unlocked_bootstrap_catalog_is_cached_but_locked_reads_bypass_cache(game
     assert len(cached_read) == 0
     assert len(locked_read) > 0
     clear_bootstrap_catalog_cache()
+
+
+@pytest.mark.django_db
+def test_v2_bootstrap_excludes_event_boss_skills_from_virtual_guests(
+    released_v2_policy,
+    game_data,
+) -> None:
+    plan = bootstrap.build_virtual_player_v2_bootstrap_plan(
+        "north",
+        "middle",
+        BotProfile.Archetype.BALANCED,
+        991_041,
+        FIXED_NOW,
+    )
+
+    catalog = load_bootstrap_catalog(load_virtual_player_config())
+    catalog_skill_keys = {entry.key for entry in catalog.skills}
+    selected_skill_keys = {key for target in plan.blueprint.assets.guests for key in target.skill_keys}
+
+    assert "gl_top_qiankun_holy_flame" not in catalog_skill_keys
+    assert not any(key.startswith("gl_top_") for key in selected_skill_keys)
+    assert selected_skill_keys <= catalog_skill_keys
 
 
 @pytest.mark.django_db

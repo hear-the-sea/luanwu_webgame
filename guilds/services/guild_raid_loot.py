@@ -11,8 +11,7 @@ from gameplay.models import ItemTemplate
 from gameplay.services.pvp_runtime.loot import (
     WeightedLootCandidate,
     calculate_item_loot_capacity,
-    calculate_item_loot_draw_count,
-    draw_weighted_item_loot,
+    draw_weighted_item_loot_with_grain_fill,
     normalize_positive_int_mapping,
 )
 
@@ -109,16 +108,15 @@ def reserve_guild_raid_loot(
         .filter(guild=defender_locked, item_key__in=whitelist, quantity__gt=0)
         .order_by("item_key", "id")
     )
-    total_quantity = sum(int(row.quantity or 0) for row in locked_rows)
-    draw_count = calculate_item_loot_draw_count(total_quantity, warehouse_percent / 100)
     capacity = _calculate_guild_item_loot_capacity(
         guests=guests,
         troop_loadout=troop_loadout,
         battle_report=battle_report,
     )
-    loot_items = draw_weighted_item_loot(
+    loot_items = draw_weighted_item_loot_with_grain_fill(
         _build_weighted_loot_candidates(locked_rows),
-        draw_count=draw_count,
+        non_grain_ratio=warehouse_percent / 100,
+        grain_ratio=warehouse_percent / 100,
         capacity=capacity,
         rng=rng,
     )

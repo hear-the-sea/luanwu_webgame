@@ -106,6 +106,24 @@ def test_merge_during_claim_remains_pending_after_fenced_finalize() -> None:
     assert demand.claim_token is None
 
 
+def test_population_claim_rotation_does_not_reselect_a_continuously_pending_cell() -> None:
+    now = timezone.now()
+    merge_population_recompute_demand(region="north", prestige_band="newbie", now=now)
+    merge_population_recompute_demand(region="east", prestige_band="newbie", now=now)
+
+    first_claim = claim_next_population_recompute_demand(now=now)
+    assert first_claim is not None
+    assert finalize_population_recompute_demand(
+        first_claim,
+        executable_deficit_remains=True,
+        now=now,
+    )
+
+    next_claim = claim_next_population_recompute_demand(now=now)
+    assert next_claim is not None
+    assert next_claim.demand_id != first_claim.demand_id
+
+
 def test_expired_claim_is_reclaimed_and_old_worker_cannot_finalize() -> None:
     now = timezone.now()
     merge_population_recompute_demand(region="north", prestige_band="junior", now=now)
@@ -202,6 +220,48 @@ def test_success_resets_failure_state_and_continuation_adds_revision() -> None:
     assert demand.last_error_digest == ""
     assert demand.available_at == now + timedelta(seconds=1)
     assert BotPopulationRecomputeDemand.objects.filter(id=demand.id).exists()
+
+
+def test_success_can_defer_a_completed_arena_handoff_without_creating_a_revision() -> None:
+    now = timezone.now()
+    merge_population_recompute_demand(region="overseas", prestige_band="newbie", now=now)
+    claim = claim_population_recompute_demand(
+        region="overseas",
+        prestige_band="newbie",
+        now=now,
+    )
+    assert claim is not None
+
+    handoff_ready_at = now + timedelta(minutes=5)
+    assert finalize_population_recompute_demand(
+        claim,
+        defer_until=handoff_ready_at,
+        now=now + timedelta(seconds=1),
+    )
+
+    demand = BotPopulationRecomputeDemand.objects.get()
+    assert demand.requested_revision == demand.completed_revision == 1
+    assert demand.available_at == handoff_ready_at
+    assert (
+        claim_population_recompute_demand(
+            region="overseas",
+            prestige_band="newbie",
+            now=handoff_ready_at - timedelta(seconds=1),
+        )
+        is None
+    )
+    merge_population_recompute_demand(
+        region="overseas",
+        prestige_band="newbie",
+        now=handoff_ready_at,
+    )
+    next_claim = claim_population_recompute_demand(
+        region="overseas",
+        prestige_band="newbie",
+        now=handoff_ready_at,
+    )
+    assert next_claim is not None
+    assert next_claim.claimed_revision == 2
 
 
 def test_claim_next_orders_by_available_region_and_v2_band_ordinal() -> None:

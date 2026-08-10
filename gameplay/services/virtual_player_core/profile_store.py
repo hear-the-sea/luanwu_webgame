@@ -11,6 +11,7 @@ from django.utils import timezone
 
 from gameplay.constants import VIRTUAL_PLAYER_REGION_KEYS
 from gameplay.models import BotProfile, Manor
+from gameplay.services.arena.virtual_protection import with_arena_reserve_guard
 from gameplay.services.runtime_configs import runtime_routing_guard_expression
 from gameplay.services.virtual_player_state_policy import VIRTUAL_PROFILE_MAINTAINED_STATES
 
@@ -263,6 +264,12 @@ def any_v2_profiles_exist() -> bool:
     return BotProfile.objects.filter(engine_version=2).exists()
 
 
+def any_non_policy2_profiles_exist() -> bool:
+    """Return whether any profile still belongs to the retired runtime."""
+
+    return BotProfile.objects.exclude(engine_version=2, policy_version=2).exists()
+
+
 def runtime_eligible_v1_profile_count() -> int:
     return BotProfile.objects.filter(
         engine_version=1,
@@ -288,6 +295,7 @@ def lock_maintained_profile(
     skip_locked: bool = False,
     nowait: bool = False,
     expected_v2_routing: RuntimeRoutingSnapshot | None = None,
+    include_arena_reserve_guard: bool = False,
 ) -> BotProfile | None:
     if skip_locked and nowait:
         raise ValueError("skip_locked and nowait are mutually exclusive")
@@ -297,6 +305,8 @@ def lock_maintained_profile(
     )
     if expected_v2_routing is not None:
         queryset = queryset.annotate(maintenance_routing_matches=runtime_routing_guard_expression(expected_v2_routing))
+    if include_arena_reserve_guard:
+        queryset = with_arena_reserve_guard(queryset)
     try:
         return queryset.filter(
             pk=profile_id,
@@ -587,11 +597,12 @@ def reactivate_profile(
     profile: BotProfile,
     *,
     now: datetime,
+    next_growth_at: datetime,
     abandon_at: datetime,
     retire_at: datetime,
 ) -> None:
     profile.state = BotProfile.State.ACTIVE
-    profile.next_growth_at = now
+    profile.next_growth_at = next_growth_at
     profile.abandon_at = abandon_at
     profile.retire_at = retire_at
     profile.maintenance_started_at = now
@@ -815,6 +826,9 @@ def commit_maintenance_cycle(
     next_growth_at_after: datetime | None,
     action_kind: str = "",
     reason: str = "",
+    shadow_cost: Mapping[str, int] | None = None,
+    target_id: int | None = None,
+    scheduled_cycle_slot_due: bool = False,
 ) -> MaintenanceResult:
     """提交一个已锁 V2 Profile 的完整维护周期元数据。"""
     if not transaction.get_connection().in_atomic_block:
@@ -830,7 +844,9 @@ def commit_maintenance_cycle(
             f"profile {profile.id} maintenance sequence changed: expected "
             f"{expected_sequence}, found {profile.maintenance_sequence}"
         )
-    if not trigger_policy.is_due(next_growth_at=profile.next_growth_at, now=now):
+    if type(scheduled_cycle_slot_due) is not bool:
+        raise ProfileStoreError("scheduled_cycle_slot_due must be a boolean")
+    if not scheduled_cycle_slot_due and not trigger_policy.is_due(next_growth_at=profile.next_growth_at, now=now):
         raise ProfileStateConflict(f"profile {profile.id} is not due for maintenance")
 
     normalized_outcome = MaintenanceOutcome(outcome)
@@ -861,6 +877,9 @@ def commit_maintenance_cycle(
         next_growth_at_after=next_growth_at_after,
         action_kind=action_kind,
         reason=reason,
+        shadow_cost=(shadow_cost or {}),
+        target_id=target_id,
+        scheduled_cycle_slot_due=scheduled_cycle_slot_due,
     )
     committed_next_growth_at = result.next_growth_at_after
     if committed_next_growth_at is None:

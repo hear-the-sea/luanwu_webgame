@@ -9,9 +9,10 @@ from django.core.cache import cache
 from django.db import transaction
 from django.utils import timezone
 
-from core.exceptions import BuildingConcurrentUpgradeLimitError, BuildingMaxLevelError
+from core.exceptions import ActionPointsInsufficientError, BuildingConcurrentUpgradeLimitError, BuildingMaxLevelError
 from gameplay.constants import BUILDING_MAX_LEVELS, MAX_CONCURRENT_BUILDING_UPGRADES, BuildingKeys
 from gameplay.models import Building, Manor, Message, PlayerTechnology, ResourceEvent, ResourceType
+from gameplay.services.action_points import ACTION_POINT_BUILDING_UPGRADE_COST
 from gameplay.services.manor import core as manor_core
 from gameplay.services.utils import messages as message_service
 from gameplay.services.utils.cache import CacheKeys
@@ -407,3 +408,50 @@ def test_start_upgrade_matches_quote_cost_and_duration(
     scheduled_building, scheduled_duration = schedule.call_args.args
     assert scheduled_building.pk == building.pk
     assert scheduled_duration == quote.duration_seconds
+
+
+@pytest.mark.django_db
+def test_start_upgrade_consumes_building_action_points(
+    manor_factory,
+    monkeypatch,
+) -> None:
+    manor, _user = manor_factory(username="building_action_points_cost")
+    _fund_manor(manor, silver=100_000, grain=100_000, capacity=100_000)
+    now = timezone.now()
+    Manor.objects.filter(pk=manor.pk).update(
+        action_points=50,
+        action_points_updated_at=now,
+    )
+    manor.refresh_from_db()
+    building = _building(manor, BuildingKeys.FORGE)
+    monkeypatch.setattr(manor_core, "schedule_building_completion", Mock())
+
+    manor_core.start_upgrade(building)
+
+    manor.refresh_from_db()
+    assert manor.action_points == 50 - ACTION_POINT_BUILDING_UPGRADE_COST
+
+
+@pytest.mark.django_db
+def test_start_upgrade_rejects_when_building_action_points_are_insufficient(
+    manor_factory,
+) -> None:
+    manor, _user = manor_factory(username="building_action_points_insufficient")
+    _fund_manor(manor, silver=100_000, grain=100_000, capacity=100_000)
+    now = timezone.now()
+    Manor.objects.filter(pk=manor.pk).update(
+        action_points=ACTION_POINT_BUILDING_UPGRADE_COST - 1,
+        action_points_updated_at=now,
+    )
+    manor.refresh_from_db()
+    building = _building(manor, BuildingKeys.FORGE)
+    before_resources = (manor.silver, manor.grain)
+
+    with pytest.raises(ActionPointsInsufficientError, match="无法升级建筑"):
+        manor_core.start_upgrade(building)
+
+    manor.refresh_from_db()
+    building.refresh_from_db()
+    assert manor.action_points == ACTION_POINT_BUILDING_UPGRADE_COST - 1
+    assert (manor.silver, manor.grain) == before_resources
+    assert building.is_upgrading is False

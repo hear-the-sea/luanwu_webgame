@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import base64
+import binascii
 import hashlib
+import json
 import os
 import re
 import shlex
@@ -40,6 +43,15 @@ GATE_E_REAL_VARIABLE = "VIRTUAL_PLAYER_GATE_E_REAL_SERVICE_TESTS"
 GATE_A_COMMAND = "DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-a"
 GATE_D1_COMMAND = "DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-d1"
 GATE_E_COMMAND = "DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-e"
+
+_GATE_E_STAGE_NAMES = (
+    "due_backlog_selection",
+    "planning_snapshot_preload",
+    "profile_plan_revalidation",
+    "action_domain_writes",
+    "cycle_attempt_receipt",
+    "safety_task_wrapup",
+)
 
 _PYTEST_SUMMARY_PATTERN = re.compile(
     r"^(?P<outcomes>\d+ [a-z]+(?:, \d+ [a-z]+)*) in " r"(?P<seconds>\d+(?:\.\d+)?)s(?: \(\d+:\d{2}:\d{2}\))?$"
@@ -347,6 +359,82 @@ def _parse_gate_e_benchmarks(output: str) -> tuple[dict[str, float | int], ...]:
     return tuple(rows)
 
 
+def _decode_stage_fingerprints(value: str) -> list[dict[str, str | int]]:
+    if value == "-":
+        return []
+    try:
+        padded = value + "=" * (-len(value) % 4)
+        decoded = json.loads(base64.urlsafe_b64decode(padded).decode("utf-8"))
+    except (binascii.Error, ValueError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise EvidenceRecordingError("Gate E stage fingerprint payload is not valid base64 JSON") from exc
+    if not isinstance(decoded, list) or len(decoded) > 10:
+        raise EvidenceRecordingError("Gate E stage fingerprint payload must contain at most ten rows")
+    fingerprints: list[dict[str, str | int]] = []
+    for item in decoded:
+        if not isinstance(item, dict) or set(item) != {"sql", "count"}:
+            raise EvidenceRecordingError("Gate E stage fingerprint rows are malformed")
+        sql = item["sql"]
+        count = item["count"]
+        if not isinstance(sql, str) or not sql or isinstance(count, bool) or not isinstance(count, int) or count <= 0:
+            raise EvidenceRecordingError("Gate E stage fingerprint rows contain invalid values")
+        fingerprints.append({"sql": sql, "count": count})
+    return fingerprints
+
+
+def _parse_gate_e_stage_metrics(output: str) -> tuple[dict[str, Any], ...]:
+    rows: list[dict[str, Any]] = []
+    expected_fields = {
+        "batch_size",
+        "concurrency",
+        "stage",
+        "observations",
+        "duration_p50_ms",
+        "duration_p95_ms",
+        "duration_p99_ms",
+        "queries_max",
+        "write_queries_max",
+        "fingerprints_b64",
+    }
+    for line in _extract_metric_records(output, prefix="gate_e_maintenance_stage"):
+        metrics = _parse_metric_line(line, prefix="gate_e_maintenance_stage")
+        if set(metrics) != expected_fields:
+            raise EvidenceRecordingError("Gate E stage metric fields are incomplete")
+        stage = metrics["stage"]
+        if stage not in _GATE_E_STAGE_NAMES:
+            raise EvidenceRecordingError(f"Gate E output contains an unknown maintenance stage: {stage}")
+        observations = int(metrics["observations"])
+        p50 = float(metrics["duration_p50_ms"])
+        p95 = float(metrics["duration_p95_ms"])
+        p99 = float(metrics["duration_p99_ms"])
+        if observations <= 0 or min(p50, p95, p99) < 0 or not p50 <= p95 <= p99:
+            raise EvidenceRecordingError("Gate E stage duration metrics are invalid")
+        rows.append(
+            {
+                "batch_size": int(metrics["batch_size"]),
+                "concurrency": int(metrics["concurrency"]),
+                "stage": stage,
+                "observations": observations,
+                "duration_p50_ms": p50,
+                "duration_p95_ms": p95,
+                "duration_p99_ms": p99,
+                "queries_max": int(metrics["queries_max"]),
+                "write_queries_max": int(metrics["write_queries_max"]),
+                "fingerprints": _decode_stage_fingerprints(metrics["fingerprints_b64"]),
+            }
+        )
+    rows.sort(key=lambda row: (int(row["batch_size"]), int(row["concurrency"]), str(row["stage"])))
+    expected_keys = {
+        (batch_size, concurrency, stage)
+        for batch_size in (1, 10, 100)
+        for concurrency in (1, 2)
+        for stage in _GATE_E_STAGE_NAMES
+    }
+    observed_keys = {(int(row["batch_size"]), int(row["concurrency"]), str(row["stage"])) for row in rows}
+    if len(rows) != len(expected_keys) or observed_keys != expected_keys:
+        raise EvidenceRecordingError("Gate E output does not contain the complete stage metric matrix")
+    return tuple(rows)
+
+
 def _hermetic_environment() -> dict[str, str]:
     environment = dict(os.environ)
     environment.update(
@@ -391,6 +479,12 @@ def _real_service_environment() -> dict[str, str]:
             "REDIS_CACHE_URL": str(environment.get("REDIS_CACHE_URL") or f"{redis_base_url}/2"),
             "REDIS_PASSWORD": str(environment.get("REDIS_PASSWORD") or ""),
             "PYTEST_ADDOPTS": "",
+        }
+    )
+    environment.update(
+        {
+            "CELERY_BROKER_URL": environment["REDIS_BROKER_URL"],
+            "CELERY_RESULT_BACKEND": environment["REDIS_RESULT_URL"],
         }
     )
     return environment
@@ -782,6 +876,7 @@ def _build_gate_e_evidence(
     real_summary: PytestSummary,
     completed_at_utc: str,
     benchmark_rows: Sequence[Mapping[str, float | int]],
+    stage_metric_rows: Sequence[Mapping[str, Any]],
     mypy_source_files: int,
     source_state: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -811,6 +906,15 @@ def _build_gate_e_evidence(
                 "worker_concurrency": acceptance["benchmark"]["worker_concurrency"],
                 "thresholds": _gate_e_thresholds(acceptance),
                 "matrix": matrix,
+                "stage_metrics": {
+                    "scope": (
+                        "measured Gate E runs; SQL fingerprints are attributed to the innermost active stage; "
+                        "duration_ms is exclusive of nested stages; nested stage durations are diagnostic and must not be summed; "
+                        "inclusive_duration_ms is retained for tracing"
+                    ),
+                    "stage_names": list(_GATE_E_STAGE_NAMES),
+                    "rows": [dict(row) for row in stage_metric_rows],
+                },
                 "canonical_execution": {
                     "command": GATE_E_COMMAND,
                     "execution_timestamp_utc": completed_at_utc,
@@ -1304,7 +1408,9 @@ def _record(args: argparse.Namespace) -> tuple[Path, Path, Path]:
             expected_count=len(gate_e_real_collection.nodeids),
             label="Gate E real-service",
         )
-        gate_e_benchmarks = _parse_gate_e_benchmarks(gate_e_result.stdout + "\n" + gate_e_result.stderr)
+        gate_e_output = gate_e_result.stdout + "\n" + gate_e_result.stderr
+        gate_e_benchmarks = _parse_gate_e_benchmarks(gate_e_output)
+        gate_e_stage_metrics = _parse_gate_e_stage_metrics(gate_e_output)
         gate_e_evidence = _build_gate_e_evidence(
             template=gate_e_template,
             artifact_date=args.artifact_date,
@@ -1315,6 +1421,7 @@ def _record(args: argparse.Namespace) -> tuple[Path, Path, Path]:
             real_summary=gate_e_real_summary,
             completed_at_utc=gate_e_result.completed_at_utc,
             benchmark_rows=gate_e_benchmarks,
+            stage_metric_rows=gate_e_stage_metrics,
             mypy_source_files=mypy_source_files,
             source_state=_source_state(
                 GATE_E_REQUIRED_SOURCE_FILES,

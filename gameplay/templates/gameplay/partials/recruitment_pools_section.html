@@ -19,20 +19,41 @@
                 </div>
 
                 <div class="p-2 pool-content">
+                    <div class="pool-title-row">
+                        <h3>{{ pool.name }}</h3>
+                        <span class="text-xs text-text-muted">{{ pool.get_tier_display }}</span>
+                    </div>
                     <p class="text-sm text-text-muted mb-2 leading-snug pool-desc">{{ pool.description }}</p>
-                    <form method="post" action="{% url 'guests:recruit' %}" class="recruit-form recruit-action"
-                          data-pool-name="{{ pool.name }}"
-                          data-pool-cost="{% for key,val in pool.cost.items %}{{ resource_labels|get_label:key }} {{ val }}{% if not forloop.last %}，{% endif %}{% empty %}免费{% endfor %}"
-                          data-pool-base="{{ pool.draw_count }}"
-                          data-pool-bonus="{{ manor.tavern_recruitment_bonus }}"
-                          data-pool-duration="{{ pool.recruit_duration_seconds }}">
-                        {% csrf_token %}
-                        <input type="hidden" name="pool" value="{{ pool.id }}">
-                        <button type="submit" class="tw-btn-primary tw-btn-sm"
-                                {% if active_recruitment %}disabled{% endif %}>
-                            {% if active_recruitment %}招募中{% else %}招募{% endif %}
-                        </button>
-                    </form>
+                    <div class="flex items-center gap-2 flex-wrap mb-2">
+                        <span class="tw-chip">今日剩余 {{ pool.daily_recruitment_remaining }} 次</span>
+                        <form method="post" action="{% url 'guests:use_recruitment_card' %}" class="inline recruitment-card-form"
+                              data-pool-name="{{ pool.name }}"
+                              data-card-count="{{ recruitment_card_count }}">
+                            {% csrf_token %}
+                            <input type="hidden" name="pool_id" value="{{ pool.id }}">
+                            <button type="submit" class="tw-btn-add"
+                                    aria-label="{% if recruitment_card_count > 0 %}使用招募卡为{{ pool.name }}增加1次今日招募额度{% else %}暂无招募卡{% endif %}"
+                                    title="{% if recruitment_card_count > 0 %}使用1张招募卡，为{{ pool.name }}增加1次今日招募额度{% else %}暂无招募卡{% endif %}"
+                                    {% if recruitment_card_count <= 0 %}disabled{% endif %}>+</button>
+                        </form>
+                    </div>
+                    <div class="pool-action-row recruit-action">
+                        <form method="post" action="{% url 'guests:recruit' %}" class="recruit-form"
+                              data-pool-name="{{ pool.name }}"
+                              data-pool-cost="{% for key,val in pool.cost.items %}{{ resource_labels|get_label:key }} {{ val }}{% if not forloop.last %}，{% endif %}{% empty %}免费{% endfor %}"
+                              data-pool-base="{{ pool.draw_count }}"
+                              data-pool-bonus="{{ manor.tavern_recruitment_bonus }}"
+                              data-pool-duration="{{ pool.recruit_duration_seconds }}"
+                              data-pool-used="{{ pool.daily_recruited_count }}"
+                              data-pool-daily-limit="{{ pool.daily_recruitment_limit }}">
+                            {% csrf_token %}
+                            <input type="hidden" name="pool" value="{{ pool.id }}">
+                            <button type="submit" class="tw-btn-primary tw-btn-sm"
+                                    {% if active_recruitment or pool.daily_recruitment_remaining <= 0 %}disabled{% endif %}>
+                                {% if active_recruitment %}招募中{% elif pool.daily_recruitment_remaining <= 0 %}今日已用尽{% else %}招募{% endif %}
+                            </button>
+                        </form>
+                    </div>
                     <p class="text-xs text-text-muted mt-2">耗时：{{ pool.recruit_duration_display }}</p>
                 </div>
             </article>

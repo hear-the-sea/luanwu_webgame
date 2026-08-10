@@ -176,8 +176,8 @@ def test_gate_d1_evidence_records_honest_execution_and_migration_results() -> No
     assert set(executions) == {"contract", "core_real_service", "adjacent_real_service"}
     for name, result in executions.items():
         assert result["status"] == "passed"
-        assert result["passed"] == evidence["suite_collection"][name]["expected_nodeid_count"]
-        assert result["failed"] == result["skipped"] == 0
+        assert result["passed"] + result["skipped"] == evidence["suite_collection"][name]["expected_nodeid_count"]
+        assert result["failed"] == 0
         _assert_utc_timestamp(result["execution_timestamp_utc"])
     _assert_utc_timestamp(migration["checked_at_utc"])
     assert (

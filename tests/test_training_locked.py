@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import pytest
 from django.db import transaction
 from django.utils import timezone
 
-from core.exceptions import GuestNotIdleError
+from core.exceptions import GuestNotIdleError, GuestTrainingInProgressError
 from gameplay.models import Manor, ResourceEvent, ResourceType
 from guests.models import Guest, GuestArchetype, GuestRarity, GuestStatus, GuestTemplate, TrainingLog
 from guests.services.training import apply_training_locked, quote_training
@@ -115,6 +115,42 @@ def test_apply_training_locked_commits_resources_log_and_guest_together(manor_fa
         ResourceType.GRAIN: -quote.resource_cost[ResourceType.GRAIN],
         ResourceType.SILVER: -quote.resource_cost[ResourceType.SILVER],
     }
+
+
+@pytest.mark.django_db
+def test_arena_free_training_overrides_active_timer_without_resource_spend(manor_factory):
+    manor, _user = manor_factory(username="locked_training_arena_instant")
+    before_resources = (manor.grain, manor.silver)
+    guest = _create_training_guest(manor, suffix="arena_instant")
+    guest.training_target_level = guest.level + 1
+    guest.training_complete_at = timezone.now() + timedelta(seconds=60)
+    guest.save(update_fields=["training_target_level", "training_complete_at"])
+
+    with pytest.raises(GuestTrainingInProgressError):
+        quote_training(guest, levels=10)
+    quote = quote_training(guest, levels=10, allow_active_training=True)
+
+    with transaction.atomic():
+        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+        applied = apply_training_locked(
+            locked_manor,
+            guest.pk,
+            levels=10,
+            rng=random.Random(73),
+            free_subsidy=True,
+        )
+
+    guest.refresh_from_db()
+    manor.refresh_from_db(fields=["grain", "silver"])
+    assert applied.pk == guest.pk
+    assert guest.level == quote.target_level
+    assert guest.training_target_level == 0
+    assert guest.training_complete_at is None
+    assert guest.training_remaining_seconds is None
+    assert (manor.grain, manor.silver) == before_resources
+    log = TrainingLog.objects.get(manor=manor, guest=guest)
+    assert log.delta_level == 10
+    assert log.resource_cost == quote.resource_cost
 
 
 @pytest.mark.django_db

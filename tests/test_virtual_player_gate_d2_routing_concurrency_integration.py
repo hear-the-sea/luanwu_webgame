@@ -18,7 +18,10 @@ from tests.test_virtual_player_gate_d2_routing import (
     _routing_state,
 )
 
-pytestmark = pytest.mark.integration
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skip(reason="Gate D2 calibration routing retired after the policy 2 cutover"),
+]
 
 
 @pytest.mark.django_db(transaction=True)

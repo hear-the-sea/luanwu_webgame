@@ -139,6 +139,35 @@ def test_retained_batch_100_metrics_are_inside_frozen_limits() -> None:
         assert cell["lock_timeouts"] == benchmark["thresholds"]["lock_timeouts_max"] == 0
 
 
+def test_gate_e_stage_metrics_cover_all_cells_and_preserve_top_fingerprints() -> None:
+    stage_metrics = _load_yaml(EVIDENCE_PATH)["maintenance_benchmark"]["stage_metrics"]
+    expected_stages = {
+        "due_backlog_selection",
+        "planning_snapshot_preload",
+        "profile_plan_revalidation",
+        "action_domain_writes",
+        "cycle_attempt_receipt",
+        "safety_task_wrapup",
+    }
+    assert set(stage_metrics["stage_names"]) == expected_stages
+    assert "nested stage durations are diagnostic and must not be summed" in stage_metrics["scope"]
+
+    rows = stage_metrics["rows"]
+    assert len(rows) == 36
+    assert {(row["batch_size"], row["concurrency"], row["stage"]) for row in rows} == {
+        (batch_size, concurrency, stage)
+        for batch_size in (1, 10, 100)
+        for concurrency in (1, 2)
+        for stage in expected_stages
+    }
+    for row in rows:
+        assert row["observations"] > 0
+        assert 0 <= row["duration_p50_ms"] <= row["duration_p95_ms"] <= row["duration_p99_ms"]
+        assert row["queries_max"] >= 0
+        assert row["write_queries_max"] >= 0
+        assert len(row["fingerprints"]) <= 10
+
+
 def test_gate_e_evidence_uses_only_the_isolated_test_database() -> None:
     environment = _load_yaml(EVIDENCE_PATH)["environment"]
 

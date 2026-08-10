@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import timedelta
 
@@ -11,15 +12,15 @@ from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
 from gameplay.models import ArenaCoopEntry, ArenaCoopEvent, ArenaEntry, ArenaTournament, ArenaVirtualDemand
-from gameplay.services.runtime_configs import read_virtual_player_routing
-from gameplay.services.virtual_player_core.config import BootstrapMode
 from gameplay.services.virtual_player_core.population_runtime import merge_population_recompute_demand_for_prestige
+from gameplay.services.virtual_player_core.runtime_assessment import assess_virtual_player_runtime
 
 from .virtual_lineups import lineup_power
 from .virtual_reserve_policy import RESERVE_MINIMUM as POLICY_RESERVE_MINIMUM
 from .virtual_reserve_policy import RESERVE_MULTIPLIER as POLICY_RESERVE_MULTIPLIER
 from .virtual_reserve_policy import reserve_target_for_missing, reserve_target_plan
 from .virtual_reserve_references import median_entry, reference_snapshots
+from .virtual_reserve_training_policy import ArenaTrainingPolicyDecision, resolve_configured_arena_training_policy
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,13 @@ _POPULATION_SUPPLY_RETRY_REASONS = frozenset(
         "population_region_unavailable",
     }
 )
+
+
+def _queue_reconcile_callback(*, mode: str, event_id: int) -> Callable[[], None]:
+    def callback() -> None:
+        queue_virtual_reserve_reconcile(mode, event_id)
+
+    return callback
 
 
 @dataclass(frozen=True)
@@ -58,6 +66,78 @@ def queue_virtual_reserve_reconcile(mode: str, event_id: int) -> bool:
             "event_id": int(event_id),
         },
     )
+
+
+@transaction.atomic
+def wake_arena_demands_after_routing_resume(*, now=None) -> int:
+    """Re-arm demand retries after maintenance routing becomes writable again.
+
+    Routing availability is an external demand input. Advancing the input
+    clock prevents a long safety pause from being charged as Arena
+    no-progress, while only the timeout terminal state is reopened. Admission
+    high-water and replacement-budget accounting remain monotonic.
+    """
+    current_time = now or timezone.now()
+    demands = list(
+        ArenaVirtualDemand.objects.select_for_update()
+        .filter(
+            Q(
+                status=ArenaVirtualDemand.Status.ACTIVE,
+                missing_entry_count__gt=0,
+            )
+            | Q(
+                status=ArenaVirtualDemand.Status.BLOCKED,
+                last_failure_reason="no_progress_timeout",
+                missing_entry_count__gt=0,
+            )
+        )
+        .select_related("tournament", "coop_event")
+        .order_by("id")
+    )
+    for demand in demands:
+        was_blocked = demand.status == ArenaVirtualDemand.Status.BLOCKED
+        demand.last_input_change_at = current_time
+        demand.last_checked_at = current_time
+        demand.next_retry_at = current_time
+        update_fields = ["last_input_change_at", "last_checked_at", "next_retry_at", "updated_at"]
+        if was_blocked:
+            target_plan = reserve_target_plan(int(demand.missing_entry_count))
+            demand.status = ArenaVirtualDemand.Status.ACTIVE
+            demand.version = int(demand.version) + 1
+            demand.reserve_target_count = target_plan.replacement_target_count
+            demand.warm_target_count = target_plan.warm_target_count
+            demand.max_reserve_target_count = max(
+                int(demand.max_reserve_target_count),
+                target_plan.replacement_target_count,
+            )
+            demand.consecutive_failure_count = 0
+            demand.last_failure_reason = ""
+            demand.admission_paused_at = None
+            demand.admission_pause_reason = ""
+            demand.admission_probe_target_ordinal = None
+            update_fields.extend(
+                [
+                    "status",
+                    "version",
+                    "reserve_target_count",
+                    "warm_target_count",
+                    "max_reserve_target_count",
+                    "consecutive_failure_count",
+                    "last_failure_reason",
+                    "admission_paused_at",
+                    "admission_pause_reason",
+                    "admission_probe_target_ordinal",
+                ]
+            )
+        demand.save(update_fields=update_fields)
+        mode = "tournament" if demand.tournament_id is not None else "coop"
+        event_id = demand.tournament_id or demand.coop_event_id
+        if event_id is not None:
+            transaction.on_commit(
+                _queue_reconcile_callback(mode=mode, event_id=int(event_id)),
+                robust=True,
+            )
+    return len(demands)
 
 
 @transaction.atomic
@@ -92,6 +172,13 @@ def wake_active_arena_demands_for_population_region(
     for demand in demands:
         demand.next_retry_at = current_time
         demand.save(update_fields=["next_retry_at", "updated_at"])
+        mode = "tournament" if demand.tournament_id is not None else "coop"
+        event_id = demand.tournament_id or demand.coop_event_id
+        if event_id is not None:
+            transaction.on_commit(
+                _queue_reconcile_callback(mode=mode, event_id=int(event_id)),
+                robust=True,
+            )
     return len(demands)
 
 
@@ -121,11 +208,9 @@ def merge_arena_population_activation(
 ) -> None:
     if not (transition.demand_created or transition.reevaluate_members):
         return
-    if (
-        transition.population_region is None
-        or transition.population_prestige is None
-        or read_virtual_player_routing().bootstrap_mode is not BootstrapMode.V2_ACTIVE
-    ):
+    if transition.population_region is None or transition.population_prestige is None:
+        return
+    if not assess_virtual_player_runtime().v2_population_activation_allowed:
         return
     demand = merge_population_recompute_demand_for_prestige(
         region=transition.population_region,
@@ -140,12 +225,35 @@ def merge_arena_population_activation(
         lambda: _queue_virtual_player_population_reconcile(
             region=region,
             prestige_band=prestige_band,
-        )
+        ),
+        robust=True,
     )
 
 
 def _reserve_target(missing: int) -> int:
     return reserve_target_for_missing(missing)
+
+
+def _arena_training_snapshot_fields(
+    decision: ArenaTrainingPolicyDecision,
+) -> dict[str, int | str | list[str]]:
+    return {
+        "arena_training_policy_version": int(decision.policy_version),
+        "arena_training_policy_checksum": str(decision.policy_checksum),
+        "arena_strength_segment": decision.strength_segment,
+        "arena_strength_envelope_digest": decision.envelope_digest,
+        "arena_supply_prestige_band": decision.supply_prestige_band,
+        "arena_supply_prestige_band_priority": list(decision.supply_prestige_band_priority),
+        "arena_supply_prestige": int(decision.supply_prestige),
+    }
+
+
+def _arena_training_snapshot_changed(
+    demand: ArenaVirtualDemand,
+    *,
+    snapshot_fields: dict[str, int | str | list[str]],
+) -> bool:
+    return any(getattr(demand, field_name) != value for field_name, value in snapshot_fields.items())
 
 
 def close_virtual_demand_state_locked(
@@ -164,6 +272,9 @@ def close_virtual_demand_state_locked(
     demand.consecutive_failure_count = 0
     demand.last_failure_reason = str(failure_reason)[:64]
     demand.last_checked_at = checked_at or timezone.now()
+    demand.admission_paused_at = None
+    demand.admission_pause_reason = ""
+    demand.admission_probe_target_ordinal = None
     demand.save(
         update_fields=[
             "status",
@@ -174,6 +285,9 @@ def close_virtual_demand_state_locked(
             "consecutive_failure_count",
             "last_failure_reason",
             "last_checked_at",
+            "admission_paused_at",
+            "admission_pause_reason",
+            "admission_probe_target_ordinal",
             "updated_at",
         ]
     )
@@ -204,7 +318,7 @@ def _upsert_demand_state_locked(
     target_team_power: int,
     missing_entry_count: int,
     population_region: str,
-    population_prestige: int,
+    arena_training: ArenaTrainingPolicyDecision,
     now,
 ) -> DemandReconcileTransition:
     lookup: dict[str, ArenaTournament | ArenaCoopEvent | None] = (
@@ -214,7 +328,22 @@ def _upsert_demand_state_locked(
     target_plan = reserve_target_plan(missing_entry_count)
     reserve_target_count = target_plan.replacement_target_count
     warm_target_count = target_plan.warm_target_count
+    training_snapshot = _arena_training_snapshot_fields(arena_training)
     if demand is None:
+        if not arena_training.available:
+            demand = ArenaVirtualDemand.objects.create(
+                **lookup,
+                status=ArenaVirtualDemand.Status.BLOCKED,
+                target_guest_count=target_guest_count,
+                target_team_power=target_team_power,
+                missing_entry_count=missing_entry_count,
+                last_failure_reason=arena_training.reason,
+                last_progress_at=now,
+                last_input_change_at=now,
+                last_checked_at=now,
+                **training_snapshot,
+            )
+            return DemandReconcileTransition(closed_demand=demand)
         demand = ArenaVirtualDemand.objects.create(
             **lookup,
             status=ArenaVirtualDemand.Status.ACTIVE,
@@ -228,12 +357,13 @@ def _upsert_demand_state_locked(
             last_progress_at=now,
             last_input_change_at=now,
             last_checked_at=now,
+            **training_snapshot,
         )
         return DemandReconcileTransition(
             active_demand=demand,
             demand_created=True,
             population_region=population_region,
-            population_prestige=population_prestige,
+            population_prestige=int(arena_training.supply_prestige),
         )
 
     changed = (
@@ -242,17 +372,49 @@ def _upsert_demand_state_locked(
         or demand.missing_entry_count != missing_entry_count
         or demand.reserve_target_count != reserve_target_count
         or demand.warm_target_count != warm_target_count
+        or _arena_training_snapshot_changed(demand, snapshot_fields=training_snapshot)
     )
     was_blocked = demand.status == ArenaVirtualDemand.Status.BLOCKED
     if demand.status == ArenaVirtualDemand.Status.BLOCKED and not changed:
         return DemandReconcileTransition()
+    if not arena_training.available:
+        if changed:
+            demand.version += 1
+        demand.status = ArenaVirtualDemand.Status.BLOCKED
+        demand.target_guest_count = target_guest_count
+        demand.target_team_power = target_team_power
+        demand.missing_entry_count = missing_entry_count
+        for field_name, value in training_snapshot.items():
+            setattr(demand, field_name, value)
+        if changed:
+            demand.last_input_change_at = now
+        demand.save(
+            update_fields=[
+                "status",
+                "version",
+                "target_guest_count",
+                "target_team_power",
+                "missing_entry_count",
+                *training_snapshot.keys(),
+                "last_input_change_at",
+                "updated_at",
+            ]
+        )
+        return close_virtual_demand_state_locked(
+            demand,
+            status=ArenaVirtualDemand.Status.BLOCKED,
+            failure_reason=arena_training.reason,
+            checked_at=now,
+        )
     last_progress_at = demand.last_progress_at or demand.created_at
     last_input_change_at = demand.last_input_change_at or demand.created_at
     last_activity_at = max(last_progress_at, last_input_change_at)
+    runtime_assessment = assess_virtual_player_runtime()
     if (
         demand.status == ArenaVirtualDemand.Status.ACTIVE
         and not changed
         and now - last_activity_at >= MAX_DEMAND_NO_PROGRESS_AGE
+        and runtime_assessment.growth_allowed
     ):
         return close_virtual_demand_state_locked(
             demand,
@@ -268,9 +430,11 @@ def _upsert_demand_state_locked(
     demand.missing_entry_count = missing_entry_count
     demand.reserve_target_count = reserve_target_count
     demand.warm_target_count = warm_target_count
+    for field_name, value in training_snapshot.items():
+        setattr(demand, field_name, value)
     if was_blocked:
         demand.max_reserve_target_count = reserve_target_count
-        demand.created_profile_count = 0
+        demand.admission_attempt_high_water = 0
     else:
         demand.max_reserve_target_count = max(demand.max_reserve_target_count, reserve_target_count)
     demand.last_checked_at = now
@@ -283,22 +447,29 @@ def _upsert_demand_state_locked(
         "reserve_target_count",
         "warm_target_count",
         "max_reserve_target_count",
+        *training_snapshot.keys(),
         "last_checked_at",
         "updated_at",
     ]
     if was_blocked:
-        update_fields.append("created_profile_count")
+        update_fields.append("admission_attempt_high_water")
     if changed:
         demand.next_retry_at = now
         demand.consecutive_failure_count = 0
         demand.last_failure_reason = ""
         demand.last_input_change_at = now
+        demand.admission_paused_at = None
+        demand.admission_pause_reason = ""
+        demand.admission_probe_target_ordinal = None
         update_fields.extend(
             [
                 "next_retry_at",
                 "consecutive_failure_count",
                 "last_failure_reason",
                 "last_input_change_at",
+                "admission_paused_at",
+                "admission_pause_reason",
+                "admission_probe_target_ordinal",
             ]
         )
     demand.save(update_fields=update_fields)
@@ -306,7 +477,7 @@ def _upsert_demand_state_locked(
         active_demand=demand,
         reevaluate_members=changed,
         population_region=population_region,
-        population_prestige=population_prestige,
+        population_prestige=int(arena_training.supply_prestige),
     )
 
 
@@ -349,13 +520,14 @@ def reconcile_tournament_demand_state_locked(
 
     reference_entry = median_entry(real_entries)
     snapshots = reference_snapshots(reference_entry)
+    target_team_power = lineup_power(snapshots)
     return _upsert_demand_state_locked(
         tournament=tournament,
         target_guest_count=len(snapshots),
-        target_team_power=lineup_power(snapshots),
+        target_team_power=target_team_power,
         missing_entry_count=missing,
         population_region=str(reference_entry.manor.region),
-        population_prestige=int(reference_entry.manor.prestige or 0),
+        arena_training=resolve_configured_arena_training_policy(target_team_power=target_team_power),
         now=current_time,
     )
 
@@ -381,13 +553,14 @@ def reconcile_coop_demand_state_locked(
 
     reference_entry = median_entry(real_entries)
     snapshots = reference_snapshots(reference_entry)[: int(event.guest_limit_per_entry)]
+    target_team_power = lineup_power(snapshots)
     return _upsert_demand_state_locked(
         coop_event=event,
         target_guest_count=len(snapshots),
-        target_team_power=lineup_power(snapshots),
+        target_team_power=target_team_power,
         missing_entry_count=missing,
         population_region=str(reference_entry.manor.region),
-        population_prestige=int(reference_entry.manor.prestige or 0),
+        arena_training=resolve_configured_arena_training_policy(target_team_power=target_team_power),
         now=current_time,
     )
 
@@ -401,4 +574,5 @@ __all__ = [
     "reconcile_coop_demand_state_locked",
     "reconcile_tournament_demand_state_locked",
     "wake_active_arena_demands_for_population_region",
+    "wake_arena_demands_after_routing_resume",
 ]

@@ -1,4 +1,5 @@
-from gameplay.services.virtual_player_core.legacy.projection import (
+from gameplay.services.virtual_player_core.lifecycle import LifecycleDates, choose_lifecycle
+from gameplay.services.virtual_player_core.runtime_helpers import (
     DEFAULT_COMBAT_PERSONAS,
     STRENGTH_QUANTILES,
     apply_combat_persona,
@@ -7,7 +8,6 @@ from gameplay.services.virtual_player_core.legacy.projection import (
     choose_strength_quantile,
     nearest_rank_quantile,
 )
-from gameplay.services.virtual_player_core.lifecycle import LifecycleDates, choose_lifecycle
 
 __all__ = [
     "DEFAULT_COMBAT_PERSONAS",

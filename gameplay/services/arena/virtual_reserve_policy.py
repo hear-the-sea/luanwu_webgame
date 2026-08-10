@@ -1,14 +1,22 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import timedelta
 from hashlib import blake2b
 
 __all__ = [
     "RESERVE_MINIMUM",
     "RESERVE_MULTIPLIER",
+    "RESERVE_ADMISSION_STALL_AGE",
+    "RESERVE_ADMISSION_STALL_FAILURES",
+    "RESERVE_ADMISSION_PROBE_COOLDOWN",
+    "ReserveAdmissionAssessment",
     "ReserveTargetPlan",
+    "assess_reserve_admission",
     "reserve_target_for_missing",
     "reserve_target_plan",
+    "reserve_admission_attempt_high_water",
+    "reserve_materialization_needed",
     "reserve_warm_target",
     "virtual_roster_target_count",
 ]
@@ -16,6 +24,29 @@ __all__ = [
 RESERVE_MULTIPLIER = 3
 RESERVE_MINIMUM = 6
 VIRTUAL_ROSTER_HARD_CAP = 10
+RESERVE_ADMISSION_STALL_AGE = timedelta(minutes=10)
+RESERVE_ADMISSION_STALL_FAILURES = 2
+RESERVE_ADMISSION_PROBE_COOLDOWN = timedelta(minutes=30)
+
+
+@dataclass(frozen=True, slots=True)
+class ReserveAdmissionAssessment:
+    raw_materialization_needed: int
+    admitted_materialization_needed: int
+    attempt_high_water: int
+    guard_reasons: tuple[str, ...] = ()
+
+    @property
+    def suppressed_materialization_needed(self) -> int:
+        return self.raw_materialization_needed - self.admitted_materialization_needed
+
+    @property
+    def admission_guard_active(self) -> bool:
+        return bool(self.guard_reasons)
+
+    @property
+    def admission_probe_allowed(self) -> bool:
+        return self.admission_guard_active and self.admitted_materialization_needed == 1
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,6 +77,87 @@ def reserve_target_plan(missing: int) -> ReserveTargetPlan:
             missing=missing,
             reserve_target=replacement_target,
         ),
+    )
+
+
+def reserve_materialization_needed(
+    *,
+    warm_target: int,
+    ready_count: int,
+    training_count: int,
+    attempt_count: int,
+    replacement_target: int,
+) -> int:
+    """Return how many new reserve leases may still enter this demand.
+
+    READY and TRAINING occupy warm slots. The caller supplies the canonical
+    attempt count, where every post-migration attempt including EXHAUSTED
+    members consumes the replacement budget.
+    """
+
+    active_count = max(0, int(ready_count)) + max(0, int(training_count))
+    warm_slots = max(0, int(warm_target) - active_count)
+    remaining_attempts = max(0, int(replacement_target) - max(0, int(attempt_count)))
+    return min(warm_slots, remaining_attempts)
+
+
+def reserve_admission_attempt_high_water(
+    *,
+    leased_attempts: int,
+    admission_attempt_high_water: int,
+) -> int:
+    """Read the monotonic admission high-water for the current reserve model."""
+
+    return max(0, int(leased_attempts), int(admission_attempt_high_water))
+
+
+def assess_reserve_admission(
+    *,
+    warm_target: int,
+    ready_count: int,
+    training_count: int,
+    leased_attempts: int,
+    admission_attempt_high_water: int,
+    replacement_target: int,
+    stalled_without_explained_constraint: bool = False,
+    active_pause_reason: str = "",
+    admission_probe_target_ordinal: int | None = None,
+) -> ReserveAdmissionAssessment:
+    """Apply demand-local admission guards without stopping existing leases."""
+
+    attempt_high_water = reserve_admission_attempt_high_water(
+        leased_attempts=leased_attempts,
+        admission_attempt_high_water=admission_attempt_high_water,
+    )
+    raw_materialization_needed = reserve_materialization_needed(
+        warm_target=warm_target,
+        ready_count=ready_count,
+        training_count=training_count,
+        attempt_count=attempt_high_water,
+        replacement_target=replacement_target,
+    )
+    guard_reasons: list[str] = []
+    normalized_pause_reason = str(active_pause_reason).strip()
+    if normalized_pause_reason:
+        guard_reasons.append(normalized_pause_reason)
+    if attempt_high_water > max(0, int(replacement_target)):
+        guard_reasons.append("admission_high_water_exceeded")
+    if raw_materialization_needed > 0 and stalled_without_explained_constraint:
+        guard_reasons.append("no_effective_progress")
+    probe_reserved = bool(
+        normalized_pause_reason == "no_effective_progress"
+        and admission_probe_target_ordinal is not None
+        and int(admission_probe_target_ordinal) == attempt_high_water + 1
+        and raw_materialization_needed > 0
+    )
+    admitted_materialization_needed = raw_materialization_needed
+    if guard_reasons:
+        admitted_materialization_needed = min(1, raw_materialization_needed) if probe_reserved else 0
+    return ReserveAdmissionAssessment(
+        raw_materialization_needed=raw_materialization_needed,
+        admitted_materialization_needed=admitted_materialization_needed,
+        attempt_high_water=attempt_high_water,
+        guard_reasons=tuple(dict.fromkeys(guard_reasons)),
     )
 
 

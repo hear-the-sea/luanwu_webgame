@@ -17,15 +17,31 @@ from guests.models import Guest, GuestArchetype, GuestRarity, GuestTemplate, Tra
 from guests.services.training import apply_training_locked, project_training_completion
 
 
-def _guest_arena_power(guest: Guest, *, force: int, intellect: int, defense: int) -> int:
+def _guest_arena_power(guest: Guest, *, force: int, intellect: int, defense: int, agility: int) -> int:
     return calculate_guest_arena_power(
         force=force,
         intellect=intellect,
         defense=defense,
+        agility=agility,
         hp_bonus=int(guest.hp_bonus),
         archetype=str(guest.template.archetype),
         base_hp=int(guest.template.base_hp),
     )
+
+
+def test_guest_arena_power_includes_agility() -> None:
+    common = {
+        "force": 100,
+        "intellect": 100,
+        "defense": 100,
+        "hp_bonus": 0,
+        "archetype": "military",
+        "base_hp": 1_000,
+    }
+    lower_agility = calculate_guest_arena_power(**common, agility=80)
+    higher_agility = calculate_guest_arena_power(**common, agility=180)
+
+    assert higher_agility - lower_agility == 100
 
 
 @pytest.mark.django_db
@@ -85,12 +101,14 @@ def test_training_intent_prediction_matches_committed_strength(manor_factory):
             force=int(guest.force),
             intellect=int(guest.intellect),
             defense=int(guest.defense_stat),
+            agility=int(guest.agility),
         ),
         guest_arena_power_after=_guest_arena_power(
             guest,
             force=completion.force,
             intellect=completion.intellect,
             defense=completion.defense_stat,
+            agility=completion.agility,
         ),
         utility_score=1.0,
     )

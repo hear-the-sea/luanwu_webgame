@@ -29,6 +29,7 @@ from gameplay.tasks.arena import (
     scan_arena_coop_events,
     scan_arena_tournaments,
     scan_arena_virtual_reserves,
+    wake_active_arena_demands_for_population_region_task,
 )
 
 # Buildings
@@ -86,9 +87,12 @@ from gameplay.tasks.virtual_players import (
     monitor_virtual_player_safety_task,
     plan_virtual_players_task,
     reconcile_external_strength_reconciliation_task,
+    reconcile_virtual_player_maintenance_completion_task,
     reconcile_virtual_player_population_cell_task,
     roll_virtual_players_task,
     scan_external_strength_reconciliations_task,
+    scan_virtual_player_growth_control_task,
+    scan_virtual_player_maintenance_task,
     scan_virtual_player_population_demands_task,
 )
 
@@ -115,6 +119,7 @@ __all__ = [
     "scan_arena_coop_events",
     "scan_arena_tournaments",
     "reconcile_arena_virtual_reserve",
+    "wake_active_arena_demands_for_population_region_task",
     "retry_arena_shortage_metric",
     "scan_arena_virtual_reserves",
     "grow_arena_virtual_reserves",
@@ -159,9 +164,12 @@ __all__ = [
     "heartbeat_virtual_player_maintenance_attempt_emitter_task",
     "monitor_virtual_player_safety_task",
     "reconcile_external_strength_reconciliation_task",
+    "reconcile_virtual_player_maintenance_completion_task",
     "reconcile_virtual_player_population_cell_task",
     "roll_virtual_players_task",
     "scan_external_strength_reconciliations_task",
+    "scan_virtual_player_maintenance_task",
+    "scan_virtual_player_growth_control_task",
     "scan_virtual_player_population_demands_task",
     # World chat
     "publish_world_chat_attempt_task",

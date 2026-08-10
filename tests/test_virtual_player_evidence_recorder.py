@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import base64
+import json
 import subprocess
 import sys
 
 import pytest
 
-from gameplay.services.virtual_player_core import gate_evidence
+from gameplay.services.virtual_player_core import gate_evidence, runtime_preflight
 from scripts import record_virtual_player_evidence as recorder
 
 pytestmark = pytest.mark.evidence
@@ -40,6 +42,43 @@ def test_gate_e_evidence_sources_cover_all_canonical_suite_files() -> None:
     canonical_suite_files.update(recorder._read_makefile_paths(recorder.GATE_E_REAL_VARIABLE))
 
     assert canonical_suite_files <= gate_evidence.GATE_E_REQUIRED_SOURCE_FILES
+
+
+def test_gate_evidence_binds_every_current_v2_maintenance_owner() -> None:
+    current_runtime_files = {
+        "gameplay/migrations/0170_arena_growth_target_driven_lifecycle.py",
+        "gameplay/migrations/0171_bot_maintenance_cycle_schedule.py",
+        "gameplay/migrations/0172_bot_maintenance_cycle_interval_seed.py",
+        "gameplay/migrations/0173_remove_legacy_arena_lifecycle_fields.py",
+        "gameplay/migrations/0174_bot_maintenance_completion_event.py",
+        "gameplay/migrations/0175_botmaintenanceattempt_action_kind_and_more.py",
+        "gameplay/migrations/0176_virtual_player_recruitment_due_and_cycle_budget.py",
+        "gameplay/migrations/0177_virtual_player_attempt_trigger_dimensions_index.py",
+        "guests/migrations/0071_guestrecruitment_virtual_source.py",
+        "gameplay/services/virtual_player_core/archetype_pacing.py",
+        "gameplay/services/virtual_player_core/business_metrics.py",
+        "gameplay/services/virtual_player_core/maintenance.py",
+        "gameplay/services/virtual_player_core/maintenance_completion.py",
+        "gameplay/services/virtual_player_core/recruitment.py",
+        "tests/test_virtual_player_archetype_pacing.py",
+        "tests/test_virtual_player_business_metrics.py",
+        "tests/test_virtual_player_maintenance_cycle.py",
+        "tests/test_virtual_player_recruitment.py",
+    }
+    assert current_runtime_files <= gate_evidence.GATE_D1_REQUIRED_SOURCE_FILES
+    assert current_runtime_files <= gate_evidence.GATE_E_REQUIRED_SOURCE_FILES
+
+
+def test_runtime_preflight_binds_the_cross_app_migration_closure() -> None:
+    required = runtime_preflight.REQUIRED_RUNTIME_MIGRATIONS
+
+    assert len(required) == len(set(required))
+    assert {app for app, _name in required} == {"gameplay", "guests"}
+    assert required[-3:] == (
+        ("gameplay", "0176_virtual_player_recruitment_due_and_cycle_budget"),
+        ("gameplay", "0177_virtual_player_attempt_trigger_dimensions_index"),
+        ("guests", "0071_guestrecruitment_virtual_source"),
+    )
 
 
 def test_gate_d1_evidence_sources_cover_all_canonical_suite_files() -> None:
@@ -155,6 +194,49 @@ def test_recorder_rejects_incomplete_gate_e_benchmark_matrix() -> None:
             "batch_size=1 concurrency=1 duration_p95_ms=1 duration_p99_ms=1 "
             "queries_max=1 write_queries_max=1 lock_wait_p95_ms=0 lock_wait_p99_ms=0 "
             "deadlocks=0 lock_timeouts=0 warmup_runs=5 measured_runs=30"
+        )
+
+
+def test_recorder_parses_complete_gate_e_stage_metrics_and_fingerprints() -> None:
+    fingerprint = (
+        base64.urlsafe_b64encode(
+            json.dumps([{"sql": "SELECT ? FROM `example`", "count": 3}], separators=(",", ":")).encode("utf-8")
+        )
+        .decode("ascii")
+        .rstrip("=")
+    )
+    stages = (
+        "due_backlog_selection",
+        "planning_snapshot_preload",
+        "profile_plan_revalidation",
+        "action_domain_writes",
+        "cycle_attempt_receipt",
+        "safety_task_wrapup",
+    )
+    output = "\n".join(
+        "gate_e_maintenance_stage "
+        f"batch_size={batch_size} concurrency={concurrency} stage={stage} observations=30 "
+        "duration_p50_ms=1.000 duration_p95_ms=2.000 duration_p99_ms=3.000 "
+        "queries_max=4 write_queries_max=2 "
+        f"fingerprints_b64={fingerprint}"
+        for batch_size in (1, 10, 100)
+        for concurrency in (1, 2)
+        for stage in stages
+    )
+
+    rows = recorder._parse_gate_e_stage_metrics(output)
+
+    assert len(rows) == 36
+    assert rows[0]["fingerprints"] == [{"sql": "SELECT ? FROM `example`", "count": 3}]
+
+
+def test_recorder_rejects_incomplete_gate_e_stage_metric_matrix() -> None:
+    with pytest.raises(recorder.EvidenceRecordingError, match="complete stage metric matrix"):
+        recorder._parse_gate_e_stage_metrics(
+            "gate_e_maintenance_stage "
+            "batch_size=1 concurrency=1 stage=due_backlog_selection observations=1 "
+            "duration_p50_ms=1 duration_p95_ms=1 duration_p99_ms=1 "
+            "queries_max=1 write_queries_max=1 fingerprints_b64=-"
         )
 
 

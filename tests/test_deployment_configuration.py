@@ -147,6 +147,78 @@ def test_prod_compose_passes_redis_password_to_redis_container() -> None:
     assert redis_environment["REDIS_PASSWORD"] == "${REDIS_PASSWORD:?set REDIS_PASSWORD in .env.docker}"
 
 
+def test_prod_compose_declares_4gb_memory_guardrails_and_single_child_baseline() -> None:
+    compose = yaml.safe_load((PROJECT_ROOT / "docker-compose.prod.yml").read_text(encoding="utf-8"))
+    services = compose["services"]
+
+    expected_memory = {
+        "redis": ("${REDIS_MEMORY_LIMIT:-128m}", "${REDIS_MEMORY_RESERVATION:-64m}"),
+        "db": ("${MYSQL_MEMORY_LIMIT:-768m}", "${MYSQL_MEMORY_RESERVATION:-512m}"),
+        "web": ("${WEB_MEMORY_LIMIT:-384m}", "${WEB_MEMORY_RESERVATION:-256m}"),
+        "worker": ("${CELERY_WORKER_MEMORY_LIMIT:-256m}", "${CELERY_WORKER_MEMORY_RESERVATION:-160m}"),
+        "worker_battle": (
+            "${CELERY_WORKER_MEMORY_LIMIT:-256m}",
+            "${CELERY_WORKER_MEMORY_RESERVATION:-160m}",
+        ),
+        "worker_timer": (
+            "${CELERY_WORKER_MEMORY_LIMIT:-256m}",
+            "${CELERY_WORKER_MEMORY_RESERVATION:-160m}",
+        ),
+        "worker_timer_scan": (
+            "${CELERY_WORKER_MEMORY_LIMIT:-256m}",
+            "${CELERY_WORKER_MEMORY_RESERVATION:-160m}",
+        ),
+        "worker_timer_maintenance": (
+            "${CELERY_WORKER_MEMORY_LIMIT:-256m}",
+            "${CELERY_WORKER_MEMORY_RESERVATION:-160m}",
+        ),
+        "beat": ("${CELERY_BEAT_MEMORY_LIMIT:-96m}", "${CELERY_BEAT_MEMORY_RESERVATION:-64m}"),
+        "caddy": ("${CADDY_MEMORY_LIMIT:-64m}", "${CADDY_MEMORY_RESERVATION:-32m}"),
+    }
+
+    for service_name, (memory_limit, memory_reservation) in expected_memory.items():
+        assert services[service_name]["mem_limit"] == memory_limit
+        assert services[service_name]["mem_reservation"] == memory_reservation
+
+    for service_name in (
+        "worker",
+        "worker_battle",
+        "worker_timer",
+        "worker_timer_scan",
+        "worker_timer_maintenance",
+    ):
+        command = services[service_name]["command"]
+        assert "${CELERY_PREFETCH_MULTIPLIER:-1}" in command
+        assert "${CELERY_MAX_TASKS_PER_CHILD:-200}" in command
+        assert "${CELERY_MAX_MEMORY_PER_CHILD:-180000}" in command
+
+    assert services["db"]["command"] == [
+        "--innodb-buffer-pool-size=${MYSQL_INNODB_BUFFER_POOL_SIZE:-512M}",
+        "--max-connections=${MYSQL_MAX_CONNECTIONS:-40}",
+        "--tmp-table-size=${MYSQL_TMP_TABLE_SIZE:-16M}",
+        "--max-heap-table-size=${MYSQL_MAX_HEAP_TABLE_SIZE:-16M}",
+    ]
+    redis_environment = services["redis"]["environment"]
+    assert redis_environment["REDIS_MAXMEMORY"] == "${REDIS_MAXMEMORY:-128mb}"
+    assert redis_environment["REDIS_MAXMEMORY_POLICY"] == "${REDIS_MAXMEMORY_POLICY:-noeviction}"
+
+
+def test_prod_env_example_matches_4gb_memory_and_queue_baseline() -> None:
+    values = _read_env_file(PROJECT_ROOT / ".env.docker.prod.example")
+
+    assert values["CELERY_DEFAULT_CONCURRENCY"] == "1"
+    assert values["CELERY_BATTLE_CONCURRENCY"] == "1"
+    assert values["CELERY_TIMER_CONCURRENCY"] == "1"
+    assert values["CELERY_TIMER_SCAN_CONCURRENCY"] == "1"
+    assert values["CELERY_TIMER_MAINTENANCE_CONCURRENCY"] == "1"
+    assert values["CELERY_MAX_TASKS_PER_CHILD"] == "200"
+    assert values["CELERY_MAX_MEMORY_PER_CHILD"] == "180000"
+    assert values["MYSQL_INNODB_BUFFER_POOL_SIZE"] == "512M"
+    assert values["MYSQL_MAX_CONNECTIONS"] == "40"
+    assert values["REDIS_MAXMEMORY"] == "128mb"
+    assert values["REDIS_MAXMEMORY_POLICY"] == "noeviction"
+
+
 def test_prod_env_requires_a_non_empty_redis_password() -> None:
     values: dict[str, str] = {}
     for line in (PROJECT_ROOT / ".env.docker.prod.example").read_text(encoding="utf-8").splitlines():
@@ -381,7 +453,8 @@ def test_env_example_uses_local_development_defaults() -> None:
 def test_env_examples_define_split_timer_concurrencies(filename: str) -> None:
     values = _read_env_file(PROJECT_ROOT / filename)
 
-    assert values["CELERY_TIMER_SCAN_CONCURRENCY"] == "2"
+    expected_scan_concurrency = "1" if filename == ".env.docker.prod.example" else "2"
+    assert values["CELERY_TIMER_SCAN_CONCURRENCY"] == expected_scan_concurrency
     assert values["CELERY_TIMER_MAINTENANCE_CONCURRENCY"] == "1"
 
 

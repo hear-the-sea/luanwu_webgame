@@ -1,0 +1,89 @@
+schema_version: 1
+manifest_id: virtual_player_gate_a_evidence_2026_08_09
+recorded_at_utc: '2026-08-09T19:08:05Z'
+scope:
+  evidence_governance_only: true
+  project_stage: development
+  environment: test
+  environment_class: non_production
+  production: false
+  authorizes_production_rollout: false
+  authorizes_gate_c_schema: false
+  authorizes_gate_c_worker: false
+  authorizes_gate_c_runtime: false
+  authorizes_v2_runtime: false
+canonical_gate:
+  command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-a
+  make_target: test-virtual-player-gate-a
+  environment:
+    database_backend: django.db.backends.mysql
+    database_host: 127.0.0.1
+    database_port: 13306
+    database_name: test_webgame
+    redis_host: 127.0.0.1
+    redis_port: 16379
+    services_restarted: false
+    database_role: isolated_test_database
+    business_database_contacted: false
+    credentials_recorded: false
+  execution:
+    status: passed
+    execution_timestamp_utc: '2026-08-09T19:08:05Z'
+    timestamp_status: captured
+    result_summary: 179 passed (167 contract in 14.48s; 12 real-service in 117.33s)
+    reason: canonical_target_completed_successfully
+suite_selection:
+  source: Makefile
+  make_variables:
+    VIRTUAL_PLAYER_GATE_A_CONTRACT_TESTS:
+    - tests/test_virtual_player_architecture_gate.py
+    - tests/test_virtual_player_gate_acceptance_config.py
+    - tests/test_virtual_player_evidence_recorder.py
+    - tests/test_virtual_player_maintenance_contracts.py
+    - tests/test_virtual_player_random_context.py
+    - tests/test_pytest_configuration.py
+    VIRTUAL_PLAYER_GATE_A_REAL_SERVICE_TESTS:
+    - tests/test_virtual_player_baseline_audit.py
+    - tests/raid_concurrency_integration/h01_cross_races.py
+  execution_order:
+  - contract_tests
+  - real_service_preflight
+  - real_service_tests
+collection:
+  status: collected
+  tests_executed: false
+  collected_at_utc: '2026-08-09T19:05:47Z'
+  selection: union_of_makefile_suite_variables
+  pytest_arguments:
+  - --collect-only
+  - -q
+  environment_overrides:
+    DJANGO_TEST_USE_ENV_SERVICES: '1'
+  service_preflight_run: false
+  external_services_contacted: false
+  expected_nodeid_count: 179
+  nodeid_checksum:
+    algorithm: sha256
+    value: dbe7dc439fa9114a0a4f603a52abdba6389fa85db48b29646c6cb11631705d48
+    input: sorted_pytest_nodeids_joined_with_lf_and_terminal_lf
+    encoding: utf-8
+historical_evidence:
+  source_record: docs/virtual_player_gate_a_dossier_2026-07-27.md
+  classification: historical_non_canonical
+  may_satisfy_canonical_execution: false
+  entries:
+  - evidence_id: isolated_baseline_gate
+    result: passed
+    result_summary: 9 passed
+    execution_timestamp_utc: null
+    timestamp_status: not_captured_in_source_record
+  - evidence_id: h01_focused_real_service_gate
+    result: passed
+    result_summary: 3 passed, 6 deselected
+    execution_timestamp_utc: null
+    timestamp_status: not_captured_in_source_record
+  - evidence_id: legacy_critical_real_service_suite
+    result: passed
+    result_summary: 61 passed in 523.56s
+    execution_timestamp_utc: null
+    timestamp_status: not_captured_in_source_record

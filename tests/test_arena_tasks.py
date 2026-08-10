@@ -194,6 +194,16 @@ def test_reconcile_arena_virtual_reserve_returns_zero_when_event_has_no_demand(m
     assert result == {"reconciled": 0, "ready": 0, "training": 0}
 
 
+def test_wake_active_arena_demands_for_population_region_delegates(monkeypatch):
+    monkeypatch.setattr(
+        arena_tasks,
+        "wake_active_arena_demands_for_population_region",
+        lambda *, region: 3 if region == "overseas" else 0,
+    )
+
+    assert arena_tasks.wake_active_arena_demands_for_population_region_task.run("overseas") == {"woken": 3}
+
+
 def test_scan_arena_virtual_reserves_delegates_to_shared_coordinator(monkeypatch):
     expected = {"scanned": 3, "reconciled": 3, "ready": 8, "training": 2, "filled_entries": 4}
     monkeypatch.setattr(arena_tasks, "scan_virtual_reserve_demands", lambda *, limit: expected)
@@ -234,14 +244,17 @@ def test_retry_arena_shortage_metric_delegates_and_returns_recorded(monkeypatch)
         2,
         4,
         1,
+        "newbie",
     )
 
     assert result == {"recorded": 1, "retry_scheduled": 0}
-    assert calls[0]["demand_id"] == 7
-    assert calls[0]["real_entry_count"] == 3
-    assert calls[0]["virtual_entry_count"] == 2
-    assert calls[0]["reserve_ready_count"] == 4
-    assert calls[0]["reserve_training_count"] == 1
+    assert calls[0]["snapshot"] == arena_observability.ArenaShortageObservationSnapshot(
+        prestige_band="newbie",
+        real_entry_count=3,
+        virtual_entry_count=2,
+        reserve_ready_count=4,
+        reserve_training_count=1,
+    )
 
 
 def test_retry_arena_shortage_metric_schedules_one_more_bounded_attempt(monkeypatch):
@@ -272,6 +285,7 @@ def test_retry_arena_shortage_metric_schedules_one_more_bounded_attempt(monkeypa
         2,
         4,
         1,
+        "newbie",
     )
 
     assert result == {"recorded": 0, "retry_scheduled": 1}
@@ -280,6 +294,53 @@ def test_retry_arena_shortage_metric_schedules_one_more_bounded_attempt(monkeypa
     assert queued[0]["virtual_entry_count"] == 2
     assert queued[0]["reserve_ready_count"] == 4
     assert queued[0]["reserve_training_count"] == 1
+    assert queued[0]["prestige_band"] == "newbie"
+
+
+def test_retry_arena_shortage_metric_freezes_fallback_snapshot_before_provider_write(monkeypatch):
+    queued: list[dict[str, object]] = []
+    snapshot = arena_observability.ArenaShortageObservationSnapshot(
+        prestige_band="newbie",
+        real_entry_count=3,
+        virtual_entry_count=2,
+        reserve_ready_count=4,
+        reserve_training_count=1,
+    )
+    monkeypatch.setattr(
+        arena_tasks,
+        "prepare_arena_shortage_observation_snapshot",
+        lambda **_kwargs: snapshot,
+    )
+    monkeypatch.setattr(
+        arena_tasks,
+        "record_arena_shortage_observation",
+        lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("commit outcome unknown")),
+    )
+    monkeypatch.setattr(
+        arena_tasks,
+        "queue_arena_shortage_metric_retry",
+        lambda **kwargs: queued.append(kwargs) or True,
+    )
+    monkeypatch.setattr(arena_tasks, "record_arena_shortage_metric_failure", lambda **_kwargs: None)
+
+    result = arena_tasks.retry_arena_shortage_metric.run(
+        7,
+        "tournament",
+        9,
+        10,
+        2,
+        100,
+        "operation-1",
+        "2026-07-28T08:00:00Z",
+        1,
+    )
+
+    assert result == {"recorded": 0, "retry_scheduled": 1}
+    assert queued[0]["real_entry_count"] == snapshot.real_entry_count
+    assert queued[0]["virtual_entry_count"] == snapshot.virtual_entry_count
+    assert queued[0]["reserve_ready_count"] == snapshot.reserve_ready_count
+    assert queued[0]["reserve_training_count"] == snapshot.reserve_training_count
+    assert queued[0]["prestige_band"] == snapshot.prestige_band
 
 
 def test_retry_arena_shortage_metric_does_not_retry_provider_terminal_error(monkeypatch):
@@ -319,6 +380,7 @@ def test_retry_arena_shortage_metric_does_not_retry_provider_terminal_error(monk
             2,
             4,
             1,
+            "newbie",
         )
 
     assert failures[0]["operation_id"] == "operation-1"
@@ -353,6 +415,7 @@ def test_retry_arena_shortage_metric_fails_closed_after_last_attempt(monkeypatch
             2,
             4,
             1,
+            "newbie",
         )
 
     assert failures[0]["operation_id"] == "operation-1"
@@ -391,23 +454,151 @@ def test_queue_arena_shortage_metric_retry_defers_missing_context_capture(monkey
         )
         is True
     )
-    assert queued[0]["args"][-4:] == [None, None, None, None]
+    assert queued[0]["args"][-5:] == [None, None, None, None, None]
 
 
-def test_grow_arena_virtual_reserves_runs_growth_then_creation(monkeypatch):
-    calls: list[tuple[str, int]] = []
+def test_arena_shortage_callback_freezes_fallback_snapshot_for_retry(monkeypatch):
+    queued: list[dict[str, object]] = []
+    snapshot = arena_observability.ArenaShortageObservationSnapshot(
+        prestige_band="newbie",
+        real_entry_count=3,
+        virtual_entry_count=2,
+        reserve_ready_count=4,
+        reserve_training_count=1,
+    )
+    prepare_results = iter((RuntimeError("database unavailable"), snapshot))
+
+    def prepare_snapshot(**_kwargs):
+        result = next(prepare_results)
+        if isinstance(result, Exception):
+            raise result
+        return result
+
+    monkeypatch.setattr(
+        arena_observability,
+        "prepare_arena_shortage_observation_snapshot",
+        prepare_snapshot,
+    )
+    monkeypatch.setattr(
+        arena_observability,
+        "record_arena_shortage_observation",
+        lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("commit outcome unknown")),
+    )
+    monkeypatch.setattr(
+        arena_observability,
+        "queue_arena_shortage_metric_retry",
+        lambda **kwargs: queued.append(kwargs) or True,
+    )
+    monkeypatch.setattr(arena_observability, "record_arena_shortage_metric_failure", lambda **_kwargs: None)
+    monkeypatch.setattr(arena_observability, "log_safety_metric_failure", lambda **_kwargs: None)
+    monkeypatch.setattr(arena_observability.transaction, "on_commit", lambda callback: callback())
+    demand = SimpleNamespace(
+        id=7,
+        tournament_id=9,
+        tournament=SimpleNamespace(player_limit=10),
+        coop_event_id=None,
+        version=2,
+        missing_entry_count=2,
+    )
+
+    arena_observability.emit_arena_shortage_after_commit(
+        demand,
+        population_prestige=100,
+        observed_at=datetime(2026, 7, 28, 8, tzinfo=dt_timezone.utc),
+    )
+
+    assert queued[0]["real_entry_count"] == snapshot.real_entry_count
+    assert queued[0]["virtual_entry_count"] == snapshot.virtual_entry_count
+    assert queued[0]["reserve_ready_count"] == snapshot.reserve_ready_count
+    assert queued[0]["reserve_training_count"] == snapshot.reserve_training_count
+    assert queued[0]["prestige_band"] == snapshot.prestige_band
+
+
+def test_record_arena_shortage_observation_uses_only_frozen_snapshot(monkeypatch):
+    calls: list[dict[str, object]] = []
+    snapshot = arena_observability.ArenaShortageObservationSnapshot(
+        prestige_band="newbie",
+        real_entry_count=3,
+        virtual_entry_count=2,
+        reserve_ready_count=4,
+        reserve_training_count=1,
+    )
+    monkeypatch.setattr(
+        arena_observability,
+        "_capture_arena_shortage_observation_context",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("provider writes must not read live context")),
+    )
+    monkeypatch.setattr(
+        arena_observability,
+        "load_virtual_player_v2_config",
+        lambda: (_ for _ in ()).throw(AssertionError("provider writes must not reload band configuration")),
+    )
+    monkeypatch.setattr(
+        arena_observability,
+        "record_arena_shortage",
+        lambda **kwargs: calls.append(kwargs),
+    )
+
+    arena_observability.record_arena_shortage_observation(
+        mode="tournament",
+        capacity=10,
+        missing_count=2,
+        operation_id="operation-1",
+        observed_at=datetime(2026, 7, 28, 8, tzinfo=dt_timezone.utc),
+        snapshot=snapshot,
+    )
+
+    assert calls[0]["prestige_band"] == "newbie"
+    assert calls[0]["real_entry_count"] == 3
+    assert calls[0]["virtual_entry_count"] == 2
+    assert calls[0]["reserve_ready_count"] == 4
+    assert calls[0]["reserve_training_count"] == 1
+
+
+def test_arena_shortage_snapshot_rejects_silent_context_coercion() -> None:
+    with pytest.raises(ValueError, match="real_entry_count"):
+        arena_observability.ArenaShortageObservationSnapshot(
+            prestige_band="newbie",
+            real_entry_count=True,
+            virtual_entry_count=2,
+            reserve_ready_count=4,
+            reserve_training_count=1,
+        )
+
+    with pytest.raises(ValueError, match="prestige_band"):
+        arena_observability.prepare_arena_shortage_observation_snapshot(
+            demand_id=7,
+            mode="tournament",
+            event_id=9,
+            population_prestige=100,
+            prestige_band=123,  # type: ignore[arg-type]
+            real_entry_count=3,
+            virtual_entry_count=2,
+            reserve_ready_count=4,
+            reserve_training_count=1,
+        )
+
+
+def test_grow_arena_virtual_reserves_runs_growth(monkeypatch):
+    calls: list[int] = []
     monkeypatch.setattr(
         arena_tasks,
         "grow_due_virtual_reserves",
-        lambda *, limit: calls.append(("grow", limit)) or 5,
-    )
-    monkeypatch.setattr(
-        arena_tasks,
-        "create_due_virtual_reserve_profiles",
-        lambda *, limit: calls.append(("create", limit)) or 3,
+        lambda *, limit: calls.append(limit) or 5,
     )
 
     result = arena_tasks.grow_arena_virtual_reserves.run(limit=40)
 
-    assert result == {"grown": 5, "created": 3}
-    assert calls == [("grow", 40), ("create", 40)]
+    assert result == {"grown": 5}
+    assert calls == [40]
+
+
+def test_grow_arena_virtual_reserves_surfaces_growth_database_failure(monkeypatch):
+    def fail_growth(*, limit):
+        del limit
+        raise DatabaseError("growth database unavailable")
+
+    monkeypatch.setattr(arena_tasks, "grow_due_virtual_reserves", fail_growth)
+
+    with pytest.raises(RuntimeError, match="grow_due_virtual_reserves"):
+        arena_tasks.grow_arena_virtual_reserves.run(limit=40)

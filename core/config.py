@@ -65,6 +65,7 @@ class GuestConfig:
     CIVIL_INTELLECT_WEIGHT: float = 0.5  # 文官智力权重
     MILITARY_FORCE_WEIGHT: float = 0.7  # 武将武力权重
     MILITARY_INTELLECT_WEIGHT: float = 0.3  # 武将智力权重
+    AGILITY_TO_ARENA_POWER_WEIGHT: float = 1.0  # 敏捷对竞技场阵容战力的 1:1 权重
 
     # 重伤恢复阈值
     INJURY_RECOVERY_HP_PERCENT: float = 0.3  # 30% HP 解除重伤
@@ -238,7 +239,7 @@ class RecruitmentConfig:
     CANDIDATE_EXPIRE_HOURS: int = 24
 
     # 每个卡池每日招募次数上限（按庄园独立统计）
-    DAILY_POOL_DRAW_LIMIT: int = 300
+    DAILY_POOL_DRAW_LIMIT: int = 3
 
 
 # ============ 打工配置 ============

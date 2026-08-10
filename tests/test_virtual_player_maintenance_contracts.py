@@ -6,6 +6,7 @@ import pytest
 
 from gameplay.services.virtual_player_core.contracts import (
     AcceleratedGrowthOutcome,
+    ArenaGrowthObjective,
     MaintenanceOutcome,
     MaintenanceResult,
     MaintenanceScheduleDisposition,
@@ -15,6 +16,28 @@ from gameplay.services.virtual_player_core.contracts import (
 )
 
 NOW = datetime(2026, 7, 27, 12, 0, tzinfo=timezone.utc)
+
+
+def test_arena_growth_objective_separates_hard_count_from_soft_preference() -> None:
+    objective = ArenaGrowthObjective(
+        critical_guest_count=3,
+        preferred_guest_count=7,
+        selected_power_lower_bound=800,
+        selected_power_upper_bound=1200,
+        selected_power_before=650,
+        target_team_power=1000,
+        lineup_mode="tournament",
+        lineup_event_id=7,
+        lineup_max_size=10,
+        minimum_guest_level=20,
+        recruitment_rarity_cap="blue",
+        max_guest_level_step=6,
+    )
+
+    assert objective.critical_guest_count == 3
+    assert objective.preferred_guest_count == 7
+    assert objective.selected_lineup_gap == 150
+    assert objective.to_payload()["recruitment_rarity_cap"] == "blue"
 
 
 def test_scheduled_trigger_requires_due_and_advances_the_normal_schedule() -> None:
@@ -35,6 +58,22 @@ def test_arena_trigger_ignores_due_time_and_preserves_the_normal_schedule() -> N
     assert policy.schedule_disposition is MaintenanceScheduleDisposition.PRESERVE_NORMAL_SCHEDULE
     assert policy.is_due(next_growth_at=NOW + timedelta(days=30), now=NOW) is True
     assert policy.is_due(next_growth_at=None, now=NOW) is True
+    assert (
+        policy.is_due(
+            next_growth_at=NOW + timedelta(days=30),
+            now=NOW,
+            arena_bypass_due=False,
+        )
+        is False
+    )
+    assert (
+        policy.is_due(
+            next_growth_at=NOW,
+            now=NOW,
+            arena_bypass_due=False,
+        )
+        is True
+    )
 
 
 @pytest.mark.parametrize(
@@ -291,8 +330,12 @@ def test_maintenance_result_enforces_action_and_reason_exclusivity(
             MaintenanceResult(**fields)
         fields["reason"] = "expected_reason"
         fields["action_kind"] = "unexpected"
-        with pytest.raises(ValueError, match="must not include an action_kind"):
-            MaintenanceResult(**fields)
+        if outcome is MaintenanceOutcome.NO_ACTION:
+            result = MaintenanceResult(**fields)
+            assert result.action_kind == "unexpected"
+        else:
+            with pytest.raises(ValueError, match="must not include an action_kind"):
+                MaintenanceResult(**fields)
 
 
 @pytest.mark.parametrize(

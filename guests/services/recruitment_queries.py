@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Iterable
 
-from django.db.models import QuerySet
+from django.db.models import Count, QuerySet
 from django.utils import timezone
 
 from core.config import RECRUITMENT
@@ -95,6 +95,39 @@ def _count_pool_draws_today(manor_id: int, pool_id: int, *, now: datetime | None
     ).count()
 
 
+def bulk_count_pool_draws_today(
+    manor_id: int,
+    pool_ids: Iterable[int],
+    *,
+    now: datetime | None = None,
+) -> dict[int, int]:
+    """批量统计庄园今日各卡池已发起的招募次数。"""
+    normalized_pool_ids = [int(pool_id) for pool_id in pool_ids]
+    result = {pool_id: 0 for pool_id in normalized_pool_ids}
+    if not normalized_pool_ids:
+        return result
+
+    current_time = now or timezone.now()
+    local_now = timezone.localtime(current_time)
+    day_start = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_end = day_start + timedelta(days=1)
+    valid_statuses = (GuestRecruitment.Status.PENDING, GuestRecruitment.Status.COMPLETED)
+    rows = (
+        GuestRecruitment.objects.filter(
+            manor_id=manor_id,
+            pool_id__in=normalized_pool_ids,
+            status__in=valid_statuses,
+            started_at__gte=day_start,
+            started_at__lt=day_end,
+        )
+        .values("pool_id")
+        .annotate(count=Count("id"))
+    )
+    for row in rows:
+        result[int(row["pool_id"])] = int(row["count"])
+    return result
+
+
 def has_active_guest_recruitment(manor: Manor) -> bool:
     """是否存在进行中的门客招募。"""
     return manor.guest_recruitments.filter(status=GuestRecruitment.Status.PENDING).exists()
@@ -129,6 +162,7 @@ __all__ = [
     "_count_pool_draws_today",
     "_get_pool_daily_draw_limit",
     "available_guests",
+    "bulk_count_pool_draws_today",
     "get_active_guest_recruitment",
     "get_excluded_template_ids",
     "get_pool_recruitment_duration_seconds",

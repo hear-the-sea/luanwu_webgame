@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from types import MappingProxyType
 
+import pytest
+
 from gameplay.services.virtual_player_core.gate_d2_candidate_artifact import GateD2RawProfile
 from gameplay.services.virtual_player_core.gate_d2_metrics import (
     _JOINT_FEATURE_FIELDS,
@@ -11,6 +13,8 @@ from gameplay.services.virtual_player_core.gate_d2_metrics import (
     _robust_joint_outlier_rates,
     _split_reference_fit_holdout,
 )
+
+pytestmark = pytest.mark.skip(reason="Gate D2 static reference metrics retired after the policy 2 cutover")
 
 
 def _derived_profile(

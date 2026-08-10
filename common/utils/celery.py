@@ -89,6 +89,7 @@ def safe_apply_async_with_dedup(
     countdown: Optional[int] = None,
     logger: Optional[logging.Logger] = None,
     log_message: str = "celery task dispatch failed",
+    log_extra: Optional[Mapping[str, Any]] = None,
     raise_on_failure: bool = False,
 ) -> bool:
     """
@@ -123,11 +124,13 @@ def safe_apply_async_with_dedup(
                 return True
         except CACHE_INFRASTRUCTURE_EXCEPTIONS:
             if logger:
+                extra = dict(log_extra or {})
+                extra.update({"degraded": True, "component": "celery_dedup_cache"})
                 logger.warning(
                     "celery dispatch dedup cache unavailable: %s",
                     dedup_key,
                     exc_info=True,
-                    extra={"degraded": True, "component": "celery_dedup_cache"},
+                    extra=extra,
                 )
 
     ok: bool | None = None
@@ -139,6 +142,7 @@ def safe_apply_async_with_dedup(
             countdown=countdown,
             logger=logger,
             log_message=log_message,
+            log_extra=log_extra,
             raise_on_failure=raise_on_failure,
         )
         return ok

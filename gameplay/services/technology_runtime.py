@@ -354,6 +354,75 @@ def apply_technology_upgrade_locked(
     return technology
 
 
+def start_technology_upgrade_locked(
+    manor: Any,
+    quote: TechnologyUpgradeQuote,
+    *,
+    get_technology_template_func: Callable[[str], dict[str, Any] | None],
+    calculate_upgrade_cost_func: Callable[[str, int], int],
+    max_concurrent_tech_upgrades: int,
+    transaction_module: Any,
+    invalidate_home_stats_cache_func: Callable[[int], None],
+    technology_not_found_error_cls: type[Exception],
+    technology_upgrade_in_progress_error_cls: type[Exception],
+    technology_max_level_error_cls: type[Exception],
+    technology_concurrent_upgrade_limit_error_cls: type[Exception],
+    insufficient_resource_error_cls: type[Exception],
+    schedule_technology_completion_func: Callable[[Any, int], None],
+    sync_production: bool = True,
+    technologies: Sequence[Any] | None = None,
+    technologies_locked: bool = False,
+    now: Any | None = None,
+) -> Any:
+    """Charge and start a technology timer without incrementing its level.
+
+    ``apply_technology_upgrade_locked`` intentionally remains the synchronous
+    primitive used by the legacy user flow.  V2 maintenance calls this start
+    primitive so the existing completion task is the sole level-increment
+    owner.
+    """
+
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from ..models import PlayerTechnology
+
+    current_quote, technology = _assert_current_technology_upgrade_quote_locked(
+        manor,
+        quote,
+        get_technology_template_func=get_technology_template_func,
+        calculate_upgrade_cost_func=calculate_upgrade_cost_func,
+        max_concurrent_tech_upgrades=max_concurrent_tech_upgrades,
+        transaction_module=transaction_module,
+        technology_not_found_error_cls=technology_not_found_error_cls,
+        technology_upgrade_in_progress_error_cls=technology_upgrade_in_progress_error_cls,
+        technology_max_level_error_cls=technology_max_level_error_cls,
+        technology_concurrent_upgrade_limit_error_cls=technology_concurrent_upgrade_limit_error_cls,
+        technologies=technologies,
+        technologies_locked=technologies_locked,
+    )
+    if technology is None:
+        technology = PlayerTechnology(
+            manor=manor,
+            tech_key=current_quote.technology_key,
+            level=current_quote.current_level,
+        )
+    _consume_technology_upgrade_quote_locked(
+        manor,
+        current_quote,
+        sync_production=sync_production,
+        insufficient_resource_error_cls=insufficient_resource_error_cls,
+    )
+    duration = technology.upgrade_duration()
+    technology.is_upgrading = True
+    technology.upgrade_complete_at = (now or timezone.now()) + timedelta(seconds=duration)
+    _save_technology_state(technology)
+    technology.manor = manor
+    schedule_technology_completion_func(technology, duration)
+    return technology
+
+
 def should_skip_tech_refresh_by_local_fallback(
     local_refresh_state: dict[int, float],
     *,

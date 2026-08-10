@@ -86,6 +86,8 @@ def normalize_entry_guest_snapshot(snapshot: Any) -> dict[str, Any]:
     normalized["intellect"] = _snapshot_int(snapshot, "intellect", minimum=0, default=0)
     normalized["defense_stat"] = _snapshot_int(snapshot, "defense_stat", minimum=0, default=0)
     normalized["agility"] = _snapshot_int(snapshot, "agility", minimum=0, default=0)
+    if "agility" not in snapshot:
+        normalized["arena_power_snapshot_semantics"] = "legacy_missing_agility"
     normalized["luck"] = _snapshot_int(snapshot, "luck", minimum=0, default=0)
     normalized["attack"] = _snapshot_int(snapshot, "attack", minimum=1)
     normalized["defense"] = _snapshot_int(snapshot, "defense", minimum=1)

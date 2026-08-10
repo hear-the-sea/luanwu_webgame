@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import base64
+import json
 import math
 import random
 import re
 import threading
 from collections import Counter
+from contextlib import ExitStack
 from dataclasses import dataclass
 from datetime import timedelta
 from time import perf_counter
@@ -35,8 +38,19 @@ from gameplay.services.virtual_player_core.projection import (
 )
 from gameplay.services.virtual_player_core.random_context import RandomContext
 from gameplay.services.virtual_player_core.safety_metrics import record_safety_heartbeat
+from gameplay.services.virtual_player_core.stage_metrics import (
+    STAGE_ACTION_DOMAIN_WRITES,
+    STAGE_CYCLE_ATTEMPT_RECEIPT,
+    STAGE_DUE_BACKLOG_SELECTION,
+    STAGE_PLANNING_SNAPSHOT_PRELOAD,
+    STAGE_PROFILE_PLAN_REVALIDATION,
+    STAGE_SAFETY_TASK_WRAPUP,
+    MaintenanceStageObservation,
+    capture_maintenance_stage_metrics,
+    current_maintenance_stage_metrics,
+)
 from gameplay.services.virtual_player_core.strategy import development_plan_catalog_v1, generate_development_plan
-from guests.models import GuestTemplate, TrainingLog
+from guests.models import Guest, GuestTemplate
 from guests.services.recruitment_guests import create_guest_from_template
 
 pytestmark = [pytest.mark.integration]
@@ -44,6 +58,14 @@ pytestmark = [pytest.mark.integration]
 _WARMUP_RUNS = 5
 _MEASURED_RUNS = 30
 _WRITE_PREFIXES = ("INSERT ", "UPDATE ", "DELETE ", "REPLACE ")
+_STAGE_NAMES = (
+    STAGE_DUE_BACKLOG_SELECTION,
+    STAGE_PLANNING_SNAPSHOT_PRELOAD,
+    STAGE_PROFILE_PLAN_REVALIDATION,
+    STAGE_ACTION_DOMAIN_WRITES,
+    STAGE_CYCLE_ATTEMPT_RECEIPT,
+    STAGE_SAFETY_TASK_WRAPUP,
+)
 
 
 @dataclass(frozen=True)
@@ -54,6 +76,7 @@ class _WorkerSample:
     row_lock_wait_ms: float
     action_kinds: tuple[str, ...]
     query_summary: tuple[tuple[str, int], ...]
+    stage_observations: tuple[MaintenanceStageObservation, ...] = ()
 
 
 def _require_mysql() -> None:
@@ -106,15 +129,58 @@ def _action_kinds(captured_queries: list[dict[str, str]]) -> tuple[str, ...]:
     return tuple(action for action, marker in markers if marker in sql)
 
 
+def _stage_query_execute_wrapper(execute, sql, params, many, context):
+    metrics = current_maintenance_stage_metrics()
+    if metrics is not None:
+        metrics.record_query(sql)
+    return execute(sql, params, many, context)
+
+
+def _stage_fingerprint_token(fingerprints: tuple[tuple[str, int], ...]) -> str:
+    payload = [{"sql": sql, "count": count} for sql, count in fingerprints]
+    encoded = base64.urlsafe_b64encode(
+        json.dumps(payload, ensure_ascii=True, separators=(",", ":")).encode("utf-8")
+    ).decode("ascii")
+    return encoded.rstrip("=") or "-"
+
+
+def _print_stage_metrics(samples: list[_WorkerSample], *, batch_size: int, concurrency: int) -> None:
+    observations_by_stage: dict[str, list[MaintenanceStageObservation]] = {stage: [] for stage in _STAGE_NAMES}
+    fingerprints_by_stage: dict[str, Counter[str]] = {stage: Counter() for stage in _STAGE_NAMES}
+    for sample in samples:
+        for observation in sample.stage_observations:
+            if observation.stage not in observations_by_stage:
+                raise AssertionError(f"unexpected maintenance stage: {observation.stage}")
+            observations_by_stage[observation.stage].append(observation)
+            fingerprints_by_stage[observation.stage].update(dict(observation.query_fingerprints))
+
+    for stage in _STAGE_NAMES:
+        observations = observations_by_stage[stage]
+        assert observations, f"no observations recorded for maintenance stage {stage}"
+        durations = [observation.duration_ms for observation in observations]
+        fingerprints = tuple(fingerprints_by_stage[stage].most_common(10))
+        print(
+            "gate_e_maintenance_stage "
+            f"batch_size={batch_size} concurrency={concurrency} stage={stage} "
+            f"observations={len(observations)} "
+            f"duration_p50_ms={_nearest_rank(durations, 0.50):.3f} "
+            f"duration_p95_ms={_nearest_rank(durations, 0.95):.3f} "
+            f"duration_p99_ms={_nearest_rank(durations, 0.99):.3f} "
+            f"queries_max={max(observation.query_count for observation in observations)} "
+            f"write_queries_max={max(observation.write_query_count for observation in observations)} "
+            f"fingerprints_b64={_stage_fingerprint_token(fingerprints)}"
+        )
+
+
 @pytest.fixture
 def released_v2_policy(db):
-    return release_configured_policy_operation(version=1, apply=True)
+    return release_configured_policy_operation(version=2, apply=True)
 
 
 def _activate_v2_maintenance() -> None:
     BotRuntimeRoutingState.objects.create(
         key=BotRuntimeRoutingState.GLOBAL_KEY,
-        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.LEGACY_BEFORE_GATE,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
         maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
         calibration_routes=[],
         revision=1,
@@ -154,9 +220,9 @@ def _install_permissive_reference(monkeypatch) -> None:
             cap=cap,
             nearest_candidate_keys=(anchor.business_key,),
         )
-        return {}, cap, selection
+        return 2, selection, "a" * 64
 
-    monkeypatch.setattr(maintenance, "select_policy_reference", _select_reference)
+    monkeypatch.setattr(maintenance, "growth_control_reference_selection", _select_reference)
 
 
 def _create_v2_profiles(*, count: int, now, policy) -> list[BotProfile]:
@@ -254,23 +320,39 @@ def _prepare_benchmark_cycle(profiles: list[BotProfile], *, now) -> None:
         grain=100_000,
         resource_updated_at=now,
     )
-    record_safety_heartbeat("safety_monitor", now=timezone.now())
+    record_safety_heartbeat("safety_monitor", now=now)
 
 
-def _run_worker(*, batch_size: int, now, start: threading.Barrier | None) -> _WorkerSample:
+def _run_worker(
+    *,
+    batch_size: int,
+    now,
+    start: threading.Barrier | None,
+    collect_stage_metrics: bool = False,
+) -> _WorkerSample:
     close_old_connections()
     try:
         if start is not None:
             start.wait(timeout=10)
         lock_wait_before = _row_lock_time_ms()
         reset_queries()
-        with CaptureQueriesContext(connection) as captured:
+        with ExitStack() as stack:
+            stage_metrics = None
+            if collect_stage_metrics:
+                stage_metrics = stack.enter_context(capture_maintenance_stage_metrics())
+                stack.enter_context(connection.execute_wrapper(_stage_query_execute_wrapper))
+            captured = stack.enter_context(CaptureQueriesContext(connection))
             maintained = maintenance.maintain_due_virtual_players(
                 now=now,
                 limit=batch_size,
             )
         lock_wait_after = _row_lock_time_ms()
         queries = list(captured.captured_queries)
+        stage_observations = ()
+        if stage_metrics is not None:
+            stage_observations = tuple(
+                observation for observations in stage_metrics.observations.values() for observation in observations
+            )
         return _WorkerSample(
             maintained=maintained,
             query_count=len(queries),
@@ -278,15 +360,27 @@ def _run_worker(*, batch_size: int, now, start: threading.Barrier | None) -> _Wo
             row_lock_wait_ms=max(0.0, lock_wait_after - lock_wait_before),
             action_kinds=_action_kinds(queries),
             query_summary=_query_summary(queries),
+            stage_observations=stage_observations,
         )
     finally:
         close_old_connections()
 
 
-def _run_batch(*, batch_size: int, concurrency: int, now) -> tuple[float, list[_WorkerSample]]:
+def _run_batch(
+    *,
+    batch_size: int,
+    concurrency: int,
+    now,
+    collect_stage_metrics: bool = False,
+) -> tuple[float, list[_WorkerSample]]:
     if concurrency == 1:
         started = perf_counter()
-        sample = _run_worker(batch_size=batch_size, now=now, start=None)
+        sample = _run_worker(
+            batch_size=batch_size,
+            now=now,
+            start=None,
+            collect_stage_metrics=collect_stage_metrics,
+        )
         return (perf_counter() - started) * 1_000, [sample]
 
     start = threading.Barrier(concurrency)
@@ -296,7 +390,12 @@ def _run_batch(*, batch_size: int, concurrency: int, now) -> tuple[float, list[_
 
     def _target() -> None:
         try:
-            sample = _run_worker(batch_size=batch_size, now=now, start=start)
+            sample = _run_worker(
+                batch_size=batch_size,
+                now=now,
+                start=start,
+                collect_stage_metrics=collect_stage_metrics,
+            )
             with guard:
                 samples.append(sample)
         except BaseException as exc:  # pragma: no cover - asserted below
@@ -553,19 +652,25 @@ def test_same_arena_operation_double_worker_commits_one_execution_receipt(
         thread.join(timeout=60)
 
     profile.refresh_from_db()
+    assert all(not thread.is_alive() for thread in threads)
+    assert errors == []
+    assert len(results) == 2
     receipt = BotMaintenanceExecution.objects.get(operation_id=operation_id)
     committed_outcome = {
         BotMaintenanceExecution.Outcome.APPLIED: AcceleratedGrowthOutcome.GROWN,
         BotMaintenanceExecution.Outcome.NO_ACTION: AcceleratedGrowthOutcome.NO_ACTION,
     }[receipt.outcome]
-    assert all(not thread.is_alive() for thread in threads)
-    assert errors == []
-    assert len(results) == 2
     assert committed_outcome in results
     assert set(results) <= {committed_outcome, AcceleratedGrowthOutcome.BUSY}
     assert profile.maintenance_sequence == 1
     assert BotMaintenanceExecution.objects.filter(operation_id=operation_id).count() == 1
-    assert TrainingLog.objects.filter(manor_id=profile.manor_id).count() == 1
+    assert (
+        Guest.objects.filter(
+            manor_id=profile.manor_id,
+            training_complete_at__isnull=False,
+        ).count()
+        == 1
+    )
 
     replay = maintenance.accelerate_virtual_player_growth(
         int(profile.id),
@@ -592,6 +697,15 @@ def test_mysql_failure_boundaries_do_not_duplicate_or_partially_commit(
     _require_mysql()
     _activate_v2_maintenance()
     _install_permissive_reference(monkeypatch)
+    for candidate_builder in (
+        "build_equipment_equip_candidates",
+        "_troop_recruitment_candidates",
+        "build_skill_learning_candidates",
+        "build_inventory_acquisition_candidates",
+    ):
+        monkeypatch.setattr(maintenance, candidate_builder, lambda **_kwargs: ((), {}))
+    monkeypatch.setattr(maintenance, "_building_upgrade_quotes", lambda **_kwargs: ())
+    monkeypatch.setattr(maintenance, "_technology_upgrade_quotes", lambda **_kwargs: ())
     now = timezone.now()
     profile = _create_v2_profiles(
         count=1,
@@ -619,7 +733,10 @@ def test_mysql_failure_boundaries_do_not_duplicate_or_partially_commit(
         )
     profile.refresh_from_db()
     assert profile.maintenance_sequence == 0
-    assert not TrainingLog.objects.filter(manor_id=profile.manor_id).exists()
+    assert not Guest.objects.filter(
+        manor_id=profile.manor_id,
+        training_complete_at__isnull=False,
+    ).exists()
 
     monkeypatch.setattr(
         maintenance,
@@ -632,20 +749,25 @@ def test_mysql_failure_boundaries_do_not_duplicate_or_partially_commit(
         now=now,
     )
     assert plan.action_kind == "training"
-    original_apply = maintenance.apply_training_locked
+    import guests.services.training as training_service
 
-    def _fail_after_domain_write(*args, **kwargs):
-        original_apply(*args, **kwargs)
+    original_ensure_auto_training = training_service.ensure_auto_training
+
+    def _fail_after_domain_write(guest):
+        original_ensure_auto_training(guest)
         raise RuntimeError("injected after domain write")
 
-    monkeypatch.setattr(maintenance, "apply_training_locked", _fail_after_domain_write)
+    monkeypatch.setattr(training_service, "ensure_auto_training", _fail_after_domain_write)
     with pytest.raises(RuntimeError, match="injected after domain write"):
         maintenance.execute_virtual_player_v2_maintenance_plan(plan)
     profile.refresh_from_db()
     assert profile.maintenance_sequence == 0
-    assert not TrainingLog.objects.filter(manor_id=profile.manor_id).exists()
+    assert not Guest.objects.filter(
+        manor_id=profile.manor_id,
+        training_complete_at__isnull=False,
+    ).exists()
 
-    monkeypatch.setattr(maintenance, "apply_training_locked", original_apply)
+    monkeypatch.setattr(training_service, "ensure_auto_training", original_ensure_auto_training)
     original_finish = maintenance._finish_safety_attempt_best_effort
 
     def _fail_after_business_commit(*_args, **_kwargs):
@@ -666,7 +788,13 @@ def test_mysql_failure_boundaries_do_not_duplicate_or_partially_commit(
         )
     profile.refresh_from_db()
     assert profile.maintenance_sequence == 1
-    assert TrainingLog.objects.filter(manor_id=profile.manor_id).count() == 1
+    assert (
+        Guest.objects.filter(
+            manor_id=profile.manor_id,
+            training_complete_at__isnull=False,
+        ).count()
+        == 1
+    )
 
     monkeypatch.setattr(
         maintenance,
@@ -682,9 +810,19 @@ def test_mysql_failure_boundaries_do_not_duplicate_or_partially_commit(
         now=now,
     )
     profile.refresh_from_db()
-    assert retry.outcome is MaintenanceOutcome.INELIGIBLE
-    assert profile.maintenance_sequence == 1
-    assert TrainingLog.objects.filter(manor_id=profile.manor_id).count() == 1
+    # Ordinary V2 maintenance does not create an Arena execution receipt.
+    # Once the committed training is visible, the next scheduled plan has no
+    # eligible candidate and therefore reports a committed NO_ACTION result.
+    assert retry.outcome is MaintenanceOutcome.NO_ACTION
+    assert retry.reason == "no_eligible_candidate"
+    assert profile.maintenance_sequence == 2
+    assert (
+        Guest.objects.filter(
+            manor_id=profile.manor_id,
+            training_complete_at__isnull=False,
+        ).count()
+        == 1
+    )
 
 
 @pytest.mark.parametrize("batch_size", (1, 10, 100))
@@ -720,6 +858,7 @@ def test_v2_maintenance_meets_frozen_mysql_benchmark_matrix(
             batch_size=batch_size,
             concurrency=concurrency,
             now=cycle_now,
+            collect_stage_metrics=index >= _WARMUP_RUNS,
         )
         assert sum(sample.maintained for sample in worker_samples) == batch_size
         assert all(sample.query_count > 0 for sample in worker_samples)
@@ -746,6 +885,7 @@ def test_v2_maintenance_meets_frozen_mysql_benchmark_matrix(
         "deadlocks=0 lock_timeouts=0 "
         f"warmup_runs={_WARMUP_RUNS} measured_runs={_MEASURED_RUNS}"
     )
+    _print_stage_metrics(measured_samples, batch_size=batch_size, concurrency=concurrency)
 
     if batch_size == 1:
         if max(query_counts) > 60:

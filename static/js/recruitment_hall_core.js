@@ -43,7 +43,17 @@
       .sort((left, right) => left - right);
   }
 
+  function buildRecruitmentCardConfirmation({ poolName, cardCount } = {}) {
+    const resolvedPoolName = String(poolName || "当前卡池").trim() || "当前卡池";
+    const resolveCount = (value) => {
+      const parsed = Number.parseInt(value, 10);
+      return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+    };
+    return `确定消耗 1 张招募卡，为「${resolvedPoolName}」增加 1 次今日招募额度吗？\n当前持有：${resolveCount(cardCount)} 张`;
+  }
+
   return {
+    buildRecruitmentCardConfirmation,
     buildRenderProgressText,
     normalizeSelectedIds,
     shouldUseChunkedRender,

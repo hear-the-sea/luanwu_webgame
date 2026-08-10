@@ -1,92 +1,296 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}游戏攻略{% endblock %}
 
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/guide.css' %}">
+{% endblock %}
+
 {% block content %}
 <section class="dashboard">
-    <div class="tw-section-header">
-        <h1>游戏攻略</h1>
-        <p class="caption">给新庄园主的基础说明书：先知道东西从哪来，再考虑江湖由谁来管。</p>
+    <div class="guide-page" id="guide-page">
+    <a class="guide-skip-link" href="#opening-route">跳到攻略正文</a>
+
+    <header class="tw-section-header guide-page__header">
+        <div>
+            <h1>游戏攻略</h1>
+            <p class="caption">按“资源 → 门客 → 行动力 → 战斗”的顺序推进，先稳住庄园，再扩大选择。</p>
+        </div>
+        <div class="guide-page__identity">
+            <strong>{{ manor.display_name }}</strong>
+            <span>{{ manor.region_display }} · 声望 {{ manor.prestige }}</span>
+        </div>
+    </header>
+
+    <section class="tw-panel guide-summary" aria-label="庄园当前概览">
+        <div class="tw-panel-header">庄园当前概览</div>
+        <div class="tw-panel-content">
+            <div class="guide-stat-grid">
+                <div class="guide-stat">
+                    <span>行动力</span>
+                    <strong>{{ guide_snapshot.action_points }}/{{ guide_snapshot.action_points_max }}</strong>
+                </div>
+                <div class="guide-stat">
+                    <span>门客编制</span>
+                    <strong>{{ guide_snapshot.guest_count }} / {{ guide_snapshot.guest_capacity }}</strong>
+                </div>
+                <div class="guide-stat">
+                    <span>粮食库存</span>
+                    <strong>{{ manor.grain }} / {{ manor.grain_capacity }}</strong>
+                </div>
+                <div class="guide-stat">
+                    <span>银两库存</span>
+                    <strong>{{ manor.silver }} / {{ manor.silver_capacity }}</strong>
+                </div>
+                <div class="guide-stat">
+                    <span>当前防护</span>
+                    <strong>{{ guide_snapshot.protection_label }}</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <nav class="tw-category-tabs guide-index" data-guide-nav aria-label="攻略章节导航">
+        <a class="tw-tab-item active" href="#opening-route" aria-current="true"><span>01</span>开局路线</a>
+        <a class="tw-tab-item" href="#economy"><span>02</span>庄园经营</a>
+        <a class="tw-tab-item" href="#guests"><span>03</span>门客与军备</a>
+        <a class="tw-tab-item" href="#expeditions"><span>04</span>任务与出征</a>
+        <a class="tw-tab-item" href="#systems"><span>05</span>系统索引</a>
+        <a class="tw-tab-item" href="#mistakes"><span>06</span>避坑清单</a>
+    </nav>
+
+    <div class="guide-content">
+        <section class="tw-panel guide-section" id="opening-route">
+            <header class="tw-panel-header guide-section__header">
+                <span class="guide-section__index">01</span>
+                <div>
+                    <span class="guide-section__eyebrow">入局顺序</span>
+                    <h2>四步把庄园盘活</h2>
+                </div>
+            </header>
+            <div class="tw-panel-content">
+                <p class="guide-intro">刚进游戏不要急着追求稀有门客。按照“产出 → 编制 → 行动力 → 战斗”的顺序推进，后续每个系统才有稳定的资源承接。</p>
+                <div class="guide-grid guide-grid--four">
+                    <article class="tw-card guide-tile guide-tile--priority">
+                        <span class="guide-tile__number">01</span>
+                        <span class="guide-tag">资源底盘</span>
+                        <h3>先让粮银持续入账</h3>
+                        <p>优先看农田、税务司，再补粮仓和银库。资源接近上限时先升容量，别让离线产出卡在仓门外。</p>
+                        <a class="tw-btn-secondary tw-btn-sm" href="{% url 'gameplay:dashboard' %}">去打理庄园</a>
+                    </article>
+                    <article class="tw-card guide-tile">
+                        <span class="guide-tile__number">02</span>
+                        <span class="guide-tag">人员编制</span>
+                        <h3>招募少量门客并集中培养</h3>
+                        <p>先养一支能稳定完成任务的主力队，等级、属性点、技能和装备都围绕主力投入。</p>
+                        <a class="tw-btn-secondary tw-btn-sm" href="{% url 'guests:recruit' %}">去招募门客</a>
+                    </article>
+                    <article class="tw-card guide-tile">
+                        <span class="guide-tile__number">03</span>
+                        <span class="guide-tag">日常周转</span>
+                        <h3>把门客派去任务与打工</h3>
+                        <p>任务看每日剩余和掉落，打工看属性门槛与回报，给日常队列留出行动力。</p>
+                        <a class="tw-btn-secondary tw-btn-sm" href="{% url 'gameplay:tasks' %}">去看任务</a>
+                    </article>
+                    <article class="tw-card guide-tile guide-tile--priority">
+                        <span class="guide-tile__number">04</span>
+                        <span class="guide-tag">战斗准备</span>
+                        <h3>先侦察，再决定是否出征</h3>
+                        <p>出征前检查声望差、保护状态、敌方兵力与路程，队伍不齐就先回庄园补充。</p>
+                        <a class="tw-btn-secondary tw-btn-sm" href="{% url 'gameplay:map' %}">打开世界地图</a>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="tw-panel guide-section" id="economy">
+            <header class="tw-panel-header guide-section__header">
+                <span class="guide-section__index">02</span>
+                <div>
+                    <span class="guide-section__eyebrow">庄园经营</span>
+                    <h2>先算资源，再按优先级升级</h2>
+                </div>
+            </header>
+            <div class="tw-panel-content">
+                <p class="guide-intro">粮食是存量资源，也是人员与护院的持续开销；银两负责建筑、招募、培养和系统周转。经济核心不是产得多，而是产出不溢出、消耗有预案。</p>
+                <div class="guide-grid guide-grid--two">
+                    <article class="tw-card guide-tile guide-tile--resource">
+                        <div class="guide-tile__topline"><span class="guide-tile__symbol" aria-hidden="true">粮</span><strong>当前约 {{ guide_snapshot.hourly_grain }} / 时</strong></div>
+                        <h3>粮食主要靠农田</h3>
+                        <p>农田是主粮来源；茅厕会在产粮的同时额外产出等量银两。门客、家丁和护院都会持续吃粮，出征前记得给返程留余量。</p>
+                        <details class="guide-detail">
+                            <summary>人员耗粮规则</summary>
+                            <p>每名门客每小时消耗 100 粮食；每名家丁、庄园护院和钱庄护院各消耗 1 粮食。</p>
+                        </details>
+                    </article>
+                    <article class="tw-card guide-tile guide-tile--resource">
+                        <div class="guide-tile__topline"><span class="guide-tile__symbol" aria-hidden="true">银</span><strong>当前约 {{ guide_snapshot.hourly_silver }} / 时</strong></div>
+                        <h3>银两主要靠税务司</h3>
+                        <p>税务司、澡堂和酒馆提供稳定银两；酒馆升级还会增加每次招募的候选人数。招募池、建筑升级、门客培养和竞技场报名都要用银两。</p>
+                        <details class="guide-detail">
+                            <summary>银两的使用顺序</summary>
+                            <p>开局优先保障资源产出与容量，再安排招募和战斗消耗；想冲竞技场时，至少先留出报名成本。</p>
+                        </details>
+                    </article>
+                </div>
+
+                <div class="guide-capacity-grid" aria-label="庄园容量与编制">
+                    <div><span>门客编制</span><strong>{{ guide_snapshot.guest_count }} / {{ guide_snapshot.guest_capacity }}</strong></div>
+                    <div><span>出战门客上限</span><strong>{{ guide_snapshot.max_squad_size }} 人</strong></div>
+                </div>
+
+                <div class="guide-subsection">
+                    <h3>建筑升级优先级</h3>
+                    <ol class="guide-priority-list">
+                        <li><strong>农田 / 税务司</strong><span>先把粮食与银两的基础产出拉起来。</span></li>
+                        <li><strong>酒馆（招募期重点）</strong><span>升级同时提高银两收入与招募候选人数；酒馆等级每 +1，单次招募就多 1 位候选，10 级最多 +10。准备连续招募时，优先级可放在资源建筑之后。</span></li>
+                        <li><strong>粮仓 / 银库</strong><span>库存长期顶格就升级，避免产出溢出。</span></li>
+                        <li><strong>聚贤庄 / 家丁房</strong><span>按门客容量、护院与生产的人力需求补。</span></li>
+                        <li><strong>练功场 / 祠堂</strong><span>中期提升训练、建筑与招募效率。</span></li>
+                        <li><strong>藏宝阁 / 城防</strong><span>准备地图和防守玩法后再投入。</span></li>
+                    </ol>
+                    <div class="guide-note"><strong>并行规则：</strong>建筑升级队列与科技升级队列最多同时 2 条，升级前先看当前资源和正在进行的队列。</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="tw-panel guide-section" id="guests">
+            <header class="tw-panel-header guide-section__header">
+                <span class="guide-section__index">03</span>
+                <div>
+                    <span class="guide-section__eyebrow">门客编制</span>
+                    <h2>门客不是收藏，是行动队</h2>
+                </div>
+            </header>
+            <div class="tw-panel-content">
+                <p class="guide-intro">门客可以打工、做任务、地图踢馆、参与竞技，也能通过等级、属性点、技能书和装备成长。容量与战斗席位有限，优先打造一支可复用的主力。</p>
+                <div class="guide-grid guide-grid--two guide-grid--aligned">
+                    <div>
+                        <h3>门客去聚贤庄招募：招募池怎么选</h3>
+                        <div class="guide-table-wrap">
+                            <table class="guide-table">
+                                <thead><tr><th>招募池</th><th>消耗</th><th>抽取</th><th>冷却</th></tr></thead>
+                                <tbody>
+                                    <tr><td>村募</td><td>500 银两</td><td>1 人</td><td>10 分钟</td></tr>
+                                    <tr><td>乡试</td><td>1,500 银两</td><td>5 人</td><td>20 分钟</td></tr>
+                                    <tr><td>会试</td><td>5,000 银两</td><td>8 人</td><td>30 分钟</td></tr>
+                                    <tr><td><strong>殿试</strong></td><td><strong>10,000 银两</strong></td><td>10 人</td><td>60 分钟</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="guide-muted">聚贤庄等级决定门客容量：基础 3 位，每级增加 1 位，15 级最多 18 位。</p>
+                        <p class="guide-muted"><strong>酒馆别漏升：</strong>酒馆加成会直接叠加到每次招募的候选人数。村募、乡试、会试、殿试的基础人数分别是 1、5、8、10；10 级酒馆可让殿试从基础 10 人扩大到 20 人，想挑主力时先把候选池做宽。</p>
+                    </div>
+                    <div class="guide-stack">
+                        <article class="tw-card guide-tile"><h3>养成顺序</h3><p>等级 → 属性点 → 技能 → 装备。先让核心门客达到能稳定过当前任务的门槛。</p></article>
+                        <article class="tw-card guide-tile"><h3>状态管理</h3><p>空闲门客才能出征或打工；其他状态需要先完成对应行动或恢复。</p></article>
+                        <article class="tw-card guide-tile"><h3>护院编制</h3><p>护院招募要同时满足科技、装备和家丁条件；各兵种对应不同造兵术。</p></article>
+                    </div>
+                </div>
+                <div class="guide-note"><strong>门客任务有区别：</strong>标记为“门客”的任务只允许门客出征，不可携带护院；普通任务按任务页配置选择门客与护院。</div>
+                <div class="guide-actions"><a class="tw-btn-primary" href="{% url 'guests:roster' %}">管理门客</a><a class="tw-btn-secondary" href="{% url 'gameplay:troop_recruitment' %}">补充护院</a></div>
+            </div>
+        </section>
+
+        <section class="tw-panel guide-section" id="expeditions">
+            <header class="tw-panel-header guide-section__header">
+                <span class="guide-section__index">04</span>
+                <div>
+                    <span class="guide-section__eyebrow">外勤与战斗</span>
+                    <h2>出征前，先读懂三张牌</h2>
+                </div>
+            </header>
+            <div class="tw-panel-content">
+                <p class="guide-intro">任务追求稳定掉落，打工追求持续回报，地图踢馆追求风险与战利品的平衡；不要用同一套判断方式处理三者。</p>
+                <div class="guide-grid guide-grid--four">
+                    <article class="tw-card guide-tile guide-tile--metric"><strong class="guide-metric">{{ guide_snapshot.action_points_max }} <small>行动力上限</small></strong><h3>每次外勤消耗 10 点</h3><p>每 60 秒恢复 1 点，给日常任务留额度。</p></article>
+                    <article class="tw-card guide-tile guide-tile--metric"><strong class="guide-metric">3</strong><span>同时地图出征</span><h3>先侦察再踢馆</h3><p>保护状态、声望差、被攻击次数都会影响能否出手。</p></article>
+                    <article class="tw-card guide-tile guide-tile--metric"><strong class="guide-metric">50%</strong><span>任务敏捷减时上限</span><h3>敏捷影响任务路程</h3><p>平均敏捷每 10 点减少 1%，最多减少 50%。</p></article>
+                    <article class="tw-card guide-tile guide-tile--metric"><strong class="guide-metric">8</strong><span>目标 24 小时被攻上限</span><h3>保护机制优先级高</h3><p>免战牌不能在自己出征或有来袭队伍时启用。</p></article>
+                </div>
+
+                <div class="guide-subsection">
+                    <h3>三类外勤怎么安排</h3>
+                    <div class="guide-table-wrap">
+                        <table class="guide-table">
+                            <thead><tr><th>入口</th><th>出发前检查</th><th>收益</th><th>关键提醒</th></tr></thead>
+                            <tbody>
+                                <tr><td>任务</td><td>难度、次数、敌方、掉落与消耗</td><td>固定与概率掉落</td><td>任务卡每日每任务最多额外增加 5 次。</td></tr>
+                                <tr><td>打工</td><td>门客等级与属性门槛</td><td>银两与打工宝箱</td><td>初级 2 小时、中级 3 小时、高级 4 小时；最多 3 名门客同时打工。</td></tr>
+                                <tr><td>地图踢馆</td><td>侦察、声望、保护、护院与路程</td><td>声望、资源与战利品</td><td>基础单程 30 分钟，距离每增加 1 格加 15 秒；跨地区 1.5 倍。</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="guide-muted"><strong>装备可以从打工宝箱开出：</strong>安排打工获得宝箱，除了银两，也有机会得到装备或技能书；缺材料时再转向铁匠铺锻造。</p>
+                </div>
+
+                <div class="guide-subsection">
+                    <h3>竞技场与共斗</h3>
+                    <div class="guide-grid guide-grid--two">
+                        <article class="tw-card guide-tile"><span class="guide-tag">单人竞技</span><h3>十人同场，拼排名</h3><p>报名消耗 5,000 银两，每次最多带 10 名门客；每日最多参与 5 次。</p><a class="tw-btn-secondary tw-btn-sm" href="{% url 'gameplay:arena' %}">进入竞技场</a></article>
+                        <article class="tw-card guide-tile"><span class="guide-tag">共斗</span><h3>五人组队围攻光明顶</h3><p>每场最多 5 名玩家，每位最多派 3 名门客；报名免费，每日最多参与 3 次。</p><a class="tw-btn-secondary tw-btn-sm" href="{% url 'gameplay:arena' %}">查看共斗入口</a></article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="tw-panel guide-section" id="systems">
+            <header class="tw-panel-header guide-section__header">
+                <span class="guide-section__index">05</span>
+                <div>
+                    <span class="guide-section__eyebrow">系统索引</span>
+                    <h2>中后期，把资源换成选择权</h2>
+                </div>
+            </header>
+            <div class="tw-panel-content">
+                <p class="guide-intro">生产稳定、主力成型后，再按目标选择技术、生产、帮会和城防系统。</p>
+                <div class="guide-grid guide-grid--four">
+                    <article class="tw-card guide-tile"><span class="guide-tag">技术</span><h3>先基本，再专精</h3><p>基本技术影响外勤与建设；生产技术解锁配方；武艺技术强化护院。</p><a class="tw-btn-secondary tw-btn-sm" href="{% url 'gameplay:technology' %}">升级技术</a></article>
+                    <article class="tw-card guide-tile"><span class="guide-tag">生产</span><h3>把原料变成战力</h3><p>畜牧场、马房、冶炼坊和铁匠铺共同决定资源与装备产出。</p><div class="guide-links"><a href="{% url 'gameplay:ranch' %}">畜牧场</a><a href="{% url 'gameplay:smithy' %}">冶炼坊</a><a href="{% url 'gameplay:forge' %}">铁匠铺</a></div></article>
+                    <article class="tw-card guide-tile"><span class="guide-tag">帮会</span><h3>贡献换资源，科技抬上限</h3><p>创建帮会消耗 2 根金条；仓库每天最多兑换 10 次。</p><a class="tw-btn-secondary tw-btn-sm" href="{% url 'guilds:hall' %}">进入帮会大厅</a></article>
+                    <article class="tw-card guide-tile"><span class="guide-tag">城防与特殊</span><h3>城墙、箭塔与监牢</h3><p>城墙和箭塔负责防守，监牢决定俘虏容量，结义林决定结义人数上限。</p><div class="guide-links"><a href="{% url 'gameplay:dashboard' %}">查看建筑</a><a href="{% url 'gameplay:jail' %}">查看监牢</a></div></article>
+                </div>
+            </div>
+        </section>
+
+        <section class="tw-panel guide-section" id="mistakes">
+            <header class="tw-panel-header guide-section__header">
+                <span class="guide-section__index">06</span>
+                <div>
+                    <span class="guide-section__eyebrow">庄主手记</span>
+                    <h2>最容易踩的六个坑</h2>
+                </div>
+            </header>
+            <div class="tw-panel-content">
+                <div class="guide-grid guide-grid--three">
+                    <article class="tw-card guide-tile guide-tile--warning"><span class="guide-tag">容量</span><h3>资源满了还在升产出</h3><p>先升级粮仓或银库，否则新增产出会溢出。</p></article>
+                    <article class="tw-card guide-tile guide-tile--warning"><span class="guide-tag">编制</span><h3>门客平均分经验</h3><p>先做出能过当前任务的主力，再扩充名单。</p></article>
+                    <article class="tw-card guide-tile guide-tile--warning"><span class="guide-tag">行动力</span><h3>行动力见底才排日常</h3><p>每次 10 点、每分钟回 1 点，要给任务与打工留空间。</p></article>
+                    <article class="tw-card guide-tile guide-tile--warning"><span class="guide-tag">侦察</span><h3>不侦察就直接踢馆</h3><p>先看保护、声望差、路程和兵力，避免队伍白跑。</p></article>
+                    <article class="tw-card guide-tile guide-tile--warning"><span class="guide-tag">防护</span><h3>有来袭队伍时开免战</h3><p>免战牌要求当前没有自己的出征队伍，也没有来袭队伍。</p></article>
+                    <article class="tw-card guide-tile guide-tile--warning"><span class="guide-tag">生产</span><h3>只升建筑不升技术</h3><p>生产建筑提供队列和速度，技术负责配方解锁与产能加成。</p></article>
+                </div>
+            </div>
+        </section>
     </div>
 
-    <section class="tw-panel mb-6">
-        <div class="tw-panel-header">基础资源怎么来</div>
-        <div class="tw-panel-content">
-            <div class="grid gap-4 md:grid-cols-3">
-                <div class="p-4 bg-bg-secondary rounded">
-                    <h3 class="m-0 mb-2 text-lg font-semibold">粮食主要靠农田</h3>
-                    <p class="m-0 text-text-muted">农田会持续产粮，茅厕也能补一点粮银收入。粮食是养人、出征、升级时的底气，仓里没粮，豪言壮语也会饿得发抖。</p>
-                </div>
-                <div class="p-4 bg-bg-secondary rounded">
-                    <h3 class="m-0 mb-2 text-lg font-semibold">银两主要靠税务司</h3>
-                    <p class="m-0 text-text-muted">税务司、澡堂等建筑会带来银两收入。银两用途很广，升级建筑、培养队伍、周转交易都离不开它。</p>
-                </div>
-                <div class="p-4 bg-bg-secondary rounded">
-                    <h3 class="m-0 mb-2 text-lg font-semibold">容量要看粮仓和银库</h3>
-                    <p class="m-0 text-text-muted">资源不是无限往口袋里塞的。粮仓管粮食上限，银库管银两上限，快满了就该升级，不然产出容易白白溢出。</p>
-                </div>
-            </div>
+    <footer class="guide-footer tw-panel">
+        <div>
+            <strong>案牍原则</strong>
+            <span>先保证下一次行动，再追求下一次升级。</span>
         </div>
-    </section>
-
-    <section class="tw-panel mb-6">
-        <div class="tw-panel-header">门客在哪招，有什么用</div>
-        <div class="tw-panel-content">
-            <div class="grid gap-4 md:grid-cols-2">
-                <div class="p-4 bg-bg-secondary rounded">
-                    <h3 class="m-0 mb-2 text-lg font-semibold">门客去聚贤庄招募</h3>
-                    <p class="m-0 text-text-muted">在庄园建筑里找到聚贤庄，点“招募门客”进入招募大厅。聚贤庄等级会影响门客容量，地方太小，英雄来了也只能在门口排队。</p>
-                </div>
-                <div class="p-4 bg-bg-secondary rounded">
-                    <h3 class="m-0 mb-2 text-lg font-semibold">门客是你的行动队</h3>
-                    <p class="m-0 text-text-muted">门客可以出任务、上地图踢馆、参与战斗，也能通过升级、属性点、技能书和装备变强。简单说：你负责点按钮，他们负责替你挨揍和揍人。</p>
-                </div>
-            </div>
+        <div class="guide-actions">
+            <a class="tw-btn-primary" href="{% url 'gameplay:dashboard' %}">回到庄园</a>
+            <a class="tw-btn-secondary" href="{% url 'home' %}">返回首页</a>
         </div>
-    </section>
-
-    <section class="tw-panel mb-6">
-        <div class="tw-panel-header">装备如何获得</div>
-        <div class="tw-panel-content">
-            <div class="grid gap-4 md:grid-cols-3">
-                <div class="p-4 bg-bg-secondary rounded">
-                    <h3 class="m-0 mb-2 text-base font-semibold">装备可以从打工宝箱开出</h3>
-                    <p class="m-0 text-text-muted">安排打工能拿到宝箱，宝箱里有银两，也可能开出装备或技能书。想白手起家，先让大家把零工干起来。</p>
-                </div>
-                <div class="p-4 bg-bg-secondary rounded">
-                    <h3 class="m-0 mb-2 text-base font-semibold">铁匠铺走锻造路线</h3>
-                    <p class="m-0 text-text-muted">铁匠铺用于锻造装备，部分装备需要图纸或材料。材料别乱扔，今天嫌它占格子，明天可能就差它一块。</p>
-                </div>
-                <div class="p-4 bg-bg-secondary rounded">
-                    <h3 class="m-0 mb-2 text-base font-semibold">帮会也有装备箱</h3>
-                    <p class="m-0 text-text-muted">加入帮会后，可以关注帮会相关产出和装备箱。独行侠很潇洒，但有人供货时确实更香。</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="tw-panel mb-6">
-        <div class="tw-panel-header">新手顺手做什么</div>
-        <div class="tw-panel-content">
-            <ol class="m-0 pl-6 space-y-3 text-text-muted">
-                <li><strong class="text-text-primary">先升级资源建筑：</strong>农田、税务司、粮仓、银库优先看一眼，资源稳定了，后面操作才不抠搜。</li>
-                <li><strong class="text-text-primary">招几个门客：</strong>去聚贤庄招募，招到后记得培养和装备，不然他们只是在名单里占座。</li>
-                <li><strong class="text-text-primary">做任务和打工：</strong>任务给收益，打工给宝箱，都是前期攒家底的老实活。</li>
-                <li><strong class="text-text-primary">打架前先侦察：</strong>地图踢馆别硬冲，先看目标信息。鲁莽能制造故事，也能制造战报里的惨案。</li>
-            </ol>
-        </div>
-    </section>
-
-    <section class="tw-panel">
-        <div class="tw-panel-header">下一步去哪</div>
-        <div class="tw-panel-content">
-            <div class="flex flex-wrap gap-3">
-                <a class="tw-btn-primary" href="{% url 'gameplay:dashboard' %}">打理庄园</a>
-                <a class="tw-btn-primary" href="{% url 'guests:roster' %}">看看门客</a>
-                <a class="tw-btn-primary" href="{% url 'gameplay:tasks' %}">接点任务</a>
-                <a class="tw-btn-secondary" href="{% url 'home' %}">回到首页</a>
-            </div>
-        </div>
-    </section>
+    </footer>
+    </div>
 </section>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<script src="{% static 'js/guide-page.js' %}"></script>
 {% endblock %}

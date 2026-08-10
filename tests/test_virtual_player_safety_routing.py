@@ -77,6 +77,96 @@ def test_safety_decision_advances_daily_cursor_without_pausing() -> None:
 
 
 @pytest.mark.django_db
+def test_safety_pause_freezes_reserve_leases_inside_the_routing_transaction(monkeypatch) -> None:
+    calls: list[str] = []
+    _routing_state(maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE)
+    monkeypatch.setattr(
+        "gameplay.services.arena.virtual_reserve_pool.pause_virtual_reserve_member_leases",
+        lambda: calls.append("pause") or 0,
+    )
+
+    runtime_configs.apply_virtual_player_safety_decision(
+        expected_revision=4,
+        window_id="hourly:2026-07-28T08:00:00Z",
+        window_kind="hourly",
+        window_end_at=HOURLY_END,
+        should_pause=True,
+        pause_reason="maintenance_failure_rate",
+    )
+
+    assert calls == ["pause"]
+
+
+@pytest.mark.django_db
+def test_safety_auto_resume_rearms_demands_before_translating_reserve_leases(monkeypatch, settings) -> None:
+    calls: list[str] = []
+    settings.VIRTUAL_PLAYER_SAFETY_AUTO_RESUME_CLEAN_WINDOWS = 1
+    state = _routing_state(
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+    )
+    state.pause_reason = "missing_finalized_hourly_window"
+    state.safety_clean_window_kind = "hourly"
+    state.paused_from_maintenance_mode = BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+    state.save(
+        update_fields=[
+            "pause_reason",
+            "safety_clean_window_kind",
+            "paused_from_maintenance_mode",
+            "updated_at",
+        ]
+    )
+    monkeypatch.setattr(
+        "gameplay.services.arena.virtual_reserve_pool.resume_virtual_reserve_member_leases",
+        lambda: calls.append("resume") or 0,
+    )
+    monkeypatch.setattr(
+        runtime_configs,
+        "_rearm_arena_demands_for_active_routing",
+        lambda: calls.append("rearm"),
+    )
+
+    result = runtime_configs.apply_virtual_player_safety_decision(
+        expected_revision=4,
+        window_id="hourly:2026-07-28T09:00:00Z",
+        window_kind="hourly",
+        window_end_at=datetime(2026, 7, 28, 9, 0, tzinfo=UTC),
+        should_pause=False,
+        resume_if_healthy=True,
+        expected_pause_reason="missing_finalized_hourly_window",
+    )
+
+    assert result.resumed is True
+    assert calls == ["rearm", "resume"]
+
+
+@pytest.mark.django_db
+def test_planned_restart_resume_sequence_starts_without_a_window_kind() -> None:
+    state = _routing_state(
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+    )
+    state.pause_reason = runtime_configs.PLANNED_RESTART_PAUSE_REASON
+    state.paused_from_maintenance_mode = BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+    state.save(update_fields=["pause_reason", "paused_from_maintenance_mode", "updated_at"])
+
+    result = runtime_configs.apply_virtual_player_safety_decision(
+        expected_revision=4,
+        window_id="hourly:2026-07-28T08:00:00Z",
+        window_kind="hourly",
+        window_end_at=HOURLY_END,
+        should_pause=False,
+        resume_if_healthy=True,
+        expected_pause_reason=runtime_configs.PLANNED_RESTART_PAUSE_REASON,
+    )
+
+    assert result.consumed is True
+    assert result.resumed is False
+    assert result.snapshot.maintenance_mode is runtime_configs.MaintenanceMode.V2_PAUSED
+    state.refresh_from_db()
+    assert state.safety_clean_window_kind == "hourly"
+    assert state.safety_clean_window_streak == 1
+
+
+@pytest.mark.django_db
 def test_safety_decision_replay_is_idempotent_before_revision_check() -> None:
     state = _routing_state(
         maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
@@ -125,6 +215,7 @@ def test_safety_decision_rejects_revision_conflict_for_new_window() -> None:
 @pytest.mark.parametrize(
     "pause_reason",
     [
+        "planned_restart",
         "arena_shortage_baseline_missing:tournament:newbie",
         "arena_shortage_baseline_expired:tournament:newbie",
         (

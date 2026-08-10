@@ -16,6 +16,7 @@ from gameplay.services.technology_catalog import build_technology_index, build_t
 from guests.models import GearTemplate, GuestTemplate, RecruitmentPoolEntry, Skill
 
 from .random_context import canonical_json_bytes
+from .skill_policy import is_virtual_player_skill_allowed
 
 ALL_TEMPLATE_SENTINEL = "__all__"
 ALL_TRADEABLE_TEMPLATE_SENTINEL = "__all_tradeable__"
@@ -281,6 +282,7 @@ def _load_bootstrap_catalog_uncached(
             required_agility=int(row["required_agility"] or 0),
         )
         for row in skill_rows
+        if is_virtual_player_skill_allowed(str(row["key"]))
     )
 
     guest_rows = list(

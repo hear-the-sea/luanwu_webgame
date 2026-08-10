@@ -81,20 +81,43 @@ class SkillLearningActionSpec:
     item_quantity_before: int
     skill_id: int
     skill_key: str
+    source: str = "book"
 
     def __post_init__(self) -> None:
-        for field in (
-            "guest_id",
-            "inventory_item_id",
-            "item_template_id",
-            "item_quantity_before",
-            "skill_id",
-        ):
+        for field in ("guest_id", "skill_id"):
             object.__setattr__(
                 self,
                 field,
                 _positive_int(getattr(self, field), field=field),
             )
+        source = _non_empty_string(self.source, field="source")
+        if source not in {"book", "virtual"}:
+            raise MaintenanceActionSpecError("skill learning source must be book or virtual")
+        object.__setattr__(self, "source", source)
+        if source == "book":
+            object.__setattr__(
+                self,
+                "item_template_id",
+                _positive_int(self.item_template_id, field="item_template_id"),
+            )
+            for field in ("inventory_item_id", "item_quantity_before"):
+                object.__setattr__(
+                    self,
+                    field,
+                    _positive_int(getattr(self, field), field=field),
+                )
+        else:
+            object.__setattr__(
+                self,
+                "item_template_id",
+                _positive_int(self.item_template_id, field="item_template_id"),
+            )
+            for field in ("inventory_item_id", "item_quantity_before"):
+                object.__setattr__(
+                    self,
+                    field,
+                    _non_negative_int(getattr(self, field), field=field),
+                )
         object.__setattr__(
             self,
             "item_key",
@@ -108,10 +131,11 @@ class SkillLearningActionSpec:
 
     @property
     def business_key(self) -> str:
-        return f"skill_learning:guest:{self.guest_id}:skill:{self.skill_key}"
+        suffix = "" if self.source == "book" else ":source:virtual"
+        return f"skill_learning:guest:{self.guest_id}:skill:{self.skill_key}{suffix}"
 
     def to_payload(self) -> dict[str, Any]:
-        return {
+        payload = {
             "action_kind": self.action_kind,
             "business_key": self.business_key,
             "guest_id": self.guest_id,
@@ -122,6 +146,9 @@ class SkillLearningActionSpec:
             "skill_id": self.skill_id,
             "skill_key": self.skill_key,
         }
+        if self.source != "book":
+            payload["source"] = self.source
+        return payload
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,18 +161,28 @@ class EquipmentEquipActionSpec:
     item_key: str
     item_quantity_before: int
     slot: str
+    source: str = "inventory"
 
     def __post_init__(self) -> None:
-        for field in (
-            "guest_id",
-            "inventory_item_id",
-            "item_template_id",
-            "item_quantity_before",
-        ):
+        for field in ("guest_id", "item_template_id"):
             object.__setattr__(
                 self,
                 field,
                 _positive_int(getattr(self, field), field=field),
+            )
+        source = _non_empty_string(self.source, field="source")
+        if source not in {"inventory", "virtual"}:
+            raise MaintenanceActionSpecError("equipment source must be inventory or virtual")
+        object.__setattr__(self, "source", source)
+        for field in ("inventory_item_id", "item_quantity_before"):
+            object.__setattr__(
+                self,
+                field,
+                (
+                    _positive_int(getattr(self, field), field=field)
+                    if source == "inventory"
+                    else _non_negative_int(getattr(self, field), field=field)
+                ),
             )
         object.__setattr__(
             self,
@@ -160,10 +197,11 @@ class EquipmentEquipActionSpec:
 
     @property
     def business_key(self) -> str:
-        return f"equipment_equip:guest:{self.guest_id}:item:{self.item_key}"
+        suffix = "" if self.source == "inventory" else ":source:virtual"
+        return f"equipment_equip:guest:{self.guest_id}:item:{self.item_key}{suffix}"
 
     def to_payload(self) -> dict[str, Any]:
-        return {
+        payload = {
             "action_kind": self.action_kind,
             "business_key": self.business_key,
             "guest_id": self.guest_id,
@@ -173,6 +211,9 @@ class EquipmentEquipActionSpec:
             "item_template_id": self.item_template_id,
             "slot": self.slot,
         }
+        if self.source != "inventory":
+            payload["source"] = self.source
+        return payload
 
 
 @dataclass(frozen=True, slots=True)
@@ -182,6 +223,11 @@ class InventoryAcquisitionActionSpec:
     item_template_id: int
     item_key: str
     daily_caps: tuple[tuple[str, int], ...]
+    quantity: int = 1
+    batch_id: str = ""
+    batch_items: tuple[tuple[int, str, tuple[tuple[str, int], ...], int], ...] = ()
+    batch_draws: tuple[tuple[int, str, str, float], ...] = ()
+    source: str = "inventory"
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -195,19 +241,106 @@ class InventoryAcquisitionActionSpec:
             _non_empty_string(self.item_key, field="item_key"),
         )
         object.__setattr__(self, "daily_caps", _canonical_caps(self.daily_caps))
+        object.__setattr__(self, "quantity", _positive_int(self.quantity, field="quantity"))
+        object.__setattr__(self, "batch_id", str(self.batch_id).strip())
+        source = _non_empty_string(self.source, field="source")
+        if source not in {"inventory", "virtual"}:
+            raise MaintenanceActionSpecError("inventory acquisition source must be inventory or virtual")
+        object.__setattr__(self, "source", source)
+        normalized_batch_items: list[tuple[int, str, tuple[tuple[str, int], ...], int]] = []
+        for index, batch_entry in enumerate(self.batch_items):
+            if not isinstance(batch_entry, tuple) or len(batch_entry) != 4:
+                raise MaintenanceActionSpecError(f"batch_items[{index}] must contain four values")
+            template_id, batch_item_key, daily_caps, quantity = batch_entry
+            normalized_batch_items.append(
+                (
+                    _positive_int(template_id, field=f"batch_items[{index}].template_id"),
+                    _non_empty_string(batch_item_key, field=f"batch_items[{index}].item_key"),
+                    _canonical_caps(daily_caps),
+                    _positive_int(quantity, field=f"batch_items[{index}].quantity"),
+                )
+            )
+        if normalized_batch_items and self.quantity != 1:
+            raise MaintenanceActionSpecError("batch_items cannot be combined with quantity")
+        object.__setattr__(self, "batch_items", tuple(normalized_batch_items))
+        if len(self.batch_draws) > 5:
+            raise MaintenanceActionSpecError("batch_draws must contain at most five draws")
+        normalized_draws: list[tuple[int, str, str, float]] = []
+        seen_ordinals: set[int] = set()
+        for index, draw_entry in enumerate(self.batch_draws):
+            if not isinstance(draw_entry, tuple) or len(draw_entry) != 4:
+                raise MaintenanceActionSpecError(f"batch_draws[{index}] must contain four values")
+            draw_ordinal, draw_color, draw_item_key, weight = draw_entry
+            ordinal = _positive_int(draw_ordinal, field=f"batch_draws[{index}].draw_ordinal")
+            color = _non_empty_string(draw_color, field=f"batch_draws[{index}].color")
+            item_key = _non_empty_string(draw_item_key, field=f"batch_draws[{index}].item_key")
+            try:
+                normalized_weight = float(weight)
+            except (TypeError, ValueError) as exc:
+                raise MaintenanceActionSpecError(f"batch_draws[{index}].weight must be finite and positive") from exc
+            if (
+                normalized_weight <= 0
+                or normalized_weight != normalized_weight
+                or normalized_weight
+                in {
+                    float("inf"),
+                    float("-inf"),
+                }
+            ):
+                raise MaintenanceActionSpecError(f"batch_draws[{index}].weight must be finite and positive")
+            if ordinal in seen_ordinals:
+                raise MaintenanceActionSpecError("batch_draws draw ordinals must be unique")
+            if ordinal != index + 1:
+                raise MaintenanceActionSpecError("batch_draws draw ordinals must start at one and be contiguous")
+            seen_ordinals.add(ordinal)
+            normalized_draws.append((ordinal, color, item_key, normalized_weight))
+        object.__setattr__(self, "batch_draws", tuple(normalized_draws))
 
     @property
     def business_key(self) -> str:
-        return f"inventory_acquisition:item:{self.item_key}"
+        if self.quantity == 1 and not self.batch_id and not self.batch_items:
+            suffix = ":source:virtual" if self.source == "virtual" else ""
+            return f"inventory_acquisition:item:{self.item_key}{suffix}"
+        batch_suffix = f":batch:{self.batch_id}" if self.batch_id else ""
+        item_suffix = f":items:{len(self.batch_items)}" if self.batch_items else f":quantity:{self.quantity}"
+        source_suffix = ":source:virtual" if self.source == "virtual" else ""
+        return f"inventory_acquisition:item:{self.item_key}{item_suffix}{batch_suffix}{source_suffix}"
 
     def to_payload(self) -> dict[str, Any]:
-        return {
+        payload = {
             "action_kind": self.action_kind,
             "business_key": self.business_key,
             "daily_caps": dict(self.daily_caps),
             "item_key": self.item_key,
             "item_template_id": self.item_template_id,
         }
+        if self.quantity != 1:
+            payload["quantity"] = self.quantity
+        if self.batch_id:
+            payload["batch_id"] = self.batch_id
+        if self.batch_items:
+            payload["batch_items"] = [
+                {
+                    "daily_caps": dict(daily_caps),
+                    "item_key": item_key,
+                    "quantity": quantity,
+                    "item_template_id": template_id,
+                }
+                for template_id, item_key, daily_caps, quantity in self.batch_items
+            ]
+        if self.batch_draws:
+            payload["batch_draws"] = [
+                {
+                    "color": color,
+                    "draw_ordinal": ordinal,
+                    "item_key": item_key,
+                    "weight": weight,
+                }
+                for ordinal, color, item_key, weight in self.batch_draws
+            ]
+        if self.source == "virtual":
+            payload["source"] = self.source
+        return payload
 
 
 @dataclass(frozen=True, slots=True)
@@ -418,6 +551,7 @@ def project_maintenance_action_intent(
     strength_before: StrengthSummary,
     strength_after: StrengthSummary,
     utility_score: float,
+    defer_completion: bool = False,
 ) -> DevelopmentIntent:
     if not isinstance(strength_before, StrengthSummary) or not isinstance(strength_after, StrengthSummary):
         raise MaintenanceActionSpecError("strength_before and strength_after must be StrengthSummary values")
@@ -442,8 +576,11 @@ def project_maintenance_action_intent(
             strength_after,
             allowed=frozenset({"core_building_level", "prestige"}),
         )
+        expected_core_level = (
+            strength_before.components["core_building_level"] if defer_completion else spec.core_building_level_after
+        )
         if (
-            strength_after.components["core_building_level"] != spec.core_building_level_after
+            strength_after.components["core_building_level"] != expected_core_level
             or strength_after.components["prestige"] != spec.prestige_after
         ):
             raise MaintenanceActionSpecError("building strength projection does not match its action spec")

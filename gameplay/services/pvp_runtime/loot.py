@@ -235,3 +235,57 @@ def draw_weighted_item_loot(
         remaining_capacity -= selected_candidate["capacity_cost"]
 
     return loot_items
+
+
+def draw_weighted_item_loot_with_grain_fill(
+    candidates: list[WeightedLootCandidate],
+    *,
+    non_grain_ratio: float,
+    grain_ratio: float,
+    capacity: int,
+    rng: random.Random,
+) -> dict[str, int]:
+    """抽取非粮食物品，并用受比例保护的粮食填充剩余运力。
+
+    粮食不参与非粮食物品的数量加权抽样，避免大库存粮食放大抽样次数或
+    压制其他物品的命中概率。粮食仍受独立比例上限和剩余运力约束。
+    """
+
+    non_grain_candidates: list[WeightedLootCandidate] = []
+    grain_quantity = 0
+    capacity_costs: dict[str, int] = {}
+
+    for raw_candidate in candidates:
+        item_key = str(raw_candidate.get("item_key") or "").strip()
+        quantity = safe_positive_int(raw_candidate.get("remaining_quantity"), 0)
+        if not item_key or quantity <= 0:
+            continue
+        if item_key == _GRAIN_ITEM_KEY:
+            grain_quantity += quantity
+            continue
+        non_grain_candidates.append(raw_candidate)
+        capacity_costs[item_key] = _calculate_item_capacity_cost(item_key, raw_candidate.get("storage_space"))
+
+    non_grain_total = sum(
+        safe_positive_int(candidate.get("remaining_quantity"), 0) for candidate in non_grain_candidates
+    )
+    non_grain_draw_count = calculate_item_loot_draw_count(non_grain_total, non_grain_ratio)
+    loot_items = draw_weighted_item_loot(
+        non_grain_candidates,
+        draw_count=non_grain_draw_count,
+        capacity=capacity,
+        rng=rng,
+    )
+
+    capacity_limit = max(0, int(capacity or 0)) * _ITEM_LOOT_CAPACITY_SCALE
+    used_capacity = sum(
+        safe_positive_int(quantity, 0) * capacity_costs.get(item_key, _ITEM_LOOT_CAPACITY_SCALE)
+        for item_key, quantity in loot_items.items()
+    )
+    remaining_capacity = max(0, capacity_limit - used_capacity)
+    grain_limit = calculate_item_loot_draw_count(grain_quantity, grain_ratio)
+    grain_quantity_to_add = min(grain_limit, remaining_capacity // _GRAIN_CAPACITY_COST)
+    if grain_quantity_to_add > 0:
+        loot_items[_GRAIN_ITEM_KEY] = grain_quantity_to_add
+
+    return loot_items

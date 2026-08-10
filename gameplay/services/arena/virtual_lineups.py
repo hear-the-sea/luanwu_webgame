@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from itertools import combinations
 from math import comb
 
+from core.config import GUEST
+
 MIN_LINEUP_POWER_PERCENT = 80
 MAX_LINEUP_POWER_PERCENT = 120
 MAX_RANDOM_LINEUP_COMBINATIONS = 64
@@ -54,6 +56,8 @@ def normalize_virtual_lineup_snapshots(
         if isinstance(max_hp, bool) or not isinstance(max_hp, int) or max_hp < 1:
             raise InvalidVirtualLineupSnapshot("virtual lineup snapshot max_hp must be a positive integer")
         copied = deepcopy(snapshot)
+        if "agility" not in copied:
+            copied["arena_power_snapshot_semantics"] = "legacy_missing_agility"
         copied["current_hp"] = max_hp
         normalized.append(copied)
     return tuple(normalized)
@@ -70,7 +74,14 @@ def validate_full_health_virtual_lineup_snapshots(
 
 
 def snapshot_power(snapshot: dict) -> int:
-    return int(snapshot.get("attack") or 0) + int(snapshot.get("defense") or 0) + int(snapshot.get("max_hp") or 0) // 10
+    normalized_agility = max(0, int(snapshot.get("agility") or 0))
+    agility_power = int(normalized_agility * GUEST.AGILITY_TO_ARENA_POWER_WEIGHT)
+    return (
+        int(snapshot.get("attack") or 0)
+        + int(snapshot.get("defense") or 0)
+        + int(snapshot.get("max_hp") or 0) // 10
+        + max(0, agility_power)
+    )
 
 
 def lineup_power(snapshots: Sequence[dict]) -> int:
@@ -116,10 +127,10 @@ def evaluate_lineup_snapshots(
 ) -> BotLineupEvaluation:
     """Choose a deterministic, legal-size lineup, then normalize health.
 
-    ``target_guest_count`` is the real-player reference size, not a hard virtual
-    player size. When the arena allows more guests, larger sizes are tried first
-    and the reference size remains the safe fallback if no larger lineup fits
-    the target power band.
+    ``target_guest_count`` is the hard minimum inherited from the real-player
+    reference. When the arena allows more guests, larger sizes are tried first;
+    a smaller partial lineup is returned only as growth evidence and can never
+    be ready.
     """
     if target_guest_count <= 0 or target_team_power <= 0 or not snapshots:
         return BotLineupEvaluation((), 0, False)
@@ -130,7 +141,9 @@ def evaluate_lineup_snapshots(
     if maximum_lineup_size <= 0:
         return BotLineupEvaluation((), 0, False)
 
-    reference_size = min(max(1, int(target_guest_count)), maximum_lineup_size)
+    required_size = max(1, int(target_guest_count))
+    reference_size = min(required_size, maximum_lineup_size)
+    has_required_guest_count = maximum_lineup_size >= required_size
     preferred_size = reference_size
     if preferred_guest_count is not None:
         preferred_size = min(
@@ -183,7 +196,7 @@ def evaluate_lineup_snapshots(
             return BotLineupEvaluation(
                 normalize_virtual_lineup_snapshots(lineup),
                 power,
-                True,
+                has_required_guest_count,
             )
 
         below = [row for row in rows if row[1] * 100 < target_team_power * MIN_LINEUP_POWER_PERCENT]

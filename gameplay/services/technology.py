@@ -224,6 +224,38 @@ def apply_technology_upgrade_locked(
     )
 
 
+def start_technology_upgrade_locked(
+    manor: Any,
+    quote: TechnologyUpgradeQuote,
+    *,
+    sync_production: bool = True,
+    technologies: Sequence[Any] | None = None,
+    technologies_locked: bool = False,
+    now: Any | None = None,
+) -> PlayerTechnology:
+    """Start a timer-backed technology upgrade without changing its level."""
+
+    return _technology_runtime.start_technology_upgrade_locked(
+        manor,
+        quote,
+        get_technology_template_func=get_technology_template,
+        calculate_upgrade_cost_func=calculate_upgrade_cost,
+        max_concurrent_tech_upgrades=MAX_CONCURRENT_TECH_UPGRADES,
+        transaction_module=transaction,
+        invalidate_home_stats_cache_func=invalidate_home_stats_cache,
+        technology_not_found_error_cls=TechnologyNotFoundError,
+        technology_upgrade_in_progress_error_cls=TechnologyUpgradeInProgressError,
+        technology_max_level_error_cls=TechnologyMaxLevelError,
+        technology_concurrent_upgrade_limit_error_cls=TechnologyConcurrentUpgradeLimitError,
+        insufficient_resource_error_cls=InsufficientResourceError,
+        schedule_technology_completion_func=schedule_technology_completion,
+        sync_production=sync_production,
+        technologies=technologies,
+        technologies_locked=technologies_locked,
+        now=now,
+    )
+
+
 def finalize_technology_upgrade(tech: Any, send_notification: bool = False) -> bool:
     return _technology_runtime.finalize_technology_upgrade(
         tech,

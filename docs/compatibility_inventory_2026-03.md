@@ -87,6 +87,6 @@
 - 责任人：`daniel`（仓库维护者）。
 - 消费者：仓内运行时与测试已迁到真实 owner；旧路径只为兼容窗口内已确认的外部分析脚本保留。
 - 外部消费者登记：存在确认声明，但本工作区没有脚本名称、仓库地址或迁移联系人；`2026-08-31` 前必须补齐，否则视为无外部消费者。
-- 保留原因：该文件只以显式 `__all__` 重导出 `virtual_player_core.lifecycle` 和 `virtual_player_core.legacy.projection` 的原有公开纯规则，不包含实现，也不改变 V1 固定 seed 结果。
+- 保留原因：该文件只以显式 `__all__` 重导出 `virtual_player_core.lifecycle` 和 `virtual_player_core.runtime_helpers` 的当前公开纯规则，不包含 ORM 或业务写入实现。
 - 退场条件：外部分析脚本完成一个兼容窗口的导入迁移，且 import characterization test 证明旧路径不再需要后删除整个文件。
 - 下次复核日期：`2026-08-31`。

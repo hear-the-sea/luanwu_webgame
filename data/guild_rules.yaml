@@ -254,7 +254,7 @@ pvp:
   silver_floor: 20000
   # 可掠夺银两的百分比，取值范围 0~100。
   silver_loot_percent: 20
-  # 可掠夺白名单仓库物品的百分比，取值范围 0~100。
+  # 非粮食白名单仓库物品按该比例抽样；白名单中的粮食按该比例独立限额并填充剩余运力，取值范围 0~100。
   warehouse_loot_percent: 20
   # 主动发起一次 PVP 固定消耗的帮会银两。
   fixed_attack_cost_silver: 10000

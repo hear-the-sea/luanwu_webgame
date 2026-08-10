@@ -74,7 +74,12 @@ class TrainingCompletionProjection:
     current_hp: int
 
 
-def quote_training(guest: Guest, levels: int = 1) -> TrainingQuote:
+def quote_training(
+    guest: Guest,
+    levels: int = 1,
+    *,
+    allow_active_training: bool = False,
+) -> TrainingQuote:
     """按当前领域规则计算培养资格与成本，不写入状态。"""
     if not getattr(guest, "pk", None):
         raise AssertionError("quote_training requires a persisted guest")
@@ -86,7 +91,9 @@ def quote_training(guest: Guest, levels: int = 1) -> TrainingQuote:
         raise GuestNotIdleError(guest)
     if guest.level >= MAX_GUEST_LEVEL:
         raise GuestMaxLevelError(guest, max_level=MAX_GUEST_LEVEL)
-    if guest.training_complete_at or guest.training_remaining_seconds is not None:
+    if type(allow_active_training) is not bool:
+        raise TypeError("allow_active_training must be a boolean")
+    if not allow_active_training and (guest.training_complete_at or guest.training_remaining_seconds is not None):
         raise GuestTrainingInProgressError(guest)
     levels_to_apply = min(normalized_levels, MAX_GUEST_LEVEL - int(guest.level))
     return TrainingQuote(
@@ -103,12 +110,17 @@ def project_training_completion(
     *,
     levels: int = 1,
     rng: random.Random,
+    allow_active_training: bool = False,
     allocate_level_up_attributes_func: GrowthAllocator = allocate_level_up_attributes,
 ) -> TrainingCompletionProjection:
     """使用正式培养规则预测同步完成结果，不修改传入实例或数据库。"""
     if not isinstance(rng, random.Random):
         raise TypeError("rng must be random.Random")
-    quote = quote_training(guest, levels=levels)
+    quote = quote_training(
+        guest,
+        levels=levels,
+        allow_active_training=allow_active_training,
+    )
     projected_guest = copy(guest)
     projected_guest._state = copy(guest._state)
     apply_training_completion(
@@ -142,6 +154,7 @@ def apply_training_locked(
     sync_production: bool = True,
     grain_template: ItemTemplate | None = None,
     grain_template_resolved: bool = False,
+    free_subsidy: bool = False,
     allocate_level_up_attributes_func: GrowthAllocator = allocate_level_up_attributes,
     _locked_guest: Guest | None = None,
 ) -> Guest:
@@ -166,6 +179,7 @@ def apply_training_locked(
         sync_production=sync_production,
         grain_template=grain_template,
         grain_template_resolved=grain_template_resolved,
+        free_subsidy=free_subsidy,
         allocate_level_up_attributes_func=allocate_level_up_attributes_func,
     )
 
@@ -179,6 +193,7 @@ def _apply_training_to_locked_guest(
     sync_production: bool = True,
     grain_template: ItemTemplate | None = None,
     grain_template_resolved: bool = False,
+    free_subsidy: bool = False,
     allocate_level_up_attributes_func: GrowthAllocator = allocate_level_up_attributes,
 ) -> Guest:
     """同步培养由调用方锁定且属于已锁定 Manor 的门客。"""
@@ -193,20 +208,22 @@ def _apply_training_to_locked_guest(
         locked_guest,
         levels=levels,
         rng=rng,
+        allow_active_training=free_subsidy,
         allocate_level_up_attributes_func=allocate_level_up_attributes_func,
     )
     quote = projection.quote
     from gameplay.models import ResourceEvent
 
-    spend_resources_locked(
-        manor,
-        quote.resource_cost,
-        note=f"培养 {locked_guest.template.name}",
-        reason=ResourceEvent.Reason.TRAINING_COST,
-        sync_production=sync_production,
-        grain_template=grain_template,
-        grain_template_resolved=grain_template_resolved,
-    )
+    if not free_subsidy:
+        spend_resources_locked(
+            manor,
+            quote.resource_cost,
+            note=f"培养 {locked_guest.template.name}",
+            reason=ResourceEvent.Reason.TRAINING_COST,
+            sync_production=sync_production,
+            grain_template=grain_template,
+            grain_template_resolved=grain_template_resolved,
+        )
     TrainingLog.objects.create(
         manor=manor,
         guest=locked_guest,

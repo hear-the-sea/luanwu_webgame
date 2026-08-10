@@ -240,11 +240,7 @@ def _set_warehouse_grain_quantity_locked(
 def _load_warehouse_grain_quantity_for_read(manor: Manor) -> int:
     from .inventory.core import get_warehouse_grain_quantity
 
-    quantity = get_warehouse_grain_quantity(manor)
-    # Read paths may update the in-memory compatibility value only; no database write.
-    manor.grain = quantity
-    setattr(manor, "warehouse_grain_quantity", quantity)
-    return quantity
+    return get_warehouse_grain_quantity(manor)
 
 
 def _clear_warehouse_grain_projection(manor: Manor) -> None:
@@ -285,7 +281,27 @@ def _handle_unknown_resource(manor: Manor, resource: str, amount: int) -> None:
     )
 
 
-def _calculate_resource_credit(manor: Manor, resource: str, amount: int) -> Tuple[int, int] | None:
+def _current_resource_value(
+    manor: Manor,
+    resource: str,
+    *,
+    current_resources: Mapping[str, int] | None = None,
+) -> int:
+    value = (
+        current_resources[resource]
+        if current_resources is not None and resource in current_resources
+        else getattr(manor, resource, 0)
+    )
+    return _require_resource_amount(value)
+
+
+def _calculate_resource_credit(
+    manor: Manor,
+    resource: str,
+    amount: int,
+    *,
+    current_resources: Mapping[str, int] | None = None,
+) -> Tuple[int, int] | None:
     if amount <= 0:
         return None
 
@@ -294,7 +310,11 @@ def _calculate_resource_credit(manor: Manor, resource: str, amount: int) -> Tupl
         _handle_unknown_resource(manor, resource, amount)
         return None
 
-    current_value = getattr(manor, resource, 0)
+    current_value = _current_resource_value(
+        manor,
+        resource,
+        current_resources=current_resources,
+    )
     available_capacity = max(0, capacity - current_value)
     added = min(amount, available_capacity)
     overflowed = amount - added
@@ -314,13 +334,21 @@ def _credit_resource(manor: Manor, resource: str, amount: int) -> Tuple[int, int
 
 def preview_resource_grant(manor: Manor, rewards: Dict[str, int]) -> Tuple[Dict[str, int], Dict[str, int]]:
     """预览资源奖励的实际入账与溢出数量，不修改庄园状态。"""
-    _load_warehouse_grain_quantity_for_read(manor)
+    current_resources: Dict[str, int] = {
+        str(ResourceType.SILVER): _require_resource_amount(manor.silver),
+        str(ResourceType.GRAIN): _load_warehouse_grain_quantity_for_read(manor),
+    }
     normalized_rewards = _normalize_resource_mapping(rewards, field_name="resource rewards")
     credited: Dict[str, int] = {}
     overflow: Dict[str, int] = {}
 
     for resource, amount in normalized_rewards.items():
-        credit_result = _calculate_resource_credit(manor, resource, amount)
+        credit_result = _calculate_resource_credit(
+            manor,
+            resource,
+            amount,
+            current_resources=current_resources,
+        )
         if credit_result is None:
             continue
         added, overflowed = credit_result
@@ -357,6 +385,7 @@ def _build_production_snapshot(
     now: datetime,
     production_basis: ResourceProductionBasis | None = None,
     resource_fields: Sequence[str] | None = None,
+    current_resources: Mapping[str, int] | None = None,
 ) -> tuple[Dict[str, int], Dict[str, int], bool]:
     elapsed_seconds = (now - manor.resource_updated_at).total_seconds()
     if elapsed_seconds <= 0:
@@ -380,7 +409,11 @@ def _build_production_snapshot(
         if delta == 0:
             continue
 
-        current_value = getattr(manor, resource)
+        current_value = _current_resource_value(
+            manor,
+            resource,
+            current_resources=current_resources,
+        )
         capacity, is_valid = _get_resource_capacity(manor, resource)
         if not is_valid:
             continue
@@ -404,14 +437,23 @@ def preview_resource_production(
     *,
     now: datetime | None = None,
     production_basis: ResourceProductionBasis | None = None,
+    current_resources: Mapping[str, int] | None = None,
 ) -> Dict[str, int]:
     """只读计算截至 ``now`` 的资源产出增量。"""
-    _load_warehouse_grain_quantity_for_read(manor)
+    resolved_current_resources: Mapping[str, int] = (
+        {
+            str(ResourceType.SILVER): _require_resource_amount(manor.silver),
+            str(ResourceType.GRAIN): _load_warehouse_grain_quantity_for_read(manor),
+        }
+        if current_resources is None
+        else current_resources
+    )
     current_time = now or timezone.now()
     _projected_values, produced, _should_advance_timestamp = _build_production_snapshot(
         manor,
         now=current_time,
         production_basis=production_basis,
+        current_resources=resolved_current_resources,
     )
     return dict(produced)
 
@@ -654,7 +696,12 @@ def sync_resource_production(
     """
     now = timezone.now()
     if not persist:
-        _load_warehouse_grain_quantity_for_read(manor)
+        grain_quantity = _load_warehouse_grain_quantity_for_read(manor)
+        # This compatibility API intentionally projects onto the caller's
+        # instance. Keep that mutation local and explicit; generic preview
+        # helpers remain read-only.
+        manor.grain = grain_quantity
+        setattr(manor, "warehouse_grain_quantity", grain_quantity)
 
     min_interval = getattr(settings, "RESOURCE_SYNC_MIN_INTERVAL_SECONDS", 0)
     if min_interval > 0:
@@ -671,6 +718,10 @@ def sync_resource_production(
             manor,
             now=now,
             resource_fields=(ResourceType.SILVER, ResourceType.GRAIN),
+            current_resources={
+                ResourceType.SILVER: _require_resource_amount(manor.silver),
+                ResourceType.GRAIN: grain_quantity,
+            },
         )
         if should_advance_timestamp:
             _apply_resource_projection(manor, projected_values, now=now)

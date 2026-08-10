@@ -2,22 +2,37 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
+from time import monotonic
 
 from celery import shared_task
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
+from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.services.jail import VIRTUAL_JAIL_CLEANUP_DEFAULT_BATCH_SIZE, cleanup_virtual_player_jail
 from gameplay.services.virtual_player_core.external_reconciliation import (
     reconcile_external_reconciliation,
     scan_external_reconciliations,
 )
-from gameplay.services.virtual_player_core.maintenance import maintain_due_virtual_players
+from gameplay.services.virtual_player_core.growth_control import GrowthControlRefreshResult, run_growth_control_task
+from gameplay.services.virtual_player_core.maintenance import (
+    SCHEDULED_MAINTENANCE_DEFAULT_BATCH_SIZE,
+    maintain_due_virtual_players,
+)
+from gameplay.services.virtual_player_core.maintenance_completion import (
+    COMPLETION_RECONCILE_BATCH_SIZE,
+    reconcile_virtual_player_maintenance_completion,
+    scan_virtual_player_maintenance_completions,
+)
 from gameplay.services.virtual_player_core.population_runtime import (
     plan_virtual_player_population,
     reconcile_virtual_player_population_cell,
     roll_virtual_player_population,
     scan_virtual_player_population_demands,
+)
+from gameplay.services.virtual_player_core.recruitment import (
+    VIRTUAL_RECRUITMENT_SCAN_BATCH_SIZE,
+    schedule_due_virtual_recruitments,
 )
 from gameplay.services.virtual_player_core.safety_metrics import record_safety_heartbeat
 from gameplay.services.virtual_player_core.safety_monitor import finalize_due_safety_windows, run_safety_monitor
@@ -50,19 +65,75 @@ def plan_virtual_players_task() -> dict:
     return plan_virtual_player_population()
 
 
-@shared_task(name="gameplay.roll_virtual_players")
+@shared_task(
+    name="gameplay.scan_virtual_player_growth_control",
+    autoretry_for=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 5},
+)
+def scan_virtual_player_growth_control_task() -> GrowthControlRefreshResult:
+    """Refresh aggregate real-player growth controls in Shanghai local time."""
+
+    return run_growth_control_task(raise_on_database_error=True)
+
+
+@shared_task(
+    name="gameplay.scan_virtual_player_maintenance",
+    autoretry_for=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 5},
+)
+def scan_virtual_player_maintenance_task(limit: int | None = None) -> int:
+    """Advance a bounded set of due maintenance cycles.
+
+    ``limit`` is an optional owner-level override used by queue-capacity
+    probes and controlled catch-up calls.  Completion reconciliation and
+    recruitment keep their own independent batch caps so one caller cannot
+    accidentally widen the whole maintenance pipeline.
+    """
+
+    started_at = monotonic()
+    completion_results = scan_virtual_player_maintenance_completions(limit=COMPLETION_RECONCILE_BATCH_SIZE)
+    recruitments_started = schedule_due_virtual_recruitments(limit=VIRTUAL_RECRUITMENT_SCAN_BATCH_SIZE)
+    maintenance_limit = SCHEDULED_MAINTENANCE_DEFAULT_BATCH_SIZE if limit is None else max(0, int(limit))
+    maintained = maintain_due_virtual_players(limit=maintenance_limit)
+    logger.info(
+        "Completed virtual player maintenance scan: reconciled=%d recruitments_started=%d maintained=%d",
+        len(completion_results),
+        recruitments_started,
+        maintained,
+        extra={
+            "event": "virtual_player_maintenance_scan_completed",
+            "completion_reconciled_count": len(completion_results),
+            "recruitments_started_count": recruitments_started,
+            "requested_maintenance_limit": maintenance_limit,
+            "maintained_count": maintained,
+            "task_duration_seconds": max(0.0, monotonic() - started_at),
+        },
+    )
+    return maintained
+
+
+@shared_task(
+    name="gameplay.roll_virtual_players",
+    autoretry_for=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 5},
+)
 def roll_virtual_players_task(limit: int | None = None) -> int:
     """Apply a small rolling slice of virtual-player population changes."""
-    maintained = maintain_due_virtual_players(limit=100)
+    started_at = monotonic()
+    population_started_at = monotonic()
     population_processed = roll_virtual_player_population(limit=limit)
+    population_duration = max(0.0, monotonic() - population_started_at)
     logger.info(
-        "Completed virtual player roll: maintained=%d population_processed=%d",
-        maintained,
+        "Completed virtual player roll: population_processed=%d",
         population_processed,
         extra={
             "event": "virtual_player_roll_completed",
-            "maintained_count": maintained,
             "population_processed_count": population_processed,
+            "population_roll_duration_seconds": population_duration,
+            "task_duration_seconds": max(0.0, monotonic() - started_at),
         },
     )
     return population_processed
@@ -88,13 +159,25 @@ def scan_virtual_player_population_demands_task(
     cell_limit: int = 8,
 ) -> list[dict]:
     """Recover due or expired durable population claims."""
-    return [
+    started_at = monotonic()
+    results = [
         result.to_payload()
         for result in scan_virtual_player_population_demands(
             limit=limit,
             cell_limit=cell_limit,
         )
     ]
+    logger.info(
+        "Completed virtual-player population demand scan task",
+        extra={
+            "event": "virtual_player_population_scan_task_completed",
+            "requested_limit": int(limit),
+            "cell_limit": int(cell_limit),
+            "selected_count": len(results),
+            "task_duration_seconds": max(0.0, monotonic() - started_at),
+        },
+    )
+    return results
 
 
 @shared_task(name="gameplay.reconcile_external_strength_reconciliation")
@@ -103,6 +186,18 @@ def reconcile_external_strength_reconciliation_task(
 ) -> dict:
     """Process one durable external-strength reconciliation intent."""
     return reconcile_external_reconciliation(reconciliation_id).to_payload()
+
+
+@shared_task(
+    name="gameplay.reconcile_virtual_player_maintenance_completion",
+    autoretry_for=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 5},
+)
+def reconcile_virtual_player_maintenance_completion_task(completion_event_id: int) -> dict:
+    """Re-read a completed domain action and wake its durable V2 cycle."""
+
+    return reconcile_virtual_player_maintenance_completion(completion_event_id)
 
 
 @shared_task(name="gameplay.scan_external_strength_reconciliations")

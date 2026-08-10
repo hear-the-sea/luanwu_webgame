@@ -39,7 +39,7 @@ from gameplay.services.virtual_player_core.population_runtime import (
 from gameplay.services.virtual_player_core.projection import BootstrapInventoryTarget
 from guests.models import GearItem, Guest, GuestSkill
 
-pytestmark = [pytest.mark.integration]
+pytestmark = pytest.mark.integration
 
 
 def _require_mysql() -> None:
@@ -95,7 +95,7 @@ def _materialize_with_test_permit(
 
 @pytest.fixture
 def released_v2_policy(db):
-    return release_configured_policy_operation(version=1, apply=True)
+    return release_configured_policy_operation(version=2, apply=True)
 
 
 @pytest.fixture(autouse=True)
@@ -285,7 +285,6 @@ def test_concurrent_fast_prestige_handoffs_preserve_every_revision() -> None:
 @pytest.mark.django_db(transaction=True)
 def test_two_population_workers_materialize_only_one_profile_for_one_deficit(
     settings,
-    released_v2_policy,
     v2_bootstrap_game_data,
 ) -> None:
     _require_mysql()
@@ -299,11 +298,12 @@ def test_two_population_workers_materialize_only_one_profile_for_one_deficit(
         }
     }
     clear_virtual_player_config_cache()
+    release_configured_policy_operation(version=2, apply=True)
     now = timezone.now()
     BotRuntimeRoutingState.objects.create(
         key=BotRuntimeRoutingState.GLOBAL_KEY,
         bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
-        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.LEGACY_BEFORE_GATE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
     )
     BotBackfillDemand.objects.create(
         region="north",

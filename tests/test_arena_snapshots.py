@@ -4,6 +4,8 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 from gameplay.services.arena.snapshots import ArenaGuestSnapshotProxy, build_entry_guest_snapshot, load_entry_guests
+from gameplay.services.arena.virtual_lineups import snapshot_power
+from gameplay.services.arena.virtual_reserve_references import reference_snapshots
 
 
 def _make_mock_guest():
@@ -46,6 +48,33 @@ def test_build_entry_guest_snapshot_clamps_hp_and_serializes_skill_keys():
         "current_hp": 900,
         "skill_keys": ["skill_a", "skill_b"],
     }
+
+
+def test_snapshot_power_includes_guest_agility():
+    base = {"attack": 123, "defense": 98, "max_hp": 900, "agility": 0}
+
+    assert snapshot_power({**base, "agility": 55}) - snapshot_power(base) == 55
+
+
+def test_reference_snapshots_mark_legacy_missing_agility_without_mutating_input():
+    source = {"attack": 123, "defense": 98, "max_hp": 900, "current_hp": 900}
+
+    class _Links:
+        def all(self):
+            return [SimpleNamespace(snapshot=source, guest=None)]
+
+    snapshots = reference_snapshots(SimpleNamespace(entry_guests=_Links()))
+
+    assert source == {"attack": 123, "defense": 98, "max_hp": 900, "current_hp": 900}
+    assert snapshots == [
+        {
+            "attack": 123,
+            "defense": 98,
+            "max_hp": 900,
+            "current_hp": 900,
+            "arena_power_snapshot_semantics": "legacy_missing_agility",
+        }
+    ]
 
 
 def test_arena_guest_snapshot_proxy_exposes_expected_fields():

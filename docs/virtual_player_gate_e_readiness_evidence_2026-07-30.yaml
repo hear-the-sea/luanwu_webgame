@@ -354,8 +354,8 @@ regression_evidence:
   canonical_gate_a:
     status: passed
     execution_timestamp_utc: '2026-08-07T06:19:41Z'
-    result: 176 passed
-    detail: 164 contract in 14.11s; 12 real-service in 107.93s
+    result: 178 passed
+    detail: 166 contract in 14.11s; 12 real-service in 107.93s
 static_gates:
   full_mypy:
     status: passed

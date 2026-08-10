@@ -18,6 +18,7 @@ from gameplay.models import BotSafetyMetricEvent, BotSafetyMetricWindow
 from gameplay.services import runtime_configs
 
 from . import safety_baselines
+from .config import MaintenanceMode
 from .random_context import canonical_json_bytes
 from .safety_metrics import (
     ARENA_SHORTAGE_METRIC,
@@ -1242,6 +1243,37 @@ def _missing_window_decision(
     )
 
 
+def _allow_planned_restart_gap(
+    decision: SafetyWindowDecision,
+    *,
+    routing: runtime_configs.RuntimeRoutingSnapshot,
+) -> SafetyWindowDecision:
+    """Consume planned-restart evidence gaps while keeping writes fenced.
+
+    The explicit planned-restart marker proves that V2 writes were paused before
+    the outage. Only missing-window and heartbeat-gap reasons are therefore
+    recoverable here; hard constraints and malformed snapshots remain fail-closed.
+    """
+
+    if (
+        routing.maintenance_mode is not MaintenanceMode.V2_PAUSED
+        or not runtime_configs.is_planned_restart_pause_reason(routing.pause_reason)
+        or not decision.pause_reasons
+        or not all(
+            reason.startswith(("missing_finalized_", "heartbeat_incomplete:")) for reason in decision.pause_reasons
+        )
+    ):
+        return decision
+    return SafetyWindowDecision(
+        window_id=decision.window_id,
+        window_kind=decision.window_kind,
+        window_start_at=decision.window_start_at,
+        window_end_at=decision.window_end_at,
+        should_pause=False,
+        pause_reasons=(),
+    )
+
+
 def _latest_mature_window_end(now: datetime, *, window_kind: str) -> datetime:
     grace_cutoff = now.astimezone(UTC) - SAFETY_WINDOW_GRACE
     if window_kind == BotSafetyMetricWindow.Kind.HOURLY:
@@ -1379,6 +1411,7 @@ def monitor_finalized_safety_windows(
                     window,
                     reason=f"invalid_safety_snapshot:{exc}",
                 )
+        decision = _allow_planned_restart_gap(decision, routing=current_routing)
 
         routing_result, conflicts = _apply_with_cas_retry(
             decision,
@@ -1419,6 +1452,7 @@ def monitor_finalized_safety_windows(
             window_kind=window_kind,
             window_end_at=latest_mature_end,
         )
+        decision = _allow_planned_restart_gap(decision, routing=current_routing)
         routing_result, conflicts = _apply_with_cas_retry(
             decision,
             max_cas_attempts=max_cas_retries,

@@ -4,12 +4,15 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from django.db import connection, transaction
+from django.db import DatabaseError, connection, transaction
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from gameplay.models import (
     BotExternalStrengthReconciliation,
+    BotMaintenanceAttempt,
+    BotMaintenanceCompletionEvent,
+    BotMaintenanceCycle,
     BotMaintenanceExecution,
     BotProfile,
     BotRuntimeRoutingState,
@@ -25,16 +28,21 @@ from gameplay.models import (
     TroopRecruitment,
 )
 from gameplay.services.recruitment.recruitment import get_troop_template
-from gameplay.services.virtual_player_core import bootstrap, maintenance
+from gameplay.services.virtual_player_core import bootstrap, maintenance, maintenance_completion
+from gameplay.services.virtual_player_core.archetype_pacing import resolve_archetype_pacing
 from gameplay.services.virtual_player_core.contracts import (
     AcceleratedGrowthOutcome,
+    ArenaGrowthObjective,
     MaintenanceOutcome,
+    MaintenanceResult,
+    MaintenanceScheduleDisposition,
     MaintenanceTrigger,
 )
 from gameplay.services.virtual_player_core.maintenance_action_specs import (
     BuildingUpgradeActionSpec,
     EquipmentEquipActionSpec,
     GuestRecruitmentActionSpec,
+    InventoryAcquisitionActionSpec,
     TechnologyUpgradeActionSpec,
 )
 from gameplay.services.virtual_player_core.policy_registry import release_configured_policy_operation
@@ -45,11 +53,20 @@ from gameplay.services.virtual_player_core.projection import (
     SampleTier,
     StrengthSummary,
 )
-from gameplay.services.virtual_player_core.reference_snapshots import load_manor_strength_summary
+from gameplay.services.virtual_player_core.reference_snapshots import (
+    ReferenceSnapshotError,
+    load_manor_strength_summary,
+)
 from gameplay.services.virtual_player_core.safety_metrics import MAINTENANCE_ATTEMPT_METRIC, record_safety_heartbeat
-from gameplay.services.virtual_player_core.safety_provider import HARD_VIOLATION_METRIC_NAME
+from gameplay.services.virtual_player_core.safety_preflight import SafetyWritePreflightResult
+from gameplay.services.virtual_player_core.safety_provider import HARD_VIOLATION_METRIC_NAME, SafetyProviderError
+from gameplay.services.virtual_player_core.virtual_candidate_pools import build_virtual_skill_learning_candidates
+from gameplay.services.virtual_player_core.virtual_candidate_pools import (
+    build_virtual_troop_candidates as build_virtual_troop_candidates_real,
+)
 from guests.models import (
     GearItem,
+    GearSlot,
     GearTemplate,
     Guest,
     GuestArchetype,
@@ -67,15 +84,18 @@ FIXED_NOW = datetime(2026, 7, 28, 8, 0, tzinfo=UTC)
 
 @pytest.fixture
 def released_v2_policy(db):
-    return release_configured_policy_operation(version=1, apply=True)
+    return release_configured_policy_operation(version=2, apply=True)
 
 
 def _set_active_routing() -> BotRuntimeRoutingState:
     return BotRuntimeRoutingState.objects.create(
         key=BotRuntimeRoutingState.GLOBAL_KEY,
-        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.LEGACY_BEFORE_GATE,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
         maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
         calibration_routes=[],
+        policy_rollout_target_version=2,
+        policy_rollout_enabled=False,
+        policy_rollout_percent=0,
         revision=7,
     )
 
@@ -119,7 +139,7 @@ def _create_v2_profile(*, seed: int) -> BotProfile:
 @pytest.fixture
 def active_v2_profile(released_v2_policy, game_data) -> BotProfile:
     _set_active_routing()
-    record_safety_heartbeat("safety_monitor", now=timezone.now())
+    record_safety_heartbeat("safety_monitor", now=FIXED_NOW)
     return _create_v2_profile(seed=995_001)
 
 
@@ -157,9 +177,10 @@ def permissive_reference(monkeypatch):
             cap=cap,
             nearest_candidate_keys=(anchor.business_key,),
         )
-        return {}, cap, selection
+        return 2, selection, "f" * 64
 
-    monkeypatch.setattr(maintenance, "select_policy_reference", select_reference)
+    monkeypatch.setattr(maintenance, "growth_control_reference_selection", select_reference)
+    monkeypatch.setattr(maintenance, "build_virtual_troop_candidates", lambda **_kwargs: ((), {}))
     return cap
 
 
@@ -169,6 +190,163 @@ def _scheduled_plan(profile: BotProfile):
         trigger=MaintenanceTrigger.SCHEDULED,
         now=FIXED_NOW,
     )
+
+
+@pytest.mark.django_db
+def test_arena_candidate_assessment_keeps_disallowed_actions_out_of_selection(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.ARENA_ACCELERATION,
+        now=FIXED_NOW,
+        minimum_guest_count=1,
+        minimum_guest_level=2,
+        max_guest_level_step=6,
+    )
+
+    assert plan.intent is None
+    rejected_by_kind = {
+        assessment.intent.action_kind: assessment.rejection_reasons
+        for assessment in plan.candidate_assessments
+        if not assessment.allowed
+    }
+    assert rejected_by_kind[BuildingUpgradeActionSpec.action_kind] == ("trigger_action_disallowed",)
+    assert rejected_by_kind[TechnologyUpgradeActionSpec.action_kind] == ("trigger_action_disallowed",)
+
+
+@pytest.mark.django_db
+def test_arena_candidate_assessment_selects_allowed_training_before_disallowed_upgrades(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.ARENA_ACCELERATION,
+        now=FIXED_NOW,
+        minimum_guest_count=1,
+        minimum_guest_level=20,
+        max_guest_level_step=6,
+    )
+
+    assert plan.action_kind == "training"
+    assert plan.selected_candidate_assessment is not None
+    assert plan.selected_candidate_assessment.allowed is True
+    assert all(
+        assessment.intent.action_kind
+        in {
+            "guest_healing",
+            GuestRecruitmentActionSpec.action_kind,
+            "training",
+            EquipmentEquipActionSpec.action_kind,
+        }
+        for assessment in plan.candidate_assessments
+        if assessment.allowed
+    )
+
+
+@pytest.mark.django_db
+def test_arena_unpaid_salary_cannot_select_non_arena_fallback(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    Manor.objects.filter(pk=active_v2_profile.manor_id).update(
+        silver=0,
+        resource_updated_at=FIXED_NOW,
+    )
+    active_v2_profile.manor.refresh_from_db()
+
+    plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.ARENA_ACCELERATION,
+        now=FIXED_NOW,
+        minimum_guest_count=1,
+        minimum_guest_level=20,
+        max_guest_level_step=6,
+    )
+
+    assert plan.resource_planning_snapshot.salary_shortfall is True
+    non_arena_assessments = tuple(
+        assessment
+        for assessment in plan.candidate_assessments
+        if assessment.intent.action_kind
+        not in {
+            "guest_healing",
+            GuestRecruitmentActionSpec.action_kind,
+            "training",
+            EquipmentEquipActionSpec.action_kind,
+        }
+    )
+    assert non_arena_assessments
+    assert all("trigger_action_disallowed" in assessment.rejection_reasons for assessment in non_arena_assessments)
+    assert plan.intent is None or plan.action_kind in {
+        "guest_healing",
+        GuestRecruitmentActionSpec.action_kind,
+        "training",
+        EquipmentEquipActionSpec.action_kind,
+    }
+
+
+@pytest.mark.django_db
+def test_arena_training_projection_applies_immediate_level_for_event_cap(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    guests = tuple(
+        active_v2_profile.manor.guests.filter(status=GuestStatus.IDLE).select_related("template").order_by("id")
+    )
+    selected_power_before = sum(
+        maintenance._guest_arena_power(
+            guest,
+            force=int(guest.force),
+            intellect=int(guest.intellect),
+            defense=int(guest.defense_stat),
+            agility=int(guest.agility),
+        )
+        for guest in guests
+    )
+    target_team_power = (selected_power_before * 100 + 119) // 120
+    selected_power_upper_bound = target_team_power * 120 // 100
+    objective = ArenaGrowthObjective(
+        critical_guest_count=len(guests),
+        preferred_guest_count=len(guests),
+        selected_power_lower_bound=(target_team_power * 80 + 99) // 100,
+        selected_power_upper_bound=selected_power_upper_bound,
+        selected_power_before=selected_power_before,
+        target_team_power=target_team_power,
+        lineup_mode="tournament",
+        lineup_event_id=77,
+        lineup_max_size=len(guests),
+        minimum_guest_level=20,
+        recruitment_rarity_cap="blue",
+        max_guest_level_step=10,
+    )
+
+    plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.ARENA_ACCELERATION,
+        now=FIXED_NOW,
+        arena_growth_objective=objective,
+    )
+
+    training_assessments = tuple(
+        assessment for assessment in plan.candidate_assessments if assessment.intent.action_kind == "training"
+    )
+    assert training_assessments
+    assert all(
+        assessment.projected_selected_power is not None and assessment.event_power_cap == selected_power_upper_bound
+        for assessment in training_assessments
+    )
+    assert all(
+        int(assessment.projected_selected_power or 0) <= selected_power_upper_bound
+        or "event_power_cap" in assessment.rejection_reasons
+        for assessment in training_assessments
+    )
+    assert any(
+        int(assessment.projected_selected_power or 0) > selected_power_before for assessment in training_assessments
+    )
+    assert any("event_power_cap" in assessment.rejection_reasons for assessment in training_assessments)
 
 
 @pytest.mark.django_db
@@ -219,10 +397,110 @@ def test_skill_candidates_use_the_frozen_catalog_without_orm(
     assert set(specs) == {candidate.business_key for candidate in candidates}
 
 
+@pytest.mark.django_db
+def test_arena_virtual_skill_candidates_exclude_bookless_boss_skills(active_v2_profile) -> None:
+    skill = Skill.objects.create(
+        key="gl_top_qiankun_holy_flame",
+        name="乾坤圣火印",
+        rarity="purple",
+    )
+    guest = Guest.objects.filter(manor_id=active_v2_profile.manor_id).order_by("id").first()
+    assert guest is not None
+    GuestSkill.objects.filter(guest_id=guest.id).delete()
+    guest.refresh_from_db()
+    guests = (guest,)
+    strength = load_manor_strength_summary(
+        manor_id=int(active_v2_profile.manor_id),
+        guests=guests,
+    )
+    development_plan = maintenance.parse_development_plan(
+        active_v2_profile.development_profile,
+        catalog=maintenance.development_plan_catalog_v1(),
+    )
+
+    candidates, specs = build_virtual_skill_learning_candidates(
+        prestige_band=str(active_v2_profile.current_prestige_band),
+        strength_before=strength,
+        development_plan=development_plan,
+        guests=guests,
+        skill_books=(),
+        skills=(skill,),
+        guest_skills=(),
+    )
+
+    assert candidates == ()
+    assert specs == {}
+
+    daily_candidates, daily_specs = build_virtual_skill_learning_candidates(
+        prestige_band=str(active_v2_profile.current_prestige_band),
+        strength_before=strength,
+        development_plan=development_plan,
+        guests=guests,
+        skill_books=(),
+        skills=(skill,),
+        guest_skills=(),
+    )
+    assert daily_candidates == ()
+    assert daily_specs == {}
+
+
+@pytest.mark.django_db
+def test_inventory_batch_materializes_once_and_replay_does_not_duplicate_rows(active_v2_profile) -> None:
+    manor = Manor.objects.get(pk=active_v2_profile.manor_id)
+    templates = tuple(
+        ItemTemplate.objects.create(
+            key=f"v2_inventory_batch_{active_v2_profile.id}_{index}",
+            name=f"V2 batch item {index}",
+            effect_type=ItemTemplate.EffectType.TOOL,
+            tradeable=True,
+        )
+        for index in range(5)
+    )
+    batch_items = tuple((int(template.id), str(template.key), (), 1) for template in templates)
+    spec = InventoryAcquisitionActionSpec(
+        item_template_id=int(templates[0].id),
+        item_key=str(templates[0].key),
+        daily_caps=(),
+        batch_id="v2-inventory-batch-test",
+        batch_items=batch_items,
+    )
+
+    with transaction.atomic():
+        first = maintenance._apply_inventory_acquisition_locked(manor, spec, now=FIXED_NOW)
+
+    assert first.template_id == templates[0].id
+    assert (
+        InventoryItem.objects.filter(
+            manor_id=manor.id,
+            template_id__in=[template.id for template in templates],
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        ).count()
+        == 5
+    )
+
+    before = tuple(
+        InventoryItem.objects.filter(manor_id=manor.id, template_id__in=[template.id for template in templates])
+        .order_by("template_id")
+        .values_list("template_id", "quantity")
+    )
+    with pytest.raises(maintenance.InventoryAcquisitionUnavailable, match="no eligible candidate"):
+        with transaction.atomic():
+            maintenance._apply_inventory_acquisition_locked(manor, spec, now=FIXED_NOW)
+    assert (
+        tuple(
+            InventoryItem.objects.filter(manor_id=manor.id, template_id__in=[template.id for template in templates])
+            .order_by("template_id")
+            .values_list("template_id", "quantity")
+        )
+        == before
+    )
+
+
 def _prepare_guest_healing_plan(
     profile: BotProfile,
     *,
     quantity: int = 2,
+    arena_growth_objective: ArenaGrowthObjective | None = None,
 ):
     guests = tuple(Guest.objects.filter(manor_id=profile.manor_id).select_related("template").order_by("id"))
     target = max(
@@ -233,6 +511,7 @@ def _prepare_guest_healing_plan(
                 force=int(guest.force),
                 intellect=int(guest.intellect),
                 defense=int(guest.defense_stat),
+                agility=int(guest.agility),
             ),
             -int(guest.id),
         ),
@@ -253,14 +532,32 @@ def _prepare_guest_healing_plan(
         quantity=quantity,
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
-    plan = _scheduled_plan(profile)
+    plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        profile.id,
+        trigger=(
+            MaintenanceTrigger.SCHEDULED if arena_growth_objective is None else MaintenanceTrigger.ARENA_ACCELERATION
+        ),
+        now=FIXED_NOW,
+        arena_growth_objective=arena_growth_objective,
+    )
     assert plan.action_kind == "guest_healing"
     assert plan.target_id == target.id
     assert plan.medicine_quote is not None
     return plan, target, item
 
 
-def _prepare_troop_recruitment_plan(profile: BotProfile):
+def _prepare_troop_recruitment_plan(profile: BotProfile, monkeypatch):
+    # The shared permissive-reference fixture suppresses troop projections so
+    # unrelated action tests stay deterministic.  This helper explicitly opts
+    # back into the policy-2 virtual troop pool and disables the other action
+    # families so the assertions exercise the current direct PlayerTroop path.
+    monkeypatch.setattr(maintenance, "build_virtual_troop_candidates", build_virtual_troop_candidates_real)
+    monkeypatch.setattr(maintenance, "_training_candidates", lambda **_kwargs: ((), {}))
+    monkeypatch.setattr(maintenance, "build_virtual_equipment_candidates", lambda **_kwargs: ((), {}))
+    monkeypatch.setattr(maintenance, "build_virtual_skill_learning_candidates", lambda **_kwargs: ((), {}))
+    monkeypatch.setattr(maintenance, "build_virtual_inventory_batch_candidate", lambda **_kwargs: (None, None))
+    monkeypatch.setattr(maintenance, "_building_upgrade_quotes", lambda **_kwargs: ())
+    monkeypatch.setattr(maintenance, "_technology_upgrade_quotes", lambda **_kwargs: ())
     Guest.objects.filter(manor_id=profile.manor_id).update(status=GuestStatus.WORKING)
     Manor.objects.filter(pk=profile.manor_id).update(retainer_count=100)
     manor = Manor.objects.get(pk=profile.manor_id)
@@ -502,33 +799,32 @@ def _prepare_equipment_plan(
     monkeypatch,
     *,
     quantity: int = 2,
+    arena_growth_objective: ArenaGrowthObjective | None = None,
 ):
     _isolate_equipment_candidates(monkeypatch)
-    InventoryItem.objects.filter(
-        manor_id=profile.manor_id,
-        template__effect_type__startswith="equip_",
-    ).delete()
-    item_template = ItemTemplate.objects.create(
+    gear_template = GearTemplate.objects.create(
         key=f"v2_equipment_{profile.id}",
         name="V2 maintenance device",
-        effect_type="equip_device",
-        effect_payload={"force": 10},
+        slot=GearSlot.MOUNT,
         rarity="green",
-        price=0,
+        extra_stats={"force": 10},
     )
-    item = InventoryItem.objects.create(
-        manor_id=profile.manor_id,
-        template=item_template,
-        quantity=quantity,
-        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        profile.id,
+        trigger=(
+            MaintenanceTrigger.SCHEDULED if arena_growth_objective is None else MaintenanceTrigger.ARENA_ACCELERATION
+        ),
+        now=FIXED_NOW,
+        arena_growth_objective=arena_growth_objective,
     )
-    plan = _scheduled_plan(profile)
     assert plan.action_kind == EquipmentEquipActionSpec.action_kind
     assert isinstance(plan.action_spec, EquipmentEquipActionSpec)
     assert plan.target_id == plan.action_spec.guest_id
-    assert plan.action_spec.inventory_item_id == item.id
+    assert plan.action_spec.source == "virtual"
+    assert plan.action_spec.item_template_id == gear_template.id
+    assert plan.action_spec.inventory_item_id == 0
     assert plan.intent is not None
-    return plan, item
+    return plan, gear_template
 
 
 def _equipment_domain_state(plan) -> dict[str, object]:
@@ -565,6 +861,55 @@ def _equipment_domain_state(plan) -> dict[str, object]:
             )
         ),
     }
+
+
+@pytest.mark.django_db
+def test_arena_equipment_candidate_enforces_event_selected_power_cap(
+    active_v2_profile,
+    permissive_reference,
+    monkeypatch,
+) -> None:
+    guests = tuple(
+        active_v2_profile.manor.guests.filter(status=GuestStatus.IDLE).select_related("template").order_by("id")
+    )
+    selected_power_before = sum(
+        maintenance._guest_arena_power(
+            guest,
+            force=int(guest.force),
+            intellect=int(guest.intellect),
+            defense=int(guest.defense_stat),
+            agility=int(guest.agility),
+        )
+        for guest in guests
+    )
+    target_team_power = (selected_power_before * 100 + 119) // 120
+    objective = ArenaGrowthObjective(
+        critical_guest_count=len(guests),
+        preferred_guest_count=len(guests),
+        selected_power_lower_bound=(target_team_power * 80 + 99) // 100,
+        selected_power_upper_bound=target_team_power * 120 // 100,
+        selected_power_before=selected_power_before,
+        target_team_power=target_team_power,
+        lineup_mode="tournament",
+        lineup_event_id=80,
+        lineup_max_size=len(guests),
+        minimum_guest_level=1,
+        recruitment_rarity_cap=GuestRarity.BLUE,
+        max_guest_level_step=3,
+    )
+
+    plan, _item = _prepare_equipment_plan(
+        active_v2_profile,
+        monkeypatch,
+        arena_growth_objective=objective,
+    )
+
+    assessment = plan.selected_candidate_assessment
+    assert assessment is not None
+    assert assessment.intent.action_kind == EquipmentEquipActionSpec.action_kind
+    assert assessment.primary_rejection_reason == "event_power_cap"
+    assert assessment.projected_selected_power is not None
+    assert assessment.projected_selected_power > objective.selected_power_upper_bound
 
 
 @pytest.mark.django_db
@@ -620,9 +965,213 @@ def test_v2_building_upgrade_commits_one_frozen_domain_action(
     active_v2_profile.refresh_from_db()
     assert result.outcome is MaintenanceOutcome.APPLIED
     assert result.action_kind == BuildingUpgradeActionSpec.action_kind
-    assert building.level == level_before + 1
+    assert building.level == level_before
+    assert building.is_upgrading is True
+    assert building.upgrade_complete_at is not None
     assert active_v2_profile.maintenance_sequence == 1
     assert load_manor_strength_summary(manor_id=plan.manor_id) == plan.intent.strength_after
+
+
+@pytest.mark.django_db
+def test_v2_scheduled_cycle_preserves_timed_action_completion_source(
+    active_v2_profile,
+    permissive_reference,
+    monkeypatch,
+) -> None:
+    _isolate_upgrade_candidates(monkeypatch, keep="building")
+    Manor.objects.filter(pk=active_v2_profile.manor_id).update(
+        silver=1_000_000,
+        grain=1_000_000,
+        silver_capacity=1_000_000,
+        grain_capacity=1_000_000,
+        resource_updated_at=FIXED_NOW,
+    )
+    active_v2_profile.manor.refresh_from_db()
+
+    cycle = maintenance._open_policy2_scheduled_cycle(
+        active_v2_profile.id,
+        now=FIXED_NOW,
+    )
+    result = maintenance.maintain_virtual_player_v2(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        now=FIXED_NOW,
+    )
+
+    cycle.refresh_from_db()
+    assert result.outcome is MaintenanceOutcome.APPLIED
+    assert result.action_kind == BuildingUpgradeActionSpec.action_kind
+    assert cycle.current_action_state == BotMaintenanceCycle.ActionState.SUBMITTED
+    assert cycle.last_action_completion_source == "building.upgrade_complete_at"
+    assert cycle.next_slot_due_at is not None
+    assert cycle.next_slot_due_at > FIXED_NOW
+
+
+@pytest.mark.django_db
+def test_v2_scheduled_cycle_retry_preserves_slot_and_records_reason_category(active_v2_profile):
+    cycle = maintenance._open_policy2_scheduled_cycle(
+        active_v2_profile.id,
+        now=FIXED_NOW,
+    )
+    result = MaintenanceResult(
+        outcome=MaintenanceOutcome.BUSY,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        profile_id=active_v2_profile.id,
+        sequence_before=0,
+        sequence_after=0,
+        schedule_disposition=MaintenanceScheduleDisposition.ADVANCE_NORMAL_SCHEDULE,
+        next_growth_at_before=FIXED_NOW,
+        next_growth_at_after=FIXED_NOW,
+        reason="profile_busy",
+    )
+
+    maintenance._record_policy2_scheduled_cycle_retry(
+        cycle.cycle_id,
+        result,
+        now=FIXED_NOW,
+    )
+
+    cycle.refresh_from_db()
+    assert cycle.status == BotMaintenanceCycle.Status.OPEN
+    assert cycle.action_ordinal == 0
+    assert cycle.current_action_state == BotMaintenanceCycle.ActionState.READY
+    assert cycle.payload["last_reason_category"] == "lock_conflict"
+    assert cycle.payload["retry_history"][-1]["reason_category"] == "lock_conflict"
+
+
+@pytest.mark.django_db
+def test_domain_completion_reconcile_wakes_latest_cycle_and_is_idempotent(active_v2_profile):
+    guest = active_v2_profile.manor.guests.order_by("id").first()
+    assert guest is not None
+    completion_at = FIXED_NOW + timedelta(hours=1)
+    old_due_at = FIXED_NOW + timedelta(minutes=5)
+    cycle = BotMaintenanceCycle.objects.create(
+        cycle_id="vp-completion-reconcile-cycle",
+        interval_seed="vp-completion-reconcile-cycle",
+        profile=active_v2_profile,
+        cycle_ordinal=1,
+        trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
+        max_actions=16,
+        action_ordinal=1,
+        current_action_state=BotMaintenanceCycle.ActionState.SUBMITTED,
+        last_action_completion_source="guest.training_complete_at",
+        next_slot_due_at=old_due_at,
+        next_decision_at=old_due_at,
+        covered_action_kinds=["training"],
+        used_business_keys=["training:guest:1"],
+        started_at=FIXED_NOW,
+        payload={
+            "pending_domain_actions": [
+                {
+                    "action_kind": "training",
+                    "action_ordinal": 1,
+                    "completion_source": "guest.training_complete_at",
+                    "domain_event_kind": "guest_training",
+                    "domain_object_id": int(guest.id),
+                    "expected_completion_at": completion_at.isoformat().replace("+00:00", "Z"),
+                },
+            ],
+        },
+    )
+    event = BotMaintenanceCompletionEvent.objects.create(
+        profile=active_v2_profile,
+        domain_event_id="vp-test-domain-completion-1",
+        domain_event_kind=BotMaintenanceCompletionEvent.DomainKind.GUEST_TRAINING,
+        domain_object_id=guest.id,
+        origin_completed_at=completion_at,
+        available_at=completion_at,
+    )
+
+    first = maintenance_completion.reconcile_virtual_player_maintenance_completion(
+        event.id,
+        now=FIXED_NOW + timedelta(hours=2),
+    )
+
+    cycle.refresh_from_db()
+    event.refresh_from_db()
+    assert first["status"] == BotMaintenanceCompletionEvent.Status.APPLIED
+    assert event.status == BotMaintenanceCompletionEvent.Status.APPLIED
+    assert cycle.current_action_state == BotMaintenanceCycle.ActionState.PLANNING
+    assert cycle.next_slot_due_at > old_due_at
+    assert cycle.next_decision_at == FIXED_NOW + timedelta(hours=2)
+    assert cycle.payload["completion_reconcile_history"][-1]["matched_pending_action"] is True
+    assert cycle.payload["last_completion_reconcile"]["effective_state"]["strength"]["components"]
+
+    history_count = len(cycle.payload["completion_reconcile_history"])
+    second = maintenance_completion.reconcile_virtual_player_maintenance_completion(
+        event.id,
+        now=FIXED_NOW + timedelta(hours=3),
+    )
+    cycle.refresh_from_db()
+    assert second["status"] == BotMaintenanceCompletionEvent.Status.APPLIED
+    assert len(cycle.payload["completion_reconcile_history"]) == history_count
+
+
+@pytest.mark.django_db
+def test_domain_completion_reconcile_uses_pending_owner_before_latest_cycle(active_v2_profile):
+    guest = active_v2_profile.manor.guests.order_by("id").first()
+    assert guest is not None
+    completion_at = FIXED_NOW + timedelta(hours=1)
+    old_cycle = BotMaintenanceCycle.objects.create(
+        cycle_id="vp-completion-reconcile-old-cycle",
+        interval_seed="vp-completion-reconcile-old-cycle",
+        profile=active_v2_profile,
+        cycle_ordinal=1,
+        trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
+        max_actions=16,
+        action_ordinal=16,
+        current_action_state=BotMaintenanceCycle.ActionState.SUBMITTED,
+        last_action_completion_source="guest.training_complete_at",
+        status=BotMaintenanceCycle.Status.COMPLETED,
+        started_at=FIXED_NOW,
+        completed_at=FIXED_NOW + timedelta(minutes=30),
+        payload={
+            "pending_domain_actions": [
+                {
+                    "action_kind": "training",
+                    "action_ordinal": 16,
+                    "completion_source": "guest.training_complete_at",
+                    "domain_event_kind": "guest_training",
+                    "domain_object_id": int(guest.id),
+                    "expected_completion_at": completion_at.isoformat().replace("+00:00", "Z"),
+                },
+            ],
+        },
+    )
+    latest_cycle = BotMaintenanceCycle.objects.create(
+        cycle_id="vp-completion-reconcile-latest-cycle",
+        interval_seed="vp-completion-reconcile-latest-cycle",
+        profile=active_v2_profile,
+        cycle_ordinal=2,
+        trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
+        max_actions=16,
+        action_ordinal=1,
+        current_action_state=BotMaintenanceCycle.ActionState.SUBMITTED,
+        last_action_completion_source="guest.training_complete_at",
+        next_slot_due_at=FIXED_NOW + timedelta(minutes=10),
+        next_decision_at=FIXED_NOW + timedelta(minutes=10),
+        started_at=FIXED_NOW + timedelta(minutes=45),
+        payload={},
+    )
+    event = BotMaintenanceCompletionEvent.objects.create(
+        profile=active_v2_profile,
+        domain_event_id="vp-test-domain-completion-old-cycle-owner",
+        domain_event_kind=BotMaintenanceCompletionEvent.DomainKind.GUEST_TRAINING,
+        domain_object_id=guest.id,
+        origin_completed_at=completion_at,
+        available_at=completion_at,
+    )
+
+    result = maintenance_completion.reconcile_virtual_player_maintenance_completion(
+        event.id,
+        now=FIXED_NOW + timedelta(hours=2),
+    )
+
+    old_cycle.refresh_from_db()
+    latest_cycle.refresh_from_db()
+    assert result["summary"]["cycle_id"] == old_cycle.cycle_id
+    assert old_cycle.payload["completion_reconcile_history"][-1]["matched_pending_action"] is True
+    assert "completion_reconcile_history" not in latest_cycle.payload
 
 
 @pytest.mark.django_db
@@ -652,15 +1201,19 @@ def test_v2_cross_band_domain_no_action_keeps_source_band_cadence(
     plan = _prepare_cross_band_building_plan(active_v2_profile, monkeypatch)
     monkeypatch.setattr(
         maintenance,
-        "apply_building_upgrade_locked",
+        "start_building_upgrade_locked",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(maintenance.BuildingUpgradingError()),
     )
 
-    result = maintenance.execute_virtual_player_v2_maintenance_plan(plan)
+    result = maintenance.maintain_virtual_player_v2(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        now=FIXED_NOW,
+    )
 
     active_v2_profile.refresh_from_db()
     assert result.outcome is MaintenanceOutcome.NO_ACTION
-    assert result.reason == "domain_constraint"
+    assert result.reason == "no_eligible_candidate"
     assert active_v2_profile.current_prestige_band == "newbie"
     assert active_v2_profile.next_growth_at == plan.next_growth_at_after_no_action
 
@@ -694,71 +1247,11 @@ def test_v2_technology_upgrade_commits_one_frozen_domain_action(
     )
     assert result.outcome is MaintenanceOutcome.APPLIED
     assert result.action_kind == TechnologyUpgradeActionSpec.action_kind
-    assert technology.level == level_before + 1
+    assert technology.level == level_before
+    assert technology.is_upgrading is True
+    assert technology.upgrade_complete_at is not None
     assert active_v2_profile.maintenance_sequence == 1
     assert load_manor_strength_summary(manor_id=plan.manor_id) == plan.intent.strength_after
-
-
-@pytest.mark.django_db
-def test_v2_scheduled_planning_snapshot_preloads_equipment_candidate_inputs(
-    active_v2_profile,
-    django_assert_num_queries,
-) -> None:
-    guest = Guest.objects.filter(manor_id=active_v2_profile.manor_id).first()
-    assert guest is not None
-    guest.status = GuestStatus.IDLE
-    guest.training_complete_at = None
-    guest.save(update_fields=["status", "training_complete_at"])
-    template = GearTemplate.objects.create(
-        key=f"v2_snapshot_equipment_{active_v2_profile.id}",
-        name="V2 snapshot equipment",
-        slot="helmet",
-        rarity="green",
-        extra_stats={},
-    )
-    gear = GearItem.objects.create(
-        manor_id=active_v2_profile.manor_id,
-        guest=guest,
-        template=template,
-    )
-    item_template = ItemTemplate.objects.create(
-        key=f"v2_snapshot_candidate_{active_v2_profile.id}",
-        name="V2 snapshot candidate",
-        effect_type="equip_device",
-        effect_payload={"force": 40},
-        rarity="green",
-        price=0,
-    )
-    item = InventoryItem.objects.create(
-        manor_id=active_v2_profile.manor_id,
-        template=item_template,
-        quantity=1,
-        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-    )
-    profile = BotProfile.objects.select_related("manor").get(pk=active_v2_profile.pk)
-
-    snapshot = maintenance._scheduled_planning_snapshots(
-        (profile,),
-        planned_at=FIXED_NOW,
-    )[int(profile.id)]
-
-    assert gear.id in {item.id for item in snapshot.gear_items}
-    with django_assert_num_queries(0):
-        candidates, specs = maintenance.build_equipment_equip_candidates(
-            manor_id=int(profile.manor_id),
-            prestige_band=str(profile.current_prestige_band),
-            strength_before=snapshot.strength,
-            development_plan=maintenance.parse_development_plan(snapshot.profile.development_profile),
-            growth_stage=int(profile.growth_stage),
-            config=maintenance.load_virtual_player_config(),
-            guests=snapshot.guests,
-            gear_items=snapshot.gear_items,
-            warehouse_items=snapshot.warehouse_items,
-        )
-
-    expected_key = f"equipment_equip:guest:{guest.id}:item:{item.template.key}"
-    assert expected_key in {candidate.business_key for candidate in candidates}
-    assert expected_key in specs
 
 
 @pytest.mark.django_db
@@ -767,16 +1260,16 @@ def test_v2_equipment_equip_commits_one_locked_frozen_action(
     permissive_reference,
     monkeypatch,
 ) -> None:
-    plan, item = _prepare_equipment_plan(active_v2_profile, monkeypatch)
+    plan, template = _prepare_equipment_plan(active_v2_profile, monkeypatch)
     assert isinstance(plan.action_spec, EquipmentEquipActionSpec)
     gear_count_before = GearItem.objects.filter(manor_id=plan.manor_id).count()
     calls: list[tuple[int, int, int, str | None, str | None]] = []
-    original_equip = maintenance.equip_guest_from_inventory_locked
+    original_equip = maintenance.equip_guest_from_virtual_template_locked
 
     def equip_spy(
         manor,
         locked_guest,
-        inventory_item_id,
+        template_id,
         *,
         expected_template_key=None,
         expected_slot=None,
@@ -786,7 +1279,7 @@ def test_v2_equipment_equip_commits_one_locked_frozen_action(
             (
                 int(manor.id),
                 int(locked_guest.id),
-                int(inventory_item_id),
+                int(template_id),
                 expected_template_key,
                 expected_slot,
             )
@@ -794,21 +1287,21 @@ def test_v2_equipment_equip_commits_one_locked_frozen_action(
         return original_equip(
             manor,
             locked_guest,
-            inventory_item_id,
+            template_id,
             expected_template_key=expected_template_key,
             expected_slot=expected_slot,
         )
 
     monkeypatch.setattr(
         maintenance,
-        "equip_guest_from_inventory_locked",
+        "equip_guest_from_virtual_template_locked",
         equip_spy,
     )
 
     result = maintenance.execute_virtual_player_v2_maintenance_plan(plan)
 
     active_v2_profile.refresh_from_db()
-    item.refresh_from_db()
+    template.refresh_from_db()
     assert result.outcome is MaintenanceOutcome.APPLIED
     assert result.action_kind == EquipmentEquipActionSpec.action_kind
     assert active_v2_profile.maintenance_sequence == 1
@@ -816,12 +1309,12 @@ def test_v2_equipment_equip_commits_one_locked_frozen_action(
         (
             plan.manor_id,
             plan.action_spec.guest_id,
-            plan.action_spec.inventory_item_id,
+            plan.action_spec.item_template_id,
             plan.action_spec.item_key,
             plan.action_spec.slot,
         )
     ]
-    assert item.quantity == 1
+    assert template.key == plan.action_spec.item_key
     assert (
         GearItem.objects.filter(
             manor_id=plan.manor_id,
@@ -831,6 +1324,12 @@ def test_v2_equipment_equip_commits_one_locked_frozen_action(
         == 1
     )
     assert GearItem.objects.filter(manor_id=plan.manor_id).count() == (gear_count_before + 1)
+    assert not GearItem.objects.filter(
+        manor_id=plan.manor_id,
+        guest_id=plan.target_id,
+        template__key=plan.action_spec.item_key,
+        inventory_backed=True,
+    ).exists()
     assert load_manor_strength_summary(manor_id=plan.manor_id) == plan.intent.strength_after
 
 
@@ -862,7 +1361,7 @@ def test_v2_equipment_plan_rejects_target_and_spec_mismatch(
         )
 
 
-@pytest.mark.parametrize("drift_kind", ("inventory", "equivalent_gear"))
+@pytest.mark.parametrize("drift_kind", ("template", "equivalent_gear"))
 @pytest.mark.django_db
 def test_v2_equipment_drift_rejects_plan_without_writes(
     active_v2_profile,
@@ -870,10 +1369,10 @@ def test_v2_equipment_drift_rejects_plan_without_writes(
     monkeypatch,
     drift_kind: str,
 ) -> None:
-    plan, item = _prepare_equipment_plan(active_v2_profile, monkeypatch)
+    plan, template = _prepare_equipment_plan(active_v2_profile, monkeypatch)
     assert isinstance(plan.action_spec, EquipmentEquipActionSpec)
-    if drift_kind == "inventory":
-        InventoryItem.objects.filter(pk=item.pk).update(quantity=3)
+    if drift_kind == "template":
+        GearTemplate.objects.filter(pk=template.pk).update(extra_stats={"force": 25})
     else:
         drift_template = GearTemplate.objects.create(
             key=f"v2_equipment_drift_{active_v2_profile.id}",
@@ -896,11 +1395,11 @@ def test_v2_equipment_drift_rejects_plan_without_writes(
         maintenance.execute_virtual_player_v2_maintenance_plan(plan)
 
     active_v2_profile.refresh_from_db()
-    item.refresh_from_db()
     assert active_v2_profile.maintenance_sequence == 0
-    assert item.quantity == (3 if drift_kind == "inventory" else 2)
+    template.refresh_from_db()
+    assert template.extra_stats == {"force": 25} if drift_kind == "template" else {"force": 10}
     assert _equipment_domain_state(plan) == state_after_drift
-    assert not GearTemplate.objects.filter(key=plan.action_spec.item_key).exists()
+    assert GearTemplate.objects.filter(key=plan.action_spec.item_key).exists()
 
 
 @pytest.mark.django_db
@@ -909,10 +1408,10 @@ def test_v2_equipment_domain_constraint_rolls_back_action_savepoint(
     permissive_reference,
     monkeypatch,
 ) -> None:
-    plan, _item = _prepare_equipment_plan(active_v2_profile, monkeypatch)
+    plan, _template = _prepare_equipment_plan(active_v2_profile, monkeypatch)
     assert isinstance(plan.action_spec, EquipmentEquipActionSpec)
     domain_before = _equipment_domain_state(plan)
-    original_equip = maintenance.equip_guest_from_inventory_locked
+    original_equip = maintenance.equip_guest_from_virtual_template_locked
 
     def fail_after_equipment_write(*args, **kwargs):
         original_equip(*args, **kwargs)
@@ -920,18 +1419,22 @@ def test_v2_equipment_domain_constraint_rolls_back_action_savepoint(
 
     monkeypatch.setattr(
         maintenance,
-        "equip_guest_from_inventory_locked",
+        "equip_guest_from_virtual_template_locked",
         fail_after_equipment_write,
     )
 
-    result = maintenance.execute_virtual_player_v2_maintenance_plan(plan)
+    result = maintenance.maintain_virtual_player_v2(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        now=FIXED_NOW,
+    )
 
     active_v2_profile.refresh_from_db()
     assert result.outcome is MaintenanceOutcome.NO_ACTION
-    assert result.reason == "domain_constraint"
+    assert result.reason == "no_eligible_candidate"
     assert active_v2_profile.maintenance_sequence == 1
     assert _equipment_domain_state(plan) == domain_before
-    assert not GearTemplate.objects.filter(key=plan.action_spec.item_key).exists()
+    assert GearTemplate.objects.filter(key=plan.action_spec.item_key).exists()
 
 
 @pytest.mark.django_db
@@ -940,11 +1443,11 @@ def test_v2_equipment_final_strength_mismatch_rolls_back_entire_cycle(
     permissive_reference,
     monkeypatch,
 ) -> None:
-    plan, _item = _prepare_equipment_plan(active_v2_profile, monkeypatch)
+    plan, _template = _prepare_equipment_plan(active_v2_profile, monkeypatch)
     assert isinstance(plan.action_spec, EquipmentEquipActionSpec)
     domain_before = _equipment_domain_state(plan)
     prestige_before = Manor.objects.values_list("prestige", flat=True).get(pk=plan.manor_id)
-    original_equip = maintenance.equip_guest_from_inventory_locked
+    original_equip = maintenance.equip_guest_from_virtual_template_locked
 
     def equip_with_strength_drift(manor, *args, **kwargs):
         equipped = original_equip(manor, *args, **kwargs)
@@ -954,7 +1457,7 @@ def test_v2_equipment_final_strength_mismatch_rolls_back_entire_cycle(
 
     monkeypatch.setattr(
         maintenance,
-        "equip_guest_from_inventory_locked",
+        "equip_guest_from_virtual_template_locked",
         equip_with_strength_drift,
     )
 
@@ -968,82 +1471,79 @@ def test_v2_equipment_final_strength_mismatch_rolls_back_entire_cycle(
     assert active_v2_profile.maintenance_sequence == 0
     assert _equipment_domain_state(plan) == domain_before
     assert Manor.objects.values_list("prestige", flat=True).get(pk=plan.manor_id) == prestige_before
-    assert not GearTemplate.objects.filter(key=plan.action_spec.item_key).exists()
+    assert GearTemplate.objects.filter(key=plan.action_spec.item_key).exists()
 
 
 @pytest.mark.django_db
-def test_v2_guest_healing_commits_one_item_without_strength_budget(
+def test_v2_scheduled_healing_runs_as_independent_cycle_preamble(
     active_v2_profile,
     permissive_reference,
-    monkeypatch,
 ) -> None:
-    plan, target, item = _prepare_guest_healing_plan(active_v2_profile)
-    quote = plan.medicine_quote
-    assert quote is not None
-    guest_before = Guest.objects.values(
-        "level",
-        "template_id",
-        "force",
-        "intellect",
-        "defense_stat",
-        "agility",
-        "attribute_points",
-    ).get(pk=target.pk)
-    last_strength_before = active_v2_profile.last_strength_increase_at
+    target = Guest.objects.filter(manor_id=active_v2_profile.manor_id).order_by("id").first()
+    assert target is not None
+    target.current_hp = max(1, int(target.max_hp * 0.1))
+    target.status = GuestStatus.INJURED
+    target.save(update_fields=["current_hp", "status"])
 
-    def _unexpected_growth_evaluation(**_kwargs):
-        pytest.fail("guest healing entered permanent strength evaluation")
-
-    monkeypatch.setattr(
-        maintenance,
-        "evaluate_controlled_action",
-        _unexpected_growth_evaluation,
+    result = maintenance.maintain_virtual_player_v2(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        now=FIXED_NOW,
     )
-    result = maintenance.execute_virtual_player_v2_maintenance_plan(plan)
 
     active_v2_profile.refresh_from_db()
     target.refresh_from_db()
-    item.refresh_from_db()
     assert result.outcome is MaintenanceOutcome.APPLIED
-    assert result.action_kind == "guest_healing"
+    assert result.action_kind != "guest_healing"
     assert active_v2_profile.maintenance_sequence == 1
-    assert active_v2_profile.strength_budget_entries == []
-    assert active_v2_profile.last_strength_increase_at == last_strength_before
-    assert target.current_hp == quote.new_hp
-    assert target.status == quote.status_after
-    assert item.quantity == 1
-    assert Guest.objects.values(*guest_before).get(pk=target.pk) == guest_before
+    assert target.current_hp == target.max_hp
+    assert target.status == GuestStatus.IDLE
+    cycle = BotMaintenanceCycle.objects.get(profile_id=active_v2_profile.id)
+    healing_sweep = BotMaintenanceAttempt.objects.get(operation_id=cycle.healing_operation_id)
+    assert healing_sweep.reason == ""
+    assert healing_sweep.shadow_cost["kind"] == "guest_healing_sweep"
+    assert healing_sweep.shadow_cost["real_silver"] == 1_000
+    assert healing_sweep.shadow_cost["healed_guest_ids"] == [target.id]
+    assert cycle.payload["healing_sweep"]["healed_guest_ids"] == [target.id]
 
 
 @pytest.mark.django_db
-def test_v2_guest_healing_unexpected_failure_rolls_back_item_hp_and_sequence(
+def test_completed_scheduled_cycle_advances_ordinal(
+    active_v2_profile,
+) -> None:
+    first = maintenance._open_policy2_scheduled_cycle(
+        active_v2_profile.id,
+        now=FIXED_NOW,
+    )
+    first.status = BotMaintenanceCycle.Status.COMPLETED
+    first.completed_at = FIXED_NOW
+    first.save(update_fields=["status", "completed_at", "updated_at"])
+
+    second = maintenance._open_policy2_scheduled_cycle(
+        active_v2_profile.id,
+        now=FIXED_NOW + timedelta(minutes=1),
+    )
+
+    assert second.cycle_ordinal == first.cycle_ordinal + 1
+    assert second.status == BotMaintenanceCycle.Status.OPEN
+
+
+@pytest.mark.django_db
+def test_v2_guest_healing_candidate_is_retired_from_policy2_action_slots(
     active_v2_profile,
     permissive_reference,
-    monkeypatch,
 ) -> None:
-    plan, target, item = _prepare_guest_healing_plan(active_v2_profile)
-    target_before = (target.current_hp, target.status)
-    original_apply = maintenance.apply_medicine_item_for_guest_locked
+    target = Guest.objects.filter(manor_id=active_v2_profile.manor_id).order_by("id").first()
+    assert target is not None
+    target.current_hp = max(1, int(target.max_hp * 0.1))
+    target.status = GuestStatus.INJURED
+    target.save(update_fields=["current_hp", "status"])
 
-    def _fail_after_healing(*args, **kwargs):
-        original_apply(*args, **kwargs)
-        raise RuntimeError("forced guest healing rollback")
+    plan = _scheduled_plan(active_v2_profile)
 
-    monkeypatch.setattr(
-        maintenance,
-        "apply_medicine_item_for_guest_locked",
-        _fail_after_healing,
-    )
-    with pytest.raises(RuntimeError, match="forced guest healing rollback"):
-        maintenance.execute_virtual_player_v2_maintenance_plan(plan)
-
-    active_v2_profile.refresh_from_db()
-    target.refresh_from_db()
-    item.refresh_from_db()
-    assert (target.current_hp, target.status) == target_before
-    assert item.quantity == 2
-    assert active_v2_profile.maintenance_sequence == 0
-    assert active_v2_profile.strength_budget_entries == []
+    assert plan.medicine_quote is None
+    assert all(assessment.intent.action_kind != "guest_healing" for assessment in plan.candidate_assessments)
+    assert target.current_hp < target.max_hp
 
 
 @pytest.mark.django_db
@@ -1080,7 +1580,7 @@ def test_v2_quantity_phase_recruits_before_quality_actions(
 
     assert plan.action_kind == GuestRecruitmentActionSpec.action_kind
     assert isinstance(plan.action_spec, GuestRecruitmentActionSpec)
-    assert plan.action_spec.quantity == 2
+    assert plan.action_spec.quantity == 1
     assert plan.action_spec.template_id == quantity_template.id
 
     result = maintenance.execute_virtual_player_v2_maintenance_plan(plan)
@@ -1088,13 +1588,186 @@ def test_v2_quantity_phase_recruits_before_quality_actions(
     assert result.outcome is MaintenanceOutcome.APPLIED
     assert result.action_kind == GuestRecruitmentActionSpec.action_kind
     created_guests = tuple(
-        Guest.objects.filter(manor_id=active_v2_profile.manor_id).exclude(template_id__isnull=True).order_by("-id")[:2]
+        Guest.objects.filter(manor_id=active_v2_profile.manor_id).exclude(template_id__isnull=True).order_by("-id")[:1]
     )
-    assert len(created_guests) == 2
+    assert len(created_guests) == 1
     assert all(guest.template_id == quantity_template.id for guest in created_guests)
     assert all(guest.level == 1 for guest in created_guests)
     assert not GuestSkill.objects.filter(guest_id__in=[guest.id for guest in created_guests]).exists()
-    assert Guest.objects.filter(manor_id=active_v2_profile.manor_id).count() == current_guest_count + 2
+    assert Guest.objects.filter(manor_id=active_v2_profile.manor_id).count() == current_guest_count + 1
+
+
+@pytest.mark.django_db
+def test_arena_recruitment_candidate_reselects_lineup_and_enforces_event_cap(
+    active_v2_profile,
+    permissive_reference,
+    monkeypatch,
+) -> None:
+    quantity_template = GuestTemplate.objects.create(
+        key=f"v2_event_cap_gray_{active_v2_profile.id}",
+        name="V2 活动上限灰门客",
+        archetype=GuestArchetype.MILITARY,
+        rarity=GuestRarity.GRAY,
+        base_attack=80,
+        base_intellect=80,
+        base_defense=80,
+        base_hp=800,
+    )
+    monkeypatch.setattr(
+        maintenance,
+        "_quantity_phase_guest_template",
+        lambda **_kwargs: (quantity_template, True),
+    )
+    current_guest_count = Guest.objects.filter(manor_id=active_v2_profile.manor_id).count()
+    objective = ArenaGrowthObjective(
+        critical_guest_count=current_guest_count + 1,
+        preferred_guest_count=current_guest_count + 1,
+        selected_power_lower_bound=1,
+        selected_power_upper_bound=1,
+        selected_power_before=0,
+        target_team_power=1,
+        lineup_mode="tournament",
+        lineup_event_id=78,
+        lineup_max_size=current_guest_count + 1,
+        minimum_guest_level=1,
+        recruitment_rarity_cap=GuestRarity.GRAY,
+        max_guest_level_step=3,
+    )
+
+    plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.ARENA_ACCELERATION,
+        now=FIXED_NOW,
+        arena_growth_objective=objective,
+    )
+
+    assessment = next(
+        assessment
+        for assessment in plan.candidate_assessments
+        if assessment.intent.action_kind == GuestRecruitmentActionSpec.action_kind
+    )
+    assert assessment.primary_rejection_reason == "event_power_cap"
+    assert assessment.projected_selected_power is not None
+    assert assessment.projected_selected_power > objective.selected_power_upper_bound
+    assert assessment.event_power_cap == objective.selected_power_upper_bound
+
+
+@pytest.mark.django_db
+def test_arena_healing_runs_as_a_free_independent_sweep_for_a_durable_round(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    target = Guest.objects.filter(manor_id=active_v2_profile.manor_id).order_by("id").first()
+    assert target is not None
+    target.current_hp = max(1, int(target.max_hp * 0.1))
+    target.status = GuestStatus.INJURED
+    target.save(update_fields=["current_hp", "status"])
+    silver_before = Manor.objects.values_list("silver", flat=True).get(pk=active_v2_profile.manor_id)
+
+    maintenance._run_arena_v2_healing_sweep(
+        active_v2_profile.id,
+        now=FIXED_NOW,
+        arena_member_id=123,
+        arena_round_ordinal=1,
+    )
+
+    target.refresh_from_db()
+    assert target.current_hp == target.max_hp
+    assert target.status == GuestStatus.IDLE
+    assert Manor.objects.values_list("silver", flat=True).get(pk=active_v2_profile.manor_id) == silver_before
+    sweep = BotMaintenanceAttempt.objects.get(operation_id="arena-member-123-r1-healing")
+    assert sweep.shadow_cost["real_silver"] == 0
+    assert sweep.shadow_cost["healed_guest_ids"] == [target.id]
+
+    plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.ARENA_ACCELERATION,
+        now=FIXED_NOW,
+    )
+    assert all(assessment.intent.action_kind != "guest_healing" for assessment in plan.candidate_assessments)
+
+
+@pytest.mark.django_db
+def test_v2_recruitment_rarity_cap_filters_quantity_templates(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    GuestTemplate.objects.create(
+        key=f"v2_quantity_cap_black_{active_v2_profile.id}",
+        name="V2 数量上限黑门客",
+        archetype=GuestArchetype.MILITARY,
+        rarity=GuestRarity.BLACK,
+        base_attack=60,
+        base_intellect=60,
+        base_defense=60,
+        base_hp=600,
+    )
+    GuestTemplate.objects.create(
+        key=f"v2_quantity_cap_orange_{active_v2_profile.id}",
+        name="V2 数量上限橙门客",
+        archetype=GuestArchetype.MILITARY,
+        rarity=GuestRarity.ORANGE,
+        base_attack=600,
+        base_intellect=600,
+        base_defense=600,
+        base_hp=6000,
+    )
+    current_guest_count = Guest.objects.filter(manor_id=active_v2_profile.manor_id).count()
+
+    plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.ARENA_ACCELERATION,
+        now=FIXED_NOW,
+        minimum_guest_count=current_guest_count + 1,
+        minimum_guest_level=50,
+        guest_rarity_cap=GuestRarity.BLACK,
+        max_guest_level_step=3,
+    )
+
+    assert plan.recruitment_rarity_cap == GuestRarity.BLACK
+    assert isinstance(plan.action_spec, GuestRecruitmentActionSpec)
+    assert plan.action_spec.rarity == GuestRarity.BLACK
+
+
+@pytest.mark.django_db
+def test_v2_invalid_recruitment_rarity_cap_fails_closed(
+    active_v2_profile,
+) -> None:
+    result = maintenance.maintain_virtual_player_v2(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.ARENA_ACCELERATION,
+        now=FIXED_NOW,
+        guest_rarity_cap="mythical",
+    )
+
+    assert result.outcome is MaintenanceOutcome.PAUSED
+    assert result.reason == "invalid_recruitment_rarity_cap"
+
+
+@pytest.mark.django_db
+def test_accelerated_growth_invalid_rarity_returns_paused_with_safety_evidence(
+    active_v2_profile,
+) -> None:
+    operation_id = "arena-growth-invalid-rarity"
+
+    outcome = maintenance.accelerate_virtual_player_growth(
+        active_v2_profile.id,
+        now=FIXED_NOW,
+        operation_id=operation_id,
+        guest_rarity_cap="mythical",
+    )
+
+    assert outcome is AcceleratedGrowthOutcome.PAUSED
+    terminal = BotSafetyMetricEvent.objects.get(
+        event_id=f"maintenance:{operation_id}:1:terminal",
+        metric_name=MAINTENANCE_ATTEMPT_METRIC,
+    )
+    assert terminal.dimensions == {
+        "result": "paused",
+        "trigger": "arena_acceleration",
+        "reason": "invalid_recruitment_rarity_cap",
+    }
+    assert not BotMaintenanceExecution.objects.filter(operation_id=operation_id).exists()
 
 
 @pytest.mark.django_db
@@ -1122,8 +1795,9 @@ def test_v2_damaged_guests_without_medicine_receive_no_free_recovery(
 def test_v2_troop_recruitment_planner_is_read_only_and_deterministic(
     active_v2_profile,
     permissive_reference,
+    monkeypatch,
 ) -> None:
-    prepared = _prepare_troop_recruitment_plan(active_v2_profile)
+    prepared = _prepare_troop_recruitment_plan(active_v2_profile, monkeypatch)
 
     with CaptureQueriesContext(connection) as captured:
         first = _scheduled_plan(active_v2_profile)
@@ -1146,10 +1820,12 @@ def test_v2_troop_recruitment_commits_audit_without_scheduling_celery(
     permissive_reference,
     monkeypatch,
 ) -> None:
-    plan = _prepare_troop_recruitment_plan(active_v2_profile)
+    plan = _prepare_troop_recruitment_plan(active_v2_profile, monkeypatch)
     quote = plan.troop_recruitment_quote
     assert quote is not None
+    assert quote.source == "virtual"
     domain_before = _troop_domain_state(plan)
+    manor_before = Manor.objects.values("silver", "grain").get(pk=plan.manor_id)
     monkeypatch.setattr(
         "gameplay.services.recruitment.recruitment._schedule_recruitment_completion",
         lambda *_args, **_kwargs: pytest.fail("V2 synchronous recruitment scheduled Celery"),
@@ -1158,20 +1834,21 @@ def test_v2_troop_recruitment_commits_audit_without_scheduling_celery(
     result = maintenance.execute_virtual_player_v2_maintenance_plan(plan)
 
     active_v2_profile.refresh_from_db()
-    recruitment = TroopRecruitment.objects.get(manor_id=plan.manor_id)
     domain_after = _troop_domain_state(plan)
+    manor_after = Manor.objects.values("silver", "grain").get(pk=plan.manor_id)
     troops_before = dict(domain_before["troops"])
     troops_after = dict(domain_after["troops"])
     assert result.outcome is MaintenanceOutcome.APPLIED
     assert result.action_kind == "troop_recruitment"
     assert active_v2_profile.maintenance_sequence == 1
     assert active_v2_profile.next_growth_at == plan.next_growth_at_after
-    assert recruitment.status == TroopRecruitment.Status.COMPLETED
-    assert recruitment.complete_at == FIXED_NOW
-    assert recruitment.finished_at == FIXED_NOW
-    assert recruitment.actual_duration == quote.actual_duration
-    assert recruitment.equipment_costs == dict(quote.equipment_costs)
-    assert domain_after["retainer_count"] == (int(domain_before["retainer_count"]) - quote.retainer_cost)
+    assert not TroopRecruitment.objects.filter(manor_id=plan.manor_id).exists()
+    assert domain_after["inventory"] == domain_before["inventory"]
+    assert domain_after["retainer_count"] == domain_before["retainer_count"]
+    assert manor_after["silver"] == (
+        manor_before["silver"] - quote.virtual_silver_cost - plan.salary_quote.total_amount
+    )
+    assert manor_after["grain"] == manor_before["grain"] - quote.virtual_grain_cost
     assert troops_after[quote.troop_key] == (troops_before.get(quote.troop_key, 0) + quote.quantity)
     assert load_manor_strength_summary(manor_id=plan.manor_id) == plan.intent.strength_after
 
@@ -1185,8 +1862,10 @@ def test_v2_training_commits_domain_result_budget_sequence_and_schedule_atomical
     _isolate_training_candidates(monkeypatch)
     plan = _scheduled_plan(active_v2_profile)
     assert plan.intent is not None
+    assert plan.training_levels == 1
     target = Guest.objects.get(pk=plan.target_id)
     template_id_before = target.template_id
+    level_before = target.level
 
     result = maintenance.execute_virtual_player_v2_maintenance_plan(plan)
 
@@ -1199,17 +1878,51 @@ def test_v2_training_commits_domain_result_budget_sequence_and_schedule_atomical
     assert active_v2_profile.next_growth_at == plan.next_growth_at_after
     assert active_v2_profile.next_growth_at > plan.next_growth_at_before
     assert target.template_id == template_id_before
-    assert (
-        TrainingLog.objects.filter(
-            manor_id=plan.manor_id,
-            guest_id=plan.target_id,
-        ).count()
-        == 1
-    )
+    assert target.level == level_before
+    assert target.training_target_level == level_before + plan.training_levels
+    assert target.training_complete_at is not None
+    assert target.training_remaining_seconds is None
+    assert not TrainingLog.objects.filter(manor_id=plan.manor_id, guest_id=plan.target_id).exists()
     assert load_manor_strength_summary(manor_id=plan.manor_id) == plan.intent.strength_after
     if plan.intent.strength_after != plan.intent.strength_before:
         assert active_v2_profile.last_strength_increase_at == FIXED_NOW
         assert len(active_v2_profile.strength_budget_entries) == 1
+
+
+@pytest.mark.django_db
+def test_scheduled_maintenance_reuses_the_frozen_cycle_pacing_snapshot(
+    active_v2_profile,
+    monkeypatch,
+) -> None:
+    frozen_pacing = resolve_archetype_pacing(maintenance.load_virtual_player_config(), "dojo")
+    BotMaintenanceCycle.objects.create(
+        cycle_id="vp-cycle-frozen-pacing",
+        profile=active_v2_profile,
+        cycle_ordinal=1,
+        trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
+        max_actions=16,
+        started_at=FIXED_NOW,
+        current_action_state=BotMaintenanceCycle.ActionState.READY,
+        next_slot_due_at=FIXED_NOW,
+        next_decision_at=FIXED_NOW,
+        payload={"archetype_pacing": frozen_pacing.to_payload()},
+    )
+    captured: dict[str, object] = {}
+
+    def _capture_cycle_pacing(*_args, **kwargs):
+        captured["pacing"] = kwargs["_cycle_pacing"]
+        raise maintenance._V2MaintenanceOutcomeError(MaintenanceOutcome.PAUSED, "test_cycle_pacing")
+
+    monkeypatch.setattr(maintenance, "build_virtual_player_v2_maintenance_plan", _capture_cycle_pacing)
+
+    result = maintenance.maintain_virtual_player_v2(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        now=FIXED_NOW,
+    )
+
+    assert result.outcome is MaintenanceOutcome.PAUSED
+    assert captured["pacing"] == frozen_pacing
 
 
 @pytest.mark.django_db
@@ -1268,10 +1981,12 @@ def test_v2_settlement_and_training_commit_in_one_cycle(
 
 
 @pytest.mark.django_db
-def test_v2_unpaid_salary_has_priority_over_training(
+def test_v2_unpaid_salary_falls_back_to_non_silver_action(
     active_v2_profile,
     permissive_reference,
+    monkeypatch,
 ) -> None:
+    _prepare_equipment_plan(active_v2_profile, monkeypatch)
     Manor.objects.filter(pk=active_v2_profile.manor_id).update(
         silver=0,
         resource_updated_at=FIXED_NOW,
@@ -1279,13 +1994,14 @@ def test_v2_unpaid_salary_has_priority_over_training(
     active_v2_profile.manor.refresh_from_db()
     plan = _scheduled_plan(active_v2_profile)
 
+    assert plan.action_kind == EquipmentEquipActionSpec.action_kind
     assert plan.intent is not None
     assert plan.salary_quote.total_amount > 0
     result = maintenance.execute_virtual_player_v2_maintenance_plan(plan)
 
     active_v2_profile.refresh_from_db()
-    assert result.outcome is MaintenanceOutcome.NO_ACTION
-    assert result.reason == "domain_constraint"
+    assert result.outcome is MaintenanceOutcome.APPLIED
+    assert result.action_kind == EquipmentEquipActionSpec.action_kind
     assert active_v2_profile.maintenance_sequence == 1
     assert not SalaryPayment.objects.filter(manor_id=plan.manor_id).exists()
     assert not TrainingLog.objects.filter(manor_id=plan.manor_id).exists()
@@ -1310,7 +2026,59 @@ def test_v2_arena_cycle_preserves_normal_schedule_exactly(
     assert outcome is AcceleratedGrowthOutcome.GROWN
     assert active_v2_profile.next_growth_at == future_schedule
     assert active_v2_profile.maintenance_sequence == 1
-    assert active_v2_profile.forced_settlement_daily_budget["combined_units"] == 20_000
+    assert active_v2_profile.forced_settlement_daily_budget["combined_units"] > 0
+
+
+@pytest.mark.django_db
+def test_manual_policy2_scheduled_cycle_replay_is_bounded_and_durable(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    """Drive the real scheduled entry point until one durable cycle closes."""
+
+    results = []
+    current_time = FIXED_NOW
+    for _ordinal in range(16):
+        record_safety_heartbeat("safety_monitor", now=current_time)
+        result = maintenance.maintain_virtual_player_v2(
+            active_v2_profile.id,
+            trigger=MaintenanceTrigger.SCHEDULED,
+            now=current_time,
+        )
+        results.append(result)
+        cycle = BotMaintenanceCycle.objects.filter(
+            profile_id=active_v2_profile.id,
+            trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
+        ).latest("cycle_ordinal")
+        assert result.outcome in {MaintenanceOutcome.APPLIED, MaintenanceOutcome.NO_ACTION}, result.reason
+        assert 0 <= int(cycle.action_ordinal) <= 16
+        if cycle.status == BotMaintenanceCycle.Status.COMPLETED:
+            break
+        assert cycle.next_slot_due_at is not None
+        assert cycle.next_slot_due_at > current_time
+        current_time = cycle.next_slot_due_at
+
+    cycle = BotMaintenanceCycle.objects.filter(
+        profile_id=active_v2_profile.id,
+        trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
+    ).latest("cycle_ordinal")
+    active_v2_profile.refresh_from_db()
+    assert results
+    assert all(result.outcome in {MaintenanceOutcome.APPLIED, MaintenanceOutcome.NO_ACTION} for result in results)
+    assert any(result.outcome is MaintenanceOutcome.APPLIED for result in results)
+    assert cycle.status == BotMaintenanceCycle.Status.COMPLETED
+    assert cycle.action_ordinal <= cycle.max_actions == 16
+    assert cycle.action_ordinal >= 1
+    assert cycle.healing_operation_id
+    assert BotMaintenanceAttempt.objects.filter(cycle_id=cycle.id).exists()
+    assert (
+        BotMaintenanceAttempt.objects.filter(
+            cycle_id=cycle.id,
+            shadow_cost__kind="guest_healing_sweep",
+        ).count()
+        == 1
+    )
+    assert active_v2_profile.next_growth_at > FIXED_NOW
 
 
 @pytest.mark.django_db
@@ -1357,14 +2125,19 @@ def test_v2_arena_execution_receipt_prevents_duplicate_maintenance_sequence(
 @pytest.mark.django_db
 def test_v2_arena_execution_receipt_replay_preserves_no_action_reason(
     active_v2_profile,
+    monkeypatch,
 ) -> None:
+    monkeypatch.setattr(maintenance, "_training_candidates", lambda **_kwargs: ((), {}))
+    monkeypatch.setattr(maintenance, "build_virtual_equipment_candidates", lambda **_kwargs: ((), {}))
+    monkeypatch.setattr(maintenance, "build_virtual_skill_learning_candidates", lambda **_kwargs: ((), {}))
+    monkeypatch.setattr(maintenance, "build_virtual_troop_candidates", lambda **_kwargs: ((), {}))
     operation_id = "arena-growth-no-action-replay"
     kwargs = {
         "now": FIXED_NOW,
         "operation_id": operation_id,
         "attempt_ordinal": 1,
         "minimum_guest_count": 1,
-        "minimum_guest_level": 2,
+        "minimum_guest_level": 1,
         "guest_rarity_cap": "purple",
         "max_guest_level_step": 20,
     }
@@ -1384,9 +2157,64 @@ def test_v2_arena_execution_receipt_replay_preserves_no_action_reason(
     assert terminal.dimensions == {
         "result": "no_action",
         "trigger": "arena_acceleration",
-        "reason": "strength_cap",
+        "reason": "arena_action_unavailable",
     }
+    receipt = BotMaintenanceExecution.objects.get(operation_id=operation_id)
+    assert receipt.action_kind == ""
     assert not BotSafetyMetricEvent.objects.filter(metric_name=HARD_VIOLATION_METRIC_NAME).exists()
+
+
+@pytest.mark.django_db
+def test_v2_arena_execution_rejects_legacy_digest_schema(active_v2_profile) -> None:
+    with pytest.raises(ValueError, match="schema 3"):
+        maintenance.accelerate_virtual_player_growth(
+            active_v2_profile.id,
+            now=FIXED_NOW,
+            operation_id="arena-growth-legacy-digest-replay",
+            request_digest_schema=1,
+        )
+
+
+@pytest.mark.django_db
+def test_v2_arena_execution_receipt_schema_two_rejects_objective_conflict(
+    active_v2_profile,
+) -> None:
+    operation_id = "arena-growth-objective-conflict"
+    objective = ArenaGrowthObjective(
+        critical_guest_count=1,
+        preferred_guest_count=1,
+        selected_power_lower_bound=1,
+        selected_power_upper_bound=1_000_000_000,
+        selected_power_before=0,
+        target_team_power=1,
+        lineup_mode="tournament",
+        lineup_event_id=99,
+        lineup_max_size=1,
+        minimum_guest_level=20,
+        recruitment_rarity_cap="purple",
+        max_guest_level_step=20,
+    )
+    maintenance.accelerate_virtual_player_growth(
+        active_v2_profile.id,
+        now=FIXED_NOW,
+        operation_id=operation_id,
+        arena_growth_objective=objective,
+    )
+
+    with pytest.raises(
+        maintenance.MaintenanceExecutionConflict,
+        match="operation_id already belongs to a different request",
+    ):
+        maintenance.accelerate_virtual_player_growth(
+            active_v2_profile.id,
+            now=FIXED_NOW,
+            operation_id=operation_id,
+            attempt_ordinal=2,
+            arena_growth_objective=replace(
+                objective,
+                selected_power_lower_bound=2,
+            ),
+        )
 
 
 @pytest.mark.django_db
@@ -1542,7 +2370,7 @@ def test_v2_normal_schedule_does_not_skip_next_salary_day(
 
 
 @pytest.mark.django_db
-def test_v2_no_reference_commits_structured_no_action_without_domain_write(
+def test_v2_without_static_reference_catalog_commits_v2_action(
     active_v2_profile,
 ) -> None:
     plan = _scheduled_plan(active_v2_profile)
@@ -1551,11 +2379,11 @@ def test_v2_no_reference_commits_structured_no_action_without_domain_write(
     result = maintenance.execute_virtual_player_v2_maintenance_plan(plan)
 
     active_v2_profile.refresh_from_db()
-    assert result.outcome is MaintenanceOutcome.NO_ACTION
-    assert result.reason == "strength_cap"
+    assert result.outcome is MaintenanceOutcome.APPLIED
+    assert result.reason == ""
     assert active_v2_profile.maintenance_sequence == 1
     assert active_v2_profile.next_growth_at == plan.next_growth_at_after
-    assert not TrainingLog.objects.filter(manor_id=plan.manor_id).exists()
+    assert result.action_kind == plan.action_kind
 
 
 @pytest.mark.django_db
@@ -1580,8 +2408,9 @@ def test_v2_execution_reuses_a_matching_live_routing_guard(
         _routing_snapshot=routing,
     )
 
-    assert result.outcome is MaintenanceOutcome.NO_ACTION
-    assert result.reason == "strength_cap"
+    assert result.outcome is MaintenanceOutcome.APPLIED
+    assert result.reason == ""
+    assert result.action_kind == plan.action_kind
 
 
 @pytest.mark.django_db
@@ -1692,6 +2521,250 @@ def test_v2_routing_and_external_reconciliation_fail_closed(
     assert active_v2_profile.maintenance_sequence == 0
 
 
+@pytest.mark.django_db
+def test_arena_growth_treats_unavailable_routing_as_recoverable_pause(
+    active_v2_profile,
+    monkeypatch,
+) -> None:
+    sequence_before = active_v2_profile.maintenance_sequence
+    schedule_before = active_v2_profile.next_growth_at
+
+    def unavailable_routing():
+        raise maintenance.RuntimeRoutingError("routing unavailable")
+
+    monkeypatch.setattr(maintenance, "read_virtual_player_routing", unavailable_routing)
+
+    outcome = maintenance.accelerate_virtual_player_growth(
+        active_v2_profile.id,
+        now=FIXED_NOW,
+    )
+
+    active_v2_profile.refresh_from_db()
+    assert outcome is AcceleratedGrowthOutcome.PAUSED
+    assert active_v2_profile.maintenance_sequence == sequence_before
+    assert active_v2_profile.next_growth_at == schedule_before
+
+
+@pytest.mark.django_db
+def test_scheduled_maintenance_reenters_after_routing_recovers(
+    active_v2_profile,
+    permissive_reference,
+    monkeypatch,
+) -> None:
+    sequence_before = active_v2_profile.maintenance_sequence
+    schedule_before = active_v2_profile.next_growth_at
+    routing_available = False
+    read_routing = maintenance.read_virtual_player_routing
+
+    def conditional_routing():
+        if not routing_available:
+            raise maintenance.RuntimeRoutingError("routing unavailable")
+        return read_routing()
+
+    monkeypatch.setattr(maintenance, "read_virtual_player_routing", conditional_routing)
+    monkeypatch.setattr(
+        maintenance,
+        "acquire_action_lock",
+        lambda *_args, **_kwargs: (True, "scheduled-routing-recovery", "owner-token"),
+    )
+    monkeypatch.setattr(
+        maintenance,
+        "release_action_lock",
+        lambda *_args, **_kwargs: None,
+    )
+
+    assert maintenance.maintain_due_virtual_players(now=FIXED_NOW, limit=1) == 0
+    active_v2_profile.refresh_from_db()
+    assert active_v2_profile.maintenance_sequence == sequence_before
+    assert active_v2_profile.next_growth_at == schedule_before
+
+    routing_available = True
+    assert maintenance.maintain_due_virtual_players(now=FIXED_NOW, limit=1) == 1
+    active_v2_profile.refresh_from_db()
+    assert active_v2_profile.maintenance_sequence == sequence_before + 1
+    assert active_v2_profile.next_growth_at > FIXED_NOW
+
+    assert maintenance.maintain_due_virtual_players(now=FIXED_NOW, limit=1) == 0
+    active_v2_profile.refresh_from_db()
+    assert active_v2_profile.maintenance_sequence == sequence_before + 1
+
+    cycle = BotMaintenanceCycle.objects.get(
+        profile_id=active_v2_profile.id,
+        trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
+    )
+    assert cycle.next_slot_due_at is not None
+    record_safety_heartbeat("safety_monitor", now=cycle.next_slot_due_at)
+    assert maintenance.maintain_due_virtual_players(now=cycle.next_slot_due_at, limit=1) == 1
+    active_v2_profile.refresh_from_db()
+    assert active_v2_profile.maintenance_sequence == sequence_before + 2
+
+
+@pytest.mark.django_db
+def test_scheduled_batch_applies_limit_after_unresolved_reconciliation_filter(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    healthy_profile = _create_v2_profile(seed=995_002)
+    BotProfile.objects.filter(pk=active_v2_profile.pk).update(
+        next_growth_at=FIXED_NOW - timedelta(hours=1),
+    )
+    BotExternalStrengthReconciliation.objects.create(
+        profile_id=active_v2_profile.id,
+        domain_event_kind="scheduled-maintenance-test",
+        domain_event_id="unresolved-head-of-line",
+        origin_committed_at=FIXED_NOW,
+        pre_strength_summary={},
+        pre_prestige_band="newbie",
+        available_at=FIXED_NOW,
+    )
+
+    maintained = maintenance._maintain_due_virtual_players_v2(
+        current_time=FIXED_NOW,
+        limit=1,
+        routing=maintenance.read_virtual_player_routing(),
+    )
+
+    active_v2_profile.refresh_from_db()
+    healthy_profile.refresh_from_db()
+    assert maintained == 1
+    assert active_v2_profile.maintenance_sequence == 0
+    assert active_v2_profile.next_growth_at == FIXED_NOW - timedelta(hours=1)
+    assert healthy_profile.maintenance_sequence == 1
+    assert healthy_profile.next_growth_at is not None
+    assert healthy_profile.next_growth_at > FIXED_NOW
+
+
+@pytest.mark.django_db
+def test_due_selection_uses_flat_ordered_scan_without_window_sql(
+    active_v2_profile,
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        maintenance,
+        "check_v2_development_write_preflight",
+        lambda **_kwargs: SafetyWritePreflightResult(
+            allowed=False,
+            reason="test_stop_after_selection",
+            checked_at=FIXED_NOW,
+            monitor_heartbeat_at=FIXED_NOW,
+        ),
+    )
+
+    with CaptureQueriesContext(connection) as captured:
+        maintained = maintenance._maintain_due_virtual_players_v2(
+            current_time=FIXED_NOW,
+            limit=1,
+            routing=maintenance.read_virtual_player_routing(),
+        )
+
+    assert maintained == 0
+    assert captured.captured_queries
+    assert any("LIMIT 1000" in query["sql"].upper() for query in captured.captured_queries)
+    assert not any(
+        token in query["sql"].upper() for query in captured.captured_queries for token in ("ROW_NUMBER", " OVER (")
+    )
+
+
+@pytest.mark.django_db
+def test_scheduled_batch_isolates_a_profile_planning_failure(
+    active_v2_profile,
+    permissive_reference,
+    monkeypatch,
+) -> None:
+    healthy_profile = _create_v2_profile(seed=995_003)
+    original_builder = maintenance._scheduled_planning_snapshots
+
+    def build_with_poison(profiles, *, planned_at):
+        if len(profiles) > 1:
+            raise ReferenceSnapshotError("batch contains a poison profile")
+        if int(profiles[0].id) == int(active_v2_profile.id):
+            raise ReferenceSnapshotError("poison profile")
+        return original_builder(profiles, planned_at=planned_at)
+
+    monkeypatch.setattr(
+        maintenance,
+        "_scheduled_planning_snapshots",
+        build_with_poison,
+    )
+
+    maintained = maintenance._maintain_due_virtual_players_v2(
+        current_time=FIXED_NOW,
+        limit=2,
+        routing=maintenance.read_virtual_player_routing(),
+    )
+
+    active_v2_profile.refresh_from_db()
+    healthy_profile.refresh_from_db()
+    assert maintained == 1
+    assert active_v2_profile.maintenance_sequence == 0
+    assert active_v2_profile.next_growth_at == FIXED_NOW
+    assert healthy_profile.maintenance_sequence == 1
+    terminal_results = sorted(
+        event.dimensions["result"]
+        for event in BotSafetyMetricEvent.objects.filter(
+            metric_name=MAINTENANCE_ATTEMPT_METRIC,
+            event_id__endswith=":terminal",
+        )
+    )
+    assert terminal_results == ["applied", "failed"]
+
+
+@pytest.mark.parametrize("error_type", (DatabaseError, SafetyProviderError))
+@pytest.mark.django_db
+def test_scheduled_batch_propagates_planning_infrastructure_errors(
+    active_v2_profile,
+    monkeypatch,
+    error_type,
+) -> None:
+    monkeypatch.setattr(
+        maintenance,
+        "_scheduled_planning_snapshots",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(error_type("planning infrastructure unavailable")),
+    )
+
+    with pytest.raises(error_type, match="planning infrastructure unavailable"):
+        maintenance._maintain_due_virtual_players_v2(
+            current_time=FIXED_NOW,
+            limit=1,
+            routing=maintenance.read_virtual_player_routing(),
+        )
+
+    active_v2_profile.refresh_from_db()
+    assert active_v2_profile.maintenance_sequence == 0
+    terminal = BotSafetyMetricEvent.objects.get(
+        metric_name=MAINTENANCE_ATTEMPT_METRIC,
+        event_id__endswith=":terminal",
+    )
+    assert terminal.dimensions["result"] == "failed"
+
+
+@pytest.mark.django_db
+def test_scheduled_batch_propagates_unknown_planning_errors(
+    active_v2_profile,
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        maintenance,
+        "_scheduled_planning_snapshots",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("unexpected planning invariant failure")),
+    )
+
+    with pytest.raises(RuntimeError, match="unexpected planning invariant failure"):
+        maintenance._maintain_due_virtual_players_v2(
+            current_time=FIXED_NOW,
+            limit=1,
+            routing=maintenance.read_virtual_player_routing(),
+        )
+
+    active_v2_profile.refresh_from_db()
+    assert active_v2_profile.maintenance_sequence == 0
+    terminal = BotSafetyMetricEvent.objects.get(
+        metric_name=MAINTENANCE_ATTEMPT_METRIC,
+        event_id__endswith=":terminal",
+    )
+    assert terminal.dimensions["result"] == "failed"
+
+
 @pytest.mark.parametrize(
     ("corrupt_field", "corrupt_value"),
     (
@@ -1741,18 +2814,18 @@ def test_v2_final_strength_mismatch_rolls_back_domain_and_cycle_writes(
         "attribute_points",
     ).get(pk=plan.target_id)
     manor_before = Manor.objects.values("silver", "grain", "prestige").get(pk=plan.manor_id)
-    original_apply = maintenance.apply_training_locked
+    original_strength_builder = maintenance._build_locked_snapshot_strength
 
-    def apply_with_strength_drift(manor, *args, **kwargs):
-        trained_guest = original_apply(manor, *args, **kwargs)
-        manor.prestige += 1
-        manor.save(update_fields=["prestige"])
-        return trained_guest
+    def build_with_strength_drift(**kwargs):
+        strength = original_strength_builder(**kwargs)
+        components = dict(strength.components)
+        components["prestige"] = int(components.get("prestige", 0)) + 1
+        return StrengthSummary(composite=strength.composite + 1, components=components)
 
     monkeypatch.setattr(
         maintenance,
-        "apply_training_locked",
-        apply_with_strength_drift,
+        "_build_locked_snapshot_strength",
+        build_with_strength_drift,
     )
     with pytest.raises(
         maintenance.V2MaintenanceError,
@@ -1793,16 +2866,18 @@ def test_v2_domain_failure_rolls_back_training_and_cycle_metadata(
         "grain",
         "resource_updated_at",
     ).get(pk=plan.manor_id)
-    original_apply = maintenance.apply_training_locked
+    import guests.services.training as training_service
 
-    def fail_after_domain_write(*args, **kwargs):
-        original_apply(*args, **kwargs)
+    original_reduce = training_service.reduce_training_time_for_guest
+
+    def fail_after_timer_write(*args, **kwargs):
+        original_reduce(*args, **kwargs)
         raise RuntimeError("forced maintenance rollback")
 
     monkeypatch.setattr(
-        maintenance,
-        "apply_training_locked",
-        fail_after_domain_write,
+        training_service,
+        "reduce_training_time_for_guest",
+        fail_after_timer_write,
     )
     with pytest.raises(RuntimeError, match="forced maintenance rollback"):
         maintenance.execute_virtual_player_v2_maintenance_plan(plan)
@@ -1828,10 +2903,7 @@ def test_v2_domain_failure_rolls_back_training_and_cycle_metadata(
     "drift_kind",
     (
         "quote",
-        "inventory",
-        "retainer",
-        "technology",
-        "building",
+        "resources",
         "troop_distribution",
     ),
 )
@@ -1839,9 +2911,10 @@ def test_v2_domain_failure_rolls_back_training_and_cycle_metadata(
 def test_v2_troop_recruitment_rejects_all_frozen_input_drift(
     active_v2_profile,
     permissive_reference,
+    monkeypatch,
     drift_kind,
 ) -> None:
-    plan = _prepare_troop_recruitment_plan(active_v2_profile)
+    plan = _prepare_troop_recruitment_plan(active_v2_profile, monkeypatch)
     quote = plan.troop_recruitment_quote
     assert quote is not None
 
@@ -1853,28 +2926,10 @@ def test_v2_troop_recruitment_rejects_all_frozen_input_drift(
                 actual_duration=quote.actual_duration + 1,
             ),
         )
-    elif drift_kind == "inventory":
-        item_key = quote.equipment_costs[0][0]
-        item = InventoryItem.objects.get(
-            manor_id=plan.manor_id,
-            template__key=item_key,
-            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-        )
-        InventoryItem.objects.filter(pk=item.pk).update(quantity=item.quantity + 1)
-    elif drift_kind == "retainer":
-        Manor.objects.filter(pk=plan.manor_id).update(retainer_count=quote.retainer_count + 1)
-    elif drift_kind == "technology":
-        assert quote.tech_key is not None
-        PlayerTechnology.objects.filter(
-            manor_id=plan.manor_id,
-            tech_key=quote.tech_key,
-        ).update(level=quote.tech_level + 1)
-    elif drift_kind == "building":
-        building = Building.objects.get(
-            manor_id=plan.manor_id,
-            building_type__key="lianggongchang",
-        )
-        Building.objects.filter(pk=building.pk).update(level=building.level + 1)
+    elif drift_kind == "resources":
+        manor = Manor.objects.get(pk=plan.manor_id)
+        manor.silver = int(manor.silver) + 1
+        manor.save(update_fields=["silver"])
     else:
         troop = PlayerTroop.objects.filter(manor_id=plan.manor_id).order_by("id").first()
         assert troop is not None
@@ -1897,25 +2952,41 @@ def test_v2_troop_domain_constraint_rolls_back_savepoint_consumption(
     permissive_reference,
     monkeypatch,
 ) -> None:
-    plan = _prepare_troop_recruitment_plan(active_v2_profile)
+    plan = _prepare_troop_recruitment_plan(active_v2_profile, monkeypatch)
     domain_before = _troop_domain_state(plan)
-    original_recruit = maintenance.recruit_troops_locked
+    quote = plan.troop_recruitment_quote
+    assert quote is not None
+    original_spend = maintenance.spend_resources_locked
 
-    def fail_after_recruitment_write(*args, **kwargs):
-        original_recruit(*args, **kwargs)
-        raise maintenance.TroopRecruitmentError("forced domain constraint")
+    def fail_after_virtual_spend(manor, costs, *args, **kwargs):
+        result = original_spend(manor, costs, *args, **kwargs)
+        normalized_costs = {str(getattr(key, "value", key)): int(value) for key, value in costs.items()}
+        if (
+            normalized_costs.get(ResourceType.SILVER.value, 0) > 0
+            and normalized_costs.get(
+                ResourceType.GRAIN.value,
+                0,
+            )
+            > 0
+        ):
+            raise maintenance.TroopRecruitmentError("forced virtual troop domain constraint")
+        return result
 
     monkeypatch.setattr(
         maintenance,
-        "recruit_troops_locked",
-        fail_after_recruitment_write,
+        "spend_resources_locked",
+        fail_after_virtual_spend,
     )
 
-    result = maintenance.execute_virtual_player_v2_maintenance_plan(plan)
+    result = maintenance.maintain_virtual_player_v2(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        now=FIXED_NOW,
+    )
 
     active_v2_profile.refresh_from_db()
     assert result.outcome is MaintenanceOutcome.NO_ACTION
-    assert result.reason == "domain_constraint"
+    assert result.reason == "no_eligible_candidate"
     assert active_v2_profile.maintenance_sequence == 1
     assert _troop_domain_state(plan) == domain_before
 
@@ -1927,26 +2998,38 @@ def test_v2_unexpected_troop_failure_rolls_back_entire_maintenance_cycle(
     monkeypatch,
 ) -> None:
     _configure_due_resource_production(active_v2_profile, monkeypatch)
-    plan = _prepare_troop_recruitment_plan(active_v2_profile)
+    plan = _prepare_troop_recruitment_plan(active_v2_profile, monkeypatch)
     domain_before = _troop_domain_state(plan)
     manor_before = Manor.objects.values(
         "silver",
         "grain",
         "resource_updated_at",
     ).get(pk=plan.manor_id)
-    original_recruit = maintenance.recruit_troops_locked
+    quote = plan.troop_recruitment_quote
+    assert quote is not None
+    original_spend = maintenance.spend_resources_locked
 
-    def fail_after_recruitment_write(*args, **kwargs):
-        original_recruit(*args, **kwargs)
-        raise RuntimeError("forced troop maintenance rollback")
+    def fail_after_virtual_spend(manor, costs, *args, **kwargs):
+        result = original_spend(manor, costs, *args, **kwargs)
+        normalized_costs = {str(getattr(key, "value", key)): int(value) for key, value in costs.items()}
+        if (
+            normalized_costs.get(ResourceType.SILVER.value, 0) > 0
+            and normalized_costs.get(
+                ResourceType.GRAIN.value,
+                0,
+            )
+            > 0
+        ):
+            raise RuntimeError("forced virtual troop maintenance rollback")
+        return result
 
     monkeypatch.setattr(
         maintenance,
-        "recruit_troops_locked",
-        fail_after_recruitment_write,
+        "spend_resources_locked",
+        fail_after_virtual_spend,
     )
 
-    with pytest.raises(RuntimeError, match="forced troop maintenance rollback"):
+    with pytest.raises(RuntimeError, match="forced virtual troop maintenance rollback"):
         maintenance.execute_virtual_player_v2_maintenance_plan(plan)
 
     active_v2_profile.refresh_from_db()

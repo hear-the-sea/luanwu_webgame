@@ -30,7 +30,7 @@ canonical_gate:
     status: passed
     execution_timestamp_utc: '2026-08-07T06:19:41Z'
     timestamp_status: captured
-    result_summary: 176 passed (164 contract in 14.11s; 12 real-service in 107.93s)
+    result_summary: 178 passed (166 contract in 14.11s; 12 real-service in 107.93s)
     reason: canonical_target_completed_successfully
 suite_selection:
   source: Makefile
@@ -61,10 +61,10 @@ collection:
     DJANGO_TEST_USE_ENV_SERVICES: '1'
   service_preflight_run: false
   external_services_contacted: false
-  expected_nodeid_count: 176
+  expected_nodeid_count: 178
   nodeid_checksum:
     algorithm: sha256
-    value: 7f85875b5a6b83b6e72ea9ed0ad49e47cdccc2d17e5f4f98e8fbcb1d41174adc
+    value: af3a3d79665db9bf57cbd57d04f59c6ff0ca666cab34bd2979059fabcfdaafae
     input: sorted_pytest_nodeids_joined_with_lf_and_terminal_lf
     encoding: utf-8
 historical_evidence:

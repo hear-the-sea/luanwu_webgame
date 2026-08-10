@@ -3,11 +3,17 @@ services:
     image: redis:7-alpine
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env.docker}
+      REDIS_MAXMEMORY: ${REDIS_MAXMEMORY:-128mb}
+      REDIS_MAXMEMORY_POLICY: ${REDIS_MAXMEMORY_POLICY:-noeviction}
     command:
       - sh
       - -c
       - |
-        exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD";
+        exec redis-server \
+          --appendonly yes \
+          --maxmemory "$$REDIS_MAXMEMORY" \
+          --maxmemory-policy "$$REDIS_MAXMEMORY_POLICY" \
+          --requirepass "$$REDIS_PASSWORD";
     healthcheck:
       test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
       interval: 10s
@@ -15,6 +21,8 @@ services:
       retries: 10
     volumes:
       - redis_data:/data
+    mem_limit: ${REDIS_MEMORY_LIMIT:-128m}
+    mem_reservation: ${REDIS_MEMORY_RESERVATION:-64m}
     logging:
       driver: "json-file"
       options:
@@ -29,6 +37,11 @@ services:
       MYSQL_USER: webgame
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env.docker}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env.docker}
+    command:
+      - --innodb-buffer-pool-size=${MYSQL_INNODB_BUFFER_POOL_SIZE:-512M}
+      - --max-connections=${MYSQL_MAX_CONNECTIONS:-40}
+      - --tmp-table-size=${MYSQL_TMP_TABLE_SIZE:-16M}
+      - --max-heap-table-size=${MYSQL_MAX_HEAP_TABLE_SIZE:-16M}
     healthcheck:
       test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_ROOT_PASSWORD\" mysqladmin ping -h 127.0.0.1 -u root"]
       interval: 10s
@@ -36,6 +49,8 @@ services:
       retries: 10
     volumes:
       - db_data:/var/lib/mysql
+    mem_limit: ${MYSQL_MEMORY_LIMIT:-768m}
+    mem_reservation: ${MYSQL_MEMORY_RESERVATION:-512m}
     logging:
       driver: "json-file"
       options:
@@ -68,6 +83,8 @@ services:
     volumes:
       - ./runtime/media:/app/media
       - ./runtime/staticfiles:/app/staticfiles
+    mem_limit: ${WEB_MEMORY_LIMIT:-384m}
+    mem_reservation: ${WEB_MEMORY_RESERVATION:-256m}
     depends_on:
       db:
         condition: service_healthy
@@ -113,14 +130,18 @@ services:
         "-Q",
         "${CELERY_DEFAULT_QUEUE:-default}",
         "--concurrency",
-        "${CELERY_DEFAULT_CONCURRENCY:-2}",
+        "${CELERY_DEFAULT_CONCURRENCY:-1}",
         "--prefetch-multiplier",
         "${CELERY_PREFETCH_MULTIPLIER:-1}",
         "--max-tasks-per-child",
-        "${CELERY_MAX_TASKS_PER_CHILD:-500}",
+        "${CELERY_MAX_TASKS_PER_CHILD:-200}",
+        "--max-memory-per-child",
+        "${CELERY_MAX_MEMORY_PER_CHILD:-180000}",
       ]
     volumes:
       - ./runtime/media:/app/media
+    mem_limit: ${CELERY_WORKER_MEMORY_LIMIT:-256m}
+    mem_reservation: ${CELERY_WORKER_MEMORY_RESERVATION:-160m}
     depends_on:
       - db
       - redis
@@ -157,14 +178,18 @@ services:
         "-Q",
         "${CELERY_BATTLE_QUEUE:-battle}",
         "--concurrency",
-        "${CELERY_BATTLE_CONCURRENCY:-4}",
+        "${CELERY_BATTLE_CONCURRENCY:-1}",
         "--prefetch-multiplier",
         "${CELERY_PREFETCH_MULTIPLIER:-1}",
         "--max-tasks-per-child",
-        "${CELERY_MAX_TASKS_PER_CHILD:-500}",
+        "${CELERY_MAX_TASKS_PER_CHILD:-200}",
+        "--max-memory-per-child",
+        "${CELERY_MAX_MEMORY_PER_CHILD:-180000}",
       ]
     volumes:
       - ./runtime/media:/app/media
+    mem_limit: ${CELERY_WORKER_MEMORY_LIMIT:-256m}
+    mem_reservation: ${CELERY_WORKER_MEMORY_RESERVATION:-160m}
     depends_on:
       - db
       - redis
@@ -201,14 +226,18 @@ services:
         "-Q",
         "${CELERY_TIMER_QUEUE:-timer}",
         "--concurrency",
-        "${CELERY_TIMER_CONCURRENCY:-2}",
+        "${CELERY_TIMER_CONCURRENCY:-1}",
         "--prefetch-multiplier",
         "${CELERY_PREFETCH_MULTIPLIER:-1}",
         "--max-tasks-per-child",
-        "${CELERY_MAX_TASKS_PER_CHILD:-500}",
+        "${CELERY_MAX_TASKS_PER_CHILD:-200}",
+        "--max-memory-per-child",
+        "${CELERY_MAX_MEMORY_PER_CHILD:-180000}",
       ]
     volumes:
       - ./runtime/media:/app/media
+    mem_limit: ${CELERY_WORKER_MEMORY_LIMIT:-256m}
+    mem_reservation: ${CELERY_WORKER_MEMORY_RESERVATION:-160m}
     depends_on:
       - db
       - redis
@@ -245,14 +274,18 @@ services:
         "-Q",
         "${CELERY_TIMER_SCAN_QUEUE:-timer_scan}",
         "--concurrency",
-        "${CELERY_TIMER_SCAN_CONCURRENCY:-2}",
+        "${CELERY_TIMER_SCAN_CONCURRENCY:-1}",
         "--prefetch-multiplier",
         "${CELERY_PREFETCH_MULTIPLIER:-1}",
         "--max-tasks-per-child",
-        "${CELERY_MAX_TASKS_PER_CHILD:-500}",
+        "${CELERY_MAX_TASKS_PER_CHILD:-200}",
+        "--max-memory-per-child",
+        "${CELERY_MAX_MEMORY_PER_CHILD:-180000}",
       ]
     volumes:
       - ./runtime/media:/app/media
+    mem_limit: ${CELERY_WORKER_MEMORY_LIMIT:-256m}
+    mem_reservation: ${CELERY_WORKER_MEMORY_RESERVATION:-160m}
     depends_on:
       - db
       - redis
@@ -293,10 +326,14 @@ services:
         "--prefetch-multiplier",
         "${CELERY_PREFETCH_MULTIPLIER:-1}",
         "--max-tasks-per-child",
-        "${CELERY_MAX_TASKS_PER_CHILD:-500}",
+        "${CELERY_MAX_TASKS_PER_CHILD:-200}",
+        "--max-memory-per-child",
+        "${CELERY_MAX_MEMORY_PER_CHILD:-180000}",
       ]
     volumes:
       - ./runtime/media:/app/media
+    mem_limit: ${CELERY_WORKER_MEMORY_LIMIT:-256m}
+    mem_reservation: ${CELERY_WORKER_MEMORY_RESERVATION:-160m}
     depends_on:
       - db
       - redis
@@ -333,6 +370,8 @@ services:
       - /var/run/celerybeat-schedule
     volumes:
       - ./runtime/celerybeat:/var/run
+    mem_limit: ${CELERY_BEAT_MEMORY_LIMIT:-96m}
+    mem_reservation: ${CELERY_BEAT_MEMORY_RESERVATION:-64m}
     depends_on:
       - db
       - redis
@@ -366,6 +405,8 @@ services:
       - ALL
     cap_add:
       - NET_BIND_SERVICE
+    mem_limit: ${CADDY_MEMORY_LIMIT:-64m}
+    mem_reservation: ${CADDY_MEMORY_RESERVATION:-32m}
     depends_on:
       web:
         condition: service_healthy

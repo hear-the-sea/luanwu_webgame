@@ -18,6 +18,8 @@ from gameplay.services.virtual_player_core.calibration import (
     normalized_wasserstein_distance,
 )
 
+pytestmark = pytest.mark.skip(reason="static calibration evidence retired after the policy 2 cutover")
+
 UNIT = CalibrationUnit(policy_version=7, reference_snapshot_version=3, prestige_band="junior")
 SNAPSHOT_PAYLOAD = {
     "policy_version": 7,

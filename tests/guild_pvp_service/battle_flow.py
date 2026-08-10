@@ -110,15 +110,15 @@ def test_process_guild_raid_battle_reserves_loot_until_the_winner_returns(
     assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key="grain").exists() is False
     assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key="red_ruby").exists() is False
     assert GuildWarehouse.objects.filter(guild=attacker_guild, item_key="guild_badge").exists() is False
-    assert GuildWarehouse.objects.get(guild=defender_guild, item_key="grain").quantity == 10
-    assert GuildWarehouse.objects.get(guild=defender_guild, item_key="gold_bar").quantity == 1
+    assert GuildWarehouse.objects.get(guild=defender_guild, item_key="grain").quantity == 8
+    assert GuildWarehouse.objects.get(guild=defender_guild, item_key="gold_bar").quantity == 3
     assert GuildWarehouse.objects.get(guild=defender_guild, item_key="red_ruby").quantity == 5
     assert GuildWarehouse.objects.get(guild=defender_guild, item_key="guild_badge").quantity == 9
     assert run.status == GuildRaidRun.Status.RETURNING
     assert run.is_attacker_victory is True
     assert run.loot_silver == 8000
-    assert run.loot_items == {"gold_bar": 4}
-    assert run.loot_item_contribution_costs == {"gold_bar": 50}
+    assert run.loot_items == {"gold_bar": 2, "grain": 2}
+    assert run.loot_item_contribution_costs == {"gold_bar": 50, "grain": 2}
     assert run.loot_settled is False
     assert run.battle_report_id == report.id
     assert run.completed_at is None
@@ -129,7 +129,9 @@ def test_process_guild_raid_battle_reserves_loot_until_the_winner_returns(
     run.refresh_from_db()
     attacker_gold = GuildWarehouse.objects.get(guild=attacker_guild, item_key="gold_bar")
     assert attacker_guild.silver == 8000
-    assert attacker_gold.quantity == 4
+    assert attacker_gold.quantity == 2
+    attacker_grain = GuildWarehouse.objects.get(guild=attacker_guild, item_key="grain")
+    assert attacker_grain.quantity == 2
     assert attacker_gold.contribution_cost == 50
     assert attacker_gold.total_produced == 0
     assert run.status == GuildRaidRun.Status.COMPLETED

@@ -41,6 +41,7 @@ class LuanwuShopProductConfig:
     item_key: str | None = None
     reward_quantity: int = 1
     is_random_device_blueprint: bool = False
+    shop_description: str | None = None
 
 
 LUANWU_SHOP_PRODUCTS: tuple[LuanwuShopProductConfig, ...] = (
@@ -59,6 +60,15 @@ LUANWU_SHOP_PRODUCTS: tuple[LuanwuShopProductConfig, ...] = (
         price=1,
         item_key="mission_card",
         reward_quantity=2,
+    ),
+    LuanwuShopProductConfig(
+        key="recruitment_card",
+        name="招募卡",
+        description="在聚贤庄卡池旁使用，为指定卡池增加今日招募次数。",
+        price=1,
+        item_key="recruitment_card",
+        reward_quantity=3,
+        shop_description="用于增加每日招募次数",
     ),
     LuanwuShopProductConfig(
         key=RANDOM_DEVICE_BLUEPRINT_PRODUCT_KEY,
@@ -231,7 +241,10 @@ def build_luanwu_shop_context(manor: Manor) -> dict[str, object]:
             {
                 "key": product.key,
                 "name": template.name if template else product.name,
-                "description": template.description if template and template.description else product.description,
+                "description": (
+                    product.shop_description
+                    or (template.description if template and template.description else product.description)
+                ),
                 "price": product.price,
                 "reward_quantity": product.reward_quantity,
                 "is_random_device_blueprint": product.is_random_device_blueprint,

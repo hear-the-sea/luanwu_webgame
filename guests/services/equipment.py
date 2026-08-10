@@ -43,6 +43,7 @@ __all__ = [
     "ensure_inventory_gears",
     "equip_guest",
     "equip_guest_from_inventory_locked",
+    "equip_guest_from_virtual_template_locked",
     "gear_options_cache_key",
     "give_gear",
     "list_available_equippable_gear_options",
@@ -217,6 +218,35 @@ def equip_guest_from_inventory_locked(
         resolved.gear,
         inventory_item=resolved.inventory_item,
     )
+
+
+def equip_guest_from_virtual_template_locked(
+    manor: Manor,
+    locked_guest: Guest,
+    template_id: int,
+    *,
+    expected_template_key: str | None = None,
+    expected_slot: str | None = None,
+) -> GearItem:
+    """Create and equip one deterministic virtual gear item without inventory."""
+
+    _require_atomic_block("equip_guest_from_virtual_template_locked")
+    if not manor.pk or not locked_guest.pk or locked_guest.manor_id != manor.pk:
+        raise GuestOwnershipError(message="门客不存在或不属于该庄园")
+    template = GearTemplate.objects.select_for_update().filter(pk=int(template_id)).first()
+    if template is None:
+        raise EquipmentError("虚拟装备模板已不存在")
+    if expected_template_key is not None and str(template.key) != str(expected_template_key):
+        raise EquipmentError("虚拟装备模板已发生变化")
+    if expected_slot is not None and str(template.slot) != str(expected_slot):
+        raise EquipmentError("虚拟装备槽位已发生变化")
+    gear = GearItem.objects.create(
+        manor=manor,
+        template=template,
+        guest=None,
+        inventory_backed=False,
+    )
+    return _apply_gear_to_locked_guest(manor, locked_guest, gear)
 
 
 def _warehouse_item_id_for_template_key(manor: Manor, template_key: str) -> int | None:

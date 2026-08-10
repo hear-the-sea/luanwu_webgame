@@ -48,6 +48,44 @@ def handle_recruit_draw(
     )
 
 
+def handle_recruitment_card_use(
+    *,
+    request: HttpRequest,
+    manor: Any,
+    is_ajax: bool,
+    pool: Any,
+    run_locked_action: Callable[..., HttpResponse],
+    recruitment_hall_response: Callable[..., HttpResponse],
+    add_recruitment_extra_attempt_with_item_cost_fn: Callable[..., int],
+) -> HttpResponse:
+    def _perform_use() -> HttpResponse:
+        extra_count = add_recruitment_extra_attempt_with_item_cost_fn(manor, pool)
+        message = f"招募卡已生效：{pool.name} 今日额度 +1！本日已额外加 {extra_count} 次，卡够就继续招，庄里不嫌人多。"
+        return recruitment_hall_response(
+            request,
+            manor,
+            message,
+            is_ajax=is_ajax,
+            use_cache=False,
+        )
+
+    return run_locked_action(
+        request=request,
+        manor=manor,
+        is_ajax=is_ajax,
+        lock_action="recruitment_card",
+        lock_scope=str(pool.key),
+        operation=_perform_use,
+        database_log_message="Unexpected recruitment card database error: manor_id=%s user_id=%s pool_key=%s",
+        unexpected_log_message="Unexpected recruitment card error: manor_id=%s user_id=%s pool_key=%s",
+        log_args=(
+            getattr(manor, "id", None),
+            getattr(request.user, "id", None),
+            getattr(pool, "key", None),
+        ),
+    )
+
+
 def handle_candidate_accept(
     *,
     request: HttpRequest,

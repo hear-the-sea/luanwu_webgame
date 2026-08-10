@@ -12,6 +12,7 @@ from core.utils.infrastructure import (
     combine_infrastructure_exceptions,
 )
 from gameplay.services.technology import finalize_technology_upgrade
+from gameplay.services.virtual_player_core.maintenance_completion import record_virtual_player_maintenance_completion
 
 from ._scheduled import DEFAULT_TASK_DEDUP_TIMEOUT, count_finalized_records, maybe_reschedule_for_future
 
@@ -59,7 +60,15 @@ def complete_technology_upgrade(self, tech_id: int):
             raise TechnologyTaskRetryRequested(str(exc)) from exc
         if rescheduled is not None:
             return rescheduled
+        origin_completed_at = tech.upgrade_complete_at
         finalized = finalize_technology_upgrade(tech, send_notification=True)
+        if finalized:
+            record_virtual_player_maintenance_completion(
+                manor_id=getattr(tech, "manor_id", None),
+                domain_event_kind="technology_upgrade",
+                domain_object_id=tech_id,
+                origin_completed_at=origin_completed_at,
+            )
         return "completed" if finalized else "skipped"
     except TECHNOLOGY_TASK_RETRY_EXCEPTIONS as exc:
         logger.exception("Failed to complete technology upgrade %d: %s", tech_id, exc)
@@ -79,9 +88,22 @@ def scan_technology_upgrades(limit: int = 200):
         .filter(is_upgrading=True, upgrade_complete_at__lte=now)
         .order_by("upgrade_complete_at")[:limit]
     )
+
+    def _finalize_technology(tech: PlayerTechnology) -> bool:
+        origin_completed_at = getattr(tech, "upgrade_complete_at", None)
+        finalized = finalize_technology_upgrade(tech, send_notification=True)
+        if finalized:
+            record_virtual_player_maintenance_completion(
+                manor_id=getattr(tech, "manor_id", None),
+                domain_event_kind="technology_upgrade",
+                domain_object_id=int(tech.id),
+                origin_completed_at=origin_completed_at,
+            )
+        return finalized
+
     return count_finalized_records(
         qs,
-        finalize=lambda tech: finalize_technology_upgrade(tech, send_notification=True),
+        finalize=_finalize_technology,
         logger=logger,
         error_message="Failed to finalize technology %s: %s",
         expected_exceptions=TECHNOLOGY_TASK_RETRY_EXCEPTIONS,

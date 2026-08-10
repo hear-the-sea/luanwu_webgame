@@ -9,10 +9,11 @@ from datetime import UTC, datetime, timedelta
 from enum import Enum
 from hashlib import sha256
 from threading import Event, Thread
+from time import monotonic
 from typing import Any, Iterator
 from uuid import UUID, uuid4
 
-from django.db import connection, transaction
+from django.db import DatabaseError, connection, transaction
 from django.db.models import Case, Count, F, IntegerField, Q, When
 from django.utils import timezone
 
@@ -20,6 +21,7 @@ from core.utils.cache_lock import acquire_best_effort_lock, release_best_effort_
 from gameplay.constants import PVPConstants
 from gameplay.models import (
     BotBackfillDemand,
+    BotMaintenanceRecovery,
     BotPopulationControl,
     BotPopulationRecomputeDemand,
     BotProfile,
@@ -27,21 +29,35 @@ from gameplay.models import (
     RaidRun,
 )
 from gameplay.services.arena.virtual_protection import arena_protected_bot_manor_ids
-from gameplay.services.arena.virtual_reserve_references import active_arena_population_activations
-from gameplay.services.runtime_configs import lock_virtual_player_routing, read_virtual_player_routing
+from gameplay.services.runtime_configs import (
+    RuntimeRoutingError,
+    lock_virtual_player_routing,
+    read_virtual_player_routing,
+)
 from gameplay.services.virtual_player_state_policy import VIRTUAL_PROFILE_MAINTAINED_STATES
 
-from . import profile_store
-from .bootstrap import _create_virtual_player_v1
+from . import arena_population, profile_store
 from .config import V2_PRESTIGE_BAND_NAMES, BootstrapMode, load_virtual_player_config, load_virtual_player_v2_config
 from .contracts import BotProjectionConfig, PopulationMutationStatus
 from .database_clock import database_utc_now as _database_utc_now
 from .database_clock import database_utc_sql_expression
-from .legacy.projection import range_value as _range_value
-from .legacy.projection import weighted_archetype as _weighted_archetype
 from .maintenance import reactivate_locked_virtual_player_profile
-from .population import PopulationCell, PopulationPlan, plan_population_cells
-from .reference_snapshots import projection_for_band as _projection_for_band
+from .population import (
+    ArenaHandoffSupply,
+    PopulationCell,
+    PopulationPlan,
+    arena_materialization_deficit,
+    plan_population_cells,
+)
+from .recovery import (
+    classify_failure,
+    clear_recovery_failure,
+    exclude_blocked_entity_recoveries,
+    record_recovery_failure,
+)
+from .runtime_assessment import assess_virtual_player_runtime
+from .runtime_helpers import range_value as _range_value
+from .runtime_helpers import weighted_archetype as _weighted_archetype
 from .selectors import active_real_player_count as _active_real_player_count
 from .selectors import band_filter_kwargs as _band_filter_kwargs
 from .selectors import configured_population_value as _configured_population_value
@@ -56,6 +72,8 @@ from .selectors import target_band_filter as _target_band_filter
 from .selectors import uses_regional_population_planning as _uses_regional_population_planning
 
 logger = logging.getLogger(__name__)
+
+POPULATION_RECOVERY_SCOPE = BotMaintenanceRecovery.Scope.POPULATION_CELL.value
 
 
 @dataclass(frozen=True)
@@ -75,6 +93,7 @@ class PopulationRecomputeClaim:
     claim_token: UUID
     claimed_at: datetime
     claim_expires_at: datetime
+    available_at: datetime
 
 
 class PopulationCellReconcileStatus(str, Enum):
@@ -84,6 +103,7 @@ class PopulationCellReconcileStatus(str, Enum):
     CLAIM_LOST = "claim_lost"
     COMPLETED = "completed"
     CONTINUED = "continued"
+    RECOVERY_REQUIRED = "recovery_required"
 
 
 @dataclass(frozen=True, slots=True)
@@ -113,6 +133,7 @@ class PopulationCellReconcileResult:
 ROLL_LOCK_KEY = "virtual_players:roll_lock"
 ROLL_LOCK_TIMEOUT_SECONDS = 300
 POPULATION_RECOMPUTE_DEFAULT_BATCH_LIMIT = 8
+ARENA_POPULATION_RESERVE_HANDOFF_DELAY = timedelta(minutes=5)
 POPULATION_RECOMPUTE_CLAIM_LEASE_SECONDS = 300
 POPULATION_RECOMPUTE_FAILURE_BACKOFF_INITIAL_SECONDS = 60
 POPULATION_RECOMPUTE_FAILURE_BACKOFF_MAX_SECONDS = 3600
@@ -181,6 +202,7 @@ def _population_demand_claim_from_model(
         claim_token=demand.claim_token,
         claimed_at=demand.claimed_at,
         claim_expires_at=demand.claim_expires_at,
+        available_at=demand.available_at,
     )
 
 
@@ -502,11 +524,14 @@ def claim_population_recompute_demand(
 ) -> PopulationRecomputeClaim | None:
     normalized = _normalize_population_demand_cells([(region, prestige_band)])
     current_time = _demand_now(now)
-    demand = (
-        BotPopulationRecomputeDemand.objects.select_for_update()
-        .filter(region=normalized[0][0], prestige_band=normalized[0][1])
-        .first()
+    demand_queryset = BotPopulationRecomputeDemand.objects.select_for_update().filter(
+        region=normalized[0][0], prestige_band=normalized[0][1]
     )
+    demand = exclude_blocked_entity_recoveries(
+        demand_queryset,
+        scope=POPULATION_RECOVERY_SCOPE,
+        now=current_time,
+    ).first()
     if demand is None:
         return None
     return _claim_locked_population_recompute_demand(demand, now=current_time)
@@ -523,16 +548,22 @@ def claim_next_population_recompute_demand(
         default=len(_V2_BAND_ORDINAL),
         output_field=IntegerField(),
     )
-    demand = (
+    demand_queryset = (
         BotPopulationRecomputeDemand.objects.select_for_update(skip_locked=True)
         .filter(
             requested_revision__gt=F("completed_revision"),
             available_at__lte=current_time,
         )
         .filter(Q(claimed_revision__isnull=True) | Q(claim_expires_at__lte=current_time))
-        .order_by("available_at", "region", band_order, "id")
-        .first()
+        # ``updated_at`` rotates cells that continuously requeue at the same
+        # timestamp; region/band/id remain deterministic tie breakers.
+        .order_by("available_at", "updated_at", "region", band_order, "id")
     )
+    demand = exclude_blocked_entity_recoveries(
+        demand_queryset,
+        scope=POPULATION_RECOVERY_SCOPE,
+        now=current_time,
+    ).first()
     if demand is None:
         return None
     _normalize_population_demand_cells([(demand.region, demand.prestige_band)])
@@ -568,6 +599,7 @@ def finalize_population_recompute_demand(
     claim: PopulationRecomputeClaim,
     *,
     executable_deficit_remains: bool = False,
+    defer_until: datetime | None = None,
     now: datetime | None = None,
 ) -> bool:
     current_time = _demand_now(now)
@@ -582,6 +614,8 @@ def finalize_population_recompute_demand(
     _clear_population_demand_claim(demand)
     if int(demand.requested_revision) > int(demand.completed_revision):
         demand.available_at = current_time
+    elif defer_until is not None and defer_until > current_time:
+        demand.available_at = defer_until
     demand.save(
         update_fields=[
             "requested_revision",
@@ -745,6 +779,8 @@ def _build_population_plan(
     maintained = _maintained_bot_queryset().select_related("manor")
     if required_engine_version is not None:
         maintained = maintained.filter(engine_version=int(required_engine_version))
+        if int(required_engine_version) == 2:
+            maintained = maintained.filter(policy_version=2)
     attackable = maintained.filter(
         Q(manor__newbie_protection_until__isnull=True) | Q(manor__newbie_protection_until__lte=now),
         Q(manor__defeat_protection_until__isnull=True) | Q(manor__defeat_protection_until__lte=now),
@@ -755,14 +791,29 @@ def _build_population_plan(
         for row in BotBackfillDemand.objects.values("region", "prestige_band", "needed")
     }
     arena_demands: dict[tuple[str, str], int] = {}
-    if required_engine_version == 2:
-        arena_demands = _active_arena_population_demand_by_cell(config)
-
+    runtime_assessment = assess_virtual_player_runtime()
+    if required_engine_version == 2 and runtime_assessment.v2_population_activation_allowed:
+        arena_demands = arena_population.active_arena_population_demand_by_cell(config)
+    arena_handoff_supply = arena_population.arena_handoff_supply_by_cell(
+        maintained,
+        arena_demands=arena_demands,
+        config=config,
+        target_based=target_based,
+        candidate_engine_version=required_engine_version,
+        ready_handoff_allowed=runtime_assessment.ready_handoff_allowed,
+        training_admission_allowed=runtime_assessment.training_admission_allowed,
+    )
     cells: list[PopulationCell] = []
     for region in _regions():
         for band_name, (low, high) in _prestige_bands(config).items():
             band_filter = _band_filter_kwargs(low, high, prefix="manor__")
             real_filter = _band_filter_kwargs(low, high)
+            arena_required_handoff = max(0, int(arena_demands.get((region, band_name), 0) or 0))
+            handoff_supply = arena_handoff_supply.get((region, band_name), ArenaHandoffSupply())
+            arena_materialization_additional = arena_materialization_deficit(
+                required_handoff=arena_required_handoff,
+                handoff_supply=handoff_supply,
+            )
             cells.append(
                 PopulationCell(
                     region=region,
@@ -785,10 +836,9 @@ def _build_population_plan(
                     )
                     .count(),
                     attackable_supply=attackable.filter(manor__region=region, **band_filter).count(),
-                    search_demand=max(
-                        demands.get((region, band_name), 0),
-                        arena_demands.get((region, band_name), 0),
-                    ),
+                    search_demand=max(0, demands.get((region, band_name), 0)),
+                    arena_handoff_supply=handoff_supply.available,
+                    arena_materialization_additional=arena_materialization_additional,
                 )
             )
 
@@ -797,7 +847,9 @@ def _build_population_plan(
         hard_cap_override = int(population.get("hard_cap") or 0) if "hard_cap" in population else None
         configured_global_floor = max(0, _population_config_int(population, "global_floor", 32))
         configured_global_multiplier = max(0, _population_config_int(population, "global_active_multiplier", 20))
-        arena_capacity_floor = sum(cell.maintained_supply for cell in cells) + sum(arena_demands.values())
+        arena_capacity_floor = sum(cell.maintained_supply for cell in cells) + sum(
+            cell.arena_materialization_additional for cell in cells
+        )
         # Arena shortages are explicit, short-lived supply commitments. Let
         # them expand the derived cap while preserving an explicit hard_cap.
         dynamic_global_floor = max(configured_global_floor, arena_capacity_floor)
@@ -839,8 +891,8 @@ def _build_population_plan(
 def _population_runtime_config_for_bootstrap_mode(
     bootstrap_mode: BootstrapMode,
 ) -> dict[str, Any]:
-    if bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE:
-        return load_virtual_player_config()
+    if bootstrap_mode is not BootstrapMode.V2_ACTIVE:
+        raise PopulationRecomputeDemandError("legacy virtual-player population runtime is retired")
     return _v2_population_runtime_config()
 
 
@@ -849,9 +901,14 @@ def _lock_population_mutation_bootstrap_mode(
     required_engine_version: int | None = None,
 ) -> BootstrapMode | None:
     """Serialize a population write with routing transitions and revalidate its engine."""
-    bootstrap_mode = lock_virtual_player_routing().bootstrap_mode
-    if bootstrap_mode is BootstrapMode.V2_PAUSED:
+    try:
+        routing = lock_virtual_player_routing()
+    except RuntimeRoutingError:
         return None
+    assessment = assess_virtual_player_runtime(routing)
+    if not assessment.population_mutation_allowed:
+        return None
+    bootstrap_mode = routing.bootstrap_mode
     routed_engine_version = 1 if bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE else 2
     if required_engine_version is not None and routed_engine_version != int(required_engine_version):
         return None
@@ -860,42 +917,17 @@ def _lock_population_mutation_bootstrap_mode(
 
 def get_virtual_player_capacity(*, now=None) -> tuple[int, int]:
     current_time = now or timezone.now()
-    bootstrap_mode = read_virtual_player_routing().bootstrap_mode
-    required_engine_version = 1 if bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE else 2
+    routing = read_virtual_player_routing()
+    if not assess_virtual_player_runtime(routing).v2_population_activation_allowed:
+        return 0, _maintained_bot_count()
+    required_engine_version = 2
     population_plan = _build_population_plan(
-        _population_runtime_config_for_bootstrap_mode(bootstrap_mode),
+        _v2_population_runtime_config(),
         now=current_time,
         required_engine_version=required_engine_version,
     )
-    return population_plan.hard_cap, _maintained_bot_count()
-
-
-def _select_virtual_player_creation_region(
-    *,
-    now,
-    config: dict[str, Any],
-    required_engine_version: int,
-) -> str | None:
-    population_plan = _build_population_plan(
-        config,
-        now=now,
-        target_based_membership=required_engine_version == 2,
-        required_engine_version=required_engine_version,
-    )
-    region_targets = population_plan.region_targets
-    if not region_targets:
-        return None
-    maintained_by_region = {
-        str(row["manor__region"]): int(row["count"] or 0)
-        for row in _maintained_bot_queryset().values("manor__region").annotate(count=Count("id"))
-    }
-    return min(
-        region_targets,
-        key=lambda region: (
-            -(int(region_targets[region]) - maintained_by_region.get(region, 0)),
-            region,
-        ),
-    )
+    maintained_count = _maintained_bot_queryset().filter(engine_version=2, policy_version=2).count()
+    return population_plan.hard_cap, maintained_count
 
 
 def _lock_population_capacity(*, now) -> tuple[int, int]:
@@ -918,45 +950,72 @@ def _v2_population_runtime_config() -> dict[str, Any]:
     return config
 
 
-def _active_arena_population_demand_by_cell(
-    config: dict[str, Any],
-) -> dict[tuple[str, str], int]:
-    valid_regions = frozenset(_regions())
-    arena_demands: dict[tuple[str, str], int] = {}
-    for activation in active_arena_population_activations():
-        region = str(activation.region)
-        band_name = _prestige_band_for_value(activation.prestige, config)
-        if region not in valid_regions or band_name is None:
-            continue
-        key = (region, band_name)
-        arena_demands[key] = arena_demands.get(key, 0) + max(0, int(activation.needed))
-    return arena_demands
-
-
 def ensure_active_arena_population_recompute_demands(
     *,
     now: datetime | None = None,
 ) -> tuple[BotPopulationRecomputeDemand, ...]:
-    """Recover missing durable population cells for active Arena shortages."""
+    """Wake idle V2 population cells when Arena has a real supply deficit."""
     if not _v2_bootstrap_routing_is_active():
         return ()
-    arena_demands = _active_arena_population_demand_by_cell(_v2_population_runtime_config())
+    current_time = _demand_now(now)
+    config = _v2_population_runtime_config()
+    arena_demands = arena_population.active_arena_population_demand_by_cell(config)
+    arena_population.observe_arena_population_funnel(
+        config,
+        maintained=_maintained_bot_queryset().filter(engine_version=2, policy_version=2),
+        target_based=True,
+        now=current_time,
+    )
     if not arena_demands:
         return ()
-    existing = set(
-        BotPopulationRecomputeDemand.objects.filter(
-            region__in={region for region, _band in arena_demands},
-            prestige_band__in={band for _region, band in arena_demands},
-        ).values_list("region", "prestige_band")
+    population_plan = _build_population_plan(
+        config,
+        now=current_time,
+        target_based_membership=True,
+        required_engine_version=2,
     )
-    missing = tuple(cell for cell in arena_demands if cell not in existing)
-    if not missing:
+    deficit_cells = {
+        key
+        for key, cell in population_plan.by_key.items()
+        if key in arena_demands and cell.arena_materialization_additional > 0
+    }
+    if not deficit_cells:
         return ()
-    return merge_population_recompute_demands(missing, now=now)
+    existing_rows = {
+        (str(row["region"]), str(row["prestige_band"])): row
+        for row in BotPopulationRecomputeDemand.objects.filter(
+            region__in={region for region, _band in deficit_cells},
+            prestige_band__in={band for _region, band in deficit_cells},
+        ).values(
+            "region",
+            "prestige_band",
+            "requested_revision",
+            "completed_revision",
+            "claimed_revision",
+            "available_at",
+        )
+    }
+    wake_cells = tuple(
+        sorted(
+            key
+            for key in deficit_cells
+            if key not in existing_rows
+            or (
+                existing_rows[key]["claimed_revision"] is None
+                and int(existing_rows[key]["requested_revision"]) <= int(existing_rows[key]["completed_revision"])
+                and existing_rows[key]["available_at"] <= current_time
+            )
+        )
+    )
+    if not wake_cells:
+        return ()
+    return merge_population_recompute_demands(wake_cells, now=current_time)
 
 
 def _v2_bootstrap_routing_is_active() -> bool:
-    return read_virtual_player_routing().bootstrap_mode is BootstrapMode.V2_ACTIVE
+    """Return whether V2 population writes are currently allowed."""
+
+    return assess_virtual_player_runtime().v2_population_activation_allowed
 
 
 def _v2_periodic_population_cells() -> tuple[tuple[str, str], ...]:
@@ -1016,7 +1075,16 @@ def _v2_population_cell_has_executable_deficit(
         target_based_membership=True,
         required_engine_version=2,
     ).by_key.get((region, prestige_band))
-    return cell is not None and cell.structural_deficit > 0
+    return cell is not None and _population_cell_deficit(cell) > 0
+
+
+def _population_cell_deficit(cell: Any) -> int:
+    """Read both current and compatibility population-cell shapes."""
+    return max(
+        0,
+        int(getattr(cell, "structural_deficit", 0) or 0),
+        int(getattr(cell, "arena_materialization_deficit", 0) or 0),
+    )
 
 
 def _reconcile_claimed_virtual_player_population_cell(
@@ -1061,8 +1129,6 @@ def _reconcile_claimed_virtual_player_population_cell(
                     prestige_band=claim.prestige_band,
                     claimed_revision=claim.claimed_revision,
                 )
-
-            from gameplay.services.arena.virtual_reserve_demand import wake_active_arena_demands_for_population_region
 
             from .bootstrap import build_virtual_player_v2_bootstrap_plan, create_virtual_player_v2
 
@@ -1128,33 +1194,7 @@ def _reconcile_claimed_virtual_player_population_cell(
 
             ownership_guard()
             if processed_count > 0:
-                try:
-                    woken_demands = wake_active_arena_demands_for_population_region(
-                        region=claim.region,
-                        now=_demand_now(now),
-                    )
-                except Exception:
-                    logger.exception(
-                        "Failed to wake Arena demands after population supply changed: region=%s",
-                        claim.region,
-                        extra={
-                            "event": "virtual_player_population_arena_wakeup_failed",
-                            "region": claim.region,
-                            "processed_count": processed_count,
-                        },
-                    )
-                else:
-                    if woken_demands:
-                        logger.info(
-                            "Woke Arena demands after population supply changed: region=%s demands=%s",
-                            claim.region,
-                            woken_demands,
-                            extra={
-                                "event": "virtual_player_population_arena_demands_woken",
-                                "region": claim.region,
-                                "woken_demand_count": woken_demands,
-                            },
-                        )
+                arena_population.queue_arena_population_handoff(region=claim.region)
             if not _v2_bootstrap_routing_is_active():
                 fail_population_recompute_demand(
                     claim,
@@ -1171,15 +1211,27 @@ def _reconcile_claimed_virtual_player_population_cell(
                     reactivated_count=reactivated_count,
                 )
             revalidation_time = _demand_now(now)
-            executable_deficit_remains = _v2_population_cell_has_executable_deficit(
-                region=claim.region,
-                prestige_band=claim.prestige_band,
-                config=config,
-                now=revalidation_time,
+            arena_cell_active = (
+                claim.region,
+                claim.prestige_band,
+            ) in arena_population.active_arena_population_demand_by_cell(config)
+            arena_handoff_pending = arena_cell_active and processed_count > 0
+            executable_deficit_remains = (
+                False
+                if arena_handoff_pending
+                else _v2_population_cell_has_executable_deficit(
+                    region=claim.region,
+                    prestige_band=claim.prestige_band,
+                    config=config,
+                    now=revalidation_time,
+                )
             )
             finalized = finalize_population_recompute_demand(
                 claim,
                 executable_deficit_remains=executable_deficit_remains,
+                defer_until=(
+                    revalidation_time + ARENA_POPULATION_RESERVE_HANDOFF_DELAY if arena_handoff_pending else None
+                ),
                 now=now,
             )
     except Exception as exc:
@@ -1240,11 +1292,50 @@ def reconcile_virtual_player_population_cell(
             prestige_band=normalized[1],
         )
     normalized_limit = max(0, min(100, int(limit)))
-    return _reconcile_claimed_virtual_player_population_cell(
-        claim,
-        limit=normalized_limit,
-        now=fixed_time,
-    )
+    entity_key = str(claim.demand_id)
+    try:
+        result = _reconcile_claimed_virtual_player_population_cell(
+            claim,
+            limit=normalized_limit,
+            now=fixed_time,
+        )
+    except DatabaseError:
+        raise
+    except Exception as exc:
+        record_recovery_failure(
+            scope=POPULATION_RECOVERY_SCOPE,
+            entity_key=entity_key,
+            failure_code=classify_failure(exc),
+            error=exc,
+            operation_id=f"population-cell-{entity_key}-{claim.claimed_revision}",
+            payload={
+                "region": claim.region,
+                "prestige_band": claim.prestige_band,
+                "phase": "reconcile",
+            },
+            now=fixed_time,
+        )
+        logger.exception(
+            "Virtual-player population cell was isolated during reconciliation: region=%s band=%s",
+            claim.region,
+            claim.prestige_band,
+        )
+        return PopulationCellReconcileResult(
+            status=PopulationCellReconcileStatus.RECOVERY_REQUIRED,
+            region=claim.region,
+            prestige_band=claim.prestige_band,
+            claimed_revision=claim.claimed_revision,
+        )
+    if result.status in {
+        PopulationCellReconcileStatus.COMPLETED,
+        PopulationCellReconcileStatus.CONTINUED,
+    }:
+        clear_recovery_failure(
+            scope=POPULATION_RECOVERY_SCOPE,
+            entity_key=entity_key,
+            now=fixed_time,
+        )
+    return result
 
 
 def scan_virtual_player_population_demands(
@@ -1253,6 +1344,7 @@ def scan_virtual_player_population_demands(
     cell_limit: int = POPULATION_RECOMPUTE_DEFAULT_BATCH_LIMIT,
     now: datetime | None = None,
 ) -> tuple[PopulationCellReconcileResult, ...]:
+    scan_started_at = monotonic()
     normalized_limit = max(0, min(1000, int(limit)))
     normalized_cell_limit = max(0, min(100, int(cell_limit)))
     fixed_time = _demand_now(now) if now is not None else None
@@ -1261,15 +1353,57 @@ def scan_virtual_player_population_demands(
 
     ensure_active_arena_population_recompute_demands(now=fixed_time)
     results: list[PopulationCellReconcileResult] = []
+    oldest_due_at: datetime | None = None
     for _index in range(normalized_limit):
         claim = claim_next_population_recompute_demand(now=fixed_time)
         if claim is None:
             break
-        result = _reconcile_claimed_virtual_player_population_cell(
-            claim,
-            limit=normalized_cell_limit,
-            now=fixed_time,
-        )
+        if oldest_due_at is None or claim.available_at < oldest_due_at:
+            oldest_due_at = claim.available_at
+        entity_key = str(claim.demand_id)
+        try:
+            result = _reconcile_claimed_virtual_player_population_cell(
+                claim,
+                limit=normalized_cell_limit,
+                now=fixed_time,
+            )
+        except DatabaseError:
+            raise
+        except Exception as exc:
+            record_recovery_failure(
+                scope=POPULATION_RECOVERY_SCOPE,
+                entity_key=entity_key,
+                failure_code=classify_failure(exc),
+                error=exc,
+                operation_id=f"population-cell-{entity_key}-{claim.claimed_revision}",
+                payload={
+                    "region": claim.region,
+                    "prestige_band": claim.prestige_band,
+                    "phase": "scan",
+                },
+                now=fixed_time,
+            )
+            logger.exception(
+                "Virtual-player population demand was isolated during scan: region=%s band=%s",
+                claim.region,
+                claim.prestige_band,
+            )
+            result = PopulationCellReconcileResult(
+                status=PopulationCellReconcileStatus.RECOVERY_REQUIRED,
+                region=claim.region,
+                prestige_band=claim.prestige_band,
+                claimed_revision=claim.claimed_revision,
+            )
+        else:
+            if result.status in {
+                PopulationCellReconcileStatus.COMPLETED,
+                PopulationCellReconcileStatus.CONTINUED,
+            }:
+                clear_recovery_failure(
+                    scope=POPULATION_RECOVERY_SCOPE,
+                    entity_key=entity_key,
+                    now=fixed_time,
+                )
         results.append(result)
         if result.status in {
             PopulationCellReconcileStatus.ROUTING_INACTIVE,
@@ -1277,6 +1411,25 @@ def scan_virtual_player_population_demands(
             PopulationCellReconcileStatus.CLAIM_LOST,
         }:
             break
+    observed_at = fixed_time or timezone.now()
+    result_counts: dict[str, int] = {}
+    for result in results:
+        result_counts[result.status.value] = result_counts.get(result.status.value, 0) + 1
+    logger.info(
+        "Virtual-player population demand scan completed",
+        extra={
+            "event": "virtual_player_population_scan_completed",
+            "requested_limit": int(normalized_limit),
+            "cell_limit": int(normalized_cell_limit),
+            "selected_count": len(results),
+            "result_counts": result_counts,
+            "oldest_due_at": oldest_due_at.isoformat() if oldest_due_at is not None else None,
+            "oldest_due_age_seconds": (
+                max(0.0, (observed_at - oldest_due_at).total_seconds()) if oldest_due_at is not None else 0.0
+            ),
+            "scan_duration_seconds": max(0.0, monotonic() - scan_started_at),
+        },
+    )
     return tuple(results)
 
 
@@ -1284,7 +1437,7 @@ def rebalance_virtual_player_target_bands(
     population_plan: PopulationPlan,
     *,
     limit: int,
-    required_engine_version: int = 1,
+    required_engine_version: int = 2,
 ) -> int:
     remaining = max(0, int(limit))
     updated = 0
@@ -1293,7 +1446,10 @@ def rebalance_virtual_player_target_bands(
         desired = {cell.prestige_band: cell.target for cell in population_plan.cells if cell.region == region}
         current = {
             band: _maintained_bot_queryset()
-            .filter(engine_version=int(required_engine_version))
+            .filter(
+                engine_version=int(required_engine_version),
+                **({"policy_version": 2} if int(required_engine_version) == 2 else {}),
+            )
             .filter(manor__region=region)
             .filter(_target_band_filter(band))
             .count()
@@ -1320,6 +1476,7 @@ def rebalance_virtual_player_target_bands(
                         .select_for_update(skip_locked=True)
                         .filter(
                             engine_version=int(required_engine_version),
+                            **({"policy_version": 2} if int(required_engine_version) == 2 else {}),
                             manor__region=region,
                             arena_virtual_reserve__isnull=True,
                         )
@@ -1359,15 +1516,8 @@ def reactivate_retired_virtual_player_with_capacity(
             hard_cap=hard_cap,
             maintained_count=maintained_count,
         )
-    required_engine_version = 1 if bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE else 2
+    required_engine_version = 2
     hard_cap, maintained_count = _lock_population_capacity(now=current_time)
-    if required_engine_version == 2:
-        return PopulationMutationResult(
-            status=PopulationMutationStatus.UNAVAILABLE,
-            profile=None,
-            hard_cap=hard_cap,
-            maintained_count=maintained_count,
-        )
     profile = (
         BotProfile.objects.select_for_update(skip_locked=True)
         .select_related("manor")
@@ -1375,6 +1525,7 @@ def reactivate_retired_virtual_player_with_capacity(
             pk=profile_id,
             state=BotProfile.State.RETIRED,
             engine_version=required_engine_version,
+            policy_version=2,
         )
         .first()
     )
@@ -1407,13 +1558,12 @@ def reactivate_virtual_player_profile(profile_id: int, *, now=None) -> BotProfil
     bootstrap_mode = _lock_population_mutation_bootstrap_mode()
     if bootstrap_mode is None:
         return None
-    required_engine_version = 1 if bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE else 2
-    if required_engine_version == 2:
-        return None
+    required_engine_version = 2
     state = (
         BotProfile.objects.filter(
             pk=profile_id,
             engine_version=required_engine_version,
+            policy_version=2,
         )
         .values_list("state", flat=True)
         .first()
@@ -1431,6 +1581,7 @@ def reactivate_virtual_player_profile(profile_id: int, *, now=None) -> BotProfil
             pk=profile_id,
             state=BotProfile.State.ABANDONED,
             engine_version=required_engine_version,
+            policy_version=2,
         )
         .first()
     )
@@ -1450,7 +1601,7 @@ def _try_reactivate_retired_player(
     config: dict[str, Any],
     evaluated_profile_ids: set[int],
     ownership_guard: Callable[[], None] | None = None,
-    required_engine_version: int = 1,
+    required_engine_version: int = 2,
 ) -> BotProfile | None:
     if ownership_guard is not None:
         ownership_guard()
@@ -1472,6 +1623,7 @@ def _try_reactivate_retired_player(
         .filter(
             state=BotProfile.State.RETIRED,
             engine_version=int(required_engine_version),
+            **({"policy_version": 2} if int(required_engine_version) == 2 else {}),
             manor__region=str(region),
         )
         .exclude(id__in=evaluated_profile_ids)
@@ -1502,13 +1654,16 @@ def _reactivate_or_create_virtual_player(
     ownership_guard: Callable[[], None] | None = None,
     require_population_deficit: bool = False,
     include_target_pipeline: bool = False,
-    required_engine_version: int = 1,
+    required_engine_version: int = 2,
     creation_factory: Callable[[object], BotProfile] | None = None,
     target_based_membership: bool | None = None,
     require_current_band_match: bool = False,
 ) -> PopulationMutationResult:
-    if required_engine_version == 2 and (
-        ownership_guard is None or not require_population_deficit or creation_factory is None
+    if (
+        int(required_engine_version) != 2
+        or ownership_guard is None
+        or not require_population_deficit
+        or creation_factory is None
     ):
         raise PopulationRecomputeDemandError(
             "V2 bootstrap requires population ownership, a cell deficit, and a materializer"
@@ -1538,16 +1693,23 @@ def _reactivate_or_create_virtual_player(
             target_based_membership=target_based_membership,
             required_engine_version=required_engine_version,
         ).by_key.get((str(region), str(prestige_band)))
-        current_deficit = 0 if current_cell is None else current_cell.structural_deficit
+        current_deficit = 0 if current_cell is None else _population_cell_deficit(current_cell)
         if current_cell is not None and include_target_pipeline:
             current_band_filter = Q(**_band_filter_kwargs(low, high, prefix="manor__"))
             pipeline_supply = (
                 _maintained_bot_queryset()
-                .filter(engine_version=int(required_engine_version))
+                .filter(
+                    engine_version=int(required_engine_version),
+                    **({"policy_version": 2} if int(required_engine_version) == 2 else {}),
+                )
                 .filter(manor__region=str(region))
                 .filter(_target_band_filter(prestige_band) | current_band_filter)
                 .count()
             )
+            # A target-band transition can leave the profile's current
+            # prestige in another cell.  For backfill, the target pipeline is
+            # the authoritative supply view; using the current-band structural
+            # deficit as well would create the same profile twice.
             current_deficit = max(0, int(current_cell.target) - pipeline_supply)
         if current_deficit <= 0:
             return PopulationMutationResult(
@@ -1579,6 +1741,8 @@ def _reactivate_or_create_virtual_player(
         .order_by("-maintenance_stopped_at", "-updated_at", "id")
     )
     retired_queryset = retired_queryset.filter(engine_version=int(required_engine_version))
+    if int(required_engine_version) == 2:
+        retired_queryset = retired_queryset.filter(policy_version=2)
     if require_current_band_match:
         retired_queryset = retired_queryset.filter(
             current_prestige_band=str(prestige_band),
@@ -1590,12 +1754,8 @@ def _reactivate_or_create_virtual_player(
         if ownership_guard is not None:
             ownership_guard()
         reactivated = reactivate_locked_virtual_player_profile(retired, now=now)
-        if required_engine_version == 2 and ownership_guard is not None:
-            ownership_guard()
-        if (
-            required_engine_version == 2
-            and _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version) is None
-        ):
+        ownership_guard()
+        if _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version) is None:
             raise PopulationRecomputeDemandError("V2 bootstrap routing stopped before reactivation committed")
         return PopulationMutationResult(
             status=PopulationMutationStatus.REACTIVATED,
@@ -1606,30 +1766,15 @@ def _reactivate_or_create_virtual_player(
 
     if ownership_guard is not None:
         ownership_guard()
-    if creation_factory is not None:
-        from .bootstrap import _issue_v2_bootstrap_population_permit
+    from .bootstrap import _issue_v2_bootstrap_population_permit
 
-        population_permit = _issue_v2_bootstrap_population_permit(
-            region=region,
-            prestige_band=prestige_band,
-        )
-        profile = creation_factory(population_permit)
-    else:
-        profile = _create_virtual_player_v1(
-            region=region,
-            prestige_band=prestige_band,
-            archetype=archetype,
-            growth_seed=growth_seed,
-            now=now,
-            projection=projection_factory(),
-            start_from_zero=True,
-        )
-    if required_engine_version == 2 and ownership_guard is not None:
-        ownership_guard()
-    if (
-        required_engine_version == 2
-        and _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version) is None
-    ):
+    population_permit = _issue_v2_bootstrap_population_permit(
+        region=region,
+        prestige_band=prestige_band,
+    )
+    profile = creation_factory(population_permit)
+    ownership_guard()
+    if _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version) is None:
         raise PopulationRecomputeDemandError("V2 bootstrap routing stopped before materialization committed")
     return PopulationMutationResult(
         status=PopulationMutationStatus.CREATED,
@@ -1644,47 +1789,10 @@ def virtual_player_prestige_bands(
 ) -> dict[str, tuple[int, int | None]]:
     if config is not None:
         return _prestige_bands(config)
-    bootstrap_mode = read_virtual_player_routing().bootstrap_mode
-    return _prestige_bands(_population_runtime_config_for_bootstrap_mode(bootstrap_mode))
-
-
-@transaction.atomic
-def _create_virtual_player_for_band(
-    *,
-    region: str,
-    prestige_band: str,
-    archetype: str,
-    growth_seed: int,
-    now,
-    rng: random.Random,
-) -> BotProfile | None:
-    bootstrap_mode = _lock_population_mutation_bootstrap_mode()
-    if bootstrap_mode is None:
-        return None
-    config = _population_runtime_config_for_bootstrap_mode(bootstrap_mode)
-    bands = _prestige_bands(config)
-    if prestige_band not in bands:
-        raise ValueError(f"unknown prestige band: {prestige_band}")
-    low, high = bands[prestige_band]
-    if bootstrap_mode is BootstrapMode.V2_ACTIVE:
-        return None
-    return _create_virtual_player_v1(
-        region=region,
-        prestige_band=prestige_band,
-        archetype=archetype,
-        growth_seed=growth_seed,
-        now=now,
-        projection=_projection_for_band(
-            prestige_band,
-            low,
-            high,
-            rng,
-            region=region,
-            config=config,
-            sample_seed=growth_seed,
-            archetype=archetype,
-        ),
-    )
+    routing = read_virtual_player_routing()
+    if not assess_virtual_player_runtime(routing).v2_population_activation_allowed:
+        return {}
+    return _prestige_bands(_v2_population_runtime_config())
 
 
 def create_virtual_players_for_band(
@@ -1699,24 +1807,9 @@ def create_virtual_players_for_band(
     if count <= 0:
         raise ValueError("count must be positive")
 
-    now = now or timezone.now()
-    rng = random.Random(int(now.timestamp()))
-    profiles: list[BotProfile] = []
-    for _idx in range(count):
-        seed = rng.randint(1, 2_147_483_647)
-        selected_archetype = archetype or _weighted_archetype(rng)
-        profile = _create_virtual_player_for_band(
-            region=region,
-            prestige_band=prestige_band,
-            archetype=selected_archetype,
-            growth_seed=seed,
-            now=now,
-            rng=rng,
-        )
-        if profile is None:
-            break
-        profiles.append(profile)
-    return profiles
+    # Direct batch creation is a retired compatibility surface.  New
+    # profiles must be materialized by the V2 population-demand consumer.
+    return []
 
 
 @transaction.atomic
@@ -1740,11 +1833,6 @@ def create_virtual_player_with_capacity(
             hard_cap=hard_cap,
             maintained_count=maintained_count,
         )
-    required_engine_version = 1 if bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE else 2
-    config = _population_runtime_config_for_bootstrap_mode(bootstrap_mode)
-    bands = _prestige_bands(config)
-    if prestige_band not in bands:
-        raise ValueError(f"unknown prestige band: {prestige_band}")
     hard_cap, maintained_count = _lock_population_capacity(now=current_time)
     if not _population_has_room(hard_cap, maintained_count):
         return PopulationMutationResult(
@@ -1753,41 +1841,9 @@ def create_virtual_player_with_capacity(
             hard_cap=hard_cap,
             maintained_count=maintained_count,
         )
-    if bootstrap_mode is BootstrapMode.V2_ACTIVE:
-        return PopulationMutationResult(
-            status=PopulationMutationStatus.UNAVAILABLE,
-            profile=None,
-            hard_cap=hard_cap,
-            maintained_count=maintained_count,
-        )
-
-    selected_region = region or _select_virtual_player_creation_region(
-        now=current_time,
-        config=config,
-        required_engine_version=required_engine_version,
-    )
-    if selected_region is None:
-        return PopulationMutationResult(
-            status=PopulationMutationStatus.UNAVAILABLE,
-            profile=None,
-            hard_cap=hard_cap,
-            maintained_count=maintained_count,
-        )
-
-    seed = int(growth_seed or random.randint(1, 2_147_483_647))
-    selected_archetype = archetype or _weighted_archetype(random.Random(seed))
-    profile = _create_virtual_player_v1(
-        region=selected_region,
-        prestige_band=prestige_band,
-        archetype=selected_archetype,
-        growth_seed=seed,
-        now=current_time,
-        projection=projection,
-        start_from_zero=start_from_zero,
-    )
     return PopulationMutationResult(
-        status=PopulationMutationStatus.CREATED,
-        profile=profile,
+        status=PopulationMutationStatus.UNAVAILABLE,
+        profile=None,
         hard_cap=hard_cap,
         maintained_count=maintained_count,
     )
@@ -1798,10 +1854,18 @@ def _retire_excess_virtual_players(
     target: int,
     now,
     ownership_guard: Callable[[], None] | None = None,
-    required_engine_version: int = 1,
+    required_engine_version: int = 2,
 ) -> int:
     target = max(0, int(target or 0))
-    excess = _maintained_bot_queryset().filter(engine_version=int(required_engine_version)).count() - target
+    excess = (
+        _maintained_bot_queryset()
+        .filter(
+            engine_version=int(required_engine_version),
+            **({"policy_version": 2} if int(required_engine_version) == 2 else {}),
+        )
+        .count()
+        - target
+    )
     if excess <= 0:
         return 0
     with transaction.atomic():
@@ -1813,6 +1877,7 @@ def _retire_excess_virtual_players(
             .select_for_update(skip_locked=True)
             .filter(
                 engine_version=int(required_engine_version),
+                **({"policy_version": 2} if int(required_engine_version) == 2 else {}),
                 state__in=VIRTUAL_PROFILE_MAINTAINED_STATES,
                 arena_virtual_reserve__isnull=True,
             )
@@ -1870,6 +1935,7 @@ def _retire_unsupported_v2_profiles(
                 .select_for_update(skip_locked=True)
                 .filter(
                     engine_version=2,
+                    policy_version=2,
                     arena_virtual_reserve__isnull=True,
                 )
                 .exclude(manor__region__in=supported_regions)
@@ -1904,7 +1970,7 @@ def _retire_excess_population_cells(
     config: dict[str, Any],
     now,
     ownership_guard: Callable[[], None] | None = None,
-    required_engine_version: int = 1,
+    required_engine_version: int = 2,
 ) -> int:
     retired_count = 0
     total_excess = 0
@@ -1929,6 +1995,7 @@ def _retire_excess_population_cells(
                 .filter(membership_filter)
                 .filter(
                     engine_version=int(required_engine_version),
+                    **({"policy_version": 2} if int(required_engine_version) == 2 else {}),
                     manor__region=cell.region,
                     state__in=VIRTUAL_PROFILE_MAINTAINED_STATES,
                     arena_virtual_reserve__isnull=True,
@@ -1970,7 +2037,7 @@ def _retire_excess_population_cells(
 def plan_virtual_player_population(*, now=None) -> dict[str, Any]:
     bootstrap_mode = read_virtual_player_routing().bootstrap_mode
     config = _population_runtime_config_for_bootstrap_mode(bootstrap_mode)
-    required_engine_version = 1 if bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE else 2
+    required_engine_version = 2
     now = now or timezone.now()
     active_real_players = _active_real_player_count(now)
     population_plan = _build_population_plan(
@@ -1980,7 +2047,7 @@ def plan_virtual_player_population(*, now=None) -> dict[str, Any]:
         required_engine_version=required_engine_version,
     )
     planned_bots = sum(cell.maintained_supply for cell in population_plan.cells)
-    maintained_bots = _maintained_bot_count()
+    maintained_bots = _maintained_bot_queryset().filter(engine_version=2, policy_version=2).count()
     unplanned_bots = max(0, maintained_bots - planned_bots)
     attackable_bots = sum(cell.attackable_supply for cell in population_plan.cells)
     population = config.get("population") or {}
@@ -2039,9 +2106,12 @@ def plan_virtual_player_population(*, now=None) -> dict[str, Any]:
                 "maintained_supply": cell.maintained_supply,
                 "attackable_supply": cell.attackable_supply,
                 "search_demand": cell.search_demand,
+                "arena_handoff_supply": cell.arena_handoff_supply,
+                "arena_materialization_additional": cell.arena_materialization_additional,
                 "target": cell.target,
                 "deficit": cell.deficit,
                 "structural_deficit": cell.structural_deficit,
+                "arena_materialization_deficit": cell.arena_materialization_deficit,
                 "attackable_target": cell.attackable_target,
                 "attackable_deficit": cell.attackable_deficit,
                 "excess": cell.excess,
@@ -2077,144 +2147,20 @@ def plan_virtual_player_population(*, now=None) -> dict[str, Any]:
     return payload
 
 
-def _create_backfill_demanded_players(
-    *,
-    demands: list[dict[str, Any]],
-    bands: dict[str, tuple[int, int | None]],
-    hard_cap: int,
-    limit: int,
-    now,
-    rng: random.Random,
-    config: dict[str, Any] | None = None,
-    evaluated_profile_ids: set[int] | None = None,
-    ownership_guard: Callable[[], None] | None = None,
-) -> int:
-    config = config or load_virtual_player_config()
-    evaluated_profile_ids = evaluated_profile_ids if evaluated_profile_ids is not None else set()
-    created = 0
-    reactivated_count = 0
-    normalized_demands: list[dict[str, Any]] = []
-    invalid_demand_ids: list[int] = []
-    for demand in demands:
-        demand_id = int(demand.get("id") or 0)
-        band_name = str(demand.get("prestige_band") or "")
-        region = str(demand.get("region") or "")
-        needed = max(0, int(demand.get("needed") or 0))
-        if band_name not in bands or region not in _regions() or needed <= 0:
-            if demand_id > 0:
-                invalid_demand_ids.append(demand_id)
-            continue
-        normalized_demands.append(
-            {
-                "id": demand_id,
-                "region": region,
-                "prestige_band": band_name,
-                "needed": needed,
-            }
-        )
-
-    if invalid_demand_ids:
-        if ownership_guard is not None:
-            ownership_guard()
-        BotBackfillDemand.objects.filter(id__in=invalid_demand_ids).delete()
-
-    for demand in normalized_demands:
-        if created >= limit:
-            break
-        demand_id = int(demand["id"])
-        band_name = str(demand.get("prestige_band") or "")
-        region = str(demand.get("region") or "")
-        low, high = bands[band_name]
-        needed = max(0, int(demand.get("needed") or 0))
-        created_before_demand = created
-        reactivated_before_demand = reactivated_count
-        cap_reached = False
-        while created < limit and created - created_before_demand < needed:
-            seed = rng.randint(1, 2_147_483_647)
-            selected_archetype = _weighted_archetype(rng)
-            if ownership_guard is not None:
-                ownership_guard()
-            with transaction.atomic():
-                locked_demand = BotBackfillDemand.objects.select_for_update().filter(id=demand_id).first()
-                if locked_demand is None or int(locked_demand.needed or 0) <= 0:
-                    break
-                current_active = _maintained_bot_count()
-                if hard_cap > 0 and current_active >= hard_cap:
-                    cap_reached = True
-                    break
-                if ownership_guard is not None:
-                    ownership_guard()
-                mutation = _reactivate_or_create_virtual_player(
-                    region=region,
-                    prestige_band=band_name,
-                    low=low,
-                    high=high,
-                    archetype=selected_archetype,
-                    growth_seed=seed,
-                    now=now,
-                    config=config,
-                    evaluated_profile_ids=evaluated_profile_ids,
-                    ownership_guard=ownership_guard,
-                    require_population_deficit=True,
-                    include_target_pipeline=True,
-                    projection_factory=lambda: _projection_for_band(
-                        band_name,
-                        low,
-                        high,
-                        rng,
-                        region=region,
-                        config=config,
-                        sample_seed=seed,
-                        archetype=selected_archetype,
-                    ),
-                )
-                if mutation.status is PopulationMutationStatus.CAP_REACHED:
-                    cap_reached = True
-                    break
-                if mutation.profile is None:
-                    break
-                if mutation.status is PopulationMutationStatus.REACTIVATED:
-                    reactivated_count += 1
-            created += 1
-        if needed > 0:
-            created_for_demand = created - created_before_demand
-            reactivated_for_demand = reactivated_count - reactivated_before_demand
-            newly_created_for_demand = created_for_demand - reactivated_for_demand
-            logger.info(
-                "Virtual player backfill demand provisioned: region=%s prestige_band=%s processed=%s needed=%s",
-                region,
-                band_name,
-                created_for_demand,
-                needed,
-                extra={
-                    "event": "virtual_player_backfill_demand_provisioned",
-                    "region": region,
-                    "prestige_band": band_name,
-                    "processed_count": created_for_demand,
-                    "created_count": newly_created_for_demand,
-                    "reactivated_count": reactivated_for_demand,
-                    "needed": needed,
-                },
-            )
-        if cap_reached or created >= limit:
-            return created
-    return created
-
-
 def roll_virtual_player_population(*, limit: int | None = None, now=None) -> int:
-    bootstrap_mode = read_virtual_player_routing().bootstrap_mode
+    routing = read_virtual_player_routing()
+    bootstrap_mode = routing.bootstrap_mode
     if bootstrap_mode is BootstrapMode.V2_PAUSED:
         return 0
     if bootstrap_mode is BootstrapMode.V2_ACTIVE:
-        return _roll_virtual_player_population_v2(limit=limit, now=now)
-    with _population_ownership() as ownership_guard:
-        if ownership_guard is None:
+        if not assess_virtual_player_runtime(routing).v2_population_activation_allowed:
             return 0
-        return _roll_virtual_player_population_unlocked(
-            limit=limit,
-            now=now,
-            ownership_guard=ownership_guard,
-        )
+        return _roll_virtual_player_population_v2(limit=limit, now=now)
+    # The pre-gate population writer is retired.  A stale or missing routing
+    # row must fail closed until the V2 runtime preflight initializes it;
+    # silently re-entering the legacy writer would violate the single-policy
+    # cutover and could create profiles that no current worker can maintain.
+    return 0
 
 
 def _roll_virtual_player_population_v2(
@@ -2267,146 +2213,6 @@ def _roll_virtual_player_population_v2(
         if result.status in terminal_statuses:
             break
     return processed
-
-
-def _roll_virtual_player_population_unlocked(
-    *,
-    limit: int | None = None,
-    now=None,
-    ownership_guard: Callable[[], None] | None = None,
-) -> int:
-    config = load_virtual_player_config()
-    if not bool(config.get("enabled", True)):
-        return 0
-
-    now = now or timezone.now()
-    population = config.get("population") or {}
-    bands = _prestige_bands(config)
-    rng = random.Random(int(now.timestamp()))
-    if limit is None:
-        limit = _range_value(rng, population.get("rolling_batch_size"), default=(3, 12))
-    limit = max(0, int(limit))
-    population_plan = _build_population_plan(
-        config,
-        now=now,
-        required_engine_version=1,
-    )
-    if _uses_regional_population_planning() and limit > 0:
-        rebalance_virtual_player_target_bands(
-            population_plan,
-            limit=limit,
-            required_engine_version=1,
-        )
-        population_plan = _build_population_plan(
-            config,
-            now=now,
-            required_engine_version=1,
-        )
-    hard_cap = population_plan.hard_cap
-    retired_for_capacity = _retire_excess_population_cells(
-        population_plan,
-        config=config,
-        now=now,
-        ownership_guard=ownership_guard,
-        required_engine_version=1,
-    )
-    active_bot_count = _maintained_bot_count()
-    if hard_cap > 0 and active_bot_count >= hard_cap:
-        return 0
-
-    if limit <= 0:
-        return 0
-
-    if not bands:
-        return retired_for_capacity
-
-    evaluated_profile_ids: set[int] = set()
-    created = _create_backfill_demanded_players(
-        demands=[
-            dict(row)
-            for row in BotBackfillDemand.objects.order_by("region", "prestige_band", "id").values(
-                "id",
-                "region",
-                "prestige_band",
-                "needed",
-            )[:limit]
-        ],
-        bands=bands,
-        hard_cap=hard_cap,
-        limit=limit,
-        now=now,
-        rng=rng,
-        config=config,
-        evaluated_profile_ids=evaluated_profile_ids,
-        ownership_guard=ownership_guard,
-    )
-
-    refreshed_plan = _build_population_plan(
-        config,
-        now=now,
-        required_engine_version=1,
-    )
-    deficit_cells: list[dict[str, Any]] = [
-        {
-            "region": cell.region,
-            "band_name": cell.prestige_band,
-            "low": bands[cell.prestige_band][0],
-            "high": bands[cell.prestige_band][1],
-            "deficit": cell.deficit,
-            "search_demand": cell.search_demand,
-        }
-        for cell in refreshed_plan.cells
-        if cell.prestige_band in bands and cell.deficit > 0
-    ]
-    while created < limit and deficit_cells:
-        progressed = False
-        for cell in deficit_cells:
-            if created >= limit:
-                break
-            if int(cell["deficit"]) <= 0:
-                continue
-            current_active = _maintained_bot_count()
-            if hard_cap > 0 and current_active >= hard_cap:
-                return created
-            seed = rng.randint(1, 2_147_483_647)
-            selected_archetype = _weighted_archetype(rng)
-            if ownership_guard is not None:
-                ownership_guard()
-            mutation = _reactivate_or_create_virtual_player(
-                region=str(cell["region"]),
-                prestige_band=str(cell["band_name"]),
-                low=int(cell["low"]),
-                high=cell["high"],
-                archetype=selected_archetype,
-                growth_seed=seed,
-                now=now,
-                config=config,
-                evaluated_profile_ids=evaluated_profile_ids,
-                ownership_guard=ownership_guard,
-                require_population_deficit=True,
-                include_target_pipeline=int(cell["search_demand"]) > 0,
-                projection_factory=lambda: _projection_for_band(
-                    str(cell["band_name"]),
-                    int(cell["low"]),
-                    cell["high"],
-                    rng,
-                    region=str(cell["region"]),
-                    config=config,
-                    sample_seed=seed,
-                    archetype=selected_archetype,
-                ),
-            )
-            if mutation.status is PopulationMutationStatus.CAP_REACHED:
-                return created
-            if mutation.profile is None:
-                continue
-            cell["deficit"] = int(cell["deficit"]) - 1
-            created += 1
-            progressed = True
-        if not progressed:
-            break
-        deficit_cells = [cell for cell in deficit_cells if int(cell["deficit"]) > 0]
-    return created
 
 
 __all__ = [

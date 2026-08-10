@@ -20,8 +20,13 @@ def test_arena_reserve_tasks_have_stable_exports_and_routes():
     assert tasks.scan_arena_virtual_reserves.name == "gameplay.scan_arena_virtual_reserves"
     assert tasks.grow_arena_virtual_reserves.name == "gameplay.grow_arena_virtual_reserves"
     assert tasks.retry_arena_shortage_metric.name == "gameplay.retry_arena_shortage_metric"
+    assert (
+        tasks.wake_active_arena_demands_for_population_region_task.name
+        == "gameplay.wake_active_arena_demands_for_population_region"
+    )
     for task_name in [
         "gameplay.reconcile_arena_virtual_reserve",
+        "gameplay.wake_active_arena_demands_for_population_region",
         "gameplay.scan_arena_virtual_reserves",
         "gameplay.grow_arena_virtual_reserves",
         "gameplay.retry_arena_shortage_metric",

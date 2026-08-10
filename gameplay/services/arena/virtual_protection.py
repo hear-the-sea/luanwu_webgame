@@ -13,9 +13,8 @@ from gameplay.models import (
     ArenaVirtualReserveMember,
     BotExternalStrengthReconciliation,
 )
-from gameplay.services.runtime_configs import RuntimeRoutingError, read_virtual_player_routing
-from gameplay.services.virtual_player_core.calibration_runtime import load_active_calibration_reference
 from gameplay.services.virtual_player_core.config import VirtualPlayerConfigError, load_virtual_player_v2_config
+from gameplay.services.virtual_player_core.growth_control import growth_control_reference_selection
 from gameplay.services.virtual_player_core.policy_registry import PolicyRegistryError, get_policy_release
 from gameplay.services.virtual_player_core.projection import (
     ProjectionRuleError,
@@ -30,7 +29,6 @@ from gameplay.services.virtual_player_core.random_context import (
 from gameplay.services.virtual_player_core.reference_snapshots import (
     ReferenceSnapshotError,
     load_manor_strength_summary,
-    select_policy_reference,
 )
 
 _HAS_UNRESOLVED_RECONCILIATION = "_arena_has_unresolved_reconciliation"
@@ -54,6 +52,15 @@ def with_arena_reconciliation_state(queryset):
             ),
         }
     ).filter(**{_HAS_UNRESOLVED_RECONCILIATION: False})
+
+
+def with_arena_reserve_guard(queryset):
+    """Annotate virtual profiles with the reserve-membership guard."""
+    return queryset.annotate(
+        maintenance_has_arena_reserve=Exists(
+            ArenaVirtualReserveMember.objects.filter(profile_id=OuterRef("pk")),
+        ),
+    )
 
 
 def _external_reconciliation_state(profile: Any) -> tuple[bool, bool]:
@@ -89,7 +96,7 @@ def _current_human_strength_cap(
     configured_policy = config.policy(int(profile.policy_version))
     if configured_policy.checksum != str(profile.policy_checksum):
         raise ArenaStrengthProtectionError("profile policy checksum does not match configuration")
-    release = get_policy_release(
+    get_policy_release(
         version=int(profile.policy_version),
         expected_checksum=str(profile.policy_checksum),
     )
@@ -99,27 +106,6 @@ def _current_human_strength_cap(
     if band.name != str(profile.current_prestige_band):
         raise ArenaStrengthProtectionError("profile current prestige band does not match Manor prestige")
 
-    routing = read_virtual_player_routing()
-    matching_routes = tuple(
-        route
-        for route in routing.calibration_routes
-        if route.policy_version == int(profile.policy_version) and route.prestige_band == band.name
-    )
-    if len(matching_routes) > 1:
-        raise ArenaStrengthProtectionError("multiple calibration routes match the Arena candidate")
-    calibration = None
-    if matching_routes:
-        calibration = load_active_calibration_reference(
-            policy_version=int(profile.policy_version),
-            policy_checksum=str(profile.policy_checksum),
-            prestige_band=band.name,
-            config=config,
-            routing=routing,
-            required_route=matching_routes[0],
-        )
-        if calibration is None:
-            raise ArenaStrengthProtectionError("active calibration route failed Arena revalidation")
-
     context = RandomContext(
         rng_version=int(profile.rng_version),
         growth_seed=int(profile.growth_seed),
@@ -128,16 +114,12 @@ def _current_human_strength_cap(
         policy_version=int(profile.policy_version),
         maintenance_sequence=int(profile.maintenance_sequence),
     )
-    _snapshot, _starter_strength, selection = select_policy_reference(
-        policy_payload=release.payload,
+    _control_version, selection, _control_digest = growth_control_reference_selection(
+        manor_strength=load_manor_strength_summary(manor_id=int(profile.manor_id)),
         context=context,
         region=str(manor.region),
         prestige_band=band.name,
-        band_lower_inclusive=band.lower_inclusive,
-        band_upper_exclusive=band.upper_exclusive,
         now=now,
-        calibrated_candidates=(None if calibration is None else calibration.candidates),
-        calibrated_sample_count=(None if calibration is None else calibration.profile_count),
     )
     return selection.cap
 
@@ -167,7 +149,6 @@ def is_virtual_profile_arena_match_eligible(
         PolicyRegistryError,
         ProjectionRuleError,
         ReferenceSnapshotError,
-        RuntimeRoutingError,
         UnsupportedRandomDomainError,
         UnsupportedRngVersionError,
         VirtualPlayerConfigError,
@@ -209,5 +190,6 @@ __all__ = [
     "arena_protected_bot_manor_ids",
     "is_virtual_profile_arena_match_eligible",
     "is_virtual_profile_arena_protected",
+    "with_arena_reserve_guard",
     "with_arena_reconciliation_state",
 ]

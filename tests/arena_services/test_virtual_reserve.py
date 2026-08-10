@@ -4,9 +4,10 @@ import logging
 from dataclasses import dataclass
 from datetime import timedelta
 from types import SimpleNamespace
+from uuid import uuid4
 
 import pytest
-from django.db import IntegrityError, connection
+from django.db import DatabaseError, IntegrityError, connection, transaction
 from django.utils import timezone
 
 from gameplay.models import (
@@ -14,43 +15,78 @@ from gameplay.models import (
     ArenaCoopEvent,
     ArenaEntry,
     ArenaEntryGuest,
+    ArenaReserveTrainingAssignment,
     ArenaTournament,
     ArenaVirtualDemand,
     ArenaVirtualReserveMember,
     BotExternalStrengthReconciliation,
     BotMaintenanceExecution,
+    BotMaintenanceRecovery,
     BotPopulationRecomputeDemand,
     BotProfile,
     BotRuntimeRoutingState,
     BotSafetyMetricEvent,
 )
+from gameplay.services import runtime_configs
 from gameplay.services.arena import virtual_reserve_demand as reserve_demand_service
 from gameplay.services.arena import virtual_reserve_fill as reserve_fill_service
 from gameplay.services.arena import virtual_reserve_pool
 from gameplay.services.arena import virtual_reserve_reconcile as reserve_reconcile_service
 from gameplay.services.arena.virtual_lineups import BotLineupEvaluation
 from gameplay.services.arena.virtual_reserve_fill import fill_due_coop_reserve, fill_due_tournament_reserve
+from gameplay.services.arena.virtual_reserve_growth_budget import (
+    ARENA_GROWTH_BUDGET_MAX_ATTEMPTS,
+    ARENA_GROWTH_BUDGET_WINDOW,
+    ArenaGrowthAttemptOutcome,
+    ArenaGrowthBudgetEntry,
+    parse_arena_growth_budget_entries,
+    serialize_arena_growth_budget_entries,
+)
 from gameplay.services.arena.virtual_reserve_pool import (
-    MAX_NO_ACTION_LEASE_AGE,
+    ARENA_REARM_JITTER_MAX,
+    MAX_RESERVE_MEMBER_LEASE_AGE,
     ReserveReplenishmentResult,
-    create_due_virtual_reserve_profiles,
     grow_due_virtual_reserves,
+    pause_virtual_reserve_member_leases,
     reevaluate_existing_members,
     replenish_virtual_reserve,
+    resume_virtual_reserve_member_leases,
 )
 from gameplay.services.arena.virtual_reserve_reconcile import reconcile_coop_demand, reconcile_tournament_demand
+from gameplay.services.arena.virtual_reserve_references import (
+    active_arena_population_activations,
+    active_arena_population_funnel_snapshots,
+)
 from gameplay.services.arena.virtual_reserve_scan import scan_virtual_reserve_demands
-from gameplay.services.virtual_player_core import maintenance, population_runtime
+from gameplay.services.virtual_player_core import maintenance, population_runtime, runtime_assessment
 from gameplay.services.virtual_player_core.config import MaintenanceMode
-from gameplay.services.virtual_player_core.contracts import AcceleratedGrowthOutcome, PopulationMutationStatus
-from gameplay.services.virtual_player_core.population_runtime import PopulationMutationResult
+from gameplay.services.virtual_player_core.contracts import (
+    AcceleratedGrowthOutcome,
+    ArenaGrowthObjective,
+    MaintenanceTrigger,
+)
 from gameplay.services.virtual_player_core.safety_metrics import HARD_CONSTRAINT_METRIC
-from gameplay.services.virtual_player_core.safety_provider import record_safety_metric_event
-from tests.arena_services.test_virtual_backfill import _add_real_arena_entry, _add_real_coop_entry, _create_bot_profile
-from tests.test_virtual_player_backfill import _bootstrap_building_types
+from gameplay.services.virtual_player_core.safety_provider import SafetyProviderError, record_safety_metric_event
+from tests.arena_services.test_virtual_backfill import _add_real_arena_entry, _add_real_coop_entry
+from tests.arena_services.test_virtual_backfill import _create_bot_profile as _create_bot_profile_unenrolled
+
+
+def _set_runtime_routing(**fields) -> BotRuntimeRoutingState:
+    """Replace the singleton routing snapshot without colliding with the V2 fixture."""
+
+    key = fields.pop("key", BotRuntimeRoutingState.GLOBAL_KEY)
+    return BotRuntimeRoutingState.objects.update_or_create(key=key, defaults=fields)[0]
 
 
 def _create_tournament_demand(*, player_limit: int = 2) -> ArenaVirtualDemand:
+    BotRuntimeRoutingState.objects.get_or_create(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        defaults={
+            "bootstrap_mode": BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+            "maintenance_mode": BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+            "calibration_routes": [],
+        },
+    )
     tournament = ArenaTournament.objects.create(
         status=ArenaTournament.Status.RECRUITING,
         player_limit=player_limit,
@@ -66,6 +102,222 @@ def _create_tournament_demand(*, player_limit: int = 2) -> ArenaVirtualDemand:
     demand = reconcile_tournament_demand(tournament.id)
     assert demand is not None
     return demand
+
+
+def _enroll_profile_v2(profile: BotProfile, *, now=None) -> BotProfile:
+    enrolled_at = now or timezone.now()
+    profile.engine_version = 2
+    profile.rng_version = 1
+    profile.plan_schema_version = 1
+    profile.policy_version = 2
+    profile.policy_checksum = "a" * 64
+    profile.last_strength_increase_at = enrolled_at
+    profile.v2_enrolled_at = enrolled_at
+    profile.save(
+        update_fields=[
+            "engine_version",
+            "rng_version",
+            "plan_schema_version",
+            "policy_version",
+            "policy_checksum",
+            "last_strength_increase_at",
+            "v2_enrolled_at",
+        ]
+    )
+    return profile
+
+
+def _create_bot_profile(
+    username: str,
+    *,
+    state: str = BotProfile.State.ACTIVE,
+    guest_stats: list[tuple[int, int, int]] | None = None,
+) -> BotProfile:
+    """Create the V2 fixture identity used by the post-cutover Arena suite."""
+
+    return _enroll_profile_v2(
+        _create_bot_profile_unenrolled(
+            username,
+            state=state,
+            guest_stats=guest_stats,
+        )
+    )
+
+
+def test_reachability_preflight_keeps_a_target_reachable_with_budget_only(
+    monkeypatch,
+) -> None:
+    guests = SimpleNamespace(count=lambda: 3)
+    profile = SimpleNamespace(
+        id=41,
+        manor_id=91,
+        manor=SimpleNamespace(guests=guests, guest_capacity=10),
+        engine_version=2,
+        policy_version=7,
+        policy_checksum="a" * 64,
+        current_prestige_band="newbie",
+    )
+    target = virtual_reserve_pool.ArenaVirtualGrowthTarget(
+        critical_guest_count=3,
+        preferred_guest_count=5,
+        minimum_guest_level=20,
+        recruitment_rarity_cap="gray",
+        selected_power_lower_bound=1500,
+        selected_power_upper_bound=2000,
+    )
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "get_policy_release",
+        lambda **_kwargs: SimpleNamespace(payload={"prestige_band_growth": {}}),
+    )
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "parse_prestige_band_growth_policy",
+        lambda _payload: SimpleNamespace(
+            cadence_for=lambda _band: SimpleNamespace(
+                composite_growth_bps_per_controlled_action_max=100,
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "load_manor_strength_summary",
+        lambda **_kwargs: SimpleNamespace(composite=1000),
+    )
+
+    assessment = virtual_reserve_pool._arena_growth_reachability(
+        demand=SimpleNamespace(),
+        profile=profile,
+        selected_power=100,
+        growth_target=target,
+    )
+
+    assert assessment.reachable is True
+    assert assessment.reason == ""
+    assert assessment.max_selected_power < target.selected_power_lower_bound
+
+
+def test_reachability_preflight_allows_juxianzhuang_capacity_provisioning() -> None:
+    profile = SimpleNamespace(
+        id=42,
+        manor=SimpleNamespace(
+            guests=SimpleNamespace(count=lambda: 3),
+            guest_capacity=3,
+            get_building_level=lambda _key: 1,
+        ),
+        engine_version=2,
+    )
+    target = virtual_reserve_pool.ArenaVirtualGrowthTarget(
+        critical_guest_count=4,
+        preferred_guest_count=4,
+        minimum_guest_level=20,
+        recruitment_rarity_cap="gray",
+        selected_power_lower_bound=500,
+        selected_power_upper_bound=750,
+    )
+
+    assessment = virtual_reserve_pool._arena_growth_reachability(
+        demand=SimpleNamespace(),
+        profile=profile,
+        selected_power=100,
+        available_growth_candidate_count=1,
+        growth_target=target,
+    )
+
+    assert assessment.reachable is True
+    assert assessment.reason == ""
+
+
+def test_reachability_keeps_missing_guests_reachable_after_execution_window_is_exhausted() -> None:
+    profile = SimpleNamespace(
+        id=43,
+        manor=SimpleNamespace(
+            guests=SimpleNamespace(count=lambda: 1),
+            guest_capacity=4,
+        ),
+        engine_version=2,
+    )
+    target = virtual_reserve_pool.ArenaVirtualGrowthTarget(
+        critical_guest_count=2,
+        preferred_guest_count=2,
+        minimum_guest_level=1,
+        recruitment_rarity_cap="gray",
+        selected_power_lower_bound=500,
+        selected_power_upper_bound=750,
+    )
+
+    assessment = virtual_reserve_pool._arena_growth_reachability(
+        demand=SimpleNamespace(),
+        profile=profile,
+        selected_power=100,
+        growth_target=target,
+        growth_execution_attempt_count=20,
+        available_growth_candidate_count=1,
+    )
+
+    assert assessment.reachable is True
+    assert assessment.reason == ""
+
+
+def test_reachability_keeps_temporarily_unavailable_or_assigned_guests_recheckable() -> None:
+    idle_guests = []
+    profile = SimpleNamespace(
+        id=45,
+        manor=SimpleNamespace(
+            guests=SimpleNamespace(count=lambda: 2),
+            arena_idle_guests=idle_guests,
+            guest_capacity=4,
+        ),
+        engine_version=2,
+    )
+    target = virtual_reserve_pool.ArenaVirtualGrowthTarget(
+        critical_guest_count=2,
+        preferred_guest_count=2,
+        minimum_guest_level=1,
+        recruitment_rarity_cap="gray",
+        selected_power_lower_bound=500,
+        selected_power_upper_bound=750,
+    )
+
+    assessment = virtual_reserve_pool._arena_growth_reachability(
+        demand=SimpleNamespace(),
+        profile=profile,
+        selected_power=100,
+        growth_target=target,
+        growth_round_training_guest_ids=(11, 12),
+    )
+
+    assert assessment.reachable is True
+
+
+def test_reachability_honors_the_remaining_candidate_upper_bound() -> None:
+    profile = SimpleNamespace(
+        id=46,
+        manor=SimpleNamespace(
+            guests=SimpleNamespace(count=lambda: 1),
+            guest_capacity=4,
+        ),
+        engine_version=2,
+    )
+    target = virtual_reserve_pool.ArenaVirtualGrowthTarget(
+        critical_guest_count=2,
+        preferred_guest_count=2,
+        minimum_guest_level=1,
+        recruitment_rarity_cap="gray",
+        selected_power_lower_bound=500,
+        selected_power_upper_bound=750,
+    )
+
+    assessment = virtual_reserve_pool._arena_growth_reachability(
+        demand=SimpleNamespace(),
+        profile=profile,
+        selected_power=100,
+        growth_target=target,
+        available_growth_candidate_count=0,
+    )
+
+    assert assessment.reachable is False
+    assert assessment.reason == "target_unreachable_by_cap"
 
 
 @pytest.fixture
@@ -91,6 +343,39 @@ def training_member(reserve_demand: ArenaVirtualDemand) -> ArenaVirtualReserveMe
         current_lineup_power=450,
         next_acceleration_at=timezone.now() - timedelta(minutes=1),
     )
+
+
+@pytest.mark.django_db
+def test_arena_training_guest_is_reserved_before_a_receipt_exists(training_member) -> None:
+    guest = training_member.profile.manor.guests.order_by("id").first()
+    assert guest is not None
+    plan = SimpleNamespace(
+        trigger_policy=SimpleNamespace(trigger=MaintenanceTrigger.ARENA_ACCELERATION),
+        action_kind="training",
+        target_id=int(guest.id),
+        manor_id=int(training_member.profile.manor_id),
+    )
+
+    maintenance._persist_arena_training_assignment_from_plan(
+        plan,
+        operation_id="arena-growth-training-slot-1",
+        member_id=training_member.id,
+        round_ordinal=1,
+        action_ordinal_in_round=1,
+    )
+
+    assignment = ArenaReserveTrainingAssignment.objects.get(member=training_member, round_ordinal=1)
+    assert assignment.guest_id == guest.id
+    assert assignment.status == ArenaReserveTrainingAssignment.Status.ASSIGNED
+    assert assignment.operation_id == "arena-growth-training-slot-1"
+    with pytest.raises(maintenance.V2MaintenanceError, match="multiple slots"):
+        maintenance._persist_arena_training_assignment_from_plan(
+            plan,
+            operation_id="arena-growth-training-slot-2",
+            member_id=training_member.id,
+            round_ordinal=1,
+            action_ordinal_in_round=2,
+        )
 
 
 @dataclass(frozen=True)
@@ -177,7 +462,7 @@ def test_tournament_reconcile_persists_gap_target_and_reference():
     assert demand.warm_target_count == 6
     assert demand.max_reserve_target_count == 9
     assert demand.target_guest_count == 1
-    assert demand.target_team_power == 600
+    assert demand.target_team_power == 700
 
 
 @pytest.mark.django_db
@@ -214,9 +499,522 @@ def test_reserve_creation_uses_bounded_warm_buffer():
 
 
 @pytest.mark.django_db
+def test_population_activation_uses_warm_slots_bounded_by_monotonic_attempt_budget():
+    demand = _create_tournament_demand(player_limit=4)
+    states = [
+        ArenaVirtualReserveMember.State.READY,
+        ArenaVirtualReserveMember.State.TRAINING,
+        ArenaVirtualReserveMember.State.TRAINING,
+        ArenaVirtualReserveMember.State.EXHAUSTED,
+        ArenaVirtualReserveMember.State.EXHAUSTED,
+        ArenaVirtualReserveMember.State.EXHAUSTED,
+        ArenaVirtualReserveMember.State.EXHAUSTED,
+        ArenaVirtualReserveMember.State.EXHAUSTED,
+    ]
+    for index, state in enumerate(states):
+        ArenaVirtualReserveMember.objects.create(
+            demand=demand,
+            profile=_create_bot_profile(f"population_attempt_{index}"),
+            state=state,
+        )
+
+    activations = active_arena_population_activations()
+
+    assert len(activations) == 1
+    assert activations[0].needed == 1
+
+    demand.admission_attempt_high_water = demand.max_reserve_target_count
+    demand.save(update_fields=["admission_attempt_high_water", "updated_at"])
+
+    assert active_arena_population_activations() == ()
+
+
+@pytest.mark.django_db
+def test_runtime_pause_leases_ready_only_and_preserves_existing_training_member():
+    now = timezone.now()
+    demand = _create_tournament_demand(player_limit=2)
+    _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        calibration_routes=[],
+    )
+    demand.reserve_target_count = 2
+    demand.warm_target_count = 2
+    demand.max_reserve_target_count = 3
+    demand.save(update_fields=["reserve_target_count", "warm_target_count", "max_reserve_target_count"])
+    existing_training = ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=_enroll_profile_v2(
+            _create_bot_profile(
+                "runtime_pause_existing_training",
+                guest_stats=[(150, 150, 25)],
+            ),
+            now=now,
+        ),
+        state=ArenaVirtualReserveMember.State.TRAINING,
+        current_lineup_power=450,
+        next_acceleration_at=now - timedelta(minutes=1),
+    )
+    unleased_training = _enroll_profile_v2(
+        _create_bot_profile(
+            "runtime_pause_unleased_training",
+            guest_stats=[(150, 150, 25)],
+        ),
+        now=now,
+    )
+    unleased_ready = _enroll_profile_v2(
+        _create_bot_profile("runtime_pause_unleased_ready", guest_stats=[(100, 100, 70)]),
+        now=now,
+    )
+
+    result = replenish_virtual_reserve(demand.id, now=now)
+
+    existing_training.refresh_from_db()
+    demand.refresh_from_db()
+    assert existing_training.state == ArenaVirtualReserveMember.State.TRAINING
+    assert existing_training.lease_paused_at == now
+    assert existing_training.next_acceleration_at <= now
+    assert not demand.reserve_members.filter(profile=unleased_training).exists()
+    assert demand.reserve_members.filter(profile=unleased_ready, state=ArenaVirtualReserveMember.State.READY).exists()
+    assert result.ready_count == 1
+    assert result.training_count == 1
+    assert result.creation_needed == 0
+
+
+@pytest.mark.django_db
+def test_member_lease_pause_resume_is_exact_and_idempotent(training_member):
+    paused_at = timezone.now()
+    original_deadline = paused_at + timedelta(hours=4)
+    ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).update(
+        lease_expires_at=original_deadline,
+        lease_paused_at=None,
+    )
+
+    assert pause_virtual_reserve_member_leases(now=paused_at) == 1
+    assert pause_virtual_reserve_member_leases(now=paused_at + timedelta(minutes=20)) == 0
+
+    training_member.refresh_from_db()
+    assert training_member.lease_paused_at == paused_at
+    assert training_member.lease_expires_at == original_deadline
+
+    resumed_at = paused_at + timedelta(hours=3, minutes=15)
+    assert resume_virtual_reserve_member_leases(now=resumed_at) == 1
+    assert resume_virtual_reserve_member_leases(now=resumed_at + timedelta(minutes=5)) == 0
+
+    training_member.refresh_from_db()
+    assert training_member.lease_paused_at is None
+    assert training_member.lease_expires_at == original_deadline + (resumed_at - paused_at)
+
+
+@pytest.mark.django_db
+def test_routing_pause_and_resume_owns_training_lease_transition(monkeypatch, training_member):
+    original_deadline = timezone.now() + timedelta(hours=4)
+    ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).update(
+        lease_expires_at=original_deadline,
+        lease_paused_at=None,
+    )
+    routing = _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        revision=3,
+    )
+
+    runtime_configs.transition_virtual_player_routing_operation(
+        expected_revision=3,
+        expected_bootstrap_mode="v2_active",
+        expected_maintenance_mode="v2_active",
+        bootstrap_mode="v2_active",
+        maintenance_mode="v2_paused",
+        calibration_routes=None,
+        pause_reason="manual_incident:arena",
+        apply=True,
+    )
+
+    training_member.refresh_from_db()
+    paused_at = training_member.lease_paused_at
+    assert paused_at is not None
+    assert training_member.lease_expires_at == original_deadline
+
+    monkeypatch.setattr(
+        "gameplay.services.virtual_player_core.safety_preflight.check_v2_development_write_preflight",
+        lambda: SimpleNamespace(allowed=True, reason=""),
+    )
+    monkeypatch.setattr(runtime_configs, "_rearm_arena_demands_for_active_routing", lambda: None)
+    runtime_configs.transition_virtual_player_routing_operation(
+        expected_revision=4,
+        expected_bootstrap_mode="v2_active",
+        expected_maintenance_mode="v2_paused",
+        bootstrap_mode="v2_active",
+        maintenance_mode="v2_active",
+        calibration_routes=None,
+        expected_pause_reason="manual_incident:arena",
+        resume_paused=True,
+        apply=True,
+    )
+
+    routing.refresh_from_db()
+    training_member.refresh_from_db()
+    assert routing.maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+    assert training_member.lease_paused_at is None
+    assert training_member.lease_expires_at >= original_deadline
+
+
+@pytest.mark.django_db
+def test_routing_resume_rearms_demand_before_translating_member_leases(monkeypatch, training_member):
+    paused_at = timezone.now() - timedelta(hours=1)
+    ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).update(
+        lease_paused_at=paused_at,
+    )
+    _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        paused_from_maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        pause_reason="aggregation_error:test",
+        revision=3,
+    )
+    calls: list[str] = []
+    original_resume = virtual_reserve_pool.resume_virtual_reserve_member_leases
+    monkeypatch.setattr(
+        "gameplay.services.virtual_player_core.safety_preflight.check_v2_development_write_preflight",
+        lambda: SimpleNamespace(allowed=True, reason=""),
+    )
+    monkeypatch.setattr(
+        runtime_configs,
+        "_rearm_arena_demands_for_active_routing",
+        lambda: calls.append("rearm"),
+    )
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "resume_virtual_reserve_member_leases",
+        lambda: calls.append("resume") or original_resume(),
+    )
+
+    runtime_configs.transition_virtual_player_routing_operation(
+        expected_revision=3,
+        expected_bootstrap_mode="v2_active",
+        expected_maintenance_mode="v2_paused",
+        bootstrap_mode="v2_active",
+        maintenance_mode="v2_active",
+        calibration_routes=None,
+        expected_pause_reason="aggregation_error:test",
+        resume_paused=True,
+        apply=True,
+    )
+
+    training_member.refresh_from_db()
+    assert calls == ["rearm", "resume"]
+    assert training_member.lease_paused_at is None
+
+
+@pytest.mark.django_db
+def test_routing_resume_rolls_back_member_lease_translation_when_rearm_fails(monkeypatch, training_member):
+    paused_at = timezone.now() - timedelta(hours=2)
+    original_deadline = timezone.now() + timedelta(hours=1)
+    ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).update(
+        lease_expires_at=original_deadline,
+        lease_paused_at=paused_at,
+    )
+    routing = _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        paused_from_maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        pause_reason="aggregation_error:test",
+        revision=3,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.virtual_player_core.safety_preflight.check_v2_development_write_preflight",
+        lambda: SimpleNamespace(allowed=True, reason=""),
+    )
+    monkeypatch.setattr(
+        runtime_configs,
+        "_rearm_arena_demands_for_active_routing",
+        lambda: (_ for _ in ()).throw(RuntimeError("rearm failed")),
+    )
+
+    with pytest.raises(RuntimeError, match="rearm failed"):
+        runtime_configs.transition_virtual_player_routing_operation(
+            expected_revision=3,
+            expected_bootstrap_mode="v2_active",
+            expected_maintenance_mode="v2_paused",
+            bootstrap_mode="v2_active",
+            maintenance_mode="v2_active",
+            calibration_routes=None,
+            expected_pause_reason="aggregation_error:test",
+            resume_paused=True,
+            apply=True,
+        )
+
+    routing.refresh_from_db()
+    training_member.refresh_from_db()
+    assert routing.maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED
+    assert routing.revision == 3
+    assert training_member.lease_paused_at == paused_at
+    assert training_member.lease_expires_at == original_deadline
+
+
+@pytest.mark.django_db
+def test_runtime_pause_does_not_trim_ready_member_behind_protected_training():
+    now = timezone.now()
+    _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        calibration_routes=[],
+    )
+    demand = _create_tournament_demand(player_limit=2)
+    demand.reserve_target_count = 1
+    demand.warm_target_count = 1
+    demand.max_reserve_target_count = 3
+    demand.save(update_fields=["reserve_target_count", "warm_target_count", "max_reserve_target_count"])
+    training = ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=_enroll_profile_v2(
+            _create_bot_profile(
+                "runtime_pause_surplus_training",
+                guest_stats=[(150, 150, 25)],
+            ),
+            now=now,
+        ),
+        state=ArenaVirtualReserveMember.State.TRAINING,
+        current_lineup_power=450,
+        next_acceleration_at=now - timedelta(minutes=1),
+    )
+    ready = ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=_enroll_profile_v2(
+            _create_bot_profile("runtime_pause_surplus_ready"),
+            now=now,
+        ),
+        state=ArenaVirtualReserveMember.State.READY,
+        current_lineup_power=600,
+    )
+
+    result = replenish_virtual_reserve(demand.id, now=now)
+
+    assert ArenaVirtualReserveMember.objects.filter(pk=training.pk).exists()
+    assert ArenaVirtualReserveMember.objects.filter(pk=ready.pk).exists()
+    assert result.ready_count == 1
+    assert result.training_count == 1
+    assert result.creation_needed == 0
+
+
+@pytest.mark.django_db
+def test_routing_unavailable_preserves_reserve_and_recovers_automatically(monkeypatch):
+    now = timezone.now()
+    _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        calibration_routes=[],
+    )
+    demand = _create_tournament_demand(player_limit=2)
+    demand.reserve_target_count = 2
+    demand.warm_target_count = 2
+    demand.max_reserve_target_count = 3
+    demand.save(update_fields=["reserve_target_count", "warm_target_count", "max_reserve_target_count"])
+    training = ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=_create_bot_profile(
+            "routing_unavailable_existing_training",
+            guest_stats=[(150, 150, 25)],
+        ),
+        state=ArenaVirtualReserveMember.State.TRAINING,
+        current_lineup_power=450,
+        next_acceleration_at=now,
+    )
+    original_deadline = now + timedelta(minutes=30)
+    ArenaVirtualReserveMember.objects.filter(pk=training.pk).update(
+        lease_expires_at=original_deadline,
+        lease_paused_at=None,
+    )
+    ready_profile = _create_bot_profile("routing_unavailable_ready_candidate")
+    routing_available = False
+    read_routing = runtime_assessment.read_virtual_player_routing
+
+    def conditional_routing():
+        if not routing_available:
+            raise runtime_assessment.RuntimeRoutingError("routing unavailable")
+        return read_routing()
+
+    monkeypatch.setattr(runtime_assessment, "read_virtual_player_routing", conditional_routing)
+
+    deferred = replenish_virtual_reserve(demand.id, now=now)
+
+    training.refresh_from_db()
+    demand.refresh_from_db()
+    assert deferred.ready_count == 0
+    assert deferred.training_count == 1
+    assert deferred.creation_needed == 0
+    assert training.state == ArenaVirtualReserveMember.State.TRAINING
+    assert training.lease_paused_at == now
+    assert training.lease_expires_at == original_deadline
+    assert not demand.reserve_members.filter(profile=ready_profile).exists()
+
+    routing_available = True
+    resumed_at = now + timedelta(hours=2)
+    resumed = replenish_virtual_reserve(demand.id, now=resumed_at)
+
+    training.refresh_from_db()
+    assert resumed.ready_count == 1
+    assert resumed.training_count == 1
+    assert training.lease_paused_at is None
+    assert training.lease_expires_at == original_deadline + (resumed_at - now)
+    assert demand.reserve_members.filter(
+        profile=ready_profile,
+        state=ArenaVirtualReserveMember.State.READY,
+    ).exists()
+
+
+@pytest.mark.django_db
+def test_stalled_demand_pauses_only_new_admission_until_real_progress():
+    demand = _create_tournament_demand(player_limit=2)
+    ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=_create_bot_profile("population_admission_guard_exhausted"),
+        state=ArenaVirtualReserveMember.State.EXHAUSTED,
+    )
+    now = timezone.now() + timedelta(minutes=11)
+    stale_at = demand.created_at
+    demand.last_progress_at = stale_at
+    demand.last_input_change_at = stale_at
+    demand.consecutive_failure_count = 2
+    demand.last_failure_reason = "insufficient_ready_members"
+    demand.save(
+        update_fields=[
+            "last_progress_at",
+            "last_input_change_at",
+            "consecutive_failure_count",
+            "last_failure_reason",
+            "updated_at",
+        ]
+    )
+
+    with transaction.atomic():
+        locked_demand = ArenaVirtualDemand.objects.select_for_update().get(pk=demand.pk)
+        assessment = virtual_reserve_pool._refresh_admission_guard_locked(
+            locked_demand,
+            now=now,
+        )
+
+    demand.refresh_from_db()
+    assert assessment.raw_materialization_needed == 5
+    assert assessment.admitted_materialization_needed == 0
+    assert demand.admission_pause_reason == "no_effective_progress"
+    assert demand.admission_paused_at == now
+    assert active_arena_population_activations() == ()
+    snapshot = active_arena_population_funnel_snapshots(now=now)[0]
+    assert snapshot.raw_materialization_need == 5
+    assert snapshot.suppressed_materialization_need == 5
+    assert snapshot.guard_reason_counts == (("no_effective_progress", 1),)
+
+    with transaction.atomic():
+        locked_demand = ArenaVirtualDemand.objects.select_for_update().get(pk=demand.pk)
+        virtual_reserve_pool.record_demand_progress_locked(locked_demand, now=now)
+
+    demand.refresh_from_db()
+    assert demand.admission_pause_reason == ""
+    assert demand.admission_paused_at is None
+    assert active_arena_population_activations()[0].needed == 5
+
+
+@pytest.mark.django_db
+def test_explicit_cap_stall_does_not_trip_admission_guard():
+    demand = _create_tournament_demand(player_limit=2)
+    ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=_create_bot_profile("population_admission_guard_cap"),
+        state=ArenaVirtualReserveMember.State.EXHAUSTED,
+        growth_retry_reason="target_cap_retry_limit",
+    )
+    now = timezone.now() + timedelta(minutes=11)
+    stale_at = demand.created_at
+    demand.last_progress_at = stale_at
+    demand.last_input_change_at = stale_at
+    demand.consecutive_failure_count = 2
+    demand.last_failure_reason = "insufficient_ready_members"
+    demand.save(
+        update_fields=[
+            "last_progress_at",
+            "last_input_change_at",
+            "consecutive_failure_count",
+            "last_failure_reason",
+            "updated_at",
+        ]
+    )
+
+    with transaction.atomic():
+        locked_demand = ArenaVirtualDemand.objects.select_for_update().get(pk=demand.pk)
+        assessment = virtual_reserve_pool._refresh_admission_guard_locked(
+            locked_demand,
+            now=now,
+        )
+
+    demand.refresh_from_db()
+    assert assessment.admitted_materialization_needed == 5
+    assert demand.admission_pause_reason == ""
+
+
+@pytest.mark.django_db
+def test_admission_pause_fields_must_be_persisted_together():
+    demand = _create_tournament_demand(player_limit=2)
+
+    with pytest.raises(IntegrityError), transaction.atomic():
+        ArenaVirtualDemand.objects.filter(pk=demand.pk).update(
+            admission_pause_reason="no_effective_progress",
+            admission_paused_at=None,
+        )
+
+
+@pytest.mark.django_db
+def test_admission_guard_still_allows_existing_ready_profile_handoff(monkeypatch):
+    now = timezone.now()
+    demand = _create_tournament_demand(player_limit=2)
+    demand.admission_pause_reason = "no_effective_progress"
+    demand.admission_paused_at = now
+    demand.save(
+        update_fields=[
+            "admission_pause_reason",
+            "admission_paused_at",
+            "updated_at",
+        ]
+    )
+    profile = _create_bot_profile("admission_guard_existing_ready_handoff")
+    reference_region = demand.tournament.entries.filter(source=ArenaEntry.Source.PLAYER).first().manor.region
+    profile.manor.region = reference_region
+    profile.manor.save(update_fields=["region"])
+    ready_assessment = virtual_reserve_pool.ArenaReserveCandidateAssessment(
+        disposition=virtual_reserve_pool.ArenaReserveCandidateDisposition.READY,
+        evaluation=BotLineupEvaluation(
+            ({"attack": 200, "defense": 200, "max_hp": 2000},),
+            600,
+            True,
+        ),
+        roster_target_count=int(demand.target_guest_count),
+    )
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "assess_arena_reserve_candidate",
+        lambda *_args, **_kwargs: ready_assessment,
+    )
+
+    result = replenish_virtual_reserve(demand.id, now=now)
+
+    demand.refresh_from_db()
+    member = ArenaVirtualReserveMember.objects.get(demand=demand, profile=profile)
+    assert member.state == ArenaVirtualReserveMember.State.READY
+    assert result.ready_count >= 1
+    assert demand.admission_attempt_high_water == 1
+    assert demand.admission_pause_reason == ""
+
+
+@pytest.mark.django_db
 def test_reserve_replenishment_uses_warm_buffer_before_full_replacement_budget():
     demand = _create_tournament_demand(player_limit=4)
-    profiles = [_create_bot_profile(f"reserve_warm_buffer_{index}") for index in range(9)]
+    profiles = [_enroll_profile_v2(_create_bot_profile(f"reserve_warm_buffer_{index}")) for index in range(9)]
 
     result = replenish_virtual_reserve(demand.id)
 
@@ -239,28 +1037,11 @@ def test_replenishment_initializes_roster_targets_even_during_retry_backoff(trai
 
 
 @pytest.mark.django_db
-def test_profile_creation_rechecks_warm_buffer_before_mutation(monkeypatch):
-    demand = _create_tournament_demand(player_limit=4)
-    for index in range(6):
-        ArenaVirtualReserveMember.objects.create(
-            demand=demand,
-            profile=_create_bot_profile(f"reserve_warm_buffer_existing_{index}"),
-            state=ArenaVirtualReserveMember.State.READY,
-        )
-    monkeypatch.setattr(
-        "gameplay.services.arena.virtual_reserve_pool.replenish_virtual_reserve",
-        lambda demand_id, now: ReserveReplenishmentResult(6, 0, 0, 0, 1),
-    )
-    monkeypatch.setattr(
-        "gameplay.services.arena.virtual_reserve_pool.create_virtual_player_with_capacity",
-        lambda **_kwargs: pytest.fail("profile creation must stop at the warm buffer"),
-    )
-
-    assert create_due_virtual_reserve_profiles(now=timezone.now(), limit=10) == 0
-
-
-@pytest.mark.django_db
 def test_reserve_reconciliation_preserves_growth_retry_state(training_member):
+    # Keep the persisted strength summary aligned with the live guest snapshot;
+    # this test is about retry preservation, not stale power repair.
+    training_member.current_lineup_power = 550
+    training_member.save(update_fields=["current_lineup_power"])
     retry_at = timezone.now() + timedelta(minutes=30)
     training_member.growth_retry_streak = 3
     training_member.growth_retry_reason = "strength_cap"
@@ -277,6 +1058,7 @@ def test_reserve_reconciliation_preserves_growth_retry_state(training_member):
 
 @pytest.mark.django_db
 def test_reconcile_increments_version_only_when_inputs_change():
+    now = timezone.now()
     tournament = ArenaTournament.objects.create(player_limit=3)
     _add_real_arena_entry(
         tournament,
@@ -293,6 +1075,19 @@ def test_reconcile_increments_version_only_when_inputs_change():
     repeated = reconcile_tournament_demand(tournament.id)
     assert repeated is not None
     assert repeated.version == first.version
+    first.admission_attempt_high_water = 1
+    first.admission_paused_at = now
+    first.admission_pause_reason = "no_effective_progress"
+    first.admission_probe_target_ordinal = 1
+    first.save(
+        update_fields=[
+            "admission_attempt_high_water",
+            "admission_paused_at",
+            "admission_pause_reason",
+            "admission_probe_target_ordinal",
+            "updated_at",
+        ]
+    )
 
     _add_real_arena_entry(
         tournament,
@@ -310,6 +1105,9 @@ def test_reconcile_increments_version_only_when_inputs_change():
     assert changed.last_progress_at == first_progress_at
     assert changed.last_input_change_at is not None
     assert changed.last_input_change_at > first_input_change_at
+    assert changed.admission_pause_reason == ""
+    assert changed.admission_paused_at is None
+    assert changed.admission_probe_target_ordinal is None
 
 
 @pytest.mark.django_db
@@ -331,12 +1129,26 @@ def test_coop_reconcile_uses_registered_real_entries_only():
 
 @pytest.mark.django_db
 def test_reconcile_closes_inactive_event_and_releases_members():
+    now = timezone.now()
     demand = _create_tournament_demand(player_limit=2)
     profile = _create_bot_profile("reserve_close_member")
     ArenaVirtualReserveMember.objects.create(
         demand=demand,
         profile=profile,
         state=ArenaVirtualReserveMember.State.READY,
+    )
+    demand.admission_attempt_high_water = 1
+    demand.admission_paused_at = now
+    demand.admission_pause_reason = "no_effective_progress"
+    demand.admission_probe_target_ordinal = 1
+    demand.save(
+        update_fields=[
+            "admission_attempt_high_water",
+            "admission_paused_at",
+            "admission_pause_reason",
+            "admission_probe_target_ordinal",
+            "updated_at",
+        ]
     )
     ArenaTournament.objects.filter(pk=demand.tournament_id).update(
         status=ArenaTournament.Status.RUNNING,
@@ -349,6 +1161,9 @@ def test_reconcile_closes_inactive_event_and_releases_members():
     assert demand.missing_entry_count == 0
     assert demand.reserve_target_count == 0
     assert demand.reserve_members.count() == 0
+    assert demand.admission_pause_reason == ""
+    assert demand.admission_paused_at is None
+    assert demand.admission_probe_target_ordinal is None
 
 
 @pytest.mark.django_db
@@ -391,7 +1206,281 @@ def test_stalled_demand_becomes_blocked_and_reactivates_after_input_change():
     assert scan_result["reconciled"] == 1
     assert reactivated.status == ArenaVirtualDemand.Status.ACTIVE
     assert reactivated.missing_entry_count == 2
-    assert reactivated.created_profile_count == 0
+    assert reactivated.reserve_members.filter(profile=profile).exists()
+
+
+@pytest.mark.django_db
+def test_routing_pause_does_not_consume_the_demand_no_progress_window():
+    now = timezone.now()
+    _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        paused_from_maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        pause_reason="maintenance_failure_rate",
+    )
+    demand = _create_tournament_demand(player_limit=3)
+    ArenaVirtualDemand.objects.filter(pk=demand.pk).update(
+        last_progress_at=now - timedelta(hours=13),
+        last_input_change_at=now - timedelta(hours=13),
+    )
+
+    reconciled = reconcile_tournament_demand(demand.tournament_id, now=now)
+
+    assert reconciled is not None
+    demand.refresh_from_db()
+    assert demand.status == ArenaVirtualDemand.Status.ACTIVE
+    assert demand.last_failure_reason != "no_progress_timeout"
+
+
+@pytest.mark.django_db
+def test_routing_resume_wakes_active_and_timeout_blocked_demands(
+    monkeypatch,
+    django_capture_on_commit_callbacks,
+):
+    now = timezone.now()
+    routing = _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        paused_from_maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        pause_reason="aggregation_error:test",
+        revision=9,
+    )
+    active = _create_tournament_demand(player_limit=2)
+    coop = ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.RECRUITING,
+        player_limit=3,
+        guest_limit_per_entry=1,
+        virtual_fill_at=now - timedelta(minutes=1),
+    )
+    _add_real_coop_entry(coop, "routing_resume_blocked_reference")
+    blocked = reconcile_coop_demand(coop.id, now=now)
+    assert blocked is not None
+    blocked.admission_attempt_high_water = 2
+    blocked.admission_paused_at = now
+    blocked.admission_pause_reason = "no_effective_progress"
+    blocked.admission_probe_target_ordinal = 2
+    blocked.status = ArenaVirtualDemand.Status.BLOCKED
+    blocked.reserve_target_count = 0
+    blocked.warm_target_count = 0
+    blocked.next_retry_at = None
+    blocked.last_failure_reason = "no_progress_timeout"
+    blocked.save(
+        update_fields=[
+            "admission_attempt_high_water",
+            "admission_paused_at",
+            "admission_pause_reason",
+            "admission_probe_target_ordinal",
+            "status",
+            "reserve_target_count",
+            "warm_target_count",
+            "next_retry_at",
+            "last_failure_reason",
+            "updated_at",
+        ]
+    )
+    queued: list[tuple[str, int]] = []
+    monkeypatch.setattr(
+        reserve_demand_service,
+        "queue_virtual_reserve_reconcile",
+        lambda mode, event_id: queued.append((mode, event_id)) or True,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.virtual_player_core.safety_preflight.check_v2_development_write_preflight",
+        lambda: SimpleNamespace(allowed=True, reason=""),
+    )
+
+    with django_capture_on_commit_callbacks(execute=True):
+        runtime_configs.transition_virtual_player_routing_operation(
+            expected_revision=9,
+            expected_bootstrap_mode="v2_active",
+            expected_maintenance_mode="v2_paused",
+            bootstrap_mode="v2_active",
+            maintenance_mode="v2_active",
+            calibration_routes=None,
+            expected_pause_reason="aggregation_error:test",
+            resume_paused=True,
+            apply=True,
+        )
+
+    routing.refresh_from_db()
+    active.refresh_from_db()
+    blocked.refresh_from_db()
+    assert routing.maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+    assert active.next_retry_at is not None
+    assert active.last_input_change_at is not None
+    assert blocked.status == ArenaVirtualDemand.Status.ACTIVE
+    assert blocked.reserve_target_count > 0
+    assert blocked.warm_target_count > 0
+    assert blocked.admission_attempt_high_water == 2
+    assert blocked.last_failure_reason == ""
+    assert blocked.admission_pause_reason == ""
+    assert blocked.admission_paused_at is None
+    assert blocked.admission_probe_target_ordinal is None
+    assert {event_id for _mode, event_id in queued} == {
+        int(active.tournament_id),
+        int(blocked.coop_event_id),
+    }
+
+
+@pytest.mark.django_db
+def test_routing_resume_rolls_back_when_arena_demand_rearm_fails(monkeypatch):
+    now = timezone.now()
+    routing = _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        paused_from_maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        pause_reason="aggregation_error:test",
+        revision=9,
+    )
+    demand = _create_tournament_demand(player_limit=2)
+    retry_at = now + timedelta(hours=1)
+    ArenaVirtualDemand.objects.filter(pk=demand.pk).update(next_retry_at=retry_at)
+    monkeypatch.setattr(
+        "gameplay.services.virtual_player_core.safety_preflight.check_v2_development_write_preflight",
+        lambda: SimpleNamespace(allowed=True, reason=""),
+    )
+    monkeypatch.setattr(
+        reserve_demand_service,
+        "wake_arena_demands_after_routing_resume",
+        lambda: (_ for _ in ()).throw(RuntimeError("arena demand rearm failed")),
+    )
+
+    with pytest.raises(RuntimeError, match="arena demand rearm failed"):
+        runtime_configs.transition_virtual_player_routing_operation(
+            expected_revision=9,
+            expected_bootstrap_mode="v2_active",
+            expected_maintenance_mode="v2_paused",
+            bootstrap_mode="v2_active",
+            maintenance_mode="v2_active",
+            calibration_routes=None,
+            expected_pause_reason="aggregation_error:test",
+            resume_paused=True,
+            apply=True,
+        )
+
+    routing.refresh_from_db()
+    demand.refresh_from_db()
+    assert routing.revision == 9
+    assert routing.maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED
+    assert routing.paused_from_maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+    assert routing.pause_reason == "aggregation_error:test"
+    assert demand.next_retry_at == retry_at
+
+
+@pytest.mark.django_db
+def test_routing_resume_dispatch_loss_falls_back_to_periodic_demand_scan(
+    monkeypatch,
+    django_capture_on_commit_callbacks,
+):
+    now = timezone.now()
+    _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        paused_from_maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        pause_reason="aggregation_error:test",
+        revision=9,
+    )
+    demand = _create_tournament_demand(player_limit=2)
+    stale_at = now - timedelta(hours=13)
+    ArenaVirtualDemand.objects.filter(pk=demand.pk).update(
+        last_progress_at=stale_at,
+        last_input_change_at=stale_at,
+        next_retry_at=now + timedelta(hours=1),
+    )
+    monkeypatch.setattr(
+        "gameplay.services.virtual_player_core.safety_preflight.check_v2_development_write_preflight",
+        lambda: SimpleNamespace(allowed=True, reason=""),
+    )
+    monkeypatch.setattr(
+        reserve_demand_service,
+        "queue_virtual_reserve_reconcile",
+        lambda _mode, _event_id: False,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.arena.virtual_reserve_scan.replenish_virtual_reserve",
+        lambda _demand_id, *, now: ReserveReplenishmentResult(0, 0, 0, 0, 0),
+    )
+    monkeypatch.setattr(
+        "gameplay.services.arena.virtual_reserve_scan.fill_due_tournament_reserve",
+        lambda _event_id, **_kwargs: 0,
+    )
+
+    with django_capture_on_commit_callbacks(execute=True):
+        runtime_configs.transition_virtual_player_routing_operation(
+            expected_revision=9,
+            expected_bootstrap_mode="v2_active",
+            expected_maintenance_mode="v2_paused",
+            bootstrap_mode="v2_active",
+            maintenance_mode="v2_active",
+            calibration_routes=None,
+            expected_pause_reason="aggregation_error:test",
+            resume_paused=True,
+            apply=True,
+        )
+
+    demand.refresh_from_db()
+    assert demand.status == ArenaVirtualDemand.Status.ACTIVE
+    assert demand.last_input_change_at is not None
+    assert demand.last_input_change_at > stale_at
+    assert demand.next_retry_at is not None
+    assert demand.next_retry_at <= timezone.now()
+
+    result = scan_virtual_reserve_demands(now=timezone.now() + timedelta(minutes=5), limit=20)
+
+    demand.refresh_from_db()
+    assert result["scanned"] == 1
+    assert result["reconciled"] == 1
+
+
+@pytest.mark.django_db
+def test_routing_resume_keeps_committed_state_when_reconcile_dispatch_raises(
+    monkeypatch,
+    django_capture_on_commit_callbacks,
+):
+    routing = _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        paused_from_maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        pause_reason="aggregation_error:test",
+        revision=9,
+    )
+    demand = _create_tournament_demand(player_limit=2)
+    monkeypatch.setattr(
+        "gameplay.services.virtual_player_core.safety_preflight.check_v2_development_write_preflight",
+        lambda: SimpleNamespace(allowed=True, reason=""),
+    )
+    monkeypatch.setattr(
+        reserve_demand_service,
+        "queue_virtual_reserve_reconcile",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("broker unavailable")),
+    )
+
+    with django_capture_on_commit_callbacks(execute=True):
+        runtime_configs.transition_virtual_player_routing_operation(
+            expected_revision=9,
+            expected_bootstrap_mode="v2_active",
+            expected_maintenance_mode="v2_paused",
+            bootstrap_mode="v2_active",
+            maintenance_mode="v2_active",
+            calibration_routes=None,
+            expected_pause_reason="aggregation_error:test",
+            resume_paused=True,
+            apply=True,
+        )
+
+    routing.refresh_from_db()
+    demand.refresh_from_db()
+    assert routing.maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+    assert routing.revision == 10
+    assert demand.next_retry_at is not None
+    assert demand.next_retry_at <= timezone.now()
+    assert demand.status == ArenaVirtualDemand.Status.ACTIVE
+    assert demand.last_failure_reason != "no_progress_timeout"
 
 
 @pytest.mark.django_db
@@ -407,7 +1496,8 @@ def test_changed_reference_reevaluates_member_without_resetting_growth_rounds():
         state=ArenaVirtualReserveMember.State.TRAINING,
         evaluated_version=demand.version,
         current_lineup_power=450,
-        accelerated_growth_rounds=4,
+        growth_rounds_started=4,
+        growth_applied_action_count=4,
     )
     real_link = ArenaEntryGuest.objects.get(
         entry__tournament_id=demand.tournament_id,
@@ -418,6 +1508,7 @@ def test_changed_reference_reevaluates_member_without_resetting_growth_rounds():
         "attack": 150,
         "defense": 150,
         "max_hp": 1500,
+        "agility": 100,
         "current_hp": 1500,
     }
     real_link.save(update_fields=["snapshot"])
@@ -429,8 +1520,8 @@ def test_changed_reference_reevaluates_member_without_resetting_growth_rounds():
     assert changed.version == demand.version + 1
     assert member.evaluated_version == changed.version
     assert member.state == ArenaVirtualReserveMember.State.READY
-    assert member.current_lineup_power == 450
-    assert member.accelerated_growth_rounds == 4
+    assert member.current_lineup_power == 550
+    assert member.growth_rounds_started == 4
 
 
 @pytest.mark.django_db
@@ -441,10 +1532,10 @@ def test_active_arena_demand_merges_its_v2_population_cell_once_per_change(
     population_region,
 ):
     current_time = timezone.now()
-    BotRuntimeRoutingState.objects.create(
+    _set_runtime_routing(
         key=BotRuntimeRoutingState.GLOBAL_KEY,
         bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
-        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.LEGACY_BEFORE_GATE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
         calibration_routes=[],
     )
     tournament = ArenaTournament.objects.create(
@@ -476,26 +1567,28 @@ def test_active_arena_demand_merges_its_v2_population_cell_once_per_change(
     assert demand is not None
     population_demand = BotPopulationRecomputeDemand.objects.get(
         region=population_region,
-        prestige_band="legend",
+        prestige_band="newbie",
     )
     assert population_demand.requested_revision == 1
-    assert queued == [(population_region, "legend")]
+    assert demand.arena_supply_prestige_band == "newbie"
+    assert queued == [(population_region, "newbie")]
     population_plan = population_runtime._build_population_plan(
         population_runtime._v2_population_runtime_config(),
         now=current_time,
         target_based_membership=True,
         required_engine_version=2,
     )
-    legend_cell = population_plan.by_key[(population_region, "legend")]
-    assert legend_cell.active_real == 0
-    assert legend_cell.search_demand == 1
-    assert legend_cell.target >= 1
+    newbie_cell = population_plan.by_key[(population_region, "newbie")]
+    assert newbie_cell.active_real == 0
+    assert newbie_cell.search_demand == 0
+    assert newbie_cell.arena_materialization_additional == demand.warm_target_count
+    assert newbie_cell.target >= demand.warm_target_count
 
     with django_capture_on_commit_callbacks(execute=True):
         reconcile_tournament_demand(tournament.id)
     population_demand.refresh_from_db()
     assert population_demand.requested_revision == 1
-    assert queued == [(population_region, "legend")]
+    assert queued == [(population_region, "newbie")]
 
     link = ArenaEntryGuest.objects.get(entry=entry)
     link.snapshot = {
@@ -511,7 +1604,34 @@ def test_active_arena_demand_merges_its_v2_population_cell_once_per_change(
 
     population_demand.refresh_from_db()
     assert population_demand.requested_revision == 2
-    assert queued == [(population_region, "legend"), (population_region, "legend")]
+    assert queued == [(population_region, "newbie"), (population_region, "newbie")]
+
+
+@pytest.mark.django_db
+def test_routing_unavailable_does_not_rollback_arena_demand_reconcile(monkeypatch):
+    tournament = ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RECRUITING,
+        player_limit=2,
+    )
+    _add_real_arena_entry(
+        tournament,
+        "routing_unavailable_demand_reference",
+        attack=200,
+        defense=200,
+        max_hp=2000,
+    )
+    monkeypatch.setattr(
+        runtime_assessment,
+        "read_virtual_player_routing",
+        lambda: (_ for _ in ()).throw(runtime_assessment.RuntimeRoutingError("routing unavailable")),
+    )
+
+    demand = reconcile_tournament_demand(tournament.id)
+
+    assert demand is not None
+    assert demand.status == ArenaVirtualDemand.Status.ACTIVE
+    assert demand.missing_entry_count == 1
+    assert not BotPopulationRecomputeDemand.objects.exists()
 
 
 @pytest.mark.django_db
@@ -653,19 +1773,66 @@ def test_unrelated_integrity_error_from_member_create_is_not_swallowed(
 
 @pytest.mark.django_db
 def test_reserve_slot_count_is_ready_plus_training_not_exhausted(reserve_demand):
+    reserve_demand.max_reserve_target_count = 2
+    reserve_demand.save(update_fields=["max_reserve_target_count", "updated_at"])
     exhausted_profile = _create_bot_profile("reserve_exhausted")
     ArenaVirtualReserveMember.objects.create(
         demand=reserve_demand,
         profile=exhausted_profile,
         state=ArenaVirtualReserveMember.State.EXHAUSTED,
-        accelerated_growth_rounds=8,
     )
-    available = _create_bot_profile("reserve_after_exhausted")
+    _create_bot_profile("reserve_after_exhausted")
 
     result = replenish_virtual_reserve(reserve_demand.id)
 
+    reserve_demand.refresh_from_db()
     assert result.ready_count + result.training_count == reserve_demand.reserve_target_count
-    assert reserve_demand.reserve_members.filter(profile=available).exists()
+    assert not reserve_demand.reserve_members.filter(state=ArenaVirtualReserveMember.State.EXHAUSTED).exists()
+
+
+@pytest.mark.django_db
+def test_replenishment_leases_only_from_the_demand_population_cell():
+    demand = _create_tournament_demand(player_limit=2)
+    demand.reserve_target_count = 1
+    demand.warm_target_count = 1
+    demand.max_reserve_target_count = 1
+    demand.save(update_fields=["reserve_target_count", "warm_target_count", "max_reserve_target_count"])
+    reference_region = demand.tournament.entries.get(source=ArenaEntry.Source.PLAYER).manor.region
+    other_region = "overseas" if reference_region != "overseas" else "north"
+    wrong_cell = _create_bot_profile("reserve_wrong_population_cell")
+    wrong_cell.manor.region = other_region
+    wrong_cell.manor.save(update_fields=["region"])
+    correct_cell = _create_bot_profile("reserve_correct_population_cell")
+
+    result = replenish_virtual_reserve(demand.id)
+
+    demand.refresh_from_db()
+    assert result.ready_count == 1
+    assert not demand.reserve_members.filter(profile=wrong_cell).exists()
+    assert demand.reserve_members.filter(profile=correct_cell).exists()
+
+
+@pytest.mark.django_db
+def test_budget_block_result_reflects_terminal_member_release():
+    demand = _create_tournament_demand(player_limit=3)
+    demand.reserve_target_count = 1
+    demand.warm_target_count = 1
+    demand.max_reserve_target_count = 1
+    demand.save(update_fields=["reserve_target_count", "warm_target_count", "max_reserve_target_count"])
+    member = ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=_create_bot_profile("reserve_terminal_ready"),
+        state=ArenaVirtualReserveMember.State.READY,
+    )
+
+    result = replenish_virtual_reserve(demand.id)
+
+    demand.refresh_from_db()
+    assert demand.status == ArenaVirtualDemand.Status.BLOCKED
+    assert result.ready_count == 0
+    assert result.training_count == 0
+    assert result.warm_target_count == 0
+    assert not ArenaVirtualReserveMember.objects.filter(pk=member.pk).exists()
 
 
 @pytest.mark.django_db
@@ -694,21 +1861,105 @@ def test_replenish_trims_to_warm_target_before_creating_more(reserve_demand):
 
 
 @pytest.mark.django_db
-def test_reevaluation_resumes_member_exhausted_by_previous_round_limit(reserve_demand):
-    profile = _create_bot_profile("reserve_previous_round_limit", guest_stats=[(150, 150, 25)])
-    member = ArenaVirtualReserveMember.objects.create(
-        demand=reserve_demand,
-        profile=profile,
-        state=ArenaVirtualReserveMember.State.EXHAUSTED,
-        accelerated_growth_rounds=6,
-    )
+def test_invalid_growth_budget_is_permanent_and_cannot_be_revived_by_demand_change(
+    monkeypatch,
+    training_member,
+):
     now = timezone.now()
+    training_member.arena_growth_budget_entries = {"invalid": "payload"}
+    training_member.save(update_fields=["arena_growth_budget_entries", "updated_at"])
 
-    reevaluate_existing_members(reserve_demand, now=now)
+    claim = virtual_reserve_pool._claim_due_virtual_reserve_growth(
+        member_id=training_member.id,
+        demand_id=training_member.demand_id,
+        now=now,
+        growth_targets={},
+    )
 
-    member.refresh_from_db()
-    assert member.state == ArenaVirtualReserveMember.State.TRAINING
-    assert member.next_acceleration_at == now
+    assert claim is None
+    training_member.refresh_from_db()
+    assert training_member.state == ArenaVirtualReserveMember.State.EXHAUSTED
+    assert training_member.growth_retry_reason == "invalid_growth_budget"
+    demand = training_member.demand
+    demand.version += 1
+    demand.save(update_fields=["version", "updated_at"])
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "_evaluate_profile_for_demand",
+        lambda *_args, **_kwargs: pytest.fail("invalid growth budget must be terminal"),
+    )
+
+    reevaluate_existing_members(demand, now=now + timedelta(minutes=1))
+
+    training_member.refresh_from_db()
+    assert training_member.state == ArenaVirtualReserveMember.State.EXHAUSTED
+    assert training_member.growth_retry_reason == "invalid_growth_budget"
+
+
+@pytest.mark.django_db
+def test_target_unreachable_member_reopens_when_re_evaluation_finds_ready(
+    monkeypatch,
+    training_member,
+):
+    now = timezone.now()
+    demand = training_member.demand
+    demand.admission_paused_at = now - timedelta(minutes=1)
+    demand.admission_pause_reason = "no_effective_progress"
+    demand.consecutive_failure_count = 2
+    demand.last_failure_reason = "insufficient_ready_members"
+    demand.save(
+        update_fields=[
+            "admission_paused_at",
+            "admission_pause_reason",
+            "consecutive_failure_count",
+            "last_failure_reason",
+            "updated_at",
+        ]
+    )
+    training_member.state = ArenaVirtualReserveMember.State.EXHAUSTED
+    training_member.growth_retry_reason = "target_unreachable_by_cap"
+    training_member.next_acceleration_at = None
+    training_member.save(
+        update_fields=[
+            "state",
+            "growth_retry_reason",
+            "next_acceleration_at",
+            "updated_at",
+        ]
+    )
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "_evaluate_profile_for_demand",
+        lambda *_args, **_kwargs: BotLineupEvaluation(
+            ({"attack": 200, "defense": 200, "max_hp": 2000},),
+            600,
+            True,
+        ),
+    )
+
+    reevaluate_existing_members(demand, now=now)
+
+    training_member.refresh_from_db()
+    demand.refresh_from_db()
+    assert training_member.state == ArenaVirtualReserveMember.State.READY
+    assert training_member.growth_retry_reason == ""
+    assert demand.admission_pause_reason == ""
+    assert demand.admission_paused_at is None
+    assert demand.consecutive_failure_count == 0
+    assert demand.last_failure_reason == ""
+
+    demand.version += 1
+    demand.save(update_fields=["version", "updated_at"])
+    reevaluate_existing_members(demand, now=now + timedelta(minutes=1))
+
+    training_member.refresh_from_db()
+    demand.refresh_from_db()
+    assert training_member.state == ArenaVirtualReserveMember.State.READY
+    assert training_member.growth_retry_reason == ""
+    assert demand.admission_pause_reason == ""
+    assert demand.admission_paused_at is None
+    assert demand.consecutive_failure_count == 0
+    assert demand.last_failure_reason == ""
 
 
 @pytest.mark.django_db
@@ -723,7 +1974,14 @@ def test_overpopulation_retirement_skips_active_reserve_members(reserve_demand):
         state=ArenaVirtualReserveMember.State.READY,
     )
 
-    assert population_runtime._retire_excess_virtual_players(target=0, now=timezone.now()) == 1
+    assert (
+        population_runtime._retire_excess_virtual_players(
+            target=0,
+            now=timezone.now(),
+            required_engine_version=2,
+        )
+        == 1
+    )
 
     reserved.refresh_from_db()
     normal.refresh_from_db()
@@ -757,7 +2015,14 @@ def test_overpopulation_retirement_rechecks_lease_before_state_update(
 
     monkeypatch.setattr(QuerySet, "update", _inject_lease_before_retirement)
 
-    assert population_runtime._retire_excess_virtual_players(target=0, now=timezone.now()) == 0
+    assert (
+        population_runtime._retire_excess_virtual_players(
+            target=0,
+            now=timezone.now(),
+            required_engine_version=2,
+        )
+        == 0
+    )
 
     profile.refresh_from_db()
     assert injected is True
@@ -800,7 +2065,14 @@ def test_population_retargeting_rechecks_lease_before_band_update(
 
     monkeypatch.setattr(QuerySet, "update", _inject_lease_before_retarget)
 
-    assert population_runtime.rebalance_virtual_player_target_bands(plan, limit=1) == 0
+    assert (
+        population_runtime.rebalance_virtual_player_target_bands(
+            plan,
+            limit=1,
+            required_engine_version=2,
+        )
+        == 0
+    )
 
     profile.refresh_from_db()
     assert injected is True
@@ -808,10 +2080,20 @@ def test_population_retargeting_rechecks_lease_before_band_update(
 
 
 @pytest.mark.django_db
-def test_lifecycle_retirement_defers_profile_with_active_reserve_lease(reserve_demand):
+def test_lifecycle_retirement_skips_leased_profile_and_resumes_after_release(reserve_demand, monkeypatch):
     from gameplay.services.virtual_players import maintain_due_virtual_players
 
     now = timezone.now()
+    monkeypatch.setattr(
+        maintenance,
+        "check_v2_development_write_preflight",
+        lambda **_kwargs: SimpleNamespace(
+            allowed=True,
+            reason="",
+            checked_at=now,
+            monitor_heartbeat_at=now,
+        ),
+    )
     profile = _create_bot_profile("reserve_lifecycle_retirement_protected")
     member = ArenaVirtualReserveMember.objects.create(
         demand=reserve_demand,
@@ -823,18 +2105,31 @@ def test_lifecycle_retirement_defers_profile_with_active_reserve_lease(reserve_d
         retire_at=now - timedelta(minutes=1),
     )
 
-    assert maintain_due_virtual_players(now=now, limit=10) == 1
+    assert maintain_due_virtual_players(now=now, limit=10) == 0
 
     profile.refresh_from_db()
     assert profile.state == BotProfile.State.ACTIVE
-    assert profile.next_growth_at > now
+    assert profile.next_growth_at <= now
     assert ArenaVirtualReserveMember.objects.filter(pk=member.pk).exists()
+
+    member.delete()
+
+    assert maintain_due_virtual_players(now=now, limit=10) == 1
+
+    profile.refresh_from_db()
+    assert profile.state == BotProfile.State.RETIRED
 
 
 @pytest.mark.django_db
 def test_overpopulation_retirement_skips_bot_in_live_arena_entry():
     from gameplay.services.virtual_player_core import population_runtime
 
+    _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        calibration_routes=[],
+    )
     tournament = ArenaTournament.objects.create(
         status=ArenaTournament.Status.RUNNING,
         player_limit=2,
@@ -847,7 +2142,14 @@ def test_overpopulation_retirement_skips_bot_in_live_arena_entry():
         source=ArenaEntry.Source.VIRTUAL,
     )
 
-    assert population_runtime._retire_excess_virtual_players(target=0, now=timezone.now()) == 1
+    assert (
+        population_runtime._retire_excess_virtual_players(
+            target=0,
+            now=timezone.now(),
+            required_engine_version=2,
+        )
+        == 1
+    )
 
     participating.refresh_from_db()
     normal.refresh_from_db()
@@ -920,7 +2222,10 @@ def test_replenish_releases_existing_member_with_unresolved_reconciliation(
     assert not ArenaVirtualReserveMember.objects.filter(pk=member.pk).exists()
     assert result.ready_count == 0
     assert result.training_count == 0
-    assert result.creation_needed == 1
+    assert result.creation_needed == 0
+    reserve_demand.refresh_from_db()
+    assert reserve_demand.status == ArenaVirtualDemand.Status.BLOCKED
+    assert reserve_demand.last_failure_reason == "replacement_budget_exhausted"
 
 
 @pytest.mark.django_db
@@ -957,13 +2262,23 @@ def test_growth_uses_reference_targets_and_marks_member_ready(monkeypatch, train
         "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
         lambda profile_id, **kwargs: calls.append((profile_id, kwargs)) or AcceleratedGrowthOutcome.GROWN,
     )
+    evaluations = iter(
+        (
+            BotLineupEvaluation(
+                ({"attack": 150, "defense": 150, "max_hp": 1500},),
+                450,
+                False,
+            ),
+            BotLineupEvaluation(
+                ({"attack": 200, "defense": 200, "max_hp": 2000},),
+                600,
+                True,
+            ),
+        )
+    )
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve_pool.evaluate_bot_lineup",
-        lambda profile, **kwargs: BotLineupEvaluation(
-            ({"attack": 200, "defense": 200, "max_hp": 2000},),
-            600,
-            True,
-        ),
+        lambda profile, **kwargs: next(evaluations),
     )
 
     result = grow_due_virtual_reserves(now=now, limit=10)
@@ -975,15 +2290,18 @@ def test_growth_uses_reference_targets_and_marks_member_ready(monkeypatch, train
     assert called_profile_id == training_member.profile_id
     assert called_kwargs.pop("operation_id").startswith("arena-growth-")
     assert called_kwargs.pop("attempt_ordinal") == 1
-    assert called_kwargs == {
-        "now": now,
-        "minimum_guest_count": training_member.roster_target_count,
-        "minimum_guest_level": 100,
-        "guest_rarity_cap": "purple",
-        "max_guest_level_step": 6,
-    }
-    assert called_kwargs["minimum_guest_count"] >= training_member.demand.target_guest_count
-    assert training_member.accelerated_growth_rounds == 1
+    assert called_kwargs.pop("request_digest_schema") == 3
+    expected_minimum_guest_count = training_member.demand.target_guest_count
+    assert called_kwargs["now"] == now
+    objective = called_kwargs["arena_growth_objective"]
+    assert isinstance(objective, ArenaGrowthObjective)
+    assert objective.critical_guest_count == expected_minimum_guest_count
+    assert objective.preferred_guest_count == training_member.roster_target_count
+    assert objective.minimum_guest_level == 100
+    assert objective.recruitment_rarity_cap == "purple"
+    assert objective.max_guest_level_step == 10
+    assert objective.critical_guest_count >= training_member.demand.target_guest_count
+    assert training_member.growth_applied_action_count == 1
     assert training_member.state == ArenaVirtualReserveMember.State.READY
     assert training_member.next_acceleration_at is None
     record = next(
@@ -994,6 +2312,186 @@ def test_growth_uses_reference_targets_and_marks_member_ready(monkeypatch, train
     assert record.power_after == 600
     assert record.growth_rounds == 1
     assert record.member_state == ArenaVirtualReserveMember.State.READY
+    budget_entries = parse_arena_growth_budget_entries(
+        training_member.arena_growth_budget_entries,
+        now=now,
+    )
+    assert len(budget_entries) == 1
+    assert budget_entries[0].outcome is ArenaGrowthAttemptOutcome.APPLIED
+    assert budget_entries[0].effective_progress is True
+    assert budget_entries[0].selected_growth_bps == 2679
+
+
+@pytest.mark.django_db
+def test_growth_isolates_claimed_member_business_error_and_continues(
+    monkeypatch,
+    training_member,
+):
+    now = timezone.now()
+    training_member.next_acceleration_at = now - timedelta(minutes=2)
+    training_member.save(update_fields=["next_acceleration_at", "updated_at"])
+    peer = ArenaVirtualReserveMember.objects.create(
+        demand=training_member.demand,
+        profile=_create_bot_profile(
+            "reserve_training_business_error_peer",
+            guest_stats=[(150, 150, 25)],
+        ),
+        state=ArenaVirtualReserveMember.State.TRAINING,
+        current_lineup_power=450,
+        next_acceleration_at=now - timedelta(minutes=1),
+    )
+    attempted_profile_ids: list[int] = []
+
+    def grow_profile(profile_id, **_kwargs):
+        attempted_profile_ids.append(profile_id)
+        if profile_id == training_member.profile_id:
+            raise maintenance.V2MaintenanceError("profile policy is invalid")
+        return AcceleratedGrowthOutcome.BUSY
+
+    monkeypatch.setattr(virtual_reserve_pool, "accelerate_virtual_player_growth", grow_profile)
+
+    assert grow_due_virtual_reserves(now=now, limit=10) == 1 + ARENA_GROWTH_BUDGET_MAX_ATTEMPTS
+
+    training_member.refresh_from_db()
+    peer.refresh_from_db()
+    training_member.profile.refresh_from_db()
+    assert attempted_profile_ids == [
+        training_member.profile_id,
+        *([peer.profile_id] * ARENA_GROWTH_BUDGET_MAX_ATTEMPTS),
+    ]
+    assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
+    assert training_member.growth_claim_token is None
+    assert training_member.growth_retry_reason == "growth_business_error"
+    assert training_member.next_acceleration_at is not None
+    assert training_member.next_acceleration_at > now
+    assert training_member.growth_applied_action_count == 0
+    assert training_member.profile.maintenance_sequence == 0
+    first_budget = parse_arena_growth_budget_entries(
+        training_member.arena_growth_budget_entries,
+        now=timezone.now(),
+    )
+    assert len(first_budget) == 1
+    assert first_budget[0].outcome is ArenaGrowthAttemptOutcome.NO_ACTION
+    assert peer.growth_claim_token is None
+    assert peer.growth_retry_reason == "arena_attempt_budget_exhausted"
+    peer_budget = parse_arena_growth_budget_entries(
+        peer.arena_growth_budget_entries,
+        now=timezone.now(),
+    )
+    assert len(peer_budget) == ARENA_GROWTH_BUDGET_MAX_ATTEMPTS
+    assert peer_budget[0].outcome is ArenaGrowthAttemptOutcome.BUSY
+
+
+@pytest.mark.django_db
+def test_growth_backs_off_unclaimed_member_business_error_and_continues(
+    monkeypatch,
+    training_member,
+):
+    now = timezone.now()
+    training_member.next_acceleration_at = now - timedelta(minutes=2)
+    training_member.save(update_fields=["next_acceleration_at", "updated_at"])
+    peer = ArenaVirtualReserveMember.objects.create(
+        demand=training_member.demand,
+        profile=_create_bot_profile(
+            "reserve_training_claim_error_peer",
+            guest_stats=[(150, 150, 25)],
+        ),
+        state=ArenaVirtualReserveMember.State.TRAINING,
+        current_lineup_power=450,
+        next_acceleration_at=now - timedelta(minutes=1),
+    )
+    evaluate_profile = virtual_reserve_pool._evaluate_profile_for_demand
+
+    def evaluate_or_fail(demand, profile, **kwargs):
+        if profile.id == training_member.profile_id:
+            raise virtual_reserve_pool.InvalidVirtualLineupSnapshot("invalid member lineup")
+        return evaluate_profile(demand, profile, **kwargs)
+
+    attempted_profile_ids: list[int] = []
+    monkeypatch.setattr(virtual_reserve_pool, "_evaluate_profile_for_demand", evaluate_or_fail)
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "accelerate_virtual_player_growth",
+        lambda profile_id, **_kwargs: attempted_profile_ids.append(profile_id) or AcceleratedGrowthOutcome.BUSY,
+    )
+
+    assert grow_due_virtual_reserves(now=now, limit=10) == ARENA_GROWTH_BUDGET_MAX_ATTEMPTS
+
+    training_member.refresh_from_db()
+    peer.refresh_from_db()
+    assert attempted_profile_ids == [peer.profile_id] * ARENA_GROWTH_BUDGET_MAX_ATTEMPTS
+    assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
+    assert training_member.growth_claim_token is None
+    assert training_member.arena_growth_budget_entries == []
+    assert training_member.growth_retry_streak == 1
+    assert training_member.growth_retry_reason == "growth_business_error"
+    assert training_member.next_acceleration_at is not None
+    assert (
+        now
+        < training_member.next_acceleration_at
+        <= (training_member.created_at + virtual_reserve_pool.MAX_RESERVE_MEMBER_LEASE_AGE)
+    )
+    assert peer.growth_claim_token is None
+    assert peer.growth_retry_reason == "arena_attempt_budget_exhausted"
+
+
+@pytest.mark.parametrize("error_type", (DatabaseError, SafetyProviderError))
+@pytest.mark.django_db
+def test_growth_propagates_infrastructure_errors_with_claim_intact(
+    monkeypatch,
+    training_member,
+    error_type,
+):
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "accelerate_virtual_player_growth",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(error_type("growth infrastructure unavailable")),
+    )
+
+    with pytest.raises(error_type, match="growth infrastructure unavailable"):
+        grow_due_virtual_reserves(now=timezone.now(), limit=1)
+
+    training_member.refresh_from_db()
+    assert training_member.growth_claim_token is not None
+    assert training_member.growth_applied_action_count == 0
+    budget_entries = parse_arena_growth_budget_entries(
+        training_member.arena_growth_budget_entries,
+        now=timezone.now(),
+    )
+    assert len(budget_entries) == 1
+    assert budget_entries[0].outcome is ArenaGrowthAttemptOutcome.PENDING
+
+
+@pytest.mark.django_db
+def test_first_growth_claim_refreshes_stale_selected_lineup_baseline(
+    monkeypatch,
+    training_member,
+):
+    now = timezone.now()
+    training_member.current_lineup_power = 1
+    training_member.save(update_fields=["current_lineup_power", "updated_at"])
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "evaluate_bot_lineup",
+        lambda *_args, **_kwargs: BotLineupEvaluation(
+            ({"attack": 150, "defense": 150, "max_hp": 1500},),
+            450,
+            False,
+        ),
+    )
+
+    claim = virtual_reserve_pool._claim_due_virtual_reserve_growth(
+        member_id=training_member.id,
+        demand_id=training_member.demand_id,
+        now=now,
+        growth_targets={},
+    )
+
+    assert claim is not None
+    assert claim.power_before == 450
+    training_member.refresh_from_db()
+    assert training_member.current_lineup_power == 450
+    assert training_member.growth_power_before == 450
 
 
 @pytest.mark.django_db(transaction=True)
@@ -1013,8 +2511,8 @@ def test_growth_executes_maintenance_without_an_arena_transaction(
         observe_transaction_state,
     )
 
-    assert grow_due_virtual_reserves(now=timezone.now(), limit=1) == 1
-    assert atomic_states == [False]
+    assert grow_due_virtual_reserves(now=timezone.now(), limit=1) == ARENA_GROWTH_BUDGET_MAX_ATTEMPTS
+    assert atomic_states == [False] * ARENA_GROWTH_BUDGET_MAX_ATTEMPTS
 
 
 @pytest.mark.django_db(transaction=True)
@@ -1046,14 +2544,19 @@ def test_growth_finalize_failure_cannot_rollback_maintenance_or_safety_event(
         lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("arena finalize failed")),
     )
 
-    with pytest.raises(RuntimeError, match="arena finalize failed"):
-        grow_due_virtual_reserves(now=now, limit=1)
+    assert grow_due_virtual_reserves(now=now, limit=1) == 0
 
     training_member.profile.refresh_from_db()
     training_member.refresh_from_db()
     assert training_member.profile.maintenance_sequence == 1
     assert training_member.growth_claim_token is not None
     assert BotSafetyMetricEvent.objects.filter(event_id="arena-growth-finalize-failure").exists()
+    recovery = BotMaintenanceRecovery.objects.get(
+        scope=BotMaintenanceRecovery.Scope.ARENA_MEMBER,
+        entity_key=f"member:{training_member.id}",
+    )
+    assert recovery.failure_code == "programmer_error"
+    assert recovery.payload["phase"] == "finalize"
 
 
 @pytest.mark.django_db(transaction=True)
@@ -1067,16 +2570,39 @@ def test_committed_growth_receipt_recovers_finalize_without_repeating_execution(
     monkeypatch.setattr(
         maintenance,
         "read_virtual_player_routing",
-        lambda: SimpleNamespace(maintenance_mode=MaintenanceMode.LEGACY_BEFORE_GATE),
+        lambda: SimpleNamespace(maintenance_mode=MaintenanceMode.V2_ACTIVE),
     )
+    monkeypatch.setattr(maintenance, "_run_arena_v2_healing_sweep", lambda *_args, **_kwargs: None)
 
-    def commit_growth(profile, **_kwargs):
+    def commit_growth(
+        profile_id, *, operation_id, attempt_ordinal, now, _execution_request_digest, _execution_requested_at, **_kwargs
+    ):
         nonlocal execution_count
         execution_count += 1
+        profile = BotProfile.objects.get(pk=profile_id)
+        sequence_before = int(profile.maintenance_sequence)
         profile.growth_stage += 1
-        profile.save(update_fields=["growth_stage", "updated_at"])
+        profile.maintenance_sequence = sequence_before + 1
+        profile.save(update_fields=["growth_stage", "maintenance_sequence", "updated_at"])
+        BotMaintenanceExecution.objects.create(
+            operation_id=str(operation_id),
+            profile=profile,
+            attempt_ordinal=int(attempt_ordinal),
+            trigger=BotMaintenanceExecution.Trigger.ARENA_ACCELERATION,
+            outcome=BotMaintenanceExecution.Outcome.APPLIED,
+            schedule_disposition=BotMaintenanceExecution.ScheduleDisposition.PRESERVE_NORMAL_SCHEDULE,
+            maintenance_sequence_before=sequence_before,
+            maintenance_sequence_after=sequence_before + 1,
+            next_growth_at_before=profile.next_growth_at,
+            next_growth_at_after=profile.next_growth_at,
+            action_kind="training",
+            shadow_cost={},
+            request_digest=str(_execution_request_digest),
+            requested_at=_execution_requested_at,
+            safety_started_at=now,
+        )
 
-    monkeypatch.setattr(maintenance, "_maintain_active_profile", commit_growth)
+    monkeypatch.setattr(maintenance, "maintain_virtual_player_v2", commit_growth)
     monkeypatch.setattr(
         virtual_reserve_pool,
         "_evaluate_member",
@@ -1093,27 +2619,35 @@ def test_committed_growth_receipt_recovers_finalize_without_repeating_execution(
         lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("simulated crash after maintenance commit")),
     )
 
-    with pytest.raises(RuntimeError, match="simulated crash"):
-        grow_due_virtual_reserves(now=now, limit=1)
+    assert grow_due_virtual_reserves(now=now, limit=1) == 0
 
     training_member.refresh_from_db()
     operation_id = training_member.growth_operation_id
     assert execution_count == 1
     assert operation_id
     assert BotMaintenanceExecution.objects.filter(operation_id=operation_id).exists()
+    assert BotMaintenanceRecovery.objects.filter(
+        scope=BotMaintenanceRecovery.Scope.ARENA_MEMBER,
+        entity_key=f"member:{training_member.id}",
+        failure_code="programmer_error",
+    ).exists()
 
     monkeypatch.setattr(
         virtual_reserve_pool,
         "_finalize_virtual_reserve_growth",
         original_finalize,
     )
+    demand = training_member.demand
+    demand.version += 1
+    demand.target_team_power += 100
+    demand.save(update_fields=["version", "target_team_power", "updated_at"])
     retry_at = now + virtual_reserve_pool.GROWTH_CLAIM_LEASE + timedelta(seconds=1)
     assert grow_due_virtual_reserves(now=retry_at, limit=1) == 1
 
     training_member.refresh_from_db()
     assert execution_count == 1
     assert training_member.growth_claim_token is None
-    assert training_member.accelerated_growth_rounds == 1
+    assert training_member.growth_applied_action_count == 1
     assert training_member.state == ArenaVirtualReserveMember.State.READY
 
 
@@ -1149,6 +2683,77 @@ def test_expired_growth_claim_reuses_operation_and_fences_stale_finalize(
     )
     training_member.refresh_from_db()
     assert training_member.growth_claim_token == second.claim_token
+    budget_entries = parse_arena_growth_budget_entries(
+        training_member.arena_growth_budget_entries,
+        now=reclaimed_at,
+    )
+    # Reclaiming an expired claim cancels its old PENDING reservation before
+    # creating the replacement attempt, so the 24-hour budget is not double
+    # charged while a worker is being recovered.
+    assert len(budget_entries) == 1
+    assert all(entry.outcome is ArenaGrowthAttemptOutcome.PENDING for entry in budget_entries)
+
+
+@pytest.mark.django_db
+def test_schema_three_growth_claim_rejects_missing_objective(training_member):
+    now = timezone.now()
+    claim = virtual_reserve_pool._claim_due_virtual_reserve_growth(
+        member_id=training_member.id,
+        demand_id=training_member.demand_id,
+        now=now,
+        growth_targets={},
+    )
+    assert claim is not None
+    assert claim.request_digest_schema == 3
+    ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).update(
+        growth_objective_payload={},
+    )
+
+    assert not virtual_reserve_pool._finalize_virtual_reserve_growth(
+        claim,
+        growth_outcome=AcceleratedGrowthOutcome.BUSY,
+        now=now,
+    )
+    training_member.refresh_from_db()
+    assert training_member.growth_claim_token == claim.claim_token
+
+
+@pytest.mark.django_db
+def test_growth_attempt_budget_defers_the_thirteenth_claim(training_member, caplog):
+    now = timezone.now()
+    oldest = now - timedelta(hours=23)
+    entries = tuple(
+        ArenaGrowthBudgetEntry(
+            attempt_id=str(uuid4()),
+            attempted_at=oldest + timedelta(minutes=index),
+            outcome=ArenaGrowthAttemptOutcome.NO_ACTION,
+            effective_progress=False,
+            selected_growth_bps=0,
+        )
+        for index in range(ARENA_GROWTH_BUDGET_MAX_ATTEMPTS)
+    )
+    training_member.arena_growth_budget_entries = serialize_arena_growth_budget_entries(entries)
+    training_member.save(update_fields=["arena_growth_budget_entries", "updated_at"])
+    caplog.set_level(logging.INFO, logger="gameplay.services.arena.virtual_reserve_demand")
+
+    claim = virtual_reserve_pool._claim_due_virtual_reserve_growth(
+        member_id=training_member.id,
+        demand_id=training_member.demand_id,
+        now=now,
+        growth_targets={},
+    )
+
+    assert claim is None
+    training_member.refresh_from_db()
+    assert training_member.growth_claim_token is None
+    assert training_member.next_acceleration_at == oldest + ARENA_GROWTH_BUDGET_WINDOW
+    assert training_member.growth_retry_reason == "arena_attempt_budget_exhausted"
+    record = next(
+        record
+        for record in caplog.records
+        if getattr(record, "failure_reason", None) == "arena_attempt_budget_exhausted"
+    )
+    assert record.attempt_count == ARENA_GROWTH_BUDGET_MAX_ATTEMPTS
 
 
 @pytest.mark.django_db
@@ -1172,7 +2777,90 @@ def test_growth_claim_can_finalize_after_lease_when_it_was_not_reclaimed(
 
     training_member.refresh_from_db()
     assert training_member.growth_claim_token is None
-    assert training_member.next_acceleration_at == now + timedelta(minutes=5)
+    assert training_member.next_acceleration_at > now
+    assert training_member.growth_retry_reason == "profile_busy"
+
+
+@pytest.mark.django_db
+def test_paused_member_lease_prevents_claim_finalize_from_expiring_training_member(training_member):
+    now = timezone.now()
+    claim = virtual_reserve_pool._claim_due_virtual_reserve_growth(
+        member_id=training_member.id,
+        demand_id=training_member.demand_id,
+        now=now,
+        growth_targets={},
+    )
+    assert claim is not None
+    ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).update(
+        lease_expires_at=now + timedelta(minutes=30),
+        lease_paused_at=now,
+    )
+
+    assert virtual_reserve_pool._finalize_virtual_reserve_growth(
+        claim,
+        growth_outcome=AcceleratedGrowthOutcome.BUSY,
+        now=now + timedelta(hours=1),
+    )
+
+    training_member.refresh_from_db()
+    assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
+    assert training_member.lease_paused_at == now
+    assert training_member.growth_claim_token is None
+    assert (
+        virtual_reserve_pool._claim_due_virtual_reserve_growth(
+            member_id=training_member.id,
+            demand_id=training_member.demand_id,
+            now=now + timedelta(hours=1),
+            growth_targets={},
+        )
+        is None
+    )
+
+
+@pytest.mark.django_db
+def test_blocked_demand_active_claim_is_released_during_finalize(training_member):
+    now = timezone.now()
+    claim = virtual_reserve_pool._claim_due_virtual_reserve_growth(
+        member_id=training_member.id,
+        demand_id=training_member.demand_id,
+        now=now,
+        growth_targets={},
+    )
+    assert claim is not None
+    ArenaVirtualDemand.objects.filter(pk=training_member.demand_id).update(
+        status=ArenaVirtualDemand.Status.BLOCKED,
+    )
+
+    assert virtual_reserve_pool._finalize_virtual_reserve_growth(
+        claim,
+        growth_outcome=AcceleratedGrowthOutcome.NO_ACTION,
+        now=now,
+    )
+    assert not ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).exists()
+
+
+@pytest.mark.django_db
+def test_blocked_demand_expired_claim_is_released_by_periodic_growth_scan(training_member):
+    now = timezone.now()
+    claim = virtual_reserve_pool._claim_due_virtual_reserve_growth(
+        member_id=training_member.id,
+        demand_id=training_member.demand_id,
+        now=now,
+        growth_targets={},
+    )
+    assert claim is not None
+    ArenaVirtualDemand.objects.filter(pk=training_member.demand_id).update(
+        status=ArenaVirtualDemand.Status.BLOCKED,
+    )
+
+    assert (
+        grow_due_virtual_reserves(
+            now=claim.claim_expires_at + timedelta(seconds=1),
+            limit=10,
+        )
+        == 0
+    )
+    assert not ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).exists()
 
 
 @pytest.mark.django_db
@@ -1206,7 +2894,7 @@ def test_growth_finalize_revalidates_demand_version(
     training_member.refresh_from_db()
     assert training_member.state == ArenaVirtualReserveMember.State.READY
     assert training_member.evaluated_version == 2
-    assert training_member.accelerated_growth_rounds == 1
+    assert training_member.growth_applied_action_count == 1
     assert training_member.growth_claim_token is None
 
 
@@ -1299,9 +2987,9 @@ def test_successful_fill_preserves_in_flight_growth_claim(ready_reserve_demand):
 
 
 @pytest.mark.django_db
-def test_eighth_failed_growth_marks_member_exhausted(monkeypatch, training_member, caplog):
-    training_member.accelerated_growth_rounds = 7
-    training_member.save(update_fields=["accelerated_growth_rounds"])
+def test_growth_continues_after_many_rounds_without_lifetime_cap(monkeypatch, training_member, caplog):
+    training_member.growth_rounds_started = 9
+    training_member.save(update_fields=["growth_rounds_started"])
     caplog.set_level(logging.INFO, logger="gameplay.services.arena.virtual_reserve_demand")
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
@@ -1316,19 +3004,68 @@ def test_eighth_failed_growth_marks_member_exhausted(monkeypatch, training_membe
         ),
     )
 
-    assert grow_due_virtual_reserves(now=timezone.now(), limit=10) == 1
+    assert grow_due_virtual_reserves(now=timezone.now(), limit=10) == virtual_reserve_pool.ARENA_SLOTS_PER_ROUND
 
     training_member.refresh_from_db()
-    assert training_member.accelerated_growth_rounds == 8
-    assert training_member.state == ArenaVirtualReserveMember.State.EXHAUSTED
-    assert training_member.next_acceleration_at is None
-    assert training_member.growth_retry_reason == "growth_round_limit"
-    exhausted_record = next(
-        record for record in caplog.records if getattr(record, "event", None) == "arena_virtual_profile_exhausted"
+    assert training_member.growth_rounds_started == 10
+    assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
+    assert training_member.next_acceleration_at is not None
+    assert training_member.growth_retry_reason == ""
+    assert not any(
+        getattr(record, "event", None) == "arena_virtual_profile_exhausted"
+        and getattr(record, "failure_reason", None) == "target_cap_retry_limit"
+        for record in caplog.records
     )
-    assert exhausted_record.profile_id == training_member.profile_id
-    assert exhausted_record.failure_reason == "growth_round_limit"
-    assert exhausted_record.growth_rounds == 8
+
+
+@pytest.mark.django_db
+def test_applied_action_without_readiness_progress_consumes_round_only(
+    monkeypatch,
+    training_member,
+    caplog,
+):
+    now = timezone.now()
+    previous_progress_at = now - timedelta(hours=2)
+    demand = training_member.demand
+    demand.last_progress_at = previous_progress_at
+    demand.consecutive_failure_count = 2
+    demand.last_failure_reason = "previous_failure"
+    demand.save(
+        update_fields=[
+            "last_progress_at",
+            "consecutive_failure_count",
+            "last_failure_reason",
+        ]
+    )
+    power_before = int(training_member.current_lineup_power)
+    caplog.set_level(logging.INFO, logger="gameplay.services.arena.virtual_reserve_demand")
+    monkeypatch.setattr(
+        "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
+        lambda *_args, **_kwargs: AcceleratedGrowthOutcome.GROWN,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.arena.virtual_reserve_pool.evaluate_bot_lineup",
+        lambda *_args, **_kwargs: BotLineupEvaluation(
+            ({"attack": 100, "defense": 100, "max_hp": 1000},),
+            power_before,
+            False,
+        ),
+    )
+
+    assert grow_due_virtual_reserves(now=now, limit=1) == 8
+
+    training_member.refresh_from_db()
+    demand.refresh_from_db()
+    assert training_member.growth_applied_action_count == 8
+    assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
+    assert demand.last_progress_at == previous_progress_at
+    assert demand.consecutive_failure_count == 2
+    assert demand.last_failure_reason == "previous_failure"
+    record = next(
+        record for record in caplog.records if getattr(record, "event", None) == "arena_virtual_profile_grown"
+    )
+    assert record.readiness_progress is False
+    assert record.selected_lineup_gap_before == record.selected_lineup_gap_after
 
 
 @pytest.mark.django_db
@@ -1348,11 +3085,55 @@ def test_post_fill_growth_waits_fifteen_minutes_before_repeating(monkeypatch, tr
         ),
     )
 
-    assert grow_due_virtual_reserves(now=now, limit=10) == 1
+    assert grow_due_virtual_reserves(now=now, limit=10) == 8
     assert grow_due_virtual_reserves(now=now, limit=10) == 0
-    assert calls == [training_member.profile_id]
+    assert calls == [training_member.profile_id] * 8
     training_member.refresh_from_db()
-    assert training_member.next_acceleration_at == now + timedelta(minutes=15)
+    assert (
+        now + timedelta(minutes=15)
+        <= training_member.next_acceleration_at
+        <= (now + timedelta(minutes=15) + ARENA_REARM_JITTER_MAX)
+    )
+
+
+@pytest.mark.django_db
+def test_growth_consumes_the_remaining_round_slots_in_order(monkeypatch, training_member):
+    now = timezone.now()
+    BotProfile.objects.filter(pk=training_member.profile_id).update(policy_version=2)
+    calls: list[dict[str, object]] = []
+
+    def grow_profile(profile_id, **kwargs):
+        calls.append({"profile_id": profile_id, **kwargs})
+        return AcceleratedGrowthOutcome.GROWN
+
+    monkeypatch.setattr(
+        "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
+        grow_profile,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.arena.virtual_reserve_pool.evaluate_bot_lineup",
+        lambda profile, **kwargs: BotLineupEvaluation(
+            ({"attack": 10, "defense": 10, "max_hp": 100},),
+            30,
+            False,
+        ),
+    )
+
+    assert grow_due_virtual_reserves(now=now, limit=1) == 8
+    assert len(calls) == 8
+    assert [int(call["_arena_action_ordinal"]) for call in calls] == list(range(1, 9))
+    assert {int(call["_arena_round_ordinal"]) for call in calls} == {1}
+    assert {int(call["_arena_slot_attempt_ordinal"]) for call in calls} == {1}
+
+    training_member.refresh_from_db()
+    assert training_member.growth_rounds_started == 1
+    assert training_member.growth_applied_action_count == 8
+    assert training_member.growth_round_id == ""
+    assert (
+        now + timedelta(minutes=15)
+        <= training_member.next_acceleration_at
+        <= (now + timedelta(minutes=15) + ARENA_REARM_JITTER_MAX)
+    )
 
 
 @pytest.mark.django_db
@@ -1374,10 +3155,14 @@ def test_pre_fill_growth_waits_one_hour_before_repeating(monkeypatch, training_m
         ),
     )
 
-    assert grow_due_virtual_reserves(now=now, limit=10) == 1
+    assert grow_due_virtual_reserves(now=now, limit=10) == 8
 
     training_member.refresh_from_db()
-    assert training_member.next_acceleration_at == now + timedelta(hours=1)
+    assert (
+        now + timedelta(hours=1)
+        <= training_member.next_acceleration_at
+        <= (now + timedelta(hours=1) + ARENA_REARM_JITTER_MAX)
+    )
 
 
 @pytest.mark.django_db
@@ -1388,19 +3173,21 @@ def test_busy_growth_keeps_training_member(monkeypatch, training_member):
         lambda *_args, **_kwargs: AcceleratedGrowthOutcome.BUSY,
     )
 
-    assert grow_due_virtual_reserves(now=now, limit=10) == 1
+    assert grow_due_virtual_reserves(now=now, limit=10) == ARENA_GROWTH_BUDGET_MAX_ATTEMPTS
 
     training_member.refresh_from_db()
     assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
-    assert training_member.accelerated_growth_rounds == 0
-    assert training_member.next_acceleration_at == now + timedelta(minutes=5)
+    assert training_member.growth_applied_action_count == 0
+    assert training_member.next_acceleration_at > now
+    assert training_member.growth_retry_reason == "arena_attempt_budget_exhausted"
 
 
 @pytest.mark.django_db
 def test_busy_growth_stops_at_the_member_lease_deadline(monkeypatch, training_member):
     now = timezone.now()
     ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).update(
-        created_at=now - MAX_NO_ACTION_LEASE_AGE,
+        created_at=now - MAX_RESERVE_MEMBER_LEASE_AGE,
+        lease_expires_at=now,
     )
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
@@ -1419,7 +3206,12 @@ def test_busy_growth_stops_at_the_member_lease_deadline(monkeypatch, training_me
 def test_no_action_growth_retries_without_consuming_a_growth_round(monkeypatch, training_member, caplog):
     now = timezone.now()
     created_at = now - timedelta(hours=11)
-    ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).update(created_at=created_at)
+    ArenaVirtualReserveMember.objects.filter(
+        pk=training_member.pk,
+    ).update(
+        created_at=created_at,
+        lease_expires_at=created_at + MAX_RESERVE_MEMBER_LEASE_AGE,
+    )
     caplog.set_level(logging.INFO, logger="gameplay.services.arena.virtual_reserve_demand")
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
@@ -1430,10 +3222,17 @@ def test_no_action_growth_retries_without_consuming_a_growth_round(monkeypatch, 
 
     training_member.refresh_from_db()
     assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
-    assert training_member.accelerated_growth_rounds == 0
+    assert training_member.growth_applied_action_count == 0
     assert training_member.next_acceleration_at == now + timedelta(minutes=15)
     record = next(record for record in caplog.records if getattr(record, "failure_reason", None) == "growth_no_action")
-    assert record.lease_deadline == (created_at + MAX_NO_ACTION_LEASE_AGE).isoformat()
+    assert record.lease_deadline == (created_at + MAX_RESERVE_MEMBER_LEASE_AGE).isoformat()
+    budget_entries = parse_arena_growth_budget_entries(
+        training_member.arena_growth_budget_entries,
+        now=now,
+    )
+    assert len(budget_entries) == 1
+    assert budget_entries[0].outcome is ArenaGrowthAttemptOutcome.NO_ACTION
+    assert budget_entries[0].effective_progress is False
 
 
 @pytest.mark.django_db
@@ -1458,7 +3257,7 @@ def test_no_action_growth_uses_exponential_member_backoff(monkeypatch, training_
 
 
 @pytest.mark.django_db
-def test_repeated_strength_cap_no_action_exhausts_member(monkeypatch, training_member):
+def test_repeated_strength_cap_no_action_reopens_arena_member(monkeypatch, training_member):
     now = timezone.now()
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
@@ -1469,31 +3268,34 @@ def test_repeated_strength_cap_no_action_exhausts_member(monkeypatch, training_m
         lambda **_kwargs: "strength_cap",
     )
 
-    assert grow_due_virtual_reserves(now=now, limit=10) == 1
+    assert grow_due_virtual_reserves(now=now, limit=10) == 3
     training_member.refresh_from_db()
-    second_attempt_at = training_member.next_acceleration_at
-    assert grow_due_virtual_reserves(now=second_attempt_at, limit=10) == 1
-    training_member.refresh_from_db()
-    third_attempt_at = training_member.next_acceleration_at
-    assert grow_due_virtual_reserves(now=third_attempt_at, limit=10) == 1
-
     training_member.refresh_from_db()
     assert training_member.state == ArenaVirtualReserveMember.State.EXHAUSTED
     assert training_member.next_acceleration_at is None
     assert training_member.growth_retry_streak == 3
-    assert training_member.growth_retry_reason == "strength_cap_retry_limit"
+    assert training_member.growth_retry_reason == "target_cap_retry_limit"
 
-    replenish_virtual_reserve(training_member.demand_id, now=now)
+    demand_id = training_member.demand_id
+    replenish_virtual_reserve(demand_id, now=now)
+    demand = ArenaVirtualDemand.objects.get(pk=demand_id)
     training_member.refresh_from_db()
-    assert training_member.state == ArenaVirtualReserveMember.State.EXHAUSTED
-    assert training_member.next_acceleration_at is None
+    assert demand.status == ArenaVirtualDemand.Status.ACTIVE
+    assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
+    assert training_member.growth_retry_reason == ""
+    assert ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).exists()
 
 
 @pytest.mark.django_db
 def test_no_action_retry_stops_at_the_absolute_lease_deadline(monkeypatch, training_member):
     deadline = timezone.now() + timedelta(minutes=10)
-    created_at = deadline - MAX_NO_ACTION_LEASE_AGE
-    ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).update(created_at=created_at)
+    created_at = deadline - MAX_RESERVE_MEMBER_LEASE_AGE
+    ArenaVirtualReserveMember.objects.filter(
+        pk=training_member.pk,
+    ).update(
+        created_at=created_at,
+        lease_expires_at=deadline,
+    )
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
         lambda *_args, **_kwargs: AcceleratedGrowthOutcome.NO_ACTION,
@@ -1503,21 +3305,26 @@ def test_no_action_retry_stops_at_the_absolute_lease_deadline(monkeypatch, train
 
     training_member.refresh_from_db()
     assert training_member.next_acceleration_at == deadline
-    assert training_member.accelerated_growth_rounds == 0
+    assert training_member.growth_applied_action_count == 0
 
     assert grow_due_virtual_reserves(now=deadline, limit=10) == 1
 
     training_member.refresh_from_db()
     assert training_member.state == ArenaVirtualReserveMember.State.EXHAUSTED
     assert training_member.next_acceleration_at is None
-    assert training_member.accelerated_growth_rounds == 0
+    assert training_member.growth_applied_action_count == 0
     assert training_member.created_at == created_at
 
 
 @pytest.mark.django_db
 def test_no_action_at_deadline_frees_active_capacity(monkeypatch, training_member, caplog):
     now = timezone.now()
-    ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).update(created_at=now - MAX_NO_ACTION_LEASE_AGE)
+    ArenaVirtualReserveMember.objects.filter(
+        pk=training_member.pk,
+    ).update(
+        created_at=now - MAX_RESERVE_MEMBER_LEASE_AGE,
+        lease_expires_at=now,
+    )
     caplog.set_level(logging.INFO, logger="gameplay.services.arena.virtual_reserve_demand")
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
@@ -1528,14 +3335,14 @@ def test_no_action_at_deadline_frees_active_capacity(monkeypatch, training_membe
 
     training_member.refresh_from_db()
     assert training_member.state == ArenaVirtualReserveMember.State.EXHAUSTED
-    assert training_member.accelerated_growth_rounds == 0
+    assert training_member.growth_applied_action_count == 0
     assert training_member.next_acceleration_at is None
     assert training_member.growth_retry_reason == "no_action_lease_deadline"
     assert training_member.demand.reserve_members.exclude(state=ArenaVirtualReserveMember.State.EXHAUSTED).count() == 0
     record = next(
         record for record in caplog.records if getattr(record, "failure_reason", None) == "no_action_lease_deadline"
     )
-    assert record.growth_rounds == 0
+    assert record.growth_rounds == 1
 
 
 @pytest.mark.django_db
@@ -1560,7 +3367,8 @@ def test_reevaluation_does_not_reactivate_a_no_action_expired_member(monkeypatch
     now = timezone.now()
     ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).update(
         state=ArenaVirtualReserveMember.State.EXHAUSTED,
-        created_at=now - MAX_NO_ACTION_LEASE_AGE,
+        created_at=now - MAX_RESERVE_MEMBER_LEASE_AGE,
+        lease_expires_at=now,
         next_acceleration_at=None,
     )
     monkeypatch.setattr(
@@ -1572,13 +3380,17 @@ def test_reevaluation_does_not_reactivate_a_no_action_expired_member(monkeypatch
 
     training_member.refresh_from_db()
     assert training_member.state == ArenaVirtualReserveMember.State.EXHAUSTED
-    assert training_member.accelerated_growth_rounds == 0
+    assert training_member.growth_applied_action_count == 0
     assert training_member.next_acceleration_at is None
     assert training_member.growth_retry_reason == "no_action_lease_deadline"
 
 
 @pytest.mark.django_db
-def test_paused_growth_releases_training_member(monkeypatch, training_member, caplog):
+def test_paused_growth_result_preserves_training_member_and_refunds_attempt_budget(
+    monkeypatch,
+    training_member,
+    caplog,
+):
     caplog.set_level(logging.INFO, logger="gameplay.services.arena.virtual_reserve_demand")
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
@@ -1587,27 +3399,107 @@ def test_paused_growth_releases_training_member(monkeypatch, training_member, ca
 
     assert grow_due_virtual_reserves(now=timezone.now(), limit=10) == 1
 
-    assert not ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).exists()
+    training_member.refresh_from_db()
+    assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
+    assert training_member.growth_claim_token is None
+    assert training_member.arena_growth_budget_entries == []
     record = next(record for record in caplog.records if getattr(record, "failure_reason", None) == "growth_paused")
-    assert record.growth_rounds == 0
+    assert record.growth_rounds == 1
+    assert record.member_state == ArenaVirtualReserveMember.State.TRAINING
 
 
 @pytest.mark.django_db
-def test_runtime_paused_skips_reserve_growth_attempt(monkeypatch, training_member):
-    BotRuntimeRoutingState.objects.create(
+def test_runtime_paused_preserves_training_and_resumes_growth_automatically(monkeypatch, training_member):
+    _enroll_profile_v2(training_member.profile)
+    routing = _set_runtime_routing(
         key=BotRuntimeRoutingState.GLOBAL_KEY,
-        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_PAUSED,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
         maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
         calibration_routes=[],
     )
+
+    def growth_attempt(*_args, **_kwargs):
+        return AcceleratedGrowthOutcome.NO_ACTION
+
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
-        lambda *_args, **_kwargs: pytest.fail("paused runtime must not issue a growth attempt"),
+        growth_attempt,
     )
 
     assert grow_due_virtual_reserves(now=timezone.now(), limit=10) == 0
 
-    assert not ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).exists()
+    training_member.refresh_from_db()
+    assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
+    assert training_member.growth_claim_token is None
+    assert training_member.arena_growth_budget_entries == []
+
+    routing.maintenance_mode = BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+    routing.save(update_fields=["maintenance_mode"])
+
+    assert grow_due_virtual_reserves(now=timezone.now(), limit=10) == 1
+    training_member.refresh_from_db()
+    budget_entries = parse_arena_growth_budget_entries(
+        training_member.arena_growth_budget_entries,
+        now=timezone.now(),
+    )
+    assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
+    assert training_member.growth_claim_token is None
+    assert len(budget_entries) == 1
+    assert budget_entries[0].outcome is ArenaGrowthAttemptOutcome.NO_ACTION
+
+
+@pytest.mark.django_db
+def test_routing_unavailable_preserves_due_growth_and_recovers_automatically(monkeypatch, training_member):
+    now = timezone.now()
+    _enroll_profile_v2(training_member.profile)
+    _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        calibration_routes=[],
+    )
+    routing_available = False
+    read_routing = runtime_assessment.read_virtual_player_routing
+
+    def conditional_routing():
+        if not routing_available:
+            raise runtime_assessment.RuntimeRoutingError("routing unavailable")
+        return read_routing()
+
+    monkeypatch.setattr(runtime_assessment, "read_virtual_player_routing", conditional_routing)
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "accelerate_virtual_player_growth",
+        lambda *_args, **_kwargs: AcceleratedGrowthOutcome.NO_ACTION,
+    )
+
+    original_deadline = now + timedelta(minutes=30)
+    ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).update(
+        lease_expires_at=original_deadline,
+        lease_paused_at=None,
+    )
+    due_at = training_member.next_acceleration_at
+    assert grow_due_virtual_reserves(now=now, limit=10) == 0
+    training_member.refresh_from_db()
+    assert training_member.next_acceleration_at == due_at
+    assert training_member.growth_claim_token is None
+    assert training_member.arena_growth_budget_entries == []
+    assert training_member.lease_paused_at == now
+    assert training_member.lease_expires_at == original_deadline
+
+    routing_available = True
+    resumed_at = now + timedelta(hours=2)
+    assert grow_due_virtual_reserves(now=resumed_at, limit=10) == 1
+    training_member.refresh_from_db()
+    budget_entries = parse_arena_growth_budget_entries(
+        training_member.arena_growth_budget_entries,
+        now=resumed_at,
+    )
+    assert training_member.growth_claim_token is None
+    assert len(budget_entries) == 1
+    assert budget_entries[0].outcome is ArenaGrowthAttemptOutcome.NO_ACTION
+    assert training_member.lease_paused_at is None
+    assert training_member.lease_expires_at == original_deadline + (resumed_at - now)
 
 
 @pytest.mark.django_db
@@ -1635,6 +3527,149 @@ def test_demand_reconcile_preserves_failure_backoff_and_scan_skips_until_due():
 
 
 @pytest.mark.django_db
+def test_same_demand_failure_is_coalesced_until_its_retry_window_expires(reserve_demand):
+    now = timezone.now()
+
+    with transaction.atomic():
+        demand = ArenaVirtualDemand.objects.select_for_update().get(pk=reserve_demand.pk)
+        virtual_reserve_pool.record_demand_failure_locked(
+            demand,
+            reason="target_unreachable_by_cap",
+            now=now,
+        )
+
+    reserve_demand.refresh_from_db()
+    first_retry_at = reserve_demand.next_retry_at
+    assert first_retry_at == now + timedelta(minutes=5)
+    assert reserve_demand.consecutive_failure_count == 1
+
+    with transaction.atomic():
+        demand = ArenaVirtualDemand.objects.select_for_update().get(pk=reserve_demand.pk)
+        virtual_reserve_pool.record_demand_failure_locked(
+            demand,
+            reason="target_unreachable_by_cap",
+            now=now + timedelta(seconds=1),
+        )
+
+    reserve_demand.refresh_from_db()
+    assert reserve_demand.next_retry_at == first_retry_at
+    assert reserve_demand.consecutive_failure_count == 1
+
+    with transaction.atomic():
+        demand = ArenaVirtualDemand.objects.select_for_update().get(pk=reserve_demand.pk)
+        virtual_reserve_pool.record_demand_failure_locked(
+            demand,
+            reason="target_unreachable_by_cap",
+            now=first_retry_at,
+        )
+
+    reserve_demand.refresh_from_db()
+    assert reserve_demand.consecutive_failure_count == 2
+    assert reserve_demand.next_retry_at == first_retry_at + timedelta(minutes=10)
+
+
+@pytest.mark.django_db
+def test_same_demand_failure_coalesces_after_a_different_prior_failure_episode(reserve_demand):
+    now = timezone.now()
+    reserve_demand.consecutive_failure_count = 2
+    reserve_demand.last_failure_reason = "insufficient_ready_members"
+    reserve_demand.save(
+        update_fields=[
+            "consecutive_failure_count",
+            "last_failure_reason",
+            "updated_at",
+        ]
+    )
+
+    with transaction.atomic():
+        demand = ArenaVirtualDemand.objects.select_for_update().get(pk=reserve_demand.pk)
+        virtual_reserve_pool.record_demand_failure_locked(
+            demand,
+            reason="target_unreachable_by_cap",
+            now=now,
+        )
+
+    reserve_demand.refresh_from_db()
+    retry_at = reserve_demand.next_retry_at
+    assert retry_at == now + timedelta(minutes=20)
+    assert reserve_demand.consecutive_failure_count == 3
+
+    with transaction.atomic():
+        demand = ArenaVirtualDemand.objects.select_for_update().get(pk=reserve_demand.pk)
+        virtual_reserve_pool.record_demand_failure_locked(
+            demand,
+            reason="target_unreachable_by_cap",
+            now=now + timedelta(seconds=1),
+        )
+
+    reserve_demand.refresh_from_db()
+    assert reserve_demand.next_retry_at == retry_at
+    assert reserve_demand.consecutive_failure_count == 3
+
+
+@pytest.mark.django_db
+def test_growth_scan_coalesces_batch_unreachable_members_into_one_demand_failure(
+    monkeypatch,
+    training_member,
+):
+    now = timezone.now()
+    demand = training_member.demand
+    peer_profile = _create_bot_profile(
+        "batch_unreachable_growth_peer",
+        guest_stats=[(150, 150, 25)],
+    )
+    peer = ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=peer_profile,
+        state=ArenaVirtualReserveMember.State.TRAINING,
+        current_lineup_power=450,
+        next_acceleration_at=now,
+    )
+    training_member.next_acceleration_at = now
+    training_member.save(update_fields=["next_acceleration_at", "updated_at"])
+    demand.consecutive_failure_count = 2
+    demand.last_failure_reason = "insufficient_ready_members"
+    demand.save(
+        update_fields=[
+            "consecutive_failure_count",
+            "last_failure_reason",
+            "updated_at",
+        ]
+    )
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "_evaluate_profile_for_demand",
+        lambda *_args, **_kwargs: BotLineupEvaluation(
+            ({"attack": 150, "defense": 150, "max_hp": 25},),
+            450,
+            False,
+        ),
+    )
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "_arena_growth_reachability",
+        lambda **_kwargs: virtual_reserve_pool._ArenaReachabilityAssessment(
+            False,
+            max_selected_power=900,
+            reason="target_unreachable_by_cap",
+        ),
+    )
+
+    assert grow_due_virtual_reserves(now=now, limit=10) == 0
+
+    demand.refresh_from_db()
+    training_member.refresh_from_db()
+    peer.refresh_from_db()
+    assert demand.consecutive_failure_count == 3
+    assert demand.last_failure_reason == "target_unreachable_by_cap"
+    assert demand.next_retry_at == now + timedelta(minutes=20)
+    assert training_member.state == ArenaVirtualReserveMember.State.EXHAUSTED
+    assert peer.state == ArenaVirtualReserveMember.State.EXHAUSTED
+    assert training_member.growth_claim_token is None
+    assert peer.growth_claim_token is None
+
+
+@pytest.mark.django_db
 def test_ineligible_growth_releases_training_member(monkeypatch, training_member):
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
@@ -1647,184 +3682,22 @@ def test_ineligible_growth_releases_training_member(monkeypatch, training_member
 
 
 @pytest.mark.django_db
-def test_unknown_growth_outcome_raises_without_consuming_round(monkeypatch, training_member):
+def test_unknown_growth_outcome_enters_recovery_without_consuming_round(monkeypatch, training_member):
     monkeypatch.setattr(
         "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
         lambda *_args, **_kwargs: "unexpected",
     )
 
-    with pytest.raises(ValueError, match="Unsupported accelerated growth outcome"):
-        grow_due_virtual_reserves(now=timezone.now(), limit=10)
+    assert grow_due_virtual_reserves(now=timezone.now(), limit=10) == 0
 
     training_member.refresh_from_db()
     assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
-    assert training_member.accelerated_growth_rounds == 0
-
-
-@pytest.mark.django_db
-def test_creation_budget_creates_zero_prestige_long_term_reserve(settings, reserve_demand, caplog):
-    _bootstrap_building_types()
-    settings.VIRTUAL_PLAYER_CONFIG = {
-        "population": {
-            "region_floor": 8,
-            "region_active_multiplier": 8,
-            "global_floor": 32,
-            "global_active_multiplier": 20,
-        },
-        "prestige_bands": {"newbie": [0, 500]},
-        "projection": {
-            "guest_template_keys": [],
-            "gear_template_keys": [],
-            "troop_template_keys": [],
-        },
-    }
-    reserve_demand.max_reserve_target_count = 6
-    reserve_demand.created_profile_count = 0
-    reserve_demand.save(update_fields=["max_reserve_target_count", "created_profile_count"])
-    caplog.set_level(logging.INFO, logger="gameplay.services.arena.virtual_reserve_demand")
-
-    created = create_due_virtual_reserve_profiles(now=timezone.now(), limit=1)
-
-    reserve_demand.refresh_from_db()
-    profile = BotProfile.objects.latest("id")
-    assert created == 1
-    assert profile.manor.prestige == 0
-    assert profile.target_prestige_band == "newbie"
-    assert reserve_demand.created_profile_count == 1
-    record = next(
-        record for record in caplog.records if getattr(record, "event", None) == "arena_virtual_profile_created"
-    )
-    assert record.profile_id == profile.id
-    assert record.demand_id == reserve_demand.id
-    assert record.target_prestige_band == "newbie"
-    assert record.actual_prestige == 0
-
-
-@pytest.mark.django_db
-def test_creation_records_budget_only_after_profile_is_created(monkeypatch, reserve_demand):
-    reserve_demand.max_reserve_target_count = 1
-    reserve_demand.created_profile_count = 0
-    reserve_demand.save(update_fields=["max_reserve_target_count", "created_profile_count"])
-    monkeypatch.setattr(
-        "gameplay.services.arena.virtual_reserve_pool.replenish_virtual_reserve",
-        lambda demand_id, now: ReserveReplenishmentResult(0, 0, 0, 0, 1),
-    )
-    observed_claims: list[int] = []
-
-    def _create_profile(**_kwargs):
-        reserve_demand.refresh_from_db()
-        observed_claims.append(reserve_demand.created_profile_count)
-        return PopulationMutationResult(
-            status=PopulationMutationStatus.CREATED,
-            profile=_create_bot_profile("reserve_creation_claimed_profile"),
-            hard_cap=10,
-            maintained_count=0,
-        )
-
-    monkeypatch.setattr(
-        "gameplay.services.arena.virtual_reserve_pool.create_virtual_player_with_capacity",
-        _create_profile,
-    )
-
-    assert create_due_virtual_reserve_profiles(now=timezone.now(), limit=1) == 1
-    reserve_demand.refresh_from_db()
-    assert observed_claims == [0]
-    assert reserve_demand.created_profile_count == 1
-
-
-@pytest.mark.django_db
-def test_creation_delegates_region_selection_to_capacity_owner(monkeypatch, reserve_demand):
-    reserve_demand.max_reserve_target_count = 1
-    reserve_demand.created_profile_count = 0
-    reserve_demand.save(update_fields=["max_reserve_target_count", "created_profile_count"])
-    monkeypatch.setattr(
-        "gameplay.services.arena.virtual_reserve_pool.replenish_virtual_reserve",
-        lambda demand_id, now: ReserveReplenishmentResult(0, 0, 0, 0, 1),
-    )
-    selected_regions: list[str | None] = []
-
-    def _capacity_owned_create(**kwargs):
-        selected_regions.append(kwargs["region"])
-        return PopulationMutationResult(
-            status=PopulationMutationStatus.CAP_REACHED,
-            profile=None,
-            hard_cap=1,
-            maintained_count=1,
-        )
-
-    monkeypatch.setattr(
-        "gameplay.services.arena.virtual_reserve_pool.create_virtual_player_with_capacity",
-        _capacity_owned_create,
-    )
-
-    assert create_due_virtual_reserve_profiles(now=timezone.now(), limit=1) == 0
-    assert selected_regions == [None]
-
-
-@pytest.mark.django_db
-def test_creation_releases_claim_when_profile_projection_fails(monkeypatch, reserve_demand):
-    reserve_demand.max_reserve_target_count = 1
-    reserve_demand.created_profile_count = 0
-    reserve_demand.save(update_fields=["max_reserve_target_count", "created_profile_count"])
-    monkeypatch.setattr(
-        "gameplay.services.arena.virtual_reserve_pool.replenish_virtual_reserve",
-        lambda demand_id, now: ReserveReplenishmentResult(0, 0, 0, 0, 1),
-    )
-    observed_claims: list[int] = []
-
-    def _fail_projection(**_kwargs):
-        reserve_demand.refresh_from_db()
-        observed_claims.append(reserve_demand.created_profile_count)
-        raise RuntimeError("projection failed")
-
-    monkeypatch.setattr(
-        "gameplay.services.arena.virtual_reserve_pool.create_virtual_player_with_capacity",
-        _fail_projection,
-    )
-
-    with pytest.raises(RuntimeError, match="projection failed"):
-        create_due_virtual_reserve_profiles(now=timezone.now(), limit=1)
-
-    reserve_demand.refresh_from_db()
-    assert observed_claims == [0]
-    assert reserve_demand.created_profile_count == 0
-
-
-@pytest.mark.django_db
-def test_creation_stops_at_dynamic_population_cap(settings, reserve_demand, caplog):
-    settings.VIRTUAL_PLAYER_CONFIG = {
-        "population": {
-            "region_floor": 0,
-            "region_active_multiplier": 0,
-            "global_floor": 1,
-            "global_active_multiplier": 0,
-        },
-        "prestige_bands": {"newbie": [0, 500]},
-    }
-    existing = _create_bot_profile("reserve_creation_cap_existing")
-    occupied_tournament = ArenaTournament.objects.create(
-        status=ArenaTournament.Status.RUNNING,
-        player_limit=2,
-    )
-    ArenaEntry.objects.create(
-        tournament=occupied_tournament,
-        manor=existing.manor,
-        source=ArenaEntry.Source.VIRTUAL,
-    )
-    reserve_demand.max_reserve_target_count = 6
-    reserve_demand.created_profile_count = 0
-    reserve_demand.save(update_fields=["max_reserve_target_count", "created_profile_count"])
-    caplog.set_level(logging.INFO, logger="gameplay.services.arena.virtual_reserve_demand")
-
-    assert create_due_virtual_reserve_profiles(now=timezone.now(), limit=5) == 0
-    assert BotProfile.objects.count() == 1
-    assert BotProfile.objects.get() == existing
-    record = next(
-        record for record in caplog.records if getattr(record, "event", None) == "arena_virtual_fill_deferred"
-    )
-    assert record.failure_reason == "dynamic_population_cap_reached"
-    assert record.hard_cap == 1
-    assert record.maintained_count == 1
+    assert training_member.growth_applied_action_count == 0
+    assert BotMaintenanceRecovery.objects.filter(
+        scope=BotMaintenanceRecovery.Scope.ARENA_MEMBER,
+        entity_key=f"member:{training_member.id}",
+        failure_code="programmer_error",
+    ).exists()
 
 
 @pytest.mark.django_db
@@ -1883,6 +3756,20 @@ def test_due_fill_falls_back_to_oldest_recent_profile(ready_reserve_demand):
 def test_successful_fill_updates_shared_participation_history(ready_reserve_demand, caplog):
     now = timezone.now()
     caplog.set_level(logging.INFO, logger="gameplay.services.arena.virtual_reserve_demand")
+    demand = ready_reserve_demand.demand
+    demand.admission_attempt_high_water = 2
+    demand.admission_paused_at = now
+    demand.admission_pause_reason = "no_effective_progress"
+    demand.admission_probe_target_ordinal = 2
+    demand.save(
+        update_fields=[
+            "admission_attempt_high_water",
+            "admission_paused_at",
+            "admission_pause_reason",
+            "admission_probe_target_ordinal",
+            "updated_at",
+        ]
+    )
 
     assert (
         fill_due_tournament_reserve(
@@ -1897,8 +3784,12 @@ def test_successful_fill_updates_shared_participation_history(ready_reserve_dema
     )
     selected_profile = BotProfile.objects.get(manor_id=virtual_entry.manor_id)
     selected_profile.refresh_from_db()
+    demand.refresh_from_db()
     assert selected_profile.last_arena_participated_at == now
     assert selected_profile.arena_participation_count == 1
+    assert demand.admission_pause_reason == ""
+    assert demand.admission_paused_at is None
+    assert demand.admission_probe_target_ordinal is None
     record = next(
         record for record in caplog.records if getattr(record, "event", None) == "arena_virtual_fill_completed"
     )
@@ -1993,6 +3884,12 @@ def test_periodic_scan_observes_arena_shortage_once_when_fill_reconciles_again(
     django_capture_on_commit_callbacks,
 ):
     now = timezone.now()
+    _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        calibration_routes=[],
+    )
     tournament = ArenaTournament.objects.create(
         status=ArenaTournament.Status.RECRUITING,
         player_limit=2,
@@ -2023,6 +3920,12 @@ def test_periodic_scan_observes_arena_shortage_once_when_fill_reconciles_again(
 @pytest.mark.django_db
 def test_periodic_scan_discovers_recruiting_event_without_persisted_demand():
     now = timezone.now()
+    _set_runtime_routing(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        calibration_routes=[],
+    )
     tournament = ArenaTournament.objects.create(
         status=ArenaTournament.Status.RECRUITING,
         player_limit=2,

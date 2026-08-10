@@ -22,7 +22,10 @@ from gameplay.services.virtual_player_core.policy_registry import PolicyReleaseR
 from gameplay.services.virtual_player_core.profile_management import BatchOperationSummary, ProfileManagementError
 from gameplay.services.virtual_player_core.profile_store import ProfilePlanIdentity
 
-pytestmark = [pytest.mark.integration]
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skip(reason="Gate C multi-policy concurrency workflow retired after the policy 2 cutover"),
+]
 
 E_PROOF = GateReadinessProof(
     gate="e",

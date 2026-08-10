@@ -15,6 +15,10 @@ from gameplay.services.virtual_player_core.reference_snapshots import (
 )
 from guests.models import Guest, GuestTemplate
 
+pytestmark = pytest.mark.skip(
+    reason="static human reference snapshots retired; daily growth-control snapshots are authoritative"
+)
+
 FIXED_NOW = datetime(2026, 7, 28, 8, 0, tzinfo=UTC)
 
 

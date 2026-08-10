@@ -149,6 +149,7 @@ def choose_template_from_entries(
     *,
     templates_by_rarity: Dict[str, List[GuestTemplate]] | None = None,
     hermit_templates: List[GuestTemplate] | None = None,
+    rarity: str | None = None,
 ) -> GuestTemplate:
     """
     从卡池条目中随机选择一个门客模板。
@@ -158,7 +159,7 @@ def choose_template_from_entries(
     if excluded_ids is None:
         excluded_ids = set()
 
-    rarity = choose_rarity(rng)
+    rarity = choose_rarity(rng) if rarity is None else str(rarity)
 
     if rarity == HERMIT_RARITY:
         loaded_hermit_templates = hermit_templates if hermit_templates is not None else _get_hermit_templates()

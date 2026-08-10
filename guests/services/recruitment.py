@@ -29,6 +29,7 @@ from . import recruitment_candidates as _recruitment_candidates
 from . import recruitment_flow as _recruitment_flow
 from . import recruitment_followups as _recruitment_followups
 from . import recruitment_queries as _recruitment_queries
+from . import recruitment_quota as _recruitment_quota
 from . import recruitment_shared as _recruitment_shared
 from . import recruitment_templates as _recruitment_templates
 
@@ -214,7 +215,10 @@ def start_guest_recruitment(manor: Manor, pool: RecruitmentPool, seed: int | Non
         pool=pool,
         current_time=current_time,
         has_active_guest_recruitment=_recruitment_queries.has_active_guest_recruitment,
-        daily_limit=_recruitment_queries._get_pool_daily_draw_limit(),
+        daily_limit=(
+            _recruitment_queries._get_pool_daily_draw_limit()
+            + _recruitment_quota.get_recruitment_extra_attempts(locked_manor, pool)
+        ),
         count_pool_draws_today=_recruitment_queries._count_pool_draws_today,
     )
 
@@ -270,6 +274,11 @@ def finalize_guest_recruitment(
         raise AssertionError("finalize_guest_recruitment requires a persisted recruitment")
 
     current_time = now or timezone.now()
+    if getattr(recruitment, "source", GuestRecruitment.Source.PLAYER) == GuestRecruitment.Source.VIRTUAL:
+        from gameplay.services.virtual_player_core.recruitment import finalize_virtual_guest_recruitment
+
+        return finalize_virtual_guest_recruitment(recruitment_id, now=current_time)
+
     manor: Manor | None = None
     pool: RecruitmentPool | None = None
     candidate_count = 0

@@ -3,6 +3,26 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 
+@dataclass(frozen=True, slots=True)
+class ArenaHandoffSupply:
+    """Unleased profiles that can satisfy Arena reserve handoff slots."""
+
+    available: int = 0
+
+
+def arena_materialization_deficit(
+    *,
+    required_handoff: int,
+    handoff_supply: ArenaHandoffSupply,
+) -> int:
+    """Return the profile count still requiring physical materialization."""
+
+    return max(
+        0,
+        int(required_handoff) - max(0, int(handoff_supply.available)),
+    )
+
+
 @dataclass(frozen=True)
 class PopulationCell:
     region: str
@@ -11,6 +31,8 @@ class PopulationCell:
     maintained_supply: int
     attackable_supply: int
     search_demand: int
+    arena_handoff_supply: int = 0
+    arena_materialization_additional: int = 0
 
 
 @dataclass(frozen=True)
@@ -22,10 +44,22 @@ class PlannedPopulationCell:
     attackable_supply: int
     search_demand: int
     target: int
+    arena_handoff_supply: int = 0
+    arena_materialization_additional: int = 0
 
     @property
     def structural_deficit(self) -> int:
         return max(0, int(self.target) - int(self.maintained_supply))
+
+    @property
+    def arena_materialization_target(self) -> int:
+        if int(self.arena_materialization_additional) <= 0:
+            return 0
+        return int(self.maintained_supply) + int(self.arena_materialization_additional)
+
+    @property
+    def arena_materialization_deficit(self) -> int:
+        return max(0, self.arena_materialization_target - int(self.target))
 
     @property
     def attackable_target(self) -> int:
@@ -78,6 +112,8 @@ def _normalized_cell(cell: PopulationCell) -> PopulationCell:
         maintained_supply=max(0, int(cell.maintained_supply)),
         attackable_supply=max(0, int(cell.attackable_supply)),
         search_demand=max(0, int(cell.search_demand)),
+        arena_handoff_supply=max(0, int(cell.arena_handoff_supply)),
+        arena_materialization_additional=max(0, int(cell.arena_materialization_additional)),
     )
 
 
@@ -109,24 +145,38 @@ def plan_population_cells(
             indexes_by_region.setdefault(cell.region, []).append(index)
 
         desired_by_region: dict[str, int] = {}
+        arena_by_region: dict[str, int] = {}
         cell_limits: dict[int, int] = {}
+        arena_limits: dict[int, int] = {}
         for region, indexes in indexes_by_region.items():
             for index in indexes:
                 cell = normalized[index]
-                cell_limits[index] = max(cell.active_real * multiplier, cell.search_demand)
+                normal_limit = max(cell.active_real * multiplier, cell.search_demand)
+                arena_limit = (
+                    int(cell.maintained_supply) + int(cell.arena_materialization_additional)
+                    if int(cell.arena_materialization_additional) > 0
+                    else 0
+                )
+                arena_limits[index] = arena_limit
+                cell_limits[index] = max(normal_limit, arena_limit)
+            arena_by_region[region] = sum(arena_limits[index] for index in indexes)
             desired_by_region[region] = max(floor, sum(cell_limits[index] for index in indexes))
 
         region_allocated = {region: 0 for region in indexes_by_region}
         remaining_cap = cap
         while remaining_cap > 0:
-            region_candidates = [
+            arena_candidates = [
+                region for region, arena_target in arena_by_region.items() if region_allocated[region] < arena_target
+            ]
+            region_candidates = arena_candidates or [
                 region for region, desired in desired_by_region.items() if region_allocated[region] < desired
             ]
             if not region_candidates:
                 break
+            priority_targets = arena_by_region if arena_candidates else desired_by_region
             region = min(
                 region_candidates,
-                key=lambda item: (-(desired_by_region[item] - region_allocated[item]), item),
+                key=lambda item: (-(priority_targets[item] - region_allocated[item]), item),
             )
             region_allocated[region] += 1
             remaining_cap -= 1
@@ -134,16 +184,21 @@ def plan_population_cells(
         allocated = [0 for _cell in normalized]
         for region, indexes in indexes_by_region.items():
             budget = region_allocated[region]
-            while budget > 0:
-                cell_candidates = [index for index in indexes if allocated[index] < cell_limits[index]]
-                if not cell_candidates:
+            for limits in (arena_limits, cell_limits):
+                while budget > 0:
+                    cell_candidates = [
+                        index for index in indexes if allocated[index] < limits[index] and limits[index] > 0
+                    ]
+                    if not cell_candidates:
+                        break
+                    index = min(
+                        cell_candidates,
+                        key=lambda item: (-(limits[item] - allocated[item]), item),
+                    )
+                    allocated[index] += 1
+                    budget -= 1
+                if budget <= 0:
                     break
-                index = min(
-                    cell_candidates,
-                    key=lambda item: (-(cell_limits[item] - allocated[item]), item),
-                )
-                allocated[index] += 1
-                budget -= 1
             if budget > 0:
                 entry_indexes = [index for index in indexes if normalized[index].prestige_band == entry_band]
                 fallback_index = entry_indexes[0] if entry_indexes else indexes[0]
@@ -158,6 +213,8 @@ def plan_population_cells(
                 attackable_supply=cell.attackable_supply,
                 search_demand=cell.search_demand,
                 target=allocated[index],
+                arena_handoff_supply=cell.arena_handoff_supply,
+                arena_materialization_additional=cell.arena_materialization_additional,
             )
             for index, cell in enumerate(normalized)
         )
@@ -176,9 +233,22 @@ def plan_population_cells(
     cap = max(0, int(hard_cap))
 
     desired: list[int] = []
+    arena_limits_by_cell: dict[int, int] = {}
     for cell in normalized:
-        has_demand = cell.active_real > 0 or cell.search_demand > 0 or cell.maintained_supply > 0
-        desired.append(max(floor, cell.active_real * multiplier, cell.search_demand) if has_demand else exploration)
+        has_demand = (
+            cell.active_real > 0
+            or cell.search_demand > 0
+            or cell.maintained_supply > 0
+            or cell.arena_materialization_additional > 0
+        )
+        normal_limit = max(floor, cell.active_real * multiplier, cell.search_demand) if has_demand else exploration
+        arena_limit = (
+            int(cell.maintained_supply) + int(cell.arena_materialization_additional)
+            if int(cell.arena_materialization_additional) > 0
+            else 0
+        )
+        arena_limits_by_cell[len(desired)] = arena_limit
+        desired.append(max(normal_limit, arena_limits_by_cell[len(desired)]))
 
     if cap <= 0 or sum(desired) <= cap:
         allocated = desired
@@ -203,6 +273,7 @@ def plan_population_cells(
                 allocated[index] += 1
                 remaining_cap -= 1
 
+        allocate(arena_limits_by_cell)
         allocate(
             {
                 index: min(desired[index], cell.search_demand)
@@ -223,6 +294,8 @@ def plan_population_cells(
             attackable_supply=cell.attackable_supply,
             search_demand=cell.search_demand,
             target=allocated[index],
+            arena_handoff_supply=cell.arena_handoff_supply,
+            arena_materialization_additional=cell.arena_materialization_additional,
         )
         for index, cell in enumerate(normalized)
     )

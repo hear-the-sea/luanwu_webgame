@@ -31,6 +31,7 @@ RUNTIME_SOURCE_ROOTS = tuple(
 VIRTUAL_PLAYER_FACADE_EXPORTS = {
     "AcceleratedGrowthOutcome",
     "BotProjectionConfig",
+    "MaintenanceBusinessMetric",
     "PopulationMutationResult",
     "PopulationMutationStatus",
     "accelerate_virtual_player_growth",
@@ -41,17 +42,18 @@ VIRTUAL_PLAYER_FACADE_EXPORTS = {
     "get_virtual_player_capacity",
     "load_virtual_player_config",
     "maintain_due_virtual_players",
+    "maintenance_business_metrics_queryset",
     "plan_virtual_player_population",
     "reactivate_retired_virtual_player_with_capacity",
     "reactivate_virtual_player_profile",
     "request_virtual_player_backfill_for_region_search",
+    "query_maintenance_business_metrics",
     "retire_virtual_player_if_unprotected",
     "roll_virtual_player_population",
     "virtual_player_prestige_bands",
 }
 
 VIRTUAL_RESERVE_FACADE_EXPORTS = {
-    "create_due_virtual_reserve_profiles",
     "fill_due_coop_reserve",
     "fill_due_tournament_reserve",
     "grow_due_virtual_reserves",
@@ -79,55 +81,71 @@ VIRTUAL_PLAYER_RULES_COMPAT_EXPORTS = {
 PURE_VIRTUAL_PLAYER_RULE_OWNERS = (
     "gameplay/services/virtual_player_core/calibration.py",
     "gameplay/services/virtual_player_core/lifecycle.py",
-    "gameplay/services/virtual_player_core/legacy/projection.py",
+    "gameplay/services/virtual_player_core/runtime_helpers.py",
     "gameplay/services/virtual_player_core/maintenance_rules.py",
     "gameplay/services/virtual_player_core/projection.py",
 )
 
 READ_ONLY_VIRTUAL_PLAYER_OWNERS = (
+    "gameplay/services/virtual_player_core/arena_population.py",
     "gameplay/services/virtual_player_core/reference_snapshots.py",
     "gameplay/services/virtual_player_core/selectors.py",
     "gameplay/services/arena/virtual_protection.py",
 )
 
+
+def test_arena_population_adapter_does_not_depend_on_population_runtime() -> None:
+    path = GAMEPLAY_ROOT / "services" / "virtual_player_core" / "arena_population.py"
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    imported_modules = _imported_modules(path, tree)
+
+    assert "gameplay.services.virtual_player_core.population_runtime" not in imported_modules
+
+
 BOT_PROFILE_DIRECT_IMPORTS = {
     "gameplay/admin/bots.py": "read-only display, filters, and Admin type metadata",
     "gameplay/management/commands/audit_virtual_player_baseline.py": "read-only deterministic baseline sampling",
-    "gameplay/management/commands/generate_virtual_players.py": "Archetype choices only",
     "gameplay/services/arena/virtual_backfill.py": "typed arena backfill lineup contract",
     "gameplay/services/arena/virtual_reserve_fill.py": "reserve candidate reads and row locks",
     "gameplay/services/arena/virtual_reserve_pool.py": "reserve candidate reads, row locks, and state checks",
     "gameplay/services/jail.py": "read-only virtual captor selection for bounded daily cleanup",
     "gameplay/services/raid/utils.py": "read-only attack eligibility",
+    "gameplay/services/virtual_player_core/arena_healing.py": "Arena healing sweep profile selection and execution boundary",
     "gameplay/services/virtual_player_core/bootstrap.py": "bootstrap profile contract and Archetype defaults",
     "gameplay/services/virtual_player_core/external_reconciliation.py": "reconciliation profile selection and locking boundary",
-    "gameplay/services/virtual_player_core/legacy/inventory.py": "legacy inventory policy and typed profile input",
-    "gameplay/services/virtual_player_core/legacy/roster.py": "legacy roster policy and maintained-state reads",
+    "gameplay/services/virtual_player_core/maintenance_cycle.py": "V2 maintenance cycle profile ownership and locking boundary",
+    "gameplay/services/virtual_player_core/maintenance_completion.py": "V2 domain completion reconcile profile selection and locking boundary",
     "gameplay/services/virtual_player_core/maintenance.py": "maintenance selection, locking, and lifecycle boundary",
     "gameplay/services/virtual_player_core/population_runtime.py": "population selection and locking before delegated writes",
     "gameplay/services/virtual_player_core/policy_registry.py": "read-only policy retirement reference checks",
     "gameplay/services/virtual_player_core/profile_store.py": "target BotProfile write owner",
+    "gameplay/services/virtual_player_core/recruitment.py": "independent virtual recruitment selection, locking, and roster write boundary",
     "gameplay/services/virtual_player_core/reference_snapshots.py": "reference cohort reads and Archetype policy",
     "gameplay/services/virtual_player_core/selectors.py": "read-only profile selectors and relation predicates",
     "gameplay/services/virtual_player_loot_limits.py": "read-only loot cap decision",
+    "gameplay/services/virtual_player_core/runtime_preflight.py": "read-only V2 release, routing, and schema preflight",
 }
 
 BOT_PROFILE_RELATION_READERS = {
+    "gameplay/services/virtual_player_core/recruitment.py": "exclude pending virtual recruitment through the Manor profile relation",
     "gameplay/management/commands/audit_virtual_player_baseline.py": "exclude virtual profiles from real samples",
     "gameplay/selectors/stats.py": "exclude virtual profiles from real-player activity counts",
     "gameplay/services/raid/map_search.py": "apply virtual-profile map visibility states",
     "gameplay/services/ranking.py": "exclude virtual profiles from real-player rankings",
-    "gameplay/services/virtual_player_core/legacy/inventory.py": "scope inventory references to maintained profiles",
-    "gameplay/services/virtual_player_core/legacy/roster.py": "scope roster references to maintained profiles",
+    "gameplay/services/virtual_player_core/growth_control.py": "scope growth-control aggregation to real-player relations",
     "gameplay/services/virtual_player_core/population_runtime.py": "separate real activity from virtual population",
     "gameplay/services/virtual_player_core/reference_snapshots.py": "exclude virtual profiles from real reference cohorts",
     "gameplay/services/virtual_player_core/selectors.py": "identify real manors and virtual profiles",
     "gameplay/services/virtual_player_loot_limits.py": "identify Raid runs against virtual defenders",
     "gameplay/views/map.py": "apply virtual-profile map visibility states",
-    "guests/tasks.py": "exclude virtual profiles from real-player automatic training",
+    "guests/models.py": "GuestRecruitment relation to the owning virtual profile",
 }
 
-BOT_PROFILE_GATE_A_WRITE_OWNERS = {"gameplay/services/virtual_player_core/profile_store.py"}
+BOT_PROFILE_GATE_A_WRITE_OWNERS = {
+    "gameplay/services/virtual_player_core/maintenance.py",
+    "gameplay/services/virtual_player_core/profile_store.py",
+    "gameplay/services/virtual_player_core/recruitment.py",
+}
 
 ARENA_DEMAND_GATE_A_WRITE_OWNERS = {
     "gameplay/services/arena/virtual_reserve_demand.py",
@@ -316,7 +334,7 @@ def test_virtual_player_facade_freezes_the_gate_a_public_contract() -> None:
     from gameplay.services import virtual_players
 
     assert set(virtual_players.__all__) == VIRTUAL_PLAYER_FACADE_EXPORTS
-    assert len(virtual_players.__all__) == len(set(virtual_players.__all__)) == 19
+    assert len(virtual_players.__all__) == len(set(virtual_players.__all__)) == 22
     assert all(hasattr(virtual_players, name) for name in virtual_players.__all__)
     _assert_thin_facade(GAMEPLAY_ROOT / "services" / "virtual_players.py")
 
@@ -334,7 +352,7 @@ def test_virtual_player_rule_consumers_use_the_real_owners() -> None:
 def test_virtual_player_rules_compatibility_module_is_a_thin_explicit_reexport() -> None:
     from gameplay.services import virtual_player_rules
     from gameplay.services.virtual_player_core import lifecycle
-    from gameplay.services.virtual_player_core.legacy import projection
+    from gameplay.services.virtual_player_core import runtime_helpers as projection
 
     expected_owners = {
         "DEFAULT_COMBAT_PERSONAS": projection.DEFAULT_COMBAT_PERSONAS,
@@ -365,9 +383,7 @@ def test_virtual_player_core_package_root_does_not_aggregate_owner_symbols() -> 
     expected_owner = {"gameplay/services/virtual_player_core/population_runtime.py"}
     assert _runtime_symbol_reference_paths("create_virtual_player_v2") == expected_owner
     assert _runtime_symbol_reference_paths("_issue_v2_bootstrap_population_permit") == expected_owner
-    assert _runtime_symbol_reference_paths("_create_virtual_player_v1") == expected_owner
     assert "create_virtual_player_v2" not in bootstrap.__all__
-    assert "_create_virtual_player_v1" not in bootstrap.__all__
 
     population_path = GAMEPLAY_ROOT / "services" / "virtual_player_core" / "population_runtime.py"
     population_tree = ast.parse(
@@ -428,18 +444,11 @@ def test_virtual_player_rule_owners_are_framework_independent(
     )
 
 
-def test_virtual_player_legacy_package_root_does_not_reexport_implementations() -> None:
-    path = GAMEPLAY_ROOT / "services" / "virtual_player_core" / "legacy" / "__init__.py"
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-
-    assert not any(isinstance(node, (ast.Import, ast.ImportFrom)) for node in tree.body)
-
-
 def test_virtual_reserve_facade_freezes_confirmed_production_entrypoints() -> None:
     from gameplay.services.arena import virtual_reserve
 
     assert set(virtual_reserve.__all__) == VIRTUAL_RESERVE_FACADE_EXPORTS
-    assert len(virtual_reserve.__all__) == len(set(virtual_reserve.__all__)) == 11
+    assert len(virtual_reserve.__all__) == len(set(virtual_reserve.__all__)) == 10
     assert all(hasattr(virtual_reserve, name) for name in virtual_reserve.__all__)
     assert "ReserveReplenishmentResult" not in virtual_reserve.__all__
     assert "ArenaVirtualGrowthTarget" not in virtual_reserve.__all__
@@ -517,7 +526,6 @@ def test_prestige_domain_event_keeps_virtual_population_out_of_write_owners() ->
     transition_sources = (
         prestige_source,
         (GAMEPLAY_ROOT / "services" / "raid" / "combat" / "battle.py").read_text(encoding="utf-8"),
-        (GAMEPLAY_ROOT / "services" / "virtual_player_core" / "maintenance.py").read_text(encoding="utf-8"),
     )
     assert all("schedule_prestige_change_on_commit(" in source for source in transition_sources)
 
@@ -765,6 +773,10 @@ def test_arena_reverse_dependency_debt_is_explicit_and_cannot_grow() -> None:
             "gameplay.services.arena.virtual_reserve_references",
         ),
         (
+            "gameplay.services.arena.virtual_reserve_references",
+            "gameplay.services.arena.virtual_reserve_policy",
+        ),
+        (
             "gameplay.services.arena.virtual_reserve_demand",
             "gameplay.services.arena.virtual_reserve_policy",
         ),
@@ -811,9 +823,11 @@ def test_arena_task_reverse_dependency_debt_is_explicit() -> None:
 
     assert task_imports == {
         "gameplay.services.arena.virtual_reserve_pool": {
-            "create_due_virtual_reserve_profiles",
             "grow_due_virtual_reserves",
             "replenish_virtual_reserve",
+        },
+        "gameplay.services.arena.virtual_reserve_demand": {
+            "wake_active_arena_demands_for_population_region",
         },
         "gameplay.services.arena.virtual_reserve_reconcile": {
             "reconcile_coop_demand",
@@ -823,6 +837,7 @@ def test_arena_task_reverse_dependency_debt_is_explicit() -> None:
         "gameplay.services.arena.virtual_reserve_observability": {
             "ARENA_SHORTAGE_METRIC_RETRY_MAX_ATTEMPTS",
             "is_retryable_arena_shortage_metric_error",
+            "prepare_arena_shortage_observation_snapshot",
             "queue_arena_shortage_metric_retry",
             "record_arena_shortage_metric_failure",
             "record_arena_shortage_observation",

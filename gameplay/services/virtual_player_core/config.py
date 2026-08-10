@@ -15,6 +15,7 @@ from yaml import YAMLError
 from core.utils.yaml_loader import load_yaml_data
 from core.utils.yaml_validators.virtual_players import validate_virtual_players
 
+from .archetype_pacing import DEFAULT_ARCHETYPE_PACING
 from .random_context import canonical_json_bytes
 
 logger = logging.getLogger(__name__)
@@ -53,6 +54,32 @@ V2_PRESTIGE_BAND_NAMES = (
     "legend",
     "mythic",
 )
+
+EFFECTIVE_RUNTIME_SCHEMA_VERSION = 1
+
+# These values are part of the executable policy surface even though they are
+# guarded by code rather than YAML.  Keeping them in the effective payload
+# makes a policy release invalidate when an operational safety limit changes.
+_EFFECTIVE_RUNTIME_CODE_DEFAULTS = {
+    "arena_growth": {
+        "budget_window_seconds": 24 * 60 * 60,
+        "budget_max_attempts": 20,
+        "slots_per_round": 8,
+        "max_slot_attempts": 5,
+        "budget_max_future_skew_seconds": 5 * 60,
+        "max_members_per_demand": 8,
+        "rearm_jitter_max_seconds": 45,
+        "retry_max_delay_seconds": 60 * 60,
+    },
+    "recovery": {
+        "retry_base_seconds": 60,
+        "retry_max_seconds": 3_600,
+        "quarantine_after_failures": 3,
+        "maximum_recovery_age_seconds": 2 * 24 * 60 * 60,
+        "circuit_failure_threshold": 3,
+        "circuit_window_seconds": 60 * 60,
+    },
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -154,9 +181,15 @@ class VirtualPlayerV2Config:
     policy_rollout: PolicyRolloutConfig
     reference_snapshot_catalog: Mapping[int, ReferenceSnapshotCatalogEntry]
     policies: Mapping[int, BotDevelopmentPolicy]
+    arena_training_policy: Mapping[str, Any] | None = None
+    growth_control: Mapping[str, Any] = field(default_factory=lambda: MappingProxyType({}))
 
     def policy(self, version: int | None = None) -> BotDevelopmentPolicy:
         normalized_version = self.policy_rollout.target_version if version is None else int(version)
+        if normalized_version != 2:
+            raise VirtualPlayerConfigError(
+                f"Virtual-player policy {normalized_version} is retired; policy 2 is the only configured release"
+            )
         try:
             return self.policies[normalized_version]
         except KeyError as exc:
@@ -178,7 +211,13 @@ _BOOTSTRAP_MODE_TRANSITIONS = {
     BootstrapMode.V2_PAUSED: frozenset({BootstrapMode.V2_PAUSED, BootstrapMode.V2_ACTIVE}),
 }
 _MAINTENANCE_MODE_TRANSITIONS = {
-    MaintenanceMode.LEGACY_BEFORE_GATE: frozenset({MaintenanceMode.LEGACY_BEFORE_GATE, MaintenanceMode.V2_CUTOVER}),
+    MaintenanceMode.LEGACY_BEFORE_GATE: frozenset(
+        {
+            MaintenanceMode.LEGACY_BEFORE_GATE,
+            MaintenanceMode.V2_CUTOVER,
+            MaintenanceMode.V2_ACTIVE,
+        }
+    ),
     MaintenanceMode.V2_CUTOVER: frozenset(
         {MaintenanceMode.V2_CUTOVER, MaintenanceMode.V2_ACTIVE, MaintenanceMode.V2_PAUSED}
     ),
@@ -219,10 +258,45 @@ def policy_checksum(policy: Mapping[str, Any]) -> str:
     return sha256(canonical_policy_bytes(policy)).hexdigest()
 
 
+def effective_policy_runtime_payload(
+    config: Mapping[str, Any],
+    v2_raw: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Return every merged runtime input that can change V2 execution.
+
+    ``parse_bot_development_v2`` still accepts the raw, independently
+    checksummed YAML shape.  This second payload is attached only by the
+    production loader, after defaults and settings overrides have been
+    merged, so a release checksum represents the behavior that workers will
+    actually execute.
+    """
+
+    runtime_sections = (
+        "enabled",
+        "population",
+        "prestige_bands",
+        "lifecycle",
+        "growth",
+        "resources",
+        "projection",
+        "combat_personas",
+        "lifecycle_personas",
+    )
+    return {
+        "schema_version": EFFECTIVE_RUNTIME_SCHEMA_VERSION,
+        "config": {
+            section: _plain_json_value(config.get(section)) for section in runtime_sections if section in config
+        },
+        "bot_development_v2": {key: _plain_json_value(value) for key, value in v2_raw.items() if key != "policies"},
+        "code_defaults": _plain_json_value(_EFFECTIVE_RUNTIME_CODE_DEFAULTS),
+    }
+
+
 def parse_bot_development_v2(
     value: Mapping[str, Any],
     *,
     source: str = "bot_development_v2",
+    effective_runtime_payload: Mapping[str, Any] | None = None,
 ) -> VirtualPlayerV2Config:
     validated_root = _validated_config({"bot_development_v2": dict(value)}, source=source)
     raw = validated_root["bot_development_v2"]
@@ -248,7 +322,7 @@ def parse_bot_development_v2(
         rollout_percent=int(raw_rollout["rollout_percent"]),
     )
     reference_snapshot_catalog: dict[int, ReferenceSnapshotCatalogEntry] = {}
-    for raw_version, raw_entry in raw["reference_snapshot_catalog"].items():
+    for raw_version, raw_entry in (raw.get("reference_snapshot_catalog") or {}).items():
         snapshot_version = int(raw_version)
         evidence_entries: dict[tuple[int, str], GateD2EvidenceCatalogEntry] = {}
         for raw_policy_version, raw_bands in raw_entry.get("gate_d2_evidence", {}).items():
@@ -274,10 +348,14 @@ def parse_bot_development_v2(
         checksum = str(raw_policy["checksum"])
         if policy_checksum(raw_policy) != checksum:
             raise VirtualPlayerConfigError(f"Virtual-player policy {version} checksum changed after validation")
+        payload = canonical_policy_payload(raw_policy)
+        if effective_runtime_payload is not None:
+            payload["effective_runtime"] = _plain_json_value(effective_runtime_payload)
+            checksum = policy_checksum(payload)
         policies[version] = BotDevelopmentPolicy(
             version=version,
             checksum=checksum,
-            payload=_freeze_config_value(canonical_policy_payload(raw_policy)),
+            payload=_freeze_config_value(payload),
         )
     return VirtualPlayerV2Config(
         environment_mode=str(raw["environment_mode"]),
@@ -290,6 +368,10 @@ def parse_bot_development_v2(
         policy_rollout=rollout,
         reference_snapshot_catalog=MappingProxyType(reference_snapshot_catalog),
         policies=MappingProxyType(policies),
+        arena_training_policy=(
+            None if raw.get("arena_training_policy") is None else _freeze_config_value(raw["arena_training_policy"])
+        ),
+        growth_control=_freeze_config_value(raw.get("growth_control") or {}),
     )
 
 
@@ -298,9 +380,10 @@ def validate_routing_transition(current: V2RoutingConfig, proposed: V2RoutingCon
         raise RoutingTransitionError("activation_mode is immutable")
     if (
         current.bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE
+        and proposed.bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE
         and proposed.maintenance_mode is not current.maintenance_mode
     ):
-        raise RoutingTransitionError("Maintenance routing cannot advance before Bootstrap exits Gate D1")
+        raise RoutingTransitionError("Maintenance routing cannot advance before Bootstrap leaves legacy mode")
     if proposed.bootstrap_mode not in _BOOTSTRAP_MODE_TRANSITIONS[current.bootstrap_mode]:
         raise RoutingTransitionError(
             f"Illegal Bootstrap routing transition: {current.bootstrap_mode.value} -> {proposed.bootstrap_mode.value}"
@@ -434,22 +517,77 @@ DEFAULT_VIRTUAL_PLAYER_CONFIG: dict[str, Any] = {
                 "tool": 1,
             },
         },
+        "daily_action_bias": {
+            "balanced": {
+                "building_upgrade": 1.0,
+                "technology_upgrade": 1.0,
+                "training": 1.0,
+                "equipment_equip": 1.0,
+                "skill_learning": 1.0,
+                "inventory_acquisition": 1.0,
+                "troop_recruitment": 1.0,
+            },
+            "rich": {
+                "building_upgrade": 1.35,
+                "technology_upgrade": 1.15,
+                "training": 0.9,
+                "equipment_equip": 0.9,
+                "skill_learning": 0.9,
+                "inventory_acquisition": 1.1,
+                "troop_recruitment": 1.0,
+            },
+            "dojo": {
+                "building_upgrade": 0.9,
+                "technology_upgrade": 1.0,
+                "training": 1.35,
+                "equipment_equip": 1.25,
+                "skill_learning": 1.25,
+                "inventory_acquisition": 0.85,
+                "troop_recruitment": 0.9,
+            },
+            "guard": {
+                "building_upgrade": 1.1,
+                "technology_upgrade": 1.35,
+                "training": 1.0,
+                "equipment_equip": 1.05,
+                "skill_learning": 0.9,
+                "inventory_acquisition": 0.85,
+                "troop_recruitment": 1.3,
+            },
+            "abandoned": {
+                "building_upgrade": 0.65,
+                "technology_upgrade": 0.6,
+                "training": 0.7,
+                "equipment_equip": 0.8,
+                "skill_learning": 0.75,
+                "inventory_acquisition": 1.1,
+                "troop_recruitment": 0.55,
+            },
+        },
+        "archetype_pacing": {
+            archetype: {field: value for field, value in pacing.to_payload().items() if field != "archetype"}
+            for archetype, pacing in DEFAULT_ARCHETYPE_PACING.items()
+        },
         "loot_budget_daily": 2_000_000,
         "loot_limits": {
             "real_attacker_daily_resource_cap": 2_000_000,
         },
         "rare_item_daily_global_cap": 20,
-        "powerful_item_daily_global_cap": 5,
-        "powerful_item_min_price": 100_000,
-        "powerful_item_min_growth_stage": 5,
-        "low_stage_powerful_item_chance": 0.03,
-        "powerful_item_prestige_chance": [
-            {"min_prestige": 0, "chance": 0.0},
-            {"min_prestige": 500, "chance": 0.01},
-            {"min_prestige": 2000, "chance": 0.03},
-            {"min_prestige": 8000, "chance": 0.06},
-            {"min_prestige": 30000, "chance": 0.12},
-        ],
+        "inventory_rare_color_set": ["red", "purple", "orange"],
+        "inventory_max_rarity_by_stage": {
+            1: "green",
+            7: "blue",
+            11: "purple",
+            16: "orange",
+        },
+        "inventory_batch_max_per_cycle": 1,
+        "inventory_color_weights_by_prestige_band": {},
+        "virtual_troop_costs": {
+            "silver_base": 100,
+            "silver_per_tier": 75,
+            "grain_base": 50,
+            "grain_per_tier": 25,
+        },
     },
     "combat_personas": {
         "balanced": {
@@ -559,16 +697,22 @@ def load_virtual_player_config() -> dict[str, Any]:
 
 
 def load_virtual_player_v2_config() -> VirtualPlayerV2Config | None:
-    raw = load_virtual_player_config().get("bot_development_v2")
+    merged_config = load_virtual_player_config()
+    raw = merged_config.get("bot_development_v2")
     if raw is None:
         return None
-    return parse_bot_development_v2(raw, source=str(VIRTUAL_PLAYER_CONFIG_PATH))
+    return parse_bot_development_v2(
+        raw,
+        source=str(VIRTUAL_PLAYER_CONFIG_PATH),
+        effective_runtime_payload=effective_policy_runtime_payload(merged_config, raw),
+    )
 
 
 __all__ = [
     "BootstrapMode",
     "BotDevelopmentPolicy",
     "DEFAULT_VIRTUAL_PLAYER_CONFIG",
+    "EFFECTIVE_RUNTIME_SCHEMA_VERSION",
     "MaintenanceMode",
     "PolicyRolloutConfig",
     "PrestigeBandConfig",
@@ -581,6 +725,7 @@ __all__ = [
     "canonical_policy_bytes",
     "canonical_policy_payload",
     "clear_virtual_player_config_cache",
+    "effective_policy_runtime_payload",
     "load_virtual_player_config",
     "load_virtual_player_v2_config",
     "parse_bot_development_v2",

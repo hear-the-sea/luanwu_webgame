@@ -36,6 +36,10 @@ class BotProfile(models.Model):
     growth_seed = models.PositiveIntegerField("成长种子")
     growth_stage = models.PositiveSmallIntegerField("成长阶段", default=1)
     next_growth_at = models.DateTimeField("下次成长时间", db_index=True)
+    # The recruitment scan always filters by the V2 profile dimensions first;
+    # keep one composite due index instead of adding a redundant single-column
+    # index that would increase write and migration cost.
+    next_recruitment_at = models.DateTimeField("下次招募到期时间", null=True, blank=True)
     abandon_at = models.DateTimeField("弃坑时间", db_index=True)
     retire_at = models.DateTimeField("退场时间", db_index=True)
     loot_budget_daily = models.PositiveIntegerField("每日资源预算", default=0)
@@ -64,6 +68,14 @@ class BotProfile(models.Model):
         verbose_name_plural = "虚拟玩家档案"
         indexes = [
             models.Index(fields=["state", "next_growth_at"], name="bot_state_next_growth_idx"),
+            models.Index(
+                fields=["engine_version", "policy_version", "state", "next_growth_at", "id"],
+                name="bot_due_identity_idx",
+            ),
+            models.Index(
+                fields=["engine_version", "policy_version", "state", "next_recruitment_at", "id"],
+                name="bot_recruit_due_idx",
+            ),
             models.Index(fields=["prestige_band", "state"], name="bot_band_state_idx"),
             models.Index(
                 fields=["target_prestige_band", "state"],
@@ -232,6 +244,7 @@ class BotExternalStrengthReconciliation(models.Model):
         ]
         indexes = [
             models.Index(fields=["status", "available_at"], name="bot_ext_status_avail_idx"),
+            models.Index(fields=["profile_id", "status", "id"], name="bot_ext_profile_status_idx"),
             models.Index(
                 fields=["profile_id", "origin_committed_at", "id"],
                 name="bot_ext_profile_order_idx",
@@ -678,6 +691,192 @@ class BotPopulationControl(models.Model):
 
     def __str__(self) -> str:
         return self.key
+
+
+class VirtualPlayerGrowthControlRun(models.Model):
+    """One all-cells transaction of the daily aggregate growth-control scan."""
+
+    class Status(models.TextChoices):
+        RUNNING = "running", "执行中"
+        COMPLETE = "complete", "已完成"
+        FAILED = "failed", "已失败"
+
+    run_key = models.CharField("运行 key", max_length=64, unique=True)
+    control_date = models.DateField("控制日期")
+    policy_version = models.PositiveSmallIntegerField("Bot 策略版本", default=2)
+    policy_checksum = models.CharField("Bot 策略校验和", max_length=64)
+    source_sample_count = models.PositiveIntegerField("源样本数", default=0)
+    cell_count = models.PositiveIntegerField("单元格数", default=0)
+    fallback_count = models.PositiveIntegerField("fallback 单元格数", default=0)
+    run_digest = models.CharField("运行摘要", max_length=64, unique=True)
+    status = models.CharField("运行状态", max_length=16, choices=Status.choices, default=Status.RUNNING)
+    failure_digest = models.CharField("失败摘要", max_length=64, default="", blank=True)
+    failure_reason = models.CharField("失败原因", max_length=512, default="", blank=True)
+    started_at = models.DateTimeField("开始时间")
+    completed_at = models.DateTimeField("完成时间", null=True, blank=True)
+    failed_at = models.DateTimeField("失败时间", null=True, blank=True)
+    created_at = models.DateTimeField("写入时间", auto_now_add=True)
+    updated_at = models.DateTimeField("更新时间", auto_now=True)
+
+    class Meta:
+        verbose_name = "虚拟玩家成长控制运行"
+        verbose_name_plural = "虚拟玩家成长控制运行"
+        constraints = [
+            models.CheckConstraint(condition=Q(policy_version=2), name="bot_growth_control_run_policy_v2"),
+            models.CheckConstraint(condition=~Q(policy_checksum=""), name="bot_growth_control_run_checksum"),
+            models.CheckConstraint(condition=~Q(run_digest=""), name="bot_growth_control_run_digest"),
+            models.CheckConstraint(
+                condition=(Q(status="complete", completed_at__isnull=False) | ~Q(status="complete")),
+                name="bot_growth_control_run_complete_marker",
+            ),
+            models.CheckConstraint(
+                condition=(Q(status="failed", failed_at__isnull=False) | ~Q(status="failed")),
+                name="bot_growth_control_run_failed_marker",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["control_date", "status"], name="bot_gctrl_run_date_idx"),
+            models.Index(fields=["status", "updated_at"], name="bot_gctrl_run_status_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.control_date}:{self.run_digest[:12]}:{self.status}"
+
+
+class VirtualPlayerGrowthControlPointer(models.Model):
+    """Singleton pointer to the last complete growth-control run."""
+
+    GLOBAL_KEY = "global"
+
+    key = models.CharField(max_length=16, primary_key=True, default=GLOBAL_KEY, editable=False)
+    current_run = models.ForeignKey(
+        VirtualPlayerGrowthControlRun,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="current_pointers",
+        verbose_name="当前完整运行",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "虚拟玩家成长控制当前指针"
+        verbose_name_plural = "虚拟玩家成长控制当前指针"
+        constraints = [
+            models.CheckConstraint(condition=Q(key="global"), name="bot_growth_control_pointer_global_only"),
+        ]
+
+    def __str__(self) -> str:
+        return self.key
+
+
+class VirtualPlayerGrowthControlSnapshot(models.Model):
+    """Daily, aggregate-only real-player growth control input."""
+
+    control_date = models.DateField("控制日期")
+    run = models.ForeignKey(
+        VirtualPlayerGrowthControlRun,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="snapshots",
+        verbose_name="完整运行",
+    )
+    region = models.CharField("地区", max_length=32)
+    prestige_band = models.CharField("声望段", max_length=32)
+    policy_version = models.PositiveSmallIntegerField("Bot 策略版本", default=2)
+    policy_checksum = models.CharField("Bot 策略校验和", max_length=64)
+    sample_count = models.PositiveIntegerField("样本数", default=0)
+    strength_p50 = models.PositiveBigIntegerField("综合实力 P50", default=0)
+    strength_p75 = models.PositiveBigIntegerField("综合实力 P75", default=0)
+    growth_24h_bps = models.IntegerField("24 小时成长基点")
+    growth_7d_bps = models.IntegerField("7 日成长基点")
+    component_statistics = models.JSONField("组件聚合统计", default=dict, blank=True)
+    effective_until = models.DateTimeField("有效截止时间")
+    is_fallback = models.BooleanField("是否 fallback", default=False)
+    snapshot_digest = models.CharField("快照摘要", max_length=64)
+    created_at = models.DateTimeField("写入时间", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "虚拟玩家成长控制快照"
+        verbose_name_plural = "虚拟玩家成长控制快照"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["control_date", "region", "prestige_band", "snapshot_digest"],
+                name="bot_growth_control_snapshot_uniq",
+            ),
+            models.CheckConstraint(condition=Q(policy_version=2), name="bot_growth_control_policy_v2"),
+            models.CheckConstraint(condition=~Q(policy_checksum=""), name="bot_growth_control_policy_checksum"),
+            models.CheckConstraint(condition=~Q(snapshot_digest=""), name="bot_growth_control_digest_nonempty"),
+            models.CheckConstraint(condition=Q(sample_count__gte=0), name="bot_growth_control_sample_nonnegative"),
+        ]
+        indexes = [
+            models.Index(fields=["region", "prestige_band", "effective_until"], name="bot_growth_control_lookup_idx"),
+            models.Index(
+                fields=["run", "region", "prestige_band", "effective_until"],
+                name="bot_growth_control_run_idx",
+            ),
+            models.Index(fields=["control_date"], name="bot_growth_control_date_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.control_date}:{self.region}:{self.prestige_band}"
+
+
+class BotMaintenanceRecovery(models.Model):
+    """Durable per-entity recovery/quarantine state."""
+
+    class Scope(models.TextChoices):
+        ARENA_MEMBER = "arena_member", "竞技场成员"
+        ARENA_DEMAND = "arena_demand", "竞技场需求"
+        PROFILE = "profile", "虚拟玩家档案"
+        POPULATION_CELL = "population_cell", "人口单元格"
+        GUEST = "guest", "门客"
+
+    class Status(models.TextChoices):
+        RETRY = "retry", "等待重试"
+        QUARANTINED = "quarantined", "已隔离"
+        REQUEUED = "requeued", "已重新排队"
+
+    scope = models.CharField("恢复范围", max_length=24, choices=Scope.choices)
+    entity_key = models.CharField("实体 key", max_length=128)
+    status = models.CharField("状态", max_length=16, choices=Status.choices, default=Status.RETRY)
+    failure_code = models.CharField("失败代码", max_length=64)
+    failure_digest = models.CharField("失败摘要", max_length=64)
+    failure_streak = models.PositiveSmallIntegerField("连续失败次数", default=1)
+    first_failed_at = models.DateTimeField("首次失败时间")
+    last_failed_at = models.DateTimeField("最近失败时间")
+    next_retry_at = models.DateTimeField("下次重试时间", null=True, blank=True, db_index=True)
+    quarantined_at = models.DateTimeField("隔离时间", null=True, blank=True)
+    requeued_at = models.DateTimeField("重新排队时间", null=True, blank=True)
+    last_success_at = models.DateTimeField("最近成功时间", null=True, blank=True)
+    last_operation_id = models.CharField("最近操作 ID", max_length=64, default="", blank=True)
+    payload = models.JSONField("恢复载荷", default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "虚拟玩家维护恢复状态"
+        verbose_name_plural = "虚拟玩家维护恢复状态"
+        constraints = [
+            models.UniqueConstraint(fields=["scope", "entity_key"], name="bot_maint_recovery_scope_entity"),
+            models.CheckConstraint(condition=~Q(entity_key=""), name="bot_maint_recovery_entity_nonempty"),
+            models.CheckConstraint(condition=~Q(failure_digest=""), name="bot_maint_recovery_digest_nonempty"),
+            models.CheckConstraint(
+                condition=(Q(status="quarantined", quarantined_at__isnull=False) | ~Q(status="quarantined")),
+                name="bot_maint_recovery_quarantine_marker",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["scope", "status", "next_retry_at"], name="bot_maint_recovery_due_idx"),
+            models.Index(
+                fields=["scope", "entity_key", "status", "next_retry_at"],
+                name="bot_maint_recovery_entity_idx",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.scope}:{self.entity_key}:{self.status}"
 
 
 class BotInventoryDailyCounter(models.Model):

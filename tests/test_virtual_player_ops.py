@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import ast
 from datetime import timedelta
-from io import StringIO
 from pathlib import Path
 
 import pytest
 from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.test import RequestFactory, override_settings
 from django.utils import timezone
 
@@ -110,7 +110,8 @@ def test_virtual_player_default_skill_and_gear_keys_exist_in_source_configs():
     assert projection["troop_template_keys"] == "__all__"
     assert projection["technology_keys"] == "__all__"
     assert projection["item_template_keys"] == "__all_tradeable__"
-    assert projection["powerful_item_min_growth_stage"] >= 1
+    assert projection["inventory_rare_color_set"] == ["red", "purple", "orange"]
+    assert projection["inventory_items_per_action"]["balanced"] == 4
 
 
 @override_settings(VIRTUAL_PLAYER_CONFIG={"enabled": False})
@@ -283,62 +284,30 @@ def test_bot_profile_admin_due_filter_partitions_all_profiles(django_user_model)
 
 @pytest.mark.django_db
 def test_generate_virtual_players_dry_run_does_not_create_rows(settings):
-    from gameplay.models import BotProfile
-
-    settings.VIRTUAL_PLAYER_CONFIG = {
-        "prestige_bands": {"newbie": [0, 500]},
-        "projection": {"guest_template_keys": [], "gear_template_keys": []},
-    }
-    out = StringIO()
-
-    call_command(
-        "generate_virtual_players",
-        "--region",
-        "north",
-        "--prestige-band",
-        "newbie",
-        "--count",
-        "3",
-        "--dry-run",
-        stdout=out,
-        verbosity=1,
-    )
-
-    assert BotProfile.objects.count() == 0
-    assert "dry-run" in out.getvalue()
+    with pytest.raises(CommandError, match="direct virtual-player generation is retired"):
+        call_command(
+            "generate_virtual_players",
+            "--region",
+            "north",
+            "--prestige-band",
+            "newbie",
+            "--count",
+            "3",
+            "--dry-run",
+            verbosity=1,
+        )
 
 
 @pytest.mark.django_db
 def test_generate_virtual_players_command_creates_requested_count(settings):
-    from gameplay.constants import BuildingKeys
-    from gameplay.models import BotProfile, BuildingType
-
-    for key in (
-        BuildingKeys.SILVER_VAULT,
-        BuildingKeys.GRANARY,
-        BuildingKeys.JUXIAN_ZHUANG,
-        BuildingKeys.JIADING_FANG,
-        BuildingKeys.YOUXIA_BAOTA,
-        BuildingKeys.LIANGGONG_CHANG,
-    ):
-        BuildingType.objects.get_or_create(key=key, defaults={"name": key, "resource_type": "silver", "base_cost": {}})
-
-    settings.VIRTUAL_PLAYER_CONFIG = {
-        "prestige_bands": {"newbie": [0, 500]},
-        "projection": {"guest_template_keys": [], "gear_template_keys": []},
-    }
-
-    call_command(
-        "generate_virtual_players",
-        "--region",
-        "north",
-        "--prestige-band",
-        "newbie",
-        "--count",
-        "2",
-        verbosity=0,
-    )
-
-    assert BotProfile.objects.filter(manor__region="north", prestige_band="newbie").count() == 2
-    assert BotProfile.objects.filter(manor__region="north", target_prestige_band="newbie").count() == 2
-    assert BotProfile.objects.filter(manor__region="north", current_prestige_band="newbie").count() == 2
+    with pytest.raises(CommandError, match="direct virtual-player generation is retired"):
+        call_command(
+            "generate_virtual_players",
+            "--region",
+            "north",
+            "--prestige-band",
+            "newbie",
+            "--count",
+            "2",
+            verbosity=0,
+        )

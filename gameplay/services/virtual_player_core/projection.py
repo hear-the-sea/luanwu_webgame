@@ -116,14 +116,20 @@ def calculate_guest_arena_power(
     force: int,
     intellect: int,
     defense: int,
+    agility: int,
     hp_bonus: int,
     archetype: str,
     base_hp: int,
 ) -> int:
-    """计算真人快照与 V2 发展预测共用的单门客竞技强度。"""
+    """计算真人快照与 V2 发展预测共用的单门客竞技强度。
+
+    敏捷既影响真实战斗出手顺序，也属于竞技场阵容强度；这里按
+    ``GUEST.AGILITY_TO_ARENA_POWER_WEIGHT`` 纳入统一的 lineup power。
+    """
     normalized_force = max(0, int(force))
     normalized_intellect = max(0, int(intellect))
     normalized_defense = max(0, int(defense))
+    normalized_agility = max(0, int(agility))
     if str(archetype) == "civil":
         attack = int(normalized_force * GUEST.CIVIL_FORCE_WEIGHT + normalized_intellect * GUEST.CIVIL_INTELLECT_WEIGHT)
     else:
@@ -134,7 +140,8 @@ def calculate_guest_arena_power(
         int(GUEST.MIN_HP_FLOOR),
         max(0, int(base_hp)) + max(0, int(hp_bonus)) + normalized_defense * int(GUEST.DEFENSE_TO_HP_MULTIPLIER),
     )
-    return max(1, attack) + max(1, normalized_defense) + max_hp // 10
+    agility_power = int(normalized_agility * GUEST.AGILITY_TO_ARENA_POWER_WEIGHT)
+    return max(1, attack) + max(1, normalized_defense) + max(0, agility_power) + max_hp // 10
 
 
 @dataclass(frozen=True, slots=True)

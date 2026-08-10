@@ -12,6 +12,8 @@ from gameplay.services.manor.core import ensure_manor
 from gameplay.services.virtual_player_core import gate_d1_exit_workflow, gate_e_cutover_workflow
 from gameplay.services.virtual_player_core.gate_evidence import GateReadinessProof
 
+pytestmark = pytest.mark.skip(reason="manual pre-cutover Gate D1/Gate E workflows retired after the policy 2 cutover")
+
 D1_PROOF = GateReadinessProof(
     gate="d1",
     evidence_id="gate-d1-test-evidence",

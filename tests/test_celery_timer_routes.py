@@ -10,6 +10,7 @@ def test_additional_timer_driven_tasks_are_routed_to_timer_queue():
     expected_timer_tasks = [
         "core.record_celery_beat_heartbeat",
         "gameplay.complete_scout_return",
+        "gameplay.wake_active_arena_demands_for_population_region",
     ]
 
     for task_name in expected_timer_tasks:

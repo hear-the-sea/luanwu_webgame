@@ -21,8 +21,10 @@ from core.exceptions import GameError
 from core.utils import sanitize_error_message
 from gameplay.selectors.core import get_dashboard_context, get_ranking_page_context, get_settings_page_context
 from gameplay.selectors.home import get_home_context
+from gameplay.services.action_points import ACTION_POINTS_MAX, get_current_action_points
 from gameplay.services.manor.core import get_manor, project_manor_activity_for_read, rename_manor
 from gameplay.services.resources import project_resource_production_for_read
+from gameplay.utils.resource_calculator import get_hourly_rates
 from gameplay.views.read_helpers import get_prepared_manor_for_read
 
 logger = logging.getLogger(__name__)
@@ -105,6 +107,28 @@ class GuideView(LoginRequiredMixin, TemplateView):
     """游戏攻略页面"""
 
     template_name = "gameplay/guide.html"
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        manor = get_prepared_manor_for_read(
+            self.request,
+            project_fn=project_resource_production_for_read,
+            logger=logger,
+            source="guide_view",
+        )
+        hourly_rates = get_hourly_rates(manor)
+        context["manor"] = manor
+        context["guide_snapshot"] = {
+            "action_points": get_current_action_points(manor),
+            "action_points_max": ACTION_POINTS_MAX,
+            "guest_count": manor.guests.count(),
+            "guest_capacity": manor.guest_capacity,
+            "max_squad_size": manor.max_squad_size,
+            "hourly_grain": round(float(hourly_rates.get("grain", 0))),
+            "hourly_silver": round(float(hourly_rates.get("silver", 0))),
+            "protection_label": "已保护" if manor.is_protected else "未保护",
+        }
+        return context
 
 
 @login_required

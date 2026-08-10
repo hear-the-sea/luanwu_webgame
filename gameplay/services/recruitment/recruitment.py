@@ -72,9 +72,12 @@ class TroopRecruitmentQuote:
     ancestral_hall_level: int
     base_duration: int
     actual_duration: int
+    source: str = "recruitment"
+    virtual_silver_cost: int = 0
+    virtual_grain_cost: int = 0
 
     def to_payload(self) -> dict[str, Any]:
-        return {
+        payload = {
             "manor_id": self.manor_id,
             "troop_key": self.troop_key,
             "troop_name": self.troop_name,
@@ -92,6 +95,15 @@ class TroopRecruitmentQuote:
             "base_duration": self.base_duration,
             "actual_duration": self.actual_duration,
         }
+        if self.source != "recruitment":
+            payload.update(
+                {
+                    "source": self.source,
+                    "virtual_grain_cost": self.virtual_grain_cost,
+                    "virtual_silver_cost": self.virtual_silver_cost,
+                }
+            )
+        return payload
 
 
 def calculate_recruitment_duration(base_duration: int, manor: Manor) -> int:

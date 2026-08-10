@@ -478,6 +478,7 @@ def build_equipment_equip_candidates(
             force=int(guest.force),
             intellect=int(guest.intellect),
             defense=int(guest.defense_stat),
+            agility=int(guest.agility),
             hp_bonus=int(guest.hp_bonus),
             archetype=str(guest.template.archetype),
             base_hp=int(guest.template.base_hp),
@@ -528,6 +529,7 @@ def build_equipment_equip_candidates(
                 force=projected_state["force"],
                 intellect=projected_state["intellect"],
                 defense=projected_state["defense_stat"],
+                agility=projected_state["agility"],
                 hp_bonus=projected_state["hp_bonus"],
                 archetype=str(guest.template.archetype),
                 base_hp=int(guest.template.base_hp),
@@ -664,7 +666,7 @@ def build_inventory_acquisition_candidates(
             str(template.effect_type),
             1,
         )
-        utility_score = effect_priority / max(100.0, float(template.price or 0) + 100.0)
+        utility_score = float(effect_priority)
         intent = project_maintenance_action_intent(
             spec=spec,
             source_prestige_band=prestige_band,

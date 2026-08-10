@@ -112,44 +112,7 @@ def _minimal_v2_config():
     }
     policy = {
         "checksum": "",
-        "max_development_actions": 1,
-        "reference_calibration_min_profiles_per_band": 30,
-        "reference_calibration_thresholds": {
-            "normalized_wasserstein_max": 0.25,
-            "normalized_quantile_deviation_p10_max": 0.35,
-            "normalized_quantile_deviation_p50_max": 0.25,
-            "normalized_quantile_deviation_p90_max": 0.35,
-            "js_divergence_max_bits": 0.10,
-            "hard_constraint_violations_max": 0,
-            "robust_joint_outlier_rate_max": 0.15,
-            "robust_joint_outlier_rate_above_real_max": 0.05,
-            "component_fingerprint_collision_rate_max": 0.35,
-            "joint_fingerprint_collision_rate_max": 0.15,
-            "fingerprint_collision_rate_above_v1_max": 0.0,
-            "archetype_standardized_effect_min_absolute": 0.20,
-            "archetype_standardized_effect_max_absolute": 0.80,
-            "archetype_effect_direction_must_match": True,
-            "abandoned_rate_deviation_max": 0.10,
-        },
-        "reference_calibration_archetype_effects": {
-            "rich": {"metric": "mean_building_level", "direction": "higher"},
-            "dojo": {"metric": "arena_lineup_power", "direction": "higher"},
-            "guard": {"metric": "troop_total", "direction": "higher"},
-            "abandoned": {"metric": "composite_strength", "direction": "lower"},
-        },
-        "reference_calibration_abandoned_features": {
-            "underfilled_roster_guest_count_max": 2,
-            "stale_gear_level_ratio_max": 0.50,
-            "growth_gap_days_min": 30,
-        },
-        "use_local_reference_when_profiles_gte": 1,
-        "borrowed_global_reference_discount_ratio": 0.90,
-        "borrowed_global_reference_usage": "composition_anchor_only",
-        "borrowed_global_may_raise_sample_tier": False,
-        "borrowed_global_may_raise_strength_cap": False,
-        "starter_snapshot_scope": "per_prestige_band_conservative_entry_fixture",
-        "starter_snapshot_requires_live_player_data": False,
-        "zero_local_sample_cap_strategy": "stricter_of_starter_90_percent_and_discounted_global",
+        "max_development_actions": 16,
         "anchor_k": 5,
         "strength_safety": {
             "no_reference": {
@@ -190,7 +153,15 @@ def _minimal_v2_config():
             "direct_prestige_grant_by_maintenance_allowed": False,
             "profiles": growth_profiles,
             "last_strength_increase_at_required": True,
-            "arena_acceleration_may_bypass_band_spacing": False,
+            "arena_acceleration_bypass": {
+                "due": True,
+                "band_spacing": True,
+                "daily_action": True,
+                "daily_growth": True,
+                "per_action": False,
+                "daily_control_cap": False,
+                "component_cap": False,
+            },
             "admin_may_bypass_band_spacing": False,
             "configured_boundaries_crossed_per_controlled_action_max": 1,
             "cross_band_uses_stricter_source_or_destination_limit": True,
@@ -241,12 +212,11 @@ def _minimal_v2_config():
         },
         "routing": {
             "activation_mode": "direct_after_gate",
-            "bootstrap_mode": "legacy_before_gate",
-            "maintenance_mode": "legacy_before_gate",
+            "bootstrap_mode": "v2_active",
+            "maintenance_mode": "v2_active",
         },
-        "policy_rollout": {"target_version": 1, "enabled": False, "rollout_percent": 0},
-        "reference_snapshot_catalog": {},
-        "policies": {"1": policy},
+        "policy_rollout": {"target_version": 2, "enabled": False, "rollout_percent": 0},
+        "policies": {"2": policy},
     }
 
 
@@ -267,10 +237,6 @@ def test_virtual_players_accepts_lifecycle_and_inventory_cap_fields():
             "technology_keys": "__all__",
             "item_template_keys": "__all_tradeable__",
             "loot_item_template_keys": ["gold_bar"],
-            "powerful_item_prestige_chance": [
-                {"min_prestige": 0, "chance": 0.0},
-                {"min_prestige": 30000, "chance": 0.5},
-            ],
             "high_tier_skill_keys": ["stratagem_burst"],
             "high_tier_skill_chance": 0.05,
             "high_tier_skills_per_guest": [1, 1],
@@ -279,13 +245,15 @@ def test_virtual_players_accepts_lifecycle_and_inventory_cap_fields():
             "multi_skill_passive_focus_chance": 0.75,
             "guest_max_rarity_by_stage": {1: "green", 7: "blue", 11: "purple"},
             "gear_max_rarity_by_stage": {1: "green", 7: "blue", 11: "purple"},
+            "inventory_rare_color_set": ["red", "purple", "orange"],
+            "inventory_max_rarity_by_stage": {1: "green", 7: "blue", 11: "purple"},
+            "inventory_batch_max_per_cycle": 1,
+            "inventory_color_weights_by_prestige_band": {
+                "newbie": {"black": 55, "gray": 30, "green": 12, "red": 3},
+            },
             "loot_item_quantity": [1, 3],
             "loot_limits": {"real_attacker_daily_resource_cap": 1000000},
             "rare_item_daily_global_cap": 20,
-            "powerful_item_daily_global_cap": 5,
-            "powerful_item_min_price": 100000,
-            "powerful_item_min_growth_stage": 5,
-            "low_stage_powerful_item_chance": 0.03,
         },
     }
 
@@ -318,23 +286,21 @@ def test_virtual_players_rejects_negative_inventory_cap_fields():
     data = {
         "projection": {
             "rare_item_daily_global_cap": -1,
-            "powerful_item_daily_global_cap": -1,
-            "powerful_item_min_price": -1,
-            "powerful_item_min_growth_stage": -1,
-            "powerful_item_prestige_chance": "bad",
+            "inventory_rare_color_set": [],
+            "inventory_batch_max_per_cycle": 0,
+            "inventory_color_weights_by_prestige_band": {"newbie": {"red": -1}},
             "loot_limits": {"real_attacker_daily_resource_cap": -1},
-        }
+        },
     }
 
     result = validate_virtual_players(data)
 
     assert not result.is_valid
-    messages = _messages(result)
+    messages = [str(error) for error in result.errors]
     assert any("rare_item_daily_global_cap" in message for message in messages)
-    assert any("powerful_item_daily_global_cap" in message for message in messages)
-    assert any("powerful_item_min_price" in message for message in messages)
-    assert any("powerful_item_min_growth_stage" in message for message in messages)
-    assert any("powerful_item_prestige_chance" in message for message in messages)
+    assert any("inventory_rare_color_set" in message for message in messages)
+    assert any("inventory_batch_max_per_cycle" in message for message in messages)
+    assert any("inventory_color_weights_by_prestige_band.newbie.red" in message for message in messages)
     assert any("real_attacker_daily_resource_cap" in message for message in messages)
 
 
@@ -351,15 +317,12 @@ def test_virtual_players_rejects_invalid_inventory_projection_fields():
             "multi_skill_passive_focus_chance": 2,
             "guest_max_rarity_by_stage": {0: "rainbow"},
             "gear_max_rarity_by_stage": {0: "rainbow"},
+            "inventory_rare_color_set": ["rainbow", "red", "red"],
+            "inventory_max_rarity_by_stage": {0: "rainbow"},
+            "inventory_batch_max_per_cycle": "1",
+            "inventory_color_weights_by_prestige_band": {"unknown": {"rainbow": "bad"}},
             "loot_item_quantity": [3, "bad"],
             "rare_item_daily_global_cap": "20",
-            "powerful_item_daily_global_cap": 1.5,
-            "powerful_item_min_price": "100000",
-            "powerful_item_min_growth_stage": "5",
-            "powerful_item_prestige_chance": [
-                {"min_prestige": "bad", "chance": 1.2},
-            ],
-            "low_stage_powerful_item_chance": 2,
             "loot_limits": {"real_attacker_daily_resource_cap": "1000000"},
         }
     }
@@ -380,11 +343,10 @@ def test_virtual_players_rejects_invalid_inventory_projection_fields():
     assert any("gear_max_rarity_by_stage" in message for message in messages)
     assert any("loot_item_quantity" in message for message in messages)
     assert any("rare_item_daily_global_cap" in message for message in messages)
-    assert any("powerful_item_daily_global_cap" in message for message in messages)
-    assert any("powerful_item_min_price" in message for message in messages)
-    assert any("powerful_item_min_growth_stage" in message for message in messages)
-    assert any("powerful_item_prestige_chance" in message for message in messages)
-    assert any("low_stage_powerful_item_chance" in message for message in messages)
+    assert any("inventory_rare_color_set" in message for message in messages)
+    assert any("inventory_max_rarity_by_stage" in message for message in messages)
+    assert any("inventory_batch_max_per_cycle" in message for message in messages)
+    assert any("inventory_color_weights_by_prestige_band" in message for message in messages)
     assert any("real_attacker_daily_resource_cap" in message for message in messages)
 
 
@@ -577,7 +539,7 @@ def test_virtual_players_accepts_complete_fail_closed_v2_release_input():
     assert result.is_valid, [str(error) for error in result.errors]
 
 
-def test_virtual_players_accepts_strict_gate_d2_evidence_catalog_entries():
+def test_virtual_players_rejects_retired_gate_d2_evidence_catalog():
     config = _minimal_v2_config()
     config["reference_snapshot_catalog"] = {
         "3": {
@@ -597,81 +559,35 @@ def test_virtual_players_accepts_strict_gate_d2_evidence_catalog_entries():
 
     result = validate_virtual_players({"bot_development_v2": config})
 
-    assert result.is_valid, [str(error) for error in result.errors]
-
-
-@pytest.mark.parametrize(
-    ("mutation", "message"),
-    (
-        (
-            lambda entry: entry.update(schema_version=2),
-            "schema_version",
-        ),
-        (
-            lambda entry: entry.update(digest="B" * 64),
-            "lowercase SHA-256",
-        ),
-        (
-            lambda entry: entry.update(unknown=True),
-            "unknown field",
-        ),
-    ),
-)
-def test_virtual_players_rejects_invalid_gate_d2_evidence_catalog_entries(
-    mutation,
-    message,
-):
-    config = _minimal_v2_config()
-    evidence_entry = {"schema_version": 3, "digest": "b" * 64}
-    mutation(evidence_entry)
-    config["reference_snapshot_catalog"] = {
-        "3": {
-            "schema_version": 1,
-            "digest": "a" * 64,
-            "artifact_path": "data/virtual_player_reference_snapshots/v3.json",
-            "gate_d2_evidence": {"1": {"junior": evidence_entry}},
-        }
-    }
-
-    result = validate_virtual_players({"bot_development_v2": config})
-
     assert not result.is_valid
-    assert any(message in str(error) for error in result.errors)
+    assert any("reference_snapshot_catalog" in str(error) and "unknown field" in str(error) for error in result.errors)
 
 
-def test_virtual_players_caps_the_policy_calibration_sample_minimum():
+def test_virtual_players_rejects_retired_policy_calibration_fields():
     config = _minimal_v2_config()
-    config["policies"]["1"]["reference_calibration_min_profiles_per_band"] = 1001
+    config["policies"]["2"]["reference_calibration_min_profiles_per_band"] = 30
     _refresh_target_policy_checksum(config)
 
     result = validate_virtual_players({"bot_development_v2": config})
 
     assert not result.is_valid
     assert any(
-        "reference_calibration_min_profiles_per_band" in str(error) and "must be <= 1000" in str(error)
+        "reference_calibration_min_profiles_per_band" in str(error) and "unknown field" in str(error)
         for error in result.errors
     )
 
 
-def test_virtual_players_rejects_unversioned_or_relaxed_calibration_thresholds():
+def test_virtual_players_rejects_retired_calibration_thresholds():
     missing = _minimal_v2_config()
-    missing["policies"]["1"].pop("reference_calibration_thresholds")
+    missing["policies"]["2"]["reference_calibration_thresholds"] = {}
     _refresh_target_policy_checksum(missing)
-    relaxed = _minimal_v2_config()
-    relaxed["policies"]["1"]["reference_calibration_thresholds"]["normalized_wasserstein_max"] = 0.30
-    _refresh_target_policy_checksum(relaxed)
 
     missing_result = validate_virtual_players({"bot_development_v2": missing})
-    relaxed_result = validate_virtual_players({"bot_development_v2": relaxed})
 
     assert not missing_result.is_valid
     assert any(
-        "missing required field 'reference_calibration_thresholds'" in str(error) for error in missing_result.errors
-    )
-    assert not relaxed_result.is_valid
-    assert any(
-        "normalized_wasserstein_max" in str(error) and "must be <= 0.25" in str(error)
-        for error in relaxed_result.errors
+        "reference_calibration_thresholds" in str(error) and "unknown field" in str(error)
+        for error in missing_result.errors
     )
 
 
@@ -680,8 +596,8 @@ def test_virtual_players_rejects_unversioned_or_relaxed_calibration_thresholds()
     [
         ((), "engine_rollout_percent"),
         (("routing",), "bootstrap_enabled"),
-        (("policies", "1"), "max_developmnt_actions"),
-        (("policies", "1", "strength_safety", "sparse_1_4"), "actions_daily"),
+        (("policies", "2"), "max_developmnt_actions"),
+        (("policies", "2", "strength_safety", "sparse_1_4"), "actions_daily"),
     ],
 )
 def test_virtual_players_rejects_unknown_v2_fields(path, field):
@@ -706,14 +622,14 @@ def test_virtual_players_rejects_unknown_root_fields():
 
 def test_virtual_players_rejects_policy_checksum_mismatch_and_missing_target():
     config = _minimal_v2_config()
-    config["policies"]["1"]["checksum"] = "0" * 64
-    config["policy_rollout"]["target_version"] = 2
+    config["policies"]["2"]["checksum"] = "0" * 64
+    config["policy_rollout"]["target_version"] = 1
 
     result = validate_virtual_players({"bot_development_v2": config})
     errors = [str(error) for error in result.errors]
 
     assert any("checksum" in error and "does not match" in error for error in errors)
-    assert any("target policy is missing" in error for error in errors)
+    assert any("single-policy runtime requires target_version=2" in error for error in errors)
 
 
 def test_virtual_players_rejects_open_rollout_without_positive_percent():
@@ -723,7 +639,7 @@ def test_virtual_players_rejects_open_rollout_without_positive_percent():
     result = validate_virtual_players({"bot_development_v2": config})
 
     assert not result.is_valid
-    assert any("must be positive while policy rollout is enabled" in str(error) for error in result.errors)
+    assert any("multi-version policy rollout is retired" in str(error) for error in result.errors)
 
 
 def test_virtual_players_rejects_maintenance_cutover_before_bootstrap_gate_exit():
@@ -733,7 +649,7 @@ def test_virtual_players_rejects_maintenance_cutover_before_bootstrap_gate_exit(
     result = validate_virtual_players({"bot_development_v2": config})
 
     assert not result.is_valid
-    assert any("before Bootstrap exits Gate D1" in str(error) for error in result.errors)
+    assert any("single-policy runtime requires v2_active" in str(error) for error in result.errors)
 
 
 def test_virtual_players_rejects_invalid_v2_band_boundaries_and_order():
@@ -751,7 +667,7 @@ def test_virtual_players_rejects_invalid_v2_band_boundaries_and_order():
 
 def test_virtual_players_rejects_relaxed_strength_tier():
     config = _minimal_v2_config()
-    config["policies"]["1"]["strength_safety"]["sparse_1_4"]["actions_per_24h_max"] = 2
+    config["policies"]["2"]["strength_safety"]["sparse_1_4"]["actions_per_24h_max"] = 2
 
     result = validate_virtual_players({"bot_development_v2": config})
 
@@ -764,13 +680,12 @@ def test_virtual_players_rejects_relaxed_strength_tier():
     [
         ("strength_safety", "arena_acceleration_may_bypass"),
         ("strength_safety", "admin_may_bypass"),
-        ("prestige_band_growth", "arena_acceleration_may_bypass_band_spacing"),
         ("prestige_band_growth", "admin_may_bypass_band_spacing"),
     ],
 )
-def test_virtual_players_rejects_arena_and_admin_growth_bypasses(path):
+def test_virtual_players_rejects_legacy_safety_and_admin_growth_bypasses(path):
     config = _minimal_v2_config()
-    policy = config["policies"]["1"]
+    policy = config["policies"]["2"]
     policy[path[0]][path[1]] = True
     _refresh_target_policy_checksum(config)
 
@@ -781,9 +696,96 @@ def test_virtual_players_rejects_arena_and_admin_growth_bypasses(path):
     assert not any("checksum" in error and "does not match" in error for error in errors)
 
 
+@pytest.mark.parametrize(
+    ("field", "invalid_value", "expected_message"),
+    [
+        ("due", False, "must be true"),
+        ("band_spacing", False, "must be true"),
+        ("daily_action", False, "must be true"),
+        ("daily_growth", False, "must be true"),
+        ("per_action", True, "must be false"),
+        ("daily_control_cap", True, "must be false"),
+        ("component_cap", True, "must be false"),
+    ],
+)
+def test_virtual_players_rejects_unsafe_arena_acceleration_bypass_contract(
+    field,
+    invalid_value,
+    expected_message,
+):
+    config = _minimal_v2_config()
+    bypass = config["policies"]["2"]["prestige_band_growth"]["arena_acceleration_bypass"]
+    bypass[field] = invalid_value
+    _refresh_target_policy_checksum(config)
+
+    result = validate_virtual_players({"bot_development_v2": config})
+    errors = [str(error) for error in result.errors]
+
+    assert any(field in error and expected_message in error for error in errors)
+    assert not any("checksum" in error and "does not match" in error for error in errors)
+
+
+def test_virtual_players_rejects_historical_arena_bypass_contract() -> None:
+    config = _minimal_v2_config()
+    growth = config["policies"]["2"]["prestige_band_growth"]
+    growth.pop("arena_acceleration_bypass")
+    growth["arena_acceleration_may_bypass_band_spacing"] = False
+    _refresh_target_policy_checksum(config)
+
+    result = validate_virtual_players({"bot_development_v2": config})
+
+    assert not result.is_valid
+    assert any("arena_acceleration_may_bypass_band_spacing" in str(error) for error in result.errors)
+
+
+def test_virtual_players_accepts_versioned_arena_supply_priority() -> None:
+    config = _minimal_v2_config()
+    arena_training_policy = {
+        "schema_version": 2,
+        "version": 2,
+        "checksum": "",
+        "envelopes": {
+            "all": {
+                "ready_power_range": [0, None],
+                "supply_prestige_band_priority": ["middle", "senior", "junior"],
+            }
+        },
+    }
+    arena_training_policy["checksum"] = _policy_checksum(arena_training_policy)
+    config["arena_training_policy"] = arena_training_policy
+
+    result = validate_virtual_players({"bot_development_v2": config})
+
+    assert result.is_valid, result.errors
+
+
+def test_virtual_players_rejects_duplicate_arena_supply_priority() -> None:
+    config = _minimal_v2_config()
+    arena_training_policy = {
+        "schema_version": 2,
+        "version": 2,
+        "checksum": "",
+        "envelopes": {
+            "all": {
+                "ready_power_range": [0, None],
+                "supply_prestige_band_priority": ["middle", "middle"],
+            }
+        },
+    }
+    arena_training_policy["checksum"] = _policy_checksum(arena_training_policy)
+    config["arena_training_policy"] = arena_training_policy
+
+    result = validate_virtual_players({"bot_development_v2": config})
+
+    assert not result.is_valid
+    assert any(
+        "supply_prestige_band_priority" in str(error) and "must not repeat" in str(error) for error in result.errors
+    )
+
+
 def test_virtual_players_rejects_decreasing_growth_cadence_and_increasing_action_cap():
     config = _minimal_v2_config()
-    elite = config["policies"]["1"]["prestige_band_growth"]["profiles"]["elite"]
+    elite = config["policies"]["2"]["prestige_band_growth"]["profiles"]["elite"]
     elite["minimum_positive_strength_action_spacing_hours"] = 10
     elite["composite_growth_bps_per_controlled_action_max"] = 300
 
@@ -803,7 +805,7 @@ def test_virtual_players_rejects_non_integer_bootstrap_history_after_valid_check
     invalid_bound,
 ):
     config = _minimal_v2_config()
-    config["policies"]["1"]["prestige_band_growth"]["profiles"]["newbie"]["bootstrap_history_age_days"][
+    config["policies"]["2"]["prestige_band_growth"]["profiles"]["newbie"]["bootstrap_history_age_days"][
         0
     ] = invalid_bound
     _refresh_target_policy_checksum(config)
@@ -817,7 +819,7 @@ def test_virtual_players_rejects_non_integer_bootstrap_history_after_valid_check
 
 def test_virtual_players_rejects_starter_snapshot_that_falls_outside_its_band_after_cap():
     config = _minimal_v2_config()
-    config["policies"]["1"]["starter_snapshots"]["profiles"]["elite"]["prestige"] = 60000
+    config["policies"]["2"]["starter_snapshots"]["profiles"]["elite"]["prestige"] = 60000
 
     result = validate_virtual_players({"bot_development_v2": config})
 

@@ -1,0 +1,315 @@
+schema_version: 1
+evidence_id: virtual_player_gate_d1_evidence_2026_08_09
+recorded_at_utc: '2026-08-09T19:16:46Z'
+gate: gate_d1_bootstrap_activation
+verdict:
+  required_implementation_and_test_evidence: passed
+  review_disposition: ready_for_gate_exit_review
+  gate_exit_performed: false
+  runtime_activation_authorized: false
+  runtime_routing_changed: false
+  production_rollout_authorized: false
+scope:
+  project_stage: development
+  environment: test
+  environment_class: non_production
+  production: false
+  isolated_test_data_only: true
+  representative_human_distribution_claimed: false
+  authorizes_gate_d2_calibration: false
+  authorizes_gate_e_maintenance: false
+  authorizes_existing_data_rebuild: false
+  authorizes_git_operations: false
+activation_preconditions_outside_this_evidence:
+  canonical_gate_a_execution_status: passed
+  explicit_gate_exit_decision_status: not_taken
+  explicit_runtime_transition_authorization_status: not_granted
+  gate_d2_reference_calibration_required_for_d1: false
+environment:
+  django_test_use_env_services: '1'
+  database_backend: django.db.backends.mysql
+  database_host: 127.0.0.1
+  database_port: 13306
+  database_name: test_webgame
+  redis_host: 127.0.0.1
+  redis_port: 16379
+  services_restarted: false
+  database_role: isolated_reused_test_database
+  test_database_recreated: false
+  credentials_recorded: false
+  business_database_touched: false
+source_state:
+  git_commit: 648488b183318ca85625efa763bcf9257ddddc28
+  git_tree: fd982f1210dfdf74aeb674d31d400e7c7e437306
+  worktree_clean: false
+  allowed_dirty_paths:
+  - docs/virtual_player_gate_d1_evidence_2026-08-09.yaml
+  - docs/virtual_player_gate_e_readiness_evidence_2026-08-09.yaml
+  - docs/virtual_player_gate_evidence_manifest_2026-08-09.yaml
+  evidence_applies_to_exact_file_hashes: true
+  digest_algorithm: sha256
+  files:
+    .env.docker.prod.example: 0546adf8dd0c0961319b85aa832159e924ceefff6003749091ec013c49560621
+    .flake8: 0e8b770a8865d682951ef7f593ab3dcc401b7b40fc7ffad5a1a4c6190916980a
+    .github/workflows/ci.yml: 1a08ea52abeeb5d415930f282b9ef92835f5834ee269003638c339eab7456c62
+    .github/workflows/virtual_player_readiness.yml: 9fd7525a7b1b960e73256eb287a64064c787ae02a8a15e13d9e22812bbec0c99
+    Makefile: a1af72988708b6a61507ee37bf795cb038fb0ce0a5ff6ca26572da4064cc4dd7
+    config/settings/base.py: deee8bf2e98bc6a6e405aeae670f23cad640a62016816362c229a69ab79af829
+    config/settings/database.py: 130ed00cc8052b81198a674e33e17ce6ab79b2f13cd120c308c4236d4cef2612
+    data/virtual_players.yaml: 6ae9a8fcd79826a8f77c3fe1541803ce648e7bf40223a4f63e05ab5a938216c2
+    docker-compose.prod.yml: dc12c49756ed615b53b96d3233e1f951c7694b1976a65d1f05647207883d5b9b
+    docs/runbook_deploy_docker.md: 864da1367038b1e04a0270ddd3b53effe46576a6eda76c9fe58e350ed987e60e
+    docs/virtual_player_gate_a_acceptance_config_2026-07-27.yaml: 7203141131e4db01e0c614edbdd9fcd2ca57e65a24541bca4fb99594c4950438
+    docs/virtual_player_gate_evidence_manifest_2026-08-09.yaml: 905792b07a575885f752063fd0d14297bda1d79e24741bd246ad172f0f44cddb
+    gameplay/management/commands/preflight_virtual_player_v2.py: 72d92c774d9d9743600996f4d45a762f074e9bad15f99b5d6814dd4fb52098b9
+    gameplay/migrations/0139_botprofile_v2_fields.py: f1bc677b3bb7ccc861c8a9c3752289cd40cf6b165927a0750fb533d139483b46
+    gameplay/migrations/0140_bot_population_recompute_demand.py: 9279a2293f03cd62b75782c5279a408303b7ffbe8c13a2a39a97f7846b829cba
+    gameplay/migrations/0141_bot_runtime_policy_rollout.py: 88d54b72c67586a6d45073f30f5c34dc75ed77dbf208e74218a1a97bf9bdd8c0
+    gameplay/migrations/0145_alter_resourceevent_reason.py: eae9a712097e4804021910dbaf19e687fb2cfdd99db71cdb0870c6c22a40a804
+    gameplay/migrations/0146_virtual_player_health_and_recovery.py: 832a48bf8d9670d88f611f67922b1d02315840753b75b2a782e31fee4815f5f5
+    gameplay/migrations/0151_manor_resource_updated_index.py: 29f24585318b1db674d350e587acee0c99fe7b7d3fc7d5ed8156e5d65afc8faa
+    gameplay/migrations/0152_performance_scan_indexes.py: 94db0973b2dbd8cac88a4d30104151673cc9068fc32407f6a35008d81b768c0a
+    gameplay/migrations/0153_arena_virtual_reserve_growth_retry_state.py: 1a704309509feb84f824badf1165af7152551f94d20294e6aeb98b03564f4145
+    gameplay/migrations/0154_alter_arenavirtualdemand_status.py: 7e18b6d74761389bf88a11f310fa4b0ed00b2aceb199473e404e268c5622264b
+    gameplay/migrations/0155_arena_virtual_demand_activity_targets.py: 2994f57360263a1ecb0de8339060b90b96faac3272ea559d55d8fb4c2de86730
+    gameplay/migrations/0156_arena_virtual_reserve_roster_target.py: de6339b8b4101dc0e66eb23b13b52db05e08305a13fe074cb3679f796eeb3e69
+    gameplay/migrations/0157_arena_growth_effective_progress.py: f076a7973dc07c082d2b84bfac2b02dab20f1c6d0c1954fbbb778ef3b122cfd2
+    gameplay/migrations/0158_arena_growth_budget_and_admission_high_water.py: bbdbcf075debea018b676b639dce2d60188e68e691ccf227cca7489dc36be274
+    gameplay/migrations/0159_arena_virtual_demand_admission_guard.py: 6f852059717cc38d6f4db2cfab9a9d96f30414fa8e9e073821c183a167620289
+    gameplay/migrations/0160_arena_growth_objective_snapshot.py: b4e8ae677cf4bd1003ba8aa0aa3a4d89d29dfc655412b7e0bc3a536e7ba9242d
+    gameplay/migrations/0161_arena_growth_digest_schema.py: aa187c6af6281a8eed6d18eddfd4bd86c57038c98b86d29bab07abcd224d89b1
+    gameplay/migrations/0162_arena_admission_probe_and_member_lease.py: d294b38ebe0ab4f10639a9bbe7cd17f2b9dbd437c1ddd640b72413a60bcc95f9
+    gameplay/migrations/0163_arena_training_policy_snapshot.py: 6168f97da2977597bedc1f137bb839fe06fd0850e3da49cebd6cf5212e87ea54
+    gameplay/migrations/0164_virtual_player_cycles_recovery_and_control.py: 487cd5208c4b687b23d80bb6313965bb4fe932b949580e144a8a8a512fd0d1f8
+    gameplay/migrations/0165_bot_maintenance_recovery_success.py: cea05cc557cfaee66384a3117d9d79779a6f5c909ee7d5bc47cd708a7d0b85d5
+    gameplay/migrations/0166_arena_growth_control_snapshot.py: d040b04def1bf9160d184989184f1f06db0f0854195ddbd61fccefa1edc3c112
+    gameplay/migrations/0167_growth_control_snapshot_immutability.py: 93601d8d04ae53e83cea62ca14db6e9f17eefd018d15beb9d9ee38775489d1fa
+    gameplay/migrations/0168_virtualplayergrowthcontrolpointer_and_more.py: 30f29b9bd47d4c8e9067f9dcf3b6d732224d8d3d159d2ca37b9f2fa89b1e5591
+    gameplay/migrations/0169_alter_botmaintenancerecovery_scope.py: 29980960ed898730bcc699d72c333cfb343d1ef9791a42d3e3f6b6b722465379
+    gameplay/models/__init__.py: 60675f518ec5f5cf7672107d772fbf2c0e4ebca837bf77acd3e7f9db0832fd20
+    gameplay/models/bots.py: e62d5f2cf03c2833712a2114169ce97a4407a9bca604a75f88e3feec54adea45
+    gameplay/services/arena/virtual_backfill.py: 045c45ab6c9f8fe0929027250aa5579357bf03322dbffeea7e983e0a70504db4
+    gameplay/services/arena/virtual_lineups.py: 1b660fc1a6086896c396bb97d4fa82a969e95f79e18c228e90fd6efb74065e1b
+    gameplay/services/arena/virtual_protection.py: fe6028ac3d7709fd8eb99bc07c11626c147408e13afb34ba8660d274891de170
+    gameplay/services/arena/virtual_reserve.py: 0454a3811f48d45e717f01a68231920d63ead3a91dd8c2cfc542e2a9ea7a856e
+    gameplay/services/arena/virtual_reserve_demand.py: b4f10bb46d03cb40ca1495f9496cc48f9cb4daf42f890b77585c89104a8ce819
+    gameplay/services/arena/virtual_reserve_fill.py: 2b914db94e0b57499e18d717c0b1d70a12f78487813b23f35baf2bfd5327cd39
+    gameplay/services/arena/virtual_reserve_growth_budget.py: 1f5c36a0bf3d87dc60e9530facc8854ad2f59dcd6100ed5842d5a71c44b7cd34
+    gameplay/services/arena/virtual_reserve_observability.py: 6ce67f8dcb5b064c9a3499f12d7a29394316fbab98dd97bec1e248fae4251f42
+    gameplay/services/arena/virtual_reserve_policy.py: 59af280abe4a7e56e2275aba3ea2c3c6976855f55bf458fa1a5a2b7316697c7e
+    gameplay/services/arena/virtual_reserve_pool.py: c20bfaab63e9557483c1e9d684367355175940f0fcb14996ec3126b38ee18189
+    gameplay/services/arena/virtual_reserve_reconcile.py: 6aee7a89ead475b8ef81684e0124c3f8b326bfadb31571dfa053a83416f6a87d
+    gameplay/services/arena/virtual_reserve_references.py: a0a16bc1b7912f26fb864e5d9221a6bd4ffa1c362ad94e38610a98e07c8fbc4b
+    gameplay/services/arena/virtual_reserve_scan.py: ea6744f16ba0079d697ab7b702584c77a4d5516975ae63e01e8b992fefcdb9cb
+    gameplay/services/arena/virtual_reserve_training_policy.py: de5353ee4c928f3b0658f6dad739129c00c8697895faaa7587ee913d14930ae2
+    gameplay/services/manor/coordinates.py: 0e19316810e0a41c1a8ce828d4d63649aabe984dc0e52b36b199733cac8d8c43
+    gameplay/services/manor/core.py: e88963b5aa4a26db0602f7c6898711e96193d4bbd4dbf596cb5ffaf68768c234
+    gameplay/services/manor/prestige.py: f5200e7b454655db6be7d36f0e8f86400419baa022c16f376d4c26cc8e1c83cd
+    gameplay/services/runtime_configs.py: 22d76bf8b85220ca6032a58674e3b18048f03147f4776802fb5f52bb7feedaf9
+    gameplay/services/virtual_player_core/arena_healing.py: fefb98b43436eaf5f72825a37efd2dde68cbde812d43fc72069e3999cff6eb62
+    gameplay/services/virtual_player_core/arena_population.py: 713057fce6b19f144a0a63790796538f73913577987c7793f21858d8e1b1642b
+    gameplay/services/virtual_player_core/bootstrap.py: 6c8f33630b84e3b66866b78b756e1a9dfade5beabf0cdc8a2feb5cce8fc0013f
+    gameplay/services/virtual_player_core/bootstrap_assets.py: 750386aa907dfe5ecfe4f139f6dacc17ee217db23fdda1d823285cba20558496
+    gameplay/services/virtual_player_core/bootstrap_catalog.py: 1318e90b089c3fdfc4cc971ea5aaa5ea81a12a9747045183b1ab46f477a97134
+    gameplay/services/virtual_player_core/bootstrap_materializer.py: de7a193e421181218520e62b59a0f14b1f08fd8611e559c3ca2ed73eea5cee3c
+    gameplay/services/virtual_player_core/calibration_runtime.py: 88dd397fad65677ef6506f45e64afcb836f398370c554c04f3eed74fd702378f
+    gameplay/services/virtual_player_core/config.py: 504be3a142534b27eedc29de14d1f7855bd04722ead43aab2104c17c0675261b
+    gameplay/services/virtual_player_core/contracts.py: cfcbe54d4d1d59e26ba0e79c8ef22bf21d9cfa635679350f5454cddb353af447
+    gameplay/services/virtual_player_core/economy.py: 796193aceb4bf07ea4bc203150e0cdf61b4be4b11cf0ef7a58d91c83aca0dfcc
+    gameplay/services/virtual_player_core/gate_d1_exit_workflow.py: 17eb7357352783c7873d140199aa9788c5ae3e426d1644a05042eb10d8b5880c
+    gameplay/services/virtual_player_core/gate_evidence.py: 22b265bd9c644f29458048787e2922ccf77f509a33b8d8ac691da0b22a834433
+    gameplay/services/virtual_player_core/growth_control.py: fdd57256fe18a0361bacc6aa97de8200ea9e63cc21a7db6ed0397f43eb6ae559
+    gameplay/services/virtual_player_core/health.py: 4d1aa5ff36f86c626a7d11adaa70420affc062692e21adfb122debac5e11a7c8
+    gameplay/services/virtual_player_core/identity.py: 3e12a8b588141f7529d8c01fa061b5cdcd725da24be809f05645cad2ffebb718
+    gameplay/services/virtual_player_core/inventory_budget.py: f4cdfff37deaf9a4edbbebed4d63f4767a31fe4e1396285b3f8b10de0a4e85c3
+    gameplay/services/virtual_player_core/lifecycle.py: 58f58f49c7fd31a404d386c55584e0a6c8a12316905432125fbbc49c75256233
+    gameplay/services/virtual_player_core/maintenance_rules.py: 3a2cfbb7d5065cb52b8ddbb21e44cac4fe6ed9b17823322ef33c9b5123c44c4d
+    gameplay/services/virtual_player_core/policy_registry.py: 73f6753fd0284e0ca3d25b50a8d9def1ec70746c313362665356b4bb95f06164
+    gameplay/services/virtual_player_core/population.py: d31df02f7c91da8125cd858d6f1bc2e60369703824fced14521449a87ccc1dba
+    gameplay/services/virtual_player_core/population_runtime.py: 162584d66745cdb1909e7158deba892ef16d3a78135d28d04c0a16c90f1d8f47
+    gameplay/services/virtual_player_core/profile_management.py: 41eaf3ecd61c05dad8427f6973cd7c9eb1e6438b98e55880cba68f7e7326dded
+    gameplay/services/virtual_player_core/profile_store.py: 32ba211d83501ce0b16601a521564372da2ab91e784b849b84622a39363aaef1
+    gameplay/services/virtual_player_core/projection.py: e162c2bb40ad099590996416a4b0571e28b3d51e8f79bedaee40430f504544b8
+    gameplay/services/virtual_player_core/random_context.py: 0c1510b562c289488a6e984f326fbb16dd89f36ce0518362092d8f14c97c8f28
+    gameplay/services/virtual_player_core/recovery.py: daeae4da7ae7af123b1f6866222658aed5e4a2d5508c8b60108dd831341ca43c
+    gameplay/services/virtual_player_core/reference_snapshots.py: f41ed6fd8cf50127d38182f6212b3d806f5c7567e44d5f5dea1659e92fc0cafb
+    gameplay/services/virtual_player_core/runtime_assessment.py: c0aeb9aade8708472c475d08048de09cb116e13caa1776fe6851963d5d2c4e20
+    gameplay/services/virtual_player_core/runtime_helpers.py: 872dcbc76a3f28d6572d0deb387827d6e00a5cecc3d2cb65e7ae3538d056e3de
+    gameplay/services/virtual_player_core/runtime_preflight.py: 6d150850d8896bc067fc9549027a61dd45309a79eda2f6086ca5e223122afebd
+    gameplay/services/virtual_player_core/selectors.py: 20b9f40681e7b96fcdf7c62922ffa245bb2f9379b10236d1e7c849acb3048e72
+    gameplay/services/virtual_player_core/stage_metrics.py: 0cf2a5423970b5140880afed094aebdcbfc7f62111be3b4414ca9dd80c83d93e
+    gameplay/services/virtual_player_core/strategy.py: 47758b26ec7bcaf37a6f5735ff113f7cec1d2f7ba2f155f309d90ff89b11183c
+    gameplay/services/virtual_players.py: 474a419bfc7b6daa6c2d3ac6f116f0f9c0b0e2c08341fdb50a464cf55e3f10e3
+    gameplay/signals.py: 4e91da51ed826d1ab6affe9749768d69945664db4c80134b41c99cbfd44b5461
+    gameplay/tasks/__init__.py: 959d7a2ac5cb6d55f8242257a33c578f274e33a0d562cb7452f7db4c35858a78
+    gameplay/tasks/arena.py: d7efc6b292a02b590623ec73bcf82b8d13b3598c009ae695f6751c374e99855f
+    gameplay/tasks/virtual_players.py: e2ca7612d52c768829f6a216f9f056da3e584342bd4164efc3865b61c259defa
+    package-lock.json: 95b1802a2e78b11987cc68c2b836400bdd6ee62e773bdd66705b9a07226634c5
+    package.json: 9210c33a50d9d836aabeacbedbcd93a9bdd4dbfa1a06dd9599ec318a0a5e1c68
+    pyproject.toml: 5759e0fa261922fa2697c06d2f6b2faf89937c001e59b529a2ab487eb1867bb7
+    pytest.ini: 4ef0f3021417d85527e2a27bc5f69ad0d5dc54451b2b5d7d75ca1ae52e6d85a6
+    requirements-dev.txt: fdec9955b52591c0c079e761c30f1575cfab0c085454a6092c4d67f51541fa28
+    requirements.lock.txt: 15473d9c69a9c209b058b05764ea804d31a2ca4f8318fb51cbdd2120bb36345b
+    requirements.txt: 6eabaa976f83a6d52642485476ca2137eee8b5931023f5c95ffeb04fb3f92104
+    scripts/check_env_services_ready.py: bc4b2f514a76b3ee70ad66fad858d4210ae7298ddafc87c887e022a2813b2464
+    scripts/record_virtual_player_evidence.py: b65786e9d561ab831344aeca8c896468375e7818992921ffdbd5f8bfdc28085f
+    tests/arena_services/test_virtual_backfill.py: 2a35a92f1dbb0e79a96706645386dd419c6025489dfcf6fa81c62946d5b242e4
+    tests/arena_services/test_virtual_reserve.py: a3c117c47c7ba93a49b60c1176e741cc8494ed89858a5c54f965f0a6a7cdaf2b
+    tests/conftest.py: cb998ede7c6f4a6316d15f98c5394824edad675b129e88de1ad5ec99987ef1ef
+    tests/raid_concurrency_integration/h01_cross_races.py: 689f59bab69c1d68c698bf93c874bd61e52d33a6a06c591e02116cc87056b443
+    tests/test_arena_schedule.py: 6359a36e3959e88ba650129f28410b34061ecb352b854096987211eb486cafd8
+    tests/test_arena_tasks.py: 17b50d0d58cc8536e24693f6db81d257b39d6b4a5c6a9ee4923803db947bf320
+    tests/test_arena_virtual_lineups.py: e3dc0e8016ff91e8042ce0e9d386d2e832ce1f6319db18132bfe4ae457cf5dc1
+    tests/test_arena_virtual_population_concurrency_integration.py: 22af0d4386bca17ed7faa9b37b0b788096d94322506177c0e666c65a3ea640be
+    tests/test_deployment_configuration.py: f486f5dcef0d685eaee35ebaf7829e8284aed030bce37ed25a50718606830c55
+    tests/test_pytest_configuration.py: 48a95d5fbd202c17368d6e4ebe68e36e78235e38c5c2c89d4dbb38c91622724f
+    tests/test_virtual_player_architecture_gate.py: 7f67a8b40801838331bad366e5c84942af1a0c3829f3c628597e4ffc9601b7cc
+    tests/test_virtual_player_baseline_audit.py: a0bc692cec3624096e71625e9020a49d658b462109405060761349dda1e431ed
+    tests/test_virtual_player_bootstrap_routing.py: 0d41e53f46eb16c858ad9d4ea565dd3d2ee34685f9384503b1f37f0e12c74b2f
+    tests/test_virtual_player_bootstrap_v2.py: d15d143744ffb09552d4112a90fe00dc7240d104961c8b76b5546bfc830dd67b
+    tests/test_virtual_player_config.py: f4378aeb40264ff624bc6a00d86e3601e3d64f233b523724c5bb6026bdd9f226
+    tests/test_virtual_player_economy.py: 1f400b48065c86767190bf890254bb60b56605213df6b515078928078acff1f6
+    tests/test_virtual_player_evidence_recorder.py: bb42f01e59c0d22d4e415ce71928b19d3e9d1f630fa6cf4b1fcc192f1f31b132
+    tests/test_virtual_player_gate_acceptance_config.py: ddf20c3d6d114f1e5db03b6fa5475eb3e37ff700fbbfdc90a3045ba09fb5913c
+    tests/test_virtual_player_gate_activation_evidence.py: 071749fb80a29a3a7a00eb96bd0fde0c6a13e302963f28e6cb95345d015052ec
+    tests/test_virtual_player_gate_d1_automation.py: 498f7184d38641ec6a70c309899a2a6cf2fef19ac06ea575af817064736c1a36
+    tests/test_virtual_player_gate_d1_concurrency_integration.py: 6375898cfc5fa7045bd10795627b30bd3e6d7eea25f2f57631caf50851eb7f58
+    tests/test_virtual_player_gate_d1_evidence.py: 9fa34d1763089ae56f9b07e6e29adc7407eb378207a1ffd6a5561ef4f38423bf
+    tests/test_virtual_player_gate_e_automation.py: 3e79eb1fd32ad0a51c49b493b1b97561d32768197ae38ca076478b55cfb1312b
+    tests/test_virtual_player_gate_evidence_manifest.py: 843ddd75985f4115498e849e75009eb648b33312cbfdec556eccfcf320b11ec5
+    tests/test_virtual_player_gate_exit_workflows.py: 6e6fb8cace0dcdc04cb7a0d813d946d5bcce83ed3989ffe19b9031cb7e8b1ba3
+    tests/test_virtual_player_health.py: fe53289d9a76051c113abad71ccb9c00e36d0c4b605d5227e06b28caed655a1d
+    tests/test_virtual_player_health_mysql_integration.py: 7cc5cb20c6a6fa2c01f73d78c7de7019e94579ea22603dcd918a1c5a8dbf156e
+    tests/test_virtual_player_maintenance_contracts.py: 5f6c99fa60d6103a3976806012dca500c73b6e37ec022aa3ff08303e635ef4fd
+    tests/test_virtual_player_maintenance_rules.py: 38e2b52c95b047e8327a8e99c111cf80a4acc40f74c5459a389713afcd52c207
+    tests/test_virtual_player_population_consumer.py: 5aa03c0279fed411ad4a51cbe2d77640730d65021a3c92009ae20fc7892996b4
+    tests/test_virtual_player_population_demand.py: 22a264a1ffd44cb0977a00fd10f89c0ca864286a7bd3e4c0248ee6ad2c113a07
+    tests/test_virtual_player_prestige_transitions.py: f0b87b045c0fc2f415b01668bcb74bb629d49261c16f3f34236c706b11fd7e17
+    tests/test_virtual_player_projection.py: 26bef894e9846bc9dde41d020798bdce808316c91d1fa260feb4f65e1c549e76
+    tests/test_virtual_player_random_context.py: 9d26d1cd8a00622e36eee876bff089703d64b2a35cc0ed85fc9ad3b3feff4931
+    tests/test_virtual_player_reference_snapshots_v2.py: ca42468b641c00d26c784ca32502c00391fda1a2d78d0fc6f7aac9643237b84d
+    tests/test_virtual_player_registration_population.py: c2b5fcc586a81c9634cd21d4fea53bdb42c6a95e603135bf9429379555cc78ca
+    tests/test_virtual_player_strength_budget.py: 56f593c6886d7b953d1d7b8e37f60768eb574f7eb02a18853e188d361e30db32
+suite_collection:
+  checksum_algorithm: sha256
+  checksum_input: sorted_pytest_nodeids_joined_with_lf_and_terminal_lf
+  encoding: utf-8
+  contract:
+    expected_nodeid_count: 382
+    nodeid_checksum: 5bb2a1ae7a3a93984a865a5308a10ecf360f22b085ca2506a855fdb6f66aa3f3
+    files:
+    - tests/test_virtual_player_bootstrap_v2.py
+    - tests/test_virtual_player_bootstrap_routing.py
+    - tests/test_virtual_player_population_consumer.py
+    - tests/test_virtual_player_population_demand.py
+    - tests/test_virtual_player_registration_population.py
+    - tests/test_virtual_player_prestige_transitions.py
+    - tests/test_virtual_player_projection.py
+    - tests/test_virtual_player_strength_budget.py
+    - tests/test_virtual_player_economy.py
+    - tests/test_virtual_player_config.py
+    - tests/test_virtual_player_maintenance_rules.py
+    - tests/arena_services/test_virtual_reserve.py
+    - tests/test_arena_schedule.py
+    - tests/test_arena_tasks.py
+    - tests/test_virtual_player_health.py
+    - tests/test_virtual_player_gate_d1_automation.py
+    - tests/test_virtual_player_gate_e_automation.py
+  core_real_service:
+    expected_nodeid_count: 10
+    nodeid_checksum: c4f15df272593d34687f5e33aaa2360ab398b9b4d6c06f7cfefe68deb4576801
+    files:
+    - tests/test_virtual_player_gate_d1_concurrency_integration.py
+    - tests/test_virtual_player_health_mysql_integration.py
+  adjacent_real_service:
+    expected_nodeid_count: 4
+    nodeid_checksum: aea3a7bb6b9e8c8f8bdab1b9ce800a52d50b253a543ae40475fc4e76acce519f
+    files:
+    - tests/test_arena_virtual_population_concurrency_integration.py
+executions:
+  contract:
+    command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-d1
+    target_stage: contract
+    status: passed
+    execution_timestamp_utc: '2026-08-09T19:16:46Z'
+    timestamp_source: canonical_target_completion
+    passed: 382
+    failed: 0
+    skipped: 0
+    duration_seconds: 70.59
+  core_real_service:
+    command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-d1
+    target_stage: core_real_service
+    status: passed
+    execution_timestamp_utc: '2026-08-09T19:16:46Z'
+    timestamp_source: canonical_target_completion
+    passed: 10
+    failed: 0
+    skipped: 0
+    duration_seconds: 442.73
+  adjacent_real_service:
+    command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-d1
+    target_stage: adjacent_real_service
+    status: passed
+    execution_timestamp_utc: '2026-08-09T19:16:46Z'
+    timestamp_source: canonical_target_completion
+    passed: 4
+    failed: 0
+    skipped: 0
+    duration_seconds: 4.92
+migration_verification:
+  checked_at_utc: '2026-08-09T19:16:46Z'
+  database: test_webgame
+  read_only_check: true
+  migration_app: gameplay
+  migration_name: 0140_bot_population_recompute_demand
+  matching_migration_records: 1
+  demand_table_rows_after_suite: 0
+  migration_executed_by_this_verification: false
+  database_rebuilt_by_this_verification: false
+performance:
+  acceptance_source: docs/virtual_player_gate_a_acceptance_config_2026-07-27.yaml
+  benchmark:
+    warmup_runs: 5
+    measured_runs: 30
+    percentile_method: nearest_rank
+    profile_band: mythic
+  planning_duration_p95_ms:
+    threshold: 250
+    observed: 13.528
+    passed: true
+  materialization_duration_p95_ms:
+    threshold: 2000
+    observed: 198.801
+    passed: true
+  query_budget:
+    sql_queries_max: 80
+    write_queries_max: 25
+    exact_observed_counts_recorded: false
+    contract_assertion_status: passed
+scenario_results:
+  same_cell_concurrent_merge_preserves_revisions: passed
+  two_population_workers_materialize_one_profile_for_one_deficit: passed
+  concurrent_inventory_cap_loser_rolls_back: passed
+  real_name_unique_conflict_reuses_original_blueprint: passed
+  real_coordinate_unique_conflict_materializes_assets_once: passed
+  coordinate_retry_exhaustion_rolls_back_complete_graph: passed
+  routing_transition_waits_for_inflight_creation: passed
+  arena_population_capacity_and_region_shortage_are_revalidated: passed
+  manor_coordinate_savepoint_compatibility: passed
+  deadlocks_observed: 0
+  lock_timeouts_observed: 0
+limitations:
+- This artifact is test-environment evidence, not a runtime authorization source.
+- The exact query counts were asserted against frozen maxima but were not printed.
+- Gate A canonical execution was run separately with the fixed local MySQL/Redis environment; this D1 artifact does not authorize
+  a gate exit.
+- Gate D2 representative distribution calibration and Gate E maintenance are out of scope.
+- No production rollout, routing transition, enrollment, reclassification, or data rebuild occurred.
+canonical_gate_a_execution:
+  command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-a
+  status: passed
+  execution_timestamp_utc: '2026-08-09T19:08:05Z'
+  contract_passed: 167
+  real_service_passed: 12
+  duration_seconds: 133.841962

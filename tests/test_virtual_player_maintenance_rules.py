@@ -35,11 +35,17 @@ BAND_CADENCE_CASES = (
 
 
 def _raw_growth_policy() -> dict:
-    return deepcopy(_minimal_v2_config()["policies"]["1"]["prestige_band_growth"])
+    return deepcopy(_minimal_v2_config()["policies"]["2"]["prestige_band_growth"])
 
 
 def _policy():
     return parse_prestige_band_growth_policy(_raw_growth_policy())
+
+
+def _policy_with_bypass(**overrides: bool):
+    raw = _raw_growth_policy()
+    raw["arena_acceleration_bypass"].update(overrides)
+    return parse_prestige_band_growth_policy(raw)
 
 
 def _context(*, sequence: int = 7) -> RandomContext:
@@ -88,9 +94,12 @@ def _evaluate(
     target_sample_count: int | None = None,
     target_strength_cap: StrengthSummary | None = None,
     allow_roster_expansion: bool = False,
+    allow_arena_acceleration: bool = False,
+    allow_arena_growth_cap_bypass: bool = False,
+    policy=None,
 ):
     return evaluate_controlled_action(
-        policy=_policy(),
+        policy=policy or _policy(),
         intent=intent,
         now=now,
         last_strength_increase_at=last_strength_increase_at,
@@ -101,6 +110,8 @@ def _evaluate(
         target_sample_count=target_sample_count,
         target_strength_cap=target_strength_cap,
         allow_roster_expansion=allow_roster_expansion,
+        allow_arena_acceleration=allow_arena_acceleration,
+        allow_arena_growth_cap_bypass=allow_arena_growth_cap_bypass,
     )
 
 
@@ -146,8 +157,41 @@ def test_growth_policy_parser_freezes_all_eight_cadence_profiles() -> None:
     ]
     with pytest.raises(TypeError):
         policy.profiles["newbie"] = policy.cadence_for("newbie")  # type: ignore[index]
+    assert policy.arena_acceleration_bypass.due is True
+    assert policy.arena_acceleration_bypass.band_spacing is True
+    assert policy.arena_acceleration_bypass.daily_action is True
+    assert policy.arena_acceleration_bypass.daily_growth is True
+    assert policy.arena_acceleration_bypass.per_action is False
+    assert policy.arena_acceleration_bypass.daily_control_cap is False
+    assert policy.arena_acceleration_bypass.component_cap is False
     with pytest.raises(FrozenInstanceError):
         policy.cadence_for("newbie").prestige_band = "junior"  # type: ignore[misc]
+
+
+def test_growth_policy_parser_rejects_historical_arena_bypass_shape() -> None:
+    raw = _raw_growth_policy()
+    raw.pop("arena_acceleration_bypass")
+    raw["arena_acceleration_may_bypass_band_spacing"] = False
+
+    with pytest.raises(MaintenanceRuleError, match="missing arena_acceleration_bypass"):
+        parse_prestige_band_growth_policy(raw)
+
+
+def test_growth_policy_parser_rejects_relaxed_historical_arena_bypass_flag() -> None:
+    raw = _raw_growth_policy()
+    raw.pop("arena_acceleration_bypass")
+    raw["arena_acceleration_may_bypass_band_spacing"] = True
+
+    with pytest.raises(MaintenanceRuleError, match="missing arena_acceleration_bypass"):
+        parse_prestige_band_growth_policy(raw)
+
+
+def test_growth_policy_parser_rejects_non_boolean_arena_bypass() -> None:
+    raw = _raw_growth_policy()
+    raw["arena_acceleration_bypass"]["daily_action"] = 1
+
+    with pytest.raises(MaintenanceRuleError, match="daily_action must be a boolean"):
+        parse_prestige_band_growth_policy(raw)
 
 
 @pytest.mark.parametrize(
@@ -263,7 +307,7 @@ def test_cross_band_effective_limits_take_the_strictest_source_target_and_sample
     assert limits.composite_growth_bps_per_24h_max == 300
 
 
-def test_roster_expansion_is_not_blocked_by_quality_growth_rate_but_keeps_reference_cap() -> None:
+def test_roster_expansion_is_not_blocked_by_quality_growth_rate_but_keeps_daily_control_cap() -> None:
     intent = _intent(after=_strength(140, attack=70, defense=70))
     regular = _evaluate(
         intent,
@@ -323,6 +367,131 @@ def test_band_action_cap_allows_exact_basis_points_and_rejects_one_more() -> Non
     assert over.allowed is False
     assert over.controlled_growth_bps == 251
     assert over.reason is MaintenanceNoActionReason.BAND_ACTION_CAP
+
+
+def test_arena_acceleration_bypasses_spacing_and_daily_limits_but_keeps_per_action_cap() -> None:
+    intent = _intent(after=_strength(104, attack=52, defense=52))
+    existing = (StrengthBudgetEntry(applied_at=NOW - timedelta(hours=1), positive_growth_bps=900, policy_version=1),)
+
+    decision = _evaluate(
+        intent,
+        last_strength_increase_at=NOW - timedelta(hours=1),
+        budget_entries=existing,
+        allow_arena_acceleration=True,
+    )
+
+    assert decision.allowed is False
+    assert decision.skipped_action_reasons == (MaintenanceNoActionReason.BAND_ACTION_CAP,)
+    assert decision.budget_entries_after == existing
+    assert decision.last_strength_increase_at_after == NOW - timedelta(hours=1)
+
+
+def test_arena_acceleration_switches_can_retain_spacing_and_each_daily_limit() -> None:
+    intent = _intent(after=_strength(102, attack=51, defense=51))
+    existing = (StrengthBudgetEntry(applied_at=NOW - timedelta(hours=1), positive_growth_bps=900, policy_version=1),)
+
+    spacing_limited = _evaluate(
+        intent,
+        last_strength_increase_at=NOW - timedelta(hours=1),
+        allow_arena_acceleration=True,
+        policy=_policy_with_bypass(band_spacing=False),
+    )
+    action_limited = _evaluate(
+        intent,
+        budget_entries=existing,
+        source_sample_count=1,
+        allow_arena_acceleration=True,
+        policy=_policy_with_bypass(daily_action=False),
+    )
+    growth_limited = _evaluate(
+        intent,
+        budget_entries=existing,
+        allow_arena_acceleration=True,
+        policy=_policy_with_bypass(daily_growth=False),
+    )
+
+    assert spacing_limited.skipped_action_reasons == (MaintenanceNoActionReason.BAND_SPACING,)
+    assert action_limited.skipped_action_reasons == (MaintenanceNoActionReason.STRENGTH_CAP,)
+    assert growth_limited.skipped_action_reasons == (MaintenanceNoActionReason.STRENGTH_CAP,)
+
+
+def test_arena_acceleration_switches_can_bypass_per_action_and_cap_dimensions_independently() -> None:
+    per_action = _evaluate(
+        _intent(after=_strength(104, attack=52, defense=52)),
+        allow_arena_acceleration=True,
+        policy=_policy_with_bypass(per_action=True),
+    )
+    daily_control_cap = _evaluate(
+        _intent(after=_strength(102, attack=51, defense=51)),
+        source_strength_cap=_strength(101, attack=60, defense=60),
+        allow_arena_acceleration=True,
+        policy=_policy_with_bypass(daily_control_cap=True),
+    )
+    component_cap = _evaluate(
+        _intent(after=_strength(102, attack=51, defense=51)),
+        source_strength_cap=_strength(200, attack=50, defense=60),
+        allow_arena_acceleration=True,
+        policy=_policy_with_bypass(component_cap=True),
+    )
+
+    assert per_action.allowed is True
+    assert daily_control_cap.allowed is True
+    assert component_cap.allowed is True
+
+
+def test_default_arena_acceleration_never_bypasses_daily_control_or_component_caps() -> None:
+    intent = _intent(after=_strength(102, attack=51, defense=51))
+
+    reference_limited = _evaluate(
+        intent,
+        source_strength_cap=_strength(101, attack=60, defense=60),
+        allow_arena_acceleration=True,
+    )
+    component_limited = _evaluate(
+        intent,
+        source_strength_cap=_strength(200, attack=50, defense=60),
+        allow_arena_acceleration=True,
+    )
+
+    assert reference_limited.reason is MaintenanceNoActionReason.STRENGTH_CAP
+    assert component_limited.reason is MaintenanceNoActionReason.STRENGTH_CAP
+
+
+def test_arena_replenishment_explicitly_bypasses_ordinary_strength_caps() -> None:
+    intent = _intent(after=_strength(102, attack=51, defense=51))
+
+    reference_limited = _evaluate(
+        intent,
+        source_strength_cap=_strength(101, attack=60, defense=60),
+        allow_arena_acceleration=True,
+        allow_arena_growth_cap_bypass=True,
+    )
+    component_limited = _evaluate(
+        intent,
+        source_strength_cap=_strength(200, attack=50, defense=60),
+        allow_arena_acceleration=True,
+        allow_arena_growth_cap_bypass=True,
+    )
+
+    assert reference_limited.allowed is True
+    assert component_limited.allowed is True
+
+
+def test_arena_replenishment_bypasses_prestige_band_action_growth_cap() -> None:
+    action_cap = _policy().cadence_for("middle").composite_growth_bps_per_controlled_action_max
+    intent = _intent(
+        before=_strength(10_000, attack=5_000, defense=5_000),
+        after=_strength(10_001 + action_cap, attack=5_001, defense=5_000),
+    )
+
+    decision = _evaluate(
+        intent,
+        source_strength_cap=_strength(1_000_000, attack=1_000_000, defense=1_000_000),
+        allow_arena_acceleration=True,
+        allow_arena_growth_cap_bypass=True,
+    )
+
+    assert decision.allowed is True
 
 
 @pytest.mark.parametrize(("prestige_band", "spacing_hours", "action_cap_bps"), BAND_CADENCE_CASES)
@@ -391,7 +560,7 @@ def test_composite_and_component_caps_are_inclusive_but_never_exceeded() -> None
     assert component_over.reason is MaintenanceNoActionReason.STRENGTH_CAP
 
 
-def test_profile_at_any_existing_cap_cannot_raise_another_strength_component() -> None:
+def test_profile_at_existing_component_cap_can_raise_another_strength_component() -> None:
     intent = _intent(
         before=_strength(100, attack=50, defense=40),
         after=_strength(100, attack=50, defense=41),
@@ -399,8 +568,8 @@ def test_profile_at_any_existing_cap_cannot_raise_another_strength_component() -
 
     decision = _evaluate(intent, source_strength_cap=_strength(200, attack=50, defense=100))
 
-    assert decision.allowed is False
-    assert decision.reason is MaintenanceNoActionReason.STRENGTH_CAP
+    assert decision.allowed is True
+    assert decision.reason is None
 
 
 def test_component_only_increase_consumes_an_action_and_records_zero_composite_bps() -> None:

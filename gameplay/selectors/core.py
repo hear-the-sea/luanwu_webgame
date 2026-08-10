@@ -5,6 +5,7 @@ from typing import Any
 from common.constants.resources import ResourceType
 from gameplay.constants import BUILDING_MAX_LEVELS
 from gameplay.models import BuildingCategory
+from gameplay.services.action_points import ACTION_POINT_BUILDING_UPGRADE_COST
 from gameplay.services.city_defense import is_city_defense_key, prepare_city_defense_display
 from gameplay.services.manor.core import get_rename_card_count
 from gameplay.services.manor.prestige import get_prestige_progress
@@ -45,6 +46,7 @@ def get_dashboard_context(manor: Any, *, category: str) -> dict[str, Any]:
         "current_category": normalized_category,
         "category_label": dict(BuildingCategory.choices).get(normalized_category, "资源生产"),
         "categories": BuildingCategory.choices,
+        "building_upgrade_action_point_cost": ACTION_POINT_BUILDING_UPGRADE_COST,
         "buildings": _prepare_building_display(buildings),
         "resource_labels": dict(ResourceType.choices),
     }

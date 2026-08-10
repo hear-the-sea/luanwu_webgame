@@ -62,7 +62,7 @@ def test_guest_training_dispatch_false(monkeypatch, caplog):
 
 
 @pytest.mark.django_db
-def test_guest_training_runtime_marker_bubbles_up_without_retry(monkeypatch):
+def test_guest_training_runtime_marker_is_quarantined_without_retry(monkeypatch):
     import guests.tasks as guest_tasks
 
     guest = SimpleNamespace(training_complete_at=None)
@@ -78,12 +78,11 @@ def test_guest_training_runtime_marker_bubbles_up_without_retry(monkeypatch):
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("retry should not be called")),
     )
 
-    with pytest.raises(RuntimeError, match="training backend unavailable"):
-        guest_tasks.complete_guest_training.run(103)
+    assert guest_tasks.complete_guest_training.run(103) == "recovery_required"
 
 
 @pytest.mark.django_db
-def test_scan_guest_training_programming_error_bubbles_up(monkeypatch):
+def test_scan_guest_training_programming_error_isolated_per_guest(monkeypatch):
     import guests.tasks as guest_tasks
 
     now = timezone.now()
@@ -99,8 +98,7 @@ def test_scan_guest_training_programming_error_bubbles_up(monkeypatch):
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("broken guest training scan contract")),
     )
 
-    with pytest.raises(AssertionError, match="broken guest training scan contract"):
-        guest_tasks.scan_guest_training()
+    assert guest_tasks.scan_guest_training() == 0
 
 
 @pytest.mark.django_db

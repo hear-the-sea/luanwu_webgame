@@ -5,9 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from django.db import transaction
-from django.utils import timezone
 
-from gameplay.constants import VIRTUAL_PLAYER_REGION_KEYS
 from gameplay.services.runtime_configs import lock_virtual_player_policy_rollout, lock_virtual_player_routing
 
 from .config import MaintenanceMode, VirtualPlayerV2Config, load_virtual_player_v2_config
@@ -15,10 +13,8 @@ from .policy_registry import get_assignable_policy_release, get_policy_release
 from .profile_store import (
     ProfilePlanIdentity,
     ProfileStoreError,
-    enroll_profile_v2,
     get_profile_plan_identity,
     list_prestige_band_reclassification_candidates,
-    list_v1_enrollment_candidates,
     list_v2_policy_candidates,
     repair_profile_plan,
     repair_profile_rng,
@@ -107,58 +103,8 @@ def enroll_virtual_players_batch(
     enrolled_at: datetime | None = None,
     config: VirtualPlayerV2Config | None = None,
 ) -> BatchOperationSummary:
-    _require_v2_enrollment_cutover()
-    resolved = _required_config(config)
-    policy = resolved.policy()
-    release = get_assignable_policy_release(version=policy.version, expected_checksum=policy.checksum)
-    identities = list_v1_enrollment_candidates(after_id=after_id, limit=batch_size)
-    now = enrolled_at or timezone.now()
-    changed = 0
-    skipped = 0
-    locked = 0
-    failures: list[str] = []
-    for identity in identities:
-        try:
-            if identity.manor_region not in VIRTUAL_PLAYER_REGION_KEYS:
-                raise ProfileManagementError(
-                    "manor region is not eligible for V2 enrollment: " f"{identity.manor_region}"
-                )
-            plan = _plan_for_identity(
-                identity,
-                rng_version=resolved.rng_version,
-                plan_schema_version=resolved.plan_schema_version,
-                policy_version=release.version,
-            )
-            if not apply:
-                changed += 1
-                continue
-            result = enroll_profile_v2(
-                identity.profile_id,
-                rng_version=resolved.rng_version,
-                plan_schema_version=resolved.plan_schema_version,
-                policy_version=release.version,
-                policy_checksum=release.checksum,
-                development_profile=plan,
-                enrolled_at=now,
-                expected_identity=identity,
-                skip_locked=True,
-            )
-            if result.changed:
-                changed += 1
-            elif result.reason == "missing_or_locked":
-                locked += 1
-            else:
-                skipped += 1
-        except (ValueError, ProfileStoreError) as exc:
-            failures.append(f"profile={identity.profile_id}:{type(exc).__name__}:{exc}")
-    return BatchOperationSummary(
-        scanned=len(identities),
-        changed=changed,
-        skipped=skipped,
-        failed=len(failures),
-        last_profile_id=identities[-1].profile_id if identities else None,
-        reasons=tuple(failures),
-        locked=locked,
+    raise ProfileManagementError(
+        "legacy V1 enrollment is retired; materialize new profiles through the active policy-2 population path"
     )
 
 
@@ -332,6 +278,7 @@ def upgrade_virtual_player_policy_batch(
     batch_size: int = 100,
     apply: bool = False,
 ) -> BatchOperationSummary:
+    raise ProfileManagementError("multi-policy upgrade is retired; policy 2 is the only virtual-player release")
     normalized_expected_checksum = str(expected_policy_checksum).strip().lower()
     normalized_target_checksum = str(target_policy_checksum).strip().lower()
     get_policy_release(version=expected_policy_version, expected_checksum=normalized_expected_checksum)
@@ -394,6 +341,7 @@ def rollout_virtual_player_policy_batch(
     batch_size: int = 100,
     apply: bool = False,
 ) -> BatchOperationSummary:
+    raise ProfileManagementError("policy rollout is retired; policy 2 is the only virtual-player release")
     normalized_revision = int(expected_revision)
     if isinstance(expected_revision, bool) or normalized_revision < 0:
         raise ProfileManagementError("expected_revision must be non-negative")

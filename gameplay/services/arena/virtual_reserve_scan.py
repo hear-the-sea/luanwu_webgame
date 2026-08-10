@@ -1,15 +1,33 @@
 from __future__ import annotations
 
+import logging
 from datetime import timedelta
 
+from django.db import DatabaseError
 from django.db.models import F, Q
 from django.utils import timezone
 
-from gameplay.models import ArenaCoopEntry, ArenaCoopEvent, ArenaEntry, ArenaTournament, ArenaVirtualDemand
+from gameplay.models import (
+    ArenaCoopEntry,
+    ArenaCoopEvent,
+    ArenaEntry,
+    ArenaTournament,
+    ArenaVirtualDemand,
+    BotMaintenanceRecovery,
+)
+from gameplay.services.virtual_player_core.recovery import (
+    classify_failure,
+    clear_recovery_failure,
+    record_recovery_failure,
+    recovery_circuit_is_open,
+    recovery_is_blocked,
+)
 
 from .virtual_reserve_fill import fill_due_coop_reserve, fill_due_tournament_reserve
 from .virtual_reserve_pool import replenish_virtual_reserve
 from .virtual_reserve_reconcile import reconcile_coop_demand, reconcile_tournament_demand
+
+logger = logging.getLogger(__name__)
 
 
 def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]:
@@ -23,6 +41,8 @@ def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]
         "filled_entries": 0,
     }
     if normalized_limit <= 0:
+        return result
+    if recovery_circuit_is_open(path="arena_demand", now=current_time):
         return result
     due_cutoff = current_time + timedelta(seconds=1)
 
@@ -114,31 +134,64 @@ def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]
     )[:normalized_limit]
     result["scanned"] = len(ordered_candidates)
     for mode, event_id in ordered_candidates:
-        if mode == "tournament":
-            reconciled_demand = reconcile_tournament_demand(event_id, now=current_time)
-        elif mode == "coop":
-            reconciled_demand = reconcile_coop_demand(event_id, now=current_time)
-        else:
+        entity_key = f"{mode}:{int(event_id)}"
+        if recovery_is_blocked(
+            scope=BotMaintenanceRecovery.Scope.ARENA_DEMAND,
+            entity_key=entity_key,
+            now=current_time,
+        ):
             continue
-        if reconciled_demand is None:
-            continue
+        try:
+            if mode == "tournament":
+                reconciled_demand = reconcile_tournament_demand(event_id, now=current_time)
+            elif mode == "coop":
+                reconciled_demand = reconcile_coop_demand(event_id, now=current_time)
+            else:
+                continue
+            if reconciled_demand is None:
+                clear_recovery_failure(
+                    scope=BotMaintenanceRecovery.Scope.ARENA_DEMAND,
+                    entity_key=entity_key,
+                    now=current_time,
+                )
+                continue
 
-        result["reconciled"] += 1
-        replenished = replenish_virtual_reserve(reconciled_demand.id, now=current_time)
-        result["ready"] += int(replenished.ready_count)
-        result["training"] += int(replenished.training_count)
-        if mode == "tournament":
-            result["filled_entries"] += fill_due_tournament_reserve(
-                event_id,
-                now=current_time,
-                emit_shortage_observation=False,
+            replenished = replenish_virtual_reserve(reconciled_demand.id, now=current_time)
+            filled_entries = (
+                fill_due_tournament_reserve(
+                    event_id,
+                    now=current_time,
+                    emit_shortage_observation=False,
+                )
+                if mode == "tournament"
+                else fill_due_coop_reserve(
+                    event_id,
+                    now=current_time,
+                    emit_shortage_observation=False,
+                )
             )
-        else:
-            result["filled_entries"] += fill_due_coop_reserve(
-                event_id,
+            result["reconciled"] += 1
+            result["ready"] += int(replenished.ready_count)
+            result["training"] += int(replenished.training_count)
+            result["filled_entries"] += int(filled_entries)
+            clear_recovery_failure(
+                scope=BotMaintenanceRecovery.Scope.ARENA_DEMAND,
+                entity_key=entity_key,
                 now=current_time,
-                emit_shortage_observation=False,
             )
+        except DatabaseError:
+            logger.exception("Arena virtual reserve demand scan hit a database failure: %s", entity_key)
+            raise
+        except Exception as exc:
+            record_recovery_failure(
+                scope=BotMaintenanceRecovery.Scope.ARENA_DEMAND,
+                entity_key=entity_key,
+                failure_code=classify_failure(exc),
+                error=exc,
+                operation_id=f"arena-demand-scan-{mode}-{int(event_id)}",
+                payload={"mode": mode, "event_id": int(event_id), "phase": "scan"},
+            )
+            logger.exception("Arena virtual reserve demand was isolated during scan: %s", entity_key)
     return result
 
 

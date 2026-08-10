@@ -44,3 +44,13 @@ test("normalizeSelectedIds deduplicates and sorts positive candidate ids", () =>
     [2, 3, 8]
   );
 });
+
+test("buildRecruitmentCardConfirmation explains the target pool and card stock", () => {
+  assert.equal(
+    recruitmentHallCore.buildRecruitmentCardConfirmation({
+      poolName: "殿试",
+      cardCount: "4",
+    }),
+    "确定消耗 1 张招募卡，为「殿试」增加 1 次今日招募额度吗？\n当前持有：4 张"
+  );
+});

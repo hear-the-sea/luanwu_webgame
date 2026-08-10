@@ -7,7 +7,11 @@ from dataclasses import dataclass
 from hashlib import sha256
 from typing import Any
 
-from common.constants.virtual_players import VIRTUAL_PLAYER_ARCHETYPES
+from common.constants.virtual_players import (
+    VIRTUAL_PLAYER_ARCHETYPES,
+    VIRTUAL_PLAYER_BUILDING_TARGET_KEYS,
+    VIRTUAL_PLAYER_TECHNOLOGY_TARGET_KEYS,
+)
 
 from .random_context import RandomContext, canonical_json_bytes
 
@@ -18,73 +22,8 @@ _PLAN_V1_GUEST_ARCHETYPES = ("civil", "military")
 _PLAN_V1_TROOP_CLASSES = ("dao", "gong", "jian", "qiang", "quan")
 _PLAN_V1_GEAR_STATS = ("agility", "defense", "force", "hp", "intellect")
 _PLAN_V1_SKILL_KINDS = ("active", "passive")
-_PLAN_V1_BUILDING_KEYS = (
-    "arrow_tower",
-    "bathhouse",
-    "citang",
-    "farm",
-    "forge",
-    "granary",
-    "jiadingfang",
-    "jail",
-    "juxianzhuang",
-    "latrine",
-    "lianggongchang",
-    "oath_grove",
-    "ranch",
-    "silver_vault",
-    "smithy",
-    "stable",
-    "tavern",
-    "tax_office",
-    "treasury",
-    "wall",
-    "youxibaota",
-)
-_PLAN_V1_TECHNOLOGY_KEYS = (
-    "animal_husbandry",
-    "architecture",
-    "dao_agility",
-    "dao_attack",
-    "dao_defense",
-    "dao_double_strike",
-    "dao_hp",
-    "dao_recruit",
-    "farming",
-    "forging",
-    "gong_agility",
-    "gong_attack",
-    "gong_defense",
-    "gong_hp",
-    "gong_melee",
-    "gong_range",
-    "gong_recruit",
-    "horsemanship",
-    "jian_agility",
-    "jian_attack",
-    "jian_defense",
-    "jian_hp",
-    "jian_preempt",
-    "jian_recruit",
-    "jian_reflect",
-    "march_art",
-    "qiang_agility",
-    "qiang_attack",
-    "qiang_counter",
-    "qiang_defense",
-    "qiang_hp",
-    "qiang_recruit",
-    "qiang_siege",
-    "quan_agility",
-    "quan_attack",
-    "quan_defense",
-    "quan_heal",
-    "quan_hp",
-    "quan_recruit",
-    "quan_vs_ranged",
-    "scout_art",
-    "smelting",
-)
+_PLAN_V1_BUILDING_KEYS = VIRTUAL_PLAYER_BUILDING_TARGET_KEYS
+_PLAN_V1_TECHNOLOGY_KEYS = VIRTUAL_PLAYER_TECHNOLOGY_TARGET_KEYS
 
 _PLAN_FIELDS = frozenset(
     {

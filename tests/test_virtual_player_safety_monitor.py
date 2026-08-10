@@ -879,6 +879,49 @@ def test_monitor_fails_closed_when_no_finalized_window_exists() -> None:
 
 
 @pytest.mark.django_db
+def test_planned_restart_consumes_missing_hourly_window_without_repausing() -> None:
+    state = _routing_state()
+    state.maintenance_mode = BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED
+    state.pause_reason = runtime_configs.PLANNED_RESTART_PAUSE_REASON
+    state.paused_from_maintenance_mode = BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+    state.save(update_fields=["maintenance_mode", "pause_reason", "paused_from_maintenance_mode", "updated_at"])
+
+    result = monitor_finalized_safety_windows(
+        now=HOURLY_START + timedelta(hours=1, minutes=5),
+        limit=1,
+    )
+
+    assert result.paused is False
+    assert result.decisions[0].should_pause is False
+    assert result.decisions[0].pause_reasons == ()
+    state.refresh_from_db()
+    assert state.maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED
+    assert state.pause_reason == runtime_configs.PLANNED_RESTART_PAUSE_REASON
+    assert state.safety_clean_window_kind == "hourly"
+    assert state.safety_clean_window_streak == 1
+
+
+@pytest.mark.django_db
+def test_planned_restart_does_not_mask_hard_safety_violation() -> None:
+    state = _routing_state()
+    state.maintenance_mode = BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED
+    state.pause_reason = runtime_configs.PLANNED_RESTART_PAUSE_REASON
+    state.paused_from_maintenance_mode = BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+    state.save(update_fields=["maintenance_mode", "pause_reason", "paused_from_maintenance_mode", "updated_at"])
+    window = _window(metrics={"hard_constraint_violation_count": 1})
+
+    result = monitor_finalized_safety_windows(
+        now=window.window_end_at + timedelta(minutes=5),
+        limit=1,
+    )
+
+    assert result.paused is True
+    assert result.decisions[0].pause_reasons == ("hard_constraint_violation",)
+    state.refresh_from_db()
+    assert state.pause_reason == "hard_constraint_violation"
+
+
+@pytest.mark.django_db
 def test_monitor_checks_missing_daily_window_independently() -> None:
     latest_hourly_end = HOURLY_START + timedelta(hours=1)
     _routing_state(

@@ -50,6 +50,32 @@ class _ArenaShortageObservationContext:
                 raise ValueError(f"{field_name} must be a non-negative integer")
 
 
+@dataclass(frozen=True, slots=True)
+class ArenaShortageObservationSnapshot:
+    """Canonical shortage dimensions frozen before the first provider write."""
+
+    prestige_band: str
+    real_entry_count: int
+    virtual_entry_count: int
+    reserve_ready_count: int
+    reserve_training_count: int
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.prestige_band, str) or not self.prestige_band.strip():
+            raise ValueError("prestige_band must be a non-empty string")
+        context = _ArenaShortageObservationContext(
+            real_entry_count=self.real_entry_count,
+            virtual_entry_count=self.virtual_entry_count,
+            reserve_ready_count=self.reserve_ready_count,
+            reserve_training_count=self.reserve_training_count,
+        )
+        object.__setattr__(self, "prestige_band", self.prestige_band.strip())
+        object.__setattr__(self, "real_entry_count", context.real_entry_count)
+        object.__setattr__(self, "virtual_entry_count", context.virtual_entry_count)
+        object.__setattr__(self, "reserve_ready_count", context.reserve_ready_count)
+        object.__setattr__(self, "reserve_training_count", context.reserve_training_count)
+
+
 def _capture_arena_shortage_observation_context(
     *,
     demand_id: int,
@@ -144,32 +170,27 @@ def _explicit_arena_shortage_observation_context(
     assert reserve_ready_count is not None
     assert reserve_training_count is not None
     return _ArenaShortageObservationContext(
-        real_entry_count=int(real_entry_count),
-        virtual_entry_count=int(virtual_entry_count),
-        reserve_ready_count=int(reserve_ready_count),
-        reserve_training_count=int(reserve_training_count),
+        real_entry_count=real_entry_count,
+        virtual_entry_count=virtual_entry_count,
+        reserve_ready_count=reserve_ready_count,
+        reserve_training_count=reserve_training_count,
     )
 
 
-def record_arena_shortage_observation(
+def prepare_arena_shortage_observation_snapshot(
     *,
     demand_id: int,
     mode: str,
     event_id: int,
-    capacity: int,
-    missing_count: int,
     population_prestige: int,
-    operation_id: str,
-    observed_at: datetime,
+    prestige_band: str | None = None,
     real_entry_count: int | None = None,
     virtual_entry_count: int | None = None,
     reserve_ready_count: int | None = None,
     reserve_training_count: int | None = None,
-) -> None:
-    config = load_virtual_player_v2_config()
-    if config is None:
-        raise ValueError("bot_development_v2 is not configured")
-    prestige_band = config.band_for_prestige(int(population_prestige)).name
+) -> ArenaShortageObservationSnapshot:
+    """Resolve every mutable dimension before a retryable provider write."""
+
     context = _resolve_arena_shortage_observation_context(
         demand_id=demand_id,
         mode=mode,
@@ -179,16 +200,45 @@ def record_arena_shortage_observation(
         reserve_ready_count=reserve_ready_count,
         reserve_training_count=reserve_training_count,
     )
-    record_arena_shortage(
-        operation_id=operation_id,
-        mode=mode,
-        prestige_band=prestige_band,
-        missing_count=missing_count,
-        capacity=capacity,
+    if prestige_band is None:
+        config = load_virtual_player_v2_config()
+        if config is None:
+            raise ValueError("bot_development_v2 is not configured")
+        normalized_prestige_band = config.band_for_prestige(int(population_prestige)).name
+    elif not isinstance(prestige_band, str) or not prestige_band.strip():
+        raise ValueError("prestige_band must be a non-empty string when provided")
+    else:
+        normalized_prestige_band = prestige_band.strip()
+    return ArenaShortageObservationSnapshot(
+        prestige_band=normalized_prestige_band,
         real_entry_count=context.real_entry_count,
         virtual_entry_count=context.virtual_entry_count,
         reserve_ready_count=context.reserve_ready_count,
         reserve_training_count=context.reserve_training_count,
+    )
+
+
+def record_arena_shortage_observation(
+    *,
+    mode: str,
+    capacity: int,
+    missing_count: int,
+    operation_id: str,
+    observed_at: datetime,
+    snapshot: ArenaShortageObservationSnapshot,
+) -> None:
+    if not isinstance(snapshot, ArenaShortageObservationSnapshot):
+        raise ValueError("snapshot must be an ArenaShortageObservationSnapshot")
+    record_arena_shortage(
+        operation_id=operation_id,
+        mode=mode,
+        prestige_band=snapshot.prestige_band,
+        missing_count=missing_count,
+        capacity=capacity,
+        real_entry_count=snapshot.real_entry_count,
+        virtual_entry_count=snapshot.virtual_entry_count,
+        reserve_ready_count=snapshot.reserve_ready_count,
+        reserve_training_count=snapshot.reserve_training_count,
         occurred_at=observed_at,
     )
 
@@ -208,6 +258,7 @@ def queue_arena_shortage_metric_retry(
     virtual_entry_count: int | None = None,
     reserve_ready_count: int | None = None,
     reserve_training_count: int | None = None,
+    prestige_band: str | None = None,
 ) -> bool:
     context = _explicit_arena_shortage_observation_context(
         real_entry_count=real_entry_count,
@@ -215,8 +266,8 @@ def queue_arena_shortage_metric_retry(
         reserve_ready_count=reserve_ready_count,
         reserve_training_count=reserve_training_count,
     )
-    # An empty context is intentional: the retry task will capture fresh state
-    # after it has been dispatched, when the original transaction is gone.
+    # An empty context is only a deferred capture request. The task freezes a
+    # complete snapshot before its first provider write and carries it onward.
     context_values = (
         (None, None, None, None)
         if context is None
@@ -241,6 +292,7 @@ def queue_arena_shortage_metric_retry(
             observed_at.isoformat(),
             int(retry_attempt),
             *context_values,
+            prestige_band,
         ],
         countdown=min(900, 60 * (2 ** max(0, int(retry_attempt)))),
         logger=logger,
@@ -292,16 +344,17 @@ def emit_arena_shortage_after_commit(
         capacity = int(coop_event.player_limit)
     operation_id = f"{mode}-{event_id}-v{int(demand.version)}-" f"{observed_at.strftime('%Y%m%dT%H%M%S%fZ')}"
     missing_count = int(demand.missing_entry_count)
-    observation_context: _ArenaShortageObservationContext | None = None
+    observation_snapshot: ArenaShortageObservationSnapshot | None = None
     try:
-        observation_context = _capture_arena_shortage_observation_context(
+        observation_snapshot = prepare_arena_shortage_observation_snapshot(
             demand_id=int(demand.id),
             mode=mode,
             event_id=event_id,
+            population_prestige=int(population_prestige),
         )
     except Exception:
         logger.exception(
-            "arena shortage observation context capture failed; retry will capture a fallback context",
+            "arena shortage observation snapshot capture failed; callback will retry capture",
             extra={
                 "event": "arena_shortage_observation_context_capture_failed",
                 "demand_id": int(demand.id),
@@ -310,20 +363,22 @@ def emit_arena_shortage_after_commit(
         )
 
     def _emit() -> None:
+        snapshot = observation_snapshot
         try:
+            if snapshot is None:
+                snapshot = prepare_arena_shortage_observation_snapshot(
+                    demand_id=int(demand.id),
+                    mode=mode,
+                    event_id=event_id,
+                    population_prestige=int(population_prestige),
+                )
             record_arena_shortage_observation(
-                demand_id=int(demand.id),
                 mode=mode,
-                event_id=event_id,
                 capacity=capacity,
                 missing_count=missing_count,
-                population_prestige=int(population_prestige),
                 operation_id=operation_id,
                 observed_at=observed_at,
-                real_entry_count=(observation_context.real_entry_count if observation_context else None),
-                virtual_entry_count=(observation_context.virtual_entry_count if observation_context else None),
-                reserve_ready_count=(observation_context.reserve_ready_count if observation_context else None),
-                reserve_training_count=(observation_context.reserve_training_count if observation_context else None),
+                snapshot=snapshot,
             )
         except Exception as exc:
             try:
@@ -354,12 +409,11 @@ def emit_arena_shortage_after_commit(
                         operation_id=operation_id,
                         observed_at=observed_at,
                         retry_attempt=1,
-                        real_entry_count=(observation_context.real_entry_count if observation_context else None),
-                        virtual_entry_count=(observation_context.virtual_entry_count if observation_context else None),
-                        reserve_ready_count=(observation_context.reserve_ready_count if observation_context else None),
-                        reserve_training_count=(
-                            observation_context.reserve_training_count if observation_context else None
-                        ),
+                        real_entry_count=(snapshot.real_entry_count if snapshot else None),
+                        virtual_entry_count=(snapshot.virtual_entry_count if snapshot else None),
+                        reserve_ready_count=(snapshot.reserve_ready_count if snapshot else None),
+                        reserve_training_count=(snapshot.reserve_training_count if snapshot else None),
+                        prestige_band=(snapshot.prestige_band if snapshot else None),
                     )
                 except Exception:
                     logger.exception(
@@ -433,7 +487,9 @@ def log_demand_event(
         "reserve_target_count": int(demand.reserve_target_count),
         "warm_target_count": int(demand.warm_target_count),
         "max_reserve_target_count": int(demand.max_reserve_target_count),
-        "created_profile_count": int(demand.created_profile_count),
+        "admission_attempt_high_water": int(demand.admission_attempt_high_water),
+        "admission_paused_at": demand.admission_paused_at.isoformat() if demand.admission_paused_at else None,
+        "admission_pause_reason": str(demand.admission_pause_reason),
         "consecutive_failure_count": int(demand.consecutive_failure_count),
         "last_progress_at": demand.last_progress_at.isoformat() if demand.last_progress_at else None,
         "last_input_change_at": demand.last_input_change_at.isoformat() if demand.last_input_change_at else None,
@@ -449,9 +505,11 @@ def log_demand_event(
 
 __all__ = [
     "ARENA_SHORTAGE_METRIC_RETRY_MAX_ATTEMPTS",
+    "ArenaShortageObservationSnapshot",
     "emit_arena_shortage_after_commit",
     "is_retryable_arena_shortage_metric_error",
     "log_demand_event",
+    "prepare_arena_shortage_observation_snapshot",
     "queue_arena_shortage_metric_retry",
     "record_arena_shortage_metric_failure",
     "record_arena_shortage_observation",

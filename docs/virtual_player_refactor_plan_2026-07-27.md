@@ -1538,9 +1538,9 @@ Bootstrap 是唯一允许直接物化历史结果的边界，但仍必须经过�
 Bootstrap 使用“锁外计划、锁内物化”的两阶段流程，避免在容量锁和档案事务内执行候选扫描与大量评分。
 
 公共注册服务在 User 和 Manor Bootstrap 都成功后发出显式真人注册事件；`gameplay/signals.py` 的 receiver 在创建事务
-`on_commit` 中通过 `population_runtime` 合并对应地区/声望段的持久人口需求，再投递一次加速唤醒，不在注册请求内物化 Bot。不能直接复用当前
-`roll_virtual_players_task`，因为它还会调用 `maintain_due_virtual_players(limit=100)`；新增的 transport task 只调用
-`population_runtime` 人口重算入口。Bot 创建、Admin 建号和 fixture 不发真人注册事件，防止创建 Bot User 时递归排队。
+`on_commit` 中通过 `population_runtime` 合并对应地区/声望段的持久人口需求，再投递一次加速唤醒，不在注册请求内物化 Bot。人口滚动
+`roll_virtual_players_task` 与维护扫描已拆分，当前维护由独立的 `scan_virtual_player_maintenance` 任务按 batch-200 处理；新增的
+transport task 只调用 `population_runtime` 人口重算入口。Bot 创建、Admin 建号和 fixture 不发真人注册事件，防止创建 Bot User 时递归排队。
 
 公共真人玩家的持久化声望跨越 V2 分段边界时使用同一 transport，在声望事务提交后投递旧段与新段的人口重算。事件按
 地区和声望段合并，消费者幂等；重复、连续跨段或 worker 重试不会重复物化。该事件只负责人口，不运行 Maintenance；

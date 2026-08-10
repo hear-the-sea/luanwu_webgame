@@ -1,7 +1,16 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
+
+ARENA_RESERVE_MEMBER_LEASE_AGE = timedelta(hours=12)
+
+
+def default_arena_reserve_member_lease_expires_at():
+    return timezone.now() + ARENA_RESERVE_MEMBER_LEASE_AGE
 
 
 class ArenaVirtualDemand(models.Model):
@@ -33,11 +42,25 @@ class ArenaVirtualDemand(models.Model):
     version = models.PositiveIntegerField("需求版本", default=1)
     target_guest_count = models.PositiveSmallIntegerField("目标门客数", default=0)
     target_team_power = models.PositiveBigIntegerField("目标队伍战力", default=0)
+    arena_training_policy_version = models.PositiveSmallIntegerField("竞技场培养策略版本", default=0)
+    arena_training_policy_checksum = models.CharField("竞技场培养策略校验和", max_length=64, default="", blank=True)
+    arena_strength_segment = models.CharField("竞技场强度段", max_length=32, default="", blank=True)
+    arena_strength_envelope_digest = models.CharField("竞技场强度包络摘要", max_length=64, default="", blank=True)
+    arena_supply_prestige_band = models.CharField("竞技场供给声望段", max_length=32, default="", blank=True)
+    arena_supply_prestige_band_priority = models.JSONField("竞技场供给声望段优先级", default=list, blank=True)
+    arena_supply_prestige = models.PositiveBigIntegerField("竞技场供给声望", default=0)
     missing_entry_count = models.PositiveSmallIntegerField("缺少席位数", default=0)
     reserve_target_count = models.PositiveIntegerField("后备目标数", default=0)
     warm_target_count = models.PositiveIntegerField("当前预热目标数", default=0)
     max_reserve_target_count = models.PositiveIntegerField("后备目标上限", default=0)
-    created_profile_count = models.PositiveIntegerField("已创建虚拟玩家数", default=0)
+    admission_attempt_high_water = models.PositiveIntegerField("准入尝试高水位", default=0)
+    admission_paused_at = models.DateTimeField("准入止损时间", null=True, blank=True)
+    admission_pause_reason = models.CharField("准入止损原因", max_length=64, blank=True, default="")
+    admission_probe_target_ordinal = models.PositiveIntegerField(
+        "准入探测目标序号",
+        null=True,
+        blank=True,
+    )
     next_retry_at = models.DateTimeField("下次重试时间", null=True, blank=True, db_index=True)
     last_checked_at = models.DateTimeField("最近检查时间", null=True, blank=True)
     consecutive_failure_count = models.PositiveSmallIntegerField("连续失败次数", default=0)
@@ -62,6 +85,63 @@ class ArenaVirtualDemand(models.Model):
                 condition=models.Q(warm_target_count__lte=models.F("reserve_target_count")),
                 name="arena_virtual_demand_warm_target_lte_reserve",
             ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(admission_pause_reason="", admission_paused_at__isnull=True)
+                    | (~models.Q(admission_pause_reason="") & models.Q(admission_paused_at__isnull=False))
+                ),
+                name="arena_vd_admission_pause_fields_together",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(admission_probe_target_ordinal__isnull=True)
+                    | (
+                        models.Q(admission_pause_reason="no_effective_progress")
+                        & models.Q(admission_paused_at__isnull=False)
+                        & models.Q(admission_probe_target_ordinal__gte=1)
+                        & models.Q(admission_probe_target_ordinal__lte=models.F("max_reserve_target_count"))
+                        & (
+                            models.Q(admission_probe_target_ordinal=models.F("admission_attempt_high_water"))
+                            | models.Q(admission_probe_target_ordinal=models.F("admission_attempt_high_water") + 1)
+                        )
+                    )
+                ),
+                name="arena_vd_admission_probe_valid",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(
+                        arena_training_policy_version=0,
+                        arena_training_policy_checksum="",
+                        arena_strength_segment="",
+                        arena_strength_envelope_digest="",
+                        arena_supply_prestige_band="",
+                        arena_supply_prestige_band_priority=[],
+                        arena_supply_prestige=0,
+                    )
+                    | (
+                        models.Q(arena_training_policy_version__gte=1)
+                        & ~models.Q(arena_training_policy_checksum="")
+                        & (
+                            models.Q(
+                                status="blocked",
+                                arena_strength_segment="",
+                                arena_strength_envelope_digest="",
+                                arena_supply_prestige_band="",
+                                arena_supply_prestige_band_priority=[],
+                                arena_supply_prestige=0,
+                            )
+                            | (
+                                ~models.Q(arena_strength_segment="")
+                                & ~models.Q(arena_strength_envelope_digest="")
+                                & ~models.Q(arena_supply_prestige_band="")
+                                & ~models.Q(arena_supply_prestige_band_priority=[])
+                            )
+                        )
+                    )
+                ),
+                name="arena_vd_training_policy_snapshot_valid",
+            ),
         ]
         indexes = [
             models.Index(fields=["status", "next_retry_at"], name="arena_vd_status_retry_idx"),
@@ -71,6 +151,16 @@ class ArenaVirtualDemand(models.Model):
         super().clean()
         if (self.tournament_id is None) == (self.coop_event_id is None):
             raise ValidationError("竞技场虚拟需求必须且只能关联一种活动")
+        if self.arena_training_policy_version >= 1 and self.arena_strength_segment:
+            priority = self.arena_supply_prestige_band_priority
+            if (
+                not isinstance(priority, list)
+                or not priority
+                or any(not isinstance(band, str) or not band for band in priority)
+                or len(set(priority)) != len(priority)
+                or priority[0] != self.arena_supply_prestige_band
+            ):
+                raise ValidationError("竞技场供给声望段优先级快照无效")
 
     def __str__(self) -> str:
         mode = "普通" if self.tournament_id is not None else "共斗"
@@ -106,12 +196,35 @@ class ArenaVirtualReserveMember(models.Model):
         null=True,
         blank=True,
     )
-    accelerated_growth_rounds = models.PositiveSmallIntegerField("加速成长轮次", default=0)
+    growth_rounds_started = models.PositiveIntegerField("已开始培养轮次", default=0)
+    growth_applied_action_count = models.PositiveIntegerField("已成功成长动作数", default=0)
+    growth_action_ordinal_in_round = models.PositiveSmallIntegerField("当前轮动作序号", default=0)
+    growth_slot_attempt_ordinal = models.PositiveSmallIntegerField("当前槽位尝试序号", default=0)
+    growth_execution_attempt_count = models.PositiveSmallIntegerField("窗口内实际执行次数", default=0)
+    growth_round_training_guest_ids = models.JSONField("当前轮已分配训练门客", default=list, blank=True)
+    growth_round_id = models.CharField("当前培养轮 ID", max_length=64, default="", blank=True)
+    arena_growth_budget_entries = models.JSONField("竞技场成长预算窗口", default=list, blank=True)
     growth_retry_streak = models.PositiveSmallIntegerField("成长延期连续次数", default=0)
     growth_retry_reason = models.CharField("最近延期原因", max_length=64, default="", blank=True)
     next_acceleration_at = models.DateTimeField("下次加速时间", null=True, blank=True, db_index=True)
     last_checked_at = models.DateTimeField("最近检查时间", null=True, blank=True)
     growth_operation_id = models.CharField("成长操作 ID", max_length=64, default="", blank=True)
+    growth_request_digest_schema = models.PositiveSmallIntegerField(
+        "成长请求摘要 schema",
+        default=2,
+    )
+    growth_control_snapshot_digest = models.CharField(
+        "成长控制快照摘要",
+        max_length=64,
+        default="",
+        blank=True,
+    )
+    growth_policy_checksum = models.CharField(
+        "成长策略校验和",
+        max_length=64,
+        default="",
+        blank=True,
+    )
     growth_attempt_ordinal = models.PositiveIntegerField("成长尝试序号", default=0)
     growth_claim_token = models.UUIDField("成长认领令牌", null=True, blank=True)
     growth_claimed_at = models.DateTimeField("成长认领时间", null=True, blank=True)
@@ -136,6 +249,11 @@ class ArenaVirtualReserveMember(models.Model):
         null=True,
         blank=True,
     )
+    growth_eligible_guest_count_before = models.PositiveSmallIntegerField(
+        "成长前可参赛门客数",
+        null=True,
+        blank=True,
+    )
     growth_minimum_guest_count = models.PositiveSmallIntegerField(
         "成长最低门客数",
         null=True,
@@ -152,6 +270,16 @@ class ArenaVirtualReserveMember(models.Model):
         default="",
         blank=True,
     )
+    growth_objective_payload = models.JSONField(
+        "成长目标快照",
+        default=dict,
+        blank=True,
+    )
+    lease_expires_at = models.DateTimeField(
+        "培养租期截止时间",
+        default=default_arena_reserve_member_lease_expires_at,
+    )
+    lease_paused_at = models.DateTimeField("培养租期暂停时间", null=True, blank=True)
     created_at = models.DateTimeField("创建时间", auto_now_add=True)
     updated_at = models.DateTimeField("更新时间", auto_now=True)
 
@@ -175,6 +303,7 @@ class ArenaVirtualReserveMember(models.Model):
                         & models.Q(growth_demand_version__isnull=True)
                         & models.Q(growth_member_version__isnull=True)
                         & models.Q(growth_power_before__isnull=True)
+                        & models.Q(growth_eligible_guest_count_before__isnull=True)
                         & models.Q(growth_minimum_guest_count__isnull=True)
                         & models.Q(growth_minimum_guest_level__isnull=True)
                         & models.Q(growth_guest_rarity_cap="")
@@ -189,6 +318,7 @@ class ArenaVirtualReserveMember(models.Model):
                         & models.Q(growth_demand_version__isnull=False)
                         & models.Q(growth_member_version__isnull=False)
                         & models.Q(growth_power_before__isnull=False)
+                        & models.Q(growth_eligible_guest_count_before__isnull=False)
                         & models.Q(growth_minimum_guest_count__isnull=False)
                         & models.Q(growth_minimum_guest_level__isnull=False)
                     )
@@ -202,6 +332,22 @@ class ArenaVirtualReserveMember(models.Model):
                 ),
                 name="arena_vm_growth_claim_expiry_gt_claim",
             ),
+            models.CheckConstraint(
+                condition=models.Q(growth_request_digest_schema__in=[1, 2, 3]),
+                name="arena_vm_growth_digest_schema_valid",
+            ),
+            models.CheckConstraint(
+                condition=(models.Q(growth_claim_token__isnull=False) | models.Q(growth_request_digest_schema=2)),
+                name="arena_vm_unclaimed_digest_schema_current",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(lease_expires_at__gt=models.F("created_at")),
+                name="arena_vm_lease_deadline_valid",
+            ),
+            models.CheckConstraint(
+                condition=(models.Q(lease_paused_at__isnull=True) | models.Q(state="training")),
+                name="arena_vm_lease_pause_training",
+            ),
         ]
         indexes = [
             models.Index(fields=["demand", "state"], name="arena_vm_demand_state_idx"),
@@ -214,3 +360,70 @@ class ArenaVirtualReserveMember(models.Model):
 
     def __str__(self) -> str:
         return f"需求#{self.demand_id} / 档案#{self.profile_id} ({self.state})"
+
+
+class ArenaReserveTrainingAssignment(models.Model):
+    """Durable same-round training guest allocation.
+
+    The uniqueness boundary is deliberately persisted instead of living in a
+    worker-local set: retries and claim takeover may replay one operation, but
+    a guest cannot be assigned to a second slot in the same round.
+    """
+
+    class Status(models.TextChoices):
+        ASSIGNED = "assigned", "已分配"
+        APPLIED = "applied", "已执行"
+        NO_ACTION = "no_action", "无动作"
+        RELEASED = "released", "已释放"
+
+    member = models.ForeignKey(
+        ArenaVirtualReserveMember,
+        on_delete=models.CASCADE,
+        related_name="training_assignments",
+        verbose_name="后备成员",
+    )
+    guest = models.ForeignKey(
+        "guests.Guest",
+        on_delete=models.CASCADE,
+        related_name="arena_reserve_training_assignments",
+        verbose_name="门客",
+    )
+    round_ordinal = models.PositiveIntegerField("培养轮次")
+    action_ordinal_in_round = models.PositiveSmallIntegerField("轮内动作序号")
+    operation_id = models.CharField("动作操作 ID", max_length=64)
+    status = models.CharField("分配状态", max_length=16, choices=Status.choices, default=Status.ASSIGNED)
+    reason = models.CharField("结果原因", max_length=64, default="", blank=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    updated_at = models.DateTimeField("更新时间", auto_now=True)
+
+    class Meta:
+        verbose_name = "竞技场后备训练分配"
+        verbose_name_plural = "竞技场后备训练分配"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["member", "round_ordinal", "guest"],
+                name="arena_training_assignment_member_round_guest",
+            ),
+            models.UniqueConstraint(
+                fields=["member", "round_ordinal", "action_ordinal_in_round"],
+                name="arena_training_assignment_member_round_slot",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(round_ordinal__gte=1),
+                name="arena_training_assignment_round_positive",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(action_ordinal_in_round__gte=1) & models.Q(action_ordinal_in_round__lte=8),
+                name="arena_training_assignment_slot_1_8",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(operation_id=""),
+                name="arena_training_assignment_operation_nonempty",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["member", "round_ordinal", "status"], name="arena_train_assign_st_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return f"member#{self.member_id}/round#{self.round_ordinal}/guest#{self.guest_id}"

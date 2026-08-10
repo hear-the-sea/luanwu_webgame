@@ -2,10 +2,8 @@ from __future__ import annotations
 
 import logging
 import os
-import threading
 import time
 import uuid
-from types import SimpleNamespace
 
 import pytest
 from django.core.cache import cache
@@ -200,65 +198,3 @@ def test_virtual_player_lock_old_owner_renew_preserves_replacement_owner_ttl():
         assert ttl_after_renew < 20_000
     finally:
         cache.delete(lock_key)
-
-
-def test_virtual_player_slow_roll_heartbeat_keeps_competing_worker_out(monkeypatch):
-    if os.environ.get("DJANGO_TEST_USE_ENV_SERVICES", "0") != "1":
-        pytest.skip("virtual player lock integration requires DJANGO_TEST_USE_ENV_SERVICES=1")
-
-    from gameplay.services.virtual_player_core import population_runtime as virtual_players
-
-    lock_key = f"integration:virtual-player-slow-roll:{uuid.uuid4().hex}"
-    logger = logging.getLogger(__name__)
-    roll_started = threading.Event()
-    allow_roll_to_finish = threading.Event()
-    results: list[int] = []
-    errors: list[BaseException] = []
-
-    def _slow_roll(*, limit=None, now=None, ownership_guard=None):
-        del limit, now
-        assert ownership_guard is not None
-        roll_started.set()
-        assert allow_roll_to_finish.wait(timeout=10)
-        ownership_guard()
-        return 7
-
-    def _run_roll():
-        try:
-            results.append(virtual_players.roll_virtual_player_population(limit=7))
-        except BaseException as exc:
-            errors.append(exc)
-
-    monkeypatch.setattr(virtual_players, "ROLL_LOCK_KEY", lock_key)
-    monkeypatch.setattr(virtual_players, "ROLL_LOCK_TIMEOUT_SECONDS", 2)
-    monkeypatch.setattr(
-        virtual_players,
-        "read_virtual_player_routing",
-        lambda: SimpleNamespace(bootstrap_mode=virtual_players.BootstrapMode.LEGACY_BEFORE_GATE),
-    )
-    monkeypatch.setattr(virtual_players, "_roll_virtual_player_population_unlocked", _slow_roll)
-
-    roll_thread = threading.Thread(target=_run_roll, daemon=True)
-    roll_thread.start()
-    try:
-        assert roll_started.wait(timeout=5)
-        time.sleep(2.5)
-
-        competitor_acquired, _competitor_from_cache, competitor_token = acquire_best_effort_lock(
-            lock_key,
-            timeout_seconds=2,
-            logger=logger,
-            log_context="virtual player competing integration roll",
-            allow_local_fallback=False,
-        )
-
-        assert competitor_acquired is False
-        assert competitor_token is None
-    finally:
-        allow_roll_to_finish.set()
-        roll_thread.join(timeout=10)
-        cache.delete(lock_key)
-
-    assert not roll_thread.is_alive()
-    assert errors == []
-    assert results == [7]

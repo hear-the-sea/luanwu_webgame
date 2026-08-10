@@ -368,7 +368,7 @@ def test_periodic_roll_recovers_bot_band_when_post_commit_handoff_fails(
 ) -> None:
     BotRuntimeRoutingState.objects.create(
         bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
-        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.LEGACY_BEFORE_GATE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
     )
     user = django_user_model.objects.create_user(
         username="prestige_transition_periodic_recovery",

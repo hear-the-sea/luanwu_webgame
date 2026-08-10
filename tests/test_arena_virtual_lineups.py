@@ -31,7 +31,10 @@ def test_virtual_lineup_normalization_only_changes_output_health() -> None:
 
     assert source == before
     assert normalized[0] is not source[0]
-    assert normalized[0] | {"current_hp": 250} == source[0]
+    assert normalized[0] | {"current_hp": 250} == {
+        **source[0],
+        "arena_power_snapshot_semantics": "legacy_missing_agility",
+    }
     assert normalized[0]["current_hp"] == normalized[0]["max_hp"] == 1_000
 
 
@@ -141,6 +144,26 @@ def test_lineup_selection_respects_arena_maximum_lineup_size() -> None:
     assert result.is_ready is False
     assert len(result.snapshots) == 1
     assert result.selected_power == 300
+
+
+def test_lineup_selection_returns_non_ready_partial_evidence_when_hard_count_is_missing() -> None:
+    snapshots = [_snapshot(), _snapshot()]
+
+    result = evaluate_lineup_snapshots(
+        snapshots,
+        context=LineupSelectionContext(
+            mode="tournament",
+            event_id=11,
+            profile_id=12,
+            max_lineup_size=10,
+        ),
+        target_guest_count=3,
+        target_team_power=600,
+    )
+
+    assert result.is_ready is False
+    assert len(result.snapshots) == 2
+    assert result.selected_power == 600
 
 
 @pytest.mark.parametrize("current_hp", (True, 1.0, "1", 0, 2))

@@ -18,6 +18,7 @@ from gameplay.models import (
     ArenaTournament,
     ArenaVirtualDemand,
     BotProfile,
+    BotRuntimeRoutingState,
 )
 from gameplay.services.arena.virtual_backfill import backfill_coop_event_locked as persist_coop_backfill_locked
 from gameplay.services.arena.virtual_backfill import backfill_tournament_locked as persist_tournament_backfill_locked
@@ -38,6 +39,21 @@ from tests.arena_services.support import User, create_guest, create_guest_templa
 _BOT_GUEST_COUNTER = count(1)
 
 
+@pytest.fixture(autouse=True)
+def _active_policy2_routing():
+    BotRuntimeRoutingState.objects.update_or_create(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        defaults={
+            "bootstrap_mode": BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+            "maintenance_mode": BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+            "calibration_routes": [],
+            "policy_rollout_target_version": 2,
+            "policy_rollout_enabled": False,
+            "policy_rollout_percent": 0,
+        },
+    )
+
+
 def _create_manor(username: str):
     return ensure_manor(User.objects.create_user(username=username, password="pass123"))
 
@@ -47,11 +63,18 @@ def _create_bot_profile(
     *,
     state: str = BotProfile.State.ACTIVE,
     guest_stats: list[tuple[int, int, int]] | None = None,
+    guest_agility: int = 100,
 ):
+    """Create an Arena-eligible policy-2 fixture after the V1 cutover."""
     manor = _create_manor(username)
     now = timezone.now()
     profile = BotProfile.objects.create(
         manor=manor,
+        engine_version=2,
+        rng_version=1,
+        plan_schema_version=1,
+        policy_version=2,
+        policy_checksum="a" * 64,
         state=state,
         prestige_band="newbie",
         target_prestige_band="newbie",
@@ -60,6 +83,8 @@ def _create_bot_profile(
         next_growth_at=now,
         abandon_at=now,
         retire_at=now,
+        last_strength_increase_at=now,
+        v2_enrolled_at=now,
     )
     for index, (force, intellect, defense) in enumerate([(100, 100, 70)] if guest_stats is None else guest_stats):
         template = create_guest_template(f"arena_bot_{next(_BOT_GUEST_COUNTER)}")
@@ -71,19 +96,30 @@ def _create_bot_profile(
             force=force,
             intellect=intellect,
             defense_stat=defense,
-            agility=100,
+            agility=guest_agility,
         )
     return profile
 
 
 def _snapshot_power(snapshots: list[dict]) -> int:
     return sum(
-        int(snapshot.get("attack") or 0) + int(snapshot.get("defense") or 0) + int(snapshot.get("max_hp") or 0) // 10
+        int(snapshot.get("attack") or 0)
+        + int(snapshot.get("defense") or 0)
+        + int(snapshot.get("max_hp") or 0) // 10
+        + int(snapshot.get("agility") or 0)
         for snapshot in snapshots
     )
 
 
-def _add_real_arena_entry(tournament: ArenaTournament, username: str, *, attack: int, defense: int, max_hp: int):
+def _add_real_arena_entry(
+    tournament: ArenaTournament,
+    username: str,
+    *,
+    attack: int,
+    defense: int,
+    max_hp: int,
+    agility: int = 100,
+):
     entry = ArenaEntry.objects.create(tournament=tournament, manor=_create_manor(username))
     ArenaEntryGuest.objects.create(
         entry=entry,
@@ -92,6 +128,7 @@ def _add_real_arena_entry(tournament: ArenaTournament, username: str, *, attack:
             "attack": attack,
             "defense": defense,
             "max_hp": max_hp,
+            "agility": agility,
             "current_hp": max_hp,
         },
     )
@@ -103,7 +140,13 @@ def _add_real_coop_entry(event: ArenaCoopEvent, username: str, *, status: str = 
     ArenaCoopEntryGuest.objects.create(
         entry=entry,
         slot_index=0,
-        snapshot={"display_name": f"{username}-门客", "attack": 200, "defense": 200, "max_hp": 2000},
+        snapshot={
+            "display_name": f"{username}-门客",
+            "attack": 200,
+            "defense": 200,
+            "max_hp": 2000,
+            "agility": 100,
+        },
     )
     return entry
 
@@ -252,7 +295,7 @@ def test_tournament_backfill_uses_bot_owned_balanced_lineups_and_skips_reserved_
         assert links[0].snapshot["current_hp"] == links[0].snapshot["max_hp"]
         bot_template_keys = set(entry.manor.guests.values_list("template__key", flat=True))
         assert links[0].snapshot["template_key"] in bot_template_keys
-        assert 600 * 80 <= _snapshot_power([links[0].snapshot]) * 100 <= 600 * 120
+        assert 700 * 80 <= _snapshot_power([links[0].snapshot]) * 100 <= 700 * 120
         assert not entry.manor.guests.exclude(status=GuestStatus.IDLE).exists()
 
 
@@ -301,6 +344,7 @@ def test_locked_virtual_backfill_rejects_non_full_health_before_any_write():
         "attack": 200,
         "defense": 200,
         "max_hp": 2_000,
+        "agility": 100,
         "current_hp": 1_999,
     }
 
@@ -328,7 +372,7 @@ def test_locked_virtual_backfill_rejects_non_full_health_before_any_write():
 
 
 @pytest.mark.django_db
-def test_tournament_backfill_uses_all_bot_guests_when_roster_is_smaller_than_reference():
+def test_tournament_backfill_defers_when_policy2_roster_is_smaller_than_reference():
     tournament = ArenaTournament.objects.create(status=ArenaTournament.Status.RECRUITING, player_limit=2)
     real_entry = _add_real_arena_entry(
         tournament,
@@ -339,17 +383,19 @@ def test_tournament_backfill_uses_all_bot_guests_when_roster_is_smaller_than_ref
     )
     ArenaEntryGuest.objects.create(
         entry=real_entry,
-        snapshot={"display_name": "第二名真人门客", "attack": 200, "defense": 200, "max_hp": 2000},
+        snapshot={
+            "display_name": "第二名真人门客",
+            "attack": 200,
+            "defense": 200,
+            "max_hp": 2000,
+            "agility": 100,
+        },
     )
     profile = _create_bot_profile("arena_backfill_short_roster", guest_stats=[(180, 120, 150)])
 
-    assert backfill_tournament_locked(tournament) == 1
-
-    virtual_entry = tournament.entries.get(source=ArenaEntry.Source.VIRTUAL)
-    snapshots = [link.snapshot for link in virtual_entry.entry_guests.all()]
-    assert len(snapshots) == 1
-    assert snapshots[0]["template_key"] == profile.manor.guests.get().template.key
-    assert 1200 * 80 <= _snapshot_power(snapshots) * 100 <= 1200 * 120
+    assert backfill_tournament_locked(tournament) == 0
+    assert not tournament.entries.filter(source=ArenaEntry.Source.VIRTUAL).exists()
+    assert profile.manor.guests.count() == 1
 
 
 @pytest.mark.django_db
@@ -369,28 +415,28 @@ def test_tournament_backfill_skips_empty_and_out_of_range_bots_before_using_late
 
 @pytest.mark.django_db
 def test_bot_lineup_evaluation_distinguishes_ready_and_closest_below():
-    ready = _create_bot_profile("reserve_ready", guest_stats=[(150, 150, 50)])
-    weak = _create_bot_profile("reserve_weak", guest_stats=[(150, 150, 25)])
+    ready = _create_bot_profile("reserve_ready", guest_stats=[(150, 150, 50)], guest_agility=100)
+    weak = _create_bot_profile("reserve_weak", guest_stats=[(150, 150, 50)], guest_agility=0)
 
     ready_result = evaluate_bot_lineup(
         ready,
         mode="tournament",
         event_id=10,
         target_guest_count=1,
-        target_team_power=600,
+        target_team_power=800,
     )
     weak_result = evaluate_bot_lineup(
         weak,
         mode="tournament",
         event_id=10,
         target_guest_count=1,
-        target_team_power=600,
+        target_team_power=800,
     )
 
     assert ready_result.is_ready is True
-    assert ready_result.selected_power == 600
+    assert ready_result.selected_power == 700
     assert weak_result.is_ready is False
-    assert weak_result.selected_power == 450
+    assert weak_result.selected_power == 600
 
 
 @pytest.mark.django_db
@@ -500,7 +546,7 @@ def test_candidate_lock_tries_the_next_profile_when_locked_lineup_is_stale(monke
     def select_after_lock(profile, **_kwargs):
         if profile.id == first.id:
             return []
-        return [{"attack": 200, "defense": 200, "max_hp": 2000}]
+        return [{"attack": 200, "defense": 200, "max_hp": 2000, "agility": 100, "current_hp": 2000}]
 
     monkeypatch.setattr(virtual_reserve_fill, "_select_bot_lineup", select_after_lock)
 
@@ -763,7 +809,7 @@ def test_tournament_backfill_emits_structured_strength_audit_log(caplog):
     assert record.event_id == tournament.id
     assert record.real_entry_count == 1
     assert record.virtual_entry_count == 1
-    assert record.target_team_power == 600
+    assert record.target_team_power == 700
 
 
 @pytest.mark.django_db

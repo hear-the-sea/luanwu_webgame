@@ -13,6 +13,7 @@ from django.db import DatabaseError
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
@@ -75,7 +76,11 @@ class UpgradeBuildingView(LoginRequiredMixin, TemplateView):
         )
         try:
             start_upgrade(building)
-            eta = building.upgrade_complete_at.strftime("%H:%M:%S") if building.upgrade_complete_at else ""
+            eta = (
+                timezone.localtime(building.upgrade_complete_at).strftime("%H:%M:%S")
+                if building.upgrade_complete_at
+                else ""
+            )
             messages.success(request, f"{building.building_type.name} 开始升级，完成时间 {eta}")
         except GameError as exc:
             _handle_known_building_error(request, exc)

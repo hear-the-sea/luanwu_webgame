@@ -23,11 +23,18 @@ from core.utils.rate_limit import rate_limit_redirect
 from gameplay.services.manor.core import get_manor
 
 from ..forms import RecruitForm
-from ..models import RecruitmentCandidate
+from ..models import RecruitmentCandidate, RecruitmentPool
 from ..services.recruitment import start_guest_recruitment, use_magnifying_glass_for_candidates
 from ..services.recruitment_guests import bulk_finalize_candidates, discard_candidates, retain_candidates
+from ..services.recruitment_quota import add_recruitment_extra_attempt_with_item_cost
+from ..services.recruitment_shared import CORE_POOL_TIERS
 from .recruit_action_runtime import RECRUIT_ACTION_LOCK_SPEC, run_locked_recruit_action
-from .recruit_handlers import handle_candidate_accept, handle_magnifying_glass_reveal, handle_recruit_draw
+from .recruit_handlers import (
+    handle_candidate_accept,
+    handle_magnifying_glass_reveal,
+    handle_recruit_draw,
+    handle_recruitment_card_use,
+)
 from .recruit_responses import candidate_action_success_response as _candidate_action_success_response
 from .recruit_responses import format_duration as _format_duration
 from .recruit_responses import json_recruitment_hall_success as _json_recruitment_hall_success
@@ -121,6 +128,35 @@ class RecruitView(LoginRequiredMixin, TemplateView):
             json_success_response=_json_recruitment_hall_success,
             start_guest_recruitment_fn=start_guest_recruitment,
         )
+
+
+@login_required
+@require_POST
+@rate_limit_redirect("recruitment_card", limit=30, window_seconds=60)
+def use_recruitment_card_view(request: HttpRequest) -> HttpResponse:
+    """为指定招募卡池增加1次今日招募额度。"""
+    manor = get_manor(request.user)
+    is_ajax = is_json_request(request)
+    pool_id = safe_positive_int(request.POST.get("pool_id"), default=None)
+    pool = RecruitmentPool.objects.filter(pk=pool_id, tier__in=CORE_POOL_TIERS).first() if pool_id is not None else None
+    if pool is None:
+        return _recruitment_hall_response(
+            request,
+            manor,
+            "请选择有效的招募方式。",
+            is_ajax=is_ajax,
+            status=400,
+        )
+
+    return handle_recruitment_card_use(
+        request=request,
+        manor=manor,
+        is_ajax=is_ajax,
+        pool=pool,
+        run_locked_action=_run_locked_recruit_action,
+        recruitment_hall_response=_recruitment_hall_response,
+        add_recruitment_extra_attempt_with_item_cost_fn=add_recruitment_extra_attempt_with_item_cost,
+    )
 
 
 @login_required

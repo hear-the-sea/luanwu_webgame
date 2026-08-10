@@ -100,6 +100,8 @@ def release_policy(
     payload: Mapping[str, Any],
     released_at: datetime | None = None,
 ) -> PolicyReleaseResult:
+    if isinstance(version, bool) or int(version) != 2:
+        raise PolicyRegistryError("policy 2 is the only releasable virtual-player policy")
     normalized_version, normalized_checksum, normalized_payload = _normalized_release_request(
         version=version,
         checksum=checksum,
@@ -205,6 +207,8 @@ def get_assignable_policy_release(
     version: int,
     expected_checksum: str,
 ) -> BotPolicyRelease:
+    if isinstance(version, bool) or int(version) != 2:
+        raise PolicyAssignmentError("policy 2 is the only assignable virtual-player policy")
     release = get_policy_release(
         version=version,
         expected_checksum=expected_checksum,
@@ -215,6 +219,8 @@ def get_assignable_policy_release(
 
 
 def lock_assignable_policy_release(*, version: int, expected_checksum: str) -> BotPolicyRelease:
+    if isinstance(version, bool) or int(version) != 2:
+        raise PolicyAssignmentError("policy 2 is the only assignable virtual-player policy")
     try:
         release = BotPolicyRelease.objects.select_for_update().get(version=int(version))
     except BotPolicyRelease.DoesNotExist as exc:
@@ -276,6 +282,8 @@ def update_routing_policy_references(
     versions = sorted(normalized_added | normalized_removed)
     if any(version < 1 for version in versions):
         raise PolicyRegistryError("routing policy versions must be positive integers")
+    if normalized_added - {2}:
+        raise PolicyRegistryError("routing may only reference policy 2")
     releases = {
         release.version: release
         for release in BotPolicyRelease.objects.select_for_update().filter(version__in=versions).order_by("version")

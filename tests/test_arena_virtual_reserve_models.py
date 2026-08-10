@@ -97,7 +97,6 @@ def test_reserve_member_profile_is_globally_unique_with_training_defaults():
 
     assert member.state == ArenaVirtualReserveMember.State.TRAINING
     assert member.evaluated_version == 1
-    assert member.accelerated_growth_rounds == 0
 
     with pytest.raises(IntegrityError), transaction.atomic():
         ArenaVirtualReserveMember.objects.create(demand=second, profile=profile)

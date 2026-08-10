@@ -2,6 +2,9 @@
 视图层 POST 操作测试
 """
 
+from datetime import datetime
+from datetime import timezone as dt_timezone
+
 import pytest
 from django.contrib.messages import get_messages
 from django.db import DatabaseError
@@ -22,6 +25,22 @@ class TestPostOperations:
         building = manor.buildings.first()
         response = client.post(reverse("gameplay:upgrade_building", kwargs={"pk": building.pk}))
         assert response.status_code == 302
+
+    def test_upgrade_building_success_message_uses_server_timezone(self, manor_with_user, monkeypatch):
+        manor, client = manor_with_user
+        building = manor.buildings.first()
+        server_eta = datetime(2026, 8, 8, 1, 2, 3, tzinfo=dt_timezone.utc)
+
+        def fake_start_upgrade(target):
+            target.upgrade_complete_at = server_eta
+
+        monkeypatch.setattr("gameplay.views.buildings.start_upgrade", fake_start_upgrade)
+
+        response = client.post(reverse("gameplay:upgrade_building", kwargs={"pk": building.pk}))
+        messages = [str(message) for message in get_messages(response.wsgi_request)]
+
+        assert response.status_code == 302
+        assert any("完成时间 09:02:03" in message for message in messages)
 
     def test_upgrade_building_known_error_shows_message(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user

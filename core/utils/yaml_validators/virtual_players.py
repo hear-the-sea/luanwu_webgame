@@ -11,7 +11,9 @@ from typing import Any
 from common.constants.virtual_players import (
     DEFAULT_VIRTUAL_PLAYER_PRESTIGE_BANDS,
     VIRTUAL_PLAYER_ARCHETYPES,
+    VIRTUAL_PLAYER_BUILDING_TARGET_KEYS,
     VIRTUAL_PLAYER_INVENTORY_EFFECT_TYPES,
+    VIRTUAL_PLAYER_TECHNOLOGY_TARGET_KEYS,
 )
 
 from .base import ValidationResult, _check_positive, _check_type
@@ -54,7 +56,7 @@ _V2_BAND_NAMES = (
     "legend",
     "mythic",
 )
-_V2_ROOT_FIELDS = frozenset(
+_V2_REQUIRED_ROOT_FIELDS = frozenset(
     {
         "environment_mode",
         "engine_version",
@@ -63,10 +65,10 @@ _V2_ROOT_FIELDS = frozenset(
         "prestige_segmentation",
         "routing",
         "policy_rollout",
-        "reference_snapshot_catalog",
         "policies",
     }
 )
+_V2_ROOT_FIELDS = frozenset({*_V2_REQUIRED_ROOT_FIELDS, "arena_training_policy", "growth_control"})
 _V2_PRESTIGE_FIELDS = frozenset(
     {
         "band_schema_version",
@@ -92,18 +94,6 @@ _V2_POLICY_FIELDS = frozenset(
     {
         "checksum",
         "max_development_actions",
-        "reference_calibration_min_profiles_per_band",
-        "reference_calibration_thresholds",
-        "reference_calibration_archetype_effects",
-        "reference_calibration_abandoned_features",
-        "use_local_reference_when_profiles_gte",
-        "borrowed_global_reference_discount_ratio",
-        "borrowed_global_reference_usage",
-        "borrowed_global_may_raise_sample_tier",
-        "borrowed_global_may_raise_strength_cap",
-        "starter_snapshot_scope",
-        "starter_snapshot_requires_live_player_data",
-        "zero_local_sample_cap_strategy",
         "anchor_k",
         "strength_safety",
         "prestige_band_growth",
@@ -164,13 +154,12 @@ _V2_STRENGTH_FIELDS = frozenset(
         "admin_may_bypass",
     }
 )
-_V2_GROWTH_FIELDS = frozenset(
+_V2_GROWTH_BASE_FIELDS = frozenset(
     {
         "effective_limit_rule",
         "direct_prestige_grant_by_maintenance_allowed",
         "profiles",
         "last_strength_increase_at_required",
-        "arena_acceleration_may_bypass_band_spacing",
         "admin_may_bypass_band_spacing",
         "configured_boundaries_crossed_per_controlled_action_max",
         "cross_band_uses_stricter_source_or_destination_limit",
@@ -178,6 +167,17 @@ _V2_GROWTH_FIELDS = frozenset(
         "bootstrap_fake_per_action_history_records",
     }
 )
+_V2_GROWTH_FIELDS = frozenset({*_V2_GROWTH_BASE_FIELDS, "arena_acceleration_bypass"})
+_V2_ARENA_ACCELERATION_BYPASS_VALUES = {
+    "due": True,
+    "band_spacing": True,
+    "daily_action": True,
+    "daily_growth": True,
+    "per_action": False,
+    "daily_control_cap": False,
+    "component_cap": False,
+}
+_V2_ARENA_ACCELERATION_BYPASS_FIELDS = frozenset(_V2_ARENA_ACCELERATION_BYPASS_VALUES)
 _V2_GROWTH_PROFILE_FIELDS = frozenset(
     {
         "bootstrap_history_age_days",
@@ -196,6 +196,29 @@ _V2_STARTER_PROFILE_FIELDS = frozenset(
         "arena_lineup_power",
         "troop_total",
         "composite_strength",
+    }
+)
+_V2_ARENA_TRAINING_POLICY_FIELDS = frozenset(
+    {
+        "schema_version",
+        "version",
+        "checksum",
+        "envelopes",
+    }
+)
+_V2_ARENA_TRAINING_ENVELOPE_FIELDS = frozenset(
+    {
+        "ready_power_range",
+        "supply_prestige_band_priority",
+    }
+)
+_V2_GROWTH_CONTROL_FIELDS = frozenset(
+    {
+        "minimum_sample_count",
+        "smoothing_alpha",
+        "maximum_daily_delta_bps",
+        "active_sample_days",
+        "ttl_days",
     }
 )
 
@@ -540,6 +563,10 @@ def _validate_v2_routing(value: Any, *, result: ValidationResult, file: str, pat
         file=file,
         path=f"{path}.maintenance_mode",
     )
+    if bootstrap_mode not in (None, "v2_active"):
+        result.add(file, f"{path}.bootstrap_mode", "single-policy runtime requires v2_active")
+    if maintenance_mode not in (None, "v2_active"):
+        result.add(file, f"{path}.maintenance_mode", "single-policy runtime requires v2_active")
     if bootstrap_mode == "legacy_before_gate" and maintenance_mode not in (
         None,
         "legacy_before_gate",
@@ -570,7 +597,11 @@ def _validate_v2_policy_rollout(
         path=f"{path}.target_version",
         minimum=1,
     )
+    if target_version not in (None, 2):
+        result.add(file, f"{path}.target_version", "single-policy runtime requires target_version=2")
     enabled = _v2_bool(rollout.get("enabled"), result=result, file=file, path=f"{path}.enabled")
+    if enabled is True:
+        result.add(file, f"{path}.enabled", "multi-version policy rollout is retired")
     rollout_percent = _v2_int(
         rollout.get("rollout_percent"),
         result=result,
@@ -867,9 +898,8 @@ def _validate_v2_growth(value: Any, *, result: ValidationResult, file: str, path
         file=file,
         path=f"{path}.effective_limit_rule",
     )
-    false_fields = (
+    false_fields: tuple[str, ...] = (
         "direct_prestige_grant_by_maintenance_allowed",
-        "arena_acceleration_may_bypass_band_spacing",
         "admin_may_bypass_band_spacing",
         "external_domain_result_may_be_rejected_by_bot_growth_policy",
         "bootstrap_fake_per_action_history_records",
@@ -882,6 +912,36 @@ def _validate_v2_growth(value: Any, *, result: ValidationResult, file: str, path
             path=f"{path}.{field_name}",
             expected=False,
         )
+    arena_bypass_path = f"{path}.arena_acceleration_bypass"
+    arena_bypass = _v2_mapping(
+        growth.get("arena_acceleration_bypass"),
+        result=result,
+        file=file,
+        path=arena_bypass_path,
+    )
+    if arena_bypass is not None:
+        _reject_unknown_fields(
+            arena_bypass,
+            _V2_ARENA_ACCELERATION_BYPASS_FIELDS,
+            result=result,
+            file=file,
+            path=arena_bypass_path,
+        )
+        _require_fields(
+            arena_bypass,
+            _V2_ARENA_ACCELERATION_BYPASS_FIELDS,
+            result=result,
+            file=file,
+            path=arena_bypass_path,
+        )
+        for field_name, expected in _V2_ARENA_ACCELERATION_BYPASS_VALUES.items():
+            _v2_bool(
+                arena_bypass.get(field_name),
+                result=result,
+                file=file,
+                path=f"{arena_bypass_path}.{field_name}",
+                expected=expected,
+            )
     for field_name in (
         "last_strength_increase_at_required",
         "cross_band_uses_stricter_source_or_destination_limit",
@@ -1157,6 +1217,7 @@ def _validate_v2_ratio_groups(
 def _validate_v2_policy(
     policy: dict[Any, Any],
     *,
+    version: int,
     bands: tuple[tuple[str, int, int | None], ...],
     result: ValidationResult,
     file: str,
@@ -1183,232 +1244,8 @@ def _validate_v2_policy(
         result=result,
         file=file,
         path=f"{path}.max_development_actions",
-        expected=1,
+        expected=(16 if int(version) == 2 else 1),
     )
-    _v2_int(
-        policy.get("reference_calibration_min_profiles_per_band"),
-        result=result,
-        file=file,
-        path=f"{path}.reference_calibration_min_profiles_per_band",
-        minimum=30,
-        maximum=1000,
-    )
-    calibration_thresholds = _v2_mapping(
-        policy.get("reference_calibration_thresholds"),
-        result=result,
-        file=file,
-        path=f"{path}.reference_calibration_thresholds",
-    )
-    if calibration_thresholds is not None:
-        threshold_path = f"{path}.reference_calibration_thresholds"
-        _reject_unknown_fields(
-            calibration_thresholds,
-            _V2_REFERENCE_CALIBRATION_THRESHOLD_FIELDS,
-            result=result,
-            file=file,
-            path=threshold_path,
-        )
-        _require_fields(
-            calibration_thresholds,
-            _V2_REFERENCE_CALIBRATION_THRESHOLD_FIELDS,
-            result=result,
-            file=file,
-            path=threshold_path,
-        )
-        normalized_thresholds: dict[str, float] = {}
-        for field_name, expected in _V2_REFERENCE_CALIBRATION_THRESHOLD_VALUES.items():
-            field_path = f"{threshold_path}.{field_name}"
-            raw_value = calibration_thresholds.get(field_name)
-            if isinstance(expected, bool):
-                _v2_bool(
-                    raw_value,
-                    result=result,
-                    file=file,
-                    path=field_path,
-                    expected=expected,
-                )
-            elif isinstance(expected, int):
-                _v2_int(
-                    raw_value,
-                    result=result,
-                    file=file,
-                    path=field_path,
-                    expected=expected,
-                )
-            else:
-                normalized = _v2_number(
-                    raw_value,
-                    result=result,
-                    file=file,
-                    path=field_path,
-                    maximum=1.0,
-                )
-                if normalized is None:
-                    continue
-                normalized_thresholds[field_name] = normalized
-                if field_name == "archetype_standardized_effect_min_absolute":
-                    if normalized < expected:
-                        result.add(file, field_path, f"must be >= {expected:g}")
-                elif normalized > expected:
-                    result.add(file, field_path, f"must be <= {expected:g}")
-        minimum_effect = normalized_thresholds.get("archetype_standardized_effect_min_absolute")
-        maximum_effect = normalized_thresholds.get("archetype_standardized_effect_max_absolute")
-        if minimum_effect is not None and maximum_effect is not None and minimum_effect > maximum_effect:
-            result.add(
-                file,
-                f"{threshold_path}.archetype_standardized_effect_max_absolute",
-                "must be >= archetype_standardized_effect_min_absolute",
-            )
-    archetype_effects = _v2_mapping(
-        policy.get("reference_calibration_archetype_effects"),
-        result=result,
-        file=file,
-        path=f"{path}.reference_calibration_archetype_effects",
-    )
-    if archetype_effects is not None:
-        effects_path = f"{path}.reference_calibration_archetype_effects"
-        expected_archetypes = frozenset(_V2_REFERENCE_CALIBRATION_ARCHETYPE_EFFECTS)
-        _reject_unknown_fields(
-            archetype_effects,
-            expected_archetypes,
-            result=result,
-            file=file,
-            path=effects_path,
-        )
-        _require_fields(
-            archetype_effects,
-            expected_archetypes,
-            result=result,
-            file=file,
-            path=effects_path,
-        )
-        for archetype, (expected_metric, expected_direction) in _V2_REFERENCE_CALIBRATION_ARCHETYPE_EFFECTS.items():
-            effect_path = f"{effects_path}.{archetype}"
-            effect = _v2_mapping(
-                archetype_effects.get(archetype),
-                result=result,
-                file=file,
-                path=effect_path,
-            )
-            if effect is None:
-                continue
-            _reject_unknown_fields(
-                effect,
-                _V2_REFERENCE_CALIBRATION_ARCHETYPE_EFFECT_FIELDS,
-                result=result,
-                file=file,
-                path=effect_path,
-            )
-            _require_fields(
-                effect,
-                _V2_REFERENCE_CALIBRATION_ARCHETYPE_EFFECT_FIELDS,
-                result=result,
-                file=file,
-                path=effect_path,
-            )
-            if effect.get("metric") != expected_metric:
-                result.add(
-                    file,
-                    f"{effect_path}.metric",
-                    f"must equal {expected_metric!r}",
-                )
-            if effect.get("direction") != expected_direction:
-                result.add(
-                    file,
-                    f"{effect_path}.direction",
-                    f"must equal {expected_direction!r}",
-                )
-    abandoned_features = _v2_mapping(
-        policy.get("reference_calibration_abandoned_features"),
-        result=result,
-        file=file,
-        path=f"{path}.reference_calibration_abandoned_features",
-    )
-    if abandoned_features is not None:
-        abandoned_path = f"{path}.reference_calibration_abandoned_features"
-        expected_fields = frozenset(_V2_REFERENCE_CALIBRATION_ABANDONED_FEATURES)
-        _reject_unknown_fields(
-            abandoned_features,
-            expected_fields,
-            result=result,
-            file=file,
-            path=abandoned_path,
-        )
-        _require_fields(
-            abandoned_features,
-            expected_fields,
-            result=result,
-            file=file,
-            path=abandoned_path,
-        )
-        _v2_int(
-            abandoned_features.get("underfilled_roster_guest_count_max"),
-            result=result,
-            file=file,
-            path=f"{abandoned_path}.underfilled_roster_guest_count_max",
-            expected=2,
-        )
-        stale_ratio = _v2_number(
-            abandoned_features.get("stale_gear_level_ratio_max"),
-            result=result,
-            file=file,
-            path=f"{abandoned_path}.stale_gear_level_ratio_max",
-            maximum=1.0,
-        )
-        if stale_ratio is not None and not math.isclose(stale_ratio, 0.50):
-            result.add(
-                file,
-                f"{abandoned_path}.stale_gear_level_ratio_max",
-                "must equal 0.5",
-            )
-        _v2_int(
-            abandoned_features.get("growth_gap_days_min"),
-            result=result,
-            file=file,
-            path=f"{abandoned_path}.growth_gap_days_min",
-            expected=30,
-        )
-    _v2_int(
-        policy.get("use_local_reference_when_profiles_gte"),
-        result=result,
-        file=file,
-        path=f"{path}.use_local_reference_when_profiles_gte",
-        expected=1,
-    )
-    discount = _v2_number(
-        policy.get("borrowed_global_reference_discount_ratio"),
-        result=result,
-        file=file,
-        path=f"{path}.borrowed_global_reference_discount_ratio",
-        maximum=1.0,
-    )
-    if discount is not None and not math.isclose(discount, 0.90):
-        result.add(file, f"{path}.borrowed_global_reference_discount_ratio", "must equal 0.9")
-    literal_fields = {
-        "borrowed_global_reference_usage": "composition_anchor_only",
-        "starter_snapshot_scope": "per_prestige_band_conservative_entry_fixture",
-        "zero_local_sample_cap_strategy": "stricter_of_starter_90_percent_and_discounted_global",
-    }
-    for field_name, expected_literal in literal_fields.items():
-        _v2_literal(
-            policy.get(field_name),
-            allowed=frozenset({expected_literal}),
-            result=result,
-            file=file,
-            path=f"{path}.{field_name}",
-        )
-    for field_name in (
-        "borrowed_global_may_raise_sample_tier",
-        "borrowed_global_may_raise_strength_cap",
-        "starter_snapshot_requires_live_player_data",
-    ):
-        _v2_bool(
-            policy.get(field_name),
-            result=result,
-            file=file,
-            path=f"{path}.{field_name}",
-            expected=False,
-        )
     _v2_int(
         policy.get("anchor_k"),
         result=result,
@@ -1438,6 +1275,171 @@ def _validate_v2_policy(
     _validate_v2_ratio_groups(policy, result=result, file=file, path=path)
 
 
+def _validate_v2_arena_training_policy(
+    value: Any,
+    *,
+    bands: tuple[tuple[str, int, int | None], ...],
+    result: ValidationResult,
+    file: str,
+    path: str,
+) -> None:
+    policy = _v2_mapping(value, result=result, file=file, path=path)
+    if policy is None:
+        return
+    _reject_unknown_fields(policy, _V2_ARENA_TRAINING_POLICY_FIELDS, result=result, file=file, path=path)
+    _require_fields(policy, _V2_ARENA_TRAINING_POLICY_FIELDS, result=result, file=file, path=path)
+    _v2_int(
+        policy.get("schema_version"),
+        result=result,
+        file=file,
+        path=f"{path}.schema_version",
+        expected=2,
+    )
+    _v2_int(
+        policy.get("version"),
+        result=result,
+        file=file,
+        path=f"{path}.version",
+        minimum=1,
+    )
+    declared_checksum = policy.get("checksum")
+    if (
+        not isinstance(declared_checksum, str)
+        or len(declared_checksum) != 64
+        or any(character not in "0123456789abcdef" for character in declared_checksum)
+    ):
+        result.add(file, f"{path}.checksum", "expected a lowercase SHA-256 checksum")
+    calculated_checksum = _policy_checksum(policy)
+    if (
+        isinstance(declared_checksum, str)
+        and calculated_checksum is not None
+        and declared_checksum != calculated_checksum
+    ):
+        result.add(file, f"{path}.checksum", "does not match the normalized arena training payload")
+
+    envelopes = _v2_mapping(
+        policy.get("envelopes"),
+        result=result,
+        file=file,
+        path=f"{path}.envelopes",
+    )
+    if not envelopes:
+        result.add(file, f"{path}.envelopes", "requires at least one strength envelope")
+        return
+    configured_bands = {name for name, _low, _high in bands}
+    ranges: list[tuple[int, int | None, str]] = []
+    for raw_segment, raw_envelope in envelopes.items():
+        segment = str(raw_segment).strip() if isinstance(raw_segment, str) else ""
+        envelope_path = f"{path}.envelopes.{raw_segment}"
+        if not segment:
+            result.add(file, envelope_path, "segment key must be a non-empty string")
+            continue
+        envelope = _v2_mapping(raw_envelope, result=result, file=file, path=envelope_path)
+        if envelope is None:
+            continue
+        _reject_unknown_fields(
+            envelope,
+            _V2_ARENA_TRAINING_ENVELOPE_FIELDS,
+            result=result,
+            file=file,
+            path=envelope_path,
+        )
+        _require_fields(
+            envelope,
+            _V2_ARENA_TRAINING_ENVELOPE_FIELDS,
+            result=result,
+            file=file,
+            path=envelope_path,
+        )
+        raw_range = envelope.get("ready_power_range")
+        range_path = f"{envelope_path}.ready_power_range"
+        if not isinstance(raw_range, list) or len(raw_range) != 2:
+            result.add(file, range_path, "expected a two-item ready-power range")
+            continue
+        lower = _v2_int(raw_range[0], result=result, file=file, path=f"{range_path}[0]", minimum=0)
+        if raw_range[1] is None:
+            upper = None
+        else:
+            upper = _v2_int(raw_range[1], result=result, file=file, path=f"{range_path}[1]", minimum=0)
+        if lower is not None and upper is not None and upper < lower:
+            result.add(file, range_path, "range upper bound must be >= lower bound")
+        if lower is not None:
+            ranges.append((lower, upper, segment))
+        supply_priority = envelope.get("supply_prestige_band_priority")
+        priority_path = f"{envelope_path}.supply_prestige_band_priority"
+        if not isinstance(supply_priority, list) or not supply_priority:
+            result.add(file, priority_path, "must be a non-empty ordered V2 prestige-band list")
+            continue
+        if any(not isinstance(band, str) or band not in configured_bands for band in supply_priority):
+            result.add(file, priority_path, "must only contain configured V2 prestige bands")
+        elif len(set(supply_priority)) != len(supply_priority):
+            result.add(file, priority_path, "must not repeat a V2 prestige band")
+
+    previous_upper: int | None = None
+    for index, (lower, upper, _segment) in enumerate(
+        sorted(ranges, key=lambda item: (item[0], item[1] is None, 0 if item[1] is None else item[1], item[2]))
+    ):
+        if previous_upper is None and index > 0:
+            result.add(file, f"{path}.envelopes", "only the final strength envelope may be open ended")
+            break
+        if previous_upper is not None and lower <= previous_upper:
+            result.add(file, f"{path}.envelopes", "strength envelope ranges must not overlap")
+            break
+        previous_upper = upper
+
+
+def _validate_v2_growth_control(
+    value: Any,
+    *,
+    result: ValidationResult,
+    file: str,
+    path: str,
+) -> None:
+    config = _v2_mapping(value, result=result, file=file, path=path)
+    if config is None:
+        return
+    _reject_unknown_fields(config, _V2_GROWTH_CONTROL_FIELDS, result=result, file=file, path=path)
+    _require_fields(config, _V2_GROWTH_CONTROL_FIELDS, result=result, file=file, path=path)
+    _v2_int(
+        config.get("minimum_sample_count"),
+        result=result,
+        file=file,
+        path=f"{path}.minimum_sample_count",
+        minimum=1,
+    )
+    smoothing_alpha = _v2_number(
+        config.get("smoothing_alpha"),
+        result=result,
+        file=file,
+        path=f"{path}.smoothing_alpha",
+        minimum=0.0,
+        maximum=1.0,
+    )
+    if smoothing_alpha is not None and smoothing_alpha <= 0:
+        result.add(file, f"{path}.smoothing_alpha", "must be > 0")
+    _v2_int(
+        config.get("maximum_daily_delta_bps"),
+        result=result,
+        file=file,
+        path=f"{path}.maximum_daily_delta_bps",
+        minimum=0,
+    )
+    _v2_int(
+        config.get("active_sample_days"),
+        result=result,
+        file=file,
+        path=f"{path}.active_sample_days",
+        minimum=1,
+    )
+    _v2_int(
+        config.get("ttl_days"),
+        result=result,
+        file=file,
+        path=f"{path}.ttl_days",
+        minimum=1,
+    )
+
+
 def _validate_bot_development_v2(
     value: Any,
     *,
@@ -1449,7 +1451,7 @@ def _validate_bot_development_v2(
     if config is None:
         return
     _reject_unknown_fields(config, _V2_ROOT_FIELDS, result=result, file=file, path=path)
-    _require_fields(config, _V2_ROOT_FIELDS, result=result, file=file, path=path)
+    _require_fields(config, _V2_REQUIRED_ROOT_FIELDS, result=result, file=file, path=path)
     _v2_literal(
         config.get("environment_mode"),
         allowed=frozenset({"test"}),
@@ -1484,18 +1486,27 @@ def _validate_bot_development_v2(
         file=file,
         path=f"{path}.prestige_segmentation",
     )
+    if "arena_training_policy" in config:
+        _validate_v2_arena_training_policy(
+            config.get("arena_training_policy"),
+            bands=bands,
+            result=result,
+            file=file,
+            path=f"{path}.arena_training_policy",
+        )
+    if "growth_control" in config:
+        _validate_v2_growth_control(
+            config.get("growth_control"),
+            result=result,
+            file=file,
+            path=f"{path}.growth_control",
+        )
     _validate_v2_routing(config.get("routing"), result=result, file=file, path=f"{path}.routing")
     target_version = _validate_v2_policy_rollout(
         config.get("policy_rollout"),
         result=result,
         file=file,
         path=f"{path}.policy_rollout",
-    )
-    _validate_v2_reference_snapshot_catalog(
-        config.get("reference_snapshot_catalog"),
-        result=result,
-        file=file,
-        path=f"{path}.reference_snapshot_catalog",
     )
     policies = _v2_mapping(config.get("policies"), result=result, file=file, path=f"{path}.policies")
     normalized_versions: set[int] = set()
@@ -1520,7 +1531,16 @@ def _validate_bot_development_v2(
             normalized_versions.add(version)
             policy = _v2_mapping(raw_policy, result=result, file=file, path=policy_path)
             if policy is not None:
-                _validate_v2_policy(policy, bands=bands, result=result, file=file, path=policy_path)
+                _validate_v2_policy(
+                    policy,
+                    version=version,
+                    bands=bands,
+                    result=result,
+                    file=file,
+                    path=policy_path,
+                )
+    if normalized_versions != {2}:
+        result.add(file, f"{path}.policies", "single-policy runtime requires exactly policy 2")
     if target_version is not None and target_version not in normalized_versions:
         result.add(
             file,
@@ -1637,25 +1657,6 @@ def _validate_string_list(value: Any, *, result: ValidationResult, file: str, pa
     for idx, item in enumerate(value):
         if not isinstance(item, str):
             result.add(file, f"{path}.{field_name}[{idx}]", "expected string")
-
-
-def _validate_prestige_chance_table(value: Any, *, result: ValidationResult, file: str, path: str) -> None:
-    if not isinstance(value, list):
-        result.add(
-            file,
-            path,
-            "powerful_item_prestige_chance expected a list of prestige chance entries",
-        )
-        return
-    for idx, row in enumerate(value):
-        row_path = f"{path}[{idx}]"
-        if not isinstance(row, dict):
-            result.add(file, row_path, "expected a mapping")
-            continue
-        min_prestige = row.get("min_prestige")
-        if not isinstance(min_prestige, int) or min_prestige < 0:
-            result.add(file, f"{row_path}.min_prestige", "expected a non-negative integer")
-        _validate_ratio(row.get("chance"), result=result, file=file, path=f"{row_path}.chance")
 
 
 def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") -> ValidationResult:
@@ -1874,6 +1875,19 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                         path="projection",
                         field_name=field_name,
                     )
+            for field_name in (
+                "powerful_item_daily_global_cap",
+                "powerful_item_min_price",
+                "powerful_item_min_growth_stage",
+                "powerful_item_prestige_chance",
+                "low_stage_powerful_item_chance",
+            ):
+                if field_name in projection:
+                    result.add(
+                        file,
+                        f"projection.{field_name}",
+                        "field is retired; inventory projection uses rarity, stage, control and component caps",
+                    )
             if "extra_skills_per_guest" in projection:
                 _validate_int_range(
                     projection["extra_skills_per_guest"],
@@ -1912,13 +1926,6 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                     file=file,
                     path="projection.multi_skill_passive_focus_chance",
                 )
-            if "low_stage_powerful_item_chance" in projection:
-                _validate_ratio(
-                    projection["low_stage_powerful_item_chance"],
-                    result=result,
-                    file=file,
-                    path="projection.low_stage_powerful_item_chance",
-                )
             if "high_tier_skills_per_guest" in projection:
                 _validate_int_range(
                     projection["high_tier_skills_per_guest"],
@@ -1934,13 +1941,6 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                     file=file,
                     path="projection.loot_item_quantity",
                     min_value=0,
-                )
-            if "powerful_item_prestige_chance" in projection:
-                _validate_prestige_chance_table(
-                    projection["powerful_item_prestige_chance"],
-                    result=result,
-                    file=file,
-                    path="projection.powerful_item_prestige_chance",
                 )
             for field_name in (
                 "real_projection_sample_size",
@@ -2011,6 +2011,7 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
             for rarity_mapping_name in (
                 "guest_max_rarity_by_stage",
                 "gear_max_rarity_by_stage",
+                "inventory_max_rarity_by_stage",
             ):
                 rarity_mapping = projection.get(rarity_mapping_name)
                 if rarity_mapping is None:
@@ -2074,6 +2075,47 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                                 )
                             if not isinstance(weight, int) or weight <= 0:
                                 result.add(file, weight_path, "expected a positive integer")
+            rare_colors = projection.get("inventory_rare_color_set")
+            if rare_colors is not None:
+                if not isinstance(rare_colors, list) or not rare_colors:
+                    result.add(file, "projection.inventory_rare_color_set", "expected a non-empty list")
+                else:
+                    seen_colors: set[str] = set()
+                    for index, raw_color in enumerate(rare_colors):
+                        color = str(raw_color).strip().lower() if isinstance(raw_color, str) else ""
+                        path = f"projection.inventory_rare_color_set[{index}]"
+                        if color not in {"red", "purple", "orange"}:
+                            result.add(file, path, "expected red, purple or orange")
+                        if color in seen_colors:
+                            result.add(file, path, "must not repeat")
+                        seen_colors.add(color)
+            color_weights = projection.get("inventory_color_weights_by_prestige_band")
+            if color_weights is not None:
+                if not isinstance(color_weights, dict):
+                    result.add(file, "projection.inventory_color_weights_by_prestige_band", "expected a mapping")
+                else:
+                    for band, weights in color_weights.items():
+                        band_path = f"projection.inventory_color_weights_by_prestige_band.{band}"
+                        if band not in _V2_BAND_NAMES:
+                            result.add(file, band_path, "expected a configured V2 prestige band")
+                        if not isinstance(weights, dict):
+                            result.add(file, band_path, "expected a mapping")
+                            continue
+                        for color, weight in weights.items():
+                            color_path = f"{band_path}.{color}"
+                            if color not in _RARITY_RANKS:
+                                result.add(file, color_path, "expected a supported rarity")
+                            if isinstance(weight, bool) or not isinstance(weight, (int, float)) or weight < 0:
+                                result.add(file, color_path, "expected a non-negative number")
+            batch_limit = projection.get("inventory_batch_max_per_cycle")
+            if batch_limit is not None:
+                _validate_int(
+                    batch_limit,
+                    result=result,
+                    file=file,
+                    path="projection.inventory_batch_max_per_cycle",
+                    minimum=1,
+                )
             loot_budget = projection.get("loot_budget_daily")
             if loot_budget is not None:
                 _check_type(
@@ -2113,12 +2155,7 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                             path="projection.loot_limits",
                             field_name="real_attacker_daily_resource_cap",
                         )
-            for field_name in (
-                "rare_item_daily_global_cap",
-                "powerful_item_daily_global_cap",
-                "powerful_item_min_price",
-                "powerful_item_min_growth_stage",
-            ):
+            for field_name in ("rare_item_daily_global_cap",):
                 value = projection.get(field_name)
                 if value is None:
                     continue
@@ -2130,17 +2167,129 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                     path="projection",
                     field_name=field_name,
                 )
-                if field_name == "powerful_item_min_growth_stage":
-                    if isinstance(value, int) and value < 0:
-                        result.add(file, "projection", f"field '{field_name}' must be >= 0")
+                _check_positive(
+                    value,
+                    result=result,
+                    file=file,
+                    path="projection",
+                    field_name=field_name,
+                )
+            archetype_pacing = projection.get("archetype_pacing")
+            if archetype_pacing is not None:
+                if not isinstance(archetype_pacing, dict):
+                    result.add(file, "projection.archetype_pacing", "expected a mapping")
                 else:
-                    _check_positive(
-                        value,
-                        result=result,
-                        file=file,
-                        path="projection",
-                        field_name=field_name,
-                    )
+                    pacing_fields = {
+                        "schema_version",
+                        "slot_interval_minutes",
+                        "silver_budget_ratio",
+                        "grain_budget_ratio",
+                        "max_parallel_training",
+                        "high_cost_actions_per_cycle",
+                        "building_targets",
+                        "technology_targets",
+                        "recruitment_pool_weights",
+                    }
+                    for archetype, values in archetype_pacing.items():
+                        pacing_path = f"projection.archetype_pacing.{archetype}"
+                        if archetype not in _COMBAT_PERSONAS:
+                            result.add(file, pacing_path, "expected a supported combat archetype")
+                        if not isinstance(values, dict):
+                            result.add(file, pacing_path, "expected a mapping")
+                            continue
+                        for field_name in set(values) - pacing_fields:
+                            result.add(file, f"{pacing_path}.{field_name}", "unknown field")
+                        _validate_int(
+                            values.get("schema_version", 1),
+                            result=result,
+                            file=file,
+                            path=f"{pacing_path}.schema_version",
+                            minimum=1,
+                        )
+                        interval = values.get("slot_interval_minutes")
+                        _validate_int_range(
+                            interval,
+                            result=result,
+                            file=file,
+                            path=f"{pacing_path}.slot_interval_minutes",
+                            min_value=10,
+                        )
+                        if isinstance(interval, list) and len(interval) == 2:
+                            if isinstance(interval[1], int) and interval[1] > 15:
+                                result.add(file, f"{pacing_path}.slot_interval_minutes[1]", "must be <= 15")
+                        for field_name in ("silver_budget_ratio", "grain_budget_ratio"):
+                            _validate_ratio(
+                                values.get(field_name),
+                                result=result,
+                                file=file,
+                                path=f"{pacing_path}.{field_name}",
+                            )
+                        for field_name, minimum, maximum in (
+                            ("max_parallel_training", 0, 8),
+                            ("high_cost_actions_per_cycle", 0, 16),
+                        ):
+                            _validate_int(
+                                values.get(field_name),
+                                result=result,
+                                file=file,
+                                path=f"{pacing_path}.{field_name}",
+                                minimum=minimum,
+                            )
+                            raw_value = values.get(field_name)
+                            if isinstance(raw_value, int) and raw_value > maximum:
+                                result.add(file, f"{pacing_path}.{field_name}", f"must be <= {maximum}")
+                        for field_name in ("building_targets", "technology_targets"):
+                            _validate_string_list(
+                                values.get(field_name),
+                                result=result,
+                                file=file,
+                                path=pacing_path,
+                                field_name=field_name,
+                            )
+                            supported_targets = {
+                                "building_targets": set(VIRTUAL_PLAYER_BUILDING_TARGET_KEYS),
+                                "technology_targets": set(VIRTUAL_PLAYER_TECHNOLOGY_TARGET_KEYS),
+                            }[field_name]
+                            raw_targets = values.get(field_name)
+                            if isinstance(raw_targets, list):
+                                for target in raw_targets:
+                                    if isinstance(target, str) and target not in supported_targets:
+                                        result.add(
+                                            file,
+                                            f"{pacing_path}.{field_name}",
+                                            f"unknown target key: {target}",
+                                        )
+                        pool_weights = values.get("recruitment_pool_weights")
+                        if not isinstance(pool_weights, dict):
+                            result.add(file, f"{pacing_path}.recruitment_pool_weights", "expected a mapping")
+                        else:
+                            expected_pools = {"dianshi", "xiangshi", "cunmu"}
+                            for pool_key in sorted(expected_pools - set(pool_weights)):
+                                result.add(
+                                    file,
+                                    f"{pacing_path}.recruitment_pool_weights.{pool_key}",
+                                    "missing required pool",
+                                )
+                            for pool_key in sorted(set(pool_weights) - expected_pools):
+                                result.add(
+                                    file,
+                                    f"{pacing_path}.recruitment_pool_weights.{pool_key}",
+                                    "expected a supported recruitment pool",
+                                )
+                            for pool_key, raw_weight in pool_weights.items():
+                                _validate_int(
+                                    raw_weight,
+                                    result=result,
+                                    file=file,
+                                    path=f"{pacing_path}.recruitment_pool_weights.{pool_key}",
+                                    minimum=1,
+                                )
+                                if isinstance(raw_weight, int) and raw_weight > 100:
+                                    result.add(
+                                        file,
+                                        f"{pacing_path}.recruitment_pool_weights.{pool_key}",
+                                        "must be <= 100",
+                                    )
 
     combat_personas = data.get("combat_personas")
     if combat_personas is not None:

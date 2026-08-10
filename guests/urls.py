@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views.equipment import equip_view, gear_options_view, unequip_view
 from .views.items import use_medicine_item_view
-from .views.recruit import RecruitView, accept_candidate_view, use_magnifying_glass_view
+from .views.recruit import RecruitView, accept_candidate_view, use_magnifying_glass_view, use_recruitment_card_view
 from .views.roster import GuestDetailView, RosterView, dismiss_guest_view
 from .views.salary import pay_all_salaries_view, pay_salary_view
 from .views.skills import forget_skill_view, learn_skill_view
@@ -22,6 +22,7 @@ urlpatterns = [
     path("<int:pk>/pay-salary/", pay_salary_view, name="pay_salary"),
     path("<int:pk>/check-training/", check_training_view, name="check_training"),
     path("recruit/", RecruitView.as_view(), name="recruit"),
+    path("recruit/use-card/", use_recruitment_card_view, name="use_recruitment_card"),
     path("train/", TrainView.as_view(), name="train"),
     path("equip/", equip_view, name="equip"),
     path("gear-options/", gear_options_view, name="gear_options"),

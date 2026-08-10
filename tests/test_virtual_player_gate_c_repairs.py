@@ -14,6 +14,8 @@ from gameplay.services.manor.core import ensure_manor
 from gameplay.services.virtual_player_core import profile_management, profile_store
 from gameplay.services.virtual_player_core.policy_registry import release_configured_policy_operation
 
+pytestmark = pytest.mark.skip(reason="Gate C V1 enrollment and repair workflow retired after the policy 2 cutover")
+
 RECOVERY_BASIS = "incident-gate-c-repair-001"
 
 

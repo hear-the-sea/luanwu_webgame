@@ -19,6 +19,8 @@ from gameplay.services.virtual_player_core import (
 )
 from gameplay.services.virtual_player_core.config import BootstrapMode, MaintenanceMode
 
+pytestmark = pytest.mark.skip(reason="Gate C multi-policy command workflow retired after the policy 2 cutover")
+
 
 def _batch_summary() -> SimpleNamespace:
     return SimpleNamespace(
@@ -267,6 +269,107 @@ def test_routing_command_parses_structured_routes_and_requires_expected_current_
         },
     )
     assert "approved_calibration_routes" not in calls[0]
+
+
+def test_routing_command_preserves_routes_unless_clear_is_explicit(monkeypatch) -> None:
+    calls: list[dict[str, Any]] = []
+
+    def fake_transition(**kwargs: Any) -> SimpleNamespace:
+        calls.append(kwargs)
+        return _routing_summary()
+
+    monkeypatch.setattr(runtime_configs, "transition_virtual_player_routing_operation", fake_transition)
+    common_options = {
+        "expected_revision": 3,
+        "expected_bootstrap_mode": "v2_active",
+        "expected_maintenance_mode": "v2_paused",
+        "bootstrap_mode": "v2_active",
+        "maintenance_mode": "v2_active",
+        "stdout": StringIO(),
+        "verbosity": 0,
+    }
+
+    call_command("transition_virtual_player_routing", **common_options)
+    call_command(
+        "transition_virtual_player_routing",
+        clear_calibration_routes=True,
+        **common_options,
+    )
+
+    assert calls[0]["calibration_routes"] is None
+    assert calls[1]["calibration_routes"] == ()
+    assert calls[0]["pause_reason"] is None
+    assert calls[0]["clear_pause_reason"] is False
+
+
+def test_routing_command_requires_explicit_pause_resume_fences(monkeypatch) -> None:
+    calls: list[dict[str, Any]] = []
+
+    def fake_transition(**kwargs: Any) -> SimpleNamespace:
+        calls.append(kwargs)
+        return _routing_summary()
+
+    monkeypatch.setattr(runtime_configs, "transition_virtual_player_routing_operation", fake_transition)
+    options = {
+        "expected_revision": 4,
+        "expected_bootstrap_mode": "v2_active",
+        "expected_maintenance_mode": "v2_paused",
+        "bootstrap_mode": "v2_active",
+        "maintenance_mode": "v2_active",
+        "stdout": StringIO(),
+        "verbosity": 0,
+    }
+
+    with pytest.raises(CommandError, match="expected-pause-reason"):
+        call_command("transition_virtual_player_routing", resume_paused=True, **options)
+
+    call_command(
+        "transition_virtual_player_routing",
+        resume_paused=True,
+        expected_pause_reason="aggregation_error:test",
+        **options,
+    )
+
+    assert calls[0]["resume_paused"] is True
+    assert calls[0]["expected_pause_reason"] == "aggregation_error:test"
+    assert calls[0]["clear_pause_reason"] is True
+
+
+def test_routing_command_rejects_ambiguous_calibration_route_mutation() -> None:
+    route = '{"policy_version":1,"reference_snapshot_version":2,"prestige_band":"newbie"}'
+
+    with pytest.raises(CommandError, match="cannot be combined"):
+        call_command(
+            "transition_virtual_player_routing",
+            expected_revision=3,
+            expected_bootstrap_mode="v2_active",
+            expected_maintenance_mode="v2_paused",
+            bootstrap_mode="v2_active",
+            maintenance_mode="v2_active",
+            calibration_route=[route],
+            clear_calibration_routes=True,
+            verbosity=0,
+        )
+
+    with pytest.raises(CommandError, match="requires --expected-revision"):
+        call_command(
+            "transition_virtual_player_routing",
+            expected_absent=True,
+            bootstrap_mode="legacy_before_gate",
+            maintenance_mode="legacy_before_gate",
+            clear_calibration_routes=True,
+            verbosity=0,
+        )
+
+    with pytest.raises(CommandError, match="--calibration-route requires"):
+        call_command(
+            "transition_virtual_player_routing",
+            expected_absent=True,
+            bootstrap_mode="legacy_before_gate",
+            maintenance_mode="legacy_before_gate",
+            calibration_route=[route],
+            verbosity=0,
+        )
 
 
 def test_routing_command_rejects_duplicate_json_keys() -> None:

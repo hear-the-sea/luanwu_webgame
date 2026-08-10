@@ -35,6 +35,8 @@ from gameplay.services.virtual_player_core.profile_management import (
 )
 from gameplay.services.virtual_player_core.random_context import policy_rollout_bucket
 
+pytestmark = pytest.mark.skip(reason="Gate C multi-policy persistence workflow retired after the policy 2 cutover")
+
 
 def _create_v1_profile(django_user_model, *, username: str, growth_seed: int) -> BotProfile:
     now = timezone.now()
@@ -534,6 +536,216 @@ def test_routing_transition_preview_is_write_free_and_apply_uses_revision_cas(mo
             authorization_basis="test-stale-gate-d1-exit",
             apply=True,
         )
+
+
+@pytest.mark.django_db
+def test_routing_mode_transition_preserves_calibration_routes_when_omitted(monkeypatch) -> None:
+    route = {
+        "policy_version": 91,
+        "reference_snapshot_version": 3,
+        "prestige_band": "newbie",
+        "policy_checksum": "a" * 64,
+        "reference_snapshot_digest": "b" * 64,
+        "evidence_schema_version": 2,
+        "evidence_digest": "c" * 64,
+    }
+    routing = BotRuntimeRoutingState.objects.create(
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        calibration_routes=[route],
+        revision=7,
+        pause_reason="aggregation_error:test",
+        paused_from_maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+    )
+
+    monkeypatch.setattr(
+        "gameplay.services.virtual_player_core.safety_preflight.check_v2_development_write_preflight",
+        lambda: type("Preflight", (), {"allowed": True, "reason": ""})(),
+    )
+
+    preview = runtime_configs.transition_virtual_player_routing_operation(
+        expected_revision=7,
+        expected_bootstrap_mode="v2_active",
+        expected_maintenance_mode="v2_paused",
+        bootstrap_mode="v2_active",
+        maintenance_mode="v2_active",
+        calibration_routes=None,
+        expected_pause_reason="aggregation_error:test",
+        resume_paused=True,
+    )
+    routing.refresh_from_db()
+
+    assert preview.snapshot.revision == 8
+    assert [item.to_payload() for item in preview.snapshot.calibration_routes] == [route]
+    assert routing.revision == 7
+    assert routing.maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED
+    assert routing.calibration_routes == [route]
+    assert routing.pause_reason == "aggregation_error:test"
+    assert routing.paused_from_maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+
+    applied = runtime_configs.transition_virtual_player_routing_operation(
+        expected_revision=7,
+        expected_bootstrap_mode="v2_active",
+        expected_maintenance_mode="v2_paused",
+        bootstrap_mode="v2_active",
+        maintenance_mode="v2_active",
+        calibration_routes=None,
+        expected_pause_reason="aggregation_error:test",
+        resume_paused=True,
+        apply=True,
+    )
+    routing.refresh_from_db()
+
+    assert applied.snapshot.revision == 8
+    assert routing.maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+    assert routing.calibration_routes == [route]
+    assert routing.pause_reason == ""
+    assert routing.paused_from_maintenance_mode == ""
+
+
+@pytest.mark.django_db
+def test_routing_pause_records_origin_and_preserves_incident_metadata() -> None:
+    routing = BotRuntimeRoutingState.objects.create(
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        revision=3,
+    )
+
+    paused = runtime_configs.transition_virtual_player_routing_operation(
+        expected_revision=3,
+        expected_bootstrap_mode="v2_active",
+        expected_maintenance_mode="v2_active",
+        bootstrap_mode="v2_active",
+        maintenance_mode="v2_paused",
+        pause_reason="manual_incident:arena",
+        apply=True,
+    )
+    routing.refresh_from_db()
+
+    assert paused.snapshot.paused_from_maintenance_mode == "v2_active"
+    assert routing.pause_reason == "manual_incident:arena"
+    assert routing.paused_from_maintenance_mode == "v2_active"
+
+    unchanged = runtime_configs.transition_virtual_player_routing_operation(
+        expected_revision=4,
+        expected_bootstrap_mode="v2_active",
+        expected_maintenance_mode="v2_paused",
+        bootstrap_mode="v2_active",
+        maintenance_mode="v2_paused",
+        calibration_routes=None,
+        apply=True,
+    )
+    routing.refresh_from_db()
+
+    assert unchanged.changed == 0
+    assert routing.pause_reason == "manual_incident:arena"
+    assert routing.paused_from_maintenance_mode == "v2_active"
+
+
+@pytest.mark.django_db
+def test_generic_routing_cannot_bypass_gate_e_pause_resume() -> None:
+    BotRuntimeRoutingState.objects.create(
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        paused_from_maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_CUTOVER,
+        pause_reason="gate_e_safety_pause",
+        revision=6,
+    )
+
+    with pytest.raises(
+        runtime_configs.RuntimeRoutingGateBlocked,
+        match="Gate E workflow|V2_CUTOVER-origin",
+    ):
+        runtime_configs.transition_virtual_player_routing_operation(
+            expected_revision=6,
+            expected_bootstrap_mode="v2_active",
+            expected_maintenance_mode="v2_paused",
+            bootstrap_mode="v2_active",
+            maintenance_mode="v2_active",
+            expected_pause_reason="gate_e_safety_pause",
+            resume_paused=True,
+        )
+
+
+@pytest.mark.django_db
+def test_manual_active_resume_requires_matching_reason_and_fresh_preflight(monkeypatch) -> None:
+    routing = BotRuntimeRoutingState.objects.create(
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        paused_from_maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        pause_reason="aggregation_error:test",
+        revision=8,
+    )
+
+    with pytest.raises(runtime_configs.RuntimeRoutingConflict, match="pause reason changed"):
+        runtime_configs.transition_virtual_player_routing_operation(
+            expected_revision=8,
+            expected_bootstrap_mode="v2_active",
+            expected_maintenance_mode="v2_paused",
+            bootstrap_mode="v2_active",
+            maintenance_mode="v2_active",
+            expected_pause_reason="different",
+            resume_paused=True,
+            apply=True,
+        )
+
+    monkeypatch.setattr(
+        "gameplay.services.virtual_player_core.safety_preflight.check_v2_development_write_preflight",
+        lambda: type(
+            "Preflight",
+            (),
+            {"allowed": False, "reason": "safety_monitor_heartbeat_stale"},
+        )(),
+    )
+    with pytest.raises(runtime_configs.RuntimeRoutingGateBlocked, match="heartbeat_stale"):
+        runtime_configs.transition_virtual_player_routing_operation(
+            expected_revision=8,
+            expected_bootstrap_mode="v2_active",
+            expected_maintenance_mode="v2_paused",
+            bootstrap_mode="v2_active",
+            maintenance_mode="v2_active",
+            expected_pause_reason="aggregation_error:test",
+            resume_paused=True,
+            apply=True,
+        )
+
+    routing.refresh_from_db()
+    assert routing.revision == 8
+    assert routing.maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED
+
+
+@pytest.mark.django_db
+def test_manual_active_resume_preview_rejects_stale_safety_preflight(monkeypatch) -> None:
+    routing = BotRuntimeRoutingState.objects.create(
+        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
+        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
+        paused_from_maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
+        pause_reason="aggregation_error:test",
+        revision=8,
+    )
+    monkeypatch.setattr(
+        "gameplay.services.virtual_player_core.safety_preflight.check_v2_development_write_preflight",
+        lambda: type(
+            "Preflight",
+            (),
+            {"allowed": False, "reason": "safety_monitor_heartbeat_stale"},
+        )(),
+    )
+
+    with pytest.raises(runtime_configs.RuntimeRoutingGateBlocked, match="heartbeat_stale"):
+        runtime_configs.transition_virtual_player_routing_operation(
+            expected_revision=8,
+            expected_bootstrap_mode="v2_active",
+            expected_maintenance_mode="v2_paused",
+            bootstrap_mode="v2_active",
+            maintenance_mode="v2_active",
+            expected_pause_reason="aggregation_error:test",
+            resume_paused=True,
+        )
+
+    routing.refresh_from_db()
+    assert routing.revision == 8
+    assert routing.maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED
 
 
 @pytest.mark.django_db

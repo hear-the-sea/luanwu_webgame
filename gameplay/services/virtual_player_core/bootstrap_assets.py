@@ -14,7 +14,13 @@ from guests.utils.recruitment_variance import apply_recruitment_variance
 
 from .bootstrap_catalog import BootstrapCatalog, GuestCatalogEntry, SkillCatalogEntry, TroopCatalogEntry
 from .contracts import BotProjectionConfig
-from .projection import BootstrapAssetTargets, BootstrapGuestTarget, BootstrapInventoryTarget, StrengthSummary
+from .projection import (
+    BootstrapAssetTargets,
+    BootstrapGuestTarget,
+    BootstrapInventoryTarget,
+    StrengthSummary,
+    calculate_guest_arena_power,
+)
 from .random_context import RandomContext
 from .strategy import BotDevelopmentPlan
 
@@ -271,17 +277,15 @@ def _guest_arena_power(
     template: GuestCatalogEntry,
     attributes: GuestSeedAttributes,
 ) -> int:
-    if template.archetype == "civil":
-        attack = int(attributes.force * GUEST.CIVIL_FORCE_WEIGHT + attributes.intellect * GUEST.CIVIL_INTELLECT_WEIGHT)
-    else:
-        attack = int(
-            attributes.force * GUEST.MILITARY_FORCE_WEIGHT + attributes.intellect * GUEST.MILITARY_INTELLECT_WEIGHT
-        )
-    max_hp = max(
-        int(GUEST.MIN_HP_FLOOR),
-        int(template.base_hp) + attributes.defense * int(GUEST.DEFENSE_TO_HP_MULTIPLIER),
+    return calculate_guest_arena_power(
+        force=attributes.force,
+        intellect=attributes.intellect,
+        defense=attributes.defense,
+        agility=attributes.agility,
+        hp_bonus=0,
+        archetype=str(template.archetype),
+        base_hp=int(template.base_hp),
     )
-    return max(1, attack) + max(1, attributes.defense) + max_hp // 10
 
 
 def _skill_is_eligible(
@@ -603,22 +607,16 @@ def _inventory_targets(
     catalog: BootstrapCatalog,
     historical_age_days: int,
 ) -> tuple[BootstrapInventoryTarget, ...]:
-    projection = config.get("projection") or {}
-    powerful_min_price = (
-        int(projection.get("powerful_item_min_price") or 100_000) if isinstance(projection, Mapping) else 100_000
-    )
     candidates = [
         entry
         for entry in catalog.inventory
         if entry.tradeable
         and entry.key != "grain"
         and RARITY_RANK.get(entry.rarity, len(RARITY_ORDER)) <= RARITY_RANK["green"]
-        and entry.price < powerful_min_price
     ]
     candidates.sort(
         key=lambda entry: (
             RARITY_RANK.get(entry.rarity, len(RARITY_ORDER)),
-            entry.price,
             context.digest(
                 domain="inventory",
                 discriminator={"template_key": entry.key},

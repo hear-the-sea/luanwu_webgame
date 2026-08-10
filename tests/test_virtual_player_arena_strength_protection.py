@@ -30,7 +30,7 @@ FIXED_NOW = datetime(2026, 7, 28, 8, 0, tzinfo=UTC)
 
 @pytest.fixture
 def arena_cap_policy(db):
-    policy = release_configured_policy_operation(version=1, apply=True)
+    policy = release_configured_policy_operation(version=2, apply=True)
     BotRuntimeRoutingState.objects.create(
         key=BotRuntimeRoutingState.GLOBAL_KEY,
         calibration_routes=[],

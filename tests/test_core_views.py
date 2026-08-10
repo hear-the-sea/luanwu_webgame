@@ -421,8 +421,12 @@ class TestCoreViews:
         assert f'href="{reverse("gameplay:messages")}" class="btn-menu"' in body
         assert f'href="{reverse("gameplay:settings")}" class="btn-menu"' in body
 
-    def test_guide_page_renders_beginner_tips_with_shared_layout(self, manor_with_user):
-        _manor, client = manor_with_user
+    def test_guide_page_renders_beginner_tips_with_shared_layout(self, manor_with_user, monkeypatch):
+        manor, client = manor_with_user
+        manor.action_points = 987
+        manor.action_points_updated_at = timezone.now()
+        manor.save(update_fields=["action_points", "action_points_updated_at"])
+        monkeypatch.setattr("gameplay.views.core.ACTION_POINTS_MAX", 777)
 
         response = client.get(reverse("gameplay:guide"))
 
@@ -432,6 +436,11 @@ class TestCoreViews:
         assert "粮食主要靠农田" in body
         assert "门客去聚贤庄招募" in body
         assert "装备可以从打工宝箱" in body
+        assert "987/777" in body
+        assert ">777 <small>行动力上限</small>" in body
+        assert "跳到攻略正文" in body
+        assert "css/guide.css" in body
+        assert "js/guide-page.js" in body
         assert 'class="dashboard"' in body
         assert 'class="tw-panel' in body
         assert "guide-card" not in body

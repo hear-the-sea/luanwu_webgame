@@ -110,7 +110,7 @@ def test_action_specs_freeze_business_keys_and_canonical_payloads() -> None:
     assert maintenance_action_spec_payload(None) is None
 
 
-def test_rare_powerful_inventory_caps_use_canonical_action_spec_order() -> None:
+def test_inventory_caps_ignore_retired_powerful_item_projection() -> None:
     daily_caps = inventory_daily_cap_limits(
         SimpleNamespace(rarity="purple", price=100_000),
         config={
@@ -122,7 +122,7 @@ def test_rare_powerful_inventory_caps_use_canonical_action_spec_order() -> None:
         },
     )
 
-    assert daily_caps == (("powerful", 2), ("rare", 8))
+    assert daily_caps == (("rare", 8),)
     assert (
         InventoryAcquisitionActionSpec(
             item_template_id=1,

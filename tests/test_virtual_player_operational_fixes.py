@@ -11,8 +11,10 @@ import gameplay.tasks.virtual_players as virtual_player_tasks
 from gameplay.models import BotProfile, BotRuntimeRoutingState
 from gameplay.services import runtime_configs
 from gameplay.services.virtual_player_core import maintenance, population_runtime
-from gameplay.services.virtual_player_core.policy_registry import release_configured_policy_operation
-from gameplay.services.virtual_player_core.profile_management import enroll_virtual_players_batch
+from gameplay.services.virtual_player_core.profile_management import (
+    ProfileManagementError,
+    enroll_virtual_players_batch,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -48,7 +50,7 @@ def _create_profile(
             {
                 "rng_version": 1,
                 "plan_schema_version": 1,
-                "policy_version": 1,
+                "policy_version": 2,
                 "policy_checksum": "a" * 64,
                 "last_strength_increase_at": now,
                 "v2_enrolled_at": now,
@@ -139,29 +141,9 @@ def test_v2_roll_keeps_profiles_in_all_supported_regions(
     )
 
 
-@pytest.mark.parametrize("apply", [False, True])
-def test_v2_enrollment_accepts_overseas_manor_region(
-    django_user_model,
-    apply: bool,
-) -> None:
-    BotRuntimeRoutingState.objects.create(
-        bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.LEGACY_BEFORE_GATE,
-        maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_CUTOVER,
-    )
-    release_configured_policy_operation(version=1, apply=True)
-    profile = _create_profile(
-        django_user_model,
-        username=f"overseas_enrollment_{int(apply)}",
-        region="overseas",
-        engine_version=1,
-    )
-
-    summary = enroll_virtual_players_batch(batch_size=10, apply=apply)
-
-    profile.refresh_from_db()
-    assert summary.changed == 1
-    assert summary.failed == 0
-    assert profile.engine_version == (2 if apply else 1)
+def test_legacy_v1_enrollment_is_retired() -> None:
+    with pytest.raises(ProfileManagementError, match="legacy V1 enrollment is retired"):
+        enroll_virtual_players_batch(batch_size=10, apply=True)
 
 
 def test_scheduled_maintenance_logs_safety_preflight_rejection(
@@ -193,27 +175,58 @@ def test_scheduled_maintenance_logs_safety_preflight_rejection(
     assert record.due_profile_count == 1
 
 
-def test_roll_task_logs_maintenance_and_population_counts(
+@pytest.mark.parametrize(("requested_limit", "expected_maintenance_limit"), ((None, 200), (17, 17)))
+def test_virtual_player_maintenance_scan_logs_maintenance_count(
     monkeypatch,
     caplog,
+    requested_limit,
+    expected_maintenance_limit,
 ) -> None:
+    limits: dict[str, int] = {}
+
+    def _capture_completion_scan(*, limit: int):
+        limits["completion"] = limit
+        return []
+
+    def _capture_recruitment_scan(*, limit: int):
+        limits["recruitment"] = limit
+        return 0
+
+    def _capture_maintenance(**kwargs):
+        limits["maintenance"] = int(kwargs["limit"])
+        return 3
+
+    monkeypatch.setattr(
+        virtual_player_tasks,
+        "scan_virtual_player_maintenance_completions",
+        _capture_completion_scan,
+    )
+    monkeypatch.setattr(
+        virtual_player_tasks,
+        "schedule_due_virtual_recruitments",
+        _capture_recruitment_scan,
+    )
     monkeypatch.setattr(
         virtual_player_tasks,
         "maintain_due_virtual_players",
-        lambda **_kwargs: 3,
-    )
-    monkeypatch.setattr(
-        virtual_player_tasks,
-        "roll_virtual_player_population",
-        lambda **_kwargs: 2,
+        _capture_maintenance,
     )
     caplog.set_level(logging.INFO, logger=virtual_player_tasks.logger.name)
 
-    result = virtual_player_tasks.roll_virtual_players_task.run(limit=7)
+    if requested_limit is None:
+        result = virtual_player_tasks.scan_virtual_player_maintenance_task.run()
+    else:
+        result = virtual_player_tasks.scan_virtual_player_maintenance_task.run(limit=requested_limit)
 
-    assert result == 2
+    assert result == 3
+    assert limits == {
+        "completion": 200,
+        "recruitment": 200,
+        "maintenance": expected_maintenance_limit,
+    }
     record = next(
-        record for record in caplog.records if getattr(record, "event", None) == "virtual_player_roll_completed"
+        record
+        for record in caplog.records
+        if getattr(record, "event", None) == "virtual_player_maintenance_scan_completed"
     )
     assert record.maintained_count == 3
-    assert record.population_processed_count == 2

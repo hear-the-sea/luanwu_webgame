@@ -504,6 +504,8 @@ def _event_result(
 
 def _write_event_once(
     canonical: _CanonicalEvent,
+    *,
+    retention_reference_at: datetime | None = None,
 ) -> tuple[SafetyMetricEventWriteResult | None, str]:
     with transaction.atomic():
         existing = BotSafetyMetricEvent.objects.filter(event_id=canonical.event_id).first()
@@ -511,7 +513,12 @@ def _write_event_once(
             if _stored_event_matches(existing, canonical):
                 return _event_result(existing, created=False), ""
             return None, "event_id_payload_conflict"
-        if canonical.occurred_at < _database_utc_now() - SAFETY_RAW_EVENT_RETENTION:
+        retention_reference = (
+            _database_utc_now()
+            if retention_reference_at is None
+            else _aware_utc(retention_reference_at, field="retention_reference_at")
+        )
+        if canonical.occurred_at < retention_reference - SAFETY_RAW_EVENT_RETENTION:
             return None, "event_outside_retention"
 
         locked_windows = _lock_window_rows(
@@ -546,6 +553,8 @@ def _write_event_once(
 
 def _write_events_once(
     canonicals: Sequence[_CanonicalEvent],
+    *,
+    retention_reference_at: datetime | None = None,
 ) -> tuple[tuple[SafetyMetricEventWriteResult, ...] | None, str, str]:
     if not canonicals:
         return (), "", ""
@@ -557,23 +566,21 @@ def _write_events_once(
             return None, "event_id_payload_conflict", canonical.metric_name
         canonical_by_id[canonical.event_id] = canonical
 
-    event_ids = tuple(canonical_by_id)
     created_ids: set[str] = set()
     with transaction.atomic():
-        stored_by_id = BotSafetyMetricEvent.objects.in_bulk(
-            event_ids,
-            field_name="event_id",
-        )
-        for event_id, stored in stored_by_id.items():
-            canonical = canonical_by_id[event_id]
-            if not _stored_event_matches(stored, canonical):
-                return None, "event_id_payload_conflict", canonical.metric_name
-
-        missing_by_id = {
-            event_id: canonical for event_id, canonical in canonical_by_id.items() if event_id not in stored_by_id
-        }
+        # The maintenance emitter uses fresh event identities for normal
+        # writes.  Let the unique constraint be the idempotency probe and
+        # perform the identity read only when the insert races or replays an
+        # existing event; this removes a guaranteed-empty pre-read while
+        # retaining payload-conflict validation.
+        missing_by_id = canonical_by_id
         if missing_by_id:
-            retention_cutoff = _database_utc_now() - SAFETY_RAW_EVENT_RETENTION
+            retention_reference = (
+                _database_utc_now()
+                if retention_reference_at is None
+                else _aware_utc(retention_reference_at, field="retention_reference_at")
+            )
+            retention_cutoff = retention_reference - SAFETY_RAW_EVENT_RETENTION
             for canonical in missing_by_id.values():
                 if canonical.occurred_at < retention_cutoff:
                     return None, "event_outside_retention", canonical.metric_name
@@ -627,7 +634,6 @@ def _write_events_once(
                                 "event_id_payload_conflict",
                                 canonical.metric_name,
                             )
-                        stored_by_id[event_id] = stored
                         pending.pop(event_id)
                     continue
                 created_ids.update(pending)
@@ -671,6 +677,7 @@ def record_safety_metric_event(
     occurred_at: datetime,
     dimensions: Mapping[str, str | int] | None,
     value: int | float | Decimal,
+    retention_reference_at: datetime | None = None,
 ) -> SafetyMetricEventWriteResult:
     """Persist one canonical event, or durably record and raise a hard violation."""
 
@@ -681,7 +688,10 @@ def record_safety_metric_event(
         dimensions=dimensions,
         value=value,
     )
-    result, violation = _write_event_once(canonical)
+    result, violation = _write_event_once(
+        canonical,
+        retention_reference_at=retention_reference_at,
+    )
     if result is not None:
         return result
 
@@ -702,6 +712,8 @@ def record_safety_metric_event(
 
 def record_safety_metric_events(
     events: Sequence[SafetyMetricEventRecord],
+    *,
+    retention_reference_at: datetime | None = None,
 ) -> tuple[SafetyMetricEventWriteResult, ...]:
     """Persist a bounded caller-owned event batch under one window lock set."""
 
@@ -715,7 +727,10 @@ def record_safety_metric_events(
         )
         for event in events
     )
-    results, violation, source_metric = _write_events_once(canonicals)
+    results, violation, source_metric = _write_events_once(
+        canonicals,
+        retention_reference_at=retention_reference_at,
+    )
     if results is not None:
         return results
 

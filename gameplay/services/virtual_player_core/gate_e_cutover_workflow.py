@@ -175,7 +175,7 @@ def _resume_gate_e_cutover_locked(
         maintenance_mode=MaintenanceMode.V2_CUTOVER,
         calibration_routes=current.calibration_routes,
         gate_e_ready=True,
-        pause_reason="",
+        clear_pause_reason=True,
         apply=apply,
     )
     return _summary(

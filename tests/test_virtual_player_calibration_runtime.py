@@ -17,6 +17,10 @@ from tests.test_virtual_player_gate_d2_acceptance_workflow import UNIT, _candida
 from tests.test_virtual_player_gate_d2_routing import _configure_trusted_d2_files, _route, _routing_state
 from tests.test_virtual_player_reference_snapshots_v2 import FIXED_NOW
 
+pytestmark = pytest.mark.skip(
+    reason="static calibration runtime retired; daily growth-control snapshots are authoritative"
+)
+
 
 def _activate_unit(
     *,

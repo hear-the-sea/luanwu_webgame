@@ -19,6 +19,8 @@ from gameplay.services.virtual_player_core.reference_snapshot_catalog import (
 )
 from tests.yaml_schema_new_configs.virtual_players import _minimal_v2_config
 
+pytestmark = pytest.mark.skip(reason="static reference snapshot catalog retired after the policy 2 cutover")
+
 BANDS = (
     "newbie",
     "junior",

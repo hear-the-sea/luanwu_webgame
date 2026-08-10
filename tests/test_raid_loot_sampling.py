@@ -6,7 +6,11 @@ from django.contrib.auth import get_user_model
 from battle.random_context import RNG_STREAM_LOOT, BattleRandomContext
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
-from gameplay.services.pvp_runtime.loot import calculate_item_loot_draw_count, draw_weighted_item_loot
+from gameplay.services.pvp_runtime.loot import (
+    calculate_item_loot_draw_count,
+    draw_weighted_item_loot,
+    draw_weighted_item_loot_with_grain_fill,
+)
 from gameplay.services.raid.combat.loot import _calculate_loot
 
 
@@ -70,6 +74,39 @@ def test_draw_weighted_item_loot_batches_dominant_grain_with_sparse_other_stock(
 
     assert loot_items == {"grain": 20_000_000}
     assert random_calls == 1
+
+
+def test_grain_does_not_inflate_non_grain_quota_and_keeps_its_own_cap():
+    loot_items = draw_weighted_item_loot_with_grain_fill(
+        [
+            {"item_key": "grain", "remaining_quantity": 10_000_000, "storage_space": 1},
+            {"item_key": "gold_bar", "remaining_quantity": 5, "storage_space": 1},
+            {"item_key": "red_ruby", "remaining_quantity": 5, "storage_space": 1},
+        ],
+        non_grain_ratio=0.20,
+        grain_ratio=0.20,
+        capacity=30_000,
+        rng=random.Random(7),
+    )
+
+    assert sum(quantity for key, quantity in loot_items.items() if key != "grain") == 2
+    assert loot_items["grain"] == 2_000_000
+
+
+def test_grain_fill_is_batched_by_remaining_capacity():
+    loot_items = draw_weighted_item_loot_with_grain_fill(
+        [
+            {"item_key": "grain", "remaining_quantity": 100_000, "storage_space": 1},
+            {"item_key": "gold_bar", "remaining_quantity": 5, "storage_space": 1},
+        ],
+        non_grain_ratio=0.20,
+        grain_ratio=1.0,
+        capacity=10,
+        rng=random.Random(8),
+    )
+
+    assert loot_items["gold_bar"] == 1
+    assert loot_items["grain"] == 9_000
 
 
 def test_twenty_percent_draw_can_all_land_on_gold_bars(monkeypatch):

@@ -188,6 +188,29 @@ chmod 600 ".env.docker"
 - `CELERY_TIMER_SCAN_QUEUE=timer_scan` 和 `CELERY_TIMER_SCAN_CONCURRENCY`：确认核心扫描队列配置符合容量规划。
 - `CELERY_TIMER_MAINTENANCE_QUEUE=timer_maintenance` 和 `CELERY_TIMER_MAINTENANCE_CONCURRENCY`：确认维护队列有独立 worker；默认并发为 1，避免低优先级任务争用核心扫描资源。
 
+#### 4GB 单机初始资源基线
+
+如果 Web、MySQL、Redis、五个 Celery worker、Beat 和 Caddy 共用约 4GB 内存，先保留
+`.env.docker.prod.example` 中的低配基线：五个 worker 各 `concurrency=1`、`prefetch=1`，并使用
+`max-tasks-per-child=200`、`max-memory-per-child=180000KB`。Compose 已为每个服务设置
+`mem_limit`/`mem_reservation`；声明的服务上限合计约 `2720MB`，保留值合计约 `1728MB`，这些是
+止损护栏，不是目标主机已经通过容量验收的证明。
+
+初始配置下不要为了追赶虚拟玩家 backlog 直接增加 worker 并发。先在目标主机记录至少以下信息，
+再决定是否逐个提高 battle 或扫描 worker 的并发：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" stats --no-stream
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" ps
+free -h
+vmstat 1 5
+```
+
+连续观测必须同时记录容器/进程 RSS 峰值、swap、OOM/restart、MySQL 连接数、Redis `used_memory`、
+队列 oldest-due、queue wait 和 maintenance owner duration。只有在没有 OOM、没有持续 swap、
+队列 oldest-due 不持续上升且保留明确 `MemAvailable` 余量时，才允许一次只调高一个队列并重新测量；
+当前静态基线不能替代 `1h/6h/24h` 长时矩阵。
+
 ### 3. 校验 Compose 和 Caddy 配置
 
 配置校验通过后再启动容器，可以提前发现环境变量缺失、YAML 错误和 Caddyfile 错误：
@@ -322,6 +345,34 @@ docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec "caddy
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec "caddy" \
   caddy reload --config "/etc/caddy/Caddyfile" --adapter caddyfile
 ```
+
+### 计划重启与虚拟玩家安全窗口
+
+如果本次操作是计划内的应用重启，先用当前 routing revision 设置计划重启围栏。该围栏会继续禁止
+V2 新增和培养写入，但允许安全监控把重启造成的心跳/窗口缺口作为计划维护恢复；未声明的异常中断仍会
+按 fail-closed 规则暂停。
+
+先只读查看 revision：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" \
+  python manage.py shell -c \
+  'from gameplay.models import BotRuntimeRoutingState; print(BotRuntimeRoutingState.objects.get(pk="virtual_players").revision)'
+```
+
+先执行 dry-run，确认当前状态确实是 `v2_active`，再加 `--apply`：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" \
+  python manage.py prepare_virtual_player_planned_restart \
+  --expected-revision "<REVISION>"
+
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" \
+  python manage.py prepare_virtual_player_planned_restart \
+  --expected-revision "<REVISION>" --apply
+```
+
+如果是未计划的异常重启，不要使用该命令；恢复后应保留安全监控的暂停结果，等待连续完整安全窗口自动恢复。
 
 验证状态：
 

@@ -432,7 +432,10 @@ def test_retryable_failure_resets_attempt_budget_instead_of_quarantining(
         fail_profile_phase,
     )
 
-    attempt_at = start
+    # The production intent uses the database clock for ``available_at``;
+    # MySQL can advance a few microseconds past the application timestamp
+    # captured immediately before intent creation.
+    attempt_at = max(start, intent.available_at)
     for expected_attempt in range(1, 13):
         result = reconcile_external_reconciliation(intent.id, now=attempt_at)
         intent.refresh_from_db()

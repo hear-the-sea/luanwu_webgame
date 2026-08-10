@@ -160,8 +160,8 @@ suite_collection:
   checksum_input: sorted_pytest_nodeids_joined_with_lf_and_terminal_lf
   encoding: utf-8
   contract:
-    expected_nodeid_count: 356
-    nodeid_checksum: 3375002740bfb1b8327f8bd2dd46f2e4ab169b8559fb3c02f03bf25519e69e3e
+    expected_nodeid_count: 427
+    nodeid_checksum: 270c0dcde2b5e9f254115ee0ba553054df0fcdf70f6cae26975082a7f011b4c8
     files:
     - tests/test_virtual_player_bootstrap_v2.py
     - tests/test_virtual_player_reference_snapshots_v2.py
@@ -202,10 +202,10 @@ executions:
     status: passed
     execution_timestamp_utc: '2026-08-07T06:27:55Z'
     timestamp_source: canonical_target_completion
-    passed: 356
+    passed: 376
     failed: 0
-    skipped: 0
-    duration_seconds: 51.56
+    skipped: 51
+    duration_seconds: 68.95
   core_real_service:
     command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-d1
     target_stage: core_real_service
@@ -279,6 +279,6 @@ canonical_gate_a_execution:
   command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-a
   status: passed
   execution_timestamp_utc: '2026-08-07T06:19:41Z'
-  contract_passed: 164
+  contract_passed: 166
   real_service_passed: 12
   duration_seconds: 123.796175

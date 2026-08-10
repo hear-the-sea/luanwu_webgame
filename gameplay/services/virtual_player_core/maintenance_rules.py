@@ -47,18 +47,29 @@ MAINTENANCE_NO_ACTION_REASON_PRIORITY: Final[tuple[MaintenanceNoActionReason, ..
 )
 
 
-_GROWTH_FIELDS: Final[frozenset[str]] = frozenset(
+_GROWTH_BASE_FIELDS: Final[frozenset[str]] = frozenset(
     {
         "effective_limit_rule",
         "direct_prestige_grant_by_maintenance_allowed",
         "profiles",
         "last_strength_increase_at_required",
-        "arena_acceleration_may_bypass_band_spacing",
         "admin_may_bypass_band_spacing",
         "configured_boundaries_crossed_per_controlled_action_max",
         "cross_band_uses_stricter_source_or_destination_limit",
         "external_domain_result_may_be_rejected_by_bot_growth_policy",
         "bootstrap_fake_per_action_history_records",
+    }
+)
+_GROWTH_FIELDS: Final[frozenset[str]] = frozenset({*_GROWTH_BASE_FIELDS, "arena_acceleration_bypass"})
+_ARENA_BYPASS_FIELDS: Final[frozenset[str]] = frozenset(
+    {
+        "due",
+        "band_spacing",
+        "daily_action",
+        "daily_growth",
+        "per_action",
+        "daily_control_cap",
+        "component_cap",
     }
 )
 _PROFILE_FIELDS: Final[frozenset[str]] = frozenset(
@@ -74,7 +85,6 @@ _EXPECTED_GROWTH_LITERALS: Final[Mapping[str, object]] = MappingProxyType(
         "effective_limit_rule": "strictest_of_sample_tier_band_profile_and_domain_constraints",
         "direct_prestige_grant_by_maintenance_allowed": False,
         "last_strength_increase_at_required": True,
-        "arena_acceleration_may_bypass_band_spacing": False,
         "admin_may_bypass_band_spacing": False,
         "configured_boundaries_crossed_per_controlled_action_max": 1,
         "cross_band_uses_stricter_source_or_destination_limit": True,
@@ -94,8 +104,20 @@ class BandGrowthCadence:
 
 
 @dataclass(frozen=True, slots=True)
+class ArenaAccelerationBypassPolicy:
+    due: bool
+    band_spacing: bool
+    daily_action: bool
+    daily_growth: bool
+    per_action: bool
+    daily_control_cap: bool
+    component_cap: bool
+
+
+@dataclass(frozen=True, slots=True)
 class PrestigeBandGrowthPolicy:
     profiles: Mapping[str, BandGrowthCadence]
+    arena_acceleration_bypass: ArenaAccelerationBypassPolicy
 
     def cadence_for(self, prestige_band: str) -> BandGrowthCadence:
         try:
@@ -173,6 +195,12 @@ def _positive_int(value: object, *, field: str) -> int:
     return normalized
 
 
+def _strict_bool(value: object, *, field: str) -> bool:
+    if type(value) is not bool:
+        raise MaintenanceRuleError(f"{field} must be a boolean")
+    return value
+
+
 def _history_range(value: object, *, field: str) -> tuple[int, int]:
     if not isinstance(value, (list, tuple)) or len(value) != 2:
         raise MaintenanceRuleError(f"{field} must be a two-item integer range")
@@ -202,8 +230,31 @@ def _validate_growth_literals(value: Mapping[object, object]) -> None:
 
 def parse_prestige_band_growth_policy(value: object) -> PrestigeBandGrowthPolicy:
     growth = _mapping(value, field="prestige_band_growth")
-    _require_exact_fields(growth, expected=_GROWTH_FIELDS, field="prestige_band_growth")
+    _require_exact_fields(
+        growth,
+        expected=_GROWTH_FIELDS,
+        field="prestige_band_growth",
+    )
     _validate_growth_literals(growth)
+
+    raw_bypass = _mapping(
+        growth["arena_acceleration_bypass"],
+        field="prestige_band_growth.arena_acceleration_bypass",
+    )
+    _require_exact_fields(
+        raw_bypass,
+        expected=_ARENA_BYPASS_FIELDS,
+        field="prestige_band_growth.arena_acceleration_bypass",
+    )
+    bypass = ArenaAccelerationBypassPolicy(
+        **{
+            field: _strict_bool(
+                raw_bypass[field],
+                field=f"prestige_band_growth.arena_acceleration_bypass.{field}",
+            )
+            for field in _ARENA_BYPASS_FIELDS
+        }
+    )
 
     raw_profiles = _mapping(growth["profiles"], field="prestige_band_growth.profiles")
     profile_names = frozenset(raw_profiles)
@@ -259,7 +310,10 @@ def parse_prestige_band_growth_policy(value: object) -> PrestigeBandGrowthPolicy
         parsed[prestige_band] = cadence
         previous = cadence
 
-    return PrestigeBandGrowthPolicy(profiles=MappingProxyType(parsed))
+    return PrestigeBandGrowthPolicy(
+        profiles=MappingProxyType(parsed),
+        arena_acceleration_bypass=bypass,
+    )
 
 
 def _aware_utc(value: datetime, *, field: str) -> datetime:
@@ -380,14 +434,14 @@ def _validate_cap_shape(intent: DevelopmentIntent, cap: StrengthSummary, *, fiel
         raise MaintenanceRuleError(f"{field} component keys must match the intent strength summary")
 
 
-def _blocked_by_cap(intent: DevelopmentIntent, cap: StrengthSummary) -> bool:
-    if intent.strength_before.composite >= cap.composite or intent.strength_after.composite > cap.composite:
-        return True
-    return any(
-        intent.strength_before.components[key] >= cap.components[key]
-        or intent.strength_after.components[key] > cap.components[key]
-        for key in cap.components
-    )
+def _blocked_by_daily_control_cap(intent: DevelopmentIntent, cap: StrengthSummary) -> bool:
+    return intent.strength_after.composite > cap.composite
+
+
+def _blocked_by_component_cap(intent: DevelopmentIntent, cap: StrengthSummary) -> bool:
+    # An unchanged component may already equal its cap without blocking growth
+    # in another component. Only the projected state is constrained.
+    return any(intent.strength_after.components[key] > cap.components[key] for key in cap.components)
 
 
 def _budget_entries(
@@ -445,6 +499,8 @@ def evaluate_controlled_action(
     target_sample_count: int | None = None,
     target_strength_cap: StrengthSummary | None = None,
     allow_roster_expansion: bool = False,
+    allow_arena_acceleration: bool = False,
+    allow_arena_growth_cap_bypass: bool = False,
 ) -> ControlledActionDecision:
     if not isinstance(policy, PrestigeBandGrowthPolicy):
         raise MaintenanceRuleError("policy must be a PrestigeBandGrowthPolicy")
@@ -452,6 +508,10 @@ def evaluate_controlled_action(
         raise MaintenanceRuleError("intent must be a DevelopmentIntent")
     if type(allow_roster_expansion) is not bool:
         raise MaintenanceRuleError("allow_roster_expansion must be a boolean")
+    if type(allow_arena_acceleration) is not bool:
+        raise MaintenanceRuleError("allow_arena_acceleration must be a boolean")
+    if type(allow_arena_growth_cap_bypass) is not bool:
+        raise MaintenanceRuleError("allow_arena_growth_cap_bypass must be a boolean")
     current_time = _aware_utc(now, field="now")
     normalized_policy_version = _positive_int(policy_version, field="policy_version")
     entries = prune_strength_budget_entries(
@@ -522,25 +582,38 @@ def evaluate_controlled_action(
     assert normalized_last is not None
     spacing_deadline = normalized_last + limits.minimum_positive_strength_action_spacing
     usage = strength_budget_usage(entries)
-    # Roster expansion is a bounded quantity-phase action: the action spec
-    # limits each batch, while the reference component cap remains enforced.
-    # Its quality-growth budget is intentionally separate so a low-level bot
-    # is not permanently unable to reach the arena roster target.
-    exceeds_strength_cap = any(_blocked_by_cap(intent, cap) for cap in caps) or (
-        not allow_roster_expansion
-        and (
-            usage.action_count + 1 > limits.strength_increasing_actions_per_24h_max
-            or usage.positive_growth_bps + controlled_growth_bps > limits.composite_growth_bps_per_24h_max
-        )
+    arena_bypass = policy.arena_acceleration_bypass if allow_arena_acceleration else None
+    bypass_spacing = allow_roster_expansion or bool(arena_bypass and arena_bypass.band_spacing)
+    bypass_daily_action = allow_roster_expansion or bool(arena_bypass and arena_bypass.daily_action)
+    bypass_daily_growth = allow_roster_expansion or bool(arena_bypass and arena_bypass.daily_growth)
+    # An explicit arena replenishment objective is target-driven: ordinary
+    # prestige-band growth ceilings must not stop the instant cultivation
+    # before it reaches the event target.  Arena acceleration still follows
+    # the configured bypass switches above.
+    bypass_per_action = (
+        allow_arena_growth_cap_bypass or allow_roster_expansion or bool(arena_bypass and arena_bypass.per_action)
+    )
+    bypass_daily_control_cap = allow_arena_growth_cap_bypass or bool(arena_bypass and arena_bypass.daily_control_cap)
+    bypass_component_cap = allow_arena_growth_cap_bypass or bool(arena_bypass and arena_bypass.component_cap)
+    exceeds_daily_control_cap = not bypass_daily_control_cap and any(
+        _blocked_by_daily_control_cap(intent, cap) for cap in caps
+    )
+    exceeds_component_cap = not bypass_component_cap and any(_blocked_by_component_cap(intent, cap) for cap in caps)
+    exceeds_daily_action = (
+        not bypass_daily_action and usage.action_count + 1 > limits.strength_increasing_actions_per_24h_max
+    )
+    exceeds_daily_growth = (
+        not bypass_daily_growth
+        and usage.positive_growth_bps + controlled_growth_bps > limits.composite_growth_bps_per_24h_max
     )
     blocked_reasons: set[MaintenanceNoActionReason] = set()
     if intent.constraint_violations:
         blocked_reasons.add(MaintenanceNoActionReason.DOMAIN_CONSTRAINT)
-    if exceeds_strength_cap:
+    if exceeds_daily_control_cap or exceeds_component_cap or exceeds_daily_action or exceeds_daily_growth:
         blocked_reasons.add(MaintenanceNoActionReason.STRENGTH_CAP)
-    if not allow_roster_expansion and current_time < spacing_deadline:
+    if not bypass_spacing and current_time < spacing_deadline:
         blocked_reasons.add(MaintenanceNoActionReason.BAND_SPACING)
-    if not allow_roster_expansion and controlled_growth_bps > limits.composite_growth_bps_per_controlled_action_max:
+    if not bypass_per_action and controlled_growth_bps > limits.composite_growth_bps_per_controlled_action_max:
         blocked_reasons.add(MaintenanceNoActionReason.BAND_ACTION_CAP)
     if blocked_reasons:
         return _decision(
@@ -554,17 +627,24 @@ def evaluate_controlled_action(
             limits=limits,
         )
 
+    consumes_daily_budget = not (bypass_daily_action and bypass_daily_growth)
     consumed = (
-        entries
-        if allow_roster_expansion
-        else consume_strength_budget(
+        consume_strength_budget(
             entries,
             now=current_time,
             positive_growth_bps=controlled_growth_bps,
             policy_version=normalized_policy_version,
-            max_actions=limits.strength_increasing_actions_per_24h_max,
-            max_positive_growth_bps=limits.composite_growth_bps_per_24h_max,
+            max_actions=(
+                usage.action_count + 1 if bypass_daily_action else limits.strength_increasing_actions_per_24h_max
+            ),
+            max_positive_growth_bps=(
+                usage.positive_growth_bps + controlled_growth_bps
+                if bypass_daily_growth
+                else limits.composite_growth_bps_per_24h_max
+            ),
         )
+        if consumes_daily_budget
+        else entries
     )
     return _decision(
         allowed=True,
@@ -580,6 +660,7 @@ def evaluate_controlled_action(
 
 
 __all__ = [
+    "ArenaAccelerationBypassPolicy",
     "BandGrowthCadence",
     "ControlledActionDecision",
     "EffectiveGrowthLimits",

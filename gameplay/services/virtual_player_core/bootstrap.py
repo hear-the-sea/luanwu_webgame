@@ -14,29 +14,23 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from gameplay.models import BotProfile, Building, InventoryItem, Manor
-from gameplay.services.inventory.core import set_warehouse_grain_quantity_locked
 from gameplay.services.manor.coordinates import is_occupied_manor_location_conflict
 from gameplay.services.manor.core import generate_unique_coordinate
 from gameplay.services.manor.naming import ManorNameConflictError
-from gameplay.services.runtime_configs import CalibrationRoute, RuntimeRoutingGateBlocked, lock_virtual_player_routing
 from guests.models import GearItem, Guest
 
 from . import profile_store
 from .bootstrap_assets import BootstrapAssetPlanningError, build_bootstrap_asset_targets
 from .bootstrap_catalog import BootstrapCatalog, BootstrapCatalogError, load_bootstrap_catalog
 from .bootstrap_materializer import BootstrapMaterializationError, materialize_bootstrap_assets
-from .calibration_runtime import ActiveCalibrationReference, load_active_calibration_reference
 from .config import (
     DEFAULT_VIRTUAL_PLAYER_CONFIG,
     V2_PRESTIGE_BAND_NAMES,
-    BootstrapMode,
     load_virtual_player_config,
     load_virtual_player_v2_config,
 )
 from .contracts import BotProjectionConfig
 from .identity import build_manor_name_candidate, fallback_manor_name_candidate, select_manor_name_style
-from .legacy.projection import range_value
-from .legacy.roster import _project_buildings, _project_guests_and_gear, _project_technologies, _project_troops
 from .lifecycle import choose_lifecycle
 from .maintenance_rules import bootstrap_historical_age_days, parse_prestige_band_growth_policy
 from .policy_registry import get_policy_release
@@ -51,24 +45,18 @@ from .projection import (
 from .random_context import RandomContext
 from .reference_snapshots import (
     ReferenceSnapshotError,
-    apply_persona_to_projection,
     build_strength_summary,
     load_manor_strength_summary,
     select_policy_reference,
     starter_snapshot_int,
 )
-from .selectors import prestige_band_for_value, prestige_bands
+from .runtime_helpers import range_value
 from .strategy import BotDevelopmentPlan, development_plan_catalog_v1, generate_development_plan
 
 logger = logging.getLogger(__name__)
 
-INITIAL_BOT_PRESTIGE = 100
-INITIAL_BOT_BUILDING_LEVEL = 1
-INITIAL_BOT_GUEST_COUNT = 1
-INITIAL_BOT_GUEST_LEVEL = 1
 VIRTUAL_PLAYER_COORDINATE_RETRY_LIMIT = 5
-V2_BOOTSTRAP_MODE_CONSERVATIVE_COLD_START = "conservative_cold_start"
-V2_BOOTSTRAP_MODE_REFERENCE_CALIBRATED = "reference_calibrated"
+V2_BOOTSTRAP_MODE_POLICY_2_DEFAULT = "policy_2_default"
 
 
 class V2BootstrapError(ValueError):
@@ -147,25 +135,14 @@ class V2BootstrapPlan:
     projection: BotProjectionConfig
     development_plan: BotDevelopmentPlan
     blueprint: BootstrapBlueprint
-    calibration_route: CalibrationRoute | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.region, str) or not self.region.strip():
             raise V2BootstrapError("region must be a non-empty string")
         if self.prestige_band not in V2_PRESTIGE_BAND_NAMES:
             raise V2BootstrapError(f"unknown V2 prestige band: {self.prestige_band!r}")
-        if self.bootstrap_mode not in {
-            V2_BOOTSTRAP_MODE_CONSERVATIVE_COLD_START,
-            V2_BOOTSTRAP_MODE_REFERENCE_CALIBRATED,
-        }:
-            raise V2BootstrapError("unsupported V2 bootstrap mode")
-        if (self.bootstrap_mode == V2_BOOTSTRAP_MODE_CONSERVATIVE_COLD_START) != (self.calibration_route is None):
-            raise V2BootstrapError("bootstrap mode and calibration route must be activated together")
-        if self.calibration_route is not None and (
-            self.calibration_route.policy_version != self.policy_version
-            or self.calibration_route.prestige_band != self.prestige_band
-        ):
-            raise V2BootstrapError("calibration route does not match the bootstrap policy and band")
+        if self.bootstrap_mode != V2_BOOTSTRAP_MODE_POLICY_2_DEFAULT:
+            raise V2BootstrapError("V2 bootstrap uses the policy-2 fixed default envelope")
         if timezone.is_naive(self.planned_at):
             raise V2BootstrapError("planned_at must be timezone-aware")
         if self.engine_version != 2:
@@ -390,7 +367,6 @@ def _select_bootstrap_reference(
     band_lower_inclusive: int,
     band_upper_exclusive: int | None,
     now: datetime,
-    calibration_reference: ActiveCalibrationReference | None = None,
 ) -> tuple[Mapping[str, Any], StrengthSummary, ReferenceSelection]:
     try:
         return select_policy_reference(
@@ -401,28 +377,10 @@ def _select_bootstrap_reference(
             band_lower_inclusive=band_lower_inclusive,
             band_upper_exclusive=band_upper_exclusive,
             now=now,
-            calibrated_candidates=(None if calibration_reference is None else calibration_reference.candidates),
-            calibrated_sample_count=(None if calibration_reference is None else calibration_reference.profile_count),
+            use_real_player_data=False,
         )
     except ReferenceSnapshotError as exc:
         raise V2BootstrapError(str(exc)) from exc
-
-
-def _calibrated_projection_snapshot(
-    starter_snapshot: Mapping[str, Any],
-    selection: ReferenceSelection,
-) -> Mapping[str, Any]:
-    if selection.anchor is None:
-        return starter_snapshot
-    components = selection.anchor.strength.components
-    return {
-        "prestige": int(components["prestige"]),
-        "core_building_level": int(selection.anchor.features["core_building_level"]),
-        "guest_count": int(selection.anchor.features["guest_count"]),
-        "max_guest_level": int(selection.anchor.features["max_guest_level"]),
-        "arena_lineup_power": int(components["arena_lineup_power"]),
-        "troop_total": int(components["troop_total"]),
-    }
 
 
 def build_virtual_player_v2_bootstrap_plan(
@@ -449,12 +407,6 @@ def build_virtual_player_v2_bootstrap_plan(
     release = get_policy_release(
         version=configured_policy.version,
         expected_checksum=configured_policy.checksum,
-    )
-    calibration_reference = load_active_calibration_reference(
-        policy_version=release.version,
-        policy_checksum=release.checksum,
-        prestige_band=prestige_band,
-        config=config,
     )
     context = RandomContext(
         rng_version=config.rng_version,
@@ -483,13 +435,9 @@ def build_virtual_player_v2_bootstrap_plan(
         band_lower_inclusive=band.lower_inclusive,
         band_upper_exclusive=band.upper_exclusive,
         now=now,
-        calibration_reference=calibration_reference,
-    )
-    projection_snapshot = (
-        snapshot if calibration_reference is None else _calibrated_projection_snapshot(snapshot, reference_selection)
     )
     projection, target_strength = _starter_snapshot_projection(
-        snapshot=projection_snapshot,
+        snapshot=snapshot,
         strength_cap=reference_selection.strength_cap,
         band_lower_inclusive=band.lower_inclusive,
         band_upper_exclusive=band.upper_exclusive,
@@ -530,124 +478,11 @@ def build_virtual_player_v2_bootstrap_plan(
         policy_checksum=release.checksum,
         band_lower_inclusive=band.lower_inclusive,
         band_upper_exclusive=band.upper_exclusive,
-        bootstrap_mode=(
-            V2_BOOTSTRAP_MODE_CONSERVATIVE_COLD_START
-            if calibration_reference is None
-            else V2_BOOTSTRAP_MODE_REFERENCE_CALIBRATED
-        ),
+        bootstrap_mode=V2_BOOTSTRAP_MODE_POLICY_2_DEFAULT,
         projection=projection,
         development_plan=development_plan,
         blueprint=blueprint,
-        calibration_route=(None if calibration_reference is None else calibration_reference.route),
     )
-
-
-def _materialize_virtual_player(
-    *,
-    region: str,
-    prestige_band: str,
-    current_prestige_band: str,
-    archetype: str,
-    seed: int,
-    now,
-    config: dict[str, Any],
-    projection: BotProjectionConfig,
-    growth_stage: int,
-    quality_enabled: bool,
-    historical_age_days: int | None = None,
-) -> BotProfile:
-    rng = random.Random(seed)
-    user = _create_bot_user(region=region, growth_seed=seed)
-    manor = user.manor
-    _set_unique_location(manor, region=region)
-    manor.prestige = max(0, int(projection.prestige))
-    manor.newbie_protection_until = None
-    manor.defeat_protection_until = None
-    manor.peace_shield_until = None
-    _project_buildings(manor, level=max(1, int(projection.building_level)))
-    manor.silver = 5000
-    initial_grain = 1200
-    manor.resource_updated_at = now
-    if historical_age_days is None:
-        manor.last_active_at = now - timedelta(days=rng.randint(3, 180), hours=rng.randint(0, 23))
-    else:
-        recent_days = max(0, int(historical_age_days) - 1)
-        manor.last_active_at = now - timedelta(days=recent_days, hours=rng.randint(0, 23))
-    _save_virtual_player_manor_with_coordinate_retry(
-        manor,
-        region=region,
-        update_fields=[
-            "region",
-            "coordinate_x",
-            "coordinate_y",
-            "prestige",
-            "newbie_protection_until",
-            "defeat_protection_until",
-            "peace_shield_until",
-            "silver_capacity",
-            "grain_capacity",
-            "silver",
-            "resource_updated_at",
-            "last_active_at",
-        ],
-    )
-    set_warehouse_grain_quantity_locked(manor, initial_grain)
-
-    _project_technologies(manor, level=0, config=config)
-    _project_guests_and_gear(
-        manor,
-        count=projection.guest_count,
-        level=projection.guest_level,
-        rng=rng,
-        config=config,
-        archetype=str(archetype),
-        growth_stage=growth_stage,
-        quality_enabled=quality_enabled,
-    )
-    _project_troops(manor, count=max(0, int(projection.troop_count)), config=config)
-
-    lifecycle_rng = random.Random(f"lifecycle:{seed}")
-    next_growth_at, abandon_at, retire_at = lifecycle_dates(now, lifecycle_rng, config)
-    profile = profile_store.create_active_profile(
-        manor=manor,
-        archetype=archetype,
-        prestige_band=prestige_band,
-        current_prestige_band=current_prestige_band,
-        growth_seed=seed,
-        growth_stage=growth_stage,
-        next_growth_at=next_growth_at,
-        abandon_at=abandon_at,
-        retire_at=retire_at,
-        loot_budget_daily=int((config.get("projection") or {}).get("loot_budget_daily", 2_000_000) or 0),
-        maintenance_started_at=now,
-        last_planned_at=now,
-    )
-    historical_created_at = None
-    if historical_age_days is not None:
-        historical_created_at = now - timedelta(days=int(historical_age_days))
-    _backfill_historical_timestamps(
-        user=user,
-        manor=manor,
-        profile=profile,
-        rng=rng,
-        now=now,
-        historical_created_at=historical_created_at,
-    )
-    logger.info(
-        "Virtual player created: region=%s prestige_band=%s archetype=%s manor_id=%s",
-        region,
-        prestige_band,
-        archetype,
-        manor.id,
-        extra={
-            "event": "virtual_player_created",
-            "region": region,
-            "prestige_band": prestige_band,
-            "archetype": archetype,
-            "manor_id": manor.id,
-        },
-    )
-    return profile
 
 
 def _materialize_virtual_player_v2(
@@ -746,80 +581,6 @@ def _materialize_virtual_player_v2(
 
 
 @transaction.atomic
-def _create_virtual_player_v1(
-    *,
-    region: str,
-    prestige_band: str,
-    archetype: str = BotProfile.Archetype.BALANCED,
-    growth_seed: int | None = None,
-    now=None,
-    projection: BotProjectionConfig | None = None,
-    start_from_zero: bool = False,
-) -> BotProfile:
-    now = now or timezone.now()
-    seed = int(growth_seed or random.randint(1, 2_147_483_647))
-    config = load_virtual_player_config()
-    projection = projection or BotProjectionConfig(
-        prestige=500,
-        building_level=3,
-        guest_count=2,
-        guest_level=3,
-    )
-    projection = apply_persona_to_projection(
-        projection,
-        archetype=str(archetype),
-        config=config,
-        growth_seed=seed,
-    )
-    target_band = prestige_bands(config).get(prestige_band)
-    target_low = target_band[0] if target_band is not None else 0
-    stage_cap = growth_stage_cap_for_band(prestige_band, config)
-    if start_from_zero:
-        starting_projection = BotProjectionConfig(
-            prestige=0,
-            building_level=INITIAL_BOT_BUILDING_LEVEL,
-            guest_count=min(max(0, int(projection.guest_count)), INITIAL_BOT_GUEST_COUNT),
-            guest_level=INITIAL_BOT_GUEST_LEVEL,
-            troop_count=max(0, min(int(projection.troop_count), 50)),
-        )
-    elif target_low > 0:
-        target_high = target_band[1] if target_band is not None else None
-        projected_prestige = max(target_low, int(projection.prestige))
-        if target_high is not None:
-            projected_prestige = min(projected_prestige, target_high - 1)
-        starting_projection = BotProjectionConfig(
-            prestige=projected_prestige,
-            building_level=min(stage_cap, max(1, int(projection.building_level))),
-            guest_count=max(0, int(projection.guest_count)),
-            guest_level=max(1, int(projection.guest_level)),
-            troop_count=max(0, int(projection.troop_count)),
-        )
-    else:
-        starting_projection = BotProjectionConfig(
-            prestige=min(max(0, int(projection.prestige)), INITIAL_BOT_PRESTIGE),
-            building_level=INITIAL_BOT_BUILDING_LEVEL,
-            guest_count=min(max(0, int(projection.guest_count)), INITIAL_BOT_GUEST_COUNT),
-            guest_level=INITIAL_BOT_GUEST_LEVEL,
-            troop_count=max(0, min(int(projection.troop_count), 50)),
-        )
-
-    return _materialize_virtual_player(
-        region=region,
-        prestige_band=prestige_band,
-        current_prestige_band=(
-            prestige_band_for_value(int(starting_projection.prestige or 0), config) or prestige_band
-        ),
-        archetype=archetype,
-        seed=seed,
-        now=now,
-        config=config,
-        projection=starting_projection,
-        growth_stage=min(stage_cap, max(1, int(starting_projection.building_level))),
-        quality_enabled=not start_from_zero,
-    )
-
-
-@transaction.atomic
 def create_virtual_player(
     *,
     region: str,
@@ -830,22 +591,7 @@ def create_virtual_player(
     projection: BotProjectionConfig | None = None,
     start_from_zero: bool = False,
 ) -> BotProfile:
-    routing = lock_virtual_player_routing()
-    if routing.bootstrap_mode is not BootstrapMode.LEGACY_BEFORE_GATE:
-        raise RuntimeRoutingGateBlocked(
-            "legacy virtual-player bootstrap requires "
-            "bootstrap_mode=legacy_before_gate; found "
-            f"{routing.bootstrap_mode.value}"
-        )
-    return _create_virtual_player_v1(
-        region=region,
-        prestige_band=prestige_band,
-        archetype=archetype,
-        growth_seed=growth_seed,
-        now=now,
-        projection=projection,
-        start_from_zero=start_from_zero,
-    )
+    raise V2BootstrapError("legacy virtual-player bootstrap is retired; use the policy-2 population materializer")
 
 
 def _revalidated_bootstrap_strength_cap(
@@ -874,17 +620,6 @@ def _revalidated_bootstrap_strength_cap(
         policy_version=plan.policy_version,
         maintenance_sequence=0,
     )
-    calibration_reference = None
-    if plan.calibration_route is not None:
-        calibration_reference = load_active_calibration_reference(
-            policy_version=plan.policy_version,
-            policy_checksum=plan.policy_checksum,
-            prestige_band=plan.prestige_band,
-            config=config,
-            required_route=plan.calibration_route,
-        )
-        if calibration_reference is None:
-            raise V2BootstrapError("V2 calibration route changed after bootstrap planning; replan required")
     _snapshot, _starter_strength, current_selection = _select_bootstrap_reference(
         policy_payload=release.payload,
         context=context,
@@ -893,7 +628,6 @@ def _revalidated_bootstrap_strength_cap(
         band_lower_inclusive=plan.band_lower_inclusive,
         band_upper_exclusive=plan.band_upper_exclusive,
         now=now,
-        calibration_reference=calibration_reference,
     )
     effective_cap = minimum_strength_cap(
         plan.blueprint.reference_selection.cap,
