@@ -18,6 +18,7 @@ from gameplay.models import (
     VirtualPlayerGrowthControlSnapshot,
 )
 from gameplay.services import runtime_configs
+from gameplay.services.virtual_player_state_policy import VIRTUAL_PROFILE_MAINTAINED_STATES
 
 from .config import BootstrapMode, MaintenanceMode, VirtualPlayerConfigError, load_virtual_player_v2_config
 from .policy_registry import release_configured_policy_operation
@@ -134,6 +135,14 @@ def _database_checks() -> list[RuntimePreflightCheck]:
         releases = tuple(BotPolicyRelease.objects.order_by("version"))
         current_releases = tuple(release for release in releases if int(release.version) == 2)
         legacy_releases = tuple(release for release in releases if int(release.version) != 2)
+        maintained_policy_versions = set(
+            BotProfile.objects.filter(state__in=VIRTUAL_PROFILE_MAINTAINED_STATES)
+            .exclude(engine_version=2, policy_version=2)
+            .values_list("policy_version", flat=True)
+        )
+        blocking_legacy_releases = tuple(
+            release for release in legacy_releases if int(release.version) in maintained_policy_versions
+        )
         checks.append(
             _check(
                 "db_policy_2_release",
@@ -145,16 +154,31 @@ def _database_checks() -> list[RuntimePreflightCheck]:
             _check(
                 "db_legacy_policy_releases",
                 not legacy_releases,
-                f"legacy policy release rows={len(legacy_releases)}",
+                (
+                    f"legacy policy release rows={len(legacy_releases)}; "
+                    f"maintained references={tuple(sorted(maintained_policy_versions))}"
+                ),
+                severity=("error" if blocking_legacy_releases else ("warning" if legacy_releases else "error")),
             )
         )
 
-        legacy_profiles = BotProfile.objects.exclude(engine_version=2, policy_version=2)
+        legacy_profiles = BotProfile.objects.filter(state__in=VIRTUAL_PROFILE_MAINTAINED_STATES).exclude(
+            engine_version=2,
+            policy_version=2,
+        )
+        historical_v2_profiles = (
+            BotProfile.objects.filter(engine_version=2)
+            .exclude(policy_version=2)
+            .exclude(state__in=VIRTUAL_PROFILE_MAINTAINED_STATES)
+        )
         checks.append(
             _check(
                 "db_single_policy_profiles",
                 not legacy_profiles.exists(),
-                f"legacy or non-policy-2 profile rows={legacy_profiles.count()}",
+                (
+                    f"maintained non-policy-2 profile rows={legacy_profiles.count()}; "
+                    f"historical non-policy-2 V2 rows preserved={historical_v2_profiles.count()}"
+                ),
             )
         )
 

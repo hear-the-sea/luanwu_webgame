@@ -265,9 +265,13 @@ def any_v2_profiles_exist() -> bool:
 
 
 def any_non_policy2_profiles_exist() -> bool:
-    """Return whether any profile still belongs to the retired runtime."""
+    """Return whether any maintained profile still belongs to the retired runtime."""
 
-    return BotProfile.objects.exclude(engine_version=2, policy_version=2).exists()
+    return (
+        BotProfile.objects.filter(state__in=VIRTUAL_PROFILE_MAINTAINED_STATES)
+        .exclude(engine_version=2, policy_version=2)
+        .exists()
+    )
 
 
 def runtime_eligible_v1_profile_count() -> int:

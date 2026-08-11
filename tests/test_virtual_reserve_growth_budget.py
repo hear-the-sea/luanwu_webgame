@@ -46,7 +46,7 @@ def test_arena_growth_budget_round_trips_canonical_entries() -> None:
     assert payload[0]["attempted_at"].endswith("Z")
 
 
-def test_arena_growth_budget_rejects_the_thirteenth_active_attempt() -> None:
+def test_arena_growth_budget_rejects_attempt_beyond_active_budget() -> None:
     now = datetime(2026, 8, 8, 8, tzinfo=UTC)
     oldest = now - timedelta(hours=23)
     entries = tuple(

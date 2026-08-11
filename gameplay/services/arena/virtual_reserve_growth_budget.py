@@ -8,7 +8,10 @@ from uuid import UUID
 ARENA_GROWTH_BUDGET_WINDOW = timedelta(hours=24)
 # This is the per-member Shanghai-time execution budget. Slot progress is
 # persisted by the reserve member and remains separate from this rolling cap.
-ARENA_GROWTH_BUDGET_MAX_ATTEMPTS = 20
+# Arena admission may need several bounded guest-recruitment actions before a
+# reserve member reaches the event's minimum roster size. Keep the rolling
+# window finite while allowing the new strategy to finish that lifecycle.
+ARENA_GROWTH_BUDGET_MAX_ATTEMPTS = 48
 ARENA_GROWTH_MAX_SLOT_ATTEMPTS = 5
 ARENA_GROWTH_BUDGET_MAX_FUTURE_SKEW = timedelta(minutes=5)
 

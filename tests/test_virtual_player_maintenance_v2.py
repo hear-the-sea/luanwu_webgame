@@ -8,6 +8,7 @@ from django.db import DatabaseError, connection, transaction
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
+from gameplay.constants import BuildingKeys
 from gameplay.models import (
     BotExternalStrengthReconciliation,
     BotMaintenanceAttempt,
@@ -1592,13 +1593,56 @@ def test_v2_quantity_phase_recruits_before_quality_actions(
     )
     assert len(created_guests) == 1
     assert all(guest.template_id == quantity_template.id for guest in created_guests)
+    assert all(guest.custom_name and guest.custom_name != quantity_template.name for guest in created_guests)
     assert all(guest.level == 1 for guest in created_guests)
     assert not GuestSkill.objects.filter(guest_id__in=[guest.id for guest in created_guests]).exists()
     assert Guest.objects.filter(manor_id=active_v2_profile.manor_id).count() == current_guest_count + 1
 
 
 @pytest.mark.django_db
-def test_arena_recruitment_candidate_reselects_lineup_and_enforces_event_cap(
+def test_arena_capacity_expansion_precedes_quality_actions(
+    active_v2_profile,
+    permissive_reference,
+    monkeypatch,
+) -> None:
+    """A full manor must expand Juxianzhuang before spending an arena slot on quality."""
+
+    monkeypatch.setattr(maintenance, "remaining_guest_capacity", lambda _manor: 0)
+    monkeypatch.setattr(
+        Manor,
+        "guest_capacity",
+        property(lambda manor: manor.guests.count()),
+    )
+    current_guest_count = Guest.objects.filter(manor_id=active_v2_profile.manor_id).count()
+    objective = ArenaGrowthObjective(
+        critical_guest_count=current_guest_count + 1,
+        preferred_guest_count=current_guest_count + 1,
+        selected_power_lower_bound=1,
+        selected_power_upper_bound=1,
+        selected_power_before=0,
+        target_team_power=1,
+        lineup_mode="tournament",
+        lineup_event_id=79,
+        lineup_max_size=current_guest_count + 1,
+        minimum_guest_level=1,
+        recruitment_rarity_cap=GuestRarity.GRAY,
+        max_guest_level_step=3,
+    )
+
+    plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.ARENA_ACCELERATION,
+        now=FIXED_NOW,
+        arena_growth_objective=objective,
+    )
+
+    assert plan.action_kind == BuildingUpgradeActionSpec.action_kind
+    assert isinstance(plan.action_spec, BuildingUpgradeActionSpec)
+    assert plan.action_spec.building_key == BuildingKeys.JUXIAN_ZHUANG
+
+
+@pytest.mark.django_db
+def test_arena_recruitment_candidate_completes_minimum_roster_before_event_cap(
     active_v2_profile,
     permissive_reference,
     monkeypatch,
@@ -1646,7 +1690,8 @@ def test_arena_recruitment_candidate_reselects_lineup_and_enforces_event_cap(
         for assessment in plan.candidate_assessments
         if assessment.intent.action_kind == GuestRecruitmentActionSpec.action_kind
     )
-    assert assessment.primary_rejection_reason == "event_power_cap"
+    assert plan.action_kind == GuestRecruitmentActionSpec.action_kind
+    assert assessment.rejection_reasons == ()
     assert assessment.projected_selected_power is not None
     assert assessment.projected_selected_power > objective.selected_power_upper_bound
     assert assessment.event_power_cap == objective.selected_power_upper_bound

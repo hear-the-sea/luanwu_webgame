@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 import guests.services.recruitment_candidates as recruitment_candidates
 import guests.services.recruitment_flow as recruitment_flow
+import guests.services.recruitment_guests as recruitment_guests
 import guests.services.recruitment_queries as recruitment_queries
 from core.exceptions import RecruitmentAlreadyInProgressError, RecruitmentDailyLimitExceededError
 from guests.models import GuestRarity
@@ -180,6 +181,16 @@ def test_build_candidate_display_name_keeps_template_name_for_hermit():
     )
 
     assert result == "隐士"
+
+
+def test_build_recruitment_custom_name_matches_normal_common_guest_naming():
+    common_template = SimpleNamespace(rarity=GuestRarity.GRAY, is_hermit=False)
+    hermit_template = SimpleNamespace(rarity=GuestRarity.BLACK, is_hermit=True)
+
+    custom_name = recruitment_guests.build_recruitment_custom_name(common_template, random.Random(1))
+
+    assert custom_name
+    assert recruitment_guests.build_recruitment_custom_name(hermit_template, random.Random(1)) == ""
 
 
 def test_candidate_template_rules_match_repeat_and_reveal_design():

@@ -126,7 +126,7 @@ from guests.rarity import GUEST_RARITY_ORDER
 from guests.services.equipment import equip_guest_from_inventory_locked, equip_guest_from_virtual_template_locked
 from guests.services.health import MedicineUseQuote, apply_medicine_item_for_guest_locked, quote_medicine_item_for_guest
 from guests.services.recruitment_finalize_helpers import remaining_guest_capacity
-from guests.services.recruitment_guests import create_guest_from_template
+from guests.services.recruitment_guests import build_recruitment_custom_name, create_guest_from_template
 from guests.services.salary import SalaryBatchQuote, bulk_check_salary_paid, pay_all_salaries_locked
 from guests.services.skills import learn_guest_skill_from_virtual_book_locked, learn_guest_skill_locked
 from guests.services.training import apply_training_locked, project_training_completion, quote_training
@@ -2538,12 +2538,14 @@ def _guest_recruitment_candidate(
     added_power = 0
     projected_guest_powers: list[int] = []
     for ordinal in range(quantity):
+        rng = random.Random(rng_seed + ordinal)
         projected = create_guest_from_template(
             manor=manor,
             template=template,
             rarity=str(template.rarity),
             archetype=str(template.archetype),
-            rng=random.Random(rng_seed + ordinal),
+            custom_name=build_recruitment_custom_name(template, rng),
+            rng=rng,
             grant_skills=False,
             save=False,
         )
@@ -3321,6 +3323,10 @@ def _build_v2_maintenance_plan_from_profile(
     arena_capacity_blocked = bool(
         arena_replenishment and quantity_target_pending and int(manor.guest_capacity) <= len(guests)
     )
+    # Capacity is a hard prerequisite for the quantity phase.  Keep the
+    # expansion candidate in its own priority group so quality actions cannot
+    # consume an arena slot while recruitment is still impossible.
+    arena_capacity_expansion_required = arena_capacity_blocked
     arena_building_focuses: tuple[str, ...] | None = (
         (BuildingKeys.JUXIAN_ZHUANG,) if arena_capacity_blocked else (() if arena_replenishment else None)
     )
@@ -3518,7 +3524,7 @@ def _build_v2_maintenance_plan_from_profile(
             scheduled_quality_groups = (*uncovered_groups, covered_group)
     arena_quality_candidates = (
         (
-            *(building_candidates if arena_replenishment else ()),
+            *(building_candidates if arena_replenishment and not arena_capacity_expansion_required else ()),
             *training_candidates,
             *equipment_candidates,
             *skill_candidates,
@@ -3659,6 +3665,7 @@ def _build_v2_maintenance_plan_from_profile(
                 for group in (
                     healing_candidates,
                     recruitment_candidates if quantity_target_pending else (),
+                    building_candidates if arena_capacity_expansion_required else (),
                     arena_quality_candidates,
                 )
                 if group
@@ -3933,13 +3940,21 @@ def _build_v2_maintenance_plan_from_profile(
         if arena_power_projection is not None:
             assert arena_growth_objective is not None
             event_power_cap = arena_growth_objective.selected_power_upper_bound
+        roster_completion_recruitment = (
+            candidate.action_kind == GuestRecruitmentActionSpec.action_kind and quantity_target_pending
+        )
         if (
             arena_power_projection is not None
             and event_power_cap is not None
             and arena_power_projection.has_legal_lineup_after
             and arena_power_projection.projected_selected_power > event_power_cap
             and arena_power_projection.projected_selected_power > arena_power_projection.selected_power_before
+            and not roster_completion_recruitment
         ):
+            # During the quantity phase, the minimum roster is the hard
+            # admission target.  Let the bounded recruitment action complete
+            # that roster; once it exists, normal event-power validation is
+            # restored for quality and lineup-selection actions.
             rejection_reasons.append("event_power_cap")
         if candidate.action_kind == "guest_healing":
             # Healing changes availability/HP but not the permanent strength
@@ -5426,18 +5441,22 @@ def execute_virtual_player_v2_maintenance_plan(
                                 > _GUEST_RARITY_RANK[plan.recruitment_rarity_cap]
                             ):
                                 raise GuestRecruitmentTemplateChangedError()
-                            created_guests = tuple(
-                                create_guest_from_template(
-                                    manor=manor,
-                                    template=template,
-                                    rarity=recruitment_spec.rarity,
-                                    archetype=recruitment_spec.archetype,
-                                    rng=random.Random(recruitment_spec.rng_seed + ordinal),
-                                    grant_skills=False,
-                                    save=True,
+                            created_guest_rows: list[Guest] = []
+                            for ordinal in range(recruitment_spec.quantity):
+                                rng = random.Random(recruitment_spec.rng_seed + ordinal)
+                                created_guest_rows.append(
+                                    create_guest_from_template(
+                                        manor=manor,
+                                        template=template,
+                                        rarity=recruitment_spec.rarity,
+                                        archetype=recruitment_spec.archetype,
+                                        custom_name=build_recruitment_custom_name(template, rng),
+                                        rng=rng,
+                                        grant_skills=False,
+                                        save=True,
+                                    )
                                 )
-                                for ordinal in range(recruitment_spec.quantity)
-                            )
+                            created_guests = tuple(created_guest_rows)
                             final_strength_guests = (*revalidation_guests, *created_guests)
                         elif plan.action_kind == BuildingUpgradeActionSpec.action_kind:
                             assert isinstance(

@@ -14,7 +14,8 @@ from core.exceptions import (
     RecruitmentCandidateStateError,
 )
 
-from ..models import Guest, GuestSkill, GuestStatus, GuestTemplate, RecruitmentCandidate, RecruitmentRecord
+from ..models import Guest, GuestRarity, GuestSkill, GuestStatus, GuestTemplate, RecruitmentCandidate, RecruitmentRecord
+from ..utils.name_generator import generate_random_name
 from ..utils.recruitment_variance import apply_recruitment_variance
 from . import recruitment_batch as _recruitment_batch
 from . import recruitment_finalize_helpers as _recruitment_finalize_helpers
@@ -71,6 +72,13 @@ def grant_template_skills(guest: Guest) -> None:
 
     if skills_to_create:
         GuestSkill.objects.bulk_create(skills_to_create)
+
+
+def build_recruitment_custom_name(template: GuestTemplate, rng: random.Random) -> str:
+    """为普通黑/灰门客生成玩家招募时使用的正常姓名。"""
+    if template.rarity in (GuestRarity.BLACK, GuestRarity.GRAY) and not template.is_hermit:
+        return generate_random_name(rng)
+    return ""
 
 
 def create_guest_from_template(
@@ -420,6 +428,7 @@ __all__ = [
     "allocate_attribute_points",
     "bulk_finalize_candidates",
     "convert_candidate_to_retainer",
+    "build_recruitment_custom_name",
     "create_guest_from_template",
     "discard_candidates",
     "finalize_candidate",

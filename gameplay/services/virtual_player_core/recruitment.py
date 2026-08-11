@@ -50,7 +50,11 @@ from guests.models import (
 from guests.services.recruitment_candidates import resolve_candidate_draw_count
 from guests.services.recruitment_flow import resolve_recruitment_cost, resolve_recruitment_seed
 from guests.services.recruitment_followups import schedule_guest_recruitment_completion
-from guests.services.recruitment_guests import create_guest_from_template, grant_template_skills
+from guests.services.recruitment_guests import (
+    build_recruitment_custom_name,
+    create_guest_from_template,
+    grant_template_skills,
+)
 from guests.services.recruitment_queries import get_pool_recruitment_duration_seconds
 from guests.services.recruitment_shared import NON_REPEATABLE_RARITIES, invalidate_recruitment_hall_cache
 from guests.services.recruitment_templates import (
@@ -416,11 +420,7 @@ def _draw_virtual_candidates(
             hermit_templates=templates_by_rarity.get(HERMIT_RARITY, []),
             rarity=rarity,
         )
-        custom_name = ""
-        if template.rarity in (GuestRarity.BLACK, GuestRarity.GRAY) and not template.is_hermit:
-            from guests.utils.name_generator import generate_random_name
-
-            custom_name = generate_random_name(rng)
+        custom_name = build_recruitment_custom_name(template, rng)
         guest = create_guest_from_template(
             manor=manor,
             template=template,

@@ -63,10 +63,11 @@ EFFECTIVE_RUNTIME_SCHEMA_VERSION = 1
 _EFFECTIVE_RUNTIME_CODE_DEFAULTS = {
     "arena_growth": {
         "budget_window_seconds": 24 * 60 * 60,
-        "budget_max_attempts": 20,
+        "budget_max_attempts": 48,
         "slots_per_round": 8,
         "max_slot_attempts": 5,
         "budget_max_future_skew_seconds": 5 * 60,
+        "roster_completion_event_power_cap_bypass": True,
         "max_members_per_demand": 8,
         "rearm_jitter_max_seconds": 45,
         "retry_max_delay_seconds": 60 * 60,
