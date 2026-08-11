@@ -1,6 +1,6 @@
 schema_version: 1
 evidence_id: virtual_player_gate_d1_evidence_2026_08_11
-recorded_at_utc: '2026-08-10T20:21:31Z'
+recorded_at_utc: '2026-08-10T23:50:12Z'
 gate: gate_d1_bootstrap_activation
 verdict:
   required_implementation_and_test_evidence: passed
@@ -39,9 +39,9 @@ environment:
   credentials_recorded: false
   business_database_touched: false
 source_state:
-  git_commit: 648488b183318ca85625efa763bcf9257ddddc28
-  git_tree: fd982f1210dfdf74aeb674d31d400e7c7e437306
-  worktree_clean: false
+  git_commit: e4a0cf12db83a72e877f90c718abfc494c58e92b
+  git_tree: 95538860d0e902f760ee0a1e3b7f809f17f3fe5a
+  worktree_clean: true
   allowed_dirty_paths:
   - docs/virtual_player_gate_d1_evidence_2026-08-11.yaml
   - docs/virtual_player_gate_e_readiness_evidence_2026-08-11.yaml
@@ -61,7 +61,7 @@ source_state:
     docker-compose.prod.yml: dc12c49756ed615b53b96d3233e1f951c7694b1976a65d1f05647207883d5b9b
     docs/runbook_deploy_docker.md: b23c8e7d92477def5aa34468e3f8e37edd9473f15d6161c1d9a41164d8a9ac2d
     docs/virtual_player_gate_a_acceptance_config_2026-07-27.yaml: 7203141131e4db01e0c614edbdd9fcd2ca57e65a24541bca4fb99594c4950438
-    docs/virtual_player_gate_evidence_manifest_2026-08-11.yaml: 07d833a2e1b75ceb89d8d97f694abb2bb4038c729f50b326757153efe5031077
+    docs/virtual_player_gate_evidence_manifest_2026-08-11.yaml: 268657f36260e8599435ad10d64ff0924e9b3dca290f5fc8e7f93d8689ba4940
     gameplay/management/commands/preflight_virtual_player_v2.py: 72d92c774d9d9743600996f4d45a762f074e9bad15f99b5d6814dd4fb52098b9
     gameplay/management/commands/requeue_virtual_player_recovery.py: 075f42b06465f1e68335fbb5140f169de4fabb0eea354f79b3aed0213175f26e
     gameplay/migrations/0139_botprofile_v2_fields.py: f1bc677b3bb7ccc861c8a9c3752289cd40cf6b165927a0750fb533d139483b46
@@ -78,23 +78,23 @@ source_state:
     gameplay/migrations/0157_arena_growth_effective_progress.py: f076a7973dc07c082d2b84bfac2b02dab20f1c6d0c1954fbbb778ef3b122cfd2
     gameplay/migrations/0158_arena_growth_budget_and_admission_high_water.py: bbdbcf075debea018b676b639dce2d60188e68e691ccf227cca7489dc36be274
     gameplay/migrations/0159_arena_virtual_demand_admission_guard.py: 6f852059717cc38d6f4db2cfab9a9d96f30414fa8e9e073821c183a167620289
-    gameplay/migrations/0160_arena_growth_objective_snapshot.py: b4e8ae677cf4bd1003ba8aa0aa3a4d89d29dfc655412b7e0bc3a536e7ba9242d
-    gameplay/migrations/0161_arena_growth_digest_schema.py: aa187c6af6281a8eed6d18eddfd4bd86c57038c98b86d29bab07abcd224d89b1
-    gameplay/migrations/0162_arena_admission_probe_and_member_lease.py: d294b38ebe0ab4f10639a9bbe7cd17f2b9dbd437c1ddd640b72413a60bcc95f9
+    gameplay/migrations/0160_arena_growth_objective_snapshot.py: 6fba83b0fe70012d562cc395f8b4c810b85350b9511b4b83ccb0bfcc63cb23e0
+    gameplay/migrations/0161_arena_growth_digest_schema.py: f9e252e47165ce10de75da99a5fa5e800d9067d05027f5f42cd5fc1ef0174543
+    gameplay/migrations/0162_arena_admission_probe_and_member_lease.py: 0ced0c9b24a833b97d8886abbe58ceb25ba2c8cc380f103597201cd0746f87e2
     gameplay/migrations/0163_arena_training_policy_snapshot.py: 6168f97da2977597bedc1f137bb839fe06fd0850e3da49cebd6cf5212e87ea54
-    gameplay/migrations/0164_virtual_player_cycles_recovery_and_control.py: 487cd5208c4b687b23d80bb6313965bb4fe932b949580e144a8a8a512fd0d1f8
+    gameplay/migrations/0164_virtual_player_cycles_recovery_and_control.py: 4d8a0a8e10cfa79cf87b5e9098738066f62309372e170da1012aeefb832d67ab
     gameplay/migrations/0165_bot_maintenance_recovery_success.py: cea05cc557cfaee66384a3117d9d79779a6f5c909ee7d5bc47cd708a7d0b85d5
     gameplay/migrations/0166_arena_growth_control_snapshot.py: d040b04def1bf9160d184989184f1f06db0f0854195ddbd61fccefa1edc3c112
     gameplay/migrations/0167_growth_control_snapshot_immutability.py: 93601d8d04ae53e83cea62ca14db6e9f17eefd018d15beb9d9ee38775489d1fa
-    gameplay/migrations/0168_virtualplayergrowthcontrolpointer_and_more.py: 30f29b9bd47d4c8e9067f9dcf3b6d732224d8d3d159d2ca37b9f2fa89b1e5591
+    gameplay/migrations/0168_virtualplayergrowthcontrolpointer_and_more.py: 04dee620cfd87ac397fb1148f2575bec0cee487650167d908a6ae876dd8b58d6
     gameplay/migrations/0169_alter_botmaintenancerecovery_scope.py: 29980960ed898730bcc699d72c333cfb343d1ef9791a42d3e3f6b6b722465379
     gameplay/migrations/0170_arena_growth_target_driven_lifecycle.py: 532b16aee2f75b42265f06529491baa64053cddaa8cc2b73506a1fbf583817d3
     gameplay/migrations/0171_bot_maintenance_cycle_schedule.py: 1d02f6779da9675e5707efec7553705a35e440a94f6571d7f6016517964ea480
     gameplay/migrations/0172_bot_maintenance_cycle_interval_seed.py: 45c9893fa7912cab0d04cc98147699f0e47dd38003b7bac6eaf26ca25c125f35
     gameplay/migrations/0173_remove_legacy_arena_lifecycle_fields.py: d161c2a5a2698c00fbd5768b3325eb5b96424691d95838ea8e7ea1cbba131f76
-    gameplay/migrations/0174_bot_maintenance_completion_event.py: a5435bce0b9494c55dff6d8483fa6848e164b277d8cf9aedbe786cc23f3f2773
+    gameplay/migrations/0174_bot_maintenance_completion_event.py: 7a419412a46510f7d36f0a1551e7716414273198ca8815b326cb2c09b60b1d18
     gameplay/migrations/0175_botmaintenanceattempt_action_kind_and_more.py: 035ce48cc7329bad32eeee12865420613b7cc7fac81e8a1b8efcf902eda4e77b
-    gameplay/migrations/0176_virtual_player_recruitment_due_and_cycle_budget.py: c608c5a66567bf2719b63d9ec4e23403214fd83e0834c244664ae00c95686e56
+    gameplay/migrations/0176_virtual_player_recruitment_due_and_cycle_budget.py: cc7471d8203a601f16568d86dbba7dd0337cde887c0dee7733febfb466b082d7
     gameplay/migrations/0177_virtual_player_attempt_trigger_dimensions_index.py: 0fbe5467cb2309f075baf84805b1fe699a82319e259e3faf3736d42bffb09271
     gameplay/models/__init__.py: a7900f5c22adebef09328a0e8ba46a7d0caefdb187d77cadab3fb9e67c1ee0fd
     gameplay/models/bots.py: 72977140be823d2967c9b5593c34a0ab5f26d9b9f6e76f69b4b215e0964e62f3
@@ -165,7 +165,7 @@ source_state:
     gameplay/tasks/__init__.py: da729ae228f77a4d5a8bd967fe086fe3539cf7fa216bed6d7de40936c665350f
     gameplay/tasks/arena.py: 0774b7ba264e85d8c513f3acf23d7c2a23189debce2ce1ee19e7f5d1e1732383
     gameplay/tasks/virtual_players.py: fb8421ef3395525364bfabb7283b3294c54002b4a8f76238f58e729a4377dad6
-    guests/migrations/0071_guestrecruitment_virtual_source.py: ac2f47050f3c8b8dd36d3e120f99901c3eb640268f4ea0f638eb1fa39e073581
+    guests/migrations/0071_guestrecruitment_virtual_source.py: e58398bddac74ae08791fe79458f5fb84b5e0a719a54414e9739f0ea8119e2f8
     package-lock.json: 95b1802a2e78b11987cc68c2b836400bdd6ee62e773bdd66705b9a07226634c5
     package.json: 9210c33a50d9d836aabeacbedbcd93a9bdd4dbfa1a06dd9599ec318a0a5e1c68
     pyproject.toml: 5759e0fa261922fa2697c06d2f6b2faf89937c001e59b529a2ab487eb1867bb7
@@ -261,34 +261,34 @@ executions:
     command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-d1
     target_stage: contract
     status: passed
-    execution_timestamp_utc: '2026-08-10T20:21:31Z'
+    execution_timestamp_utc: '2026-08-10T23:50:12Z'
     timestamp_source: canonical_target_completion
     passed: 403
     failed: 0
     skipped: 0
-    duration_seconds: 64.86
+    duration_seconds: 65.35
   core_real_service:
     command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-d1
     target_stage: core_real_service
     status: passed
-    execution_timestamp_utc: '2026-08-10T20:21:31Z'
+    execution_timestamp_utc: '2026-08-10T23:50:12Z'
     timestamp_source: canonical_target_completion
     passed: 10
     failed: 0
     skipped: 0
-    duration_seconds: 454.31
+    duration_seconds: 457.09
   adjacent_real_service:
     command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-d1
     target_stage: adjacent_real_service
     status: passed
-    execution_timestamp_utc: '2026-08-10T20:21:31Z'
+    execution_timestamp_utc: '2026-08-10T23:50:12Z'
     timestamp_source: canonical_target_completion
     passed: 4
     failed: 0
     skipped: 0
-    duration_seconds: 5.05
+    duration_seconds: 5.06
 migration_verification:
-  checked_at_utc: '2026-08-10T20:21:32Z'
+  checked_at_utc: '2026-08-10T23:50:12Z'
   database: test_webgame
   read_only_check: true
   migration_app: gameplay
@@ -306,11 +306,11 @@ performance:
     profile_band: mythic
   planning_duration_p95_ms:
     threshold: 250
-    observed: 56.692
+    observed: 21.123
     passed: true
   materialization_duration_p95_ms:
     threshold: 2000
-    observed: 191.238
+    observed: 212.881
     passed: true
   query_budget:
     sql_queries_max: 80
@@ -339,7 +339,7 @@ limitations:
 canonical_gate_a_execution:
   command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-a
   status: passed
-  execution_timestamp_utc: '2026-08-10T20:12:44Z'
+  execution_timestamp_utc: '2026-08-10T23:41:21Z'
   contract_passed: 169
   real_service_passed: 12
-  duration_seconds: 145.929541
+  duration_seconds: 148.888823

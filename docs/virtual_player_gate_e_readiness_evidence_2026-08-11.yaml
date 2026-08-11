@@ -1,6 +1,6 @@
 schema_version: 1
 evidence_id: virtual_player_gate_e_readiness_2026_08_11
-recorded_at_utc: '2026-08-10T20:54:46Z'
+recorded_at_utc: '2026-08-11T00:25:50Z'
 scope:
   project_stage: development
   environment: test
@@ -23,9 +23,9 @@ environment:
   database_role: isolated_disposable_test_database
   business_database_contacted: false
 source_state:
-  git_commit: 648488b183318ca85625efa763bcf9257ddddc28
-  git_tree: fd982f1210dfdf74aeb674d31d400e7c7e437306
-  worktree_clean: false
+  git_commit: e4a0cf12db83a72e877f90c718abfc494c58e92b
+  git_tree: 95538860d0e902f760ee0a1e3b7f809f17f3fe5a
+  worktree_clean: true
   allowed_dirty_paths:
   - docs/virtual_player_gate_d1_evidence_2026-08-11.yaml
   - docs/virtual_player_gate_e_readiness_evidence_2026-08-11.yaml
@@ -49,7 +49,7 @@ source_state:
     docker-compose.prod.yml: dc12c49756ed615b53b96d3233e1f951c7694b1976a65d1f05647207883d5b9b
     docs/runbook_deploy_docker.md: b23c8e7d92477def5aa34468e3f8e37edd9473f15d6161c1d9a41164d8a9ac2d
     docs/virtual_player_gate_a_acceptance_config_2026-07-27.yaml: 7203141131e4db01e0c614edbdd9fcd2ca57e65a24541bca4fb99594c4950438
-    docs/virtual_player_gate_evidence_manifest_2026-08-11.yaml: 07d833a2e1b75ceb89d8d97f694abb2bb4038c729f50b326757153efe5031077
+    docs/virtual_player_gate_evidence_manifest_2026-08-11.yaml: 268657f36260e8599435ad10d64ff0924e9b3dca290f5fc8e7f93d8689ba4940
     gameplay/admin/__init__.py: ddde01d3bd0dc20609699e6d0d96de2e1d0a7305d1ab372a3e5e70a93d9456c8
     gameplay/admin/bots.py: 69067bdb94a61c1fc9c59e41b7fcd6feab8f18a3528e6672a48e6c38bc203441
     gameplay/management/commands/cleanup_expired_virtual_player_arena_baselines.py: 7ba7b8225b78cf0b36c7dafeb8ee7814cb1fcb071c4b30687290a752ec605450
@@ -77,23 +77,23 @@ source_state:
     gameplay/migrations/0157_arena_growth_effective_progress.py: f076a7973dc07c082d2b84bfac2b02dab20f1c6d0c1954fbbb778ef3b122cfd2
     gameplay/migrations/0158_arena_growth_budget_and_admission_high_water.py: bbdbcf075debea018b676b639dce2d60188e68e691ccf227cca7489dc36be274
     gameplay/migrations/0159_arena_virtual_demand_admission_guard.py: 6f852059717cc38d6f4db2cfab9a9d96f30414fa8e9e073821c183a167620289
-    gameplay/migrations/0160_arena_growth_objective_snapshot.py: b4e8ae677cf4bd1003ba8aa0aa3a4d89d29dfc655412b7e0bc3a536e7ba9242d
-    gameplay/migrations/0161_arena_growth_digest_schema.py: aa187c6af6281a8eed6d18eddfd4bd86c57038c98b86d29bab07abcd224d89b1
-    gameplay/migrations/0162_arena_admission_probe_and_member_lease.py: d294b38ebe0ab4f10639a9bbe7cd17f2b9dbd437c1ddd640b72413a60bcc95f9
+    gameplay/migrations/0160_arena_growth_objective_snapshot.py: 6fba83b0fe70012d562cc395f8b4c810b85350b9511b4b83ccb0bfcc63cb23e0
+    gameplay/migrations/0161_arena_growth_digest_schema.py: f9e252e47165ce10de75da99a5fa5e800d9067d05027f5f42cd5fc1ef0174543
+    gameplay/migrations/0162_arena_admission_probe_and_member_lease.py: 0ced0c9b24a833b97d8886abbe58ceb25ba2c8cc380f103597201cd0746f87e2
     gameplay/migrations/0163_arena_training_policy_snapshot.py: 6168f97da2977597bedc1f137bb839fe06fd0850e3da49cebd6cf5212e87ea54
-    gameplay/migrations/0164_virtual_player_cycles_recovery_and_control.py: 487cd5208c4b687b23d80bb6313965bb4fe932b949580e144a8a8a512fd0d1f8
+    gameplay/migrations/0164_virtual_player_cycles_recovery_and_control.py: 4d8a0a8e10cfa79cf87b5e9098738066f62309372e170da1012aeefb832d67ab
     gameplay/migrations/0165_bot_maintenance_recovery_success.py: cea05cc557cfaee66384a3117d9d79779a6f5c909ee7d5bc47cd708a7d0b85d5
     gameplay/migrations/0166_arena_growth_control_snapshot.py: d040b04def1bf9160d184989184f1f06db0f0854195ddbd61fccefa1edc3c112
     gameplay/migrations/0167_growth_control_snapshot_immutability.py: 93601d8d04ae53e83cea62ca14db6e9f17eefd018d15beb9d9ee38775489d1fa
-    gameplay/migrations/0168_virtualplayergrowthcontrolpointer_and_more.py: 30f29b9bd47d4c8e9067f9dcf3b6d732224d8d3d159d2ca37b9f2fa89b1e5591
+    gameplay/migrations/0168_virtualplayergrowthcontrolpointer_and_more.py: 04dee620cfd87ac397fb1148f2575bec0cee487650167d908a6ae876dd8b58d6
     gameplay/migrations/0169_alter_botmaintenancerecovery_scope.py: 29980960ed898730bcc699d72c333cfb343d1ef9791a42d3e3f6b6b722465379
     gameplay/migrations/0170_arena_growth_target_driven_lifecycle.py: 532b16aee2f75b42265f06529491baa64053cddaa8cc2b73506a1fbf583817d3
     gameplay/migrations/0171_bot_maintenance_cycle_schedule.py: 1d02f6779da9675e5707efec7553705a35e440a94f6571d7f6016517964ea480
     gameplay/migrations/0172_bot_maintenance_cycle_interval_seed.py: 45c9893fa7912cab0d04cc98147699f0e47dd38003b7bac6eaf26ca25c125f35
     gameplay/migrations/0173_remove_legacy_arena_lifecycle_fields.py: d161c2a5a2698c00fbd5768b3325eb5b96424691d95838ea8e7ea1cbba131f76
-    gameplay/migrations/0174_bot_maintenance_completion_event.py: a5435bce0b9494c55dff6d8483fa6848e164b277d8cf9aedbe786cc23f3f2773
+    gameplay/migrations/0174_bot_maintenance_completion_event.py: 7a419412a46510f7d36f0a1551e7716414273198ca8815b326cb2c09b60b1d18
     gameplay/migrations/0175_botmaintenanceattempt_action_kind_and_more.py: 035ce48cc7329bad32eeee12865420613b7cc7fac81e8a1b8efcf902eda4e77b
-    gameplay/migrations/0176_virtual_player_recruitment_due_and_cycle_budget.py: c608c5a66567bf2719b63d9ec4e23403214fd83e0834c244664ae00c95686e56
+    gameplay/migrations/0176_virtual_player_recruitment_due_and_cycle_budget.py: cc7471d8203a601f16568d86dbba7dd0337cde887c0dee7733febfb466b082d7
     gameplay/migrations/0177_virtual_player_attempt_trigger_dimensions_index.py: 0fbe5467cb2309f075baf84805b1fe699a82319e259e3faf3736d42bffb09271
     gameplay/models/__init__.py: a7900f5c22adebef09328a0e8ba46a7d0caefdb187d77cadab3fb9e67c1ee0fd
     gameplay/models/arena_virtual.py: da5062252ef17d65d29c0a1100ebe94111539583748d51f0fadd1b90a3d37896
@@ -207,7 +207,7 @@ source_state:
     gameplay/tasks/virtual_players.py: fb8421ef3395525364bfabb7283b3294c54002b4a8f76238f58e729a4377dad6
     guests/constants.py: 3589624610276634626bec24a3865753554e6c2d07bb427eb448710b7ccd3e96
     guests/migrations/0067_guest_training_remaining_seconds.py: 914aba9c20d8b44176d31878ba4b7b2d2f072675d2d3128f5f5bbd2eefb96cc0
-    guests/migrations/0071_guestrecruitment_virtual_source.py: ac2f47050f3c8b8dd36d3e120f99901c3eb640268f4ea0f638eb1fa39e073581
+    guests/migrations/0071_guestrecruitment_virtual_source.py: e58398bddac74ae08791fe79458f5fb84b5e0a719a54414e9739f0ea8119e2f8
     guests/models.py: af814e3f9513830268b88fe83ce6a80a682c2f833e5fd15823a3531c518e3958
     guests/services/equipment.py: 414002bd34ced6ff1b41fcae0b6b3c14aa011dae43bba4ebadbe05e3be84fdc8
     guests/services/health.py: dd6d6ea8f3bf1ae0045ff9810a8e61b78915ca4431ce76cde15623549c8a03e1
@@ -336,8 +336,8 @@ maintenance_benchmark:
   matrix:
   - batch_size: 1
     concurrency: 1
-    duration_p95_ms: 109.437
-    duration_p99_ms: 110.661
+    duration_p95_ms: 111.462
+    duration_p99_ms: 114.706
     queries_max: 59
     write_queries_max: 12
     lock_wait_p95_ms: 0.0
@@ -350,8 +350,8 @@ maintenance_benchmark:
     status: passed
   - batch_size: 1
     concurrency: 2
-    duration_p95_ms: 121.875
-    duration_p99_ms: 124.049
+    duration_p95_ms: 124.47
+    duration_p99_ms: 124.523
     queries_max: 59
     write_queries_max: 12
     lock_wait_p95_ms: 0.0
@@ -364,8 +364,8 @@ maintenance_benchmark:
     status: passed
   - batch_size: 10
     concurrency: 1
-    duration_p95_ms: 626.972
-    duration_p99_ms: 744.681
+    duration_p95_ms: 612.747
+    duration_p99_ms: 625.788
     queries_max: 275
     write_queries_max: 102
     lock_wait_p95_ms: 0.0
@@ -378,8 +378,8 @@ maintenance_benchmark:
     status: passed
   - batch_size: 10
     concurrency: 2
-    duration_p95_ms: 582.713
-    duration_p99_ms: 835.182
+    duration_p95_ms: 580.579
+    duration_p99_ms: 641.357
     queries_max: 275
     write_queries_max: 102
     lock_wait_p95_ms: 0.0
@@ -392,10 +392,10 @@ maintenance_benchmark:
     status: passed
   - batch_size: 100
     concurrency: 1
-    duration_p95_ms: 5261.938
-    duration_p99_ms: 5295.199
-    queries_max: 2435
-    write_queries_max: 1002
+    duration_p95_ms: 5463.474
+    duration_p99_ms: 5781.196
+    queries_max: 2442
+    write_queries_max: 1003
     lock_wait_p95_ms: 0.0
     lock_wait_p99_ms: 0.0
     deadlocks: 0
@@ -406,8 +406,8 @@ maintenance_benchmark:
     status: passed
   - batch_size: 100
     concurrency: 2
-    duration_p95_ms: 5299.34
-    duration_p99_ms: 5653.03
+    duration_p95_ms: 5354.627
+    duration_p99_ms: 5359.555
     queries_max: 2435
     write_queries_max: 1002
     lock_wait_p95_ms: 0.0
@@ -433,9 +433,9 @@ maintenance_benchmark:
       concurrency: 1
       stage: action_domain_writes
       observations: 30
-      duration_p50_ms: 10.724
-      duration_p95_ms: 17.757
-      duration_p99_ms: 19.096
+      duration_p50_ms: 10.892
+      duration_p95_ms: 16.683
+      duration_p99_ms: 19.762
       queries_max: 11
       write_queries_max: 6
       fingerprints:
@@ -476,9 +476,9 @@ maintenance_benchmark:
       concurrency: 1
       stage: cycle_attempt_receipt
       observations: 60
-      duration_p50_ms: 2.906
-      duration_p95_ms: 8.175
-      duration_p99_ms: 11.206
+      duration_p50_ms: 2.899
+      duration_p95_ms: 8.266
+      duration_p99_ms: 10.611
       queries_max: 4
       write_queries_max: 2
       fingerprints:
@@ -507,9 +507,9 @@ maintenance_benchmark:
       concurrency: 1
       stage: due_backlog_selection
       observations: 30
-      duration_p50_ms: 5.092
-      duration_p95_ms: 5.635
-      duration_p99_ms: 5.7
+      duration_p50_ms: 5.145
+      duration_p95_ms: 5.752
+      duration_p99_ms: 6.157
       queries_max: 2
       write_queries_max: 0
       fingerprints:
@@ -524,9 +524,9 @@ maintenance_benchmark:
       concurrency: 1
       stage: planning_snapshot_preload
       observations: 30
-      duration_p50_ms: 14.621
-      duration_p95_ms: 15.358
-      duration_p99_ms: 15.631
+      duration_p50_ms: 14.787
+      duration_p95_ms: 15.783
+      duration_p99_ms: 15.792
       queries_max: 16
       write_queries_max: 0
       fingerprints:
@@ -566,9 +566,9 @@ maintenance_benchmark:
       concurrency: 1
       stage: profile_plan_revalidation
       observations: 30
-      duration_p50_ms: 2.7
-      duration_p95_ms: 2.899
-      duration_p99_ms: 3.174
+      duration_p50_ms: 2.806
+      duration_p95_ms: 3.011
+      duration_p99_ms: 3.039
       queries_max: 0
       write_queries_max: 0
       fingerprints: []
@@ -576,9 +576,9 @@ maintenance_benchmark:
       concurrency: 1
       stage: safety_task_wrapup
       observations: 60
-      duration_p50_ms: 21.945
-      duration_p95_ms: 45.727
-      duration_p99_ms: 46.265
+      duration_p50_ms: 18.852
+      duration_p95_ms: 47.872
+      duration_p99_ms: 54.531
       queries_max: 7
       write_queries_max: 1
       fingerprints:
@@ -597,23 +597,23 @@ maintenance_benchmark:
       - sql: SELECT `gameplay_botsafetymetricevent`.`id`, `gameplay_botsafetymetricevent`.`event_id`, `gameplay_botsafetymetricevent`.`occurred_at`,
           `gameplay_botsafetymetricevent`.`dimensions`, `gameplay_botsafetymetricevent`.`value` FROM `gameplay_bot
         count: 30
-      - sql: SAVEPOINT `s127358987627392_x18142`
+      - sql: SAVEPOINT `s129250014571392_x18142`
         count: 1
-      - sql: RELEASE SAVEPOINT `s127358987627392_x18142`
+      - sql: RELEASE SAVEPOINT `s129250014571392_x18142`
         count: 1
-      - sql: SAVEPOINT `s127358987627392_x18141`
+      - sql: SAVEPOINT `s129250014571392_x18141`
         count: 1
-      - sql: RELEASE SAVEPOINT `s127358987627392_x18141`
+      - sql: RELEASE SAVEPOINT `s129250014571392_x18141`
         count: 1
-      - sql: SAVEPOINT `s127358987627392_x18149`
+      - sql: SAVEPOINT `s129250014571392_x18149`
         count: 1
     - batch_size: 1
       concurrency: 2
       stage: action_domain_writes
       observations: 30
-      duration_p50_ms: 10.22
-      duration_p95_ms: 10.806
-      duration_p99_ms: 11.328
+      duration_p50_ms: 10.42
+      duration_p95_ms: 11.274
+      duration_p99_ms: 11.48
       queries_max: 11
       write_queries_max: 6
       fingerprints:
@@ -654,9 +654,9 @@ maintenance_benchmark:
       concurrency: 2
       stage: cycle_attempt_receipt
       observations: 60
-      duration_p50_ms: 2.71
-      duration_p95_ms: 3.161
-      duration_p99_ms: 3.418
+      duration_p50_ms: 2.794
+      duration_p95_ms: 3.125
+      duration_p99_ms: 3.302
       queries_max: 4
       write_queries_max: 2
       fingerprints:
@@ -685,9 +685,9 @@ maintenance_benchmark:
       concurrency: 2
       stage: due_backlog_selection
       observations: 30
-      duration_p50_ms: 5.86
-      duration_p95_ms: 6.142
-      duration_p99_ms: 6.36
+      duration_p50_ms: 5.915
+      duration_p95_ms: 8.755
+      duration_p99_ms: 9.813
       queries_max: 2
       write_queries_max: 0
       fingerprints:
@@ -702,9 +702,9 @@ maintenance_benchmark:
       concurrency: 2
       stage: planning_snapshot_preload
       observations: 30
-      duration_p50_ms: 14.155
-      duration_p95_ms: 15.067
-      duration_p99_ms: 15.093
+      duration_p50_ms: 14.082
+      duration_p95_ms: 14.662
+      duration_p99_ms: 15.346
       queries_max: 16
       write_queries_max: 0
       fingerprints:
@@ -744,9 +744,9 @@ maintenance_benchmark:
       concurrency: 2
       stage: profile_plan_revalidation
       observations: 30
-      duration_p50_ms: 2.655
-      duration_p95_ms: 5.299
-      duration_p99_ms: 6.046
+      duration_p50_ms: 2.623
+      duration_p95_ms: 2.951
+      duration_p99_ms: 3.012
       queries_max: 0
       write_queries_max: 0
       fingerprints: []
@@ -754,9 +754,9 @@ maintenance_benchmark:
       concurrency: 2
       stage: safety_task_wrapup
       observations: 60
-      duration_p50_ms: 16.263
-      duration_p95_ms: 45.446
-      duration_p99_ms: 53.83
+      duration_p50_ms: 13.953
+      duration_p95_ms: 46.144
+      duration_p99_ms: 50.752
       queries_max: 7
       write_queries_max: 1
       fingerprints:
@@ -775,23 +775,23 @@ maintenance_benchmark:
       - sql: SELECT `gameplay_botsafetymetricevent`.`id`, `gameplay_botsafetymetricevent`.`event_id`, `gameplay_botsafetymetricevent`.`occurred_at`,
           `gameplay_botsafetymetricevent`.`dimensions`, `gameplay_botsafetymetricevent`.`value` FROM `gameplay_bot
         count: 30
-      - sql: SAVEPOINT `s127358860256960_x2`
-        count: 16
-      - sql: RELEASE SAVEPOINT `s127358860256960_x2`
-        count: 16
-      - sql: SAVEPOINT `s127358860256960_x1`
-        count: 16
-      - sql: RELEASE SAVEPOINT `s127358860256960_x1`
-        count: 16
-      - sql: SAVEPOINT `s127358868649664_x2`
-        count: 14
+      - sql: SAVEPOINT `s129249895773888_x2`
+        count: 15
+      - sql: RELEASE SAVEPOINT `s129249895773888_x2`
+        count: 15
+      - sql: SAVEPOINT `s129249895773888_x1`
+        count: 15
+      - sql: RELEASE SAVEPOINT `s129249895773888_x1`
+        count: 15
+      - sql: SAVEPOINT `s129249887381184_x2`
+        count: 15
     - batch_size: 10
       concurrency: 1
       stage: action_domain_writes
       observations: 300
-      duration_p50_ms: 10.648
-      duration_p95_ms: 18.945
-      duration_p99_ms: 23.87
+      duration_p50_ms: 10.934
+      duration_p95_ms: 18.789
+      duration_p99_ms: 30.666
       queries_max: 11
       write_queries_max: 6
       fingerprints:
@@ -832,9 +832,9 @@ maintenance_benchmark:
       concurrency: 1
       stage: cycle_attempt_receipt
       observations: 600
-      duration_p50_ms: 2.858
-      duration_p95_ms: 8.886
-      duration_p99_ms: 11.695
+      duration_p50_ms: 2.884
+      duration_p95_ms: 8.989
+      duration_p99_ms: 10.992
       queries_max: 4
       write_queries_max: 2
       fingerprints:
@@ -863,9 +863,9 @@ maintenance_benchmark:
       concurrency: 1
       stage: due_backlog_selection
       observations: 30
-      duration_p50_ms: 6.211
-      duration_p95_ms: 6.925
-      duration_p99_ms: 7.274
+      duration_p50_ms: 6.493
+      duration_p95_ms: 7.146
+      duration_p99_ms: 7.177
       queries_max: 2
       write_queries_max: 0
       fingerprints:
@@ -880,9 +880,9 @@ maintenance_benchmark:
       concurrency: 1
       stage: planning_snapshot_preload
       observations: 30
-      duration_p50_ms: 15.682
-      duration_p95_ms: 16.521
-      duration_p99_ms: 16.645
+      duration_p50_ms: 15.943
+      duration_p95_ms: 17.05
+      duration_p99_ms: 61.248
       queries_max: 16
       write_queries_max: 0
       fingerprints:
@@ -923,380 +923,19 @@ maintenance_benchmark:
       concurrency: 1
       stage: profile_plan_revalidation
       observations: 300
-      duration_p50_ms: 2.634
-      duration_p95_ms: 3.032
-      duration_p99_ms: 3.182
-      queries_max: 0
-      write_queries_max: 0
-      fingerprints: []
-    - batch_size: 10
-      concurrency: 1
-      stage: safety_task_wrapup
-      observations: 60
-      duration_p50_ms: 31.055
-      duration_p95_ms: 312.855
-      duration_p99_ms: 498.888
-      queries_max: 7
-      write_queries_max: 1
-      fingerprints:
-      - sql: SELECT `gameplay_botsafetymetricwindow`.`window_id` AS `window_id` FROM `gameplay_botsafetymetricwindow` WHERE
-          `gameplay_botsafetymetricwindow`.`window_id` IN (%s, %s)
-        count: 60
-      - sql: SELECT `window_id`, `kind`, `window_start_at`, `window_end_at`, `finalized_at` FROM `gameplay_botsafetymetricwindow`
-          WHERE `window_id` IN (%s, %s) ORDER BY `window_end_at`, `kind` FOR SHARE
-        count: 60
-      - sql: INSERT INTO `gameplay_botsafetymetricevent` (`event_id`, `metric_name`, `occurred_at`, `dimensions`, `value`,
-          `payload_digest`, `created_at`) VALUES (%s, %s, %s, %s, %s, %s, %s), (%s, %s, %s, %s, %s, %s, %s), (%s, %s, %s,
-          %s, %s, %s, %s), (
-        count: 60
-      - sql: SELECT `gameplay_botmaintenancerecovery`.`id`, `gameplay_botmaintenancerecovery`.`scope`, `gameplay_botmaintenancerecovery`.`entity_key`,
-          `gameplay_botmaintenancerecovery`.`status`, `gameplay_botmaintenancerecovery`.`failure_code`, `gamepla
-        count: 30
-      - sql: SELECT `gameplay_botsafetymetricevent`.`id`, `gameplay_botsafetymetricevent`.`event_id`, `gameplay_botsafetymetricevent`.`occurred_at`,
-          `gameplay_botsafetymetricevent`.`dimensions`, `gameplay_botsafetymetricevent`.`value` FROM `gameplay_bot
-        count: 30
-      - sql: SAVEPOINT `s127358987627392_x22069`
-        count: 1
-      - sql: RELEASE SAVEPOINT `s127358987627392_x22069`
-        count: 1
-      - sql: SAVEPOINT `s127358987627392_x22068`
-        count: 1
-      - sql: RELEASE SAVEPOINT `s127358987627392_x22068`
-        count: 1
-      - sql: SAVEPOINT `s127358987627392_x22076`
-        count: 1
-    - batch_size: 10
-      concurrency: 2
-      stage: action_domain_writes
-      observations: 300
-      duration_p50_ms: 10.662
-      duration_p95_ms: 11.436
-      duration_p99_ms: 11.98
-      queries_max: 11
-      write_queries_max: 6
-      fingerprints:
-      - sql: INSERT INTO `gameplay_botmaintenanceattempt` (`operation_id`, `profile_id`, `cycle_id`, `trigger`, `archetype`,
-          `action_kind`, `round_ordinal`, `action_ordinal_in_round`, `attempt_ordinal`, `outcome`, `reason`, `reason_category`,
-          `dispatche
-        count: 600
-      - sql: SELECT `gameplay_botprofile`.`id`, `gameplay_botprofile`.`manor_id`, `gameplay_botprofile`.`archetype`, `gameplay_botprofile`.`state`,
-          `gameplay_botprofile`.`prestige_band`, `gameplay_botprofile`.`target_prestige_band`, `gameplay_botprofile
-        count: 300
-      - sql: SELECT `gameplay_botmaintenancecycle`.`id`, `gameplay_botmaintenancecycle`.`cycle_id`, `gameplay_botmaintenancecycle`.`interval_seed`,
-          `gameplay_botmaintenancecycle`.`profile_id`, `gameplay_botmaintenancecycle`.`cycle_ordinal`, `gameplay_bo
-        count: 300
-      - sql: SELECT `gameplay_manor`.`id`, `gameplay_manor`.`user_id`, `gameplay_manor`.`name`, `gameplay_manor`.`grain`,
-          `gameplay_manor`.`silver`, `gameplay_manor`.`arena_coins`, `gameplay_manor`.`arena_participations_today`, `gameplay_manor`.`arena_p
-        count: 300
-      - sql: SELECT `guests_guest`.`id`, `guests_guest`.`manor_id`, `guests_guest`.`template_id`, `guests_guest`.`level`,
-          `guests_guest`.`experience`, `guests_guest`.`attack_bonus`, `guests_guest`.`defense_bonus`, `guests_guest`.`custom_name`,
-          `guests_g
-        count: 300
-      - sql: SELECT `gameplay_manor`.`id` AS `id`, `gameplay_manor`.`region` AS `region`, `gameplay_manor`.`prestige` AS `prestige`,
-          COALESCE((SELECT MAX(U0.`level`) AS `value` FROM `gameplay_building` U0 INNER JOIN `gameplay_buildingtype` U1 ON
-          (U0.`bu
-        count: 300
-      - sql: INSERT INTO `guests_salarypayment` (`manor_id`, `guest_id`, `amount`, `paid_at`, `for_date`) VALUES (%s, %s,
-          %s, %s, %s)
-        count: 300
-      - sql: UPDATE `gameplay_manor` SET `silver` = %s WHERE `gameplay_manor`.`id` = %s
-        count: 300
-      - sql: UPDATE `gameplay_botmaintenancecycle` SET `healing_operation_id` = %s, `salary_operation_id` = %s, `last_reason`
-          = %s, `payload` = %s, `updated_at` = %s WHERE `gameplay_botmaintenancecycle`.`id` = %s
-        count: 300
-      - sql: UPDATE `gameplay_botprofile` SET `next_growth_at` = %s, `maintenance_sequence` = %s, `strength_budget_entries`
-          = %s, `last_strength_increase_at` = %s, `last_planned_at` = %s, `updated_at` = %s WHERE `gameplay_botprofile`.`id`
-          = %s
-        count: 300
-    - batch_size: 10
-      concurrency: 2
-      stage: cycle_attempt_receipt
-      observations: 600
-      duration_p50_ms: 2.805
-      duration_p95_ms: 3.187
-      duration_p99_ms: 3.436
-      queries_max: 4
-      write_queries_max: 2
-      fingerprints:
-      - sql: SELECT `gameplay_botmaintenancecycle`.`id`, `gameplay_botmaintenancecycle`.`cycle_id`, `gameplay_botmaintenancecycle`.`interval_seed`,
-          `gameplay_botmaintenancecycle`.`profile_id`, `gameplay_botmaintenancecycle`.`cycle_ordinal`, `gameplay_bo
-        count: 600
-      - sql: INSERT INTO `gameplay_botmaintenancecycle` (`cycle_id`, `interval_seed`, `profile_id`, `cycle_ordinal`, `trigger`,
-          `max_actions`, `action_ordinal`, `high_cost_actions_used`, `current_action_state`, `last_action_completion_source`,
-          `next_slo
-        count: 300
-      - sql: UPDATE `gameplay_botmaintenancecycle` SET `current_action_state` = %s, `next_decision_at` = %s, `updated_at`
-          = %s WHERE `gameplay_botmaintenancecycle`.`id` = %s
-        count: 300
-      - sql: SELECT %s AS domain_name, `upgrade_complete_at` AS completion_at FROM `gameplay_building` WHERE `manor_id` =
-          %s AND `is_upgrading` = %s UNION ALL SELECT %s AS domain_name, `upgrade_complete_at` AS completion_at FROM `gameplay_playertechnolo
-        count: 300
-      - sql: INSERT INTO `gameplay_botmaintenanceattempt` (`operation_id`, `profile_id`, `cycle_id`, `trigger`, `archetype`,
-          `action_kind`, `round_ordinal`, `action_ordinal_in_round`, `attempt_ordinal`, `outcome`, `reason`, `reason_category`,
-          `dispatche
-        count: 300
-      - sql: UPDATE `gameplay_botmaintenancecycle` SET `current_action_state` = %s, `last_action_completion_source` = %s,
-          `next_slot_due_at` = NULL, `next_decision_at` = NULL, `status` = %s, `completed_at` = %s, `last_reason` = %s, `payload`
-          = %s, `upda
-        count: 300
-    - batch_size: 10
-      concurrency: 2
-      stage: due_backlog_selection
-      observations: 30
-      duration_p50_ms: 6.88
-      duration_p95_ms: 7.832
-      duration_p99_ms: 8.131
-      queries_max: 2
-      write_queries_max: 0
-      fingerprints:
-      - sql: SELECT COUNT(`gameplay_botprofile`.`id`) AS `due_backlog_count`, COUNT(DISTINCT `gameplay_manor`.`region`) AS
-          `region_count` FROM `gameplay_botprofile` LEFT OUTER JOIN `gameplay_arenavirtualreservemember` ON (`gameplay_botprofile`.`id`
-          = `g
-        count: 30
-      - sql: SELECT `gameplay_botprofile`.`id`, `gameplay_botprofile`.`manor_id`, `gameplay_botprofile`.`archetype`, `gameplay_botprofile`.`state`,
-          `gameplay_botprofile`.`prestige_band`, `gameplay_botprofile`.`target_prestige_band`, `gameplay_botprofile
-        count: 30
-    - batch_size: 10
-      concurrency: 2
-      stage: planning_snapshot_preload
-      observations: 30
-      duration_p50_ms: 15.737
-      duration_p95_ms: 16.286
-      duration_p99_ms: 16.425
-      queries_max: 16
-      write_queries_max: 0
-      fingerprints:
-      - sql: SELECT `gameplay_itemtemplate`.`id`, `gameplay_itemtemplate`.`key`, `gameplay_itemtemplate`.`name`, `gameplay_itemtemplate`.`description`,
-          `gameplay_itemtemplate`.`effect_type`, `gameplay_itemtemplate`.`effect_payload`, `gameplay_itemtempla
-        count: 90
-      - sql: SELECT `guests_guest`.`id`, `guests_guest`.`manor_id`, `guests_guest`.`template_id`, `guests_guest`.`level`,
-          `guests_guest`.`experience`, `guests_guest`.`attack_bonus`, `guests_guest`.`defense_bonus`, `guests_guest`.`custom_name`,
-          `guests_g
-        count: 30
-      - sql: SELECT `guests_guestskill`.`id`, `guests_guestskill`.`guest_id`, `guests_guestskill`.`skill_id`, `guests_guestskill`.`source`,
-          `guests_guestskill`.`learned_at`, `guests_skill`.`id`, `guests_skill`.`key`, `guests_skill`.`name`, `guests_skill
-        count: 30
-      - sql: SELECT `guests_gearitem`.`id`, `guests_gearitem`.`manor_id`, `guests_gearitem`.`template_id`, `guests_gearitem`.`guest_id`,
-          `guests_gearitem`.`inventory_backed`, `guests_gearitem`.`level`, `guests_gearitem`.`acquired_at`, `guests_geartempla
-        count: 30
-      - sql: SELECT `guests_salarypayment`.`guest_id` AS `guest_id` FROM `guests_salarypayment` WHERE (`guests_salarypayment`.`for_date`
-          = %s AND `guests_salarypayment`.`guest_id` IN (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)) ORDER BY `guests_salarypayme
-        count: 30
-      - sql: SELECT `gameplay_manor`.`id` AS `id`, `gameplay_manor`.`region` AS `region`, `gameplay_manor`.`prestige` AS `prestige`,
-          COALESCE((SELECT MAX(U0.`level`) AS `value` FROM `gameplay_building` U0 INNER JOIN `gameplay_buildingtype` U1 ON
-          (U0.`bu
-        count: 30
-      - sql: SELECT `gameplay_building`.`id`, `gameplay_building`.`manor_id`, `gameplay_building`.`building_type_id`, `gameplay_building`.`level`,
-          `gameplay_building`.`is_upgrading`, `gameplay_building`.`upgrade_complete_at`, `gameplay_building`.`curren
-        count: 30
-      - sql: SELECT `gameplay_playertechnology`.`id`, `gameplay_playertechnology`.`manor_id`, `gameplay_playertechnology`.`tech_key`,
-          `gameplay_playertechnology`.`level`, `gameplay_playertechnology`.`is_upgrading`, `gameplay_playertechnology`.`upgrade_c
-        count: 30
-      - sql: SELECT `gameplay_playertroop`.`manor_id` AS `manor_id`, SUM(`gameplay_playertroop`.`count`) AS `total` FROM `gameplay_playertroop`
-          WHERE `gameplay_playertroop`.`manor_id` IN (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) GROUP BY ? ORDER BY NULL
-        count: 30
-      - sql: SELECT `gameplay_troopbankstorage`.`manor_id` AS `manor_id`, SUM(`gameplay_troopbankstorage`.`count`) AS `total`
-          FROM `gameplay_troopbankstorage` WHERE `gameplay_troopbankstorage`.`manor_id` IN (%s, %s, %s, %s, %s, %s, %s, %s,
-          %s, %s) GROUP
-        count: 30
-    - batch_size: 10
-      concurrency: 2
-      stage: profile_plan_revalidation
-      observations: 300
-      duration_p50_ms: 2.602
-      duration_p95_ms: 3.008
-      duration_p99_ms: 3.261
-      queries_max: 0
-      write_queries_max: 0
-      fingerprints: []
-    - batch_size: 10
-      concurrency: 2
-      stage: safety_task_wrapup
-      observations: 60
-      duration_p50_ms: 38.036
-      duration_p95_ms: 310.444
-      duration_p99_ms: 581.684
-      queries_max: 7
-      write_queries_max: 1
-      fingerprints:
-      - sql: SELECT `gameplay_botsafetymetricwindow`.`window_id` AS `window_id` FROM `gameplay_botsafetymetricwindow` WHERE
-          `gameplay_botsafetymetricwindow`.`window_id` IN (%s, %s)
-        count: 60
-      - sql: SELECT `window_id`, `kind`, `window_start_at`, `window_end_at`, `finalized_at` FROM `gameplay_botsafetymetricwindow`
-          WHERE `window_id` IN (%s, %s) ORDER BY `window_end_at`, `kind` FOR SHARE
-        count: 60
-      - sql: INSERT INTO `gameplay_botsafetymetricevent` (`event_id`, `metric_name`, `occurred_at`, `dimensions`, `value`,
-          `payload_digest`, `created_at`) VALUES (%s, %s, %s, %s, %s, %s, %s), (%s, %s, %s, %s, %s, %s, %s), (%s, %s, %s,
-          %s, %s, %s, %s), (
-        count: 60
-      - sql: SELECT `gameplay_botmaintenancerecovery`.`id`, `gameplay_botmaintenancerecovery`.`scope`, `gameplay_botmaintenancerecovery`.`entity_key`,
-          `gameplay_botmaintenancerecovery`.`status`, `gameplay_botmaintenancerecovery`.`failure_code`, `gamepla
-        count: 30
-      - sql: SELECT `gameplay_botsafetymetricevent`.`id`, `gameplay_botsafetymetricevent`.`event_id`, `gameplay_botsafetymetricevent`.`occurred_at`,
-          `gameplay_botsafetymetricevent`.`dimensions`, `gameplay_botsafetymetricevent`.`value` FROM `gameplay_bot
-        count: 30
-      - sql: SAVEPOINT `s127358868649664_x2`
-        count: 15
-      - sql: RELEASE SAVEPOINT `s127358868649664_x2`
-        count: 15
-      - sql: SAVEPOINT `s127358868649664_x1`
-        count: 15
-      - sql: RELEASE SAVEPOINT `s127358868649664_x1`
-        count: 15
-      - sql: SAVEPOINT `s127358860256960_x2`
-        count: 15
-    - batch_size: 100
-      concurrency: 1
-      stage: action_domain_writes
-      observations: 3000
-      duration_p50_ms: 10.72
-      duration_p95_ms: 12.154
-      duration_p99_ms: 17.644
-      queries_max: 11
-      write_queries_max: 6
-      fingerprints:
-      - sql: INSERT INTO `gameplay_botmaintenanceattempt` (`operation_id`, `profile_id`, `cycle_id`, `trigger`, `archetype`,
-          `action_kind`, `round_ordinal`, `action_ordinal_in_round`, `attempt_ordinal`, `outcome`, `reason`, `reason_category`,
-          `dispatche
-        count: 6000
-      - sql: SELECT `gameplay_botprofile`.`id`, `gameplay_botprofile`.`manor_id`, `gameplay_botprofile`.`archetype`, `gameplay_botprofile`.`state`,
-          `gameplay_botprofile`.`prestige_band`, `gameplay_botprofile`.`target_prestige_band`, `gameplay_botprofile
-        count: 3000
-      - sql: SELECT `gameplay_botmaintenancecycle`.`id`, `gameplay_botmaintenancecycle`.`cycle_id`, `gameplay_botmaintenancecycle`.`interval_seed`,
-          `gameplay_botmaintenancecycle`.`profile_id`, `gameplay_botmaintenancecycle`.`cycle_ordinal`, `gameplay_bo
-        count: 3000
-      - sql: SELECT `gameplay_manor`.`id`, `gameplay_manor`.`user_id`, `gameplay_manor`.`name`, `gameplay_manor`.`grain`,
-          `gameplay_manor`.`silver`, `gameplay_manor`.`arena_coins`, `gameplay_manor`.`arena_participations_today`, `gameplay_manor`.`arena_p
-        count: 3000
-      - sql: SELECT `guests_guest`.`id`, `guests_guest`.`manor_id`, `guests_guest`.`template_id`, `guests_guest`.`level`,
-          `guests_guest`.`experience`, `guests_guest`.`attack_bonus`, `guests_guest`.`defense_bonus`, `guests_guest`.`custom_name`,
-          `guests_g
-        count: 3000
-      - sql: SELECT `gameplay_manor`.`id` AS `id`, `gameplay_manor`.`region` AS `region`, `gameplay_manor`.`prestige` AS `prestige`,
-          COALESCE((SELECT MAX(U0.`level`) AS `value` FROM `gameplay_building` U0 INNER JOIN `gameplay_buildingtype` U1 ON
-          (U0.`bu
-        count: 3000
-      - sql: INSERT INTO `guests_salarypayment` (`manor_id`, `guest_id`, `amount`, `paid_at`, `for_date`) VALUES (%s, %s,
-          %s, %s, %s)
-        count: 3000
-      - sql: UPDATE `gameplay_manor` SET `silver` = %s WHERE `gameplay_manor`.`id` = %s
-        count: 3000
-      - sql: UPDATE `gameplay_botmaintenancecycle` SET `healing_operation_id` = %s, `salary_operation_id` = %s, `last_reason`
-          = %s, `payload` = %s, `updated_at` = %s WHERE `gameplay_botmaintenancecycle`.`id` = %s
-        count: 3000
-      - sql: UPDATE `gameplay_botprofile` SET `next_growth_at` = %s, `maintenance_sequence` = %s, `strength_budget_entries`
-          = %s, `last_strength_increase_at` = %s, `last_planned_at` = %s, `updated_at` = %s WHERE `gameplay_botprofile`.`id`
-          = %s
-        count: 3000
-    - batch_size: 100
-      concurrency: 1
-      stage: cycle_attempt_receipt
-      observations: 6000
-      duration_p50_ms: 2.823
-      duration_p95_ms: 3.334
-      duration_p99_ms: 4.167
-      queries_max: 4
-      write_queries_max: 2
-      fingerprints:
-      - sql: SELECT `gameplay_botmaintenancecycle`.`id`, `gameplay_botmaintenancecycle`.`cycle_id`, `gameplay_botmaintenancecycle`.`interval_seed`,
-          `gameplay_botmaintenancecycle`.`profile_id`, `gameplay_botmaintenancecycle`.`cycle_ordinal`, `gameplay_bo
-        count: 6000
-      - sql: INSERT INTO `gameplay_botmaintenancecycle` (`cycle_id`, `interval_seed`, `profile_id`, `cycle_ordinal`, `trigger`,
-          `max_actions`, `action_ordinal`, `high_cost_actions_used`, `current_action_state`, `last_action_completion_source`,
-          `next_slo
-        count: 3000
-      - sql: UPDATE `gameplay_botmaintenancecycle` SET `current_action_state` = %s, `next_decision_at` = %s, `updated_at`
-          = %s WHERE `gameplay_botmaintenancecycle`.`id` = %s
-        count: 3000
-      - sql: SELECT %s AS domain_name, `upgrade_complete_at` AS completion_at FROM `gameplay_building` WHERE `manor_id` =
-          %s AND `is_upgrading` = %s UNION ALL SELECT %s AS domain_name, `upgrade_complete_at` AS completion_at FROM `gameplay_playertechnolo
-        count: 3000
-      - sql: INSERT INTO `gameplay_botmaintenanceattempt` (`operation_id`, `profile_id`, `cycle_id`, `trigger`, `archetype`,
-          `action_kind`, `round_ordinal`, `action_ordinal_in_round`, `attempt_ordinal`, `outcome`, `reason`, `reason_category`,
-          `dispatche
-        count: 3000
-      - sql: UPDATE `gameplay_botmaintenancecycle` SET `current_action_state` = %s, `last_action_completion_source` = %s,
-          `next_slot_due_at` = NULL, `next_decision_at` = NULL, `status` = %s, `completed_at` = %s, `last_reason` = %s, `payload`
-          = %s, `upda
-        count: 3000
-    - batch_size: 100
-      concurrency: 1
-      stage: due_backlog_selection
-      observations: 30
-      duration_p50_ms: 16.713
-      duration_p95_ms: 21.861
-      duration_p99_ms: 107.714
-      queries_max: 2
-      write_queries_max: 0
-      fingerprints:
-      - sql: SELECT COUNT(`gameplay_botprofile`.`id`) AS `due_backlog_count`, COUNT(DISTINCT `gameplay_manor`.`region`) AS
-          `region_count` FROM `gameplay_botprofile` LEFT OUTER JOIN `gameplay_arenavirtualreservemember` ON (`gameplay_botprofile`.`id`
-          = `g
-        count: 30
-      - sql: SELECT `gameplay_botprofile`.`id`, `gameplay_botprofile`.`manor_id`, `gameplay_botprofile`.`archetype`, `gameplay_botprofile`.`state`,
-          `gameplay_botprofile`.`prestige_band`, `gameplay_botprofile`.`target_prestige_band`, `gameplay_botprofile
-        count: 30
-    - batch_size: 100
-      concurrency: 1
-      stage: planning_snapshot_preload
-      observations: 30
-      duration_p50_ms: 24.25
-      duration_p95_ms: 31.355
-      duration_p99_ms: 96.519
-      queries_max: 16
-      write_queries_max: 0
-      fingerprints:
-      - sql: SELECT `gameplay_itemtemplate`.`id`, `gameplay_itemtemplate`.`key`, `gameplay_itemtemplate`.`name`, `gameplay_itemtemplate`.`description`,
-          `gameplay_itemtemplate`.`effect_type`, `gameplay_itemtemplate`.`effect_payload`, `gameplay_itemtempla
-        count: 90
-      - sql: SELECT `guests_guest`.`id`, `guests_guest`.`manor_id`, `guests_guest`.`template_id`, `guests_guest`.`level`,
-          `guests_guest`.`experience`, `guests_guest`.`attack_bonus`, `guests_guest`.`defense_bonus`, `guests_guest`.`custom_name`,
-          `guests_g
-        count: 30
-      - sql: SELECT `guests_guestskill`.`id`, `guests_guestskill`.`guest_id`, `guests_guestskill`.`skill_id`, `guests_guestskill`.`source`,
-          `guests_guestskill`.`learned_at`, `guests_skill`.`id`, `guests_skill`.`key`, `guests_skill`.`name`, `guests_skill
-        count: 30
-      - sql: SELECT `guests_gearitem`.`id`, `guests_gearitem`.`manor_id`, `guests_gearitem`.`template_id`, `guests_gearitem`.`guest_id`,
-          `guests_gearitem`.`inventory_backed`, `guests_gearitem`.`level`, `guests_gearitem`.`acquired_at`, `guests_geartempla
-        count: 30
-      - sql: SELECT `guests_salarypayment`.`guest_id` AS `guest_id` FROM `guests_salarypayment` WHERE (`guests_salarypayment`.`for_date`
-          = %s AND `guests_salarypayment`.`guest_id` IN (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-          %
-        count: 30
-      - sql: SELECT `gameplay_manor`.`id` AS `id`, `gameplay_manor`.`region` AS `region`, `gameplay_manor`.`prestige` AS `prestige`,
-          COALESCE((SELECT MAX(U0.`level`) AS `value` FROM `gameplay_building` U0 INNER JOIN `gameplay_buildingtype` U1 ON
-          (U0.`bu
-        count: 30
-      - sql: SELECT `gameplay_building`.`id`, `gameplay_building`.`manor_id`, `gameplay_building`.`building_type_id`, `gameplay_building`.`level`,
-          `gameplay_building`.`is_upgrading`, `gameplay_building`.`upgrade_complete_at`, `gameplay_building`.`curren
-        count: 30
-      - sql: SELECT `gameplay_playertechnology`.`id`, `gameplay_playertechnology`.`manor_id`, `gameplay_playertechnology`.`tech_key`,
-          `gameplay_playertechnology`.`level`, `gameplay_playertechnology`.`is_upgrading`, `gameplay_playertechnology`.`upgrade_c
-        count: 30
-      - sql: SELECT `gameplay_playertroop`.`manor_id` AS `manor_id`, SUM(`gameplay_playertroop`.`count`) AS `total` FROM `gameplay_playertroop`
-          WHERE `gameplay_playertroop`.`manor_id` IN (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %
-        count: 30
-      - sql: SELECT `gameplay_troopbankstorage`.`manor_id` AS `manor_id`, SUM(`gameplay_troopbankstorage`.`count`) AS `total`
-          FROM `gameplay_troopbankstorage` WHERE `gameplay_troopbankstorage`.`manor_id` IN (%s, %s, %s, %s, %s, %s, %s, %s,
-          %s, %s, %s, %
-        count: 30
-    - batch_size: 100
-      concurrency: 1
-      stage: profile_plan_revalidation
-      observations: 3000
-      duration_p50_ms: 2.619
+      duration_p50_ms: 2.723
       duration_p95_ms: 3.039
-      duration_p99_ms: 3.412
+      duration_p99_ms: 3.159
       queries_max: 0
       write_queries_max: 0
       fingerprints: []
-    - batch_size: 100
+    - batch_size: 10
       concurrency: 1
       stage: safety_task_wrapup
       observations: 60
-      duration_p50_ms: 61.016
-      duration_p95_ms: 3026.165
-      duration_p99_ms: 3106.724
+      duration_p50_ms: 27.898
+      duration_p95_ms: 320.486
+      duration_p99_ms: 331.147
       queries_max: 7
       write_queries_max: 1
       fingerprints:
@@ -1316,23 +955,384 @@ maintenance_benchmark:
       - sql: SELECT `gameplay_botsafetymetricevent`.`id`, `gameplay_botsafetymetricevent`.`event_id`, `gameplay_botsafetymetricevent`.`occurred_at`,
           `gameplay_botsafetymetricevent`.`dimensions`, `gameplay_botsafetymetricevent`.`value` FROM `gameplay_bot
         count: 30
-      - sql: SAVEPOINT `s127358987627392_x26626`
+      - sql: SAVEPOINT `s129250014571392_x22069`
         count: 1
-      - sql: RELEASE SAVEPOINT `s127358987627392_x26626`
+      - sql: RELEASE SAVEPOINT `s129250014571392_x22069`
         count: 1
-      - sql: SAVEPOINT `s127358987627392_x26625`
+      - sql: SAVEPOINT `s129250014571392_x22068`
         count: 1
-      - sql: RELEASE SAVEPOINT `s127358987627392_x26625`
+      - sql: RELEASE SAVEPOINT `s129250014571392_x22068`
         count: 1
-      - sql: SAVEPOINT `s127358987627392_x26633`
+      - sql: SAVEPOINT `s129250014571392_x22076`
+        count: 1
+    - batch_size: 10
+      concurrency: 2
+      stage: action_domain_writes
+      observations: 300
+      duration_p50_ms: 10.722
+      duration_p95_ms: 11.612
+      duration_p99_ms: 12.008
+      queries_max: 11
+      write_queries_max: 6
+      fingerprints:
+      - sql: INSERT INTO `gameplay_botmaintenanceattempt` (`operation_id`, `profile_id`, `cycle_id`, `trigger`, `archetype`,
+          `action_kind`, `round_ordinal`, `action_ordinal_in_round`, `attempt_ordinal`, `outcome`, `reason`, `reason_category`,
+          `dispatche
+        count: 600
+      - sql: SELECT `gameplay_botprofile`.`id`, `gameplay_botprofile`.`manor_id`, `gameplay_botprofile`.`archetype`, `gameplay_botprofile`.`state`,
+          `gameplay_botprofile`.`prestige_band`, `gameplay_botprofile`.`target_prestige_band`, `gameplay_botprofile
+        count: 300
+      - sql: SELECT `gameplay_botmaintenancecycle`.`id`, `gameplay_botmaintenancecycle`.`cycle_id`, `gameplay_botmaintenancecycle`.`interval_seed`,
+          `gameplay_botmaintenancecycle`.`profile_id`, `gameplay_botmaintenancecycle`.`cycle_ordinal`, `gameplay_bo
+        count: 300
+      - sql: SELECT `gameplay_manor`.`id`, `gameplay_manor`.`user_id`, `gameplay_manor`.`name`, `gameplay_manor`.`grain`,
+          `gameplay_manor`.`silver`, `gameplay_manor`.`arena_coins`, `gameplay_manor`.`arena_participations_today`, `gameplay_manor`.`arena_p
+        count: 300
+      - sql: SELECT `guests_guest`.`id`, `guests_guest`.`manor_id`, `guests_guest`.`template_id`, `guests_guest`.`level`,
+          `guests_guest`.`experience`, `guests_guest`.`attack_bonus`, `guests_guest`.`defense_bonus`, `guests_guest`.`custom_name`,
+          `guests_g
+        count: 300
+      - sql: SELECT `gameplay_manor`.`id` AS `id`, `gameplay_manor`.`region` AS `region`, `gameplay_manor`.`prestige` AS `prestige`,
+          COALESCE((SELECT MAX(U0.`level`) AS `value` FROM `gameplay_building` U0 INNER JOIN `gameplay_buildingtype` U1 ON
+          (U0.`bu
+        count: 300
+      - sql: INSERT INTO `guests_salarypayment` (`manor_id`, `guest_id`, `amount`, `paid_at`, `for_date`) VALUES (%s, %s,
+          %s, %s, %s)
+        count: 300
+      - sql: UPDATE `gameplay_manor` SET `silver` = %s WHERE `gameplay_manor`.`id` = %s
+        count: 300
+      - sql: UPDATE `gameplay_botmaintenancecycle` SET `healing_operation_id` = %s, `salary_operation_id` = %s, `last_reason`
+          = %s, `payload` = %s, `updated_at` = %s WHERE `gameplay_botmaintenancecycle`.`id` = %s
+        count: 300
+      - sql: UPDATE `gameplay_botprofile` SET `next_growth_at` = %s, `maintenance_sequence` = %s, `strength_budget_entries`
+          = %s, `last_strength_increase_at` = %s, `last_planned_at` = %s, `updated_at` = %s WHERE `gameplay_botprofile`.`id`
+          = %s
+        count: 300
+    - batch_size: 10
+      concurrency: 2
+      stage: cycle_attempt_receipt
+      observations: 600
+      duration_p50_ms: 2.809
+      duration_p95_ms: 3.212
+      duration_p99_ms: 3.383
+      queries_max: 4
+      write_queries_max: 2
+      fingerprints:
+      - sql: SELECT `gameplay_botmaintenancecycle`.`id`, `gameplay_botmaintenancecycle`.`cycle_id`, `gameplay_botmaintenancecycle`.`interval_seed`,
+          `gameplay_botmaintenancecycle`.`profile_id`, `gameplay_botmaintenancecycle`.`cycle_ordinal`, `gameplay_bo
+        count: 600
+      - sql: INSERT INTO `gameplay_botmaintenancecycle` (`cycle_id`, `interval_seed`, `profile_id`, `cycle_ordinal`, `trigger`,
+          `max_actions`, `action_ordinal`, `high_cost_actions_used`, `current_action_state`, `last_action_completion_source`,
+          `next_slo
+        count: 300
+      - sql: UPDATE `gameplay_botmaintenancecycle` SET `current_action_state` = %s, `next_decision_at` = %s, `updated_at`
+          = %s WHERE `gameplay_botmaintenancecycle`.`id` = %s
+        count: 300
+      - sql: SELECT %s AS domain_name, `upgrade_complete_at` AS completion_at FROM `gameplay_building` WHERE `manor_id` =
+          %s AND `is_upgrading` = %s UNION ALL SELECT %s AS domain_name, `upgrade_complete_at` AS completion_at FROM `gameplay_playertechnolo
+        count: 300
+      - sql: INSERT INTO `gameplay_botmaintenanceattempt` (`operation_id`, `profile_id`, `cycle_id`, `trigger`, `archetype`,
+          `action_kind`, `round_ordinal`, `action_ordinal_in_round`, `attempt_ordinal`, `outcome`, `reason`, `reason_category`,
+          `dispatche
+        count: 300
+      - sql: UPDATE `gameplay_botmaintenancecycle` SET `current_action_state` = %s, `last_action_completion_source` = %s,
+          `next_slot_due_at` = NULL, `next_decision_at` = NULL, `status` = %s, `completed_at` = %s, `last_reason` = %s, `payload`
+          = %s, `upda
+        count: 300
+    - batch_size: 10
+      concurrency: 2
+      stage: due_backlog_selection
+      observations: 30
+      duration_p50_ms: 6.998
+      duration_p95_ms: 8.264
+      duration_p99_ms: 8.579
+      queries_max: 2
+      write_queries_max: 0
+      fingerprints:
+      - sql: SELECT COUNT(`gameplay_botprofile`.`id`) AS `due_backlog_count`, COUNT(DISTINCT `gameplay_manor`.`region`) AS
+          `region_count` FROM `gameplay_botprofile` LEFT OUTER JOIN `gameplay_arenavirtualreservemember` ON (`gameplay_botprofile`.`id`
+          = `g
+        count: 30
+      - sql: SELECT `gameplay_botprofile`.`id`, `gameplay_botprofile`.`manor_id`, `gameplay_botprofile`.`archetype`, `gameplay_botprofile`.`state`,
+          `gameplay_botprofile`.`prestige_band`, `gameplay_botprofile`.`target_prestige_band`, `gameplay_botprofile
+        count: 30
+    - batch_size: 10
+      concurrency: 2
+      stage: planning_snapshot_preload
+      observations: 30
+      duration_p50_ms: 15.802
+      duration_p95_ms: 16.44
+      duration_p99_ms: 16.756
+      queries_max: 16
+      write_queries_max: 0
+      fingerprints:
+      - sql: SELECT `gameplay_itemtemplate`.`id`, `gameplay_itemtemplate`.`key`, `gameplay_itemtemplate`.`name`, `gameplay_itemtemplate`.`description`,
+          `gameplay_itemtemplate`.`effect_type`, `gameplay_itemtemplate`.`effect_payload`, `gameplay_itemtempla
+        count: 90
+      - sql: SELECT `guests_guest`.`id`, `guests_guest`.`manor_id`, `guests_guest`.`template_id`, `guests_guest`.`level`,
+          `guests_guest`.`experience`, `guests_guest`.`attack_bonus`, `guests_guest`.`defense_bonus`, `guests_guest`.`custom_name`,
+          `guests_g
+        count: 30
+      - sql: SELECT `guests_guestskill`.`id`, `guests_guestskill`.`guest_id`, `guests_guestskill`.`skill_id`, `guests_guestskill`.`source`,
+          `guests_guestskill`.`learned_at`, `guests_skill`.`id`, `guests_skill`.`key`, `guests_skill`.`name`, `guests_skill
+        count: 30
+      - sql: SELECT `guests_gearitem`.`id`, `guests_gearitem`.`manor_id`, `guests_gearitem`.`template_id`, `guests_gearitem`.`guest_id`,
+          `guests_gearitem`.`inventory_backed`, `guests_gearitem`.`level`, `guests_gearitem`.`acquired_at`, `guests_geartempla
+        count: 30
+      - sql: SELECT `guests_salarypayment`.`guest_id` AS `guest_id` FROM `guests_salarypayment` WHERE (`guests_salarypayment`.`for_date`
+          = %s AND `guests_salarypayment`.`guest_id` IN (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)) ORDER BY `guests_salarypayme
+        count: 30
+      - sql: SELECT `gameplay_manor`.`id` AS `id`, `gameplay_manor`.`region` AS `region`, `gameplay_manor`.`prestige` AS `prestige`,
+          COALESCE((SELECT MAX(U0.`level`) AS `value` FROM `gameplay_building` U0 INNER JOIN `gameplay_buildingtype` U1 ON
+          (U0.`bu
+        count: 30
+      - sql: SELECT `gameplay_building`.`id`, `gameplay_building`.`manor_id`, `gameplay_building`.`building_type_id`, `gameplay_building`.`level`,
+          `gameplay_building`.`is_upgrading`, `gameplay_building`.`upgrade_complete_at`, `gameplay_building`.`curren
+        count: 30
+      - sql: SELECT `gameplay_playertechnology`.`id`, `gameplay_playertechnology`.`manor_id`, `gameplay_playertechnology`.`tech_key`,
+          `gameplay_playertechnology`.`level`, `gameplay_playertechnology`.`is_upgrading`, `gameplay_playertechnology`.`upgrade_c
+        count: 30
+      - sql: SELECT `gameplay_playertroop`.`manor_id` AS `manor_id`, SUM(`gameplay_playertroop`.`count`) AS `total` FROM `gameplay_playertroop`
+          WHERE `gameplay_playertroop`.`manor_id` IN (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) GROUP BY ? ORDER BY NULL
+        count: 30
+      - sql: SELECT `gameplay_troopbankstorage`.`manor_id` AS `manor_id`, SUM(`gameplay_troopbankstorage`.`count`) AS `total`
+          FROM `gameplay_troopbankstorage` WHERE `gameplay_troopbankstorage`.`manor_id` IN (%s, %s, %s, %s, %s, %s, %s, %s,
+          %s, %s) GROUP
+        count: 30
+    - batch_size: 10
+      concurrency: 2
+      stage: profile_plan_revalidation
+      observations: 300
+      duration_p50_ms: 2.68
+      duration_p95_ms: 3.13
+      duration_p99_ms: 3.567
+      queries_max: 0
+      write_queries_max: 0
+      fingerprints: []
+    - batch_size: 10
+      concurrency: 2
+      stage: safety_task_wrapup
+      observations: 60
+      duration_p50_ms: 21.353
+      duration_p95_ms: 310.826
+      duration_p99_ms: 321.268
+      queries_max: 7
+      write_queries_max: 1
+      fingerprints:
+      - sql: SELECT `gameplay_botsafetymetricwindow`.`window_id` AS `window_id` FROM `gameplay_botsafetymetricwindow` WHERE
+          `gameplay_botsafetymetricwindow`.`window_id` IN (%s, %s)
+        count: 60
+      - sql: SELECT `window_id`, `kind`, `window_start_at`, `window_end_at`, `finalized_at` FROM `gameplay_botsafetymetricwindow`
+          WHERE `window_id` IN (%s, %s) ORDER BY `window_end_at`, `kind` FOR SHARE
+        count: 60
+      - sql: INSERT INTO `gameplay_botsafetymetricevent` (`event_id`, `metric_name`, `occurred_at`, `dimensions`, `value`,
+          `payload_digest`, `created_at`) VALUES (%s, %s, %s, %s, %s, %s, %s), (%s, %s, %s, %s, %s, %s, %s), (%s, %s, %s,
+          %s, %s, %s, %s), (
+        count: 60
+      - sql: SELECT `gameplay_botmaintenancerecovery`.`id`, `gameplay_botmaintenancerecovery`.`scope`, `gameplay_botmaintenancerecovery`.`entity_key`,
+          `gameplay_botmaintenancerecovery`.`status`, `gameplay_botmaintenancerecovery`.`failure_code`, `gamepla
+        count: 30
+      - sql: SELECT `gameplay_botsafetymetricevent`.`id`, `gameplay_botsafetymetricevent`.`event_id`, `gameplay_botsafetymetricevent`.`occurred_at`,
+          `gameplay_botsafetymetricevent`.`dimensions`, `gameplay_botsafetymetricevent`.`value` FROM `gameplay_bot
+        count: 30
+      - sql: SAVEPOINT `s129249887381184_x2`
+        count: 16
+      - sql: RELEASE SAVEPOINT `s129249887381184_x2`
+        count: 16
+      - sql: SAVEPOINT `s129249887381184_x1`
+        count: 16
+      - sql: RELEASE SAVEPOINT `s129249887381184_x1`
+        count: 16
+      - sql: SAVEPOINT `s129249895773888_x2`
+        count: 14
+    - batch_size: 100
+      concurrency: 1
+      stage: action_domain_writes
+      observations: 3000
+      duration_p50_ms: 11.021
+      duration_p95_ms: 13.055
+      duration_p99_ms: 21.479
+      queries_max: 11
+      write_queries_max: 6
+      fingerprints:
+      - sql: INSERT INTO `gameplay_botmaintenanceattempt` (`operation_id`, `profile_id`, `cycle_id`, `trigger`, `archetype`,
+          `action_kind`, `round_ordinal`, `action_ordinal_in_round`, `attempt_ordinal`, `outcome`, `reason`, `reason_category`,
+          `dispatche
+        count: 6000
+      - sql: SELECT `gameplay_botprofile`.`id`, `gameplay_botprofile`.`manor_id`, `gameplay_botprofile`.`archetype`, `gameplay_botprofile`.`state`,
+          `gameplay_botprofile`.`prestige_band`, `gameplay_botprofile`.`target_prestige_band`, `gameplay_botprofile
+        count: 3000
+      - sql: SELECT `gameplay_botmaintenancecycle`.`id`, `gameplay_botmaintenancecycle`.`cycle_id`, `gameplay_botmaintenancecycle`.`interval_seed`,
+          `gameplay_botmaintenancecycle`.`profile_id`, `gameplay_botmaintenancecycle`.`cycle_ordinal`, `gameplay_bo
+        count: 3000
+      - sql: SELECT `gameplay_manor`.`id`, `gameplay_manor`.`user_id`, `gameplay_manor`.`name`, `gameplay_manor`.`grain`,
+          `gameplay_manor`.`silver`, `gameplay_manor`.`arena_coins`, `gameplay_manor`.`arena_participations_today`, `gameplay_manor`.`arena_p
+        count: 3000
+      - sql: SELECT `guests_guest`.`id`, `guests_guest`.`manor_id`, `guests_guest`.`template_id`, `guests_guest`.`level`,
+          `guests_guest`.`experience`, `guests_guest`.`attack_bonus`, `guests_guest`.`defense_bonus`, `guests_guest`.`custom_name`,
+          `guests_g
+        count: 3000
+      - sql: SELECT `gameplay_manor`.`id` AS `id`, `gameplay_manor`.`region` AS `region`, `gameplay_manor`.`prestige` AS `prestige`,
+          COALESCE((SELECT MAX(U0.`level`) AS `value` FROM `gameplay_building` U0 INNER JOIN `gameplay_buildingtype` U1 ON
+          (U0.`bu
+        count: 3000
+      - sql: INSERT INTO `guests_salarypayment` (`manor_id`, `guest_id`, `amount`, `paid_at`, `for_date`) VALUES (%s, %s,
+          %s, %s, %s)
+        count: 3000
+      - sql: UPDATE `gameplay_manor` SET `silver` = %s WHERE `gameplay_manor`.`id` = %s
+        count: 3000
+      - sql: UPDATE `gameplay_botmaintenancecycle` SET `healing_operation_id` = %s, `salary_operation_id` = %s, `last_reason`
+          = %s, `payload` = %s, `updated_at` = %s WHERE `gameplay_botmaintenancecycle`.`id` = %s
+        count: 3000
+      - sql: UPDATE `gameplay_botprofile` SET `next_growth_at` = %s, `maintenance_sequence` = %s, `strength_budget_entries`
+          = %s, `last_strength_increase_at` = %s, `last_planned_at` = %s, `updated_at` = %s WHERE `gameplay_botprofile`.`id`
+          = %s
+        count: 3000
+    - batch_size: 100
+      concurrency: 1
+      stage: cycle_attempt_receipt
+      observations: 6000
+      duration_p50_ms: 2.892
+      duration_p95_ms: 3.664
+      duration_p99_ms: 5.806
+      queries_max: 4
+      write_queries_max: 2
+      fingerprints:
+      - sql: SELECT `gameplay_botmaintenancecycle`.`id`, `gameplay_botmaintenancecycle`.`cycle_id`, `gameplay_botmaintenancecycle`.`interval_seed`,
+          `gameplay_botmaintenancecycle`.`profile_id`, `gameplay_botmaintenancecycle`.`cycle_ordinal`, `gameplay_bo
+        count: 6000
+      - sql: INSERT INTO `gameplay_botmaintenancecycle` (`cycle_id`, `interval_seed`, `profile_id`, `cycle_ordinal`, `trigger`,
+          `max_actions`, `action_ordinal`, `high_cost_actions_used`, `current_action_state`, `last_action_completion_source`,
+          `next_slo
+        count: 3000
+      - sql: UPDATE `gameplay_botmaintenancecycle` SET `current_action_state` = %s, `next_decision_at` = %s, `updated_at`
+          = %s WHERE `gameplay_botmaintenancecycle`.`id` = %s
+        count: 3000
+      - sql: SELECT %s AS domain_name, `upgrade_complete_at` AS completion_at FROM `gameplay_building` WHERE `manor_id` =
+          %s AND `is_upgrading` = %s UNION ALL SELECT %s AS domain_name, `upgrade_complete_at` AS completion_at FROM `gameplay_playertechnolo
+        count: 3000
+      - sql: INSERT INTO `gameplay_botmaintenanceattempt` (`operation_id`, `profile_id`, `cycle_id`, `trigger`, `archetype`,
+          `action_kind`, `round_ordinal`, `action_ordinal_in_round`, `attempt_ordinal`, `outcome`, `reason`, `reason_category`,
+          `dispatche
+        count: 3000
+      - sql: UPDATE `gameplay_botmaintenancecycle` SET `current_action_state` = %s, `last_action_completion_source` = %s,
+          `next_slot_due_at` = NULL, `next_decision_at` = NULL, `status` = %s, `completed_at` = %s, `last_reason` = %s, `payload`
+          = %s, `upda
+        count: 3000
+    - batch_size: 100
+      concurrency: 1
+      stage: due_backlog_selection
+      observations: 30
+      duration_p50_ms: 17.789
+      duration_p95_ms: 23.791
+      duration_p99_ms: 28.748
+      queries_max: 2
+      write_queries_max: 0
+      fingerprints:
+      - sql: SELECT COUNT(`gameplay_botprofile`.`id`) AS `due_backlog_count`, COUNT(DISTINCT `gameplay_manor`.`region`) AS
+          `region_count` FROM `gameplay_botprofile` LEFT OUTER JOIN `gameplay_arenavirtualreservemember` ON (`gameplay_botprofile`.`id`
+          = `g
+        count: 30
+      - sql: SELECT `gameplay_botprofile`.`id`, `gameplay_botprofile`.`manor_id`, `gameplay_botprofile`.`archetype`, `gameplay_botprofile`.`state`,
+          `gameplay_botprofile`.`prestige_band`, `gameplay_botprofile`.`target_prestige_band`, `gameplay_botprofile
+        count: 30
+    - batch_size: 100
+      concurrency: 1
+      stage: planning_snapshot_preload
+      observations: 30
+      duration_p50_ms: 24.547
+      duration_p95_ms: 83.849
+      duration_p99_ms: 101.697
+      queries_max: 16
+      write_queries_max: 0
+      fingerprints:
+      - sql: SELECT `gameplay_itemtemplate`.`id`, `gameplay_itemtemplate`.`key`, `gameplay_itemtemplate`.`name`, `gameplay_itemtemplate`.`description`,
+          `gameplay_itemtemplate`.`effect_type`, `gameplay_itemtemplate`.`effect_payload`, `gameplay_itemtempla
+        count: 90
+      - sql: SELECT `guests_guest`.`id`, `guests_guest`.`manor_id`, `guests_guest`.`template_id`, `guests_guest`.`level`,
+          `guests_guest`.`experience`, `guests_guest`.`attack_bonus`, `guests_guest`.`defense_bonus`, `guests_guest`.`custom_name`,
+          `guests_g
+        count: 30
+      - sql: SELECT `guests_guestskill`.`id`, `guests_guestskill`.`guest_id`, `guests_guestskill`.`skill_id`, `guests_guestskill`.`source`,
+          `guests_guestskill`.`learned_at`, `guests_skill`.`id`, `guests_skill`.`key`, `guests_skill`.`name`, `guests_skill
+        count: 30
+      - sql: SELECT `guests_gearitem`.`id`, `guests_gearitem`.`manor_id`, `guests_gearitem`.`template_id`, `guests_gearitem`.`guest_id`,
+          `guests_gearitem`.`inventory_backed`, `guests_gearitem`.`level`, `guests_gearitem`.`acquired_at`, `guests_geartempla
+        count: 30
+      - sql: SELECT `guests_salarypayment`.`guest_id` AS `guest_id` FROM `guests_salarypayment` WHERE (`guests_salarypayment`.`for_date`
+          = %s AND `guests_salarypayment`.`guest_id` IN (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+          %
+        count: 30
+      - sql: SELECT `gameplay_manor`.`id` AS `id`, `gameplay_manor`.`region` AS `region`, `gameplay_manor`.`prestige` AS `prestige`,
+          COALESCE((SELECT MAX(U0.`level`) AS `value` FROM `gameplay_building` U0 INNER JOIN `gameplay_buildingtype` U1 ON
+          (U0.`bu
+        count: 30
+      - sql: SELECT `gameplay_building`.`id`, `gameplay_building`.`manor_id`, `gameplay_building`.`building_type_id`, `gameplay_building`.`level`,
+          `gameplay_building`.`is_upgrading`, `gameplay_building`.`upgrade_complete_at`, `gameplay_building`.`curren
+        count: 30
+      - sql: SELECT `gameplay_playertechnology`.`id`, `gameplay_playertechnology`.`manor_id`, `gameplay_playertechnology`.`tech_key`,
+          `gameplay_playertechnology`.`level`, `gameplay_playertechnology`.`is_upgrading`, `gameplay_playertechnology`.`upgrade_c
+        count: 30
+      - sql: SELECT `gameplay_playertroop`.`manor_id` AS `manor_id`, SUM(`gameplay_playertroop`.`count`) AS `total` FROM `gameplay_playertroop`
+          WHERE `gameplay_playertroop`.`manor_id` IN (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %
+        count: 30
+      - sql: SELECT `gameplay_troopbankstorage`.`manor_id` AS `manor_id`, SUM(`gameplay_troopbankstorage`.`count`) AS `total`
+          FROM `gameplay_troopbankstorage` WHERE `gameplay_troopbankstorage`.`manor_id` IN (%s, %s, %s, %s, %s, %s, %s, %s,
+          %s, %s, %s, %
+        count: 30
+    - batch_size: 100
+      concurrency: 1
+      stage: profile_plan_revalidation
+      observations: 3000
+      duration_p50_ms: 2.76
+      duration_p95_ms: 3.162
+      duration_p99_ms: 4.073
+      queries_max: 0
+      write_queries_max: 0
+      fingerprints: []
+    - batch_size: 100
+      concurrency: 1
+      stage: safety_task_wrapup
+      observations: 60
+      duration_p50_ms: 61.334
+      duration_p95_ms: 3086.722
+      duration_p99_ms: 3368.487
+      queries_max: 14
+      write_queries_max: 2
+      fingerprints:
+      - sql: SELECT `gameplay_botsafetymetricwindow`.`window_id` AS `window_id` FROM `gameplay_botsafetymetricwindow` WHERE
+          `gameplay_botsafetymetricwindow`.`window_id` IN (%s, %s)
+        count: 60
+      - sql: SELECT `window_id`, `kind`, `window_start_at`, `window_end_at`, `finalized_at` FROM `gameplay_botsafetymetricwindow`
+          WHERE `window_id` IN (%s, %s) ORDER BY `window_end_at`, `kind` FOR SHARE
+        count: 59
+      - sql: INSERT INTO `gameplay_botsafetymetricevent` (`event_id`, `metric_name`, `occurred_at`, `dimensions`, `value`,
+          `payload_digest`, `created_at`) VALUES (%s, %s, %s, %s, %s, %s, %s), (%s, %s, %s, %s, %s, %s, %s), (%s, %s, %s,
+          %s, %s, %s, %s), (
+        count: 59
+      - sql: SELECT `gameplay_botmaintenancerecovery`.`id`, `gameplay_botmaintenancerecovery`.`scope`, `gameplay_botmaintenancerecovery`.`entity_key`,
+          `gameplay_botmaintenancerecovery`.`status`, `gameplay_botmaintenancerecovery`.`failure_code`, `gamepla
+        count: 30
+      - sql: SELECT `gameplay_botsafetymetricevent`.`id`, `gameplay_botsafetymetricevent`.`event_id`, `gameplay_botsafetymetricevent`.`occurred_at`,
+          `gameplay_botsafetymetricevent`.`dimensions`, `gameplay_botsafetymetricevent`.`value` FROM `gameplay_bot
+        count: 30
+      - sql: SAVEPOINT `s129250014571392_x26626`
+        count: 1
+      - sql: RELEASE SAVEPOINT `s129250014571392_x26626`
+        count: 1
+      - sql: SAVEPOINT `s129250014571392_x26625`
+        count: 1
+      - sql: RELEASE SAVEPOINT `s129250014571392_x26625`
+        count: 1
+      - sql: SAVEPOINT `s129250014571392_x26635`
         count: 1
     - batch_size: 100
       concurrency: 2
       stage: action_domain_writes
       observations: 3000
-      duration_p50_ms: 10.687
-      duration_p95_ms: 11.989
-      duration_p99_ms: 14.986
+      duration_p50_ms: 10.987
+      duration_p95_ms: 12.553
+      duration_p99_ms: 20.04
       queries_max: 11
       write_queries_max: 6
       fingerprints:
@@ -1373,9 +1373,9 @@ maintenance_benchmark:
       concurrency: 2
       stage: cycle_attempt_receipt
       observations: 6000
-      duration_p50_ms: 2.812
-      duration_p95_ms: 3.329
-      duration_p99_ms: 3.966
+      duration_p50_ms: 2.879
+      duration_p95_ms: 3.614
+      duration_p99_ms: 4.522
       queries_max: 4
       write_queries_max: 2
       fingerprints:
@@ -1404,9 +1404,9 @@ maintenance_benchmark:
       concurrency: 2
       stage: due_backlog_selection
       observations: 30
-      duration_p50_ms: 17.849
-      duration_p95_ms: 23.397
-      duration_p99_ms: 83.7
+      duration_p50_ms: 17.741
+      duration_p95_ms: 23.098
+      duration_p99_ms: 24.69
       queries_max: 2
       write_queries_max: 0
       fingerprints:
@@ -1421,9 +1421,9 @@ maintenance_benchmark:
       concurrency: 2
       stage: planning_snapshot_preload
       observations: 30
-      duration_p50_ms: 24.404
-      duration_p95_ms: 94.371
-      duration_p99_ms: 95.507
+      duration_p50_ms: 24.781
+      duration_p95_ms: 26.888
+      duration_p99_ms: 105.901
       queries_max: 16
       write_queries_max: 0
       fingerprints:
@@ -1465,9 +1465,9 @@ maintenance_benchmark:
       concurrency: 2
       stage: profile_plan_revalidation
       observations: 3000
-      duration_p50_ms: 2.602
-      duration_p95_ms: 2.99
-      duration_p99_ms: 3.481
+      duration_p50_ms: 2.743
+      duration_p95_ms: 3.144
+      duration_p99_ms: 3.618
       queries_max: 0
       write_queries_max: 0
       fingerprints: []
@@ -1475,9 +1475,9 @@ maintenance_benchmark:
       concurrency: 2
       stage: safety_task_wrapup
       observations: 60
-      duration_p50_ms: 33.032
-      duration_p95_ms: 3061.245
-      duration_p99_ms: 3319.201
+      duration_p50_ms: 22.764
+      duration_p95_ms: 3064.552
+      duration_p99_ms: 3143.877
       queries_max: 7
       write_queries_max: 1
       fingerprints:
@@ -1497,33 +1497,33 @@ maintenance_benchmark:
       - sql: SELECT `gameplay_botsafetymetricevent`.`id`, `gameplay_botsafetymetricevent`.`event_id`, `gameplay_botsafetymetricevent`.`occurred_at`,
           `gameplay_botsafetymetricevent`.`dimensions`, `gameplay_botsafetymetricevent`.`value` FROM `gameplay_bot
         count: 30
-      - sql: SAVEPOINT `s127358868649664_x2`
+      - sql: SAVEPOINT `s129249895773888_x2`
         count: 19
-      - sql: RELEASE SAVEPOINT `s127358868649664_x2`
+      - sql: RELEASE SAVEPOINT `s129249895773888_x2`
         count: 19
-      - sql: SAVEPOINT `s127358868649664_x1`
+      - sql: SAVEPOINT `s129249895773888_x1`
         count: 19
-      - sql: RELEASE SAVEPOINT `s127358868649664_x1`
+      - sql: RELEASE SAVEPOINT `s129249895773888_x1`
         count: 19
-      - sql: SAVEPOINT `s127358860256960_x2`
+      - sql: SAVEPOINT `s129249887381184_x2`
         count: 11
   canonical_execution:
     command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-e
-    execution_timestamp_utc: '2026-08-10T20:54:46Z'
-    result_summary: 38 passed in 1827.51s
+    execution_timestamp_utc: '2026-08-11T00:25:50Z'
+    result_summary: 38 passed in 1970.05s
   all_six_cells_passed: true
 regression_evidence:
   gate_e_contract:
     command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-e
-    result: 859 passed in 164.64s
+    result: 859 passed in 164.92s
   gate_e_real_service:
     command: DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-e
-    result: 38 passed in 1827.51s
+    result: 38 passed in 1970.05s
   canonical_gate_a:
     status: passed
-    execution_timestamp_utc: '2026-08-10T20:12:44Z'
+    execution_timestamp_utc: '2026-08-10T23:41:21Z'
     result: 181 passed
-    detail: 169 contract in 14.92s; 12 real-service in 129.19s
+    detail: 169 contract in 15.49s; 12 real-service in 131.30s
 static_gates:
   full_mypy:
     status: passed

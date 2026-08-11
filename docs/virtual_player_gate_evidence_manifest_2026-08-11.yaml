@@ -1,6 +1,6 @@
 schema_version: 1
 manifest_id: virtual_player_gate_a_evidence_2026_08_11
-recorded_at_utc: '2026-08-10T20:12:44Z'
+recorded_at_utc: '2026-08-10T23:41:21Z'
 scope:
   evidence_governance_only: true
   project_stage: development
@@ -28,9 +28,9 @@ canonical_gate:
     credentials_recorded: false
   execution:
     status: passed
-    execution_timestamp_utc: '2026-08-10T20:12:44Z'
+    execution_timestamp_utc: '2026-08-10T23:41:21Z'
     timestamp_status: captured
-    result_summary: 181 passed (169 contract in 14.92s; 12 real-service in 129.19s)
+    result_summary: 181 passed (169 contract in 15.49s; 12 real-service in 131.30s)
     reason: canonical_target_completed_successfully
 suite_selection:
   source: Makefile
@@ -52,7 +52,7 @@ suite_selection:
 collection:
   status: collected
   tests_executed: false
-  collected_at_utc: '2026-08-10T20:10:15Z'
+  collected_at_utc: '2026-08-10T23:38:49Z'
   selection: union_of_makefile_suite_variables
   pytest_arguments:
   - --collect-only
