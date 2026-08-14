@@ -414,7 +414,7 @@ def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
     _ensure_guest_capacity(manor)
 
     from guests.models import GuestTemplate
-    from guests.services.recruitment_guests import create_guest_from_template
+    from guests.services.recruitment_guests import build_recruitment_custom_name, create_guest_from_template
 
     template = GuestTemplate.objects.filter(key=chosen_key).first()
     if not template:
@@ -432,10 +432,12 @@ def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
 
     _consume_required_items_locked(manor, payload)
 
+    summon_rng = inventory_random.Random()
     guest = create_guest_from_template(
         manor=manor,
         template=template,
-        rng=inventory_random.Random(),
+        custom_name=build_recruitment_custom_name(template, summon_rng),
+        rng=summon_rng,
     )
 
     rarity_display = template.get_rarity_display()

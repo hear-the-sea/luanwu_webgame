@@ -148,7 +148,7 @@ def test_arena_event_detail_view_renders(arena_client, django_user_model):
 
 
 @pytest.mark.django_db
-def test_arena_event_detail_marks_virtual_opponent(arena_client, django_user_model):
+def test_arena_event_detail_hides_virtual_opponent_label(arena_client, django_user_model):
     client, manor = arena_client
     virtual_user = django_user_model.objects.create_user(
         username="arena_detail_virtual_opponent",
@@ -181,7 +181,7 @@ def test_arena_event_detail_marks_virtual_opponent(arena_client, django_user_mod
     response = client.get(reverse("gameplay:arena_event_detail", args=[tournament.id]))
 
     assert response.status_code == 200
-    assert "系统参赛者" in response.content.decode("utf-8")
+    assert "系统参赛者" not in response.content.decode("utf-8")
 
 
 @pytest.mark.django_db
@@ -220,7 +220,9 @@ def test_arena_coop_detail_keeps_virtual_damage_out_of_real_reward_ranking(arena
     response = client.get(reverse("gameplay:arena_coop_detail", args=[event.id]))
 
     assert response.status_code == 200
-    assert "系统参赛者伤害" in response.content.decode("utf-8")
+    body = response.content.decode("utf-8")
+    assert "系统参赛者伤害" not in body
+    assert virtual_entry.manor.display_name in body
     assert [row["manor_name"] for row in response.context["contribution_rows"]] == [manor.display_name]
     assert [row["manor_name"] for row in response.context["virtual_contribution_rows"]] == [
         virtual_entry.manor.display_name

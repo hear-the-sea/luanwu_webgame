@@ -28,8 +28,8 @@ buildings:
     category: resource
     description: 兵马未动，粮草先行。江湖中人行走四方，腹中无粮可走不远。升级可提升粮食产量。
     resource_type: grain
-    base_rate_per_hour: 850
-    rate_growth: 0.1197551
+    base_rate_per_hour: 1500
+    rate_growth: 0.8
     base_upgrade_time: 180
     time_growth: 1.22
     base_cost:
@@ -42,8 +42,8 @@ buildings:
     category: resource
     description: 有道是"钱能通神"，行走江湖哪能没有银两傍身？此处便是生财之道。升级可提升银两产量。
     resource_type: silver
-    base_rate_per_hour: 500
-    rate_growth: 0.17
+    base_rate_per_hour: 1200
+    rate_growth: 0.8
     base_upgrade_time: 210
     time_growth: 1.25
     base_cost:
@@ -57,7 +57,7 @@ buildings:
     description: 刀光剑影之后，且来此处洗去一身风尘。热汤沐浴，疲惫尽消，内力恢复更快。升级可提升银两产量和门客恢复速度。
     resource_type: silver
     base_rate_per_hour: 345
-    rate_growth: 0.1
+    rate_growth: 1
     base_upgrade_time: 300
     time_growth: 1.25
     base_cost:
@@ -71,7 +71,7 @@ buildings:
     description: 英雄也有三急时。此处虽不雅，却能化腐朽为神奇，肥水不流外人田。升级可提升粮食和银两产量。
     resource_type: grain
     base_rate_per_hour: 430
-    rate_growth: 0.15
+    rate_growth: 1.2
     base_upgrade_time: 300
     time_growth: 1.25
     base_cost:

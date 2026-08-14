@@ -34,6 +34,7 @@
 | [虚拟玩家 Gate E readiness 证据（2026-08-09）](virtual_player_gate_e_readiness_evidence_2026-08-09.yaml) | 当前 Maintenance、容量回放、静态门禁与4GB配置治理摘要；不构成目标主机长时容量通过 |
 | [虚拟玩家重构完成度审计（2026-07-28）](virtual_player_refactor_completion_audit_2026-07-28.md) | Gate A-E 实现、证据、授权边界与剩余顺序 |
 | [虚拟玩家培养策略全面审核（2026-08-08）](virtual_player_maintenance_strategy_audit_2026-08-08.md) | 日常培养、竞技场补位、资源恢复、暂停恢复与剩余风险 |
+| [虚拟玩家培养动作优化路线图（2026-08-12）](virtual_player_maintenance_optimization_roadmap_2026-08-12.md) | 资源恢复、容量阶段、候选按需生成，以及中长期架构演进计划 |
 | [优化计划](optimization_plan.md) | 与技术审计配套的执行路线图 |
 | [兼容入口清单（2026-03）](compatibility_inventory_2026-03.md) | 当前仍明确保留的兼容入口 |
 

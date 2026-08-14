@@ -162,7 +162,7 @@ def _result_fields(
         "next_growth_at_before": NOW,
         "next_growth_at_after": after,
         "action_kind": "training" if outcome is MaintenanceOutcome.APPLIED else "",
-        "reason": "strength_cap" if outcome is not MaintenanceOutcome.APPLIED else "",
+        "reason": "candidate_domain_constraint" if outcome is not MaintenanceOutcome.APPLIED else "",
     }
 
 

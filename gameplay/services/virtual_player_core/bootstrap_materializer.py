@@ -9,6 +9,7 @@ from typing import Any
 from django.db import transaction
 
 from battle.models import TroopTemplate
+from common.constants.virtual_players import VIRTUAL_PLAYER_EXCLUDED_TROOP_KEYS
 from core.config import GUEST
 from gameplay.constants import BuildingKeys
 from gameplay.models import Building, BuildingType, InventoryItem, ItemTemplate, Manor, PlayerTechnology, PlayerTroop
@@ -497,6 +498,11 @@ def _materialize_troops(
 ) -> tuple[PlayerTroop, ...]:
     troop_catalog = {entry.key: entry for entry in catalog.troops}
     target_keys = set(assets.troop_counts)
+    excluded_keys = sorted(target_keys & VIRTUAL_PLAYER_EXCLUDED_TROOP_KEYS)
+    if excluded_keys:
+        raise BootstrapMaterializationError(
+            "virtual-player bootstrap cannot materialize excluded troop templates: " + ", ".join(excluded_keys)
+        )
     if not target_keys <= set(troop_catalog):
         raise BootstrapMaterializationError("bootstrap troops reference templates outside the locked catalog")
     troop_templates = _load_exact_templates(

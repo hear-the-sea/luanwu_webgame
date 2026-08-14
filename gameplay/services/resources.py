@@ -51,6 +51,7 @@ def load_resource_production_bases(
     *,
     guest_counts: Mapping[int, int] | None = None,
     troop_counts: Mapping[int, int] | None = None,
+    retainer_counts: Mapping[int, int] | None = None,
     buildings_by_manor: Mapping[int, Sequence[Building]] | None = None,
     technology_levels: Mapping[int, Mapping[str, int]] | None = None,
 ) -> dict[int, ResourceProductionBasis]:
@@ -122,6 +123,15 @@ def load_resource_production_bases(
             for manor_id, count in troop_counts.items()
             if int(manor_id) in manor_by_id
         }
+    resolved_retainer_counts = (
+        {
+            int(manor_id): max(0, int(count))
+            for manor_id, count in retainer_counts.items()
+            if int(manor_id) in manor_by_id
+        }
+        if retainer_counts is not None
+        else {manor_id: max(0, int(manor.retainer_count or 0)) for manor_id, manor in manor_by_id.items()}
+    )
     bank_troop_totals = {
         int(row["manor_id"]): int(row["total"] or 0)
         for row in TroopBankStorage.objects.filter(manor_id__in=manor_ids)
@@ -140,7 +150,7 @@ def load_resource_production_bases(
                 )
             ),
             personnel_grain_cost_per_hour=calculate_personnel_grain_cost_per_hour(
-                retainer_count=int(manor.retainer_count or 0),
+                retainer_count=resolved_retainer_counts.get(manor_id, int(manor.retainer_count or 0)),
                 guest_count=resolved_guest_counts.get(manor_id, 0),
                 troop_count=troop_totals.get(manor_id, 0),
                 bank_troop_count=bank_troop_totals.get(manor_id, 0),
@@ -155,16 +165,31 @@ def load_resource_production_basis(
     *,
     guest_count: int | None = None,
     troop_count: int | None = None,
+    retainer_count: int | None = None,
     buildings: Sequence[Building] | None = None,
     technology_levels: Mapping[str, int] | None = None,
 ) -> ResourceProductionBasis:
     if not getattr(manor, "pk", None):
         raise AssertionError("production basis requires a persisted manor")
-    if guest_count is not None and troop_count is not None:
+    if retainer_count is not None and all(
+        value is None for value in (guest_count, troop_count, buildings, technology_levels)
+    ):
+        # Preserve the single-manor production adapter (including test and
+        # runtime overrides of get_hourly_rates) while allowing V2 to replace
+        # only the retainer component of the personnel cost.
+        current_retainer_count = max(0, int(manor.retainer_count or 0))
+        personnel_cost = get_personnel_grain_cost_per_hour(manor)
+        personnel_cost += max(0, int(retainer_count)) - current_retainer_count
+        return ResourceProductionBasis(
+            hourly_rates=tuple(sorted(get_hourly_rates(manor).items())),
+            personnel_grain_cost_per_hour=max(0, int(personnel_cost)),
+        )
+    if any(value is not None for value in (guest_count, troop_count, buildings, technology_levels)):
         return load_resource_production_bases(
             (manor,),
-            guest_counts={int(manor.pk): guest_count},
-            troop_counts={int(manor.pk): troop_count},
+            guest_counts=(None if guest_count is None else {int(manor.pk): guest_count}),
+            troop_counts=(None if troop_count is None else {int(manor.pk): troop_count}),
+            retainer_counts=(None if retainer_count is None else {int(manor.pk): retainer_count}),
             buildings_by_manor=(None if buildings is None else {int(manor.pk): tuple(buildings)}),
             technology_levels=(None if technology_levels is None else {int(manor.pk): dict(technology_levels)}),
         )[int(manor.pk)]

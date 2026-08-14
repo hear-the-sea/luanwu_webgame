@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime
 
 from gameplay.services.virtual_player_core.maintenance_candidate_assessment import (
     CandidateAssessment,
@@ -47,7 +47,7 @@ def test_selector_skips_a_higher_utility_rejected_candidate() -> None:
         assessments=(
             CandidateAssessment(
                 intent=rejected,
-                rejection_reasons=("strength_cap",),
+                rejection_reasons=("multi_band_transition",),
                 retryable=True,
             ),
             CandidateAssessment(intent=allowed),
@@ -67,8 +67,8 @@ def test_selector_retains_the_primary_rejection_when_all_group_candidates_fail()
     selected = select_candidate_assessment(
         ((first, second),),
         assessments=(
-            CandidateAssessment(intent=first, rejection_reasons=("strength_cap",)),
-            CandidateAssessment(intent=second, rejection_reasons=("band_action_cap",)),
+            CandidateAssessment(intent=first, rejection_reasons=("multi_band_transition",)),
+            CandidateAssessment(intent=second, rejection_reasons=("domain_constraint",)),
         ),
         context=_context(),
         optimization_bias=1,
@@ -76,7 +76,31 @@ def test_selector_retains_the_primary_rejection_when_all_group_candidates_fail()
 
     assert selected is not None
     assert selected.intent is first
-    assert selected.primary_rejection_reason == "strength_cap"
+    assert selected.primary_rejection_reason == "multi_band_transition"
+
+
+def test_selector_keeps_a_resource_blocked_priority_group_from_falling_back() -> None:
+    blocked = _intent("building:blocked", utility=10)
+    fallback = _intent("training:fallback", utility=1)
+    selected = select_candidate_assessment(
+        ((blocked,), (fallback,)),
+        assessments=(
+            CandidateAssessment(
+                intent=blocked,
+                rejection_reasons=("insufficient_resource",),
+                retryable=True,
+            ),
+            CandidateAssessment(intent=fallback),
+        ),
+        context=_context(),
+        optimization_bias=1,
+        resource_barrier_group_indexes=frozenset({0}),
+    )
+
+    assert selected is not None
+    assert selected.intent is blocked
+    assert selected.allowed is False
+    assert selected.primary_rejection_reason == "insufficient_resource"
 
 
 def test_selector_does_not_promote_observation_only_rejections() -> None:
@@ -145,3 +169,79 @@ def test_resource_snapshot_distinguishes_runway_from_physical_shortfall() -> Non
 
     assert runway_reasons == ("salary_runway_protected",)
     assert stock_reasons == ("insufficient_resource",)
+
+
+def test_resource_snapshot_exposes_liquidity_forecast_and_affordability_time() -> None:
+    current_salary = SalaryBatchQuote(
+        for_date=date(2026, 8, 8),
+        guest_ids=(1,),
+        unpaid_guest_ids=(),
+        total_amount=10,
+    )
+    next_salary = SalaryBatchQuote(
+        for_date=date(2026, 8, 9),
+        guest_ids=(1,),
+        unpaid_guest_ids=(1,),
+        total_amount=10,
+    )
+    snapshot = ResourcePlanningSnapshot(
+        current_resources=(("grain", 50), ("silver", 110)),
+        production_deltas=(),
+        post_settlement_resources=(("grain", 50), ("silver", 110)),
+        current_salary_quote=current_salary,
+        current_salary_payable=True,
+        post_salary_resources=(("grain", 50), ("silver", 100)),
+        next_day_salary_quote=next_salary,
+        operating_buffer=(("grain", 0), ("silver", 0)),
+        protected_resources=(("grain", 0), ("silver", 0)),
+        spendable_resources=(("grain", 50), ("silver", 100)),
+        production_rates=(("grain", -5.0), ("silver", 20.0)),
+        silver_forecast_24h=570,
+        silver_forecast_72h=1_000,
+        grain_forecast_24h=0,
+        grain_forecast_72h=0,
+    )
+    now = datetime(2026, 8, 8, 12, tzinfo=UTC)
+
+    assert snapshot.silver_liquidity_state == "healthy"
+    affordable_at = snapshot.next_affordable_at({"silver": 200}, now=now)
+
+    assert affordable_at is not None
+    assert affordable_at > now
+    assert snapshot.next_affordable_at({"grain": 60}, now=now) is None
+
+
+def test_recurring_outflow_changes_forecast_without_reserving_current_silver() -> None:
+    current_salary = SalaryBatchQuote(
+        for_date=date(2026, 8, 8),
+        guest_ids=(),
+        unpaid_guest_ids=(),
+        total_amount=0,
+    )
+    next_salary = SalaryBatchQuote(
+        for_date=date(2026, 8, 9),
+        guest_ids=(),
+        unpaid_guest_ids=(),
+        total_amount=0,
+    )
+    snapshot = ResourcePlanningSnapshot(
+        current_resources=(("grain", 0), ("silver", 10_000)),
+        production_deltas=(),
+        post_settlement_resources=(("grain", 0), ("silver", 10_000)),
+        current_salary_quote=current_salary,
+        current_salary_payable=True,
+        post_salary_resources=(("grain", 0), ("silver", 10_000)),
+        next_day_salary_quote=next_salary,
+        operating_buffer=(("grain", 0), ("silver", 0)),
+        protected_resources=(("grain", 0), ("silver", 0)),
+        spendable_resources=(("grain", 0), ("silver", 10_000)),
+        production_rates=(("grain", 0.0), ("silver", 300.0)),
+        silver_forecast_24h=11_200,
+        silver_forecast_72h=13_600,
+        recurring_silver_outflow_daily=6_000,
+    )
+    now = datetime(2026, 8, 8, 12, tzinfo=UTC)
+
+    assert dict(snapshot.spendable_resources)["silver"] == 10_000
+    assert snapshot.assess_costs({"silver": 9_000})[-1] == ()
+    assert snapshot.next_affordable_at({"silver": 11_000}, now=now) is not None

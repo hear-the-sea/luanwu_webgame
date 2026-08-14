@@ -95,7 +95,6 @@ _V2_POLICY_FIELDS = frozenset(
         "checksum",
         "max_development_actions",
         "anchor_k",
-        "strength_safety",
         "prestige_band_growth",
         "starter_snapshots",
         "gear_upgrade_threshold",
@@ -134,56 +133,21 @@ _V2_REFERENCE_CALIBRATION_ABANDONED_FEATURES = {
     "stale_gear_level_ratio_max": 0.50,
     "growth_gap_days_min": 30,
 }
-_V2_STRENGTH_TIERS = (
-    "no_reference",
-    "sparse_1_4",
-    "limited_5_29",
-    "sufficient_30_plus",
-)
-_V2_STRENGTH_COMMON_FIELDS = frozenset(
-    {
-        "positive_jitter_bps_max",
-        "actions_per_24h_max",
-        "growth_bps_per_24h_max",
-    }
-)
-_V2_STRENGTH_FIELDS = frozenset(
-    {
-        *_V2_STRENGTH_TIERS,
-        "arena_acceleration_may_bypass",
-        "admin_may_bypass",
-    }
-)
 _V2_GROWTH_BASE_FIELDS = frozenset(
     {
-        "effective_limit_rule",
         "direct_prestige_grant_by_maintenance_allowed",
         "profiles",
-        "last_strength_increase_at_required",
-        "admin_may_bypass_band_spacing",
         "configured_boundaries_crossed_per_controlled_action_max",
-        "cross_band_uses_stricter_source_or_destination_limit",
         "external_domain_result_may_be_rejected_by_bot_growth_policy",
         "bootstrap_fake_per_action_history_records",
     }
 )
 _V2_GROWTH_FIELDS = frozenset({*_V2_GROWTH_BASE_FIELDS, "arena_acceleration_bypass"})
-_V2_ARENA_ACCELERATION_BYPASS_VALUES = {
-    "due": True,
-    "band_spacing": True,
-    "daily_action": True,
-    "daily_growth": True,
-    "per_action": False,
-    "daily_control_cap": False,
-    "component_cap": False,
-}
-_V2_ARENA_ACCELERATION_BYPASS_FIELDS = frozenset(_V2_ARENA_ACCELERATION_BYPASS_VALUES)
+_V2_ARENA_ACCELERATION_BYPASS_FIELDS = frozenset({"due"})
 _V2_GROWTH_PROFILE_FIELDS = frozenset(
     {
         "bootstrap_history_age_days",
         "preferred_strength_check_interval_hours",
-        "minimum_positive_strength_action_spacing_hours",
-        "composite_growth_bps_per_controlled_action_max",
     }
 )
 _V2_STARTER_SNAPSHOT_FIELDS = frozenset({"snapshot_version", "profiles"})
@@ -800,107 +764,14 @@ def _validate_v2_reference_snapshot_catalog(
                     )
 
 
-def _validate_v2_strength_safety(value: Any, *, result: ValidationResult, file: str, path: str) -> None:
-    strength = _v2_mapping(value, result=result, file=file, path=path)
-    if strength is None:
-        return
-    _reject_unknown_fields(strength, _V2_STRENGTH_FIELDS, result=result, file=file, path=path)
-    _require_fields(strength, _V2_STRENGTH_FIELDS, result=result, file=file, path=path)
-    expected_tiers: dict[str, dict[str, str | int | float]] = {
-        "no_reference": {
-            "starter_snapshot_ratio": 0.90,
-            "positive_jitter_bps_max": 0,
-            "actions_per_24h_max": 0,
-            "growth_bps_per_24h_max": 0,
-        },
-        "sparse_1_4": {
-            "cap_quantile": "p50",
-            "composite_cap_ratio": 1.05,
-            "component_cap_ratio": 1.10,
-            "positive_jitter_bps_max": 0,
-            "actions_per_24h_max": 1,
-            "growth_bps_per_24h_max": 300,
-        },
-        "limited_5_29": {
-            "cap_quantile": "p75",
-            "composite_cap_ratio": 1.10,
-            "component_cap_ratio": 1.15,
-            "positive_jitter_bps_max": 200,
-            "actions_per_24h_max": 2,
-            "growth_bps_per_24h_max": 500,
-        },
-        "sufficient_30_plus": {
-            "cap_quantile": "p95",
-            "composite_cap_ratio": 1.15,
-            "component_cap_ratio": 1.20,
-            "positive_jitter_bps_max": 500,
-            "actions_per_24h_max": 4,
-            "growth_bps_per_24h_max": 1000,
-        },
-    }
-    for tier_name, expected in expected_tiers.items():
-        tier_path = f"{path}.{tier_name}"
-        tier = _v2_mapping(strength.get(tier_name), result=result, file=file, path=tier_path)
-        if tier is None:
-            continue
-        allowed = frozenset(expected)
-        _reject_unknown_fields(tier, allowed, result=result, file=file, path=tier_path)
-        _require_fields(tier, allowed, result=result, file=file, path=tier_path)
-        for field_name, expected_value in expected.items():
-            field_path = f"{tier_path}.{field_name}"
-            actual = tier.get(field_name)
-            if isinstance(expected_value, str):
-                _v2_literal(
-                    actual,
-                    allowed=frozenset({expected_value}),
-                    result=result,
-                    file=file,
-                    path=field_path,
-                )
-            elif isinstance(expected_value, int):
-                _v2_int(
-                    actual,
-                    result=result,
-                    file=file,
-                    path=field_path,
-                    expected=expected_value,
-                )
-            else:
-                normalized = _v2_number(actual, result=result, file=file, path=field_path)
-                if normalized is not None and not math.isclose(normalized, expected_value):
-                    result.add(file, field_path, f"must equal {expected_value:g}")
-    _v2_bool(
-        strength.get("arena_acceleration_may_bypass"),
-        result=result,
-        file=file,
-        path=f"{path}.arena_acceleration_may_bypass",
-        expected=False,
-    )
-    _v2_bool(
-        strength.get("admin_may_bypass"),
-        result=result,
-        file=file,
-        path=f"{path}.admin_may_bypass",
-        expected=False,
-    )
-
-
 def _validate_v2_growth(value: Any, *, result: ValidationResult, file: str, path: str) -> None:
     growth = _v2_mapping(value, result=result, file=file, path=path)
     if growth is None:
         return
     _reject_unknown_fields(growth, _V2_GROWTH_FIELDS, result=result, file=file, path=path)
     _require_fields(growth, _V2_GROWTH_FIELDS, result=result, file=file, path=path)
-    _v2_literal(
-        growth.get("effective_limit_rule"),
-        allowed=frozenset({"strictest_of_sample_tier_band_profile_and_domain_constraints"}),
-        result=result,
-        file=file,
-        path=f"{path}.effective_limit_rule",
-    )
     false_fields: tuple[str, ...] = (
         "direct_prestige_grant_by_maintenance_allowed",
-        "admin_may_bypass_band_spacing",
         "external_domain_result_may_be_rejected_by_bot_growth_policy",
         "bootstrap_fake_per_action_history_records",
     )
@@ -934,23 +805,11 @@ def _validate_v2_growth(value: Any, *, result: ValidationResult, file: str, path
             file=file,
             path=arena_bypass_path,
         )
-        for field_name, expected in _V2_ARENA_ACCELERATION_BYPASS_VALUES.items():
-            _v2_bool(
-                arena_bypass.get(field_name),
-                result=result,
-                file=file,
-                path=f"{arena_bypass_path}.{field_name}",
-                expected=expected,
-            )
-    for field_name in (
-        "last_strength_increase_at_required",
-        "cross_band_uses_stricter_source_or_destination_limit",
-    ):
         _v2_bool(
-            growth.get(field_name),
+            arena_bypass.get("due"),
             result=result,
             file=file,
-            path=f"{path}.{field_name}",
+            path=f"{arena_bypass_path}.due",
             expected=True,
         )
     _v2_int(
@@ -973,8 +832,6 @@ def _validate_v2_growth(value: Any, *, result: ValidationResult, file: str, path
         )
     previous_history: tuple[float, float] | None = None
     previous_interval: tuple[float, float] | None = None
-    previous_spacing: float | None = None
-    previous_action_cap: int | None = None
     for band_name in _V2_BAND_NAMES:
         profile_path = f"{path}.profiles.{band_name}"
         profile = _v2_mapping(profiles.get(band_name), result=result, file=file, path=profile_path)
@@ -1006,18 +863,6 @@ def _validate_v2_growth(value: Any, *, result: ValidationResult, file: str, path
             file=file,
             path=f"{profile_path}.preferred_strength_check_interval_hours",
         )
-        spacing = _v2_number(
-            profile.get("minimum_positive_strength_action_spacing_hours"),
-            result=result,
-            file=file,
-            path=f"{profile_path}.minimum_positive_strength_action_spacing_hours",
-        )
-        action_cap = _v2_int(
-            profile.get("composite_growth_bps_per_controlled_action_max"),
-            result=result,
-            file=file,
-            path=f"{profile_path}.composite_growth_bps_per_controlled_action_max",
-        )
         if (
             history is not None
             and previous_history is not None
@@ -1038,22 +883,8 @@ def _validate_v2_growth(value: Any, *, result: ValidationResult, file: str, path
                 f"{profile_path}.preferred_strength_check_interval_hours",
                 "must not decrease across prestige bands",
             )
-        if spacing is not None and previous_spacing is not None and spacing < previous_spacing:
-            result.add(
-                file,
-                f"{profile_path}.minimum_positive_strength_action_spacing_hours",
-                "must not decrease across prestige bands",
-            )
-        if action_cap is not None and previous_action_cap is not None and action_cap > previous_action_cap:
-            result.add(
-                file,
-                f"{profile_path}.composite_growth_bps_per_controlled_action_max",
-                "must not increase across prestige bands",
-            )
         previous_history = history or previous_history
         previous_interval = interval or previous_interval
-        previous_spacing = spacing if spacing is not None else previous_spacing
-        previous_action_cap = action_cap if action_cap is not None else previous_action_cap
 
 
 def _validate_v2_starter_snapshots(
@@ -1252,12 +1083,6 @@ def _validate_v2_policy(
         file=file,
         path=f"{path}.anchor_k",
         minimum=1,
-    )
-    _validate_v2_strength_safety(
-        policy.get("strength_safety"),
-        result=result,
-        file=file,
-        path=f"{path}.strength_safety",
     )
     _validate_v2_growth(
         policy.get("prestige_band_growth"),
@@ -2182,10 +2007,7 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                     pacing_fields = {
                         "schema_version",
                         "slot_interval_minutes",
-                        "silver_budget_ratio",
-                        "grain_budget_ratio",
                         "max_parallel_training",
-                        "high_cost_actions_per_cycle",
                         "building_targets",
                         "technology_targets",
                         "recruitment_pool_weights",
@@ -2217,17 +2039,7 @@ def validate_virtual_players(data: dict, *, file: str = "virtual_players.yaml") 
                         if isinstance(interval, list) and len(interval) == 2:
                             if isinstance(interval[1], int) and interval[1] > 15:
                                 result.add(file, f"{pacing_path}.slot_interval_minutes[1]", "must be <= 15")
-                        for field_name in ("silver_budget_ratio", "grain_budget_ratio"):
-                            _validate_ratio(
-                                values.get(field_name),
-                                result=result,
-                                file=file,
-                                path=f"{pacing_path}.{field_name}",
-                            )
-                        for field_name, minimum, maximum in (
-                            ("max_parallel_training", 0, 8),
-                            ("high_cost_actions_per_cycle", 0, 16),
-                        ):
+                        for field_name, minimum, maximum in (("max_parallel_training", 0, 8),):
                             _validate_int(
                                 values.get(field_name),
                                 result=result,

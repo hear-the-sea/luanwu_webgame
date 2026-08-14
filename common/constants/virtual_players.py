@@ -2,6 +2,10 @@ from __future__ import annotations
 
 VIRTUAL_PLAYER_ARCHETYPES = frozenset({"balanced", "rich", "dojo", "guard", "abandoned"})
 
+# Scouts belong to the human-controlled reconnaissance flow.  V2 virtual
+# players use ordinary combat troops as their permanent guard force.
+VIRTUAL_PLAYER_EXCLUDED_TROOP_KEYS = frozenset({"scout"})
+
 VIRTUAL_PLAYER_BUILDING_TARGET_KEYS = (
     "arrow_tower",
     "bathhouse",

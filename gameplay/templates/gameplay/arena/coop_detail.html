@@ -17,7 +17,7 @@
 
         {% if virtual_contribution_rows %}
         <div class="mt-5 text-sm">
-            <p class="font-semibold mb-2">系统参赛者伤害</p>
+            <p class="font-semibold mb-2">伤害记录</p>
             <div class="space-y-1 text-text-muted">
                 {% for row in virtual_contribution_rows %}
                 <p>{{ row.manor_name }}：总伤害 {{ row.total_damage }}，首领伤害 {{ row.boss_damage }}</p>

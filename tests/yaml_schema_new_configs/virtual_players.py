@@ -42,50 +42,34 @@ def _minimal_v2_config():
         "newbie": {
             "bootstrap_history_age_days": [1, 14],
             "preferred_strength_check_interval_hours": [4, 8],
-            "minimum_positive_strength_action_spacing_hours": 4,
-            "composite_growth_bps_per_controlled_action_max": 400,
         },
         "junior": {
             "bootstrap_history_age_days": [14, 45],
             "preferred_strength_check_interval_hours": [6, 12],
-            "minimum_positive_strength_action_spacing_hours": 6,
-            "composite_growth_bps_per_controlled_action_max": 300,
         },
         "middle": {
             "bootstrap_history_age_days": [45, 120],
             "preferred_strength_check_interval_hours": [8, 16],
-            "minimum_positive_strength_action_spacing_hours": 8,
-            "composite_growth_bps_per_controlled_action_max": 250,
         },
         "senior": {
             "bootstrap_history_age_days": [120, 240],
             "preferred_strength_check_interval_hours": [12, 24],
-            "minimum_positive_strength_action_spacing_hours": 12,
-            "composite_growth_bps_per_controlled_action_max": 200,
         },
         "veteran": {
             "bootstrap_history_age_days": [240, 360],
             "preferred_strength_check_interval_hours": [14, 24],
-            "minimum_positive_strength_action_spacing_hours": 14,
-            "composite_growth_bps_per_controlled_action_max": 200,
         },
         "elite": {
             "bootstrap_history_age_days": [360, 540],
             "preferred_strength_check_interval_hours": [18, 30],
-            "minimum_positive_strength_action_spacing_hours": 18,
-            "composite_growth_bps_per_controlled_action_max": 175,
         },
         "legend": {
             "bootstrap_history_age_days": [540, 720],
             "preferred_strength_check_interval_hours": [24, 36],
-            "minimum_positive_strength_action_spacing_hours": 24,
-            "composite_growth_bps_per_controlled_action_max": 150,
         },
         "mythic": {
             "bootstrap_history_age_days": [720, 1080],
             "preferred_strength_check_interval_hours": [30, 48],
-            "minimum_positive_strength_action_spacing_hours": 30,
-            "composite_growth_bps_per_controlled_action_max": 125,
         },
     }
     starter_prestige = {
@@ -114,57 +98,11 @@ def _minimal_v2_config():
         "checksum": "",
         "max_development_actions": 16,
         "anchor_k": 5,
-        "strength_safety": {
-            "no_reference": {
-                "starter_snapshot_ratio": 0.90,
-                "positive_jitter_bps_max": 0,
-                "actions_per_24h_max": 0,
-                "growth_bps_per_24h_max": 0,
-            },
-            "sparse_1_4": {
-                "cap_quantile": "p50",
-                "composite_cap_ratio": 1.05,
-                "component_cap_ratio": 1.10,
-                "positive_jitter_bps_max": 0,
-                "actions_per_24h_max": 1,
-                "growth_bps_per_24h_max": 300,
-            },
-            "limited_5_29": {
-                "cap_quantile": "p75",
-                "composite_cap_ratio": 1.10,
-                "component_cap_ratio": 1.15,
-                "positive_jitter_bps_max": 200,
-                "actions_per_24h_max": 2,
-                "growth_bps_per_24h_max": 500,
-            },
-            "sufficient_30_plus": {
-                "cap_quantile": "p95",
-                "composite_cap_ratio": 1.15,
-                "component_cap_ratio": 1.20,
-                "positive_jitter_bps_max": 500,
-                "actions_per_24h_max": 4,
-                "growth_bps_per_24h_max": 1000,
-            },
-            "arena_acceleration_may_bypass": False,
-            "admin_may_bypass": False,
-        },
         "prestige_band_growth": {
-            "effective_limit_rule": "strictest_of_sample_tier_band_profile_and_domain_constraints",
             "direct_prestige_grant_by_maintenance_allowed": False,
             "profiles": growth_profiles,
-            "last_strength_increase_at_required": True,
-            "arena_acceleration_bypass": {
-                "due": True,
-                "band_spacing": True,
-                "daily_action": True,
-                "daily_growth": True,
-                "per_action": False,
-                "daily_control_cap": False,
-                "component_cap": False,
-            },
-            "admin_may_bypass_band_spacing": False,
+            "arena_acceleration_bypass": {"due": True},
             "configured_boundaries_crossed_per_controlled_action_max": 1,
-            "cross_band_uses_stricter_source_or_destination_limit": True,
             "external_domain_result_may_be_rejected_by_bot_growth_policy": False,
             "bootstrap_fake_per_action_history_records": False,
         },
@@ -597,7 +535,7 @@ def test_virtual_players_rejects_retired_calibration_thresholds():
         ((), "engine_rollout_percent"),
         (("routing",), "bootstrap_enabled"),
         (("policies", "2"), "max_developmnt_actions"),
-        (("policies", "2", "strength_safety", "sparse_1_4"), "actions_daily"),
+        (("policies", "2", "prestige_band_growth", "profiles", "newbie"), "legacy_strength_cap"),
     ],
 )
 def test_virtual_players_rejects_unknown_v2_fields(path, field):
@@ -665,63 +603,43 @@ def test_virtual_players_rejects_invalid_v2_band_boundaries_and_order():
     assert any("gapless and non-overlapping" in error for error in errors)
 
 
-def test_virtual_players_rejects_relaxed_strength_tier():
+def test_virtual_players_rejects_strength_cap_fields():
     config = _minimal_v2_config()
-    config["policies"]["2"]["strength_safety"]["sparse_1_4"]["actions_per_24h_max"] = 2
+    config["policies"]["2"]["prestige_band_growth"]["profiles"]["newbie"][
+        "composite_growth_bps_per_controlled_action_max"
+    ] = 400
 
     result = validate_virtual_players({"bot_development_v2": config})
 
     assert not result.is_valid
-    assert any("actions_per_24h_max" in str(error) and "must equal 1" in str(error) for error in result.errors)
+    assert any("composite_growth_bps_per_controlled_action_max" in str(error) for error in result.errors)
 
 
-@pytest.mark.parametrize(
-    "path",
-    [
-        ("strength_safety", "arena_acceleration_may_bypass"),
-        ("strength_safety", "admin_may_bypass"),
-        ("prestige_band_growth", "admin_may_bypass_band_spacing"),
-    ],
-)
-def test_virtual_players_rejects_legacy_safety_and_admin_growth_bypasses(path):
+def test_virtual_players_rejects_legacy_growth_cap_fields():
     config = _minimal_v2_config()
     policy = config["policies"]["2"]
-    policy[path[0]][path[1]] = True
+    policy["prestige_band_growth"][
+        "effective_limit_rule"
+    ] = "strictest_of_sample_tier_band_profile_and_domain_constraints"
     _refresh_target_policy_checksum(config)
 
     result = validate_virtual_players({"bot_development_v2": config})
     errors = [str(error) for error in result.errors]
 
-    assert any(path[1] in error and "must be false" in error for error in errors)
+    assert any("effective_limit_rule" in error and "unknown field" in error for error in errors)
     assert not any("checksum" in error and "does not match" in error for error in errors)
 
 
-@pytest.mark.parametrize(
-    ("field", "invalid_value", "expected_message"),
-    [
-        ("due", False, "must be true"),
-        ("band_spacing", False, "must be true"),
-        ("daily_action", False, "must be true"),
-        ("daily_growth", False, "must be true"),
-        ("per_action", True, "must be false"),
-        ("daily_control_cap", True, "must be false"),
-        ("component_cap", True, "must be false"),
-    ],
-)
-def test_virtual_players_rejects_unsafe_arena_acceleration_bypass_contract(
-    field,
-    invalid_value,
-    expected_message,
-):
+def test_virtual_players_rejects_disabled_arena_acceleration_bypass():
     config = _minimal_v2_config()
     bypass = config["policies"]["2"]["prestige_band_growth"]["arena_acceleration_bypass"]
-    bypass[field] = invalid_value
+    bypass["due"] = False
     _refresh_target_policy_checksum(config)
 
     result = validate_virtual_players({"bot_development_v2": config})
     errors = [str(error) for error in result.errors]
 
-    assert any(field in error and expected_message in error for error in errors)
+    assert any("due" in error and "must be true" in error for error in errors)
     assert not any("checksum" in error and "does not match" in error for error in errors)
 
 
@@ -783,21 +701,17 @@ def test_virtual_players_rejects_duplicate_arena_supply_priority() -> None:
     )
 
 
-def test_virtual_players_rejects_decreasing_growth_cadence_and_increasing_action_cap():
+def test_virtual_players_rejects_decreasing_growth_cadence():
     config = _minimal_v2_config()
     elite = config["policies"]["2"]["prestige_band_growth"]["profiles"]["elite"]
-    elite["minimum_positive_strength_action_spacing_hours"] = 10
-    elite["composite_growth_bps_per_controlled_action_max"] = 300
+    elite["bootstrap_history_age_days"] = [10, 20]
+    elite["preferred_strength_check_interval_hours"] = [2, 4]
 
     result = validate_virtual_players({"bot_development_v2": config})
     errors = [str(error) for error in result.errors]
 
-    assert any(
-        "minimum_positive_strength_action_spacing_hours" in error and "must not decrease" in error for error in errors
-    )
-    assert any(
-        "composite_growth_bps_per_controlled_action_max" in error and "must not increase" in error for error in errors
-    )
+    assert any("bootstrap_history_age_days" in error and "must not decrease" in error for error in errors)
+    assert any("preferred_strength_check_interval_hours" in error and "must not decrease" in error for error in errors)
 
 
 @pytest.mark.parametrize("invalid_bound", [1.5, True])

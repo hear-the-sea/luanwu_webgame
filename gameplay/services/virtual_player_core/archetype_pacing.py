@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from math import isfinite
 from typing import Any
 
 from common.constants.virtual_players import VIRTUAL_PLAYER_BUILDING_TARGET_KEYS, VIRTUAL_PLAYER_TECHNOLOGY_TARGET_KEYS
@@ -12,128 +11,10 @@ from common.constants.virtual_players import VIRTUAL_PLAYER_BUILDING_TARGET_KEYS
 ARCHETYPE_PACING_SCHEMA_VERSION = 1
 SUPPORTED_ARCHETYPES = ("balanced", "rich", "dojo", "guard", "abandoned")
 SUPPORTED_RECRUITMENT_POOLS = ("dianshi", "xiangshi", "cunmu")
-HIGH_COST_ACTION_KINDS = frozenset(
-    {
-        "building_upgrade",
-        "technology_upgrade",
-        "training",
-        "troop_recruitment",
-    }
-)
 
 
 class ArchetypePacingError(ValueError):
     """Raised when a typed archetype pacing payload is malformed."""
-
-
-_ARCHETYPE_BUDGET_RESOURCES = ("silver", "grain")
-
-
-def _canonical_budget_entries(value: Mapping[str, Any], *, field: str) -> tuple[tuple[str, int], ...]:
-    if not isinstance(value, Mapping):
-        raise ArchetypePacingError(f"{field} must be a mapping")
-    unknown = set(value) - set(_ARCHETYPE_BUDGET_RESOURCES)
-    if unknown:
-        raise ArchetypePacingError(f"{field} contains unknown resources: {sorted(unknown)!r}")
-    return tuple(
-        (
-            resource,
-            _bounded_int(value.get(resource, 0), field=f"{field}.{resource}", minimum=0),
-        )
-        for resource in _ARCHETYPE_BUDGET_RESOURCES
-    )
-
-
-@dataclass(frozen=True, slots=True)
-class ArchetypeBudgetState:
-    """Immutable cycle budget baseline and committed resource usage.
-
-    The baseline is captured from the post-salary spendable ledger at the first
-    slot.  Every later slot consumes from the same baseline, so the configured
-    ratio is a cycle ceiling rather than a fresh per-slot allowance.
-    """
-
-    baseline: tuple[tuple[str, int], ...]
-    spent: tuple[tuple[str, int], ...] = (("silver", 0), ("grain", 0))
-
-    def __post_init__(self) -> None:
-        expected = _ARCHETYPE_BUDGET_RESOURCES
-        if tuple(resource for resource, _amount in self.baseline) != expected:
-            raise ArchetypePacingError("budget baseline must use canonical resource order")
-        if tuple(resource for resource, _amount in self.spent) != expected:
-            raise ArchetypePacingError("budget spent must use canonical resource order")
-        if any(
-            isinstance(amount, bool) or not isinstance(amount, int) or amount < 0
-            for _resource, amount in (*self.baseline, *self.spent)
-        ):
-            raise ArchetypePacingError("budget values must be non-negative integers")
-        baseline = dict(self.baseline)
-        if any(amount > baseline[resource] for resource, amount in self.spent):
-            raise ArchetypePacingError("budget spent cannot exceed the cycle baseline")
-
-    @classmethod
-    def from_spendable_resources(
-        cls,
-        spendable_resources: Mapping[str, Any] | Sequence[tuple[str, Any]],
-    ) -> "ArchetypeBudgetState":
-        if isinstance(spendable_resources, Mapping):
-            raw = spendable_resources
-        else:
-            raw = dict(spendable_resources)
-        return cls(
-            baseline=_canonical_budget_entries(raw, field="budget baseline"),
-        )
-
-    @classmethod
-    def from_payload(cls, payload: Mapping[str, Any] | None) -> "ArchetypeBudgetState | None":
-        if payload is None:
-            return None
-        if not isinstance(payload, Mapping):
-            raise ArchetypePacingError("archetype budget payload must be a mapping")
-        if "baseline" not in payload:
-            return None
-        raw_baseline = payload.get("baseline")
-        if not isinstance(raw_baseline, Mapping):
-            raise ArchetypePacingError("budget baseline must be a mapping")
-        raw_spent = payload.get("spent") or {}
-        if not isinstance(raw_spent, Mapping):
-            raise ArchetypePacingError("budget spent must be a mapping")
-        baseline = _canonical_budget_entries(raw_baseline, field="budget baseline")
-        spent = _canonical_budget_entries(raw_spent, field="budget spent")
-        return cls(baseline=baseline, spent=spent)
-
-    def baseline_for(self, resource: str) -> int:
-        return int(dict(self.baseline).get(str(resource), 0))
-
-    def spent_for(self, resource: str) -> int:
-        return int(dict(self.spent).get(str(resource), 0))
-
-    def remaining_limits(self, pacing: "ArchetypePacing") -> tuple[tuple[str, int], ...]:
-        ratios = {
-            "silver": pacing.silver_budget_ratio,
-            "grain": pacing.grain_budget_ratio,
-        }
-        return tuple(
-            (
-                resource,
-                max(0, int(self.baseline_for(resource) * ratios[resource]) - self.spent_for(resource)),
-            )
-            for resource in _ARCHETYPE_BUDGET_RESOURCES
-        )
-
-    def consume(self, costs: Mapping[str, Any] | Sequence[tuple[str, Any]]) -> "ArchetypeBudgetState":
-        raw_costs = costs if isinstance(costs, Mapping) else dict(costs)
-        normalized_costs = dict(_canonical_budget_entries(raw_costs, field="budget costs"))
-        spent = {
-            resource: self.spent_for(resource) + normalized_costs[resource] for resource in _ARCHETYPE_BUDGET_RESOURCES
-        }
-        return type(self)(baseline=self.baseline, spent=tuple(spent.items()))
-
-    def to_payload(self) -> dict[str, dict[str, int]]:
-        return {
-            "baseline": dict(self.baseline),
-            "spent": dict(self.spent),
-        }
 
 
 def _bounded_int(value: Any, *, field: str, minimum: int, maximum: int | None = None) -> int:
@@ -144,15 +25,6 @@ def _bounded_int(value: Any, *, field: str, minimum: int, maximum: int | None = 
         bound = f"between {minimum} and {maximum}" if maximum is not None else f">= {minimum}"
         raise ArchetypePacingError(f"{field} must be {bound}")
     return normalized
-
-
-def _bounded_ratio(value: Any, *, field: str) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise ArchetypePacingError(f"{field} must be a finite ratio")
-    normalized = float(value)
-    if not isfinite(normalized) or normalized < 0.0 or normalized > 1.0:
-        raise ArchetypePacingError(f"{field} must be a finite ratio between 0 and 1")
-    return round(normalized, 6)
 
 
 def _string_tuple(value: Any, *, field: str, allow_empty: bool = False) -> tuple[str, ...]:
@@ -193,10 +65,7 @@ class ArchetypePacing:
 
     archetype: str
     slot_interval_minutes: tuple[int, int]
-    silver_budget_ratio: float
-    grain_budget_ratio: float
     max_parallel_training: int
-    high_cost_actions_per_cycle: int
     building_targets: tuple[str, ...]
     technology_targets: tuple[str, ...]
     recruitment_pool_weights: tuple[tuple[str, int], ...]
@@ -219,20 +88,9 @@ class ArchetypePacing:
             raise ArchetypePacingError("slot_interval_minutes must stay within 10..15 minutes")
         object.__setattr__(self, "archetype", archetype)
         object.__setattr__(
-            self, "silver_budget_ratio", _bounded_ratio(self.silver_budget_ratio, field="silver_budget_ratio")
-        )
-        object.__setattr__(
-            self, "grain_budget_ratio", _bounded_ratio(self.grain_budget_ratio, field="grain_budget_ratio")
-        )
-        object.__setattr__(
             self,
             "max_parallel_training",
             _bounded_int(self.max_parallel_training, field="max_parallel_training", minimum=0, maximum=8),
-        )
-        object.__setattr__(
-            self,
-            "high_cost_actions_per_cycle",
-            _bounded_int(self.high_cost_actions_per_cycle, field="high_cost_actions_per_cycle", minimum=0, maximum=16),
         )
         building_targets = _string_tuple(self.building_targets, field="building_targets")
         unknown_buildings = set(building_targets) - set(VIRTUAL_PLAYER_BUILDING_TARGET_KEYS)
@@ -267,13 +125,7 @@ class ArchetypePacing:
         return cls(
             archetype=str(archetype),
             slot_interval_minutes=(int(interval[0]), int(interval[1])),
-            silver_budget_ratio=value.get("silver_budget_ratio", base.silver_budget_ratio),
-            grain_budget_ratio=value.get("grain_budget_ratio", base.grain_budget_ratio),
             max_parallel_training=value.get("max_parallel_training", base.max_parallel_training),
-            high_cost_actions_per_cycle=value.get(
-                "high_cost_actions_per_cycle",
-                base.high_cost_actions_per_cycle,
-            ),
             building_targets=value.get("building_targets", list(base.building_targets)),
             technology_targets=value.get("technology_targets", list(base.technology_targets)),
             recruitment_pool_weights=value.get(
@@ -288,10 +140,7 @@ class ArchetypePacing:
             "schema_version": self.schema_version,
             "archetype": self.archetype,
             "slot_interval_minutes": list(self.slot_interval_minutes),
-            "silver_budget_ratio": self.silver_budget_ratio,
-            "grain_budget_ratio": self.grain_budget_ratio,
             "max_parallel_training": self.max_parallel_training,
-            "high_cost_actions_per_cycle": self.high_cost_actions_per_cycle,
             "building_targets": list(self.building_targets),
             "technology_targets": list(self.technology_targets),
             "recruitment_pool_weights": dict(self.recruitment_pool_weights),
@@ -302,10 +151,7 @@ DEFAULT_ARCHETYPE_PACING: dict[str, ArchetypePacing] = {
     "balanced": ArchetypePacing(
         archetype="balanced",
         slot_interval_minutes=(10, 15),
-        silver_budget_ratio=0.60,
-        grain_budget_ratio=0.60,
         max_parallel_training=1,
-        high_cost_actions_per_cycle=4,
         building_targets=("farm", "granary", "tax_office"),
         technology_targets=("architecture", "farming"),
         recruitment_pool_weights=(
@@ -317,43 +163,31 @@ DEFAULT_ARCHETYPE_PACING: dict[str, ArchetypePacing] = {
     "rich": ArchetypePacing(
         archetype="rich",
         slot_interval_minutes=(12, 15),
-        silver_budget_ratio=0.80,
-        grain_budget_ratio=0.75,
         max_parallel_training=1,
-        high_cost_actions_per_cycle=5,
-        building_targets=("tax_office", "silver_vault", "tavern", "treasury"),
+        building_targets=("tax_office", "silver_vault", "tavern", "bathhouse"),
         technology_targets=("architecture", "farming"),
         recruitment_pool_weights=(("dianshi", 3), ("xiangshi", 2), ("cunmu", 1)),
     ),
     "dojo": ArchetypePacing(
         archetype="dojo",
         slot_interval_minutes=(10, 12),
-        silver_budget_ratio=0.45,
-        grain_budget_ratio=0.45,
         max_parallel_training=2,
-        high_cost_actions_per_cycle=5,
-        building_targets=("forge", "smithy"),
-        technology_targets=("forging", "smelting"),
+        building_targets=("tax_office", "farm", "bathhouse"),
+        technology_targets=("architecture", "farming"),
         recruitment_pool_weights=(("dianshi", 1), ("xiangshi", 3), ("cunmu", 2)),
     ),
     "guard": ArchetypePacing(
         archetype="guard",
         slot_interval_minutes=(11, 14),
-        silver_budget_ratio=0.50,
-        grain_budget_ratio=0.65,
         max_parallel_training=1,
-        high_cost_actions_per_cycle=5,
-        building_targets=("wall", "arrow_tower", "jiadingfang"),
-        technology_targets=("dao_defense", "qiang_defense", "gong_defense"),
+        building_targets=("tax_office", "silver_vault", "bathhouse"),
+        technology_targets=("architecture", "farming"),
         recruitment_pool_weights=(("dianshi", 2), ("xiangshi", 1), ("cunmu", 3)),
     ),
     "abandoned": ArchetypePacing(
         archetype="abandoned",
         slot_interval_minutes=(14, 15),
-        silver_budget_ratio=0.20,
-        grain_budget_ratio=0.20,
         max_parallel_training=0,
-        high_cost_actions_per_cycle=1,
         building_targets=("farm", "granary"),
         technology_targets=("farming",),
         recruitment_pool_weights=(("dianshi", 1), ("xiangshi", 1), ("cunmu", 1)),
@@ -396,11 +230,9 @@ def pacing_from_cycle_payload(
 
 __all__ = [
     "ARCHETYPE_PACING_SCHEMA_VERSION",
-    "ArchetypeBudgetState",
     "ArchetypePacing",
     "ArchetypePacingError",
     "DEFAULT_ARCHETYPE_PACING",
-    "HIGH_COST_ACTION_KINDS",
     "SUPPORTED_ARCHETYPES",
     "SUPPORTED_RECRUITMENT_POOLS",
     "pacing_from_cycle_payload",

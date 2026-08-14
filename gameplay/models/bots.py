@@ -35,11 +35,13 @@ class BotProfile(models.Model):
     current_prestige_band = models.CharField("当前声望段", max_length=32, db_index=True, default="")
     growth_seed = models.PositiveIntegerField("成长种子")
     growth_stage = models.PositiveSmallIntegerField("成长阶段", default=1)
+    guest_count_target = models.PositiveSmallIntegerField("普通培养门客目标数", default=0)
     next_growth_at = models.DateTimeField("下次成长时间", db_index=True)
     # The recruitment scan always filters by the V2 profile dimensions first;
     # keep one composite due index instead of adding a redundant single-column
     # index that would increase write and migration cost.
     next_recruitment_at = models.DateTimeField("下次招募到期时间", null=True, blank=True)
+    recruitment_schedule_snapshot = models.JSONField("每日招募配额快照", default=dict, blank=True)
     abandon_at = models.DateTimeField("弃坑时间", db_index=True)
     retire_at = models.DateTimeField("退场时间", db_index=True)
     loot_budget_daily = models.PositiveIntegerField("每日资源预算", default=0)

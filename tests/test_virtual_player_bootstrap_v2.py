@@ -21,6 +21,10 @@ from gameplay.models import (
     PlayerTroop,
 )
 from gameplay.services.virtual_player_core import bootstrap
+from gameplay.services.virtual_player_core.asset_policy import (
+    VIRTUAL_PLAYER_USEFUL_BUILDING_KEYS,
+    useful_virtual_technology_keys,
+)
 from gameplay.services.virtual_player_core.bootstrap_catalog import (
     clear_bootstrap_catalog_cache,
     load_bootstrap_catalog,
@@ -106,6 +110,7 @@ def test_build_v2_bootstrap_plan_is_deterministic_and_stays_in_all_eight_bands(
             first.projection.guest_level if first.projection.guest_count else 0
         )
         assert sum(assets.troop_counts.values()) == first.projection.troop_count
+        assert "scout" not in assets.troop_counts
         assert max(assets.building_levels.values()) == first.projection.building_level
         assert len(assets.catalog_digest) == 64
         assert all(
@@ -370,6 +375,19 @@ def test_v2_bootstrap_materializes_exact_blueprint_assets_in_all_eight_bands(
         manor = profile.manor
         assets = plan.blueprint.assets
         account_created_at = FIXED_NOW - timedelta(days=plan.blueprint.historical_age_days)
+
+        assert assets.retainer_count == 0
+        assert all(
+            assets.building_levels[key] == 1
+            for key in assets.building_levels
+            if key not in VIRTUAL_PLAYER_USEFUL_BUILDING_KEYS
+        )
+        useful_technology_keys = useful_virtual_technology_keys(
+            troop_class for troop_class, _ratio in plan.development_plan.troop_mix
+        )
+        assert all(
+            assets.technology_levels[key] == 0 for key in assets.technology_levels if key not in useful_technology_keys
+        )
 
         assert dict(
             Building.objects.filter(manor=manor).values_list(

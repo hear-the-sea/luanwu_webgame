@@ -5,11 +5,7 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
-from gameplay.services.virtual_player_core.archetype_pacing import (
-    ArchetypeBudgetState,
-    pacing_from_cycle_payload,
-    resolve_archetype_pacing,
-)
+from gameplay.services.virtual_player_core.archetype_pacing import pacing_from_cycle_payload, resolve_archetype_pacing
 from gameplay.services.virtual_player_core.config import load_virtual_player_config
 from gameplay.services.virtual_player_core.maintenance_cycle import (
     next_ordinary_slot_due_at,
@@ -26,7 +22,7 @@ def test_archetype_pacing_is_typed_and_archetype_specific() -> None:
 
     assert balanced.slot_interval_minutes == (10, 15)
     assert dojo.max_parallel_training == 2
-    assert dojo.technology_targets == ("forging", "smelting")
+    assert dojo.technology_targets == ("architecture", "farming")
     assert abandoned.max_parallel_training == 0
     assert abandoned.slot_interval_minutes == (14, 15)
     assert balanced.recruitment_pool_weights != dojo.recruitment_pool_weights
@@ -81,16 +77,9 @@ def test_archetype_pacing_payload_contains_a_complete_business_contract(archetyp
     assert set(payload["recruitment_pool_weights"]) == {"dianshi", "xiangshi", "cunmu"}
     assert payload["building_targets"]
     assert payload["technology_targets"]
-
-
-def test_archetype_budget_consumes_one_cycle_baseline_across_slots() -> None:
-    pacing = resolve_archetype_pacing(load_virtual_player_config(), "balanced")
-    state = ArchetypeBudgetState.from_spendable_resources({"silver": 1_000, "grain": 500})
-
-    first_limits = dict(state.remaining_limits(pacing))
-    state_after_first = state.consume({"silver": 200, "grain": 100})
-    second_limits = dict(state_after_first.remaining_limits(pacing))
-
-    assert first_limits == {"silver": 600, "grain": 300}
-    assert second_limits == {"silver": 400, "grain": 200}
-    assert ArchetypeBudgetState.from_payload(state_after_first.to_payload()) == state_after_first
+    assert not {
+        "silver_budget_ratio",
+        "grain_budget_ratio",
+        "high_cost_actions_per_cycle",
+        "economic_recovery_actions_per_cycle",
+    } & set(payload)

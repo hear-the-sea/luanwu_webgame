@@ -6,12 +6,19 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, TypeVar
 
+from common.constants.virtual_players import VIRTUAL_PLAYER_EXCLUDED_TROOP_KEYS
 from core.config import GUEST
 from gameplay.constants import BuildingKeys
 from gameplay.services.manor.core import calculate_building_capacity
 from guests.services.equipment_stats import slot_capacity
 from guests.utils.recruitment_variance import apply_recruitment_variance
 
+from .asset_policy import (
+    VIRTUAL_PLAYER_RETAINER_COUNT,
+    VIRTUAL_PLAYER_USEFUL_BUILDING_KEYS,
+    filter_virtual_building_focuses,
+    useful_virtual_technology_keys,
+)
 from .bootstrap_catalog import BootstrapCatalog, GuestCatalogEntry, SkillCatalogEntry, TroopCatalogEntry
 from .contracts import BotProjectionConfig
 from .projection import (
@@ -168,7 +175,8 @@ def _building_targets(
     historical_age_days: int,
 ) -> tuple[dict[str, int], dict[str, int]]:
     target_level = max(1, int(target_level))
-    preferred = set(plan.building_focuses)
+    useful_buildings = set(filter_virtual_building_focuses(plan.building_focuses))
+    useful_building_keys = set(VIRTUAL_PLAYER_USEFUL_BUILDING_KEYS)
     ranked = _digest_ranked(
         context,
         domain="buildings",
@@ -176,14 +184,11 @@ def _building_targets(
         values=catalog.buildings,
         key=lambda entry: entry.key,
     )
-    ranked.sort(key=lambda entry: entry.key not in preferred)
+    ranked.sort(key=lambda entry: entry.key not in useful_buildings)
     core_keys = {
         BuildingKeys.SILVER_VAULT,
         BuildingKeys.GRANARY,
         BuildingKeys.JUXIAN_ZHUANG,
-        BuildingKeys.JIADING_FANG,
-        BuildingKeys.YOUXIA_BAOTA,
-        BuildingKeys.LIANGGONG_CHANG,
     }
     anchor = next((entry for entry in ranked if entry.key in core_keys), None)
     if anchor is None:
@@ -194,13 +199,18 @@ def _building_targets(
     for index, entry in enumerate(ranked):
         if entry.key == anchor.key:
             level = target_level
+        elif entry.key not in useful_building_keys:
+            # Keep the complete building catalog materialized for schema
+            # compatibility, but do not bootstrap progression into buildings
+            # that the V2 runtime never consumes.
+            level = 1
         else:
             spread = context.bucket(
                 domain="buildings",
                 discriminator={"level_spread": entry.key},
                 bucket_count=min(3, target_level),
             )
-            if entry.key in preferred:
+            if entry.key in useful_buildings:
                 spread = min(spread, 1)
             level = max(1, target_level - spread)
         if entry.max_level is not None:
@@ -226,12 +236,18 @@ def _technology_targets(
     historical_age_days: int,
 ) -> tuple[dict[str, int], dict[str, int]]:
     base_level = max(0, int(building_level) // 3)
-    preferred = set(plan.technology_focuses)
     troop_classes = {troop_class for troop_class, _ratio in plan.troop_mix}
+    useful_technologies = useful_virtual_technology_keys(troop_classes)
+    preferred = set(plan.technology_focuses) & useful_technologies
     levels: dict[str, int] = {}
     offsets: dict[str, int] = {}
     for entry in catalog.technologies:
-        if entry.key in preferred:
+        if entry.key not in useful_technologies:
+            # Keep a zero row so the locked bootstrap catalog remains
+            # complete, while preventing unused technologies from appearing
+            # as progressed virtual-player assets.
+            level = 0
+        elif entry.key in preferred:
             level = base_level
         elif entry.troop_class in troop_classes:
             level = max(0, base_level - 1)
@@ -564,6 +580,8 @@ def _troop_targets(
         by_class.setdefault(entry.troop_class, []).append(entry)
     weighted_templates: list[tuple[str, float]] = []
     for troop_class, weight in plan.troop_mix:
+        if troop_class in VIRTUAL_PLAYER_EXCLUDED_TROOP_KEYS:
+            continue
         candidates = by_class.get(troop_class, [])
         if not candidates:
             raise BootstrapAssetPlanningError(f"bootstrap catalog has no troop for class {troop_class!r}")
@@ -575,17 +593,8 @@ def _troop_targets(
             key=lambda entry: entry.key,
         )
         weighted_templates.append((ranked[0].key, float(weight)))
-    scout_candidates = by_class.get("scout", [])
-    if scout_candidates and troop_total >= 20:
-        ranked_scouts = _digest_ranked(
-            context,
-            domain="troops",
-            discriminator="class:scout",
-            values=scout_candidates,
-            key=lambda entry: entry.key,
-        )
-        weighted_templates = [(key, weight * 0.95) for key, weight in weighted_templates]
-        weighted_templates.append((ranked_scouts[0].key, 0.05))
+    if not weighted_templates:
+        raise BootstrapAssetPlanningError("virtual-player bootstrap troop mix has no allowed troop classes")
     return _largest_remainder_counts(troop_total, weighted_templates)
 
 
@@ -721,12 +730,6 @@ def build_bootstrap_asset_targets(
         catalog=catalog,
         troop_total=int(projection.troop_count),
     )
-    jiading_level = building_levels[BuildingKeys.JIADING_FANG]
-    retainer_capacity = 50 + jiading_level * 100
-    retainer_count = min(
-        retainer_capacity,
-        max(0, int(projection.troop_count) // 5),
-    )
     inventory = _inventory_targets(
         context=context,
         archetype=str(archetype),
@@ -748,7 +751,7 @@ def build_bootstrap_asset_targets(
         building_levels=building_levels,
         technology_levels=technology_levels,
         guests=guests,
-        retainer_count=retainer_count,
+        retainer_count=VIRTUAL_PLAYER_RETAINER_COUNT,
         troop_counts=troop_counts,
         inventory=inventory,
         silver=silver,

@@ -76,13 +76,13 @@ def test_worker_lease_helpers_set_expiry_and_delete_the_worker_key() -> None:
 @pytest.mark.asyncio
 async def test_concurrent_ensure_started_creates_one_identity_and_one_heartbeat(monkeypatch) -> None:
     module = _lease_module()
-    redis = _FakeRedis()
     uuid4 = Mock(return_value=SimpleNamespace(hex=WORKER_ID))
     monkeypatch.setattr(module.uuid, "uuid4", uuid4)
-    monkeypatch.setattr(module, "get_redis_connection", lambda alias: redis)
-    monkeypatch.setattr(module.settings, "WEBSOCKET_WORKER_LEASE_TTL_SECONDS", 8)
-    monkeypatch.setattr(module.settings, "WEBSOCKET_WORKER_LEASE_HEARTBEAT_SECONDS", 2)
     manager = module.WebSocketWorkerLeaseManager()
+    refresh = AsyncMock()
+    delete = AsyncMock()
+    monkeypatch.setattr(manager, "_refresh_worker_lease", refresh)
+    monkeypatch.setattr(manager, "_delete_worker_lease", delete)
 
     assert manager.worker_id is None
     worker_ids = await asyncio.gather(*(manager.ensure_started() for _ in range(20)))
@@ -90,15 +90,15 @@ async def test_concurrent_ensure_started_creates_one_identity_and_one_heartbeat(
 
     assert worker_ids == [WORKER_ID] * 20
     assert uuid4.call_count == 1
+    refresh.assert_awaited_once_with()
     assert heartbeat_task is not None
     assert not heartbeat_task.done()
-    assert len(redis.set_calls) == 1
 
     await manager.stop()
 
     assert manager.heartbeat_task is None
     assert heartbeat_task.done()
-    assert redis.delete_calls == [f"websocket:worker:{WORKER_ID}"]
+    delete.assert_awaited_once_with()
 
 
 @pytest.mark.asyncio

@@ -16,6 +16,7 @@ from guests.models import GearItem, GearTemplate, Guest, GuestSkill, GuestStatus
 from guests.services.equipment_stats import apply_set_bonuses, apply_template_stats_to_guest, slot_capacity
 from guests.services.skills import MAX_GUEST_SKILL_SLOTS, assert_guest_meets_skill_requirements
 
+from .asset_policy import VIRTUAL_PLAYER_EXCLUDED_TROOP_KEYS, VIRTUAL_PLAYER_RETAINER_COUNT
 from .bootstrap_assets import RARITY_RANK
 from .inventory_budget import inventory_daily_cap_limits
 from .maintenance_action_specs import (
@@ -97,10 +98,16 @@ def build_virtual_troop_candidates(
     quotes: dict[str, TroopRecruitmentQuote] = {}
     normalized_archetype = str(archetype).strip()
     for troop_class, target_weight in development_plan.troop_mix:
+        if str(troop_class).strip() in VIRTUAL_PLAYER_EXCLUDED_TROOP_KEYS:
+            continue
         class_info = troop_classes.get(str(troop_class))
         if not isinstance(class_info, Mapping):
             continue
-        troop_keys = tuple(str(key).strip() for key in (class_info.get("troops") or ()) if str(key).strip())
+        troop_keys = tuple(
+            str(key).strip()
+            for key in (class_info.get("troops") or ())
+            if str(key).strip() and str(key).strip() not in VIRTUAL_PLAYER_EXCLUDED_TROOP_KEYS
+        )
         if not troop_keys:
             continue
         eligible: list[tuple[int, str, dict[str, Any], int]] = []
@@ -123,10 +130,6 @@ def build_virtual_troop_candidates(
         current_total = max(0, int(strength_before.components.get("troop_total", 0)))
         components_after = dict(strength_before.components)
         components_after["troop_total"] = current_total + 1
-        spent_before = max(0, int(manor.prestige_silver_spent or 0))
-        spending_prestige_before = spent_before // 1_000
-        pvp_prestige = max(0, int(manor.prestige or 0) - spending_prestige_before)
-        components_after["prestige"] = pvp_prestige + (spent_before + silver_cost) // 1_000
         strength_after = StrengthSummary(
             composite=float(components_after["arena_lineup_power"] + 2 * components_after["troop_total"]),
             components=components_after,
@@ -159,7 +162,7 @@ def build_virtual_troop_candidates(
             equipment_costs=(),
             equipment_stock=(),
             retainer_cost=0,
-            retainer_count=max(0, int(manor.retainer_count or 0)),
+            retainer_count=VIRTUAL_PLAYER_RETAINER_COUNT,
             tech_key=(str((troop.get("recruit") or {}).get("tech_key") or "").strip() or None),
             tech_level_required=max(0, int((troop.get("recruit") or {}).get("tech_level") or 0)),
             tech_level=actual_tech_level,

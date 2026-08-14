@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, replace
+from datetime import datetime
 
 from .maintenance_rules import ControlledActionDecision
 from .projection import DevelopmentIntent, ProjectionRuleError, select_development_intent
@@ -28,6 +29,7 @@ class CandidateAssessment:
     expected_strength_gain: int = 0
     selection_score: float | None = None
     rejection_reasons: tuple[str, ...] = ()
+    next_affordable_at: datetime | None = None
     retryable: bool = False
     execution_metadata_key: str = ""
 
@@ -78,6 +80,12 @@ class CandidateAssessment:
             raise CandidateAssessmentError("expected_strength_gain must be a non-negative integer")
         if self.selection_score is not None and not math.isfinite(float(self.selection_score)):
             raise CandidateAssessmentError("selection_score must be finite")
+        if self.next_affordable_at is not None and (
+            not isinstance(self.next_affordable_at, datetime)
+            or self.next_affordable_at.tzinfo is None
+            or self.next_affordable_at.utcoffset() is None
+        ):
+            raise CandidateAssessmentError("next_affordable_at must be a timezone-aware datetime or None")
         normalized_reasons = tuple(dict.fromkeys(str(reason).strip() for reason in self.rejection_reasons))
         if any(not reason for reason in normalized_reasons):
             raise CandidateAssessmentError("rejection reasons must be non-empty strings")
@@ -116,6 +124,7 @@ class CandidateAssessment:
             "expected_strength_gain": self.expected_strength_gain,
             "selection_score": self.selection_score,
             "rejection_reasons": list(self.rejection_reasons),
+            "next_affordable_at": (None if self.next_affordable_at is None else self.next_affordable_at.isoformat()),
             "retryable": self.retryable,
         }
 
@@ -126,6 +135,8 @@ def select_candidate_assessment(
     assessments: tuple[CandidateAssessment, ...],
     context: RandomContext,
     optimization_bias: float,
+    resource_barrier_group_indexes: frozenset[int] = frozenset(),
+    resource_recovery_group_indexes: frozenset[int] = frozenset(),
 ) -> CandidateAssessment | None:
     """Select the first priority group containing an allowed candidate.
 
@@ -142,7 +153,60 @@ def select_candidate_assessment(
             return assessment.intent
         return replace(assessment.intent, utility_score=assessment.selection_score)
 
-    for group in candidate_groups:
+    resource_rejection_reasons = frozenset({"insufficient_resource", "salary_runway_protected"})
+
+    resource_barrier_assessment: CandidateAssessment | None = None
+    resource_barrier_active = False
+    for group_index, group in enumerate(candidate_groups):
+        if (
+            resource_barrier_active
+            and group_index not in resource_barrier_group_indexes
+            and group_index not in resource_recovery_group_indexes
+        ):
+            continue
+        group_assessments = tuple(
+            assessment for intent in group if (assessment := by_key.get(intent.business_key)) is not None
+        )
+        if group_index in resource_recovery_group_indexes:
+            rejected = tuple(assessment for assessment in group_assessments if not assessment.allowed)
+            if rejected and not any(assessment.allowed for assessment in group_assessments):
+                # Economic recovery is an explicit priority group.  When its
+                # production candidates are uniformly blocked, retain that
+                # concrete recovery candidate as the no-action explanation;
+                # a later minimum group must not hide the liquidity bottleneck.
+                if all(
+                    resource_rejection_reasons.intersection(assessment.rejection_reasons) for assessment in rejected
+                ):
+                    return min(
+                        rejected,
+                        key=lambda assessment: (
+                            assessment.primary_rejection_reason,
+                            assessment.intent.business_key,
+                        ),
+                    )
+        if group_index in resource_barrier_group_indexes:
+            rejected = tuple(assessment for assessment in group_assessments if not assessment.allowed)
+            if (
+                rejected
+                and not any(assessment.allowed for assessment in group_assessments)
+                and all(
+                    resource_rejection_reasons.intersection(assessment.rejection_reasons) for assessment in rejected
+                )
+            ):
+                # A mandatory priority group that is uniformly resource
+                # blocked must remain visible as NO_ACTION.  Falling through
+                # to a lower-priority action would hide the shortage and make
+                # the next retry less likely to execute the intended work.
+                if resource_barrier_assessment is None:
+                    resource_barrier_assessment = min(
+                        rejected,
+                        key=lambda assessment: (
+                            assessment.primary_rejection_reason,
+                            assessment.intent.business_key,
+                        ),
+                    )
+                resource_barrier_active = True
+                continue
         allowed = tuple(
             _selection_intent(assessment)
             for intent in group
@@ -156,15 +220,20 @@ def select_candidate_assessment(
         if selected is not None:
             return by_key[selected.business_key]
 
+    if resource_barrier_assessment is not None:
+        return resource_barrier_assessment
+
     for group in candidate_groups:
-        rejected = tuple(
-            _selection_intent(assessment)
+        rejected_assessments = tuple(
+            assessment
             for intent in group
-            if (assessment := by_key.get(intent.business_key)) is not None and not assessment.allowed
+            for assessment in (by_key.get(intent.business_key),)
+            if assessment is not None and not assessment.allowed
         )
+        rejected_intents = tuple(_selection_intent(assessment) for assessment in rejected_assessments)
         try:
             selected = select_development_intent(
-                rejected,
+                rejected_intents,
                 context=context,
                 optimization_bias=optimization_bias,
             )

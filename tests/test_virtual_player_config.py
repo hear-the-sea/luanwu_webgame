@@ -108,8 +108,7 @@ def test_typed_v2_config_is_immutable_and_resolves_all_band_boundaries() -> None
         config.policies[2] = config.policy()  # type: ignore[index]
     with pytest.raises(TypeError):
         config.policy().payload["anchor_k"] = 9  # type: ignore[index]
-    with pytest.raises(TypeError):
-        config.policy().payload["strength_safety"]["no_reference"] = {}  # type: ignore[index]
+    assert "strength_safety" not in config.policy().payload
 
 
 def test_typed_v2_config_retires_gate_d2_evidence_registry() -> None:

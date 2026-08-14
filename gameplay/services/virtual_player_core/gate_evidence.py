@@ -14,7 +14,7 @@ import yaml
 from django.db import connection
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_ARTIFACT_DATE = "2026-07-30"
+DEFAULT_ARTIFACT_DATE = "2026-08-11"
 ARTIFACT_DATE = os.environ.get("VIRTUAL_PLAYER_EVIDENCE_ARTIFACT_DATE", DEFAULT_ARTIFACT_DATE).strip()
 try:
     if datetime.strptime(ARTIFACT_DATE, "%Y-%m-%d").strftime("%Y-%m-%d") != ARTIFACT_DATE:

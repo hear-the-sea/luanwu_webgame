@@ -116,6 +116,7 @@ BOT_PROFILE_DIRECT_IMPORTS = {
     "gameplay/services/virtual_player_core/maintenance_cycle.py": "V2 maintenance cycle profile ownership and locking boundary",
     "gameplay/services/virtual_player_core/maintenance_completion.py": "V2 domain completion reconcile profile selection and locking boundary",
     "gameplay/services/virtual_player_core/maintenance.py": "maintenance selection, locking, and lifecycle boundary",
+    "gameplay/services/virtual_player_core/policy_alignment.py": "guarded policy release and V2 profile alignment write boundary",
     "gameplay/services/virtual_player_core/population_runtime.py": "population selection and locking before delegated writes",
     "gameplay/services/virtual_player_core/policy_registry.py": "read-only policy retirement reference checks",
     "gameplay/services/virtual_player_core/profile_store.py": "target BotProfile write owner",
@@ -143,6 +144,7 @@ BOT_PROFILE_RELATION_READERS = {
 
 BOT_PROFILE_GATE_A_WRITE_OWNERS = {
     "gameplay/services/virtual_player_core/maintenance.py",
+    "gameplay/services/virtual_player_core/policy_alignment.py",
     "gameplay/services/virtual_player_core/profile_store.py",
     "gameplay/services/virtual_player_core/recruitment.py",
 }

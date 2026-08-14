@@ -549,6 +549,24 @@ items:
   #                              功能道具
   # ══════════════════════════════════════════════════════════════════════════════
 
+  - key: junior_guest_card
+    name: 初级门客卡
+    description: 一张看起来很有排面的卡片，实际承诺只有一句：“保证来人，不保证来的是谁。”使用后随机招募一名灰色门客，姓名现场现编，若听着耳熟，纯属江湖重名。
+    effect_type: tool
+    rarity: black
+    tradeable: true
+    price: 1000
+    storage_space: 50
+    is_usable: true
+    image: junior_guest_card.png
+    effect_payload:
+      action: summon_guest
+      choices:
+        - template_key: base_gray_civil
+          weight: 50
+        - template_key: base_gray_military
+          weight: 50
+
   - key: fangdajing
     name: 放大镜
     description: 用于查看招募门客的稀有度。

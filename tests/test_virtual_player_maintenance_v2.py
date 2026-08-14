@@ -75,6 +75,7 @@ from guests.models import (
     GuestSkill,
     GuestStatus,
     GuestTemplate,
+    RecruitmentPool,
     SalaryPayment,
     Skill,
     TrainingLog,
@@ -215,6 +216,254 @@ def test_arena_candidate_assessment_keeps_disallowed_actions_out_of_selection(
     }
     assert rejected_by_kind[BuildingUpgradeActionSpec.action_kind] == ("trigger_action_disallowed",)
     assert rejected_by_kind[TechnologyUpgradeActionSpec.action_kind] == ("trigger_action_disallowed",)
+
+
+@pytest.mark.django_db
+def test_scheduled_recruitment_due_does_not_trigger_economic_recovery_by_itself(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    BotProfile.objects.filter(pk=active_v2_profile.pk).update(next_recruitment_at=FIXED_NOW)
+
+    plan = _scheduled_plan(active_v2_profile)
+
+    assert plan.economic_recovery_mode is False
+
+
+@pytest.mark.django_db
+def test_scheduled_low_silver_forecast_enters_economic_recovery(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    Manor.objects.filter(pk=active_v2_profile.manor_id).update(
+        silver=0,
+        silver_capacity=1,
+        resource_updated_at=FIXED_NOW,
+    )
+
+    plan = _scheduled_plan(active_v2_profile)
+
+    assert plan.economic_recovery_mode is True
+    assert plan.action_kind == BuildingUpgradeActionSpec.action_kind
+    assert isinstance(plan.action_spec, BuildingUpgradeActionSpec)
+    assert plan.action_spec.building_key in {"tax_office", "tavern", "bathhouse", BuildingKeys.LATRINE}
+
+
+@pytest.mark.django_db
+def test_scheduled_plan_forecasts_recruitment_cost_without_reserving_silver(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    plan = _scheduled_plan(active_v2_profile)
+
+    pool_costs = {
+        key: int((cost or {}).get(ResourceType.SILVER, 0))
+        for key, cost in RecruitmentPool.objects.filter(
+            key__in={"xiangshi", "cunmu"},
+        ).values_list("key", "cost")
+    }
+    assert plan.resource_planning_snapshot.recurring_silver_outflow_daily == (
+        3 * pool_costs["xiangshi"] + 3 * pool_costs["cunmu"]
+    )
+    assert dict(plan.resource_planning_snapshot.protected_resources)[ResourceType.SILVER] == 0
+    assert (
+        dict(plan.resource_planning_snapshot.spendable_resources)[ResourceType.SILVER]
+        == dict(plan.resource_planning_snapshot.post_salary_resources)[ResourceType.SILVER]
+    )
+
+
+@pytest.mark.django_db
+def test_v2_planner_does_not_emit_removed_budget_spacing_or_salary_gates(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    Manor.objects.filter(pk=active_v2_profile.manor_id).update(
+        silver=1_000,
+        grain=1_000,
+        silver_capacity=1_000,
+        grain_capacity=1_000,
+        resource_updated_at=FIXED_NOW,
+    )
+
+    plan = _scheduled_plan(active_v2_profile)
+    removed_gate_reasons = {
+        "band_spacing",
+        "archetype_budget_silver",
+        "archetype_budget_grain",
+        "archetype_high_cost_cap",
+        "salary_runway_protected",
+    }
+
+    assert not removed_gate_reasons.intersection(
+        reason for assessment in plan.candidate_assessments for reason in assessment.rejection_reasons
+    )
+    assert dict(plan.resource_planning_snapshot.protected_resources)[ResourceType.SILVER] == 0
+
+
+@pytest.mark.django_db
+def test_economic_recovery_cycle_coverage_does_not_duplicate_candidates(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    BotProfile.objects.filter(pk=active_v2_profile.pk).update(next_recruitment_at=FIXED_NOW)
+
+    plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        now=FIXED_NOW,
+        _cycle_covered_action_kinds=(EquipmentEquipActionSpec.action_kind,),
+        _scheduled_cycle_slot_due=True,
+    )
+
+    business_keys = [assessment.intent.business_key for assessment in plan.candidate_assessments]
+    assert len(business_keys) == len(set(business_keys))
+    assert plan.action_kind == BuildingUpgradeActionSpec.action_kind
+
+
+@pytest.mark.django_db
+def test_scheduled_cycle_rotates_remaining_building_and_technology_evaluations(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    BotProfile.objects.filter(pk=active_v2_profile.pk).update(
+        next_recruitment_at=FIXED_NOW + timedelta(days=1),
+    )
+    building_kind = BuildingUpgradeActionSpec.action_kind
+    technology_kind = TechnologyUpgradeActionSpec.action_kind
+    covered = (building_kind, technology_kind)
+
+    technology_plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        now=FIXED_NOW,
+        _cycle_covered_action_kinds=covered,
+        _cycle_action_kind_counts=((building_kind, 1), (technology_kind, 0)),
+        _cycle_action_attempt_counts=((building_kind, 1), (technology_kind, 0)),
+        _scheduled_cycle_slot_due=True,
+    )
+    assert technology_plan.action_kind == technology_kind
+    assert technology_plan.cycle_action_kind_counts == (
+        (building_kind, 1),
+        (technology_kind, 0),
+    )
+    assert technology_plan.cycle_action_attempt_counts == (
+        (building_kind, 1),
+        (technology_kind, 0),
+    )
+
+    building_plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        now=FIXED_NOW,
+        _cycle_covered_action_kinds=covered,
+        _cycle_action_kind_counts=((building_kind, 1), (technology_kind, 1)),
+        _cycle_action_attempt_counts=((building_kind, 1), (technology_kind, 1)),
+        _scheduled_cycle_slot_due=True,
+    )
+    assert building_plan.action_kind == building_kind
+
+
+@pytest.mark.django_db
+def test_scheduled_cycle_falls_back_when_minimum_building_candidate_is_unavailable(
+    active_v2_profile,
+    permissive_reference,
+    monkeypatch,
+) -> None:
+    _isolate_upgrade_candidates(monkeypatch, keep="technology")
+    BotProfile.objects.filter(pk=active_v2_profile.pk).update(
+        next_recruitment_at=FIXED_NOW + timedelta(days=1),
+    )
+
+    plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        now=FIXED_NOW,
+        _cycle_action_kind_counts=(
+            (BuildingUpgradeActionSpec.action_kind, 0),
+            (TechnologyUpgradeActionSpec.action_kind, 0),
+        ),
+        _scheduled_cycle_slot_due=True,
+    )
+
+    assert plan.action_kind == TechnologyUpgradeActionSpec.action_kind
+
+
+@pytest.mark.django_db
+def test_resource_blocked_minimum_evaluation_rotates_to_the_other_kind(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    building_kind = BuildingUpgradeActionSpec.action_kind
+    technology_kind = TechnologyUpgradeActionSpec.action_kind
+    Manor.objects.filter(pk=active_v2_profile.manor_id).update(
+        silver=0,
+        grain=0,
+        resource_updated_at=FIXED_NOW,
+    )
+    cycle = maintenance._open_policy2_scheduled_cycle(active_v2_profile.id, now=FIXED_NOW)
+
+    first = maintenance.maintain_virtual_player_v2(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        now=FIXED_NOW,
+    )
+    cycle.refresh_from_db()
+
+    assert first.outcome is MaintenanceOutcome.NO_ACTION
+    assert first.action_kind == building_kind
+    assert cycle.action_ordinal == 0
+    assert cycle.payload["action_attempt_counts"][building_kind] == 1
+
+    retry_at = cycle.next_slot_due_at
+    assert retry_at is not None
+    record_safety_heartbeat("safety_monitor", now=retry_at)
+    Manor.objects.filter(pk=active_v2_profile.manor_id).update(
+        silver=0,
+        grain=0,
+        resource_updated_at=retry_at,
+    )
+    second = maintenance.maintain_virtual_player_v2(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        now=retry_at,
+    )
+    cycle.refresh_from_db()
+
+    assert second.outcome is MaintenanceOutcome.NO_ACTION
+    assert second.action_kind == technology_kind
+    assert cycle.action_ordinal == 0
+    assert cycle.payload["action_attempt_counts"] == {
+        building_kind: 1,
+        technology_kind: 1,
+    }
+
+
+@pytest.mark.django_db
+def test_economic_recovery_evaluation_counts_the_planned_minimum_kind(
+    active_v2_profile,
+    permissive_reference,
+) -> None:
+    building_kind = BuildingUpgradeActionSpec.action_kind
+    technology_kind = TechnologyUpgradeActionSpec.action_kind
+    cycle = maintenance._open_policy2_scheduled_cycle(active_v2_profile.id, now=FIXED_NOW)
+    Manor.objects.filter(pk=active_v2_profile.manor_id).update(
+        silver=800,
+        silver_capacity=1_000,
+        resource_updated_at=FIXED_NOW,
+    )
+
+    result = maintenance.maintain_virtual_player_v2(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        now=FIXED_NOW,
+    )
+    cycle.refresh_from_db()
+
+    assert result.outcome is MaintenanceOutcome.NO_ACTION
+    assert result.action_kind == building_kind
+    assert cycle.payload["last_minimum_evaluation_kind"] == building_kind
+    assert cycle.payload["action_attempt_counts"] == {building_kind: 1}
+    assert technology_kind not in cycle.payload["action_attempt_counts"]
 
 
 @pytest.mark.django_db
@@ -1004,6 +1253,9 @@ def test_v2_scheduled_cycle_preserves_timed_action_completion_source(
     assert result.action_kind == BuildingUpgradeActionSpec.action_kind
     assert cycle.current_action_state == BotMaintenanceCycle.ActionState.SUBMITTED
     assert cycle.last_action_completion_source == "building.upgrade_complete_at"
+    assert cycle.payload["action_kind_counts"][BuildingUpgradeActionSpec.action_kind] == 1
+    assert cycle.payload["action_attempt_counts"][BuildingUpgradeActionSpec.action_kind] == 1
+    assert cycle.payload["coverage_debt"][BuildingUpgradeActionSpec.action_kind] == 1
     assert cycle.next_slot_due_at is not None
     assert cycle.next_slot_due_at > FIXED_NOW
 
@@ -1527,6 +1779,52 @@ def test_completed_scheduled_cycle_advances_ordinal(
 
     assert second.cycle_ordinal == first.cycle_ordinal + 1
     assert second.status == BotMaintenanceCycle.Status.OPEN
+    assert second.payload["coverage_debt"][BuildingUpgradeActionSpec.action_kind] == 4
+    assert second.payload["coverage_debt"][TechnologyUpgradeActionSpec.action_kind] == 4
+
+
+@pytest.mark.django_db
+def test_scheduled_cycle_resource_wait_is_bounded_and_deferred(
+    active_v2_profile,
+    permissive_reference,
+):
+    cycle = maintenance._open_policy2_scheduled_cycle(
+        active_v2_profile.id,
+        now=FIXED_NOW,
+    )
+    plan = _scheduled_plan(active_v2_profile)
+
+    for attempt in range(6):
+        result = MaintenanceResult(
+            outcome=MaintenanceOutcome.NO_ACTION,
+            trigger=MaintenanceTrigger.SCHEDULED,
+            profile_id=active_v2_profile.id,
+            sequence_before=attempt,
+            sequence_after=attempt + 1,
+            schedule_disposition=MaintenanceScheduleDisposition.ADVANCE_NORMAL_SCHEDULE,
+            next_growth_at_before=FIXED_NOW,
+            next_growth_at_after=FIXED_NOW + timedelta(hours=1),
+            reason="insufficient_resource",
+            scheduled_cycle_slot_due=True,
+        )
+        maintenance._record_policy2_scheduled_cycle_result(
+            cycle.cycle_id,
+            result,
+            plan=plan,
+            now=FIXED_NOW + timedelta(minutes=attempt),
+        )
+        cycle.refresh_from_db()
+        if cycle.status == BotMaintenanceCycle.Status.COMPLETED:
+            break
+
+    assert cycle.status == BotMaintenanceCycle.Status.COMPLETED
+    assert cycle.last_reason == "deferred_to_next_cycle"
+    assert cycle.payload["resource_wait_count"] == 6
+    assert cycle.payload["resource_wait_status"] == "deferred_to_next_cycle"
+    assert cycle.payload["coverage_debt"] == {
+        BuildingUpgradeActionSpec.action_kind: 2,
+        TechnologyUpgradeActionSpec.action_kind: 2,
+    }
 
 
 @pytest.mark.django_db
@@ -1899,6 +2197,35 @@ def test_v2_troop_recruitment_commits_audit_without_scheduling_celery(
 
 
 @pytest.mark.django_db
+def test_v2_virtual_troop_recruitment_does_not_project_prestige_gain(
+    active_v2_profile,
+    permissive_reference,
+    monkeypatch,
+) -> None:
+    initial_plan = _prepare_troop_recruitment_plan(active_v2_profile, monkeypatch)
+    initial_quote = initial_plan.troop_recruitment_quote
+    assert initial_quote is not None
+
+    manor = Manor.objects.get(pk=active_v2_profile.manor_id)
+    spending_before_threshold = max(0, 1_000 - int(initial_quote.virtual_silver_cost) + 1)
+    Manor.objects.filter(pk=manor.pk).update(
+        prestige_silver_spent=spending_before_threshold,
+        prestige=int(manor.prestige),
+    )
+    active_v2_profile.refresh_from_db()
+
+    plan = _scheduled_plan(active_v2_profile)
+    quote = plan.troop_recruitment_quote
+    assert quote is not None
+    assert quote.virtual_silver_cost == initial_quote.virtual_silver_cost
+
+    result = maintenance.execute_virtual_player_v2_maintenance_plan(plan)
+
+    assert result.outcome is MaintenanceOutcome.APPLIED
+    assert load_manor_strength_summary(manor_id=plan.manor_id) == plan.intent.strength_after
+
+
+@pytest.mark.django_db
 def test_v2_training_commits_domain_result_budget_sequence_and_schedule_atomically(
     active_v2_profile,
     permissive_reference,
@@ -1931,7 +2258,7 @@ def test_v2_training_commits_domain_result_budget_sequence_and_schedule_atomical
     assert load_manor_strength_summary(manor_id=plan.manor_id) == plan.intent.strength_after
     if plan.intent.strength_after != plan.intent.strength_before:
         assert active_v2_profile.last_strength_increase_at == FIXED_NOW
-        assert len(active_v2_profile.strength_budget_entries) == 1
+        assert active_v2_profile.strength_budget_entries == []
 
 
 @pytest.mark.django_db
@@ -2896,6 +3223,11 @@ def test_v2_domain_failure_rolls_back_training_and_cycle_metadata(
     monkeypatch,
 ) -> None:
     _configure_due_resource_production(active_v2_profile, monkeypatch)
+    # This test exercises the training write failure path; keep recruitment
+    # recovery out of the candidate priority so the fixture is explicit.
+    BotProfile.objects.filter(pk=active_v2_profile.pk).update(
+        next_recruitment_at=FIXED_NOW + timedelta(days=1),
+    )
     plan = _scheduled_plan(active_v2_profile)
     assert plan.target_id is not None
     target_before = Guest.objects.values(

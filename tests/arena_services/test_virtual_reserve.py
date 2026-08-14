@@ -144,9 +144,7 @@ def _create_bot_profile(
     )
 
 
-def test_reachability_preflight_keeps_a_target_reachable_with_budget_only(
-    monkeypatch,
-) -> None:
+def test_reachability_preflight_keeps_a_target_reachable_with_budget_only() -> None:
     guests = SimpleNamespace(count=lambda: 3)
     profile = SimpleNamespace(
         id=41,
@@ -165,26 +163,6 @@ def test_reachability_preflight_keeps_a_target_reachable_with_budget_only(
         selected_power_lower_bound=1500,
         selected_power_upper_bound=2000,
     )
-    monkeypatch.setattr(
-        virtual_reserve_pool,
-        "get_policy_release",
-        lambda **_kwargs: SimpleNamespace(payload={"prestige_band_growth": {}}),
-    )
-    monkeypatch.setattr(
-        virtual_reserve_pool,
-        "parse_prestige_band_growth_policy",
-        lambda _payload: SimpleNamespace(
-            cadence_for=lambda _band: SimpleNamespace(
-                composite_growth_bps_per_controlled_action_max=100,
-            )
-        ),
-    )
-    monkeypatch.setattr(
-        virtual_reserve_pool,
-        "load_manor_strength_summary",
-        lambda **_kwargs: SimpleNamespace(composite=1000),
-    )
-
     assessment = virtual_reserve_pool._arena_growth_reachability(
         demand=SimpleNamespace(),
         profile=profile,
@@ -194,7 +172,7 @@ def test_reachability_preflight_keeps_a_target_reachable_with_budget_only(
 
     assert assessment.reachable is True
     assert assessment.reason == ""
-    assert assessment.max_selected_power < target.selected_power_lower_bound
+    assert assessment.max_selected_power is None
 
 
 def test_reachability_preflight_allows_juxianzhuang_capacity_provisioning() -> None:
@@ -1048,7 +1026,7 @@ def test_reserve_reconciliation_preserves_growth_retry_state(training_member):
     training_member.save(update_fields=["current_lineup_power"])
     retry_at = timezone.now() + timedelta(minutes=30)
     training_member.growth_retry_streak = 3
-    training_member.growth_retry_reason = "strength_cap"
+    training_member.growth_retry_reason = "domain_constraint"
     training_member.next_acceleration_at = retry_at
     training_member.save(update_fields=["growth_retry_streak", "growth_retry_reason", "next_acceleration_at"])
 
@@ -1056,7 +1034,7 @@ def test_reserve_reconciliation_preserves_growth_retry_state(training_member):
 
     training_member.refresh_from_db()
     assert training_member.growth_retry_streak == 3
-    assert training_member.growth_retry_reason == "strength_cap"
+    assert training_member.growth_retry_reason == "domain_constraint"
     assert training_member.next_acceleration_at == retry_at
 
 
@@ -3261,36 +3239,6 @@ def test_no_action_growth_uses_exponential_member_backoff(monkeypatch, training_
     training_member.refresh_from_db()
     assert training_member.next_acceleration_at == first_retry_at + timedelta(minutes=30)
     assert training_member.growth_retry_streak == 2
-
-
-@pytest.mark.django_db
-def test_repeated_strength_cap_no_action_reopens_arena_member(monkeypatch, training_member):
-    now = timezone.now()
-    monkeypatch.setattr(
-        "gameplay.services.arena.virtual_reserve_pool.accelerate_virtual_player_growth",
-        lambda *_args, **_kwargs: AcceleratedGrowthOutcome.NO_ACTION,
-    )
-    monkeypatch.setattr(
-        "gameplay.services.arena.virtual_reserve_pool._growth_retry_reason",
-        lambda **_kwargs: "strength_cap",
-    )
-
-    assert grow_due_virtual_reserves(now=now, limit=10) == 3
-    training_member.refresh_from_db()
-    training_member.refresh_from_db()
-    assert training_member.state == ArenaVirtualReserveMember.State.EXHAUSTED
-    assert training_member.next_acceleration_at is None
-    assert training_member.growth_retry_streak == 3
-    assert training_member.growth_retry_reason == "target_cap_retry_limit"
-
-    demand_id = training_member.demand_id
-    replenish_virtual_reserve(demand_id, now=now)
-    demand = ArenaVirtualDemand.objects.get(pk=demand_id)
-    training_member.refresh_from_db()
-    assert demand.status == ArenaVirtualDemand.Status.ACTIVE
-    assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
-    assert training_member.growth_retry_reason == ""
-    assert ArenaVirtualReserveMember.objects.filter(pk=training_member.pk).exists()
 
 
 @pytest.mark.django_db

@@ -184,50 +184,35 @@ projection:
     balanced:
       schema_version: 1
       slot_interval_minutes: [10, 15]
-      silver_budget_ratio: 0.60
-      grain_budget_ratio: 0.60
       max_parallel_training: 1
-      high_cost_actions_per_cycle: 4
       building_targets: [farm, granary, tax_office]
       technology_targets: [architecture, farming]
       recruitment_pool_weights: {dianshi: 1, xiangshi: 1, cunmu: 1}
     rich:
       schema_version: 1
       slot_interval_minutes: [12, 15]
-      silver_budget_ratio: 0.80
-      grain_budget_ratio: 0.75
       max_parallel_training: 1
-      high_cost_actions_per_cycle: 5
-      building_targets: [tax_office, silver_vault, tavern, treasury]
+      building_targets: [tax_office, silver_vault, tavern, bathhouse]
       technology_targets: [architecture, farming]
       recruitment_pool_weights: {dianshi: 3, xiangshi: 2, cunmu: 1}
     dojo:
       schema_version: 1
       slot_interval_minutes: [10, 12]
-      silver_budget_ratio: 0.45
-      grain_budget_ratio: 0.45
       max_parallel_training: 2
-      high_cost_actions_per_cycle: 5
-      building_targets: [forge, smithy]
-      technology_targets: [forging, smelting]
+      building_targets: [tax_office, farm, bathhouse]
+      technology_targets: [architecture, farming]
       recruitment_pool_weights: {dianshi: 1, xiangshi: 3, cunmu: 2}
     guard:
       schema_version: 1
       slot_interval_minutes: [11, 14]
-      silver_budget_ratio: 0.50
-      grain_budget_ratio: 0.65
       max_parallel_training: 1
-      high_cost_actions_per_cycle: 5
-      building_targets: [wall, arrow_tower, jiadingfang]
-      technology_targets: [dao_defense, qiang_defense, gong_defense]
+      building_targets: [tax_office, silver_vault, bathhouse]
+      technology_targets: [architecture, farming]
       recruitment_pool_weights: {dianshi: 2, xiangshi: 1, cunmu: 3}
     abandoned:
       schema_version: 1
       slot_interval_minutes: [14, 15]
-      silver_budget_ratio: 0.20
-      grain_budget_ratio: 0.20
       max_parallel_training: 0
-      high_cost_actions_per_cycle: 1
       building_targets: [farm, granary]
       technology_targets: [farming]
       recruitment_pool_weights: {dianshi: 1, xiangshi: 1, cunmu: 1}
@@ -317,94 +302,39 @@ bot_development_v2:
         supply_prestige_band_priority: [mythic, legend, elite, veteran, senior, middle, junior, newbie]
   policies:
     "2": &virtual_player_policy_v2
-      checksum: "016666aea476491e6089d192fd5e84b8fa8701c7f0ff8cca4912708d3c9571d9"
+      checksum: "2e1bfdd9d705c7461884a2f951dce846ec7458c21b2f91a62856b606d8fdef86"
       max_development_actions: 16
       anchor_k: 5
-      strength_safety:
-        no_reference:
-          starter_snapshot_ratio: 0.90
-          positive_jitter_bps_max: 0
-          actions_per_24h_max: 0
-          growth_bps_per_24h_max: 0
-        sparse_1_4:
-          cap_quantile: p50
-          composite_cap_ratio: 1.05
-          component_cap_ratio: 1.10
-          positive_jitter_bps_max: 0
-          actions_per_24h_max: 1
-          growth_bps_per_24h_max: 300
-        limited_5_29:
-          cap_quantile: p75
-          composite_cap_ratio: 1.10
-          component_cap_ratio: 1.15
-          positive_jitter_bps_max: 200
-          actions_per_24h_max: 2
-          growth_bps_per_24h_max: 500
-        sufficient_30_plus:
-          cap_quantile: p95
-          composite_cap_ratio: 1.15
-          component_cap_ratio: 1.20
-          positive_jitter_bps_max: 500
-          actions_per_24h_max: 4
-          growth_bps_per_24h_max: 1000
-        arena_acceleration_may_bypass: false
-        admin_may_bypass: false
       prestige_band_growth:
-        effective_limit_rule: strictest_of_sample_tier_band_profile_and_domain_constraints
         direct_prestige_grant_by_maintenance_allowed: false
         profiles: &virtual_player_growth_profiles_v2
           newbie:
             bootstrap_history_age_days: [1, 14]
             preferred_strength_check_interval_hours: [4, 8]
-            minimum_positive_strength_action_spacing_hours: 4
-            composite_growth_bps_per_controlled_action_max: 400
           junior:
             bootstrap_history_age_days: [14, 45]
             preferred_strength_check_interval_hours: [6, 12]
-            minimum_positive_strength_action_spacing_hours: 6
-            composite_growth_bps_per_controlled_action_max: 300
           middle:
             bootstrap_history_age_days: [45, 120]
             preferred_strength_check_interval_hours: [8, 16]
-            minimum_positive_strength_action_spacing_hours: 8
-            composite_growth_bps_per_controlled_action_max: 250
           senior:
             bootstrap_history_age_days: [120, 240]
             preferred_strength_check_interval_hours: [12, 24]
-            minimum_positive_strength_action_spacing_hours: 12
-            composite_growth_bps_per_controlled_action_max: 200
           veteran:
             bootstrap_history_age_days: [240, 360]
             preferred_strength_check_interval_hours: [14, 24]
-            minimum_positive_strength_action_spacing_hours: 14
-            composite_growth_bps_per_controlled_action_max: 200
           elite:
             bootstrap_history_age_days: [360, 540]
             preferred_strength_check_interval_hours: [18, 30]
-            minimum_positive_strength_action_spacing_hours: 18
-            composite_growth_bps_per_controlled_action_max: 175
           legend:
             bootstrap_history_age_days: [540, 720]
             preferred_strength_check_interval_hours: [24, 36]
-            minimum_positive_strength_action_spacing_hours: 24
-            composite_growth_bps_per_controlled_action_max: 150
           mythic:
             bootstrap_history_age_days: [720, 1080]
             preferred_strength_check_interval_hours: [30, 48]
-            minimum_positive_strength_action_spacing_hours: 30
-            composite_growth_bps_per_controlled_action_max: 125
-        last_strength_increase_at_required: true
         arena_acceleration_bypass:
           due: true
-          band_spacing: true
-          daily_action: true
-          daily_growth: true
-          per_action: false
-          daily_control_cap: false
-          component_cap: false
-        admin_may_bypass_band_spacing: false
         configured_boundaries_crossed_per_controlled_action_max: 1
-        cross_band_uses_stricter_source_or_destination_limit: true
         external_domain_result_may_be_rejected_by_bot_growth_policy: false
         bootstrap_fake_per_action_history_records: false
       starter_snapshots:
@@ -426,7 +356,7 @@ bot_development_v2:
       troop_mix:
         primary: [0.55, 0.75]
         secondary: [0.15, 0.30]
-        scout: [0.03, 0.10]
+        scout: [0.0, 0.0]
       personas:
         balanced: {}
         rich: {}

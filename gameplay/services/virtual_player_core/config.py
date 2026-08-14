@@ -12,6 +12,7 @@ from typing import Any
 from django.conf import settings
 from yaml import YAMLError
 
+from common.constants.virtual_players import VIRTUAL_PLAYER_EXCLUDED_TROOP_KEYS
 from core.utils.yaml_loader import load_yaml_data
 from core.utils.yaml_validators.virtual_players import validate_virtual_players
 
@@ -61,6 +62,16 @@ EFFECTIVE_RUNTIME_SCHEMA_VERSION = 1
 # guarded by code rather than YAML.  Keeping them in the effective payload
 # makes a policy release invalidate when an operational safety limit changes.
 _EFFECTIVE_RUNTIME_CODE_DEFAULTS = {
+    "virtual_player_assets": {
+        "excluded_troop_keys": sorted(VIRTUAL_PLAYER_EXCLUDED_TROOP_KEYS),
+    },
+    "maintenance_growth": {
+        "strength_growth_mode": "unbounded",
+        "reference_strength_caps_enforced": False,
+        "daily_strength_budgets_enforced": False,
+        "per_action_strength_caps_enforced": False,
+        "strength_action_spacing_enforced": False,
+    },
     "arena_growth": {
         "budget_window_seconds": 24 * 60 * 60,
         "budget_max_attempts": 48,

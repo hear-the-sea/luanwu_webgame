@@ -15,7 +15,16 @@ from django.utils import timezone
 
 from gameplay.models import BotMaintenanceAttempt, BotMaintenanceCycle, BotProfile
 
-from .archetype_pacing import HIGH_COST_ACTION_KINDS
+# Kept only for historical cycle telemetry.  It is not a planning gate and
+# never prevents an action from being selected.
+_AUDIT_COSTLY_ACTION_KINDS = frozenset(
+    {
+        "building_upgrade",
+        "technology_upgrade",
+        "training",
+        "troop_recruitment",
+    }
+)
 
 
 class MaintenanceCycleError(ValueError):
@@ -31,11 +40,55 @@ class MaintenanceReasonCategory(StrEnum):
     DOMAIN_CONSTRAINT = "domain_constraint"
     RESOURCE = "resource"
     SALARY = "salary"
+    HOUSEKEEPING = "housekeeping"
     LOCK_CONFLICT = "lock_conflict"
     NO_CANDIDATE = "no_candidate"
     POLICY_GUARD = "policy_guard"
     RETRY_BACKOFF = "retry_backoff"
     OTHER = "other"
+
+
+class MaintenanceProgressCategory(StrEnum):
+    PROGRESS_APPLIED = "progress_applied"
+    PROGRESS_BLOCKED = "progress_blocked"
+    RESOURCE_WAIT = "resource_wait"
+    DOMAIN_WAIT = "domain_wait"
+    LOCK_RETRY = "lock_retry"
+    HOUSEKEEPING = "housekeeping"
+    SCHEDULER_WAIT = "scheduler_wait"
+    CANDIDATE_EXHAUSTED = "candidate_exhausted"
+
+
+def classify_maintenance_progress(
+    *,
+    outcome: str,
+    reason: str | None,
+    stage: str = "slot",
+) -> MaintenanceProgressCategory:
+    """Map an audited attempt to a report-facing progress bucket."""
+
+    normalized_outcome = str(outcome or "").strip()
+    normalized_stage = str(stage or "slot").strip()
+    normalized_reason = str(reason or "").strip()
+    if (
+        normalized_stage == "preamble"
+        or classify_maintenance_reason(normalized_reason) is MaintenanceReasonCategory.HOUSEKEEPING
+    ):
+        return MaintenanceProgressCategory.HOUSEKEEPING
+    if normalized_reason in {"scheduled_cycle_slot_not_due", "profile_not_due"}:
+        return MaintenanceProgressCategory.SCHEDULER_WAIT
+    if normalized_outcome == "applied":
+        return MaintenanceProgressCategory.PROGRESS_APPLIED
+    reason_category = classify_maintenance_reason(normalized_reason)
+    if reason_category in {MaintenanceReasonCategory.RESOURCE, MaintenanceReasonCategory.SALARY}:
+        return MaintenanceProgressCategory.RESOURCE_WAIT
+    if reason_category is MaintenanceReasonCategory.DOMAIN_CONSTRAINT:
+        return MaintenanceProgressCategory.DOMAIN_WAIT
+    if reason_category in {MaintenanceReasonCategory.LOCK_CONFLICT, MaintenanceReasonCategory.RETRY_BACKOFF}:
+        return MaintenanceProgressCategory.LOCK_RETRY
+    if reason_category is MaintenanceReasonCategory.NO_CANDIDATE:
+        return MaintenanceProgressCategory.CANDIDATE_EXHAUSTED
+    return MaintenanceProgressCategory.PROGRESS_BLOCKED
 
 
 def classify_maintenance_reason(reason: str | None) -> MaintenanceReasonCategory:
@@ -52,11 +105,12 @@ def classify_maintenance_reason(reason: str | None) -> MaintenanceReasonCategory
         "healing_insufficient_resource",
     } or normalized.startswith("archetype_budget_"):
         return MaintenanceReasonCategory.RESOURCE
+    if normalized in {"salary_already_paid", "no_guests_to_heal"}:
+        return MaintenanceReasonCategory.HOUSEKEEPING
     if normalized in {
         "salary_runway_protected",
         "salary_shortfall",
         "salary_no_action",
-        "salary_already_paid",
     }:
         return MaintenanceReasonCategory.SALARY
     if normalized in {
@@ -79,9 +133,6 @@ def classify_maintenance_reason(reason: str | None) -> MaintenanceReasonCategory
     }:
         return MaintenanceReasonCategory.NO_CANDIDATE
     if normalized in {
-        "strength_cap",
-        "band_spacing",
-        "band_action_cap",
         "multi_band_transition",
         "archetype_high_cost_cap",
         "arena_ineligible",
@@ -203,7 +254,7 @@ def allocate_cycle_action(
             state,
             action_ordinal=state.action_ordinal + 1,
             high_cost_actions_used=(
-                state.high_cost_actions_used + (1 if normalized_kind in HIGH_COST_ACTION_KINDS else 0)
+                state.high_cost_actions_used + (1 if normalized_kind in _AUDIT_COSTLY_ACTION_KINDS else 0)
             ),
             covered_action_kinds=(
                 state.covered_action_kinds
@@ -327,7 +378,7 @@ def append_durable_cycle_action_locked(
         raise MaintenanceCycleError("action kind is not allowed for this cycle")
     ordinal = int(cycle.action_ordinal) + 1
     cycle.action_ordinal = ordinal
-    if str(action_kind) in HIGH_COST_ACTION_KINDS:
+    if str(action_kind) in _AUDIT_COSTLY_ACTION_KINDS:
         cycle.high_cost_actions_used = int(cycle.high_cost_actions_used or 0) + 1
     covered_action_kinds = [str(value) for value in (cycle.covered_action_kinds or [])]
     if str(action_kind) not in covered_action_kinds:
@@ -723,12 +774,14 @@ __all__ = [
     "ORDINARY_SLOT_INTERVAL_MINUTES_MIN",
     "CycleTrigger",
     "MaintenanceCycleError",
+    "MaintenanceProgressCategory",
     "MaintenanceReasonCategory",
     "MaintenanceCycleState",
     "allocate_cycle_action",
     "append_durable_cycle_action",
     "append_durable_cycle_action_locked",
     "classify_maintenance_reason",
+    "classify_maintenance_progress",
     "cycle_action_limit",
     "cycle_retry_due_at",
     "next_ordinary_slot_due_at",

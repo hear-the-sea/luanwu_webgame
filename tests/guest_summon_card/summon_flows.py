@@ -83,6 +83,59 @@ def test_summon_card_rolls_green(monkeypatch, django_user_model):
 
 
 @pytest.mark.django_db
+def test_summon_card_generates_recruitment_style_name_for_gray_guest(django_user_model):
+    user = django_user_model.objects.create_user(username="summon_gray_named", password="pass123")
+    manor = ensure_manor(user)
+
+    gray_civil = GuestTemplate.objects.create(
+        key="base_gray_civil_named_test",
+        name="灰阶谋士",
+        archetype="civil",
+        rarity="gray",
+        default_gender="unknown",
+        default_morality=65,
+    )
+    gray_military = GuestTemplate.objects.create(
+        key="base_gray_military_named_test",
+        name="灰阶兵长",
+        archetype="military",
+        rarity="gray",
+        default_gender="unknown",
+        default_morality=50,
+    )
+    card_template = ItemTemplate.objects.create(
+        key="junior_guest_card_named_test",
+        name="初级门客卡",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=True,
+        effect_payload={
+            "action": "summon_guest",
+            "choices": [
+                {"template_key": gray_civil.key, "weight": 50},
+                {"template_key": gray_military.key, "weight": 50},
+            ],
+        },
+    )
+    item = InventoryItem.objects.create(
+        manor=manor,
+        template=card_template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    result = use_inventory_item(item, manor)
+
+    guest = manor.guests.get()
+    assert guest.template in {gray_civil, gray_military}
+    assert guest.rarity == "gray"
+    assert guest.custom_name
+    assert guest.display_name == guest.custom_name
+    assert guest.display_name not in {gray_civil.name, gray_military.name}
+    assert result["稀有度"] == "灰"
+    assert not InventoryItem.objects.filter(pk=item.pk).exists()
+
+
+@pytest.mark.django_db
 def test_summon_card_respects_guest_capacity(monkeypatch, django_user_model):
     user = django_user_model.objects.create_user(username="summon_full", password="pass123")
     manor = ensure_manor(user)

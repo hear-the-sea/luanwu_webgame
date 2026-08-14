@@ -225,6 +225,8 @@ def _equipment_summary(payload: dict) -> str:
 def _tool_summary(template_key: str, payload: dict) -> str:
     if template_key == "fangdajing":
         return "显现候选稀有度"
+    if template_key == "junior_guest_card":
+        return "随机获得灰色门客"
     if template_key == "recruitment_card":
         return "指定卡池今日招募额度 +1"
     if template_key.startswith("peace_shield_"):

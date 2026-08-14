@@ -28,7 +28,6 @@ from gameplay.models import (
     BotMaintenanceExecution,
     BotMaintenanceRecovery,
     BotProfile,
-    Manor,
 )
 from gameplay.models.arena_virtual import ARENA_RESERVE_MEMBER_LEASE_AGE
 from gameplay.services.arena.snapshots import build_entry_guest_snapshot
@@ -41,11 +40,6 @@ from gameplay.services.virtual_player_core.growth_control import growth_control_
 from gameplay.services.virtual_player_core.maintenance import V2MaintenanceError, accelerate_virtual_player_growth
 from gameplay.services.virtual_player_core.maintenance_arena_projection import ArenaSelectedPowerProjectionError
 from gameplay.services.virtual_player_core.maintenance_cycle import CycleTrigger, record_durable_attempt
-from gameplay.services.virtual_player_core.maintenance_rules import (
-    MaintenanceRuleError,
-    parse_prestige_band_growth_policy,
-)
-from gameplay.services.virtual_player_core.policy_registry import PolicyRegistryError, get_policy_release
 from gameplay.services.virtual_player_core.population_runtime import (
     get_virtual_player_capacity,
     reactivate_retired_virtual_player_with_capacity,
@@ -59,10 +53,6 @@ from gameplay.services.virtual_player_core.recovery import (
     record_recovery_failure,
     recovery_circuit_is_open,
     recovery_is_blocked,
-)
-from gameplay.services.virtual_player_core.reference_snapshots import (
-    ReferenceSnapshotError,
-    load_manor_strength_summary,
 )
 from gameplay.services.virtual_player_core.runtime_assessment import assess_virtual_player_runtime
 from gameplay.services.virtual_player_core.safety_provider import SafetyProviderError
@@ -187,7 +177,6 @@ ARENA_REARM_JITTER_MAX = timedelta(seconds=45)
 ARENA_GROWTH_MAX_MEMBERS_PER_DEMAND = 8
 RESERVE_LEASE_RESUME_GRACE = GROWTH_RETRY_MAX_DELAY
 BUSY_RETRY_INITIAL_DELAY = timedelta(minutes=5)
-MAX_TARGET_CAP_RETRIES = 3
 DEMAND_RETRY_INITIAL = timedelta(minutes=5)
 DEMAND_RETRY_MAX = timedelta(hours=1)
 _GUEST_RARITY_RANK = {rarity.value: index for index, rarity in enumerate(GuestRarity)}
@@ -209,9 +198,6 @@ _ARENA_GROWTH_MEMBER_BUSINESS_ERRORS = (
     ArenaGrowthBudgetError,
     ArenaSelectedPowerProjectionError,
     InvalidVirtualLineupSnapshot,
-    MaintenanceRuleError,
-    PolicyRegistryError,
-    ReferenceSnapshotError,
     V2MaintenanceError,
 )
 
@@ -681,11 +667,9 @@ def _arena_growth_reachability(
             reason="target_unreachable_by_cap",
         )
 
-    execution_attempts = max(0, int(growth_execution_attempt_count or 0))
-    execution_attempts_remaining = max(0, ARENA_GROWTH_BUDGET_MAX_ATTEMPTS - execution_attempts)
     # The 24-hour execution budget is a retry/backpressure window, not a
-    # lifetime reachability cap.  Once it is full, the member remains
-    # reachable and the budget layer supplies the next retry timestamp.
+    # lifetime growth cap. Once it is full, the member remains reachable and
+    # the budget layer supplies the next retry timestamp.
 
     missing_guests = max(0, target.critical_guest_count - current_guest_count)
     if missing_guests:
@@ -739,15 +723,13 @@ def _arena_growth_reachability(
                     max_selected_power=selected_power,
                     reason="target_unreachable_by_cap",
                 )
-        # Recruitment is separately bounded and may exceed the ordinary
-        # per-action growth cap, so do not apply the quality-growth upper bound
-        # until the hard roster count has been reached.
+        # Recruitment is separately bounded; it does not participate in a
+        # strength-growth cap.
         return _ArenaReachabilityAssessment(True)
 
     # A sufficient total roster may still be temporarily unavailable because
     # guests are injured, training, or working. Healing/completion can recover
-    # that eligibility, so only apply the strength ceiling after a legal-size
-    # lineup exists.
+    # that eligibility.
     assigned_guest_ids: set[int] = set()
     for value in growth_round_training_guest_ids or ():
         if isinstance(value, bool):
@@ -780,38 +762,10 @@ def _arena_growth_reachability(
         return _ArenaReachabilityAssessment(True)
     if selected_power >= target.selected_power_lower_bound:
         return _ArenaReachabilityAssessment(True, max_selected_power=selected_power)
-
-    if int(profile.engine_version) != 2:
-        return _ArenaReachabilityAssessment(True)
-    try:
-        release = get_policy_release(
-            version=int(profile.policy_version),
-            expected_checksum=str(profile.policy_checksum),
-        )
-        policy = parse_prestige_band_growth_policy(
-            release.payload.get("prestige_band_growth"),
-        )
-        per_action_bps = policy.cadence_for(
-            str(profile.current_prestige_band),
-        ).composite_growth_bps_per_controlled_action_max
-        strength = load_manor_strength_summary(manor_id=int(profile.manor_id))
-    except (MaintenanceRuleError, PolicyRegistryError, ReferenceSnapshotError, Manor.DoesNotExist):
-        # Missing policy evidence must pause planning elsewhere; it is not safe
-        # evidence for a terminal reachability decision here.
-        return _ArenaReachabilityAssessment(True)
-
-    composite_before = max(1, int(strength.composite))
-    composite_upper = composite_before
-    for _round in range(max(0, execution_attempts_remaining)):
-        composite_upper = (composite_upper * (10_000 + int(per_action_bps)) + 9_999) // 10_000
-    max_selected_power = int(selected_power) + max(
-        0,
-        composite_upper - composite_before,
-    )
-    return _ArenaReachabilityAssessment(
-        True,
-        max_selected_power=max_selected_power,
-    )
+    # No strength ceiling is applied after the roster is legal. The event
+    # target remains reachable; actual actions still pass arena lineup and
+    # domain validation at execution time.
+    return _ArenaReachabilityAssessment(True)
 
 
 def _demand_fill_at(demand: ArenaVirtualDemand):
@@ -2478,7 +2432,7 @@ def _claim_due_virtual_reserve_growth(
             log_demand_event(
                 "arena_virtual_profile_exhausted",
                 demand,
-                message="arena virtual profile target is unreachable within its growth cap",
+                message="arena virtual profile target is unreachable under roster or event constraints",
                 level=logging.WARNING,
                 failure_reason=reachability.reason,
                 profile_id=int(member.profile_id),
@@ -2832,13 +2786,10 @@ def _finalize_virtual_reserve_growth(
             reason=no_action_reason,
             initial_delay=_growth_interval_for_demand(demand, now=handled_at),
         )
-        strength_cap_exhausted = (
-            no_action_reason == "strength_cap" and int(member.growth_retry_streak) >= MAX_TARGET_CAP_RETRIES
-        )
-        if max(handled_at, now) >= deadline or strength_cap_exhausted:
+        if max(handled_at, now) >= deadline:
             member.state = ArenaVirtualReserveMember.State.EXHAUSTED
             member.next_acceleration_at = None
-            exhausted_reason = "target_cap_retry_limit" if strength_cap_exhausted else "no_action_lease_deadline"
+            exhausted_reason = "no_action_lease_deadline"
             member.growth_retry_reason = exhausted_reason
             member.lease_paused_at = None
             event = "arena_virtual_profile_exhausted"
@@ -3627,7 +3578,6 @@ __all__ = [
     "ArenaVirtualGrowthTarget",
     "EXHAUSTED_LEASE_GRACE",
     "MAX_RESERVE_MEMBER_LEASE_AGE",
-    "MAX_TARGET_CAP_RETRIES",
     "ReserveReplenishmentResult",
     "assess_arena_reserve_candidate",
     "evaluate_bot_lineup",

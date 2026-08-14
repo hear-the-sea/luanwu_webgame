@@ -32,7 +32,11 @@ from .config import (
 from .contracts import BotProjectionConfig
 from .identity import build_manor_name_candidate, fallback_manor_name_candidate, select_manor_name_style
 from .lifecycle import choose_lifecycle
-from .maintenance_rules import bootstrap_historical_age_days, parse_prestige_band_growth_policy
+from .maintenance_rules import (
+    bootstrap_historical_age_days,
+    guest_count_target_for_profile,
+    parse_prestige_band_growth_policy,
+)
 from .policy_registry import get_policy_release
 from .projection import (
     BootstrapBlueprint,
@@ -557,6 +561,11 @@ def _materialize_virtual_player_v2(
         current_prestige_band=plan.prestige_band,
         growth_seed=plan.growth_seed,
         growth_stage=growth_stage,
+        guest_count_target=guest_count_target_for_profile(
+            starter_guest_count=int(plan.projection.guest_count),
+            growth_stage=growth_stage,
+            roster_focus=float(plan.development_plan.roster_focus),
+        ),
         next_growth_at=next_growth_at,
         abandon_at=abandon_at,
         retire_at=retire_at,

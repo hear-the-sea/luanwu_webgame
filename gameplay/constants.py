@@ -29,7 +29,7 @@ BUILDING_MAX_LEVELS = {
     BuildingKeys.LATRINE: 20,  # 茅厕：满级每小时产粮1000+产银1000两
     BuildingKeys.TAVERN: 10,  # 酒馆：满级每小时产银1000两+候选人数+10
     "farm": 50,  # 农田：满级50级
-    "tax_office": 20,  # 税务司：满级20级
+    "tax_office": 30,  # 税务司：满级30级
     # 人员管理建筑
     BuildingKeys.JUXIAN_ZHUANG: 15,  # 聚贤庄：满级容量18位门客
     BuildingKeys.JIADING_FANG: 30,  # 家丁房：满级容量3050个位置

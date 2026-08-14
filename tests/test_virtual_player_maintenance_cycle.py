@@ -8,8 +8,10 @@ from gameplay.services.virtual_player_core.maintenance_cycle import (
     CycleTrigger,
     MaintenanceCycleError,
     MaintenanceCycleState,
+    MaintenanceProgressCategory,
     MaintenanceReasonCategory,
     allocate_cycle_action,
+    classify_maintenance_progress,
     classify_maintenance_reason,
     cycle_retry_due_at,
     next_ordinary_slot_due_at,
@@ -68,7 +70,7 @@ def test_cycle_retry_due_at_is_a_stable_short_backoff() -> None:
     assert timedelta(minutes=1) <= retry_at - now <= timedelta(minutes=3)
 
 
-def test_repeated_high_cost_actions_consume_distinct_cycle_budget() -> None:
+def test_repeated_costly_actions_are_retained_as_audit_telemetry() -> None:
     state = MaintenanceCycleState(
         cycle_id="vp-cycle-high-cost",
         cycle_ordinal=1,
@@ -97,10 +99,12 @@ def test_repeated_high_cost_actions_consume_distinct_cycle_budget() -> None:
     (
         ("candidate_domain_constraint", MaintenanceReasonCategory.DOMAIN_CONSTRAINT),
         ("insufficient_resource", MaintenanceReasonCategory.RESOURCE),
+        ("salary_already_paid", MaintenanceReasonCategory.HOUSEKEEPING),
+        ("no_guests_to_heal", MaintenanceReasonCategory.HOUSEKEEPING),
         ("salary_runway_protected", MaintenanceReasonCategory.SALARY),
         ("profile_busy", MaintenanceReasonCategory.LOCK_CONFLICT),
         ("no_eligible_candidate", MaintenanceReasonCategory.NO_CANDIDATE),
-        ("strength_cap", MaintenanceReasonCategory.POLICY_GUARD),
+        ("multi_band_transition", MaintenanceReasonCategory.POLICY_GUARD),
         ("unclassified_reason", MaintenanceReasonCategory.OTHER),
     ),
 )
@@ -109,3 +113,25 @@ def test_maintenance_reason_categories_are_stable(
     category: MaintenanceReasonCategory,
 ) -> None:
     assert classify_maintenance_reason(reason) is category
+
+
+@pytest.mark.parametrize(
+    ("outcome", "reason", "stage", "category"),
+    (
+        ("applied", "", "slot", MaintenanceProgressCategory.PROGRESS_APPLIED),
+        ("no_action", "insufficient_resource", "slot", MaintenanceProgressCategory.RESOURCE_WAIT),
+        ("no_action", "candidate_domain_constraint", "slot", MaintenanceProgressCategory.DOMAIN_WAIT),
+        ("busy", "profile_busy", "slot", MaintenanceProgressCategory.LOCK_RETRY),
+        ("no_action", "salary_already_paid", "preamble", MaintenanceProgressCategory.HOUSEKEEPING),
+        ("ineligible", "scheduled_cycle_slot_not_due", "slot", MaintenanceProgressCategory.SCHEDULER_WAIT),
+        ("no_action", "candidate_exhausted", "slot", MaintenanceProgressCategory.CANDIDATE_EXHAUSTED),
+        ("no_action", "multi_band_transition", "slot", MaintenanceProgressCategory.PROGRESS_BLOCKED),
+    ),
+)
+def test_maintenance_progress_categories_separate_housekeeping_and_waits(
+    outcome: str,
+    reason: str,
+    stage: str,
+    category: MaintenanceProgressCategory,
+) -> None:
+    assert classify_maintenance_progress(outcome=outcome, reason=reason, stage=stage) is category
