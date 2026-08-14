@@ -389,15 +389,17 @@ def finalize_livestock_production(production: LivestockProduction, send_notifica
     Returns:
         是否成功完成
     """
-    from ...models import Message
+    from ...models import Manor, Message
 
     if production.complete_at > timezone.now():
         return False
 
     completed_production = production
     with transaction.atomic():
-        # 先在事务内锁定并重新读取养殖记录，确保并发 worker 只有一个能看到 PRODUCING 并发货；
+        # 统一锁序 Manor -> production，确保容量检查和并发 worker 都可串行化；
+        # 重新读取养殖记录后只有一个 worker 能看到 PRODUCING 并发货；
         # 其余 worker 读到最新状态后直接返回，保证完成结算幂等。
+        locked_manor = Manor.objects.select_for_update().get(pk=production.manor_id)
         locked_production = (
             LivestockProduction.objects.select_for_update().select_related("manor").get(pk=production.pk)
         )
@@ -412,7 +414,7 @@ def finalize_livestock_production(production: LivestockProduction, send_notifica
         from ..inventory.core import add_item_to_inventory_locked
 
         add_item_to_inventory_locked(
-            locked_production.manor,
+            locked_manor,
             locked_production.livestock_key,
             locked_production.quantity,
         )

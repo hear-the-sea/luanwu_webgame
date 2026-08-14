@@ -83,4 +83,10 @@ def grant_auction_item_directly_impl(
         return
 
     with transaction.atomic():
-        add_item_to_inventory_locked(manor, item_template.key, quantity)
+        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+        add_item_to_inventory_locked(
+            locked_manor,
+            item_template.key,
+            quantity,
+            template=item_template,
+        )

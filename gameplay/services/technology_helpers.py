@@ -11,6 +11,8 @@ from core.utils.infrastructure import (
     combine_infrastructure_exceptions,
 )
 
+from .technology_rules import calculate_upgrade_duration
+
 MARTIAL_TECH_GROUP_ORDER = ("dao", "qiang", "jian", "quan", "gong")
 TECHNOLOGY_MESSAGE_BEST_EFFORT_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
     MessageError,
@@ -31,8 +33,11 @@ def build_technology_display_entry(
 
     upgrade_cost = calculate_upgrade_cost(tech_key, level) if level < max_level else None
     if level < max_level:
-        base_time = tech.get("base_time", 60)
-        upgrade_duration = scale_duration(base_time * (1.4**level), minimum=1)
+        upgrade_duration = calculate_upgrade_duration(
+            tech,
+            level,
+            scale_duration_func=scale_duration,
+        )
     else:
         upgrade_duration = None
 

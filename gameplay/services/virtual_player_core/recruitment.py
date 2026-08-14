@@ -1057,6 +1057,12 @@ def _start_virtual_recruitment_batch_locked(
     draw_context_by_key: dict[str, _SnapshotDrawContext] = {}
     prepared: list[_PreparedVirtualRecruitment] = []
     deferred_reasons: list[str] = []
+    deferred_reasons_by_operation: dict[str, str] = {}
+
+    def defer_slot(schedule: VirtualRecruitmentSchedule, reason: str) -> None:
+        deferred_reasons.append(reason)
+        deferred_reasons_by_operation.setdefault(schedule.operation_id, reason)
+
     settle_resource_production_locked(manor)
 
     for schedule in pending_schedules:
@@ -1065,7 +1071,7 @@ def _start_virtual_recruitment_batch_locked(
             pool = RecruitmentPool.objects.filter(key=schedule.pool_key).prefetch_related("entries__template").first()
             pools_by_key[schedule.pool_key] = pool
         if pool is None:
-            deferred_reasons.append("pool_missing")
+            defer_slot(schedule, "pool_missing")
             continue
 
         base_snapshot = snapshots_by_key.get(schedule.pool_key)
@@ -1085,11 +1091,11 @@ def _start_virtual_recruitment_batch_locked(
         pool_data = _snapshot_pool(snapshot)
         cost = dict(pool_data.get("cost") or {})
         if not cost or int(cost.get(str(ResourceType.SILVER), 0) or 0) <= 0:
-            deferred_reasons.append("recruitment_cost_missing")
+            defer_slot(schedule, "recruitment_cost_missing")
             continue
         silver_cost = int(cost.get(str(ResourceType.SILVER), 0) or 0)
         if int(manor.silver or 0) < silver_cost:
-            deferred_reasons.append("insufficient_resource")
+            defer_slot(schedule, "insufficient_resource")
             continue
         draw_count = _strict_int(pool_data.get("draw_count"), field="pool.draw_count", minimum=1)
         resolved_seed = _virtual_seed(profile=profile, operation_id=schedule.operation_id)
@@ -1103,10 +1109,10 @@ def _start_virtual_recruitment_batch_locked(
                 snapshot_draw_context=draw_context,
             )
         except (NoTemplateAvailableError, VirtualRecruitmentError):
-            deferred_reasons.append("no_virtual_candidate")
+            defer_slot(schedule, "no_virtual_candidate")
             continue
         if not drawn:
-            deferred_reasons.append("no_virtual_candidate")
+            defer_slot(schedule, "no_virtual_candidate")
             continue
 
         selected = max(drawn, key=_candidate_sort_key)
@@ -1144,7 +1150,6 @@ def _start_virtual_recruitment_batch_locked(
         operation_id = pending_schedules[0].operation_id if pending_schedules else None
         return VirtualRecruitmentResult(status, reason, operation_id=operation_id, deferred_slots=len(deferred_reasons))
 
-    completed_ids: list[int] = []
     completed_ids_by_operation: dict[str, int] = {}
     accepted_any = False
     for item in sorted(
@@ -1174,7 +1179,7 @@ def _start_virtual_recruitment_batch_locked(
                     reason = "roster_power_guard"
 
         if reason:
-            deferred_reasons.append(reason)
+            defer_slot(item.schedule, reason)
             continue
 
         # The pool slot is paid only after capacity, replacement salary, and
@@ -1185,7 +1190,7 @@ def _start_virtual_recruitment_batch_locked(
             pool=item.pool,
             cost=item.cost,
         ):
-            deferred_reasons.append("insufficient_resource")
+            defer_slot(item.schedule, "insufficient_resource")
             continue
 
         if victim is not None:
@@ -1213,7 +1218,6 @@ def _start_virtual_recruitment_batch_locked(
             result_count=result_count,
             reason=reason,
         )
-        completed_ids.append(int(audit.id))
         completed_ids_by_operation[item.schedule.operation_id] = int(audit.id)
 
     batch_operation_id = (
@@ -1234,17 +1238,45 @@ def _start_virtual_recruitment_batch_locked(
 
     if accepted_any:
         invalidate_recruitment_hall_cache(getattr(manor, "id", None))
-    reason = "batch_partial_deferred" if deferred_reasons else "batch_completed"
+
+    ordered_completed_ids = tuple(
+        completed_ids_by_operation[schedule.operation_id]
+        for schedule in pending_schedules
+        if schedule.operation_id in completed_ids_by_operation
+    )
+
+    if preferred_operation_id is not None and preferred_operation_id not in completed_ids_by_operation:
+        return VirtualRecruitmentResult(
+            VirtualRecruitmentStatus.DEFERRED,
+            deferred_reasons_by_operation.get(preferred_operation_id, "preferred_slot_deferred"),
+            operation_id=preferred_operation_id,
+            recruitment_ids=ordered_completed_ids,
+            deferred_slots=len(deferred_reasons),
+        )
+
+    if deferred_reasons:
+        deferred_recruitment_id = (
+            completed_ids_by_operation.get(preferred_operation_id) if preferred_operation_id is not None else None
+        )
+        return VirtualRecruitmentResult(
+            VirtualRecruitmentStatus.DEFERRED,
+            deferred_reasons[0],
+            recruitment_id=deferred_recruitment_id,
+            operation_id=preferred_operation_id or batch_operation_id,
+            recruitment_ids=ordered_completed_ids,
+            deferred_slots=len(deferred_reasons),
+        )
+
     return VirtualRecruitmentResult(
         VirtualRecruitmentStatus.STARTED,
-        reason,
+        "batch_completed",
         recruitment_id=(
             completed_ids_by_operation.get(preferred_operation_id)
             if preferred_operation_id is not None
-            else (completed_ids[0] if completed_ids else None)
+            else (ordered_completed_ids[0] if ordered_completed_ids else None)
         ),
         operation_id=preferred_operation_id or batch_operation_id,
-        recruitment_ids=tuple(completed_ids),
+        recruitment_ids=ordered_completed_ids,
         deferred_slots=len(deferred_reasons),
     )
 

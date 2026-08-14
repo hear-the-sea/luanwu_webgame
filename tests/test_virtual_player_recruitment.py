@@ -5,7 +5,8 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
-from gameplay.models import BotProfile, Manor
+from gameplay.constants import BuildingKeys
+from gameplay.models import BotProfile, Building, Manor
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.virtual_player_core.archetype_pacing import resolve_archetype_pacing
 from gameplay.services.virtual_player_core.config import load_virtual_player_config
@@ -38,9 +39,11 @@ def _create_v2_profile(
     username: str,
     silver: int = 1_000_000,
     prestige: int = 0,
+    juxian_level: int = 15,
 ) -> BotProfile:
     user = django_user_model.objects.create_user(username=username, password="pass123")
     manor = ensure_manor(user)
+    Building.objects.filter(manor=manor, building_type__key=BuildingKeys.JUXIAN_ZHUANG).update(level=juxian_level)
     Manor.objects.filter(pk=manor.pk).update(silver=silver, grain=100_000, prestige=prestige)
     now = timezone.localtime(timezone.now()).replace(hour=10, minute=0, second=0, microsecond=0)
     return BotProfile.objects.create(
@@ -313,12 +316,14 @@ def test_virtual_recruitment_ignores_salary_runway_and_spends_recruitment_cost(
     result = start_virtual_recruitment(schedule, now=schedule.due_at + timedelta(seconds=1))
 
     manor.refresh_from_db()
-    assert result.status is VirtualRecruitmentStatus.STARTED
+    assert result.status is VirtualRecruitmentStatus.DEFERRED
+    assert result.reason == "insufficient_resource"
     recruitments = GuestRecruitment.objects.filter(
         bot_profile_id=profile.id,
         source=GuestRecruitment.Source.VIRTUAL,
     )
     assert recruitments.exists()
+    assert result.recruitment_ids == tuple(recruitments.order_by("quota_ordinal").values_list("id", flat=True))
     assert result.deferred_slots > 0
     assert manor.silver == before_silver - sum(int((row.cost or {}).get("silver", 0)) for row in recruitments)
 
@@ -352,7 +357,7 @@ def test_virtual_recruitment_defers_without_spending_when_roster_is_full(
     django_user_model,
     load_guest_data,
 ):
-    profile = _create_v2_profile(django_user_model, username="virtual_recruit_full_roster")
+    profile = _create_v2_profile(django_user_model, username="virtual_recruit_full_roster", juxian_level=1)
     manor = profile.manor
     full_roster_template = GuestTemplate.objects.create(
         key="virtual_recruit_full_roster_orange",

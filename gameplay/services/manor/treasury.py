@@ -17,6 +17,7 @@ from core.exceptions import (
 from ...constants import BUILDING_MAX_LEVELS, BuildingKeys
 from ...models import InventoryItem, ItemTemplate, Manor
 from ..inventory.core import GRAIN_ITEM_KEY, TREASURY_BLOCKED_ITEM_KEYS, add_item_to_inventory_locked
+from ..inventory.core import get_warehouse_used_space as _get_warehouse_used_space
 
 
 def get_treasury_deposit_block_reason(template: ItemTemplate) -> str | None:
@@ -67,24 +68,8 @@ def get_treasury_used_space(manor: Manor) -> int:
 
 
 def get_warehouse_used_space(manor: Manor) -> int:
-    """
-    获取仓库已使用空间
-
-    Args:
-        manor: 庄园对象
-
-    Returns:
-        已使用空间
-    """
-    items = InventoryItem.objects.filter(
-        manor=manor, storage_location=InventoryItem.StorageLocation.WAREHOUSE
-    ).select_related("template")
-
-    total_space = 0
-    for item in items:
-        total_space += item.template.storage_space * item.quantity
-
-    return total_space
+    """Compatibility export for the inventory-owned warehouse calculation."""
+    return _get_warehouse_used_space(manor)
 
 
 @transaction.atomic
@@ -211,15 +196,9 @@ def move_item_to_warehouse(manor: Manor, item_id: int, quantity: int) -> None:
     if is_grain:
         add_item_to_inventory_locked(manor, GRAIN_ITEM_KEY, quantity)
     else:
-        warehouse_item, created = InventoryItem.objects.get_or_create(
-            manor=manor,
+        add_item_to_inventory_locked(
+            manor,
+            treasury_item.template.key,
+            quantity,
             template=treasury_item.template,
-            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-            defaults={"quantity": 0},
         )
-
-        if not created:
-            warehouse_item = InventoryItem.objects.select_for_update().get(pk=warehouse_item.pk)
-
-        warehouse_item.quantity += quantity
-        warehouse_item.save(update_fields=["quantity"])

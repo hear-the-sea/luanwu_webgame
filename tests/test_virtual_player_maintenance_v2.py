@@ -4,7 +4,7 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from django.db import DatabaseError, connection, transaction
+from django.db import DatabaseError, OperationalError, connection, transaction
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
@@ -1825,6 +1825,52 @@ def test_scheduled_cycle_resource_wait_is_bounded_and_deferred(
         BuildingUpgradeActionSpec.action_kind: 2,
         TechnologyUpgradeActionSpec.action_kind: 2,
     }
+
+
+def test_cycle_result_record_retries_only_transient_mysql_lock_errors(monkeypatch) -> None:
+    calls: list[int] = []
+    delays: list[float] = []
+
+    def _record(*_args, **_kwargs) -> None:
+        calls.append(1)
+        if len(calls) == 1:
+            raise OperationalError(1213, "Deadlock found when trying to get lock")
+
+    monkeypatch.setattr(maintenance, "_record_policy2_scheduled_cycle_result", _record)
+    monkeypatch.setattr(maintenance, "sleep", delays.append)
+
+    maintenance._record_policy2_scheduled_cycle_result_with_retry(
+        "cycle-1",
+        object(),
+        plan=object(),
+        now=FIXED_NOW,
+    )
+
+    assert len(calls) == 2
+    assert delays == [0.02]
+
+
+def test_cycle_result_record_does_not_retry_other_operational_errors(monkeypatch) -> None:
+    calls: list[int] = []
+    delays: list[float] = []
+
+    def _record(*_args, **_kwargs) -> None:
+        calls.append(1)
+        raise OperationalError(2006, "MySQL server has gone away")
+
+    monkeypatch.setattr(maintenance, "_record_policy2_scheduled_cycle_result", _record)
+    monkeypatch.setattr(maintenance, "sleep", delays.append)
+
+    with pytest.raises(OperationalError, match="server has gone away"):
+        maintenance._record_policy2_scheduled_cycle_result_with_retry(
+            "cycle-1",
+            object(),
+            plan=object(),
+            now=FIXED_NOW,
+        )
+
+    assert len(calls) == 1
+    assert delays == []
 
 
 @pytest.mark.django_db

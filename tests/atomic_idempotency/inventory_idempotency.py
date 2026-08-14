@@ -1,13 +1,15 @@
 import pytest
 from django.db import transaction
 
-from core.exceptions import InsufficientStockError, ItemNotFoundError
-from gameplay.models import InventoryItem, ItemTemplate
+from core.exceptions import InsufficientSpaceError, InsufficientStockError, ItemNotFoundError
+from gameplay.models import InventoryItem, ItemTemplate, Manor
 from gameplay.services.inventory.core import (
     add_item_to_inventory,
     add_item_to_inventory_locked,
+    add_items_to_inventory_locked,
     consume_inventory_item,
     consume_inventory_item_locked,
+    get_warehouse_used_space,
 )
 from gameplay.services.manor.core import ensure_manor
 from trade.models import FrozenGoldBar
@@ -166,3 +168,68 @@ def test_add_item_to_inventory_requires_positive_quantity(django_user_model):
 
     with pytest.raises(AssertionError, match="requires positive quantity"):
         add_item_to_inventory(manor, tpl.key, 0)
+
+
+@pytest.mark.django_db
+def test_add_item_to_inventory_enforces_warehouse_capacity_atomically(django_user_model):
+    user = django_user_model.objects.create_user(username="inv_capacity", password="pass12345")
+    manor = ensure_manor(user)
+    baseline_space = get_warehouse_used_space(manor)
+    Manor.objects.filter(pk=manor.pk).update(storage_capacity=baseline_space + 5)
+
+    tpl = ItemTemplate.objects.create(
+        key="inv_capacity_item",
+        name="容量测试道具",
+        storage_space=2,
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=False,
+    )
+
+    add_item_to_inventory(manor, tpl.key, 2)
+    with pytest.raises(InsufficientSpaceError) as exc_info:
+        add_item_to_inventory(manor, tpl.key, 1)
+
+    assert exc_info.value.context["location"] == "warehouse"
+    assert InventoryItem.objects.get(manor=manor, template=tpl).quantity == 2
+    assert get_warehouse_used_space(manor) == baseline_space + 4
+
+
+@pytest.mark.django_db(transaction=True)
+def test_inventory_batch_capacity_failure_does_not_partially_write(django_user_model):
+    user = django_user_model.objects.create_user(username="inv_batch_capacity", password="pass12345")
+    manor = ensure_manor(user)
+    baseline_space = get_warehouse_used_space(manor)
+    locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+    locked_manor.storage_capacity = baseline_space + 3
+    locked_manor.save(update_fields=["storage_capacity"])
+
+    first = ItemTemplate.objects.create(
+        key="inv_batch_capacity_first",
+        name="批量容量道具一",
+        storage_space=2,
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=False,
+    )
+    second = ItemTemplate.objects.create(
+        key="inv_batch_capacity_second",
+        name="批量容量道具二",
+        storage_space=2,
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=False,
+    )
+
+    with transaction.atomic():
+        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+        with pytest.raises(InsufficientSpaceError):
+            add_items_to_inventory_locked(
+                locked_manor,
+                {first.key: 1, second.key: 1},
+                templates={first.key: first, second.key: second},
+            )
+
+        # The domain error is raised before any row write and does not poison
+        # the surrounding transaction; a smaller valid grant can still commit.
+        add_item_to_inventory_locked(locked_manor, first.key, 1, template=first)
+
+    assert InventoryItem.objects.get(manor=manor, template=first).quantity == 1
+    assert not InventoryItem.objects.filter(manor=manor, template=second).exists()

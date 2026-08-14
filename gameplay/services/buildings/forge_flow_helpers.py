@@ -188,6 +188,12 @@ def finalize_equipment_production_locked(
     if not getattr(production, "pk", None):
         return None
 
+    # Inventory capacity is serialized by Manor.  Lock it before the
+    # production row so completion has the same Manor -> production ->
+    # InventoryItem order as the other warehouse writers.
+    from ...models import Manor
+
+    locked_manor = Manor.objects.select_for_update().get(pk=production.manor_id)
     locked_production = (
         equipment_production_model.objects.select_for_update()
         .select_related("manor", "manor__user")
@@ -199,7 +205,7 @@ def finalize_equipment_production_locked(
         return None
 
     add_item_to_inventory_locked(
-        locked_production.manor,
+        locked_manor,
         locked_production.equipment_key,
         locked_production.quantity,
     )

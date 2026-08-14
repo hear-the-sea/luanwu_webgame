@@ -32,15 +32,18 @@ class PlayerTechnology(models.Model):
         """
         计算升级到下一级所需的时间（秒）。
 
-        公式: base_time * (1.4 ^ level)
+        统一按全等级预算曲线分配。
         """
         from core.utils.time_scale import scale_duration
         from gameplay.services.technology import get_technology_template
+        from gameplay.services.technology_rules import calculate_upgrade_duration
 
         template = get_technology_template(self.tech_key)
-        base_time = template.get("base_time", 60) if template else 60
-        raw = base_time * (1.4**self.level)
-        return scale_duration(raw, minimum=1)
+        return calculate_upgrade_duration(
+            template,
+            self.level,
+            scale_duration_func=scale_duration,
+        )
 
     @property
     def time_remaining(self) -> int:

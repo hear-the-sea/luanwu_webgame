@@ -16,7 +16,30 @@
     </nav>
 
     <section class="tw-warehouse-card">
-        {% if current_tab == 'treasury' %}
+        {% if current_tab == 'warehouse' %}
+        <!-- 仓库容量条 -->
+        <div class="tw-capacity-bar">
+            <div class="tw-capacity-info">
+                <span class="tw-capacity-label">仓库容量</span>
+                <span class="tw-capacity-values">
+                    <span class="tw-capacity-used">已使用：{{ warehouse_used }}</span>
+                    <span class="text-text-muted">/</span>
+                    <span class="tw-capacity-total">总容量：{{ warehouse_capacity }}</span>
+                    <span class="tw-capacity-remaining {% if warehouse_over_capacity %}critical{% elif warehouse_usage_percent >= 90 %}critical{% elif warehouse_usage_percent >= 70 %}warning{% endif %}">
+                        {% if warehouse_over_capacity %}
+                        (已超出 {{ warehouse_over_capacity }} 空间)
+                        {% else %}
+                        (剩余 {{ warehouse_remaining }})
+                        {% endif %}
+                    </span>
+                </span>
+            </div>
+            <div class="tw-capacity-progress">
+                <div class="tw-capacity-progress-bar {% if warehouse_over_capacity %}critical{% elif warehouse_usage_percent >= 90 %}critical{% elif warehouse_usage_percent >= 70 %}warning{% endif %}"
+                     style="width: {{ warehouse_usage_percent }}%;"></div>
+            </div>
+        </div>
+        {% elif current_tab == 'treasury' %}
         <!-- 藏宝阁容量条 -->
         <div class="tw-capacity-bar">
             {% if treasury_capacity > 0 %}

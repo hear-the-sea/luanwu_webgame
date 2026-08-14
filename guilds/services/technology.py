@@ -21,8 +21,6 @@ from .utils import get_active_membership, lock_active_member_for_guild
 from .warehouse import spend_guild_warehouse_items_locked
 
 logger = logging.getLogger(__name__)
-CAPACITY_TECH_KEYS = {"guild_lineup_capacity", "guild_dispatch_capacity"}
-WAREHOUSE_FUNDED_TECH_KEYS = CAPACITY_TECH_KEYS | {"mysticism"}
 WAREHOUSE_TECH_RESOURCE_KEYS = ("red_ruby", "grain", "gold_bar")
 TECH_RESOURCE_LABELS = {
     "silver": "银两",
@@ -164,67 +162,45 @@ def upgrade_technology(guild, tech_key, operator):
         # 成本必须基于锁内的当前等级计算，避免并发下低价升级
         cost = calculate_tech_upgrade_cost(tech_key, tech_locked.level)
 
-        if tech_key in WAREHOUSE_FUNDED_TECH_KEYS:
-            warehouse_cost = {
-                item_key: int(cost.get(item_key, 0) or 0)
-                for item_key in WAREHOUSE_TECH_RESOURCE_KEYS
-                if int(cost.get(item_key, 0) or 0) > 0
-            }
-            if warehouse_cost:
-                try:
-                    spend_guild_warehouse_items_locked(
-                        guild_locked,
-                        warehouse_cost,
-                        error_prefix="帮会仓库",
-                    )
-                except GuildWarehouseError as exc:
-                    raise GuildTechnologyError(str(exc)) from exc
-            GuildTechnology.objects.filter(pk=tech_locked.pk).update(level=F("level") + 1)
-            tech_locked.refresh_from_db(fields=["level"])
-            GuildResourceLog.objects.create(
-                guild=guild_locked,
-                action="tech_upgrade",
-                grain_change=-warehouse_cost.get("grain", 0),
-                gold_bar_change=-warehouse_cost.get("gold_bar", 0),
-                related_user=operator,
-                note=(
-                    f"升级{guild_constants.TECH_NAMES.get(tech_key, '该科技')}至{tech_locked.level}级"
-                    f"（消耗{_format_tech_resource_cost(cost)}）"
-                ),
-            )
-        else:
-            if guild_locked.silver < cost["silver"]:
-                raise GuildTechnologyError(f"帮会银两不足，需要{cost['silver']}")
-            warehouse_cost = {
-                item_key: cost.get(item_key, 0)
-                for item_key in ("grain", "gold_bar")
-                if int(cost.get(item_key, 0) or 0) > 0
-            }
-            if warehouse_cost:
-                try:
-                    spend_guild_warehouse_items_locked(guild_locked, warehouse_cost, error_prefix="帮会")
-                except GuildWarehouseError as exc:
-                    raise GuildTechnologyError(str(exc)) from exc
+        # 科技成本可能由银两和任意仓库资源组成，统一扣费可避免新增纯金条/红宝石科技
+        # 误进入旧的 cost["silver"] 分支。所有资源检查和扣减都在同一组行锁内完成。
+        silver_cost = int(cost.get("silver", 0) or 0)
+        warehouse_cost = {
+            item_key: int(cost.get(item_key, 0) or 0)
+            for item_key in WAREHOUSE_TECH_RESOURCE_KEYS
+            if int(cost.get(item_key, 0) or 0) > 0
+        }
 
-            # 步骤3：银两继续使用 Guild 字段扣减
-            Guild.objects.filter(pk=guild_locked.pk).update(silver=F("silver") - cost["silver"])
+        if silver_cost > int(guild_locked.silver):
+            raise GuildTechnologyError(f"帮会银两不足，需要{silver_cost}")
+        if warehouse_cost:
+            try:
+                spend_guild_warehouse_items_locked(
+                    guild_locked,
+                    warehouse_cost,
+                    error_prefix="帮会仓库",
+                )
+            except GuildWarehouseError as exc:
+                raise GuildTechnologyError(str(exc)) from exc
 
-            # 步骤4：使用F()表达式原子性地升级科技
-            GuildTechnology.objects.filter(pk=tech_locked.pk).update(level=F("level") + 1)
+        if silver_cost:
+            Guild.objects.filter(pk=guild_locked.pk).update(silver=F("silver") - silver_cost)
 
-            # 刷新对象以获取更新后的值（用于日志和公告）
-            tech_locked.refresh_from_db(fields=["level"])
+        GuildTechnology.objects.filter(pk=tech_locked.pk).update(level=F("level") + 1)
+        tech_locked.refresh_from_db(fields=["level"])
 
-            # 步骤5：记录资源流水
-            GuildResourceLog.objects.create(
-                guild=guild_locked,
-                action="tech_upgrade",
-                silver_change=-cost["silver"],
-                grain_change=-cost["grain"],
-                gold_bar_change=-cost["gold_bar"],
-                related_user=operator,
-                note=f"升级{guild_constants.TECH_NAMES.get(tech_key, '该科技')}至{tech_locked.level}级",
-            )
+        GuildResourceLog.objects.create(
+            guild=guild_locked,
+            action="tech_upgrade",
+            silver_change=-silver_cost,
+            grain_change=-warehouse_cost.get("grain", 0),
+            gold_bar_change=-warehouse_cost.get("gold_bar", 0),
+            related_user=operator,
+            note=(
+                f"升级{guild_constants.TECH_NAMES.get(tech_key, '该科技')}至{tech_locked.level}级"
+                f"（消耗{_format_tech_resource_cost(cost)}）"
+            ),
+        )
 
         # 步骤6：获取操作者庄园名称（保存用于事务外使用）
         operator_user_id = operator.id

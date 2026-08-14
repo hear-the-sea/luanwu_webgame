@@ -8,7 +8,6 @@ import logging
 
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import F
 
 from core.exceptions import (
     DuplicateEquipmentError,
@@ -92,7 +91,12 @@ def give_gear(manor: Manor, template: GearTemplate) -> GearItem:
     return GearItem.objects.create(manor=manor, template=template)
 
 
-def _clear_replaced_items(guest: Guest, existing_items: list[GearItem], updates: set[str]) -> None:
+def _clear_replaced_items(
+    manor: Manor,
+    guest: Guest,
+    existing_items: list[GearItem],
+    updates: set[str],
+) -> None:
     for item in existing_items:
         guest.attack_bonus -= item.template.attack_bonus
         guest.defense_bonus -= item.template.defense_bonus
@@ -111,17 +115,12 @@ def _clear_replaced_items(guest: Guest, existing_items: list[GearItem], updates:
             logger.error("Cannot return gear to inventory: ItemTemplate not found for key %s", item.template.key)
             continue
 
-        updated = InventoryItem.objects.filter(
-            manor=guest.manor, template=item_template, storage_location=InventoryItem.StorageLocation.WAREHOUSE
-        ).update(quantity=F("quantity") + 1)
-
-        if updated == 0:
-            InventoryItem.objects.create(
-                manor=guest.manor,
-                template=item_template,
-                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-                quantity=1,
-            )
+        inventory_core.add_item_to_inventory_locked(
+            manor,
+            item_template.key,
+            1,
+            template=item_template,
+        )
         item.inventory_backed = True
         item.save(update_fields=["inventory_backed"])
 
@@ -176,7 +175,7 @@ def _apply_gear_to_locked_guest(
             raise EquipmentError("装备库存已发生变化，请刷新后重试")
 
     if capacity == 1 and existing_items:
-        _clear_replaced_items(guest, existing_items, updates)
+        _clear_replaced_items(manor, guest, existing_items, updates)
 
     gear.guest = guest
     gear.inventory_backed = False
@@ -348,19 +347,12 @@ def unequip_guest_item(gear: GearItem, guest: Guest, *, allow_injured: bool = Fa
         guest.current_hp = guest.max_hp
         guest.save(update_fields=["current_hp"])
 
-    updated = InventoryItem.objects.filter(
-        manor=locked_manor,
+    inventory_core.add_item_to_inventory_locked(
+        locked_manor,
+        item_template.key,
+        1,
         template=item_template,
-        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-    ).update(quantity=F("quantity") + 1)
-
-    if updated == 0:
-        InventoryItem.objects.create(
-            manor=locked_manor,
-            template=item_template,
-            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-            quantity=1,
-        )
+    )
 
     _schedule_gear_options_cache_clear(guest.manor_id, slots={gear.template.slot})
     return gear

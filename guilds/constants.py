@@ -36,15 +36,15 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
     },
     "technology": {
         "upgrade_costs": {
-            "equipment_forge": {"silver": 5000, "grain": 2000, "gold_bar": 1},
-            "guard_armory": {"silver": 5000, "grain": 2500, "gold_bar": 1},
-            "experience_refine": {"silver": 5000, "grain": 2000, "gold_bar": 1},
+            "equipment_forge": {"gold_bar": 3},
+            "guard_armory": {"silver": 307220, "grain": 307220},
+            "experience_refine": {"gold_bar": 3},
             "resource_supply": {"silver": 4000, "grain": 3000, "gold_bar": 1},
             "mysticism": {"red_ruby": 200},
-            "troop_tactics": {"silver": 8000, "grain": 3000, "gold_bar": 2},
-            "resource_boost": {"silver": 10000, "grain": 5000, "gold_bar": 3},
-            "march_speed": {"silver": 10000, "grain": 5000, "gold_bar": 3},
-            "guild_lineup_capacity": {"red_ruby": 5},
+            "troop_tactics": {"silver": 307220, "grain": 307220},
+            "resource_boost": {"silver": 2173913, "grain": 2173913},
+            "march_speed": {"gold_bar": 2},
+            "guild_lineup_capacity": {"gold_bar": 2},
             "guild_dispatch_capacity": {"red_ruby": 5},
         },
         "upgrade_cost_curves": {
@@ -99,9 +99,38 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
             "guild_dispatch_capacity": "capacity_20",
         },
         "upgrade_cost_overrides": {
+            "equipment_forge": {
+                "8": {"gold_bar": 210, "red_ruby": 24},
+                "9": {"gold_bar": 450, "red_ruby": 53},
+                "10": {"gold_bar": 1097, "red_ruby": 123},
+            },
+            "guard_armory": {
+                "10": {"silver": 107526780, "grain": 107526780},
+            },
+            "experience_refine": {
+                "8": {"gold_bar": 210, "red_ruby": 24},
+                "9": {"gold_bar": 450, "red_ruby": 53},
+                "10": {"gold_bar": 1097, "red_ruby": 123},
+            },
             "mysticism": {
                 "2": {"red_ruby": 300, "gold_bar": 150},
                 "3": {"red_ruby": 300, "gold_bar": 200},
+            },
+            "troop_tactics": {
+                "10": {"silver": 107526780, "grain": 107526780},
+            },
+            "resource_boost": {
+                "5": {"silver": 130434784, "grain": 130434784},
+            },
+            "march_speed": {
+                "5": {"gold_bar": 136},
+            },
+            "guild_lineup_capacity": {
+                "16": {"gold_bar": 32, "red_ruby": 36},
+                "17": {"gold_bar": 34, "red_ruby": 38},
+                "18": {"gold_bar": 36, "red_ruby": 40},
+                "19": {"gold_bar": 38, "red_ruby": 42},
+                "20": {"gold_bar": 120, "red_ruby": 44},
             },
         },
         "names": {

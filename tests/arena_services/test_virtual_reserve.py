@@ -324,7 +324,7 @@ def training_member(reserve_demand: ArenaVirtualDemand) -> ArenaVirtualReserveMe
 
 
 def _single_growth_round_attempt_count() -> int:
-    return (virtual_reserve_pool.ARENA_SLOTS_PER_ROUND - 1) * virtual_reserve_pool.ARENA_GROWTH_MAX_SLOT_ATTEMPTS + 1
+    return virtual_reserve_pool.ARENA_GROWTH_BUDGET_MAX_ATTEMPTS
 
 
 @pytest.mark.django_db
@@ -2356,7 +2356,7 @@ def test_growth_isolates_claimed_member_business_error_and_continues(
     assert len(first_budget) == 1
     assert first_budget[0].outcome is ArenaGrowthAttemptOutcome.NO_ACTION
     assert peer.growth_claim_token is None
-    assert peer.growth_retry_reason == "profile_busy"
+    assert peer.growth_retry_reason == "arena_attempt_budget_exhausted"
     peer_budget = parse_arena_growth_budget_entries(
         peer.arena_growth_budget_entries,
         now=timezone.now(),
@@ -2416,7 +2416,7 @@ def test_growth_backs_off_unclaimed_member_business_error_and_continues(
         <= (training_member.created_at + virtual_reserve_pool.MAX_RESERVE_MEMBER_LEASE_AGE)
     )
     assert peer.growth_claim_token is None
-    assert peer.growth_retry_reason == "profile_busy"
+    assert peer.growth_retry_reason == "arena_attempt_budget_exhausted"
 
 
 @pytest.mark.parametrize("error_type", (DatabaseError, SafetyProviderError))
@@ -3164,7 +3164,7 @@ def test_busy_growth_keeps_training_member(monkeypatch, training_member):
     assert training_member.state == ArenaVirtualReserveMember.State.TRAINING
     assert training_member.growth_applied_action_count == 0
     assert training_member.next_acceleration_at > now
-    assert training_member.growth_retry_reason == "profile_busy"
+    assert training_member.growth_retry_reason == "arena_attempt_budget_exhausted"
 
 
 @pytest.mark.django_db

@@ -22,6 +22,17 @@ def _coerce_non_negative_float(value, default: float) -> float:
     return parsed
 
 
+def _coerce_non_negative_mapping(value) -> dict[str, int]:
+    if not isinstance(value, dict):
+        return {}
+    result: dict[str, int] = {}
+    for resource, amount in value.items():
+        parsed = safe_non_negative_int(amount, 0)
+        if parsed > 0:
+            result[str(resource)] = parsed
+    return result
+
+
 class Command(BaseCommand):
     help = "Load BuildingType definitions from a YAML/JSON file."
 
@@ -89,8 +100,12 @@ class Command(BaseCommand):
                 "rate_growth": _coerce_non_negative_float(entry.get("rate_growth"), 0.0),
                 "base_upgrade_time": safe_non_negative_int(entry.get("base_upgrade_time"), 60),
                 "time_growth": _coerce_non_negative_float(entry.get("time_growth"), 1.25),
+                "upgrade_time_budget": safe_non_negative_int(entry.get("upgrade_time_budget"), 0),
+                "time_curve": _coerce_non_negative_float(entry.get("time_curve"), 1.0),
                 "base_cost": base_cost,
                 "cost_growth": _coerce_non_negative_float(entry.get("cost_growth"), 1.35),
+                "upgrade_cost_budget": _coerce_non_negative_mapping(entry.get("upgrade_cost_budget")),
+                "cost_curve": _coerce_non_negative_float(entry.get("cost_curve"), 1.0),
                 "icon": str(entry.get("icon") or ""),
             }
             obj, was_created = BuildingType.objects.update_or_create(key=key, defaults=defaults)

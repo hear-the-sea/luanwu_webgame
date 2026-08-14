@@ -10,7 +10,7 @@ from django.db.utils import DatabaseError
 def _seed_basic_tech_upgrade_warehouse_costs(guild) -> None:
     from guilds.models import GuildWarehouse
 
-    GuildWarehouse.objects.create(guild=guild, item_key="grain", quantity=999999, contribution_cost=2)
+    GuildWarehouse.objects.create(guild=guild, item_key="grain", quantity=99_999_999, contribution_cost=2)
     GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=999999, contribution_cost=50)
 
 
@@ -25,27 +25,44 @@ def test_calculate_tech_upgrade_cost_uses_staged_curves_without_exponential_fall
     with pytest.raises(GuildTechnologyError, match="缺少升至3级的费用配置"):
         calculate_tech_upgrade_cost("unknown", 2)
 
-    assert calculate_tech_upgrade_cost("equipment_forge", 1) == {
-        "silver": 10000,
-        "grain": 4000,
-        "gold_bar": 2,
-    }
+    assert calculate_tech_upgrade_cost("equipment_forge", 1) == {"gold_bar": 6}
     assert calculate_tech_upgrade_cost("equipment_forge", 8) == {
-        "silver": 750000,
-        "grain": 300000,
-        "gold_bar": 150,
+        "gold_bar": 450,
+        "red_ruby": 53,
     }
     assert calculate_tech_upgrade_cost("equipment_forge", 9) == {
-        "silver": 1750000,
-        "grain": 700000,
-        "gold_bar": 350,
+        "gold_bar": 1097,
+        "red_ruby": 123,
     }
     assert calculate_tech_upgrade_cost("resource_boost", 4) == {
-        "silver": 600000,
-        "grain": 300000,
-        "gold_bar": 180,
+        "silver": 130434784,
+        "grain": 130434784,
     }
-    assert calculate_tech_upgrade_cost("guild_lineup_capacity", 19) == {"red_ruby": 100}
+    assert calculate_tech_upgrade_cost("guild_lineup_capacity", 19) == {
+        "gold_bar": 120,
+        "red_ruby": 44,
+    }
+
+
+def test_requested_guild_technology_maximum_costs_are_exact():
+    from guilds.services.technology import calculate_tech_upgrade_cost
+
+    expected_totals = {
+        "equipment_forge": (10, {"gold_bar": 2000, "red_ruby": 200}),
+        "guard_armory": (10, {"silver": 200_000_000, "grain": 200_000_000}),
+        "experience_refine": (10, {"gold_bar": 2000, "red_ruby": 200}),
+        "troop_tactics": (10, {"silver": 200_000_000, "grain": 200_000_000}),
+        "resource_boost": (5, {"silver": 200_000_000, "grain": 200_000_000}),
+        "march_speed": (5, {"gold_bar": 200}),
+        "guild_lineup_capacity": (20, {"gold_bar": 500, "red_ruby": 200}),
+    }
+
+    for tech_key, (max_level, expected) in expected_totals.items():
+        total: dict[str, int] = {}
+        for current_level in range(max_level):
+            for resource_key, amount in calculate_tech_upgrade_cost(tech_key, current_level).items():
+                total[resource_key] = total.get(resource_key, 0) + int(amount)
+        assert total == expected
 
 
 def test_all_supported_guild_technology_levels_have_explicit_positive_costs():
@@ -391,7 +408,7 @@ def test_upgrade_technology_happy_path(monkeypatch, django_user_model):
     tech.refresh_from_db()
     guild.refresh_from_db()
     assert tech.level == 1
-    assert guild.silver < 999999
+    assert guild.silver == 999999
     assert GuildResourceLog.objects.filter(guild=guild, action="tech_upgrade").exists()
     assert announcements
 
@@ -409,24 +426,20 @@ def test_upgrade_technology_spends_grain_and_gold_bar_from_warehouse(monkeypatch
 
     operator = django_user_model.objects.create_user(username="tech_operator_warehouse_cost", password="pass")
     founder = django_user_model.objects.create_user(username="tech_founder_warehouse_cost", password="pass")
-    guild = Guild.objects.create(name="TechWarehouseCost", founder=founder, silver=10000, grain=0, gold_bar=0)
+    guild = Guild.objects.create(name="TechWarehouseCost", founder=founder, silver=0, grain=0, gold_bar=0)
     GuildTechnology.objects.create(guild=guild, tech_key="march_speed", level=0, max_level=5)
-    grain_row = GuildWarehouse.objects.create(guild=guild, item_key="grain", quantity=6000, contribution_cost=2)
     gold_bar_row = GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=4, contribution_cost=50)
 
     upgrade_technology(guild, "march_speed", operator)
 
     guild.refresh_from_db()
-    grain_row.refresh_from_db()
     gold_bar_row.refresh_from_db()
 
     assert guild.silver == 0
     assert guild.grain == 0
     assert guild.gold_bar == 0
-    assert grain_row.quantity == 1000
-    assert grain_row.total_exchanged == 5000
-    assert gold_bar_row.quantity == 1
-    assert gold_bar_row.total_exchanged == 3
+    assert gold_bar_row.quantity == 2
+    assert gold_bar_row.total_exchanged == 2
 
 
 @pytest.mark.django_db
@@ -442,7 +455,13 @@ def test_upgrade_technology_uses_runtime_troop_tactics_cap_for_legacy_rows(monke
 
     operator = django_user_model.objects.create_user(username="tech_operator_runtime_troop_cap", password="pass")
     founder = django_user_model.objects.create_user(username="tech_founder_runtime_troop_cap", password="pass")
-    guild = Guild.objects.create(name="TechRuntimeTroopCapGuild", founder=founder, silver=999999, grain=0, gold_bar=0)
+    guild = Guild.objects.create(
+        name="TechRuntimeTroopCapGuild",
+        founder=founder,
+        silver=10_000_000,
+        grain=0,
+        gold_bar=0,
+    )
     tech = GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", level=5, max_level=5)
     _seed_basic_tech_upgrade_warehouse_costs(guild)
 
@@ -594,7 +613,7 @@ def test_upgrade_technology_missing_membership_is_wrapped_as_guild_technology_er
 @pytest.mark.django_db
 def test_upgrade_technology_insufficient_resources(monkeypatch, django_user_model):
     from core.exceptions import GuildTechnologyError
-    from guilds.models import Guild, GuildTechnology
+    from guilds.models import Guild, GuildTechnology, GuildWarehouse
     from guilds.services.technology import upgrade_technology
 
     monkeypatch.setattr(
@@ -610,17 +629,19 @@ def test_upgrade_technology_insufficient_resources(monkeypatch, django_user_mode
     founder = django_user_model.objects.create_user(username="tech_founder6", password="pass")
     guild = Guild.objects.create(name="TechGuild6", founder=founder, silver=0, grain=0, gold_bar=0)
     tech = GuildTechnology.objects.create(guild=guild, tech_key="equipment_forge", level=0, max_level=5)
-    _seed_basic_tech_upgrade_warehouse_costs(guild)
+    gold_bar = GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=2, contribution_cost=50)
 
-    with pytest.raises(GuildTechnologyError, match="银两不足"):
+    with pytest.raises(GuildTechnologyError, match="帮会仓库金条不足，需要3"):
         upgrade_technology(guild, "equipment_forge", operator)
 
     tech.refresh_from_db()
+    gold_bar.refresh_from_db()
     assert tech.level == 0
+    assert gold_bar.quantity == 2
 
 
 @pytest.mark.django_db
-def test_upgrade_new_guild_capacity_tech_consumes_red_ruby(monkeypatch, django_user_model):
+def test_upgrade_new_guild_capacity_tech_consumes_gold_bar_at_low_level(monkeypatch, django_user_model):
     from guilds.models import Guild, GuildResourceLog, GuildTechnology, GuildWarehouse
     from guilds.services.technology import upgrade_technology
 
@@ -634,23 +655,53 @@ def test_upgrade_new_guild_capacity_tech_consumes_red_ruby(monkeypatch, django_u
     founder = django_user_model.objects.create_user(username="tech_founder_red_ruby", password="pass")
     guild = Guild.objects.create(name="TechGuildRedRuby", founder=founder, silver=0, grain=0, gold_bar=0)
     tech = GuildTechnology.objects.create(guild=guild, tech_key="guild_lineup_capacity", level=0, max_level=5)
-    ruby = GuildWarehouse.objects.create(guild=guild, item_key="red_ruby", quantity=6, contribution_cost=0)
+    gold = GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=2, contribution_cost=0)
 
     upgrade_technology(guild, "guild_lineup_capacity", operator)
 
     tech.refresh_from_db()
     guild.refresh_from_db()
-    ruby.refresh_from_db()
 
     assert tech.level == 1
-    assert ruby.quantity == 1
+    assert not GuildWarehouse.objects.filter(pk=gold.pk).exists()
     assert guild.silver == 0
     assert guild.grain == 0
     assert guild.gold_bar == 0
     assert GuildResourceLog.objects.filter(
         guild=guild,
         action="tech_upgrade",
-        note__contains="红宝石×5",
+        note__contains="金条×2",
+    ).exists()
+
+
+@pytest.mark.django_db
+def test_upgrade_guild_capacity_tech_consumes_red_ruby_only_at_high_level(monkeypatch, django_user_model):
+    from guilds.models import Guild, GuildResourceLog, GuildTechnology, GuildWarehouse
+    from guilds.services.technology import upgrade_technology
+
+    monkeypatch.setattr(
+        "guilds.services.technology.get_active_membership",
+        lambda *_a, **_k: SimpleNamespace(can_manage=True),
+    )
+    monkeypatch.setattr("guilds.services.technology.create_announcement", lambda *_a, **_k: None)
+
+    operator = django_user_model.objects.create_user(username="tech_operator_capacity_high", password="pass")
+    founder = django_user_model.objects.create_user(username="tech_founder_capacity_high", password="pass")
+    guild = Guild.objects.create(name="TechGuildCapacityHigh", founder=founder, silver=0, grain=0, gold_bar=0)
+    tech = GuildTechnology.objects.create(guild=guild, tech_key="guild_lineup_capacity", level=15, max_level=20)
+    gold = GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=32, contribution_cost=0)
+    ruby = GuildWarehouse.objects.create(guild=guild, item_key="red_ruby", quantity=36, contribution_cost=0)
+
+    upgrade_technology(guild, "guild_lineup_capacity", operator)
+
+    tech.refresh_from_db()
+    assert tech.level == 16
+    assert not GuildWarehouse.objects.filter(pk__in=(gold.pk, ruby.pk)).exists()
+    assert GuildResourceLog.objects.filter(
+        guild=guild,
+        action="tech_upgrade",
+        gold_bar_change=-32,
+        note__contains="出战位扩容至16级（消耗金条×32、红宝石×36）",
     ).exists()
 
 

@@ -22,6 +22,41 @@ def _building(manor: Manor, building_key: str) -> Building:
     return manor.buildings.select_related("building_type").get(building_type__key=building_key)
 
 
+@pytest.mark.django_db
+def test_budgeted_upgrade_curve_hits_total_budget_without_exponential_tail(manor_factory) -> None:
+    manor, _user = manor_factory(username="building_budget_curve")
+    building = _building(manor, BuildingKeys.SILVER_VAULT)
+    building_type = building.building_type
+    building_type.base_upgrade_time = 120
+    building_type.upgrade_time_budget = 100_000
+    building_type.time_curve = 1.1
+    building_type.base_cost = {ResourceType.SILVER: 100}
+    building_type.upgrade_cost_budget = {ResourceType.SILVER: 100_000}
+    building_type.cost_curve = 1.1
+    building_type.save(
+        update_fields=[
+            "base_upgrade_time",
+            "upgrade_time_budget",
+            "time_curve",
+            "base_cost",
+            "upgrade_cost_budget",
+            "cost_curve",
+        ]
+    )
+
+    durations = []
+    costs = []
+    for level in range(1, BUILDING_MAX_LEVELS[BuildingKeys.SILVER_VAULT]):
+        building.level = level
+        durations.append(building.next_level_duration())
+        costs.append(building.next_level_cost()[ResourceType.SILVER])
+
+    assert sum(durations) == 100_000
+    assert sum(costs) == 100_000
+    assert max(durations[index + 1] / durations[index] for index in range(len(durations) - 1)) <= 1.11
+    assert max(costs[index + 1] / costs[index] for index in range(len(costs) - 1)) <= 1.11
+
+
 def _fund_manor(
     manor: Manor,
     *,

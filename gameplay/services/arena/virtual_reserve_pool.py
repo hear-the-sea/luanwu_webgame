@@ -77,6 +77,7 @@ from .virtual_lineups import (
 from .virtual_protection import is_virtual_profile_arena_match_eligible, with_arena_reconciliation_state
 from .virtual_reserve_growth_budget import (
     ARENA_GROWTH_BUDGET_MAX_ATTEMPTS,
+    ARENA_GROWTH_BUDGET_WINDOW,
     ARENA_GROWTH_MAX_SLOT_ATTEMPTS,
     ArenaGrowthAttemptBudgetExceeded,
     ArenaGrowthAttemptOutcome,
@@ -3361,6 +3362,7 @@ def _prepare_same_round_retry(*, member_id: int, now: datetime) -> bool:
         .values(
             "growth_round_id",
             "growth_action_ordinal_in_round",
+            "arena_growth_budget_entries",
             "growth_retry_reason",
         )
         .first()
@@ -3383,8 +3385,35 @@ def _prepare_same_round_retry(*, member_id: int, now: datetime) -> bool:
         "routing_unavailable",
     }:
         return False
-    if int(member.get("growth_action_ordinal_in_round") or 0) >= ARENA_SLOTS_PER_ROUND:
+    try:
+        budget_entries = prune_arena_growth_budget_entries(
+            parse_arena_growth_budget_entries(
+                member.get("arena_growth_budget_entries"),
+                now=now,
+            ),
+            now=now,
+        )
+    except InvalidArenaGrowthBudgetError:
+        # The claim path owns invalid-budget recovery.  Do not overwrite its
+        # durable error state from this scheduler adapter.
         return False
+    if actual_arena_growth_attempt_count(budget_entries) >= ARENA_GROWTH_BUDGET_MAX_ATTEMPTS:
+        if budget_entries:
+            retry_at = budget_entries[0].attempted_at + ARENA_GROWTH_BUDGET_WINDOW
+            ArenaVirtualReserveMember.objects.filter(
+                pk=int(member_id),
+                state=ArenaVirtualReserveMember.State.TRAINING,
+                growth_claim_token__isnull=True,
+            ).update(
+                next_acceleration_at=retry_at,
+                growth_retry_reason="arena_attempt_budget_exhausted",
+            )
+        return False
+    # A BUSY retry may exhaust the current round without consuming a
+    # successful action.  Let the next claim allocate a new round; the outer
+    # worker loop is bounded by the 24-hour execution budget, so this cannot
+    # turn into an unbounded hot loop.  APPLIED and terminal NO_ACTION paths
+    # clear ``growth_round_id`` or return above before reaching this point.
     ArenaVirtualReserveMember.objects.filter(
         pk=int(member_id),
         state=ArenaVirtualReserveMember.State.TRAINING,
@@ -3487,7 +3516,10 @@ def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
 
     processed = 0
     for member_id, _demand_id in selected_member_rows:
-        for _slot_attempt in range(ARENA_SLOTS_PER_ROUND * ARENA_GROWTH_MAX_SLOT_ATTEMPTS):
+        # The rolling execution budget is the authoritative safety boundary.
+        # Slot/round limits order retries but must not silently reduce the
+        # configured 24-hour attempt budget when every result is BUSY.
+        for _slot_attempt in range(ARENA_GROWTH_BUDGET_MAX_ATTEMPTS):
             attempt_result = _grow_due_virtual_reserves_once(
                 now=current_time,
                 limit=1,

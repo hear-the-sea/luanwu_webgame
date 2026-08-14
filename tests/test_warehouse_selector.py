@@ -3,8 +3,9 @@ from django.contrib.auth import get_user_model
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
-from gameplay.models import InventoryItem, ItemTemplate
+from gameplay.models import InventoryItem, ItemTemplate, Manor
 from gameplay.selectors.warehouse import _distinct_effect_types, get_warehouse_context
+from gameplay.services.inventory.core import get_warehouse_used_space
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestStatus, GuestTemplate
 
@@ -71,6 +72,28 @@ def test_get_warehouse_context_guest_lists_filter_and_order():
         g_idle_100_xisui_ok.id,
         g_idle_100_xisui_limit.id,
     ]
+
+
+@pytest.mark.django_db
+def test_warehouse_context_reports_capacity_from_inventory_space(django_user_model):
+    user = django_user_model.objects.create_user(username="warehouse_capacity_context", password="pass123")
+    manor = ensure_manor(user)
+    baseline_space = get_warehouse_used_space(manor)
+    Manor.objects.filter(pk=manor.pk).update(storage_capacity=baseline_space + 10)
+    manor.refresh_from_db(fields=["storage_capacity"])
+    template = ItemTemplate.objects.create(
+        key="warehouse_capacity_context_item",
+        name="仓库容量展示道具",
+        storage_space=3,
+    )
+    InventoryItem.objects.create(manor=manor, template=template, quantity=2)
+
+    context = get_warehouse_context(manor, current_tab="warehouse", selected_category="all", page=1)
+
+    assert context["warehouse_capacity"] == baseline_space + 10
+    assert context["warehouse_used"] == baseline_space + 6
+    assert context["warehouse_remaining"] == 4
+    assert context["warehouse_over_capacity"] == 0
 
 
 @pytest.mark.django_db

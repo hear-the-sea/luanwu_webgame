@@ -4,17 +4,19 @@ import logging
 import math
 import random
 from collections import defaultdict
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
+from contextlib import nullcontext
 from dataclasses import dataclass
 from dataclasses import field as dataclass_field
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
+from functools import wraps
 from hashlib import sha256
-from time import monotonic
-from typing import Any
+from time import monotonic, sleep
+from typing import Any, TypeVar
 from uuid import UUID, uuid4
 
-from django.db import DatabaseError, IntegrityError, connection, transaction
+from django.db import DatabaseError, OperationalError, connection, transaction
 from django.db.models import Case, CharField, Count, DateTimeField, Exists, F, IntegerField, OuterRef, Q, Subquery, When
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
@@ -37,6 +39,7 @@ from core.exceptions import (
     GuestSkillAlreadyLearnedError,
     GuestTrainingInProgressError,
     InsufficientResourceError,
+    InsufficientSpaceError,
     InsufficientStockError,
     InvalidHealAmountError,
     ItemNotFoundError,
@@ -71,7 +74,7 @@ from gameplay.models import (
     ResourceType,
 )
 from gameplay.services.arena.virtual_protection import is_virtual_profile_arena_protected
-from gameplay.services.inventory.core import GRAIN_ITEM_KEY
+from gameplay.services.inventory.core import GRAIN_ITEM_KEY, add_items_to_inventory_locked
 from gameplay.services.manor.core import (
     BuildingUpgradeQuote,
     BuildingUpgradeQuoteStaleError,
@@ -297,6 +300,29 @@ from .virtual_candidate_pools import (
 
 logger = logging.getLogger(__name__)
 
+_AtomicResult = TypeVar("_AtomicResult")
+
+
+def _atomic_if_requested(
+    function: Callable[..., _AtomicResult],
+) -> Callable[..., _AtomicResult]:
+    """Keep public atomic semantics without nested savepoints in a parent transaction.
+
+    The private ``_manage_transaction`` switch is used only when a scheduled
+    policy-2 attempt already owns the transaction that covers cycle reservation
+    and domain writes.  Direct callers retain the historical atomic boundary.
+    """
+
+    @wraps(function)
+    def wrapper(*args: Any, _manage_transaction: bool = True, **kwargs: Any) -> _AtomicResult:
+        if _manage_transaction:
+            with transaction.atomic():
+                return function(*args, **kwargs)
+        return function(*args, **kwargs)
+
+    return wrapper
+
+
 V2_MAINTENANCE_ENGINE_VERSION = 2
 SCHEDULED_MAINTENANCE_BATCH_LOCK_TIMEOUT_SECONDS = 180
 # Keep the scheduled maintenance slice large enough to drain the configured
@@ -306,6 +332,12 @@ SCHEDULED_MAINTENANCE_DEFAULT_BATCH_SIZE = 200
 # 1000.  Keep the due selection bounded even when a caller bypasses the
 # public batch entry point.
 SCHEDULED_MAINTENANCE_DUE_SCAN_HARD_CAP = 1000
+# MySQL can abort an otherwise valid cycle-result transaction when a scheduled
+# worker overlaps with the profile/cycle lock hand-off.  Retry only those
+# server-classified transient lock failures, and only after the atomic wrapper
+# has rolled the failed transaction back completely.
+_CYCLE_RESULT_COMMIT_MAX_ATTEMPTS = 3
+_CYCLE_RESULT_COMMIT_RETRY_DELAYS_SECONDS = (0.02, 0.05)
 
 # 这些动作不直接消耗银两；工资短缺时允许作为安全回退。
 # guest_recruitment 刻意排除，因为它会增加下一轮工资负担；training 和
@@ -2578,8 +2610,8 @@ def _apply_inventory_acquisition_locked(
         manor=manor,
         template_ids=template_ids,
     )
-    pending_new_by_template_id: dict[int, InventoryItem] = {}
-    updated_existing_by_template_id: dict[int, InventoryItem] = {}
+    acquisition_grants: dict[str, int] = {}
+    acquisition_templates: dict[str, ItemTemplate] = {}
     first_template_id: int | None = None
     for item_template_id, item_key, expected_caps, requested_quantity in batch_items:
         template = templates_by_id.get(int(item_template_id))
@@ -2619,54 +2651,30 @@ def _apply_inventory_acquisition_locked(
                 storage_location=InventoryItem.StorageLocation.WAREHOUSE,
                 quantity=allowed,
             )
-            pending_new_by_template_id[int(template.id)] = pending
             # Keep duplicate entries in one batch replay-safe: once a template
             # has a positive planned quantity, the later duplicate is skipped
             # exactly as it was when each item was saved immediately.
             existing_by_template_id[int(template.id)] = pending
         else:
             existing.quantity = int(existing.quantity or 0) + allowed
-            updated_existing_by_template_id[int(template.id)] = existing
+        acquisition_grants[template.key] = acquisition_grants.get(template.key, 0) + int(allowed)
+        acquisition_templates[template.key] = template
         if first_template_id is None:
             first_template_id = int(template.id)
 
-    pending_items = list(pending_new_by_template_id.values())
-    if pending_items:
-        try:
-            # All new warehouse rows are materialized as one batch inside the
-            # caller's Manor transaction.  The savepoint only isolates a
-            # legacy concurrent insert so the outer cap reservations remain
-            # atomic with the inventory result.
-            with transaction.atomic():
-                InventoryItem.objects.bulk_create(pending_items)
-        except IntegrityError:
-            locked_conflicts = {
-                int(item.template_id): item
-                for item in InventoryItem.objects.select_for_update()
-                .select_related("template")
-                .filter(
-                    manor_id=int(manor.id),
-                    template_id__in=tuple(pending_new_by_template_id),
-                    storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-                )
-            }
-            missing_template_ids = set(pending_new_by_template_id) - set(locked_conflicts)
-            if missing_template_ids:
-                raise
-            for template_id, pending in pending_new_by_template_id.items():
-                conflict = locked_conflicts[template_id]
-                conflict.quantity = int(conflict.quantity or 0) + int(pending.quantity or 0)
-                updated_existing_by_template_id[template_id] = conflict
-                existing_by_template_id[template_id] = conflict
-            pending_items = []
-    if updated_existing_by_template_id:
-        InventoryItem.objects.bulk_update(
-            list(updated_existing_by_template_id.values()),
-            ["quantity", "updated_at"],
-        )
     if first_template_id is None:
         raise InventoryAcquisitionUnavailable("inventory acquisition batch has no eligible candidate")
-    first_created = existing_by_template_id.get(first_template_id)
+    try:
+        inventory_rows = add_items_to_inventory_locked(
+            manor,
+            acquisition_grants,
+            templates=acquisition_templates,
+        )
+    except InsufficientSpaceError as exc:
+        raise InventoryAcquisitionUnavailable("warehouse capacity is full") from exc
+
+    first_template = templates_by_id.get(first_template_id)
+    first_created = inventory_rows.get(first_template.key) if first_template is not None else None
     if first_created is None:
         raise InventoryAcquisitionUnavailable("inventory acquisition batch result disappeared")
     return first_created
@@ -4717,16 +4725,23 @@ def _build_v2_maintenance_plan_from_profile(
                         )
                         for kind in minimum_priority_kinds
                     )
-                    if not economic_recovery_mode:
-                        deferred_groups.append(
-                            _DeferredCandidateGroup(
-                                name="quality_fallback",
-                                mode="all",
-                                stage_names=quality_stage_order,
-                                cycle_filtered=True,
-                                excluded_coverage_kinds=frozenset(minimum_priority_kinds),
-                            )
+                    # Economic recovery is a priority, not an absolute
+                    # admission gate.  If the recovery/minimum stages produce
+                    # no candidate (for example, every focused building is at
+                    # its cap), keep the safe training fallback so a due cycle
+                    # cannot be committed as a false no-action.  Other quality
+                    # domains remain deferred while liquidity is tight; their
+                    # spend is not part of the recovery contract.
+                    deferred_groups.append(
+                        _DeferredCandidateGroup(
+                            name="quality_fallback",
+                            mode="all",
+                            stage_names=(("training",) if economic_recovery_mode else quality_stage_order),
+                            cycle_filtered=True,
+                            excluded_coverage_kinds=frozenset(minimum_priority_kinds),
+                            exclude_recovery=economic_recovery_mode,
                         )
+                    )
                 else:
                     deferred_groups.extend(
                         _DeferredCandidateGroup(
@@ -5569,6 +5584,63 @@ def _cycle_child_operation_id(parent_operation_id: str, *, kind: str, ordinal: i
     return f"vp-child-{digest}"
 
 
+def _cycle_request_marker(
+    *,
+    operation_id: str | None,
+    attempt_ordinal: int,
+    outcome: MaintenanceOutcome,
+) -> dict[str, Any] | None:
+    """Describe the caller request that produced the latest committed slot.
+
+    Ordinary policy-2 cycles intentionally do not use the Arena execution
+    receipt. Keeping this small marker in the cycle payload still lets a
+    caller recover from a response lost after the business transaction
+    committed, without treating an unrelated request as a replay.
+    """
+
+    normalized_operation_id = str(operation_id or "").strip()
+    if not normalized_operation_id:
+        return None
+    normalized_attempt_ordinal = int(attempt_ordinal)
+    if normalized_attempt_ordinal < 1:
+        raise V2MaintenanceError("cycle request attempt ordinal must be positive")
+    return {
+        "operation_id": normalized_operation_id[:64],
+        "attempt_ordinal": normalized_attempt_ordinal,
+        "outcome": outcome.value,
+    }
+
+
+def _cycle_allows_post_commit_retry(
+    cycle: BotMaintenanceCycle,
+    *,
+    operation_id: str | None,
+    attempt_ordinal: int,
+) -> bool:
+    """Return whether this request may recover a committed ordinary slot.
+
+    The retry must carry the same operation identity and a strictly newer
+    attempt ordinal than the last committed APPLIED request. This keeps the
+    normal slot pacing intact for unrelated workers and prevents a repeated
+    first attempt from silently consuming another slot.
+    """
+
+    if cycle.status != BotMaintenanceCycle.Status.OPEN or int(cycle.action_ordinal) < 1:
+        return False
+    marker = (cycle.payload or {}).get("last_request") if isinstance(cycle.payload, Mapping) else None
+    if not isinstance(marker, Mapping):
+        return False
+    normalized_operation_id = str(operation_id or "").strip()
+    if not normalized_operation_id or marker.get("operation_id") != normalized_operation_id:
+        return False
+    if marker.get("outcome") != MaintenanceOutcome.APPLIED.value:
+        return False
+    recorded_attempt_ordinal = marker.get("attempt_ordinal")
+    if isinstance(recorded_attempt_ordinal, bool) or not isinstance(recorded_attempt_ordinal, int):
+        return False
+    return int(attempt_ordinal) > recorded_attempt_ordinal
+
+
 def _record_ordinary_salary_batch_locked(
     *,
     profile: BotProfile,
@@ -5759,7 +5831,7 @@ def _run_ordinary_guest_healing_sweep_locked(
     return True
 
 
-@transaction.atomic
+@_atomic_if_requested
 @record_maintenance_stage(STAGE_ACTION_DOMAIN_WRITES)
 def execute_virtual_player_v2_maintenance_plan(
     plan: MaintenancePlan,
@@ -5770,32 +5842,39 @@ def execute_virtual_player_v2_maintenance_plan(
     _grain_template_resolved: bool = False,
     _scheduled_cycle_id: str | None = None,
     _run_ordinary_preamble: bool = False,
+    _locked_profile: BotProfile | None = None,
+    _manage_transaction: bool = True,
 ) -> MaintenanceResult:
     """Revalidate and atomically execute one frozen V2 maintenance plan."""
     if not isinstance(plan, MaintenancePlan):
         raise V2MaintenanceError("plan must be a MaintenancePlan")
-    try:
-        profile = profile_store.lock_maintained_profile(
-            plan.profile_id,
-            nowait=True,
-            expected_v2_routing=_routing_snapshot,
-            include_arena_reserve_guard=(plan.trigger_policy.trigger is MaintenanceTrigger.SCHEDULED),
-        )
-    except profile_store.ProfileLockUnavailable as exc:
-        raise _V2MaintenanceOutcomeError(
-            MaintenanceOutcome.BUSY,
-            "profile_busy",
-        ) from exc
-    if profile is None:
-        still_eligible = BotProfile.objects.filter(
-            pk=plan.profile_id,
-            engine_version=V2_MAINTENANCE_ENGINE_VERSION,
-            state__in=[BotProfile.State.ACTIVE, BotProfile.State.SLOWING],
-        ).exists()
-        raise _V2MaintenanceOutcomeError(
-            (MaintenanceOutcome.BUSY if still_eligible else MaintenanceOutcome.INELIGIBLE),
-            "profile_busy" if still_eligible else "profile_ineligible",
-        )
+    if _locked_profile is None:
+        try:
+            profile = profile_store.lock_maintained_profile(
+                plan.profile_id,
+                nowait=True,
+                expected_v2_routing=_routing_snapshot,
+                include_arena_reserve_guard=(plan.trigger_policy.trigger is MaintenanceTrigger.SCHEDULED),
+            )
+        except profile_store.ProfileLockUnavailable as exc:
+            raise _V2MaintenanceOutcomeError(
+                MaintenanceOutcome.BUSY,
+                "profile_busy",
+            ) from exc
+        if profile is None:
+            still_eligible = BotProfile.objects.filter(
+                pk=plan.profile_id,
+                engine_version=V2_MAINTENANCE_ENGINE_VERSION,
+                state__in=[BotProfile.State.ACTIVE, BotProfile.State.SLOWING],
+            ).exists()
+            raise _V2MaintenanceOutcomeError(
+                (MaintenanceOutcome.BUSY if still_eligible else MaintenanceOutcome.INELIGIBLE),
+                "profile_busy" if still_eligible else "profile_ineligible",
+            )
+    else:
+        profile = _locked_profile
+        if int(profile.id) != int(plan.profile_id):
+            raise V2MaintenanceError("locked profile does not match maintenance plan")
     locked_scheduled_cycle = _assert_locked_profile_matches_plan(
         profile,
         plan,
@@ -6839,6 +6918,7 @@ def _execute_virtual_player_v2_maintenance_with_receipt(
     arena_round_ordinal: int | None = None,
     arena_action_ordinal: int | None = None,
     arena_slot_attempt_ordinal: int | None = None,
+    locked_profile: BotProfile | None = None,
 ) -> MaintenanceResult:
     result = (
         execute_virtual_player_v2_maintenance_plan(
@@ -6848,6 +6928,8 @@ def _execute_virtual_player_v2_maintenance_with_receipt(
             _grain_template_resolved=grain_template_resolved,
             _scheduled_cycle_id=scheduled_cycle_id,
             _run_ordinary_preamble=run_ordinary_preamble,
+            _locked_profile=locked_profile,
+            _manage_transaction=False,
         )
         if policy_release is None
         else execute_virtual_player_v2_maintenance_plan(
@@ -6858,6 +6940,8 @@ def _execute_virtual_player_v2_maintenance_with_receipt(
             _grain_template_resolved=grain_template_resolved,
             _scheduled_cycle_id=scheduled_cycle_id,
             _run_ordinary_preamble=run_ordinary_preamble,
+            _locked_profile=locked_profile,
+            _manage_transaction=False,
         )
     )
     if result.outcome not in {
@@ -6900,12 +6984,13 @@ def _execute_virtual_player_v2_maintenance_with_receipt(
     return result
 
 
-@transaction.atomic
+@_atomic_if_requested
 @record_maintenance_stage(STAGE_CYCLE_ATTEMPT_RECEIPT)
 def _open_policy2_scheduled_cycle(
     profile_id: int,
     *,
     now: datetime,
+    _manage_transaction: bool = True,
 ) -> BotMaintenanceCycle:
     """Return the one open ordinary policy-2 cycle for a profile."""
 
@@ -7028,7 +7113,7 @@ def _cap_policy2_cycle_restart_schedule(profile: BotProfile, *, now: datetime) -
     profile.save(update_fields=["next_growth_at", "updated_at"])
 
 
-@transaction.atomic
+@_atomic_if_requested
 @record_maintenance_stage(STAGE_CYCLE_ATTEMPT_RECEIPT)
 def _record_policy2_scheduled_cycle_retry(
     cycle_id: str,
@@ -7092,7 +7177,7 @@ def _record_policy2_scheduled_cycle_retry(
     )
 
 
-@transaction.atomic
+@_atomic_if_requested
 @record_maintenance_stage(STAGE_CYCLE_ATTEMPT_RECEIPT)
 def _record_policy2_scheduled_cycle_result(
     cycle_id: str,
@@ -7100,6 +7185,8 @@ def _record_policy2_scheduled_cycle_result(
     *,
     plan: MaintenancePlan,
     now: datetime,
+    request_operation_id: str | None = None,
+    request_attempt_ordinal: int = 1,
 ) -> None:
     """Persist a committed slot and keep the profile due until slot 16.
 
@@ -7125,6 +7212,13 @@ def _record_policy2_scheduled_cycle_result(
         payload["action_attempt_counts"] = action_attempt_counts
         payload["last_minimum_evaluation_kind"] = attempted_coverage_kind
     payload["state_schema_version"] = _CYCLE_PAYLOAD_SCHEMA_VERSION
+    request_marker = _cycle_request_marker(
+        operation_id=request_operation_id,
+        attempt_ordinal=request_attempt_ordinal,
+        outcome=result.outcome,
+    )
+    if request_marker is not None:
+        payload["last_request"] = request_marker
     if result.outcome is MaintenanceOutcome.APPLIED:
         action_kind_counts = dict(
             _cycle_action_kind_counts_from_payload(
@@ -7677,6 +7771,353 @@ def _record_policy2_scheduled_cycle_result(
     )
 
 
+def _is_retryable_cycle_result_lock_error(error: OperationalError) -> bool:
+    """Return whether MySQL classified the failed transaction as transient."""
+
+    error_candidates = (error, getattr(error, "__cause__", None), getattr(error, "__context__", None))
+    for candidate in error_candidates:
+        error_args = getattr(candidate, "args", ())
+        if error_args and isinstance(error_args[0], int) and int(error_args[0]) in {1205, 1213}:
+            return True
+    return False
+
+
+def _record_policy2_scheduled_cycle_result_with_retry(
+    cycle_id: str,
+    result: MaintenanceResult,
+    *,
+    plan: MaintenancePlan,
+    now: datetime,
+    request_operation_id: str | None = None,
+    request_attempt_ordinal: int = 1,
+) -> None:
+    """Retry only a rolled-back MySQL lock transaction at the receipt boundary.
+
+    The decorated recorder owns one transaction per invocation.  Calling it
+    again only after an exception has escaped that wrapper guarantees that a
+    retry never reuses a transaction marked for rollback.  The durable attempt
+    and execution records are idempotent, so a retry cannot create a second
+    business action if the first transaction had already committed.
+    """
+
+    for attempt in range(_CYCLE_RESULT_COMMIT_MAX_ATTEMPTS):
+        try:
+            _record_policy2_scheduled_cycle_result(
+                cycle_id,
+                result,
+                plan=plan,
+                now=now,
+                request_operation_id=request_operation_id,
+                request_attempt_ordinal=request_attempt_ordinal,
+            )
+            return
+        except OperationalError as exc:
+            if not _is_retryable_cycle_result_lock_error(exc):
+                raise
+            if attempt + 1 >= _CYCLE_RESULT_COMMIT_MAX_ATTEMPTS:
+                raise
+            retry_delay = _CYCLE_RESULT_COMMIT_RETRY_DELAYS_SECONDS[attempt]
+            logger.warning(
+                "Virtual player cycle result hit a transient database lock; retrying",
+                extra={
+                    "event": "virtual_player_cycle_result_lock_retry",
+                    "cycle_id": str(cycle_id),
+                    "attempt": attempt + 1,
+                    "error_code": int(exc.args[0]) if exc.args and isinstance(exc.args[0], int) else None,
+                    "retry_delay_seconds": retry_delay,
+                },
+            )
+            sleep(retry_delay)
+
+
+def _run_v2_maintenance_attempt(
+    *,
+    profile_id: int,
+    trigger_policy: MaintenanceTriggerPolicy,
+    policy_version: int | None,
+    request_operation_id: str | None,
+    request_attempt_ordinal: int,
+    now: datetime | None,
+    policy_release: BotPolicyRelease | None,
+    grain_template: ItemTemplate | None,
+    grain_template_resolved: bool,
+    receipt_context: _MaintenanceExecutionReceiptContext | None,
+    admin_requires_due: bool | None,
+    admin_schedule_disposition: MaintenanceScheduleDisposition | None,
+    minimum_guest_count: int | None,
+    minimum_guest_level: int | None,
+    guest_rarity_cap: str | None,
+    max_guest_level_step: int | None,
+    arena_growth_objective: ArenaGrowthObjective | None,
+    frozen_control_snapshot_digest: str | None,
+    routing_snapshot: RuntimeRoutingSnapshot | None,
+    external_reconciliation_prechecked: bool,
+    planning_snapshot: _MaintenancePlanningSnapshot | None,
+    arena_excluded_training_guest_ids: tuple[int, ...],
+    arena_member_id: int | None,
+    arena_round_ordinal: int | None,
+    arena_action_ordinal: int | None,
+    arena_slot_attempt_ordinal: int | None,
+) -> tuple[BotMaintenanceCycle | None, MaintenancePlan | None, MaintenanceResult]:
+    """Open, plan and execute one maintenance attempt.
+
+    Ordinary policy-2 cycles are opened by the caller inside one transaction
+    that also contains this function.  Keeping the phase together prevents a
+    failed domain write from publishing a cycle reservation that the next
+    worker could mistake for a committed schedule advance.
+    """
+
+    scheduled_cycle: BotMaintenanceCycle | None = None
+    scheduled_cycle_slot_due = False
+    scheduled_cycle_pacing: ArchetypePacing | None = None
+    scheduled_cycle_action_kind_counts: tuple[tuple[str, int], ...] = ()
+    scheduled_cycle_action_attempt_counts: tuple[tuple[str, int], ...] = ()
+    scheduled_cycle_coverage_debt: tuple[tuple[str, int], ...] = ()
+    scheduled_cycle_guest_count_target: int | None = None
+    locked_profile: BotProfile | None = None
+    if trigger_policy.trigger is MaintenanceTrigger.SCHEDULED and int(policy_version or 0) == 2:
+        try:
+            locked_profile = profile_store.lock_maintained_profile(
+                profile_id,
+                nowait=True,
+                expected_v2_routing=routing_snapshot,
+                include_arena_reserve_guard=True,
+            )
+        except profile_store.ProfileLockUnavailable:
+            return (
+                None,
+                None,
+                _uncommitted_maintenance_result(
+                    profile_id=profile_id,
+                    trigger_policy=trigger_policy,
+                    outcome=MaintenanceOutcome.BUSY,
+                    reason="profile_busy",
+                ),
+            )
+        if locked_profile is None:
+            still_eligible = BotProfile.objects.filter(
+                pk=profile_id,
+                engine_version=V2_MAINTENANCE_ENGINE_VERSION,
+                state__in=[BotProfile.State.ACTIVE, BotProfile.State.SLOWING],
+            ).exists()
+            return (
+                None,
+                None,
+                _uncommitted_maintenance_result(
+                    profile_id=profile_id,
+                    trigger_policy=trigger_policy,
+                    outcome=(MaintenanceOutcome.BUSY if still_eligible else MaintenanceOutcome.INELIGIBLE),
+                    reason="profile_busy" if still_eligible else "profile_ineligible",
+                ),
+            )
+        try:
+            scheduled_cycle = _open_policy2_scheduled_cycle(
+                profile_id,
+                now=(now or timezone.now()),
+                _manage_transaction=False,
+            )
+        except (KeyError, TypeError, ValueError, V2MaintenanceError):
+            logger.warning(
+                "Virtual player V2 scheduled cycle payload could not be opened",
+                extra={"profile_id": int(profile_id), "reason": "cycle_payload_invalid"},
+                exc_info=True,
+            )
+            return (
+                scheduled_cycle,
+                None,
+                _uncommitted_maintenance_result(
+                    profile_id=profile_id,
+                    trigger_policy=trigger_policy,
+                    outcome=MaintenanceOutcome.PAUSED,
+                    reason="cycle_payload_invalid",
+                ),
+            )
+        scheduled_cycle_slot_due = bool(
+            scheduled_cycle.next_slot_due_at is not None and scheduled_cycle.next_slot_due_at <= (now or timezone.now())
+        )
+        if not scheduled_cycle_slot_due and _cycle_allows_post_commit_retry(
+            scheduled_cycle,
+            operation_id=request_operation_id,
+            attempt_ordinal=request_attempt_ordinal,
+        ):
+            recovery_now = now or timezone.now()
+            scheduled_cycle.next_slot_due_at = recovery_now
+            scheduled_cycle.next_decision_at = recovery_now
+            scheduled_cycle.current_action_state = BotMaintenanceCycle.ActionState.PLANNING
+            scheduled_cycle.save(
+                update_fields=[
+                    "next_slot_due_at",
+                    "next_decision_at",
+                    "current_action_state",
+                    "updated_at",
+                ]
+            )
+            scheduled_cycle_slot_due = True
+    if scheduled_cycle is not None and not scheduled_cycle_slot_due:
+        return (
+            scheduled_cycle,
+            None,
+            _uncommitted_maintenance_result(
+                profile_id=profile_id,
+                trigger_policy=trigger_policy,
+                outcome=MaintenanceOutcome.INELIGIBLE,
+                reason="scheduled_cycle_slot_not_due",
+            ),
+        )
+
+    candidate_exclusions: tuple[str, ...] = ()
+    plan: MaintenancePlan | None = None
+    try:
+        if scheduled_cycle is not None:
+            try:
+                cycle_payload = scheduled_cycle.payload if isinstance(scheduled_cycle.payload, Mapping) else {}
+                scheduled_cycle_pacing = pacing_from_cycle_payload(cycle_payload)
+                scheduled_cycle_action_kind_counts = _cycle_action_kind_counts_from_payload(
+                    cycle_payload,
+                )
+                scheduled_cycle_action_attempt_counts = _cycle_action_attempt_counts_from_payload(
+                    cycle_payload,
+                )
+                if dict(scheduled_cycle_action_attempt_counts) != dict(
+                    _normalize_cycle_action_kind_counts(cycle_payload.get("action_attempt_counts"))
+                ):
+                    raise V2MaintenanceError("cycle action attempt counts are below submitted action counts")
+                scheduled_cycle_coverage_debt = _normalize_cycle_coverage_debt(cycle_payload.get("coverage_debt"))
+                scheduled_cycle_guest_count_target = _normalize_ordinary_guest_count_target(
+                    cycle_payload.get("ordinary_guest_count_target")
+                )
+            except (V2MaintenanceError, ValueError) as exc:
+                raise _V2MaintenanceOutcomeError(
+                    MaintenanceOutcome.PAUSED,
+                    "cycle_payload_invalid",
+                ) from exc
+        while True:
+            plan = build_virtual_player_v2_maintenance_plan(
+                profile_id,
+                trigger=trigger_policy.trigger,
+                now=now,
+                admin_requires_due=admin_requires_due,
+                admin_schedule_disposition=admin_schedule_disposition,
+                minimum_guest_count=minimum_guest_count,
+                minimum_guest_level=minimum_guest_level,
+                guest_rarity_cap=guest_rarity_cap,
+                max_guest_level_step=max_guest_level_step,
+                arena_growth_objective=arena_growth_objective,
+                _arena_excluded_training_guest_ids=arena_excluded_training_guest_ids,
+                _cycle_covered_action_kinds=(
+                    () if scheduled_cycle is None else tuple(scheduled_cycle.covered_action_kinds or [])
+                ),
+                _cycle_action_kind_counts=scheduled_cycle_action_kind_counts,
+                _cycle_action_attempt_counts=scheduled_cycle_action_attempt_counts,
+                _cycle_coverage_debt=scheduled_cycle_coverage_debt,
+                _cycle_pacing=scheduled_cycle_pacing,
+                _cycle_guest_count_target=scheduled_cycle_guest_count_target,
+                _cycle_guest_count_target_frozen=(scheduled_cycle is not None),
+                _candidate_exclusions=candidate_exclusions,
+                _scheduled_cycle_slot_due=scheduled_cycle_slot_due,
+                _routing_snapshot=routing_snapshot,
+                _external_reconciliation_prechecked=external_reconciliation_prechecked,
+                _planning_snapshot=planning_snapshot,
+                _frozen_control_snapshot_digest=frozen_control_snapshot_digest,
+            )
+            if receipt_context is not None:
+                _persist_arena_training_assignment_from_plan(
+                    plan,
+                    operation_id=receipt_context.operation_id,
+                    member_id=arena_member_id,
+                    round_ordinal=arena_round_ordinal,
+                    action_ordinal_in_round=arena_action_ordinal,
+                )
+            try:
+                result = (
+                    (
+                        execute_virtual_player_v2_maintenance_plan(
+                            plan,
+                            _policy_release=policy_release,
+                            _routing_snapshot=routing_snapshot,
+                            _grain_template=grain_template,
+                            _grain_template_resolved=grain_template_resolved,
+                            _scheduled_cycle_id=(None if scheduled_cycle is None else scheduled_cycle.cycle_id),
+                            _locked_profile=locked_profile,
+                            # Policy-2 scheduled cycles already own the outer
+                            # profile/cycle transaction.  Other triggers must
+                            # retain the executor's public atomic boundary.
+                            _manage_transaction=(scheduled_cycle is None),
+                            _run_ordinary_preamble=(
+                                scheduled_cycle is not None and int(scheduled_cycle.action_ordinal) == 0
+                            ),
+                        )
+                    )
+                    if receipt_context is None
+                    else _execute_virtual_player_v2_maintenance_with_receipt(
+                        plan,
+                        context=receipt_context,
+                        policy_release=policy_release,
+                        routing_snapshot=routing_snapshot,
+                        grain_template=grain_template,
+                        grain_template_resolved=grain_template_resolved,
+                        scheduled_cycle_id=(None if scheduled_cycle is None else scheduled_cycle.cycle_id),
+                        locked_profile=locked_profile,
+                        run_ordinary_preamble=(
+                            scheduled_cycle is not None and int(scheduled_cycle.action_ordinal) == 0
+                        ),
+                        arena_member_id=arena_member_id,
+                        arena_round_ordinal=arena_round_ordinal,
+                        arena_action_ordinal=arena_action_ordinal,
+                        arena_slot_attempt_ordinal=arena_slot_attempt_ordinal,
+                    )
+                )
+            except _V2MaintenanceCandidateRejected as exc:
+                if not (
+                    scheduled_cycle is not None
+                    and plan.policy_version == 2
+                    and trigger_policy.trigger is MaintenanceTrigger.SCHEDULED
+                ):
+                    raise
+                next_exclusions = [*candidate_exclusions, exc.business_key]
+                if len(next_exclusions) >= 6:
+                    # The next planning pass produces a committed NO_ACTION
+                    # from the same frozen snapshot without trying a seventh
+                    # candidate.  Keep the rejected identities in the digest
+                    # so revalidation cannot silently revive one.
+                    next_exclusions.extend(assessment.intent.business_key for assessment in plan.candidate_assessments)
+                candidate_exclusions = tuple(dict.fromkeys(next_exclusions))
+                continue
+            break
+    except _V2MaintenanceOutcomeError as exc:
+        result = _uncommitted_maintenance_result(
+            profile_id=profile_id,
+            trigger_policy=trigger_policy,
+            outcome=exc.outcome,
+            reason=exc.reason,
+        )
+    if (
+        scheduled_cycle is not None
+        and plan is not None
+        and result.outcome in {MaintenanceOutcome.APPLIED, MaintenanceOutcome.NO_ACTION}
+    ):
+        # Keep the durable slot transition in the same transaction as the
+        # domain write.  Releasing the profile lock before this update would
+        # let a second worker observe the old due slot and repeat the action.
+        _record_policy2_scheduled_cycle_result(
+            scheduled_cycle.cycle_id,
+            result,
+            plan=plan,
+            now=(now or timezone.now()),
+            request_operation_id=request_operation_id,
+            request_attempt_ordinal=request_attempt_ordinal,
+            _manage_transaction=False,
+        )
+    elif scheduled_cycle is not None and result.outcome is MaintenanceOutcome.BUSY:
+        _record_policy2_scheduled_cycle_retry(
+            scheduled_cycle.cycle_id,
+            result,
+            now=(now or timezone.now()),
+            _manage_transaction=False,
+        )
+    return scheduled_cycle, plan, result
+
+
 def maintain_virtual_player_v2(
     profile_id: int,
     *,
@@ -7761,98 +8202,33 @@ def maintain_virtual_player_v2(
             request_digest_schema=int(_execution_request_digest_schema),
             safety_started_at=safety_attempt.started_at,
         )
-    scheduled_cycle: BotMaintenanceCycle | None = None
-    scheduled_cycle_slot_due = False
-    scheduled_cycle_pacing: ArchetypePacing | None = None
-    scheduled_cycle_action_kind_counts: tuple[tuple[str, int], ...] = ()
-    scheduled_cycle_action_attempt_counts: tuple[tuple[str, int], ...] = ()
-    scheduled_cycle_coverage_debt: tuple[tuple[str, int], ...] = ()
-    scheduled_cycle_guest_count_target: int | None = None
-    if trigger_policy.trigger is MaintenanceTrigger.SCHEDULED:
-        policy_version = (
-            _planning_snapshot.profile.policy_version
-            if _planning_snapshot is not None
-            else BotProfile.objects.filter(pk=profile_id).values_list("policy_version", flat=True).first()
+    policy_version = (
+        _planning_snapshot.profile.policy_version
+        if _planning_snapshot is not None
+        else (
+            BotProfile.objects.filter(pk=profile_id).values_list("policy_version", flat=True).first()
+            if trigger_policy.trigger is MaintenanceTrigger.SCHEDULED
+            else None
         )
-        if int(policy_version or 0) == 2:
-            try:
-                scheduled_cycle = _open_policy2_scheduled_cycle(
-                    profile_id,
-                    now=(now or timezone.now()),
-                )
-            except DatabaseError:
-                _finish_or_defer_safety_attempt(
-                    safety_attempt,
-                    result=MaintenanceAttemptResult.COMMIT_UNCERTAIN,
-                    terminal_batch=_safety_terminal_batch,
-                )
-                raise
-            except (KeyError, TypeError, ValueError, V2MaintenanceError):
-                logger.warning(
-                    "Virtual player V2 scheduled cycle payload could not be opened",
-                    extra={"profile_id": int(profile_id), "reason": "cycle_payload_invalid"},
-                    exc_info=True,
-                )
-                result = _uncommitted_maintenance_result(
-                    profile_id=profile_id,
-                    trigger_policy=trigger_policy,
-                    outcome=MaintenanceOutcome.PAUSED,
-                    reason="cycle_payload_invalid",
-                )
-                _finish_or_defer_safety_attempt(
-                    safety_attempt,
-                    result=result,
-                    terminal_batch=_safety_terminal_batch,
-                )
-                return result
-            scheduled_cycle_slot_due = bool(
-                scheduled_cycle.next_slot_due_at is not None
-                and scheduled_cycle.next_slot_due_at <= (now or timezone.now())
-            )
-    if scheduled_cycle is not None and not scheduled_cycle_slot_due:
-        result = _uncommitted_maintenance_result(
-            profile_id=profile_id,
-            trigger_policy=trigger_policy,
-            outcome=MaintenanceOutcome.INELIGIBLE,
-            reason="scheduled_cycle_slot_not_due",
-        )
-        _finish_or_defer_safety_attempt(
-            safety_attempt,
-            result=result,
-            terminal_batch=_safety_terminal_batch,
-        )
-        return result
-    candidate_exclusions: tuple[str, ...] = ()
-    plan: MaintenancePlan | None = None
+    )
+    cycle_transaction = (
+        transaction.atomic()
+        if trigger_policy.trigger is MaintenanceTrigger.SCHEDULED and int(policy_version or 0) == 2
+        else nullcontext()
+    )
     try:
-        if scheduled_cycle is not None:
-            try:
-                cycle_payload = scheduled_cycle.payload if isinstance(scheduled_cycle.payload, Mapping) else {}
-                scheduled_cycle_pacing = pacing_from_cycle_payload(cycle_payload)
-                scheduled_cycle_action_kind_counts = _cycle_action_kind_counts_from_payload(
-                    cycle_payload,
-                )
-                scheduled_cycle_action_attempt_counts = _cycle_action_attempt_counts_from_payload(
-                    cycle_payload,
-                )
-                if dict(scheduled_cycle_action_attempt_counts) != dict(
-                    _normalize_cycle_action_kind_counts(cycle_payload.get("action_attempt_counts"))
-                ):
-                    raise V2MaintenanceError("cycle action attempt counts are below submitted action counts")
-                scheduled_cycle_coverage_debt = _normalize_cycle_coverage_debt(cycle_payload.get("coverage_debt"))
-                scheduled_cycle_guest_count_target = _normalize_ordinary_guest_count_target(
-                    cycle_payload.get("ordinary_guest_count_target")
-                )
-            except (V2MaintenanceError, ValueError) as exc:
-                raise _V2MaintenanceOutcomeError(
-                    MaintenanceOutcome.PAUSED,
-                    "cycle_payload_invalid",
-                ) from exc
-        while True:
-            plan = build_virtual_player_v2_maintenance_plan(
-                profile_id,
-                trigger=trigger_policy.trigger,
+        with cycle_transaction:
+            scheduled_cycle, plan, result = _run_v2_maintenance_attempt(
+                profile_id=profile_id,
+                trigger_policy=trigger_policy,
+                policy_version=policy_version,
+                request_operation_id=safety_attempt.operation_id,
+                request_attempt_ordinal=safety_attempt.attempt_ordinal,
                 now=now,
+                policy_release=policy_release,
+                grain_template=grain_template,
+                grain_template_resolved=grain_template_resolved,
+                receipt_context=receipt_context,
                 admin_requires_due=admin_requires_due,
                 admin_schedule_disposition=admin_schedule_disposition,
                 minimum_guest_count=minimum_guest_count,
@@ -7860,99 +8236,16 @@ def maintain_virtual_player_v2(
                 guest_rarity_cap=guest_rarity_cap,
                 max_guest_level_step=max_guest_level_step,
                 arena_growth_objective=arena_growth_objective,
-                _arena_excluded_training_guest_ids=_arena_excluded_training_guest_ids,
-                _cycle_covered_action_kinds=(
-                    () if scheduled_cycle is None else tuple(scheduled_cycle.covered_action_kinds or [])
-                ),
-                _cycle_action_kind_counts=scheduled_cycle_action_kind_counts,
-                _cycle_action_attempt_counts=scheduled_cycle_action_attempt_counts,
-                _cycle_coverage_debt=scheduled_cycle_coverage_debt,
-                _cycle_pacing=scheduled_cycle_pacing,
-                _cycle_guest_count_target=scheduled_cycle_guest_count_target,
-                _cycle_guest_count_target_frozen=(scheduled_cycle is not None),
-                _candidate_exclusions=candidate_exclusions,
-                _scheduled_cycle_slot_due=scheduled_cycle_slot_due,
-                _routing_snapshot=_routing_snapshot,
-                _external_reconciliation_prechecked=(_external_reconciliation_prechecked),
-                _planning_snapshot=_planning_snapshot,
-                _frozen_control_snapshot_digest=_frozen_control_snapshot_digest,
+                frozen_control_snapshot_digest=_frozen_control_snapshot_digest,
+                routing_snapshot=_routing_snapshot,
+                external_reconciliation_prechecked=_external_reconciliation_prechecked,
+                planning_snapshot=_planning_snapshot,
+                arena_excluded_training_guest_ids=_arena_excluded_training_guest_ids,
+                arena_member_id=_arena_member_id,
+                arena_round_ordinal=_arena_round_ordinal,
+                arena_action_ordinal=_arena_action_ordinal,
+                arena_slot_attempt_ordinal=_arena_slot_attempt_ordinal,
             )
-            if receipt_context is not None:
-                _persist_arena_training_assignment_from_plan(
-                    plan,
-                    operation_id=receipt_context.operation_id,
-                    member_id=_arena_member_id,
-                    round_ordinal=_arena_round_ordinal,
-                    action_ordinal_in_round=_arena_action_ordinal,
-                )
-            try:
-                result = (
-                    (
-                        execute_virtual_player_v2_maintenance_plan(
-                            plan,
-                            _routing_snapshot=_routing_snapshot,
-                            _grain_template=grain_template,
-                            _grain_template_resolved=grain_template_resolved,
-                            _scheduled_cycle_id=(None if scheduled_cycle is None else scheduled_cycle.cycle_id),
-                            _run_ordinary_preamble=(
-                                scheduled_cycle is not None and int(scheduled_cycle.action_ordinal) == 0
-                            ),
-                        )
-                        if policy_release is None
-                        else execute_virtual_player_v2_maintenance_plan(
-                            plan,
-                            _policy_release=policy_release,
-                            _routing_snapshot=_routing_snapshot,
-                            _grain_template=grain_template,
-                            _grain_template_resolved=grain_template_resolved,
-                            _scheduled_cycle_id=(None if scheduled_cycle is None else scheduled_cycle.cycle_id),
-                            _run_ordinary_preamble=(
-                                scheduled_cycle is not None and int(scheduled_cycle.action_ordinal) == 0
-                            ),
-                        )
-                    )
-                    if receipt_context is None
-                    else _execute_virtual_player_v2_maintenance_with_receipt(
-                        plan,
-                        context=receipt_context,
-                        policy_release=policy_release,
-                        routing_snapshot=_routing_snapshot,
-                        grain_template=grain_template,
-                        grain_template_resolved=grain_template_resolved,
-                        scheduled_cycle_id=(None if scheduled_cycle is None else scheduled_cycle.cycle_id),
-                        run_ordinary_preamble=(
-                            scheduled_cycle is not None and int(scheduled_cycle.action_ordinal) == 0
-                        ),
-                        arena_member_id=_arena_member_id,
-                        arena_round_ordinal=_arena_round_ordinal,
-                        arena_action_ordinal=_arena_action_ordinal,
-                        arena_slot_attempt_ordinal=_arena_slot_attempt_ordinal,
-                    )
-                )
-            except _V2MaintenanceCandidateRejected as exc:
-                if not (
-                    scheduled_cycle is not None
-                    and plan.policy_version == 2
-                    and trigger_policy.trigger is MaintenanceTrigger.SCHEDULED
-                ):
-                    raise
-                next_exclusions = [*candidate_exclusions, exc.business_key]
-                if len(next_exclusions) >= 6:
-                    # The next planning pass produces a committed NO_ACTION
-                    # from the same frozen snapshot without trying a seventh
-                    # candidate.  Keep the rejected identities in the digest
-                    # so revalidation cannot silently revive one.
-                    next_exclusions.extend(assessment.intent.business_key for assessment in plan.candidate_assessments)
-                candidate_exclusions = tuple(dict.fromkeys(next_exclusions))
-                continue
-            break
-    except _V2MaintenanceOutcomeError as exc:
-        result = _uncommitted_maintenance_result(
-            profile_id=profile_id,
-            trigger_policy=trigger_policy,
-            outcome=exc.outcome,
-            reason=exc.reason,
-        )
     except DatabaseError:
         _finish_or_defer_safety_attempt(
             safety_attempt,
@@ -7972,23 +8265,6 @@ def maintain_virtual_player_v2(
         result=result,
         terminal_batch=_safety_terminal_batch,
     )
-    if (
-        scheduled_cycle is not None
-        and plan is not None
-        and result.outcome in {MaintenanceOutcome.APPLIED, MaintenanceOutcome.NO_ACTION}
-    ):
-        _record_policy2_scheduled_cycle_result(
-            scheduled_cycle.cycle_id,
-            result,
-            plan=plan,
-            now=(now or timezone.now()),
-        )
-    elif scheduled_cycle is not None and result.outcome is MaintenanceOutcome.BUSY:
-        _record_policy2_scheduled_cycle_retry(
-            scheduled_cycle.cycle_id,
-            result,
-            now=(now or timezone.now()),
-        )
     return result
 
 

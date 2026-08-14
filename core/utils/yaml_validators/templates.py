@@ -149,11 +149,32 @@ def validate_building_templates(data: dict, *, file: str = "building_templates.y
                 _check_type(val, (int, float), result=result, file=file, path=path, field_name=num_field)
                 _check_positive(val, result=result, file=file, path=path, field_name=num_field)
 
-        for float_field in ("rate_growth", "time_growth", "cost_growth"):
+        for float_field in ("rate_growth", "time_growth", "cost_growth", "time_curve", "cost_curve"):
             val = bld.get(float_field)
             if val is not None:
                 _check_type(val, (int, float), result=result, file=file, path=path, field_name=float_field)
                 _check_positive(val, result=result, file=file, path=path, field_name=float_field)
+                if float_field in {"time_curve", "cost_curve"} and isinstance(val, (int, float)) and val < 1:
+                    result.add(file, f"{path}.{float_field}", "must be greater than or equal to 1")
+
+        upgrade_time_budget = bld.get("upgrade_time_budget")
+        if upgrade_time_budget is not None:
+            _check_type(
+                upgrade_time_budget,
+                (int, float),
+                result=result,
+                file=file,
+                path=path,
+                field_name="upgrade_time_budget",
+            )
+            _check_positive(
+                upgrade_time_budget,
+                result=result,
+                file=file,
+                path=path,
+                field_name="upgrade_time_budget",
+                allow_zero=False,
+            )
 
         base_cost = bld.get("base_cost")
         if base_cost is not None:
@@ -165,6 +186,29 @@ def validate_building_templates(data: dict, *, file: str = "building_templates.y
                         result.add(
                             file, f"{path}.base_cost.{cost_key}", f"expected number, got {type(cost_val).__name__}"
                         )
+
+        upgrade_cost_budget = bld.get("upgrade_cost_budget")
+        if upgrade_cost_budget is not None:
+            if not isinstance(upgrade_cost_budget, dict):
+                result.add(file, path, "field 'upgrade_cost_budget' expected a mapping")
+            else:
+                for cost_key, cost_val in upgrade_cost_budget.items():
+                    budget_path = f"{path}.upgrade_cost_budget.{cost_key}"
+                    if not isinstance(cost_val, (int, float)):
+                        result.add(
+                            file,
+                            budget_path,
+                            f"expected number, got {type(cost_val).__name__}",
+                        )
+                        continue
+                    _check_positive(
+                        cost_val,
+                        result=result,
+                        file=file,
+                        path=budget_path,
+                        field_name=str(cost_key),
+                        allow_zero=False,
+                    )
 
     # Validate categories section if present
     categories = data.get("categories")

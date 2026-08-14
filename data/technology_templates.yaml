@@ -1,5 +1,17 @@
 # 技术系统配置
 # 分类: basic(基本技术), martial(武艺技术), production(生产技术)
+# 升级预算字段按“全等级累计预算 + 逐级曲线”计算：
+# upgrade_*_budget 为从 0 级升至满级的累计值，*_curve 只控制逐级倾斜，
+# 不再用固定的末级/首级倍数倒推初始价格；当前所有技术统一使用预算曲线。
+
+upgrade_profiles:
+  # 武艺技术统一按 10 天 / 200 万银两的满级预算执行；不同最高等级
+  # 仍由同一套预算公式自动分摊，避免为 5/7/10 级分别硬编码价格。
+  martial:
+    upgrade_time_budget: 864000
+    time_curve: 1.08
+    upgrade_cost_budget: 2000000
+    cost_curve: 1.20
 
 categories:
   - key: basic
@@ -20,8 +32,12 @@ technologies:
     description: 探子眼神更毒辣，敌人想偷窥你？门都没有！升级提升侦察和反侦察能力
     effect_type: scout_bonus
     effect_per_level: 0.05
-    max_level: 20
+    max_level: 200
     base_cost: 8000
+    upgrade_time_budget: 15552000
+    time_curve: 1.01
+    upgrade_cost_budget: 200000000
+    cost_curve: 1.01
 
   - key: march_art
     name: 行军术
@@ -31,6 +47,10 @@ technologies:
     effect_per_level: 0.10
     max_level: 10
     base_cost: 8000
+    upgrade_time_budget: 1728000
+    time_curve: 1.08
+    upgrade_cost_budget: 10000000
+    cost_curve: 1.20
 
   - key: architecture
     name: 建筑学
@@ -40,6 +60,10 @@ technologies:
     effect_per_level: 0.05
     max_level: 10
     base_cost: 8000
+    upgrade_time_budget: 864000
+    time_curve: 1.08
+    upgrade_cost_budget: 3000000
+    cost_curve: 1.20
 
   - key: horsemanship
     name: 驯马术
@@ -49,6 +73,10 @@ technologies:
     effect_per_level: 100
     max_level: 10
     base_cost: 8000
+    upgrade_time_budget: 864000
+    time_curve: 1.08
+    upgrade_cost_budget: 1000000
+    cost_curve: 1.20
 
   - key: animal_husbandry
     name: 养殖术
@@ -58,6 +86,10 @@ technologies:
     effect_per_level: 50
     max_level: 10
     base_cost: 8000
+    upgrade_time_budget: 864000
+    time_curve: 1.08
+    upgrade_cost_budget: 1000000
+    cost_curve: 1.20
 
   - key: smelting
     name: 冶炼技
@@ -67,6 +99,10 @@ technologies:
     effect_per_level: 100
     max_level: 10
     base_cost: 8000
+    upgrade_time_budget: 864000
+    time_curve: 1.08
+    upgrade_cost_budget: 1000000
+    cost_curve: 1.20
 
   - key: forging
     name: 锻造技
@@ -76,6 +112,10 @@ technologies:
     effect_per_level: 50
     max_level: 10
     base_cost: 8000
+    upgrade_time_budget: 864000
+    time_curve: 1.08
+    upgrade_cost_budget: 1000000
+    cost_curve: 1.20
 
   # ==================== 武艺技术 - 刀类 ====================
   - key: dao_attack
@@ -388,7 +428,10 @@ technologies:
     effect_per_level: 0.05
     max_level: 30
     base_cost: 6400
-    cost_growth: 1.25
+    upgrade_time_budget: 1728000
+    time_curve: 1.02
+    upgrade_cost_budget: 8000000
+    cost_curve: 1.02
 
   - key: dao_recruit
     name: 造兵术-刀

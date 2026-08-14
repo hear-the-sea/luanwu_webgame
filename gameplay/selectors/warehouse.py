@@ -6,7 +6,7 @@ from guests.models import GuestStatus
 
 from ..models import InventoryItem, ItemTemplate
 from ..models.items import LEGACY_TOOL_EFFECT_TYPES, get_item_effect_type_label
-from ..services.inventory.core import get_warehouse_grain_quantity
+from ..services.inventory.core import get_warehouse_grain_quantity, get_warehouse_used_space
 from ..services.inventory.guest_item_selector import build_guest_item_selection_context
 from ..services.manor.treasury import get_treasury_capacity, get_treasury_deposit_block_reason, get_treasury_used_space
 
@@ -95,6 +95,21 @@ def get_warehouse_context(manor, current_tab: str, selected_category: str, page:
         "frozen_gold_bars": get_frozen_gold_bars(manor),
         "current_tab": current_tab,
     }
+
+    warehouse_capacity = max(0, int(getattr(manor, "storage_capacity", 0) or 0))
+    warehouse_used = get_warehouse_used_space(manor)
+    warehouse_delta = warehouse_capacity - warehouse_used
+    context.update(
+        {
+            "warehouse_capacity": warehouse_capacity,
+            "warehouse_used": warehouse_used,
+            "warehouse_remaining": max(0, warehouse_delta),
+            "warehouse_over_capacity": max(0, -warehouse_delta),
+            "warehouse_usage_percent": (
+                min(100, int(warehouse_used * 100 / warehouse_capacity)) if warehouse_capacity > 0 else 0
+            ),
+        }
+    )
 
     # Load eligible guests once, then derive specific lists in memory to avoid repeated DB queries.
     eligible_guests = list(

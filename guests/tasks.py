@@ -253,6 +253,12 @@ def complete_guest_recruitment(self, recruitment_id: int) -> str:
             return "not_found"
 
         now = timezone.now()
+        # Immediate virtual-player recruitment is persisted as COMPLETED with
+        # a zero-duration timestamp.  Status is the durable source of truth;
+        # do not reschedule a completion task merely because a caller supplied
+        # a future logical timestamp while settling the batch.
+        if getattr(recruitment, "source", None) == "virtual" and getattr(recruitment, "status", None) == "completed":
+            return "skipped"
         if recruitment.complete_at and recruitment.complete_at > now:
             remaining = math.ceil((recruitment.complete_at - now).total_seconds())
             if remaining > 0:

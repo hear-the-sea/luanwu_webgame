@@ -23,7 +23,7 @@ def test_city_defense_building_category_is_after_special():
     assert categories[categories.index("special") + 1] == "city_defense"
 
 
-def test_wall_and_arrow_tower_templates_use_late_heavy_upgrade_curve():
+def test_wall_and_arrow_tower_templates_use_budgeted_defense_upgrade_curve():
     payload = load_yaml_data(
         Path("data/building_templates.yaml"),
         logger=logging.getLogger(__name__),
@@ -45,5 +45,13 @@ def test_wall_and_arrow_tower_templates_use_late_heavy_upgrade_curve():
     assert arrow_tower["base_upgrade_time"] == 1200
     assert wall["time_growth"] == 1.85
     assert arrow_tower["time_growth"] == 1.85
+    assert wall["upgrade_time_budget"] == 864000
+    assert arrow_tower["upgrade_time_budget"] == 864000
+    assert wall["time_curve"] == 1.08
+    assert arrow_tower["time_curve"] == 1.08
+    assert wall["upgrade_cost_budget"] == {"silver": 1000000}
+    assert arrow_tower["upgrade_cost_budget"] == {"silver": 1000000}
+    assert wall["cost_curve"] == 1.10
+    assert arrow_tower["cost_curve"] == 1.10
     assert BUILDING_MAX_LEVELS[BUILDING_KEYS.WALL] == 10
     assert BUILDING_MAX_LEVELS[BUILDING_KEYS.ARROW_TOWER] == 10

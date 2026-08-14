@@ -51,6 +51,7 @@
 - 候选池、稀有度概率、候选数量和合法门客过滤复用真实玩家规则；`GuestRecruitment.pool_snapshot` 在启动时冻结卡池条目、可招募模板 ID 和稀有度分布，完成时不重新读取真人概率。不得使用新虚拟玩家阶段稀有度硬上限。
 - 招募消耗实际持久化卡池配置中的正常银两、时长和候选数，不能调用会扣行动力且限制同庄园并发数的真人提交入口；银两/工资 runway 不满足时延期，不产生免费招募。
 - 完成后虚拟分支自动从候选批次中确定性选择门客，更新 `Guest`、`RecruitmentRecord`、模板技能和自动训练；不生成真人可见的 `RecruitmentCandidate`。满员时只有在重新校验门客状态、稀有度、含敏捷的阵容战力以及未来 72 小时工资 runway 后，才允许用更高稀有度且战力不下降的空闲门客替换；无安全替换对象则保留队列等待容量/ roster 状态变化。
+- 直接请求某个招募槽位时，批处理可以同时结算当天其他可执行槽位；若被请求槽位本身延期，即使同批已有其他槽位完成，结果仍返回 `DEFERRED` 并保留该槽位的 `operation_id`，不能返回没有对应 `recruitment_id` 的假 `STARTED`。扫描入口没有指定槽位时，才按批次整体返回 `STARTED`，并通过 `recruitment_ids` 按配额序号返回已完成记录。
 - 招募与普通培养共用 BotProfile → Manor → Guest 锁顺序。锁冲突、资源不足和工资保护只延期，不消耗新增配额；同庄园始终保持一条进行中招募队列；完成招募只更新 roster、招募账本和完成事件，不改普通周期槽位或 `next_growth_at`。
 
 ### 2.3 竞技场补位培养（当前实施依据）
@@ -319,3 +320,26 @@
 本轮 artifact 的 `git_commit` 为 `648488b183318ca85625efa763bcf9257ddddc28`，`worktree_clean=false`，且 artifact 明确标记为 development/non-production、未执行 gate exit、runtime activation、commit、push 或生产切换。因此本轮结论是“代码与隔离门禁通过的 release candidate”，不是生产已发布。
 
 仍未闭合的项目保持为外部验收：目标业务库 migration/preflight 与 EXPLAIN、类型化节奏和 24/48/72 小时业务指标校准、Arena 真实 time-to-ready/补位窗口、4GB 同机 1h/6h/24h RSS/OOM/swap/重启/队列证据，以及 retention 策略的运营确认。上述项目不应通过修改 artifact 数字或放宽测试阈值来标记完成。
+
+## 11. 2026-08-15 高风险/高频路径复核收口
+
+### 11.1 本轮修复
+
+- **库存写入所有权统一**：仓库容量检查、粮食兼容字段回退、批量 upsert 与 `InsufficientSpaceError` 统一收口到 Manor 锁内写入口，并补齐建筑、任务、战斗、拍卖、帮会、访客和生产重试等写入方的锁顺序。
+- **普通维护事务边界修复**：周期开启、规划和领域写入由调度入口的单一事务覆盖；直接调用仍保持原子语义，嵌套调用通过私有事务管理开关避免重复 savepoint。失败时周期预留、业务写入和审计状态一起回滚。
+- **虚拟招募状态修复**：优先槽位延期时返回明确 `DEFERRED`，不再伪造 `STARTED` 或空招募 ID；批次部分完成、唯一性竞争和容量延期均保留可重试的 durable 状态。
+- **Arena 预算修复**：增长预算按持久化时间窗口裁剪，锁冲突重试不会吞掉剩余轮次，也不会绕过累计尝试上限。
+
+### 11.2 最终验证
+
+- `make static-check` 通过：Black、isort、flake8、mypy（737 个 source files）、JavaScript syntax/tests（34 passed）、Django check、makemigrations dry-run、compileall 与 `git diff --check` 均通过。
+- 本地 V2 维护回归：`86 passed`。
+- 真实 MySQL 失败边界与同档并发唯一胜者：`2 passed`。
+- 真实 MySQL 冻结查询矩阵：`6 passed`，此前超出预算的 4 个 benchmark 断言已全部恢复。
+- 完整 `make test-critical`（隔离 MySQL/Redis）：`77 passed`，无功能、并发、幂等或查询预算失败。
+
+上述结果只证明当前工作区在隔离测试服务中的 release-candidate 质量，不构成生产发布授权；本轮未执行 commit、push、生产迁移或生产切换。
+
+### 11.3 复核结论与剩余风险
+
+本轮发现的库存超容量竞态、周期半提交、招募延期状态伪造、Arena 预算重试泄漏和维护路径重复事务开销均已完成代码修复并有回归证据。仍需在目标环境单独完成目标 MySQL EXPLAIN、batch-200/500/1000 长时吞吐、4GB 主机 RSS/OOM/swap/重启/队列、Arena time-to-ready，以及 persona/工资 runway/retention 的业务口径确认；这些不能由本地 `77 passed` 替代。

@@ -4,9 +4,9 @@ import random
 from typing import Dict
 
 from django.db import IntegrityError, transaction
-from django.db.models import F
 
-from ...models import InventoryItem, ItemTemplate, Manor, ResourceEvent, ResourceType
+from ...models import ItemTemplate, Manor, ResourceEvent, ResourceType
+from ..inventory.core import add_items_to_inventory_locked
 from ..resources import grant_resources_locked
 
 
@@ -178,6 +178,7 @@ def _get_or_create_equipment_item_template_from_category(key: str, category: str
 
 
 def _upsert_warehouse_items_locked(manor: Manor, item_keys: Dict[str, int], templates: Dict[str, ItemTemplate]) -> None:
+    grants: dict[str, int] = {}
     for key, amount in item_keys.items():
         if amount <= 0:
             continue
@@ -185,14 +186,10 @@ def _upsert_warehouse_items_locked(manor: Manor, item_keys: Dict[str, int], temp
         template = templates.get(key)
         if not template:
             raise AssertionError(f"invalid mission drop item key: {key!r}")
+        grants[key] = int(amount)
 
-        inventory_item, _created = InventoryItem.objects.select_for_update().get_or_create(
-            manor=manor,
-            template=template,
-            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-            defaults={"quantity": 0},
-        )
-        InventoryItem.objects.filter(pk=inventory_item.pk).update(quantity=F("quantity") + amount)
+    if grants:
+        add_items_to_inventory_locked(manor, grants, templates=templates)
 
 
 def award_mission_drops_locked(

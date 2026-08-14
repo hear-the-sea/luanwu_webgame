@@ -22,7 +22,7 @@ def guild_tech_client(django_user_model):
 
 
 @pytest.mark.django_db
-def test_technology_page_renders_capacity_tech_with_count_effect_and_ruby_cost(guild_tech_client):
+def test_technology_page_renders_capacity_tech_with_count_effect_and_cost(guild_tech_client):
     client, _user, guild = guild_tech_client
     GuildTechnology.objects.create(
         guild=guild, tech_key="guild_lineup_capacity", category="combat", level=0, max_level=20
@@ -39,7 +39,7 @@ def test_technology_page_renders_capacity_tech_with_count_effect_and_ruby_cost(g
     assert "提升单次帮会任务最多可派出的门客人数" in content
     assert "20 名" in content
     assert "6 名" in content
-    assert "红宝石 ×5" in content
+    assert "金条 ×2" in content
     assert "红宝石 ×10" in content
 
 

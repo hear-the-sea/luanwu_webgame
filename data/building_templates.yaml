@@ -1,5 +1,10 @@
 # 建筑配置文件
 # 分类: resource(资源生产), storage(仓储设施), production(生产加工), personnel(人员管理), special(特殊建筑)
+#
+# 升级曲线：
+# - upgrade_time_budget / upgrade_cost_budget：从当前起始等级升到满级的总预算；0/缺省时沿用旧指数公式。
+# - time_curve / cost_curve：逐级增长系数 g，按 weight = g^step_index 分配剩余预算；总预算仍精确控制累计消耗。
+# - base_upgrade_time / base_cost：每级基础底线，不再承担“把总预算硬顶出来”的职责。
 
 categories:
   - key: resource
@@ -32,9 +37,14 @@ buildings:
     rate_growth: 0.8
     base_upgrade_time: 180
     time_growth: 1.22
+    upgrade_time_budget: 1728000
+    time_curve: 1.10
     base_cost:
       silver: 170
     cost_growth: 1.33
+    upgrade_cost_budget:
+      silver: 5000000
+    cost_curve: 1.18
     icon: ""
 
   - key: tax_office
@@ -46,9 +56,14 @@ buildings:
     rate_growth: 0.8
     base_upgrade_time: 210
     time_growth: 1.25
+    upgrade_time_budget: 1728000
+    time_curve: 1.10
     base_cost:
       silver: 450
     cost_growth: 1.36
+    upgrade_cost_budget:
+      silver: 5000000
+    cost_curve: 1.45
     icon: tax
 
   - key: bathhouse
@@ -60,9 +75,14 @@ buildings:
     rate_growth: 1
     base_upgrade_time: 300
     time_growth: 1.25
+    upgrade_time_budget: 864000
+    time_curve: 1.08
     base_cost:
       silver: 850
     cost_growth: 1.35
+    upgrade_cost_budget:
+      silver: 2000000
+    cost_curve: 1.40
     icon: bathhouse
 
   - key: latrine
@@ -74,9 +94,14 @@ buildings:
     rate_growth: 1.2
     base_upgrade_time: 300
     time_growth: 1.25
+    upgrade_time_budget: 864000
+    time_curve: 1.08
     base_cost:
       silver: 550
     cost_growth: 1.35
+    upgrade_cost_budget:
+      silver: 2000000
+    cost_curve: 1.40
     icon: latrine
 
   # ==================== 仓储设施 ====================
@@ -89,9 +114,14 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 300
     time_growth: 1.2
+    upgrade_time_budget: 1728000
+    time_curve: 1.08
     base_cost:
       silver: 950
     cost_growth: 1.35
+    upgrade_cost_budget:
+      silver: 5000000
+    cost_curve: 1.50
     icon: granary
 
   - key: silver_vault
@@ -103,6 +133,8 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 300
     time_growth: 1.2
+    upgrade_time_budget: 2592000
+    time_curve: 1.08
     base_cost:
       silver: 1100
     cost_growth: 1.35
@@ -117,6 +149,8 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 600
     time_growth: 1.3
+    upgrade_time_budget: 2592000
+    time_curve: 1.08
     base_cost:
       silver: 7500
     cost_growth: 1.4
@@ -132,9 +166,14 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 300
     time_growth: 1.25
+    upgrade_time_budget: 864000
+    time_curve: 1.08
     base_cost:
       silver: 800
     cost_growth: 1.35
+    upgrade_cost_budget:
+      silver: 1000000
+    cost_curve: 1.20
     icon: ranch
 
   - key: smithy
@@ -146,9 +185,14 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 300
     time_growth: 1.25
+    upgrade_time_budget: 864000
+    time_curve: 1.08
     base_cost:
       silver: 1000
     cost_growth: 1.35
+    upgrade_cost_budget:
+      silver: 1000000
+    cost_curve: 1.20
     icon: smithy
 
   - key: stable
@@ -160,9 +204,14 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 300
     time_growth: 1.25
+    upgrade_time_budget: 864000
+    time_curve: 1.08
     base_cost:
       silver: 980
     cost_growth: 1.35
+    upgrade_cost_budget:
+      silver: 1000000
+    cost_curve: 1.20
     icon: stable
 
   - key: forge
@@ -174,10 +223,16 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 300
     time_growth: 1.25
+    upgrade_time_budget: 864000
+    time_curve: 1.08
     base_cost:
       grain: 500
       silver: 500
     cost_growth: 1.35
+    upgrade_cost_budget:
+      grain: 1000000
+      silver: 1000000
+    cost_curve: 1.20
     icon: forge
 
   # ==================== 人员管理 ====================
@@ -190,6 +245,8 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 3107
     time_growth: 1.5
+    upgrade_time_budget: 15552000
+    time_curve: 1.10
     base_cost:
       grain: 3432
       silver: 17164
@@ -205,6 +262,8 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 300
     time_growth: 1.2
+    upgrade_time_budget: 2160000
+    time_curve: 1.08
     base_cost:
       silver: 420
     cost_growth: 1.3
@@ -219,9 +278,14 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 300
     time_growth: 1.2
+    upgrade_time_budget: 864000
+    time_curve: 1.08
     base_cost:
       silver: 550
     cost_growth: 1.3
+    upgrade_cost_budget:
+      silver: 1000000
+    cost_curve: 1.20
     icon: training
 
   - key: tavern
@@ -233,9 +297,14 @@ buildings:
     rate_growth: 0.211
     base_upgrade_time: 300
     time_growth: 1.25
+    upgrade_time_budget: 864000
+    time_curve: 1.08
     base_cost:
       silver: 1150
     cost_growth: 1.35
+    upgrade_cost_budget:
+      silver: 5000000
+    cost_curve: 1.20
     icon: tavern
 
   # ==================== 特殊建筑 ====================
@@ -247,11 +316,17 @@ buildings:
     base_rate_per_hour: 0
     rate_growth: 0.0
     base_upgrade_time: 3600
+    upgrade_time_budget: 2592000
+    time_curve: 1.03
     time_growth: 2.0
     base_cost:
       grain: 5000
       silver: 10000
     cost_growth: 2.0
+    upgrade_cost_budget:
+      grain: 5000000
+      silver: 10000000
+    cost_curve: 1.03
     icon: citang
 
   - key: youxibaota
@@ -263,6 +338,8 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 3107
     time_growth: 1.5
+    upgrade_time_budget: 15552000
+    time_curve: 1.10
     base_cost:
       grain: 4038
       silver: 20193
@@ -278,10 +355,16 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 600
     time_growth: 1.35
+    upgrade_time_budget: 2592000
+    time_curve: 1.03
     base_cost:
       grain: 800
       silver: 1200
-    cost_growth: 1.4
+    cost_growth: 2.0
+    upgrade_cost_budget:
+      grain: 6666667
+      silver: 10000000
+    cost_curve: 1.03
     icon: ""
 
   - key: oath_grove
@@ -293,10 +376,16 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 600
     time_growth: 1.35
+    upgrade_time_budget: 2592000
+    time_curve: 1.03
     base_cost:
       grain: 800
       silver: 1200
-    cost_growth: 1.4
+    cost_growth: 2.0
+    upgrade_cost_budget:
+      grain: 6666667
+      silver: 10000000
+    cost_curve: 1.03
     icon: ""
 
   # ==================== 城防建筑 ====================
@@ -309,9 +398,14 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 900
     time_growth: 1.85
+    upgrade_time_budget: 864000
+    time_curve: 1.08
     base_cost:
       silver: 18000
     cost_growth: 1.85
+    upgrade_cost_budget:
+      silver: 1000000
+    cost_curve: 1.10
     icon: ""
 
   - key: arrow_tower
@@ -323,7 +417,12 @@ buildings:
     rate_growth: 0.0
     base_upgrade_time: 1200
     time_growth: 1.85
+    upgrade_time_budget: 864000
+    time_curve: 1.08
     base_cost:
       silver: 18000
     cost_growth: 1.85
+    upgrade_cost_budget:
+      silver: 1000000
+    cost_curve: 1.10
     icon: ""

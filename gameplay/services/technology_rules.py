@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from typing import Any, Callable, Dict, Iterable, Optional
 
 
@@ -17,6 +18,61 @@ def coerce_float(value: Any, default: float = 0.0) -> float:
         return default
 
 
+def allocate_upgrade_budget(
+    total_budget: int,
+    floor_amount: int,
+    curve_growth: float,
+    step_count: int,
+) -> list[int]:
+    """
+    将全等级预算平滑分配到每一次升级。
+
+    预算决定累计消耗，曲线只决定各级之间的倾斜程度；保留基础消耗
+    作为每级底线，并把整数舍入误差放到最后一级，确保累计值精确等于预算。
+    """
+    if step_count <= 0:
+        return []
+
+    floor_amount = max(0, int(floor_amount))
+    total_budget = max(int(total_budget), floor_amount * step_count)
+    curve_growth = max(1.0, float(curve_growth))
+    if step_count == 1:
+        return [total_budget]
+
+    weights = [curve_growth**index for index in range(step_count)]
+    remaining_budget = total_budget - floor_amount * step_count
+    weight_total = sum(weights)
+    allocations = [math.floor(remaining_budget * weight / weight_total) for weight in weights]
+    allocations[-1] += remaining_budget - sum(allocations)
+    return [floor_amount + allocation for allocation in allocations]
+
+
+def calculate_upgrade_duration(
+    template: Dict[str, Any] | None,
+    current_level: int,
+    *,
+    scale_duration_func: Callable[..., int],
+) -> int:
+    """统一使用全等级预算曲线计算个人科技升级时长。"""
+    base_time = coerce_float((template or {}).get("base_time", 60), 60.0)
+    if base_time <= 0:
+        base_time = 60.0
+
+    max_level = max(1, coerce_int((template or {}).get("max_level", 10), 10))
+    floor_time = math.ceil(base_time)
+    total_budget = coerce_int((template or {}).get("upgrade_time_budget", 0), 0)
+    if total_budget <= 0:
+        total_budget = floor_time * max_level
+    schedule = allocate_upgrade_budget(
+        total_budget=total_budget,
+        floor_amount=floor_time,
+        curve_growth=coerce_float((template or {}).get("time_curve", 1.08), 1.08),
+        step_count=max_level,
+    )
+    level = max(0, coerce_int(current_level, 0))
+    return scale_duration_func(schedule[min(level, len(schedule) - 1)], minimum=1)
+
+
 def calculate_upgrade_cost(
     template: Dict[str, Any] | None,
     current_level: int,
@@ -26,11 +82,19 @@ def calculate_upgrade_cost(
 ) -> int:
     if not template:
         return 0
-    base_cost = coerce_int_func(template.get("base_cost", 8000), 8000)
-    growth = coerce_float_func(template.get("cost_growth", 1.5), 1.5)
-    if growth <= 0:
-        growth = 1.5
-    return int(base_cost * (growth**current_level))
+    base_cost = max(0, coerce_int_func(template.get("base_cost", 8000), 8000))
+    max_level = max(1, coerce_int_func(template.get("max_level", 10), 10))
+    total_budget = coerce_int_func(template.get("upgrade_cost_budget", 0), 0)
+    if total_budget <= 0:
+        total_budget = base_cost * max_level
+    schedule = allocate_upgrade_budget(
+        total_budget=total_budget,
+        floor_amount=base_cost,
+        curve_growth=coerce_float_func(template.get("cost_curve", 1.15), 1.15),
+        step_count=max_level,
+    )
+    level = max(0, coerce_int_func(current_level, 0))
+    return schedule[min(level, len(schedule) - 1)]
 
 
 def get_tech_bonus_from_templates(
@@ -160,8 +224,10 @@ def get_resource_production_bonus_from_templates(
 
 
 __all__ = [
+    "allocate_upgrade_budget",
     "build_uniform_tech_levels",
     "calculate_upgrade_cost",
+    "calculate_upgrade_duration",
     "coerce_float",
     "coerce_int",
     "get_guest_stat_bonuses",

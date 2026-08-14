@@ -389,7 +389,7 @@ def finalize_horse_production(production: HorseProduction, send_notification: bo
     Returns:
         是否成功完成
     """
-    from ...models import Message
+    from ...models import Manor, Message
     from ..utils.notifications import notify_user
 
     if production.complete_at > timezone.now():
@@ -397,8 +397,10 @@ def finalize_horse_production(production: HorseProduction, send_notification: bo
 
     completed_production = production
     with transaction.atomic():
-        # 先在事务内锁定并重新读取生产记录，确保并发 worker 只有一个能看到 PRODUCING 并发货；
+        # 统一锁序 Manor -> production，确保容量检查和并发 worker 都可串行化；
+        # 重新读取生产记录后只有一个 worker 能看到 PRODUCING 并发货；
         # 其余 worker 读到最新状态后直接返回，保证完成结算幂等。
+        locked_manor = Manor.objects.select_for_update().get(pk=production.manor_id)
         locked_production = HorseProduction.objects.select_for_update().select_related("manor").get(pk=production.pk)
         if locked_production.status != HorseProduction.Status.PRODUCING:
             production.status = locked_production.status
@@ -410,7 +412,7 @@ def finalize_horse_production(production: HorseProduction, send_notification: bo
         # 添加马匹到仓库（按数量添加）
         from ..inventory.core import add_item_to_inventory_locked
 
-        add_item_to_inventory_locked(locked_production.manor, locked_production.horse_key, locked_production.quantity)
+        add_item_to_inventory_locked(locked_manor, locked_production.horse_key, locked_production.quantity)
 
         # 更新生产状态
         finished_at = timezone.now()

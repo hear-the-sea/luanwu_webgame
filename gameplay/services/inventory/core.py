@@ -7,13 +7,14 @@ lives in `gameplay.services.inventory.use`.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any, Callable, Dict
 
-from django.db import IntegrityError, transaction
-from django.db.models import F, Sum
-from django.db.models.functions import Now
+from django.db import transaction
+from django.db.models import F, IntegerField, Sum, Value
+from django.db.models.functions import Coalesce, Now
 
-from core.exceptions import GameError, InsufficientStockError, ItemNotFoundError
+from core.exceptions import GameError, InsufficientSpaceError, InsufficientStockError, ItemNotFoundError
 from gameplay.models import InventoryItem, ItemTemplate, Manor
 
 # 粮食物品模板 key
@@ -115,7 +116,12 @@ def get_warehouse_grain_quantity_locked(
         quantity = max(0, int(grain_item.quantity or 0))
     else:
         # 仅用于一次性兼容旧数据；写路径会立即建立仓库账本行。
-        quantity = max(0, int(getattr(manor, "grain", 0) or 0))
+        legacy_quantity = (
+            Manor.objects.filter(pk=manor.pk).values_list("grain", flat=True).first()
+            if manor.pk
+            else getattr(manor, "grain", 0)
+        )
+        quantity = max(0, int(legacy_quantity or 0))
         if template is not None and quantity > 0:
             grain_item, _created = InventoryItem.objects.get_or_create(
                 manor=manor,
@@ -212,6 +218,205 @@ def adjust_warehouse_grain_quantity_locked(
     )
 
 
+def get_warehouse_used_space(manor: Manor) -> int:
+    """Return warehouse item space currently occupied by this manor.
+
+    The caller may use this read-only helper for display, but all write-side
+    checks must happen while the Manor row is locked.  Grain is intentionally
+    included because its warehouse ledger is represented by an InventoryItem
+    row as well.
+    """
+    total = (
+        InventoryItem.objects.filter(
+            manor=manor,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+        .aggregate(
+            total=Coalesce(
+                Sum(
+                    F("quantity") * F("template__storage_space"),
+                    output_field=IntegerField(),
+                ),
+                Value(0),
+            )
+        )
+        .get("total")
+    )
+    normalized_total = max(0, int(total or 0))
+
+    # A small number of pre-ledger manors may still have grain only on the
+    # compatibility Manor.grain field.  Count it for capacity display and
+    # for non-grain writes until the first grain write materializes its row.
+    grain_row = (
+        InventoryItem.objects.filter(
+            manor=manor,
+            template__key=GRAIN_ITEM_KEY,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+        .values_list("quantity", "template__storage_space")
+        .first()
+    )
+    if grain_row is None:
+        grain_space = ItemTemplate.objects.filter(key=GRAIN_ITEM_KEY).values_list("storage_space", flat=True).first()
+        if grain_space is not None:
+            legacy_quantity = (
+                Manor.objects.filter(pk=manor.pk).values_list("grain", flat=True).first()
+                if manor.pk
+                else getattr(manor, "grain", 0)
+            )
+            normalized_total += max(0, int(legacy_quantity or 0)) * max(0, int(grain_space or 0))
+
+    return normalized_total
+
+
+def _ensure_warehouse_capacity_locked(
+    manor: Manor,
+    additions: Mapping[ItemTemplate, int],
+) -> None:
+    """Reject a warehouse write before any inventory row is mutated.
+
+    ``add_item_to_inventory_locked`` and ``add_items_to_inventory_locked`` are
+    write owners.  They require the caller to hold the Manor row lock, so the
+    used-space snapshot and the subsequent upserts are one serialized state
+    transition rather than an advisory check.
+    """
+    required_space = sum(
+        max(0, int(getattr(template, "storage_space", 0) or 0)) * int(quantity)
+        for template, quantity in additions.items()
+    )
+    if required_space <= 0:
+        return
+
+    used_space = get_warehouse_used_space(manor)
+    # The row lock belongs to the caller, but the object may have been loaded
+    # before that lock was acquired.  Read the locked row's current capacity so
+    # an old in-memory Manor cannot reject valid writes or bypass the limit.
+    capacity = (
+        Manor.objects.filter(pk=manor.pk).values_list("storage_capacity", flat=True).first()
+        if manor.pk
+        else getattr(manor, "storage_capacity", 0)
+    )
+    capacity = max(0, int(capacity or 0))
+    available_space = max(0, capacity - used_space)
+    if required_space > available_space:
+        raise InsufficientSpaceError("warehouse", available_space, required_space)
+
+
+def add_items_to_inventory_locked(
+    manor: Manor,
+    grants: Mapping[str, int],
+    storage_location: str = InventoryItem.StorageLocation.WAREHOUSE,
+    *,
+    templates: Mapping[str, ItemTemplate] | None = None,
+) -> dict[str, InventoryItem]:
+    """Atomically add several inventory quantities under the Manor lock.
+
+    This is the batch counterpart to ``add_item_to_inventory_locked``.  It
+    centralizes capacity validation and the unique-row upsert so high-frequency
+    reward paths do not implement their own ``get_or_create``/``bulk_create``
+    variants.
+    """
+    _require_atomic_block("add_items_to_inventory_locked")
+    if not isinstance(grants, Mapping):
+        raise AssertionError("grants must be a mapping")
+
+    normalized_grants: dict[str, int] = {}
+    for raw_key, raw_quantity in grants.items():
+        if not isinstance(raw_key, str) or not raw_key.strip():
+            raise AssertionError(f"invalid inventory item key: {raw_key!r}")
+        key = raw_key.strip()
+        if isinstance(raw_quantity, bool):
+            raise AssertionError(f"invalid inventory quantity: {(key, raw_quantity)!r}")
+        try:
+            quantity = int(raw_quantity)
+        except (TypeError, ValueError) as exc:
+            raise AssertionError(f"invalid inventory quantity: {(key, raw_quantity)!r}") from exc
+        if quantity <= 0:
+            raise AssertionError("add_item_to_inventory_locked requires positive quantity")
+        normalized_grants[key] = normalized_grants.get(key, 0) + quantity
+
+    if not normalized_grants:
+        return {}
+
+    supplied_templates = dict(templates or {})
+    resolved_templates: dict[str, ItemTemplate] = {}
+    missing_keys: set[str] = set()
+    for key in normalized_grants:
+        supplied = supplied_templates.get(key)
+        if supplied is None:
+            missing_keys.add(key)
+            continue
+        if not supplied.pk or supplied.key != key:
+            raise AssertionError("template must match item_key")
+        resolved_templates[key] = supplied
+
+    if missing_keys:
+        resolved_templates.update(
+            {template.key: template for template in ItemTemplate.objects.filter(key__in=missing_keys)}
+        )
+    missing_templates = set(normalized_grants) - set(resolved_templates)
+    if missing_templates:
+        raise ItemNotFoundError("物品不存在", item_key=sorted(missing_templates)[0])
+
+    if storage_location == InventoryItem.StorageLocation.TREASURY:
+        blocked = set(normalized_grants) & TREASURY_BLOCKED_ITEM_KEYS
+        if blocked:
+            template = resolved_templates[sorted(blocked)[0]]
+            raise GameError(f"{template.name}不可存入藏宝阁")
+
+    warehouse_grain_template = resolved_templates.get(GRAIN_ITEM_KEY)
+    if storage_location == InventoryItem.StorageLocation.WAREHOUSE:
+        _ensure_warehouse_capacity_locked(
+            manor,
+            {resolved_templates[key]: quantity for key, quantity in normalized_grants.items()},
+        )
+
+    if storage_location == InventoryItem.StorageLocation.WAREHOUSE and warehouse_grain_template is not None:
+        # Materialize the compatibility row only after capacity validation;
+        # a rejected grant must not leave a legacy grain row behind when the
+        # caller intentionally handles the domain error inside its transaction.
+        get_warehouse_grain_quantity_locked(
+            manor,
+            grain_template=warehouse_grain_template,
+            grain_template_resolved=True,
+        )
+
+    for key, quantity in normalized_grants.items():
+        template = resolved_templates[key]
+        if key == GRAIN_ITEM_KEY and storage_location == InventoryItem.StorageLocation.WAREHOUSE:
+            adjust_warehouse_grain_quantity_locked(
+                manor,
+                quantity,
+                grain_template=template,
+                grain_template_resolved=True,
+            )
+            continue
+
+        # get_or_create owns its INSERT savepoint.  If a concurrent request
+        # wins the unique key race, Django re-reads the row after rolling back
+        # only that savepoint; the surrounding business transaction remains
+        # usable.  The increment itself is still an F-expression so it cannot
+        # lose a quantity update.
+        item, created = InventoryItem.objects.get_or_create(
+            manor=manor,
+            template=template,
+            storage_location=storage_location,
+            defaults={"quantity": quantity},
+        )
+        if not created:
+            InventoryItem.objects.filter(pk=item.pk).update(
+                quantity=F("quantity") + quantity,
+                updated_at=Now(),
+            )
+
+    rows = InventoryItem.objects.select_related("template").filter(
+        manor=manor,
+        template__key__in=tuple(normalized_grants),
+        storage_location=storage_location,
+    )
+    return {row.template.key: row for row in rows}
+
+
 def add_item_to_inventory_locked(
     manor: Manor,
     item_key: str,
@@ -221,57 +426,18 @@ def add_item_to_inventory_locked(
     template: ItemTemplate | None = None,
 ) -> InventoryItem:
     """
-    向庄园背包添加物品（假设调用方已在 transaction.atomic 中完成所需的并发控制）。
+    向庄园背包添加物品（调用方必须在 transaction.atomic 中持有 Manor 行锁）。
 
     该函数不会创建新的事务块；适用于上层服务函数已处于事务中并希望避免嵌套事务的冗余开销。
     """
     _require_atomic_block("add_item_to_inventory_locked")
-    if template is None:
-        template = ItemTemplate.objects.filter(key=item_key).first()
-    elif not template.pk or template.key != item_key:
-        raise AssertionError("template must match item_key")
-    if not template:
-        raise ItemNotFoundError("物品不存在", item_key=item_key)
-
-    if storage_location == InventoryItem.StorageLocation.TREASURY and item_key in TREASURY_BLOCKED_ITEM_KEYS:
-        raise GameError(f"{template.name}不可存入藏宝阁")
-
-    if quantity <= 0:
-        raise AssertionError("add_item_to_inventory_locked requires positive quantity")
-
-    if item_key == GRAIN_ITEM_KEY and storage_location == InventoryItem.StorageLocation.WAREHOUSE:
-        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
-        adjust_warehouse_grain_quantity_locked(locked_manor, int(quantity), grain_template=template)
-        manor.grain = locked_manor.grain
-        setattr(manor, "warehouse_grain_quantity", locked_manor.grain)
-    else:
-        # Atomic increment to avoid lost updates under concurrent requests.
-        updated = InventoryItem.objects.filter(
-            manor=manor,
-            template=template,
-            storage_location=storage_location,
-        ).update(quantity=F("quantity") + int(quantity), updated_at=Now())
-        if updated == 0:
-            try:
-                InventoryItem.objects.create(
-                    manor=manor,
-                    template=template,
-                    storage_location=storage_location,
-                    quantity=int(quantity),
-                )
-            except IntegrityError:
-                # Another request created the row concurrently; retry atomic increment.
-                InventoryItem.objects.filter(
-                    manor=manor,
-                    template=template,
-                    storage_location=storage_location,
-                ).update(quantity=F("quantity") + int(quantity), updated_at=Now())
-
-    item = (
-        InventoryItem.objects.select_related("template")
-        .filter(manor=manor, template=template, storage_location=storage_location)
-        .first()
-    )
+    item_key = str(item_key).strip()
+    item = add_items_to_inventory_locked(
+        manor,
+        {item_key: quantity},
+        storage_location=storage_location,
+        templates={item_key: template} if template is not None else None,
+    ).get(item_key)
     if not item:
         raise RuntimeError("failed to create or update inventory item")
 

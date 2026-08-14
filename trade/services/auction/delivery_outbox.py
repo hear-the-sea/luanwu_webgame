@@ -9,7 +9,7 @@ from django.db import IntegrityError, ProgrammingError, transaction
 from django.db.models import F
 from django.utils import timezone
 
-from core.exceptions import MessageError
+from core.exceptions import InsufficientSpaceError, MessageError
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from core.utils.side_effects import schedule_best_effort_after_commit
 from gameplay.models import ItemTemplate, Manor, Message
@@ -193,6 +193,13 @@ def process_pending_auction_deliveries(*, limit: int = 100) -> int:
             logger.exception(
                 "deterministic auction delivery failure; keeping pending and continuing: delivery_id=%s",
                 delivery_id,
+            )
+        except InsufficientSpaceError as exc:
+            _record_pending_delivery_failure_best_effort(delivery_id, exc)
+            logger.warning(
+                "auction delivery deferred because warehouse capacity is full: delivery_id=%s error=%s",
+                delivery_id,
+                exc,
             )
         except ProgrammingError:
             raise

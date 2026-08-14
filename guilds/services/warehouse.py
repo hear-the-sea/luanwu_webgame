@@ -14,9 +14,10 @@ from django.db.models import F, Sum
 from django.utils import timezone
 
 import guilds.constants as guild_constants
-from core.exceptions import GuildMembershipError, GuildWarehouseError
+from core.exceptions import GuildMembershipError, GuildWarehouseError, InsufficientSpaceError
 from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
-from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
+from gameplay.models import ItemTemplate, Manor, ResourceEvent
+from gameplay.services.inventory.core import add_item_to_inventory_locked
 from gameplay.services.resources import grant_resources_locked
 
 from ..models import Guild, GuildExchangeLog, GuildMember, GuildWarehouse
@@ -285,26 +286,15 @@ def _grant_exchanged_item_locked(manor: Manor, item_key: str, template: Any, qua
 
 
 def _grant_inventory_item_to_manor_locked(manor: Manor, template: Any, quantity: int) -> None:
-    inventory_item = (
-        InventoryItem.objects.select_for_update()
-        .filter(
-            manor=manor,
+    try:
+        add_item_to_inventory_locked(
+            manor,
+            template.key,
+            quantity,
             template=template,
-            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
         )
-        .first()
-    )
-
-    if inventory_item:
-        InventoryItem.objects.filter(pk=inventory_item.pk).update(quantity=F("quantity") + quantity)
-        return
-
-    InventoryItem.objects.create(
-        manor=manor,
-        template=template,
-        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-        quantity=quantity,
-    )
+    except InsufficientSpaceError as exc:
+        raise GuildWarehouseError(str(exc)) from exc
 
 
 def _exchange_projected_resource_item(member: GuildMember, item_key: str, quantity: int) -> None:

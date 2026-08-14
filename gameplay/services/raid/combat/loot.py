@@ -351,9 +351,14 @@ def _grant_loot_items(manor: Manor, items: Dict[str, int]) -> None:
     if not items:
         return
 
+    # Direct callers may not already have the raid-finalization lock.  Reusing
+    # the same row lock is safe for callers that do, and makes warehouse
+    # capacity validation a serialized transition in both paths.
+    locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+
     from core.utils.template_loader import load_templates_by_key
 
-    templates = load_templates_by_key(ItemTemplate, keys=items.keys(), only_fields=["id", "key"])
+    templates = load_templates_by_key(ItemTemplate, keys=items.keys(), only_fields=["id", "key", "storage_space"])
 
     if not templates:
         return
@@ -362,4 +367,4 @@ def _grant_loot_items(manor: Manor, items: Dict[str, int]) -> None:
         template = templates.get(key)
         if not template:
             continue
-        add_item_to_inventory_locked(manor, key, qty, template=template)
+        add_item_to_inventory_locked(locked_manor, key, qty, template=template)

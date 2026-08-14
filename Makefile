@@ -23,7 +23,8 @@ CRITICAL_INTEGRATION_TESTS ?= \
 	tests/test_virtual_player_maintenance_concurrency_integration.py \
 	tests/test_arena_virtual_population_concurrency_integration.py \
 	tests/test_virtual_player_baseline_audit.py \
-	tests/test_message_claim_delete_concurrency_integration.py
+	tests/test_message_claim_delete_concurrency_integration.py \
+	tests/test_inventory_concurrency_integration.py
 VIRTUAL_PLAYER_GATE_A_CONTRACT_TESTS ?= \
 	tests/test_virtual_player_architecture_gate.py \
 	tests/test_virtual_player_gate_acceptance_config.py \

@@ -58,7 +58,7 @@ def test_normalize_guild_rules_merges_and_clamps_values():
     assert loaded["technology"]["names"]["guild_lineup_capacity"] == "出战位扩容"
     assert loaded["technology"]["descriptions"]["equipment_forge"] == "新的科技简介"
     assert loaded["technology"]["descriptions"]["guild_lineup_capacity"] == "提升帮会已上阵名单总容量"
-    assert loaded["technology"]["upgrade_costs"]["guild_lineup_capacity"] == {"red_ruby": 5}
+    assert loaded["technology"]["upgrade_costs"]["guild_lineup_capacity"] == {"gold_bar": 2}
     assert loaded["technology"]["upgrade_costs"]["guild_dispatch_capacity"] == {"red_ruby": 5}
     assert loaded["technology"]["upgrade_costs"]["mysticism"] == {"red_ruby": 200}
     assert loaded["technology"]["upgrade_cost_curves"]["standard_10"]["2"] == 3

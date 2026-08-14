@@ -151,6 +151,40 @@ class TestBuildingTemplatesValidation:
         result = validate_building_templates(data)
         assert_has_error(result, substring="expected a mapping")
 
+    def test_upgrade_budget_fields_validate_shape_and_curve(self):
+        data = {
+            "buildings": [
+                {
+                    "key": "b",
+                    "name": "B",
+                    "category": "resource",
+                    "resource_type": "grain",
+                    "upgrade_time_budget": 0,
+                    "time_curve": 0.9,
+                    "upgrade_cost_budget": {"silver": "invalid"},
+                }
+            ]
+        }
+        result = validate_building_templates(data)
+        assert_has_error(result, substring="upgrade_time_budget")
+        assert_has_error(result, substring="time_curve")
+        assert_has_error(result, substring="upgrade_cost_budget.silver")
+
+    def test_upgrade_cost_budget_must_be_mapping(self):
+        data = {
+            "buildings": [
+                {
+                    "key": "b",
+                    "name": "B",
+                    "category": "resource",
+                    "resource_type": "grain",
+                    "upgrade_cost_budget": 100,
+                }
+            ]
+        }
+        result = validate_building_templates(data)
+        assert_has_error(result, substring="field 'upgrade_cost_budget' expected a mapping")
+
     def test_duplicate_keys(self):
         building = {"key": "dup", "name": "D", "category": "resource", "resource_type": "grain"}
         data = {"buildings": [building, dict(building)]}

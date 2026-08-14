@@ -7,7 +7,9 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 
-from gameplay.models import InventoryItem, ItemTemplate, ResourceEvent, ResourceType
+from core.exceptions import InsufficientSpaceError
+from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent, ResourceType
+from gameplay.services.inventory.core import get_warehouse_used_space
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.missions_impl.drops import (
     _get_or_create_skill_book_template,
@@ -48,6 +50,31 @@ def test_award_mission_drops_grants_resources_and_items():
     ).first()
     assert event is not None
     assert event.delta == 30
+
+
+@pytest.mark.django_db
+def test_award_mission_drops_rolls_back_resource_when_warehouse_is_full():
+    user = User.objects.create_user(username="mission_drop_capacity", password="pass123")
+    manor = ensure_manor(user)
+    baseline_space = get_warehouse_used_space(manor)
+    Manor.objects.filter(pk=manor.pk).update(storage_capacity=baseline_space + 1)
+    item_template = ItemTemplate.objects.create(
+        key="mission_drop_capacity_item",
+        name="容量不足掉落",
+        storage_space=2,
+    )
+    initial_silver = manor.silver
+
+    with pytest.raises(InsufficientSpaceError):
+        award_mission_drops(
+            manor,
+            {"silver": 30, item_template.key: 1},
+            note="容量不足任务",
+        )
+
+    manor.refresh_from_db()
+    assert manor.silver == initial_silver
+    assert not InventoryItem.objects.filter(manor=manor, template=item_template).exists()
 
 
 @pytest.mark.django_db

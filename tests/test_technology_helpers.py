@@ -17,6 +17,8 @@ def test_build_technology_display_entry_calculates_upgrade_fields():
             "effect_per_level": 0.15,
             "base_time": 90,
             "max_level": 5,
+            "upgrade_time_budget": 10000,
+            "time_curve": 1.2,
         },
         player_tech=SimpleNamespace(
             level=2,
@@ -30,11 +32,30 @@ def test_build_technology_display_entry_calculates_upgrade_fields():
 
     assert entry["key"] == "march_art"
     assert entry["upgrade_cost"] == 102
-    assert entry["upgrade_duration"] == 176
+    assert entry["upgrade_duration"] == 1937
     assert entry["current_effect"] == 30.0
     assert entry["next_effect"] == __import__("pytest").approx(45.0)
     assert entry["is_upgrading"] is True
     assert entry["can_upgrade"] is False
+
+
+def test_build_technology_display_entry_uses_budget_curve_for_duration():
+    entry = technology_helpers.build_technology_display_entry(
+        tech={
+            "key": "budgeted",
+            "name": "预算技术",
+            "effect_per_level": 0.1,
+            "max_level": 4,
+            "base_time": 60,
+            "upgrade_time_budget": 10000,
+            "time_curve": 1.2,
+        },
+        player_tech=SimpleNamespace(level=2, is_upgrading=False, upgrade_complete_at=None, time_remaining=0),
+        calculate_upgrade_cost=lambda *_args, **_kwargs: 100,
+        scale_duration=lambda seconds, minimum=1: max(minimum, int(seconds)),
+    )
+
+    assert entry["upgrade_duration"] == 2678
 
 
 def test_build_technology_display_entry_caps_upgrade_fields_at_max_level():

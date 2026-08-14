@@ -456,12 +456,53 @@ def validate_guest_growth_rules(data: dict, *, file: str = "guest_growth_rules.y
 VALID_TECH_CATEGORIES = {"basic", "martial", "production"}
 
 
+def _validate_technology_upgrade_budget_fields(
+    value: dict,
+    *,
+    result: ValidationResult,
+    file: str,
+    path: str,
+) -> None:
+    for field_name in ("upgrade_time_budget", "upgrade_cost_budget"):
+        field_value = value.get(field_name)
+        if field_value is None:
+            continue
+        _check_type(field_value, (int, float), result=result, file=file, path=path, field_name=field_name)
+        _check_positive(field_value, result=result, file=file, path=path, field_name=field_name, allow_zero=False)
+
+    for field_name in ("time_curve", "cost_curve"):
+        field_value = value.get(field_name)
+        if field_value is None:
+            continue
+        _check_type(field_value, (int, float), result=result, file=file, path=path, field_name=field_name)
+        _check_positive(field_value, result=result, file=file, path=path, field_name=field_name, allow_zero=False)
+        if isinstance(field_value, (int, float)) and field_value < 1:
+            result.add(file, f"{path}.{field_name}", "must be greater than or equal to 1")
+
+
 def validate_technology_templates(data: dict, *, file: str = "technology_templates.yaml") -> ValidationResult:
     result = ValidationResult()
 
     if not isinstance(data, dict):
         result.add(file, "<root>", "expected a mapping at root level")
         return result
+
+    upgrade_profiles = data.get("upgrade_profiles")
+    if upgrade_profiles is not None:
+        if not isinstance(upgrade_profiles, dict):
+            result.add(file, "upgrade_profiles", "expected a mapping")
+        else:
+            for profile_key, profile in upgrade_profiles.items():
+                profile_path = f"upgrade_profiles.{profile_key}"
+                if not isinstance(profile, dict):
+                    result.add(file, profile_path, "expected a mapping")
+                    continue
+                _validate_technology_upgrade_budget_fields(
+                    profile,
+                    result=result,
+                    file=file,
+                    path=profile_path,
+                )
 
     # Validate categories section
     categories = data.get("categories")
@@ -516,6 +557,13 @@ def validate_technology_templates(data: dict, *, file: str = "technology_templat
         if base_cost is not None:
             _check_type(base_cost, (int, float), result=result, file=file, path=path, field_name="base_cost")
             _check_positive(base_cost, result=result, file=file, path=path, field_name="base_cost", allow_zero=False)
+
+        _validate_technology_upgrade_budget_fields(
+            tech,
+            result=result,
+            file=file,
+            path=path,
+        )
 
         effect_per_level = tech.get("effect_per_level")
         if effect_per_level is not None:

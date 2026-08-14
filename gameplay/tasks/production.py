@@ -6,6 +6,7 @@ from celery import shared_task
 from django.utils import timezone
 
 from common.utils.celery import safe_apply_async_with_dedup
+from core.exceptions import InsufficientSpaceError
 from core.utils.infrastructure import (
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
     InfrastructureExceptions,
@@ -23,6 +24,7 @@ class ProductionTaskRetryRequested(RuntimeError):
 
 PRODUCTION_TASK_RETRY_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
     ProductionTaskRetryRequested,
+    InsufficientSpaceError,
     infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
 )
 

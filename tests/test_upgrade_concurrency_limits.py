@@ -37,7 +37,7 @@ def test_technology_upgrade_concurrency_limit(django_user_model, monkeypatch):
 
     user = django_user_model.objects.create_user(username="limit_tech", password="pass12345")
     manor = ensure_manor(user)
-    manor.silver = 500000
+    manor.silver = 1_000_000
     manor.save(update_fields=["silver"])
 
     upgrade_technology(manor, "march_art")

@@ -351,7 +351,7 @@ def test_reload_runtime_configs_updates_guild_service_runtime_values(monkeypatch
 
             cost = technology_service.calculate_tech_upgrade_cost("equipment_forge", 0)
             level_two_cost = technology_service.calculate_tech_upgrade_cost("equipment_forge", 1)
-            ruby_cost = technology_service.calculate_tech_upgrade_cost("guild_lineup_capacity", 0)
+            lineup_cost = technology_service.calculate_tech_upgrade_cost("guild_lineup_capacity", 0)
             submitted_at = timezone.now()
             cooldown_until = hero_pool_service._replace_cooldown_until(
                 type("Entry", (), {"last_submitted_at": submitted_at})()
@@ -359,7 +359,7 @@ def test_reload_runtime_configs_updates_guild_service_runtime_values(monkeypatch
 
             assert cost == {"silver": 7000, "grain": 3000, "gold_bar": 2}
             assert level_two_cost == {"silver": 35000, "grain": 15000, "gold_bar": 10}
-            assert ruby_cost == {"red_ruby": 5}
+            assert lineup_cost == {"gold_bar": 2}
             assert int((cooldown_until - submitted_at).total_seconds()) == 120
     finally:
         clear_guild_rules_cache()

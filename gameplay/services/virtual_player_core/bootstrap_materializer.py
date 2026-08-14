@@ -610,6 +610,10 @@ def materialize_bootstrap_assets(
     growth_stage: int,
 ) -> MaterializedBootstrapAssets:
     _require_atomic()
+    # The inventory and grain ledger are written below; hold the Manor row for
+    # the whole materialization so capacity and compatibility updates share the
+    # same lock contract as runtime reward paths.
+    manor = Manor.objects.select_for_update().get(pk=manor.pk)
     buildings = _materialize_buildings(
         manor=manor,
         assets=assets,

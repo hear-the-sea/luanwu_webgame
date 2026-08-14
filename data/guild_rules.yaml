@@ -64,21 +64,16 @@ contribution:
 technology:
   # 各科技从0级升到1级的费用；后续等级按 upgrade_cost_curves 的离散倍率计算。
   upgrade_costs:
-    # 装备锻造：消耗帮会银两，以及帮会仓库中的粮食和金条。
+    # 装备锻造：满级累计消耗2000金条、200红宝石；红宝石仅在8-10级追加。
     equipment_forge:
-      silver: 5000
-      grain: 2000
-      gold_bar: 1
-    # 护院军备：消耗帮会银两，以及帮会仓库中的粮食和金条。
+      gold_bar: 3
+    # 护院军备：满级累计消耗2亿银两、2亿粮食。
     guard_armory:
-      silver: 5000
-      grain: 2500
-      gold_bar: 1
-    # 武学研习：消耗帮会银两，以及帮会仓库中的粮食和金条。
+      silver: 307220
+      grain: 307220
+    # 武学研习：满级累计消耗2000金条、200红宝石；红宝石仅在8-10级追加。
     experience_refine:
-      silver: 5000
-      grain: 2000
-      gold_bar: 1
+      gold_bar: 3
     # 资源补给：消耗帮会银两，以及帮会仓库中的粮食和金条。
     resource_supply:
       silver: 4000
@@ -87,24 +82,20 @@ technology:
     # 神秘学：1级从帮会仓库消耗红宝石；后续等级使用下方指定成本。
     mysticism:
       red_ruby: 200
-    # 强兵战术：消耗帮会银两，以及帮会仓库中的粮食和金条。
+    # 强兵战术：满级累计消耗2亿银两、2亿粮食。
     troop_tactics:
-      silver: 8000
-      grain: 3000
-      gold_bar: 2
-    # 资源增产：消耗帮会银两，以及帮会仓库中的粮食和金条。
+      silver: 307220
+      grain: 307220
+    # 资源增产：满级累计消耗2亿银两、2亿粮食。
     resource_boost:
-      silver: 10000
-      grain: 5000
-      gold_bar: 3
-    # 行军加速：消耗帮会银两，以及帮会仓库中的粮食和金条。
+      silver: 2173913
+      grain: 2173913
+    # 行军加速：满级累计消耗200金条。
     march_speed:
-      silver: 10000
-      grain: 5000
-      gold_bar: 3
-    # 出战位扩容：从帮会仓库消耗红宝石。
+      gold_bar: 2
+    # 出战位扩容：满级累计消耗500金条、200红宝石；红宝石仅在16-20级追加。
     guild_lineup_capacity:
-      red_ruby: 5
+      gold_bar: 2
     # 出征位扩容：从帮会仓库消耗红宝石。
     guild_dispatch_capacity:
       red_ruby: 5
@@ -158,6 +149,30 @@ technology:
     guild_dispatch_capacity: capacity_20
   # 无法由基础费用与曲线表达的逐级指定成本；等级键表示升级后的目标等级。
   upgrade_cost_overrides:
+    equipment_forge:
+      8:
+        gold_bar: 210
+        red_ruby: 24
+      9:
+        gold_bar: 450
+        red_ruby: 53
+      10:
+        gold_bar: 1097
+        red_ruby: 123
+    guard_armory:
+      10:
+        silver: 107526780
+        grain: 107526780
+    experience_refine:
+      8:
+        gold_bar: 210
+        red_ruby: 24
+      9:
+        gold_bar: 450
+        red_ruby: 53
+      10:
+        gold_bar: 1097
+        red_ruby: 123
     mysticism:
       2:
         red_ruby: 300
@@ -165,6 +180,33 @@ technology:
       3:
         red_ruby: 300
         gold_bar: 200
+    troop_tactics:
+      10:
+        silver: 107526780
+        grain: 107526780
+    resource_boost:
+      5:
+        silver: 130434784
+        grain: 130434784
+    march_speed:
+      5:
+        gold_bar: 136
+    guild_lineup_capacity:
+      16:
+        gold_bar: 32
+        red_ruby: 36
+      17:
+        gold_bar: 34
+        red_ruby: 38
+      18:
+        gold_bar: 36
+        red_ruby: 40
+      19:
+        gold_bar: 38
+        red_ruby: 42
+      20:
+        gold_bar: 120
+        red_ruby: 44
   # 科技卡片标题；键必须与 upgrade_costs 中的科技键一致。
   names:
     equipment_forge: 装备锻造

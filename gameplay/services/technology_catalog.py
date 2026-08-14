@@ -12,6 +12,27 @@ logger = logging.getLogger(__name__)
 TECHNOLOGY_TEMPLATES_PATH = settings.BASE_DIR / "data" / "technology_templates.yaml"
 
 
+def _apply_upgrade_profiles(data: dict[str, Any]) -> dict[str, Any]:
+    """将分类级升级预算默认值展开到具体技术，保留技术自身字段优先级。"""
+    profiles = data.get("upgrade_profiles")
+    technologies = data.get("technologies")
+    if not isinstance(profiles, dict) or not isinstance(technologies, list):
+        return data
+
+    resolved = dict(data)
+    resolved_technologies: list[Any] = []
+    for technology in technologies:
+        if not isinstance(technology, dict):
+            resolved_technologies.append(technology)
+            continue
+        profile = profiles.get(technology.get("category"), {})
+        merged = dict(profile) if isinstance(profile, dict) else {}
+        merged.update(technology)
+        resolved_technologies.append(merged)
+    resolved["technologies"] = resolved_technologies
+    return resolved
+
+
 @lru_cache(maxsize=4)
 def load_technology_templates(
     load_yaml_data_func: Callable[..., Any] = load_yaml_data,
@@ -22,7 +43,7 @@ def load_technology_templates(
         context="technology templates",
         default={},
     )
-    return ensure_mapping(raw, logger=logger, context="technology templates root")
+    return _apply_upgrade_profiles(ensure_mapping(raw, logger=logger, context="technology templates root"))
 
 
 @lru_cache(maxsize=4)

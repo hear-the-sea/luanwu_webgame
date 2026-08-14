@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from common.constants.resources import ResourceType
 
-from ..constants import BuildingKeys
+from ..constants import BUILDING_MAX_LEVELS, BuildingKeys
 
 # ============ 庄园容量常量 ============
 
@@ -405,8 +405,12 @@ class BuildingType(models.Model):
     rate_growth = models.FloatField("每级增长系数", default=0.15)
     base_upgrade_time = models.PositiveIntegerField("一级建造时间(秒)", default=60)
     time_growth = models.FloatField("时间成长系数", default=1.25)
+    upgrade_time_budget = models.PositiveBigIntegerField("全等级时长预算(秒)", default=0)
+    time_curve = models.FloatField("时长逐级增长系数", default=1.0)
     base_cost = models.JSONField(default=dict)
     cost_growth = models.FloatField("成本成长系数", default=1.35)
+    upgrade_cost_budget = models.JSONField("全等级成本预算", default=dict)
+    cost_curve = models.FloatField("成本逐级增长系数", default=1.0)
     icon = models.CharField(max_length=32, blank=True)
 
     class Meta:
@@ -415,6 +419,37 @@ class BuildingType(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+def _allocate_upgrade_budget(
+    total_budget: int,
+    floor_amount: int,
+    curve_growth: float,
+    step_count: int,
+) -> list[int]:
+    """
+    将全等级预算分配到每一次升级。
+
+    预算型曲线保留每级基础底线，把剩余预算按“受控几何权重”分配：
+    weight = curve_growth ^ step_index。
+    总预算决定累计消耗，curve_growth 只决定相邻等级的递增幅度；
+    因此不会再用“末级是首级几倍”作为隐含目标，也不会出现旧指数公式的失控长尾。
+    """
+    if step_count <= 0:
+        return []
+
+    floor_amount = max(0, int(floor_amount))
+    total_budget = max(int(total_budget), floor_amount * step_count)
+    curve_growth = max(1.0, float(curve_growth))
+    if step_count == 1:
+        return [total_budget]
+
+    weights = [curve_growth**index for index in range(step_count)]
+    remaining_budget = total_budget - floor_amount * step_count
+    weight_total = sum(weights)
+    allocations = [math.floor(remaining_budget * weight / weight_total) for weight in weights]
+    allocations[-1] += remaining_budget - sum(allocations)
+    return [floor_amount + allocation for allocation in allocations]
 
 
 class Building(models.Model):
@@ -445,13 +480,41 @@ class Building(models.Model):
 
     def next_level_cost(self) -> Dict[str, int]:
         target_level = self.level + 1
-        multiplier = self.building_type.cost_growth ** (target_level - 1)
-        return {
-            resource: math.ceil(amount * multiplier)
-            for resource, amount in (self.building_type.base_cost or {}).items()
-        }
+        max_level = BUILDING_MAX_LEVELS.get(str(self.building_type.key))
+        budget_map = self.building_type.upgrade_cost_budget or {}
+        result: Dict[str, int] = {}
+        for resource, amount in (self.building_type.base_cost or {}).items():
+            budget = budget_map.get(resource)
+            if budget and max_level is not None:
+                schedule = _allocate_upgrade_budget(
+                    total_budget=int(budget),
+                    floor_amount=int(amount),
+                    curve_growth=float(self.building_type.cost_curve),
+                    step_count=max_level - 1,
+                )
+                index = self.level - 1
+                if 0 <= index < len(schedule):
+                    result[resource] = schedule[index]
+                    continue
+
+            multiplier = self.building_type.cost_growth ** (target_level - 1)
+            result[resource] = math.ceil(amount * multiplier)
+        return result
 
     def next_level_duration(self) -> int:
+        max_level = BUILDING_MAX_LEVELS.get(str(self.building_type.key))
+        budget = int(self.building_type.upgrade_time_budget or 0)
+        if budget > 0 and max_level is not None:
+            schedule = _allocate_upgrade_budget(
+                total_budget=budget,
+                floor_amount=int(self.building_type.base_upgrade_time),
+                curve_growth=float(self.building_type.time_curve),
+                step_count=max_level - 1,
+            )
+            index = self.level - 1
+            if 0 <= index < len(schedule):
+                return schedule[index]
+
         target_level = self.level + 1
         multiplier = self.building_type.time_growth ** (target_level - 1)
         return math.ceil(self.building_type.base_upgrade_time * multiplier)

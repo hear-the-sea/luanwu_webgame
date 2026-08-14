@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from random import Random
 
 from django.db import IntegrityError, transaction
-from django.db.models import F
 
 from core.exceptions import (
     GameError,
@@ -20,6 +19,8 @@ from gameplay.models import InventoryItem, ItemTemplate, Manor
 from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
 from guests.models import Guest, GuestRarity, GuestStatus, GuestTemplate
 from guests.rarity import GUEST_RARITY_ORDER
+
+from .core import add_item_to_inventory_locked
 
 logger = logging.getLogger(__name__)
 
@@ -97,10 +98,11 @@ def validate_guest_item_use(
     return locked_item, guest
 
 
-def detach_guest_gears_for_reset(guest: Guest, *, action_label: str) -> int:
+def detach_guest_gears_for_reset(guest: Guest, *, action_label: str, manor: Manor | None = None) -> int:
     """Best-effort detach all equipped gears for guest reset-like flows."""
     from guests.services.equipment import unequip_guest_item
 
+    restore_manor = manor or guest.manor
     gear_items = list(guest.gear_items.select_related("template"))
     unequipped_count = 0
 
@@ -119,7 +121,7 @@ def detach_guest_gears_for_reset(guest: Guest, *, action_label: str) -> int:
             )
         updated = guest.gear_items.filter(pk=gear.pk, guest_id=guest.pk).update(guest=None)
         if updated:
-            restore_gear_to_warehouse(guest.manor, gear.template.key)
+            restore_gear_to_warehouse(restore_manor, gear.template.key)
             unequipped_count += 1
         else:
             logger.warning(
@@ -138,22 +140,21 @@ def restore_gear_to_warehouse(manor: Manor, gear_template_key: str) -> None:
         logger.warning("强制卸装后未找到回仓模板: manor_id=%s, gear_key=%s", manor.pk, gear_template_key)
         return
 
-    restored = InventoryItem.objects.filter(
-        manor=manor,
+    add_item_to_inventory_locked(
+        manor,
+        item_template.key,
+        1,
         template=item_template,
-        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-    ).update(quantity=F("quantity") + 1)
-    if restored == 0:
-        InventoryItem.objects.create(
-            manor=manor,
-            template=item_template,
-            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-            quantity=1,
-        )
+    )
 
 
-def prepare_guest_for_reset(guest: Guest, *, action_label: str) -> GuestResetPreparation:
-    unequipped_count = detach_guest_gears_for_reset(guest, action_label=action_label)
+def prepare_guest_for_reset(
+    guest: Guest,
+    *,
+    action_label: str,
+    manor: Manor | None = None,
+) -> GuestResetPreparation:
+    unequipped_count = detach_guest_gears_for_reset(guest, action_label=action_label, manor=manor)
     skills_count = guest.guest_skills.count()
     guest.guest_skills.all().delete()
     return GuestResetPreparation(
