@@ -6734,6 +6734,7 @@ def execute_virtual_player_v2_maintenance_plan(
                     GuestNotRequirementError,
                     GuestSkillAlreadyLearnedError,
                     GuestTrainingInProgressError,
+                    InsufficientSpaceError,
                     InventoryAcquisitionUnavailable,
                     ItemNotFoundError,
                     SkillSlotFullError,
