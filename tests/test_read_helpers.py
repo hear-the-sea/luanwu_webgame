@@ -12,7 +12,11 @@ from gameplay.request_context import (
     get_prepared_manor,
     set_prepared_manor,
 )
-from gameplay.views.read_helpers import get_prepared_manor_for_read, prepare_manor_for_read
+from gameplay.views.read_helpers import (
+    get_prepared_manor_for_read,
+    get_prepared_manor_for_read_result,
+    prepare_manor_for_read,
+)
 
 
 def test_prepare_manor_for_read_degrades_database_error():
@@ -72,6 +76,47 @@ def test_get_prepared_manor_for_read_loads_manor_and_projects(monkeypatch):
     assert calls == [("get_manor", request.user), ("project", manor)]
     assert getattr(request, PREPARED_MANOR_REQUEST_ATTR) is manor
     logger.warning.assert_not_called()
+
+
+def test_get_prepared_manor_for_read_result_returns_typed_projection(monkeypatch):
+    logger = MagicMock()
+    request = SimpleNamespace(user=SimpleNamespace(id=99))
+    manor = SimpleNamespace(id=7)
+    projection = object()
+
+    monkeypatch.setattr("gameplay.views.read_helpers.get_manor", lambda _user: manor)
+
+    result = get_prepared_manor_for_read_result(
+        request,
+        project_fn=lambda _manor: projection,
+        logger=logger,
+        source="unit-test",
+    )
+
+    assert result.manor is manor
+    assert result.projection_result is projection
+    assert result.projection_succeeded is True
+    assert getattr(request, PREPARED_MANOR_REQUEST_ATTR) is manor
+
+
+def test_get_prepared_manor_for_read_result_marks_expected_failure(monkeypatch):
+    logger = MagicMock()
+    request = SimpleNamespace(user=SimpleNamespace(id=99))
+    manor = SimpleNamespace(id=7)
+
+    monkeypatch.setattr("gameplay.views.read_helpers.get_manor", lambda _user: manor)
+
+    result = get_prepared_manor_for_read_result(
+        request,
+        project_fn=lambda _manor: (_ for _ in ()).throw(DatabaseError("db down")),
+        logger=logger,
+        source="unit-test",
+    )
+
+    assert result.manor is manor
+    assert result.projection_result is None
+    assert result.projection_succeeded is False
+    assert not hasattr(request, PREPARED_MANOR_REQUEST_ATTR)
 
 
 def test_get_prepared_manor_for_read_does_not_cache_failed_projection(monkeypatch):

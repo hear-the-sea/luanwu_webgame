@@ -33,6 +33,10 @@ data/images/*
 !data/images/guests/**
 !data/images/troops/
 !data/images/troops/**
+# The guild shell references this image as a static catalog asset.
+!data/images/buildings/
+data/images/buildings/*
+!data/images/buildings/guild-residence.webp
 
 *.tar
 *.tar.gz

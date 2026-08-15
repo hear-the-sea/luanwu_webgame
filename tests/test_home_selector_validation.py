@@ -10,6 +10,7 @@ from django_redis.exceptions import ConnectionInterrupted
 import gameplay.services.raid as raid_service
 from gameplay.selectors.home import _normalize_hourly_rates, get_home_context
 from gameplay.services.manor.core import ensure_manor
+from gameplay.services.resources import ResourceProductionBasis
 from guilds.models import Guild, GuildMember, GuildMissionRun, GuildMissionTemplate, GuildRaidRun
 
 
@@ -112,6 +113,40 @@ def test_get_home_context_tolerates_cache_backend_failure(monkeypatch):
         {"resource": "grain", "label": "粮食", "rate": 12},
         {"resource": "silver", "label": "银两", "rate": 8},
     ]
+
+
+def test_get_home_context_reuses_read_production_basis_on_cache_miss(monkeypatch):
+    _patch_home_context_dependencies(monkeypatch)
+    monkeypatch.setattr(
+        "gameplay.utils.resource_calculator.get_hourly_rates",
+        lambda *_args, **_kwargs: pytest.fail("hourly rates should be reused from the read projection"),
+    )
+    monkeypatch.setattr(
+        "gameplay.utils.resource_calculator.get_personnel_grain_cost_per_hour",
+        lambda *_args, **_kwargs: pytest.fail("personnel cost should be reused from the read projection"),
+    )
+
+    production_basis = ResourceProductionBasis(
+        hourly_rates=(("grain", 12.0), ("silver", 8.0)),
+        personnel_grain_cost_per_hour=3,
+    )
+    manor = SimpleNamespace(
+        pk=1,
+        grain=100,
+        silver=200,
+        retainer_count=3,
+        retainer_capacity=10,
+        guests=_FakeQuerySet(),
+        mission_runs=_FakeQuerySet(),
+        buildings=_FakeQuerySet(),
+        technologies=_FakeQuerySet(),
+        troops=_FakeQuerySet(),
+    )
+
+    context = get_home_context(manor, production_basis=production_basis)
+
+    assert context["grain_production"] == 12
+    assert context["personnel_grain_cost"] == 3
 
 
 def test_get_home_context_runtime_marker_cache_error_bubbles_up(monkeypatch):

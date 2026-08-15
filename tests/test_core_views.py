@@ -13,6 +13,8 @@ from django.utils import timezone
 from core.exceptions import GameError
 from gameplay.constants import BUILDING_MAX_LEVELS
 from gameplay.services.manor.core import ensure_manor
+from gameplay.services.resources import ResourceProductionBasis
+from gameplay.views.read_helpers import PreparedManorRead
 
 
 @pytest.mark.django_db
@@ -35,14 +37,25 @@ class TestCoreViews:
         ensure_manor(authenticated_client.user)
         calls = {"prepared": 0, "context": 0}
         manor = ensure_manor(authenticated_client.user)
+        expected_production_basis = ResourceProductionBasis(
+            hourly_rates=(("grain", 12.0),),
+            personnel_grain_cost_per_hour=3,
+        )
 
-        def _fake_context(manor):
+        def _fake_context(current_manor, *, production_basis=None):
             calls["context"] += 1
-            return {"manor": manor}
+            assert current_manor is manor
+            assert production_basis is expected_production_basis
+            return {"manor": current_manor}
 
         monkeypatch.setattr(
-            "gameplay.views.core.get_prepared_manor_for_read",
-            lambda request, **_kwargs: calls.__setitem__("prepared", calls["prepared"] + 1) or manor,
+            "gameplay.views.core.get_prepared_manor_for_read_result",
+            lambda request, **_kwargs: calls.__setitem__("prepared", calls["prepared"] + 1)
+            or PreparedManorRead(
+                manor=manor,
+                projection_result=expected_production_basis,
+                projection_succeeded=True,
+            ),
         )
         monkeypatch.setattr("gameplay.views.core.get_home_context", _fake_context)
 
@@ -55,8 +68,12 @@ class TestCoreViews:
         now = timezone.now()
 
         monkeypatch.setattr(
-            "gameplay.views.core.get_prepared_manor_for_read",
-            lambda request, **_kwargs: manor,
+            "gameplay.views.core.get_prepared_manor_for_read_result",
+            lambda request, **_kwargs: PreparedManorRead(
+                manor=manor,
+                projection_result=None,
+                projection_succeeded=True,
+            ),
         )
         monkeypatch.setattr(
             "gameplay.views.core.get_home_context",
@@ -121,8 +138,12 @@ class TestCoreViews:
         now = timezone.now()
 
         monkeypatch.setattr(
-            "gameplay.views.core.get_prepared_manor_for_read",
-            lambda request, **_kwargs: manor,
+            "gameplay.views.core.get_prepared_manor_for_read_result",
+            lambda request, **_kwargs: PreparedManorRead(
+                manor=manor,
+                projection_result=None,
+                projection_succeeded=True,
+            ),
         )
         monkeypatch.setattr(
             "gameplay.views.core.get_home_context",
@@ -239,8 +260,12 @@ class TestCoreViews:
         now = timezone.now()
 
         monkeypatch.setattr(
-            "gameplay.views.core.get_prepared_manor_for_read",
-            lambda request, **_kwargs: manor,
+            "gameplay.views.core.get_prepared_manor_for_read_result",
+            lambda request, **_kwargs: PreparedManorRead(
+                manor=manor,
+                projection_result=None,
+                projection_succeeded=True,
+            ),
         )
         monkeypatch.setattr(
             "gameplay.views.core.get_home_context",

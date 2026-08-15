@@ -20,6 +20,7 @@ from guilds.services.guild_pvp_display import (
 from ..models import MissionRun, ResourceType
 from ..services.inventory.core import get_warehouse_grain_quantity
 from ..services.missions import can_retreat
+from ..services.resources import ResourceProductionBasis
 from ..services.technology import get_technology_template
 from ..services.utils.cache import CacheKeys
 from ..services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
@@ -55,7 +56,7 @@ def _safe_cache_set(key: str, value, timeout: int) -> None:
         logger.warning("Home selector cache.set failed: key=%s error=%s", key, exc, exc_info=True)
 
 
-def get_home_context(manor) -> dict:
+def get_home_context(manor, *, production_basis: ResourceProductionBasis | None = None) -> dict:
     warehouse_grain_quantity = get_warehouse_grain_quantity(manor)
     resources = [
         ("grain", "粮食", warehouse_grain_quantity),
@@ -96,8 +97,13 @@ def get_home_context(manor) -> dict:
 
     cache_key = CacheKeys.home_hourly_rates(manor.pk)
     hourly_rates = _safe_cache_get(cache_key)
+    reused_read_basis: ResourceProductionBasis | None = None
     if hourly_rates is None:
-        hourly_rates = get_hourly_rates(manor)
+        if production_basis is not None:
+            hourly_rates = dict(production_basis.hourly_rates)
+            reused_read_basis = production_basis
+        else:
+            hourly_rates = get_hourly_rates(manor)
         _safe_cache_set(cache_key, hourly_rates, timeout=settings.HOME_STATS_CACHE_TTL_SECONDS)
     hourly_rates = _normalize_hourly_rates(hourly_rates)
     resource_labels = dict(ResourceType.choices)
@@ -178,6 +184,15 @@ def get_home_context(manor) -> dict:
         )
         incoming_guild_pvp_runs = [project_incoming_guild_pvp_run(run, now=now) for run in incoming_guild_pvp_run_rows]
 
+    if reused_read_basis is not None:
+        personnel_grain_cost = reused_read_basis.personnel_grain_cost_per_hour
+    else:
+        personnel_grain_cost = get_personnel_grain_cost_per_hour(
+            manor,
+            guest_count=len(guests),
+            troop_count=sum(int(getattr(troop, "count", 0) or 0) for troop in player_troops),
+        )
+
     return {
         "manor": manor,
         "warehouse_grain_quantity": warehouse_grain_quantity,
@@ -191,11 +206,7 @@ def get_home_context(manor) -> dict:
         "total_guest_salary": total_guest_salary,
         "building_income": building_income,
         "grain_production": hourly_rates.get("grain", 0),
-        "personnel_grain_cost": get_personnel_grain_cost_per_hour(
-            manor,
-            guest_count=len(guests),
-            troop_count=sum(int(getattr(troop, "count", 0) or 0) for troop in player_troops),
-        ),
+        "personnel_grain_cost": personnel_grain_cost,
         "player_troops": player_troops,
         "active_scouts": get_active_scouts(manor),
         "active_raids": get_active_raids(manor),

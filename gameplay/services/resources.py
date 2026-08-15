@@ -700,7 +700,7 @@ def sync_resource_production(
     refresh: bool = True,
     grain_template: ItemTemplate | None = None,
     grain_template_resolved: bool = False,
-) -> None:
+) -> ResourceProductionBasis | None:
     """
     同步庄园资源产出，根据离线时间计算并发放资源。
 
@@ -729,19 +729,23 @@ def sync_resource_production(
         setattr(manor, "warehouse_grain_quantity", grain_quantity)
 
     min_interval = getattr(settings, "RESOURCE_SYNC_MIN_INTERVAL_SECONDS", 0)
+    elapsed_hint = (now - manor.resource_updated_at).total_seconds()
     if min_interval > 0:
-        elapsed_hint = (now - manor.resource_updated_at).total_seconds()
         if elapsed_hint < min_interval:
             if persist:
                 if refresh:
                     manor.refresh_from_db(fields=RESOURCE_FIELDS + ["resource_updated_at"])
                 _clear_warehouse_grain_projection(manor)
-            return
+            return None
 
     if not persist:
+        production_basis = None
+        if elapsed_hint > 0:
+            production_basis = load_resource_production_basis(manor)
         projected_values, _produced, should_advance_timestamp = _build_production_snapshot(
             manor,
             now=now,
+            production_basis=production_basis,
             resource_fields=(ResourceType.SILVER, ResourceType.GRAIN),
             current_resources={
                 ResourceType.SILVER: _require_resource_amount(manor.silver),
@@ -750,7 +754,7 @@ def sync_resource_production(
         )
         if should_advance_timestamp:
             _apply_resource_projection(manor, projected_values, now=now)
-        return
+        return production_basis
 
     with transaction.atomic():
         locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
@@ -765,6 +769,7 @@ def sync_resource_production(
     if refresh:
         manor.refresh_from_db(fields=RESOURCE_FIELDS + ["resource_updated_at"])
     _clear_warehouse_grain_projection(manor)
+    return None
 
 
 def sync_resource_production_batch(
@@ -822,14 +827,14 @@ def sync_resource_production_batch(
         return processed
 
 
-def project_resource_production_for_read(manor: Manor) -> None:
+def project_resource_production_for_read(manor: Manor) -> ResourceProductionBasis | None:
     """
     在读路径中投影庄园资源状态。
 
     这是页面读取入口应使用的显式接口，避免调用方直接依赖
     `sync_resource_production(..., persist=False)` 的实现细节。
     """
-    sync_resource_production(manor, persist=False)
+    return sync_resource_production(manor, persist=False)
 
 
 def log_resource_gain(manor: Manor, payload: Dict[str, int], reason: str, note: str = "") -> None:

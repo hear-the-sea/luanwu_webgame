@@ -11,6 +11,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from threading import Lock
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.core.cache import cache
@@ -50,6 +51,9 @@ from ...models import ArenaTournament, Building, Manor, Message, MissionRun, Rai
 from ..utils.cache import invalidate_home_stats_cache
 from ..utils.notifications import notify_user
 from . import refresh as _refresh
+
+if TYPE_CHECKING:
+    from ..resources import ResourceProductionBasis
 
 CAPACITY_BASE = 20000
 CAPACITY_GROWTH_SILVER = 1.299657
@@ -234,11 +238,14 @@ def refresh_manor_state(
 ) -> None:
     from ..resources import sync_resource_production
 
+    def sync_resource_projection(current_manor: Manor) -> None:
+        sync_resource_production(current_manor)
+
     _run_manor_refresh(
         manor,
         prefer_async=prefer_async,
         include_activity_refresh=include_activity_refresh,
-        sync_resource_projection_func=sync_resource_production,
+        sync_resource_projection_func=sync_resource_projection,
     )
 
 
@@ -246,7 +253,7 @@ def project_manor_activity_for_read(
     manor: Manor,
     *,
     prefer_async: bool = False,
-) -> None:
+) -> ResourceProductionBasis | None:
     """
     Apply the read-side manor projection without mutating activity state.
 
@@ -256,7 +263,7 @@ def project_manor_activity_for_read(
     del prefer_async
     from ..resources import project_resource_production_for_read
 
-    project_resource_production_for_read(manor)
+    return project_resource_production_for_read(manor)
 
 
 def _require_building_upgrade_atomic() -> None:

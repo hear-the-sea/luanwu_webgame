@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Generic, TypeVar
 
 from django.http import HttpRequest
 
@@ -11,21 +13,29 @@ from gameplay.request_context import PREPARED_MANOR_REQUEST_ATTR, clear_prepared
 from gameplay.services.manor.core import get_manor
 
 EXPECTED_READ_PROJECTION_ERRORS = DATABASE_INFRASTRUCTURE_EXCEPTIONS
+ProjectionResultT = TypeVar("ProjectionResultT")
 
 
-def prepare_manor_for_read(
+@dataclass(frozen=True, slots=True)
+class PreparedManorRead(Generic[ProjectionResultT]):
+    """The manor and typed result produced by its read projection."""
+
+    manor: Manor
+    projection_result: ProjectionResultT | None
+    projection_succeeded: bool
+
+
+def _run_manor_read_projection(
     manor: Manor,
     *,
-    project_fn: Callable[[Manor], None],
+    project_fn: Callable[[Manor], ProjectionResultT],
     logger: logging.Logger,
     source: str,
     user_id: int | None = None,
     on_expected_failure: Callable[[Exception], None] | None = None,
-) -> bool:
-    """Run manor read projection with consistent view-layer degradation semantics."""
+) -> tuple[bool, ProjectionResultT | None]:
     try:
-        project_fn(manor)
-        return True
+        return True, project_fn(manor)
     except EXPECTED_READ_PROJECTION_ERRORS as exc:
         logger.warning(
             "Manor read projection failed: source=%s manor_id=%s user_id=%s error=%s",
@@ -37,21 +47,42 @@ def prepare_manor_for_read(
         )
         if on_expected_failure is not None:
             on_expected_failure(exc)
-        return False
+        return False, None
 
 
-def get_prepared_manor_for_read(
+def prepare_manor_for_read(
+    manor: Manor,
+    *,
+    project_fn: Callable[[Manor], ProjectionResultT],
+    logger: logging.Logger,
+    source: str,
+    user_id: int | None = None,
+    on_expected_failure: Callable[[Exception], None] | None = None,
+) -> bool:
+    """Run manor read projection with consistent view-layer degradation semantics."""
+    projection_succeeded, _projection_result = _run_manor_read_projection(
+        manor,
+        project_fn=project_fn,
+        logger=logger,
+        source=source,
+        user_id=user_id,
+        on_expected_failure=on_expected_failure,
+    )
+    return projection_succeeded
+
+
+def get_prepared_manor_for_read_result(
     request: HttpRequest,
     *,
-    project_fn: Callable[[Manor], None],
+    project_fn: Callable[[Manor], ProjectionResultT],
     logger: logging.Logger,
     source: str,
     on_expected_failure: Callable[[Exception], None] | None = None,
-) -> Manor:
-    """Load the current manor and run the standard read projection flow."""
+) -> PreparedManorRead[ProjectionResultT]:
+    """Load a manor, run its projection, and return the typed projection result."""
     clear_prepared_manor(request)
     manor = get_manor(request.user)
-    projection_succeeded = prepare_manor_for_read(
+    projection_succeeded, projection_result = _run_manor_read_projection(
         manor,
         project_fn=project_fn,
         logger=logger,
@@ -63,4 +94,26 @@ def get_prepared_manor_for_read(
         set_prepared_manor(request, manor)
     else:
         clear_prepared_manor(request)
-    return manor
+    return PreparedManorRead(
+        manor=manor,
+        projection_result=projection_result,
+        projection_succeeded=projection_succeeded,
+    )
+
+
+def get_prepared_manor_for_read(
+    request: HttpRequest,
+    *,
+    project_fn: Callable[[Manor], ProjectionResultT],
+    logger: logging.Logger,
+    source: str,
+    on_expected_failure: Callable[[Exception], None] | None = None,
+) -> Manor:
+    """Load the current manor and run the standard read projection flow."""
+    return get_prepared_manor_for_read_result(
+        request,
+        project_fn=project_fn,
+        logger=logger,
+        source=source,
+        on_expected_failure=on_expected_failure,
+    ).manor

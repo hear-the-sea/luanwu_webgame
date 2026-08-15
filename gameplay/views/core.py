@@ -23,9 +23,9 @@ from gameplay.selectors.core import get_dashboard_context, get_ranking_page_cont
 from gameplay.selectors.home import get_home_context
 from gameplay.services.action_points import ACTION_POINTS_MAX, get_current_action_points
 from gameplay.services.manor.core import get_manor, project_manor_activity_for_read, rename_manor
-from gameplay.services.resources import project_resource_production_for_read
+from gameplay.services.resources import ResourceProductionBasis, project_resource_production_for_read
 from gameplay.utils.resource_calculator import get_hourly_rates
-from gameplay.views.read_helpers import get_prepared_manor_for_read
+from gameplay.views.read_helpers import get_prepared_manor_for_read, get_prepared_manor_for_read_result
 
 logger = logging.getLogger(__name__)
 
@@ -77,13 +77,23 @@ class HomeView(TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         if user.is_authenticated:
-            manor = get_prepared_manor_for_read(
+            prepared_manor = get_prepared_manor_for_read_result(
                 self.request,
                 logger=logger,
                 source="home_view",
                 project_fn=project_manor_activity_for_read,
             )
-            context.update(get_home_context(manor))
+            manor = prepared_manor.manor
+            production_basis = (
+                prepared_manor.projection_result
+                if prepared_manor.projection_succeeded
+                and isinstance(prepared_manor.projection_result, ResourceProductionBasis)
+                else None
+            )
+            if production_basis is None:
+                context.update(get_home_context(manor))
+            else:
+                context.update(get_home_context(manor, production_basis=production_basis))
 
         return context
 
