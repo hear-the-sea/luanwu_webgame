@@ -185,28 +185,28 @@ projection:
       schema_version: 1
       slot_interval_minutes: [10, 15]
       max_parallel_training: 1
-      building_targets: [farm, granary, tax_office]
+      building_targets: [tax_office, latrine, tavern, bathhouse, farm, granary, silver_vault]
       technology_targets: [architecture, farming]
       recruitment_pool_weights: {dianshi: 1, xiangshi: 1, cunmu: 1}
     rich:
       schema_version: 1
       slot_interval_minutes: [12, 15]
       max_parallel_training: 1
-      building_targets: [tax_office, silver_vault, tavern, bathhouse]
+      building_targets: [tax_office, silver_vault, tavern, bathhouse, latrine, farm, granary]
       technology_targets: [architecture, farming]
       recruitment_pool_weights: {dianshi: 3, xiangshi: 2, cunmu: 1}
     dojo:
       schema_version: 1
       slot_interval_minutes: [10, 12]
       max_parallel_training: 2
-      building_targets: [tax_office, farm, bathhouse]
+      building_targets: [tax_office, bathhouse, latrine, tavern, farm, silver_vault, granary]
       technology_targets: [architecture, farming]
       recruitment_pool_weights: {dianshi: 1, xiangshi: 3, cunmu: 2}
     guard:
       schema_version: 1
       slot_interval_minutes: [11, 14]
       max_parallel_training: 1
-      building_targets: [tax_office, silver_vault, bathhouse]
+      building_targets: [tax_office, silver_vault, bathhouse, latrine, tavern, farm, granary]
       technology_targets: [architecture, farming]
       recruitment_pool_weights: {dianshi: 2, xiangshi: 1, cunmu: 3}
     abandoned:
@@ -302,7 +302,7 @@ bot_development_v2:
         supply_prestige_band_priority: [mythic, legend, elite, veteran, senior, middle, junior, newbie]
   policies:
     "2": &virtual_player_policy_v2
-      checksum: "2e1bfdd9d705c7461884a2f951dce846ec7458c21b2f91a62856b606d8fdef86"
+      checksum: "dd43146af65faa8580ef59bef02b0b8688d5d7eb5b088d545d83596e78046f61"
       max_development_actions: 16
       anchor_k: 5
       prestige_band_growth:
@@ -340,14 +340,14 @@ bot_development_v2:
       starter_snapshots:
         snapshot_version: 1
         profiles:
-          newbie: {prestige: 400, core_building_level: 2, max_guest_level: 5, guest_count: 2, arena_lineup_power: 1000, troop_total: 500, composite_strength: 2000}
-          junior: {prestige: 1000, core_building_level: 3, max_guest_level: 10, guest_count: 3, arena_lineup_power: 2000, troop_total: 1000, composite_strength: 4000}
-          middle: {prestige: 3000, core_building_level: 4, max_guest_level: 15, guest_count: 4, arena_lineup_power: 3000, troop_total: 1500, composite_strength: 6000}
-          senior: {prestige: 10000, core_building_level: 5, max_guest_level: 20, guest_count: 5, arena_lineup_power: 4000, troop_total: 2000, composite_strength: 8000}
-          veteran: {prestige: 40000, core_building_level: 6, max_guest_level: 25, guest_count: 6, arena_lineup_power: 5000, troop_total: 2500, composite_strength: 10000}
-          elite: {prestige: 70000, core_building_level: 7, max_guest_level: 30, guest_count: 7, arena_lineup_power: 6000, troop_total: 3000, composite_strength: 12000}
-          legend: {prestige: 140000, core_building_level: 8, max_guest_level: 35, guest_count: 8, arena_lineup_power: 7000, troop_total: 3500, composite_strength: 14000}
-          mythic: {prestige: 270000, core_building_level: 9, max_guest_level: 40, guest_count: 9, arena_lineup_power: 8000, troop_total: 4000, composite_strength: 16000}
+          newbie: {prestige: 400, core_building_level: 2, juxianzhuang_level: 2, max_guest_level: 5, guest_count: 2, arena_lineup_power: 1000, troop_total: 500, composite_strength: 2000}
+          junior: {prestige: 1000, core_building_level: 3, juxianzhuang_level: 3, max_guest_level: 10, guest_count: 3, arena_lineup_power: 2000, troop_total: 1000, composite_strength: 4000}
+          middle: {prestige: 3000, core_building_level: 4, juxianzhuang_level: 4, max_guest_level: 15, guest_count: 4, arena_lineup_power: 3000, troop_total: 1500, composite_strength: 6000}
+          senior: {prestige: 10000, core_building_level: 5, juxianzhuang_level: 5, max_guest_level: 20, guest_count: 5, arena_lineup_power: 4000, troop_total: 2000, composite_strength: 8000}
+          veteran: {prestige: 40000, core_building_level: 6, juxianzhuang_level: 6, max_guest_level: 25, guest_count: 6, arena_lineup_power: 5000, troop_total: 2500, composite_strength: 10000}
+          elite: {prestige: 70000, core_building_level: 7, juxianzhuang_level: 7, max_guest_level: 30, guest_count: 7, arena_lineup_power: 6000, troop_total: 3000, composite_strength: 12000}
+          legend: {prestige: 140000, core_building_level: 8, juxianzhuang_level: 8, max_guest_level: 35, guest_count: 8, arena_lineup_power: 7000, troop_total: 3500, composite_strength: 14000}
+          mythic: {prestige: 270000, core_building_level: 9, juxianzhuang_level: 9, max_guest_level: 40, guest_count: 9, arena_lineup_power: 8000, troop_total: 4000, composite_strength: 16000}
       gear_upgrade_threshold: [0.08, 0.15]
       roster_tiers:
         core: [0.85, 1.00]

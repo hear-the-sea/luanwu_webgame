@@ -92,21 +92,6 @@ heroes:
       intellect: 22
       defense: 20
       agility: 28
-  - key: hero_teng_yi
-    name: 滕翼
-    archetype: military
-    flavor: 滕翼是项少龙并肩而行的生死兄弟，沉稳寡言，忠义如山。临阵能挥刀破敌，平日能替同伴收拾残局，是队伍最可靠的脊梁。话少不是没意见，只是他的意见通常已经写在刀锋上。出自黄易小说《寻秦记》。
-    default_gender: male
-    default_morality: 80
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 15
-      defense: 30
-      agility: 20
   - key: hero_jing_jun
     name: 荆俊
     archetype: civil
@@ -137,66 +122,6 @@ heroes:
       intellect: 35
       defense: 20
       agility: 30
-  - key: hero_song_lu
-    name: 宋鲁
-    archetype: military
-    flavor: 宋鲁是宋阀高手，性情豪迈爽直，重诺重义。乱世行军，他能冲锋，也能稳住阵脚；论绝世锋芒或许不抢头彩，论可靠二字却少有人能与他争。这样的兄弟，江湖上很难遇到，遇到后最好别轻易弄丢。出自黄易小说《大唐双龙传》。
-    default_gender: male
-    default_morality: 80
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 15
-      defense: 30
-      agility: 20
-  - key: hero_shen_luoyan
-    name: 沈落雁
-    archetype: civil
-    flavor: 沈落雁是瓦岗军中声名赫赫的女军师，容貌与智计同样出众。她善于审势布局，常以一念牵动群雄，既有谋士的冷静，也有身处乱世的无奈。她落子之前，旁人还在争论棋盘在哪儿。出自黄易小说《大唐双龙传》。
-    default_gender: female
-    default_morality: 60
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 10
-      intellect: 50
-      defense: 15
-      agility: 25
-  - key: hero_shan_meixian
-    name: 单美仙
-    archetype: military
-    flavor: 单美仙是东溟派掌门，性情刚烈，行事果断，兼有江湖女子的英气与威势。她掌一派、历风波，不靠谁的怜惜立足，遇事更习惯自己拔剑解决。若她说“此事到此为止”，通常只是提醒对方先把遗言想好。出自黄易小说《大唐双龙传》。
-    default_gender: female
-    default_morality: 70
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 30
-      intellect: 20
-      defense: 15
-      agility: 35
-  - key: hero_hou_xibai
-    name: 侯希白
-    archetype: military
-    flavor: 侯希白是花间派传人，人称“多情公子”，一柄美人扇不离手，画笔与武功都颇有风流。看似爱花惜美、潇洒不羁，实则心怀正义，重朋友、知进退。别人以画留名，他偶尔还顺手用画迷惑对手。出自黄易小说《大唐双龙传》。
-    default_gender: male
-    default_morality: 70
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 30
-      intellect: 25
-      defense: 15
-      agility: 30
   - key: hero_shang_xiuxun
     name: 商秀珣
     archetype: military
@@ -212,66 +137,6 @@ heroes:
       intellect: 20
       defense: 20
       agility: 30
-  - key: hero_feng_xinglie
-    name: 风行烈
-    archetype: military
-    flavor: 风行烈是枪王厉若海门下的传人，性情磊落，枪法凌厉。师门风云与江湖血火磨出他的坚忍，却没有磨掉他的赤子之心；他行事干脆，认定的情义便不会轻易放手。这样的枪，刺出去是锋芒，收回来是分寸。出自黄易小说《覆雨翻云》。
-    default_gender: male
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 15
-      defense: 25
-      agility: 25
-  - key: hero_qin_mengyao
-    name: 秦梦瑶
-    archetype: civil
-    flavor: 秦梦瑶是慈航静斋传人，清雅出尘而意志坚定。她奉师门之命行走江湖，身负天下之重，却始终没有把自己的心交给所谓“大局”处置；与韩柏的情缘，更让她看见人间烟火的温度。她的剑很清，选择却并不轻。出自黄易小说《覆雨翻云》。
-    default_gender: female
-    default_morality: 80
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 40
-      defense: 20
-      agility: 25
-  - key: hero_fan_liangji
-    name: 范良极
-    archetype: military
-    flavor: 范良极号称盗王，行事诡奇，身法与心思一样难捉摸。虽有一身绝顶武学，他却不肯把自己拴在任何旗号之下，时而出手，时而旁观，叫敌友都摸不准他的算盘。江湖最怕的不是高手笑，而是高手笑完还不说打算做什么。出自黄易小说《覆雨翻云》。
-    default_gender: male
-    default_morality: 45
-    recruitable: true
-    growth_range:
-    - 5
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 25
-      defense: 20
-      agility: 20
-  - key: hero_yang_xuyan
-    name: 杨虚彦
-    archetype: military
-    flavor: 杨虚彦是魔门补天阁传人，人称“影子刺客”。他善于潜行、伪装与一击制敌，常把身份和杀意一并藏进暗处；行走江湖时，仿佛阴影偶尔决定从哪面墙上落下来。出自黄易小说《大唐双龙传》。
-    default_gender: male
-    default_morality: 25
-    recruitable: true
-    growth_range:
-    - 5
-    - 7
-    attribute_weights:
-      force: 25
-      intellect: 20
-      defense: 10
-      agility: 45
   - key: hero_zhao_ya
     name: 赵雅
     archetype: civil
@@ -287,21 +152,6 @@ heroes:
       intellect: 50
       defense: 15
       agility: 25
-  - key: hero_lian_jin
-    name: 连晋
-    archetype: military
-    flavor: 连晋本是剑术高手，野心与怨恨却把他一步步推向歧途。他善于借势，也敢以险招搏命，在项少龙面前更是屡次露出阴狠锋芒。剑走偏锋尚可称奇，人若也走偏了，便只剩下后患。出自黄易小说《寻秦记》。
-    default_gender: male
-    default_morality: 25
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 28
-      defense: 15
-      agility: 22
   blue:
   - key: hero_zhu_yuzhen
     name: 祝玉妍
@@ -333,21 +183,6 @@ heroes:
       intellect: 15
       defense: 25
       agility: 20
-  - key: hero_pang_ban
-    name: 庞斑
-    archetype: military
-    flavor: 庞斑人称“魔师”，是《覆雨翻云》中压得群雄屏息的绝世高手。他统御魔师宫，野心、武学与气魄俱臻巅峰；与浪翻云的一战早已不只是胜负，更像两条武道的正面相撞。此人一出场，连江湖的风都得先掂量自己够不够硬。出自黄易小说《覆雨翻云》。
-    default_gender: male
-    default_morality: 25
-    recruitable: true
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 45
-      intellect: 20
-      defense: 25
-      agility: 10
   - key: hero_li_ruohai
     name: 厉若海
     archetype: military
@@ -363,6 +198,156 @@ heroes:
       intellect: 20
       defense: 20
       agility: 25
+  - key: hero_teng_yi
+    name: 滕翼
+    archetype: military
+    flavor: 滕翼是项少龙并肩而行的生死兄弟，沉稳寡言，忠义如山。临阵能挥刀破敌，平日能替同伴收拾残局，是队伍最可靠的脊梁。话少不是没意见，只是他的意见通常已经写在刀锋上。出自黄易小说《寻秦记》。
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 15
+      defense: 30
+      agility: 20
+  - key: hero_song_lu
+    name: 宋鲁
+    archetype: military
+    flavor: 宋鲁是宋阀高手，性情豪迈爽直，重诺重义。乱世行军，他能冲锋，也能稳住阵脚；论绝世锋芒或许不抢头彩，论可靠二字却少有人能与他争。这样的兄弟，江湖上很难遇到，遇到后最好别轻易弄丢。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 15
+      defense: 30
+      agility: 20
+  - key: hero_shen_luoyan
+    name: 沈落雁
+    archetype: civil
+    flavor: 沈落雁是瓦岗军中声名赫赫的女军师，容貌与智计同样出众。她善于审势布局，常以一念牵动群雄，既有谋士的冷静，也有身处乱世的无奈。她落子之前，旁人还在争论棋盘在哪儿。出自黄易小说《大唐双龙传》。
+    default_gender: female
+    default_morality: 60
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 50
+      defense: 15
+      agility: 25
+  - key: hero_shan_meixian
+    name: 单美仙
+    archetype: military
+    flavor: 单美仙是东溟派掌门，性情刚烈，行事果断，兼有江湖女子的英气与威势。她掌一派、历风波，不靠谁的怜惜立足，遇事更习惯自己拔剑解决。若她说“此事到此为止”，通常只是提醒对方先把遗言想好。出自黄易小说《大唐双龙传》。
+    default_gender: female
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 20
+      defense: 15
+      agility: 35
+  - key: hero_hou_xibai
+    name: 侯希白
+    archetype: military
+    flavor: 侯希白是花间派传人，人称“多情公子”，一柄美人扇不离手，画笔与武功都颇有风流。看似爱花惜美、潇洒不羁，实则心怀正义，重朋友、知进退。别人以画留名，他偶尔还顺手用画迷惑对手。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 25
+      defense: 15
+      agility: 30
+  - key: hero_feng_xinglie
+    name: 风行烈
+    archetype: military
+    flavor: 风行烈是枪王厉若海门下的传人，性情磊落，枪法凌厉。师门风云与江湖血火磨出他的坚忍，却没有磨掉他的赤子之心；他行事干脆，认定的情义便不会轻易放手。这样的枪，刺出去是锋芒，收回来是分寸。出自黄易小说《覆雨翻云》。
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 15
+      defense: 25
+      agility: 25
+  - key: hero_qin_mengyao
+    name: 秦梦瑶
+    archetype: civil
+    flavor: 秦梦瑶是慈航静斋传人，清雅出尘而意志坚定。她奉师门之命行走江湖，身负天下之重，却始终没有把自己的心交给所谓“大局”处置；与韩柏的情缘，更让她看见人间烟火的温度。她的剑很清，选择却并不轻。出自黄易小说《覆雨翻云》。
+    default_gender: female
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 40
+      defense: 20
+      agility: 25
+  - key: hero_fan_liangji
+    name: 范良极
+    archetype: military
+    flavor: 范良极号称盗王，行事诡奇，身法与心思一样难捉摸。虽有一身绝顶武学，他却不肯把自己拴在任何旗号之下，时而出手，时而旁观，叫敌友都摸不准他的算盘。江湖最怕的不是高手笑，而是高手笑完还不说打算做什么。出自黄易小说《覆雨翻云》。
+    default_gender: male
+    default_morality: 45
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 25
+      defense: 20
+      agility: 20
+  - key: hero_yang_xuyan
+    name: 杨虚彦
+    archetype: military
+    flavor: 杨虚彦是魔门补天阁传人，人称“影子刺客”。他善于潜行、伪装与一击制敌，常把身份和杀意一并藏进暗处；行走江湖时，仿佛阴影偶尔决定从哪面墙上落下来。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 25
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 25
+      intellect: 20
+      defense: 10
+      agility: 45
+  - key: hero_lian_jin
+    name: 连晋
+    archetype: military
+    flavor: 连晋本是剑术高手，野心与怨恨却把他一步步推向歧途。他善于借势，也敢以险招搏命，在项少龙面前更是屡次露出阴狠锋芒。剑走偏锋尚可称奇，人若也走偏了，便只剩下后患。出自黄易小说《寻秦记》。
+    default_gender: male
+    default_morality: 25
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 28
+      defense: 15
+      agility: 22
   purple:
   - key: hero_chuan_ying
     name: 传鹰
@@ -559,3 +544,18 @@ heroes:
       intellect: 15
       defense: 20
       agility: 15
+  - key: hero_pang_ban
+    name: 庞斑
+    archetype: military
+    flavor: 庞斑人称“魔师”，是《覆雨翻云》中压得群雄屏息的绝世高手。他统御魔师宫，野心、武学与气魄俱臻巅峰；与浪翻云的一战早已不只是胜负，更像两条武道的正面相撞。此人一出场，连江湖的风都得先掂量自己够不够硬。出自黄易小说《覆雨翻云》。
+    default_gender: male
+    default_morality: 25
+    recruitable: true
+    growth_range:
+    - 8
+    - 11
+    attribute_weights:
+      force: 45
+      intellect: 20
+      defense: 25
+      agility: 10

@@ -207,7 +207,7 @@ def recover_guest_hp(guest: Guest, now: datetime | None = None) -> None:
     从1点到满血耗时24小时，每10分钟检查一次并线性恢复。
     澡堂建筑可提供生命恢复加成（满级200%）。
 
-    重伤门客（INJURED状态）会自动恢复，但速率仅为普通状态的 1/10。
+    重伤门客（INJURED状态）会自动恢复，但速率仅为普通状态的 1/10；自然回血达到最大生命值20%后解除重伤。
     全局时间流速（GAME_TIME_MULTIPLIER）同样作用于重伤回血。
     """
     now = now or timezone.now()
@@ -260,7 +260,10 @@ def recover_guest_hp(guest: Guest, now: datetime | None = None) -> None:
     guest.last_hp_recovery_at = last + timedelta(seconds=intervals * TimeConstants.HP_RECOVERY_INTERVAL)
     update_fields = ["current_hp", "last_hp_recovery_at", *loyalty_update_fields]
     resumed_training = False
-    if guest.status == GuestStatus.INJURED and guest.current_hp >= guest.max_hp:
+    if guest.status == GuestStatus.INJURED and _guest_health_rules.should_clear_injured_status(
+        current_hp=guest.current_hp,
+        max_hp=guest.max_hp,
+    ):
         transition = prepare_guest_status_transition(guest, GuestStatus.IDLE, now=now)
         resumed_training = transition.resumed_training
         update_fields.extend(GUEST_STATUS_UPDATE_FIELDS)

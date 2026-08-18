@@ -47,21 +47,6 @@ heroes:
       intellect: 40
       defense: 10
       agility: 35
-  - key: hero_xue_bing
-    name: 薛冰
-    archetype: civil
-    flavor: 陆小凤的红颜知己，人称“冷罗刹”，是江湖中赫赫有名的神针薛家的后人，也是“红鞋子”组织中的八妹。她长得虽不算绝美，但那一双大眼睛却灵动异常，充满了顽皮与狡黠。她性格泼辣直爽，敢爱敢恨，对陆小凤一往情深，常以吃醋撒娇的方式表达爱意。她不似寻常女子只会等待，而是积极参与江湖纷争，以智慧和武功支持着那个风流不羁的"四条眉毛"。可惜红颜薄命，她最终成为了金九龄阴谋下的牺牲品，令人扼腕叹息。出自古龙小说《陆小凤系列》
-    default_gender: female
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 35
-      defense: 15
-      agility: 35
   - key: hero_ouyang_qing
     name: 欧阳情
     archetype: civil
@@ -152,66 +137,6 @@ heroes:
       intellect: 20
       defense: 30
       agility: 20
-  - key: hero_qingqing
-    name: 青青
-    archetype: civil
-    flavor: 魔教教主之孙女，丁鹏的结发妻子。她温柔美丽，善解人意，不仅拥有着惊人的美貌，更有着一颗七窍玲珑心。在丁鹏最落魄、最绝望的时候，是她给予了他重生的希望，并毫无保留地将魔教绝学"圆月弯刀"传授给他。她对丁鹏的爱是无私的、包容的，甚至为了成全丁鹏的名声，甘愿隐姓埋名。她是古龙笔下最完美、最令人动容的女性形象之一，正如天上的明月，皎洁而温暖，照亮了丁鹏黑暗的人生。出自古龙小说《圆月弯刀》
-    default_gender: female
-    default_morality: 85
-    recruitable: true
-    growth_range:
-    - 3
-    - 8
-    attribute_weights:
-      force: 15
-      intellect: 35
-      defense: 20
-      agility: 30
-  - key: hero_xiao_gao
-    name: 小高
-    archetype: military
-    flavor: 一个初入江湖的平凡少年，却意外卷入了一场惊天动地的阴谋之中。他本是普通人，没有任何显赫的家世背景，却凭借着一股初生牛犊不怕虎的勇气和坚韧不拔的毅力，在"血鹦鹉"的恐怖传说中艰难求生。他见证了江湖中最黑暗、最诡异的一面，也经历了生离死别的痛苦考验。他是古龙笔下最具平民色彩的主角，以普通人的视角揭示了江湖的残酷与人性的复杂。出自古龙小说《血鹦鹉》
-    default_gender: male
-    default_morality: 70
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 30
-      intellect: 20
-      defense: 25
-      agility: 25
-  - key: hero_tian_sisi
-    name: 田思思
-    archetype: civil
-    flavor: 田二爷的独生女儿，一位集万千宠爱于一身的千金大小姐。她性格天真烂漫，古灵精怪，为了寻找心目中的大英雄，她带着巨额财富离家出走，踏入了这个充满未知的江湖。一路上，她闹出了不少笑话，也经历了不少磨难，逐渐从一个不谙世事的少女成长为懂得识人用人的女子。她与杨凡的爱情故事，充满了欢笑与温情，证明了真正的"大人物"往往就隐藏在平凡的外表之下，而真爱也往往就在身边。出自古龙小说《大人物》
-    default_gender: female
-    default_morality: 80
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 10
-      intellect: 40
-      defense: 20
-      agility: 30
-  - key: hero_xiao_die
-    name: 小蝶
-    archetype: civil
-    flavor: 江湖霸主"老伯"孙玉伯的掌上明珠，一个命运多舛的女子。她生性温柔善良，向往自由与美好的爱情，却被卷入了残酷的权力斗争漩涡之中。她被律香川欺骗与伤害，未婚生子，饱受世俗的冷眼与非议。然而，她从未放弃对生活的希望，依然保持着一颗纯洁坚韧的心。她与孟星魂的相遇，是两个孤独灵魂的相互救赎。她的存在，如同一束柔和的光，照亮了流星蝴蝶剑这个充满杀戮与阴谋的黑暗世界。出自古龙小说《流星·蝴蝶·剑》
-    default_gender: female
-    default_morality: 85
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 10
-      intellect: 35
-      defense: 25
-      agility: 30
   - key: hero_zhou_ting
     name: 周婷
     archetype: civil
@@ -226,36 +151,6 @@ heroes:
       force: 10
       intellect: 40
       defense: 25
-      agility: 25
-  - key: hero_sun_xiaohong
-    name: 孙小红
-    archetype: civil
-    flavor: 天机老人的孙女，一位活泼开朗、明艳动人的少女。她扎着两条又黑又亮的大辫子，一双大眼睛里充满了智慧与勇气。她自幼随爷爷行走江湖，见多识广，胆略过人。在李寻欢最颓废、最痛苦的日子里，是她用如阳光般温暖的笑容和坚定的爱意，一步步融化了他心中的坚冰。她不仅敢爱敢恨，更有着超乎常人的果决，在关键时刻屡次助李寻欢化险为夷。她的真诚与执着最终打动了这位浪子，两人携手归隐，成就了一段江湖佳话。出自古龙小说《多情剑客无情剑》
-    default_gender: female
-    default_morality: 85
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 20
-      intellect: 30
-      defense: 20
-      agility: 30
-  - key: hero_lin_xianer
-    name: 林仙儿
-    archetype: civil
-    flavor: 江湖公认的"第一美人"，拥有着欺霜赛雪的绝世容颜和令人销魂的柔媚身姿。她外表看似楚楚可怜、纯洁无瑕，宛如一朵出淤泥而不染的白莲，实则内心如蛇蝎般狠毒，充满着对权力和欲望的无尽贪婪。她将天下男人玩弄于股掌之间，利用自己的美貌编织了一张巨大的关系网，让无数英雄豪杰为她竞折腰，甚至不惜身败名裂。她是阿飞心中永远的痛，也是江湖中最堕落的灵魂。她的一生在征服与背叛中度过，最终红颜凋零，沦为最卑微的娼妓，留给世人无尽的唏嘘与警示。出自古龙小说《多情剑客无情剑》
-    default_gender: female
-    default_morality: 15
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
       agility: 25
   - key: hero_tie_chuanjia
     name: 铁传甲
@@ -272,21 +167,6 @@ heroes:
       intellect: 10
       defense: 35
       agility: 15
-  - key: hero_li_hongxiu
-    name: 李红袖
-    archetype: civil
-    flavor: 楚留香身畔的红衣佳人，博闻强记，胸罗万象，堪称武林活典籍。她常居海上兰舟，虽不常亲涉刀光剑影，却对江湖各派掌故、人物秘辛乃至武功路数了如指掌。每逢香帅遭逢疑局，往往赖她引经据典，一语道破玄机。她性情爽朗明艳，如同一团红色的火焰，于风云变幻中守着一份难得的清醒与理智。她以智慧为剑，在谈笑间助人化解危难，是楚留香最得力的助手之一。出自古龙小说《楚留香系列》
-    default_gender: female
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
   - key: hero_gong_nanyan
     name: 宫南燕
     archetype: military
@@ -317,21 +197,6 @@ heroes:
       intellect: 10
       defense: 30
       agility: 25
-  - key: hero_xue_xiaoren
-    name: 薛笑人
-    archetype: military
-    flavor: “天下第一剑客”薛衣人的弟弟，一个在江湖中极具欺骗性的角色。他表面上是一个只会傻笑、行为如孩童般天真的“薛宝宝”，实则城府极深，心狠手辣。为了家族声誉和满足自己的野心，他在幕后一手创建了令人闻风丧胆的杀手组织。他武功高强，剑法不在其兄之下。他是楚留香遇到的最危险、最难以捉摸的对手之一，将“大智若愚”演绎到了极致。最终在真相大白后，他选择了自尽，结束了自己分裂而罪恶的一生。出自古龙小说《楚留香系列》
-    default_gender: male
-    default_morality: 25
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 25
-      defense: 20
-      agility: 20
   - key: hero_laoshi_heshang
     name: 老实和尚
     archetype: military
@@ -347,21 +212,6 @@ heroes:
       intellect: 15
       defense: 25
       agility: 25
-  - key: hero_jin_jiuling
-    name: 金九龄
-    archetype: military
-    flavor: 六扇门三百年来第一神捕，也是江湖中著名的风流人物。他相貌英俊，衣着华丽，武功高强，智计更是冠绝一时。他表面上正义凛然，维护法纪，实则野心勃勃，贪婪成性。为了维持其奢靡的生活和满足对权力的渴望，他精心策划了轰动江湖的“绣花大盗”案，将黑白两道玩弄于股掌之间。他自负到了极点，认为自己算无遗策，最终却败在了同样聪明的陆小凤手中。金九龄的虚伪与狠辣，正是古龙对“道貌岸然”最锋利的一次揭穿。出自古龙小说《陆小凤系列》
-    default_gender: male
-    default_morality: 40
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 15
-      defense: 30
-      agility: 20
   - key: hero_jiang_feng
     name: 江枫
     archetype: military
@@ -377,51 +227,6 @@ heroes:
       intellect: 20
       defense: 25
       agility: 20
-  - key: hero_tie_xinlan
-    name: 铁心兰
-    archetype: military
-    flavor: “狂狮”铁战之女，一位明艳高洁、外柔内刚的牡丹美人。她为了寻找失踪的父亲踏入江湖，最初与江小鱼相识相知，情愫暗生。然而命运弄人，她又遇见了温润如玉的花无缺。在两个优秀的男子之间，她经历了漫长的痛苦、挣扎与抉择。她曾为救小鱼儿不惜牺牲尊严，也曾被花无缺的深情所打动。她的情感历程是全书最扣人心弦的部分，最终她选择了花无缺，与其结为连理。出自古龙小说《绝代双骄》
-    default_gender: female
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 30
-      intellect: 20
-      defense: 25
-      agility: 25
-  - key: hero_su_ying
-    name: 苏樱
-    archetype: civil
-    flavor: 十二星相之首魏无牙的义女，一个集智慧、美貌与个性于一身的奇女子。她外表冷漠孤傲，实则深情执着。她不仅精通机关药理，更拥有绝顶的智慧，是唯一能在智谋上与江小鱼一较高下的女子。在江小鱼最危难的时刻，她挺身而出，对其一见钟情后便主动追求，毫不掩饰。她是唯一能在这个世界上降住"天下第一恶人"江小鱼的女子，两人最终终成眷属，共度余生。出自古龙小说《绝代双骄》
-    default_gender: female
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 5
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
-  - key: hero_lian_xing
-    name: 怜星
-    archetype: military
-    flavor: 移花宫二宫主，大宫主邀月的妹妹。她清冷如月，武功高强，却有着一颗比姐姐柔软得多的心。虽身患残疾，却更添几分楚楚动人。在当年江枫夫妇惨死时，是她的一念之仁保全了双胞胎的性命。多年来，她一直生活在姐姐的强势与阴影下，在爱与恐惧之间挣扎。她多次暗中帮助花无缺和小鱼儿，试图阻止那场兄弟相残的悲剧。她的柔弱与坚忍，是移花宫悲剧里最令人心疼的一笔。出自古龙小说《绝代双骄》
-    default_gender: female
-    default_morality: 70
-    recruitable: true
-    growth_range:
-    - 5
-    - 7
-    attribute_weights:
-      force: 30
-      intellect: 20
-      defense: 25
-      agility: 25
   - key: hero_li_dazui
     name: 李大嘴
     archetype: military
@@ -467,51 +272,6 @@ heroes:
       intellect: 15
       defense: 30
       agility: 25
-  - key: hero_shen_bijun
-    name: 沈璧君
-    archetype: civil
-    flavor: 无垢山庄少夫人，连城璧之妻，人称"武林第一美人"。她出身江南世家，拥有着令人窒息的美貌和高贵的身份，却像一只被囚禁在金丝笼中的金丝雀。她外表柔弱，内心却渴望自由与真爱。与萧十一郎的相遇，如同在她平静的湖心投下了一颗巨石，激起了惊涛骇浪。她爱上了这个被世人唾弃的"大盗"，并在家族责任、丈夫的名声与内心的渴望之间痛苦挣扎。她的爱情是绝望而凄美的，她是古龙笔下内心最为矛盾、命运最为坎坷的女性角色之一。出自古龙小说《萧十一郎》
-    default_gender: female
-    default_morality: 65
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 20
-      intellect: 30
-      defense: 20
-      agility: 30
-  - key: hero_feng_siniang
-    name: 风四娘
-    archetype: military
-    flavor: 江湖奇女子，人称"风四娘"。她就像一阵风，来去无踪，自由洒脱。她不仅长得美，而且有着男儿般的豪情与酒量。她喜欢骑最快的马，喝最烈的酒，杀最狠的人。她深爱着萧十一郎，却深知他心中只有沈璧君，于是她选择将这份爱深埋心底，以姐姐和朋友的身份默默守护着他。她为了萧十一郎可以付出一切，甚至不惜牺牲自己的幸福。她是古龙笔下最真性情、最令人敬佩的女性角色之一，展现了江湖儿女的快意恩仇。出自古龙小说《萧十一郎》
-    default_gender: female
-    default_morality: 70
-    recruitable: true
-    growth_range:
-    - 5
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 15
-      defense: 30
-      agility: 20
-  - key: hero_wuhua_heshang
-    name: 无花和尚
-    archetype: military
-    flavor: 少林寺的"妙僧"，外表高洁儒雅，琴棋书画样样精通，是无数人心目中的圣僧。然而，在这完美的面具之下，隐藏着一颗勃勃的野心和冷酷的灵魂。他是"天枫十四郎"与石观音之子，继承了父母的优秀基因与狠毒手段。他与楚留香本是惺惺相惜的知己，却因策划惊天阴谋而走向对立。他是楚留香遇到的第一个真正意义上的强敌，其智谋与武功皆属顶尖。他的伪善与堕落，是对人性最深刻的讽刺，令人不寒而栗。出自古龙小说《楚留香系列》
-    default_gender: male
-    default_morality: 35
-    recruitable: true
-    growth_range:
-    - 5
-    - 7
-    attribute_weights:
-      force: 30
-      intellect: 15
-      defense: 30
-      agility: 25
   - key: hero_lu_xiaojia
     name: 路小佳
     archetype: military
@@ -542,36 +302,6 @@ heroes:
       intellect: 15
       defense: 25
       agility: 25
-  - key: hero_lv_xiangchuan
-    name: 律香川
-    archetype: civil
-    flavor: 人称“律香川，立香坛”，曾是“老伯”孙玉伯最信任的智囊和得力助手。他外表温文尔雅，举止得体，不仅精通武功，更擅长烹饪和暗器。然而，在这完美的表象之下，隐藏着一颗极度阴暗、扭曲和充满野心的心。他背叛了对他恩重如山的老伯，策划了一系列精密的阴谋，试图夺取孙府的大权。他对孙蝶的爱充满了占有欲和病态，最终因爱生恨。他的结局充满了讽刺，机关算尽太聪明，反误了卿卿性命。出自古龙小说《流星·蝴蝶·剑》
-    default_gender: male
-    default_morality: 30
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 20
-      intellect: 35
-      defense: 15
-      agility: 30
-  - key: hero_zhao_wuji
-    name: 赵无忌
-    archetype: civil
-    flavor: 大风堂堂主赵简之子，一个背负着血海深仇的年轻侠客。在父亲赵简离奇自刎后，为了查明真相，他不惜自毁名誉，忍辱负重，深入虎穴，潜入蜀中唐门卧底。在尔虞我诈的江湖斗争中，他凭借着过人的胆识、缜密的心思和坚韧的毅力，一步步揭开了隐藏在背后的巨大阴谋。他在复仇的道路上经历了无数生死考验，也体会到了江湖的冷暖与人性的复杂，最终成长为一代大侠。出自古龙小说《白玉老虎》
-    default_gender: male
-    default_morality: 70
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 25
-      intellect: 40
-      defense: 15
-      agility: 20
   - key: hero_guo_dalu
     name: 郭大路
     archetype: military
@@ -647,21 +377,6 @@ heroes:
       intellect: 15
       defense: 30
       agility: 15
-  - key: hero_wang_lianhua
-    name: 王怜花
-    archetype: civil
-    flavor: 人称"千面公子"，快活王之子。他风流倜傥，惊才绝艳，精通易容、下毒、摄心等旁门左道，更兼文韬武略，无一不精。他性格复杂多变，亦正亦邪，既能如谦谦君子般温润如玉，又能如恶魔般心狠手辣。他与沈浪既是惺惺相惜的知己，又是势不两立的对手。他的一生都在爱恨情仇中挣扎，最终被沈浪的人格魅力所感化，选择归隐海外。他是古龙笔下最具魅力和复杂性的反派人物之一。出自古龙小说《武林外史》
-    default_gender: male
-    default_morality: 55
-    recruitable: true
-    growth_range:
-    - 5
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 10
-      agility: 30
   - key: hero_liu_yuhen
     name: 柳余恨
     archetype: military
@@ -737,36 +452,6 @@ heroes:
       intellect: 20
       defense: 20
       agility: 25
-  - key: hero_ma_rulong
-    name: 马如龙
-    archetype: military
-    flavor: 碧血洗银枪的主角，一位身负绝世武功的年轻侠客。他手中的银枪不仅是一件杀人利器，更是正义与荣耀的象征。他性格刚烈，嫉恶如仇，即使身陷重围、背负不白之冤，也从未放弃过对真相的追寻。他的故事充满了热血与豪情，碧血染红了他的银枪，却染不红他那颗赤诚的侠义之心。他是古龙后期作品中少有的传统型大侠，用生命诠释了"虽千万人吾往矣"的英雄气概。出自古龙小说《碧血洗银枪》
-    default_gender: male
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 5
-    - 7
-    attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 20
-      agility: 25
-  - key: hero_xue_yiren
-    name: 薛衣人
-    archetype: military
-    flavor: 人称"天下第一剑客"，薛家庄的主人。他一生痴迷于剑道，视剑如命，剑法已臻化境。为了追求剑术的极致，他不惜挑战天下高手，手上沾满了鲜血。他性格孤僻冷傲，行事诡秘，给江湖蒙上了一层神秘的阴影。然而，在他冷酷的外表下，也隐藏着对弟弟薛笑人的复杂情感。他与楚留香的交锋，不仅是武功的较量，更是智慧与人格的碰撞。最终，他在楚留香的感化下，放下屠刀，领悟了比剑术更重要的人生真谛。出自古龙小说《楚留香系列》
-    default_gender: male
-    default_morality: 50
-    recruitable: true
-    growth_range:
-    - 6
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 25
-      defense: 20
-      agility: 20
   - key: hero_yang_zheng
     name: 杨铮
     archetype: military
@@ -781,21 +466,6 @@ heroes:
       force: 35
       intellect: 20
       defense: 25
-      agility: 20
-  - key: hero_yedi
-    name: 夜帝
-    archetype: military
-    flavor: 江湖传说中的巅峰存在，与"日后"并称武林至尊。他性格风流潇洒，放荡不羁，喜爱收集天下美人，过着神仙般的日子。他武功深不可测，当世罕有敌手，是铁中棠的恩师之一。在被困于岩洞的岁月里，他将毕生绝学传授给了铁中棠，助其练成神功。他虽游戏人间，却在大是大非面前毫不含糊，是一位真正的大宗师。他的存在，象征着武林中那种超脱世俗、逍遥自在的至高境界。出自古龙小说《大旗英雄传》
-    default_gender: male
-    default_morality: 55
-    recruitable: true
-    growth_range:
-    - 6
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 25
-      defense: 20
       agility: 20
   - key: hero_jin_wuwang
     name: 金无望
@@ -917,21 +587,6 @@ heroes:
       intellect: 15
       defense: 25
       agility: 20
-  - key: hero_gao_jiping
-    name: 高寄萍
-    archetype: civil
-    flavor: 快活林的主人，江湖人称“高老大”。她身世凄苦，自幼流落街头，靠着惊人的毅力和不择手段的狠辣才在弱肉强食的江湖中扎下根来。她一手抚养了孟星魂、叶翔等四大杀手，既是他们的姐姐和恩人，也是冷酷的剥削者与掌控者。她对金钱和权力有着近乎病态的渴望，这种渴望源于童年时期的贫穷与屈辱。她美艳绝伦却心机深沉，一生都在利用他人的情感来达成自己的目的，最终却发现自己在这个过程中失落了最珍贵的东西。她是古龙笔下性格最为复杂、最令人扼腕叹息的女性反派，可恨的外表下隐藏着一颗早已破碎的心。出自古龙小说《流星·蝴蝶·剑》
-    default_gender: female
-    default_morality: 35
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 25
-      intellect: 35
-      defense: 20
-      agility: 20
   - key: hero_baishui_gongzhu
     name: 白水宫主
     archetype: military
@@ -950,7 +605,7 @@ heroes:
   - key: hero_gao_li
     name: 高立
     archetype: military
-    flavor: 曾是杀手组织“青龙会”的成员，因厌倦杀戮而归隐。为了帮助朋友，他借用了传说中的暗器“孔雀翎”。他重情重义，勇于担当，证明了真正的武器不是孔雀翎，而是使用者的信心与勇气。出自古龙小说《七种武器》。无论成败如何，高立所面对的战场条件都具有典型性，因此其经验常被后人用作比较案例。
+    flavor: 曾是杀手组织“青龙会”的成员，因厌倦杀戮而归隐。为了帮助朋友，他借用了传说中的暗器“孔雀翎”。他重情重义，勇于担当，证明了真正的武器不是孔雀翎，而是使用者的信心与勇气。出自古龙小说《七种武器》。
     default_gender: male
     default_morality: 80
     recruitable: true
@@ -965,7 +620,7 @@ heroes:
   - key: hero_xiao_pei
     name: 段玉
     archetype: military
-    flavor: 是个诚实、天真、单纯的少年。他带着碧玉刀去给岳父贺寿，却意外卷入了一场阴谋。凭借着诚实和运气，他不仅化解了危机，还赢得了美人心。他的故事告诉我们，诚实有时是最好的武器。出自古龙小说《七种武器》。围绕其生平的军事叙述，常与同代对手及盟友并读，进而揭示武侠叙事语境力量对比的动态演化。
+    flavor: 是个诚实、天真、单纯的少年。他带着碧玉刀去给岳父贺寿，却意外卷入了一场阴谋。凭借着诚实和运气，他不仅化解了危机，还赢得了美人心。他的故事告诉我们，诚实有时是最好的武器。出自古龙小说《七种武器》。
     default_gender: male
     default_morality: 80
     recruitable: true
@@ -980,7 +635,7 @@ heroes:
   - key: hero_xiang_song
     name: 萧少英
     archetype: military
-    flavor: 曾是双环门的杰出弟子。他为了重振师门，不惜伪装成败类，深入仇家内部。他心机深沉，忍辱负重，用情义和计谋将敌人一步步推向毁灭。他的故事充满了反转与人性的拷问。出自古龙小说《七种武器》。无论成败如何，萧少英所面对的战场条件都具有典型性，因此其经验常被后人用作比较案例。
+    flavor: 曾是双环门的杰出弟子。他为了重振师门，不惜伪装成败类，深入仇家内部。他心机深沉，忍辱负重，用情义和计谋将敌人一步步推向毁灭。他的故事充满了反转与人性的拷问。出自古龙小说《七种武器》。
     default_gender: male
     default_morality: 65
     recruitable: true
@@ -991,51 +646,6 @@ heroes:
       force: 35
       intellect: 30
       defense: 15
-      agility: 20
-  - key: hero_hu_bugui
-    name: 伊风
-    archetype: military
-    flavor: 飘香剑雨的主角，本名吕南人。他原是武林名门之后，却因妻子被邪教掠走而家破人亡。为了复仇，他隐姓埋名，手持飘香剑，只身闯荡险恶江湖。他从一个被仇恨蒙蔽双眼的狂人，在经历了一系列的磨难与奇遇后，逐渐领悟了侠义的真谛，成长为一代大侠。他的故事充满了早期的悲情与苍凉，展现了一个男人在绝境中的挣扎与救赎，是古龙笔下"浪子"形象的早期雏形。出自古龙小说《飘香剑雨》
-    default_gender: male
-    default_morality: 70
-    recruitable: true
-    growth_range:
-    - 5
-    - 8
-    attribute_weights:
-      force: 35
-      intellect: 20
-      defense: 20
-      agility: 25
-  - key: hero_mo_bai
-    name: 白衣人
-    archetype: military
-    flavor: 来自东瀛的绝世高手。他身着白衣，剑法已入神境，来到中原只为寻求真正的一战。他的出现终结了中原武林的安宁，也促使方宝玉走上了漫长的求剑之路。他不仅是方宝玉一生追赶的目标，也代表了武学中至高无上的孤独与追求。出自古龙小说《浣花洗剑录》
-    default_gender: male
-    default_morality: 55
-    recruitable: true
-    growth_range:
-    - 7
-    - 9
-    attribute_weights:
-      force: 45
-      intellect: 15
-      defense: 20
-      agility: 20
-  - key: hero_yu_peiyu
-    name: 俞佩玉
-    archetype: civil
-    flavor: 先天无极派掌门人之子。他遭遇家门巨变，父亲及同门被伪装者所害。他虽然容貌绝世、性情温和，却在复仇之路上展现出极大的坚韧。他多次易容改面，周旋于各大势力之间，最终揭露了真相，成为一代武林名侠。出自古龙小说《名剑风流》
-    default_gender: male
-    default_morality: 80
-    recruitable: true
-    growth_range:
-    - 5
-    - 8
-    attribute_weights:
-      force: 25
-      intellect: 35
-      defense: 20
       agility: 20
   blue:
   - key: hero_su_rongrong
@@ -1098,21 +708,6 @@ heroes:
       intellect: 30
       defense: 20
       agility: 30
-  - key: hero_meng_xinghun
-    name: 孟星魂
-    archetype: military
-    flavor: 快活林"高老大"抚养长大的四大杀手之一，一个身处黑暗却心向光明的孤独刺客。他厌倦了杀人的生活，渴望像普通人一样在阳光下活着。为了完成最后一个任务，他潜入孙府刺杀老伯，却意外爱上了老伯的女儿小蝶。在忠诚与正义、责任与爱情之间，他经历了痛苦的抉择。最终，他不仅识破了律香川的阴谋，更在老伯的感召下找到了人性的救赎。他的故事充满了悲情与浪漫，展现了一个杀手在残酷江湖中寻找自我和真爱的艰难历程。出自古龙小说《流星·蝴蝶·剑》
-    default_gender: male
-    default_morality: 65
-    recruitable: true
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 30
-      intellect: 20
-      defense: 15
-      agility: 35
   - key: hero_gao_jianfei
     name: 高渐飞
     archetype: civil
@@ -1167,7 +762,7 @@ heroes:
     recruitable: true
     growth_range:
     - 6
-    - 9
+    - 10
     attribute_weights:
       force: 35
       intellect: 10
@@ -1181,7 +776,7 @@ heroes:
     default_morality: 85
     recruitable: true
     growth_range:
-    - 5
+    - 6
     - 9
     attribute_weights:
       force: 40
@@ -1226,8 +821,8 @@ heroes:
     default_morality: 45
     recruitable: true
     growth_range:
-    - 5
-    - 9
+    - 6
+    - 10
     attribute_weights:
       force: 30
       intellect: 20
@@ -1241,8 +836,8 @@ heroes:
     default_morality: 25
     recruitable: true
     growth_range:
-    - 5
-    - 9
+    - 6
+    - 10
     attribute_weights:
       force: 30
       intellect: 35
@@ -1287,7 +882,7 @@ heroes:
     recruitable: true
     growth_range:
     - 6
-    - 9
+    - 10
     attribute_weights:
       force: 40
       intellect: 20
@@ -1488,21 +1083,6 @@ heroes:
       intellect: 35
       defense: 15
       agility: 35
-  - key: hero_ding_peng
-    name: 丁鹏
-    archetype: military
-    flavor: 曾经的落魄少年，在遭遇背叛后意外坠入魔教，习得绝世武学“圆月弯刀”。他的一生充满了宿命的纠葛，刀锋上既刻着“小楼一夜听春雨”的凄美，也承载着复仇的狂戾。在与青青的相伴中，他逐渐看透了江湖名利的虚幻，明白了武器的善恶全在执刀之人的心。他从一个一心复仇的魔头，最终蜕变为能够掌控魔性、追求平静的刀客。圆月之下，弯刀如虹，他用苦难和磨砺铸就了属于自己的刀道传奇。出自古龙小说《圆月弯刀》
-    default_gender: male
-    default_morality: 65
-    recruitable: true
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 35
-      intellect: 15
-      defense: 20
-      agility: 30
   - key: hero_li_huai
     name: 李坏
     archetype: military
@@ -1526,8 +1106,8 @@ heroes:
     default_morality: 25
     recruitable: true
     growth_range:
-    - 5
-    - 9
+    - 6
+    - 10
     attribute_weights:
       force: 40
       intellect: 30
@@ -1541,8 +1121,8 @@ heroes:
     default_morality: 20
     recruitable: true
     growth_range:
-    - 5
-    - 9
+    - 6
+    - 10
     attribute_weights:
       force: 20
       intellect: 45
@@ -1578,21 +1158,6 @@ heroes:
       intellect: 45
       defense: 10
       agility: 30
-  - key: hero_yin_ji
-    name: 阴姬
-    archetype: military
-    flavor: 神水宫宫主，号称“水母”，被誉为当时天下第一高手。她拥有着惊天动地的内力“天一神水”和独步武林的掌法，武功已臻化境，少有敌手。她性格孤傲、威严且带有严重的洁癖，因早年的情感创伤而极度厌恶男性，在神水宫建立了一个森严且禁绝男性的王国。她与楚留香的终极决战展现了武学的至高境界，令读者叹为观止。她不仅是一个武功高强的霸主，更是一个被畸形情感束缚、生活在自我封闭世界中的悲剧性女性。她的存在象征着武林中那种极致的权力与孤独，是古龙笔下最具压迫感的巅峰强者之一。出自古龙小说《楚留香系列》
-    default_gender: female
-    default_morality: 15
-    recruitable: true
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 40
-      intellect: 25
-      defense: 20
-      agility: 15
   - key: hero_xiao_leixue
     name: 萧泪血
     archetype: military
@@ -1608,21 +1173,6 @@ heroes:
       intellect: 10
       defense: 15
       agility: 45
-  - key: hero_ri_hou
-    name: 日后
-    archetype: military
-    flavor: 常年居于海外神秘海岛的绝顶高手，与“夜帝”齐名，并称当世武林的至尊存在。她是天下所有女性武者的精神领袖，性情圣洁而高傲，仿佛不食人间烟火的仙子。她掌握着大旗门失传已久的无上秘辛，并在铁中棠成长的关键时刻给予了最重要的指引与帮助。她的武功已入化境，轻功更是独步天下。她不仅代表了女性在武学上所能达到的最高峰，更是一种理想化的人格象征——超凡脱俗，博大精深。她的一生充满了传奇色彩，是江湖中一个令人仰望且充满敬畏的传说。出自古龙小说《大旗英雄传》
-    default_gender: female
-    default_morality: 85
-    recruitable: true
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 40
-      intellect: 25
-      defense: 20
-      agility: 15
   - key: hero_huo_xiu
     name: 霍休
     archetype: civil
@@ -1631,8 +1181,8 @@ heroes:
     default_morality: 15
     recruitable: true
     growth_range:
-    - 5
-    - 9
+    - 6
+    - 10
     attribute_weights:
       force: 15
       intellect: 50
@@ -1646,8 +1196,8 @@ heroes:
     default_morality: 70
     recruitable: true
     growth_range:
-    - 5
-    - 9
+    - 6
+    - 10
     attribute_weights:
       force: 20
       intellect: 45
@@ -1683,7 +1233,367 @@ heroes:
       intellect: 45
       defense: 10
       agility: 30
+  - key: hero_xue_yiren
+    name: 薛衣人
+    archetype: military
+    flavor: 人称"天下第一剑客"，薛家庄的主人。他一生痴迷于剑道，视剑如命，剑法已臻化境。为了追求剑术的极致，他不惜挑战天下高手，手上沾满了鲜血。他性格孤僻冷傲，行事诡秘，给江湖蒙上了一层神秘的阴影。然而，在他冷酷的外表下，也隐藏着对弟弟薛笑人的复杂情感。他与楚留香的交锋，不仅是武功的较量，更是智慧与人格的碰撞。最终，他在楚留香的感化下，放下屠刀，领悟了比剑术更重要的人生真谛。出自古龙小说《楚留香系列》
+    default_gender: male
+    default_morality: 50
+    recruitable: true
+    growth_range:
+    - 6
+    - 10
+    attribute_weights:
+      force: 35
+      intellect: 25
+      defense: 20
+      agility: 20
+  - key: hero_mo_bai
+    name: 白衣人
+    archetype: military
+    flavor: 来自东瀛的绝世高手。他身着白衣，剑法已入神境，来到中原只为寻求真正的一战。他的出现终结了中原武林的安宁，也促使方宝玉走上了漫长的求剑之路。他不仅是方宝玉一生追赶的目标，也代表了武学中至高无上的孤独与追求。出自古龙小说《浣花洗剑录》
+    default_gender: male
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 7
+    - 10
+    attribute_weights:
+      force: 45
+      intellect: 15
+      defense: 20
+      agility: 20
+  - key: hero_qingqing
+    name: 青青
+    archetype: civil
+    flavor: 魔教教主之孙女，丁鹏的结发妻子。她温柔美丽，善解人意，不仅拥有着惊人的美貌，更有着一颗七窍玲珑心。在丁鹏最落魄、最绝望的时候，是她给予了他重生的希望，并毫无保留地将魔教绝学"圆月弯刀"传授给他。她对丁鹏的爱是无私的、包容的，甚至为了成全丁鹏的名声，甘愿隐姓埋名。她是古龙笔下最完美、最令人动容的女性形象之一，正如天上的明月，皎洁而温暖，照亮了丁鹏黑暗的人生。出自古龙小说《圆月弯刀》
+    default_gender: female
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 35
+      defense: 20
+      agility: 30
+  - key: hero_su_ying
+    name: 苏樱
+    archetype: civil
+    flavor: 十二星相之首魏无牙的义女，一个集智慧、美貌与个性于一身的奇女子。她外表冷漠孤傲，实则深情执着。她不仅精通机关药理，更拥有绝顶的智慧，是唯一能在智谋上与江小鱼一较高下的女子。在江小鱼最危难的时刻，她挺身而出，对其一见钟情后便主动追求，毫不掩饰。她是唯一能在这个世界上降住"天下第一恶人"江小鱼的女子，两人最终终成眷属，共度余生。出自古龙小说《绝代双骄》
+    default_gender: female
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
+  - key: hero_tie_xinlan
+    name: 铁心兰
+    archetype: military
+    flavor: “狂狮”铁战之女，一位明艳高洁、外柔内刚的牡丹美人。她为了寻找失踪的父亲踏入江湖，最初与江小鱼相识相知，情愫暗生。然而命运弄人，她又遇见了温润如玉的花无缺。在两个优秀的男子之间，她经历了漫长的痛苦、挣扎与抉择。她曾为救小鱼儿不惜牺牲尊严，也曾被花无缺的深情所打动。她的情感历程是全书最扣人心弦的部分，最终她选择了花无缺，与其结为连理。出自古龙小说《绝代双骄》
+    default_gender: female
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 20
+      defense: 25
+      agility: 25
+  - key: hero_shen_bijun
+    name: 沈璧君
+    archetype: civil
+    flavor: 无垢山庄少夫人，连城璧之妻，人称"武林第一美人"。她出身江南世家，拥有着令人窒息的美貌和高贵的身份，却像一只被囚禁在金丝笼中的金丝雀。她外表柔弱，内心却渴望自由与真爱。与萧十一郎的相遇，如同在她平静的湖心投下了一颗巨石，激起了惊涛骇浪。她爱上了这个被世人唾弃的"大盗"，并在家族责任、丈夫的名声与内心的渴望之间痛苦挣扎。她的爱情是绝望而凄美的，她是古龙笔下内心最为矛盾、命运最为坎坷的女性角色之一。出自古龙小说《萧十一郎》
+    default_gender: female
+    default_morality: 65
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 20
+      intellect: 30
+      defense: 20
+      agility: 30
+  - key: hero_feng_siniang
+    name: 风四娘
+    archetype: military
+    flavor: 江湖奇女子，人称"风四娘"。她就像一阵风，来去无踪，自由洒脱。她不仅长得美，而且有着男儿般的豪情与酒量。她喜欢骑最快的马，喝最烈的酒，杀最狠的人。她深爱着萧十一郎，却深知他心中只有沈璧君，于是她选择将这份爱深埋心底，以姐姐和朋友的身份默默守护着他。她为了萧十一郎可以付出一切，甚至不惜牺牲自己的幸福。她是古龙笔下最真性情、最令人敬佩的女性角色之一，展现了江湖儿女的快意恩仇。出自古龙小说《萧十一郎》
+    default_gender: female
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 15
+      defense: 30
+      agility: 20
+  - key: hero_xiao_die
+    name: 小蝶
+    archetype: civil
+    flavor: 江湖霸主"老伯"孙玉伯的掌上明珠，一个命运多舛的女子。她生性温柔善良，向往自由与美好的爱情，却被卷入了残酷的权力斗争漩涡之中。她被律香川欺骗与伤害，未婚生子，饱受世俗的冷眼与非议。然而，她从未放弃对生活的希望，依然保持着一颗纯洁坚韧的心。她与孟星魂的相遇，是两个孤独灵魂的相互救赎。她的存在，如同一束柔和的光，照亮了流星蝴蝶剑这个充满杀戮与阴谋的黑暗世界。出自古龙小说《流星·蝴蝶·剑》
+    default_gender: female
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 35
+      defense: 25
+      agility: 30
+  - key: hero_sun_xiaohong
+    name: 孙小红
+    archetype: civil
+    flavor: 天机老人的孙女，一位活泼开朗、明艳动人的少女。她扎着两条又黑又亮的大辫子，一双大眼睛里充满了智慧与勇气。她自幼随爷爷行走江湖，见多识广，胆略过人。在李寻欢最颓废、最痛苦的日子里，是她用如阳光般温暖的笑容和坚定的爱意，一步步融化了他心中的坚冰。她不仅敢爱敢恨，更有着超乎常人的果决，在关键时刻屡次助李寻欢化险为夷。她的真诚与执着最终打动了这位浪子，两人携手归隐，成就了一段江湖佳话。出自古龙小说《多情剑客无情剑》
+    default_gender: female
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 20
+      intellect: 30
+      defense: 20
+      agility: 30
+  - key: hero_xue_bing
+    name: 薛冰
+    archetype: civil
+    flavor: 陆小凤的红颜知己，人称“冷罗刹”，是江湖中赫赫有名的神针薛家的后人，也是“红鞋子”组织中的八妹。她长得虽不算绝美，但那一双大眼睛却灵动异常，充满了顽皮与狡黠。她性格泼辣直爽，敢爱敢恨，对陆小凤一往情深，常以吃醋撒娇的方式表达爱意。她不似寻常女子只会等待，而是积极参与江湖纷争，以智慧和武功支持着那个风流不羁的"四条眉毛"。可惜红颜薄命，她最终成为了金九龄阴谋下的牺牲品，令人扼腕叹息。出自古龙小说《陆小凤系列》
+    default_gender: female
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 35
+      defense: 15
+      agility: 35
+  - key: hero_li_hongxiu
+    name: 李红袖
+    archetype: civil
+    flavor: 楚留香身畔的红衣佳人，博闻强记，胸罗万象，堪称武林活典籍。她常居海上兰舟，虽不常亲涉刀光剑影，却对江湖各派掌故、人物秘辛乃至武功路数了如指掌。每逢香帅遭逢疑局，往往赖她引经据典，一语道破玄机。她性情爽朗明艳，如同一团红色的火焰，于风云变幻中守着一份难得的清醒与理智。她以智慧为剑，在谈笑间助人化解危难，是楚留香最得力的助手之一。出自古龙小说《楚留香系列》
+    default_gender: female
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
+  - key: hero_gao_jiping
+    name: 高寄萍
+    archetype: civil
+    flavor: 快活林的主人，江湖人称“高老大”。她身世凄苦，自幼流落街头，靠着惊人的毅力和不择手段的狠辣才在弱肉强食的江湖中扎下根来。她一手抚养了孟星魂、叶翔等四大杀手，既是他们的姐姐和恩人，也是冷酷的剥削者与掌控者。她对金钱和权力有着近乎病态的渴望，这种渴望源于童年时期的贫穷与屈辱。她美艳绝伦却心机深沉，一生都在利用他人的情感来达成自己的目的，最终却发现自己在这个过程中失落了最珍贵的东西。她是古龙笔下性格最为复杂、最令人扼腕叹息的女性反派，可恨的外表下隐藏着一颗早已破碎的心。出自古龙小说《流星·蝴蝶·剑》
+    default_gender: female
+    default_morality: 35
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 25
+      intellect: 35
+      defense: 20
+      agility: 20
+  - key: hero_lv_xiangchuan
+    name: 律香川
+    archetype: civil
+    flavor: 人称“律香川，立香坛”，曾是“老伯”孙玉伯最信任的智囊和得力助手。他外表温文尔雅，举止得体，不仅精通武功，更擅长烹饪和暗器。然而，在这完美的表象之下，隐藏着一颗极度阴暗、扭曲和充满野心的心。他背叛了对他恩重如山的老伯，策划了一系列精密的阴谋，试图夺取孙府的大权。他对孙蝶的爱充满了占有欲和病态，最终因爱生恨。他的结局充满了讽刺，机关算尽太聪明，反误了卿卿性命。出自古龙小说《流星·蝴蝶·剑》
+    default_gender: male
+    default_morality: 30
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 20
+      intellect: 35
+      defense: 15
+      agility: 30
+  - key: hero_lin_xianer
+    name: 林仙儿
+    archetype: civil
+    flavor: 江湖公认的"第一美人"，拥有着欺霜赛雪的绝世容颜和令人销魂的柔媚身姿。她外表看似楚楚可怜、纯洁无瑕，宛如一朵出淤泥而不染的白莲，实则内心如蛇蝎般狠毒，充满着对权力和欲望的无尽贪婪。她将天下男人玩弄于股掌之间，利用自己的美貌编织了一张巨大的关系网，让无数英雄豪杰为她竞折腰，甚至不惜身败名裂。她是阿飞心中永远的痛，也是江湖中最堕落的灵魂。她的一生在征服与背叛中度过，最终红颜凋零，沦为最卑微的娼妓，留给世人无尽的唏嘘与警示。出自古龙小说《多情剑客无情剑》
+    default_gender: female
+    default_morality: 15
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
+  - key: hero_wuhua_heshang
+    name: 无花和尚
+    archetype: military
+    flavor: 少林寺的"妙僧"，外表高洁儒雅，琴棋书画样样精通，是无数人心目中的圣僧。然而，在这完美的面具之下，隐藏着一颗勃勃的野心和冷酷的灵魂。他是"天枫十四郎"与石观音之子，继承了父母的优秀基因与狠毒手段。他与楚留香本是惺惺相惜的知己，却因策划惊天阴谋而走向对立。他是楚留香遇到的第一个真正意义上的强敌，其智谋与武功皆属顶尖。他的伪善与堕落，是对人性最深刻的讽刺，令人不寒而栗。出自古龙小说《楚留香系列》
+    default_gender: male
+    default_morality: 35
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 15
+      defense: 30
+      agility: 25
+  - key: hero_jin_jiuling
+    name: 金九龄
+    archetype: military
+    flavor: 六扇门三百年来第一神捕，也是江湖中著名的风流人物。他相貌英俊，衣着华丽，武功高强，智计更是冠绝一时。他表面上正义凛然，维护法纪，实则野心勃勃，贪婪成性。为了维持其奢靡的生活和满足对权力的渴望，他精心策划了轰动江湖的“绣花大盗”案，将黑白两道玩弄于股掌之间。他自负到了极点，认为自己算无遗策，最终却败在了同样聪明的陆小凤手中。金九龄的虚伪与狠辣，正是古龙对“道貌岸然”最锋利的一次揭穿。出自古龙小说《陆小凤系列》
+    default_gender: male
+    default_morality: 40
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 15
+      defense: 30
+      agility: 20
+  - key: hero_xue_xiaoren
+    name: 薛笑人
+    archetype: military
+    flavor: “天下第一剑客”薛衣人的弟弟，一个在江湖中极具欺骗性的角色。他表面上是一个只会傻笑、行为如孩童般天真的“薛宝宝”，实则城府极深，心狠手辣。为了家族声誉和满足自己的野心，他在幕后一手创建了令人闻风丧胆的杀手组织。他武功高强，剑法不在其兄之下。他是楚留香遇到的最危险、最难以捉摸的对手之一，将“大智若愚”演绎到了极致。最终在真相大白后，他选择了自尽，结束了自己分裂而罪恶的一生。出自古龙小说《楚留香系列》
+    default_gender: male
+    default_morality: 25
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 25
+      defense: 20
+      agility: 20
+  - key: hero_yu_peiyu
+    name: 俞佩玉
+    archetype: civil
+    flavor: 先天无极派掌门人之子。他遭遇家门巨变，父亲及同门被伪装者所害。他虽然容貌绝世、性情温和，却在复仇之路上展现出极大的坚韧。他多次易容改面，周旋于各大势力之间，最终揭露了真相，成为一代武林名侠。出自古龙小说《名剑风流》
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 25
+      intellect: 35
+      defense: 20
+      agility: 20
+  - key: hero_hu_bugui
+    name: 伊风
+    archetype: military
+    flavor: 飘香剑雨的主角，本名吕南人。他原是武林名门之后，却因妻子被邪教掠走而家破人亡。为了复仇，他隐姓埋名，手持飘香剑，只身闯荡险恶江湖。他从一个被仇恨蒙蔽双眼的狂人，在经历了一系列的磨难与奇遇后，逐渐领悟了侠义的真谛，成长为一代大侠。他的故事充满了早期的悲情与苍凉，展现了一个男人在绝境中的挣扎与救赎，是古龙笔下"浪子"形象的早期雏形。出自古龙小说《飘香剑雨》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 20
+      defense: 20
+      agility: 25
+  - key: hero_zhao_wuji
+    name: 赵无忌
+    archetype: civil
+    flavor: 大风堂堂主赵简之子，一个背负着血海深仇的年轻侠客。在父亲赵简离奇自刎后，为了查明真相，他不惜自毁名誉，忍辱负重，深入虎穴，潜入蜀中唐门卧底。在尔虞我诈的江湖斗争中，他凭借着过人的胆识、缜密的心思和坚韧的毅力，一步步揭开了隐藏在背后的巨大阴谋。他在复仇的道路上经历了无数生死考验，也体会到了江湖的冷暖与人性的复杂，最终成长为一代大侠。出自古龙小说《白玉老虎》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 25
+      intellect: 40
+      defense: 15
+      agility: 20
+  - key: hero_xiao_gao
+    name: 小高
+    archetype: military
+    flavor: 一个初入江湖的平凡少年，却意外卷入了一场惊天动地的阴谋之中。他本是普通人，没有任何显赫的家世背景，却凭借着一股初生牛犊不怕虎的勇气和坚韧不拔的毅力，在"血鹦鹉"的恐怖传说中艰难求生。他见证了江湖中最黑暗、最诡异的一面，也经历了生离死别的痛苦考验。他是古龙笔下最具平民色彩的主角，以普通人的视角揭示了江湖的残酷与人性的复杂。出自古龙小说《血鹦鹉》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 20
+      defense: 25
+      agility: 25
+  - key: hero_ma_rulong
+    name: 马如龙
+    archetype: military
+    flavor: 碧血洗银枪的主角，一位身负绝世武功的年轻侠客。他手中的银枪不仅是一件杀人利器，更是正义与荣耀的象征。他性格刚烈，嫉恶如仇，即使身陷重围、背负不白之冤，也从未放弃过对真相的追寻。他的故事充满了热血与豪情，碧血染红了他的银枪，却染不红他那颗赤诚的侠义之心。他是古龙后期作品中少有的传统型大侠，用生命诠释了"虽千万人吾往矣"的英雄气概。出自古龙小说《碧血洗银枪》
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 20
+      agility: 25
+  - key: hero_tian_sisi
+    name: 田思思
+    archetype: civil
+    flavor: 田二爷的独生女儿，一位集万千宠爱于一身的千金大小姐。她性格天真烂漫，古灵精怪，为了寻找心目中的大英雄，她带着巨额财富离家出走，踏入了这个充满未知的江湖。一路上，她闹出了不少笑话，也经历了不少磨难，逐渐从一个不谙世事的少女成长为懂得识人用人的女子。她与杨凡的爱情故事，充满了欢笑与温情，证明了真正的"大人物"往往就隐藏在平凡的外表之下，而真爱也往往就在身边。出自古龙小说《大人物》
+    default_gender: female
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 40
+      defense: 20
+      agility: 30
   purple:
+  - key: hero_ding_peng
+    name: 丁鹏
+    archetype: military
+    flavor: 曾经的落魄少年，在遭遇背叛后意外坠入魔教，习得绝世武学“圆月弯刀”。他的一生充满了宿命的纠葛，刀锋上既刻着“小楼一夜听春雨”的凄美，也承载着复仇的狂戾。在与青青的相伴中，他逐渐看透了江湖名利的虚幻，明白了武器的善恶全在执刀之人的心。他从一个一心复仇的魔头，最终蜕变为能够掌控魔性、追求平静的刀客。圆月之下，弯刀如虹，他用苦难和磨砺铸就了属于自己的刀道传奇。出自古龙小说《圆月弯刀》
+    default_gender: male
+    default_morality: 65
+    recruitable: true
+    growth_range:
+    - 7
+    - 12
+    attribute_weights:
+      force: 35
+      intellect: 15
+      defense: 20
+      agility: 30
   - key: hero_ye_kai
     name: 叶开
     archetype: military
@@ -1917,8 +1827,8 @@ heroes:
     default_morality: 20
     recruitable: true
     growth_range:
-    - 7
-    - 11
+    - 8
+    - 12
     attribute_weights:
       force: 40
       intellect: 25
@@ -1975,6 +1885,96 @@ heroes:
     flavor: 绰号“九公子”，太平王世子，一个集绝世天才与疯狂病态于一身的恐怖对手。他不仅拥有惊才绝艳的武功天赋，各种旁门左道乃至经天纬地之才无一不精，更兼备深不可测的城府与智谋。然而，在优雅高贵的外表下，却隐藏着极其扭曲的内心和难以言说的受虐倾向。他将整个江湖视作自己的玩物，设下一个又一个致命死局来戏弄世人，甚至连陆小凤也多次险些丧命其手。他是一个在孤独与疯狂中挣扎的邪恶天才，其复杂的人性和极致的疯狂，使他成为了古龙笔下最令人印象深刻、也最令人战栗的反派角色之一。出自古龙小说《陆小凤系列》
     default_gender: male
     default_morality: 20
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 10
+      agility: 30
+  - key: hero_ri_hou
+    name: 日后
+    archetype: military
+    flavor: 常年居于海外神秘海岛的绝顶高手，与“夜帝”齐名，并称当世武林的至尊存在。她是天下所有女性武者的精神领袖，性情圣洁而高傲，仿佛不食人间烟火的仙子。她掌握着大旗门失传已久的无上秘辛，并在铁中棠成长的关键时刻给予了最重要的指引与帮助。她的武功已入化境，轻功更是独步天下。她不仅代表了女性在武学上所能达到的最高峰，更是一种理想化的人格象征——超凡脱俗，博大精深。她的一生充满了传奇色彩，是江湖中一个令人仰望且充满敬畏的传说。出自古龙小说《大旗英雄传》
+    default_gender: female
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 8
+    - 12
+    attribute_weights:
+      force: 40
+      intellect: 25
+      defense: 20
+      agility: 15
+  - key: hero_yedi
+    name: 夜帝
+    archetype: military
+    flavor: 江湖传说中的巅峰存在，与"日后"并称武林至尊。他性格风流潇洒，放荡不羁，喜爱收集天下美人，过着神仙般的日子。他武功深不可测，当世罕有敌手，是铁中棠的恩师之一。在被困于岩洞的岁月里，他将毕生绝学传授给了铁中棠，助其练成神功。他虽游戏人间，却在大是大非面前毫不含糊，是一位真正的大宗师。他的存在，象征着武林中那种超脱世俗、逍遥自在的至高境界。出自古龙小说《大旗英雄传》
+    default_gender: male
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 8
+    - 12
+    attribute_weights:
+      force: 35
+      intellect: 25
+      defense: 20
+      agility: 20
+  - key: hero_yin_ji
+    name: 阴姬
+    archetype: military
+    flavor: 神水宫宫主，号称“水母”，被誉为当时天下第一高手。她拥有着惊天动地的内力“天一神水”和独步武林的掌法，武功已臻化境，少有敌手。她性格孤傲、威严且带有严重的洁癖，因早年的情感创伤而极度厌恶男性，在神水宫建立了一个森严且禁绝男性的王国。她与楚留香的终极决战展现了武学的至高境界，令读者叹为观止。她不仅是一个武功高强的霸主，更是一个被畸形情感束缚、生活在自我封闭世界中的悲剧性女性。她的存在象征着武林中那种极致的权力与孤独，是古龙笔下最具压迫感的巅峰强者之一。出自古龙小说《楚留香系列》
+    default_gender: female
+    default_morality: 15
+    recruitable: true
+    growth_range:
+    - 8
+    - 12
+    attribute_weights:
+      force: 40
+      intellect: 25
+      defense: 20
+      agility: 15
+  - key: hero_lian_xing
+    name: 怜星
+    archetype: military
+    flavor: 移花宫二宫主，大宫主邀月的妹妹。她清冷如月，武功高强，却有着一颗比姐姐柔软得多的心。虽身患残疾，却更添几分楚楚动人。在当年江枫夫妇惨死时，是她的一念之仁保全了双胞胎的性命。多年来，她一直生活在姐姐的强势与阴影下，在爱与恐惧之间挣扎。她多次暗中帮助花无缺和小鱼儿，试图阻止那场兄弟相残的悲剧。她的柔弱与坚忍，是移花宫悲剧里最令人心疼的一笔。出自古龙小说《绝代双骄》
+    default_gender: female
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 30
+      intellect: 20
+      defense: 25
+      agility: 25
+  - key: hero_meng_xinghun
+    name: 孟星魂
+    archetype: military
+    flavor: 快活林"高老大"抚养长大的四大杀手之一，一个身处黑暗却心向光明的孤独刺客。他厌倦了杀人的生活，渴望像普通人一样在阳光下活着。为了完成最后一个任务，他潜入孙府刺杀老伯，却意外爱上了老伯的女儿小蝶。在忠诚与正义、责任与爱情之间，他经历了痛苦的抉择。最终，他不仅识破了律香川的阴谋，更在老伯的感召下找到了人性的救赎。他的故事充满了悲情与浪漫，展现了一个杀手在残酷江湖中寻找自我和真爱的艰难历程。出自古龙小说《流星·蝴蝶·剑》
+    default_gender: male
+    default_morality: 65
+    recruitable: true
+    growth_range:
+    - 7
+    - 12
+    attribute_weights:
+      force: 30
+      intellect: 20
+      defense: 15
+      agility: 35
+  - key: hero_wang_lianhua
+    name: 王怜花
+    archetype: civil
+    flavor: 人称"千面公子"，快活王之子。他风流倜傥，惊才绝艳，精通易容、下毒、摄心等旁门左道，更兼文韬武略，无一不精。他性格复杂多变，亦正亦邪，既能如谦谦君子般温润如玉，又能如恶魔般心狠手辣。他与沈浪既是惺惺相惜的知己，又是势不两立的对手。他的一生都在爱恨情仇中挣扎，最终被沈浪的人格魅力所感化，选择归隐海外。他是古龙笔下最具魅力和复杂性的反派人物之一。出自古龙小说《武林外史》
+    default_gender: male
+    default_morality: 55
     recruitable: true
     growth_range:
     - 7

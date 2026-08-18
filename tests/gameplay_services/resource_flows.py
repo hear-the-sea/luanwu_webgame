@@ -518,6 +518,43 @@ def test_locked_resource_settlement_caps_positive_delta_and_preserves_upkeep(
 
 
 @pytest.mark.django_db
+def test_locked_resource_settlement_preserves_legacy_balance_above_capacity():
+    user = User.objects.create_user(
+        username="resource_over_capacity_user",
+        password="test123",
+    )
+    manor = ensure_manor(user)
+    settled_at = timezone.now()
+    manor.silver = 500
+    manor.silver_capacity = 100
+    manor.resource_updated_at = settled_at - timezone.timedelta(hours=1)
+    manor.save(update_fields=["silver", "silver_capacity", "resource_updated_at"])
+    production_basis = ResourceProductionBasis(
+        hourly_rates=((ResourceType.SILVER, 100.0),),
+        personnel_grain_cost_per_hour=0,
+    )
+
+    with transaction.atomic():
+        locked_manor = type(manor).objects.select_for_update().get(pk=manor.pk)
+        settled = settle_resource_production_locked(
+            locked_manor,
+            now=settled_at,
+            production_basis=production_basis,
+            note="超容量余额测试",
+        )
+
+    manor.refresh_from_db(fields=["silver", "resource_updated_at"])
+    assert settled == {}
+    assert manor.silver == 500
+    assert manor.resource_updated_at == settled_at
+    assert not ResourceEvent.objects.filter(
+        manor=manor,
+        reason=ResourceEvent.Reason.PRODUCE,
+        note="超容量余额测试",
+    ).exists()
+
+
+@pytest.mark.django_db
 @override_settings(RESOURCE_SYNC_MIN_INTERVAL_SECONDS=0, RESOURCE_SYNC_TRANSACTION_BATCH_SIZE=1)
 def test_resource_sync_task_reuses_resolved_grain_template(monkeypatch):
     first_user = User.objects.create_user(username="resource_task_template_1", password="test123")

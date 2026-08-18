@@ -19,13 +19,14 @@ from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils import timezone
 
-from core.exceptions import TroopRecruitmentAlreadyInProgressError, TroopRecruitmentError
+from core.exceptions import TroopCapacityFullError, TroopRecruitmentAlreadyInProgressError, TroopRecruitmentError
 from core.utils import safe_non_negative_int, safe_positive_int
 from core.utils.time_scale import scale_duration
 
 from ...constants import BuildingKeys
 from ...models import Manor, TroopRecruitment
 from ..inventory.core import get_item_quantity
+from ..manor.troop_capacity import ensure_manor_troop_capacity_locked, get_manor_troop_remaining_space
 from ..technology import get_player_technology_level, get_technology_template
 from .lifecycle import apply_troop_recruitment_result_locked, finalize_troop_recruitment
 from .lifecycle import schedule_recruitment_completion as _schedule_recruitment_completion
@@ -215,6 +216,7 @@ def check_recruitment_requirements(
         "tech_satisfied": False,
         "equipment_satisfied": False,
         "retainer_satisfied": False,
+        "capacity_satisfied": False,
         "equipment_status": {},
     }
 
@@ -278,8 +280,19 @@ def check_recruitment_requirements(
     else:
         result["errors"].append(f"家丁不足（需要{retainer_cost}，拥有{manor.retainer_count}）")
 
+    remaining_space = get_manor_troop_remaining_space(manor)
+    if remaining_space >= quantity:
+        result["capacity_satisfied"] = True
+    else:
+        result["errors"].append(f"庄园内护院容量不足（剩余{remaining_space}，需要{quantity}，上限5000）")
+
     # 综合判断
-    result["can_recruit"] = result["tech_satisfied"] and result["equipment_satisfied"] and result["retainer_satisfied"]
+    result["can_recruit"] = (
+        result["tech_satisfied"]
+        and result["equipment_satisfied"]
+        and result["retainer_satisfied"]
+        and result["capacity_satisfied"]
+    )
 
     return result
 
@@ -333,6 +346,7 @@ def get_recruitment_options(manor: Manor) -> List[Dict[str, Any]]:
 
     # 批量加载玩家科技等级
     tech_levels = _batch_get_tech_levels(manor, all_tech_keys)
+    capacity_remaining = get_manor_troop_remaining_space(manor)
 
     options = []
     for troop in troops:
@@ -358,6 +372,7 @@ def get_recruitment_options(manor: Manor) -> List[Dict[str, Any]]:
             recruit_config,
             tech_level=player_tech_level if tech_key else None,
         )
+        max_quantity = min(max_quantity, capacity_remaining)
 
         # 计算时间
         base_duration = recruit_config.get("base_duration", 120)
@@ -388,6 +403,7 @@ def get_recruitment_options(manor: Manor) -> List[Dict[str, Any]]:
         # 检查家丁
         retainer_cost = recruit_config.get("retainer_cost", 1)
         retainer_satisfied = manor.retainer_count >= retainer_cost
+        capacity_satisfied = capacity_remaining >= 1
 
         options.append(
             {
@@ -407,10 +423,12 @@ def get_recruitment_options(manor: Manor) -> List[Dict[str, Any]]:
                 "equipment": equipment_status,
                 "retainer_cost": retainer_cost,
                 "retainer_satisfied": retainer_satisfied,
+                "capacity_satisfied": capacity_satisfied,
+                "capacity_remaining": capacity_remaining,
                 "base_duration": base_duration,
                 "actual_duration": actual_duration,
                 "max_quantity": max_quantity,
-                "can_afford": can_afford and retainer_satisfied,
+                "can_afford": can_afford and retainer_satisfied and capacity_satisfied,
                 "is_recruiting": is_recruiting,
             }
         )
@@ -678,6 +696,10 @@ def _assert_current_recruitment_quote(
         expected_quote.troop_key,
         expected_quote.quantity,
     )
+    try:
+        ensure_manor_troop_capacity_locked(manor, current_quote.quantity)
+    except TroopCapacityFullError as exc:
+        raise TroopRecruitmentError(str(exc)) from exc
     if current_quote != expected_quote:
         raise TroopRecruitmentError("募兵报价已失效，请重试")
     return current_quote

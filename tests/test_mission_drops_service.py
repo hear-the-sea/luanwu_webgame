@@ -7,9 +7,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 
-from core.exceptions import InsufficientSpaceError
-from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent, ResourceType
-from gameplay.services.inventory.core import get_warehouse_used_space
+from gameplay.models import InventoryItem, ItemTemplate, ResourceEvent, ResourceType
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.missions_impl.drops import (
     _get_or_create_skill_book_template,
@@ -53,11 +51,9 @@ def test_award_mission_drops_grants_resources_and_items():
 
 
 @pytest.mark.django_db
-def test_award_mission_drops_rolls_back_resource_when_warehouse_is_full():
+def test_award_mission_drops_ignores_warehouse_capacity():
     user = User.objects.create_user(username="mission_drop_capacity", password="pass123")
     manor = ensure_manor(user)
-    baseline_space = get_warehouse_used_space(manor)
-    Manor.objects.filter(pk=manor.pk).update(storage_capacity=baseline_space + 1)
     item_template = ItemTemplate.objects.create(
         key="mission_drop_capacity_item",
         name="容量不足掉落",
@@ -65,16 +61,22 @@ def test_award_mission_drops_rolls_back_resource_when_warehouse_is_full():
     )
     initial_silver = manor.silver
 
-    with pytest.raises(InsufficientSpaceError):
-        award_mission_drops(
-            manor,
-            {"silver": 30, item_template.key: 1},
-            note="容量不足任务",
-        )
+    award_mission_drops(
+        manor,
+        {"silver": 30, item_template.key: 1},
+        note="无容量上限任务",
+    )
 
     manor.refresh_from_db()
-    assert manor.silver == initial_silver
-    assert not InventoryItem.objects.filter(manor=manor, template=item_template).exists()
+    assert manor.silver == initial_silver + 30
+    assert (
+        InventoryItem.objects.get(
+            manor=manor,
+            template=item_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        ).quantity
+        == 1
+    )
 
 
 @pytest.mark.django_db

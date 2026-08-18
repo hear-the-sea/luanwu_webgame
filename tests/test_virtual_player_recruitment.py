@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from datetime import timedelta
 
 import pytest
@@ -14,11 +15,16 @@ from gameplay.services.virtual_player_core.recruitment import (
     VIRTUAL_RECRUITMENT_LOCKED_POOL_PLAN,
     VIRTUAL_RECRUITMENT_POOL_PLAN,
     VIRTUAL_RECRUITMENT_PRESTIGE_THRESHOLD,
+    VIRTUAL_RECRUITMENT_RARITY_POLICY_VERSION,
+    VirtualRecruitmentError,
     VirtualRecruitmentStatus,
+    _frozen_rarity,
+    _virtual_recruitment_rarity_distribution,
     finalize_virtual_guest_recruitment,
     iter_virtual_recruitment_schedule,
     load_virtual_recruitment_pool_silver_costs,
     schedule_due_virtual_recruitments,
+    start_next_due_virtual_recruitment,
     start_virtual_recruitment,
     virtual_recruitment_daily_silver_cost,
 )
@@ -86,6 +92,73 @@ def test_virtual_recruitment_cashflow_forecast_reuses_real_pool_prices(load_gues
         )
         == 3 * costs["dianshi"] + 3 * costs["xiangshi"] + 3 * costs["cunmu"]
     )
+
+
+def test_virtual_recruitment_rarity_policy_halves_only_purple_and_orange():
+    from guests.utils.recruitment_utils import get_recruitment_rarity_distribution
+
+    base_total, _base_weights, base_distribution = get_recruitment_rarity_distribution()
+    virtual_total, virtual_distribution = _virtual_recruitment_rarity_distribution()
+
+    base_weights = dict(base_distribution)
+    adjusted_weights = dict(virtual_distribution)
+    assert virtual_total == base_total
+    assert adjusted_weights["purple"] == base_weights["purple"] // 2
+    assert adjusted_weights["orange"] == base_weights["orange"] // 2
+    assert adjusted_weights["black"] == base_weights["black"] + (
+        base_weights["purple"] // 2 + base_weights["orange"] // 2
+    )
+    assert all(
+        adjusted_weights[rarity] == base_weights[rarity]
+        for rarity in base_weights
+        if rarity not in {"purple", "orange", "black"}
+    )
+    # The virtual overlay is pure; the real-player cache remains untouched.
+    refreshed_total, _refreshed_weights, refreshed_distribution = get_recruitment_rarity_distribution()
+    assert refreshed_total == base_total
+    assert dict(refreshed_distribution) == base_weights
+
+
+def test_virtual_recruitment_rarity_policy_keeps_legacy_snapshots_usable():
+    assert (
+        _frozen_rarity(
+            random.Random(1),
+            {
+                "rarity": {
+                    "total_weight": 1,
+                    "distribution": [{"rarity": "black", "weight": 1}],
+                }
+            },
+        )
+        == "black"
+    )
+
+
+def test_virtual_recruitment_rarity_policy_rejects_mismatched_current_metadata():
+    with pytest.raises(VirtualRecruitmentError, match="策略元数据不一致"):
+        _frozen_rarity(
+            random.Random(1),
+            {
+                "rarity": {
+                    "policy_version": VIRTUAL_RECRUITMENT_RARITY_POLICY_VERSION,
+                    "adjustments": {},
+                    "total_weight": 1,
+                    "distribution": [{"rarity": "black", "weight": 1}],
+                }
+            },
+        )
+
+
+def test_virtual_recruitment_rarity_policy_rejects_non_exact_weight_scaling(monkeypatch):
+    import gameplay.services.virtual_player_core.recruitment as virtual_recruitment_service
+
+    monkeypatch.setattr(
+        virtual_recruitment_service,
+        "get_recruitment_rarity_distribution",
+        lambda: (100, (), (("black", 97), ("purple", 3), ("orange", 0))),
+    )
+    with pytest.raises(VirtualRecruitmentError, match="无法按策略精确缩放"):
+        _virtual_recruitment_rarity_distribution()
 
 
 @pytest.mark.django_db
@@ -231,7 +304,17 @@ def test_virtual_recruitment_starts_with_snapshot_and_without_action_points(
     assert recruitment.quota_date == schedule.quota_date
     assert recruitment.quota_ordinal == schedule.quota_ordinal
     assert recruitment.pool_snapshot["snapshot_version"] == 1
-    assert recruitment.pool_snapshot["rarity"]["distribution"]
+    rarity_snapshot = recruitment.pool_snapshot["rarity"]
+    assert rarity_snapshot["policy_version"] == VIRTUAL_RECRUITMENT_RARITY_POLICY_VERSION
+    assert rarity_snapshot["adjustments"] == {
+        "purple": {"numerator": 1, "denominator": 2},
+        "orange": {"numerator": 1, "denominator": 2},
+    }
+    assert rarity_snapshot["distribution"]
+    rarity_weights = {row["rarity"]: row["weight"] for row in rarity_snapshot["distribution"]}
+    assert rarity_weights["purple"] == 750
+    assert rarity_weights["orange"] == 250
+    assert rarity_weights["black"] == 882_000
     preview = recruitment.pool_snapshot["candidate_preview"]
     assert preview["salary"] == recruitment.salary_commitment
     assert preview["template_id"] > 0
@@ -310,6 +393,7 @@ def test_virtual_recruitment_ignores_salary_runway_and_spends_recruitment_cost(
     schedule = next(
         item for item in iter_virtual_recruitment_schedule(profile.id, now=timezone.now()) if item.pool_key == "cunmu"
     )
+    Manor.objects.filter(pk=profile.manor_id).update(resource_updated_at=schedule.due_at)
     manor.refresh_from_db()
     before_silver = manor.silver
 
@@ -338,6 +422,7 @@ def test_virtual_recruitment_insufficient_silver_defers_without_consuming_quota(
         item for item in iter_virtual_recruitment_schedule(profile.id, now=timezone.now()) if item.pool_key == "cunmu"
     )
     now = schedule.due_at + timedelta(seconds=1)
+    Manor.objects.filter(pk=profile.manor_id).update(resource_updated_at=now)
 
     deferred = start_virtual_recruitment(schedule, now=now)
 
@@ -389,11 +474,76 @@ def test_virtual_recruitment_defers_without_spending_when_roster_is_full(
 
     profile.refresh_from_db()
     manor.refresh_from_db()
-    assert start_result.status is VirtualRecruitmentStatus.DEFERRED
+    assert start_result.status is VirtualRecruitmentStatus.STARTED
     assert start_result.reason == "guest_capacity_full"
-    assert not GuestRecruitment.objects.filter(operation_id=schedule.operation_id).exists()
+    assert len(start_result.recruitment_ids) == len(iter_virtual_recruitment_schedule(profile.id, now=timezone.now()))
+    recruitments = GuestRecruitment.objects.filter(
+        bot_profile_id=profile.id,
+        source=GuestRecruitment.Source.VIRTUAL,
+        quota_date=schedule.quota_date,
+    )
+    assert recruitments.count() == len(start_result.recruitment_ids)
+    assert all(recruitment.status == GuestRecruitment.Status.COMPLETED for recruitment in recruitments)
+    assert all(recruitment.result_count == 0 for recruitment in recruitments)
+    assert all(recruitment.error_message == "guest_capacity_full" for recruitment in recruitments)
+    assert all(recruitment.salary_commitment == 0 for recruitment in recruitments)
     assert manor.silver == before_silver
     assert Guest.objects.filter(manor_id=manor.id).count() == capacity
+    assert profile.next_recruitment_at is not None
+    assert timezone.localtime(profile.next_recruitment_at).date() > schedule.quota_date
+    assert (
+        start_next_due_virtual_recruitment(profile.id, now=schedule.due_at + timedelta(minutes=15)).status
+        is VirtualRecruitmentStatus.NOT_DUE
+    )
+
+
+@pytest.mark.django_db
+def test_virtual_recruitment_replaces_lower_power_guest_when_rarity_is_higher(
+    django_user_model,
+    load_guest_data,
+):
+    from gameplay.services.virtual_player_core import recruitment as virtual_recruitment
+
+    profile = _create_v2_profile(django_user_model, username="virtual_recruit_rarity_only", juxian_level=1)
+    victim_template = GuestTemplate.objects.create(
+        key="virtual_recruit_rarity_only_green",
+        name="高战力低稀有度门客",
+        archetype="military",
+        rarity="green",
+        base_attack=10_000,
+        base_intellect=10_000,
+        base_defense=10_000,
+        base_agility=10_000,
+        base_hp=10_000,
+        recruitable=False,
+    )
+    candidate_template = GuestTemplate.objects.create(
+        key="virtual_recruit_rarity_only_orange",
+        name="低战力高稀有度门客",
+        archetype="military",
+        rarity="orange",
+        base_attack=1,
+        base_intellect=1,
+        base_defense=1,
+        base_agility=1,
+        base_hp=1,
+        recruitable=False,
+    )
+    victim = create_guest_from_template(manor=profile.manor, template=victim_template, rarity="green")
+    candidate_guest = create_guest_from_template(
+        manor=profile.manor,
+        template=candidate_template,
+        rarity="orange",
+        save=False,
+    )
+    candidate = virtual_recruitment._DrawnGuest(
+        guest=candidate_guest,
+        rarity="orange",
+        template_id=int(candidate_template.id),
+    )
+
+    assert virtual_recruitment._guest_power(victim) > virtual_recruitment._guest_power(candidate_guest)
+    assert virtual_recruitment._replacement_guest(guests=[victim], candidate=candidate) == victim
 
 
 @pytest.mark.django_db

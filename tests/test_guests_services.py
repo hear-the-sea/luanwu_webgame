@@ -190,32 +190,45 @@ def test_recover_guest_hp_injured_respects_global_time_multiplier():
 
 
 @pytest.mark.django_db
-def test_recover_guest_hp_clears_injured_status_when_reaching_full_hp():
-    user = User.objects.create_user(username="testuser_hp_recover_full_injured", password="test123")
+def test_recover_guest_hp_clears_injured_status_at_recovery_threshold():
+    user = User.objects.create_user(username="testuser_hp_recover_threshold_injured", password="test123")
     manor = ensure_manor(user)
 
     template = GuestTemplate.objects.create(
-        key="test_guest_recover_full_injured",
-        name="测试门客满血解除重伤",
+        key="test_guest_recover_threshold_injured",
+        name="测试门客达到阈值解除重伤",
         rarity="gray",
         base_attack=50,
         base_defense=50,
+        base_hp=1000,
     )
     now = timezone.now()
-    last = now - timezone.timedelta(days=10)
 
     guest = Guest.objects.create(
         manor=manor,
         template=template,
         status=GuestStatus.INJURED,
-        current_hp=max(1, template.base_hp // 4),
-        last_hp_recovery_at=last,
+        current_hp=1,
+        last_hp_recovery_at=now,
     )
 
-    recover_guest_hp(guest, now=now)
+    with override_settings(GAME_TIME_MULTIPLIER=1):
+        per_second = max(1, (guest.max_hp - 1) / TimeConstants.HP_FULL_RECOVERY_TIME)
+        recovery_seconds = (
+            int(
+                guest.max_hp
+                * 0.25
+                / (per_second * health_service.INJURED_RECOVERY_RATE_FACTOR * manor.hp_recovery_multiplier)
+            )
+            + TimeConstants.HP_RECOVERY_INTERVAL
+        )
+        guest.last_hp_recovery_at = now - timezone.timedelta(seconds=recovery_seconds)
+        guest.save(update_fields=["last_hp_recovery_at"])
+        recover_guest_hp(guest, now=now)
     guest.refresh_from_db()
 
-    assert guest.current_hp == guest.max_hp
+    assert guest.current_hp >= guest.max_hp * 0.2
+    assert guest.current_hp < guest.max_hp
     assert guest.status == GuestStatus.IDLE
 
 

@@ -13,6 +13,7 @@ from django.utils import timezone
 from core.exceptions import RaidStartError
 
 from ....models import Manor, PlayerTroop, RaidRun
+from ...manor.troop_capacity import ensure_manor_troop_capacity_locked
 
 # Normalization / calculation helpers from the troops sub-module.
 from .troops import (
@@ -93,6 +94,8 @@ def _add_troops_batch(manor: Manor, troops_to_add: Dict[str, int]) -> None:
     troops_to_add = _normalize_troops_for_addition(troops_to_add)
     if not troops_to_add:
         return
+
+    ensure_manor_troop_capacity_locked(manor, sum(troops_to_add.values()))
 
     from core.utils.template_loader import load_templates_by_key
 

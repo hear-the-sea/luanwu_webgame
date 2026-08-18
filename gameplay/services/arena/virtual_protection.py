@@ -10,6 +10,7 @@ from gameplay.models import (
     ArenaCoopEvent,
     ArenaEntry,
     ArenaTournament,
+    ArenaVirtualDemand,
     ArenaVirtualReserveMember,
     BotExternalStrengthReconciliation,
 )
@@ -59,6 +60,13 @@ def with_arena_reserve_guard(queryset):
     return queryset.annotate(
         maintenance_has_arena_reserve=Exists(
             ArenaVirtualReserveMember.objects.filter(profile_id=OuterRef("pk")),
+        ),
+        maintenance_has_arena_training=Exists(
+            ArenaVirtualReserveMember.objects.filter(
+                profile_id=OuterRef("pk"),
+                state=ArenaVirtualReserveMember.State.TRAINING,
+                demand__status=ArenaVirtualDemand.Status.ACTIVE,
+            ),
         ),
     )
 
@@ -186,10 +194,21 @@ def is_virtual_profile_arena_protected(*, profile_id: int, manor_id: int) -> boo
     return int(manor_id) in arena_protected_bot_manor_ids()
 
 
+def is_virtual_profile_arena_training(*, profile_id: int) -> bool:
+    """Return whether an active arena reserve currently owns this profile's growth slot."""
+
+    return ArenaVirtualReserveMember.objects.filter(
+        profile_id=profile_id,
+        state=ArenaVirtualReserveMember.State.TRAINING,
+        demand__status=ArenaVirtualDemand.Status.ACTIVE,
+    ).exists()
+
+
 __all__ = [
     "arena_protected_bot_manor_ids",
     "is_virtual_profile_arena_match_eligible",
     "is_virtual_profile_arena_protected",
+    "is_virtual_profile_arena_training",
     "with_arena_reserve_guard",
     "with_arena_reconciliation_state",
 ]

@@ -30,6 +30,7 @@ from gameplay.models import (
     ArenaEntryGuest,
     ArenaReserveTrainingAssignment,
     ArenaVirtualReserveMember,
+    BotMaintenanceCompletionEvent,
     BotProfile,
     Manor,
     ResourceEvent,
@@ -37,7 +38,6 @@ from gameplay.models import (
 )
 from gameplay.services.resources import settle_resource_production_locked, spend_resources_locked
 from gameplay.services.virtual_player_state_policy import VIRTUAL_PROFILE_MAINTAINED_STATES
-from guests.guest_upkeep_rules import get_guest_salary_for_rarity
 from guests.models import (
     Guest,
     GuestRarity,
@@ -73,6 +73,15 @@ from .selectors import without_unresolved_external_reconciliations
 logger = logging.getLogger(__name__)
 
 VIRTUAL_RECRUITMENT_SNAPSHOT_VERSION = 1
+# Rarity policy is versioned independently from the pool snapshot contract.
+# Existing queued rows without this field are legacy real-player distributions
+# and must keep their already-frozen probabilities when they are finalized.
+VIRTUAL_RECRUITMENT_RARITY_POLICY_LEGACY_VERSION = 1
+VIRTUAL_RECRUITMENT_RARITY_POLICY_VERSION = 2
+VIRTUAL_RECRUITMENT_RARITY_ADJUSTMENTS: tuple[tuple[str, int, int], ...] = (
+    (GuestRarity.PURPLE.value, 1, 2),
+    (GuestRarity.ORANGE.value, 1, 2),
+)
 VIRTUAL_RECRUITMENT_SCHEDULE_POLICY_VERSION = 2
 VIRTUAL_RECRUITMENT_PRESTIGE_THRESHOLD = 10_000
 VIRTUAL_RECRUITMENT_SCAN_BATCH_SIZE = 200
@@ -549,6 +558,62 @@ def _normalize_distribution(
     return normalized
 
 
+def _virtual_recruitment_rarity_adjustments_payload() -> dict[str, dict[str, int]]:
+    return {
+        rarity: {"numerator": int(numerator), "denominator": int(denominator)}
+        for rarity, numerator, denominator in VIRTUAL_RECRUITMENT_RARITY_ADJUSTMENTS
+    }
+
+
+def _virtual_recruitment_rarity_distribution() -> tuple[int, tuple[tuple[str, int], ...]]:
+    """Return the virtual-only rarity distribution without mutating global config.
+
+    The real-player weights are the source of truth.  Halving purple/orange
+    removes exactly 1,000 units from the configured million-unit range; the
+    remainder is assigned to ordinary black rarity so the integer sampling
+    range stays stable and the total probability remains exactly 100%.
+    """
+
+    total_weight, _rarity_weights, base_distribution = get_recruitment_rarity_distribution()
+    normalized_base = tuple((str(rarity), int(weight)) for rarity, weight in base_distribution)
+    if int(total_weight) <= 0 or sum(weight for _rarity, weight in normalized_base) != int(total_weight):
+        raise VirtualRecruitmentError("真实玩家招募稀有度分布权重总数不一致")
+
+    adjustments = {
+        rarity: (int(numerator), int(denominator))
+        for rarity, numerator, denominator in VIRTUAL_RECRUITMENT_RARITY_ADJUSTMENTS
+    }
+    adjusted: list[tuple[str, int]] = []
+    black_index: int | None = None
+    removed_weight = 0
+    for index, (rarity, weight) in enumerate(normalized_base):
+        if weight < 0:
+            raise VirtualRecruitmentError("真实玩家招募稀有度权重不能为负数")
+        if rarity == GuestRarity.BLACK.value:
+            black_index = index
+        factor = adjustments.get(rarity)
+        if factor is None:
+            adjusted_weight = weight
+        else:
+            numerator, denominator = factor
+            if numerator < 0 or denominator <= 0:
+                raise VirtualRecruitmentError("虚拟招募稀有度调整策略无效")
+            scaled_weight = weight * numerator
+            if scaled_weight % denominator != 0:
+                raise VirtualRecruitmentError("虚拟招募稀有度权重无法按策略精确缩放")
+            adjusted_weight = scaled_weight // denominator
+            removed_weight += weight - adjusted_weight
+        adjusted.append((rarity, adjusted_weight))
+
+    if black_index is None:
+        raise VirtualRecruitmentError("真实玩家招募稀有度分布缺少黑色稀有度")
+    black_rarity, black_weight = adjusted[black_index]
+    adjusted[black_index] = (black_rarity, black_weight + removed_weight)
+    if sum(weight for _rarity, weight in adjusted) != int(total_weight):
+        raise VirtualRecruitmentError("虚拟招募稀有度调整后权重总数不一致")
+    return int(total_weight), tuple(adjusted)
+
+
 def _strict_int(value: object, *, field: str, minimum: int | None = None) -> int:
     if isinstance(value, bool) or not isinstance(value, int):
         raise VirtualRecruitmentError(f"虚拟招募快照中的{_snapshot_field_label(field)}必须是整数")
@@ -567,12 +632,13 @@ def _snapshot_field_label(field: str) -> str:
         "entry.weight": "招募条目权重",
         "rarity.weight": "稀有度权重",
         "rarity.total_weight": "稀有度权重总数",
+        "rarity.policy_version": "稀有度策略版本",
     }
     return labels.get(str(field), "相关字段")
 
 
 def _build_pool_snapshot(*, pool: RecruitmentPool, manor: Manor, captured_at: datetime) -> dict[str, Any]:
-    total_weight, _rarity_weights, rarity_distribution = get_recruitment_rarity_distribution()
+    total_weight, rarity_distribution = _virtual_recruitment_rarity_distribution()
     templates_by_rarity = _get_recruitable_templates_by_rarity()
     hermit_templates = _get_hermit_templates()
     template_ids_by_rarity = {
@@ -606,6 +672,9 @@ def _build_pool_snapshot(*, pool: RecruitmentPool, manor: Manor, captured_at: da
             "draw_count": int(resolve_candidate_draw_count(pool=pool, manor=manor, total_draw_count=None)),
         },
         "rarity": {
+            "policy_version": VIRTUAL_RECRUITMENT_RARITY_POLICY_VERSION,
+            "source": "real_player_default",
+            "adjustments": _virtual_recruitment_rarity_adjustments_payload(),
             "total_weight": int(total_weight),
             "distribution": _normalize_distribution(rarity_distribution),
         },
@@ -694,6 +763,19 @@ def _frozen_rarity(rng: random.Random, snapshot: Mapping[str, Any]) -> str:
     distribution = raw_rarity.get("distribution")
     if isinstance(raw_total, bool) or not isinstance(distribution, (list, tuple)):
         raise VirtualRecruitmentError("虚拟招募稀有度快照无效")
+    policy_version = _strict_int(
+        raw_rarity.get("policy_version", VIRTUAL_RECRUITMENT_RARITY_POLICY_LEGACY_VERSION),
+        field="rarity.policy_version",
+        minimum=1,
+    )
+    if policy_version not in {
+        VIRTUAL_RECRUITMENT_RARITY_POLICY_LEGACY_VERSION,
+        VIRTUAL_RECRUITMENT_RARITY_POLICY_VERSION,
+    }:
+        raise VirtualRecruitmentError("不支持的虚拟招募稀有度策略版本")
+    if policy_version == VIRTUAL_RECRUITMENT_RARITY_POLICY_VERSION:
+        if raw_rarity.get("adjustments") != _virtual_recruitment_rarity_adjustments_payload():
+            raise VirtualRecruitmentError("虚拟招募稀有度策略元数据不一致")
     rows: list[tuple[str, int]] = []
     for row in distribution:
         if not isinstance(row, Mapping):
@@ -799,45 +881,48 @@ def _has_arena_history(guest_id: int) -> bool:
 
 
 def _replacement_guest(*, guests: list[Guest], candidate: _DrawnGuest) -> Guest | None:
-    candidate_power = _guest_power(candidate.guest)
     rarity_order = ("black", "gray", "green", "red", "blue", "purple", "orange")
     rarity_rank = {rarity: index for index, rarity in enumerate(rarity_order)}
-    candidates = []
+    candidates: list[tuple[int, int, Guest]] = []
     for guest in guests:
-        if (
-            guest.status != GuestStatus.IDLE
-            or guest.training_complete_at
-            or guest.training_remaining_seconds is not None
-        ):
+        if guest.status != GuestStatus.IDLE:
             continue
         if _has_arena_history(int(guest.id)):
             continue
         guest_rank = rarity_rank.get(str(guest.rarity), -1)
         if rarity_rank.get(str(candidate.rarity), -1) <= guest_rank:
             continue
-        guest_power = _guest_power(guest)
-        if candidate_power <= guest_power:
-            continue
-        candidates.append((guest_rank, guest_power, int(guest.id), guest))
+        candidates.append((guest_rank, int(guest.id), guest))
     if not candidates:
         return None
-    return min(candidates, key=lambda row: (row[0], row[1], row[2]))[-1]
+    return min(candidates, key=lambda row: (row[0], row[1]))[-1]
 
 
-def _replacement_salary_affordable(
-    *,
-    guests: list[Guest],
-    victim: Guest,
-    candidate: _DrawnGuest,
-    available_silver: int,
-) -> bool:
-    """Check the post-replacement daily salary against the locked balance."""
+def _cancel_pending_guest_training_events(*, profile_id: int, guest_id: int) -> int:
+    """Remove V2 completion inbox rows for a guest that is being replaced.
 
-    retained_salary = sum(
-        int(get_guest_salary_for_rarity(guest.rarity)) for guest in guests if int(guest.id) != int(victim.id)
+    The Celery timer is idempotent and will safely return ``not_found`` after
+    the guest row is deleted.  The durable V2 inbox is separate from that
+    timer, so it must be cleared explicitly to prevent a later reconciliation
+    pass from treating the removed guest as an orphaned completion.  This
+    path already holds ``BotProfile -> Manor``; lock the event rows last so
+    completion reconciliation uses the same order.
+    """
+
+    event_ids = tuple(
+        BotMaintenanceCompletionEvent.objects.select_for_update()
+        .filter(
+            profile_id=int(profile_id),
+            domain_event_kind=BotMaintenanceCompletionEvent.DomainKind.GUEST_TRAINING,
+            domain_object_id=int(guest_id),
+            status=BotMaintenanceCompletionEvent.Status.PENDING,
+        )
+        .values_list("id", flat=True)
     )
-    replacement_salary = int(get_guest_salary_for_rarity(candidate.rarity))
-    return int(available_silver) >= retained_salary + replacement_salary
+    if not event_ids:
+        return 0
+    deleted, _details = BotMaintenanceCompletionEvent.objects.filter(pk__in=event_ids).delete()
+    return int(deleted)
 
 
 def _defer_completion_locked(recruitment: GuestRecruitment, *, current_time: datetime, reason: str) -> None:
@@ -958,7 +1043,7 @@ def _create_virtual_recruitment_audit_locked(
         quota_date=prepared.schedule.quota_date,
         quota_ordinal=prepared.schedule.quota_ordinal,
         pool_snapshot=snapshot,
-        salary_commitment=int(prepared.salary_commitment),
+        salary_commitment=(int(prepared.salary_commitment) if int(result_count) > 0 else 0),
         cost=dict(prepared.cost),
         draw_count=int(prepared.draw_count),
         duration_seconds=0,
@@ -967,6 +1052,55 @@ def _create_virtual_recruitment_audit_locked(
         complete_at=now,
         finished_at=now,
         result_count=int(result_count),
+        error_message=str(reason)[:255],
+    )
+
+
+def _create_virtual_capacity_terminal_audit_locked(
+    *,
+    profile: BotProfile,
+    manor: Manor,
+    schedule: VirtualRecruitmentSchedule,
+    pool: RecruitmentPool | None,
+    snapshot: Mapping[str, Any] | None,
+    now: datetime,
+    reason: str = "guest_capacity_full",
+) -> GuestRecruitment:
+    """Consume a skipped daily slot after a full roster has ended the batch."""
+
+    terminal_snapshot = deepcopy(dict(snapshot)) if isinstance(snapshot, Mapping) else {}
+    pool_data = terminal_snapshot.get("pool")
+    if not isinstance(pool_data, Mapping):
+        pool_data = {}
+    raw_cost = pool_data.get("cost")
+    cost = dict(raw_cost) if isinstance(raw_cost, Mapping) else {}
+    raw_draw_count = pool_data.get("draw_count")
+    draw_count = int(raw_draw_count) if isinstance(raw_draw_count, int) and not isinstance(raw_draw_count, bool) else 1
+    if draw_count < 1:
+        draw_count = 1
+    terminal_snapshot["settlement"] = {
+        "mode": "instant_batch",
+        "result_count": 0,
+        "reason": str(reason),
+    }
+    return GuestRecruitment.objects.create(
+        manor=manor,
+        bot_profile=profile,
+        pool=pool,
+        source=GuestRecruitment.Source.VIRTUAL,
+        operation_id=schedule.operation_id,
+        quota_date=schedule.quota_date,
+        quota_ordinal=schedule.quota_ordinal,
+        pool_snapshot=terminal_snapshot,
+        salary_commitment=0,
+        cost=cost,
+        draw_count=draw_count,
+        duration_seconds=0,
+        seed=int(_virtual_seed(profile=profile, operation_id=schedule.operation_id)),
+        status=GuestRecruitment.Status.COMPLETED,
+        complete_at=now,
+        finished_at=now,
+        result_count=0,
         error_message=str(reason)[:255],
     )
 
@@ -1056,6 +1190,7 @@ def _start_virtual_recruitment_batch_locked(
     snapshots_by_key: dict[str, dict[str, Any]] = {}
     draw_context_by_key: dict[str, _SnapshotDrawContext] = {}
     prepared: list[_PreparedVirtualRecruitment] = []
+    prepared_by_operation: dict[str, _PreparedVirtualRecruitment] = {}
     deferred_reasons: list[str] = []
     deferred_reasons_by_operation: dict[str, str] = {}
 
@@ -1063,7 +1198,7 @@ def _start_virtual_recruitment_batch_locked(
         deferred_reasons.append(reason)
         deferred_reasons_by_operation.setdefault(schedule.operation_id, reason)
 
-    settle_resource_production_locked(manor)
+    settle_resource_production_locked(manor, now=now)
 
     for schedule in pending_schedules:
         pool = pools_by_key.get(schedule.pool_key)
@@ -1126,21 +1261,21 @@ def _start_virtual_recruitment_batch_locked(
         snapshot["candidate_preview"] = {
             "template_id": int(selected.template_id),
             "rarity": str(selected.rarity),
-            "salary": int(get_guest_salary_for_rarity(selected.rarity)),
+            "salary": 0,
             "custom_name": str(selected.guest.custom_name or selected.guest.template.name),
         }
-        prepared.append(
-            _PreparedVirtualRecruitment(
-                schedule=schedule,
-                pool=pool,
-                snapshot=snapshot,
-                cost=cost,
-                draw_count=draw_count,
-                seed=resolved_seed,
-                selected=selected,
-                salary_commitment=int(get_guest_salary_for_rarity(selected.rarity)),
-            )
+        prepared_item = _PreparedVirtualRecruitment(
+            schedule=schedule,
+            pool=pool,
+            snapshot=snapshot,
+            cost=cost,
+            draw_count=draw_count,
+            seed=resolved_seed,
+            selected=selected,
+            salary_commitment=0,
         )
+        prepared.append(prepared_item)
+        prepared_by_operation[schedule.operation_id] = prepared_item
 
     if not prepared:
         reason = deferred_reasons[0] if deferred_reasons else "no_due_slot"
@@ -1152,6 +1287,7 @@ def _start_virtual_recruitment_batch_locked(
 
     completed_ids_by_operation: dict[str, int] = {}
     accepted_any = False
+    capacity_terminal = False
     for item in sorted(
         prepared,
         key=lambda row: (_candidate_sort_key(row.selected), -int(row.schedule.quota_ordinal)),
@@ -1165,26 +1301,17 @@ def _start_virtual_recruitment_batch_locked(
             silver_cost = int(item.cost.get(str(ResourceType.SILVER), 0) or 0)
             if int(manor.silver or 0) < silver_cost:
                 reason = "insufficient_resource"
-            elif not _replacement_salary_affordable(
-                guests=locked_guests,
-                victim=victim,
-                candidate=selected,
-                available_silver=int(manor.silver or 0) - silver_cost,
-            ):
-                reason = "salary_unaffordable"
-            else:
-                before_power = sum(_guest_power(guest) for guest in locked_guests)
-                after_power = before_power - _guest_power(victim) + _guest_power(selected.guest)
-                if after_power < before_power:
-                    reason = "roster_power_guard"
 
         if reason:
+            if reason == "guest_capacity_full":
+                capacity_terminal = True
+                break
             defer_slot(item.schedule, reason)
             continue
 
-        # The pool slot is paid only after capacity, replacement salary, and
-        # roster-power checks pass.  This keeps a rejected candidate retryable
-        # and prevents a paid-but-empty recruitment audit.
+        # The pool slot is paid only after capacity and resource checks pass.
+        # Replacement eligibility is deliberately rarity-only; combat power
+        # and salary are not gates for virtual-player recruitment.
         if not _spend_virtual_recruitment_cost_locked(
             manor=manor,
             pool=item.pool,
@@ -1195,6 +1322,7 @@ def _start_virtual_recruitment_batch_locked(
 
         if victim is not None:
             victim_id = int(victim.id)
+            _cancel_pending_guest_training_events(profile_id=int(profile.id), guest_id=victim_id)
             locked_guests = [guest for guest in locked_guests if int(guest.id) != victim_id]
             victim.delete()
         selected.guest.save()
@@ -1205,7 +1333,7 @@ def _start_virtual_recruitment_batch_locked(
             guest=selected.guest,
             rarity=selected.rarity,
         )
-        ensure_auto_training(selected.guest)
+        ensure_auto_training(selected.guest, now=now)
         locked_guests.append(selected.guest)
         accepted_any = True
         result_count = 1
@@ -1224,6 +1352,59 @@ def _start_virtual_recruitment_batch_locked(
         f"vp-recruit-batch-v{VIRTUAL_RECRUITMENT_SNAPSHOT_VERSION}:{int(profile.id)}:"
         f"{pending_schedules[0].quota_date:%Y%m%d}"
     )
+    if capacity_terminal:
+        for schedule in pending_schedules:
+            if schedule.operation_id in completed_ids_by_operation:
+                continue
+            terminal_reason = deferred_reasons_by_operation.get(schedule.operation_id, "guest_capacity_full")
+            terminal_prepared_item = prepared_by_operation.get(schedule.operation_id)
+            if terminal_prepared_item is not None:
+                audit = _create_virtual_recruitment_audit_locked(
+                    profile=profile,
+                    manor=manor,
+                    prepared=terminal_prepared_item,
+                    now=now,
+                    result_count=0,
+                    reason=terminal_reason,
+                )
+            else:
+                audit = _create_virtual_capacity_terminal_audit_locked(
+                    profile=profile,
+                    manor=manor,
+                    schedule=schedule,
+                    pool=pools_by_key.get(schedule.pool_key),
+                    snapshot=snapshots_by_key.get(schedule.pool_key),
+                    now=now,
+                    reason=terminal_reason,
+                )
+            completed_ids_by_operation[schedule.operation_id] = int(audit.id)
+
+        next_schedule = _next_unconsumed_schedule(
+            int(profile.id),
+            now=now,
+            pacing=resolved_pacing,
+        )
+        profile.next_recruitment_at = None if next_schedule is None else next_schedule.due_at
+        profile.save(update_fields=["next_recruitment_at", "updated_at"])
+        if accepted_any:
+            invalidate_recruitment_hall_cache(getattr(manor, "id", None))
+        ordered_completed_ids = tuple(
+            completed_ids_by_operation[schedule.operation_id]
+            for schedule in pending_schedules
+            if schedule.operation_id in completed_ids_by_operation
+        )
+        return VirtualRecruitmentResult(
+            VirtualRecruitmentStatus.STARTED,
+            "guest_capacity_full",
+            recruitment_id=(
+                completed_ids_by_operation.get(preferred_operation_id)
+                if preferred_operation_id is not None
+                else (ordered_completed_ids[0] if ordered_completed_ids else None)
+            ),
+            operation_id=preferred_operation_id or batch_operation_id,
+            recruitment_ids=ordered_completed_ids,
+        )
+
     if not accepted_any:
         reason = deferred_reasons[0] if deferred_reasons else "no_virtual_candidate"
         status = (
@@ -1582,19 +1763,7 @@ def finalize_virtual_guest_recruitment(
             return True
 
         if victim is not None:
-            if not _replacement_salary_affordable(
-                guests=locked_guests,
-                victim=victim,
-                candidate=selected,
-                available_silver=int(manor.silver or 0),
-            ):
-                _defer_completion_locked(recruitment, current_time=current_time, reason="salary_unaffordable")
-                return False
-            before_power = sum(_guest_power(guest) for guest in locked_guests)
-            after_power = before_power - _guest_power(victim) + _guest_power(selected.guest)
-            if after_power < before_power:
-                _defer_completion_locked(recruitment, current_time=current_time, reason="roster_power_guard")
-                return False
+            _cancel_pending_guest_training_events(profile_id=int(profile.id), guest_id=int(victim.id))
             victim.delete()
 
         selected.guest.save()
@@ -1605,7 +1774,7 @@ def finalize_virtual_guest_recruitment(
             guest=selected.guest,
             rarity=selected.rarity,
         )
-        ensure_auto_training(selected.guest)
+        ensure_auto_training(selected.guest, now=current_time)
         _mark_virtual_completion_locked(recruitment, current_time=current_time, result_count=1)
         pacing = resolve_archetype_pacing(load_virtual_player_config(), str(profile.archetype))
         next_schedule = _next_unconsumed_schedule(int(profile.id), now=current_time, pacing=pacing)

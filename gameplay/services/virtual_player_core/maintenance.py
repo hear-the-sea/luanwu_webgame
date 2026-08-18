@@ -50,6 +50,7 @@ from core.exceptions import (
     TechnologyMaxLevelError,
     TechnologyNotFoundError,
     TechnologyUpgradeInProgressError,
+    TroopCapacityFullError,
     TroopRecruitmentError,
 )
 from core.utils.cache_lock import acquire_action_lock, release_action_lock
@@ -73,7 +74,10 @@ from gameplay.models import (
     ResourceEvent,
     ResourceType,
 )
-from gameplay.services.arena.virtual_protection import is_virtual_profile_arena_protected
+from gameplay.services.arena.virtual_protection import (
+    is_virtual_profile_arena_protected,
+    is_virtual_profile_arena_training,
+)
 from gameplay.services.inventory.core import GRAIN_ITEM_KEY, add_items_to_inventory_locked
 from gameplay.services.manor.core import (
     BuildingUpgradeQuote,
@@ -83,6 +87,7 @@ from gameplay.services.manor.core import (
     quote_building_upgrade,
     start_building_upgrade_locked,
 )
+from gameplay.services.manor.troop_capacity import MANOR_TROOP_CAPACITY, get_manor_troop_remaining_space
 from gameplay.services.recruitment.recruitment import (
     TroopRecruitmentQuote,
     get_recruitment_options,
@@ -113,7 +118,6 @@ from gameplay.services.technology import (
     quote_technology_upgrade,
     start_technology_upgrade_locked,
 )
-from guests.guest_upkeep_rules import get_guest_salary_for_rarity
 from guests.models import (
     GearItem,
     GearTemplate,
@@ -131,7 +135,7 @@ from guests.services.equipment import equip_guest_from_inventory_locked, equip_g
 from guests.services.health import MedicineUseQuote, apply_medicine_item_for_guest_locked, quote_medicine_item_for_guest
 from guests.services.recruitment_finalize_helpers import remaining_guest_capacity
 from guests.services.recruitment_guests import build_recruitment_custom_name, create_guest_from_template
-from guests.services.salary import SalaryBatchQuote, bulk_check_salary_paid, pay_all_salaries_locked
+from guests.services.salary import SalaryBatchQuote, bulk_check_salary_paid, get_guest_salary, pay_all_salaries_locked
 from guests.services.skills import learn_guest_skill_from_virtual_book_locked, learn_guest_skill_locked
 from guests.services.training import apply_training_locked, project_training_completion, quote_training
 from guests.utils.training_calculator import get_training_duration
@@ -194,16 +198,25 @@ from .maintenance_candidates import (
 from .maintenance_cycle import (
     ACTION_COMPLETION_SOURCE_CANDIDATE_EXHAUSTED,
     ACTION_COMPLETION_SOURCE_MAINTENANCE_COMMIT,
+    CANDIDATE_POOL_COOLDOWN_PAYLOAD_KEY,
     ORDINARY_CYCLE_NEXT_START_MAX_DELAY,
     CycleTrigger,
     append_durable_cycle_action_locked,
+    candidate_pool_cooldown_entries,
+    candidate_pool_cooldown_until,
     classify_maintenance_reason,
     close_durable_cycle_locked,
     cycle_retry_due_at,
+    merge_candidate_pool_cooldowns,
     next_ordinary_slot_due_at,
     record_durable_attempts_locked,
 )
-from .maintenance_resources import ResourcePlanningError, ResourcePlanningSnapshot, build_resource_planning_snapshot
+from .maintenance_resources import (
+    VIRTUAL_PLAYER_SALARY_SCALE,
+    ResourcePlanningError,
+    ResourcePlanningSnapshot,
+    build_resource_planning_snapshot,
+)
 from .maintenance_rules import (
     GUEST_COUNT_TARGET_MAX,
     MaintenanceNoActionReason,
@@ -220,6 +233,7 @@ from .maintenance_upgrade_candidates import (
     build_technology_upgrade_candidates,
 )
 from .policy_registry import PolicyRegistryError, get_policy_release
+from .prestige_targets import VirtualPrestigeTargetPolicyError, virtual_juxianzhuang_level_for_prestige_band
 from .projection import (
     PRESTIGE_BANDS,
     DevelopmentIntent,
@@ -289,8 +303,15 @@ from .stage_metrics import (
     record_maintenance_stage,
 )
 from .strategy import BotDevelopmentPlan, DevelopmentPlanError, development_plan_catalog_v1, parse_development_plan
+from .troop_capacity import (
+    ensure_virtual_troop_capacity_locked,
+    get_virtual_troop_remaining_space,
+    virtual_troop_capacity_for_prestige_band,
+)
 from .virtual_assets import free_arena_shadow_cost
 from .virtual_candidate_pools import (
+    VIRTUAL_TROOP_BATCH_MAX_QUANTITY,
+    VIRTUAL_TROOP_BATCH_MIN_QUANTITY,
     VirtualCandidatePoolError,
     build_virtual_equipment_candidates,
     build_virtual_inventory_batch_candidate,
@@ -420,6 +441,7 @@ def _economic_recovery_building_focuses(
     *,
     manor: Manor,
     resource_snapshot: ResourcePlanningSnapshot,
+    technology_capacity_required: bool = False,
 ) -> tuple[str, ...]:
     """Return a liquidity-aware production order.
 
@@ -431,6 +453,11 @@ def _economic_recovery_building_focuses(
     silver = max(0, int(manor.silver or 0))
     silver_capacity = max(1, int(manor.silver_capacity or 0))
     silver_near_capacity = silver * 10 >= silver_capacity * 9
+    if technology_capacity_required:
+        # A technology quote that cannot fit in the current silver warehouse
+        # has a hard capacity prerequisite.  Keep the recovery group scoped to
+        # the vault so production buildings cannot consume the slot first.
+        return (BuildingKeys.SILVER_VAULT,)
     focuses: list[str] = list(_SILVER_PRODUCTION_BUILDING_KEYS)
     if silver_near_capacity:
         focuses.insert(0, BuildingKeys.SILVER_VAULT)
@@ -451,6 +478,7 @@ def _resource_aware_building_focuses(
     manor: Manor,
     resource_snapshot: ResourcePlanningSnapshot,
     focuses: Sequence[str],
+    technology_capacity_required: bool = False,
 ) -> tuple[str, ...]:
     """Remove storage/food targets that cannot relieve the current shortage."""
 
@@ -464,7 +492,7 @@ def _resource_aware_building_focuses(
     filtered = tuple(
         key
         for key in normalized
-        if not (key == BuildingKeys.SILVER_VAULT and not silver_near_capacity)
+        if not (key == BuildingKeys.SILVER_VAULT and not silver_near_capacity and not technology_capacity_required)
         and not (key == BuildingKeys.GRANARY and not grain_near_capacity)
         and not (key == "farm" and grain_near_capacity)
     )
@@ -483,11 +511,16 @@ def _economic_recovery_score(
     resource_costs: tuple[tuple[str, int], ...],
     focus_rank: int,
     focus_count: int,
+    technology_capacity_required: bool = False,
 ) -> float:
     """Score an economic building by production return per silver spent."""
 
     cost = max(1, sum(int(amount) for _resource, amount in resource_costs))
     building_type = building.building_type
+    if technology_capacity_required and str(building_type.key) == BuildingKeys.SILVER_VAULT:
+        # Capacity preparation is a prerequisite, not a production ROI tie
+        # breaker.  This score is only used inside the recovery priority group.
+        return 1_000_000.0 - float(focus_rank)
     resource_type = str(building_type.resource_type)
     bonus = get_resource_production_bonus_from_levels(
         dict(technology_levels),
@@ -520,6 +553,7 @@ def _prioritize_economic_recovery_candidates(
     buildings: tuple[Building, ...],
     technology_levels: Mapping[str, int],
     focus_order: tuple[str, ...],
+    technology_capacity_required: bool = False,
 ) -> tuple[DevelopmentIntent, ...]:
     buildings_by_key = {str(building.building_type.key): building for building in buildings}
     focus_rank = {key: index for index, key in enumerate(focus_order)}
@@ -544,6 +578,7 @@ def _prioritize_economic_recovery_candidates(
                     resource_costs=spec.resource_costs,
                     focus_rank=focus_rank.get(spec.building_key, focus_count),
                     focus_count=focus_count,
+                    technology_capacity_required=technology_capacity_required,
                 ),
             )
         )
@@ -582,6 +617,13 @@ class _V2MaintenanceCandidateRejected(V2MaintenanceError):
         self.reason = str(reason)
 
 
+def _virtual_troop_grain_rate_budget(production_basis: ResourceProductionBasis) -> int:
+    """Return the 24-hour grain budget enforced for a virtual troop batch."""
+
+    hourly_grain_rate = float(dict(production_basis.hourly_rates).get(ResourceType.GRAIN.value, 0.0))
+    return max(0, math.floor(max(0.0, hourly_grain_rate) * 24.0))
+
+
 _ORDINARY_CYCLE_COVERAGE_KINDS = (
     BuildingUpgradeActionSpec.action_kind,
     TechnologyUpgradeActionSpec.action_kind,
@@ -595,7 +637,7 @@ _ORDINARY_CYCLE_MIN_ACTION_COUNTS = (
     (TechnologyUpgradeActionSpec.action_kind, 2),
 )
 _ORDINARY_CYCLE_MIN_ACTION_COUNT_BY_KIND = dict(_ORDINARY_CYCLE_MIN_ACTION_COUNTS)
-_CYCLE_PAYLOAD_SCHEMA_VERSION = 3
+_CYCLE_PAYLOAD_SCHEMA_VERSION = 4
 _CYCLE_COVERAGE_DEBT_MAX = 32
 _RESOURCE_WAIT_MAX_RETRIES = 6
 _RESOURCE_WAIT_REASONS = frozenset(
@@ -603,8 +645,15 @@ _RESOURCE_WAIT_REASONS = frozenset(
         "insufficient_resource",
         "resource_snapshot_changed",
         "healing_insufficient_resource",
+        "technology_insufficient_resource",
     }
 )
+_TECHNOLOGY_QUOTE_REJECTION_REASONS = {
+    TechnologyConcurrentUpgradeLimitError: "technology_concurrent_limit",
+    TechnologyMaxLevelError: "technology_max_level",
+    TechnologyNotFoundError: "technology_not_found",
+    TechnologyUpgradeInProgressError: "technology_upgrade_in_progress",
+}
 
 
 def _normalize_cycle_action_kind_counts(value: object) -> tuple[tuple[str, int], ...]:
@@ -979,6 +1028,9 @@ class MaintenancePlan:
     economic_recovery_mode: bool = False
     candidate_exclusions: tuple[str, ...] = ()
     candidate_generation_coverage_kinds: tuple[str, ...] = ()
+    candidate_pool_cooldown_kinds: tuple[str, ...] = ()
+    technology_candidate_rejections: tuple[tuple[str, str], ...] = ()
+    troop_candidate_rejections: tuple[tuple[str, str], ...] = ()
     scheduled_cycle_slot_due: bool = False
     domain_availability: tuple[tuple[str, tuple[datetime, ...]], ...] = ()
     virtual_projection_pools: _VirtualProjectionPools | None = dataclass_field(
@@ -1099,6 +1151,8 @@ class MaintenancePlan:
             raise V2MaintenanceError("salary_quote must be a SalaryBatchQuote")
         if not isinstance(self.resource_planning_snapshot, ResourcePlanningSnapshot):
             raise V2MaintenanceError("resource_planning_snapshot must be a ResourcePlanningSnapshot")
+        if self.policy_version == 2 and self.resource_planning_snapshot.salary_enabled:
+            raise V2MaintenanceError("policy-2 virtual-player maintenance must not enable guest salary")
         if self.resource_planning_snapshot.current_salary_quote != self.salary_quote:
             raise V2MaintenanceError("resource planning salary quote differs from the plan salary quote")
         if self.resource_planning_snapshot.production_deltas != self.resource_production_deltas:
@@ -1370,6 +1424,38 @@ class MaintenancePlan:
         if len(normalized_exclusions) != len(self.candidate_exclusions):
             raise V2MaintenanceError("candidate exclusions must be unique and non-empty")
         object.__setattr__(self, "candidate_exclusions", normalized_exclusions)
+        normalized_technology_rejections: dict[str, str] = {}
+        for raw_item in self.technology_candidate_rejections:
+            if not isinstance(raw_item, (tuple, list)) or len(raw_item) != 2:
+                raise V2MaintenanceError("technology candidate rejections must contain key/reason pairs")
+            technology_key = str(raw_item[0]).strip()
+            rejection_reason = str(raw_item[1]).strip()
+            if not technology_key or not rejection_reason:
+                raise V2MaintenanceError("technology candidate rejections must be non-empty")
+            if technology_key in normalized_technology_rejections:
+                raise V2MaintenanceError("technology candidate rejection keys must be unique")
+            normalized_technology_rejections[technology_key] = rejection_reason
+        object.__setattr__(
+            self,
+            "technology_candidate_rejections",
+            tuple(sorted(normalized_technology_rejections.items())),
+        )
+        normalized_troop_rejections: dict[str, str] = {}
+        for raw_item in self.troop_candidate_rejections:
+            if not isinstance(raw_item, (tuple, list)) or len(raw_item) != 2:
+                raise V2MaintenanceError("troop candidate rejections must contain class/reason pairs")
+            troop_class = str(raw_item[0]).strip()
+            rejection_reason = str(raw_item[1]).strip()
+            if not troop_class or not rejection_reason:
+                raise V2MaintenanceError("troop candidate rejections must be non-empty")
+            if troop_class in normalized_troop_rejections:
+                raise V2MaintenanceError("troop candidate rejection keys must be unique")
+            normalized_troop_rejections[troop_class] = rejection_reason
+        object.__setattr__(
+            self,
+            "troop_candidate_rejections",
+            tuple(sorted(normalized_troop_rejections.items())),
+        )
         normalized_generation_kinds = tuple(
             dict.fromkeys(
                 str(value).strip() for value in self.candidate_generation_coverage_kinds if str(value).strip()
@@ -1383,6 +1469,16 @@ class MaintenancePlan:
         ):
             raise V2MaintenanceError("candidate generation coverage kinds must use canonical order")
         object.__setattr__(self, "candidate_generation_coverage_kinds", normalized_generation_kinds)
+        normalized_cooldown_kinds = tuple(
+            kind
+            for kind in _ORDINARY_CYCLE_COVERAGE_KINDS
+            if kind in {str(value).strip() for value in self.candidate_pool_cooldown_kinds if str(value).strip()}
+        )
+        if normalized_cooldown_kinds and (
+            self.policy_version != 2 or self.trigger_policy.trigger is not MaintenanceTrigger.SCHEDULED
+        ):
+            raise V2MaintenanceError("candidate pool cooldowns are only valid for scheduled policy-2 maintenance")
+        object.__setattr__(self, "candidate_pool_cooldown_kinds", normalized_cooldown_kinds)
 
     @property
     def reference_sample_count(self) -> int:
@@ -1641,6 +1737,21 @@ def retire_locked_virtual_player_if_unprotected(profile: BotProfile, *, now: Any
         profile_store.defer_profile_retirement(profile, now=now, retry_after=timedelta(hours=1))
         return False
     profile_store.mark_profile_retired(profile, now=now)
+    # Retirement makes every future scheduled slot ineligible.  Close any
+    # already-open cycle as part of the same transaction so the scheduler
+    # cannot keep selecting a dead profile because its stale slot is due.
+    open_cycles = BotMaintenanceCycle.objects.select_for_update().filter(
+        profile_id=profile.id,
+        status=BotMaintenanceCycle.Status.OPEN,
+    )
+    for cycle in open_cycles:
+        close_durable_cycle_locked(
+            cycle,
+            reason="profile_retired",
+            action_state=BotMaintenanceCycle.ActionState.NO_ACTION,
+            completion_source="profile_retired",
+            completed_at=now,
+        )
     return True
 
 
@@ -2095,6 +2206,9 @@ def _maintenance_precondition_digest(
     economic_recovery_mode: bool,
     candidate_exclusions: tuple[str, ...],
     candidate_generation_coverage_kinds: tuple[str, ...],
+    candidate_pool_cooldown_kinds: tuple[str, ...],
+    technology_candidate_rejections: tuple[tuple[str, str], ...],
+    troop_candidate_rejections: tuple[tuple[str, str], ...],
 ) -> str:
     payload = {
         "action": {
@@ -2143,6 +2257,9 @@ def _maintenance_precondition_digest(
             "economic_recovery_mode": bool(economic_recovery_mode),
             "candidate_exclusions": list(candidate_exclusions),
             "candidate_generation_coverage_kinds": list(candidate_generation_coverage_kinds),
+            "candidate_pool_cooldown_kinds": list(candidate_pool_cooldown_kinds),
+            "technology_candidate_rejections": dict(technology_candidate_rejections),
+            "troop_candidate_rejections": dict(troop_candidate_rejections),
             "recruitment_rarity_cap": guest_rarity_cap,
             "max_guest_level_step": max_guest_level_step,
             "minimum_guest_count": minimum_guest_count,
@@ -3204,6 +3321,7 @@ def _technology_upgrade_quotes(
     development_plan: BotDevelopmentPlan,
     technologies: tuple[PlayerTechnology, ...] | None = None,
     technology_focuses: tuple[str, ...] | None = None,
+    rejection_reasons: dict[str, str] | None = None,
 ) -> tuple[TechnologyUpgradeQuote, ...]:
     quotes: list[TechnologyUpgradeQuote] = []
     resolved_technology_focuses = (
@@ -3225,7 +3343,13 @@ def _technology_upgrade_quotes(
             TechnologyMaxLevelError,
             TechnologyNotFoundError,
             TechnologyUpgradeInProgressError,
-        ):
+        ) as exc:
+            if rejection_reasons is not None:
+                rejection_reasons[str(technology_key)] = next(
+                    reason
+                    for exception_type, reason in _TECHNOLOGY_QUOTE_REJECTION_REASONS.items()
+                    if isinstance(exc, exception_type)
+                )
             continue
     return tuple(quotes)
 
@@ -3379,6 +3503,8 @@ def _next_v2_growth_at(
         context=context,
         now=now,
     )
+    if int(profile.policy_version) == 2:
+        return next_strength_check
     next_salary_date = timezone.localdate(now) + timedelta(days=1)
     next_salary_settlement = timezone.make_aware(
         datetime.combine(next_salary_date, datetime.min.time()),
@@ -3408,6 +3534,7 @@ def _build_v2_maintenance_plan_from_profile(
     cycle_guest_count_target: int | None = None,
     cycle_guest_count_target_frozen: bool = False,
     candidate_exclusions: tuple[str, ...] = (),
+    candidate_pool_cooldown_kinds: tuple[str, ...] = (),
     scheduled_cycle_slot_due: bool = False,
     planning_snapshot: _MaintenancePlanningSnapshot | None = None,
     frozen_control_snapshot_digest: str | None = None,
@@ -3475,6 +3602,11 @@ def _build_v2_maintenance_plan_from_profile(
     candidate_exclusions = tuple(
         dict.fromkeys(str(value).strip() for value in candidate_exclusions if str(value).strip())
     )
+    candidate_pool_cooldown_kinds = tuple(
+        kind
+        for kind in _ORDINARY_CYCLE_COVERAGE_KINDS
+        if kind in {str(value).strip() for value in candidate_pool_cooldown_kinds if str(value).strip()}
+    )
 
     planning_strength = None if planning_snapshot is None else planning_snapshot.strength
     context = _maintenance_context(profile)
@@ -3507,6 +3639,22 @@ def _build_v2_maintenance_plan_from_profile(
             "profile_not_due",
         )
     virtual_asset_policy = int(profile.policy_version) == 2
+    virtual_troop_capacity = (
+        virtual_troop_capacity_for_prestige_band(
+            policy_payload=resolved_policy_release.payload,
+            prestige_band=str(profile.current_prestige_band),
+        )
+        if virtual_asset_policy
+        else None
+    )
+    virtual_juxianzhuang_target = (
+        virtual_juxianzhuang_level_for_prestige_band(
+            policy_payload=resolved_policy_release.payload,
+            prestige_band=str(profile.current_prestige_band),
+        )
+        if virtual_asset_policy
+        else None
+    )
     maintenance_config = load_virtual_player_config()
     if cycle_pacing is not None and not (
         virtual_asset_policy and trigger_policy.trigger is not MaintenanceTrigger.ARENA_ACCELERATION
@@ -3621,11 +3769,27 @@ def _build_v2_maintenance_plan_from_profile(
         ),
         protect_salary_runway=not virtual_asset_policy,
         recurring_silver_outflow_daily=recurring_recruitment_silver,
+        salary_scale=(VIRTUAL_PLAYER_SALARY_SCALE if virtual_asset_policy else (1, 1)),
+        salary_enabled=not virtual_asset_policy,
     )
     resource_production_deltas = resource_planning_snapshot.production_deltas
     salary_quote = resource_planning_snapshot.current_salary_quote
     salary_shortfall = resource_planning_snapshot.salary_shortfall
     arena_acceleration = trigger_policy.trigger is MaintenanceTrigger.ARENA_ACCELERATION
+    current_juxian_level = max(
+        (
+            int(building.level or 0)
+            for building in buildings
+            if str(building.building_type.key) == BuildingKeys.JUXIAN_ZHUANG
+        ),
+        default=0,
+    )
+    prestige_building_priority_required = bool(
+        virtual_asset_policy
+        and not arena_acceleration
+        and virtual_juxianzhuang_target is not None
+        and current_juxian_level < int(virtual_juxianzhuang_target)
+    )
     healing_intent, healing_guest, medicine_quote = _guest_healing_candidate(
         manor=manor,
         prestige_band=str(profile.current_prestige_band),
@@ -3661,6 +3825,37 @@ def _build_v2_maintenance_plan_from_profile(
         healing_intent = None
         healing_guest = None
         medicine_quote = None
+    configured_technology_focuses = tuple(
+        dict.fromkeys(
+            (
+                *(archetype_pacing.technology_targets if archetype_pacing is not None else ()),
+                *development_plan.technology_focuses,
+            )
+        )
+    )
+    if virtual_asset_policy:
+        resolved_technology_focuses = resolve_virtual_technology_focuses(
+            configured_technology_focuses,
+            troop_classes=(troop_class for troop_class, _ratio in development_plan.troop_mix),
+        )
+    else:
+        resolved_technology_focuses = configured_technology_focuses
+    technology_candidate_rejections: dict[str, str] = {}
+    troop_candidate_rejections: dict[str, str] = {}
+    technology_budget_quotes = (
+        _technology_upgrade_quotes(
+            manor=manor,
+            development_plan=development_plan,
+            technologies=technologies,
+            technology_focuses=resolved_technology_focuses,
+            rejection_reasons=technology_candidate_rejections,
+        )
+        if virtual_asset_policy and not arena_acceleration
+        else ()
+    )
+    technology_capacity_required = bool(
+        technology_budget_quotes and int(technology_budget_quotes[0].silver_cost) > int(manor.silver_capacity or 0)
+    )
     growth_guests = (
         _arena_growth_priority_guests(
             tuple(guest for guest in guests if guest.status == GuestStatus.IDLE),
@@ -3672,12 +3867,13 @@ def _build_v2_maintenance_plan_from_profile(
     economic_recovery_mode = bool(
         virtual_asset_policy
         and not arena_acceleration
-        and resource_planning_snapshot.silver_liquidity_state in {"critical", "tight"}
+        and (resource_planning_snapshot.silver_liquidity_state in {"critical", "tight"} or technology_capacity_required)
     )
     economic_recovery_focuses = (
         _economic_recovery_building_focuses(
             manor=manor,
             resource_snapshot=resource_planning_snapshot,
+            technology_capacity_required=technology_capacity_required,
         )
         if economic_recovery_mode
         else ()
@@ -3720,14 +3916,7 @@ def _build_v2_maintenance_plan_from_profile(
                     *(archetype_pacing.building_targets if archetype_pacing is not None else ()),
                     *development_plan.building_focuses,
                 ),
-            )
-        )
-    )
-    configured_technology_focuses = tuple(
-        dict.fromkeys(
-            (
-                *(archetype_pacing.technology_targets if archetype_pacing is not None else ()),
-                *development_plan.technology_focuses,
+                technology_capacity_required=technology_capacity_required,
             )
         )
     )
@@ -3735,12 +3924,16 @@ def _build_v2_maintenance_plan_from_profile(
         resolved_building_focuses = filter_virtual_building_focuses(resolved_building_focuses)
         if not resolved_building_focuses and arena_building_focuses is None:
             resolved_building_focuses = ("tax_office",)
-        resolved_technology_focuses = resolve_virtual_technology_focuses(
-            configured_technology_focuses,
-            troop_classes=(troop_class for troop_class, _ratio in development_plan.troop_mix),
-        )
-    else:
-        resolved_technology_focuses = configured_technology_focuses
+        if prestige_building_priority_required and arena_building_focuses is None:
+            # The published V2 starter snapshot defines the minimum 聚贤庄
+            # level for the current prestige band.  Put it first in the
+            # building focus list; the candidate group below makes it a real
+            # priority while retaining other buildings as fallback work when
+            # the prerequisite is locked or unaffordable.
+            resolved_building_focuses = (
+                BuildingKeys.JUXIAN_ZHUANG,
+                *(key for key in resolved_building_focuses if key != BuildingKeys.JUXIAN_ZHUANG),
+            )
     troop_counts = (
         ()
         if virtual_asset_policy
@@ -3892,6 +4085,7 @@ def _build_v2_maintenance_plan_from_profile(
             development_plan=development_plan,
             technologies=technologies,
             technology_focuses=resolved_technology_focuses,
+            rejection_reasons=technology_candidate_rejections,
         )
         candidates, specs = build_technology_upgrade_candidates(
             manor=manor,
@@ -3946,6 +4140,16 @@ def _build_v2_maintenance_plan_from_profile(
     def _build_troop_stage() -> tuple[tuple[DevelopmentIntent, ...], dict[str, TroopRecruitmentQuote]]:
         if virtual_asset_policy:
             try:
+                batch_quantity_by_class = {
+                    str(troop_class): context.random(
+                        domain="troops",
+                        discriminator={
+                            "purpose": "virtual-batch-quantity",
+                            "troop_class": str(troop_class),
+                        },
+                    ).randint(VIRTUAL_TROOP_BATCH_MIN_QUANTITY, VIRTUAL_TROOP_BATCH_MAX_QUANTITY)
+                    for troop_class, _target_weight in development_plan.troop_mix
+                }
                 return build_virtual_troop_candidates(
                     manor=manor,
                     prestige_band=str(profile.current_prestige_band),
@@ -3955,6 +4159,25 @@ def _build_v2_maintenance_plan_from_profile(
                     technology_levels=technology_levels,
                     archetype=str(profile.archetype),
                     config=projection_config,
+                    batch_quantity_by_class=batch_quantity_by_class,
+                    # The virtual path shares the same 5000-man manor capacity
+                    # service as real recruitment, bank withdrawal, and battle
+                    # returns.  The virtual path additionally counts bank
+                    # storage and pending recruitment against its prestige-band
+                    # total.  A pending recruitment is counted as reserved
+                    # space by the adapter.
+                    remaining_troop_capacity=get_virtual_troop_remaining_space(
+                        manor,
+                        virtual_capacity=(
+                            virtual_troop_capacity if virtual_troop_capacity is not None else MANOR_TROOP_CAPACITY
+                        ),
+                    ),
+                    capacity_rejection_reasons=(
+                        "troop_prestige_cap_reached",
+                        "troop_prestige_cap_below_batch_minimum",
+                    ),
+                    grain_budget=resource_planning_snapshot.grain_rate_budget_24h,
+                    rejection_reasons=troop_candidate_rejections,
                 )
             except VirtualCandidatePoolError as exc:
                 raise V2MaintenanceError(str(exc)) from exc
@@ -4070,7 +4293,36 @@ def _build_v2_maintenance_plan_from_profile(
     troop_candidates = candidate_state.troop_candidates
     troop_quotes = candidate_state.troop_quotes
     ordinary_capacity_candidates = building_candidates if ordinary_capacity_expansion_required else ()
-    quality_building_candidates = () if ordinary_capacity_expansion_required else building_candidates
+
+    def _is_prestige_building_priority_candidate(candidate: DevelopmentIntent) -> bool:
+        spec = building_specs.get(candidate.business_key)
+        return isinstance(spec, BuildingUpgradeActionSpec) and spec.building_key == BuildingKeys.JUXIAN_ZHUANG
+
+    prestige_building_priority_candidates = (
+        tuple(
+            candidate
+            for candidate in building_candidates
+            if (
+                prestige_building_priority_required
+                and not ordinary_capacity_expansion_required
+                and _is_prestige_building_priority_candidate(candidate)
+            )
+        )
+        if prestige_building_priority_required and not ordinary_capacity_expansion_required
+        else ()
+    )
+    prestige_building_priority_keys = frozenset(
+        candidate.business_key for candidate in prestige_building_priority_candidates
+    )
+    quality_building_candidates = (
+        ()
+        if ordinary_capacity_expansion_required
+        else tuple(
+            candidate
+            for candidate in building_candidates
+            if candidate.business_key not in prestige_building_priority_keys
+        )
+    )
     healing_candidates = () if healing_intent is None else (healing_intent,)
     recruitment_candidates = () if guest_recruitment_intent is None else (guest_recruitment_intent,)
     scheduled_quality_candidates = (
@@ -4106,7 +4358,11 @@ def _build_v2_maintenance_plan_from_profile(
             scheduled_quality_candidates = tuple(biased_candidates)
 
     def _is_economic_recovery_candidate(candidate: DevelopmentIntent) -> bool:
-        if not economic_recovery_mode or candidate.action_kind != BuildingUpgradeActionSpec.action_kind:
+        if not economic_recovery_mode:
+            return False
+        if technology_capacity_required and candidate.action_kind == TechnologyUpgradeActionSpec.action_kind:
+            return True
+        if candidate.action_kind != BuildingUpgradeActionSpec.action_kind:
             return False
         spec = building_specs.get(candidate.business_key)
         return isinstance(spec, BuildingUpgradeActionSpec) and spec.building_key in resolved_recovery_focuses
@@ -4121,6 +4377,7 @@ def _build_v2_maintenance_plan_from_profile(
             buildings=buildings,
             technology_levels=technology_levels,
             focus_order=economic_recovery_focuses,
+            technology_capacity_required=technology_capacity_required,
         )
     scheduled_quality_groups: tuple[tuple[DevelopmentIntent, ...], ...] = (
         (economic_recovery_candidates,) if economic_recovery_mode and economic_recovery_candidates else ()
@@ -4210,6 +4467,8 @@ def _build_v2_maintenance_plan_from_profile(
                 )
             scheduled_quality_candidates = tuple(candidate for group in ordered_groups for candidate in group)
             scheduled_quality_groups = tuple(group for group in ordered_groups if group)
+    if prestige_building_priority_candidates:
+        scheduled_quality_groups = (prestige_building_priority_candidates, *scheduled_quality_groups)
     arena_quality_candidates = (
         (
             *(building_candidates if arena_replenishment and not arena_capacity_expansion_required else ()),
@@ -4224,6 +4483,7 @@ def _build_v2_maintenance_plan_from_profile(
         *healing_candidates,
         *recruitment_candidates,
         *ordinary_capacity_candidates,
+        *prestige_building_priority_candidates,
         *scheduled_quality_candidates,
     )
     if not lazy_scheduled_v2:
@@ -4625,13 +4885,39 @@ def _build_v2_maintenance_plan_from_profile(
                 utility_score=max(0.001, float(candidate.utility_score) * multiplier),
             )
 
-        def _stage_candidates(stage_name: str) -> tuple[DevelopmentIntent, ...]:
+        deferred_prestige_priority_keys: set[str] = set()
+
+        def _stage_candidates(
+            stage_name: str,
+            *,
+            bypass_cooldown: bool = False,
+        ) -> tuple[DevelopmentIntent, ...]:
+            if not bypass_cooldown and any(
+                kind in candidate_pool_cooldown_kinds for kind in candidate_stage_coverage_kinds.get(stage_name, ())
+            ):
+                return ()
             _materialize_candidate_stage(stage_name)
             candidates = getattr(candidate_state, f"{stage_name}_candidates")
-            return tuple(candidate for candidate in candidates if candidate.business_key not in excluded_candidate_keys)
+            return tuple(
+                candidate
+                for candidate in candidates
+                if candidate.business_key not in excluded_candidate_keys
+                and candidate.business_key not in deferred_prestige_priority_keys
+            )
 
         def _deferred_group_candidates(group: _DeferredCandidateGroup) -> tuple[DevelopmentIntent, ...]:
-            if group.mode == "fixed":
+            if group.name == "prestige_core_building":
+                _materialize_candidate_stage("building")
+                priority_candidates: list[DevelopmentIntent] = []
+                for candidate in candidate_state.building_candidates:
+                    if candidate.business_key in excluded_candidate_keys:
+                        continue
+                    spec = building_specs.get(candidate.business_key)
+                    if isinstance(spec, BuildingUpgradeActionSpec) and spec.building_key == BuildingKeys.JUXIAN_ZHUANG:
+                        priority_candidates.append(candidate)
+                candidates = tuple(priority_candidates)
+                deferred_prestige_priority_keys.update(candidate.business_key for candidate in candidates)
+            elif group.mode == "fixed":
                 candidates = tuple(
                     candidate
                     for candidate in group.fixed_candidates
@@ -4639,7 +4925,9 @@ def _build_v2_maintenance_plan_from_profile(
                 )
             else:
                 candidates = tuple(
-                    candidate for stage_name in group.stage_names for candidate in _stage_candidates(stage_name)
+                    candidate
+                    for stage_name in group.stage_names
+                    for candidate in _stage_candidates(stage_name, bypass_cooldown=group.mode == "capacity")
                 )
             if group.mode == "capacity":
                 return candidates
@@ -4675,6 +4963,7 @@ def _build_v2_maintenance_plan_from_profile(
                     buildings=buildings,
                     technology_levels=technology_levels,
                     focus_order=economic_recovery_focuses,
+                    technology_capacity_required=technology_capacity_required,
                 )
             return tuple(resolved)
 
@@ -4694,6 +4983,14 @@ def _build_v2_maintenance_plan_from_profile(
                 )
             )
         else:
+            if prestige_building_priority_required:
+                deferred_groups.append(
+                    _DeferredCandidateGroup(
+                        name="prestige_core_building",
+                        mode="priority",
+                        stage_names=("building",),
+                    )
+                )
             if quantity_target_pending:
                 deferred_groups.append(
                     _DeferredCandidateGroup(
@@ -4913,14 +5210,25 @@ def _build_v2_maintenance_plan_from_profile(
         ) = resource_planning_snapshot.assess_costs(
             _candidate_resource_costs(candidate),
         )
+        technology_capacity_exceeded = bool(
+            candidate.action_kind == TechnologyUpgradeActionSpec.action_kind
+            and dict(resource_costs).get(ResourceType.SILVER, 0) > int(manor.silver_capacity or 0)
+        )
+        technology_resource_reason = (
+            "technology_cost_exceeds_capacity"
+            if technology_capacity_exceeded
+            else ("technology_insufficient_resource" if resource_rejections else None)
+        )
         next_affordable_at = (
             resource_planning_snapshot.next_affordable_at(
                 resource_costs,
                 now=planned_at,
             )
-            if resource_rejections
+            if resource_rejections and not technology_capacity_exceeded
             else None
         )
+        if technology_resource_reason is not None:
+            rejection_reasons.insert(0, technology_resource_reason)
         rejection_reasons.extend(resource_rejections)
         if ordinary_pacing is not None:
             if candidate.action_kind == "training" and active_training_count >= ordinary_pacing.max_parallel_training:
@@ -4997,6 +5305,7 @@ def _build_v2_maintenance_plan_from_profile(
                         "archetype_budget_silver",
                         "archetype_budget_grain",
                     }
+                    and not technology_capacity_exceeded
                 ),
             )
         )
@@ -5156,6 +5465,9 @@ def _build_v2_maintenance_plan_from_profile(
         candidate_generation_coverage_kinds=tuple(
             kind for kind in _ORDINARY_CYCLE_COVERAGE_KINDS if kind in candidate_generation_coverage_kinds
         ),
+        candidate_pool_cooldown_kinds=candidate_pool_cooldown_kinds,
+        technology_candidate_rejections=tuple(sorted(technology_candidate_rejections.items())),
+        troop_candidate_rejections=tuple(sorted(troop_candidate_rejections.items())),
     )
     return MaintenancePlan(
         profile_id=int(profile.id),
@@ -5219,6 +5531,9 @@ def _build_v2_maintenance_plan_from_profile(
         candidate_generation_coverage_kinds=tuple(
             kind for kind in _ORDINARY_CYCLE_COVERAGE_KINDS if kind in candidate_generation_coverage_kinds
         ),
+        candidate_pool_cooldown_kinds=candidate_pool_cooldown_kinds,
+        technology_candidate_rejections=tuple(sorted(technology_candidate_rejections.items())),
+        troop_candidate_rejections=tuple(sorted(troop_candidate_rejections.items())),
         scheduled_cycle_slot_due=bool(scheduled_cycle_slot_due),
         domain_availability=domain_availability,
         virtual_projection_pools=virtual_projection_pools,
@@ -5248,6 +5563,7 @@ def build_virtual_player_v2_maintenance_plan(
     _cycle_guest_count_target: int | None = None,
     _cycle_guest_count_target_frozen: bool = False,
     _candidate_exclusions: tuple[str, ...] = (),
+    _candidate_pool_cooldown_kinds: tuple[str, ...] = (),
     _scheduled_cycle_slot_due: bool = False,
     _routing_snapshot: RuntimeRoutingSnapshot | None = None,
     _external_reconciliation_prechecked: bool = False,
@@ -5345,6 +5661,7 @@ def build_virtual_player_v2_maintenance_plan(
             cycle_guest_count_target=_cycle_guest_count_target,
             cycle_guest_count_target_frozen=_cycle_guest_count_target_frozen,
             candidate_exclusions=_candidate_exclusions,
+            candidate_pool_cooldown_kinds=_candidate_pool_cooldown_kinds,
             scheduled_cycle_slot_due=_scheduled_cycle_slot_due,
             planning_snapshot=_planning_snapshot,
             frozen_control_snapshot_digest=_frozen_control_snapshot_digest,
@@ -5365,6 +5682,7 @@ def build_virtual_player_v2_maintenance_plan(
         ReferenceSnapshotError,
         UnsupportedRandomDomainError,
         UnsupportedRngVersionError,
+        VirtualPrestigeTargetPolicyError,
         V2MaintenanceError,
         VirtualPlayerConfigError,
     ) as exc:
@@ -5496,6 +5814,14 @@ def _assert_locked_profile_matches_plan(
             "profile_state_ineligible",
         )
     if plan.trigger_policy.trigger is MaintenanceTrigger.SCHEDULED:
+        has_arena_training = getattr(profile, "maintenance_has_arena_training", None)
+        if has_arena_training is None:
+            has_arena_training = is_virtual_profile_arena_training(profile_id=int(profile.id))
+        if has_arena_training:
+            raise _V2MaintenanceOutcomeError(
+                MaintenanceOutcome.INELIGIBLE,
+                "arena_training_active",
+            )
         has_arena_reserve = getattr(profile, "maintenance_has_arena_reserve", None)
         if has_arena_reserve is None:
             has_arena_reserve = BotProfile.objects.filter(
@@ -5683,7 +6009,9 @@ def _record_ordinary_salary_batch_locked(
     guests_by_id = {int(guest.id): guest for guest in guests}
     for guest_id in unpaid_ids:
         guest = guests_by_id.get(guest_id)
-        guest_salary = 0 if not paid or guest is None else int(get_guest_salary_for_rarity(guest.template.rarity))
+        guest_salary = (
+            0 if not paid or guest is None else int(get_guest_salary(guest, salary_scale=salary_quote.salary_scale))
+        )
         child_paid = guest_id in paid_ids
         attempt_specs.append(
             {
@@ -5933,15 +6261,13 @@ def execute_virtual_player_v2_maintenance_plan(
             "external_reconciliation_unresolved",
         )
 
-    salary_paid = SalaryPayment.objects.filter(
-        guest_id=OuterRef("pk"),
-        for_date=timezone.localdate(plan.planned_at),
-    )
-    revalidation_guest_query = (
-        Guest.objects.filter(manor_id=manor.id)
-        .select_related("template")
-        .annotate(maintenance_salary_paid=Exists(salary_paid))
-    )
+    revalidation_guest_query = Guest.objects.filter(manor_id=manor.id).select_related("template")
+    if plan.policy_version != 2:
+        salary_paid = SalaryPayment.objects.filter(
+            guest_id=OuterRef("pk"),
+            for_date=timezone.localdate(plan.planned_at),
+        )
+        revalidation_guest_query = revalidation_guest_query.annotate(maintenance_salary_paid=Exists(salary_paid))
     if connection.features.has_select_for_update_of:
         revalidation_guest_query = revalidation_guest_query.select_for_update(of=("self",))
     else:
@@ -5958,8 +6284,12 @@ def execute_virtual_player_v2_maintenance_plan(
                 MaintenanceOutcome.BUSY,
                 "maintenance_target_changed",
             )
-    paid_guest_ids = frozenset(
-        int(guest.id) for guest in revalidation_guests if bool(getattr(guest, "maintenance_salary_paid", False))
+    paid_guest_ids = (
+        frozenset()
+        if plan.policy_version == 2
+        else frozenset(
+            int(guest.id) for guest in revalidation_guests if bool(getattr(guest, "maintenance_salary_paid", False))
+        )
     )
     planning_snapshot = plan.planning_snapshot
     fast_batch_revalidation = bool(
@@ -5989,7 +6319,11 @@ def execute_virtual_player_v2_maintenance_plan(
                 MaintenanceOutcome.BUSY,
                 "maintenance_precondition_changed",
             )
-        current_unpaid_guest_ids = tuple(guest_id for guest_id in current_guest_ids if guest_id not in paid_guest_ids)
+        current_unpaid_guest_ids = (
+            ()
+            if plan.policy_version == 2
+            else tuple(guest_id for guest_id in current_guest_ids if guest_id not in paid_guest_ids)
+        )
         if current_unpaid_guest_ids != plan.salary_quote.unpaid_guest_ids:
             raise _V2MaintenanceOutcomeError(
                 MaintenanceOutcome.BUSY,
@@ -6148,6 +6482,7 @@ def execute_virtual_player_v2_maintenance_plan(
                     plan.trigger_policy.trigger is MaintenanceTrigger.SCHEDULED and plan.scheduled_cycle_slot_due
                 ),
                 candidate_exclusions=plan.candidate_exclusions,
+                candidate_pool_cooldown_kinds=plan.candidate_pool_cooldown_kinds,
                 scheduled_cycle_slot_due=plan.scheduled_cycle_slot_due,
                 planning_snapshot=revalidation_snapshot,
                 frozen_control_snapshot_digest=plan.control_snapshot_digest,
@@ -6168,6 +6503,7 @@ def execute_virtual_player_v2_maintenance_plan(
             ReferenceSnapshotError,
             UnsupportedRandomDomainError,
             UnsupportedRngVersionError,
+            VirtualPrestigeTargetPolicyError,
             V2MaintenanceError,
             VirtualPlayerConfigError,
         ) as exc:
@@ -6207,7 +6543,7 @@ def execute_virtual_player_v2_maintenance_plan(
     salary_payment_failed = False
     salary_result: Mapping[str, Any] | None = None
     salary_failure_reason = ""
-    if plan.salary_quote.unpaid_guest_ids and not arena_free_subsidy:
+    if plan.policy_version != 2 and plan.salary_quote.unpaid_guest_ids and not arena_free_subsidy:
         try:
             salary_result = pay_all_salaries_locked(
                 manor,
@@ -6246,16 +6582,18 @@ def execute_virtual_player_v2_maintenance_plan(
         preamble_cycle = locked_scheduled_cycle
         if preamble_cycle is None:
             raise V2MaintenanceError("ordinary cycle preamble requires a locked scheduled cycle")
-        salary_preamble_changed = _record_ordinary_salary_batch_locked(
-            profile=profile,
-            cycle=preamble_cycle,
-            salary_quote=revalidated.salary_quote,
-            guests=revalidation_guests,
-            salary_result=salary_result,
-            reason=salary_failure_reason
-            or ("salary_already_paid" if not revalidated.salary_quote.unpaid_guest_ids else ""),
-            now=plan.planned_at,
-        )
+        salary_preamble_changed = False
+        if plan.resource_planning_snapshot.salary_enabled:
+            salary_preamble_changed = _record_ordinary_salary_batch_locked(
+                profile=profile,
+                cycle=preamble_cycle,
+                salary_quote=revalidated.salary_quote,
+                guests=revalidation_guests,
+                salary_result=salary_result,
+                reason=salary_failure_reason
+                or ("salary_already_paid" if not revalidated.salary_quote.unpaid_guest_ids else ""),
+                now=plan.planned_at,
+            )
         healing_preamble_changed = _run_ordinary_guest_healing_sweep_locked(
             profile=profile,
             manor=manor,
@@ -6402,18 +6740,19 @@ def execute_virtual_player_v2_maintenance_plan(
                                             revalidation_grain_template is not None or _grain_template_resolved
                                         ),
                                     )
-                                if not ensure_auto_training(locked_guest):
+                                if not ensure_auto_training(locked_guest, now=plan.planned_at):
                                     raise GuestTrainingInProgressError(locked_guest)
                                 locked_guest.refresh_from_db()
                                 if locked_guest.training_complete_at is None:
                                     raise GuestTrainingInProgressError(locked_guest)
                                 remaining_seconds = max(
                                     1,
-                                    int((locked_guest.training_complete_at - timezone.now()).total_seconds()),
+                                    int((locked_guest.training_complete_at - plan.planned_at).total_seconds()),
                                 )
                                 reduce_training_time_for_guest(
                                     locked_guest,
                                     max(60, min(remaining_seconds, remaining_seconds // 4 or 1)),
+                                    now=plan.planned_at,
                                 )
                                 locked_guest.refresh_from_db()
                                 applied_guest = locked_guest
@@ -6456,6 +6795,59 @@ def execute_virtual_player_v2_maintenance_plan(
                                 )
                                 if troop_template is None:
                                     raise TroopRecruitmentError("虚拟护院模板缺失")
+                                policy_payload = (
+                                    _policy_release.payload
+                                    if _policy_release is not None
+                                    else get_policy_release(
+                                        version=plan.policy_version,
+                                        expected_checksum=plan.policy_checksum,
+                                    ).payload
+                                )
+                                virtual_capacity = virtual_troop_capacity_for_prestige_band(
+                                    policy_payload=policy_payload,
+                                    prestige_band=plan.current_prestige_band,
+                                )
+                                try:
+                                    ensure_virtual_troop_capacity_locked(
+                                        manor,
+                                        virtual_quote.quantity,
+                                        virtual_capacity=virtual_capacity,
+                                    )
+                                except TroopCapacityFullError as exc:
+                                    if (
+                                        plan.policy_version == 2
+                                        and plan.trigger_policy.trigger is MaintenanceTrigger.SCHEDULED
+                                    ):
+                                        physical_remaining = get_manor_troop_remaining_space(manor)
+                                        virtual_remaining = get_virtual_troop_remaining_space(
+                                            manor,
+                                            virtual_capacity=virtual_capacity,
+                                        )
+                                        raise _V2MaintenanceCandidateRejected(
+                                            business_key=plan.intent.business_key,
+                                            reason=(
+                                                "troop_prestige_cap_reached"
+                                                if virtual_remaining < VIRTUAL_TROOP_BATCH_MIN_QUANTITY
+                                                else (
+                                                    "troop_capacity_full"
+                                                    if physical_remaining < VIRTUAL_TROOP_BATCH_MIN_QUANTITY
+                                                    else "troop_capacity_changed"
+                                                )
+                                            ),
+                                        ) from exc
+                                    raise TroopRecruitmentError(str(exc)) from exc
+                                if int(virtual_quote.virtual_grain_cost) > _virtual_troop_grain_rate_budget(
+                                    production_basis
+                                ):
+                                    if (
+                                        plan.policy_version == 2
+                                        and plan.trigger_policy.trigger is MaintenanceTrigger.SCHEDULED
+                                    ):
+                                        raise _V2MaintenanceCandidateRejected(
+                                            business_key=plan.intent.business_key,
+                                            reason="troop_grain_rate_limited",
+                                        )
+                                    raise TroopRecruitmentError("虚拟护院招募粮食消耗超过当前净产粮速率")
                                 spend_resources_locked(
                                     manor,
                                     {
@@ -6586,7 +6978,7 @@ def execute_virtual_player_v2_maintenance_plan(
                                     sync_production=False,
                                     buildings=revalidation_buildings,
                                     technology_levels=revalidation_technology_levels,
-                                    now=timezone.now(),
+                                    now=plan.planned_at,
                                 )
                             else:
                                 apply_building_upgrade_locked(
@@ -6680,7 +7072,7 @@ def execute_virtual_player_v2_maintenance_plan(
                                     sync_production=False,
                                     technologies=revalidation_technologies,
                                     technologies_locked=True,
-                                    now=timezone.now(),
+                                    now=plan.planned_at,
                                 )
                             else:
                                 apply_technology_upgrade_locked(
@@ -6773,6 +7165,17 @@ def execute_virtual_player_v2_maintenance_plan(
         committed_shadow_cost = {
             **committed_shadow_cost,
             "target_guest_id": int(plan.target_id),
+        }
+    if plan.action_kind == "troop_recruitment" and plan.troop_recruitment_quote is not None:
+        # Keep the clipped batch quantity and its virtual resource costs in
+        # the durable attempt receipt so simulation reports can verify the
+        # 80-120 batch rule against the real committed action.  The receipt
+        # contract intentionally accepts flat non-negative integer values.
+        committed_shadow_cost = {
+            **committed_shadow_cost,
+            "troop_batch_quantity": int(plan.troop_recruitment_quote.quantity),
+            "troop_batch_grain_cost": int(plan.troop_recruitment_quote.virtual_grain_cost),
+            "troop_batch_silver_cost": int(plan.troop_recruitment_quote.virtual_silver_cost),
         }
     result = profile_store.commit_maintenance_cycle(
         profile,
@@ -7065,6 +7468,15 @@ def _open_policy2_scheduled_cycle(
             cycle.save(update_fields=[*dict.fromkeys([*update_fields, "updated_at"])])
         return cycle
     previous_payload = dict(cycle.payload or {}) if cycle is not None and isinstance(cycle.payload, Mapping) else None
+    previous_candidate_cooldowns = candidate_pool_cooldown_entries(
+        previous_payload,
+        now=now,
+    )
+    previous_candidate_cooldown_until = candidate_pool_cooldown_until(previous_payload, now=now)
+    if previous_candidate_cooldown_until is not None and (
+        initial_due_at is None or initial_due_at < previous_candidate_cooldown_until
+    ):
+        initial_due_at = previous_candidate_cooldown_until
     if cycle is not None and cycle.status == BotMaintenanceCycle.Status.OPEN:
         close_durable_cycle_locked(
             cycle,
@@ -7090,6 +7502,7 @@ def _open_policy2_scheduled_cycle(
             "ordinary_guest_count_target": ordinary_guest_count_target,
             "action_attempt_counts": {},
             "coverage_debt": _cycle_coverage_debt_for_new_cycle(previous_payload),
+            CANDIDATE_POOL_COOLDOWN_PAYLOAD_KEY: [dict(entry) for entry in previous_candidate_cooldowns],
         },
     )
     if cycle.next_slot_due_at is not None and cycle.next_slot_due_at <= now:
@@ -7146,6 +7559,34 @@ def _record_policy2_scheduled_cycle_retry(
         now=now,
         reason=normalized_reason,
     )
+    if normalized_reason in {"maintenance_precondition_changed", "maintenance_plan_changed"}:
+        # These conflicts are not equivalent to a short-lived profile lock.
+        # A cycle that already submitted a building/training action must wait
+        # for the real domain timer (or the next growth window); retrying every
+        # 1–3 minutes only replays the same stale snapshot and can create a
+        # virtual-clock hot loop.
+        wake_times: list[datetime] = []
+        payload = cycle.payload if isinstance(cycle.payload, Mapping) else {}
+        for pending_action in payload.get("pending_domain_actions", ()):
+            if not isinstance(pending_action, Mapping):
+                continue
+            raw_completion_at = pending_action.get("expected_completion_at")
+            if not isinstance(raw_completion_at, str) or not raw_completion_at.strip():
+                continue
+            try:
+                completion_at = datetime.fromisoformat(raw_completion_at.replace("Z", "+00:00"))
+            except ValueError:
+                continue
+            if timezone.is_naive(completion_at):
+                continue
+            if completion_at > now:
+                wake_times.append(completion_at.astimezone(UTC))
+        if wake_times:
+            retry_at = min(wake_times)
+        elif profile.next_growth_at is not None and profile.next_growth_at > now:
+            retry_at = profile.next_growth_at
+        else:
+            retry_at = now + timedelta(hours=1)
     payload = dict(cycle.payload or {})
     retry_history = list(payload.get("retry_history") or [])
     retry_history.append(
@@ -7175,6 +7616,86 @@ def _record_policy2_scheduled_cycle_retry(
             "next_decision_at",
             "updated_at",
         ]
+    )
+
+
+def _coverage_gap_identity(gap: Mapping[str, Any]) -> tuple[Any, ...]:
+    rejection_details = gap.get("candidate_rejections")
+    normalized_rejections = (
+        tuple(sorted((str(key), str(value)) for key, value in rejection_details.items()))
+        if isinstance(rejection_details, Mapping)
+        else ()
+    )
+    excluded_candidates = gap.get("excluded_candidates")
+    normalized_exclusions = (
+        tuple(sorted(str(value) for value in excluded_candidates))
+        if isinstance(excluded_candidates, (list, tuple, set, frozenset))
+        else ()
+    )
+    return (
+        str(gap.get("action_kind") or ""),
+        str(gap.get("reason") or ""),
+        normalized_rejections,
+        normalized_exclusions,
+    )
+
+
+def _merge_coverage_gaps(
+    existing: Sequence[object],
+    incoming: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    """Keep the latest state for one logical gap instead of appending noise."""
+
+    merged: list[dict[str, Any]] = []
+    indexes: dict[tuple[Any, ...], int] = {}
+    for raw_gap in (*existing, *incoming):
+        if not isinstance(raw_gap, Mapping):
+            continue
+        gap = dict(raw_gap)
+        identity = _coverage_gap_identity(gap)
+        if identity in indexes:
+            merged[indexes[identity]] = gap
+            continue
+        indexes[identity] = len(merged)
+        merged.append(gap)
+    return merged[-32:]
+
+
+def _gap_has_future_domain_completion(
+    gap: Mapping[str, Any],
+    *,
+    domain_availability: Sequence[tuple[str, Sequence[datetime]]],
+    now: datetime,
+) -> bool:
+    action_kind = str(gap.get("action_kind") or "")
+    domain_name = {
+        BuildingUpgradeActionSpec.action_kind: "building_upgrade",
+        TechnologyUpgradeActionSpec.action_kind: "technology_upgrade",
+        "guest": "guest_training",
+    }.get(action_kind)
+    if domain_name is None:
+        return False
+    reason = str(gap.get("reason") or "")
+    if reason == "technology_candidate_exhausted":
+        return False
+    if reason == "technology_cost_exceeds_capacity":
+        return False
+    if reason == "technology_candidate_blocked":
+        rejection_details = gap.get("candidate_rejections")
+        if isinstance(rejection_details, Mapping) and not any(
+            str(value)
+            in {
+                "technology_concurrent_limit",
+                "technology_upgrade_in_progress",
+            }
+            for value in rejection_details.values()
+        ):
+            return False
+    return any(
+        completion_at > now
+        for current_domain_name, completion_times in domain_availability
+        if current_domain_name == domain_name
+        for completion_at in completion_times
     )
 
 
@@ -7359,8 +7880,20 @@ def _record_policy2_scheduled_cycle_result(
             candidates = assessments_by_kind.get(kind, [])
             if any(assessment.allowed for assessment in candidates):
                 continue
-            reason = (
-                next(
+            gap: dict[str, Any] = {
+                "action_kind": kind,
+                "completed_count": completed_count,
+                "evaluated_count": evaluated_count,
+                "required_count": required_count,
+            }
+            if candidates:
+                rejection_counts: dict[str, int] = {}
+                candidate_rejections: dict[str, str] = {}
+                for assessment in candidates:
+                    rejection_reason = str(assessment.primary_rejection_reason or "no_eligible_candidate")
+                    rejection_counts[rejection_reason] = rejection_counts.get(rejection_reason, 0) + 1
+                    candidate_rejections[str(assessment.intent.business_key)] = rejection_reason
+                gap["reason"] = next(
                     (
                         assessment.primary_rejection_reason
                         for assessment in candidates
@@ -7368,18 +7901,29 @@ def _record_policy2_scheduled_cycle_result(
                     ),
                     "no_eligible_candidate",
                 )
-                if candidates
-                else "no_candidate"
-            )
-            gaps.append(
-                {
-                    "action_kind": kind,
-                    "completed_count": completed_count,
-                    "evaluated_count": evaluated_count,
-                    "required_count": required_count,
-                    "reason": reason,
-                }
-            )
+                gap["reason_source"] = "candidate_assessment"
+                gap["candidate_count"] = len(candidates)
+                gap["candidate_rejection_counts"] = dict(sorted(rejection_counts.items()))
+                gap["candidate_rejections"] = dict(sorted(candidate_rejections.items()))
+            elif kind == TechnologyUpgradeActionSpec.action_kind and plan.technology_candidate_rejections:
+                gap["reason"] = "technology_candidate_blocked"
+                gap["reason_source"] = "technology_quote_rejection"
+                gap["candidate_count"] = 0
+                gap["candidate_rejections"] = dict(plan.technology_candidate_rejections)
+            elif kind == TechnologyUpgradeActionSpec.action_kind and any(
+                str(value).startswith("technology_upgrade:") for value in plan.candidate_exclusions
+            ):
+                gap["reason"] = "technology_candidate_exhausted"
+                gap["reason_source"] = "candidate_exclusion"
+                gap["candidate_count"] = 0
+                gap["excluded_candidates"] = [
+                    str(value) for value in plan.candidate_exclusions if str(value).startswith("technology_upgrade:")
+                ]
+            else:
+                gap["reason"] = "no_candidate"
+                gap["reason_source"] = "empty_candidate_pool"
+                gap["candidate_count"] = 0
+            gaps.append(gap)
         return gaps
 
     if result.outcome is MaintenanceOutcome.NO_ACTION:
@@ -7391,6 +7935,11 @@ def _record_policy2_scheduled_cycle_result(
         normalized_reason = str(result.reason or "no_eligible_candidate")[:64]
         reason_category = classify_maintenance_reason(normalized_reason).value
         gaps = _coverage_gaps(cycle)
+        candidate_pool_cooldowns = merge_candidate_pool_cooldowns(
+            cycle.payload if isinstance(cycle.payload, Mapping) else {},
+            gaps=gaps,
+            now=now,
+        )
         record_durable_attempts_locked(
             profile,
             attempts=(
@@ -7405,6 +7954,10 @@ def _record_policy2_scheduled_cycle_result(
                     "shadow_cost": {
                         "kind": "cycle_no_action",
                         "coverage_gaps": gaps,
+                        "candidate_pool_cooldowns": candidate_pool_cooldowns,
+                        "candidate_generation_coverage_kinds": list(plan.candidate_generation_coverage_kinds),
+                        "technology_candidate_rejections": dict(plan.technology_candidate_rejections),
+                        "troop_candidate_rejections": dict(plan.troop_candidate_rejections),
                         "control_snapshot_digest": plan.control_snapshot_digest,
                         "reason_category": reason_category,
                     },
@@ -7416,7 +7969,7 @@ def _record_policy2_scheduled_cycle_result(
         )
         payload = dict(cycle.payload or {})
         existing_gaps = list(payload.get("coverage_gaps") or [])
-        payload["coverage_gaps"] = [*existing_gaps, *gaps][-32:]
+        payload["coverage_gaps"] = _merge_coverage_gaps(existing_gaps, gaps)
         payload["last_reason_category"] = reason_category
         payload["state_schema_version"] = _CYCLE_PAYLOAD_SCHEMA_VERSION
         coverage_debt = dict(_cycle_coverage_debt_for_existing_payload(payload))
@@ -7439,6 +7992,10 @@ def _record_policy2_scheduled_cycle_result(
                     max(int(coverage_debt.get(coverage_kind, 0)), deficit),
                 )
         payload["coverage_debt"] = coverage_debt
+        if candidate_pool_cooldowns:
+            payload[CANDIDATE_POOL_COOLDOWN_PAYLOAD_KEY] = candidate_pool_cooldowns
+        else:
+            payload.pop(CANDIDATE_POOL_COOLDOWN_PAYLOAD_KEY, None)
         cycle.payload = payload
         _record_domain_snapshot(cycle)
         # The domain snapshot helper adds its own fields to a fresh payload
@@ -7493,6 +8050,7 @@ def _record_policy2_scheduled_cycle_result(
             "candidate_domain_constraint",
             "domain_constraint",
             "insufficient_resource",
+            "technology_insufficient_resource",
             "resource_snapshot_changed",
             "archetype_parallel_training_cap",
         }
@@ -7508,14 +8066,18 @@ def _record_policy2_scheduled_cycle_result(
                 "candidate_domain_constraint",
                 "domain_constraint",
                 "insufficient_resource",
+                "technology_insufficient_resource",
                 "resource_snapshot_changed",
             }
             for gap in gaps
         )
         has_future_domain_completion = any(
-            completion_at > now
-            for _domain_name, completion_times in current_domain_availability
-            for completion_at in completion_times
+            _gap_has_future_domain_completion(
+                gap,
+                domain_availability=current_domain_availability,
+                now=now,
+            )
+            for gap in gaps
         )
         if (
             retryable_reason
@@ -7724,7 +8286,7 @@ def _record_policy2_scheduled_cycle_result(
     if gaps:
         payload = dict(cycle.payload or {})
         existing_gaps = list(payload.get("coverage_gaps") or [])
-        payload["coverage_gaps"] = [*existing_gaps, *gaps][-32:]
+        payload["coverage_gaps"] = _merge_coverage_gaps(existing_gaps, gaps)
         cycle.payload = payload
     if int(cycle.action_ordinal) >= int(cycle.max_actions):
         close_durable_cycle_locked(
@@ -7874,6 +8436,7 @@ def _run_v2_maintenance_attempt(
     scheduled_cycle_action_kind_counts: tuple[tuple[str, int], ...] = ()
     scheduled_cycle_action_attempt_counts: tuple[tuple[str, int], ...] = ()
     scheduled_cycle_coverage_debt: tuple[tuple[str, int], ...] = ()
+    scheduled_cycle_candidate_pool_cooldown_kinds: tuple[str, ...] = ()
     scheduled_cycle_guest_count_target: int | None = None
     locked_profile: BotProfile | None = None
     if trigger_policy.trigger is MaintenanceTrigger.SCHEDULED and int(policy_version or 0) == 2:
@@ -7984,6 +8547,16 @@ def _run_v2_maintenance_attempt(
                 ):
                     raise V2MaintenanceError("cycle action attempt counts are below submitted action counts")
                 scheduled_cycle_coverage_debt = _normalize_cycle_coverage_debt(cycle_payload.get("coverage_debt"))
+                scheduled_cycle_candidate_pool_cooldown_kinds = tuple(
+                    dict.fromkeys(
+                        str(entry.get("action_kind"))
+                        for entry in candidate_pool_cooldown_entries(
+                            cycle_payload,
+                            now=(now or timezone.now()),
+                        )
+                        if str(entry.get("action_kind") or "").strip()
+                    )
+                )
                 scheduled_cycle_guest_count_target = _normalize_ordinary_guest_count_target(
                     cycle_payload.get("ordinary_guest_count_target")
                 )
@@ -8011,6 +8584,7 @@ def _run_v2_maintenance_attempt(
                 _cycle_action_kind_counts=scheduled_cycle_action_kind_counts,
                 _cycle_action_attempt_counts=scheduled_cycle_action_attempt_counts,
                 _cycle_coverage_debt=scheduled_cycle_coverage_debt,
+                _candidate_pool_cooldown_kinds=scheduled_cycle_candidate_pool_cooldown_kinds,
                 _cycle_pacing=scheduled_cycle_pacing,
                 _cycle_guest_count_target=scheduled_cycle_guest_count_target,
                 _cycle_guest_count_target_frozen=(scheduled_cycle is not None),
@@ -8029,45 +8603,58 @@ def _run_v2_maintenance_attempt(
                     round_ordinal=arena_round_ordinal,
                     action_ordinal_in_round=arena_action_ordinal,
                 )
+            candidate_savepoint = (
+                transaction.atomic()
+                if scheduled_cycle is not None
+                and plan.policy_version == 2
+                and trigger_policy.trigger is MaintenanceTrigger.SCHEDULED
+                else nullcontext()
+            )
             try:
-                result = (
-                    (
-                        execute_virtual_player_v2_maintenance_plan(
+                # Resource settlement and the ordinary salary/healing preamble
+                # happen before the domain write.  A rejected candidate must
+                # roll back those preparatory writes as well; otherwise the
+                # next candidate is evaluated against the old planning
+                # snapshot and can be rejected forever as stale.
+                with candidate_savepoint:
+                    result = (
+                        (
+                            execute_virtual_player_v2_maintenance_plan(
+                                plan,
+                                _policy_release=policy_release,
+                                _routing_snapshot=routing_snapshot,
+                                _grain_template=grain_template,
+                                _grain_template_resolved=grain_template_resolved,
+                                _scheduled_cycle_id=(None if scheduled_cycle is None else scheduled_cycle.cycle_id),
+                                _locked_profile=locked_profile,
+                                # Policy-2 scheduled cycles already own the outer
+                                # profile/cycle transaction.  Other triggers must
+                                # retain the executor's public atomic boundary.
+                                _manage_transaction=(scheduled_cycle is None),
+                                _run_ordinary_preamble=(
+                                    scheduled_cycle is not None and int(scheduled_cycle.action_ordinal) == 0
+                                ),
+                            )
+                        )
+                        if receipt_context is None
+                        else _execute_virtual_player_v2_maintenance_with_receipt(
                             plan,
-                            _policy_release=policy_release,
-                            _routing_snapshot=routing_snapshot,
-                            _grain_template=grain_template,
-                            _grain_template_resolved=grain_template_resolved,
-                            _scheduled_cycle_id=(None if scheduled_cycle is None else scheduled_cycle.cycle_id),
-                            _locked_profile=locked_profile,
-                            # Policy-2 scheduled cycles already own the outer
-                            # profile/cycle transaction.  Other triggers must
-                            # retain the executor's public atomic boundary.
-                            _manage_transaction=(scheduled_cycle is None),
-                            _run_ordinary_preamble=(
+                            context=receipt_context,
+                            policy_release=policy_release,
+                            routing_snapshot=routing_snapshot,
+                            grain_template=grain_template,
+                            grain_template_resolved=grain_template_resolved,
+                            scheduled_cycle_id=(None if scheduled_cycle is None else scheduled_cycle.cycle_id),
+                            locked_profile=locked_profile,
+                            run_ordinary_preamble=(
                                 scheduled_cycle is not None and int(scheduled_cycle.action_ordinal) == 0
                             ),
+                            arena_member_id=arena_member_id,
+                            arena_round_ordinal=arena_round_ordinal,
+                            arena_action_ordinal=arena_action_ordinal,
+                            arena_slot_attempt_ordinal=arena_slot_attempt_ordinal,
                         )
                     )
-                    if receipt_context is None
-                    else _execute_virtual_player_v2_maintenance_with_receipt(
-                        plan,
-                        context=receipt_context,
-                        policy_release=policy_release,
-                        routing_snapshot=routing_snapshot,
-                        grain_template=grain_template,
-                        grain_template_resolved=grain_template_resolved,
-                        scheduled_cycle_id=(None if scheduled_cycle is None else scheduled_cycle.cycle_id),
-                        locked_profile=locked_profile,
-                        run_ordinary_preamble=(
-                            scheduled_cycle is not None and int(scheduled_cycle.action_ordinal) == 0
-                        ),
-                        arena_member_id=arena_member_id,
-                        arena_round_ordinal=arena_round_ordinal,
-                        arena_action_ordinal=arena_action_ordinal,
-                        arena_slot_attempt_ordinal=arena_slot_attempt_ordinal,
-                    )
-                )
             except _V2MaintenanceCandidateRejected as exc:
                 if not (
                     scheduled_cycle is not None
@@ -8170,6 +8757,7 @@ def maintain_virtual_player_v2(
                 trigger=trigger_policy.trigger,
                 operation_id=operation_id,
                 attempt_ordinal=attempt_ordinal,
+                started_at=(now or timezone.now()),
             )
         except (DatabaseError, SafetyProviderError) as exc:
             log_safety_metric_failure(
@@ -8623,11 +9211,19 @@ def _scheduled_planning_snapshots(
             .order_by("manor_id", "guest_id", "id")
         ):
             gear_items_mutable[int(gear.manor_id)].append(gear)
+    salary_guest_ids = [
+        int(guest.id)
+        for profile in profiles
+        if int(profile.policy_version) != 2
+        for guest in guests_by_manor[int(profile.manor_id)]
+    ]
     paid_guest_ids = frozenset(
         bulk_check_salary_paid(
-            all_guest_ids,
+            salary_guest_ids,
             timezone.localdate(planned_at),
         )
+        if salary_guest_ids
+        else ()
     )
     strengths = load_manor_strength_summaries(
         manor_ids=manor_ids,

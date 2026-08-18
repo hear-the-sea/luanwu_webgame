@@ -26,6 +26,7 @@ from gameplay.services.inventory.core import (
     set_warehouse_grain_quantity_locked,
 )
 from gameplay.services.manor.core import calculate_building_capacity
+from gameplay.services.manor.troop_capacity import MANOR_TROOP_CAPACITY
 from guests.models import GearItem, GearTemplate, Guest, GuestSkill, GuestTemplate, Skill
 from guests.services.equipment_stats import apply_set_bonuses, apply_template_stats_to_guest, slot_capacity
 from guests.services.recruitment_guests import create_guest_from_template
@@ -180,17 +181,13 @@ def _validate_manor_capacity_and_resources(
         raise BootstrapMaterializationError("bootstrap retainers exceed the materialized retainer capacity")
 
     inventory_by_key = {entry.key: entry for entry in catalog.inventory}
-    inventory_space = 0
     grain_inventory_quantity = 0
     for target in assets.inventory:
         entry = inventory_by_key.get(target.template_key)
         if entry is None or not entry.tradeable:
             raise BootstrapMaterializationError("bootstrap inventory references an unavailable tradeable template")
-        inventory_space += int(entry.storage_space) * int(target.quantity)
         if target.template_key == "grain" and target.storage_location == InventoryItem.StorageLocation.WAREHOUSE:
             grain_inventory_quantity += int(target.quantity)
-    if inventory_space > int(manor.storage_capacity):
-        raise BootstrapMaterializationError("bootstrap inventory exceeds the materialized storage capacity")
     if grain_inventory_quantity > int(assets.grain):
         raise BootstrapMaterializationError("bootstrap grain inventory exceeds the target grain balance")
 
@@ -495,6 +492,7 @@ def _materialize_troops(
     manor: Manor,
     assets: BootstrapAssetTargets,
     catalog: BootstrapCatalog,
+    virtual_troop_capacity: int | None = None,
 ) -> tuple[PlayerTroop, ...]:
     troop_catalog = {entry.key: entry for entry in catalog.troops}
     target_keys = set(assets.troop_counts)
@@ -505,6 +503,15 @@ def _materialize_troops(
         )
     if not target_keys <= set(troop_catalog):
         raise BootstrapMaterializationError("bootstrap troops reference templates outside the locked catalog")
+    troop_total = sum(int(count) for count in assets.troop_counts.values())
+    if troop_total > MANOR_TROOP_CAPACITY:
+        raise BootstrapMaterializationError(
+            f"bootstrap troop total {troop_total} exceeds manor capacity {MANOR_TROOP_CAPACITY}"
+        )
+    if virtual_troop_capacity is not None and troop_total > int(virtual_troop_capacity):
+        raise BootstrapMaterializationError(
+            f"bootstrap troop total {troop_total} exceeds prestige-band capacity {int(virtual_troop_capacity)}"
+        )
     troop_templates = _load_exact_templates(
         TroopTemplate,
         target_keys,
@@ -608,6 +615,7 @@ def materialize_bootstrap_assets(
     account_created_at: datetime,
     now: datetime,
     growth_stage: int,
+    virtual_troop_capacity: int | None = None,
 ) -> MaterializedBootstrapAssets:
     _require_atomic()
     # The inventory and grain ledger are written below; hold the Manor row for
@@ -656,6 +664,7 @@ def materialize_bootstrap_assets(
         manor=manor,
         assets=assets,
         catalog=catalog,
+        virtual_troop_capacity=virtual_troop_capacity,
     )
     inventory = _materialize_inventory(
         manor=manor,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
@@ -10,7 +11,11 @@ from django.utils import timezone
 from battle.services import lock_guests_for_battle
 from guests.models import Guest, GuestArchetype, GuestRarity, GuestStatus, GuestTemplate
 from guests.services.health import INJURY_RECOVERY_THRESHOLD, heal_guest
-from guests.services.status import persist_guest_status_transition
+from guests.services.status import (
+    persist_guest_status_transition,
+    resolve_guest_activity_status,
+    resolve_guest_training_state,
+)
 from guests.services.training import finalize_guest_training
 
 
@@ -119,3 +124,23 @@ def test_status_transition_does_not_change_training_without_a_timer(monkeypatch,
     assert guest.training_complete_at is None
     assert guest.training_remaining_seconds is None
     assert dispatched == []
+
+
+def test_report_status_follows_active_and_paused_training_queue():
+    guest = SimpleNamespace(
+        status=GuestStatus.IDLE,
+        training_complete_at=timezone.now() + timedelta(minutes=5),
+        training_remaining_seconds=None,
+    )
+
+    assert resolve_guest_activity_status(guest) == "training"
+    assert resolve_guest_training_state(guest) == "active"
+
+    guest.training_complete_at = None
+    guest.training_remaining_seconds = 120
+    assert resolve_guest_activity_status(guest) == "training"
+    assert resolve_guest_training_state(guest) == "paused"
+
+    guest.training_remaining_seconds = None
+    assert resolve_guest_activity_status(guest) == GuestStatus.IDLE
+    assert resolve_guest_training_state(guest) == "none"

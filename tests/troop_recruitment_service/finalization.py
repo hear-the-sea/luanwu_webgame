@@ -7,13 +7,14 @@ from django.db import connection
 from django.utils import timezone
 
 from battle.models import TroopTemplate
-from core.exceptions import MessageError
+from core.exceptions import MessageError, TroopCapacityFullError
 from core.exceptions.recruitment_extended import (
     TroopRecruitmentNotFoundError,
     TroopRecruitmentNotReadyError,
     TroopTemplateNotFoundError,
 )
 from gameplay.models import PlayerTroop, TroopRecruitment
+from gameplay.services.recruitment.queries import refresh_troop_recruitments
 from gameplay.services.recruitment.recruitment import finalize_troop_recruitment
 from tests.troop_recruitment_service.support import build_due_recruitment
 
@@ -75,6 +76,33 @@ def test_finalize_troop_recruitment_increments_existing_troop_in_database(recrui
     assert troop.count == 13
     quoted_count = connection.ops.quote_name("count")
     assert any(f"{quoted_count} + " in statement for statement in statements)
+
+
+@pytest.mark.django_db
+def test_finalize_troop_recruitment_rejects_manor_capacity_overflow(recruit_manor):
+    recruitment = build_due_recruitment(recruit_manor, troop_key="scout", troop_name="探子", quantity=2)
+    template = TroopTemplate.objects.create(key="scout", name="探子")
+    troop = PlayerTroop.objects.create(manor=recruit_manor, troop_template=template, count=4999)
+
+    with pytest.raises(TroopCapacityFullError, match="庄园内护院容量不足"):
+        finalize_troop_recruitment(recruitment, send_notification=False)
+
+    troop.refresh_from_db()
+    recruitment.refresh_from_db()
+    assert troop.count == 4999
+    assert recruitment.status == TroopRecruitment.Status.RECRUITING
+
+
+@pytest.mark.django_db
+def test_refresh_troop_recruitments_keeps_capacity_blocked_queue_retryable(recruit_manor):
+    recruitment = build_due_recruitment(recruit_manor, troop_key="scout", troop_name="探子", quantity=2)
+    template = TroopTemplate.objects.create(key="scout", name="探子")
+    PlayerTroop.objects.create(manor=recruit_manor, troop_template=template, count=4999)
+
+    assert refresh_troop_recruitments(recruit_manor) == 0
+
+    recruitment.refresh_from_db()
+    assert recruitment.status == TroopRecruitment.Status.RECRUITING
 
 
 @pytest.mark.django_db

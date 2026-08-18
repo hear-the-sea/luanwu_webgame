@@ -96,6 +96,8 @@ def _clear_replaced_items(
     guest: Guest,
     existing_items: list[GearItem],
     updates: set[str],
+    *,
+    allow_virtual_discard: bool = False,
 ) -> None:
     for item in existing_items:
         guest.attack_bonus -= item.template.attack_bonus
@@ -112,8 +114,14 @@ def _clear_replaced_items(
 
         item_template = ItemTemplate.objects.filter(key=item.template.key).first()
         if not item_template:
-            logger.error("Cannot return gear to inventory: ItemTemplate not found for key %s", item.template.key)
-            continue
+            # Virtual gear is materialized directly for a manor and has no
+            # ItemTemplate or warehouse quantity.  Only the virtual action
+            # may discard this projection instance; real equipment must fail
+            # closed so an inventory return is never silently lost.
+            if allow_virtual_discard:
+                item.delete()
+                continue
+            raise ItemNotFoundError("找不到对应的装备模板，无法返还库存")
 
         inventory_core.add_item_to_inventory_locked(
             manor,
@@ -136,6 +144,7 @@ def _apply_gear_to_locked_guest(
     gear: GearItem,
     *,
     inventory_item: InventoryItem | None = None,
+    allow_virtual_discard: bool = False,
 ) -> GearItem:
     _require_atomic_block("_apply_gear_to_locked_guest")
     if not manor.pk or not guest.pk or guest.manor_id != manor.pk:
@@ -175,7 +184,13 @@ def _apply_gear_to_locked_guest(
             raise EquipmentError("装备库存已发生变化，请刷新后重试")
 
     if capacity == 1 and existing_items:
-        _clear_replaced_items(manor, guest, existing_items, updates)
+        _clear_replaced_items(
+            manor,
+            guest,
+            existing_items,
+            updates,
+            allow_virtual_discard=allow_virtual_discard,
+        )
 
     gear.guest = guest
     gear.inventory_backed = False
@@ -245,7 +260,12 @@ def equip_guest_from_virtual_template_locked(
         guest=None,
         inventory_backed=False,
     )
-    return _apply_gear_to_locked_guest(manor, locked_guest, gear)
+    return _apply_gear_to_locked_guest(
+        manor,
+        locked_guest,
+        gear,
+        allow_virtual_discard=True,
+    )
 
 
 def _warehouse_item_id_for_template_key(manor: Manor, template_key: str) -> int | None:

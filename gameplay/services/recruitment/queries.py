@@ -10,6 +10,8 @@ from typing import Any
 
 from django.utils import timezone
 
+from core.exceptions import TroopCapacityFullError
+
 from ...models import Manor, PlayerTroop, TroopRecruitment
 
 
@@ -35,7 +37,12 @@ def refresh_troop_recruitments(manor: Manor) -> int:
         try:
             finalize_troop_recruitment(recruitment, send_notification=True)
             completed += 1
-        except (TroopRecruitmentNotFoundError, TroopRecruitmentNotReadyError, TroopTemplateNotFoundError):
+        except (
+            TroopRecruitmentNotFoundError,
+            TroopRecruitmentNotReadyError,
+            TroopTemplateNotFoundError,
+            TroopCapacityFullError,
+        ):
             # Skip recruitments that can't be finalized
             pass
 

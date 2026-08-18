@@ -47,6 +47,7 @@ class ResourceEvent(models.Model):
         ADMIN_ADJUST = "admin_adjust", "运营调整"
         RECRUIT_COST = "recruit_cost", "门客招募"
         TRAINING_COST = "training_cost", "门客培养"
+        SALARY_COST = "salary_cost", "门客工资"
         ITEM_USE = "item_use", "道具使用"
         BANK_EXCHANGE = "bank_exchange", "钱庄兑换"
         SHOP_PURCHASE = "shop_purchase", "商铺购买"

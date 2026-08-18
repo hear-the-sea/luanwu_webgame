@@ -3,6 +3,16 @@ from __future__ import annotations
 from typing import Any
 
 from gameplay.constants import BuildingKeys
+from gameplay.services.manor.troop_bank import (
+    TROOP_BANK_CAPACITY,
+    get_troop_bank_remaining_space,
+    get_troop_bank_used_space,
+)
+from gameplay.services.manor.troop_capacity import (
+    MANOR_TROOP_CAPACITY,
+    get_manor_troop_remaining_space,
+    get_manor_troop_used_space,
+)
 from gameplay.services.recruitment.recruitment import (
     get_active_recruitments,
     get_player_troops,
@@ -65,6 +75,11 @@ def get_troop_recruitment_context(manor: Any, *, selected_category: str) -> dict
             troop for troop in recruitment_options if troop.get("troop_class") == normalized_category
         ]
 
+    manor_troop_used = get_manor_troop_used_space(manor)
+    manor_troop_remaining = get_manor_troop_remaining_space(manor)
+    troop_bank_used = get_troop_bank_used_space(manor)
+    troop_bank_remaining = get_troop_bank_remaining_space(manor)
+
     return {
         "training_level": training_level,
         "citang_level": citang_level,
@@ -78,4 +93,10 @@ def get_troop_recruitment_context(manor: Any, *, selected_category: str) -> dict
         "training_multiplier": training_multiplier,
         "citang_multiplier": citang_multiplier,
         "is_recruiting": is_recruiting,
+        "manor_troop_used": manor_troop_used,
+        "manor_troop_capacity": MANOR_TROOP_CAPACITY,
+        "manor_troop_remaining": manor_troop_remaining,
+        "troop_bank_used": troop_bank_used,
+        "troop_bank_capacity": TROOP_BANK_CAPACITY,
+        "troop_bank_remaining": troop_bank_remaining,
     }

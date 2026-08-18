@@ -56,7 +56,6 @@ class ManorAdmin(admin.ModelAdmin):
                     "arena_coins",
                     "grain_capacity",
                     "silver_capacity",
-                    "storage_capacity",
                     "retainer_count",
                 )
             },

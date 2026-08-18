@@ -19,7 +19,9 @@ from gameplay.models import (
 from gameplay.services.arena import virtual_reserve_fill, virtual_reserve_pool
 from gameplay.services.arena.virtual_protection import (
     is_virtual_profile_arena_match_eligible,
+    is_virtual_profile_arena_training,
     with_arena_reconciliation_state,
+    with_arena_reserve_guard,
 )
 from gameplay.services.virtual_player_core.policy_registry import release_configured_policy_operation
 
@@ -295,6 +297,39 @@ def test_reevaluation_releases_applied_member_that_is_now_over_cap(
 
     assert not ArenaVirtualReserveMember.objects.filter(pk=member.pk).exists()
     assert BotProfile.objects.filter(pk=profile.pk).exists()
+
+
+def test_active_arena_training_is_a_distinct_daily_maintenance_guard(
+    django_user_model,
+    arena_cap_policy,
+) -> None:
+    demand = _create_demand()
+    profile = _create_v2_profile(
+        django_user_model,
+        arena_cap_policy,
+        username="arena_daily_training_guard",
+        prestige=100,
+    )
+    member = ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=profile,
+        state=ArenaVirtualReserveMember.State.TRAINING,
+    )
+
+    annotated = with_arena_reserve_guard(BotProfile.objects.filter(pk=profile.pk)).get()
+    assert annotated.maintenance_has_arena_reserve is True
+    assert annotated.maintenance_has_arena_training is True
+    assert is_virtual_profile_arena_training(profile_id=profile.id) is True
+
+    member.state = ArenaVirtualReserveMember.State.READY
+    member.save(update_fields=["state", "updated_at"])
+    assert is_virtual_profile_arena_training(profile_id=profile.id) is False
+
+    demand.status = ArenaVirtualDemand.Status.CLOSED
+    demand.save(update_fields=["status", "updated_at"])
+    member.state = ArenaVirtualReserveMember.State.TRAINING
+    member.save(update_fields=["state", "updated_at"])
+    assert is_virtual_profile_arena_training(profile_id=profile.id) is False
 
 
 def test_locked_fill_recheck_rejects_profile_that_crossed_cap_after_scan(

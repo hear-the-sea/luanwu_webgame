@@ -18,6 +18,33 @@ GUEST_STATUS_UPDATE_FIELDS = [
     "training_remaining_seconds",
 ]
 
+GUEST_TRAINING_STATE_NONE = "none"
+GUEST_TRAINING_STATE_ACTIVE = "active"
+GUEST_TRAINING_STATE_PAUSED = "paused"
+
+
+def resolve_guest_training_state(guest: Guest) -> str:
+    """Read the persisted training queue state without changing the guest."""
+
+    if guest.training_complete_at is not None:
+        return GUEST_TRAINING_STATE_ACTIVE
+    if guest.training_remaining_seconds is not None:
+        return GUEST_TRAINING_STATE_PAUSED
+    return GUEST_TRAINING_STATE_NONE
+
+
+def resolve_guest_activity_status(guest: Guest) -> str:
+    """Return a report-facing status consistent with the training queue.
+
+    ``Guest.status`` remains the availability state used by gameplay rules;
+    an active or paused training timer is exposed as ``training`` at the
+    reporting boundary so consumers do not mistake a queued guest for idle.
+    """
+
+    if resolve_guest_training_state(guest) != GUEST_TRAINING_STATE_NONE:
+        return "training"
+    return str(guest.status)
+
 
 @dataclass(frozen=True, slots=True)
 class GuestStatusTransition:

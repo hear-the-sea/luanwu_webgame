@@ -86,6 +86,7 @@ def _minimal_v2_config():
         band: {
             "prestige": prestige,
             "core_building_level": index + 2,
+            "juxianzhuang_level": index + 2,
             "max_guest_level": (index + 1) * 5,
             "guest_count": index + 2,
             "arena_lineup_power": (index + 1) * 1000,

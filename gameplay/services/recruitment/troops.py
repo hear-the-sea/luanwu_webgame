@@ -235,6 +235,7 @@ def _add_troops_batch(manor: "Manor", troops_to_add: Dict[str, int]) -> None:
     from battle.models import TroopTemplate
 
     from ...models import PlayerTroop
+    from ..manor.troop_capacity import ensure_manor_troop_capacity_locked
 
     if not troops_to_add:
         return
@@ -243,6 +244,8 @@ def _add_troops_batch(manor: "Manor", troops_to_add: Dict[str, int]) -> None:
     troops_to_add = {k: v for k, v in troops_to_add.items() if v > 0}
     if not troops_to_add:
         return
+
+    ensure_manor_troop_capacity_locked(manor, sum(troops_to_add.values()))
 
     # 预加载模板
     from core.utils.template_loader import load_templates_by_key

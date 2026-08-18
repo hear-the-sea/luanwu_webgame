@@ -393,6 +393,7 @@ def scan_injury_loyalty_decay(limit: int = 200) -> int:
         Guest.objects.filter(
             status=GuestStatus.INJURED,
             injury_loyalty_processed_at__lte=cutoff,
+            manor__bot_profile__isnull=True,
         )
         .order_by("injury_loyalty_processed_at", "id")
         .values_list("id", flat=True)[: max(0, int(limit))]
@@ -422,14 +423,29 @@ def process_daily_loyalty(self) -> str:
 
     from gameplay.services.utils.messages import create_message
     from guests.models import Guest, SalaryPayment
+    from guests.services.loyalty import VIRTUAL_PLAYER_GUEST_LOYALTY
 
     try:
         today = timezone.localdate()
         yesterday = today - timedelta(days=1)
 
         paid_guest_ids_qs = SalaryPayment.objects.filter(for_date=yesterday).values_list("guest_id", flat=True)
+        virtual_normalized_count = (
+            Guest.objects.filter(manor__bot_profile__isnull=False)
+            .exclude(
+                loyalty=VIRTUAL_PLAYER_GUEST_LOYALTY,
+                loyalty_processed_for_date=today,
+                injury_loyalty_processed_at__isnull=True,
+            )
+            .update(
+                loyalty=VIRTUAL_PLAYER_GUEST_LOYALTY,
+                loyalty_processed_for_date=today,
+                injury_loyalty_processed_at=None,
+            )
+        )
         base_qs = Guest.objects.filter(
-            Q(loyalty_processed_for_date__lt=today) | Q(loyalty_processed_for_date__isnull=True)
+            (Q(loyalty_processed_for_date__lt=today) | Q(loyalty_processed_for_date__isnull=True)),
+            manor__bot_profile__isnull=True,
         )
 
         # A guest owes no salary on its creation date. The first loyalty
@@ -467,6 +483,7 @@ def process_daily_loyalty(self) -> str:
                 created_at__date__lt=yesterday,
                 loyalty_processed_for_date=today,
                 loyalty__lt=30,
+                manor__bot_profile__isnull=True,
             )
             .exclude(id__in=paid_guest_ids_qs)
             .values_list("id", flat=True)
@@ -483,7 +500,7 @@ def process_daily_loyalty(self) -> str:
         if batch:
             defection_count += _process_defection_batch(batch, create_message=create_message)
 
-        updated_count = increased_count + decreased_count + exempt_count
+        updated_count = virtual_normalized_count + increased_count + decreased_count + exempt_count
         return f"处理了 {updated_count} 个门客的忠诚度，{defection_count} 个门客叛逃"
     except GUEST_TASK_RETRY_EXCEPTIONS as exc:
         logger.exception("Failed to process daily loyalty: %s", exc)

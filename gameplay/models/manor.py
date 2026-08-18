@@ -53,7 +53,6 @@ class Manor(models.Model):
     arena_coop_participation_date = models.DateField(
         "竞技场共斗参与次数日期", null=True, blank=True, db_index=True, default=None
     )
-    storage_capacity = models.PositiveIntegerField("仓储上限", default=20000)
     silver_capacity = models.PositiveIntegerField("银库上限", default=20000)
     grain_capacity = models.PositiveIntegerField("粮仓上限", default=20000)
     retainer_count = models.PositiveIntegerField("家丁", default=0)

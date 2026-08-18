@@ -152,6 +152,7 @@ from .resource import (
     RetainerCapacityFullError,
     SkillSlotFullError,
     TreasuryCapacityFullError,
+    TroopCapacityFullError,
 )
 from .task import TaskDispatchError, TaskRescheduleError
 from .trade import ShopValidationError, TradeError, TradeValidationError
@@ -174,6 +175,7 @@ __all__ = [
     "CapacityError",
     "GuestCapacityFullError",
     "RetainerCapacityFullError",
+    "TroopCapacityFullError",
     "SkillSlotFullError",
     "EquipmentSlotFullError",
     "TreasuryCapacityFullError",

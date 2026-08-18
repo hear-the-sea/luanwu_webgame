@@ -530,12 +530,13 @@ def finalize_technology_upgrade(
     invalidate_home_stats_cache_func: Callable[[int], None],
     logger: Any,
     send_notification: bool = False,
+    now: Any | None = None,
 ) -> bool:
     from django.utils import timezone
 
     if not getattr(tech, "pk", None):
         return False
-    now = timezone.now()
+    now = now or timezone.now()
     updated = tech.__class__.objects.filter(
         pk=tech.pk,
         is_upgrading=True,

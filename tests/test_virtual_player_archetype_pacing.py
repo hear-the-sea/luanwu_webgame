@@ -28,6 +28,20 @@ def test_archetype_pacing_is_typed_and_archetype_specific() -> None:
     assert balanced.recruitment_pool_weights != dojo.recruitment_pool_weights
 
 
+@pytest.mark.parametrize("archetype", ["balanced", "rich", "dojo", "guard"])
+def test_active_archetypes_include_all_core_resource_buildings(archetype: str) -> None:
+    pacing = resolve_archetype_pacing(load_virtual_player_config(), archetype)
+
+    assert {
+        "tax_office",
+        "latrine",
+        "tavern",
+        "bathhouse",
+        "silver_vault",
+    }.issubset(pacing.building_targets)
+    assert pacing.building_targets.index("tax_office") < pacing.building_targets.index("farm")
+
+
 def test_cycle_pacing_payload_round_trips_without_configuration_lookup() -> None:
     pacing = resolve_archetype_pacing(load_virtual_player_config(), "rich")
 

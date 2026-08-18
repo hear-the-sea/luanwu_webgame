@@ -25,7 +25,9 @@ from guests.services.salary import bulk_check_salary_paid, quote_all_salaries
 
 from .archetype_pacing import pacing_from_cycle_payload
 from .config import load_virtual_player_config
-from .maintenance_resources import salary_runway_commitment
+from .maintenance_cycle import CANDIDATE_POOL_COOLDOWN_PAYLOAD_KEY, wake_candidate_pool_cooldowns
+from .maintenance_resources import VIRTUAL_PLAYER_SALARY_SCALE, salary_runway_commitment
+from .profile_store import set_next_growth_at
 from .reference_snapshots import load_manor_strength_summary
 
 logger = logging.getLogger(__name__)
@@ -107,6 +109,7 @@ def record_virtual_player_maintenance_completion(
     domain_event_kind: str,
     domain_object_id: int,
     origin_completed_at: datetime | None,
+    available_at: datetime | None = None,
 ) -> int | None:
     """Record one completion for an eligible V2 profile and enqueue reconcile.
 
@@ -125,6 +128,7 @@ def record_virtual_player_maintenance_completion(
     normalized_time = _normalize_completion_time(origin_completed_at)
     if normalized_time is None:
         return None
+    normalized_available_at = _normalize_completion_time(available_at) or timezone.now()
 
     profile_id = (
         BotProfile.objects.filter(
@@ -150,7 +154,7 @@ def record_virtual_player_maintenance_completion(
             "domain_event_kind": normalized_kind,
             "domain_object_id": normalized_object_id,
             "origin_completed_at": normalized_time,
-            "available_at": timezone.now(),
+            "available_at": normalized_available_at,
         },
     )
     if event.status == BotMaintenanceCompletionEvent.Status.PENDING:
@@ -291,17 +295,51 @@ def _domain_object_snapshot(
     return snapshot
 
 
-def _salary_snapshot(manor: Manor, guests: tuple[Guest, ...], *, now: datetime) -> dict[str, Any]:
+def _salary_snapshot(
+    manor: Manor,
+    guests: tuple[Guest, ...],
+    *,
+    now: datetime,
+    salary_enabled: bool,
+) -> dict[str, Any]:
     today: date = timezone.localdate(now)
+    guest_ids = [int(guest.id) for guest in guests]
+    tomorrow_date = today + timedelta(days=1)
+    if not salary_enabled:
+        return {
+            "enabled": False,
+            "current": {
+                "for_date": today.isoformat(),
+                "guest_ids": guest_ids,
+                "unpaid_guest_ids": [],
+                "total_amount": 0,
+                "payable_from_current_silver": True,
+            },
+            "next_day": {
+                "for_date": tomorrow_date.isoformat(),
+                "guest_ids": guest_ids,
+                "unpaid_guest_ids": [],
+                "total_amount": 0,
+            },
+            "protected_silver": 0,
+        }
     paid_today = bulk_check_salary_paid([int(guest.id) for guest in guests], today)
-    current = quote_all_salaries(manor, for_date=today, guests=guests, paid_guest_ids=paid_today)
-    tomorrow = quote_all_salaries(
+    current = quote_all_salaries(
         manor,
-        for_date=today + timedelta(days=1),
+        for_date=today,
+        guests=guests,
+        paid_guest_ids=paid_today,
+        salary_scale=VIRTUAL_PLAYER_SALARY_SCALE,
+    )
+    next_day = quote_all_salaries(
+        manor,
+        for_date=tomorrow_date,
         guests=guests,
         paid_guest_ids=set(),
+        salary_scale=VIRTUAL_PLAYER_SALARY_SCALE,
     )
     return {
+        "enabled": True,
         "current": {
             "for_date": current.for_date.isoformat(),
             "guest_ids": list(current.guest_ids),
@@ -310,12 +348,12 @@ def _salary_snapshot(manor: Manor, guests: tuple[Guest, ...], *, now: datetime) 
             "payable_from_current_silver": int(manor.silver or 0) >= int(current.total_amount),
         },
         "next_day": {
-            "for_date": tomorrow.for_date.isoformat(),
-            "guest_ids": list(tomorrow.guest_ids),
-            "unpaid_guest_ids": list(tomorrow.unpaid_guest_ids),
-            "total_amount": int(tomorrow.total_amount),
+            "for_date": next_day.for_date.isoformat(),
+            "guest_ids": list(next_day.guest_ids),
+            "unpaid_guest_ids": list(next_day.unpaid_guest_ids),
+            "total_amount": int(next_day.total_amount),
         },
-        "protected_silver": int(salary_runway_commitment(int(tomorrow.total_amount))),
+        "protected_silver": int(salary_runway_commitment(int(next_day.total_amount))),
     }
 
 
@@ -355,7 +393,12 @@ def _effective_state_snapshot(
             "grain_capacity": int(manor.grain_capacity or 0),
             "resource_updated_at": _datetime_payload(manor.resource_updated_at),
         },
-        "salary": _salary_snapshot(manor, guests, now=now),
+        "salary": _salary_snapshot(
+            manor,
+            guests,
+            now=now,
+            salary_enabled=int(profile.policy_version) != 2,
+        ),
         "queues": _queue_times(manor_id=int(manor.id)),
     }
 
@@ -476,30 +519,113 @@ def _reconcile_cycle_schedule(
     )
 
 
+def _wake_candidate_pool_cooldowns_for_event(
+    profile: BotProfile,
+    *,
+    event: BotMaintenanceCompletionEvent,
+    now: datetime,
+) -> dict[str, Any] | None:
+    """Wake the latest cycle when a completion changes an empty pool's state."""
+
+    cycle = (
+        BotMaintenanceCycle.objects.select_for_update()
+        .filter(
+            profile_id=int(profile.id),
+            trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
+        )
+        .order_by("-cycle_ordinal", "-id")
+        .first()
+    )
+    if cycle is None:
+        return None
+    payload = dict(cycle.payload or {})
+    remaining, woken = wake_candidate_pool_cooldowns(
+        payload,
+        domain_event_kind=str(event.domain_event_kind),
+        now=now,
+    )
+    if not woken:
+        return None
+    if remaining:
+        payload[CANDIDATE_POOL_COOLDOWN_PAYLOAD_KEY] = remaining
+    else:
+        payload.pop(CANDIDATE_POOL_COOLDOWN_PAYLOAD_KEY, None)
+
+    update_fields = ["payload"]
+    wake_deferred = False
+    if cycle.status == BotMaintenanceCycle.Status.OPEN:
+        if cycle.current_action_state in {
+            BotMaintenanceCycle.ActionState.READY,
+            BotMaintenanceCycle.ActionState.NO_ACTION,
+            BotMaintenanceCycle.ActionState.COMPLETED,
+        }:
+            cycle.next_slot_due_at = now
+            cycle.next_decision_at = now
+            cycle.current_action_state = BotMaintenanceCycle.ActionState.PLANNING
+            update_fields.extend(["next_slot_due_at", "next_decision_at", "current_action_state"])
+        else:
+            wake_deferred = True
+    else:
+        if profile.next_growth_at is None or profile.next_growth_at > now:
+            set_next_growth_at(profile, next_growth_at=now)
+
+    cycle.last_reason = "candidate_pool_state_changed"
+    update_fields.append("last_reason")
+    cycle.payload = payload
+    cycle.save(update_fields=[*dict.fromkeys([*update_fields, "updated_at"])])
+    return {
+        "cycle_id": str(cycle.cycle_id),
+        "woken_entries": woken,
+        "deferred": wake_deferred,
+    }
+
+
 @transaction.atomic
 def reconcile_virtual_player_maintenance_completion(
     event_id: int,
     *,
     now: datetime | None = None,
 ) -> dict[str, Any]:
-    """Apply one completion event exactly once and update its owning cycle."""
+    """Apply one completion event exactly once and update its owning cycle.
+
+    The lock order is deliberately ``BotProfile -> Manor -> CompletionEvent``.
+    Guest replacement already holds the profile and manor locks before it
+    removes a pending guest-training event.  Resolving the owner from an
+    unlocked snapshot and re-reading the event after those locks are held
+    keeps the two paths from waiting on the same rows in opposite orders.
+    """
 
     normalized_id = _normalize_positive_id(event_id, field="event_id")
     current_time = now or timezone.now()
     if timezone.is_naive(current_time):
         raise MaintenanceCompletionError("now must be timezone-aware")
-    event = BotMaintenanceCompletionEvent.objects.select_for_update().filter(pk=normalized_id).first()
-    if event is None:
+    event_snapshot = (
+        BotMaintenanceCompletionEvent.objects.filter(pk=normalized_id)
+        .values("id", "status", "profile_id", "result_summary")
+        .first()
+    )
+    if event_snapshot is None:
         return {"event_id": normalized_id, "status": "not_found"}
-    if event.status == BotMaintenanceCompletionEvent.Status.APPLIED:
+    if event_snapshot["status"] == BotMaintenanceCompletionEvent.Status.APPLIED:
         return {
             "event_id": normalized_id,
-            "status": event.status,
-            "summary": dict(event.result_summary or {}),
+            "status": event_snapshot["status"],
+            "summary": dict(event_snapshot["result_summary"] or {}),
         }
 
-    profile = BotProfile.objects.select_for_update().filter(pk=event.profile_id).first()
+    profile = BotProfile.objects.select_for_update().filter(pk=int(event_snapshot["profile_id"])).first()
     if profile is None:
+        # The profile can disappear while a stale inbox row is being scanned;
+        # take the event lock only after confirming there is no owner to lock.
+        event = BotMaintenanceCompletionEvent.objects.select_for_update().filter(pk=normalized_id).first()
+        if event is None:
+            return {"event_id": normalized_id, "status": "not_found"}
+        if event.status == BotMaintenanceCompletionEvent.Status.APPLIED:
+            return {
+                "event_id": normalized_id,
+                "status": event.status,
+                "summary": dict(event.result_summary or {}),
+            }
         event.status = BotMaintenanceCompletionEvent.Status.APPLIED
         event.processed_at = current_time
         event.attempt_count = min(32, int(event.attempt_count) + 1)
@@ -508,6 +634,21 @@ def reconcile_virtual_player_maintenance_completion(
         return {"event_id": normalized_id, "status": "profile_missing"}
 
     manor = Manor.objects.select_for_update().get(pk=profile.manor_id)
+    event = BotMaintenanceCompletionEvent.objects.select_for_update().filter(pk=normalized_id).first()
+    if event is None:
+        # Replacement won the profile/manor lock first and deleted this
+        # pending training event.  The timer completion is now a harmless
+        # stale delivery, not an error and not a reason to wake a cycle.
+        return {"event_id": normalized_id, "status": "not_found"}
+    if event.status == BotMaintenanceCompletionEvent.Status.APPLIED:
+        return {
+            "event_id": normalized_id,
+            "status": event.status,
+            "summary": dict(event.result_summary or {}),
+        }
+    if int(event.profile_id) != int(profile.id):
+        raise MaintenanceCompletionError("completion event owner changed during reconciliation")
+
     independent_virtual_recruitment = _is_independent_virtual_recruitment_event(
         event=event,
         manor_id=int(manor.id),
@@ -561,6 +702,14 @@ def reconcile_virtual_player_maintenance_completion(
                 "updated_at",
             ]
         )
+
+    candidate_pool_wake = _wake_candidate_pool_cooldowns_for_event(
+        profile,
+        event=event,
+        now=current_time,
+    )
+    if candidate_pool_wake is not None:
+        result_summary["candidate_pool_wake"] = candidate_pool_wake
 
     event.status = BotMaintenanceCompletionEvent.Status.APPLIED
     event.processed_at = current_time

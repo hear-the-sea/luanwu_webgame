@@ -599,6 +599,45 @@ def touch_profile_updated_at(profile: BotProfile, *, now: datetime) -> None:
     BotProfile.objects.filter(pk=profile.pk).update(updated_at=now)
 
 
+@transaction.atomic
+def reset_virtual_player_simulation_clock(
+    profile_id: int,
+    *,
+    now: datetime,
+    next_recruitment_at: datetime | None,
+) -> ProfileWriteResult:
+    """Reset only scheduling timestamps for an isolated V2 simulation run.
+
+    The simulation must use the production profile write owner even though it
+    runs against a disposable database.  Assets, resources, lifecycle dates,
+    and policy assignments are intentionally left untouched.
+    """
+
+    if timezone.is_naive(now):
+        raise ProfileStoreError("simulation clock reset requires a timezone-aware timestamp")
+    if next_recruitment_at is not None and timezone.is_naive(next_recruitment_at):
+        raise ProfileStoreError("next_recruitment_at must be timezone-aware")
+    profile = BotProfile.objects.select_for_update().filter(pk=profile_id, engine_version=2, policy_version=2).first()
+    if profile is None:
+        return ProfileWriteResult(profile_id=int(profile_id), changed=False, reason="missing_or_not_v2")
+    profile.next_growth_at = now
+    profile.next_recruitment_at = next_recruitment_at
+    profile.last_planned_at = None
+    profile.maintenance_started_at = now
+    profile.maintenance_stopped_at = None
+    profile.save(
+        update_fields=[
+            "next_growth_at",
+            "next_recruitment_at",
+            "last_planned_at",
+            "maintenance_started_at",
+            "maintenance_stopped_at",
+            "updated_at",
+        ]
+    )
+    return ProfileWriteResult(profile_id=profile.id, changed=True, reason="simulation_clock_reset")
+
+
 def reactivate_profile(
     profile: BotProfile,
     *,

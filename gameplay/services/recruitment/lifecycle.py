@@ -26,6 +26,7 @@ from core.utils.imports import is_missing_target_import
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS, NOTIFICATION_INFRASTRUCTURE_EXCEPTIONS
 
 from ...models import Manor, PlayerTroop, TroopRecruitment
+from ..manor.troop_capacity import ensure_manor_troop_capacity_locked
 
 if TYPE_CHECKING:
     from battle.models import TroopTemplate
@@ -130,6 +131,16 @@ def apply_troop_recruitment_result_locked(
         )
     if require_due and recruitment.complete_at > current_time:
         raise TroopRecruitmentNotReadyError(complete_at=str(recruitment.complete_at))
+
+    # The active queue already reserves its own quantity. Exclude this record
+    # so completion checks the actual stock plus any other reservation exactly
+    # once, while still preventing a concurrent bank withdrawal or recruitment
+    # from pushing the manor above 5000.
+    ensure_manor_troop_capacity_locked(
+        recruitment.manor,
+        recruitment.quantity,
+        exclude_recruitment_id=recruitment.pk,
+    )
 
     troop_template = _get_or_create_battle_troop_template(recruitment)
     if not troop_template:

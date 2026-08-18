@@ -76,6 +76,28 @@ class RetainerCapacityFullError(CapacityError):
     default_message = "家丁房容量已满，无法继续安置家丁"
 
 
+class TroopCapacityFullError(CapacityError):
+    """庄园内护院容量已满"""
+
+    error_code = "TROOP_CAPACITY_FULL"
+
+    def __init__(
+        self,
+        required: int,
+        available: int,
+        capacity: int,
+        message: str | None = None,
+    ):
+        if message is None:
+            message = f"庄园内护院容量不足，需要增加{required}名，当前仅剩{available}名（上限{capacity}名）"
+        super().__init__(
+            message,
+            required=required,
+            available=available,
+            capacity=capacity,
+        )
+
+
 class SkillSlotFullError(CapacityError):
     """技能位已满"""
 

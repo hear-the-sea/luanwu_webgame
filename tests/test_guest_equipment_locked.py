@@ -18,7 +18,11 @@ from guests.models import (
     GuestStatus,
     GuestTemplate,
 )
-from guests.services.equipment import equip_guest, equip_guest_from_inventory_locked
+from guests.services.equipment import (
+    equip_guest,
+    equip_guest_from_inventory_locked,
+    equip_guest_from_virtual_template_locked,
+)
 
 _COUNTER = count(1)
 
@@ -163,6 +167,117 @@ def test_equip_guest_from_inventory_locked_replaces_to_warehouse_and_recalculate
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
     assert returned.quantity == 1
+
+
+@pytest.mark.django_db
+def test_virtual_equipment_replacement_discards_projection_without_item_template(django_user_model):
+    user = django_user_model.objects.create_user(
+        username=_unique("locked_equipment_virtual_replace"),
+        password="pass123",
+    )
+    manor = ensure_manor(user)
+    guest = _create_guest(manor)
+    old_template = GearTemplate.objects.create(
+        key=_unique("locked_equipment_virtual_old"),
+        name="虚拟旧武器",
+        slot=GearSlot.WEAPON,
+        rarity=GuestRarity.GREEN,
+        extra_stats={"force": 5},
+    )
+    old_gear = GearItem.objects.create(
+        manor=manor,
+        template=old_template,
+        inventory_backed=False,
+    )
+    equip_guest(old_gear, guest)
+    new_template = GearTemplate.objects.create(
+        key=_unique("locked_equipment_virtual_new"),
+        name="虚拟新武器",
+        slot=GearSlot.WEAPON,
+        rarity=GuestRarity.GREEN,
+        extra_stats={"force": 8},
+    )
+
+    with transaction.atomic():
+        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+        locked_guest = Guest.objects.select_for_update().get(pk=guest.pk)
+        equipped = equip_guest_from_virtual_template_locked(
+            locked_manor,
+            locked_guest,
+            new_template.pk,
+            expected_template_key=new_template.key,
+            expected_slot=GearSlot.WEAPON,
+        )
+
+    equipped.refresh_from_db()
+    assert not GearItem.objects.filter(pk=old_gear.pk).exists()
+    assert equipped.guest_id == guest.pk
+    assert equipped.inventory_backed is False
+    assert not ItemTemplate.objects.filter(key=old_template.key).exists()
+
+
+@pytest.mark.django_db
+def test_inventory_backed_replacement_without_item_template_rolls_back(django_user_model):
+    user = django_user_model.objects.create_user(
+        username=_unique("locked_equipment_missing_item_template"),
+        password="pass123",
+    )
+    manor = ensure_manor(user)
+    guest = _create_guest(manor)
+    old_template = GearTemplate.objects.create(
+        key=_unique("locked_equipment_missing_item"),
+        name="缺失物品模板的真实装备",
+        slot=GearSlot.WEAPON,
+        rarity=GuestRarity.GREEN,
+        extra_stats={"force": 5},
+    )
+    old_gear = GearItem.objects.create(
+        manor=manor,
+        template=old_template,
+        guest=guest,
+        inventory_backed=True,
+    )
+    new_template = GearTemplate.objects.create(
+        key=_unique("locked_equipment_missing_item_new"),
+        name="替换装备",
+        slot=GearSlot.WEAPON,
+        rarity=GuestRarity.GREEN,
+        extra_stats={"force": 8},
+    )
+    new_item_template = _create_item_template(
+        key=new_template.key,
+        name=new_template.name,
+        effect_type="equip_weapon",
+        payload={"force": 8},
+    )
+    new_item = InventoryItem.objects.create(
+        manor=manor,
+        template=new_item_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        quantity=1,
+    )
+    guest_force_before = guest.force
+
+    with pytest.raises(ItemNotFoundError, match="找不到对应的装备模板"):
+        with transaction.atomic():
+            locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+            locked_guest = Guest.objects.select_for_update().get(pk=guest.pk)
+            equip_guest_from_inventory_locked(
+                locked_manor,
+                locked_guest,
+                new_item.pk,
+                expected_template_key=new_template.key,
+                expected_slot=GearSlot.WEAPON,
+            )
+
+    guest.refresh_from_db()
+    old_gear.refresh_from_db()
+    assert guest.force == guest_force_before
+    assert old_gear.guest_id == guest.pk
+    assert old_gear.inventory_backed is True
+    new_item.refresh_from_db()
+    assert new_item.quantity == 1
+    assert not GearItem.objects.filter(manor=manor, template=new_template).exists()
 
 
 @pytest.mark.django_db

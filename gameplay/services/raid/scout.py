@@ -20,6 +20,7 @@ from core.utils.time_scale import scale_duration
 
 from ...constants import PVPConstants
 from ...models import Manor, PlayerTroop, ScoutCooldown, ScoutRecord
+from ..manor.troop_capacity import ensure_manor_troop_capacity_locked
 from ..technology import get_player_technology_level
 from . import scout_finalize as scout_finalize_command
 from . import scout_followups
@@ -53,11 +54,13 @@ def _restore_scout_troops(attacker: Manor, quantity: int, *, now: datetime | Non
         return
 
     restored_at = now or timezone.now()
+    locked_attacker = Manor.objects.select_for_update().get(pk=attacker.pk)
+    ensure_manor_troop_capacity_locked(locked_attacker, quantity)
     scout_template, _ = TroopTemplate.objects.get_or_create(
         key=PVPConstants.SCOUT_TROOP_KEY,
         defaults={"name": "探子"},
     )
-    updated = PlayerTroop.objects.filter(manor=attacker, troop_template=scout_template).update(
+    updated = PlayerTroop.objects.filter(manor=locked_attacker, troop_template=scout_template).update(
         count=models.F("count") + quantity,
         updated_at=restored_at,
     )
@@ -66,12 +69,12 @@ def _restore_scout_troops(attacker: Manor, quantity: int, *, now: datetime | Non
 
     try:
         PlayerTroop.objects.create(
-            manor=attacker,
+            manor=locked_attacker,
             troop_template=scout_template,
             count=quantity,
         )
     except IntegrityError:
-        updated = PlayerTroop.objects.filter(manor=attacker, troop_template=scout_template).update(
+        updated = PlayerTroop.objects.filter(manor=locked_attacker, troop_template=scout_template).update(
             count=models.F("count") + quantity,
             updated_at=restored_at,
         )

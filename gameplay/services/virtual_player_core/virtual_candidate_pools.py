@@ -44,6 +44,8 @@ from .virtual_assets import (
 )
 
 _VIRTUAL_INVENTORY_RARITIES = frozenset(VIRTUAL_RARITY_RANK)
+VIRTUAL_TROOP_BATCH_MIN_QUANTITY = 80
+VIRTUAL_TROOP_BATCH_MAX_QUANTITY = 120
 
 
 class VirtualCandidatePoolError(ValueError):
@@ -84,6 +86,14 @@ def build_virtual_troop_candidates(
     technology_levels: Mapping[str, int],
     archetype: str,
     config: Mapping[str, Any],
+    batch_quantity_by_class: Mapping[str, int] | None = None,
+    remaining_troop_capacity: int | None = None,
+    capacity_rejection_reasons: tuple[str, str] = (
+        "troop_capacity_full",
+        "troop_capacity_below_batch_minimum",
+    ),
+    grain_budget: int | None = None,
+    rejection_reasons: dict[str, str] | None = None,
 ) -> tuple[tuple[DevelopmentIntent, ...], dict[str, TroopRecruitmentQuote]]:
     """Build direct PlayerTroop projections without formal recruit prerequisites.
 
@@ -97,6 +107,21 @@ def build_virtual_troop_candidates(
     candidates: list[DevelopmentIntent] = []
     quotes: dict[str, TroopRecruitmentQuote] = {}
     normalized_archetype = str(archetype).strip()
+    batch_mode = batch_quantity_by_class is not None
+    if remaining_troop_capacity is not None:
+        remaining_troop_capacity = max(0, int(remaining_troop_capacity))
+    if grain_budget is not None:
+        grain_budget = max(0, int(grain_budget))
+    if len(capacity_rejection_reasons) != 2 or any(
+        not isinstance(reason, str) or not reason.strip() for reason in capacity_rejection_reasons
+    ):
+        raise VirtualCandidatePoolError("capacity rejection reasons must contain two non-empty strings")
+    capacity_full_reason, capacity_minimum_reason = (str(reason).strip() for reason in capacity_rejection_reasons)
+
+    def reject(troop_class: str, reason: str) -> None:
+        if rejection_reasons is not None:
+            rejection_reasons.setdefault(str(troop_class), str(reason))
+
     for troop_class, target_weight in development_plan.troop_mix:
         if str(troop_class).strip() in VIRTUAL_PLAYER_EXCLUDED_TROOP_KEYS:
             continue
@@ -109,6 +134,7 @@ def build_virtual_troop_candidates(
             if str(key).strip() and str(key).strip() not in VIRTUAL_PLAYER_EXCLUDED_TROOP_KEYS
         )
         if not troop_keys:
+            reject(str(troop_class), "troop_no_catalog_candidate")
             continue
         eligible: list[tuple[int, str, dict[str, Any], int]] = []
         for tier, troop_key in enumerate(troop_keys):
@@ -123,20 +149,52 @@ def build_virtual_troop_candidates(
                 continue
             eligible.append((tier, troop_key, dict(troop), actual_level))
         if not eligible:
+            reject(str(troop_class), "troop_no_unlocked_candidate")
             continue
         selected = eligible[0] if normalized_archetype == "abandoned" else eligible[-1]
         tier, troop_key, troop, actual_tech_level = selected
-        silver_cost, grain_cost = _virtual_troop_cost(troop, tier=tier, config=config)
+        unit_silver_cost, unit_grain_cost = _virtual_troop_cost(troop, tier=tier, config=config)
+        planned_quantity = 1
+        if batch_mode:
+            raw_quantity = (batch_quantity_by_class or {}).get(str(troop_class))
+            if isinstance(raw_quantity, bool) or not isinstance(raw_quantity, int):
+                raise VirtualCandidatePoolError(f"troop batch quantity is invalid for class {troop_class!r}")
+            if not VIRTUAL_TROOP_BATCH_MIN_QUANTITY <= raw_quantity <= VIRTUAL_TROOP_BATCH_MAX_QUANTITY:
+                raise VirtualCandidatePoolError(f"troop batch quantity is outside 80-120 for class {troop_class!r}")
+            planned_quantity = raw_quantity
+            if remaining_troop_capacity is not None and remaining_troop_capacity < VIRTUAL_TROOP_BATCH_MIN_QUANTITY:
+                reject(
+                    str(troop_class),
+                    capacity_full_reason if remaining_troop_capacity <= 0 else capacity_minimum_reason,
+                )
+                continue
+            if grain_budget is not None:
+                if unit_grain_cost <= 0 or grain_budget // unit_grain_cost < VIRTUAL_TROOP_BATCH_MIN_QUANTITY:
+                    reject(
+                        str(troop_class),
+                        "troop_grain_rate_limited" if grain_budget <= 0 else "troop_grain_budget_insufficient",
+                    )
+                    continue
+            quantity_by_grain = (
+                planned_quantity if grain_budget is None or unit_grain_cost <= 0 else grain_budget // unit_grain_cost
+            )
+            quantity_by_capacity = planned_quantity if remaining_troop_capacity is None else remaining_troop_capacity
+            planned_quantity = min(planned_quantity, quantity_by_capacity, quantity_by_grain)
+            if planned_quantity < VIRTUAL_TROOP_BATCH_MIN_QUANTITY:
+                reject(str(troop_class), "troop_batch_below_minimum_after_limits")
+                continue
+        silver_cost = unit_silver_cost * planned_quantity
+        grain_cost = unit_grain_cost * planned_quantity
         current_total = max(0, int(strength_before.components.get("troop_total", 0)))
         components_after = dict(strength_before.components)
-        components_after["troop_total"] = current_total + 1
+        components_after["troop_total"] = current_total + planned_quantity
         strength_after = StrengthSummary(
             composite=float(components_after["arena_lineup_power"] + 2 * components_after["troop_total"]),
             components=components_after,
         )
         intent = project_troop_recruitment_development_intent(
             troop_key=troop_key,
-            quantity=1,
+            quantity=planned_quantity,
             prestige_band=prestige_band,
             strength_before=strength_before,
             utility_score=max(0.001, float(target_weight) * (1 + tier)),
@@ -158,7 +216,7 @@ def build_virtual_troop_candidates(
             manor_id=int(manor.id),
             troop_key=troop_key,
             troop_name=str(troop.get("name") or troop_key),
-            quantity=1,
+            quantity=planned_quantity,
             equipment_costs=(),
             equipment_stock=(),
             retainer_cost=0,
@@ -166,7 +224,7 @@ def build_virtual_troop_candidates(
             tech_key=(str((troop.get("recruit") or {}).get("tech_key") or "").strip() or None),
             tech_level_required=max(0, int((troop.get("recruit") or {}).get("tech_level") or 0)),
             tech_level=actual_tech_level,
-            max_quantity=1,
+            max_quantity=(VIRTUAL_TROOP_BATCH_MAX_QUANTITY if batch_mode else 1),
             training_ground_level=0,
             ancestral_hall_level=0,
             base_duration=0,
@@ -534,6 +592,8 @@ def build_virtual_inventory_batch_candidate(
 
 __all__ = [
     "VirtualCandidatePoolError",
+    "VIRTUAL_TROOP_BATCH_MAX_QUANTITY",
+    "VIRTUAL_TROOP_BATCH_MIN_QUANTITY",
     "build_virtual_equipment_candidates",
     "build_virtual_inventory_batch_candidate",
     "build_virtual_skill_learning_candidates",

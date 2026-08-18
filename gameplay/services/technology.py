@@ -256,7 +256,7 @@ def start_technology_upgrade_locked(
     )
 
 
-def finalize_technology_upgrade(tech: Any, send_notification: bool = False) -> bool:
+def finalize_technology_upgrade(tech: Any, send_notification: bool = False, now: Any | None = None) -> bool:
     return _technology_runtime.finalize_technology_upgrade(
         tech,
         get_technology_template_func=get_technology_template,
@@ -266,6 +266,7 @@ def finalize_technology_upgrade(tech: Any, send_notification: bool = False) -> b
         invalidate_home_stats_cache_func=invalidate_home_stats_cache,
         logger=logger,
         send_notification=send_notification,
+        now=now,
     )
 
 

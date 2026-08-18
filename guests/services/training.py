@@ -337,13 +337,14 @@ def _try_enqueue_complete_guest_training(guest: Guest, *, countdown: int, source
             logger.warning("生产环境：保持训练完成时间，等待定时任务结算")
 
 
-def ensure_auto_training(guest: Guest) -> bool:
+def ensure_auto_training(guest: Guest, now: datetime | None = None) -> bool:
     """
     如果没有训练计划且门客未达到最高等级，则自动开始训练到下一级。
     """
     if not getattr(guest, "pk", None):
         return False
 
+    current_time = now or timezone.now()
     with transaction.atomic():
         locked_guest = Guest.objects.select_for_update().select_related("template").get(pk=guest.pk)
         guest.training_target_level = locked_guest.training_target_level
@@ -359,7 +360,7 @@ def ensure_auto_training(guest: Guest) -> bool:
 
         duration = get_training_duration(locked_guest, levels=1)
         locked_guest.training_target_level = min(MAX_GUEST_LEVEL, locked_guest.level + 1)
-        locked_guest.training_complete_at = timezone.now() + timedelta(seconds=duration)
+        locked_guest.training_complete_at = current_time + timedelta(seconds=duration)
         locked_guest.save(update_fields=["training_target_level", "training_complete_at"])
 
         guest.training_target_level = locked_guest.training_target_level
@@ -377,15 +378,21 @@ def ensure_auto_training(guest: Guest) -> bool:
     return True
 
 
-def _reduce_guest_training_once(guest: Guest, remaining_seconds: int) -> tuple[int, int, bool]:
+def _reduce_guest_training_once(
+    guest: Guest,
+    remaining_seconds: int,
+    *,
+    now: datetime | None = None,
+) -> tuple[int, int, bool]:
     """单步缩减训练时间。
 
     Returns:
         (实际减少秒数, 消耗后的剩余秒数, 是否影响了训练进度)
     """
-    remaining = remaining_training_seconds(guest, now=timezone.now())
+    current_time = now or timezone.now()
+    remaining = remaining_training_seconds(guest, now=current_time)
     if remaining <= 0:
-        finalized = finalize_guest_training(guest)
+        finalized = finalize_guest_training(guest, now=current_time)
         if finalized:
             guest.refresh_from_db()
         return 0, remaining_seconds, finalized
@@ -395,7 +402,7 @@ def _reduce_guest_training_once(guest: Guest, remaining_seconds: int) -> tuple[i
         finalize_guest_training(guest, now=guest.training_complete_at)
         guest.refresh_from_db()
         if guest.level < MAX_GUEST_LEVEL and not guest.training_complete_at:
-            ensure_auto_training(guest)
+            ensure_auto_training(guest, now=current_time)
             guest.refresh_from_db()
     else:
         training_complete_at = guest.training_complete_at
@@ -405,15 +412,21 @@ def _reduce_guest_training_once(guest: Guest, remaining_seconds: int) -> tuple[i
     return consume, remaining_seconds - consume, consume > 0
 
 
-def _reschedule_guest_training_if_needed(guest: Guest, source: str) -> None:
-    finalize_guest_training(guest)
+def _reschedule_guest_training_if_needed(
+    guest: Guest,
+    source: str,
+    *,
+    now: datetime | None = None,
+) -> None:
+    current_time = now or timezone.now()
+    finalize_guest_training(guest, now=current_time)
     if guest.level < MAX_GUEST_LEVEL and not guest.training_complete_at:
-        ensure_auto_training(guest)
+        ensure_auto_training(guest, now=current_time)
         guest.refresh_from_db()
     if not guest.training_complete_at:
         return
 
-    countdown = max(0, int((guest.training_complete_at - timezone.now()).total_seconds()))
+    countdown = max(0, int((guest.training_complete_at - current_time).total_seconds()))
 
     def enqueue_training() -> None:
         _try_enqueue_complete_guest_training(
@@ -518,7 +531,7 @@ def use_experience_item_for_guest(manor: Manor, guest: Guest, item_id: int, redu
     }
 
 
-def reduce_training_time(manor: Manor, seconds: int) -> Dict[str, int]:
+def reduce_training_time(manor: Manor, seconds: int, now: datetime | None = None) -> Dict[str, int]:
     """
     缩短庄园所有门客的训练时间。多余的时间会顺延到下一级。
 
@@ -538,7 +551,7 @@ def reduce_training_time(manor: Manor, seconds: int) -> Dict[str, int]:
     )
     total_reduced = 0
     applied = 0
-    now = timezone.now()
+    now = now or timezone.now()
     remaining_seconds = normalized_seconds
 
     with transaction.atomic():
@@ -577,21 +590,29 @@ def reduce_training_time(manor: Manor, seconds: int) -> Dict[str, int]:
 
             guest_touched = False
             while remaining_seconds > 0 and guest.training_complete_at and guest.level < MAX_GUEST_LEVEL:
-                reduced, remaining_seconds, touched = _reduce_guest_training_once(guest, remaining_seconds)
+                reduced, remaining_seconds, touched = _reduce_guest_training_once(
+                    guest,
+                    remaining_seconds,
+                    now=now,
+                )
                 total_reduced += reduced
                 if touched:
                     applied += 1
                     guest_touched = True
             if guest_touched and guest.id not in touched_guest_ids:
                 touched_guest_ids.add(guest.id)
-                _reschedule_guest_training_if_needed(guest, source="reduce_training_time")
+                _reschedule_guest_training_if_needed(guest, source="reduce_training_time", now=now)
             if remaining_seconds <= 0:
                 break
 
     return {"time_reduced": total_reduced, "applied_guests": applied}
 
 
-def reduce_training_time_for_guest(guest: Guest, seconds: int) -> GuestTrainingReductionResult:
+def reduce_training_time_for_guest(
+    guest: Guest,
+    seconds: int,
+    now: datetime | None = None,
+) -> GuestTrainingReductionResult:
     """
     缩短单个门客的训练时间。多余的时间继续用于后续等级。
 
@@ -611,7 +632,7 @@ def reduce_training_time_for_guest(guest: Guest, seconds: int) -> GuestTrainingR
     )
     if guest.status != GuestStatus.IDLE:
         raise GuestNotIdleError(guest)
-    now = timezone.now()
+    now = now or timezone.now()
     if not ensure_training_timer(guest, now=now):
         if guest.level >= MAX_GUEST_LEVEL:
             raise GuestMaxLevelError(guest, max_level=MAX_GUEST_LEVEL)
@@ -623,12 +644,16 @@ def reduce_training_time_for_guest(guest: Guest, seconds: int) -> GuestTrainingR
     while remaining_seconds > 0 and guest.level < MAX_GUEST_LEVEL:
         if not ensure_training_timer(guest, now=now):
             break
-        reduced, remaining_seconds, touched = _reduce_guest_training_once(guest, remaining_seconds)
+        reduced, remaining_seconds, touched = _reduce_guest_training_once(
+            guest,
+            remaining_seconds,
+            now=now,
+        )
         total_reduced += reduced
         if touched:
             levels_applied += 1
 
-    _reschedule_guest_training_if_needed(guest, source="reduce_training_time_for_guest")
+    _reschedule_guest_training_if_needed(guest, source="reduce_training_time_for_guest", now=now)
     return {
         "time_reduced": total_reduced,
         "applied_levels": levels_applied,
@@ -746,6 +771,10 @@ def finalize_guest_training(guest: Guest, now: datetime | None = None) -> bool:
         )
 
         if locked_guest.level < MAX_GUEST_LEVEL:
-            ensure_auto_training(locked_guest)
+            # The caller may be driving a virtual clock.  Reuse the same
+            # completion time for the next timer; falling back to
+            # ``timezone.now()`` here can move the newly scheduled timer
+            # backwards and leave it permanently due in a simulation.
+            ensure_auto_training(locked_guest, now=now)
 
     return True

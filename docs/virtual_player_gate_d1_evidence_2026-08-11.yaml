@@ -221,8 +221,8 @@ suite_collection:
   checksum_input: sorted_pytest_nodeids_joined_with_lf_and_terminal_lf
   encoding: utf-8
   contract:
-    expected_nodeid_count: 427
-    nodeid_checksum: 1d7a1446ad6395204b2166ced9ac60fcc533b9884463031dd6281faa3eabcbd4
+    expected_nodeid_count: 387
+    nodeid_checksum: 7e2d214a2a315075fdf3960dad20fcf8a8153554a42daff5d0614d1af82852ef
     files:
     - tests/test_virtual_player_bootstrap_v2.py
     - tests/test_virtual_player_bootstrap_routing.py
@@ -263,7 +263,7 @@ executions:
     status: passed
     execution_timestamp_utc: '2026-08-10T23:50:12Z'
     timestamp_source: canonical_target_completion
-    passed: 427
+    passed: 387
     failed: 0
     skipped: 0
     duration_seconds: 65.35

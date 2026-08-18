@@ -14,7 +14,7 @@ from django.db import transaction
 from django.db.models import F, IntegerField, Sum, Value
 from django.db.models.functions import Coalesce, Now
 
-from core.exceptions import GameError, InsufficientSpaceError, InsufficientStockError, ItemNotFoundError
+from core.exceptions import GameError, InsufficientStockError, ItemNotFoundError
 from gameplay.models import InventoryItem, ItemTemplate, Manor
 
 # 粮食物品模板 key
@@ -221,10 +221,10 @@ def adjust_warehouse_grain_quantity_locked(
 def get_warehouse_used_space(manor: Manor) -> int:
     """Return warehouse item space currently occupied by this manor.
 
-    The caller may use this read-only helper for display, but all write-side
-    checks must happen while the Manor row is locked.  Grain is intentionally
-    included because its warehouse ledger is represented by an InventoryItem
-    row as well.
+    This read-only helper is retained for compatibility and accounting callers.
+    Ordinary warehouse writes intentionally do not enforce a capacity limit.
+    Grain is included because its warehouse ledger is represented by an
+    InventoryItem row as well.
     """
     total = (
         InventoryItem.objects.filter(
@@ -245,8 +245,8 @@ def get_warehouse_used_space(manor: Manor) -> int:
     normalized_total = max(0, int(total or 0))
 
     # A small number of pre-ledger manors may still have grain only on the
-    # compatibility Manor.grain field.  Count it for capacity display and
-    # for non-grain writes until the first grain write materializes its row.
+    # compatibility Manor.grain field.  Count it so read-only space accounting
+    # remains accurate until the first grain write materializes its row.
     grain_row = (
         InventoryItem.objects.filter(
             manor=manor,
@@ -269,39 +269,6 @@ def get_warehouse_used_space(manor: Manor) -> int:
     return normalized_total
 
 
-def _ensure_warehouse_capacity_locked(
-    manor: Manor,
-    additions: Mapping[ItemTemplate, int],
-) -> None:
-    """Reject a warehouse write before any inventory row is mutated.
-
-    ``add_item_to_inventory_locked`` and ``add_items_to_inventory_locked`` are
-    write owners.  They require the caller to hold the Manor row lock, so the
-    used-space snapshot and the subsequent upserts are one serialized state
-    transition rather than an advisory check.
-    """
-    required_space = sum(
-        max(0, int(getattr(template, "storage_space", 0) or 0)) * int(quantity)
-        for template, quantity in additions.items()
-    )
-    if required_space <= 0:
-        return
-
-    used_space = get_warehouse_used_space(manor)
-    # The row lock belongs to the caller, but the object may have been loaded
-    # before that lock was acquired.  Read the locked row's current capacity so
-    # an old in-memory Manor cannot reject valid writes or bypass the limit.
-    capacity = (
-        Manor.objects.filter(pk=manor.pk).values_list("storage_capacity", flat=True).first()
-        if manor.pk
-        else getattr(manor, "storage_capacity", 0)
-    )
-    capacity = max(0, int(capacity or 0))
-    available_space = max(0, capacity - used_space)
-    if required_space > available_space:
-        raise InsufficientSpaceError("warehouse", available_space, required_space)
-
-
 def add_items_to_inventory_locked(
     manor: Manor,
     grants: Mapping[str, int],
@@ -312,9 +279,8 @@ def add_items_to_inventory_locked(
     """Atomically add several inventory quantities under the Manor lock.
 
     This is the batch counterpart to ``add_item_to_inventory_locked``.  It
-    centralizes capacity validation and the unique-row upsert so high-frequency
-    reward paths do not implement their own ``get_or_create``/``bulk_create``
-    variants.
+    centralizes the unique-row upsert so high-frequency reward paths do not
+    implement their own ``get_or_create``/``bulk_create`` variants.
     """
     _require_atomic_block("add_items_to_inventory_locked")
     if not isinstance(grants, Mapping):
@@ -365,16 +331,9 @@ def add_items_to_inventory_locked(
             raise GameError(f"{template.name}不可存入藏宝阁")
 
     warehouse_grain_template = resolved_templates.get(GRAIN_ITEM_KEY)
-    if storage_location == InventoryItem.StorageLocation.WAREHOUSE:
-        _ensure_warehouse_capacity_locked(
-            manor,
-            {resolved_templates[key]: quantity for key, quantity in normalized_grants.items()},
-        )
-
     if storage_location == InventoryItem.StorageLocation.WAREHOUSE and warehouse_grain_template is not None:
-        # Materialize the compatibility row only after capacity validation;
-        # a rejected grant must not leave a legacy grain row behind when the
-        # caller intentionally handles the domain error inside its transaction.
+        # Materialize the compatibility row before the grain ledger update so
+        # legacy grain-only manors are upgraded consistently.
         get_warehouse_grain_quantity_locked(
             manor,
             grain_template=warehouse_grain_template,

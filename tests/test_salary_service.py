@@ -7,9 +7,11 @@ from zoneinfo import ZoneInfo
 import pytest
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models import Sum
 from django.utils import timezone
 
 from core.exceptions import InsufficientResourceError, SalaryAlreadyPaidError
+from gameplay.models import ResourceEvent, ResourceType
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestRarity, GuestTemplate, SalaryPayment
 from guests.services.salary import (
@@ -61,6 +63,12 @@ def test_pay_guest_salary_creates_payment_and_deducts_silver():
     payment = pay_guest_salary(manor, guest, for_date=for_date)
 
     assert SalaryPayment.objects.filter(pk=payment.pk).exists()
+    salary_event = ResourceEvent.objects.get(
+        manor=manor,
+        reason=ResourceEvent.Reason.SALARY_COST,
+    )
+    assert salary_event.resource_type == ResourceType.SILVER
+    assert salary_event.delta == -get_guest_salary(guest)
     manor.refresh_from_db(fields=["silver"])
     assert manor.silver < 10_000
 
@@ -97,6 +105,33 @@ def test_pay_all_salaries_pays_only_unpaid_and_deducts_total():
     manor.refresh_from_db(fields=["silver"])
     assert manor.silver < before
     assert SalaryPayment.objects.filter(manor=manor, for_date=for_date).count() == 2
+    assert ResourceEvent.objects.filter(manor=manor, reason=ResourceEvent.Reason.SALARY_COST).aggregate(
+        total=Sum("delta")
+    )["total"] == -(get_guest_salary(g1) + get_guest_salary(g2))
+
+
+@pytest.mark.django_db
+def test_salary_resource_event_survives_guest_replacement_delete():
+    user = get_user_model().objects.create_user(username="salary_ledger_retention", password="pass123")
+    manor = ensure_manor(user)
+    manor.silver = 10_000
+    manor.save(update_fields=["silver"])
+    template = GuestTemplate.objects.create(
+        key="salary_ledger_retention_template",
+        name="工资流水留存测试门客",
+        rarity=GuestRarity.GRAY,
+    )
+    guest = Guest.objects.create(manor=manor, template=template)
+    for_date = date(2026, 2, 12)
+
+    payment = pay_guest_salary(manor, guest, for_date=for_date)
+    event = ResourceEvent.objects.get(manor=manor, reason=ResourceEvent.Reason.SALARY_COST)
+    expected_delta = -get_guest_salary(guest)
+
+    guest.delete()
+
+    assert not SalaryPayment.objects.filter(pk=payment.pk).exists()
+    assert ResourceEvent.objects.filter(pk=event.pk).values_list("delta", flat=True).get() == expected_delta
 
 
 @pytest.mark.django_db

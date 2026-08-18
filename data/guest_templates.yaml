@@ -111,7 +111,7 @@ pools:
   cost:
     silver: 500
   cooldown_seconds: 600
-  draw_count: 1
+  draw_count: 5
 - key: xiangshi
   name: 乡试
   tier: xiangshi
@@ -119,7 +119,7 @@ pools:
   cost:
     silver: 1500
   cooldown_seconds: 1200
-  draw_count: 5
+  draw_count: 8
 - key: huishi
   name: 会试
   tier: huishi
@@ -127,7 +127,7 @@ pools:
   cost:
     silver: 5000
   cooldown_seconds: 1800
-  draw_count: 8
+  draw_count: 12
 - key: dianshi
   name: 殿试
   tier: dianshi
@@ -135,4 +135,4 @@ pools:
   cost:
     silver: 10000
   cooldown_seconds: 3600
-  draw_count: 10
+  draw_count: 15

@@ -444,7 +444,12 @@ def _build_production_snapshot(
             continue
 
         if delta > 0:
-            new_value = min(capacity, current_value + delta)
+            # A legacy/imported balance may already exceed today's capacity.
+            # Natural production must never delete that existing balance or
+            # emit a misleading negative ``produce`` event.  Until the
+            # balance falls back under capacity, new positive production is
+            # discarded rather than increasing the over-cap amount.
+            new_value = max(current_value, min(capacity, current_value + delta))
         else:
             new_value = max(0, current_value + delta)
         actual_delta = new_value - current_value

@@ -110,6 +110,7 @@ def test_build_v2_bootstrap_plan_is_deterministic_and_stays_in_all_eight_bands(
             first.projection.guest_level if first.projection.guest_count else 0
         )
         assert sum(assets.troop_counts.values()) == first.projection.troop_count
+        assert sum(assets.troop_counts.values()) <= first.virtual_troop_capacity
         assert "scout" not in assets.troop_counts
         assert max(assets.building_levels.values()) == first.projection.building_level
         assert len(assets.catalog_digest) == 64

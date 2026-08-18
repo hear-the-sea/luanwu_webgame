@@ -11,7 +11,27 @@ from django.db.models.functions import Least
 from guests.models import Guest, GuestStatus
 
 MAX_GUEST_LOYALTY = 100
+VIRTUAL_PLAYER_GUEST_LOYALTY = 60
 INJURY_LOYALTY_DECAY_INTERVAL = timedelta(hours=3)
+
+
+def is_virtual_player_guest(guest: Any) -> bool:
+    """Return whether a guest belongs to a system-controlled virtual Manor."""
+
+    marker = getattr(guest, "_virtual_player_guest", None)
+    if marker is not None:
+        return bool(marker)
+    manor_id = getattr(guest, "manor_id", None)
+    if manor_id is None:
+        manor = getattr(guest, "manor", None)
+        manor_id = getattr(manor, "pk", None) or getattr(manor, "id", None)
+    if manor_id is None:
+        return False
+    # Keep the gameplay-model dependency lazy: the guests service is imported
+    # by gameplay bootstrap and must not create an import cycle at module load.
+    from gameplay.models import BotProfile
+
+    return BotProfile.objects.filter(manor_id=int(manor_id)).exists()
 
 
 def _normalize_positive_int(raw: Any, *, field_name: str) -> int:
@@ -56,7 +76,7 @@ def increase_guest_loyalty_by_ids(guest_ids: Iterable[int], *, amount: int = 1) 
     if not normalized_ids:
         return 0
 
-    return Guest.objects.filter(id__in=normalized_ids).update(
+    return Guest.objects.filter(id__in=normalized_ids, manor__bot_profile__isnull=True).update(
         loyalty=Least(MAX_GUEST_LOYALTY, F("loyalty") + normalized_amount)
     )
 
@@ -77,6 +97,13 @@ def apply_injury_loyalty_decay(guest: Any, *, now: datetime) -> int:
     """按完整重伤周期扣减忠诚度，并推进持久化结算点。"""
     processed_at = getattr(guest, "injury_loyalty_processed_at", None)
     if getattr(guest, "status", None) != GuestStatus.INJURED or processed_at is None:
+        return 0
+    if is_virtual_player_guest(guest):
+        # Virtual-player loyalty is a stable gameplay parameter, not an
+        # economy outcome.  The daily normalizer repairs legacy drift; this
+        # guard prevents injury recovery from changing it again.  Keep this
+        # check after the cheap state guards because passive HP recovery also
+        # visits healthy real-player guests.
         return 0
 
     elapsed = now - processed_at

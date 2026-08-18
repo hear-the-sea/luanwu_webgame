@@ -12,7 +12,7 @@ from core.config import GUEST
 from gameplay.models import BotProfile
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestArchetype, GuestRarity, GuestStatus, GuestTemplate
-from guests.services.training import ensure_auto_training
+from guests.services.training import ensure_auto_training, finalize_guest_training
 from guests.tasks import scan_guest_training
 
 
@@ -132,6 +132,24 @@ def test_scan_guest_training_prioritizes_due_training_within_limit(monkeypatch, 
     orphan_guest.refresh_from_db()
     assert finalized == [due_guest.pk]
     assert orphan_guest.training_complete_at is None
+
+
+@pytest.mark.django_db
+def test_finalize_guest_training_reschedules_from_supplied_virtual_time(django_user_model):
+    guest = _create_guest(django_user_model, suffix="virtual_clock")
+    virtual_now = timezone.now() + timedelta(days=1)
+    guest.training_target_level = 2
+    guest.training_complete_at = virtual_now - timedelta(seconds=1)
+    guest.save(update_fields=["training_target_level", "training_complete_at"])
+
+    with TestCase.captureOnCommitCallbacks(execute=True):
+        assert finalize_guest_training(guest, now=virtual_now) is True
+
+    guest.refresh_from_db()
+    assert guest.level == 2
+    assert guest.training_target_level == 3
+    assert guest.training_complete_at is not None
+    assert guest.training_complete_at > virtual_now
 
 
 @pytest.mark.django_db

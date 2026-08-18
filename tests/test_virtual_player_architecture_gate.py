@@ -125,6 +125,8 @@ BOT_PROFILE_DIRECT_IMPORTS = {
     "gameplay/services/virtual_player_core/selectors.py": "read-only profile selectors and relation predicates",
     "gameplay/services/virtual_player_loot_limits.py": "read-only loot cap decision",
     "gameplay/services/virtual_player_core/runtime_preflight.py": "read-only V2 release, routing, and schema preflight",
+    "scripts/simulate_virtual_players.py": "isolated simulation population setup, lifecycle snapshots, and audit reads",
+    "guests/services/loyalty.py": "exclude virtual-player guests from loyalty mutations while keeping the guest service boundary explicit",
 }
 
 BOT_PROFILE_RELATION_READERS = {
@@ -140,6 +142,8 @@ BOT_PROFILE_RELATION_READERS = {
     "gameplay/services/virtual_player_loot_limits.py": "identify Raid runs against virtual defenders",
     "gameplay/views/map.py": "apply virtual-profile map visibility states",
     "guests/models.py": "GuestRecruitment relation to the owning virtual profile",
+    "guests/services/loyalty.py": "identify virtual-player guests before applying injury loyalty rules",
+    "guests/tasks.py": "exclude virtual-player guests from daily loyalty settlement and defection",
 }
 
 BOT_PROFILE_GATE_A_WRITE_OWNERS = {

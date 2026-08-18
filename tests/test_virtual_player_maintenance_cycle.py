@@ -11,11 +11,14 @@ from gameplay.services.virtual_player_core.maintenance_cycle import (
     MaintenanceProgressCategory,
     MaintenanceReasonCategory,
     allocate_cycle_action,
+    candidate_pool_cooldown_until,
     classify_maintenance_progress,
     classify_maintenance_reason,
     cycle_retry_due_at,
+    merge_candidate_pool_cooldowns,
     next_ordinary_slot_due_at,
     ordinary_slot_interval_minutes,
+    wake_candidate_pool_cooldowns,
 )
 
 
@@ -68,6 +71,72 @@ def test_cycle_retry_due_at_is_a_stable_short_backoff() -> None:
 
     assert retry_at == cycle_retry_due_at("seed-a", now=now, reason="profile_busy")
     assert timedelta(minutes=1) <= retry_at - now <= timedelta(minutes=3)
+
+
+def test_empty_candidate_pool_uses_a_bounded_cooldown_and_domain_wake() -> None:
+    now = datetime(2026, 8, 10, 8, 0, tzinfo=UTC)
+    gaps = (
+        {
+            "action_kind": "building_upgrade",
+            "reason": "no_candidate",
+            "reason_source": "empty_candidate_pool",
+            "candidate_count": 0,
+        },
+    )
+
+    cooldowns = merge_candidate_pool_cooldowns({}, gaps=gaps, now=now)
+
+    assert candidate_pool_cooldown_until({"candidate_pool_cooldowns": cooldowns}, now=now) == now + timedelta(hours=6)
+    remaining, woken = wake_candidate_pool_cooldowns(
+        {"candidate_pool_cooldowns": cooldowns},
+        domain_event_kind="building_upgrade",
+        now=now + timedelta(minutes=1),
+    )
+    assert remaining == []
+    assert woken[0]["action_kind"] == "building_upgrade"
+
+
+def test_candidate_pool_cooldown_ignores_expired_and_malformed_entries() -> None:
+    now = datetime(2026, 8, 10, 8, 0, tzinfo=UTC)
+
+    assert (
+        candidate_pool_cooldown_until(
+            {
+                "candidate_pool_cooldowns": [
+                    None,
+                    {"action_kind": "building_upgrade", "retry_at": "not-a-timestamp"},
+                    {
+                        "action_kind": "technology_upgrade",
+                        "reason": "no_candidate",
+                        "reason_source": "empty_candidate_pool",
+                        "retry_at": (now - timedelta(seconds=1)).isoformat(),
+                    },
+                ]
+            },
+            now=now,
+        )
+        is None
+    )
+
+
+def test_candidate_pool_cooldown_merge_ignores_malformed_candidate_count() -> None:
+    now = datetime(2026, 8, 10, 8, 0, tzinfo=UTC)
+    gaps = (
+        {
+            "action_kind": "building_upgrade",
+            "reason": "no_candidate",
+            "reason_source": "empty_candidate_pool",
+            "candidate_count": "not-an-integer",
+        },
+        {
+            "action_kind": "technology_upgrade",
+            "reason": "no_candidate",
+            "reason_source": "empty_candidate_pool",
+            "candidate_count": False,
+        },
+    )
+
+    assert merge_candidate_pool_cooldowns({}, gaps=gaps, now=now) == []
 
 
 def test_repeated_costly_actions_are_retained_as_audit_telemetry() -> None:

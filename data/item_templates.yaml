@@ -2275,13 +2275,13 @@ items:
     description: 以龙吟之势震慑敌军的绝学。
     effect_type: skill_book
     image: skill3.png
-    rarity: orange
+    rarity: purple
     effect_payload:
       skill_key: dragon_roar
       skill_name: 龙吟破阵
     tradeable: true
     price: 1000000
-    storage_space: 200
+    storage_space: 125
 
   - key: book_stratagem_burst
     name: 《奇策突袭》秘术
@@ -2341,13 +2341,13 @@ items:
     description: 以极致突进穿透敌阵的身法剑术秘籍。
     effect_type: skill_book
     image: skill2.png
-    rarity: blue
+    rarity: purple
     effect_payload:
       skill_key: meteor_pierce_moon
       skill_name: 流星贯月
     tradeable: true
     price: 240000
-    storage_space: 75
+    storage_space: 125
 
   # ---------- 文系技能书（绿色品质）----------
   - key: book_ice_curse
@@ -2541,13 +2541,13 @@ items:
     description: 九天神雷的召唤秘法，威力惊天动地。
     effect_type: skill_book
     image: skill3.png
-    rarity: purple
+    rarity: blue
     effect_payload:
       skill_key: thunder_nine_heavens
       skill_name: 雷动九天
     tradeable: true
     price: 600000
-    storage_space: 125
+    storage_space: 75
 
   - key: book_tangseng_sermon
     name: 《唐僧说禅》秘术

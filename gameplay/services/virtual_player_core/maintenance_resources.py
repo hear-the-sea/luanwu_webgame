@@ -11,7 +11,7 @@ from core.utils.time_scale import get_time_scale
 from gameplay.models import Manor, ResourceType
 from gameplay.services.resources import ResourceProductionBasis, preview_resource_production
 from guests.models import Guest
-from guests.services.salary import SalaryBatchQuote, quote_all_salaries
+from guests.services.salary import DEFAULT_SALARY_SCALE, SalaryBatchQuote, SalaryScale, quote_all_salaries
 
 from .economy import ForcedSettlementBudget, ForcedSettlementDecision, plan_forced_settlement
 
@@ -25,6 +25,7 @@ _OPERATING_BUFFER_SALARY_NUMERATOR = 1
 _OPERATING_BUFFER_SALARY_DENOMINATOR = 10
 _SILVER_FORECAST_HORIZON_24_HOURS = 24
 _SILVER_FORECAST_HORIZON_72_HOURS = 72
+VIRTUAL_PLAYER_SALARY_SCALE: SalaryScale = (1, 2)
 
 
 def salary_runway_commitment(additional_daily_salary: int) -> int:
@@ -116,6 +117,7 @@ class ResourcePlanningSnapshot:
     grain_forecast_24h: int = 0
     grain_forecast_72h: int = 0
     recurring_silver_outflow_daily: int = 0
+    salary_enabled: bool = True
 
     def __post_init__(self) -> None:
         for field in (
@@ -156,6 +158,8 @@ class ResourcePlanningSnapshot:
             raise ResourcePlanningError("next_day_salary_quote must be a SalaryBatchQuote")
         if not isinstance(self.current_salary_payable, bool):
             raise ResourcePlanningError("current_salary_payable must be a boolean")
+        if not isinstance(self.salary_enabled, bool):
+            raise ResourcePlanningError("salary_enabled must be a boolean")
         if self.next_day_salary_quote.for_date <= self.current_salary_quote.for_date:
             raise ResourcePlanningError("next-day salary quote must follow the current salary date")
 
@@ -184,6 +188,18 @@ class ResourcePlanningSnapshot:
         if self.silver_forecast_72h < daily_cash_floor * 3:
             return "tight"
         return "healthy"
+
+    @property
+    def net_grain_rate_per_hour(self) -> float:
+        """Return the frozen net grain rate after personnel upkeep."""
+
+        return float(dict(self.production_rates).get(ResourceType.GRAIN, 0.0))
+
+    @property
+    def grain_rate_budget_24h(self) -> int:
+        """Return the maximum grain outflow supported by one frozen day of net production."""
+
+        return max(0, math.floor(self.net_grain_rate_per_hour * 24.0))
 
     def next_affordable_at(
         self,
@@ -260,6 +276,7 @@ class ResourcePlanningSnapshot:
             "current_resources": dict(self.current_resources),
             "production_deltas": dict(self.production_deltas),
             "post_settlement_resources": dict(self.post_settlement_resources),
+            "salary_enabled": self.salary_enabled,
             "current_salary": {
                 "for_date": self.current_salary_quote.for_date.isoformat(),
                 "total_amount": self.current_salary_quote.total_amount,
@@ -280,6 +297,8 @@ class ResourcePlanningSnapshot:
             "silver_forecast_72h": self.silver_forecast_72h,
             "grain_forecast_24h": self.grain_forecast_24h,
             "grain_forecast_72h": self.grain_forecast_72h,
+            "net_grain_rate_per_hour": self.net_grain_rate_per_hour,
+            "grain_rate_budget_24h": self.grain_rate_budget_24h,
             "recurring_silver_outflow_daily": self.recurring_silver_outflow_daily,
             "silver_liquidity_state": self.silver_liquidity_state,
         }
@@ -296,6 +315,8 @@ def build_resource_planning_snapshot(
     current_grain: int,
     protect_salary_runway: bool = True,
     recurring_silver_outflow_daily: int = 0,
+    salary_scale: SalaryScale = DEFAULT_SALARY_SCALE,
+    salary_enabled: bool = True,
 ) -> tuple[ResourcePlanningSnapshot, ForcedSettlementDecision]:
     if (
         isinstance(recurring_silver_outflow_daily, bool)
@@ -303,6 +324,8 @@ def build_resource_planning_snapshot(
         or recurring_silver_outflow_daily < 0
     ):
         raise ResourcePlanningError("recurring_silver_outflow_daily must be a non-negative integer")
+    if not isinstance(salary_enabled, bool):
+        raise ResourcePlanningError("salary_enabled must be a boolean")
     current_resources = _canonical_resources(
         {
             ResourceType.SILVER: max(0, int(manor.silver or 0)),
@@ -345,26 +368,49 @@ def build_resource_planning_snapshot(
         post_settlement[resource] = max(0, current + applied_delta)
 
     salary_date = timezone.localdate(planned_at)
-    current_salary = quote_all_salaries(
-        manor,
-        for_date=salary_date,
-        guests=guests,
-        paid_guest_ids=(None if paid_guest_ids is None else set(paid_guest_ids)),
+    guest_ids = tuple(sorted(int(guest.id) for guest in guests))
+    current_salary = (
+        quote_all_salaries(
+            manor,
+            for_date=salary_date,
+            guests=guests,
+            paid_guest_ids=(None if paid_guest_ids is None else set(paid_guest_ids)),
+            salary_scale=salary_scale,
+        )
+        if salary_enabled
+        else SalaryBatchQuote(
+            for_date=salary_date,
+            guest_ids=guest_ids,
+            unpaid_guest_ids=(),
+            total_amount=0,
+            salary_scale=salary_scale,
+        )
     )
     current_salary_payable = post_settlement[ResourceType.SILVER] >= current_salary.total_amount
     post_salary = dict(post_settlement)
     if current_salary_payable:
         post_salary[ResourceType.SILVER] -= current_salary.total_amount
 
-    next_day_salary = quote_all_salaries(
-        manor,
-        for_date=salary_date + timedelta(days=1),
-        guests=guests,
-        paid_guest_ids=set(),
+    next_day_salary = (
+        quote_all_salaries(
+            manor,
+            for_date=salary_date + timedelta(days=1),
+            guests=guests,
+            paid_guest_ids=set(),
+            salary_scale=salary_scale,
+        )
+        if salary_enabled
+        else SalaryBatchQuote(
+            for_date=salary_date + timedelta(days=1),
+            guest_ids=guest_ids,
+            unpaid_guest_ids=(),
+            total_amount=0,
+            salary_scale=salary_scale,
+        )
     )
     operating_silver = (
         salary_runway_commitment(next_day_salary.total_amount) - next_day_salary.total_amount
-        if protect_salary_runway
+        if salary_enabled and protect_salary_runway
         else 0
     )
     operating_buffer: dict[str, int] = {
@@ -372,14 +418,20 @@ def build_resource_planning_snapshot(
         str(ResourceType.GRAIN): 0,
     }
     protected_resources: dict[str, int] = {
-        str(ResourceType.SILVER): (next_day_salary.total_amount + operating_silver if protect_salary_runway else 0),
+        str(ResourceType.SILVER): (
+            next_day_salary.total_amount + operating_silver if salary_enabled and protect_salary_runway else 0
+        ),
         str(ResourceType.GRAIN): 0,
     }
     spendable_resources: dict[str, int] = {
         str(ResourceType.SILVER): (
-            max(0, post_salary[ResourceType.SILVER] - protected_resources[ResourceType.SILVER])
-            if protect_salary_runway and current_salary_payable
-            else (0 if protect_salary_runway else post_salary[ResourceType.SILVER])
+            post_salary[ResourceType.SILVER]
+            if not salary_enabled
+            else (
+                max(0, post_salary[ResourceType.SILVER] - protected_resources[ResourceType.SILVER])
+                if protect_salary_runway and current_salary_payable
+                else (0 if protect_salary_runway else post_salary[ResourceType.SILVER])
+            )
         ),
         str(ResourceType.GRAIN): post_salary[ResourceType.GRAIN],
     }
@@ -390,7 +442,11 @@ def build_resource_planning_snapshot(
         capacity=int(manor.silver_capacity or 0),
         hourly_rate=float(rate_by_resource.get(ResourceType.SILVER, 0.0)),
         horizon_hours=_SILVER_FORECAST_HORIZON_24_HOURS,
-        obligations=(current_salary_obligation + int(next_day_salary.total_amount) + recurring_silver_outflow_daily),
+        obligations=(
+            current_salary_obligation
+            + (int(next_day_salary.total_amount) if salary_enabled else 0)
+            + recurring_silver_outflow_daily
+        ),
     )
     silver_forecast_72h = _forecast_resource(
         current=post_salary[ResourceType.SILVER],
@@ -398,7 +454,9 @@ def build_resource_planning_snapshot(
         hourly_rate=float(rate_by_resource.get(ResourceType.SILVER, 0.0)),
         horizon_hours=_SILVER_FORECAST_HORIZON_72_HOURS,
         obligations=(
-            current_salary_obligation + int(next_day_salary.total_amount) * 3 + recurring_silver_outflow_daily * 3
+            current_salary_obligation
+            + (int(next_day_salary.total_amount) * 3 if salary_enabled else 0)
+            + recurring_silver_outflow_daily * 3
         ),
     )
     grain_forecast_24h = _forecast_resource(
@@ -439,6 +497,7 @@ def build_resource_planning_snapshot(
         grain_forecast_24h=grain_forecast_24h,
         grain_forecast_72h=grain_forecast_72h,
         recurring_silver_outflow_daily=recurring_silver_outflow_daily,
+        salary_enabled=salary_enabled,
     )
     return snapshot, settlement
 

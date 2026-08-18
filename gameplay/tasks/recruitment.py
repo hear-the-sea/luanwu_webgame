@@ -6,6 +6,7 @@ from celery import shared_task
 from django.utils import timezone
 
 from common.utils.celery import safe_apply_async_with_dedup
+from core.exceptions import TroopCapacityFullError
 from core.utils.infrastructure import (
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
     InfrastructureExceptions,
@@ -68,7 +69,12 @@ def complete_troop_recruitment(self, recruitment_id: int):
 
         try:
             finalize_troop_recruitment(recruitment, send_notification=True)
-        except (TroopRecruitmentNotFoundError, TroopRecruitmentNotReadyError, TroopTemplateNotFoundError) as exc:
+        except (
+            TroopRecruitmentNotFoundError,
+            TroopRecruitmentNotReadyError,
+            TroopTemplateNotFoundError,
+            TroopCapacityFullError,
+        ) as exc:
             logger.warning("Failed to finalize troop recruitment %s: %s", recruitment_id, exc)
             return "skipped"
         return "completed"
@@ -102,7 +108,12 @@ def scan_troop_recruitments(limit: int = 200):
         try:
             finalize_troop_recruitment(recruitment, send_notification=True)
             return True
-        except (TroopRecruitmentNotFoundError, TroopRecruitmentNotReadyError, TroopTemplateNotFoundError):
+        except (
+            TroopRecruitmentNotFoundError,
+            TroopRecruitmentNotReadyError,
+            TroopTemplateNotFoundError,
+            TroopCapacityFullError,
+        ):
             # Skip recruitments that can't be finalized
             return False
 

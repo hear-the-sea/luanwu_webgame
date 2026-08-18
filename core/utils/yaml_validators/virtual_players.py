@@ -155,6 +155,7 @@ _V2_STARTER_PROFILE_FIELDS = frozenset(
     {
         "prestige",
         "core_building_level",
+        "juxianzhuang_level",
         "max_guest_level",
         "guest_count",
         "arena_lineup_power",

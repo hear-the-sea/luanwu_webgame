@@ -10,27 +10,12 @@ heroes:
     default_morality: 20
     recruitable: true
     growth_range:
-    - 4
+    - 5
     - 7
     attribute_weights:
       force: 35
       intellect: 15
       defense: 30
-      agility: 20
-  - key: hero_yue_mingke
-    name: 岳鸣珂
-    archetype: military
-    flavor: 武当门人岳鸣珂，剑术深厚，行事端方。作为卓一航师兄，他在正道与情义的夹缝中见证了白发魔女的悲剧。江湖风雨里，他既是门规的守卫者，也是内心动摇的见证人。剑光之下，忠与情的抉择让他一生难安。他的克制与犹疑，映照出武当门人的沉重责任。出自梁羽生小说《白发魔女传》
-    default_gender: male
-    default_morality: 70
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 20
-      defense: 25
       agility: 20
   - key: hero_fei_hongjin
     name: 飞红巾
@@ -40,28 +25,13 @@ heroes:
     default_morality: 75
     recruitable: true
     growth_range:
-    - 4
+    - 5
     - 7
     attribute_weights:
       force: 25
       intellect: 20
       defense: 15
       agility: 40
-  - key: hero_yi_lanzhu
-    name: 易兰珠
-    archetype: military
-    flavor: 易兰珠出身名门，气质清冷却情深似海。她与张丹枫、金逐流纠葛难解，在国仇家恨与儿女情长间辗转。武功不弱，心性更坚，宁以牺牲换他人平安。她的选择如玉弓之弦，绷紧了整段爱情的悲音。她的隐忍与担当，让她成为故事里最深情的一束光。出自梁羽生小说《云海玉弓缘》
-    default_gender: female
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 30
-      intellect: 20
-      defense: 20
-      agility: 30
   - key: hero_tan_yuchong
     name: 檀羽冲
     archetype: military
@@ -70,28 +40,13 @@ heroes:
     default_morality: 75
     recruitable: true
     growth_range:
-    - 4
+    - 5
     - 7
     attribute_weights:
       force: 30
       intellect: 20
       defense: 25
       agility: 25
-  - key: hero_jin_zhuliu
-    name: 金逐流
-    archetype: military
-    flavor: 金逐流豪迈不羁，剑法狂放如风。身陷与张丹枫、易兰珠的情感纠葛，他在爱与义之间屡屡挣扎。武学上他敢破旧成新，江湖上他敢爱敢恨。风云变幻里，他终以真性情写出一段侠客传奇。他的冲动与豪情并存，既耀眼也让人叹息。出自梁羽生小说《云海玉弓缘》
-    default_gender: male
-    default_morality: 70
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 15
-      defense: 20
-      agility: 30
   - key: hero_nalan_minghui
     name: 纳兰明慧
     archetype: civil
@@ -100,7 +55,7 @@ heroes:
     default_morality: 70
     recruitable: true
     growth_range:
-    - 4
+    - 5
     - 7
     attribute_weights:
       force: 15
@@ -115,7 +70,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 4
+    - 5
     - 7
     attribute_weights:
       force: 40
@@ -130,7 +85,7 @@ heroes:
     default_morality: 75
     recruitable: true
     growth_range:
-    - 4
+    - 5
     - 7
     attribute_weights:
       force: 20
@@ -145,7 +100,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 4
+    - 5
     - 7
     attribute_weights:
       force: 30
@@ -160,7 +115,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 4
+    - 5
     - 7
     attribute_weights:
       force: 40
@@ -175,7 +130,7 @@ heroes:
     default_morality: 60
     recruitable: true
     growth_range:
-    - 4
+    - 5
     - 7
     attribute_weights:
       force: 35
@@ -190,7 +145,7 @@ heroes:
     default_morality: 50
     recruitable: true
     growth_range:
-    - 4
+    - 5
     - 7
     attribute_weights:
       force: 35
@@ -205,7 +160,7 @@ heroes:
     default_morality: 45
     recruitable: true
     growth_range:
-    - 3
+    - 5
     - 7
     attribute_weights:
       force: 10
@@ -220,7 +175,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 4
+    - 5
     - 7
     attribute_weights:
       force: 30
@@ -272,36 +227,6 @@ heroes:
       intellect: 20
       defense: 10
       agility: 45
-  - key: hero_li_yi
-    name: 李逸
-    archetype: military
-    flavor: 李逸少年英气，剑胆琴心。行走唐代江湖，他扶危济困、惩恶扬善，以热血书写侠义。武功高强而不恃强，内心更重承诺与情义。风云起处，他是大唐游侠的代表身影。他的坦荡与赤诚，让他在乱世中格外醒目。出自梁羽生小说《大唐游侠传》
-    default_gender: male
-    default_morality: 80
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 30
-      intellect: 25
-      defense: 20
-      agility: 25
-  - key: hero_tie_mole
-    name: 铁摩勒
-    archetype: military
-    flavor: 铁摩勒沉稳如山，是李逸最可靠的同伴。武功深厚，行事谨慎，却在大义面前从不含糊。战阵中他以坚韧守护队伍，江湖里他以义气赢得敬重。若说李逸是火，他便是那块稳固的石。他寡言却可信，常在危急关头稳住全局。出自梁羽生小说《大唐游侠传》
-    default_gender: male
-    default_morality: 80
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 15
-      defense: 35
-      agility: 15
   blue:
   - key: hero_gu_zhihua
     name: 谷之华
@@ -311,7 +236,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 5
+    - 6
     - 9
     attribute_weights:
       force: 30
@@ -326,7 +251,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 5
+    - 6
     - 9
     attribute_weights:
       force: 20
@@ -341,7 +266,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 5
+    - 6
     - 9
     attribute_weights:
       force: 30
@@ -371,7 +296,7 @@ heroes:
     default_morality: 90
     recruitable: true
     growth_range:
-    - 5
+    - 6
     - 9
     attribute_weights:
       force: 30
@@ -386,7 +311,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 5
+    - 6
     - 9
     attribute_weights:
       force: 40
@@ -401,7 +326,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 5
+    - 6
     - 9
     attribute_weights:
       force: 30
@@ -416,7 +341,7 @@ heroes:
     default_morality: 60
     recruitable: true
     growth_range:
-    - 5
+    - 6
     - 9
     attribute_weights:
       force: 30
@@ -431,7 +356,7 @@ heroes:
     default_morality: 90
     recruitable: true
     growth_range:
-    - 5
+    - 6
     - 9
     attribute_weights:
       force: 35
@@ -446,13 +371,88 @@ heroes:
     default_morality: 85
     recruitable: true
     growth_range:
-    - 5
+    - 6
     - 9
     attribute_weights:
       force: 35
       intellect: 20
       defense: 20
       agility: 25
+  - key: hero_yue_mingke
+    name: 岳鸣珂
+    archetype: military
+    flavor: 武当门人岳鸣珂，剑术深厚，行事端方。作为卓一航师兄，他在正道与情义的夹缝中见证了白发魔女的悲剧。江湖风雨里，他既是门规的守卫者，也是内心动摇的见证人。剑光之下，忠与情的抉择让他一生难安。他的克制与犹疑，映照出武当门人的沉重责任。出自梁羽生小说《白发魔女传》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 20
+      defense: 25
+      agility: 20
+  - key: hero_yi_lanzhu
+    name: 易兰珠
+    archetype: military
+    flavor: 易兰珠出身名门，气质清冷却情深似海。她与张丹枫、金逐流纠葛难解，在国仇家恨与儿女情长间辗转。武功不弱，心性更坚，宁以牺牲换他人平安。她的选择如玉弓之弦，绷紧了整段爱情的悲音。她的隐忍与担当，让她成为故事里最深情的一束光。出自梁羽生小说《云海玉弓缘》
+    default_gender: female
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 20
+      defense: 20
+      agility: 30
+  - key: hero_jin_zhuliu
+    name: 金逐流
+    archetype: military
+    flavor: 金逐流豪迈不羁，剑法狂放如风。身陷与张丹枫、易兰珠的情感纠葛，他在爱与义之间屡屡挣扎。武学上他敢破旧成新，江湖上他敢爱敢恨。风云变幻里，他终以真性情写出一段侠客传奇。他的冲动与豪情并存，既耀眼也让人叹息。出自梁羽生小说《云海玉弓缘》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 15
+      defense: 20
+      agility: 30
+  - key: hero_li_yi
+    name: 李逸
+    archetype: military
+    flavor: 李逸少年英气，剑胆琴心。行走唐代江湖，他扶危济困、惩恶扬善，以热血书写侠义。武功高强而不恃强，内心更重承诺与情义。风云起处，他是大唐游侠的代表身影。他的坦荡与赤诚，让他在乱世中格外醒目。出自梁羽生小说《大唐游侠传》
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 25
+      defense: 20
+      agility: 25
+  - key: hero_tie_mole
+    name: 铁摩勒
+    archetype: military
+    flavor: 铁摩勒沉稳如山，是李逸最可靠的同伴。武功深厚，行事谨慎，却在大义面前从不含糊。战阵中他以坚韧守护队伍，江湖里他以义气赢得敬重。若说李逸是火，他便是那块稳固的石。他寡言却可信，常在危急关头稳住全局。出自梁羽生小说《大唐游侠传》
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 15
+      defense: 35
+      agility: 15
   purple:
   - key: hero_jin_shiyi
     name: 金世遗

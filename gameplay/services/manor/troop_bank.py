@@ -9,11 +9,16 @@ from typing import Any
 from django.db import DatabaseError, transaction
 from django.db.models import Sum
 
-from core.exceptions import TradeValidationError
+from core.exceptions import TradeValidationError, TroopCapacityFullError
 
 from ...models import Manor, PlayerTroop, TroopBankStorage
-
-TROOP_BANK_CAPACITY = 5000
+from .troop_capacity import (
+    MANOR_TROOP_CAPACITY,
+    TROOP_BANK_CAPACITY,
+    ensure_manor_troop_capacity_locked,
+    get_manor_troop_remaining_space,
+    get_manor_troop_used_space,
+)
 
 
 def _normalize_positive_quantity(quantity: int, *, action_label: str) -> int:
@@ -157,6 +162,13 @@ def withdraw_troops_from_bank(manor: Manor, troop_key: str, quantity: int) -> di
     if bank_troop.count < quantity:
         raise TradeValidationError(f"钱庄中{bank_troop.troop_template.name}数量不足，当前仅有{bank_troop.count}")
 
+    try:
+        ensure_manor_troop_capacity_locked(locked_manor, quantity)
+    except TroopCapacityFullError as exc:
+        raise TradeValidationError(
+            f"庄园内护院容量不足，当前最多还可容纳{get_manor_troop_remaining_space(locked_manor)}名"
+        ) from exc
+
     player_troop, _created = PlayerTroop.objects.get_or_create(
         manor=locked_manor,
         troop_template=bank_troop.troop_template,
@@ -176,4 +188,6 @@ def withdraw_troops_from_bank(manor: Manor, troop_key: str, quantity: int) -> di
         "quantity": quantity,
         "used": get_troop_bank_used_space(locked_manor),
         "capacity": TROOP_BANK_CAPACITY,
+        "manor_used": get_manor_troop_used_space(locked_manor),
+        "manor_capacity": MANOR_TROOP_CAPACITY,
     }

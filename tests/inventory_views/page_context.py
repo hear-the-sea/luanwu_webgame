@@ -22,6 +22,7 @@ class TestInventoryPageContext:
         response = client.get(reverse("gameplay:warehouse"))
         assert response.status_code == 200
         assert "inventory_items" in response.context
+        assert "仓库容量" not in response.content.decode("utf-8")
 
     def test_warehouse_treasury_tab(self, manor_with_user):
         _manor, client = manor_with_user
@@ -54,6 +55,7 @@ class TestInventoryPageContext:
         assert response.context["treasury_over_capacity"] == 100
         assert response.context["treasury_usage_percent"] == 100
         body = response.content.decode("utf-8")
+        assert "藏宝阁容量" in body
         assert "已超出 100 空间" in body
         assert "剩余 -100" not in body
         assert 'style="width: 100%;"' in body

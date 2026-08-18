@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from hashlib import sha256
 from typing import Any
@@ -103,6 +103,7 @@ def classify_maintenance_reason(reason: str | None) -> MaintenanceReasonCategory
         "insufficient_resource",
         "resource_snapshot_changed",
         "healing_insufficient_resource",
+        "technology_insufficient_resource",
     } or normalized.startswith("archetype_budget_"):
         return MaintenanceReasonCategory.RESOURCE
     if normalized in {"salary_already_paid", "no_guests_to_heal"}:
@@ -126,6 +127,9 @@ def classify_maintenance_reason(reason: str | None) -> MaintenanceReasonCategory
     if normalized in {
         "no_candidate",
         "no_eligible_candidate",
+        "technology_candidate_blocked",
+        "technology_candidate_exhausted",
+        "technology_cost_exceeds_capacity",
         "arena_action_unavailable",
         "arena_no_action",
         "no_guests_to_heal",
@@ -168,6 +172,177 @@ ARENA_CYCLE_ACTION_KINDS = (
     "skill_learning",
     NO_ACTION_CYCLE_KIND,
 )
+
+# An empty candidate pool is a stable observation, not a transient lock
+# conflict. Keep it in the cycle payload so the scheduler can back off
+# without losing the reason, while domain completion events can still wake a
+# cycle immediately when the relevant state changes.
+CANDIDATE_POOL_COOLDOWN = timedelta(hours=6)
+CANDIDATE_POOL_COOLDOWN_MAX_ENTRIES = 16
+CANDIDATE_POOL_COOLDOWN_PAYLOAD_KEY = "candidate_pool_cooldowns"
+_CANDIDATE_POOL_WAKE_DOMAINS: dict[str, tuple[str, ...]] = {
+    "building_upgrade": ("building_upgrade",),
+    "technology_upgrade": ("technology_upgrade",),
+    "guest": ("guest_training", "guest_recruitment"),
+    "equipment_equip": ("guest_training", "guest_recruitment"),
+    "skill_learning": ("guest_training", "guest_recruitment"),
+    "inventory_acquisition": ("guest_recruitment",),
+}
+
+
+def _candidate_pool_datetime(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if timezone.is_naive(parsed):
+        return None
+    return parsed.astimezone(UTC)
+
+
+def _candidate_pool_datetime_payload(value: datetime) -> str:
+    if timezone.is_naive(value):
+        raise MaintenanceCycleError("candidate pool cooldown timestamps must be timezone-aware")
+    return value.astimezone(UTC).isoformat().replace("+00:00", "Z")
+
+
+def candidate_pool_cooldown_entries(
+    payload: Mapping[str, Any] | None,
+    *,
+    now: datetime,
+) -> tuple[dict[str, Any], ...]:
+    """Return valid, unexpired candidate-pool cooldown entries.
+
+    Payload data is treated as untrusted audit state: malformed entries are
+    ignored and duplicate logical entries are collapsed deterministically.
+    """
+
+    if timezone.is_naive(now):
+        raise MaintenanceCycleError("candidate pool cooldown now must be timezone-aware")
+    current_time = now.astimezone(UTC)
+    raw_entries = () if not isinstance(payload, Mapping) else payload.get(CANDIDATE_POOL_COOLDOWN_PAYLOAD_KEY, ())
+    if not isinstance(raw_entries, (list, tuple)):
+        return ()
+    normalized: dict[tuple[str, str, str], dict[str, Any]] = {}
+    for raw_entry in raw_entries:
+        if not isinstance(raw_entry, Mapping):
+            continue
+        action_kind = str(raw_entry.get("action_kind") or "").strip()
+        reason = str(raw_entry.get("reason") or "").strip()
+        reason_source = str(raw_entry.get("reason_source") or "").strip()
+        retry_at = _candidate_pool_datetime(raw_entry.get("retry_at"))
+        if not action_kind or not reason or not reason_source or retry_at is None or retry_at <= current_time:
+            continue
+        wake_domains = tuple(
+            dict.fromkeys(str(value).strip() for value in (raw_entry.get("wake_domains") or ()) if str(value).strip())
+        )
+        observed_at = _candidate_pool_datetime(raw_entry.get("observed_at")) or current_time
+        identity = (action_kind, reason, reason_source)
+        normalized[identity] = {
+            "action_kind": action_kind,
+            "reason": reason,
+            "reason_source": reason_source,
+            "observed_at": _candidate_pool_datetime_payload(observed_at),
+            "retry_at": _candidate_pool_datetime_payload(retry_at),
+            "wake_domains": list(wake_domains),
+        }
+    return tuple(normalized.values())[-CANDIDATE_POOL_COOLDOWN_MAX_ENTRIES:]
+
+
+def candidate_pool_cooldown_until(
+    payload: Mapping[str, Any] | None,
+    *,
+    now: datetime,
+) -> datetime | None:
+    """Return the latest active cooldown boundary for a cycle payload."""
+
+    entries = candidate_pool_cooldown_entries(payload, now=now)
+    retry_times = [_candidate_pool_datetime(entry.get("retry_at")) for entry in entries]
+    valid_retry_times = [value for value in retry_times if value is not None]
+    return max(valid_retry_times, default=None)
+
+
+def _candidate_pool_count(value: object) -> int | None:
+    """Return a valid non-negative candidate count from untrusted payload data."""
+
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        return None
+    return int(value)
+
+
+def merge_candidate_pool_cooldowns(
+    payload: Mapping[str, Any] | None,
+    *,
+    gaps: Sequence[Mapping[str, Any]],
+    now: datetime,
+) -> list[dict[str, Any]]:
+    """Add empty-pool observations to a bounded, deduplicated audit list."""
+
+    if timezone.is_naive(now):
+        raise MaintenanceCycleError("candidate pool cooldown now must be timezone-aware")
+    current_time = now.astimezone(UTC)
+    entries = list(candidate_pool_cooldown_entries(payload, now=now))
+    indexes = {
+        (
+            str(entry["action_kind"]),
+            str(entry["reason"]),
+            str(entry["reason_source"]),
+        ): index
+        for index, entry in enumerate(entries)
+    }
+    retry_at = current_time + CANDIDATE_POOL_COOLDOWN
+    for gap in gaps:
+        if not isinstance(gap, Mapping):
+            continue
+        if str(gap.get("reason_source") or "") != "empty_candidate_pool":
+            continue
+        candidate_count = _candidate_pool_count(gap.get("candidate_count", 0))
+        if candidate_count != 0:
+            continue
+        action_kind = str(gap.get("action_kind") or "").strip()
+        reason = str(gap.get("reason") or "").strip()
+        reason_source = str(gap.get("reason_source") or "").strip()
+        if not action_kind or not reason:
+            continue
+        identity = (action_kind, reason, reason_source)
+        entry = {
+            "action_kind": action_kind,
+            "reason": reason,
+            "reason_source": reason_source,
+            "observed_at": _candidate_pool_datetime_payload(current_time),
+            "retry_at": _candidate_pool_datetime_payload(retry_at),
+            "wake_domains": list(_CANDIDATE_POOL_WAKE_DOMAINS.get(action_kind, ())),
+        }
+        existing_index = indexes.get(identity)
+        if existing_index is None:
+            indexes[identity] = len(entries)
+            entries.append(entry)
+            continue
+        existing_retry_at = _candidate_pool_datetime(entries[existing_index].get("retry_at"))
+        if existing_retry_at is not None and existing_retry_at > retry_at:
+            entry["retry_at"] = entries[existing_index]["retry_at"]
+        entries[existing_index] = entry
+    return entries[-CANDIDATE_POOL_COOLDOWN_MAX_ENTRIES:]
+
+
+def wake_candidate_pool_cooldowns(
+    payload: Mapping[str, Any] | None,
+    *,
+    domain_event_kind: str,
+    now: datetime,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Remove cooldowns awakened by a completed domain state change."""
+
+    remaining: list[dict[str, Any]] = []
+    woken: list[dict[str, Any]] = []
+    for entry in candidate_pool_cooldown_entries(payload, now=now):
+        if str(domain_event_kind) in set(entry.get("wake_domains") or ()):
+            woken.append(entry)
+        else:
+            remaining.append(entry)
+    return remaining, woken
 
 
 @dataclass(frozen=True, slots=True)
@@ -766,6 +941,9 @@ __all__ = [
     "ARENA_CYCLE_ACTION_SLOTS",
     "ACTION_COMPLETION_SOURCE_CANDIDATE_EXHAUSTED",
     "ACTION_COMPLETION_SOURCE_MAINTENANCE_COMMIT",
+    "CANDIDATE_POOL_COOLDOWN",
+    "CANDIDATE_POOL_COOLDOWN_MAX_ENTRIES",
+    "CANDIDATE_POOL_COOLDOWN_PAYLOAD_KEY",
     "NO_ACTION_CYCLE_KIND",
     "ORDINARY_ACTION_KINDS",
     "ORDINARY_CYCLE_ACTION_SLOTS",
@@ -782,8 +960,11 @@ __all__ = [
     "append_durable_cycle_action_locked",
     "classify_maintenance_reason",
     "classify_maintenance_progress",
+    "candidate_pool_cooldown_entries",
+    "candidate_pool_cooldown_until",
     "cycle_action_limit",
     "cycle_retry_due_at",
+    "merge_candidate_pool_cooldowns",
     "next_ordinary_slot_due_at",
     "ordinary_slot_interval_minutes",
     "finish_cycle",
@@ -794,4 +975,5 @@ __all__ = [
     "record_durable_attempts_locked",
     "start_durable_cycle",
     "close_durable_cycle",
+    "wake_candidate_pool_cooldowns",
 ]

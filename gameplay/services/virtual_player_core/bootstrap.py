@@ -56,6 +56,7 @@ from .reference_snapshots import (
 )
 from .runtime_helpers import range_value
 from .strategy import BotDevelopmentPlan, development_plan_catalog_v1, generate_development_plan
+from .troop_capacity import virtual_troop_capacity_for_prestige_band
 
 logger = logging.getLogger(__name__)
 
@@ -137,6 +138,7 @@ class V2BootstrapPlan:
     band_upper_exclusive: int | None
     bootstrap_mode: str
     projection: BotProjectionConfig
+    virtual_troop_capacity: int
     development_plan: BotDevelopmentPlan
     blueprint: BootstrapBlueprint
 
@@ -162,6 +164,14 @@ class V2BootstrapPlan:
                 raise V2BootstrapError(f"{field} must be a positive integer")
         if not self.policy_checksum:
             raise V2BootstrapError("policy_checksum must not be empty")
+        if (
+            isinstance(self.virtual_troop_capacity, bool)
+            or not isinstance(self.virtual_troop_capacity, int)
+            or self.virtual_troop_capacity < 0
+        ):
+            raise V2BootstrapError("virtual_troop_capacity must be a non-negative integer")
+        if sum(self.blueprint.assets.troop_counts.values()) > self.virtual_troop_capacity:
+            raise V2BootstrapError("bootstrap troop assets exceed the prestige-band capacity")
         if self.development_plan.schema_version != self.plan_schema_version:
             raise V2BootstrapError("development plan schema does not match bootstrap plan")
         if self.blueprint.prestige_band != self.prestige_band:
@@ -446,6 +456,12 @@ def build_virtual_player_v2_bootstrap_plan(
         band_lower_inclusive=band.lower_inclusive,
         band_upper_exclusive=band.upper_exclusive,
     )
+    virtual_troop_capacity = virtual_troop_capacity_for_prestige_band(
+        policy_payload=release.payload,
+        prestige_band=prestige_band,
+    )
+    if int(projection.troop_count) > virtual_troop_capacity:
+        raise V2BootstrapError("starter snapshot troop total exceeds the prestige-band capacity")
     legacy_config = load_virtual_player_config()
     try:
         catalog = load_bootstrap_catalog(legacy_config)
@@ -484,6 +500,7 @@ def build_virtual_player_v2_bootstrap_plan(
         band_upper_exclusive=band.upper_exclusive,
         bootstrap_mode=V2_BOOTSTRAP_MODE_POLICY_2_DEFAULT,
         projection=projection,
+        virtual_troop_capacity=virtual_troop_capacity,
         development_plan=development_plan,
         blueprint=blueprint,
     )
@@ -546,6 +563,7 @@ def _materialize_virtual_player_v2(
         account_created_at=account_created_at,
         now=now,
         growth_stage=growth_stage,
+        virtual_troop_capacity=plan.virtual_troop_capacity,
     )
 
     lifecycle_rng = random.Random(f"lifecycle:{plan.growth_seed}")
