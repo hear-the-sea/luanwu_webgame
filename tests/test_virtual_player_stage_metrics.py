@@ -5,6 +5,10 @@ import pytest
 from gameplay.services.virtual_player_core.stage_metrics import (
     STAGE_ACTION_DOMAIN_WRITES,
     STAGE_DUE_BACKLOG_SELECTION,
+    STAGE_RECOVERY_STATE,
+    STAGE_SAFETY_ATTEMPT_FINISH,
+    STAGE_SAFETY_ATTEMPT_START,
+    STAGE_SAFETY_TASK_WRAPUP,
     capture_maintenance_stage_metrics,
     current_maintenance_stage_metrics,
     record_maintenance_stage,
@@ -64,3 +68,21 @@ def test_stage_metrics_report_exclusive_duration_for_nested_stages(monkeypatch) 
     assert writes.duration_ms == 2_000
     assert selection.inclusive_duration_ms == 10_000
     assert selection.duration_ms == 8_000
+
+
+def test_stage_metrics_support_safety_and_recovery_substages() -> None:
+    with capture_maintenance_stage_metrics() as metrics:
+        with record_maintenance_stage(STAGE_SAFETY_TASK_WRAPUP):
+            with record_maintenance_stage(STAGE_SAFETY_ATTEMPT_START):
+                pass
+            with record_maintenance_stage(STAGE_SAFETY_ATTEMPT_FINISH):
+                pass
+            with record_maintenance_stage(STAGE_RECOVERY_STATE):
+                pass
+
+    assert set(metrics.observations) == {
+        STAGE_RECOVERY_STATE,
+        STAGE_SAFETY_ATTEMPT_FINISH,
+        STAGE_SAFETY_ATTEMPT_START,
+        STAGE_SAFETY_TASK_WRAPUP,
+    }

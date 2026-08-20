@@ -33,6 +33,7 @@ from gameplay.services.arena.virtual_reserve_references import (
     active_arena_population_funnel_snapshots,
     median_entry,
 )
+from gameplay.services.arena.virtual_reserve_references import reference_snapshots as build_reference_snapshots
 from gameplay.services.arena.virtual_reserve_training_policy import (
     demand_supply_prestige_band,
     demand_supply_prestige_band_priority,
@@ -119,6 +120,7 @@ class _ArenaHandoffDemandContext:
     target_guest_count: int
     target_team_power: int
     max_lineup_size: int
+    reference_snapshots: tuple[dict[str, Any], ...]
     remaining: int
 
 
@@ -348,6 +350,10 @@ def arena_handoff_supply_by_cell(
     # one concrete demand; this prevents one profile from satisfying several
     # aggregated cell requests.
     demand_contexts: dict[tuple[str, str], list[_ArenaHandoffDemandContext]] = {key: [] for key in arena_demands}
+    # A candidate can only match demand contexts from the same region. Keep
+    # the original cell-indexed collection for slot identity, while avoiding
+    # a full cell scan for every candidate profile.
+    contexts_by_region: dict[str, list[tuple[tuple[str, str], int, _ArenaHandoffDemandContext]]] = defaultdict(list)
     active_demands = list(
         ArenaVirtualDemand.objects.filter(status=ArenaVirtualDemand.Status.ACTIVE)
         .select_related("tournament", "coop_event")
@@ -456,19 +462,23 @@ def arena_handoff_supply_by_cell(
             if coop_event is None:
                 continue
             max_lineup_size = max(1, int(coop_event.guest_limit_per_entry))
-        demand_contexts[cell].append(
-            _ArenaHandoffDemandContext(
-                demand=demand,
-                cell=cell,
-                supply_prestige_band_priority=allowed_bands,
-                mode=mode,
-                event_id=int(demand.tournament_id or demand.coop_event_id or 0),
-                target_guest_count=int(demand.target_guest_count),
-                target_team_power=int(demand.target_team_power),
-                max_lineup_size=max_lineup_size,
-                remaining=remaining,
-            )
+        context = _ArenaHandoffDemandContext(
+            demand=demand,
+            cell=cell,
+            supply_prestige_band_priority=allowed_bands,
+            mode=mode,
+            event_id=int(demand.tournament_id or demand.coop_event_id or 0),
+            target_guest_count=int(demand.target_guest_count),
+            target_team_power=int(demand.target_team_power),
+            max_lineup_size=max_lineup_size,
+            reference_snapshots=tuple(
+                build_reference_snapshots(reference_entry)[: max(0, int(demand.target_guest_count))]
+            ),
+            remaining=remaining,
         )
+        context_index = len(demand_contexts[cell])
+        demand_contexts[cell].append(context)
+        contexts_by_region[cell[0]].append((cell, context_index, context))
 
     # Import lazily to avoid the population_runtime -> arena_population import
     # cycle during Django app initialization.
@@ -528,15 +538,12 @@ def arena_handoff_supply_by_cell(
             continue
         profile_cell = (str(profile.manor.region), str(profile_band))
         matching_contexts: list[tuple[int, tuple[str, str], int, _ArenaHandoffDemandContext]] = []
-        for cell, contexts in demand_contexts.items():
-            if cell[0] != profile_cell[0]:
+        for cell, context_index, context in contexts_by_region.get(profile_cell[0], ()):
+            try:
+                priority_index = context.supply_prestige_band_priority.index(profile_cell[1])
+            except ValueError:
                 continue
-            for context_index, context in enumerate(contexts):
-                try:
-                    priority_index = context.supply_prestige_band_priority.index(profile_cell[1])
-                except ValueError:
-                    continue
-                matching_contexts.append((priority_index, cell, context_index, context))
+            matching_contexts.append((priority_index, cell, context_index, context))
         if matching_contexts:
             edges: list[int] = []
             for _priority_index, cell, context_index, context in sorted(
@@ -546,6 +553,7 @@ def arena_handoff_supply_by_cell(
                 assessment = assess_arena_reserve_candidate(
                     context.demand,
                     profile,
+                    reference_snapshots_override=context.reference_snapshots,
                 )
                 if assessment.disposition is ArenaReserveCandidateDisposition.READY or (
                     training_admission_allowed and assessment.disposition is ArenaReserveCandidateDisposition.TRAINING
@@ -562,12 +570,11 @@ def arena_handoff_supply_by_cell(
             remaining_by_cell[profile_cell] -= 1
             fallback_supply[profile_cell] += 1
 
+    # Each matched slot belongs to exactly one cell; aggregate once instead
+    # of rescanning every slot for every output cell.
+    matched_by_cell: Counter[tuple[str, str]] = Counter(slot_records[slot_id][0] for slot_id in matched_slot_profiles)
     for key in handoff_supply:
-        matched = sum(
-            1
-            for slot_id, (cell, _context_index) in enumerate(slot_records)
-            if cell == key and slot_id in matched_slot_profiles
-        )
+        matched = matched_by_cell[key]
         handoff_supply[key] = ArenaHandoffSupply(
             available=min(
                 max(0, int(arena_demands[key])),

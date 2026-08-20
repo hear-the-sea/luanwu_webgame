@@ -494,10 +494,11 @@ def guild_tech_daily_production(self):
     采用 Fan-out 模式分发任务，避免单次任务超时
     """
     try:
-        # 获取所有活跃帮会ID
-        guild_ids = list(Guild.objects.filter(is_active=True).values_list("id", flat=True))
         dispatched_count = 0
 
+        # Stream IDs in bounded chunks so a large guild population does not
+        # remain resident in the master task's Python heap.
+        guild_ids = Guild.objects.filter(is_active=True).values_list("id", flat=True).iterator(chunk_size=500)
         for guild_id in guild_ids:
             dispatched = celery_utils.safe_apply_async(
                 process_single_guild_production,

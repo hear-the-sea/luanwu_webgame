@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta
 from typing import Any
 
 from django.db import IntegrityError, transaction
@@ -90,10 +91,14 @@ def get_troop_donation_rate(troop_key: str) -> int:
 
 def get_today_troop_contribution(member: GuildMember) -> int:
     """根据今日护院捐赠日志统计已获得贡献。"""
+    today = timezone.localdate()
+    today_start = timezone.make_aware(datetime.combine(today, datetime.min.time()))
+    tomorrow_start = timezone.make_aware(datetime.combine(today + timedelta(days=1), datetime.min.time()))
     rows = (
         GuildTroopDonationLog.objects.filter(
             member=member,
-            donated_at__date=timezone.localdate(),
+            donated_at__gte=today_start,
+            donated_at__lt=tomorrow_start,
         )
         .values("troop_template__key")
         .annotate(total_quantity=Sum("quantity"))

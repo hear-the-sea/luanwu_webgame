@@ -19,6 +19,7 @@ from gameplay.models import (
     BotMaintenanceCompletionEvent,
     BotMaintenanceCycle,
     BotMaintenanceExecution,
+    BotPolicyRelease,
     BotProfile,
     BotRuntimeRoutingState,
     BotSafetyMetricEvent,
@@ -33,7 +34,13 @@ from gameplay.models import (
     TroopRecruitment,
 )
 from gameplay.services.recruitment.recruitment import get_troop_template
-from gameplay.services.virtual_player_core import bootstrap, maintenance, maintenance_completion, maintenance_resources
+from gameplay.services.virtual_player_core import (
+    bootstrap,
+    maintenance,
+    maintenance_completion,
+    maintenance_resources,
+    profile_store,
+)
 from gameplay.services.virtual_player_core.archetype_pacing import resolve_archetype_pacing
 from gameplay.services.virtual_player_core.contracts import (
     AcceleratedGrowthOutcome,
@@ -569,6 +576,142 @@ def test_resource_blocked_minimum_evaluation_rotates_to_the_other_kind(
         building_kind: 1,
         technology_kind: 1,
     }
+
+
+@pytest.mark.django_db
+def test_scheduled_profile_cycle_lock_reuses_joined_cycle_row(active_v2_profile) -> None:
+    cycle = maintenance._open_policy2_scheduled_cycle(active_v2_profile.id, now=FIXED_NOW)
+
+    with transaction.atomic():
+        with CaptureQueriesContext(connection) as captured:
+            locked_profile, locked_cycle = profile_store.lock_maintained_profile_with_scheduled_cycle(
+                active_v2_profile.id,
+                nowait=True,
+                include_arena_reserve_guard=True,
+                open_cycle_known=True,
+            )
+
+    assert locked_profile is not None
+    assert locked_cycle is not None
+    assert locked_profile.id == active_v2_profile.id
+    assert locked_cycle.id == cycle.id
+    assert getattr(locked_profile, "maintenance_has_arena_reserve") is False
+    assert getattr(locked_profile, "maintenance_has_arena_training") is False
+    assert sum(query["sql"].lstrip().upper().startswith("SELECT ") for query in captured.captured_queries) == 1
+
+
+@pytest.mark.django_db
+def test_scheduled_profile_cycle_lock_keeps_latest_cycle_over_older_open_cycle(active_v2_profile) -> None:
+    older_cycle = maintenance._open_policy2_scheduled_cycle(active_v2_profile.id, now=FIXED_NOW)
+    older_cycle.status = BotMaintenanceCycle.Status.COMPLETED
+    older_cycle.completed_at = FIXED_NOW
+    older_cycle.save(update_fields=["status", "completed_at", "updated_at"])
+    latest_cycle = maintenance._open_policy2_scheduled_cycle(
+        active_v2_profile.id,
+        now=FIXED_NOW + timedelta(minutes=1),
+    )
+    latest_cycle.status = BotMaintenanceCycle.Status.COMPLETED
+    latest_cycle.completed_at = FIXED_NOW + timedelta(minutes=1)
+    latest_cycle.save(update_fields=["status", "completed_at", "updated_at"])
+    older_cycle.status = BotMaintenanceCycle.Status.OPEN
+    older_cycle.completed_at = None
+    older_cycle.save(update_fields=["status", "completed_at", "updated_at"])
+
+    with transaction.atomic():
+        locked_profile, locked_cycle = profile_store.lock_maintained_profile_with_scheduled_cycle(
+            active_v2_profile.id,
+            nowait=True,
+            include_arena_reserve_guard=True,
+            open_cycle_known=True,
+        )
+
+    assert locked_profile is not None
+    assert locked_cycle is not None
+    assert locked_cycle.id == latest_cycle.id
+    assert locked_cycle.status == BotMaintenanceCycle.Status.COMPLETED
+
+
+@pytest.mark.django_db
+def test_scheduled_profile_cycle_lock_skips_stale_empty_probe(active_v2_profile) -> None:
+    with transaction.atomic():
+        with CaptureQueriesContext(connection) as captured:
+            locked_profile, locked_cycle = profile_store.lock_maintained_profile_with_scheduled_cycle(
+                active_v2_profile.id,
+                nowait=True,
+                include_arena_reserve_guard=True,
+                cycle_known_absent=True,
+            )
+
+    assert locked_profile is not None
+    assert locked_cycle is None
+    assert sum(query["sql"].lstrip().upper().startswith("SELECT ") for query in captured.captured_queries) == 2
+
+
+@pytest.mark.django_db
+def test_scheduled_profile_cycle_lock_can_defer_training_probe_for_unreserved_profile(
+    active_v2_profile,
+    monkeypatch,
+) -> None:
+    plan = _scheduled_plan(active_v2_profile)
+
+    def _unexpected_training_probe(**_kwargs):
+        raise AssertionError("an unreserved profile must not probe Arena training")
+
+    monkeypatch.setattr(maintenance, "is_virtual_profile_arena_training", _unexpected_training_probe)
+    with transaction.atomic():
+        locked_profile, locked_cycle = profile_store.lock_maintained_profile_with_scheduled_cycle(
+            active_v2_profile.id,
+            nowait=True,
+            include_arena_reserve_guard=True,
+            include_arena_training_guard=False,
+            cycle_known_absent=True,
+        )
+        assert locked_profile is not None
+        assert locked_cycle is None
+        assert locked_profile.maintenance_has_arena_reserve is False
+        assert not hasattr(locked_profile, "maintenance_has_arena_training")
+        assert maintenance._assert_locked_profile_matches_plan(locked_profile, plan) is None
+
+
+@pytest.mark.django_db
+def test_scheduled_profile_cycle_lock_rechecks_training_for_reserved_profile(active_v2_profile) -> None:
+    tournament = ArenaTournament.objects.create(
+        status=ArenaTournament.Status.RECRUITING,
+        player_limit=2,
+    )
+    demand = ArenaVirtualDemand.objects.create(
+        tournament=tournament,
+        target_guest_count=1,
+        target_team_power=100,
+        missing_entry_count=1,
+        reserve_target_count=1,
+        warm_target_count=1,
+        max_reserve_target_count=1,
+    )
+    ArenaVirtualReserveMember.objects.create(
+        demand=demand,
+        profile=active_v2_profile,
+        state=ArenaVirtualReserveMember.State.TRAINING,
+    )
+    plan = _scheduled_plan(active_v2_profile)
+
+    with transaction.atomic():
+        locked_profile, locked_cycle = profile_store.lock_maintained_profile_with_scheduled_cycle(
+            active_v2_profile.id,
+            nowait=True,
+            include_arena_reserve_guard=True,
+            include_arena_training_guard=False,
+            cycle_known_absent=True,
+        )
+        assert locked_profile is not None
+        assert locked_cycle is None
+        assert locked_profile.maintenance_has_arena_reserve is True
+        assert not hasattr(locked_profile, "maintenance_has_arena_training")
+        with pytest.raises(maintenance._V2MaintenanceOutcomeError) as exc_info:
+            maintenance._assert_locked_profile_matches_plan(locked_profile, plan)
+
+    assert exc_info.value.outcome is MaintenanceOutcome.INELIGIBLE
+    assert exc_info.value.reason == "arena_training_active"
 
 
 @pytest.mark.django_db
@@ -2634,6 +2777,41 @@ def test_v2_training_commits_domain_result_budget_sequence_and_schedule_atomical
     if plan.intent.strength_after != plan.intent.strength_before:
         assert active_v2_profile.last_strength_increase_at == FIXED_NOW
         assert active_v2_profile.strength_budget_entries == []
+
+
+@pytest.mark.django_db
+def test_v2_fast_batch_revalidation_reuses_locked_strength_aggregates(
+    active_v2_profile,
+    released_v2_policy,
+    permissive_reference,
+    monkeypatch,
+) -> None:
+    _isolate_training_candidates(monkeypatch)
+    planning_snapshot = maintenance._scheduled_planning_snapshots(
+        (active_v2_profile,),
+        planned_at=FIXED_NOW,
+    )[active_v2_profile.id]
+    plan = maintenance.build_virtual_player_v2_maintenance_plan(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        now=FIXED_NOW,
+        _planning_snapshot=planning_snapshot,
+    )
+    assert plan.planning_snapshot is not None
+    assert plan.resource_production_deltas == ()
+    assert plan.forced_settlement_decision.combined_units == 0
+
+    def _unexpected_strength_query(*_args, **_kwargs):
+        raise AssertionError("fast batch revalidation must use the locked Manor aggregates")
+
+    monkeypatch.setattr(maintenance, "load_manor_strength_summary", _unexpected_strength_query)
+
+    result = maintenance.execute_virtual_player_v2_maintenance_plan(
+        plan,
+        _policy_release=BotPolicyRelease.objects.get(version=released_v2_policy.version),
+    )
+
+    assert result.outcome in {MaintenanceOutcome.APPLIED, MaintenanceOutcome.NO_ACTION}
 
 
 @pytest.mark.django_db

@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import pytest
 from django.db import DatabaseError, IntegrityError, connection, transaction
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from gameplay.models import (
@@ -1016,6 +1017,47 @@ def test_replenishment_initializes_roster_targets_even_during_retry_backoff(trai
     assert result.creation_needed == 0
     assert training_member.roster_target_count is not None
     assert training_member.roster_target_count >= training_member.demand.target_guest_count
+
+
+@pytest.mark.django_db
+def test_roster_target_initialization_batches_guest_counts_and_writes(training_member):
+    second_member = ArenaVirtualReserveMember.objects.create(
+        demand=training_member.demand,
+        profile=_create_bot_profile(
+            "reserve_roster_target_batching",
+            guest_stats=[(150, 150, 25), (160, 160, 30)],
+        ),
+        state=ArenaVirtualReserveMember.State.TRAINING,
+    )
+
+    with CaptureQueriesContext(connection) as captured:
+        initialized = virtual_reserve_pool._ensure_roster_targets_for_demand(training_member.demand)
+
+    assert initialized == 2
+    selects = [query for query in captured if query["sql"].lstrip().upper().startswith("SELECT")]
+    updates = [query for query in captured if query["sql"].lstrip().upper().startswith("UPDATE")]
+    assert len(selects) == 1
+    assert len(updates) == 1
+
+    training_member.refresh_from_db()
+    second_member.refresh_from_db()
+    assert training_member.roster_target_count >= training_member.demand.target_guest_count
+    assert second_member.roster_target_count >= second_member.demand.target_guest_count
+
+
+@pytest.mark.django_db
+def test_reserve_candidate_context_reuses_reference_entries(training_member):
+    demand = training_member.demand
+    context = virtual_reserve_pool._ArenaReserveCandidateContext()
+
+    with CaptureQueriesContext(connection) as captured:
+        target_cell = context.target_population_cell_for(demand)
+        snapshots = context.reference_snapshots_for(demand)
+
+    selects = [query for query in captured if query["sql"].lstrip().upper().startswith("SELECT")]
+    assert target_cell is not None
+    assert len(snapshots) == demand.target_guest_count
+    assert len(selects) == 2
 
 
 @pytest.mark.django_db

@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 
 from gameplay.models import (
     VirtualPlayerGrowthControlPointer,
@@ -20,8 +22,11 @@ from gameplay.services.virtual_player_core.growth_control import (
     configured_growth_control_policy,
     effective_growth_control_snapshot,
     growth_control_digest_for_route,
+    growth_control_reference_selection,
     refresh_growth_control_snapshots,
 )
+from gameplay.services.virtual_player_core.projection import CANONICAL_STRENGTH_COMPONENTS, StrengthSummary
+from gameplay.services.virtual_player_core.random_context import RandomContext
 
 
 def test_growth_control_aggregates_cells_and_clamps_daily_change() -> None:
@@ -140,6 +145,78 @@ def test_growth_control_refresh_keeps_prior_digest_immutable() -> None:
     assert current is not None
     assert current.snapshot_digest == second.snapshot_digest
     assert growth_control_digest_for_route(region="east", prestige_band="newbie", now=now) == (second.snapshot_digest)
+
+
+@pytest.mark.django_db
+def test_effective_growth_control_snapshots_reads_shared_pointer_once() -> None:
+    now = datetime(2026, 8, 9, 8, 0, tzinfo=UTC)
+    refresh_growth_control_snapshots(
+        now=now,
+        samples=tuple(
+            RealPlayerGrowthSample(region, "newbie", 100 + index) for region in ("east", "west") for index in range(5)
+        ),
+    )
+
+    with CaptureQueriesContext(connection) as single_route_captured:
+        single_route_snapshots = tuple(
+            effective_growth_control_snapshot(region=region, prestige_band="newbie", now=now)
+            for region in ("east", "west")
+        )
+
+    with CaptureQueriesContext(connection) as captured:
+        snapshots = growth_control.effective_growth_control_snapshots(
+            routes=(
+                ("east", "newbie"),
+                ("west", "newbie"),
+                ("missing", "newbie"),
+            ),
+            now=now,
+        )
+
+    assert len(single_route_captured) == 4
+    assert all(snapshot is not None for snapshot in single_route_snapshots)
+    assert len(captured) == 2
+    assert snapshots[("east", "newbie")] is not None
+    assert snapshots[("west", "newbie")] is not None
+    assert snapshots[("missing", "newbie")] is None
+
+
+@pytest.mark.django_db
+def test_growth_control_reference_selection_uses_preloaded_snapshot_without_query() -> None:
+    now = datetime(2026, 8, 9, 8, 0, tzinfo=UTC)
+    refresh_growth_control_snapshots(
+        now=now,
+        samples=tuple(RealPlayerGrowthSample("east", "newbie", 100 + index) for index in range(5)),
+    )
+    snapshot = VirtualPlayerGrowthControlSnapshot.objects.get(region="east", prestige_band="newbie")
+    manor_strength = StrengthSummary(
+        composite=100,
+        components={key: 10 for key in CANONICAL_STRENGTH_COMPONENTS},
+    )
+    context = RandomContext(
+        rng_version=1,
+        growth_seed=1,
+        engine_version=2,
+        plan_schema_version=1,
+        policy_version=2,
+        maintenance_sequence=0,
+    )
+
+    with CaptureQueriesContext(connection) as captured:
+        snapshot_version, selection, digest = growth_control_reference_selection(
+            manor_strength=manor_strength,
+            context=context,
+            region="east",
+            prestige_band="newbie",
+            now=now,
+            control_snapshot=snapshot,
+            control_snapshot_preloaded=True,
+        )
+
+    assert snapshot_version == growth_control.CONTROL_POLICY_VERSION
+    assert selection.anchor is not None
+    assert digest == snapshot.snapshot_digest
+    assert len(captured) == 0
 
 
 @pytest.mark.django_db

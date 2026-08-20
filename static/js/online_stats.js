@@ -23,6 +23,8 @@
     let stabilityTimer = null;
     let disposed = false;
     let disconnected = false;
+    let lastOnlineCount = null;
+    let lastTotalCount = null;
 
     function clearReconnectTimer() {
         if (reconnectTimer === null) return;
@@ -111,11 +113,19 @@
         const totalCountElement = document.getElementById('total-user-count');
 
         if (onlineCountElement && data.online_count !== undefined) {
-            onlineCountElement.textContent = data.online_count;
+            const onlineCount = String(data.online_count);
+            if (lastOnlineCount !== onlineCount || String(onlineCountElement.textContent) !== onlineCount) {
+                onlineCountElement.textContent = data.online_count;
+                lastOnlineCount = onlineCount;
+            }
         }
 
         if (totalCountElement && data.total_count !== undefined) {
-            totalCountElement.textContent = data.total_count;
+            const totalCount = String(data.total_count);
+            if (lastTotalCount !== totalCount || String(totalCountElement.textContent) !== totalCount) {
+                totalCountElement.textContent = data.total_count;
+                lastTotalCount = totalCount;
+            }
         }
     }
 

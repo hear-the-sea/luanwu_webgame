@@ -160,7 +160,7 @@ def test_replenish_prefers_primary_band_before_lower_id_fallback(monkeypatch, pr
     monkeypatch.setattr(
         virtual_reserve_pool,
         "assess_arena_reserve_candidate",
-        lambda current_demand, _profile: _ready_assessment(current_demand),
+        lambda current_demand, _profile, **_kwargs: _ready_assessment(current_demand),
     )
 
     result = virtual_reserve_pool.replenish_virtual_reserve(demand.id, now=timezone.now())
@@ -177,7 +177,7 @@ def test_replenish_falls_back_to_next_configured_band(monkeypatch, priority_runt
     monkeypatch.setattr(
         virtual_reserve_pool,
         "assess_arena_reserve_candidate",
-        lambda current_demand, _profile: _ready_assessment(current_demand),
+        lambda current_demand, _profile, **_kwargs: _ready_assessment(current_demand),
     )
 
     result = virtual_reserve_pool.replenish_virtual_reserve(demand.id, now=timezone.now())
@@ -193,7 +193,7 @@ def test_replenish_does_not_lease_a_band_outside_the_snapshot(monkeypatch, prior
     monkeypatch.setattr(
         virtual_reserve_pool,
         "assess_arena_reserve_candidate",
-        lambda current_demand, _profile: _ready_assessment(current_demand),
+        lambda current_demand, _profile, **_kwargs: _ready_assessment(current_demand),
     )
 
     virtual_reserve_pool.replenish_virtual_reserve(demand.id, now=timezone.now())
@@ -215,7 +215,7 @@ def test_population_handoff_counts_a_priority_fallback_for_the_primary_cell(monk
     monkeypatch.setattr(
         virtual_reserve_pool,
         "assess_arena_reserve_candidate",
-        lambda current_demand, _profile: _ready_assessment(current_demand),
+        lambda current_demand, _profile, **_kwargs: _ready_assessment(current_demand),
     )
 
     supply = arena_population.arena_handoff_supply_by_cell(

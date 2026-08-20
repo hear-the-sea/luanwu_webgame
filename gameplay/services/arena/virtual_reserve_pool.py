@@ -11,17 +11,13 @@ from typing import Any, cast
 from uuid import UUID, uuid4
 
 from django.db import DatabaseError, transaction
-from django.db.models import F, Prefetch, Q, Window
+from django.db.models import Count, F, Prefetch, Q, Window
 from django.db.models.functions import RowNumber
 from django.utils import timezone
 
 from gameplay.constants import BUILDING_MAX_LEVELS, BuildingKeys
 from gameplay.models import (
-    ArenaCoopEntry,
-    ArenaCoopEvent,
-    ArenaEntry,
     ArenaReserveTrainingAssignment,
-    ArenaTournament,
     ArenaVirtualDemand,
     ArenaVirtualReserveMember,
     BotMaintenanceAttempt,
@@ -44,7 +40,6 @@ from gameplay.services.virtual_player_core.population_runtime import (
     get_virtual_player_capacity,
     reactivate_retired_virtual_player_with_capacity,
     reactivate_virtual_player_profile,
-    virtual_player_prestige_bands,
 )
 from gameplay.services.virtual_player_core.recovery import (
     RecoveryFailureClass,
@@ -105,7 +100,11 @@ from .virtual_reserve_policy import (
     reserve_warm_target,
     virtual_roster_target_count,
 )
-from .virtual_reserve_references import median_entry, reference_snapshots_for_demand
+from .virtual_reserve_read_models import ArenaReserveCandidateContext as _ArenaReserveCandidateContext
+from .virtual_reserve_read_models import occupied_arena_manor_ids as _occupied_arena_manor_ids
+from .virtual_reserve_read_models import supply_band_priority_for_demand as _supply_band_priority_for_demand
+from .virtual_reserve_read_models import target_population_cell_for_demand as _target_population_cell_for_demand
+from .virtual_reserve_references import reference_snapshots_for_demand
 from .virtual_reserve_training_policy import demand_supply_prestige_band_priority, demand_uses_arena_training_policy
 
 logger = logging.getLogger(__name__)
@@ -576,16 +575,24 @@ def _ensure_roster_targets_for_demand(demand: ArenaVirtualDemand) -> int:
 
     members = list(
         demand.reserve_members.filter(roster_target_count__isnull=True)
-        .select_related("profile", "profile__manor")
+        .annotate(current_guest_count=Count("profile__manor__guests"))
         .order_by("id")
     )
+    if not members:
+        return 0
+    updated_at = timezone.now()
     for member in members:
         member.roster_target_count = _roster_target_for_member(
             demand,
             profile_id=int(member.profile_id),
-            current_guest_count=member.profile.manor.guests.count(),
+            current_guest_count=int(member.current_guest_count),
         )
-        member.save(update_fields=["roster_target_count", "updated_at"])
+        member.updated_at = updated_at
+    ArenaVirtualReserveMember.objects.bulk_update(
+        members,
+        ["roster_target_count", "updated_at"],
+        batch_size=100,
+    )
     return len(members)
 
 
@@ -593,8 +600,13 @@ def _growth_target_for_demand(
     demand: ArenaVirtualDemand,
     *,
     roster_target_count: int | None = None,
+    reference_snapshots_override: Sequence[dict[str, Any]] | None = None,
 ) -> ArenaVirtualGrowthTarget:
-    snapshots = reference_snapshots_for_demand(demand)
+    snapshots = (
+        list(reference_snapshots_override)
+        if reference_snapshots_override is not None
+        else reference_snapshots_for_demand(demand)
+    )
     guest_levels: list[int] = []
     guest_rarities: list[str] = []
     for snapshot in snapshots:
@@ -1227,13 +1239,18 @@ def reevaluate_existing_members(
     *,
     now,
     preserve_training: bool = False,
+    target_cell: tuple[str, str] | None = None,
 ) -> None:
     if demand.tournament_id is None and demand.coop_event_id is None:
         return
 
     policy_scoped_supply = demand_uses_arena_training_policy(demand)
-    target_cell = _target_population_cell_for_demand(demand) if policy_scoped_supply else None
-    supply_band_priority = _supply_band_priority_for_demand(demand, target_cell=target_cell)
+    resolved_target_cell = (
+        target_cell
+        if target_cell is not None
+        else (_target_population_cell_for_demand(demand) if policy_scoped_supply else None)
+    )
+    supply_band_priority = _supply_band_priority_for_demand(demand, target_cell=resolved_target_cell)
     members = list(
         demand.reserve_members.select_for_update().select_related("profile", "profile__manor").order_by("id")
     )
@@ -1243,11 +1260,11 @@ def reevaluate_existing_members(
         if preserve_training and member.state == ArenaVirtualReserveMember.State.TRAINING:
             continue
         if policy_scoped_supply and (
-            target_cell is None
+            resolved_target_cell is None
             or supply_band_priority is None
             or not _profile_matches_population_supply(
                 member.profile,
-                target_region=target_cell[0],
+                target_region=resolved_target_cell[0],
                 allowed_bands=supply_band_priority,
             )
         ):
@@ -1350,29 +1367,6 @@ def reevaluate_existing_members(
             record_demand_progress_locked(demand, now=now)
 
 
-def _occupied_arena_manor_ids() -> set[int]:
-    occupied = set(
-        ArenaEntry.objects.filter(
-            status=ArenaEntry.Status.REGISTERED,
-            tournament__status__in=[
-                ArenaTournament.Status.RECRUITING,
-                ArenaTournament.Status.RUNNING,
-            ],
-        ).values_list("manor_id", flat=True)
-    )
-    occupied.update(
-        ArenaCoopEntry.objects.filter(
-            status=ArenaCoopEntry.Status.REGISTERED,
-            event__status__in=[
-                ArenaCoopEvent.Status.RECRUITING,
-                ArenaCoopEvent.Status.PREPARING,
-                ArenaCoopEvent.Status.RUNNING,
-            ],
-        ).values_list("manor_id", flat=True)
-    )
-    return occupied
-
-
 def _profile_matches_population_supply(
     profile: BotProfile,
     *,
@@ -1387,27 +1381,22 @@ def _candidate_queryset(
     *,
     engine_version: int = 2,
     target_cell: tuple[str, str] | None = None,
+    occupied_manor_ids: Collection[int] | None = None,
 ):
+    resolved_occupied_manor_ids = (
+        {int(manor_id) for manor_id in occupied_manor_ids}
+        if occupied_manor_ids is not None
+        else _occupied_arena_manor_ids()
+    )
     queryset = (
         BotProfile.objects.filter(
             state__in=list(states),
             engine_version=int(engine_version),
             arena_virtual_reserve__isnull=True,
         )
-        .exclude(manor_id__in=_occupied_arena_manor_ids())
+        .exclude(manor_id__in=resolved_occupied_manor_ids)
         .select_related("manor")
-        .prefetch_related(
-            Prefetch(
-                "manor__guests",
-                queryset=Guest.objects.filter(status=GuestStatus.IDLE).select_related("template").order_by("id"),
-                to_attr="arena_idle_guests",
-            ),
-            Prefetch(
-                "manor__guests",
-                queryset=Guest.objects.only("id", "manor_id", "template_id").order_by("id"),
-                to_attr="arena_all_guests",
-            ),
-        )
+        .prefetch_related(*_arena_candidate_guest_prefetches())
         .order_by("id")
     )
     if int(engine_version) == 2:
@@ -1419,6 +1408,21 @@ def _candidate_queryset(
             manor__region=target_region,
         )
     return with_arena_reconciliation_state(queryset)
+
+
+def _arena_candidate_guest_prefetches() -> tuple[Prefetch, Prefetch]:
+    return (
+        Prefetch(
+            "manor__guests",
+            queryset=Guest.objects.filter(status=GuestStatus.IDLE).select_related("template").order_by("id"),
+            to_attr="arena_idle_guests",
+        ),
+        Prefetch(
+            "manor__guests",
+            queryset=Guest.objects.only("id", "manor_id", "template_id").order_by("id"),
+            to_attr="arena_all_guests",
+        ),
+    )
 
 
 def _evaluate_profile_for_demand(
@@ -1449,6 +1453,9 @@ def _evaluate_profile_for_demand(
 def assess_arena_reserve_candidate(
     demand: ArenaVirtualDemand,
     profile: BotProfile,
+    *,
+    candidate_context: _ArenaReserveCandidateContext | None = None,
+    reference_snapshots_override: Sequence[dict[str, Any]] | None = None,
 ) -> ArenaReserveCandidateAssessment:
     """Classify a profile exactly as the reserve writer will before leasing it.
 
@@ -1479,9 +1486,14 @@ def assess_arena_reserve_candidate(
             reachability_reason="no_valid_lineup",
         )
 
+    if candidate_context is not None and reference_snapshots_override is not None:
+        raise ValueError("candidate_context and reference_snapshots_override are mutually exclusive")
+    if candidate_context is not None:
+        reference_snapshots_override = candidate_context.reference_snapshots_for(demand)
     growth_target = _growth_target_for_demand(
         demand,
         roster_target_count=roster_target_count,
+        reference_snapshots_override=reference_snapshots_override,
     )
     reachability = _arena_growth_reachability(
         demand=demand,
@@ -1588,6 +1600,7 @@ def _lease_candidate(
                 )
                 if int(engine_version) == 2:
                     profile_queryset = profile_queryset.filter(policy_version=2)
+                profile_queryset = profile_queryset.prefetch_related(*_arena_candidate_guest_prefetches())
                 profile = with_arena_reconciliation_state(profile_queryset).first()
             if profile is None:
                 return None
@@ -1741,10 +1754,13 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
     if demand.next_retry_at is not None and demand.next_retry_at > current_time + timedelta(seconds=1):
         return ReserveReplenishmentResult(0, 0, 0, 0, 0)
 
+    candidate_context = _ArenaReserveCandidateContext()
+    target_cell = candidate_context.target_population_cell_for(demand)
     reevaluate_existing_members(
         demand,
         now=current_time,
         preserve_training=not growth_admission_allowed,
+        target_cell=target_cell,
     )
     _trim_surplus_members(
         demand,
@@ -1765,8 +1781,10 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
     recovered_retired = 0
     made_ready_progress = False
     training_candidates: list[tuple[int, int, int]] = []
-    target_cell = _target_population_cell_for_demand(demand)
     supply_band_priority = _supply_band_priority_for_demand(demand, target_cell=target_cell)
+    occupied_manor_ids = (
+        candidate_context.occupied_manor_ids() if target_cell is not None and supply_band_priority is not None else None
+    )
 
     if target_cell is not None and supply_band_priority is not None:
         target_region = target_cell[0]
@@ -1777,13 +1795,18 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
                 VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES,
                 engine_version=candidate_engine_version,
                 target_cell=(target_region, target_band),
+                occupied_manor_ids=occupied_manor_ids,
             )
             for profile in active_candidates.iterator(chunk_size=100):
                 if slots_needed <= 0:
                     break
                 if not is_virtual_profile_arena_match_eligible(profile, now=current_time):
                     continue
-                assessment = assess_arena_reserve_candidate(demand, profile)
+                assessment = assess_arena_reserve_candidate(
+                    demand,
+                    profile,
+                    candidate_context=candidate_context,
+                )
                 if assessment.disposition is ArenaReserveCandidateDisposition.READY:
                     member = _lease_candidate(
                         demand=demand,
@@ -1821,6 +1844,7 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
                 [BotProfile.State.ABANDONED],
                 engine_version=candidate_engine_version,
                 target_cell=(target_region, target_band),
+                occupied_manor_ids=occupied_manor_ids,
             )
             for profile in abandoned_candidates.iterator(chunk_size=100):
                 if slots_needed <= 0 or materialization_attempts_used >= materialization_attempt_limit:
@@ -1828,7 +1852,11 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
                 if not is_virtual_profile_arena_match_eligible(profile, now=current_time):
                     continue
                 if (
-                    assess_arena_reserve_candidate(demand, profile).disposition
+                    assess_arena_reserve_candidate(
+                        demand,
+                        profile,
+                        candidate_context=candidate_context,
+                    ).disposition
                     is not ArenaReserveCandidateDisposition.READY
                 ):
                     continue
@@ -1866,6 +1894,7 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
                 [BotProfile.State.RETIRED],
                 engine_version=candidate_engine_version,
                 target_cell=(target_region, target_band),
+                occupied_manor_ids=occupied_manor_ids,
             )
             for profile in retired_candidates.iterator(chunk_size=100):
                 if (
@@ -1877,7 +1906,11 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
                 if not is_virtual_profile_arena_match_eligible(profile, now=current_time):
                     continue
                 if (
-                    assess_arena_reserve_candidate(demand, profile).disposition
+                    assess_arena_reserve_candidate(
+                        demand,
+                        profile,
+                        candidate_context=candidate_context,
+                    ).disposition
                     is not ArenaReserveCandidateDisposition.READY
                 ):
                     continue
@@ -3531,77 +3564,6 @@ def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
             if not _prepare_same_round_retry(member_id=int(member_id), now=current_time):
                 break
     return processed
-
-
-def _supply_band_priority_for_demand(
-    demand: ArenaVirtualDemand,
-    *,
-    target_cell: tuple[str, str] | None,
-) -> tuple[str, ...] | None:
-    """Return the persisted lease order for the demand's supply cell."""
-
-    if target_cell is None:
-        return None
-    if not demand_uses_arena_training_policy(demand):
-        return (target_cell[1],)
-    priority = demand_supply_prestige_band_priority(demand)
-    if priority is None:
-        return None
-    # The demand stores the validated, immutable borrowing order.  Do not
-    # consult the live population activation gate here: V2_PAUSED must still
-    # be able to hand off already-materialized candidates in this cell.
-    return priority
-
-
-def _reference_population_context_for_demand(
-    demand: ArenaVirtualDemand,
-) -> tuple[str, int] | None:
-    real_entries: Sequence[ArenaEntry | ArenaCoopEntry]
-    if demand.tournament_id is not None:
-        real_entries = list(
-            ArenaEntry.objects.filter(
-                tournament_id=demand.tournament_id,
-                status=ArenaEntry.Status.REGISTERED,
-                source=ArenaEntry.Source.PLAYER,
-            )
-            .select_related("manor")
-            .prefetch_related("entry_guests")
-        )
-    else:
-        real_entries = list(
-            ArenaCoopEntry.objects.filter(
-                event_id=demand.coop_event_id,
-                status=ArenaCoopEntry.Status.REGISTERED,
-                source=ArenaCoopEntry.Source.PLAYER,
-            )
-            .select_related("manor")
-            .prefetch_related("entry_guests")
-        )
-    if not real_entries:
-        return None
-    reference_entry = median_entry(real_entries)
-    return str(reference_entry.manor.region), int(reference_entry.manor.prestige or 0)
-
-
-def _target_population_cell_for_demand(
-    demand: ArenaVirtualDemand,
-) -> tuple[str, str] | None:
-    reference_context = _reference_population_context_for_demand(demand)
-    if reference_context is None:
-        return None
-    region, prestige = reference_context
-    supply_band_priority = demand_supply_prestige_band_priority(demand)
-    if supply_band_priority is not None:
-        # The policy snapshot was validated when the demand was reconciled;
-        # keep using that persisted primary band during a runtime pause.
-        return region, supply_band_priority[0]
-    if demand_uses_arena_training_policy(demand):
-        return None
-    bands = virtual_player_prestige_bands()
-    for band_name, (low, high) in bands.items():
-        if prestige >= low and (high is None or prestige < high):
-            return region, band_name
-    return None
 
 
 __all__ = [

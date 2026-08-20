@@ -88,7 +88,8 @@
 
       if (!messageDeduplicator.accept(normalized)) return;
 
-      const shouldScroll = shouldAutoScroll();
+      const renderOptions = opts || {};
+      const shouldScroll = renderOptions.deferScroll ? false : shouldAutoScroll();
       const line = document.createElement("div");
       line.className = "chat-line";
       line.dataset.ts = String(normalized.timestamp);
@@ -120,15 +121,17 @@
       bubbleWrap.appendChild(bubbleRow);
       line.appendChild(bubbleWrap);
 
-      messagesEl.appendChild(line);
-      pruneOldMessages();
-      trimDomMessages();
+      (renderOptions.appendTarget || messagesEl).appendChild(line);
+      if (!renderOptions.deferMaintenance) {
+        pruneOldMessages();
+        trimDomMessages();
+      }
 
-      if (shouldScroll) {
+      if (!renderOptions.deferScroll && shouldScroll) {
         messagesEl.scrollTop = messagesEl.scrollHeight;
       }
 
-      const fromHistory = Boolean(opts && opts.fromHistory);
+      const fromHistory = Boolean(renderOptions.fromHistory);
       if (core.shouldMarkUnread({ isOpen: getIsOpen(), isSelf: normalized.isSelf, fromHistory })) {
         setUnreadDot(true);
       }
@@ -146,8 +149,20 @@
 
       if (payload.type === "history" && Array.isArray(payload.messages)) {
         clearMessages();
-        payload.messages.forEach((message) => appendMessage(message, { fromHistory: true }));
+        const appendTarget = typeof document.createDocumentFragment === "function"
+          ? document.createDocumentFragment()
+          : messagesEl;
+        payload.messages.forEach((message) => appendMessage(message, {
+          appendTarget,
+          deferMaintenance: true,
+          deferScroll: true,
+          fromHistory: true,
+        }));
+        if (appendTarget !== messagesEl) {
+          messagesEl.appendChild(appendTarget);
+        }
         pruneOldMessages();
+        trimDomMessages();
         messagesEl.scrollTop = messagesEl.scrollHeight;
         return;
       }

@@ -6,6 +6,8 @@
   let missionLists = []; // cached mission list elements
   let cacheInitialized = false;
   let observerInitialized = false;
+  let mutationObserver = null;
+  let observedMutationRoot = null;
   let tickTimerId = null;
   let reloadTimerId = null;
   let refreshRequestInFlight = false;
@@ -53,12 +55,20 @@
       });
   }
 
+  function refreshCache() {
+    const root = getMutationRoot();
+    const querySelectorAll = root && typeof root.querySelectorAll === "function"
+      ? root.querySelectorAll.bind(root)
+      : document.querySelectorAll.bind(document);
+    countdownCache.clear();
+    querySelectorAll("[data-countdown]").forEach(registerCountdownElement);
+    missionLists = Array.from(querySelectorAll(".mission-list"));
+    cacheInitialized = true;
+  }
+
   function initCache() {
     if (cacheInitialized) return;
-    countdownCache.clear();
-    document.querySelectorAll("[data-countdown]").forEach(registerCountdownElement);
-    missionLists = Array.from(document.querySelectorAll(".mission-list"));
-    cacheInitialized = true;
+    refreshCache();
   }
 
   function registerCountdownElement(el) {
@@ -77,11 +87,47 @@
       completeText: el.getAttribute("data-complete-text"),
       removeSelector: el.getAttribute("data-remove-selector"),
       initialRemainingMs,
+      lastText: null,
     });
   }
 
   function unregisterCountdownElement(el) {
     countdownCache.delete(el);
+  }
+
+  function isElementConnected(el) {
+    if (typeof el.isConnected === "boolean") {
+      return el.isConnected;
+    }
+    return document.body.contains(el);
+  }
+
+  function setCountdownText(el, cached, text) {
+    if (cached.lastText === text && el.textContent === text) {
+      return;
+    }
+    el.textContent = text;
+    cached.lastText = text;
+  }
+
+  function getMutationRoot() {
+    return document.querySelector("#page-shell") || document.body;
+  }
+
+  function observeMutationRoot() {
+    if (!mutationObserver) return;
+    const nextRoot = getMutationRoot();
+    if (!nextRoot || nextRoot === observedMutationRoot) return;
+    if (observedMutationRoot && typeof mutationObserver.disconnect === "function") {
+      mutationObserver.disconnect();
+    }
+    mutationObserver.observe(nextRoot, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-countdown"]
+    });
+    observedMutationRoot = nextRoot;
   }
 
   // Observe DOM changes to update cache automatically
@@ -132,13 +178,16 @@
         }
       }
     });
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["data-countdown"]
-    });
+    mutationObserver = observer;
     observerInitialized = true;
+    observeMutationRoot();
+  }
+
+  function refreshAfterPartialNavigation() {
+    if (!observerInitialized) return;
+    refreshCache();
+    observeMutationRoot();
+    tick();
   }
 
   function formatCountdown(diffMs, style) {
@@ -213,7 +262,7 @@
   }
 
   function scheduleTrainingCheckRetry(el) {
-    if (!document.body.contains(el)) return;
+    if (!isElementConnected(el)) return;
 
     const attempt = (trainingCheckRetryAttempts.get(el) || 0) + 1;
     const retryDelay = Math.min(
@@ -230,7 +279,7 @@
     }
     const retryTimerId = window.setTimeout(() => {
       trainingCheckRetryTimers.delete(el);
-      if (document.body.contains(el)) {
+      if (isElementConnected(el)) {
         checkTrainingAndUpdate(el);
       }
     }, retryDelay);
@@ -328,7 +377,7 @@
     const toRemove = [];
     for (const [el, cached] of countdownCache) {
       // Check if element is still in DOM
-      if (!document.body.contains(el)) {
+      if (!isElementConnected(el)) {
         toRemove.push(el);
         continue;
       }
@@ -353,11 +402,11 @@
 
       if (readyToComplete) {
         if (shouldRefresh || checkUrl) {
-          el.textContent = "刷新中...";
+          setCountdownText(el, cached, "刷新中...");
         } else if (completeText) {
-          el.textContent = completeText;
+          setCountdownText(el, cached, completeText);
         } else {
-          el.textContent = formatCountdown(diff, style);
+          setCountdownText(el, cached, formatCountdown(diff, style));
         }
         el.classList.add("countdown-finished");
         el.removeAttribute("data-countdown");
@@ -378,9 +427,9 @@
         }
       } else if (shouldRefresh && diff <= 0) {
         // 倒计时到点后留出短暂缓冲，减少短计时建筑因节流/时钟偏差导致的重复刷新。
-        el.textContent = "结算中...";
+        setCountdownText(el, cached, "结算中...");
       } else {
-        el.textContent = formatCountdown(diff, style);
+        setCountdownText(el, cached, formatCountdown(diff, style));
       }
     }
 
@@ -389,7 +438,7 @@
 
     // Use cached mission lists instead of querying DOM
     missionLists = missionLists.filter((listEl) => {
-      if (document.body.contains(listEl)) {
+      if (isElementConnected(listEl)) {
         ensureListPlaceholder(listEl);
         return true;
       }
@@ -403,6 +452,10 @@
     setupMutationObserver();
     tick();
     tickTimerId = setInterval(tick, 1000);
+  }
+
+  if (typeof document.addEventListener === "function") {
+    document.addEventListener("partial-nav:loaded", refreshAfterPartialNavigation);
   }
 
   if (document.readyState === "loading") {

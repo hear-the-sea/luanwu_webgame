@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.db import transaction
 from django.utils import timezone
@@ -15,6 +15,10 @@ WEEKLY_BLUEPRINT_CAPS = {"blue": 5, "purple": 2, "orange": 1}
 def current_week_start():
     today = timezone.localdate()
     return today - timedelta(days=today.weekday())
+
+
+def _current_week_start_at() -> datetime:
+    return timezone.make_aware(datetime.combine(current_week_start(), datetime.min.time()))
 
 
 @transaction.atomic
@@ -39,7 +43,7 @@ def claim_guild_blueprint_reward(member: GuildMember, blueprint_key: str) -> Gui
     used = GuildBlueprintRewardClaim.objects.filter(
         member=locked_member,
         rarity=catalog_entry.rarity,
-        claimed_at__date__gte=current_week_start(),
+        claimed_at__gte=_current_week_start_at(),
     ).count()
     cap = WEEKLY_BLUEPRINT_CAPS[catalog_entry.rarity]
     if used >= cap:

@@ -206,12 +206,15 @@ def test_recorder_parses_complete_gate_e_stage_metrics_and_fingerprints() -> Non
         .rstrip("=")
     )
     stages = (
+        "batch_orchestration",
         "due_backlog_selection",
         "planning_snapshot_preload",
         "profile_plan_revalidation",
         "action_domain_writes",
         "cycle_attempt_receipt",
         "safety_task_wrapup",
+        "safety_attempt_start",
+        "safety_attempt_finish",
     )
     output = "\n".join(
         "gate_e_maintenance_stage "
@@ -226,8 +229,67 @@ def test_recorder_parses_complete_gate_e_stage_metrics_and_fingerprints() -> Non
 
     rows = recorder._parse_gate_e_stage_metrics(output)
 
-    assert len(rows) == 36
+    assert len(rows) == 54
     assert rows[0]["fingerprints"] == [{"sql": "SELECT ? FROM `example`", "count": 3}]
+
+
+def test_recorder_accepts_optional_gate_e_recovery_stage_without_changing_required_matrix() -> None:
+    output = "\n".join(
+        "gate_e_maintenance_stage "
+        f"batch_size={batch_size} concurrency={concurrency} stage={stage} observations=1 "
+        "duration_p50_ms=1.000 duration_p95_ms=1.000 duration_p99_ms=1.000 "
+        "queries_max=1 write_queries_max=1 fingerprints_b64=-"
+        for batch_size in (1, 10, 100)
+        for concurrency in (1, 2)
+        for stage in (*recorder._GATE_E_STAGE_NAMES, "recovery_state")
+    )
+
+    rows = recorder._parse_gate_e_stage_metrics(output)
+
+    assert len(rows) == 60
+    assert sum(row["stage"] == "recovery_state" for row in rows) == 6
+
+
+def test_gate_e_evidence_declares_observed_optional_stage_names() -> None:
+    template = recorder._load_yaml(
+        recorder.PROJECT_ROOT / "docs/virtual_player_gate_e_readiness_evidence_2026-08-11.yaml"
+    )
+    acceptance = recorder._load_yaml(recorder.ACCEPTANCE_PATH)
+    manifest = recorder._load_yaml(recorder.PROJECT_ROOT / "docs/virtual_player_gate_evidence_manifest_2026-08-11.yaml")
+    summary = recorder.PytestSummary(passed=1, failed=0, skipped=0, deselected=0, duration_seconds=1.0)
+    evidence = recorder._build_gate_e_evidence(
+        template=template,
+        artifact_date="2026-08-20",
+        environment={
+            "DJANGO_DB_ENGINE": "django.db.backends.mysql",
+            "DJANGO_DB_HOST": "127.0.0.1",
+            "DJANGO_DB_PORT": "13306",
+            "REDIS_URL": "redis://127.0.0.1:16379/0",
+        },
+        acceptance=acceptance,
+        manifest=manifest,
+        contract_summary=summary,
+        real_summary=summary,
+        completed_at_utc="2026-08-20T00:00:00Z",
+        benchmark_rows=(),
+        stage_metric_rows=({"stage": "recovery_state"},),
+        mypy_source_files=1,
+        source_state={},
+    )
+
+    stage_metrics = evidence["maintenance_benchmark"]["stage_metrics"]
+    assert stage_metrics["stage_names"] == list(recorder._GATE_E_STAGE_NAMES)
+    assert stage_metrics["optional_stage_names"] == ["recovery_state"]
+
+
+def test_recorder_rejects_unknown_gate_e_stage() -> None:
+    with pytest.raises(recorder.EvidenceRecordingError, match="unknown maintenance stage"):
+        recorder._parse_gate_e_stage_metrics(
+            "gate_e_maintenance_stage "
+            "batch_size=1 concurrency=1 stage=unexpected_stage observations=1 "
+            "duration_p50_ms=1 duration_p95_ms=1 duration_p99_ms=1 "
+            "queries_max=1 write_queries_max=1 fingerprints_b64=-"
+        )
 
 
 def test_recorder_rejects_incomplete_gate_e_stage_metric_matrix() -> None:

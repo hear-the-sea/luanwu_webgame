@@ -11,18 +11,29 @@
   let changeHandler = null;
   let inputHandler = null;
   let submitHandler = null;
-  let marketCountdownTimer = null;
-  let auctionCountdownTimer = null;
+  let countdownTimer = null;
+  let marketCountdownRoot = null;
+  let marketCountdownElements = [];
+  let auctionCountdownElement = null;
+  let auctionRemaining = -1;
+  const marketCountdownState = new WeakMap();
+
+  function stopCountdownTimerIfIdle() {
+    if (marketCountdownRoot || auctionCountdownElement) {
+      return;
+    }
+    if (countdownTimer !== null) {
+      window.clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
+  }
 
   function clearTimers() {
-    if (marketCountdownTimer !== null) {
-      window.clearInterval(marketCountdownTimer);
-      marketCountdownTimer = null;
-    }
-    if (auctionCountdownTimer !== null) {
-      window.clearInterval(auctionCountdownTimer);
-      auctionCountdownTimer = null;
-    }
+    marketCountdownRoot = null;
+    marketCountdownElements = [];
+    auctionCountdownElement = null;
+    auctionRemaining = -1;
+    stopCountdownTimerIfIdle();
   }
 
   function teardownTradePage() {
@@ -49,63 +60,125 @@
     submitHandler = null;
   }
 
-  function updateMarketCountdowns(root) {
-    const countdownElements = root.querySelectorAll(".tw-market-countdown");
+  function updateMarketCountdowns() {
+    const countdownElements = marketCountdownElements;
     if (countdownElements.length === 0) {
-      clearTimers();
+      marketCountdownRoot = null;
+      stopCountdownTimerIfIdle();
       return;
     }
 
-    countdownElements.forEach((element) => {
-      const expiresAt = Date.parse(element.dataset.expires || "");
-      if (Number.isNaN(expiresAt)) {
+    marketCountdownElements = countdownElements.filter((element) => {
+      if (typeof element.isConnected === "boolean" && !element.isConnected) {
+        return false;
+      }
+      return true;
+    });
+
+    marketCountdownElements.forEach((element) => {
+      const expiresValue = element.dataset.expires || "";
+      let state = marketCountdownState.get(element);
+      if (!state || state.expiresValue !== expiresValue) {
+        state = {
+          expiresValue,
+          expiresAt: Date.parse(expiresValue),
+          lastText: null,
+          lastColor: null,
+        };
+        marketCountdownState.set(element, state);
+      }
+      if (Number.isNaN(state.expiresAt)) {
         return;
       }
-      const remainingSeconds = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
-      element.textContent = tradeCore.formatMarketCountdown(remainingSeconds);
-      element.style.color =
+      const remainingSeconds = Math.max(0, Math.floor((state.expiresAt - Date.now()) / 1000));
+      const countdownText = tradeCore.formatMarketCountdown(remainingSeconds);
+      if (state.lastText !== countdownText || element.textContent !== countdownText) {
+        element.textContent = countdownText;
+        state.lastText = countdownText;
+      }
+      const color =
         remainingSeconds <= 0
           ? "var(--text-muted)"
           : remainingSeconds < ONE_HOUR_SECONDS
             ? "#FF6B6B"
             : "var(--text-secondary)";
+      if (state.lastColor !== color) {
+        element.style.color = color;
+        state.lastColor = color;
+      }
     });
+    if (marketCountdownElements.length === 0) {
+      marketCountdownRoot = null;
+      stopCountdownTimerIfIdle();
+    }
+  }
+
+  function updateAuctionCountdown() {
+    const countdownElement = auctionCountdownElement;
+    if (!countdownElement || !countdownElement.isConnected) {
+      auctionCountdownElement = null;
+      auctionRemaining = -1;
+      stopCountdownTimerIfIdle();
+      return;
+    }
+
+    countdownElement.textContent = tradeCore.formatAuctionCountdown(auctionRemaining);
+    countdownElement.style.color =
+      auctionRemaining <= 0
+        ? "var(--text-muted)"
+        : auctionRemaining < ONE_HOUR_SECONDS
+          ? "#FF6B6B"
+          : "var(--text-secondary)";
+    auctionRemaining -= 1;
+  }
+
+  function tickCountdowns() {
+    if (marketCountdownRoot) {
+      updateMarketCountdowns();
+    }
+    if (auctionCountdownElement) {
+      updateAuctionCountdown();
+    }
+  }
+
+  function ensureCountdownTimer() {
+    if (countdownTimer === null) {
+      countdownTimer = window.setInterval(tickCountdowns, 1000);
+    }
   }
 
   function startMarketCountdowns(root) {
-    updateMarketCountdowns(root);
-    if (root.querySelector(".tw-market-countdown")) {
-      marketCountdownTimer = window.setInterval(() => updateMarketCountdowns(root), 1000);
+    marketCountdownRoot = root;
+    marketCountdownElements = Array.from(root.querySelectorAll(".tw-market-countdown"));
+    updateMarketCountdowns();
+    if (marketCountdownRoot) {
+      ensureCountdownTimer();
     }
   }
 
   function startAuctionCountdown(root) {
     const countdownElement = root.querySelector(".auction-countdown");
     if (!countdownElement) {
+      auctionCountdownElement = null;
+      auctionRemaining = -1;
+      stopCountdownTimerIfIdle();
       return;
     }
 
     let remaining = tradeCore.parseInteger(countdownElement.dataset.remaining, -1);
     if (remaining < 0) {
+      auctionCountdownElement = null;
+      auctionRemaining = -1;
+      stopCountdownTimerIfIdle();
       return;
     }
 
-    const tick = () => {
-      if (!countdownElement.isConnected) {
-        if (auctionCountdownTimer !== null) {
-          window.clearInterval(auctionCountdownTimer);
-          auctionCountdownTimer = null;
-        }
-        return;
-      }
-      countdownElement.textContent = tradeCore.formatAuctionCountdown(remaining);
-      countdownElement.style.color =
-        remaining <= 0 ? "var(--text-muted)" : remaining < ONE_HOUR_SECONDS ? "#FF6B6B" : "var(--text-secondary)";
-      remaining -= 1;
-    };
-
-    tick();
-    auctionCountdownTimer = window.setInterval(tick, 1000);
+    auctionCountdownElement = countdownElement;
+    auctionRemaining = remaining;
+    updateAuctionCountdown();
+    if (auctionCountdownElement) {
+      ensureCountdownTimer();
+    }
   }
 
   function syncShopMode(root, mode) {

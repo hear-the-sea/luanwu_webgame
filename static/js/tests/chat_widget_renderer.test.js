@@ -28,6 +28,11 @@ class FakeElement {
   }
 
   appendChild(child) {
+    if (child && child.isFragment) {
+      this.children.push(...child.children);
+      this.scrollHeight = this.children.length;
+      return child;
+    }
     this.children.push(child);
     this.scrollHeight = this.children.length;
     return child;
@@ -94,6 +99,45 @@ test("renderer deduplicates by operation id and retains legacy id fallback", () 
     });
 
     assert.equal(messagesEl.children.length, 3);
+  } finally {
+    global.document = originalDocument;
+  }
+});
+
+test("history rendering batches DOM maintenance before applying the message cap", () => {
+  const originalDocument = global.document;
+  class FakeFragment extends FakeElement {
+    constructor() {
+      super();
+      this.isFragment = true;
+    }
+  }
+
+  global.document = {
+    createElement: () => new FakeElement(),
+    createDocumentFragment: () => new FakeFragment(),
+  };
+  try {
+    const messagesEl = new FakeElement();
+    const renderer = chatWidgetRenderer.createRenderer({
+      getIsOpen: () => true,
+      maxDomMessages: 2,
+      messageTtlMs: 60_000,
+      messagesEl,
+      setUnreadDot() {},
+      userId: 1,
+    });
+
+    renderer.handlePayload({
+      type: "history",
+      messages: [
+        { type: "message", id: "history-1", sender: { id: 2, name: "A" }, text: "one", ts: Date.now() },
+        { type: "message", id: "history-2", sender: { id: 2, name: "A" }, text: "two", ts: Date.now() },
+        { type: "message", id: "history-3", sender: { id: 2, name: "A" }, text: "three", ts: Date.now() },
+      ],
+    });
+
+    assert.equal(messagesEl.children.length, 2);
   } finally {
     global.document = originalDocument;
   }

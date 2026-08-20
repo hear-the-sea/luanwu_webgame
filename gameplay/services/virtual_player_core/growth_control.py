@@ -21,6 +21,7 @@ from typing import Any, Iterable, Mapping, TypedDict
 from zoneinfo import ZoneInfo
 
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from gameplay.models import (
@@ -713,27 +714,55 @@ def effective_growth_control_snapshot(
     prestige_band: str,
     now: datetime | None = None,
 ) -> VirtualPlayerGrowthControlSnapshot | None:
+    route = (str(region), str(prestige_band))
+    return effective_growth_control_snapshots(routes=(route,), now=now)[route]
+
+
+def effective_growth_control_snapshots(
+    *,
+    routes: Iterable[tuple[str, str]],
+    now: datetime | None = None,
+) -> dict[tuple[str, str], VirtualPlayerGrowthControlSnapshot | None]:
+    """Resolve the effective control row for several routes in one read set.
+
+    The global pointer and the selected run are shared by every route.  Read
+    them once, then fetch the route cells together while preserving the
+    single-route resolver's effective-until and completed-run guards.
+    """
     current_time = now or timezone.now()
+    normalized_routes = tuple(dict.fromkeys((str(region), str(prestige_band)) for region, prestige_band in routes))
+    resolved: dict[tuple[str, str], VirtualPlayerGrowthControlSnapshot | None] = {
+        route: None for route in normalized_routes
+    }
+    if not normalized_routes:
+        return resolved
     pointer = (
         VirtualPlayerGrowthControlPointer.objects.select_related("current_run")
         .filter(key=VirtualPlayerGrowthControlPointer.GLOBAL_KEY)
         .first()
     )
     if pointer is None or pointer.current_run is None:
-        return None
+        return resolved
     if pointer.current_run.status != VirtualPlayerGrowthControlRun.Status.COMPLETE:
-        return None
-    return (
-        VirtualPlayerGrowthControlSnapshot.objects.filter(
-            run_id=pointer.current_run_id,
-            region=str(region),
-            prestige_band=str(prestige_band),
-            effective_until__gt=current_time,
-            run__status=VirtualPlayerGrowthControlRun.Status.COMPLETE,
-        )
-        .order_by("-control_date", "-id")
-        .first()
+        return resolved
+    route_filter = Q(
+        region=normalized_routes[0][0],
+        prestige_band=normalized_routes[0][1],
     )
+    for region, prestige_band in normalized_routes[1:]:
+        route_filter |= Q(region=region, prestige_band=prestige_band)
+    seen_routes: set[tuple[str, str]] = set()
+    for snapshot in VirtualPlayerGrowthControlSnapshot.objects.filter(
+        route_filter,
+        run_id=pointer.current_run_id,
+        effective_until__gt=current_time,
+        run__status=VirtualPlayerGrowthControlRun.Status.COMPLETE,
+    ).order_by("-control_date", "-id"):
+        route = (str(snapshot.region), str(snapshot.prestige_band))
+        if route in resolved and route not in seen_routes:
+            resolved[route] = snapshot
+            seen_routes.add(route)
+    return resolved
 
 
 def _usable_growth_control_snapshot(
@@ -775,6 +804,8 @@ def growth_control_reference_selection(
     prestige_band: str,
     now: datetime | None = None,
     expected_digest: str | None = None,
+    control_snapshot: VirtualPlayerGrowthControlSnapshot | None = None,
+    control_snapshot_preloaded: bool = False,
 ) -> tuple[int, ReferenceSelection, str]:
     """Resolve the V2 cap from one durable aggregate row.
 
@@ -812,6 +843,8 @@ def growth_control_reference_selection(
             )
             if _usable_growth_control_snapshot(snapshot) is None:
                 raise ReferenceSnapshotError("frozen growth-control snapshot is missing or no longer valid")
+    elif control_snapshot_preloaded:
+        snapshot = control_snapshot
     else:
         snapshot = effective_growth_control_snapshot(
             region=str(region),
@@ -925,6 +958,7 @@ __all__ = [
     "collect_real_player_growth_samples",
     "configured_growth_control_policy",
     "effective_growth_control_snapshot",
+    "effective_growth_control_snapshots",
     "growth_control_digest_for_route",
     "growth_control_reference_selection",
     "refresh_growth_control_snapshots",

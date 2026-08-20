@@ -116,24 +116,32 @@ def median_entry(entries: Sequence[ArenaEntry | ArenaCoopEntry]) -> ArenaEntry |
     return sorted(entries, key=lambda entry: lineup_power(reference_snapshots(entry)))[len(entries) // 2]
 
 
-def reference_snapshots_for_demand(demand: ArenaVirtualDemand) -> list[dict]:
-    real_entries: Sequence[ArenaEntry | ArenaCoopEntry]
+def reference_entries_for_demand(demand: ArenaVirtualDemand) -> tuple[ArenaEntry | ArenaCoopEntry, ...]:
+    """Load the registered real-player entries used as a demand reference."""
+
     if demand.tournament_id is not None:
-        real_entries = list(
+        return tuple(
             ArenaEntry.objects.filter(
                 tournament_id=demand.tournament_id,
                 status=ArenaEntry.Status.REGISTERED,
                 source=ArenaEntry.Source.PLAYER,
-            ).prefetch_related("entry_guests")
+            )
+            .select_related("manor")
+            .prefetch_related("entry_guests")
         )
-    else:
-        real_entries = list(
-            ArenaCoopEntry.objects.filter(
-                event_id=demand.coop_event_id,
-                status=ArenaCoopEntry.Status.REGISTERED,
-                source=ArenaCoopEntry.Source.PLAYER,
-            ).prefetch_related("entry_guests")
+    return tuple(
+        ArenaCoopEntry.objects.filter(
+            event_id=demand.coop_event_id,
+            status=ArenaCoopEntry.Status.REGISTERED,
+            source=ArenaCoopEntry.Source.PLAYER,
         )
+        .select_related("manor")
+        .prefetch_related("entry_guests")
+    )
+
+
+def reference_snapshots_for_demand(demand: ArenaVirtualDemand) -> list[dict]:
+    real_entries = reference_entries_for_demand(demand)
     if not real_entries:
         return []
     snapshots = reference_snapshots(median_entry(real_entries))
@@ -417,6 +425,7 @@ __all__ = [
     "active_arena_population_activations",
     "active_arena_population_funnel_snapshots",
     "median_entry",
+    "reference_entries_for_demand",
     "reference_snapshots",
     "reference_snapshots_for_demand",
 ]

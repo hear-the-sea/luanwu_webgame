@@ -15,7 +15,28 @@ STAGE_PLANNING_SNAPSHOT_PRELOAD = "planning_snapshot_preload"
 STAGE_PROFILE_PLAN_REVALIDATION = "profile_plan_revalidation"
 STAGE_ACTION_DOMAIN_WRITES = "action_domain_writes"
 STAGE_CYCLE_ATTEMPT_RECEIPT = "cycle_attempt_receipt"
+STAGE_BATCH_ORCHESTRATION = "batch_orchestration"
 STAGE_SAFETY_TASK_WRAPUP = "safety_task_wrapup"
+STAGE_SAFETY_ATTEMPT_START = "safety_attempt_start"
+STAGE_SAFETY_ATTEMPT_FINISH = "safety_attempt_finish"
+STAGE_RECOVERY_STATE = "recovery_state"
+
+# Gate E requires these stages for every benchmark cell.  Keep the contract
+# here so the runtime instrumentation, integration test, and evidence recorder
+# cannot drift apart when a diagnostic stage is added.
+GATE_E_REQUIRED_STAGE_NAMES = (
+    STAGE_BATCH_ORCHESTRATION,
+    STAGE_DUE_BACKLOG_SELECTION,
+    STAGE_PLANNING_SNAPSHOT_PRELOAD,
+    STAGE_PROFILE_PLAN_REVALIDATION,
+    STAGE_ACTION_DOMAIN_WRITES,
+    STAGE_CYCLE_ATTEMPT_RECEIPT,
+    STAGE_SAFETY_TASK_WRAPUP,
+    STAGE_SAFETY_ATTEMPT_START,
+    STAGE_SAFETY_ATTEMPT_FINISH,
+)
+GATE_E_OPTIONAL_STAGE_NAMES = (STAGE_RECOVERY_STATE,)
+GATE_E_ALLOWED_STAGE_NAMES = GATE_E_REQUIRED_STAGE_NAMES + GATE_E_OPTIONAL_STAGE_NAMES
 
 _WRITE_PREFIXES = ("INSERT ", "UPDATE ", "DELETE ", "REPLACE ")
 _SQL_STRING_RE = re.compile(r"'(?:''|[^'])*'")
@@ -126,11 +147,18 @@ def current_maintenance_stage_metrics() -> MaintenanceStageMetrics | None:
 __all__ = [
     "MaintenanceStageMetrics",
     "MaintenanceStageObservation",
+    "GATE_E_ALLOWED_STAGE_NAMES",
+    "GATE_E_OPTIONAL_STAGE_NAMES",
+    "GATE_E_REQUIRED_STAGE_NAMES",
     "STAGE_ACTION_DOMAIN_WRITES",
+    "STAGE_BATCH_ORCHESTRATION",
     "STAGE_CYCLE_ATTEMPT_RECEIPT",
     "STAGE_DUE_BACKLOG_SELECTION",
     "STAGE_PLANNING_SNAPSHOT_PRELOAD",
     "STAGE_PROFILE_PLAN_REVALIDATION",
+    "STAGE_RECOVERY_STATE",
+    "STAGE_SAFETY_ATTEMPT_FINISH",
+    "STAGE_SAFETY_ATTEMPT_START",
     "STAGE_SAFETY_TASK_WRAPUP",
     "capture_maintenance_stage_metrics",
     "current_maintenance_stage_metrics",

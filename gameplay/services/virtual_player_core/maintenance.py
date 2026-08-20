@@ -17,7 +17,21 @@ from typing import Any, TypeVar
 from uuid import UUID, uuid4
 
 from django.db import DatabaseError, OperationalError, connection, transaction
-from django.db.models import Case, CharField, Count, DateTimeField, Exists, F, IntegerField, OuterRef, Q, Subquery, When
+from django.db.models import (
+    Case,
+    CharField,
+    Count,
+    DateTimeField,
+    Exists,
+    F,
+    IntegerField,
+    Max,
+    OuterRef,
+    Q,
+    Subquery,
+    Sum,
+    When,
+)
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
 from django.utils import timezone
@@ -73,6 +87,7 @@ from gameplay.models import (
     PlayerTroop,
     ResourceEvent,
     ResourceType,
+    VirtualPlayerGrowthControlSnapshot,
 )
 from gameplay.services.arena.virtual_protection import (
     is_virtual_profile_arena_protected,
@@ -172,7 +187,7 @@ from .contracts import (
 )
 from .database_clock import database_utc_sql_expression, normalize_database_utc
 from .economy import ForcedSettlementDecision, parse_forced_settlement_budget, plan_forced_settlement
-from .growth_control import growth_control_reference_selection
+from .growth_control import effective_growth_control_snapshots, growth_control_reference_selection
 from .inventory_budget import apply_inventory_daily_caps, inventory_daily_cap_limits
 from .maintenance_action_specs import (
     BuildingUpgradeActionSpec,
@@ -211,6 +226,12 @@ from .maintenance_cycle import (
     next_ordinary_slot_due_at,
     record_durable_attempts_locked,
 )
+from .maintenance_read_models import arena_growth_priority_guests as _arena_growth_priority_guests
+from .maintenance_read_models import build_locked_snapshot_strength as _build_locked_snapshot_strength
+from .maintenance_read_models import (
+    build_strength_summary_from_locked_values as _build_strength_summary_from_locked_values,
+)
+from .maintenance_read_models import guest_arena_power as _guest_arena_power
 from .maintenance_resources import (
     VIRTUAL_PLAYER_SALARY_SCALE,
     ResourcePlanningError,
@@ -241,7 +262,6 @@ from .projection import (
     ProjectionRuleError,
     ReferenceSelection,
     StrengthSummary,
-    calculate_guest_arena_power,
     project_guest_healing_development_intent,
     project_training_development_intent,
     project_troop_recruitment_development_intent,
@@ -270,7 +290,6 @@ from .recruitment import (
 from .reference_snapshots import (
     CORE_BUILDING_KEYS,
     ReferenceSnapshotError,
-    build_strength_summary,
     load_manor_strength_summaries,
     load_manor_strength_summary,
 )
@@ -295,10 +314,14 @@ from .selectors import (
 )
 from .stage_metrics import (
     STAGE_ACTION_DOMAIN_WRITES,
+    STAGE_BATCH_ORCHESTRATION,
     STAGE_CYCLE_ATTEMPT_RECEIPT,
     STAGE_DUE_BACKLOG_SELECTION,
     STAGE_PLANNING_SNAPSHOT_PRELOAD,
     STAGE_PROFILE_PLAN_REVALIDATION,
+    STAGE_RECOVERY_STATE,
+    STAGE_SAFETY_ATTEMPT_FINISH,
+    STAGE_SAFETY_ATTEMPT_START,
     STAGE_SAFETY_TASK_WRAPUP,
     record_maintenance_stage,
 )
@@ -856,6 +879,8 @@ class _MaintenancePlanningSnapshot:
     virtual_inventory_templates: tuple[ItemTemplate, ...] = ()
     rare_inventory_quantity_today: int = 0
     recruitment_pool_silver_costs: tuple[tuple[str, int], ...] = ()
+    growth_control_snapshots: tuple[tuple[str, str, VirtualPlayerGrowthControlSnapshot | None], ...] = ()
+    growth_control_snapshots_preloaded: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -865,6 +890,24 @@ class _VirtualProjectionPools:
     gear_templates: tuple[GearTemplate, ...]
     inventory_templates: tuple[ItemTemplate, ...]
     rare_inventory_quantity_today: int
+
+
+def _preloaded_growth_control_snapshot(
+    planning_snapshot: _MaintenancePlanningSnapshot | None,
+    *,
+    region: str,
+    prestige_band: str,
+) -> tuple[VirtualPlayerGrowthControlSnapshot | None, bool]:
+    if planning_snapshot is None or not planning_snapshot.growth_control_snapshots_preloaded:
+        return None, False
+    route = (str(region), str(prestige_band))
+    for snapshot_region, snapshot_band, snapshot in planning_snapshot.growth_control_snapshots:
+        if (snapshot_region, snapshot_band) == route:
+            return snapshot, True
+    # A preload marker only suppresses the resolver for a route that was
+    # explicitly included in the batch read.  An uncovered route must retain
+    # the legacy single-route lookup semantics.
+    return None, False
 
 
 @dataclass(slots=True)
@@ -2290,87 +2333,6 @@ def _maintenance_precondition_digest(
     return sha256(canonical_json_bytes(payload)).hexdigest()
 
 
-def _guest_arena_power(
-    guest: Guest,
-    *,
-    force: int,
-    intellect: int,
-    defense: int,
-    agility: int,
-) -> int:
-    return calculate_guest_arena_power(
-        force=force,
-        intellect=intellect,
-        defense=defense,
-        agility=agility,
-        hp_bonus=int(guest.hp_bonus),
-        archetype=str(guest.template.archetype),
-        base_hp=int(guest.template.base_hp),
-    )
-
-
-def _arena_growth_priority_guests(
-    guests: tuple[Guest, ...],
-    objective: ArenaGrowthObjective | None,
-) -> tuple[Guest, ...]:
-    if objective is None or not guests:
-        return guests
-    target_count = min(
-        len(guests),
-        max(objective.critical_guest_count, objective.preferred_guest_count),
-    )
-    if target_count <= 0:
-        return guests
-    return tuple(
-        sorted(
-            guests,
-            key=lambda guest: (
-                -_guest_arena_power(
-                    guest,
-                    force=int(guest.force),
-                    intellect=int(guest.intellect),
-                    defense=int(guest.defense_stat),
-                    agility=int(guest.agility),
-                ),
-                int(guest.id),
-            ),
-        )[:target_count]
-    )
-
-
-def _build_locked_snapshot_strength(
-    *,
-    manor: Manor,
-    guests: tuple[Guest, ...],
-    buildings: tuple[Building, ...],
-    troop_total: int,
-) -> StrengthSummary:
-    return build_strength_summary(
-        prestige=int(manor.prestige or 0),
-        core_building_level=max(
-            (
-                int(building.level or 0)
-                for building in buildings
-                if str(building.building_type.key) in CORE_BUILDING_KEYS
-            ),
-            default=0,
-        ),
-        guest_count=len(guests),
-        max_guest_level=max((int(guest.level or 0) for guest in guests), default=0),
-        arena_lineup_power=sum(
-            _guest_arena_power(
-                guest,
-                force=int(guest.force or 0),
-                intellect=int(guest.intellect or 0),
-                defense=int(guest.defense_stat or 0),
-                agility=int(guest.agility or 0),
-            )
-            for guest in guests
-        ),
-        troop_total=troop_total,
-    )
-
-
 def _normalize_optional_non_negative_int(
     value: int | None,
     *,
@@ -2418,6 +2380,8 @@ def _maintenance_reference_for_band(
     now: datetime,
     manor_strength: StrengthSummary | None = None,
     expected_control_digest: str | None = None,
+    growth_control_snapshot: VirtualPlayerGrowthControlSnapshot | None = None,
+    growth_control_snapshot_preloaded: bool = False,
 ) -> tuple[int, ReferenceSelection, CalibrationRoute | None, str]:
     band = next(
         (candidate for candidate in config.bands if candidate.name == prestige_band),
@@ -2438,6 +2402,8 @@ def _maintenance_reference_for_band(
             prestige_band=band.name,
             now=now,
             expected_digest=expected_control_digest,
+            control_snapshot=growth_control_snapshot,
+            control_snapshot_preloaded=growth_control_snapshot_preloaded,
         )
         return snapshot_version, selection, None, control_digest
     raise V2MaintenanceError("only policy 2 growth-control references are supported")
@@ -2453,6 +2419,8 @@ def _resolve_maintenance_policy(
     policy_release: BotPolicyRelease | None = None,
     manor_strength: StrengthSummary | None = None,
     expected_control_digest: str | None = None,
+    growth_control_snapshot: VirtualPlayerGrowthControlSnapshot | None = None,
+    growth_control_snapshot_preloaded: bool = False,
 ) -> tuple[
     BotDevelopmentPlan,
     PrestigeBandGrowthPolicy,
@@ -2517,6 +2485,8 @@ def _resolve_maintenance_policy(
         now=now,
         manor_strength=manor_strength,
         expected_control_digest=expected_control_digest,
+        growth_control_snapshot=growth_control_snapshot,
+        growth_control_snapshot_preloaded=growth_control_snapshot_preloaded,
     )
     return (
         development_plan,
@@ -3578,6 +3548,11 @@ def _build_v2_maintenance_plan_from_profile(
         int(planning_snapshot.profile.id) != int(profile.id) or int(planning_snapshot.profile.manor_id) != int(manor.id)
     ):
         raise V2MaintenanceError("maintenance planning snapshot identity changed")
+    growth_control_snapshot, growth_control_snapshot_preloaded = _preloaded_growth_control_snapshot(
+        planning_snapshot,
+        region=str(manor.region),
+        prestige_band=str(profile.current_prestige_band),
+    )
     cycle_covered_action_kinds = tuple(
         dict.fromkeys(str(value).strip() for value in cycle_covered_action_kinds if str(value).strip())
     )
@@ -3628,6 +3603,8 @@ def _build_v2_maintenance_plan_from_profile(
         policy_release=(None if planning_snapshot is None else planning_snapshot.policy_release),
         manor_strength=planning_strength,
         expected_control_digest=frozen_control_snapshot_digest,
+        growth_control_snapshot=growth_control_snapshot,
+        growth_control_snapshot_preloaded=growth_control_snapshot_preloaded,
     )
     if trigger_policy.trigger is MaintenanceTrigger.ARENA_ACCELERATION and not trigger_policy.is_due(
         next_growth_at=profile.next_growth_at,
@@ -4705,6 +4682,11 @@ def _build_v2_maintenance_plan_from_profile(
         cached = target_context_by_band.get(candidate.target_prestige_band)
         if cached is not None:
             return cached
+        target_growth_control_snapshot, target_growth_control_snapshot_preloaded = _preloaded_growth_control_snapshot(
+            planning_snapshot,
+            region=str(manor.region),
+            prestige_band=candidate.target_prestige_band,
+        )
         (
             target_snapshot_version,
             target_selection,
@@ -4720,6 +4702,8 @@ def _build_v2_maintenance_plan_from_profile(
             prestige_band=candidate.target_prestige_band,
             now=planned_at,
             manor_strength=strength_before,
+            growth_control_snapshot=target_growth_control_snapshot,
+            growth_control_snapshot_preloaded=target_growth_control_snapshot_preloaded,
         )
         if target_snapshot_version != reference_snapshot_version:
             raise V2MaintenanceError("source and target maintenance references use different snapshot versions")
@@ -5801,6 +5785,7 @@ def _assert_locked_profile_matches_plan(
     plan: MaintenancePlan,
     *,
     scheduled_cycle_id: str | None = None,
+    locked_scheduled_cycle: BotMaintenanceCycle | None = None,
 ) -> BotMaintenanceCycle | None:
     scheduled_cycle: BotMaintenanceCycle | None = None
     if profile.engine_version != V2_MAINTENANCE_ENGINE_VERSION:
@@ -5814,14 +5799,6 @@ def _assert_locked_profile_matches_plan(
             "profile_state_ineligible",
         )
     if plan.trigger_policy.trigger is MaintenanceTrigger.SCHEDULED:
-        has_arena_training = getattr(profile, "maintenance_has_arena_training", None)
-        if has_arena_training is None:
-            has_arena_training = is_virtual_profile_arena_training(profile_id=int(profile.id))
-        if has_arena_training:
-            raise _V2MaintenanceOutcomeError(
-                MaintenanceOutcome.INELIGIBLE,
-                "arena_training_active",
-            )
         has_arena_reserve = getattr(profile, "maintenance_has_arena_reserve", None)
         if has_arena_reserve is None:
             has_arena_reserve = BotProfile.objects.filter(
@@ -5829,6 +5806,14 @@ def _assert_locked_profile_matches_plan(
                 arena_virtual_reserve__isnull=False,
             ).exists()
         if has_arena_reserve:
+            has_arena_training = getattr(profile, "maintenance_has_arena_training", None)
+            if has_arena_training is None:
+                has_arena_training = is_virtual_profile_arena_training(profile_id=int(profile.id))
+            if has_arena_training:
+                raise _V2MaintenanceOutcomeError(
+                    MaintenanceOutcome.INELIGIBLE,
+                    "arena_training_active",
+                )
             raise _V2MaintenanceOutcomeError(
                 MaintenanceOutcome.INELIGIBLE,
                 "arena_reserve_owned",
@@ -5836,16 +5821,30 @@ def _assert_locked_profile_matches_plan(
     if plan.scheduled_cycle_slot_due:
         if not scheduled_cycle_id:
             raise V2MaintenanceError("scheduled cycle due plan requires a durable cycle identity")
-        scheduled_cycle = (
-            BotMaintenanceCycle.objects.select_for_update()
-            .filter(
-                cycle_id=str(scheduled_cycle_id),
-                profile_id=profile.id,
-                trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
-                status=BotMaintenanceCycle.Status.OPEN,
+        if locked_scheduled_cycle is not None:
+            # The scheduled path already locked this exact cycle while
+            # opening it. Reusing that instance keeps the lock boundary and
+            # avoids a second SELECT ... FOR UPDATE in the same transaction.
+            if (
+                str(locked_scheduled_cycle.cycle_id) != str(scheduled_cycle_id)
+                or int(locked_scheduled_cycle.profile_id) != int(profile.id)
+                or locked_scheduled_cycle.trigger != BotMaintenanceCycle.Trigger.SCHEDULED
+                or locked_scheduled_cycle.status != BotMaintenanceCycle.Status.OPEN
+            ):
+                scheduled_cycle = None
+            else:
+                scheduled_cycle = locked_scheduled_cycle
+        else:
+            scheduled_cycle = (
+                BotMaintenanceCycle.objects.select_for_update()
+                .filter(
+                    cycle_id=str(scheduled_cycle_id),
+                    profile_id=profile.id,
+                    trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
+                    status=BotMaintenanceCycle.Status.OPEN,
+                )
+                .first()
             )
-            .first()
-        )
         if scheduled_cycle is None or scheduled_cycle.next_slot_due_at is None:
             raise _V2MaintenanceOutcomeError(
                 MaintenanceOutcome.INELIGIBLE,
@@ -6169,6 +6168,7 @@ def execute_virtual_player_v2_maintenance_plan(
     _grain_template: ItemTemplate | None = None,
     _grain_template_resolved: bool = False,
     _scheduled_cycle_id: str | None = None,
+    _locked_scheduled_cycle: BotMaintenanceCycle | None = None,
     _run_ordinary_preamble: bool = False,
     _locked_profile: BotProfile | None = None,
     _manage_transaction: bool = True,
@@ -6207,6 +6207,7 @@ def execute_virtual_player_v2_maintenance_plan(
         profile,
         plan,
         scheduled_cycle_id=_scheduled_cycle_id,
+        locked_scheduled_cycle=_locked_scheduled_cycle,
     )
     routing_guard_matches = bool(getattr(profile, "maintenance_routing_matches", False))
     if _routing_snapshot is None or not routing_guard_matches:
@@ -6229,6 +6230,13 @@ def execute_virtual_player_v2_maintenance_plan(
             "maintenance_routing_changed",
         )
 
+    planning_snapshot = plan.planning_snapshot
+    fast_batch_revalidation_candidate = bool(
+        planning_snapshot is not None
+        and _policy_release is not None
+        and not plan.resource_production_deltas
+        and plan.forced_settlement_decision.combined_units == 0
+    )
     unresolved_reconciliation = BotExternalStrengthReconciliation.objects.filter(
         profile_id=profile.id,
     ).exclude(status=BotExternalStrengthReconciliation.Status.APPLIED)
@@ -6241,15 +6249,39 @@ def execute_virtual_player_v2_maintenance_plan(
         .order_by("id")
         .values("quantity")[:1]
     )
-    manor = (
-        Manor.objects.annotate(
-            maintenance_current_grain=Subquery(current_grain_item),
-            maintenance_has_unresolved_reconciliation=Exists(unresolved_reconciliation),
-        )
-        .select_for_update()
-        .filter(pk=plan.manor_id)
-        .first()
+    manor_queryset = Manor.objects.annotate(
+        maintenance_current_grain=Subquery(current_grain_item),
+        maintenance_has_unresolved_reconciliation=Exists(unresolved_reconciliation),
     )
+    if fast_batch_revalidation_candidate:
+        current_core_building_level = (
+            Building.objects.filter(
+                manor_id=OuterRef("pk"),
+                building_type__key__in=CORE_BUILDING_KEYS,
+            )
+            .order_by()
+            .values("manor_id")
+            .annotate(value=Max("level"))
+            .values("value")[:1]
+        )
+        current_troop_total = (
+            PlayerTroop.objects.filter(manor_id=OuterRef("pk"))
+            .order_by()
+            .values("manor_id")
+            .annotate(value=Sum("count"))
+            .values("value")[:1]
+        )
+        manor_queryset = manor_queryset.annotate(
+            maintenance_core_building_level=Subquery(
+                current_core_building_level,
+                output_field=IntegerField(),
+            ),
+            maintenance_troop_total=Subquery(
+                current_troop_total,
+                output_field=IntegerField(),
+            ),
+        )
+    manor = manor_queryset.select_for_update().filter(pk=plan.manor_id).first()
     if manor is None or int(profile.manor_id) != int(manor.id):
         raise _V2MaintenanceOutcomeError(
             MaintenanceOutcome.INELIGIBLE,
@@ -6291,14 +6323,7 @@ def execute_virtual_player_v2_maintenance_plan(
             int(guest.id) for guest in revalidation_guests if bool(getattr(guest, "maintenance_salary_paid", False))
         )
     )
-    planning_snapshot = plan.planning_snapshot
-    fast_batch_revalidation = bool(
-        planning_snapshot is not None
-        and _policy_release is not None
-        and not plan.resource_production_deltas
-        and plan.forced_settlement_decision.combined_units == 0
-        and manor.resource_updated_at == plan.planned_at
-    )
+    fast_batch_revalidation = bool(fast_batch_revalidation_candidate and manor.resource_updated_at == plan.planned_at)
     if fast_batch_revalidation:
         assert planning_snapshot is not None
         source_profile = planning_snapshot.profile
@@ -6338,9 +6363,11 @@ def execute_virtual_player_v2_maintenance_plan(
                 MaintenanceOutcome.BUSY,
                 "resource_snapshot_changed",
             )
-        revalidation_strength = load_manor_strength_summary(
-            manor_id=manor.id,
+        revalidation_strength = _build_strength_summary_from_locked_values(
+            manor=manor,
             guests=revalidation_guests,
+            core_building_level=int(getattr(manor, "maintenance_core_building_level", 0) or 0),
+            troop_total=int(getattr(manor, "maintenance_troop_total", 0) or 0),
         )
         if revalidation_strength != plan.strength_before:
             raise _V2MaintenanceOutcomeError(
@@ -7227,26 +7254,28 @@ def _finish_safety_attempt_best_effort(
     *,
     result: MaintenanceResult | MaintenanceAttemptResult,
 ) -> None:
-    try:
-        finish_maintenance_attempt(attempt, result=result)
-    except Exception as exc:
-        log_safety_metric_failure(
-            operation="maintenance_attempt_terminal",
-            exc=exc,
-        )
+    with record_maintenance_stage(STAGE_SAFETY_ATTEMPT_FINISH):
+        try:
+            finish_maintenance_attempt(attempt, result=result)
+        except Exception as exc:
+            log_safety_metric_failure(
+                operation="maintenance_attempt_terminal",
+                exc=exc,
+            )
 
 
 @record_maintenance_stage(STAGE_SAFETY_TASK_WRAPUP)
 def _finish_safety_attempts_best_effort(
     attempts: list[tuple[MaintenanceAttempt, MaintenanceResult | MaintenanceAttemptResult]],
 ) -> None:
-    try:
-        finish_maintenance_attempts(attempts)
-    except Exception as exc:
-        log_safety_metric_failure(
-            operation="maintenance_attempt_terminal_batch",
-            exc=exc,
-        )
+    with record_maintenance_stage(STAGE_SAFETY_ATTEMPT_FINISH):
+        try:
+            finish_maintenance_attempts(attempts)
+        except Exception as exc:
+            log_safety_metric_failure(
+                operation="maintenance_attempt_terminal_batch",
+                exc=exc,
+            )
 
 
 def _finish_or_defer_safety_attempt(
@@ -7317,6 +7346,7 @@ def _execute_virtual_player_v2_maintenance_with_receipt(
     grain_template: ItemTemplate | None = None,
     grain_template_resolved: bool = False,
     scheduled_cycle_id: str | None = None,
+    locked_scheduled_cycle: BotMaintenanceCycle | None = None,
     run_ordinary_preamble: bool = False,
     arena_member_id: int | None = None,
     arena_round_ordinal: int | None = None,
@@ -7331,6 +7361,7 @@ def _execute_virtual_player_v2_maintenance_with_receipt(
             _grain_template=grain_template,
             _grain_template_resolved=grain_template_resolved,
             _scheduled_cycle_id=scheduled_cycle_id,
+            _locked_scheduled_cycle=locked_scheduled_cycle,
             _run_ordinary_preamble=run_ordinary_preamble,
             _locked_profile=locked_profile,
             _manage_transaction=False,
@@ -7343,6 +7374,7 @@ def _execute_virtual_player_v2_maintenance_with_receipt(
             _grain_template=grain_template,
             _grain_template_resolved=grain_template_resolved,
             _scheduled_cycle_id=scheduled_cycle_id,
+            _locked_scheduled_cycle=locked_scheduled_cycle,
             _run_ordinary_preamble=run_ordinary_preamble,
             _locked_profile=locked_profile,
             _manage_transaction=False,
@@ -7395,23 +7427,34 @@ def _open_policy2_scheduled_cycle(
     *,
     now: datetime,
     _manage_transaction: bool = True,
+    _locked_profile: BotProfile | None = None,
+    _locked_cycle: BotMaintenanceCycle | None = None,
+    _cycle_lookup_complete: bool = False,
 ) -> BotMaintenanceCycle:
     """Return the one open ordinary policy-2 cycle for a profile."""
 
     cycle = (
-        BotMaintenanceCycle.objects.select_for_update()
-        .select_related("profile")
-        .filter(
-            profile_id=profile_id,
-            trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
+        _locked_cycle
+        if _cycle_lookup_complete
+        else (
+            BotMaintenanceCycle.objects.select_for_update()
+            .select_related("profile")
+            .filter(
+                profile_id=profile_id,
+                trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
+            )
+            .order_by("-cycle_ordinal", "-id")
+            .first()
         )
-        .order_by("-cycle_ordinal", "-id")
-        .first()
     )
     # A profile without a cycle still needs the profile lock to serialize the
     # first-cycle insert.  Once a cycle exists, the joined FOR UPDATE query
     # locks the cycle and its profile in one round trip.
-    profile = cycle.profile if cycle is not None else BotProfile.objects.select_for_update().get(pk=profile_id)
+    profile = (
+        cycle.profile
+        if cycle is not None
+        else (_locked_profile or BotProfile.objects.select_for_update().get(pk=profile_id))
+    )
     ordinary_guest_count_target = _normalize_ordinary_guest_count_target(
         int(getattr(profile, "guest_count_target", 0) or 0)
     )
@@ -7709,6 +7752,7 @@ def _record_policy2_scheduled_cycle_result(
     now: datetime,
     request_operation_id: str | None = None,
     request_attempt_ordinal: int = 1,
+    _locked_cycle: BotMaintenanceCycle | None = None,
 ) -> None:
     """Persist a committed slot and keep the profile due until slot 16.
 
@@ -7718,7 +7762,15 @@ def _record_policy2_scheduled_cycle_result(
 
     if result.outcome not in {MaintenanceOutcome.APPLIED, MaintenanceOutcome.NO_ACTION}:
         return
-    cycle = BotMaintenanceCycle.objects.select_for_update().select_related("profile").get(cycle_id=str(cycle_id))
+    if _locked_cycle is not None:
+        # _run_v2_maintenance_attempt owns the same row lock from cycle open
+        # through this commit. Reuse the locked object instead of re-reading
+        # it; direct callers keep the original SELECT ... FOR UPDATE path.
+        if str(_locked_cycle.cycle_id) != str(cycle_id):
+            raise V2MaintenanceError("locked scheduled cycle differs from the committed cycle")
+        cycle = _locked_cycle
+    else:
+        cycle = BotMaintenanceCycle.objects.select_for_update().select_related("profile").get(cycle_id=str(cycle_id))
     profile = cycle.profile
     if int(profile.id) != int(result.profile_id):
         raise V2MaintenanceError("scheduled cycle profile differs from the committed maintenance result")
@@ -8416,6 +8468,8 @@ def _run_v2_maintenance_attempt(
     routing_snapshot: RuntimeRoutingSnapshot | None,
     external_reconciliation_prechecked: bool,
     planning_snapshot: _MaintenancePlanningSnapshot | None,
+    scheduled_cycle_known_absent: bool,
+    scheduled_cycle_open_known: bool,
     arena_excluded_training_guest_ids: tuple[int, ...],
     arena_member_id: int | None,
     arena_round_ordinal: int | None,
@@ -8441,11 +8495,18 @@ def _run_v2_maintenance_attempt(
     locked_profile: BotProfile | None = None
     if trigger_policy.trigger is MaintenanceTrigger.SCHEDULED and int(policy_version or 0) == 2:
         try:
-            locked_profile = profile_store.lock_maintained_profile(
+            locked_profile, scheduled_cycle = profile_store.lock_maintained_profile_with_scheduled_cycle(
                 profile_id,
                 nowait=True,
                 expected_v2_routing=routing_snapshot,
                 include_arena_reserve_guard=True,
+                # A normal scheduled profile has no Arena reserve.  The
+                # reserve membership is enough to avoid the training probe;
+                # _assert_locked_profile_matches_plan performs that second
+                # check only for a profile that actually owns a reserve.
+                include_arena_training_guard=False,
+                cycle_known_absent=scheduled_cycle_known_absent,
+                open_cycle_known=scheduled_cycle_open_known,
             )
         except profile_store.ProfileLockUnavailable:
             return (
@@ -8479,6 +8540,9 @@ def _run_v2_maintenance_attempt(
                 profile_id,
                 now=(now or timezone.now()),
                 _manage_transaction=False,
+                _locked_profile=locked_profile,
+                _locked_cycle=scheduled_cycle,
+                _cycle_lookup_complete=True,
             )
         except (KeyError, TypeError, ValueError, V2MaintenanceError):
             logger.warning(
@@ -8626,6 +8690,7 @@ def _run_v2_maintenance_attempt(
                                 _grain_template=grain_template,
                                 _grain_template_resolved=grain_template_resolved,
                                 _scheduled_cycle_id=(None if scheduled_cycle is None else scheduled_cycle.cycle_id),
+                                _locked_scheduled_cycle=scheduled_cycle,
                                 _locked_profile=locked_profile,
                                 # Policy-2 scheduled cycles already own the outer
                                 # profile/cycle transaction.  Other triggers must
@@ -8645,6 +8710,7 @@ def _run_v2_maintenance_attempt(
                             grain_template=grain_template,
                             grain_template_resolved=grain_template_resolved,
                             scheduled_cycle_id=(None if scheduled_cycle is None else scheduled_cycle.cycle_id),
+                            locked_scheduled_cycle=scheduled_cycle,
                             locked_profile=locked_profile,
                             run_ordinary_preamble=(
                                 scheduled_cycle is not None and int(scheduled_cycle.action_ordinal) == 0
@@ -8695,6 +8761,7 @@ def _run_v2_maintenance_attempt(
             request_operation_id=request_operation_id,
             request_attempt_ordinal=request_attempt_ordinal,
             _manage_transaction=False,
+            _locked_cycle=scheduled_cycle,
         )
     elif scheduled_cycle is not None and result.outcome is MaintenanceOutcome.BUSY:
         _record_policy2_scheduled_cycle_retry(
@@ -8727,6 +8794,8 @@ def maintain_virtual_player_v2(
     _routing_snapshot: RuntimeRoutingSnapshot | None = None,
     _external_reconciliation_prechecked: bool = False,
     _planning_snapshot: _MaintenancePlanningSnapshot | None = None,
+    _scheduled_cycle_known_absent: bool = False,
+    _scheduled_cycle_open_known: bool = False,
     _arena_excluded_training_guest_ids: tuple[int, ...] = (),
     _arena_member_id: int | None = None,
     _arena_round_ordinal: int | None = None,
@@ -8829,6 +8898,8 @@ def maintain_virtual_player_v2(
                 routing_snapshot=_routing_snapshot,
                 external_reconciliation_prechecked=_external_reconciliation_prechecked,
                 planning_snapshot=_planning_snapshot,
+                scheduled_cycle_known_absent=_scheduled_cycle_known_absent,
+                scheduled_cycle_open_known=_scheduled_cycle_open_known,
                 arena_excluded_training_guest_ids=_arena_excluded_training_guest_ids,
                 arena_member_id=_arena_member_id,
                 arena_round_ordinal=_arena_round_ordinal,
@@ -9258,6 +9329,26 @@ def _scheduled_planning_snapshots(
     )
     policy_releases = BotPolicyRelease.objects.in_bulk({int(profile.policy_version) for profile in profiles})
 
+    control_config = load_virtual_player_v2_config()
+    control_bands = tuple(
+        dict.fromkeys(
+            str(band.name)
+            for band in (control_config.bands if control_config is not None else ())
+            if str(band.name).strip()
+        )
+    )
+    if not control_bands:
+        control_bands = tuple(dict.fromkeys(str(profile.current_prestige_band) for profile in profiles))
+    control_routes = tuple(
+        dict.fromkeys(
+            (str(profile.manor.region), prestige_band) for profile in profiles for prestige_band in control_bands
+        )
+    )
+    growth_control_snapshots = effective_growth_control_snapshots(
+        routes=control_routes,
+        now=planned_at,
+    )
+
     troop_manor_ids = tuple(
         int(profile.manor_id)
         for profile in profiles
@@ -9347,6 +9438,16 @@ def _scheduled_planning_snapshots(
             virtual_inventory_templates=virtual_pools.inventory_templates,
             rare_inventory_quantity_today=virtual_pools.rare_inventory_quantity_today,
             recruitment_pool_silver_costs=recruitment_pool_silver_costs,
+            growth_control_snapshots=tuple(
+                (
+                    manor_region,
+                    prestige_band,
+                    growth_control_snapshots.get((manor_region, prestige_band)),
+                )
+                for manor_region in (str(profile.manor.region),)
+                for prestige_band in control_bands
+            ),
+            growth_control_snapshots_preloaded=True,
         )
     return snapshots
 
@@ -9443,14 +9544,15 @@ def _scheduled_planning_snapshots_with_profile_isolation(
                     "failure_code": type(exc).__name__,
                 },
             )
-            record_recovery_failure(
-                scope="profile",
-                entity_key=str(profile_id),
-                failure_code=classify_failure(exc),
-                error=exc,
-                operation_id=safety_attempt.operation_id,
-                payload={"trigger": MaintenanceTrigger.SCHEDULED.value, "phase": "planning"},
-            )
+            with record_maintenance_stage(STAGE_RECOVERY_STATE):
+                record_recovery_failure(
+                    scope="profile",
+                    entity_key=str(profile_id),
+                    failure_code=classify_failure(exc),
+                    error=exc,
+                    operation_id=safety_attempt.operation_id,
+                    payload={"trigger": MaintenanceTrigger.SCHEDULED.value, "phase": "planning"},
+                )
             terminal_batch.append((safety_attempt, MaintenanceAttemptResult.FAILED))
             continue
         except Exception as exc:
@@ -9462,14 +9564,15 @@ def _scheduled_planning_snapshots_with_profile_isolation(
                     "profile_id": profile_id,
                 },
             )
-            record_recovery_failure(
-                scope="profile",
-                entity_key=str(profile_id),
-                failure_code=classify_failure(exc),
-                error=exc,
-                operation_id=safety_attempt.operation_id,
-                payload={"trigger": MaintenanceTrigger.SCHEDULED.value, "phase": "planning"},
-            )
+            with record_maintenance_stage(STAGE_RECOVERY_STATE):
+                record_recovery_failure(
+                    scope="profile",
+                    entity_key=str(profile_id),
+                    failure_code=classify_failure(exc),
+                    error=exc,
+                    operation_id=safety_attempt.operation_id,
+                    payload={"trigger": MaintenanceTrigger.SCHEDULED.value, "phase": "planning"},
+                )
             terminal_batch.append((safety_attempt, MaintenanceAttemptResult.FAILED))
             continue
         snapshots.update(profile_snapshots)
@@ -9492,7 +9595,7 @@ def _retire_due_v2_profiles(
     return retired, frozenset(retired_ids)
 
 
-@record_maintenance_stage(STAGE_SAFETY_TASK_WRAPUP)
+@record_maintenance_stage(STAGE_BATCH_ORCHESTRATION)
 def _maintain_due_virtual_players_v2(
     *,
     current_time: datetime,
@@ -9509,15 +9612,12 @@ def _maintain_due_virtual_players_v2(
     # Filter unsafe profiles before applying the batch limit.  Slicing first
     # lets a permanently quarantined head-of-line profile starve every later
     # due profile indefinitely.
-    open_scheduled_cycle = (
-        BotMaintenanceCycle.objects.filter(
-            profile_id=OuterRef("pk"),
-            trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
-            status=BotMaintenanceCycle.Status.OPEN,
-        )
-        .order_by("-cycle_ordinal", "-id")
-        .values("next_slot_due_at")[:1]
+    scheduled_cycles = BotMaintenanceCycle.objects.filter(
+        profile_id=OuterRef("pk"),
+        trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
     )
+    open_scheduled_cycles = scheduled_cycles.filter(status=BotMaintenanceCycle.Status.OPEN)
+    open_scheduled_cycle = open_scheduled_cycles.order_by("-cycle_ordinal", "-id").values("next_slot_due_at")[:1]
     profile_queryset = without_unresolved_external_reconciliations(
         BotProfile.objects.filter(
             engine_version=V2_MAINTENANCE_ENGINE_VERSION,
@@ -9585,6 +9685,8 @@ def _maintain_due_virtual_players_v2(
                     output_field=DateTimeField(),
                 ),
                 maintenance_recovery_needs_clear=Exists(recovery_needs_clear),
+                scheduled_cycle_exists_at_selection=Exists(scheduled_cycles),
+                scheduled_cycle_open_at_selection=Exists(open_scheduled_cycles),
             )
             .select_related("manor")
             .order_by(*due_order, "manor__region")[:SCHEDULED_MAINTENANCE_DUE_SCAN_HARD_CAP]
@@ -9687,11 +9789,12 @@ def _maintain_due_virtual_players_v2(
         raise
 
     try:
-        safety_attempts = start_maintenance_attempts(
-            trigger=MaintenanceTrigger.SCHEDULED,
-            operation_ids=(None,) * len(profiles),
-            retention_reference_at=database_clock,
-        )
+        with record_maintenance_stage(STAGE_SAFETY_ATTEMPT_START):
+            safety_attempts = start_maintenance_attempts(
+                trigger=MaintenanceTrigger.SCHEDULED,
+                operation_ids=(None,) * len(profiles),
+                retention_reference_at=database_clock,
+            )
     except (DatabaseError, SafetyProviderError) as exc:
         log_safety_metric_failure(
             operation="maintenance_attempt_started_batch",
@@ -9723,16 +9826,19 @@ def _maintain_due_virtual_players_v2(
                 _planning_snapshot=planning_snapshot,
                 _safety_attempt=safety_attempt,
                 _safety_terminal_batch=terminal_batch,
+                _scheduled_cycle_known_absent=not bool(getattr(profile, "scheduled_cycle_exists_at_selection", True)),
+                _scheduled_cycle_open_known=bool(getattr(profile, "scheduled_cycle_open_at_selection", False)),
             )
         except DatabaseError as exc:
-            record_recovery_failure(
-                scope="profile",
-                entity_key=str(profile_id),
-                failure_code=classify_failure(exc, commit_uncertain=True),
-                error=exc,
-                operation_id=safety_attempt.operation_id,
-                payload={"trigger": MaintenanceTrigger.SCHEDULED.value},
-            )
+            with record_maintenance_stage(STAGE_RECOVERY_STATE):
+                record_recovery_failure(
+                    scope="profile",
+                    entity_key=str(profile_id),
+                    failure_code=classify_failure(exc, commit_uncertain=True),
+                    error=exc,
+                    operation_id=safety_attempt.operation_id,
+                    payload={"trigger": MaintenanceTrigger.SCHEDULED.value},
+                )
             logger.exception(
                 "Virtual player V2 maintenance database failure isolated: profile_id=%s",
                 profile_id,
@@ -9745,14 +9851,15 @@ def _maintain_due_virtual_players_v2(
             _finish_safety_attempts_best_effort(terminal_batch)
             raise
         except Exception as exc:
-            record_recovery_failure(
-                scope="profile",
-                entity_key=str(profile_id),
-                failure_code=classify_failure(exc),
-                error=exc,
-                operation_id=safety_attempt.operation_id,
-                payload={"trigger": MaintenanceTrigger.SCHEDULED.value},
-            )
+            with record_maintenance_stage(STAGE_RECOVERY_STATE):
+                record_recovery_failure(
+                    scope="profile",
+                    entity_key=str(profile_id),
+                    failure_code=classify_failure(exc),
+                    error=exc,
+                    operation_id=safety_attempt.operation_id,
+                    payload={"trigger": MaintenanceTrigger.SCHEDULED.value},
+                )
             logger.exception(
                 "Virtual player V2 maintenance failed: profile_id=%s",
                 profile_id,
@@ -9767,7 +9874,8 @@ def _maintain_due_virtual_players_v2(
             MaintenanceOutcome.NO_ACTION,
         }:
             if bool(getattr(profile, "maintenance_recovery_needs_clear", False)):
-                clear_recovery_failure(scope="profile", entity_key=str(profile_id), now=current_time)
+                with record_maintenance_stage(STAGE_RECOVERY_STATE):
+                    clear_recovery_failure(scope="profile", entity_key=str(profile_id), now=current_time)
             maintained += 1
     _finish_safety_attempts_best_effort(terminal_batch)
     logger.info(

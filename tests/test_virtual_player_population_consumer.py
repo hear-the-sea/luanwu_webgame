@@ -547,7 +547,7 @@ def test_arena_handoff_uses_maximum_matching_for_general_and_specialized_candida
     )
     first_demand_id = demands[0].id
 
-    def assess_candidate(demand, profile):
+    def assess_candidate(demand, profile, **_kwargs):
         eligible = profile.id == general.id or demand.id == first_demand_id
         return SimpleNamespace(
             disposition=(

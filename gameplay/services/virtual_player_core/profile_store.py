@@ -5,8 +5,9 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
+from django.apps import apps
 from django.db import DatabaseError, transaction
-from django.db.models import F, Q
+from django.db.models import F, OuterRef, Q
 from django.utils import timezone
 
 from gameplay.constants import VIRTUAL_PLAYER_REGION_KEYS
@@ -300,6 +301,7 @@ def lock_maintained_profile(
     nowait: bool = False,
     expected_v2_routing: RuntimeRoutingSnapshot | None = None,
     include_arena_reserve_guard: bool = False,
+    include_arena_training_guard: bool = True,
 ) -> BotProfile | None:
     if skip_locked and nowait:
         raise ValueError("skip_locked and nowait are mutually exclusive")
@@ -310,7 +312,7 @@ def lock_maintained_profile(
     if expected_v2_routing is not None:
         queryset = queryset.annotate(maintenance_routing_matches=runtime_routing_guard_expression(expected_v2_routing))
     if include_arena_reserve_guard:
-        queryset = with_arena_reserve_guard(queryset)
+        queryset = with_arena_reserve_guard(queryset, include_training=include_arena_training_guard)
     try:
         return queryset.filter(
             pk=profile_id,
@@ -320,6 +322,93 @@ def lock_maintained_profile(
         if nowait and _is_nowait_lock_unavailable(exc):
             raise ProfileLockUnavailable from exc
         raise
+
+
+def lock_maintained_profile_with_scheduled_cycle(
+    profile_id: int,
+    *,
+    skip_locked: bool = False,
+    nowait: bool = False,
+    expected_v2_routing: RuntimeRoutingSnapshot | None = None,
+    include_arena_reserve_guard: bool = False,
+    include_arena_training_guard: bool = True,
+    cycle_known_absent: bool = False,
+    open_cycle_known: bool = False,
+) -> tuple[BotProfile | None, Any | None]:
+    """Lock a maintained profile and its latest scheduled cycle together.
+
+    Existing cycles are loaded through one joined locking query.  A profile
+    without a cycle still uses ``lock_maintained_profile`` so the first-cycle
+    insert remains serialized by the profile row lock.
+    """
+    if skip_locked and nowait:
+        raise ValueError("skip_locked and nowait are mutually exclusive")
+    cycle_model: Any = apps.get_model("gameplay", "BotMaintenanceCycle")
+    cycle_queryset = (
+        cycle_model.objects.select_for_update(
+            skip_locked=skip_locked,
+            nowait=nowait,
+        )
+        .select_related("profile")
+        .filter(
+            profile_id=profile_id,
+            profile__state__in=VIRTUAL_PROFILE_MAINTAINED_STATES,
+            trigger=cycle_model.Trigger.SCHEDULED,
+        )
+        .order_by("-cycle_ordinal", "-id")
+    )
+    if expected_v2_routing is not None:
+        cycle_queryset = cycle_queryset.annotate(
+            maintenance_routing_matches=runtime_routing_guard_expression(expected_v2_routing),
+        )
+    if include_arena_reserve_guard:
+        cycle_queryset = with_arena_reserve_guard(
+            cycle_queryset,
+            profile_ref=OuterRef("profile_id"),
+            include_training=include_arena_training_guard,
+        )
+    try:
+        # The latest scheduled row is the only row the cycle state machine can
+        # use.  Reading it directly also avoids a correlated "latest ordinal"
+        # subquery that would scan a profile's completed history before the
+        # same latest-row lookup below.  Keep the caller's open-cycle hint in
+        # the signature for compatibility; the indexed latest-row read
+        # subsumes both cases without changing which cycle is returned.
+        cycle = None
+        if not cycle_known_absent:
+            cycle = cycle_queryset.first()
+        if cycle is None:
+            # The initial cycle lookup and the profile fallback are separate
+            # reads. Recheck after acquiring the profile lock so a cycle
+            # committed between those reads is reused instead of being
+            # mistaken for a first-cycle insert.
+            profile = lock_maintained_profile(
+                profile_id,
+                skip_locked=skip_locked,
+                nowait=nowait,
+                expected_v2_routing=expected_v2_routing,
+                include_arena_reserve_guard=include_arena_reserve_guard,
+                include_arena_training_guard=include_arena_training_guard,
+            )
+            if profile is None:
+                return None, None
+            cycle = cycle_queryset.first()
+            if cycle is None:
+                return profile, None
+    except DatabaseError as exc:
+        if nowait and _is_nowait_lock_unavailable(exc):
+            raise ProfileLockUnavailable from exc
+        raise
+
+    profile = cycle.profile
+    for attribute in (
+        "maintenance_routing_matches",
+        "maintenance_has_arena_reserve",
+        "maintenance_has_arena_training",
+    ):
+        if hasattr(cycle, attribute):
+            setattr(profile, attribute, getattr(cycle, attribute))
+    return profile, cycle
 
 
 def create_active_profile(
@@ -1087,6 +1176,7 @@ __all__ = [
     "commit_maintenance_cycle",
     "defer_profile_retirement",
     "lock_maintained_profile",
+    "lock_maintained_profile_with_scheduled_cycle",
     "mark_profiles_stale",
     "mark_profile_retired",
     "reactivate_profile",

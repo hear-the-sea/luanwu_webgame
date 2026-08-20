@@ -39,12 +39,8 @@ from gameplay.services.virtual_player_core.projection import (
 from gameplay.services.virtual_player_core.random_context import RandomContext
 from gameplay.services.virtual_player_core.safety_metrics import record_safety_heartbeat
 from gameplay.services.virtual_player_core.stage_metrics import (
-    STAGE_ACTION_DOMAIN_WRITES,
-    STAGE_CYCLE_ATTEMPT_RECEIPT,
-    STAGE_DUE_BACKLOG_SELECTION,
-    STAGE_PLANNING_SNAPSHOT_PRELOAD,
-    STAGE_PROFILE_PLAN_REVALIDATION,
-    STAGE_SAFETY_TASK_WRAPUP,
+    GATE_E_OPTIONAL_STAGE_NAMES,
+    GATE_E_REQUIRED_STAGE_NAMES,
     MaintenanceStageObservation,
     capture_maintenance_stage_metrics,
     current_maintenance_stage_metrics,
@@ -58,14 +54,8 @@ pytestmark = [pytest.mark.integration]
 _WARMUP_RUNS = 5
 _MEASURED_RUNS = 30
 _WRITE_PREFIXES = ("INSERT ", "UPDATE ", "DELETE ", "REPLACE ")
-_STAGE_NAMES = (
-    STAGE_DUE_BACKLOG_SELECTION,
-    STAGE_PLANNING_SNAPSHOT_PRELOAD,
-    STAGE_PROFILE_PLAN_REVALIDATION,
-    STAGE_ACTION_DOMAIN_WRITES,
-    STAGE_CYCLE_ATTEMPT_RECEIPT,
-    STAGE_SAFETY_TASK_WRAPUP,
-)
+_STAGE_NAMES = GATE_E_REQUIRED_STAGE_NAMES
+_OPTIONAL_STAGE_NAMES = GATE_E_OPTIONAL_STAGE_NAMES
 
 
 @dataclass(frozen=True)
@@ -145,8 +135,9 @@ def _stage_fingerprint_token(fingerprints: tuple[tuple[str, int], ...]) -> str:
 
 
 def _print_stage_metrics(samples: list[_WorkerSample], *, batch_size: int, concurrency: int) -> None:
-    observations_by_stage: dict[str, list[MaintenanceStageObservation]] = {stage: [] for stage in _STAGE_NAMES}
-    fingerprints_by_stage: dict[str, Counter[str]] = {stage: Counter() for stage in _STAGE_NAMES}
+    all_stage_names = (*_STAGE_NAMES, *_OPTIONAL_STAGE_NAMES)
+    observations_by_stage: dict[str, list[MaintenanceStageObservation]] = {stage: [] for stage in all_stage_names}
+    fingerprints_by_stage: dict[str, Counter[str]] = {stage: Counter() for stage in all_stage_names}
     for sample in samples:
         for observation in sample.stage_observations:
             if observation.stage not in observations_by_stage:
@@ -154,9 +145,12 @@ def _print_stage_metrics(samples: list[_WorkerSample], *, batch_size: int, concu
             observations_by_stage[observation.stage].append(observation)
             fingerprints_by_stage[observation.stage].update(dict(observation.query_fingerprints))
 
-    for stage in _STAGE_NAMES:
+    for stage in all_stage_names:
         observations = observations_by_stage[stage]
-        assert observations, f"no observations recorded for maintenance stage {stage}"
+        if not observations:
+            if stage in _STAGE_NAMES:
+                raise AssertionError(f"no observations recorded for maintenance stage {stage}")
+            continue
         durations = [observation.duration_ms for observation in observations]
         fingerprints = tuple(fingerprints_by_stage[stage].most_common(10))
         print(
@@ -223,6 +217,9 @@ def _install_permissive_reference(monkeypatch) -> None:
         return 2, selection, "a" * 64
 
     monkeypatch.setattr(maintenance, "growth_control_reference_selection", _select_reference)
+    # The deterministic benchmark double replaces the production resolver;
+    # keep its planning snapshot preload side-effect free as well.
+    monkeypatch.setattr(maintenance, "effective_growth_control_snapshots", lambda **_kwargs: {})
 
 
 def _create_v2_profiles(*, count: int, now, policy) -> list[BotProfile]:
@@ -536,7 +533,7 @@ def test_same_profile_double_worker_has_one_committed_winner(
     )[0]
     record_safety_heartbeat("safety_monitor", now=timezone.now())
 
-    original_lock = maintenance.profile_store.lock_maintained_profile
+    original_lock = maintenance.profile_store.lock_maintained_profile_with_scheduled_cycle
     contenders_ready = threading.Barrier(2)
 
     def _synchronized_lock(*args, **kwargs):
@@ -545,7 +542,7 @@ def test_same_profile_double_worker_has_one_committed_winner(
 
     monkeypatch.setattr(
         maintenance.profile_store,
-        "lock_maintained_profile",
+        "lock_maintained_profile_with_scheduled_cycle",
         _synchronized_lock,
     )
     start = threading.Barrier(2)
@@ -753,8 +750,8 @@ def test_mysql_failure_boundaries_do_not_duplicate_or_partially_commit(
 
     original_ensure_auto_training = training_service.ensure_auto_training
 
-    def _fail_after_domain_write(guest):
-        original_ensure_auto_training(guest)
+    def _fail_after_domain_write(guest, **kwargs):
+        original_ensure_auto_training(guest, **kwargs)
         raise RuntimeError("injected after domain write")
 
     monkeypatch.setattr(training_service, "ensure_auto_training", _fail_after_domain_write)

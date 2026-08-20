@@ -25,6 +25,7 @@ function createClassList() {
 
 function createDashboardEnvironment(fetchResponses) {
   const timeoutHandles = [];
+  const eventListeners = new Map();
   const levelElement = { textContent: "等级 1" };
   const hpElement = { textContent: "生命 100/100" };
   const upgradeCell = {
@@ -45,6 +46,7 @@ function createDashboardEnvironment(fetchResponses) {
   ]);
   const countdownElement = {
     nodeType: 1,
+    isConnected: true,
     textContent: "计算中",
     classList: createClassList(),
     getAttribute(name) {
@@ -69,6 +71,13 @@ function createDashboardEnvironment(fetchResponses) {
     },
   };
 
+  let currentPageShell = {
+    querySelectorAll(selector) {
+      if (selector === "[data-countdown]") return [countdownElement];
+      return [];
+    },
+  };
+
   const documentObj = {
     readyState: "complete",
     cookie: "",
@@ -82,10 +91,18 @@ function createDashboardEnvironment(fetchResponses) {
       return [];
     },
     querySelector(selector) {
+      if (selector === "#page-shell") return currentPageShell;
       if (selector === 'meta[name="csrf-token"]') {
         return { getAttribute: () => "test-csrf-token" };
       }
       return null;
+    },
+    addEventListener(type, listener) {
+      eventListeners.set(type, listener);
+    },
+    dispatchEvent(event) {
+      const listener = eventListeners.get(event.type);
+      if (listener) listener(event);
     },
     createElement() {
       return {
@@ -143,6 +160,9 @@ function createDashboardEnvironment(fetchResponses) {
     fetchCallCount() {
       return fetchCallCount;
     },
+    setPageShell(nextPageShell) {
+      currentPageShell = nextPageShell;
+    },
   };
 }
 
@@ -188,4 +208,44 @@ test("guest training countdown retries a failed status check and recovers", asyn
   assert.equal(environment.attributes.get("data-countdown"), nextTrainingEta);
   assert.equal(environment.countdownElement.textContent, "计算中");
   assert.equal(environment.countdownElement.classList.contains("countdown-finished"), false);
+});
+
+test("dashboard refreshes its countdown cache after partial navigation replaces the page shell", () => {
+  const environment = createDashboardEnvironment([]);
+  const nextCountdownElement = {
+    nodeType: 1,
+    isConnected: true,
+    textContent: "旧内容",
+    classList: createClassList(),
+    getAttribute(name) {
+      if (name === "data-countdown") return "2999-01-01T00:00:00.000Z";
+      if (name === "data-format") return "zh";
+      return null;
+    },
+    hasAttribute(name) {
+      return name === "data-countdown";
+    },
+    setAttribute() {},
+    removeAttribute() {},
+    querySelectorAll() {
+      return [];
+    },
+    closest() {
+      return null;
+    },
+  };
+  const nextPageShell = {
+    querySelectorAll(selector) {
+      if (selector === "[data-countdown]") return [nextCountdownElement];
+      return [];
+    },
+  };
+  const scriptPath = path.resolve(__dirname, "..", "dashboard.js");
+  const scriptSource = fs.readFileSync(scriptPath, "utf8");
+
+  vm.runInContext(scriptSource, environment.context, { filename: "dashboard.js" });
+  environment.setPageShell(nextPageShell);
+  environment.context.document.dispatchEvent({ type: "partial-nav:loaded" });
+
+  assert.match(nextCountdownElement.textContent, /分钟|秒/);
 });

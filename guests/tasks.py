@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import math
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 from typing import Callable
 
 from celery import shared_task
@@ -416,7 +416,6 @@ def process_daily_loyalty(self) -> str:
     建议每日凌晨执行一次
     """
     import hashlib
-    from datetime import timedelta
 
     from django.db.models import F, Q
     from django.db.models.functions import Greatest, Least
@@ -428,6 +427,7 @@ def process_daily_loyalty(self) -> str:
     try:
         today = timezone.localdate()
         yesterday = today - timedelta(days=1)
+        yesterday_start = timezone.make_aware(datetime.combine(yesterday, time.min))
 
         paid_guest_ids_qs = SalaryPayment.objects.filter(for_date=yesterday).values_list("guest_id", flat=True)
         virtual_normalized_count = (
@@ -451,8 +451,8 @@ def process_daily_loyalty(self) -> str:
         # A guest owes no salary on its creation date. The first loyalty
         # settlement after recruitment therefore records processing without a
         # gain or loss; normal salary-based settlement starts the next day.
-        creation_day_exempt_qs = base_qs.filter(created_at__date__gte=yesterday)
-        salary_eligible_qs = base_qs.filter(created_at__date__lt=yesterday)
+        creation_day_exempt_qs = base_qs.filter(created_at__gte=yesterday_start)
+        salary_eligible_qs = base_qs.filter(created_at__lt=yesterday_start)
 
         paid_qs = salary_eligible_qs.filter(id__in=paid_guest_ids_qs)
         unpaid_qs = salary_eligible_qs.exclude(id__in=paid_guest_ids_qs)
@@ -480,7 +480,7 @@ def process_daily_loyalty(self) -> str:
         # So for defections we re-select candidates by `loyalty_processed_for_date=today`.
         defection_candidate_ids = (
             Guest.objects.filter(
-                created_at__date__lt=yesterday,
+                created_at__lt=yesterday_start,
                 loyalty_processed_for_date=today,
                 loyalty__lt=30,
                 manor__bot_profile__isnull=True,

@@ -25,6 +25,13 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from gameplay.services.virtual_player_core.stage_metrics import (  # noqa: E402
+    GATE_E_ALLOWED_STAGE_NAMES as _GATE_E_ALLOWED_STAGE_NAMES,
+)
+from gameplay.services.virtual_player_core.stage_metrics import (  # noqa: E402
+    GATE_E_REQUIRED_STAGE_NAMES as _GATE_E_STAGE_NAMES,
+)
+
 DOCS_ROOT = PROJECT_ROOT / "docs"
 MAKEFILE_PATH = PROJECT_ROOT / "Makefile"
 ACCEPTANCE_PATH = DOCS_ROOT / "virtual_player_gate_a_acceptance_config_2026-07-27.yaml"
@@ -43,15 +50,6 @@ GATE_E_REAL_VARIABLE = "VIRTUAL_PLAYER_GATE_E_REAL_SERVICE_TESTS"
 GATE_A_COMMAND = "DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-a"
 GATE_D1_COMMAND = "DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-d1"
 GATE_E_COMMAND = "DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-e"
-
-_GATE_E_STAGE_NAMES = (
-    "due_backlog_selection",
-    "planning_snapshot_preload",
-    "profile_plan_revalidation",
-    "action_domain_writes",
-    "cycle_attempt_receipt",
-    "safety_task_wrapup",
-)
 
 _PYTEST_SUMMARY_PATTERN = re.compile(
     r"^(?P<outcomes>\d+ [a-z]+(?:, \d+ [a-z]+)*) in " r"(?P<seconds>\d+(?:\.\d+)?)s(?: \(\d+:\d{2}:\d{2}\))?$"
@@ -400,7 +398,7 @@ def _parse_gate_e_stage_metrics(output: str) -> tuple[dict[str, Any], ...]:
         if set(metrics) != expected_fields:
             raise EvidenceRecordingError("Gate E stage metric fields are incomplete")
         stage = metrics["stage"]
-        if stage not in _GATE_E_STAGE_NAMES:
+        if stage not in _GATE_E_ALLOWED_STAGE_NAMES:
             raise EvidenceRecordingError(f"Gate E output contains an unknown maintenance stage: {stage}")
         observations = int(metrics["observations"])
         p50 = float(metrics["duration_p50_ms"])
@@ -430,7 +428,19 @@ def _parse_gate_e_stage_metrics(output: str) -> tuple[dict[str, Any], ...]:
         for stage in _GATE_E_STAGE_NAMES
     }
     observed_keys = {(int(row["batch_size"]), int(row["concurrency"]), str(row["stage"])) for row in rows}
-    if len(rows) != len(expected_keys) or observed_keys != expected_keys:
+    optional_keys = {
+        (batch_size, concurrency, stage)
+        for batch_size in (1, 10, 100)
+        for concurrency in (1, 2)
+        for stage in _GATE_E_ALLOWED_STAGE_NAMES
+        if stage not in _GATE_E_STAGE_NAMES
+    }
+    permitted_keys = expected_keys | optional_keys
+    if (
+        len(rows) != len(observed_keys)
+        or not expected_keys.issubset(observed_keys)
+        or not observed_keys.issubset(permitted_keys)
+    ):
         raise EvidenceRecordingError("Gate E output does not contain the complete stage metric matrix")
     return tuple(rows)
 
@@ -883,6 +893,13 @@ def _build_gate_e_evidence(
     evidence = deepcopy(dict(template))
     date_id = artifact_date.replace("-", "_")
     matrix = [{**dict(row), "exact_metrics_retained": True, "status": "passed"} for row in benchmark_rows]
+    required_stage_names = frozenset(_GATE_E_STAGE_NAMES)
+    observed_stage_names = {str(row["stage"]) for row in stage_metric_rows}
+    observed_optional_stage_names = [
+        stage
+        for stage in _GATE_E_ALLOWED_STAGE_NAMES
+        if stage not in required_stage_names and stage in observed_stage_names
+    ]
     manifest_execution = manifest["canonical_gate"]["execution"]
     result_summary = str(manifest_execution["result_summary"])
     result, separator, detail = result_summary.partition(" (")
@@ -913,6 +930,7 @@ def _build_gate_e_evidence(
                         "inclusive_duration_ms is retained for tracing"
                     ),
                     "stage_names": list(_GATE_E_STAGE_NAMES),
+                    "optional_stage_names": observed_optional_stage_names,
                     "rows": [dict(row) for row in stage_metric_rows],
                 },
                 "canonical_execution": {

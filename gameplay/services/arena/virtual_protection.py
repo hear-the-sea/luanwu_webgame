@@ -55,19 +55,36 @@ def with_arena_reconciliation_state(queryset):
     ).filter(**{_HAS_UNRESOLVED_RECONCILIATION: False})
 
 
-def with_arena_reserve_guard(queryset):
-    """Annotate virtual profiles with the reserve-membership guard."""
-    return queryset.annotate(
-        maintenance_has_arena_reserve=Exists(
-            ArenaVirtualReserveMember.objects.filter(profile_id=OuterRef("pk")),
+def with_arena_reserve_guard(
+    queryset,
+    *,
+    profile_ref: Any | None = None,
+    include_training: bool = True,
+):
+    """Annotate a profile-shaped queryset with the reserve-membership guard.
+
+    ``profile_ref`` is used by callers whose queryset is rooted at a related
+    row, such as a maintenance cycle.  The default keeps the original
+    ``BotProfile`` queryset behavior.  Callers that only need to know whether
+    a reserve exists may defer the training probe; the training state remains
+    checked under the profile lock when a reserve is present.
+    """
+    profile_reference: Any = OuterRef("pk") if profile_ref is None else profile_ref
+    annotations = {
+        "maintenance_has_arena_reserve": Exists(
+            ArenaVirtualReserveMember.objects.filter(profile_id=profile_reference),
         ),
-        maintenance_has_arena_training=Exists(
+    }
+    if include_training:
+        annotations["maintenance_has_arena_training"] = Exists(
             ArenaVirtualReserveMember.objects.filter(
-                profile_id=OuterRef("pk"),
+                profile_id=profile_reference,
                 state=ArenaVirtualReserveMember.State.TRAINING,
                 demand__status=ArenaVirtualDemand.Status.ACTIVE,
             ),
-        ),
+        )
+    return queryset.annotate(
+        **annotations,
     )
 
 

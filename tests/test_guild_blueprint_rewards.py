@@ -1,7 +1,10 @@
+from datetime import datetime, timedelta
+
 import pytest
+from django.utils import timezone
 
 from gameplay.services.manor.core import ensure_manor
-from guilds.models import Guild, GuildMember
+from guilds.models import Guild, GuildBlueprintRewardClaim, GuildMember
 from guilds.services.blueprint_rewards import claim_guild_blueprint_reward
 
 
@@ -34,3 +37,44 @@ def test_claim_guild_blueprint_reward_uses_member_owned_weekly_cap(monkeypatch, 
 
     assert claim.blueprint_key == _Blueprint.key
     assert granted == [(user.manor, _Blueprint.key, 1)]
+
+
+@pytest.mark.django_db
+def test_claim_guild_blueprint_reward_excludes_claims_before_local_week_start(
+    monkeypatch,
+    django_user_model,
+):
+    user = django_user_model.objects.create_user(username="guild_blueprint_week_boundary", password="pass123")
+    ensure_manor(user)
+    guild = Guild.objects.create(name="图纸边界帮会", founder=user)
+    member = GuildMember.objects.create(guild=guild, user=user, weekly_contribution=1)
+
+    monkeypatch.setattr(
+        "guilds.services.blueprint_rewards.load_blueprint_catalog", lambda: {_Blueprint.key: _Blueprint()}
+    )
+    monkeypatch.setattr(
+        "guilds.services.blueprint_rewards.load_guild_rules",
+        lambda: {"blueprint_rewards": {"choices": {"blue": [_Blueprint.key]}}},
+    )
+    monkeypatch.setattr("guilds.services.blueprint_rewards.add_item_to_inventory_locked", lambda *_args: None)
+
+    week_start = timezone.localdate() - timedelta(days=timezone.localdate().weekday())
+    week_start_at = timezone.make_aware(datetime.combine(week_start, datetime.min.time()))
+    for offset in range(4):
+        GuildBlueprintRewardClaim.objects.create(
+            member=member,
+            blueprint_key=_Blueprint.key,
+            rarity="blue",
+            claimed_at=week_start_at + timedelta(seconds=offset),
+        )
+    GuildBlueprintRewardClaim.objects.create(
+        member=member,
+        blueprint_key=_Blueprint.key,
+        rarity="blue",
+        claimed_at=week_start_at - timedelta(seconds=1),
+    )
+
+    claim = claim_guild_blueprint_reward(member, _Blueprint.key)
+
+    assert claim.blueprint_key == _Blueprint.key
+    assert GuildBlueprintRewardClaim.objects.filter(member=member, rarity="blue").count() == 6
