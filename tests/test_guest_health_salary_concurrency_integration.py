@@ -257,6 +257,7 @@ def test_salary_manor_and_roster_locks_linearize_a_concurrent_guest_insert(
         *,
         for_date,
         paid_guest_ids=None,
+        salary_scale=salary_service.DEFAULT_SALARY_SCALE,
     ) -> salary_service.SalaryBatchQuote:
         salary_locks_held.set()
         if not release_salary.wait(timeout=10):
@@ -265,6 +266,7 @@ def test_salary_manor_and_roster_locks_linearize_a_concurrent_guest_insert(
             locked_guests,
             for_date=for_date,
             paid_guest_ids=paid_guest_ids,
+            salary_scale=salary_scale,
         )
 
     monkeypatch.setattr(salary_service, "_quote_salary_batch", _quote_with_pause)

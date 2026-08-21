@@ -153,8 +153,8 @@ def calculate_team_losses(
     lost_hp = max(0, total_hp - remaining_hp)
     hp_loss_ratio = lost_hp / total_hp
 
-    # 被击败的护院损失概率：进攻方80%，防守方70%
-    defeated_troop_loss_rate = 0.8 if side == "attacker" else 0.7
+    # 被击败的护院统一按80%概率判定损失，攻防双方使用同一规则。
+    defeated_troop_loss_rate = CASUALTY_BASE_PROBABILITY
 
     total_troops = sum(getattr(c, "initial_troop_strength", c.troop_strength) for c in team if c.kind == "troop")
     troops_deployed = total_troops

@@ -604,3 +604,97 @@ def test_finalize_guild_mission_uses_launch_time_troop_tech_snapshot_after_guild
     assert guild_mission_service.finalize_guild_mission_run(run) is True
     assert captured["unit_attack"] == 12
     assert captured["unit_hp"] == 24
+
+
+@pytest.mark.django_db(transaction=True)
+def test_finalize_guild_mission_bad_guest_snapshot_releases_troops_once(django_user_model):
+    from guilds.services import guild_missions as guild_mission_service
+
+    leader, _leader_manor = create_user_with_manor(django_user_model, "guild_mission_bad_guest_snapshot")
+    guild = Guild.objects.create(name="帮会任务坏快照帮", founder=leader, is_active=True)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    template = GuildMissionTemplate.objects.create(
+        key="guild_bad_guest_snapshot_task",
+        name="坏快照任务",
+        description="",
+        difficulty="junior",
+        task_type="troop",
+        base_duration_seconds=60,
+        ruby_reward=0,
+        recommended_guest_count=1,
+        allow_troops=True,
+        enemy_guests=[],
+        enemy_troops={},
+        enemy_technology={},
+        is_active=True,
+    )
+    troop_template = TroopTemplate.objects.create(key="guild_bad_snapshot_archer", name="坏快照弓手")
+    storage = GuildTroopStorage.objects.create(guild=guild, troop_template=troop_template, count=6)
+    run = GuildMissionRun.objects.create(
+        guild=guild,
+        template=template,
+        started_by=leader_member,
+        status=GuildMissionRun.Status.ACTIVE,
+        selected_guest_count=1,
+        ruby_reward=0,
+        guest_ids=[],
+        guest_snapshots={"broken": True},
+        troop_loadout={troop_template.key: 4},
+    )
+
+    now = timezone.now()
+    assert guild_mission_service.finalize_guild_mission_run(run, now=now) is True
+    run.refresh_from_db()
+    storage.refresh_from_db()
+
+    assert run.status == GuildMissionRun.Status.FAILED
+    assert run.completed_at == now
+    assert storage.count == 10
+    assert guild_mission_service.finalize_guild_mission_run(run, now=now) is False
+    storage.refresh_from_db()
+    assert storage.count == 10
+
+
+@pytest.mark.django_db(transaction=True)
+def test_finalize_guild_mission_bad_enemy_config_releases_troops(django_user_model):
+    from guilds.services import guild_missions as guild_mission_service
+
+    leader, leader_manor = create_user_with_manor(django_user_model, "guild_mission_bad_enemy_config")
+    guild = Guild.objects.create(name="帮会任务坏配置帮", founder=leader, is_active=True)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    template = GuildMissionTemplate.objects.create(
+        key="guild_bad_enemy_config_task",
+        name="坏配置任务",
+        description="",
+        difficulty="junior",
+        task_type="guest",
+        base_duration_seconds=60,
+        ruby_reward=0,
+        recommended_guest_count=1,
+        allow_troops=True,
+        enemy_guests="broken-payload",
+        enemy_troops={},
+        enemy_technology={},
+        is_active=True,
+    )
+    troop_template = TroopTemplate.objects.create(key="guild_bad_config_archer", name="坏配置弓手")
+    storage = GuildTroopStorage.objects.create(guild=guild, troop_template=troop_template, count=3)
+    guest = create_guest(manor=leader_manor, template=create_template("guild_bad_config_guest"), name="配置先锋")
+    run = GuildMissionRun.objects.create(
+        guild=guild,
+        template=template,
+        started_by=leader_member,
+        status=GuildMissionRun.Status.ACTIVE,
+        selected_guest_count=1,
+        ruby_reward=0,
+        guest_ids=[guest.id],
+        guest_snapshots=build_guest_battle_snapshots([guest], include_identity=True),
+        troop_loadout={troop_template.key: 2},
+    )
+
+    assert guild_mission_service.finalize_guild_mission_run(run) is True
+    run.refresh_from_db()
+    storage.refresh_from_db()
+
+    assert run.status == GuildMissionRun.Status.FAILED
+    assert storage.count == 5

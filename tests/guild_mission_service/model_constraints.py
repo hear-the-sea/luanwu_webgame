@@ -14,6 +14,7 @@ class TestGuildMissionModelConstraints:
         assert GuildMissionRun.Status.ACTIVE == "active"
         assert GuildMissionRun.Status.COMPLETED == "completed"
         assert GuildMissionRun.Status.RETREATED == "retreated"
+        assert GuildMissionRun.Status.FAILED == "failed"
 
     @pytest.mark.django_db
     def test_guild_mission_run_allows_only_one_active_run_per_guild(self, django_user_model):

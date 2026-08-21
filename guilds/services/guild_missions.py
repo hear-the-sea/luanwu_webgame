@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import math
 from datetime import timedelta
+from math import isfinite
 from typing import Any, cast
 
 from django.contrib.auth import get_user_model
@@ -11,16 +12,22 @@ from django.utils import timezone
 
 from battle.execution import BattleOptions, execute_battle
 from common.utils.celery import safe_apply_async
-from core.exceptions import GuildValidationError
+from core.exceptions import BattlePreparationError, GuildValidationError, InvalidBattleSnapshotError
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.models import Manor
-from gameplay.services.battle_snapshots import build_guest_battle_snapshots, build_guest_snapshot_proxies
+from gameplay.services.battle_snapshots import (
+    build_guest_battle_snapshots,
+    build_guest_snapshot_proxies,
+    validate_battle_troop_loadout,
+)
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.utils.messages import bulk_create_messages
+from guests.models import GuestTemplate
 
 from ..models import Guild, GuildMember, GuildMissionRun, GuildMissionTemplate
 from . import guild_troops
 from .guild_dispatch import load_dispatch_lineup_rows, lock_manage_member, normalize_positive_ids
+from .guild_mission_failure import fail_guild_mission_and_release_resources
 from .technology import build_guild_troop_tech_levels, get_guild_dispatch_capacity
 from .warehouse import add_item_to_warehouse
 
@@ -260,46 +267,237 @@ def _resolve_guild_mission_attacker_limit(run: GuildMissionRun) -> int:
     return max(1, candidate)
 
 
+def _invalid_guild_mission_config(message: str, *, field_name: str) -> InvalidBattleSnapshotError:
+    return InvalidBattleSnapshotError(
+        message,
+        snapshot_kind="enemy_config",
+        field_name=field_name,
+    )
+
+
 def _build_guild_mission_enemy_guest_keys(raw_enemy_guests) -> list[str | dict[str, Any]]:
     if raw_enemy_guests is None:
         return []
     if not isinstance(raw_enemy_guests, (list, tuple, set)):
-        raise AssertionError(f"invalid guild mission enemy_guests payload: {raw_enemy_guests!r}")
+        raise _invalid_guild_mission_config(
+            "帮会任务敌方门客配置无效",
+            field_name="enemy_guests",
+        )
 
     normalized: list[str | dict[str, Any]] = []
     for entry in raw_enemy_guests:
         if isinstance(entry, str):
             key = entry.strip()
             if not key:
-                raise AssertionError(f"invalid guild mission enemy_guests entry: {entry!r}")
+                raise _invalid_guild_mission_config(
+                    "帮会任务敌方门客配置无效",
+                    field_name="enemy_guests",
+                )
             normalized.append(key)
             continue
 
         if not isinstance(entry, dict):
-            raise AssertionError(f"invalid guild mission enemy_guests entry: {entry!r}")
+            raise _invalid_guild_mission_config(
+                "帮会任务敌方门客配置无效",
+                field_name="enemy_guests",
+            )
 
         raw_key = entry.get("key")
         if raw_key is None:
             raw_key = entry.get("template_key")
         if not isinstance(raw_key, str) or not raw_key.strip():
-            raise AssertionError(f"invalid guild mission enemy_guests entry: {entry!r}")
+            raise _invalid_guild_mission_config(
+                "帮会任务敌方门客配置无效",
+                field_name="enemy_guests",
+            )
 
         normalized_entry: dict[str, Any] = {"key": raw_key.strip()}
         raw_skills = entry.get("skills")
         if raw_skills is not None:
             if not isinstance(raw_skills, (list, tuple, set)):
-                raise AssertionError(f"invalid guild mission enemy_guests skills: {raw_skills!r}")
-            normalized_entry["skills"] = [str(skill).strip() for skill in raw_skills if str(skill).strip()]
+                raise _invalid_guild_mission_config(
+                    "帮会任务敌方门客技能配置无效",
+                    field_name="enemy_guests",
+                )
+            normalized_skills: list[str] = []
+            for skill in raw_skills:
+                if not isinstance(skill, str) or not skill.strip():
+                    raise _invalid_guild_mission_config(
+                        "帮会任务敌方门客技能配置无效",
+                        field_name="enemy_guests",
+                    )
+                normalized_skills.append(skill.strip())
+            normalized_entry["skills"] = normalized_skills
         normalized.append(normalized_entry)
 
+    guest_keys = {entry if isinstance(entry, str) else entry["key"] for entry in normalized}
+    existing_guest_keys = set(GuestTemplate.objects.filter(key__in=guest_keys).values_list("key", flat=True))
+    if guest_keys - existing_guest_keys:
+        raise _invalid_guild_mission_config(
+            "帮会任务敌方门客模板不存在",
+            field_name="enemy_guests",
+        )
+    return normalized
+
+
+def _normalize_guild_mission_enemy_troops(raw_enemy_troops: Any) -> dict[str, int]:
+    if raw_enemy_troops is None:
+        return {}
+    if not isinstance(raw_enemy_troops, dict):
+        raise _invalid_guild_mission_config(
+            "帮会任务敌方护院配置无效",
+            field_name="enemy_troops",
+        )
+
+    normalized: dict[str, int] = {}
+    for raw_key, raw_value in raw_enemy_troops.items():
+        if not isinstance(raw_key, str) or not raw_key.strip():
+            raise _invalid_guild_mission_config(
+                "帮会任务敌方护院配置无效",
+                field_name="enemy_troops",
+            )
+        key = raw_key.strip()
+        if key in normalized or raw_value is None or isinstance(raw_value, bool):
+            raise _invalid_guild_mission_config(
+                "帮会任务敌方护院配置无效",
+                field_name="enemy_troops",
+            )
+        try:
+            quantity = int(raw_value)
+        except (TypeError, ValueError) as exc:
+            raise _invalid_guild_mission_config(
+                "帮会任务敌方护院配置无效",
+                field_name="enemy_troops",
+            ) from exc
+        if quantity < 0:
+            raise _invalid_guild_mission_config(
+                "帮会任务敌方护院配置无效",
+                field_name="enemy_troops",
+            )
+        normalized[key] = quantity
+    return normalized
+
+
+def _normalize_guild_mission_enemy_technology(raw_enemy_technology: Any) -> dict[str, Any]:
+    if raw_enemy_technology is None:
+        return {}
+    if not isinstance(raw_enemy_technology, dict):
+        raise _invalid_guild_mission_config(
+            "帮会任务敌方科技配置无效",
+            field_name="enemy_technology",
+        )
+
+    guest_level = raw_enemy_technology.get("guest_level")
+    if guest_level is not None:
+        try:
+            if isinstance(guest_level, bool) or int(guest_level) <= 0:
+                raise ValueError
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise _invalid_guild_mission_config(
+                "帮会任务敌方门客等级配置无效",
+                field_name="enemy_technology",
+            ) from exc
+
+    global_level = raw_enemy_technology.get("level")
+    if global_level is not None:
+        try:
+            if isinstance(global_level, bool) or int(global_level) < 0:
+                raise ValueError
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise _invalid_guild_mission_config(
+                "帮会任务敌方科技等级配置无效",
+                field_name="enemy_technology",
+            ) from exc
+
+    raw_levels = raw_enemy_technology.get("levels")
+    if raw_levels is not None:
+        if not isinstance(raw_levels, dict):
+            raise _invalid_guild_mission_config(
+                "帮会任务敌方科技等级配置无效",
+                field_name="enemy_technology",
+            )
+        for key, value in raw_levels.items():
+            try:
+                if not isinstance(key, str) or not key.strip() or isinstance(value, bool) or int(value) < 0:
+                    raise ValueError
+            except (TypeError, ValueError, OverflowError) as exc:
+                raise _invalid_guild_mission_config(
+                    "帮会任务敌方科技等级配置无效",
+                    field_name="enemy_technology",
+                ) from exc
+
+    raw_guest_skills = raw_enemy_technology.get("guest_skills")
+    if raw_guest_skills is not None:
+        if not isinstance(raw_guest_skills, (list, tuple, set)) or any(
+            not isinstance(skill, str) or not skill.strip() for skill in raw_guest_skills
+        ):
+            raise _invalid_guild_mission_config(
+                "帮会任务敌方门客技能配置无效",
+                field_name="enemy_technology",
+            )
+
+    guest_bonus = raw_enemy_technology.get("guest_bonus")
+    if guest_bonus is not None:
+        try:
+            if not isfinite(float(guest_bonus)) or float(guest_bonus) < 0:
+                raise ValueError
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise _invalid_guild_mission_config(
+                "帮会任务敌方属性加成配置无效",
+                field_name="enemy_technology",
+            ) from exc
+
+    return dict(raw_enemy_technology)
+
+
+def _normalize_guild_mission_attacker_tech_snapshot(raw_snapshot: Any) -> dict[str, int]:
+    if raw_snapshot is None:
+        return {}
+    if not isinstance(raw_snapshot, dict):
+        raise InvalidBattleSnapshotError(
+            "帮会任务攻击方科技快照无效",
+            snapshot_kind="attacker_technology",
+            field_name="attacker_troop_tech_snapshot",
+        )
+
+    normalized: dict[str, int] = {}
+    for raw_key, raw_value in raw_snapshot.items():
+        if not isinstance(raw_key, str) or not raw_key.strip() or isinstance(raw_value, bool):
+            raise InvalidBattleSnapshotError(
+                "帮会任务攻击方科技快照无效",
+                snapshot_kind="attacker_technology",
+                field_name="attacker_troop_tech_snapshot",
+            )
+        key = raw_key.strip()
+        if key in normalized:
+            raise InvalidBattleSnapshotError(
+                "帮会任务攻击方科技快照无效",
+                snapshot_kind="attacker_technology",
+                field_name="attacker_troop_tech_snapshot",
+            )
+        try:
+            value = int(raw_value)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise InvalidBattleSnapshotError(
+                "帮会任务攻击方科技快照无效",
+                snapshot_kind="attacker_technology",
+                field_name="attacker_troop_tech_snapshot",
+            ) from exc
+        if value < 0:
+            raise InvalidBattleSnapshotError(
+                "帮会任务攻击方科技快照无效",
+                snapshot_kind="attacker_technology",
+                field_name="attacker_troop_tech_snapshot",
+            )
+        normalized[key] = value
     return normalized
 
 
 def _build_guild_mission_defender_setup(run: GuildMissionRun) -> dict[str, Any]:
     return {
         "guest_keys": _build_guild_mission_enemy_guest_keys(getattr(run.template, "enemy_guests", None)),
-        "troop_loadout": getattr(run.template, "enemy_troops", None) or {},
-        "technology": getattr(run.template, "enemy_technology", None) or {},
+        "troop_loadout": _normalize_guild_mission_enemy_troops(getattr(run.template, "enemy_troops", None)),
+        "technology": _normalize_guild_mission_enemy_technology(getattr(run.template, "enemy_technology", None)),
     }
 
 
@@ -347,7 +545,33 @@ def finalize_guild_mission_run(run: GuildMissionRun, *, now=None) -> bool:
     owner_user_id = _ensure_report_owner_for_mission_run(run.pk)
     if owner_user_id is None:
         return False
-    return _finalize_guild_mission_run_atomic(run, now=now, expected_report_owner_user_id=owner_user_id)
+    finalized_at = now or timezone.now()
+    try:
+        return _finalize_guild_mission_run_atomic(
+            run,
+            now=finalized_at,
+            expected_report_owner_user_id=owner_user_id,
+        )
+    except InvalidBattleSnapshotError as exc:
+        if exc.snapshot_kind == "troop_loadout":
+            failure_reason = "invalid_troop_loadout"
+        elif exc.snapshot_kind in {"enemy_config", "attacker_technology"}:
+            failure_reason = "invalid_enemy_config"
+        else:
+            failure_reason = "invalid_guest_snapshot"
+        return fail_guild_mission_and_release_resources(
+            run.pk,
+            failure_reason=failure_reason,
+            now=finalized_at,
+            failure_detail=str(exc),
+        )
+    except BattlePreparationError as exc:
+        return fail_guild_mission_and_release_resources(
+            run.pk,
+            failure_reason="invalid_enemy_config",
+            now=finalized_at,
+            failure_detail=str(exc),
+        )
 
 
 @transaction.atomic
@@ -387,7 +611,8 @@ def _finalize_guild_mission_run_atomic(
     battle_guest_models = cast(list[Any], guest_models)
     attacker_limit = _resolve_guild_mission_attacker_limit(locked_run)
     defender_setup = _build_guild_mission_defender_setup(locked_run)
-    attacker_tech_levels = dict(locked_run.attacker_troop_tech_snapshot or {})
+    validated_troop_loadout = validate_battle_troop_loadout(locked_run.troop_loadout)
+    attacker_tech_levels = _normalize_guild_mission_attacker_tech_snapshot(locked_run.attacker_troop_tech_snapshot)
     if not attacker_tech_levels:
         attacker_tech_levels = build_guild_troop_tech_levels(locked_run.guild)
     defender_limit = (
@@ -399,7 +624,7 @@ def _finalize_guild_mission_run_atomic(
         battle_guest_models,
         BattleOptions(
             battle_type="guild_mission",
-            troop_loadout=locked_run.troop_loadout,
+            troop_loadout=validated_troop_loadout,
             fill_default_troops=False,
             defender_setup=defender_setup,
             opponent_name=locked_run.template.name,

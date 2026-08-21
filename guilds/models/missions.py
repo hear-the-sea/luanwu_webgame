@@ -63,6 +63,7 @@ class GuildMissionRun(models.Model):
         ACTIVE = "active", "进行中"
         COMPLETED = "completed", "已完成"
         RETREATED = "retreated", "已撤退"
+        FAILED = "failed", "结算失败"
 
     guild = models.ForeignKey(Guild, on_delete=models.CASCADE, related_name="mission_runs", verbose_name="所属帮会")
     template = models.ForeignKey(

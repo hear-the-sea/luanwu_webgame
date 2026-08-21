@@ -220,6 +220,8 @@ def complete_guild_mission_task(self, run_id: int):
         if not run:
             logger.warning("GuildMissionRun %d not found", run_id)
             return "not_found"
+        if run.status == GuildMissionRun.Status.FAILED:
+            return "already_failed"
 
         rescheduled, now = _reschedule_guild_mission_if_needed(run, run_id=run_id)
         if rescheduled is not None:
@@ -231,7 +233,11 @@ def complete_guild_mission_task(self, run_id: int):
                 raise GuildMissionTaskRetryRequested(
                     f"guild mission run remains active after finalization no-op: run_id={run_id}"
                 )
+            if GuildMissionRun.objects.filter(pk=run_id, status=GuildMissionRun.Status.FAILED).exists():
+                return "already_failed"
             return "already_completed"
+        if GuildMissionRun.objects.filter(pk=run_id, status=GuildMissionRun.Status.FAILED).exists():
+            return "failed"
         return "completed"
     except GUILD_MISSION_TASK_RETRY_EXCEPTIONS as exc:
         logger.exception("Failed to complete guild mission %d: %s", run_id, exc)

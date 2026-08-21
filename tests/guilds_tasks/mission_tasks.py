@@ -66,6 +66,22 @@ def test_complete_guild_mission_task_finalizes_due_run(monkeypatch, django_user_
 
 
 @pytest.mark.django_db
+def test_complete_guild_mission_task_does_not_reschedule_failed_run(django_user_model):
+    from guilds.models import GuildMissionRun
+    from guilds.tasks import complete_guild_mission_task
+
+    run = create_active_guild_run(
+        django_user_model,
+        username="guild_task_failed",
+        key_suffix="failed",
+        return_at=timezone.now() + timedelta(seconds=10),
+    )
+    GuildMissionRun.objects.filter(pk=run.pk).update(status=GuildMissionRun.Status.FAILED)
+
+    assert complete_guild_mission_task.run(run.id) == "already_failed"
+
+
+@pytest.mark.django_db
 def test_complete_guild_mission_task_retries_when_due_run_remains_active(monkeypatch, django_user_model):
     from guilds.tasks import complete_guild_mission_task
 
