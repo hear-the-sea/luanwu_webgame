@@ -251,9 +251,7 @@ def test_recorder_accepts_optional_gate_e_recovery_stage_without_changing_requir
 
 
 def test_gate_e_evidence_declares_observed_optional_stage_names() -> None:
-    template = recorder._load_yaml(
-        recorder.PROJECT_ROOT / "docs/virtual_player_gate_e_readiness_evidence_2026-08-11.yaml"
-    )
+    template = recorder._load_yaml(recorder.DEFAULT_GATE_E_TEMPLATE)
     acceptance = recorder._load_yaml(recorder.ACCEPTANCE_PATH)
     manifest = recorder._load_yaml(recorder.PROJECT_ROOT / "docs/virtual_player_gate_evidence_manifest_2026-08-11.yaml")
     summary = recorder.PytestSummary(passed=1, failed=0, skipped=0, deselected=0, duration_seconds=1.0)
