@@ -66,6 +66,28 @@ def _round_with_side_states():
 
 
 @pytest.mark.django_db
+def test_report_team_member_frames_do_not_use_rarity_colors(client, django_user_model):
+    user = django_user_model.objects.create_user(username="report_rarity_colors", password="pass123")
+    manor = ensure_manor(user)
+    report = create_report(
+        manor=manor,
+        opponent_name="对手",
+        battle_type="raid",
+        attacker_team=[{"name": "橙将", "guest_id": None, "template_key": "attacker", "rarity": "orange"}],
+        defender_team=[{"name": "蓝将", "guest_id": None, "template_key": "defender", "rarity": "blue"}],
+    )
+
+    assert client.login(username="report_rarity_colors", password="pass123")
+    response = client.get(reverse("battle:report_detail", kwargs={"pk": report.pk}))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert '<li class="team-member" title="橙将">' in body
+    assert '<li class="team-member" title="蓝将">' in body
+    assert "team-member rarity-" not in body
+
+
+@pytest.mark.django_db
 def test_arena_coop_report_uses_participant_message_title(client, django_user_model):
     owner_user = django_user_model.objects.create_user(username="arena_coop_report_owner", password="pass123")
     user = django_user_model.objects.create_user(username="arena_coop_report_user", password="pass123")

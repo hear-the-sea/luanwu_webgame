@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static guest_extras %}
+{% load static %}
 
 {% block title %}战报详情{% endblock %}
 
@@ -30,7 +30,7 @@
                 </h3>
                 <ul class="team-members">
                     {% for member in attacker_team_display %}
-                        <li class="team-member {{ member.rarity|rarity_class }}" title="{{ member.name }}">
+                        <li class="team-member" title="{{ member.name }}">
                             {% if member.avatar_url %}
                                 <img class="member-avatar" src="{{ member.avatar_url }}" alt="{{ member.name }}" loading="lazy" decoding="async">
                             {% else %}
@@ -81,7 +81,7 @@
                 </h3>
                 <ul class="team-members">
                     {% for member in defender_team_display %}
-                        <li class="team-member {{ member.rarity|rarity_class }}" title="{{ member.name }}">
+                        <li class="team-member" title="{{ member.name }}">
                             {% if member.avatar_url %}
                                 <img class="member-avatar" src="{{ member.avatar_url }}" alt="{{ member.name }}" loading="lazy" decoding="async">
                             {% else %}
