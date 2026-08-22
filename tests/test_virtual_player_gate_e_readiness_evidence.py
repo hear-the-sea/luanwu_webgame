@@ -6,6 +6,7 @@ import pytest
 import yaml
 
 from gameplay.services.virtual_player_core import gate_evidence
+from gameplay.services.virtual_player_core.stage_metrics import GATE_E_REQUIRED_STAGE_NAMES
 
 pytestmark = pytest.mark.evidence
 
@@ -141,19 +142,12 @@ def test_retained_batch_100_metrics_are_inside_frozen_limits() -> None:
 
 def test_gate_e_stage_metrics_cover_all_cells_and_preserve_top_fingerprints() -> None:
     stage_metrics = _load_yaml(EVIDENCE_PATH)["maintenance_benchmark"]["stage_metrics"]
-    expected_stages = {
-        "due_backlog_selection",
-        "planning_snapshot_preload",
-        "profile_plan_revalidation",
-        "action_domain_writes",
-        "cycle_attempt_receipt",
-        "safety_task_wrapup",
-    }
+    expected_stages = set(GATE_E_REQUIRED_STAGE_NAMES)
     assert set(stage_metrics["stage_names"]) == expected_stages
     assert "nested stage durations are diagnostic and must not be summed" in stage_metrics["scope"]
 
     rows = stage_metrics["rows"]
-    assert len(rows) == 36
+    assert len(rows) == 54
     assert {(row["batch_size"], row["concurrency"], row["stage"]) for row in rows} == {
         (batch_size, concurrency, stage)
         for batch_size in (1, 10, 100)
