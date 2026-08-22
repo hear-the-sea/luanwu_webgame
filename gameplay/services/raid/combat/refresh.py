@@ -16,7 +16,7 @@ def refresh_raid_runs(
     try_dispatch_raid_refresh_task: Callable[[Any, int, str], bool],
     process_due_raid_run_ids: Callable[..., None],
     process_raid_battle: Callable[..., None],
-    finalize_raid: Callable[..., None],
+    finalize_raid: Callable[..., Any],
 ) -> None:
     now = now_func()
     marching_ids, returning_ids, retreated_ids = collect_due_raid_run_ids(manor, now, raid_run_model)

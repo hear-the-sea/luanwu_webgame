@@ -4,6 +4,7 @@ import math
 from datetime import timedelta
 from typing import Any
 
+from django.db.models import F
 from django.utils import timezone
 
 from core.exceptions import GuildValidationError
@@ -31,7 +32,12 @@ def dispatch_countdown_for_run(run: GuildRaidRun) -> int:
 def load_defender_guests(defender_guild: Guild) -> list[Any]:
     guests: list[Any] = []
     lineup_rows = (
-        GuildBattleLineupEntry.objects.filter(guild=defender_guild)
+        GuildBattleLineupEntry.objects.filter(
+            guild=defender_guild,
+            pool_entry__owner_member__is_active=True,
+            pool_entry__owner_member__guild_id=defender_guild.id,
+            pool_entry__source_guest__manor__user_id=F("pool_entry__owner_member__user_id"),
+        )
         .select_related("pool_entry__source_guest__template", "pool_entry__source_guest__manor")
         .order_by("slot_index", "id")
     )

@@ -24,12 +24,6 @@
 
         <dl class="tw-raid-intel-grid">
             <div class="tw-raid-intel-item">
-                <dt>声望</dt>
-                <dd class="{% if target_info.prestige_comparison == 'higher' %}is-danger{% elif target_info.prestige_comparison == 'lower' %}is-positive{% endif %}">
-                    {{ target_info.prestige }}
-                </dd>
-            </div>
-            <div class="tw-raid-intel-item">
                 <dt>距离</dt>
                 <dd>{{ target_info.distance|floatformat:1 }}</dd>
             </div>

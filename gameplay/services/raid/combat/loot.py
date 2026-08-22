@@ -211,6 +211,58 @@ def _calculate_loot(
     return loot_resources, loot_items
 
 
+def clamp_loot_to_attacker_storage_capacity(
+    attacker: Manor,
+    loot_resources: Dict[str, int],
+    loot_items: Dict[str, int],
+) -> Tuple[Dict[str, int], Dict[str, int]]:
+    """按攻击方当前仓储余量裁剪可带走的资源。
+
+    踢馆战斗会先从防守方扣除战利品、返程后再发放给攻击方，因此这里必须
+    在扣除前完成容量裁剪；否则攻击方仓储溢出时，防守方会被扣除一份实际
+    无法带走的资源。普通物品仓库写入不受容量限制，只有银两和粮食需要处理。
+    """
+    normalized_resources = normalize_positive_int_mapping(loot_resources)
+    normalized_items = normalize_positive_int_mapping(loot_items)
+
+    def _available_capacity(resource_key: str) -> int | None:
+        if resource_key == "silver":
+            current = max(0, int(getattr(attacker, "silver", 0) or 0))
+            capacity = max(0, int(getattr(attacker, "silver_capacity", 0) or 0))
+            return max(0, capacity - current)
+        if resource_key == GRAIN_ITEM_KEY:
+            current = get_warehouse_grain_quantity_locked(attacker)
+            capacity = max(0, int(getattr(attacker, "grain_capacity", 0) or 0))
+            return max(0, capacity - current)
+        return None
+
+    silver_amount = normalized_resources.get("silver", 0)
+    if silver_amount > 0:
+        available_silver = _available_capacity("silver")
+        if available_silver is not None:
+            if available_silver <= 0:
+                normalized_resources.pop("silver", None)
+            else:
+                normalized_resources["silver"] = min(silver_amount, available_silver)
+
+    resource_grain = normalized_resources.get(GRAIN_ITEM_KEY, 0)
+    item_grain = normalized_items.get(GRAIN_ITEM_KEY, 0)
+    if resource_grain > 0 or item_grain > 0:
+        available_grain = _available_capacity(GRAIN_ITEM_KEY) or 0
+        kept_resource_grain = min(resource_grain, available_grain)
+        kept_item_grain = min(item_grain, max(0, available_grain - kept_resource_grain))
+        if kept_resource_grain > 0:
+            normalized_resources[GRAIN_ITEM_KEY] = kept_resource_grain
+        else:
+            normalized_resources.pop(GRAIN_ITEM_KEY, None)
+        if kept_item_grain > 0:
+            normalized_items[GRAIN_ITEM_KEY] = kept_item_grain
+        else:
+            normalized_items.pop(GRAIN_ITEM_KEY, None)
+
+    return normalized_resources, normalized_items
+
+
 def _apply_loot(
     defender: Manor, loot_resources: Dict[str, int], loot_items: Dict[str, int], locked_manor: Manor | None = None
 ) -> Tuple[Dict[str, int], Dict[str, int]]:

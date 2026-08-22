@@ -16,6 +16,7 @@ from gameplay.services.raid.combat.loot import (
     _format_battle_rewards_description,
     _format_loot_description,
     _grant_loot_items,
+    clamp_loot_to_attacker_storage_capacity,
 )
 from tests.gameplay_services.support import ensure_grain_template
 
@@ -311,6 +312,28 @@ def test_apply_loot_clamps_to_available_resources():
 
 
 @pytest.mark.django_db
+def test_clamp_loot_to_attacker_storage_capacity_keeps_overflow_on_defender_side():
+    attacker_user = User.objects.create_user(username="raid_capacity_attacker", password="pass123")
+    attacker = ensure_manor(attacker_user)
+    attacker.silver = 95
+    attacker.silver_capacity = 100
+    attacker.grain = 95
+    attacker.grain_capacity = 100
+    attacker.save(update_fields=["silver", "silver_capacity", "grain", "grain_capacity"])
+    ensure_grain_template()
+
+    with transaction.atomic():
+        resources, items = clamp_loot_to_attacker_storage_capacity(
+            attacker,
+            {"silver": 20},
+            {"grain": 20, "raid_loot_item": 2},
+        )
+
+    assert resources == {"silver": 5}
+    assert items == {"grain": 5, "raid_loot_item": 2}
+
+
+@pytest.mark.django_db
 def test_apply_loot_deducts_item_pool_grain_from_resource_ledger():
     user = User.objects.create_user(username="raid_grain_defender", password="pass123")
     defender = ensure_manor(user)
@@ -406,6 +429,32 @@ def test_finalize_raid_merges_new_and_legacy_grain_into_resource_ledger():
     assert grain_item.quantity == 150
     assert loot_item.quantity == 2
     assert list(grain_events.values_list("delta", flat=True)) == [50]
+
+
+@pytest.mark.django_db
+def test_finalize_raid_waits_when_return_capacity_was_filled():
+    attacker_user = User.objects.create_user(username="raid_capacity_finalize_attacker", password="pass123")
+    defender_user = User.objects.create_user(username="raid_capacity_finalize_defender", password="pass123")
+    attacker = ensure_manor(attacker_user)
+    defender = ensure_manor(defender_user)
+    attacker.silver = 100
+    attacker.silver_capacity = 100
+    attacker.save(update_fields=["silver", "silver_capacity"])
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.RETURNING,
+        is_attacker_victory=True,
+        loot_resources={"silver": 10},
+    )
+
+    finalized = combat_runs.finalize_raid(run)
+
+    attacker.refresh_from_db()
+    run.refresh_from_db()
+    assert finalized is False
+    assert run.status == RaidRun.Status.RETURNING
+    assert attacker.silver == 100
 
 
 @pytest.mark.django_db

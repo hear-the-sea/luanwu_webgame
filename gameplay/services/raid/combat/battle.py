@@ -75,7 +75,7 @@ from .capture import (  # noqa: F401
 )
 from .config import PVPConstants
 from .failure import fail_raid_run_and_release_resources
-from .loot import _apply_loot, _calculate_loot
+from .loot import _apply_loot, _calculate_loot, clamp_loot_to_attacker_storage_capacity
 from .messaging import _send_raid_battle_messages  # noqa: F401
 from .travel import (
     _dismiss_marching_raids_if_protected,
@@ -193,9 +193,14 @@ def _apply_raid_loot_if_needed(
         loot_resources=loot_resources,
         now=now,
     )
+    loot_resources, loot_items = clamp_loot_to_attacker_storage_capacity(
+        locked_run.attacker,
+        dict(loot_decision.resources),
+        loot_items,
+    )
     applied_resources, applied_items = _apply_loot(
         locked_defender,
-        dict(loot_decision.resources),
+        loot_resources,
         loot_items,
         locked_manor=locked_defender,
     )

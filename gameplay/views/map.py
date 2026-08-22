@@ -8,11 +8,12 @@ import logging
 from collections.abc import Callable
 from typing import Any, TypeVar, cast
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q, QuerySet
-from django.http import HttpRequest, JsonResponse
-from django.shortcuts import get_object_or_404
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
@@ -216,6 +217,14 @@ class RaidConfigView(LoginRequiredMixin, TemplateView):
     """踢馆出征配置页面"""
 
     template_name = "gameplay/raid_config.html"
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        context = self.get_context_data(**kwargs)
+        if not context.get("can_attack", False):
+            attack_reason = context.get("attack_reason") or "当前无法发起攻击"
+            messages.error(request, f"无法进攻：{attack_reason}")
+            return redirect("gameplay:map")
+        return self.render_to_response(context)
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)

@@ -6467,7 +6467,8 @@ items:
     effect_payload:
       hp: 500
       intellect: 40
-      agility: 20
+      agility: 30
+      luck: 10
 
   - key: equip_chixiaojifeng
     name: 赤霄机凤

@@ -499,7 +499,14 @@ def _process_guild_raid_battle_atomic(
     guest_models = build_guest_snapshot_proxies(locked_run.guest_snapshots, include_guest_identity=True)
     battle_guest_models = cast(list[Any], guest_models)
     attacker_limit = max(1, int(getattr(locked_run, "selected_guest_count", 0) or len(battle_guest_models)))
-    defender_guests = _load_defender_guests(defender_locked)
+    defender_live_guests = _load_defender_guests(defender_locked)
+    # 帮会 PVP 使用独立战斗快照：不锁定、不恢复、不修改玩家真实门客的
+    # HP、状态或忠诚度。源门客叛逃/删除或成员离会后，门客池清理会使后续阵容消失。
+    defender_guest_snapshots = build_guest_battle_snapshots(defender_live_guests, include_identity=True)
+    defender_guests = cast(
+        list[Any],
+        build_guest_snapshot_proxies(defender_guest_snapshots, include_guest_identity=True),
+    )
     defender_setup = guild_troops.build_guild_defender_setup(guild=defender_locked)
     attacker_tech_levels = dict(locked_run.attacker_troop_tech_snapshot or {})
     if not attacker_tech_levels:
@@ -522,6 +529,8 @@ def _process_guild_raid_battle_atomic(
             auto_reward=False,
             send_message=False,
             apply_damage=False,
+            apply_victory_loyalty=False,
+            recover_live_guest_hp=False,
             validate_attacker_troop_capacity=False,
             limit=attacker_limit,
             defender_limit=defender_limit,

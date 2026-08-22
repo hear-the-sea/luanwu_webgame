@@ -63,6 +63,10 @@ class BattleOptions:
     send_message: bool = True
     limit: int = MAX_SQUAD
     apply_damage: bool = True
+    # 快照战斗不得把胜负奖励写回真实门客。
+    apply_victory_loyalty: bool = True
+    # 快照战斗不得触发真实门客的 HP 自然恢复。
+    recover_live_guest_hp: bool = True
     attacker_tech_levels: Dict[str, int] | None = None
     attacker_guest_bonuses: Dict[str, float] | None = None
     attacker_guest_skills: List[str] | None = None
@@ -158,6 +162,7 @@ def _build_defender_guest_and_loadout(
     defender_guest_level: int,
     defender_guest_bonuses: Dict[str, float],
     defender_guest_skills: List[str] | None,
+    recover_live_guest_hp: bool = True,
 ) -> tuple[list[Combatant], Dict[str, int]]:
     return _build_defender_guest_and_loadout_from_sources(
         defender_guests=defender_guests,
@@ -176,6 +181,7 @@ def _build_defender_guest_and_loadout(
         generate_ai_loadout_fn=generate_ai_loadout,
         normalize_troop_loadout_fn=normalize_troop_loadout,
         build_ai_guests_fn=build_ai_guests,
+        recover_live_guest_hp=recover_live_guest_hp,
     )
 
 
@@ -196,7 +202,8 @@ def validate_troop_capacity(guests: List[Any], troop_loadout: Dict[str, int]) ->
 
 def _prepare_battle_environment(active_guests: List[Guest], options: BattleOptions) -> Dict[str, int]:
     now = timezone.now()
-    _recover_guest_hp_batch(active_guests, now)
+    if options.recover_live_guest_hp:
+        _recover_guest_hp_batch(active_guests, now)
 
     normalized_loadout = normalize_troop_loadout(options.troop_loadout, default_if_empty=options.fill_default_troops)
     if options.validate_attacker_troop_capacity:
@@ -250,6 +257,7 @@ def _build_defender_units(
         defender_guest_level,
         defender_guest_bonuses,
         defender_guest_skills,
+        options.recover_live_guest_hp,
     )
     active_defender_guests = (options.defender_guests or [])[: options.defender_limit]
     defender_device_bonuses = build_troop_device_bonuses(active_defender_guests)
@@ -360,10 +368,11 @@ def _finalize_battle_results(
             drop_handler=options.drop_handler,
         )
 
-        if simulation.winner == "attacker":
-            grant_battle_victory_loyalty(_guests_in_combatants(guests, attacker_guests_comb))
-        elif simulation.winner == "defender" and options.defender_guests is not None:
-            grant_battle_victory_loyalty(_guests_in_combatants(options.defender_guests, defender_guests_comb))
+        if options.apply_victory_loyalty:
+            if simulation.winner == "attacker":
+                grant_battle_victory_loyalty(_guests_in_combatants(guests, attacker_guests_comb))
+            elif simulation.winner == "defender" and options.defender_guests is not None:
+                grant_battle_victory_loyalty(_guests_in_combatants(options.defender_guests, defender_guests_comb))
 
         hp_updates = apply_guest_hp_updates(guests, attacker_guests_comb, apply_damage=options.apply_damage)
         simulation.losses["attacker"]["hp_updates"] = hp_updates

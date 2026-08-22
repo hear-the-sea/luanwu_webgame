@@ -79,7 +79,7 @@ def process_due_raid_run_ids(
     *,
     raid_run_model: type[RaidRun],
     process_raid_battle: Callable[..., None],
-    finalize_raid: Callable[..., None],
+    finalize_raid: Callable[..., Any],
 ) -> None:
     if marching_ids:
         for run in raid_run_model.objects.filter(id__in=marching_ids).order_by("battle_at"):

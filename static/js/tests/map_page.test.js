@@ -7,6 +7,7 @@ const vm = require("node:vm");
 function createElement({ dataset = {}, value = "", textContent = "" } = {}) {
   const listeners = new Map();
   return {
+    listeners,
     dataset,
     value,
     textContent,
@@ -31,7 +32,7 @@ function createElement({ dataset = {}, value = "", textContent = "" } = {}) {
   };
 }
 
-async function loadMapPage({ searchQuery = "" } = {}) {
+async function loadMapPage({ searchQuery = "", results = [] } = {}) {
   const scriptPath = path.resolve(__dirname, "..", "map-page.js");
   const scriptSource = fs.readFileSync(scriptPath, "utf8");
   const page = createElement({
@@ -57,6 +58,7 @@ async function loadMapPage({ searchQuery = "" } = {}) {
     ["page-info", createElement()],
   ]);
   const calls = [];
+  const alerts = [];
   const document = {
     cookie: "csrftoken=test-csrf-token",
     getElementById(id) {
@@ -74,6 +76,9 @@ async function loadMapPage({ searchQuery = "" } = {}) {
     createElement() {
       return createElement();
     },
+    createTextNode(text) {
+      return { textContent: text };
+    },
     createDocumentFragment() {
       return createElement();
     },
@@ -87,7 +92,7 @@ async function loadMapPage({ searchQuery = "" } = {}) {
         ok: true,
         json: async () => ({
           success: true,
-          results: [],
+          results,
           total: 1,
           page_size: 20,
           has_more: false,
@@ -95,7 +100,9 @@ async function loadMapPage({ searchQuery = "" } = {}) {
       };
     },
     window: {
-      alert() {},
+      alert(message) {
+        alerts.push(message);
+      },
       confirm() {
         return true;
       },
@@ -111,11 +118,11 @@ async function loadMapPage({ searchQuery = "" } = {}) {
   vm.runInContext(scriptSource, context, { filename: "map-page.js" });
   await new Promise((resolve) => setImmediate(resolve));
   await new Promise((resolve) => setImmediate(resolve));
-  return calls;
+  return { calls, alerts, elements };
 }
 
 test("region search explicitly requests virtual-player backfill after loading its first page", async () => {
-  const calls = await loadMapPage();
+  const { calls } = await loadMapPage();
 
   assert.equal(calls.length, 2);
   assert.equal(calls[0].url, "/manor/api/map/search/?type=region&region=north&page=1");
@@ -126,8 +133,41 @@ test("region search explicitly requests virtual-player backfill after loading it
 });
 
 test("name search does not request region backfill", async () => {
-  const calls = await loadMapPage({ searchQuery: "target" });
+  const { calls } = await loadMapPage({ searchQuery: "target" });
 
   assert.equal(calls.length, 1);
   assert.equal(calls[0].url, "/manor/api/map/search/?type=name&q=target");
+});
+
+test("blocked attack shows the reason and does not open the raid config page", async () => {
+  const { alerts, elements } = await loadMapPage({
+    results: [
+      {
+        id: 9,
+        name: "高声望目标",
+        region_display: "北俱芦洲",
+        coordinate_x: 1,
+        coordinate_y: 2,
+        can_attack: false,
+        attack_reason: "对方声望过高，无法攻击",
+        is_protected: false,
+      },
+    ],
+  });
+
+  const fragment = elements.get("manor-list").childNodes[0];
+  const card = fragment.childNodes.find((node) => node.className === "tw-manor-card");
+  const actions = card.childNodes[1].childNodes[0];
+  const attackLink = actions.childNodes[1];
+  let prevented = false;
+
+  attackLink.listeners.get("click")({
+    preventDefault() {
+      prevented = true;
+    },
+  });
+
+  assert.equal(prevented, true);
+  assert.deepEqual(alerts, ["对方声望过高，无法攻击"]);
+  assert.equal(attackLink.href, "/manor/map/raid/9/");
 });

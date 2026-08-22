@@ -231,6 +231,14 @@
         attackLink.className = "tw-btn-attack";
         attackLink.textContent = "进攻";
         attackLink.href = `${raidConfigUrlPrefix}${manorId}/`;
+        attackLink.addEventListener("click", (event) => {
+          if (manor.can_attack !== false) {
+            return;
+          }
+
+          event.preventDefault();
+          showToast(manor.attack_reason || "当前无法发起攻击", "error");
+        });
 
         actions.appendChild(scoutBtn);
         actions.appendChild(attackLink);

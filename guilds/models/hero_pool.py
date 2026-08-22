@@ -8,7 +8,11 @@ from .member import GuildMember
 
 
 class GuildHeroPoolEntry(models.Model):
-    """帮会门客池条目（成员最多2个槽位，映射真实门客）。"""
+    """帮会门客池条目（成员最多2个槽位，映射真实门客）。
+
+    ``source_guest`` 只提供帮会阵容的快照来源，不代表帮会拥有或占用该门客；
+    玩家门客叛逃时由外键级联清理，成员离会时由成员生命周期服务清理。
+    """
 
     guild = models.ForeignKey(
         Guild, on_delete=models.CASCADE, related_name="hero_pool_entries", verbose_name="所属帮会"
@@ -66,7 +70,10 @@ class GuildHeroPoolEntry(models.Model):
 
 
 class GuildBattleLineupEntry(models.Model):
-    """帮会出战门客名单（容量可由科技扩展至最多40名）。"""
+    """帮会出战门客名单（容量可由科技扩展至最多40名）。
+
+    出战时只读取源门客并生成独立快照，帮会战斗不直接驱动源门客状态。
+    """
 
     guild = models.ForeignKey(
         Guild,

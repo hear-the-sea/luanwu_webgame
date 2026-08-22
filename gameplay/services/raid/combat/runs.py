@@ -212,7 +212,7 @@ def _send_raid_incoming_message(run: RaidRun) -> None:
     send_raid_incoming_message(run, create_message=create_message)
 
 
-def finalize_raid(run: RaidRun, now: Optional[datetime] = None) -> None:
+def finalize_raid(run: RaidRun, now: Optional[datetime] = None) -> bool:
     """
     完成踢馆返程，释放门客和发放战利品。
 
@@ -220,7 +220,7 @@ def finalize_raid(run: RaidRun, now: Optional[datetime] = None) -> None:
         run: 踢馆记录
         now: 当前时间（可选）
     """
-    _finalize_raid_command(
+    return _finalize_raid_command(
         run,
         now=now,
         load_locked_raid_run=_load_locked_raid_run,

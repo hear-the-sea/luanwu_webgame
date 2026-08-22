@@ -254,6 +254,40 @@ def test_apply_raid_loot_passes_raid_context_to_loot_calculation(monkeypatch, dj
 
 
 @pytest.mark.django_db
+def test_apply_raid_loot_does_not_deduct_attacker_storage_overflow_from_defender(
+    monkeypatch,
+    django_user_model,
+):
+    attacker, defender = build_attacker_defender(
+        django_user_model,
+        attacker_username="raid_storage_capacity_a",
+        defender_username="raid_storage_capacity_d",
+    )
+    attacker.silver = 95
+    attacker.silver_capacity = 100
+    attacker.save(update_fields=["silver", "silver_capacity"])
+    defender.silver = 100
+    defender.save(update_fields=["silver"])
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.BATTLING,
+        base_seed=101,
+        rng_version=1,
+        battle_engine_version="2",
+    )
+
+    monkeypatch.setattr(combat_battle, "_calculate_loot", lambda *_args, **_kwargs: ({"silver": 20}, {}))
+
+    with transaction.atomic():
+        combat_battle._apply_raid_loot_if_needed(run, is_attacker_victory=True)
+
+    defender.refresh_from_db()
+    assert defender.silver == 95
+    assert run.loot_resources == {"silver": 5}
+
+
+@pytest.mark.django_db
 def test_execute_raid_battle_uses_attacker_snapshot(monkeypatch, django_user_model):
     attacker, defender = build_attacker_defender(
         django_user_model,

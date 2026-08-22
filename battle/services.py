@@ -128,6 +128,7 @@ def _build_defender_guest_and_loadout(
     defender_guest_level: int,
     defender_guest_bonuses: Dict[str, float],
     defender_guest_skills: List[str] | None,
+    recover_live_guest_hp: bool = True,
 ):
     from guests.services.health import recover_guest_hp
 
@@ -148,6 +149,7 @@ def _build_defender_guest_and_loadout(
         generate_ai_loadout_fn=generate_ai_loadout,
         normalize_troop_loadout_fn=normalize_troop_loadout,
         build_ai_guests_fn=build_ai_guests,
+        recover_live_guest_hp=recover_live_guest_hp,
     )
 
 

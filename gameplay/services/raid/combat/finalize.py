@@ -20,7 +20,7 @@ def finalize_raid(
     grant_resources_locked: Callable[..., Any],
     grant_loot_items: Callable[[Any, dict[str, int]], None],
     battle_reward_reason: Any,
-) -> None:
+) -> bool:
     now = now or timezone.now()
 
     with transaction.atomic():
@@ -29,7 +29,7 @@ def finalize_raid(
             locked_run.Status.RETURNING,
             locked_run.Status.RETREATED,
         }:
-            return
+            return True
 
         guests = list(locked_run.guests.select_for_update())
         persist_guest_status_transitions(
@@ -50,16 +50,22 @@ def finalize_raid(
             if grain_loot > 0:
                 loot_resources["grain"] = grain_loot
             if loot_resources:
-                grant_resources_locked(
+                _, overflow = grant_resources_locked(
                     attacker_locked,
                     loot_resources,
                     note="踢馆掠夺",
                     reason=battle_reward_reason,
                     sync_production=False,
                 )
+                if overflow:
+                    # 战斗时已按攻击方容量裁剪；返程期间若容量又被占满，保持
+                    # RETURNING 并等待容量释放，不能把已从防守方扣除的资源静默丢掉。
+                    transaction.set_rollback(True)
+                    return False
             if loot_items:
                 grant_loot_items(attacker_locked, loot_items)
 
         locked_run.status = locked_run.Status.COMPLETED
         locked_run.completed_at = now
         locked_run.save(update_fields=["status", "completed_at"])
+        return True

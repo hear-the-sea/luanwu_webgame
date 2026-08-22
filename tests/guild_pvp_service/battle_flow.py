@@ -461,6 +461,9 @@ def test_process_guild_raid_battle_preserves_explicit_empty_defense(django_user_
     def _fake_execute_battle(_manor, _guests, _active_guests, options):
         captured["defender_guests"] = options.defender_guests
         captured["defender_setup"] = options.defender_setup
+        captured["apply_damage"] = options.apply_damage
+        captured["apply_victory_loyalty"] = options.apply_victory_loyalty
+        captured["recover_live_guest_hp"] = options.recover_live_guest_hp
         return report
 
     monkeypatch.setattr("guilds.services.guild_raids.execute_battle", _fake_execute_battle)
@@ -473,7 +476,13 @@ def test_process_guild_raid_battle_preserves_explicit_empty_defense(django_user_
     from guilds.services.guild_raids import process_guild_raid_battle
 
     assert process_guild_raid_battle(run, now=now) is True
-    assert captured == {"defender_guests": [], "defender_setup": {}}
+    assert captured == {
+        "defender_guests": [],
+        "defender_setup": {},
+        "apply_damage": False,
+        "apply_victory_loyalty": False,
+        "recover_live_guest_hp": False,
+    }
 
 
 @pytest.mark.django_db(transaction=True)

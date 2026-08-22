@@ -280,8 +280,8 @@ def complete_raid_task(self, run_id: int):
                     if not dispatched:
                         raise PvpTaskRetryRequested(f"raid complete reschedule dispatch failed: run_id={run_id}")
                     return "rescheduled"
-            finalize_raid(run, now=now)
-            return "completed"
+            finalized = finalize_raid(run, now=now)
+            return "completed" if finalized is not False else "capacity_blocked"
 
         # Returning status checks time
         if run.status == RaidRun.Status.RETURNING:
@@ -300,8 +300,8 @@ def complete_raid_task(self, run_id: int):
                     if not dispatched:
                         raise PvpTaskRetryRequested(f"raid complete reschedule dispatch failed: run_id={run_id}")
                     return "rescheduled"
-            finalize_raid(run, now=now)
-            return "completed"
+            finalized = finalize_raid(run, now=now)
+            return "completed" if finalized is not False else "capacity_blocked"
 
         return "invalid_status"
     except PVP_TASK_RETRY_EXCEPTIONS as exc:
@@ -343,8 +343,8 @@ def scan_raid_runs(limit: int = 200):
     )
     for run in returning_qs:
         try:
-            finalize_raid(run, now=now)
-            count += 1
+            if finalize_raid(run, now=now) is not False:
+                count += 1
         except PVP_TASK_RETRY_EXCEPTIONS:
             logger.exception("Failed to finalize raid %d", run.id)
 
@@ -357,8 +357,8 @@ def scan_raid_runs(limit: int = 200):
     )
     for run in retreated_qs:
         try:
-            finalize_raid(run, now=now)
-            count += 1
+            if finalize_raid(run, now=now) is not False:
+                count += 1
         except PVP_TASK_RETRY_EXCEPTIONS:
             logger.exception("Failed to finalize retreated raid %d", run.id)
 

@@ -47,6 +47,7 @@ def build_defender_guest_and_loadout(
     generate_ai_loadout_fn,
     normalize_troop_loadout_fn,
     build_ai_guests_fn,
+    recover_live_guest_hp: bool = True,
 ):
     normalized_setup = _normalize_optional_mapping(
         defender_setup,
@@ -57,7 +58,7 @@ def build_defender_guest_and_loadout(
         if len(defender_guests) > defender_limit:
             raise BattlePreparationError(f"最多只能派出 {defender_limit} 名门客出征")
         for guest in defender_guests[:defender_limit]:
-            if is_live_guest_model_fn(guest) and getattr(guest, "pk", None):
+            if recover_live_guest_hp and is_live_guest_model_fn(guest) and getattr(guest, "pk", None):
                 recover_guest_hp_fn(guest, now=now)
         defender_guests_comb = build_guest_combatants_fn(defender_guests, side="defender", limit=defender_limit)
         defender_loadout = normalize_troop_loadout_fn(

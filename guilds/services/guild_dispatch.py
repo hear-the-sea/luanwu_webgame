@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from django.db.models import F
+
 from core.exceptions import GuildMembershipError, GuildPermissionError, GuildValidationError
 
 from ..models import Guild, GuildBattleLineupEntry, GuildMember
@@ -45,7 +47,13 @@ def load_dispatch_lineup_rows(*, guild: Guild, pool_entry_ids: list[int]) -> lis
         row.pool_entry_id: row
         for row in GuildBattleLineupEntry.objects.select_for_update()
         .select_related("pool_entry__source_guest__template")
-        .filter(guild=guild, pool_entry_id__in=pool_entry_ids)
+        .filter(
+            guild=guild,
+            pool_entry_id__in=pool_entry_ids,
+            pool_entry__owner_member__is_active=True,
+            pool_entry__owner_member__guild_id=guild.id,
+            pool_entry__source_guest__manor__user_id=F("pool_entry__owner_member__user_id"),
+        )
         .order_by("slot_index", "id")
     }
     if len(row_map) != len(pool_entry_ids):

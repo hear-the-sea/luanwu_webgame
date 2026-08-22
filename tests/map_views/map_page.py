@@ -186,7 +186,7 @@ class TestMapViews:
                 "target_manor": current_target,
                 "target_info": {
                     "region_display": current_target.region_display,
-                    "prestige": 10,
+                    "prestige": 987654,
                     "prestige_comparison": "lower",
                     "distance": 1.0,
                     "travel_time": 30,
@@ -221,6 +221,8 @@ class TestMapViews:
 
         assert response.status_code == 200
         body = response.content.decode("utf-8")
+        assert "<dt>声望</dt>" not in body
+        assert "987654" not in body
         assert "data-raid-config-page" in body
         assert 'class="tw-panel tw-raid-intel"' in body
         assert 'class="tw-raid-loadout-grid"' in body
@@ -234,6 +236,32 @@ class TestMapViews:
         assert f'data-map-url="{reverse("gameplay:map")}"' in body
         assert "const raidApiUrl =" not in body
         assert "fetch(raidApiUrl" not in body
+
+    def test_raid_config_page_redirects_when_attack_is_blocked(self, manor_with_user, monkeypatch, django_user_model):
+        manor, client = manor_with_user
+        target_user = django_user_model.objects.create_user(username="raid_config_blocked_target", password="pass123")
+        target_manor = ensure_manor(target_user)
+
+        monkeypatch.setattr(
+            "gameplay.views.map.get_prepared_manor_for_read",
+            lambda request, **_kwargs: manor,
+        )
+        monkeypatch.setattr(
+            "gameplay.views.map.get_raid_config_context",
+            lambda current_manor, current_target: {
+                "manor": current_manor,
+                "target_manor": current_target,
+                "target_info": {},
+                "can_attack": False,
+                "attack_reason": "对方声望过高，无法攻击",
+            },
+        )
+
+        response = client.get(reverse("gameplay:raid_config", kwargs={"target_id": target_manor.id}))
+
+        assert response.status_code == 302
+        assert response.url == reverse("gameplay:map")
+        assert [str(message) for message in response.wsgi_request._messages] == ["无法进攻：对方声望过高，无法攻击"]
 
     def test_raid_config_page_hides_stale_virtual_player(self, manor_with_user, django_user_model):
         _manor, client = manor_with_user
