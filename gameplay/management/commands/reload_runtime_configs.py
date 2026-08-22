@@ -6,7 +6,7 @@ from gameplay.services.runtime_configs import format_runtime_config_summary, rel
 
 
 class Command(BaseCommand):
-    help = "刷新运行期 YAML 配置缓存（商铺/拍卖/仓库/锻造/生产/门客成长/竞技场/交易/帮会/监牢招降）。"
+    help = "刷新运行期 YAML 配置缓存（商铺/乱舞商城/拍卖/仓库/锻造/生产/门客成长/竞技场/交易/帮会/监牢招降）。"
 
     def handle(self, *args, **options):
         summary = reload_runtime_configs()

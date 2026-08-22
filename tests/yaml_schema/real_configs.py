@@ -16,6 +16,7 @@ from core.utils.yaml_schema import (
     validate_guest_skills,
     validate_guest_templates,
     validate_item_templates,
+    validate_luanwu_shop,
     validate_mission_templates,
     validate_shop_items,
     validate_trade_market_rules,
@@ -214,6 +215,15 @@ class TestRealConfigsPassValidation:
 
         item_keys = {item["key"] for item in item_data.get("items", []) if isinstance(item, dict) and "key" in item}
         assert_valid(validate_shop_items(shop_data, item_keys=item_keys))
+
+    def test_luanwu_shop_valid(self, data_dir):
+        with (data_dir / "luanwu_shop.yaml").open("r", encoding="utf-8") as handle:
+            luanwu_shop_data = yaml.safe_load(handle)
+        with (data_dir / "item_templates.yaml").open("r", encoding="utf-8") as handle:
+            item_data = yaml.safe_load(handle)
+
+        item_keys = {item["key"] for item in item_data.get("items", []) if isinstance(item, dict) and "key" in item}
+        assert_valid(validate_luanwu_shop(luanwu_shop_data, item_keys=item_keys))
 
     def test_new_skill_books_stay_wired_across_configs(self, data_dir):
         import yaml

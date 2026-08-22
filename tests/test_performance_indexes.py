@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from gameplay.models import Building, Manor, PlayerTechnology
-from guests.models import Guest
+from guests.models import Guest, RecruitmentCandidate
 from guilds.models import GuildMissionRun
 
 
@@ -22,6 +22,7 @@ def test_periodic_scan_models_expose_matching_composite_indexes() -> None:
         (Building, "building_due_scan_idx"): ("is_upgrading", "upgrade_complete_at", "id"),
         (PlayerTechnology, "tech_due_scan_idx"): ("is_upgrading", "upgrade_complete_at", "id"),
         (Manor, "manor_resource_updated_idx"): ("resource_updated_at", "id"),
+        (RecruitmentCandidate, "guest_candidate_expiry_idx"): ("created_at", "id"),
     }
 
     for (model, index_name), fields in expected_indexes.items():

@@ -3,6 +3,7 @@ from __future__ import annotations
 from core.utils.yaml_schema import (
     validate_forge_blueprints,
     validate_forge_equipment,
+    validate_luanwu_shop,
     validate_mission_templates,
     validate_shop_items,
 )
@@ -138,6 +139,99 @@ class TestShopItemsValidation:
         data = {"items": [{"item_key": "grain", "daily_refresh": "yes"}]}
         result = validate_shop_items(data)
         assert_has_error(result, substring="expected bool")
+
+
+class TestLuanwuShopValidation:
+    def test_valid_entries(self):
+        data = {
+            "currency_item_key": "chunqiu_coin",
+            "items": [
+                {
+                    "key": "fangdajing",
+                    "price": 1,
+                    "item_key": "fangdajing",
+                    "reward_type": "item",
+                    "reward_quantity": 10,
+                },
+                {
+                    "key": "device_blueprint",
+                    "name": "机关图纸宝箱",
+                    "description": "随机图纸。",
+                    "price": 10,
+                    "reward_type": "random_device_blueprint",
+                },
+            ],
+        }
+        assert_valid(validate_luanwu_shop(data, item_keys={"chunqiu_coin", "fangdajing"}))
+
+    def test_item_reward_requires_item_key_and_quantity(self):
+        data = {
+            "currency_item_key": "chunqiu_coin",
+            "items": [
+                {
+                    "key": "broken",
+                    "name": "错误商品",
+                    "description": "错误配置。",
+                    "price": 1,
+                    "reward_type": "item",
+                }
+            ],
+        }
+        result = validate_luanwu_shop(data, item_keys={"chunqiu_coin"})
+        assert_has_error(result, substring="item_key")
+        assert_has_error(result, substring="reward_quantity")
+
+    def test_fixed_item_rejects_duplicate_display_metadata(self):
+        data = {
+            "currency_item_key": "chunqiu_coin",
+            "items": [
+                {
+                    "key": "duplicate_metadata",
+                    "name": "重复名称",
+                    "description": "重复描述。",
+                    "price": 1,
+                    "item_key": "fangdajing",
+                    "reward_type": "item",
+                    "reward_quantity": 1,
+                }
+            ],
+        }
+        result = validate_luanwu_shop(data, item_keys={"chunqiu_coin", "fangdajing"})
+        assert_has_error(result, substring="name must be omitted")
+        assert_has_error(result, substring="description must be omitted")
+
+    def test_random_reward_rejects_item_key(self):
+        data = {
+            "currency_item_key": "chunqiu_coin",
+            "items": [
+                {
+                    "key": "broken_random",
+                    "name": "错误随机商品",
+                    "description": "错误配置。",
+                    "price": 1,
+                    "item_key": "fangdajing",
+                    "reward_type": "random_device_blueprint",
+                }
+            ],
+        }
+        result = validate_luanwu_shop(data, item_keys={"chunqiu_coin", "fangdajing"})
+        assert_has_error(result, substring="item_key must be omitted")
+
+    def test_reward_type_rejects_non_string_values(self):
+        data = {
+            "currency_item_key": "chunqiu_coin",
+            "items": [
+                {
+                    "key": "broken_type",
+                    "price": 1,
+                    "item_key": "fangdajing",
+                    "reward_type": ["item"],
+                    "reward_quantity": 1,
+                }
+            ],
+        }
+        result = validate_luanwu_shop(data, item_keys={"chunqiu_coin", "fangdajing"})
+        assert_has_error(result, substring="reward_type")
 
 
 class TestForgeBlueprintValidation:

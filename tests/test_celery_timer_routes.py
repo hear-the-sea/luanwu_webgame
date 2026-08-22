@@ -21,6 +21,7 @@ def test_batch_timer_tasks_are_routed_to_the_scan_queue():
     expected_scan_tasks = [
         "gameplay.scan_due_missions",
         "guests.scan_passive_hp_recovery",
+        "guests.cleanup_expired_recruitment_candidates",
         "guilds.scan_due_missions",
         "guilds.scan_due_raids",
     ]

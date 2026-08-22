@@ -6009,12 +6009,12 @@ items:
     effect_type: equip_device
     rarity: purple
     effect_payload:
-      hp: 339
-      defense: 4
+      hp: 500
+      defense: 15
       force: 18
       intellect: 25
       luck: 10
-    tradeable: false
+    tradeable: true
     price: 0
     storage_space: 150
     image: taotieding.png
@@ -6033,8 +6033,9 @@ items:
     storage_space: 75
     image: equip_taomujian.png
     effect_payload:
-      defense: 15
-      force: 15
+      defense: 10
+      intellect: 15
+      luck: 5
 
   - key: equip_tongjing
     name: 铜镜
@@ -6046,7 +6047,7 @@ items:
     storage_space: 75
     image: equip_tongjing.png
     effect_payload:
-      hp: 250
+      hp: 500
       defense: 20
       intellect: 5
 
@@ -6087,7 +6088,7 @@ items:
     storage_space: 75
     image: equip_moyuyan.png
     effect_payload:
-      hp: 50
+      hp: 200
       defense: 5
       intellect: 25
 
@@ -6115,7 +6116,7 @@ items:
     image: equip_xiaoxingjiguanshu.png
     effect_payload:
       hp: 800
-      intellect: 5
+      force: 15
       agility: 15
 
   - key: equip_tongchanjiguan
@@ -6128,8 +6129,10 @@ items:
     storage_space: 75
     image: equip_tongchanjiguan.png
     effect_payload:
-      hp: 1000
-      intellect: 18
+      hp: 200
+      agility: 18
+      force: 15
+      intellect: 5
 
   # ---------- 器械 - 蓝色品质 ----------
 
@@ -6143,7 +6146,7 @@ items:
     storage_space: 100
     image: equip_zhaoyaojing.png
     effect_payload:
-      hp: 150
+      hp: 500
       force: 25
       luck: 15
 
@@ -6157,7 +6160,7 @@ items:
     storage_space: 100
     image: equip_qiankunquan.png
     effect_payload:
-      defense: 8
+      defense: 10
       force: 25
       agility: 12
 
@@ -6172,8 +6175,8 @@ items:
     image: equip_tianjiluopan.png
     effect_payload:
       intellect: 25
-      agility: 10
-      luck: 5
+      agility: 5
+      luck: 20
 
   - key: equip_lingwenyubi
     name: 灵纹玉笔
@@ -6185,8 +6188,8 @@ items:
     storage_space: 100
     image: equip_lingwenyubi.png
     effect_payload:
-      hp: 150
-      intellect: 20
+      hp: 200
+      intellect: 25
       luck: 15
 
   - key: equip_guanxingdeng
@@ -6200,8 +6203,8 @@ items:
     image: equip_guanxingdeng.png
     effect_payload:
       hp: 100
-      intellect: 25
-      luck: 15
+      intellect: 10
+      luck: 30
 
   - key: equip_jixiemao
     name: 机械猫
@@ -6213,10 +6216,10 @@ items:
     storage_space: 100
     image: equip_jixiemao.png
     effect_payload:
-      hp: 100
-      intellect: 25
+      hp: 500
+      intellect: 10
       agility: 10
-      luck: 10
+      force: 25
 
   - key: equip_jiguanchuniao
     name: 机关雏鸟
@@ -6228,9 +6231,9 @@ items:
     storage_space: 100
     image: equip_jiguanchuniao.png
     effect_payload:
-      hp: 100
-      force: 30
-      agility: 18
+      hp: 500
+      force: 15
+      agility: 30
 
   - key: equip_kuileimuren
     name: 傀儡木人
@@ -6249,7 +6252,7 @@ items:
 
   - key: equip_qingji
     name: 庆忌
-    description: 《山海经》中记载的神虫，形如蜂蝉，栖于青铜之上，见之者大吉。
+    description: 庆忌者，其状若人，其长四寸，衣黄衣，冠黄冠，戴黄盖，乘小马，好急驰。
     effect_type: equip_device
     rarity: blue
     tradeable: true
@@ -6257,8 +6260,7 @@ items:
     storage_space: 100
     image: equip_qingji.png
     effect_payload:
-      intellect: 30
-      agility: 10
+      agility: 35
       luck: 12
 
   # ---------- 器械 - 紫色品质 ----------
@@ -6273,9 +6275,9 @@ items:
     storage_space: 150
     image: equip_baguajing.png
     effect_payload:
-      hp: 210
-      intellect: 37
-      luck: 18
+      hp: 500
+      intellect: 30
+      luck: 30
 
   - key: equip_hunyuansan
     name: 混元伞
@@ -6287,10 +6289,10 @@ items:
     storage_space: 150
     image: equip_hunyuansan.png
     effect_payload:
-      hp: 214
+      hp: 800
       defense: 14
-      intellect: 42
-      luck: 4
+      force: 42
+      luck: 5
 
   - key: equip_zijinhulu
     name: 紫金葫芦
@@ -6303,9 +6305,8 @@ items:
     image: equip_zijinhulu.png
     effect_payload:
       hp: 225
-      force: 3
+      defense: 20
       intellect: 37
-      luck: 20
 
   - key: equip_tianyinguqin
     name: 天音古琴
@@ -6317,7 +6318,7 @@ items:
     storage_space: 150
     image: equip_tianyinguqin.png
     effect_payload:
-      hp: 214
+      hp: 300
       intellect: 40
       luck: 17
 
@@ -6346,10 +6347,9 @@ items:
     storage_space: 150
     image: equip_jiguanxiong.png
     effect_payload:
-      hp: 203
-      defense: 10
-      force: 14
-      intellect: 34
+      hp: 800
+      defense: 15
+      force: 45
 
   - key: equip_muniuliuma
     name: 木牛流马
@@ -6361,7 +6361,7 @@ items:
     storage_space: 150
     image: equip_muniuliuma.png
     effect_payload:
-      hp: 209
+      hp: 300
       intellect: 34
       agility: 13
       luck: 11
@@ -6391,10 +6391,9 @@ items:
     storage_space: 150
     image: equip_xuanwujigui.png
     effect_payload:
-      hp: 236
-      defense: 12
-      intellect: 33
-      luck: 14
+      hp: 800
+      defense: 45
+      luck: 15
 
   # ---------- 器械 - 橙色品质 ----------
 
@@ -6410,7 +6409,7 @@ items:
     effect_payload:
       hp: 350
       defense: 5
-      intellect: 38
+      intellect: 45
       luck: 20
 
   - key: equip_shanheshejitu
@@ -6424,8 +6423,8 @@ items:
     image: equip_shanheshejitu.png
     effect_payload:
       hp: 350
-      force: 13
-      intellect: 43
+      agility: 15
+      intellect: 45
       luck: 10
 
   - key: equip_zhoutianxingpan
@@ -6438,9 +6437,9 @@ items:
     storage_space: 200
     image: equip_zhoutianxingpan.png
     effect_payload:
-      defense: 47
-      agility: 11
-      luck: 13
+      defense: 30
+      agility: 10
+      luck: 30
 
   - key: equip_taiqingyuce
     name: 太清玉册
@@ -6466,7 +6465,7 @@ items:
     storage_space: 200
     image: equip_feiyuan.png
     effect_payload:
-      hp: 340
+      hp: 500
       intellect: 40
       agility: 20
 
@@ -6481,10 +6480,9 @@ items:
     image: equip_chixiaojifeng.png
     effect_payload:
       hp: 300
-      defense: 3
-      force: 43
-      agility: 13
-      luck: 8
+      force: 45
+      agility: 35
+      luck: 10
 
   - key: equip_mojiajiguanren
     name: 墨家机关人
@@ -6496,12 +6494,12 @@ items:
     storage_space: 200
     image: equip_mojiajiguanren.png
     effect_payload:
-      hp: 423
-      defense: 5
+      hp: 800
+      defense: 15
       force: 25
       intellect: 25
       agility: 15
-      luck: 5
+      luck: 10
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 坐骑

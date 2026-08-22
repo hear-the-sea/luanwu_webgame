@@ -12,6 +12,7 @@ from .gear import (
     validate_forge_blueprints,
     validate_forge_decompose,
     validate_forge_equipment,
+    validate_luanwu_shop,
     validate_shop_items,
     validate_smithy_production,
 )
@@ -53,6 +54,7 @@ SUPPORTED_YAML_CONFIGS = (
     "mission_templates.yaml",
     "forge_equipment.yaml",
     "shop_items.yaml",
+    "luanwu_shop.yaml",
     "arena_rules.yaml",
     "arena_coop_rules.yaml",
     "trade_market_rules.yaml",
@@ -136,6 +138,7 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
     mission_data = _load("mission_templates.yaml")
     forge_data = _load("forge_equipment.yaml")
     shop_data = _load("shop_items.yaml")
+    luanwu_shop_data = _load("luanwu_shop.yaml")
     arena_data = _load("arena_rules.yaml")
     arena_coop_data = _load("arena_coop_rules.yaml")
     trade_data = _load("trade_market_rules.yaml")
@@ -208,6 +211,9 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
 
     if shop_data is not None:
         result.merge(validate_shop_items(shop_data, item_keys=item_keys))
+
+    if luanwu_shop_data is not None:
+        result.merge(validate_luanwu_shop(luanwu_shop_data, item_keys=item_keys))
 
     if arena_data is not None:
         result.merge(validate_arena_rules(arena_data))

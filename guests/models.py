@@ -591,6 +591,9 @@ class RecruitmentCandidate(models.Model):
         verbose_name = "招募候选"
         verbose_name_plural = "招募候选"
         ordering = ("created_at",)
+        indexes = [
+            models.Index(fields=["created_at", "id"], name="guest_candidate_expiry_idx"),
+        ]
 
 
 class SalaryPayment(models.Model):

@@ -26,6 +26,7 @@ and upserts rows via `update_or_create` keyed on a stable identifier (`key` fiel
 
 Examples: `data/building_templates.yaml`, `data/guest_templates.yaml`,
 `data/troop_templates.yaml`, `data/forge_blueprints.yaml`, `data/shop_items.yaml`,
+`data/luanwu_shop.yaml`,
 plus per-era guest files under `data/guests/`.
 
 ### Dynamic instances -- database models

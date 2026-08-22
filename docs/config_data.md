@@ -13,6 +13,7 @@
 当前已经纳入 `python manage.py reload_runtime_configs` 统一刷新流程的文件：
 
 - `data/shop_items.yaml`
+- `data/luanwu_shop.yaml`
 - `data/auction_items.yaml`
 - `data/warehouse_production.yaml`
 - `data/forge_equipment.yaml`
@@ -75,6 +76,7 @@ python manage.py bootstrap_game_data --skip-images
 适合场景：
 
 - 商铺和拍卖可售项
+- 乱舞商城商品、兑换价格和奖励规则
 - 仓库、锻造、冶炼、养殖、马房生产规则
 - 竞技场奖励和规则
 - 帮会规则

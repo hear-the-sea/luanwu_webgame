@@ -73,6 +73,7 @@ def test_luanwu_shop_fixed_purchase_consumes_warehouse_coins_and_grants_pack(dja
     result = luanwu_shop.purchase_luanwu_shop_item(manor, "fangdajing")
 
     assert result["total_cost"] == 1
+    assert result["product_name"] == "放大镜"
     assert result["granted_items"] == {"fangdajing": 10}
     assert InventoryItem.objects.get(manor=manor, template=coin).quantity == 2
     assert InventoryItem.objects.get(manor=manor, template=magnifying_glass).quantity == 10
@@ -92,6 +93,41 @@ def test_luanwu_shop_recruitment_card_purchase_grants_three_cards_per_coin(djang
     assert result["granted_items"] == {"recruitment_card": 3}
     assert InventoryItem.objects.get(manor=manor, template=coin).quantity == 1
     assert InventoryItem.objects.get(manor=manor, template=recruitment_card).quantity == 3
+
+
+@pytest.mark.django_db
+def test_luanwu_shop_purchase_uses_reloaded_yaml_price_and_reward_quantity(django_user_model, tmp_path, monkeypatch):
+    user = django_user_model.objects.create_user(username="luanwu_shop_yaml_reload", password="pass123")
+    manor = ensure_manor(user)
+    coin = _create_item_template("chunqiu_coin", "春秋币", effect_type=ItemTemplate.EffectType.RESOURCE)
+    magnifying_glass = _create_item_template("fangdajing", "放大镜")
+    InventoryItem.objects.create(manor=manor, template=coin, quantity=2)
+
+    config_path = tmp_path / "luanwu_shop.yaml"
+    config_path.write_text(
+        """currency_item_key: chunqiu_coin
+items:
+  - key: fangdajing
+    price: 2
+    item_key: fangdajing
+    reward_type: item
+    reward_quantity: 4
+""",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(luanwu_shop, "LUANWU_SHOP_CONFIG_PATH", config_path)
+    try:
+        luanwu_shop.clear_luanwu_shop_config_cache()
+        result = luanwu_shop.purchase_luanwu_shop_item(manor, "fangdajing")
+    finally:
+        monkeypatch.undo()
+        luanwu_shop.clear_luanwu_shop_config_cache()
+
+    assert result["total_cost"] == 2
+    assert result["granted_items"] == {"fangdajing": 4}
+    assert not InventoryItem.objects.filter(manor=manor, template=coin).exists()
+    assert InventoryItem.objects.get(manor=manor, template=magnifying_glass).quantity == 4
 
 
 @pytest.mark.django_db
@@ -163,7 +199,7 @@ def test_luanwu_shop_random_device_blueprint_selects_only_device_blueprints(djan
 
     result = luanwu_shop.purchase_luanwu_shop_item(
         manor,
-        luanwu_shop.RANDOM_DEVICE_BLUEPRINT_PRODUCT_KEY,
+        "device_blueprint",
         rng=FixedChoice(),
     )
 
@@ -230,7 +266,7 @@ def test_luanwu_shop_checks_currency_before_random_blueprint_selection(django_us
     with pytest.raises(InsufficientStockError, match="春秋币"):
         luanwu_shop.purchase_luanwu_shop_item(
             manor,
-            luanwu_shop.RANDOM_DEVICE_BLUEPRINT_PRODUCT_KEY,
+            "device_blueprint",
         )
 
     assert called is False

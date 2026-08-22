@@ -21,7 +21,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--skip-config-reload",
             action="store_true",
-            help="跳过商铺/拍卖/仓库/铁匠铺配置热加载。",
+            help="跳过商铺/乱舞商城/拍卖/仓库/铁匠铺配置热加载。",
         )
         parser.add_argument(
             "--continue-on-error",

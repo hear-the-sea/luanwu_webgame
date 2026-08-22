@@ -1,4 +1,4 @@
-"""Validators for forge equipment, shop items, blueprints, decompose, and smithy YAML configs."""
+"""Validators for forge equipment, shops, blueprints, decompose, and smithy YAML configs."""
 
 from __future__ import annotations
 
@@ -124,6 +124,177 @@ def validate_shop_items(
         daily_refresh = entry.get("daily_refresh")
         if daily_refresh is not None:
             _check_type(daily_refresh, bool, result=result, file=file, path=path, field_name="daily_refresh")
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Schema: luanwu_shop.yaml
+# ---------------------------------------------------------------------------
+
+
+VALID_LUANWU_SHOP_REWARD_TYPES = {"item", "random_device_blueprint"}
+
+
+def _check_luanwu_positive_int(
+    value: object,
+    *,
+    result: ValidationResult,
+    file: str,
+    path: str,
+    field_name: str,
+) -> bool:
+    if isinstance(value, bool) or not isinstance(value, int):
+        result.add(file, path, f"field '{field_name}' expected int, got {type(value).__name__}")
+        return False
+    return _check_positive(value, result=result, file=file, path=path, field_name=field_name, allow_zero=False)
+
+
+def validate_luanwu_shop(
+    data: dict,
+    *,
+    file: str = "luanwu_shop.yaml",
+    item_keys: set[str] | None = None,
+) -> ValidationResult:
+    result = ValidationResult()
+
+    if not isinstance(data, dict):
+        result.add(file, "<root>", "expected a mapping at root level")
+        return result
+
+    currency_item_key = data.get("currency_item_key")
+    if currency_item_key is None:
+        result.add(file, "<root>", "missing required key 'currency_item_key'")
+    elif _check_type(currency_item_key, str, result=result, file=file, path="<root>", field_name="currency_item_key"):
+        if not currency_item_key.strip():
+            result.add(file, "<root>", "field 'currency_item_key' must not be empty")
+        if item_keys is not None and currency_item_key not in item_keys:
+            result.add(
+                file,
+                "<root>",
+                f"currency_item_key '{currency_item_key}' not found in item_templates.yaml",
+            )
+
+    items = data.get("items")
+    if items is None:
+        result.add(file, "<root>", "missing required key 'items'")
+        return result
+    if not isinstance(items, list):
+        result.add(file, "items", "expected a list")
+        return result
+
+    _check_unique_keys(items, "key", result=result, file=file, context="items")
+
+    for index, entry in enumerate(items):
+        path = f"items[{index}]"
+        if not isinstance(entry, dict):
+            result.add(file, path, "expected a mapping")
+            continue
+
+        _check_required_fields(
+            entry,
+            ["key", "price", "reward_type"],
+            result=result,
+            file=file,
+            path=path,
+        )
+
+        for field_name in ("key", "reward_type"):
+            value = entry.get(field_name)
+            if value is not None and _check_type(
+                value,
+                str,
+                result=result,
+                file=file,
+                path=path,
+                field_name=field_name,
+            ):
+                if not value.strip():
+                    result.add(file, path, f"field '{field_name}' must not be empty")
+
+        for field_name in ("name", "description"):
+            value = entry.get(field_name)
+            if value is not None:
+                if _check_type(value, str, result=result, file=file, path=path, field_name=field_name):
+                    if not value.strip():
+                        result.add(file, path, f"field '{field_name}' must not be empty")
+
+        price = entry.get("price")
+        if price is not None:
+            _check_luanwu_positive_int(
+                price,
+                result=result,
+                file=file,
+                path=path,
+                field_name="price",
+            )
+
+        reward_type = entry.get("reward_type")
+        reward_type_valid = (
+            _check_in(
+                reward_type,
+                VALID_LUANWU_SHOP_REWARD_TYPES,
+                result=result,
+                file=file,
+                path=path,
+                field_name="reward_type",
+            )
+            if isinstance(reward_type, str)
+            else False
+        )
+
+        item_key = entry.get("item_key")
+        if reward_type == "item":
+            if item_key is None:
+                result.add(file, path, "missing required field 'item_key' for item reward")
+            elif _check_type(item_key, str, result=result, file=file, path=path, field_name="item_key"):
+                if not item_key.strip():
+                    result.add(file, path, "field 'item_key' must not be empty")
+                if item_keys is not None and item_key not in item_keys:
+                    result.add(file, path, f"item_key '{item_key}' not found in item_templates.yaml")
+            if entry.get("name") is not None:
+                result.add(file, path, "name must be omitted for item reward; use ItemTemplate.name")
+            if entry.get("description") is not None:
+                result.add(file, path, "description must be omitted for item reward; use ItemTemplate.description")
+        elif reward_type == "random_device_blueprint" and item_key is not None:
+            result.add(file, path, "item_key must be omitted for random_device_blueprint reward")
+        elif not reward_type_valid and item_key is not None:
+            _check_type(item_key, str, result=result, file=file, path=path, field_name="item_key")
+
+        if reward_type == "random_device_blueprint":
+            if entry.get("name") is None:
+                result.add(file, path, "missing required field 'name' for random_device_blueprint reward")
+            if entry.get("description") is None:
+                result.add(file, path, "missing required field 'description' for random_device_blueprint reward")
+
+        reward_quantity = entry.get("reward_quantity")
+        if reward_type == "item" and reward_quantity is None:
+            result.add(file, path, "missing required field 'reward_quantity' for item reward")
+        elif reward_type == "random_device_blueprint" and reward_quantity is not None:
+            result.add(file, path, "reward_quantity must be omitted for random_device_blueprint reward")
+        elif reward_quantity is not None:
+            _check_luanwu_positive_int(
+                reward_quantity,
+                result=result,
+                file=file,
+                path=path,
+                field_name="reward_quantity",
+            )
+
+        shop_description = entry.get("shop_description")
+        if shop_description is not None:
+            if (
+                _check_type(
+                    shop_description,
+                    str,
+                    result=result,
+                    file=file,
+                    path=path,
+                    field_name="shop_description",
+                )
+                and not shop_description.strip()
+            ):
+                result.add(file, path, "field 'shop_description' must not be empty")
 
     return result
 

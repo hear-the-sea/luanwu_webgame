@@ -12,7 +12,7 @@ from django.db.models.functions import Greatest
 from django.utils import timezone
 
 from common.utils.celery import safe_apply_async_with_dedup
-from core.config import GUEST, GUEST_LOYALTY
+from core.config import GUEST, GUEST_LOYALTY, RECRUITMENT
 from core.exceptions import MessageError
 from core.exceptions.task import TaskRescheduleError
 from core.utils.infrastructure import (
@@ -41,6 +41,8 @@ GUEST_DEFECTION_MESSAGE_EXCEPTIONS: InfrastructureExceptions = combine_infrastru
     MessageError,
     infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
 )
+CANDIDATE_CLEANUP_BATCH_SIZE = 200
+CANDIDATE_CLEANUP_MAX_BATCH_SIZE = 1_000
 
 
 def _dedup_timeout_for_remaining(remaining: int) -> int:
@@ -335,6 +337,43 @@ def scan_guest_recruitments(limit: int = 200) -> int:
             # will retry any recruitments that were skipped.
             logger.exception("Failed to finalize guest recruitment %d", recruitment.id)
     return count
+
+
+@shared_task(name="guests.cleanup_expired_recruitment_candidates")
+def cleanup_expired_recruitment_candidates(limit: int = CANDIDATE_CLEANUP_BATCH_SIZE) -> int:
+    """删除生成时间超过候选有效期的聚贤庄候选门客。"""
+    from guests.models import RecruitmentCandidate
+    from guests.services.recruitment_shared import invalidate_recruitment_hall_cache
+
+    batch_limit = max(0, min(int(limit), CANDIDATE_CLEANUP_MAX_BATCH_SIZE))
+    if batch_limit <= 0:
+        return 0
+
+    now = timezone.now()
+    expire_hours = int(RECRUITMENT.CANDIDATE_EXPIRE_HOURS)
+    if expire_hours <= 0:
+        raise ValueError("RECRUITMENT.CANDIDATE_EXPIRE_HOURS must be positive")
+    cutoff = now - timedelta(hours=expire_hours)
+
+    expired_candidates = list(
+        RecruitmentCandidate.objects.filter(created_at__lte=cutoff)
+        .order_by("created_at", "id")
+        .values_list("id", "manor_id")[:batch_limit]
+    )
+    if not expired_candidates:
+        return 0
+
+    candidate_ids = [int(candidate_id) for candidate_id, _manor_id in expired_candidates]
+    manor_ids = {int(manor_id) for _candidate_id, manor_id in expired_candidates}
+    deleted_count, _ = RecruitmentCandidate.objects.filter(
+        id__in=candidate_ids,
+        created_at__lte=cutoff,
+    ).delete()
+
+    if deleted_count:
+        for manor_id in manor_ids:
+            invalidate_recruitment_hall_cache(manor_id)
+    return int(deleted_count)
 
 
 @shared_task(name="guests.scan_passive_hp_recovery")

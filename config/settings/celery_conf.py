@@ -86,6 +86,7 @@ CELERY_TIMER_SCAN_TASKS = frozenset(
         "gameplay.sync_resource_production",
         "guests.scan_training",
         "guests.scan_recruitments",
+        "guests.cleanup_expired_recruitment_candidates",
         "guests.scan_passive_hp_recovery",
         "guests.scan_injury_loyalty_decay",
         "gameplay.scan_scout_records",
@@ -199,6 +200,10 @@ CELERY_BEAT_SCHEDULE = {
     },
     "scan-guest-recruitments": {
         "task": "guests.scan_recruitments",
+        "schedule": crontab(minute="*/5"),
+    },
+    "cleanup-expired-recruitment-candidates": {
+        "task": "guests.cleanup_expired_recruitment_candidates",
         "schedule": crontab(minute="*/5"),
     },
     "scan-passive-guest-hp-recovery": {

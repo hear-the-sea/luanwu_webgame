@@ -1396,6 +1396,7 @@ def reload_runtime_configs() -> dict[str, int]:
         clear_jail_persuasion_profiles_cache,
         load_jail_persuasion_profiles,
     )
+    from gameplay.services.luanwu_shop import clear_luanwu_shop_config_cache, load_luanwu_shop_config
     from gameplay.services.virtual_player_core.config import (
         clear_virtual_player_config_cache,
         load_virtual_player_config,
@@ -1410,6 +1411,9 @@ def reload_runtime_configs() -> dict[str, int]:
 
     reload_shop_config()
     shop_items = load_shop_config()
+
+    clear_luanwu_shop_config_cache()
+    luanwu_shop = load_luanwu_shop_config()
 
     reload_auction_config()
     auction_config = load_auction_config()
@@ -1465,6 +1469,7 @@ def reload_runtime_configs() -> dict[str, int]:
 
     return {
         "shop_items": len(shop_items),
+        "luanwu_shop_items": len(luanwu_shop.products),
         "auction_items": len(getattr(auction_config, "items", [])),
         "warehouse_techs": len(warehouse_cfg),
         "forge_equipment": len(forge_equipment_cfg),
@@ -1488,6 +1493,7 @@ def reload_runtime_configs() -> dict[str, int]:
 def format_runtime_config_summary(summary: dict[str, Any]) -> str:
     ordered_keys = [
         "shop_items",
+        "luanwu_shop_items",
         "auction_items",
         "warehouse_techs",
         "forge_equipment",

@@ -7,6 +7,7 @@ from .gear import (
     validate_forge_blueprints,
     validate_forge_decompose,
     validate_forge_equipment,
+    validate_luanwu_shop,
     validate_shop_items,
     validate_smithy_production,
 )
@@ -48,6 +49,7 @@ __all__ = [
     "validate_mission_templates",
     # gear
     "validate_forge_equipment",
+    "validate_luanwu_shop",
     "validate_shop_items",
     "validate_forge_blueprints",
     "validate_forge_decompose",

@@ -1,0 +1,35 @@
+# 乱舞商城配置
+# currency_item_key: 商城兑换货币对应的 ItemTemplate.key
+# items.key: 页面提交和购买动作使用的商品 key
+# items.item_key: 固定奖励对应的 ItemTemplate.key；固定物品的名称和描述读取 item_templates.yaml
+# items.reward_type: item 或 random_device_blueprint
+# items.reward_quantity: 固定奖励每份兑换产出的数量
+# random_device_blueprint 商品需要在本文件中填写 name 和 description
+
+currency_item_key: chunqiu_coin
+
+items:
+  - key: fangdajing
+    price: 1
+    item_key: fangdajing
+    reward_type: item
+    reward_quantity: 10
+
+  - key: mission_card
+    price: 1
+    item_key: mission_card
+    reward_type: item
+    reward_quantity: 2
+
+  - key: recruitment_card
+    shop_description: 用于增加每日招募次数
+    price: 1
+    item_key: recruitment_card
+    reward_type: item
+    reward_quantity: 3
+
+  - key: device_blueprint
+    name: 机关图纸宝箱
+    description: 随机获得一张器械图纸，有机会合成各类强力器械装备。
+    price: 10
+    reward_type: random_device_blueprint
