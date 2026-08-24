@@ -7,7 +7,7 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from core.utils import safe_positive_int
+from core.utils import safe_non_negative_int, safe_positive_int
 from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
 from gameplay.models import MissionTemplate
 
@@ -134,8 +134,10 @@ class Command(BaseCommand):
                 "drop_table": drop_table,
                 "probability_drop_table": probability_drop_table,
                 "available_weekdays": _normalize_available_weekdays(entry.get("available_weekdays")),
+                "display_order": safe_positive_int(entry.get("display_order"), 1000),
                 "base_travel_time": safe_positive_int(entry.get("base_travel_time"), 1800),
                 "daily_limit": safe_positive_int(entry.get("daily_limit"), 3),
+                "mission_card_daily_limit": safe_non_negative_int(entry.get("mission_card_daily_limit"), 5),
             }
             obj, created = MissionTemplate.objects.update_or_create(key=key, defaults=defaults)
             action = "Created" if created else "Updated"

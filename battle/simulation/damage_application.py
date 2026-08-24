@@ -14,6 +14,9 @@ if TYPE_CHECKING:
     from ..combatants_pkg.core import Combatant
 
 
+_SWORD_REFLECT_PRE_HIT_HP_CAP_RATIO = 1.20
+
+
 def _normalize_non_negative_int(value: object) -> int:
     if isinstance(value, bool):
         return 0
@@ -93,6 +96,8 @@ def _apply_reflect(
     actor: "Combatant",
     target: "Combatant",
     damage: float,
+    *,
+    target_hp_before: int,
     troop_unit_hp_fn,
 ) -> _UnitDamageApplication:
     """Apply reflected secondary damage without normal-attack multipliers."""
@@ -101,7 +106,9 @@ def _apply_reflect(
 
     reflect_ratio = target.tech_effects.get("damage_reflect", 0)
     max_reflect = float(actor.attack)
-    if reflect_ratio <= 0 or target.troop_class != "jian":
+    if reflect_ratio > 0 and target.troop_class == "jian":
+        max_reflect = min(max_reflect, target_hp_before * _SWORD_REFLECT_PRE_HIT_HP_CAP_RATIO)
+    else:
         reflect_ratio, special_cap = get_arena_coop_reflect_values(target)
         if reflect_ratio <= 0:
             return _snapshot_zero_damage(actor, troop_unit_hp_fn)
@@ -151,7 +158,8 @@ def apply_damage_results(
         actor,
         target,
         damage,
-        troop_unit_hp,
+        target_hp_before=target_application.hp_before,
+        troop_unit_hp_fn=troop_unit_hp,
     )
     counter_application = _apply_counter(
         actor,

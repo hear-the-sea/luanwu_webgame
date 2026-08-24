@@ -27,6 +27,7 @@ from gameplay.services.manor.core import get_manor, project_manor_activity_for_r
 from gameplay.services.work import (
     assign_guest_to_work_with_refresh,
     claim_work_reward_with_refresh,
+    get_work_action_point_cost,
     recall_guest_from_work_with_refresh,
     refresh_work_assignments,
 )
@@ -133,7 +134,12 @@ def assign_work_view(request: HttpRequest) -> HttpResponse:
         assign_guest_to_work_with_refresh(manor=manor, guest=guest, work_template=work_template)
         # 计算完成时间（小时）
         hours = work_template.work_duration / 3600
-        messages.success(request, f"{guest.display_name} 已前往 {work_template.name} 打工，预计 {hours:.1f} 小时后完成")
+        action_point_cost = get_work_action_point_cost(work_template.tier)
+        messages.success(
+            request,
+            f"{guest.display_name} 已前往 {work_template.name} 打工，消耗行动力 {action_point_cost} 点，"
+            f"预计 {hours:.1f} 小时后完成",
+        )
     except GameError as exc:
         _handle_known_work_error(request, exc)
     except DatabaseError as exc:

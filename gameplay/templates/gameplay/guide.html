@@ -205,7 +205,7 @@
             <div class="tw-panel-content">
                 <p class="guide-intro">任务追求稳定掉落，打工追求持续回报，地图踢馆追求风险与战利品的平衡；不要用同一套判断方式处理三者。</p>
                 <div class="guide-grid guide-grid--four">
-                    <article class="tw-card guide-tile guide-tile--metric"><strong class="guide-metric">{{ guide_snapshot.action_points_max }} <small>行动力上限</small></strong><h3>每次外勤消耗 10 点</h3><p>每 60 秒恢复 1 点，给日常任务留额度。</p></article>
+                    <article class="tw-card guide-tile guide-tile--metric"><strong class="guide-metric">{{ guide_snapshot.action_points_max }} <small>行动力上限</small></strong><h3>常规外勤消耗 10 点</h3><p>打工按工作区消耗 10/20/30 点；行动力每 60 秒恢复 1 点。</p></article>
                     <article class="tw-card guide-tile guide-tile--metric"><strong class="guide-metric">3</strong><span>同时地图出征</span><h3>先侦察再踢馆</h3><p>保护状态、声望差、被攻击次数都会影响能否出手。</p></article>
                     <article class="tw-card guide-tile guide-tile--metric"><strong class="guide-metric">50%</strong><span>任务敏捷减时上限</span><h3>敏捷影响任务路程</h3><p>平均敏捷每 10 点减少 1%，最多减少 50%。</p></article>
                     <article class="tw-card guide-tile guide-tile--metric"><strong class="guide-metric">8</strong><span>目标 24 小时被攻上限</span><h3>保护机制优先级高</h3><p>免战牌不能在自己出征或有来袭队伍时启用。</p></article>
@@ -217,8 +217,8 @@
                         <table class="guide-table">
                             <thead><tr><th>入口</th><th>出发前检查</th><th>收益</th><th>关键提醒</th></tr></thead>
                             <tbody>
-                                <tr><td>任务</td><td>难度、次数、敌方、掉落与消耗</td><td>固定与概率掉落</td><td>任务卡每日每任务最多额外增加 5 次。</td></tr>
-                                <tr><td>打工</td><td>门客等级与属性门槛</td><td>银两与打工宝箱</td><td>初级 2 小时、中级 3 小时、高级 4 小时；最多 3 名门客同时打工。</td></tr>
+                                <tr><td>任务</td><td>难度、次数、敌方、掉落与消耗</td><td>固定与概率掉落</td><td>各任务可用任务卡次数不同，以任务详情为准。</td></tr>
+                                <tr><td>打工</td><td>门客等级与属性门槛</td><td>银两与打工宝箱</td><td>初级 2 小时/10 点、中级 3 小时/20 点、高级 4 小时/30 点；最多 3 名门客同时打工。</td></tr>
                                 <tr><td>地图踢馆</td><td>侦察、声望、保护、护院与路程</td><td>声望、资源与战利品</td><td>基础单程 30 分钟，距离每增加 1 格加 15 秒；跨地区 1.5 倍。</td></tr>
                             </tbody>
                         </table>
@@ -267,7 +267,7 @@
                 <div class="guide-grid guide-grid--three">
                     <article class="tw-card guide-tile guide-tile--warning"><span class="guide-tag">容量</span><h3>资源满了还在升产出</h3><p>先升级粮仓或银库，否则新增产出会溢出。</p></article>
                     <article class="tw-card guide-tile guide-tile--warning"><span class="guide-tag">编制</span><h3>门客平均分经验</h3><p>先做出能过当前任务的主力，再扩充名单。</p></article>
-                    <article class="tw-card guide-tile guide-tile--warning"><span class="guide-tag">行动力</span><h3>行动力见底才排日常</h3><p>每次 10 点、每分钟回 1 点，要给任务与打工留空间。</p></article>
+                    <article class="tw-card guide-tile guide-tile--warning"><span class="guide-tag">行动力</span><h3>行动力见底才排日常</h3><p>常规外勤每次 10 点；打工初级 10 点、中级 20 点、高级 30 点，每分钟恢复 1 点。</p></article>
                     <article class="tw-card guide-tile guide-tile--warning"><span class="guide-tag">侦察</span><h3>不侦察就直接踢馆</h3><p>先看保护、声望差、路程和兵力，避免队伍白跑。</p></article>
                     <article class="tw-card guide-tile guide-tile--warning"><span class="guide-tag">防护</span><h3>有来袭队伍时开免战</h3><p>免战牌要求当前没有自己的出征队伍，也没有来袭队伍。</p></article>
                     <article class="tw-card guide-tile guide-tile--warning"><span class="guide-tag">生产</span><h3>只升建筑不升技术</h3><p>生产建筑提供队列和速度，技术负责配方解锁与产能加成。</p></article>

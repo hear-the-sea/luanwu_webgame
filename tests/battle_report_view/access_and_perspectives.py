@@ -66,7 +66,7 @@ def _round_with_side_states():
 
 
 @pytest.mark.django_db
-def test_report_team_member_frames_do_not_use_rarity_colors(client, django_user_model):
+def test_report_removes_initial_team_member_comparison(client, django_user_model):
     user = django_user_model.objects.create_user(username="report_rarity_colors", password="pass123")
     manor = ensure_manor(user)
     report = create_report(
@@ -82,9 +82,10 @@ def test_report_team_member_frames_do_not_use_rarity_colors(client, django_user_
 
     assert response.status_code == 200
     body = response.content.decode("utf-8")
-    assert '<li class="team-member" title="橙将">' in body
-    assert '<li class="team-member" title="蓝将">' in body
-    assert "team-member rarity-" not in body
+    assert "阵容对比" not in body
+    assert 'class="team-member"' not in body
+    assert "橙将" not in body
+    assert "蓝将" not in body
 
 
 @pytest.mark.django_db

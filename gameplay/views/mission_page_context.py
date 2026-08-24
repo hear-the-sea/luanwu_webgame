@@ -12,6 +12,7 @@ from gameplay.services.missions_impl.attempts import (
     MISSION_CARD_DAILY_LIMIT_PER_MISSION,
     bulk_get_mission_extra_attempts,
     bulk_mission_attempts_today,
+    get_mission_card_daily_limit,
 )
 from gameplay.services.recruitment.recruitment import get_player_troops
 from gameplay.utils.template_loader import get_item_templates_by_keys, get_troop_templates_by_keys
@@ -40,7 +41,9 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         logger=logger,
         source="task_board_view",
     )
-    missions = mission_helpers.filter_available_missions(list(MissionTemplate.objects.all().order_by("id")))
+    missions = mission_helpers.order_missions_for_task_board(
+        mission_helpers.filter_available_missions(list(MissionTemplate.objects.all().order_by("display_order", "id")))
+    )
     missions_by_key = {mission.key: mission for mission in missions}
     attempts = bulk_mission_attempts_today(manor, missions)
     extra_attempts = bulk_get_mission_extra_attempts(manor, missions)
@@ -87,6 +90,9 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
 
     mission_card_count = get_item_quantity(manor, mission_helpers.MISSION_CARD_KEY)
     selected_mission_card_uses = extra_attempts.get(selected_mission.key, 0) if selected_mission else 0
+    mission_card_daily_limit = (
+        get_mission_card_daily_limit(selected_mission) if selected_mission else MISSION_CARD_DAILY_LIMIT_PER_MISSION
+    )
     troop_templates, config_items = build_troop_config()
 
     context: dict[str, Any] = {
@@ -102,7 +108,7 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         "task_board_close_url": f"{request.path}?tab={active_tab}",
         "mission_card_count": mission_card_count,
         "selected_mission_card_uses": selected_mission_card_uses,
-        "mission_card_daily_limit": MISSION_CARD_DAILY_LIMIT_PER_MISSION,
+        "mission_card_daily_limit": mission_card_daily_limit,
         "selected_drop_items": [],
         "selected_probability_drop_items": [],
         "selected_entry_cost_items": [],

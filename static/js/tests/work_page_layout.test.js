@@ -41,3 +41,9 @@ test("work tier tabs use page-specific compact vertical spacing", () => {
   assert.match(styles, /\.tw-work-subtabs\s*\{[^}]*@apply\s+py-1;/);
   assert.match(styles, /\.tw-work-subtabs\s+\.tw-troop-subtab\s*\{[^}]*@apply\s+py-1;/);
 });
+
+test("work cards show the tier action point cost", () => {
+  assert.match(template, /<dt[^>]*>行动力<\/dt>/);
+  assert.match(template, /\{\{ work\.action_point_cost \}\} 点/);
+  assert.match(template, /sm:grid-cols-3/);
+});

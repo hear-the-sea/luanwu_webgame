@@ -5,7 +5,14 @@ from ..models import MissionRun, MissionTemplate
 
 @admin.register(MissionTemplate)
 class MissionTemplateAdmin(admin.ModelAdmin):
-    list_display = ("name", "battle_type", "daily_limit", "base_travel_time")
+    list_display = (
+        "name",
+        "display_order",
+        "battle_type",
+        "daily_limit",
+        "mission_card_daily_limit",
+        "base_travel_time",
+    )
     search_fields = ("name", "key")
 
 

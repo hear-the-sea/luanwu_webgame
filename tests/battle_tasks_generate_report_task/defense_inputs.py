@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from battle.models import BattleReport
 from gameplay.models import PlayerTechnology
 from gameplay.services.manor.core import ensure_manor
 from guests.models import GuestTemplate
@@ -190,3 +191,47 @@ def test_generate_report_task_defense_passes_player_technology_to_defender_setup
         "technology": {"levels": {"gong_attack": 7, "gong_hp": 5}},
     }
     assert captured["defender_manor"] == manor
+
+
+@pytest.mark.django_db
+def test_generate_report_task_defense_records_each_round_starting_lineup(
+    monkeypatch,
+    django_user_model,
+    game_data,
+):
+    from battle.tasks import generate_report_task
+    from gameplay.models import MissionTemplate
+
+    user = django_user_model.objects.create_user(username="task_defense_round_lineups", password="pass")
+    manor = ensure_manor(user)
+    enemy_template = GuestTemplate.objects.order_by("id").first()
+    assert enemy_template is not None
+    mission = MissionTemplate.objects.create(
+        key="m_task_defense_round_lineups",
+        name="DefenseTaskRoundLineups",
+        is_defense=True,
+        enemy_technology={"guest_level": 1},
+        enemy_troops={"archer": 20},
+        enemy_guests=[enemy_template.key],
+    )
+
+    assert_no_retry(monkeypatch)
+
+    report_id = generate_report_task.run(
+        manor_id=manor.id,
+        mission_id=mission.id,
+        run_id=None,
+        guest_ids=[],
+        troop_loadout={"archer": 20},
+        battle_type="task",
+        fill_default_troops=False,
+        travel_seconds=0,
+        seed=41,
+    )
+
+    report = BattleReport.objects.get(pk=report_id)
+    assert report.rounds
+    for battle_round in report.rounds:
+        assert set(battle_round["lineups"]) == {"attacker", "defender"}
+        assert set(battle_round["lineups"]["attacker"]) == {"guests", "city_defenses", "troops"}
+        assert set(battle_round["lineups"]["defender"]) == {"guests", "city_defenses", "troops"}

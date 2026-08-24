@@ -147,6 +147,35 @@ class TestTaskBoardPage:
         assert re.search(r'class="tw-btn-add"[^>]+disabled', body)
         assert "该任务今日最多使用5张任务卡" in body
 
+    def test_task_board_hides_mission_card_form_when_mission_disables_cards(self, manor_with_user):
+        manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key=f"task_board_card_disabled_{manor.id}",
+            name="禁用任务卡任务",
+            difficulty=MissionTemplate.Difficulty.JUNIOR,
+            daily_limit=1,
+            mission_card_daily_limit=0,
+        )
+        card_template, _ = ItemTemplate.objects.get_or_create(
+            key="mission_card",
+            defaults={"name": "任务卡", "effect_type": ItemTemplate.EffectType.TOOL},
+        )
+        InventoryItem.objects.update_or_create(
+            manor=manor,
+            template=card_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            defaults={"quantity": 3},
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        assert response.context["mission_card_daily_limit"] == 0
+        assert response.context["selected_daily_limit"] == 1
+        body = response.content.decode("utf-8")
+        assert "本任务不可使用任务卡" in body
+        assert "js-mission-card-form" not in body
+
     def test_task_board_renders_non_silver_drops_as_drop_icons(self, manor_with_user, settings, tmp_path):
         _manor, client = manor_with_user
         settings.MEDIA_ROOT = tmp_path
@@ -181,6 +210,43 @@ class TestTaskBoardPage:
         assert '<span class="tw-drop-count">×2</span>' in body
         assert '<span class="tw-drop-placeholder" aria-hidden="true">占</span>' in body
         assert ">银两 ×500<" in body
+
+    def test_task_board_renders_choice_pool_items_as_individual_drop_icons(self, manor_with_user, settings, tmp_path):
+        _manor, client = manor_with_user
+        settings.MEDIA_ROOT = tmp_path
+        helmet = ItemTemplate.objects.create(
+            key="task_board_choice_pool_helmet",
+            name="青龙盔图纸",
+            image=SimpleUploadedFile("qinglong-helmet.png", b"helmet", content_type="image/png"),
+            rarity="blue",
+        )
+        armor = ItemTemplate.objects.create(
+            key="task_board_choice_pool_armor",
+            name="青龙甲图纸",
+            image=SimpleUploadedFile("qinglong-armor.png", b"armor", content_type="image/png"),
+            rarity="blue",
+        )
+        mission = MissionTemplate.objects.create(
+            key="task_board_choice_pool_icons",
+            name="选择池图标任务",
+            difficulty=MissionTemplate.Difficulty.INTERMEDIATE,
+            drop_table={
+                "blueprint_top_blue": {
+                    "chance": 0.45,
+                    "choices": [helmet.key, armor.key],
+                }
+            },
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert helmet.image.url in body
+        assert armor.image.url in body
+        assert 'title="青龙盔图纸 ×1"' in body
+        assert 'title="青龙甲图纸 ×1"' in body
+        assert "青龙盔图纸/青龙甲图纸" not in body
 
     def test_task_board_displays_fixed_and_probability_drops_in_one_preview_grid(self, manor_with_user):
         _manor, client = manor_with_user

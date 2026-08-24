@@ -10,6 +10,7 @@ from gameplay.views.mission_helpers import (
     build_selection_summary,
     collect_mission_asset_keys,
     iter_choice_pool_keys,
+    order_missions_for_task_board,
     parse_drop_value,
     parse_positive_ids,
 )
@@ -52,6 +53,24 @@ def test_build_selection_summary_handles_missing_selection():
     assert selected_attempts == 0
     assert selected_daily_limit == 0
     assert selected_remaining == 0
+
+
+def test_order_missions_for_task_board_uses_display_order_then_id():
+    missions = [
+        SimpleNamespace(key="later_task", id=1, display_order=1000),
+        SimpleNamespace(key="huashan_lunjian", id=2, display_order=2),
+        SimpleNamespace(key="jingyanggang", id=3, display_order=1),
+        SimpleNamespace(key="same_order_earlier_id", id=4, display_order=1000),
+    ]
+
+    ordered = order_missions_for_task_board(missions)
+
+    assert [mission.key for mission in ordered] == [
+        "jingyanggang",
+        "huashan_lunjian",
+        "later_task",
+        "same_order_earlier_id",
+    ]
 
 
 def test_collect_mission_asset_keys_includes_choice_pool_entries():
@@ -194,6 +213,50 @@ def test_build_drop_lists_prefers_probability_drop_table_for_choice_pool_display
             "label": "霓裳剑 ×1",
             "count": 1,
             "rarity": "green",
+            "image_url": "",
+        },
+    ]
+
+
+def test_build_drop_lists_expands_choice_pool_preview_items_without_probability_table():
+    mission = SimpleNamespace(
+        drop_table={
+            "blueprint_top_blue": {
+                "chance": 0.45,
+                "choices": ["blueprint_qinglongkui", "blueprint_qinglongjia"],
+            }
+        },
+        probability_drop_table={},
+    )
+    item_templates = {
+        "blueprint_qinglongkui": SimpleNamespace(name="青龙盔图纸"),
+        "blueprint_qinglongjia": SimpleNamespace(name="青龙甲图纸"),
+    }
+
+    guaranteed_drops, probability_drops = build_drop_lists(
+        mission,
+        {},
+        item_templates,
+        {},
+        {"blueprint_qinglongkui": "blue", "blueprint_qinglongjia": "blue"},
+    )
+
+    assert guaranteed_drops == []
+    assert probability_drops == [
+        {
+            "key": "blueprint_qinglongkui",
+            "name": "青龙盔图纸",
+            "label": "青龙盔图纸 ×1",
+            "count": 1,
+            "rarity": "blue",
+            "image_url": "",
+        },
+        {
+            "key": "blueprint_qinglongjia",
+            "name": "青龙甲图纸",
+            "label": "青龙甲图纸 ×1",
+            "count": 1,
+            "rarity": "blue",
             "image_url": "",
         },
     ]

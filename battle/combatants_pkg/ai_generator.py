@@ -133,8 +133,6 @@ def build_named_ai_guests(
         dummy_guest = Guest(
             template=template,
             level=normalized_level,
-            attack_bonus=40,
-            defense_bonus=40,
             force=template.base_attack,
             intellect=template.base_intellect,
             defense_stat=template.base_defense,

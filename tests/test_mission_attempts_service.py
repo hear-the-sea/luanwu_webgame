@@ -52,6 +52,42 @@ def test_add_mission_extra_attempt_caps_each_mission_at_five_per_day():
 
 
 @pytest.mark.django_db
+def test_add_mission_extra_attempt_uses_per_mission_limit():
+    user = get_user_model().objects.create_user(username="mission_extra_attempt_custom_limit", password="pass123")
+    manor = ensure_manor(user)
+    mission = MissionTemplate.objects.create(
+        key="mission_attempt_custom_limit",
+        name="任务卡独立上限",
+        mission_card_daily_limit=1,
+    )
+
+    assert add_mission_extra_attempt(manor, mission, 1) == 1
+
+    with pytest.raises(MissionDailyLimitError, match="该任务今日最多使用 1 张任务卡"):
+        add_mission_extra_attempt(manor, mission, 1)
+
+    assert mission_attempts_service.get_mission_extra_attempts(manor, mission) == 1
+
+
+@pytest.mark.django_db
+def test_zero_mission_card_limit_does_not_disable_base_mission_attempts():
+    user = get_user_model().objects.create_user(username="mission_extra_attempt_disabled", password="pass123")
+    manor = ensure_manor(user)
+    mission = MissionTemplate.objects.create(
+        key="mission_attempt_disabled",
+        name="禁用任务卡任务",
+        daily_limit=1,
+        mission_card_daily_limit=0,
+    )
+
+    with pytest.raises(MissionDailyLimitError, match="该任务不可使用任务卡"):
+        add_mission_extra_attempt(manor, mission, 1)
+
+    assert MissionExtraAttempt.objects.filter(manor=manor, mission=mission).exists() is False
+    assert get_mission_daily_limit(manor, mission) == 1
+
+
+@pytest.mark.django_db
 def test_add_mission_extra_attempt_limit_is_scoped_to_natural_day():
     user = get_user_model().objects.create_user(username="mission_extra_attempt_new_day", password="pass123")
     manor = ensure_manor(user)

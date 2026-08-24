@@ -986,6 +986,108 @@ items:
     is_usable: false
     image: blueprint_mojiajiguanren.png
 
+  # ---------- 封神活动道具 ----------
+
+  - key: fengshen_equipment_box
+    name: 封神装备箱
+    description: 封榜天门中截取的天命宝匣，封着碧游宫、玉虚宫与太清道统的遗宝。打开后可随机获得一件封神遗宝。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: true
+    price: 40000
+    storage_space: 100
+    is_usable: true
+    image: fengshen_equipment_box.png
+    effect_payload:
+      gear_chance: 1.0
+      gear_choices:
+        - item_key: equip_hunyuansan
+          weight: 1
+        - item_key: equip_xuanmingdeng
+          weight: 1
+        - item_key: equip_zijinhulu
+          weight: 1
+        - item_key: equip_tianyinguqin
+          weight: 1
+        - item_key: equip_qixingjian
+          weight: 1
+        - item_key: equip_guiyuanzhu
+          weight: 1
+        - item_key: equip_xuanwuyufu
+          weight: 1
+        - item_key: equip_zhurixue
+          weight: 1
+
+  - key: huashan_wulin_chest
+    name: 武林宝箱
+    description: 华山绝巅论剑留下的武林秘匣，打开后可从历代名器与奇珍中随机获得一件装备。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: true
+    price: 100000
+    storage_space: 100
+    is_usable: true
+    image: large.png
+    effect_payload:
+      gear_chance: 1
+      gear_choices:
+        - item_key: equip_taotieding
+          weight: 1
+        - item_key: equip_yuanyangdao
+          weight: 1
+        - item_key: equip_shenghuoling
+          weight: 1
+        - item_key: equip_duoqinghuan
+          weight: 1
+        - item_key: equip_tulongdao
+          weight: 1
+        - item_key: equip_tianjilu
+          weight: 1
+        - item_key: equip_tianjizhang
+          weight: 1
+        - item_key: equip_tianjiyupei
+          weight: 1
+        - item_key: equip_tianjidaopao
+          weight: 1
+        - item_key: equip_tiancanbaoyi
+          weight: 1
+        - item_key: equip_biyudao
+          weight: 1
+        - item_key: equip_libiegou
+          weight: 1
+        - item_key: equip_ziweiruanjian
+          weight: 1
+        - item_key: equip_xiuhuazhen
+          weight: 1
+        - item_key: equip_xuedao
+          weight: 1
+        - item_key: equip_jinshejian
+          weight: 1
+        - item_key: equip_jinshezui
+          weight: 1
+        - item_key: equip_jinlun
+          weight: 1
+        - item_key: equip_yuanyuewandao
+          weight: 1
+        - item_key: equip_tianyamingyuedao
+          weight: 1
+        - item_key: equip_kongquelin
+          weight: 1
+        - item_key: equip_xiaolifeidao
+          weight: 1
+        - item_key: equip_dagoubang
+          weight: 1
+        - item_key: equip_xuantiechongjian
+          weight: 1
+        - item_key: equip_shendiao
+          weight: 1
+        - item_key: equip_shangshanfaeling
+          weight: 1
+        - item_key: equip_ruanweijia
+          weight: 1
+        - item_key: equip_jinsirujia
+          weight: 1
+
   # ---------- 中秋活动道具 ----------
 
   - key: mid_autumn_mooncake
@@ -1341,6 +1443,57 @@ items:
         - template_key: orig_ma_wencai
           weight: 100
 
+  - key: lvbu_guest_scroll
+    name: 吕布招募卷轴
+    description: 从白门楼决战中寻得的名将卷轴。使用后可直接招募紫色门客「吕布」；若庄园已拥有该门客，则无法再次招募。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 8000000
+    storage_space: 150
+    is_usable: true
+    effect_payload:
+      action: summon_guest
+      exclusive_template_keys:
+        - hist_sljnbc_0013
+      choices:
+        - template_key: hist_sljnbc_0013
+          weight: 100
+
+  - key: zhaoyun_guest_scroll
+    name: 赵云招募卷轴
+    description: 从白门楼决战中寻得的名将卷轴。使用后可直接招募紫色门客「赵云」；若庄园已拥有该门客，则无法再次招募。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 8000000
+    storage_space: 150
+    is_usable: true
+    effect_payload:
+      action: summon_guest
+      exclusive_template_keys:
+        - hist_sljnbc_0012
+      choices:
+        - template_key: hist_sljnbc_0012
+          weight: 100
+
+  - key: diaochan_guest_scroll
+    name: 貂蝉招募卷轴
+    description: 从白门楼决战中寻得的名将卷轴。使用后可直接招募紫色门客「貂蝉」；若庄园已拥有该门客，则无法再次招募。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 8000000
+    storage_space: 150
+    is_usable: true
+    effect_payload:
+      action: summon_guest
+      exclusive_template_keys:
+        - hist_sljnbc_0425
+      choices:
+        - template_key: hist_sljnbc_0425
+          weight: 100
+
   - key: peerless_general_upgrade_token
     name: 《上将的自我修养》残卷1
     description: 使用后可将潘凤或邢道荣升至蓝色稀有度。升阶后后续成长按蓝色标准成长区间计算。
@@ -1537,6 +1690,66 @@ items:
         - blue
         - purple
 
+  # ---------- 任务技能宝箱 ----------
+
+  - key: civil_skill_book_box
+    name: 文系技能宝箱
+    description: 从蛮族营帐中缴获的秘卷宝箱，打开后可随机获得一本蓝色或更高品质的文系技能书。
+    effect_type: loot_box
+    rarity: blue
+    tradeable: true
+    price: 30000
+    storage_space: 50
+    is_usable: true
+    image: large.png
+    effect_payload:
+      skill_book_chance: 1
+      skill_book_choices:
+        - item_key: book_taiyi_wind
+          weight: 1
+        - item_key: book_flower_rain
+          weight: 1
+        - item_key: book_soul_erode
+          weight: 1
+        - item_key: book_red_lotus_dance
+          weight: 1
+        - item_key: book_thunder_nine_heavens
+          weight: 1
+        - item_key: book_tangseng_sermon
+          weight: 1
+        - item_key: book_five_thunder_descent
+          weight: 1
+        - item_key: book_brahma_true_fire
+          weight: 1
+
+  - key: passive_skill_book_box
+    name: 被动技能宝箱
+    description: 从垓下战场遗落的秘卷中整理而成，打开后可随机获得一本现有的被动技能书。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: true
+    price: 50000
+    storage_space: 100
+    is_usable: true
+    image: large.png
+    effect_payload:
+      skill_book_chance: 1
+      skill_book_choices:
+        - item_key: book_steadfast_planning
+          weight: 1
+        - item_key: book_iron_wall_heart
+          weight: 1
+        - item_key: book_last_chance_revival
+          weight: 1
+        - item_key: book_draw_enemy_blades
+          weight: 1
+        - item_key: book_desperate_beast
+          weight: 1
+        - item_key: book_bloodthirsty_fury
+          weight: 1
+        - item_key: book_comrade_command
+          weight: 1
+
   # ---------- 打工宝箱 ----------
 
   - key: work_chest_small
@@ -1702,7 +1915,6 @@ items:
         - book_soul_erode
         - book_red_lotus_dance
         - book_fatal_chain_sword
-        - book_meteor_pierce_moon
         - book_ice_curse          # 寒冰咒
         - book_thunder_control    # 驭雷术
         - book_dragon_break_curse # 破龙咒
@@ -1760,6 +1972,18 @@ items:
           max_quantity: 1
           choices:
             - item_key: gaolu
+              weight: 1
+        - chance: 0.10
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: chunqiu_coin
+              weight: 1
+        - chance: 0.01
+          min_quantity: 10
+          max_quantity: 10
+          choices:
+            - item_key: chunqiu_coin
               weight: 1
       gear_chance: 0.2
       gear_keys:
@@ -2554,13 +2778,13 @@ items:
     description: 据说是唐三藏亲传的念经心法，令听者昏昏欲睡。
     effect_type: skill_book
     image: skill3.png
-    rarity: purple
+    rarity: blue
     effect_payload:
       skill_key: tangseng_sermon
       skill_name: 唐僧说禅
     tradeable: true
     price: 550000
-    storage_space: 125
+    storage_space: 75
 
   - key: book_five_thunder_descent
     name: 《五雷降世》秘术
@@ -2661,6 +2885,39 @@ items:
       choices:
         - template_key: orig_crayon_shinchan_purple
           weight: 100
+
+  - key: sishui_battle_report
+    name: 汜水关战报
+    description: 击败华雄后从汜水关军帐中取得的战报，记录着通往虎牢关的军情与暗号，是继续追击董卓军的凭证。
+    effect_type: resource
+    rarity: blue
+    tradeable: false
+    price: 0
+    storage_space: 10
+    is_usable: false
+    image: sishui_battle_report.png
+
+  - key: hulao_war_banner
+    name: 虎牢关战旗
+    description: 从吕布出阵后的虎牢关战场上夺下的残旗，旗中仍凝着并州铁骑的战意，可作为前往白门楼的军令。
+    effect_type: resource
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 15
+    is_usable: false
+    image: hulao_war_banner.png
+
+  - key: baimenlou_fate_seal
+    name: 白门楼命印
+    description: 白门楼决战后留下的碎裂玉印，裂痕记录着吕布一生的荣辱，也见证了这场乱世抉择的终局。
+    effect_type: resource
+    rarity: orange
+    tradeable: false
+    price: 0
+    storage_space: 20
+    is_usable: false
+    image: baimenlou_fate_seal.png
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 新手套装（一蓑烟雨）

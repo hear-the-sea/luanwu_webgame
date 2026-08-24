@@ -15,7 +15,7 @@ from core.utils.rate_limit import rate_limit_redirect
 from .. import constants as guild_constants
 from ..decorators import require_guild_member
 from ..services import technology as technology_service
-from ..services.warehouse import get_guild_material_balances
+from ..services.warehouse import get_guild_material_balances, get_technology_daily_output_display
 from .helpers import build_guild_member_context, execute_guild_action, load_ordered_technologies
 
 TECH_CATEGORY_TABS = (
@@ -25,11 +25,6 @@ TECH_CATEGORY_TABS = (
 )
 
 VALID_TECH_CATEGORIES = frozenset(key for key, _label in TECH_CATEGORY_TABS)
-MYSTICISM_DAILY_OUTPUTS = {
-    1: "灵魂容器 ×1",
-    2: "灵魂容器 ×1、门客重生卡 ×1、洗点卡 ×1",
-    3: "灵魂容器 ×1、门客重生卡 ×1、洗点卡 ×1、洗髓丹 ×1",
-}
 
 
 def _format_upgrade_cost(tech: Any) -> str:
@@ -54,27 +49,15 @@ def _format_troop_tactics_effect(level: int, max_level: int) -> str:
     return f"按 {level} / {max_level} 级线性映射个人兵种科技"
 
 
-def _format_mysticism_daily_output(level: int) -> str:
-    output_level = max(1, min(int(level), max(MYSTICISM_DAILY_OUTPUTS)))
-    return MYSTICISM_DAILY_OUTPUTS[output_level]
-
-
 def _build_tech_display_meta(tech: Any) -> dict[str, str]:
     max_level = _resolve_display_max_level(tech)
     description = guild_constants.TECH_DESCRIPTIONS.get(tech.tech_key, "科技效果")
 
-    if tech.tech_key == "equipment_forge":
-        return {"description": description, "upgrade_cost": _format_upgrade_cost(tech)}
-    if tech.tech_key == "guard_armory":
-        return {"description": description, "upgrade_cost": _format_upgrade_cost(tech)}
-    if tech.tech_key == "experience_refine":
-        return {"description": description, "upgrade_cost": _format_upgrade_cost(tech)}
-    if tech.tech_key == "resource_supply":
-        return {"description": description, "upgrade_cost": _format_upgrade_cost(tech)}
-    if tech.tech_key == "mysticism":
+    daily_output = get_technology_daily_output_display(tech.tech_key, tech.level)
+    if daily_output is not None:
         return {
             "description": description,
-            "daily_output": _format_mysticism_daily_output(tech.level),
+            "daily_output": daily_output,
             "upgrade_cost": _format_upgrade_cost(tech),
         }
     if tech.tech_key == "troop_tactics":

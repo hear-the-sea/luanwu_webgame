@@ -9,3 +9,4 @@ existing pytest commands and CI references.
 from tests.battle_report_view.access_and_perspectives import *  # noqa: F401,F403
 from tests.battle_report_view.passive_rendering import *  # noqa: F401,F403
 from tests.battle_report_view.raid_cases import *  # noqa: F401,F403
+from tests.battle_report_view.round_lineups import *  # noqa: F401,F403

@@ -17,7 +17,7 @@ from core.exceptions import (
 )
 from core.utils.time_scale import scale_duration
 from gameplay.models import Manor, ResourceEvent, ResourceType, WorkAssignment, WorkTemplate
-from gameplay.services.action_points import consume_action_points_for_expedition
+from gameplay.services.action_points import ACTION_POINT_EXPEDITION_COST, consume_action_points
 from gameplay.services.inventory.core import add_item_to_inventory_locked
 from gameplay.services.resources import grant_resources_locked
 from gameplay.services.work_requirements import evaluate_work_requirements
@@ -31,6 +31,17 @@ WORK_TIER_CHEST_KEYS: dict[str, str] = {
     WorkTemplate.Tier.INTERMEDIATE.value: "work_chest_medium",
     WorkTemplate.Tier.SENIOR.value: "work_chest_large",
 }
+
+WORK_TIER_ACTION_POINT_COSTS: dict[str, int] = {
+    WorkTemplate.Tier.JUNIOR.value: 10,
+    WorkTemplate.Tier.INTERMEDIATE.value: 20,
+    WorkTemplate.Tier.SENIOR.value: 30,
+}
+
+
+def get_work_action_point_cost(tier: str) -> int:
+    """返回工作区对应的派遣行动力消耗。"""
+    return WORK_TIER_ACTION_POINT_COSTS.get(str(tier), ACTION_POINT_EXPEDITION_COST)
 
 
 def _ensure_guest_meets_work_requirements(guest: Guest, work_template: WorkTemplate) -> None:
@@ -78,7 +89,12 @@ def assign_guest_to_work(guest: Guest, work_template: WorkTemplate) -> WorkAssig
         # 锁内再次检查要求，避免并发更新属性后绕过验证
         _ensure_guest_meets_work_requirements(guest, work_template)
 
-        consume_action_points_for_expedition(locked_manor)
+        action_point_cost = get_work_action_point_cost(work_template.tier)
+        consume_action_points(
+            locked_manor,
+            action_point_cost,
+            insufficient_message=f"行动力不足，无法开始打工（需要 {action_point_cost} 点）",
+        )
 
         # 在事务内检查打工人数限制，防止并发超限
         current_working = WorkAssignment.objects.filter(

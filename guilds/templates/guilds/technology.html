@@ -41,8 +41,8 @@
                         </div>
                         <div>
                             <dt>每日产出</dt>
-                            {% with daily_output=tech_display_meta|get_item:tech.tech_key|get_item:'daily_output' %}
-                            <dd>{% if daily_output %}{{ daily_output }}{% else %}{{ tech.level|add:"1" }} 件{% endif %}</dd>
+                            {% with tech_meta=tech_display_meta|get_item:tech.tech_key %}
+                            <dd>{{ tech_meta.daily_output|default:"暂无产出" }}</dd>
                             {% endwith %}
                         </div>
                         {% if tech.last_production_at %}

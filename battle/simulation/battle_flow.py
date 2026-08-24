@@ -13,7 +13,7 @@ from django.utils import timezone
 
 from .attack_execution import perform_attack
 from .constants import MAX_ALLOWED_PRIORITY, MIN_ALLOWED_PRIORITY
-from .report_state import snapshot_unit_state
+from .report_state import snapshot_round_lineups, snapshot_unit_state
 from .turn_order import determine_turn_order
 from .utils import alive, roll_loot, summarize_losses
 
@@ -178,6 +178,7 @@ def _resolve_standard_round(
         handle_pre_action_status,
     )
 
+    lineups = snapshot_round_lineups(attacker_units, defender_units)
     prepare_combatants_for_round(attacker_units, defender_units, round_no, promote_pending=True)
     events: List[Dict[str, Any]] = []
     for status_event in sync_arena_coop_combat_state(attacker_units, defender_units, round_no):
@@ -238,7 +239,7 @@ def _resolve_standard_round(
         if not alive(defender_units) or not alive(attacker_units):
             break
 
-    return {"round": round_no, "events": events}
+    return {"round": round_no, "lineups": lineups, "events": events}
 
 
 def resolve_priority_phases(
@@ -266,6 +267,7 @@ def resolve_priority_phases(
 
     staged_priorities = list(range(min_priority, 0))
     for priority in staged_priorities:
+        lineups = snapshot_round_lineups(attacker_team, defender_team)
         events: List[Dict[str, Any]] = []
         prepare_combatants_for_round(attacker_team, defender_team, next_round_no, promote_pending=True)
         for status_event in sync_arena_coop_combat_state(attacker_team, defender_team, next_round_no):
@@ -329,7 +331,7 @@ def resolve_priority_phases(
             consume_active_status_effects(actor, active_statuses)
             clear_action_modifiers(attacker_team + defender_team)
         _append_waiting_units(events, attacker_team, defender_team, priority)
-        rounds.append({"round": next_round_no, "events": events, "priority": priority})
+        rounds.append({"round": next_round_no, "lineups": lineups, "events": events, "priority": priority})
         next_round_no += 1
         if not alive(attacker_team) or not alive(defender_team):
             break
@@ -356,6 +358,7 @@ def simulate_battle(
     # 安全修复：验证回合数范围，防止负数和过大值导致异常
     max_rounds = max(1, min(max_rounds, MAX_ROUNDS * 2))
     rounds: List[Dict[str, Any]] = []
+    initial_lineups = snapshot_round_lineups(attacker_units, defender_units)
     battle_start_events: List[Dict[str, Any]] = []
     for unit in alive(attacker_units) + alive(defender_units):
         passive_events: List[Dict[str, Any]] = []
@@ -378,9 +381,12 @@ def simulate_battle(
         rounds.append(_resolve_standard_round(attacker_units, defender_units, rng, round_no))
         round_no += 1
         remaining_rounds -= 1
+    if rounds:
+        # 开战被动会并入第一回合，因此第一回合必须保留被动触发前的初始阵容。
+        rounds[0]["lineups"] = initial_lineups
     if battle_start_events:
         if not rounds:
-            rounds.append({"round": 1, "events": []})
+            rounds.append({"round": 1, "lineups": initial_lineups, "events": []})
         first_round_events = list(battle_start_events) + list(rounds[0].get("events") or [])
         _normalize_event_orders(first_round_events)
         rounds[0]["events"] = first_round_events

@@ -12,6 +12,7 @@ from .view_helpers import (
     attach_avatar_urls,
     build_report_title,
     build_reward_context,
+    build_rounds_display,
     build_side_labels,
     collect_template_keys,
     load_avatar_map,
@@ -78,10 +79,11 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
 
         attacker_team = report.attacker_team or []
         defender_team = report.defender_team or []
-        template_keys = collect_template_keys(attacker_team, defender_team)
+        template_keys = collect_template_keys(attacker_team, defender_team, report.rounds or [])
         avatar_map = load_avatar_map(template_keys)
         attach_avatar_urls(attacker_team, avatar_map)
         attach_avatar_urls(defender_team, avatar_map)
+        context["battle_rounds"] = build_rounds_display(report.rounds or [], avatar_map)
 
         my_team, enemy_team, my_troops_raw, enemy_troops_raw, my_loss, enemy_loss = resolve_perspective(
             report,

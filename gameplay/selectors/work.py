@@ -6,6 +6,7 @@ from typing import Any
 from django.core.paginator import Paginator
 
 from gameplay.models import WorkAssignment, WorkTemplate
+from gameplay.services.work import get_work_action_point_cost
 from gameplay.services.work_requirements import (
     WorkEligibility,
     WorkRequirementResult,
@@ -115,6 +116,7 @@ def get_work_page_context(manor: Any, *, current_tier: str, page: int) -> dict[s
             working_assignment_by_work_template_id.setdefault(assignment.work_template_id, assignment)
 
     for work in works:
+        work.action_point_cost = get_work_action_point_cost(work.tier)
         work.claimable_assignment = claimable_assignment_by_work_template_id.get(work.id)
         work.working_assignment = working_assignment_by_work_template_id.get(work.id)
         work.active_assignment = work.claimable_assignment or work.working_assignment

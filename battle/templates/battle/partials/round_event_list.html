@@ -1,0 +1,73 @@
+<ul class="battle-events round-action-list {{ event_list_class }}">
+    {% for event in events %}
+        <li>
+            {% if event.type == 'heal' %}
+                <div class="event-line">
+                    <span class="event-order">{{ event.order }}</span>
+                    <div class="event-unit-summary">
+                        <strong class="event-unit-name">{{ event.unit }}</strong>
+                        {% include "battle/partials/unit_state_bar.html" with state=event.unit_state visible_side=my_side spectator=is_spectator %}
+                        <span class="event-unit-skills">
+                            <span class="tech-tag heal">{{ event.effect }}</span>
+                            <span class="heal-text">恢复 +{{ event.healed }} 生命</span>
+                        </span>
+                    </div>
+                </div>
+            {% elif event.type == 'passive' %}
+                <div class="event-line">
+                    <span class="event-order">{{ event.order }}</span>
+                    {% include "battle/partials/passive_event_summary.html" with passive_event=event visible_side=my_side spectator=is_spectator %}
+                </div>
+            {% elif event.status %}
+                <div class="event-line">
+                    <span class="event-order">{{ event.order }}</span>
+                    <div class="event-unit-summary event-status-layout">
+                        <strong class="event-unit-name">{{ event.actor }}</strong>
+                        {% include "battle/partials/unit_state_bar.html" with state=event.actor_state visible_side=my_side spectator=is_spectator %}
+                        <span class="event-unit-skills"><span class="status-pill">{{ event.message|default:"状态中..." }}</span></span>
+                    </div>
+                </div>
+            {% else %}
+                <div class="event-line">
+                    <span class="event-order">{{ event.order }}</span>
+                    <div class="event-unit-summary">
+                        <strong class="event-unit-name">{{ event.actor }}</strong>
+                        {% include "battle/partials/unit_state_bar.html" with state=event.actor_state visible_side=my_side spectator=is_spectator %}
+                        <span class="event-unit-skills">
+                            {% if event.is_crit %}<span class="tech-tag crit">暴击</span>{% endif %}
+                            {% if event.is_double_strike %}<span class="tech-tag double">狂狼必杀</span>{% endif %}
+                            {% if event.attack_type == 'ranged' %}<span class="tech-tag ranged">远程</span>{% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="tw-muted">
+                    {% for passive in event.passive_events_before %}
+                        <div class="event-passive-entry">{% include "battle/partials/passive_event_summary.html" with passive_event=passive visible_side=my_side spectator=is_spectator %}</div>
+                    {% endfor %}
+                    {% include "battle/partials/attack_damage_summary.html" with attack=event visible_side=my_side spectator=is_spectator %}
+                    {% if event.reflect_damage %}<div class="reflect-text">← {{ event.target }}爆发护身剑罡（{{ event.reflect_damage }}伤害）｜ 伤害人数：{{ event.reflect_kills|default:0 }}{% if event.reflect_defeated %} 敌方全军覆没{% endif %}</div>{% endif %}
+                    {% if event.counter_damage %}<div class="counter-text">← {{ event.target }}爆发反戈一击（{{ event.counter_damage }}伤害）｜ 伤害人数：{{ event.counter_kills|default:0 }}{% if event.counter_defeated %} 敌方全军覆没{% endif %}</div>{% endif %}
+                    {% for passive in event.passive_events_after %}
+                        <div class="event-passive-entry">{% include "battle/partials/passive_event_summary.html" with passive_event=passive visible_side=my_side spectator=is_spectator %}</div>
+                    {% endfor %}
+                    {% for sub in event.additional_targets %}
+                        {% for passive in sub.passive_events_before %}
+                            <div class="event-passive-entry">{% include "battle/partials/passive_event_summary.html" with passive_event=passive visible_side=my_side spectator=is_spectator %}</div>
+                        {% endfor %}
+                        {% include "battle/partials/attack_damage_summary.html" with attack=sub is_secondary=True visible_side=my_side spectator=is_spectator %}
+                        {% if sub.reflect_damage %}<div class="event-target-summary event-actor-settlement-summary reflect-text"><strong class="event-unit-name">{{ sub.actor }}</strong>{% include "battle/partials/unit_state_bar.html" with state=sub.actor_state visible_side=my_side spectator=is_spectator %}<span class="event-target-detail">← {{ sub.target }}爆发护身剑罡（{{ sub.reflect_damage }}伤害）｜ 伤害人数：{{ sub.reflect_kills|default:0 }}{% if sub.reflect_defeated %} 敌方全军覆没{% endif %}</span></div>{% endif %}
+                        {% if sub.counter_damage %}<div class="event-target-summary event-actor-settlement-summary counter-text"><strong class="event-unit-name">{{ sub.actor }}</strong>{% include "battle/partials/unit_state_bar.html" with state=sub.actor_state visible_side=my_side spectator=is_spectator %}<span class="event-target-detail">← {{ sub.target }}爆发反戈一击（{{ sub.counter_damage }}伤害）｜ 伤害人数：{{ sub.counter_kills|default:0 }}{% if sub.counter_defeated %} 敌方全军覆没{% endif %}</span></div>{% endif %}
+                        {% for passive in sub.passive_events_after %}
+                            <div class="event-passive-entry">{% include "battle/partials/passive_event_summary.html" with passive_event=passive visible_side=my_side spectator=is_spectator %}</div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                {% if event.status_inflicted %}
+                    <div class="status-tag">造成状态：{{ event.status_inflicted|join:"、" }}</div>
+                {% endif %}
+            {% endif %}
+        </li>
+    {% empty %}
+        <li class="round-action-empty">本回合无行动</li>
+    {% endfor %}
+</ul>

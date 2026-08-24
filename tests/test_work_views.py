@@ -122,6 +122,18 @@ class TestWorkViews:
         assert response.status_code == 200
         assert response.context["current_tier"] == "senior"
 
+    def test_work_page_shows_tier_action_point_cost(self, manor_with_user):
+        manor, client = manor_with_user
+        self._create_work_data(manor, "senior_action_cost", tier=WorkTemplate.Tier.SENIOR)
+
+        response = client.get(reverse("gameplay:work") + "?tier=senior")
+
+        assert response.status_code == 200
+        assert response.context["works"][0].action_point_cost == 30
+        body = response.content.decode("utf-8")
+        assert "行动力" in body
+        assert "30 点" in body
+
     def test_work_page_uses_explicit_read_helper(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user
         calls = {"prepared": 0}

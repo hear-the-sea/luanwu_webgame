@@ -55,6 +55,7 @@ def test_work_selector_groups_guests_and_keeps_three_closest_ineligible(manor_wi
     selected_work = context["works"][0]
 
     assert selected_work.pk == work.pk
+    assert selected_work.action_point_cost == 10
     assert [(item.key, item.label, item.required) for item in selected_work.requirements] == [
         ("level", "等级", 10),
         ("intellect", "智力", 100),

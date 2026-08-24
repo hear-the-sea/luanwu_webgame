@@ -106,6 +106,43 @@ def test_reflect_and_counter_skip_slaughter_but_preserve_troop_hp_strength_invar
     assert application.reflect.kills + application.counter.kills == 2
 
 
+def test_sword_reflect_is_capped_at_120_percent_of_hp_before_hit():
+    actor = _make_guest(name="攻击者", side="attacker", hp=1000, attack=1000)
+    target = _make_troop(name="残血剑兵", side="defender", count=1, unit_hp=100)
+    target.hp = 50
+    target.troop_class = "jian"
+    target.tech_effects = {"damage_reflect": 1.0}
+
+    application = apply_damage_results(actor, target, 10_000, random.Random(1))
+
+    assert application.target.hp_before == 50
+    assert application.reflect.raw_damage == 60
+    assert actor.hp == 940
+
+
+def test_sword_reflect_keeps_actor_attack_as_the_lower_cap():
+    actor = _make_guest(name="低攻攻击者", side="attacker", hp=1000, attack=30)
+    target = _make_troop(name="剑兵", side="defender", count=10, unit_hp=100)
+    target.troop_class = "jian"
+    target.tech_effects = {"damage_reflect": 1.0}
+
+    application = apply_damage_results(actor, target, 10_000, random.Random(1))
+
+    assert application.reflect.raw_damage == 30
+    assert actor.hp == 970
+
+
+def test_special_reflect_is_not_limited_by_the_sword_hp_cap():
+    actor = _make_guest(name="攻击者", side="attacker", hp=1000, attack=1000)
+    target = _make_guest(name="特殊反伤者", side="defender", hp=50)
+    target.battle_modifiers = {"reflect_ratio": 1.0, "reflect_cap": 800}
+
+    application = apply_damage_results(actor, target, 10_000, random.Random(1))
+
+    assert application.reflect.raw_damage == 800
+    assert actor.hp == 200
+
+
 def test_counter_damage_rounds_only_when_applied_to_hp():
     actor = _make_troop(name="进攻护院", side="attacker")
     target = _make_guest(name="反击者", side="defender", attack=401.9)

@@ -1,0 +1,185 @@
+from __future__ import annotations
+
+import pytest
+from django.urls import reverse
+
+from gameplay.services.manor.core import ensure_manor
+from tests.battle_report_view.support import create_report
+
+
+@pytest.mark.django_db
+def test_report_round_renders_starting_lineups_in_fixed_attacker_defender_columns(
+    client,
+    django_user_model,
+    monkeypatch,
+):
+    user = django_user_model.objects.create_user(username="round_lineup_report", password="pass123")
+    manor = ensure_manor(user)
+    report = create_report(
+        manor=manor,
+        opponent_name="演武对手",
+        battle_type="task1",
+        rounds=[
+            {
+                "round": 2,
+                "lineups": {
+                    "attacker": {
+                        "guests": [
+                            {
+                                "name": "进攻门客",
+                                "template_key": "attacker_round_guest",
+                                "current_hp": 900,
+                                "max_hp": 1000,
+                            }
+                        ],
+                        "city_defenses": [
+                            {
+                                "key": "wall",
+                                "name": "城墙",
+                                "level": 8,
+                                "hp": 24000,
+                                "max_hp": 24000,
+                            }
+                        ],
+                        "troops": [
+                            {"name": "刀圣", "template_key": "dao_sheng", "count": 500},
+                            {"name": "剑圣", "template_key": "jian_sheng", "count": 450},
+                        ],
+                    },
+                    "defender": {
+                        "guests": [
+                            {
+                                "name": "防守门客",
+                                "template_key": "defender_round_guest",
+                                "current_hp": 700,
+                                "max_hp": 1000,
+                            }
+                        ],
+                        "troops": [],
+                    },
+                },
+                "events": [
+                    {
+                        "side": "attacker",
+                        "order": 1,
+                        "actor": "进攻门客",
+                        "status": "charging",
+                        "message": "蓄势待发",
+                    },
+                    {
+                        "side": "defender",
+                        "order": 2,
+                        "actor": "防守门客",
+                        "status": "charging",
+                        "message": "严阵以待",
+                    },
+                ],
+            }
+        ],
+    )
+    monkeypatch.setattr(
+        "battle.views.load_avatar_map",
+        lambda _keys: {
+            "attacker_round_guest": "/media/guests/attacker.webp",
+            "defender_round_guest": "/media/guests/defender.webp",
+        },
+    )
+
+    assert client.login(username="round_lineup_report", password="pass123")
+    response = client.get(reverse("battle:report_detail", kwargs={"pk": report.pk}))
+
+    assert response.status_code == 200
+    battle_round = response.context["battle_rounds"][0]
+    assert [event["actor"] for event in battle_round["attacker_events"]] == ["进攻门客"]
+    assert [event["actor"] for event in battle_round["defender_events"]] == ["防守门客"]
+
+    body = response.content.decode("utf-8")
+    assert '<section class="dashboard battle-report-page">' in body
+    round_html = body[
+        body.index('data-battle-round="2"') : body.index("</article>", body.index('data-battle-round="2"'))
+    ]
+    assert round_html.index("第 2 回合") < round_html.index("进攻方")
+    assert round_html.index("进攻方") < round_html.index('aria-label="进攻方剩余门客"')
+    assert round_html.index('aria-label="进攻方剩余门客"') < round_html.index('aria-label="进攻方剩余护院"')
+    assert round_html.index('aria-label="进攻方剩余护院"') < round_html.index('aria-label="进攻方行动记录"')
+    assert 'src="/media/guests/attacker.webp" alt="进攻门客"' in round_html
+    assert 'src="/media/guests/defender.webp" alt="防守门客"' in round_html
+    assert round_html.index("崭新的高级城墙") < round_html.index("刀圣</span>:<strong>500</strong>")
+    assert "刀圣</span>:<strong>500</strong>" in round_html
+    assert "剑圣</span>:<strong>450</strong>" in round_html
+    assert "被歼灭" in round_html
+    assert "蓄势待发" in round_html
+    assert "严阵以待" in round_html
+    assert "回合开始阵容" not in round_html
+    assert "具体行动" not in round_html
+    assert "旧战报未记录回合阵容" not in round_html
+
+
+@pytest.mark.django_db
+def test_report_round_marks_missing_historical_lineup_snapshot(client, django_user_model):
+    user = django_user_model.objects.create_user(username="legacy_round_lineup_report", password="pass123")
+    manor = ensure_manor(user)
+    report = create_report(
+        manor=manor,
+        opponent_name="旧战报对手",
+        battle_type="task1",
+        rounds=[{"round": 1, "events": []}],
+    )
+
+    assert client.login(username="legacy_round_lineup_report", password="pass123")
+    response = client.get(reverse("battle:report_detail", kwargs={"pk": report.pk}))
+
+    assert response.status_code == 200
+    assert response.context["battle_rounds"][0]["has_lineup_snapshot"] is False
+    assert "旧战报未记录回合阵容" in response.content.decode("utf-8")
+
+
+@pytest.mark.django_db
+def test_report_uses_reserved_equipment_and_settlement_tables_without_lineup_comparison(client, django_user_model):
+    user = django_user_model.objects.create_user(username="flat_report_tables", password="pass123")
+    manor = ensure_manor(user)
+    report = create_report(
+        manor=manor,
+        opponent_name="演武对手",
+        battle_type="task1",
+        attacker_team=[
+            {
+                "name": "赵云",
+                "guest_id": 31,
+                "template_key": "zhao_yun",
+            }
+        ],
+        defender_team=[{"name": "守将", "guest_id": 32, "template_key": "defender"}],
+    )
+    report.losses = {
+        "attacker": {
+            "troops_lost": 5,
+            "casualties": [{"label": "刀圣", "lost": 5}],
+        },
+        "defender": {
+            "troops_lost": 3,
+            "casualties": [{"label": "剑圣", "lost": 3}],
+        },
+    }
+    report.drops = {"silver": 88}
+    report.save(update_fields=["losses", "drops"])
+
+    assert client.login(username="flat_report_tables", password="pass123")
+    response = client.get(reverse("battle:report_detail", kwargs={"pk": report.pk}))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert '<div class="tw-section-header battle-report-title">' in body
+    assert "<h1>= 演武对手 战报 =</h1>" in body
+    assert "阵容对比" not in body
+    assert 'class="battle-overview-table"' in body
+    assert body.count('<span class="battle-table-label">装备属性加成</span>') == 2
+    assert body.count('<span class="battle-table-empty">无</span>') == 2
+    assert "attacker_equipment_bonuses" not in response.context
+    assert "defender_equipment_bonuses" not in response.context
+    assert 'class="battle-settlement-table"' in body
+    assert "刀圣 × 5" in body
+    assert "剑圣 × 3" in body
+    assert ">5</strong>" not in body
+    assert ">3</strong>" not in body
+    assert "银两 +88" in body

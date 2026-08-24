@@ -16,10 +16,10 @@ skills:
     status_probability: 0.3
     status_duration: 1
     damage_formula:
-      base: 220
+      base: 800
       ally:
         force: 0.5
-        intellect: 7
+        intellect: 5
         agility: 0.2
       enemy:
         defense: 0.35
@@ -44,10 +44,10 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 330
+      base: 1000
       ally:
         force: 0.2
-        intellect: 1.44
+        intellect: 1.8
       enemy:
         defense: 0.2
         intellect: 0.1
@@ -62,10 +62,10 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 352
+      base: 1500
       ally:
         force: 0.15
-        intellect: 1.32
+        intellect: 1.5
         agility: 0.3
       enemy:
         defense: 0.25
@@ -81,7 +81,7 @@ skills:
     base_probability: 0.7
     kind: active
     damage_formula:
-      base: 418
+      base: 750
       ally:
         force: 0.1
         intellect: 1.56
@@ -100,10 +100,10 @@ skills:
     base_probability: 0.8
     kind: active
     damage_formula:
-      base: 275
+      base: 1200
       ally:
         force: 0.1
-        intellect: 1.2
+        intellect: 1.9
         luck: 0.4
       enemy:
         defense: 0.15
@@ -141,7 +141,7 @@ skills:
       base: 770
       ally:
         force: 0.2
-        intellect: 2.76
+        intellect: 3.5
         luck: 0.6
       enemy:
         defense: 0.25
@@ -160,7 +160,7 @@ skills:
       base: 990
       ally:
         force: 0.15
-        intellect: 3.36
+        intellect: 4
         luck: 0.4
       enemy:
         defense: 0.1
@@ -177,10 +177,10 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 935
+      base: 2500
       ally:
         force: 0.3
-        intellect: 3.12
+        intellect: 4.5
         agility: 0.4
       enemy:
         defense: 0.25
@@ -196,7 +196,7 @@ skills:
     base_probability: 0.8
     kind: active
     damage_formula:
-      base: 1650
+      base: 3000
       ally:
         force: 0.5
         intellect: 5.4
@@ -215,7 +215,7 @@ skills:
     base_probability: 0.8
     kind: active
     damage_formula:
-      base: 1430
+      base: 3000
       ally:
         force: 0.2
         intellect: 5.04
@@ -235,13 +235,13 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 1870
+      base: 4500
       ally:
         force: 0.4
         intellect: 5.76
         luck: 0.8
       enemy:
-        defense: 0.3
+        defense: 0.1
         intellect: 0.25
     required_level: 25
     required_intellect: 140
@@ -254,7 +254,7 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 2640
+      base: 5000
       ally:
         force: 0.7
         intellect: 7.8
@@ -390,7 +390,7 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 1870
+      base: 4500
       ally:
         force: 5.76
         agility: 0.8
@@ -410,7 +410,7 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 2640
+      base: 4500
       ally:
         force: 7.1
         agility: 1.0
@@ -431,7 +431,7 @@ skills:
     base_probability: 0.78
     kind: active
     damage_formula:
-      base: 1430
+      base: 2500
       ally:
         force: 1.0
         agility: 5.04
@@ -451,7 +451,7 @@ skills:
     base_probability: 0.72
     kind: active
     damage_formula:
-      base: 1280
+      base: 2000
       ally:
         force: 0.6
         agility: 3.2
@@ -471,10 +471,10 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 1020
+      base: 2500
       ally:
         force: 1.8
-        agility: 3.6
+        agility: 4.3
         luck: 0.4
       enemy:
         defense: 0.2
@@ -491,9 +491,9 @@ skills:
     base_power: 260
     base_probability: 0.8
     damage_formula:
-      base: 260
+      base: 1500
       ally:
-        force: 0.4
+        force: 3.3
         intellect: 0.2
         agility: 0.2
         luck: 0.2
@@ -936,11 +936,11 @@ skills:
         - timing: round_start
           chance: 0.2
           conditions:
-            ally_alive_template_count_gte: 3
+            ally_alive_template_count_gte: 2
           effects:
             - type: emit_log
               log_name: 同袍号令
               message: 全体伤害↑
             - type: modify_outgoing_damage
-              value: 1.06
+              value: 1.15
               target_scope: allies

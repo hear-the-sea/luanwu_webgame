@@ -43,6 +43,8 @@ def test_default_special_yaml_contains_task_specific_enemy_templates() -> None:
     assert "guild_blackwind_iron_guard" in purple_keys
     assert "guild_blackwind_gate_general" in orange_keys
     assert "task_barbarian_chanyu" in orange_keys
+    assert "task_guandu_yuanshao" in orange_keys
+    assert "task_hulao_lvbu" in orange_keys
 
 
 def test_load_guest_templates_merges_default_arena_coop_special_skills(tmp_path: Path, monkeypatch) -> None:

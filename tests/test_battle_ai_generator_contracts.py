@@ -59,6 +59,8 @@ def test_build_named_ai_guests_starts_generated_enemy_at_full_hp(monkeypatch):
     guests = build_named_ai_guests([template.key], level=82, rng=random.Random(82))
 
     assert len(guests) == 1
+    assert guests[0].attack_bonus == 0
+    assert guests[0].defense_bonus == 0
     assert guests[0].current_hp == guests[0].max_hp
 
 

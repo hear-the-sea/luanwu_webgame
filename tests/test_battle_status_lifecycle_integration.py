@@ -100,3 +100,48 @@ def test_priority_unit_consumes_duration_across_each_action_opportunity(monkeypa
     assert next_round_no == 3
     assert observed_penalties == [0.3, 0.3]
     assert "weakened" not in fast_actor.status_effects
+
+
+def test_next_round_lineup_snapshot_reflects_previous_round_losses(monkeypatch):
+    attacker = make_unit(name="进攻门客", side="attacker", template_key="attacker_guest")
+    defender_guest = make_unit(name="防守门客", side="defender", template_key="defender_guest")
+    defender_troop = make_unit(
+        name="刀圣",
+        side="defender",
+        kind="troop",
+        template_key="dao_sheng",
+        hp=5000,
+        max_hp=5000,
+        troop_strength=500,
+        initial_troop_strength=500,
+    )
+
+    monkeypatch.setattr(
+        "battle.simulation.battle_flow.determine_turn_order",
+        lambda *_args, **_kwargs: [attacker],
+    )
+
+    def _perform_attack(*_args, **_kwargs):
+        defender_guest.hp = 0
+        defender_troop.troop_strength = 450
+        return None
+
+    monkeypatch.setattr("battle.simulation.battle_flow.perform_attack", _perform_attack)
+
+    first_round = _resolve_standard_round(
+        [attacker],
+        [defender_guest, defender_troop],
+        random.Random(4),
+        round_no=1,
+    )
+    second_round = _resolve_standard_round(
+        [attacker],
+        [defender_guest, defender_troop],
+        random.Random(5),
+        round_no=2,
+    )
+
+    assert [guest["name"] for guest in first_round["lineups"]["defender"]["guests"]] == ["防守门客"]
+    assert first_round["lineups"]["defender"]["troops"][0]["count"] == 500
+    assert second_round["lineups"]["defender"]["guests"] == []
+    assert second_round["lineups"]["defender"]["troops"][0]["count"] == 450

@@ -24,6 +24,20 @@ class TestMissionTemplatesValidation:
         result = validate_mission_templates(data)
         assert_has_error(result, substring="must be >= 1")
 
+    def test_zero_mission_card_daily_limit_is_valid(self):
+        data = {"missions": [{"key": "m", "name": "M", "mission_card_daily_limit": 0}]}
+        assert_valid(validate_mission_templates(data))
+
+    def test_negative_mission_card_daily_limit_is_invalid(self):
+        data = {"missions": [{"key": "m", "name": "M", "mission_card_daily_limit": -1}]}
+        result = validate_mission_templates(data)
+        assert_has_error(result, substring="must be >= 0")
+
+    def test_invalid_display_order(self):
+        data = {"missions": [{"key": "m", "name": "M", "display_order": 0}]}
+        result = validate_mission_templates(data)
+        assert_has_error(result, substring="must be >= 1")
+
     def test_enemy_guests_invalid_entry(self):
         data = {"missions": [{"key": "m", "name": "M", "enemy_guests": [123]}]}
         result = validate_mission_templates(data)

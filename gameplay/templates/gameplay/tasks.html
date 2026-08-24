@@ -164,8 +164,12 @@
                 <span class="tw-chip">
                     {% if selected_mission.is_defense %}防守任务{% elif selected_mission.guest_only %}门客任务{% else %}护院任务{% endif %}
                 </span>
+                {% if mission_card_daily_limit > 0 %}
                 <span class="tw-chip">任务卡 {{ selected_mission_card_uses }} / {{ mission_card_daily_limit }}</span>
-                {% if mission_card_count > 0 %}
+                {% else %}
+                <span class="tw-chip">本任务不可使用任务卡</span>
+                {% endif %}
+                {% if mission_card_count > 0 and mission_card_daily_limit > 0 %}
                 <form method="post"
                       action="{% url 'gameplay:use_mission_card' %}"
                       class="inline js-mission-card-form"

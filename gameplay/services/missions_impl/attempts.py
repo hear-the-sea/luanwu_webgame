@@ -24,11 +24,18 @@ def _resolve_non_negative_int(raw: Any, *, field_name: str) -> int:
     return value
 
 
-def _resolve_incremented_extra_attempts(current: Any, increment: int) -> int:
+def get_mission_card_daily_limit(mission: MissionTemplate) -> int:
+    raw_limit = getattr(mission, "mission_card_daily_limit", MISSION_CARD_DAILY_LIMIT_PER_MISSION)
+    return _resolve_non_negative_int(raw_limit, field_name="mission_card_daily_limit")
+
+
+def _resolve_incremented_extra_attempts(current: Any, increment: int, *, daily_limit: int) -> int:
     current_count = _resolve_non_negative_int(current, field_name="extra attempts")
     next_count = current_count + increment
-    if next_count > MISSION_CARD_DAILY_LIMIT_PER_MISSION:
-        raise MissionDailyLimitError(f"该任务今日最多使用 {MISSION_CARD_DAILY_LIMIT_PER_MISSION} 张任务卡")
+    if next_count > daily_limit:
+        if daily_limit == 0:
+            raise MissionDailyLimitError("该任务不可使用任务卡")
+        raise MissionDailyLimitError(f"该任务今日最多使用 {daily_limit} 张任务卡")
     return next_count
 
 
@@ -67,7 +74,8 @@ def add_mission_extra_attempt(manor: Manor, mission: MissionTemplate, count: int
     if resolved_count <= 0:
         raise AssertionError(f"invalid mission extra attempt count: {count!r}")
 
-    _resolve_incremented_extra_attempts(0, resolved_count)
+    mission_card_daily_limit = get_mission_card_daily_limit(mission)
+    _resolve_incremented_extra_attempts(0, resolved_count, daily_limit=mission_card_daily_limit)
 
     _, _, today_date = get_today_date_range()
     with transaction.atomic():
@@ -77,7 +85,11 @@ def add_mission_extra_attempt(manor: Manor, mission: MissionTemplate, count: int
             .first()
         )
         if extra:
-            extra.extra_count = _resolve_incremented_extra_attempts(extra.extra_count, resolved_count)
+            extra.extra_count = _resolve_incremented_extra_attempts(
+                extra.extra_count,
+                resolved_count,
+                daily_limit=mission_card_daily_limit,
+            )
             extra.save(update_fields=["extra_count", "updated_at"])
             return extra.extra_count
 
@@ -93,7 +105,11 @@ def add_mission_extra_attempt(manor: Manor, mission: MissionTemplate, count: int
     except IntegrityError:
         with transaction.atomic():
             extra = MissionExtraAttempt.objects.select_for_update().get(manor=manor, mission=mission, date=today_date)
-            extra.extra_count = _resolve_incremented_extra_attempts(extra.extra_count, resolved_count)
+            extra.extra_count = _resolve_incremented_extra_attempts(
+                extra.extra_count,
+                resolved_count,
+                daily_limit=mission_card_daily_limit,
+            )
             extra.save(update_fields=["extra_count", "updated_at"])
             return extra.extra_count
 

@@ -44,6 +44,30 @@ def test_load_luanwu_shop_config_reads_products_and_currency(tmp_path, monkeypat
         luanwu_shop.clear_luanwu_shop_config_cache()
 
 
+def test_default_luanwu_shop_includes_requested_coin_products():
+    luanwu_shop.clear_luanwu_shop_config_cache()
+    try:
+        config = luanwu_shop.load_luanwu_shop_config()
+    finally:
+        luanwu_shop.clear_luanwu_shop_config_cache()
+
+    products = {product.key: product for product in config.products}
+    expected_prices = {
+        "manor_rename_card": 1,
+        "peace_shield_small": 1,
+        "peace_shield_medium": 2,
+        "peace_shield_large": 3,
+        "xisuidan": 15,
+        "edward_blue_guest_scroll": 15,
+        "edward_purple_guest_scroll": 30,
+    }
+
+    assert config.currency_item_key == "chunqiu_coin"
+    assert {key: products[key].price for key in expected_prices} == expected_prices
+    assert {key: products[key].item_key for key in expected_prices} == {key: key for key in expected_prices}
+    assert all(products[key].reward_quantity == 1 for key in expected_prices)
+
+
 def test_load_luanwu_shop_config_rejects_invalid_reward_type(tmp_path, monkeypatch):
     config_path = tmp_path / "luanwu_shop.yaml"
     config_path.write_text(

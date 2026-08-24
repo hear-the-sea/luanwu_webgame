@@ -392,12 +392,37 @@ def validate_mission_templates(
                 daily_limit, result=result, file=file, path=path, field_name="daily_limit", allow_zero=False
             )
 
+        mission_card_daily_limit = mission.get("mission_card_daily_limit")
+        if mission_card_daily_limit is not None:
+            _check_type(
+                mission_card_daily_limit,
+                int,
+                result=result,
+                file=file,
+                path=path,
+                field_name="mission_card_daily_limit",
+            )
+            _check_positive(
+                mission_card_daily_limit,
+                result=result,
+                file=file,
+                path=path,
+                field_name="mission_card_daily_limit",
+            )
+
         base_travel_time = mission.get("base_travel_time")
         if base_travel_time is not None:
             _check_type(
                 base_travel_time, (int, float), result=result, file=file, path=path, field_name="base_travel_time"
             )
             _check_positive(base_travel_time, result=result, file=file, path=path, field_name="base_travel_time")
+
+        display_order = mission.get("display_order")
+        if display_order is not None:
+            _check_type(display_order, int, result=result, file=file, path=path, field_name="display_order")
+            _check_positive(
+                display_order, result=result, file=file, path=path, field_name="display_order", allow_zero=False
+            )
 
         available_weekdays = mission.get("available_weekdays")
         if available_weekdays is not None:

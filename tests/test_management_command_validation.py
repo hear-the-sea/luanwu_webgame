@@ -88,6 +88,7 @@ missions:
     probability_drop_table: []
     base_travel_time: bad
     daily_limit: 0
+    mission_card_daily_limit: -1
 """,
         encoding="utf-8",
     )
@@ -102,8 +103,10 @@ missions:
     assert mission.enemy_technology == {}
     assert mission.drop_table == {}
     assert mission.probability_drop_table == {}
+    assert mission.display_order == 1000
     assert mission.base_travel_time == 1800
     assert mission.daily_limit == 3
+    assert mission.mission_card_daily_limit == 5
 
 
 @pytest.mark.django_db
@@ -151,6 +154,47 @@ missions:
 
 
 @pytest.mark.django_db
+def test_load_mission_templates_command_imports_display_order(tmp_path):
+    payload_path = tmp_path / "mission_templates.yaml"
+    payload_path.write_text(
+        """
+missions:
+  - key: cmd_mission_display_order
+    name: 手动排序任务
+    display_order: 17
+""",
+        encoding="utf-8",
+    )
+
+    call_command("load_mission_templates", file=str(payload_path), verbosity=0)
+
+    mission = MissionTemplate.objects.get(key="cmd_mission_display_order")
+    assert mission.display_order == 17
+
+
+@pytest.mark.django_db
+def test_load_mission_templates_command_imports_per_mission_card_limits(tmp_path):
+    payload_path = tmp_path / "mission_templates.yaml"
+    payload_path.write_text(
+        """
+missions:
+  - key: cmd_mission_cards_disabled
+    name: 禁用任务卡
+    mission_card_daily_limit: 0
+  - key: cmd_mission_cards_one
+    name: 单张任务卡
+    mission_card_daily_limit: 1
+""",
+        encoding="utf-8",
+    )
+
+    call_command("load_mission_templates", file=str(payload_path), verbosity=0)
+
+    assert MissionTemplate.objects.get(key="cmd_mission_cards_disabled").mission_card_daily_limit == 0
+    assert MissionTemplate.objects.get(key="cmd_mission_cards_one").mission_card_daily_limit == 1
+
+
+@pytest.mark.django_db
 def test_default_mission_templates_define_junior_mission_tiering():
     payload_path = settings.BASE_DIR / "data" / "mission_templates.yaml"
 
@@ -159,15 +203,15 @@ def test_default_mission_templates_define_junior_mission_tiering():
     expected_enemy_technology = {
         "huashan_lunjian": {
             "difficulty": "junior",
-            "enemy_technology": {"level": 2, "guest_level": 39, "guest_bonus": 0.1},
+            "enemy_technology": {"level": 2, "guest_level": 12, "guest_bonus": 0},
         },
         "jingyanggang": {
             "difficulty": "junior",
-            "enemy_technology": {"level": 3, "guest_level": 39, "guest_bonus": 0.02},
+            "enemy_technology": {"level": 3, "guest_level": 15, "guest_bonus": 0.02},
         },
         "wulongshan": {
             "difficulty": "junior",
-            "enemy_technology": {"level": 4, "guest_level": 43, "guest_bonus": 0.04},
+            "enemy_technology": {"level": 4, "guest_level": 20, "guest_bonus": 0.04},
         },
         "fugui_shanzhuang": {
             "difficulty": "junior",
@@ -175,15 +219,15 @@ def test_default_mission_templates_define_junior_mission_tiering():
         },
         "biwu_zhaoqin": {
             "difficulty": "junior",
-            "enemy_technology": {"level": 4, "guest_level": 80, "guest_bonus": 0.2},
+            "enemy_technology": {"level": 4, "guest_level": 55, "guest_bonus": 0.2},
         },
         "taozi_fenban": {
             "difficulty": "junior",
-            "enemy_technology": {"level": 3, "guest_level": 41, "guest_bonus": 0.06},
+            "enemy_technology": {"level": 3, "guest_level": 40, "guest_bonus": 0.06},
         },
         "wagangzhai": {
             "difficulty": "junior",
-            "enemy_technology": {"level": 5, "guest_level": 53, "guest_bonus": 0.1},
+            "enemy_technology": {"level": 5, "guest_level": 35, "guest_bonus": 0.1},
         },
         "wagangzhai_nixi": {
             "difficulty": "intermediate",
@@ -191,27 +235,27 @@ def test_default_mission_templates_define_junior_mission_tiering():
         },
         "shizipo_heidian": {
             "difficulty": "intermediate",
-            "enemy_technology": {"level": 6, "guest_level": 57, "guest_bonus": 0.1},
+            "enemy_technology": {"level": 6, "guest_level": 70, "guest_bonus": 0.1},
         },
         "shanhaiguan": {
             "difficulty": "intermediate",
-            "enemy_technology": {"level": 7, "guest_level": 60, "guest_bonus": 0.18},
+            "enemy_technology": {"level": 7, "guest_level": 70, "guest_bonus": 0.18},
         },
         "shiren_daochang": {
             "difficulty": "intermediate",
             "enemy_technology": {"level": 6, "guest_level": 55, "guest_bonus": 0.08},
         },
         "jiguanshou_chuxian": {
-            "difficulty": "intermediate",
-            "enemy_technology": {"level": 7, "guest_level": 58, "guest_bonus": 0.12},
+            "difficulty": "junior",
+            "enemy_technology": {"level": 7, "guest_level": 35, "guest_bonus": 0.12},
         },
         "tianpeng_dijiao_1": {
             "difficulty": "intermediate",
-            "enemy_technology": {"level": 8, "guest_level": 64, "guest_bonus": 0.12},
+            "enemy_technology": {"level": 8, "guest_level": 50, "guest_bonus": 0.12},
         },
         "jiguan_chuniao": {
             "difficulty": "intermediate",
-            "enemy_technology": {"level": 7, "guest_level": 59, "guest_bonus": 0.1},
+            "enemy_technology": {"level": 7, "guest_level": 60, "guest_bonus": 0.1},
         },
         "jiufeng_feihuan": {
             "difficulty": "intermediate",
@@ -219,7 +263,7 @@ def test_default_mission_templates_define_junior_mission_tiering():
         },
         "liangshanbo_zhuyingtai": {
             "difficulty": "intermediate",
-            "enemy_technology": {"level": 5, "guest_level": 54, "guest_bonus": 0.16},
+            "enemy_technology": {"level": 5, "guest_level": 60, "guest_bonus": 0.16},
         },
         "tianpeng_dijiao_2": {
             "difficulty": "advanced",
@@ -227,7 +271,7 @@ def test_default_mission_templates_define_junior_mission_tiering():
         },
         "dongtian_fudi": {
             "difficulty": "advanced",
-            "enemy_technology": {"level": 9, "guest_level": 75, "guest_bonus": 0.22},
+            "enemy_technology": {"level": 9, "guest_level": 80, "guest_bonus": 0.26},
         },
         "simian_chuge": {
             "difficulty": "advanced",
@@ -261,7 +305,29 @@ def test_default_mission_templates_define_junior_mission_tiering():
 
 
 @pytest.mark.django_db
-def test_default_mission_templates_cover_mid_tier_equipment_sources():
+def test_default_mission_templates_import_configured_display_order():
+    payload_path = settings.BASE_DIR / "data" / "mission_templates.yaml"
+
+    call_command("load_mission_templates", file=str(payload_path), verbosity=0)
+
+    assert list(
+        MissionTemplate.objects.filter(difficulty=MissionTemplate.Difficulty.JUNIOR)
+        .order_by("display_order", "id")
+        .values_list("key", flat=True)
+    ) == [
+        "jingyanggang",
+        "huashan_lunjian",
+        "fugui_shanzhuang",
+        "wulongshan",
+        "wagangzhai",
+        "biwu_zhaoqin",
+        "jiguanshou_chuxian",
+        "taozi_fenban",
+    ]
+
+
+@pytest.mark.django_db
+def test_default_mission_templates_cover_configured_equipment_sources():
     payload_path = settings.BASE_DIR / "data" / "mission_templates.yaml"
 
     call_command("load_mission_templates", file=str(payload_path), verbosity=0)
@@ -308,16 +374,14 @@ def test_default_mission_templates_cover_mid_tier_equipment_sources():
     }
 
     intermediate_drop_keys = set()
-    mid_or_advanced_drop_keys = set()
+    mission_drop_keys = set()
     for mission in MissionTemplate.objects.all():
+        mission_drop_keys.update(mission.drop_table)
         if mission.difficulty == "intermediate":
             intermediate_drop_keys.update(mission.drop_table)
-            mid_or_advanced_drop_keys.update(mission.drop_table)
-        elif mission.difficulty == "advanced":
-            mid_or_advanced_drop_keys.update(mission.drop_table)
 
     assert _expected_mission_source_keys(intermediate_equipment) <= intermediate_drop_keys
-    assert _expected_mission_source_keys(flexible_equipment) <= mid_or_advanced_drop_keys
+    assert _expected_mission_source_keys(flexible_equipment) <= mission_drop_keys
 
 
 @pytest.mark.django_db
@@ -355,6 +419,19 @@ def test_default_mission_templates_split_shiren_named_enemy_keys_by_display_name
 
 
 @pytest.mark.django_db
+def test_default_mission_templates_import_tianpeng_dijiao_2_as_huxian_blueprints():
+    payload_path = settings.BASE_DIR / "data" / "mission_templates.yaml"
+
+    call_command("load_mission_templates", file=str(payload_path), verbosity=0)
+
+    tianpeng = MissionTemplate.objects.get(key="tianpeng_dijiao_2")
+    assert tianpeng.drop_table["blueprint_huxianjian"] == 0.05
+    assert tianpeng.drop_table["blueprint_huxianpao"] == 0.1
+    assert tianpeng.drop_table["blueprint_huxianxie"] == 0.1
+    assert not {"equip_huxianjian", "equip_huxianpao", "equip_huxianxie"}.intersection(tianpeng.drop_table)
+
+
+@pytest.mark.django_db
 def test_default_mission_templates_import_wanxian_niming_chain():
     payload_path = settings.BASE_DIR / "data" / "mission_templates.yaml"
 
@@ -366,6 +443,31 @@ def test_default_mission_templates_import_wanxian_niming_chain():
     assert biyou.daily_limit == 3
     assert biyou.entry_cost == {}
     assert biyou.drop_table["wanyin_flag_fragment"] == {"chance": 0.35, "count": 1}
+    assert biyou.drop_table["equip_xiaowei_set"] == {
+        "chance": 0.35,
+        "choices": [
+            "equip_xiaoweitoukui",
+            "equip_xiaoweikaijia",
+            "equip_xiaoweichangxue",
+            "equip_xiaoweichangjian",
+        ],
+    }
+    assert biyou.drop_table["equip_huxian_set"] == {
+        "chance": 0.10,
+        "choices": ["equip_huxianpao", "equip_huxianxie", "equip_huxianjian"],
+    }
+    assert not {"blueprint_advanced_blue", "blueprint_advanced_purple"}.intersection(biyou.drop_table)
+
+    shanhaiguan = MissionTemplate.objects.get(key="shanhaiguan")
+    assert shanhaiguan.drop_table["blueprint_xiaowei_set"] == {
+        "chance": 0.35,
+        "choices": [
+            "blueprint_xiaoweitoukie",
+            "blueprint_xiaoweikaijia",
+            "blueprint_xiaoweichangxue",
+            "blueprint_xiaoweichangjian",
+        ],
+    }
     assert biyou.enemy_guests == [
         "task_wanxian_nangong_lie",
         "task_wanxian_lu_xuanqing",

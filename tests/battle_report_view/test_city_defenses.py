@@ -37,6 +37,35 @@ def test_battle_report_context_shows_brief_city_defense_names_under_troops(clien
                 "defense": 360,
             },
         ],
+        rounds=[
+            {
+                "round": 1,
+                "lineups": {
+                    "attacker": {"guests": [], "city_defenses": [], "troops": []},
+                    "defender": {
+                        "guests": [],
+                        "city_defenses": [
+                            {
+                                "key": BUILDING_KEYS.WALL,
+                                "name": "城墙",
+                                "level": 10,
+                                "hp": 30000,
+                                "max_hp": 30000,
+                            },
+                            {
+                                "key": BUILDING_KEYS.ARROW_TOWER,
+                                "name": "箭塔",
+                                "level": 4,
+                                "hp": 2500,
+                                "max_hp": 6000,
+                            },
+                        ],
+                        "troops": [],
+                    },
+                },
+                "events": [],
+            }
+        ],
     )
 
     assert client.login(username="city_defense_report", password="pass123")
@@ -45,7 +74,7 @@ def test_battle_report_context_shows_brief_city_defense_names_under_troops(clien
     assert response.status_code == 200
     assert response.context["defender_city_defenses"][0]["display_name"] == "崭新的高级城墙"
     assert response.context["defender_city_defenses"][1]["display_name"] == "破烂的中级箭塔"
-    assert "城防建筑" in response.content.decode()
+    assert "城防建筑" not in response.content.decode()
     assert "崭新的高级城墙" in response.content.decode()
     assert "破烂的中级箭塔" in response.content.decode()
     assert '<span class="troop-placeholder">城</span>' not in response.content.decode()
@@ -96,6 +125,28 @@ def test_battle_report_v2_city_defense_still_hides_exact_hp(client, django_user_
                 "defense": 180,
             }
         ],
+        rounds=[
+            {
+                "round": 1,
+                "lineups": {
+                    "attacker": {"guests": [], "city_defenses": [], "troops": []},
+                    "defender": {
+                        "guests": [],
+                        "city_defenses": [
+                            {
+                                "key": BUILDING_KEYS.WALL,
+                                "name": "城墙",
+                                "level": 6,
+                                "hp": 9_876,
+                                "max_hp": 18_000,
+                            }
+                        ],
+                        "troops": [],
+                    },
+                },
+                "events": [],
+            }
+        ],
     )
 
     assert client.login(username="city_defense_report_v2", password="pass123")
@@ -125,4 +176,5 @@ def test_battle_report_city_defense_empty_state_says_none(client, django_user_mo
     assert response.status_code == 200
     content = response.content.decode()
     assert "未修建城防" not in content
-    assert "<li>无</li>" in content
+    assert "<li>无</li>" not in content
+    assert "阵容对比" not in content

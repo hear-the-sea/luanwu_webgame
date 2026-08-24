@@ -81,6 +81,33 @@ def test_load_item_templates_imports_edward_scroll_confirm_payload():
 
 
 @pytest.mark.django_db
+def test_load_item_templates_imports_large_work_chest_chunqiu_coin_rewards():
+    call_command("load_item_templates", verbosity=0)
+
+    large_chest = ItemTemplate.objects.get(key="work_chest_large")
+    coin_groups = [
+        group
+        for group in large_chest.effect_payload["random_item_groups"]
+        if group["choices"] == [{"item_key": "chunqiu_coin", "weight": 1}]
+    ]
+
+    assert coin_groups == [
+        {
+            "chance": 0.1,
+            "min_quantity": 1,
+            "max_quantity": 1,
+            "choices": [{"item_key": "chunqiu_coin", "weight": 1}],
+        },
+        {
+            "chance": 0.01,
+            "min_quantity": 10,
+            "max_quantity": 10,
+            "choices": [{"item_key": "chunqiu_coin", "weight": 1}],
+        },
+    ]
+
+
+@pytest.mark.django_db
 def test_load_item_templates_synchronizes_imported_equipment(monkeypatch, tmp_path: Path):
     payload_path = tmp_path / "items.yaml"
     payload_path.write_text(

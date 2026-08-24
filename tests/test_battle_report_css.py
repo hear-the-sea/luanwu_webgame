@@ -57,3 +57,71 @@ def test_battle_report_state_bar_and_skills_use_non_overlapping_grid():
     assert "overflow: visible" in damage_detail_rule
     assert "white-space: normal" in damage_detail_rule
     assert "overflow-wrap: anywhere" in damage_detail_rule
+
+
+def test_report_uses_one_pale_yellow_surface_and_round_roster_column_dividers():
+    css = Path("battle/templates/battle/partials/report_detail_styles.html").read_text(encoding="utf-8")
+
+    page_rule = _rule_body(css, ".battle-report-page")
+    assert "--battle-report-background: #fff6d8" in page_rule
+    assert "background: var(--battle-report-background)" in page_rule
+
+    title_rule = _rule_body(css, ".round-title-row")
+    assert "justify-content: center" in title_rule
+    assert "text-align: center" in title_rule
+
+    for selector in (
+        ".battle-rounds-card .battle-round",
+        ".round-title-row",
+        ".round-side-heading.attacker",
+        ".round-side-heading.defender",
+    ):
+        assert "background: var(--battle-report-background)" in _rule_body(css, selector)
+
+    surface_rules = re.findall(r"\.round-roster-cell,\s*\.round-action-cell\s*\{([^}]*)\}", css)
+    assert any("background: var(--battle-report-background)" in rule for rule in surface_rules)
+
+    result_rule = _rule_body(
+        css,
+        ".battle-report-page .battle-result,\n.battle-report-page .battle-result.victory,\n.battle-report-page .battle-result.defeat",
+    )
+    assert "background: var(--battle-report-background)" in result_rule
+    assert "border-color: #c8a36d" in result_rule
+    assert "color: #4b3420" in result_rule
+
+    roster_rule = _rule_body(css, ".round-roster-cell")
+    assert "gap: 0" in roster_rule
+    assert "padding: 0" in roster_rule
+
+    label_rule = _rule_body(css, ".round-row-label")
+    assert "border-right: 1px solid #c8a36d" in label_rule
+
+    assert "font-style: italic" not in css
+
+
+def test_report_title_overview_and_settlement_use_flat_table_layouts():
+    css = Path("battle/templates/battle/partials/report_detail_styles.html").read_text(encoding="utf-8")
+
+    title_wrap_rule = _rule_body(css, ".battle-report-title")
+    assert "margin-top: 0.5rem" in title_wrap_rule
+
+    title_rule = _rule_body(css, ".battle-report-page .battle-report-title h1")
+    assert "font-size: 1.45rem" in title_rule
+    assert "text-align: center" in title_rule
+
+    section_title_rule = _rule_body(css, ".battle-report-page .tw-card > h2")
+    assert "font-size: 1.18rem" in section_title_rule
+
+    for selector in (".battle-overview-table", ".battle-settlement-table"):
+        table_rule = _rule_body(css, selector)
+        assert "grid-template-columns: repeat(2, minmax(0, 1fr))" in table_rule
+        assert "border: 1px solid #c8a36d" in table_rule
+        assert "background: var(--battle-report-background)" in table_rule
+
+    label_rule = _rule_body(css, ".battle-table-label")
+    assert "border-right: 1px solid #c8a36d" in label_rule
+
+    assert ".lineup-comparison" not in css
+
+    assert ".round-action-list.attacker li" not in css
+    assert ".round-action-list.defender li" not in css

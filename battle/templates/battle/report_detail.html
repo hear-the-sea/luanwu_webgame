@@ -8,327 +8,199 @@
 {% endblock %}
 
 {% block content %}
-<section class="dashboard">
-    <div class="tw-section-header">
+<section class="dashboard battle-report-page">
+    <div class="tw-section-header battle-report-title">
         <div>
-            <h1>{{ report_title }}</h1>
+            <h1>= {{ report_title }} =</h1>
         </div>
     </div>
 
+    <div class="battle-overview-table-wrap">
+        <section class="battle-overview-table" aria-label="双方装备属性加成">
+            <div class="battle-overview-side attacker"><strong>进攻方</strong></div>
+            <div class="battle-overview-side defender"><strong>防守方</strong></div>
 
-    <section class="tw-card">
-        <h2>阵容对比</h2>
-        <div class="lineup-comparison">
-            <article class="tw-building-card">
-                <h3>
-                    {{ left_team_title }}
-                    {% if my_side == 'attacker' %}
-                    <span class="role-tag attacker">进攻方</span>
-                    {% else %}
-                    <span class="role-tag defender">防守方</span>
-                    {% endif %}
-                </h3>
-                <ul class="team-members">
-                    {% for member in attacker_team_display %}
-                        <li class="team-member" title="{{ member.name }}">
-                            {% if member.avatar_url %}
-                                <img class="member-avatar" src="{{ member.avatar_url }}" alt="{{ member.name }}" loading="lazy" decoding="async">
-                            {% else %}
-                                <span class="avatar-placeholder">{{ member.name|first|default:"?" }}</span>
-                            {% endif %}
-                        </li>
-                    {% endfor %}
-                </ul>
-                <h4 style="margin-bottom: 0px;">护院</h4>
-                <ul class="troop-list">
-                    {% for troop in attacker_troops %}
-                        <li class="troop-item">
-                            {% if troop.avatar %}
-                                <img class="troop-avatar" src="{{ troop.avatar }}" alt="{{ troop.label }}" loading="lazy" decoding="async">
-                            {% else %}
-                                <span class="troop-placeholder">{{ troop.label|first|default:"兵" }}</span>
-                            {% endif %}
-                            <span class="troop-info">
-                                <strong>{{ troop.label }}</strong>
-                                <span class="troop-count">× {{ troop.count }}</span>
-                            </span>
-                        </li>
-                    {% empty %}
-                        <li>未携带护院</li>
-                    {% endfor %}
-                </ul>
-                <h4 style="margin-bottom: 0px;">城防建筑</h4>
-                <ul class="troop-list">
-                    {% for defense in attacker_city_defenses %}
-                        <li class="troop-item">
-                            <span class="troop-info">
-                                <strong>{{ defense.display_name }}</strong>
-                            </span>
-                        </li>
-                    {% empty %}
-                        <li>无</li>
-                    {% endfor %}
-                </ul>
-            </article>
-            <article class="tw-building-card">
-                <h3>
-                    {{ right_team_title }}
-                    {% if enemy_side == 'attacker' %}
-                    <span class="role-tag attacker">进攻方</span>
-                    {% else %}
-                    <span class="role-tag defender">防守方</span>
-                    {% endif %}
-                </h3>
-                <ul class="team-members">
-                    {% for member in defender_team_display %}
-                        <li class="team-member" title="{{ member.name }}">
-                            {% if member.avatar_url %}
-                                <img class="member-avatar" src="{{ member.avatar_url }}" alt="{{ member.name }}" loading="lazy" decoding="async">
-                            {% else %}
-                                <span class="avatar-placeholder">{{ member.name|first|default:"?" }}</span>
-                            {% endif %}
-                        </li>
-                    {% endfor %}
-                </ul>
-                <h4 style="margin-bottom: 0px;">护院</h4>
-                <ul class="troop-list">
-                    {% for troop in defender_troops %}
-                        <li class="troop-item">
-                            {% if troop.avatar %}
-                                <img class="troop-avatar" src="{{ troop.avatar }}" alt="{{ troop.label }}" loading="lazy" decoding="async">
-                            {% else %}
-                                <span class="troop-placeholder">{{ troop.label|first|default:"兵" }}</span>
-                            {% endif %}
-                            <span class="troop-info">
-                                <strong>{{ troop.label }}</strong>
-                                <span class="troop-count">× {{ troop.count }}</span>
-                            </span>
-                        </li>
-                    {% empty %}
-                        <li>未携带护院</li>
-                    {% endfor %}
-                </ul>
-                <h4 style="margin-bottom: 0px;">城防建筑</h4>
-                <ul class="troop-list">
-                    {% for defense in defender_city_defenses %}
-                        <li class="troop-item">
-                            <span class="troop-info">
-                                <strong>{{ defense.display_name }}</strong>
-                            </span>
-                        </li>
-                    {% empty %}
-                        <li>无</li>
-                    {% endfor %}
-                </ul>
-            </article>
-        </div>
-    </section>
+            <div class="battle-overview-cell attacker">
+                <span class="battle-table-label">装备属性加成</span>
+                <div class="battle-equipment-list">
+                    <span class="battle-table-empty">无</span>
+                </div>
+            </div>
+            <div class="battle-overview-cell defender">
+                <span class="battle-table-label">装备属性加成</span>
+                <div class="battle-equipment-list">
+                    <span class="battle-table-empty">无</span>
+                </div>
+            </div>
+        </section>
+    </div>
 
-    <section class="tw-card">
+    <section class="tw-card battle-rounds-card">
         <h2>战斗回合</h2>
         <div class="battle-rounds">
-            {% for round in report.rounds %}
-                <article class="battle-round">
-                    <h3>第 {{ round.round }} 回合</h3>
-                    <div class="battle-round-grid">
-                        <ul class="battle-events friendly">
-                            {% for event in round.events %}
-                                {% if event.side == my_side %}
-                                <li>
-                                    {% if event.type == 'heal' %}
-                                        <div class="event-line">
-                                            <span class="event-order">{{ event.order }}</span>
-                                            <div class="event-unit-summary">
-                                                <strong class="event-unit-name">{{ event.unit }}</strong>
-                                                {% include "battle/partials/unit_state_bar.html" with state=event.unit_state visible_side=my_side spectator=is_spectator %}
-                                                <span class="event-unit-skills">
-                                                <span class="tech-tag heal">{{ event.effect }}</span>
-                                                <span class="heal-text">恢复 +{{ event.healed }} 生命</span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    {% elif event.type == 'passive' %}
-                                        <div class="event-line">
-                                            <span class="event-order">{{ event.order }}</span>
-                                            {% include "battle/partials/passive_event_summary.html" with passive_event=event visible_side=my_side spectator=is_spectator %}
-                                        </div>
-                                    {% elif event.status %}
-                                        <div class="event-line">
-                                            <span class="event-order">{{ event.order }}</span>
-                                            <div class="event-unit-summary event-status-layout">
-                                                <strong class="event-unit-name">{{ event.actor }}</strong>
-                                                {% include "battle/partials/unit_state_bar.html" with state=event.actor_state visible_side=my_side spectator=is_spectator %}
-                                                <span class="event-unit-skills"><span class="status-pill">{{ event.message|default:"状态中..." }}</span></span>
-                                            </div>
-                                        </div>
-                                    {% else %}
-                                        <div class="event-line">
-                                            <span class="event-order">{{ event.order }}</span>
-                                            <div class="event-unit-summary">
-                                                <strong class="event-unit-name">{{ event.actor }}</strong>
-                                                {% include "battle/partials/unit_state_bar.html" with state=event.actor_state visible_side=my_side spectator=is_spectator %}
-                                                <span class="event-unit-skills">
-                                                {% if event.is_crit %}<span class="tech-tag crit">暴击</span>{% endif %}
-                                                {% if event.is_double_strike %}<span class="tech-tag double">狂狼必杀</span>{% endif %}
-                                                {% if event.attack_type == 'ranged' %}<span class="tech-tag ranged">远程</span>{% endif %}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="tw-muted">
-                                            {% for passive in event.passive_events_before %}
-                                                <div class="event-passive-entry">{% include "battle/partials/passive_event_summary.html" with passive_event=passive visible_side=my_side spectator=is_spectator %}</div>
-                                            {% endfor %}
-                                            {% include "battle/partials/attack_damage_summary.html" with attack=event visible_side=my_side spectator=is_spectator %}
-                                            {% if event.reflect_damage %}<div class="reflect-text">← {{ event.target }}爆发护身剑罡（{{ event.reflect_damage }}伤害）｜ 伤害人数：{{ event.reflect_kills|default:0 }}{% if event.reflect_defeated %} 敌方全军覆没{% endif %}</div>{% endif %}
-                                            {% if event.counter_damage %}<div class="counter-text">← {{ event.target }}爆发反戈一击（{{ event.counter_damage }}伤害）｜ 伤害人数：{{ event.counter_kills|default:0 }}{% if event.counter_defeated %} 敌方全军覆没{% endif %}</div>{% endif %}
-                                            {% for passive in event.passive_events_after %}
-                                                <div class="event-passive-entry">{% include "battle/partials/passive_event_summary.html" with passive_event=passive visible_side=my_side spectator=is_spectator %}</div>
-                                            {% endfor %}
-                                            {% for sub in event.additional_targets %}
-                                                {% for passive in sub.passive_events_before %}
-                                                    <div class="event-passive-entry">{% include "battle/partials/passive_event_summary.html" with passive_event=passive visible_side=my_side spectator=is_spectator %}</div>
-                                                {% endfor %}
-                                                {% include "battle/partials/attack_damage_summary.html" with attack=sub is_secondary=True visible_side=my_side spectator=is_spectator %}
-                                                {% if sub.reflect_damage %}<div class="event-target-summary event-actor-settlement-summary reflect-text"><strong class="event-unit-name">{{ sub.actor }}</strong>{% include "battle/partials/unit_state_bar.html" with state=sub.actor_state visible_side=my_side spectator=is_spectator %}<span class="event-target-detail">← {{ sub.target }}爆发护身剑罡（{{ sub.reflect_damage }}伤害）｜ 伤害人数：{{ sub.reflect_kills|default:0 }}{% if sub.reflect_defeated %} 敌方全军覆没{% endif %}</span></div>{% endif %}
-                                                {% if sub.counter_damage %}<div class="event-target-summary event-actor-settlement-summary counter-text"><strong class="event-unit-name">{{ sub.actor }}</strong>{% include "battle/partials/unit_state_bar.html" with state=sub.actor_state visible_side=my_side spectator=is_spectator %}<span class="event-target-detail">← {{ sub.target }}爆发反戈一击（{{ sub.counter_damage }}伤害）｜ 伤害人数：{{ sub.counter_kills|default:0 }}{% if sub.counter_defeated %} 敌方全军覆没{% endif %}</span></div>{% endif %}
-                                                {% for passive in sub.passive_events_after %}
-                                                    <div class="event-passive-entry">{% include "battle/partials/passive_event_summary.html" with passive_event=passive visible_side=my_side spectator=is_spectator %}</div>
-                                                {% endfor %}
-                                            {% endfor %}
-                                        </div>
-                                        {% if event.status_inflicted %}
-                                            <div class="status-tag">造成状态：{{ event.status_inflicted|join:"、" }}</div>
-                                        {% endif %}
-                                    {% endif %}
-                                </li>
+            {% for round in battle_rounds %}
+                <article class="battle-round" data-battle-round="{{ round.round }}">
+                    <header class="round-title-row">
+                        <h3>第 {{ round.round }} 回合</h3>
+                    </header>
+                    <div class="battle-round-table-wrap">
+                        <div class="battle-round-table">
+                            <div class="round-side-heading attacker">
+                                <span class="round-side-dot" aria-hidden="true"></span>
+                                <strong>进攻方</strong>
+                            </div>
+                            <div class="round-side-heading defender">
+                                <span class="round-side-dot" aria-hidden="true"></span>
+                                <strong>防守方</strong>
+                            </div>
+
+                            <div class="round-roster-cell attacker">
+                                <span class="round-row-label">门客</span>
+                                {% if round.has_lineup_snapshot %}
+                                    <ul class="round-guest-list" aria-label="进攻方剩余门客">
+                                        {% for guest in round.lineups.attacker.guests %}
+                                            <li class="round-guest" title="{{ guest.name }}">
+                                                {% if guest.avatar_url %}
+                                                    <img class="round-guest-avatar" src="{{ guest.avatar_url }}" alt="{{ guest.name }}" width="48" height="48" loading="lazy" decoding="async">
+                                                {% else %}
+                                                    <span class="round-guest-placeholder" aria-label="{{ guest.name }}">{{ guest.name|first|default:"?" }}</span>
+                                                {% endif %}
+                                            </li>
+                                        {% empty %}
+                                            <li class="round-roster-empty">无剩余门客</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <span class="round-snapshot-unavailable">旧战报未记录回合阵容</span>
                                 {% endif %}
-                            {% endfor %}
-                        </ul>
-                        <ul class="battle-events enemy">
-                            {% for event in round.events %}
-                                {% if event.side == enemy_side %}
-                                <li>
-                                    {% if event.type == 'heal' %}
-                                        <div class="event-line">
-                                            <span class="event-order">{{ event.order }}</span>
-                                            <div class="event-unit-summary">
-                                                <strong class="event-unit-name">{{ event.unit }}</strong>
-                                                {% include "battle/partials/unit_state_bar.html" with state=event.unit_state visible_side=my_side spectator=is_spectator %}
-                                                <span class="event-unit-skills">
-                                                <span class="tech-tag heal">{{ event.effect }}</span>
-                                                <span class="heal-text">恢复 +{{ event.healed }} 生命</span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    {% elif event.type == 'passive' %}
-                                        <div class="event-line">
-                                            <span class="event-order">{{ event.order }}</span>
-                                            {% include "battle/partials/passive_event_summary.html" with passive_event=event visible_side=my_side spectator=is_spectator %}
-                                        </div>
-                                    {% elif event.status %}
-                                        <div class="event-line">
-                                            <span class="event-order">{{ event.order }}</span>
-                                            <div class="event-unit-summary event-status-layout">
-                                                <strong class="event-unit-name">{{ event.actor }}</strong>
-                                                {% include "battle/partials/unit_state_bar.html" with state=event.actor_state visible_side=my_side spectator=is_spectator %}
-                                                <span class="event-unit-skills"><span class="status-pill">{{ event.message|default:"状态中..." }}</span></span>
-                                            </div>
-                                        </div>
-                                    {% else %}
-                                        <div class="event-line">
-                                            <span class="event-order">{{ event.order }}</span>
-                                            <div class="event-unit-summary">
-                                                <strong class="event-unit-name">{{ event.actor }}</strong>
-                                                {% include "battle/partials/unit_state_bar.html" with state=event.actor_state visible_side=my_side spectator=is_spectator %}
-                                                <span class="event-unit-skills">
-                                                {% if event.is_crit %}<span class="tech-tag crit">暴击</span>{% endif %}
-                                                {% if event.is_double_strike %}<span class="tech-tag double">狂狼必杀</span>{% endif %}
-                                                {% if event.attack_type == 'ranged' %}<span class="tech-tag ranged">远程</span>{% endif %}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="tw-muted">
-                                            {% for passive in event.passive_events_before %}
-                                                <div class="event-passive-entry">{% include "battle/partials/passive_event_summary.html" with passive_event=passive visible_side=my_side spectator=is_spectator %}</div>
-                                            {% endfor %}
-                                            {% include "battle/partials/attack_damage_summary.html" with attack=event visible_side=my_side spectator=is_spectator %}
-                                            {% if event.reflect_damage %}<div class="reflect-text">← {{ event.target }}爆发护身剑罡（{{ event.reflect_damage }}伤害）｜ 伤害人数：{{ event.reflect_kills|default:0 }}{% if event.reflect_defeated %} 敌方全军覆没{% endif %}</div>{% endif %}
-                                            {% if event.counter_damage %}<div class="counter-text">← {{ event.target }}爆发反戈一击（{{ event.counter_damage }}伤害）｜ 伤害人数：{{ event.counter_kills|default:0 }}{% if event.counter_defeated %} 敌方全军覆没{% endif %}</div>{% endif %}
-                                            {% for passive in event.passive_events_after %}
-                                                <div class="event-passive-entry">{% include "battle/partials/passive_event_summary.html" with passive_event=passive visible_side=my_side spectator=is_spectator %}</div>
-                                            {% endfor %}
-                                            {% for sub in event.additional_targets %}
-                                                {% for passive in sub.passive_events_before %}
-                                                    <div class="event-passive-entry">{% include "battle/partials/passive_event_summary.html" with passive_event=passive visible_side=my_side spectator=is_spectator %}</div>
-                                                {% endfor %}
-                                                {% include "battle/partials/attack_damage_summary.html" with attack=sub is_secondary=True visible_side=my_side spectator=is_spectator %}
-                                                {% if sub.reflect_damage %}<div class="event-target-summary event-actor-settlement-summary reflect-text"><strong class="event-unit-name">{{ sub.actor }}</strong>{% include "battle/partials/unit_state_bar.html" with state=sub.actor_state visible_side=my_side spectator=is_spectator %}<span class="event-target-detail">← {{ sub.target }}爆发护身剑罡（{{ sub.reflect_damage }}伤害）｜ 伤害人数：{{ sub.reflect_kills|default:0 }}{% if sub.reflect_defeated %} 敌方全军覆没{% endif %}</span></div>{% endif %}
-                                                {% if sub.counter_damage %}<div class="event-target-summary event-actor-settlement-summary counter-text"><strong class="event-unit-name">{{ sub.actor }}</strong>{% include "battle/partials/unit_state_bar.html" with state=sub.actor_state visible_side=my_side spectator=is_spectator %}<span class="event-target-detail">← {{ sub.target }}爆发反戈一击（{{ sub.counter_damage }}伤害）｜ 伤害人数：{{ sub.counter_kills|default:0 }}{% if sub.counter_defeated %} 敌方全军覆没{% endif %}</span></div>{% endif %}
-                                                {% for passive in sub.passive_events_after %}
-                                                    <div class="event-passive-entry">{% include "battle/partials/passive_event_summary.html" with passive_event=passive visible_side=my_side spectator=is_spectator %}</div>
-                                                {% endfor %}
-                                            {% endfor %}
-                                        </div>
-                                        {% if event.status_inflicted %}
-                                            <div class="status-tag">造成状态：{{ event.status_inflicted|join:"、" }}</div>
-                                        {% endif %}
-                                    {% endif %}
-                                </li>
+                            </div>
+                            <div class="round-roster-cell defender">
+                                <span class="round-row-label">门客</span>
+                                {% if round.has_lineup_snapshot %}
+                                    <ul class="round-guest-list" aria-label="防守方剩余门客">
+                                        {% for guest in round.lineups.defender.guests %}
+                                            <li class="round-guest" title="{{ guest.name }}">
+                                                {% if guest.avatar_url %}
+                                                    <img class="round-guest-avatar" src="{{ guest.avatar_url }}" alt="{{ guest.name }}" width="48" height="48" loading="lazy" decoding="async">
+                                                {% else %}
+                                                    <span class="round-guest-placeholder" aria-label="{{ guest.name }}">{{ guest.name|first|default:"?" }}</span>
+                                                {% endif %}
+                                            </li>
+                                        {% empty %}
+                                            <li class="round-roster-empty">无剩余门客</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <span class="round-snapshot-unavailable">旧战报未记录回合阵容</span>
                                 {% endif %}
-                            {% endfor %}
-                        </ul>
+                            </div>
+
+                            <div class="round-roster-cell attacker">
+                                <span class="round-row-label">护院</span>
+                                {% if round.has_lineup_snapshot %}
+                                    <ul class="round-troop-list" aria-label="进攻方剩余护院">
+                                        {% for defense in round.lineups.attacker.city_defenses %}
+                                            <li class="round-city-defense"><span>{{ defense.display_name }}</span></li>
+                                        {% endfor %}
+                                        {% for troop in round.lineups.attacker.troops %}
+                                            <li><span>{{ troop.name }}</span>:<strong>{{ troop.count }}</strong></li>
+                                        {% endfor %}
+                                        {% if not round.lineups.attacker.city_defenses and not round.lineups.attacker.troops %}
+                                            <li class="round-roster-empty">被歼灭</li>
+                                        {% endif %}
+                                    </ul>
+                                {% else %}
+                                    <span class="round-snapshot-unavailable">旧战报未记录回合阵容</span>
+                                {% endif %}
+                            </div>
+                            <div class="round-roster-cell defender">
+                                <span class="round-row-label">护院</span>
+                                {% if round.has_lineup_snapshot %}
+                                    <ul class="round-troop-list" aria-label="防守方剩余护院">
+                                        {% for defense in round.lineups.defender.city_defenses %}
+                                            <li class="round-city-defense"><span>{{ defense.display_name }}</span></li>
+                                        {% endfor %}
+                                        {% for troop in round.lineups.defender.troops %}
+                                            <li><span>{{ troop.name }}</span>:<strong>{{ troop.count }}</strong></li>
+                                        {% endfor %}
+                                        {% if not round.lineups.defender.city_defenses and not round.lineups.defender.troops %}
+                                            <li class="round-roster-empty">被歼灭</li>
+                                        {% endif %}
+                                    </ul>
+                                {% else %}
+                                    <span class="round-snapshot-unavailable">旧战报未记录回合阵容</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="round-action-cell attacker" aria-label="进攻方行动记录">
+                                {% include "battle/partials/round_event_list.html" with events=round.attacker_events event_list_class="attacker" %}
+                            </div>
+                            <div class="round-action-cell defender" aria-label="防守方行动记录">
+                                {% include "battle/partials/round_event_list.html" with events=round.defender_events event_list_class="defender" %}
+                            </div>
+                        </div>
                     </div>
                 </article>
+            {% empty %}
+                <p class="tw-muted">暂无战斗回合记录。</p>
             {% endfor %}
         </div>
     </section>
-    <section class="tw-card">
+    <section class="tw-card battle-settlement-card">
         <h2>战斗损失与掉落</h2>
-        <div class="battle-loss-grid battle-loss-row">
-            <article class="battle-loss friendly battle-loss-left">
-                <h3>{{ left_loss_title }}</h3>
-                <p>阵亡护院：{{ attacker_loss.troops_lost|default:0 }}</p>
-                <div class="loss-details">
-                    {% for entry in attacker_loss.casualties %}
-                        {% if entry.lost > 0 %}
-                            <div>{{ entry.label }} × {{ entry.lost }}</div>
+        <div class="battle-settlement-table-wrap">
+            <div class="battle-settlement-table" aria-label="战斗损失与掉落明细">
+                <div class="battle-settlement-side friendly"><strong>{{ left_loss_title }}</strong></div>
+                <div class="battle-settlement-side enemy"><strong>{{ right_loss_title }}</strong></div>
+
+                <div class="battle-settlement-cell friendly">
+                    <span class="battle-table-label">阵亡护院</span>
+                    <div class="battle-settlement-value">
+                        {% if attacker_loss.troops_lost %}
+                            {% for entry in attacker_loss.casualties %}
+                                {% if entry.lost > 0 %}
+                                    <span>{{ entry.label }} × {{ entry.lost }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <span class="battle-table-empty">无</span>
                         {% endif %}
-                    {% endfor %}
+                    </div>
                 </div>
-            </article>
-            <article class="battle-loss enemy battle-loss-right">
-                <h3>{{ right_loss_title }}</h3>
-                <p>阵亡护院：{{ defender_loss.troops_lost|default:0 }}</p>
-                <div class="loss-details">
-                    {% for entry in defender_loss.casualties %}
-                        {% if entry.lost > 0 %}
-                            <div>{{ entry.label }} × {{ entry.lost }}</div>
+                <div class="battle-settlement-cell enemy">
+                    <span class="battle-table-label">阵亡护院</span>
+                    <div class="battle-settlement-value">
+                        {% if defender_loss.troops_lost %}
+                            {% for entry in defender_loss.casualties %}
+                                {% if entry.lost > 0 %}
+                                    <span>{{ entry.label }} × {{ entry.lost }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <span class="battle-table-empty">无</span>
                         {% endif %}
-                    {% endfor %}
+                    </div>
                 </div>
-            </article>
-        </div>
-        <div class="battle-drops">
-            {% if loss_items and not player_won and not is_spectator %}
-                <h3>战斗损失</h3>
-            {% else %}
-                <h3>战斗掉落</h3>
-            {% endif %}
-            {% if drop_items %}
-                <p>
-                    {% for drop in drop_items %}{{ drop.label }} +{{ drop.amount }}{% if not forloop.last %}、{% endif %}{% endfor %}
-                </p>
-            {% elif loss_items %}
-                <p>
-                    {% for loss in loss_items %}{{ loss.label }}{% if loss.amount %} -{{ loss.amount }}{% endif %}{% if not forloop.last %}、{% endif %}{% endfor %}
-                </p>
-            {% elif is_spectator %}
-                <p>本场无额外掉落记录。</p>
-            {% elif player_won %}
-                <p>胜利但补给匮乏，本次未获得额外战利品。</p>
-            {% else %}
-                <p>战斗失败，损失详见上方“战斗损失”明细。</p>
-            {% endif %}
+
+                <div class="battle-settlement-drop-row">
+                    <span class="battle-table-label">
+                        {% if loss_items and not player_won and not is_spectator %}战斗损失{% else %}战斗掉落{% endif %}
+                    </span>
+                    <div class="battle-settlement-value">
+                        {% if drop_items %}
+                            <span>{% for drop in drop_items %}{{ drop.label }} +{{ drop.amount }}{% if not forloop.last %}、{% endif %}{% endfor %}</span>
+                        {% elif loss_items %}
+                            <span>{% for loss in loss_items %}{{ loss.label }}{% if loss.amount %} -{{ loss.amount }}{% endif %}{% if not forloop.last %}、{% endif %}{% endfor %}</span>
+                        {% elif is_spectator %}
+                            <span>本场无额外掉落记录。</span>
+                        {% elif player_won %}
+                            <span>胜利但补给匮乏，本次未获得额外战利品。</span>
+                        {% else %}
+                            <span>战斗失败，损失详见上方“战斗损失”明细。</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
     <section class="tw-card">

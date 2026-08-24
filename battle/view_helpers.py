@@ -149,12 +149,34 @@ def resolve_report_runtime_context(report: "BattleReport", *, manor_id: int) -> 
     return {"player_side": "attacker", "raid_run": None}
 
 
-def collect_template_keys(attacker_team: list[dict[str, Any]], defender_team: list[dict[str, Any]]) -> set[str]:
+def collect_template_keys(
+    attacker_team: list[dict[str, Any]],
+    defender_team: list[dict[str, Any]],
+    rounds: Iterable[dict[str, Any]] = (),
+) -> set[str]:
     template_keys: set[str] = set()
     for member in attacker_team + defender_team:
         key = str(member.get("template_key") or "").strip()
         if key:
             template_keys.add(key)
+
+    for round_data in rounds:
+        lineups = round_data.get("lineups")
+        if not isinstance(lineups, dict):
+            continue
+        for side in ("attacker", "defender"):
+            side_lineup = lineups.get(side)
+            if not isinstance(side_lineup, dict):
+                continue
+            guests = side_lineup.get("guests")
+            if not isinstance(guests, list):
+                continue
+            for member in guests:
+                if not isinstance(member, dict):
+                    continue
+                key = str(member.get("template_key") or "").strip()
+                if key:
+                    template_keys.add(key)
     return template_keys
 
 
@@ -189,6 +211,73 @@ def load_avatar_map(template_keys: set[str]) -> dict[str, str]:
 def attach_avatar_urls(team: list[dict[str, Any]], avatar_map: dict[str, str]) -> None:
     for member in team:
         member["avatar_url"] = avatar_map.get(str(member.get("template_key") or ""), "")
+
+
+def _normalize_round_lineup_side(raw_side: Any, avatar_map: dict[str, str]) -> dict[str, list[dict[str, Any]]]:
+    if not isinstance(raw_side, dict):
+        return {"guests": [], "city_defenses": [], "troops": []}
+
+    guests: list[dict[str, Any]] = []
+    raw_guests = raw_side.get("guests")
+    if isinstance(raw_guests, list):
+        for raw_guest in raw_guests:
+            if not isinstance(raw_guest, dict):
+                continue
+            guest = dict(raw_guest)
+            guest["name"] = str(raw_guest.get("name") or "门客")
+            guest["avatar_url"] = avatar_map.get(str(raw_guest.get("template_key") or ""), "")
+            guests.append(guest)
+
+    troops: list[dict[str, Any]] = []
+    raw_troops = raw_side.get("troops")
+    if isinstance(raw_troops, list):
+        for raw_troop in raw_troops:
+            if not isinstance(raw_troop, dict):
+                continue
+            try:
+                count = max(0, int(raw_troop.get("count") or 0))
+            except (TypeError, ValueError):
+                continue
+            if count <= 0:
+                continue
+            troops.append(
+                {
+                    **raw_troop,
+                    "name": str(raw_troop.get("name") or raw_troop.get("label") or "护院"),
+                    "count": count,
+                }
+            )
+
+    raw_city_defenses = raw_side.get("city_defenses")
+    city_defenses = serialize_city_defense_rows(
+        [row for row in raw_city_defenses if isinstance(row, dict)] if isinstance(raw_city_defenses, list) else []
+    )
+
+    return {"guests": guests, "city_defenses": city_defenses, "troops": troops}
+
+
+def build_rounds_display(rounds: Iterable[dict[str, Any]], avatar_map: dict[str, str]) -> list[dict[str, Any]]:
+    display_rounds: list[dict[str, Any]] = []
+    for raw_round in rounds:
+        if not isinstance(raw_round, dict):
+            continue
+        raw_lineups = raw_round.get("lineups")
+        has_lineup_snapshot = isinstance(raw_lineups, dict) and "attacker" in raw_lineups and "defender" in raw_lineups
+        lineups = raw_lineups if isinstance(raw_lineups, dict) else {}
+        events = [event for event in (raw_round.get("events") or []) if isinstance(event, dict)]
+        display_rounds.append(
+            {
+                **raw_round,
+                "has_lineup_snapshot": has_lineup_snapshot,
+                "lineups": {
+                    "attacker": _normalize_round_lineup_side(lineups.get("attacker"), avatar_map),
+                    "defender": _normalize_round_lineup_side(lineups.get("defender"), avatar_map),
+                },
+                "attacker_events": [event for event in events if event.get("side") == "attacker"],
+                "defender_events": [event for event in events if event.get("side") == "defender"],
+            }
+        )
+    return display_rounds
 
 
 def resolve_perspective(

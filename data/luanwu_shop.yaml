@@ -28,6 +28,48 @@ items:
     reward_type: item
     reward_quantity: 3
 
+  - key: manor_rename_card
+    price: 1
+    item_key: manor_rename_card
+    reward_type: item
+    reward_quantity: 1
+
+  - key: peace_shield_small
+    price: 1
+    item_key: peace_shield_small
+    reward_type: item
+    reward_quantity: 1
+
+  - key: peace_shield_medium
+    price: 2
+    item_key: peace_shield_medium
+    reward_type: item
+    reward_quantity: 1
+
+  - key: peace_shield_large
+    price: 3
+    item_key: peace_shield_large
+    reward_type: item
+    reward_quantity: 1
+
+  - key: xisuidan
+    price: 15
+    item_key: xisuidan
+    reward_type: item
+    reward_quantity: 1
+
+  - key: edward_blue_guest_scroll
+    price: 15
+    item_key: edward_blue_guest_scroll
+    reward_type: item
+    reward_quantity: 1
+
+  - key: edward_purple_guest_scroll
+    price: 30
+    item_key: edward_purple_guest_scroll
+    reward_type: item
+    reward_quantity: 1
+
   - key: device_blueprint
     name: 机关图纸宝箱
     description: 随机获得一张器械图纸，有机会合成各类强力器械装备。

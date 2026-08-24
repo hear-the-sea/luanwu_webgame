@@ -21,6 +21,7 @@ heroes:
   - key: orig_ma_wencai
     name: 马文才
     archetype: military
+    avatar: monkey_wen_male8.png
     flavor: 民间传说中的马文才，多被视作梁祝姻缘间那道难以跨过的门第高墙。他出身豪门士族，家势煊赫，少年便习惯了以家声与礼法衡量世间万事，于是婚姻在他眼中更像两姓相合、门楣相称，而非两心相许。传说中的他气盛而自矜，行事带着世家子弟的强硬与骄贵，最终在梁祝故事里成了富贵礼教的冷影，也成了那场凄美爱情最无言的反衬。
     default_gender: male
     default_morality: 35

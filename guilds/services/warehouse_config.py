@@ -19,6 +19,14 @@ from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
 WAREHOUSE_PRODUCTION_PATH = settings.BASE_DIR / "data" / "warehouse_production.yaml"
 logger = logging.getLogger(__name__)
 
+TECH_PRODUCTION_CONFIG_KEY_BY_TECH_KEY = {
+    "equipment_forge": "equipment",
+    "guard_armory": "guard",
+    "experience_refine": "experience",
+    "resource_supply": "resource",
+    "mysticism": "mysticism",
+}
+
 
 @dataclass
 class ProductionItem:
@@ -122,6 +130,19 @@ def get_production_items(tech_key: str, level: int) -> List[ProductionItem]:
     if tech:
         return tech.get_items(level)
     return []
+
+
+def get_technology_production_config_key(tech_key: str) -> str | None:
+    """将帮会科技标识转换为仓库产出配置标识。"""
+    return TECH_PRODUCTION_CONFIG_KEY_BY_TECH_KEY.get(str(tech_key or "").strip())
+
+
+def get_technology_production_items(tech_key: str, level: int) -> List[ProductionItem]:
+    """按帮会科技标识获取对应等级的仓库产出。"""
+    production_config_key = get_technology_production_config_key(tech_key)
+    if production_config_key is None:
+        return []
+    return get_production_items(production_config_key, level)
 
 
 def get_warehouse_production_item_keys() -> frozenset[str]:

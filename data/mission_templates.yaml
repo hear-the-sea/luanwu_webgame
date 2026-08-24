@@ -16,6 +16,7 @@
 #   - battle_type: 战斗类型（可选，默认"task"）
 #   - is_defense: 防守任务（可选，默认false，敌方来袭）
 #   - daily_limit: 每日挑战次数限制（可选，默认3次，整数）
+#   - mission_card_daily_limit: 每日可为本任务使用的任务卡上限（可选，默认5张；0表示禁用）
 #   - base_travel_time: 往返基础耗时，单位：秒（可选，默认1800秒=30分钟，整数）
 #   - available_weekdays: 开放星期（可选，1=周一 ... 7=周日；不填或空列表表示每日开放）
 #
@@ -285,6 +286,7 @@ missions:
   # ========================================
   - key: huashan_lunjian
     name: 华山论贱
+    display_order: 2
     difficulty: junior
     description: |
       中原大地，经过无数年的风吹雨打，各大贱派均元气大伤，数百年的休养调整使各大贱客高手知耻后勇，不断创新各种贱术秘籍，停办经年的贱客比武大赛将顺应民意在华山之巅重新开启，各路英雄贱客可在此大展身手，争当新一届人见人爱、花见花开的贱客之王，在此和谐社会留下自己奋斗的印记。
@@ -303,13 +305,18 @@ missions:
 
     enemy_technology:
       level: 2
-      guest_level: 39
-      guest_bonus: 0.1
+      guest_level: 12
+      guest_bonus: 0
 
     drop_table:
-      silver: 3000
-      equip_shushengzhesan: 0.04
-      equip_yanlingmao: 0.05
+      silver: 8000
+      book_thunder_control: 0.05
+      huashan_equipment_pool:
+        chance: 0.60
+        count: 1
+        choices:
+          - equip_shushengzhesan
+          - equip_yanlingmao
 
     daily_limit: 3
 
@@ -323,6 +330,7 @@ missions:
       在上一次广大庄园主联手扫荡瓦岗寨时，正值瓦岗五虎出门执行任务，翟让和程咬金输的并不服气，为了证明瓦岗寨的实力，翟让率领瓦岗五虎"秦叔宝"、"单雄信"、"王伯当"、"罗成"、"程咬金"携山寨喽啰兵600人亲自上各庄园寻衅……这一次的战场变成了您的庄园，请加强防御设施，让您的门客和护院准备好迎接战斗洗礼。
     battle_type: task1
     is_defense: true
+    display_order: 7
 
     enemy_guests:
       - key: hist_suitang_0162_zhairang
@@ -349,6 +357,7 @@ missions:
     drop_table:
       silver: 40000
       book_ice_curse: 0.2
+      book_fatal_chain_sword: 0.04
       experience_pineapple:
         chance: 0.3
         count: 5
@@ -369,6 +378,7 @@ missions:
   # ========================================
   - key: jingyanggang
     name: 景阳冈
+    display_order: 1
     difficulty: junior
     description: |
       景阳冈上有只吊睛白额大虫伤害人命，官府多次派猎户擒捉未果，往客商人只能在巳午未三个时辰结伴过冈，其馀时分，及单身客人，不能过冈，恐被伤害性命。
@@ -381,19 +391,24 @@ missions:
 
     enemy_technology:
       level: 3
-      guest_level: 39
+      guest_level: 15
       guest_bonus: 0.02
 
     drop_table:
-      silver: 2000
-      equip_hupixue: 0.06
-      equip_huwenkui: 0.05
+      silver: 7000
+      jingyang_equipment_pool:
+        chance: 0.50
+        count: 1
+        choices:
+          - equip_hupixue
+          - equip_huwenkui
 
     daily_limit: 3
 
   - key: wulongshan
     name: 乌龙山
     difficulty: junior
+    display_order: 4
     description: |
       湘黔边界的乌龙山鲜少人迹，这里盘聚着一帮强盗将那里作为他们的大本营。他们借这乱世之际四处行凶，烧杀凌掠无恶不作，种种罪行令人发指。由于此帮强盗行迹过于放肆导致朝野上下为之震动，朝廷号召各方能人尽快歼灭这帮流寇。
     battle_type: task1
@@ -406,24 +421,30 @@ missions:
 
     enemy_technology:
       level: 4
-      guest_level: 43
+      guest_level: 20
       guest_bonus: 0.04
 
     enemy_troops:
       qiang_ke: 200
 
     drop_table:
-      silver: 10000
-      equip_baoutoukui: 0.05
-      equip_tiegugun: 0.04
-      equip_youxiaxue: 0.05
-      equip_mengguma: 0.02
+      silver: 15000
+      book_dragon_break_curse: 0.05
+      wulong_equipment_pool:
+        chance: 0.70
+        count: 1
+        choices:
+          - equip_baoutoukui
+          - equip_tiegugun
+          - equip_youxiaxue
+          - equip_mengguma
 
     daily_limit: 3
 
   - key: wagangzhai
     name: 瓦岗寨
     difficulty: junior
+    display_order: 5
     description: |
       瓦岗寨原来的寨主翟让被程咬金击败后让出寨主之位，程咬金自号"大魔国混世魔王"，并带领瓦岗军四处出门踢馆打劫，引得各地庄园主怨声在道，大家决定联手打击瓦岗寨，维护和保障各庄园的和平与稳定。
     battle_type: task1
@@ -437,26 +458,31 @@ missions:
 
     enemy_technology:
       level: 5
-      guest_level: 53
+      guest_level: 35
       guest_bonus: 0.10
 
     drop_table:
       silver: 20000
-      equip_suozijia: 0.05
-      equip_shanwenjia: 0.05
-      equip_tiexianjia: 0.04
-      equip_pofengji: 0.05
-      equip_tongshanchui: 0.04
-      equip_tiehufu: 0.05
-      equip_yiqiyaopai: 0.05
-      equip_xiliangma: 0.02
-      equip_chibiao: 0.02
+      wagang_equipment_pool:
+        chance: 0.75
+        count: 1
+        choices:
+          - equip_suozijia
+          - equip_shanwenjia
+          - equip_tiexianjia
+          - equip_pofengji
+          - equip_tongshanchui
+          - equip_tiehufu
+          - equip_yiqiyaopai
+          - equip_xiliangma
+          - equip_chibiao
 
     daily_limit: 3
 
   - key: fugui_shanzhuang
     name: 富贵山庄
     difficulty: junior
+    display_order: 3
     description: |
       富贵山庄，其美甲天下、其富可敌国，庄主张富贵更是好客之人，但凡江湖有难，他都不遗余力伸出援助之手，解人燃眉。故被人予以"雪中炭"之美名。江湖多有时运不济、怀才不遇的落魄之士，若想求得张庄主帮助，必先证明自己才识。在接受庄主考验后，若能得到庄主赏识，则日后必荣禄相授。
     battle_type: task1
@@ -472,18 +498,23 @@ missions:
       guest_bonus: 0.05
 
     drop_table:
-      silver: 30000
-      experience_peach: 6
-      equip_yupei: 0.08
-      equip_fudai: 0.06
-      equip_zhujian: 0.04
-      equip_moyuyan: 0.05
+      silver: 14000
+      book_steadfast_planning: 0.05
+      fugui_equipment_pool:
+        chance: 0.80
+        count: 1
+        choices:
+          - equip_yupei
+          - equip_fudai
+          - equip_zhujian
+          - equip_moyuyan
 
     daily_limit: 3
 
   - key: shizipo_heidian
     name: 十字坡黑店
     difficulty: intermediate
+    display_order: 5
     description: |
       孙二娘和张青在十字坡开酒店，常用蒙汗药蒙翻过往行人。他们将行人杀死后，大块好肉当作黄牛肉卖，零碎小肉，做馅包馒头。江湖有传言说："大树十字坡，客人谁敢那里过？肥的切做馒头馅，瘦的却丢去填河。"
     battle_type: task1
@@ -501,26 +532,34 @@ missions:
 
     enemy_technology:
       level: 6
-      guest_level: 57
+      guest_level: 70
       guest_bonus: 0.10
 
     drop_table:
       silver: 30000
-      equip_hushenfu: 0.06
-      equip_tongjing: 0.05
-      equip_fudai: 0.06
-      equip_duanhunbian: 0.07
-      equip_hanyuejian: 0.07
-      equip_lieyandao: 0.07
-      equip_zhenyuechui: 0.06
-      equip_huyaxianglian: 0.06
-      equip_xueyuzhuo: 0.06
+      shizipo_skill_book_random:
+        chance: 0.08
+        choices:
+          - item_key: book_soul_erode
+            weight: 1
+          - item_key: book_draw_enemy_blades
+            weight: 1
+      equip_hushenfu: 0.1
+      equip_tongjing: 0.1
+      equip_fudai: 0.1
+      equip_duanhunbian: 0.2
+      equip_hanyuejian: 0.1
+      equip_lieyandao: 0.1
+      equip_zhenyuechui: 0.1
+      equip_huyaxianglian: 0.1
+      equip_xueyuzhuo: 0.1
 
     daily_limit: 3
 
   - key: shanhaiguan
     name: 山海关
     difficulty: intermediate
+    display_order: 6
     description: |
       山海关所在的河西走廊是华北通向东北的咽喉地带，是一座及其重要的军事重镇，主要防御外族势力的入侵。吴三桂作为镇守山海关的大将，居然意图勾结外族势力，入侵中原。
     battle_type: task1
@@ -536,24 +575,39 @@ missions:
 
     enemy_technology:
       level: 7
-      guest_level: 60
+      guest_level: 70
       guest_bonus: 0.18
 
     drop_table:
       silver: 40000
-      equip_luopan: 0.06
-      equip_tiehufu: 0.06
-      equip_feiyukui: 0.06
-      equip_langyakui: 0.06
-      equip_zhaoyeyushizi: 0.07
-      equip_zhuidian: 0.06
-      equip_bailongju: 0.05
+      shanhaiguan_skill_book_random:
+        chance: 0.09
+        choices:
+          - item_key: book_iron_wall_heart
+            weight: 5
+          - item_key: book_last_chance_revival
+            weight: 4
+      equip_luopan: 0.1
+      equip_tiehufu: 0.1
+      equip_feiyukui: 0.1
+      equip_langyakui: 0.1
+      equip_zhaoyeyushizi: 0.15
+      equip_zhuidian: 0.1
+      equip_bailongju: 0.1
+      blueprint_xiaowei_set:
+        chance: 0.35
+        choices:
+          - blueprint_xiaoweitoukie
+          - blueprint_xiaoweikaijia
+          - blueprint_xiaoweichangxue
+          - blueprint_xiaoweichangjian
 
     daily_limit: 3
 
   - key: shiren_daochang
     name: 十人道场
     difficulty: intermediate
+    display_order: 3
     description: |
       十人道场是春秋世界初级试炼之地，由恶人谷十大恶人驻守。只要能击败十大恶人，通过试炼，就能极速提升门客的等级和能力。
     battle_type: task1
@@ -581,19 +635,27 @@ missions:
 
     drop_table:
       silver: 20000
+      shiren_skill_book_random:
+        chance: 0.10
+        choices:
+          - item_key: book_taiyi_wind
+            weight: 1
+          - item_key: book_flower_rain
+            weight: 1
       experience_peach: 9
-      equip_tanmunianzhu: 0.05
-      equip_taomujian: 0.05
-      equip_yunwenkui: 0.06
-      equip_yunwenfayi: 0.06
-      equip_xingluoshan: 0.06
-      equip_linghuzhui: 0.06
+      equip_tanmunianzhu: 0.1
+      equip_taomujian: 0.1
+      equip_yunwenkui: 0.1
+      equip_yunwenfayi: 0.1
+      equip_xingluoshan: 0.1
+      equip_linghuzhui: 0.1
 
     daily_limit: 3
 
   - key: jiguanshou_chuxian
     name: 机关兽初现
-    difficulty: intermediate
+    difficulty: junior
+    display_order: 7
     description: |
       乔家村以制做灵活轻巧、栩栩如生的「机械猫」闻名于天下。「机械猫」又称之为「钟离猫」，相传是墨家子弟孙钟离路过此地时，时逢村中鼠患肆虐，为清除鼠患取当地木材仿猫型制成。经历代乔家村民不断改良，「机械猫」以生具灵性、精巧无比，并作用于生活各用途中。某日乔家村第一铁匠乔大牛家中被盗，八只刚制成的「机械猫」见房门未锁，逃离乔家村。随后，逃离的八只「机械猫」开始在乔家村附近肆虐作恶，搞得乔家村民苦不堪言。
     battle_type: task1
@@ -618,23 +680,25 @@ missions:
 
     enemy_technology:
       level: 7
-      guest_level: 58
+      guest_level: 35
       guest_bonus: 0.12
 
     drop_table:
-      equip_jixiemao: 1
-      equip_qingtongsuanchou: 0.06
-      equip_zhaoyaojing: 0.08
-      equip_qiankunquan: 0.07
-      equip_tianjiluopan: 0.07
-      equip_lingwenyubi: 0.07
-      equip_guanxingdeng: 0.07
+      silver: 24000
+      jiguanshou_equipment_pool:
+        chance: 0.80
+        count: 1
+        choices:
+          - equip_jixiemao
+          - equip_qingtongsuanchou
 
-    daily_limit: 3
+    daily_limit: 2
+    mission_card_daily_limit: 1
 
   - key: biwu_zhaoqin
     name: 比武招亲
     difficulty: junior
+    display_order: 6
     description: |
       苏州首富杜万年之女杜莞尔芳龄二八，登门求亲者络绎不绝，门庭若市。杜老爷既不想得罪朝廷中人，也不愿把女儿嫁给草莽之士，于是想出一招比武招亲。奇就奇在这代杜千金比武的，不是人，而是一只战斗熊。此熊周身每个关节都可活动，内部充满各种机关，战斗力强。比武当天无人能出其右，最终竟由穷小子管无介出马搏得头筹。原来小姐早已芳心暗许，只因那固执的父亲介意门第之见。管无介经众人帮助，得到铸熊大师珍藏图纸，命中熊身要害，一击即中。杜老爷在众人面前也不能食言而肥，只得将女儿许配给比赛冠军。管无介如愿以偿，开心抱得美人归。
     battle_type: task1
@@ -646,21 +710,28 @@ missions:
 
     enemy_technology:
       level: 4
-      guest_level: 80
+      guest_level: 55
       guest_bonus: 0.2
 
     drop_table:
       silver: 20000
-      equip_xuantiejia: 0.04
-      equip_qingtongsuanchou: 0.05
-      equip_tongjing: 0.05
-      equip_qingzongma: 0.02
+      book_endless_chatter: 0.05
+      blueprint_jiguanxiong: 0.02
+      biwu_equipment_pool:
+        chance: 0.80
+        count: 1
+        choices:
+          - equip_xuantiejia
+          - equip_qingtongsuanchou
+          - equip_tongjing
+          - equip_qingzongma
 
     daily_limit: 3
 
   - key: tianpeng_dijiao_1
     name: 天蓬元帅的地窖（第一层）
     difficulty: intermediate
+    display_order: 1
     description: |
       天蓬元帅何许人也，我想不必多加介绍，他的大名你我也都如雷贯耳了。天蓬元帅耳大招风，腰缠"万贯"，气宇方刚，心宽体胖。当然，他最出名的还是吃，不仅会吃，吃遍天下美食，还私藏了许多琼浆玉液、佳肴珍馐。每次天庭大请宾筵，我们的大元帅都是不仅吃得饱饱的，还要兜着走。拿了这么多食物，一时半会儿也消灭不了，那到底放在哪里才算妥当安全呢？天蓬元帅还真是聪明，他想到他在高老庄的老相好，还有他那个老丈人，也是很喜欢这个勤奋的女婿的，他们特地留出一块上好的、超大平方米、黄金地段、冬暖夏凉的地窖给猪女婿保存食物。要说天神也有打瞌睡的时候，天蓬元帅乘天门打开之际，每次都私自下凡，偷渡美食于此地窖中。经年累月，地窖倒也藏了不少宝贝。
     battle_type: task1
@@ -685,11 +756,13 @@ missions:
 
     enemy_technology:
       level: 8
-      guest_level: 64
+      guest_level: 50
       guest_bonus: 0.12
 
     drop_table:
       silver: 50000
+      book_red_lotus_dance: 0.05
+      book_tangseng_sermon: 0.03
       experience_pineapple: 15
       equip_junzijian: 0.1
       equip_yupei: 0.06
@@ -743,15 +816,21 @@ missions:
       experience_pineapple:
         chance: 0.99
         count: 20  # TODO: 替换为经验西瓜
-      equip_huxianjian: 0.05
-      equip_huxianpao: 0.1
-      equip_huxianxie: 0.1
+      blueprint_huxianjian: 0.05
+      blueprint_huxianpao: 0.1
+      blueprint_huxianxie: 0.1
+      equip_zhaoyaojing: 0.15
+      equip_qiankunquan: 0.1
+      equip_tianjiluopan: 0.1
+      equip_lingwenyubi: 0.1
+      equip_guanxingdeng: 0.1
 
     daily_limit: 3
 
   - key: jiguan_chuniao
     name: 机关雏鸟
     difficulty: intermediate
+    display_order: 4
     description: |
       话说江家堡被仇家围攻，四面受敌，堡内粮草只能维持3天生计，突围的任务迫在眉睫。堡主曾派壮丁驾快马送信求救，可惜都遭遇埋伏。管家之子江犁墨献上自制的木结构机关雏鸟。其鸟可避弓矢，自动飞达目的地。江家堡靠此木鸟最终送出求救信号，得盟友支援解困。后来此鸟被奉为堡内"幸运鸟"，经改造后功能更强大，已成为江家堡著名的机关武器之一。
     battle_type: task1
@@ -772,11 +851,12 @@ missions:
 
     enemy_technology:
       level: 7
-      guest_level: 59
+      guest_level: 60
       guest_bonus: 0.10
 
     drop_table:
       silver: 30000
+      book_thunder_nine_heavens: 0.04
       equip_jiguanchuniao: 1
       equip_feiyunzui: 0.1
       equip_luopan: 0.05
@@ -804,29 +884,31 @@ missions:
         label: 金甲神兵
 
     enemy_troops:
-      arrow_god: 200
-      quan_sheng: 400
+      arrow_god: 300
+      quan_sheng: 700
 
     enemy_technology:
       level: 9
-      guest_level: 75
-      guest_bonus: 0.22
+      guest_level: 80
+      guest_bonus: 0.26
 
     drop_table:
       silver: 50000
-      book_ice_curse: 0.1
-      book_thunder_control: 0.1
-      book_dragon_break_curse: 0.1
-      book_endless_chatter: 0.1
-      book_taiyi_wind: 0.1
-      book_flower_rain: 0.1
-      book_soul_erode: 0.1
+      experience_watermelon: 5
+      xidianka: 0.5
+      xisuidan: 0.05
+      equip_pojunji: 0.2
+      equip_pojunkui: 0.2
+      equip_pojunzhanjia: 0.2
+      equip_pojunxue: 0.1
+
 
     daily_limit: 3
 
   - key: jiufeng_feihuan
     name: 九峰匪患
     difficulty: intermediate
+    display_order: 2
     description: |
       话说有一座有着九个山峰的山叫做九峰山，那里山水秀丽，风景如画，九峰山下有个九峰村，这里的人民善良纯朴，吃苦耐劳，上天也因为这里的人勤劳善良，所以赐给了他们肥沃的土地，村民们也通过自己勤劳的双手将这片土地变成了万顷良田来回报上天的恩赐，于是一代一代的村民就在这里过着无忧无虑的生活。
 
@@ -869,6 +951,7 @@ missions:
   - key: taozi_fenban
     name: 我的桃子分你一半
     difficulty: junior
+    display_order: 8
     description: |
       终南山为道教发祥地之一。据传，周康王时，函谷关关令尹喜，在山中结草为楼，每日登草楼观星望气。一日圣人老子经过此关，尹喜忙把老子请到楼观，执弟子礼，请其讲经著书。老子为尹喜讲授《道德经》五千言后飘然而去。传说今日楼观台的说经台就是当年老子讲经之处。道教产生后，尊老子为道祖，尹喜为文始真人，奉《道德经》为根本经典。于是终南山上的楼观成了"天下道林张本之地"。
 
@@ -880,27 +963,46 @@ missions:
     enemy_guests:
       - key: task_orchard_wraith
         label: 孤魂野鬼
+      - key: task_orchard_wraith
+        label: 孤魂野鬼
+      - key: task_orchard_wraith
+        label: 孤魂野鬼
+      - key: task_orchard_wraith
+        label: 孤魂野鬼
+      - key: task_orchard_wraith
+        label: 孤魂野鬼
+      - key: task_orchard_wraith
+        label: 孤魂野鬼
+      - key: task_orchard_wraith
+        label: 孤魂野鬼
+      - key: task_orchard_wraith
+        label: 孤魂野鬼
 
     enemy_technology:
       level: 3
-      guest_level: 41
+      guest_level: 40
       guest_bonus: 0.06
 
     drop_table:
       experience_peach: 15
-      equip_qingzhujia: 0.05
-      equip_qingtengguan: 0.05
-      equip_zhuyelu: 0.06
-      equip_tayunxue: 0.05
-      equip_jifengxue: 0.04
-      equip_hushenfu: 0.05
-      equip_taomupai: 0.04
-      equip_tanmunianzhu: 0.04
-      equip_taomujian: 0.05
-      equip_luopan: 0.05
-      equip_taxuema: 0.02
+      taozi_equipment_pool:
+        chance: 0.85
+        count: 1
+        choices:
+          - equip_qingzhujia
+          - equip_qingtengguan
+          - equip_zhuyelu
+          - equip_tayunxue
+          - equip_jifengxue
+          - equip_hushenfu
+          - equip_taomupai
+          - equip_tanmunianzhu
+          - equip_taomujian
+          - equip_luopan
+          - equip_taxuema
 
-    daily_limit: 3
+    daily_limit: 1
+    mission_card_daily_limit: 0
 
   - key: simian_chuge
     name: 四面楚歌
@@ -932,6 +1034,7 @@ missions:
       equip_xiaoweitoukui: 0.1
       equip_xiaoweichangxue: 0.1
       equip_bawangqiang: 0.1
+      passive_skill_book_box: 0.05
 
     daily_limit: 3
 
@@ -960,6 +1063,7 @@ missions:
     drop_table:
       silver: 50000
       work_chest_small: 1  # TODO: 替换为幸运宝箱
+      civil_skill_book_box: 0.05
       equip_xiaoweikaijia: 0.1
       pubayi_guest_card: 0.1
 
@@ -1016,7 +1120,7 @@ missions:
 
     enemy_technology:
       level: 5
-      guest_level: 54
+      guest_level: 60
       guest_bonus: 0.16
 
     drop_table:
@@ -1080,19 +1184,19 @@ missions:
       wanyin_flag_fragment:
         chance: 0.35
         count: 1
-      blueprint_advanced_blue:
+      equip_xiaowei_set:
         chance: 0.35
         choices:
-          - blueprint_xiaoweitoukie
-          - blueprint_xiaoweikaijia
-          - blueprint_xiaoweichangxue
-          - blueprint_xiaoweichangjian
-      blueprint_advanced_purple:
+          - equip_xiaoweitoukui
+          - equip_xiaoweikaijia
+          - equip_xiaoweichangxue
+          - equip_xiaoweichangjian
+      equip_huxian_set:
         chance: 0.10
         choices:
-          - blueprint_huxianpao
-          - blueprint_huxianxie
-          - blueprint_huxianjian
+          - equip_huxianpao
+          - equip_huxianxie
+          - equip_huxianjian
 
     base_travel_time: 1800
     daily_limit: 3
@@ -1186,6 +1290,7 @@ missions:
       equip_baguajing: 0.08
       equip_taiqingyuce: 0.01
       equip_fengshenbang: 0.005
+      fengshen_equipment_box: 0.08
       blueprint_top_blue:
         chance: 0.45
         choices:
@@ -1273,6 +1378,265 @@ missions:
           - blueprint_mojiajiguanren
 
     base_travel_time: 1800
+    daily_limit: 1
+
+  - key: guandu_zhizhan
+    name: 官渡之战
+    difficulty: advanced
+    description: |
+      袁绍拥河北四州之众，粮甲号称百万，正于官渡压境。曹军粮道危急，乌巢成为决定胜负的最后一线生机。
+
+      此战不再是群雄混战，庄园主必须率军直面袁绍本人，在河北军势最盛之时击溃这位四世三公之后，夺下官渡最后的胜局。战后可从袁军遗库中寻得多件橙色装备。
+    battle_type: task1
+
+    enemy_guests:
+      - key: task_guandu_yuanshao
+        label: 袁绍
+
+    enemy_troops:
+      dao_sheng: 1400
+      qiang_wang: 1400
+      jian_sheng: 1200
+      quan_sheng: 1000
+      arrow_god: 1200
+
+    enemy_technology:
+      level: 10
+      guest_level: 100
+      guest_bonus: 0.68
+      guest_skills:
+        - stratagem_burst
+
+    drop_table:
+      silver: 120000
+      experience_watermelon:
+        chance: 0.75
+        count: 5
+      equip_taixudiguan: 0.01
+      equip_hundunlongpao: 0.01
+      equip_changshengjian: 0.008
+      equip_panlonggun: 0.008
+      equip_qiankunshengong: 0.008
+      equip_tuwujian: 0.005
+      equip_jianghuling: 0.01
+
+    base_travel_time: 2400
+    daily_limit: 1
+
+  # ========================================
+  # 华山论剑
+  # ========================================
+  - key: huashan_lunjian_advanced
+    name: 华山论剑
+    display_order: 1100
+    difficulty: advanced
+    description: |
+      华山绝巅再开论剑之会，不问门派，不论辈分，只以武道高下定座次。扫地僧、张三丰、独孤求败、东方不败、石破天、黄裳、阿青、逍遥子与王重阳先后登顶，九道气机压得山风都绕峰而行。
+
+      此战只许门客出阵。庄园主若能连破九位绝顶高手，便可取走峰顶封存的武林宝箱；箱中所藏皆是江湖上有名有姓的神兵奇珍，得其一件，便不算空走这一遭。
+    battle_type: task1
+    guest_only: true
+
+    enemy_guests:
+      - key: hero_sao_di_seng
+        label: 扫地僧
+        skills:
+          - iron_wall_heart
+          - last_chance_revival
+      - key: hero_zhang_sanfeng
+        label: 张三丰
+        skills:
+          - taiyi_wind
+          - draw_enemy_blades
+      - key: hero_dugu_qiubai
+        label: 独孤求败
+        skills:
+          - fatal_chain_sword
+          - prison_break_blade
+      - key: hero_dongfang_bubai
+        label: 东方不败
+        skills:
+          - flower_rain
+          - meteor_pierce_moon
+      - key: hero_shi_zhongjian
+        label: 石破天
+        skills:
+          - dragon_roar
+          - desperate_beast
+      - key: task_huashan_huang_shang
+        label: 黄裳
+      - key: hero_a_qing
+        label: 阿青
+        skills:
+          - city_felling_strike
+          - meteor_pierce_moon
+      - key: hero_xiaoyao_zi
+        label: 逍遥子
+        skills:
+          - taiyi_wind
+          - soul_erode
+      - key: hero_wang_chongyang
+        label: 王重阳
+        skills:
+          - thunder_nine_heavens
+          - comrade_command
+
+    enemy_technology:
+      level: 10
+      guest_level: 100
+      guest_bonus: 0.68
+
+    drop_table:
+      silver: 120000
+      huashan_wulin_chest: 1
+
+    base_travel_time: 2400
+    daily_limit: 1
+
+  # ========================================
+  # 虎牢关群英战吕布：第一关
+  # ========================================
+  - key: sishui_huaxiong_chengwei
+    name: 汜水关华雄逞威
+    display_order: 1001
+    difficulty: advanced
+    description: |
+      汜水关的酒还温着，华雄已经把联军先锋的名册划掉了一大半。他站在关楼上敲着大斧，逢人便问“还有谁”，问得守军都开始替对面捏汗——毕竟再这样下去，联军可能要先输掉士气，再输掉晚饭。
+
+      庄园主必须带门客杀穿西凉军，给这位“汜水关话事人”一个正式答复。击败华雄后，夺走军帐中的汜水关战报；那张薄薄的纸，记录着虎牢关布防，也记录着华雄从“逞威”到“闭嘴”的全过程。
+    battle_type: task1
+
+    enemy_guests:
+      - key: task_sishui_huaxiong
+        label: 华雄
+
+    enemy_troops:
+      dao_sheng: 1200
+      qiang_wang: 1100
+      arrow_god: 900
+
+    enemy_technology:
+      level: 10
+      guest_level: 92
+      guest_bonus: 0.58
+
+    drop_table:
+      silver: 90000
+      experience_watermelon:
+        chance: 0.85
+        count: 5
+      equip_jingtiedao: 0.08
+      equip_tieyekui: 0.06
+      equip_xuantiejia: 0.05
+      sishui_battle_report: 1
+
+    base_travel_time: 2400
+    daily_limit: 1
+
+  # ========================================
+  # 虎牢关群英战吕布：第二关
+  # ========================================
+  - key: hulao_qunying_zhan_lvbu
+    name: 虎牢关群英战吕布
+    display_order: 1002
+    difficulty: advanced
+    description: |
+      汜水关的战报还没捂热，虎牢关的战鼓已经震得杯中茶水自己站了起来。吕布骑赤兔、执方天画戟，单骑出阵便把诸侯联军的气势砍成了好几段；有人提议讲道理，有人提议先撤退，最后大家一致决定——还是派最能打的上去试试。
+
+      进入此关需要消耗一份「汜水关战报」。庄园主须在群英合围中正面击破吕布，并从战场遗物里搜寻方天画戟、龙鳞战甲与赤兔马的踪迹。若能活着离开，还要记得把虎牢关战旗带走——它将是下一场麻烦的入场券。
+    battle_type: task1
+    entry_cost:
+      sishui_battle_report: 1
+
+    enemy_guests:
+      - key: task_hulao_lvbu
+        label: 吕布
+
+    enemy_troops:
+      dao_sheng: 1500
+      qiang_wang: 1500
+      jian_sheng: 1300
+      quan_sheng: 1000
+      arrow_god: 1300
+
+    enemy_technology:
+      level: 10
+      guest_level: 100
+      guest_bonus: 0.72
+      guest_skills:
+        - dragon_roar
+
+    drop_table:
+      silver: 110000
+      experience_watermelon:
+        chance: 0.75
+        count: 5
+      hulao_war_banner: 1
+      equip_fangtianhuaji: 0.008
+      equip_longlinzhanjia: 0.006
+      equip_chituma: 0.005
+
+    base_travel_time: 2400
+    daily_limit: 1
+
+  # ========================================
+  # 虎牢关群英战吕布：第三关
+  # ========================================
+  - key: baimenlou_mingyun_jueze
+    name: 吕布命运抉择白门楼
+    display_order: 1003
+    difficulty: advanced
+    description: |
+      虎牢关战旗染血之后，曹军围住下邳，白门楼成了吕布最后的落脚处。高顺在整军，张辽在寻找退路，陈宫在推演一条不必投降的路，臧霸守着最后的旧部；而吕布仍相信，只要再给他一次冲阵的机会，天下就还没有真正决定谁会输。
+
+      然而江湖传闻，白门楼风声最紧时，总有一张没有落款的招贤帖在暗中流转。若它最终落到有缘人手中，史书上那句“吕布死于白门楼”未必还能照抄，城楼之下或许会多出一位改旗易帜的绝世猛将；只是新东家能不能压住他的脾气，就要看庄园主自己的本事了。
+
+      进入此关需要消耗一面「虎牢关战旗」。庄园主须击破吕布、高顺、张辽、陈宫与臧霸的合围，替这段乱世故事写下最后一笔。无论结局如何，碎裂的白门楼命印都会记住：有人留在城楼，有人换了一面旗，带着方天画戟走向另一段江湖。
+    battle_type: task1
+    entry_cost:
+      hulao_war_banner: 1
+
+    enemy_guests:
+      - key: task_baimenlou_lvbu
+        label: 吕布
+      - key: task_baimenlou_gaoshun
+        label: 高顺
+      - key: task_baimenlou_zhangliao
+        label: 张辽
+      - key: task_baimenlou_chengong
+        label: 陈宫
+      - key: task_baimenlou_zangba
+        label: 臧霸
+
+    enemy_troops:
+      dao_sheng: 1800
+      qiang_wang: 1700
+      jian_sheng: 1600
+      quan_sheng: 1200
+      arrow_god: 1500
+
+    enemy_technology:
+      level: 10
+      guest_level: 100
+      guest_bonus: 0.8
+
+    drop_table:
+      silver: 180000
+      experience_watermelon:
+        chance: 0.9
+        count: 8
+      baimenlou_fate_seal: 1
+      lvbu_guest_scroll: 0.01
+      zhaoyun_guest_scroll: 0.01
+      diaochan_guest_scroll: 0.01
+      equip_panlonggun: 0.008
+      equip_pojunzhanjia: 0.02
+      equip_tianjiguan: 0.025
+      book_dragon_roar: 0.03
+      book_stratagem_burst: 0.03
+      book_prison_break_blade: 0.03
+
+    base_travel_time: 2700
     daily_limit: 1
 
   # ========================================

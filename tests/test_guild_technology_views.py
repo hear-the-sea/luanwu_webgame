@@ -69,6 +69,37 @@ def test_technology_page_uses_category_switches_and_removes_caption(guild_tech_c
 
 
 @pytest.mark.django_db
+def test_technology_page_renders_configured_daily_outputs_for_all_production_technologies(guild_tech_client):
+    client, _user, guild = guild_tech_client
+    technologies = (
+        ("equipment_forge", 3, 10),
+        ("guard_armory", 3, 10),
+        ("experience_refine", 3, 10),
+        ("resource_supply", 5, 10),
+        ("mysticism", 3, 3),
+    )
+    for tech_key, level, max_level in technologies:
+        GuildTechnology.objects.create(
+            guild=guild,
+            tech_key=tech_key,
+            category="production",
+            level=level,
+            max_level=max_level,
+        )
+
+    response = client.get(reverse("guilds:technology") + "?category=production")
+
+    content = response.content.decode("utf-8")
+    assert response.status_code == 200
+    assert "帮会蓝装箱 ×1、帮会绿装箱 ×2" in content
+    assert "帮会进阶护院箱 ×1、帮会基础护院箱 ×1" in content
+    assert "帮会中级技能书箱 ×1、帮会初级技能书箱 ×2" in content
+    assert "帮会高级补给包 ×3、帮会混合补给包 ×1" in content
+    assert "灵魂容器 ×1、门客重生卡 ×1、洗点卡 ×1、洗髓丹 ×1" in content
+    assert "未知项目" not in content
+
+
+@pytest.mark.django_db
 def test_technology_page_filters_to_selected_category(guild_tech_client):
     client, _user, guild = guild_tech_client
     GuildTechnology.objects.create(

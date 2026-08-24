@@ -22,7 +22,12 @@ from gameplay.services.resources import grant_resources_locked
 
 from ..models import Guild, GuildExchangeLog, GuildMember, GuildWarehouse
 from .utils import lock_active_member_for_guild
-from .warehouse_config import get_production_items, get_weekly_personal_limit
+from .warehouse_config import (
+    get_tech_production,
+    get_technology_production_config_key,
+    get_technology_production_items,
+    get_weekly_personal_limit,
+)
 
 PROJECTED_RESOURCE_KEYS = ("silver",)
 REAL_GUILD_RESOURCE_ITEM_KEYS = ("grain", "gold_bar")
@@ -71,6 +76,29 @@ def _load_item_display_catalog() -> dict[str, dict[str, Any]]:
 
 def _get_item_display_meta(item_key: str) -> dict[str, Any]:
     return _load_item_display_catalog().get(str(item_key or "").strip(), {})
+
+
+def get_technology_daily_output_display(tech_key: str, tech_level: int) -> str | None:
+    """使用真实仓库产出配置生成科技每日产出文案。"""
+    production_config_key = get_technology_production_config_key(tech_key)
+    if production_config_key is None:
+        return None
+
+    production = get_tech_production(production_config_key)
+    if production is None or not production.levels:
+        return "暂无产出"
+
+    display_level = min(max(1, int(tech_level)), max(production.levels))
+    items = production.get_items(display_level)
+    if not items:
+        return "暂无产出"
+
+    output_parts = []
+    for item in items:
+        display_meta = _get_item_display_meta(item.item_key)
+        item_name = str(display_meta.get("name") or item.item_key)
+        output_parts.append(f"{item_name} ×{item.quantity}")
+    return "、".join(output_parts)
 
 
 def add_item_to_warehouse(
@@ -529,16 +557,16 @@ def exchange_item(member: GuildMember, item_key: str, quantity: int = 1) -> None
         )
 
 
-def _produce_items_from_config(guild: Guild, tech_key: str, tech_level: int) -> None:
+def _produce_items_for_technology(guild: Guild, tech_key: str, tech_level: int) -> None:
     """
     通用科技产出函数（使用YAML配置）
 
     Args:
         guild: Guild对象
-        tech_key: 仓库产出配置中的科技标识符
+        tech_key: 帮会科技标识符
         tech_level: 科技等级
     """
-    items = get_production_items(tech_key, tech_level)
+    items = get_technology_production_items(tech_key, tech_level)
     for item in items:
         add_item_to_warehouse(guild, item.item_key, item.quantity, item.contribution_cost)
 
@@ -551,12 +579,12 @@ def produce_equipment(guild: Guild, tech_level: int) -> None:
         guild: Guild对象
         tech_level: 科技等级
     """
-    _produce_items_from_config(guild, "equipment", tech_level)
+    _produce_items_for_technology(guild, "equipment_forge", tech_level)
 
 
 def produce_guard_items(guild: Guild, tech_level: int) -> None:
     """护院军备科技产出护院招募装备箱"""
-    _produce_items_from_config(guild, "guard", tech_level)
+    _produce_items_for_technology(guild, "guard_armory", tech_level)
 
 
 def produce_experience_items(guild: Guild, tech_level: int) -> None:
@@ -567,7 +595,7 @@ def produce_experience_items(guild: Guild, tech_level: int) -> None:
         guild: Guild对象
         tech_level: 科技等级
     """
-    _produce_items_from_config(guild, "experience", tech_level)
+    _produce_items_for_technology(guild, "experience_refine", tech_level)
 
 
 def produce_resource_packs(guild: Guild, tech_level: int) -> None:
@@ -578,12 +606,12 @@ def produce_resource_packs(guild: Guild, tech_level: int) -> None:
         guild: Guild对象
         tech_level: 科技等级
     """
-    _produce_items_from_config(guild, "resource", tech_level)
+    _produce_items_for_technology(guild, "resource_supply", tech_level)
 
 
 def produce_soul_containers(guild: Guild, tech_level: int) -> None:
     """生产当前神秘学等级解锁的每日道具。"""
-    _produce_items_from_config(guild, "mysticism", tech_level)
+    _produce_items_for_technology(guild, "mysticism", tech_level)
 
 
 def _build_projected_resource_item(guild: Guild, item_key: str, template: Any) -> Any | None:

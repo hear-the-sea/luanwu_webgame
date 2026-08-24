@@ -155,3 +155,29 @@ class TestMissionCardView:
         extra.refresh_from_db()
         assert card_item.quantity == 2
         assert extra.extra_count == 5
+
+    def test_use_mission_card_rejects_disabled_mission_without_consuming_inventory(self, manor_with_user):
+        manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key=f"view_use_card_disabled_{manor.id}",
+            name="禁用任务卡任务",
+            mission_card_daily_limit=0,
+        )
+        card_template, _ = ItemTemplate.objects.get_or_create(
+            key="mission_card",
+            defaults={"name": "任务卡", "effect_type": ItemTemplate.EffectType.TOOL},
+        )
+        card_item, _ = InventoryItem.objects.update_or_create(
+            manor=manor,
+            template=card_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            defaults={"quantity": 2},
+        )
+
+        response = client.post(reverse("gameplay:use_mission_card"), {"mission_key": mission.key})
+
+        assert_redirect(response, f"{reverse('gameplay:tasks')}?mission={mission.key}")
+        assert any("该任务不可使用任务卡" in message for message in response_messages(response))
+        card_item.refresh_from_db()
+        assert card_item.quantity == 2
+        assert MissionExtraAttempt.objects.filter(manor=manor, mission=mission).exists() is False

@@ -14,14 +14,14 @@ EXPECTED_WORK_REQUIREMENTS = {
     "shuyuan": (9, 0, 60, 0, 0),
     "chaguan": (11, 0, 70, 0, 0),
     "matou": (13, 80, 0, 0, 0),
-    "wuguan": (14, 100, 0, 0, 0),
-    "shanghang": (15, 0, 105, 0, 0),
-    "guanfu": (16, 0, 105, 0, 60),
-    "qianzhuang": (17, 0, 110, 55, 0),
-    "biaoju": (18, 115, 0, 75, 0),
-    "jingwumeng": (23, 140, 0, 0, 80),
-    "shenfengyi": (28, 0, 0, 90, 100),
-    "guozijian": (33, 0, 200, 0, 95),
+    "wuguan": (20, 120, 0, 0, 0),
+    "shanghang": (25, 0, 125, 0, 0),
+    "guanfu": (20, 0, 110, 0, 70),
+    "qianzhuang": (25, 0, 130, 100, 0),
+    "biaoju": (45, 210, 0, 120, 0),
+    "jingwumeng": (50, 230, 0, 0, 120),
+    "shenfengyi": (45, 0, 0, 130, 180),
+    "guozijian": (50, 0, 220, 0, 100),
 }
 
 

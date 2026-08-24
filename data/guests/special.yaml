@@ -7,51 +7,56 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: monkey_wu_male7.png
       custom_stats:
-        force: 41
+        force: 35
         intellect: 12
-        defense: 35
-        agility: 29
+        defense: 25
+        agility: 30
         luck: 47
     - key: task_huashan_jianjing
       name: 顶级贱精
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: monkey_mission.png
       custom_stats:
-        force: 41
+        force: 30
         intellect: 12
-        defense: 35
-        agility: 29
+        defense: 10
+        agility: 10
         luck: 47
     - key: task_huashan_audience_a
       name: 观众甲
       archetype: civil
       recruitable: false
       default_gender: male
+      avatar: buyi.png
       custom_stats:
-        force: 29
+        force: 15
         intellect: 32
-        defense: 15
-        agility: 33
+        defense: 5
+        agility: 10
         luck: 112
     - key: task_jingyang_tiger
       name: 猛虎
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: menghu.png
       custom_stats:
-        force: 132
+        force: 55
         intellect: 46
-        defense: 104
-        agility: 118
+        defense: 30
+        agility: 50
         luck: 42
-        base_hp: 1680
+        base_hp: 1000
     - key: task_fugui_instructor
       name: 武师教头
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: monkey_wu_male10.png
       custom_stats:
         force: 126
         intellect: 72
@@ -64,6 +69,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: equip_jiguanxiong.png
       custom_stats:
         force: 138
         intellect: 38
@@ -89,6 +95,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: monkey_mission.png
       custom_stats:
         force: 166
         intellect: 90
@@ -101,6 +108,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: monkey_mission.png
       custom_stats:
         force: 166
         intellect: 90
@@ -181,11 +189,12 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: equip_jixiemao.png
       custom_stats:
-        force: 158
+        force: 60
         intellect: 78
-        defense: 128
-        agility: 138
+        defense: 50
+        agility: 40
         luck: 48
         base_hp: 1800
     - key: task_mechanism_bird
@@ -193,6 +202,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: monkey_mistry.png
       custom_stats:
         force: 150
         intellect: 96
@@ -205,6 +215,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: monkey_mission.png
       custom_stats:
         force: 170
         intellect: 86
@@ -286,6 +297,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig_wu_male3.png
       custom_stats:
         force: 196
         intellect: 110
@@ -311,6 +323,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: monkey_wu_male16.png
       custom_stats:
         force: 208
         intellect: 118
@@ -1082,3 +1095,134 @@ heroes:
         agility: 142
         luck: 90
         base_hp: 2560
+    - key: task_guandu_yuanshao
+      name: 袁绍
+      archetype: military
+      recruitable: false
+      default_gender: male
+      custom_stats:
+        force: 322
+        intellect: 328
+        defense: 408
+        agility: 238
+        luck: 188
+        base_hp: 7200
+    - key: task_hulao_lvbu
+      name: 吕布
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: lvbu_monkey.png
+      custom_stats:
+        force: 468
+        intellect: 128
+        defense: 388
+        agility: 348
+        luck: 158
+        base_hp: 7600
+    - key: task_sishui_huaxiong
+      name: 华雄
+      archetype: military
+      recruitable: false
+      default_gender: male
+      skills:
+        - bloodthirsty_fury
+        - desperate_beast
+      custom_stats:
+        force: 410
+        intellect: 102
+        defense: 344
+        agility: 238
+        luck: 112
+        base_hp: 6400
+    - key: task_baimenlou_lvbu
+      name: 吕布
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: lvbu_monkey.png
+      skills:
+        - dragon_roar
+        - desperate_beast
+      custom_stats:
+        force: 492
+        intellect: 144
+        defense: 420
+        agility: 360
+        luck: 188
+        base_hp: 8600
+    - key: task_baimenlou_gaoshun
+      name: 高顺
+      archetype: military
+      recruitable: false
+      default_gender: male
+      skills:
+        - iron_wall_heart
+        - prison_break_blade
+      custom_stats:
+        force: 386
+        intellect: 118
+        defense: 430
+        agility: 228
+        luck: 132
+        base_hp: 6500
+    - key: task_baimenlou_zhangliao
+      name: 张辽
+      archetype: military
+      recruitable: false
+      default_gender: male
+      skills:
+        - stratagem_burst
+        - bloodthirsty_fury
+      custom_stats:
+        force: 420
+        intellect: 146
+        defense: 356
+        agility: 338
+        luck: 168
+        base_hp: 6400
+    - key: task_baimenlou_chengong
+      name: 陈宫
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      skills:
+        - stratagem_burst
+        - city_felling_strike
+      custom_stats:
+        force: 140
+        intellect: 440
+        defense: 300
+        agility: 268
+        luck: 220
+        base_hp: 5800
+    - key: task_baimenlou_zangba
+      name: 臧霸
+      archetype: military
+      recruitable: false
+      default_gender: male
+      skills:
+        - desperate_beast
+        - iron_wall_heart
+      custom_stats:
+        force: 392
+        intellect: 128
+        defense: 382
+        agility: 270
+        luck: 148
+        base_hp: 6400
+    - key: task_huashan_huang_shang
+      name: 黄裳
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      skills:
+        - hell_instant_formation
+        - steadfast_planning
+      custom_stats:
+        force: 280
+        intellect: 430
+        defense: 340
+        agility: 280
+        luck: 180
+        base_hp: 6500

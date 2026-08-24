@@ -24,6 +24,7 @@ from gameplay.models import MissionTemplate
 logger = logging.getLogger(__name__)
 
 MISSION_CARD_KEY = "mission_card"
+DEFAULT_MISSION_DISPLAY_ORDER = 1000
 MISSION_ACTION_LOCK_SECONDS = 5
 MISSION_ACTION_LOCK_NAMESPACE = "mission:view_lock"
 MISSION_ACTION_LOCK_SPEC = ActionLockSpec(
@@ -104,6 +105,16 @@ def filter_available_missions(
 ) -> list[MissionTemplate]:
     today = current_date or timezone.localdate()
     return [mission for mission in missions if is_mission_available_on(mission, today)]
+
+
+def order_missions_for_task_board(missions: list[MissionTemplate]) -> list[MissionTemplate]:
+    return sorted(
+        missions,
+        key=lambda mission: (
+            getattr(mission, "display_order", DEFAULT_MISSION_DISPLAY_ORDER),
+            mission.id,
+        ),
+    )
 
 
 def resolve_mission_or_redirect(
@@ -438,28 +449,34 @@ def build_drop_lists(
                     )
                 )
             continue
-        label = resolve_drop_pool_label(val, drop_labels, item_templates, book_labels) or resolve_drop_label(
-            key,
-            drop_labels,
-            item_templates,
-            book_labels,
-        )
-        chance, count = parse_drop_value(val)
-        rarity = resolve_drop_pool_rarity(val, loot_rarities) or loot_rarities.get(key) or "default"
+        choice_keys = iter_choice_pool_keys(val)
+        if choice_keys:
+            chance, count = parse_drop_value(val)
+            target_drops = probability_drops if chance is not None and 0 < chance < 1 else guaranteed_drops
+            for choice_key in choice_keys:
+                label = resolve_drop_label(choice_key, drop_labels, item_templates, book_labels)
+                display_label = f"{label} ×{count}" if (count is not None and count >= 1) else label
+                target_drops.append(
+                    build_drop_display_item(
+                        key=choice_key,
+                        name=label,
+                        label=display_label,
+                        count=count,
+                        rarity=loot_rarities.get(choice_key) or "default",
+                        item_templates=item_templates,
+                    )
+                )
+            continue
 
-        is_choice_pool = resolve_drop_pool_label(val, drop_labels, item_templates, book_labels) is not None
-        choice_keys = iter_choice_pool_keys(val) if is_choice_pool else []
-        display_key = choice_keys[0] if len(choice_keys) == 1 else key
-        if count is not None and count >= 1 and not (is_choice_pool and count == 1):
-            display_label = f"{label} ×{count}"
-        else:
-            display_label = label
+        label = resolve_drop_label(key, drop_labels, item_templates, book_labels)
+        chance, count = parse_drop_value(val)
+        display_label = f"{label} ×{count}" if (count is not None and count >= 1) else label
         drop_item = build_drop_display_item(
-            key=display_key,
+            key=key,
             name=label,
             label=display_label,
             count=count,
-            rarity=rarity,
+            rarity=loot_rarities.get(key) or "default",
             item_templates=item_templates,
         )
         if chance is not None and 0 < chance < 1:
