@@ -317,7 +317,9 @@ heroes:
         defense: 146
         agility: 132
         luck: 78
-        base_hp: 2060
+        base_hp: 12060
+      skills:
+        - flower_rain
     - key: task_heaven_cave_sentinel
       name: 金甲神兵
       archetype: military
@@ -639,6 +641,51 @@ heroes:
         agility: 156
         luck: 72
         base_hp: 2950
+    - key: task_simian_chuge_hanxin_boss
+      name: 韩信·垓下
+      archetype: military
+      recruitable: false
+      default_gender: male
+      skills:
+        - prison_break_blade
+        - desperate_beast
+      custom_stats:
+        force: 59
+        intellect: 17
+        defense: 51
+        agility: 42
+        luck: 62
+        base_hp: 50000
+    - key: task_simian_chuge_pengyue_boss
+      name: 彭越·垓下
+      archetype: military
+      recruitable: false
+      default_gender: male
+      skills:
+        - fatal_chain_sword
+        - draw_enemy_blades
+      custom_stats:
+        force: 59
+        intellect: 17
+        defense: 51
+        agility: 42
+        luck: 62
+        base_hp: 50000
+    - key: task_simian_chuge_yingbu_boss
+      name: 英布·垓下
+      archetype: military
+      recruitable: false
+      default_gender: male
+      skills:
+        - city_felling_strike
+        - bloodthirsty_fury
+      custom_stats:
+        force: 59
+        intellect: 17
+        defense: 51
+        agility: 42
+        luck: 62
+        base_hp: 50000
   red:
     - key: task_barbarian_vanguard
       name: 蛮族先锋统领
@@ -1088,13 +1135,15 @@ heroes:
       recruitable: false
       default_gender: male
       avatar: pubayi.png
+      skills:
+        - city_felling_strike
       custom_stats:
         force: 246
         intellect: 116
         defense: 202
         agility: 142
         luck: 90
-        base_hp: 2560
+        base_hp: 100000
     - key: task_guandu_yuanshao
       name: 袁绍
       archetype: military

@@ -500,6 +500,7 @@ skills:
       enemy:
         defense: 0.3
         intellect: 0.2
+        force: 0.2
     required_level: 45
     required_force: 150
     targets: 3

@@ -17,7 +17,7 @@ heroes:
     name: 绮里季
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）绮里季，秦汉之际隐士名士，商山四皓之一，曾隐居山林并在汉初政局中应召出山。其主要贡献在于以德望影响储位稳定，强化了西汉初年政治合法性与朝廷秩序。
+    flavor: （生卒年不详）秦汉之际隐士，商山四皓之一。秦末，他与东园公、夏黄公、甪里先生隐居商山；汉高祖晚年欲废太子时，绮里季等应吕后之请出山，辅佐太子刘盈。
     growth_range:
     - 5
     - 9
@@ -26,37 +26,11 @@ heroes:
       intellect: 54
       defense: 17
       agility: 18
-  - key: hist_qinhan_0518
-    name: 董偃
-    default_gender: male
-    archetype: civil
-    flavor: （生卒年不详）董偃为西汉宫廷人物，曾出入内廷权力网络，亲历武帝时期政治与礼制运作。其历史意义在于折射宫廷权力与私人关系对政局的影响，成为研究西汉中期政治生态的重要样本。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 14
-      intellect: 57
-      defense: 21
-      agility: 8
-  - key: hist_qinhan_0523
-    name: 哀章
-    default_gender: male
-    archetype: civil
-    flavor: （生卒年不详）哀章，新莽时期政治人物，曾以符命文书介入政权合法性塑造，亲历王莽政局变动。其历史意义在于揭示谶纬政治如何影响权力建构与舆论动员。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 14
-      intellect: 55
-      defense: 17
-      agility: 14
   - key: hist_qinhan_0526
     name: 蒯彻
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）蒯彻，楚汉之际谋士，先后服务诸侯，尤以游说与战略判断见长。其主要贡献在于提出因势制衡的谋略框架，深刻影响了楚汉战争后期的政治与军事布局。
+    flavor: （生卒年不详）楚汉之际谋士，曾为韩信分析天下形势，劝他据齐地自立，与刘邦、项羽鼎足而立；韩信没有采纳。汉朝建立后，蒯彻因避汉武帝名讳改名蒯通，最终得到赦免。
     growth_range:
     - 5
     - 10
@@ -69,7 +43,7 @@ heroes:
     name: 毛亨
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）毛亨为西汉经学家，《诗》学传承的重要人物，长期从事经典训诂与讲授。其主要贡献在于奠定毛诗学传统，对汉以后经学教育与文本解释产生深远影响。
+    flavor: （生卒年不详）西汉经学家，相传为《诗经》毛诗一派的传授者。毛亨长期讲授、训释《诗经》，并将所传经文交给毛苌；除经学传承外，他的个人经历已难详考。
     growth_range:
     - 5
     - 9
@@ -82,7 +56,7 @@ heroes:
     name: 孔鲋
     default_gender: male
     archetype: civil
-    flavor: （前264年—前208年）孔鲋为秦末儒者，孔门后裔，曾在乱世中主持讲学并守护典籍。其经历贯穿秦末学术危局，其主要贡献在于保存儒学文脉，为汉初经学复兴奠定了关键基础。
+    flavor: （前264年—前208年）秦末儒者，孔门后裔。孔鲋曾主持讲学、收藏典籍，秦末战乱中仍设法保存儒家文献；他后来卷入陈胜政权的动荡，最终死于乱军之中。
     growth_range:
     - 5
     - 9
@@ -91,24 +65,11 @@ heroes:
       intellect: 56
       defense: 18
       agility: 14
-  - key: hist_qinhan_0474
-    name: 夏无且
-    default_gender: male
-    archetype: civil
-    flavor: （生卒年不详）夏无且，秦代医官，曾在宫廷任太医，亲历秦始皇时代重大政治事件。其主要贡献在于代表秦廷医官群体的专业角色，反映了早期帝国医疗制度与宫廷政治之间的紧密关系。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 50
-      defense: 16
-      agility: 22
   - key: hist_qinhan_0476
     name: 巴寡妇清
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）巴寡妇清，秦代巴郡著名女商人，长期经营丹砂产业并与朝廷保持稳定供给关系。其主要贡献在于以卓越商业能力支撑国家战略物资供应，成为秦汉女性经济力量的代表性人物。
+    flavor: （生卒年不详）秦代巴郡女商人，丈夫早逝后经营丹砂产业，凭借矿产和商业积累成为巨富。秦始皇曾召见巴寡妇清，并为她修筑“女怀清台”。
     growth_range:
     - 5
     - 9
@@ -121,7 +82,7 @@ heroes:
     name: 乌氏倮
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）乌氏倮，秦代著名边地富商，长期经营畜牧与马匹贸易，并与朝廷保持供给往来。其主要贡献在于以商贸网络支持边地军需与交通体系，成为秦国北方经营的重要经济支点。
+    flavor: （生卒年不详）秦代边地富商，长期经营畜牧与马匹贸易，家中拥有大量牛、马、羊。乌氏倮曾向秦廷输送牲畜和物资，因经营有方而得到秦始皇召见。
     growth_range:
     - 5
     - 9
@@ -130,24 +91,11 @@ heroes:
       intellect: 54
       defense: 18
       agility: 16
-  - key: hist_qinhan_0491
-    name: 卢敖
-    default_gender: male
-    archetype: civil
-    flavor: （生卒年不详）卢敖为秦汉时期方术与游学人物，曾遍游名山并与士人群体往来，兼具知识传播与政治观察经验。其主要贡献在于拓展了秦汉时期知识交流网络，对思想与文化流动有持续影响。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 14
-      intellect: 58
-      defense: 23
-      agility: 5
   - key: hist_qinhan_0492
     name: 史禄
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）史禄，秦代水利与工程官员，曾主持岭南灵渠等关键工程建设，兼顾军运与民用需求。其主要贡献在于打通湘漓水道，显著提升南北交通与军需转运能力。
+    flavor: （生卒年不详）秦代水利官，秦始皇南征百越时主持开凿灵渠，沟通湘水与漓水。灵渠建成后，史禄负责的水运得以承担军粮和兵员转运。
     growth_range:
     - 5
     - 9
@@ -160,7 +108,7 @@ heroes:
     name: 朱家
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）朱家为秦汉时期游侠与地方名士，常在乱局中庇护弱者并调停冲突，社会声望颇高。其主要贡献在于维系民间伦理与社会互助网络，为动荡时代保留了基层秩序资源。
+    flavor: （生卒年不详）秦汉之际游侠，家财丰厚而乐于救助他人。朱家曾收留被通缉的季布，帮助他躲过追捕；他不以富贵自居，门下常有受其救济的宾客。
     growth_range:
     - 5
     - 9
@@ -173,7 +121,7 @@ heroes:
     name: 随何
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）随何，楚汉之际纵横家与外交谋士，曾奉刘邦之命游说诸侯，关键时期促成英布倒向汉军。其主要贡献在于以外交与辩说改写战略格局，为汉方最终胜出创造了重要条件。
+    flavor: （生卒年不详）楚汉之际谋士，奉刘邦之命出使九江，游说英布背楚归汉。英布接受他的劝说后率军归附刘邦，随何也因此得到重用。
     growth_range:
     - 5
     - 9
@@ -186,7 +134,7 @@ heroes:
     name: 屠睢
     default_gender: male
     archetype: military
-    flavor: （生卒年不详）屠睢，秦代将领，曾奉命南征百越，长期负责岭南战线推进与驻防。其主要贡献在于拓展帝国南方控制范围，推动了秦朝边疆军事与行政布局向南延伸。
+    flavor: （生卒年不详）秦代将领，奉秦始皇之命率军南征百越，负责岭南战线的进攻和驻防。屠睢在南征中遭越人伏击战死，秦军随后由赵佗等人继续统率。
     growth_range:
     - 5
     - 9
@@ -196,6 +144,58 @@ heroes:
       defense: 24
       agility: 21
   green:
+  - key: hist_qinhan_0491
+    name: 卢敖
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）秦汉时期方术与游学人物，曾遍游名山，与方士和士人往来。卢敖的故事多与求仙、远游传说相连，具体行迹和结局已难考。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 58
+      defense: 23
+      agility: 5
+  - key: hist_qinhan_0474
+    name: 夏无且
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）秦代医官，曾任秦始皇身边的太医。荆轲刺秦时，夏无且以药囊投击荆轲，帮助秦始皇躲过袭击；其余生平事迹记载不多。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 16
+      agility: 22
+  - key: hist_qinhan_0523
+    name: 哀章
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）新莽政治人物，曾向王莽献上符命文书，劝其接受天命、登上帝位。王莽称帝后，哀章得到任用；更始军攻入长安时，他随新莽政权覆亡而被杀。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 55
+      defense: 17
+      agility: 14
+  - key: hist_qinhan_0518
+    name: 董偃
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）西汉宫廷人物，因受馆陶公主宠信而得以出入宫廷。董偃善于应对，常陪公主入朝，曾受到汉武帝接见；除这些宫廷活动外，他的生平记载不多。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 57
+      defense: 21
+      agility: 8
   - key: hist_qinhan_0482
     name: 羊千
     default_gender: male

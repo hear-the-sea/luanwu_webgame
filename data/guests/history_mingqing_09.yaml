@@ -4,7 +4,7 @@ heroes:
     name: 刘瑾
     default_gender: male
     archetype: civil
-    flavor: （1451年—1510年）明武宗正德年间的司礼监掌印太监，曾掌内廷机要并深度介入朝政，一度权倾朝野。刘瑾的专权最终以伏诛收场；这段经历更适合作为观察明代中期内廷与外朝失衡、宦官干政及监察失效的反面案例。
+    flavor: （1451年—1510年）明武宗正德年间的司礼监掌印太监。刘瑾与张永等八名宦官随朱厚照即位，后来掌握内廷和司礼监，排斥异己；正德五年，刘瑾被捕处死，家产被抄没。
     growth_range:
     - 5
     - 9
@@ -13,20 +13,20 @@ heroes:
       intellect: 50
       defense: 19
       agility: 14
+  green:
   - key: hist_mingqing_0412
     name: 乌思道
     default_gender: male
     archetype: civil
-    flavor: （生卒年不详）清代幕友，浙江慈溪人，曾入河南巡抚田文镜幕，负责查对文书、核算钱谷。后世熟知的“邬思道”形象，多来自清末民初野史与影视文学；现有档案主要显示，他是一名参与地方政务的幕友，关于替雍正出谋划策等说法则多属后世传闻。
+    flavor: （生卒年不详）清代幕友，浙江慈溪人，曾入河南巡抚田文镜幕府，负责查对文书、核算钱谷。关于他后来入雍正帝潜邸并参与夺嫡谋划的故事，主要见于野史和文学作品，正史记载十分简略。
     growth_range:
-    - 5
-    - 9
+    - 3
+    - 7
     attribute_weights:
       force: 13
       intellect: 52
       defense: 19
       agility: 16
-  green:
   - key: hist_mingqing_0366
     name: 李世熊
     default_gender: male

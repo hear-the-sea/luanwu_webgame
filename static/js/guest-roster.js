@@ -193,6 +193,30 @@ const initGuestRosterPage = () => {
     });
   }
 
+  const healAllForm = document.getElementById("heal-all-guests-form");
+  if (healAllForm) {
+    healAllForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const guestCount = healAllForm.dataset.count || "0";
+      const medicineQuantity = healAllForm.dataset.medicineQuantity || "0";
+      const confirmHandler =
+        typeof window.gameConfirm === "function"
+          ? window.gameConfirm
+          : (message, _options) => Promise.resolve(window.confirm(message));
+      try {
+        const confirmed = await confirmHandler(
+          `将按重伤优先、缺血比例优先的顺序治疗 ${guestCount} 位门客，最多消耗 ${medicineQuantity} 个疗伤道具。确认继续？`,
+          { title: "一键疗伤" },
+        );
+        if (confirmed) {
+          healAllForm.submit();
+        }
+      } catch (error) {
+        console.error("一键疗伤确认失败:", error);
+      }
+    });
+  }
+
   const expModal = document.getElementById("exp-item-modal");
   const expForm = document.getElementById("exp-item-form");
   const expTargetLabel = document.getElementById("exp-modal-target");

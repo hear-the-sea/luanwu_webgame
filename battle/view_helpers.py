@@ -5,13 +5,14 @@ from typing import TYPE_CHECKING, Any, Iterable
 from django.apps import apps
 
 from common.constants.resources import ResourceType
-from gameplay.utils.template_loader import get_item_template_names_by_keys
+from gameplay.utils.template_loader import get_item_templates_by_keys
 from guests.models import Guest, GuestTemplate, SkillBook
 
 if TYPE_CHECKING:
     from .models import BattleReport
 
 _RESOURCE_LABELS = {key: label for key, label in ResourceType.choices}
+_REWARD_RARITIES = frozenset({"default", "black", "gray", "green", "blue", "red", "purple", "orange"})
 
 
 def _load_mission_run_for_report(report: "BattleReport"):
@@ -390,13 +391,33 @@ def merge_nonzero_drops(target: dict[str, int], source: dict[str, Any]) -> None:
             target[key] = target.get(key, 0) + int(amount)
 
 
-def load_reward_label_maps(drop_keys: Iterable[str], loss_keys: Iterable[str]) -> tuple[dict[str, str], dict[str, str]]:
+def _normalize_reward_rarity(value: Any) -> str:
+    rarity = str(value or "default").strip().lower()
+    return rarity if rarity in _REWARD_RARITIES else "default"
+
+
+def load_reward_metadata_maps(
+    drop_keys: Iterable[str],
+    loss_keys: Iterable[str],
+) -> tuple[dict[str, str], dict[str, str], dict[str, str]]:
     all_keys = {str(key).strip() for key in tuple(drop_keys) + tuple(loss_keys) if str(key).strip()}
     if not all_keys:
-        return {}, {}
+        return {}, {}, {}
 
-    item_labels = get_item_template_names_by_keys(all_keys)
-    skill_book_labels = {book.key: book.name for book in SkillBook.objects.filter(key__in=all_keys)}
+    item_templates = get_item_templates_by_keys(all_keys)
+    item_labels = {key: template.name for key, template in item_templates.items()}
+    item_rarities = {
+        key: _normalize_reward_rarity(getattr(template, "rarity", None)) for key, template in item_templates.items()
+    }
+    skill_books = SkillBook.objects.filter(key__in=all_keys).select_related("skill")
+    skill_book_labels = {book.key: book.name for book in skill_books}
+    for book in skill_books:
+        item_rarities.setdefault(book.key, _normalize_reward_rarity(getattr(book.skill, "rarity", None)))
+    return item_labels, skill_book_labels, item_rarities
+
+
+def load_reward_label_maps(drop_keys: Iterable[str], loss_keys: Iterable[str]) -> tuple[dict[str, str], dict[str, str]]:
+    item_labels, skill_book_labels, _item_rarities = load_reward_metadata_maps(drop_keys, loss_keys)
     return item_labels, skill_book_labels
 
 
@@ -405,7 +426,9 @@ def build_drop_items(
     *,
     item_template_names_by_key: dict[str, str],
     skill_book_names_by_key: dict[str, str],
+    rarity_by_key: dict[str, str] | None = None,
 ) -> list[dict[str, Any]]:
+    rarity_by_key = rarity_by_key or {}
     return [
         {
             "key": key,
@@ -414,6 +437,7 @@ def build_drop_items(
             or skill_book_names_by_key.get(key)
             or "未知奖励",
             "amount": amount,
+            "rarity": _normalize_reward_rarity(rarity_by_key.get(key)),
         }
         for key, amount in drops.items()
     ]
@@ -480,16 +504,18 @@ def build_reward_context(
     loss_map: dict[str, int],
     capture_loss_label: str = "",
 ) -> dict[str, Any]:
-    item_template_names, skill_book_names = load_reward_label_maps(drops.keys(), loss_map.keys())
+    item_template_names, skill_book_names, item_rarities = load_reward_metadata_maps(drops.keys(), loss_map.keys())
     drop_items = build_drop_items(
         drops,
         item_template_names_by_key=item_template_names,
         skill_book_names_by_key=skill_book_names,
+        rarity_by_key=item_rarities,
     )
     loss_items = build_drop_items(
         loss_map,
         item_template_names_by_key=item_template_names,
         skill_book_names_by_key=skill_book_names,
+        rarity_by_key=item_rarities,
     )
     if capture_loss_label:
         loss_items.append({"key": "captured_guest", "label": capture_loss_label})

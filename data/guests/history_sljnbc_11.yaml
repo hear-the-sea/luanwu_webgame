@@ -1,23 +1,10 @@
 heroes:
   blue:
-  - key: hist_sljnbc_0501
-    name: 胡车儿
-    default_gender: male
-    archetype: military
-    flavor: （生卒年不详）胡车儿是张绣麾下悍将，史书写他，多落在“力能负重、奔走如飞”的惊人勇力上。宛城风雨骤起时，他的名字紧挨着曹军受创的记忆出现。此人未必有统军定策之名，却把汉末乱军里“猛将可改一夜胜负”的凶险意味，写得格外分明。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 49
-      intellect: 16
-      defense: 24
-      agility: 11
   - key: hist_sljnbc_0511
     name: 刘繇
     default_gender: male
     archetype: military
-    flavor: （156年—197年）刘繇为东汉宗室，历任扬州刺史，曾据曲阿，与袁术、孙策先后角力。江东群雄并起之际，他既有清流名望，也负守土之责，却终究压不住时代翻涌的兵锋。虽未能成就霸业，但在孙氏席卷东南之前，他仍是江东汉家官府最后一层沉稳而黯淡的旧影。
+    flavor: （156年—197年）东汉宗室、官员，字正礼，齐悼王刘肥后裔。刘繇曾任扬州刺史，驻曲阿与袁术、孙策交战；孙策攻破曲阿后，他退往豫章，病死于当地。
     growth_range:
     - 5
     - 9
@@ -30,7 +17,7 @@ heroes:
     name: 沙摩柯
     default_gender: male
     archetype: military
-    flavor: （生卒年不详）沙摩柯为五溪蛮首领，章武年间率部响应蜀汉，随军东出，见于夷陵鏖兵。史笔不多，却足以看出其人山野悍气与部众锋锐。比起中原名将，他更像自溪谷深处拔出的重矛，提醒后人：三国战场从来不只是汉家州郡的棋局，边地豪杰同样能在血火中压出自己的声响。
+    flavor: （生卒年不详）东汉末五溪蛮首领。章武年间，沙摩柯率部响应刘备，参加夷陵之战；蜀军败后，他被吴将潘璋追击杀死。
     growth_range:
     - 5
     - 9
@@ -183,6 +170,19 @@ heroes:
       defense: 28
       agility: 15
   green:
+  - key: hist_sljnbc_0501
+    name: 胡车儿
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）胡车儿是张绣麾下悍将，史书写他，多落在“力能负重、奔走如飞”的惊人勇力上。宛城风雨骤起时，他的名字紧挨着曹军受创的记忆出现。此人未必有统军定策之名，却把汉末乱军里“猛将可改一夜胜负”的凶险意味，写得格外分明。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 49
+      intellect: 16
+      defense: 24
+      agility: 11
   - key: hist_sljnbc_0489
     name: 步阐
     default_gender: male

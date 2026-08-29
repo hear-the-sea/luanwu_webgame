@@ -53,6 +53,7 @@ def test_arena_registration_page_lists_guangming_top_card(arena_client):
     assert "5 人共斗" not in body
     assert response.context["arena_coop_daily_limit"] == 3
     assert "武林高手齐聚光明顶，请派遣3名主力门客参战" in body
+    assert 'id="arena-coop-registration-panel" data-max-selected="3"' in body
     assert "查看共斗详情" not in body
     assert body.count("tw-building-card tw-building-card--manor tw-arena-hero-card") >= 2
     assert body.count('class="tw-arena-signup-panel"') >= 2

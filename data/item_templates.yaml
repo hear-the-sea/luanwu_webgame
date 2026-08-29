@@ -551,7 +551,7 @@ items:
 
   - key: junior_guest_card
     name: 初级门客卡
-    description: 一张看起来很有排面的卡片，实际承诺只有一句：“保证来人，不保证来的是谁。”使用后随机招募一名灰色门客，姓名现场现编，若听着耳熟，纯属江湖重名。
+    description: 一张看起来很有排面的卡片，使用后随机招募一名门客，若听着耳熟，纯属江湖重名。
     effect_type: tool
     rarity: black
     tradeable: true

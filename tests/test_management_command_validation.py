@@ -275,7 +275,7 @@ def test_default_mission_templates_define_junior_mission_tiering():
         },
         "simian_chuge": {
             "difficulty": "advanced",
-            "enemy_technology": {"level": 10, "guest_level": 83, "guest_bonus": 0.28},
+            "enemy_technology": {"level": 10, "guest_level": 100, "guest_bonus": 0.28},
         },
         "manzu_ruqin": {
             "difficulty": "advanced",

@@ -1014,9 +1014,16 @@ missions:
     battle_type: task1
 
     enemy_guests:
-      - hist_qinhan_0022
-      - hist_qinhan_0138
-      - hist_qinhan_0146
+      - key: task_simian_chuge_hanxin_boss
+        label: 韩信
+        skills:
+          - stratagem_burst
+      - key: task_simian_chuge_pengyue_boss
+        skills:
+          - city_felling_strike
+      - key: task_simian_chuge_yingbu_boss
+        skills:
+          - city_felling_strike
 
     enemy_troops:
       dao_sheng: 500
@@ -1024,16 +1031,14 @@ missions:
 
     enemy_technology:
       level: 10
-      guest_level: 83
+      guest_level: 100
       guest_bonus: 0.28
 
     drop_table:
       silver: 50000
-      equip_wuzhuima: 1
-      equip_xiaoweichangjian: 1
-      equip_xiaoweitoukui: 0.1
-      equip_xiaoweichangxue: 0.1
+      equip_wuzhuima: 0.5
       equip_bawangqiang: 0.1
+      experience_watermelon: 2
       passive_skill_book_box: 0.05
 
     daily_limit: 3
@@ -1062,9 +1067,7 @@ missions:
 
     drop_table:
       silver: 50000
-      work_chest_small: 1  # TODO: 替换为幸运宝箱
-      civil_skill_book_box: 0.05
-      equip_xiaoweikaijia: 0.1
+      civil_skill_book_box: 0.15
       pubayi_guest_card: 0.1
 
     daily_limit: 3
@@ -1431,9 +1434,13 @@ missions:
     display_order: 1100
     difficulty: advanced
     description: |
-      华山绝巅再开论剑之会，不问门派，不论辈分，只以武道高下定座次。扫地僧、张三丰、独孤求败、东方不败、石破天、黄裳、阿青、逍遥子与王重阳先后登顶，九道气机压得山风都绕峰而行。
+      天下风云出我辈，一入江湖岁月催。皇图霸业谈笑中，不胜人生一场醉。
 
-      此战只许门客出阵。庄园主若能连破九位绝顶高手，便可取走峰顶封存的武林宝箱；箱中所藏皆是江湖上有名有姓的神兵奇珍，得其一件，便不算空走这一遭。
+      一张没有落款的论剑帖，自华山传入江湖。有人说，发帖之人要在绝顶重排天下高手座次；有人说，山巅藏着一坛开封即能忘忧的陈年好酒；还有人信誓旦旦地表示，自己只是路过，绝不是专程来抢宝箱的。消息传开后，闭关的出关了，隐姓埋名的改回本名了，连多年不肯下山的老前辈也开始认真挑选登山鞋。
+
+      华山九重关，每一重都由一位绝顶高手镇守。扫地僧守心，张三丰守意，独孤求败守剑，东方不败守影；石破天、黄裳、阿青、逍遥子与王重阳也已在峰顶等候。这里没有客套寒暄，也没有凭年龄论资排辈，想在江湖留下名字，便把手中兵刃亮出来说话。
+
+      此战只许门客登场。庄园主若能连破九关，便可登上华山绝顶，取走封存已久的武林宝箱。至于箱中是震动江湖的神兵奇珍，还是某位醉仙留下的压箱底玩意儿，只有最后站着的人，才有资格亲手打开。
     battle_type: task1
     guest_only: true
 
@@ -1497,7 +1504,7 @@ missions:
   # 虎牢关群英战吕布：第一关
   # ========================================
   - key: sishui_huaxiong_chengwei
-    name: 汜水关华雄逞威
+    name: 飞将浮沉录·第一关：汜水关华雄逞威
     display_order: 1001
     difficulty: advanced
     description: |
@@ -1537,7 +1544,7 @@ missions:
   # 虎牢关群英战吕布：第二关
   # ========================================
   - key: hulao_qunying_zhan_lvbu
-    name: 虎牢关群英战吕布
+    name: 飞将浮沉录·第二关：虎牢关群英战吕布
     display_order: 1002
     difficulty: advanced
     description: |
@@ -1583,7 +1590,7 @@ missions:
   # 虎牢关群英战吕布：第三关
   # ========================================
   - key: baimenlou_mingyun_jueze
-    name: 吕布命运抉择白门楼
+    name: 飞将浮沉录·第三关：白门楼命运抉择
     display_order: 1003
     difficulty: advanced
     description: |

@@ -21,7 +21,7 @@ from core.exceptions import GameError
 from core.utils import sanitize_error_message
 
 from ..forms import AllocateSkillPointsForm
-from ..models import GearItem, GearSlot, GuestSkill, Skill
+from ..models import GearItem, GearSlot, GuestSkill, GuestStatus, Skill
 from ..services.recruitment_queries import available_guests
 from ..services.roster import dismiss_guest
 from ..services.skills import collect_skill_requirements, collect_unmet_skill_requirements
@@ -284,12 +284,20 @@ class RosterView(LoginRequiredMixin, TemplateView):
 
         unpaid_guests = get_unpaid_guests(manor, today)
         total_unpaid_salary = sum(get_guest_salary(g) for g in unpaid_guests)
+        healable_count = sum(
+            1
+            for guest in guests
+            if guest.status in {GuestStatus.IDLE, GuestStatus.INJURED} and int(guest.current_hp) < int(guest.max_hp)
+        )
+        medicine_quantity = sum(max(0, int(item.quantity or 0)) for item in medicine_items)
 
         context["manor"] = manor
         context["guests"] = guests
         context["guests_with_salary"] = guests_with_salary
         context["unpaid_count"] = len(unpaid_guests)
         context["total_unpaid_salary"] = total_unpaid_salary
+        context["healable_count"] = healable_count
+        context["medicine_quantity"] = medicine_quantity
         context["exp_items"] = exp_items
         context["medicine_items"] = medicine_items
         return context

@@ -93,7 +93,7 @@
     </div>
     <div class="tw-building-main">
         {% include "gameplay/arena/partials/summary_intro.html" with summary=arena_coop_event compact=False %}
-        <section class="tw-arena-signup-panel">
+        <section class="tw-arena-signup-panel" id="arena-coop-registration-panel" data-max-selected="{{ arena_coop_event.guest_limit_per_entry }}">
             {% if arena_coop_recruiting_event %}
             <p class="text-sm text-text-muted mb-3">
                 当前共斗池：场次 #{{ arena_coop_recruiting_event.id }}

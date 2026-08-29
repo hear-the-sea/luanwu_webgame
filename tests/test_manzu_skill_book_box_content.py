@@ -22,7 +22,7 @@ def _load_yaml(filename: str) -> dict:
 def test_manzu_invasion_drops_civil_skill_book_box_at_configured_rate():
     missions = {row["key"]: row for row in _load_yaml("mission_templates.yaml")["missions"]}
 
-    assert missions["manzu_ruqin"]["drop_table"]["civil_skill_book_box"] == 0.05
+    assert missions["manzu_ruqin"]["drop_table"]["civil_skill_book_box"] == 0.15
 
 
 def test_civil_skill_book_box_contains_only_blue_or_better_civil_books():

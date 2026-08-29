@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from fractions import Fraction
 from typing import TYPE_CHECKING, Any, Dict
 
 from django.db import transaction
@@ -102,6 +103,14 @@ class MedicineUseQuote:
             "status_after": self.status_after,
             "status_before": self.status_before,
         }
+
+
+@dataclass(slots=True)
+class _MedicineStock:
+    """批量疗伤过程中已经锁定的一种药品库存。"""
+
+    item: Any
+    heal_amount: int
 
 
 def _normalize_non_negative_health_int(raw_value: Any, *, contract_name: str) -> int:
@@ -505,3 +514,174 @@ def use_medicine_item_for_guest(
         item_id,
         expected_heal_amount=heal_amount,
     )
+
+
+def _select_batch_medicine_stock(
+    stocks: list[_MedicineStock],
+    *,
+    missing_hp: int,
+) -> _MedicineStock | None:
+    """为一次治疗选择最合适的药品，避免在满血前浪费大剂量药品。
+
+    优先选择能够刚好覆盖缺口且溢出最少的药品；没有单瓶足够时，
+    使用当前库存中恢复量最大的药品，确保有限库存优先转化为实际 HP。
+    同恢复量时按模板 key 和库存 id 排序，保证批量操作可复现。
+    """
+
+    available = [
+        stock
+        for stock in stocks
+        if getattr(stock.item, "pk", None) and int(getattr(stock.item, "quantity", 0) or 0) > 0
+    ]
+    if not available or missing_hp <= 0:
+        return None
+
+    finishing = [stock for stock in available if stock.heal_amount >= missing_hp]
+    if finishing:
+        return min(
+            finishing,
+            key=lambda stock: (
+                stock.heal_amount - missing_hp,
+                stock.heal_amount,
+                str(stock.item.template.key),
+                int(stock.item.pk),
+            ),
+        )
+    return min(
+        available,
+        key=lambda stock: (
+            -stock.heal_amount,
+            str(stock.item.template.key),
+            int(stock.item.pk),
+        ),
+    )
+
+
+def _batch_healing_guest_sort_key(guest: Guest) -> tuple[int, Fraction, int, int]:
+    """重伤优先，其次优先处理缺血比例更高的门客。"""
+
+    max_hp = max(1, int(guest.max_hp))
+    current_hp = max(0, min(max_hp, int(guest.current_hp)))
+    missing_hp = max_hp - current_hp
+    return (
+        0 if guest.status == GuestStatus.INJURED else 1,
+        -Fraction(missing_hp, max_hp),
+        -missing_hp,
+        int(guest.pk),
+    )
+
+
+@transaction.atomic
+def heal_all_guests_with_medicine(manor: Manor) -> dict[str, int]:
+    """使用仓库药品批量治疗庄园内可治疗的门客。
+
+    批量操作始终先锁庄园，再锁住参与治疗的门客和药品；庄园父行锁会
+    与单个药品使用串行化，避免重复扣减。每位门客会被持续治疗到满血
+    或药品耗尽；药品不足时按“重伤优先、缺血比例优先”部分完成，并
+    把未完成数量返回给调用方。
+    """
+
+    from gameplay.models import InventoryItem, ItemTemplate
+    from gameplay.models import Manor as ManorModel
+
+    locked_manor = ManorModel.objects.select_for_update().get(pk=manor.pk)
+    locked_guests = list(
+        Guest.objects.select_for_update()
+        .select_related("template")
+        .filter(
+            manor_id=locked_manor.pk,
+            status__in=[GuestStatus.IDLE, GuestStatus.INJURED],
+        )
+        .order_by("id")
+    )
+    healable_guests = [guest for guest in locked_guests if int(guest.current_hp) < int(guest.max_hp)]
+    requested_count = len(healable_guests)
+    if not healable_guests:
+        return {
+            "requested_count": 0,
+            "healed_count": 0,
+            "partial_count": 0,
+            "unhealed_count": 0,
+            "consumed_item_count": 0,
+            "healed_hp": 0,
+        }
+
+    locked_items = list(
+        InventoryItem.objects.select_for_update()
+        .select_related("template")
+        .filter(
+            manor_id=locked_manor.pk,
+            quantity__gt=0,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            template__effect_type=ItemTemplate.EffectType.MEDICINE,
+        )
+        .order_by("template__key", "id")
+    )
+    stocks: list[_MedicineStock] = []
+    for item in locked_items:
+        try:
+            heal_amount = resolve_medicine_heal_amount(item)
+        except GuestItemConfigurationError:
+            # 单个异常配置不应阻断其它正常药品的批量治疗。
+            continue
+        stocks.append(_MedicineStock(item=item, heal_amount=heal_amount))
+
+    healed_count = 0
+    partial_count = 0
+    consumed_item_count = 0
+    healed_hp = 0
+    for guest in sorted(healable_guests, key=_batch_healing_guest_sort_key):
+        used_for_guest = False
+        while int(guest.current_hp) < int(guest.max_hp):
+            missing_hp = int(guest.max_hp) - int(guest.current_hp)
+            stock = _select_batch_medicine_stock(stocks, missing_hp=missing_hp)
+            if stock is None:
+                break
+            try:
+                # 为单次尝试建立保存点：若库存行在重新校验时已失效，
+                # 只回滚这次尝试，不让前面成功的治疗被污染。
+                with transaction.atomic():
+                    result = apply_medicine_item_for_guest_locked(
+                        locked_manor,
+                        int(guest.pk),
+                        int(stock.item.pk),
+                        expected_heal_amount=stock.heal_amount,
+                    )
+            except (GuestFullHpError, GuestItemConfigurationError, GuestItemOwnershipError, GuestNotIdleError):
+                # 状态变化或库存配置变化时跳过当前药品，继续尝试其它库存。
+                stock.item.quantity = 0
+                stock.item.pk = None
+                continue
+            except (GuestOwnershipError, InsufficientStockError):
+                stock.item.quantity = 0
+                stock.item.pk = None
+                continue
+
+            healed = int(result["healed"])
+            if healed <= 0:
+                break
+            used_for_guest = True
+            consumed_item_count += 1
+            healed_hp += healed
+            guest.current_hp = int(result["new_hp"])
+            guest.status = str(result["status"])
+            remaining_quantity = int(result["remaining_item_quantity"])
+            if remaining_quantity <= 0:
+                stock.item.quantity = 0
+                stock.item.pk = None
+            else:
+                stock.item.quantity = remaining_quantity
+
+        if int(guest.current_hp) >= int(guest.max_hp):
+            healed_count += 1
+        elif used_for_guest:
+            partial_count += 1
+
+    return {
+        "requested_count": requested_count,
+        "healed_count": healed_count,
+        "partial_count": partial_count,
+        "unhealed_count": requested_count - healed_count,
+        "consumed_item_count": consumed_item_count,
+        "healed_hp": healed_hp,
+    }

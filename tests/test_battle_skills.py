@@ -5,7 +5,11 @@ import pytest
 
 from battle.combat_math import SLAUGHTER_MULTIPLIER, effective_attack_value, effective_defense_value, troop_unit_hp
 from battle.combatants_pkg.guest_builder import serialize_skills
-from battle.simulation.constants import GUEST_SKILL_VS_TROOP_MULTIPLIER
+from battle.simulation.constants import (
+    GUEST_SKILL_VS_GUEST_MULTIPLIER,
+    GUEST_SKILL_VS_TROOP_MULTIPLIER,
+    GUEST_VS_GUEST_DAMAGE_MULTIPLIER,
+)
 from battle.simulation.damage_calculation import calculate_attack_damage, process_status_effects
 from battle.skills import apply_skill_statuses, skill_damage_bonus, trigger_skills
 from battle.status_manager import prepare_combatants_for_round
@@ -298,7 +302,7 @@ def test_troop_unit_hp_rejects_invalid_max_hp():
         troop_unit_hp(troop)
 
 
-def test_guest_vs_troop_normal_attack_uses_increased_slaughter_multiplier():
+def test_guest_vs_troop_normal_attack_uses_slaughter_multiplier():
     actor = make_unit(kind="guest", attack=1000, priority=0)
     target = make_unit(kind="troop", side="defender", unit_defense=10, troop_strength=200, unit_hp=10)
     rng = FixedRng()
@@ -307,7 +311,7 @@ def test_guest_vs_troop_normal_attack_uses_increased_slaughter_multiplier():
 
     reduction = target.unit_defense / (target.unit_defense + 50)
     base_damage = actor.attack * (1 - reduction)
-    expected = int(base_damage * 12)
+    expected = int(base_damage * SLAUGHTER_MULTIPLIER)
     assert result.damage == expected
 
 
@@ -334,6 +338,36 @@ def test_guest_vs_troop_skill_damage_uses_reduced_skill_multiplier():
     reduction = target.unit_defense / (target.unit_defense + 50)
     base_damage = actor.attack * (1 - reduction)
     expected = int(base_damage * SLAUGHTER_MULTIPLIER + 2000 * GUEST_SKILL_VS_TROOP_MULTIPLIER)
+    assert result.damage == expected
+
+
+def test_guest_vs_guest_normal_attack_uses_fifteen_times_multiplier():
+    actor = make_unit(kind="guest", attack=1000, priority=0)
+    target = make_unit(kind="guest", side="defender", defense=300)
+    rng = FixedRng()
+
+    result = calculate_attack_damage(actor, target, skills=[], rng=rng, round_priority=0)
+
+    reduction = target.defense / (target.defense + 600)
+    base_damage = actor.attack * (1 - reduction)
+    assert GUEST_VS_GUEST_DAMAGE_MULTIPLIER == 15.0
+    expected = int(base_damage * GUEST_VS_GUEST_DAMAGE_MULTIPLIER)
+    assert result.damage == expected
+
+
+def test_guest_vs_guest_skill_damage_uses_independent_skill_multiplier():
+    actor = make_unit(kind="guest", attack=1000, priority=0)
+    target = make_unit(kind="guest", side="defender", defense=300)
+    skill = {"name": "Flat Bonus", "damage_formula": {"base": 2000}}
+    rng = FixedRng()
+
+    result = calculate_attack_damage(actor, target, skills=[skill], rng=rng, round_priority=0)
+
+    reduction = target.defense / (target.defense + 600)
+    base_damage = actor.attack * (1 - reduction)
+    assert GUEST_VS_GUEST_DAMAGE_MULTIPLIER == 15.0
+    assert GUEST_SKILL_VS_GUEST_MULTIPLIER == 2.0
+    expected = int(base_damage * GUEST_VS_GUEST_DAMAGE_MULTIPLIER + 2000 * GUEST_SKILL_VS_GUEST_MULTIPLIER)
     assert result.damage == expected
 
 

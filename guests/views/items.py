@@ -20,7 +20,7 @@ from core.utils import is_ajax_request, json_error, json_success, safe_positive_
 from core.utils.validation import safe_redirect_url, sanitize_error_message
 
 from ..models import Guest
-from ..services.health import resolve_medicine_heal_amount, use_medicine_item_for_guest
+from ..services.health import heal_all_guests_with_medicine, resolve_medicine_heal_amount, use_medicine_item_for_guest
 
 logger = logging.getLogger(__name__)
 
@@ -163,3 +163,50 @@ def use_medicine_item_view(request, pk: int):
             return json_error(error_msg, status=500, include_message=True)
         messages.error(request, error_msg)
     return redirect(next_url)
+
+
+@login_required
+@require_POST
+def heal_all_guests_view(request):
+    """一键使用仓库药品，按优先级治疗所有可治疗的受伤门客。"""
+
+    from gameplay.services.manor.core import get_manor
+
+    manor = None
+    try:
+        manor = get_manor(request.user)
+        result = heal_all_guests_with_medicine(manor)
+    except GameError as exc:
+        messages.error(request, sanitize_error_message(exc))
+        return redirect("guests:roster")
+    except DatabaseError:
+        logger.exception(
+            "Unexpected bulk guest healing view database error: manor_id=%s user_id=%s",
+            getattr(manor, "id", None),
+            getattr(request.user, "id", None),
+        )
+        messages.error(request, "操作失败，请稍后重试")
+        return redirect("guests:roster")
+
+    requested_count = int(result["requested_count"])
+    healed_count = int(result["healed_count"])
+    partial_count = int(result["partial_count"])
+    unhealed_count = int(result["unhealed_count"])
+    consumed_item_count = int(result["consumed_item_count"])
+    if requested_count == 0:
+        messages.info(request, "当前没有需要疗伤的门客")
+    elif healed_count == requested_count:
+        messages.success(
+            request,
+            f"一键疗伤完成：已治愈 {healed_count} 位门客，消耗疗伤道具 {consumed_item_count} 个",
+        )
+    elif consumed_item_count > 0:
+        messages.warning(
+            request,
+            f"疗伤道具不足：{healed_count} 位门客已满血，{partial_count} 位门客部分恢复，"
+            f"仍有 {unhealed_count} 位门客未满血；共消耗 {consumed_item_count} 个道具",
+        )
+    else:
+        messages.warning(request, "仓库没有可用的疗伤道具，暂未治疗任何门客")
+
+    return redirect("guests:roster")

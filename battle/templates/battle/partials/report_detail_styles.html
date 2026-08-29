@@ -14,6 +14,11 @@
     background: var(--battle-report-background);
 }
 
+/* 浅色战报底色上的标签使用深色文字，避免沿用深色背景的白字 */
+.battle-report-page .tech-tag {
+    color: #4b3420;
+}
+
 .battle-report-page .battle-result,
 .battle-report-page .battle-result.victory,
 .battle-report-page .battle-result.defeat {
@@ -381,6 +386,23 @@
     font-size: 0.84rem;
     line-height: 1.55;
     overflow-wrap: anywhere;
+}
+
+.battle-drop-list {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: baseline;
+    min-width: 0;
+}
+
+.battle-drop-item {
+    white-space: nowrap;
+}
+
+.battle-drop-separator {
+    color: #998168;
+    white-space: pre;
 }
 
 .battle-settlement-drop-row {

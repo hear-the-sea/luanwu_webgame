@@ -89,6 +89,9 @@ def test_report_uses_one_pale_yellow_surface_and_round_roster_column_dividers():
     assert "border-color: #c8a36d" in result_rule
     assert "color: #4b3420" in result_rule
 
+    report_tag_rules = re.findall(r"\.battle-report-page \.tech-tag\s*\{([^}]*)\}", css)
+    assert any("color: #4b3420" in rule for rule in report_tag_rules)
+
     roster_rule = _rule_body(css, ".round-roster-cell")
     assert "gap: 0" in roster_rule
     assert "padding: 0" in roster_rule
@@ -125,3 +128,16 @@ def test_report_title_overview_and_settlement_use_flat_table_layouts():
 
     assert ".round-action-list.attacker li" not in css
     assert ".round-action-list.defender li" not in css
+
+
+def test_battle_report_drop_names_use_rarity_colored_text():
+    template = Path("battle/templates/battle/report_detail.html").read_text(encoding="utf-8")
+    css = Path("battle/templates/battle/partials/report_detail_styles.html").read_text(encoding="utf-8")
+
+    assert "class=\"battle-drop-item rarity-text rarity-{{ drop.rarity|default:'default' }}\"" in template
+    drop_list_rule = _rule_body(css, ".battle-drop-list")
+    assert "display: flex" in drop_list_rule
+    assert "flex-wrap: wrap" in drop_list_rule
+
+    drop_item_rule = _rule_body(css, ".battle-drop-item")
+    assert "white-space: nowrap" in drop_item_rule

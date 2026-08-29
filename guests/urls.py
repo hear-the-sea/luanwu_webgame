@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views.equipment import equip_view, gear_options_view, unequip_view
-from .views.items import use_medicine_item_view
+from .views.items import heal_all_guests_view, use_medicine_item_view
 from .views.recruit import RecruitView, accept_candidate_view, use_magnifying_glass_view, use_recruitment_card_view
 from .views.roster import GuestDetailView, RosterView, dismiss_guest_view
 from .views.salary import pay_all_salaries_view, pay_salary_view
@@ -30,4 +30,5 @@ urlpatterns = [
     path("candidates/accept/", accept_candidate_view, name="candidate_accept"),
     path("candidates/reveal/", use_magnifying_glass_view, name="use_magnifying_glass"),
     path("pay-all-salaries/", pay_all_salaries_view, name="pay_all_salaries"),
+    path("heal-all-guests/", heal_all_guests_view, name="heal_all_guests"),
 ]

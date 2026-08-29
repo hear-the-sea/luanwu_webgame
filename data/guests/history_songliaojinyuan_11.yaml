@@ -17,7 +17,7 @@ heroes:
     name: 滕宗谅
     default_gender: male
     archetype: military
-    flavor: （991年—1047年）滕宗谅是北宋边臣，任庆州知州时整修城防、招辑流民，西北军政颇有成效。后又重修巴陵岳阳楼，请范仲淹作《岳阳楼记》，遂使一座楼、一篇文与其姓名一并流传。被记住的不只是文名缘分，也有实打实的治边政绩。
+    flavor: （991年—1047年）北宋官员，字子京。滕宗谅任庆州知州时整修城防、招抚流民；调任巴陵后重修岳阳楼，请范仲淹作《岳阳楼记》，后任苏州知州，病逝于任上。
     growth_range:
     - 5
     - 9
@@ -26,20 +26,20 @@ heroes:
       intellect: 13
       defense: 26
       agility: 19
+  green:
   - key: hist_songliaojinyuan_0552
     name: 焦赞
     default_gender: male
     archetype: military
-    flavor: （生卒年不详）焦赞在正史中着墨不多，却因杨家将故事长期流传。民间演义多写他与孟良并称，常为抗辽军中的冲阵先锋，以勇猛、急烈、善破围著称。后世记住焦赞，主要不是因显赫官爵，而是因他在杨家将叙事里成了北宋猛将形象的一部分。
+    flavor: （生卒年不详）北宋将领，正史记载较少。杨家将演义把焦赞写成杨业部下，常与孟良并称，负责冲阵破围；其官职、战绩和生卒年缺乏可靠史料。
     growth_range:
-    - 5
-    - 9
+    - 3
+    - 7
     attribute_weights:
       force: 47
       intellect: 16
       defense: 23
       agility: 14
-  green:
   - key: hist_songliaojinyuan_0496
     name: 巢谷
     default_gender: male

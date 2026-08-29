@@ -24,6 +24,16 @@
                 </button>
             </form>
             {% endif %}
+            <form method="post" action="{% url 'guests:heal_all_guests' %}" style="display: inline;" id="heal-all-guests-form"
+                data-count="{{ healable_count }}" data-medicine-quantity="{{ medicine_quantity }}">
+                {% csrf_token %}
+                <button type="submit" class="tw-btn-secondary"
+                    {% if healable_count == 0 or medicine_quantity == 0 %}disabled{% endif %}
+                    {% if healable_count == 0 %}title="当前没有需要疗伤的门客"
+                    {% elif medicine_quantity == 0 %}title="仓库暂无疗伤道具"{% endif %}>
+                    一键疗伤{% if healable_count > 0 %} ({{ healable_count }}人){% endif %}
+                </button>
+            </form>
             <a class="tw-btn-primary" href="{% url 'gameplay:recruitment_hall' %}">前往聚贤庄</a>
         </div>
     </div>

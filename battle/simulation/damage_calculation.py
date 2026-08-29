@@ -16,6 +16,7 @@ from .constants import (
     DAMAGE_VARIANCE_MAX,
     DAMAGE_VARIANCE_MIN,
     DEFAULT_DEFENSE_CONSTANT,
+    GUEST_SKILL_VS_GUEST_MULTIPLIER,
     GUEST_SKILL_VS_TROOP_MULTIPLIER,
     GUEST_VS_CITY_DEFENSE_DAMAGE_MULTIPLIER,
     GUEST_VS_GUEST_DAMAGE_MULTIPLIER,
@@ -205,6 +206,11 @@ def _apply_guest_vs_troop_split_scaling(
     return base_damage * slaughter_mult + skill_damage * GUEST_SKILL_VS_TROOP_MULTIPLIER
 
 
+def _apply_guest_vs_guest_split_scaling(*, base_damage: float, total_damage: float) -> float:
+    skill_damage = total_damage - base_damage
+    return base_damage + skill_damage * GUEST_SKILL_VS_GUEST_MULTIPLIER
+
+
 def _apply_passive_true_damage(actor: "Combatant", target: "Combatant", damage: float) -> float:
     modifiers = getattr(actor, "battle_modifiers", None)
     if not isinstance(modifiers, dict):
@@ -312,7 +318,7 @@ def calculate_attack_damage(
     9) 先手回合调整 + 特定武艺倍率
     10) 双倍打击
     11) 状态惩罚（伤害降低）
-    12) 对小兵目标的最终倍率：普攻屠戮倍率 + 技能伤害独立倍率
+    12) 门客对小兵/门客的最终倍率：普攻倍率 + 技能伤害独立倍率
     13) 非门客来源的城防相关最终伤害倍率
 
     该函数不直接修改 actor/target 的血量或兵力，专注于"伤害数值"的计算。
@@ -368,6 +374,11 @@ def calculate_attack_damage(
             base_damage=base_damage_value,
             total_damage=total_damage_value,
             calculate_slaughter_multiplier_fn=calculate_slaughter_multiplier,
+        )
+    elif actor.kind == "guest" and target.kind == "guest":
+        damage = _apply_guest_vs_guest_split_scaling(
+            base_damage=base_damage_value,
+            total_damage=total_damage_value,
         )
     else:
         damage = _apply_slaughter_multiplier(actor, target, total_damage_value, calculate_slaughter_multiplier)

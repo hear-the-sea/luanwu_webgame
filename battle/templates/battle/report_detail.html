@@ -188,7 +188,11 @@
                     </span>
                     <div class="battle-settlement-value">
                         {% if drop_items %}
-                            <span>{% for drop in drop_items %}{{ drop.label }} +{{ drop.amount }}{% if not forloop.last %}、{% endif %}{% endfor %}</span>
+                            <span class="battle-drop-list" aria-label="战斗掉落物品">
+                                {% for drop in drop_items %}
+                                    <span class="battle-drop-item rarity-text rarity-{{ drop.rarity|default:'default' }}" title="{{ drop.label }}">{{ drop.label }} +{{ drop.amount }}</span>{% if not forloop.last %}<span class="battle-drop-separator" aria-hidden="true">、</span>{% endif %}
+                                {% endfor %}
+                            </span>
                         {% elif loss_items %}
                             <span>{% for loss in loss_items %}{{ loss.label }}{% if loss.amount %} -{{ loss.amount }}{% endif %}{% if not forloop.last %}、{% endif %}{% endfor %}</span>
                         {% elif is_spectator %}

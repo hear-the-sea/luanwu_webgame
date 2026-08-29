@@ -31,7 +31,7 @@ def test_baimenlou_has_the_requested_five_bosses_and_final_rewards():
     missions = {entry["key"]: entry for entry in _load_yaml("mission_templates.yaml")["missions"]}
     mission = missions["baimenlou_mingyun_jueze"]
 
-    assert mission["name"] == "吕布命运抉择白门楼"
+    assert mission["name"] == "飞将浮沉录·第三关：白门楼命运抉择"
     assert [entry["label"] for entry in mission["enemy_guests"]] == [
         "吕布",
         "高顺",
