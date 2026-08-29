@@ -1926,7 +1926,7 @@ items:
 
   - key: work_chest_large
     name: 打工宝箱（大）
-    description: 打工获得的大型宝箱，打开后可获得随机铂金和锻造材料，有小概率获得紫色装备或技能书。
+    description: 打工获得的大型宝箱，打开后可获得随机铂金和锻造材料，有机会获得春秋币，以及小概率获得紫色装备或技能书。
     effect_type: loot_box
     rarity: purple
     image: large.png

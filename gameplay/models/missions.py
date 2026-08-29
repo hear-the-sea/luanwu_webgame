@@ -39,7 +39,11 @@ class MissionTemplate(models.Model):
     display_order = models.PositiveIntegerField(default=1000, db_index=True, verbose_name="显示顺序")
     base_travel_time = models.PositiveIntegerField(default=1800, help_text="往返基础耗时（秒）")
     daily_limit = models.PositiveIntegerField(default=3)
-    mission_card_daily_limit = models.PositiveIntegerField(default=5, help_text="该任务每日最多使用的任务卡数量")
+    mission_card_daily_limit = models.PositiveIntegerField(
+        default=5,
+        verbose_name="任务卡每日上限",
+        help_text="该任务每日最多使用的任务卡数量",
+    )
 
     class Meta:
         verbose_name = "任务模板"

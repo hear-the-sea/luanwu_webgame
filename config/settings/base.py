@@ -53,7 +53,8 @@ def _production_default_flag(*, debug: bool, running_tests: bool) -> str:
 
 
 # Game time multiplier
-GAME_TIME_MULTIPLIER = env_float("GAME_TIME_MULTIPLIER", 1.0)
+# Tests must not inherit the accelerated local development clock from `.env`.
+GAME_TIME_MULTIPLIER = 1.0 if RUNNING_TESTS else env_float("GAME_TIME_MULTIPLIER", 1.0)
 if not math.isfinite(GAME_TIME_MULTIPLIER) or GAME_TIME_MULTIPLIER <= 0:
     GAME_TIME_MULTIPLIER = 1.0
 

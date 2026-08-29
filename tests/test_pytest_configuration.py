@@ -19,6 +19,12 @@ def test_pytest_testpaths_include_app_local_test_directories():
     assert {"tests", "guests/tests"}.issubset(testpaths)
 
 
+def test_pytest_uses_real_time_game_clock_even_with_accelerated_local_env():
+    from django.conf import settings
+
+    assert settings.GAME_TIME_MULTIPLIER == 1.0
+
+
 def test_pytest_registers_commit_bound_evidence_marker():
     config = configparser.ConfigParser()
     config.read(ROOT_DIR / "pytest.ini")

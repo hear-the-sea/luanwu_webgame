@@ -41,8 +41,10 @@ SLOT_CAPACITY = {
 }
 MAX_DIRECT_TROOP_CAPACITY = 520
 MAX_DIRECT_LUCK = 210
-MAX_DIRECT_AGILITY = 360
-MAX_DIRECT_EFFECTIVE_HP = 19000
+# The 2026-08 equipment rebalance raised the catalog maxima to 393 agility and
+# 21,293 effective HP; keep rounded ceilings with a small regression margin.
+MAX_DIRECT_AGILITY = 400
+MAX_DIRECT_EFFECTIVE_HP = 22000
 MAX_ORANGE_NON_HP_ATTRIBUTE_SUM = 260
 
 EQUIPMENT_STORAGE_BY_RARITY = {"black": 50, "green": 75, "blue": 100, "purple": 150, "orange": 200}
@@ -84,6 +86,9 @@ RESOURCE_STORAGE = {
     "niu": 20,
     "wanyin_flag_fragment": 10,
     "yuxu_broken_seal": 20,
+    "sishui_battle_report": 10,
+    "hulao_war_banner": 15,
+    "baimenlou_fate_seal": 20,
 }
 RESOURCE_PACK_STORAGE = {
     "resource_pack_silver": 25,
@@ -281,7 +286,7 @@ def test_work_chests_include_tool_item_reward_ranges():
     assert actual == expected
 
 
-def test_work_chests_include_forge_material_random_groups():
+def test_work_chests_include_forge_material_and_currency_random_groups():
     items = _load_item_templates()
     expected = {
         "work_chest_small": [
@@ -297,6 +302,8 @@ def test_work_chests_include_forge_material_random_groups():
             (1.00, 2, 3, {"shuiqumu": 5, "paozi": 3, "zaozi": 3}),
             (1.00, 1, 2, {"tiemu": 4, "zitanmu": 3, "heiyuanshi": 3, "jingangmei": 2}),
             (0.12, 1, 1, {"gaolu": 1}),
+            (0.10, 1, 1, {"chunqiu_coin": 1}),
+            (0.01, 10, 10, {"chunqiu_coin": 1}),
         ],
     }
 
@@ -314,11 +321,6 @@ def test_work_chests_include_forge_material_random_groups():
         ]
 
     assert actual == expected
-    assert all(
-        "chunqiu_coin" not in choices
-        for chest_groups in actual.values()
-        for _chance, _minimum, _maximum, choices in chest_groups
-    )
 
 
 def test_work_chests_include_starter_equipment_rewards():
