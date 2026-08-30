@@ -19,6 +19,7 @@ from core.exceptions import (
     ItemNotFoundError,
     ShopValidationError,
 )
+from core.game_data.troop_device_bonus_display import format_raw_troop_device_bonus
 from core.utils import safe_int, safe_non_negative_int
 from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent
 from gameplay.models.items import (
@@ -58,6 +59,12 @@ class ShopItemDisplay:
     category: str  # 种类显示名称
     rarity: str  # 稀有度
     effect_payload: dict  # 效果数据（装备属性、套装等）
+
+    @property
+    def troop_stat_bonus_summary(self) -> str:
+        if self.effect_type != "equip_device":
+            return ""
+        return format_raw_troop_device_bonus(self.effect_payload.get("troop_stat_bonus"))
 
 
 @dataclass

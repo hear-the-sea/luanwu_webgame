@@ -108,6 +108,37 @@ def test_gear_options_view_does_not_materialize_gear_items_from_get(game_data, d
 
 
 @pytest.mark.django_db
+def test_gear_options_view_exposes_device_troop_bonus(game_data, django_user_model):
+    cache.clear()
+    user = django_user_model.objects.create_user(username="view_device_troop_bonus", password="pass123")
+    manor = ensure_manor(user)
+    client = Client()
+    assert client.login(username="view_device_troop_bonus", password="pass123")
+    template = ItemTemplate.objects.create(
+        key=f"view_device_troop_bonus_{manor.id}",
+        name="机械猫测试",
+        effect_type="equip_device",
+        rarity="blue",
+        effect_payload={
+            "force": 25,
+            "troop_stat_bonus": {"gong": {"hp_pct": 0.01}},
+        },
+    )
+    InventoryItem.objects.create(
+        manor=manor,
+        template=template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    response = client.get(reverse("guests:gear_options"), {"slot": GearSlot.DEVICE})
+
+    assert response.status_code == 200
+    option = next(entry for entry in response.json()["options"] if entry["template_key"] == template.key)
+    assert option["title"] == "武力+25；护院加成：弓系生命+1%"
+
+
+@pytest.mark.django_db
 def test_gear_options_view_lists_free_gear_without_inventory(game_data, django_user_model):
     cache.clear()
     user = django_user_model.objects.create_user(username="view_gear_options_free_gear", password="pass123")

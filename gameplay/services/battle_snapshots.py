@@ -10,12 +10,19 @@ from django.utils import timezone
 from battle.combatants_pkg.troop_device_bonuses import (
     ALLOWED_STATS,
     ALLOWED_TROOP_CLASSES,
-    build_troop_device_bonuses_by_guest,
+    build_troop_device_bonus_sources_by_guest,
+    build_troop_device_bonuses_from_sources,
 )
 from core.exceptions import InvalidBattleSnapshotError
 from guests.guest_combat_stats import resolve_guest_combat_stats
 from guests.guest_rules import compute_guest_troop_capacity
 from guests.models import Guest
+
+LEGACY_BATTLE_GUEST_SNAPSHOT_VERSION = 1
+CURRENT_BATTLE_GUEST_SNAPSHOT_VERSION = 2
+SUPPORTED_BATTLE_GUEST_SNAPSHOT_VERSIONS = frozenset(
+    {LEGACY_BATTLE_GUEST_SNAPSHOT_VERSION, CURRENT_BATTLE_GUEST_SNAPSHOT_VERSION}
+)
 
 
 class _EmptySkillSet:
@@ -37,6 +44,17 @@ def _invalid_troop_loadout() -> InvalidBattleSnapshotError:
         snapshot_kind="troop_loadout",
         field_name="troop_loadout",
     )
+
+
+def _resolve_snapshot_version(snapshot: dict[str, Any]) -> int:
+    raw_version = snapshot.get("snapshot_version", LEGACY_BATTLE_GUEST_SNAPSHOT_VERSION)
+    if (
+        not isinstance(raw_version, int)
+        or isinstance(raw_version, bool)
+        or raw_version not in SUPPORTED_BATTLE_GUEST_SNAPSHOT_VERSIONS
+    ):
+        raise _invalid_guest_snapshot("snapshot_version")
+    return raw_version
 
 
 def _resolve_snapshot_text_field(raw: Any, *, field_name: str) -> str:
@@ -106,31 +124,34 @@ def _normalize_snapshot_skill_keys(snapshot: dict[str, Any]) -> list[str]:
     return normalized
 
 
-def _normalize_snapshot_troop_device_bonuses(snapshot: dict[str, Any]) -> dict[str, dict[str, dict[str, int | float]]]:
-    raw_bonuses = snapshot.get("troop_device_bonuses")
+def _normalize_snapshot_troop_device_bonus_mapping(
+    raw_bonuses: Any,
+    *,
+    field_name: str,
+) -> dict[str, dict[str, dict[str, int | float]]]:
     if raw_bonuses is None:
         return {}
     if not isinstance(raw_bonuses, Mapping):
-        raise _invalid_guest_snapshot("troop_device_bonuses")
+        raise _invalid_guest_snapshot(field_name)
 
     normalized: dict[str, dict[str, dict[str, int | float]]] = {}
     for troop_class, raw_stats in raw_bonuses.items():
         if troop_class not in ALLOWED_TROOP_CLASSES or not isinstance(raw_stats, Mapping):
-            raise _invalid_guest_snapshot("troop_device_bonuses")
+            raise _invalid_guest_snapshot(field_name)
 
         for stat, raw_bonus in raw_stats.items():
             if stat not in ALLOWED_STATS or not isinstance(raw_bonus, Mapping):
-                raise _invalid_guest_snapshot("troop_device_bonuses")
+                raise _invalid_guest_snapshot(field_name)
             if any(key not in {"flat", "pct"} for key in raw_bonus):
-                raise _invalid_guest_snapshot("troop_device_bonuses")
+                raise _invalid_guest_snapshot(field_name)
 
             flat_value = _resolve_snapshot_nonnegative_number(
                 raw_bonus.get("flat", 0),
-                field_name="troop_device_bonuses",
+                field_name=field_name,
             )
             pct_value = _resolve_snapshot_nonnegative_number(
                 raw_bonus.get("pct", 0),
-                field_name="troop_device_bonuses",
+                field_name=field_name,
             )
             if flat_value <= 0 and pct_value <= 0:
                 continue
@@ -138,6 +159,48 @@ def _normalize_snapshot_troop_device_bonuses(snapshot: dict[str, Any]) -> dict[s
                 "flat": flat_value,
                 "pct": pct_value,
             }
+    return normalized
+
+
+def _normalize_snapshot_troop_device_bonuses(snapshot: dict[str, Any]) -> dict[str, dict[str, dict[str, int | float]]]:
+    return _normalize_snapshot_troop_device_bonus_mapping(
+        snapshot.get("troop_device_bonuses"),
+        field_name="troop_device_bonuses",
+    )
+
+
+def _normalize_snapshot_troop_device_bonus_sources(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+    if "troop_device_bonus_sources" not in snapshot:
+        return []
+    raw_sources = snapshot.get("troop_device_bonus_sources")
+    if not isinstance(raw_sources, list):
+        raise _invalid_guest_snapshot("troop_device_bonus_sources")
+
+    normalized: list[dict[str, Any]] = []
+    for raw_source in raw_sources:
+        if not isinstance(raw_source, Mapping):
+            raise _invalid_guest_snapshot("troop_device_bonus_sources")
+        if any(key not in {"template_key", "template_name", "bonuses"} for key in raw_source):
+            raise _invalid_guest_snapshot("troop_device_bonus_sources")
+        template_key = raw_source.get("template_key")
+        template_name = raw_source.get("template_name")
+        if not isinstance(template_key, str) or not template_key.strip():
+            raise _invalid_guest_snapshot("troop_device_bonus_sources")
+        if not isinstance(template_name, str) or not template_name.strip():
+            raise _invalid_guest_snapshot("troop_device_bonus_sources")
+        bonuses = _normalize_snapshot_troop_device_bonus_mapping(
+            raw_source.get("bonuses"),
+            field_name="troop_device_bonus_sources",
+        )
+        if not bonuses:
+            raise _invalid_guest_snapshot("troop_device_bonus_sources")
+        normalized.append(
+            {
+                "template_key": template_key.strip(),
+                "template_name": template_name.strip(),
+                "bonuses": bonuses,
+            }
+        )
     return normalized
 
 
@@ -211,6 +274,7 @@ class BattleGuestSnapshotProxy:
 
     def __init__(self, snapshot: dict[str, Any], *, include_guest_identity: bool = False):
         now = timezone.now()
+        self.snapshot_version = _resolve_snapshot_version(snapshot)
         guest_id = (
             _resolve_snapshot_identity_int(snapshot.get("guest_id"), field_name="guest_id", required=True)
             if include_guest_identity
@@ -250,6 +314,14 @@ class BattleGuestSnapshotProxy:
             snapshot.get("troop_capacity"), field_name="troop_capacity", minimum=0
         )
         self.troop_device_bonuses = _normalize_snapshot_troop_device_bonuses(snapshot)
+        self.has_troop_device_bonus_sources = "troop_device_bonus_sources" in snapshot
+        if self.snapshot_version >= CURRENT_BATTLE_GUEST_SNAPSHOT_VERSION and not self.has_troop_device_bonus_sources:
+            raise _invalid_guest_snapshot("troop_device_bonus_sources")
+        self.troop_device_bonus_sources = _normalize_snapshot_troop_device_bonus_sources(snapshot)
+        if self.has_troop_device_bonus_sources and (
+            build_troop_device_bonuses_from_sources(self.troop_device_bonus_sources) != self.troop_device_bonuses
+        ):
+            raise _invalid_guest_snapshot("troop_device_bonus_sources")
         self.manor = None
         self._override_skills = _normalize_snapshot_skill_keys(snapshot)
 
@@ -275,6 +347,7 @@ def build_guest_battle_snapshot(
     *,
     include_identity: bool = True,
     troop_device_bonuses: Mapping[str, Any] | None = None,
+    troop_device_bonus_sources: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     stats = resolve_guest_combat_stats(guest)
     attack = _resolve_live_computed_stat_int(stats.attack, field_name="attack", minimum=1)
@@ -284,10 +357,12 @@ def build_guest_battle_snapshot(
     troop_capacity = _resolve_live_computed_stat_int(troop_capacity_raw, field_name="troop_capacity", minimum=0)
     current_hp = _resolve_live_snapshot_stat_int(guest, field_name="current_hp", minimum=1)
     current_hp = min(max_hp, current_hp)
+    if troop_device_bonus_sources is None:
+        troop_device_bonus_sources = build_troop_device_bonus_sources_by_guest([guest])[0]
     if troop_device_bonuses is None:
-        troop_device_bonuses = build_troop_device_bonuses_by_guest([guest])[0]
+        troop_device_bonuses = build_troop_device_bonuses_from_sources(troop_device_bonus_sources)
     payload: dict[str, Any] = {
-        "snapshot_version": 1,
+        "snapshot_version": CURRENT_BATTLE_GUEST_SNAPSHOT_VERSION,
         "display_name": _resolve_live_snapshot_text_field(guest, field_name="display_name"),
         "rarity": _resolve_live_snapshot_text_field(guest, field_name="rarity"),
         "status": _resolve_live_snapshot_text_field(guest, field_name="status"),
@@ -304,6 +379,7 @@ def build_guest_battle_snapshot(
         "current_hp": current_hp,
         "troop_capacity": troop_capacity,
         "troop_device_bonuses": dict(troop_device_bonuses),
+        "troop_device_bonus_sources": list(troop_device_bonus_sources),
         "skill_keys": _serialize_guest_skill_keys(guest),
     }
     if include_identity:
@@ -318,12 +394,14 @@ def build_guest_battle_snapshots(
     include_identity: bool = True,
 ) -> list[dict[str, Any]]:
     guest_list = list(guests)
-    device_bonuses_by_guest = build_troop_device_bonuses_by_guest(guest_list)
+    device_sources_by_guest = build_troop_device_bonus_sources_by_guest(guest_list)
+    device_bonuses_by_guest = [build_troop_device_bonuses_from_sources(sources) for sources in device_sources_by_guest]
     return [
         build_guest_battle_snapshot(
             guest,
             include_identity=include_identity,
             troop_device_bonuses=device_bonuses_by_guest[index],
+            troop_device_bonus_sources=device_sources_by_guest[index],
         )
         for index, guest in enumerate(guest_list)
     ]

@@ -135,6 +135,21 @@ def test_gear_tooltip_renders_troop_capacity_label_in_chinese():
     assert "troop_capacity" not in html
 
 
+def test_gear_summary_and_tooltip_render_troop_device_bonus():
+    template = SimpleNamespace(
+        description="机械猫",
+        attack_bonus=0,
+        defense_bonus=0,
+        extra_stats={"force": 25},
+        set_key="",
+        set_bonus={},
+        troop_stat_bonus_summary="弓系生命+1%",
+    )
+
+    assert guest_extras.gear_summary(template) == "机械猫；武力+25；护院加成：弓系生命+1%"
+    assert "护院加成：弓系生命+1%" in str(guest_extras.gear_tooltip(template))
+
+
 def test_attribute_icons_renders_expected_icon_pack():
     html = str(guest_extras.attribute_icons(85))
 

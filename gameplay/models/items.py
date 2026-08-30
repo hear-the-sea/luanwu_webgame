@@ -11,6 +11,8 @@ from django.db.models.deletion import ProtectedError
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
+from core.game_data.troop_device_bonus_display import format_raw_troop_device_bonus
+
 from .manor import ResourceType
 
 _PREVALIDATED_MESSAGE_DELETIONS: ContextVar[frozenset[tuple[str, int]]] = ContextVar(
@@ -107,6 +109,18 @@ class ItemTemplate(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    @property
+    def troop_stat_bonus_summary(self) -> str:
+        if self.effect_type != "equip_device" or not isinstance(self.effect_payload, dict):
+            return ""
+        return format_raw_troop_device_bonus(self.effect_payload.get("troop_stat_bonus"))
+
+    @property
+    def equipment_effect_summary(self) -> str:
+        if not str(self.effect_type or "").startswith("equip_") or not isinstance(self.effect_payload, dict):
+            return ""
+        return _equipment_summary(self.effect_payload)
 
 
 LEGACY_TOOL_EFFECT_TYPES = {
@@ -213,9 +227,13 @@ def _equipment_set_summary(payload: dict) -> str:
 def _equipment_summary(payload: dict) -> str:
     parts = []
     for key, value in payload.items():
-        if value is None or key in {"set_key", "set_bonus", "set_description"}:
+        if value is None or key in {"set_key", "set_bonus", "set_description", "troop_stat_bonus"}:
             continue
         parts.append(f"{_ITEM_EFFECT_STAT_LABELS.get(key, '未知属性')}+{value}")
+
+    troop_bonus_text = format_raw_troop_device_bonus(payload.get("troop_stat_bonus"))
+    if troop_bonus_text:
+        parts.append(troop_bonus_text)
 
     set_text = _equipment_set_summary(payload)
     if set_text:
@@ -281,7 +299,7 @@ class InventoryItem(models.Model):
             skill_name = payload.get("skill_name") or payload.get("skill_key", "技能")
             return f"学习 {skill_name}"
         if effect_type and effect_type.startswith("equip_"):
-            return _equipment_summary(payload)
+            return self.template.equipment_effect_summary
         if effect_type == ItemTemplate.EffectType.MEDICINE:
             hp = payload.get("hp")
             if hp:

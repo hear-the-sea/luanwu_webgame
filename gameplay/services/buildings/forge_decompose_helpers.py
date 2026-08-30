@@ -28,6 +28,7 @@ def build_decomposable_equipment_option(
     return {
         "key": item.template.key,
         "name": item.template.name,
+        "effect_summary": str(getattr(item.template, "equipment_effect_summary", "") or ""),
         "rarity": rarity,
         "rarity_label": rarity_labels.get(rarity, rarity),
         "quantity": item.quantity,

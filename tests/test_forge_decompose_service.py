@@ -9,11 +9,19 @@ from gameplay.services.inventory.core import get_item_quantity
 from gameplay.services.manor.core import ensure_manor
 
 
-def _create_item_template(key: str, name: str, effect_type: str, rarity: str = "black") -> ItemTemplate:
+def _create_item_template(
+    key: str,
+    name: str,
+    effect_type: str,
+    rarity: str = "black",
+    *,
+    effect_payload: dict | None = None,
+) -> ItemTemplate:
     return ItemTemplate.objects.create(
         key=key,
         name=name,
         effect_type=effect_type,
+        effect_payload=effect_payload or {},
         rarity=rarity,
         tradeable=True,
         is_usable=False,
@@ -96,7 +104,13 @@ def test_get_decomposable_equipment_options_supports_device_category(django_user
     user = django_user_model.objects.create_user(username="forge_device_group", password="pass123")
     manor = ensure_manor(user)
 
-    device = _create_item_template("equip_custom_device", "自定义器械", "equip_device", "green")
+    device = _create_item_template(
+        "equip_custom_device",
+        "自定义器械",
+        "equip_device",
+        "green",
+        effect_payload={"troop_stat_bonus": {"gong": {"hp_pct": 0.01}}},
+    )
     InventoryItem.objects.create(manor=manor, template=device, quantity=1)
 
     monkeypatch.setattr(forge_service, "get_recruitment_equipment_keys", lambda: set())
@@ -106,6 +120,7 @@ def test_get_decomposable_equipment_options_supports_device_category(django_user
     assert len(device_options) == 1
     assert device_options[0]["key"] == "equip_custom_device"
     assert device_options[0]["category"] == "device"
+    assert device_options[0]["effect_summary"] == "弓系生命+1%"
 
 
 @pytest.mark.django_db

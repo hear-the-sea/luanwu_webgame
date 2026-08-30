@@ -52,15 +52,17 @@ def _snapshot_lineup_side(units: Iterable[Any]) -> dict[str, list[dict[str, Any]
 
         kind = str(getattr(unit, "kind", "") or "")
         if kind == "guest":
-            guests.append(
-                {
-                    "name": str(getattr(unit, "name", "") or "门客"),
-                    "template_key": str(getattr(unit, "template_key", "") or ""),
-                    "guest_id": getattr(unit, "guest_id", None),
-                    "current_hp": max(0, int(getattr(unit, "hp", 0) or 0)),
-                    "max_hp": max(0, int(getattr(unit, "max_hp", 0) or 0)),
-                }
-            )
+            guest = {
+                "name": str(getattr(unit, "name", "") or "门客"),
+                "template_key": str(getattr(unit, "template_key", "") or ""),
+                "guest_id": getattr(unit, "guest_id", None),
+                "current_hp": max(0, int(getattr(unit, "hp", 0) or 0)),
+                "max_hp": max(0, int(getattr(unit, "max_hp", 0) or 0)),
+            }
+            agility = getattr(unit, "agility", None)
+            if agility is not None:
+                guest["agility"] = agility
+            guests.append(guest)
             continue
 
         if kind == "city_defense":

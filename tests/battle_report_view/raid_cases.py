@@ -28,7 +28,32 @@ def test_raid_report_without_run_relation_uses_defender_perspective_from_message
     attacker_manor = ensure_manor(attacker_user)
     defender_manor = ensure_manor(defender_user)
 
-    report = create_report(manor=attacker_manor, opponent_name=defender_manor.display_name, battle_type="raid", seed=3)
+    report = create_report(
+        manor=attacker_manor,
+        opponent_name=defender_manor.display_name,
+        battle_type="raid",
+        seed=3,
+        attacker_equipment_bonuses=[
+            {
+                "template_key": "equip_jiguanchuniao",
+                "name": "机关雏鸟",
+                "equipped_count": 1,
+                "effective_count": 1,
+                "capped": False,
+                "bonuses": {"gong": {"attack": {"flat": 0, "pct": 0.01}}},
+            }
+        ],
+        defender_equipment_bonuses=[
+            {
+                "template_key": "equip_jixiemao",
+                "name": "机械猫",
+                "equipped_count": 1,
+                "effective_count": 1,
+                "capped": False,
+                "bonuses": {"gong": {"hp": {"flat": 0, "pct": 0.01}}},
+            }
+        ],
+    )
     Message.objects.create(
         manor=defender_manor,
         kind=Message.Kind.BATTLE,
@@ -44,7 +69,14 @@ def test_raid_report_without_run_relation_uses_defender_perspective_from_message
     assert response.context["my_side"] == "defender"
     assert response.context["attacker_team_display"][0]["name"] == "D"
     assert response.context["defender_team_display"][0]["name"] == "A"
+    assert response.context["attacker_equipment_bonuses"][0]["name"] == "机械猫"
+    assert response.context["defender_equipment_bonuses"][0]["name"] == "机关雏鸟"
     assert response.context["report_title"] == "踢馆战报 - 防守失败"
+    body = response.content.decode("utf-8")
+    overview_html = body.split('<section class="battle-overview-table"', 1)[1].split("</section>", 1)[0]
+    assert "我方" in overview_html
+    assert "敌方" in overview_html
+    assert overview_html.index("机械猫") < overview_html.index("机关雏鸟")
 
 
 @pytest.mark.django_db

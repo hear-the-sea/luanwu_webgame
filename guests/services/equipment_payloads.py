@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from core.game_data.troop_device_bonus_display import format_raw_troop_device_bonus
+
 from ..models import GearTemplate, GuestRarity
 from ..utils.equipment_utils import EQUIP_SLOT_MAP, SET_STAT_FIELD_MAP
 
@@ -133,7 +135,14 @@ def build_gear_template_preview(item_template: Any) -> GearTemplate | None:
     slot = EQUIP_SLOT_MAP.get(effect_type)
     if not slot:
         return None
-    return GearTemplate(
+    preview = GearTemplate(
         key=require_string(getattr(item_template, "key", None), field_name="item_template.key"),
         **build_gear_template_defaults(item_template, slot=slot),
     )
+    payload = require_mapping(getattr(item_template, "effect_payload", None), field_name="item_template.effect_payload")
+    setattr(
+        preview,
+        "troop_stat_bonus_summary",
+        format_raw_troop_device_bonus(payload.get("troop_stat_bonus")) if slot == "device" else "",
+    )
+    return preview

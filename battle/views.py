@@ -20,6 +20,7 @@ from .view_helpers import (
     resolve_city_defense_perspective,
     resolve_display_drops,
     resolve_display_losses,
+    resolve_equipment_bonus_perspective,
     resolve_perspective,
     resolve_report_runtime_context,
     serialize_city_defense_rows,
@@ -90,6 +91,7 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
             player_side,
         )
         my_city_defenses_raw, enemy_city_defenses_raw = resolve_city_defense_perspective(report, player_side)
+        my_equipment_bonuses, enemy_equipment_bonuses = resolve_equipment_bonus_perspective(report, player_side)
 
         context["attacker_team_display"] = my_team
         context["defender_team_display"] = enemy_team
@@ -97,6 +99,8 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
         context["defender_troops"] = serialize_troops(enemy_troops_raw, troop_definitions)
         context["attacker_city_defenses"] = serialize_city_defense_rows(my_city_defenses_raw)
         context["defender_city_defenses"] = serialize_city_defense_rows(enemy_city_defenses_raw)
+        context["attacker_equipment_bonuses"] = my_equipment_bonuses
+        context["defender_equipment_bonuses"] = enemy_equipment_bonuses
         context["attacker_loss"] = my_loss
         context["defender_loss"] = enemy_loss
 

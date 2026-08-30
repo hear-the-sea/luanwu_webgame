@@ -211,6 +211,32 @@ class TestInventoryPageContext:
         assert "使用获得" in body
         assert "银两 +1234" in body
 
+    def test_warehouse_page_shows_device_troop_bonus(self, manor_with_user):
+        manor, client = manor_with_user
+        template = ItemTemplate.objects.create(
+            key="view_warehouse_device_troop_bonus",
+            name="机械猫测试",
+            effect_type="equip_device",
+            rarity="blue",
+            effect_payload={
+                "force": 25,
+                "troop_stat_bonus": {"gong": {"hp_pct": 0.01}},
+            },
+        )
+        InventoryItem.objects.create(
+            manor=manor,
+            template=template,
+            quantity=1,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+
+        response = client.get(reverse("gameplay:warehouse"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "护院加成" in body
+        assert "弓系生命+1%" in body
+
     def test_recruitment_hall_page(self, manor_with_user):
         _manor, client = manor_with_user
         response = client.get(reverse("gameplay:recruitment_hall"))

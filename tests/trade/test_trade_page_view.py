@@ -178,6 +178,7 @@ def test_shop_tooltips_render_direct_stats_and_multi_tier_set_bonuses():
         category="装备",
         rarity="blue",
         effect_payload=buy_payload,
+        troop_stat_bonus_summary="弓系生命+1%",
     )
     sell_template = SimpleNamespace(
         key="sell_gear",
@@ -186,6 +187,7 @@ def test_shop_tooltips_render_direct_stats_and_multi_tier_set_bonuses():
         image=None,
         rarity="blue",
         effect_payload=sell_payload,
+        troop_stat_bonus_summary="枪系生命+1%",
     )
     sell_item = SimpleNamespace(
         inventory_item=SimpleNamespace(template=sell_template, quantity=1),
@@ -222,3 +224,82 @@ def test_shop_tooltips_render_direct_stats_and_multi_tier_set_bonuses():
     assert "可携带护院人数+44" in html
     assert "攻击+55" in html
     assert "可携带护院人数+88" in html
+    assert '<span class="tw-attr-label">护院加成</span><span class="tw-attr-value">弓系生命+1%</span>' in html
+    assert '<span class="tw-attr-label">护院加成</span><span class="tw-attr-value">枪系生命+1%</span>' in html
+
+
+@pytest.mark.django_db
+def test_market_and_auction_tooltips_render_device_troop_bonus_summary():
+    equipment_summary = "武力+6；弓系生命+1%"
+    item_template = SimpleNamespace(
+        key="mechanical_cat",
+        name="机械猫",
+        description="灵巧的弓系机关兽",
+        image=None,
+        rarity="blue",
+        category_display="器械",
+        equipment_effect_summary=equipment_summary,
+        price=100,
+    )
+    seller = SimpleNamespace(display_name="卖家庄园")
+    manor = SimpleNamespace(prestige=500, silver=1000)
+    listing = SimpleNamespace(
+        id=1,
+        item_template=item_template,
+        quantity=1,
+        unit_price=100,
+        total_price=100,
+        seller=seller,
+        expires_at=SimpleNamespace(isoformat="2030-01-01T00:00:00+08:00"),
+        time_remaining=600,
+    )
+    slot = SimpleNamespace(
+        id=1,
+        item_template=item_template,
+        starting_price=10,
+        min_increment=1,
+        bid_info=SimpleNamespace(
+            winner_count=5,
+            cutoff_price=10,
+            bidder_count=0,
+            is_full=False,
+            my_bid_amount=None,
+            is_safe=False,
+        ),
+    )
+    request = RequestFactory().get("/trade")
+    request.user = AnonymousUser()
+
+    market_html = render_to_string(
+        "trade/partials/_market.html",
+        {
+            "market_view": "buy",
+            "market_can_buy_or_list": True,
+            "market_min_prestige": 300,
+            "manor": manor,
+            "categories": [],
+            "listings": [listing],
+            "page_obj": Paginator([listing], 20).page(1),
+        },
+        request=request,
+    )
+    auction_html = render_to_string(
+        "trade/partials/_auction.html",
+        {
+            "auction_view": "browse",
+            "auction_stats": {
+                "current_round": 1,
+                "time_remaining": 600,
+                "available_gold_bars": 100,
+                "my_frozen_gold_bars": 0,
+                "my_leading_count": 0,
+            },
+            "categories": [],
+            "auction_slots": [slot],
+            "page_obj": Paginator([slot], 20).page(1),
+        },
+        request=request,
+    )
+
+    assert equipment_summary in market_html
+    assert equipment_summary in auction_html

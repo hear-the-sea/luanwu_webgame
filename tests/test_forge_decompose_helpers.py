@@ -17,6 +17,7 @@ def test_build_decomposable_equipment_option_applies_category_filter_and_labels(
             name="自定义剑",
             rarity="green",
             effect_type="equip_weapon",
+            equipment_effect_summary="武力+10",
         ),
     )
 
@@ -32,6 +33,7 @@ def test_build_decomposable_equipment_option_applies_category_filter_and_labels(
     assert option == {
         "key": "equip_custom_jian",
         "name": "自定义剑",
+        "effect_summary": "武力+10",
         "rarity": "green",
         "rarity_label": "绿色",
         "quantity": 3,

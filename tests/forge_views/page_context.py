@@ -183,6 +183,7 @@ class TestForgePageContext:
                     "rarity_label": "绿色",
                     "quantity": 1,
                     "effect_type": "equip_weapon",
+                    "effect_summary": "武力+10" if index == 0 else "",
                     "category": "weapon",
                     "category_name": "武器",
                 }
@@ -195,6 +196,7 @@ class TestForgePageContext:
         decompose_page_obj = response.context["decompose_page_obj"]
         assert len(decompose_page_obj.object_list) == 9
         assert decompose_page_obj.has_next()
+        assert "装备属性：武力+10" in response.content.decode("utf-8")
 
     def test_forge_synthesis_blueprints_paginate_to_three_items(self, manor_with_user, monkeypatch):
         _manor, client = manor_with_user
@@ -228,6 +230,7 @@ class TestForgePageContext:
             return {
                 "key": key,
                 "name": key,
+                "effect_summary": "生命+10" if key == "equip_a" else "",
                 "category": category,
                 "category_name": category,
                 "materials": [],
@@ -259,6 +262,7 @@ class TestForgePageContext:
         assert response.context["current_category"] == "weapon"
         page_obj = response.context["equipment_list"]
         assert {item["key"] for item in page_obj.object_list} == {"equip_a", "equip_b"}
+        assert "装备属性：生命+10" in response.content.decode("utf-8")
 
     def test_forge_synthesize_mode_supports_device_blueprint_category(self, manor_with_user, monkeypatch):
         _manor, client = manor_with_user
@@ -277,6 +281,7 @@ class TestForgePageContext:
                     "result_key": "equip_unknown_device",
                     "result_name": "器械产物",
                     "result_effect_type": "equip_device",
+                    "result_effect_summary": "弓系生命+1%",
                     "result_quantity": 1,
                     "required_forging": 1,
                     "description": "",
@@ -313,6 +318,7 @@ class TestForgePageContext:
         assert len(options) == 1
         assert options[0]["blueprint_key"] == "bp_device"
         assert options[0]["result_category"] == "device"
+        assert "装备属性：弓系生命+1%" in response.content.decode("utf-8")
 
     def test_forge_all_category_prioritizes_forgeable_high_requirement(self, manor_with_user, monkeypatch):
         _manor, client = manor_with_user

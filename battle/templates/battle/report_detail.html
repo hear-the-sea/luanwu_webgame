@@ -17,19 +17,39 @@
 
     <div class="battle-overview-table-wrap">
         <section class="battle-overview-table" aria-label="双方装备属性加成">
-            <div class="battle-overview-side attacker"><strong>进攻方</strong></div>
-            <div class="battle-overview-side defender"><strong>防守方</strong></div>
+            <div class="battle-overview-side attacker"><strong>{{ left_team_title }}</strong></div>
+            <div class="battle-overview-side defender"><strong>{{ right_team_title }}</strong></div>
 
             <div class="battle-overview-cell attacker">
                 <span class="battle-table-label">装备属性加成</span>
                 <div class="battle-equipment-list">
-                    <span class="battle-table-empty">无</span>
+                    {% for bonus in attacker_equipment_bonuses %}
+                        <div class="battle-equipment-bonus">
+                            <strong>{{ bonus.name }}{% if bonus.effective_count %} × {{ bonus.effective_count }}{% endif %}</strong>
+                            <span>{{ bonus.effect_text }}</span>
+                            {% if bonus.capped %}
+                                <small>已装备 {{ bonus.equipped_count }} 件，仅前 {{ bonus.effective_count }} 件生效</small>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <span class="battle-table-empty">无</span>
+                    {% endfor %}
                 </div>
             </div>
             <div class="battle-overview-cell defender">
                 <span class="battle-table-label">装备属性加成</span>
                 <div class="battle-equipment-list">
-                    <span class="battle-table-empty">无</span>
+                    {% for bonus in defender_equipment_bonuses %}
+                        <div class="battle-equipment-bonus">
+                            <strong>{{ bonus.name }}{% if bonus.effective_count %} × {{ bonus.effective_count }}{% endif %}</strong>
+                            <span>{{ bonus.effect_text }}</span>
+                            {% if bonus.capped %}
+                                <small>已装备 {{ bonus.equipped_count }} 件，仅前 {{ bonus.effective_count }} 件生效</small>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <span class="battle-table-empty">无</span>
+                    {% endfor %}
                 </div>
             </div>
         </section>

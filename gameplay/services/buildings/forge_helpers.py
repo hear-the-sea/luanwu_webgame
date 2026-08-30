@@ -130,6 +130,7 @@ def build_blueprint_synthesis_option(
         "result_key": result_key,
         "result_name": getattr(result_template, "name", "未知装备"),
         "result_effect_type": str(getattr(result_template, "effect_type", "") or ""),
+        "result_effect_summary": str(getattr(result_template, "equipment_effect_summary", "") or ""),
         "result_quantity": quantity_out,
         "required_forging": required_forging,
         "description": str(recipe.get("description", "") or ""),
@@ -153,6 +154,7 @@ def build_equipment_option(
     config: dict[str, Any],
     *,
     item_name_map: dict[str, str],
+    equipment_effect_summary_map: dict[str, str],
     material_quantities: dict[str, int],
     material_name_fallback_map: dict[str, str],
     equipment_categories: dict[str, str],
@@ -183,6 +185,7 @@ def build_equipment_option(
     return {
         "key": equip_key,
         "name": equipment_name,
+        "effect_summary": equipment_effect_summary_map.get(equip_key, ""),
         "category": config["category"],
         "category_name": equipment_categories.get(config["category"], "其他装备"),
         "materials": material_info,

@@ -46,6 +46,29 @@ MAX_DIRECT_LUCK = 210
 MAX_DIRECT_AGILITY = 400
 MAX_DIRECT_EFFECTIVE_HP = 22000
 MAX_ORANGE_NON_HP_ATTRIBUTE_SUM = 260
+ALL_DEVICE_TROOP_CLASSES = ("dao", "qiang", "jian", "quan", "gong", "scout")
+DEVICE_TROOP_BONUS_DESIGN = {
+    "equip_taotieding": {
+        troop_class: {"attack_pct": 0.0025, "defense_pct": 0.0025, "hp_pct": 0.0025}
+        for troop_class in ALL_DEVICE_TROOP_CLASSES
+    },
+    "equip_xiaoxingjiguanshu": {troop_class: {"hp_pct": 0.005} for troop_class in ALL_DEVICE_TROOP_CLASSES},
+    "equip_tongchanjiguan": {troop_class: {"attack_pct": 0.005} for troop_class in ALL_DEVICE_TROOP_CLASSES},
+    "equip_jixiemao": {"gong": {"hp_pct": 0.01}},
+    "equip_jiguanchuniao": {"gong": {"attack_pct": 0.01}},
+    "equip_kuileimuren": {"qiang": {"hp_pct": 0.01}},
+    "equip_qingji": {"jian": {"attack_pct": 0.01}},
+    "equip_jiguanxiong": {"quan": {"attack_pct": 0.01}},
+    "equip_muniuliuma": {troop_class: {"hp_pct": 0.005} for troop_class in ALL_DEVICE_TROOP_CLASSES},
+    "equip_kuileiren": {"jian": {"attack_pct": 0.005, "defense_pct": 0.005, "hp_pct": 0.005}},
+    "equip_xuanwujigui": {"qiang": {"attack_pct": 0.005, "defense_pct": 0.005, "hp_pct": 0.005}},
+    "equip_feiyuan": {troop_class: {"attack_pct": 0.005} for troop_class in ALL_DEVICE_TROOP_CLASSES},
+    "equip_chixiaojifeng": {"gong": {"attack_pct": 0.015}},
+    "equip_mojiajiguanren": {
+        troop_class: {"attack_pct": 0.005, "defense_pct": 0.005, "hp_pct": 0.005}
+        for troop_class in ALL_DEVICE_TROOP_CLASSES
+    },
+}
 
 EQUIPMENT_STORAGE_BY_RARITY = {"black": 50, "green": 75, "blue": 100, "purple": 150, "orange": 200}
 MOUNT_STORAGE_BY_RARITY = {"black": 75, "green": 100, "blue": 125, "purple": 175, "orange": 250}
@@ -186,6 +209,22 @@ def _iter_equipment_items(items: dict[str, dict]):
         effect_type = str(item.get("effect_type") or "")
         if effect_type.startswith("equip_"):
             yield key, item
+
+
+def test_device_troop_bonuses_match_approved_design_and_never_grant_agility():
+    items = _load_item_templates()
+    device_keys = {key for key, item in items.items() if item.get("effect_type") == "equip_device"}
+
+    actual = {key: items[key]["effect_payload"].get("troop_stat_bonus") for key in DEVICE_TROOP_BONUS_DESIGN}
+
+    assert device_keys == set(DEVICE_TROOP_BONUS_DESIGN)
+    assert actual == DEVICE_TROOP_BONUS_DESIGN
+    for bonus_by_class in actual.values():
+        assert bonus_by_class is not None
+        for stat_bonus in bonus_by_class.values():
+            affected_stats = {key.removesuffix("_pct").removesuffix("_flat") for key in stat_bonus}
+            assert affected_stats in ({"attack"}, {"defense"}, {"hp"}, {"attack", "defense", "hp"})
+            assert "agility" not in affected_stats
 
 
 def _top_slot_total(items: dict[str, dict], stat: str) -> int:

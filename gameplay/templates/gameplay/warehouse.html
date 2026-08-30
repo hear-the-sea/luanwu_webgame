@@ -100,6 +100,7 @@
                                     {% if payload.luck %}<div class="tw-attr-row"><span class="tw-attr-label">幸运</span><span class="tw-attr-value">+{{ payload.luck }}</span></div>{% endif %}
                                     {% if payload.intellect %}<div class="tw-attr-row"><span class="tw-attr-label">智力</span><span class="tw-attr-value">+{{ payload.intellect }}</span></div>{% endif %}
                                     {% if payload.troop_capacity %}<div class="tw-attr-row"><span class="tw-attr-label">可携带护院人数</span><span class="tw-attr-value">+{{ payload.troop_capacity }}</span></div>{% endif %}
+                                    {% if entry.template.troop_stat_bonus_summary %}<div class="tw-attr-row"><span class="tw-attr-label">护院加成</span><span class="tw-attr-value">{{ entry.template.troop_stat_bonus_summary }}</span></div>{% endif %}
                                     {% if payload.time %}<div class="tw-attr-row"><span class="tw-attr-label">减少时间</span><span class="tw-attr-value">{{ payload.time }}秒</span></div>{% endif %}
                                 </div>
                                 {% if payload.set_key %}

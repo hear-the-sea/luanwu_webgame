@@ -68,6 +68,22 @@ def test_payload_module_builds_preview_with_multi_tier_set_bonus():
     assert preview.set_bonus == set_bonus
 
 
+def test_payload_module_attaches_device_troop_bonus_summary_to_preview():
+    preview = build_gear_template_preview(
+        _build_item_template_stub(
+            effect_type="equip_device",
+            effect_payload={
+                "force": 25,
+                "troop_stat_bonus": {"gong": {"hp_pct": 0.01}},
+            },
+        )
+    )
+
+    assert preview is not None
+    assert preview.slot == GearSlot.DEVICE
+    assert preview.troop_stat_bonus_summary == "弓系生命+1%"
+
+
 @pytest.mark.django_db
 def test_inventory_module_lists_equippable_options_without_materializing_gear(django_user_model):
     user = django_user_model.objects.create_user(username="split_inventory_options", password="pass123")
@@ -92,6 +108,32 @@ def test_inventory_module_lists_equippable_options_without_materializing_gear(dj
     assert options[0]["template_key"] == template.key
     assert options[0]["count"] == 2
     assert not GearItem.objects.filter(manor=manor, template__key=template.key).exists()
+
+
+@pytest.mark.django_db
+def test_inventory_module_attaches_device_bonus_to_existing_free_gear(django_user_model):
+    user = django_user_model.objects.create_user(username="split_free_device_bonus", password="pass123")
+    manor = ensure_manor(user)
+    item_template = ItemTemplate.objects.create(
+        key="split_free_device_bonus",
+        name="机械猫测试",
+        effect_type="equip_device",
+        rarity=GuestRarity.BLUE,
+        effect_payload={"troop_stat_bonus": {"gong": {"hp_pct": 0.01}}},
+    )
+    gear_template = GearTemplate.objects.create(
+        key=item_template.key,
+        name=item_template.name,
+        slot=GearSlot.DEVICE,
+        rarity=GuestRarity.BLUE,
+    )
+    gear = GearItem.objects.create(manor=manor, template=gear_template)
+
+    options = list_available_equippable_gear_options(manor, slot=GearSlot.DEVICE)
+
+    assert len(options) == 1
+    assert options[0]["id"] == gear.id
+    assert options[0]["template"].troop_stat_bonus_summary == "弓系生命+1%"
 
 
 @pytest.mark.django_db

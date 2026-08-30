@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
+from math import isfinite
 from typing import TYPE_CHECKING, Any, Iterable
 
 from django.apps import apps
 
 from common.constants.resources import ResourceType
+from core.game_data.troop_device_bonus_display import format_aggregated_troop_device_bonus
 from gameplay.utils.template_loader import get_item_templates_by_keys
 from guests.models import Guest, GuestTemplate, SkillBook
 
@@ -214,6 +217,69 @@ def attach_avatar_urls(team: list[dict[str, Any]], avatar_map: dict[str, str]) -
         member["avatar_url"] = avatar_map.get(str(member.get("template_key") or ""), "")
 
 
+def serialize_equipment_bonus_rows(raw_rows: Any) -> list[dict[str, Any]]:
+    if not isinstance(raw_rows, list):
+        return []
+    rows: list[dict[str, Any]] = []
+    for raw_row in raw_rows:
+        if not isinstance(raw_row, Mapping):
+            continue
+        effect_text = format_aggregated_troop_device_bonus(raw_row.get("bonuses"))
+        if not effect_text:
+            continue
+        raw_effective_count = raw_row.get("effective_count")
+        effective_count = (
+            int(raw_effective_count)
+            if isinstance(raw_effective_count, int)
+            and not isinstance(raw_effective_count, bool)
+            and raw_effective_count > 0
+            else None
+        )
+        raw_equipped_count = raw_row.get("equipped_count")
+        equipped_count = (
+            int(raw_equipped_count)
+            if isinstance(raw_equipped_count, int)
+            and not isinstance(raw_equipped_count, bool)
+            and raw_equipped_count > 0
+            else effective_count
+        )
+        rows.append(
+            {
+                "template_key": str(raw_row.get("template_key") or ""),
+                "name": str(raw_row.get("name") or "器械加成"),
+                "effective_count": effective_count,
+                "equipped_count": equipped_count,
+                "capped": bool(raw_row.get("capped")) and effective_count is not None,
+                "effect_text": effect_text,
+            }
+        )
+    return rows
+
+
+def resolve_equipment_bonus_perspective(
+    report: "BattleReport",
+    player_side: str,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    attacker = serialize_equipment_bonus_rows(report.attacker_equipment_bonuses)
+    defender = serialize_equipment_bonus_rows(report.defender_equipment_bonuses)
+    if player_side == "defender":
+        return defender, attacker
+    return attacker, defender
+
+
+def _guest_agility_sort_key(guest: dict[str, Any]) -> tuple[int, float]:
+    raw_agility = guest.get("agility")
+    if isinstance(raw_agility, bool):
+        return (0, 0.0)
+    try:
+        agility = float(str(raw_agility))
+    except (TypeError, ValueError):
+        return (0, 0.0)
+    if not isfinite(agility):
+        return (0, 0.0)
+    return (1, agility)
+
+
 def _normalize_round_lineup_side(raw_side: Any, avatar_map: dict[str, str]) -> dict[str, list[dict[str, Any]]]:
     if not isinstance(raw_side, dict):
         return {"guests": [], "city_defenses": [], "troops": []}
@@ -228,6 +294,8 @@ def _normalize_round_lineup_side(raw_side: Any, avatar_map: dict[str, str]) -> d
             guest["name"] = str(raw_guest.get("name") or "门客")
             guest["avatar_url"] = avatar_map.get(str(raw_guest.get("template_key") or ""), "")
             guests.append(guest)
+
+        guests.sort(key=_guest_agility_sort_key, reverse=True)
 
     troops: list[dict[str, Any]] = []
     raw_troops = raw_side.get("troops")

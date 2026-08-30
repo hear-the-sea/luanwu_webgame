@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from battle.combatants_pkg.troop_device_bonuses import build_troop_device_bonus_summary
 from battle.execution import validate_troop_capacity
 from core.exceptions import BattlePreparationError, InvalidBattleSnapshotError
 from gameplay.services.battle_snapshots import (
@@ -103,7 +104,56 @@ def test_build_guest_snapshot_proxies_rejects_negative_troop_capacity():
 def test_build_guest_snapshot_proxies_accepts_legacy_payload_without_device_bonuses():
     proxy = build_guest_snapshot_proxies([build_snapshot_payload()], include_guest_identity=True)[0]
 
+    assert proxy.snapshot_version == 1
     assert proxy.troop_device_bonuses == {}
+    assert proxy.has_troop_device_bonus_sources is False
+    assert proxy.troop_device_bonus_sources == []
+
+
+def test_build_guest_snapshot_proxies_preserves_legacy_aggregate_device_bonus():
+    proxy = build_guest_snapshot_proxies(
+        [
+            build_snapshot_payload(
+                troop_device_bonuses={"gong": {"hp": {"flat": 0, "pct": 0.01}}},
+            )
+        ],
+        include_guest_identity=True,
+    )[0]
+
+    summary = build_troop_device_bonus_summary([proxy])
+
+    assert summary.bonuses == {"gong": {"hp": {"flat": 0, "pct": 0.01}}}
+    assert summary.devices == [
+        {
+            "template_key": "",
+            "name": "器械加成（旧快照）",
+            "equipped_count": None,
+            "effective_count": None,
+            "capped": False,
+            "bonuses": {"gong": {"hp": {"flat": 0, "pct": 0.01}}},
+        }
+    ]
+
+
+@pytest.mark.parametrize("snapshot_version", [True, 0, 3, "2"])
+def test_build_guest_snapshot_proxies_rejects_unsupported_snapshot_versions(snapshot_version):
+    with pytest.raises(InvalidBattleSnapshotError) as exc_info:
+        build_guest_snapshot_proxies(
+            [build_snapshot_payload(snapshot_version=snapshot_version)],
+            include_guest_identity=True,
+        )
+
+    assert exc_info.value.field_name == "snapshot_version"
+
+
+def test_build_guest_snapshot_proxies_requires_device_sources_in_version_two():
+    with pytest.raises(InvalidBattleSnapshotError) as exc_info:
+        build_guest_snapshot_proxies(
+            [build_snapshot_payload(snapshot_version=2, troop_device_bonuses={})],
+            include_guest_identity=True,
+        )
+
+    assert exc_info.value.field_name == "troop_device_bonus_sources"
 
 
 @pytest.mark.parametrize(
@@ -126,6 +176,40 @@ def test_build_guest_snapshot_proxies_rejects_invalid_device_bonuses(troop_devic
         )
 
     assert exc_info.value.field_name == "troop_device_bonuses"
+
+
+@pytest.mark.parametrize(
+    "troop_device_bonus_sources",
+    [
+        "bad-sources",
+        ["bad-source"],
+        [{"template_key": "", "template_name": "机械猫", "bonuses": {"gong": {"hp": {"pct": 0.01}}}}],
+        [{"template_key": "equip_jixiemao", "template_name": "", "bonuses": {"gong": {"hp": {"pct": 0.01}}}}],
+        [{"template_key": "equip_jixiemao", "template_name": "机械猫", "bonuses": {}}],
+        [
+            {
+                "template_key": "equip_jixiemao",
+                "template_name": "机械猫",
+                "bonuses": {"gong": {"hp": {"pct": -0.01}}},
+            }
+        ],
+        [
+            {
+                "template_key": "equip_jixiemao",
+                "template_name": "机械猫",
+                "bonuses": {"gong": {"hp": {"flat": 0, "pct": 0.01}}},
+            }
+        ],
+    ],
+)
+def test_build_guest_snapshot_proxies_rejects_invalid_device_bonus_sources(troop_device_bonus_sources):
+    with pytest.raises(InvalidBattleSnapshotError) as exc_info:
+        build_guest_snapshot_proxies(
+            [build_snapshot_payload(troop_device_bonus_sources=troop_device_bonus_sources)],
+            include_guest_identity=True,
+        )
+
+    assert exc_info.value.field_name == "troop_device_bonus_sources"
 
 
 def test_validate_troop_capacity_uses_snapshot_capacity_without_recomputing_guest_model_rules():

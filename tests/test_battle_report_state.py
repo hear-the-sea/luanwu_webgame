@@ -143,3 +143,21 @@ def test_snapshot_round_lineups_keeps_only_remaining_guests_and_troops():
             "troops": [],
         },
     }
+
+
+def test_snapshot_round_lineups_records_guest_agility_for_report_ordering():
+    from battle.simulation.report_state import snapshot_round_lineups
+
+    lineups = snapshot_round_lineups(
+        [
+            make_unit(name="进攻慢客", side="attacker", agility=80),
+            make_unit(name="进攻快客", side="attacker", agility=180),
+        ],
+        [
+            make_unit(name="防守慢客", side="defender", agility=90),
+            make_unit(name="防守快客", side="defender", agility=210),
+        ],
+    )
+
+    assert [guest["agility"] for guest in lineups["attacker"]["guests"]] == [80, 180]
+    assert [guest["agility"] for guest in lineups["defender"]["guests"]] == [90, 210]

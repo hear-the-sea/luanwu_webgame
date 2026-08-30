@@ -6271,6 +6271,13 @@ items:
       force: 18
       intellect: 25
       luck: 10
+      troop_stat_bonus:
+        dao: {attack_pct: 0.0025, defense_pct: 0.0025, hp_pct: 0.0025}
+        qiang: {attack_pct: 0.0025, defense_pct: 0.0025, hp_pct: 0.0025}
+        jian: {attack_pct: 0.0025, defense_pct: 0.0025, hp_pct: 0.0025}
+        quan: {attack_pct: 0.0025, defense_pct: 0.0025, hp_pct: 0.0025}
+        gong: {attack_pct: 0.0025, defense_pct: 0.0025, hp_pct: 0.0025}
+        scout: {attack_pct: 0.0025, defense_pct: 0.0025, hp_pct: 0.0025}
     tradeable: true
     price: 0
     storage_space: 150
@@ -6375,6 +6382,13 @@ items:
       hp: 800
       force: 15
       agility: 15
+      troop_stat_bonus:
+        dao: {hp_pct: 0.005}
+        qiang: {hp_pct: 0.005}
+        jian: {hp_pct: 0.005}
+        quan: {hp_pct: 0.005}
+        gong: {hp_pct: 0.005}
+        scout: {hp_pct: 0.005}
 
   - key: equip_tongchanjiguan
     name: 铜蝉机关
@@ -6390,6 +6404,13 @@ items:
       agility: 18
       force: 15
       intellect: 5
+      troop_stat_bonus:
+        dao: {attack_pct: 0.005}
+        qiang: {attack_pct: 0.005}
+        jian: {attack_pct: 0.005}
+        quan: {attack_pct: 0.005}
+        gong: {attack_pct: 0.005}
+        scout: {attack_pct: 0.005}
 
   # ---------- 器械 - 蓝色品质 ----------
 
@@ -6477,6 +6498,8 @@ items:
       intellect: 10
       agility: 10
       force: 25
+      troop_stat_bonus:
+        gong: {hp_pct: 0.01}
 
   - key: equip_jiguanchuniao
     name: 机关雏鸟
@@ -6491,6 +6514,8 @@ items:
       hp: 500
       force: 15
       agility: 30
+      troop_stat_bonus:
+        gong: {attack_pct: 0.01}
 
   - key: equip_kuileimuren
     name: 傀儡木人
@@ -6506,6 +6531,8 @@ items:
       defense: 5
       force: 20
       intellect: 25
+      troop_stat_bonus:
+        qiang: {hp_pct: 0.01}
 
   - key: equip_qingji
     name: 庆忌
@@ -6519,6 +6546,8 @@ items:
     effect_payload:
       agility: 35
       luck: 12
+      troop_stat_bonus:
+        jian: {attack_pct: 0.01}
 
   # ---------- 器械 - 紫色品质 ----------
 
@@ -6607,6 +6636,8 @@ items:
       hp: 800
       defense: 15
       force: 45
+      troop_stat_bonus:
+        quan: {attack_pct: 0.01}
 
   - key: equip_muniuliuma
     name: 木牛流马
@@ -6622,6 +6653,13 @@ items:
       intellect: 34
       agility: 13
       luck: 11
+      troop_stat_bonus:
+        dao: {hp_pct: 0.005}
+        qiang: {hp_pct: 0.005}
+        jian: {hp_pct: 0.005}
+        quan: {hp_pct: 0.005}
+        gong: {hp_pct: 0.005}
+        scout: {hp_pct: 0.005}
 
   - key: equip_kuileiren
     name: 傀儡人
@@ -6637,6 +6675,8 @@ items:
       defense: 10
       intellect: 37
       agility: 13
+      troop_stat_bonus:
+        jian: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
 
   - key: equip_xuanwujigui
     name: 玄武机龟
@@ -6651,6 +6691,8 @@ items:
       hp: 800
       defense: 45
       luck: 15
+      troop_stat_bonus:
+        qiang: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
 
   # ---------- 器械 - 橙色品质 ----------
 
@@ -6726,6 +6768,13 @@ items:
       intellect: 40
       agility: 30
       luck: 10
+      troop_stat_bonus:
+        dao: {attack_pct: 0.005}
+        qiang: {attack_pct: 0.005}
+        jian: {attack_pct: 0.005}
+        quan: {attack_pct: 0.005}
+        gong: {attack_pct: 0.005}
+        scout: {attack_pct: 0.005}
 
   - key: equip_chixiaojifeng
     name: 赤霄机凤
@@ -6741,6 +6790,8 @@ items:
       force: 45
       agility: 35
       luck: 10
+      troop_stat_bonus:
+        gong: {attack_pct: 0.015}
 
   - key: equip_mojiajiguanren
     name: 墨家机关人
@@ -6758,6 +6809,13 @@ items:
       intellect: 25
       agility: 15
       luck: 10
+      troop_stat_bonus:
+        dao: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
+        qiang: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
+        jian: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
+        quan: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
+        gong: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
+        scout: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 坐骑

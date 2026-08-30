@@ -87,10 +87,13 @@ EQUIPMENT_CATEGORIES = {
 MATERIAL_NAMES: Dict[str, str] = {}
 
 
-def _get_item_name_map(keys: set[str]) -> Dict[str, str]:
+def _get_item_template_map(keys: set[str]) -> Dict[str, ItemTemplate]:
     if not keys:
         return {}
-    return {tpl.key: tpl.name for tpl in ItemTemplate.objects.filter(key__in=keys).only("key", "name")}
+    return {
+        tpl.key: tpl
+        for tpl in ItemTemplate.objects.filter(key__in=keys).only("key", "name", "effect_type", "effect_payload")
+    }
 
 
 def infer_equipment_category(item_key: str, effect_type: str | None = None) -> str | None:
@@ -304,7 +307,11 @@ def get_equipment_options(manor: Manor, category: str = None) -> List[Dict[str, 
 
     equipment_keys: set[str] = {equip_key for equip_key, _ in filtered_configs}
     material_keys = collect_material_keys(filtered_configs)
-    item_name_map = _get_item_name_map(equipment_keys | material_keys)
+    item_template_map = _get_item_template_map(equipment_keys | material_keys)
+    item_name_map = {key: template.name for key, template in item_template_map.items()}
+    equipment_effect_summary_map = {
+        key: item_template_map[key].equipment_effect_summary for key in equipment_keys if key in item_template_map
+    }
     material_quantities = load_material_quantity_map(
         inventory_item_model=InventoryItem,
         manor=manor,
@@ -316,6 +323,7 @@ def get_equipment_options(manor: Manor, category: str = None) -> List[Dict[str, 
         manor=manor,
         filtered_configs=filtered_configs,
         item_name_map=item_name_map,
+        equipment_effect_summary_map=equipment_effect_summary_map,
         material_quantities=material_quantities,
         material_name_fallback_map=MATERIAL_NAMES,
         equipment_categories=EQUIPMENT_CATEGORIES,

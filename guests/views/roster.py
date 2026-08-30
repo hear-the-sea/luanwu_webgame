@@ -22,6 +22,7 @@ from core.utils import sanitize_error_message
 
 from ..forms import AllocateSkillPointsForm
 from ..models import GearItem, GearSlot, GuestSkill, GuestStatus, Skill
+from ..services.equipment_inventory import attach_troop_device_bonus_summaries
 from ..services.recruitment_queries import available_guests
 from ..services.roster import dismiss_guest
 from ..services.skills import collect_skill_requirements, collect_unmet_skill_requirements
@@ -321,6 +322,7 @@ class GuestDetailView(LoginRequiredMixin, TemplateView):
             GearSlot.ORNAMENT.value: 3,
         }
         gear_items = list(guest.gear_items.all())
+        attach_troop_device_bonus_summaries(item.template for item in gear_items)
         equipped = {slot: [] for slot, _ in slots}
         for item in gear_items:
             equipped[item.template.slot].append(item)

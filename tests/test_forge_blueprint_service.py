@@ -9,11 +9,19 @@ from gameplay.services.inventory.core import get_item_quantity
 from gameplay.services.manor.core import ensure_manor
 
 
-def _create_item_template(key: str, name: str, effect_type: str, rarity: str = "black") -> ItemTemplate:
+def _create_item_template(
+    key: str,
+    name: str,
+    effect_type: str,
+    rarity: str = "black",
+    *,
+    effect_payload: dict | None = None,
+) -> ItemTemplate:
     return ItemTemplate.objects.create(
         key=key,
         name=name,
         effect_type=effect_type,
+        effect_payload=effect_payload or {},
         rarity=rarity,
         tradeable=True,
         is_usable=False,
@@ -138,7 +146,17 @@ def test_get_blueprint_synthesis_options_reads_device_blueprint_from_runtime_con
     PlayerTechnology.objects.create(manor=manor, tech_key="forging", level=12)
 
     blueprint = _create_item_template("blueprint_xiaoxingjiguanshu", "小型机关鼠图纸", "tool", "green")
-    _create_item_template("equip_xiaoxingjiguanshu", "小型机关鼠", "equip_device", "green")
+    _create_item_template(
+        "equip_xiaoxingjiguanshu",
+        "小型机关鼠",
+        "equip_device",
+        "green",
+        effect_payload={
+            "troop_stat_bonus": {
+                troop_class: {"hp_pct": 0.005} for troop_class in ("dao", "qiang", "jian", "quan", "gong", "scout")
+            }
+        },
+    )
     tong = _create_item_template("tong", "铜", "resource", "black")
     xi = _create_item_template("xi", "锡", "resource", "black")
     tie = _create_item_template("tie", "铁", "resource", "black")
@@ -174,6 +192,7 @@ def test_get_blueprint_synthesis_options_reads_device_blueprint_from_runtime_con
     option = device_options[0]
     assert option["result_effect_type"] == "equip_device"
     assert option["result_name"] == "小型机关鼠"
+    assert option["result_effect_summary"] == "全兵种生命+0.5%"
     assert option["required_forging"] == 6
     assert option["can_synthesize"] is True
 

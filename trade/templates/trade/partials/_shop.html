@@ -57,6 +57,7 @@
                                     {% if item.effect_payload.luck %}<div class="tw-attr-row"><span class="tw-attr-label">运势</span><span class="tw-attr-value">+{{ item.effect_payload.luck }}</span></div>{% endif %}
                                     {% if item.effect_payload.intellect %}<div class="tw-attr-row"><span class="tw-attr-label">智力</span><span class="tw-attr-value">+{{ item.effect_payload.intellect }}</span></div>{% endif %}
                                     {% if item.effect_payload.troop_capacity %}<div class="tw-attr-row"><span class="tw-attr-label">可携带护院人数</span><span class="tw-attr-value">+{{ item.effect_payload.troop_capacity }}</span></div>{% endif %}
+                                    {% if item.troop_stat_bonus_summary %}<div class="tw-attr-row"><span class="tw-attr-label">护院加成</span><span class="tw-attr-value">{{ item.troop_stat_bonus_summary }}</span></div>{% endif %}
                                 </div>
                                 {% if item.effect_payload.set_key %}
                                 <div class="tw-tooltip-set">
@@ -167,6 +168,7 @@
                                     {% if payload.luck %}<div class="tw-attr-row"><span class="tw-attr-label">运势</span><span class="tw-attr-value">+{{ payload.luck }}</span></div>{% endif %}
                                     {% if payload.intellect %}<div class="tw-attr-row"><span class="tw-attr-label">智力</span><span class="tw-attr-value">+{{ payload.intellect }}</span></div>{% endif %}
                                     {% if payload.troop_capacity %}<div class="tw-attr-row"><span class="tw-attr-label">可携带护院人数</span><span class="tw-attr-value">+{{ payload.troop_capacity }}</span></div>{% endif %}
+                                    {% if item.inventory_item.template.troop_stat_bonus_summary %}<div class="tw-attr-row"><span class="tw-attr-label">护院加成</span><span class="tw-attr-value">{{ item.inventory_item.template.troop_stat_bonus_summary }}</span></div>{% endif %}
                                 </div>
                                 {% if payload.set_key %}
                                 <div class="tw-tooltip-set">

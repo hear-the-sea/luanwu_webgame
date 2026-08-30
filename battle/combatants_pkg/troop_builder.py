@@ -4,13 +4,19 @@ Troop combatant builder.
 
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Dict, List, Optional
 
 from battle.troops import default_troop_loadout, load_troop_templates
 
 from .core import Combatant
 from .tech_effects import build_tech_effects
-from .troop_device_bonuses import TroopStatBonuses, apply_troop_device_bonus
+from .troop_device_bonuses import (
+    TroopStatBonuses,
+    apply_troop_device_bonus,
+    apply_troop_device_bonus_decimal,
+    has_troop_device_stat_bonus,
+)
 
 
 def normalize_troop_loadout(
@@ -85,18 +91,8 @@ def build_troop_combatants(
             stat="defense",
             device_bonuses=device_bonuses,
         )
-        base_hp = apply_troop_device_bonus(
-            base_value=definition.get("base_hp", 80),
-            troop_class=troop_class,
-            stat="hp",
-            device_bonuses=device_bonuses,
-        )
-        base_agility = apply_troop_device_bonus(
-            base_value=definition.get("speed_bonus", 0),
-            troop_class=troop_class,
-            stat="agility",
-            device_bonuses=device_bonuses,
-        )
+        # Device bonuses intentionally never affect agility/turn order.
+        base_agility = definition.get("speed_bonus", 0)
 
         attack_mult = 1.0 + bonuses.get("attack", 0)
         defense_mult = 1.0 + bonuses.get("defense", 0)
@@ -107,13 +103,31 @@ def build_troop_combatants(
         # This lets low-base-value device and technology bonuses affect a full troop group.
         unit_attack = base_attack * attack_mult
         unit_defense = base_defense * defense_mult
-        unit_hp = base_hp * hp_mult
+        has_device_hp_bonus = has_troop_device_stat_bonus(
+            troop_class=troop_class,
+            stat="hp",
+            device_bonuses=device_bonuses,
+        )
+        # HP is stateful: use decimal math for the new device path, then truncate once
+        # at the group boundary. Keep the legacy no-device path byte-for-byte stable.
+        if has_device_hp_bonus:
+            base_hp_decimal = apply_troop_device_bonus_decimal(
+                base_value=definition.get("base_hp", 80),
+                troop_class=troop_class,
+                stat="hp",
+                device_bonuses=device_bonuses,
+            )
+            hp_tech_bonus = round(float(bonuses.get("hp", 0)), 12)
+            unit_hp_decimal = base_hp_decimal * (1 + Decimal(str(hp_tech_bonus)))
+            unit_hp = float(unit_hp_decimal)
+            hp = max(1, int(unit_hp_decimal * count))
+        else:
+            unit_hp = definition.get("base_hp", 80) * hp_mult
+            hp = max(1, int(unit_hp * count))
         agility = base_agility * agility_mult
 
         attack = unit_attack * count
         defense = unit_defense * count
-        # HP is a stateful integer, so round only after all per-unit bonuses are applied.
-        hp = max(1, int(unit_hp * count))
 
         tech_effects_dict: Dict[str, float] = {}
         if effective_levels is not None and troop_class:

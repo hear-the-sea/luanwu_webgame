@@ -4,15 +4,17 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from django.db.models import Count, F, Min
 
 from core.exceptions import EquipmentError, ItemNotFoundError
-from gameplay.models import InventoryItem
+from core.game_data.troop_device_bonus_display import format_raw_troop_device_bonus
+from gameplay.models import InventoryItem, ItemTemplate
 
-from ..models import GearItem, GearTemplate
+from ..models import GearItem, GearSlot, GearTemplate
 from ..utils.equipment_utils import EQUIP_SLOT_MAP
 from .equipment_payloads import build_gear_template_defaults, build_gear_template_preview, require_int
 
@@ -34,6 +36,23 @@ class ResolvedWarehouseGear:
     inventory_item: InventoryItem
 
 
+def attach_troop_device_bonus_summaries(templates: Iterable[GearTemplate]) -> None:
+    """Attach display-only troop bonus text to device templates in one query."""
+
+    device_templates = [template for template in templates if template.slot == GearSlot.DEVICE]
+    template_keys = {template.key for template in device_templates if template.key}
+    summaries_by_key = {
+        key: format_raw_troop_device_bonus(payload.get("troop_stat_bonus"))
+        for key, payload in ItemTemplate.objects.filter(
+            key__in=template_keys,
+            effect_type="equip_device",
+        ).values_list("key", "effect_payload")
+        if isinstance(payload, dict)
+    }
+    for template in device_templates:
+        setattr(template, "troop_stat_bonus_summary", summaries_by_key.get(template.key, ""))
+
+
 def list_free_gear_options(manor: Manor, *, slot: str) -> list[dict[str, Any]]:
     rows = (
         manor.gears.filter(guest__isnull=True, template__slot=slot)
@@ -48,6 +67,7 @@ def list_free_gear_options(manor: Manor, *, slot: str) -> list[dict[str, Any]]:
             "id",
             "key",
             "name",
+            "slot",
             "rarity",
             "set_key",
             "set_description",
@@ -57,6 +77,7 @@ def list_free_gear_options(manor: Manor, *, slot: str) -> list[dict[str, Any]]:
             "extra_stats",
         )
     }
+    attach_troop_device_bonus_summaries(templates.values())
 
     options: list[dict[str, Any]] = []
     for row in rows:

@@ -178,6 +178,10 @@ def gear_summary(template) -> str:
     if stats:
         parts.append("、".join(stats))
 
+    troop_bonus_summary = getattr(template, "troop_stat_bonus_summary", "") or ""
+    if troop_bonus_summary:
+        parts.append(f"护院加成：{troop_bonus_summary}")
+
     set_key = getattr(template, "set_key", "") or ""
     set_description = getattr(template, "set_description", "") or ""
     set_bonus = getattr(template, "set_bonus", {}) or {}
@@ -204,6 +208,10 @@ def gear_tooltip(template, set_map=None) -> str:
         label, _, value = part.partition("+")
         attrs.append(format_html("{} +{}", esc(label), value))
     lines.extend(attrs)
+
+    troop_bonus_summary = getattr(template, "troop_stat_bonus_summary", "") or ""
+    if troop_bonus_summary:
+        lines.append(format_html("护院加成：{}", esc(troop_bonus_summary)))
 
     tpl_set_key = getattr(template, "set_key", "") or ""
     if tpl_set_key and set_map:

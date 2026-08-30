@@ -59,6 +59,7 @@ def test_collect_material_keys_and_build_equipment_option():
         "equip_a",
         {"category": "helmet", "materials": {"tong": 3, "xi": 1}, "base_duration": 120},
         item_name_map={"equip_a": "甲", "tong": "铜", "xi": "锡"},
+        equipment_effect_summary_map={"equip_a": "生命+10"},
         material_quantities={"tong": 5, "xi": 0},
         material_name_fallback_map={},
         equipment_categories={"helmet": "头盔"},
@@ -72,6 +73,7 @@ def test_collect_material_keys_and_build_equipment_option():
     assert option == {
         "key": "equip_a",
         "name": "甲",
+        "effect_summary": "生命+10",
         "category": "helmet",
         "category_name": "头盔",
         "materials": [
@@ -119,6 +121,7 @@ def test_build_blueprint_synthesis_option_calculates_affordability_and_limits():
         "result_key": "equip_qingmangjian",
         "result_name": "青芒剑",
         "result_effect_type": "equip_weapon",
+        "result_effect_summary": "",
         "result_quantity": 1,
         "required_forging": 5,
         "description": "蓝图描述",

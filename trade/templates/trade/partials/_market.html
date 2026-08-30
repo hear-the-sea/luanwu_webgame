@@ -109,6 +109,11 @@
                                     {% if listing.item_template.description %}
                                     <div class="tw-tooltip-desc">{{ listing.item_template.description }}</div>
                                     {% endif %}
+                                    {% if listing.item_template.equipment_effect_summary %}
+                                    <div class="tw-tooltip-attrs">
+                                        <div class="tw-attr-row"><span class="tw-attr-label">装备属性</span><span class="tw-attr-value">{{ listing.item_template.equipment_effect_summary }}</span></div>
+                                    </div>
+                                    {% endif %}
                                     <div class="text-accent-gold font-semibold mt-2">参考价：{{ listing.item_template.price }} 银两</div>
                                 </div>
                             </div>

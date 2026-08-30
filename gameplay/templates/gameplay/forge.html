@@ -89,6 +89,9 @@
                             <div>
                                 <h3>{{ recipe.result_name }}</h3>
                                 <p class="production-option-detail">图纸 {{ recipe.blueprint_name }} · 持有 {{ recipe.blueprint_count }}</p>
+                                {% if recipe.result_effect_summary %}
+                                <p class="production-option-detail">装备属性：{{ recipe.result_effect_summary }}</p>
+                                {% endif %}
                                 <p class="production-option-detail">锻造技 等级{{ recipe.required_forging }}</p>
                             </div>
                             {% if current_category == 'all' and recipe.result_category_name %}
@@ -157,6 +160,9 @@
                         <header class="production-option-card__header">
                             <div>
                                 <h3>{{ item.name }}</h3>
+                                {% if item.effect_summary %}
+                                <p class="production-option-detail">装备属性：{{ item.effect_summary }}</p>
+                                {% endif %}
                                 {% if not item.is_unlocked %}
                                 <p class="production-card-lock">锻造技 等级{{ item.required_forging }}</p>
                                 {% endif %}
@@ -246,6 +252,9 @@
                             <div>
                                 <h3>{{ equip.name }}</h3>
                                 <p class="production-option-detail">{{ equip.rarity_label }} · 持有 {{ equip.quantity }}</p>
+                                {% if equip.effect_summary %}
+                                <p class="production-option-detail">装备属性：{{ equip.effect_summary }}</p>
+                                {% endif %}
                             </div>
                             {% if current_category == 'all' and equip.category_name %}
                             <span class="production-option-tag">{{ equip.category_name }}</span>

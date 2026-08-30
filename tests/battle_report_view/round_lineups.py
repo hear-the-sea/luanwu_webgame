@@ -26,11 +26,19 @@ def test_report_round_renders_starting_lineups_in_fixed_attacker_defender_column
                     "attacker": {
                         "guests": [
                             {
-                                "name": "进攻门客",
+                                "name": "进攻慢门客",
                                 "template_key": "attacker_round_guest",
+                                "agility": 80,
                                 "current_hp": 900,
                                 "max_hp": 1000,
-                            }
+                            },
+                            {
+                                "name": "进攻快门客",
+                                "template_key": "attacker_fast_round_guest",
+                                "agility": 180,
+                                "current_hp": 850,
+                                "max_hp": 1000,
+                            },
                         ],
                         "city_defenses": [
                             {
@@ -49,11 +57,19 @@ def test_report_round_renders_starting_lineups_in_fixed_attacker_defender_column
                     "defender": {
                         "guests": [
                             {
-                                "name": "防守门客",
+                                "name": "防守慢门客",
                                 "template_key": "defender_round_guest",
+                                "agility": 90,
                                 "current_hp": 700,
                                 "max_hp": 1000,
-                            }
+                            },
+                            {
+                                "name": "防守快门客",
+                                "template_key": "defender_fast_round_guest",
+                                "agility": 210,
+                                "current_hp": 650,
+                                "max_hp": 1000,
+                            },
                         ],
                         "troops": [],
                     },
@@ -62,14 +78,14 @@ def test_report_round_renders_starting_lineups_in_fixed_attacker_defender_column
                     {
                         "side": "attacker",
                         "order": 1,
-                        "actor": "进攻门客",
+                        "actor": "进攻慢门客",
                         "status": "charging",
                         "message": "蓄势待发",
                     },
                     {
                         "side": "defender",
                         "order": 2,
-                        "actor": "防守门客",
+                        "actor": "防守慢门客",
                         "status": "charging",
                         "message": "严阵以待",
                     },
@@ -81,7 +97,9 @@ def test_report_round_renders_starting_lineups_in_fixed_attacker_defender_column
         "battle.views.load_avatar_map",
         lambda _keys: {
             "attacker_round_guest": "/media/guests/attacker.webp",
+            "attacker_fast_round_guest": "/media/guests/attacker-fast.webp",
             "defender_round_guest": "/media/guests/defender.webp",
+            "defender_fast_round_guest": "/media/guests/defender-fast.webp",
         },
     )
 
@@ -90,8 +108,8 @@ def test_report_round_renders_starting_lineups_in_fixed_attacker_defender_column
 
     assert response.status_code == 200
     battle_round = response.context["battle_rounds"][0]
-    assert [event["actor"] for event in battle_round["attacker_events"]] == ["进攻门客"]
-    assert [event["actor"] for event in battle_round["defender_events"]] == ["防守门客"]
+    assert [event["actor"] for event in battle_round["attacker_events"]] == ["进攻慢门客"]
+    assert [event["actor"] for event in battle_round["defender_events"]] == ["防守慢门客"]
 
     body = response.content.decode("utf-8")
     assert '<section class="dashboard battle-report-page">' in body
@@ -102,8 +120,12 @@ def test_report_round_renders_starting_lineups_in_fixed_attacker_defender_column
     assert round_html.index("进攻方") < round_html.index('aria-label="进攻方剩余门客"')
     assert round_html.index('aria-label="进攻方剩余门客"') < round_html.index('aria-label="进攻方剩余护院"')
     assert round_html.index('aria-label="进攻方剩余护院"') < round_html.index('aria-label="进攻方行动记录"')
-    assert 'src="/media/guests/attacker.webp" alt="进攻门客"' in round_html
-    assert 'src="/media/guests/defender.webp" alt="防守门客"' in round_html
+    assert 'src="/media/guests/attacker.webp" alt="进攻慢门客"' in round_html
+    assert 'src="/media/guests/attacker-fast.webp" alt="进攻快门客"' in round_html
+    assert 'src="/media/guests/defender.webp" alt="防守慢门客"' in round_html
+    assert 'src="/media/guests/defender-fast.webp" alt="防守快门客"' in round_html
+    assert round_html.index('alt="进攻快门客"') < round_html.index('alt="进攻慢门客"')
+    assert round_html.index('alt="防守快门客"') < round_html.index('alt="防守慢门客"')
     assert round_html.index("崭新的高级城墙") < round_html.index("刀圣</span>:<strong>500</strong>")
     assert "刀圣</span>:<strong>500</strong>" in round_html
     assert "剑圣</span>:<strong>450</strong>" in round_html
@@ -175,11 +197,59 @@ def test_report_uses_reserved_equipment_and_settlement_tables_without_lineup_com
     assert 'class="battle-overview-table"' in body
     assert body.count('<span class="battle-table-label">装备属性加成</span>') == 2
     assert body.count('<span class="battle-table-empty">无</span>') == 2
-    assert "attacker_equipment_bonuses" not in response.context
-    assert "defender_equipment_bonuses" not in response.context
+    assert response.context["attacker_equipment_bonuses"] == []
+    assert response.context["defender_equipment_bonuses"] == []
     assert 'class="battle-settlement-table"' in body
     assert "刀圣 × 5" in body
     assert "剑圣 × 3" in body
     assert ">5</strong>" not in body
     assert ">3</strong>" not in body
     assert "银两 +88" in body
+
+
+@pytest.mark.django_db
+def test_report_renders_persisted_troop_device_bonuses_and_five_copy_cap(client, django_user_model):
+    user = django_user_model.objects.create_user(username="device_bonus_report", password="pass123")
+    manor = ensure_manor(user)
+    report = create_report(
+        manor=manor,
+        opponent_name="器械演武",
+        battle_type="task1",
+        attacker_equipment_bonuses=[
+            {
+                "template_key": "equip_jixiemao",
+                "name": "机械猫",
+                "equipped_count": 7,
+                "effective_count": 5,
+                "capped": True,
+                "bonuses": {"gong": {"hp": {"flat": 0, "pct": 0.05}}},
+            }
+        ],
+        defender_equipment_bonuses=[
+            {
+                "template_key": "equip_xuanwujigui",
+                "name": "玄武机龟",
+                "equipped_count": 2,
+                "effective_count": 2,
+                "capped": False,
+                "bonuses": {
+                    "qiang": {
+                        "attack": {"flat": 0, "pct": 0.01},
+                        "defense": {"flat": 0, "pct": 0.01},
+                        "hp": {"flat": 0, "pct": 0.01},
+                    }
+                },
+            }
+        ],
+    )
+
+    assert client.login(username="device_bonus_report", password="pass123")
+    response = client.get(reverse("battle:report_detail", kwargs={"pk": report.pk}))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert "机械猫 × 5" in body
+    assert "弓系生命 +5%" in body
+    assert "已装备 7 件，仅前 5 件生效" in body
+    assert "玄武机龟 × 2" in body
+    assert "枪系全部属性 +1%" in body

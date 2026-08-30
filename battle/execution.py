@@ -27,7 +27,7 @@ from .combatants_pkg import (
     normalize_troop_loadout,
     serialize_guest_for_report,
 )
-from .combatants_pkg.troop_device_bonuses import build_troop_device_bonuses
+from .combatants_pkg.troop_device_bonuses import TroopDeviceBonusSummary, build_troop_device_bonus_summary
 from .constants import DEFAULT_BATTLE_TYPE, MAX_SQUAD, get_battle_config
 from .defender_setup import build_defender_guest_and_loadout as _build_defender_guest_and_loadout_from_sources
 from .models import BattleReport
@@ -217,7 +217,7 @@ def _build_attacker_units(
     normalized_loadout: Dict[str, int],
     options: BattleOptions,
     manor,
-) -> tuple[List[Combatant], List[Combatant]]:
+) -> tuple[List[Combatant], List[Combatant], TroopDeviceBonusSummary]:
     attacker_guests_comb = build_guest_combatants(
         guests,
         side="attacker",
@@ -227,22 +227,22 @@ def _build_attacker_units(
     )
 
     attacker_manor = manor if options.attacker_manor is None else options.attacker_manor
-    attacker_device_bonuses = build_troop_device_bonuses(active_guests)
+    attacker_device_summary = build_troop_device_bonus_summary(active_guests)
     attacker_troops = build_troop_combatants(
         normalized_loadout,
         side="attacker",
         manor=attacker_manor,
         tech_levels=options.attacker_tech_levels,
-        device_bonuses=attacker_device_bonuses,
+        device_bonuses=attacker_device_summary.bonuses,
     )
-    return attacker_guests_comb, attacker_troops
+    return attacker_guests_comb, attacker_troops, attacker_device_summary
 
 
 def _build_defender_units(
     options: BattleOptions,
     rng: random.Random,
     now,
-) -> tuple[List[Combatant], List[Combatant], List[Combatant], Dict[str, int]]:
+) -> tuple[List[Combatant], List[Combatant], List[Combatant], Dict[str, int], TroopDeviceBonusSummary]:
     defender_tech_levels, defender_guest_level, defender_guest_bonuses, defender_guest_skills = (
         _extract_defender_tech_profile(options.defender_setup)
     )
@@ -260,15 +260,15 @@ def _build_defender_units(
         options.recover_live_guest_hp,
     )
     active_defender_guests = (options.defender_guests or [])[: options.defender_limit]
-    defender_device_bonuses = build_troop_device_bonuses(active_defender_guests)
+    defender_device_summary = build_troop_device_bonus_summary(active_defender_guests)
     defender_troops = build_troop_combatants(
         defender_loadout,
         side="defender",
         tech_levels=defender_tech_levels or None,
-        device_bonuses=defender_device_bonuses,
+        device_bonuses=defender_device_summary.bonuses,
     )
     defender_city_defenses = build_city_defense_combatants(options.defender_manor, side="defender")
-    return defender_guests_comb, defender_troops, defender_city_defenses, defender_loadout
+    return defender_guests_comb, defender_troops, defender_city_defenses, defender_loadout, defender_device_summary
 
 
 def _execute_simulation(
@@ -354,6 +354,8 @@ def _finalize_battle_results(
     options: BattleOptions,
     opponent_label: str,
     random_context: BattleRandomContext | None = None,
+    attacker_equipment_bonuses: list[dict[str, Any]] | None = None,
+    defender_equipment_bonuses: list[dict[str, Any]] | None = None,
 ) -> BattleReport:
     resolved_random_context = random_context or BattleRandomContext.create(
         simulation.seed,
@@ -398,9 +400,11 @@ def _finalize_battle_results(
             attacker_team=[serialize_guest_for_report(c) for c in attacker_guests_comb],
             attacker_troops=normalized_loadout,
             attacker_city_defenses=[],
+            attacker_equipment_bonuses=list(attacker_equipment_bonuses or []),
             defender_team=[serialize_guest_for_report(c) for c in defender_guests_comb],
             defender_troops=defender_loadout,
             defender_city_defenses=defender_city_defense_rows,
+            defender_equipment_bonuses=list(defender_equipment_bonuses or []),
             rounds=simulation.rounds,
             losses=simulation.losses,
             drops=simulation.drops,
@@ -430,7 +434,7 @@ def execute_battle(
         options.rng_source,
         rng_version=options.rng_version,
     )
-    attacker_guests_comb, attacker_troops = _build_attacker_units(
+    attacker_guests_comb, attacker_troops, attacker_device_summary = _build_attacker_units(
         guests,
         active_guests,
         normalized_loadout,
@@ -438,9 +442,13 @@ def execute_battle(
         manor,
     )
     now = timezone.now()
-    defender_guests_comb, defender_troops, defender_city_defenses, defender_loadout = _build_defender_units(
-        options, random_context.rng(RNG_STREAM_AI_GROWTH), now
-    )
+    (
+        defender_guests_comb,
+        defender_troops,
+        defender_city_defenses,
+        defender_loadout,
+        defender_device_summary,
+    ) = _build_defender_units(options, random_context.rng(RNG_STREAM_AI_GROWTH), now)
     attacker_units = attacker_guests_comb + attacker_troops
     defender_units = defender_guests_comb + defender_troops + defender_city_defenses
     simulation, opponent_label = _execute_simulation(
@@ -463,6 +471,8 @@ def execute_battle(
         options,
         opponent_label,
         random_context,
+        attacker_equipment_bonuses=attacker_device_summary.devices,
+        defender_equipment_bonuses=defender_device_summary.devices,
     )
 
 
