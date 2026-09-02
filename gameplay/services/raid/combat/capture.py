@@ -10,6 +10,7 @@ from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.constants import get_raid_capture_guest_rate
 from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
 from guests.models import Guest, GuestRarity, GuestTemplate
+from guests.services.world_unique import WORLD_UNIQUE_LUBU_TEMPLATE_KEY, release_world_unique_guest_after_raid
 
 from ....models import JailPrisoner, Manor, OathBond, RaidRun
 
@@ -57,8 +58,16 @@ def _collect_losing_guest_ids(report: Any, is_attacker_victory: bool) -> List[in
 
 
 def _filter_capture_candidates(losing_guest_ids: List[int]) -> List[int]:
+    unique_guest_ids = set(
+        Guest.objects.filter(
+            id__in=losing_guest_ids,
+            template__is_world_unique=True,
+        ).values_list("id", flat=True)
+    )
     oathed_ids = set(OathBond.objects.filter(guest_id__in=losing_guest_ids).values_list("guest_id", flat=True))
-    return [guest_id for guest_id in losing_guest_ids if guest_id not in oathed_ids]
+    return [
+        guest_id for guest_id in losing_guest_ids if guest_id not in oathed_ids and guest_id not in unique_guest_ids
+    ]
 
 
 def _select_capture_target(
@@ -79,8 +88,49 @@ def _select_capture_target(
 
     if OathBond.objects.filter(guest=target).exists():
         return None
+    if getattr(target.template, "is_world_unique", False):
+        return None
 
     return target
+
+
+def _find_losing_world_unique_guest_id(report: Any, is_attacker_victory: bool) -> int | None:
+    winning_side = "attacker" if is_attacker_victory else "defender"
+    if str(getattr(report, "winner", "") or "").strip() != winning_side:
+        return None
+
+    losing_team = (report.defender_team or []) if is_attacker_victory else (report.attacker_team or [])
+    for entry in losing_team:
+        if not isinstance(entry, dict) or entry.get("template_key") != WORLD_UNIQUE_LUBU_TEMPLATE_KEY:
+            continue
+        raw_guest_id = entry.get("guest_id")
+        if raw_guest_id is None:
+            continue
+        try:
+            guest_id = int(str(raw_guest_id).strip())
+        except (TypeError, ValueError):
+            continue
+        if guest_id > 0:
+            return guest_id
+    return None
+
+
+def _release_losing_world_unique_guest(
+    run: RaidRun,
+    report: Any,
+    is_attacker_victory: bool,
+) -> Dict[str, Any] | None:
+    guest_id = _find_losing_world_unique_guest_id(report, is_attacker_victory)
+    if guest_id is None:
+        return None
+
+    _winner, loser = _resolve_capture_sides(run, is_attacker_victory)
+    return release_world_unique_guest_after_raid(
+        loser,
+        guest_id=guest_id,
+        template_key=WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
+        losing_side="defender" if is_attacker_victory else "attacker",
+    )
 
 
 def _delete_captured_guest_gear(run: RaidRun, target: Guest) -> None:

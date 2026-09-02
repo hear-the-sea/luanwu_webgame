@@ -17,6 +17,7 @@ from guests.growth_engine import (
     reroll_guest_growth,
     reset_guest_allocation,
 )
+from guests.services.world_unique import ensure_guest_not_world_unique
 
 from .core import add_item_to_inventory_locked, consume_inventory_item_locked
 from .guest_reset_helpers import (
@@ -162,6 +163,7 @@ def use_guest_rarity_upgrade_item(manor: Manor, item: InventoryItem, guest_id: i
         guest_id,
         "upgrade_guest_rarity",
     )
+    ensure_guest_not_world_unique(guest, action="升阶")
 
     target_template = resolve_rarity_upgrade_target(guest, payload=locked_item.template.effect_payload or {})
     reset_prep = prepare_guest_for_reset(guest, action_label="升阶", manor=manor)
@@ -211,6 +213,7 @@ def use_soul_container(manor: Manor, item: InventoryItem, guest_id: int) -> Dict
         guest_id,
         "soul_fusion",
     )
+    ensure_guest_not_world_unique(guest, action="灵魂融合")
 
     payload = locked_item.template.effect_payload or {}
     min_level, allowed_rarities = get_soul_fusion_requirements(payload)

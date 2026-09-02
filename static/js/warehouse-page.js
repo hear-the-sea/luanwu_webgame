@@ -65,7 +65,12 @@
   };
 
   const confirmWarehouseUseForm = async (form) => {
-    const confirmText = form.dataset.confirmText;
+    const statusSummary = form.dataset.worldUniqueStatusSummary;
+    const guestName = form.dataset.worldUniqueGuestName || "该门客";
+    const configuredConfirmText = form.dataset.confirmText;
+    const confirmText = statusSummary
+      ? `${guestName}当前状态：${statusSummary}\n\n${configuredConfirmText || `确认使用${guestName}召唤卷轴？`}`
+      : configuredConfirmText;
     if (!confirmText) {
       return true;
     }

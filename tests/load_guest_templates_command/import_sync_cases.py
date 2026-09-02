@@ -10,7 +10,16 @@ from django.utils import timezone
 
 from gameplay.models import JailPrisoner
 from gameplay.services.manor.core import ensure_manor
-from guests.models import Guest, GuestStatus, GuestTemplate, RecruitmentPool, RecruitmentPoolEntry, Skill, SkillBook
+from guests.models import (
+    Guest,
+    GuestStatus,
+    GuestTemplate,
+    RecruitmentPool,
+    RecruitmentPoolEntry,
+    Skill,
+    SkillBook,
+    WorldUniqueGuest,
+)
 
 
 @pytest.mark.django_db
@@ -425,6 +434,53 @@ def test_load_guest_templates_skips_removed_templates_with_protected_prisoners(
     assert GuestTemplate.objects.filter(key="tpl_loader_keep_after_protected").exists()
     assert "Skipped 1 removed templates still referenced by protected records" in out.getvalue()
     assert "tpl_loader_protected_prisoner" in out.getvalue()
+
+
+@pytest.mark.django_db
+def test_load_guest_templates_skips_removed_world_unique_templates(
+    tmp_path: Path,
+) -> None:
+    protected_template = GuestTemplate.objects.create(
+        key="tpl_loader_protected_unique",
+        name="受保护唯一模板",
+        archetype="military",
+        rarity="orange",
+        is_world_unique=True,
+    )
+    WorldUniqueGuest.objects.create(template=protected_template)
+
+    payload = {
+        "templates": [
+            {
+                "key": "tpl_loader_keep_after_unique",
+                "name": "保留模板",
+                "archetype": "civil",
+                "rarity": "gray",
+            },
+        ],
+    }
+    main_file = tmp_path / "guest_templates_unique_cleanup.json"
+    main_file.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+    skills_file = tmp_path / "skills_empty.json"
+    skills_file.write_text("{}", encoding="utf-8")
+    heroes_dir = tmp_path / "heroes"
+    heroes_dir.mkdir()
+    out = StringIO()
+
+    call_command(
+        "load_guest_templates",
+        file=str(main_file),
+        skills_file=str(skills_file),
+        heroes_dir=str(heroes_dir),
+        skip_images=True,
+        verbosity=1,
+        stdout=out,
+    )
+
+    assert GuestTemplate.objects.filter(pk=protected_template.pk).exists()
+    assert WorldUniqueGuest.objects.filter(template=protected_template).exists()
+    assert "tpl_loader_protected_unique" in out.getvalue()
 
 
 @pytest.mark.django_db

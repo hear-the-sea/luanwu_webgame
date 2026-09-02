@@ -10,6 +10,7 @@ from gameplay.models import Manor
 
 from ..models import Guest, GuestStatus
 from . import equipment as equipment_service
+from .world_unique import ensure_guest_not_world_unique
 
 
 @dataclass(frozen=True)
@@ -29,6 +30,7 @@ def dismiss_guest(guest: Guest) -> DismissGuestResult:
             raise GuestNotFoundError()
         if locked_guest.status not in {GuestStatus.IDLE, GuestStatus.INJURED}:
             raise GuestNotIdleError(locked_guest)
+        ensure_guest_not_world_unique(locked_guest, action="辞退")
 
         guest_name = locked_guest.display_name
         gear_items = list(locked_guest.gear_items.select_related("template"))

@@ -47,6 +47,7 @@ __all__ = [
     "give_gear",
     "list_available_equippable_gear_options",
     "resolve_equippable_gear",
+    "return_guest_gear_to_inventory_locked",
     "unequip_guest_item",
 ]
 
@@ -89,6 +90,37 @@ def _schedule_gear_options_cache_clear(manor_id: int, *, slots: set[str] | None 
 def give_gear(manor: Manor, template: GearTemplate) -> GearItem:
     """创建一个装备道具。"""
     return GearItem.objects.create(manor=manor, template=template)
+
+
+def return_guest_gear_to_inventory_locked(manor: Manor, guest: Guest) -> int:
+    """在调用方已持有 Manor 锁时，将门客身上的装备完整归还仓库。"""
+    _require_atomic_block("return_guest_gear_to_inventory_locked")
+    if guest.manor_id != manor.pk:
+        raise GuestOwnershipError(message="门客不存在或不属于该庄园")
+
+    gear_items = list(
+        GearItem.objects.select_for_update().select_related("template").filter(manor_id=manor.pk, guest_id=guest.pk)
+    )
+    slots: set[str] = set()
+    for gear in gear_items:
+        item_template = ItemTemplate.objects.filter(key=gear.template.key).first()
+        if not item_template:
+            raise ItemNotFoundError("找不到对应的装备模板，无法返还库存")
+
+        gear.guest = None
+        gear.inventory_backed = True
+        gear.save(update_fields=["guest", "inventory_backed"])
+        inventory_core.add_item_to_inventory_locked(
+            manor,
+            item_template.key,
+            1,
+            template=item_template,
+        )
+        slots.add(gear.template.slot)
+
+    if slots:
+        _schedule_gear_options_cache_clear(manor.pk, slots=slots)
+    return len(gear_items)
 
 
 def _clear_replaced_items(

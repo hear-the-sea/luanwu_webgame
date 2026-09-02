@@ -24,6 +24,7 @@ from gameplay.services.manor.core import ensure_manor
 from gameplay.services.utils.messages import bulk_create_messages
 from guests.models import GuestTemplate
 
+from ..constants import GUILD_MISSION_WEEKLY_LIMIT
 from ..models import Guild, GuildMember, GuildMissionRun, GuildMissionTemplate
 from . import guild_troops
 from .guild_dispatch import load_dispatch_lineup_rows, lock_manage_member, normalize_positive_ids
@@ -32,6 +33,23 @@ from .technology import build_guild_troop_tech_levels, get_guild_dispatch_capaci
 from .warehouse import add_item_to_warehouse
 
 logger = logging.getLogger(__name__)
+
+
+def get_guild_mission_week_bounds(*, now=None):
+    """返回帮会任务使用的自然周边界（本地时区周一 00:00 至下周一 00:00）。"""
+    current_time = timezone.localtime(now or timezone.now())
+    day_start = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_start = day_start - timedelta(days=day_start.weekday())
+    return week_start, week_start + timedelta(days=7)
+
+
+def get_guild_mission_weekly_limit(template: GuildMissionTemplate) -> int:
+    """解析任务周上限，并将配置上限收敛到当前规则允许的最大值。"""
+    try:
+        configured_limit = int(getattr(template, "weekly_limit", GUILD_MISSION_WEEKLY_LIMIT))
+    except (TypeError, ValueError):
+        configured_limit = GUILD_MISSION_WEEKLY_LIMIT
+    return min(max(1, configured_limit), GUILD_MISSION_WEEKLY_LIMIT)
 
 
 def _dispatch_countdown_for_run(run: GuildMissionRun) -> int:
@@ -132,6 +150,18 @@ def _launch_guild_mission_atomic(
     template = GuildMissionTemplate.objects.filter(key=template_key, is_active=True).first()
     if template is None:
         raise GuildValidationError("帮会任务不存在")
+
+    week_start, week_end = get_guild_mission_week_bounds()
+    weekly_limit = get_guild_mission_weekly_limit(template)
+    # 发起即占用次数，完成、撤退和失败都计入，避免通过反复撤退刷过周限额。
+    weekly_used = GuildMissionRun.objects.filter(
+        guild=locked_guild,
+        template=template,
+        started_at__gte=week_start,
+        started_at__lt=week_end,
+    ).count()
+    if weekly_used >= weekly_limit:
+        raise GuildValidationError(f"「{template.name}」本周发起次数已达上限（{weekly_limit}次）")
 
     normalized_pool_entry_ids = normalize_positive_ids(pool_entry_ids)
     if not normalized_pool_entry_ids:

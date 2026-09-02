@@ -27,7 +27,15 @@ from gameplay.services.virtual_player_core.safety_provider import (
     record_safety_metric_events,
 )
 
-OCCURRED_AT = datetime(2026, 7, 27, 12, 34, 56, 123456, tzinfo=UTC)
+# Keep the fixture recent enough for the provider's raw-event retention window.
+# A fixed historical date would eventually make unrelated canonicalization and
+# window-finalization tests fail as real time advances.
+OCCURRED_AT = (datetime.now(UTC) - timedelta(days=2)).replace(
+    hour=12,
+    minute=34,
+    second=56,
+    microsecond=123456,
+)
 HOURLY_START = OCCURRED_AT.replace(minute=0, second=0, microsecond=0)
 HOURLY_END = HOURLY_START + timedelta(hours=1)
 DAILY_START = OCCURRED_AT.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -281,7 +289,7 @@ def test_window_finalization_requires_exact_end_plus_five_minute_grace() -> None
 
     open_window.refresh_from_db()
     assert result.newly_finalized is True
-    assert result.window_id == "hourly:20260727T120000Z"
+    assert result.window_id == f"hourly:{HOURLY_START.strftime('%Y%m%dT%H%M%SZ')}"
     assert result.window_end_at == HOURLY_END
     assert open_window.finalized_at == HOURLY_END + timedelta(minutes=5)
     assert open_window.snapshot == snapshot
@@ -428,7 +436,7 @@ def test_daily_window_uses_fixed_utc_boundaries() -> None:
         finalized_at=DAILY_START + timedelta(days=1, minutes=5),
     )
 
-    assert result.window_id == "daily:20260727T000000Z"
+    assert result.window_id == f"daily:{DAILY_START.strftime('%Y%m%dT%H%M%SZ')}"
     assert result.window_start_at == DAILY_START
     assert result.window_end_at == DAILY_START + timedelta(days=1)
     assert result.newly_finalized is True

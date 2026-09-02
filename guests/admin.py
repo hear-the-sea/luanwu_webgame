@@ -14,6 +14,7 @@ from .models import (
     RecruitmentRecord,
     SalaryPayment,
     TrainingLog,
+    WorldUniqueGuest,
 )
 from .query_utils import guest_template_rarity_rank_case
 
@@ -28,6 +29,7 @@ apply_common_field_labels(
     RecruitmentCandidate,
     SalaryPayment,
     GuestDefection,
+    WorldUniqueGuest,
 )
 
 
@@ -39,11 +41,12 @@ class GuestTemplateAdmin(admin.ModelAdmin):
         "rarity",
         "archetype",
         "recruitable",
+        "is_world_unique",
         "base_attack",
         "base_intellect",
         "base_defense",
     )
-    list_filter = ("rarity", "archetype", "recruitable")
+    list_filter = ("rarity", "archetype", "recruitable", "is_world_unique")
     search_fields = ("name", "key")
     list_editable = ("recruitable",)
 
@@ -64,6 +67,14 @@ class GuestTemplateAdmin(admin.ModelAdmin):
         queryset.update(recruitable=False)
 
     actions = ["mark_recruitable", "mark_unrecruitable"]
+
+
+@admin.register(WorldUniqueGuest)
+class WorldUniqueGuestAdmin(admin.ModelAdmin):
+    list_display = ("template", "status", "owner_manor", "owner_guest", "version", "updated_at")
+    list_filter = ("status",)
+    search_fields = ("template__name", "template__key", "owner_manor__user__username")
+    autocomplete_fields = ("template", "owner_manor", "owner_guest")
 
 
 class RecruitmentPoolEntryInline(admin.TabularInline):

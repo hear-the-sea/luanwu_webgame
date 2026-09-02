@@ -38,7 +38,7 @@ def _get_recruitable_templates_by_rarity() -> Dict[str, List[GuestTemplate]]:
             ]
         return cached_result
 
-    all_templates = list(GuestTemplate.objects.filter(recruitable=True))
+    all_templates = list(GuestTemplate.objects.filter(recruitable=True, is_world_unique=False))
     result: Dict[str, List[GuestTemplate]] = {}
     template_ids_by_rarity: Dict[str, List[int]] = {}
 
@@ -124,7 +124,7 @@ def _resolve_entry_template(
         template = entry.template
         if template is None:
             raise AssertionError(f"invalid recruitment pool entry template: {entry.template_id!r}")
-        if not template.recruitable:
+        if not template.recruitable or getattr(template, "is_world_unique", False):
             raise AssertionError(f"invalid recruitment pool entry template: {entry.template_id!r}")
         return template
 
@@ -250,6 +250,7 @@ def _choose_template_by_rarity(
     """
     for rarity_option in _build_rarity_search_order(rarity):
         queryset = GuestTemplate.objects.filter(rarity=rarity_option, recruitable=True)
+        queryset = queryset.filter(is_world_unique=False)
         if rarity_option == GuestRarity.BLACK:
             queryset = queryset.filter(is_hermit=False)
         if excluded_ids:

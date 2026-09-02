@@ -11,24 +11,21 @@ from typing import Any, cast
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
-from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
-from django.views.generic import TemplateView
 
 from core.exceptions import GameError, GuestItemConfigurationError
 from core.utils import is_ajax_request, is_json_request, json_error, json_success, safe_positive_int
 from core.utils.rate_limit import rate_limit_json
 from core.utils.validation import safe_redirect_url, sanitize_error_message
 
-from ..forms import AllocateSkillPointsForm, TrainGuestForm
+from ..forms import AllocateSkillPointsForm
 from ..models import Guest
 from ..services.recruitment_guests import allocate_attribute_points
-from ..services.training import finalize_guest_training, train_guest, use_experience_item_for_guest
+from ..services.training import finalize_guest_training, use_experience_item_for_guest
 
 logger = logging.getLogger(__name__)
 
@@ -78,47 +75,6 @@ def _normalize_experience_item_view_result_datetime(raw_value: object, *, contra
     if not isinstance(raw_value, datetime):
         raise AssertionError(f"invalid {contract_name}: {raw_value!r}")
     return raw_value
-
-
-@method_decorator(require_POST, name="dispatch")
-class TrainView(LoginRequiredMixin, TemplateView):
-    """
-    门客训练视图（类视图）
-
-    注意：类视图使用手动错误处理，但使用 manager 方法简化查询
-    """
-
-    http_method_names = ["post"]
-
-    def post(self, request, *args, **kwargs):
-        from gameplay.services.manor.core import get_manor
-
-        manor = get_manor(request.user)
-        form = TrainGuestForm(request.POST, manor=manor)
-        default_url = "gameplay:recruitment_hall"
-        next_url = safe_redirect_url(request, request.POST.get("next"), default_url)
-        if not form.is_valid():
-            messages.error(request, "培养参数有误")
-            return redirect(next_url)
-        guest = form.cleaned_data["guest"]
-        levels = form.cleaned_data["levels"]
-        try:
-            updated_guest = train_guest(guest, levels)
-            eta = updated_guest.training_complete_at
-            eta_str = eta.strftime("%H:%M:%S") if eta else ""
-            messages.success(request, f"{updated_guest.display_name} 正在升级，预计 {eta_str} 完成")
-        except GameError as exc:
-            messages.error(request, sanitize_error_message(exc))
-        except DatabaseError as exc:
-            logger.exception(
-                "Unexpected guest train database error: manor_id=%s user_id=%s guest_id=%s levels=%s",
-                getattr(manor, "id", None),
-                getattr(request.user, "id", None),
-                getattr(guest, "id", None),
-                levels,
-            )
-            messages.error(request, sanitize_error_message(exc))
-        return redirect(next_url)
 
 
 @login_required

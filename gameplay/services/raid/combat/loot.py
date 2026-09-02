@@ -392,6 +392,17 @@ def _format_capture_description(capture_payload: Any) -> str:
     return f"{name}（已押入监牢，装备尽失）"
 
 
+def _format_unique_guest_loss_description(unique_guest_payload: Any) -> str:
+    if not isinstance(unique_guest_payload, dict):
+        return ""
+    name = (unique_guest_payload.get("guest_name") or "").strip()
+    if not name:
+        return ""
+    returned_gear_count = safe_positive_int(unique_guest_payload.get("returned_gear_count", 0), 0)
+    gear_text = f"原装备已归还仓库（{returned_gear_count}件）" if returned_gear_count else "原装备已归还仓库"
+    return f"{name}（战败后回归在野，{gear_text}）"
+
+
 def _grant_loot_items(manor: Manor, items: Dict[str, int]) -> None:
     """批量发放掠夺的物品"""
     if not transaction.get_connection().in_atomic_block:

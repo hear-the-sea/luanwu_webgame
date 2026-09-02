@@ -85,6 +85,8 @@ heroes:
     default_gender: male
     avatar: lvbu_monkey.png
     archetype: military
+    recruitable: false
+    is_world_unique: true
     flavor: （？—199年2月7日）人中吕布，马中赤兔。“辕门射戟”“虎牢关”等多为《三国演义》渲染，方天画戟亦属演义常见形象。其人骁勇善战，然反复无常，先杀丁原后刺董卓，终为曹操所擒。白门楼上英雄末路，枭雄一世却难逃"三姓家奴"之讥。麾下并州骑兵精悍，然无定策失人心。勇冠一时却缺治军治国之略，终成“勇而无谋”象征。
     growth_range:
     - 8

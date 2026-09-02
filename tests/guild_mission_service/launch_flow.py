@@ -418,3 +418,52 @@ def test_launch_guild_mission_keeps_overdue_finalization_when_new_launch_validat
     assert overdue_run.status == GuildMissionRun.Status.COMPLETED
     assert overdue_run.completed_at is not None
     assert GuildMissionRun.objects.filter(guild=guild, status=GuildMissionRun.Status.ACTIVE).count() == 0
+
+
+@pytest.mark.django_db(transaction=True)
+def test_launch_guild_mission_enforces_weekly_limit_per_template(django_user_model, monkeypatch):
+    leader, _leader_manor = create_user_with_manor(django_user_model, "guild_mission_weekly_limit_leader")
+    guild = Guild.objects.create(name="帮会任务周限帮", founder=leader, is_active=True)
+    leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
+    template = GuildMissionTemplate.objects.create(
+        key="guild_weekly_limit_task",
+        name="周限任务",
+        description="",
+        difficulty="junior",
+        task_type="guest",
+        base_duration_seconds=600,
+        ruby_reward=2,
+        recommended_guest_count=1,
+        allow_troops=False,
+        is_active=True,
+    )
+
+    from guilds.services import guild_missions as guild_mission_service
+
+    week_start, _week_end = guild_mission_service.get_guild_mission_week_bounds()
+    started_at = week_start + timedelta(hours=1)
+    GuildMissionRun.objects.bulk_create(
+        [
+            GuildMissionRun(
+                guild=guild,
+                template=template,
+                started_by=leader_member,
+                status=GuildMissionRun.Status.COMPLETED,
+                started_at=started_at + timedelta(minutes=index),
+            )
+            for index in range(3)
+        ]
+    )
+
+    monkeypatch.setattr("guilds.services.guild_missions.schedule_guild_mission_completion", lambda _run: None)
+
+    with pytest.raises(GuildValidationError, match="本周发起次数已达上限"):
+        guild_mission_service.launch_guild_mission(
+            guild=guild,
+            operator=leader,
+            template_key=template.key,
+            pool_entry_ids=[],
+            troop_loadout={},
+        )
+
+    assert GuildMissionRun.objects.filter(guild=guild, template=template).count() == 3

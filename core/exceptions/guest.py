@@ -147,6 +147,13 @@ class GuestAlreadyOwnedError(GuestError):
         super().__init__(message, guest_name=guest_name)
 
 
+class WorldUniqueGuestError(GuestError):
+    """全服唯一门客不能通过普通流程处理。"""
+
+    error_code = "WORLD_UNIQUE_GUEST_ERROR"
+    default_message = "该门客为全服唯一门客，当前操作不可用"
+
+
 class GuestNotFoundError(GuestError):
     """门客不存在"""
 

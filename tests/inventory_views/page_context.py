@@ -12,7 +12,9 @@ from guests.models import (
     GuestTemplate,
     RecruitmentCandidate,
     RecruitmentPool,
+    WorldUniqueGuest,
 )
+from guests.services.world_unique import WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY, WORLD_UNIQUE_LUBU_TEMPLATE_KEY
 
 
 @pytest.mark.django_db
@@ -187,6 +189,42 @@ class TestInventoryPageContext:
         assert 'data-confirm-ok-text="确认使用"' in body
         assert "爱德华召唤卷轴" in body
         assert "消耗 50 根金条" in body
+
+    def test_warehouse_page_keeps_lubu_status_only_in_use_confirmation_metadata(self, manor_with_user):
+        manor, client = manor_with_user
+        lubu_template = GuestTemplate.objects.create(
+            key=WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
+            name="吕布",
+            rarity=GuestRarity.PURPLE,
+            archetype=GuestArchetype.MILITARY,
+            is_world_unique=True,
+            recruitable=False,
+        )
+        WorldUniqueGuest.objects.create(template=lubu_template, status=WorldUniqueGuest.Status.WILD)
+        scroll_template = ItemTemplate.objects.create(
+            key=WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY,
+            name="吕布招募卷轴",
+            effect_type=ItemTemplate.EffectType.TOOL,
+            is_usable=True,
+            effect_payload={
+                "action": "summon_guest",
+                "choices": [{"template_key": WORLD_UNIQUE_LUBU_TEMPLATE_KEY, "weight": 100}],
+            },
+        )
+        InventoryItem.objects.create(
+            manor=manor,
+            template=scroll_template,
+            quantity=1,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+
+        response = client.get(reverse("gameplay:warehouse"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert 'data-world-unique-guest-name="吕布"' in body
+        assert 'data-world-unique-status-summary="在野"' in body
+        assert "吕布状态" not in body
 
     def test_warehouse_page_shows_exact_resource_pack_reward(self, manor_with_user):
         manor, client = manor_with_user

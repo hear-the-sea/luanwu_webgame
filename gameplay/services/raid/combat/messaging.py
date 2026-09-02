@@ -9,7 +9,12 @@ if TYPE_CHECKING:
 
 from ...utils.messages import create_message
 from .config import PVPConstants
-from .loot import _format_battle_rewards_description, _format_capture_description, _format_loot_description
+from .loot import (
+    _format_battle_rewards_description,
+    _format_capture_description,
+    _format_loot_description,
+    _format_unique_guest_loss_description,
+)
 from .troops import _normalize_mapping, _normalize_positive_int_mapping
 
 
@@ -41,6 +46,7 @@ def _send_raid_battle_messages(run: RaidRun) -> None:
     loot_items = _normalize_positive_int_mapping(run.loot_items)
     battle_rewards_desc = _format_battle_rewards_description(battle_rewards)
     capture_desc = _format_capture_description(battle_rewards.get("capture"))
+    unique_guest_loss_desc = _format_unique_guest_loss_description(battle_rewards.get("unique_guest_loss"))
     defeat_protection_seconds = int(getattr(PVPConstants, "RAID_DEFEAT_PROTECTION_SECONDS", 1800) or 1800)
     defeat_protection_minutes = max(1, defeat_protection_seconds // 60)
 
@@ -65,6 +71,11 @@ def _send_raid_battle_messages(run: RaidRun) -> None:
 
 俘获：
 {capture_desc}"""
+        if unique_guest_loss_desc:
+            attacker_body += f"""
+
+唯一门客损失：
+{unique_guest_loss_desc}"""
     else:
         attacker_title = "踢馆战报 - 踢馆失败"
         attacker_body = f"""对 {run.defender.display_name} 的踢馆行动失败了。
@@ -75,6 +86,11 @@ def _send_raid_battle_messages(run: RaidRun) -> None:
 
 损失：
 {capture_desc}"""
+        if unique_guest_loss_desc:
+            attacker_body += f"""
+
+唯一门客损失：
+{unique_guest_loss_desc}"""
 
     create_message(
         manor=run.attacker,
@@ -100,6 +116,11 @@ def _send_raid_battle_messages(run: RaidRun) -> None:
 
 损失：
 {capture_desc}"""
+        if unique_guest_loss_desc:
+            defender_body += f"""
+
+唯一门客损失：
+{unique_guest_loss_desc}"""
     else:
         defender_title = "踢馆战报 - 防守成功"
         defender_body = f"""成功抵御了来自 {run.attacker.location_display} 的 {run.attacker.display_name} 的踢馆！
@@ -116,6 +137,11 @@ def _send_raid_battle_messages(run: RaidRun) -> None:
 
 俘获：
 {capture_desc}"""
+        if unique_guest_loss_desc:
+            defender_body += f"""
+
+唯一门客损失：
+{unique_guest_loss_desc}"""
 
     create_message(
         manor=run.defender,
@@ -126,3 +152,12 @@ def _send_raid_battle_messages(run: RaidRun) -> None:
     )
 
     _send_raid_capture_loss_message(run, battle_rewards.get("capture"))
+    if unique_guest_loss_desc:
+        loser_manor = run.defender if run.is_attacker_victory else run.attacker
+        create_message(
+            manor=loser_manor,
+            kind="battle",
+            title="唯一门客失去通知",
+            body=f"本次踢馆中，{unique_guest_loss_desc}。吕布已回归在野，其他玩家可再次使用专属召唤卷轴招募。",
+            battle_report=run.battle_report,
+        )

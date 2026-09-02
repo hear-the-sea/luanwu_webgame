@@ -18,6 +18,7 @@ from gameplay.services.recruitment.recruitment import get_player_troops
 from gameplay.utils.template_loader import get_item_templates_by_keys, get_troop_templates_by_keys
 from gameplay.views.read_helpers import get_prepared_manor_for_read
 from guests.models import GuestStatus, GuestTemplate, SkillBook
+from guests.services.world_unique import get_world_unique_guest_status
 
 from . import mission_helpers
 
@@ -28,6 +29,7 @@ VALID_MISSION_TABS = {
     MissionTemplate.Difficulty.INTERMEDIATE,
     MissionTemplate.Difficulty.ADVANCED,
 }
+BAIMENLOU_MISSION_KEY = "baimenlou_mingyun_jueze"
 
 
 def build_troop_config() -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
@@ -113,6 +115,7 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         "selected_probability_drop_items": [],
         "selected_entry_cost_items": [],
         "can_afford_entry_cost": True,
+        "world_unique_guest_status": None,
         "available_guests": available_guests,
         "troop_config": config_items,
         "player_troops": get_player_troops(manor),
@@ -128,6 +131,8 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
     context["resource_labels"] = drop_labels
 
     if selected_mission:
+        if selected_mission.key == BAIMENLOU_MISSION_KEY:
+            context["world_unique_guest_status"] = get_world_unique_guest_status()
         guaranteed_drops, probability_drops = mission_helpers.build_drop_lists(
             selected_mission,
             drop_labels,

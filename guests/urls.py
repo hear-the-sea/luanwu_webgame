@@ -6,7 +6,7 @@ from .views.recruit import RecruitView, accept_candidate_view, use_magnifying_gl
 from .views.roster import GuestDetailView, RosterView, dismiss_guest_view
 from .views.salary import pay_all_salaries_view, pay_salary_view
 from .views.skills import forget_skill_view, learn_skill_view
-from .views.training import TrainView, allocate_points_view, check_training_view, use_experience_item_view
+from .views.training import allocate_points_view, check_training_view, use_experience_item_view
 
 app_name = "guests"
 
@@ -23,7 +23,6 @@ urlpatterns = [
     path("<int:pk>/check-training/", check_training_view, name="check_training"),
     path("recruit/", RecruitView.as_view(), name="recruit"),
     path("recruit/use-card/", use_recruitment_card_view, name="use_recruitment_card"),
-    path("train/", TrainView.as_view(), name="train"),
     path("equip/", equip_view, name="equip"),
     path("gear-options/", gear_options_view, name="gear_options"),
     path("unequip/", unequip_view, name="unequip"),

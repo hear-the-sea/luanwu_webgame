@@ -3,6 +3,7 @@
 # ============================================================
 # 本文件用于配置帮会任务，任务类型与个人任务口径保持一致：门客/护院/防守。
 # 字段风格与个人任务导入保持一致，便于统一维护。
+# 每个任务模板每个自然周最多发起 3 次。
 
 missions:
   - key: guild_patrol_alpha
@@ -15,6 +16,7 @@ missions:
     task_type: troop
     base_duration_seconds: 1500
     ruby_reward: 96
+    weekly_limit: 3
     recommended_guest_count: 10
     allow_troops: true
     enemy_guests:
@@ -52,6 +54,7 @@ missions:
     task_type: troop
     base_duration_seconds: 2100
     ruby_reward: 168
+    weekly_limit: 3
     recommended_guest_count: 14
     allow_troops: true
     enemy_guests:
@@ -93,6 +96,7 @@ missions:
     task_type: troop
     base_duration_seconds: 3000
     ruby_reward: 288
+    weekly_limit: 3
     recommended_guest_count: 18
     allow_troops: true
     enemy_guests:

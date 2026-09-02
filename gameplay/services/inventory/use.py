@@ -415,10 +415,21 @@ def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
 
     from guests.models import GuestTemplate
     from guests.services.recruitment_guests import build_recruitment_custom_name, create_guest_from_template
+    from guests.services.world_unique import (
+        WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY,
+        claim_world_unique_guest_from_scroll,
+        is_world_unique_template,
+    )
 
     template = GuestTemplate.objects.filter(key=chosen_key).first()
     if not template:
         raise ItemNotConfiguredError(f"门客模板不存在: {chosen_key}")
+
+    if is_world_unique_template(template) and item.template.key != WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY:
+        raise ItemNotUsableError(
+            template.name,
+            message="全服唯一门客只能通过专属召唤卷轴获得",
+        )
 
     exclusive_template_keys_raw = payload.get("exclusive_template_keys")
     normalized_exclusive_keys: list[str] = []
@@ -433,17 +444,28 @@ def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
     _consume_required_items_locked(manor, payload)
 
     summon_rng = inventory_random.Random()
-    guest = create_guest_from_template(
-        manor=manor,
-        template=template,
-        custom_name=build_recruitment_custom_name(template, summon_rng),
-        rng=summon_rng,
-    )
+    custom_name = build_recruitment_custom_name(template, summon_rng)
+    if is_world_unique_template(template):
+        guest = claim_world_unique_guest_from_scroll(
+            manor,
+            item.template.key,
+            template,
+            custom_name=custom_name,
+            rng=summon_rng,
+        )
+    else:
+        guest = create_guest_from_template(
+            manor=manor,
+            template=template,
+            custom_name=custom_name,
+            rng=summon_rng,
+        )
 
     rarity_display = template.get_rarity_display()
     return {
         "获得门客": guest.display_name,
         "稀有度": rarity_display,
+        "全服唯一": is_world_unique_template(template),
         "_message": f"获得门客 {guest.display_name}（{rarity_display}）",
     }
 

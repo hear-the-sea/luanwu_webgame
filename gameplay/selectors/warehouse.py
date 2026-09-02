@@ -3,6 +3,7 @@ from __future__ import annotations
 from django.core.paginator import Paginator
 
 from guests.models import GuestStatus
+from guests.services.world_unique import WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY, get_world_unique_guest_status
 
 from ..models import InventoryItem, ItemTemplate
 from ..models.items import LEGACY_TOOL_EFFECT_TYPES, get_item_effect_type_label
@@ -84,6 +85,19 @@ def _append_missing_category_option(
         return
     if not any(item["key"] == key for item in categories):
         categories.append({"key": key, "label": get_item_effect_type_label(key)})
+
+
+def _annotate_world_unique_scroll_use_status(items: list) -> None:
+    if not any(item.template.key == WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY for item in items):
+        return
+
+    status = get_world_unique_guest_status()
+    for item in items:
+        if item.template.key != WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY:
+            continue
+        # 仅供点击“使用”时的确认弹窗读取，仓库物品提示不展示唯一门客状态。
+        item.world_unique_use_guest_name = status["guest_name"]
+        item.world_unique_use_status_summary = status["summary"]
 
 
 def get_warehouse_context(manor, current_tab: str, selected_category: str, page: int = 1) -> dict:
@@ -171,6 +185,8 @@ def get_warehouse_context(manor, current_tab: str, selected_category: str, page:
         current_tab=current_tab,
         selected_category=selected_category,
     )
+    if current_tab == "warehouse":
+        _annotate_world_unique_scroll_use_status(warehouse_items)
     for item in warehouse_items:
         deposit_block_reason = get_treasury_deposit_block_reason(item.template)
         item.treasury_deposit_blocked = deposit_block_reason is not None

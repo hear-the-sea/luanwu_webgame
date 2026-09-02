@@ -234,8 +234,8 @@ def handle_game_errors(
         @handle_game_errors(redirect_url="gameplay:dashboard")
         def my_view(request, pk):
             guest = get_guest_with_template(get_manor(request.user), pk)
-            train_guest(guest, levels=1)
-            messages.success(request, f"{guest.display_name} 开始训练")
+            # 调用具体业务服务
+            messages.success(request, f"{guest.display_name} 操作成功")
             return redirect("guests:detail", pk=guest.pk)
 
         # 或返回 URL 字符串，让装饰器处理重定向
@@ -244,7 +244,7 @@ def handle_game_errors(
         @handle_game_errors(redirect_url="gameplay:dashboard")
         def my_view(request, pk):
             guest = get_guest_with_template(get_manor(request.user), pk)
-            train_guest(guest, levels=1)
+            # 调用具体业务服务
             # 返回 URL 字符串，装饰器会处理重定向
             return "guests:detail"
 
@@ -293,7 +293,7 @@ def atomic_handle_game_errors(
         def my_view(request, pk):
             # 自动在事务中执行
             guest = get_guest_with_template(get_manor(request.user), pk)
-            train_guest(guest, levels=1)
+            # 调用需要在事务中执行的业务服务
             # ...
     """
 

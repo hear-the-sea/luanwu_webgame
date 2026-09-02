@@ -9,6 +9,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from core.utils import safe_int, safe_non_negative_int, safe_positive_int
 from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
+from guilds.constants import GUILD_MISSION_WEEKLY_LIMIT
 from guilds.models import GuildMissionTemplate
 
 logger = logging.getLogger(__name__)
@@ -118,6 +119,10 @@ class Command(BaseCommand):
                 "task_type": _normalize_task_type(entry.get("task_type"), allow_troops=allow_troops),
                 "base_duration_seconds": safe_positive_int(entry.get("base_duration_seconds"), 600),
                 "ruby_reward": safe_non_negative_int(entry.get("ruby_reward"), 0),
+                "weekly_limit": min(
+                    safe_positive_int(entry.get("weekly_limit"), GUILD_MISSION_WEEKLY_LIMIT),
+                    GUILD_MISSION_WEEKLY_LIMIT,
+                ),
                 "recommended_guest_count": safe_positive_int(entry.get("recommended_guest_count"), 1),
                 "allow_troops": allow_troops,
                 "enemy_guests": enemy_guests,

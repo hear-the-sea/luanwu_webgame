@@ -29,6 +29,7 @@ from guests.models import (
     Skill,
     SkillBook,
     SkillKind,
+    WorldUniqueGuest,
 )
 from guests.services.recruitment_templates import clear_template_cache
 from guests.services.status import (
@@ -210,6 +211,7 @@ class Command(BaseCommand):
             "default_morality": entry.get("default_morality", 70),
             "recruitable": entry.get("recruitable", True),
             "is_hermit": entry.get("is_hermit", False),
+            "is_world_unique": entry.get("is_world_unique", False),
             "skills": entry.get("skills") or [],
             "avatar": entry.get("avatar"),
             "growth_range": entry.get("growth_range") or [],
@@ -304,6 +306,7 @@ class Command(BaseCommand):
             "default_morality": data.get("default_morality", 50),
             "recruitable": data.get("recruitable", True),
             "is_hermit": data.get("is_hermit", False),
+            "is_world_unique": data.get("is_world_unique", False),
             "growth_range": data.get("growth_range") or [],
             "attribute_weights": data.get("attribute_weights") or {},
         }
@@ -442,6 +445,11 @@ class Command(BaseCommand):
 
             template_keys.add(obj.key)
             template_skill_keys[obj.key] = data.get("skills") or []
+            if obj.is_world_unique:
+                WorldUniqueGuest.objects.get_or_create(
+                    template=obj,
+                    defaults={"status": WorldUniqueGuest.Status.WILD},
+                )
             if verbosity >= 1:
                 self.stdout.write(f"{'Created' if created else 'Updated'} template {obj.key}")
         if verbosity >= 1 and synced_guest_hp_count > 0:
@@ -712,12 +720,13 @@ class Command(BaseCommand):
         return referenced_ids
 
     def _protected_guest_templates_from_error(self, exc: ProtectedError):
-        template_ids = {
-            template_id
-            for obj in exc.protected_objects
-            for template_id in [getattr(obj, "guest_template_id", None)]
-            if template_id is not None
-        }
+        template_ids = set()
+        for obj in exc.protected_objects:
+            template_id = getattr(obj, "guest_template_id", None)
+            if template_id is None:
+                template_id = getattr(obj, "template_id", None)
+            if template_id is not None:
+                template_ids.add(template_id)
         return GuestTemplate.objects.filter(pk__in=template_ids)
 
     def _cleanup_removed_books(self, book_keys: set[str]) -> None:

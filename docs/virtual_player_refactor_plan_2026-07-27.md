@@ -948,7 +948,7 @@ M-14 是 Gate B 行为等价拆分完成后的独立 `Surgical Fix`：它只改�
 
 | 文件 | 本轮安排 |
 |------|----------|
-| `guests/services/training.py` | 提取 actor-neutral 的 quote/validate/apply locked primitive；真人 `train_guest()` 与 Bot 同用，原公开入口不改 |
+| `guests/services/training.py` | 保留自动升级与经验道具缩时的 actor-neutral quote/validate/apply locked primitive；Bot 复用同一领域能力，不恢复旧式公开手动入口 |
 | `guests/services/health.py` | 为 `guest_healing` 提取 actor-neutral 药品 quote/validate/apply locked primitive；统一解析药品 HP 效果，保持 `Manor -> InventoryItem -> Guest` 锁序、单件扣减、重伤阈值和失败回滚；真人入口与 Bot 共用 |
 | `guests/services/recruitment.py`、`recruitment_flow.py`、`recruitment_guests.py` | 本次增补保持现状，不为 Maintenance V2 提取或接入门客招募/候选处置链，也不把 Bot archetype 或 policy 传入领域层；未来纳入时重新评审 |
 | `guests/services/equipment.py`、`equipment_inventory.py` | 原同步 command 优先直接复用；只有锁矩阵证明嵌套入口不安全时才提取 locked primitive，不做预防性重写 |
@@ -1488,7 +1488,7 @@ gear_score =
 
 | 领域动作 | 当前真实规则所有者 | Maintenance V2 组合方式 | 不可省略 |
 |----------|----------------------|-------------------------|----------|
-| 门客培养 | `guests/services/training.py` | 从 `train_guest()` 的资格、cost、属性成长和日志中提取 actor-neutral locked primitive；同步完成一个培养动作，不派发倒计时 | `Manor -> Guest` 锁序、空闲状态、等级上限、资源扣除、`TrainingLog`、属性成长 |
+| 门客培养 | `guests/services/training.py` | 复用自动升级结算的资格、cost、属性成长和日志 locked primitive；同步完成一个培养动作，不派发倒计时 | `Manor -> Guest` 锁序、空闲状态、等级上限、资源扣除、`TrainingLog`、属性成长 |
 | 门客回血/治疗 | `guests/services/health.py` | 复用被动恢复规则；主动治疗通过 actor-neutral 药品 locked primitive 一次处理一名门客，作为 `guest_healing` 占用唯一同步动作 | 本庄园所有权、`IDLE/INJURED`、未满血、药品效果解析、`Manor -> InventoryItem -> Guest` 锁序、单件扣减、20% 重伤解除阈值、整事务回滚 |
 | 门客招募/候选处置 | `guests/services/recruitment.py`、`recruitment_flow.py`、`recruitment_guests.py` | 本次增补保持现状，Maintenance V2 首版不组合整个招募链；未来纳入时重新评审 actor-neutral command | 不得跳过或伪造 `ensure_auto_training()`、候选、成本、身份及审计语义 |
 | 装备穿脱 | `guests/services/equipment.py`、`equipment_inventory.py` | 直接复用同步 command 或提取 locked primitive；只使用已有库存，acquisition 另占周期 | 所有权、门客状态、槽位、库存消费、属性和套装重算、旧装备去向 |

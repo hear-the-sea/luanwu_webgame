@@ -614,6 +614,7 @@ def test_default_guild_mission_templates_use_guild_specific_enemy_templates():
         "dao_jie": 500,
     }
     assert patrol.enemy_technology == {"level": 7, "guest_level": 88, "guest_bonus": 0.36}
+    assert patrol.weekly_limit == 3
     assert escort_keys == [
         "guild_bloodflag_head_escort",
         "guild_bloodflag_deputy_escort",
@@ -639,6 +640,7 @@ def test_default_guild_mission_templates_use_guild_specific_enemy_templates():
         "quan_wang": 860,
     }
     assert escort.enemy_technology == {"level": 10, "guest_level": 102, "guest_bonus": 0.62}
+    assert escort.weekly_limit == 3
     assert assault_keys == [
         "guild_blackwind_gate_general",
         "guild_blackwind_gate_overseer",
@@ -671,6 +673,7 @@ def test_default_guild_mission_templates_use_guild_specific_enemy_templates():
         "dao_sheng": 930,
     }
     assert assault.enemy_technology == {"level": 12, "guest_level": 108, "guest_bonus": 0.96}
+    assert assault.weekly_limit == 3
 
     guest_keys = set(patrol_keys + escort_keys + assault_keys)
     existing_keys = set(GuestTemplate.objects.filter(key__in=guest_keys).values_list("key", flat=True))
@@ -691,6 +694,7 @@ missions:
     base_duration_seconds: bad
     ruby_reward: -1
     recommended_guest_count: 0
+    weekly_limit: -2
     allow_troops: "true"
     is_active: "false"
     sort_weight: bad
@@ -707,6 +711,7 @@ missions:
     assert mission.base_duration_seconds == 600
     assert mission.ruby_reward == 0
     assert mission.recommended_guest_count == 1
+    assert mission.weekly_limit == 3
     assert mission.task_type == "troop"
     assert mission.allow_troops is True
     assert mission.is_active is False

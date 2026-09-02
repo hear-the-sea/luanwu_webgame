@@ -590,10 +590,18 @@ def _process_defection_batch(guest_ids: list[int], *, create_message: Callable) 
                 locked_manor = Manor.objects.select_for_update().filter(pk=manor_id).first()
                 if locked_manor is None:
                     continue
-                guest = Guest.objects.select_for_update().filter(id=guest_id, manor_id=locked_manor.pk).first()
+                guest = (
+                    Guest.objects.select_for_update()
+                    .select_related("template")
+                    .filter(id=guest_id, manor_id=locked_manor.pk)
+                    .first()
+                )
                 if guest is None:
                     continue
                 guest.manor = locked_manor
+                if getattr(guest.template, "is_world_unique", False):
+                    logger.info("Skip defection for world-unique guest: guest_id=%d", guest.id)
+                    continue
 
                 defection, created = GuestDefection.objects.get_or_create(
                     guest_id=guest.id,

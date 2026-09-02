@@ -12,6 +12,7 @@ from core.exceptions import (
     GuestNotIdleError,
     InvalidAllocationError,
     RecruitmentCandidateStateError,
+    WorldUniqueGuestError,
 )
 
 from ..models import Guest, GuestRarity, GuestSkill, GuestStatus, GuestTemplate, RecruitmentCandidate, RecruitmentRecord
@@ -91,8 +92,14 @@ def create_guest_from_template(
     rng: Optional[random.Random] = None,
     grant_skills: bool = True,
     save: bool = True,
+    allow_world_unique: bool = False,
 ) -> Guest:
     """按模板创建门客（含属性波动、初始HP与技能）。"""
+    if getattr(template, "is_world_unique", False) and not allow_world_unique:
+        raise WorldUniqueGuestError(
+            message=f"{template.name}为全服唯一门客，只能通过专属召唤卷轴获得",
+        )
+
     rng = rng or random.Random()
     effective_rarity = rarity or template.rarity
     effective_archetype = archetype or template.archetype

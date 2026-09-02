@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from django import forms
 
-from core.config import GUEST
-
 from .models import Guest, RecruitmentPool
 
 
@@ -13,29 +11,6 @@ class RecruitForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["pool"].queryset = RecruitmentPool.objects.all()
-
-
-class TrainGuestForm(forms.Form):
-    guest = forms.ModelChoiceField(queryset=Guest.objects.none(), label="门客")
-    levels = forms.IntegerField(min_value=1, max_value=5, initial=1, label="提升等级")
-
-    def __init__(self, *args, **kwargs):
-        manor = kwargs.pop("manor", None)
-        super().__init__(*args, **kwargs)
-        if manor:
-            self.fields["guest"].queryset = manor.guests.all()
-
-    def clean(self):
-        cleaned = super().clean()
-        guest = cleaned.get("guest")
-        levels = cleaned.get("levels")
-        if guest and levels:
-            max_guest_level = int(GUEST.MAX_LEVEL)
-            if guest.level >= max_guest_level:
-                raise forms.ValidationError(f"{guest.display_name} 已达等级上限 {max_guest_level}")
-            if guest.level + levels > max_guest_level:
-                cleaned["levels"] = max_guest_level - guest.level
-        return cleaned
 
 
 class EquipForm(forms.Form):

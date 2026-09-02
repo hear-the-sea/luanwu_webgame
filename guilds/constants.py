@@ -17,6 +17,9 @@ from core.utils.yaml_loader import ensure_mapping, load_yaml_data
 logger = logging.getLogger(__name__)
 GUILD_RULES_PATH = Path(__file__).resolve().parent.parent / "data" / "guild_rules.yaml"
 
+# 同一帮会的同一任务模板每个自然周最多发起次数。
+GUILD_MISSION_WEEKLY_LIMIT = 3
+
 DEFAULT_GUILD_RULES: dict[str, Any] = {
     "pagination": {
         "guild_list_page_size": 20,

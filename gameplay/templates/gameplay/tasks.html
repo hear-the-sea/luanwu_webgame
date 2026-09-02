@@ -232,6 +232,19 @@
                             {% endfor %}
                         </div>
                     </section>
+                    {% if world_unique_guest_status %}
+                    <section class="tw-task-detail-section">
+                        <h5 class="text-text-primary text-lg font-bold mb-2">吕布状态</h5>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="tw-pill">{{ world_unique_guest_status.summary }}</span>
+                            {% if world_unique_guest_status.is_available %}
+                            <span class="tw-muted text-sm">当前可使用吕布召唤卷轴招募</span>
+                            {% else %}
+                            <span class="tw-muted text-sm">吕布当前由其他玩家持有</span>
+                            {% endif %}
+                        </div>
+                    </section>
+                    {% endif %}
                     <section class="tw-task-detail-section">
                         <h5 class="text-text-primary text-lg font-bold mb-2">掉落预览</h5>
                         <div class="tw-drop-grid">

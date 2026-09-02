@@ -19,6 +19,7 @@
                 <span class="tw-chip">{{ selected_mission.get_task_type_display }}</span>
                 <span class="tw-chip">推荐门客 {{ selected_mission.recommended_guest_count }}</span>
                 <span class="tw-chip">红宝石 {{ selected_mission.ruby_reward }}</span>
+                <span class="tw-chip">本周次数 {{ selected_mission.weekly_usage|default_if_none:"0" }} / {{ selected_mission.weekly_limit }}</span>
                 <span class="tw-chip">预计耗时 {{ selected_mission.actual_duration_seconds }} 秒</span>
                 <span class="tw-chip">
                     {% if selected_mission.allow_troops %}允许护院{% else %}仅门客{% endif %}
@@ -163,12 +164,14 @@
 
                             <div class="flex gap-4 mt-8">
                                 <button type="submit"
-                                        class="{% if active_run or not lineup_entries %}tw-btn-secondary{% else %}tw-btn-primary{% endif %}"
-                                        {% if active_run or not lineup_entries %}disabled{% endif %}>
+                                        class="{% if active_run or not lineup_entries or not selected_mission.weekly_remaining %}tw-btn-secondary{% else %}tw-btn-primary{% endif %}"
+                                        {% if active_run or not lineup_entries or not selected_mission.weekly_remaining %}disabled{% endif %}>
                                     {% if active_run %}
                                     已有进行中的帮会任务
                                     {% elif not lineup_entries %}
                                     暂无可派遣门客
+                                    {% elif not selected_mission.weekly_remaining %}
+                                    本周次数已用尽
                                     {% else %}
                                     发起出征
                                     {% endif %}

@@ -245,7 +245,7 @@ gameplay/services/virtual_players.py
 
 | 领域动作 | 当前规则 owner 与边界 | 当前副作用 | Gate E 前最小提取 |
 |----------|-----------------------|------------|-------------------|
-| 门客培养 | `guests/services/training.py::train_guest/finalize_guest_training`；start 为 Manor/Guest 事务，finalize 只锁 Guest 并可续排长期训练 | 资源、`TrainingLog`、timer、Celery、等级/四维/属性点/HP | `quote_training` + `validate_training_locked` + 可注入 RNG/allocator 的 `apply_training_locked`；Bot 同事务同步完成且不写 timer |
+| 门客培养 | `guests/services/training.py::ensure_auto_training/finalize_guest_training`；自动升级由状态机安排，finalize 只锁 Guest 并可续排长期训练 | 资源、`TrainingLog`、timer、Celery、等级/四维/属性点/HP | `quote_training` + `validate_training_locked` + 可注入 RNG/allocator 的 `apply_training_locked`；Bot 同事务同步完成且不写 timer |
 | 门客招募/候选处置 | `recruitment.py`、`recruitment_guests.py`；start/finalize 反序，资格还涉及行动力、日限、容量、身份和 seed | 行动力/资源、候选、Guest/Retainer、缓存、通知；正式 Guest 会启动自动训练 | Maintenance V2 首版移除整个招募链；未来纳入时另行重开语义和锁序评审 |
 | 装备穿脱 | `equipment.py`、`equipment_inventory.py`；同步 command 从 Guest 开始，存在 Inventory/Guest 反向路径 | Inventory/Gear、属性、套装、HP clamp、旧装备、缓存 | 真人与 Bot 共用 Manor-first、按主键排序的 resolve/equip/unequip locked primitive；acquisition 另占周期 |
 | 技能学习 | `skills.py::learn_guest_skill`；Guest 后锁技能书，关键书本身份校验仍在 view | `GuestSkill(source=BOOK)`、技能书消费 | 将所有权、库位、effect/payload/skill identity 下沉到 Manor-first locked command |

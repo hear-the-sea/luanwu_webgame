@@ -153,6 +153,7 @@ class GuildMissionTemplateAdmin(admin.ModelAdmin):
         "task_type",
         "base_duration_seconds",
         "ruby_reward",
+        "weekly_limit",
         "allow_troops",
         "is_active",
         "sort_weight",

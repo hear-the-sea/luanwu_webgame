@@ -10,6 +10,8 @@ function readScript(relativePath) {
 
 function createWarehouseTestEnv({
   confirmText = "确认使用卷轴？",
+  worldUniqueStatusSummary = "",
+  worldUniqueGuestName = "",
   confirmResult = true,
   useGameConfirm = true,
   useGameDialogConfirm = true,
@@ -50,6 +52,10 @@ function createWarehouseTestEnv({
     form.dataset.confirmText = confirmText;
     form.dataset.confirmTitle = "使用确认";
     form.dataset.confirmOkText = "确认使用";
+  }
+  if (worldUniqueStatusSummary) {
+    form.dataset.worldUniqueStatusSummary = worldUniqueStatusSummary;
+    form.dataset.worldUniqueGuestName = worldUniqueGuestName || "吕布";
   }
 
   const document = {
@@ -196,6 +202,24 @@ test("warehouse page confirms configured forms before submitting", async () => {
   assert.equal(env.calls.reload, 1);
   assert.equal(env.submitButton.disabled, true);
   assert.equal(env.submitButton.textContent, "处理中...");
+});
+
+test("warehouse page shows the world-unique guest status in the use confirmation", async () => {
+  const env = createWarehouseTestEnv({
+    confirmText: "",
+    worldUniqueStatusSummary: "仕官（甲庄园，坐标[并州] (1, 2)）",
+    worldUniqueGuestName: "吕布",
+  });
+
+  env.runWarehouseScript();
+  await env.dispatchSubmit();
+
+  assert.equal(env.calls.gameConfirm.length, 1);
+  assert.equal(
+    env.calls.gameConfirm[0].message,
+    "吕布当前状态：仕官（甲庄园，坐标[并州] (1, 2)）\n\n确认使用吕布召唤卷轴？",
+  );
+  assert.equal(env.calls.fetch.length, 1);
 });
 
 test("warehouse page aborts submit when confirmation is cancelled", async () => {

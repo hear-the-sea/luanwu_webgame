@@ -176,6 +176,10 @@
                                     <form
                                         method="post"
                                         action="{% url 'gameplay:use_item' entry.id %}"
+                                        {% if entry.world_unique_use_status_summary %}
+                                        data-world-unique-guest-name="{{ entry.world_unique_use_guest_name }}"
+                                        data-world-unique-status-summary="{{ entry.world_unique_use_status_summary }}"
+                                        {% endif %}
                                         {% if payload.confirm_text %}
                                         data-confirm-title="{{ payload.confirm_title|default:'使用确认' }}"
                                         data-confirm-text="{{ payload.confirm_text }}"

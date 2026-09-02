@@ -247,6 +247,7 @@ def get_oath_grove_page_context(manor: Any) -> dict[str, Any]:
     available_guests = (
         manor.guests.select_related("template")
         .exclude(id__in=oathed_ids)
+        .exclude(template__is_world_unique=True)
         .annotate(_template_rarity_rank=guest_template_rarity_rank_case("template__rarity"))
         .order_by("-_template_rarity_rank", "-level", "id")
     )

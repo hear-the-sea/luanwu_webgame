@@ -3,6 +3,7 @@ from django.utils import timezone
 
 from battle.models import BattleReport, TroopTemplate
 from core.utils.time_scale import scale_duration
+from guilds.constants import GUILD_MISSION_WEEKLY_LIMIT
 
 from .base import Guild
 from .member import GuildMember
@@ -34,6 +35,11 @@ class GuildMissionTemplate(models.Model):
     )
     base_duration_seconds = models.PositiveIntegerField(default=600, verbose_name="基础耗时(秒)")
     ruby_reward = models.PositiveIntegerField(default=0, verbose_name="红宝石奖励")
+    weekly_limit = models.PositiveSmallIntegerField(
+        default=GUILD_MISSION_WEEKLY_LIMIT,
+        verbose_name="每周次数上限",
+        help_text="同一帮会同一任务模板每个自然周最多发起次数",
+    )
     recommended_guest_count = models.PositiveSmallIntegerField(default=1, verbose_name="推荐门客数")
     allow_troops = models.BooleanField(default=False, verbose_name="允许携带护院")
     enemy_guests = models.JSONField(default=list, blank=True, verbose_name="敌方门客配置")
@@ -54,6 +60,12 @@ class GuildMissionTemplate(models.Model):
     @property
     def actual_duration_seconds(self) -> int:
         return scale_duration(self.base_duration_seconds, minimum=1)
+
+    @property
+    def weekly_remaining(self) -> int:
+        """当前帮会本周还可发起的次数（页面查询会注入 weekly_usage 注解）。"""
+        weekly_usage = int(getattr(self, "weekly_usage", 0) or 0)
+        return max(0, self.weekly_limit - weekly_usage)
 
 
 class GuildMissionRun(models.Model):

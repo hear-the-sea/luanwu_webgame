@@ -72,6 +72,8 @@ class GuestTemplate(models.Model):
     recruitable = models.BooleanField(default=True)
     # 是否为隐士（隐藏在民间的高手，虽为黑色但不可重复招募）
     is_hermit = models.BooleanField(default=False, verbose_name="隐士")
+    # 是否为全服唯一门客。唯一门客只能由其专属业务入口创建。
+    is_world_unique = models.BooleanField(default=False, verbose_name="全服唯一")
     # 自定义成长点数区间 [min, max]，为空则使用稀有度默认值
     growth_range = models.JSONField(default=list, blank=True, verbose_name="成长点数区间")
     # 自定义属性分配权重 {force: X, intellect: Y, defense: Z, agility: W}
@@ -360,6 +362,63 @@ class Guest(models.Model):
     def save(self, *args, **kwargs):
         self._initialize_current_hp_if_missing()
         super().save(*args, **kwargs)
+
+
+class WorldUniqueGuest(models.Model):
+    """全服唯一门客的归属状态。"""
+
+    class Status(models.TextChoices):
+        WILD = "wild", "在野"
+        SERVING = "serving", "仕官"
+
+    template = models.OneToOneField(
+        GuestTemplate,
+        on_delete=models.PROTECT,
+        related_name="world_unique_state",
+        verbose_name="门客模板",
+    )
+    owner_manor = models.ForeignKey(
+        "gameplay.Manor",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="world_unique_guests",
+        verbose_name="当前庄园",
+    )
+    owner_guest = models.OneToOneField(
+        Guest,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="world_unique_state",
+        verbose_name="当前门客实例",
+    )
+    status = models.CharField(
+        "状态",
+        max_length=16,
+        choices=Status.choices,
+        default=Status.WILD,
+        db_index=True,
+    )
+    version = models.PositiveBigIntegerField("状态版本", default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "全服唯一门客状态"
+        verbose_name_plural = "全服唯一门客状态"
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(status="wild", owner_manor__isnull=True, owner_guest__isnull=True)
+                    | models.Q(status="serving", owner_manor__isnull=False, owner_guest__isnull=False)
+                ),
+                name="world_unique_guest_owner_consistency",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.template.name} - {self.get_status_display()}"
 
 
 class GearSlot(models.TextChoices):

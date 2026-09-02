@@ -62,6 +62,7 @@
                             <th class="tw-mission-name-col">任务名称</th>
                             <th class="tw-mission-meta-col text-center">类型</th>
                             <th class="tw-mission-meta-col text-center">红宝石</th>
+                            <th class="tw-mission-meta-col text-center">本周次数</th>
                             <th class="tw-mission-action-col text-center">操作</th>
                         </tr>
                     </thead>
@@ -77,13 +78,16 @@
                             <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">{{ mission.ruby_reward }}</span>
                             </td>
+                            <td class="tw-mission-meta-col text-center">
+                                <span class="tw-chip">本周 {{ mission.weekly_usage|default_if_none:"0" }} / {{ mission.weekly_limit }}</span>
+                            </td>
                             <td class="tw-mission-action-col text-center">
                                 <a class="tw-btn-primary tw-btn-sm" href="?mission={{ mission.key }}">详情</a>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" class="tw-muted text-center py-8">暂无任务配置。</td>
+                            <td colspan="5" class="tw-muted text-center py-8">暂无任务配置。</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -97,6 +101,7 @@
                             <th class="tw-mission-name-col">任务名称</th>
                             <th class="tw-mission-meta-col text-center">类型</th>
                             <th class="tw-mission-meta-col text-center">红宝石</th>
+                            <th class="tw-mission-meta-col text-center">本周次数</th>
                             <th class="tw-mission-action-col text-center">操作</th>
                         </tr>
                     </thead>
@@ -112,13 +117,16 @@
                             <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">{{ mission.ruby_reward }}</span>
                             </td>
+                            <td class="tw-mission-meta-col text-center">
+                                <span class="tw-chip">本周 {{ mission.weekly_usage|default_if_none:"0" }} / {{ mission.weekly_limit }}</span>
+                            </td>
                             <td class="tw-mission-action-col text-center">
                                 <a class="tw-btn-primary tw-btn-sm" href="?mission={{ mission.key }}">详情</a>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" class="tw-muted text-center py-8">暂无任务配置。</td>
+                            <td colspan="5" class="tw-muted text-center py-8">暂无任务配置。</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -132,6 +140,7 @@
                             <th class="tw-mission-name-col">任务名称</th>
                             <th class="tw-mission-meta-col text-center">类型</th>
                             <th class="tw-mission-meta-col text-center">红宝石</th>
+                            <th class="tw-mission-meta-col text-center">本周次数</th>
                             <th class="tw-mission-action-col text-center">操作</th>
                         </tr>
                     </thead>
@@ -147,13 +156,16 @@
                             <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">{{ mission.ruby_reward }}</span>
                             </td>
+                            <td class="tw-mission-meta-col text-center">
+                                <span class="tw-chip">本周 {{ mission.weekly_usage|default_if_none:"0" }} / {{ mission.weekly_limit }}</span>
+                            </td>
                             <td class="tw-mission-action-col text-center">
                                 <a class="tw-btn-primary tw-btn-sm" href="?mission={{ mission.key }}">详情</a>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" class="tw-muted text-center py-8">暂无任务配置。</td>
+                            <td colspan="5" class="tw-muted text-center py-8">暂无任务配置。</td>
                         </tr>
                         {% endfor %}
                     </tbody>

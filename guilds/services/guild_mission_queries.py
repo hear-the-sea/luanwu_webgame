@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.utils import timezone
 
 from gameplay.utils.template_loader import get_troop_templates_by_keys
@@ -10,6 +10,7 @@ from guests.models import GuestTemplate
 
 from ..models import GuildBattleLineupEntry, GuildMember, GuildMissionRun, GuildMissionTemplate, GuildTroopStorage
 from .guild_missions import can_retreat as can_retreat_guild_mission
+from .guild_missions import get_guild_mission_week_bounds, get_guild_mission_weekly_limit
 from .technology import get_guild_dispatch_capacity, get_guild_lineup_capacity
 
 
@@ -72,7 +73,23 @@ def get_guild_mission_page_context(
         .order_by("-started_at")
         .first()
     )
-    mission_templates = list(GuildMissionTemplate.objects.filter(is_active=True).order_by("sort_weight", "id"))
+    week_start, week_end = get_guild_mission_week_bounds(now=resolved_now)
+    mission_templates = list(
+        GuildMissionTemplate.objects.filter(is_active=True)
+        .annotate(
+            weekly_usage=Count(
+                "mission_runs",
+                filter=Q(
+                    mission_runs__guild=guild,
+                    mission_runs__started_at__gte=week_start,
+                    mission_runs__started_at__lt=week_end,
+                ),
+            )
+        )
+        .order_by("sort_weight", "id")
+    )
+    for mission in mission_templates:
+        mission.weekly_limit = get_guild_mission_weekly_limit(mission)
     lineup_entries = list(
         GuildBattleLineupEntry.objects.filter(guild=guild)
         .select_related("pool_entry__source_guest__template", "pool_entry__owner_member__user__manor")

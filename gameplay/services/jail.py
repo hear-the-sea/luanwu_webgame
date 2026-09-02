@@ -31,6 +31,7 @@ from core.exceptions import (
     PrisonerAlreadyHandledError,
     PrisonerNotFoundError,
     PrisonerUnavailableError,
+    WorldUniqueGuestError,
 )
 from guests.models import Guest, GuestStatus, GuestTemplate
 from guests.services.recruitment_guests import grant_template_skills
@@ -302,6 +303,8 @@ def add_oath_bond(manor: Manor, guest_id: int) -> OathBond:
     )
     if not guest:
         raise OathGuestNotFoundError()
+    if getattr(getattr(guest, "template", None), "is_world_unique", False):
+        raise WorldUniqueGuestError(message="全服唯一门客不可结义")
     if guest.status != GuestStatus.IDLE:
         raise GuestNotIdleError(guest)
 
@@ -400,6 +403,8 @@ def recruit_prisoner(
         raise GuestCapacityFullError()
 
     template: GuestTemplate = prisoner.guest_template
+    if getattr(template, "is_world_unique", False):
+        raise WorldUniqueGuestError(message="全服唯一门客不可通过监牢收编")
     repeatable_template_keys = _get_prisoner_recruit_repeatable_keys(template.key)
     duplicate_template_keys = _get_prisoner_recruit_duplicate_keys(template.key)
     if (

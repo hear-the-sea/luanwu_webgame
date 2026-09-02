@@ -48,6 +48,7 @@ def test_guild_mission_page_renders_tabbed_task_list_without_troop_pool(guild_me
     assert 'class="ghp-layout"' not in body
     assert "详情" in body
     assert "门客" in body
+    assert "本周 0 / 3" in body
 
 
 @pytest.mark.django_db

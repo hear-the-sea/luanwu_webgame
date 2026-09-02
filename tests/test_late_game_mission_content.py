@@ -120,6 +120,15 @@ def test_baimenlou_has_three_direct_recruitment_scrolls():
             "choices": [{"template_key": guest_key, "weight": 100}],
         }
 
+    lvbu = next(
+        entry
+        for entries in _load_yaml(DATA_DIR / "guests" / "history_sljnbc_01.yaml")["heroes"].values()
+        for entry in entries
+        if entry["key"] == "hist_sljnbc_0013"
+    )
+    assert lvbu["recruitable"] is False
+    assert lvbu["is_world_unique"] is True
+
 
 def test_single_bosses_use_task_only_orange_hp_profiles():
     heroes = _special_heroes()

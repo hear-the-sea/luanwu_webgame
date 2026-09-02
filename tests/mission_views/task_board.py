@@ -76,6 +76,37 @@ class TestTaskBoardPage:
         response = client.get(reverse("gameplay:tasks") + "?mission=huashan_lunjian")
         assert response.status_code == 200
 
+    def test_task_board_shows_lubu_status_only_on_baimenlou_detail(self, manor_with_user, monkeypatch):
+        _manor, client = manor_with_user
+        monkeypatch.setattr(
+            "gameplay.views.mission_page_context.get_world_unique_guest_status",
+            lambda: {"summary": "在野", "is_available": True},
+        )
+        MissionTemplate.objects.create(
+            key="baimenlou_mingyun_jueze",
+            name="白门楼命运抉择",
+            difficulty=MissionTemplate.Difficulty.ADVANCED,
+            daily_limit=1,
+        )
+
+        baimenlou_response = client.get(reverse("gameplay:tasks") + "?mission=baimenlou_mingyun_jueze")
+
+        assert baimenlou_response.status_code == 200
+        assert baimenlou_response.context["world_unique_guest_status"]["summary"] == "在野"
+        assert "吕布状态" in baimenlou_response.content.decode("utf-8")
+
+        other_mission = MissionTemplate.objects.create(
+            key="task_board_without_lubu_status",
+            name="普通任务详情",
+            difficulty=MissionTemplate.Difficulty.ADVANCED,
+            daily_limit=1,
+        )
+        other_response = client.get(reverse("gameplay:tasks") + f"?mission={other_mission.key}")
+
+        assert other_response.status_code == 200
+        assert other_response.context["world_unique_guest_status"] is None
+        assert "吕布状态" not in other_response.content.decode("utf-8")
+
     def test_task_board_renders_mission_card_confirmation_metadata(self, manor_with_user):
         manor, client = manor_with_user
         mission = MissionTemplate.objects.create(

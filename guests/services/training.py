@@ -661,61 +661,6 @@ def reduce_training_time_for_guest(
     }
 
 
-def train_guest(guest: Guest, levels: int = 1) -> Guest:
-    """
-    开始培养门客，消耗资源并设置训练计时器。
-    """
-    if not getattr(guest, "pk", None):
-        raise AssertionError("train_guest requires a persisted guest")
-    normalized_levels = _normalize_positive_training_seconds(levels, contract_name="guest training levels")
-
-    with transaction.atomic():
-        # 死锁预防：统一锁顺序 Manor -> Guest
-        # 全局规则是先锁 Manor (资源扣除) 再锁 Guest (状态变更)
-        from gameplay.models import Manor
-
-        locked_manor = Manor.objects.select_for_update().get(pk=guest.manor_id)
-
-        locked_guest = Guest.objects.select_for_update().select_related("manor", "template").get(pk=guest.pk)
-        quote = quote_training(locked_guest, levels=normalized_levels)
-        from gameplay.models import ResourceEvent
-
-        spend_resources_locked(
-            locked_manor,
-            quote.resource_cost,
-            note=f"培养 {guest.template.name}",
-            reason=ResourceEvent.Reason.TRAINING_COST,
-        )
-        duration = get_training_duration(locked_guest, quote.levels)
-        locked_guest.training_target_level = quote.target_level
-        locked_guest.training_complete_at = timezone.now() + timedelta(seconds=duration)
-        locked_guest.training_remaining_seconds = None
-        locked_guest.save(
-            update_fields=[
-                "training_target_level",
-                "training_complete_at",
-                "training_remaining_seconds",
-            ]
-        )
-        TrainingLog.objects.create(
-            manor=locked_manor,
-            guest=locked_guest,
-            delta_level=quote.levels,
-            resource_cost=quote.resource_cost,
-        )
-
-    # Celery 不可用时直接完成训练，确保调用方立即看到等级变更（测试/开发环境友好）。
-    def enqueue_training() -> None:
-        _try_enqueue_complete_guest_training(
-            locked_guest,
-            countdown=max(0, int(duration)),
-            source="train_guest",
-        )
-
-    transaction.on_commit(enqueue_training)
-    return locked_guest
-
-
 def finalize_guest_training(guest: Guest, now: datetime | None = None) -> bool:
     """
     完成门客训练，提升等级并随机增加属性。

@@ -616,7 +616,7 @@ def validate_guild_mission_templates(data: dict, *, file: str = "guild_mission_t
                 continue
             _check_type(value, str, result=result, file=file, path=path, field_name=field_name)
 
-        for field_name in ("base_duration_seconds", "recommended_guest_count"):
+        for field_name in ("base_duration_seconds", "recommended_guest_count", "weekly_limit"):
             value = mission.get(field_name)
             if value is None:
                 continue

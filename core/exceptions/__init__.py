@@ -95,6 +95,7 @@ from .guest import (
     GuestTrainingUnavailableError,
     InvalidHealAmountError,
     NoGuestsError,
+    WorldUniqueGuestError,
 )
 from .guild import (
     GuildContributionError,
@@ -203,6 +204,7 @@ __all__ = [
     "GuestFullHpError",
     "InvalidHealAmountError",
     "NoGuestsError",
+    "WorldUniqueGuestError",
     # Item & Equipment
     "ItemError",
     "ItemNotFoundError",

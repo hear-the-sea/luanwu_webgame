@@ -69,6 +69,7 @@ from .capture import (  # noqa: F401
     _collect_losing_guest_ids,
     _delete_captured_guest_gear,
     _filter_capture_candidates,
+    _release_losing_world_unique_guest,
     _resolve_capture_sides,
     _select_capture_target,
     _try_capture_guest,
@@ -301,6 +302,15 @@ def _apply_defeat_protection(run: RaidRun, is_attacker_victory: bool, *, now: Op
 
 def _apply_capture_reward(locked_run: RaidRun, report: Any, is_attacker_victory: bool) -> None:
     try:
+        unique_guest_loss = _release_losing_world_unique_guest(
+            locked_run,
+            report,
+            is_attacker_victory,
+        )
+        if unique_guest_loss:
+            battle_rewards = _normalize_mapping(locked_run.battle_rewards)
+            locked_run.battle_rewards = {**battle_rewards, "unique_guest_loss": unique_guest_loss}
+
         random_context = BattleRandomContext.create(
             locked_run.base_seed,
             rng_version=locked_run.rng_version,
