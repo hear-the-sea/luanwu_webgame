@@ -249,5 +249,13 @@ def test_page_context_and_status_payload_include_full_persuasion_state(persuasio
 
     payload = build_jail_status_payload(persuasion_world.captor, context["prisoner_states"])
     state = payload["prisoners"][0]
-    assert {"heart", "affinity", "revealed_level", "remaining_actions", "recruitment_offers"} <= set(state)
+    assert {
+        "heart",
+        "affinity",
+        "revealed_level",
+        "remaining_actions",
+        "recruitment_offers",
+        "expires_at",
+        "remaining_days",
+    } <= set(state)
     _assert_no_forbidden_public_keys(payload, path="jail")

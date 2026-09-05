@@ -33,6 +33,7 @@ def test_batch_timer_tasks_are_routed_to_the_scan_queue():
 def test_long_running_maintenance_tasks_are_routed_to_the_maintenance_queue():
     expected_maintenance_tasks = [
         "gameplay.cleanup_old_data",
+        "gameplay.cleanup_expired_jail_prisoners",
         "gameplay.scan_virtual_player_population_demands",
         "gameplay.scan_arena_virtual_reserves",
         "guilds.cleanup_old_logs",

@@ -40,7 +40,7 @@ def test_list_held_prisoners_returns_empty_list_when_no_prisoners():
         result = jail_service.list_held_prisoners(manor)
 
         assert result == []
-        mock_qs.filter.assert_called_once()
+        assert mock_qs.filter.call_count == 2
 
 
 # ============ list_oath_bonds tests ============

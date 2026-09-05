@@ -7,6 +7,7 @@ from django.utils import timezone
 from gameplay.constants import PVPConstants, get_raid_capture_guest_rate
 from gameplay.models import JailInteractionLog
 from gameplay.services.jail import list_held_prisoners, list_oath_bonds
+from gameplay.services.jail_expiration import prisoner_expires_at
 from gameplay.services.jail_persuasion.eligibility import RECRUITMENT_MODES, recruitment_offer
 from gameplay.services.jail_persuasion.interactions import daily_action_limit
 from gameplay.services.jail_persuasion.milestones import pending_milestone
@@ -107,6 +108,9 @@ def build_prisoner_state(
     local_date = today or timezone.localdate()
     profile = load_jail_persuasion_profiles()
     observed = prisoner.observed_at is not None
+    expires_at = prisoner_expires_at(prisoner.captured_at)
+    remaining_seconds = max(0, int((expires_at - timezone.now()).total_seconds())) if expires_at else 0
+    remaining_days = (remaining_seconds + 86_399) // 86_400 if remaining_seconds else 0
     interactions_today = int(prisoner.interactions_today or 0) if prisoner.interaction_date == local_date else 0
     action_limit = daily_action_limit(manor)
     clue_keys = (
@@ -177,6 +181,10 @@ def build_prisoner_state(
         "heart": int(prisoner.loyalty),
         "affinity": int(prisoner.affinity),
         "captured_at": prisoner.captured_at.isoformat() if prisoner.captured_at else "",
+        "expires_at": expires_at.isoformat() if expires_at else "",
+        "expires_at_display": timezone.localtime(expires_at).strftime("%Y-%m-%d %H:%M") if expires_at else "",
+        "remaining_seconds": remaining_seconds,
+        "remaining_days": remaining_days,
         "original_manor": getattr(getattr(prisoner, "original_manor", None), "display_name", ""),
         "observed": observed,
         "revealed_level": int(prisoner.revealed_level or 0),

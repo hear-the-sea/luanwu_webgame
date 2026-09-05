@@ -12,6 +12,7 @@ from core.exceptions import ItemInsufficientError, ItemNotFoundError, JailError
 from gameplay.constants import BuildingKeys
 from gameplay.models import JailInteractionLog, JailPrisoner, Manor, ResourceEvent
 from gameplay.services.inventory.core import get_item_quantity
+from gameplay.services.jail_expiration import release_expired_prisoner_if_needed
 from gameplay.services.resources import spend_resources_locked
 from guests.models import Guest, GuestStatus
 from trade.services.auction.gold_bars import consume_available_gold_bars_locked
@@ -97,10 +98,19 @@ def _initialize_persuasion_state(prisoner: JailPrisoner, *, now: Any) -> dict[st
     return scores
 
 
-@transaction.atomic
 def observe_prisoner(manor: Manor, prisoner_id: int) -> ObservationResult:
+    result = _observe_prisoner(manor, prisoner_id)
+    if result is None:
+        raise JailError("囚徒已关押满30天，已自动释放")
+    return result
+
+
+@transaction.atomic
+def _observe_prisoner(manor: Manor, prisoner_id: int) -> ObservationResult | None:
     locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
     prisoner = _get_locked_prisoner(locked_manor, prisoner_id)
+    if release_expired_prisoner_if_needed(prisoner):
+        return None
     if prisoner.observed_at is not None:
         raise JailError("已经察言观色，无需重复观察")
 
@@ -201,7 +211,6 @@ def _create_log_with_speaker_guard(**values: Any) -> JailInteractionLog:
         raise
 
 
-@transaction.atomic
 def interact_prisoner(
     manor: Manor,
     prisoner_id: int,
@@ -210,12 +219,35 @@ def interact_prisoner(
     speaker_id: int | None = None,
     lazy_observe: bool = False,
 ) -> InteractionResult:
+    result = _interact_prisoner(
+        manor,
+        prisoner_id,
+        method=method,
+        speaker_id=speaker_id,
+        lazy_observe=lazy_observe,
+    )
+    if result is None:
+        raise JailError("囚徒已关押满30天，已自动释放")
+    return result
+
+
+@transaction.atomic
+def _interact_prisoner(
+    manor: Manor,
+    prisoner_id: int,
+    *,
+    method: str,
+    speaker_id: int | None = None,
+    lazy_observe: bool = False,
+) -> InteractionResult | None:
     normalized_method = str(method or "").strip()
     if normalized_method not in METHOD_ORDER:
         raise JailError("未知的招降手段")
 
     locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
     prisoner = _get_locked_prisoner(locked_manor, prisoner_id)
+    if release_expired_prisoner_if_needed(prisoner):
+        return None
     if prisoner.observed_at is None:
         if not lazy_observe:
             raise JailError("请先察言观色，再选择招降手段")

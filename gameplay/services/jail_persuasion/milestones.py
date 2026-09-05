@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from core.exceptions import JailError
 from gameplay.models import JailInteractionLog, JailPrisoner, Manor
+from gameplay.services.jail_expiration import release_expired_prisoner_if_needed
 
 from .profiles import METHOD_ORDER, clamp, load_jail_persuasion_profiles, render_copy
 
@@ -79,8 +80,15 @@ def pending_milestone(prisoner: JailPrisoner) -> PendingMilestone | None:
     )
 
 
-@transaction.atomic
 def resolve_milestone(manor: Manor, prisoner_id: int, *, choice: str) -> MilestoneResult:
+    result = _resolve_milestone(manor, prisoner_id, choice=choice)
+    if result is None:
+        raise JailError("囚徒已关押满30天，已自动释放")
+    return result
+
+
+@transaction.atomic
+def _resolve_milestone(manor: Manor, prisoner_id: int, *, choice: str) -> MilestoneResult | None:
     normalized_choice = str(choice or "").strip()
     if normalized_choice not in {"aligned", "alternative"}:
         raise JailError("未知的事件选项")
@@ -94,6 +102,8 @@ def resolve_milestone(manor: Manor, prisoner_id: int, *, choice: str) -> Milesto
     )
     if prisoner is None:
         raise JailError("囚徒不存在或已处理")
+    if release_expired_prisoner_if_needed(prisoner):
+        return None
     event = pending_milestone(prisoner)
     if event is None:
         raise JailError("当前没有待处理的归心事件")

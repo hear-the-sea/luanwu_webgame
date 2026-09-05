@@ -8,7 +8,7 @@ This package contains all Celery tasks for the gameplay module, organized by dom
 - production: All production tasks (horse, livestock, smelting, equipment, work)
 - recruitment: Troop recruitment tasks
 - pvp: Raid and scout tasks
-- maintenance: Data cleanup and prisoner loyalty decay tasks
+- maintenance: Data cleanup, prisoner loyalty decay, and jail expiration tasks
 - global_mail: Global mail backfill tasks
 """
 
@@ -39,7 +39,11 @@ from gameplay.tasks.buildings import complete_building_upgrade, scan_building_up
 from gameplay.tasks.global_mail import backfill_global_mail_campaign_task, enqueue_global_mail_backfill
 
 # Maintenance
-from gameplay.tasks.maintenance import cleanup_old_data_task, decay_prisoner_loyalty_task
+from gameplay.tasks.maintenance import (
+    cleanup_expired_jail_prisoners_task,
+    cleanup_old_data_task,
+    decay_prisoner_loyalty_task,
+)
 
 # Missions
 from gameplay.tasks.missions import complete_mission_task, scan_due_missions
@@ -154,6 +158,7 @@ __all__ = [
     # Maintenance
     "cleanup_old_data_task",
     "decay_prisoner_loyalty_task",
+    "cleanup_expired_jail_prisoners_task",
     # Virtual players
     "plan_virtual_players_task",
     "aggregate_virtual_player_safety_task",

@@ -121,6 +121,7 @@ class PVPConstants:
 
     # 俘获/监牢
     RAID_CAPTURE_GUEST_RATE = 0.5  # 单场胜利后俘获失败方出战门客的概率（单场最多1名）
+    JAIL_MAX_HOLD_DAYS = 30  # 俘虏门客最多关押30天，期满自动释放
     JAIL_LOYALTY_DAILY_DECAY = 5  # 被俘期间每日忠诚度衰减值
     JAIL_RECRUIT_LOYALTY_THRESHOLD = 30  # 忠诚度<=该值可招募
     JAIL_RECRUIT_GOLD_BAR_COST = 1  # 招募俘虏消耗金条数量（gold_bar）

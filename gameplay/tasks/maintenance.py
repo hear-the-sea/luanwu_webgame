@@ -1,14 +1,20 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any
 
 from celery import shared_task
 from django.db.models import Case, F, Value, When
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 
 from core.config import MESSAGE
+from gameplay.services.jail import (
+    JAIL_CLEANUP_DEFAULT_BATCH_SIZE,
+    JAIL_CLEANUP_DEFAULT_MAX_BATCHES,
+    cleanup_expired_jail_prisoners,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +22,17 @@ RESOURCE_EVENT_RETENTION_DAYS = 30
 ARENA_EXCHANGE_RETENTION_DAYS = 30
 BATTLE_REPORT_RETENTION_DAYS = 30
 DELETE_BATCH_SIZE = 10000
+
+
+def _jail_cleanup_as_of(value: str | datetime | None) -> datetime:
+    if value is None:
+        return timezone.now()
+    if isinstance(value, datetime):
+        return value
+    parsed = parse_datetime(value)
+    if parsed is None or timezone.is_naive(parsed):
+        raise ValueError("as_of must be an ISO-8601 timezone-aware datetime")
+    return parsed
 
 
 def _batched_delete_before(
@@ -97,12 +114,17 @@ def decay_prisoner_loyalty_task():
     """
     from gameplay.constants import PVPConstants
     from gameplay.models import JailPrisoner
+    from gameplay.services.jail_expiration import jail_expiration_cutoff
 
     decay_amount = int(getattr(PVPConstants, "JAIL_LOYALTY_DAILY_DECAY", 5) or 5)
+    expiration_cutoff = jail_expiration_cutoff()
 
     # Keep the subtraction out of the low-loyalty branch. MySQL evaluates
     # unsigned arithmetic before Greatest(), which can underflow below zero.
-    updated = JailPrisoner.objects.filter(status=JailPrisoner.Status.HELD).update(
+    updated = JailPrisoner.objects.filter(
+        status=JailPrisoner.Status.HELD,
+        captured_at__gt=expiration_cutoff,
+    ).update(
         loyalty=Case(
             When(loyalty__lte=decay_amount, then=Value(0)),
             default=F("loyalty") - decay_amount,
@@ -115,3 +137,28 @@ def decay_prisoner_loyalty_task():
         decay_amount,
     )
     return updated
+
+
+@shared_task(name="gameplay.cleanup_expired_jail_prisoners")
+def cleanup_expired_jail_prisoners_task(
+    as_of: str | datetime | None = None,
+    batch_size: int = JAIL_CLEANUP_DEFAULT_BATCH_SIZE,
+    max_batches: int = JAIL_CLEANUP_DEFAULT_MAX_BATCHES,
+) -> dict[str, object]:
+    """Release 30-day-expired prisoners across real and virtual-player manors."""
+    frozen_as_of = _jail_cleanup_as_of(as_of)
+    result = cleanup_expired_jail_prisoners(
+        as_of=frozen_as_of,
+        batch_size=batch_size,
+        max_batches=max_batches,
+    )
+    payload = result.to_payload()
+    logger.info(
+        "Cleaned expired jail prisoners: as_of=%s cutoff=%s released=%d skipped=%d failed=%d",
+        frozen_as_of.isoformat(),
+        payload["cutoff"],
+        payload["released"],
+        payload["skipped"],
+        payload["failed"],
+    )
+    return payload

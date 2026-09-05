@@ -15,8 +15,10 @@ from gameplay.services.jail import (
     VIRTUAL_JAIL_CLEANUP_MAX_BATCH_SIZE,
     VIRTUAL_JAIL_CLEANUP_MAX_BATCHES,
     VirtualJailCleanupError,
+    cleanup_expired_jail_prisoners,
     cleanup_virtual_player_jail,
 )
+from gameplay.services.jail_expiration import JAIL_MAX_HOLD_DURATION
 from gameplay.services.manor.core import ensure_manor
 from guests.models import Guest, GuestTemplate
 
@@ -177,6 +179,45 @@ def test_cleanup_uses_stable_bounded_batches_and_replays_idempotently(
     assert replay.skipped == replay.failed == 0
     assert replay.oldest_remaining_age_seconds is None
     assert JailPrisoner.objects.count() == 4
+
+
+@pytest.mark.django_db
+def test_expired_cleanup_releases_real_and_virtual_prisoners_at_exact_boundary(
+    django_user_model,
+) -> None:
+    virtual_profile = _create_profile(django_user_model, username="expired_cleanup_virtual")
+    real_manor = _create_manor(django_user_model, username="expired_cleanup_real")
+    original = _create_manor(django_user_model, username="expired_cleanup_original")
+    template = _create_template(key="expired_cleanup_template")
+
+    virtual_expired = _create_prisoner(
+        captor=virtual_profile.manor,
+        original_manor=original,
+        template=template,
+        captured_at=CUTOFF - JAIL_MAX_HOLD_DURATION,
+        name="virtual-expired",
+    )
+    real_expired = _create_prisoner(
+        captor=real_manor,
+        original_manor=original,
+        template=template,
+        captured_at=CUTOFF - JAIL_MAX_HOLD_DURATION,
+        name="real-expired",
+    )
+    still_held = _create_prisoner(
+        captor=real_manor,
+        original_manor=original,
+        template=template,
+        captured_at=CUTOFF - JAIL_MAX_HOLD_DURATION + timedelta(microseconds=1),
+        name="still-held",
+    )
+
+    result = cleanup_expired_jail_prisoners(as_of=CUTOFF, batch_size=2)
+
+    assert result.released == 2
+    assert JailPrisoner.objects.get(pk=virtual_expired.pk).status == JailPrisoner.Status.RELEASED
+    assert JailPrisoner.objects.get(pk=real_expired.pk).status == JailPrisoner.Status.RELEASED
+    assert JailPrisoner.objects.get(pk=still_held.pk).status == JailPrisoner.Status.HELD
 
 
 @pytest.mark.django_db
@@ -391,7 +432,7 @@ def test_cleanup_transport_freezes_cutoff_and_serializes_summary(monkeypatch) ->
     assert result == payload
 
 
-def test_cleanup_transport_captures_default_cutoff_once(monkeypatch) -> None:
+def test_cleanup_transport_captures_legacy_daily_cutoff_once(monkeypatch) -> None:
     cutoff_calls = 0
     observed: list[datetime] = []
 

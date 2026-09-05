@@ -116,6 +116,7 @@ CELERY_TIMER_MAINTENANCE_TASKS = frozenset(
         "gameplay.monitor_virtual_player_safety",
         "gameplay.cleanup_virtual_player_safety_metrics",
         "gameplay.cleanup_virtual_player_jail",
+        "gameplay.cleanup_expired_jail_prisoners",
         "gameplay.backfill_global_mail_campaign",
         "gameplay.cleanup_old_data",
         "gameplay.decay_prisoner_loyalty",
@@ -382,5 +383,9 @@ CELERY_BEAT_SCHEDULE = {
     "cleanup-virtual-player-jail": {
         "task": "gameplay.cleanup_virtual_player_jail",
         "schedule": crontab(hour=0, minute=20),
+    },
+    "cleanup-expired-jail-prisoners": {
+        "task": "gameplay.cleanup_expired_jail_prisoners",
+        "schedule": crontab(minute="*/5"),
     },
 }

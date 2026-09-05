@@ -41,6 +41,11 @@ from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 
 from ..models import BotProfile, JailInteractionLog, JailPrisoner, Manor, OathBond
 from .inventory.core import get_item_quantity
+from .jail_expiration import (
+    JAIL_MAX_HOLD_DURATION,
+    release_expired_prisoner_if_needed,
+    release_expired_prisoners_for_captor,
+)
 from .jail_persuasion.eligibility import (
     RECRUIT_NEGOTIATED,
     RECRUIT_STANDARD,
@@ -56,14 +61,21 @@ VIRTUAL_JAIL_CLEANUP_DEFAULT_BATCH_SIZE = 100
 VIRTUAL_JAIL_CLEANUP_MAX_BATCH_SIZE = 1_000
 VIRTUAL_JAIL_CLEANUP_DEFAULT_MAX_BATCHES = 100
 VIRTUAL_JAIL_CLEANUP_MAX_BATCHES = 1_000
+JAIL_CLEANUP_DEFAULT_BATCH_SIZE = VIRTUAL_JAIL_CLEANUP_DEFAULT_BATCH_SIZE
+JAIL_CLEANUP_MAX_BATCH_SIZE = VIRTUAL_JAIL_CLEANUP_MAX_BATCH_SIZE
+JAIL_CLEANUP_DEFAULT_MAX_BATCHES = VIRTUAL_JAIL_CLEANUP_DEFAULT_MAX_BATCHES
+JAIL_CLEANUP_MAX_BATCHES = VIRTUAL_JAIL_CLEANUP_MAX_BATCHES
 
 
-class VirtualJailCleanupError(ValueError):
+class JailCleanupError(ValueError):
     pass
 
 
+VirtualJailCleanupError = JailCleanupError
+
+
 @dataclass(frozen=True, slots=True)
-class VirtualJailCleanupResult:
+class JailCleanupResult:
     cutoff: datetime
     batch_size: int
     batch_count: int
@@ -91,7 +103,7 @@ class VirtualJailCleanupResult:
 
 
 @dataclass(frozen=True, slots=True)
-class _VirtualJailCleanupBatchResult:
+class _JailCleanupBatchResult:
     scanned: int
     locked: int
     released: int
@@ -145,6 +157,7 @@ def _get_prisoner_recruit_repeatable_keys(template_key: str) -> tuple[str, ...]:
 
 
 def list_held_prisoners(manor: Manor) -> List[JailPrisoner]:
+    release_expired_prisoners_for_captor(manor)
     return list(
         JailPrisoner.objects.filter(captor=manor, status=JailPrisoner.Status.HELD)
         .select_related("guest_template", "original_manor")
@@ -156,39 +169,45 @@ def list_oath_bonds(manor: Manor) -> List[OathBond]:
     return list(OathBond.objects.filter(manor=manor).select_related("guest", "guest__template").order_by("-created_at"))
 
 
-def _normalize_virtual_jail_cleanup_cutoff(cutoff: datetime) -> datetime:
+def _normalize_jail_cleanup_cutoff(cutoff: datetime) -> datetime:
     if not isinstance(cutoff, datetime) or timezone.is_naive(cutoff):
-        raise VirtualJailCleanupError("cutoff must be a timezone-aware datetime")
+        raise JailCleanupError("cutoff must be a timezone-aware datetime")
     return cutoff.astimezone(UTC)
 
 
-def _normalize_virtual_jail_cleanup_limit(
+def _normalize_jail_cleanup_limit(
     value: int,
     *,
     field: str,
     maximum: int,
 ) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= maximum:
-        raise VirtualJailCleanupError(f"{field} must be between 1 and {maximum}")
+        raise JailCleanupError(f"{field} must be between 1 and {maximum}")
     return value
 
 
-def _eligible_virtual_jail_prisoners(*, cutoff: datetime) -> QuerySet[JailPrisoner]:
-    virtual_manor_ids = BotProfile.objects.values_list("manor_id", flat=True)
-    return JailPrisoner.objects.filter(
-        captor_id__in=virtual_manor_ids,
-        status=JailPrisoner.Status.HELD,
-        captured_at__lte=cutoff,
-    )
+def _eligible_jail_prisoners(*, cutoff: datetime, captor_ids: Any = None) -> QuerySet[JailPrisoner]:
+    filters: dict[str, Any] = {
+        "status": JailPrisoner.Status.HELD,
+        "captured_at__lte": cutoff,
+    }
+    if captor_ids is not None:
+        filters["captor_id__in"] = captor_ids
+    return JailPrisoner.objects.filter(**filters)
+
+
+def _virtual_player_manor_ids() -> Any:
+    return BotProfile.objects.values_list("manor_id", flat=True)
 
 
 @transaction.atomic
-def _release_virtual_jail_prisoners_batch(
+def _release_jail_prisoners_batch(
     *,
     cutoff: datetime,
     batch_size: int,
-) -> _VirtualJailCleanupBatchResult:
-    candidates = _eligible_virtual_jail_prisoners(cutoff=cutoff)
+    captor_ids: Any = None,
+) -> _JailCleanupBatchResult:
+    candidates = _eligible_jail_prisoners(cutoff=cutoff, captor_ids=captor_ids)
     if connection.features.has_select_for_update_skip_locked:
         candidates = candidates.select_for_update(skip_locked=True)
     else:
@@ -197,21 +216,22 @@ def _release_virtual_jail_prisoners_batch(
     prisoner_ids = list(candidates.order_by("captured_at", "id").values_list("id", flat=True)[:batch_size])
     locked = len(prisoner_ids)
     if not prisoner_ids:
-        return _VirtualJailCleanupBatchResult(
+        return _JailCleanupBatchResult(
             scanned=0,
             locked=0,
             released=0,
             skipped=0,
         )
 
-    virtual_manor_ids = BotProfile.objects.values_list("manor_id", flat=True)
-    released = JailPrisoner.objects.filter(
+    release_queryset = JailPrisoner.objects.filter(
         id__in=prisoner_ids,
-        captor_id__in=virtual_manor_ids,
         status=JailPrisoner.Status.HELD,
         captured_at__lte=cutoff,
-    ).update(status=JailPrisoner.Status.RELEASED)
-    return _VirtualJailCleanupBatchResult(
+    )
+    if captor_ids is not None:
+        release_queryset = release_queryset.filter(captor_id__in=captor_ids)
+    released = release_queryset.update(status=JailPrisoner.Status.RELEASED)
+    return _JailCleanupBatchResult(
         scanned=locked,
         locked=locked,
         released=released,
@@ -219,28 +239,23 @@ def _release_virtual_jail_prisoners_batch(
     )
 
 
-def cleanup_virtual_player_jail(
+def _cleanup_jail_prisoners(
     *,
     cutoff: datetime,
-    batch_size: int = VIRTUAL_JAIL_CLEANUP_DEFAULT_BATCH_SIZE,
-    max_batches: int = VIRTUAL_JAIL_CLEANUP_DEFAULT_MAX_BATCHES,
-) -> VirtualJailCleanupResult:
-    """Release a bounded daily slice of prisoners held by virtual-player captors.
-
-    Database failures roll back their current batch and propagate to the caller, so
-    every successfully returned summary has ``failed=0``.
-    """
-
-    normalized_cutoff = _normalize_virtual_jail_cleanup_cutoff(cutoff)
-    normalized_batch_size = _normalize_virtual_jail_cleanup_limit(
+    batch_size: int,
+    max_batches: int,
+    captor_ids: Any = None,
+) -> JailCleanupResult:
+    normalized_cutoff = _normalize_jail_cleanup_cutoff(cutoff)
+    normalized_batch_size = _normalize_jail_cleanup_limit(
         batch_size,
         field="batch_size",
-        maximum=VIRTUAL_JAIL_CLEANUP_MAX_BATCH_SIZE,
+        maximum=JAIL_CLEANUP_MAX_BATCH_SIZE,
     )
-    normalized_max_batches = _normalize_virtual_jail_cleanup_limit(
+    normalized_max_batches = _normalize_jail_cleanup_limit(
         max_batches,
         field="max_batches",
-        maximum=VIRTUAL_JAIL_CLEANUP_MAX_BATCHES,
+        maximum=JAIL_CLEANUP_MAX_BATCHES,
     )
 
     batch_count = 0
@@ -250,9 +265,10 @@ def cleanup_virtual_player_jail(
     skipped = 0
     failed = 0
     for _batch_index in range(normalized_max_batches):
-        batch = _release_virtual_jail_prisoners_batch(
+        batch = _release_jail_prisoners_batch(
             cutoff=normalized_cutoff,
             batch_size=normalized_batch_size,
+            captor_ids=captor_ids,
         )
         scanned += batch.scanned
         locked += batch.locked
@@ -264,7 +280,7 @@ def cleanup_virtual_player_jail(
         batch_count += 1
 
     oldest_remaining_at = (
-        _eligible_virtual_jail_prisoners(cutoff=normalized_cutoff)
+        _eligible_jail_prisoners(cutoff=normalized_cutoff, captor_ids=captor_ids)
         .order_by("captured_at", "id")
         .values_list("captured_at", flat=True)
         .first()
@@ -276,7 +292,7 @@ def cleanup_virtual_player_jail(
             int((normalized_cutoff - oldest_remaining_at.astimezone(UTC)).total_seconds()),
         )
 
-    return VirtualJailCleanupResult(
+    return JailCleanupResult(
         cutoff=normalized_cutoff,
         batch_size=normalized_batch_size,
         batch_count=batch_count,
@@ -288,6 +304,43 @@ def cleanup_virtual_player_jail(
         oldest_remaining_age_seconds=oldest_remaining_age_seconds,
         batch_limit_reached=(oldest_remaining_at is not None and batch_count >= normalized_max_batches),
     )
+
+
+def cleanup_virtual_player_jail(
+    *,
+    cutoff: datetime,
+    batch_size: int = VIRTUAL_JAIL_CLEANUP_DEFAULT_BATCH_SIZE,
+    max_batches: int = VIRTUAL_JAIL_CLEANUP_DEFAULT_MAX_BATCHES,
+) -> JailCleanupResult:
+    """Release a bounded daily slice of prisoners held by virtual-player captors.
+
+    Database failures roll back their current batch and propagate to the caller, so
+    every successfully returned summary has ``failed=0``.
+    """
+    return _cleanup_jail_prisoners(
+        cutoff=cutoff,
+        batch_size=batch_size,
+        max_batches=max_batches,
+        captor_ids=_virtual_player_manor_ids(),
+    )
+
+
+def cleanup_expired_jail_prisoners(
+    *,
+    as_of: datetime | None = None,
+    batch_size: int = JAIL_CLEANUP_DEFAULT_BATCH_SIZE,
+    max_batches: int = JAIL_CLEANUP_DEFAULT_MAX_BATCHES,
+) -> JailCleanupResult:
+    """Release expired prisoners for both real and virtual-player captors."""
+    normalized_as_of = _normalize_jail_cleanup_cutoff(as_of or timezone.now())
+    return _cleanup_jail_prisoners(
+        cutoff=normalized_as_of - JAIL_MAX_HOLD_DURATION,
+        batch_size=batch_size,
+        max_batches=max_batches,
+    )
+
+
+VirtualJailCleanupResult = JailCleanupResult
 
 
 @transaction.atomic
@@ -329,11 +382,18 @@ def remove_oath_bond(manor: Manor, guest_id: int) -> int:
     return int(deleted)
 
 
-@transaction.atomic
 def release_prisoner(manor: Manor, prisoner_id: int) -> JailPrisoner:
     """
     释放囚徒：将囚徒状态设置为已释放
     """
+    prisoner = _release_prisoner(manor, prisoner_id)
+    if prisoner is None:
+        raise PrisonerUnavailableError()
+    return prisoner
+
+
+@transaction.atomic
+def _release_prisoner(manor: Manor, prisoner_id: int) -> JailPrisoner | None:
     prisoner = (
         JailPrisoner.objects.select_for_update()
         .filter(pk=prisoner_id, captor=manor, status=JailPrisoner.Status.HELD)
@@ -342,13 +402,15 @@ def release_prisoner(manor: Manor, prisoner_id: int) -> JailPrisoner:
     if not prisoner:
         raise PrisonerUnavailableError()
 
+    if release_expired_prisoner_if_needed(prisoner):
+        return None
+
     prisoner.status = JailPrisoner.Status.RELEASED
     prisoner.save(update_fields=["status"])
 
     return prisoner
 
 
-@transaction.atomic
 def draw_pie(manor: Manor, prisoner_id: int) -> JailPrisoner:
     """兼容旧“画饼”入口，按新的许以重利规则结算。"""
     result = interact_prisoner(
@@ -363,7 +425,6 @@ def draw_pie(manor: Manor, prisoner_id: int) -> JailPrisoner:
     return prisoner
 
 
-@transaction.atomic
 def recruit_prisoner(
     manor: Manor,
     prisoner_id: int,
@@ -371,6 +432,20 @@ def recruit_prisoner(
     mode: str = RECRUIT_STANDARD,
     rng: Any = None,
 ) -> RecruitmentResult:
+    result = _recruit_prisoner(manor, prisoner_id, mode=mode, rng=rng)
+    if result is None:
+        raise JailError("囚徒已关押满30天，已自动释放")
+    return result
+
+
+@transaction.atomic
+def _recruit_prisoner(
+    manor: Manor,
+    prisoner_id: int,
+    *,
+    mode: str = RECRUIT_STANDARD,
+    rng: Any = None,
+) -> RecruitmentResult | None:
     # 死锁/并发预防：先锁定 Manor，确保容量检查原子化
     # 必须使用锁定后的对象来检查容量，防止陈旧读
     locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
@@ -385,6 +460,8 @@ def recruit_prisoner(
         raise PrisonerNotFoundError()
     if prisoner.status != JailPrisoner.Status.HELD:
         raise PrisonerAlreadyHandledError()
+    if release_expired_prisoner_if_needed(prisoner):
+        return None
 
     if pending_milestone_stage(prisoner):
         raise JailError("请先处理当前归心事件")

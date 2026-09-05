@@ -13,6 +13,7 @@ from guests.models import Guest, GuestRarity, GuestTemplate
 from guests.services.world_unique import WORLD_UNIQUE_LUBU_TEMPLATE_KEY, release_world_unique_guest_after_raid
 
 from ....models import JailPrisoner, Manor, OathBond, RaidRun
+from ...jail_expiration import release_expired_prisoners_for_captor
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ def _can_attempt_capture(winner: Manor, *, rng: random.Random) -> bool:
     if capacity <= 0:
         return False
 
+    release_expired_prisoners_for_captor(winner)
     held_count = JailPrisoner.objects.filter(captor=winner, status=JailPrisoner.Status.HELD).count()
     if held_count >= capacity:
         return False

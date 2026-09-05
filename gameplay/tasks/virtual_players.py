@@ -52,6 +52,8 @@ def _heartbeat_payload(stream: str) -> dict[str, object]:
 
 def _virtual_jail_cleanup_cutoff(value: str | None) -> datetime:
     if value is None:
+        # Virtual-player captors keep the legacy daily cleanup behavior. The
+        # generic 30-day cleanup task remains the safety net for missed runs.
         return timezone.now()
     parsed = parse_datetime(value)
     if parsed is None or timezone.is_naive(parsed):

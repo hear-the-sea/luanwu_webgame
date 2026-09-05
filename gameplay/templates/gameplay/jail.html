@@ -27,6 +27,7 @@
           <span class="jail-slot-label">牢位 {{ forloop.counter }}</span>
           <h2>{{ p.name }}</h2>
           <p>原属：{{ p.original_manor }}</p>
+          <p>最迟释放：{{ p.expires_at_display }}（剩余 {{ p.remaining_days }} 天）</p>
         </div>
         <div class="jail-prisoner-actions">
           <button

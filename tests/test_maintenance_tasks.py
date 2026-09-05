@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
+from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
 
+import gameplay.tasks as gameplay_tasks
 from battle.models import BattleReport
 from core.config import MESSAGE
 from gameplay.models import ArenaExchangeRecord, JailPrisoner, Message, ResourceEvent, ResourceType
@@ -16,6 +18,7 @@ from gameplay.tasks.maintenance import (
     ARENA_EXCHANGE_RETENTION_DAYS,
     BATTLE_REPORT_RETENTION_DAYS,
     RESOURCE_EVENT_RETENTION_DAYS,
+    cleanup_expired_jail_prisoners_task,
     cleanup_old_data_task,
     decay_prisoner_loyalty_task,
 )
@@ -203,3 +206,33 @@ def test_decay_prisoner_loyalty_floors_unsigned_values_without_underflow(
         .order_by("pk")
         .values_list("loyalty", flat=True)
     ) == [0, 0, 3, 3]
+
+
+def test_cleanup_expired_jail_prisoners_task_freezes_as_of_and_returns_summary(monkeypatch):
+    as_of = datetime(2026, 7, 29, 0, 0, tzinfo=UTC)
+    observed = {}
+
+    class _Result:
+        def to_payload(self):
+            return {"cutoff": "2026-06-29T00:00:00+00:00", "released": 2, "skipped": 0, "failed": 0}
+
+    def _cleanup(*, as_of, batch_size, max_batches):
+        observed.update(as_of=as_of, batch_size=batch_size, max_batches=max_batches)
+        return _Result()
+
+    monkeypatch.setattr("gameplay.tasks.maintenance.cleanup_expired_jail_prisoners", _cleanup)
+
+    result = cleanup_expired_jail_prisoners_task.run(as_of=as_of.isoformat(), batch_size=7, max_batches=3)
+
+    assert observed == {"as_of": as_of, "batch_size": 7, "max_batches": 3}
+    assert result["released"] == 2
+
+
+def test_cleanup_expired_jail_prisoners_task_is_exported_routed_and_runs_every_five_minutes():
+    task = cleanup_expired_jail_prisoners_task
+    assert gameplay_tasks.cleanup_expired_jail_prisoners_task is task
+    assert task.name == "gameplay.cleanup_expired_jail_prisoners"
+    assert settings.CELERY_TASK_ROUTES[task.name] == {"queue": settings.CELERY_TIMER_MAINTENANCE_QUEUE}
+    schedule = settings.CELERY_BEAT_SCHEDULE["cleanup-expired-jail-prisoners"]
+    assert schedule["task"] == task.name
+    assert schedule["schedule"]._orig_minute == "*/5"
