@@ -231,7 +231,7 @@ def test_default_mission_templates_define_junior_mission_tiering():
         },
         "wagangzhai_nixi": {
             "difficulty": "intermediate",
-            "enemy_technology": {"level": 9, "guest_level": 80, "guest_bonus": 0.3},
+            "enemy_technology": {"level": 10, "guest_level": 100, "guest_bonus": 0.3},
         },
         "shizipo_heidian": {
             "difficulty": "intermediate",
@@ -283,7 +283,7 @@ def test_default_mission_templates_define_junior_mission_tiering():
         },
         "zhuiji_manzu": {
             "difficulty": "advanced",
-            "enemy_technology": {"level": 10, "guest_level": 81, "guest_bonus": 0.26},
+            "enemy_technology": {"level": 10, "guest_level": 100, "guest_bonus": 0.26},
         },
     }
 

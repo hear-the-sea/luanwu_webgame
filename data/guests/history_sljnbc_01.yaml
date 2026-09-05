@@ -80,22 +80,6 @@ heroes:
       intellect: 16
       defense: 24
       agility: 20
-  - key: hist_sljnbc_0013
-    name: 吕布
-    default_gender: male
-    avatar: lvbu_monkey.png
-    archetype: military
-    recruitable: false
-    is_world_unique: true
-    flavor: （？—199年2月7日）人中吕布，马中赤兔。“辕门射戟”“虎牢关”等多为《三国演义》渲染，方天画戟亦属演义常见形象。其人骁勇善战，然反复无常，先杀丁原后刺董卓，终为曹操所擒。白门楼上英雄末路，枭雄一世却难逃"三姓家奴"之讥。麾下并州骑兵精悍，然无定策失人心。勇冠一时却缺治军治国之略，终成“勇而无谋”象征。
-    growth_range:
-    - 8
-    - 12
-    attribute_weights:
-      force: 56
-      intellect: 8
-      defense: 22
-      agility: 14
   - key: hist_sljnbc_0014
     name: 孙权
     default_gender: male
@@ -657,3 +641,19 @@ heroes:
       intellect: 10
       defense: 26
       agility: 16
+  - key: hist_sljnbc_0013
+    name: 吕布
+    default_gender: male
+    avatar: lvbu_monkey.png
+    archetype: military
+    recruitable: false
+    is_world_unique: true
+    flavor: （？—199年2月7日）人中吕布，马中赤兔。“辕门射戟”“虎牢关”等多为《三国演义》渲染，方天画戟亦属演义常见形象。其人骁勇善战，然反复无常，先杀丁原后刺董卓，终为曹操所擒。白门楼上英雄末路，枭雄一世却难逃"三姓家奴"之讥。麾下并州骑兵精悍，然无定策失人心。勇冠一时却缺治军治国之略，终成“勇而无谋”象征。
+    growth_range:
+    - 11
+    - 14
+    attribute_weights:
+      force: 56
+      intellect: 8
+      defense: 22
+      agility: 14

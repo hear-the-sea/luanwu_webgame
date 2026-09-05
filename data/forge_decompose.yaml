@@ -68,7 +68,7 @@ chance_rewards:
     zitanmu: 0.12
     heiyuanshi: 0.15
     jingangmei: 0.10
-    gaolu: 0.02
+    gaolu: 0.05
   purple:
     wood_essence: 0.88
     copper_essence: 0.88
@@ -84,7 +84,7 @@ chance_rewards:
     zitanmu: 0.22
     heiyuanshi: 0.26
     jingangmei: 0.20
-    gaolu: 0.06
+    gaolu: 0.10
   orange:
     wood_essence: 0.95
     copper_essence: 0.95
@@ -100,4 +100,4 @@ chance_rewards:
     zitanmu: 0.34
     heiyuanshi: 0.40
     jingangmei: 0.32
-    gaolu: 0.14
+    gaolu: 0.20

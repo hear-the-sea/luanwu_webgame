@@ -14,16 +14,16 @@ recipes:
     quantity_out: 1
     description: 校尉头盔图纸，蓝色四件套的入门部件之一。
     costs:
-      tong: 22
-      xi: 14
-      tie: 10
-      wood_essence: 1
-      copper_essence: 1
-      tiemu: 3
-      heiyuanshi: 4
-      jingangmei: 3
-      zaozi: 3
-      earth_stone: 1
+      tong: 27
+      xi: 17
+      tie: 12
+      wood_essence: 2
+      copper_essence: 2
+      tiemu: 4
+      heiyuanshi: 5
+      jingangmei: 4
+      zaozi: 4
+      earth_stone: 2
 
   - blueprint_key: blueprint_xiaoweikaijia
     result_item_key: equip_xiaoweikaijia
@@ -31,16 +31,16 @@ recipes:
     quantity_out: 1
     description: 校尉铠甲图纸，强调军阵防护，材料消耗在同套装中最高。
     costs:
-      tong: 30
-      xi: 18
-      tie: 14
-      wood_essence: 1
-      copper_essence: 2
-      tiemu: 5
-      heiyuanshi: 7
-      jingangmei: 5
-      zaozi: 5
-      earth_stone: 2
+      tong: 36
+      xi: 22
+      tie: 17
+      wood_essence: 2
+      copper_essence: 3
+      tiemu: 6
+      heiyuanshi: 9
+      jingangmei: 6
+      zaozi: 6
+      earth_stone: 3
 
   - blueprint_key: blueprint_xiaoweichangxue
     result_item_key: equip_xiaoweichangxue
@@ -48,15 +48,15 @@ recipes:
     quantity_out: 1
     description: 校尉长靴图纸，材料相对轻一些，便于成套补齐。
     costs:
-      tong: 18
-      xi: 10
-      tie: 8
-      wood_essence: 1
-      copper_essence: 1
-      shuiqumu: 6
-      tiemu: 3
-      paozi: 4
-      air_stone: 1
+      tong: 22
+      xi: 12
+      tie: 10
+      wood_essence: 2
+      copper_essence: 2
+      shuiqumu: 8
+      tiemu: 4
+      paozi: 5
+      air_stone: 2
 
   - blueprint_key: blueprint_xiaoweichangjian
     result_item_key: equip_xiaoweichangjian
@@ -64,16 +64,16 @@ recipes:
     quantity_out: 1
     description: 校尉长剑图纸，适合中阶军阵门客使用。
     costs:
-      tong: 26
-      xi: 16
-      tie: 12
-      wood_essence: 1
-      copper_essence: 2
-      tiemu: 4
-      heiyuanshi: 6
-      jingangmei: 4
-      zaozi: 4
-      fire_stone: 1
+      tong: 32
+      xi: 20
+      tie: 15
+      wood_essence: 2
+      copper_essence: 3
+      tiemu: 5
+      heiyuanshi: 8
+      jingangmei: 5
+      zaozi: 5
+      fire_stone: 2
 
   - blueprint_key: blueprint_qinglongkui
     result_item_key: equip_qinglongkui
@@ -81,17 +81,17 @@ recipes:
     quantity_out: 1
     description: 四象套装头盔图纸，兼顾灵性与防护。
     costs:
-      tong: 24
-      xi: 14
-      tie: 10
-      wood_essence: 2
-      copper_essence: 1
-      zitanmu: 4
-      heiyuanshi: 3
-      jingangmei: 2
-      paozi: 2
-      zaozi: 2
-      air_stone: 1
+      tong: 29
+      xi: 17
+      tie: 12
+      wood_essence: 3
+      copper_essence: 2
+      zitanmu: 5
+      heiyuanshi: 4
+      jingangmei: 3
+      paozi: 3
+      zaozi: 3
+      air_stone: 2
 
   - blueprint_key: blueprint_qinglongjia
     result_item_key: equip_qinglongjia
@@ -99,18 +99,18 @@ recipes:
     quantity_out: 1
     description: 四象套装护甲图纸，材料扎实，兼顾智力成长。
     costs:
-      tong: 30
-      xi: 18
-      tie: 14
-      wood_essence: 2
-      copper_essence: 2
-      zitanmu: 3
-      tiemu: 5
-      heiyuanshi: 5
-      jingangmei: 3
-      zaozi: 4
-      water_stone: 1
-      earth_stone: 1
+      tong: 36
+      xi: 22
+      tie: 17
+      wood_essence: 3
+      copper_essence: 3
+      zitanmu: 4
+      tiemu: 6
+      heiyuanshi: 6
+      jingangmei: 4
+      zaozi: 5
+      water_stone: 2
+      earth_stone: 2
 
   - blueprint_key: blueprint_qinglongxue
     result_item_key: equip_qinglongxue
@@ -118,15 +118,15 @@ recipes:
     quantity_out: 1
     description: 四象套装战靴图纸，消耗略低，方便拼成四件套。
     costs:
-      tong: 18
-      xi: 10
-      tie: 8
-      wood_essence: 2
-      copper_essence: 1
-      zitanmu: 3
-      shuiqumu: 7
-      paozi: 4
-      air_stone: 1
+      tong: 22
+      xi: 12
+      tie: 10
+      wood_essence: 3
+      copper_essence: 2
+      zitanmu: 4
+      shuiqumu: 9
+      paozi: 5
+      air_stone: 2
 
   - blueprint_key: blueprint_qinglongdao
     result_item_key: equip_qinglongdao
@@ -134,18 +134,18 @@ recipes:
     quantity_out: 1
     description: 四象套装武器图纸，兼顾力道与术法加成。
     costs:
-      tong: 26
-      xi: 16
-      tie: 12
-      wood_essence: 2
-      copper_essence: 2
-      zitanmu: 3
-      tiemu: 4
-      heiyuanshi: 5
-      jingangmei: 4
-      zaozi: 3
-      air_stone: 1
-      water_stone: 1
+      tong: 32
+      xi: 20
+      tie: 15
+      wood_essence: 3
+      copper_essence: 3
+      zitanmu: 4
+      tiemu: 5
+      heiyuanshi: 6
+      jingangmei: 5
+      zaozi: 4
+      air_stone: 2
+      water_stone: 2
 
   - blueprint_key: blueprint_huxianpao
     result_item_key: equip_huxianpao
@@ -153,20 +153,20 @@ recipes:
     quantity_out: 1
     description: 狐仙袍图纸，偏术法与气运路线的紫色三件套核心部件。
     costs:
-      tong: 34
-      xi: 22
-      tie: 16
-      wood_essence: 3
-      copper_essence: 2
-      xuan_tie_essence: 1
-      zitanmu: 9
-      shuiqumu: 10
-      tiemu: 3
-      jingangmei: 3
-      paozi: 6
-      zaozi: 2
+      tong: 41
+      xi: 27
+      tie: 20
+      wood_essence: 4
+      copper_essence: 3
+      xuan_tie_essence: 2
+      zitanmu: 11
+      shuiqumu: 12
+      tiemu: 4
+      jingangmei: 4
+      paozi: 8
+      zaozi: 3
       gaolu: 2
-      water_stone: 2
+      water_stone: 3
 
   - blueprint_key: blueprint_huxianxie
     result_item_key: equip_huxianxie
@@ -174,20 +174,20 @@ recipes:
     quantity_out: 1
     description: 狐仙鞋图纸，灵巧部件，材料低于法袍与宝剑。
     costs:
-      tong: 26
-      xi: 16
-      tie: 12
-      wood_essence: 2
-      copper_essence: 2
-      xuan_tie_essence: 1
-      zitanmu: 5
-      shuiqumu: 10
-      tiemu: 2
-      jingangmei: 1
-      paozi: 6
-      zaozi: 1
+      tong: 32
+      xi: 20
+      tie: 15
+      wood_essence: 3
+      copper_essence: 3
+      xuan_tie_essence: 2
+      zitanmu: 6
+      shuiqumu: 12
+      tiemu: 3
+      jingangmei: 2
+      paozi: 8
+      zaozi: 2
       gaolu: 1
-      air_stone: 2
+      air_stone: 3
 
   - blueprint_key: blueprint_huxianjian
     result_item_key: equip_huxianjian
@@ -195,21 +195,21 @@ recipes:
     quantity_out: 1
     description: 狐仙剑图纸，兼顾力道与灵性，属于紫色三件套武器位。
     costs:
-      tong: 32
-      xi: 20
-      tie: 16
-      wood_essence: 2
-      copper_essence: 2
-      xuan_tie_essence: 1
-      zitanmu: 5
-      tiemu: 5
-      heiyuanshi: 8
-      jingangmei: 6
-      paozi: 2
-      zaozi: 5
+      tong: 39
+      xi: 24
+      tie: 20
+      wood_essence: 3
+      copper_essence: 3
+      xuan_tie_essence: 2
+      zitanmu: 6
+      tiemu: 6
+      heiyuanshi: 10
+      jingangmei: 8
+      paozi: 3
+      zaozi: 6
       gaolu: 2
-      air_stone: 1
-      water_stone: 2
+      air_stone: 2
+      water_stone: 3
 
   - blueprint_key: blueprint_qilinkui
     result_item_key: equip_qilinkui
@@ -217,17 +217,17 @@ recipes:
     quantity_out: 1
     description: 麒麟盔图纸，顶阶四件套头部部件。
     costs:
-      tong: 38
-      xi: 24
-      tie: 18
-      xuan_tie_essence: 1
-      zitanmu: 3
-      tiemu: 6
-      heiyuanshi: 7
-      jingangmei: 5
-      zaozi: 5
+      tong: 46
+      xi: 29
+      tie: 22
+      xuan_tie_essence: 2
+      zitanmu: 4
+      tiemu: 8
+      heiyuanshi: 9
+      jingangmei: 6
+      zaozi: 6
       gaolu: 2
-      fire_stone: 2
+      fire_stone: 3
 
   - blueprint_key: blueprint_qilinjia
     result_item_key: equip_qilinjia
@@ -235,18 +235,18 @@ recipes:
     quantity_out: 1
     description: 麒麟甲图纸，顶阶护甲位，材料消耗在麒麟套中最高。
     costs:
-      tong: 46
-      xi: 30
-      tie: 24
-      xuan_tie_essence: 2
-      tiemu: 10
-      heiyuanshi: 12
-      jingangmei: 8
-      paozi: 2
-      zaozi: 8
+      tong: 56
+      xi: 36
+      tie: 29
+      xuan_tie_essence: 3
+      tiemu: 12
+      heiyuanshi: 15
+      jingangmei: 10
+      paozi: 3
+      zaozi: 10
       gaolu: 3
-      fire_stone: 2
-      earth_stone: 2
+      fire_stone: 3
+      earth_stone: 3
 
   - blueprint_key: blueprint_qilinxue
     result_item_key: equip_qilinxue
@@ -254,18 +254,18 @@ recipes:
     quantity_out: 1
     description: 麒麟靴图纸，用于补齐整套机动性。
     costs:
-      tong: 30
-      xi: 18
-      tie: 14
-      xuan_tie_essence: 1
-      shuiqumu: 8
-      tiemu: 5
-      jingangmei: 3
-      paozi: 5
-      zaozi: 2
+      tong: 36
+      xi: 22
+      tie: 17
+      xuan_tie_essence: 2
+      shuiqumu: 10
+      tiemu: 6
+      jingangmei: 4
+      paozi: 6
+      zaozi: 3
       gaolu: 1
-      fire_stone: 1
-      air_stone: 1
+      fire_stone: 2
+      air_stone: 2
 
   - blueprint_key: blueprint_qilindao
     result_item_key: equip_qilindao
@@ -273,17 +273,17 @@ recipes:
     quantity_out: 1
     description: 麒麟刀图纸，顶阶四件套武器位，强调杀伤与压制。
     costs:
-      tong: 42
-      xi: 26
-      tie: 20
-      xuan_tie_essence: 2
-      tiemu: 8
-      heiyuanshi: 10
-      jingangmei: 7
-      paozi: 2
-      zaozi: 6
+      tong: 51
+      xi: 32
+      tie: 24
+      xuan_tie_essence: 3
+      tiemu: 10
+      heiyuanshi: 12
+      jingangmei: 9
+      paozi: 3
+      zaozi: 8
       gaolu: 2
-      fire_stone: 3
+      fire_stone: 4
 
   - blueprint_key: blueprint_xuanwukui
     result_item_key: equip_xuanwukui
@@ -291,16 +291,16 @@ recipes:
     quantity_out: 1
     description: 玄武盔图纸，偏耐久与防御路线的顶阶部件。
     costs:
-      tong: 40
-      xi: 26
-      tie: 20
-      xuan_tie_essence: 1
-      tiemu: 7
-      heiyuanshi: 9
-      jingangmei: 5
-      zaozi: 6
+      tong: 48
+      xi: 32
+      tie: 24
+      xuan_tie_essence: 2
+      tiemu: 9
+      heiyuanshi: 11
+      jingangmei: 6
+      zaozi: 8
       gaolu: 2
-      water_stone: 2
+      water_stone: 3
 
   - blueprint_key: blueprint_xuanwujia
     result_item_key: equip_xuanwujia
@@ -308,18 +308,18 @@ recipes:
     quantity_out: 1
     description: 玄武甲图纸，顶阶四件套中最重的防具位。
     costs:
-      tong: 48
-      xi: 32
-      tie: 26
-      xuan_tie_essence: 2
-      tiemu: 12
-      heiyuanshi: 14
-      jingangmei: 9
-      paozi: 2
-      zaozi: 9
+      tong: 58
+      xi: 39
+      tie: 32
+      xuan_tie_essence: 3
+      tiemu: 15
+      heiyuanshi: 17
+      jingangmei: 11
+      paozi: 3
+      zaozi: 11
       gaolu: 3
-      water_stone: 2
-      earth_stone: 2
+      water_stone: 3
+      earth_stone: 3
 
   - blueprint_key: blueprint_xuanwuxue
     result_item_key: equip_xuanwuxue
@@ -327,18 +327,18 @@ recipes:
     quantity_out: 1
     description: 玄武靴图纸，强调稳固与阵地机动。
     costs:
-      tong: 32
-      xi: 20
-      tie: 16
-      xuan_tie_essence: 1
-      shuiqumu: 6
-      tiemu: 7
-      heiyuanshi: 4
-      jingangmei: 3
-      paozi: 4
-      zaozi: 3
+      tong: 39
+      xi: 24
+      tie: 20
+      xuan_tie_essence: 2
+      shuiqumu: 8
+      tiemu: 9
+      heiyuanshi: 5
+      jingangmei: 4
+      paozi: 5
+      zaozi: 4
       gaolu: 1
-      earth_stone: 2
+      earth_stone: 3
 
   - blueprint_key: blueprint_xuanwuchui
     result_item_key: equip_xuanwuchui
@@ -346,19 +346,19 @@ recipes:
     quantity_out: 1
     description: 玄武锤图纸，兼顾力量与耐久，是玄武套装武器核心。
     costs:
-      tong: 44
-      xi: 28
-      tie: 22
-      xuan_tie_essence: 2
-      tiemu: 10
-      heiyuanshi: 12
-      jingangmei: 9
-      paozi: 2
-      zaozi: 8
+      tong: 53
+      xi: 34
+      tie: 27
+      xuan_tie_essence: 3
+      tiemu: 12
+      heiyuanshi: 15
+      jingangmei: 11
+      paozi: 3
+      zaozi: 10
       gaolu: 3
-      water_stone: 1
-      earth_stone: 2
-      fire_stone: 1
+      water_stone: 2
+      earth_stone: 3
+      fire_stone: 2
 
   - blueprint_key: blueprint_fenglingguan
     result_item_key: equip_fenglingguan
@@ -366,19 +366,19 @@ recipes:
     quantity_out: 1
     description: 凤翎冠图纸，偏智力与气运的紫色三件套头部部件。
     costs:
-      tong: 30
-      xi: 18
-      tie: 14
-      wood_essence: 2
-      copper_essence: 3
-      zitanmu: 7
-      shuiqumu: 5
-      tiemu: 2
-      jingangmei: 2
-      paozi: 5
-      zaozi: 2
+      tong: 36
+      xi: 22
+      tie: 17
+      wood_essence: 3
+      copper_essence: 4
+      zitanmu: 9
+      shuiqumu: 6
+      tiemu: 3
+      jingangmei: 3
+      paozi: 6
+      zaozi: 3
       gaolu: 1
-      air_stone: 2
+      air_stone: 3
 
   - blueprint_key: blueprint_fenglingshan
     result_item_key: equip_fenglingshan
@@ -386,20 +386,20 @@ recipes:
     quantity_out: 1
     description: 凤翎扇图纸，术法输出位，材料略高于头部部件。
     costs:
-      tong: 34
-      xi: 20
-      tie: 16
-      wood_essence: 2
-      copper_essence: 3
-      zitanmu: 9
-      shuiqumu: 8
-      tiemu: 2
-      jingangmei: 2
-      paozi: 7
-      zaozi: 2
+      tong: 41
+      xi: 24
+      tie: 20
+      wood_essence: 3
+      copper_essence: 4
+      zitanmu: 11
+      shuiqumu: 10
+      tiemu: 3
+      jingangmei: 3
+      paozi: 9
+      zaozi: 3
       gaolu: 1
-      air_stone: 2
-      water_stone: 1
+      air_stone: 3
+      water_stone: 2
 
   - blueprint_key: blueprint_fenghuangyu
     result_item_key: equip_fenghuangyu
@@ -407,19 +407,19 @@ recipes:
     quantity_out: 1
     description: 凤凰羽图纸，凤翎套装饰品位，金属消耗低于常规防具与武器。
     costs:
-      tong: 24
-      xi: 14
-      tie: 10
-      wood_essence: 3
-      copper_essence: 3
-      zitanmu: 8
-      shuiqumu: 9
-      jingangmei: 1
-      paozi: 6
-      zaozi: 1
+      tong: 29
+      xi: 17
+      tie: 12
+      wood_essence: 4
+      copper_essence: 4
+      zitanmu: 10
+      shuiqumu: 11
+      jingangmei: 2
+      paozi: 8
+      zaozi: 2
       gaolu: 1
-      air_stone: 2
-      water_stone: 1
+      air_stone: 3
+      water_stone: 2
 
   - blueprint_key: blueprint_xiaoxingjiguanshu
     result_item_key: equip_xiaoxingjiguanshu
@@ -427,17 +427,17 @@ recipes:
     quantity_out: 1
     description: 小型机关鼠图纸，入门器械中最轻巧的一支，依旧需要完整机簧与风行辅材。
     costs:
-      tong: 28
-      xi: 18
-      tie: 14
-      wood_essence: 2
-      copper_essence: 1
-      shuiqumu: 6
-      tiemu: 2
-      jingangmei: 1
-      paozi: 3
-      zaozi: 2
-      air_stone: 1
+      tong: 34
+      xi: 22
+      tie: 17
+      wood_essence: 3
+      copper_essence: 2
+      shuiqumu: 8
+      tiemu: 3
+      jingangmei: 2
+      paozi: 4
+      zaozi: 3
+      air_stone: 2
 
   - blueprint_key: blueprint_tongchanjiguan
     result_item_key: equip_tongchanjiguan
@@ -445,18 +445,18 @@ recipes:
     quantity_out: 1
     description: 铜蝉机关图纸，薄翼与传声机括都需要更精细的金属与灵材配比。
     costs:
-      tong: 30
-      xi: 20
-      tie: 16
-      wood_essence: 1
-      copper_essence: 2
-      zitanmu: 2
-      shuiqumu: 4
-      heiyuanshi: 2
-      jingangmei: 1
-      paozi: 2
-      zaozi: 3
-      water_stone: 1
+      tong: 36
+      xi: 24
+      tie: 20
+      wood_essence: 2
+      copper_essence: 3
+      zitanmu: 3
+      shuiqumu: 5
+      heiyuanshi: 3
+      jingangmei: 2
+      paozi: 3
+      zaozi: 4
+      water_stone: 2
 
   - blueprint_key: blueprint_jixiemao
     result_item_key: equip_jixiemao
@@ -464,19 +464,19 @@ recipes:
     quantity_out: 1
     description: 机械猫图纸，灵巧关节与潜行机簧让其成本明显高于常规蓝装。
     costs:
-      tong: 40
-      xi: 26
-      tie: 20
-      wood_essence: 2
-      copper_essence: 2
-      xuan_tie_essence: 1
-      zitanmu: 3
-      tiemu: 5
-      heiyuanshi: 5
-      jingangmei: 3
-      paozi: 3
-      zaozi: 3
-      air_stone: 1
+      tong: 48
+      xi: 32
+      tie: 24
+      wood_essence: 3
+      copper_essence: 3
+      xuan_tie_essence: 2
+      zitanmu: 4
+      tiemu: 6
+      heiyuanshi: 6
+      jingangmei: 4
+      paozi: 4
+      zaozi: 4
+      air_stone: 2
 
   - blueprint_key: blueprint_jiguanchuniao
     result_item_key: equip_jiguanchuniao
@@ -484,21 +484,21 @@ recipes:
     quantity_out: 1
     description: 机关雏鸟图纸，羽翼滑翔结构复杂，额外需要风行与灵水辅材稳固机件。
     costs:
-      tong: 42
-      xi: 28
-      tie: 20
-      wood_essence: 2
-      copper_essence: 2
-      xuan_tie_essence: 1
-      zitanmu: 3
-      shuiqumu: 6
-      tiemu: 2
-      heiyuanshi: 3
-      jingangmei: 2
-      paozi: 4
-      zaozi: 2
-      air_stone: 1
-      water_stone: 1
+      tong: 51
+      xi: 34
+      tie: 24
+      wood_essence: 3
+      copper_essence: 3
+      xuan_tie_essence: 2
+      zitanmu: 4
+      shuiqumu: 8
+      tiemu: 3
+      heiyuanshi: 4
+      jingangmei: 3
+      paozi: 5
+      zaozi: 3
+      air_stone: 2
+      water_stone: 2
 
   - blueprint_key: blueprint_kuileimuren
     result_item_key: equip_kuileimuren
@@ -506,19 +506,19 @@ recipes:
     quantity_out: 1
     description: 傀儡木人图纸，躯干承压结构沉重，木精与土性辅材消耗都高于常规蓝装。
     costs:
-      tong: 44
-      xi: 30
-      tie: 24
-      wood_essence: 2
-      copper_essence: 3
-      xuan_tie_essence: 1
-      shuiqumu: 5
-      tiemu: 8
-      heiyuanshi: 2
-      jingangmei: 3
-      paozi: 5
-      zaozi: 3
-      earth_stone: 2
+      tong: 53
+      xi: 36
+      tie: 29
+      wood_essence: 3
+      copper_essence: 4
+      xuan_tie_essence: 2
+      shuiqumu: 6
+      tiemu: 10
+      heiyuanshi: 3
+      jingangmei: 4
+      paozi: 6
+      zaozi: 4
+      earth_stone: 3
 
   - blueprint_key: blueprint_qingji
     result_item_key: equip_qingji
@@ -526,19 +526,19 @@ recipes:
     quantity_out: 1
     description: 庆忌图纸，轻灵小巧但工艺精细，仍需完整玄铁与风性辅材配合。
     costs:
-      tong: 38
-      xi: 24
-      tie: 18
-      wood_essence: 2
-      copper_essence: 2
-      xuan_tie_essence: 1
-      zitanmu: 5
-      tiemu: 2
-      heiyuanshi: 5
-      jingangmei: 3
-      paozi: 2
-      zaozi: 4
-      air_stone: 1
+      tong: 46
+      xi: 29
+      tie: 22
+      wood_essence: 3
+      copper_essence: 3
+      xuan_tie_essence: 2
+      zitanmu: 6
+      tiemu: 3
+      heiyuanshi: 6
+      jingangmei: 4
+      paozi: 3
+      zaozi: 5
+      air_stone: 2
 
   - blueprint_key: blueprint_taotieding
     result_item_key: equip_taotieding
@@ -546,21 +546,21 @@ recipes:
     quantity_out: 1
     description: 饕餮鼎图纸，兼具祭器与器械之重，铸造所需金属与精华远超常规紫装。
     costs:
-      tong: 60
-      xi: 40
-      tie: 32
-      wood_essence: 2
-      copper_essence: 3
-      xuan_tie_essence: 2
-      tiemu: 10
-      heiyuanshi: 15
-      jingangmei: 12
-      paozi: 2
-      zaozi: 10
+      tong: 72
+      xi: 48
+      tie: 39
+      wood_essence: 3
+      copper_essence: 4
+      xuan_tie_essence: 3
+      tiemu: 12
+      heiyuanshi: 18
+      jingangmei: 15
+      paozi: 3
+      zaozi: 12
       gaolu: 4
-      water_stone: 1
-      earth_stone: 2
-      fire_stone: 2
+      water_stone: 2
+      earth_stone: 3
+      fire_stone: 3
 
   - blueprint_key: blueprint_jiguanxiong
     result_item_key: equip_jiguanxiong
@@ -568,21 +568,21 @@ recipes:
     quantity_out: 1
     description: 机关熊图纸，重载骨架与驱动机括都需要更高强度的材料投入。
     costs:
-      tong: 56
-      xi: 38
-      tie: 30
-      wood_essence: 2
-      copper_essence: 3
-      xuan_tie_essence: 2
-      zitanmu: 3
-      tiemu: 12
-      heiyuanshi: 10
-      jingangmei: 8
-      paozi: 6
-      zaozi: 7
+      tong: 68
+      xi: 46
+      tie: 36
+      wood_essence: 3
+      copper_essence: 4
+      xuan_tie_essence: 3
+      zitanmu: 4
+      tiemu: 15
+      heiyuanshi: 12
+      jingangmei: 10
+      paozi: 8
+      zaozi: 9
       gaolu: 3
-      earth_stone: 2
-      fire_stone: 1
+      earth_stone: 3
+      fire_stone: 2
 
   - blueprint_key: blueprint_muniuliuma
     result_item_key: equip_muniuliuma
@@ -590,22 +590,22 @@ recipes:
     quantity_out: 1
     description: 木牛流马图纸，承载与续行结构极重，对木精、玄铁与水土辅材要求都更高。
     costs:
-      tong: 54
-      xi: 36
-      tie: 28
-      wood_essence: 3
-      copper_essence: 3
-      xuan_tie_essence: 2
-      zitanmu: 6
-      shuiqumu: 10
-      tiemu: 14
-      heiyuanshi: 4
-      jingangmei: 6
-      paozi: 9
-      zaozi: 6
+      tong: 65
+      xi: 44
+      tie: 34
+      wood_essence: 4
+      copper_essence: 4
+      xuan_tie_essence: 3
+      zitanmu: 8
+      shuiqumu: 12
+      tiemu: 17
+      heiyuanshi: 5
+      jingangmei: 8
+      paozi: 11
+      zaozi: 8
       gaolu: 3
-      earth_stone: 2
-      water_stone: 1
+      earth_stone: 3
+      water_stone: 2
 
   - blueprint_key: blueprint_kuileiren
     result_item_key: equip_kuileiren
@@ -613,22 +613,22 @@ recipes:
     quantity_out: 1
     description: 傀儡人图纸，关节联动与平衡校准复杂，属于高成本紫阶器械。
     costs:
-      tong: 58
-      xi: 38
-      tie: 30
-      wood_essence: 2
-      copper_essence: 3
-      xuan_tie_essence: 2
-      zitanmu: 5
-      shuiqumu: 4
-      tiemu: 13
-      heiyuanshi: 10
-      jingangmei: 7
-      paozi: 7
-      zaozi: 9
+      tong: 70
+      xi: 46
+      tie: 36
+      wood_essence: 3
+      copper_essence: 4
+      xuan_tie_essence: 3
+      zitanmu: 6
+      shuiqumu: 5
+      tiemu: 16
+      heiyuanshi: 12
+      jingangmei: 9
+      paozi: 9
+      zaozi: 11
       gaolu: 3
-      earth_stone: 2
-      air_stone: 1
+      earth_stone: 3
+      air_stone: 2
 
   - blueprint_key: blueprint_xuanwujigui
     result_item_key: equip_xuanwujigui
@@ -636,21 +636,21 @@ recipes:
     quantity_out: 1
     description: 玄武机龟图纸，防御型器械的代表，装甲与水土稳固成本都被显著拉高。
     costs:
-      tong: 62
-      xi: 42
-      tie: 34
-      wood_essence: 2
-      copper_essence: 3
-      xuan_tie_essence: 2
-      zitanmu: 2
-      tiemu: 11
-      heiyuanshi: 14
-      jingangmei: 9
-      paozi: 4
-      zaozi: 9
+      tong: 75
+      xi: 51
+      tie: 41
+      wood_essence: 3
+      copper_essence: 4
+      xuan_tie_essence: 3
+      zitanmu: 3
+      tiemu: 14
+      heiyuanshi: 17
+      jingangmei: 11
+      paozi: 5
+      zaozi: 11
       gaolu: 4
-      water_stone: 2
-      earth_stone: 2
+      water_stone: 3
+      earth_stone: 3
 
   - blueprint_key: blueprint_feiyuan
     result_item_key: equip_feiyuan
@@ -658,20 +658,20 @@ recipes:
     quantity_out: 1
     description: 飞鸢图纸，顶阶飞行器械的机关与外翼都极其昂贵，远超常规橙装。
     costs:
-      tong: 84
-      xi: 56
-      tie: 44
-      xuan_tie_essence: 3
-      zitanmu: 14
-      shuiqumu: 18
-      tiemu: 12
-      heiyuanshi: 10
-      jingangmei: 10
-      paozi: 12
-      zaozi: 7
+      tong: 101
+      xi: 68
+      tie: 53
+      xuan_tie_essence: 4
+      zitanmu: 17
+      shuiqumu: 22
+      tiemu: 15
+      heiyuanshi: 12
+      jingangmei: 12
+      paozi: 15
+      zaozi: 9
       gaolu: 7
-      air_stone: 3
-      fire_stone: 2
+      air_stone: 4
+      fire_stone: 3
 
   - blueprint_key: blueprint_chixiaojifeng
     result_item_key: equip_chixiaojifeng
@@ -679,20 +679,20 @@ recipes:
     quantity_out: 1
     description: 赤霄机凤图纸，赤铜羽翼与高温驱动核心令其成为顶阶高耗器械之一。
     costs:
-      tong: 88
-      xi: 58
-      tie: 46
-      xuan_tie_essence: 3
-      zitanmu: 12
-      shuiqumu: 8
-      tiemu: 16
-      heiyuanshi: 18
-      jingangmei: 18
-      paozi: 7
-      zaozi: 12
+      tong: 106
+      xi: 70
+      tie: 56
+      xuan_tie_essence: 4
+      zitanmu: 15
+      shuiqumu: 10
+      tiemu: 20
+      heiyuanshi: 22
+      jingangmei: 22
+      paozi: 9
+      zaozi: 15
       gaolu: 8
-      fire_stone: 4
-      air_stone: 2
+      fire_stone: 5
+      air_stone: 3
 
   - blueprint_key: blueprint_mojiajiguanren
     result_item_key: equip_mojiajiguanren
@@ -700,18 +700,18 @@ recipes:
     quantity_out: 1
     description: 墨家机关人图纸，顶阶机关造物的核心蓝图，金属、玄铁与多系属性石消耗均为器械之最。
     costs:
-      tong: 96
-      xi: 64
-      tie: 52
-      xuan_tie_essence: 4
-      zitanmu: 12
-      shuiqumu: 8
-      tiemu: 22
-      heiyuanshi: 24
-      jingangmei: 22
-      paozi: 10
-      zaozi: 16
+      tong: 116
+      xi: 77
+      tie: 63
+      xuan_tie_essence: 5
+      zitanmu: 15
+      shuiqumu: 10
+      tiemu: 27
+      heiyuanshi: 29
+      jingangmei: 27
+      paozi: 12
+      zaozi: 20
       gaolu: 10
-      earth_stone: 2
-      fire_stone: 2
-      water_stone: 2
+      earth_stone: 3
+      fire_stone: 3
+      water_stone: 3

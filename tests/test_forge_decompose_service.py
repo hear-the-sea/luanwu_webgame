@@ -288,7 +288,7 @@ def test_decompose_forge_material_probabilities_match_balance():
             "zitanmu": 0.12,
             "heiyuanshi": 0.15,
             "jingangmei": 0.10,
-            "gaolu": 0.02,
+            "gaolu": 0.05,
         },
         "purple": {
             "shuiqumu": 0.50,
@@ -298,7 +298,7 @@ def test_decompose_forge_material_probabilities_match_balance():
             "zitanmu": 0.22,
             "heiyuanshi": 0.26,
             "jingangmei": 0.20,
-            "gaolu": 0.06,
+            "gaolu": 0.10,
         },
         "orange": {
             "shuiqumu": 0.65,
@@ -308,7 +308,7 @@ def test_decompose_forge_material_probabilities_match_balance():
             "zitanmu": 0.34,
             "heiyuanshi": 0.40,
             "jingangmei": 0.32,
-            "gaolu": 0.14,
+            "gaolu": 0.20,
         },
     }
 

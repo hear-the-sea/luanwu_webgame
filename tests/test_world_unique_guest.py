@@ -34,7 +34,7 @@ def _lubu_template() -> GuestTemplate:
         defaults={
             "name": "吕布",
             "archetype": "military",
-            "rarity": "purple",
+            "rarity": "orange",
             "base_attack": 150,
             "base_intellect": 80,
             "base_defense": 110,

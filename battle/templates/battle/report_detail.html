@@ -17,13 +17,13 @@
 
     <div class="battle-overview-table-wrap">
         <section class="battle-overview-table" aria-label="双方装备属性加成">
-            <div class="battle-overview-side attacker"><strong>{{ left_team_title }}</strong></div>
-            <div class="battle-overview-side defender"><strong>{{ right_team_title }}</strong></div>
+            <div class="battle-overview-side attacker"><strong>{{ equipment_left_title }}</strong></div>
+            <div class="battle-overview-side defender"><strong>{{ equipment_right_title }}</strong></div>
 
             <div class="battle-overview-cell attacker">
                 <span class="battle-table-label">装备属性加成</span>
                 <div class="battle-equipment-list">
-                    {% for bonus in attacker_equipment_bonuses %}
+                    {% for bonus in equipment_left_bonuses %}
                         <div class="battle-equipment-bonus">
                             <strong>{{ bonus.name }}{% if bonus.effective_count %} × {{ bonus.effective_count }}{% endif %}</strong>
                             <span>{{ bonus.effect_text }}</span>
@@ -39,7 +39,7 @@
             <div class="battle-overview-cell defender">
                 <span class="battle-table-label">装备属性加成</span>
                 <div class="battle-equipment-list">
-                    {% for bonus in defender_equipment_bonuses %}
+                    {% for bonus in equipment_right_bonuses %}
                         <div class="battle-equipment-bonus">
                             <strong>{{ bonus.name }}{% if bonus.effective_count %} × {{ bonus.effective_count }}{% endif %}</strong>
                             <span>{{ bonus.effect_text }}</span>
@@ -176,8 +176,8 @@
                 <div class="battle-settlement-cell friendly">
                     <span class="battle-table-label">阵亡护院</span>
                     <div class="battle-settlement-value">
-                        {% if attacker_loss.troops_lost %}
-                            {% for entry in attacker_loss.casualties %}
+                        {% if loss_left.troops_lost %}
+                            {% for entry in loss_left.casualties %}
                                 {% if entry.lost > 0 %}
                                     <span>{{ entry.label }} × {{ entry.lost }}</span>
                                 {% endif %}
@@ -190,8 +190,8 @@
                 <div class="battle-settlement-cell enemy">
                     <span class="battle-table-label">阵亡护院</span>
                     <div class="battle-settlement-value">
-                        {% if defender_loss.troops_lost %}
-                            {% for entry in defender_loss.casualties %}
+                        {% if loss_right.troops_lost %}
+                            {% for entry in loss_right.casualties %}
                                 {% if entry.lost > 0 %}
                                     <span>{{ entry.label }} × {{ entry.lost }}</span>
                                 {% endif %}

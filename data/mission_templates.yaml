@@ -345,14 +345,14 @@ missions:
       - hero_cheng_yaojin
 
     enemy_technology:
-      level: 9               # 9级科技
-      guest_level: 80        # 80级门客
+      level: 10               # 10级科技
+      guest_level: 100        # 100级门客
       guest_bonus: 0.3       # +30%属性加成
 
     enemy_troops:
-      arrow_god: 300
-      quan_sheng: 300
-      qiang_wang: 300
+      arrow_god: 800
+      quan_sheng: 800
+      qiang_wang: 800
 
     drop_table:
       silver: 40000
@@ -1092,7 +1092,7 @@ missions:
 
     enemy_technology:
       level: 10
-      guest_level: 81
+      guest_level: 100
       guest_bonus: 0.26
 
     drop_table:

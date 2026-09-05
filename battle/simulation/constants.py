@@ -88,8 +88,8 @@ DAMAGE_VARIANCE_MAX = 1.1
 GUEST_VS_TROOP_DEFENSE_CONSTANT = 50
 
 # 门客技能打护院的额外伤害倍率（普攻屠戮倍率独立计算）
-# 设计目标：压制技能秒杀护院，但保留技能的明显收益
-GUEST_SKILL_VS_TROOP_MULTIPLIER = 4.0
+# 与门客对门客的技能倍率保持一致
+GUEST_SKILL_VS_TROOP_MULTIPLIER = 2.0
 
 # ============ 城防伤害倍率 ============
 

@@ -252,11 +252,11 @@ def test_effective_defense_value_troop_vs_troop_scales():
     assert value == pytest.approx(expected)
 
 
-def test_effective_attack_value_troop_vs_guest_uses_smaller_multiplier():
+def test_effective_attack_value_troop_vs_guest_uses_full_strength_multiplier():
     troop = make_unit(kind="troop", unit_attack=50, troop_strength=100, initial_troop_strength=100)
     guest = make_unit(kind="guest")
     value = effective_attack_value(troop, guest)
-    expected = max(1.0, 50 * max(1.0, 100 / 1.5))
+    expected = max(1.0, 50 * max(1.0, 100 / 1.0))
     assert value == pytest.approx(expected)
 
 
@@ -327,7 +327,7 @@ def test_guest_vs_troop_damage_keeps_fractional_unit_defense_until_damage_roundi
     assert result.damage == int(base_damage * SLAUGHTER_MULTIPLIER)
 
 
-def test_guest_vs_troop_skill_damage_uses_reduced_skill_multiplier():
+def test_guest_vs_troop_skill_damage_uses_two_times_skill_multiplier():
     actor = make_unit(kind="guest", attack=1000, priority=0)
     target = make_unit(kind="troop", side="defender", unit_defense=10, troop_strength=200, unit_hp=10)
     skill = {"name": "Flat Bonus", "damage_formula": {"base": 2000}}

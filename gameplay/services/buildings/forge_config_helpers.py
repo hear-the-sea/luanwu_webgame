@@ -47,6 +47,7 @@ DEFAULT_FORGE_DECOMPOSE_CONFIG: Dict[str, Any] = {
             "fire_stone": 0.12,
             "earth_stone": 0.12,
             "water_stone": 0.12,
+            "gaolu": 0.05,
         },
         "purple": {
             "wood_essence": 0.88,
@@ -56,6 +57,7 @@ DEFAULT_FORGE_DECOMPOSE_CONFIG: Dict[str, Any] = {
             "fire_stone": 0.22,
             "earth_stone": 0.22,
             "water_stone": 0.22,
+            "gaolu": 0.10,
         },
         "orange": {
             "wood_essence": 0.95,
@@ -65,6 +67,7 @@ DEFAULT_FORGE_DECOMPOSE_CONFIG: Dict[str, Any] = {
             "fire_stone": 0.35,
             "earth_stone": 0.35,
             "water_stone": 0.35,
+            "gaolu": 0.20,
         },
     },
 }

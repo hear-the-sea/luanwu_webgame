@@ -1,12 +1,23 @@
 from __future__ import annotations
 
 import pytest
+from bs4 import BeautifulSoup
+from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils.html import strip_tags
 
 from battle.view_helpers import serialize_city_defense_rows
 from core.config import BUILDING_KEYS
 from gameplay.services.manor.core import ensure_manor
 from tests.battle_report_view.support import create_report
+
+
+def _render_attack_event(event: dict) -> BeautifulSoup:
+    body = render_to_string(
+        "battle/partials/round_event_list.html",
+        {"events": [event], "my_side": "defender", "is_spectator": False},
+    )
+    return BeautifulSoup(body, "html.parser")
 
 
 @pytest.mark.django_db
@@ -99,6 +110,94 @@ def test_city_defense_report_names_use_three_qualitative_conditions():
         "受损的中级城墙",
         "破烂的中级箭塔",
     ]
+
+
+def test_arrow_tower_multi_target_events_use_normal_attack_copy():
+    event = {
+        "side": "defender",
+        "order": 1,
+        "actor": "箭塔",
+        "target": "甲",
+        "damage": 100,
+        "skills": [],
+        "kind": "city_defense",
+        "kills": 0,
+        "target_defeated": False,
+        "additional_targets": [
+            {
+                "actor": "箭塔",
+                "target": "枪王",
+                "damage": 90,
+                "skills": [],
+                "kind": "city_defense",
+                "kills": 1,
+                "target_defeated": False,
+            },
+            {
+                "actor": "箭塔",
+                "target": "乙",
+                "damage": 80,
+                "skills": [],
+                "kind": "city_defense",
+                "kills": 0,
+                "target_defeated": False,
+            },
+        ],
+    }
+
+    document = _render_attack_event(event)
+    text = "".join(strip_tags(str(document)).split())
+
+    assert text.count("普通攻击：对") == 3
+    assert "波及" not in text
+
+
+@pytest.mark.parametrize("target", ["城墙", "箭塔"])
+def test_city_defense_target_defeat_uses_destroyed_copy(target):
+    event = {
+        "side": "attacker",
+        "order": 1,
+        "actor": "枪王",
+        "target": target,
+        "damage": 500,
+        "skills": [],
+        "kind": "guest",
+        "kills": 0,
+        "target_defeated": True,
+        "target_state": {"kind": "city_defense", "side": "defender"},
+    }
+
+    document = _render_attack_event(event)
+    text = "".join(strip_tags(str(document)).split())
+
+    assert f"{target}被摧毁" in text
+    assert "敌方全军覆没" not in text
+
+
+def test_counterattack_against_arrow_tower_does_not_show_casualty_count():
+    event = {
+        "side": "defender",
+        "order": 1,
+        "actor": "箭塔",
+        "target": "枪王",
+        "damage": 100,
+        "skills": [],
+        "kind": "city_defense",
+        "kills": 1,
+        "target_defeated": False,
+        "counter_damage": 171,
+        "counter_kills": 1,
+        "counter_defeated": True,
+    }
+
+    document = _render_attack_event(event)
+    counter_text = document.select_one(".counter-text")
+
+    assert counter_text is not None
+    assert "枪王爆发反戈一击（171伤害）" in counter_text.get_text()
+    assert "伤害人数" not in counter_text.get_text()
+    assert "箭塔被摧毁" in counter_text.get_text()
+    assert "敌方全军覆没" not in counter_text.get_text()
 
 
 @pytest.mark.django_db

@@ -54,6 +54,11 @@ def test_raid_report_without_run_relation_uses_defender_perspective_from_message
             }
         ],
     )
+    report.losses = {
+        "attacker": {"troops_lost": 2, "casualties": [{"label": "进攻方护院", "lost": 2}]},
+        "defender": {"troops_lost": 1, "casualties": [{"label": "防守方护院", "lost": 1}]},
+    }
+    report.save(update_fields=["losses"])
     Message.objects.create(
         manor=defender_manor,
         kind=Message.Kind.BATTLE,
@@ -71,12 +76,23 @@ def test_raid_report_without_run_relation_uses_defender_perspective_from_message
     assert response.context["defender_team_display"][0]["name"] == "A"
     assert response.context["attacker_equipment_bonuses"][0]["name"] == "机械猫"
     assert response.context["defender_equipment_bonuses"][0]["name"] == "机关雏鸟"
+    assert response.context["equipment_left_title"] == "敌方"
+    assert response.context["equipment_right_title"] == "我方"
+    assert response.context["equipment_left_bonuses"][0]["name"] == "机关雏鸟"
+    assert response.context["equipment_right_bonuses"][0]["name"] == "机械猫"
+    assert response.context["left_loss_title"] == "敌方损失"
+    assert response.context["right_loss_title"] == "我方损失"
+    assert response.context["loss_left"]["casualties"][0]["label"] == "进攻方护院"
+    assert response.context["loss_right"]["casualties"][0]["label"] == "防守方护院"
     assert response.context["report_title"] == "踢馆战报 - 防守失败"
     body = response.content.decode("utf-8")
     overview_html = body.split('<section class="battle-overview-table"', 1)[1].split("</section>", 1)[0]
     assert "我方" in overview_html
     assert "敌方" in overview_html
-    assert overview_html.index("机械猫") < overview_html.index("机关雏鸟")
+    assert overview_html.index("机关雏鸟") < overview_html.index("机械猫")
+    settlement_html = body.split('<div class="battle-settlement-table"', 1)[1].split("</section>", 1)[0]
+    assert settlement_html.index("敌方损失") < settlement_html.index("我方损失")
+    assert settlement_html.index("进攻方护院 × 2") < settlement_html.index("防守方护院 × 1")
 
 
 @pytest.mark.django_db

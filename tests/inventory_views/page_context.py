@@ -195,7 +195,7 @@ class TestInventoryPageContext:
         lubu_template = GuestTemplate.objects.create(
             key=WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
             name="吕布",
-            rarity=GuestRarity.PURPLE,
+            rarity=GuestRarity.ORANGE,
             archetype=GuestArchetype.MILITARY,
             is_world_unique=True,
             recruitable=False,

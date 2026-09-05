@@ -326,13 +326,15 @@ heroes:
       recruitable: false
       default_gender: male
       avatar: monkey_wu_male16.png
+      skills:
+        - dragon_roar
       custom_stats:
         force: 208
         intellect: 118
         defense: 176
         agility: 118
         luck: 70
-        base_hp: 2240
+        base_hp: 150000
     - key: guild_wulinzhai_zhai_zhu
       name: 乌鳞寨寨主
       archetype: military

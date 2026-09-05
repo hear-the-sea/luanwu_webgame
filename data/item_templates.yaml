@@ -1445,12 +1445,12 @@ items:
 
   - key: lvbu_guest_scroll
     name: 吕布招募卷轴
-    description: 从白门楼决战中寻得的名将卷轴。使用后可直接招募紫色门客「吕布」；吕布全服仅有一名，使用卷轴时会显示其当前状态，若已被其他玩家持有则卷轴不会消耗。
+    description: 从白门楼决战中寻得的名将卷轴。使用后可直接招募橙色门客「吕布」；吕布全服仅有一名，使用卷轴时会显示其当前状态，若已被其他玩家持有则卷轴不会消耗。
     effect_type: tool
-    rarity: purple
+    rarity: orange
     tradeable: true
     price: 8000000
-    storage_space: 150
+    storage_space: 200
     is_usable: true
     effect_payload:
       action: summon_guest

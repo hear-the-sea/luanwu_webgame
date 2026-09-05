@@ -544,6 +544,8 @@ def build_side_labels(*, player_side: str, winner: str | None) -> dict[str, Any]
             {
                 "left_team_title": "进攻方",
                 "right_team_title": "防守方",
+                "equipment_left_title": "进攻方",
+                "equipment_right_title": "防守方",
                 "left_loss_title": "进攻方损失",
                 "right_loss_title": "防守方损失",
                 "spectator_result": (
@@ -559,8 +561,10 @@ def build_side_labels(*, player_side: str, winner: str | None) -> dict[str, Any]
         {
             "left_team_title": "我方",
             "right_team_title": "敌方",
-            "left_loss_title": "我方损失",
-            "right_loss_title": "敌方损失",
+            "equipment_left_title": "敌方" if player_side == "defender" else "我方",
+            "equipment_right_title": "我方" if player_side == "defender" else "敌方",
+            "left_loss_title": "敌方损失" if player_side == "defender" else "我方损失",
+            "right_loss_title": "我方损失" if player_side == "defender" else "敌方损失",
         }
     )
     return context

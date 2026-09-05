@@ -33,6 +33,12 @@ HULAO_SCROLL_TARGETS = {
     "diaochan_guest_scroll": "hist_sljnbc_0425",
 }
 
+HULAO_SCROLL_RARITIES = {
+    "lvbu_guest_scroll": "orange",
+    "zhaoyun_guest_scroll": "purple",
+    "diaochan_guest_scroll": "purple",
+}
+
 
 def _load_yaml(path: Path) -> dict:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -110,7 +116,7 @@ def test_baimenlou_has_three_direct_recruitment_scrolls():
         assert guest_key in guest_keys
         assert mission["drop_table"][scroll_key] == 0.01
         assert scroll["effect_type"] == "tool"
-        assert scroll["rarity"] == "purple"
+        assert scroll["rarity"] == HULAO_SCROLL_RARITIES[scroll_key]
         assert scroll["is_usable"] is True
         assert "白门楼" in scroll["description"]
         assert "虎牢关" not in scroll["description"]
@@ -120,14 +126,11 @@ def test_baimenlou_has_three_direct_recruitment_scrolls():
             "choices": [{"template_key": guest_key, "weight": 100}],
         }
 
-    lvbu = next(
-        entry
-        for entries in _load_yaml(DATA_DIR / "guests" / "history_sljnbc_01.yaml")["heroes"].values()
-        for entry in entries
-        if entry["key"] == "hist_sljnbc_0013"
-    )
+    guest_roster = _load_yaml(DATA_DIR / "guests" / "history_sljnbc_01.yaml")["heroes"]
+    lvbu = next(entry for entry in guest_roster["orange"] if entry["key"] == "hist_sljnbc_0013")
     assert lvbu["recruitable"] is False
     assert lvbu["is_world_unique"] is True
+    assert lvbu["growth_range"] == [11, 14]
 
 
 def test_single_bosses_use_task_only_orange_hp_profiles():

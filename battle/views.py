@@ -92,6 +92,16 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
         )
         my_city_defenses_raw, enemy_city_defenses_raw = resolve_city_defense_perspective(report, player_side)
         my_equipment_bonuses, enemy_equipment_bonuses = resolve_equipment_bonus_perspective(report, player_side)
+        if player_side == "defender":
+            equipment_left_bonuses = enemy_equipment_bonuses
+            equipment_right_bonuses = my_equipment_bonuses
+            loss_left = enemy_loss
+            loss_right = my_loss
+        else:
+            equipment_left_bonuses = my_equipment_bonuses
+            equipment_right_bonuses = enemy_equipment_bonuses
+            loss_left = my_loss
+            loss_right = enemy_loss
 
         context["attacker_team_display"] = my_team
         context["defender_team_display"] = enemy_team
@@ -101,8 +111,12 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
         context["defender_city_defenses"] = serialize_city_defense_rows(enemy_city_defenses_raw)
         context["attacker_equipment_bonuses"] = my_equipment_bonuses
         context["defender_equipment_bonuses"] = enemy_equipment_bonuses
+        context["equipment_left_bonuses"] = equipment_left_bonuses
+        context["equipment_right_bonuses"] = equipment_right_bonuses
         context["attacker_loss"] = my_loss
         context["defender_loss"] = enemy_loss
+        context["loss_left"] = loss_left
+        context["loss_right"] = loss_right
 
         side_context = build_side_labels(player_side=player_side, winner=report.winner)
         is_spectator = bool(side_context["is_spectator"])
