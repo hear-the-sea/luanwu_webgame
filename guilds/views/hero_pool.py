@@ -4,9 +4,9 @@ from typing import Any
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from core.utils import safe_int
 from core.utils.rate_limit import rate_limit_redirect
@@ -53,6 +53,19 @@ def hero_pool_page(request: Any) -> HttpResponse:
     member = request.guild_member
     context = hero_pool_service.get_hero_pool_page_context(member)
     return render(request, "guilds/hero_pool.html", context)
+
+
+@login_required
+@require_guild_member
+@require_GET
+def hero_pool_guest_detail(request: Any, pool_entry_id: int) -> HttpResponse:
+    context = hero_pool_service.get_hero_pool_guest_detail_context(
+        request.guild_member,
+        pool_entry_id=pool_entry_id,
+    )
+    if context is None:
+        raise Http404("门客池中不存在该门客")
+    return render(request, "guilds/partials/hero_pool_guest_detail.html", context)
 
 
 @login_required

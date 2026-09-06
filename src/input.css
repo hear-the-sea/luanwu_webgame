@@ -10,8 +10,9 @@
 @layer components {
   /* ========== 按钮组件 ========== */
   .tw-btn {
-    @apply px-4 py-2 border rounded-md cursor-pointer transition-all duration-200
+    @apply px-4 py-2 border rounded-md cursor-pointer transition duration-200
            text-center no-underline inline-block;
+    touch-action: manipulation;
   }
 
   .tw-btn-primary {
@@ -65,8 +66,10 @@
     box-shadow: 0 8px 24px rgba(74, 38, 18, 0.2);
   }
 
+  .tw-auth-card h1,
   .tw-auth-card h2 {
     @apply mt-0 text-3xl text-text-primary border-b-2 border-border-primary pb-2 mb-4;
+    text-wrap: balance;
   }
 
   .tw-auth-card form {
@@ -79,6 +82,112 @@
 
   .tw-auth-card a {
     @apply text-accent-gold hover:underline;
+  }
+
+  .tw-auth-card--register {
+    @apply w-full max-w-none;
+  }
+
+  .tw-register-layout {
+    @apply grid w-full max-w-6xl gap-6 mx-auto;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: stretch;
+  }
+
+  .tw-register-hero {
+    @apply flex flex-col justify-center rounded-xl border-[3px] border-border-primary p-10;
+    min-height: 100%;
+    background: linear-gradient(145deg, #6B3410 0%, #8B4513 52%, #A56332 100%);
+    box-shadow: 0 8px 24px rgba(74, 38, 18, 0.2);
+    color: var(--text-light);
+  }
+
+  .tw-register-hero h1 {
+    @apply mt-0 mb-3 text-4xl;
+    color: var(--text-light);
+    text-wrap: balance;
+  }
+
+  .tw-register-hero p {
+    @apply mt-0 text-left;
+    color: #F7E8C8;
+  }
+
+  .tw-register-grid {
+    @apply grid gap-5;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tw-register-field-full {
+    grid-column: 1 / -1;
+  }
+
+  .tw-register-submit {
+    @apply w-full;
+  }
+
+  .tw-register-alt {
+    @apply mb-0;
+  }
+
+  .tw-email-verification-card {
+    @apply w-full;
+  }
+
+  .tw-auth-notice {
+    @apply rounded-lg border-2 p-4;
+    line-height: 1.6;
+  }
+
+  .tw-auth-notice--success {
+    border-color: var(--accent-green);
+    background: #ECFDF5;
+    color: #065F46;
+  }
+
+  .tw-auth-notice--error {
+    border-color: var(--accent-red);
+    background: #FFEAEA;
+    color: var(--accent-red);
+  }
+
+  .tw-email-address {
+    @apply mt-3;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .tw-resend-form {
+    @apply mt-6 border-t border-border-light pt-5;
+  }
+
+  .tw-resend-help {
+    @apply text-sm text-text-muted;
+  }
+
+  @media (max-width: 900px) {
+    .tw-register-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .tw-register-hero {
+      min-height: auto;
+      padding: 2rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .tw-auth-card {
+      padding: 1.5rem;
+    }
+
+    .tw-register-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .tw-register-field-full {
+      grid-column: auto;
+    }
   }
 
   /* ========== 表单组件 ========== */
@@ -95,7 +204,7 @@
   .tw-form-field textarea {
     @apply w-full rounded-md border-2 border-border-primary p-3 text-base
            bg-white text-text-primary
-           focus:outline-none focus:border-accent-gold;
+           focus:border-accent-gold;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
 
@@ -105,6 +214,16 @@
     box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.2);
   }
 
+  .tw-form-field input:focus-visible,
+  .tw-form-field select:focus-visible,
+  .tw-form-field textarea:focus-visible,
+  .tw-btn-primary:focus-visible,
+  .tw-btn-secondary:focus-visible,
+  .tw-btn-danger:focus-visible {
+    outline: 2px solid var(--accent-gold);
+    outline-offset: 3px;
+  }
+
   .tw-form-field small {
     @apply text-sm text-text-muted mt-1;
   }
@@ -112,6 +231,10 @@
   .tw-form-errors {
     @apply rounded-lg border-2 border-accent-red p-4 text-accent-red;
     background: #FFEAEA;
+  }
+
+  .tw-form-field .errorlist {
+    @apply mt-1 list-none p-0 text-sm text-accent-red;
   }
 
   .tw-input {
@@ -3250,6 +3373,19 @@
 
   .tw-guild-section-spacing {
     @apply mt-6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tw-btn,
+  .tw-btn-primary,
+  .tw-btn-secondary,
+  .tw-btn-danger {
+    transition-duration: 0.01ms;
+  }
+
+  .tw-btn-primary:hover {
+    transform: none;
   }
 }
 

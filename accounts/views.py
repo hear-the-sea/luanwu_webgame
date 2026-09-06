@@ -16,7 +16,7 @@ from django.db import DatabaseError, IntegrityError, transaction
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import CreateView, TemplateView
+from django.views.generic import CreateView, TemplateView, View
 
 from core.config import SECURITY
 from core.utils.network import get_client_ip
@@ -24,7 +24,20 @@ from core.utils.rate_limit import rate_limit_redirect
 from gameplay.models import Manor
 from gameplay.services.manor.core import ManorNameConflictError
 
-from .forms import LoginForm, SignUpForm
+from .email_quota import (
+    EmailQuotaExceeded,
+    EmailSendReservation,
+    is_email_send_quota_exhausted,
+    release_email_send_slot,
+    reserve_email_send_slot,
+)
+from .email_verification import (
+    EmailVerificationDeliveryError,
+    build_email_verification_token,
+    get_user_from_email_verification_token,
+    send_email_verification_message,
+)
+from .forms import EmailVerificationRecoveryForm, LoginForm, SignUpForm
 from .login_runtime import check_login_attempts as runtime_check_login_attempts
 from .login_runtime import clear_login_attempts as runtime_clear_login_attempts
 from .login_runtime import increment_attempt_counter as runtime_increment_attempt_counter
@@ -43,6 +56,25 @@ LOGIN_LOCKOUT_DURATION = SECURITY.LOGIN_LOCKOUT_DURATION
 REGISTRATION_IP_LIMIT = SECURITY.REGISTRATION_IP_LIMIT
 REGISTRATION_EMAIL_LIMIT = SECURITY.REGISTRATION_EMAIL_LIMIT
 REGISTRATION_RATE_WINDOW = SECURITY.REGISTRATION_RATE_WINDOW
+EMAIL_QUOTA_EXHAUSTED_MESSAGE = "本月注册验证邮件额度已用尽，注册暂时关闭，请下月再试。"
+EMAIL_VERIFICATION_DELIVERY_ERROR_MESSAGE = "验证邮件发送失败，请稍后重试。"
+EMAIL_VERIFICATION_RESEND_COOLDOWN_MESSAGE = "验证邮件刚刚发送过，请稍后再试。"
+EMAIL_VERIFICATION_RESEND_ERROR_MESSAGE = "验证邮件发送失败，请稍后重试。"
+EMAIL_VERIFICATION_RECOVERY_ERROR_MESSAGE = "系统繁忙，请稍后再试。"
+EMAIL_VERIFICATION_RECOVERY_QUOTA_MESSAGE = "本月验证邮件额度已用尽，暂时无法发送，请下月再试。"
+EMAIL_VERIFICATION_RESEND_SESSION_KEY = "pending_email_verification_user_id"
+EMAIL_VERIFICATION_RESEND_COOLDOWN_SECONDS = max(
+    1,
+    int(getattr(settings, "EMAIL_VERIFICATION_RESEND_COOLDOWN_SECONDS", 60)),
+)
+EMAIL_VERIFICATION_RESEND_IP_LIMIT = max(
+    1,
+    int(getattr(settings, "EMAIL_VERIFICATION_RESEND_IP_LIMIT", 5)),
+)
+EMAIL_VERIFICATION_RESEND_IP_WINDOW_SECONDS = max(
+    1,
+    int(getattr(settings, "EMAIL_VERIFICATION_RESEND_IP_WINDOW_SECONDS", 3600)),
+)
 logger = logging.getLogger(__name__)
 _LOCAL_LOGIN_CACHE: dict[str, tuple[object, float]] = {}
 _LOCAL_LOGIN_CACHE_GUARD = Lock()
@@ -300,6 +332,72 @@ def _registration_email_identifier(request) -> str:
     return f"missing-email:{username or 'anonymous'}"
 
 
+def _email_verification_recovery_identifier(request) -> str:
+    email = (request.POST.get("email", "") or "").strip().lower()
+    if email:
+        return f"email:{email}"
+    return f"missing-email:{_get_client_ip(request)}"
+
+
+def _get_pending_email_verification_user(request, *, token: str | None = None) -> User | None:
+    if token:
+        token_user = get_user_from_email_verification_token(token, allow_expired=True)
+        if token_user is not None and not token_user.is_active and not token_user.email_verified:
+            return token_user
+
+    raw_user_id = request.session.get(EMAIL_VERIFICATION_RESEND_SESSION_KEY)
+    try:
+        user_id = int(raw_user_id)
+    except (TypeError, ValueError):
+        user_id = 0
+
+    if user_id > 0:
+        pending_user = User.objects.filter(
+            pk=user_id,
+            is_active=False,
+            email_verified=False,
+        ).first()
+        if pending_user is not None:
+            return pending_user
+
+    return None
+
+
+def _email_verification_pending_context(user: User, **extra) -> dict[str, object]:
+    context: dict[str, object] = {
+        "email": user.email,
+        "resend_available": True,
+        "resend_cooldown_seconds": EMAIL_VERIFICATION_RESEND_COOLDOWN_SECONDS,
+    }
+    context.update(extra)
+    return context
+
+
+def _email_verification_resend_cache_key(user_id: int) -> str:
+    return f"email-verification-resend:user:{user_id}"
+
+
+def _claim_email_verification_resend_cooldown(user_id: int) -> bool | None:
+    try:
+        return bool(
+            cache.add(
+                _email_verification_resend_cache_key(user_id),
+                "1",
+                timeout=EMAIL_VERIFICATION_RESEND_COOLDOWN_SECONDS,
+            )
+        )
+    except LOGIN_CACHE_INFRASTRUCTURE_EXCEPTIONS:
+        logger.error("Failed to claim email verification resend cooldown", exc_info=True)
+        return None
+
+
+def _release_email_verification_resend_cooldown(user_id: int) -> None:
+    try:
+        cache.delete(_email_verification_resend_cache_key(user_id))
+    except LOGIN_CACHE_INFRASTRUCTURE_EXCEPTIONS:
+        logger.error("Failed to release email verification resend cooldown", exc_info=True)
+
+
 @method_decorator(
     rate_limit_redirect(
         "registration_ip",
@@ -327,25 +425,357 @@ class RegisterView(CreateView):
     template_name = "accounts/register.html"
     success_url = reverse_lazy("home")
 
-    def form_valid(self, form):
-        user = prepare_signup_user(form=form)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["registration_email_quota_exhausted"] = is_email_send_quota_exhausted()
+        return context
+
+    @staticmethod
+    def _release_unattempted_email_reservation(
+        reservation: EmailSendReservation | None,
+        *,
+        delivery_attempted: bool,
+    ) -> None:
+        if reservation is None or delivery_attempted:
+            return
         try:
-            save_signup_user(user, transaction_atomic=transaction.atomic)
+            release_email_send_slot(reservation)
+        except Exception:
+            logger.error("Failed to release unused registration email quota reservation", exc_info=True)
+
+    def form_valid(self, form):
+        if is_email_send_quota_exhausted():
+            form.add_error(None, EMAIL_QUOTA_EXHAUSTED_MESSAGE)
+            return self.form_invalid(form)
+
+        user = prepare_signup_user(form=form)
+        user.is_active = False
+        user.email_verified = False
+        reservation: EmailSendReservation | None = None
+        delivery_attempted = False
+        try:
+            # Reserve the provider budget before the external SMTP call. The
+            # reservation is conservative: once delivery is attempted, the
+            # slot is kept even if the provider reports a transient failure.
+            reservation = reserve_email_send_slot()
+            with transaction.atomic():
+                save_signup_user(user, transaction_atomic=transaction.atomic)
+                token = build_email_verification_token(user)
+                delivery_attempted = True
+                send_email_verification_message(request=self.request, user=user, token=token)
+        except EmailQuotaExceeded:
+            form.add_error(None, EMAIL_QUOTA_EXHAUSTED_MESSAGE)
+            return self.form_invalid(form)
         except ManorNameConflictError:
+            self._release_unattempted_email_reservation(reservation, delivery_attempted=delivery_attempted)
             form.add_error("manor_name", "该庄园名称已被使用")
             return self.form_invalid(form)
         except IntegrityError:
+            self._release_unattempted_email_reservation(reservation, delivery_attempted=delivery_attempted)
             apply_registration_integrity_errors(
                 form=form,
                 user_model=User,
                 manor_model=Manor,
             )
             return self.form_invalid(form)
+        except EmailVerificationDeliveryError:
+            # The user transaction has rolled back. Keep the conservative
+            # reservation because an SMTP failure can happen after handoff.
+            form.add_error(None, EMAIL_VERIFICATION_DELIVERY_ERROR_MESSAGE)
+            return self.form_invalid(form)
+        except DatabaseError:
+            self._release_unattempted_email_reservation(reservation, delivery_attempted=delivery_attempted)
+            logger.error("Failed to create pending email-verified user", exc_info=True)
+            form.add_error(None, "注册失败，请稍后重试。")
+            return self.form_invalid(form)
         self.object = user
+        self.request.session[EMAIL_VERIFICATION_RESEND_SESSION_KEY] = self.object.pk
 
-        login(self.request, self.object)
-        messages.success(self.request, "注册成功，已自动登录。")
-        return redirect(self.success_url)
+        return render(
+            self.request,
+            "accounts/email_verification_pending.html",
+            _email_verification_pending_context(self.object, resend_token=token),
+        )
+
+
+@method_decorator(
+    rate_limit_redirect(
+        "email_verification_recovery_email",
+        limit=REGISTRATION_EMAIL_LIMIT,
+        window_seconds=REGISTRATION_RATE_WINDOW,
+        key_func=_email_verification_recovery_identifier,
+        redirect_url=cast(str, reverse_lazy("accounts:email_verification_recovery")),
+        error_message="该邮箱的验证邮件请求过于频繁，请稍后再试",
+    ),
+    name="dispatch",
+)
+@method_decorator(
+    rate_limit_redirect(
+        "email_verification_resend_ip",
+        limit=EMAIL_VERIFICATION_RESEND_IP_LIMIT,
+        window_seconds=EMAIL_VERIFICATION_RESEND_IP_WINDOW_SECONDS,
+        redirect_url=cast(str, reverse_lazy("accounts:email_verification_recovery")),
+        error_message="验证邮件请求过于频繁，请稍后再试",
+    ),
+    name="dispatch",
+)
+class EmailVerificationRecoveryView(View):
+    template_name = "accounts/email_verification_recovery.html"
+
+    def _render(self, request, form: EmailVerificationRecoveryForm, *, status: int = 200, **context):
+        context.setdefault("resend_cooldown_seconds", EMAIL_VERIFICATION_RESEND_COOLDOWN_SECONDS)
+        context.setdefault("recovery_quota_message", EMAIL_VERIFICATION_RECOVERY_QUOTA_MESSAGE)
+        context["form"] = form
+        return render(request, self.template_name, context, status=status)
+
+    def get(self, request):
+        return self._render(request, EmailVerificationRecoveryForm())
+
+    def post(self, request):
+        form = EmailVerificationRecoveryForm(request.POST)
+        if not form.is_valid():
+            return self._render(request, form)
+
+        if is_email_send_quota_exhausted():
+            return self._render(
+                request,
+                EmailVerificationRecoveryForm(),
+                recovery_quota_exhausted=True,
+            )
+
+        email = form.cleaned_data["email"]
+        try:
+            pending_user = User.objects.filter(
+                email__iexact=email,
+                is_active=False,
+                email_verified=False,
+            ).first()
+        except DatabaseError:
+            logger.error("Failed to look up email verification recovery user", exc_info=True)
+            return self._render(
+                request,
+                form,
+                recovery_error=EMAIL_VERIFICATION_RECOVERY_ERROR_MESSAGE,
+                status=503,
+            )
+
+        if pending_user is not None:
+            cooldown_claimed = _claim_email_verification_resend_cooldown(pending_user.pk)
+            if cooldown_claimed is None:
+                return self._render(
+                    request,
+                    form,
+                    recovery_error=EMAIL_VERIFICATION_RECOVERY_ERROR_MESSAGE,
+                    status=503,
+                )
+
+            if cooldown_claimed:
+                reservation: EmailSendReservation | None = None
+                delivery_attempted = False
+                try:
+                    reservation = reserve_email_send_slot()
+                    verification_token = build_email_verification_token(pending_user)
+                    delivery_attempted = True
+                    send_email_verification_message(
+                        request=request,
+                        user=pending_user,
+                        token=verification_token,
+                    )
+                except EmailQuotaExceeded:
+                    _release_email_verification_resend_cooldown(pending_user.pk)
+                    return self._render(
+                        request,
+                        EmailVerificationRecoveryForm(),
+                        recovery_quota_exhausted=True,
+                    )
+                except EmailVerificationDeliveryError:
+                    # Keep the quota reservation and cooldown after an SMTP
+                    # attempt because the provider may have accepted the message.
+                    logger.warning("Failed to deliver recovered email verification message", exc_info=True)
+                except (DatabaseError, ValueError):
+                    if not delivery_attempted:
+                        RegisterView._release_unattempted_email_reservation(
+                            reservation,
+                            delivery_attempted=False,
+                        )
+                        _release_email_verification_resend_cooldown(pending_user.pk)
+                    logger.error("Failed to recover email verification message", exc_info=True)
+                    return self._render(
+                        request,
+                        form,
+                        recovery_error=EMAIL_VERIFICATION_RECOVERY_ERROR_MESSAGE,
+                        status=503,
+                    )
+
+        return self._render(
+            request,
+            EmailVerificationRecoveryForm(),
+            recovery_submitted=True,
+        )
+
+
+@method_decorator(
+    rate_limit_redirect(
+        "email_verification_resend_ip",
+        limit=EMAIL_VERIFICATION_RESEND_IP_LIMIT,
+        window_seconds=EMAIL_VERIFICATION_RESEND_IP_WINDOW_SECONDS,
+        redirect_url=cast(str, reverse_lazy("accounts:register")),
+        error_message="验证邮件请求过于频繁，请稍后再试",
+    ),
+    name="dispatch",
+)
+class ResendEmailVerificationView(View):
+    def post(self, request):
+        token = (request.POST.get("token", "") or "").strip() or None
+        pending_user = _get_pending_email_verification_user(request, token=token)
+        if pending_user is None:
+            request.session.pop(EMAIL_VERIFICATION_RESEND_SESSION_KEY, None)
+            messages.info(request, "验证信息已失效，请重新注册。")
+            return redirect("accounts:register")
+
+        request.session[EMAIL_VERIFICATION_RESEND_SESSION_KEY] = pending_user.pk
+        cooldown_claimed = _claim_email_verification_resend_cooldown(pending_user.pk)
+        if cooldown_claimed is None:
+            return render(
+                request,
+                "accounts/email_verification_pending.html",
+                _email_verification_pending_context(
+                    pending_user,
+                    resend_error="系统繁忙，请稍后再试。",
+                    resend_token=token,
+                ),
+                status=503,
+            )
+        if not cooldown_claimed:
+            return render(
+                request,
+                "accounts/email_verification_pending.html",
+                _email_verification_pending_context(
+                    pending_user,
+                    resend_error=EMAIL_VERIFICATION_RESEND_COOLDOWN_MESSAGE,
+                    resend_token=token,
+                ),
+            )
+
+        reservation: EmailSendReservation | None = None
+        delivery_attempted = False
+        try:
+            reservation = reserve_email_send_slot()
+            verification_token = build_email_verification_token(pending_user)
+            delivery_attempted = True
+            send_email_verification_message(
+                request=request,
+                user=pending_user,
+                token=verification_token,
+            )
+        except EmailQuotaExceeded:
+            _release_email_verification_resend_cooldown(pending_user.pk)
+            return render(
+                request,
+                "accounts/email_verification_pending.html",
+                _email_verification_pending_context(
+                    pending_user,
+                    resend_quota_exhausted=True,
+                    resend_token=token,
+                ),
+            )
+        except EmailVerificationDeliveryError:
+            # Keep the reservation and cooldown after an SMTP attempt because
+            # the provider may have accepted the message before reporting an error.
+            return render(
+                request,
+                "accounts/email_verification_pending.html",
+                _email_verification_pending_context(
+                    pending_user,
+                    resend_error=EMAIL_VERIFICATION_RESEND_ERROR_MESSAGE,
+                    resend_token=verification_token,
+                ),
+            )
+        except (DatabaseError, ValueError):
+            self._release_unattempted_resend_state(
+                pending_user_id=pending_user.pk,
+                reservation=reservation,
+                delivery_attempted=delivery_attempted,
+            )
+            logger.error("Failed to resend email verification message", exc_info=True)
+            return render(
+                request,
+                "accounts/email_verification_pending.html",
+                _email_verification_pending_context(
+                    pending_user,
+                    resend_error="发送验证邮件失败，请稍后重试。",
+                    resend_token=token,
+                ),
+            )
+
+        return render(
+            request,
+            "accounts/email_verification_pending.html",
+            _email_verification_pending_context(
+                pending_user,
+                resend_success=True,
+                resend_token=verification_token,
+            ),
+        )
+
+    @staticmethod
+    def _release_unattempted_resend_state(
+        *,
+        pending_user_id: int,
+        reservation: EmailSendReservation | None,
+        delivery_attempted: bool,
+    ) -> None:
+        if delivery_attempted:
+            return
+        RegisterView._release_unattempted_email_reservation(
+            reservation,
+            delivery_attempted=False,
+        )
+        _release_email_verification_resend_cooldown(pending_user_id)
+
+
+class VerifyEmailView(View):
+    def get(self, request, token: str):
+        user = get_user_from_email_verification_token(token)
+        if user is None:
+            resend_user = _get_pending_email_verification_user(request, token=token)
+            return render(
+                request,
+                "accounts/email_verification_result.html",
+                {
+                    "verified": False,
+                    "resend_user": resend_user,
+                    "resend_token": token if resend_user is not None else None,
+                    "resend_cooldown_seconds": EMAIL_VERIFICATION_RESEND_COOLDOWN_SECONDS,
+                },
+                status=400,
+            )
+
+        try:
+            with transaction.atomic():
+                verified_user = User.objects.select_for_update().get(pk=user.pk)
+                if verified_user.email_verified:
+                    request.session.pop(EMAIL_VERIFICATION_RESEND_SESSION_KEY, None)
+                    return render(
+                        request,
+                        "accounts/email_verification_result.html",
+                        {"already_verified": True},
+                    )
+                verified_user.email_verified = True
+                verified_user.is_active = True
+                verified_user.save(update_fields=("email_verified", "is_active"))
+        except User.DoesNotExist:
+            return render(
+                request,
+                "accounts/email_verification_result.html",
+                {"verified": False},
+                status=400,
+            )
+
+        request.session.pop(EMAIL_VERIFICATION_RESEND_SESSION_KEY, None)
+        login(request, verified_user)
+        messages.success(request, "邮箱验证成功，欢迎进入庄园。")
+        return redirect("home")
 
 
 class ProfileView(LoginRequiredMixin, TemplateView):

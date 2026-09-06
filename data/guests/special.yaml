@@ -656,8 +656,8 @@ heroes:
         intellect: 17
         defense: 51
         agility: 42
-        luck: 62
-        base_hp: 50000
+        luck: 169
+        base_hp: 80000
     - key: task_simian_chuge_pengyue_boss
       name: 彭越·垓下
       archetype: military
@@ -671,8 +671,8 @@ heroes:
         intellect: 17
         defense: 51
         agility: 42
-        luck: 62
-        base_hp: 50000
+        luck: 162
+        base_hp: 80000
     - key: task_simian_chuge_yingbu_boss
       name: 英布·垓下
       archetype: military
@@ -686,8 +686,8 @@ heroes:
         intellect: 17
         defense: 51
         agility: 42
-        luck: 62
-        base_hp: 50000
+        luck: 162
+        base_hp: 80000
   red:
     - key: task_barbarian_vanguard
       name: 蛮族先锋统领
@@ -1138,13 +1138,13 @@ heroes:
       default_gender: male
       avatar: pubayi.png
       skills:
-        - city_felling_strike
+        - dragon_roar
       custom_stats:
         force: 246
         intellect: 116
         defense: 202
         agility: 142
-        luck: 90
+        luck: 220
         base_hp: 100000
     - key: task_guandu_yuanshao
       name: 袁绍

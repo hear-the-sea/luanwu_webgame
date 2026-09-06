@@ -11,7 +11,18 @@ from django.urls import reverse
 
 from core.exceptions import GuildValidationError
 from gameplay.services.manor.core import ensure_manor
-from guests.models import Guest, GuestArchetype, GuestRarity, GuestTemplate
+from guests.models import (
+    GearItem,
+    GearSlot,
+    GearTemplate,
+    Guest,
+    GuestArchetype,
+    GuestRarity,
+    GuestSkill,
+    GuestTemplate,
+    Skill,
+    SkillKind,
+)
 from guilds.models import Guild, GuildMember
 from guilds.services import hero_pool as hero_pool_service
 
@@ -152,6 +163,9 @@ def test_hero_pool_page_uses_guest_roster_avatar_markup_for_all_sections(
     _assert_region_uses_shared_avatar_markup(_get_ghp_region(soup, "slot-summary"))
     lineup_region = _get_ghp_region(soup, "lineup-scroll")
     _assert_region_uses_shared_avatar_markup(lineup_region)
+    slot_summary = _get_ghp_region(soup, "slot-summary")
+    detail_url = reverse("guilds:hero_pool_guest_detail", kwargs={"pool_entry_id": pool_entry.id})
+    assert slot_summary.select_one(f'[data-ghp-guest-detail-url="{detail_url}"]') is not None
     assert f"所属玩家：{user.manor.display_name}" in lineup_region.get_text(" ", strip=True)
     body = response.content.decode("utf-8")
     assert "tw-guild-guest-avatar" not in body
@@ -219,7 +233,9 @@ def test_hero_pool_page_loads_dedicated_assets(guild_member_client):
     response = client.get(reverse("guilds:hero_pool"))
 
     soup = _parse_hero_pool_html(response)
+    assert soup.select_one('link[href$="css/guest-detail.css"]') is not None
     assert soup.select_one('link[href$="css/guild-hero-pool.css"]') is not None
+    assert soup.select_one('script[src$="js/tooltip.js"]') is not None
     assert soup.select_one('script[src$="js/guild-hero-pool.js"]') is not None
 
 
@@ -234,7 +250,7 @@ def test_hero_pool_page_renders_filterable_roster_rows(
     member = GuildMember.objects.get(guild=guild, user=user)
 
     guest = _create_guest_with_avatar(user=user, key="ghp_filter_hooks", name="张辽")
-    hero_pool_service.submit_hero_pool_entry(member, guest_id=guest.id, slot_index=1)
+    entry = hero_pool_service.submit_hero_pool_entry(member, guest_id=guest.id, slot_index=1).entry
 
     response = client.get(reverse("guilds:hero_pool"))
 
@@ -250,6 +266,104 @@ def test_hero_pool_page_renders_filterable_roster_rows(
     assert roster_row.get("data-status-key") == "mine"
     assert guest.display_name.lower() in (roster_row.get("data-search-text") or "")
     assert page.select_one(".ghp-search-input") is not None
+    detail_url = reverse("guilds:hero_pool_guest_detail", kwargs={"pool_entry_id": entry.id})
+    assert page.select_one(f'[data-ghp-guest-detail-url="{detail_url}"]') is not None
+    assert soup.select_one("[data-ghp-guest-detail-modal]") is not None
+
+
+@pytest.mark.django_db
+def test_hero_pool_guest_detail_renders_read_only_guest_equipment_skills_and_stats(guild_member_client):
+    client, user, guild = guild_member_client
+    member = GuildMember.objects.get(guild=guild, user=user)
+    guest = _create_guest_with_avatar(user=user, key="ghp_detail_guest", name="门客详情测试")
+
+    skill = Skill.objects.create(
+        key="ghp_detail_skill",
+        name="破阵诀",
+        rarity=GuestRarity.PURPLE,
+        kind=SkillKind.PASSIVE,
+        description="提升门客的破阵能力。",
+    )
+    GuestSkill.objects.create(guest=guest, skill=skill, source=GuestSkill.Source.BOOK)
+    gear_template = GearTemplate.objects.create(
+        key="ghp_detail_weapon",
+        name="紫霄长剑",
+        slot=GearSlot.WEAPON,
+        rarity=GuestRarity.PURPLE,
+        attack_bonus=40,
+        extra_stats={"force": 6},
+    )
+    GearItem.objects.create(manor=user.manor, guest=guest, template=gear_template, level=12)
+    entry = hero_pool_service.submit_hero_pool_entry(member, guest_id=guest.id, slot_index=1).entry
+
+    response = client.get(reverse("guilds:hero_pool_guest_detail", kwargs={"pool_entry_id": entry.id}))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert "门客详情测试" in body
+    assert "基础" in body
+    assert "姓名" in body
+    assert "血量" in body
+    assert "所属玩家" in body
+    assert user.manor.display_name in body
+    assert "紫霄长剑" in body
+    assert "等级 12" not in body
+    assert "破阵诀" in body
+    assert "提升门客的破阵能力。" in body
+    detail = BeautifulSoup(body, "html.parser").select_one("[data-ghp-guest-detail]")
+    assert detail is not None
+    detail_board = detail.select_one(".detail-board")
+    assert detail_board is not None
+    attribute_card = detail.select_one(".ghp-detail-attribute-card")
+    equipment_card = detail.select_one(".ghp-detail-equipment-card")
+    assert attribute_card is not None
+    assert equipment_card is not None
+    board_children = detail_board.find_all(recursive=False)
+    assert board_children.index(attribute_card) < board_children.index(equipment_card)
+    assert [
+        row.find_all("span", recursive=False)[0].get_text(strip=True) for row in attribute_card.select(".stat-row")
+    ] == [
+        "武力",
+        "智力",
+        "防御",
+        "敏捷",
+        "运势",
+    ]
+    assert {element.get("data-attribute") for element in detail.select(".js-attribute-icons")} == {
+        "force",
+        "intellect",
+        "defense",
+        "agility",
+        "luck",
+    }
+    assert detail.select_one(".guest-equip-tooltip-trigger") is not None
+    assert detail.select_one(".guest-equip-tooltip-bubble") is not None
+    assert detail.select_one(".ghp-detail-equipment-tooltip") is None
+    assert "武力" in body
+    assert "攻击" in body
+    assert "门客概览" not in body
+    assert "战斗概览" not in body
+    assert "当前套装加成" not in body
+    assert "护院容量" not in body
+    assert "未分配属性点" not in body
+    assert "辞退门客" not in body
+    assert "学习技能" not in body
+    assert "卸下选中装备" not in body
+
+
+@pytest.mark.django_db
+def test_hero_pool_guest_detail_rejects_another_guild_entry(guild_member_client, django_user_model):
+    client, _user, guild = guild_member_client
+    other_user = django_user_model.objects.create_user(username="ghp_detail_other_guild", password="pass12345")
+    ensure_manor(other_user)
+    other_guild = Guild.objects.create(name="门客详情隔离帮", founder=other_user, is_active=True)
+    other_member = GuildMember.objects.create(guild=other_guild, user=other_user, position="leader")
+    other_guest = _create_guest_with_avatar(user=other_user, key="ghp_detail_other_guest", name="隔离门客")
+    entry = hero_pool_service.submit_hero_pool_entry(other_member, guest_id=other_guest.id, slot_index=1).entry
+
+    response = client.get(reverse("guilds:hero_pool_guest_detail", kwargs={"pool_entry_id": entry.id}))
+
+    assert response.status_code == 404
 
 
 @pytest.mark.django_db

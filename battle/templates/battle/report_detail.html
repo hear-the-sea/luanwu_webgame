@@ -174,13 +174,11 @@
                 <div class="battle-settlement-side enemy"><strong>{{ right_loss_title }}</strong></div>
 
                 <div class="battle-settlement-cell friendly">
-                    <span class="battle-table-label">阵亡护院</span>
+                    <span class="battle-table-label">阵亡单位</span>
                     <div class="battle-settlement-value">
-                        {% if loss_left.troops_lost %}
-                            {% for entry in loss_left.casualties %}
-                                {% if entry.lost > 0 %}
-                                    <span>{{ entry.label }} × {{ entry.lost }}</span>
-                                {% endif %}
+                        {% if loss_left_casualties %}
+                            {% for entry in loss_left_casualties %}
+                                <span>{{ entry.label }} × {{ entry.lost }}</span>
                             {% endfor %}
                         {% else %}
                             <span class="battle-table-empty">无</span>
@@ -188,13 +186,11 @@
                     </div>
                 </div>
                 <div class="battle-settlement-cell enemy">
-                    <span class="battle-table-label">阵亡护院</span>
+                    <span class="battle-table-label">阵亡单位</span>
                     <div class="battle-settlement-value">
-                        {% if loss_right.troops_lost %}
-                            {% for entry in loss_right.casualties %}
-                                {% if entry.lost > 0 %}
-                                    <span>{{ entry.label }} × {{ entry.lost }}</span>
-                                {% endif %}
+                        {% if loss_right_casualties %}
+                            {% for entry in loss_right_casualties %}
+                                <span>{{ entry.label }} × {{ entry.lost }}</span>
                             {% endfor %}
                         {% else %}
                             <span class="battle-table-empty">无</span>

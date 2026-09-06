@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}找回验证邮件{% endblock %}
+
+{% block content %}
+<section class="tw-auth-card tw-email-verification-card" aria-labelledby="email-verification-recovery-title">
+    <h1 id="email-verification-recovery-title">找回验证邮件</h1>
+    <p>注册后不小心关闭了验证页面？输入注册邮箱，我们会尝试重新发送验证邮件。</p>
+
+    {% if recovery_submitted %}
+        <div class="tw-auth-notice tw-auth-notice--success" role="status" aria-live="polite">
+            如果该邮箱对应未完成验证的账号，验证邮件会发送到该邮箱。请检查收件箱和垃圾邮件；如果刚刚请求过，请等待 {{ resend_cooldown_seconds }} 秒后再试。
+        </div>
+    {% endif %}
+    {% if recovery_error %}
+        <div class="tw-auth-notice tw-auth-notice--error" role="alert">
+            {{ recovery_error }}
+        </div>
+    {% endif %}
+    {% if recovery_quota_exhausted %}
+        <div class="tw-auth-notice tw-auth-notice--error" role="alert">
+            {{ recovery_quota_message }}
+        </div>
+    {% endif %}
+
+    {% if form.errors and not recovery_submitted and not recovery_quota_exhausted %}
+        <div class="tw-form-errors" role="alert">
+            请填写有效的邮箱地址。
+        </div>
+    {% endif %}
+
+    {% if not recovery_quota_exhausted %}
+        <form method="post" class="tw-recovery-form">
+            {% csrf_token %}
+            <div class="tw-form-field">
+                {{ form.email.label_tag }}
+                {{ form.email }}
+                {{ form.email.errors }}
+            </div>
+            <button type="submit" class="tw-btn-primary tw-register-submit">重新发送验证邮件</button>
+        </form>
+    {% endif %}
+
+    <p class="tw-resend-help">为保护账号安全，系统不会提示邮箱是否存在；每个邮箱和网络地址都有请求限制。</p>
+    <p class="tw-register-alt">
+        <a href="{% url 'accounts:login' %}">返回登录</a>
+        ·
+        <a href="{% url 'accounts:register' %}">返回注册</a>
+    </p>
+</section>
+{% endblock %}

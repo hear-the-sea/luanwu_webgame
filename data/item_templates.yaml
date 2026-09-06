@@ -1750,6 +1750,38 @@ items:
         - item_key: book_comrade_command
           weight: 1
 
+  - key: saiwai_equipment_box
+    name: 塞外装备箱
+    description: 从单于败军辎重中缴获的塞外宝箱，打开后必定获得一件紫色或橙色装备。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: true
+    price: 40000
+    storage_space: 100
+    is_usable: true
+    image: large.png
+    effect_payload:
+      gear_chance: 1
+      gear_choices:
+        - item_key: equip_xuanwukui
+          weight: 10
+        - item_key: equip_xuanwujia
+          weight: 10
+        - item_key: equip_xuanwuxue
+          weight: 10
+        - item_key: equip_xuanwuchui
+          weight: 10
+        - item_key: equip_jinlun
+          weight: 10
+        - item_key: equip_jinshezui
+          weight: 10
+        - item_key: equip_tiancanbaoyi
+          weight: 10
+        - item_key: equip_jinsirujia
+          weight: 2
+        - item_key: equip_hanxuebaoma
+          weight: 2
+
   # ---------- 打工宝箱 ----------
 
   - key: work_chest_small

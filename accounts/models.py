@@ -8,6 +8,7 @@ class User(AbstractUser):
     """Custom user for future gameplay/运营字段扩展。"""
 
     email = models.EmailField("email address", unique=True, null=True, blank=True)  # type: ignore[assignment]
+    email_verified = models.BooleanField("邮箱已验证", default=True, db_default=True, db_index=True)
     title = models.CharField("头衔", max_length=64, blank=True)
 
     class Meta:
@@ -36,3 +37,20 @@ class UserActiveSession(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user_id}:{self.session_key[:8]}"
+
+
+class EmailSendQuota(models.Model):
+    """Monthly registration-email send budget."""
+
+    month = models.DateField("月份", unique=True, db_index=True)
+    sent_count = models.PositiveIntegerField("已预占发信数", default=0)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    updated_at = models.DateTimeField("更新时间", auto_now=True)
+
+    class Meta:
+        verbose_name = "月度邮件额度"
+        verbose_name_plural = "月度邮件额度"
+        ordering = ("-month",)
+
+    def __str__(self) -> str:
+        return f"{self.month}:{self.sent_count}"

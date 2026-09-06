@@ -67,7 +67,7 @@ def test_public_registration_merges_and_queues_population_after_commit(
             REMOTE_ADDR="203.0.113.171",
         )
 
-    assert response.status_code == 302
+    assert response.status_code == 200
     assert not BotPopulationRecomputeDemand.objects.exists()
     assert queued == []
     assert len(callbacks) == 1
@@ -163,7 +163,7 @@ def test_periodic_roll_recovers_registration_when_post_commit_merge_fails(
             REMOTE_ADDR="203.0.113.172",
         )
 
-    assert response.status_code == 302
+    assert response.status_code == 200
     assert not BotPopulationRecomputeDemand.objects.exists()
 
     assert population_runtime.roll_virtual_player_population(limit=0) == 0

@@ -50,3 +50,42 @@ test("guest detail equipment tooltip wraps long set content inside the viewport"
   assert.match(tooltipRule, /min-width:\s*min\(240px,\s*calc\(100vw\s*-\s*40px\)\)\s*;/);
   assert.match(tooltipRule, /max-width:\s*min\(320px,\s*calc\(100vw\s*-\s*40px\)\)\s*;/);
 });
+
+test("guest detail stat labels stay on one line", () => {
+  const css = fs.readFileSync(path.join(__dirname, "../../css/guest-detail.css"), "utf8");
+  const labelRule = cssRuleBody(css, ".guest-detail .stat-row > span:first-child");
+
+  assertDeclaration(labelRule, "flex:\\s*0\\s+0\\s+auto");
+  assertDeclaration(labelRule, "white-space:\\s*nowrap");
+});
+
+test("guest detail attribute rows align label and value to the left", () => {
+  const css = fs.readFileSync(path.join(__dirname, "../../css/guest-detail.css"), "utf8");
+  const attributeRule = cssRuleBody(css, ".guest-detail .stat-row:has(.guest-attribute-tooltip-trigger)");
+
+  assertDeclaration(attributeRule, "justify-content:\\s*flex-start");
+  assertDeclaration(attributeRule, "gap:\\s*0\\.85rem");
+});
+
+test("guild guest equipment entries stay borderless", () => {
+  const css = fs.readFileSync(path.join(__dirname, "../../css/guild-hero-pool.css"), "utf8");
+  const lineRule = cssRuleBody(css, ".ghp-guest-detail .ghp-detail-equipment-card .equip-line");
+  const chipRule = cssRuleBody(css, ".ghp-guest-detail .ghp-detail-equipment-card .equip-chip");
+
+  assertDeclaration(lineRule, "border:\\s*0");
+  assertDeclaration(chipRule, "border:\\s*0");
+  assertDeclaration(chipRule, "background:\\s*transparent");
+});
+
+test("guild guest equipment collapses to one contained column on mobile", () => {
+  const css = fs.readFileSync(path.join(__dirname, "../../css/guild-hero-pool.css"), "utf8");
+
+  assert.match(
+    css,
+    /@media\s*\(max-width:\s*640px\)[\s\S]*?\.ghp-guest-detail \.ghp-detail-equipment-card \.equip-lines\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)\s*;/,
+  );
+  assert.match(
+    css,
+    /@media\s*\(max-width:\s*640px\)[\s\S]*?\.ghp-guest-detail \.ghp-detail-equipment-card \.equip-chip\s*\{[\s\S]*?text-overflow:\s*ellipsis\s*;/,
+  );
+});

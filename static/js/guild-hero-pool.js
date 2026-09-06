@@ -11,10 +11,87 @@
     const filterEmptyState = page.querySelector(".ghp-filter-empty");
     const slotTabs = Array.from(page.querySelectorAll("[data-ghp-slot-target]"));
     const slotCards = Array.from(page.querySelectorAll("[data-ghp-slot-card]"));
+    const detailModal = document.querySelector("[data-ghp-guest-detail-modal]");
+    const detailBody = document.getElementById("ghp-guest-detail-body");
+    const detailTriggers = Array.from(page.querySelectorAll("[data-ghp-guest-detail-url]"));
+    let detailRequestController = null;
+    let detailRequestSerial = 0;
 
-    if (!rows.length) {
+    if (!rows.length && !detailTriggers.length) {
       return;
     }
+
+    const setDetailState = (message, { error = false } = {}) => {
+      if (!detailBody) {
+        return;
+      }
+      detailBody.innerHTML = `<div class="ghp-guest-detail-state${error ? " ghp-guest-detail-state--error" : ""}" role="${error ? "alert" : "status"}">${message}</div>`;
+    };
+
+    const initGuestDetailTooltips = () => {
+      if (typeof window.initItemTooltip !== "function") {
+        return;
+      }
+      window.initItemTooltip({
+        key: "guild_hero_pool_guest_attributes",
+        cellSelector: ".ghp-guest-detail .guest-attribute-tooltip-trigger",
+        tooltipSelector: ".guest-attribute-tooltip-bubble",
+        contentAttribute: "data-tooltip-text",
+        trackPointer: false,
+      });
+      window.initItemTooltip({
+        key: "guild_hero_pool_guest_equipment",
+        cellSelector: ".ghp-guest-detail .guest-equip-tooltip-trigger",
+        tooltipSelector: ".guest-equip-tooltip-bubble",
+        trackPointer: false,
+      });
+    };
+
+    const openGuestDetail = async (trigger) => {
+      const detailUrl = trigger.dataset.ghpGuestDetailUrl || "";
+      if (!detailModal || !detailBody || !detailUrl) {
+        return;
+      }
+
+      detailRequestSerial += 1;
+      const requestSerial = detailRequestSerial;
+      detailRequestController?.abort();
+      detailRequestController = new AbortController();
+      setDetailState("门客情报加载中…");
+
+      const opened = typeof window.GuildModal?.open === "function"
+        ? window.GuildModal.open(detailModal, trigger)
+        : false;
+      if (!opened) {
+        detailModal.style.display = "flex";
+        detailModal.setAttribute("aria-hidden", "false");
+      }
+
+      try {
+        const response = await fetch(detailUrl, {
+          credentials: "same-origin",
+          headers: {
+            Accept: "text/html",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          signal: detailRequestController.signal,
+        });
+        if (!response.ok) {
+          throw new Error(`guest detail request failed: ${response.status}`);
+        }
+        const html = await response.text();
+        if (requestSerial !== detailRequestSerial) {
+          return;
+        }
+        detailBody.innerHTML = html;
+        initGuestDetailTooltips();
+      } catch (error) {
+        if (error?.name === "AbortError" || requestSerial !== detailRequestSerial) {
+          return;
+        }
+        setDetailState("门客情报加载失败，请关闭弹窗后刷新门客池再试。", { error: true });
+      }
+    };
 
     const setActiveFilter = (nextFilter) => {
       chips.forEach((chip) => {
@@ -83,6 +160,16 @@
       });
     });
 
+    detailTriggers.forEach((trigger) => {
+      if (trigger.dataset.ghpBound === "1") {
+        return;
+      }
+      trigger.dataset.ghpBound = "1";
+      trigger.addEventListener("click", () => {
+        void openGuestDetail(trigger);
+      });
+    });
+
     const joinableCount = Number.parseInt(page.dataset.filterCountJoinable || "", 10);
     if (Number.isFinite(joinableCount) && joinableCount <= 0) {
       setActiveFilter("all");
@@ -92,6 +179,10 @@
     applyFilters();
   };
 
-  document.addEventListener("DOMContentLoaded", initGuildHeroPool);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initGuildHeroPool, { once: true });
+  } else {
+    initGuildHeroPool();
+  }
   document.addEventListener("partial-nav:loaded", initGuildHeroPool);
 })();

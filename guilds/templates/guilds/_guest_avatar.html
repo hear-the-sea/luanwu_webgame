@@ -1,5 +1,20 @@
 <div class="guest-avatar">
-    {% if avatar_url %}
+    {% if detail_url %}
+    <button
+        type="button"
+        class="ghp-guest-avatar-trigger"
+        data-ghp-guest-detail-url="{{ detail_url }}"
+        data-guild-modal-open="ghp-guest-detail-modal"
+        aria-haspopup="dialog"
+        aria-label="查看{{ guest_name }}的装备、技能和属性"
+    >
+        {% if avatar_url %}
+        <img src="{{ avatar_url }}" alt="" loading="lazy" width="48" height="48">
+        {% else %}
+        <span aria-hidden="true">{{ guest_name|slice:":1"|default:"?" }}</span>
+        {% endif %}
+    </button>
+    {% elif avatar_url %}
     <img src="{{ avatar_url }}" alt="{{ guest_name }}" loading="lazy" width="48" height="48">
     {% else %}
     {{ guest_name|slice:":1"|default:"?" }}

@@ -81,6 +81,7 @@ HEALTH_CHECK_CELERY_WORKERS = False
 HEALTH_CHECK_CELERY_BEAT = False
 HEALTH_CHECK_CELERY_ROUNDTRIP = False
 SINGLE_SESSION_FAIL_OPEN = False
+EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
 if not _using_env_services():
     try:

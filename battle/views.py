@@ -23,6 +23,7 @@ from .view_helpers import (
     resolve_equipment_bonus_perspective,
     resolve_perspective,
     resolve_report_runtime_context,
+    serialize_casualty_rows,
     serialize_city_defense_rows,
     serialize_troops,
 )
@@ -117,6 +118,8 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
         context["defender_loss"] = enemy_loss
         context["loss_left"] = loss_left
         context["loss_right"] = loss_right
+        context["loss_left_casualties"] = serialize_casualty_rows(loss_left)
+        context["loss_right_casualties"] = serialize_casualty_rows(loss_right)
 
         side_context = build_side_labels(player_side=player_side, winner=report.winner)
         is_spectator = bool(side_context["is_spectator"])

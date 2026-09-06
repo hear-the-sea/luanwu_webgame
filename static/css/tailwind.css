@@ -177,9 +177,10 @@
   padding-bottom: 0.5rem;
   text-align: center;
   text-decoration-line: none;
-  transition-property: all;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
+  touch-action: manipulation;
 }
 
 .tw-btn-primary {
@@ -193,11 +194,18 @@
   padding-bottom: 0.5rem;
   text-align: center;
   text-decoration-line: none;
-  transition-property: all;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
+  touch-action: manipulation;
   border-color: var(--border-primary);
   color: var(--text-light);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tw-btn-primary {
+    transition-duration: 0.01ms;
+  }
 }
 
 .tw-btn-primary:hover {
@@ -225,12 +233,19 @@
   padding-bottom: 0.5rem;
   text-align: center;
   text-decoration-line: none;
-  transition-property: all;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
+  touch-action: manipulation;
   border-color: var(--border-light);
   background-color: var(--bg-secondary);
   color: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tw-btn-secondary {
+    transition-duration: 0.01ms;
+  }
 }
 
 .tw-btn-secondary:hover {
@@ -248,13 +263,20 @@
   padding-bottom: 0.5rem;
   text-align: center;
   text-decoration-line: none;
-  transition-property: all;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
+  touch-action: manipulation;
   border-color: var(--accent-red);
   background-color: var(--accent-red);
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tw-btn-danger {
+    transition-duration: 0.01ms;
+  }
 }
 
 .tw-btn-danger:hover {
@@ -320,7 +342,8 @@
   box-shadow: 0 8px 24px rgba(74, 38, 18, 0.2);
 }
 
-.tw-auth-card h2 {
+.tw-auth-card h1,
+  .tw-auth-card h2 {
   margin-top: 0px;
   margin-bottom: 1rem;
   border-bottom-width: 2px;
@@ -329,6 +352,7 @@
   font-size: 1.875rem;
   line-height: 2.25rem;
   color: var(--text-primary);
+  text-wrap: balance;
 }
 
 @media (max-width: 640px) {
@@ -357,6 +381,143 @@
 
 .tw-auth-card a:hover {
   text-decoration-line: underline;
+}
+
+.tw-auth-card--register {
+  width: 100%;
+  max-width: none;
+}
+
+.tw-register-layout {
+  margin-left: auto;
+  margin-right: auto;
+  display: grid;
+  width: 100%;
+  max-width: 72rem;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  align-items: stretch;
+}
+
+@media (max-width: 640px) {
+  .tw-work-card .tw-card-actions > .tw-register-hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.tw-register-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 0.75rem;
+  border-width: 3px;
+  border-color: var(--border-primary);
+  padding: 2.5rem;
+  min-height: 100%;
+  background: linear-gradient(145deg, #6B3410 0%, #8B4513 52%, #A56332 100%);
+  box-shadow: 0 8px 24px rgba(74, 38, 18, 0.2);
+  color: var(--text-light);
+}
+
+.tw-register-hero h1 {
+  margin-top: 0px;
+  margin-bottom: 0.75rem;
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  color: var(--text-light);
+  text-wrap: balance;
+}
+
+.tw-register-hero p {
+  margin-top: 0px;
+  text-align: left;
+  color: #F7E8C8;
+}
+
+.tw-register-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tw-register-field-full {
+  grid-column: 1 / -1;
+}
+
+.tw-register-submit {
+  width: 100%;
+}
+
+.tw-register-alt {
+  margin-bottom: 0px;
+}
+
+.tw-email-verification-card {
+  width: 100%;
+}
+
+.tw-auth-notice {
+  border-radius: 0.5rem;
+  border-width: 2px;
+  padding: 1rem;
+  line-height: 1.6;
+}
+
+.tw-auth-notice--success {
+  border-color: var(--accent-green);
+  background: #ECFDF5;
+  color: #065F46;
+}
+
+.tw-auth-notice--error {
+  border-color: var(--accent-red);
+  background: #FFEAEA;
+  color: var(--accent-red);
+}
+
+.tw-email-address {
+  margin-top: 0.75rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.tw-resend-form {
+  margin-top: 1.5rem;
+  border-top-width: 1px;
+  border-color: var(--border-light);
+  padding-top: 1.25rem;
+}
+
+.tw-resend-help {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+  .tw-register-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tw-register-hero {
+    min-height: auto;
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .tw-auth-card {
+    padding: 1.5rem;
+  }
+
+  .tw-register-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tw-register-field-full {
+    grid-column: auto;
+  }
 }
 
 /* ========== 表单组件 ========== */
@@ -398,8 +559,6 @@
   .tw-form-field select:focus,
   .tw-form-field textarea:focus {
   border-color: var(--accent-gold);
-  outline: 2px solid transparent;
-  outline-offset: 2px;
 }
 
 .tw-form-field input,
@@ -412,6 +571,16 @@
   .tw-form-field select:focus,
   .tw-form-field textarea:focus {
   box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.2);
+}
+
+.tw-form-field input:focus-visible,
+  .tw-form-field select:focus-visible,
+  .tw-form-field textarea:focus-visible,
+  .tw-btn-primary:focus-visible,
+  .tw-btn-secondary:focus-visible,
+  .tw-btn-danger:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 3px;
 }
 
 .tw-form-field small {
@@ -428,6 +597,15 @@
   padding: 1rem;
   color: var(--accent-red);
   background: #FFEAEA;
+}
+
+.tw-form-field .errorlist {
+  margin-top: 0.25rem;
+  list-style-type: none;
+  padding: 0px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--accent-red);
 }
 
 .tw-input {
@@ -6654,6 +6832,10 @@
   min-width: 80px;
 }
 
+.max-w-6xl {
+  max-width: 72rem;
+}
+
 .max-w-\[280px\] {
   max-width: 280px;
 }
@@ -6846,12 +7028,6 @@
   margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
 }
 
-.space-y-3 > :not([hidden]) ~ :not([hidden]) {
-  --tw-space-y-reverse: 0;
-  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));
-}
-
 .overflow-hidden {
   overflow: hidden;
 }
@@ -6876,6 +7052,10 @@
 
 .whitespace-nowrap {
   white-space: nowrap;
+}
+
+.text-wrap {
+  text-wrap: wrap;
 }
 
 .rounded {
@@ -7288,10 +7468,6 @@
   font-weight: 600;
 }
 
-.italic {
-  font-style: italic;
-}
-
 .leading-none {
   line-height: 1;
 }
@@ -7473,6 +7649,19 @@
  * 春秋乱世庄园主 - Tailwind 组件层
  * 使用 @apply 定义可复用的组件类，保持与原有类名兼容
  */
+
+@media (prefers-reduced-motion: reduce) {
+  .tw-btn,
+  .tw-btn-primary,
+  .tw-btn-secondary,
+  .tw-btn-danger {
+    transition-duration: 0.01ms;
+  }
+
+  .tw-btn-primary:hover {
+    transform: none;
+  }
+}
 
 /* ========== 移动端响应式样式 ========== */
 
@@ -7836,8 +8025,8 @@
 }
 
 @media (min-width: 640px) {
-  .sm\:grid-cols-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .sm\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .sm\:flex-row {
@@ -7852,9 +8041,5 @@
 @media (min-width: 768px) {
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .md\:grid-cols-3 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

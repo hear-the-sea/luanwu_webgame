@@ -200,6 +200,47 @@ def test_counterattack_against_arrow_tower_does_not_show_casualty_count():
     assert "敌方全军覆没" not in counter_text.get_text()
 
 
+def test_secondary_counterattack_against_arrow_tower_hides_actor_summary():
+    event = {
+        "side": "defender",
+        "order": 1,
+        "actor": "箭塔",
+        "target": "甲",
+        "damage": 100,
+        "skills": [],
+        "kind": "city_defense",
+        "kills": 0,
+        "target_defeated": False,
+        "additional_targets": [
+            {
+                "actor": "箭塔",
+                "target": "枪王",
+                "damage": 90,
+                "skills": [],
+                "kind": "city_defense",
+                "kills": 1,
+                "target_defeated": False,
+                "counter_damage": 17547,
+                "counter_defeated": True,
+                "actor_state": {
+                    "side": "defender",
+                    "status": "healthy",
+                    "status_label": "状态充足",
+                    "percent": 100,
+                },
+            }
+        ],
+    }
+
+    document = _render_attack_event(event)
+    counter_text = document.select_one(".counter-text")
+
+    assert counter_text is not None
+    assert "← 枪王爆发反戈一击（17547伤害），箭塔被摧毁" in counter_text.get_text()
+    assert counter_text.select_one(".event-unit-name") is None
+    assert counter_text.select_one(".battle-unit-state") is None
+
+
 @pytest.mark.django_db
 def test_battle_report_v2_city_defense_still_hides_exact_hp(client, django_user_model):
     user = django_user_model.objects.create_user(username="city_defense_report_v2", password="pass123")

@@ -28,9 +28,11 @@ def test_user_can_register(client):
             "password2": "StrongPass123!",
         },
     )
-    assert response.status_code == 302
+    assert response.status_code == 200
     user = User.objects.get(username="test-user")
     assert user.manor.name == "先锋庄园"
+    assert user.is_active is False
+    assert user.email_verified is False
 
 
 @pytest.mark.django_db
@@ -231,7 +233,7 @@ def test_register_page_uses_concise_hero_copy(client):
     assert response.status_code == 200
     content = response.content.decode()
     assert "建立你的庄园势力" in content
-    assert "完成注册后将自动登录，开启你的春秋霸业吧~" in content
+    assert "完成注册并验证邮箱后，开启你的春秋霸业吧~" in content
     assert "新玩家招募" not in content
     assert "初始赠送基础资源" not in content
     assert "地区将影响地图首页默认显示范围" not in content

@@ -1,0 +1,116 @@
+{% load guest_extras %}
+
+<div class="ghp-guest-detail guest-detail" data-ghp-guest-detail>
+    <div class="detail-board">
+        <div class="board-card avatar-card">
+            <div class="avatar-frame" aria-hidden="true">
+                <span class="avatar-corner avatar-corner-tl"></span>
+                <span class="avatar-corner avatar-corner-tr"></span>
+                <span class="avatar-corner avatar-corner-bl"></span>
+                <span class="avatar-corner avatar-corner-br"></span>
+                <div class="avatar-bubble">
+                    {% if guest.template.avatar %}
+                        <img src="{{ guest.template.avatar.url }}" alt="" loading="lazy" width="160" height="160">
+                    {% else %}
+                        {{ guest.display_name|first|default:"?" }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="board-card stats-card ghp-detail-basic-card">
+            <h3>基础</h3>
+            <div class="stat-rows">
+                <div class="stat-row">
+                    <span>姓名</span>
+                    <strong class="rarity-text {{ guest.rarity|rarity_class }}">{{ guest.display_name }}</strong>
+                </div>
+                <div class="stat-row">
+                    <span>等级</span>
+                    <strong>等级 {{ guest.level }}</strong>
+                </div>
+                <div class="stat-row">
+                    <span>血量</span>
+                    <strong>{{ health_stat.current }}/{{ health_stat.max }}</strong>
+                </div>
+                <div class="stat-row">
+                    <span>所属玩家</span>
+                    <strong>{{ owner_name }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="board-card stats-card ghp-detail-attribute-card">
+            <h3>属性</h3>
+            <div class="stat-rows">
+                {% for row in core_stat_rows %}
+                <div class="stat-row">
+                    <span>{{ row.label }}</span>
+                    <strong
+                        class="guest-attribute-tooltip-trigger"
+                        tabindex="0"
+                        aria-label="{{ row.label }} {{ row.value }}"
+                        data-tooltip-text="{{ row.label }}：{{ row.value }}"
+                        aria-describedby="ghp-attribute-tooltip-{{ row.key }}"
+                    >
+                        <span class="js-attribute-icons" data-attribute="{{ row.key }}">{{ row.value|attribute_icons }}</span>
+                        <span class="guest-attribute-tooltip-bubble" id="ghp-attribute-tooltip-{{ row.key }}" role="tooltip" aria-hidden="true"></span>
+                    </strong>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="board-card equip-card ghp-detail-equipment-card">
+            <h3>装备</h3>
+            <div class="equip-lines">
+                {% for panel in equipment_panels %}
+                <div class="equip-line{% if panel.value == "ornament" or panel.value == "device" %} wide{% endif %}">
+                    <span class="equip-line-title">{{ panel.label }}：</span>
+                    {% for item in panel.items %}
+                    <span
+                        class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger"
+                        tabindex="0"
+                        aria-label="{{ item.template.name }}"
+                        aria-describedby="ghp-gear-tooltip-{{ item.id }}"
+                    >
+                        {{ item.template.name }}
+                        <span class="guest-equip-tooltip-bubble" id="ghp-gear-tooltip-{{ item.id }}" role="tooltip" aria-hidden="true">
+                            {% with tooltip=item.template|gear_tooltip %}
+                                {% if tooltip %}{{ tooltip }}{% endif %}
+                            {% endwith %}
+                            {% if item.template.set_description %}
+                            <div>套装：{{ item.template.set_description }}</div>
+                            {% endif %}
+                        </span>
+                    </span>
+                    {% empty %}
+                    <span class="equip-placeholder">未装备</span>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <section class="board-card skills-card ghp-detail-skills-card">
+        <h2>门客技能（{{ skill_count }}/{{ skill_capacity }}）</h2>
+        <ul class="skill-list">
+            {% for slot in skill_slots %}
+            <li class="skill-slot">
+                <div>
+                    <strong>技能位 {{ slot.index }}：</strong>
+                    {% if slot.skill %}
+                    <span class="rarity-text {{ slot.skill.rarity|rarity_class }}">{{ slot.skill.name }}</span>
+                    <span> — {{ slot.skill.description|default:"暂无技能描述" }}</span>
+                    {% else %}
+                    <span>空闲</span>
+                    {% endif %}
+                </div>
+            </li>
+            {% empty %}
+            <li class="skill-slot"><span>暂无已学习技能</span></li>
+            {% endfor %}
+        </ul>
+    </section>
+</div>

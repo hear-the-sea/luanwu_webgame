@@ -1096,7 +1096,12 @@ missions:
       guest_bonus: 0.26
 
     drop_table:
-      silver: 30000
+      silver: 40000
+      experience_pineapple:
+        chance: 0.8
+        count: 10
+      saiwai_equipment_box: 0.2
+      book_dragon_roar: 0.005
 
     daily_limit: 3
 
@@ -1504,7 +1509,7 @@ missions:
   # 虎牢关群英战吕布：第一关
   # ========================================
   - key: sishui_huaxiong_chengwei
-    name: 飞将浮沉录·第一关：汜水关华雄逞威
+    name: 飞将浮沉录：汜水关华雄逞威
     display_order: 1001
     difficulty: advanced
     description: |
@@ -1544,7 +1549,7 @@ missions:
   # 虎牢关群英战吕布：第二关
   # ========================================
   - key: hulao_qunying_zhan_lvbu
-    name: 飞将浮沉录·第二关：虎牢关群英战吕布
+    name: 飞将浮沉录：虎牢关群英战吕布
     display_order: 1002
     difficulty: advanced
     description: |
@@ -1590,7 +1595,7 @@ missions:
   # 虎牢关群英战吕布：第三关
   # ========================================
   - key: baimenlou_mingyun_jueze
-    name: 飞将浮沉录·第三关：白门楼命运抉择
+    name: 飞将浮沉录：白门楼命运抉择
     display_order: 1003
     difficulty: advanced
     description: |

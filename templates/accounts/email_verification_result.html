@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}邮箱验证{% endblock %}
+
+{% block content %}
+<section class="tw-auth-card tw-email-verification-card" aria-labelledby="email-verification-result-title">
+    {% if already_verified %}
+        <h1 id="email-verification-result-title">邮箱已经验证</h1>
+        <p>该验证链接已经使用过，请直接登录。</p>
+    {% else %}
+        <h1 id="email-verification-result-title">验证链接无效</h1>
+        <p>链接可能已过期、已被使用，或地址不正确。</p>
+        {% if resend_user %}
+            <p>可以重新发送验证邮件到：</p>
+            <p class="tw-email-address" translate="no"><strong>{{ resend_user.email }}</strong></p>
+            <form method="post" action="{% url 'accounts:resend_email_verification' %}" class="tw-resend-form">
+                {% csrf_token %}
+                {% if resend_token %}
+                    <input type="hidden" name="token" value="{{ resend_token }}">
+                {% endif %}
+                <button type="submit" class="tw-btn-primary tw-register-submit">重新发送验证邮件</button>
+            </form>
+            <p class="tw-resend-help">同一账号 {{ resend_cooldown_seconds }} 秒内只能发送一次。</p>
+        {% else %}
+            <p>如果没有保存验证链接，可以通过注册邮箱重新发送验证邮件。</p>
+            <p><a href="{% url 'accounts:email_verification_recovery' %}">找回验证邮件</a></p>
+        {% endif %}
+    {% endif %}
+    <p class="tw-register-alt"><a href="{% url 'accounts:login' %}">返回登录</a></p>
+</section>
+{% endblock %}

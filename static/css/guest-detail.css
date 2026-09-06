@@ -172,6 +172,16 @@
   font-weight: 700;
 }
 
+.guest-detail .stat-row > span:first-child {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.guest-detail .stat-row:has(.guest-attribute-tooltip-trigger) {
+  justify-content: flex-start;
+  gap: 0.85rem;
+}
+
 .guest-detail .stat-row strong .attr-pack {
   display: inline-flex;
   align-items: center;

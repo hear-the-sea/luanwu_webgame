@@ -173,7 +173,38 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 LOGIN_URL = "accounts:login"
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_HOST = env("EMAIL_HOST")
+EMAIL_PORT = int(env("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = env("EMAIL_USE_TLS", "1") == "1"
+EMAIL_USE_SSL = env("EMAIL_USE_SSL", "0") == "1"
+EMAIL_TIMEOUT = max(1, int(env("EMAIL_TIMEOUT", "10")))
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "webgame@example.com")
+EMAIL_BACKEND = env(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.smtp.EmailBackend" if EMAIL_HOST else "django.core.mail.backends.console.EmailBackend",
+)
+
+# Registration verification emails are budgeted before delivery so concurrent
+# requests cannot reserve more than the configured monthly provider quota.
+EMAIL_MONTHLY_SEND_LIMIT = max(0, int(env("EMAIL_MONTHLY_SEND_LIMIT", "3000")))
+EMAIL_VERIFICATION_TOKEN_MAX_AGE_SECONDS = max(
+    60,
+    int(env("EMAIL_VERIFICATION_TOKEN_MAX_AGE_SECONDS", "86400")),
+)
+EMAIL_VERIFICATION_RESEND_COOLDOWN_SECONDS = max(
+    1,
+    int(env("EMAIL_VERIFICATION_RESEND_COOLDOWN_SECONDS", "60")),
+)
+EMAIL_VERIFICATION_RESEND_IP_LIMIT = max(
+    1,
+    int(env("EMAIL_VERIFICATION_RESEND_IP_LIMIT", "5")),
+)
+EMAIL_VERIFICATION_RESEND_IP_WINDOW_SECONDS = max(
+    1,
+    int(env("EMAIL_VERIFICATION_RESEND_IP_WINDOW_SECONDS", "3600")),
+)
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [

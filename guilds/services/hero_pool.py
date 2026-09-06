@@ -5,11 +5,15 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from django.db import transaction
-from django.db.models import F, Q
+from django.db.models import F, Prefetch, Q
 from django.utils import timezone
 
+from core.config import GUEST
 from core.exceptions import GuildMembershipError, GuildPermissionError, GuildValidationError
-from guests.models import Guest
+from guests.guest_combat_stats import resolve_guest_combat_stats
+from guests.models import GearItem, GearSlot, Guest, GuestSkill
+from guests.services.equipment_inventory import attach_troop_device_bonus_summaries
+from guests.services.equipment_stats import slot_capacity
 
 from .. import constants as guild_constants
 from ..models import Guild, GuildBattleLineupEntry, GuildHeroPoolEntry, GuildMember
@@ -430,6 +434,146 @@ def _build_filter_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
     }
 
 
+def _build_guest_detail_equipment_panels(gear_items: list[GearItem]) -> list[dict[str, Any]]:
+    equipment_by_slot: dict[str, list[GearItem]] = {slot.value: [] for slot in GearSlot}
+    for gear_item in gear_items:
+        equipment_by_slot.setdefault(gear_item.template.slot, []).append(gear_item)
+
+    panels: list[dict[str, Any]] = []
+    known_slots: set[str] = set()
+    for slot in GearSlot:
+        known_slots.add(slot.value)
+        panels.append(
+            {
+                "value": slot.value,
+                "label": slot.label,
+                "items": equipment_by_slot.get(slot.value, []),
+                "capacity": slot_capacity(slot.value),
+            }
+        )
+
+    for slot_value in sorted(set(equipment_by_slot) - known_slots):
+        panels.append(
+            {
+                "value": slot_value,
+                "label": slot_value or "其他",
+                "items": equipment_by_slot[slot_value],
+                "capacity": len(equipment_by_slot[slot_value]),
+            }
+        )
+    return panels
+
+
+def _build_guest_detail_skill_slots(guest_skill_records: list[GuestSkill]) -> list[dict[str, Any]]:
+    ordered_records = sorted(guest_skill_records, key=lambda record: (record.learned_at, record.id))
+    return [
+        {
+            "index": index + 1,
+            "record": ordered_records[index] if index < len(ordered_records) else None,
+            "skill": ordered_records[index].skill if index < len(ordered_records) else None,
+        }
+        for index in range(int(GUEST.MAX_SKILL_SLOTS))
+    ]
+
+
+def get_hero_pool_guest_detail_context(member: GuildMember, *, pool_entry_id: int) -> dict[str, Any] | None:
+    """Return read-only details for a valid guest currently visible in this guild's pool."""
+
+    try:
+        normalized_entry_id = int(pool_entry_id)
+    except (TypeError, ValueError):
+        return None
+    if normalized_entry_id <= 0:
+        return None
+
+    active_member_exists = GuildMember.objects.filter(
+        pk=member.pk,
+        guild_id=member.guild_id,
+        user_id=member.user_id,
+        is_active=True,
+    ).exists()
+    if not active_member_exists:
+        return None
+
+    entry = (
+        GuildHeroPoolEntry.objects.filter(
+            pk=normalized_entry_id,
+            guild_id=member.guild_id,
+            owner_member__is_active=True,
+            owner_member__guild_id=F("guild_id"),
+            source_guest__isnull=False,
+            source_guest__manor__user_id=F("owner_member__user_id"),
+        )
+        .select_related("owner_member__user__manor", "source_guest__template")
+        .prefetch_related(
+            Prefetch(
+                "source_guest__gear_items",
+                queryset=GearItem.objects.select_related("template").only(
+                    "id",
+                    "guest_id",
+                    "template_id",
+                    "template__key",
+                    "template__name",
+                    "template__slot",
+                    "template__rarity",
+                    "template__set_key",
+                    "template__set_description",
+                    "template__set_bonus",
+                    "template__attack_bonus",
+                    "template__defense_bonus",
+                    "template__extra_stats",
+                ),
+            ),
+            Prefetch(
+                "source_guest__guest_skills",
+                queryset=GuestSkill.objects.select_related("skill").only(
+                    "id",
+                    "guest_id",
+                    "skill_id",
+                    "source",
+                    "learned_at",
+                    "skill__key",
+                    "skill__name",
+                    "skill__rarity",
+                    "skill__description",
+                    "skill__kind",
+                ),
+            ),
+        )
+        .first()
+    )
+    if entry is None or entry.source_guest is None:
+        return None
+
+    guest = entry.source_guest
+    gear_items = list(guest.gear_items.all())
+    attach_troop_device_bonus_summaries(item.template for item in gear_items)
+    guest_skill_records = list(guest.guest_skills.all())
+    combat_stats = resolve_guest_combat_stats(guest)
+    current_hp = max(0, min(combat_stats.max_hp, int(guest.current_hp or 0)))
+
+    return {
+        "pool_entry": entry,
+        "guest": guest,
+        "owner_name": entry.owner_member.user.manor.display_name,
+        "health_stat": {
+            "current": current_hp,
+            "max": combat_stats.max_hp,
+        },
+        "core_stat_rows": [
+            {"key": "force", "label": "武力", "value": guest.force},
+            {"key": "intellect", "label": "智力", "value": guest.intellect},
+            {"key": "defense", "label": "防御", "value": guest.defense_stat},
+            {"key": "agility", "label": "敏捷", "value": guest.agility},
+            {"key": "luck", "label": "运势", "value": guest.luck},
+        ],
+        "equipment_panels": _build_guest_detail_equipment_panels(gear_items),
+        "skill_slots": _build_guest_detail_skill_slots(guest_skill_records),
+        "skill_count": len(guest_skill_records),
+        "skill_capacity": int(GUEST.MAX_SKILL_SLOTS),
+    }
+
+
 def get_hero_pool_page_context(member: GuildMember) -> dict[str, Any]:
     now = timezone.now()
     guild_id = member.guild_id
@@ -486,6 +630,7 @@ def get_hero_pool_page_context(member: GuildMember) -> dict[str, Any]:
     lineup_summary_rows = [
         {
             "lineup_entry_id": lineup.id,
+            "pool_entry_id": lineup.pool_entry_id,
             "slot_index": lineup.slot_index,
             "guest_name": lineup.pool_entry.source_guest.display_name,
             "guest_rarity": lineup.pool_entry.source_guest.rarity,

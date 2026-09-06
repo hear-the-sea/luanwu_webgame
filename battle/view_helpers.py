@@ -256,6 +256,35 @@ def serialize_equipment_bonus_rows(raw_rows: Any) -> list[dict[str, Any]]:
     return rows
 
 
+def serialize_casualty_rows(raw_loss: Any) -> list[dict[str, Any]]:
+    """Serialize positive casualty entries for the battle settlement table."""
+    if not isinstance(raw_loss, Mapping):
+        return []
+
+    raw_casualties = raw_loss.get("casualties")
+    if not isinstance(raw_casualties, list):
+        return []
+
+    rows: list[dict[str, Any]] = []
+    for raw_entry in raw_casualties:
+        if not isinstance(raw_entry, Mapping):
+            continue
+
+        try:
+            lost = int(raw_entry.get("lost", 0) or 0)
+        except (TypeError, ValueError):
+            continue
+        if lost <= 0:
+            continue
+
+        label = str(raw_entry.get("label") or raw_entry.get("name") or raw_entry.get("key") or "").strip()
+        if not label:
+            continue
+        rows.append({"label": label, "lost": lost})
+
+    return rows
+
+
 def resolve_equipment_bonus_perspective(
     report: "BattleReport",
     player_side: str,

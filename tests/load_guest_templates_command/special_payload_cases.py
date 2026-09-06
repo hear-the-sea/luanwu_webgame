@@ -47,7 +47,7 @@ def test_default_special_yaml_contains_task_specific_enemy_templates() -> None:
     assert "task_hulao_lvbu" in orange_keys
 
     barbarian_chanyu = _hero_entry_by_key(payload, "task_barbarian_chanyu")
-    assert barbarian_chanyu["skills"] == ["city_felling_strike"]
+    assert barbarian_chanyu["skills"] == ["dragon_roar"]
 
 
 def test_load_guest_templates_merges_default_arena_coop_special_skills(tmp_path: Path, monkeypatch) -> None:

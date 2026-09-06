@@ -28,10 +28,33 @@ class SignUpForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        for field in self.fields.values():
+        autocomplete_by_name = {
+            "username": "username",
+            "email": "email",
+            "manor_name": "off",
+            "region": "off",
+            "password1": "new-password",
+            "password2": "new-password",
+        }
+        described_by = {
+            "manor_name": "id_manor_name_help",
+            "region": "id_region_help",
+            "password1": "id_password1_help",
+        }
+        for name, field in self.fields.items():
             field.widget.attrs.update(
-                {"class": "input", "placeholder": field.label},
+                {
+                    "class": "input",
+                    "placeholder": f"{field.label}…",
+                    "autocomplete": autocomplete_by_name.get(name, "off"),
+                },
             )
+            if name in described_by:
+                field.widget.attrs["aria-describedby"] = described_by[name]
+            if name in {"username", "email"}:
+                field.widget.attrs["spellcheck"] = "false"
+            if name == "email":
+                field.widget.attrs["inputmode"] = "email"
 
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()
@@ -51,10 +74,36 @@ class SignUpForm(UserCreationForm):
         return name
 
 
+class EmailVerificationRecoveryForm(forms.Form):
+    email = forms.EmailField(label="注册邮箱", required=True)
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["email"].widget.attrs.update(
+            {
+                "class": "input",
+                "placeholder": "注册邮箱…",
+                "autocomplete": "email",
+                "spellcheck": "false",
+                "inputmode": "email",
+            },
+        )
+
+    def clean_email(self):
+        return self.cleaned_data["email"].strip().lower()
+
+
 class LoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        for field in self.fields.values():
+        autocomplete_by_name = {"username": "username", "password": "current-password"}
+        for name, field in self.fields.items():
             field.widget.attrs.update(
-                {"class": "input", "placeholder": field.label},
+                {
+                    "class": "input",
+                    "placeholder": f"{field.label}…",
+                    "autocomplete": autocomplete_by_name.get(name, "off"),
+                },
             )
+            if name == "username":
+                field.widget.attrs["spellcheck"] = "false"

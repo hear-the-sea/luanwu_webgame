@@ -208,6 +208,46 @@ def test_report_uses_reserved_equipment_and_settlement_tables_without_lineup_com
 
 
 @pytest.mark.django_db
+def test_report_renders_guest_only_casualties_as_units(client, django_user_model):
+    user = django_user_model.objects.create_user(username="guest_only_casualties", password="pass123")
+    manor = ensure_manor(user)
+    report = create_report(
+        manor=manor,
+        opponent_name="门客演武对手",
+        battle_type="task1",
+    )
+    report.losses = {
+        "attacker": {
+            "troops_lost": 0,
+            "casualties": [
+                {"key": "attacker_guest", "label": "阵亡门客甲", "lost": 1},
+                {"key": "zero_loss_troop", "label": "不应显示的零损失单位", "lost": 0},
+                {"key": "invalid_loss", "label": "不应显示的非法损失", "lost": "invalid"},
+            ],
+        },
+        "defender": {
+            "troops_lost": 0,
+            "casualties": [{"key": "defender_guest", "label": "阵亡门客乙", "lost": "2"}],
+        },
+    }
+    report.save(update_fields=["losses"])
+
+    assert client.login(username="guest_only_casualties", password="pass123")
+    response = client.get(reverse("battle:report_detail", kwargs={"pk": report.pk}))
+
+    assert response.status_code == 200
+    assert response.context["loss_left_casualties"] == [{"label": "阵亡门客甲", "lost": 1}]
+    assert response.context["loss_right_casualties"] == [{"label": "阵亡门客乙", "lost": 2}]
+
+    settlement_html = response.content.decode("utf-8").split('<div class="battle-settlement-table"', 1)[1]
+    assert settlement_html.count("阵亡单位") == 2
+    assert "阵亡门客甲 × 1" in settlement_html
+    assert "阵亡门客乙 × 2" in settlement_html
+    assert "不应显示的零损失单位" not in settlement_html
+    assert "不应显示的非法损失" not in settlement_html
+
+
+@pytest.mark.django_db
 def test_report_renders_persisted_troop_device_bonuses_and_five_copy_cap(client, django_user_model):
     user = django_user_model.objects.create_user(username="device_bonus_report", password="pass123")
     manor = ensure_manor(user)

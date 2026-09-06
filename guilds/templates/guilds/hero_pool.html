@@ -4,6 +4,7 @@
 {% block title %}帮会门客池 - {{ guild.name }}{% endblock %}
 
 {% block guild_extra_head %}
+<link rel="stylesheet" href="{% static 'css/guest-detail.css' %}">
 <link rel="stylesheet" href="{% static 'css/guild-hero-pool.css' %}">
 {% endblock %}
 
@@ -66,11 +67,21 @@
                             data-search-text="{{ row.search_text }}"
                         >
                             <div class="ghp-avatar-cell">
-                                {% include "guilds/_guest_avatar.html" with avatar_url=row.avatar_url guest_name=row.guest_name only %}
+                                {% url 'guilds:hero_pool_guest_detail' row.entry.id as guest_detail_url %}
+                                {% include "guilds/_guest_avatar.html" with avatar_url=row.avatar_url guest_name=row.guest_name detail_url=guest_detail_url only %}
                             </div>
                             <div class="ghp-guest-cell">
-                                <span class="ghp-guest-name rarity-text-{{ row.guest_rarity }}">{{ row.guest_name }}</span>
-                                <span class="ghp-guest-meta">等级 {{ row.guest_level }}</span>
+                                <button
+                                    type="button"
+                                    class="ghp-guest-trigger"
+                                    data-ghp-guest-detail-url="{% url 'guilds:hero_pool_guest_detail' row.entry.id %}"
+                                    data-guild-modal-open="ghp-guest-detail-modal"
+                                    aria-haspopup="dialog"
+                                    aria-label="查看{{ row.guest_name }}的装备、技能和属性"
+                                >
+                                    <span class="ghp-guest-name rarity-text-{{ row.guest_rarity }}">{{ row.guest_name }}</span>
+                                    <span class="ghp-guest-meta">等级 {{ row.guest_level }} · 查看详情</span>
+                                </button>
                             </div>
                             <div class="ghp-owner-cell">{{ row.owner_name }}</div>
                             <div class="ghp-status-cell">{{ row.status_label }}</div>
@@ -139,15 +150,23 @@
                         {% if slot.entry %}
                         <div class="tw-guild-hero-slot-meta">
                             <div class="tw-guild-guest-mini-card tw-guild-guest-mini-card--slot m-0">
+                                {% url 'guilds:hero_pool_guest_detail' slot.entry.id as slot_guest_detail_url %}
                                 {% if slot.entry.source_guest.template.avatar %}
-                                {% include "guilds/_guest_avatar.html" with avatar_url=slot.entry.source_guest.template.avatar.url guest_name=slot.entry.source_guest.display_name only %}
+                                {% include "guilds/_guest_avatar.html" with avatar_url=slot.entry.source_guest.template.avatar.url guest_name=slot.entry.source_guest.display_name detail_url=slot_guest_detail_url only %}
                                 {% else %}
-                                {% include "guilds/_guest_avatar.html" with guest_name=slot.entry.source_guest.display_name only %}
+                                {% include "guilds/_guest_avatar.html" with guest_name=slot.entry.source_guest.display_name detail_url=slot_guest_detail_url only %}
                                 {% endif %}
-                                <div class="tw-guild-guest-mini-meta">
-                                    <p class="tw-guild-guest-name rarity-text-{{ slot.entry.source_guest.rarity }}">{{ slot.entry.source_guest.display_name }}</p>
-                                    <p class="tw-guild-guest-sub">等级 {{ slot.entry.source_guest.level }} · {{ slot.entry.source_guest.get_gender_display }}</p>
-                                </div>
+                                <button
+                                    type="button"
+                                    class="ghp-guest-trigger tw-guild-guest-mini-meta"
+                                    data-ghp-guest-detail-url="{{ slot_guest_detail_url }}"
+                                    data-guild-modal-open="ghp-guest-detail-modal"
+                                    aria-haspopup="dialog"
+                                    aria-label="查看{{ slot.entry.source_guest.display_name }}的装备、技能和属性"
+                                >
+                                    <span class="tw-guild-guest-name rarity-text-{{ slot.entry.source_guest.rarity }}">{{ slot.entry.source_guest.display_name }}</span>
+                                    <span class="tw-guild-guest-sub">等级 {{ slot.entry.source_guest.level }} · {{ slot.entry.source_guest.get_gender_display }}</span>
+                                </button>
                             </div>
                             <p class="m-0 text-sm">
                                 替换冷却：
@@ -208,10 +227,20 @@
                     {% for row in lineup_summary_rows %}
                     <div class="ghp-lineup-row">
                         <div class="ghp-lineup-slot">#{{ row.slot_index }}</div>
-                        {% include "guilds/_guest_avatar.html" with avatar_url=row.avatar_url guest_name=row.guest_name only %}
+                        {% url 'guilds:hero_pool_guest_detail' row.pool_entry_id as lineup_guest_detail_url %}
+                        {% include "guilds/_guest_avatar.html" with avatar_url=row.avatar_url guest_name=row.guest_name detail_url=lineup_guest_detail_url only %}
                         <div class="ghp-lineup-meta">
-                            <span class="ghp-guest-name rarity-text-{{ row.guest_rarity }}">{{ row.guest_name }}</span>
-                            <span class="ghp-owner-note">所属玩家：{{ row.owner_name }}</span>
+                            <button
+                                type="button"
+                                class="ghp-guest-trigger"
+                                data-ghp-guest-detail-url="{% url 'guilds:hero_pool_guest_detail' row.pool_entry_id %}"
+                                data-guild-modal-open="ghp-guest-detail-modal"
+                                aria-haspopup="dialog"
+                                aria-label="查看{{ row.guest_name }}的装备、技能和属性"
+                            >
+                                <span class="ghp-guest-name rarity-text-{{ row.guest_rarity }}">{{ row.guest_name }}</span>
+                                <span class="ghp-owner-note">所属玩家：{{ row.owner_name }} · 查看详情</span>
+                            </button>
                         </div>
                         {% if member.can_manage %}
                         <form method="post" action="{% url 'guilds:lineup_remove' %}" class="ghp-lineup-action">
@@ -231,9 +260,44 @@
         </aside>
     </div>
 </section>
+
+<div
+    class="tw-modal-overlay ghp-guest-detail-overlay"
+    id="ghp-guest-detail-modal"
+    style="display: none;"
+    role="dialog"
+    aria-modal="false"
+    aria-hidden="true"
+    aria-labelledby="ghp-guest-detail-modal-title"
+    data-ghp-guest-detail-modal
+    data-guild-modal-backdrop-close
+>
+    <div class="tw-modal-content ghp-guest-detail-modal-content">
+        <div class="tw-modal-header">
+            <div>
+                <h2 id="ghp-guest-detail-modal-title">门客详情</h2>
+            </div>
+            <button
+                type="button"
+                class="tw-modal-close ghp-guest-detail-close"
+                data-guild-modal-close
+                data-guild-modal-initial-focus
+                aria-label="关闭门客详情"
+            >
+                关闭
+            </button>
+        </div>
+        <div class="tw-modal-body ghp-guest-detail-modal-body" id="ghp-guest-detail-body" aria-live="polite">
+            <div class="ghp-guest-detail-state" data-ghp-detail-state>
+                点击门客即可查看装备、技能和属性。
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
 {{ block.super }}
+<script src="{% static 'js/tooltip.js' %}"></script>
 <script src="{% static 'js/guild-hero-pool.js' %}"></script>
 {% endblock %}

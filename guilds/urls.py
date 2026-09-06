@@ -6,7 +6,14 @@ from .views.announcement import announcement_list, create_announcement
 from .views.blueprint_rewards import claim_blueprint_reward
 from .views.contribution import contribution_ranking, donate_resource, donation_logs, resource_logs
 from .views.core import create_guild, guild_detail, guild_hall, guild_info, guild_list, guild_search
-from .views.hero_pool import hero_pool_page, hero_pool_remove, hero_pool_submit, lineup_add, lineup_remove
+from .views.hero_pool import (
+    hero_pool_guest_detail,
+    hero_pool_page,
+    hero_pool_remove,
+    hero_pool_submit,
+    lineup_add,
+    lineup_remove,
+)
 from .views.membership import (
     application_list,
     apply_to_guild,
@@ -53,6 +60,7 @@ urlpatterns = [
     path("leave/", leave_guild, name="leave"),
     # 门客池
     path("hero-pool/", hero_pool_page, name="hero_pool"),
+    path("hero-pool/guest/<int:pool_entry_id>/", hero_pool_guest_detail, name="hero_pool_guest_detail"),
     path("hero-pool/submit/", hero_pool_submit, name="hero_pool_submit"),
     path("hero-pool/remove/", hero_pool_remove, name="hero_pool_remove"),
     path("hero-pool/lineup/add/", lineup_add, name="lineup_add"),

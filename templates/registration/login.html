@@ -4,8 +4,8 @@
 
 {% block content %}
 <section class="tw-auth-card">
-    <h2>登录控制台</h2>
-    <p class="!mt-0 !mb-4">输入账号即可管理庄园与门客。</p>
+    <h2>登录游戏账号</h2>
+    <p class="!mt-0 !mb-4">登入游戏开启你的春秋乱世之旅。</p>
 
     {% if form.errors %}
         <div class="tw-form-errors">
@@ -27,6 +27,7 @@
         </div>
         <button type="submit" class="tw-btn-primary">登录</button>
     </form>
+    <p>未收到验证邮件？<a href="{% url 'accounts:email_verification_recovery' %}">重新发送验证邮件</a></p>
     <p>还没有账号？<a href="{% url 'accounts:register' %}">立即注册</a></p>
 </section>
 {% endblock %}

@@ -35,7 +35,14 @@ from gameplay.services.virtual_player_core.safety_metrics import (
     start_maintenance_attempts,
 )
 
-NOW = datetime(2026, 7, 28, 8, 1, 23, 456789, tzinfo=UTC)
+# Keep metric fixtures inside the provider's raw-event retention window while
+# retaining a stable timestamp for all assertions in this module.
+NOW = (datetime.now(UTC) - timedelta(days=2)).replace(
+    hour=8,
+    minute=1,
+    second=23,
+    microsecond=456789,
+)
 
 
 @pytest.mark.django_db

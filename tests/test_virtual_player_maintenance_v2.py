@@ -95,7 +95,14 @@ from guests.models import (
 )
 from guests.services.loyalty import apply_injury_loyalty_decay, grant_battle_victory_loyalty
 
-FIXED_NOW = datetime(2026, 7, 28, 8, 0, tzinfo=UTC)
+# Safety heartbeat fixtures must remain inside the provider's raw-event
+# retention window; the relative anchor stays stable for this test module.
+FIXED_NOW = (datetime.now(UTC) - timedelta(days=2)).replace(
+    hour=8,
+    minute=0,
+    second=0,
+    microsecond=0,
+)
 
 
 def test_technology_quote_rejection_reasons_are_preserved(monkeypatch) -> None:

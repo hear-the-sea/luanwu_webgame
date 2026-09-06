@@ -109,7 +109,7 @@ def test_baimenlou_has_three_direct_recruitment_scrolls():
 
     assert mission["difficulty"] == "advanced"
     assert mission["daily_limit"] == 1
-    assert mission["name"] == "飞将浮沉录·第三关：白门楼命运抉择"
+    assert mission["name"] == "飞将浮沉录：白门楼命运抉择"
 
     for scroll_key, guest_key in HULAO_SCROLL_TARGETS.items():
         scroll = items[scroll_key]

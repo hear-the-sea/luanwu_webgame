@@ -5,77 +5,84 @@
 {% block content %}
 <section class="tw-register-layout">
     <aside class="tw-register-hero">
-        <h2>建立你的庄园势力</h2>
-        <p>完成注册后将自动登录，开启你的春秋霸业吧~</p>
+        <h1>建立你的庄园势力</h1>
+        <p>完成注册并验证邮箱后，开启你的春秋霸业吧~</p>
     </aside>
 
     <section class="tw-auth-card tw-auth-card--register">
         <h2>创建新账号</h2>
-        <p class="tw-register-subtitle">填写下列信息后即可进入游戏。</p>
+        <p class="tw-register-subtitle">填写下列信息后，请先验证邮箱再进入游戏。</p>
 
         {% if form.non_field_errors %}
-            <div class="tw-form-errors">
+            <div class="tw-form-errors" role="alert">
                 {% for err in form.non_field_errors %}
                     <p class="m-0">{{ err }}</p>
                 {% endfor %}
             </div>
         {% elif form.errors %}
-            <div class="tw-form-errors">
+            <div class="tw-form-errors" role="alert">
                 请修正表单中的错误后再提交。
             </div>
         {% endif %}
 
-        <form method="post" class="tw-register-form">
-            {% csrf_token %}
-            <div class="tw-register-grid">
-                <div class="tw-form-field">
-                    {{ form.username.label_tag }}
-                    {{ form.username }}
-                    {{ form.username.errors }}
-                </div>
-
-                <div class="tw-form-field">
-                    {{ form.email.label_tag }}
-                    {{ form.email }}
-                    {{ form.email.errors }}
-                </div>
-
-                <div class="tw-form-field">
-                    {{ form.manor_name.label_tag }}
-                    {{ form.manor_name }}
-                    {% if form.manor_name.help_text %}
-                        <small>{{ form.manor_name.help_text }}</small>
-                    {% endif %}
-                    {{ form.manor_name.errors }}
-                </div>
-
-                <div class="tw-form-field">
-                    {{ form.region.label_tag }}
-                    {{ form.region }}
-                    {% if form.region.help_text %}
-                        <small>{{ form.region.help_text }}</small>
-                    {% endif %}
-                    {{ form.region.errors }}
-                </div>
-
-                <div class="tw-form-field tw-register-field-full">
-                    {{ form.password1.label_tag }}
-                    {{ form.password1 }}
-                    {% if form.password1.help_text %}
-                        <small>{{ form.password1.help_text }}</small>
-                    {% endif %}
-                    {{ form.password1.errors }}
-                </div>
-
-                <div class="tw-form-field tw-register-field-full">
-                    {{ form.password2.label_tag }}
-                    {{ form.password2 }}
-                    {{ form.password2.errors }}
-                </div>
+        {% if registration_email_quota_exhausted %}
+            <div class="tw-form-errors" role="alert">
+                本月注册验证邮件额度已用尽，注册暂时关闭，请下月再试。
             </div>
+        {% else %}
+            <form method="post" class="tw-register-form">
+                {% csrf_token %}
+                <div class="tw-register-grid">
+                    <div class="tw-form-field">
+                        {{ form.username.label_tag }}
+                        {{ form.username }}
+                        {{ form.username.errors }}
+                    </div>
 
-            <button type="submit" class="tw-btn-primary tw-register-submit">注册并登录</button>
-        </form>
+                    <div class="tw-form-field">
+                        {{ form.email.label_tag }}
+                        {{ form.email }}
+                        {{ form.email.errors }}
+                    </div>
+
+                    <div class="tw-form-field">
+                        {{ form.manor_name.label_tag }}
+                        {{ form.manor_name }}
+                        {% if form.manor_name.help_text %}
+                            <small id="id_manor_name_help">{{ form.manor_name.help_text }}</small>
+                        {% endif %}
+                        {{ form.manor_name.errors }}
+                    </div>
+
+                    <div class="tw-form-field">
+                        {{ form.region.label_tag }}
+                        {{ form.region }}
+                        {% if form.region.help_text %}
+                            <small id="id_region_help">{{ form.region.help_text }}</small>
+                        {% endif %}
+                        {{ form.region.errors }}
+                    </div>
+
+                    <div class="tw-form-field tw-register-field-full">
+                        {{ form.password1.label_tag }}
+                        {{ form.password1 }}
+                        {% if form.password1.help_text %}
+                            <small id="id_password1_help">{{ form.password1.help_text }}</small>
+                        {% endif %}
+                        {{ form.password1.errors }}
+                    </div>
+
+                    <div class="tw-form-field tw-register-field-full">
+                        {{ form.password2.label_tag }}
+                        {{ form.password2 }}
+                        {{ form.password2.errors }}
+                    </div>
+                </div>
+
+                <button type="submit" class="tw-btn-primary tw-register-submit">注册并验证邮箱</button>
+            </form>
+        {% endif %}
+        <p class="tw-register-alt">未收到验证邮件？<a href="{% url 'accounts:email_verification_recovery' %}">重新发送验证邮件</a></p>
         <p class="tw-register-alt">已有账号？<a href="{% url 'accounts:login' %}">点击登录</a></p>
     </section>
 </section>
