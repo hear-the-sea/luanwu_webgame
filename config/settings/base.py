@@ -186,9 +186,30 @@ EMAIL_BACKEND = env(
     "django.core.mail.backends.smtp.EmailBackend" if EMAIL_HOST else "django.core.mail.backends.console.EmailBackend",
 )
 
-# Registration verification emails are budgeted before delivery so concurrent
-# requests cannot reserve more than the configured monthly provider quota.
-EMAIL_MONTHLY_SEND_LIMIT = max(0, int(env("EMAIL_MONTHLY_SEND_LIMIT", "3000")))
+# Registration verification emails are routed through Resend first and Brevo
+# second. The legacy EMAIL_* variables remain the Resend configuration so the
+# existing production environment keeps working without a secret migration.
+EMAIL_RESEND_HOST = env("EMAIL_RESEND_HOST", EMAIL_HOST)
+EMAIL_RESEND_PORT = int(env("EMAIL_RESEND_PORT", str(EMAIL_PORT)))
+EMAIL_RESEND_HOST_USER = env("EMAIL_RESEND_HOST_USER", EMAIL_HOST_USER)
+EMAIL_RESEND_HOST_PASSWORD = env("EMAIL_RESEND_HOST_PASSWORD", EMAIL_HOST_PASSWORD)
+EMAIL_RESEND_USE_TLS = env("EMAIL_RESEND_USE_TLS", "1" if EMAIL_USE_TLS else "0") == "1"
+EMAIL_RESEND_USE_SSL = env("EMAIL_RESEND_USE_SSL", "1" if EMAIL_USE_SSL else "0") == "1"
+EMAIL_RESEND_DAILY_SEND_LIMIT = max(0, int(env("EMAIL_RESEND_DAILY_SEND_LIMIT", "100")))
+
+EMAIL_BREVO_HOST = env("BREVO_EMAIL_HOST", env("EMAIL_BREVO_HOST"))
+EMAIL_BREVO_PORT = int(env("BREVO_EMAIL_PORT", env("EMAIL_BREVO_PORT", "587")))
+EMAIL_BREVO_HOST_USER = env("BREVO_EMAIL_HOST_USER", env("EMAIL_BREVO_HOST_USER"))
+EMAIL_BREVO_HOST_PASSWORD = env("BREVO_EMAIL_HOST_PASSWORD", env("EMAIL_BREVO_HOST_PASSWORD"))
+EMAIL_BREVO_USE_TLS = env("BREVO_EMAIL_USE_TLS", env("EMAIL_BREVO_USE_TLS", "1")) == "1"
+EMAIL_BREVO_USE_SSL = env("BREVO_EMAIL_USE_SSL", env("EMAIL_BREVO_USE_SSL", "0")) == "1"
+EMAIL_BREVO_DAILY_SEND_LIMIT = max(
+    0, int(env("BREVO_EMAIL_DAILY_SEND_LIMIT", env("EMAIL_BREVO_DAILY_SEND_LIMIT", "300")))
+)
+
+# Reservations are counted once per logical email across both providers. The
+# daily counters use the project's Asia/Shanghai local date.
+EMAIL_MONTHLY_SEND_LIMIT = max(0, int(env("EMAIL_MONTHLY_SEND_LIMIT", "4000")))
 EMAIL_VERIFICATION_TOKEN_MAX_AGE_SECONDS = max(
     60,
     int(env("EMAIL_VERIFICATION_TOKEN_MAX_AGE_SECONDS", "86400")),

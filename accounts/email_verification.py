@@ -8,6 +8,7 @@ from django.core.mail import send_mail
 from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.urls import reverse
 
+from .email_providers import EMAIL_PROVIDER_RESEND, get_email_provider_connection
 from .models import User
 
 logger = logging.getLogger(__name__)
@@ -53,7 +54,13 @@ def verification_url(request, token: str) -> str:
     return request.build_absolute_uri(reverse("accounts:verify_email", kwargs={"token": token}))
 
 
-def send_email_verification_message(*, request, user: User, token: str) -> int:
+def send_email_verification_message(
+    *,
+    request,
+    user: User,
+    token: str,
+    provider: str = EMAIL_PROVIDER_RESEND,
+) -> int:
     if not user.email:
         raise ValueError("email verification requires a user email")
 
@@ -73,9 +80,14 @@ def send_email_verification_message(*, request, user: User, token: str) -> int:
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
             fail_silently=False,
+            connection=get_email_provider_connection(provider),
         )
     except Exception as exc:
-        logger.warning("Failed to send registration email verification message", exc_info=True)
+        logger.warning(
+            "Failed to send registration email verification message via provider=%s",
+            provider,
+            exc_info=True,
+        )
         raise EmailVerificationDeliveryError("verification email delivery failed") from exc
 
     if sent_count != 1:

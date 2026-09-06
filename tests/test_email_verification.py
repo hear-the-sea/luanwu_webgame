@@ -11,9 +11,10 @@ from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from accounts.email_quota import quota_month
+from accounts.email_providers import EMAIL_PROVIDER_BREVO, EMAIL_PROVIDER_RESEND
+from accounts.email_quota import EmailQuotaExceeded, quota_month, release_email_send_slot, reserve_email_send_slot
 from accounts.forms import EmailVerificationRecoveryForm, SignUpForm
-from accounts.models import EmailSendQuota
+from accounts.models import EmailProviderDailyQuota, EmailSendQuota
 
 pytestmark = pytest.mark.django_db
 
@@ -444,3 +445,129 @@ def test_quota_month_uses_first_day_of_local_month():
     current_time = timezone.now() - timedelta(days=1)
 
     assert quota_month(current_time).day == 1
+
+
+@override_settings(
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    EMAIL_RESEND_DAILY_SEND_LIMIT=1,
+    EMAIL_BREVO_DAILY_SEND_LIMIT=1,
+    EMAIL_MONTHLY_SEND_LIMIT=10,
+)
+def test_provider_daily_quota_falls_back_from_resend_to_brevo(client):
+    first = reserve_email_send_slot(preferred_provider=EMAIL_PROVIDER_RESEND)
+    second = reserve_email_send_slot(preferred_provider=EMAIL_PROVIDER_RESEND)
+
+    assert first.provider == EMAIL_PROVIDER_RESEND
+    assert second.provider == EMAIL_PROVIDER_BREVO
+    assert EmailSendQuota.objects.get(month=quota_month()).sent_count == 2
+    assert (
+        EmailProviderDailyQuota.objects.get(
+            provider=EMAIL_PROVIDER_RESEND,
+            day=first.day,
+        ).sent_count
+        == 1
+    )
+    assert (
+        EmailProviderDailyQuota.objects.get(
+            provider=EMAIL_PROVIDER_BREVO,
+            day=second.day,
+        ).sent_count
+        == 1
+    )
+
+    with pytest.raises(EmailQuotaExceeded) as error:
+        reserve_email_send_slot(preferred_provider=EMAIL_PROVIDER_RESEND)
+    assert error.value.scope == "daily"
+
+
+@override_settings(
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    EMAIL_RESEND_DAILY_SEND_LIMIT=10,
+    EMAIL_BREVO_DAILY_SEND_LIMIT=10,
+    EMAIL_MONTHLY_SEND_LIMIT=10,
+)
+def test_resend_alternates_provider_and_persists_last_provider(client, django_user_model):
+    cache.clear()
+    client.post(
+        reverse("accounts:register"),
+        _registration_data(
+            username="email_provider_switch_user",
+            email="email-provider-switch@example.com",
+            manor_name="供应商切换庄园",
+        ),
+        REMOTE_ADDR="203.0.113.240",
+    )
+    pending_user = django_user_model.objects.get(username="email_provider_switch_user")
+    assert pending_user.email_verification_last_provider == EMAIL_PROVIDER_RESEND
+
+    client.post(
+        reverse("accounts:resend_email_verification"),
+        REMOTE_ADDR="203.0.113.241",
+    )
+    pending_user.refresh_from_db()
+    assert pending_user.email_verification_last_provider == EMAIL_PROVIDER_BREVO
+
+    cache.clear()
+    client.post(
+        reverse("accounts:resend_email_verification"),
+        REMOTE_ADDR="203.0.113.242",
+    )
+    pending_user.refresh_from_db()
+    assert pending_user.email_verification_last_provider == EMAIL_PROVIDER_RESEND
+    assert len(mail.outbox) == 3
+
+
+@override_settings(
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    EMAIL_RESEND_DAILY_SEND_LIMIT=1,
+    EMAIL_BREVO_DAILY_SEND_LIMIT=1,
+    EMAIL_MONTHLY_SEND_LIMIT=10,
+)
+def test_registration_stops_when_both_provider_daily_quotas_are_exhausted(client, django_user_model):
+    cache.clear()
+    for index in range(2):
+        response = client.post(
+            reverse("accounts:register"),
+            _registration_data(
+                username=f"daily_quota_user_{index}",
+                email=f"daily-quota-{index}@example.com",
+                manor_name=f"每日额度庄园{index}",
+            ),
+            REMOTE_ADDR=f"203.0.113.{250 + index}",
+        )
+        assert response.status_code == 200
+
+    blocked = client.post(
+        reverse("accounts:register"),
+        _registration_data(
+            username="daily_quota_blocked_user",
+            email="daily-quota-blocked@example.com",
+            manor_name="每日额度阻断庄园",
+        ),
+        REMOTE_ADDR="203.0.113.252",
+    )
+
+    assert blocked.status_code == 200
+    assert "今日验证邮件额度已用尽" in blocked.content.decode()
+    assert not django_user_model.objects.filter(username="daily_quota_blocked_user").exists()
+    assert len(mail.outbox) == 2
+
+
+@override_settings(
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    EMAIL_RESEND_DAILY_SEND_LIMIT=1,
+    EMAIL_BREVO_DAILY_SEND_LIMIT=1,
+    EMAIL_MONTHLY_SEND_LIMIT=10,
+)
+def test_releasing_unattempted_reservation_restores_both_counters():
+    reservation = reserve_email_send_slot(preferred_provider=EMAIL_PROVIDER_RESEND)
+    release_email_send_slot(reservation)
+
+    assert EmailSendQuota.objects.get(month=quota_month()).sent_count == 0
+    assert (
+        EmailProviderDailyQuota.objects.get(
+            provider=EMAIL_PROVIDER_RESEND,
+            day=reservation.day,
+        ).sent_count
+        == 0
+    )

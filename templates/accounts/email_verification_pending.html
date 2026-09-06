@@ -23,7 +23,7 @@
     {% endif %}
     {% if resend_quota_exhausted %}
         <div class="tw-auth-notice tw-auth-notice--error" role="alert">
-            本月注册验证邮件额度已用尽，暂时无法重新发送，请下月再试。
+            {{ resend_quota_message|default:"本月注册验证邮件额度已用尽，暂时无法重新发送，请下月再试。" }}
         </div>
     {% elif resend_available %}
         <form method="post" action="{% url 'accounts:resend_email_verification' %}" class="tw-resend-form">

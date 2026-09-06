@@ -27,7 +27,7 @@
 
         {% if registration_email_quota_exhausted %}
             <div class="tw-form-errors" role="alert">
-                本月注册验证邮件额度已用尽，注册暂时关闭，请下月再试。
+                {{ registration_email_quota_message }}
             </div>
         {% else %}
             <form method="post" class="tw-register-form">
