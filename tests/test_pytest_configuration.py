@@ -92,6 +92,21 @@ def test_makefile_exposes_read_only_format_and_static_checks():
     assert "check: format lint" not in makefile_content
 
 
+def test_makefile_integration_gate_has_bounded_diagnostics():
+    makefile_content = (ROOT_DIR / "Makefile").read_text(encoding="utf-8")
+
+    assert "INTEGRATION_PYTEST_ARGS ?= -vv --durations=30 --timeout=900" in makefile_content
+    assert "$(PYTHON) -m pytest -m integration $(INTEGRATION_PYTEST_ARGS)" in makefile_content
+
+
+def test_makefile_installs_dependencies_through_the_selected_python_interpreter():
+    makefile_content = (ROOT_DIR / "Makefile").read_text(encoding="utf-8")
+
+    assert "$(PYTHON) -m pip install -r requirements-dev.lock.txt" in makefile_content
+    assert "$(PYTHON) -m pip install -r requirements.lock.txt" in makefile_content
+    assert "\n\tpip install" not in makefile_content
+
+
 def test_ci_real_service_job_runs_complete_virtual_player_baseline_file():
     workflow_content = (ROOT_DIR / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
 
@@ -221,3 +236,26 @@ def test_makefile_exposes_javascript_quality_gate():
     assert "npm run check:js" in makefile_content
     assert "npm run test:js" in makefile_content
     assert "lint: lint-js" in makefile_content
+
+
+def test_ci_workflows_use_the_reproducible_development_lock():
+    expected_install = "python -m pip install -r requirements-dev.lock.txt"
+    for workflow_name in ("ci.yml", "virtual_player_readiness.yml"):
+        workflow_content = (ROOT_DIR / ".github" / "workflows" / workflow_name).read_text(encoding="utf-8")
+
+        assert expected_install in workflow_content
+        assert "python -m pip check" in workflow_content
+        assert "pip install -r requirements-dev.txt" not in workflow_content
+
+
+def test_ci_type_check_and_integration_diagnostics_are_pinned():
+    requirements_content = (ROOT_DIR / "requirements-dev.txt").read_text(encoding="utf-8")
+    workflow_content = (ROOT_DIR / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+
+    assert "mypy==1.19.1" in requirements_content
+    assert "django-stubs==5.2.9" in requirements_content
+    assert "django-stubs-ext==5.2.9" in requirements_content
+    assert "types-PyYAML==6.0.12.20250915" in requirements_content
+    assert "pytest-timeout==2.4.0" in requirements_content
+    assert "--durations=30" in workflow_content
+    assert "--timeout=900" in workflow_content

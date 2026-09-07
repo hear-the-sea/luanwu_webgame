@@ -33,12 +33,13 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.lock.txt ]; then
-            pip install -r requirements.lock.txt
+          if [ ! -f requirements-dev.lock.txt ]; then
+            echo "requirements-dev.lock.txt is required for CI" >&2
+            exit 1
           fi
-          pip install -r requirements-dev.txt
-          # Type-checking deps (keep them small/stable for CI).
-          pip install "mypy>=1.8" "django-stubs>=5.0" "django-stubs-ext>=5.0" "types-PyYAML"
+          python -m pip install -r requirements-dev.lock.txt
+          python -m pip check
+          python -m pip show mypy django-stubs django-stubs-ext pytest-timeout
 
       - name: Check migration drift
         env:
@@ -180,10 +181,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.lock.txt ]; then
-            pip install -r requirements.lock.txt
+          if [ ! -f requirements-dev.lock.txt ]; then
+            echo "requirements-dev.lock.txt is required for CI" >&2
+            exit 1
           fi
-          pip install -r requirements-dev.txt
+          python -m pip install -r requirements-dev.lock.txt
+          python -m pip check
 
       - name: Wait for MySQL and Redis
         run: |
@@ -208,7 +211,12 @@ jobs:
       - name: Integration Tests (MySQL + Redis)
         run: |
           set -o pipefail
-          python -m coverage run -m pytest -m integration -q 2>&1 | tee /tmp/integration-pytest.log
+          python -m coverage run -m pytest \
+            -m integration \
+            -vv \
+            --durations=30 \
+            --timeout=900 \
+            2>&1 | tee /tmp/integration-pytest.log
 
       - name: Integration Coverage
         run: |
@@ -301,10 +309,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.lock.txt ]; then
-            pip install -r requirements.lock.txt
+          if [ ! -f requirements-dev.lock.txt ]; then
+            echo "requirements-dev.lock.txt is required for CI" >&2
+            exit 1
           fi
-          pip install -r requirements-dev.txt
+          python -m pip install -r requirements-dev.lock.txt
+          python -m pip check
 
       - name: Install service probe CLI tools
         run: |

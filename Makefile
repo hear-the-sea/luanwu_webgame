@@ -152,6 +152,7 @@ REDIS_RESULT_URL ?= $(REDIS_BROKER_URL)
 REDIS_CHANNEL_URL ?= $(REDIS_URL)/1
 REDIS_CACHE_URL ?= $(REDIS_URL)/2
 REDIS_PASSWORD ?=
+INTEGRATION_PYTEST_ARGS ?= -vv --durations=30 --timeout=900
 
 REAL_SERVICE_TEST_ENV = DJANGO_TEST_USE_ENV_SERVICES=1 DJANGO_DB_ENGINE=django.db.backends.mysql DJANGO_DB_HOST=$(DJANGO_DB_HOST) DJANGO_DB_PORT=$(DJANGO_DB_PORT) DJANGO_DB_USER=$(REAL_SERVICES_TEST_DB_USER) DJANGO_DB_PASSWORD=$(REAL_SERVICES_TEST_DB_PASSWORD) DJANGO_DB_NAME=$(DJANGO_DB_NAME) REDIS_URL=$(REDIS_URL) REDIS_BROKER_URL=$(REDIS_BROKER_URL) REDIS_RESULT_URL=$(REDIS_RESULT_URL) REDIS_CHANNEL_URL=$(REDIS_CHANNEL_URL) REDIS_CACHE_URL=$(REDIS_CACHE_URL) REDIS_PASSWORD=$(REDIS_PASSWORD) CELERY_BROKER_URL=$(REDIS_BROKER_URL) CELERY_RESULT_BACKEND=$(REDIS_RESULT_URL)
 REAL_SERVICE_COMPOSE_ENV = REAL_SERVICES_MYSQL_PORT=$(REAL_SERVICES_MYSQL_PORT) REAL_SERVICES_REDIS_PORT=$(REAL_SERVICES_REDIS_PORT) DJANGO_DB_USER=$(DJANGO_DB_USER) DJANGO_DB_PASSWORD=$(DJANGO_DB_PASSWORD) DJANGO_DB_ROOT_PASSWORD=$(DJANGO_DB_ROOT_PASSWORD) DJANGO_DB_NAME=$(DJANGO_DB_NAME) REDIS_PASSWORD=$(REDIS_PASSWORD)
@@ -160,21 +161,21 @@ REAL_SERVICE_COMPOSE_ENV = REAL_SERVICES_MYSQL_PORT=$(REAL_SERVICES_MYSQL_PORT) 
 
 install:
 	@if [ -f requirements-dev.lock.txt ]; then \
-		pip install -r requirements-dev.lock.txt; \
+		$(PYTHON) -m pip install -r requirements-dev.lock.txt; \
 	elif [ -f requirements.lock.txt ]; then \
-		pip install -r requirements.lock.txt -r requirements-dev.txt; \
+		$(PYTHON) -m pip install -r requirements.lock.txt -r requirements-dev.txt; \
 	else \
-		pip install -r requirements-dev.txt; \
+		$(PYTHON) -m pip install -r requirements-dev.txt; \
 	fi
 
 install-unpinned:
-	pip install -r requirements-dev.txt
+	$(PYTHON) -m pip install -r requirements-dev.txt
 
 install-lock:
-	pip install -r requirements.lock.txt
+	$(PYTHON) -m pip install -r requirements.lock.txt
 
 install-dev-lock:
-	pip install -r requirements-dev.lock.txt
+	$(PYTHON) -m pip install -r requirements-dev.lock.txt
 
 lock:
 	$(PYTHON) scripts/generate_requirements_lock.py requirements.txt > requirements.lock.txt
@@ -324,7 +325,7 @@ test-gates:
 
 test-integration:
 	@$(REAL_SERVICE_TEST_ENV) $(MAKE) test-real-services-preflight
-	@$(REAL_SERVICE_TEST_ENV) $(PYTHON) -m pytest -m integration -q
+	@$(REAL_SERVICE_TEST_ENV) $(PYTHON) -m pytest -m integration $(INTEGRATION_PYTEST_ARGS)
 
 test-all:
 	$(PYTHON) -m pytest

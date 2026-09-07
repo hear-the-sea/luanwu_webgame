@@ -30,12 +30,17 @@ npm install
 make install-lock
 ```
 
-如果你先自行生成了 `requirements-dev.lock.txt`，再使用：
+仓库已提交 `requirements-dev.lock.txt`，普通的 `make install` 会优先使用它，保证本地与 CI 使用同一套开发依赖。
+
+如果有意升级开发依赖，修改 `requirements-dev.txt` 后重新生成并检查锁文件：
 
 ```bash
 make lock-dev
 make install-dev-lock
+python -m pip check
 ```
+
+不要只修改 `requirements-dev.txt` 而跳过锁文件更新；类型检查和真实服务测试都依赖锁定的开发工具版本。
 
 ### 2. 准备环境变量
 
@@ -179,6 +184,14 @@ DJANGO_TEST_USE_ENV_SERVICES=1 make test-gates
 
 ```bash
 DJANGO_TEST_USE_ENV_SERVICES=1 make test-integration
+```
+
+集成测试默认启用详细节点名、最慢测试统计和单测试 900 秒超时；如果需要临时调整，可覆盖 `INTEGRATION_PYTEST_ARGS`，但不要在 CI 中移除超时诊断：
+
+```bash
+DJANGO_TEST_USE_ENV_SERVICES=1 \
+INTEGRATION_PYTEST_ARGS='-vv --durations=30 --timeout=900' \
+make test-integration
 ```
 
 ### 静态检查
