@@ -26,6 +26,8 @@ pytestmark = [pytest.mark.integration, pytest.mark.capacity]
 
 _TASK_BATCH_LIMIT = 200
 _SCAN_PERIOD_SECONDS = 3_600.0
+_WORKER_SHUTDOWN_TIMEOUT_SECONDS = 60.0
+_HEARTBEAT_JOIN_TIMEOUT_SECONDS = 20.0
 _QUEUE_CASES = ((1, 200), (3, 500), (5, 1000))
 
 
@@ -129,16 +131,17 @@ def test_real_timer_maintenance_queue_preserves_fair_batches(
 
     dispatched_at: list[float] = []
     heartbeat_thread = threading.Thread(target=_heartbeat_worker, name="virtual-player-safety-heartbeat", daemon=True)
-    heartbeat_thread.start()
-    try:
-        with start_worker(
-            celery_app,
-            pool="solo",
-            concurrency=1,
-            loglevel="WARNING",
-            perform_ping_check=False,
-            queues=[queue_name],
-        ):
+    with start_worker(
+        celery_app,
+        pool="solo",
+        concurrency=1,
+        loglevel="WARNING",
+        perform_ping_check=False,
+        shutdown_timeout=_WORKER_SHUTDOWN_TIMEOUT_SECONDS,
+        queues=[queue_name],
+    ):
+        heartbeat_thread.start()
+        try:
             results = []
             for _index in range(task_count):
                 dispatched_at.append(monotonic())
@@ -149,9 +152,9 @@ def test_real_timer_maintenance_queue_preserves_fair_batches(
                     )
                 )
             result_values = [result.get(timeout=600) for result in results]
-    finally:
-        heartbeat_stop.set()
-        heartbeat_thread.join(timeout=20)
+        finally:
+            heartbeat_stop.set()
+            heartbeat_thread.join(timeout=_HEARTBEAT_JOIN_TIMEOUT_SECONDS)
 
     assert not heartbeat_thread.is_alive()
     assert heartbeat_errors == []

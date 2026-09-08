@@ -15,6 +15,8 @@ from gameplay.services.virtual_player_core.safety_provider import LateSafetyMetr
 pytestmark = [pytest.mark.integration]
 
 HOURLY_START = datetime(2026, 7, 27, 1, 0, tzinfo=UTC)
+# Keep the fixed fixture inside raw-event retention regardless of the current date.
+TEST_NOW = HOURLY_START + timedelta(hours=1, minutes=5)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -49,6 +51,7 @@ def test_atomic_finalizer_serializes_event_writer_on_real_database(monkeypatch) 
         occurred_at=HOURLY_START + timedelta(minutes=10),
         dimensions={},
         value=1,
+        retention_reference_at=TEST_NOW,
     )
     builder_holds_window = threading.Event()
     release_builder = threading.Event()
@@ -73,7 +76,7 @@ def test_atomic_finalizer_serializes_event_writer_on_real_database(monkeypatch) 
         close_old_connections()
         try:
             safety_monitor.finalize_due_safety_windows(
-                now=HOURLY_START + timedelta(hours=1, minutes=5),
+                now=TEST_NOW,
                 limit=1,
             )
         except BaseException as exc:  # pragma: no cover - asserted below
@@ -91,6 +94,7 @@ def test_atomic_finalizer_serializes_event_writer_on_real_database(monkeypatch) 
                 occurred_at=HOURLY_START + timedelta(minutes=20),
                 dimensions={},
                 value=1,
+                retention_reference_at=TEST_NOW,
             )
         except LateSafetyMetricEventError:
             pass

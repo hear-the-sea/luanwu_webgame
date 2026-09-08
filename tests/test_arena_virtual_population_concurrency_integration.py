@@ -216,7 +216,7 @@ def test_concurrent_arena_demands_share_last_population_slot(settings):
     ]
     for index, tournament in enumerate(tournaments):
         _add_real_arena_entry(tournament, f"arena_population_reference_{index}", attack=200, defense=200, max_hp=2_000)
-    demands = [reconcile_tournament_demand(tournament.id) for tournament in tournaments]
+    demands = [reconcile_tournament_demand(tournament.id, now=now) for tournament in tournaments]
     assert all(demand is not None for demand in demands)
     start = threading.Barrier(2)
     outcomes: list[int] = []
