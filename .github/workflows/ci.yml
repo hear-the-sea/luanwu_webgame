@@ -7,7 +7,7 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@v4
@@ -81,7 +81,7 @@ jobs:
           set -o pipefail
           {
             DJANGO_DB_ENGINE=django.db.backends.mysql DJANGO_DB_NAME=ci_deploy_check REDIS_PASSWORD=ci-test-dummy python manage.py check --deploy
-            python -m coverage run -m pytest -q -m "not integration and not evidence"
+            python -m coverage run -m pytest -q -m "not integration and not evidence" --durations=30 --timeout=900
           } 2>&1 | tee /tmp/unit-pytest.log
 
       - name: Unit Coverage
@@ -122,7 +122,21 @@ jobs:
   # ─────────────────────────────────────────────────────────────────────────
   integration-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    name: integration-tests (${{ matrix.suite }})
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: general
+            pytest_marker: "integration and not capacity"
+            pytest_keyword: "not virtual_player"
+          - suite: virtual-player
+            pytest_marker: "integration and not capacity"
+            pytest_keyword: virtual_player
+          - suite: capacity
+            pytest_marker: "integration and capacity"
+            pytest_keyword: ""
     env:
       DJANGO_DEBUG: "0"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
@@ -141,6 +155,8 @@ jobs:
       REDIS_RESULT_URL: "redis://127.0.0.1:6379/0"
       REDIS_CHANNEL_URL: "redis://127.0.0.1:6379/1"
       REDIS_CACHE_URL: "redis://127.0.0.1:6379/2"
+      PYTEST_MARKER: ${{ matrix.pytest_marker }}
+      PYTEST_KEYWORD: ${{ matrix.pytest_keyword }}
 
     services:
       mysql:
@@ -204,6 +220,7 @@ jobs:
           } 2>&1 | tee /tmp/integration-prepare.log
 
       - name: Virtual Player Baseline Audit
+        if: matrix.suite == 'virtual-player'
         run: |
           set -o pipefail
           python -m pytest tests/test_virtual_player_baseline_audit.py -q 2>&1 | tee /tmp/integration-baseline.log
@@ -211,29 +228,30 @@ jobs:
       - name: Integration Tests (MySQL + Redis)
         run: |
           set -o pipefail
+          pytest_args=(-m "$PYTEST_MARKER" -vv --durations=30 --timeout=900)
+          if [[ -n "$PYTEST_KEYWORD" ]]; then
+            pytest_args+=(-k "$PYTEST_KEYWORD")
+          fi
           python -m coverage run -m pytest \
-            -m integration \
-            -vv \
-            --durations=30 \
-            --timeout=900 \
-            2>&1 | tee /tmp/integration-pytest.log
+            "${pytest_args[@]}" \
+            2>&1 | tee "/tmp/integration-pytest-${{ matrix.suite }}.log"
 
       - name: Integration Coverage
         run: |
           set -o pipefail
-          python -m coverage report -m 2>&1 | tee /tmp/integration-coverage.log
-          python -m coverage xml -o coverage-integration.xml
+          python -m coverage report -m 2>&1 | tee "/tmp/integration-coverage-${{ matrix.suite }}.log"
+          python -m coverage xml -o "coverage-integration-${{ matrix.suite }}.xml"
 
       - name: Upload Integration Diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: integration-diagnostics-${{ github.sha }}
+          name: integration-diagnostics-${{ github.sha }}-${{ matrix.suite }}
           path: |
             /tmp/integration-prepare.log
             /tmp/integration-baseline.log
-            /tmp/integration-pytest.log
-            /tmp/integration-coverage.log
+            /tmp/integration-pytest-${{ matrix.suite }}.log
+            /tmp/integration-coverage-${{ matrix.suite }}.log
           if-no-files-found: ignore
           retention-days: 7
 
@@ -241,8 +259,8 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-integration
-          path: coverage-integration.xml
+          name: coverage-integration-${{ matrix.suite }}
+          path: coverage-integration-${{ matrix.suite }}.xml
 
   gate-d1:
     name: gate-d1

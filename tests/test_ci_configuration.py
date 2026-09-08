@@ -57,6 +57,22 @@ def test_integration_ci_uses_database_creation_credentials():
     assert integration_environment["DJANGO_SECURE_SSL_REDIRECT"] == "0"
 
 
+def test_integration_ci_partitions_general_virtual_player_and_capacity_suites():
+    workflow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
+    integration_job = workflow["jobs"]["integration-tests"]
+    matrix = integration_job["strategy"]["matrix"]["include"]
+
+    assert integration_job["strategy"]["fail-fast"] is False
+    assert integration_job["timeout-minutes"] == 60
+    assert {entry["suite"] for entry in matrix} == {"general", "virtual-player", "capacity"}
+    selectors = {entry["suite"]: (entry["pytest_marker"], entry["pytest_keyword"]) for entry in matrix}
+    assert selectors == {
+        "general": ("integration and not capacity", "not virtual_player"),
+        "virtual-player": ("integration and not capacity", "virtual_player"),
+        "capacity": ("integration and capacity", ""),
+    }
+
+
 def test_mypy_ci_loads_non_production_django_settings():
     workflow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
     type_check_step = next(

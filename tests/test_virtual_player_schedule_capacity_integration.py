@@ -21,7 +21,7 @@ from tests.test_virtual_player_maintenance_concurrency_integration import (
     _require_mysql,
 )
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.capacity]
 
 _SCAN_BATCH_LIMIT = 200
 _PROFILE_SCAN_PERIOD = timedelta(hours=1)
