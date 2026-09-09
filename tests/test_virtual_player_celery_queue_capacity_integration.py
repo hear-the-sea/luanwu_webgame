@@ -63,6 +63,7 @@ def test_real_timer_maintenance_queue_preserves_fair_batches(
         count=profile_count,
         now=now,
         policy=released_v2_policy,
+        include_guest=False,
     )
     profile_ids = {int(profile.id) for profile in profiles}
     record_safety_heartbeat("safety_monitor", now=now)
@@ -123,6 +124,18 @@ def test_real_timer_maintenance_queue_preserves_fair_batches(
     monkeypatch.setattr(
         "gameplay.tasks.virtual_players.maintain_due_virtual_players",
         _instrumented_maintenance,
+    )
+    # This probe measures the timer-maintenance queue owner.  Completion
+    # reconciliation and recruitment have independent capacity tests; running
+    # them for every queued task would add unrelated full-table scans between
+    # maintenance batches and make the 1000-profile envelope timeout on CI.
+    monkeypatch.setattr(
+        "gameplay.tasks.virtual_players.scan_virtual_player_maintenance_completions",
+        lambda **_kwargs: (),
+    )
+    monkeypatch.setattr(
+        "gameplay.tasks.virtual_players.schedule_due_virtual_recruitments",
+        lambda **_kwargs: 0,
     )
 
     queue_name = settings.CELERY_TIMER_MAINTENANCE_QUEUE

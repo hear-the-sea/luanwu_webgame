@@ -222,7 +222,7 @@ def _install_permissive_reference(monkeypatch) -> None:
     monkeypatch.setattr(maintenance, "effective_growth_control_snapshots", lambda **_kwargs: {})
 
 
-def _create_v2_profiles(*, count: int, now, policy) -> list[BotProfile]:
+def _create_v2_profiles(*, count: int, now, policy, include_guest: bool = True) -> list[BotProfile]:
     config = load_virtual_player_v2_config()
     assert config is not None
     guest_template = GuestTemplate.objects.order_by("key").first()
@@ -282,12 +282,13 @@ def _create_v2_profiles(*, count: int, now, policy) -> list[BotProfile]:
             maintenance_started_at=now - timedelta(days=1),
             last_planned_at=now,
         )
-        create_guest_from_template(
-            manor=manor,
-            template=guest_template,
-            rng=random.Random(seed),
-            grant_skills=False,
-        )
+        if include_guest:
+            create_guest_from_template(
+                manor=manor,
+                template=guest_template,
+                rng=random.Random(seed),
+                grant_skills=False,
+            )
         profiles.append(profile)
 
     profile_ids = [int(profile.id) for profile in profiles]
