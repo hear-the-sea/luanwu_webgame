@@ -81,6 +81,7 @@ class ManorAdmin(admin.ModelAdmin):
 
 @admin.register(ResourceEvent)
 class ResourceEventAdmin(admin.ModelAdmin):
+    list_select_related = ("manor__user",)
     list_display = (
         "id",
         "manor_link",

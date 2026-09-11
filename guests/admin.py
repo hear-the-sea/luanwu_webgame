@@ -58,11 +58,11 @@ class GuestTemplateAdmin(admin.ModelAdmin):
             .order_by("-_rarity_rank", "name")
         )
 
-    @admin.action(description="批量设置为可招募")
+    @admin.action(permissions=["change"], description="批量设置为可招募")
     def mark_recruitable(self, request, queryset):
         queryset.update(recruitable=True)
 
-    @admin.action(description="批量设置为不可招募")
+    @admin.action(permissions=["change"], description="批量设置为不可招募")
     def mark_unrecruitable(self, request, queryset):
         queryset.update(recruitable=False)
 
@@ -137,11 +137,11 @@ class RecruitmentCandidateAdmin(admin.ModelAdmin):
     search_fields = ("display_name", "pool__name", "manor__user__username")
     autocomplete_fields = ("pool", "manor", "template")
 
-    @admin.action(description="标记已显现稀有度")
+    @admin.action(permissions=["change"], description="标记已显现稀有度")
     def mark_revealed(self, request, queryset):
         queryset.update(rarity_revealed=True)
 
-    @admin.action(description="标记为未显现稀有度")
+    @admin.action(permissions=["change"], description="标记为未显现稀有度")
     def mark_hidden(self, request, queryset):
         queryset.update(rarity_revealed=False)
 

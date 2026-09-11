@@ -252,7 +252,7 @@ class BotProfileAdmin(admin.ModelAdmin):
             obj.state not in {BotProfile.State.STALE, BotProfile.State.RETIRED} and obj.next_growth_at <= timezone.now()
         )
 
-    @admin.action(description="标记为停滞")
+    @admin.action(permissions=["change"], description="标记为停滞")
     def mark_selected_stale(self, request, queryset) -> None:
         now = timezone.now()
         updated = mark_profiles_stale(

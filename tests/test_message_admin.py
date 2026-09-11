@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages import SUCCESS, get_messages
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.db.models.signals import pre_delete
 from django.test import RequestFactory
 from django.urls import reverse
@@ -16,12 +17,69 @@ from gameplay.admin.messages import MessageAdmin
 from gameplay.models import Message
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.utils.cache import CacheKeys
+from gameplay.services.utils.messages import set_message_queryset_read_state
 
 
 def _admin_request(user):
     request = RequestFactory().post("/admin/gameplay/message/")
     request.user = user
     return request
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("is_read", [True, False])
+def test_message_admin_read_state_updates_filtered_selection_and_cache(
+    manor_factory, monkeypatch, django_capture_on_commit_callbacks, is_read
+):
+    manor, _user = manor_factory()
+    untouched_manor, _untouched_user = manor_factory()
+    Message.objects.bulk_create(
+        [Message(manor=manor, title=f"批量状态{index}", is_read=not is_read) for index in range(1001)]
+    )
+    untouched = Message.objects.create(manor=untouched_manor, title="不在选择范围", is_read=not is_read)
+    cache_key = CacheKeys.unread_count(manor.pk)
+    untouched_key = CacheKeys.unread_count(untouched_manor.pk)
+    cache.set(cache_key, 999, timeout=60)
+    cache.set(untouched_key, 123, timeout=60)
+    feedback = []
+    admin_obj = MessageAdmin(Message, AdminSite())
+    monkeypatch.setattr(admin_obj, "message_user", lambda _request, text, **kw: feedback.append(str(text)))
+    action = admin_obj.mark_as_read if is_read else admin_obj.mark_as_unread
+
+    try:
+        with django_capture_on_commit_callbacks(execute=True):
+            action(_admin_request(manor.user), Message.objects.filter(manor=manor, is_read=not is_read))
+            assert cache.get(cache_key) == 999
+
+        assert Message.objects.filter(manor=manor, is_read=is_read).count() == 1001
+        assert feedback == [f"已标记 1001 条消息为{'已读' if is_read else '未读'}"]
+        assert cache.get(cache_key) is None
+        assert cache.get(untouched_key) == 123
+        untouched.refresh_from_db()
+        assert untouched.is_read is not is_read
+    finally:
+        cache.delete_many([cache_key, untouched_key])
+
+
+@pytest.mark.django_db
+def test_message_read_state_rollback_preserves_cache(manor_factory, django_capture_on_commit_callbacks):
+    manor, _user = manor_factory()
+    message = Message.objects.create(manor=manor, title="回滚已读状态")
+    cache_key = CacheKeys.unread_count(manor.pk)
+    cache.set(cache_key, 1, timeout=60)
+    try:
+        with django_capture_on_commit_callbacks(execute=True) as callbacks:
+            with pytest.raises(RuntimeError, match="rollback"):
+                with transaction.atomic():
+                    set_message_queryset_read_state(Message.objects.filter(pk=message.pk), is_read=True)
+                    raise RuntimeError("rollback")
+
+        message.refresh_from_db()
+        assert message.is_read is False
+        assert cache.get(cache_key) == 1
+        assert callbacks == []
+    finally:
+        cache.delete(cache_key)
 
 
 @pytest.mark.django_db

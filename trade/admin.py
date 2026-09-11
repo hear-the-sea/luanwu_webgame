@@ -1,4 +1,6 @@
+from django import forms
 from django.contrib import admin
+from django.db.models import Count, Q
 
 from core.admin_i18n import apply_common_field_labels
 from trade.models import (
@@ -155,8 +157,23 @@ class AuctionSlotInline(admin.TabularInline):
     can_delete = False
 
 
+class AuctionRoundAdminForm(forms.ModelForm):
+    class Meta:
+        model = AuctionRound
+        fields = "__all__"
+
+    def clean_status(self):
+        status = self.cleaned_data["status"]
+        if status in {AuctionRound.Status.ACTIVE, AuctionRound.Status.SETTLING}:
+            existing = AuctionRound.objects.filter(status=status).exclude(pk=self.instance.pk)
+            if existing.exists():
+                raise forms.ValidationError("已存在相同状态的拍卖轮次，请先处理现有轮次。")
+        return status
+
+
 @admin.register(AuctionRound)
 class AuctionRoundAdmin(admin.ModelAdmin):
+    form = AuctionRoundAdminForm
     list_display = (
         "round_number",
         "status",
@@ -172,13 +189,29 @@ class AuctionRoundAdmin(admin.ModelAdmin):
     readonly_fields = ("start_at", "settled_at")
     inlines = [AuctionSlotInline]
 
+    def get_readonly_fields(self, request, obj=None):
+        fields = super().get_readonly_fields(request, obj)
+        if obj is None:
+            return tuple(field for field in fields if field != "start_at")
+        return fields
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(
+                _slot_count=Count("slots", distinct=True),
+                _sold_count=Count("slots", filter=Q(slots__status=AuctionSlot.Status.SOLD), distinct=True),
+            )
+        )
+
     @admin.display(description="拍卖位数")
     def get_slot_count(self, obj):
-        return obj.slots.count()
+        return obj._slot_count
 
     @admin.display(description="售出数")
     def get_sold_count(self, obj):
-        return obj.slots.filter(status="sold").count()
+        return obj._sold_count
 
 
 @admin.register(AuctionSlot)

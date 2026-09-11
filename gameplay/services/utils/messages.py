@@ -8,6 +8,7 @@ import logging
 import time
 from dataclasses import dataclass
 from datetime import timedelta
+from functools import partial
 from heapq import nsmallest
 from threading import Lock
 from typing import Callable, Dict
@@ -371,6 +372,32 @@ def delete_all_messages(manor: Manor) -> MessageDeleteResult:
         manor: 庄园对象
     """
     return delete_message_queryset(manor.messages.all())
+
+
+def set_message_queryset_read_state(queryset: QuerySet[Message], *, is_read: bool) -> int:
+    """分批更新消息已读状态，提交后清除相关庄园缓存。"""
+    database_alias = queryset.db
+    updated_count = 0
+    last_message_id = 0
+    with transaction.atomic(using=database_alias):
+        while True:
+            rows = list(
+                queryset.select_for_update()
+                .filter(pk__gt=last_message_id)
+                .order_by("pk")
+                .values_list("pk", "manor_id")[:1000]
+            )
+            if not rows:
+                break
+            last_message_id = rows[-1][0]
+            updated_count += (
+                Message.objects.using(database_alias)
+                .filter(pk__in=[message_id for message_id, _manor_id in rows])
+                .update(is_read=is_read)
+            )
+            cache_keys = [CacheKeys.unread_count(manor_id) for manor_id in {row[1] for row in rows}]
+            transaction.on_commit(partial(_safe_cache_delete_many, cache_keys), using=database_alias)
+    return updated_count
 
 
 def mark_messages_read(manor: Manor, message_ids):

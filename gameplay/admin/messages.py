@@ -7,13 +7,18 @@ from django.contrib.admin.actions import delete_selected as django_delete_select
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
-from django.db import DEFAULT_DB_ALIAS, router
+from django.db import DEFAULT_DB_ALIAS, router, transaction
 from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.html import format_html
 
 from ..models import GlobalMailCampaign, GlobalMailDelivery, Manor, Message
-from ..services.utils.messages import MessageDeleteResult, create_message, delete_message_queryset
+from ..services.utils.messages import (
+    MessageDeleteResult,
+    create_message,
+    delete_message_queryset,
+    set_message_queryset_read_state,
+)
 from ..tasks.global_mail import enqueue_global_mail_backfill
 
 User = get_user_model()
@@ -215,7 +220,8 @@ class GlobalMailCampaignAdmin(admin.ModelAdmin):
     def deliveries_count(self, obj):
         if obj is None or not getattr(obj, "pk", None):
             return 0
-        return int(getattr(obj, "_deliveries_count", obj.deliveries.count()))
+        count = getattr(obj, "_deliveries_count", None)
+        return int(count if count is not None else obj.deliveries.count())
 
     @admin.display(description="运行状态")
     def runtime_status_badge(self, obj):
@@ -247,17 +253,17 @@ class GlobalMailCampaignAdmin(admin.ModelAdmin):
         pretty = json.dumps(attachments or {}, ensure_ascii=False, indent=2)
         return format_html("<pre style='max-width:760px;white-space:pre-wrap;'>{}</pre>", pretty)
 
-    @admin.action(description="批量启用活动")
+    @admin.action(permissions=["change"], description="批量启用活动")
     def activate_selected_campaigns(self, request, queryset):
         updated = queryset.update(is_active=True)
         self.message_user(request, f"已启用 {updated} 个活动")
 
-    @admin.action(description="批量停用活动")
+    @admin.action(permissions=["change"], description="批量停用活动")
     def deactivate_selected_campaigns(self, request, queryset):
         updated = queryset.update(is_active=False)
         self.message_user(request, f"已停用 {updated} 个活动")
 
-    @admin.action(description="补发给当前所有玩家（幂等）")
+    @admin.action(permissions=["change"], description="补发给当前所有玩家（幂等）")
     def backfill_selected_campaigns(self, request, queryset):
         queued = 0
         for campaign in queryset:
@@ -274,11 +280,15 @@ class GlobalMailCampaignAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         if form.cleaned_data.get("send_to_existing_now"):
             batch_size = int(form.cleaned_data.get("backfill_batch_size") or 500)
-            dispatched = enqueue_global_mail_backfill(obj.id, batch_size=batch_size)
-            if dispatched:
-                self.message_user(request, f"已提交补发任务（batch_size={batch_size}）")
-            else:
-                self.message_user(request, "补发任务提交失败，请稍后重试", level=messages.ERROR)
+
+            def dispatch_backfill():
+                dispatched = enqueue_global_mail_backfill(obj.id, batch_size=batch_size)
+                if dispatched:
+                    self.message_user(request, f"已提交补发任务（batch_size={batch_size}）")
+                else:
+                    self.message_user(request, "补发任务提交失败，请稍后重试", level=messages.ERROR)
+
+            transaction.on_commit(dispatch_backfill, using=obj._state.db)
 
 
 @admin.register(GlobalMailDelivery)
@@ -299,6 +309,7 @@ class GlobalMailDeliveryAdmin(admin.ModelAdmin):
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
+    list_select_related = ("manor__user",)
     list_display = ("title", "manor", "kind", "has_attachments", "is_claimed", "is_read", "created_at")
     list_filter = ("kind", "is_read", "is_claimed", "created_at")
     search_fields = ("title", "body", "manor__user__username")
@@ -402,14 +413,14 @@ class MessageAdmin(admin.ModelAdmin):
         # 显示成功消息
         self.message_user(request, f"已向 {recipients.count()} 位玩家发送消息")
 
-    @admin.action(description="标记为已读")
+    @admin.action(permissions=["change"], description="标记为已读")
     def mark_as_read(self, request, queryset):
-        queryset.update(is_read=True)
-        self.message_user(request, f"已标记 {queryset.count()} 条消息为已读")
+        updated = set_message_queryset_read_state(queryset, is_read=True)
+        self.message_user(request, f"已标记 {updated} 条消息为已读")
 
-    @admin.action(description="标记为未读")
+    @admin.action(permissions=["change"], description="标记为未读")
     def mark_as_unread(self, request, queryset):
-        queryset.update(is_read=False)
-        self.message_user(request, f"已标记 {queryset.count()} 条消息为未读")
+        updated = set_message_queryset_read_state(queryset, is_read=False)
+        self.message_user(request, f"已标记 {updated} 条消息为未读")
 
     actions = ["mark_as_read", "mark_as_unread", "delete_selected"]

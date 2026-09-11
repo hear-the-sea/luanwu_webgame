@@ -4,6 +4,8 @@ from types import SimpleNamespace
 
 import pytest
 from django.contrib.admin.sites import AdminSite
+from django.db import transaction
+from django.test import RequestFactory
 
 from gameplay.admin import GlobalMailCampaignAdmin, GlobalMailCampaignForm
 from gameplay.models import GlobalMailCampaign, Message
@@ -63,7 +65,9 @@ def test_global_mail_campaign_form_rejects_invalid_attachment_amount():
 
 
 @pytest.mark.django_db
-def test_global_mail_campaign_admin_save_model_enqueues_backfill_with_batch(monkeypatch):
+def test_global_mail_campaign_admin_save_model_enqueues_backfill_with_batch(
+    monkeypatch, django_capture_on_commit_callbacks
+):
     admin_obj = GlobalMailCampaignAdmin(GlobalMailCampaign, AdminSite())
     messages: list[str] = []
     enqueued: list[tuple[int, int]] = []
@@ -91,7 +95,9 @@ def test_global_mail_campaign_admin_save_model_enqueues_backfill_with_batch(monk
     assert form.is_valid(), form.errors
 
     obj = form.save(commit=False)
-    admin_obj.save_model(SimpleNamespace(), obj, form, change=False)
+    with django_capture_on_commit_callbacks(execute=True):
+        admin_obj.save_model(SimpleNamespace(), obj, form, change=False)
+        assert enqueued == []
 
     assert obj.pk is not None
     assert enqueued == [(obj.pk, 321)]
@@ -144,3 +150,34 @@ def test_global_mail_campaign_admin_readonly_fields_handle_unsaved_obj():
     assert admin_obj.deliveries_count(GlobalMailCampaign()) == 0
     assert "未保存" in str(admin_obj.runtime_status_badge(None))
     assert "{}" in str(admin_obj.attachments_preview(None))
+
+
+@pytest.mark.django_db
+def test_global_mail_campaign_counts_use_annotation(django_assert_num_queries):
+    GlobalMailCampaign.objects.bulk_create(
+        [GlobalMailCampaign(key=f"query_campaign_{index}", title="查询测试") for index in range(5)]
+    )
+    admin_obj = GlobalMailCampaignAdmin(GlobalMailCampaign, AdminSite())
+    request = RequestFactory().get("/admin/gameplay/globalmailcampaign/")
+
+    with django_assert_num_queries(1):
+        assert [admin_obj.deliveries_count(obj) for obj in admin_obj.get_queryset(request)] == [0] * 5
+
+
+@pytest.mark.django_db
+def test_global_mail_backfill_is_not_dispatched_after_save_rollback(monkeypatch, django_capture_on_commit_callbacks):
+    admin_obj = GlobalMailCampaignAdmin(GlobalMailCampaign, AdminSite())
+    enqueued = []
+    monkeypatch.setattr("gameplay.admin.messages.enqueue_global_mail_backfill", lambda *a, **kw: enqueued.append(a))
+    campaign = GlobalMailCampaign(key="rollback_campaign", title="回滚活动")
+    form = SimpleNamespace(cleaned_data={"send_to_existing_now": True})
+
+    with django_capture_on_commit_callbacks(execute=True) as callbacks:
+        with pytest.raises(RuntimeError, match="rollback"):
+            with transaction.atomic():
+                admin_obj.save_model(SimpleNamespace(), campaign, form, change=False)
+                raise RuntimeError("rollback")
+
+    assert callbacks == []
+    assert enqueued == []
+    assert not GlobalMailCampaign.objects.filter(key="rollback_campaign").exists()

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Count, Q
 
 from core.admin_i18n import apply_common_field_labels, apply_model_property_labels
 
@@ -50,6 +51,15 @@ apply_model_property_labels(
 
 @admin.register(Guild)
 class GuildAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(
+                _member_count=Count("members", filter=Q(members__is_active=True), distinct=True),
+            )
+        )
+
     list_display = ["name", "level", "current_member_count", "member_capacity", "is_active", "created_at"]
     list_filter = ["level", "is_active", "auto_accept"]
     search_fields = ["name", "founder__username"]
