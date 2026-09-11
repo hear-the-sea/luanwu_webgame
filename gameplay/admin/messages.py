@@ -2,7 +2,7 @@ import json
 from contextlib import contextmanager
 
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin.actions import delete_selected as django_delete_selected
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth import get_user_model
@@ -261,9 +261,12 @@ class GlobalMailCampaignAdmin(admin.ModelAdmin):
     def backfill_selected_campaigns(self, request, queryset):
         queued = 0
         for campaign in queryset:
-            async_result = enqueue_global_mail_backfill(campaign.id)
-            queued += 1
-            self.message_user(request, f"活动 {campaign.key} 已提交补发任务（task_id={async_result.id}）")
+            dispatched = enqueue_global_mail_backfill(campaign.id)
+            if dispatched:
+                queued += 1
+                self.message_user(request, f"活动 {campaign.key} 已提交补发任务")
+            else:
+                self.message_user(request, f"活动 {campaign.key} 补发任务提交失败，请稍后重试", level=messages.ERROR)
         if queued > 1:
             self.message_user(request, f"已提交 {queued} 个补发任务")
 
@@ -271,11 +274,11 @@ class GlobalMailCampaignAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         if form.cleaned_data.get("send_to_existing_now"):
             batch_size = int(form.cleaned_data.get("backfill_batch_size") or 500)
-            async_result = enqueue_global_mail_backfill(obj.id, batch_size=batch_size)
-            self.message_user(
-                request,
-                f"已提交补发任务（task_id={async_result.id}，batch_size={batch_size}）",
-            )
+            dispatched = enqueue_global_mail_backfill(obj.id, batch_size=batch_size)
+            if dispatched:
+                self.message_user(request, f"已提交补发任务（batch_size={batch_size}）")
+            else:
+                self.message_user(request, "补发任务提交失败，请稍后重试", level=messages.ERROR)
 
 
 @admin.register(GlobalMailDelivery)

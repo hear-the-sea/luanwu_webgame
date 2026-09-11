@@ -70,7 +70,7 @@ def test_global_mail_campaign_admin_save_model_enqueues_backfill_with_batch(monk
 
     def _fake_enqueue(campaign_id: int, *, batch_size: int = 500):
         enqueued.append((campaign_id, batch_size))
-        return SimpleNamespace(id="task-admin-save")
+        return True
 
     monkeypatch.setattr("gameplay.admin.messages.enqueue_global_mail_backfill", _fake_enqueue)
     monkeypatch.setattr(admin_obj, "message_user", lambda _request, message, **_kwargs: messages.append(str(message)))
@@ -95,7 +95,7 @@ def test_global_mail_campaign_admin_save_model_enqueues_backfill_with_batch(monk
 
     assert obj.pk is not None
     assert enqueued == [(obj.pk, 321)]
-    assert any("task-admin-save" in message and "batch_size=321" in message for message in messages)
+    assert any("已提交补发任务" in message and "batch_size=321" in message for message in messages)
 
 
 @pytest.mark.django_db
@@ -120,7 +120,7 @@ def test_global_mail_campaign_admin_actions_enqueue_and_toggle(monkeypatch):
     def _fake_enqueue(campaign_id: int, *, batch_size: int = 500):
         del batch_size
         enqueued_ids.append(campaign_id)
-        return SimpleNamespace(id=f"task-{campaign_id}")
+        return True
 
     monkeypatch.setattr("gameplay.admin.messages.enqueue_global_mail_backfill", _fake_enqueue)
     monkeypatch.setattr(admin_obj, "message_user", lambda _request, message, **_kwargs: messages.append(str(message)))
