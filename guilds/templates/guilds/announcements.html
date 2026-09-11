@@ -12,7 +12,7 @@
         </div>
         <div class="flex gap-2">
             {% if member.is_leader %}
-                <button type="button" class="tw-btn-primary" onclick="document.getElementById('create-modal').style.display='flex'">
+                <button type="button" class="tw-btn-primary" data-guild-modal-open="create-modal">
                     发布公告
                 </button>
             {% endif %}
@@ -84,11 +84,11 @@
 
 <!-- 发布公告模态框 -->
 {% if member.is_leader %}
-<div class="tw-modal-overlay" id="create-modal" style="display: none;" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="create-announcement-title">
+<div class="tw-modal-overlay" id="create-modal" style="display: none;" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="create-announcement-title" data-guild-modal-backdrop-close>
     <div class="tw-modal-content">
         <div class="tw-modal-header">
             <h3 id="create-announcement-title">发布公告</h3>
-            <button type="button" class="tw-modal-close" onclick="document.getElementById('create-modal').style.display='none'" aria-label="关闭发布公告窗口">
+            <button type="button" class="tw-modal-close" data-guild-modal-close aria-label="关闭发布公告窗口">
                 &times;
             </button>
         </div>
@@ -122,14 +122,4 @@
 
 {% block extra_scripts %}
 {{ block.super }}
-<script>
-    const modal = document.getElementById('create-modal');
-    if (modal) {
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-    }
-</script>
 {% endblock %}

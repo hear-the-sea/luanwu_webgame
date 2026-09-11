@@ -10,7 +10,7 @@
                 <input type="hidden" name="view" value="buy">
                 <input type="hidden" name="sell_page" value="{{ shop_sell_page_obj.number }}">
                 <label for="shop-category" class="tw-filter-label">筛选</label>
-                <select id="shop-category" name="category" class="tw-filter-select" onchange="this.form.submit()">
+                <select id="shop-category" name="category" class="tw-filter-select" data-trade-auto-submit>
                     {% for opt in categories %}
                     <option value="{{ opt.key }}" {% if selected_category == opt.key %}selected{% endif %}>{{ opt.label }}</option>
                     {% endfor %}

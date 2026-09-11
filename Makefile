@@ -3,9 +3,12 @@ MANAGE ?= $(PYTHON) manage.py
 BLACK ?= black
 ISORT ?= isort
 LOCAL_STATE_DIR ?= .local
-FLAKE8_TARGETS ?= accounts battle gameplay guests guilds trade core websocket config tests
+# Executable Python under scripts/ and battle_debugger/ is part of the shipped
+# tooling surface, so it must receive the same syntax/lint gate as application
+# and test code.
+FLAKE8_TARGETS ?= accounts battle gameplay guests guilds trade core websocket config tests scripts battle_debugger
 MYPY_TARGETS ?= accounts battle common config core gameplay guests guilds tasks trade websocket
-PYTHON_SOURCE_TARGETS ?= accounts battle common config core gameplay guests guilds tasks trade websocket tests
+PYTHON_SOURCE_TARGETS ?= accounts battle common config core gameplay guests guilds tasks trade websocket tests scripts battle_debugger
 CRITICAL_INTEGRATION_TESTS ?= \
 	tests/test_raid_concurrency_integration.py \
 	tests/test_raid_scout_concurrency_integration.py \
@@ -157,7 +160,7 @@ INTEGRATION_PYTEST_ARGS ?= -vv --durations=30 --timeout=900
 REAL_SERVICE_TEST_ENV = DJANGO_TEST_USE_ENV_SERVICES=1 DJANGO_DB_ENGINE=django.db.backends.mysql DJANGO_DB_HOST=$(DJANGO_DB_HOST) DJANGO_DB_PORT=$(DJANGO_DB_PORT) DJANGO_DB_USER=$(REAL_SERVICES_TEST_DB_USER) DJANGO_DB_PASSWORD=$(REAL_SERVICES_TEST_DB_PASSWORD) DJANGO_DB_NAME=$(DJANGO_DB_NAME) REDIS_URL=$(REDIS_URL) REDIS_BROKER_URL=$(REDIS_BROKER_URL) REDIS_RESULT_URL=$(REDIS_RESULT_URL) REDIS_CHANNEL_URL=$(REDIS_CHANNEL_URL) REDIS_CACHE_URL=$(REDIS_CACHE_URL) REDIS_PASSWORD=$(REDIS_PASSWORD) CELERY_BROKER_URL=$(REDIS_BROKER_URL) CELERY_RESULT_BACKEND=$(REDIS_RESULT_URL)
 REAL_SERVICE_COMPOSE_ENV = REAL_SERVICES_MYSQL_PORT=$(REAL_SERVICES_MYSQL_PORT) REAL_SERVICES_REDIS_PORT=$(REAL_SERVICES_REDIS_PORT) DJANGO_DB_USER=$(DJANGO_DB_USER) DJANGO_DB_PASSWORD=$(DJANGO_DB_PASSWORD) DJANGO_DB_ROOT_PASSWORD=$(DJANGO_DB_ROOT_PASSWORD) DJANGO_DB_NAME=$(DJANGO_DB_NAME) REDIS_PASSWORD=$(REDIS_PASSWORD)
 
-.PHONY: install install-unpinned install-lock install-dev-lock migrate bootstrap-data dev dev-ws worker beat test test-unit test-unit-cov test-critical test-integration test-all format format-check lint lint-js lint-strict static-check check clean lock lock-dev test-real-services-up test-real-services-down test-real-services test-real-services-preflight test-virtual-player-gate-a test-virtual-player-gate-d1 gate-d1-evidence verify-gate-d1-evidence gate-e-readiness-evidence verify-gate-e-readiness-evidence test-virtual-player-gate-e verify-virtual-player-gate-e test-gates cov cov-html
+.PHONY: install install-unpinned install-lock install-dev-lock migrate bootstrap-data dev dev-ws worker beat test test-unit test-unit-cov test-critical test-integration test-all format format-check check-frontend-contracts test-browser lint lint-js lint-strict static-check check clean lock lock-dev test-real-services-up test-real-services-down test-real-services test-real-services-preflight test-virtual-player-gate-a test-virtual-player-gate-d1 gate-d1-evidence verify-gate-d1-evidence gate-e-readiness-evidence verify-gate-e-readiness-evidence test-virtual-player-gate-e verify-virtual-player-gate-e test-gates cov cov-html
 
 install:
 	@if [ -f requirements-dev.lock.txt ]; then \
@@ -348,8 +351,16 @@ format-check:
 	$(BLACK) --check .
 	$(ISORT) --check-only .
 
+check-frontend-contracts:
+	$(PYTHON) scripts/check_frontend_contracts.py
+
+test-browser:
+	npm run test:browser
+
 lint-js:
+	$(MAKE) check-frontend-contracts
 	npm run check:js
+	npm run lint:js
 	npm run test:js
 
 lint: lint-js
@@ -365,7 +376,9 @@ static-check: format-check lint
 	$(MANAGE) check
 	$(MANAGE) makemigrations --check --dry-run
 	$(PYTHON) -m compileall -q $(PYTHON_SOURCE_TARGETS)
-	git diff --check
+	# The repository keeps legacy CRLF npm manifests; tell Git that CR is an
+	# allowed line ending while retaining the rest of diff whitespace checks.
+	git -c core.whitespace=cr-at-eol diff --check
 
 check: static-check
 	@echo "Static checks completed!"

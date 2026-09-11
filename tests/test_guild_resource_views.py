@@ -200,6 +200,22 @@ def test_resources_page_is_removed(guild_member_client):
 
 
 @pytest.mark.django_db
+def test_resource_logs_page_keeps_help_aligned_with_logged_actions(guild_member_client):
+    client, _guild, _member, _manor = guild_member_client
+
+    response = client.get(reverse("guilds:resource_logs"))
+
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert "成员捐赠资源" in body
+    assert "升级帮会等级消耗资源" in body
+    assert "升级帮会科技消耗资源" in body
+    assert f'href="{reverse("guilds:exchange_logs")}"' in body
+    assert "成员兑换物品请查看" in body
+    assert "生产产出" not in body
+
+
+@pytest.mark.django_db
 def test_guild_warehouse_page_projects_guild_resources_without_writing_guild_warehouse(guild_member_client):
     client, guild, _member, _manor = guild_member_client
     ItemTemplate.objects.get_or_create(key="grain", defaults={"name": "粮食"})

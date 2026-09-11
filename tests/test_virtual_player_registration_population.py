@@ -70,9 +70,13 @@ def test_public_registration_merges_and_queues_population_after_commit(
     assert response.status_code == 200
     assert not BotPopulationRecomputeDemand.objects.exists()
     assert queued == []
-    assert len(callbacks) == 1
+    assert len(callbacks) == 2
+    assert any("_dispatch" in callback.__qualname__ for callback in callbacks)
 
-    callbacks[0]()
+    population_callback = next(
+        callback for callback in callbacks if "_merge_and_queue_after_commit" in callback.__qualname__
+    )
+    population_callback()
 
     demand = BotPopulationRecomputeDemand.objects.get()
     assert (demand.region, demand.prestige_band) == ("north", "newbie")

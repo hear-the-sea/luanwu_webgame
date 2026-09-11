@@ -25,6 +25,7 @@ function createCountdownElement({ expires, remaining, onText } = {}) {
 
 function createTradePageHarness() {
   let marketTextWrites = 0;
+  let filterSubmitCount = 0;
   const marketCountdown = createCountdownElement({
     expires: "2999-01-01T00:00:00.000Z",
     onText: () => {
@@ -33,10 +34,29 @@ function createTradePageHarness() {
   });
   const auctionCountdown = createCountdownElement({ remaining: 120 });
   const intervals = [];
+  const listeners = new Map();
+  const filterForm = {
+    requestSubmit() {
+      filterSubmitCount += 1;
+    },
+  };
+  const filterControl = {
+    form: filterForm,
+    matches(selector) {
+      return selector === "[data-trade-auto-submit]";
+    },
+    closest() {
+      return filterForm;
+    },
+  };
   const root = {
     dataset: {},
-    addEventListener() {},
-    removeEventListener() {},
+    addEventListener(type, listener) {
+      listeners.set(type, listener);
+    },
+    removeEventListener(type) {
+      listeners.delete(type);
+    },
     contains() {
       return true;
     },
@@ -88,7 +108,15 @@ function createTradePageHarness() {
   const scriptPath = path.resolve(__dirname, "..", "trade.js");
   vm.runInContext(fs.readFileSync(scriptPath, "utf8"), context, { filename: "trade.js" });
 
-  return { auctionCountdown, intervals, marketCountdown, marketTextWrites: () => marketTextWrites };
+  return {
+    auctionCountdown,
+    filterControl,
+    filterSubmitCount: () => filterSubmitCount,
+    intervals,
+    listeners,
+    marketCountdown,
+    marketTextWrites: () => marketTextWrites,
+  };
 }
 
 test("trade page shares one countdown interval for market and auction timers", () => {
@@ -101,4 +129,14 @@ test("trade page shares one countdown interval for market and auction timers", (
   assert.match(harness.marketCountdown.textContent, /^market:/);
   assert.equal(harness.marketTextWrites(), 1);
   assert.equal(harness.auctionCountdown.textContent, "auction:118");
+});
+
+test("trade filters submit through the delegated change handler", () => {
+  const harness = createTradePageHarness();
+  const changeHandler = harness.listeners.get("change");
+
+  assert.equal(typeof changeHandler, "function");
+  changeHandler({ target: harness.filterControl });
+
+  assert.equal(harness.filterSubmitCount(), 1);
 });

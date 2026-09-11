@@ -375,6 +375,22 @@
     }
   }
 
+  function submitTradeFilter(control) {
+    const form =
+      control.form
+      || (typeof control.closest === "function" ? control.closest("form") : null);
+    if (!form) {
+      return;
+    }
+    if (typeof form.requestSubmit === "function") {
+      form.requestSubmit();
+      return;
+    }
+    if (typeof form.submit === "function") {
+      form.submit();
+    }
+  }
+
   function bindTradeEvents(root) {
     clickHandler = (event) => {
       const shopModeButton = event.target.closest(".tw-mode-btn[data-mode]");
@@ -420,8 +436,15 @@
     };
 
     changeHandler = (event) => {
-      if (event.target.matches('input[name="duration"]')) {
+      if (event.target.matches && event.target.matches('input[name="duration"]')) {
         updateListingFee(root);
+      }
+      if (
+        event.target.matches
+        && event.target.matches("[data-trade-auto-submit]")
+        && root.contains(event.target)
+      ) {
+        submitTradeFilter(event.target);
       }
     };
 

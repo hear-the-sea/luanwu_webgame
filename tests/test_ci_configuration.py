@@ -87,6 +87,21 @@ def test_mypy_ci_loads_non_production_django_settings():
     }
 
 
+def test_python_quality_gates_cover_executable_tooling_surfaces():
+    makefile = (REPO_ROOT / "Makefile").read_text(encoding="utf-8")
+    workflow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
+    lint_step = next(step for step in workflow["jobs"]["tests"]["steps"] if step.get("name") == "Lint (flake8)")
+    assignments = {
+        line.split("?=", 1)[0].strip(): line
+        for line in makefile.splitlines()
+        if "?=" in line and not line.startswith("\t")
+    }
+
+    assert "scripts battle_debugger" in assignments["FLAKE8_TARGETS"]
+    assert "scripts battle_debugger" in assignments["PYTHON_SOURCE_TARGETS"]
+    assert "scripts battle_debugger" in lint_step["run"]
+
+
 def test_unit_ci_disables_https_redirect_for_http_client_tests():
     workflow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
     unit_step = next(step for step in workflow["jobs"]["tests"]["steps"] if step.get("name") == "Unit Tests (pytest)")
@@ -99,6 +114,14 @@ def test_package_script_builds_css_and_rejects_artifact_drift():
     package = json.loads((REPO_ROOT / "package.json").read_text(encoding="utf-8"))
 
     assert package["scripts"].get("check:css") == CHECK_CSS_COMMAND
+    assert (
+        package["scripts"].get("check:js")
+        == "find static/js -maxdepth 1 -name '*.js' -print0 | xargs -0 -n1 node --check"
+    )
+    assert package["scripts"].get("lint:js") == "eslint static/js tests/browser playwright.config.cjs"
+    assert package["scripts"].get("test:browser") == "playwright test"
+    assert "eslint" in package["devDependencies"]
+    assert "@playwright/test" in package["devDependencies"]
 
 
 def test_unit_ci_checks_css_after_installing_node_dependencies():
@@ -107,8 +130,20 @@ def test_unit_ci_checks_css_after_installing_node_dependencies():
 
     assert "npm ci" in run_commands
     assert "npm run check:css" in run_commands
+    assert "npm run check:js" in run_commands
+    assert "npm run lint:js" in run_commands
+    assert "npx playwright install --with-deps chromium" in run_commands
+    assert "npm run test:browser" in run_commands
+    assert "python scripts/check_frontend_contracts.py" in run_commands
 
     assert run_commands.index("npm ci") < run_commands.index("npm run check:css")
+    assert run_commands.index("npm run test:js") < run_commands.index("npm run check:js")
+    assert run_commands.index("npm run check:js") < run_commands.index("npm run lint:js")
+    assert run_commands.index("npm run lint:js") < run_commands.index("npx playwright install --with-deps chromium")
+    assert run_commands.index("npx playwright install --with-deps chromium") < run_commands.index(
+        "npm run test:browser"
+    )
+    assert run_commands.index("npm run test:browser") < run_commands.index("python scripts/check_frontend_contracts.py")
 
 
 def test_unit_ci_checks_for_uncommitted_migrations_after_dependencies():

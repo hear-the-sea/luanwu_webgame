@@ -57,9 +57,24 @@ jobs:
       - name: Frontend Unit Tests
         run: npm run test:js
 
+      - name: Frontend JavaScript Syntax Check
+        run: npm run check:js
+
+      - name: Frontend ESLint
+        run: npm run lint:js
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Frontend Browser Regression
+        run: npm run test:browser
+
+      - name: Frontend Template Contract
+        run: python scripts/check_frontend_contracts.py
+
       - name: Lint (flake8)
         run: |
-          python -m flake8 --jobs=1 accounts battle gameplay guests guilds trade core websocket config tests
+          python -m flake8 --jobs=1 accounts battle gameplay guests guilds trade core websocket config tests scripts battle_debugger
 
       - name: Type check (mypy)
         env:
@@ -206,10 +221,20 @@ jobs:
 
       - name: Wait for MySQL and Redis
         run: |
+          ready=0
           for i in {1..30}; do
-            nc -z 127.0.0.1 3306 && nc -z 127.0.0.1 6379 && break
+            if nc -z 127.0.0.1 3306 && nc -z 127.0.0.1 6379; then
+              ready=1
+              break
+            fi
             sleep 2
           done
+          if [ "$ready" -ne 1 ]; then
+            echo "MySQL or Redis did not become ready within 60 seconds" >&2
+            nc -vz 127.0.0.1 3306 || true
+            nc -vz 127.0.0.1 6379 || true
+            exit 1
+          fi
 
       - name: Prepare Integration Database
         run: |
@@ -264,7 +289,7 @@ jobs:
 
   gate-d1:
     name: gate-d1
-    if: always() && github.event_name == 'push'
+    if: ${{ github.event_name == 'push' && needs.integration-tests.result == 'success' }}
     needs: integration-tests
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -341,10 +366,20 @@ jobs:
 
       - name: Wait for MySQL and Redis
         run: |
+          ready=0
           for i in {1..30}; do
-            nc -z 127.0.0.1 3306 && nc -z 127.0.0.1 6379 && break
+            if nc -z 127.0.0.1 3306 && nc -z 127.0.0.1 6379; then
+              ready=1
+              break
+            fi
             sleep 2
           done
+          if [ "$ready" -ne 1 ]; then
+            echo "MySQL or Redis did not become ready within 60 seconds" >&2
+            nc -vz 127.0.0.1 3306 || true
+            nc -vz 127.0.0.1 6379 || true
+            exit 1
+          fi
 
       - name: Generate commit-bound Gate D1 evidence
         run: |
@@ -373,5 +408,6 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-  # Gate D1 waits for integration completion but still runs on pushes when the
-  # broad integration job fails, keeping its evidence and diagnostics visible.
+  # Gate D1 runs only after the broad integration matrix succeeds. This keeps
+  # a failing integration run from spending another hour on overlapping
+  # evidence suites; the integration artifacts remain the failure diagnostic.

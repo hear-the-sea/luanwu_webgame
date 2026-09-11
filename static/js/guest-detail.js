@@ -64,7 +64,7 @@ const initGuestDetailPage = () => {
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const name = form.getAttribute("data-guest-name") || "该门客";
-        const confirmed = await gameDialog.danger(
+        const confirmed = await window.gameDialog.danger(
           `${name} 将被永久辞退，已穿戴装备会自动归还仓库。确认继续吗？`,
           { title: "辞退门客" }
         );

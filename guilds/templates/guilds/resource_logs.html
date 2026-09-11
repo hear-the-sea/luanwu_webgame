@@ -41,10 +41,6 @@
                                 <span class="tw-guild-action-upgrade">升级</span>
                             {% elif log.action == 'tech_upgrade' or log.action == 'upgrade_tech' %}
                                 <span class="tw-guild-action-tech">科技</span>
-                            {% elif log.action == 'production' %}
-                                <span class="tw-guild-action-production">生产</span>
-                            {% elif log.action == 'exchange' %}
-                                <span class="tw-guild-action-exchange">兑换</span>
                             {% else %}
                                 {{ log.action }}
                             {% endif %}
@@ -113,12 +109,11 @@
                 <li><strong>捐赠：</strong>成员捐赠资源</li>
                 <li><strong>升级：</strong>升级帮会等级消耗资源</li>
                 <li><strong>科技：</strong>升级帮会科技消耗资源</li>
-                <li><strong>生产：</strong>科技每日产出（暂未影响资源）</li>
-                <li><strong>兑换：</strong>成员兑换物品（暂未影响资源）</li>
             </ul>
 
             <div class="tw-guild-info-card tw-guild-log-tip mt-4">
                 <strong>提示：</strong>红宝石等非银粮金条类消耗会记录在备注中；资源流水记录保留最近30天，超过30天的记录会自动清理。
+                成员兑换物品请查看<a href="{% url 'guilds:exchange_logs' %}">兑换记录</a>。
             </div>
         </div>
     </section>

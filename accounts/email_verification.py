@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import smtplib
+import socket
 from typing import Any
 
 from django.conf import settings
@@ -18,6 +20,21 @@ EMAIL_VERIFICATION_SALT = "accounts.email-verification"
 
 class EmailVerificationDeliveryError(RuntimeError):
     """Raised when the verification message cannot be handed to the email backend."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str = "unknown",
+        can_failover: bool = False,
+        handoff_unknown: bool = True,
+        retryable: bool = False,
+    ) -> None:
+        super().__init__(message)
+        self.code = code
+        self.can_failover = can_failover
+        self.handoff_unknown = handoff_unknown
+        self.retryable = retryable
 
 
 def build_email_verification_token(user: User) -> str:
@@ -56,15 +73,22 @@ def verification_url(request, token: str) -> str:
 
 def send_email_verification_message(
     *,
-    request,
+    request=None,
     user: User,
-    token: str,
+    token: str | None = None,
+    verification_url_value: str | None = None,
     provider: str = EMAIL_PROVIDER_RESEND,
 ) -> int:
     if not user.email:
         raise ValueError("email verification requires a user email")
 
-    url = verification_url(request, token)
+    if verification_url_value:
+        url = verification_url_value
+    elif request is not None and token:
+        url = verification_url(request, token)
+    else:
+        raise ValueError("email verification requires a verification URL or request/token pair")
+
     age_hours = max(1, int(getattr(settings, "EMAIL_VERIFICATION_TOKEN_MAX_AGE_SECONDS", 86400)) // 3600)
     message = (
         "欢迎来到春秋乱世庄园主！\n\n"
@@ -74,22 +98,71 @@ def send_email_verification_message(
         "如果这不是你的操作，请忽略本邮件。"
     )
     try:
+        connection = get_email_provider_connection(provider)
+    except ValueError as exc:
+        logger.warning(
+            "Email provider is not configured: provider=%s",
+            provider,
+            exc_info=True,
+        )
+        raise EmailVerificationDeliveryError(
+            "email provider is not configured",
+            code="provider_configuration",
+            can_failover=True,
+            handoff_unknown=False,
+        ) from exc
+
+    try:
         sent_count = send_mail(
             subject="完成邮箱验证，开启你的春秋乱世之旅",
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
             fail_silently=False,
-            connection=get_email_provider_connection(provider),
+            connection=connection,
         )
-    except Exception as exc:
+    except (smtplib.SMTPAuthenticationError, smtplib.SMTPConnectError) as exc:
         logger.warning(
-            "Failed to send registration email verification message via provider=%s",
+            "Email provider rejected the SMTP connection: provider=%s",
             provider,
             exc_info=True,
         )
-        raise EmailVerificationDeliveryError("verification email delivery failed") from exc
-
+        raise EmailVerificationDeliveryError(
+            "email provider rejected the SMTP connection",
+            code="provider_connection",
+            can_failover=True,
+            handoff_unknown=False,
+        ) from exc
+    except (socket.gaierror, ConnectionError, TimeoutError, OSError) as exc:
+        logger.warning(
+            "Email provider transport connection failed: provider=%s",
+            provider,
+            exc_info=True,
+        )
+        raise EmailVerificationDeliveryError(
+            "email provider transport connection failed",
+            code="provider_transport",
+            can_failover=True,
+            handoff_unknown=False,
+            retryable=True,
+        ) from exc
+    except smtplib.SMTPException as exc:
+        logger.warning(
+            "SMTP provider returned an indeterminate delivery error: provider=%s",
+            provider,
+            exc_info=True,
+        )
+        raise EmailVerificationDeliveryError(
+            "SMTP delivery result is unknown",
+            code="provider_unknown",
+            can_failover=False,
+            handoff_unknown=True,
+        ) from exc
     if sent_count != 1:
-        raise EmailVerificationDeliveryError("email backend did not accept the verification message")
+        raise EmailVerificationDeliveryError(
+            "email backend did not accept the verification message",
+            code="not_accepted",
+            can_failover=True,
+            handoff_unknown=False,
+        )
     return sent_count

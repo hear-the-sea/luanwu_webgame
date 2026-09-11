@@ -1,6 +1,6 @@
 # 春秋乱世庄园主 - 开发指南
 
-> 最近校正：2026-03-26
+> 最近校正：2026-09-10
 
 本文档只记录当前仓库仍然成立的开发流程、命令和环境边界。
 
@@ -46,6 +46,7 @@ python -m pip check
 
 ```bash
 cp .env.example .env
+chmod 600 .env
 ```
 
 开发时至少确认：
@@ -60,7 +61,22 @@ cp .env.example .env
 python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
 ```
 
-### 3. 初始化数据
+`.env` 只应保存在本机或部署机，不能提交到 Git。若供应商密码、SMTP key 或 Django secret 曾经暴露，
+应先在供应商侧轮换，再更新本地环境变量。
+
+生产 settings 会拒绝读取对组用户或其他用户可读的 `.env`；部署前必须确保权限为 `600`。如需在受控测试环境中覆盖该检查，显式设置 `DJANGO_ENFORCE_DOTENV_PERMISSIONS=0`，不要在生产环境使用。
+
+### 3. 注册验证邮件
+
+生产注册邮件使用 Resend 主供应商、Brevo 备用供应商。Resend 读取现有 `EMAIL_*` 配置，Brevo 使用
+`.env.example` 中的 `BREVO_EMAIL_*` 配置；两家供应商都必须先验证发信域名和 `DEFAULT_FROM_EMAIL`。
+
+- Resend 每日最多 100 次，Brevo 每日最多 300 次；额度按本地日期统计。
+- 两家供应商共享每月 4000 次逻辑邮件额度；重试/切换供应商不会重复占用月度逻辑额度，但会占用实际供应商的每日尝试额度。
+- 注册事务只写入待投递 outbox，SMTP 在提交后由 Celery 处理；`beat` 每分钟扫描未派发、到期重试和租约过期记录。
+- 结果为 `unknown` 的记录不会自动切换供应商，避免 SMTP 已接受邮件后重复投递；应在 Admin 中人工核对供应商投递日志。
+
+### 4. 初始化数据
 
 ```bash
 python manage.py migrate
@@ -81,7 +97,7 @@ make bootstrap-data
 python manage.py reload_runtime_configs
 ```
 
-### 4. 启动服务
+### 5. 启动服务
 
 只需要 HTTP 页面：
 
@@ -110,7 +126,7 @@ Tailwind 监听：
 npm run watch:css
 ```
 
-### 5. 常用地址
+### 6. 常用地址
 
 - 首页：`http://127.0.0.1:8000/`
 - 管理后台：`http://127.0.0.1:8000/admin/`
@@ -162,6 +178,8 @@ python -m pytest -m "not integration and not evidence"
 
 这套门禁不验证真实 MySQL 行锁、Redis 共享语义、真实 Channels fan-out 与真实 Celery broker 行为。
 
+不要用 `python -m pytest -m "not integration"` 代替上述命令；它会把 commit-bound 的 `evidence` 测试也纳入，可能因历史证据工件与当前测试集合不同而产生误导性失败。证据校验应通过 `make verify-gate-e-readiness-evidence` 在指定 artifact date 下执行。
+
 ### 真实服务门禁
 
 ```bash
@@ -201,14 +219,21 @@ make lint
 make format
 make cov
 npm run test:js
+npm run check:js
+npm run lint:js
+npm run test:browser
 ```
 
 `make lint` 当前执行：
 
-- `flake8`
+- `flake8`（包括应用、测试、`scripts/` 和 `battle_debugger/`）
 - `mypy`
 
-`npm run test:js` 当前用于覆盖聊天挂件脚本的纯逻辑回归，不替代 Python 测试。
+`npm run test:js` 当前覆盖聊天、页面交互纯逻辑与模板边界回归，不替代 Python 测试。
+`npm run check:js` 会对 `static/js/` 顶层脚本执行 Node 语法检查。
+`npm run lint:js` 使用 ESLint Flat Config 检查页面脚本、浏览器回归用例和 Playwright 配置。
+`npm run test:browser` 使用 Playwright Chromium 执行真实浏览器交互回归；本机首次运行先执行 `npx playwright install chromium`，CI 会自动安装浏览器及系统依赖。
+`python scripts/check_frontend_contracts.py` 会扫描玩家侧模板，阻止内联脚本和 `onclick`/`onchange` 等事件属性重新进入页面；该检查由 `make static-check` 与 CI 执行。
 
 ## 调试工具
 
@@ -273,5 +298,6 @@ python manage.py validate_yaml_configs --strict-coverage
 ## 协作约束
 
 - 页面读路径默认走 Django template view，不要擅自把现有页面文档写成 REST 契约。
-- 运行期 YAML 改动后，`reload_runtime_configs` 只保证 service loader 更新；已经按 `from X import Y` 缓存下来的模块级常量仍可能需要重启进程。
+- 运行期 YAML 改动后，`reload_runtime_configs` 会刷新当前已登记的 service loader 和模块级运行时常量；新增 loader
+  必须同步接入刷新函数并补回归测试，不能只依赖进程重启兜底。
 - 改并发状态机、锁或任务派发前，先看 [`write_model_boundaries.md`](write_model_boundaries.md) 与 [`domain_boundaries.md`](domain_boundaries.md)。

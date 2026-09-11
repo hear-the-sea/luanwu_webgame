@@ -8,11 +8,17 @@
     "watch:css": "tailwindcss -i ./src/input.css -o ./static/css/tailwind.css --watch",
     "build:css:prod": "tailwindcss -i ./src/input.css -o ./static/css/tailwind.css --minify",
     "check:js": "find static/js -maxdepth 1 -name '*.js' -print0 | xargs -0 -n1 node --check",
-    "test:js": "node --test static/js/tests/*.test.js"
+    "lint:js": "eslint static/js tests/browser playwright.config.cjs",
+    "test:js": "node --test static/js/tests/*.test.js",
+    "test:browser": "playwright test"
   },
   "devDependencies": {
-    "tailwindcss": "^3.4.0",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0",
     "postcss": "^8.4.32",
-    "autoprefixer": "^10.4.16"
+    "tailwindcss": "^3.4.0"
   }
 }

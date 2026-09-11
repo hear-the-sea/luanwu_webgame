@@ -1,6 +1,6 @@
 # 项目重构优化规则与阶段目标（2026-03）
 
-最近更新：2026-05-06
+最近更新：2026-09-10
 
 本文档不记录详细审计过程、历史数据或阶段性结果，只保留后续重构必须遵守的规则，以及各阶段的优化目标。
 
@@ -12,9 +12,24 @@
 - [数据流边界](domain_boundaries.md)
 - [第二阶段统一写模型基线](write_model_boundaries.md)
 
-## 0. 当前基线（2026-05-06）
+## 0. 当前基线（2026-09-10）
 
 本文档只保留当前仍生效的治理结论、门禁基线与未收口项摘要，不再记录已封板阶段的实施流水。
+
+- 2026-09-10 本轮复核已补齐注册验证邮件的 durable outbox、提交后派发、双供应商 failover、每日/月度额度与扫描恢复链路；验证入口改为 GET 预览、POST 确认，避免邮件客户端预览链接直接激活账号。
+- 2026-09-10 质量门禁已覆盖 `scripts/` 与 `battle_debugger/` 的 flake8、格式检查和 compileall；这两类探索/工具脚本仍明确排除在严格 mypy 生产名单之外，避免把未类型化的历史调试脚本伪装成类型稳定。
+- 2026-09-10 玩家侧帮会与交易模板的内联脚本/事件属性已清零：帮会页面统一复用 `static/js/guild-page.js` / `GuildModal`，交易筛选统一由 `static/js/trade.js` 委托处理，并由模板边界与行为回归锁定；Battle Debugger 的动态配置/图表脚本仍按开发工具边界单独维护，不混入玩家页面门禁。
+- 2026-09-10 最终本地 hermetic 验证通过：`5713 passed, 234 skipped, 618 deselected`；本轮关键回归 `97 passed`，新增模板契约回归 `2 passed`，`.env` 权限护栏回归 `1 passed`，`make static-check`、37 个 JavaScript 单测、JavaScript 语法检查和迁移漂移检查均通过。
+- 2026-09-10 CI 的真实服务等待在 60 秒后会输出端口诊断并失败，Gate D1 仅在 push 且 integration matrix 全部成功后运行；Gate D1 证据仍保持独立提交绑定，不能以普通 integration 结果替代。
+- 2026-09-10 兼容入口完成复核：仓内生产代码未发现四个虚拟玩家旧入口的业务消费者，但因外部调用方不可核验且测试/架构门禁仍覆盖，暂保留薄门面并设置 `2026-10-15` 退场评审点。
+- 真实 MySQL/Redis 集成门禁仍依赖外部服务；本机未启动或不可达时必须先运行 `make test-real-services-up`，不得以 SQLite/LocMem 结果替代并发语义结论。
+- 2026-09-10 在受限沙箱权限下访问本机 MySQL/Redis 的预检会失败，这不能代表容器服务本身不可用；真实服务结论必须在允许访问容器端口的环境中取得。
+- 2026-09-10 在允许访问已运行的隔离容器后，真实服务预检通过；`DJANGO_TEST_USE_ENV_SERVICES=1 make test-critical` 通过 `79 passed`，Gate D1 通过 `393` 条契约测试、`10` 条核心真实服务测试和 `4` 条 Arena 相邻真实服务测试。此前的 `[0, 0]` Arena 人口并发失败与 Gate D1 exit code 2 未在本次复跑中重现。
+- 2026-09-10 完整 `integration` marker 套件在真实 MySQL/Redis 上通过：`120 passed, 7 skipped, 6435 deselected`，耗时 `54 分 40 秒`；此前队列公平性 `[5-1000]`、Arena 共斗并发和虚拟玩家维护基准用例均通过。该轮的容量基准曾因 Django 全局查询日志达到 9000 条而出现 warning；随后已改为窗口级 `connection.execute_wrapper` 收集器，最大 `[1000]` 档复测 `1 passed in 158.40s` 且无 warning，查询与写入计数仍完整保留。
+- 2026-09-10 使用 npm 官方 audit endpoint 复核发现开发依赖原有 `5` 个漏洞（`3 high / 1 moderate / 1 low`），涉及 `browserslist`、`nanoid`、`postcss` 与传递依赖；已执行 `npm audit fix --package-lock-only --registry=https://registry.npmjs.org`，更新 `package-lock.json` 并以 `npm ci` 验证可复现安装，复核结果为 `0 vulnerabilities`。
+- 2026-09-10 前端语义门禁已补齐：新增 ESLint Flat Config，`npm run lint:js` 覆盖 `static/js`、浏览器回归用例与 Playwright 配置；新增 Playwright Chromium 冒烟测试，`npm run test:browser` 在受控环境通过 `1 passed`，CI 会安装 Chromium 后执行该门禁。
+- 2026-09-10 本机 `.env` 权限仍为 `644`，已在 settings 中补充生产 fail-closed 检查并在开发文档中给出 `chmod 600 .env` 要求；实际本机权限变更仍属于安全操作，需获得操作者明确确认后执行。
+- 2026-09-10 证据边界复核确认：`make test`、CI unit job 与正式 hermetic 命令均使用 `not integration and not evidence`；直接运行 `pytest -m "not integration"` 会额外加载历史 commit-bound evidence 工件，当前 2026-08-11 manifest 仍记录旧的 `185` 个 Gate A nodeid，而当前集合为 `189` 个。该漂移不影响正式 CI，但若要更新历史工件，必须重新生成完整 Gate E evidence bundle，不能只手改 count/checksum。
 
 - 默认门禁基线：
   - 2026-03-23 `make lint` 通过。
@@ -65,11 +80,11 @@
 - 当前仍需持续关注的项：
   - 阶段 5 仅保留“持续维护”主题：超大测试文件收缩主线已基本完成，但 env-services / 并发集成环境的外部依赖可用性仍会影响真实环境 gate 的稳定性。
   - `2026-03-25` 新一轮复杂度复核中点名的三处热点：`gameplay/services/manor/core.py`、`gameplay/views/jail.py`、`trade/selector_builders.py` 当前都已压回默认 Python 复杂度预算以内；这轮支线可视为完成一轮收口，但后续仍需持续防止公开入口再次堆回多职责。
-  - 最新模板复杂度复核显示，`battle_debugger/templates/battle_debugger/custom_config.html` 已将页面级样式迁出到 `static/css/battle-debugger-custom-config.css`，主模板由 `738` 行降到 `386` 行，退出 `500` 行热点阈值；对应契约已补入 `tests/test_battle_debugger_contracts.py::test_custom_config_template_keeps_page_styles_out_of_main_template`。仓库当前最高体量模板变为 `battle_debugger/templates/battle_debugger/partials/result_detail_styles.html`（`500` 行），其次是 `battle_debugger/templates/battle_debugger/tune_result.html`（`492` 行）与 `trade/templates/trade/partials/_market.html`（`485` 行）；这些项目接近阈值但未超过默认模板热点线，后续若继续增长需优先复核。
+  - 最新模板复杂度复核显示，`battle_debugger/templates/battle_debugger/custom_config.html` 已将页面级样式迁出到 `static/css/battle-debugger-custom-config.css`，当前模板为 `448` 行，仍低于 `500` 行热点阈值；对应契约已补入 `tests/test_battle_debugger_contracts.py::test_custom_config_template_keeps_page_styles_out_of_main_template`。仓库当前最高体量模板并列为 `battle_debugger/templates/battle_debugger/partials/result_detail_styles.html`（`500` 行）与 `trade/templates/trade/partials/_market.html`（`500` 行），其次是 `battle_debugger/templates/battle_debugger/tune_result.html`（`492` 行）；这些项目尚未超过默认模板热点线，后续若继续增长需优先复核。
   - 最新测试复杂度复核显示，仓库内当前最高体量的三份测试文件依次为 `tests/test_virtual_player_maintenance_v2.py`（`4098` 行）、`tests/arena_services/test_virtual_reserve.py`（`3949` 行）与 `tests/guild_pvp_service/battle_flow.py`（`1320` 行），三者均已超过 `800` 行热点阈值；其余超过 `500` 行的候选应继续按同一动态统计规则复核，不在此固化容易随测试增删而过时的次级排序。`tests/test_guild_mission_views.py`、`tests/test_guild_mission_service.py`、`tests/test_guild_warehouse_service.py`、`tests/test_guilds_tasks.py`、`tests/test_arena_views.py`、`tests/test_battle_report_view.py` 与 `tests/test_load_guest_templates_command.py` 已回落到兼容入口体量，因此“超大测试文件收口”虽已显著收敛，但当前热点名单必须以新基线为准。
   - 后续若继续推进复杂度治理，应优先复核新的超阈值文件是否真的形成认知热点，再按稳定业务职责切分；默认不再把已经回到预算内的模块作为主线持续拆分对象。
   - 默认门禁、真实环境 gate、复杂度预算与文档基线需要在后续每轮改动后持续复核，不再单列历史批次明细。
-  - `2026-03-26` 复核确认：阶段 4 “模板内联脚本清零”虽已完成，但前端工程化并未收口；仓库当前虽已具备最小前端测试执行链路（`package.json` 提供 `npm run test:js`，本轮也已把它补进 CI），但仍缺少前端 lint 与更成体系的构建/模块化约束，`static/js` 当前仍约 `5k+` 行手写页面脚本。这一项应作为新的治理主线，而不是继续把“脚本已迁出模板”误判为前端边界已稳定。
+  - `2026-09-10` 复核确认：阶段 4 “模板内联脚本清零”已完成，当前 CI 已具备 `npm run test:js`、`npm run check:js`、`npm run lint:js`、Playwright 浏览器回归与 `scripts/check_frontend_contracts.py` 的前端验证链路，模板契约扫描已由 `make static-check` 与 CI 执行；`static/js` 当前约 `8.8k` 行手写页面脚本，后续重点转为模块边界和回归覆盖维护，不能把这些门禁误解为已经完成全部模块化治理。
   - `2026-07-11` 复核确认：`templates/base.html` 中原有行动力、贡献积分硬编码和 `href="#"` 占位入口已经清理，侧栏状态改由真实上下文驱动；该项已收口，后续只需防止基模板重新吸收页面专属状态。
   - `2026-03-26` 复核确认：热点复杂度已从“超大文件”演进为“预算上方徘徊的多职责文件”问题。本轮已完成 `trade/services/auction/rounds.py`、`websocket/consumers/world_chat.py`、`gameplay/views/map.py`、`gameplay/views/inventory.py`、`guests/services/equipment.py`、`gameplay/services/arena/coop_core.py` 与 `static/js/chat_widget.js` 的一轮收口；后续应继续重点关注新的候选入口，而不是机械反复拆已经回到预算内的模块。
   - `2026-03-26` 复核确认：类型治理仍处于过渡态；全局 `mypy` 仍保持 `disallow_untyped_defs = false`、`ignore_missing_imports = true` 的宽松基线，后续新增热点重构若不顺带收口输入/输出契约与 `Any` 扩散，将继续放大维护成本。

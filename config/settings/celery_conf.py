@@ -74,6 +74,7 @@ CELERY_TASK_QUEUES = tuple(Queue(queue_name) for queue_name in _CELERY_QUEUE_NAM
 # 批量扫描/维护任务与单记录完成任务分开消费，避免一个慢扫描阻塞到期状态推进。
 CELERY_TIMER_SCAN_TASKS = frozenset(
     {
+        "accounts.scan_email_verification_deliveries",
         "gameplay.scan_due_missions",
         "gameplay.scan_building_upgrades",
         "gameplay.scan_technology_upgrades",
@@ -104,6 +105,7 @@ CELERY_TIMER_SCAN_TASKS = frozenset(
 # consume the small timer-scan worker pool needed for user-facing state scans.
 CELERY_TIMER_MAINTENANCE_TASKS = frozenset(
     {
+        "accounts.send_email_verification_delivery",
         "gameplay.scan_arena_virtual_reserves",
         "gameplay.grow_arena_virtual_reserves",
         "gameplay.plan_virtual_players",
@@ -317,6 +319,10 @@ CELERY_BEAT_SCHEDULE = {
     },
     "scan-world-chat-attempts": {
         "task": "gameplay.scan_world_chat_attempts",
+        "schedule": crontab(minute="*"),
+    },
+    "scan-email-verification-deliveries": {
+        "task": "accounts.scan_email_verification_deliveries",
         "schedule": crontab(minute="*"),
     },
     "settle-auction-round": {

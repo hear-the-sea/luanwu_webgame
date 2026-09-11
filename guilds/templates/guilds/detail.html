@@ -98,7 +98,7 @@
                 </div>
             </dl>
             <div class="tw-guild-card-divider">
-                <button type="button" class="tw-btn-primary w-full" onclick="openGuildDonationModal()">捐赠资源</button>
+                <button type="button" class="tw-btn-primary w-full" data-guild-modal-open="guild-donation-modal">捐赠资源</button>
             </div>
         </section>
         {% endif %}
@@ -172,8 +172,7 @@
             <a href="{% url 'guilds:resource_logs' %}" class="tw-btn-secondary">资源流水</a>
 
             {% if member.is_leader %}
-                <button type="button" class="tw-btn-secondary"
-                    onclick="document.getElementById('disband-modal').style.display='flex'">
+                <button type="button" class="tw-btn-secondary" data-guild-modal-open="disband-modal">
                     解散帮会
                 </button>
             {% else %}
@@ -189,12 +188,11 @@
 
 <!-- 解散帮会确认模态框 -->
 {% if is_member and member.is_leader %}
-<div class="tw-modal-overlay" id="disband-modal" style="display: none;" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="detail-disband-title">
+<div class="tw-modal-overlay" id="disband-modal" style="display: none;" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="detail-disband-title" data-guild-modal-backdrop-close>
     <div class="tw-modal-content">
         <div class="tw-modal-header">
             <h3 id="detail-disband-title">解散帮会</h3>
-            <button type="button" class="tw-modal-close"
-                onclick="document.getElementById('disband-modal').style.display='none'" aria-label="关闭解散帮会窗口">&times;</button>
+            <button type="button" class="tw-modal-close" data-guild-modal-close aria-label="关闭解散帮会窗口">&times;</button>
         </div>
         <div class="tw-modal-body">
             <div class="tw-guild-warning" style="margin-top: 0;">
@@ -218,11 +216,11 @@
 {% endif %}
 
 {% if is_member %}
-<div class="tw-modal-overlay" id="guild-donation-modal" style="display: none;" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="guild-donation-title">
+<div class="tw-modal-overlay" id="guild-donation-modal" style="display: none;" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="guild-donation-title" data-guild-modal-backdrop-close>
     <div class="tw-modal-content">
         <div class="tw-modal-header">
             <h3 id="guild-donation-title">资源捐赠</h3>
-            <button type="button" class="tw-modal-close" onclick="closeGuildDonationModal()" aria-label="关闭资源捐赠窗口">&times;</button>
+            <button type="button" class="tw-modal-close" data-guild-modal-close aria-label="关闭资源捐赠窗口">&times;</button>
         </div>
         <div class="tw-modal-body">
             <div class="tw-form-field">
@@ -323,119 +321,4 @@
     </div>
 </div>
 {% endif %}
-{% endblock %}
-
-{% block extra_scripts %}
-{{ block.super }}
-<script>
-    (() => {
-        const modal = document.getElementById('disband-modal');
-        const guildDonationModal = document.getElementById('guild-donation-modal');
-        const donationKindSelect = document.getElementById('guild-donation-kind');
-        const resourceDonationForm = document.getElementById('guild-resource-donation-form');
-        const troopDonationForm = document.getElementById('guild-troop-donation-form');
-        const resourceTypeInput = document.getElementById('resource_type');
-        const resourcePanels = Array.from(document.querySelectorAll('[data-resource-panel]'));
-        const troopKeyInput = document.getElementById('troop_key');
-        const troopQuantityInput = document.getElementById('troop_quantity');
-        const troopContributionPreview = document.getElementById('troop-contribution-preview');
-        const troopDonationSubmit = document.getElementById('troop-donation-submit');
-
-        if (modal) {
-            modal.addEventListener('click', (event) => {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                }
-            });
-        }
-
-        function syncTroopDonationLimit() {
-            if (!troopKeyInput || !troopQuantityInput) return;
-            const selected = troopKeyInput.selectedOptions[0];
-            const rate = Number.parseInt(selected?.dataset.contributionRate || '0', 10);
-            const maxQuantity = Number.parseInt(selected?.dataset.maxQuantity || '0', 10);
-            troopQuantityInput.max = String(Math.max(0, maxQuantity));
-            if (maxQuantity <= 0) {
-                troopQuantityInput.value = '';
-            } else {
-                const currentQuantity = Number.parseInt(troopQuantityInput.value || '1', 10);
-                troopQuantityInput.value = String(Math.min(Math.max(1, currentQuantity), maxQuantity));
-            }
-            if (troopContributionPreview) {
-                troopContributionPreview.textContent = maxQuantity > 0
-                    ? `每名 ${rate} 贡献，本次最多可捐 ${maxQuantity} 名`
-                    : '今日护院贡献额度不足';
-            }
-            if (troopDonationSubmit) {
-                troopDonationSubmit.disabled = maxQuantity <= 0;
-            }
-        }
-
-        function syncGuildDonationForms() {
-            if (!donationKindSelect || !resourceDonationForm || !troopDonationForm) return;
-            const kind = donationKindSelect.value;
-            const isTroops = kind === 'troops';
-            resourceDonationForm.style.display = isTroops ? 'none' : 'block';
-            troopDonationForm.style.display = isTroops ? 'block' : 'none';
-            if (troopKeyInput) {
-                troopKeyInput.disabled = !isTroops;
-                troopKeyInput.required = isTroops;
-            }
-            if (troopQuantityInput) {
-                troopQuantityInput.disabled = !isTroops;
-                troopQuantityInput.required = isTroops;
-            }
-            if (isTroops) {
-                syncTroopDonationLimit();
-            }
-            resourcePanels.forEach((panel) => {
-                const active = !isTroops && panel.dataset.resourcePanel === kind;
-                panel.hidden = !active;
-                panel.querySelectorAll('input[name="amount"]').forEach((input) => {
-                    input.disabled = !active;
-                    input.required = active;
-                });
-            });
-            if (!isTroops && resourceTypeInput) {
-                resourceTypeInput.value = kind;
-            }
-        }
-
-        window.openGuildDonationModal = function openGuildDonationModal() {
-            if (!guildDonationModal) return;
-            guildDonationModal.style.display = 'flex';
-            syncGuildDonationForms();
-        };
-
-        window.closeGuildDonationModal = function closeGuildDonationModal() {
-            if (!guildDonationModal) return;
-            guildDonationModal.style.display = 'none';
-        };
-
-        donationKindSelect?.addEventListener('change', syncGuildDonationForms);
-        troopKeyInput?.addEventListener('change', syncTroopDonationLimit);
-        guildDonationModal?.addEventListener('click', (event) => {
-            if (event.target === guildDonationModal) {
-                window.closeGuildDonationModal();
-            }
-        });
-
-        if (typeof URLSearchParams !== 'undefined') {
-            const params = new URLSearchParams(window.location?.search || '');
-            if (params.get('donate') === '1') {
-                window.openGuildDonationModal();
-            }
-        }
-
-        document.getElementById('leave-guild-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            try {
-                const confirmed = await gameDialog.danger('确认退出帮会吗？退出后当前贡献将清零。', { title: '退出帮会' });
-                if (confirmed) e.target.submit();
-            } catch (err) {
-                console.error('退出帮会确认失败:', err);
-            }
-        });
-    })();
-</script>
 {% endblock %}

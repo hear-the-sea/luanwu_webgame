@@ -4,21 +4,18 @@
 <div class="flex flex-col">
     <!-- 子导航 -->
     <div class="tw-mode-switch mb-4">
-        <button type="button"
-                class="tw-mode-btn {% if market_view == 'buy' or not market_view %}active{% endif %}"
-                onclick="location.href='?tab=market&view=buy'">
+        <a href="?tab=market&view=buy"
+           class="tw-mode-btn {% if market_view == 'buy' or not market_view %}active{% endif %}">
             浏览购买
-        </button>
-        <button type="button"
-                class="tw-mode-btn {% if market_view == 'sell' %}active{% endif %}"
-                onclick="location.href='?tab=market&view=sell'">
+        </a>
+        <a href="?tab=market&view=sell"
+           class="tw-mode-btn {% if market_view == 'sell' %}active{% endif %}">
             上架出售
-        </button>
-        <button type="button"
-                class="tw-mode-btn {% if market_view == 'my_listings' %}active{% endif %}"
-                onclick="location.href='?tab=market&view=my_listings'">
+        </a>
+        <a href="?tab=market&view=my_listings"
+           class="tw-mode-btn {% if market_view == 'my_listings' %}active{% endif %}">
             我的挂单
-        </button>
+        </a>
     </div>
 
     {% if not market_can_buy_or_list %}
@@ -38,7 +35,7 @@
                 <input type="hidden" name="view" value="buy">
 
                 <label class="tw-filter-label">类别：</label>
-                <select name="category" class="tw-filter-select" onchange="this.form.submit()">
+                <select name="category" class="tw-filter-select" data-trade-auto-submit>
                     {% for cat in categories %}
                     <option value="{{ cat.key }}" {% if selected_category == cat.key %}selected{% endif %}>
                         {{ cat.label }}
@@ -47,7 +44,7 @@
                 </select>
 
                 <label class="tw-filter-label ml-4">稀有度：</label>
-                <select name="rarity" class="tw-filter-select" onchange="this.form.submit()">
+                <select name="rarity" class="tw-filter-select" data-trade-auto-submit>
                     <option value="all">全部</option>
                     <option value="orange" {% if selected_rarity == 'orange' %}selected{% endif %}>橙色</option>
                     <option value="purple" {% if selected_rarity == 'purple' %}selected{% endif %}>紫色</option>
@@ -57,7 +54,7 @@
                 </select>
 
                 <label class="tw-filter-label ml-4">排序：</label>
-                <select name="order_by" class="tw-filter-select" onchange="this.form.submit()">
+                <select name="order_by" class="tw-filter-select" data-trade-auto-submit>
                     <option value="-listed_at" {% if selected_order == '-listed_at' %}selected{% endif %}>最新上架</option>
                     <option value="unit_price" {% if selected_order == 'unit_price' %}selected{% endif %}>价格↑</option>
                     <option value="-unit_price" {% if selected_order == '-unit_price' %}selected{% endif %}>价格↓</option>
@@ -190,7 +187,7 @@
                 <input type="hidden" name="view" value="sell">
 
                 <label class="tw-filter-label">类别：</label>
-                <select name="category" class="tw-filter-select" onchange="this.form.submit()">
+                <select name="category" class="tw-filter-select" data-trade-auto-submit>
                     {% for cat in categories %}
                     <option value="{{ cat.key }}" {% if selected_category == cat.key %}selected{% endif %}>
                         {{ cat.label }}
@@ -284,21 +281,18 @@
 
         <!-- 状态筛选 -->
         <div class="tw-mode-switch mb-4">
-            <button type="button"
-                    class="tw-mode-btn {% if selected_status == 'all' or not selected_status %}active{% endif %}"
-                    onclick="location.href='?tab=market&view=my_listings&status=all'">
+            <a href="?tab=market&view=my_listings&status=all"
+               class="tw-mode-btn {% if selected_status == 'all' or not selected_status %}active{% endif %}">
                 全部
-            </button>
-            <button type="button"
-                    class="tw-mode-btn {% if selected_status == 'active' %}active{% endif %}"
-                    onclick="location.href='?tab=market&view=my_listings&status=active'">
+            </a>
+            <a href="?tab=market&view=my_listings&status=active"
+               class="tw-mode-btn {% if selected_status == 'active' %}active{% endif %}">
                 在售中
-            </button>
-            <button type="button"
-                    class="tw-mode-btn {% if selected_status == 'sold' %}active{% endif %}"
-                    onclick="location.href='?tab=market&view=my_listings&status=sold'">
+            </a>
+            <a href="?tab=market&view=my_listings&status=sold"
+               class="tw-mode-btn {% if selected_status == 'sold' %}active{% endif %}">
                 已售出
-            </button>
+            </a>
         </div>
 
         {% if my_listings %}

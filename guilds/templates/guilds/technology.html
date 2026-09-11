@@ -197,12 +197,3 @@
     {% endif %}
 </section>
 {% endblock %}
-
-{% block extra_scripts %}
-{{ block.super }}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 可以添加一些交互效果，如确认升级提示等
-});
-</script>
-{% endblock %}

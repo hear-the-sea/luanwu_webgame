@@ -6,14 +6,14 @@
 <section class="tw-auth-card tw-email-verification-card" aria-labelledby="email-verification-title">
     <h1 id="email-verification-title">验证你的邮箱</h1>
     <div class="tw-auth-notice tw-auth-notice--success" role="status" aria-live="polite">
-        验证邮件已经发送到：
+        验证邮件已安排发送到：
     </div>
     <p class="tw-email-address" translate="no"><strong>{{ email }}</strong></p>
     <p>请打开邮件并点击验证链接，验证成功后即可登录游戏。</p>
     <p>如果没有收到邮件，请检查垃圾邮件文件夹。</p>
     {% if resend_success %}
         <div class="tw-auth-notice tw-auth-notice--success" role="status" aria-live="polite">
-            新的验证邮件已发送，请检查收件箱。
+            新的验证邮件已安排发送，请检查收件箱。
         </div>
     {% endif %}
     {% if resend_error %}

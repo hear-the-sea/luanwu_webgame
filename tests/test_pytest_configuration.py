@@ -232,6 +232,8 @@ def test_makefile_critical_gate_dry_run_does_not_execute_recursive_make():
 def test_makefile_exposes_javascript_quality_gate():
     makefile_content = (ROOT_DIR / "Makefile").read_text(encoding="utf-8")
 
+    assert "check-frontend-contracts:" in makefile_content
+    assert "$(PYTHON) scripts/check_frontend_contracts.py" in makefile_content
     assert "lint-js:" in makefile_content
     assert "npm run check:js" in makefile_content
     assert "npm run test:js" in makefile_content

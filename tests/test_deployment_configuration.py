@@ -47,6 +47,7 @@ def _run_settings_import(secret_key: str) -> subprocess.CompletedProcess[str]:
         "DJANGO_ALLOWED_HOSTS": "example.com",
         "DJANGO_SECRET_KEY": secret_key,
         "DJANGO_STRICT_INFRA_CONFIG": "0",
+        "DJANGO_ENFORCE_DOTENV_PERMISSIONS": "0",
         "DJANGO_DB_ENGINE": "django.db.backends.sqlite3",
         "DJANGO_DB_NAME": ":memory:",
     }
@@ -58,6 +59,20 @@ def _run_settings_import(secret_key: str) -> subprocess.CompletedProcess[str]:
         text=True,
         check=False,
     )
+
+
+def test_dotenv_permissions_reject_group_or_other_read_access(tmp_path: Path) -> None:
+    from config.settings.security import _validate_dotenv_permissions
+
+    dotenv_path = tmp_path / ".env"
+    dotenv_path.write_text("DJANGO_SECRET_KEY=not-a-real-secret\n", encoding="utf-8")
+    dotenv_path.chmod(0o644)
+
+    with pytest.raises(RuntimeError, match=r"chmod 600 \.env"):
+        _validate_dotenv_permissions(dotenv_path)
+
+    dotenv_path.chmod(0o600)
+    _validate_dotenv_permissions(dotenv_path)
 
 
 def test_readiness_request_uses_fixed_loopback_url_and_explicit_healthcheck_host() -> None:

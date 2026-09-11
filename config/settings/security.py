@@ -5,8 +5,28 @@ Security configuration - CSRF, CORS, SSL, HSTS, etc.
 from __future__ import annotations
 
 import os
+import stat
+from pathlib import Path
 
-from .base import DEBUG, env
+from .base import BASE_DIR, DEBUG, RUNNING_TESTS, env
+
+
+def _validate_dotenv_permissions(dotenv_path: Path) -> None:
+    """Reject dotenv files that expose secrets to group or other users."""
+
+    if not dotenv_path.is_file():
+        return
+
+    mode = stat.S_IMODE(dotenv_path.stat().st_mode)
+    if mode & 0o077:
+        raise RuntimeError(
+            f"{dotenv_path.name} must not be readable by group or other users; "
+            "run 'chmod 600 .env' on the deployment host."
+        )
+
+
+if not DEBUG and not RUNNING_TESTS and env("DJANGO_ENFORCE_DOTENV_PERMISSIONS", "1") == "1":
+    _validate_dotenv_permissions(BASE_DIR / ".env")
 
 # Security: SECRET_KEY must be set via environment variable in production
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")

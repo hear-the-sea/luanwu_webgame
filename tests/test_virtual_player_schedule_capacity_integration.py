@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import math
+from contextlib import contextmanager
 from datetime import timedelta
 from time import perf_counter
 
 import pytest
 from django.conf import settings
 from django.db import connection
-from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from gameplay.models import BotProfile
@@ -37,6 +37,20 @@ def _write_query_count(captured_queries: list[dict[str, str]]) -> int:
     return sum(query["sql"].lstrip().upper().startswith(prefixes) for query in captured_queries)
 
 
+@contextmanager
+def _capture_queries():
+    """Capture only the current benchmark window without Django's 9000-query ring buffer."""
+
+    captured_queries: list[dict[str, str]] = []
+
+    def _record_query(execute, sql, params, many, context):
+        captured_queries.append({"sql": sql, "time": ""})
+        return execute(sql, params, many, context)
+
+    with connection.execute_wrapper(_record_query):
+        yield captured_queries
+
+
 def _row_lock_time_ms() -> float:
     with connection.cursor() as cursor:
         cursor.execute("SHOW SESSION STATUS LIKE 'Innodb_row_lock_time'")
@@ -59,7 +73,7 @@ def test_same_time_due_capacity_matrix_is_bounded_and_fair(
     game_data,
     monkeypatch,
 ) -> None:
-    """Replay the documented 200/500/1000 due-profile capacity envelope.
+    """Replay the documented 100/500/1000 due-profile capacity envelope.
 
     The test intentionally invokes the real scheduled-maintenance owner in a
     disposable MySQL test database.  It advances one scheduler tick at a
@@ -111,7 +125,7 @@ def test_same_time_due_capacity_matrix_is_bounded_and_fair(
         record_safety_heartbeat("safety_monitor", now=scan_now)
         started = perf_counter()
         lock_wait_before = _row_lock_time_ms()
-        with CaptureQueriesContext(connection) as captured:
+        with _capture_queries() as captured_queries:
             maintained = maintenance.maintain_due_virtual_players(
                 now=scan_now,
                 limit=_SCAN_BATCH_LIMIT,
@@ -133,8 +147,8 @@ def test_same_time_due_capacity_matrix_is_bounded_and_fair(
 
         batch_counts.append(len(committed_profile_ids))
         durations_ms.append(duration_ms)
-        query_counts.append(len(captured.captured_queries))
-        write_query_counts.append(_write_query_count(captured.captured_queries))
+        query_counts.append(len(captured_queries))
+        write_query_counts.append(_write_query_count(captured_queries))
         lock_waits_ms.append(max(0.0, lock_wait_after - lock_wait_before))
         oldest_due_ages_seconds.append(oldest_due_age)
 

@@ -129,6 +129,43 @@ def release_email_send_slot(reservation: EmailSendReservation) -> None:
             daily_quota.save(update_fields=("sent_count", "updated_at"))
 
 
+def reserve_additional_provider_daily_slot(*, provider: str, day: date) -> bool:
+    """Reserve a daily slot for a provider without incrementing the monthly budget.
+
+    A provider fallback is still one logical verification message, so its monthly
+    reservation must not be counted twice. The extra provider attempt does consume
+    that provider's own daily budget, which keeps the configured safety cap honest.
+    """
+
+    config = get_email_provider_config(provider)
+    if config.daily_limit <= 0 or not is_email_provider_configured(provider):
+        return False
+
+    with transaction.atomic():
+        daily_quota, _created = EmailProviderDailyQuota.objects.select_for_update().get_or_create(
+            provider=provider,
+            day=day,
+        )
+        if daily_quota.sent_count >= config.daily_limit:
+            return False
+        daily_quota.sent_count += 1
+        daily_quota.save(update_fields=("sent_count", "updated_at"))
+        return True
+
+
+def reserve_existing_delivery_provider_slot(
+    *,
+    preferred_provider: str | None,
+    day: date,
+) -> str | None:
+    """Reserve only a provider-day slot for a retry of an existing logical email."""
+
+    for provider in _configured_provider_order(preferred_provider=preferred_provider):
+        if reserve_additional_provider_daily_slot(provider=provider, day=day):
+            return provider
+    return None
+
+
 def get_email_quota_status(*, now: datetime | None = None) -> EmailQuotaStatus:
     month = quota_month(now)
     day = _quota_day(now)

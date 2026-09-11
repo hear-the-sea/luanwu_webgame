@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
 from core.admin_i18n import apply_common_field_labels
 
-from .models import EmailProviderDailyQuota, EmailSendQuota, User
+from .models import EmailProviderDailyQuota, EmailSendQuota, EmailVerificationDelivery, User
 
 apply_common_field_labels(User, labels={"username": "用户名", "title": "称号"})
 
@@ -45,3 +45,25 @@ class EmailProviderDailyQuotaAdmin(admin.ModelAdmin):
     list_display = ("day", "provider", "sent_count", "updated_at")
     list_filter = ("provider", "day")
     readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(EmailVerificationDelivery)
+class EmailVerificationDeliveryAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "provider",
+        "status",
+        "attempts",
+        "fallback_used",
+        "last_error_code",
+        "created_at",
+        "sent_at",
+    )
+    list_filter = ("status", "provider", "fallback_used")
+    search_fields = ("user__username", "user__email", "last_error_code")
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+        "last_attempt_at",
+        "sent_at",
+    )

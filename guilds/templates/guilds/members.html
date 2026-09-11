@@ -141,32 +141,4 @@
 
 {% block extra_scripts %}
 {{ block.super }}
-<script>
-// 转让帮主确认
-document.querySelectorAll('.transfer-form').forEach(form => {
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        try {
-            const name = form.dataset.name;
-            const confirmed = await gameDialog.danger(`确认将帮主之位传给 ${name} 吗？`, { title: '转让帮主' });
-            if (confirmed) form.submit();
-        } catch (err) {
-            console.error('转让帮主确认失败:', err);
-        }
-    });
-});
-// 辞退成员确认
-document.querySelectorAll('.kick-form').forEach(form => {
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        try {
-            const name = form.dataset.name;
-            const confirmed = await gameDialog.danger(`确认辞退 ${name} 吗？`, { title: '辞退成员' });
-            if (confirmed) form.submit();
-        } catch (err) {
-            console.error('辞退成员确认失败:', err);
-        }
-    });
-});
-</script>
 {% endblock %}

@@ -41,16 +41,14 @@
 
     <!-- 子导航 -->
     <div class="tw-mode-switch mb-4">
-        <button type="button"
-                class="tw-mode-btn {% if auction_view == 'browse' or not auction_view %}active{% endif %}"
-                onclick="location.href='?tab=auction&view=browse'">
+        <a href="?tab=auction&view=browse"
+           class="tw-mode-btn {% if auction_view == 'browse' or not auction_view %}active{% endif %}">
             浏览竞拍
-        </button>
-        <button type="button"
-                class="tw-mode-btn {% if auction_view == 'my_bids' %}active{% endif %}"
-                onclick="location.href='?tab=auction&view=my_bids'">
+        </a>
+        <a href="?tab=auction&view=my_bids"
+           class="tw-mode-btn {% if auction_view == 'my_bids' %}active{% endif %}">
             我的竞拍
-        </button>
+        </a>
     </div>
 
     {% if auction_view == 'browse' or not auction_view %}
@@ -64,7 +62,7 @@
                 <input type="hidden" name="view" value="browse">
 
                 <label class="tw-filter-label">类别：</label>
-                <select name="category" class="tw-filter-select" onchange="this.form.submit()">
+                <select name="category" class="tw-filter-select" data-trade-auto-submit>
                     {% for cat in categories %}
                     <option value="{{ cat.key }}" {% if selected_category == cat.key %}selected{% endif %}>
                         {{ cat.label }}
@@ -73,7 +71,7 @@
                 </select>
 
                 <label class="tw-filter-label ml-4">稀有度：</label>
-                <select name="rarity" class="tw-filter-select" onchange="this.form.submit()">
+                <select name="rarity" class="tw-filter-select" data-trade-auto-submit>
                     <option value="all">全部</option>
                     <option value="orange" {% if selected_rarity == 'orange' %}selected{% endif %}>橙色</option>
                     <option value="purple" {% if selected_rarity == 'purple' %}selected{% endif %}>紫色</option>
@@ -81,7 +79,7 @@
                 </select>
 
                 <label class="tw-filter-label ml-4">排序：</label>
-                <select name="order_by" class="tw-filter-select" onchange="this.form.submit()">
+                <select name="order_by" class="tw-filter-select" data-trade-auto-submit>
                     <option value="-current_price" {% if selected_order == '-current_price' %}selected{% endif %}>价格↓</option>
                     <option value="current_price" {% if selected_order == 'current_price' %}selected{% endif %}>价格↑</option>
                     <option value="-bid_count" {% if selected_order == '-bid_count' %}selected{% endif %}>出价次数↓</option>

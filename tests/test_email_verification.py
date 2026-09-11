@@ -16,7 +16,10 @@ from accounts.email_quota import EmailQuotaExceeded, quota_month, release_email_
 from accounts.forms import EmailVerificationRecoveryForm, SignUpForm
 from accounts.models import EmailProviderDailyQuota, EmailSendQuota
 
-pytestmark = pytest.mark.django_db
+# The production flow deliberately schedules delivery with transaction.on_commit.
+# These tests need real commits so they exercise the same boundary and can
+# observe the LocMem backend after the callback runs.
+pytestmark = pytest.mark.django_db(transaction=True)
 
 
 def _registration_data(*, username: str, email: str, manor_name: str) -> dict[str, str]:
@@ -70,7 +73,7 @@ def test_registration_creates_pending_user_and_sends_verification_email(client, 
 
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
-def test_verification_link_activates_user_and_logs_them_in(client, django_user_model):
+def test_verification_link_requires_post_then_activates_user_and_logs_them_in(client, django_user_model):
     client.post(
         reverse("accounts:register"),
         _registration_data(
@@ -81,11 +84,21 @@ def test_verification_link_activates_user_and_logs_them_in(client, django_user_m
     )
     token = _verification_token_from_email()
 
-    response = client.get(reverse("accounts:verify_email", kwargs={"token": token}))
+    verification_url = reverse("accounts:verify_email", kwargs={"token": token})
+    response = client.get(verification_url)
+
+    assert response.status_code == 200
+    assert "确认并验证邮箱" in response.content.decode()
+    user = django_user_model.objects.get(username="email_verify_user")
+    assert user.is_active is False
+    assert user.email_verified is False
+    assert client.session.get("_auth_user_id") is None
+
+    response = client.post(verification_url)
 
     assert response.status_code == 302
     assert response["Location"] == "/"
-    user = django_user_model.objects.get(username="email_verify_user")
+    user.refresh_from_db()
     assert user.is_active is True
     assert user.email_verified is True
     assert client.session.get("_auth_user_id") == str(user.pk)
@@ -161,7 +174,7 @@ def test_expired_verification_link_offers_resend_without_registration_session(cl
     )
 
     assert resent.status_code == 200
-    assert "新的验证邮件已发送" in resent.content.decode()
+    assert "新的验证邮件已安排发送" in resent.content.decode()
     assert len(mail.outbox) == 2
     assert EmailSendQuota.objects.get(month=quota_month()).sent_count == 2
     assert django_user_model.objects.get(username="email_expired_resend_user").is_active is False
@@ -309,7 +322,7 @@ def test_resend_cooldown_prevents_duplicate_messages(client):
     second = client.post(url, REMOTE_ADDR="203.0.113.206")
 
     assert first.status_code == 200
-    assert "新的验证邮件已发送" in first.content.decode()
+    assert "新的验证邮件已安排发送" in first.content.decode()
     assert second.status_code == 200
     assert "验证邮件刚刚发送过" in second.content.decode()
     assert len(mail.outbox) == 2

@@ -84,7 +84,7 @@
         <h2 class="tw-guild-error-title">危险操作</h2>
         <p>以下操作将对帮会造成重大影响，请谨慎操作。</p>
         <div class="tw-guild-danger-actions mt-4">
-            <button type="button" class="tw-btn-danger" onclick="document.getElementById('disband-modal').style.display='flex'">
+                <button type="button" class="tw-btn-danger" data-guild-modal-open="disband-modal">
                 解散帮会
             </button>
         </div>
@@ -92,11 +92,11 @@
 </section>
 
 <!-- 解散帮会确认模态框 -->
-<div class="tw-modal-overlay" id="disband-modal" style="display: none;" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="settings-disband-title">
+<div class="tw-modal-overlay" id="disband-modal" style="display: none;" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="settings-disband-title" data-guild-modal-backdrop-close>
     <div class="tw-modal-content">
         <div class="tw-modal-header">
             <h3 id="settings-disband-title">解散帮会</h3>
-            <button type="button" class="tw-modal-close" onclick="document.getElementById('disband-modal').style.display='none'" aria-label="关闭解散帮会窗口">&times;</button>
+            <button type="button" class="tw-modal-close" data-guild-modal-close aria-label="关闭解散帮会窗口">&times;</button>
         </div>
         <div class="tw-modal-body">
             <div class="tw-guild-warning tw-guild-warning-severe">
@@ -121,14 +121,4 @@
 
 {% block extra_scripts %}
 {{ block.super }}
-<script>
-    const modal = document.getElementById('disband-modal');
-    if (modal) {
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-    }
-</script>
 {% endblock %}

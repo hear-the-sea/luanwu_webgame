@@ -1,6 +1,6 @@
 # 春秋乱世庄园主
 
-> 最近校正：2026-08-03
+> 最近校正：2026-09-10
 >
 > 本 README 只保留当前仓库能直接验证的工程事实。补充文档见 [`docs/index.md`](docs/index.md)。
 
@@ -44,9 +44,13 @@ npm install
 
 ```bash
 cp .env.example .env
+chmod 600 .env
 ```
 
-按需补充数据库、Redis 与密钥配置。仓库还提供：
+按需补充数据库、Redis 与密钥配置。`.env` 只应保存在本机或部署机，不能提交到 Git；如果密钥曾经暴露，
+应立即在供应商侧轮换。仓库还提供：
+
+生产环境会拒绝使用对组用户或其他用户可读的 `.env`；部署前请确认权限为 `600`。
 
 - `.env.docker.example`
 - `.env.docker.prod.example`
@@ -110,7 +114,14 @@ make lint
 
 ```bash
 npm run test:js
+npm run check:js
+npm run lint:js
+npx playwright install chromium  # 首次运行浏览器回归时执行
+npm run test:browser
+python scripts/check_frontend_contracts.py
 ```
+
+`test:js` 执行纯逻辑回归，`check:js` 执行顶层浏览器脚本语法检查，`lint:js` 执行 ESLint 语义检查，`test:browser` 执行 Playwright 浏览器回归，`check_frontend_contracts.py` 检查玩家侧模板不得重新引入内联脚本和事件属性；这些检查均已纳入 CI。
 
 ## 前端资源边界
 

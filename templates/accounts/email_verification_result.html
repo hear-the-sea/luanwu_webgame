@@ -4,7 +4,15 @@
 
 {% block content %}
 <section class="tw-auth-card tw-email-verification-card" aria-labelledby="email-verification-result-title">
-    {% if already_verified %}
+    {% if verification_pending %}
+        <h1 id="email-verification-result-title">确认邮箱验证</h1>
+        <p>请确认这是你本人发起的注册操作。确认后账号会被激活并自动登录游戏。</p>
+        <form method="post" action="{% url 'accounts:verify_email' token=verification_token %}" class="tw-resend-form">
+            {% csrf_token %}
+            <button type="submit" class="tw-btn-primary tw-register-submit">确认并验证邮箱</button>
+        </form>
+        <p class="tw-resend-help">如果这是邮件客户端的自动预览，请不要点击确认按钮。</p>
+    {% elif already_verified %}
         <h1 id="email-verification-result-title">邮箱已经验证</h1>
         <p>该验证链接已经使用过，请直接登录。</p>
     {% else %}

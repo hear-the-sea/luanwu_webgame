@@ -175,7 +175,8 @@ Celery 配置位于 [`config/settings/celery_conf.py`](/home/daniel/code/web_gam
 
 注意：
 
-- 并不是所有运行期 YAML 都已经纳入 `reload_runtime_configs()`；例如 `recruitment_rarity_weights.yaml` 仍主要依赖模块缓存与进程重启刷新。
+- 当前列出的运行期 YAML（包括 `recruitment_rarity_weights.yaml`）已经纳入
+  `reload_runtime_configs()`；新增运行期 loader 时必须同步接入刷新函数、汇总统计和回归测试。
 - 文档里不再维护“手工抄录的 YAML 字段说明”；字段约束以 schema 校验与 loader 实现为准。
 
 ## 测试门禁
@@ -192,7 +193,9 @@ Celery 配置位于 [`config/settings/celery_conf.py`](/home/daniel/code/web_gam
 - `DJANGO_TEST_USE_ENV_SERVICES=1 make test-critical`
 - `DJANGO_TEST_USE_ENV_SERVICES=1 make test-integration`
 - `DJANGO_TEST_USE_ENV_SERVICES=1 make test-gates`
-- `npm run test:js`：当前覆盖聊天挂件的纯逻辑脚本测试
+- `npm run test:js`：页面脚本纯逻辑回归
+- `npm run lint:js`：ESLint 语义检查
+- `npm run test:browser`：Playwright Chromium 浏览器交互回归
 
 ## 健康检查与可观测性
 
