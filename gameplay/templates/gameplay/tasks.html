@@ -298,8 +298,8 @@
                                                 <input type="checkbox" name="guest_ids" value="{{ guest.id }}" class="guest-input">
                                                 <div class="tw-guest-card">
                                                     <div class="tw-guest-avatar">
-                                                        {% if guest.template.avatar %}
-                                                        <img src="{{ guest.template.avatar.url }}" alt="{{ guest.display_name }}" loading="lazy" decoding="async">
+                                                        {% if guest.avatar_url %}
+                                                        <img src="{{ guest.avatar_url }}" alt="{{ guest.display_name }}" loading="lazy" decoding="async">
                                                         {% else %}
                                                         <div class="tw-avatar-placeholder">{{ guest.display_name|slice:":1" }}</div>
                                                         {% endif %}

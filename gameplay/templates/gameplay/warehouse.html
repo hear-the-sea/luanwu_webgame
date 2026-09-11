@@ -155,6 +155,8 @@
                                     {% with payload=entry.template.effect_payload %}
                                     {% if payload.action == 'rebirth_guest' %}
                                     <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-action-type="rebirth" data-action-url="{% url 'gameplay:use_rebirth_card' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
+                                    {% elif payload.action == 'disguise_guest' %}
+                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-action-type="disguise" data-action-url="{% url 'gameplay:use_super_guest_disguise' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     {% elif payload.action == 'soul_fusion' %}
                                     <button
                                         type="button"
@@ -272,6 +274,24 @@
                 </button>
                 {% empty %}
                 <p class="tw-no-guests">没有可用的门客（门客需处于空闲或受伤状态）</p>
+                {% endfor %}
+            </div>
+            <!-- 超级门客易容卡门客列表 -->
+            <div id="guest-list-disguise" class="tw-guest-list" style="display: none;">
+                {% for guest in guests_for_disguise %}
+                <button type="button" class="tw-guest-option" data-guest-id="{{ guest.id }}">
+                    <span class="tw-guest-info">
+                        <span class="tw-guest-name rarity-text-{{ guest.template.rarity }}">{{ guest.display_name }}</span>
+                        <span class="tw-guest-level">等级 {{ guest.level }}</span>
+                    </span>
+                    <span class="tw-guest-stats">
+                        <span>武:{{ guest.force }}</span>
+                        <span>敏:{{ guest.agility }}</span>
+                        <span>生命:{{ guest.max_hp }}</span>
+                    </span>
+                </button>
+                {% empty %}
+                <p class="tw-no-guests">没有可易容的门客（需仍归属于本庄园，且未使用过此卡）</p>
                 {% endfor %}
             </div>
             <!-- 灵魂容器门客列表 -->

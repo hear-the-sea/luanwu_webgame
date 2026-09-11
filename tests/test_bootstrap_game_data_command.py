@@ -37,6 +37,7 @@ def test_bootstrap_game_data_runs_expected_steps(monkeypatch):
     assert kwargs_by_name["load_item_templates"]["repair_grain_ledger"] is True
     assert kwargs_by_name["load_troop_templates"]["skip_images"] is True
     assert kwargs_by_name["load_guest_templates"]["skip_images"] is True
+    assert kwargs_by_name["load_guest_templates"]["assign_missing_avatars"] is True
     assert reloaded["count"] == 1
 
 
@@ -57,6 +58,20 @@ def test_bootstrap_game_data_skip_config_reload(monkeypatch):
     call_command("bootstrap_game_data", verbosity=0, skip_config_reload=True)
 
     assert reloaded["count"] == 0
+
+
+def test_bootstrap_game_data_can_skip_missing_avatar_assignment(monkeypatch):
+    calls: list[tuple[str, dict]] = []
+
+    def _fake_call_command(name, *args, **kwargs):
+        calls.append((name, kwargs))
+
+    monkeypatch.setattr("gameplay.management.commands.bootstrap_game_data.call_command", _fake_call_command)
+
+    call_command("bootstrap_game_data", verbosity=0, skip_avatar_assignment=True, skip_config_reload=True)
+
+    kwargs_by_name = {name: kwargs for name, kwargs in calls}
+    assert kwargs_by_name["load_guest_templates"]["assign_missing_avatars"] is False
 
 
 def test_bootstrap_game_data_continue_on_error_keeps_running(monkeypatch):

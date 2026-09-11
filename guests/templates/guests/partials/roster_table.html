@@ -35,8 +35,8 @@
                            title="查看 {{ guest.display_name }} 详情"
                            aria-label="查看 {{ guest.display_name }} 详情">
                             <div class="guest-avatar">
-                                {% if guest.template.avatar %}
-                                <img src="{{ guest.template.avatar.url }}" alt="{{ guest.display_name }}" loading="lazy" width="48" height="48">
+                                {% if guest.avatar_url %}
+                                <img src="{{ guest.avatar_url }}" alt="{{ guest.display_name }}" loading="lazy" width="48" height="48">
                                 {% else %}
                                 {{ guest.display_name|first|default:"?" }}
                                 {% endif %}

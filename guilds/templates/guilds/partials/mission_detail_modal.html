@@ -86,8 +86,8 @@
                                                class="guest-input">
                                         <div class="tw-guest-card">
                                             <div class="tw-guest-avatar">
-                                                {% if lineup.pool_entry.source_guest.template.avatar %}
-                                                <img src="{{ lineup.pool_entry.source_guest.template.avatar.url }}" alt="{{ lineup.pool_entry.source_guest.display_name }}" loading="lazy" decoding="async">
+                                                {% if lineup.pool_entry.source_guest.avatar_url %}
+                                                <img src="{{ lineup.pool_entry.source_guest.avatar_url }}" alt="{{ lineup.pool_entry.source_guest.display_name }}" loading="lazy" decoding="async">
                                                 {% else %}
                                                 <div class="tw-avatar-placeholder">{{ lineup.pool_entry.source_guest.display_name|slice:":1" }}</div>
                                                 {% endif %}

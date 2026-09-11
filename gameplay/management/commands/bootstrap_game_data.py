@@ -10,13 +10,18 @@ StepFunc = Callable[[], object]
 
 
 class Command(BaseCommand):
-    help = "一键加载核心游戏数据（建筑/科技/物品/兵种/门客/任务/帮会任务/打工）并刷新运行期配置。"
+    help = "一键加载核心游戏数据（建筑/科技/物品/兵种/门客/任务/帮会任务/打工），补齐缺失门客头像并刷新运行期配置。"
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "--skip-images",
             action="store_true",
             help="跳过兵种/门客头像处理（适合 CI 或仅做数据同步时）。",
+        )
+        parser.add_argument(
+            "--skip-avatar-assignment",
+            action="store_true",
+            help="跳过按门客规则为缺失头像的门客分配头像（仍可处理明确配置的头像）。",
         )
         parser.add_argument(
             "--skip-config-reload",
@@ -50,6 +55,7 @@ class Command(BaseCommand):
 
     def handle(self, *args: object, **options: Any) -> None:
         skip_images = bool(options.get("skip_images"))
+        assign_missing_avatars = not bool(options.get("skip_avatar_assignment"))
         skip_config_reload = bool(options.get("skip_config_reload"))
         continue_on_error = bool(options.get("continue_on_error"))
         verbosity = int(options.get("verbosity", 1) or 1)
@@ -64,7 +70,14 @@ class Command(BaseCommand):
             ("加载科技模板", _call("load_technology_templates")),
             ("加载物品模板", _call("load_item_templates", repair_grain_ledger=True)),
             ("加载兵种模板", _call("load_troop_templates", skip_images=skip_images)),
-            ("加载门客模板", _call("load_guest_templates", skip_images=skip_images)),
+            (
+                "加载门客模板",
+                _call(
+                    "load_guest_templates",
+                    skip_images=skip_images,
+                    assign_missing_avatars=assign_missing_avatars,
+                ),
+            ),
             ("加载任务模板", _call("load_mission_templates")),
             ("加载帮会任务模板", _call("load_guild_mission_templates")),
             ("初始化打工模板", _call("seed_work_templates")),

@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from typing import Any
 
 from core.exceptions import InvalidBattleSnapshotError
+from guests.avatar import has_guest_avatar_override, resolve_guest_avatar_url
 from guests.guest_combat_stats import resolve_guest_combat_stats
 
 
@@ -94,6 +95,11 @@ def normalize_entry_guest_snapshot(snapshot: Any) -> dict[str, Any]:
     normalized["max_hp"] = _snapshot_int(snapshot, "max_hp", minimum=1)
     normalized["current_hp"] = _snapshot_int(snapshot, "current_hp", minimum=1, default=1)
     normalized["skill_keys"] = _snapshot_skill_keys(snapshot)
+    if "avatar_url" in snapshot:
+        raw_avatar_url = snapshot["avatar_url"]
+        if not isinstance(raw_avatar_url, str) or not raw_avatar_url.strip():
+            raise _invalid_snapshot("avatar_url", raw_avatar_url)
+        normalized["avatar_url"] = raw_avatar_url.strip()
     return normalized
 
 
@@ -121,6 +127,7 @@ class ArenaGuestSnapshotProxy:
         self.defense = snapshot["defense"]
         self.max_hp = snapshot["max_hp"]
         self._override_skills = snapshot["skill_keys"]
+        self.avatar_url = snapshot.get("avatar_url", "")
 
     @property
     def display_name(self) -> str:
@@ -143,25 +150,28 @@ def build_entry_guest_snapshot(guest) -> dict[str, Any]:
     stats = resolve_guest_combat_stats(guest)
     current_hp = int(getattr(guest, "current_hp", 0) or 0)
     current_hp = min(stats.max_hp, max(1, current_hp if current_hp > 0 else stats.max_hp))
-    return normalize_entry_guest_snapshot(
-        {
-            "snapshot_version": 1,
-            "display_name": guest.display_name,
-            "rarity": guest.rarity,
-            "template_key": guest.template.key,
-            "level": int(guest.level),
-            "force": int(guest.force),
-            "intellect": int(guest.intellect),
-            "defense_stat": int(guest.defense_stat),
-            "agility": int(guest.agility),
-            "luck": int(guest.luck),
-            "attack": stats.attack,
-            "defense": stats.defense,
-            "max_hp": stats.max_hp,
-            "current_hp": current_hp,
-            "skill_keys": serialize_guest_skill_keys(guest),
-        }
-    )
+    payload = {
+        "snapshot_version": 1,
+        "display_name": guest.display_name,
+        "rarity": guest.rarity,
+        "template_key": guest.template.key,
+        "level": int(guest.level),
+        "force": int(guest.force),
+        "intellect": int(guest.intellect),
+        "defense_stat": int(guest.defense_stat),
+        "agility": int(guest.agility),
+        "luck": int(guest.luck),
+        "attack": stats.attack,
+        "defense": stats.defense,
+        "max_hp": stats.max_hp,
+        "current_hp": current_hp,
+        "skill_keys": serialize_guest_skill_keys(guest),
+    }
+    if has_guest_avatar_override(guest):
+        avatar_url = resolve_guest_avatar_url(guest)
+        if avatar_url:
+            payload["avatar_url"] = avatar_url
+    return normalize_entry_guest_snapshot(payload)
 
 
 def load_entry_guests(entry, *, max_guests_per_entry: int = 10) -> list[ArenaGuestSnapshotProxy]:

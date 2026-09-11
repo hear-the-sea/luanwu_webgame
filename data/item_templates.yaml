@@ -1452,6 +1452,7 @@ items:
     price: 8000000
     storage_space: 200
     is_usable: true
+    image: zhuyingtai_guest_scroll.png
     effect_payload:
       action: summon_guest
       exclusive_template_keys:
@@ -1462,13 +1463,14 @@ items:
 
   - key: zhaoyun_guest_scroll
     name: 赵云招募卷轴
-    description: 从白门楼决战中寻得的名将卷轴。使用后可直接招募紫色门客「赵云」；若庄园已拥有该门客，则无法再次招募。
+    description: 使用后可直接招募紫色门客「赵云」；若庄园已拥有该门客，则无法再次招募。
     effect_type: tool
     rarity: purple
     tradeable: true
     price: 8000000
     storage_space: 150
     is_usable: true
+    image: zhuyingtai_guest_scroll.png
     effect_payload:
       action: summon_guest
       exclusive_template_keys:
@@ -1486,6 +1488,7 @@ items:
     price: 8000000
     storage_space: 150
     is_usable: true
+    image: zhuyingtai_guest_scroll.png
     effect_payload:
       action: summon_guest
       exclusive_template_keys:
@@ -1639,6 +1642,25 @@ items:
     image: guest_rebirth_card.png
     effect_payload:
       action: rebirth_guest
+
+  # ---------- 超级门客易容卡 ----------
+
+  - key: super_guest_disguise_card
+    name: 超级门客易容卡
+    description: 使用后可将任意门客的显示形象替换为吕布猴，并使其生命+800、武力+20、敏捷+20。效果只生效一次；门客重生、被俘虏或重新招募后失效。
+    effect_type: tool
+    rarity: orange
+    tradeable: true
+    price: 200000
+    storage_space: 100
+    is_usable: true
+    image: super_guest_disguise_card.png
+    effect_payload:
+      action: disguise_guest
+      avatar_override: lvbu_monkey
+      hp: 800
+      force: 20
+      agility: 20
 
   # ---------- 洗髓丹 ----------
 

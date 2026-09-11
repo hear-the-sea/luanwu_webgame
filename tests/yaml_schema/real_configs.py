@@ -271,14 +271,21 @@ class TestRealConfigsPassValidation:
         assert tracked_skill_books <= item_keys
         assert tracked_book_skill_keys <= skill_keys
         assert tracked_skill_books.isdisjoint(shop_item_keys)
-        assert {
-            "book_prison_break_blade",
-            "book_city_felling_strike",
-            "book_hell_instant_formation",
-            "book_desperate_beast",
-            "book_bloodthirsty_fury",
-            "book_comrade_command",
-        } <= auction_item_keys
+        assert auction_item_keys == {
+            "xisuidan",
+            "guest_rebirth_card",
+            "green_to_blue_pill",
+            "xidianka",
+            "soul_container",
+        }
+        assert all(
+            item["slots"] == 1
+            and item["quantity_per_slot"] == 1
+            and item["starting_price"] == 1
+            and item["min_increment"] == 1
+            and item["enabled"] is True
+            for item in auction_data["items"]
+        )
         assert_valid(validate_auction_items(auction_data, item_keys=item_keys))
 
     def test_arena_rules_valid(self, data_dir):

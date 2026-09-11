@@ -214,6 +214,14 @@ class Guest(models.Model):
     attack_bonus = models.IntegerField(default=0)
     defense_bonus = models.IntegerField(default=0)
     custom_name = models.CharField("自定义称号", max_length=64, blank=True)
+    avatar_override_key = models.CharField(
+        "头像覆盖",
+        max_length=32,
+        blank=True,
+        default="",
+        help_text="受控的门客头像覆盖 key，空值表示使用门客模板头像",
+    )
+    super_disguise_applied = models.BooleanField("超级易容效果已生效", default=False)
     force = models.PositiveIntegerField("武力", default=80)
     intellect = models.PositiveIntegerField("智力", default=80)
     defense_stat = models.PositiveIntegerField("防御", default=80)
@@ -294,6 +302,12 @@ class Guest(models.Model):
     @property
     def display_name(self) -> str:
         return self.custom_name or self.template.name
+
+    @property
+    def avatar_url(self) -> str:
+        from .avatar import resolve_guest_avatar_url
+
+        return resolve_guest_avatar_url(self)
 
     @property
     def rarity(self) -> str:

@@ -29,6 +29,7 @@ from .guest_items import (  # noqa: F401
     use_guest_rarity_upgrade_item,
     use_guest_rebirth_card,
     use_soul_container,
+    use_super_guest_disguise_card,
     use_xidianka,
     use_xisuidan,
 )
@@ -485,6 +486,8 @@ def _apply_tool(item: InventoryItem) -> Dict[str, Any]:
         raise ItemNotUsableError(item.template.name, message="请选择要升阶的门客")
     if normalized_action == "soul_fusion":
         raise ItemNotUsableError(item.template.name, message="请选择要融合的门客")
+    if normalized_action == "disguise_guest":
+        raise ItemNotUsableError(item.template.name, message="请选择要易容的门客")
     key = item.template.key or ""
     if key.startswith("peace_shield_"):
         return _apply_peace_shield(item)

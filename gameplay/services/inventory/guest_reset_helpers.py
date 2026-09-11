@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Collection
 from dataclasses import dataclass
 from random import Random
 
@@ -51,6 +52,8 @@ GUEST_RESET_UPDATE_FIELDS = [
     "allocated_intellect",
     "allocated_defense",
     "allocated_agility",
+    "avatar_override_key",
+    "super_disguise_applied",
 ]
 
 
@@ -68,6 +71,8 @@ def validate_guest_item_use(
     item: InventoryItem,
     guest_id: int,
     action: str,
+    *,
+    allowed_statuses: Collection[str] | None = None,
 ) -> tuple[InventoryItem, Guest]:
     """Validate guest-target item usage prerequisites and lock related rows."""
     if not item.pk:
@@ -92,7 +97,8 @@ def validate_guest_item_use(
     guest = Guest.objects.select_for_update().select_related("template").filter(id=guest_id, manor=manor).first()
     if not guest:
         raise GuestOwnershipError(message="门客不存在或不属于您的庄园")
-    if guest.status != GuestStatus.IDLE:
+    eligible_statuses = set(allowed_statuses) if allowed_statuses is not None else {GuestStatus.IDLE}
+    if guest.status not in eligible_statuses:
         raise GuestNotIdleError(guest, message=f"{guest.display_name} 当前非空闲状态，无法执行该操作")
 
     return locked_item, guest
@@ -339,6 +345,8 @@ def apply_guest_template_reset(
     guest.allocated_defense = 0
     guest.allocated_agility = 0
     guest.xisuidan_used = 0
+    guest.avatar_override_key = ""
+    guest.super_disguise_applied = False
 
     update_fields = list(GUEST_RESET_UPDATE_FIELDS)
     if include_template:

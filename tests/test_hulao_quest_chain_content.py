@@ -24,7 +24,7 @@ def test_hulao_quest_chain_consumes_the_previous_stage_token():
     assert stages[1]["entry_cost"] == {"sishui_battle_report": 1}
     assert stages[1]["drop_table"]["hulao_war_banner"] == 1
     assert stages[2]["entry_cost"] == {"hulao_war_banner": 1}
-    assert stages[2]["drop_table"]["baimenlou_fate_seal"] == 1
+    assert stages[2]["drop_table"]["super_guest_disguise_card"] == 0.01
 
 
 def test_baimenlou_has_the_requested_five_bosses_and_final_rewards():
@@ -40,9 +40,8 @@ def test_baimenlou_has_the_requested_five_bosses_and_final_rewards():
         "臧霸",
     ]
     assert {
-        "baimenlou_fate_seal",
         "lvbu_guest_scroll",
-        "zhaoyun_guest_scroll",
+        "super_guest_disguise_card",
         "diaochan_guest_scroll",
         "equip_panlonggun",
         "book_dragon_roar",

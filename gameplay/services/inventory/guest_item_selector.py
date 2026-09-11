@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Iterable
 
 from core.config import WAREHOUSE
@@ -22,6 +22,7 @@ class GuestItemSelectionContext:
     guests_for_xidianka: list[Guest]
     guests_for_soul_fusion: list[Guest]
     guests_for_rarity_upgrade: list[Guest]
+    guests_for_disguise: list[Guest] = field(default_factory=list)
 
 
 def _load_guest_tool_payloads(manor) -> list[object]:
@@ -82,7 +83,12 @@ def _collect_soul_fusion_requirements(payloads: Iterable[object]) -> tuple[int, 
     )
 
 
-def build_guest_item_selection_context(manor, *, eligible_guests: list[Guest]) -> GuestItemSelectionContext:
+def build_guest_item_selection_context(
+    manor,
+    *,
+    eligible_guests: list[Guest],
+    disguise_guests: list[Guest] | None = None,
+) -> GuestItemSelectionContext:
     payloads = _load_guest_tool_payloads(manor)
     soul_fusion_min_level, soul_fusion_allowed_rarities = _collect_soul_fusion_requirements(payloads)
     rarity_upgrade_source_keys = _collect_rarity_upgrade_source_keys(payloads)
@@ -120,6 +126,10 @@ def build_guest_item_selection_context(manor, *, eligible_guests: list[Guest]) -
             guest.template.key in rarity_upgrade_source_keys or guest.template.rarity in rarity_upgrade_source_rarities
         )
     ]
+    disguise_candidates = disguise_guests if disguise_guests is not None else eligible_guests
+    guests_for_disguise = [
+        guest for guest in disguise_candidates if not guest.super_disguise_applied and not guest.avatar_override_key
+    ]
 
     return GuestItemSelectionContext(
         guests_for_rebirth=eligible_guests,
@@ -127,4 +137,5 @@ def build_guest_item_selection_context(manor, *, eligible_guests: list[Guest]) -
         guests_for_xidianka=guests_for_xidianka,
         guests_for_soul_fusion=guests_for_soul_fusion,
         guests_for_rarity_upgrade=guests_for_rarity_upgrade,
+        guests_for_disguise=guests_for_disguise,
     )

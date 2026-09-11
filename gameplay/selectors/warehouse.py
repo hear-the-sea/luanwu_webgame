@@ -110,18 +110,21 @@ def get_warehouse_context(manor, current_tab: str, selected_category: str, page:
         "current_tab": current_tab,
     }
 
-    # Load eligible guests once, then derive specific lists in memory to avoid repeated DB queries.
-    eligible_guests = list(
-        manor.guests.select_related("template")
-        .filter(status__in=[GuestStatus.IDLE, GuestStatus.INJURED])
-        .order_by("-level", "template__name", "id")
+    # Load guests once, then preserve the existing eligible subset for legacy tools while
+    # allowing the disguise card to target any guest that still belongs to the manor.
+    all_guests = list(manor.guests.select_related("template").order_by("-level", "template__name", "id"))
+    eligible_guests = [guest for guest in all_guests if guest.status in {GuestStatus.IDLE, GuestStatus.INJURED}]
+    guest_item_selection = build_guest_item_selection_context(
+        manor,
+        eligible_guests=eligible_guests,
+        disguise_guests=all_guests,
     )
-    guest_item_selection = build_guest_item_selection_context(manor, eligible_guests=eligible_guests)
     context["guests_for_rebirth"] = guest_item_selection.guests_for_rebirth
     context["guests_for_xisuidan"] = guest_item_selection.guests_for_xisuidan
     context["guests_for_xidianka"] = guest_item_selection.guests_for_xidianka
     context["guests_for_soul_fusion"] = guest_item_selection.guests_for_soul_fusion
     context["guests_for_rarity_upgrade"] = guest_item_selection.guests_for_rarity_upgrade
+    context["guests_for_disguise"] = guest_item_selection.guests_for_disguise
 
     tool_effect_types = LEGACY_TOOL_EFFECT_TYPES
     tool_category_key = "tool"

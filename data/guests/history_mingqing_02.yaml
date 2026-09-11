@@ -460,6 +460,7 @@ heroes:
     name: 吴三桂
     default_gender: male
     archetype: military
+    avatar: wusangui.png
     flavor: （1612年—1678年）明末清初将领，字长伯，山海关总兵。李自成攻陷北京、明思宗自尽后，吴三桂引清兵入关，随后归附清廷，封平西王，镇守云南；康熙年间，他与尚可喜、耿精忠起兵反清，称帝于衡州，病死于军中。
     growth_range:
     - 5

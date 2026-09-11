@@ -29,14 +29,17 @@ FENGSHEN_EQUIPMENT_BOX_GEAR_KEYS = {
 
 HULAO_SCROLL_TARGETS = {
     "lvbu_guest_scroll": "hist_sljnbc_0013",
-    "zhaoyun_guest_scroll": "hist_sljnbc_0012",
     "diaochan_guest_scroll": "hist_sljnbc_0425",
 }
 
 HULAO_SCROLL_RARITIES = {
     "lvbu_guest_scroll": "orange",
-    "zhaoyun_guest_scroll": "purple",
     "diaochan_guest_scroll": "purple",
+}
+
+HULAO_SCROLL_DROP_RATES = {
+    "lvbu_guest_scroll": 0.01,
+    "diaochan_guest_scroll": 0.02,
 }
 
 
@@ -102,7 +105,7 @@ def test_fengbang_drops_a_random_fengshen_equipment_box():
     assert (DATA_DIR / "images" / "items" / box["image"]).is_file()
 
 
-def test_baimenlou_has_three_direct_recruitment_scrolls():
+def test_baimenlou_has_direct_recruitment_scrolls():
     mission = _missions()["baimenlou_mingyun_jueze"]
     items = _items()
     guest_keys = _guest_keys()
@@ -114,7 +117,7 @@ def test_baimenlou_has_three_direct_recruitment_scrolls():
     for scroll_key, guest_key in HULAO_SCROLL_TARGETS.items():
         scroll = items[scroll_key]
         assert guest_key in guest_keys
-        assert mission["drop_table"][scroll_key] == 0.01
+        assert mission["drop_table"][scroll_key] == HULAO_SCROLL_DROP_RATES[scroll_key]
         assert scroll["effect_type"] == "tool"
         assert scroll["rarity"] == HULAO_SCROLL_RARITIES[scroll_key]
         assert scroll["is_usable"] is True
@@ -131,6 +134,23 @@ def test_baimenlou_has_three_direct_recruitment_scrolls():
     assert lvbu["recruitable"] is False
     assert lvbu["is_world_unique"] is True
     assert lvbu["growth_range"] == [11, 14]
+
+
+def test_baimenlou_drops_the_super_guest_disguise_card():
+    mission = _missions()["baimenlou_mingyun_jueze"]
+    disguise_card = _items()["super_guest_disguise_card"]
+
+    assert mission["drop_table"]["super_guest_disguise_card"] == 0.01
+    assert disguise_card["effect_type"] == "tool"
+    assert disguise_card["rarity"] == "orange"
+    assert disguise_card["is_usable"] is True
+    assert disguise_card["effect_payload"] == {
+        "action": "disguise_guest",
+        "avatar_override": "lvbu_monkey",
+        "hp": 800,
+        "force": 20,
+        "agility": 20,
+    }
 
 
 def test_single_bosses_use_task_only_orange_hp_profiles():

@@ -28,6 +28,7 @@ from gameplay.services.inventory.guest_items import (
     use_guest_rarity_upgrade_item,
     use_guest_rebirth_card,
     use_soul_container,
+    use_super_guest_disguise_card,
     use_xidianka,
     use_xisuidan,
 )
@@ -328,6 +329,21 @@ def use_guest_rebirth_card_view(request: HttpRequest, pk: int) -> HttpResponse:
         missing_guest_error="请选择要重生的门客",
         success_fallback_message=lambda result: f"门客 {result.get('guest_name', '')} 已重生为1级",
         service_call=use_guest_rebirth_card,
+    )
+
+
+@login_required
+@require_POST
+@rate_limit_redirect("use_super_guest_disguise", limit=10, window_seconds=60)
+def use_super_guest_disguise_view(request: HttpRequest, pk: int) -> HttpResponse:
+    """使用超级门客易容卡（需要选择目标门客）。"""
+    return _use_target_guest_item(
+        request,
+        pk,
+        expected_action="disguise_guest",
+        missing_guest_error="请选择要易容的门客",
+        success_fallback_message=lambda result: f"门客 {result.get('guest_name', '')} 已完成超级易容",
+        service_call=use_super_guest_disguise_card,
     )
 
 

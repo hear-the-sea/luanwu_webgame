@@ -214,6 +214,10 @@ def load_avatar_map(template_keys: set[str]) -> dict[str, str]:
 
 def attach_avatar_urls(team: list[dict[str, Any]], avatar_map: dict[str, str]) -> None:
     for member in team:
+        stored_avatar_url = member.get("avatar_url")
+        if isinstance(stored_avatar_url, str) and stored_avatar_url.strip():
+            member["avatar_url"] = stored_avatar_url.strip()
+            continue
         member["avatar_url"] = avatar_map.get(str(member.get("template_key") or ""), "")
 
 
@@ -321,7 +325,11 @@ def _normalize_round_lineup_side(raw_side: Any, avatar_map: dict[str, str]) -> d
                 continue
             guest = dict(raw_guest)
             guest["name"] = str(raw_guest.get("name") or "门客")
-            guest["avatar_url"] = avatar_map.get(str(raw_guest.get("template_key") or ""), "")
+            stored_avatar_url = raw_guest.get("avatar_url")
+            if isinstance(stored_avatar_url, str) and stored_avatar_url.strip():
+                guest["avatar_url"] = stored_avatar_url.strip()
+            else:
+                guest["avatar_url"] = avatar_map.get(str(raw_guest.get("template_key") or ""), "")
             guests.append(guest)
 
         guests.sort(key=_guest_agility_sort_key, reverse=True)

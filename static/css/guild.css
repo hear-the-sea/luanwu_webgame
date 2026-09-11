@@ -32,6 +32,10 @@
   animation: guild-enter 220ms ease-out both;
 }
 
+.tw-guild-context-bar--guest {
+  grid-template-columns: 84px minmax(0, 1fr);
+}
+
 .tw-guild-context-art {
   width: 84px;
   height: 64px;
@@ -97,6 +101,10 @@
   padding: 0.2rem 0 0.35rem;
   scrollbar-width: thin;
   scrollbar-color: rgba(139, 69, 19, 0.34) transparent;
+}
+
+.tw-guild-context-bar--guest .tw-guild-subnav {
+  grid-column: 2 / -1;
 }
 
 .tw-guild-subnav-link {

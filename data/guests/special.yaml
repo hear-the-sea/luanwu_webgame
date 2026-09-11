@@ -1176,6 +1176,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig_wu_male8.png
       skills:
         - bloodthirsty_fury
         - desperate_beast
@@ -1207,6 +1208,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig_wu_male3.png
       skills:
         - iron_wall_heart
         - prison_break_blade
@@ -1222,6 +1224,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig_wu_male9.png
       skills:
         - stratagem_burst
         - bloodthirsty_fury
@@ -1236,6 +1239,7 @@ heroes:
       name: 陈宫
       archetype: civil
       recruitable: false
+      avatar: monkey_wen_male8.png
       default_gender: male
       skills:
         - stratagem_burst
@@ -1252,6 +1256,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: monkey_wu_male10.png
       skills:
         - desperate_beast
         - iron_wall_heart

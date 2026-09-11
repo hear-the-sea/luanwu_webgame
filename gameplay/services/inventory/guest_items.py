@@ -1,5 +1,5 @@
 """
-Guest-target item usage helpers (rebirth / growth reroll / allocation reset).
+Guest-target item usage helpers (rebirth / growth reroll / allocation reset / disguise).
 """
 
 from __future__ import annotations
@@ -10,6 +10,13 @@ from django.db import transaction
 
 from core.exceptions import GuestItemConfigurationError, GuestNotRequirementError
 from gameplay.models import InventoryItem, Manor
+from guests.constants import (
+    SUPER_GUEST_DISGUISE_ACTION,
+    SUPER_GUEST_DISGUISE_AGILITY_BONUS,
+    SUPER_GUEST_DISGUISE_AVATAR_KEY,
+    SUPER_GUEST_DISGUISE_FORCE_BONUS,
+    SUPER_GUEST_DISGUISE_HP_BONUS,
+)
 from guests.growth_engine import (
     XISUIDAN_MAX_REROLL_ATTEMPTS,
     build_allocation_reset_message,
@@ -17,6 +24,7 @@ from guests.growth_engine import (
     reroll_guest_growth,
     reset_guest_allocation,
 )
+from guests.models import GuestStatus
 from guests.services.world_unique import ensure_guest_not_world_unique
 
 from .core import add_item_to_inventory_locked, consume_inventory_item_locked
@@ -52,6 +60,89 @@ from .soul_fusion_helpers import (  # noqa: F401
 
 _validate_guest_item_use = validate_guest_item_use
 _detach_guest_gears_for_reset = detach_guest_gears_for_reset
+
+
+def _resolve_disguise_bonus(payload: object, key: str, default: int) -> int:
+    if not isinstance(payload, dict):
+        raise GuestItemConfigurationError("超级门客易容卡配置错误")
+    raw_value = payload.get(key, default)
+    if isinstance(raw_value, bool):
+        raise GuestItemConfigurationError("超级门客易容卡属性配置错误")
+    try:
+        value = int(raw_value)
+    except (TypeError, ValueError) as exc:
+        raise GuestItemConfigurationError("超级门客易容卡属性配置错误") from exc
+    if value <= 0:
+        raise GuestItemConfigurationError("超级门客易容卡属性配置错误")
+    return value
+
+
+def _resolve_super_guest_disguise_config(payload: object) -> tuple[str, int, int, int]:
+    if not isinstance(payload, dict) or payload.get("action") != SUPER_GUEST_DISGUISE_ACTION:
+        raise GuestItemConfigurationError("超级门客易容卡配置错误")
+
+    avatar_key = payload.get("avatar_override", payload.get("avatar_override_key", SUPER_GUEST_DISGUISE_AVATAR_KEY))
+    if avatar_key != SUPER_GUEST_DISGUISE_AVATAR_KEY:
+        raise GuestItemConfigurationError("超级门客易容卡头像配置错误")
+
+    return (
+        SUPER_GUEST_DISGUISE_AVATAR_KEY,
+        _resolve_disguise_bonus(payload, "hp", SUPER_GUEST_DISGUISE_HP_BONUS),
+        _resolve_disguise_bonus(payload, "force", SUPER_GUEST_DISGUISE_FORCE_BONUS),
+        _resolve_disguise_bonus(payload, "agility", SUPER_GUEST_DISGUISE_AGILITY_BONUS),
+    )
+
+
+@transaction.atomic
+def use_super_guest_disguise_card(manor: Manor, item: InventoryItem, guest_id: int) -> Dict[str, Any]:
+    """给指定门客应用一次性超级易容效果。"""
+    # 死锁预防：统一锁顺序 Manor -> InventoryItem -> Guest
+    manor = Manor.objects.select_for_update().get(pk=manor.pk)
+    locked_item, guest = _validate_guest_item_use(
+        manor,
+        item,
+        guest_id,
+        SUPER_GUEST_DISGUISE_ACTION,
+        allowed_statuses=GuestStatus.values,
+    )
+
+    avatar_key, hp_bonus, force_bonus, agility_bonus = _resolve_super_guest_disguise_config(
+        locked_item.template.effect_payload
+    )
+    if guest.super_disguise_applied or guest.avatar_override_key:
+        raise GuestItemConfigurationError("该门客已经使用过超级门客易容卡")
+
+    current_hp = max(0, int(guest.current_hp or 0))
+    was_at_full_hp = current_hp >= guest.max_hp
+    guest.avatar_override_key = avatar_key
+    guest.super_disguise_applied = True
+    guest.hp_bonus += hp_bonus
+    guest.force += force_bonus
+    guest.agility += agility_bonus
+    guest.current_hp = guest.max_hp if was_at_full_hp else min(guest.max_hp, current_hp)
+    guest.save(
+        update_fields=[
+            "avatar_override_key",
+            "super_disguise_applied",
+            "hp_bonus",
+            "force",
+            "agility",
+            "current_hp",
+        ]
+    )
+    consume_inventory_item_locked(locked_item, 1)
+
+    return {
+        "guest_name": guest.display_name,
+        "avatar_override_key": avatar_key,
+        "hp_bonus": hp_bonus,
+        "force_bonus": force_bonus,
+        "agility_bonus": agility_bonus,
+        "_message": (
+            f"门客 {guest.display_name} 已完成超级易容：形象替换为吕布猴，"
+            f"生命+{hp_bonus}、武力+{force_bonus}、敏捷+{agility_bonus}"
+        ),
+    }
 
 
 @transaction.atomic

@@ -35,6 +35,27 @@ def test_get_trade_context_auction_browse_sets_bid_info(monkeypatch, django_user
 
 
 @pytest.mark.django_db
+def test_get_trade_context_auction_defaults_to_browse_without_view(monkeypatch, django_user_model):
+    monkeypatch.setattr("trade.selectors.get_auction_stats", lambda *_args, **_kwargs: {"round": 1})
+
+    class Slot:
+        id = 1
+
+    monkeypatch.setattr("trade.selectors.get_active_slots", lambda **_kwargs: [Slot()])
+    monkeypatch.setattr(
+        "trade.services.auction_service.get_slots_bid_info_batch",
+        lambda slots_list, _manor: {slot.id: {"bid": slot.id} for slot in slots_list},
+    )
+
+    manor = create_manor(django_user_model, username="trade_ctx_auction_default")
+    request = RequestFactory().get("/trade", {"tab": "auction"})
+
+    context = get_trade_context(manor=manor, params=build_trade_request_params(request))
+    assert context["auction_view"] == "browse"
+    assert [slot.bid_info for slot in context["auction_slots"]] == [{"bid": 1}]
+
+
+@pytest.mark.django_db
 def test_get_trade_context_auction_browse_tolerates_bid_info_batch_error(monkeypatch, django_user_model):
     monkeypatch.setattr("trade.selectors.get_auction_stats", lambda *_args, **_kwargs: {"round": 1})
 

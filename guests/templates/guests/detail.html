@@ -22,8 +22,8 @@
                 <span class="avatar-corner avatar-corner-bl"></span>
                 <span class="avatar-corner avatar-corner-br"></span>
                 <div class="avatar-bubble">
-                    {% if guest.template.avatar %}
-                        <img src="{{ guest.template.avatar.url }}" alt="{{ guest.display_name }}" loading="lazy" width="160" height="160">
+                    {% if guest.avatar_url %}
+                        <img src="{{ guest.avatar_url }}" alt="{{ guest.display_name }}" loading="lazy" width="160" height="160">
                     {% else %}
                         {{ guest.display_name|first|default:"?" }}
                     {% endif %}

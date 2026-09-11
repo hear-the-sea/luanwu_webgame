@@ -7,6 +7,12 @@
       confirmText: "确认重生",
       listId: "guest-list-rebirth",
     },
+    disguise: {
+      title: "选择要易容的门客",
+      hint: "易容后形象替换为吕布猴，并获得生命+800、武力+20、敏捷+20；效果只生效一次，重生、被俘虏或重新招募后失效。可对任意仍归属于本庄园的门客使用。",
+      confirmText: "确认易容",
+      listId: "guest-list-disguise",
+    },
     soul_fusion: {
       title: "选择要融合的门客",
       hint: "融合后门客会永久消失，已穿戴装备将自动归还仓库。生成饰品的属性会参考门客自身属性结构，并保留随机波动。",

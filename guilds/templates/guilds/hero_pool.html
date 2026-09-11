@@ -151,8 +151,8 @@
                         <div class="tw-guild-hero-slot-meta">
                             <div class="tw-guild-guest-mini-card tw-guild-guest-mini-card--slot m-0">
                                 {% url 'guilds:hero_pool_guest_detail' slot.entry.id as slot_guest_detail_url %}
-                                {% if slot.entry.source_guest.template.avatar %}
-                                {% include "guilds/_guest_avatar.html" with avatar_url=slot.entry.source_guest.template.avatar.url guest_name=slot.entry.source_guest.display_name detail_url=slot_guest_detail_url only %}
+                                {% if slot.entry.source_guest.avatar_url %}
+                                {% include "guilds/_guest_avatar.html" with avatar_url=slot.entry.source_guest.avatar_url guest_name=slot.entry.source_guest.display_name detail_url=slot_guest_detail_url only %}
                                 {% else %}
                                 {% include "guilds/_guest_avatar.html" with guest_name=slot.entry.source_guest.display_name detail_url=slot_guest_detail_url only %}
                                 {% endif %}

@@ -258,6 +258,8 @@ def _tool_summary(template_key: str, payload: dict) -> str:
         return f"免战保护 {hours} 小时"
     if template_key == "manor_rename_card":
         return "更换庄园名称"
+    if template_key == "super_guest_disguise_card":
+        return "门客形象替换为吕布猴；生命+800、武力+20、敏捷+20（重生/被俘虏/重新招募后失效）"
     return "道具"
 
 

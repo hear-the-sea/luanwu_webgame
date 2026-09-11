@@ -86,8 +86,8 @@
                                    data-troop-capacity="{{ guest.troop_capacity }}">
                             <span class="tw-raid-guest-card">
                                 <span class="tw-guest-avatar">
-                                    {% if guest.template.avatar %}
-                                    <img src="{{ guest.template.avatar.url }}" width="44" height="44" alt="{{ guest.display_name }}" loading="lazy" decoding="async">
+                                    {% if guest.avatar_url %}
+                                    <img src="{{ guest.avatar_url }}" width="44" height="44" alt="{{ guest.display_name }}" loading="lazy" decoding="async">
                                     {% else %}
                                     <span class="tw-avatar-placeholder">{{ guest.display_name|slice:":1" }}</span>
                                     {% endif %}

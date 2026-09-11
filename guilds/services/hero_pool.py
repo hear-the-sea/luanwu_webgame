@@ -416,7 +416,7 @@ def _build_pool_row_payload(
         "guest_level": source_guest.level,
         "guest_rarity": source_guest.rarity,
         "owner_name": entry.owner_member.user.manor.display_name,
-        "avatar_url": source_guest.template.avatar.url if source_guest.template.avatar else None,
+        "avatar_url": source_guest.avatar_url or None,
         "status_key": status_key,
         "status_label": status_label,
         "is_owner": entry.owner_member_id == member_id,
@@ -635,11 +635,7 @@ def get_hero_pool_page_context(member: GuildMember) -> dict[str, Any]:
             "guest_name": lineup.pool_entry.source_guest.display_name,
             "guest_rarity": lineup.pool_entry.source_guest.rarity,
             "owner_name": lineup.pool_entry.owner_member.user.manor.display_name,
-            "avatar_url": (
-                lineup.pool_entry.source_guest.template.avatar.url
-                if lineup.pool_entry.source_guest.template.avatar
-                else None
-            ),
+            "avatar_url": lineup.pool_entry.source_guest.avatar_url or None,
         }
         for lineup in lineup_entries
         if lineup.pool_entry and lineup.pool_entry.source_guest

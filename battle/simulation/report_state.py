@@ -62,6 +62,9 @@ def _snapshot_lineup_side(units: Iterable[Any]) -> dict[str, list[dict[str, Any]
             agility = getattr(unit, "agility", None)
             if agility is not None:
                 guest["agility"] = agility
+            avatar_url = getattr(unit, "avatar_url", "")
+            if isinstance(avatar_url, str) and avatar_url.strip():
+                guest["avatar_url"] = avatar_url.strip()
             guests.append(guest)
             continue
 

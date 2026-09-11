@@ -1603,7 +1603,7 @@ missions:
 
       然而江湖传闻，白门楼风声最紧时，总有一张没有落款的招贤帖在暗中流转。若它最终落到有缘人手中，史书上那句“吕布死于白门楼”未必还能照抄，城楼之下或许会多出一位改旗易帜的绝世猛将；只是新东家能不能压住他的脾气，就要看庄园主自己的本事了。
 
-      进入此关需要消耗一面「虎牢关战旗」。庄园主须击破吕布、高顺、张辽、陈宫与臧霸的合围，替这段乱世故事写下最后一笔。无论结局如何，碎裂的白门楼命印都会记住：有人留在城楼，有人换了一面旗，带着方天画戟走向另一段江湖。
+      进入此关需要消耗一面「虎牢关战旗」。庄园主须击破吕布、高顺、张辽、陈宫与臧霸的合围，替这段乱世故事写下最后一笔。
     battle_type: task1
     entry_cost:
       hulao_war_banner: 1
@@ -1637,10 +1637,9 @@ missions:
       experience_watermelon:
         chance: 0.9
         count: 8
-      baimenlou_fate_seal: 1
       lvbu_guest_scroll: 0.01
-      zhaoyun_guest_scroll: 0.01
-      diaochan_guest_scroll: 0.01
+      super_guest_disguise_card: 0.01
+      diaochan_guest_scroll: 0.02
       equip_panlonggun: 0.008
       equip_pojunzhanjia: 0.02
       equip_tianjiguan: 0.025

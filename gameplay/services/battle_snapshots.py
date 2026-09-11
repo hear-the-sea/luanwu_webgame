@@ -14,6 +14,8 @@ from battle.combatants_pkg.troop_device_bonuses import (
     build_troop_device_bonuses_from_sources,
 )
 from core.exceptions import InvalidBattleSnapshotError
+from guests.avatar import has_guest_avatar_override, resolve_guest_avatar_url
+from guests.constants import SUPER_GUEST_DISGUISE_AVATAR_KEY
 from guests.guest_combat_stats import resolve_guest_combat_stats
 from guests.guest_rules import compute_guest_troop_capacity
 from guests.models import Guest
@@ -324,6 +326,14 @@ class BattleGuestSnapshotProxy:
             raise _invalid_guest_snapshot("troop_device_bonus_sources")
         self.manor = None
         self._override_skills = _normalize_snapshot_skill_keys(snapshot)
+        raw_avatar_url = snapshot.get("avatar_url")
+        if raw_avatar_url is None:
+            self.avatar_url = ""
+        elif not isinstance(raw_avatar_url, str) or not raw_avatar_url.strip():
+            raise _invalid_guest_snapshot("avatar_url")
+        else:
+            self.avatar_url = raw_avatar_url.strip()
+        self.avatar_override_key = SUPER_GUEST_DISGUISE_AVATAR_KEY if self.avatar_url else ""
 
     @property
     def display_name(self) -> str:
@@ -382,6 +392,15 @@ def build_guest_battle_snapshot(
         "troop_device_bonus_sources": list(troop_device_bonus_sources),
         "skill_keys": _serialize_guest_skill_keys(guest),
     }
+    if has_guest_avatar_override(guest):
+        avatar_url = resolve_guest_avatar_url(guest)
+    elif not isinstance(guest, Guest):
+        raw_avatar_url = getattr(guest, "avatar_url", "")
+        avatar_url = raw_avatar_url.strip() if isinstance(raw_avatar_url, str) else ""
+    else:
+        avatar_url = ""
+    if avatar_url:
+        payload["avatar_url"] = avatar_url
     if include_identity:
         payload["guest_id"] = _resolve_live_snapshot_identity(guest, field_name="id")
         payload["manor_id"] = _resolve_live_snapshot_identity(guest, field_name="manor_id")

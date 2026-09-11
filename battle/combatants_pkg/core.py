@@ -65,4 +65,5 @@ class Combatant:
     current_round: int = 0
     last_round_acted: int = 0
     troop_class: str = ""
+    avatar_url: str = ""
     tech_effects: Dict[str, float] = field(default_factory=dict)

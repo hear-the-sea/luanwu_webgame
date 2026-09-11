@@ -27,6 +27,16 @@ VANGUARD_RATIO = 0.25
 MAX_SQUAD = 5  # Will be overridden by constants import
 
 
+def _resolve_battle_avatar_url(guest: Guest) -> str:
+    from guests.avatar import has_guest_avatar_override, resolve_guest_avatar_url
+
+    if isinstance(guest, Guest):
+        return resolve_guest_avatar_url(guest) if has_guest_avatar_override(guest) else ""
+
+    raw_avatar_url = getattr(guest, "avatar_url", "")
+    return raw_avatar_url.strip() if isinstance(raw_avatar_url, str) else ""
+
+
 def _get_max_squad() -> int:
     """Get MAX_SQUAD from constants, with fallback."""
     try:
@@ -136,7 +146,7 @@ def serialize_skills(guest: Guest, override_skill_keys: Optional[List[str]] = No
 
 
 def serialize_guest_for_report(combatant: Combatant) -> Dict[str, Any]:
-    return {
+    payload = {
         "name": combatant.name,
         "attack": combatant.attack,
         "defense": combatant.defense,
@@ -153,6 +163,9 @@ def serialize_guest_for_report(combatant: Combatant) -> Dict[str, Any]:
         "is_boss": combatant.is_boss,
         "level": combatant.level,
     }
+    if isinstance(combatant.avatar_url, str) and combatant.avatar_url.strip():
+        payload["avatar_url"] = combatant.avatar_url.strip()
+    return payload
 
 
 def resolve_guest_display_name(guest: Guest) -> str:
@@ -238,6 +251,7 @@ def build_guest_combatants(
                 intellect_attr=getattr(guest, "intellect", 100),
                 defense_attr=getattr(guest, "defense_stat", stats.defense),
                 level=getattr(guest, "level", 1),
+                avatar_url=_resolve_battle_avatar_url(guest),
             )
         )
     return team

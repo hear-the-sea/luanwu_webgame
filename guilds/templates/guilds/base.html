@@ -9,23 +9,23 @@
 {% block content %}
 {% with url_name=request.resolver_match.url_name %}
 <div class="tw-guild-frame">
-    <header class="tw-guild-context-bar">
+    <header class="tw-guild-context-bar{% if not guild %} tw-guild-context-bar--guest{% endif %}">
         <div class="tw-guild-context-art" aria-hidden="true">
             <img src="{% static 'buildings/guild-residence.webp' %}" alt="" width="84" height="64" loading="eager" decoding="async">
         </div>
-        <div class="tw-guild-context-copy">
-            <span class="tw-guild-context-kicker">{% if guild %}帮会驻地{% else %}武林会盟{% endif %}</span>
-            <strong class="tw-guild-context-name">{% if guild %}{{ guild.name }}{% else %}天下帮会{% endif %}</strong>
-            <span class="tw-guild-context-meta">
-                {% if member %}
-                    {{ member.get_position_display }} · 帮会等级 {{ guild.level }}
-                {% elif guild %}
-                    等级 {{ guild.level }} · {{ guild.current_member_count }} / {{ guild.member_capacity }} 人
-                {% else %}
-                    四海豪杰 · 会盟名录
-                {% endif %}
-            </span>
-        </div>
+        {% if guild %}
+            <div class="tw-guild-context-copy">
+                <span class="tw-guild-context-kicker">帮会驻地</span>
+                <strong class="tw-guild-context-name">{{ guild.name }}</strong>
+                <span class="tw-guild-context-meta">
+                    {% if member %}
+                        {{ member.get_position_display }} · 帮会等级 {{ guild.level }}
+                    {% else %}
+                        等级 {{ guild.level }} · {{ guild.current_member_count }} / {{ guild.member_capacity }} 人
+                    {% endif %}
+                </span>
+            </div>
+        {% endif %}
 
         <nav class="tw-guild-subnav" aria-label="帮会导航">
             {% if member %}

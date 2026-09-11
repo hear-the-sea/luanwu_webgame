@@ -195,15 +195,15 @@
                                 value="{{ entry.pool_entry_id }}"
                                 class="guest-input"
                                 data-guest-option
-                                data-avatar-url="{% if guest.template.avatar %}{{ guest.template.avatar.url }}{% endif %}"
+                                data-avatar-url="{{ guest.avatar_url }}"
                                 data-guest-name="{{ guest.display_name }}"
                                 data-agility="{{ guest.agility }}"
                                 data-troop-capacity="{{ guest.troop_capacity }}"
                             >
                             <div class="tw-guest-card">
                                 <div class="tw-guest-avatar">
-                                    {% if guest.template.avatar %}
-                                    <img src="{{ guest.template.avatar.url }}" alt="{{ guest.display_name }}" loading="lazy" decoding="async">
+                                    {% if guest.avatar_url %}
+                                    <img src="{{ guest.avatar_url }}" alt="{{ guest.display_name }}" loading="lazy" decoding="async">
                                     {% else %}
                                     <div class="tw-avatar-placeholder">{{ guest.display_name|slice:":1" }}</div>
                                     {% endif %}

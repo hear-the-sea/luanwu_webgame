@@ -118,7 +118,7 @@ def build_auction_trade_context(
     get_slots_bid_info_batch: Callable[..., Any],
 ) -> None:
     context["auction_stats"] = _safe_call(get_auction_stats, manor, default={}, log_message="load auction stats failed")
-    auction_view = params.get("view", "browse")
+    auction_view = params.get("view") or "browse"
     context["auction_view"] = auction_view
 
     if auction_view == "browse":

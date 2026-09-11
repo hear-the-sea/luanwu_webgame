@@ -35,310 +35,39 @@ settings:
 
 items:
 
-  # ══════════════════════════════════════════════════════════════════════════════
-  #                              技能书 - 橙色品质
-  # ══════════════════════════════════════════════════════════════════════════════
+  # 本轮拍卖商品：每种物品 1 个拍卖位、1 个中标名额，起拍价均为 1 金条
 
-  - item_key: book_dragon_roar
+  - item_key: xisuidan
     slots: 1
     quantity_per_slot: 1
-    starting_price: 10
+    starting_price: 1
     min_increment: 1
     enabled: true
 
-  # ══════════════════════════════════════════════════════════════════════════════
-  #                              技能书 - 紫色品质
-  # ══════════════════════════════════════════════════════════════════════════════
-
-  - item_key: book_stratagem_burst
+  - item_key: guest_rebirth_card
     slots: 1
     quantity_per_slot: 1
-    starting_price: 8
+    starting_price: 1
     min_increment: 1
     enabled: true
 
-  - item_key: book_prison_break_blade
+  - item_key: green_to_blue_pill
     slots: 1
     quantity_per_slot: 1
-    starting_price: 7
+    starting_price: 1
     min_increment: 1
     enabled: true
 
-  - item_key: book_city_felling_strike
+  - item_key: xidianka
     slots: 1
     quantity_per_slot: 1
-    starting_price: 7
+    starting_price: 1
     min_increment: 1
     enabled: true
 
-  - item_key: book_thunder_nine_heavens
+  - item_key: soul_container
     slots: 1
     quantity_per_slot: 1
-    starting_price: 6
-    min_increment: 1
-    enabled: true
-
-  - item_key: book_five_thunder_descent
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 7
-    min_increment: 1
-    enabled: true
-
-  - item_key: book_brahma_true_fire
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 7
-    min_increment: 1
-    enabled: true
-
-  - item_key: book_hell_instant_formation
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 7
-    min_increment: 1
-    enabled: true
-
-  - item_key: book_comrade_command
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 6
-    min_increment: 1
-    enabled: true
-
-  - item_key: book_desperate_beast
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 7
-    min_increment: 1
-    enabled: true
-
-  - item_key: book_bloodthirsty_fury
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
-    min_increment: 1
-    enabled: true
-
-  # ══════════════════════════════════════════════════════════════════════════════
-  #                              武器 - 橙色品质
-  # ══════════════════════════════════════════════════════════════════════════════
-
-  - item_key: equip_yitianjian
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
-    min_increment: 1
-    enabled: true
-
-  - item_key: equip_xuanyuanjian
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
-    min_increment: 1
-    enabled: true
-
-  - item_key: equip_fangtianhuaji
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
-    min_increment: 1
-    enabled: true
-
-  - item_key: equip_zhuxianjian
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
-    min_increment: 1
-    enabled: true
-
-  - item_key: equip_xiaolifeidao
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
-    min_increment: 1
-    enabled: true
-
-  # ══════════════════════════════════════════════════════════════════════════════
-  #                              装备 - 紫色品质套装
-  # ══════════════════════════════════════════════════════════════════════════════
-
-  # 麒麟套装
-  - item_key: equip_qilinkui
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 5
-    min_increment: 1
-    enabled: true
-
-  - item_key: equip_qilinjia
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 6
-    min_increment: 1
-    enabled: true
-
-  - item_key: equip_qilinxue
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 5
-    min_increment: 1
-    enabled: true
-
-  - item_key: equip_qilindao
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 5
-    min_increment: 1
-    enabled: true
-
-  # 玄武套装
-  - item_key: equip_xuanwukui
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 5
-    min_increment: 1
-    enabled: true
-
-  - item_key: equip_xuanwujia
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 6
-    min_increment: 1
-    enabled: true
-
-  - item_key: equip_xuanwuxue
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 5
-    min_increment: 1
-    enabled: true
-
-  # ══════════════════════════════════════════════════════════════════════════════
-  #                              饰品 - 橙色品质
-  # ══════════════════════════════════════════════════════════════════════════════
-
-  - item_key: equip_heshibi
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
-    min_increment: 1
-    enabled: true
-
-  - item_key: equip_chuanguoyuxi
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 10
-    min_increment: 1
-    enabled: true
-
-  - item_key: equip_qiankunzhu
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
-    min_increment: 1
-    enabled: true
-
-  # ══════════════════════════════════════════════════════════════════════════════
-  #                              坐骑 - 橙色品质
-  # ══════════════════════════════════════════════════════════════════════════════
-
-  - item_key: equip_chituma
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 10
-    min_increment: 2
-    enabled: true
-
-  - item_key: equip_hanxuebaoma
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 10
-    min_increment: 2
-    enabled: true
-
-  - item_key: equip_qilin
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 12
-    min_increment: 2
-    enabled: true
-
-  # ══════════════════════════════════════════════════════════════════════════════
-  #                              护甲 - 橙色品质
-  # ══════════════════════════════════════════════════════════════════════════════
-
-  - item_key: equip_longlinzhanjia
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
-    min_increment: 1
-    enabled: true
-
-  - item_key: equip_jinsirujia
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
-    min_increment: 1
-    enabled: true
-
-  # ══════════════════════════════════════════════════════════════════════════════
-  #                              头盔 - 橙色品质
-  # ══════════════════════════════════════════════════════════════════════════════
-
-  - item_key: equip_longhuangguan
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
-    min_increment: 1
-    enabled: true
-
-  - item_key: equip_diwangkui
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
-    min_increment: 1
-    enabled: true
-
-  # ══════════════════════════════════════════════════════════════════════════════
-  #                              鞋子 - 橙色品质
-  # ══════════════════════════════════════════════════════════════════════════════
-
-  - item_key: equip_tatianxue
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
-    min_increment: 1
-    enabled: true
-
-  - item_key: equip_shenxingxue
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
-    min_increment: 1
-    enabled: true
-
-  # ══════════════════════════════════════════════════════════════════════════════
-  #                              器械 - 橙色品质
-  # ══════════════════════════════════════════════════════════════════════════════
-
-  - item_key: equip_fengshenbang
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 10
-    min_increment: 2
-    enabled: true
-
-  - item_key: equip_shanheshejitu
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 10
-    min_increment: 2
-    enabled: true
-
-  - item_key: equip_mojiajiguanren
-    slots: 1
-    quantity_per_slot: 1
-    starting_price: 8
+    starting_price: 1
     min_increment: 1
     enabled: true
