@@ -362,6 +362,25 @@ def test_future_finalized_at_cannot_bypass_database_clock_grace(monkeypatch) -> 
 
 
 @pytest.mark.django_db
+def test_mature_window_rejects_finalized_at_ahead_of_database_clock(monkeypatch) -> None:
+    database_now = HOURLY_END + timedelta(minutes=6)
+    monkeypatch.setattr(
+        "gameplay.services.virtual_player_core.safety_provider._database_utc_now",
+        lambda: database_now,
+    )
+
+    with pytest.raises(InvalidSafetyMetricError, match="later than the database clock"):
+        finalize_safety_metric_window(
+            window_kind="hourly",
+            window_start_at=HOURLY_START,
+            snapshot={"schema_version": 1, "event_count": 0},
+            finalized_at=database_now + timedelta(microseconds=1),
+        )
+
+    assert not BotSafetyMetricWindow.objects.exists()
+
+
+@pytest.mark.django_db
 def test_finalized_window_is_idempotent_for_same_snapshot_and_immutable_otherwise() -> None:
     _record_event()
     finalized_at = HOURLY_END + timedelta(minutes=5)

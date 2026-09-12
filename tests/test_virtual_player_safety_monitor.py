@@ -16,7 +16,7 @@ from gameplay.models import (
     BotSafetyMetricWindow,
 )
 from gameplay.services import runtime_configs
-from gameplay.services.virtual_player_core import safety_baselines, safety_monitor
+from gameplay.services.virtual_player_core import safety_baselines, safety_monitor, safety_provider
 from gameplay.services.virtual_player_core.safety_metrics import (
     ECONOMY_CAP_BREACH_METRIC,
     H01_CALLBACK_ATTEMPT_METRIC,
@@ -31,6 +31,7 @@ from gameplay.services.virtual_player_core.safety_monitor import (
     finalize_due_safety_windows,
     monitor_finalized_safety_windows,
 )
+from gameplay.tasks import virtual_players as virtual_player_tasks
 from tests.helpers.model_dml_audit import find_model_dml
 
 HOURLY_START = datetime(2026, 7, 27, 1, 0, tzinfo=UTC)
@@ -318,6 +319,60 @@ def test_aggregator_marks_heartbeat_gap_over_120_seconds_incomplete() -> None:
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize("app_offset_seconds", [-120, 0.5, 120])
+@pytest.mark.parametrize(
+    "task",
+    [
+        virtual_player_tasks.aggregate_virtual_player_safety_task,
+        virtual_player_tasks.monitor_virtual_player_safety_task,
+    ],
+)
+def test_safety_tasks_finalize_with_database_clock_despite_application_clock_skew(
+    monkeypatch, task, app_offset_seconds
+) -> None:
+    window = _window(finalized=False)
+    _routing_state(hourly_cursor=HOURLY_START)
+    BotSafetyMetricEvent.objects.bulk_create(_heartbeat_events())
+    database_now = window.window_end_at + timedelta(minutes=5)
+    monkeypatch.setattr(timezone, "now", lambda: database_now + timedelta(seconds=app_offset_seconds))
+    monkeypatch.setattr(safety_provider, "_database_utc_now", lambda: database_now)
+    monkeypatch.setattr(safety_monitor, "_database_utc_now", lambda: database_now)
+
+    result = task.run()
+
+    assert result["finalized_count"] == 1
+    window.refresh_from_db()
+    assert window.finalized_at == database_now
+    assert window.snapshot["heartbeat"]["complete"] is True
+    assert result["heartbeat"]["created"] is True
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("run_cycle", [False, True])
+def test_monitor_does_not_advance_cursors_before_database_grace(monkeypatch, run_cycle) -> None:
+    window = _window(finalized=False)
+    state = _routing_state(hourly_cursor=HOURLY_START)
+    database_now = window.window_end_at + timedelta(minutes=5) - timedelta(microseconds=1)
+    monkeypatch.setattr(timezone, "now", lambda: database_now + timedelta(seconds=1))
+    monkeypatch.setattr(safety_provider, "_database_utc_now", lambda: database_now)
+    monkeypatch.setattr(safety_monitor, "_database_utc_now", lambda: database_now)
+
+    if run_cycle:
+        cycle = safety_monitor.run_safety_monitor()
+        assert cycle.finalized_windows == ()
+        result = cycle.monitor
+    else:
+        result = monitor_finalized_safety_windows()
+
+    assert result.decisions == ()
+    state.refresh_from_db()
+    window.refresh_from_db()
+    assert state.last_hourly_safety_window_end_at == HOURLY_START
+    assert state.maintenance_mode == BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+    assert window.finalized_at is None
+
+
+@pytest.mark.django_db
 def test_due_finalizer_waits_until_exact_end_plus_five_minutes() -> None:
     window = _window(finalized=False)
     end_at = window.window_end_at
@@ -515,6 +570,38 @@ def test_arena_shortage_requires_persisted_baseline_and_strict_increase() -> Non
         reason.startswith("arena_shortage_baseline_missing")
         for reason in evaluate_finalized_safety_window(cold_start_missing).pause_reasons
     )
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("expired", [False, True])
+def test_runtime_baseline_expiry_uses_database_clock(monkeypatch, expired) -> None:
+    expires_at = HOURLY_START + timedelta(hours=2)
+    database_now = expires_at if expired else expires_at - timedelta(microseconds=1)
+    monkeypatch.setattr(timezone, "now", lambda: expires_at + timedelta(seconds=30))
+    monkeypatch.setattr(safety_monitor, "_database_utc_now", lambda: database_now)
+    window = _window(
+        arena=[
+            {
+                "kind": "coop",
+                "prestige_band": "junior",
+                "sample_count": 1,
+                "current_ratio_max": 0.01,
+                "real_entry_count_min": 3,
+            }
+        ],
+        baselines=[
+            _arena_baseline(
+                source=safety_baselines.BASELINE_SOURCE_RUNTIME_BOOTSTRAP,
+                expires_at=expires_at,
+                max_real_entry_count=3,
+            )
+        ],
+    )
+
+    decision = evaluate_finalized_safety_window(window)
+
+    assert ("arena_shortage_baseline_expired:coop:junior" in decision.pause_reasons) is expired
+    assert decision.should_pause is expired
 
 
 @pytest.mark.django_db

@@ -437,7 +437,7 @@ def test_run_safety_monitor_resolves_default_clock_once(monkeypatch) -> None:
     finalize_calls: list[dict[str, object]] = []
     monitor_calls: list[dict[str, object]] = []
 
-    monkeypatch.setattr(safety_monitor.timezone, "now", lambda: next(clock_values))
+    monkeypatch.setattr(safety_monitor, "_database_utc_now", lambda: next(clock_values))
     monkeypatch.setattr(
         safety_monitor,
         "finalize_due_safety_windows",
@@ -455,3 +455,4 @@ def test_run_safety_monitor_resolves_default_clock_once(monkeypatch) -> None:
     assert finalize_calls == [{"now": first, "limit": 7}]
     assert monitor_calls == [{"now": first, "limit": 7, "max_cas_retries": 4}]
     assert result.monitor is monitor_result
+    assert next(clock_values) == second

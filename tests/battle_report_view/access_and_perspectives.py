@@ -126,6 +126,41 @@ def test_arena_coop_report_uses_participant_message_title(client, django_user_mo
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize("notification_title", ["门客被俘通知", "唯一门客失去通知"])
+@pytest.mark.parametrize("has_battle_message", [False, True])
+def test_raid_report_title_prefers_battle_message(client, django_user_model, notification_title, has_battle_message):
+    user = django_user_model.objects.create_user(username="raid_report_capture_title", password="pass123")
+    manor = ensure_manor(user)
+    report = create_report(
+        manor=manor,
+        opponent_name="敌方庄园",
+        battle_type="raid",
+        attacker_team=[],
+        defender_team=[],
+    )
+    if has_battle_message:
+        Message.objects.create(
+            manor=manor,
+            kind=Message.Kind.BATTLE,
+            title="踢馆战报 - 踢馆失败",
+            battle_report=report,
+        )
+    Message.objects.create(
+        manor=manor,
+        kind=Message.Kind.BATTLE,
+        title=notification_title,
+        battle_report=report,
+    )
+
+    assert client.login(username="raid_report_capture_title", password="pass123")
+    response = client.get(reverse("battle:report_detail", kwargs={"pk": report.pk}))
+
+    assert response.status_code == 200
+    expected_title = "踢馆战报 - 踢馆失败" if has_battle_message else notification_title
+    assert response.context["report_title"] == expected_title
+
+
+@pytest.mark.django_db
 def test_arena_report_uses_defender_perspective_for_defender_viewer(client, django_user_model):
     attacker_user = django_user_model.objects.create_user(
         username="arena_report_attacker",

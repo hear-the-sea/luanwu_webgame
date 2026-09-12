@@ -19,6 +19,7 @@ from gameplay.services import runtime_configs
 
 from . import safety_baselines
 from .config import MaintenanceMode
+from .database_clock import database_utc_now as _database_utc_now
 from .random_context import canonical_json_bytes
 from .safety_metrics import (
     ARENA_SHORTAGE_METRIC,
@@ -534,7 +535,7 @@ def build_safety_window_snapshot(
 def _build_provider_snapshot(
     aggregation: SafetyMetricWindowAggregationInput,
 ) -> Mapping[str, Any]:
-    baselines = safety_baselines.lock_frozen_arena_shortage_baselines(now=timezone.now())
+    baselines = safety_baselines.lock_frozen_arena_shortage_baselines()
     return build_safety_window_snapshot(
         window_kind=aggregation.window_kind,
         window_start_at=aggregation.window_start_at,
@@ -551,10 +552,7 @@ def finalize_due_safety_windows(
     """Aggregate and freeze open windows whose provider grace has elapsed."""
 
     resolved_limit = _validate_limit(limit)
-    resolved_now = _aware_utc(
-        timezone.now() if now is None else now,
-        field="now",
-    )
+    resolved_now = _aware_utc(_database_utc_now() if now is None else now, field="now")
     due_before = resolved_now - SAFETY_WINDOW_GRACE
     windows = tuple(
         BotSafetyMetricWindow.objects.filter(
@@ -994,7 +992,7 @@ def _bootstrap_missing_arena_baselines(
     if mature_windows is None or not all(_bootstrap_window_is_healthy(facts) for facts in mature_windows):
         return {}
 
-    reference_at = _aware_utc(timezone.now() if now is None else now, field="now")
+    reference_at = _aware_utc(_database_utc_now() if now is None else now, field="now")
     existing_scopes = {
         scope
         for facts in mature_windows
@@ -1093,7 +1091,7 @@ def evaluate_finalized_safety_window(
     """Evaluate one immutable snapshot without applying routing state changes."""
 
     current, history_facts = _parse_window_history(window, history)
-    reference_at = timezone.now() if now is None else _aware_utc(now, field="now")
+    reference_at = _database_utc_now() if now is None else _aware_utc(now, field="now")
 
     reasons: list[str] = []
     reasons.extend(f"aggregation_error:{reason}" for reason in current.aggregation_errors)
@@ -1341,10 +1339,7 @@ def monitor_finalized_safety_windows(
     resolved_limit = _validate_limit(limit)
     if isinstance(max_cas_retries, bool) or not isinstance(max_cas_retries, int) or not 1 <= max_cas_retries <= 20:
         raise SafetyMonitorError("max_cas_retries must be an integer between 1 and 20")
-    resolved_now = _aware_utc(
-        timezone.now() if now is None else now,
-        field="now",
-    )
+    resolved_now = _aware_utc(_database_utc_now() if now is None else now, field="now")
 
     routing = runtime_configs.read_virtual_player_routing()
     if not routing.persisted or routing.revision is None:
@@ -1475,10 +1470,7 @@ def run_safety_monitor(
     limit: int = DEFAULT_WINDOW_LIMIT,
     max_cas_retries: int = DEFAULT_MAX_CAS_ATTEMPTS,
 ) -> SafetyMonitorCycleResult:
-    resolved_now = _aware_utc(
-        timezone.now() if now is None else now,
-        field="now",
-    )
+    resolved_now = _aware_utc(_database_utc_now() if now is None else now, field="now")
     finalized = finalize_due_safety_windows(now=resolved_now, limit=limit)
     monitored = monitor_finalized_safety_windows(
         now=resolved_now,
