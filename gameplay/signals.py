@@ -29,12 +29,7 @@ def configure_mysql_connection(sender, connection, **kwargs) -> None:
     if connection.vendor != "mysql":
         return
     with connection.cursor() as cursor:
-        cursor.execute(
-            "SET character_set_client='utf8mb4', "
-            "character_set_connection='utf8mb4', "
-            "character_set_results='utf8mb4', "
-            "collation_connection='utf8mb4_unicode_ci'"
-        )
+        cursor.execute("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci")
 
 
 def _queue_virtual_player_population_reconcile(
