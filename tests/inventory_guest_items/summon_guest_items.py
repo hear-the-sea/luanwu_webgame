@@ -43,6 +43,9 @@ def test_summon_guest_item_can_require_additional_copies_of_itself(django_user_m
 
     assert "蜡笔小新" in result["_message"]
     assert manor.guests.filter(template=template).count() == 1
+    summoned_guest = manor.guests.get(template=template)
+    assert summoned_guest.training_target_level == summoned_guest.level + 1
+    assert summoned_guest.training_complete_at is not None
     assert not InventoryItem.objects.filter(pk=item.pk).exists()
 
 

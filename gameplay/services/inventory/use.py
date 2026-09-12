@@ -416,6 +416,7 @@ def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
 
     from guests.models import GuestTemplate
     from guests.services.recruitment_guests import build_recruitment_custom_name, create_guest_from_template
+    from guests.services.training import ensure_auto_training
     from guests.services.world_unique import (
         WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY,
         claim_world_unique_guest_from_scroll,
@@ -462,6 +463,7 @@ def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
             rng=summon_rng,
             assign_fallback_avatar=True,
         )
+        ensure_auto_training(guest)
 
     rarity_display = template.get_rarity_display()
     return {

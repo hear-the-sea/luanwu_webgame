@@ -103,6 +103,8 @@ def test_lubu_scroll_claim_is_global_and_shows_holder_status(manor_factory):
     guest = Guest.objects.get(manor=owner, template__key=WORLD_UNIQUE_LUBU_TEMPLATE_KEY)
     status_after = get_world_unique_guest_status()
     assert guest.template.key == WORLD_UNIQUE_LUBU_TEMPLATE_KEY
+    assert guest.training_target_level == guest.level + 1
+    assert guest.training_complete_at is not None
     assert effect["全服唯一"] is True
     assert status_after["owner_manor_id"] == owner.pk
     assert "吕布持有者" in status_after["summary"]

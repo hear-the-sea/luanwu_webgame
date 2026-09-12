@@ -152,7 +152,13 @@ from guests.services.recruitment_finalize_helpers import remaining_guest_capacit
 from guests.services.recruitment_guests import build_recruitment_custom_name, create_guest_from_template
 from guests.services.salary import SalaryBatchQuote, bulk_check_salary_paid, get_guest_salary, pay_all_salaries_locked
 from guests.services.skills import learn_guest_skill_from_virtual_book_locked, learn_guest_skill_locked
-from guests.services.training import apply_training_locked, project_training_completion, quote_training
+from guests.services.training import (
+    apply_training_locked,
+    ensure_auto_training,
+    project_training_completion,
+    quote_training,
+    reduce_training_time_for_guest,
+)
 from guests.utils.training_calculator import get_training_duration
 
 from . import profile_store
@@ -6745,11 +6751,6 @@ def execute_virtual_player_v2_maintenance_plan(
                                 # level is changed only by the normal training
                                 # completion worker, so this action cannot
                                 # create a high-level direct jump.
-                                from guests.services.training import (
-                                    ensure_auto_training,
-                                    reduce_training_time_for_guest,
-                                )
-
                                 if not arena_free_subsidy:
                                     training_quote = quote_training(locked_guest, levels=1)
                                     spend_resources_locked(
@@ -6959,6 +6960,8 @@ def execute_virtual_player_v2_maintenance_plan(
                                     )
                                 )
                             created_guests = tuple(created_guest_rows)
+                            for created_guest in created_guests:
+                                ensure_auto_training(created_guest, now=plan.planned_at)
                             final_strength_guests = (*revalidation_guests, *created_guests)
                         elif plan.action_kind == BuildingUpgradeActionSpec.action_kind:
                             assert isinstance(

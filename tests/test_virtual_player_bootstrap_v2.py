@@ -9,6 +9,7 @@ from django.db import connection, transaction
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
+from core.config import GUEST
 from gameplay import signals as gameplay_signals
 from gameplay.models import (
     BotInventoryDailyCounter,
@@ -424,6 +425,12 @@ def test_v2_bootstrap_materializes_exact_blueprint_assets_in_all_eight_bands(
         guests = list(Guest.objects.filter(manor=manor).order_by("id"))
         assert [guest.template.key for guest in guests] == [target.template_key for target in assets.guests]
         assert [guest.level for guest in guests] == [target.level for target in assets.guests]
+        assert all(
+            guest.training_target_level == guest.level + 1 and guest.training_complete_at is not None
+            for guest in guests
+            if guest.level < int(GUEST.MAX_LEVEL)
+        )
+        assert all(guest.training_complete_at is None for guest in guests if guest.level >= int(GUEST.MAX_LEVEL))
         assert [guest.created_at for guest in guests] == [
             account_created_at + timedelta(days=target.created_day_offset) for target in assets.guests
         ]

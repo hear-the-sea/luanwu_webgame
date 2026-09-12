@@ -170,6 +170,10 @@ def claim_world_unique_guest_from_scroll(
     state.owner_guest_id = guest.pk
     state.version = int(state.version or 0) + 1
     state.save(update_fields=["status", "owner_manor", "owner_guest", "version", "updated_at"])
+
+    from .training import ensure_auto_training
+
+    ensure_auto_training(guest)
     return guest
 
 

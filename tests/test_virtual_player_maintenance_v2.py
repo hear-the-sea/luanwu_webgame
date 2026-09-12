@@ -2417,6 +2417,8 @@ def test_v2_quantity_phase_recruits_before_quality_actions(
     assert all(guest.template_id == quantity_template.id for guest in created_guests)
     assert all(guest.custom_name and guest.custom_name != quantity_template.name for guest in created_guests)
     assert all(guest.level == 1 for guest in created_guests)
+    assert all(guest.training_target_level == guest.level + 1 for guest in created_guests)
+    assert all(guest.training_complete_at is not None for guest in created_guests)
     assert not GuestSkill.objects.filter(guest_id__in=[guest.id for guest in created_guests]).exists()
     assert Guest.objects.filter(manor_id=active_v2_profile.manor_id).count() == current_guest_count + 1
 
