@@ -845,6 +845,7 @@ def _draw_virtual_candidates(
             custom_name=custom_name,
             rng=rng,
             grant_skills=False,
+            assign_fallback_avatar=True,
             save=False,
         )
         drawn.append(_DrawnGuest(guest=guest, rarity=str(template.rarity), template_id=int(template.id)))

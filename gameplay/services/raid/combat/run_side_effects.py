@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
+from django.utils import timezone
+
 from core.utils.imports import is_missing_target_import
 
 
 def send_raid_incoming_message(run: Any, *, create_message: Callable[..., Any]) -> None:
     battle_at = run.battle_at
-    arrive_time = battle_at.strftime("%Y-%m-%d %H:%M:%S") if battle_at else "未知"
+    arrive_time = timezone.localtime(battle_at).strftime("%Y-%m-%d %H:%M:%S") if battle_at else "未知"
 
     body = f"""来自 {run.attacker.location_display} 的 {run.attacker.display_name} 正在向你发起进攻！
 

@@ -346,7 +346,7 @@ MARKET_STATS_CACHE_LOCK_WAIT_SECONDS = max(
 # Cache TTL for defender 24h raid-received counter in attack checks
 RAID_RECENT_ATTACKS_CACHE_TTL_SECONDS = int(env("DJANGO_RAID_RECENT_ATTACKS_CACHE_TTL_SECONDS", "5"))
 # Raid capture rate (0.0 ~ 1.0, clamped in gameplay.constants.get_raid_capture_guest_rate)
-RAID_CAPTURE_GUEST_RATE = env_float("DJANGO_RAID_CAPTURE_GUEST_RATE", 0.5)
+RAID_CAPTURE_GUEST_RATE = env_float("DJANGO_RAID_CAPTURE_GUEST_RATE", 0.1)
 
 # High-value thresholds for logging/monitoring
 TRADE_HIGH_VALUE_SILVER_THRESHOLD = int(env("DJANGO_TRADE_HIGH_VALUE_SILVER_THRESHOLD", "1000000"))

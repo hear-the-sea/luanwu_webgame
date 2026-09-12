@@ -18,6 +18,26 @@ from guests.models import GuestStatus
 from tests.gameplay.support import recruit_frontline_guests
 
 
+@pytest.mark.django_db
+def test_completed_mission_is_not_reported_as_returning(game_data, manor_with_troops):
+    mission = MissionTemplate.objects.create(
+        key="completed_mission_status_case",
+        name="已完成任务状态测试",
+    )
+    run = MissionRun.objects.create(
+        manor=manor_with_troops,
+        mission=mission,
+        status=MissionRun.Status.COMPLETED,
+        travel_time=1,
+        return_at=timezone.now() - timedelta(minutes=1),
+        completed_at=timezone.now(),
+    )
+
+    assert run.is_returning is False
+    assert run.next_state_at is None
+    assert run.time_remaining == 0
+
+
 @pytest.mark.django_db(transaction=True)
 def test_mission_launch_and_return(game_data, mission_templates, manor_with_troops):
     mission = MissionTemplate.objects.create(

@@ -98,11 +98,12 @@ def send_scout_retreat_message(record: Any) -> None:
 
 def send_scout_detected_message(record: Any) -> None:
     """发送被侦察警告消息给防守方。"""
+    detected_at = timezone.localtime(timezone.now())
     body = f"""我方巡逻队在庄园附近发现并抓获了一名探子！
 
 探子来源：{record.attacker.display_name}
 所在地区：{record.attacker.location_display}
-发现时间：{timezone.now().strftime('%Y-%m-%d %H:%M:%S')}
+发现时间：{detected_at.strftime('%Y-%m-%d %H:%M:%S')}
 
 建议加强防备，敌人可能即将来袭！"""
 

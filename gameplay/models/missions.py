@@ -94,6 +94,8 @@ class MissionRun(models.Model):
     @property
     def is_returning(self) -> bool:
         """是否处于返程阶段"""
+        if self.status != self.Status.ACTIVE:
+            return False
         if self.is_retreating:
             return True
         battle_at = self.battle_at
@@ -104,6 +106,8 @@ class MissionRun(models.Model):
     @property
     def next_state_at(self):
         """下一个状态的时间点（用于事件栏显示）"""
+        if self.status != self.Status.ACTIVE:
+            return None
         if self.is_returning:
             return self.return_at
         return self.battle_at

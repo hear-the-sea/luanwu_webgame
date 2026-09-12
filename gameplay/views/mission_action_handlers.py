@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.db import DatabaseError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.utils import timezone
 
 from battle import troops as battle_troops
 from core.exceptions import GameError
@@ -130,7 +131,7 @@ def handle_retreat_mission(
 
     def _perform_retreat() -> None:
         request_retreat_fn(run)
-        eta = run.return_at.strftime("%H:%M:%S") if run.return_at else ""
+        eta = timezone.localtime(run.return_at).strftime("%H:%M:%S") if run.return_at else ""
         messages.info(request, f"{run.mission.name} 已撤退，预计返程：{eta}")
 
     def _on_lock_conflict() -> HttpResponse:

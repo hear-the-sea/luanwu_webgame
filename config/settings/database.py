@@ -112,7 +112,13 @@ if "postgresql" in _db_engine:
 elif "mysql" in _db_engine:
     _db_options = {
         "connect_timeout": 5,
-        "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+        "init_command": (
+            "SET sql_mode='STRICT_TRANS_TABLES', "
+            "character_set_client='utf8mb4', "
+            "character_set_connection='utf8mb4', "
+            "character_set_results='utf8mb4', "
+            "collation_connection='utf8mb4_unicode_ci'"
+        ),
     }
 
 DATABASES = {
