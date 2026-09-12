@@ -460,6 +460,7 @@ def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
             template=template,
             custom_name=custom_name,
             rng=summon_rng,
+            assign_fallback_avatar=True,
         )
 
     rarity_display = template.get_rarity_display()

@@ -6,6 +6,7 @@ The original file exceeded the audit size threshold. Tests now live in
 existing pytest commands and CI references.
 """
 
+from tests.inventory_guest_items.disguise import *  # noqa: F401,F403
 from tests.inventory_guest_items.rarity_upgrade import *  # noqa: F401,F403
 from tests.inventory_guest_items.reset_items import *  # noqa: F401,F403
 from tests.inventory_guest_items.soul_container import *  # noqa: F401,F403

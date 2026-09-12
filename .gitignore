@@ -85,6 +85,7 @@ logs/
 # Runtime bind-mount directories (production data)
 runtime/
 dump.rdb
+webgame-prod-*.tar.gz
 
 # OS
 Thumbs.db

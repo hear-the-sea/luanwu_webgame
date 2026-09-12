@@ -17,6 +17,7 @@ from core.exceptions import (
     ItemNotFoundError,
 )
 from gameplay.models import InventoryItem, ItemTemplate, Manor
+from guests.avatar import prepare_guest_avatar_asset, uses_instance_avatar_generation
 from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
 from guests.models import Guest, GuestRarity, GuestStatus, GuestTemplate
 from guests.rarity import GUEST_RARITY_ORDER
@@ -53,6 +54,7 @@ GUEST_RESET_UPDATE_FIELDS = [
     "allocated_defense",
     "allocated_agility",
     "avatar_override_key",
+    "avatar_asset_key",
     "super_disguise_applied",
 ]
 
@@ -316,6 +318,7 @@ def apply_guest_template_reset(
     varied_attrs: dict[str, int],
     include_template: bool = False,
 ) -> None:
+    had_generated_avatar = bool(guest.avatar_asset_key)
     if include_template:
         guest.template = target_template
 
@@ -346,6 +349,13 @@ def apply_guest_template_reset(
     guest.allocated_agility = 0
     guest.xisuidan_used = 0
     guest.avatar_override_key = ""
+    guest.avatar_asset_key = ""
+    if had_generated_avatar and (not target_template.avatar or uses_instance_avatar_generation(target_template.key)):
+        guest.avatar_asset_key = prepare_guest_avatar_asset(
+            archetype=target_template.archetype,
+            gender=guest.gender,
+            rng=Random(),
+        )
     guest.super_disguise_applied = False
 
     update_fields = list(GUEST_RESET_UPDATE_FIELDS)

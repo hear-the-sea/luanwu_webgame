@@ -313,6 +313,14 @@ docker compose down -v
 4. 如果有模板数据变更，再执行导入
 5. 强制重建业务容器
 
+更新登录限流和邮件重发配置时，已有 `.env.docker` 中的显式值会覆盖代码默认值。
+将 `EMAIL_VERIFICATION_RESEND_IP_LIMIT` 调整为 `20`（每 IP 每小时请求数），
+`EMAIL_VERIFICATION_RECOVERY_EMAIL_LIMIT` 设为 `10`（找回入口每邮箱每小时请求数）；
+账号发送间隔仍为 60 秒，邮件供应商的日/月额度独立生效。
+同时核对 `DJANGO_TRUSTED_PROXY_IPS` 是否包含实际入口代理，且代理正确传递 `X-Forwarded-For`。
+如果不同玩家的请求被识别为同一代理 IP，仍会共用 IP 防刷额度；应修正代理配置，不能信任任意来源的转发头。
+本次门客头像字段使用 `guests/0075_guest_avatar_asset_key.py` 增量迁移，保留旧迁移历史和现有玩家数据。
+
 常用命令：
 
 ```bash

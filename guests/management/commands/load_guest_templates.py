@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import logging
-import random
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -17,6 +16,12 @@ from battle.combatants_pkg.cache import clear_guest_template_cache
 from core.config import GUEST
 from core.utils.image_utils import compress_and_resize_image
 from core.utils.yaml_loader import ensure_mapping, load_yaml_data
+from guests.avatar import (
+    build_guest_avatar_catalog,
+    extract_guest_avatar_tags,
+    pick_guest_avatar_filename,
+    uses_instance_avatar_generation,
+)
 from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
 from guests.growth_rules import RARITY_HP_PROFILES
 from guests.models import (
@@ -56,7 +61,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--assign-missing-avatars",
             action="store_true",
-            help="Auto-assign avatars for templates missing avatar based on gender/archetype.",
+            help="Auto-assign template avatars for missing images; instance-avatar templates are assigned on guest creation.",
         )
         parser.add_argument(
             "--skills-file",
@@ -366,6 +371,10 @@ class Command(BaseCommand):
         avatar_cache: dict[str, str],
         verbosity: int,
     ) -> int:
+        if not data.get("avatar") and uses_instance_avatar_generation(data.get("key")):
+            # 已有实例仍可能依赖模板头像，保留旧图作为兼容兜底。
+            return 0
+
         avatar_filename = data.get("avatar")
         fallback_count = 0
         if not avatar_filename and assign_missing_avatars and not obj.avatar:
@@ -791,43 +800,15 @@ class Command(BaseCommand):
             return
         if GuestTemplate.objects.filter(avatar=old_name).exclude(pk=template.pk).exists():
             return
+        if Guest.objects.filter(avatar_asset_key=old_name).exists():
+            return
         template.avatar.storage.delete(old_name)
 
     def _build_avatar_catalog(self, image_source_dir: Path) -> dict[tuple[str, str], list[str]]:
-        catalog: dict[tuple[str, str], list[str]] = {
-            ("civil", "male"): [],
-            ("civil", "female"): [],
-            ("military", "male"): [],
-            ("military", "female"): [],
-        }
-        if not image_source_dir.exists():
-            return catalog
-        for path in image_source_dir.iterdir():
-            if not path.is_file():
-                continue
-            if path.suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp"}:
-                continue
-            archetype, gender = self._extract_avatar_tags(path.name)
-            if not archetype or not gender:
-                continue
-            catalog[(archetype, gender)].append(path.name)
-        for key in catalog:
-            catalog[key].sort()
-        return catalog
+        return build_guest_avatar_catalog(image_source_dir)
 
     def _extract_avatar_tags(self, filename: str) -> tuple[str | None, str | None]:
-        normalized = filename.lower().replace("-", "_")
-        archetype = None
-        if "_wen_" in normalized or "_wen." in normalized:
-            archetype = "civil"
-        elif "_wu_" in normalized or "_wu." in normalized:
-            archetype = "military"
-        gender = None
-        if "_female" in normalized:
-            gender = "female"
-        elif "_male" in normalized:
-            gender = "male"
-        return archetype, gender
+        return extract_guest_avatar_tags(filename)
 
     def _pick_fallback_avatar(
         self,
@@ -836,18 +817,9 @@ class Command(BaseCommand):
         gender: str | None,
         seed_key: str | None,
     ) -> str | None:
-        if not avatar_catalog:
-            return None
-        candidates: list[str] = []
-        if archetype in {"civil", "military"}:
-            if gender in {"male", "female"}:
-                candidates = avatar_catalog.get((archetype, gender), [])
-            else:
-                candidates = avatar_catalog.get((archetype, "male"), []) + avatar_catalog.get((archetype, "female"), [])
-        if not candidates:
-            for items in avatar_catalog.values():
-                candidates.extend(items)
-        if not candidates:
-            return None
-        rng = random.Random(seed_key or "")
-        return rng.choice(candidates)
+        return pick_guest_avatar_filename(
+            avatar_catalog,
+            archetype,
+            gender,
+            seed_key=seed_key,
+        )

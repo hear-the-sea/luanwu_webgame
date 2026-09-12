@@ -285,6 +285,7 @@ def test_clear_login_attempts_removes_lock(monkeypatch):
 def test_clear_login_attempts_can_preserve_ip_bucket(monkeypatch):
     cache.clear()
     monkeypatch.setattr(account_views, "LOGIN_ATTEMPT_LIMIT", 2)
+    monkeypatch.setattr(account_views, "LOGIN_IP_ATTEMPT_LIMIT", 2)
     monkeypatch.setattr(account_views, "LOGIN_ATTEMPT_WINDOW", 60)
     monkeypatch.setattr(account_views, "LOGIN_LOCKOUT_DURATION", 120)
 

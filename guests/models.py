@@ -221,6 +221,13 @@ class Guest(models.Model):
         default="",
         help_text="受控的门客头像覆盖 key，空值表示使用门客模板头像",
     )
+    avatar_asset_key = models.CharField(
+        "头像资源",
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="按文武和性别选择的受控头像资源路径，空值表示使用门客模板头像",
+    )
     super_disguise_applied = models.BooleanField("超级易容效果已生效", default=False)
     force = models.PositiveIntegerField("武力", default=80)
     intellect = models.PositiveIntegerField("智力", default=80)

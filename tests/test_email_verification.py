@@ -11,8 +11,10 @@ from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 
+from accounts import views as account_views
 from accounts.email_providers import EMAIL_PROVIDER_BREVO, EMAIL_PROVIDER_RESEND
 from accounts.email_quota import EmailQuotaExceeded, quota_month, release_email_send_slot, reserve_email_send_slot
+from accounts.email_verification import build_email_verification_token
 from accounts.forms import EmailVerificationRecoveryForm, SignUpForm
 from accounts.models import EmailProviderDailyQuota, EmailSendQuota
 
@@ -266,6 +268,98 @@ def test_recovery_reuses_per_user_cooldown(client, django_user_model):
     assert first.status_code == 200
     assert second.status_code == 200
     assert "如果该邮箱对应未完成验证的账号" in second.content.decode()
+    assert len(mail.outbox) == 1
+    assert EmailSendQuota.objects.get(month=quota_month()).sent_count == 1
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+def test_resend_and_recovery_share_increased_ip_limit(client, django_user_model):
+    cache.clear()
+    pending_user = _create_pending_user(
+        django_user_model,
+        username="email_shared_ip_limit_user",
+        email="email-shared-ip-limit@example.com",
+    )
+    resend_url = reverse("accounts:resend_email_verification")
+    recovery_url = reverse("accounts:email_verification_recovery")
+    token = build_email_verification_token(pending_user)
+    limit = account_views.EMAIL_VERIFICATION_RESEND_IP_LIMIT
+
+    for index in range(limit):
+        cache.delete(account_views._email_verification_resend_cache_key(pending_user.pk))
+        # Both entry points must use the same IP budget.
+        if index == 0:
+            url, data = recovery_url, {"email": pending_user.email}
+        else:
+            url, data = resend_url, {"token": token}
+        response = client.post(url, data, REMOTE_ADDR="203.0.113.170")
+
+        assert response.status_code == 200
+        assert len(mail.outbox) == index + 1
+
+    cache.delete(account_views._email_verification_resend_cache_key(pending_user.pk))
+    limited = client.post(resend_url, {"token": token}, REMOTE_ADDR="203.0.113.170")
+
+    assert limited.status_code == 302
+    assert limited["Location"] == reverse("accounts:register")
+    assert len(mail.outbox) == limit
+    assert EmailSendQuota.objects.get(month=quota_month()).sent_count == limit
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+def test_recovery_has_increased_normalized_email_limit_across_ips(client, django_user_model):
+    cache.clear()
+    pending_user = _create_pending_user(
+        django_user_model,
+        username="email_recovery_limit_user",
+        email="email-recovery-limit@example.com",
+    )
+    url = reverse("accounts:email_verification_recovery")
+    limit = account_views.EMAIL_VERIFICATION_RECOVERY_EMAIL_LIMIT
+
+    for index in range(limit):
+        cache.delete(account_views._email_verification_resend_cache_key(pending_user.pk))
+        response = client.post(
+            url,
+            {"email": f" {pending_user.email.upper()} " if index % 2 else pending_user.email},
+            REMOTE_ADDR=f"203.0.113.{180 + index}",
+        )
+
+        assert response.status_code == 200
+        assert len(mail.outbox) == index + 1
+
+    cache.delete(account_views._email_verification_resend_cache_key(pending_user.pk))
+    limited = client.post(url, {"email": pending_user.email}, REMOTE_ADDR="203.0.113.199")
+
+    assert limited.status_code == 302
+    assert limited["Location"] == url
+    assert len(mail.outbox) == limit
+    assert EmailSendQuota.objects.get(month=quota_month()).sent_count == limit
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+def test_recovery_and_resend_share_per_user_cooldown(client, django_user_model):
+    cache.clear()
+    pending_user = _create_pending_user(
+        django_user_model,
+        username="email_shared_cooldown_user",
+        email="email-shared-cooldown@example.com",
+    )
+
+    recovery = client.post(
+        reverse("accounts:email_verification_recovery"),
+        {"email": pending_user.email},
+        REMOTE_ADDR="203.0.113.171",
+    )
+    resend = client.post(
+        reverse("accounts:resend_email_verification"),
+        {"token": build_email_verification_token(pending_user)},
+        REMOTE_ADDR="203.0.113.172",
+    )
+
+    assert recovery.status_code == 200
+    assert resend.status_code == 200
+    assert "验证邮件刚刚发送过" in resend.content.decode()
     assert len(mail.outbox) == 1
     assert EmailSendQuota.objects.get(month=quota_month()).sent_count == 1
 

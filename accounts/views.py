@@ -19,6 +19,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, TemplateView, View
 
 from core.config import SECURITY
+from core.utils.infrastructure import DATABASE_CACHE_INFRASTRUCTURE_EXCEPTIONS
 from core.utils.network import get_client_ip
 from core.utils.rate_limit import rate_limit_redirect
 from gameplay.models import Manor
@@ -49,6 +50,7 @@ from .register_runtime import apply_registration_integrity_errors, prepare_signu
 
 # 从 core.config 导入配置
 LOGIN_ATTEMPT_LIMIT = SECURITY.LOGIN_ATTEMPT_LIMIT
+LOGIN_IP_ATTEMPT_LIMIT = SECURITY.LOGIN_IP_ATTEMPT_LIMIT
 LOGIN_ATTEMPT_WINDOW = SECURITY.LOGIN_ATTEMPT_WINDOW
 LOGIN_LOCKOUT_DURATION = SECURITY.LOGIN_LOCKOUT_DURATION
 REGISTRATION_IP_LIMIT = SECURITY.REGISTRATION_IP_LIMIT
@@ -69,17 +71,21 @@ EMAIL_VERIFICATION_RESEND_COOLDOWN_SECONDS = max(
 )
 EMAIL_VERIFICATION_RESEND_IP_LIMIT = max(
     1,
-    int(getattr(settings, "EMAIL_VERIFICATION_RESEND_IP_LIMIT", 5)),
+    int(getattr(settings, "EMAIL_VERIFICATION_RESEND_IP_LIMIT", 20)),
+)
+EMAIL_VERIFICATION_RECOVERY_EMAIL_LIMIT = max(
+    1,
+    int(getattr(settings, "EMAIL_VERIFICATION_RECOVERY_EMAIL_LIMIT", 10)),
 )
 EMAIL_VERIFICATION_RESEND_IP_WINDOW_SECONDS = max(
     1,
     int(getattr(settings, "EMAIL_VERIFICATION_RESEND_IP_WINDOW_SECONDS", 3600)),
 )
 logger = logging.getLogger(__name__)
-_LOCAL_LOGIN_CACHE: dict[str, tuple[object, float]] = {}
+_LOCAL_LOGIN_CACHE: dict[str, tuple[object, float, bool]] = {}
 _LOCAL_LOGIN_CACHE_GUARD = Lock()
 _LOCAL_LOGIN_CACHE_MAX_SIZE = 5000
-LOGIN_CACHE_INFRASTRUCTURE_EXCEPTIONS = (DatabaseError, ConnectionError, OSError, TimeoutError)
+LOGIN_CACHE_INFRASTRUCTURE_EXCEPTIONS = DATABASE_CACHE_INFRASTRUCTURE_EXCEPTIONS
 
 
 def _get_client_ip(request) -> str:
@@ -128,7 +134,7 @@ def _get_login_lock_key(request, username: str | None = None) -> tuple[str, str 
 
 
 def _cleanup_local_login_cache(now: float) -> None:
-    expired_keys = [key for key, (_value, expire_at) in _LOCAL_LOGIN_CACHE.items() if expire_at <= now]
+    expired_keys = [key for key, (_value, expire_at, _unsynced) in _LOCAL_LOGIN_CACHE.items() if expire_at <= now]
     for key in expired_keys[:1000]:
         _LOCAL_LOGIN_CACHE.pop(key, None)
 
@@ -139,29 +145,38 @@ def _cleanup_local_login_cache(now: float) -> None:
         _LOCAL_LOGIN_CACHE.pop(key, None)
 
 
-def _local_login_cache_get(key: str, default=None):
+def _local_login_cache_get(key: str, default=None, *, unsynced_only: bool = False):
     now = time.monotonic()
     with _LOCAL_LOGIN_CACHE_GUARD:
         record = _LOCAL_LOGIN_CACHE.get(key)
         if record is None:
             return default
-        value, expire_at = record
+        value, expire_at, unsynced = record
         if expire_at <= now:
             _LOCAL_LOGIN_CACHE.pop(key, None)
             return default
-        return value
+        return value if not unsynced_only or unsynced else default
 
 
-def _local_login_cache_set(key: str, value, timeout: int) -> None:
-    expire_at = time.monotonic() + max(1, int(timeout))
+def _local_login_cache_set(key: str, value, timeout: int, *, unsynced: bool = False, refresh: bool = True) -> None:
+    now = time.monotonic()
+    expire_at = now + max(1, int(timeout))
     with _LOCAL_LOGIN_CACHE_GUARD:
-        _LOCAL_LOGIN_CACHE[key] = (value, expire_at)
+        record = _LOCAL_LOGIN_CACHE.get(key)
+        # 共享缓存读取只补充镜像，不延长已知锁的本地有效期。
+        if not refresh and record is not None and record[1] > now and record[0] == value:
+            _LOCAL_LOGIN_CACHE[key] = (value, min(expire_at, record[1]), unsynced)
+            return
+        _LOCAL_LOGIN_CACHE[key] = (value, expire_at, unsynced)
         if len(_LOCAL_LOGIN_CACHE) > _LOCAL_LOGIN_CACHE_MAX_SIZE:
             _cleanup_local_login_cache(time.monotonic())
 
 
-def _local_login_cache_delete(key: str) -> None:
+def _local_login_cache_delete(key: str, *, synced_only: bool = False) -> None:
     with _LOCAL_LOGIN_CACHE_GUARD:
+        record = _LOCAL_LOGIN_CACHE.get(key)
+        if synced_only and record is not None and record[2]:
+            return
         _LOCAL_LOGIN_CACHE.pop(key, None)
 
 
@@ -171,10 +186,10 @@ def _local_login_cache_incr(key: str, timeout: int) -> int:
     with _LOCAL_LOGIN_CACHE_GUARD:
         record = _LOCAL_LOGIN_CACHE.get(key)
         if record is None or record[1] <= now:
-            _LOCAL_LOGIN_CACHE[key] = (1, expire_at)
+            _LOCAL_LOGIN_CACHE[key] = (1, expire_at, True)
             return 1
 
-        current_value, _current_expire_at = record
+        current_value, _current_expire_at, _unsynced = record
         if isinstance(current_value, bool):
             next_value = 1
         elif isinstance(current_value, (int, float, str, bytes, bytearray)):
@@ -184,7 +199,7 @@ def _local_login_cache_incr(key: str, timeout: int) -> int:
                 next_value = 1
         else:
             next_value = 1
-        _LOCAL_LOGIN_CACHE[key] = (next_value, expire_at)
+        _LOCAL_LOGIN_CACHE[key] = (next_value, expire_at, True)
         return next_value
 
 
@@ -208,7 +223,7 @@ def _normalize_lock_ttl(lock_key: str) -> int:
     )
 
 
-def _increment_attempt_counter(key: str) -> int:
+def _increment_attempt_counter(key: str, *, limit: int | None = None) -> int:
     from core.utils.task_monitoring import increment_degraded_counter
 
     return runtime_increment_attempt_counter(
@@ -217,10 +232,11 @@ def _increment_attempt_counter(key: str) -> int:
         logger=logger,
         settings_obj=settings,
         infrastructure_exceptions=LOGIN_CACHE_INFRASTRUCTURE_EXCEPTIONS,
-        login_attempt_limit=LOGIN_ATTEMPT_LIMIT,
+        login_attempt_limit=LOGIN_ATTEMPT_LIMIT if limit is None else limit,
         login_attempt_window=LOGIN_ATTEMPT_WINDOW,
         safe_cache_get=_safe_cache_get,
         safe_cache_set=_safe_cache_set,
+        local_cache_set=_local_login_cache_set,
         increment_degraded_counter=increment_degraded_counter,
     )
 
@@ -234,6 +250,7 @@ def _record_failed_attempt(request, username: str = None) -> int:
         increment_attempt_counter=_increment_attempt_counter,
         safe_cache_set=_safe_cache_set,
         login_attempt_limit=LOGIN_ATTEMPT_LIMIT,
+        login_ip_attempt_limit=LOGIN_IP_ATTEMPT_LIMIT,
         login_lockout_duration=LOGIN_LOCKOUT_DURATION,
     )
 
@@ -258,6 +275,7 @@ def _safe_cache_get(key: str, default=None):
         default,
         local_cache_get=_local_login_cache_get,
         local_cache_set=_local_login_cache_set,
+        local_cache_delete=_local_login_cache_delete,
         cache_obj=cache,
         logger=logger,
         infrastructure_exceptions=LOGIN_CACHE_INFRASTRUCTURE_EXCEPTIONS,
@@ -314,9 +332,9 @@ class LoginView(DjangoLoginView):
     def form_invalid(self, form):
         # 登录失败，记录尝试次数（基于 IP + 用户名双重限制）
         username = form.cleaned_data.get("username", "")
-        attempts = _record_failed_attempt(self.request, username)
-        remaining = LOGIN_ATTEMPT_LIMIT - attempts
-        if remaining > 0:
+        _record_failed_attempt(self.request, username)
+        is_locked, _remaining = _check_login_attempts(self.request, username)
+        if not is_locked:
             messages.warning(self.request, "用户名或密码错误，请重试")
         else:
             # 安全修复：使用模糊的提示信息
@@ -526,7 +544,7 @@ class RegisterView(CreateView):
 @method_decorator(
     rate_limit_redirect(
         "email_verification_recovery_email",
-        limit=REGISTRATION_EMAIL_LIMIT,
+        limit=EMAIL_VERIFICATION_RECOVERY_EMAIL_LIMIT,
         window_seconds=REGISTRATION_RATE_WINDOW,
         key_func=_email_verification_recovery_identifier,
         redirect_url=cast(str, reverse_lazy("accounts:email_verification_recovery")),

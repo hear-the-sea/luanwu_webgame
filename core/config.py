@@ -309,7 +309,8 @@ class SecurityConfig:
     """安全相关配置"""
 
     # 登录限制
-    LOGIN_ATTEMPT_LIMIT: int = 5  # 最大尝试次数
+    LOGIN_ATTEMPT_LIMIT: int = 5  # 单账号最大尝试次数
+    LOGIN_IP_ATTEMPT_LIMIT: int = 50  # 共享网络出口的最大尝试次数
     LOGIN_ATTEMPT_WINDOW: int = 300  # 时间窗口（秒）
     LOGIN_LOCKOUT_DURATION: int = 900  # 锁定时长（秒）
 

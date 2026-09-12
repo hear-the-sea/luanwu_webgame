@@ -93,6 +93,7 @@ def create_guest_from_template(
     grant_skills: bool = True,
     save: bool = True,
     allow_world_unique: bool = False,
+    assign_fallback_avatar: bool = False,
 ) -> Guest:
     """按模板创建门客（含属性波动、初始HP与技能）。"""
     if getattr(template, "is_world_unique", False) and not allow_world_unique:
@@ -123,6 +124,18 @@ def create_guest_from_template(
         rng=rng,
     )
 
+    avatar_asset_key = ""
+    if assign_fallback_avatar:
+        from guests.avatar import prepare_guest_avatar_asset, uses_instance_avatar_generation
+
+        should_assign_avatar = not template.avatar or uses_instance_avatar_generation(template.key)
+        if should_assign_avatar:
+            avatar_asset_key = prepare_guest_avatar_asset(
+                archetype=effective_archetype,
+                gender=gender_choice,
+                rng=rng,
+            )
+
     initial_hp = max(
         int(GUEST.MIN_HP_FLOOR),
         template.base_hp + varied_attrs["defense"] * int(GUEST.DEFENSE_TO_HP_MULTIPLIER),
@@ -132,6 +145,7 @@ def create_guest_from_template(
         manor=manor,
         template=template,
         custom_name=custom_name,
+        avatar_asset_key=avatar_asset_key,
         force=varied_attrs["force"],
         intellect=varied_attrs["intellect"],
         defense_stat=varied_attrs["defense"],

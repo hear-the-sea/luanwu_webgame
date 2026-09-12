@@ -8,7 +8,7 @@ import pytest
 from django.core.management.base import CommandError
 
 from guests.management.commands.load_guest_templates import Command
-from guests.models import GuestTemplate
+from guests.models import Guest, GuestTemplate
 from tests.load_guest_templates_command.support import _Recorder
 
 
@@ -61,6 +61,53 @@ def test_sync_template_avatar_programming_error_bubbles_up(tmp_path: Path, monke
             {},
             1,
         )
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("skip_images", [False, True])
+def test_instance_avatar_template_preserves_legacy_template_avatar(skip_images) -> None:
+    command = Command()
+    GuestTemplate.objects.create(
+        key="base_gray_civil",
+        name="灰阶谋士",
+        archetype="civil",
+        rarity="gray",
+        avatar="legacy_instance_avatar.webp",
+    )
+
+    command._sync_templates(
+        [{"key": "base_gray_civil", "name": "灰阶谋士", "archetype": "civil", "rarity": "gray"}],
+        assign_missing_avatars=True,
+        skip_images=skip_images,
+        verbosity=0,
+    )
+
+    template = GuestTemplate.objects.get(key="base_gray_civil")
+    template.refresh_from_db()
+    assert template.avatar.name == "legacy_instance_avatar.webp"
+
+
+@pytest.mark.django_db
+def test_old_template_avatar_is_preserved_while_guest_uses_asset(django_user_model, monkeypatch) -> None:
+    user = django_user_model.objects.create_user(username="shared_avatar_owner")
+    template = GuestTemplate.objects.create(key="shared_avatar_template", name="共享头像")
+    guest = Guest.objects.create(
+        manor=user.manor,
+        template=template,
+        avatar_asset_key="guests/shared_avatar.webp",
+    )
+    deleted: list[str] = []
+    monkeypatch.setattr(template.avatar.storage, "delete", deleted.append)
+
+    Command()._safe_delete_old_avatar(template, "guests/shared_avatar.webp", "guests/new.webp")
+
+    assert deleted == []
+
+    guest.avatar_asset_key = ""
+    guest.save(update_fields=["avatar_asset_key"])
+    Command()._safe_delete_old_avatar(template, "guests/shared_avatar.webp", "guests/new.webp")
+
+    assert deleted == ["guests/shared_avatar.webp"]
 
 
 def test_load_heroes_from_dir_recoverable_command_error_degrades(tmp_path: Path) -> None:

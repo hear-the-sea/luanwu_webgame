@@ -1,27 +1,13 @@
 import logging
 
-from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from core.utils.infrastructure import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
-from .models import GearTemplate, GuestTemplate
-from .services.equipment import give_gear
+from .models import GuestTemplate
 
 logger = logging.getLogger(__name__)
-
-
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def grant_initial_gear(sender, instance, created, **kwargs):
-    if not created:
-        return
-    from gameplay.services.manor.core import ensure_manor
-
-    manor = ensure_manor(instance)
-    template = GearTemplate.objects.first()
-    if template:
-        give_gear(manor, template)
 
 
 @receiver([post_save, post_delete], sender=GuestTemplate)

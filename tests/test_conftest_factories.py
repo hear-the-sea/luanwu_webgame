@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from guests.models import GuestTemplate, RecruitmentPool
+from guests.models import GuestTemplate, RecruitmentPool, WorldUniqueGuest
 from tests.conftest import ensure_guest_data_loaded
 
 
@@ -37,6 +37,7 @@ def test_ensure_guest_data_loaded_reloads_missing_templates(game_data, django_db
     assert GuestTemplate.objects.exists() is True
     assert RecruitmentPool.objects.exists() is True
 
+    WorldUniqueGuest.objects.filter(owner_guest__isnull=True, owner_manor__isnull=True).delete()
     GuestTemplate.objects.all().delete()
 
     assert GuestTemplate.objects.exists() is False

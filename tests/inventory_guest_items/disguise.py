@@ -147,3 +147,43 @@ def test_guest_reset_clears_super_guest_disguise_state(django_user_model):
     assert guest.avatar_override_key == ""
     assert guest.super_disguise_applied is False
     assert guest.hp_bonus == 0
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("template_key", "template_avatar", "expected_asset"),
+    [
+        ("base_gray_civil", "guests/legacy.webp", "guests/regenerated.webp"),
+        ("unpictured_reset_guest", "", "guests/regenerated.webp"),
+        ("pictured_reset_guest", "guests/fixed.webp", ""),
+    ],
+)
+def test_guest_reset_restores_appropriate_avatar(
+    django_user_model, monkeypatch, template_key, template_avatar, expected_asset
+):
+    _manor, guest, _item = _prepare_disguise_case(django_user_model)
+    template = guest.template
+    template.key = template_key
+    template.avatar = template_avatar
+    template.save(update_fields=["key", "avatar"])
+    guest.avatar_asset_key = "guests/original.webp"
+    guest.avatar_override_key = SUPER_GUEST_DISGUISE_AVATAR_KEY
+    guest.save(update_fields=["avatar_asset_key", "avatar_override_key"])
+    prepared: list[tuple[str, str]] = []
+
+    def prepare_avatar(*, archetype, gender, rng):
+        prepared.append((archetype, gender))
+        return "guests/regenerated.webp"
+
+    monkeypatch.setattr("gameplay.services.inventory.guest_reset_helpers.prepare_guest_avatar_asset", prepare_avatar)
+
+    apply_guest_template_reset(
+        guest,
+        target_template=template,
+        varied_attrs={"force": 100, "intellect": 80, "defense": 90, "agility": 75, "luck": 50},
+    )
+    guest.refresh_from_db()
+
+    assert guest.avatar_override_key == ""
+    assert guest.avatar_asset_key == expected_asset
+    assert prepared == ([(template.archetype, guest.gender)] if expected_asset else [])

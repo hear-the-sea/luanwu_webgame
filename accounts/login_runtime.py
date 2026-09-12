@@ -59,6 +59,7 @@ def safe_cache_get(
     *,
     local_cache_get: Callable[..., Any],
     local_cache_set: Callable[..., None],
+    local_cache_delete: Callable[..., None],
     cache_obj: Any,
     logger: Any,
     infrastructure_exceptions: tuple[type[BaseException], ...],
@@ -76,10 +77,19 @@ def safe_cache_get(
             extra={"degraded": True, "component": "login_cache"},
         )
         return local_value
-    if cached is cache_miss_sentinel:
-        return local_value
-    if cached is not None:
-        local_cache_set(key, cached, timeout=local_cache_timeout)
+    if cached is cache_miss_sentinel or cached is None:
+        # 清理已失效的共享镜像；写入失败的降级锁仍按原本地期限生效。
+        local_cache_delete(key, synced_only=True)
+        missing_default = default if cached is cache_miss_sentinel else None
+        return local_cache_get(key, missing_default, unsynced_only=True)
+    timeout = normalize_lock_ttl(
+        key,
+        cache_obj=cache_obj,
+        logger=logger,
+        infrastructure_exceptions=infrastructure_exceptions,
+        lockout_duration=local_cache_timeout,
+    )
+    local_cache_set(key, cached, timeout=timeout, refresh=False)
     return cached
 
 
@@ -93,16 +103,18 @@ def safe_cache_set(
     logger: Any,
     infrastructure_exceptions: tuple[type[BaseException], ...],
 ) -> None:
-    local_cache_set(key, value, timeout=timeout)
+    unsynced = False
     try:
-        cache_obj.set(key, value, timeout=timeout)
+        unsynced = cache_obj.set(key, value, timeout=timeout) is False
     except infrastructure_exceptions:
+        unsynced = True
         logger.warning(
             "Failed to write cache key: %s",
             key,
             exc_info=True,
             extra={"degraded": True, "component": "login_cache"},
         )
+    local_cache_set(key, value, timeout=timeout, unsynced=unsynced)
 
 
 def safe_cache_delete(
@@ -153,6 +165,7 @@ def increment_attempt_counter(
     login_attempt_window: int,
     safe_cache_get: Callable[..., Any],
     safe_cache_set: Callable[..., None],
+    local_cache_set: Callable[..., None],
     increment_degraded_counter: Callable[[str], None],
 ) -> int:
     added: bool | None = None
@@ -168,13 +181,15 @@ def increment_attempt_counter(
         added = None
 
     if added is True:
-        safe_cache_set(key, 1, timeout=login_attempt_window)
+        local_cache_set(key, 1, timeout=login_attempt_window)
         return 1
 
     if added is False:
         try:
             attempts = int(cache_obj.incr(key))
-            safe_cache_set(key, attempts, timeout=login_attempt_window)
+            # 只续期，不用旧计数覆盖其他请求已经原子递增的结果。
+            cache_obj.touch(key, timeout=login_attempt_window)
+            local_cache_set(key, attempts, timeout=login_attempt_window)
             return attempts
         except infrastructure_exceptions:
             logger.warning(
@@ -225,13 +240,14 @@ def record_failed_attempt(
     increment_attempt_counter: Callable[..., int],
     safe_cache_set: Callable[..., None],
     login_attempt_limit: int,
+    login_ip_attempt_limit: int,
     login_lockout_duration: int,
 ) -> int:
     ip_key, username_key = get_login_attempt_key(request, username)
     ip_lock_key, username_lock_key = get_login_lock_key(request, username)
 
-    ip_attempts = increment_attempt_counter(ip_key)
-    if ip_attempts >= login_attempt_limit:
+    ip_attempts = increment_attempt_counter(ip_key, limit=login_ip_attempt_limit)
+    if ip_attempts >= login_ip_attempt_limit:
         safe_cache_set(ip_lock_key, 1, timeout=login_lockout_duration)
 
     user_attempts = 0
@@ -240,7 +256,7 @@ def record_failed_attempt(
         if user_attempts >= login_attempt_limit and username_lock_key:
             safe_cache_set(username_lock_key, 1, timeout=login_lockout_duration)
 
-    return max(ip_attempts, user_attempts)
+    return user_attempts if username_key else ip_attempts
 
 
 def clear_login_attempts(
