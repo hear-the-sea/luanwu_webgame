@@ -5,6 +5,7 @@ import logging
 from celery import current_app
 from django.conf import settings
 from django.db import transaction
+from django.db.backends.signals import connection_created
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -20,6 +21,20 @@ from .services.virtual_player_core.population_runtime import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+@receiver(connection_created, dispatch_uid="gameplay.mysql_connection_collation")
+def configure_mysql_connection(sender, connection, **kwargs) -> None:
+    """Keep MySQL comparison collation aligned with the application's tables."""
+    if connection.vendor != "mysql":
+        return
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SET collation_connection='utf8mb4_unicode_ci', "
+            "character_set_client='utf8mb4', "
+            "character_set_connection='utf8mb4', "
+            "character_set_results='utf8mb4'"
+        )
 
 
 def _queue_virtual_player_population_reconcile(
