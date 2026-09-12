@@ -22,7 +22,30 @@ def get_prepared_guest_roster_for_read(
         logger=logger,
         source=source,
     )
-    return manor, list(available_guests_fn(manor))
+    guests = list(available_guests_fn(manor))
+
+    # 返程中的出征门客仍被踢馆记录占用。读取旧数据或状态同步延迟时，
+    # 以进行中的 RaidRun 作为展示边界，避免把他们误列为空闲门客。
+    from gameplay.models import RaidRun
+    from guests.models import GuestStatus
+
+    active_raid_guest_ids = set(
+        RaidRun.objects.filter(
+            attacker=manor,
+            status__in=(
+                RaidRun.Status.MARCHING,
+                RaidRun.Status.BATTLING,
+                RaidRun.Status.RETURNING,
+                RaidRun.Status.RETREATED,
+            ),
+            guests__isnull=False,
+            guests__in=[guest.pk for guest in guests],
+        ).values_list("guests__pk", flat=True)
+    )
+    for guest in guests:
+        if guest.pk in active_raid_guest_ids:
+            guest.status = GuestStatus.DEPLOYED
+    return manor, guests
 
 
 def get_prepared_guest_detail_for_read(

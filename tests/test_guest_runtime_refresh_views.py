@@ -63,6 +63,30 @@ def test_roster_view_does_not_start_training_from_get(game_data, django_user_mod
 
 
 @pytest.mark.django_db
+def test_roster_marks_guests_in_raid_return_as_deployed(game_data, django_user_model):
+    user = django_user_model.objects.create_user(username="roster_raid_return", password="pass123")
+    defender_user = django_user_model.objects.create_user(username="roster_raid_return_defender", password="pass123")
+    manor = ensure_manor(user)
+    defender = ensure_manor(defender_user)
+    guest = _create_guest(manor, prefix="roster_raid_return")
+    RaidRun.objects.create(
+        attacker=manor,
+        defender=defender,
+        status=RaidRun.Status.RETURNING,
+        travel_time=60,
+        return_at=timezone.now() + timedelta(minutes=5),
+    ).guests.add(guest)
+
+    client = Client()
+    client.force_login(user)
+    response = client.get(reverse("guests:roster"))
+
+    assert response.status_code == 200
+    assert response.context["guests"][0].status == GuestStatus.DEPLOYED
+    assert "出征中" in response.content.decode("utf-8")
+
+
+@pytest.mark.django_db
 def test_guest_detail_view_does_not_finalize_overdue_training_on_get(game_data, django_user_model):
     user = django_user_model.objects.create_user(username="detail_auto_train", password="pass123")
     manor = ensure_manor(user)
