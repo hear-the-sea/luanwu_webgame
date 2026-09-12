@@ -109,6 +109,7 @@ def build_guest_from_candidate(
         archetype=candidate.archetype,
         custom_name=candidate.display_name if use_custom_name else "",
         rng=rng,
+        assign_fallback_avatar=True,
     )
 
 

@@ -139,6 +139,15 @@ def test_quote_building_upgrade_freezes_architecture_discount_and_citang_duratio
     assert quote.upgrading_count == 0
     assert quote.to_payload()["resource_cost"] == expected_cost
 
+    from gameplay.selectors.core import get_dashboard_context
+    from gameplay.templatetags.gameplay_extras import duration_hours_minutes
+
+    context = get_dashboard_context(manor, category=building.building_type.category)
+    displayed = next(row for row in context["buildings"] if row.pk == building.pk)
+    assert displayed.upgrade_duration == quote.duration_seconds
+    total_minutes = math.ceil(quote.duration_seconds / 60)
+    assert duration_hours_minutes(displayed.upgrade_duration) == f"{total_minutes // 60}小时{total_minutes % 60}分钟"
+
 
 @pytest.mark.django_db
 def test_quote_building_upgrade_enforces_max_level_and_concurrent_slot(

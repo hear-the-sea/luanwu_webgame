@@ -1,0 +1,8 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+{% if can_clear_login_restrictions %}
+<li><a href="{% url 'admin:accounts_user_clear_login_restrictions' %}">解除登录限制</a></li>
+{% endif %}
+{{ block.super }}
+{% endblock %}

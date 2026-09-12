@@ -512,6 +512,8 @@ class TestCoreViews:
         assert 'data-refresh="1"' in body
         assert reverse("gameplay:refresh_building_upgrades_api") in body
         assert 'data-refresh-method="post"' in body
+        assert 'data-format="hours-minutes"' in body
+        assert "0小时5分钟" in body
 
     def test_dashboard_max_level_building_shows_maxed_state(self, manor_with_user):
         """达到建筑等级上限时，页面应显示满级、禁用升级按钮，并将升级消耗显示为 /。"""

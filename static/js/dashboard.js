@@ -192,6 +192,10 @@
 
   function formatCountdown(diffMs, style) {
     if (diffMs <= 0) return style === "zh" || style === "zh-no-sec" ? "已返程" : "完成";
+    if (style === "hours-minutes") {
+      const totalMinutes = Math.ceil(diffMs / 60000);
+      return `${Math.floor(totalMinutes / 60)}小时${totalMinutes % 60}分钟`;
+    }
     const totalSeconds = Math.floor(diffMs / 1000);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);

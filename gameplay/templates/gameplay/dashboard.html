@@ -77,8 +77,8 @@
                             <div>
                                 <dt>升级完成</dt>
                                 <dd>
-                                    <span class="countdown" data-countdown="{{ building.upgrade_complete_at|date:'c' }}" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_building_upgrades_api' %}" data-refresh-method="post">
-                                        {{ building.upgrade_complete_at|date:"H:i:s" }}
+                                    <span class="countdown" data-countdown="{{ building.upgrade_complete_at|date:'c' }}" data-format="hours-minutes" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_building_upgrades_api' %}" data-refresh-method="post">
+                                        {{ building.upgrade_time_remaining|default:0|duration_hours_minutes }}
                                     </span>
                                 </dd>
                             </div>
@@ -96,6 +96,12 @@
                                     {% endif %}
                                 </dd>
                             </div>
+                            {% if building.can_upgrade %}
+                            <div>
+                                <dt>升级耗时</dt>
+                                <dd>{{ building.upgrade_duration|duration_hours_minutes }}</dd>
+                            </div>
+                            {% endif %}
                         {% endif %}
                     </dl>
                     <div class="tw-card-actions">

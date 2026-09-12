@@ -18,14 +18,16 @@ def test_building_upgrade_concurrency_limit(django_user_model, monkeypatch):
     manor.silver = 500000
     manor.save(update_fields=["grain", "silver"])
 
-    buildings = list(manor.buildings.all()[:3])
-    assert len(buildings) >= 3
+    buildings = list(manor.buildings.order_by("pk")[:4])
+    assert len(buildings) == 4
 
     start_upgrade(buildings[0])
     start_upgrade(buildings[1])
+    start_upgrade(buildings[2])
+    assert manor.buildings.filter(is_upgrading=True).count() == 3
 
-    with pytest.raises(BuildingConcurrentUpgradeLimitError, match=r"同时最多只能升级 2 个建筑"):
-        start_upgrade(buildings[2])
+    with pytest.raises(BuildingConcurrentUpgradeLimitError, match=r"同时最多只能升级 3 个建筑"):
+        start_upgrade(buildings[3])
 
 
 @pytest.mark.django_db
@@ -42,6 +44,7 @@ def test_technology_upgrade_concurrency_limit(django_user_model, monkeypatch):
 
     upgrade_technology(manor, "march_art")
     upgrade_technology(manor, "architecture")
+    upgrade_technology(manor, "dao_attack")
 
-    with pytest.raises(TechnologyConcurrentUpgradeLimitError, match=r"同时最多只能研究 2 项科技"):
-        upgrade_technology(manor, "dao_attack")
+    with pytest.raises(TechnologyConcurrentUpgradeLimitError, match=r"同时最多只能研究 3 项科技"):
+        upgrade_technology(manor, "jian_attack")

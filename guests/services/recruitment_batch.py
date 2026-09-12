@@ -47,6 +47,7 @@ def prepare_guest_objects(
             rng=rng,
             grant_skills=False,
             save=False,
+            assign_fallback_avatar=True,
         )
         guests_to_create.append(guest)
         templates_for_guests.append(template)

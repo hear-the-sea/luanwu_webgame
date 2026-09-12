@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from typing import Any
 
+from django.utils import timezone
+
 from common.constants.resources import ResourceType
 from gameplay.constants import BUILDING_MAX_LEVELS
 from gameplay.models import BuildingCategory
 from gameplay.services.action_points import ACTION_POINT_BUILDING_UPGRADE_COST
 from gameplay.services.city_defense import is_city_defense_key, prepare_city_defense_display
-from gameplay.services.manor.core import get_rename_card_count
+from gameplay.services.manor.core import calculate_building_upgrade_duration, get_rename_card_count
 from gameplay.services.manor.prestige import get_prestige_progress
 from gameplay.services.ranking import get_ranking_with_player_context
 
@@ -19,8 +21,9 @@ def _normalize_dashboard_category(raw_category: str | None) -> str:
     return category
 
 
-def _prepare_building_display(buildings: Any) -> list[Any]:
+def _prepare_building_display(buildings: Any, *, time_reduction: float) -> list[Any]:
     prepared: list[Any] = []
+    now = timezone.now()
     for building in buildings:
         max_level = BUILDING_MAX_LEVELS.get(building.building_type.key)
         is_max_level = max_level is not None and building.level >= max_level
@@ -28,6 +31,12 @@ def _prepare_building_display(buildings: Any) -> list[Any]:
         building.is_max_level = is_max_level
         building.can_upgrade = not building.is_upgrading and not is_max_level
         building.next_level_cost_display = None if is_max_level else building.next_level_cost()
+        if building.can_upgrade:
+            building.upgrade_duration = calculate_building_upgrade_duration(
+                building.next_level_duration(), time_reduction
+            )
+        if building.is_upgrading and building.upgrade_complete_at:
+            building.upgrade_time_remaining = max(0, (building.upgrade_complete_at - now).total_seconds())
         building.is_city_defense = is_city_defense_key(building.building_type.key)
         if building.is_city_defense:
             prepare_city_defense_display(building)
@@ -47,7 +56,7 @@ def get_dashboard_context(manor: Any, *, category: str) -> dict[str, Any]:
         "category_label": dict(BuildingCategory.choices).get(normalized_category, "资源生产"),
         "categories": BuildingCategory.choices,
         "building_upgrade_action_point_cost": ACTION_POINT_BUILDING_UPGRADE_COST,
-        "buildings": _prepare_building_display(buildings),
+        "buildings": _prepare_building_display(buildings, time_reduction=float(manor.citang_building_time_reduction)),
         "resource_labels": dict(ResourceType.choices),
     }
 

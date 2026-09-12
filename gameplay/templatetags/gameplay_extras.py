@@ -1,3 +1,5 @@
+import math
+
 from django import template
 
 _DEFAULT_BUILDING_IMAGE = "images/buildings/xianxuan.webp"
@@ -43,6 +45,14 @@ _WORK_IMAGE_PATHS = {
 }
 
 register = template.Library()
+
+
+@register.filter
+def duration_hours_minutes(seconds):
+    """按小时和分钟显示耗时，不足一分钟向上取整。"""
+    total_minutes = math.ceil(max(0, seconds) / 60)
+    hours, minutes = divmod(total_minutes, 60)
+    return f"{hours}小时{minutes}分钟"
 
 
 @register.filter

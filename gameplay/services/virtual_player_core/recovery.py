@@ -8,9 +8,9 @@ from datetime import datetime, timedelta
 from enum import StrEnum
 from typing import Any
 
-from django.db import DatabaseError, IntegrityError, OperationalError, transaction
-from django.db.models import CharField, Exists, OuterRef, Q
-from django.db.models.functions import Cast
+from django.db import DatabaseError, IntegrityError, OperationalError, connections, transaction
+from django.db.models import CharField, Exists, Func, OuterRef, Q
+from django.db.models.functions import Cast, Collate
 from django.utils import timezone
 
 from gameplay.models import BotMaintenanceRecovery
@@ -414,9 +414,21 @@ def exclude_blocked_entity_recoveries(
     current_time = now or timezone.now()
     if not hasattr(queryset, "annotate"):
         return queryset
+    entity_key: Cast | Collate = Cast(OuterRef(entity_field), output_field=CharField())
+    if connections[queryset.db].vendor == "mysql":
+        # CAST inherits the connection collation, which may differ from the
+        # persisted entity_key column on upgraded MySQL databases.
+        entity_key = Collate(
+            Func(
+                OuterRef(entity_field),
+                output_field=CharField(),
+                template="CAST(%(expressions)s AS CHAR CHARACTER SET utf8mb4)",
+            ),
+            "utf8mb4_unicode_ci",
+        )
     blocked = BotMaintenanceRecovery.objects.filter(
         scope=str(scope),
-        entity_key=Cast(OuterRef(entity_field), output_field=CharField()),
+        entity_key=entity_key,
     ).filter(
         Q(status=BotMaintenanceRecovery.Status.QUARANTINED) | Q(next_retry_at__gt=current_time),
     )

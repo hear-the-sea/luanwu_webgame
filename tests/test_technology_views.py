@@ -23,8 +23,9 @@ class TestTechnologyViews:
         content = response.content.decode("utf-8")
         assert 'class="tw-building-headline"' in content
         assert "等级 0 /" in content
-        assert "当前效果" in content
-        assert "升级后" in content
+        assert "当前效果" not in content
+        assert "升级后" not in content
+        assert "小时" in content and "分钟" in content
 
     def test_technology_martial_tab(self, manor_with_user):
         """武艺科技标签页"""
@@ -32,6 +33,10 @@ class TestTechnologyViews:
         response = client.get(reverse("gameplay:technology") + "?tab=martial")
         assert response.status_code == 200
         assert response.context["current_tab"] == "martial"
+        content = response.content.decode("utf-8")
+        assert "当前效果" not in content
+        assert "升级后" not in content
+        assert "小时" in content and "分钟" in content
 
     def test_technology_invalid_tab_falls_back_to_basic(self, manor_with_user):
         """非法科技标签页应回退到基础分类。"""
@@ -57,6 +62,7 @@ class TestTechnologyViews:
         assert 'data-refresh="1"' in body
         assert reverse("gameplay:refresh_technology_upgrades_api") in body
         assert 'data-refresh-method="post"' in body
+        assert 'data-format="hours-minutes"' in body
 
     def test_technology_page_uses_explicit_read_helper(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user

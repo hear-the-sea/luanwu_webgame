@@ -52,7 +52,7 @@ def test_load_shop_config_normalizes_invalid_entries(tmp_path, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_shop_config_is_limited_to_grain_medicine_recruit_equipment_and_guest_scrolls():
+def test_shop_config_is_limited_to_grain_trumpet_medicine_recruit_equipment_and_guest_scrolls():
     allowed_medicine_keys = {
         "zhixuesan",
         "jinchuangyao",
@@ -75,7 +75,7 @@ def test_shop_config_is_limited_to_grain_medicine_recruit_equipment_and_guest_sc
         for equipment_key in (troop.get("recruit") or {}).get("equipment") or []
     }
 
-    expected_keys = {"grain"} | allowed_medicine_keys | allowed_scroll_keys | allowed_equipment_keys
+    expected_keys = {"grain", "small_trumpet"} | allowed_medicine_keys | allowed_scroll_keys | allowed_equipment_keys
     actual_keys = {config.item_key for config in shop_config.load_shop_config()}
 
     assert actual_keys == expected_keys

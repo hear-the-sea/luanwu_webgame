@@ -12,6 +12,41 @@ from guests.models import Guest, GuestTemplate
 from tests.load_guest_templates_command.support import _Recorder
 
 
+@pytest.mark.parametrize("blue_luck_override", [None, 137])
+def test_hermits_inherit_blue_luck_without_changing_other_attributes(blue_luck_override) -> None:
+    command = Command()
+    data_dir = Path(__file__).resolve().parents[2] / "data"
+    profiles = command._load_payload(data_dir / "guest_templates.yaml")["attribute_profiles"]
+    roster = command._load_payload(data_dir / "guests" / "hermits.yaml")["heroes"]
+    if blue_luck_override is not None:
+        for profile in profiles["blue"].values():
+            profile["luck"] = blue_luck_override
+
+    templates: list[dict] = []
+    command._append_hero_roster_templates(templates, roster, profiles, verbosity=0)
+
+    assert templates
+    assert {template["archetype"] for template in templates} == {"military", "civil"}
+    for template in templates:
+        assert template["is_hermit"] is True
+        assert template["base_luck"] == profiles["blue"][template["archetype"]]["luck"]
+        hero = next(hero for hero in roster[template["rarity"]] if hero["key"] == template["key"])
+        original = command._build_template_from_stats(
+            hero, template["rarity"], template["archetype"], profiles[template["rarity"]][template["archetype"]]
+        )
+        assert template == {**original, "base_luck": template["base_luck"]}
+
+    ordinary_roster = {
+        "black": [
+            {"key": "ordinary_military", "name": "Ordinary military", "archetype": "military"},
+            {"key": "ordinary_civil", "name": "Ordinary civil", "archetype": "civil"},
+        ]
+    }
+    ordinary_templates: list[dict] = []
+    command._append_hero_roster_templates(ordinary_templates, ordinary_roster, profiles, verbosity=0)
+    assert [template["base_luck"] for template in ordinary_templates] == [25, 80]
+
+
 def test_finish_sync_clears_recruitment_and_battle_template_caches(monkeypatch: pytest.MonkeyPatch) -> None:
     cleared: list[str] = []
 

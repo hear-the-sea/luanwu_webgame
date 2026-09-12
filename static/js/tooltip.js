@@ -164,6 +164,10 @@
             root.matchMedia
             && root.matchMedia('(hover: hover) and (pointer: fine)').matches
         );
+        const supportsCoarsePointer = !!(
+            root.matchMedia
+            && root.matchMedia('(any-pointer: coarse)').matches
+        );
         const config = {
             key: options.key || 'default',
             cellSelector: options.cellSelector || '.tw-item-cell',
@@ -172,7 +176,9 @@
             offset: options.offset || 8,
             trackPointer: options.trackPointer !== undefined ? !!options.trackPointer : true,
             enableHover: options.enableHover !== undefined ? !!options.enableHover : supportsHover,
-            enableTouch: options.enableTouch !== undefined ? !!options.enableTouch : !supportsHover,
+            enableTouch: options.enableTouch !== undefined
+                ? !!options.enableTouch
+                : (!supportsHover || supportsCoarsePointer),
             ignoreSelector: options.ignoreSelector || '',
             contentAttribute: options.contentAttribute || '',
         };
@@ -187,6 +193,7 @@
         tooltipRegistry[config.key] = true;
 
         let activeCell = null;
+        let activeFromClick = false;
         let activeAnchor = null;
         let rafId = null;
 
@@ -206,6 +213,7 @@
                 activeCell.classList.remove('is-tooltip-active');
             }
             activeCell = null;
+            activeFromClick = false;
             activeAnchor = null;
         }
 
@@ -262,7 +270,8 @@
             });
         }
 
-        function setActiveCell(cell, event) {
+        function setActiveCell(cell, event, fromClick = false) {
+            activeFromClick = fromClick || (activeCell === cell && activeFromClick);
             if (activeCell !== cell && activeCell?.classList) {
                 clearTooltipPosition(activeCell);
                 clearTooltipContent(activeCell, config.tooltipSelector, config.contentAttribute);
@@ -318,10 +327,21 @@
                 }
                 const cell = event.target?.closest?.(config.cellSelector);
                 if (cell) {
-                    if (activeCell === cell) {
+                    const labelControl = cell.tagName?.toLowerCase() === 'label'
+                        ? cell.control
+                        : null;
+                    if (
+                        labelControl
+                        && event.target !== labelControl
+                        && !labelControl.contains?.(event.target)
+                    ) {
+                        // Reserve label text clicks for the tooltip, leaving direct control clicks intact.
+                        event.preventDefault?.();
+                    }
+                    if (activeCell === cell && activeFromClick) {
                         clearActiveCell();
                     } else {
-                        setActiveCell(cell, event);
+                        setActiveCell(cell, event, true);
                     }
                     return;
                 }

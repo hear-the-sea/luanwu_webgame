@@ -386,6 +386,7 @@ services:
     image: caddy:2.10-alpine
     environment:
       CADDY_SITE_ADDRESS: ${CADDY_SITE_ADDRESS:?set CADDY_SITE_ADDRESS in .env.docker}
+      CADDY_TRUSTED_PROXIES: ${CADDY_TRUSTED_PROXIES:-}
     ports:
       - "80:80"
       - "443:443"

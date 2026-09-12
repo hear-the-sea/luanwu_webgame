@@ -1,3 +1,12 @@
+{
+	servers {
+		# Empty by default; only explicitly configured upstream proxies are trusted.
+		trusted_proxies static {$CADDY_TRUSTED_PROXIES}
+		trusted_proxies_strict
+		client_ip_headers X-Forwarded-For
+	}
+}
+
 {$CADDY_SITE_ADDRESS} {
 	encode zstd gzip
 
@@ -31,7 +40,7 @@
 	}
 
 	handle {
-		# Caddy sets X-Forwarded-* and ignores spoofed incoming values by default.
+		# Preserve forwarded client IPs only from the trusted upstream proxies above.
 		reverse_proxy web:8000
 	}
 }

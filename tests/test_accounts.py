@@ -2,6 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.contrib.messages import get_messages
 from django.core.cache import cache
 from django.db import IntegrityError
 from django.test import RequestFactory, override_settings
@@ -49,6 +50,7 @@ def test_register_view_rate_limits_repeated_requests_from_same_ip(client):
     assert limited.status_code == 302
     assert limited["Location"] == url
     assert User.objects.filter(username="still-invalid").exists() is False
+    assert any("当前网络" in str(message) for message in get_messages(limited.wsgi_request))
 
 
 @pytest.mark.django_db
@@ -72,6 +74,7 @@ def test_register_view_rate_limits_normalized_email_across_ips(client):
 
     assert limited.status_code == 302
     assert limited["Location"] == url
+    assert any("该邮箱" in str(message) for message in get_messages(limited.wsgi_request))
 
 
 @pytest.mark.django_db
@@ -99,6 +102,45 @@ def test_register_view_fails_closed_when_rate_limit_cache_is_unavailable(client,
     assert response.status_code == 302
     assert response["Location"] == url
     assert User.objects.filter(username="cache-failure-user").exists() is False
+    assert [str(message) for message in get_messages(response.wsgi_request)] == ["系统繁忙，请稍后再试"]
+
+
+@pytest.mark.django_db
+@override_settings(TRUSTED_PROXY_IPS=["172.18.0.4"])
+def test_registration_separates_players_behind_trusted_proxy(client):
+    cache.clear()
+    url = reverse("accounts:register")
+    for index in range(account_views.REGISTRATION_IP_LIMIT + 2):
+        response = client.post(
+            url,
+            {"email": f"separate-{index}@example.com"},
+            REMOTE_ADDR="172.18.0.4",
+            HTTP_X_FORWARDED_FOR=f"203.0.113.{index + 1}",
+        )
+        assert response.status_code == 200
+
+
+@pytest.mark.django_db
+@override_settings(TRUSTED_PROXY_IPS=[])
+def test_registration_does_not_trust_unconfigured_forwarded_addresses(client):
+    cache.clear()
+    url = reverse("accounts:register")
+    for index in range(account_views.REGISTRATION_IP_LIMIT):
+        response = client.post(
+            url,
+            {"email": f"untrusted-{index}@example.com"},
+            REMOTE_ADDR="172.18.0.4",
+            HTTP_X_FORWARDED_FOR=f"203.0.113.{index + 1}",
+        )
+        assert response.status_code == 200
+    limited = client.post(
+        url,
+        {"email": "new-player@example.com"},
+        REMOTE_ADDR="172.18.0.4",
+        HTTP_X_FORWARDED_FOR="203.0.113.99",
+    )
+    assert limited.status_code == 302
+    assert any("当前网络" in str(message) for message in get_messages(limited.wsgi_request))
 
 
 @pytest.mark.django_db
@@ -106,6 +148,73 @@ def test_user_email_blank_is_normalized_to_null():
     user = User.objects.create_user(username="email_null_user", password="pass123")
     user.refresh_from_db()
     assert user.email is None
+
+
+@pytest.mark.django_db
+def test_registration_throttle_can_be_disabled_and_restored(client, settings):
+    cache.clear()
+    url = reverse("accounts:register")
+    ip = "172.18.0.2"
+    email = "temporary-registration@example.com"
+    ip_key = f"rl:registration_ip:ip:{ip}"
+    email_key = f"rl:registration_email:email:{email}"
+    cache.set(ip_key, 100, timeout=3600)
+    cache.set(email_key, 100, timeout=3600)
+    settings.REGISTRATION_RATE_LIMIT_ENABLED = False
+
+    response = client.post(
+        url,
+        {
+            "username": "temporary-registration",
+            "email": email,
+            "manor_name": "临时开放注册庄园",
+            "region": "overseas",
+            "password1": "StrongPass123!",
+            "password2": "StrongPass123!",
+        },
+        REMOTE_ADDR=ip,
+    )
+    assert response.status_code == 200
+    user = User.objects.get(username="temporary-registration")
+    assert user.is_active is False
+    assert user.email_verified is False
+    assert cache.get(ip_key) == 100
+    assert cache.get(email_key) == 100
+
+    settings.REGISTRATION_RATE_LIMIT_ENABLED = True
+    limited = client.post(url, {"email": "another@example.com"}, REMOTE_ADDR=ip)
+    assert limited.status_code == 302
+    assert any("当前网络" in str(message) for message in get_messages(limited.wsgi_request))
+
+
+@pytest.mark.django_db
+@override_settings(REGISTRATION_RATE_LIMIT_ENABLED=False)
+def test_disabled_registration_throttle_still_validates_form(client):
+    cache.clear()
+    response = client.post(reverse("accounts:register"), {"username": "invalid-open-registration"})
+    assert response.status_code == 200
+    assert response.context["form"].errors
+    assert not User.objects.filter(username="invalid-open-registration").exists()
+
+
+@pytest.mark.django_db
+@override_settings(REGISTRATION_RATE_LIMIT_ENABLED=False)
+def test_disabled_registration_throttle_preserves_email_quota(client, monkeypatch):
+    monkeypatch.setattr(account_views, "is_email_send_quota_exhausted", lambda: True)
+    response = client.post(
+        reverse("accounts:register"),
+        {
+            "username": "quota-open-registration",
+            "email": "quota-open@example.com",
+            "manor_name": "注册额度庄园",
+            "region": "overseas",
+            "password1": "StrongPass123!",
+            "password2": "StrongPass123!",
+        },
+    )
+    assert response.status_code == 200
+    assert account_views.EMAIL_QUOTA_EXHAUSTED_MESSAGE in response.context["form"].non_field_errors()
+    assert not User.objects.filter(username="quota-open-registration").exists()
 
 
 @pytest.mark.django_db

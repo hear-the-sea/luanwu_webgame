@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import pytest
+from django.test import Client
+from django.urls import reverse
 
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
@@ -48,6 +50,34 @@ def test_use_magnifying_glass_for_candidates_is_atomic_success(game_data, django
     assert revealed_count == candidate_count
     assert manor.candidates.filter(rarity_revealed=False).count() == 0
     assert InventoryItem.objects.filter(pk=item.pk).exists() is False
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("quantity", [1, 2])
+def test_repeated_magnifying_glass_request_returns_business_error_without_extra_consumption(
+    game_data, django_user_model, quantity
+):
+    manor, candidate_count = _bootstrap_candidates(game_data, django_user_model, username=f"magnify_repeat_{quantity}")
+    item = _create_magnifying_item(manor)
+    item.quantity = quantity
+    item.save(update_fields=["quantity"])
+    client = Client()
+    client.force_login(manor.user)
+    url = reverse("guests:use_magnifying_glass")
+    request_data = {"item_id": str(item.pk)}
+
+    first = client.post(url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+    second = client.post(url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+
+    assert first.status_code == 200
+    assert first.json()["success"] is True
+    assert second.status_code == 400
+    assert second.json()["success"] is False
+    expected_error = "道具不存在或不属于您的庄园" if quantity == 1 else "当前候选门客的稀有度已全部显现"
+    assert second.json()["error"] == expected_error
+    assert manor.candidates.filter(rarity_revealed=True).count() == candidate_count
+    remaining = InventoryItem.objects.filter(pk=item.pk).values_list("quantity", flat=True).first()
+    assert (remaining or 0) == quantity - 1
 
 
 @pytest.mark.django_db

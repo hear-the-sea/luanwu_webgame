@@ -244,6 +244,10 @@ class Command(BaseCommand):
                         )
                     )
                     continue
+                if hero.get("is_hermit"):
+                    blue_profile = attribute_profiles.get(GuestRarity.BLUE, {}).get(archetype, {})
+                    if "luck" in blue_profile:
+                        stats = {**stats, "luck": blue_profile["luck"]}
                 template_data.append(self._build_template_from_stats(hero, rarity, archetype, stats))
 
     def _sync_skills_and_books(self, skill_data: list[dict], book_data: list[dict], verbosity: int) -> dict[str, Skill]:

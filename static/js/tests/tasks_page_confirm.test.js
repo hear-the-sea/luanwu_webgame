@@ -7,7 +7,7 @@ const vm = require("node:vm");
 function createTasksPageHarness(confirmResult) {
   const source = fs.readFileSync(path.resolve(__dirname, "..", "tasks-page.js"), "utf8");
   const listeners = new Map();
-  const calls = { confirm: [], submit: 0, preventDefault: 0 };
+  const calls = { confirm: [], tooltip: [], submit: 0, preventDefault: 0 };
   const submitButton = { disabled: false };
   const form = {
     dataset: {
@@ -41,6 +41,9 @@ function createTasksPageHarness(confirmResult) {
     },
   };
   const windowObject = {
+    initItemTooltip(options) {
+      calls.tooltip.push(options);
+    },
     TasksPageCore: {
       buildMissionCardConfirmation(data) {
         return `确认 ${data.missionName} ${data.usedCount}/${data.dailyLimit}`;
@@ -86,6 +89,17 @@ test("mission card form asks for confirmation before submitting", async () => {
   assert.equal(harness.calls.preventDefault, 1);
   assert.equal(harness.calls.submit, 1);
   assert.equal(harness.submitButton.disabled, true);
+});
+
+test("task page initializes touch tooltips for mission drop items", () => {
+  const harness = createTasksPageHarness(true);
+  const tooltipOptions = harness.calls.tooltip[0];
+
+  assert.equal(tooltipOptions.key, "tasks_mission_drops");
+  assert.equal(tooltipOptions.cellSelector, ".tw-drop-entry");
+  assert.equal(tooltipOptions.tooltipSelector, ".tw-item-tooltip");
+  assert.equal(tooltipOptions.trackPointer, false);
+  assert.equal(tooltipOptions.enableTouch, true);
 });
 
 test("mission card form remains idle when confirmation is cancelled", async () => {

@@ -1,7 +1,7 @@
 {% if drop.key == "silver" %}
 <span class="tw-pill rarity-{{ drop.rarity|default:'default' }}">{{ drop.label }}</span>
 {% else %}
-<span class="tw-drop-entry" title="{{ drop.label }}" aria-label="{{ drop.label }}">
+<button type="button" class="tw-drop-entry tw-item-cell" aria-label="{{ drop.label }}">
     <span class="tw-drop-icon rarity-{{ drop.rarity|default:'default' }}">
         {% if drop.image_url %}
             <img src="{{ drop.image_url }}" alt="{{ drop.label }}" loading="lazy" decoding="async">
@@ -10,5 +10,8 @@
         {% endif %}
     </span>
     {% if drop.count > 1 %}<span class="tw-drop-count">×{{ drop.count }}</span>{% endif %}
-</span>
+    <span class="tw-item-tooltip">
+        <span class="tw-tooltip-header rarity-{{ drop.rarity|default:'default' }}">{{ drop.label }}</span>
+    </span>
+</button>
 {% endif %}

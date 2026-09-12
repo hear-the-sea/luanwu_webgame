@@ -179,7 +179,7 @@ def rate_limit_redirect(
             if count is None:
                 if wants_json:
                     return json_error("系统繁忙，请稍后再试", status=503)
-                return _cache_error_response(False, error_message, request, redirect_url)
+                return _cache_error_response(False, "系统繁忙，请稍后再试", request, redirect_url)
 
             if count > limit:
                 if wants_json:

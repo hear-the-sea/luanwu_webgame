@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load gameplay_extras static %}
 
 {% block title %}技术研究{% endblock %}
 
@@ -53,30 +53,16 @@
                         </div>
                     </header>
                     <dl>
-                        <div>
-                            <dt>当前效果</dt>
-                            <dd>
-                                {% if tech.current_effect > 0 %}
-                                    +{{ tech.current_effect|floatformat:0 }}%
-                                {% else %}
-                                    未研究
-                                {% endif %}
-                            </dd>
-                        </div>
                         {% if tech.is_upgrading %}
                         <div>
                             <dt>研究完成</dt>
                             <dd>
-                                <span class="countdown" data-countdown="{{ tech.upgrade_complete_at|date:'c' }}" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_technology_upgrades_api' %}" data-refresh-method="post" data-complete-text="完成">
-                                    {{ tech.time_remaining }}秒
+                                <span class="countdown" data-countdown="{{ tech.upgrade_complete_at|date:'c' }}" data-format="hours-minutes" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_technology_upgrades_api' %}" data-refresh-method="post" data-complete-text="完成">
+                                    {{ tech.time_remaining|duration_hours_minutes }}
                                 </span>
                             </dd>
                         </div>
                         {% elif tech.can_upgrade %}
-                        <div>
-                            <dt>升级后</dt>
-                            <dd>+{{ tech.next_effect|floatformat:0 }}%</dd>
-                        </div>
                         <div>
                             <dt>升级费用</dt>
                             <dd class="{% if manor.silver < tech.upgrade_cost %}tw-cost-insufficient{% endif %}">
@@ -85,7 +71,7 @@
                         </div>
                         <div>
                             <dt>研究耗时</dt>
-                            <dd>{{ tech.upgrade_duration }}秒</dd>
+                            <dd>{{ tech.upgrade_duration|duration_hours_minutes }}</dd>
                         </div>
                         {% endif %}
                     </dl>
@@ -131,30 +117,16 @@
                     </div>
                 </header>
                 <dl>
-                    <div>
-                        <dt>当前效果</dt>
-                        <dd>
-                            {% if tech.current_effect > 0 %}
-                                +{{ tech.current_effect|floatformat:0 }}%
-                            {% else %}
-                                未研究
-                            {% endif %}
-                        </dd>
-                    </div>
                     {% if tech.is_upgrading %}
                     <div>
                         <dt>研究完成</dt>
                         <dd>
-                            <span class="countdown" data-countdown="{{ tech.upgrade_complete_at|date:'c' }}" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_technology_upgrades_api' %}" data-refresh-method="post" data-complete-text="完成">
-                                {{ tech.time_remaining }}秒
+                            <span class="countdown" data-countdown="{{ tech.upgrade_complete_at|date:'c' }}" data-format="hours-minutes" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_technology_upgrades_api' %}" data-refresh-method="post" data-complete-text="完成">
+                                {{ tech.time_remaining|duration_hours_minutes }}
                             </span>
                         </dd>
                     </div>
                     {% elif tech.can_upgrade %}
-                    <div>
-                        <dt>升级后</dt>
-                        <dd>+{{ tech.next_effect|floatformat:0 }}%</dd>
-                    </div>
                     <div>
                         <dt>升级费用</dt>
                         <dd class="{% if manor.silver < tech.upgrade_cost %}tw-cost-insufficient{% endif %}">
@@ -163,7 +135,7 @@
                     </div>
                     <div>
                         <dt>研究耗时</dt>
-                        <dd>{{ tech.upgrade_duration }}秒</dd>
+                        <dd>{{ tech.upgrade_duration|duration_hours_minutes }}</dd>
                     </div>
                     {% endif %}
                 </dl>

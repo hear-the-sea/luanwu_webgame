@@ -486,7 +486,7 @@ docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "w
   python manage.py reload_runtime_configs
 ```
 
-如果需要给缺失形象的门客补图，执行：
+如果需要给缺失形象的门客模板补图，执行：
 
 ```bash
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" \
@@ -494,6 +494,123 @@ docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "w
 ```
 
 不要带 `--skip-images`，否则图片处理会被跳过。
+
+灰色基础门客（`base_gray_civil`、`base_gray_military`）在单个招募、批量招募和门客卡召唤时，
+按实例的文武、性别选择头像，不依赖统一模板头像。因此上面的模板导入命令不会补齐这些门客的实例头像。
+先按发布流程加载包含修复的新镜像、完成迁移并更新业务容器，再检查历史门客：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec -T "web" \
+  python manage.py backfill_guest_avatars
+```
+
+默认 `mode=dry-run` 只查询，不写数据库或媒体文件。`ready` 是找到匹配源图的门客数；确认范围后执行：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec -T "web" \
+  python manage.py backfill_guest_avatars --apply
+```
+
+可加 `--manor-id 123` 限定庄园，或 `--limit 100` 限定本次检查的门客数。命令只处理上述灰色基础模板，
+保留已有实例头像、特殊形象覆盖和仍可读取的模板头像；重复执行不会重分配已补齐的头像。
+`updated` 表示成功补齐数，`unavailable` 表示源图匹配或资源写入失败数。出现失败时命令返回非零退出码，
+已成功补齐的记录会保留，修复资源问题后可以重跑。
+
+镜像必须包含 `/app/data/images/guests` 下匹配文武、性别标签的源图；`/app/media` 必须可由应用用户
+UID/GID `10001:10001` 写入，并与 Caddy 的 `/srv/media` 指向同一份 `runtime/media` 目录。
+数据库中的非空实例头像路径如果对应文件已丢失，应恢复媒体文件；此命令不会覆盖这类已有选择。
+
+## 双层 Caddy 的真实 IP
+
+默认部署让游戏 Caddy 直接接收公网请求。如果外层 Caddy 将请求转发给游戏 Caddy，需要在内层配置
+`CADDY_TRUSTED_PROXIES`，否则内层会忽略外层提供的 `X-Forwarded-For`，所有玩家共用外层容器的限流额度。
+已发现的实例为 `gongsi-deploy-caddy-1 (172.18.0.2)` 转发到 `code-caddy-1 (172.18.0.5)`：
+
+```dotenv
+CADDY_TRUSTED_PROXIES=172.18.0.2/32
+```
+
+这里必须填写经 `docker inspect` 确认、由自己控制且正确维护转发头的上游代理地址。多个 IP/CIDR 用空格分隔，
+默认留空表示不信任上游。Caddy 使用 `trusted_proxies_strict` 从代理链右端解析，防止伪造左端地址。
+这项配置与 Django 的 `DJANGO_TRUSTED_PROXY_IPS` 分属两跳，不能互相替代。
+
+内层 Caddy 转发给 Django 的 `X-Forwarded-For` 保留完整代理链，例如 `203.0.113.8, 172.18.0.2`。
+Django 从右向左剥离可信代理，因此必须同时信任内层和外层的受控地址。上述实例应配置：
+
+```dotenv
+DJANGO_TRUSTED_PROXY_IPS=172.18.0.5/32,172.18.0.2/32
+```
+
+只信任内层 `172.18.0.5` 时，Django 仍会把外层 `172.18.0.2` 当作玩家 IP。
+地址应以当前容器检查结果为准；更新 Django 环境变量后还需重建 `web` 容器。
+
+同步新的 `docker-compose.prod.yml` 和 `docker/caddy/Caddyfile` 并填写环境变量后，在变更前检查现有
+Caddy 的网络和端口绑定。额外连接的外层代理网络必须持久化到服务器 Compose 配置；不能直接用仓库默认文件
+覆盖服务器已有网络/端口改动，否则重建会丢失手工 `docker network connect` 的连接。
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" config --quiet
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm --no-deps caddy \
+  caddy validate --config "/etc/caddy/Caddyfile" --adapter caddyfile
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --no-deps --force-recreate caddy
+```
+
+不需要重建业务镜像。外层代理应使用稳定的容器地址，或在地址变化后同步精确的信任配置。
+现有容器需要快速热更新时，也可在服务器 Caddyfile 顶部的全局 `servers` 块中写入
+`trusted_proxies static 172.18.0.2/32`、`trusted_proxies_strict`、`client_ip_headers X-Forwarded-For`，
+通过 `dc exec -T caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile` 后再用
+`dc exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile` 热加载。这种方式保留现有容器网络。
+
+验证时使用两个不同公网出口访问注册页面，无需提交注册。内层 Caddy 日志中 `remote_ip` 仍应为外层代理，
+但 `client_ip` 应分别为玩家公网 IP，Django 访问日志的 `ip` 也应随之区分。
+如果关闭过注册限流，验证后将 `DJANGO_REGISTRATION_RATE_LIMIT_ENABLED` 恢复为 `1` 并重建 `web`。
+只清除旧的 `rl:registration_ip:ip:172.18.0.2` 计数不能代替代理修复。
+
+本地可用 Caddy 2.10 程序运行配置解析及隔离 HTTP 转发测试：
+
+```bash
+CADDY_TEST_BINARY="/path/to/caddy" CADDY_TEST_HTTP=1 python -m pytest "tests/test_caddy_proxy_forwarding.py" -q
+```
+
+## 多个玩家首次注册被限流
+
+需要临时开放注册时，先部署包含开关的新镜像，再在 `.env.docker` 设置
+`DJANGO_REGISTRATION_RATE_LIMIT_ENABLED=0`，然后重建 `web` 容器读取新环境：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --no-deps --force-recreate web
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec -T web \
+  python manage.py shell -c 'from django.conf import settings; print(settings.REGISTRATION_RATE_LIMIT_ENABLED)'
+```
+
+应输出 `False`。此开关只停用注册 IP/邮箱限流，表单校验、邮件验证、邮件配额、登录和邮件重发限流仍生效。
+代理问题修正后将开关恢复为 `1` 并重建 `web`。关闭期间不更新注册计数，旧计数仍按原 TTL 自然过期。
+未包含此开关的旧镜像不会因添加环境变量而改变行为。
+
+注册当前按 IP 每小时 5 次、邮箱每小时 3 次限制，表单校验失败的 POST 也会计数。
+多个玩家首次提交就被拦截时，先确认实际运行容器的可信代理配置，而不是增加限额：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec -T "web" \
+  python manage.py shell -c 'from django.conf import settings; print("trusted_proxies=", settings.TRUSTED_PROXY_IPS); print("access_log_trust_proxy=", settings.ACCESS_LOG_TRUST_PROXY)'
+docker inspect "$(docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" ps -q caddy)" \
+  --format '{{range $name, $net := .NetworkSettings.Networks}}{{$name}} {{$net.IPAddress}} {{$net.GlobalIPv6Address}}{{println}}{{end}}'
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --since=30m "web" \
+  | rg 'path=/accounts/register/|Rate limit redirect cache backend unavailable'
+```
+
+`DJANGO_USE_PROXY=1` 只启用 HTTPS 转发识别，不会自动信任客户端 IP 转发头。若 Caddy 的实际容器地址
+未包含在 `DJANGO_TRUSTED_PROXY_IPS` 中，不同玩家会共用代理地址的注册额度。
+将 `.env.docker` 中的可信代理配置修正为实际代理地址或受控的代理网络，并设置
+`DJANGO_ACCESS_LOG_TRUST_PROXY=1`。单个容器 IP 可能在重建时变化，必须重新核对；不要信任任意来源
+（例如 `0.0.0.0/0`），也不要仅因地址是私网地址就扩大信任范围。
+环境文件修改后执行 `docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --no-deps --force-recreate web`
+使配置生效，单纯 `restart` 不会重新读取环境文件。
+
+访问日志只有在 `ACCESS_LOG_TRUST_PROXY=True` 时才按同一代理策略记录客户端地址。若玩家真实 IP 已被正确识别，
+进一步检查是否共用公网出口（公司、校园或运营商 NAT）、邮箱是否重复，以及 Redis 是否报错。
+旧版本在 Redis 故障时也会将普通页面请求提示为“注册请求过于频繁”；修复后该场景提示“系统繁忙”，
+实际超限则分别提示当前网络或该邮箱请求频繁。不要清空 Redis 来排查注册限流，那里还包含业务缓存和任务状态。
 
 ## Redis 认证
 

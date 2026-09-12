@@ -1,0 +1,34 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/forms.css' %}">
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:accounts_user_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+    &rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <fieldset class="module aligned">
+        {% for field in form %}
+        <div class="form-row{% if field.errors %} errors{% endif %}">
+            {{ field.errors }}
+            <div class="flex-container">{{ field.label_tag }} {{ field }}</div>
+        </div>
+        {% endfor %}
+    </fieldset>
+    <div class="submit-row">
+        <input type="submit" value="解除登录限制" class="default">
+        <a href="{% url 'admin:accounts_user_changelist' %}" class="closelink">取消</a>
+    </div>
+</form>
+{% endblock %}

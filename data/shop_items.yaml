@@ -4,12 +4,16 @@
 # stock: 库存数量，-1 表示无限
 # daily_refresh: 是否每日刷新库存（可选，默认 false）
 #
-# 当前商店只售卖：粮食、药品、护院招募装备、门客合成卷轴。
+# 当前商店只售卖：粮食、小喇叭、药品、护院招募装备、门客合成卷轴。
 
 items:
   - item_key: grain
     stock: -1
     daily_refresh: true
+
+  - item_key: small_trumpet
+    stock: -1
+    daily_refresh: false
 
   # 药品
   - item_key: zhixuesan

@@ -4,6 +4,7 @@ import json
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.contrib.messages import get_messages
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.cache import cache
@@ -63,6 +64,7 @@ class RateLimitRedirectTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "/rate-limit")
+        self.assertEqual([str(message) for message in get_messages(request)], ["系统繁忙，请稍后再试"])
 
     def test_rate_limit_redirect_blank_key_func_falls_back(self):
         @rate_limit_redirect(

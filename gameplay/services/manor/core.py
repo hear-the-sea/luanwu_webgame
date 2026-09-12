@@ -287,6 +287,11 @@ def _validate_building_upgrade_ownership(manor: Manor, building: Building) -> No
         raise ValueError("building does not belong to the supplied Manor")
 
 
+def calculate_building_upgrade_duration(base_duration: int, time_reduction: float) -> int:
+    duration_seconds = max(1, int(base_duration * (1.0 - time_reduction)))
+    return scale_duration(duration_seconds, minimum=1)
+
+
 def quote_building_upgrade(
     manor: Manor,
     building: Building,
@@ -338,11 +343,7 @@ def quote_building_upgrade(
         resource: max(1, math.ceil(amount * reduction_multiplier)) for resource, amount in base_cost.items()
     }
     base_duration = int(building.next_level_duration())
-    duration_seconds = max(
-        1,
-        int(base_duration * (1.0 - float(manor.citang_building_time_reduction))),
-    )
-    duration_seconds = scale_duration(duration_seconds, minimum=1)
+    duration_seconds = calculate_building_upgrade_duration(base_duration, float(manor.citang_building_time_reduction))
     return BuildingUpgradeQuote(
         manor_id=int(manor.pk),
         building_id=int(building.pk),

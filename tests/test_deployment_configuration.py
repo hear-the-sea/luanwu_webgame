@@ -429,7 +429,17 @@ def test_caddyfile_preserves_static_media_and_proxy_behavior() -> None:
     assert "root * /srv/staticfiles" in caddyfile
     assert "root * /srv/media" in caddyfile
     assert "reverse_proxy web:8000" in caddyfile
-    assert "trusted_proxies" not in caddyfile
+    assert "trusted_proxies static {$CADDY_TRUSTED_PROXIES}" in caddyfile
+    assert "trusted_proxies_strict" in caddyfile
+    assert "client_ip_headers X-Forwarded-For" in caddyfile
+    assert "private_ranges" not in caddyfile
+
+
+def test_caddy_upstream_proxy_trust_is_opt_in() -> None:
+    compose = yaml.safe_load((PROJECT_ROOT / "docker-compose.prod.yml").read_text(encoding="utf-8"))
+    assert compose["services"]["caddy"]["environment"]["CADDY_TRUSTED_PROXIES"] == "${CADDY_TRUSTED_PROXIES:-}"
+    lines = (PROJECT_ROOT / ".env.docker.prod.example").read_text(encoding="utf-8").splitlines()
+    assert "CADDY_TRUSTED_PROXIES=" in lines
 
 
 def test_nginx_deployment_artifact_is_removed() -> None:

@@ -76,7 +76,7 @@ heroes:
         defense: 128
         agility: 72
         luck: 36
-        base_hp: 1960
+        base_hp: 19600
     - key: task_orchard_wraith
       name: 孤魂野鬼
       archetype: civil

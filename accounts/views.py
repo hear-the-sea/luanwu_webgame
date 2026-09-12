@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import time
-import unicodedata
 from threading import Lock
 from typing import cast
 
@@ -40,6 +39,7 @@ from .forms import EmailVerificationRecoveryForm, LoginForm, SignUpForm
 from .login_runtime import check_login_attempts as runtime_check_login_attempts
 from .login_runtime import clear_login_attempts as runtime_clear_login_attempts
 from .login_runtime import increment_attempt_counter as runtime_increment_attempt_counter
+from .login_runtime import login_attempt_keys, login_lock_keys
 from .login_runtime import normalize_lock_ttl as runtime_normalize_lock_ttl
 from .login_runtime import record_failed_attempt as runtime_record_failed_attempt
 from .login_runtime import safe_cache_delete as runtime_safe_cache_delete
@@ -100,11 +100,6 @@ def _get_client_ip(request) -> str:
     return get_client_ip(request, trust_proxy=True)
 
 
-def _normalize_login_throttle_username(username: str | None) -> str | None:
-    normalized = unicodedata.normalize("NFKC", str(username or "")).strip().casefold()
-    return normalized or None
-
-
 def _get_login_attempt_key(request, username: str | None = None) -> tuple[str, str | None]:
     """
     获取登录尝试的缓存 key（基于 IP + 用户名双重限制）。
@@ -112,11 +107,7 @@ def _get_login_attempt_key(request, username: str | None = None) -> tuple[str, s
     Returns:
         (ip_key, username_key) - 两个缓存 key
     """
-    ip = _get_client_ip(request)
-    username = _normalize_login_throttle_username(username)
-    ip_key = f"login_attempts:ip:{ip}"
-    username_key = f"login_attempts:user:{username}" if username else None
-    return ip_key, username_key
+    return login_attempt_keys(_get_client_ip(request), username)
 
 
 def _get_login_lock_key(request, username: str | None = None) -> tuple[str, str | None]:
@@ -126,11 +117,7 @@ def _get_login_lock_key(request, username: str | None = None) -> tuple[str, str 
     Returns:
         (ip_lock_key, username_lock_key)
     """
-    ip = _get_client_ip(request)
-    username = _normalize_login_throttle_username(username)
-    ip_lock_key = f"login_lock:ip:{ip}"
-    username_lock_key = f"login_lock:user:{username}" if username else None
-    return ip_lock_key, username_lock_key
+    return login_lock_keys(_get_client_ip(request), username)
 
 
 def _cleanup_local_login_cache(now: float) -> None:
@@ -461,9 +448,9 @@ def _release_email_verification_resend_cooldown(user_id: int) -> None:
         limit=REGISTRATION_IP_LIMIT,
         window_seconds=REGISTRATION_RATE_WINDOW,
         redirect_url=cast(str, reverse_lazy("accounts:register")),
-        error_message="注册请求过于频繁，请稍后再试",
+        error_message="当前网络的注册请求过于频繁，请稍后再试",
     ),
-    name="dispatch",
+    name="_rate_limited_dispatch",
 )
 @method_decorator(
     rate_limit_redirect(
@@ -472,15 +459,23 @@ def _release_email_verification_resend_cooldown(user_id: int) -> None:
         window_seconds=REGISTRATION_RATE_WINDOW,
         key_func=_registration_email_identifier,
         redirect_url=cast(str, reverse_lazy("accounts:register")),
-        error_message="注册请求过于频繁，请稍后再试",
+        error_message="该邮箱的注册请求过于频繁，请稍后再试",
     ),
-    name="dispatch",
+    name="_rate_limited_dispatch",
 )
 class RegisterView(CreateView):
     model = User
     form_class = SignUpForm
     template_name = "accounts/register.html"
     success_url = reverse_lazy("home")
+
+    def dispatch(self, request, *args, **kwargs):
+        if not settings.REGISTRATION_RATE_LIMIT_ENABLED:
+            return super().dispatch(request, *args, **kwargs)
+        return self._rate_limited_dispatch(request, *args, **kwargs)
+
+    def _rate_limited_dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

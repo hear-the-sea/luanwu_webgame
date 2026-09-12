@@ -166,6 +166,28 @@ function createDashboardEnvironment(fetchResponses) {
   };
 }
 
+test("upgrade countdowns round up minutes and always show hours and minutes", () => {
+  const scriptSource = fs.readFileSync(path.resolve(__dirname, "..", "dashboard.js"), "utf8");
+  for (const [remainingMs, expected] of [
+    [1, "0小时1分钟"],
+    [60000, "0小时1分钟"],
+    [3599000, "1小时0分钟"],
+    [3600000, "1小时0分钟"],
+    [3660000, "1小时1分钟"],
+    [90000000, "25小时0分钟"],
+  ]) {
+    const environment = createDashboardEnvironment([]);
+    const now = Date.now();
+    environment.context.Date = class extends Date {
+      static now() { return now; }
+    };
+    environment.attributes.set("data-countdown", new Date(now + remainingMs).toISOString());
+    environment.attributes.set("data-format", "hours-minutes");
+    vm.runInContext(scriptSource, environment.context, { filename: "dashboard.js" });
+    assert.equal(environment.countdownElement.textContent, expected);
+  }
+});
+
 test("guest training countdown retries a failed status check and recovers", async () => {
   const nextTrainingEta = new Date(Date.now() + 60000).toISOString();
   const environment = createDashboardEnvironment([

@@ -4,6 +4,16 @@
       return;
     }
 
+    if (typeof window.initItemTooltip === "function") {
+      window.initItemTooltip({
+        key: "tasks_mission_drops",
+        cellSelector: ".tw-drop-entry",
+        tooltipSelector: ".tw-item-tooltip",
+        trackPointer: false,
+        enableTouch: true,
+      });
+    }
+
     const tabs = document.querySelectorAll(".tw-trade-tab");
     const contents = document.querySelectorAll(".mission-tab-content");
     tabs.forEach((tab) => {

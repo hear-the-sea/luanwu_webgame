@@ -1,6 +1,22 @@
 from __future__ import annotations
 
+import unicodedata
 from typing import Any, Callable
+
+
+def normalize_login_throttle_username(username: str | None) -> str | None:
+    normalized = unicodedata.normalize("NFKC", str(username or "")).strip().casefold()
+    return normalized or None
+
+
+def login_attempt_keys(ip: str, username: str | None = None) -> tuple[str, str | None]:
+    username = normalize_login_throttle_username(username)
+    return f"login_attempts:ip:{ip}", f"login_attempts:user:{username}" if username else None
+
+
+def login_lock_keys(ip: str, username: str | None = None) -> tuple[str, str | None]:
+    username = normalize_login_throttle_username(username)
+    return f"login_lock:ip:{ip}", f"login_lock:user:{username}" if username else None
 
 
 def normalize_lock_ttl(

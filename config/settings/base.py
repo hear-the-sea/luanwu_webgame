@@ -263,6 +263,9 @@ SPECTACULAR_SETTINGS = {
 ENABLE_API_DOCS = env("DJANGO_ENABLE_API_DOCS", "1" if DEBUG else "0") == "1"
 API_DOCS_REQUIRE_AUTH = env("DJANGO_API_DOCS_REQUIRE_AUTH", "0" if DEBUG else "1") == "1"
 
+# Temporary registration throttle switch; validation and email quotas still apply.
+REGISTRATION_RATE_LIMIT_ENABLED = env("DJANGO_REGISTRATION_RATE_LIMIT_ENABLED", "1") != "0"
+
 # Trusted reverse proxy addresses (exact IPs or CIDR), comma-separated.
 trusted_proxy_ips_str = env("DJANGO_TRUSTED_PROXY_IPS", "")
 TRUSTED_PROXY_IPS = [ip.strip() for ip in trusted_proxy_ips_str.split(",") if ip.strip()]

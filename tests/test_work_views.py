@@ -259,7 +259,7 @@ class TestWorkViews:
         assert "智力 100/105，尚缺 5" in body
         assert "敏捷 55/60，尚缺 5" in body
 
-    def test_work_page_shows_only_three_closest_guests_when_none_are_eligible(self, manor_with_user):
+    def test_work_page_hides_closest_guests_when_none_are_eligible(self, manor_with_user):
         manor, client = manor_with_user
         first_guest, work_template = self._create_work_data(manor, "closest")
         first_guest.custom_name = "等级不足"
@@ -280,13 +280,11 @@ class TestWorkViews:
         response = client.get(reverse("gameplay:work"))
 
         body = response.content.decode("utf-8")
-        closest_block = body.split('data-closest-ineligible="true"', maxsplit=1)[1].split("</section>", maxsplit=1)[0]
-        assert "最接近要求" in closest_block
-        assert "缺一" in closest_block
-        assert "缺二" in closest_block
-        assert "缺三" in closest_block
-        assert "缺十" not in closest_block
-        assert "等级不足" not in closest_block
+        assert response.status_code == 200
+        assert "最接近要求" not in body
+        assert 'data-closest-ineligible="true"' not in body
+        assert "暂不符合" in body
+        assert "武力 99/100，尚缺 1" in body
         assert "tw-work-card--no-match" in body
         assert 'type="submit" class="tw-btn-primary" disabled' in body
 

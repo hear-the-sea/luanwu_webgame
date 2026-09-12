@@ -228,6 +228,12 @@ def test_technology_upgrade_quote_reuses_human_eligibility_rules(
         level=0,
         is_upgrading=True,
     )
+    PlayerTechnology.objects.create(
+        manor=manor,
+        tech_key="scout_art",
+        level=0,
+        is_upgrading=True,
+    )
     with pytest.raises(TechnologyConcurrentUpgradeLimitError):
         quote_technology_upgrade(manor, "dao_attack")
 

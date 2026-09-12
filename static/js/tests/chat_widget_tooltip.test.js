@@ -102,6 +102,110 @@ test("initTooltip skips mousemove listener when pointer tracking is disabled", (
   assert.ok(!listeners.includes("mousemove"));
 });
 
+test("touch tooltips avoid label selection and support hybrid pointers", () => {
+  const listeners = new Map();
+  const previousDocument = global.document;
+  const previousMatchMedia = global.matchMedia;
+  const previousAddEventListener = global.addEventListener;
+  const previousRequestAnimationFrame = global.requestAnimationFrame;
+
+  const classNames = new Set();
+  const control = {
+    closest(selector) {
+      return selector === ".guest-equip-tooltip-trigger" ? cell : null;
+    },
+    contains() {
+      return false;
+    },
+  };
+  const cell = {
+    tagName: "LABEL",
+    control,
+    classList: {
+      add(name) {
+        classNames.add(name);
+      },
+      remove(name) {
+        classNames.delete(name);
+      },
+      contains(name) {
+        return classNames.has(name);
+      },
+    },
+    getBoundingClientRect() {
+      return { left: 0, top: 0, width: 100, height: 32, bottom: 32 };
+    },
+    querySelector() {
+      return { style: {} };
+    },
+  };
+  const labelText = {
+    closest(selector) {
+      return selector === ".guest-equip-tooltip-trigger" ? cell : null;
+    },
+  };
+
+  global.document = {
+    querySelector(selector) {
+      return selector === ".guest-equip-tooltip-trigger" ? cell : null;
+    },
+    addEventListener(type, handler) {
+      listeners.set(type, handler);
+    },
+  };
+  global.matchMedia = (query) => ({
+    matches: query === "(hover: hover) and (pointer: fine)" || query === "(any-pointer: coarse)",
+  });
+  global.addEventListener = () => {};
+  global.requestAnimationFrame = () => 1;
+  try {
+    tooltip.initTooltip({
+      key: "guest_detail_label_forwarding_test",
+      cellSelector: ".guest-equip-tooltip-trigger",
+      tooltipSelector: ".guest-equip-tooltip-bubble",
+      trackPointer: false,
+    });
+
+    const clickHandler = listeners.get("click");
+    assert.equal(typeof clickHandler, "function");
+
+    // Hybrid devices can emit a mouseover before the touch-generated click.
+    listeners.get("mouseover")({ target: labelText });
+    let labelClickPrevented = false;
+    clickHandler({
+      target: labelText,
+      preventDefault() {
+        labelClickPrevented = true;
+      },
+    });
+    assert.equal(labelClickPrevented, true);
+    assert.equal(classNames.has("is-tooltip-active"), true);
+
+    clickHandler({
+      target: labelText,
+      preventDefault() {
+        labelClickPrevented = true;
+      },
+    });
+    assert.equal(classNames.has("is-tooltip-active"), false);
+
+    let controlClickPrevented = false;
+    clickHandler({
+      target: control,
+      preventDefault() {
+        controlClickPrevented = true;
+      },
+    });
+    assert.equal(controlClickPrevented, false);
+    assert.equal(classNames.has("is-tooltip-active"), true);
+  } finally {
+    global.document = previousDocument;
+    global.matchMedia = previousMatchMedia;
+    global.addEventListener = previousAddEventListener;
+    global.requestAnimationFrame = previousRequestAnimationFrame;
+  }
+});
+
 test("eventTargetMatchesIgnore detects ignored tooltip controls", () => {
   const ignoredTarget = {
     closest(selector) {
