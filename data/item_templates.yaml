@@ -1980,7 +1980,7 @@ items:
 
   - key: work_chest_large
     name: 打工宝箱（大）
-    description: 打工获得的大型宝箱，打开后可获得随机铂金和锻造材料，有机会获得春秋币，以及小概率获得紫色装备或技能书。
+    description: 打工获得的大型宝箱，打开后可获得随机铂金和锻造材料，有机会获得春秋币，以及小概率获得紫色装备、绿色或蓝色技能书，或紫色技能书《五雷降世》。
     effect_type: loot_box
     rarity: purple
     image: large.png
@@ -2083,9 +2083,10 @@ items:
       skill_book_keys:
         - book_thunder_nine_heavens
         - book_tangseng_sermon
-        - book_hell_instant_formation
-        - book_comrade_command
-        - book_desperate_beast
+        - book_red_lotus_dance
+        - book_fatal_chain_sword
+        - book_soul_erode
+        - book_five_thunder_descent
         - book_dragon_break_curse # 破龙咒
         - book_endless_chatter    # 唧唧歪歪
         - book_steadfast_planning # 静水筹谋
