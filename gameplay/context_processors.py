@@ -117,10 +117,11 @@ def notifications(request):
     Provide unread message count and user statistics to every template.
 
     The notification badge in the navigation bar depends on this context value.
-    Also provides online_user_count and total_user_count (excluding staff/superusers).
+    Also provides online_user_count and total_user_count (excluding staff, superusers, and virtual players).
 
     Performance optimizations:
-    - User counts are cached for 5 minutes
+    - Total user count is cached for 30 seconds
+    - Online user count is cached for 5 seconds when Redis is available
     - Online count uses Redis atomic SET operations
     - Sidebar raid/scout data cached for 10 seconds per user
     - Player rank cached for 30 seconds per user

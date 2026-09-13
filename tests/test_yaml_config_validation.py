@@ -61,6 +61,7 @@ def test_shop_items_match_expected_public_sale_catalog():
 
     expected_keys = [
         "grain",
+        "small_trumpet",
         "zhixuesan",
         "jinchuangyao",
         "baijiwan",

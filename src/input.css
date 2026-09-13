@@ -879,7 +879,7 @@
 
   /* ========== 物品 Tooltip ========== */
   .tw-item-tooltip {
-    @apply hidden fixed min-w-[220px] max-w-[280px] p-3.5 rounded-md z-[1000] pointer-events-none;
+    @apply hidden fixed min-w-[220px] max-w-[280px] p-3.5 rounded-md z-[1000] pointer-events-none text-left;
     background: rgba(40, 25, 15, 0.95);
     border: 1px solid var(--border-light);
     box-shadow: 0 4px 20px rgba(0,0,0,0.5);
@@ -897,7 +897,7 @@
   }
 
   .tw-tooltip-header {
-    @apply font-bold text-base mb-1 bg-transparent;
+    @apply block font-bold text-base mb-1 bg-transparent;
   }
 
   .tw-tooltip-header.rarity-black { color: #E0E0E0; }
@@ -1634,7 +1634,7 @@
   }
 
   .tw-troop-num-input {
-    @apply max-w-[60px] p-0 text-center text-xs font-semibold rounded flex-shrink-0
+    @apply w-[60px] max-w-[60px] p-0 text-center text-xs font-semibold rounded flex-shrink-0
            bg-bg-secondary border border-border-light text-text-primary
            focus:outline-none focus:border-accent-gold;
   }

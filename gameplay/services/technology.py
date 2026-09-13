@@ -256,6 +256,10 @@ def start_technology_upgrade_locked(
     )
 
 
+def cancel_technology_upgrade(manor: Any, tech_key: str) -> bool:
+    return _technology_runtime.cancel_technology_upgrade(manor, tech_key)
+
+
 def finalize_technology_upgrade(tech: Any, send_notification: bool = False, now: Any | None = None) -> bool:
     return _technology_runtime.finalize_technology_upgrade(
         tech,

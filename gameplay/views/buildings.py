@@ -21,10 +21,10 @@ from django.views.generic import TemplateView
 from core.decorators import flash_unexpected_view_error
 from core.exceptions import GameError
 from core.utils import safe_redirect_url, sanitize_error_message
-from core.utils.rate_limit import rate_limit_json
+from core.utils.rate_limit import rate_limit_json, rate_limit_redirect
 from gameplay.models import Building
 from gameplay.services.city_defense import repair_city_defense
-from gameplay.services.manor.core import finalize_upgrades, get_manor, start_upgrade
+from gameplay.services.manor.core import cancel_building_upgrade, finalize_upgrades, get_manor, start_upgrade
 
 from .runtime_refresh_support import run_refresh_api
 
@@ -96,6 +96,31 @@ class UpgradeBuildingView(LoginRequiredMixin, TemplateView):
                 ),
             )
         return redirect(redirect_url)
+
+
+@login_required
+@require_POST
+@rate_limit_redirect("building_upgrade_cancel", limit=10, window_seconds=60)
+def cancel_building_upgrade_view(request: HttpRequest, pk: int) -> HttpResponse:
+    manor = get_manor(request.user)
+    try:
+        cancelled = cancel_building_upgrade(manor, pk)
+        if cancelled:
+            messages.success(request, "建筑升级已取消，已消耗的资源和行动力不会返还")
+        else:
+            messages.info(request, "该建筑升级已完成或已不在进行中，无法取消")
+    except DatabaseError as exc:
+        _handle_unexpected_building_error(
+            request,
+            exc,
+            log_message="Unexpected building upgrade cancel view error: manor_id=%s user_id=%s building_id=%s",
+            log_args=(
+                getattr(manor, "id", None),
+                getattr(request.user, "id", None),
+                pk,
+            ),
+        )
+    return redirect("gameplay:dashboard")
 
 
 @method_decorator(require_POST, name="dispatch")

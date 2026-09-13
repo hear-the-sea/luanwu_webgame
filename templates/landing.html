@@ -277,7 +277,15 @@
                               title="预计完成 {{ building.upgrade_complete_at|date:'Y-m-d H:i:s' }}">计算中</span>
                     </td>
                     <td>
-                        <a href="{% url 'gameplay:dashboard' %}" class="btn-secondary btn-sm">查看</a>
+                        <form method="post"
+                              action="{% url 'gameplay:cancel_building_upgrade' building.id %}"
+                              class="js-production-cancel-form"
+                              data-confirm-title="取消建筑升级"
+                              data-confirm-message="取消后建筑等级不会提升，已消耗的资源和行动力不会返还。确定取消吗？"
+                              data-confirm-ok-text="确认取消">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-secondary btn-sm">取消</button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
@@ -300,7 +308,15 @@
                               title="预计完成 {{ tech.upgrade_complete_at|date:'Y-m-d H:i:s' }}">计算中</span>
                     </td>
                     <td>
-                        <a href="{% url 'gameplay:technology' %}" class="btn-secondary btn-sm">查看</a>
+                        <form method="post"
+                              action="{% url 'gameplay:cancel_technology_upgrade' tech.tech_key %}"
+                              class="js-production-cancel-form"
+                              data-confirm-title="取消科技升级"
+                              data-confirm-message="取消后科技等级不会提升，已消耗的银两不会返还。确定取消吗？"
+                              data-confirm-ok-text="确认取消">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-secondary btn-sm">取消</button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
@@ -402,5 +418,6 @@
 
 {% block extra_scripts %}
 <script src="{% static 'js/dashboard.js' %}"></script>
+<script src="{% static 'js/production-cancel.js' %}"></script>
 <script src="{% static 'js/landing-page.js' %}"></script>
 {% endblock %}

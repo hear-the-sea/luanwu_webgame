@@ -13,7 +13,12 @@ from .views.arena import (
     arena_register_view,
     refresh_arena_activity_api,
 )
-from .views.buildings import RepairCityDefenseView, UpgradeBuildingView, refresh_building_upgrades_api
+from .views.buildings import (
+    RepairCityDefenseView,
+    UpgradeBuildingView,
+    cancel_building_upgrade_view,
+    refresh_building_upgrades_api,
+)
 from .views.core import DashboardView, GuideView, RankingView, SettingsView, rename_manor_view
 from .views.inventory import (
     RecruitmentHallView,
@@ -103,7 +108,12 @@ from .views.recruitment import (
     start_troop_recruitment_view,
     withdraw_troop_from_bank_view,
 )
-from .views.technology import TechnologyView, refresh_technology_upgrades_api, upgrade_technology_view
+from .views.technology import (
+    TechnologyView,
+    cancel_technology_upgrade_view,
+    refresh_technology_upgrades_api,
+    upgrade_technology_view,
+)
 from .views.work import (
     WorkView,
     assign_work_view,
@@ -153,6 +163,7 @@ urlpatterns = [
     path("recruitment/", RecruitmentHallView.as_view(), name="recruitment_hall"),
     path("api/recruitment/refresh/", refresh_recruitment_hall_api, name="refresh_recruitment_hall_api"),
     path("building/<int:pk>/upgrade/", UpgradeBuildingView.as_view(), name="upgrade_building"),
+    path("building/<int:pk>/upgrade/cancel/", cancel_building_upgrade_view, name="cancel_building_upgrade"),
     path("building/<int:pk>/repair-city-defense/", RepairCityDefenseView.as_view(), name="repair_city_defense"),
     path("api/buildings/upgrades/refresh/", refresh_building_upgrades_api, name="refresh_building_upgrades_api"),
     path("tasks/accept/", AcceptMissionView.as_view(), name="accept_mission"),
@@ -161,6 +172,11 @@ urlpatterns = [
     path("api/missions/refresh/", refresh_mission_runs_api, name="refresh_mission_runs_api"),
     path("technology/", TechnologyView.as_view(), name="technology"),
     path("technology/upgrade/<str:tech_key>/", upgrade_technology_view, name="upgrade_technology"),
+    path(
+        "technology/upgrade/<str:tech_key>/cancel/",
+        cancel_technology_upgrade_view,
+        name="cancel_technology_upgrade",
+    ),
     path("api/technology/upgrades/refresh/", refresh_technology_upgrades_api, name="refresh_technology_upgrades_api"),
     path("work/", WorkView.as_view(), name="work"),
     path("work/assign/", assign_work_view, name="assign_work"),

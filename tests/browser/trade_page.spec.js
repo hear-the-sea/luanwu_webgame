@@ -18,9 +18,20 @@ test("trade page delegates mode and listing interactions in a real browser", asy
         data-available="12"
         data-min-price="25"
         data-rarity="purple"
+        data-image-url="/static/test-item.png"
       ><span>上架测试道具</span></button>
+      <button
+        type="button"
+        class="js-open-listing-modal"
+        data-item-key="fallback-item"
+        data-item-name="无图道具"
+        data-available="3"
+        data-min-price="5"
+        data-rarity="green"
+      ><span>上架无图道具</span></button>
       <span class="tw-market-countdown" data-expires="2999-01-01T00:00:00.000Z"></span>
       <div id="listingModal" style="display: none">
+        <button type="button" data-trade-close-modal="listing">关闭</button>
         <input id="modal-item-key" />
         <span id="modal-item-name"></span>
         <span id="modal-available"></span>
@@ -29,7 +40,6 @@ test("trade page delegates mode and listing interactions in a real browser", asy
         <input id="modal-unit-price" />
         <span id="modal-fee"></span>
         <span id="modal-item-icon"></span>
-        <span id="modal-item-initial"></span>
         <label><input type="radio" name="duration" value="3600" data-trade-duration-fee="2" /></label>
       </div>
     </main>
@@ -48,9 +58,25 @@ test("trade page delegates mode and listing interactions in a real browser", asy
   await expect(page.locator("#shop-sell-section")).not.toHaveClass(/tw-shop-section-hidden/);
   expect(await page.evaluate(() => window.__historyCalls.length)).toBe(1);
 
-  await page.locator(".js-open-listing-modal span").click();
+  await page.locator('[data-item-key="test-item"] span').click();
   await expect(page.locator("#listingModal")).toHaveCSS("display", "flex");
   await expect(page.locator("#modal-item-name")).toHaveText("测试道具");
   await expect(page.locator("#modal-available")).toHaveText("12");
   await expect(page.locator("#modal-unit-price")).toHaveValue("25");
+  await expect(page.locator("#modal-item-icon img")).toHaveAttribute("src", "/static/test-item.png");
+
+  await page.locator('[data-trade-close-modal="listing"]').click();
+  await expect(page.locator("#listingModal")).toHaveCSS("display", "none");
+
+  await page.locator('[data-item-key="fallback-item"] span').click();
+  await expect(page.locator("#listingModal")).toHaveCSS("display", "flex");
+  await expect(page.locator("#modal-item-name")).toHaveText("无图道具");
+  await expect(page.locator("#modal-item-icon img")).toHaveCount(0);
+  await expect(page.locator("#modal-item-icon .tw-icon-placeholder")).toHaveText("无");
+
+  await page.locator('[data-trade-close-modal="listing"]').click();
+  await page.locator('[data-item-key="test-item"] span').click();
+  await expect(page.locator("#listingModal")).toHaveCSS("display", "flex");
+  await expect(page.locator("#modal-item-name")).toHaveText("测试道具");
+  await expect(page.locator("#modal-item-icon img")).toHaveAttribute("src", "/static/test-item.png");
 });

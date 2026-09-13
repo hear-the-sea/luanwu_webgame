@@ -12,6 +12,7 @@ from django.utils import timezone
 
 from core.exceptions import GameError
 from gameplay.constants import BUILDING_MAX_LEVELS
+from gameplay.models import PlayerTechnology
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.resources import ResourceProductionBasis
 from gameplay.views.read_helpers import PreparedManorRead
@@ -32,6 +33,31 @@ class TestCoreViews:
         response = authenticated_client.get(reverse("home"))
         assert response.status_code == 200
         assert "manor" in response.context
+
+    def test_home_page_active_upgrades_show_cancel_forms_with_refund_warning(self, manor_with_user):
+        manor, client = manor_with_user
+        building = manor.buildings.first()
+        building.is_upgrading = True
+        building.upgrade_complete_at = timezone.now() + timedelta(minutes=5)
+        building.save(update_fields=["is_upgrading", "upgrade_complete_at"])
+        technology = PlayerTechnology.objects.create(
+            manor=manor,
+            tech_key="dao_attack",
+            level=1,
+            is_upgrading=True,
+            upgrade_complete_at=timezone.now() + timedelta(minutes=10),
+        )
+
+        response = client.get(reverse("home"))
+
+        body = response.content.decode("utf-8")
+        assert response.status_code == 200
+        assert f'action="{reverse("gameplay:cancel_building_upgrade", args=[building.pk])}"' in body
+        assert f'action="{reverse("gameplay:cancel_technology_upgrade", args=[technology.tech_key])}"' in body
+        assert body.count('class="js-production-cancel-form"') == 2
+        assert "已消耗的资源和行动力不会返还" in body
+        assert "已消耗的银两不会返还" in body
+        assert "/static/js/production-cancel.js" in body
 
     def test_home_page_syncs_resources_before_loading_context(self, authenticated_client, monkeypatch):
         ensure_manor(authenticated_client.user)
@@ -219,6 +245,7 @@ class TestCoreViews:
                 ],
                 "upgrading_buildings": [
                     SimpleNamespace(
+                        id=51,
                         level=1,
                         upgrade_complete_at=now + timedelta(minutes=2),
                         building_type=SimpleNamespace(name="农田"),

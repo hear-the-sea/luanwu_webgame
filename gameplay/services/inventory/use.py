@@ -612,6 +612,7 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
     if gear_chance > 0 and (gear_choices or gear_keys) and inventory_random.random() < gear_chance:
         from guests.models import GearTemplate
         from guests.services.equipment import give_gear
+        from guests.utils.equipment_utils import EQUIP_SLOT_MAP
 
         if gear_choices:
             choice_keys = [str(entry["item_key"]) for entry in gear_choices]
@@ -619,17 +620,18 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
             gear_key = weighted_random_choice(choice_keys, choice_weights, inventory_random)
         else:
             gear_key = inventory_random.choice(gear_keys)
-        gear_template = GearTemplate.objects.filter(key=gear_key).first()
-        if gear_template:
-            give_gear(manor, gear_template)
-            rewards.append(f"装备【{gear_template.name}】")
-        else:
-            from guests.utils.equipment_utils import EQUIP_SLOT_MAP
 
-            item_template = ItemTemplate.objects.filter(key=gear_key).first()
-            if item_template and item_template.effect_type in EQUIP_SLOT_MAP:
-                add_item_to_inventory(manor, gear_key, 1)
-                rewards.append(f"装备【{item_template.name}】")
+        item_template = ItemTemplate.objects.filter(key=gear_key).first()
+        if item_template and item_template.effect_type in EQUIP_SLOT_MAP:
+            add_item_to_inventory(manor, gear_key, 1)
+            rewards.append(f"装备【{item_template.name}】")
+        else:
+            gear_template = GearTemplate.objects.filter(key=gear_key).first()
+            if gear_template:
+                # Keep supporting legacy gear-only keys that do not have an
+                # ItemTemplate representation in the warehouse.
+                give_gear(manor, gear_template)
+                rewards.append(f"装备【{gear_template.name}】")
             else:
                 skipped_bonus_items.append(gear_key)
 

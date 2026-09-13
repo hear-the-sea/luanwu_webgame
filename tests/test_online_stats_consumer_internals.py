@@ -308,17 +308,38 @@ class OnlineStatsConsumerInternalTests(SimpleTestCase):
 
 
 @pytest.mark.django_db
-def test_get_total_users_uses_cache(django_user_model):
+def test_get_total_users_uses_cache(django_user_model, monkeypatch):
+    from django.utils import timezone
+
+    from gameplay.models import BotProfile
+    from gameplay.selectors import stats
+
     consumer = OnlineStatsConsumer()
+    monkeypatch.setattr(stats, "_LOCAL_STATS_CACHE", {})
 
     django_user_model.objects.create_user(username="total_users_1", password="pass")
     django_user_model.objects.create_user(username="staff", password="pass", is_staff=True)
+    virtual_user = django_user_model.objects.create_user(
+        username="bot_total_users_1",
+        password="pass",
+        is_active=False,
+    )
+    now = timezone.now()
+    BotProfile.objects.create(
+        manor=virtual_user.manor,
+        prestige_band="low",
+        growth_seed=1,
+        next_growth_at=now,
+        abandon_at=now,
+        retire_at=now,
+    )
 
-    cache.delete(consumer.TOTAL_COUNT_CACHE_KEY)
+    cache.delete(stats.TOTAL_USERS_CACHE_KEY)
     # Call the underlying sync implementation to avoid SQLite/thread
     # locking issues (the async wrapper executes in a separate thread).
     first = consumer.get_total_users.__wrapped__(consumer)
     assert first == 1
+    assert stats.load_total_user_count() == first
 
     django_user_model.objects.filter(username="total_users_1").delete()
     second = consumer.get_total_users.__wrapped__(consumer)
@@ -326,8 +347,11 @@ def test_get_total_users_uses_cache(django_user_model):
 
 
 @pytest.mark.django_db
-def test_get_total_users_tolerates_cache_backend_failure(django_user_model):
+def test_get_total_users_tolerates_cache_backend_failure(django_user_model, monkeypatch):
+    from gameplay.selectors import stats
+
     consumer = OnlineStatsConsumer()
+    monkeypatch.setattr(stats, "_LOCAL_STATS_CACHE", {})
 
     django_user_model.objects.create_user(username="total_users_cache_failure", password="pass")
 

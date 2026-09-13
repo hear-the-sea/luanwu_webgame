@@ -755,3 +755,23 @@ def start_upgrade(building: Building) -> None:
     building.level = locked_building.level
     building.is_upgrading = locked_building.is_upgrading
     building.upgrade_complete_at = locked_building.upgrade_complete_at
+
+
+def cancel_building_upgrade(manor: Manor, building_id: int) -> bool:
+    """Cancel an active building upgrade without refunding its consumed costs."""
+
+    with transaction.atomic():
+        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+        building = Building.objects.select_for_update().filter(pk=building_id, manor_id=locked_manor.pk).first()
+        if building is None or not building.is_upgrading:
+            return False
+
+        if building.upgrade_complete_at is not None and building.upgrade_complete_at <= timezone.now():
+            return False
+
+        building.is_upgrading = False
+        building.upgrade_complete_at = None
+        building.save(update_fields=["is_upgrading", "upgrade_complete_at"])
+        _schedule_building_cache_invalidation(locked_manor)
+
+    return True

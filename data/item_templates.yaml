@@ -1225,7 +1225,7 @@ items:
 
   - key: jade_rabbit_summon_scroll
     name: 玉兔召唤卷轴
-    description: 记有月宫药杵印记的召唤卷轴。使用时消耗卷轴与30个月饼，可招募绿色门客「玉兔」；庄园已拥有玉兔时无法再次招募。
+    description: 记有月宫药杵印记的召唤卷轴。使用时消耗卷轴与5个月饼，可招募绿色门客「玉兔」；庄园已拥有玉兔时无法再次招募。
     effect_type: tool
     rarity: green
     tradeable: true
@@ -1236,7 +1236,7 @@ items:
     effect_payload:
       action: summon_guest
       required_items:
-        mid_autumn_mooncake: 30
+        mid_autumn_mooncake: 5
       exclusive_template_keys:
         - myth_moon_jade_rabbit
       choices:
@@ -3245,9 +3245,9 @@ items:
     storage_space: 75
     image: equip_tieyekui.png
     effect_payload:
-      hp: 150
-      defense: 10
-      force: 15
+      hp: 120
+      defense: 8
+      force: 12
 
   - key: equip_yulindin
     name: 鱼鳞顶
@@ -3259,10 +3259,10 @@ items:
     storage_space: 75
     image: equip_yulindin.png
     effect_payload:
-      hp: 500
-      defense: 15
-      force: 2
-      agility: 5
+      hp: 400
+      defense: 12
+      force: 1
+      agility: 4
 
   - key: equip_baihongkui
     name: 白虹盔
@@ -3274,10 +3274,10 @@ items:
     storage_space: 75
     image: equip_baihongkui.png
     effect_payload:
-      hp: 200
-      defense: 15
-      force: 5
-      troop_capacity: 20
+      hp: 160
+      defense: 12
+      force: 4
+      troop_capacity: 16
 
   - key: equip_zhubiankui
     name: 竹编盔
@@ -3688,9 +3688,9 @@ items:
     storage_space: 50
     image: equip_bupao.png
     effect_payload:
-      hp: 100
-      defense: 8
-      intellect: 10
+      hp: 80
+      defense: 6
+      intellect: 8
 
   - key: equip_shengpijia
     name: 生皮甲
@@ -3702,9 +3702,9 @@ items:
     storage_space: 50
     image: equip_shengpijia.png
     effect_payload:
-      hp: 200
-      defense: 15
-      force: 5
+      hp: 160
+      defense: 12
+      force: 4
 
   - key: equip_housipao
     name: 厚丝袍
@@ -3716,10 +3716,10 @@ items:
     storage_space: 75
     image: equip_housipao.png
     effect_payload:
-      hp: 100
-      defense: 15
-      intellect: 5
-      agility: 8
+      hp: 80
+      defense: 12
+      intellect: 4
+      agility: 6
 
   - key: equip_shapijia
     name: 鲨皮甲
@@ -3731,10 +3731,10 @@ items:
     storage_space: 75
     image: equip_shapijia.png
     effect_payload:
-      hp: 250
-      defense: 18
-      force: 5
-      agility: 5
+      hp: 200
+      defense: 14
+      force: 4
+      agility: 4
 
   - key: equip_cubujia
     name: 粗布甲
@@ -4160,10 +4160,10 @@ items:
     storage_space: 50
     image: equip_buxie.png
     effect_payload:
-      hp: 100
-      defense: 5
-      intellect: 5
-      agility: 8
+      hp: 80
+      defense: 4
+      intellect: 4
+      agility: 6
 
   - key: equip_yangpixue
     name: 羊皮靴
@@ -4175,10 +4175,10 @@ items:
     storage_space: 50
     image: equip_yangpixue.png
     effect_payload:
-      hp: 150
-      defense: 3
-      force: 5
-      agility: 10
+      hp: 120
+      defense: 2
+      force: 4
+      agility: 8
 
   - key: equip_gangpianxue
     name: 钢片靴
@@ -4190,10 +4190,10 @@ items:
     storage_space: 75
     image: equip_gangpianxue.png
     effect_payload:
-      hp: 300
-      defense: 10
-      force: 5
-      agility: 13
+      hp: 240
+      defense: 8
+      force: 4
+      agility: 10
 
   - key: equip_yanyuxue
     name: 燕羽靴
@@ -4205,10 +4205,10 @@ items:
     storage_space: 75
     image: equip_yanyuxue.png
     effect_payload:
-      hp: 200
-      defense: 10
-      force: 5
-      agility: 18
+      hp: 160
+      defense: 8
+      force: 4
+      agility: 14
 
   - key: equip_mabuxue
     name: 麻布靴
@@ -4643,9 +4643,9 @@ items:
     storage_space: 50
     image: duanjian.png
     effect_payload:
-      hp: 100
-      force: 10
-      agility: 8
+      hp: 80
+      force: 8
+      agility: 6
 
   - key: equip_changjian
     name: 长剑
@@ -4657,9 +4657,9 @@ items:
     storage_space: 50
     image: changjian.png
     effect_payload:
-      hp: 150
-      defense: 2
-      force: 18
+      hp: 120
+      defense: 1
+      force: 14
 
   - key: equip_qingmangjian
     name: 青芒剑
@@ -4671,9 +4671,9 @@ items:
     storage_space: 75
     image: equip_qingmangjian.png
     effect_payload:
-      defense: 5
-      force: 20
-      agility: 7
+      defense: 4
+      force: 16
+      agility: 5
 
   - key: equip_duanmajian
     name: 断马剑
@@ -4685,8 +4685,8 @@ items:
     storage_space: 75
     image: equip_duanmajian.png
     effect_payload:
-      force: 25
-      agility: 10
+      force: 20
+      agility: 8
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 武器（刀）
@@ -4702,9 +4702,9 @@ items:
     storage_space: 50
     image: equip_duandao.png
     effect_payload:
-      hp: 50
-      force: 15
-      agility: 5
+      hp: 40
+      force: 12
+      agility: 4
 
   - key: equip_dakandao
     name: 大砍刀
@@ -4716,8 +4716,8 @@ items:
     storage_space: 50
     image: equip_dakandao.png
     effect_payload:
-      hp: 100
-      force: 20
+      hp: 80
+      force: 16
 
   - key: equip_tongchangdao
     name: 铜长刀
@@ -4729,9 +4729,9 @@ items:
     storage_space: 75
     image: equip_tongchangdao.png
     effect_payload:
-      hp: 100
-      defense: 5
-      force: 28
+      hp: 80
+      defense: 4
+      force: 22
 
   - key: equip_jingtiedao
     name: 精铁刀
@@ -4743,8 +4743,8 @@ items:
     storage_space: 75
     image: jingtiedao.png
     effect_payload:
-      hp: 50
-      force: 35
+      hp: 40
+      force: 28
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 武器（枪）
@@ -4760,10 +4760,10 @@ items:
     storage_space: 50
     image: changqiang.png
     effect_payload:
-      hp: 200
-      defense: 1
-      force: 12
-      troop_capacity: 15
+      hp: 160
+      defense: 0
+      force: 9
+      troop_capacity: 12
 
   - key: equip_baoweiqiang
     name: 豹尾枪
@@ -4775,9 +4775,9 @@ items:
     storage_space: 50
     image: equip_baoweiqiang.png
     effect_payload:
-      defense: 5
-      force: 10
-      troop_capacity: 25
+      defense: 4
+      force: 8
+      troop_capacity: 20
 
   - key: equip_hutoumao
     name: 虎头矛
@@ -4789,9 +4789,9 @@ items:
     storage_space: 75
     image: equip_hutoumao.png
     effect_payload:
-      defense: 5
-      force: 20
-      troop_capacity: 20
+      defense: 4
+      force: 16
+      troop_capacity: 16
 
   - key: equip_pansheqiang
     name: 盘蛇枪
@@ -4803,9 +4803,9 @@ items:
     storage_space: 75
     image: equip_pansheqiang.png
     effect_payload:
-      force: 20
-      agility: 5
-      troop_capacity: 20
+      force: 16
+      agility: 4
+      troop_capacity: 16
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 武器（弓）
@@ -4821,8 +4821,8 @@ items:
     storage_space: 50
     image: changgong.png
     effect_payload:
-      force: 15
-      agility: 5
+      force: 12
+      agility: 4
 
   - key: equip_fanqugong
     name: 反曲弓
@@ -4834,8 +4834,8 @@ items:
     storage_space: 50
     image: fanqugong.png
     effect_payload:
-      force: 15
-      agility: 8
+      force: 12
+      agility: 6
 
   - key: equip_tietaigong
     name: 铁胎弓
@@ -4847,9 +4847,9 @@ items:
     storage_space: 75
     image: equip_tietaigong.png
     effect_payload:
-      defense: 5
-      force: 15
-      agility: 12
+      defense: 4
+      force: 12
+      agility: 9
 
   - key: equip_shenbigong
     name: 神臂弓
@@ -4861,8 +4861,8 @@ items:
     storage_space: 75
     image: shenbigong.png
     effect_payload:
-      force: 20
-      agility: 15
+      force: 16
+      agility: 12
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 武器（鞭）
@@ -4892,8 +4892,8 @@ items:
     image: niupibian.png
     effect_payload:
       force: 10
-      agility: 8
-      luck: 5
+      agility: 6
+      luck: 4
 
   - key: equip_jicibian
     name: 棘刺鞭
@@ -4905,9 +4905,9 @@ items:
     storage_space: 75
     image: jicibian.png
     effect_payload:
-      force: 15
-      agility: 8
-      luck: 8
+      force: 12
+      agility: 6
+      luck: 6
 
   - key: equip_jiulonggangbian
     name: 九龙钢鞭
@@ -4919,9 +4919,9 @@ items:
     storage_space: 75
     image: jiulonggangbian.png
     effect_payload:
-      force: 15
-      agility: 10
-      luck: 8
+      force: 12
+      agility: 8
+      luck: 6
 
   - key: equip_mingshejiebian
     name: 冥蛇节鞭
@@ -4933,10 +4933,10 @@ items:
     storage_space: 75
     image: equip_mingshejiebian.png
     effect_payload:
-      hp: 50
-      force: 15
-      agility: 8
-      luck: 10
+      hp: 40
+      force: 12
+      agility: 6
+      luck: 8
 
   # ---------- 武器 - 扩展（成长期及以后）----------
 
@@ -6885,10 +6885,10 @@ items:
     storage_space: 75
     image: equip_zaohongma.png
     effect_payload:
-      hp: 50
-      defense: 5
-      force: 5
-      agility: 12
+      hp: 40
+      defense: 4
+      force: 4
+      agility: 9
 
   - key: equip_huangbiaoma
     name: 黄膘马
@@ -6900,9 +6900,9 @@ items:
     storage_space: 75
     image: equip_huangbiaoma.png
     effect_payload:
-      hp: 200
-      defense: 10
-      agility: 15
+      hp: 160
+      defense: 8
+      agility: 12
 
   - key: equip_dawanma
     name: 大宛马
@@ -6914,9 +6914,9 @@ items:
     storage_space: 100
     image: equip_dawanma.png
     effect_payload:
-      hp: 200
-      defense: 5
-      agility: 20
+      hp: 160
+      defense: 4
+      agility: 16
 
   # ---------- 坐骑 - 扩展 ----------
 

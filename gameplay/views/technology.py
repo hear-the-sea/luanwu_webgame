@@ -20,7 +20,7 @@ from django.views.generic import TemplateView
 from core.decorators import flash_unexpected_view_error
 from core.exceptions import GameError
 from core.utils import safe_redirect_url, sanitize_error_message
-from core.utils.rate_limit import rate_limit_json
+from core.utils.rate_limit import rate_limit_json, rate_limit_redirect
 from gameplay.selectors.technology import (
     get_technology_page_context,
     normalize_martial_troop_class,
@@ -28,7 +28,7 @@ from gameplay.selectors.technology import (
 )
 from gameplay.services.manor.core import get_manor
 from gameplay.services.resources import project_resource_production_for_read
-from gameplay.services.technology import refresh_technology_upgrades, upgrade_technology
+from gameplay.services.technology import cancel_technology_upgrade, refresh_technology_upgrades, upgrade_technology
 from gameplay.views.read_helpers import get_prepared_manor_for_read
 
 from .runtime_refresh_support import run_refresh_api
@@ -117,6 +117,31 @@ def upgrade_technology_view(request: HttpRequest, tech_key: str) -> HttpResponse
     redirect_url = _build_technology_redirect_url(tab, troop)
     redirect_url = safe_redirect_url(request, next_url, redirect_url)
     return redirect(redirect_url)
+
+
+@login_required
+@require_POST
+@rate_limit_redirect("technology_upgrade_cancel", limit=10, window_seconds=60)
+def cancel_technology_upgrade_view(request: HttpRequest, tech_key: str) -> HttpResponse:
+    manor = get_manor(request.user)
+    try:
+        cancelled = cancel_technology_upgrade(manor, tech_key)
+        if cancelled:
+            messages.success(request, "科技升级已取消，已消耗的银两不会返还")
+        else:
+            messages.info(request, "该科技升级已完成或已不在进行中，无法取消")
+    except DatabaseError as exc:
+        _handle_unexpected_technology_error(
+            request,
+            exc,
+            log_message="Unexpected technology upgrade cancel view error: manor_id=%s user_id=%s tech_key=%s",
+            log_args=(
+                getattr(manor, "id", None),
+                getattr(request.user, "id", None),
+                tech_key,
+            ),
+        )
+    return redirect("gameplay:dashboard")
 
 
 @login_required

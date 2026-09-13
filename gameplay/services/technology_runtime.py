@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable
 
+from django.db import transaction
 from django.db.models import F
 
 from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
@@ -423,6 +424,31 @@ def start_technology_upgrade_locked(
     return technology
 
 
+def cancel_technology_upgrade(manor: Any, tech_key: str) -> bool:
+    """Cancel an active technology upgrade without refunding its silver cost."""
+
+    from django.utils import timezone
+
+    from ..models import Manor, PlayerTechnology
+
+    with transaction.atomic():
+        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+        technology = (
+            PlayerTechnology.objects.select_for_update().filter(manor_id=locked_manor.pk, tech_key=tech_key).first()
+        )
+        if technology is None or not technology.is_upgrading:
+            return False
+
+        if technology.upgrade_complete_at is not None and technology.upgrade_complete_at <= timezone.now():
+            return False
+
+        technology.is_upgrading = False
+        technology.upgrade_complete_at = None
+        technology.save(update_fields=["is_upgrading", "upgrade_complete_at", "updated_at"])
+
+    return True
+
+
 def should_skip_tech_refresh_by_local_fallback(
     local_refresh_state: dict[int, float],
     *,
@@ -606,6 +632,7 @@ __all__ = [
     "TechnologyUpgradeQuote",
     "TechnologyUpgradeQuoteStaleError",
     "apply_technology_upgrade_locked",
+    "cancel_technology_upgrade",
     "finalize_technology_upgrade",
     "quote_technology_upgrade",
     "refresh_technology_upgrades",

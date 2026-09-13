@@ -298,7 +298,6 @@
     const quantityInput = root.querySelector("#modal-quantity");
     const unitPriceInput = root.querySelector("#modal-unit-price");
     const itemIconElement = root.querySelector("#modal-item-icon");
-    const itemInitialElement = root.querySelector("#modal-item-initial");
     if (
       !modal ||
       !itemKeyElement ||
@@ -307,8 +306,7 @@
       !minPriceElement ||
       !quantityInput ||
       !unitPriceInput ||
-      !itemIconElement ||
-      !itemInitialElement
+      !itemIconElement
     ) {
       return;
     }
@@ -328,7 +326,7 @@
     minPriceElement.textContent = referencePrice.toLocaleString();
 
     itemIconElement.className = `tw-item-icon rarity-${rarity}`;
-    itemIconElement.textContent = "";
+    itemIconElement.replaceChildren();
     if (imageUrl) {
       const img = document.createElement("img");
       img.src = imageUrl;
@@ -343,7 +341,6 @@
       const placeholder = document.createElement("span");
       placeholder.className = "tw-icon-placeholder";
       placeholder.textContent = itemName ? itemName.charAt(0) : "?";
-      itemInitialElement.textContent = placeholder.textContent;
       itemIconElement.appendChild(placeholder);
     }
 

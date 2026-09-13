@@ -7,13 +7,13 @@ import time
 from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.db import DatabaseError
 from django_redis import get_redis_connection
 
 from core.utils.cache_lock import acquire_best_effort_lock
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
+from gameplay.selectors.stats import TOTAL_USERS_CACHE_KEY, TOTAL_USERS_CACHE_TIMEOUT, load_total_user_count
 from gameplay.services.online_presence_backend import (
     ONLINE_USERS_CACHE_KEY,
     ONLINE_USERS_TTL_SECONDS,
@@ -24,8 +24,6 @@ from gameplay.services.online_presence_backend import (
 from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
 from .session_guard import SingleSessionWebSocketMixin, WebSocketSessionValidationResult
-
-User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +39,9 @@ class OnlineStatsConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsume
     ONLINE_USER_CONN_COUNT_KEY_PREFIX = "online_user_conn_count:"
 
     ONLINE_COUNT_CACHE_KEY = ONLINE_USERS_CACHE_KEY
-    TOTAL_COUNT_CACHE_KEY = "stats:total_users_count"
     ONLINE_COUNT_CACHE_TTL = 5
-    TOTAL_COUNT_CACHE_TTL = 30
+    TOTAL_COUNT_CACHE_KEY = TOTAL_USERS_CACHE_KEY
+    TOTAL_COUNT_CACHE_TTL = TOTAL_USERS_CACHE_TIMEOUT
 
     BROADCAST_DEBOUNCE_SECONDS = 1
     BROADCAST_DEBOUNCE_CACHE_KEY = "stats:online:broadcast:debounce"
@@ -302,15 +300,8 @@ class OnlineStatsConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsume
 
     @database_sync_to_async
     def get_total_users(self):
-        cached_total = self._safe_cache_get(self.TOTAL_COUNT_CACHE_KEY)
-        if cached_total is not None:
-            return int(cached_total)
-
         try:
-            total = User.objects.filter(is_staff=False, is_superuser=False).count()
+            return load_total_user_count()
         except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
             logger.warning("Failed to COUNT total users; returning 0: %s", exc)
             return 0
-
-        self._safe_cache_set(self.TOTAL_COUNT_CACHE_KEY, total, timeout=self.TOTAL_COUNT_CACHE_TTL)
-        return total

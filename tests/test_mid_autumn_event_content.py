@@ -207,7 +207,7 @@ def test_mid_autumn_mooncake_contract():
             "jade_rabbit_summon_scroll",
             "玉兔召唤卷轴",
             "green",
-            30,
+            5,
             "myth_moon_jade_rabbit",
             "mawencai_guest_scroll.png",
         ),

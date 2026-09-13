@@ -4,9 +4,11 @@ import pytest
 
 from core.exceptions import ItemNotConfiguredError, ItemNotFoundError, ItemResourceOverflowConfirmationRequired
 from gameplay.models import InventoryItem, ItemTemplate
+from gameplay.selectors.warehouse import get_warehouse_context
 from gameplay.services.inventory.use import use_inventory_item
 from gameplay.services.manor.core import ensure_manor
 from guests.models import GearSlot, GearTemplate
+from guests.services.equipment_inventory import list_available_equippable_gear_options
 
 
 @pytest.mark.django_db
@@ -556,6 +558,59 @@ def test_loot_box_weighted_gear_choices_grant_inventory_equipment_when_template_
     assert inventory_entry.quantity == 1
     assert manor.gears.filter(template__key="weighted_inventory_gear_a").count() == 0
     assert any(entry == f"装备【{target_template.name}】" for entry in payload["rewards"])
+
+
+@pytest.mark.django_db
+def test_loot_box_gear_with_materialized_templates_is_visible_in_warehouse_and_equip_options(
+    monkeypatch, django_user_model
+):
+    user = django_user_model.objects.create_user(username="loot_box_panlonggun", password="pass123")
+    manor = ensure_manor(user)
+    target_template = ItemTemplate.objects.create(
+        key="equip_panlonggun",
+        name="盘龙棍",
+        effect_type="equip_weapon",
+        rarity="orange",
+    )
+    GearTemplate.objects.create(
+        key=target_template.key,
+        name=target_template.name,
+        slot=GearSlot.WEAPON,
+        rarity="orange",
+    )
+    chest_template = ItemTemplate.objects.create(
+        key="loot_box_panlonggun_test",
+        name="盘龙棍测试宝箱",
+        effect_type=ItemTemplate.EffectType.LOOT_BOX,
+        is_usable=True,
+        effect_payload={
+            "gear_chance": 1,
+            "gear_choices": [{"item_key": target_template.key, "weight": 1}],
+        },
+    )
+    chest = InventoryItem.objects.create(
+        manor=manor,
+        template=chest_template,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.random", lambda: 0.0)
+    monkeypatch.setattr("gameplay.services.inventory.use.inventory_random.uniform", lambda _a, _b: 1.0)
+
+    payload = use_inventory_item(chest)
+
+    inventory_entry = InventoryItem.objects.get(
+        manor=manor,
+        template=target_template,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    warehouse = get_warehouse_context(manor, "warehouse", "all", page=1)
+    options = list_available_equippable_gear_options(manor, slot=GearSlot.WEAPON)
+    assert inventory_entry.quantity == 1
+    assert any(entry.template.key == target_template.key for entry in warehouse["inventory_items"])
+    assert target_template.key in {entry["template_key"] for entry in options}
+    assert not manor.gears.filter(template__key=target_template.key).exists()
+    assert f"装备【{target_template.name}】" in payload["rewards"]
 
 
 @pytest.mark.django_db
