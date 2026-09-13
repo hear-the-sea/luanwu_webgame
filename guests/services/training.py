@@ -6,9 +6,11 @@ from __future__ import annotations
 
 import logging
 import random
+from collections.abc import Sequence
 from copy import copy
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from functools import partial
 from typing import TYPE_CHECKING, Any, Dict, TypedDict
 
 from django.db import connection, transaction
@@ -343,39 +345,56 @@ def ensure_auto_training(guest: Guest, now: datetime | None = None) -> bool:
     """
     if not getattr(guest, "pk", None):
         return False
+    return bool(ensure_auto_training_batch([guest], now=now))
 
+
+def ensure_auto_training_batch(guests: Sequence[Guest], now: datetime | None = None) -> int:
+    """批量锁定门客并启动缺失的训练计划，提交成功后再派发任务。"""
+    if not guests:
+        return 0
+    if any(not getattr(guest, "pk", None) for guest in guests):
+        raise ValueError("ensure_auto_training_batch requires persisted guests")
+    guest_ids = {guest.pk for guest in guests}
     current_time = now or timezone.now()
     with transaction.atomic():
-        locked_guest = Guest.objects.select_for_update().select_related("template").get(pk=guest.pk)
-        guest.training_target_level = locked_guest.training_target_level
-        guest.training_complete_at = locked_guest.training_complete_at
-        guest.training_remaining_seconds = locked_guest.training_remaining_seconds
+        locked_guests = list(
+            Guest.objects.select_for_update().select_related("template").filter(pk__in=guest_ids).order_by("pk")
+        )
+        if len(locked_guests) != len(guest_ids):
+            raise Guest.DoesNotExist("One or more guests no longer exist")
 
-        if locked_guest.level >= MAX_GUEST_LEVEL:
-            return False
-        if locked_guest.status != GuestStatus.IDLE:
-            return False
-        if locked_guest.training_complete_at or locked_guest.training_remaining_seconds is not None:
-            return False
-
-        duration = get_training_duration(locked_guest, levels=1)
-        locked_guest.training_target_level = min(MAX_GUEST_LEVEL, locked_guest.level + 1)
-        locked_guest.training_complete_at = current_time + timedelta(seconds=duration)
-        locked_guest.save(update_fields=["training_target_level", "training_complete_at"])
-
-        guest.training_target_level = locked_guest.training_target_level
-        guest.training_complete_at = locked_guest.training_complete_at
-        guest.training_remaining_seconds = locked_guest.training_remaining_seconds
-
-        def enqueue_training() -> None:
-            _try_enqueue_complete_guest_training(
-                locked_guest,
-                countdown=max(0, int(duration)),
-                source="ensure_auto_training",
+        scheduled: list[tuple[Guest, int]] = []
+        for locked_guest in locked_guests:
+            if locked_guest.level >= MAX_GUEST_LEVEL or locked_guest.status != GuestStatus.IDLE:
+                continue
+            if locked_guest.training_complete_at or locked_guest.training_remaining_seconds is not None:
+                continue
+            duration = get_training_duration(locked_guest, levels=1)
+            locked_guest.training_target_level = min(MAX_GUEST_LEVEL, locked_guest.level + 1)
+            locked_guest.training_complete_at = current_time + timedelta(seconds=duration)
+            scheduled.append((locked_guest, duration))
+        if scheduled:
+            Guest.objects.bulk_update(
+                [guest for guest, _duration in scheduled],
+                ["training_target_level", "training_complete_at"],
             )
+        locked_by_id = {guest.pk: guest for guest in locked_guests}
+        for guest in guests:
+            locked_guest = locked_by_id[guest.pk]
+            guest.training_target_level = locked_guest.training_target_level
+            guest.training_complete_at = locked_guest.training_complete_at
+            guest.training_remaining_seconds = locked_guest.training_remaining_seconds
 
-        transaction.on_commit(enqueue_training)
-    return True
+        for locked_guest, duration in scheduled:
+            transaction.on_commit(
+                partial(
+                    _try_enqueue_complete_guest_training,
+                    locked_guest,
+                    countdown=max(0, int(duration)),
+                    source="ensure_auto_training",
+                )
+            )
+    return len(scheduled)
 
 
 def _reduce_guest_training_once(

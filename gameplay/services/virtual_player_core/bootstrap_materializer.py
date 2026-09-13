@@ -485,10 +485,9 @@ def _materialize_guests(
     if gear_rows:
         GearItem.objects.bulk_update(gear_rows, ["acquired_at"])
 
-    from guests.services.training import ensure_auto_training
+    from guests.services.training import ensure_auto_training_batch
 
-    for guest in guests:
-        ensure_auto_training(guest, now=now)
+    ensure_auto_training_batch(guests, now=now)
     return tuple(guests), tuple(gear_rows), tuple(skill_rows)
 
 

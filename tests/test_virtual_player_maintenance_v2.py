@@ -212,6 +212,17 @@ def active_v2_profile(released_v2_policy, game_data) -> BotProfile:
 
 
 @pytest.fixture
+def idle_v2_guests(active_v2_profile) -> None:
+    # Bootstrap starts automatic training. These scenarios need idle guests
+    # so their candidate selection and rollback assertions reach the action under test.
+    Guest.objects.filter(manor_id=active_v2_profile.manor_id).update(
+        training_target_level=0,
+        training_complete_at=None,
+        training_remaining_seconds=None,
+    )
+
+
+@pytest.fixture
 def permissive_reference(monkeypatch):
     cap = StrengthSummary(
         composite=1_000_000_000,
@@ -750,6 +761,7 @@ def test_economic_recovery_evaluation_counts_the_planned_minimum_kind(
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_arena_candidate_assessment_selects_allowed_training_before_disallowed_upgrades(
     active_v2_profile,
     permissive_reference,
@@ -897,6 +909,7 @@ def test_arena_training_projection_applies_immediate_level_for_event_cap(
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_skill_candidates_use_the_frozen_catalog_without_orm(
     active_v2_profile,
     django_assert_num_queries,
@@ -945,6 +958,7 @@ def test_skill_candidates_use_the_frozen_catalog_without_orm(
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_arena_virtual_skill_candidates_exclude_bookless_boss_skills(active_v2_profile) -> None:
     skill = Skill.objects.create(
         key="gl_top_qiankun_holy_flame",
@@ -1437,6 +1451,7 @@ def _equipment_domain_state(plan) -> dict[str, object]:
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_arena_equipment_candidate_enforces_event_selected_power_cap(
     active_v2_profile,
     permissive_reference,
@@ -1486,6 +1501,36 @@ def test_arena_equipment_candidate_enforces_event_selected_power_cap(
 
 
 @pytest.mark.django_db
+def test_v2_training_planner_preserves_bootstrap_training_and_waits_for_completion(
+    active_v2_profile,
+    permissive_reference,
+    monkeypatch,
+) -> None:
+    _isolate_training_candidates(monkeypatch)
+    guests = Guest.objects.filter(manor_id=active_v2_profile.manor_id).order_by("id")
+    fields = ("id", "level", "training_target_level", "training_complete_at", "training_remaining_seconds")
+    before = tuple(guests.values_list(*fields))
+    assert before
+    assert all(
+        target_level > level and completion_at > FIXED_NOW for _, level, target_level, completion_at, _ in before
+    )
+
+    with CaptureQueriesContext(connection) as captured:
+        plan = _scheduled_plan(active_v2_profile)
+
+    assert not any(
+        query["sql"].lstrip().upper().startswith(("INSERT ", "UPDATE ", "DELETE ", "REPLACE "))
+        for query in captured.captured_queries
+    )
+    assert plan.intent is None
+    assert plan.action_kind == ""
+    completion_at = min(row[3] for row in before)
+    assert completion_at < plan.next_growth_at_after_no_action <= completion_at + timedelta(minutes=3)
+    assert tuple(guests.values_list(*fields)) == before
+
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_v2_training_planner_is_read_only_and_deterministic(
     active_v2_profile,
     permissive_reference,
@@ -1901,6 +1946,7 @@ def test_domain_completion_wakes_closed_empty_candidate_cooldown(active_v2_profi
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_v2_cross_band_building_upgrade_uses_target_reference_and_cadence(
     active_v2_profile,
     permissive_reference,
@@ -1919,6 +1965,7 @@ def test_v2_cross_band_building_upgrade_uses_target_reference_and_cadence(
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_v2_cross_band_domain_no_action_keeps_source_band_cadence(
     active_v2_profile,
     permissive_reference,
@@ -1986,6 +2033,7 @@ def test_v2_technology_upgrade_commits_one_frozen_domain_action(
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_v2_equipment_equip_commits_one_locked_frozen_action(
     active_v2_profile,
     permissive_reference,
@@ -2065,6 +2113,7 @@ def test_v2_equipment_equip_commits_one_locked_frozen_action(
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_v2_equipment_plan_rejects_target_and_spec_mismatch(
     active_v2_profile,
     permissive_reference,
@@ -2094,6 +2143,7 @@ def test_v2_equipment_plan_rejects_target_and_spec_mismatch(
 
 @pytest.mark.parametrize("drift_kind", ("template", "equivalent_gear"))
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_v2_equipment_drift_rejects_plan_without_writes(
     active_v2_profile,
     permissive_reference,
@@ -2134,6 +2184,7 @@ def test_v2_equipment_drift_rejects_plan_without_writes(
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_v2_equipment_domain_constraint_rolls_back_action_savepoint(
     active_v2_profile,
     permissive_reference,
@@ -2169,6 +2220,7 @@ def test_v2_equipment_domain_constraint_rolls_back_action_savepoint(
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_v2_equipment_final_strength_mismatch_rolls_back_entire_cycle(
     active_v2_profile,
     permissive_reference,
@@ -2753,6 +2805,7 @@ def test_v2_virtual_troop_recruitment_does_not_project_prestige_gain(
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_v2_training_commits_domain_result_budget_sequence_and_schedule_atomically(
     active_v2_profile,
     permissive_reference,
@@ -2913,6 +2966,7 @@ def test_v2_settlement_and_training_commit_in_one_cycle(
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_v2_virtual_player_does_not_need_salary_to_take_action(
     active_v2_profile,
     permissive_reference,
@@ -2941,6 +2995,7 @@ def test_v2_virtual_player_does_not_need_salary_to_take_action(
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_v2_arena_cycle_preserves_normal_schedule_exactly(
     active_v2_profile,
     permissive_reference,
@@ -3403,6 +3458,7 @@ def test_v2_busy_result_keeps_sequence_and_schedule(
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_v2_stale_precondition_and_sequence_conflicts_write_nothing(
     active_v2_profile,
     permissive_reference,
@@ -3785,6 +3841,7 @@ def test_corrupt_v2_identity_or_profile_pauses_without_legacy_fallback(
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_v2_final_strength_mismatch_rolls_back_domain_and_cycle_writes(
     active_v2_profile,
     permissive_reference,
@@ -3792,6 +3849,7 @@ def test_v2_final_strength_mismatch_rolls_back_domain_and_cycle_writes(
 ) -> None:
     _isolate_training_candidates(monkeypatch)
     plan = _scheduled_plan(active_v2_profile)
+    assert plan.action_kind == "training"
     assert plan.target_id is not None
     target_before = Guest.objects.values(
         "level",
@@ -3800,6 +3858,9 @@ def test_v2_final_strength_mismatch_rolls_back_domain_and_cycle_writes(
         "defense_stat",
         "agility",
         "attribute_points",
+        "training_target_level",
+        "training_complete_at",
+        "training_remaining_seconds",
     ).get(pk=plan.target_id)
     manor_before = Manor.objects.values("silver", "grain", "prestige").get(pk=plan.manor_id)
     original_strength_builder = maintenance._build_locked_snapshot_strength
@@ -3833,10 +3894,12 @@ def test_v2_final_strength_mismatch_rolls_back_domain_and_cycle_writes(
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
 def test_v2_domain_failure_rolls_back_training_and_cycle_metadata(
     active_v2_profile,
     permissive_reference,
     monkeypatch,
+    django_capture_on_commit_callbacks,
 ) -> None:
     _mark_juxianzhuang_target_reached(active_v2_profile)
     _configure_due_resource_production(active_v2_profile, monkeypatch)
@@ -3847,6 +3910,7 @@ def test_v2_domain_failure_rolls_back_training_and_cycle_metadata(
     )
     _set_large_resource_capacity(active_v2_profile)
     plan = _scheduled_plan(active_v2_profile)
+    assert plan.action_kind == "training"
     assert plan.target_id is not None
     target_before = Guest.objects.values(
         "level",
@@ -3855,28 +3919,31 @@ def test_v2_domain_failure_rolls_back_training_and_cycle_metadata(
         "defense_stat",
         "agility",
         "attribute_points",
+        "training_target_level",
+        "training_complete_at",
+        "training_remaining_seconds",
     ).get(pk=plan.target_id)
     manor_before = Manor.objects.values(
         "silver",
         "grain",
         "resource_updated_at",
     ).get(pk=plan.manor_id)
-    import guests.services.training as training_service
-
-    original_reduce = training_service.reduce_training_time_for_guest
+    original_reduce = maintenance.reduce_training_time_for_guest
 
     def fail_after_timer_write(*args, **kwargs):
         original_reduce(*args, **kwargs)
         raise RuntimeError("forced maintenance rollback")
 
     monkeypatch.setattr(
-        training_service,
+        maintenance,
         "reduce_training_time_for_guest",
         fail_after_timer_write,
     )
-    with pytest.raises(RuntimeError, match="forced maintenance rollback"):
-        maintenance.execute_virtual_player_v2_maintenance_plan(plan)
+    with django_capture_on_commit_callbacks(execute=True) as callbacks:
+        with pytest.raises(RuntimeError, match="forced maintenance rollback"):
+            maintenance.execute_virtual_player_v2_maintenance_plan(plan)
 
+    assert callbacks == []
     active_v2_profile.refresh_from_db()
     assert active_v2_profile.maintenance_sequence == 0
     assert active_v2_profile.strength_budget_entries == []

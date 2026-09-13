@@ -747,15 +747,14 @@ def test_mysql_failure_boundaries_do_not_duplicate_or_partially_commit(
         now=now,
     )
     assert plan.action_kind == "training"
-    import guests.services.training as training_service
 
-    original_ensure_auto_training = training_service.ensure_auto_training
+    original_ensure_auto_training = maintenance.ensure_auto_training
 
     def _fail_after_domain_write(guest, **kwargs):
         original_ensure_auto_training(guest, **kwargs)
         raise RuntimeError("injected after domain write")
 
-    monkeypatch.setattr(training_service, "ensure_auto_training", _fail_after_domain_write)
+    monkeypatch.setattr(maintenance, "ensure_auto_training", _fail_after_domain_write)
     with pytest.raises(RuntimeError, match="injected after domain write"):
         maintenance.execute_virtual_player_v2_maintenance_plan(plan)
     profile.refresh_from_db()
@@ -765,7 +764,7 @@ def test_mysql_failure_boundaries_do_not_duplicate_or_partially_commit(
         training_complete_at__isnull=False,
     ).exists()
 
-    monkeypatch.setattr(training_service, "ensure_auto_training", original_ensure_auto_training)
+    monkeypatch.setattr(maintenance, "ensure_auto_training", original_ensure_auto_training)
     original_finish = maintenance._finish_safety_attempt_best_effort
 
     def _fail_after_business_commit(*_args, **_kwargs):

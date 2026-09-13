@@ -275,8 +275,9 @@ class TestTaskBoardPage:
         body = response.content.decode("utf-8")
         assert helmet.image.url in body
         assert armor.image.url in body
-        assert 'title="青龙盔图纸 ×1"' in body
-        assert 'title="青龙甲图纸 ×1"' in body
+        for label in ("青龙盔图纸 ×1", "青龙甲图纸 ×1"):
+            assert f'<button type="button" class="tw-drop-entry tw-item-cell" aria-label="{label}">' in body
+            assert f'<span class="tw-tooltip-header rarity-blue">{label}</span>' in body
         assert "青龙盔图纸/青龙甲图纸" not in body
 
     def test_task_board_displays_fixed_and_probability_drops_in_one_preview_grid(self, manor_with_user):
@@ -299,7 +300,8 @@ class TestTaskBoardPage:
         assert response.status_code == 200
         body = response.content.decode("utf-8")
         assert ">银两 ×500<" in body
-        assert 'title="概率预览物品 ×1"' in body
+        assert '<button type="button" class="tw-drop-entry tw-item-cell" aria-label="概率预览物品 ×1">' in body
+        assert '<span class="tw-tooltip-header rarity-green">概率预览物品 ×1</span>' in body
         assert "概率掉落：" not in body
         assert body.count('class="tw-drop-grid"') == 1
 
