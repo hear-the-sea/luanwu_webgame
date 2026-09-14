@@ -33,8 +33,10 @@ from .coop_lifecycle import (
 from .coop_rules import load_arena_coop_rules
 from .coop_settlement import settle_coop_event_locked
 from .lifecycle_helpers import move_coop_event_to_preparing_locked
+from .low_population_policy import new_event_wait_seconds
 from .replay import ensure_coop_event_replay_metadata
 from .snapshots import load_entry_guests
+from .virtual_fill_service import observe_fill_service_locked
 from .virtual_reserve_demand import delete_virtual_demands_for_coop_events, queue_virtual_reserve_reconcile
 from .virtual_reserve_pool import release_virtual_reserve_member_for_manor
 from .virtual_reserve_reconcile import reconcile_coop_demand_locked
@@ -173,12 +175,14 @@ def register_arena_coop_entry(manor: Manor, guest_ids: Iterable[int]) -> ArenaCo
         recruiting_lock_key=ARENA_COOP_RECRUITING_LOCK_KEY,
         recruiting_lock_timeout=ARENA_COOP_RECRUITING_LOCK_TIMEOUT,
         resolve_boss_initial_hp_fn=resolve_boss_initial_hp,
-        virtual_fill_wait_seconds=ARENA_COOP_VIRTUAL_FILL_WAIT_SECONDS,
+        virtual_fill_wait_seconds=new_event_wait_seconds("coop", ARENA_COOP_VIRTUAL_FILL_WAIT_SECONDS),
     )
+    observe_fill_service_locked(event=event, mode="coop", phase="before_registration")
     entry = upsert_entry_with_snapshots_locked(event, locked_manor, selected_guests)
     entry_count = event.entries.filter(status=ArenaCoopEntry.Status.REGISTERED).count()
     current_time = timezone.now()
     demand = reconcile_coop_demand_locked(event, now=current_time)
+    observe_fill_service_locked(event=event, mode="coop", now=current_time, phase="registration")
     moved_to_preparing = False
     if entry_count >= event.player_limit:
         moved_to_preparing = move_coop_event_to_preparing_locked(event, now=current_time)
@@ -255,6 +259,7 @@ def cancel_arena_coop_entry(manor: Manor) -> int:
         today_bounds_fn=_today_bounds,
     )
     reconcile_coop_demand_locked(event, now=current_time)
+    observe_fill_service_locked(event=event, mode="coop", now=current_time, phase="cancellation")
     transaction.on_commit(lambda: queue_virtual_reserve_reconcile("coop", event.id))
     return 1
 
@@ -353,12 +358,15 @@ def _handle_insufficient_coop_entries_locked(
         event.prepare_ends_at = None
         event.ended_at = now
         event.save(update_fields=["status", "prepare_ends_at", "ended_at", "updated_at"])
+        observe_fill_service_locked(event=event, mode="coop", now=now, phase="cancellation")
         return
 
     event.status = ArenaCoopEvent.Status.RECRUITING
     event.prepare_ends_at = None
     event.virtual_fill_completed = False
-    event.virtual_fill_at = now + timedelta(seconds=max(1, ARENA_COOP_VIRTUAL_FILL_WAIT_SECONDS))
+    event.virtual_fill_at = now + timedelta(
+        seconds=max(1, new_event_wait_seconds("coop", ARENA_COOP_VIRTUAL_FILL_WAIT_SECONDS))
+    )
     event.save(
         update_fields=[
             "status",
@@ -369,6 +377,7 @@ def _handle_insufficient_coop_entries_locked(
         ]
     )
     reconcile_coop_demand_locked(event, now=now)
+    observe_fill_service_locked(event=event, mode="coop", now=now, phase="reopening")
     transaction.on_commit(lambda: queue_virtual_reserve_reconcile("coop", event.pk))
 
 

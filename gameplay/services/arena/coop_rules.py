@@ -26,7 +26,7 @@ DEFAULT_ARENA_COOP_RULES: dict[str, Any] = {
     },
     "runtime": {
         "auto_start_scan_seconds": 30,
-        "virtual_fill_wait_seconds": 28_800,
+        "virtual_fill_wait_seconds": 7_200,
         "completed_retention_seconds": 86400,
     },
     "contribution": {

@@ -200,7 +200,7 @@ class ArenaVirtualReserveMember(models.Model):
     growth_applied_action_count = models.PositiveIntegerField("已成功成长动作数", default=0)
     growth_action_ordinal_in_round = models.PositiveSmallIntegerField("当前轮动作序号", default=0)
     growth_slot_attempt_ordinal = models.PositiveSmallIntegerField("当前槽位尝试序号", default=0)
-    growth_execution_attempt_count = models.PositiveSmallIntegerField("窗口内实际执行次数", default=0)
+    growth_execution_attempt_count = models.PositiveBigIntegerField("累计实际执行次数", default=0)
     growth_round_training_guest_ids = models.JSONField("当前轮已分配训练门客", default=list, blank=True)
     growth_round_id = models.CharField("当前培养轮 ID", max_length=64, default="", blank=True)
     arena_growth_budget_entries = models.JSONField("竞技场成长预算窗口", default=list, blank=True)

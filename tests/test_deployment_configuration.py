@@ -162,13 +162,13 @@ def test_prod_compose_passes_redis_password_to_redis_container() -> None:
     assert redis_environment["REDIS_PASSWORD"] == "${REDIS_PASSWORD:?set REDIS_PASSWORD in .env.docker}"
 
 
-def test_prod_compose_declares_4gb_memory_guardrails_and_single_child_baseline() -> None:
+def test_prod_compose_declares_8gb_memory_guardrails_and_single_child_baseline() -> None:
     compose = yaml.safe_load((PROJECT_ROOT / "docker-compose.prod.yml").read_text(encoding="utf-8"))
     services = compose["services"]
 
     expected_memory = {
         "redis": ("${REDIS_MEMORY_LIMIT:-128m}", "${REDIS_MEMORY_RESERVATION:-64m}"),
-        "db": ("${MYSQL_MEMORY_LIMIT:-768m}", "${MYSQL_MEMORY_RESERVATION:-512m}"),
+        "db": ("${MYSQL_MEMORY_LIMIT:-1536m}", "${MYSQL_MEMORY_RESERVATION:-768m}"),
         "web": ("${WEB_MEMORY_LIMIT:-384m}", "${WEB_MEMORY_RESERVATION:-256m}"),
         "worker": ("${CELERY_WORKER_MEMORY_LIMIT:-256m}", "${CELERY_WORKER_MEMORY_RESERVATION:-160m}"),
         "worker_battle": (
@@ -183,12 +183,16 @@ def test_prod_compose_declares_4gb_memory_guardrails_and_single_child_baseline()
             "${CELERY_WORKER_MEMORY_LIMIT:-256m}",
             "${CELERY_WORKER_MEMORY_RESERVATION:-160m}",
         ),
+        "worker_timer_safety": (
+            "${CELERY_TIMER_SAFETY_MEMORY_LIMIT:-256m}",
+            "${CELERY_TIMER_SAFETY_MEMORY_RESERVATION:-160m}",
+        ),
         "worker_timer_maintenance": (
-            "${CELERY_WORKER_MEMORY_LIMIT:-256m}",
-            "${CELERY_WORKER_MEMORY_RESERVATION:-160m}",
+            "${CELERY_TIMER_MAINTENANCE_MEMORY_LIMIT:-768m}",
+            "${CELERY_TIMER_MAINTENANCE_MEMORY_RESERVATION:-384m}",
         ),
         "beat": ("${CELERY_BEAT_MEMORY_LIMIT:-96m}", "${CELERY_BEAT_MEMORY_RESERVATION:-64m}"),
-        "caddy": ("${CADDY_MEMORY_LIMIT:-64m}", "${CADDY_MEMORY_RESERVATION:-32m}"),
+        "caddy": ("${CADDY_MEMORY_LIMIT:-256m}", "${CADDY_MEMORY_RESERVATION:-128m}"),
     }
 
     for service_name, (memory_limit, memory_reservation) in expected_memory.items():
@@ -200,6 +204,7 @@ def test_prod_compose_declares_4gb_memory_guardrails_and_single_child_baseline()
         "worker_battle",
         "worker_timer",
         "worker_timer_scan",
+        "worker_timer_safety",
         "worker_timer_maintenance",
     ):
         command = services[service_name]["command"]
@@ -218,7 +223,7 @@ def test_prod_compose_declares_4gb_memory_guardrails_and_single_child_baseline()
     assert redis_environment["REDIS_MAXMEMORY_POLICY"] == "${REDIS_MAXMEMORY_POLICY:-noeviction}"
 
 
-def test_prod_env_example_matches_4gb_memory_and_queue_baseline() -> None:
+def test_prod_env_example_matches_8gb_memory_and_queue_baseline() -> None:
     values = _read_env_file(PROJECT_ROOT / ".env.docker.prod.example")
 
     assert values["CELERY_DEFAULT_CONCURRENCY"] == "1"
@@ -226,12 +231,30 @@ def test_prod_env_example_matches_4gb_memory_and_queue_baseline() -> None:
     assert values["CELERY_TIMER_CONCURRENCY"] == "1"
     assert values["CELERY_TIMER_SCAN_CONCURRENCY"] == "1"
     assert values["CELERY_TIMER_MAINTENANCE_CONCURRENCY"] == "1"
+    assert values["CELERY_TIMER_SAFETY_CONCURRENCY"] == "1"
     assert values["CELERY_MAX_TASKS_PER_CHILD"] == "200"
     assert values["CELERY_MAX_MEMORY_PER_CHILD"] == "180000"
     assert values["MYSQL_INNODB_BUFFER_POOL_SIZE"] == "512M"
     assert values["MYSQL_MAX_CONNECTIONS"] == "40"
     assert values["REDIS_MAXMEMORY"] == "128mb"
     assert values["REDIS_MAXMEMORY_POLICY"] == "noeviction"
+
+    # Every Compose fallback must agree with the production template. Count
+    # shared worker limits once per service, not once per environment key.
+    compose = yaml.safe_load((PROJECT_ROOT / "docker-compose.prod.yml").read_text(encoding="utf-8"))
+    totals = {"mem_limit": 0, "mem_reservation": 0}
+    for service in compose["services"].values():
+        memory = {}
+        for field in totals:
+            expression = service[field]
+            assert expression.startswith("${") and expression.endswith("}")
+            key, fallback = expression[2:-1].split(":-", 1)
+            assert values[key] == fallback
+            assert fallback.endswith("m")
+            memory[field] = int(fallback[:-1])
+            totals[field] += memory[field]
+        assert 0 < memory["mem_reservation"] <= memory["mem_limit"]
+    assert totals == {"mem_limit": 4448, "mem_reservation": 2464}
 
 
 def test_prod_env_requires_a_non_empty_redis_password() -> None:
@@ -409,6 +432,7 @@ def test_prod_compose_uses_caddy_as_the_only_public_ingress() -> None:
         "worker_battle",
         "worker_timer",
         "worker_timer_scan",
+        "worker_timer_safety",
         "worker_timer_maintenance",
         "beat",
     ):
@@ -481,6 +505,7 @@ def test_env_examples_define_split_timer_concurrencies(filename: str) -> None:
     expected_scan_concurrency = "1" if filename == ".env.docker.prod.example" else "2"
     assert values["CELERY_TIMER_SCAN_CONCURRENCY"] == expected_scan_concurrency
     assert values["CELERY_TIMER_MAINTENANCE_CONCURRENCY"] == "1"
+    assert values["CELERY_TIMER_SAFETY_CONCURRENCY"] == "1"
 
 
 def test_prod_env_enables_full_async_readiness_checks() -> None:
@@ -516,6 +541,7 @@ def test_prod_collectstatic_only_runs_where_staticfiles_volume_is_writable() -> 
         "worker_battle",
         "worker_timer",
         "worker_timer_scan",
+        "worker_timer_safety",
         "worker_timer_maintenance",
         "beat",
     ]

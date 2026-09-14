@@ -7,6 +7,7 @@ from hashlib import sha256
 from pathlib import Path
 
 import pytest
+from django.test import override_settings
 from django.utils import timezone
 
 from gameplay.models import (
@@ -505,6 +506,7 @@ def test_distribution_requires_same_scope_across_two_daily_windows() -> None:
 
 
 @pytest.mark.django_db
+@override_settings(VIRTUAL_PLAYER_ARENA_SAFETY_POLICY="legacy")
 def test_arena_shortage_requires_persisted_baseline_and_strict_increase() -> None:
     baseline = [_arena_baseline()]
     equal = _window(
@@ -574,6 +576,7 @@ def test_arena_shortage_requires_persisted_baseline_and_strict_increase() -> Non
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("expired", [False, True])
+@override_settings(VIRTUAL_PLAYER_ARENA_SAFETY_POLICY="legacy")
 def test_runtime_baseline_expiry_uses_database_clock(monkeypatch, expired) -> None:
     expires_at = HOURLY_START + timedelta(hours=2)
     database_now = expires_at if expired else expires_at - timedelta(microseconds=1)
@@ -605,6 +608,7 @@ def test_runtime_baseline_expiry_uses_database_clock(monkeypatch, expired) -> No
 
 
 @pytest.mark.django_db
+@override_settings(VIRTUAL_PLAYER_ARENA_SAFETY_POLICY="legacy")
 def test_expired_runtime_baseline_is_fail_closed() -> None:
     expires_at = HOURLY_START - timedelta(hours=1)
     window = _window(
@@ -635,6 +639,7 @@ def test_expired_runtime_baseline_is_fail_closed() -> None:
 
 
 @pytest.mark.django_db
+@override_settings(VIRTUAL_PLAYER_ARENA_SAFETY_POLICY="legacy")
 def test_runtime_baseline_population_exceeded_is_fail_closed() -> None:
     expires_at = HOURLY_START + timedelta(days=30)
     window = _window(

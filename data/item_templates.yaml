@@ -1180,6 +1180,8 @@ items:
               weight: 1
             - item_key: book_endless_chatter
               weight: 1
+            - item_key: book_taiyi_wind
+              weight: 1
             - item_key: book_steadfast_planning
               weight: 1
             - item_key: book_iron_wall_heart
@@ -1205,8 +1207,6 @@ items:
           max_quantity: 1
           choices:
             - item_key: book_meteor_pierce_moon
-              weight: 1
-            - item_key: book_taiyi_wind
               weight: 1
             - item_key: book_flower_rain
               weight: 1
@@ -1647,7 +1647,7 @@ items:
 
   - key: super_guest_disguise_card
     name: 超级门客易容卡
-    description: 使用后可将任意门客的显示形象替换为吕布猴，并使其生命+800、武力+20、敏捷+20。效果只生效一次；门客重生、被俘虏或重新招募后失效。
+    description: 使用后可将任意门客的显示形象替换为吕布，并使其生命+800、武力+20、敏捷+20。效果不会重复叠加。
     effect_type: tool
     rarity: orange
     tradeable: true
@@ -1727,8 +1727,6 @@ items:
     effect_payload:
       skill_book_chance: 1
       skill_book_choices:
-        - item_key: book_taiyi_wind
-          weight: 1
         - item_key: book_flower_rain
           weight: 1
         - item_key: book_soul_erode
@@ -1878,6 +1876,7 @@ items:
         - book_thunder_control    # 驭雷术
         - book_dragon_break_curse # 破龙咒
         - book_endless_chatter    # 唧唧歪歪
+        - book_taiyi_wind         # 太乙生风
         - book_steadfast_planning # 静水筹谋
         - book_iron_wall_heart    # 铁壁心法
 
@@ -2267,6 +2266,8 @@ items:
           weight: 25
         - item_key: book_endless_chatter
           weight: 25
+        - item_key: book_taiyi_wind
+          weight: 25
         - item_key: book_steadfast_planning
           weight: 18
         - item_key: book_iron_wall_heart
@@ -2285,8 +2286,6 @@ items:
     effect_payload:
       skill_book_chance: 1
       skill_book_choices:
-        - item_key: book_taiyi_wind
-          weight: 18
         - item_key: book_flower_rain
           weight: 18
         - item_key: book_soul_erode
@@ -2681,6 +2680,19 @@ items:
     price: 45000
     storage_space: 50
 
+  - key: book_taiyi_wind
+    name: 《太乙生风》秘术
+    description: 太乙门不传之秘，可化真气为狂风席卷战场。
+    effect_type: skill_book
+    image: skill1.png
+    rarity: green
+    effect_payload:
+      skill_key: taiyi_wind
+      skill_name: 太乙生风
+    tradeable: true
+    price: 200000
+    storage_space: 50
+
   # ---------- 通用被动技能书（绿色品质）----------
   - key: book_steadfast_planning
     name: 《静水筹谋》秘术
@@ -2709,19 +2721,6 @@ items:
     storage_space: 50
 
   # ---------- 文系技能书（蓝色品质）----------
-  - key: book_taiyi_wind
-    name: 《太乙生风》秘术
-    description: 太乙门不传之秘，可化真气为狂风席卷战场。
-    effect_type: skill_book
-    image: skill2.png
-    rarity: blue
-    effect_payload:
-      skill_key: taiyi_wind
-      skill_name: 太乙生风
-    tradeable: true
-    price: 200000
-    storage_space: 75
-
   - key: book_flower_rain
     name: 《天花乱坠》秘术
     description: 佛门辩经绝学，口吐莲花，舌灿生辉。

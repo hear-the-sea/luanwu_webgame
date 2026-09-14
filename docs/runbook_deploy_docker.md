@@ -1,6 +1,6 @@
 # Docker 部署运行手册
 
-> 最近校正：2026-08-06
+> 最近校正：2026-09-14
 
 本文档沉淀当前仓库在 WSL2 本地构建、导出镜像、传输到服务器、更新运行中容器与排查常见 Docker 发布问题的实操经验。
 
@@ -17,7 +17,7 @@
 
 当前生产 Docker 方案不是“单容器全包”，而是：
 
-- 应用业务镜像一张，同时供 `web`、`worker`、`worker_battle`、`worker_timer`、`worker_timer_scan`、`worker_timer_maintenance`、`beat` 复用
+- 应用业务镜像一张，同时供 `web`、`worker`、`worker_battle`、`worker_timer`、`worker_timer_scan`、`worker_timer_safety`、`worker_timer_maintenance`、`beat` 复用
 - `db` 使用 MySQL 容器
 - `redis` 使用 Redis 容器
 - `caddy` 直接监听公网 `80/443`，自动管理 HTTPS、静态资源和反向代理
@@ -28,18 +28,19 @@
 - `worker_battle` 只消费 `battle` 队列
 - `worker_timer` 只消费 `timer` 队列
 - `worker_timer_scan` 只消费 `timer_scan` 队列
+- `worker_timer_safety` 只消费 `timer_safety` 队列，专门运行安全心跳、聚合和监控
 - `worker_timer_maintenance` 只消费 `timer_maintenance` 队列
 - `beat` 只负责发布定时任务，不消费业务任务
 
-因此，生产部署时必须把 `worker_timer_scan` 和 `worker_timer_maintenance` 一并启动。只启动
-`worker` 不会自动创建或启动这两个独立的定时 worker 容器。
+因此，生产部署时必须把 `worker_timer_scan`、`worker_timer_safety` 和 `worker_timer_maintenance` 一并启动。只启动
+`worker` 不会自动创建或启动这些独立的定时 worker 容器。
 
 生产镜像内应用进程使用 UID/GID `10001:10001` 运行；`web` 容器在
 [`docker-compose.prod.yml`](/home/daniel/code/web_game_v5/docker-compose.prod.yml#L42)
 中启用了 `read_only: true`。因此 `DJANGO_COLLECTSTATIC=1` 依赖
 `./runtime/staticfiles:/app/staticfiles` 这个可写 volume，首次部署和由 root 创建
 runtime 目录后，都必须把 runtime 目录归属修正给 `10001:10001`。
-`worker`、`worker_battle`、`worker_timer`、`worker_timer_scan`、`worker_timer_maintenance`、`beat` 没有挂载 `/app/staticfiles`，
+`worker`、`worker_battle`、`worker_timer`、`worker_timer_scan`、`worker_timer_safety`、`worker_timer_maintenance`、`beat` 没有挂载 `/app/staticfiles`，
 生产 Compose 已对这些服务设置 `DJANGO_COLLECTSTATIC=0`，避免只读容器在启动时写静态目录。
 
 这意味着发布时通常只需要传输业务镜像；数据库和 Redis 由服务器上的 Compose 编排直接启动。
@@ -186,15 +187,43 @@ chmod 600 ".env.docker"
 - `CADDY_SITE_ADDRESS`、`DJANGO_ALLOWED_HOSTS`、`DJANGO_CSRF_TRUSTED_ORIGINS`：使用同一个生产域名。
 - `DJANGO_RUN_MIGRATIONS=0`：保持关闭，由发布步骤手动执行迁移。
 - `CELERY_TIMER_SCAN_QUEUE=timer_scan` 和 `CELERY_TIMER_SCAN_CONCURRENCY`：确认核心扫描队列配置符合容量规划。
+- `CELERY_TIMER_SAFETY_QUEUE=timer_safety` 和 `CELERY_TIMER_SAFETY_CONCURRENCY`：确认安全任务使用独立 worker，默认并发为 1，避免队列排队制造心跳缺口。
 - `CELERY_TIMER_MAINTENANCE_QUEUE=timer_maintenance` 和 `CELERY_TIMER_MAINTENANCE_CONCURRENCY`：确认维护队列有独立 worker；默认并发为 1，避免低优先级任务争用核心扫描资源。
 
-#### 4GB 单机初始资源基线
+#### 8 GiB 单机初始资源基线
 
-如果 Web、MySQL、Redis、五个 Celery worker、Beat 和 Caddy 共用约 4GB 内存，先保留
-`.env.docker.prod.example` 中的低配基线：五个 worker 各 `concurrency=1`、`prefetch=1`，并使用
-`max-tasks-per-child=200`、`max-memory-per-child=180000KB`。Compose 已为每个服务设置
-`mem_limit`/`mem_reservation`；声明的服务上限合计约 `2720MB`，保留值合计约 `1728MB`，这些是
-止损护栏，不是目标主机已经通过容量验收的证明。
+2026-09-14 的生产排查确认维护 worker（256 MiB）和 Caddy（64 MiB）发生容器限额 OOM，
+并发现 MySQL 被 OOM 杀死的记录。旧的 4 GiB 低配估算不再作为当前生产默认配置。
+新的 Compose 默认值和 `.env.docker.prod.example` 按约 8 GiB 单机设置，适用于每种服务一个实例：
+
+| 服务 | 内存硬上限 | 软保留值 |
+| --- | ---: | ---: |
+| MySQL | 1536 MiB | 768 MiB |
+| 维护 worker | 768 MiB | 384 MiB |
+| 安全 worker | 256 MiB | 160 MiB |
+| Caddy | 256 MiB | 128 MiB |
+| 其他四个普通 worker，每个 | 256 MiB | 160 MiB |
+| Web | 384 MiB | 256 MiB |
+| Beat | 96 MiB | 64 MiB |
+| Redis | 128 MiB | 64 MiB |
+| 合计 | **4448 MiB（约 4.34 GiB）** | **2464 MiB（约 2.41 GiB）** |
+
+这是一组针对已观察到的 OOM 调整的初始预算，不是压测得出的峰值，也不能保证不再 OOM。
+上限不是预分配内存，软保留值也不是额外叠加的硬上限；宿主机、Docker、其他项目和发布时的临时
+容器都需要额外空间。7.8 GiB 主机与上述硬上限总和的差额约 3.7 GiB，但不等于实时可用内存。
+4 GiB 主机不能直接套用这组预算，应扩容、拆分服务或重新进行容量评估；增加服务副本或并发也要重算。
+
+仅维护 worker 改用独立的 `CELERY_TIMER_MAINTENANCE_MEMORY_LIMIT` 和
+`CELERY_TIMER_MAINTENANCE_MEMORY_RESERVATION`。原 `CELERY_WORKER_MEMORY_*` 继续控制其他四个
+worker，不再影响维护 worker；需要定制维护预算的旧部署必须迁移到新变量。
+MySQL 保持 512 MiB buffer pool、40 个最大连接和原临时表参数，把新增空间留给服务器其他内存开销。
+Caddy 的 `validate` 健康检查会在同一容器中启动另一个进程，预算必须覆盖主进程和检查进程。
+
+六个 worker 仍各用 `concurrency=1`、`prefetch=1`，保持 `max-tasks-per-child=200`、
+`max-memory-per-child=180000`（KiB）。后者是单个子进程的回收阈值，超过后在任务结束时回收，
+不是运行中任务或整个容器的实时内存上限；容器还要容纳父进程和任务峰值。
+参见 [Celery 子进程内存阈值](https://docs.celeryq.dev/en/stable/userguide/configuration.html#worker-max-memory-per-child)
+和 [Docker 内存限制](https://docs.docker.com/engine/containers/resource_constraints/#memory)。
 
 初始配置下不要为了追赶虚拟玩家 backlog 直接增加 worker 并发。先在目标主机记录至少以下信息，
 再决定是否逐个提高 battle 或扫描 worker 的并发：
@@ -210,6 +239,52 @@ vmstat 1 5
 队列 oldest-due、queue wait 和 maintenance owner duration。只有在没有 OOM、没有持续 swap、
 队列 oldest-due 不持续上升且保留明确 `MemAvailable` 余量时，才允许一次只调高一个队列并重新测量；
 当前静态基线不能替代 `1h/6h/24h` 长时矩阵。
+
+#### 已部署环境升级内存预算
+
+只替换镜像不会修改运行中容器的 cgroup 限额；只更新模板也不会覆盖服务器 `.env.docker` 的旧值。
+本次调整不需要重建应用镜像或执行数据库迁移，但需要同步新版 `docker-compose.prod.yml`，并在
+已有 `.env.docker` 中逐项更新下列值（不存在则补充，每个键只保留一次）：
+
+```dotenv
+MYSQL_MEMORY_LIMIT=1536m
+MYSQL_MEMORY_RESERVATION=768m
+CELERY_TIMER_MAINTENANCE_MEMORY_LIMIT=768m
+CELERY_TIMER_MAINTENANCE_MEMORY_RESERVATION=384m
+CELERY_TIMER_SAFETY_MEMORY_LIMIT=256m
+CELERY_TIMER_SAFETY_MEMORY_RESERVATION=160m
+CADDY_MEMORY_LIMIT=256m
+CADDY_MEMORY_RESERVATION=128m
+```
+
+不要用示例文件覆盖整个生产 `.env.docker`，不要修改其中的密码、域名、镜像标签或其他业务参数。
+检查当前 shell 中是否有同名导出变量；它们也可能覆盖环境文件。先仅校验展开后的配置：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" config --quiet
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" config --format json |
+  python3 -c 'import json, sys; services = json.load(sys.stdin)["services"]; print(json.dumps({name: {key: service.get(key) for key in ("mem_limit", "mem_reservation")} for name, service in services.items()}, indent=2))'
+```
+
+这里只输出资源字段，避免把完整 Compose 展开结果中的生产密码贴到工单。
+应用配置必须安排并确认维护窗口：MySQL 和 Caddy 重建会分别中断数据库连接和公网入口；安全 worker
+增加或重建时也要短暂确认安全心跳连续性。
+先确认数据库备份可恢复，再停止接收新业务、排空在途任务，按下文“计划重启与虚拟玩家安全窗口”
+处理运行围栏，然后暂停相关业务进程和调度器。只对需要更新限额的 `db`、
+`worker_timer_safety`、`worker_timer_maintenance`、`caddy` 重建容器，保留全部命名卷；数据库恢复健康后再恢复业务服务。
+`docker compose restart` 不会应用新的 Compose 配置，不能代替重建。若同时部署新代码，应合并到
+下文完整发布流程，不要重复重建。参见 [Compose restart 的限制](https://docs.docker.com/reference/cli/docker/compose/restart/)。
+
+如果虚拟玩家当前已因心跳异常暂停，不要覆盖原因、伪造计划重启标记或直接清空暂停状态。
+内存调整不修改安全阈值、历史快照或恢复计数；本次 03:00–04:00 的心跳缺口尚未与更早的 OOM
+建立直接因果关系。安全任务现由专用队列承载，但安全 worker 自身 OOM、Beat 停止、Redis/数据库故障
+或发布期间任务未启动仍可能造成心跳缺口。
+已有缺口也可能在日窗口定稿时再次触发暂停，不能把“容器已恢复运行”当成安全窗口已恢复的证明。
+
+更新后以 `docker inspect` 的 `HostConfig.Memory` / `HostConfig.MemoryReservation` 验证实际限额，
+并观察新 OOM 事件、重启次数、队列延迟、MySQL 健康、Web readiness 和安全窗口推进情况。
+若需要回滚，恢复备份中的对应 Compose/资源配置后在维护窗口重建受影响容器，不删除数据卷；
+回到已发生 OOM 的低限额不是稳定性修复。
 
 ### 3. 校验 Compose 和 Caddy 配置
 
@@ -229,7 +304,7 @@ docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" config --se
 ```
 
 输出中应至少包含：`db`、`redis`、`web`、`worker`、`worker_battle`、`worker_timer`、
-`worker_timer_scan`、`worker_timer_maintenance`、`beat`、`caddy`。
+`worker_timer_scan`、`worker_timer_safety`、`worker_timer_maintenance`、`beat`、`caddy`。
 
 ### 4. 启动基础设施并执行数据库迁移
 
@@ -257,16 +332,16 @@ docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "w
 
 ### 5. 启动全部业务服务
 
-必须显式包含 `worker_timer_scan` 和 `worker_timer_maintenance`。前者以 `timer_scan` 队列和独立并发度运行
-用户相关的批量扫描，后者以 `timer_maintenance` 队列运行虚拟玩家、竞技场储备、市场和清理等维护任务：
+必须显式包含 `worker_timer_scan`、`worker_timer_safety` 和 `worker_timer_maintenance`。前者以 `timer_scan` 队列和独立并发度运行
+用户相关的批量扫描，安全 worker 只处理安全心跳/窗口监控，维护 worker 以 `timer_maintenance` 队列运行虚拟玩家、竞技场储备、市场和清理等维护任务：
 
 ```bash
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d \
-  "web" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_maintenance" "beat" "caddy"
+  "web" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_safety" "worker_timer_maintenance" "beat" "caddy"
 ```
 
 如果直接执行不带服务名的 `docker compose up -d`，Compose 也会启动文件中声明的全部服务；生产发布
-仍建议使用上面的显式服务列表，便于确认本次发布确实包含两个独立的定时 worker。
+仍建议使用上面的显式服务列表，便于确认本次发布确实包含三个独立的定时 worker。
 
 ### 6. 验证部署结果
 
@@ -277,13 +352,14 @@ docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" ps
 ```
 
 重点确认以下服务处于 `running` 或健康状态：`web`、`worker`、`worker_battle`、`worker_timer`、
-`worker_timer_scan`、`worker_timer_maintenance`、`beat`、`caddy`、`db`、`redis`。
+`worker_timer_scan`、`worker_timer_safety`、`worker_timer_maintenance`、`beat`、`caddy`、`db`、`redis`。
 
 分别查看应用和扫描 worker 的最近日志：
 
 ```bash
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "web"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "worker_timer_scan"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "worker_timer_safety"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "worker_timer_maintenance"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "beat"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "caddy"
@@ -327,11 +403,11 @@ docker compose down -v
 cd "/opt/web_game_v5"
 docker load -i "webgame_v1.tar.gz"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" config >/dev/null
-docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" stop "beat" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_maintenance"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" stop "beat" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_safety" "worker_timer_maintenance"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm "web" \
   python manage.py migrate --noinput
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --force-recreate --no-deps \
-  "web" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_maintenance" "beat"
+  "web" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_safety" "worker_timer_maintenance" "beat"
 ```
 
 如果本次发布包含模板数据变更，迁移完成后、重启业务服务前执行：
@@ -389,6 +465,7 @@ docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" ps
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "web"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "worker"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "worker_timer_scan"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "worker_timer_safety"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "worker_timer_maintenance"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --tail=100 "caddy"
 curl --fail --show-error --silent "https://your-production-domain.example/health/live"
@@ -399,7 +476,7 @@ curl --fail --show-error --silent "https://your-production-domain.example/health
 ### 发布失败时的处理顺序
 
 1. 先查看 `docker compose ps`，确认是容器未启动、健康检查失败，还是应用进程启动后退出。
-2. 查看对应服务日志，优先检查 `web`、`worker_timer_scan`、`worker_timer_maintenance`、`beat`、`db` 和 `redis`。
+2. 查看对应服务日志，优先检查 `web`、`worker_timer_scan`、`worker_timer_safety`、`worker_timer_maintenance`、`beat`、`db` 和 `redis`。
 3. 如果是镜像名错误，执行 `docker images`，确认 `WEBGAME_IMAGE` 与 `docker load` 输出完全一致。
 4. 如果是迁移失败，不要继续重启全部 worker；先保留错误日志，修复迁移或镜像后重新执行迁移。
 5. 如果只是业务容器异常，可重新执行对应服务的 `up -d --force-recreate`，不要删除数据卷。
@@ -544,9 +621,10 @@ DJANGO_TRUSTED_PROXY_IPS=172.18.0.5/32,172.18.0.2/32
 只信任内层 `172.18.0.5` 时，Django 仍会把外层 `172.18.0.2` 当作玩家 IP。
 地址应以当前容器检查结果为准；更新 Django 环境变量后还需重建 `web` 容器。
 
-同步新的 `docker-compose.prod.yml` 和 `docker/caddy/Caddyfile` 并填写环境变量后，在变更前检查现有
-Caddy 的网络和端口绑定。额外连接的外层代理网络必须持久化到服务器 Compose 配置；不能直接用仓库默认文件
-覆盖服务器已有网络/端口改动，否则重建会丢失手工 `docker network connect` 的连接。
+同步新的 `docker-compose.prod.yml`、可选的
+`docker-compose.prod.double-caddy.yml` 和 `docker/caddy/Caddyfile` 并填写环境变量后，在变更前检查现有
+Caddy 的网络和端口绑定。双层部署必须使用覆盖文件持久化外层网络和端口配置；不能只依赖手工
+`docker network connect`，也不能用仓库默认文件覆盖服务器已有双层配置，否则重建会丢失连接。
 
 ```bash
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" config --quiet
@@ -555,11 +633,44 @@ docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm --
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --no-deps --force-recreate caddy
 ```
 
+若外层 Caddy 已经占用宿主机 `80/443`，必须改用双层覆盖文件；外层 Caddy 与内层 Caddy
+必须加入同一个外部 Docker 网络。覆盖文件会移除内层 Caddy 的宿主机端口发布，但保留它与
+`web` 所在默认网络的连接，并注册稳定别名 `webgame-caddy`。外层 Caddy 的目标应写成
+`webgame-caddy:80`（不要写成 `webgame_caddy`）：
+
+```bash
+# Replace this with the external network name stored in .env.docker.
+export CADDY_INGRESS_NETWORK="gongsi-deploy_default"
+docker network inspect "${CADDY_INGRESS_NETWORK}" >/dev/null
+docker compose --env-file ".env.docker" \
+  -f "docker-compose.prod.yml" \
+  -f "docker-compose.prod.double-caddy.yml" config --quiet
+docker compose --env-file ".env.docker" \
+  -f "docker-compose.prod.yml" \
+  -f "docker-compose.prod.double-caddy.yml" run --rm --no-deps caddy \
+  caddy validate --config "/etc/caddy/Caddyfile" --adapter caddyfile
+docker compose --env-file ".env.docker" \
+  -f "docker-compose.prod.yml" \
+  -f "docker-compose.prod.double-caddy.yml" up -d --no-deps --force-recreate caddy
+```
+
+确认外层容器也连接了 `CADDY_INGRESS_NETWORK`，并且 `CADDY_INGRESS_ALIAS` 与外层 Caddyfile
+中的目标主机完全一致。随后用 `docker inspect` 取得外层 Caddy 在该网络上的实际 IP，填入
+`CADDY_TRUSTED_PROXIES`；不要复用它在另一网络上的地址。
+
 不需要重建业务镜像。外层代理应使用稳定的容器地址，或在地址变化后同步精确的信任配置。
 现有容器需要快速热更新时，也可在服务器 Caddyfile 顶部的全局 `servers` 块中写入
 `trusted_proxies static 172.18.0.2/32`、`trusted_proxies_strict`、`client_ip_headers X-Forwarded-For`，
-通过 `dc exec -T caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile` 后再用
-`dc exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile` 热加载。这种方式保留现有容器网络。
+先执行：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec -T caddy \
+  caddy validate --config "/etc/caddy/Caddyfile" --adapter caddyfile
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec -T caddy \
+  caddy reload --config "/etc/caddy/Caddyfile" --adapter caddyfile
+```
+
+这种方式保留现有容器网络。
 
 验证时使用两个不同公网出口访问注册页面，无需提交注册。内层 Caddy 日志中 `remote_ip` 仍应为外层代理，
 但 `client_ip` 应分别为玩家公网 IP，Django 访问日志的 `ip` 也应随之区分。
@@ -645,9 +756,9 @@ REDIS_PASSWORD=your-strong-password
 改完后不能只重启应用，必须重建 Redis 容器：
 
 ```bash
-docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" stop "web" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_maintenance" "beat"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" stop "web" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_safety" "worker_timer_maintenance" "beat"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --force-recreate "redis"
-docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --force-recreate "web" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_maintenance" "beat"
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --force-recreate "web" "worker" "worker_battle" "worker_timer" "worker_timer_scan" "worker_timer_safety" "worker_timer_maintenance" "beat"
 ```
 
 自检命令：

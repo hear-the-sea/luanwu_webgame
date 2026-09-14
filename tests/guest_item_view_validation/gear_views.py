@@ -169,6 +169,41 @@ def test_gear_options_view_lists_free_gear_without_inventory(game_data, django_u
 
 
 @pytest.mark.django_db
+def test_gear_options_view_hides_stale_inventory_backed_gear_without_inventory(game_data, django_user_model):
+    cache.clear()
+    user = django_user_model.objects.create_user(username="view_stale_inventory_gear", password="pass123")
+    manor = ensure_manor(user)
+    client = Client()
+    assert client.login(username="view_stale_inventory_gear", password="pass123")
+
+    item_template = ItemTemplate.objects.create(
+        key=f"view_stale_inventory_gear_{manor.id}",
+        name="过期库存投影甲",
+        effect_type="equip_armor",
+        rarity="green",
+        effect_payload={"defense": 5},
+    )
+    gear_template = GearTemplate.objects.create(
+        key=item_template.key,
+        name=item_template.name,
+        slot=GearSlot.ARMOR,
+        rarity="green",
+        defense_bonus=5,
+    )
+    GearItem.objects.create(
+        manor=manor,
+        template=gear_template,
+        guest=None,
+        inventory_backed=True,
+    )
+
+    response = client.get(reverse("guests:gear_options"), {"slot": GearSlot.ARMOR})
+
+    assert response.status_code == 200
+    assert response.json()["options"] == []
+
+
+@pytest.mark.django_db
 def test_gear_options_view_accepts_nested_set_bonus_definition(game_data, django_user_model):
     cache.clear()
     user = django_user_model.objects.create_user(username="view_gear_options_nested_set_bonus", password="pass123")

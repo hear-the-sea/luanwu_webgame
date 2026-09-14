@@ -85,7 +85,7 @@ def backfill_global_mail_campaign_task(
     campaign_id: int, batch_size: int = GLOBAL_MAIL_BACKFILL_DEFAULT_BATCH_SIZE
 ) -> dict[str, Any]:
     """
-    异步补发全服邮件活动（幂等）。
+    异步补发全服邮件活动给真实玩家（幂等）。
 
     说明：
     - 若活动不存在，返回 not_found；
@@ -130,7 +130,12 @@ def backfill_global_mail_campaign_task(
     scanned_count = 0
     failed_manor_ids: list[int] = []
 
-    for manor in Manor.objects.only("id").order_by("id").iterator(chunk_size=normalized_batch_size):
+    for manor in (
+        Manor.objects.filter(bot_profile__isnull=True)
+        .only("id")
+        .order_by("id")
+        .iterator(chunk_size=normalized_batch_size)
+    ):
         scanned_count += 1
         try:
             if deliver_campaign_to_manor(campaign, manor, now=current_time):

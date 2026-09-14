@@ -17,6 +17,11 @@ ALL_TEMPLATE_SENTINEL = "__all__"
 ALL_TRADEABLE_TEMPLATE_SENTINEL = "__all_tradeable__"
 
 
+def virtual_guest_owner_expression() -> Exists:
+    """Correlate a Guest query to virtual ownership without extra read queries."""
+    return Exists(BotProfile.objects.filter(manor_id=OuterRef("manor_id")))
+
+
 def configured_keys(config: dict[str, Any], field: str) -> list[str]:
     projection = config.get("projection") or {}
     raw = projection.get(field) or []

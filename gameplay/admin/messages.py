@@ -48,8 +48,8 @@ class SendMessageForm(forms.ModelForm):
         queryset=User.objects.all(),
         required=False,
         widget=FilteredSelectMultiple("玩家", False),
-        label="指定玩家（不选则发送给所有人）",
-        help_text="按住 Ctrl 多选",
+        label="指定玩家（不选则发送给真实玩家）",
+        help_text="按住 Ctrl 多选；未指定时自动排除虚拟玩家",
     )
 
     attachment_resources = forms.JSONField(
@@ -91,7 +91,7 @@ class GlobalMailCampaignForm(forms.ModelForm):
     send_to_existing_now = forms.BooleanField(
         required=False,
         label="保存后补发给现有玩家",
-        help_text="仅补发当前生效活动，已收到过的玩家不会重复收到。",
+        help_text="仅补发当前生效活动给真实玩家，已收到过的玩家不会重复收到。",
     )
     backfill_batch_size = forms.IntegerField(
         required=False,
@@ -263,7 +263,7 @@ class GlobalMailCampaignAdmin(admin.ModelAdmin):
         updated = queryset.update(is_active=False)
         self.message_user(request, f"已停用 {updated} 个活动")
 
-    @admin.action(permissions=["change"], description="补发给当前所有玩家（幂等）")
+    @admin.action(permissions=["change"], description="补发给当前真实玩家（幂等）")
     def backfill_selected_campaigns(self, request, queryset):
         queued = 0
         for campaign in queryset:
@@ -394,9 +394,9 @@ class MessageAdmin(admin.ModelAdmin):
         if attachment_items:
             attachments["items"] = attachment_items
 
-        # 如果没有指定接收人，发送给所有人
+        # 如果没有指定接收人，默认只发送给真实玩家，避免消耗虚拟玩家资源
         if not recipients:
-            recipients = User.objects.filter(is_active=True)
+            recipients = User.objects.filter(is_active=True, manor__bot_profile__isnull=True)
 
         # 批量创建消息
         for user in recipients:

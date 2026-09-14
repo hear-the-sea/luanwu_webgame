@@ -9,7 +9,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import BooleanField, Exists, Value
 
-from gameplay.models import BotRuntimeRoutingState
+from gameplay.models import BotRuntimeRoutingState, BotSafetyDecisionAudit
 from gameplay.services.virtual_player_core.config import (
     V2_PRESTIGE_BAND_NAMES,
     BootstrapMode,
@@ -19,6 +19,13 @@ from gameplay.services.virtual_player_core.config import (
     VirtualPlayerConfigError,
     load_virtual_player_v2_config,
     validate_routing_transition,
+)
+from gameplay.services.virtual_player_core.safety_policy import (
+    POLICY_VERSION,
+    arena_warning_scope,
+    classify_reasons,
+    reason_details,
+    safety_policy_mode,
 )
 
 
@@ -1054,6 +1061,16 @@ def is_recoverable_safety_pause_reason(reason: str) -> bool:
     reasons = tuple(part.strip() for part in normalized.split(","))
     if not reasons or any(not part for part in reasons):
         return False
+    # Arena warnings are recoverable only when their full scope is valid.  Do
+    # not let a malformed/unknown ``arena_shortage_*`` reason fall through to
+    # the legacy prefix check below; an invalid safety reason must stay
+    # fail-closed until an operator reviews it explicitly.
+    if any(part.startswith("arena_shortage_") and arena_warning_scope(part) is None for part in reasons):
+        return False
+    # An upgrade must not silently release a legacy arena pause. The audited
+    # recovery operation checks fresh evidence before explicitly releasing it.
+    if safety_policy_mode() == "scoped" and any(arena_warning_scope(part) for part in reasons):
+        return False
 
     # One scheduler outage can make every heartbeat stream incomplete in the
     # same window. Keep that operational pause recoverable as a unit, while
@@ -1096,6 +1113,7 @@ def apply_virtual_player_safety_decision(
     pause_reason: str = "",
     resume_if_healthy: bool = False,
     expected_pause_reason: str = "",
+    warning_reasons: tuple[str, ...] = (),
 ) -> SafetyRoutingDecisionResult:
     """Consume one finalized safety window and atomically apply its routing decision."""
     (
@@ -1144,6 +1162,9 @@ def apply_virtual_player_safety_decision(
         expected_bootstrap_mode=None,
         expected_maintenance_mode=None,
     )
+    previous_mode, previous_reason, previous_revision = state.maintenance_mode, state.pause_reason, state.revision
+    if any(arena_warning_scope(reason) is None for reason in warning_reasons):
+        raise RuntimeRoutingError("warning_reasons contains an unknown or blocking reason")
     setattr(state, cursor_field, normalized_window_end)
     update_fields = [cursor_field, "revision", "updated_at"]
     resumed = False
@@ -1158,7 +1179,16 @@ def apply_virtual_player_safety_decision(
             state.maintenance_mode = MaintenanceMode.V2_PAUSED.value
             update_fields.append("maintenance_mode")
         state.last_pause_window_id = normalized_window_id
-        state.pause_reason = normalized_reason
+        # Do not let a later recoverable heartbeat/arena warning erase a hard
+        # or manual fence. Explicit reviewed recovery is required for those.
+        if (
+            previous_mode == MaintenanceMode.V2_PAUSED.value
+            and previous_reason
+            and not is_recoverable_safety_pause_reason(previous_reason)
+        ):
+            state.pause_reason = ",".join(dict.fromkeys((*previous_reason.split(","), *normalized_reason.split(","))))
+        else:
+            state.pause_reason = normalized_reason
         update_fields.extend(
             [
                 "last_pause_window_id",
@@ -1220,6 +1250,25 @@ def apply_virtual_player_safety_decision(
         resume_virtual_reserve_member_leases()
     state.revision += 1
     state.save(update_fields=update_fields)
+    all_reasons = tuple(dict.fromkeys((*normalized_reason.split(","), *warning_reasons)))
+    all_reasons = tuple(reason for reason in all_reasons if reason)
+    # Shadow/legacy audits retain the global decision the scoped policy would
+    # make, separately from the effective action of the selected policy.
+    scoped_blocking_reasons, _ = classify_reasons(all_reasons)
+    BotSafetyDecisionAudit.objects.create(
+        window_id=normalized_window_id,
+        policy_version=POLICY_VERSION,
+        policy_mode=safety_policy_mode(),
+        reasons=reason_details(all_reasons),
+        effective_pause=should_pause,
+        scoped_pause=bool(scoped_blocking_reasons),
+        previous_mode=previous_mode,
+        resulting_mode=state.maintenance_mode,
+        previous_reason=previous_reason,
+        resulting_reason=state.pause_reason,
+        previous_revision=previous_revision,
+        resulting_revision=state.revision,
+    )
     snapshot = _snapshot(state)
     return SafetyRoutingDecisionResult(
         snapshot=snapshot,

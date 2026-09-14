@@ -6,15 +6,15 @@ from uuid import uuid4
 import pytest
 
 from gameplay.services.arena.virtual_reserve_growth_budget import (
-    ARENA_GROWTH_BUDGET_MAX_ATTEMPTS,
-    ARENA_GROWTH_BUDGET_WINDOW,
-    ArenaGrowthAttemptBudgetExceeded,
+    ARENA_GROWTH_ATTEMPT_HISTORY_WINDOW,
+    ARENA_GROWTH_HISTORY_MAX_ENTRIES,
     ArenaGrowthAttemptOutcome,
     ArenaGrowthBudgetEntry,
     InvalidArenaGrowthBudgetError,
     cancel_arena_growth_attempt,
     finalize_arena_growth_attempt,
     parse_arena_growth_budget_entries,
+    prune_arena_growth_budget_entries,
     reserve_arena_growth_attempt,
     selected_growth_bps,
     serialize_arena_growth_budget_entries,
@@ -43,10 +43,12 @@ def test_arena_growth_budget_round_trips_canonical_entries() -> None:
     payload = serialize_arena_growth_budget_entries(entries)
 
     assert parse_arena_growth_budget_entries(payload, now=now) == entries
-    assert payload[0]["attempted_at"].endswith("Z")
+    attempted_at = payload[0]["attempted_at"]
+    assert isinstance(attempted_at, str)
+    assert attempted_at.endswith("Z")
 
 
-def test_arena_growth_budget_rejects_attempt_beyond_active_budget() -> None:
+def test_arena_growth_attempt_history_does_not_throttle_after_48_entries() -> None:
     now = datetime(2026, 8, 8, 8, tzinfo=UTC)
     oldest = now - timedelta(hours=23)
     entries = tuple(
@@ -54,27 +56,27 @@ def test_arena_growth_budget_rejects_attempt_beyond_active_budget() -> None:
             attempted_at=oldest + timedelta(minutes=index),
             outcome=ArenaGrowthAttemptOutcome.NO_ACTION,
         )
-        for index in range(ARENA_GROWTH_BUDGET_MAX_ATTEMPTS)
+        for index in range(64)
     )
 
-    with pytest.raises(ArenaGrowthAttemptBudgetExceeded) as exc_info:
-        reserve_arena_growth_attempt(
-            entries,
-            now=now,
-            attempt_id=str(uuid4()),
-        )
+    reserved = reserve_arena_growth_attempt(
+        entries,
+        now=now,
+        attempt_id=str(uuid4()),
+    )
 
-    assert exc_info.value.retry_at == oldest + ARENA_GROWTH_BUDGET_WINDOW
+    assert len(reserved) == len(entries) + 1
+    assert reserved[-1].outcome is ArenaGrowthAttemptOutcome.PENDING
 
 
 def test_arena_growth_budget_prunes_expired_attempt_before_reservation() -> None:
     now = datetime(2026, 8, 8, 8, tzinfo=UTC)
     entries = tuple(
         _entry(
-            attempted_at=now - ARENA_GROWTH_BUDGET_WINDOW,
+            attempted_at=now - ARENA_GROWTH_ATTEMPT_HISTORY_WINDOW,
             outcome=ArenaGrowthAttemptOutcome.NO_ACTION,
         )
-        for _index in range(ARENA_GROWTH_BUDGET_MAX_ATTEMPTS)
+        for _index in range(64)
     )
 
     reserved = reserve_arena_growth_attempt(
@@ -85,6 +87,26 @@ def test_arena_growth_budget_prunes_expired_attempt_before_reservation() -> None
 
     assert len(reserved) == 1
     assert reserved[0].outcome is ArenaGrowthAttemptOutcome.PENDING
+
+
+def test_arena_growth_history_is_bounded_without_dropping_pending_reservation() -> None:
+    now = datetime(2026, 8, 8, 8, tzinfo=UTC)
+    completed = tuple(
+        _entry(
+            attempted_at=now - timedelta(hours=20) + timedelta(minutes=index),
+            outcome=ArenaGrowthAttemptOutcome.NO_ACTION,
+        )
+        for index in range(ARENA_GROWTH_HISTORY_MAX_ENTRIES)
+    )
+    reserved = reserve_arena_growth_attempt(completed, now=now, attempt_id=str(uuid4()))
+
+    assert len(reserved) == ARENA_GROWTH_HISTORY_MAX_ENTRIES
+    assert reserved[-1].outcome is ArenaGrowthAttemptOutcome.PENDING
+    assert reserved[0].attempt_id != completed[0].attempt_id
+
+    retained = prune_arena_growth_budget_entries(reserved, now=now)
+    assert len(retained) == ARENA_GROWTH_HISTORY_MAX_ENTRIES
+    assert retained[-1].outcome is ArenaGrowthAttemptOutcome.PENDING
 
 
 def test_arena_growth_budget_finalizes_one_pending_attempt_with_shadow_progress() -> None:

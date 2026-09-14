@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 import pytest
+from django.test import override_settings
 
 from gameplay.models import BotRuntimeRoutingState
 from gameplay.services import runtime_configs
@@ -227,6 +228,7 @@ def test_safety_decision_rejects_revision_conflict_for_new_window() -> None:
         ),
     ],
 )
+@override_settings(VIRTUAL_PLAYER_ARENA_SAFETY_POLICY="legacy")
 def test_recoverable_safety_pause_auto_resumes_after_clean_window_streak(pause_reason: str) -> None:
     state = _routing_state(
         maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED,
@@ -316,6 +318,7 @@ def test_daily_pause_is_not_resumed_by_hourly_clean_windows() -> None:
         ("heartbeat_incomplete:maintenance_attempt_emitter," "heartbeat_incomplete:h01_callback_attempt_emitter"),
     ],
 )
+@override_settings(VIRTUAL_PLAYER_ARENA_SAFETY_POLICY="legacy")
 def test_recoverable_pause_reasons_are_recoverable(reason: str) -> None:
     assert runtime_configs.is_recoverable_safety_pause_reason(reason) is True
     assert runtime_configs.is_recoverable_safety_pause_reason(f"{reason},hard_constraint_violation") is False

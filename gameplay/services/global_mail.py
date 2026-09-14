@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from gameplay.models import GlobalMailCampaign, GlobalMailDelivery, Manor
 from gameplay.services.utils.messages import create_message
+from gameplay.services.virtual_player_core.selectors import is_bot_manor
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,8 @@ def deliver_campaign_to_manor(campaign: GlobalMailCampaign, manor: Manor, *, now
         False: 已投递过或活动当前无效
     """
     current_time = now or timezone.now()
+    if is_bot_manor(manor):
+        return False
     if not campaign.is_active_at(current_time):
         return False
 
@@ -55,7 +58,10 @@ def deliver_campaign_to_manor(campaign: GlobalMailCampaign, manor: Manor, *, now
 
 
 def deliver_active_global_mail_campaigns(manor: Manor, *, now=None) -> int:
-    """给庄园投递当前所有有效活动邮件。"""
+    """给真实玩家庄园投递当前所有有效活动邮件。"""
+    if is_bot_manor(manor):
+        return 0
+
     delivered_count = 0
     current_time = now or timezone.now()
     for campaign in get_active_global_mail_campaigns(current_time):
@@ -66,14 +72,14 @@ def deliver_active_global_mail_campaigns(manor: Manor, *, now=None) -> int:
 
 def backfill_campaign_to_existing_manors(campaign: GlobalMailCampaign, *, now=None) -> int:
     """
-    为指定活动补发给现有庄园（幂等，不会重复发）。
+    为指定活动补发给现有真实玩家庄园（幂等，不会重复发）。
     """
     delivered_count = 0
     current_time = now or timezone.now()
     if not campaign.is_active_at(current_time):
         return 0
 
-    for manor in Manor.objects.only("id").iterator(chunk_size=500):
+    for manor in Manor.objects.filter(bot_profile__isnull=True).only("id").iterator(chunk_size=500):
         if deliver_campaign_to_manor(campaign, manor, now=current_time):
             delivered_count += 1
     return delivered_count

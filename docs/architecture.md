@@ -34,6 +34,7 @@
 - `worker_battle`：`battle` 队列。
 - `worker_timer`：`timer` 队列中的到期状态推进任务。
 - `worker_timer_scan`：`timer_scan` 队列中的用户相关批量扫描任务。
+- `worker_timer_safety`：`timer_safety` 队列中的安全心跳、窗口聚合和安全监控任务。
 - `worker_timer_maintenance`：`timer_maintenance` 队列中的虚拟玩家、竞技场储备、市场和清理维护任务。
 - `beat`：定时扫描与心跳。
 - `caddy`：自动 HTTPS、静态/媒体资源、HTTP 与 WebSocket 反向代理。
@@ -106,7 +107,7 @@ WebSocket 路由定义于 [`websocket/routing.py`](/home/daniel/code/web_game_v5
 
 Celery 配置位于 [`config/settings/celery_conf.py`](/home/daniel/code/web_game_v5/config/settings/celery_conf.py)。
 
-当前固定五类队列：
+当前固定六类队列：
 
 | 队列 | 用途 |
 |------|------|
@@ -114,6 +115,7 @@ Celery 配置位于 [`config/settings/celery_conf.py`](/home/daniel/code/web_gam
 | `battle` | 战斗相关任务 |
 | `timer` | 定时完成类任务与低延迟状态推进 |
 | `timer_scan` | 用户相关批量扫描与状态收口 |
+| `timer_safety` | 安全心跳、窗口聚合与安全监控 |
 | `timer_maintenance` | 虚拟玩家、竞技场储备、市场和清理维护任务 |
 
 当前 beat 中的重要周期任务包括：

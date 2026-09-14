@@ -30,7 +30,14 @@ def _load_raid_run_for_report(report: "BattleReport"):
 
 def _load_arena_match_for_report(report: "BattleReport"):
     ArenaMatch = apps.get_model("gameplay", "ArenaMatch")
-    return ArenaMatch.objects.select_related("attacker_entry", "defender_entry").filter(battle_report=report).first()
+    return (
+        ArenaMatch.objects.select_related(
+            "attacker_entry__manor",
+            "defender_entry__manor",
+        )
+        .filter(battle_report=report)
+        .first()
+    )
 
 
 def _load_arena_coop_event_for_report(report: "BattleReport"):
@@ -120,10 +127,10 @@ def resolve_report_runtime_context(report: "BattleReport", *, manor_id: int) -> 
     arena_match = _load_arena_match_for_report(report)
     if arena_match:
         if arena_match.defender_entry_id and getattr(arena_match.defender_entry, "manor_id", None) == manor_id:
-            return {"player_side": "defender", "raid_run": None}
+            return {"player_side": "defender", "raid_run": None, "arena_match": arena_match}
         if getattr(arena_match.attacker_entry, "manor_id", None) == manor_id:
-            return {"player_side": "attacker", "raid_run": None}
-        return {"player_side": "spectator", "raid_run": None}
+            return {"player_side": "attacker", "raid_run": None, "arena_match": arena_match}
+        return {"player_side": "spectator", "raid_run": None, "arena_match": arena_match}
 
     arena_coop_event = _load_arena_coop_event_for_report(report)
     if arena_coop_event:
@@ -568,6 +575,30 @@ def build_report_title(report: "BattleReport", *, player_side: str, viewer_manor
         attacker_name = getattr(report.manor, "display_name", "") or ""
         return f"{attacker_name or report.opponent_name} 战报"
     return f"{report.opponent_name} 战报"
+
+
+def build_arena_matchup_context(report: "BattleReport", *, arena_match: Any = None) -> dict[str, str] | None:
+    """Build the attacker/defender manor names shown on arena reports."""
+    if arena_match is None and str(getattr(report, "battle_type", "") or "") != "arena":
+        return None
+
+    if arena_match is not None:
+        attacker_entry = getattr(arena_match, "attacker_entry", None)
+        defender_entry = getattr(arena_match, "defender_entry", None)
+        attacker_manor = getattr(attacker_entry, "manor", None)
+        defender_manor = getattr(defender_entry, "manor", None)
+        attacker_name = str(getattr(attacker_manor, "display_name", "") or "").strip()
+        defender_name = str(getattr(defender_manor, "display_name", "") or "").strip()
+    else:
+        attacker_name = str(getattr(getattr(report, "manor", None), "display_name", "") or "").strip()
+        defender_name = str(getattr(report, "opponent_name", "") or "").strip()
+
+    if not attacker_name and not defender_name:
+        return None
+    return {
+        "attacker_name": attacker_name or "进攻方",
+        "defender_name": defender_name or "防守方",
+    }
 
 
 def build_side_labels(*, player_side: str, winner: str | None) -> dict[str, Any]:

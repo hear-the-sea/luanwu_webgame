@@ -10,6 +10,8 @@ public model classes/constants here to preserve the historical import style:
 
 from .arena import ArenaEntry, ArenaEntryGuest, ArenaExchangeRecord, ArenaMatch, ArenaTournament
 from .arena_coop import ArenaCoopContribution, ArenaCoopEntry, ArenaCoopEntryGuest, ArenaCoopEvent
+from .arena_fill_service import ArenaFillServiceEpisode, ArenaFillServiceOutcome
+from .arena_runtime_budget import ArenaRuntimeBudget
 from .arena_virtual import ArenaReserveTrainingAssignment, ArenaVirtualDemand, ArenaVirtualReserveMember
 from .bots import (
     BotArenaShortageBaseline,
@@ -64,6 +66,7 @@ from .progression import (
     WorkTemplate,
 )
 from .pvp import JailInteractionLog, JailPrisoner, OathBond, RaidRun, ScoutCooldown, ScoutRecord
+from .safety_audit import BotSafetyDecisionAudit
 from .virtual_player_maintenance import (
     BotMaintenanceAttempt,
     BotMaintenanceCompletionEvent,
@@ -108,6 +111,9 @@ __all__ = [
     "ArenaCoopEntryGuest",
     "ArenaCoopContribution",
     "ArenaVirtualDemand",
+    "ArenaFillServiceEpisode",
+    "ArenaFillServiceOutcome",
+    "ArenaRuntimeBudget",
     "ArenaVirtualReserveMember",
     "ArenaReserveTrainingAssignment",
     # bots
@@ -130,6 +136,7 @@ __all__ = [
     "BotRuntimeRoutingState",
     "BotSafetyMetricEvent",
     "BotSafetyMetricWindow",
+    "BotSafetyDecisionAudit",
     "BotVirtualPlayerHealth",
     # chat
     "WorldChatSendAttempt",

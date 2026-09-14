@@ -1,0 +1,17 @@
+# Optional production override for a host that already has an outer Caddy.
+# Compose >= 2.24 is required for the standard !reset merge tag.
+services:
+  caddy:
+    # The outer Caddy owns the host's public 80/443 bindings.
+    ports: !reset []
+    networks:
+      default: {}
+      ingress:
+        aliases:
+          # The outer Caddy must reverse_proxy to this exact DNS name.
+          - ${CADDY_INGRESS_ALIAS:-webgame-caddy}
+
+networks:
+  ingress:
+    external: true
+    name: ${CADDY_INGRESS_NETWORK:?set CADDY_INGRESS_NETWORK in .env.docker}

@@ -10,6 +10,7 @@ from .models import BattleReport
 from .troops import load_troop_templates
 from .view_helpers import (
     attach_avatar_urls,
+    build_arena_matchup_context,
     build_report_title,
     build_reward_context,
     build_rounds_display,
@@ -125,6 +126,10 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
         is_spectator = bool(side_context["is_spectator"])
         player_won = bool(side_context["player_won"])
         context["report_title"] = build_report_title(report, player_side=player_side, viewer_manor_id=viewer_manor_id)
+        context["arena_matchup"] = build_arena_matchup_context(
+            report,
+            arena_match=report_runtime.get("arena_match"),
+        )
         context.update(side_context)
 
         raid_run = None if is_spectator else report_runtime.get("raid_run")

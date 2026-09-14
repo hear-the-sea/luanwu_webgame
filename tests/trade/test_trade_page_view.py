@@ -303,3 +303,4 @@ def test_market_and_auction_tooltips_render_device_troop_bonus_summary():
 
     assert equipment_summary in market_html
     assert equipment_summary in auction_html
+    assert "我的安全" not in auction_html

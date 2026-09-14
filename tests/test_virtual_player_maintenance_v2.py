@@ -2609,6 +2609,32 @@ def test_arena_healing_runs_as_a_free_independent_sweep_for_a_durable_round(
 
 
 @pytest.mark.django_db
+def test_arena_healing_does_not_write_after_routing_pause(active_v2_profile) -> None:
+    target = Guest.objects.filter(manor_id=active_v2_profile.manor_id).order_by("id").first()
+    assert target is not None
+    target.current_hp = max(1, int(target.max_hp * 0.1))
+    target.status = GuestStatus.INJURED
+    target.save(update_fields=["current_hp", "status"])
+
+    routing = BotRuntimeRoutingState.objects.get()
+    routing.maintenance_mode = BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED
+    routing.revision += 1
+    routing.save(update_fields=["maintenance_mode", "revision", "updated_at"])
+
+    maintenance._run_arena_v2_healing_sweep(
+        active_v2_profile.id,
+        now=FIXED_NOW,
+        arena_member_id=456,
+        arena_round_ordinal=1,
+        routing_revision=routing.revision,
+    )
+
+    target.refresh_from_db()
+    assert target.current_hp < target.max_hp
+    assert not BotMaintenanceAttempt.objects.filter(operation_id="arena-member-456-r1-healing").exists()
+
+
+@pytest.mark.django_db
 def test_v2_recruitment_rarity_cap_filters_quantity_templates(
     active_v2_profile,
     permissive_reference,

@@ -30,6 +30,7 @@ from . import helpers as _arena_helpers
 from . import virtual_reserve_fill
 from .exchange_helpers import ArenaExchangeResult, exchange_arena_reward  # noqa: F401
 from .lifecycle_helpers import finalize_tournament_locked, schedule_tournament_round_locked, start_tournament_locked
+from .low_population_policy import new_event_wait_seconds
 from .match_helpers import resolve_match_locked, save_resolved_match
 from .registration_helpers import (
     collect_cancelable_recruiting_entries_locked,
@@ -43,6 +44,7 @@ from .rules import load_arena_rules
 from .snapshots import build_entry_guest_snapshot
 from .state_helpers import sync_daily_participation_counter_locked as _sync_daily_participation_counter_locked
 from .state_helpers import update_daily_participation_counter_locked as _update_daily_participation_counter_locked
+from .virtual_fill_service import observe_fill_service_locked
 from .virtual_reserve_demand import delete_virtual_demands_for_tournaments, queue_virtual_reserve_reconcile
 from .virtual_reserve_reconcile import reconcile_tournament_demand_locked
 
@@ -173,7 +175,8 @@ def _get_or_create_recruiting_tournament_locked() -> ArenaTournament:
             status=ArenaTournament.Status.RECRUITING,
             player_limit=ARENA_TOURNAMENT_PLAYER_LIMIT,
             round_interval_seconds=_round_interval_seconds(),
-            virtual_fill_at=timezone.now() + timedelta(seconds=ARENA_VIRTUAL_FILL_WAIT_SECONDS),
+            virtual_fill_at=timezone.now()
+            + timedelta(seconds=new_event_wait_seconds("tournament", ARENA_VIRTUAL_FILL_WAIT_SECONDS)),
             **current_replay_metadata(),
         )
     finally:
@@ -210,6 +213,7 @@ def register_arena_entry(manor: Manor, guest_ids: Iterable[int]) -> ArenaRegistr
     selected_guests = load_selected_registration_guests_locked(locked_manor, selected_guest_ids)
     deduct_registration_silver_locked(locked_manor, silver_cost=ARENA_REGISTRATION_SILVER_COST)
     tournament = _get_or_create_recruiting_tournament_locked()
+    observe_fill_service_locked(event=tournament, mode="tournament", phase="before_registration")
     entry = create_arena_entry_with_guests_locked(
         tournament=tournament,
         locked_manor=locked_manor,
@@ -220,6 +224,7 @@ def register_arena_entry(manor: Manor, guest_ids: Iterable[int]) -> ArenaRegistr
     entry_count = tournament.entries.count()
     current_time = timezone.now()
     demand = reconcile_tournament_demand_locked(tournament, now=current_time)
+    observe_fill_service_locked(event=tournament, mode="tournament", now=current_time, phase="registration")
     auto_started = False
     if entry_count >= tournament.player_limit:
         auto_started = start_tournament_locked(tournament, now=current_time)
@@ -265,6 +270,7 @@ def cancel_arena_entry(manor: Manor) -> int:
         status=ArenaTournament.Status.RECRUITING,
     ):
         reconcile_tournament_demand_locked(tournament, now=current_time)
+        observe_fill_service_locked(event=tournament, mode="tournament", now=current_time, phase="cancellation")
         transaction.on_commit(partial(queue_virtual_reserve_reconcile, "tournament", tournament.id))
     return len(entry_ids)
 

@@ -9,7 +9,7 @@ registration:
 
 runtime:
   auto_start_scan_seconds: 30
-  virtual_fill_wait_seconds: 28800
+  virtual_fill_wait_seconds: 7200
   completed_retention_seconds: 86400
 
 contribution:

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from datetime import timedelta
+from types import SimpleNamespace
+
 import pytest
 from django.contrib.admin import helpers
 from django.contrib.admin.models import DELETION, LogEntry
@@ -12,9 +15,10 @@ from django.db import transaction
 from django.db.models.signals import pre_delete
 from django.test import RequestFactory
 from django.urls import reverse
+from django.utils import timezone
 
 from gameplay.admin.messages import MessageAdmin
-from gameplay.models import Message
+from gameplay.models import BotProfile, Message
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.utils.cache import CacheKeys
 from gameplay.services.utils.messages import set_message_queryset_read_state
@@ -24,6 +28,45 @@ def _admin_request(user):
     request = RequestFactory().post("/admin/gameplay/message/")
     request.user = user
     return request
+
+
+@pytest.mark.django_db
+def test_message_admin_default_broadcast_skips_virtual_players(django_user_model, monkeypatch):
+    real_user = django_user_model.objects.create_user(username="message_admin_real", password="pass123")
+    virtual_user = django_user_model.objects.create_user(username="message_admin_virtual", password="pass123")
+    real_manor = ensure_manor(real_user)
+    virtual_manor = ensure_manor(virtual_user)
+    now = timezone.now()
+    BotProfile.objects.create(
+        manor=virtual_manor,
+        prestige_band="newbie",
+        growth_seed=991,
+        next_growth_at=now,
+        abandon_at=now + timedelta(days=1),
+        retire_at=now + timedelta(days=2),
+    )
+
+    feedback = []
+    admin_obj = MessageAdmin(Message, AdminSite())
+    monkeypatch.setattr(admin_obj, "message_user", lambda _request, text, **_kwargs: feedback.append(str(text)))
+    form = SimpleNamespace(
+        cleaned_data={
+            "recipients": None,
+            "attachment_resources": {},
+            "attachment_items": {},
+        }
+    )
+
+    admin_obj.save_model(
+        _admin_request(real_user),
+        Message(kind=Message.Kind.REWARD, title="默认活动奖励", body="真实玩家奖励"),
+        form,
+        change=False,
+    )
+
+    assert Message.objects.filter(manor=real_manor, title="默认活动奖励").count() == 1
+    assert Message.objects.filter(manor=virtual_manor, title="默认活动奖励").exists() is False
+    assert feedback == ["已向 1 位玩家发送消息"]
 
 
 @pytest.mark.django_db

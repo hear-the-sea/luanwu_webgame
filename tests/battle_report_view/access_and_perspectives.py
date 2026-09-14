@@ -211,7 +211,13 @@ def test_arena_report_uses_defender_perspective_for_defender_viewer(client, djan
     assert response.context["attacker_team_display"][0]["name"] == "D"
     assert response.context["defender_team_display"][0]["name"] == "A"
     assert response.context["report_title"] == f"{attacker_manor.display_name} 战报"
+    assert response.context["arena_matchup"] == {
+        "attacker_name": attacker_manor.display_name,
+        "defender_name": defender_manor.display_name,
+    }
     body = response.content.decode("utf-8")
+    assert attacker_manor.display_name in body
+    assert defender_manor.display_name in body
     assert body.count('data-unit-state-side="defender"') == 1
     assert 'data-unit-state-side="attacker"' not in body
 
@@ -273,7 +279,15 @@ def test_arena_report_uses_spectator_perspective_for_non_participant_viewer(clie
     assert response.context["left_team_title"] == "进攻方"
     assert attacker_manor.display_name in response.context["report_title"]
     assert defender_manor.display_name in response.context["report_title"]
-    assert "battle-unit-state" not in response.content.decode("utf-8")
+    assert response.context["arena_matchup"] == {
+        "attacker_name": attacker_manor.display_name,
+        "defender_name": defender_manor.display_name,
+    }
+    body = response.content.decode("utf-8")
+    assert 'aria-label="竞技场对战双方"' in body
+    assert attacker_manor.display_name in body
+    assert defender_manor.display_name in body
+    assert "battle-unit-state" not in body
 
 
 @pytest.mark.django_db
@@ -308,6 +322,10 @@ def test_arena_report_without_match_relation_uses_defender_perspective_from_mess
     assert response.context["attacker_team_display"][0]["name"] == "D"
     assert response.context["defender_team_display"][0]["name"] == "A"
     assert response.context["report_title"] == "竞技场战报"
+    assert response.context["arena_matchup"] == {
+        "attacker_name": attacker_manor.display_name,
+        "defender_name": defender_manor.display_name,
+    }
 
 
 @pytest.mark.django_db

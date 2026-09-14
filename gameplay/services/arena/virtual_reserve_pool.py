@@ -23,6 +23,7 @@ from gameplay.models import (
     BotMaintenanceAttempt,
     BotMaintenanceExecution,
     BotMaintenanceRecovery,
+    BotPopulationControl,
     BotProfile,
 )
 from gameplay.models.arena_virtual import ARENA_RESERVE_MEMBER_LEASE_AGE
@@ -33,7 +34,11 @@ from gameplay.services.virtual_player_core.contracts import (
     PopulationMutationStatus,
 )
 from gameplay.services.virtual_player_core.growth_control import growth_control_digest_for_route
-from gameplay.services.virtual_player_core.maintenance import V2MaintenanceError, accelerate_virtual_player_growth
+from gameplay.services.virtual_player_core.maintenance import (
+    V2MaintenanceError,
+    accelerate_virtual_player_growth,
+    discard_uncommitted_arena_training_assignment,
+)
 from gameplay.services.virtual_player_core.maintenance_arena_projection import ArenaSelectedPowerProjectionError
 from gameplay.services.virtual_player_core.maintenance_cycle import CycleTrigger, record_durable_attempt
 from gameplay.services.virtual_player_core.population_runtime import (
@@ -60,6 +65,13 @@ from guests.models import Guest, GuestRarity, GuestStatus, GuestTemplate
 from guests.rarity import GUEST_RARITY_ORDER
 
 from .coop_rules import load_arena_coop_rules
+from .low_population_budget import (
+    cancel_materialization_locked,
+    reserve_growth_batch,
+    reserve_materialization_locked,
+    training_admission_available_locked,
+)
+from .low_population_policy import growth_batch_limits, growth_interval, low_population_enabled
 from .rules import load_arena_rules
 from .virtual_lineups import (
     MAX_LINEUP_POWER_PERCENT,
@@ -71,19 +83,14 @@ from .virtual_lineups import (
 )
 from .virtual_protection import is_virtual_profile_arena_match_eligible, with_arena_reconciliation_state
 from .virtual_reserve_growth_budget import (
-    ARENA_GROWTH_BUDGET_MAX_ATTEMPTS,
-    ARENA_GROWTH_BUDGET_WINDOW,
+    ARENA_GROWTH_MAX_ATTEMPTS_PER_TASK,
     ARENA_GROWTH_MAX_SLOT_ATTEMPTS,
-    ArenaGrowthAttemptBudgetExceeded,
     ArenaGrowthAttemptOutcome,
     ArenaGrowthBudgetError,
     InvalidArenaGrowthBudgetError,
-    actual_arena_growth_attempt_count,
-    applied_arena_growth_attempt_count,
     cancel_arena_growth_attempt,
     finalize_arena_growth_attempt,
     parse_arena_growth_budget_entries,
-    prune_arena_growth_budget_entries,
     reserve_arena_growth_attempt,
     selected_growth_bps,
     serialize_arena_growth_budget_entries,
@@ -185,7 +192,7 @@ _ADMISSION_STALL_EXPLICIT_REASONS = frozenset(
         "arena_strength_envelope_mismatch",
         "arena_strength_segment_mismatch",
         "arena_training_policy_unavailable",
-        "arena_attempt_budget_exhausted",
+        "global_training_capacity",
         "domain_constraint",
         "insufficient_resource",
         "salary_runway_protected",
@@ -642,7 +649,6 @@ def _arena_growth_reachability(
     profile: BotProfile,
     selected_power: int,
     growth_target: ArenaVirtualGrowthTarget | None = None,
-    growth_execution_attempt_count: int | None = None,
     growth_round_training_guest_ids: Collection[int] | None = None,
     available_growth_candidate_count: int | None = None,
 ) -> _ArenaReachabilityAssessment:
@@ -679,10 +685,6 @@ def _arena_growth_reachability(
             max_selected_power=selected_power,
             reason="target_unreachable_by_cap",
         )
-
-    # The 24-hour execution budget is a retry/backpressure window, not a
-    # lifetime growth cap. Once it is full, the member remains reachable and
-    # the budget layer supplies the next retry timestamp.
 
     missing_guests = max(0, target.critical_guest_count - current_guest_count)
     if missing_guests:
@@ -792,7 +794,8 @@ def _demand_fill_is_due(demand: ArenaVirtualDemand, *, now) -> bool:
 
 
 def _growth_interval_for_demand(demand: ArenaVirtualDemand, *, now) -> timedelta:
-    return POST_FILL_GROWTH_INTERVAL if _demand_fill_is_due(demand, now=now) else PRE_FILL_GROWTH_INTERVAL
+    normal = POST_FILL_GROWTH_INTERVAL if _demand_fill_is_due(demand, now=now) else PRE_FILL_GROWTH_INTERVAL
+    return growth_interval(fill_at=_demand_fill_at(demand), now=now, normal=normal)
 
 
 def _arena_rearm_jitter(*, member_id: int, round_ordinal: int, action_ordinal: int) -> timedelta:
@@ -804,8 +807,40 @@ def _arena_rearm_jitter(*, member_id: int, round_ordinal: int, action_ordinal: i
 
 
 def _reserve_growth_engine_version(*, now: datetime | None = None) -> int | None:
-    assessment = assess_virtual_player_runtime()
-    if not assessment.routing_available:
+    from gameplay.services.runtime_configs import RuntimeRoutingError, lock_virtual_player_routing
+
+    initial_assessment = assess_virtual_player_runtime()
+    if not initial_assessment.routing_available:
+        # Preserve the member's remaining lease so a repaired routing row can
+        # resume the same training work instead of expiring it during outage.
+        pause_virtual_reserve_member_leases(now=now)
+        logger.warning(
+            "arena virtual reserve growth paused because runtime routing is unavailable",
+            extra={
+                "event": "arena_virtual_growth_routing_unavailable",
+                "failure_reason": initial_assessment.reason,
+            },
+        )
+        return None
+
+    try:
+        # Keep lease repair under routing -> member locking. Otherwise a pause
+        # transition can race a stale active read and accidentally resume a
+        # lease after the transition has already frozen it.
+        with transaction.atomic():
+            assessment = assess_virtual_player_runtime(lock_virtual_player_routing())
+            if assessment.growth_allowed:
+                # A worker restart can miss the routing resume callback; the
+                # next durable growth scan repairs remaining pause markers.
+                resume_virtual_reserve_member_leases(now=now)
+            else:
+                # Likewise, a scheduled scan freezes members when a safety
+                # pause was written by an older process version.
+                pause_virtual_reserve_member_leases(now=now)
+    except RuntimeRoutingError:
+        assessment = assess_virtual_player_runtime()
+        # A routing lock failure must never authorize a growth writer.
+        failure_reason = "routing_lock_unavailable" if assessment.routing_available else assessment.reason
         # A logically unavailable routing snapshot cannot authorize growth.
         # Preserve the member's remaining lease so a repaired routing row can
         # resume the same training work instead of expiring it during outage.
@@ -814,18 +849,10 @@ def _reserve_growth_engine_version(*, now: datetime | None = None) -> int | None
             "arena virtual reserve growth paused because runtime routing is unavailable",
             extra={
                 "event": "arena_virtual_growth_routing_unavailable",
-                "failure_reason": assessment.reason,
+                "failure_reason": failure_reason,
             },
         )
         return None
-    if assessment.growth_allowed:
-        # A worker restart can miss the routing resume callback; the next
-        # durable growth scan repairs any remaining pause markers.
-        resume_virtual_reserve_member_leases(now=now)
-    else:
-        # Likewise, a scheduled scan is sufficient to freeze a member when a
-        # safety pause was written by an older process version.
-        pause_virtual_reserve_member_leases(now=now)
     if not assessment.growth_allowed:
         logger.info(
             "arena virtual reserve growth deferred while maintenance routing is paused",
@@ -939,6 +966,18 @@ def _demand_stalled_without_explained_constraint(
     attempt_high_water: int,
     now: datetime,
 ) -> bool:
+    if not assess_virtual_player_runtime().growth_allowed:
+        return False
+    # A scheduled legal wait is not a failed attempt. Existing per-member
+    # retry/claim deadlines remain authoritative even with minute dispatch.
+    if (
+        demand.reserve_members.filter(state=ArenaVirtualReserveMember.State.TRAINING)
+        .filter(
+            Q(next_acceleration_at__gt=now) | Q(growth_claim_token__isnull=False) | Q(lease_paused_at__isnull=False)
+        )
+        .exists()
+    ):
+        return False
     if attempt_high_water <= 0 or int(demand.consecutive_failure_count) < RESERVE_ADMISSION_STALL_FAILURES:
         return False
     activity_candidates = [
@@ -1000,7 +1039,8 @@ def _refresh_admission_guard_locked(
             and int(demand.admission_probe_target_ordinal) <= attempt_high_water
         )
         probe_due = bool(
-            demand.admission_pause_reason == "no_effective_progress"
+            assess_virtual_player_runtime().population_mutation_allowed
+            and demand.admission_pause_reason == "no_effective_progress"
             and demand.admission_paused_at is not None
             and now >= demand.admission_paused_at + RESERVE_ADMISSION_PROBE_COOLDOWN
             and (demand.admission_probe_target_ordinal is None or probe_consumed)
@@ -1279,6 +1319,11 @@ def reevaluate_existing_members(
         previous_version = int(member.evaluated_version)
         previous_power = int(member.current_lineup_power)
         demand_version_changed = previous_version != int(demand.version)
+        if member.growth_retry_reason == "arena_attempt_budget_exhausted":
+            # Re-arm rows deferred by the removed rolling attempt cap. The
+            # scheduler will still apply normal per-attempt backoff afterward.
+            member.next_acceleration_at = now
+            _clear_growth_retry(member)
         member.evaluated_version = demand.version
         member.last_checked_at = now
         if member.roster_target_count is None:
@@ -1328,6 +1373,32 @@ def reevaluate_existing_members(
             member.next_acceleration_at = None
             member.lease_paused_at = None
         elif evaluation.snapshots:
+            if previous_state != ArenaVirtualReserveMember.State.TRAINING:
+                training_admission = training_admission_available_locked()
+                if training_admission is None:
+                    # The training mutex was contended, not full. Leave the
+                    # row untouched so a transient SKIP LOCKED result cannot
+                    # permanently exhaust a stale READY member.
+                    continue
+                if not training_admission:
+                    # A stale READY cannot remain eligible just because the
+                    # shared training pool is full. Re-evaluate it on the next
+                    # scan.
+                    member.state = ArenaVirtualReserveMember.State.EXHAUSTED
+                    member.growth_retry_reason = "global_training_capacity"
+                    member.next_acceleration_at = None
+                    member.save(
+                        update_fields=[
+                            "state",
+                            "growth_retry_reason",
+                            "next_acceleration_at",
+                            "last_checked_at",
+                            "updated_at",
+                        ]
+                    )
+                    continue
+            if member.growth_retry_reason == "global_training_capacity":
+                member.growth_retry_reason = ""
             member.state = ArenaVirtualReserveMember.State.TRAINING
             member.next_acceleration_at = now if demand_version_changed else (member.next_acceleration_at or now)
             if (
@@ -1336,6 +1407,11 @@ def reevaluate_existing_members(
                 and member.next_acceleration_at > now + POST_FILL_GROWTH_INTERVAL
             ):
                 member.next_acceleration_at = now
+            if low_population_enabled() and not member.growth_retry_reason:
+                member.next_acceleration_at = min(
+                    member.next_acceleration_at,
+                    now + _growth_interval_for_demand(demand, now=now),
+                )
         else:
             member.delete()
             continue
@@ -1575,6 +1651,11 @@ def _lease_candidate(
             if not resolved_supply_band_priority:
                 raise _CandidateLeaseRejected
             previous_state = next(iter(allowed_states), "")
+            materialization_token = None
+            if recover:
+                materialization_token = reserve_materialization_locked(demand_id=int(demand.id), now=now)
+                if materialization_token is None:
+                    return None
             profile: BotProfile | None
             if recover and BotProfile.State.RETIRED in allowed_states:
                 mutation = reactivate_retired_virtual_player_with_capacity(
@@ -1582,6 +1663,8 @@ def _lease_candidate(
                     now=now,
                 )
                 if mutation.status is not PopulationMutationStatus.REACTIVATED:
+                    if materialization_token is not None:
+                        cancel_materialization_locked(materialization_token)
                     return None
                 profile = mutation.profile
             elif recover and BotProfile.State.ABANDONED in allowed_states:
@@ -1603,6 +1686,8 @@ def _lease_candidate(
                 profile_queryset = profile_queryset.prefetch_related(*_arena_candidate_guest_prefetches())
                 profile = with_arena_reconciliation_state(profile_queryset).first()
             if profile is None:
+                if materialization_token is not None:
+                    cancel_materialization_locked(materialization_token)
                 return None
             if int(profile.engine_version) != int(engine_version):
                 raise _CandidateLeaseRejected
@@ -1644,6 +1729,12 @@ def _lease_candidate(
                     reason=assessment.reachability_reason,
                 )
             )
+            if (
+                member_state == ArenaVirtualReserveMember.State.TRAINING
+                and reachability is None
+                and training_admission_available_locked() is not True
+            ):
+                raise _CandidateLeaseRejected
             if not _consume_reserve_attempt_locked(
                 demand,
                 now=now,
@@ -1707,7 +1798,34 @@ def _lease_candidate(
 @transaction.atomic
 def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishmentResult:
     current_time = now or timezone.now()
-    runtime_assessment = assess_virtual_player_runtime()
+    # Every reserve write must establish the same routing -> population ->
+    # demand/member lock order. Low-population mode adds extra budgets, but a
+    # global safety pause must fence normal-mode handoffs as well.
+    from gameplay.services.runtime_configs import RuntimeRoutingError, lock_virtual_player_routing
+
+    initial_assessment = assess_virtual_player_runtime()
+    if not initial_assessment.routing_available:
+        # Preserve the existing fail-closed behavior for a missing or invalid
+        # V2 routing row; no reserve write is authorized from this snapshot.
+        runtime_assessment = initial_assessment
+    else:
+        try:
+            locked_routing = lock_virtual_player_routing()
+        except RuntimeRoutingError as exc:
+            # A readable preflight is not a write capability. If the routing
+            # row cannot be locked, do not continue with a stale assessment.
+            logger.warning(
+                "arena virtual reserve replenishment deferred because runtime routing could not be locked",
+                extra={
+                    "event": "arena_virtual_reserve_routing_lock_unavailable",
+                    "failure_reason": str(exc),
+                },
+            )
+            return ReserveReplenishmentResult(0, 0, 0, 0, 0)
+        else:
+            runtime_assessment = assess_virtual_player_runtime(locked_routing)
+            if runtime_assessment.population_mutation_allowed:
+                BotPopulationControl.objects.select_for_update().get_or_create(key=BotPopulationControl.GLOBAL_KEY)
     growth_admission_allowed = runtime_assessment.training_admission_allowed
     population_mutation_allowed = runtime_assessment.population_mutation_allowed
     candidate_engine_version = runtime_assessment.reserve_engine_version
@@ -2191,11 +2309,10 @@ def _finalize_growth_budget_attempt(
             selected_growth_bps=growth_bps,
         )
     )
-    entries_after = parse_arena_growth_budget_entries(
-        member.arena_growth_budget_entries,
-        now=claim.claimed_at,
-    )
-    member.growth_execution_attempt_count = actual_arena_growth_attempt_count(entries_after)
+
+    # This counter is informational only. It must not become a hidden growth
+    # cap now that the old rolling 24-hour limit has been removed.
+    member.growth_execution_attempt_count = int(member.growth_execution_attempt_count) + 1
 
 
 def _record_growth_slot_result(
@@ -2415,32 +2532,14 @@ def _claim_due_virtual_reserve_growth(
                 roster_target_count=int(member.roster_target_count),
             )
             growth_targets[target_key] = growth_target
-        try:
-            active_budget_entries = prune_arena_growth_budget_entries(
-                parse_arena_growth_budget_entries(
-                    member.arena_growth_budget_entries,
-                    now=now,
-                ),
-                now=now,
-            )
-            active_execution_attempt_count = actual_arena_growth_attempt_count(active_budget_entries)
-        except InvalidArenaGrowthBudgetError:
-            active_execution_attempt_count = int(member.growth_execution_attempt_count)
-        # Let the durable attempt-budget reservation below own the retry
-        # disposition once the rolling window is full.  The reachability
-        # preflight remains authoritative for direct target/cap decisions, but
-        # must not replace the existing budget-window retry timestamp/reason.
-        reachability = None
-        if active_execution_attempt_count < ARENA_GROWTH_BUDGET_MAX_ATTEMPTS:
-            reachability = _arena_growth_reachability(
-                demand=demand,
-                profile=member.profile,
-                selected_power=int(member.current_lineup_power),
-                growth_target=growth_target,
-                growth_execution_attempt_count=active_execution_attempt_count,
-                growth_round_training_guest_ids=tuple(member.growth_round_training_guest_ids or ()),
-            )
-        if reachability is not None and not reachability.reachable:
+        reachability = _arena_growth_reachability(
+            demand=demand,
+            profile=member.profile,
+            selected_power=int(member.current_lineup_power),
+            growth_target=growth_target,
+            growth_round_training_guest_ids=tuple(member.growth_round_training_guest_ids or ()),
+        )
+        if not reachability.reachable:
             member.state = ArenaVirtualReserveMember.State.EXHAUSTED
             member.next_acceleration_at = None
             member.last_checked_at = now
@@ -2571,41 +2670,11 @@ def _claim_due_virtual_reserve_growth(
         )
 
     claim_token = uuid4()
-    try:
-        budget_entries = reserve_arena_growth_attempt(
-            budget_entries,
-            now=now,
-            attempt_id=str(claim_token),
-        )
-    except ArenaGrowthAttemptBudgetExceeded as exc:
-        member.next_acceleration_at = exc.retry_at
-        member.last_checked_at = now
-        member.growth_retry_reason = "arena_attempt_budget_exhausted"
-        member.arena_growth_budget_entries = serialize_arena_growth_budget_entries(budget_entries)
-        _clear_growth_claim(member)
-        member.save(
-            update_fields=[
-                "next_acceleration_at",
-                "last_checked_at",
-                "growth_retry_reason",
-                "arena_growth_budget_entries",
-                *_GROWTH_CLAIM_FIELDS,
-                "updated_at",
-            ]
-        )
-        log_demand_event(
-            "arena_virtual_profile_growth_deferred",
-            demand,
-            message="arena virtual profile growth deferred by its 24-hour attempt budget",
-            failure_reason="arena_attempt_budget_exhausted",
-            profile_id=int(member.profile_id),
-            power_before=int(member.current_lineup_power),
-            growth_rounds=int(member.growth_rounds_started),
-            member_state=str(member.state),
-            attempt_count=len(budget_entries),
-            retry_at=exc.retry_at.isoformat(),
-        )
-        return None
+    budget_entries = reserve_arena_growth_attempt(
+        budget_entries,
+        now=now,
+        attempt_id=str(claim_token),
+    )
 
     member.growth_attempt_ordinal = int(member.growth_attempt_ordinal) + 1
     member.growth_claim_token = claim_token
@@ -2851,6 +2920,18 @@ def _finalize_virtual_reserve_growth(
             outcome=ArenaGrowthAttemptOutcome.NO_ACTION,
             retry_reason=no_action_reason,
         )
+        if no_action_reason == _GROWTH_BUSINESS_ERROR_REASON:
+            # The planner reserves the guest before dispatch.  A recoverable
+            # business exception rolls back the execution/receipt transaction
+            # but not that separate reservation transaction, so remove only
+            # this operation's known-uncommitted assignment. Commit-uncertain
+            # and receipt-backed rows remain reconciliation fences.
+            discard_uncommitted_arena_training_assignment(
+                member_id=int(claim.member_id),
+                round_ordinal=int(claim.round_ordinal),
+                action_ordinal_in_round=int(claim.action_ordinal_in_round),
+                operation_id=claim.operation_id,
+            )
         _record_training_assignment_from_receipt(
             member,
             claim,
@@ -2920,17 +3001,6 @@ def _finalize_virtual_reserve_growth(
     )
     member.current_lineup_power = evaluation.selected_power
     member.growth_applied_action_count = int(member.growth_applied_action_count) + 1
-    member.growth_execution_attempt_count = max(
-        int(member.growth_execution_attempt_count),
-        int(
-            applied_arena_growth_attempt_count(
-                parse_arena_growth_budget_entries(
-                    member.arena_growth_budget_entries,
-                    now=handled_at,
-                )
-            )
-        ),
-    )
     member.evaluated_version = demand.version
     _clear_growth_retry(member)
     if evaluation.is_ready:
@@ -2962,7 +3032,7 @@ def _finalize_virtual_reserve_growth(
         member.growth_round_id = ""
         member.growth_action_ordinal_in_round = 0
         member.growth_round_training_guest_ids = []
-        if member.next_acceleration_at is not None:
+        if member.next_acceleration_at is not None and not low_population_enabled():
             member.next_acceleration_at += _arena_rearm_jitter(
                 member_id=int(member.id),
                 round_ordinal=completed_round,
@@ -3395,7 +3465,6 @@ def _prepare_same_round_retry(*, member_id: int, now: datetime) -> bool:
         .values(
             "growth_round_id",
             "growth_action_ordinal_in_round",
-            "arena_growth_budget_entries",
             "growth_retry_reason",
         )
         .first()
@@ -3405,48 +3474,13 @@ def _prepare_same_round_retry(*, member_id: int, now: datetime) -> bool:
     round_id = str(member.get("growth_round_id") or "")
     if not round_id:
         return False
-    if str(member.get("growth_retry_reason") or "") in {
-        "arena_action_unavailable",
-        "no_eligible_candidate",
-        "growth_no_action",
-        # A V2 maintenance/rule error is a bounded business failure.  Let
-        # the member's durable retry/backoff handle a later scan; do not
-        # spend every remaining slot of the current round on the same bad
-        # operation.
-        "growth_business_error",
-        "growth_paused",
-        "routing_unavailable",
-    }:
+    # Successful growth clears the retry reason. Every failed attempt keeps
+    # its persisted backoff; immediately retrying BUSY/NO_ACTION here would
+    # turn the old rolling budget into a hot-loop dependency.
+    if str(member.get("growth_retry_reason") or ""):
         return False
-    try:
-        budget_entries = prune_arena_growth_budget_entries(
-            parse_arena_growth_budget_entries(
-                member.get("arena_growth_budget_entries"),
-                now=now,
-            ),
-            now=now,
-        )
-    except InvalidArenaGrowthBudgetError:
-        # The claim path owns invalid-budget recovery.  Do not overwrite its
-        # durable error state from this scheduler adapter.
-        return False
-    if actual_arena_growth_attempt_count(budget_entries) >= ARENA_GROWTH_BUDGET_MAX_ATTEMPTS:
-        if budget_entries:
-            retry_at = budget_entries[0].attempted_at + ARENA_GROWTH_BUDGET_WINDOW
-            ArenaVirtualReserveMember.objects.filter(
-                pk=int(member_id),
-                state=ArenaVirtualReserveMember.State.TRAINING,
-                growth_claim_token__isnull=True,
-            ).update(
-                next_acceleration_at=retry_at,
-                growth_retry_reason="arena_attempt_budget_exhausted",
-            )
-        return False
-    # A BUSY retry may exhaust the current round without consuming a
-    # successful action.  Let the next claim allocate a new round; the outer
-    # worker loop is bounded by the 24-hour execution budget, so this cannot
-    # turn into an unbounded hot loop.  APPLIED and terminal NO_ACTION paths
-    # clear ``growth_round_id`` or return above before reaching this point.
+    # Keep same-round APPLIED slots ordered, while the per-task attempt bound
+    # limits work independently of the removed 24-hour attempt throttle.
     ArenaVirtualReserveMember.objects.filter(
         pk=int(member_id),
         state=ArenaVirtualReserveMember.State.TRAINING,
@@ -3462,7 +3496,7 @@ def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
     growth_engine_version = _reserve_growth_engine_version(now=current_time)
     if growth_engine_version is None:
         return 0
-    requested_limit = max(0, int(limit))
+    requested_limit, per_demand_limit = growth_batch_limits(limit, ARENA_GROWTH_MAX_MEMBERS_PER_DEMAND)
     due_member_query = ArenaVirtualReserveMember.objects.filter(
         Q(
             state=ArenaVirtualReserveMember.State.TRAINING,
@@ -3489,7 +3523,7 @@ def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
                 order_by=[F("next_acceleration_at").asc(), F("id").asc()],
             )
         )
-        .filter(demand_due_rank__lte=ARENA_GROWTH_MAX_MEMBERS_PER_DEMAND)
+        .filter(demand_due_rank__lte=per_demand_limit)
         .order_by("next_acceleration_at", "id")
         .values_list("id", "demand_id", "next_acceleration_at")
     )
@@ -3528,6 +3562,7 @@ def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
             break
 
     oldest_due_at = member_rows[0][2] if member_rows else None
+    selected_member_rows = reserve_growth_batch(members=selected_member_rows, now=current_time)
     oldest_due_age_seconds = (
         max(0.0, (current_time - oldest_due_at).total_seconds()) if oldest_due_at is not None else 0.0
     )
@@ -3540,7 +3575,7 @@ def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
             "candidate_count": len(member_rows),
             "selected_count": len(selected_member_rows),
             "demand_count": len(demand_counts),
-            "candidate_limit_per_demand": ARENA_GROWTH_MAX_MEMBERS_PER_DEMAND,
+            "candidate_limit_per_demand": per_demand_limit,
             "oldest_due_member_id": member_rows[0][0] if member_rows else None,
             "oldest_due_at": oldest_due_at.isoformat() if oldest_due_at is not None else None,
             "oldest_due_age_seconds": oldest_due_age_seconds,
@@ -3549,10 +3584,7 @@ def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
 
     processed = 0
     for member_id, _demand_id in selected_member_rows:
-        # The rolling execution budget is the authoritative safety boundary.
-        # Slot/round limits order retries but must not silently reduce the
-        # configured 24-hour attempt budget when every result is BUSY.
-        for _slot_attempt in range(ARENA_GROWTH_BUDGET_MAX_ATTEMPTS):
+        for _attempt in range(ARENA_GROWTH_MAX_ATTEMPTS_PER_TASK):
             attempt_result = _grow_due_virtual_reserves_once(
                 now=current_time,
                 limit=1,

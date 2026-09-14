@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import random
-from datetime import timedelta
+from datetime import UTC, timedelta
 
 import pytest
 from django.utils import timezone
 
 from gameplay.constants import BuildingKeys
-from gameplay.models import BotProfile, Building, Manor
+from gameplay.models import BotProfile, BotRuntimeRoutingState, BotSafetyMetricEvent, Building, Manor
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.virtual_player_core.archetype_pacing import resolve_archetype_pacing
 from gameplay.services.virtual_player_core.config import load_virtual_player_config
@@ -28,6 +28,7 @@ from gameplay.services.virtual_player_core.recruitment import (
     start_virtual_recruitment,
     virtual_recruitment_daily_silver_cost,
 )
+from gameplay.services.virtual_player_core.safety_metrics import SAFETY_HEARTBEAT_METRIC
 from guests.models import (
     Guest,
     GuestRecruitment,
@@ -37,6 +38,25 @@ from guests.models import (
     RecruitmentRecord,
 )
 from guests.services.recruitment_guests import create_guest_from_template
+
+
+def _seed_healthy_recruitment_runtime(now):
+    """Exercise real routing/preflight with evidence at each test's logical clock."""
+    BotRuntimeRoutingState.objects.update_or_create(
+        key=BotRuntimeRoutingState.GLOBAL_KEY,
+        defaults={"bootstrap_mode": "v2_active", "maintenance_mode": "v2_active", "calibration_routes": []},
+    )
+    heartbeat_at = now.astimezone(UTC).replace(second=0, microsecond=0)
+    BotSafetyMetricEvent.objects.update_or_create(
+        event_id=f"safety-heartbeat:safety_monitor:{heartbeat_at.strftime('%Y%m%dT%H%MZ')}",
+        defaults={
+            "metric_name": SAFETY_HEARTBEAT_METRIC,
+            "occurred_at": heartbeat_at,
+            "dimensions": {"stream": "safety_monitor"},
+            "value": 1,
+            "payload_digest": "a" * 64,
+        },
+    )
 
 
 def _create_v2_profile(
@@ -212,6 +232,7 @@ def test_virtual_recruitment_daily_snapshot_does_not_add_dianshi_midday(
     first = iter_virtual_recruitment_schedule(profile.id, now=now)
     assert len(first) == 6
 
+    _seed_healthy_recruitment_runtime(first[0].due_at + timedelta(seconds=1))
     settled = start_virtual_recruitment(first[0], now=first[0].due_at + timedelta(seconds=1))
     assert settled.status is VirtualRecruitmentStatus.STARTED
 
@@ -236,6 +257,7 @@ def test_virtual_recruitment_low_prestige_batch_has_no_dianshi_records(django_us
     assert len(schedule) == 6
     assert all(item.pool_key != "dianshi" for item in schedule)
 
+    _seed_healthy_recruitment_runtime(schedule[0].due_at + timedelta(seconds=1))
     result = start_virtual_recruitment(schedule[0], now=schedule[0].due_at + timedelta(seconds=1))
 
     assert result.status is VirtualRecruitmentStatus.STARTED
@@ -287,6 +309,7 @@ def test_virtual_recruitment_starts_with_snapshot_and_without_action_points(
     before_silver = manor.silver
     before_action_points = manor.action_points
 
+    _seed_healthy_recruitment_runtime(now)
     result = start_virtual_recruitment(schedule, now=now)
 
     assert result.status is VirtualRecruitmentStatus.STARTED
@@ -339,6 +362,7 @@ def test_virtual_recruitment_is_immediate_and_idempotent(
     schedule = next(
         item for item in iter_virtual_recruitment_schedule(profile.id, now=timezone.now()) if item.pool_key == "cunmu"
     )
+    _seed_healthy_recruitment_runtime(schedule.due_at + timedelta(seconds=1))
     start_result = start_virtual_recruitment(schedule, now=schedule.due_at + timedelta(seconds=1))
     recruitment = GuestRecruitment.objects.get(pk=start_result.recruitment_id)
     recruitment.refresh_from_db()
@@ -376,6 +400,7 @@ def test_virtual_recruitment_does_not_schedule_completion_worker(
     schedule = next(
         item for item in iter_virtual_recruitment_schedule(profile.id, now=timezone.now()) if item.pool_key == "cunmu"
     )
+    _seed_healthy_recruitment_runtime(schedule.due_at + timedelta(seconds=1))
     start_result = start_virtual_recruitment(schedule, now=schedule.due_at + timedelta(seconds=1))
     recruitment = GuestRecruitment.objects.get(pk=start_result.recruitment_id)
 
@@ -397,6 +422,7 @@ def test_virtual_recruitment_ignores_salary_runway_and_spends_recruitment_cost(
     manor.refresh_from_db()
     before_silver = manor.silver
 
+    _seed_healthy_recruitment_runtime(schedule.due_at + timedelta(seconds=1))
     result = start_virtual_recruitment(schedule, now=schedule.due_at + timedelta(seconds=1))
 
     manor.refresh_from_db()
@@ -424,6 +450,7 @@ def test_virtual_recruitment_insufficient_silver_defers_without_consuming_quota(
     now = schedule.due_at + timedelta(seconds=1)
     Manor.objects.filter(pk=profile.manor_id).update(resource_updated_at=now)
 
+    _seed_healthy_recruitment_runtime(now)
     deferred = start_virtual_recruitment(schedule, now=now)
 
     assert deferred.status is VirtualRecruitmentStatus.DEFERRED
@@ -431,6 +458,7 @@ def test_virtual_recruitment_insufficient_silver_defers_without_consuming_quota(
     assert not GuestRecruitment.objects.filter(operation_id=schedule.operation_id).exists()
 
     Manor.objects.filter(pk=profile.manor_id).update(silver=1_000_000)
+    _seed_healthy_recruitment_runtime(now + timedelta(minutes=15))
     retried = start_virtual_recruitment(schedule, now=now + timedelta(minutes=15))
 
     assert retried.status is VirtualRecruitmentStatus.STARTED
@@ -470,6 +498,7 @@ def test_virtual_recruitment_defers_without_spending_when_roster_is_full(
     )
     manor.refresh_from_db()
     before_silver = manor.silver
+    _seed_healthy_recruitment_runtime(schedule.due_at + timedelta(seconds=1))
     start_result = start_virtual_recruitment(schedule, now=schedule.due_at + timedelta(seconds=1))
 
     profile.refresh_from_db()
@@ -491,6 +520,7 @@ def test_virtual_recruitment_defers_without_spending_when_roster_is_full(
     assert Guest.objects.filter(manor_id=manor.id).count() == capacity
     assert profile.next_recruitment_at is not None
     assert timezone.localtime(profile.next_recruitment_at).date() > schedule.quota_date
+    _seed_healthy_recruitment_runtime(schedule.due_at + timedelta(minutes=15))
     assert (
         start_next_due_virtual_recruitment(profile.id, now=schedule.due_at + timedelta(minutes=15)).status
         is VirtualRecruitmentStatus.NOT_DUE
@@ -559,6 +589,7 @@ def test_virtual_recruitment_scanner_is_bounded_and_does_not_duplicate_pending_q
     schedule_now = timezone.now() + timedelta(days=1)
     scan_now = iter_virtual_recruitment_schedule(profile.id, now=schedule_now)[0].due_at + timedelta(seconds=1)
 
+    _seed_healthy_recruitment_runtime(scan_now)
     assert schedule_due_virtual_recruitments(now=scan_now, limit=1) == 1
     assert schedule_due_virtual_recruitments(now=scan_now, limit=1) == 0
     recruitments = GuestRecruitment.objects.filter(
@@ -582,6 +613,7 @@ def test_virtual_recruitment_due_index_skips_future_head_and_reaches_later_due_p
     BotProfile.objects.filter(pk=head.pk).update(next_recruitment_at=scan_now + timedelta(days=1))
     BotProfile.objects.filter(pk=due.pk).update(next_recruitment_at=scan_now - timedelta(minutes=1))
 
+    _seed_healthy_recruitment_runtime(scan_now)
     assert schedule_due_virtual_recruitments(now=scan_now, limit=1) == 1
     assert GuestRecruitment.objects.filter(bot_profile_id=due.id, source=GuestRecruitment.Source.VIRTUAL).exists()
     assert not GuestRecruitment.objects.filter(bot_profile_id=head.id, source=GuestRecruitment.Source.VIRTUAL).exists()
@@ -598,6 +630,7 @@ def test_virtual_recruitment_due_index_prioritizes_known_due_rows_over_uninitial
     scan_now = iter_virtual_recruitment_schedule(due.id, now=schedule_now)[0].due_at + timedelta(seconds=1)
     BotProfile.objects.filter(pk=due.pk).update(next_recruitment_at=scan_now - timedelta(minutes=1))
 
+    _seed_healthy_recruitment_runtime(scan_now)
     assert schedule_due_virtual_recruitments(now=scan_now, limit=1) == 1
     assert GuestRecruitment.objects.filter(bot_profile_id=due.id, source=GuestRecruitment.Source.VIRTUAL).exists()
     assert not GuestRecruitment.objects.filter(

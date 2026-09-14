@@ -8,7 +8,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from django.db.models import Count, F, Min
+from django.db.models import Count, Exists, F, Min, OuterRef, Q
 
 from core.exceptions import EquipmentError, ItemNotFoundError
 from core.game_data.troop_device_bonus_display import format_raw_troop_device_bonus
@@ -54,8 +54,20 @@ def attach_troop_device_bonus_summaries(templates: Iterable[GearTemplate]) -> No
 
 
 def list_free_gear_options(manor: Manor, *, slot: str) -> list[dict[str, Any]]:
+    warehouse_stock = InventoryItem.objects.filter(
+        manor_id=manor.pk,
+        template__key=OuterRef("template__key"),
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        quantity__gt=0,
+    )
     rows = (
+        # Inventory-backed gear is only a materialized projection of warehouse
+        # stock.  Requiring matching positive stock here prevents stale options
+        # after another flow consumes the warehouse item (for example troop
+        # recruitment), while preserving real free gear without inventory.
         manor.gears.filter(guest__isnull=True, template__slot=slot)
+        .annotate(has_warehouse_stock=Exists(warehouse_stock))
+        .filter(Q(inventory_backed=False) | Q(has_warehouse_stock=True))
         .values("template_id", "template__key")
         .annotate(count=Count("id"), gear_id=Min("id"))
         .order_by("template__name", "template_id")

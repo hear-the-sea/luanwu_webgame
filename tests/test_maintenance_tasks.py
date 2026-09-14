@@ -11,13 +11,24 @@ from django.utils import timezone
 import gameplay.tasks as gameplay_tasks
 from battle.models import BattleReport
 from core.config import MESSAGE
-from gameplay.models import ArenaExchangeRecord, JailPrisoner, Message, ResourceEvent, ResourceType
+from gameplay.models import (
+    ArenaExchangeRecord,
+    ArenaFillServiceEpisode,
+    ArenaFillServiceOutcome,
+    BotSafetyDecisionAudit,
+    JailPrisoner,
+    Message,
+    ResourceEvent,
+    ResourceType,
+)
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.utils.cache import CacheKeys
 from gameplay.tasks.maintenance import (
     ARENA_EXCHANGE_RETENTION_DAYS,
+    ARENA_FILL_SERVICE_RETENTION_DAYS,
     BATTLE_REPORT_RETENTION_DAYS,
     RESOURCE_EVENT_RETENTION_DAYS,
+    VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS,
     cleanup_expired_jail_prisoners_task,
     cleanup_old_data_task,
     decay_prisoner_loyalty_task,
@@ -135,6 +146,103 @@ def test_cleanup_old_data_task_cleans_old_rows_and_keeps_recent(django_user_mode
     assert Message.objects.filter(pk=new_message.pk).exists() is True
     assert "protected_messages=1" in caplog.text
     assert "dynamically_protected_candidates=" not in caplog.text
+
+
+@pytest.mark.django_db
+def test_cleanup_old_data_task_deletes_only_published_terminal_fill_evidence_and_old_audits(caplog):
+    now = timezone.now()
+    old_at = now - timedelta(days=ARENA_FILL_SERVICE_RETENTION_DAYS + 1)
+    old_episode = ArenaFillServiceEpisode.objects.create(
+        mode="coop",
+        event_id=9001,
+        virtual_fill_at=old_at,
+        checkpoint_at=old_at,
+        first_observed_at=old_at,
+        last_observed_at=old_at,
+        first_real_entry_at=old_at,
+        first_demand_at=old_at,
+        closed_at=old_at,
+        terminal_reason="fulfilled",
+        slo_result="human_satisfied",
+        last_snapshot={},
+        pending_outcomes={},
+        publication_pending=False,
+    )
+    old_outcome = ArenaFillServiceOutcome.objects.create(
+        episode=old_episode,
+        phase="slo",
+        result="human_satisfied",
+        logical_at=old_at,
+        observed_at=old_at,
+        payload={"result": "human_satisfied"},
+    )
+    ArenaFillServiceOutcome.objects.filter(pk=old_outcome.pk).update(published_at=old_at)
+    recent_episode = ArenaFillServiceEpisode.objects.create(
+        mode="coop",
+        event_id=9002,
+        virtual_fill_at=now,
+        checkpoint_at=now,
+        first_observed_at=now,
+        last_observed_at=now,
+        closed_at=now,
+        terminal_reason="fulfilled",
+        slo_result="human_satisfied",
+        last_snapshot={},
+        pending_outcomes={},
+        publication_pending=False,
+    )
+    old_open_episode = ArenaFillServiceEpisode.objects.create(
+        mode="coop",
+        event_id=9003,
+        virtual_fill_at=old_at,
+        checkpoint_at=old_at,
+        first_observed_at=old_at,
+        last_observed_at=old_at,
+        last_snapshot={},
+        pending_outcomes={},
+        publication_pending=False,
+    )
+    old_pending_episode = ArenaFillServiceEpisode.objects.create(
+        mode="coop",
+        event_id=9004,
+        virtual_fill_at=old_at,
+        checkpoint_at=old_at,
+        first_observed_at=old_at,
+        last_observed_at=old_at,
+        closed_at=old_at,
+        terminal_reason="fulfilled",
+        slo_result="human_satisfied",
+        last_snapshot={},
+        pending_outcomes={"slo": {"result": "human_satisfied"}},
+        publication_pending=True,
+    )
+    old_audit = BotSafetyDecisionAudit.objects.create(
+        window_id="retention-test",
+        policy_version="arena-scoped-v1",
+        policy_mode="scoped",
+        operation="monitor",
+        reasons=[],
+        previous_mode="v2_active",
+        resulting_mode="v2_active",
+        previous_revision=1,
+        resulting_revision=2,
+    )
+    BotSafetyDecisionAudit.objects.filter(pk=old_audit.pk).update(
+        created_at=now - timedelta(days=VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS + 1)
+    )
+
+    with caplog.at_level(logging.INFO, logger="gameplay.tasks.maintenance"):
+        cleanup_old_data_task.run()
+
+    assert not ArenaFillServiceEpisode.objects.filter(pk=old_episode.pk).exists()
+    assert not ArenaFillServiceOutcome.objects.filter(pk=old_outcome.pk).exists()
+    assert ArenaFillServiceEpisode.objects.filter(pk=recent_episode.pk).exists()
+    assert ArenaFillServiceEpisode.objects.filter(pk=old_open_episode.pk).exists()
+    assert ArenaFillServiceEpisode.objects.filter(pk=old_pending_episode.pk).exists()
+    assert not BotSafetyDecisionAudit.objects.filter(pk=old_audit.pk).exists()
+    assert "fill_service_episodes=1" in caplog.text
+    assert "fill_service_outcomes=1" in caplog.text
+    assert "safety_audits=1" in caplog.text
 
 
 @pytest.mark.django_db

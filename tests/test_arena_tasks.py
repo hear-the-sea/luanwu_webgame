@@ -173,6 +173,7 @@ def test_scan_arena_coop_events_programming_error_bubbles_up(monkeypatch):
 def test_reconcile_arena_virtual_reserve_replenishes_targeted_demand(monkeypatch):
     demand = SimpleNamespace(id=17)
     replenished = SimpleNamespace(ready_count=4, training_count=2)
+    monkeypatch.setattr(arena_tasks, "observe_fill_service", lambda **kwargs: None)
     monkeypatch.setattr(arena_tasks, "reconcile_tournament_demand", lambda event_id: demand)
     monkeypatch.setattr(
         arena_tasks,
@@ -187,6 +188,7 @@ def test_reconcile_arena_virtual_reserve_replenishes_targeted_demand(monkeypatch
 
 
 def test_reconcile_arena_virtual_reserve_returns_zero_when_event_has_no_demand(monkeypatch):
+    monkeypatch.setattr(arena_tasks, "observe_fill_service", lambda **kwargs: None)
     monkeypatch.setattr(arena_tasks, "reconcile_coop_demand", lambda event_id: None)
 
     result = arena_tasks.reconcile_arena_virtual_reserve.run("coop", 12)

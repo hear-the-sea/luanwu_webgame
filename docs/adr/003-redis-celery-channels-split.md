@@ -27,11 +27,13 @@ All URLs inherit `REDIS_PASSWORD` when no credentials are embedded in the URL.
 `_redis_url_with_password()` injects auth transparently so that operators only need
 to set the password once.
 
-Celery additionally defines five task queues (`default`, `battle`, `timer`,
-`timer_scan`, `timer_maintenance`) with explicit route mappings in
+Celery additionally defines six task queues (`default`, `battle`, `timer`,
+`timer_scan`, `timer_safety`, `timer_maintenance`) with explicit route mappings in
 `celery_conf.py`. The `timer` queue handles latency-sensitive single-record
 completion tasks, `timer_scan` handles user-related batch scans, and
-`timer_maintenance` isolates virtual-player, market, arena-reserve, and cleanup
+`timer_safety` isolates safety heartbeats, window aggregation and safety
+decisions so queue delay cannot manufacture a safety gap. The
+`timer_maintenance` queue isolates virtual-player, market, arena-reserve, and cleanup
 work so a slow maintenance sweep cannot delay routine state scans. `battle`
 isolates CPU-intensive report generation.
 

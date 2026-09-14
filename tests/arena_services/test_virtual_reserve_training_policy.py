@@ -119,7 +119,7 @@ def priority_runtime(monkeypatch):
     monkeypatch.setattr(
         virtual_reserve_pool,
         "assess_virtual_player_runtime",
-        lambda: VirtualPlayerRuntimeAssessment(
+        lambda _snapshot=None: VirtualPlayerRuntimeAssessment(
             routing_available=True,
             bootstrap_mode=BootstrapMode.V2_ACTIVE,
             maintenance_mode=MaintenanceMode.V2_ACTIVE,

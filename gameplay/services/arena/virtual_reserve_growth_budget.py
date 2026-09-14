@@ -5,13 +5,14 @@ from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from uuid import UUID
 
-ARENA_GROWTH_BUDGET_WINDOW = timedelta(hours=24)
-# This is the per-member Shanghai-time execution budget. Slot progress is
-# persisted by the reserve member and remains separate from this rolling cap.
-# Arena admission may need several bounded guest-recruitment actions before a
-# reserve member reaches the event's minimum roster size. Keep the rolling
-# window finite while allowing the new strategy to finish that lifecycle.
-ARENA_GROWTH_BUDGET_MAX_ATTEMPTS = 48
+ARENA_GROWTH_ATTEMPT_HISTORY_WINDOW = timedelta(hours=24)
+# Bound same-member work within one worker invocation. This is deliberately
+# independent of rolling attempt history and does not cap long-term growth.
+ARENA_GROWTH_MAX_ATTEMPTS_PER_TASK = 48
+# Keep the JSON field a bounded diagnostic tail after the rolling attempt cap
+# is removed. This is storage protection only; it is never consulted for
+# admission, retry scheduling or growth eligibility.
+ARENA_GROWTH_HISTORY_MAX_ENTRIES = 256
 ARENA_GROWTH_MAX_SLOT_ATTEMPTS = 5
 ARENA_GROWTH_BUDGET_MAX_FUTURE_SKEW = timedelta(minutes=5)
 
@@ -22,12 +23,6 @@ class ArenaGrowthBudgetError(ValueError):
 
 class InvalidArenaGrowthBudgetError(ArenaGrowthBudgetError):
     pass
-
-
-class ArenaGrowthAttemptBudgetExceeded(ArenaGrowthBudgetError):
-    def __init__(self, *, retry_at: datetime) -> None:
-        super().__init__("arena growth attempt budget exceeded")
-        self.retry_at = retry_at
 
 
 class ArenaGrowthAttemptOutcome(StrEnum):
@@ -99,11 +94,6 @@ def parse_arena_growth_budget_entries(
         raise InvalidArenaGrowthBudgetError("max_future_skew must be non-negative")
     if not isinstance(value, list):
         raise InvalidArenaGrowthBudgetError("arena_growth_budget_entries must be a list")
-    if len(value) > ARENA_GROWTH_BUDGET_MAX_ATTEMPTS:
-        raise InvalidArenaGrowthBudgetError(
-            f"arena_growth_budget_entries may contain at most {ARENA_GROWTH_BUDGET_MAX_ATTEMPTS} entries"
-        )
-
     expected_fields = {
         "attempt_id",
         "attempted_at",
@@ -125,7 +115,7 @@ def parse_arena_growth_budget_entries(
             )
         try:
             attempted_at = datetime.fromisoformat(attempted_at_value.replace("Z", "+00:00"))
-        except ValueError as exc:
+        except (TypeError, ValueError) as exc:
             raise InvalidArenaGrowthBudgetError(
                 f"arena_growth_budget_entries[{index}].attempted_at must be an ISO-8601 datetime"
             ) from exc
@@ -137,7 +127,7 @@ def parse_arena_growth_budget_entries(
                 effective_progress=raw_entry["effective_progress"],
                 selected_growth_bps=raw_entry["selected_growth_bps"],
             )
-        except ValueError as exc:
+        except (TypeError, ValueError) as exc:
             if isinstance(exc, InvalidArenaGrowthBudgetError):
                 raise
             raise InvalidArenaGrowthBudgetError(f"arena_growth_budget_entries[{index}].outcome is invalid") from exc
@@ -157,9 +147,21 @@ def prune_arena_growth_budget_entries(
     *,
     now: datetime,
 ) -> tuple[ArenaGrowthBudgetEntry, ...]:
+    """Keep only recent attempt history; the window is not a growth throttle."""
+
     current_time = _aware_utc(now, field="now")
-    cutoff = current_time - ARENA_GROWTH_BUDGET_WINDOW
-    return tuple(entry for entry in entries if entry.attempted_at > cutoff)
+    cutoff = current_time - ARENA_GROWTH_ATTEMPT_HISTORY_WINDOW
+    retained = tuple(entry for entry in entries if entry.attempted_at > cutoff)
+    pending = tuple(entry for entry in retained if entry.outcome is ArenaGrowthAttemptOutcome.PENDING)
+    if len(pending) > 1:
+        raise InvalidArenaGrowthBudgetError("arena growth budget contains multiple pending attempts")
+    completed = tuple(entry for entry in retained if entry.outcome is not ArenaGrowthAttemptOutcome.PENDING)
+    completed_capacity = ARENA_GROWTH_HISTORY_MAX_ENTRIES - len(pending)
+    kept = (*completed[-completed_capacity:], *pending) if completed_capacity else pending
+    # A pending reservation is normally the newest entry, but sorting here
+    # keeps the parser invariant intact even when an old row is being
+    # reconciled after a clock adjustment.
+    return tuple(sorted(kept, key=lambda entry: entry.attempted_at))
 
 
 def reserve_arena_growth_attempt(
@@ -168,11 +170,9 @@ def reserve_arena_growth_attempt(
     now: datetime,
     attempt_id: str,
 ) -> tuple[ArenaGrowthBudgetEntry, ...]:
+    """Record an attempt reservation without applying a per-member count cap."""
+
     active_entries = prune_arena_growth_budget_entries(entries, now=now)
-    if len(active_entries) >= ARENA_GROWTH_BUDGET_MAX_ATTEMPTS:
-        raise ArenaGrowthAttemptBudgetExceeded(
-            retry_at=active_entries[0].attempted_at + ARENA_GROWTH_BUDGET_WINDOW,
-        )
     candidate = ArenaGrowthBudgetEntry(
         attempt_id=attempt_id,
         attempted_at=now,
@@ -182,7 +182,10 @@ def reserve_arena_growth_attempt(
     )
     if active_entries and candidate.attempted_at < active_entries[-1].attempted_at:
         raise InvalidArenaGrowthBudgetError("new arena growth attempt predates the active budget window")
-    return (*active_entries, candidate)
+    # Keep the new pending reservation inside the same bound.  Completed
+    # history may be evicted, but a pending row must survive until finalize or
+    # cancel can settle it; silently dropping it would strand the member claim.
+    return prune_arena_growth_budget_entries((*active_entries, candidate), now=now)
 
 
 def finalize_arena_growth_attempt(
@@ -246,7 +249,7 @@ def serialize_arena_growth_budget_entries(
 def actual_arena_growth_attempt_count(
     entries: tuple[ArenaGrowthBudgetEntry, ...],
 ) -> int:
-    """Count business calls, excluding a never-dispatched PENDING reservation."""
+    """Count business calls in the retained diagnostic tail."""
 
     return sum(entry.outcome is not ArenaGrowthAttemptOutcome.PENDING for entry in entries)
 
@@ -260,10 +263,10 @@ def applied_arena_growth_attempt_count(
 
 
 __all__ = [
-    "ARENA_GROWTH_BUDGET_MAX_ATTEMPTS",
-    "ARENA_GROWTH_BUDGET_WINDOW",
+    "ARENA_GROWTH_ATTEMPT_HISTORY_WINDOW",
+    "ARENA_GROWTH_HISTORY_MAX_ENTRIES",
+    "ARENA_GROWTH_MAX_ATTEMPTS_PER_TASK",
     "ARENA_GROWTH_MAX_SLOT_ATTEMPTS",
-    "ArenaGrowthAttemptBudgetExceeded",
     "ArenaGrowthAttemptOutcome",
     "ArenaGrowthBudgetEntry",
     "InvalidArenaGrowthBudgetError",

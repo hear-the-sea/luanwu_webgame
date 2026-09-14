@@ -356,9 +356,16 @@ def ensure_auto_training_batch(guests: Sequence[Guest], now: datetime | None = N
         raise ValueError("ensure_auto_training_batch requires persisted guests")
     guest_ids = {guest.pk for guest in guests}
     current_time = now or timezone.now()
+    from gameplay.services.virtual_player_core.selectors import virtual_guest_owner_expression
+
+    virtual_owner = virtual_guest_owner_expression()
     with transaction.atomic():
         locked_guests = list(
-            Guest.objects.select_for_update().select_related("template").filter(pk__in=guest_ids).order_by("pk")
+            Guest.objects.select_for_update()
+            .select_related("template")
+            .annotate(_virtual_timer_owner=virtual_owner)
+            .filter(pk__in=guest_ids)
+            .order_by("pk")
         )
         if len(locked_guests) != len(guest_ids):
             raise Guest.DoesNotExist("One or more guests no longer exist")
@@ -374,10 +381,27 @@ def ensure_auto_training_batch(guests: Sequence[Guest], now: datetime | None = N
             locked_guest.training_complete_at = current_time + timedelta(seconds=duration)
             scheduled.append((locked_guest, duration))
         if scheduled:
-            Guest.objects.bulk_update(
+            writes = Guest.objects.all()
+            if any(getattr(guest, "_virtual_timer_owner", False) for guest, _ in scheduled):
+                from gameplay.services.virtual_player_core.training_gate import virtual_auto_training_write_guard
+
+                human = ~virtual_owner
+                writes = writes.filter(human | virtual_auto_training_write_guard(now=current_time))
+            updated = writes.bulk_update(
                 [guest for guest, _duration in scheduled],
                 ["training_target_level", "training_complete_at"],
             )
+            if updated != len(scheduled):
+                # A virtual timer may be fenced while human timers in the same
+                # batch succeed. Do not enqueue or expose uncommitted timers.
+                persisted = {guest.pk: guest for guest in Guest.objects.filter(pk__in=guest_ids)}
+                scheduled = [
+                    (guest, duration)
+                    for guest, duration in scheduled
+                    if persisted[guest.pk].training_complete_at == guest.training_complete_at
+                    and persisted[guest.pk].training_target_level == guest.training_target_level
+                ]
+                locked_guests = list(persisted.values())
         locked_by_id = {guest.pk: guest for guest in locked_guests}
         for guest in guests:
             locked_guest = locked_by_id[guest.pk]

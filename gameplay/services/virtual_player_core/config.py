@@ -15,6 +15,13 @@ from yaml import YAMLError
 from common.constants.virtual_players import VIRTUAL_PLAYER_EXCLUDED_TROOP_KEYS
 from core.utils.yaml_loader import load_yaml_data
 from core.utils.yaml_validators.virtual_players import validate_virtual_players
+from gameplay.services.arena.virtual_reserve_growth_budget import (
+    ARENA_GROWTH_ATTEMPT_HISTORY_WINDOW,
+    ARENA_GROWTH_BUDGET_MAX_FUTURE_SKEW,
+    ARENA_GROWTH_HISTORY_MAX_ENTRIES,
+    ARENA_GROWTH_MAX_ATTEMPTS_PER_TASK,
+    ARENA_GROWTH_MAX_SLOT_ATTEMPTS,
+)
 
 from .archetype_pacing import DEFAULT_ARCHETYPE_PACING
 from .random_context import canonical_json_bytes
@@ -73,11 +80,12 @@ _EFFECTIVE_RUNTIME_CODE_DEFAULTS = {
         "strength_action_spacing_enforced": False,
     },
     "arena_growth": {
-        "budget_window_seconds": 24 * 60 * 60,
-        "budget_max_attempts": 48,
+        "attempt_history_window_seconds": int(ARENA_GROWTH_ATTEMPT_HISTORY_WINDOW.total_seconds()),
+        "history_max_entries": ARENA_GROWTH_HISTORY_MAX_ENTRIES,
+        "max_attempts_per_task": ARENA_GROWTH_MAX_ATTEMPTS_PER_TASK,
         "slots_per_round": 8,
-        "max_slot_attempts": 5,
-        "budget_max_future_skew_seconds": 5 * 60,
+        "max_slot_attempts": ARENA_GROWTH_MAX_SLOT_ATTEMPTS,
+        "attempt_history_max_future_skew_seconds": int(ARENA_GROWTH_BUDGET_MAX_FUTURE_SKEW.total_seconds()),
         "roster_completion_event_power_cap_bypass": True,
         "max_members_per_demand": 8,
         "rearm_jitter_max_seconds": 45,

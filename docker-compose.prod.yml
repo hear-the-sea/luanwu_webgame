@@ -49,8 +49,8 @@ services:
       retries: 10
     volumes:
       - db_data:/var/lib/mysql
-    mem_limit: ${MYSQL_MEMORY_LIMIT:-768m}
-    mem_reservation: ${MYSQL_MEMORY_RESERVATION:-512m}
+    mem_limit: ${MYSQL_MEMORY_LIMIT:-1536m}
+    mem_reservation: ${MYSQL_MEMORY_RESERVATION:-768m}
     logging:
       driver: "json-file"
       options:
@@ -296,6 +296,56 @@ services:
         max-file: "5"
     restart: unless-stopped
 
+  worker_timer_safety:
+    image: ${WEBGAME_IMAGE:-webgame:v1}
+    pull_policy: never
+    env_file: ${WEBGAME_ENV_FILE:-.env.docker}
+    environment:
+      DJANGO_COLLECTSTATIC: "0"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    command:
+      [
+        "bash",
+        "/app/docker/entrypoint.sh",
+        "celery",
+        "-A",
+        "config",
+        "worker",
+        "-l",
+        "info",
+        "-Q",
+        "${CELERY_TIMER_SAFETY_QUEUE:-timer_safety}",
+        "--concurrency",
+        "${CELERY_TIMER_SAFETY_CONCURRENCY:-1}",
+        "--prefetch-multiplier",
+        "${CELERY_PREFETCH_MULTIPLIER:-1}",
+        "--max-tasks-per-child",
+        "${CELERY_MAX_TASKS_PER_CHILD:-200}",
+        "--max-memory-per-child",
+        "${CELERY_MAX_MEMORY_PER_CHILD:-180000}",
+      ]
+    volumes:
+      - ./runtime/media:/app/media
+    # Keep safety liveness independent from both ordinary timer work and
+    # potentially long-running maintenance tasks.
+    mem_limit: ${CELERY_TIMER_SAFETY_MEMORY_LIMIT:-256m}
+    mem_reservation: ${CELERY_TIMER_SAFETY_MEMORY_RESERVATION:-160m}
+    depends_on:
+      - db
+      - redis
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+    restart: unless-stopped
+
   worker_timer_maintenance:
     image: ${WEBGAME_IMAGE:-webgame:v1}
     pull_policy: never
@@ -332,8 +382,10 @@ services:
       ]
     volumes:
       - ./runtime/media:/app/media
-    mem_limit: ${CELERY_WORKER_MEMORY_LIMIT:-256m}
-    mem_reservation: ${CELERY_WORKER_MEMORY_RESERVATION:-160m}
+    # Budget the parent, prefork child and task peaks together. Keep this
+    # independent of the shared limit used by the other four workers.
+    mem_limit: ${CELERY_TIMER_MAINTENANCE_MEMORY_LIMIT:-768m}
+    mem_reservation: ${CELERY_TIMER_MAINTENANCE_MEMORY_RESERVATION:-384m}
     depends_on:
       - db
       - redis
@@ -406,8 +458,9 @@ services:
       - ALL
     cap_add:
       - NET_BIND_SERVICE
-    mem_limit: ${CADDY_MEMORY_LIMIT:-64m}
-    mem_reservation: ${CADDY_MEMORY_RESERVATION:-32m}
+    # Healthchecks run a second Caddy process inside the same cgroup.
+    mem_limit: ${CADDY_MEMORY_LIMIT:-256m}
+    mem_reservation: ${CADDY_MEMORY_RESERVATION:-128m}
     depends_on:
       web:
         condition: service_healthy

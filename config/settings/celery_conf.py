@@ -9,7 +9,7 @@ import os
 from celery.schedules import crontab
 from kombu import Queue
 
-from .base import env
+from .base import ARENA_LOW_POPULATION_MODE, env
 from .database import REDIS_BROKER_URL, REDIS_PASSWORD, REDIS_RESULT_URL, _redis_url_with_password
 
 CELERY_BROKER_URL = _redis_url_with_password(env("CELERY_BROKER_URL", REDIS_BROKER_URL), REDIS_PASSWORD)
@@ -26,6 +26,7 @@ CELERY_BATTLE_QUEUE = env("CELERY_BATTLE_QUEUE", "battle")
 CELERY_TIMER_QUEUE = env("CELERY_TIMER_QUEUE", "timer")
 CELERY_TIMER_SCAN_QUEUE = env("CELERY_TIMER_SCAN_QUEUE", "timer_scan")
 CELERY_TIMER_MAINTENANCE_QUEUE = env("CELERY_TIMER_MAINTENANCE_QUEUE", "timer_maintenance")
+CELERY_TIMER_SAFETY_QUEUE = env("CELERY_TIMER_SAFETY_QUEUE", "timer_safety")
 CELERY_TASK_DEFAULT_QUEUE = CELERY_DEFAULT_QUEUE
 
 
@@ -42,6 +43,7 @@ _CELERY_QUEUE_NAMES = (
     CELERY_TIMER_QUEUE,
     CELERY_TIMER_SCAN_QUEUE,
     CELERY_TIMER_MAINTENANCE_QUEUE,
+    CELERY_TIMER_SAFETY_QUEUE,
 )
 _validate_celery_queue_names(_CELERY_QUEUE_NAMES)
 
@@ -108,14 +110,13 @@ CELERY_TIMER_MAINTENANCE_TASKS = frozenset(
         "accounts.send_email_verification_delivery",
         "gameplay.scan_arena_virtual_reserves",
         "gameplay.grow_arena_virtual_reserves",
+        "gameplay.collect_arena_fill_service_outcomes",
         "gameplay.plan_virtual_players",
         "gameplay.roll_virtual_players",
         "gameplay.scan_virtual_player_maintenance",
         "gameplay.scan_external_strength_reconciliations",
         "gameplay.scan_virtual_player_population_demands",
         "gameplay.scan_virtual_player_growth_control",
-        "gameplay.aggregate_virtual_player_safety",
-        "gameplay.monitor_virtual_player_safety",
         "gameplay.cleanup_virtual_player_safety_metrics",
         "gameplay.cleanup_virtual_player_jail",
         "gameplay.cleanup_expired_jail_prisoners",
@@ -160,13 +161,23 @@ CELERY_TIMER_DEFAULT_TASKS = frozenset(
         "gameplay.reconcile_external_strength_reconciliation",
         "gameplay.reconcile_virtual_player_maintenance_completion",
         "gameplay.reconcile_virtual_player_population_cell",
-        "gameplay.heartbeat_virtual_player_maintenance_attempt_emitter",
-        "gameplay.heartbeat_virtual_player_h01_callback_attempt_emitter",
-        "gameplay.heartbeat_virtual_player_arena_shortage_emitter",
         "gameplay.publish_world_chat_attempt",
         "gameplay.refund_world_chat_attempt",
         "guilds.complete_guild_mission",
         "guilds.complete_guild_raid",
+    }
+)
+
+# Safety liveness and decisions have a strict one-minute cadence. Keep every
+# required heartbeat and its two consumers off both ordinary timer work and
+# long-running maintenance so queue delay cannot manufacture a safety gap.
+CELERY_TIMER_SAFETY_TASKS = frozenset(
+    {
+        "gameplay.heartbeat_virtual_player_maintenance_attempt_emitter",
+        "gameplay.heartbeat_virtual_player_h01_callback_attempt_emitter",
+        "gameplay.heartbeat_virtual_player_arena_shortage_emitter",
+        "gameplay.aggregate_virtual_player_safety",
+        "gameplay.monitor_virtual_player_safety",
     }
 )
 
@@ -175,6 +186,7 @@ CELERY_TASK_QUEUE_GROUPS = (
     (CELERY_TIMER_QUEUE, CELERY_TIMER_DEFAULT_TASKS),
     (CELERY_TIMER_SCAN_QUEUE, CELERY_TIMER_SCAN_TASKS),
     (CELERY_TIMER_MAINTENANCE_QUEUE, CELERY_TIMER_MAINTENANCE_TASKS),
+    (CELERY_TIMER_SAFETY_QUEUE, CELERY_TIMER_SAFETY_TASKS),
 )
 _CELERY_TASK_NAMES = [task_name for _queue_name, task_names in CELERY_TASK_QUEUE_GROUPS for task_name in task_names]
 if len(_CELERY_TASK_NAMES) != len(set(_CELERY_TASK_NAMES)):
@@ -295,11 +307,16 @@ CELERY_BEAT_SCHEDULE = {
     },
     "scan-arena-virtual-reserves": {
         "task": "gameplay.scan_arena_virtual_reserves",
-        "schedule": crontab(minute="*/5"),
+        "schedule": crontab(minute="*" if ARENA_LOW_POPULATION_MODE else "*/5"),
     },
     "grow-arena-virtual-reserves": {
         "task": "gameplay.grow_arena_virtual_reserves",
-        "schedule": crontab(minute="1-59/5"),
+        "schedule": crontab(minute="*" if ARENA_LOW_POPULATION_MODE else "1-59/5"),
+    },
+    "collect-arena-fill-service-outcomes": {
+        "task": "gameplay.collect_arena_fill_service_outcomes",
+        "schedule": crontab(minute="*"),
+        "options": {"queue": CELERY_TIMER_MAINTENANCE_QUEUE},
     },
     "process-expired-market-listings": {
         "task": "trade.process_expired_listings",

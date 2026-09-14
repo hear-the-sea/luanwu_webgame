@@ -19,7 +19,7 @@ from enum import StrEnum
 from types import SimpleNamespace
 from typing import Any, Mapping, Sequence, cast
 
-from django.db import IntegrityError, transaction
+from django.db import DatabaseError, IntegrityError, transaction
 from django.db.models import Exists, F, OuterRef, Q
 from django.utils import timezone
 
@@ -37,6 +37,13 @@ from gameplay.models import (
     ResourceType,
 )
 from gameplay.services.resources import settle_resource_production_locked, spend_resources_locked
+from gameplay.services.runtime_configs import (
+    RuntimeRoutingError,
+    RuntimeRoutingSnapshot,
+    lock_virtual_player_routing,
+    read_virtual_player_routing,
+    runtime_routing_guard_expression,
+)
 from gameplay.services.virtual_player_state_policy import VIRTUAL_PROFILE_MAINTAINED_STATES
 from guests.models import (
     Guest,
@@ -68,6 +75,8 @@ from guests.utils.recruitment_utils import HERMIT_RARITY, get_recruitment_rarity
 from .archetype_pacing import ArchetypePacing, resolve_archetype_pacing
 from .config import load_virtual_player_config
 from .projection import calculate_guest_arena_power
+from .runtime_assessment import assess_virtual_player_runtime
+from .safety_preflight import check_v2_development_write_preflight
 from .selectors import without_unresolved_external_reconciliations
 
 logger = logging.getLogger(__name__)
@@ -117,6 +126,7 @@ VIRTUAL_RECRUITMENT_SCAN_RETRY_DELAY = timedelta(minutes=15)
 
 
 class VirtualRecruitmentStatus(StrEnum):
+    SAFETY_BLOCKED = "safety_blocked"
     STARTED = "started"
     ALREADY_EXISTS = "already_exists"
     NOT_DUE = "not_due"
@@ -1106,6 +1116,31 @@ def _create_virtual_capacity_terminal_audit_locked(
     )
 
 
+def _recruitment_write_gate(*, now: datetime, lock: bool = False) -> tuple[RuntimeRoutingSnapshot | None, str]:
+    """Read new-action permission; writers acquire routing before profile/manor.
+
+    The savepoint keeps a failed routing/heartbeat read from poisoning an
+    already-authorized completion transaction. A successful routing lock is
+    retained until the caller's outer write transaction commits.
+    """
+
+    try:
+        with transaction.atomic():
+            routing = lock_virtual_player_routing() if lock else read_virtual_player_routing()
+            if not routing.persisted or routing.revision is None:
+                return None, "routing_unavailable"
+            assessment = assess_virtual_player_runtime(routing)
+            if not assessment.training_admission_allowed:
+                return None, assessment.reason or "routing_inactive"
+            preflight = check_v2_development_write_preflight(now=now)
+            if not preflight.allowed:
+                return None, preflight.reason
+            return routing, ""
+    except (DatabaseError, RuntimeRoutingError, TypeError, ValueError):
+        return None, "routing_unavailable"
+
+
+@transaction.atomic
 def _start_virtual_recruitment_batch_locked(
     *,
     profile_id: int,
@@ -1115,10 +1150,19 @@ def _start_virtual_recruitment_batch_locked(
     preferred_operation_id: str | None = None,
     pacing: ArchetypePacing | None = None,
 ) -> VirtualRecruitmentResult:
-    """Settle all due slots in one locked, immediate virtual-player batch."""
+    """Settle a batch, locking routing -> profile -> manor before any writes.
+
+    Direct callers must enter before acquiring profile/manor locks, just like
+    the public scheduling entry points.
+    """
+
+    routing, reason = _recruitment_write_gate(now=now, lock=True)
+    if routing is None:
+        return VirtualRecruitmentResult(VirtualRecruitmentStatus.SAFETY_BLOCKED, reason)
 
     profile = (
         BotProfile.objects.select_for_update()
+        .annotate(recruitment_routing_matches=runtime_routing_guard_expression(routing))
         .filter(
             pk=int(profile_id),
             engine_version=2,
@@ -1129,8 +1173,14 @@ def _start_virtual_recruitment_batch_locked(
     )
     if profile is None or ArenaVirtualReserveMember.objects.filter(profile_id=profile.id).exists():
         return VirtualRecruitmentResult(VirtualRecruitmentStatus.NOT_ELIGIBLE, "profile_not_eligible")
+    if not profile.recruitment_routing_matches:
+        return VirtualRecruitmentResult(VirtualRecruitmentStatus.SAFETY_BLOCKED, "routing_changed")
 
     manor = Manor.objects.select_for_update().get(pk=profile.manor_id)
+    # Recheck after waiting for profile/manor; routing is still locked first.
+    _, reason = _recruitment_write_gate(now=now)
+    if reason:
+        return VirtualRecruitmentResult(VirtualRecruitmentStatus.SAFETY_BLOCKED, reason)
     config = load_virtual_player_config()
     resolved_pacing = pacing or resolve_archetype_pacing(config, str(profile.archetype))
     quota_date = schedules[0].quota_date if schedules else timezone.localdate(now)
@@ -1485,6 +1535,9 @@ def start_virtual_recruitment(
                 operation_id=schedule.operation_id,
                 recruitment_ids=(int(existing.id),),
             )
+        _, reason = _recruitment_write_gate(now=current_time)
+        if reason:
+            return VirtualRecruitmentResult(VirtualRecruitmentStatus.SAFETY_BLOCKED, reason)
         daily_schedules = _next_daily_batch_schedule(
             int(schedule.profile_id),
             now=current_time,
@@ -1613,6 +1666,9 @@ def _refresh_recruitment_due_hint(
     """Update the indexed wake-up hint under the same profile lock boundary."""
 
     with transaction.atomic():
+        _, reason = _recruitment_write_gate(now=now, lock=True)
+        if reason:
+            return
         profile = BotProfile.objects.select_for_update().filter(pk=int(profile_id)).first()
         if profile is None:
             return
@@ -1633,6 +1689,9 @@ def start_next_due_virtual_recruitment(
     pacing: ArchetypePacing | None = None,
 ) -> VirtualRecruitmentResult:
     current_time = _normalize_now(now)
+    _, reason = _recruitment_write_gate(now=current_time)
+    if reason:
+        return VirtualRecruitmentResult(VirtualRecruitmentStatus.SAFETY_BLOCKED, reason)
     schedules = _next_daily_batch_schedule(int(profile_id), now=current_time, pacing=pacing)
     if not schedules:
         return VirtualRecruitmentResult(VirtualRecruitmentStatus.NOT_DUE, "no_due_slot")
@@ -1660,6 +1719,9 @@ def schedule_due_virtual_recruitments(
     normalized_limit = max(0, min(int(limit), VIRTUAL_RECRUITMENT_SCAN_BATCH_SIZE))
     if normalized_limit <= 0:
         return 0
+    _, reason = _recruitment_write_gate(now=current_time)
+    if reason:
+        return 0
     profiles = tuple(
         _eligible_profile_queryset(now=current_time)
         # A NULL hint means that the profile has not been indexed yet.  It is
@@ -1673,6 +1735,8 @@ def schedule_due_virtual_recruitments(
     for profile in profiles:
         pacing = resolve_archetype_pacing(config, str(profile["archetype"]))
         result = start_next_due_virtual_recruitment(int(profile["id"]), now=current_time, pacing=pacing)
+        if result.status is VirtualRecruitmentStatus.SAFETY_BLOCKED:
+            break
         if result.status is VirtualRecruitmentStatus.STARTED:
             started += 1
         _refresh_recruitment_due_hint(
@@ -1701,6 +1765,9 @@ def finalize_virtual_guest_recruitment(
         return False
 
     with transaction.atomic():
+        # Settlement was authorized when queued. Only the automatic follow-up
+        # training needs current permission; never lock routing after profile.
+        _, training_block_reason = _recruitment_write_gate(now=current_time, lock=True)
         queue_identity = (
             GuestRecruitment.objects.filter(pk=int(recruitment_id)).values_list("bot_profile_id", flat=True).first()
         )
@@ -1775,7 +1842,10 @@ def finalize_virtual_guest_recruitment(
             guest=selected.guest,
             rarity=selected.rarity,
         )
-        ensure_auto_training(selected.guest, now=current_time)
+        if not training_block_reason:
+            _, training_block_reason = _recruitment_write_gate(now=current_time)
+        if not training_block_reason:
+            ensure_auto_training(selected.guest, now=current_time)
         _mark_virtual_completion_locked(recruitment, current_time=current_time, result_count=1)
         pacing = resolve_archetype_pacing(load_virtual_player_config(), str(profile.archetype))
         next_schedule = _next_unconsumed_schedule(int(profile.id), now=current_time, pacing=pacing)

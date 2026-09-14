@@ -71,6 +71,7 @@ from core.utils.cache_lock import acquire_action_lock, release_action_lock
 from gameplay.constants import BuildingKeys
 from gameplay.models import (
     ArenaReserveTrainingAssignment,
+    ArenaVirtualReserveMember,
     BotExternalStrengthReconciliation,
     BotInventoryDailyCounter,
     BotMaintenanceAttempt,
@@ -122,6 +123,7 @@ from gameplay.services.runtime_configs import (
     CalibrationRoute,
     RuntimeRoutingError,
     RuntimeRoutingSnapshot,
+    lock_virtual_player_routing,
     read_virtual_player_routing,
 )
 from gameplay.services.technology import (
@@ -375,6 +377,10 @@ def _atomic_if_requested(
 
 V2_MAINTENANCE_ENGINE_VERSION = 2
 SCHEDULED_MAINTENANCE_BATCH_LOCK_TIMEOUT_SECONDS = 180
+# Keep this aligned with the five-minute Arena growth claim lease.  The
+# assignment is written before the execution transaction, so an abandoned
+# ASSIGNED row must age past one full lease before it can be reclaimed.
+_ARENA_TRAINING_ASSIGNMENT_STALE_AFTER = timedelta(minutes=5)
 # Keep the scheduled maintenance slice large enough to drain the configured
 # population without removing the separate hard-cap safety boundary below.
 SCHEDULED_MAINTENANCE_DEFAULT_BATCH_SIZE = 200
@@ -5705,6 +5711,121 @@ def _uncommitted_maintenance_result(
     )
 
 
+def _arena_training_assignment_has_commit_fence(*, member_id: int, operation_id: str) -> bool:
+    """Keep an assignment when its execution may have committed or is uncertain."""
+
+    normalized_operation_id = str(operation_id or "").strip()
+    if not normalized_operation_id:
+        return True
+    if BotMaintenanceExecution.objects.filter(operation_id=normalized_operation_id).exists():
+        return True
+    recovery = BotMaintenanceRecovery.objects.filter(
+        scope=BotMaintenanceRecovery.Scope.ARENA_MEMBER,
+        entity_key=f"member:{int(member_id)}",
+        failure_code=RecoveryFailureClass.COMMIT_UNCERTAIN.value,
+        last_operation_id=normalized_operation_id,
+    ).first()
+    if recovery is not None:
+        # REQUEUED is the explicit durable signal that the old uncertainty
+        # fence has been released for a fresh operation.
+        return recovery.status != BotMaintenanceRecovery.Status.REQUEUED
+    if (
+        BotMaintenanceAttempt.objects.filter(
+            outcome=BotMaintenanceAttempt.Outcome.COMMIT_UNCERTAIN,
+        )
+        .filter(Q(operation_id=normalized_operation_id) | Q(receipt_operation_id=normalized_operation_id))
+        .exists()
+    ):
+        return True
+    return False
+
+
+@transaction.atomic
+def discard_uncommitted_arena_training_assignment(
+    *,
+    member_id: int,
+    round_ordinal: int,
+    action_ordinal_in_round: int,
+    operation_id: str,
+) -> bool:
+    """Remove a reservation made by a known rolled-back arena operation.
+
+    This is intentionally narrower than stale-assignment reclamation in the
+    planner: callers use it only after a recoverable business error, before
+    the growth claim is cleared.  Infrastructure/commit-uncertain paths keep
+    the row as a reconciliation fence.
+    """
+
+    normalized_operation_id = str(operation_id or "").strip()
+    if not normalized_operation_id:
+        return False
+    member = ArenaVirtualReserveMember.objects.select_for_update().filter(pk=int(member_id)).first()
+    if member is None:
+        return False
+    member_operation_id = str(member.growth_operation_id or "").strip()
+    if member_operation_id and member_operation_id != normalized_operation_id:
+        return False
+    if _arena_training_assignment_has_commit_fence(
+        member_id=int(member_id),
+        operation_id=normalized_operation_id,
+    ):
+        return False
+    assignment = (
+        ArenaReserveTrainingAssignment.objects.select_for_update()
+        .filter(
+            member_id=int(member_id),
+            round_ordinal=int(round_ordinal),
+            action_ordinal_in_round=int(action_ordinal_in_round),
+            operation_id=normalized_operation_id,
+            status=ArenaReserveTrainingAssignment.Status.ASSIGNED,
+        )
+        .first()
+    )
+    if assignment is None:
+        return False
+    assignment.delete()
+    logger.warning(
+        "Reclaimed uncommitted arena training assignment: member_id=%s round=%s slot=%s operation_id=%s",
+        int(member_id),
+        int(round_ordinal),
+        int(action_ordinal_in_round),
+        normalized_operation_id,
+        extra={
+            "event": "arena_training_assignment_reclaimed",
+            "member_id": int(member_id),
+            "round_ordinal": int(round_ordinal),
+            "action_ordinal_in_round": int(action_ordinal_in_round),
+            "operation_id": normalized_operation_id,
+            "reason": "known_business_error_without_receipt",
+        },
+    )
+    return True
+
+
+def _arena_training_assignment_is_reclaimable_stale(
+    assignment: ArenaReserveTrainingAssignment,
+    *,
+    member: ArenaVirtualReserveMember | None,
+    current_operation_id: str,
+    now: datetime,
+) -> bool:
+    if assignment.status != ArenaReserveTrainingAssignment.Status.ASSIGNED:
+        return False
+    if assignment.updated_at > now - _ARENA_TRAINING_ASSIGNMENT_STALE_AFTER:
+        return False
+    assignment_operation_id = str(assignment.operation_id or "").strip()
+    if not assignment_operation_id or assignment_operation_id == current_operation_id:
+        return False
+    if member is not None:
+        member_operation_id = str(member.growth_operation_id or "").strip()
+        if member_operation_id and member_operation_id != current_operation_id:
+            return False
+    return not _arena_training_assignment_has_commit_fence(
+        member_id=int(assignment.member_id),
+        operation_id=assignment_operation_id,
+    )
+
+
 @transaction.atomic
 def _persist_arena_training_assignment_from_plan(
     plan: MaintenancePlan,
@@ -5739,29 +5860,77 @@ def _persist_arena_training_assignment_from_plan(
     normalized_action = int(action_ordinal_in_round)
     if not Guest.objects.filter(pk=target_guest_id, manor_id=int(plan.manor_id)).exists():
         raise V2MaintenanceError("arena training assignment target is not owned by the profile Manor")
-    by_slot = (
-        ArenaReserveTrainingAssignment.objects.select_for_update()
-        .filter(
-            member_id=int(member_id),
-            round_ordinal=normalized_round,
-            action_ordinal_in_round=normalized_action,
+
+    # Serialize reclaim against claim takeover/finalization.  A different
+    # active operation owns the member until its result is reconciled.
+    member = ArenaVirtualReserveMember.objects.select_for_update().filter(pk=int(member_id)).first()
+    if member is None:
+        raise V2MaintenanceError("arena training member no longer exists")
+    now = timezone.now()
+
+    def load_conflicts() -> tuple[
+        ArenaReserveTrainingAssignment | None,
+        ArenaReserveTrainingAssignment | None,
+    ]:
+        by_slot = (
+            ArenaReserveTrainingAssignment.objects.select_for_update()
+            .filter(
+                member_id=int(member_id),
+                round_ordinal=normalized_round,
+                action_ordinal_in_round=normalized_action,
+            )
+            .first()
         )
-        .first()
-    )
-    by_guest = (
-        ArenaReserveTrainingAssignment.objects.select_for_update()
-        .filter(
-            member_id=int(member_id),
-            round_ordinal=normalized_round,
-            guest_id=target_guest_id,
+        by_guest = (
+            ArenaReserveTrainingAssignment.objects.select_for_update()
+            .filter(
+                member_id=int(member_id),
+                round_ordinal=normalized_round,
+                guest_id=target_guest_id,
+            )
+            .first()
         )
-        .first()
-    )
+        return by_slot, by_guest
+
+    by_slot, by_guest = load_conflicts()
+    stale_assignments = {
+        candidate.id: candidate
+        for candidate in (by_slot, by_guest)
+        if candidate is not None
+        and _arena_training_assignment_is_reclaimable_stale(
+            candidate,
+            member=member,
+            current_operation_id=normalized_operation_id,
+            now=now,
+        )
+    }
+    for stale_assignment in stale_assignments.values():
+        stale_assignment.delete()
+        logger.warning(
+            "Reclaimed stale arena training assignment before retry: "
+            "member_id=%s round=%s slot=%s guest_id=%s operation_id=%s",
+            int(member_id),
+            int(stale_assignment.round_ordinal),
+            int(stale_assignment.action_ordinal_in_round),
+            int(stale_assignment.guest_id),
+            str(stale_assignment.operation_id),
+            extra={
+                "event": "arena_training_assignment_stale_reclaimed",
+                "member_id": int(member_id),
+                "round_ordinal": int(stale_assignment.round_ordinal),
+                "action_ordinal_in_round": int(stale_assignment.action_ordinal_in_round),
+                "guest_id": int(stale_assignment.guest_id),
+                "previous_operation_id": str(stale_assignment.operation_id),
+                "operation_id": normalized_operation_id,
+            },
+        )
+    if stale_assignments:
+        by_slot, by_guest = load_conflicts()
     if by_slot is not None and int(by_slot.guest_id) != target_guest_id:
         raise V2MaintenanceError("arena training slot already belongs to another guest")
     if by_guest is not None and int(by_guest.action_ordinal_in_round) != normalized_action:
         raise V2MaintenanceError("arena training guest was assigned to multiple slots in one round")
-    assignment = by_guest or by_slot
+    assignment: ArenaReserveTrainingAssignment | None = by_guest if by_guest is not None else by_slot
     if assignment is None:
         ArenaReserveTrainingAssignment.objects.create(
             member_id=int(member_id),
@@ -9033,6 +9202,7 @@ def _run_arena_v2_healing_sweep(
     now: datetime | None,
     arena_member_id: int,
     arena_round_ordinal: int,
+    routing_revision: int | None = None,
 ) -> None:
     """Run one non-budgeted arena preamble for a durable arena round.
 
@@ -9049,11 +9219,23 @@ def _run_arena_v2_healing_sweep(
     policy_version = BotProfile.objects.filter(pk=profile_id).values_list("policy_version", flat=True).first()
     if int(policy_version or 0) != 2:
         return
-    run_arena_guest_healing_sweep(
-        profile_id,
-        operation_id=sweep_operation_id,
-        now=now,
-    )
+    # Serialize this free roster write with the persisted routing transition.
+    # The main maintenance plan rechecks routing later, but that check cannot
+    # protect a preamble which writes before the plan is executed.
+    try:
+        with transaction.atomic():
+            routing = lock_virtual_player_routing()
+            if routing.maintenance_mode is not MaintenanceMode.V2_ACTIVE or (
+                routing_revision is not None and routing.revision != int(routing_revision)
+            ):
+                return
+            run_arena_guest_healing_sweep(
+                profile_id,
+                operation_id=sweep_operation_id,
+                now=now,
+            )
+    except RuntimeRoutingError:
+        return
 
 
 def accelerate_virtual_player_growth(
@@ -9192,6 +9374,7 @@ def accelerate_virtual_player_growth(
             now=resolved_now,
             arena_member_id=int(_arena_member_id),
             arena_round_ordinal=int(_arena_round_ordinal),
+            routing_revision=getattr(routing, "revision", None),
         )
     try:
         result = maintain_virtual_player_v2(

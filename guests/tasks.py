@@ -202,8 +202,12 @@ def scan_guest_training(limit: int = 200) -> int:
     if remaining <= 0:
         return count
 
+    from gameplay.services.virtual_player_core.selectors import virtual_guest_owner_expression
+    from gameplay.services.virtual_player_core.training_gate import virtual_auto_training_write_guard
+
     orphan_query = (
         Guest.objects.select_related("template")
+        .filter(~virtual_guest_owner_expression() | virtual_auto_training_write_guard(now=now))
         .filter(
             status=GuestStatus.IDLE,
             level__lt=int(GUEST.MAX_LEVEL),

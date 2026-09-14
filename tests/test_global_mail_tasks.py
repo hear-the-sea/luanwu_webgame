@@ -7,7 +7,7 @@ from django.db import DatabaseError
 from django.utils import timezone
 
 from core.exceptions import MessageError
-from gameplay.models import GlobalMailCampaign, GlobalMailDelivery, Message
+from gameplay.models import BotProfile, GlobalMailCampaign, GlobalMailDelivery, Message
 from gameplay.services.manor.core import ensure_manor
 from gameplay.tasks.global_mail import (
     FAILED_GLOBAL_MAIL_MANOR_IDS_TTL,
@@ -90,6 +90,40 @@ def test_backfill_global_mail_campaign_task_is_idempotent(django_user_model):
     assert GlobalMailDelivery.objects.filter(campaign=campaign, manor=manor_a).exists()
     assert GlobalMailDelivery.objects.filter(campaign=campaign, manor=manor_b).exists()
     assert Message.objects.filter(title="任务补发奖励").count() == 2
+
+
+@pytest.mark.django_db
+def test_backfill_global_mail_campaign_task_skips_virtual_players(django_user_model):
+    real_user = django_user_model.objects.create_user(username="global_mail_task_real", password="pass123")
+    virtual_user = django_user_model.objects.create_user(username="global_mail_task_virtual", password="pass123")
+    real_manor = ensure_manor(real_user)
+    virtual_manor = ensure_manor(virtual_user)
+    now = timezone.now()
+    BotProfile.objects.create(
+        manor=virtual_manor,
+        prestige_band="newbie",
+        growth_seed=994,
+        next_growth_at=now,
+        abandon_at=now + timedelta(days=1),
+        retire_at=now + timedelta(days=2),
+    )
+    campaign = GlobalMailCampaign.objects.create(
+        key="global_mail_task_real_only",
+        kind=Message.Kind.REWARD,
+        title="异步真实玩家奖励",
+        body="虚拟玩家跳过",
+        attachments={"resources": {"grain": 88}},
+        is_active=True,
+    )
+
+    result = backfill_global_mail_campaign_task.run(campaign.id)
+
+    assert result["status"] == "ok"
+    assert result["scanned"] == 1
+    assert result["delivered"] == 1
+    assert GlobalMailDelivery.objects.filter(campaign=campaign, manor=real_manor).exists()
+    assert GlobalMailDelivery.objects.filter(campaign=campaign, manor=virtual_manor).exists() is False
+    assert Message.objects.filter(title="异步真实玩家奖励").count() == 1
 
 
 @pytest.mark.django_db

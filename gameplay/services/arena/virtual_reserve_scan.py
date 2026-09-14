@@ -23,6 +23,7 @@ from gameplay.services.virtual_player_core.recovery import (
     recovery_is_blocked,
 )
 
+from .virtual_fill_service import observe_fill_service
 from .virtual_reserve_fill import fill_due_coop_reserve, fill_due_tournament_reserve
 from .virtual_reserve_pool import replenish_virtual_reserve
 from .virtual_reserve_reconcile import reconcile_coop_demand, reconcile_tournament_demand
@@ -149,6 +150,7 @@ def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]
             else:
                 continue
             if reconciled_demand is None:
+                observe_fill_service(mode=mode, event_id=event_id, now=current_time, phase="scan")
                 clear_recovery_failure(
                     scope=BotMaintenanceRecovery.Scope.ARENA_DEMAND,
                     entity_key=entity_key,

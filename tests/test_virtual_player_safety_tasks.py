@@ -8,6 +8,7 @@ from django.conf import settings
 
 import gameplay.tasks as gameplay_tasks
 import gameplay.tasks.virtual_players as virtual_player_tasks
+from gameplay.services.virtual_player_core.config import MaintenanceMode
 
 
 @pytest.mark.parametrize(
@@ -79,10 +80,19 @@ def test_monitor_finalizes_before_deciding_and_heartbeats_after_success(
     cycle = SimpleNamespace(
         finalized_windows=[SimpleNamespace(window_id="daily:20260728T000000Z")],
         monitor=SimpleNamespace(
-            decisions=[SimpleNamespace(window_id="hourly:20260728T080000Z")],
+            decisions=[SimpleNamespace(window_id="hourly:20260728T080000Z", warning_reasons=())],
             consumed_count=1,
             paused=False,
             cas_conflicts=0,
+        ),
+    )
+    monkeypatch.setattr(
+        virtual_player_tasks,
+        "read_virtual_player_routing",
+        lambda: SimpleNamespace(
+            maintenance_mode=MaintenanceMode.V2_PAUSED,
+            persisted=True,
+            pause_reason="manual",
         ),
     )
     monkeypatch.setattr(
@@ -111,6 +121,9 @@ def test_monitor_finalizes_before_deciding_and_heartbeats_after_success(
         "decision_count": 1,
         "consumed_count": 1,
         "paused": False,
+        "routing_mode": "v2_paused",
+        "routing_pause_reason": "manual",
+        "warning_reasons": [],
         "cas_conflicts": 0,
         "window_ids": ["hourly:20260728T080000Z"],
     }
@@ -174,12 +187,7 @@ def test_all_safety_tasks_are_exported_routed_and_scheduled() -> None:
     }
 
     for schedule_name, task_name in expected.items():
-        expected_queue = (
-            settings.CELERY_TIMER_MAINTENANCE_QUEUE
-            if task_name in {"gameplay.aggregate_virtual_player_safety", "gameplay.monitor_virtual_player_safety"}
-            else settings.CELERY_TIMER_QUEUE
-        )
-        assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": expected_queue}
+        assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": settings.CELERY_TIMER_SAFETY_QUEUE}
         entry = settings.CELERY_BEAT_SCHEDULE[schedule_name]
         assert entry["task"] == task_name
         assert entry["schedule"]._orig_minute == "*"

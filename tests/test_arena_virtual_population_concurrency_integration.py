@@ -16,10 +16,6 @@ from gameplay.models import (
     BotRuntimeRoutingState,
 )
 from gameplay.services.arena import virtual_reserve_pool
-from gameplay.services.arena.virtual_reserve_growth_budget import (
-    ARENA_GROWTH_BUDGET_MAX_ATTEMPTS,
-    ARENA_GROWTH_BUDGET_WINDOW,
-)
 from gameplay.services.arena.virtual_reserve_pool import (
     evaluate_bot_lineup,
     grow_due_virtual_reserves,
@@ -173,13 +169,14 @@ def test_two_growth_workers_issue_one_claim_and_execute_without_arena_locks(
     member.refresh_from_db()
     assert all(not thread.is_alive() for thread in threads)
     assert errors == []
-    assert sorted(results) == [0, ARENA_GROWTH_BUDGET_MAX_ATTEMPTS]
-    assert len(calls) == ARENA_GROWTH_BUDGET_MAX_ATTEMPTS
+    assert sorted(results) == [0, 1]
+    assert len(calls) == 1
     assert len({operation_id for operation_id, _attempt, _in_atomic in calls}) == len(calls)
     assert all(operation_id.startswith("arena-growth-") for operation_id, _attempt, _in_atomic in calls)
     assert all((attempt, in_atomic) == (1, False) for _operation_id, attempt, in_atomic in calls)
     assert member.growth_claim_token is None
-    assert member.next_acceleration_at == now + ARENA_GROWTH_BUDGET_WINDOW
+    assert member.growth_retry_reason == "profile_busy"
+    assert member.next_acceleration_at > now
 
 
 @pytest.mark.django_db(transaction=True)

@@ -12,6 +12,19 @@
     <div class="tw-section-header battle-report-title">
         <div>
             <h1>= {{ report_title }} =</h1>
+            {% if arena_matchup %}
+                <div class="battle-report-matchup" aria-label="竞技场对战双方">
+                    <div class="battle-report-side-name attacker">
+                        <span>进攻方</span>
+                        <strong>{{ arena_matchup.attacker_name }}</strong>
+                    </div>
+                    <span class="battle-report-matchup-vs" aria-hidden="true">对阵</span>
+                    <div class="battle-report-side-name defender">
+                        <span>防守方</span>
+                        <strong>{{ arena_matchup.defender_name }}</strong>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 

@@ -23,7 +23,7 @@ DEFAULT_ARENA_RULES: dict[str, Any] = {
     },
     "runtime": {
         "round_interval_seconds": 600,
-        "virtual_fill_wait_seconds": 18_000,
+        "virtual_fill_wait_seconds": 7_200,
         "completed_retention_seconds": 600,
         "round_retry_seconds": 30,
         "recruiting_lock_key": "arena:recruiting_tournament:create",

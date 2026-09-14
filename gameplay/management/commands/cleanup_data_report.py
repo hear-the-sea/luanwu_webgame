@@ -17,11 +17,16 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from django.apps import apps
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.db.models import Max, Min
 from django.utils import timezone
 
-from .cleanup_old_data import CLEANUP_CONFIG
+from gameplay.services.arena.fill_service_retention import (
+    eligible_fill_service_episodes,
+    fill_service_outcomes_for_retention,
+)
+
+from .cleanup_old_data import ARENA_FILL_SERVICE_RETENTION_DAYS, CLEANUP_CONFIG, FILL_SERVICE_MODEL_PATHS
 
 
 class Command(BaseCommand):
@@ -32,7 +37,7 @@ class Command(BaseCommand):
             "--days",
             type=int,
             default=None,
-            help="覆盖所有模型的保留天数（默认使用各模型配置）",
+            help="覆盖所有模型的保留天数，须非负（默认使用各模型配置）",
         )
         parser.add_argument(
             "--model",
@@ -48,6 +53,8 @@ class Command(BaseCommand):
 
     def handle(self, *args: object, **options: Any) -> None:
         override_days = options["days"]
+        if override_days is not None and override_days < 0:
+            raise CommandError("days must be non-negative")
         target_model = options["model"]
         json_mode = bool(options["json"])
 
@@ -58,6 +65,18 @@ class Command(BaseCommand):
             "stale_records": 0,
             "models": 0,
         }
+
+        if target_model is None or target_model in FILL_SERVICE_MODEL_PATHS:
+            fill_rows = self._build_fill_service_rows(
+                days=override_days if override_days is not None else ARENA_FILL_SERVICE_RETENTION_DAYS,
+                target_model=target_model,
+                now=now,
+            )
+            rows.extend(fill_rows)
+            for row in fill_rows:
+                totals["models"] += 1
+                totals["total_records"] += int(row["total_records"])
+                totals["stale_records"] += int(row["stale_records"])
 
         for model_path, (default_days, time_field) in CLEANUP_CONFIG.items():
             if target_model and model_path != target_model:
@@ -84,6 +103,61 @@ class Command(BaseCommand):
             return
 
         self._print_human_report(report)
+
+    def _build_fill_service_rows(self, *, days: int, target_model: str | None, now: datetime) -> list[dict[str, Any]]:
+        cutoff = now - timedelta(days=days)
+        episodes = eligible_fill_service_episodes(cutoff=cutoff)
+        outcomes = fill_service_outcomes_for_retention(cutoff=cutoff)
+        rows: list[dict[str, Any]] = []
+        if target_model in (None, "gameplay.ArenaFillServiceEpisode"):
+            rows.append(
+                self._build_retention_row(
+                    "gameplay.ArenaFillServiceEpisode",
+                    episodes,
+                    days,
+                    "last_observed_at",
+                    now=now,
+                )
+            )
+        if target_model in (None, "gameplay.ArenaFillServiceOutcome"):
+            rows.append(
+                self._build_retention_row(
+                    "gameplay.ArenaFillServiceOutcome",
+                    outcomes,
+                    days,
+                    "published_at",
+                    now=now,
+                )
+            )
+        return rows
+
+    def _build_retention_row(
+        self,
+        model_path: str,
+        queryset,
+        days: int,
+        time_field: str,
+        *,
+        now: datetime,
+    ) -> dict[str, Any]:
+        model = queryset.model
+        total_records = int(model.objects.count())
+        stale_records = int(queryset.count())
+        window = queryset.aggregate(oldest=Min(time_field), newest=Max(time_field))
+        oldest = window.get("oldest")
+        newest = window.get("newest")
+        return {
+            "model": model_path,
+            "status": "ok",
+            "retention_days": int(days),
+            "time_field": time_field,
+            "cutoff": (now - timedelta(days=days)).isoformat(),
+            "total_records": total_records,
+            "stale_records": stale_records,
+            "stale_ratio": round((stale_records / total_records) if total_records else 0.0, 4),
+            "oldest": oldest.isoformat() if oldest else None,
+            "newest": newest.isoformat() if newest else None,
+        }
 
     def _build_model_row(self, *, model_path: str, days: int, time_field: str, now: datetime) -> dict[str, Any]:
         try:

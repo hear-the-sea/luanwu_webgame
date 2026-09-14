@@ -34,6 +34,7 @@ from .safety_metrics import (
     SAFETY_HEARTBEAT_METRIC,
     MaintenanceAttemptResult,
 )
+from .safety_policy import classify_reasons, safety_policy_mode
 from .safety_provider import (
     HARD_VIOLATION_METRIC_NAME,
     SAFETY_WINDOW_GRACE,
@@ -94,6 +95,7 @@ class SafetyWindowDecision:
     window_end_at: datetime
     should_pause: bool
     pause_reasons: tuple[str, ...]
+    warning_reasons: tuple[str, ...] = ()
 
     @property
     def pause_reason(self) -> str:
@@ -1199,13 +1201,16 @@ def evaluate_finalized_safety_window(
             reasons.append(f"arena_shortage_absolute_increase:{scope.label()}")
 
     unique_reasons = tuple(dict.fromkeys(reasons))
+    blocking_reasons, warning_reasons = classify_reasons(unique_reasons)
+    effective_reasons = blocking_reasons if safety_policy_mode() == "scoped" else unique_reasons
     return SafetyWindowDecision(
         window_id=window.window_id,
         window_kind=window.kind,
         window_start_at=window.window_start_at.astimezone(UTC),
         window_end_at=window.window_end_at.astimezone(UTC),
-        should_pause=bool(unique_reasons),
-        pause_reasons=unique_reasons,
+        should_pause=bool(effective_reasons),
+        pause_reasons=effective_reasons,
+        warning_reasons=warning_reasons,
     )
 
 
@@ -1269,6 +1274,7 @@ def _allow_planned_restart_gap(
         window_end_at=decision.window_end_at,
         should_pause=False,
         pause_reasons=(),
+        warning_reasons=decision.warning_reasons,
     )
 
 
@@ -1308,6 +1314,7 @@ def _apply_with_cas_retry(
                 pause_reason=decision.pause_reason,
                 resume_if_healthy=bool(expected_pause_reason),
                 expected_pause_reason=expected_pause_reason,
+                warning_reasons=decision.warning_reasons,
             )
         except runtime_configs.RuntimeRoutingConflict:
             conflicts += 1

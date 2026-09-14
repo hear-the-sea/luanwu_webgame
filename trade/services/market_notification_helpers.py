@@ -77,7 +77,7 @@ def send_purchase_notifications(
             f"- 数量：{listing.quantity}\n"
             f"- 单价：{listing.unit_price:,} 银两\n"
             f"- 总价：{listing.total_price:,} 银两\n"
-            f"- 卖家：{listing.seller.user.username}\n"
+            f"- 卖家：{listing.seller.display_name}\n"
             f"- 成交时间：{listing.sold_at.strftime('%Y-%m-%d %H:%M:%S')}"
         ),
     )
@@ -97,7 +97,7 @@ def send_purchase_notifications(
                 f"- 成交价：{listing.total_price:,} 银两\n"
                 f"- 税费（10%）：{tax_amount:,} 银两\n"
                 f"- 实际到账：{seller_received:,} 银两\n"
-                f"- 买家：{buyer.user.username}\n"
+                f"- 买家：{buyer.display_name}\n"
                 f"- 成交时间：{listing.sold_at.strftime('%Y-%m-%d %H:%M:%S')}"
             ),
         )

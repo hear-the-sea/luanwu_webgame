@@ -5,10 +5,10 @@ from io import StringIO
 
 import pytest
 from django.core.cache import cache
-from django.core.management import call_command
+from django.core.management import CommandError, call_command
 from django.utils import timezone
 
-from gameplay.models import Message
+from gameplay.models import ArenaFillServiceEpisode, ArenaFillServiceOutcome, Message
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.utils.cache import CacheKeys
 
@@ -101,3 +101,75 @@ def test_cleanup_old_data_command_dry_run_reports_all_protected_rows(django_user
         assert "模拟完成：共将删除 1 条记录" in output
     finally:
         cache.delete(cache_key)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("target_model", ["gameplay.ArenaFillServiceEpisode", "gameplay.ArenaFillServiceOutcome"])
+def test_cleanup_old_data_command_cleans_fill_service_outcomes_before_episodes(target_model):
+    old_at = timezone.now() - timedelta(days=2)
+    episode = ArenaFillServiceEpisode.objects.create(
+        mode="coop",
+        event_id=7001,
+        virtual_fill_at=old_at,
+        checkpoint_at=old_at,
+        first_observed_at=old_at,
+        last_observed_at=old_at,
+        closed_at=old_at,
+        terminal_reason="fulfilled",
+        slo_result="human_satisfied",
+        last_snapshot={},
+        pending_outcomes={},
+        publication_pending=False,
+    )
+    outcome = ArenaFillServiceOutcome.objects.create(
+        episode=episode,
+        phase="slo",
+        result="human_satisfied",
+        logical_at=old_at,
+        observed_at=old_at,
+        payload={"result": "human_satisfied"},
+    )
+    ArenaFillServiceOutcome.objects.filter(pk=outcome.pk).update(published_at=old_at)
+    unpublished = ArenaFillServiceEpisode.objects.create(
+        mode="coop",
+        event_id=7002,
+        virtual_fill_at=old_at,
+        checkpoint_at=old_at,
+        first_observed_at=old_at,
+        last_observed_at=old_at,
+        closed_at=old_at,
+        terminal_reason="fulfilled",
+        slo_result="human_satisfied",
+        last_snapshot={},
+        pending_outcomes={},
+        publication_pending=False,
+    )
+    stdout = StringIO()
+
+    call_command(
+        "cleanup_old_data",
+        model=target_model,
+        days=1,
+        batch_size=1,
+        stdout=stdout,
+    )
+
+    assert not ArenaFillServiceEpisode.objects.filter(pk=episode.pk).exists()
+    assert not ArenaFillServiceOutcome.objects.filter(pk=outcome.pk).exists()
+    assert ArenaFillServiceEpisode.objects.filter(pk=unpublished.pk).exists()
+    assert "期次 1 条、结果 1 条" in stdout.getvalue()
+
+
+@pytest.mark.django_db
+def test_cleanup_old_data_command_rejects_non_positive_batch_size():
+    with pytest.raises(CommandError, match="batch-size must be at least 1"):
+        call_command("cleanup_old_data", batch_size=0)
+
+
+@pytest.mark.parametrize(
+    "command,options",
+    [("cleanup_old_data", {}), ("cleanup_old_data", {"dry_run": True}), ("cleanup_data_report", {})],
+)
+def test_cleanup_commands_reject_negative_days_before_database_access(command, options):
+    with pytest.raises(CommandError, match="days must be non-negative"):
+        call_command(command, days=-1, **options)

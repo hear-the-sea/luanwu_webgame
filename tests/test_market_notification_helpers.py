@@ -155,8 +155,8 @@ def test_send_purchase_notifications_returns_mail_flags_and_notifies_seller():
     def _safe_notify_user(user_id, payload, *, log_context):
         calls["notifications"].append((user_id, payload, log_context))
 
-    buyer = SimpleNamespace(user=SimpleNamespace(username="buyer"))
-    seller = SimpleNamespace(user=SimpleNamespace(username="seller"), user_id=9)
+    buyer = SimpleNamespace(display_name="买家庄园", user=SimpleNamespace(username="buyer"))
+    seller = SimpleNamespace(display_name="卖家庄园", user=SimpleNamespace(username="seller"), user_id=9)
     listing = SimpleNamespace(
         item_template=SimpleNamespace(name="青锋剑", key="equip_qingfeng"),
         quantity=2,
@@ -179,6 +179,10 @@ def test_send_purchase_notifications_returns_mail_flags_and_notifies_seller():
     assert buyer_sent is True
     assert seller_sent is True
     assert len(calls["messages"]) == 2
+    assert "- 卖家：卖家庄园\n" in calls["messages"][0]["body"]
+    assert "- 买家：买家庄园\n" in calls["messages"][1]["body"]
+    assert "- 卖家：seller\n" not in calls["messages"][0]["body"]
+    assert "- 买家：buyer\n" not in calls["messages"][1]["body"]
     assert calls["notifications"] == [
         (
             9,
@@ -196,13 +200,13 @@ def test_send_purchase_notifications_returns_mail_flags_and_notifies_seller():
 
 
 def test_send_purchase_notifications_skips_seller_branch_without_seller_id():
-    buyer = SimpleNamespace(user=SimpleNamespace(username="buyer"))
+    buyer = SimpleNamespace(display_name="买家庄园", user=SimpleNamespace(username="buyer"))
     listing = SimpleNamespace(
         item_template=SimpleNamespace(name="匿名物品", key="item"),
         quantity=1,
         total_price=100,
         unit_price=100,
-        seller=SimpleNamespace(user=SimpleNamespace(username="npc"), user_id=0),
+        seller=SimpleNamespace(display_name="NPC庄园", user=SimpleNamespace(username="npc"), user_id=0),
         seller_id=None,
         sold_at=SimpleNamespace(strftime=lambda _fmt: "2026-03-12 12:00:00"),
     )

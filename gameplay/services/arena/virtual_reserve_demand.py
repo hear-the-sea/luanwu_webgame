@@ -10,11 +10,12 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
-from common.utils.celery import safe_apply_async
+from common.utils.celery import safe_apply_async, safe_apply_async_with_dedup
 from gameplay.models import ArenaCoopEntry, ArenaCoopEvent, ArenaEntry, ArenaTournament, ArenaVirtualDemand
 from gameplay.services.virtual_player_core.population_runtime import merge_population_recompute_demand_for_prestige
 from gameplay.services.virtual_player_core.runtime_assessment import assess_virtual_player_runtime
 
+from .low_population_policy import low_population_enabled
 from .virtual_lineups import lineup_power
 from .virtual_reserve_policy import RESERVE_MINIMUM as POLICY_RESERVE_MINIMUM
 from .virtual_reserve_policy import RESERVE_MULTIPLIER as POLICY_RESERVE_MULTIPLIER
@@ -55,6 +56,15 @@ class DemandReconcileTransition:
 
 def queue_virtual_reserve_reconcile(mode: str, event_id: int) -> bool:
     task = current_app.signature("gameplay.reconcile_arena_virtual_reserve")
+    if low_population_enabled():
+        return safe_apply_async_with_dedup(
+            task,
+            dedup_key=f"arena-low-population-reconcile:{mode}:{int(event_id)}",
+            dedup_timeout=30,
+            args=[str(mode), int(event_id)],
+            logger=logger,
+            log_message="arena virtual reserve reconcile dispatch failed; relying on periodic scan",
+        )
     return safe_apply_async(
         task,
         args=[str(mode), int(event_id)],

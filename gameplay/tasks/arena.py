@@ -10,6 +10,7 @@ from django.utils import timezone
 import gameplay.services.arena.coop_core as arena_coop_core
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.services.arena.core import cleanup_expired_tournaments, run_due_arena_rounds, start_ready_tournaments
+from gameplay.services.arena.virtual_fill_service import collect_fill_service_outcomes, observe_fill_service
 from gameplay.services.arena.virtual_reserve_demand import wake_active_arena_demands_for_population_region
 from gameplay.services.arena.virtual_reserve_observability import (
     ARENA_SHORTAGE_METRIC_RETRY_MAX_ATTEMPTS,
@@ -100,6 +101,7 @@ def reconcile_arena_virtual_reserve(mode: str, event_id: int) -> dict[str, int]:
         demand = reconcile_coop_demand(event_id)
     else:
         raise ValueError(f"unsupported arena virtual reserve mode: {mode}")
+    observe_fill_service(mode=mode, event_id=event_id, phase="reconcile")
     if demand is None:
         return {"reconciled": 0, "ready": 0, "training": 0}
     result = replenish_virtual_reserve(demand.id)
@@ -214,6 +216,11 @@ def retry_arena_shortage_metric(
                 return {"recorded": 0, "retry_scheduled": 1}
         raise RuntimeError("arena shortage metric retry exhausted") from exc
     return {"recorded": 1, "retry_scheduled": 0}
+
+
+@shared_task(name="gameplay.collect_arena_fill_service_outcomes")
+def collect_arena_fill_service_outcomes(limit: int = 100) -> dict[str, int]:
+    return collect_fill_service_outcomes(limit=limit)
 
 
 @shared_task(name="gameplay.grow_arena_virtual_reserves")

@@ -266,6 +266,14 @@ API_DOCS_REQUIRE_AUTH = env("DJANGO_API_DOCS_REQUIRE_AUTH", "0" if DEBUG else "1
 # Temporary registration throttle switch; validation and email quotas still apply.
 REGISTRATION_RATE_LIMIT_ENABLED = env("DJANGO_REGISTRATION_RATE_LIMIT_ENABLED", "1") != "0"
 
+# Explicit deployment opt-in; existing activity deadlines remain frozen.
+ARENA_LOW_POPULATION_MODE = env("ARENA_LOW_POPULATION_MODE", "0").strip().lower() in {"1", "true", "yes", "on"}
+ARENA_LOW_POPULATION_WAIT_SECONDS = int(env("ARENA_LOW_POPULATION_WAIT_SECONDS", "900"))
+ARENA_LOW_POPULATION_COOP_WAIT_SECONDS = int(env("ARENA_LOW_POPULATION_COOP_WAIT_SECONDS", "1800"))
+VIRTUAL_PLAYER_ARENA_SAFETY_POLICY = env("VIRTUAL_PLAYER_ARENA_SAFETY_POLICY", "scoped").strip().lower()
+if VIRTUAL_PLAYER_ARENA_SAFETY_POLICY not in {"legacy", "shadow", "scoped"}:
+    raise ValueError("VIRTUAL_PLAYER_ARENA_SAFETY_POLICY must be legacy, shadow, or scoped")
+
 # Trusted reverse proxy addresses (exact IPs or CIDR), comma-separated.
 trusted_proxy_ips_str = env("DJANGO_TRUSTED_PROXY_IPS", "")
 TRUSTED_PROXY_IPS = [ip.strip() for ip in trusted_proxy_ips_str.split(",") if ip.strip()]
@@ -313,6 +321,14 @@ ARENA_SHORTAGE_BASELINE_BOOTSTRAP_EARLY_GAME_MAX_RATIO = min(
 ARENA_SHORTAGE_BASELINE_BOOTSTRAP_TTL_HOURS = max(
     1,
     min(24 * 30, int(env("DJANGO_ARENA_SHORTAGE_BASELINE_BOOTSTRAP_TTL_HOURS", "168"))),
+)
+# Fill-service evidence is operational history, not a forever-growing event
+# log. Keep enough history for rollout comparison while allowing the scheduled
+# maintenance task to bound database growth.
+ARENA_FILL_SERVICE_RETENTION_DAYS = max(30, int(env("ARENA_FILL_SERVICE_RETENTION_DAYS", "90")))
+VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS = max(
+    30,
+    int(env("VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS", "180")),
 )
 VIRTUAL_PLAYER_SAFETY_AUTO_RESUME_CLEAN_WINDOWS = max(
     1,

@@ -24,8 +24,66 @@ from ..models import (
     BotPopulationRecomputeDemand,
     BotProfile,
     BotRuntimeRoutingState,
+    BotSafetyDecisionAudit,
     BotVirtualPlayerHealth,
 )
+
+
+@admin.register(BotSafetyDecisionAudit)
+class BotSafetyDecisionAuditAdmin(admin.ModelAdmin):
+    list_display = (
+        "created_at_label",
+        "window_label",
+        "policy_mode_label",
+        "operation_label",
+        "effective_pause_label",
+        "scoped_policy_pause_label",
+        "resulting_mode_label",
+        "resulting_revision_label",
+    )
+    list_filter = ("policy_mode", "operation", "effective_pause")
+    search_fields = ("window_id", "previous_reason", "resulting_reason")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    @admin.display(ordering="created_at", description="创建时间")
+    def created_at_label(self, obj: BotSafetyDecisionAudit):
+        return obj.created_at
+
+    @admin.display(ordering="window_id", description="窗口编号")
+    def window_label(self, obj: BotSafetyDecisionAudit) -> str:
+        return obj.window_id
+
+    @admin.display(ordering="policy_mode", description="策略模式")
+    def policy_mode_label(self, obj: BotSafetyDecisionAudit) -> str:
+        return obj.policy_mode
+
+    @admin.display(ordering="operation", description="操作")
+    def operation_label(self, obj: BotSafetyDecisionAudit) -> str:
+        return obj.operation
+
+    @admin.display(ordering="effective_pause", description="当前策略暂停决定", boolean=True)
+    def effective_pause_label(self, obj: BotSafetyDecisionAudit) -> bool:
+        return obj.effective_pause
+
+    @admin.display(ordering="scoped_pause", description="作用域策略暂停决定", boolean=True)
+    def scoped_policy_pause_label(self, obj: BotSafetyDecisionAudit) -> bool:
+        return obj.scoped_pause
+
+    @admin.display(ordering="resulting_mode", description="最终模式")
+    def resulting_mode_label(self, obj: BotSafetyDecisionAudit) -> str:
+        return obj.resulting_mode
+
+    @admin.display(ordering="resulting_revision", description="最终版本号")
+    def resulting_revision_label(self, obj: BotSafetyDecisionAudit) -> int:
+        return obj.resulting_revision
 
 
 class DueMaintenanceFilter(admin.SimpleListFilter):

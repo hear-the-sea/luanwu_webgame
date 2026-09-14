@@ -4,7 +4,6 @@ import yaml
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 CIVIL_BLUE_PLUS_BOOK_KEYS = {
-    "book_taiyi_wind",
     "book_flower_rain",
     "book_soul_erode",
     "book_red_lotus_dance",

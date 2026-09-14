@@ -1719,6 +1719,28 @@ def _reactivate_or_create_virtual_player(
                 maintained_count=maintained_count,
             )
 
+    # Structural population growth retains its existing capacity rules. Arena-
+    # only expansion additionally shares the same rolling ledger as reserve
+    # reactivation, at the actual transactional mutation boundary.
+    if require_population_deficit and current_cell is not None and current_cell.structural_deficit <= 0:
+        from gameplay.services.arena.low_population_budget import reserve_population_cell_materialization_locked
+
+        if (
+            reserve_population_cell_materialization_locked(
+                region=str(region),
+                prestige_band=str(prestige_band),
+                config=config,
+                now=now,
+            )
+            is None
+        ):
+            return PopulationMutationResult(
+                status=PopulationMutationStatus.UNAVAILABLE,
+                profile=None,
+                hard_cap=hard_cap,
+                maintained_count=maintained_count,
+            )
+
     retired_queryset = (
         BotProfile.objects.select_for_update(skip_locked=True)
         .select_related("manor")

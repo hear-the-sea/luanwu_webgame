@@ -5,11 +5,13 @@ from datetime import datetime
 from time import monotonic
 
 from celery import shared_task
+from django.db import DatabaseError
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.services.jail import VIRTUAL_JAIL_CLEANUP_DEFAULT_BATCH_SIZE, cleanup_virtual_player_jail
+from gameplay.services.runtime_configs import RuntimeRoutingError, read_virtual_player_routing
 from gameplay.services.virtual_player_core.external_reconciliation import (
     reconcile_external_reconciliation,
     scan_external_reconciliations,
@@ -238,6 +240,18 @@ def aggregate_virtual_player_safety_task(limit: int = 100) -> dict[str, object]:
 def monitor_virtual_player_safety_task(limit: int = 100) -> dict[str, object]:
     cycle = run_safety_monitor(limit=limit)
     result = cycle.monitor
+    warnings = list(dict.fromkeys(reason for decision in result.decisions for reason in decision.warning_reasons))
+    try:
+        routing = read_virtual_player_routing()
+        routing_mode = routing.maintenance_mode.value if routing.persisted else "unavailable"
+        routing_pause_reason = routing.pause_reason
+    except (DatabaseError, RuntimeRoutingError, TypeError, ValueError):
+        # Routing is diagnostic here; the completed monitor cycle still needs
+        # to emit its heartbeat. A failed optional read must not manufacture a
+        # second heartbeat gap after the safety decision already committed.
+        logger.warning("Could not read virtual-player routing for safety task diagnostics", exc_info=True)
+        routing_mode = "unavailable"
+        routing_pause_reason = ""
     heartbeat = _heartbeat_payload("safety_monitor")
     return {
         "heartbeat": heartbeat,
@@ -246,6 +260,10 @@ def monitor_virtual_player_safety_task(limit: int = 100) -> dict[str, object]:
         "decision_count": len(result.decisions),
         "consumed_count": result.consumed_count,
         "paused": result.paused,
+        # `paused` is this cycle's action, not the persisted current state.
+        "routing_mode": routing_mode,
+        "routing_pause_reason": routing_pause_reason,
+        "warning_reasons": warnings,
         "cas_conflicts": result.cas_conflicts,
         "window_ids": [decision.window_id for decision in result.decisions],
     }

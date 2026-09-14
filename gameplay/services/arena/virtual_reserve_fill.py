@@ -27,6 +27,7 @@ from .coop_rules import load_arena_coop_rules
 from .lifecycle_helpers import move_coop_event_to_preparing_locked, start_tournament_locked
 from .rules import load_arena_rules
 from .virtual_backfill import backfill_coop_event_locked, backfill_tournament_locked
+from .virtual_fill_service import observe_fill_service_locked
 from .virtual_lineups import lineup_power
 from .virtual_protection import is_virtual_profile_arena_match_eligible, with_arena_reconciliation_state
 from .virtual_reserve_observability import log_demand_event
@@ -634,6 +635,7 @@ def _fill_due_reserve(
     event = event_model.objects.select_for_update().filter(pk=event_id).first()
     if event is None:
         return 0
+    observe_fill_service_locked(event=event, mode=mode, now=now, phase="prefill")
     if (
         event.status != event_model.Status.RECRUITING
         or event.virtual_fill_completed
@@ -723,6 +725,7 @@ def _fill_due_reserve(
         now=now,
         used_cooldown=used_cooldown,
     )
+    observe_fill_service_locked(event=event, mode=mode, now=now, phase="postfill")
     return filled
 
 

@@ -47,6 +47,66 @@
     text-align: center;
 }
 
+.battle-report-matchup {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    width: min(100%, 42rem);
+    margin: 0.45rem auto 0;
+    border: 1px solid #c8a36d;
+    background: var(--battle-report-background);
+}
+
+.battle-report-side-name {
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.12rem;
+    padding: 0.42rem 0.75rem 0.5rem;
+    color: #76512f;
+    text-align: center;
+}
+
+.battle-report-side-name span {
+    color: #9a7650;
+    font-size: 0.68rem;
+    font-weight: 750;
+    letter-spacing: 0.12em;
+}
+
+.battle-report-side-name strong {
+    overflow-wrap: anywhere;
+    color: #4c2b12;
+    font-size: 0.92rem;
+    line-height: 1.35;
+}
+
+.battle-report-matchup-vs {
+    display: flex;
+    align-items: center;
+    padding: 0 0.55rem;
+    color: #b07a3b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+@media (max-width: 560px) {
+    .battle-report-side-name {
+        padding-right: 0.45rem;
+        padding-left: 0.45rem;
+    }
+
+    .battle-report-side-name strong {
+        font-size: 0.84rem;
+    }
+
+    .battle-report-matchup-vs {
+        padding: 0 0.35rem;
+    }
+}
+
 .battle-report-page .tw-card > h2 {
     margin-top: 0;
     font-size: 1.18rem;

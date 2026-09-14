@@ -23,6 +23,7 @@ from gameplay.services.technology import finalize_technology_upgrade
 
 # Arena
 from gameplay.tasks.arena import (
+    collect_arena_fill_service_outcomes,
     grow_arena_virtual_reserves,
     reconcile_arena_virtual_reserve,
     retry_arena_shortage_metric,
@@ -127,6 +128,7 @@ __all__ = [
     "retry_arena_shortage_metric",
     "scan_arena_virtual_reserves",
     "grow_arena_virtual_reserves",
+    "collect_arena_fill_service_outcomes",
     # Global mail
     "backfill_global_mail_campaign_task",
     "enqueue_global_mail_backfill",

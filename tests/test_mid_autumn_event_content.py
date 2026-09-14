@@ -28,12 +28,12 @@ GREEN_SKILL_BOOK_KEYS = [
     "book_thunder_control",
     "book_dragon_break_curse",
     "book_endless_chatter",
+    "book_taiyi_wind",
     "book_steadfast_planning",
     "book_iron_wall_heart",
 ]
 BLUE_SKILL_BOOK_KEYS = [
     "book_meteor_pierce_moon",
-    "book_taiyi_wind",
     "book_flower_rain",
     "book_soul_erode",
     "book_red_lotus_dance",
