@@ -17,6 +17,7 @@ from gameplay.services.virtual_player_core.runtime_assessment import assess_virt
 
 from .low_population_policy import low_population_enabled
 from .virtual_lineups import lineup_power
+from .virtual_reserve_policy import RESERVE_ADMISSION_PROBE_COOLDOWN
 from .virtual_reserve_policy import RESERVE_MINIMUM as POLICY_RESERVE_MINIMUM
 from .virtual_reserve_policy import RESERVE_MULTIPLIER as POLICY_RESERVE_MULTIPLIER
 from .virtual_reserve_policy import reserve_target_for_missing, reserve_target_plan
@@ -28,6 +29,18 @@ logger = logging.getLogger(__name__)
 RESERVE_MULTIPLIER = POLICY_RESERVE_MULTIPLIER
 RESERVE_MINIMUM = POLICY_RESERVE_MINIMUM
 MAX_DEMAND_NO_PROGRESS_AGE = timedelta(hours=12)
+BLOCKED_DEMAND_RETRY_COOLDOWN = RESERVE_ADMISSION_PROBE_COOLDOWN
+RECOVERABLE_BLOCKED_DEMAND_REASONS = frozenset(
+    {
+        "no_progress_timeout",
+        "replacement_budget_exhausted",
+        "target_unreachable_by_cap",
+        "insufficient_ready_members",
+        "dynamic_population_cap_reached",
+        "population_region_unavailable",
+    }
+)
+POLICY_BLOCKED_DEMAND_REASONS = frozenset({"arena_training_policy_unavailable", "arena_strength_envelope_mismatch"})
 _POPULATION_SUPPLY_RETRY_REASONS = frozenset(
     {
         "insufficient_ready_members",
@@ -278,7 +291,12 @@ def close_virtual_demand_state_locked(
         demand.missing_entry_count = 0
     demand.reserve_target_count = 0
     demand.warm_target_count = 0
-    demand.next_retry_at = None
+    demand.next_retry_at = (
+        (checked_at or timezone.now()) + BLOCKED_DEMAND_RETRY_COOLDOWN
+        if status == ArenaVirtualDemand.Status.BLOCKED
+        and failure_reason in RECOVERABLE_BLOCKED_DEMAND_REASONS | POLICY_BLOCKED_DEMAND_REASONS
+        else None
+    )
     demand.consecutive_failure_count = 0
     demand.last_failure_reason = str(failure_reason)[:64]
     demand.last_checked_at = checked_at or timezone.now()
@@ -351,6 +369,7 @@ def _upsert_demand_state_locked(
                 last_progress_at=now,
                 last_input_change_at=now,
                 last_checked_at=now,
+                next_retry_at=now + BLOCKED_DEMAND_RETRY_COOLDOWN,
                 **training_snapshot,
             )
             return DemandReconcileTransition(closed_demand=demand)
@@ -380,12 +399,25 @@ def _upsert_demand_state_locked(
         demand.target_guest_count != target_guest_count
         or demand.target_team_power != target_team_power
         or demand.missing_entry_count != missing_entry_count
-        or demand.reserve_target_count != reserve_target_count
-        or demand.warm_target_count != warm_target_count
         or _arena_training_snapshot_changed(demand, snapshot_fields=training_snapshot)
     )
     was_blocked = demand.status == ArenaVirtualDemand.Status.BLOCKED
-    if demand.status == ArenaVirtualDemand.Status.BLOCKED and not changed:
+    retry_due_at = demand.next_retry_at or (
+        (demand.last_checked_at or demand.created_at) + BLOCKED_DEMAND_RETRY_COOLDOWN
+    )
+    retry_probe = bool(
+        was_blocked
+        and not changed
+        and demand.last_failure_reason in RECOVERABLE_BLOCKED_DEMAND_REASONS
+        and now >= retry_due_at
+    )
+    if was_blocked and not changed and not retry_probe:
+        if now >= retry_due_at and demand.last_failure_reason in POLICY_BLOCKED_DEMAND_REASONS:
+            # Poll configuration changes without allowing page reads to turn
+            # an unchanged unavailable policy into a fresh admission budget.
+            demand.next_retry_at = now + BLOCKED_DEMAND_RETRY_COOLDOWN
+            demand.last_checked_at = now
+            demand.save(update_fields=["next_retry_at", "last_checked_at", "updated_at"])
         return DemandReconcileTransition()
     if not arena_training.available:
         if changed:
@@ -419,6 +451,11 @@ def _upsert_demand_state_locked(
     last_progress_at = demand.last_progress_at or demand.created_at
     last_input_change_at = demand.last_input_change_at or demand.created_at
     last_activity_at = max(last_progress_at, last_input_change_at)
+    if demand.admission_pause_reason == "no_effective_progress" and demand.admission_paused_at is not None:
+        # A bounded admission probe is a legal wait, not fabricated progress
+        # or an external input change. Its existing cooldown clock also keeps
+        # a second reconcile in the same fill from immediately closing it.
+        last_activity_at = max(last_activity_at, demand.admission_paused_at)
     runtime_assessment = assess_virtual_player_runtime()
     if (
         demand.status == ArenaVirtualDemand.Status.ACTIVE
@@ -442,11 +479,7 @@ def _upsert_demand_state_locked(
     demand.warm_target_count = warm_target_count
     for field_name, value in training_snapshot.items():
         setattr(demand, field_name, value)
-    if was_blocked:
-        demand.max_reserve_target_count = reserve_target_count
-        demand.admission_attempt_high_water = 0
-    else:
-        demand.max_reserve_target_count = max(demand.max_reserve_target_count, reserve_target_count)
+    demand.max_reserve_target_count = max(demand.max_reserve_target_count, reserve_target_count)
     demand.last_checked_at = now
     update_fields = [
         "status",
@@ -461,8 +494,6 @@ def _upsert_demand_state_locked(
         "last_checked_at",
         "updated_at",
     ]
-    if was_blocked:
-        update_fields.append("admission_attempt_high_water")
     if changed:
         demand.next_retry_at = now
         demand.consecutive_failure_count = 0
@@ -481,6 +512,18 @@ def _upsert_demand_state_locked(
                 "admission_pause_reason",
                 "admission_probe_target_ordinal",
             ]
+        )
+    if retry_probe:
+        demand.next_retry_at = now
+        demand.admission_paused_at = now
+        demand.admission_pause_reason = "no_effective_progress"
+        demand.admission_probe_target_ordinal = (
+            int(demand.admission_attempt_high_water) + 1
+            if int(demand.admission_attempt_high_water) < int(demand.max_reserve_target_count)
+            else None
+        )
+        update_fields.extend(
+            ["next_retry_at", "admission_paused_at", "admission_pause_reason", "admission_probe_target_ordinal"]
         )
     demand.save(update_fields=update_fields)
     return DemandReconcileTransition(

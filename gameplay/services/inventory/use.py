@@ -24,7 +24,13 @@ from core.exceptions import (
 from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent, ResourceType
 from gameplay.services.resources import grant_resources, grant_resources_locked, preview_resource_grant
 
-from .core import add_item_to_inventory, consume_inventory_item_for_manor_locked, consume_inventory_item_locked
+from ..action_points import ACTION_POINTS_MAX, get_current_action_points, restore_action_points
+from .core import (
+    add_item_to_inventory,
+    add_item_to_inventory_locked,
+    consume_inventory_item_for_manor_locked,
+    consume_inventory_item_locked,
+)
 from .guest_items import (  # noqa: F401
     use_guest_rarity_upgrade_item,
     use_guest_rebirth_card,
@@ -396,6 +402,42 @@ def _apply_peace_shield(item: InventoryItem) -> Dict[str, Any]:
     }
 
 
+def _apply_restore_action_points(item: InventoryItem) -> Dict[str, Any]:
+    """Restore the manor's action points, capped at the configured maximum."""
+    payload = _require_effect_payload_dict(item)
+    amount = _normalize_positive_config_int(payload.get("amount"), field_name="amount")
+    before = get_current_action_points(item.manor)
+    after = restore_action_points(item.manor, amount)
+    gained = max(0, after - before)
+    return {
+        "action_points": after,
+        "action_points_gained": gained,
+        "action_points_max": ACTION_POINTS_MAX,
+        "_message": f"行动力 +{gained}（当前 {after}/{ACTION_POINTS_MAX}）",
+    }
+
+
+def _apply_item_synthesis(item: InventoryItem) -> Dict[str, Any]:
+    """Consume the configured recipe inputs and grant the configured item output."""
+    payload = _require_effect_payload_dict(item)
+    result_key = _normalize_non_empty_string(payload.get("result_item_key"), field_name="result_item_key")
+    result_quantity = _normalize_positive_config_int(
+        payload.get("result_quantity", 1),
+        field_name="result_quantity",
+    )
+    result_template = ItemTemplate.objects.filter(key=result_key).only("key", "name").first()
+    if result_template is None:
+        raise ItemNotConfiguredError("result_item_key 配置异常")
+
+    _consume_required_items_locked(item.manor, payload)
+    add_item_to_inventory_locked(item.manor, result_key, result_quantity, template=result_template)
+    return {
+        "result_item_key": result_key,
+        "result_quantity": result_quantity,
+        "_message": f"合成 {result_template.name} ×{result_quantity}",
+    }
+
+
 def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
     """
     使用门客召唤卡：按权重随机获得一个门客模板并直接加入聚贤庄。
@@ -482,6 +524,10 @@ def _apply_tool(item: InventoryItem) -> Dict[str, Any]:
     normalized_action = _normalize_optional_tool_action(payload)
     if normalized_action == "summon_guest":
         return _apply_guest_summon(item)
+    if normalized_action == "synthesize_item":
+        return _apply_item_synthesis(item)
+    if normalized_action == "restore_action_points":
+        return _apply_restore_action_points(item)
     if normalized_action == "rebirth_guest":
         # 门客重生卡需要选择目标门客，抛出提示让前端引导选择
         raise ItemNotUsableError(item.template.name, message="请选择要重生的门客")

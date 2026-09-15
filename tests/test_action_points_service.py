@@ -11,6 +11,7 @@ from gameplay.services.action_points import (
     ACTION_POINTS_MAX,
     consume_action_points_for_expedition,
     get_current_action_points,
+    restore_action_points,
 )
 from gameplay.services.manor.core import ensure_manor
 
@@ -75,3 +76,19 @@ def test_consume_action_points_for_expedition_rejects_when_insufficient(django_u
 
     manor.refresh_from_db()
     assert manor.action_points == ACTION_POINT_EXPEDITION_COST - 1
+
+
+def test_restore_action_points_caps_at_maximum(django_user_model):
+    user = django_user_model.objects.create_user(username="ap_restore_user", password="pass12345")
+    manor = ensure_manor(user)
+    now = timezone.now()
+    manor.action_points = ACTION_POINTS_MAX - 50
+    manor.action_points_updated_at = now
+    manor.save(update_fields=["action_points", "action_points_updated_at"])
+
+    restored = restore_action_points(manor, 200, now=now)
+
+    assert restored == ACTION_POINTS_MAX
+    manor.refresh_from_db()
+    assert manor.action_points == ACTION_POINTS_MAX
+    assert manor.action_points_updated_at == now

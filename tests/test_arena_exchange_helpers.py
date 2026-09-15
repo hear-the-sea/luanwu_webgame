@@ -70,6 +70,18 @@ def test_build_exchange_summary_returns_default_when_empty():
     assert build_exchange_summary(credited_resources={}, overflow_resources={}, granted_items={}) == "奖励已处理"
 
 
+def test_build_exchange_summary_lists_granted_item_names_and_quantities():
+    assert (
+        build_exchange_summary(
+            credited_resources={},
+            overflow_resources={},
+            granted_items={"item_b": 1, "item_a": 2},
+            item_names={"item_a": "春秋币", "item_b": "多情环"},
+        )
+        == "获得物品：春秋币×2、多情环×1"
+    )
+
+
 def test_select_weekly_blueprint_key_uses_iso_week_rotation():
     pool = ArenaRotatingBlueprintPool(
         rarity="blue",

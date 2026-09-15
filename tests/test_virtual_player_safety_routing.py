@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from django.test import override_settings
@@ -305,6 +305,77 @@ def test_daily_pause_is_not_resumed_by_hourly_clean_windows() -> None:
     state.refresh_from_db()
     assert state.safety_clean_window_streak == 0
     assert state.safety_clean_window_kind == "daily"
+
+
+@pytest.mark.django_db
+def test_daily_pause_recovers_with_interleaved_hourly_clean_windows(settings) -> None:
+    settings.VIRTUAL_PLAYER_SAFETY_AUTO_RESUME_CLEAN_WINDOWS = 3
+    pause_reason = "heartbeat_incomplete:safety_monitor"
+    _routing_state(maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE)
+    result = runtime_configs.apply_virtual_player_safety_decision(
+        expected_revision=4,
+        window_id="daily:initial-pause",
+        window_kind="daily",
+        window_end_at=DAILY_END,
+        should_pause=True,
+        pause_reason=pause_reason,
+    )
+
+    for day in range(1, 4):
+        end_at = DAILY_END + timedelta(days=day)
+        result = runtime_configs.apply_virtual_player_safety_decision(
+            expected_revision=result.snapshot.revision,
+            window_id=f"daily:clean-{day}",
+            window_kind="daily",
+            window_end_at=end_at,
+            should_pause=False,
+            resume_if_healthy=True,
+            expected_pause_reason=pause_reason,
+        )
+        if day == 3:
+            assert result.resumed is True
+            assert result.snapshot.maintenance_mode is runtime_configs.MaintenanceMode.V2_ACTIVE
+            break
+        # The monitor consumes the daily window before the hourly window at
+        # the same UTC midnight, then receives hourly windows throughout the day.
+        for hour in range(24):
+            result = runtime_configs.apply_virtual_player_safety_decision(
+                expected_revision=result.snapshot.revision,
+                window_id=f"hourly:clean-{day}-{hour}",
+                window_kind="hourly",
+                window_end_at=end_at + timedelta(hours=hour),
+                should_pause=False,
+                resume_if_healthy=True,
+                expected_pause_reason=pause_reason,
+            )
+            assert result.resumed is False
+            state = BotRuntimeRoutingState.objects.get()
+            assert state.safety_clean_window_kind == "daily"
+            assert state.safety_clean_window_streak == day
+
+
+@pytest.mark.django_db
+def test_hard_violation_resets_daily_recovery_progress() -> None:
+    state = _routing_state(maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_PAUSED)
+    state.pause_reason = "heartbeat_incomplete:safety_monitor"
+    state.paused_from_maintenance_mode = BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE
+    state.safety_clean_window_kind = "daily"
+    state.safety_clean_window_streak = 2
+    state.save()
+
+    result = runtime_configs.apply_virtual_player_safety_decision(
+        expected_revision=4,
+        window_id="hourly:hard-violation",
+        window_kind="hourly",
+        window_end_at=HOURLY_END,
+        should_pause=True,
+        pause_reason="hard_constraint_violation",
+    )
+
+    state.refresh_from_db()
+    assert state.safety_clean_window_streak == 0
+    assert result.snapshot.maintenance_mode is runtime_configs.MaintenanceMode.V2_PAUSED
+    assert not runtime_configs.is_recoverable_safety_pause_reason(result.snapshot.pause_reason)
 
 
 @pytest.mark.parametrize(

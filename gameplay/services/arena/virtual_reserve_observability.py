@@ -500,7 +500,20 @@ def log_demand_event(
         "failure_reason": str(demand.last_failure_reason if failure_reason is None else failure_reason),
     }
     extra.update(details)
-    logger.log(level, message, extra=extra)
+    logger.log(
+        level,
+        "%s: mode=%s event_id=%s demand_id=%s reason=%s missing=%s ready=%s training=%s next_retry_at=%s",
+        message,
+        mode,
+        event_id,
+        demand.id,
+        extra["failure_reason"],
+        demand.missing_entry_count,
+        ready_count,
+        training_count,
+        demand.next_retry_at,
+        extra=extra,
+    )
 
 
 __all__ = [

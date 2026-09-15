@@ -328,14 +328,14 @@ services:
         "--max-tasks-per-child",
         "${CELERY_MAX_TASKS_PER_CHILD:-200}",
         "--max-memory-per-child",
-        "${CELERY_MAX_MEMORY_PER_CHILD:-180000}",
+        "${CELERY_TIMER_SAFETY_MAX_MEMORY_PER_CHILD:-400000}",
       ]
     volumes:
       - ./runtime/media:/app/media
     # Keep safety liveness independent from both ordinary timer work and
     # potentially long-running maintenance tasks.
-    mem_limit: ${CELERY_TIMER_SAFETY_MEMORY_LIMIT:-256m}
-    mem_reservation: ${CELERY_TIMER_SAFETY_MEMORY_RESERVATION:-160m}
+    mem_limit: ${CELERY_TIMER_SAFETY_MEMORY_LIMIT:-512m}
+    mem_reservation: ${CELERY_TIMER_SAFETY_MEMORY_RESERVATION:-256m}
     depends_on:
       - db
       - redis

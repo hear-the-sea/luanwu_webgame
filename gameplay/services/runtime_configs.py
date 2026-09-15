@@ -1211,9 +1211,9 @@ def apply_virtual_player_safety_decision(
                 update_fields.append("safety_clean_window_kind")
             elif state.safety_clean_window_kind == normalized_kind:
                 state.safety_clean_window_streak = min(255, int(state.safety_clean_window_streak) + 1)
-            else:
-                state.safety_clean_window_streak = 0
-                update_fields.append("safety_clean_window_streak")
+            # Healthy windows of another kind neither supply the required
+            # evidence nor erase it. Hourly windows otherwise prevent a daily
+            # recovery streak from ever reaching its threshold.
             if state.safety_clean_window_streak >= int(settings.VIRTUAL_PLAYER_SAFETY_AUTO_RESUME_CLEAN_WINDOWS):
                 state.maintenance_mode = MaintenanceMode.V2_ACTIVE.value
                 state.pause_reason = ""

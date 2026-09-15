@@ -1900,7 +1900,7 @@ def test_replenishment_leases_only_from_the_demand_population_cell():
 
 
 @pytest.mark.django_db
-def test_budget_block_result_reflects_terminal_member_release():
+def test_exhausted_budget_preserves_partial_ready_supply():
     demand = _create_tournament_demand(player_limit=3)
     demand.reserve_target_count = 1
     demand.warm_target_count = 1
@@ -1915,11 +1915,11 @@ def test_budget_block_result_reflects_terminal_member_release():
     result = replenish_virtual_reserve(demand.id)
 
     demand.refresh_from_db()
-    assert demand.status == ArenaVirtualDemand.Status.BLOCKED
-    assert result.ready_count == 0
+    assert demand.status == ArenaVirtualDemand.Status.ACTIVE
+    assert result.ready_count == 1
     assert result.training_count == 0
-    assert result.warm_target_count == 0
-    assert not ArenaVirtualReserveMember.objects.filter(pk=member.pk).exists()
+    assert result.creation_needed == 0
+    assert ArenaVirtualReserveMember.objects.filter(pk=member.pk).exists()
 
 
 @pytest.mark.django_db
@@ -3595,7 +3595,7 @@ def test_routing_unavailable_preserves_due_growth_and_recovers_automatically(mon
 
 
 @pytest.mark.django_db
-def test_demand_reconcile_preserves_failure_backoff_and_scan_skips_until_due():
+def test_demand_scan_checks_ready_without_spending_failure_backoff():
     now = timezone.now()
     demand = _create_tournament_demand(player_limit=2)
     reserve_fill_service._record_fill_deferred(
@@ -3615,7 +3615,10 @@ def test_demand_reconcile_preserves_failure_backoff_and_scan_skips_until_due():
     assert reconciled.consecutive_failure_count == 1
 
     result = scan_virtual_reserve_demands(now=now + timedelta(minutes=1), limit=20)
-    assert result["scanned"] == 0
+    assert result["scanned"] == 1
+    demand.refresh_from_db()
+    assert demand.next_retry_at == retry_at
+    assert demand.consecutive_failure_count == 1
 
 
 @pytest.mark.django_db

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime, timedelta, timezone
 from decimal import Decimal
+from hashlib import sha256
 
 import pytest
 from django.db import connection
@@ -21,6 +23,7 @@ from gameplay.services.virtual_player_core.safety_provider import (
     SafetyMetricWindowNotReadyError,
     SafetyProviderError,
     aggregate_and_finalize_safety_metric_window,
+    canonical_safety_snapshot_digest,
     cleanup_safety_metric_retention,
     finalize_safety_metric_window,
     record_safety_metric_event,
@@ -55,6 +58,13 @@ def _record_event(
         dimensions={"result": "applied", "policy_version": "1"},
         value=value,
     )
+
+
+def test_snapshot_digest_is_stable_across_float_json_round_trip() -> None:
+    precise = {"metrics": {"rate": float(Decimal(2) / Decimal(170))}}
+    mysql_round_trip = {"metrics": {"rate": float("0.01176470588235294")}}
+
+    assert canonical_safety_snapshot_digest(precise) == canonical_safety_snapshot_digest(mysql_round_trip)
 
 
 def _seed_finalized_event(clock: list[datetime]) -> tuple[str, str]:
@@ -419,6 +429,53 @@ def test_finalized_window_is_idempotent_for_same_snapshot_and_immutable_otherwis
     assert window.snapshot_digest == first.snapshot_digest
     assert window.finalized_at == finalized_at
     assert hard_violation.dimensions["reason"] == ("finalized_window_payload_conflict")
+
+
+@pytest.mark.django_db
+def test_legacy_digest_window_remains_idempotent_without_rewriting_evidence() -> None:
+    snapshot = {"metrics": {"rate": 2 / 170}, "schema_version": 1}
+    legacy_digest = sha256(
+        json.dumps(snapshot, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False).encode("ascii")
+    ).hexdigest()
+    assert legacy_digest != canonical_safety_snapshot_digest(snapshot)
+    window = BotSafetyMetricWindow.objects.create(
+        window_id=f"hourly:{HOURLY_START.strftime('%Y%m%dT%H%M%SZ')}",
+        kind="hourly",
+        window_start_at=HOURLY_START,
+        window_end_at=HOURLY_END,
+        snapshot=snapshot,
+        snapshot_digest=legacy_digest,
+        finalized_at=HOURLY_END + timedelta(minutes=5),
+    )
+
+    result = finalize_safety_metric_window(window_kind="hourly", window_start_at=HOURLY_START, snapshot=snapshot)
+
+    window.refresh_from_db()
+    assert not result.newly_finalized
+    assert result.snapshot_digest == window.snapshot_digest == legacy_digest
+    assert window.snapshot == snapshot
+    assert not BotSafetyMetricEvent.objects.filter(metric_name=HARD_VIOLATION_METRIC_NAME).exists()
+
+
+@pytest.mark.django_db
+def test_float_round_trip_window_is_idempotent_without_rewriting_snapshot() -> None:
+    precise = {"metrics": {"rate": float(Decimal(2) / Decimal(170))}}
+    round_tripped = {"metrics": {"rate": float("0.01176470588235294")}}
+    window = BotSafetyMetricWindow.objects.create(
+        window_id=f"hourly:{HOURLY_START.strftime('%Y%m%dT%H%M%SZ')}",
+        kind="hourly",
+        window_start_at=HOURLY_START,
+        window_end_at=HOURLY_END,
+        snapshot=round_tripped,
+        snapshot_digest=canonical_safety_snapshot_digest(round_tripped),
+        finalized_at=HOURLY_END + timedelta(minutes=5),
+    )
+
+    result = finalize_safety_metric_window(window_kind="hourly", window_start_at=HOURLY_START, snapshot=precise)
+
+    assert result.newly_finalized is False
+    window.refresh_from_db()
+    assert window.snapshot == round_tripped
 
 
 @pytest.mark.django_db

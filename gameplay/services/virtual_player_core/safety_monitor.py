@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import logging
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
@@ -42,6 +41,7 @@ from .safety_provider import (
     SafetyMetricWindowAggregationInput,
     SafetyMetricWindowFinalizeResult,
     aggregate_and_finalize_safety_metric_window,
+    safety_snapshot_digest_matches,
 )
 
 logger = logging.getLogger(__name__)
@@ -752,16 +752,10 @@ def _parse_window_facts(window: BotSafetyMetricWindow) -> _WindowFacts:
     if not isinstance(snapshot, Mapping):
         raise InvalidSafetySnapshotError("safety window snapshot must be a mapping")
     try:
-        encoded_snapshot = json.dumps(
-            snapshot,
-            sort_keys=True,
-            separators=(",", ":"),
-            ensure_ascii=True,
-            allow_nan=False,
-        ).encode("ascii")
+        digest_matches = safety_snapshot_digest_matches(snapshot, window.snapshot_digest)
     except (TypeError, ValueError, UnicodeEncodeError) as exc:
         raise InvalidSafetySnapshotError("safety window snapshot is not canonical JSON") from exc
-    if sha256(encoded_snapshot).hexdigest() != window.snapshot_digest:
+    if not digest_matches:
         raise InvalidSafetySnapshotError("safety window snapshot digest differs")
     raw_schema_version = snapshot.get("schema_version")
     if (

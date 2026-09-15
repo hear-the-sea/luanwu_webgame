@@ -200,17 +200,17 @@ chmod 600 ".env.docker"
 | --- | ---: | ---: |
 | MySQL | 1536 MiB | 768 MiB |
 | 维护 worker | 768 MiB | 384 MiB |
-| 安全 worker | 256 MiB | 160 MiB |
+| 安全 worker | 512 MiB | 256 MiB |
 | Caddy | 256 MiB | 128 MiB |
 | 其他四个普通 worker，每个 | 256 MiB | 160 MiB |
 | Web | 384 MiB | 256 MiB |
 | Beat | 96 MiB | 64 MiB |
 | Redis | 128 MiB | 64 MiB |
-| 合计 | **4448 MiB（约 4.34 GiB）** | **2464 MiB（约 2.41 GiB）** |
+| 合计 | **4704 MiB（约 4.59 GiB）** | **2560 MiB（约 2.50 GiB）** |
 
 这是一组针对已观察到的 OOM 调整的初始预算，不是压测得出的峰值，也不能保证不再 OOM。
 上限不是预分配内存，软保留值也不是额外叠加的硬上限；宿主机、Docker、其他项目和发布时的临时
-容器都需要额外空间。7.8 GiB 主机与上述硬上限总和的差额约 3.7 GiB，但不等于实时可用内存。
+容器都需要额外空间。7.8 GiB 主机与上述硬上限总和的差额约 3.2 GiB，但不等于实时可用内存。
 4 GiB 主机不能直接套用这组预算，应扩容、拆分服务或重新进行容量评估；增加服务副本或并发也要重算。
 
 仅维护 worker 改用独立的 `CELERY_TIMER_MAINTENANCE_MEMORY_LIMIT` 和
@@ -219,9 +219,11 @@ worker，不再影响维护 worker；需要定制维护预算的旧部署必须�
 MySQL 保持 512 MiB buffer pool、40 个最大连接和原临时表参数，把新增空间留给服务器其他内存开销。
 Caddy 的 `validate` 健康检查会在同一容器中启动另一个进程，预算必须覆盖主进程和检查进程。
 
-六个 worker 仍各用 `concurrency=1`、`prefetch=1`，保持 `max-tasks-per-child=200`、
-`max-memory-per-child=180000`（KiB）。后者是单个子进程的回收阈值，超过后在任务结束时回收，
-不是运行中任务或整个容器的实时内存上限；容器还要容纳父进程和任务峰值。
+六个 worker 仍各用 `concurrency=1`、`prefetch=1`，保持 `max-tasks-per-child=200`。普通 worker
+和维护 worker 使用 `max-memory-per-child=180000`（KiB），安全 worker 使用独立的
+`CELERY_TIMER_SAFETY_MAX_MEMORY_PER_CHILD=400000`（KiB），以覆盖安全快照聚合的工作内存。
+该阈值是单个子进程的回收阈值，超过后在任务结束时回收，不是运行中任务或整个容器的实时内存上限；
+容器还要容纳父进程和任务峰值。
 参见 [Celery 子进程内存阈值](https://docs.celeryq.dev/en/stable/userguide/configuration.html#worker-max-memory-per-child)
 和 [Docker 内存限制](https://docs.docker.com/engine/containers/resource_constraints/#memory)。
 
@@ -251,8 +253,9 @@ MYSQL_MEMORY_LIMIT=1536m
 MYSQL_MEMORY_RESERVATION=768m
 CELERY_TIMER_MAINTENANCE_MEMORY_LIMIT=768m
 CELERY_TIMER_MAINTENANCE_MEMORY_RESERVATION=384m
-CELERY_TIMER_SAFETY_MEMORY_LIMIT=256m
-CELERY_TIMER_SAFETY_MEMORY_RESERVATION=160m
+CELERY_TIMER_SAFETY_MEMORY_LIMIT=512m
+CELERY_TIMER_SAFETY_MEMORY_RESERVATION=256m
+CELERY_TIMER_SAFETY_MAX_MEMORY_PER_CHILD=400000
 CADDY_MEMORY_LIMIT=256m
 CADDY_MEMORY_RESERVATION=128m
 ```

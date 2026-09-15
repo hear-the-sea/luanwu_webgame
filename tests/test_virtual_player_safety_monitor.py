@@ -169,6 +169,37 @@ def _window(
     )
 
 
+@pytest.mark.django_db
+@pytest.mark.parametrize("digest_kind", ["legacy", "current"])
+def test_monitor_accepts_valid_float_digest_and_rejects_changed_evidence(digest_kind) -> None:
+    window = _window(
+        metrics={
+            "maintenance_failure_count": 2,
+            "maintenance_eligible_attempt_count": 170,
+            "maintenance_failure_rate": 2 / 170,
+        }
+    )
+    legacy_digest = window.snapshot_digest
+    current_digest = safety_provider.canonical_safety_snapshot_digest(window.snapshot)
+    assert legacy_digest != current_digest
+    if digest_kind == "current":
+        window.snapshot_digest = current_digest
+    assert not evaluate_finalized_safety_window(window).should_pause
+
+    window.snapshot["metrics"]["hard_constraint_violation_count"] = 1
+    with pytest.raises(safety_monitor.InvalidSafetySnapshotError, match="snapshot digest differs"):
+        evaluate_finalized_safety_window(window)
+
+
+@pytest.mark.django_db
+def test_monitor_does_not_repair_unverifiable_legacy_float_digest() -> None:
+    window = _window(metrics={"maintenance_failure_rate": 2 / 170})
+    window.snapshot["metrics"]["maintenance_failure_rate"] = float("0.01176470588235294")
+
+    with pytest.raises(safety_monitor.InvalidSafetySnapshotError, match="snapshot digest differs"):
+        evaluate_finalized_safety_window(window)
+
+
 def _routing_state(
     *,
     revision: int = 4,

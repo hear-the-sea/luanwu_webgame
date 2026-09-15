@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
 
 from django.db import DatabaseError
 from django.db.models import F, Q
@@ -24,8 +23,13 @@ from gameplay.services.virtual_player_core.recovery import (
 )
 
 from .virtual_fill_service import observe_fill_service
+from .virtual_reserve_demand import (
+    BLOCKED_DEMAND_RETRY_COOLDOWN,
+    POLICY_BLOCKED_DEMAND_REASONS,
+    RECOVERABLE_BLOCKED_DEMAND_REASONS,
+)
 from .virtual_reserve_fill import fill_due_coop_reserve, fill_due_tournament_reserve
-from .virtual_reserve_pool import replenish_virtual_reserve
+from .virtual_reserve_pool import release_expired_exhausted_virtual_reserve_members, replenish_virtual_reserve
 from .virtual_reserve_reconcile import reconcile_coop_demand, reconcile_tournament_demand
 
 logger = logging.getLogger(__name__)
@@ -45,7 +49,16 @@ def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]
         return result
     if recovery_circuit_is_open(path="arena_demand", now=current_time):
         return result
-    due_cutoff = current_time + timedelta(seconds=1)
+    release_expired_exhausted_virtual_reserve_members(now=current_time, limit=normalized_limit)
+    blocked_retry_due = Q(
+        virtual_demand__last_failure_reason__in=RECOVERABLE_BLOCKED_DEMAND_REASONS | POLICY_BLOCKED_DEMAND_REASONS
+    ) & (
+        Q(virtual_demand__next_retry_at__lte=current_time)
+        | Q(
+            virtual_demand__next_retry_at__isnull=True,
+            virtual_demand__last_checked_at__lte=current_time - BLOCKED_DEMAND_RETRY_COOLDOWN,
+        )
+    )
 
     candidates: dict[tuple[str, int], float] = {}
 
@@ -55,23 +68,22 @@ def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]
 
     active_demands = list(
         ArenaVirtualDemand.objects.filter(status=ArenaVirtualDemand.Status.ACTIVE)
-        .filter(Q(next_retry_at__isnull=True) | Q(next_retry_at__lte=due_cutoff))
         .select_related("tournament", "coop_event")
-        .order_by("next_retry_at", "id")[:normalized_limit]
+        .order_by("last_checked_at", "id")[:normalized_limit]
     )
     for demand in active_demands:
         if demand.tournament_id is not None and demand.tournament is not None:
             _add_candidate(
                 "tournament",
                 demand.tournament_id,
-                demand.tournament.virtual_fill_at,
+                demand.last_checked_at,
                 demand.tournament.created_at,
             )
         elif demand.coop_event_id is not None and demand.coop_event is not None:
             _add_candidate(
                 "coop",
                 demand.coop_event_id,
-                demand.coop_event.virtual_fill_at,
+                demand.last_checked_at,
                 demand.coop_event.created_at,
             )
 
@@ -84,14 +96,11 @@ def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]
         .filter(
             Q(virtual_demand__isnull=True)
             | (
-                Q(virtual_demand__status=ArenaVirtualDemand.Status.ACTIVE)
-                & (Q(virtual_demand__next_retry_at__isnull=True) | Q(virtual_demand__next_retry_at__lte=due_cutoff))
-            )
-            | (
                 Q(virtual_demand__status=ArenaVirtualDemand.Status.BLOCKED)
                 & (
                     Q(virtual_demand__updated_at__isnull=True)
                     | Q(entries__joined_at__gt=F("virtual_demand__updated_at"))
+                    | blocked_retry_due
                 )
             )
         )
@@ -111,14 +120,11 @@ def scan_virtual_reserve_demands(*, now=None, limit: int = 20) -> dict[str, int]
         .filter(
             Q(virtual_demand__isnull=True)
             | (
-                Q(virtual_demand__status=ArenaVirtualDemand.Status.ACTIVE)
-                & (Q(virtual_demand__next_retry_at__isnull=True) | Q(virtual_demand__next_retry_at__lte=due_cutoff))
-            )
-            | (
                 Q(virtual_demand__status=ArenaVirtualDemand.Status.BLOCKED)
                 & (
                     Q(virtual_demand__updated_at__isnull=True)
                     | Q(entries__joined_at__gt=F("virtual_demand__updated_at"))
+                    | blocked_retry_due
                 )
             )
         )

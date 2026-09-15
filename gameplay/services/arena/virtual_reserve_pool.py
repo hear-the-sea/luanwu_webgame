@@ -471,20 +471,41 @@ def release_virtual_reserve_members_for_demand(demand: ArenaVirtualDemand) -> in
     return int(deleted)
 
 
+@transaction.atomic
 def release_expired_exhausted_virtual_reserve_members(*, now=None, limit: int = 100) -> int:
-    """Release only terminal-demand exhausted leases so they cannot re-enter the same demand."""
+    """Release exhausted terminal leases and busy spares left by a completed fill."""
     current_time = now or timezone.now()
     cutoff = current_time - EXHAUSTED_LEASE_GRACE
-    candidate_ids = list(
-        ArenaVirtualReserveMember.objects.filter(
-            state=ArenaVirtualReserveMember.State.EXHAUSTED,
-            growth_claim_token__isnull=True,
-            demand__status__in=[
+    terminal_demands = list(
+        ArenaVirtualDemand.objects.select_for_update(skip_locked=True)
+        .filter(
+            status__in=[
                 ArenaVirtualDemand.Status.SATISFIED,
                 ArenaVirtualDemand.Status.BLOCKED,
                 ArenaVirtualDemand.Status.CLOSED,
-            ],
+            ]
         )
+        .order_by("id")
+        .values_list("id", "status")[: max(0, int(limit))]
+    )
+    satisfied_or_closed_ids = [
+        int(demand_id)
+        for demand_id, status in terminal_demands
+        if status in {ArenaVirtualDemand.Status.SATISFIED, ArenaVirtualDemand.Status.CLOSED}
+    ]
+    blocked_ids = [
+        int(demand_id) for demand_id, status in terminal_demands if status == ArenaVirtualDemand.Status.BLOCKED
+    ]
+    if not satisfied_or_closed_ids and not blocked_ids:
+        return 0
+    candidate_ids = list(
+        ArenaVirtualReserveMember.objects.select_for_update(skip_locked=True)
+        .filter(
+            Q(demand_id__in=satisfied_or_closed_ids)
+            | Q(demand_id__in=blocked_ids, state=ArenaVirtualReserveMember.State.EXHAUSTED),
+            growth_claim_token__isnull=True,
+        )
+        .exclude(training_assignments__status=ArenaReserveTrainingAssignment.Status.ASSIGNED)
         .filter(
             Q(last_checked_at__lte=cutoff) | Q(last_checked_at__isnull=True, created_at__lte=cutoff),
         )
@@ -493,16 +514,18 @@ def release_expired_exhausted_virtual_reserve_members(*, now=None, limit: int = 
     )
     if not candidate_ids:
         return 0
-    deleted, _details = ArenaVirtualReserveMember.objects.filter(
-        id__in=candidate_ids,
-        state=ArenaVirtualReserveMember.State.EXHAUSTED,
-        growth_claim_token__isnull=True,
-        demand__status__in=[
-            ArenaVirtualDemand.Status.SATISFIED,
-            ArenaVirtualDemand.Status.BLOCKED,
-            ArenaVirtualDemand.Status.CLOSED,
-        ],
-    ).delete()
+    deleted, _details = (
+        ArenaVirtualReserveMember.objects.filter(
+            id__in=candidate_ids,
+            growth_claim_token__isnull=True,
+        )
+        .filter(
+            Q(demand_id__in=satisfied_or_closed_ids)
+            | Q(demand_id__in=blocked_ids, state=ArenaVirtualReserveMember.State.EXHAUSTED)
+        )
+        .exclude(training_assignments__status=ArenaReserveTrainingAssignment.Status.ASSIGNED)
+        .delete()
+    )
     released = int(deleted)
     if released:
         logger.info(
@@ -1132,7 +1155,7 @@ def _block_replacement_budget_exhausted(
     demand.status = ArenaVirtualDemand.Status.BLOCKED
     demand.reserve_target_count = 0
     demand.warm_target_count = 0
-    demand.next_retry_at = None
+    demand.next_retry_at = now + RESERVE_ADMISSION_PROBE_COOLDOWN
     demand.consecutive_failure_count = min(255, int(demand.consecutive_failure_count) + 1)
     demand.last_failure_reason = failure_reason
     demand.last_checked_at = now
@@ -1634,6 +1657,7 @@ def _lease_candidate(
     now,
     supply_band_priority: Sequence[str] | None = None,
     recover: bool = False,
+    allow_ready_replacement: bool = False,
 ) -> ArenaVirtualReserveMember | None:
     try:
         with transaction.atomic():
@@ -1735,14 +1759,36 @@ def _lease_candidate(
                 and training_admission_available_locked() is not True
             ):
                 raise _CandidateLeaseRejected
-            if not _consume_reserve_attempt_locked(
+            direct_ready = not recover and member_state == ArenaVirtualReserveMember.State.READY
+            if direct_ready:
+                # A validated ACTIVE handoff needs no creation or growth attempt.
+                # Preserve historical spending before replacing an idle lease;
+                # never discard an in-flight claim or an uncommitted assignment.
+                _synchronize_reserve_attempt_count_locked(demand)
+                active_count = demand.reserve_members.exclude(
+                    state=ArenaVirtualReserveMember.State.EXHAUSTED,
+                ).count()
+                if active_count >= _reserve_creation_target(demand):
+                    if not allow_ready_replacement or demand.reserve_members.filter(
+                        state=ArenaVirtualReserveMember.State.READY,
+                    ).count() >= int(demand.missing_entry_count):
+                        raise _CandidateLeaseRejected
+                    replacement = (
+                        demand.reserve_members.select_for_update()
+                        .filter(state=ArenaVirtualReserveMember.State.TRAINING, growth_claim_token__isnull=True)
+                        .exclude(training_assignments__status=ArenaReserveTrainingAssignment.Status.ASSIGNED)
+                        .order_by("current_lineup_power", "id")
+                        .first()
+                    )
+                    if replacement is None:
+                        raise _CandidateLeaseRejected
+                    replacement.delete()
+            elif not _consume_reserve_attempt_locked(
                 demand,
                 now=now,
-                # An already active profile is a handoff, not a new
-                # materialization.  It must still respect the hard
-                # replacement budget, but a stalled creation guard must not
-                # strand usable supply in the same population cell.
-                bypass_admission_guard=not recover,
+                # New training still consumes the replacement budget even
+                # when the profile was already ACTIVE.
+                bypass_admission_guard=False,
             ):
                 raise _CandidateLeaseRejected
             if reachability is not None and not reachability.reachable:
@@ -1780,6 +1826,8 @@ def _lease_candidate(
                 next_acceleration_at=(now if member_state == ArenaVirtualReserveMember.State.TRAINING else None),
                 last_checked_at=now,
             )
+            if direct_ready:
+                _synchronize_reserve_attempt_count_locked(demand)
             if recover:
                 log_demand_event(
                     "arena_virtual_profile_recovered",
@@ -1869,8 +1917,9 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
     _synchronize_reserve_attempt_count_locked(demand)
     _ensure_roster_targets_for_demand(demand)
     admission_assessment = _refresh_admission_guard_locked(demand, now=current_time)
-    if demand.next_retry_at is not None and demand.next_retry_at > current_time + timedelta(seconds=1):
-        return ReserveReplenishmentResult(0, 0, 0, 0, 0)
+    retry_deferred = bool(
+        demand.next_retry_at is not None and demand.next_retry_at > current_time + timedelta(seconds=1)
+    )
 
     candidate_context = _ArenaReserveCandidateContext()
     target_cell = candidate_context.target_population_cell_for(demand)
@@ -1886,6 +1935,7 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
     )
     ready_count = demand.reserve_members.filter(state=ArenaVirtualReserveMember.State.READY).count()
     training_count = demand.reserve_members.filter(state=ArenaVirtualReserveMember.State.TRAINING).count()
+    ready_needed = max(0, int(demand.missing_entry_count) - ready_count)
     attempt_count = _reserve_attempt_count(demand)
     creation_target = _reserve_creation_target(demand)
     slots_needed = reserve_materialization_needed(
@@ -1907,7 +1957,7 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
     if target_cell is not None and supply_band_priority is not None:
         target_region = target_cell[0]
         for priority_index, target_band in enumerate(supply_band_priority):
-            if slots_needed <= 0:
+            if slots_needed <= 0 and ready_needed <= 0:
                 break
             active_candidates = _candidate_queryset(
                 VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES,
@@ -1916,7 +1966,7 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
                 occupied_manor_ids=occupied_manor_ids,
             )
             for profile in active_candidates.iterator(chunk_size=100):
-                if slots_needed <= 0:
+                if slots_needed <= 0 and ready_needed <= 0:
                     break
                 if not is_virtual_profile_arena_match_eligible(profile, now=current_time):
                     continue
@@ -1935,12 +1985,30 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
                         target_cell=target_cell,
                         supply_band_priority=supply_band_priority,
                         now=current_time,
+                        allow_ready_replacement=growth_admission_allowed,
                     )
                     if member is not None:
                         made_ready_progress = True
-                        slots_needed -= 1
-                elif growth_admission_allowed and assessment.disposition is ArenaReserveCandidateDisposition.TRAINING:
+                        ready_needed = max(0, ready_needed - 1)
+                        slots_needed = max(0, slots_needed - 1)
+                elif (
+                    not retry_deferred
+                    and growth_admission_allowed
+                    and assessment.disposition is ArenaReserveCandidateDisposition.TRAINING
+                ):
                     training_candidates.append((priority_index, assessment.evaluation.selected_power, profile.id))
+
+    if retry_deferred:
+        if made_ready_progress:
+            record_demand_progress_locked(demand, now=current_time)
+        return ReserveReplenishmentResult(
+            ready_count=demand.reserve_members.filter(state=ArenaVirtualReserveMember.State.READY).count(),
+            training_count=demand.reserve_members.filter(state=ArenaVirtualReserveMember.State.TRAINING).count(),
+            recovered_abandoned=0,
+            recovered_retired=0,
+            creation_needed=0,
+            warm_target_count=creation_target,
+        )
 
     # Re-read after direct handoff.  A stalled demand may still hand off
     # existing ACTIVE profiles, but reactivation is limited to the persisted
@@ -2099,7 +2167,10 @@ def replenish_virtual_reserve(demand_id: int, *, now=None) -> ReserveReplenishme
     blocked = (
         raw_creation_needed == 0
         and training_count == 0
-        and ready_count < int(demand.missing_entry_count)
+        # Keep partial usable supply while waiting for another ACTIVE handoff.
+        # Exhausted creation credit must not discard already qualified seats.
+        and ready_count == 0
+        and int(demand.missing_entry_count) > 0
         and attempt_count >= int(demand.max_reserve_target_count)
     )
     if blocked:

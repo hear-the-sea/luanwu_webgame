@@ -545,6 +545,68 @@ items:
     storage_space: 20
     image: experience_watermelon.png
 
+  # ---------- 经验道具合成图纸 ----------
+
+  - key: experience_peach_recipe
+    name: 经验桃子合成图纸
+    description: 使用后消耗1张图纸和16个经验果，合成1个经验桃子。
+    effect_type: tool
+    rarity: green
+    tradeable: true
+    price: 1000
+    storage_space: 10
+    is_usable: true
+    effect_payload:
+      action: synthesize_item
+      result_item_key: experience_peach
+      result_quantity: 1
+      required_items:
+        experience_fruit: 16
+      confirm_title: 合成经验桃子
+      confirm_text: 确认消耗16个经验果，合成1个经验桃子吗？
+      confirm_ok_text: 确认合成
+    image: blueprint_experience_peach.png
+
+  - key: experience_pineapple_recipe
+    name: 经验菠萝合成图纸
+    description: 使用后消耗1张图纸和32个经验果，合成1个经验菠萝。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 3000
+    storage_space: 10
+    is_usable: true
+    effect_payload:
+      action: synthesize_item
+      result_item_key: experience_pineapple
+      result_quantity: 1
+      required_items:
+        experience_fruit: 32
+      confirm_title: 合成经验菠萝
+      confirm_text: 确认消耗32个经验果，合成1个经验菠萝吗？
+      confirm_ok_text: 确认合成
+    image: blueprint_experience_pineapple.png
+
+  - key: experience_watermelon_recipe
+    name: 经验西瓜合成图纸
+    description: 使用后消耗1张图纸和48个经验果，合成1个经验西瓜。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 12000
+    storage_space: 10
+    is_usable: true
+    effect_payload:
+      action: synthesize_item
+      result_item_key: experience_watermelon
+      result_quantity: 1
+      required_items:
+        experience_fruit: 48
+      confirm_title: 合成经验西瓜
+      confirm_text: 确认消耗48个经验果，合成1个经验西瓜吗？
+      confirm_ok_text: 确认合成
+    image: blueprint_experience_watermelon.png
+
   # ══════════════════════════════════════════════════════════════════════════════
   #                              功能道具
   # ══════════════════════════════════════════════════════════════════════════════
@@ -576,6 +638,23 @@ items:
     price: 2000
     storage_space: 10
     image: magnifier.png  # 可选：物品图片  文件名
+
+  - key: action_point_potion
+    name: 行动力药水
+    description: 使用后恢复200点行动力，行动力不会超过上限1000点。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    price: 2000
+    storage_space: 5
+    is_usable: true
+    effect_payload:
+      action: restore_action_points
+      amount: 200
+      confirm_title: 使用行动力药水
+      confirm_text: 使用后恢复200点行动力，超过上限的部分不会返还。确认使用吗？
+      confirm_ok_text: 确认使用
+    image: action_point_potion.png
 
   - key: manor_rename_card
     name: 庄园命名卡

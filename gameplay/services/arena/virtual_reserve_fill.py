@@ -14,6 +14,7 @@ from gameplay.models import (
     ArenaCoopEntry,
     ArenaCoopEvent,
     ArenaEntry,
+    ArenaReserveTrainingAssignment,
     ArenaTournament,
     ArenaVirtualDemand,
     ArenaVirtualReserveMember,
@@ -565,7 +566,12 @@ def _record_fill_deferred(*, demand_id: int, reason: str, now) -> None:
         )
         if demand is None:
             return
-        record_demand_failure_locked(demand, reason=reason, now=now)
+        if not (
+            str(demand.last_failure_reason or "") == str(reason)[:64]
+            and demand.next_retry_at is not None
+            and demand.next_retry_at > now
+        ):
+            record_demand_failure_locked(demand, reason=reason, now=now)
         log_demand_event(
             "arena_virtual_fill_deferred",
             demand,
@@ -584,7 +590,17 @@ def _complete_demand_fill(
 ) -> None:
     wait_seconds = max(0.0, (now - demand.created_at).total_seconds())
     record_arena_participation(profile_ids, participated_at=now)
-    demand.reserve_members.filter(growth_claim_token__isnull=True).delete()
+    # A skipped busy spare must not block completion again during cleanup.
+    # Terminal-demand cleanup releases it after its owning transaction ends.
+    releasable_ids = list(
+        demand.reserve_members.select_for_update(skip_locked=True)
+        .filter(growth_claim_token__isnull=True)
+        .exclude(training_assignments__status=ArenaReserveTrainingAssignment.Status.ASSIGNED)
+        .values_list("id", flat=True)
+    )
+    demand.reserve_members.filter(id__in=releasable_ids, growth_claim_token__isnull=True).exclude(
+        training_assignments__status=ArenaReserveTrainingAssignment.Status.ASSIGNED
+    ).delete()
     demand.status = ArenaVirtualDemand.Status.SATISFIED
     demand.missing_entry_count = 0
     demand.reserve_target_count = 0
@@ -659,15 +675,15 @@ def _fill_due_reserve(
     if demand is None:
         return 0
     demand = ArenaVirtualDemand.objects.select_for_update().select_related("tournament", "coop_event").get(pk=demand.pk)
-    if demand.next_retry_at is not None and demand.next_retry_at > now + timedelta(seconds=1):
-        return 0
+    retry_deferred = demand.next_retry_at is not None and demand.next_retry_at > now + timedelta(seconds=1)
     gap = max(0, int(demand.missing_entry_count))
     if gap <= 0:
         return 0
 
     ordered_members = _ordered_ready_members(demand, now=now)
     if len(ordered_members) < gap:
-        record_demand_failure_locked(demand, reason="insufficient_ready_members", now=now)
+        if not retry_deferred:
+            record_demand_failure_locked(demand, reason="insufficient_ready_members", now=now)
         log_demand_event(
             "arena_virtual_fill_deferred",
             demand,
@@ -677,18 +693,16 @@ def _fill_due_reserve(
         )
         return 0
 
-    selected_members = _lock_selected_ready_members(
-        demand,
-        selected_members=ordered_members[:gap],
-    )
-    if len(selected_members) != gap:
-        raise _AtomicFillAborted(demand.id, "ready_member_lock_failed")
-
-    locked_lineups = _lock_ready_member_lineups(
-        demand,
-        members=selected_members,
-        now=now,
-    )
+    locked_lineups: list[tuple[BotProfile, list[dict]]] = []
+    for member in ordered_members:
+        selected_members = _lock_selected_ready_members(demand, selected_members=[member])
+        if not selected_members:
+            continue
+        lineups = _lock_ready_member_lineups(demand, members=selected_members, now=now)
+        if lineups:
+            locked_lineups.extend(lineups)
+        if len(locked_lineups) == gap:
+            break
     if len(locked_lineups) != gap:
         raise _AtomicFillAborted(demand.id, "ready_member_revalidation_failed")
 

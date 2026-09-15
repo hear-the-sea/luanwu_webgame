@@ -184,8 +184,8 @@ def test_prod_compose_declares_8gb_memory_guardrails_and_single_child_baseline()
             "${CELERY_WORKER_MEMORY_RESERVATION:-160m}",
         ),
         "worker_timer_safety": (
-            "${CELERY_TIMER_SAFETY_MEMORY_LIMIT:-256m}",
-            "${CELERY_TIMER_SAFETY_MEMORY_RESERVATION:-160m}",
+            "${CELERY_TIMER_SAFETY_MEMORY_LIMIT:-512m}",
+            "${CELERY_TIMER_SAFETY_MEMORY_RESERVATION:-256m}",
         ),
         "worker_timer_maintenance": (
             "${CELERY_TIMER_MAINTENANCE_MEMORY_LIMIT:-768m}",
@@ -204,13 +204,17 @@ def test_prod_compose_declares_8gb_memory_guardrails_and_single_child_baseline()
         "worker_battle",
         "worker_timer",
         "worker_timer_scan",
-        "worker_timer_safety",
         "worker_timer_maintenance",
     ):
         command = services[service_name]["command"]
         assert "${CELERY_PREFETCH_MULTIPLIER:-1}" in command
         assert "${CELERY_MAX_TASKS_PER_CHILD:-200}" in command
         assert "${CELERY_MAX_MEMORY_PER_CHILD:-180000}" in command
+
+    safety_command = services["worker_timer_safety"]["command"]
+    assert "${CELERY_PREFETCH_MULTIPLIER:-1}" in safety_command
+    assert "${CELERY_MAX_TASKS_PER_CHILD:-200}" in safety_command
+    assert "${CELERY_TIMER_SAFETY_MAX_MEMORY_PER_CHILD:-400000}" in safety_command
 
     assert services["db"]["command"] == [
         "--innodb-buffer-pool-size=${MYSQL_INNODB_BUFFER_POOL_SIZE:-512M}",
@@ -234,6 +238,7 @@ def test_prod_env_example_matches_8gb_memory_and_queue_baseline() -> None:
     assert values["CELERY_TIMER_SAFETY_CONCURRENCY"] == "1"
     assert values["CELERY_MAX_TASKS_PER_CHILD"] == "200"
     assert values["CELERY_MAX_MEMORY_PER_CHILD"] == "180000"
+    assert values["CELERY_TIMER_SAFETY_MAX_MEMORY_PER_CHILD"] == "400000"
     assert values["MYSQL_INNODB_BUFFER_POOL_SIZE"] == "512M"
     assert values["MYSQL_MAX_CONNECTIONS"] == "40"
     assert values["REDIS_MAXMEMORY"] == "128mb"
@@ -254,7 +259,7 @@ def test_prod_env_example_matches_8gb_memory_and_queue_baseline() -> None:
             memory[field] = int(fallback[:-1])
             totals[field] += memory[field]
         assert 0 < memory["mem_reservation"] <= memory["mem_limit"]
-    assert totals == {"mem_limit": 4448, "mem_reservation": 2464}
+    assert totals == {"mem_limit": 4704, "mem_reservation": 2560}
 
 
 def test_prod_env_requires_a_non_empty_redis_password() -> None:

@@ -4,7 +4,7 @@ import pytest
 
 from battle.random_context import RNG_STREAM_LOOT, BattleRandomContext
 from core.exceptions import ArenaExchangeError, ArenaRewardLimitError, MessageError
-from gameplay.models import ArenaExchangeRecord, InventoryItem, ItemTemplate
+from gameplay.models import ArenaExchangeRecord, InventoryItem, ItemTemplate, Message
 from gameplay.services.arena.core import exchange_arena_reward
 from gameplay.services.arena.exchange_helpers import ARENA_EXCHANGE_RANDOM_ITEMS_DISCRIMINATOR
 from gameplay.services.arena.helpers import resolve_random_reward_items
@@ -237,6 +237,8 @@ def test_exchange_arena_reward_wulin_chest_respects_weekly_limit(monkeypatch):
     assert manor.arena_coins == 1000
     assert result.granted_items == {"chunqiu_coin": 20}
     assert InventoryItem.objects.filter(manor=manor, template__key="chunqiu_coin", quantity=20).exists()
+    message = Message.objects.filter(manor=manor, title="竞技场兑换成功：武林宝箱").latest("created_at")
+    assert "获得物品：春秋币×20" in message.body
 
     with pytest.raises(ArenaRewardLimitError, match="武林宝箱 本周最多可兑换 2 次"):
         exchange_arena_reward(manor, "wulin_chest", quantity=1)

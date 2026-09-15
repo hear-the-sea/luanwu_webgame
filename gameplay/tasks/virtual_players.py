@@ -226,7 +226,7 @@ def heartbeat_virtual_player_arena_shortage_emitter_task() -> dict[str, object]:
 
 
 @shared_task(name="gameplay.aggregate_virtual_player_safety")
-def aggregate_virtual_player_safety_task(limit: int = 100) -> dict[str, object]:
+def aggregate_virtual_player_safety_task(limit: int = 50) -> dict[str, object]:
     windows = finalize_due_safety_windows(limit=limit)
     heartbeat = _heartbeat_payload("safety_aggregator")
     return {
@@ -237,7 +237,7 @@ def aggregate_virtual_player_safety_task(limit: int = 100) -> dict[str, object]:
 
 
 @shared_task(name="gameplay.monitor_virtual_player_safety")
-def monitor_virtual_player_safety_task(limit: int = 100) -> dict[str, object]:
+def monitor_virtual_player_safety_task(limit: int = 50) -> dict[str, object]:
     cycle = run_safety_monitor(limit=limit)
     result = cycle.monitor
     warnings = list(dict.fromkeys(reason for decision in result.decisions for reason in decision.warning_reasons))

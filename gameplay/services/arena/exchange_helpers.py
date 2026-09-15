@@ -19,6 +19,7 @@ from gameplay.services.buildings.forge import load_blueprint_catalog
 from gameplay.services.inventory.core import add_item_to_inventory_locked
 from gameplay.services.resources import grant_resources_locked
 from gameplay.services.utils.messages import create_message
+from gameplay.utils.template_loader import get_item_template_names_by_keys
 
 from . import helpers as _arena_helpers
 from .rewards import (
@@ -119,12 +120,19 @@ def build_exchange_summary(
     credited_resources: dict[str, int],
     overflow_resources: dict[str, int],
     granted_items: dict[str, int],
+    item_names: dict[str, str] | None = None,
 ) -> str:
     summary_parts: list[str] = []
     if credited_resources:
         summary_parts.append("资源已发放")
     if granted_items:
-        summary_parts.append("道具已入库")
+        if item_names is not None:
+            item_summary = "、".join(
+                f"{item_names.get(item_key, item_key)}×{amount}" for item_key, amount in sorted(granted_items.items())
+            )
+            summary_parts.append(f"获得物品：{item_summary}")
+        else:
+            summary_parts.append("道具已入库")
     if overflow_resources:
         summary_parts.append("部分资源因容量上限溢出")
     return "，".join(summary_parts) if summary_parts else "奖励已处理"
@@ -329,10 +337,12 @@ def exchange_arena_reward(manor: Manor, reward_key: str, quantity: int = 1) -> A
         payload=payload,
     )
 
+    item_names = get_item_template_names_by_keys(granted_items)
     summary = build_exchange_summary(
         credited_resources=credited_resources,
         overflow_resources=overflow_resources,
         granted_items=granted_items,
+        item_names=item_names,
     )
 
     send_exchange_success_message(

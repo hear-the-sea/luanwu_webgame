@@ -33,6 +33,51 @@ def _race(count, action):
         return [future.result(timeout=30) for future in futures]
 
 
+def test_fill_skips_locked_ready_member_and_uses_spare(monkeypatch):
+    from gameplay.models import ArenaVirtualReserveMember
+    from gameplay.services.arena import virtual_reserve_fill as fill
+    from tests.arena_services.test_virtual_reserve import _create_bot_profile, _create_tournament_demand
+
+    demand = _create_tournament_demand()
+    members = [
+        ArenaVirtualReserveMember.objects.create(
+            demand=demand,
+            profile=_create_bot_profile(f"locked_ready_{index}"),
+            state="ready",
+        )
+        for index in range(2)
+    ]
+    monkeypatch.setattr(fill, "_ordered_ready_members", lambda *args, **kwargs: members)
+    held, release = Event(), Event()
+
+    def hold_member():
+        close_old_connections()
+        try:
+            with transaction.atomic():
+                ArenaVirtualReserveMember.objects.select_for_update().get(pk=members[0].pk)
+                held.set()
+                assert release.wait(timeout=15)
+        finally:
+            close_old_connections()
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        future = executor.submit(hold_member)
+        try:
+            assert held.wait(timeout=10)
+            fill_future = executor.submit(fill.fill_due_tournament_reserve, demand.tournament_id)
+            assert fill_future.result(timeout=10) == 1
+        finally:
+            release.set()
+        future.result(timeout=10)
+    entry = demand.tournament.entries.get(source="virtual")
+    assert entry.manor_id == members[1].profile.manor_id
+    from gameplay.services.arena.virtual_reserve_pool import EXHAUSTED_LEASE_GRACE
+    from gameplay.services.arena.virtual_reserve_scan import scan_virtual_reserve_demands
+
+    scan_virtual_reserve_demands(now=timezone.now() + EXHAUSTED_LEASE_GRACE + timedelta(seconds=1))
+    assert not demand.reserve_members.exists()
+
+
 def test_shared_mysql_materialization_ledger_cannot_overspend(settings):
     settings.ARENA_LOW_POPULATION_MODE = True
     ArenaRuntimeBudget.objects.update_or_create(pk="materialization", defaults={"entries": []})

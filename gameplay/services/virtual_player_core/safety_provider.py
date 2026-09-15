@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
@@ -28,6 +29,7 @@ SAFETY_MAX_DIMENSIONS = 8
 SAFETY_MAX_SNAPSHOT_BYTES = 65_536
 SAFETY_MAX_SNAPSHOT_DEPTH = 8
 SAFETY_MAX_SNAPSHOT_NODES = 2_048
+SAFETY_SNAPSHOT_FLOAT_SIGNIFICANT_DIGITS = 16
 HARD_VIOLATION_METRIC_NAME = "virtual_player_safety_hard_violation"
 
 _IDENTIFIER_RE = re.compile(r"^[a-z][a-z0-9_]{0,127}$")
@@ -772,6 +774,60 @@ def _validate_snapshot_node(value: object, *, depth: int, state: list[int]) -> N
     raise InvalidSafetyMetricError("snapshot must contain finite canonical JSON values")
 
 
+def _normalize_snapshot_digest_value(value: object) -> object:
+    """Normalize floats before hashing so JSON database round-trips are stable."""
+
+    if isinstance(value, bool) or value is None:
+        return value
+    if isinstance(value, str):
+        return str(value)
+    if isinstance(value, int):
+        return int(value)
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise InvalidSafetyMetricError("snapshot must contain finite canonical JSON values")
+        return float(format(value, f".{SAFETY_SNAPSHOT_FLOAT_SIGNIFICANT_DIGITS}g"))
+    if isinstance(value, Mapping):
+        return {key: _normalize_snapshot_digest_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_normalize_snapshot_digest_value(item) for item in value]
+    raise InvalidSafetyMetricError("snapshot must contain finite canonical JSON values")
+
+
+def canonical_safety_snapshot_digest(value: object) -> str:
+    """Hash a JSON snapshot using a float profile stable across DB JSON codecs."""
+
+    normalized = _normalize_snapshot_digest_value(value)
+    try:
+        encoded = json.dumps(
+            normalized,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+            allow_nan=False,
+        ).encode("ascii")
+    except (TypeError, ValueError, UnicodeEncodeError) as exc:
+        raise InvalidSafetyMetricError("snapshot must be canonical JSON") from exc
+    return sha256(encoded).hexdigest()
+
+
+def safety_snapshot_digest_matches(value: object, expected_digest: str) -> bool:
+    """Verify current or exact legacy JSON evidence without rewriting its digest."""
+
+    if canonical_safety_snapshot_digest(value) == expected_digest:
+        return True
+    # Previously finalized windows used the unrounded canonical JSON bytes.
+    # Only accept that exact hash; do not infer or repair lost float precision.
+    encoded = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+        allow_nan=False,
+    ).encode("ascii")
+    return sha256(encoded).hexdigest() == expected_digest
+
+
 def _canonical_snapshot(value: object) -> tuple[dict[str, Any], str]:
     if not isinstance(value, Mapping):
         raise InvalidSafetyMetricError("snapshot must be a mapping")
@@ -789,7 +845,7 @@ def _canonical_snapshot(value: object) -> tuple[dict[str, Any], str]:
     if len(encoded) > SAFETY_MAX_SNAPSHOT_BYTES:
         raise InvalidSafetyMetricError(f"snapshot may contain at most {SAFETY_MAX_SNAPSHOT_BYTES} bytes")
     normalized = json.loads(encoded.decode("ascii"))
-    return normalized, sha256(encoded).hexdigest()
+    return normalized, canonical_safety_snapshot_digest(normalized)
 
 
 def _window_finalize_result(
@@ -837,7 +893,9 @@ def finalize_safety_metric_window(
                 stored_snapshot, stored_digest = _canonical_snapshot(window.snapshot)
             except InvalidSafetyMetricError:
                 stored_snapshot, stored_digest = None, ""
-            if stored_snapshot == normalized_snapshot and stored_digest == snapshot_digest == window.snapshot_digest:
+            if stored_digest == snapshot_digest and safety_snapshot_digest_matches(
+                stored_snapshot, window.snapshot_digest
+            ):
                 return _window_finalize_result(window, newly_finalized=False)
             conflict = True
         else:
@@ -1045,6 +1103,7 @@ __all__ = [
     "HARD_VIOLATION_METRIC_NAME",
     "SAFETY_CLOSED_WINDOW_RETENTION",
     "SAFETY_RAW_EVENT_RETENTION",
+    "SAFETY_SNAPSHOT_FLOAT_SIGNIFICANT_DIGITS",
     "SAFETY_WINDOW_GRACE",
     "InvalidSafetyMetricError",
     "LateSafetyMetricEventError",
@@ -1061,6 +1120,8 @@ __all__ = [
     "SafetyMetricWindowNotReadyError",
     "SafetyProviderError",
     "aggregate_and_finalize_safety_metric_window",
+    "canonical_safety_snapshot_digest",
+    "safety_snapshot_digest_matches",
     "cleanup_safety_metric_retention",
     "finalize_safety_metric_window",
     "record_safety_metric_event",
