@@ -66,6 +66,9 @@ def test_default_luanwu_shop_includes_requested_coin_products():
     assert {key: products[key].price for key in expected_prices} == expected_prices
     assert {key: products[key].item_key for key in expected_prices} == {key: key for key in expected_prices}
     assert all(products[key].reward_quantity == 1 for key in expected_prices)
+    assert products["action_point_potion"].price == 1
+    assert products["action_point_potion"].item_key == "action_point_potion"
+    assert products["action_point_potion"].reward_quantity == 2
 
 
 def test_load_luanwu_shop_config_rejects_invalid_reward_type(tmp_path, monkeypatch):

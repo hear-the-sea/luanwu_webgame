@@ -257,6 +257,26 @@ class TestProductionViews:
         assert 'id="quantity-zhixuesan"' in body
         assert 'id="quantity-zhixuesan"\n                                       value="1" min="1" max="100"' in body
 
+    def test_smithy_page_shows_category_specific_max_quantity(self, manor_with_user):
+        from gameplay.models import PlayerTechnology
+
+        manor, client = manor_with_user
+        PlayerTechnology.objects.update_or_create(
+            manor=manor,
+            tech_key="smelting",
+            defaults={"level": 5},
+        )
+
+        medicine_response = client.get(f"{reverse('gameplay:smithy')}?category=medicine")
+        assert medicine_response.status_code == 200
+        medicine_body = medicine_response.content.decode("utf-8")
+        assert "单次上限 <strong>100</strong>" in medicine_body
+
+        metal_response = client.get(f"{reverse('gameplay:smithy')}?category=metal")
+        assert metal_response.status_code == 200
+        metal_body = metal_response.content.decode("utf-8")
+        assert "单次上限 <strong>500</strong>" in metal_body
+
     def test_smithy_quantity_input_updates_duration_preview(self, manor_with_user):
         _manor, client = manor_with_user
 

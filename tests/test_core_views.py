@@ -632,11 +632,16 @@ class TestCoreViews:
             client.post(reverse("gameplay:rename_manor"), {"new_name": "新庄园名"})
 
     def test_ranking_page(self, manor_with_user):
-        """排行榜页面"""
+        """声望页面"""
         _manor, client = manor_with_user
         response = client.get(reverse("gameplay:ranking"))
         assert response.status_code == 200
         assert "ranking" in response.context
+        body = response.content.decode("utf-8")
+        assert "声望" not in body
+        assert "刷新" not in body
+        assert "声望进度" not in body
+        assert "排行榜" not in body
 
     def test_ranking_page_uses_selector_context(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user

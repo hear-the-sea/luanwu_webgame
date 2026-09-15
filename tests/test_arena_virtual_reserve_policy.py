@@ -4,6 +4,7 @@ import pytest
 
 from gameplay.services.arena.virtual_reserve_policy import (
     assess_reserve_admission,
+    reserve_budget_after_input_change,
     reserve_materialization_needed,
     reserve_target_plan,
     virtual_roster_target_count,
@@ -33,6 +34,33 @@ def test_reserve_target_plan_separates_replacement_budget_from_warm_target(
 def test_reserve_target_plan_clamps_negative_shortage() -> None:
     assert reserve_target_plan(-1).replacement_target_count == 0
     assert reserve_target_plan(-1).warm_target_count == 0
+
+
+def test_budget_extension_preserves_high_water_and_appends_current_target() -> None:
+    assert (
+        reserve_budget_after_input_change(
+            current_max=27,
+            attempt_high_water=27,
+            replacement_target=15,
+        )
+        == 42
+    )
+    assert (
+        reserve_budget_after_input_change(
+            current_max=27,
+            attempt_high_water=10,
+            replacement_target=15,
+        )
+        == 27
+    )
+    assert (
+        reserve_budget_after_input_change(
+            current_max=27,
+            attempt_high_water=27,
+            replacement_target=0,
+        )
+        == 27
+    )
 
 
 def test_materialization_need_uses_warm_slots_and_replacement_attempt_budget() -> None:

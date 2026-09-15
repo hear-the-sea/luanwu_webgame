@@ -34,6 +34,7 @@ def test_luanwu_shop_page_shows_products_and_warehouse_coin_balance(django_user_
     _create_item_template("fangdajing", "放大镜")
     _create_item_template("mission_card", "任务卡")
     _create_item_template("recruitment_card", "招募卡")
+    _create_item_template("action_point_potion", "行动力药水", is_usable=True)
     blueprint = _create_item_template("blueprint_shop_device", "机关猫图纸", rarity="purple")
     InventoryItem.objects.create(manor=manor, template=coin, quantity=12)
     monkeypatch.setattr(luanwu_shop, "get_device_blueprint_templates", lambda: [blueprint])
@@ -49,6 +50,8 @@ def test_luanwu_shop_page_shows_products_and_warehouse_coin_balance(django_user_
     assert "放大镜" in response.content.decode()
     assert "任务卡" in response.content.decode()
     assert "招募卡" in response.content.decode()
+    assert "行动力药水" in response.content.decode()
+    assert "×2" in response.content.decode()
     assert "×3" in response.content.decode()
     assert "用于增加每日招募次数" in response.content.decode()
     assert "机关图纸宝箱" in response.content.decode()
@@ -93,6 +96,22 @@ def test_luanwu_shop_recruitment_card_purchase_grants_three_cards_per_coin(djang
     assert result["granted_items"] == {"recruitment_card": 3}
     assert InventoryItem.objects.get(manor=manor, template=coin).quantity == 1
     assert InventoryItem.objects.get(manor=manor, template=recruitment_card).quantity == 3
+
+
+@pytest.mark.django_db
+def test_luanwu_shop_action_point_potion_purchase_grants_two_per_coin(django_user_model):
+    user = django_user_model.objects.create_user(username="luanwu_shop_action_potion", password="pass123")
+    manor = ensure_manor(user)
+    coin = _create_item_template("chunqiu_coin", "春秋币", effect_type=ItemTemplate.EffectType.RESOURCE)
+    potion = _create_item_template("action_point_potion", "行动力药水", is_usable=True)
+    InventoryItem.objects.create(manor=manor, template=coin, quantity=1)
+
+    result = luanwu_shop.purchase_luanwu_shop_item(manor, "action_point_potion")
+
+    assert result["total_cost"] == 1
+    assert result["granted_items"] == {"action_point_potion": 2}
+    assert not InventoryItem.objects.filter(manor=manor, template=coin).exists()
+    assert InventoryItem.objects.get(manor=manor, template=potion).quantity == 2
 
 
 @pytest.mark.django_db

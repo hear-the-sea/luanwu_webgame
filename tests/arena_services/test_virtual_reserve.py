@@ -1162,10 +1162,10 @@ def test_reconcile_increments_version_only_when_inputs_change():
     repeated = reconcile_tournament_demand(tournament.id)
     assert repeated is not None
     assert repeated.version == first.version
-    first.admission_attempt_high_water = 1
+    first.admission_attempt_high_water = first.max_reserve_target_count
     first.admission_paused_at = now
     first.admission_pause_reason = "no_effective_progress"
-    first.admission_probe_target_ordinal = 1
+    first.admission_probe_target_ordinal = first.max_reserve_target_count
     first.save(
         update_fields=[
             "admission_attempt_high_water",
@@ -1192,9 +1192,78 @@ def test_reconcile_increments_version_only_when_inputs_change():
     assert changed.last_progress_at == first_progress_at
     assert changed.last_input_change_at is not None
     assert changed.last_input_change_at > first_input_change_at
+    assert changed.max_reserve_target_count == first.max_reserve_target_count + changed.reserve_target_count
+    assert changed.admission_attempt_high_water == first.max_reserve_target_count
     assert changed.admission_pause_reason == ""
     assert changed.admission_paused_at is None
     assert changed.admission_probe_target_ordinal is None
+
+
+@pytest.mark.django_db
+def test_blocked_replacement_budget_gets_one_compatibility_rearm_after_cooldown():
+    now = timezone.now()
+    demand = _create_tournament_demand(player_limit=6)
+    exhausted_budget = 27
+    demand.status = ArenaVirtualDemand.Status.BLOCKED
+    demand.reserve_target_count = 0
+    demand.warm_target_count = 0
+    demand.max_reserve_target_count = exhausted_budget
+    demand.admission_attempt_high_water = exhausted_budget
+    demand.next_retry_at = now
+    demand.last_checked_at = now - timedelta(minutes=30)
+    demand.last_failure_reason = "replacement_budget_exhausted"
+    demand.consecutive_failure_count = 1
+    demand.save(
+        update_fields=[
+            "status",
+            "reserve_target_count",
+            "warm_target_count",
+            "admission_attempt_high_water",
+            "next_retry_at",
+            "last_checked_at",
+            "last_failure_reason",
+            "consecutive_failure_count",
+            "updated_at",
+        ]
+    )
+
+    rearmed = reconcile_tournament_demand(demand.tournament_id, now=now)
+
+    assert rearmed is not None
+    assert rearmed.status == ArenaVirtualDemand.Status.ACTIVE
+    assert rearmed.reserve_target_count == 15
+    assert rearmed.warm_target_count == 8
+    assert rearmed.max_reserve_target_count == exhausted_budget + 15
+    assert rearmed.admission_attempt_high_water == exhausted_budget
+    assert rearmed.consecutive_failure_count == 2
+    assert rearmed.next_retry_at == now
+    replenished = replenish_virtual_reserve(rearmed.id, now=now)
+    assert replenished.creation_needed == rearmed.warm_target_count
+    rearmed.refresh_from_db()
+    assert rearmed.status == ArenaVirtualDemand.Status.ACTIVE
+
+    rearmed.status = ArenaVirtualDemand.Status.BLOCKED
+    rearmed.reserve_target_count = 0
+    rearmed.warm_target_count = 0
+    rearmed.admission_attempt_high_water = rearmed.max_reserve_target_count
+    rearmed.next_retry_at = now
+    rearmed.last_failure_reason = "replacement_budget_exhausted"
+    rearmed.save(
+        update_fields=[
+            "status",
+            "reserve_target_count",
+            "warm_target_count",
+            "admission_attempt_high_water",
+            "next_retry_at",
+            "last_failure_reason",
+            "updated_at",
+        ]
+    )
+
+    second_retry = reconcile_tournament_demand(demand.tournament_id, now=now)
+
+    assert second_retry is not None
+    assert second_retry.max_reserve_target_count == exhausted_budget + 15
 
 
 @pytest.mark.django_db

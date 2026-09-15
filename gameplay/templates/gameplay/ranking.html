@@ -1,39 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}声望排行榜{% endblock %}
+{% block title %}排名{% endblock %}
 
 {% block content %}
 <section class="dashboard">
     <div class="tw-section-header">
         <div>
-            <h1>声望排行榜</h1>
+            <h1>排名</h1>
             <p class="caption">
-                我的声望：<strong>{{ prestige_info.prestige }}</strong>
+                <strong>{{ manor.prestige }}</strong>
                 {% if player_rank %}
                     | 当前排名：<strong>第 {{ player_rank }} 名</strong>
                 {% endif %}
                 | 共 {{ total_players }} 人上榜
             </p>
         </div>
-        <a class="tw-btn-secondary" href="{% url 'gameplay:ranking' %}">刷新</a>
     </div>
 
-    <section class="tw-panel mb-6">
-        <div class="tw-panel-header">声望进度</div>
-        <div class="tw-panel-content">
-            <div class="p-4 bg-bg-secondary rounded-lg">
-                <p class="mb-3">累计花费银两：{{ prestige_info.silver_spent }}</p>
-                <div class="w-full h-5 bg-border-light rounded-full overflow-hidden mb-3">
-                    <div class="h-full rounded-full transition-all duration-300"
-                         style="width: {{ prestige_info.progress|divisibleby:10 }}%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); min-width: 2%;"></div>
-                </div>
-                <p class="text-sm text-text-muted text-center">下一点声望进度：{{ prestige_info.progress }} / {{ prestige_info.threshold }}</p>
-            </div>
-        </div>
-    </section>
-
     <section class="tw-panel">
-        <div class="tw-panel-header">排行榜</div>
         <div class="tw-panel-content">
             {% if ranking %}
             <div class="tw-table-wrapper">
@@ -42,7 +26,7 @@
                         <tr>
                             <th class="w-20 text-center">排名</th>
                             <th>庄园</th>
-                            <th class="w-24 text-right">声望</th>
+                            <th class="w-24 text-right" aria-label="数值"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,14 +62,14 @@
                         <tr class="bg-blue-50">
                             <td class="w-20 text-center">{{ player_rank }}</td>
                             <td class="font-medium">{{ manor.display_name }} <span class="tw-self-badge">我</span></td>
-                            <td class="w-24 text-right font-semibold text-purple-600">{{ prestige_info.prestige }}</td>
+                            <td class="w-24 text-right font-semibold text-purple-600">{{ manor.prestige }}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             {% endif %}
             {% else %}
-            <p class="tw-empty-hint">暂无玩家上榜，成为第一个获得声望的玩家吧！</p>
+            <p class="tw-empty-hint">暂无玩家上榜，成为第一个上榜的玩家吧！</p>
             {% endif %}
         </div>
     </section>

@@ -17,6 +17,7 @@ from gameplay.services.buildings.ranch import (
 from gameplay.services.buildings.smithy import (
     get_active_smelting_productions,
     get_max_smelting_quantity,
+    get_max_smithy_medicine_quantity,
     get_metal_options,
     get_smithy_speed_bonus,
     has_active_smelting_production,
@@ -85,6 +86,10 @@ def get_smithy_page_context(manor: Any, *, current_category: str | None = None) 
     speed_bonus = get_smithy_speed_bonus(manor)
     normalized_category = _normalize_smithy_category(current_category)
     metal_options = get_metal_options(manor)
+    max_smelting_quantity = get_max_smelting_quantity(manor)
+    max_current_quantity = (
+        get_max_smithy_medicine_quantity(manor) if normalized_category == "medicine" else max_smelting_quantity
+    )
     return {
         "current_smithy_category": normalized_category,
         "smithy_categories": SMITHY_CATEGORIES,
@@ -94,7 +99,8 @@ def get_smithy_page_context(manor: Any, *, current_category: str | None = None) 
         "speed_bonus": speed_bonus,
         "speed_bonus_percent": int(speed_bonus * 100),
         "smelting_level": get_player_technology_level(manor, "smelting"),
-        "max_smelting_quantity": get_max_smelting_quantity(manor),
+        "max_smelting_quantity": max_smelting_quantity,
+        "max_current_quantity": max_current_quantity,
         "is_producing": has_active_smelting_production(manor),
     }
 

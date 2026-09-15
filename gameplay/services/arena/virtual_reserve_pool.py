@@ -197,6 +197,7 @@ _ADMISSION_STALL_EXPLICIT_REASONS = frozenset(
         "insufficient_resource",
         "salary_runway_protected",
         "target_unreachable_by_cap",
+        "replacement_budget_exhausted",
     }
 )
 _GROWTH_BUSINESS_ERROR_REASON = "growth_business_error"

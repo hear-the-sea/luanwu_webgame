@@ -20,7 +20,7 @@ from .virtual_lineups import lineup_power
 from .virtual_reserve_policy import RESERVE_ADMISSION_PROBE_COOLDOWN
 from .virtual_reserve_policy import RESERVE_MINIMUM as POLICY_RESERVE_MINIMUM
 from .virtual_reserve_policy import RESERVE_MULTIPLIER as POLICY_RESERVE_MULTIPLIER
-from .virtual_reserve_policy import reserve_target_for_missing, reserve_target_plan
+from .virtual_reserve_policy import reserve_budget_after_input_change, reserve_target_for_missing, reserve_target_plan
 from .virtual_reserve_references import median_entry, reference_snapshots
 from .virtual_reserve_training_policy import ArenaTrainingPolicyDecision, resolve_configured_arena_training_policy
 
@@ -411,6 +411,18 @@ def _upsert_demand_state_locked(
         and demand.last_failure_reason in RECOVERABLE_BLOCKED_DEMAND_REASONS
         and now >= retry_due_at
     )
+    # Rows created before the input-epoch budget extension may already be
+    # blocked with their historical high-water equal to the old ceiling. Give
+    # each such row one compatibility rearm on its first cooldown retry. The
+    # failure streak is advanced so a failed rearm cannot become an endless
+    # automatic creation loop; later real input changes can still earn a new
+    # bounded budget through the normal path below.
+    budget_rearm = bool(
+        retry_probe
+        and demand.last_failure_reason == "replacement_budget_exhausted"
+        and int(demand.consecutive_failure_count) == 1
+        and int(demand.admission_attempt_high_water) >= int(demand.max_reserve_target_count)
+    )
     if was_blocked and not changed and not retry_probe:
         if now >= retry_due_at and demand.last_failure_reason in POLICY_BLOCKED_DEMAND_REASONS:
             # Poll configuration changes without allowing page reads to turn
@@ -479,7 +491,14 @@ def _upsert_demand_state_locked(
     demand.warm_target_count = warm_target_count
     for field_name, value in training_snapshot.items():
         setattr(demand, field_name, value)
-    demand.max_reserve_target_count = max(demand.max_reserve_target_count, reserve_target_count)
+    if changed or budget_rearm:
+        demand.max_reserve_target_count = reserve_budget_after_input_change(
+            current_max=demand.max_reserve_target_count,
+            attempt_high_water=demand.admission_attempt_high_water,
+            replacement_target=reserve_target_count,
+        )
+    else:
+        demand.max_reserve_target_count = max(demand.max_reserve_target_count, reserve_target_count)
     demand.last_checked_at = now
     update_fields = [
         "status",
@@ -513,7 +532,22 @@ def _upsert_demand_state_locked(
                 "admission_probe_target_ordinal",
             ]
         )
-    if retry_probe:
+    if budget_rearm:
+        demand.next_retry_at = now
+        demand.consecutive_failure_count = min(255, int(demand.consecutive_failure_count) + 1)
+        demand.admission_paused_at = None
+        demand.admission_pause_reason = ""
+        demand.admission_probe_target_ordinal = None
+        update_fields.extend(
+            [
+                "next_retry_at",
+                "consecutive_failure_count",
+                "admission_paused_at",
+                "admission_pause_reason",
+                "admission_probe_target_ordinal",
+            ]
+        )
+    elif retry_probe:
         demand.next_retry_at = now
         demand.admission_paused_at = now
         demand.admission_pause_reason = "no_effective_progress"

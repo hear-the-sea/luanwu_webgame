@@ -28,6 +28,12 @@ items:
     reward_type: item
     reward_quantity: 3
 
+  - key: action_point_potion
+    price: 1
+    item_key: action_point_potion
+    reward_type: item
+    reward_quantity: 2
+
   - key: manor_rename_card
     price: 1
     item_key: manor_rename_card

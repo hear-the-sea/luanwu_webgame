@@ -16,6 +16,7 @@ __all__ = [
     "reserve_target_for_missing",
     "reserve_target_plan",
     "reserve_admission_attempt_high_water",
+    "reserve_budget_after_input_change",
     "reserve_materialization_needed",
     "reserve_warm_target",
     "virtual_roster_target_count",
@@ -109,6 +110,31 @@ def reserve_admission_attempt_high_water(
     """Read the monotonic admission high-water for the current reserve model."""
 
     return max(0, int(leased_attempts), int(admission_attempt_high_water))
+
+
+def reserve_budget_after_input_change(
+    *,
+    current_max: int,
+    attempt_high_water: int,
+    replacement_target: int,
+) -> int:
+    """Extend a demand budget for a new input epoch without resetting history.
+
+    The high-water mark is a monotonic audit of every admission attempt. A
+    changed human demand still needs a fresh, bounded chance to find supply;
+    append the current replacement target after that high-water instead of
+    clearing or reusing historical attempts.
+    """
+
+    normalized_current_max = max(0, int(current_max))
+    normalized_attempt_high_water = max(0, int(attempt_high_water))
+    normalized_replacement_target = max(0, int(replacement_target))
+    if normalized_replacement_target == 0:
+        return normalized_current_max
+    return max(
+        normalized_current_max,
+        normalized_attempt_high_water + normalized_replacement_target,
+    )
 
 
 def assess_reserve_admission(
