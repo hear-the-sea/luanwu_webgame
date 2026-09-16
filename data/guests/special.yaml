@@ -231,10 +231,10 @@ heroes:
       skills:
         - guild_wulinzhai_night_signal
       custom_stats:
-        force: 176
-        intellect: 104
+        force: 88
+        intellect: 52
         defense: 144
-        agility: 128
+        agility: 55
         luck: 64
         base_hp: 1980
     - key: guild_wulinzhai_blade_ambusher
@@ -245,10 +245,10 @@ heroes:
       skills:
         - guild_wulinzhai_shadow_raid
       custom_stats:
-        force: 188
-        intellect: 82
+        force: 99
+        intellect: 41
         defense: 146
-        agility: 136
+        agility: 70
         luck: 62
         base_hp: 2020
     - key: guild_wulinzhai_torch_archer
@@ -259,10 +259,10 @@ heroes:
       skills:
         - guild_wulinzhai_torch_volley
       custom_stats:
-        force: 180
-        intellect: 92
+        force: 90
+        intellect: 41
         defense: 136
-        agility: 142
+        agility: 71
         luck: 60
         base_hp: 1960
     - key: guild_wulinzhai_path_scout
@@ -273,10 +273,10 @@ heroes:
       skills:
         - guild_wulinzhai_shadow_raid
       custom_stats:
-        force: 172
-        intellect: 96
+        force: 86
+        intellect: 55
         defense: 132
-        agility: 150
+        agility: 75
         luck: 66
         base_hp: 1920
     - key: guild_wulinzhai_minion
@@ -284,11 +284,12 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: monkey_mission.png
       custom_stats:
-        force: 168
-        intellect: 74
+        force: 50
+        intellect: 40
         defense: 138
-        agility: 118
+        agility: 50
         luck: 52
         base_hp: 1880
   purple:
@@ -344,12 +345,12 @@ heroes:
         - guild_wulinzhai_shadow_raid
         - guild_wulinzhai_torch_volley
       custom_stats:
-        force: 214
-        intellect: 120
+        force: 96
+        intellect: 66
         defense: 176
         agility: 142
         luck: 76
-        base_hp: 2480
+        base_hp: 24800
     - key: guild_wulinzhai_junshi
       name: 乌鳞寨军师
       archetype: civil
@@ -358,10 +359,10 @@ heroes:
       skills:
         - guild_wulinzhai_night_signal
       custom_stats:
-        force: 172
-        intellect: 198
+        force: 64
+        intellect: 120
         defense: 148
-        agility: 138
+        agility: 55
         luck: 82
         base_hp: 2300
     - key: guild_bloodflag_head_escort

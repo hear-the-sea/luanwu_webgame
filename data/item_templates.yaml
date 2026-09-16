@@ -1741,6 +1741,25 @@ items:
       force: 20
       agility: 20
 
+  # ---------- 门客易容卡 ----------
+
+  - key: guest_disguise_card
+    name: 门客易容卡
+    description: 使用后可为指定门客重新选择显示形象，从文件名以 monkey、pig、duck 开头的门客头像中任选其一。只改变显示形象，不改变门客属性。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 50000
+    storage_space: 50
+    is_usable: true
+    image: guest_disguise_card.png
+    effect_payload:
+      action: disguise_guest_avatar
+      avatar_prefixes:
+        - monkey
+        - pig
+        - duck
+
   # ---------- 洗髓丹 ----------
 
   - key: xisuidan

@@ -23,6 +23,7 @@ class GuestItemSelectionContext:
     guests_for_soul_fusion: list[Guest]
     guests_for_rarity_upgrade: list[Guest]
     guests_for_disguise: list[Guest] = field(default_factory=list)
+    has_guest_avatar_disguise_card: bool = False
 
 
 def _load_guest_tool_payloads(manor) -> list[object]:
@@ -90,6 +91,9 @@ def build_guest_item_selection_context(
     disguise_guests: list[Guest] | None = None,
 ) -> GuestItemSelectionContext:
     payloads = _load_guest_tool_payloads(manor)
+    has_guest_avatar_disguise_card = any(
+        isinstance(payload, dict) and payload.get("action") == "disguise_guest_avatar" for payload in payloads
+    )
     soul_fusion_min_level, soul_fusion_allowed_rarities = _collect_soul_fusion_requirements(payloads)
     rarity_upgrade_source_keys = _collect_rarity_upgrade_source_keys(payloads)
     rarity_upgrade_source_rarities = _collect_rarity_upgrade_source_rarities(payloads)
@@ -138,4 +142,5 @@ def build_guest_item_selection_context(
         guests_for_soul_fusion=guests_for_soul_fusion,
         guests_for_rarity_upgrade=guests_for_rarity_upgrade,
         guests_for_disguise=guests_for_disguise,
+        has_guest_avatar_disguise_card=has_guest_avatar_disguise_card,
     )

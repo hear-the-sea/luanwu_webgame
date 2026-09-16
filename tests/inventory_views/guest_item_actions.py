@@ -9,6 +9,51 @@ from gameplay.models import InventoryItem, ItemTemplate
 
 @pytest.mark.django_db
 class TestInventoryGuestItemActions:
+    def test_use_guest_disguise_card_requires_avatar_key(self, manor_with_user):
+        manor, client = manor_with_user
+        template = ItemTemplate.objects.create(
+            key="view_guest_disguise_card_item",
+            name="门客易容卡",
+            effect_payload={"action": "disguise_guest_avatar"},
+        )
+        item = InventoryItem.objects.create(manor=manor, template=template, quantity=1)
+
+        response = client.post(
+            reverse("gameplay:use_guest_disguise", kwargs={"pk": item.pk}),
+            {"guest_id": 1},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        assert response.status_code == 400
+        assert response.json()["error"] == "请选择新的门客形象"
+
+    def test_use_guest_disguise_card_forwards_avatar_key(self, manor_with_user, monkeypatch):
+        manor, client = manor_with_user
+        template = ItemTemplate.objects.create(
+            key="view_guest_disguise_card_forward",
+            name="门客易容卡",
+            effect_payload={"action": "disguise_guest_avatar"},
+        )
+        item = InventoryItem.objects.create(manor=manor, template=template, quantity=1)
+        captured = {}
+
+        def fake_use(*args):
+            captured["args"] = args
+            return {"_message": "已更换形象"}
+
+        monkeypatch.setattr("gameplay.views.inventory.use_guest_disguise_card", fake_use)
+
+        response = client.post(
+            reverse("gameplay:use_guest_disguise", kwargs={"pk": item.pk}),
+            {"guest_id": 9, "avatar_key": "pig_wu_male1.png"},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        assert response.status_code == 200
+        assert response.json() == {"success": True, "message": "已更换形象"}
+        assert captured["args"][:3] == (manor, item, 9)
+        assert captured["args"][3] == "pig_wu_male1.png"
+
     def test_use_rebirth_card_rejects_non_positive_guest_id(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user
         template = ItemTemplate.objects.create(

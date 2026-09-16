@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 from django.apps import apps
 from django.db import DatabaseError, transaction
-from django.db.models import F, OuterRef, Q
+from django.db.models import F, Max, OuterRef, Q
 from django.utils import timezone
 
 from gameplay.constants import VIRTUAL_PLAYER_REGION_KEYS
@@ -1018,6 +1018,13 @@ def commit_maintenance_cycle(
     committed_next_growth_at = result.next_growth_at_after
     if committed_next_growth_at is None:
         raise ProfileStoreError("committed maintenance requires a non-null next_growth_at")
+    # 与出生投影保持一致，只使用已完成的建筑等级修复旧档案的成长阶段。
+    # 升级中的 Building.level 仍是完成前等级，不能提前解锁下一阶段品质。
+    building_model: Any = apps.get_model("gameplay", "Building")
+    completed_building_level = building_model.objects.filter(manor_id=profile.manor_id).aggregate(level=Max("level"))[
+        "level"
+    ]
+    profile.growth_stage = max(1, int(completed_building_level or 0))
     profile.maintenance_sequence = sequence_after
     profile.strength_budget_entries = serialize_strength_budget_entries(normalized_budget_after)
     profile.last_strength_increase_at = last_strength_increase_at_after
@@ -1025,6 +1032,7 @@ def commit_maintenance_cycle(
     profile.last_planned_at = now
     profile.save(
         update_fields=[
+            "growth_stage",
             "maintenance_sequence",
             "strength_budget_entries",
             "last_strength_increase_at",

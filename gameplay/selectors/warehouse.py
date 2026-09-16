@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.core.paginator import Paginator
 
+from guests.avatar import get_guest_disguise_avatar_options
 from guests.models import GuestStatus
 from guests.services.world_unique import WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY, get_world_unique_guest_status
 
@@ -125,6 +126,15 @@ def get_warehouse_context(manor, current_tab: str, selected_category: str, page:
     context["guests_for_soul_fusion"] = guest_item_selection.guests_for_soul_fusion
     context["guests_for_rarity_upgrade"] = guest_item_selection.guests_for_rarity_upgrade
     context["guests_for_disguise"] = guest_item_selection.guests_for_disguise
+    context["guest_disguise_avatar_options"] = (
+        get_guest_disguise_avatar_options()
+        if (
+            current_tab == "warehouse"
+            and guest_item_selection.has_guest_avatar_disguise_card
+            and guest_item_selection.guests_for_disguise
+        )
+        else []
+    )
 
     tool_effect_types = LEGACY_TOOL_EFFECT_TYPES
     tool_category_key = "tool"

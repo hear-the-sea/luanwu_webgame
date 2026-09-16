@@ -13,13 +13,27 @@ from django.core.files.storage import default_storage
 
 from core.utils.image_utils import compress_and_resize_image
 
-from .constants import SUPER_GUEST_DISGUISE_AVATAR_KEY, SUPER_GUEST_DISGUISE_AVATAR_PATH
+from .constants import GUEST_DISGUISE_AVATAR_PREFIXES, SUPER_GUEST_DISGUISE_AVATAR_KEY, SUPER_GUEST_DISGUISE_AVATAR_PATH
 
 logger = logging.getLogger(__name__)
 
 GUEST_AVATAR_EXTENSIONS = frozenset({".png", ".jpg", ".jpeg", ".webp"})
 GUEST_AVATAR_STORAGE_PREFIX = "guests/"
 INSTANCE_AVATAR_TEMPLATE_KEYS = frozenset({"base_gray_civil", "base_gray_military"})
+GUEST_DISGUISE_AVATAR_LABELS = {
+    "monkey": "猴",
+    "pig": "猪",
+    "duck": "鸭",
+}
+GUEST_DISGUISE_AVATAR_PART_LABELS = {
+    "wen": "文",
+    "wu": "武",
+    "male": "男",
+    "female": "女",
+    "special": "特别",
+    "mission": "任务",
+    "mistry": "神秘",
+}
 
 
 def uses_instance_avatar_generation(template_key: str | None) -> bool:
@@ -125,6 +139,93 @@ def ensure_guest_avatar_asset(source_filename: str) -> str:
     except OSError as exc:
         logger.warning("Failed to prepare guest avatar %s: %s", source_filename, exc)
         return ""
+
+
+def get_guest_disguise_avatar_filenames() -> tuple[str, ...]:
+    """返回门客易容卡可使用的受控头像文件。"""
+    source_dir = Path(settings.BASE_DIR) / "data" / "images" / "guests"
+    if not source_dir.exists():
+        return ()
+
+    filenames = []
+    for path in source_dir.iterdir():
+        if not path.is_file() or path.suffix.lower() not in GUEST_AVATAR_EXTENSIONS:
+            continue
+        normalized_name = path.name.lower()
+        if any(normalized_name.startswith(prefix) for prefix in GUEST_DISGUISE_AVATAR_PREFIXES):
+            filenames.append(path.name)
+    prefix_rank = {prefix: index for index, prefix in enumerate(GUEST_DISGUISE_AVATAR_PREFIXES)}
+
+    def sort_key(filename: str) -> tuple[int, str]:
+        normalized_name = filename.lower()
+        rank = next(
+            (prefix_rank[prefix] for prefix in GUEST_DISGUISE_AVATAR_PREFIXES if normalized_name.startswith(prefix)),
+            len(prefix_rank),
+        )
+        return rank, normalized_name
+
+    return tuple(sorted(filenames, key=sort_key))
+
+
+def _guest_disguise_avatar_label(filename: str) -> str:
+    stem = Path(filename).stem
+    normalized_stem = stem.lower()
+    prefix = next(
+        (candidate for candidate in GUEST_DISGUISE_AVATAR_PREFIXES if normalized_stem.startswith(candidate)),
+        "",
+    )
+    prefix_label = GUEST_DISGUISE_AVATAR_LABELS.get(prefix, "门客")
+    suffix = stem[len(prefix) :].lstrip("_-") if prefix else stem
+    label_parts = []
+    for part in suffix.replace("-", "_").split("_"):
+        normalized_part = part.lower()
+        # 文件名中的文/武仅用于区分资源，玩家选择形象时不需要看到这层技术标记。
+        if normalized_part in {"wen", "wu"}:
+            continue
+        label = next(
+            (
+                f"{translated}{normalized_part[len(english):]}"
+                for english, translated in GUEST_DISGUISE_AVATAR_PART_LABELS.items()
+                if normalized_part.startswith(english)
+            ),
+            part,
+        )
+        label_parts.append(label or part)
+    detail = "".join(label_parts)
+    return f"{prefix_label}·{detail}" if detail else f"{prefix_label}形象"
+
+
+def get_guest_disguise_avatar_options() -> list[dict[str, str]]:
+    """准备门客易容卡弹窗展示的头像选项及名称。"""
+    options: list[dict[str, str]] = []
+    for filename in get_guest_disguise_avatar_filenames():
+        asset_path = ensure_guest_avatar_asset(filename)
+        if not asset_path:
+            continue
+        try:
+            asset_url = str(default_storage.url(asset_path) or "")
+        except (AttributeError, ValueError):
+            asset_url = ""
+        if not asset_url:
+            continue
+        options.append(
+            {
+                "key": filename,
+                "label": _guest_disguise_avatar_label(filename),
+                "url": asset_url,
+            }
+        )
+    return options
+
+
+def resolve_guest_disguise_avatar_asset(source_filename: object) -> str:
+    """通过受控素材目录解析客户端选择的头像。"""
+    if not isinstance(source_filename, str):
+        return ""
+    normalized_filename = source_filename.strip()
+    if normalized_filename not in get_guest_disguise_avatar_filenames():
+        return ""
+    return ensure_guest_avatar_asset(normalized_filename)
 
 
 def prepare_guest_avatar_asset(

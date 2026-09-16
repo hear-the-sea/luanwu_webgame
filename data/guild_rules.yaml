@@ -37,10 +37,10 @@ contribution:
     gold_bar: 1200
   # 单个成员每天可捐赠的资源数量上限，按资源原始数量计。
   daily_limits:
-    # 每日最多捐赠 100000 银两。
-    silver: 100000
-    # 每日最多捐赠 50000 粮食。
-    grain: 50000
+    # 每日最多捐赠 500000 银两。
+    silver: 500000
+    # 每日最多捐赠 250000 粮食。
+    grain: 250000
     # 每日最多捐赠 5 根金条。
     gold_bar: 5
   # 护院招募所需科技等级 -> 每捐赠 1 名该类护院获得的贡献度。
@@ -93,12 +93,12 @@ technology:
     # 行军加速：满级累计消耗200金条。
     march_speed:
       gold_bar: 2
-    # 出战位扩容：满级累计消耗500金条、200红宝石；红宝石仅在16-20级追加。
+    # 出战位扩容：从帮会仓库消耗红宝石。
     guild_lineup_capacity:
-      gold_bar: 2
-    # 出征位扩容：从帮会仓库消耗红宝石。
-    guild_dispatch_capacity:
       red_ruby: 5
+    # 出征位扩容：满级累计消耗500金条、200红宝石；红宝石仅在16-20级追加。
+    guild_dispatch_capacity:
+      gold_bar: 2
   # 非指数升级曲线；等级键表示升级后的目标等级，值为1级费用的倍率。
   upgrade_cost_curves:
     standard_10:
@@ -191,7 +191,7 @@ technology:
     march_speed:
       5:
         gold_bar: 136
-    guild_lineup_capacity:
+    guild_dispatch_capacity:
       16:
         gold_bar: 32
         red_ruby: 36

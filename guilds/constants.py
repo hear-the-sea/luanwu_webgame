@@ -32,7 +32,7 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
     "contribution": {
         "units": {"silver": 1000, "grain": 2000, "gold_bar": 1},
         "rates": {"silver": 1, "grain": 1, "gold_bar": 1200},
-        "daily_limits": {"silver": 100000, "grain": 50000, "gold_bar": 5},
+        "daily_limits": {"silver": 500000, "grain": 250000, "gold_bar": 5},
         "troop_rates": {"0": 1, "1": 1, "3": 3, "5": 6, "7": 12},
         "daily_troop_contribution_limit": 300,
         "min_donation_amount": 1,
@@ -47,8 +47,8 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
             "troop_tactics": {"silver": 307220, "grain": 307220},
             "resource_boost": {"silver": 2173913, "grain": 2173913},
             "march_speed": {"gold_bar": 2},
-            "guild_lineup_capacity": {"gold_bar": 2},
-            "guild_dispatch_capacity": {"red_ruby": 5},
+            "guild_lineup_capacity": {"red_ruby": 5},
+            "guild_dispatch_capacity": {"gold_bar": 2},
         },
         "upgrade_cost_curves": {
             "standard_10": {
@@ -128,7 +128,7 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
             "march_speed": {
                 "5": {"gold_bar": 136},
             },
-            "guild_lineup_capacity": {
+            "guild_dispatch_capacity": {
                 "16": {"gold_bar": 32, "red_ruby": 36},
                 "17": {"gold_bar": 34, "red_ruby": 38},
                 "18": {"gold_bar": 36, "red_ruby": 40},

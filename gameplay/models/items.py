@@ -260,6 +260,8 @@ def _tool_summary(template_key: str, payload: dict) -> str:
         return "更换庄园名称"
     if template_key == "super_guest_disguise_card":
         return "门客形象替换为吕布猴；生命+800、武力+20、敏捷+20（重生/被俘虏/重新招募后失效）"
+    if template_key == "guest_disguise_card":
+        return "可从猴、猪、鸭头像中任选其一替换门客形象"
     if payload.get("action") == "restore_action_points":
         amount = payload.get("amount")
         return f"行动力+{amount}" if amount else "恢复行动力"

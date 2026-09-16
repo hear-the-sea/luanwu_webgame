@@ -5,6 +5,19 @@ def test_normalize_guild_rules_uses_defaults_for_invalid_root():
     assert normalize_guild_rules(["invalid-root"]) == DEFAULT_GUILD_RULES
 
 
+def test_default_daily_donation_limits_match_guild_rules():
+    assert DEFAULT_GUILD_RULES["contribution"]["daily_limits"] == {
+        "silver": 500_000,
+        "grain": 250_000,
+        "gold_bar": 5,
+    }
+    assert load_guild_rules()["contribution"]["daily_limits"] == {
+        "silver": 500_000,
+        "grain": 250_000,
+        "gold_bar": 5,
+    }
+
+
 def test_normalize_guild_rules_merges_and_clamps_values():
     loaded = normalize_guild_rules(
         {
@@ -58,8 +71,13 @@ def test_normalize_guild_rules_merges_and_clamps_values():
     assert loaded["technology"]["names"]["guild_lineup_capacity"] == "出战位扩容"
     assert loaded["technology"]["descriptions"]["equipment_forge"] == "新的科技简介"
     assert loaded["technology"]["descriptions"]["guild_lineup_capacity"] == "提升帮会已上阵名单总容量"
-    assert loaded["technology"]["upgrade_costs"]["guild_lineup_capacity"] == {"gold_bar": 2}
-    assert loaded["technology"]["upgrade_costs"]["guild_dispatch_capacity"] == {"red_ruby": 5}
+    assert loaded["technology"]["upgrade_costs"]["guild_lineup_capacity"] == {"red_ruby": 5}
+    assert loaded["technology"]["upgrade_costs"]["guild_dispatch_capacity"] == {"gold_bar": 2}
+    assert loaded["technology"]["upgrade_cost_overrides"].get("guild_lineup_capacity", {}) == {}
+    assert loaded["technology"]["upgrade_cost_overrides"]["guild_dispatch_capacity"]["20"] == {
+        "gold_bar": 120,
+        "red_ruby": 44,
+    }
     assert loaded["technology"]["upgrade_costs"]["mysticism"] == {"red_ruby": 200}
     assert loaded["technology"]["upgrade_cost_curves"]["standard_10"]["2"] == 3
     assert loaded["technology"]["upgrade_cost_curves"]["standard_10"]["10"] == 350

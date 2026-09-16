@@ -38,7 +38,8 @@ def test_calculate_tech_upgrade_cost_uses_staged_curves_without_exponential_fall
         "silver": 130434784,
         "grain": 130434784,
     }
-    assert calculate_tech_upgrade_cost("guild_lineup_capacity", 19) == {
+    assert calculate_tech_upgrade_cost("guild_lineup_capacity", 19) == {"red_ruby": 100}
+    assert calculate_tech_upgrade_cost("guild_dispatch_capacity", 19) == {
         "gold_bar": 120,
         "red_ruby": 44,
     }
@@ -54,7 +55,8 @@ def test_requested_guild_technology_maximum_costs_are_exact():
         "troop_tactics": (10, {"silver": 200_000_000, "grain": 200_000_000}),
         "resource_boost": (5, {"silver": 200_000_000, "grain": 200_000_000}),
         "march_speed": (5, {"gold_bar": 200}),
-        "guild_lineup_capacity": (20, {"gold_bar": 500, "red_ruby": 200}),
+        "guild_lineup_capacity": (20, {"red_ruby": 1050}),
+        "guild_dispatch_capacity": (20, {"gold_bar": 500, "red_ruby": 200}),
     }
 
     for tech_key, (max_level, expected) in expected_totals.items():
@@ -641,7 +643,7 @@ def test_upgrade_technology_insufficient_resources(monkeypatch, django_user_mode
 
 
 @pytest.mark.django_db
-def test_upgrade_new_guild_capacity_tech_consumes_gold_bar_at_low_level(monkeypatch, django_user_model):
+def test_upgrade_new_guild_dispatch_capacity_tech_consumes_gold_bar_at_low_level(monkeypatch, django_user_model):
     from guilds.models import Guild, GuildResourceLog, GuildTechnology, GuildWarehouse
     from guilds.services.technology import upgrade_technology
 
@@ -654,10 +656,10 @@ def test_upgrade_new_guild_capacity_tech_consumes_gold_bar_at_low_level(monkeypa
     operator = django_user_model.objects.create_user(username="tech_operator_red_ruby", password="pass")
     founder = django_user_model.objects.create_user(username="tech_founder_red_ruby", password="pass")
     guild = Guild.objects.create(name="TechGuildRedRuby", founder=founder, silver=0, grain=0, gold_bar=0)
-    tech = GuildTechnology.objects.create(guild=guild, tech_key="guild_lineup_capacity", level=0, max_level=5)
+    tech = GuildTechnology.objects.create(guild=guild, tech_key="guild_dispatch_capacity", level=0, max_level=5)
     gold = GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=2, contribution_cost=0)
 
-    upgrade_technology(guild, "guild_lineup_capacity", operator)
+    upgrade_technology(guild, "guild_dispatch_capacity", operator)
 
     tech.refresh_from_db()
     guild.refresh_from_db()
@@ -675,7 +677,7 @@ def test_upgrade_new_guild_capacity_tech_consumes_gold_bar_at_low_level(monkeypa
 
 
 @pytest.mark.django_db
-def test_upgrade_guild_capacity_tech_consumes_red_ruby_only_at_high_level(monkeypatch, django_user_model):
+def test_upgrade_guild_dispatch_capacity_tech_consumes_red_ruby_only_at_high_level(monkeypatch, django_user_model):
     from guilds.models import Guild, GuildResourceLog, GuildTechnology, GuildWarehouse
     from guilds.services.technology import upgrade_technology
 
@@ -688,11 +690,11 @@ def test_upgrade_guild_capacity_tech_consumes_red_ruby_only_at_high_level(monkey
     operator = django_user_model.objects.create_user(username="tech_operator_capacity_high", password="pass")
     founder = django_user_model.objects.create_user(username="tech_founder_capacity_high", password="pass")
     guild = Guild.objects.create(name="TechGuildCapacityHigh", founder=founder, silver=0, grain=0, gold_bar=0)
-    tech = GuildTechnology.objects.create(guild=guild, tech_key="guild_lineup_capacity", level=15, max_level=20)
+    tech = GuildTechnology.objects.create(guild=guild, tech_key="guild_dispatch_capacity", level=15, max_level=20)
     gold = GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=32, contribution_cost=0)
     ruby = GuildWarehouse.objects.create(guild=guild, item_key="red_ruby", quantity=36, contribution_cost=0)
 
-    upgrade_technology(guild, "guild_lineup_capacity", operator)
+    upgrade_technology(guild, "guild_dispatch_capacity", operator)
 
     tech.refresh_from_db()
     assert tech.level == 16
@@ -701,7 +703,7 @@ def test_upgrade_guild_capacity_tech_consumes_red_ruby_only_at_high_level(monkey
         guild=guild,
         action="tech_upgrade",
         gold_bar_change=-32,
-        note__contains="出战位扩容至16级（消耗金条×32、红宝石×36）",
+        note__contains="出征位扩容至16级（消耗金条×32、红宝石×36）",
     ).exists()
 
 

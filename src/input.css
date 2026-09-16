@@ -1086,6 +1086,43 @@
     @apply text-center text-text-muted py-8 bg-bg-card;
   }
 
+  .tw-avatar-disguise-panel {
+    @apply flex flex-col gap-4;
+  }
+
+  .tw-avatar-disguise-section {
+    @apply flex flex-col gap-2;
+  }
+
+  .tw-avatar-disguise-label {
+    @apply text-sm font-semibold text-text-primary;
+  }
+
+  .tw-avatar-option-grid {
+    @apply grid max-h-56 overflow-y-auto gap-2 border border-border-primary rounded-lg p-2;
+    grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
+  }
+
+  .tw-avatar-option {
+    @apply flex min-w-0 flex-col items-center gap-1 rounded-md border border-transparent bg-bg-card p-1 text-text-secondary transition-all;
+    cursor: pointer;
+    font-size: 0.6875rem;
+    line-height: 1rem;
+  }
+
+  .tw-avatar-option img {
+    @apply h-14 w-14 rounded-md object-cover;
+  }
+
+  .tw-avatar-option:hover {
+    @apply bg-bg-hover;
+  }
+
+  .tw-avatar-option.selected {
+    @apply border-accent-gold text-text-primary;
+    background: rgba(218, 165, 32, 0.15);
+  }
+
   /* 门客稀有度颜色 */
   .rarity-text-black { color: #333; }
   .rarity-text-gray { color: #888; }
@@ -3731,5 +3768,11 @@
 
   .tw-bid-item-card {
     padding: 0.875rem;
+  }
+}
+
+@layer utilities {
+  .duration-300 {
+    transition-duration: 300ms;
   }
 }

@@ -39,8 +39,8 @@ def test_technology_page_renders_capacity_tech_with_count_effect_and_cost(guild_
     assert "提升单次帮会任务最多可派出的门客人数" in content
     assert "20 名" in content
     assert "6 名" in content
-    assert "金条 ×2" in content
-    assert "红宝石 ×10" in content
+    assert "红宝石 ×5" in content
+    assert "金条 ×4" in content
 
 
 @pytest.mark.django_db

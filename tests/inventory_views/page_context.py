@@ -146,6 +146,40 @@ class TestInventoryPageContext:
         assert 'data-guest-level="66"' in body
         assert 'data-guest-rarity="blue"' in body
 
+    def test_warehouse_page_renders_guest_disguise_avatar_choices(self, manor_with_user, monkeypatch):
+        manor, client = manor_with_user
+        guest_template = GuestTemplate.objects.create(
+            key="view_guest_avatar_disguise_guest",
+            name="易容候选门客",
+            rarity=GuestRarity.BLUE,
+            archetype=GuestArchetype.CIVIL,
+        )
+        guest = Guest.objects.create(manor=manor, template=guest_template, status=GuestStatus.IDLE, level=12)
+        card_template = ItemTemplate.objects.create(
+            key="view_guest_avatar_disguise_card",
+            name="门客易容卡",
+            effect_type=ItemTemplate.EffectType.TOOL,
+            is_usable=True,
+            effect_payload={"action": "disguise_guest_avatar"},
+        )
+        InventoryItem.objects.create(manor=manor, template=card_template, quantity=1)
+        monkeypatch.setattr(
+            "gameplay.selectors.warehouse.get_guest_disguise_avatar_options",
+            lambda: [{"key": "duck_wen_male1.png", "label": "鸭·男1", "url": "/media/duck.webp"}],
+        )
+
+        response = client.get(reverse("gameplay:warehouse"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert 'data-action-type="avatar_disguise"' in body
+        assert f'data-guest-id="{guest.id}"' in body
+        assert 'data-avatar-key="duck_wen_male1.png"' in body
+        assert "/media/duck.webp" in body
+        assert 'aria-label="门客形象选项1"' in body
+        assert "鸭·男1" not in body
+        assert 'class="tw-avatar-option-label"' not in body
+
     def test_warehouse_page_loads_external_page_script_without_inline_handlers(self, manor_with_user):
         _manor, client = manor_with_user
 

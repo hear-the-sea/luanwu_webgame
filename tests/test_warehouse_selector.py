@@ -74,6 +74,33 @@ def test_get_warehouse_context_guest_lists_filter_and_order():
 
 
 @pytest.mark.django_db
+def test_get_warehouse_context_exposes_avatar_choices_for_guest_disguise_card(django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(username="warehouse_avatar_choices", password="pass123")
+    manor = ensure_manor(user)
+    guest_template = GuestTemplate.objects.create(
+        key="warehouse_avatar_guest",
+        name="头像易容测试门客",
+        rarity="gray",
+        archetype="civil",
+    )
+    Guest.objects.create(manor=manor, template=guest_template, status=GuestStatus.IDLE)
+    template = ItemTemplate.objects.create(
+        key="warehouse_avatar_disguise_card",
+        name="门客易容卡",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=True,
+        effect_payload={"action": "disguise_guest_avatar"},
+    )
+    InventoryItem.objects.create(manor=manor, template=template, quantity=1)
+    choices = [{"key": "monkey_wen_male1.png", "label": "猴·男1", "url": "/media/guest.webp"}]
+    monkeypatch.setattr("gameplay.selectors.warehouse.get_guest_disguise_avatar_options", lambda: choices)
+
+    context = get_warehouse_context(manor, current_tab="warehouse", selected_category="all", page=1)
+
+    assert context["guest_disguise_avatar_options"] == choices
+
+
+@pytest.mark.django_db
 def test_warehouse_context_does_not_expose_ordinary_capacity(django_user_model):
     user = django_user_model.objects.create_user(username="warehouse_capacity_context", password="pass123")
     manor = ensure_manor(user)

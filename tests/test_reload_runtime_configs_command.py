@@ -359,7 +359,7 @@ def test_reload_runtime_configs_updates_guild_service_runtime_values(monkeypatch
 
             assert cost == {"silver": 7000, "grain": 3000, "gold_bar": 2}
             assert level_two_cost == {"silver": 35000, "grain": 15000, "gold_bar": 10}
-            assert lineup_cost == {"gold_bar": 2}
+            assert lineup_cost == {"red_ruby": 5}
             assert int((cooldown_until - submitted_at).total_seconds()) == 120
     finally:
         clear_guild_rules_cache()

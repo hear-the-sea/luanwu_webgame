@@ -26,6 +26,7 @@ from .views.inventory import (
     move_item_to_treasury_view,
     move_item_to_warehouse_view,
     refresh_recruitment_hall_api,
+    use_guest_disguise_card_view,
     use_guest_rarity_upgrade_view,
     use_guest_rebirth_card_view,
     use_item_view,
@@ -152,6 +153,7 @@ urlpatterns = [
     path(
         "warehouse/use-super-guest-disguise/<int:pk>/", use_super_guest_disguise_view, name="use_super_guest_disguise"
     ),
+    path("warehouse/use-guest-disguise/<int:pk>/", use_guest_disguise_card_view, name="use_guest_disguise"),
     path("warehouse/use-rarity-upgrade/<int:pk>/", use_guest_rarity_upgrade_view, name="use_guest_rarity_upgrade"),
     path("warehouse/use-soul-container/<int:pk>/", use_soul_container_view, name="use_soul_container"),
     path("warehouse/use-xisuidan/<int:pk>/", use_xisuidan_view, name="use_xisuidan"),

@@ -89,8 +89,8 @@ def validate_guest_item_use(
     if not locked_item:
         raise GuestItemOwnershipError()
 
-    payload = locked_item.template.effect_payload or {}
-    if payload.get("action") != action:
+    payload = locked_item.template.effect_payload
+    if not isinstance(payload, dict) or payload.get("action") != action:
         raise GuestItemConfigurationError("物品类型错误")
 
     if locked_item.quantity <= 0:

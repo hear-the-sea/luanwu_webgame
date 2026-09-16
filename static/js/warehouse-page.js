@@ -13,6 +13,13 @@
       confirmText: "确认易容",
       listId: "guest-list-disguise",
     },
+    avatar_disguise: {
+      title: "选择门客与新形象",
+      hint: "选择任意门客，将其易容为选择的形象。",
+      confirmText: "确认易容",
+      listId: "guest-list-avatar-disguise",
+      requiresImage: true,
+    },
     soul_fusion: {
       title: "选择要融合的门客",
       hint: "融合后门客会永久消失，已穿戴装备将自动归还仓库。生成饰品的属性会参考门客自身属性结构，并保留随机波动。",
@@ -51,6 +58,7 @@
     currentActionUrl: null,
     currentItemId: null,
     selectedGuestId: null,
+    selectedImageKey: null,
     lastTriggerElement: null,
   };
 
@@ -202,6 +210,7 @@
     warehouseModalState.currentActionType = null;
     warehouseModalState.currentActionUrl = null;
     warehouseModalState.selectedGuestId = null;
+    warehouseModalState.selectedImageKey = null;
     const lastTriggerElement = warehouseModalState.lastTriggerElement;
     warehouseModalState.lastTriggerElement = null;
     if (lastTriggerElement && lastTriggerElement.isConnected && typeof lastTriggerElement.focus === "function") {
@@ -220,6 +229,7 @@
     warehouseModalState.currentActionType = actionType;
     warehouseModalState.currentActionUrl = triggerElement?.dataset?.actionUrl || null;
     warehouseModalState.selectedGuestId = null;
+    warehouseModalState.selectedImageKey = null;
     warehouseModalState.lastTriggerElement = triggerElement;
 
     const modalTitle = document.getElementById("modal-title");
@@ -251,6 +261,7 @@
       applySoulFusionGuestFilter(triggerElement);
     }
     document.querySelectorAll(".tw-guest-option").forEach((option) => option.classList.remove("selected"));
+    document.querySelectorAll(".tw-avatar-option").forEach((option) => option.classList.remove("selected"));
 
     const modal = document.getElementById("guest-select-modal");
     if (modal) {
@@ -318,12 +329,19 @@
     if (!config || !confirmBtn) {
       return;
     }
+    if (config.requiresImage && !warehouseModalState.selectedImageKey) {
+      await showErrorDialog("请选择新的门客形象", "提示");
+      return;
+    }
 
     confirmBtn.disabled = true;
     confirmBtn.textContent = "处理中...";
 
     const formData = new FormData();
     formData.append("guest_id", warehouseModalState.selectedGuestId);
+    if (config.requiresImage) {
+      formData.append("avatar_key", warehouseModalState.selectedImageKey);
+    }
     formData.append("csrfmiddlewaretoken", document.querySelector("input[name='csrfmiddlewaretoken']")?.value || "");
 
     try {
@@ -484,12 +502,29 @@
       }
 
       const guestOption = event.target.closest(".tw-guest-option");
-      if (!guestOption || !warehouseModalState.currentActionType) {
+      const avatarOption = event.target.closest(".tw-avatar-option");
+      if (!warehouseModalState.currentActionType) {
         return;
       }
 
-      const activeList = document.getElementById(WAREHOUSE_MODAL_CONFIG[warehouseModalState.currentActionType]?.listId);
-      if (!activeList || !activeList.contains(guestOption)) {
+      const activeConfig = WAREHOUSE_MODAL_CONFIG[warehouseModalState.currentActionType];
+      const activeList = document.getElementById(activeConfig?.listId);
+      if (!activeList) {
+        return;
+      }
+
+      if (avatarOption && activeConfig?.requiresImage && activeList.contains(avatarOption)) {
+        activeList.querySelectorAll(".tw-avatar-option").forEach((option) => option.classList.remove("selected"));
+        avatarOption.classList.add("selected");
+        warehouseModalState.selectedImageKey = avatarOption.dataset.avatarKey || null;
+        const confirmBtn = document.getElementById("modal-confirm-btn");
+        if (confirmBtn) {
+          confirmBtn.disabled = !warehouseModalState.selectedGuestId || !warehouseModalState.selectedImageKey;
+        }
+        return;
+      }
+
+      if (!guestOption || !activeList.contains(guestOption)) {
         return;
       }
 
@@ -499,7 +534,9 @@
 
       const confirmBtn = document.getElementById("modal-confirm-btn");
       if (confirmBtn) {
-        confirmBtn.disabled = false;
+        confirmBtn.disabled = activeConfig?.requiresImage
+          ? !warehouseModalState.selectedGuestId || !warehouseModalState.selectedImageKey
+          : false;
       }
     });
   };

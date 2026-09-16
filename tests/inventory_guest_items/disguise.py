@@ -1,16 +1,22 @@
 from __future__ import annotations
 
 import pytest
+from django.db import connection
 
 from battle.combatants_pkg.guest_builder import build_guest_combatants, serialize_guest_for_report
 from core.exceptions import GuestItemConfigurationError
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.arena.snapshots import ArenaGuestSnapshotProxy, build_entry_guest_snapshot
 from gameplay.services.battle_snapshots import build_guest_battle_snapshot, build_guest_snapshot_proxies
-from gameplay.services.inventory.guest_items import use_super_guest_disguise_card
+from gameplay.services.inventory.guest_items import use_guest_disguise_card, use_super_guest_disguise_card
 from gameplay.services.inventory.guest_reset_helpers import apply_guest_template_reset
 from gameplay.services.manor.core import ensure_manor
-from guests.constants import SUPER_GUEST_DISGUISE_AVATAR_KEY, SUPER_GUEST_DISGUISE_AVATAR_PATH
+from guests.avatar import _guest_disguise_avatar_label, get_guest_disguise_avatar_filenames
+from guests.constants import (
+    GUEST_DISGUISE_AVATAR_ACTION,
+    SUPER_GUEST_DISGUISE_AVATAR_KEY,
+    SUPER_GUEST_DISGUISE_AVATAR_PATH,
+)
 from guests.models import Guest, GuestStatus, GuestTemplate
 
 
@@ -58,6 +64,15 @@ def _prepare_disguise_case(django_user_model, *, quantity: int = 1):
     return manor, guest, item
 
 
+def _prepare_avatar_disguise_case(django_user_model, *, quantity: int = 1):
+    manor, guest, item = _prepare_disguise_case(django_user_model, quantity=quantity)
+    item.template.key = "guest_disguise_card_test"
+    item.template.name = "门客易容卡"
+    item.template.effect_payload = {"action": GUEST_DISGUISE_AVATAR_ACTION}
+    item.template.save(update_fields=["key", "name", "effect_payload"])
+    return manor, guest, item
+
+
 @pytest.mark.django_db
 def test_super_guest_disguise_applies_stats_avatar_and_consumes_card(django_user_model):
     manor, guest, item = _prepare_disguise_case(django_user_model)
@@ -75,6 +90,77 @@ def test_super_guest_disguise_applies_stats_avatar_and_consumes_card(django_user
     assert guest.current_hp == min(old_max_hp + 800, old_current_hp + 800)
     assert result["avatar_override_key"] == SUPER_GUEST_DISGUISE_AVATAR_KEY
     assert not InventoryItem.objects.filter(pk=item.pk).exists()
+
+
+@pytest.mark.django_db
+def test_guest_disguise_card_applies_selected_avatar_without_stat_changes(django_user_model, monkeypatch):
+    manor, guest, item = _prepare_avatar_disguise_case(django_user_model)
+    old_stats = (guest.force, guest.intellect, guest.defense_stat, guest.agility, guest.luck, guest.max_hp)
+    monkeypatch.setattr(
+        "gameplay.services.inventory.guest_items.resolve_guest_disguise_avatar_asset",
+        lambda avatar_key: "guests/monkey_wen_male1.webp" if avatar_key == "monkey_wen_male1.png" else "",
+    )
+
+    result = use_guest_disguise_card(manor, item, guest.id, "monkey_wen_male1.png")
+    guest.refresh_from_db()
+
+    assert guest.avatar_asset_key == "guests/monkey_wen_male1.webp"
+    assert guest.avatar_override_key == ""
+    assert guest.super_disguise_applied is False
+    assert (guest.force, guest.intellect, guest.defense_stat, guest.agility, guest.luck, guest.max_hp) == old_stats
+    assert result["avatar_key"] == "monkey_wen_male1.png"
+    assert not InventoryItem.objects.filter(pk=item.pk).exists()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_guest_disguise_card_opens_transaction_before_locking_manor(django_user_model, monkeypatch):
+    manor, guest, item = _prepare_avatar_disguise_case(django_user_model)
+    transaction_states = []
+    monkeypatch.setattr(
+        "gameplay.services.inventory.guest_items.resolve_guest_disguise_avatar_asset",
+        lambda _avatar_key: transaction_states.append(connection.in_atomic_block) or "guests/monkey_wen_male1.webp",
+    )
+
+    use_guest_disguise_card(manor, item, guest.id, "monkey_wen_male1.png")
+
+    assert transaction_states == [True]
+
+
+@pytest.mark.django_db
+def test_guest_disguise_card_rejects_avatar_outside_controlled_catalog(django_user_model, monkeypatch):
+    manor, guest, item = _prepare_avatar_disguise_case(django_user_model, quantity=2)
+    monkeypatch.setattr(
+        "gameplay.services.inventory.guest_items.resolve_guest_disguise_avatar_asset",
+        lambda _avatar_key: "",
+    )
+
+    with pytest.raises(GuestItemConfigurationError, match="形象不存在"):
+        use_guest_disguise_card(manor, item, guest.id, "../media/evil.webp")
+
+    guest.refresh_from_db()
+    item.refresh_from_db()
+    assert guest.avatar_asset_key == ""
+    assert item.quantity == 2
+
+
+def test_guest_disguise_catalog_only_contains_requested_prefixes():
+    filenames = get_guest_disguise_avatar_filenames()
+
+    assert filenames
+    assert all(filename.lower().startswith(("monkey", "pig", "duck")) for filename in filenames)
+
+
+@pytest.mark.parametrize(
+    ("filename", "expected_label"),
+    [
+        ("monkey_wen_female1.png", "猴·女1"),
+        ("pig_wu_male2.png", "猪·男2"),
+        ("duck_wen_male1.png", "鸭·男1"),
+        ("monkey_mistry.png", "猴·神秘"),
+    ],
+)
+def test_guest_disguise_avatar_labels_are_player_facing(filename, expected_label):
+    assert _guest_disguise_avatar_label(filename) == expected_label
 
 
 @pytest.mark.django_db

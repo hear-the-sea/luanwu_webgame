@@ -15,3 +15,13 @@ test("xisuidan modal shows the current qualification hint", () => {
     /xisuidan:\s*\{[\s\S]*hint:\s*"洗髓丹能提升门客的资质，但成长方向可能发生某些未知改变哦~仅满级门客能够使用"[\s\S]*\}/
   );
 });
+
+test("avatar disguise modal describes avatar choices without source filenames", () => {
+  const source = readScript("warehouse-page.js");
+
+  assert.match(
+    source,
+    /avatar_disguise:\s*\{[\s\S]*hint:\s*"选择任意门客，将其易容为选择的形象。"/
+  );
+  assert.doesNotMatch(source, /文件名以 monkey、pig、duck 开头/);
+});

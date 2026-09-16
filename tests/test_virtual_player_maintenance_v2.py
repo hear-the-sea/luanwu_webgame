@@ -1027,9 +1027,9 @@ def test_inventory_batch_materializes_once_and_replay_does_not_duplicate_rows(ac
     )
 
     with transaction.atomic():
-        first = maintenance._apply_inventory_acquisition_locked(manor, spec, now=FIXED_NOW)
+        grants = maintenance._apply_inventory_acquisition_locked(manor, spec, now=FIXED_NOW)
 
-    assert first.template_id == templates[0].id
+    assert grants == {template.key: 1 for template in templates}
     assert (
         InventoryItem.objects.filter(
             manor_id=manor.id,

@@ -95,9 +95,11 @@ def classify_maintenance_reason(reason: str | None) -> MaintenanceReasonCategory
     """Normalize maintenance outcomes into stable operational categories."""
 
     normalized = str(reason or "").strip()
-    if normalized in {"candidate_domain_constraint", "domain_constraint"} or normalized.startswith(
-        "archetype_parallel_training"
-    ):
+    if normalized in {
+        "candidate_domain_constraint",
+        "domain_constraint",
+        "inventory_item_not_granted",
+    } or normalized.startswith("archetype_parallel_training"):
         return MaintenanceReasonCategory.DOMAIN_CONSTRAINT
     if normalized in {
         "insufficient_resource",

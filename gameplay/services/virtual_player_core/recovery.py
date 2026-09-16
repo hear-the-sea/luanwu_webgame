@@ -231,7 +231,14 @@ def record_recovery_failure(
             .filter(scope=normalized_scope, entity_key=normalized_entity)
             .first()
         )
-        same_failure = row is not None and row.failure_code == normalized_code and row.failure_digest == failure_digest
+        # A successful recovery or formal requeue ends the previous episode,
+        # even when the same defect occurs again after the maximum recovery age.
+        same_failure = (
+            row is not None
+            and row.status != BotMaintenanceRecovery.Status.REQUEUED
+            and row.failure_code == normalized_code
+            and row.failure_digest == failure_digest
+        )
         if same_failure:
             assert row is not None
             streak = int(row.failure_streak) + 1

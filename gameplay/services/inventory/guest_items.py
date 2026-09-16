@@ -10,7 +10,10 @@ from django.db import transaction
 
 from core.exceptions import GuestItemConfigurationError, GuestNotRequirementError
 from gameplay.models import InventoryItem, Manor
+from guests.avatar import resolve_guest_disguise_avatar_asset
 from guests.constants import (
+    GUEST_DISGUISE_AVATAR_ACTION,
+    GUEST_DISGUISE_AVATAR_PREFIXES,
     SUPER_GUEST_DISGUISE_ACTION,
     SUPER_GUEST_DISGUISE_AGILITY_BONUS,
     SUPER_GUEST_DISGUISE_AVATAR_KEY,
@@ -142,6 +145,57 @@ def use_super_guest_disguise_card(manor: Manor, item: InventoryItem, guest_id: i
             f"门客 {guest.display_name} 已完成超级易容：形象替换为吕布猴，"
             f"生命+{hp_bonus}、武力+{force_bonus}、敏捷+{agility_bonus}"
         ),
+    }
+
+
+@transaction.atomic
+def use_guest_disguise_card(
+    manor: Manor,
+    item: InventoryItem,
+    guest_id: int,
+    avatar_key: str,
+) -> Dict[str, Any]:
+    """为所属门客应用玩家选择的猴、猪或鸭头像。"""
+    # 死锁预防：统一锁顺序 Manor -> InventoryItem -> Guest
+    manor = Manor.objects.select_for_update().get(pk=manor.pk)
+    locked_item, guest = _validate_guest_item_use(
+        manor,
+        item,
+        guest_id,
+        GUEST_DISGUISE_AVATAR_ACTION,
+        allowed_statuses=GuestStatus.values,
+    )
+
+    payload = locked_item.template.effect_payload
+    if not isinstance(payload, dict) or payload.get("action") != GUEST_DISGUISE_AVATAR_ACTION:
+        raise GuestItemConfigurationError("门客易容卡配置错误")
+    configured_prefixes = payload.get("avatar_prefixes", list(GUEST_DISGUISE_AVATAR_PREFIXES))
+    if (
+        not isinstance(configured_prefixes, list)
+        or len(configured_prefixes) != len(GUEST_DISGUISE_AVATAR_PREFIXES)
+        or any(not isinstance(prefix, str) or not prefix.strip() for prefix in configured_prefixes)
+        or {prefix.strip() for prefix in configured_prefixes} != set(GUEST_DISGUISE_AVATAR_PREFIXES)
+    ):
+        raise GuestItemConfigurationError("门客易容卡头像范围配置错误")
+
+    if not isinstance(avatar_key, str) or not avatar_key.strip():
+        raise GuestItemConfigurationError("请选择有效的门客形象")
+    normalized_avatar_key = avatar_key.strip()
+    avatar_asset_key = resolve_guest_disguise_avatar_asset(normalized_avatar_key)
+    if not avatar_asset_key:
+        raise GuestItemConfigurationError("门客形象不存在或不可用")
+    if guest.super_disguise_applied or guest.avatar_override_key:
+        raise GuestItemConfigurationError("该门客已经使用过特殊易容效果")
+
+    guest.avatar_asset_key = avatar_asset_key
+    guest.save(update_fields=["avatar_asset_key"])
+    consume_inventory_item_locked(locked_item, 1)
+
+    return {
+        "guest_name": guest.display_name,
+        "avatar_key": normalized_avatar_key,
+        "avatar_asset_key": avatar_asset_key,
+        "_message": f"门客 {guest.display_name} 已更换为所选形象",
     }
 
 

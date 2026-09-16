@@ -157,6 +157,8 @@
                                     <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-action-type="rebirth" data-action-url="{% url 'gameplay:use_rebirth_card' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     {% elif payload.action == 'disguise_guest' %}
                                     <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-action-type="disguise" data-action-url="{% url 'gameplay:use_super_guest_disguise' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
+                                    {% elif payload.action == 'disguise_guest_avatar' %}
+                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-action-type="avatar_disguise" data-action-url="{% url 'gameplay:use_guest_disguise' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     {% elif payload.action == 'soul_fusion' %}
                                     <button
                                         type="button"
@@ -249,7 +251,7 @@
     </section>
 </section>
 
-<!-- 门客选择弹窗（通用：重生卡/升阶道具/洗髓丹/洗点卡/灵魂容器） -->
+<!-- 门客选择弹窗（通用：重生卡/易容卡/升阶道具/洗髓丹/洗点卡/灵魂容器） -->
 <div id="guest-select-modal" class="tw-modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modal-title" aria-describedby="modal-hint" tabindex="-1">
     <div class="tw-modal-content">
         <div class="tw-modal-header">
@@ -293,6 +295,46 @@
                 {% empty %}
                 <p class="tw-no-guests">没有可易容的门客（需仍归属于本庄园，且未使用过此卡）</p>
                 {% endfor %}
+            </div>
+            <!-- 门客易容卡的头像与门客列表 -->
+            <div id="guest-list-avatar-disguise" class="tw-avatar-disguise-panel" style="display: none;">
+                <div class="tw-avatar-disguise-section">
+                    <div class="tw-avatar-disguise-label">选择新的门客形象</div>
+                    <div class="tw-avatar-option-grid" role="listbox" aria-label="可选门客形象">
+                        {% for avatar in guest_disguise_avatar_options %}
+                        <button
+                            type="button"
+                            class="tw-avatar-option"
+                            data-avatar-key="{{ avatar.key }}"
+                            aria-label="门客形象选项{{ forloop.counter }}"
+                        >
+                            <img src="{{ avatar.url }}" alt="门客形象选项{{ forloop.counter }}" loading="lazy" width="56" height="56">
+                        </button>
+                        {% empty %}
+                        <p class="tw-no-guests">暂无可用的门客头像</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="tw-avatar-disguise-section">
+                    <div class="tw-avatar-disguise-label">选择要易容的门客</div>
+                    <div class="tw-guest-list">
+                        {% for guest in guests_for_disguise %}
+                        <button type="button" class="tw-guest-option" data-guest-id="{{ guest.id }}">
+                            <span class="tw-guest-info">
+                                <span class="tw-guest-name rarity-text-{{ guest.template.rarity }}">{{ guest.display_name }}</span>
+                                <span class="tw-guest-level">等级 {{ guest.level }}</span>
+                            </span>
+                            <span class="tw-guest-stats">
+                                <span>武:{{ guest.force }}</span>
+                                <span>敏:{{ guest.agility }}</span>
+                                <span>生命:{{ guest.max_hp }}</span>
+                            </span>
+                        </button>
+                        {% empty %}
+                        <p class="tw-no-guests">没有可易容的门客（需仍归属于本庄园）</p>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
             <!-- 灵魂容器门客列表 -->
             <div id="guest-list-soul-fusion" class="tw-guest-list" style="display: none;">

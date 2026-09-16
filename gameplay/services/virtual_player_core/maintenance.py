@@ -2699,7 +2699,8 @@ def _apply_inventory_acquisition_locked(
     spec: InventoryAcquisitionActionSpec,
     *,
     now: datetime,
-) -> InventoryItem:
+) -> dict[str, int]:
+    """Materialize a batch and return only quantities actually granted."""
     if not transaction.get_connection().in_atomic_block:
         raise RuntimeError("_apply_inventory_acquisition_locked must run inside transaction.atomic()")
     config = load_virtual_player_config()
@@ -2711,7 +2712,6 @@ def _apply_inventory_acquisition_locked(
     )
     acquisition_grants: dict[str, int] = {}
     acquisition_templates: dict[str, ItemTemplate] = {}
-    first_template_id: int | None = None
     for item_template_id, item_key, expected_caps, requested_quantity in batch_items:
         template = templates_by_id.get(int(item_template_id))
         if template is None or template.key != item_key or item_key == "grain":
@@ -2758,10 +2758,7 @@ def _apply_inventory_acquisition_locked(
             existing.quantity = int(existing.quantity or 0) + allowed
         acquisition_grants[template.key] = acquisition_grants.get(template.key, 0) + int(allowed)
         acquisition_templates[template.key] = template
-        if first_template_id is None:
-            first_template_id = int(template.id)
-
-    if first_template_id is None:
+    if not acquisition_grants:
         raise InventoryAcquisitionUnavailable("inventory acquisition batch has no eligible candidate")
     try:
         inventory_rows = add_items_to_inventory_locked(
@@ -2772,11 +2769,9 @@ def _apply_inventory_acquisition_locked(
     except InsufficientSpaceError as exc:
         raise InventoryAcquisitionUnavailable("warehouse capacity is full") from exc
 
-    first_template = templates_by_id.get(first_template_id)
-    first_created = inventory_rows.get(first_template.key) if first_template is not None else None
-    if first_created is None:
+    if any(key not in inventory_rows for key in acquisition_grants):
         raise InventoryAcquisitionUnavailable("inventory acquisition batch result disappeared")
-    return first_created
+    return acquisition_grants
 
 
 def _guest_investment_tiers(guests: tuple[Guest, ...]) -> dict[int, str]:
@@ -3297,6 +3292,51 @@ def _building_upgrade_quotes(
     return tuple(quotes)
 
 
+def _capacity_expansion_building_focuses(
+    *,
+    manor: Manor,
+    development_plan: BotDevelopmentPlan,
+    buildings: tuple[Building, ...],
+    technology_levels: dict[str, int],
+) -> tuple[str, ...]:
+    """Resolve storage prerequisites before the ordinary roster expansion.
+
+    Waiting for production cannot fund a quote above storage capacity. Follow
+    those dependencies using the same quotes as execution, including storage
+    upgrades that themselves need more room for another resource.
+    """
+
+    storage: dict[str, tuple[int, str]] = {
+        ResourceType.SILVER: (int(manor.silver_capacity or 0), BuildingKeys.SILVER_VAULT),
+        ResourceType.GRAIN: (int(manor.grain_capacity or 0), BuildingKeys.GRANARY),
+    }
+    visited: set[str] = set()
+
+    def resolve(building_key: str) -> tuple[str, ...]:
+        if building_key in visited:
+            return ()
+        visited.add(building_key)
+        quotes = _building_upgrade_quotes(
+            manor=manor,
+            development_plan=development_plan,
+            buildings=buildings,
+            technology_levels=technology_levels,
+            building_keys=(building_key,),
+        )
+        if not quotes:
+            return ()
+        prerequisites = tuple(
+            storage[resource][1]
+            for resource, amount in quotes[0].resource_cost
+            if resource in storage and amount > storage[resource][0]
+        )
+        if not prerequisites:
+            return (building_key,)
+        return tuple(dict.fromkeys(key for prerequisite in prerequisites for key in resolve(prerequisite)))
+
+    return resolve(BuildingKeys.JUXIAN_ZHUANG)
+
+
 def _technology_upgrade_quotes(
     *,
     manor: Manor,
@@ -3710,6 +3750,9 @@ def _build_v2_maintenance_plan_from_profile(
         virtual_inventory_templates = planning_snapshot.virtual_inventory_templates
         rare_inventory_quantity_today = planning_snapshot.rare_inventory_quantity_today
         recruitment_pool_silver_costs = planning_snapshot.recruitment_pool_silver_costs
+    # Use completed levels immediately, even before an old profile has had
+    # its persisted stage repaired by the next maintenance commit.
+    effective_growth_stage = max(1, max((int(building.level or 0) for building in buildings), default=1))
     domain_availability = _domain_availability_snapshot(
         buildings=buildings,
         technologies=technologies,
@@ -3889,9 +3932,14 @@ def _build_v2_maintenance_plan_from_profile(
     # impossible to satisfy.
     arena_capacity_expansion_required = arena_capacity_blocked
     arena_building_focuses: tuple[str, ...] | None = (
-        (BuildingKeys.JUXIAN_ZHUANG,)
-        if arena_capacity_blocked or ordinary_capacity_expansion_required
-        else (() if arena_replenishment else None)
+        _capacity_expansion_building_focuses(
+            manor=manor,
+            development_plan=development_plan,
+            buildings=buildings,
+            technology_levels=technology_levels,
+        )
+        if ordinary_capacity_expansion_required
+        else ((BuildingKeys.JUXIAN_ZHUANG,) if arena_capacity_blocked else (() if arena_replenishment else None))
     )
     resolved_building_focuses = (
         arena_building_focuses
@@ -4019,7 +4067,7 @@ def _build_v2_maintenance_plan_from_profile(
                     guests=growth_guests,
                     gear_templates=virtual_gear_templates,
                     equipped_items=gear_items,
-                    growth_stage=int(profile.growth_stage),
+                    growth_stage=effective_growth_stage,
                     rarity_stage_caps=projection_config.get("gear_max_rarity_by_stage") or {},
                 )
             except VirtualCandidatePoolError as exc:
@@ -4029,7 +4077,7 @@ def _build_v2_maintenance_plan_from_profile(
             prestige_band=str(profile.current_prestige_band),
             strength_before=strength_before,
             development_plan=development_plan,
-            growth_stage=int(profile.growth_stage),
+            growth_stage=effective_growth_stage,
             config=maintenance_config,
             guests=growth_guests,
             gear_items=gear_items,
@@ -4096,7 +4144,7 @@ def _build_v2_maintenance_plan_from_profile(
             inventory_intent, inventory_spec = build_virtual_inventory_batch_candidate(
                 manor_id=int(manor.id),
                 prestige_band=str(profile.current_prestige_band),
-                growth_stage=int(profile.growth_stage),
+                growth_stage=effective_growth_stage,
                 archetype=str(profile.archetype),
                 strength_before=strength_before,
                 inventory_templates=virtual_inventory_templates,
@@ -4110,6 +4158,7 @@ def _build_v2_maintenance_plan_from_profile(
                     },
                 ),
                 rare_count_today=rare_inventory_quantity_today,
+                used_keys={str(item.template.key) for item in warehouse_items if int(item.quantity or 0) > 0},
             )
             candidates: tuple[DevelopmentIntent, ...] = () if inventory_intent is None else (inventory_intent,)
             specs: dict[str, MaintenanceActionSpec] = {}
@@ -5210,17 +5259,28 @@ def _build_v2_maintenance_plan_from_profile(
             candidate.action_kind == TechnologyUpgradeActionSpec.action_kind
             and dict(resource_costs).get(ResourceType.SILVER, 0) > int(manor.silver_capacity or 0)
         )
-        technology_resource_reason = (
-            "technology_cost_exceeds_capacity"
-            if technology_capacity_exceeded
-            else ("technology_insufficient_resource" if resource_rejections else None)
+        technology_resource_reason = None
+        if candidate.action_kind == TechnologyUpgradeActionSpec.action_kind:
+            technology_resource_reason = (
+                "technology_cost_exceeds_capacity"
+                if technology_capacity_exceeded
+                else ("technology_insufficient_resource" if resource_rejections else None)
+            )
+        storage_capacity_exceeded = any(
+            amount > capacity
+            for resource, capacity in (
+                (ResourceType.SILVER, int(manor.silver_capacity or 0)),
+                (ResourceType.GRAIN, int(manor.grain_capacity or 0)),
+            )
+            for cost_resource, amount in resource_costs
+            if cost_resource == resource
         )
         next_affordable_at = (
             resource_planning_snapshot.next_affordable_at(
                 resource_costs,
                 now=planned_at,
             )
-            if resource_rejections and not technology_capacity_exceeded
+            if resource_rejections and not storage_capacity_exceeded
             else None
         )
         if technology_resource_reason is not None:
@@ -6826,6 +6886,7 @@ def execute_virtual_player_v2_maintenance_plan(
         else selected_assessment.primary_rejection_reason
     )
     outcome = MaintenanceOutcome.NO_ACTION
+    inventory_grants: dict[str, int] = {}
     action_kind = plan.action_kind if plan.intent is not None else ""
     reason = planning_rejection_reason or (
         "arena_action_unavailable"
@@ -7244,7 +7305,7 @@ def execute_virtual_player_v2_maintenance_plan(
                                 plan.action_spec,
                                 InventoryAcquisitionActionSpec,
                             )
-                            _apply_inventory_acquisition_locked(
+                            inventory_grants = _apply_inventory_acquisition_locked(
                                 manor,
                                 plan.action_spec,
                                 now=plan.planned_at,
@@ -7358,6 +7419,10 @@ def execute_virtual_player_v2_maintenance_plan(
         plan.next_growth_at_after if outcome is MaintenanceOutcome.APPLIED else plan.next_growth_at_after_no_action
     )
     committed_shadow_cost: Mapping[str, Any] = {}
+    if outcome is MaintenanceOutcome.APPLIED and inventory_grants:
+        # Persist actual grants with the receipt; subsequent audit/retry code
+        # must not infer successful writes from the planned batch.
+        committed_shadow_cost = {f"inventory_granted:{key}": quantity for key, quantity in inventory_grants.items()}
     if arena_free_subsidy and outcome is MaintenanceOutcome.APPLIED:
         committed_shadow_cost = free_arena_shadow_cost()
     if arena_free_subsidy and plan.target_id is not None:
@@ -8458,7 +8523,10 @@ def _record_policy2_scheduled_cycle_result(
     if plan.action_kind == InventoryAcquisitionActionSpec.action_kind and isinstance(
         plan.action_spec, InventoryAcquisitionActionSpec
     ):
+        remaining_grants = dict(result.shadow_cost)
         for draw_ordinal, color, item_key, weight in plan.action_spec.batch_draws:
+            granted_quantity = int(remaining_grants.pop(f"inventory_granted:{item_key}", 0))
+            draw_applied = result.outcome is MaintenanceOutcome.APPLIED and granted_quantity > 0
             attempt_specs.append(
                 {
                     "operation_id": _cycle_child_operation_id(
@@ -8468,8 +8536,12 @@ def _record_policy2_scheduled_cycle_result(
                     ),
                     "trigger": CycleTrigger.SCHEDULED,
                     "attempt_ordinal": draw_ordinal,
-                    "outcome": child_outcome,
-                    "reason": result.reason,
+                    "outcome": (
+                        BotMaintenanceAttempt.Outcome.APPLIED
+                        if draw_applied
+                        else BotMaintenanceAttempt.Outcome.NO_ACTION
+                    ),
+                    "reason": "" if draw_applied else (result.reason or "inventory_item_not_granted"),
                     "cycle": cycle,
                     "action_ordinal_in_round": slot_ordinal,
                     "receipt_operation_id": attempt_operation_id,
@@ -8479,6 +8551,7 @@ def _record_policy2_scheduled_cycle_result(
                         "color": str(color),
                         "item_key": str(item_key),
                         "weight": float(weight),
+                        "granted_quantity": granted_quantity if draw_applied else 0,
                     },
                     "started_at": now,
                 }

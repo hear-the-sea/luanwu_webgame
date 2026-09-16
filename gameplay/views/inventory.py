@@ -25,6 +25,7 @@ from gameplay.models import InventoryItem
 from gameplay.selectors.recruitment import get_recruitment_hall_context
 from gameplay.selectors.warehouse import get_warehouse_context
 from gameplay.services.inventory.guest_items import (
+    use_guest_disguise_card,
     use_guest_rarity_upgrade_item,
     use_guest_rebirth_card,
     use_soul_container,
@@ -344,6 +345,34 @@ def use_super_guest_disguise_view(request: HttpRequest, pk: int) -> HttpResponse
         missing_guest_error="请选择要易容的门客",
         success_fallback_message=lambda result: f"门客 {result.get('guest_name', '')} 已完成超级易容",
         service_call=use_super_guest_disguise_card,
+    )
+
+
+@login_required
+@require_POST
+@rate_limit_redirect("use_guest_disguise", limit=10, window_seconds=60)
+def use_guest_disguise_card_view(request: HttpRequest, pk: int) -> HttpResponse:
+    """使用门客易容卡（需要选择目标门客和头像）。"""
+    avatar_key = (request.POST.get("avatar_key") or "").strip()
+    if not avatar_key:
+        return inventory_error_response(
+            request,
+            is_ajax_request(request),
+            "请选择新的门客形象",
+        )
+
+    return _use_target_guest_item(
+        request,
+        pk,
+        expected_action="disguise_guest_avatar",
+        missing_guest_error="请选择要易容的门客",
+        success_fallback_message=lambda result: f"门客 {result.get('guest_name', '')} 已更换形象",
+        service_call=lambda manor, item, guest_id: use_guest_disguise_card(
+            manor,
+            item,
+            guest_id,
+            avatar_key,
+        ),
     )
 
 

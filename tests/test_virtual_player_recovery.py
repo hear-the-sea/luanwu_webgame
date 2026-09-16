@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from functools import partial
 from io import StringIO
 
 import pytest
@@ -57,6 +58,109 @@ def test_recovery_episode_quarantines_and_formal_requeue_resets_backoff() -> Non
     )
     requeued.refresh_from_db()
     assert requeued.last_success_at == now + timedelta(minutes=2)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("reset_action", ["clear", "requeue"])
+def test_recovered_failure_starts_a_new_episode_after_maximum_age(reset_action: str) -> None:
+    now = timezone.now()
+    policy = RecoveryPolicy(retry_base_seconds=10, retry_max_seconds=60)
+    record_failure = partial(
+        record_recovery_failure,
+        scope=BotMaintenanceRecovery.Scope.PROFILE,
+        entity_key="profile:42",
+        failure_code=RecoveryFailureClass.PROGRAMMER_ERROR,
+        error=RuntimeError("recurring defect"),
+        policy=policy,
+    )
+    record_failure(now=now)
+    reset_time = now + timedelta(minutes=1)
+    if reset_action == "clear":
+        clear_recovery_failure(scope=BotMaintenanceRecovery.Scope.PROFILE, entity_key="profile:42", now=reset_time)
+    else:
+        requeue_recovery(scope=BotMaintenanceRecovery.Scope.PROFILE, entity_key="profile:42", now=reset_time)
+
+    new_failure_time = now + policy.maximum_recovery_age + timedelta(days=1)
+    row = record_failure(now=new_failure_time)
+
+    assert row.status == BotMaintenanceRecovery.Status.RETRY
+    assert row.failure_streak == 1
+    assert row.first_failed_at == new_failure_time
+    assert row.last_failed_at == new_failure_time
+    assert row.next_retry_at == new_failure_time + timedelta(seconds=10)
+    assert row.quarantined_at is None
+    assert "quarantine_reason" not in row.payload
+
+    row = record_failure(now=new_failure_time + timedelta(seconds=10))
+    assert row.status == BotMaintenanceRecovery.Status.RETRY
+    assert row.failure_streak == 2
+    assert row.first_failed_at == new_failure_time
+    assert row.next_retry_at == new_failure_time + timedelta(seconds=30)
+
+    row = record_failure(now=new_failure_time + timedelta(seconds=30))
+    assert row.status == BotMaintenanceRecovery.Status.QUARANTINED
+    assert row.failure_streak == 3
+    assert row.first_failed_at == new_failure_time
+    assert row.next_retry_at is None
+
+
+@pytest.mark.django_db
+def test_unresolved_failure_still_quarantines_at_maximum_age() -> None:
+    now = timezone.now()
+    policy = RecoveryPolicy(quarantine_after_failures=5)
+    record_failure = partial(
+        record_recovery_failure,
+        scope=BotMaintenanceRecovery.Scope.PROFILE,
+        entity_key="profile:42",
+        failure_code=RecoveryFailureClass.PROGRAMMER_ERROR,
+        error=RuntimeError("persistent defect"),
+        policy=policy,
+    )
+    record_failure(now=now)
+
+    row = record_failure(now=now + policy.maximum_recovery_age)
+
+    assert row.status == BotMaintenanceRecovery.Status.QUARANTINED
+    assert row.failure_streak == 2
+    assert row.first_failed_at == now
+    assert row.next_retry_at is None
+    assert row.payload["quarantine_reason"] == "maximum_recovery_age_exceeded"
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("failure_code", "message"),
+    [
+        (RecoveryFailureClass.PROGRAMMER_ERROR, "different defect"),
+        (RecoveryFailureClass.INFRASTRUCTURE, "original defect"),
+    ],
+)
+def test_different_failure_starts_a_new_episode(failure_code: RecoveryFailureClass, message: str) -> None:
+    now = timezone.now()
+    policy = RecoveryPolicy()
+    record_recovery_failure(
+        scope=BotMaintenanceRecovery.Scope.PROFILE,
+        entity_key="profile:42",
+        failure_code=RecoveryFailureClass.PROGRAMMER_ERROR,
+        error=RuntimeError("original defect"),
+        now=now,
+        policy=policy,
+    )
+    new_failure_time = now + policy.maximum_recovery_age
+
+    row = record_recovery_failure(
+        scope=BotMaintenanceRecovery.Scope.PROFILE,
+        entity_key="profile:42",
+        failure_code=failure_code,
+        error=RuntimeError(message),
+        now=new_failure_time,
+        policy=policy,
+    )
+
+    assert row.status == BotMaintenanceRecovery.Status.RETRY
+    assert row.failure_streak == 1
+    assert row.first_failed_at == new_failure_time
+    assert row.quarantined_at is None
 
 
 @pytest.mark.django_db
