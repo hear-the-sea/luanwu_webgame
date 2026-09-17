@@ -15,6 +15,8 @@
       return;
     }
     form.dataset.confirming = "true";
+    form.dataset.actionPending = "1";
+    let actionSubmitted = false;
 
     const message = form.dataset.confirmMessage || "取消后已消耗的材料不会返还。确定取消吗？";
     const options = {
@@ -31,9 +33,13 @@
       if (confirmed) {
         form.dataset.confirmed = "true";
         form.submit();
+        actionSubmitted = true;
       }
     } finally {
       delete form.dataset.confirming;
+      if (!actionSubmitted) {
+        delete form.dataset.actionPending;
+      }
     }
   });
 })();

@@ -28,6 +28,7 @@ from django.db.models import (
     Max,
     OuterRef,
     Q,
+    QuerySet,
     Subquery,
     Sum,
     When,
@@ -657,6 +658,24 @@ def _virtual_troop_grain_rate_budget(production_basis: ResourceProductionBasis) 
 
     hourly_grain_rate = float(dict(production_basis.hourly_rates).get(ResourceType.GRAIN.value, 0.0))
     return max(0, math.floor(max(0.0, hourly_grain_rate) * 24.0))
+
+
+def _remaining_virtual_troop_grain_budget(*, profile_id: int, production_budget: int) -> int:
+    """Deduct committed troop outflow from the current ordinary cycle's allowance.
+
+    The existing attempt ledger is committed with the domain action. Failed
+    candidates and rolled-back attempts therefore never consume the budget.
+    The execution caller holds the profile/cycle locks when rechecking it.
+    """
+    spent = BotMaintenanceAttempt.objects.filter(
+        profile_id=profile_id,
+        cycle__status=BotMaintenanceCycle.Status.OPEN,
+        cycle__trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
+        trigger=BotMaintenanceCycle.Trigger.SCHEDULED,
+        outcome=BotMaintenanceAttempt.Outcome.APPLIED,
+        action_kind="troop_recruitment",
+    ).aggregate(total=Sum("grain_cost"))["total"]
+    return max(0, int(production_budget) - int(spent or 0))
 
 
 _ORDINARY_CYCLE_COVERAGE_KINDS = (
@@ -4214,7 +4233,10 @@ def _build_v2_maintenance_plan_from_profile(
                         "troop_prestige_cap_reached",
                         "troop_prestige_cap_below_batch_minimum",
                     ),
-                    grain_budget=resource_planning_snapshot.grain_rate_budget_24h,
+                    grain_budget=_remaining_virtual_troop_grain_budget(
+                        profile_id=int(profile.id),
+                        production_budget=resource_planning_snapshot.grain_rate_budget_24h,
+                    ),
                     rejection_reasons=troop_candidate_rejections,
                 )
             except VirtualCandidatePoolError as exc:
@@ -5800,6 +5822,40 @@ def _arena_training_assignment_has_commit_fence(*, member_id: int, operation_id:
     return False
 
 
+def completed_busy_arena_training_assignments() -> QuerySet[ArenaReserveTrainingAssignment]:
+    """Select known rolled-back reservations, never infer completion from age.
+
+    The arena finalizer writes the BUSY audit only after the domain call has
+    returned. Receipts and uncertainty records remain stronger fences. This
+    selector is only an admission filter; deletion must recheck under locks.
+    """
+
+    busy_attempts = BotMaintenanceAttempt.objects.filter(
+        profile_id=OuterRef("member__profile_id"),
+        receipt_operation_id=OuterRef("operation_id"),
+        trigger=BotMaintenanceExecution.Trigger.ARENA_ACCELERATION,
+        outcome=BotMaintenanceAttempt.Outcome.BUSY,
+        round_ordinal=OuterRef("round_ordinal"),
+        action_ordinal_in_round=OuterRef("action_ordinal_in_round"),
+    )
+    uncertain_attempts = BotMaintenanceAttempt.objects.filter(
+        Q(operation_id=OuterRef("operation_id")) | Q(receipt_operation_id=OuterRef("operation_id")),
+        outcome=BotMaintenanceAttempt.Outcome.COMMIT_UNCERTAIN,
+    )
+    uncertain_recoveries = BotMaintenanceRecovery.objects.filter(
+        scope=BotMaintenanceRecovery.Scope.ARENA_MEMBER,
+        failure_code=RecoveryFailureClass.COMMIT_UNCERTAIN.value,
+        last_operation_id=OuterRef("operation_id"),
+    ).exclude(status=BotMaintenanceRecovery.Status.REQUEUED)
+    return (
+        ArenaReserveTrainingAssignment.objects.filter(status=ArenaReserveTrainingAssignment.Status.ASSIGNED)
+        .exclude(operation_id="")
+        .filter(Exists(busy_attempts))
+        .filter(~Exists(BotMaintenanceExecution.objects.filter(operation_id=OuterRef("operation_id"))))
+        .filter(~Exists(uncertain_attempts), ~Exists(uncertain_recoveries))
+    )
+
+
 @transaction.atomic
 def discard_uncommitted_arena_training_assignment(
     *,
@@ -5811,9 +5867,9 @@ def discard_uncommitted_arena_training_assignment(
     """Remove a reservation made by a known rolled-back arena operation.
 
     This is intentionally narrower than stale-assignment reclamation in the
-    planner: callers use it only after a recoverable business error, before
-    the growth claim is cleared.  Infrastructure/commit-uncertain paths keep
-    the row as a reconciliation fence.
+    planner: callers use it after a recoverable business error, or under the
+    profile lock with a durable BUSY audit proving the call has returned.
+    Infrastructure/commit-uncertain paths keep the row as a reconciliation fence.
     """
 
     normalized_operation_id = str(operation_id or "").strip()
@@ -7094,8 +7150,9 @@ def execute_virtual_player_v2_maintenance_plan(
                                             ),
                                         ) from exc
                                     raise TroopRecruitmentError(str(exc)) from exc
-                                if int(virtual_quote.virtual_grain_cost) > _virtual_troop_grain_rate_budget(
-                                    production_basis
+                                if int(virtual_quote.virtual_grain_cost) > _remaining_virtual_troop_grain_budget(
+                                    profile_id=int(profile.id),
+                                    production_budget=_virtual_troop_grain_rate_budget(production_basis),
                                 ):
                                     if (
                                         plan.policy_version == 2

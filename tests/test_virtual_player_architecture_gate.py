@@ -813,6 +813,10 @@ def test_arena_reverse_dependency_debt_is_explicit_and_cannot_grow() -> None:
             "gameplay.services.arena.virtual_reserve_scan",
             "gameplay.services.arena.virtual_reserve_reconcile",
         ),
+        (
+            "gameplay.services.arena.virtual_reserve_scan",
+            "gameplay.services.arena.virtual_reserve_policy",
+        ),
     }
     _assert_acyclic_import_graph(arena_modules, arena_edges)
     assert reverse_edges == set()

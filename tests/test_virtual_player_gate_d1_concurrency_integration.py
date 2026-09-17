@@ -37,6 +37,7 @@ from gameplay.services.virtual_player_core.population_runtime import (
     try_merge_already_classified_mysql_prestige_transition_cells,
 )
 from gameplay.services.virtual_player_core.projection import BootstrapInventoryTarget
+from gameplay.services.virtual_player_core.safety_metrics import record_safety_heartbeat
 from guests.models import GearItem, Guest, GuestSkill
 
 pytestmark = pytest.mark.integration
@@ -305,6 +306,7 @@ def test_two_population_workers_materialize_only_one_profile_for_one_deficit(
         bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE,
         maintenance_mode=BotRuntimeRoutingState.MaintenanceMode.V2_ACTIVE,
     )
+    record_safety_heartbeat("safety_monitor", now=now)
     BotBackfillDemand.objects.create(
         region="north",
         prestige_band="newbie",

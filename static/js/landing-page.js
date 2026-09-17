@@ -79,13 +79,22 @@
     document.querySelectorAll(".scout-retreat-form").forEach((form) => {
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
+        form.dataset.confirming = "true";
+        form.dataset.actionPending = "1";
+        let actionSubmitted = false;
         try {
           const confirmed = await confirmAction("确定要撤退侦察吗？探子将立即返程。", { title: "撤退确认" });
           if (confirmed) {
             form.submit();
+            actionSubmitted = true;
           }
         } catch (error) {
           console.error("撤退确认失败:", error);
+        } finally {
+          delete form.dataset.confirming;
+          if (!actionSubmitted) {
+            delete form.dataset.actionPending;
+          }
         }
       });
     });
@@ -101,11 +110,18 @@
           return;
         }
 
-        const confirmed = await confirmAction("确定要撤退吗？部队将立即返程。", { title: "撤退确认" });
+        button.dataset.confirming = "true";
+        let confirmed;
+        try {
+          confirmed = await confirmAction("确定要撤退吗？部队将立即返程。", { title: "撤退确认" });
+        } finally {
+          delete button.dataset.confirming;
+        }
         if (!confirmed) {
           return;
         }
 
+        button.dataset.actionPending = "1";
         button.disabled = true;
         button.textContent = "撤退中...";
 
@@ -128,6 +144,7 @@
 
         button.disabled = false;
         button.textContent = "撤退";
+        delete button.dataset.actionPending;
       });
     });
   }

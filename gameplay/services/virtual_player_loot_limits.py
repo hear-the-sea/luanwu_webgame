@@ -5,7 +5,7 @@ from typing import Any
 
 from django.utils import timezone
 
-from gameplay.models import BotProfile, Manor, RaidRun
+from gameplay.models import BotProfile, Manor, RaidRun, ResourceType
 from gameplay.services.pvp_runtime.loot import normalize_positive_int_mapping
 from gameplay.services.virtual_player_core.config import load_virtual_player_config
 from gameplay.services.virtual_player_core.contracts import BotLootClampDecision
@@ -14,6 +14,15 @@ from gameplay.services.virtual_player_state_policy import is_virtual_profile_mai
 
 def _resource_total(resources: dict[str, int]) -> int:
     return sum(normalize_positive_int_mapping(resources).values())
+
+
+def resource_loot_amounts(resources: dict[str, int], items: dict[str, int]) -> dict[str, int]:
+    """Count warehouse grain together with legacy resource loot, excluding ordinary items."""
+    amounts = normalize_positive_int_mapping(resources)
+    grain = normalize_positive_int_mapping(items).get(ResourceType.GRAIN, 0)
+    if grain:
+        amounts[ResourceType.GRAIN] = amounts.get(ResourceType.GRAIN, 0) + grain
+    return amounts
 
 
 def _clamp_resources_to_budget(resources: dict[str, int], budget: int) -> dict[str, int]:
@@ -46,8 +55,8 @@ def _spent_from_bots_today(attacker: Manor, *, now) -> int:
         defender__bot_profile__isnull=False,
         is_attacker_victory=True,
         started_at__gte=since,
-    ).only("loot_resources")
-    return sum(_resource_total(run.loot_resources) for run in runs)
+    ).only("loot_resources", "loot_items")
+    return sum(_resource_total(resource_loot_amounts(run.loot_resources, run.loot_items)) for run in runs)
 
 
 def _spent_from_bot_defender_today(defender: Manor, *, now) -> int:
@@ -56,8 +65,8 @@ def _spent_from_bot_defender_today(defender: Manor, *, now) -> int:
         defender=defender,
         is_attacker_victory=True,
         started_at__gte=since,
-    ).only("loot_resources")
-    return sum(_resource_total(run.loot_resources) for run in runs)
+    ).only("loot_resources", "loot_items")
+    return sum(_resource_total(resource_loot_amounts(run.loot_resources, run.loot_items)) for run in runs)
 
 
 def _is_bot_manor(manor: Manor) -> bool:

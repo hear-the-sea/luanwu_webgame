@@ -848,6 +848,25 @@ def test_virtual_guest_loyalty_is_fixed_at_60_across_battle_injury_and_daily_set
 
 
 @pytest.mark.django_db
+def test_daily_loyalty_does_not_rewrite_already_normalized_virtual_guests(active_v2_profile) -> None:
+    guest = Guest.objects.filter(manor_id=active_v2_profile.manor_id).order_by("id").first()
+    assert guest is not None
+    previous_date = timezone.localdate() - timedelta(days=1)
+    Guest.objects.filter(pk=guest.pk).update(
+        loyalty=60,
+        injury_loyalty_processed_at=None,
+        loyalty_processed_for_date=previous_date,
+    )
+
+    guest_tasks.process_daily_loyalty.run()
+
+    guest.refresh_from_db()
+    assert guest.loyalty == 60
+    assert guest.injury_loyalty_processed_at is None
+    assert guest.loyalty_processed_for_date == previous_date
+
+
+@pytest.mark.django_db
 def test_arena_training_projection_applies_immediate_level_for_event_cap(
     active_v2_profile,
     permissive_reference,
@@ -2828,6 +2847,73 @@ def test_v2_virtual_troop_recruitment_does_not_project_prestige_gain(
 
     assert result.outcome is MaintenanceOutcome.APPLIED
     assert load_manor_strength_summary(manor_id=plan.manor_id) == plan.intent.strength_after
+
+
+@pytest.mark.django_db
+def test_scheduled_troop_batches_share_one_cycle_grain_allowance(
+    active_v2_profile, permissive_reference, monkeypatch
+) -> None:
+    plan = _prepare_troop_recruitment_plan(active_v2_profile, monkeypatch)
+    assert plan.troop_recruitment_quote is not None
+    production_budget = plan.troop_recruitment_quote.virtual_grain_cost + 1
+    monkeypatch.setattr(
+        "gameplay.services.resources.get_hourly_rates",
+        lambda _manor: {ResourceType.SILVER: 50_000, ResourceType.GRAIN: production_budget / 24},
+    )
+    first = maintenance.maintain_virtual_player_v2(
+        active_v2_profile.id,
+        trigger=MaintenanceTrigger.SCHEDULED,
+        operation_id="troop-budget-first",
+        now=FIXED_NOW,
+    )
+    assert first.outcome is MaintenanceOutcome.APPLIED, first.reason
+    assert first.action_kind == "troop_recruitment"
+    cycle = BotMaintenanceCycle.objects.get(profile=active_v2_profile, status=BotMaintenanceCycle.Status.OPEN)
+    spent = BotMaintenanceAttempt.objects.get(cycle=cycle, action_kind="troop_recruitment").grain_cost
+    assert spent == first.shadow_cost["troop_batch_grain_cost"]
+    before_troops = dict(PlayerTroop.objects.filter(manor_id=active_v2_profile.manor_id).values_list("id", "count"))
+    second_at = cycle.next_slot_due_at
+    assert second_at is not None
+    record_safety_heartbeat("safety_monitor", now=second_at)
+    second = maintenance.maintain_virtual_player_v2(
+        active_v2_profile.id, trigger=MaintenanceTrigger.SCHEDULED, now=second_at
+    )
+    assert second.action_kind != "troop_recruitment"
+    assert (
+        dict(PlayerTroop.objects.filter(manor_id=active_v2_profile.manor_id).values_list("id", "count"))
+        == before_troops
+    )
+    assert (
+        BotMaintenanceAttempt.objects.filter(cycle=cycle, action_kind="troop_recruitment", outcome="applied").count()
+        == 1
+    )
+
+    # Closed cycles cannot consume the next cycle's allowance.
+    BotMaintenanceCycle.objects.filter(pk=cycle.pk).update(status=BotMaintenanceCycle.Status.COMPLETED)
+    assert (
+        maintenance._remaining_virtual_troop_grain_budget(
+            profile_id=active_v2_profile.id, production_budget=production_budget
+        )
+        == production_budget
+    )
+
+
+@pytest.mark.django_db
+def test_troop_grain_recheck_rejects_consumed_budget_without_domain_writes(
+    active_v2_profile, permissive_reference, monkeypatch
+) -> None:
+    plan = _prepare_troop_recruitment_plan(active_v2_profile, monkeypatch)
+    before = _troop_domain_state(plan)
+    original = maintenance._remaining_virtual_troop_grain_budget
+    monkeypatch.setattr(maintenance, "_remaining_virtual_troop_grain_budget", lambda **_kwargs: 0)
+    with pytest.raises(maintenance._V2MaintenanceOutcomeError) as exc_info:
+        maintenance.execute_virtual_player_v2_maintenance_plan(plan)
+    assert exc_info.value.reason == "maintenance_precondition_changed"
+    assert _troop_domain_state(plan) == before
+    active_v2_profile.refresh_from_db()
+    assert active_v2_profile.maintenance_sequence == 0
+    monkeypatch.setattr(maintenance, "_remaining_virtual_troop_grain_budget", original)
+    assert maintenance.execute_virtual_player_v2_maintenance_plan(plan).outcome is MaintenanceOutcome.APPLIED
 
 
 @pytest.mark.django_db

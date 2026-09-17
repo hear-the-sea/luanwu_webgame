@@ -64,7 +64,7 @@ from gameplay.services.virtual_player_core.contracts import (
     ArenaGrowthObjective,
     MaintenanceTrigger,
 )
-from gameplay.services.virtual_player_core.safety_metrics import HARD_CONSTRAINT_METRIC
+from gameplay.services.virtual_player_core.safety_metrics import HARD_CONSTRAINT_METRIC, record_safety_heartbeat
 from gameplay.services.virtual_player_core.safety_provider import SafetyProviderError, record_safety_metric_event
 from tests.arena_services.test_virtual_backfill import _add_real_arena_entry, _add_real_coop_entry
 from tests.arena_services.test_virtual_backfill import _create_bot_profile as _create_bot_profile_unenrolled
@@ -73,11 +73,13 @@ from tests.arena_services.test_virtual_backfill import _create_bot_profile as _c
 def _set_runtime_routing(**fields) -> BotRuntimeRoutingState:
     """Replace the singleton routing snapshot without colliding with the V2 fixture."""
 
+    record_safety_heartbeat("safety_monitor", now=timezone.now())
     key = fields.pop("key", BotRuntimeRoutingState.GLOBAL_KEY)
     return BotRuntimeRoutingState.objects.update_or_create(key=key, defaults=fields)[0]
 
 
 def _create_tournament_demand(*, player_limit: int = 2) -> ArenaVirtualDemand:
+    record_safety_heartbeat("safety_monitor", now=timezone.now())
     BotRuntimeRoutingState.objects.get_or_create(
         key=BotRuntimeRoutingState.GLOBAL_KEY,
         defaults={
@@ -3521,6 +3523,34 @@ def test_expired_exhausted_terminal_lease_is_released():
 
     assert virtual_reserve_pool.release_expired_exhausted_virtual_reserve_members(now=now, limit=10) == 1
     assert not ArenaVirtualReserveMember.objects.filter(pk=member.pk).exists()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("terminal_status", ["satisfied", "closed", "blocked"])
+def test_terminal_lease_cleanup_skips_demands_without_releasable_members(terminal_status):
+    now = timezone.now()
+
+    def terminal_demand():
+        event = ArenaTournament.objects.create(status=ArenaTournament.Status.RUNNING)
+        return ArenaVirtualDemand.objects.create(tournament=event, status=terminal_status)
+
+    terminal_demand()
+    recent_member = ArenaVirtualReserveMember.objects.create(
+        demand=terminal_demand(),
+        profile=_create_bot_profile("reserve_terminal_recent"),
+        state=ArenaVirtualReserveMember.State.EXHAUSTED,
+        last_checked_at=now,
+    )
+    expired_member = ArenaVirtualReserveMember.objects.create(
+        demand=terminal_demand(),
+        profile=_create_bot_profile("reserve_terminal_expired"),
+        state=ArenaVirtualReserveMember.State.EXHAUSTED,
+        last_checked_at=now - timedelta(hours=1),
+    )
+
+    assert virtual_reserve_pool.release_expired_exhausted_virtual_reserve_members(now=now, limit=1) == 1
+    assert not ArenaVirtualReserveMember.objects.filter(pk=expired_member.pk).exists()
+    assert ArenaVirtualReserveMember.objects.filter(pk=recent_member.pk).exists()
 
 
 @pytest.mark.django_db

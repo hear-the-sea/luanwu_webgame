@@ -477,7 +477,6 @@ def process_daily_loyalty(self) -> str:
             Guest.objects.filter(manor__bot_profile__isnull=False)
             .exclude(
                 loyalty=VIRTUAL_PLAYER_GUEST_LOYALTY,
-                loyalty_processed_for_date=today,
                 injury_loyalty_processed_at__isnull=True,
             )
             .update(

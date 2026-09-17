@@ -49,7 +49,7 @@ from gameplay.services.virtual_player_core.safety_metrics import (
     record_h01_callback_attempt,
     record_h01_retirement_recommendation,
 )
-from gameplay.services.virtual_player_loot_limits import clamp_bot_loot_resources
+from gameplay.services.virtual_player_loot_limits import clamp_bot_loot_resources, resource_loot_amounts
 from guests.models import Guest, GuestStatus
 
 from ....models import Manor, PlayerTroop, RaidRun
@@ -188,17 +188,28 @@ def _apply_raid_loot_if_needed(
         troop_loadout=locked_run.troop_loadout,
         battle_report=locked_run.battle_report,
     )
+    # Capacity determines what can actually be taken before the Bot budget is
+    # evaluated. Grain lives in loot_items but shares the resource allowance.
+    loot_resources, loot_items = clamp_loot_to_attacker_storage_capacity(
+        locked_run.attacker,
+        loot_resources,
+        loot_items,
+    )
     loot_decision = clamp_bot_loot_resources(
         attacker=locked_run.attacker,
         defender=locked_defender,
-        loot_resources=loot_resources,
+        loot_resources=resource_loot_amounts(loot_resources, loot_items),
         now=now,
     )
-    loot_resources, loot_items = clamp_loot_to_attacker_storage_capacity(
-        locked_run.attacker,
-        dict(loot_decision.resources),
-        loot_items,
-    )
+    legacy_grain = min(loot_resources.get("grain", 0), loot_decision.resources.get("grain", 0))
+    item_grain = max(0, loot_decision.resources.get("grain", 0) - legacy_grain)
+    loot_resources = dict(loot_decision.resources)
+    loot_resources.pop("grain", None)
+    if legacy_grain:
+        loot_resources["grain"] = legacy_grain
+    loot_items.pop("grain", None)
+    if item_grain:
+        loot_items["grain"] = item_grain
     applied_resources, applied_items = _apply_loot(
         locked_defender,
         loot_resources,
@@ -207,6 +218,16 @@ def _apply_raid_loot_if_needed(
     )
     locked_run.loot_resources = applied_resources
     locked_run.loot_items = applied_items
+    actual_amounts = resource_loot_amounts(applied_resources, applied_items)
+    if loot_decision.bot_profile_id is not None and actual_amounts != dict(loot_decision.resources):
+        # Defensive inventory clipping must not retire a Bot on a quoted loss
+        # that never happened. The current run has not been persisted yet.
+        loot_decision = clamp_bot_loot_resources(
+            attacker=locked_run.attacker,
+            defender=locked_defender,
+            loot_resources=actual_amounts,
+            now=now,
+        )
     return loot_decision
 
 

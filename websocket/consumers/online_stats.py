@@ -104,7 +104,7 @@ class OnlineStatsConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsume
         stats = await self.get_stats()
         await self._broadcast_stats_best_effort(stats)
 
-    def _acquire_broadcast_debounce(self) -> bool:
+    def _acquire_broadcast_debounce_sync(self) -> bool:
         if int(self.BROADCAST_DEBOUNCE_SECONDS) > 0:
             debounce_seconds = max(1, int(self.BROADCAST_DEBOUNCE_SECONDS))
             acquired, _from_cache, _lock_token = acquire_best_effort_lock(
@@ -117,6 +117,10 @@ class OnlineStatsConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsume
                 return False
         return True
 
+    async def _acquire_broadcast_debounce(self) -> bool:
+        """Acquire the debounce lock without blocking Daphne's event loop."""
+        return await sync_to_async(self._acquire_broadcast_debounce_sync, thread_sensitive=False)()
+
     async def _send_stats_update(self, stats: dict) -> None:
         await self.channel_layer.group_send(
             self.STATS_GROUP,
@@ -127,13 +131,13 @@ class OnlineStatsConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsume
         )
 
     async def _broadcast_stats_best_effort(self, stats: dict) -> None:
-        if not self._acquire_broadcast_debounce():
+        if not await self._acquire_broadcast_debounce():
             return
         await self._send_stats_update(stats)
 
     async def _refresh_and_broadcast_stats_best_effort(self) -> None:
         """Refresh and broadcast once per debounce window for heartbeat callers."""
-        if not self._acquire_broadcast_debounce():
+        if not await self._acquire_broadcast_debounce():
             return
         stats = await self.get_stats()
         await self._send_stats_update(stats)

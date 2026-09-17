@@ -23,12 +23,12 @@ from gameplay.services.virtual_player_core.recovery import (
 )
 
 from .virtual_fill_service import observe_fill_service
-from .virtual_reserve_demand import (
+from .virtual_reserve_fill import fill_due_coop_reserve, fill_due_tournament_reserve
+from .virtual_reserve_policy import (
     BLOCKED_DEMAND_RETRY_COOLDOWN,
     POLICY_BLOCKED_DEMAND_REASONS,
     RECOVERABLE_BLOCKED_DEMAND_REASONS,
 )
-from .virtual_reserve_fill import fill_due_coop_reserve, fill_due_tournament_reserve
 from .virtual_reserve_pool import release_expired_exhausted_virtual_reserve_members, replenish_virtual_reserve
 from .virtual_reserve_reconcile import reconcile_coop_demand, reconcile_tournament_demand
 

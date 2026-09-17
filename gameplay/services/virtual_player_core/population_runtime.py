@@ -54,10 +54,12 @@ from .recovery import (
     clear_recovery_failure,
     exclude_blocked_entity_recoveries,
     record_recovery_failure,
+    recovery_circuit_is_open,
 )
 from .runtime_assessment import assess_virtual_player_runtime
 from .runtime_helpers import range_value as _range_value
 from .runtime_helpers import weighted_archetype as _weighted_archetype
+from .safety_preflight import check_v2_development_write_preflight
 from .selectors import active_real_player_count as _active_real_player_count
 from .selectors import band_filter_kwargs as _band_filter_kwargs
 from .selectors import configured_population_value as _configured_population_value
@@ -524,6 +526,8 @@ def claim_population_recompute_demand(
 ) -> PopulationRecomputeClaim | None:
     normalized = _normalize_population_demand_cells([(region, prestige_band)])
     current_time = _demand_now(now)
+    if recovery_circuit_is_open(path=POPULATION_RECOVERY_SCOPE, now=current_time):
+        return None
     demand_queryset = BotPopulationRecomputeDemand.objects.select_for_update().filter(
         region=normalized[0][0], prestige_band=normalized[0][1]
     )
@@ -543,6 +547,8 @@ def claim_next_population_recompute_demand(
     now: datetime | None = None,
 ) -> PopulationRecomputeClaim | None:
     current_time = _demand_now(now)
+    if recovery_circuit_is_open(path=POPULATION_RECOVERY_SCOPE, now=current_time):
+        return None
     band_order = Case(
         *[When(prestige_band=band, then=ordinal) for band, ordinal in _V2_BAND_ORDINAL.items()],
         default=len(_V2_BAND_ORDINAL),
@@ -899,6 +905,7 @@ def _population_runtime_config_for_bootstrap_mode(
 def _lock_population_mutation_bootstrap_mode(
     *,
     required_engine_version: int | None = None,
+    now: datetime | None = None,
 ) -> BootstrapMode | None:
     """Serialize a population write with routing transitions and revalidate its engine."""
     try:
@@ -907,6 +914,10 @@ def _lock_population_mutation_bootstrap_mode(
         return None
     assessment = assess_virtual_player_runtime(routing)
     if not assessment.population_mutation_allowed:
+        return None
+    if recovery_circuit_is_open(path=POPULATION_RECOVERY_SCOPE, now=now):
+        return None
+    if not check_v2_development_write_preflight(now=now).allowed:
         return None
     bootstrap_mode = routing.bootstrap_mode
     routed_engine_version = 1 if bootstrap_mode is BootstrapMode.LEGACY_BEFORE_GATE else 2
@@ -1507,7 +1518,7 @@ def reactivate_retired_virtual_player_with_capacity(
     now=None,
 ) -> PopulationMutationResult:
     current_time = now or timezone.now()
-    bootstrap_mode = _lock_population_mutation_bootstrap_mode()
+    bootstrap_mode = _lock_population_mutation_bootstrap_mode(now=current_time)
     if bootstrap_mode is None:
         hard_cap, maintained_count = get_virtual_player_capacity(now=current_time)
         return PopulationMutationResult(
@@ -1555,7 +1566,7 @@ def reactivate_retired_virtual_player_with_capacity(
 @transaction.atomic
 def reactivate_virtual_player_profile(profile_id: int, *, now=None) -> BotProfile | None:
     current_time = now or timezone.now()
-    bootstrap_mode = _lock_population_mutation_bootstrap_mode()
+    bootstrap_mode = _lock_population_mutation_bootstrap_mode(now=current_time)
     if bootstrap_mode is None:
         return None
     required_engine_version = 2
@@ -1605,7 +1616,7 @@ def _try_reactivate_retired_player(
 ) -> BotProfile | None:
     if ownership_guard is not None:
         ownership_guard()
-    if _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version) is None:
+    if _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version, now=now) is None:
         return None
     hard_cap, maintained_count = _lock_population_capacity(now=now)
     if not _population_has_room(hard_cap, maintained_count):
@@ -1670,7 +1681,7 @@ def _reactivate_or_create_virtual_player(
         )
     if ownership_guard is not None:
         ownership_guard()
-    if _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version) is None:
+    if _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version, now=now) is None:
         hard_cap, maintained_count = _lock_population_capacity(now=now)
         return PopulationMutationResult(
             status=PopulationMutationStatus.UNAVAILABLE,
@@ -1777,7 +1788,7 @@ def _reactivate_or_create_virtual_player(
             ownership_guard()
         reactivated = reactivate_locked_virtual_player_profile(retired, now=now)
         ownership_guard()
-        if _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version) is None:
+        if _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version, now=now) is None:
             raise PopulationRecomputeDemandError("V2 bootstrap routing stopped before reactivation committed")
         return PopulationMutationResult(
             status=PopulationMutationStatus.REACTIVATED,
@@ -1796,7 +1807,7 @@ def _reactivate_or_create_virtual_player(
     )
     profile = creation_factory(population_permit)
     ownership_guard()
-    if _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version) is None:
+    if _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version, now=now) is None:
         raise PopulationRecomputeDemandError("V2 bootstrap routing stopped before materialization committed")
     return PopulationMutationResult(
         status=PopulationMutationStatus.CREATED,
@@ -1846,7 +1857,7 @@ def create_virtual_player_with_capacity(
     start_from_zero: bool = False,
 ) -> PopulationMutationResult:
     current_time = now or timezone.now()
-    bootstrap_mode = _lock_population_mutation_bootstrap_mode()
+    bootstrap_mode = _lock_population_mutation_bootstrap_mode(now=current_time)
     if bootstrap_mode is None:
         hard_cap, maintained_count = get_virtual_player_capacity(now=current_time)
         return PopulationMutationResult(
@@ -1891,7 +1902,7 @@ def _retire_excess_virtual_players(
     if excess <= 0:
         return 0
     with transaction.atomic():
-        if _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version) is None:
+        if _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version, now=now) is None:
             return 0
         protected_manor_ids = _arena_protected_bot_manor_ids()
         stale_ids = list(
@@ -1948,7 +1959,7 @@ def _retire_unsupported_v2_profiles(
             return 0
         with transaction.atomic():
             ownership_guard()
-            if _lock_population_mutation_bootstrap_mode(required_engine_version=2) is None:
+            if _lock_population_mutation_bootstrap_mode(required_engine_version=2, now=now) is None:
                 return 0
             _lock_population_capacity(now=now)
             protected_manor_ids = _arena_protected_bot_manor_ids()
@@ -2008,7 +2019,10 @@ def _retire_excess_population_cells(
             target_based=target_based,
         )
         with transaction.atomic():
-            if _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version) is None:
+            if (
+                _lock_population_mutation_bootstrap_mode(required_engine_version=required_engine_version, now=now)
+                is None
+            ):
                 return retired_count
             protected_manor_ids = _arena_protected_bot_manor_ids()
             stale_ids = list(

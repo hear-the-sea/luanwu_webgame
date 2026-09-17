@@ -268,7 +268,7 @@ class OnlineStatsConsumerInternalTests(SimpleTestCase):
         consumer = self._build_consumer()
         consumer.get_stats = AsyncMock(return_value={"online_count": 4, "total_count": 12})
         consumer._send_stats_update = AsyncMock()
-        consumer._acquire_broadcast_debounce = lambda: False
+        consumer._acquire_broadcast_debounce = AsyncMock(return_value=False)
 
         asyncio.run(consumer._refresh_and_broadcast_stats_best_effort())
 
@@ -280,7 +280,7 @@ class OnlineStatsConsumerInternalTests(SimpleTestCase):
         stats = {"online_count": 4, "total_count": 12}
         consumer.get_stats = AsyncMock(return_value=stats)
         consumer._send_stats_update = AsyncMock()
-        consumer._acquire_broadcast_debounce = lambda: True
+        consumer._acquire_broadcast_debounce = AsyncMock(return_value=True)
 
         asyncio.run(consumer._refresh_and_broadcast_stats_best_effort())
 

@@ -4,7 +4,7 @@ import threading
 from datetime import timedelta
 
 import pytest
-from django.db import close_old_connections, connection
+from django.db import close_old_connections, connection, transaction
 from django.utils import timezone
 
 from gameplay.models import (
@@ -23,6 +23,7 @@ from gameplay.services.arena.virtual_reserve_pool import (
 )
 from gameplay.services.arena.virtual_reserve_reconcile import reconcile_tournament_demand
 from gameplay.services.virtual_player_core.contracts import AcceleratedGrowthOutcome
+from gameplay.services.virtual_player_core.safety_metrics import record_safety_heartbeat
 from gameplay.services.virtual_players import (
     BotProjectionConfig,
     PopulationMutationStatus,
@@ -35,9 +36,49 @@ from tests.arena_services.test_virtual_backfill import _create_bot_profile as _c
 pytestmark = [pytest.mark.integration]
 
 
+@pytest.mark.django_db(transaction=True)
+def test_terminal_busy_assignment_cleanup_skips_a_locked_profile() -> None:
+    if connection.vendor != "mysql":
+        pytest.skip("terminal assignment cleanup requires MySQL skip_locked semantics")
+    from tests.arena_services.test_virtual_reserve_terminal_assignments import _complete_and_expire, _reserved_training
+
+    member, _claim, now = _reserved_training()
+    cleanup_at = _complete_and_expire(member, now)
+    profile_locked = threading.Event()
+    release_profile = threading.Event()
+    errors: list[BaseException] = []
+
+    def hold_profile() -> None:
+        close_old_connections()
+        try:
+            with transaction.atomic():
+                BotProfile.objects.select_for_update().get(pk=member.profile_id)
+                profile_locked.set()
+                assert release_profile.wait(timeout=30)
+        except BaseException as exc:  # pragma: no cover - asserted below
+            errors.append(exc)
+        finally:
+            close_old_connections()
+
+    worker = threading.Thread(target=hold_profile, daemon=True)
+    worker.start()
+    try:
+        assert profile_locked.wait(timeout=10)
+        assert virtual_reserve_pool.release_expired_exhausted_virtual_reserve_members(now=cleanup_at, limit=1) == 0
+        assert ArenaVirtualReserveMember.objects.filter(pk=member.id).exists()
+    finally:
+        release_profile.set()
+        worker.join(timeout=10)
+    assert not worker.is_alive()
+    assert errors == []
+    assert virtual_reserve_pool.release_expired_exhausted_virtual_reserve_members(now=cleanup_at, limit=1) == 1
+    assert not ArenaVirtualReserveMember.objects.filter(pk=member.id).exists()
+
+
 def _ensure_v2_runtime_routing() -> None:
     """Give real-service concurrency tests the active V2 gate they exercise."""
 
+    record_safety_heartbeat("safety_monitor", now=timezone.now())
     BotRuntimeRoutingState.objects.update_or_create(
         key=BotRuntimeRoutingState.GLOBAL_KEY,
         defaults={

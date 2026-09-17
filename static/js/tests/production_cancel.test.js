@@ -78,6 +78,8 @@ test("production cancel submits after an explicit irreversible-action confirmati
   assert.equal(harness.calls.danger[0].options.okText, "确认取消");
   assert.equal(harness.calls.danger[0].options.cancelText, "返回");
   assert.equal(harness.form.dataset.confirmed, "true");
+  assert.equal(harness.form.dataset.actionPending, "1");
+  assert.equal(harness.form.dataset.confirming, undefined);
 });
 
 test("production cancel leaves the task running when confirmation is declined", async () => {
@@ -90,6 +92,7 @@ test("production cancel leaves the task running when confirmation is declined", 
   assert.equal(harness.calls.submit, 0);
   assert.equal(harness.form.dataset.confirmed, undefined);
   assert.equal(harness.form.dataset.confirming, undefined);
+  assert.equal(harness.form.dataset.actionPending, undefined);
 });
 
 test("production cancel installs one delegated handler across partial navigation runs", () => {

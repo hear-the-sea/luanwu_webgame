@@ -381,10 +381,15 @@ def test_expired_claim_is_reclaimed_and_stale_token_cannot_finalize(
         event_id="fencing",
         origin_committed_at=start,
     )
-    old_claim = claim_external_reconciliation(intent.id, now=start)
+    # Intent availability is initialized from the database clock.  On a
+    # backend with sub-second precision that clock can be a few microseconds
+    # ahead of the application timestamp captured above, so claim from the
+    # intent's actual due time rather than assuming both clocks are identical.
+    first_claim_at = max(start, intent.available_at)
+    old_claim = claim_external_reconciliation(intent.id, now=first_claim_at)
     assert old_claim is not None
 
-    reclaimed_at = start + timedelta(minutes=5, seconds=1)
+    reclaimed_at = first_claim_at + timedelta(minutes=5, seconds=1)
     new_claim = claim_external_reconciliation(intent.id, now=reclaimed_at)
     assert new_claim is not None
     assert new_claim.claim_token != old_claim.claim_token

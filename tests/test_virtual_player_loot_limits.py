@@ -342,3 +342,105 @@ def test_normal_player_defender_is_not_clamped_by_bot_budget(monkeypatch, django
         combat_battle._apply_raid_loot_if_needed(run, is_attacker_victory=True)
 
     assert run.loot_resources == {"grain": 700, "silver": 600}
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("same_defender", [True, False])
+def test_daily_loot_caps_include_item_grain_and_legacy_resources(settings, django_user_model, same_defender):
+    from gameplay.services.virtual_player_loot_limits import clamp_bot_loot_resources
+
+    settings.VIRTUAL_PLAYER_CONFIG = {"projection": {"loot_limits": {"real_attacker_daily_resource_cap": 1_000}}}
+    attacker = _create_manor(django_user_model, "grain_history_attacker")
+    prior_defender = _create_manor(django_user_model, "grain_history_prior")
+    defender = prior_defender if same_defender else _create_manor(django_user_model, "grain_history_next")
+    _create_bot_profile(prior_defender, budget=1_000)
+    if not same_defender:
+        _create_bot_profile(defender, budget=10_000)
+    RaidRun.objects.create(
+        attacker=attacker,
+        defender=prior_defender,
+        is_attacker_victory=True,
+        loot_resources={"grain": 100, "silver": 200},
+        loot_items={"grain": 500, "ordinary_item": 9_999},
+    )
+
+    decision = clamp_bot_loot_resources(attacker=attacker, defender=defender, loot_resources={"silver": 500})
+
+    assert dict(decision.resources) == {"silver": 200}
+    assert decision.retirement_recommended is same_defender
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("prior_spent, expected_grain", [(0, 500), (500, 0)])
+def test_item_grain_is_clamped_without_changing_its_loot_storage(
+    monkeypatch, django_user_model, prior_spent, expected_grain
+):
+    attacker = _create_manor(django_user_model, "item_grain_attacker")
+    defender = _create_manor(django_user_model, "item_grain_defender")
+    profile = _create_bot_profile(defender, budget=500)
+    attacker.grain = 0
+    attacker.save(update_fields=["grain"])
+    defender.grain = 10_000
+    defender.save(update_fields=["grain"])
+    if prior_spent:
+        RaidRun.objects.create(
+            attacker=attacker,
+            defender=defender,
+            is_attacker_victory=True,
+            loot_items={"grain": prior_spent},
+        )
+    run = RaidRun.objects.create(attacker=attacker, defender=defender, **current_replay_metadata(2026))
+    monkeypatch.setattr(combat_battle, "_calculate_loot", lambda *_args, **_kwargs: ({}, {"grain": 700}))
+
+    with transaction.atomic():
+        decision = combat_battle._apply_raid_loot_if_needed(run, True)
+
+    defender.refresh_from_db()
+    assert run.loot_resources == {}
+    assert run.loot_items == ({"grain": expected_grain} if expected_grain else {})
+    assert defender.grain == 10_000 - expected_grain
+    assert decision.bot_profile_id == profile.pk
+    assert decision.retirement_recommended is True
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("available_storage", [0, 50])
+def test_retirement_uses_loot_after_attacker_storage_clipping(monkeypatch, django_user_model, available_storage):
+    attacker = _create_manor(django_user_model, "capacity_retirement_attacker")
+    defender = _create_manor(django_user_model, "capacity_retirement_defender")
+    profile = _create_bot_profile(defender, budget=100)
+    attacker.silver = attacker.silver_capacity - available_storage
+    attacker.save(update_fields=["silver"])
+    defender.silver = 10_000
+    defender.save(update_fields=["silver"])
+    run = RaidRun.objects.create(attacker=attacker, defender=defender, **current_replay_metadata(2027))
+    monkeypatch.setattr(combat_battle, "_calculate_loot", lambda *_args, **_kwargs: ({"silver": 100}, {}))
+
+    with transaction.atomic():
+        decision = combat_battle._apply_raid_loot_if_needed(run, True)
+    combat_battle._process_bot_loot_retirement(decision, now=timezone.now())
+
+    profile.refresh_from_db()
+    assert run.loot_resources == ({"silver": available_storage} if available_storage else {})
+    assert decision.retirement_recommended is False
+    assert profile.state == BotProfile.State.ACTIVE
+
+
+@pytest.mark.django_db
+def test_retirement_uses_actual_defender_deduction(monkeypatch, django_user_model):
+    attacker = _create_manor(django_user_model, "deduction_retirement_attacker")
+    defender = _create_manor(django_user_model, "deduction_retirement_defender")
+    _create_bot_profile(defender, budget=100)
+    attacker.silver = 0
+    attacker.save(update_fields=["silver"])
+    defender.silver = 50
+    defender.save(update_fields=["silver"])
+    run = RaidRun.objects.create(attacker=attacker, defender=defender, **current_replay_metadata(2028))
+    monkeypatch.setattr(combat_battle, "_calculate_loot", lambda *_args, **_kwargs: ({"silver": 100}, {}))
+
+    with transaction.atomic():
+        decision = combat_battle._apply_raid_loot_if_needed(run, True)
+
+    assert run.loot_resources == {"silver": 50}
+    assert dict(decision.resources) == {"silver": 50}
+    assert decision.retirement_recommended is False

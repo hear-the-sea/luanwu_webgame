@@ -1,6 +1,6 @@
 # Docker 部署运行手册
 
-> 最近校正：2026-09-14
+> 最近校正：2026-09-17
 
 本文档沉淀当前仓库在 WSL2 本地构建、导出镜像、传输到服务器、更新运行中容器与排查常见 Docker 发布问题的实操经验。
 
@@ -183,17 +183,21 @@ chmod 600 ".env.docker"
 - `DJANGO_SECRET_KEY`：使用新的随机生产密钥，不要沿用示例值。
 - `MYSQL_PASSWORD`、`MYSQL_ROOT_PASSWORD`：使用强密码。
 - `DJANGO_DB_PASSWORD`：必须与 `MYSQL_PASSWORD` 一致。
+- `DJANGO_DB_CONNECT_TIMEOUT`、`DJANGO_DB_READ_TIMEOUT` 和 `DJANGO_DB_WRITE_TIMEOUT`：限制 MySQL 建连、读、写等待；初始值分别为 5、60、60 秒，长查询应拆成可观测的批次。
 - `REDIS_PASSWORD`：生产必填，且不能留空。
 - `CADDY_SITE_ADDRESS`、`DJANGO_ALLOWED_HOSTS`、`DJANGO_CSRF_TRUSTED_ORIGINS`：使用同一个生产域名。
 - `DJANGO_RUN_MIGRATIONS=0`：保持关闭，由发布步骤手动执行迁移。
 - `CELERY_TIMER_SCAN_QUEUE=timer_scan` 和 `CELERY_TIMER_SCAN_CONCURRENCY`：确认核心扫描队列配置符合容量规划。
 - `CELERY_TIMER_SAFETY_QUEUE=timer_safety` 和 `CELERY_TIMER_SAFETY_CONCURRENCY`：确认安全任务使用独立 worker，默认并发为 1，避免队列排队制造心跳缺口。
 - `CELERY_TIMER_MAINTENANCE_QUEUE=timer_maintenance` 和 `CELERY_TIMER_MAINTENANCE_CONCURRENCY`：确认维护队列有独立 worker；默认并发为 1，避免低优先级任务争用核心扫描资源。
+- `REDIS_SOCKET_CONNECT_TIMEOUT` 和 `REDIS_SOCKET_TIMEOUT`：限制 Django cache 与 Celery 的 Redis 连接和读写等待，初始值为 2 秒；`REDIS_CHANNEL_SOCKET_TIMEOUT` 单独用于 Channels Redis，必须高于其默认 5 秒阻塞读取，初始值为 10 秒。
 
 #### 8 GiB 单机初始资源基线
 
 2026-09-14 的生产排查确认维护 worker（256 MiB）和 Caddy（64 MiB）发生容器限额 OOM，
-并发现 MySQL 被 OOM 杀死的记录。旧的 4 GiB 低配估算不再作为当前生产默认配置。
+并发现 MySQL 被 OOM 杀死的记录；2026-09-16 的内核日志进一步确认 `worker_timer` 的 Celery
+进程达到约 580 MiB 后触发容器限额 OOM。即使临时提高到 768 MiB，23:37 仍再次触发同一
+worker 的 cgroup OOM，因此当前初始预算提高到 1 GiB。旧的 4 GiB 低配估算不再作为当前生产默认配置。
 新的 Compose 默认值和 `.env.docker.prod.example` 按约 8 GiB 单机设置，适用于每种服务一个实例：
 
 | 服务 | 内存硬上限 | 软保留值 |
@@ -202,20 +206,20 @@ chmod 600 ".env.docker"
 | 维护 worker | 768 MiB | 384 MiB |
 | 安全 worker | 512 MiB | 256 MiB |
 | Caddy | 256 MiB | 128 MiB |
-| 其他四个普通 worker，每个 | 256 MiB | 160 MiB |
+| Timer worker | 1024 MiB | 512 MiB |
+| 其他三个普通 worker，每个 | 256 MiB | 160 MiB |
 | Web | 384 MiB | 256 MiB |
 | Beat | 96 MiB | 64 MiB |
 | Redis | 128 MiB | 64 MiB |
-| 合计 | **4704 MiB（约 4.59 GiB）** | **2560 MiB（约 2.50 GiB）** |
+| 合计 | **5472 MiB（约 5.34 GiB）** | **2912 MiB（约 2.84 GiB）** |
 
 这是一组针对已观察到的 OOM 调整的初始预算，不是压测得出的峰值，也不能保证不再 OOM。
 上限不是预分配内存，软保留值也不是额外叠加的硬上限；宿主机、Docker、其他项目和发布时的临时
-容器都需要额外空间。7.8 GiB 主机与上述硬上限总和的差额约 3.2 GiB，但不等于实时可用内存。
+容器都需要额外空间。7.8 GiB 主机与上述硬上限总和的差额约 2.5 GiB，但不等于实时可用内存。
 4 GiB 主机不能直接套用这组预算，应扩容、拆分服务或重新进行容量评估；增加服务副本或并发也要重算。
 
-仅维护 worker 改用独立的 `CELERY_TIMER_MAINTENANCE_MEMORY_LIMIT` 和
-`CELERY_TIMER_MAINTENANCE_MEMORY_RESERVATION`。原 `CELERY_WORKER_MEMORY_*` 继续控制其他四个
-worker，不再影响维护 worker；需要定制维护预算的旧部署必须迁移到新变量。
+Timer、维护和安全 worker 分别使用独立的内存变量；原 `CELERY_WORKER_MEMORY_*` 继续控制
+`worker`、`worker_battle` 和 `worker_timer_scan` 三个普通 worker。需要定制维护预算的旧部署必须迁移到新变量。
 MySQL 保持 512 MiB buffer pool、40 个最大连接和原临时表参数，把新增空间留给服务器其他内存开销。
 Caddy 的 `validate` 健康检查会在同一容器中启动另一个进程，预算必须覆盖主进程和检查进程。
 
@@ -227,14 +231,89 @@ Caddy 的 `validate` 健康检查会在同一容器中启动另一个进程，�
 参见 [Celery 子进程内存阈值](https://docs.celeryq.dev/en/stable/userguide/configuration.html#worker-max-memory-per-child)
 和 [Docker 内存限制](https://docs.docker.com/engine/containers/resource_constraints/#memory)。
 
+#### Timer OOM 与 ETA 队列取证
+
+内核日志中的 `task=celery` 只说明被杀的是 Celery 进程，不能确定具体业务任务。下次重建容器前先保留
+现场，尤其要查看 `worker_timer` 的计划、保留和正在执行任务：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec -T "worker_timer" \
+  celery -A config inspect scheduled --timeout=2 --json
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec -T "worker_timer" \
+  celery -A config inspect reserved --timeout=2 --json
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec -T "worker_timer" \
+  celery -A config inspect active --timeout=2 --json
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" logs --since "30m" "worker_timer"
+timer_cid="$(docker inspect "code-worker_timer-1" --format '{{.Id}}')"
+timer_cgroup="/sys/fs/cgroup/system.slice/docker-${timer_cid}.scope"
+for metric in memory.current memory.peak memory.events; do
+  printf '%s: ' "$metric"
+  sudo cat "${timer_cgroup}/${metric}" 2>/dev/null || true
+done
+```
+
+`scheduled` 中若有大量远期任务，或数量随时间持续增长，应优先怀疑 ETA/countdown 堆积；如果数量不高但
+单个任务执行时 RSS 突然上升，则继续按任务名检查扫描批量、`prefetch_related` 和快照聚合。当前锁定的
+Celery 5.5.3 没有 `worker_eta_task_limit`，在该版本的环境文件中添加同名变量不会产生限制效果；该选项是
+Celery 5.6 才提供的能力，升级依赖前必须单独做兼容性验证。
+
+本项目存在多种带 `countdown` 的持久业务状态，并且 Redis transport 默认可见性超时是 1 小时。保留超过
+1 小时的 countdown 时，任务可能在执行前被 Redis 重新投递，造成重复任务和更多内存；不能只把
+`CELERY_TIMER_SAFETY_MEMORY_LIMIT` 或 `CELERY_MAX_MEMORY_PER_CHILD` 调大来解决。若暂时保留 ETA，须先
+统计生产环境的最大倒计时和任务最长运行时间，再将 broker、result backend 和 Celery 对应的 visibility
+timeout 一致设置为更大的值；不要凭估计写死。根治方案是把 `complete_at`、`return_at` 等截止时间作为数据库
+事实源，由 `timer_scan` 按小批量轮询到期记录，Celery 只承载短延迟任务，避免把数小时任务长期留在 worker 内存。
+
+当前数据模板在 `GAME_TIME_MULTIPLIER=1` 时已经包含很长的单步时长：`youxibaota` 和 `juxianzhuang`
+的最高级建筑升级约 1,916,950 秒（22.2 天），`march_art` 的科技升级约 238,430 秒（66.2 小时）。
+这不是异常任务才会出现的远期 ETA；只要玩家数量增长，`worker_timer` 的计划列表就可能持续积累。
+
+#### Web 卡住时的现场取证与恢复
+
+`web` 显示 `unhealthy` 不会触发 Compose 自动重建；`restart: unless-stopped` 只在容器进程退出时生效。
+若 Daphne 仍为 `running` 但本机 `/health/live` 也无法建立 TCP 连接，记录监听队列和进程状态后再恢复：
+
+```bash
+docker inspect "code-web-1" --format 'status={{.State.Status}} health={{.State.Health.Status}} oom={{.State.OOMKilled}} pid={{.State.Pid}} restarts={{.RestartCount}} memory={{.HostConfig.Memory}}'
+docker inspect "code-web-1" --format '{{range .State.Health.Log}}{{println .Start .ExitCode .Output}}{{end}}'
+docker stats --no-stream "code-web-1" "code-worker_timer-1"
+docker top "code-web-1"
+web_pid="$(docker inspect "code-web-1" --format '{{.State.Pid}}')"
+ps -o pid,ppid,stat,wchan:32,etime,pcpu,pmem,cmd -p "$web_pid"
+sudo cat "/proc/$web_pid/stack" 2>/dev/null || true
+sudo nsenter -t "$web_pid" -n ss -lntp
+sudo nsenter -t "$web_pid" -n curl -sv --max-time 5 -H "Host: luanwu.top" "http://127.0.0.1:8000/health/live"
+docker logs --since "30m" "code-web-1"
+sudo journalctl -k --since "30m" --no-pager | rg -i 'oom|out of memory|killed process|segfault|i/o error'
+sudo journalctl -u docker --since "30m" --no-pager
+docker events --since "30m" --until "0s" --filter type=container
+```
+
+监听 socket 的 `Recv-Q` 接近 `Send-Q` 且本机 curl 超时，表示 Daphne 没有及时 accept 新连接，网站的
+502/504 是反向代理看到的后果。先保存上述输出，再只重建卡住的服务：
+
+```bash
+docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" up -d --no-deps --force-recreate "web"
+```
+
+恢复后要同时验证 `health/live`、`health/ready`、Caddy 日志和 WebSocket；不要用 `docker compose restart` 代替
+配置或镜像变更，也不要执行 `docker compose down -v`。如果线上有外层 Caddy，必须沿用双层覆盖文件，并同时
+查看 `gongsi-deploy-caddy-1` 和 `code-caddy-1` 两层日志；内层当前只有一个 `web:8000` 上游，Caddy 本身不会
+把 Docker 的 `unhealthy` 状态变成自动重启。需要自动恢复时，应在宿主机用 systemd/编排器根据健康状态执行
+受控重建，并保留事件日志。
+
 初始配置下不要为了追赶虚拟玩家 backlog 直接增加 worker 并发。先在目标主机记录至少以下信息，
 再决定是否逐个提高 battle 或扫描 worker 的并发：
 
 ```bash
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" stats --no-stream
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" ps
+docker stats --no-stream
 free -h
 vmstat 1 5
+swapon --show
+df -h
+df -i
 ```
 
 连续观测必须同时记录容器/进程 RSS 峰值、swap、OOM/restart、MySQL 连接数、Redis `used_memory`、
@@ -245,36 +324,51 @@ vmstat 1 5
 #### 已部署环境升级内存预算
 
 只替换镜像不会修改运行中容器的 cgroup 限额；只更新模板也不会覆盖服务器 `.env.docker` 的旧值。
-本次调整不需要重建应用镜像或执行数据库迁移，但需要同步新版 `docker-compose.prod.yml`，并在
-已有 `.env.docker` 中逐项更新下列值（不存在则补充，每个键只保留一次）：
+本轮包含应用代码和 settings 变更，必须构建并发布新应用镜像；不需要执行数据库迁移，但需要同步新版
+`docker-compose.prod.yml`，并在已有 `.env.docker` 中逐项更新下列值（不存在则补充，每个键只保留一次）：
 
 ```dotenv
 MYSQL_MEMORY_LIMIT=1536m
 MYSQL_MEMORY_RESERVATION=768m
+DJANGO_DB_CONNECT_TIMEOUT=5
+DJANGO_DB_READ_TIMEOUT=60
+DJANGO_DB_WRITE_TIMEOUT=60
+CELERY_WORKER_MEMORY_LIMIT=256m
+CELERY_WORKER_MEMORY_RESERVATION=160m
+CELERY_TIMER_WORKER_MEMORY_LIMIT=1024m
+CELERY_TIMER_WORKER_MEMORY_RESERVATION=512m
 CELERY_TIMER_MAINTENANCE_MEMORY_LIMIT=768m
 CELERY_TIMER_MAINTENANCE_MEMORY_RESERVATION=384m
 CELERY_TIMER_SAFETY_MEMORY_LIMIT=512m
 CELERY_TIMER_SAFETY_MEMORY_RESERVATION=256m
 CELERY_TIMER_SAFETY_MAX_MEMORY_PER_CHILD=400000
+REDIS_SOCKET_CONNECT_TIMEOUT=2
+REDIS_SOCKET_TIMEOUT=2
+REDIS_CHANNEL_SOCKET_TIMEOUT=10
+DAPHNE_HTTP_TIMEOUT=60
 CADDY_MEMORY_LIMIT=256m
 CADDY_MEMORY_RESERVATION=128m
 ```
 
 不要用示例文件覆盖整个生产 `.env.docker`，不要修改其中的密码、域名、镜像标签或其他业务参数。
-检查当前 shell 中是否有同名导出变量；它们也可能覆盖环境文件。先仅校验展开后的配置：
+检查当前 shell 中是否有同名导出变量；它们也可能覆盖环境文件。若之前为 Timer 临时修改过
+`CELERY_WORKER_MEMORY_LIMIT`，要把它恢复为普通 worker 的 256 MiB，并新增
+`CELERY_TIMER_WORKER_MEMORY_LIMIT=1024m`；否则三个普通 worker 也会同时获得过大的上限。先检查重复键并
+仅校验展开后的配置：
 
 ```bash
+awk -F= '/^[A-Za-z_][A-Za-z0-9_]*=/{count[$1]++} END{for (key in count) if (count[key] > 1) print key, count[key]}' ".env.docker"
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" config --quiet
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" config --format json |
   python3 -c 'import json, sys; services = json.load(sys.stdin)["services"]; print(json.dumps({name: {key: service.get(key) for key in ("mem_limit", "mem_reservation")} for name, service in services.items()}, indent=2))'
 ```
 
 这里只输出资源字段，避免把完整 Compose 展开结果中的生产密码贴到工单。
-应用配置必须安排并确认维护窗口：MySQL 和 Caddy 重建会分别中断数据库连接和公网入口；安全 worker
-增加或重建时也要短暂确认安全心跳连续性。
+应用配置必须安排并确认维护窗口：MySQL 和 Caddy 重建会分别中断数据库连接和公网入口；应用镜像更新需要
+重建 `web` 及全部 Celery 业务 worker，安全 worker 增加或重建时也要短暂确认安全心跳连续性。
 先确认数据库备份可恢复，再停止接收新业务、排空在途任务，按下文“计划重启与虚拟玩家安全窗口”
 处理运行围栏，然后暂停相关业务进程和调度器。只对需要更新限额的 `db`、
-`worker_timer_safety`、`worker_timer_maintenance`、`caddy` 重建容器，保留全部命名卷；数据库恢复健康后再恢复业务服务。
+`worker_timer`、`worker_timer_safety`、`worker_timer_maintenance`、`caddy` 重建容器，保留全部命名卷；本轮应用代码变更还要按完整发布流程重建 `web` 和其余业务 worker；数据库恢复健康后再恢复业务服务。
 `docker compose restart` 不会应用新的 Compose 配置，不能代替重建。若同时部署新代码，应合并到
 下文完整发布流程，不要重复重建。参见 [Compose restart 的限制](https://docs.docker.com/reference/cli/docker/compose/restart/)。
 

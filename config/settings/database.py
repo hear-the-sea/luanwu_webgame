@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from urllib.parse import quote, urlparse, urlunparse
 
-from .base import BASE_DIR, DEBUG, RUNNING_TESTS, env
+from .base import BASE_DIR, DEBUG, RUNNING_TESTS, env, env_float
 
 # Redis configuration
 REDIS_URL = env("REDIS_URL", "redis://127.0.0.1:6379")
@@ -72,9 +72,20 @@ REDIS_RESULT_URL = _redis_url_with_password(env("REDIS_RESULT_URL", REDIS_BROKER
 REDIS_CHANNEL_URL = _redis_url_with_password(env("REDIS_CHANNEL_URL", f"{REDIS_URL}/1"), REDIS_PASSWORD)
 REDIS_CACHE_URL = _redis_url_with_password(env("REDIS_CACHE_URL", f"{REDIS_URL}/2"), REDIS_PASSWORD)
 
+# Redis connection budgets. Keep every Redis client bounded so an outage cannot
+# turn into an unbounded wait in a request, WebSocket, or background task.
+REDIS_SOCKET_CONNECT_TIMEOUT = max(0.1, env_float("REDIS_SOCKET_CONNECT_TIMEOUT", 2.0))
+REDIS_SOCKET_TIMEOUT = max(0.1, env_float("REDIS_SOCKET_TIMEOUT", 2.0))
+# channels_redis uses a five-second blocking receive by default. Keep this
+# timeout above that interval so an idle WebSocket is not mistaken for a
+# broken Redis connection while still bounding a genuinely stalled read.
+REDIS_CHANNEL_SOCKET_TIMEOUT = max(6.0, env_float("REDIS_CHANNEL_SOCKET_TIMEOUT", 10.0))
+
 # Redis cache configuration
 _redis_cache_options = {
     "CLIENT_CLASS": "django_redis.client.DefaultClient",
+    "SOCKET_CONNECT_TIMEOUT": REDIS_SOCKET_CONNECT_TIMEOUT,
+    "SOCKET_TIMEOUT": REDIS_SOCKET_TIMEOUT,
 }
 if REDIS_PASSWORD:
     _redis_cache_options["PASSWORD"] = REDIS_PASSWORD
@@ -102,16 +113,21 @@ else:
     _conn_max_age = 60 if DEBUG else 300
 
 # Database-specific options
+_db_connect_timeout = max(1, int(env_float("DJANGO_DB_CONNECT_TIMEOUT", 5.0)))
+_db_read_timeout = max(1, int(env_float("DJANGO_DB_READ_TIMEOUT", 60.0)))
+_db_write_timeout = max(1, int(env_float("DJANGO_DB_WRITE_TIMEOUT", 60.0)))
 _db_options = {}
 if "postgresql" in _db_engine:
     _db_options = {
-        "connect_timeout": 5,
+        "connect_timeout": _db_connect_timeout,
         "application_name": "webgame_v5",
         "sslmode": env("DJANGO_DB_SSLMODE", "prefer"),
     }
 elif "mysql" in _db_engine:
     _db_options = {
-        "connect_timeout": 5,
+        "connect_timeout": _db_connect_timeout,
+        "read_timeout": _db_read_timeout,
+        "write_timeout": _db_write_timeout,
         "init_command": (
             "SET sql_mode='STRICT_TRANS_TABLES', "
             "character_set_client='utf8mb4', "
@@ -148,6 +164,14 @@ _validate_production_infrastructure(
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [REDIS_CHANNEL_URL]},
+        "CONFIG": {
+            "hosts": [
+                {
+                    "address": REDIS_CHANNEL_URL,
+                    "socket_connect_timeout": REDIS_SOCKET_CONNECT_TIMEOUT,
+                    "socket_timeout": REDIS_CHANNEL_SOCKET_TIMEOUT,
+                }
+            ]
+        },
     },
 }

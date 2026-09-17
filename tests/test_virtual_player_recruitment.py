@@ -528,6 +528,64 @@ def test_virtual_recruitment_defers_without_spending_when_roster_is_full(
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize("legacy_queue", [False, True])
+def test_virtual_recruitment_keeps_existing_guest_when_roster_has_space(
+    django_user_model,
+    load_guest_data,
+    monkeypatch,
+    legacy_queue,
+):
+    from gameplay.services.virtual_player_core import recruitment as virtual_recruitment
+
+    profile = _create_v2_profile(django_user_model, username=f"virtual_recruit_spare_slot_{legacy_queue}")
+    manor = profile.manor
+    low_template = GuestTemplate.objects.create(
+        key="virtual_recruit_spare_slot_black", name="原有门客", archetype="military", rarity="black"
+    )
+    high_template = GuestTemplate.objects.create(
+        key="virtual_recruit_spare_slot_green", name="新门客", archetype="military", rarity="green"
+    )
+    existing = create_guest_from_template(manor=manor, template=low_template, rarity="black")
+    schedule = iter_virtual_recruitment_schedule(profile.id, now=timezone.now())[0]
+    now = schedule.due_at + timedelta(seconds=1)
+    Guest.objects.filter(pk=existing.pk).update(training_complete_at=now + timedelta(hours=1))
+
+    def draw_candidate(**kwargs):
+        guest = create_guest_from_template(manor=kwargs["manor"], template=high_template, rarity="green", save=False)
+        return [virtual_recruitment._DrawnGuest(guest=guest, rarity="green", template_id=high_template.id)]
+
+    monkeypatch.setattr(virtual_recruitment, "_draw_virtual_candidates", draw_candidate)
+    _seed_healthy_recruitment_runtime(now)
+    assert manor.guest_capacity > 1 + len(iter_virtual_recruitment_schedule(profile.id, now=now))
+
+    if legacy_queue:
+        recruitment = GuestRecruitment.objects.create(
+            manor=manor,
+            bot_profile=profile,
+            pool=RecruitmentPool.objects.get(key=schedule.pool_key),
+            source=GuestRecruitment.Source.VIRTUAL,
+            operation_id=schedule.operation_id,
+            quota_date=schedule.quota_date,
+            quota_ordinal=schedule.quota_ordinal,
+            status=GuestRecruitment.Status.PENDING,
+            seed=1,
+            complete_at=now,
+        )
+        assert finalize_virtual_guest_recruitment(recruitment.id, now=now)
+        recruited_count = 1
+    else:
+        result = start_virtual_recruitment(schedule, now=now)
+        assert result.status is VirtualRecruitmentStatus.STARTED
+        recruited_count = sum(
+            GuestRecruitment.objects.filter(bot_profile=profile).values_list("result_count", flat=True)
+        )
+
+    existing.refresh_from_db()
+    assert existing.training_complete_at == now + timedelta(hours=1)
+    assert Guest.objects.filter(manor=manor).count() == 1 + recruited_count
+
+
+@pytest.mark.django_db
 def test_virtual_recruitment_replaces_lower_power_guest_when_rarity_is_higher(
     django_user_model,
     load_guest_data,

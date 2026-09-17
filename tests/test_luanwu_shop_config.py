@@ -60,6 +60,7 @@ def test_default_luanwu_shop_includes_requested_coin_products():
         "xisuidan": 15,
         "edward_blue_guest_scroll": 15,
         "edward_purple_guest_scroll": 30,
+        "guest_disguise_card": 1,
     }
 
     assert config.currency_item_key == "chunqiu_coin"
@@ -69,6 +70,8 @@ def test_default_luanwu_shop_includes_requested_coin_products():
     assert products["action_point_potion"].price == 1
     assert products["action_point_potion"].item_key == "action_point_potion"
     assert products["action_point_potion"].reward_quantity == 2
+    assert products["guest_disguise_card"].item_key == "guest_disguise_card"
+    assert products["guest_disguise_card"].reward_quantity == 1
 
 
 def test_load_luanwu_shop_config_rejects_invalid_reward_type(tmp_path, monkeypatch):

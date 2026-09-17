@@ -1345,7 +1345,11 @@ def _start_virtual_recruitment_batch_locked(
         reverse=True,
     ):
         selected = item.selected
-        victim = _replacement_guest(guests=locked_guests, candidate=selected)
+        victim = (
+            _replacement_guest(guests=locked_guests, candidate=selected)
+            if len(locked_guests) >= int(manor.guest_capacity)
+            else None
+        )
         result_count = 0
         reason = "guest_capacity_full" if victim is None and len(locked_guests) >= int(manor.guest_capacity) else ""
         if victim is not None:
@@ -1816,7 +1820,11 @@ def finalize_virtual_guest_recruitment(
         locked_guests = list(
             Guest.objects.select_for_update().select_related("template").filter(manor_id=manor.id).order_by("id")
         )
-        victim = _replacement_guest(guests=locked_guests, candidate=selected)
+        victim = (
+            _replacement_guest(guests=locked_guests, candidate=selected)
+            if len(locked_guests) >= int(manor.guest_capacity)
+            else None
+        )
         if victim is None and len(locked_guests) >= int(manor.guest_capacity):
             _mark_virtual_completion_locked(
                 recruitment,

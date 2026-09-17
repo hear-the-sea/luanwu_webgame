@@ -78,6 +78,8 @@ services:
         "0.0.0.0",
         "-p",
         "8000",
+        "--http-timeout",
+        "${DAPHNE_HTTP_TIMEOUT:-60}",
         "config.asgi:application",
       ]
     volumes:
@@ -236,8 +238,8 @@ services:
       ]
     volumes:
       - ./runtime/media:/app/media
-    mem_limit: ${CELERY_WORKER_MEMORY_LIMIT:-256m}
-    mem_reservation: ${CELERY_WORKER_MEMORY_RESERVATION:-160m}
+    mem_limit: ${CELERY_TIMER_WORKER_MEMORY_LIMIT:-1024m}
+    mem_reservation: ${CELERY_TIMER_WORKER_MEMORY_RESERVATION:-512m}
     depends_on:
       - db
       - redis
@@ -383,7 +385,7 @@ services:
     volumes:
       - ./runtime/media:/app/media
     # Budget the parent, prefork child and task peaks together. Keep this
-    # independent of the shared limit used by the other four workers.
+    # independent of the shared limit used by the other worker services.
     mem_limit: ${CELERY_TIMER_MAINTENANCE_MEMORY_LIMIT:-768m}
     mem_reservation: ${CELERY_TIMER_MAINTENANCE_MEMORY_RESERVATION:-384m}
     depends_on:

@@ -10,7 +10,14 @@
   let observedMutationRoot = null;
   let tickTimerId = null;
   let reloadTimerId = null;
+  let reloadPending = false;
+  let lastUserInteractionAt = 0;
   let refreshRequestInFlight = false;
+  let refreshRequestController = null;
+  let refreshGeneration = 0;
+  const PAGE_RELOAD_DELAY_MS = 500;
+  const PAGE_RELOAD_INTERACTION_GRACE_MS = 1500;
+  const PAGE_RELOAD_RETRY_MS = 500;
   const AUTO_REFRESH_GRACE_MS = 800;
   const SHORT_COUNTDOWN_WINDOW_MS = 5000;
   const SHORT_COUNTDOWN_GRACE_MS = 1200;
@@ -21,9 +28,63 @@
   const trainingCheckRetryAttempts = new WeakMap();
   const trainingCheckRetryTimers = new WeakMap();
 
+  function clearPageReloadTimer() {
+    if (reloadTimerId === null) return;
+    window.clearTimeout(reloadTimerId);
+    reloadTimerId = null;
+  }
+
+  function armPageReload(delay) {
+    clearPageReloadTimer();
+    reloadTimerId = window.setTimeout(attemptPageReload, delay);
+  }
+
+  function hasBlockingInteraction() {
+    return Boolean(document.querySelector(
+      ".game-dialog-overlay.visible, [data-confirming='true'], [data-action-pending='1']",
+    ));
+  }
+
+  function attemptPageReload() {
+    reloadTimerId = null;
+    if (!reloadPending) return;
+
+    if (document.visibilityState === "hidden" || hasBlockingInteraction()) {
+      armPageReload(PAGE_RELOAD_RETRY_MS);
+      return;
+    }
+
+    const idleForMs = Date.now() - lastUserInteractionAt;
+    if (lastUserInteractionAt > 0 && idleForMs < PAGE_RELOAD_INTERACTION_GRACE_MS) {
+      armPageReload(PAGE_RELOAD_INTERACTION_GRACE_MS - idleForMs);
+      return;
+    }
+
+    reloadPending = false;
+    window.location.reload();
+  }
+
   function schedulePageReload() {
+    reloadPending = true;
     if (reloadTimerId !== null) return;
-    reloadTimerId = window.setTimeout(() => window.location.reload(), 500);
+    armPageReload(PAGE_RELOAD_DELAY_MS);
+  }
+
+  function postponePageReload() {
+    lastUserInteractionAt = Date.now();
+    if (!reloadPending) return;
+    armPageReload(PAGE_RELOAD_INTERACTION_GRACE_MS);
+  }
+
+  function cancelPendingAutoRefresh() {
+    refreshGeneration += 1;
+    reloadPending = false;
+    clearPageReloadTimer();
+    if (refreshRequestController) {
+      refreshRequestController.abort();
+      refreshRequestController = null;
+    }
+    refreshRequestInFlight = false;
   }
 
   function requestRefreshThenReload(refreshUrl, refreshMethod) {
@@ -33,6 +94,11 @@
     }
     if (refreshRequestInFlight) return;
     refreshRequestInFlight = true;
+    const requestGeneration = refreshGeneration;
+    const requestController = typeof window.AbortController === "function"
+      ? new window.AbortController()
+      : null;
+    refreshRequestController = requestController;
 
     const method = (refreshMethod || "GET").toUpperCase();
     const headers = { "X-Requested-With": "XMLHttpRequest" };
@@ -45,12 +111,21 @@
 
     fetch(refreshUrl, {
       method,
+      credentials: "same-origin",
       headers,
+      signal: requestController ? requestController.signal : undefined,
     })
       .catch((err) => {
-        console.error("状态刷新失败:", err);
+        if (requestGeneration === refreshGeneration && err?.name !== "AbortError") {
+          console.error("状态刷新失败:", err);
+        }
       })
       .finally(() => {
+        if (refreshRequestController === requestController) {
+          refreshRequestController = null;
+        }
+        if (requestGeneration !== refreshGeneration) return;
+        refreshRequestInFlight = false;
         schedulePageReload();
       });
   }
@@ -458,6 +533,22 @@
     tickTimerId = setInterval(tick, 1000);
   }
 
+  function setupReloadInteractionGuards() {
+    if (typeof document.addEventListener !== "function") return;
+
+    const deferReload = () => postponePageReload();
+    ["pointerdown", "touchstart", "click", "keydown", "submit"].forEach((eventName) => {
+      document.addEventListener(eventName, deferReload, true);
+    });
+    document.addEventListener("partial-nav:started", cancelPendingAutoRefresh);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && reloadPending && reloadTimerId === null) {
+        armPageReload(PAGE_RELOAD_DELAY_MS);
+      }
+    });
+  }
+
+  setupReloadInteractionGuards();
   if (typeof document.addEventListener === "function") {
     document.addEventListener("partial-nav:loaded", refreshAfterPartialNavigation);
   }

@@ -277,6 +277,7 @@
       return;
     }
 
+    document.dispatchEvent(new CustomEvent("partial-nav:started", { detail: { url: targetUrl.href } }));
     if (activeNavigationController) {
       activeNavigationController.abort();
     }

@@ -176,8 +176,8 @@ def test_prod_compose_declares_8gb_memory_guardrails_and_single_child_baseline()
             "${CELERY_WORKER_MEMORY_RESERVATION:-160m}",
         ),
         "worker_timer": (
-            "${CELERY_WORKER_MEMORY_LIMIT:-256m}",
-            "${CELERY_WORKER_MEMORY_RESERVATION:-160m}",
+            "${CELERY_TIMER_WORKER_MEMORY_LIMIT:-1024m}",
+            "${CELERY_TIMER_WORKER_MEMORY_RESERVATION:-512m}",
         ),
         "worker_timer_scan": (
             "${CELERY_WORKER_MEMORY_LIMIT:-256m}",
@@ -239,6 +239,13 @@ def test_prod_env_example_matches_8gb_memory_and_queue_baseline() -> None:
     assert values["CELERY_MAX_TASKS_PER_CHILD"] == "200"
     assert values["CELERY_MAX_MEMORY_PER_CHILD"] == "180000"
     assert values["CELERY_TIMER_SAFETY_MAX_MEMORY_PER_CHILD"] == "400000"
+    assert values["DAPHNE_HTTP_TIMEOUT"] == "60"
+    assert values["DJANGO_DB_CONNECT_TIMEOUT"] == "5"
+    assert values["DJANGO_DB_READ_TIMEOUT"] == "60"
+    assert values["DJANGO_DB_WRITE_TIMEOUT"] == "60"
+    assert values["REDIS_SOCKET_CONNECT_TIMEOUT"] == "2"
+    assert values["REDIS_SOCKET_TIMEOUT"] == "2"
+    assert values["REDIS_CHANNEL_SOCKET_TIMEOUT"] == "10"
     assert values["MYSQL_INNODB_BUFFER_POOL_SIZE"] == "512M"
     assert values["MYSQL_MAX_CONNECTIONS"] == "40"
     assert values["REDIS_MAXMEMORY"] == "128mb"
@@ -259,7 +266,7 @@ def test_prod_env_example_matches_8gb_memory_and_queue_baseline() -> None:
             memory[field] = int(fallback[:-1])
             totals[field] += memory[field]
         assert 0 < memory["mem_reservation"] <= memory["mem_limit"]
-    assert totals == {"mem_limit": 4704, "mem_reservation": 2560}
+    assert totals == {"mem_limit": 5472, "mem_reservation": 2912}
 
 
 def test_prod_env_requires_a_non_empty_redis_password() -> None:
@@ -287,6 +294,8 @@ def test_prod_compose_waits_for_dependency_and_application_readiness() -> None:
     web_healthcheck = services["web"]["healthcheck"]
     assert web_healthcheck["test"] == ["CMD", "python", "scripts/check_web_readiness.py"]
     assert web_healthcheck["timeout"] == "12s"
+    assert "--http-timeout" in services["web"]["command"]
+    assert "${DAPHNE_HTTP_TIMEOUT:-60}" in services["web"]["command"]
 
 
 def test_prod_env_declares_explicit_healthcheck_host() -> None:

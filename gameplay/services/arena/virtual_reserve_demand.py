@@ -17,7 +17,11 @@ from gameplay.services.virtual_player_core.runtime_assessment import assess_virt
 
 from .low_population_policy import low_population_enabled
 from .virtual_lineups import lineup_power
-from .virtual_reserve_policy import RESERVE_ADMISSION_PROBE_COOLDOWN
+from .virtual_reserve_policy import (
+    BLOCKED_DEMAND_RETRY_COOLDOWN,
+    POLICY_BLOCKED_DEMAND_REASONS,
+    RECOVERABLE_BLOCKED_DEMAND_REASONS,
+)
 from .virtual_reserve_policy import RESERVE_MINIMUM as POLICY_RESERVE_MINIMUM
 from .virtual_reserve_policy import RESERVE_MULTIPLIER as POLICY_RESERVE_MULTIPLIER
 from .virtual_reserve_policy import reserve_budget_after_input_change, reserve_target_for_missing, reserve_target_plan
@@ -28,19 +32,9 @@ logger = logging.getLogger(__name__)
 
 RESERVE_MULTIPLIER = POLICY_RESERVE_MULTIPLIER
 RESERVE_MINIMUM = POLICY_RESERVE_MINIMUM
+# Keep the historical module-level name available to existing callers.
+RESERVE_ADMISSION_PROBE_COOLDOWN = BLOCKED_DEMAND_RETRY_COOLDOWN
 MAX_DEMAND_NO_PROGRESS_AGE = timedelta(hours=12)
-BLOCKED_DEMAND_RETRY_COOLDOWN = RESERVE_ADMISSION_PROBE_COOLDOWN
-RECOVERABLE_BLOCKED_DEMAND_REASONS = frozenset(
-    {
-        "no_progress_timeout",
-        "replacement_budget_exhausted",
-        "target_unreachable_by_cap",
-        "insufficient_ready_members",
-        "dynamic_population_cap_reached",
-        "population_region_unavailable",
-    }
-)
-POLICY_BLOCKED_DEMAND_REASONS = frozenset({"arena_training_policy_unavailable", "arena_strength_envelope_mismatch"})
 _POPULATION_SUPPLY_RETRY_REASONS = frozenset(
     {
         "insufficient_ready_members",

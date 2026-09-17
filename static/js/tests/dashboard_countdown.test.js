@@ -26,6 +26,8 @@ function createClassList() {
 function createDashboardEnvironment(fetchResponses) {
   const timeoutHandles = [];
   const eventListeners = new Map();
+  let reloadCalls = 0;
+  let blockingInteraction = false;
   const levelElement = { textContent: "等级 1" };
   const hpElement = { textContent: "生命 100/100" };
   const upgradeCell = {
@@ -81,6 +83,7 @@ function createDashboardEnvironment(fetchResponses) {
   const documentObj = {
     readyState: "complete",
     cookie: "",
+    visibilityState: "visible",
     body: {
       contains(element) {
         return element === countdownElement;
@@ -94,6 +97,13 @@ function createDashboardEnvironment(fetchResponses) {
       if (selector === "#page-shell") return currentPageShell;
       if (selector === 'meta[name="csrf-token"]') {
         return { getAttribute: () => "test-csrf-token" };
+      }
+      if (
+        selector.includes("game-dialog-overlay")
+        || selector.includes("data-confirming")
+        || selector.includes("data-action-pending")
+      ) {
+        return blockingInteraction ? {} : null;
       }
       return null;
     },
@@ -114,7 +124,11 @@ function createDashboardEnvironment(fetchResponses) {
 
   const windowObj = {
     AbortController,
-    location: { reload() {} },
+    location: {
+      reload() {
+        reloadCalls += 1;
+      },
+    },
     setInterval() {
       return 1;
     },
@@ -159,6 +173,15 @@ function createDashboardEnvironment(fetchResponses) {
     },
     fetchCallCount() {
       return fetchCallCount;
+    },
+    reloadCalls() {
+      return reloadCalls;
+    },
+    dispatchEvent(event) {
+      documentObj.dispatchEvent(event);
+    },
+    setBlockingInteraction(value) {
+      blockingInteraction = value;
     },
     setPageShell(nextPageShell) {
       currentPageShell = nextPageShell;
@@ -230,6 +253,121 @@ test("guest training countdown retries a failed status check and recovers", asyn
   assert.equal(environment.attributes.get("data-countdown"), nextTrainingEta);
   assert.equal(environment.countdownElement.textContent, "计算中");
   assert.equal(environment.countdownElement.classList.contains("countdown-finished"), false);
+});
+
+test("dashboard reloads an expired runtime countdown when the page is idle", async () => {
+  const environment = createDashboardEnvironment([{ ok: true }]);
+  let now = Date.now();
+  environment.context.Date = class extends Date {
+    static now() { return now; }
+  };
+  environment.attributes.set("data-countdown", new Date(now - 2000).toISOString());
+  environment.attributes.delete("data-check-url");
+  environment.attributes.set("data-refresh", "1");
+  environment.attributes.set("data-refresh-url", "/runtime/refresh/");
+  environment.attributes.set("data-refresh-method", "post");
+
+  const scriptSource = fs.readFileSync(path.resolve(__dirname, "..", "dashboard.js"), "utf8");
+  vm.runInContext(scriptSource, environment.context, { filename: "dashboard.js" });
+  await flushAsyncWork();
+
+  const [reloadTimer] = environment.pendingTimeouts();
+  assert.equal(reloadTimer.delay, 500);
+  reloadTimer.fired = true;
+  reloadTimer.callback();
+
+  assert.equal(environment.reloadCalls(), 1);
+});
+
+test("dashboard preserves the interaction grace when refresh settles after a click", async () => {
+  let resolveRefresh;
+  const refreshResponse = new Promise((resolve) => {
+    resolveRefresh = resolve;
+  });
+  const environment = createDashboardEnvironment([refreshResponse]);
+  let now = Date.now();
+  environment.context.Date = class extends Date {
+    static now() { return now; }
+  };
+  environment.attributes.set("data-countdown", new Date(now - 2000).toISOString());
+  environment.attributes.delete("data-check-url");
+  environment.attributes.set("data-refresh", "1");
+  environment.attributes.set("data-refresh-url", "/runtime/refresh/");
+  environment.attributes.set("data-refresh-method", "post");
+
+  const scriptSource = fs.readFileSync(path.resolve(__dirname, "..", "dashboard.js"), "utf8");
+  vm.runInContext(scriptSource, environment.context, { filename: "dashboard.js" });
+  environment.dispatchEvent({ type: "pointerdown" });
+  resolveRefresh({ ok: true });
+  await flushAsyncWork();
+
+  const [reloadTimer] = environment.pendingTimeouts();
+  assert.equal(reloadTimer.delay, 500);
+  now += 500;
+  reloadTimer.fired = true;
+  reloadTimer.callback();
+  assert.equal(environment.reloadCalls(), 0);
+
+  const [graceTimer] = environment.pendingTimeouts();
+  assert.equal(graceTimer.delay, 1000);
+  now += 1000;
+  graceTimer.fired = true;
+  graceTimer.callback();
+  assert.equal(environment.reloadCalls(), 1);
+});
+
+test("dashboard defers reload after user interaction and cancels it on partial navigation", async () => {
+  const environment = createDashboardEnvironment([{ ok: true }]);
+  let now = Date.now();
+  environment.context.Date = class extends Date {
+    static now() { return now; }
+  };
+  environment.attributes.set("data-countdown", new Date(now - 2000).toISOString());
+  environment.attributes.delete("data-check-url");
+  environment.attributes.set("data-refresh", "1");
+  environment.attributes.set("data-refresh-url", "/runtime/refresh/");
+  environment.attributes.set("data-refresh-method", "post");
+
+  const scriptSource = fs.readFileSync(path.resolve(__dirname, "..", "dashboard.js"), "utf8");
+  vm.runInContext(scriptSource, environment.context, { filename: "dashboard.js" });
+  await flushAsyncWork();
+
+  const [initialReloadTimer] = environment.pendingTimeouts();
+  environment.dispatchEvent({ type: "pointerdown" });
+  assert.equal(initialReloadTimer.cleared, true);
+  const [deferredReloadTimer] = environment.pendingTimeouts();
+  assert.equal(deferredReloadTimer.delay, 1500);
+
+  now += 1500;
+  environment.setBlockingInteraction(true);
+  deferredReloadTimer.fired = true;
+  deferredReloadTimer.callback();
+  assert.equal(environment.reloadCalls(), 0);
+  const [blockedReloadTimer] = environment.pendingTimeouts();
+  assert.equal(blockedReloadTimer.delay, 500);
+
+  environment.setBlockingInteraction(false);
+  now += 500;
+  blockedReloadTimer.fired = true;
+  blockedReloadTimer.callback();
+  assert.equal(environment.reloadCalls(), 1);
+
+  const secondEnvironment = createDashboardEnvironment([{ ok: true }]);
+  now = Date.now();
+  secondEnvironment.context.Date = class extends Date {
+    static now() { return now; }
+  };
+  secondEnvironment.attributes.set("data-countdown", new Date(now - 2000).toISOString());
+  secondEnvironment.attributes.delete("data-check-url");
+  secondEnvironment.attributes.set("data-refresh", "1");
+  secondEnvironment.attributes.set("data-refresh-url", "/runtime/refresh/");
+  secondEnvironment.attributes.set("data-refresh-method", "post");
+  vm.runInContext(scriptSource, secondEnvironment.context, { filename: "dashboard.js" });
+  await flushAsyncWork();
+
+  secondEnvironment.dispatchEvent({ type: "partial-nav:started" });
+  assert.equal(secondEnvironment.pendingTimeouts().length, 0);
+  assert.equal(secondEnvironment.reloadCalls(), 0);
 });
 
 test("dashboard refreshes its countdown cache after partial navigation replaces the page shell", () => {

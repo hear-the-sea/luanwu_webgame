@@ -6,7 +6,7 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
-from gameplay.models import BotPopulationRecomputeDemand
+from gameplay.models import BotMaintenanceRecovery, BotPopulationRecomputeDemand
 from gameplay.services.virtual_player_core import population_runtime
 from gameplay.services.virtual_player_core.population_runtime import (
     PopulationCellReconcileStatus,
@@ -18,8 +18,42 @@ from gameplay.services.virtual_player_core.population_runtime import (
     merge_population_recompute_demand,
     merge_population_recompute_demands,
 )
+from gameplay.services.virtual_player_core.recovery import (
+    RecoveryFailureClass,
+    record_recovery_failure,
+    recovery_circuit_is_open,
+    requeue_recovery,
+)
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.mark.parametrize("claim_specific_cell", [False, True])
+def test_population_path_circuit_blocks_unaffected_cells_until_formal_requeue(claim_specific_cell) -> None:
+    now = timezone.now()
+    scope = BotMaintenanceRecovery.Scope.POPULATION_CELL
+    for entity_key in ("1001", "1002", "1003"):
+        record_recovery_failure(
+            scope=scope,
+            entity_key=entity_key,
+            failure_code=RecoveryFailureClass.PROGRAMMER_ERROR,
+            error=RuntimeError("shared population planner defect"),
+            now=now,
+        )
+    demand = merge_population_recompute_demand(region="north", prestige_band="newbie", now=now)
+    assert recovery_circuit_is_open(path=scope, now=now)
+
+    def claim():
+        if claim_specific_cell:
+            return claim_population_recompute_demand(region="north", prestige_band="newbie", now=now)
+        return claim_next_population_recompute_demand(now=now)
+
+    assert claim() is None
+    demand.refresh_from_db()
+    assert demand.claim_token is None
+    assert demand.completed_revision == 0
+    requeue_recovery(scope=scope, entity_key=f"circuit:{scope}", now=now, reason="planner repaired")
+    assert claim() is not None
 
 
 def test_population_demand_merge_coalesces_cells_in_canonical_lock_order() -> None:

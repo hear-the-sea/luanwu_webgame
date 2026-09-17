@@ -28,6 +28,7 @@ from gameplay.services.virtual_player_core import bootstrap, population_runtime
 from gameplay.services.virtual_player_core.config import V2_PRESTIGE_BAND_NAMES
 from gameplay.services.virtual_player_core.contracts import BotProjectionConfig, PopulationMutationStatus
 from gameplay.services.virtual_player_core.policy_registry import release_configured_policy_operation
+from gameplay.services.virtual_player_core.safety_metrics import record_safety_heartbeat
 from guests.models import GearItem, Guest, GuestSkill
 
 pytestmark = pytest.mark.django_db
@@ -202,8 +203,11 @@ def test_raw_public_bootstrap_blocks_corrupt_routing_without_dml() -> None:
 def test_v2_population_reactivation_is_the_only_supported_profile_reuse(
     released_v2_policy,
     game_data,
+    monkeypatch,
 ) -> None:
     _set_bootstrap_mode(BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE)
+    monkeypatch.setattr("gameplay.services.virtual_player_core.safety_provider._database_utc_now", lambda: FIXED_NOW)
+    record_safety_heartbeat("safety_monitor", now=FIXED_NOW)
     v2_profile = _materialize_v2_profile(
         region="north",
         prestige_band="newbie",
@@ -294,8 +298,11 @@ def test_generate_command_fails_closed_when_direct_creation_is_unavailable(
 def test_v2_active_public_reactivation_requires_the_population_consumer(
     released_v2_policy,
     game_data,
+    monkeypatch,
 ) -> None:
     _set_bootstrap_mode(BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE)
+    monkeypatch.setattr("gameplay.services.virtual_player_core.safety_provider._database_utc_now", lambda: FIXED_NOW)
+    record_safety_heartbeat("safety_monitor", now=FIXED_NOW)
     v2_profile = _materialize_v2_profile(
         region="north",
         prestige_band="newbie",

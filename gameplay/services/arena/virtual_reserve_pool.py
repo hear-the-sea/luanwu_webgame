@@ -11,7 +11,7 @@ from typing import Any, cast
 from uuid import UUID, uuid4
 
 from django.db import DatabaseError, transaction
-from django.db.models import Count, F, Prefetch, Q, Window
+from django.db.models import Count, Exists, F, OuterRef, Prefetch, Q, Window
 from django.db.models.functions import RowNumber
 from django.utils import timezone
 
@@ -37,6 +37,7 @@ from gameplay.services.virtual_player_core.growth_control import growth_control_
 from gameplay.services.virtual_player_core.maintenance import (
     V2MaintenanceError,
     accelerate_virtual_player_growth,
+    completed_busy_arena_training_assignments,
     discard_uncommitted_arena_training_assignment,
 )
 from gameplay.services.virtual_player_core.maintenance_arena_projection import ArenaSelectedPowerProjectionError
@@ -477,6 +478,26 @@ def release_expired_exhausted_virtual_reserve_members(*, now=None, limit: int = 
     """Release exhausted terminal leases and busy spares left by a completed fill."""
     current_time = now or timezone.now()
     cutoff = current_time - EXHAUSTED_LEASE_GRACE
+    completed_busy_assignments = completed_busy_arena_training_assignments()
+    unresolved_assignments = ArenaReserveTrainingAssignment.objects.filter(
+        member_id=OuterRef("pk"),
+        status=ArenaReserveTrainingAssignment.Status.ASSIGNED,
+    ).exclude(pk__in=completed_busy_assignments.values("pk"))
+    releasable_members = (
+        ArenaVirtualReserveMember.objects.filter(
+            demand_id=OuterRef("pk"),
+            growth_claim_token__isnull=True,
+        )
+        .filter(
+            Q(demand__status__in=[ArenaVirtualDemand.Status.SATISFIED, ArenaVirtualDemand.Status.CLOSED])
+            | Q(demand__status=ArenaVirtualDemand.Status.BLOCKED, state=ArenaVirtualReserveMember.State.EXHAUSTED)
+        )
+        .filter(~Exists(unresolved_assignments))
+        .filter(Q(last_checked_at__lte=cutoff) | Q(last_checked_at__isnull=True, created_at__lte=cutoff))
+    )
+    # Only demands with eligible work may occupy this bounded batch. Empty
+    # historical demands and leases still in their grace period must not
+    # prevent newer terminal leases from ever reaching the member locks.
     terminal_demands = list(
         ArenaVirtualDemand.objects.select_for_update(skip_locked=True)
         .filter(
@@ -486,6 +507,7 @@ def release_expired_exhausted_virtual_reserve_members(*, now=None, limit: int = 
                 ArenaVirtualDemand.Status.CLOSED,
             ]
         )
+        .filter(Exists(releasable_members))
         .order_by("id")
         .values_list("id", "status")[: max(0, int(limit))]
     )
@@ -506,7 +528,7 @@ def release_expired_exhausted_virtual_reserve_members(*, now=None, limit: int = 
             | Q(demand_id__in=blocked_ids, state=ArenaVirtualReserveMember.State.EXHAUSTED),
             growth_claim_token__isnull=True,
         )
-        .exclude(training_assignments__status=ArenaReserveTrainingAssignment.Status.ASSIGNED)
+        .filter(~Exists(unresolved_assignments))
         .filter(
             Q(last_checked_at__lte=cutoff) | Q(last_checked_at__isnull=True, created_at__lte=cutoff),
         )
@@ -515,6 +537,23 @@ def release_expired_exhausted_virtual_reserve_members(*, now=None, limit: int = 
     )
     if not candidate_ids:
         return 0
+    # A BUSY finalizer is durable proof that the old domain call returned.
+    # Lock profile after demand/member, matching fill ownership, and skip an
+    # ongoing domain transaction rather than mistaking its missing receipt
+    # for rollback. Recheck the owner service's commit fence before deletion.
+    for member in ArenaVirtualReserveMember.objects.filter(id__in=candidate_ids):
+        assignments = list(completed_busy_arena_training_assignments().filter(member_id=member.id))
+        if not assignments:
+            continue
+        if not BotProfile.objects.select_for_update(skip_locked=True).filter(pk=member.profile_id).exists():
+            continue
+        for assignment in assignments:
+            discard_uncommitted_arena_training_assignment(
+                member_id=int(member.id),
+                round_ordinal=int(assignment.round_ordinal),
+                action_ordinal_in_round=int(assignment.action_ordinal_in_round),
+                operation_id=str(assignment.operation_id),
+            )
     deleted, _details = (
         ArenaVirtualReserveMember.objects.filter(
             id__in=candidate_ids,

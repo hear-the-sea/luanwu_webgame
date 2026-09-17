@@ -10,7 +10,14 @@ from celery.schedules import crontab
 from kombu import Queue
 
 from .base import ARENA_LOW_POPULATION_MODE, env
-from .database import REDIS_BROKER_URL, REDIS_PASSWORD, REDIS_RESULT_URL, _redis_url_with_password
+from .database import (
+    REDIS_BROKER_URL,
+    REDIS_PASSWORD,
+    REDIS_RESULT_URL,
+    REDIS_SOCKET_CONNECT_TIMEOUT,
+    REDIS_SOCKET_TIMEOUT,
+    _redis_url_with_password,
+)
 
 CELERY_BROKER_URL = _redis_url_with_password(env("CELERY_BROKER_URL", REDIS_BROKER_URL), REDIS_PASSWORD)
 CELERY_RESULT_BACKEND = env(
@@ -20,6 +27,16 @@ CELERY_RESULT_BACKEND = env(
 CELERY_RESULT_BACKEND = _redis_url_with_password(CELERY_RESULT_BACKEND, REDIS_PASSWORD)
 CELERY_RESULT_EXPIRES = int(env("CELERY_RESULT_EXPIRES", "3600"))
 CELERY_TASK_STORE_EAGER_RESULT = False
+
+# Keep broker/result-backend waits finite. A stalled Redis must fail a task or
+# health check promptly instead of consuming a worker thread indefinitely.
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    "socket_connect_timeout": REDIS_SOCKET_CONNECT_TIMEOUT,
+    "socket_timeout": REDIS_SOCKET_TIMEOUT,
+}
+# Redis result backends read these top-level settings, not transport options.
+CELERY_REDIS_SOCKET_CONNECT_TIMEOUT = REDIS_SOCKET_CONNECT_TIMEOUT
+CELERY_REDIS_SOCKET_TIMEOUT = REDIS_SOCKET_TIMEOUT
 
 CELERY_DEFAULT_QUEUE = env("CELERY_DEFAULT_QUEUE", "default")
 CELERY_BATTLE_QUEUE = env("CELERY_BATTLE_QUEUE", "battle")

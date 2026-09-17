@@ -10,6 +10,9 @@ __all__ = [
     "RESERVE_ADMISSION_STALL_AGE",
     "RESERVE_ADMISSION_STALL_FAILURES",
     "RESERVE_ADMISSION_PROBE_COOLDOWN",
+    "BLOCKED_DEMAND_RETRY_COOLDOWN",
+    "RECOVERABLE_BLOCKED_DEMAND_REASONS",
+    "POLICY_BLOCKED_DEMAND_REASONS",
     "ReserveAdmissionAssessment",
     "ReserveTargetPlan",
     "assess_reserve_admission",
@@ -28,6 +31,23 @@ VIRTUAL_ROSTER_HARD_CAP = 10
 RESERVE_ADMISSION_STALL_AGE = timedelta(minutes=10)
 RESERVE_ADMISSION_STALL_FAILURES = 2
 RESERVE_ADMISSION_PROBE_COOLDOWN = timedelta(minutes=30)
+BLOCKED_DEMAND_RETRY_COOLDOWN = RESERVE_ADMISSION_PROBE_COOLDOWN
+RECOVERABLE_BLOCKED_DEMAND_REASONS = frozenset(
+    {
+        "no_progress_timeout",
+        "replacement_budget_exhausted",
+        "target_unreachable_by_cap",
+        "insufficient_ready_members",
+        "dynamic_population_cap_reached",
+        "population_region_unavailable",
+    }
+)
+POLICY_BLOCKED_DEMAND_REASONS = frozenset(
+    {
+        "arena_training_policy_unavailable",
+        "arena_strength_envelope_mismatch",
+    }
+)
 
 
 @dataclass(frozen=True, slots=True)

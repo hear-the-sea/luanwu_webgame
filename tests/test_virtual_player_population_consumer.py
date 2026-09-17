@@ -18,6 +18,7 @@ from gameplay.models import (
     BotPopulationRecomputeDemand,
     BotProfile,
     BotRuntimeRoutingState,
+    BotSafetyMetricEvent,
 )
 from gameplay.services.arena import virtual_reserve_pool
 from gameplay.services.virtual_player_core import arena_population, bootstrap, population_runtime, runtime_assessment
@@ -29,6 +30,7 @@ from gameplay.services.virtual_player_core.population_runtime import (
     PopulationMutationResult,
     merge_population_recompute_demand,
 )
+from gameplay.services.virtual_player_core.safety_metrics import record_safety_heartbeat
 from tests.arena_services.test_virtual_backfill import _add_real_arena_entry, _create_bot_profile
 
 pytestmark = pytest.mark.django_db
@@ -45,6 +47,7 @@ def _owned_population():
 
 
 def _activate_consumer(monkeypatch) -> None:
+    record_safety_heartbeat("safety_monitor", now=timezone.now())
     BotRuntimeRoutingState.objects.update_or_create(
         key=BotRuntimeRoutingState.GLOBAL_KEY,
         defaults={
@@ -815,8 +818,10 @@ def test_ownership_loss_after_materialization_rolls_back_the_cell_write(
     ).exists()
 
 
+@pytest.mark.parametrize("lost_authorization", ["routing", "heartbeat"])
 def test_routing_pause_after_materialization_rolls_back_the_cell_write(
     monkeypatch,
+    lost_authorization,
 ) -> None:
     now = timezone.now()
     _activate_consumer(monkeypatch)
@@ -839,9 +844,12 @@ def test_routing_pause_after_materialization_rolls_back_the_cell_write(
             requested_revision=1,
             available_at=now,
         )
-        BotRuntimeRoutingState.objects.filter(key=BotRuntimeRoutingState.GLOBAL_KEY).update(
-            bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_PAUSED
-        )
+        if lost_authorization == "routing":
+            BotRuntimeRoutingState.objects.filter(key=BotRuntimeRoutingState.GLOBAL_KEY).update(
+                bootstrap_mode=BotRuntimeRoutingState.BootstrapMode.V2_PAUSED
+            )
+        else:
+            BotSafetyMetricEvent.objects.all().delete()
         return SimpleNamespace(id=102)
 
     with pytest.raises(
@@ -872,6 +880,54 @@ def test_routing_pause_after_materialization_rolls_back_the_cell_write(
     ).exists()
     routing = BotRuntimeRoutingState.objects.get(key=BotRuntimeRoutingState.GLOBAL_KEY)
     assert routing.bootstrap_mode == BotRuntimeRoutingState.BootstrapMode.V2_ACTIVE
+
+
+@pytest.mark.parametrize("heartbeat_state", ["missing", "stale", "invalid"])
+def test_unhealthy_monitor_blocks_population_materialization(
+    released_v2_policy, game_data, monkeypatch, heartbeat_state
+) -> None:
+    now = timezone.now()
+    _activate_consumer(monkeypatch)
+    BotSafetyMetricEvent.objects.all().delete()
+    if heartbeat_state == "stale":
+        record_safety_heartbeat("safety_monitor", now=now - timedelta(minutes=3))
+    elif heartbeat_state == "invalid":
+        record_safety_heartbeat("safety_monitor", now=now)
+        BotSafetyMetricEvent.objects.all().update(value=0)
+    merge_population_recompute_demand(region="north", prestige_band="newbie", now=now)
+
+    result = population_runtime.reconcile_virtual_player_population_cell(
+        region="north", prestige_band="newbie", limit=1, now=now
+    )
+
+    assert result.processed_count == 0
+    assert not BotProfile.objects.exists()
+    demand = BotPopulationRecomputeDemand.objects.get(region="north", prestige_band="newbie")
+    assert demand.requested_revision > demand.completed_revision
+
+
+@pytest.mark.parametrize("profile_state", [BotProfile.State.RETIRED, BotProfile.State.ABANDONED])
+def test_unhealthy_monitor_blocks_direct_population_reactivation(monkeypatch, django_user_model, profile_state):
+    now = timezone.now()
+    _activate_consumer(monkeypatch)
+    profile = _create_retired_profile(
+        django_user_model,
+        username="population_reactivation_no_monitor",
+        region="north",
+        prestige=100,
+        target_band="newbie",
+        current_band="newbie",
+        engine_version=2,
+        now=now,
+    )
+    profile.state = profile_state
+    profile.save(update_fields=["state"])
+    BotSafetyMetricEvent.objects.all().delete()
+
+    assert population_runtime.reactivate_virtual_player_profile(profile.id, now=now) is None
+
+    profile.refresh_from_db()
+    assert profile.state == profile_state
 
 
 def test_bounded_batch_adds_continuation_for_only_the_claimed_cell(

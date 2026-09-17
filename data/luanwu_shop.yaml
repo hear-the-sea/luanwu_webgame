@@ -76,6 +76,12 @@ items:
     reward_type: item
     reward_quantity: 1
 
+  - key: guest_disguise_card
+    price: 1
+    item_key: guest_disguise_card
+    reward_type: item
+    reward_quantity: 1
+
   - key: device_blueprint
     name: 机关图纸宝箱
     description: 随机获得一张器械图纸，有机会合成各类强力器械装备。
