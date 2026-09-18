@@ -729,25 +729,38 @@ UID/GID `10001:10001` 写入，并与 Caddy 的 `/srv/media` 指向同一份 `ru
 
 默认部署让游戏 Caddy 直接接收公网请求。如果外层 Caddy 将请求转发给游戏 Caddy，需要在内层配置
 `CADDY_TRUSTED_PROXIES`，否则内层会忽略外层提供的 `X-Forwarded-For`，所有玩家共用外层容器的限流额度。
-已发现的实例为 `gongsi-deploy-caddy-1 (172.18.0.2)` 转发到 `code-caddy-1 (172.18.0.5)`：
+容器 IP 不是稳定标识，不能把旧机器或旧重建实例的地址写进模板。先在目标服务器上确认两个容器
+在外部入口网络上的实际地址：
 
-```dotenv
-CADDY_TRUSTED_PROXIES=172.18.0.2/32
+```bash
+docker inspect "gongsi-deploy-caddy-1" \
+  --format '{{range $name, $network := .NetworkSettings.Networks}}{{$name}} {{$network.IPAddress}}{{println}}{{end}}'
+docker inspect "code-caddy-1" \
+  --format '{{range $name, $network := .NetworkSettings.Networks}}{{$name}} {{$network.IPAddress}}{{println}}{{end}}'
 ```
 
-这里必须填写经 `docker inspect` 确认、由自己控制且正确维护转发头的上游代理地址。多个 IP/CIDR 用空格分隔，
+把外层 Caddy 在 `CADDY_INGRESS_NETWORK` 上的地址填入 `CADDY_TRUSTED_PROXIES`。例如当前这台服务器实际
+检查到的外层地址是 `172.18.0.4`，对应配置为：
+
+```dotenv
+CADDY_TRUSTED_PROXIES=172.18.0.4/32
+```
+
+这里必须填写经 `docker inspect` 确认、由自己控制且正确维护转发头的上游代理地址；不要照抄历史地址。
+多个 IP/CIDR 用空格分隔，
 默认留空表示不信任上游。Caddy 使用 `trusted_proxies_strict` 从代理链右端解析，防止伪造左端地址。
 这项配置与 Django 的 `DJANGO_TRUSTED_PROXY_IPS` 分属两跳，不能互相替代。
 
-内层 Caddy 转发给 Django 的 `X-Forwarded-For` 保留完整代理链，例如 `203.0.113.8, 172.18.0.2`。
-Django 从右向左剥离可信代理，因此必须同时信任内层和外层的受控地址。上述实例应配置：
+内层 Caddy 转发给 Django 的 `X-Forwarded-For` 保留完整代理链，例如
+`203.0.113.8, 172.18.0.4`。Django 从右向左剥离可信代理，因此必须同时信任内层和外层的受控地址。
+按刚才的检查结果填写：
 
 ```dotenv
-DJANGO_TRUSTED_PROXY_IPS=172.18.0.5/32,172.18.0.2/32
+DJANGO_TRUSTED_PROXY_IPS=<INNER_CADDY_IP>/32,<OUTER_CADDY_IP>/32
 ```
 
-只信任内层 `172.18.0.5` 时，Django 仍会把外层 `172.18.0.2` 当作玩家 IP。
-地址应以当前容器检查结果为准；更新 Django 环境变量后还需重建 `web` 容器。
+只信任内层地址时，Django 仍会把外层代理当作玩家 IP；地址应以当前容器检查结果为准。
+更新 Django 环境变量后还需重建 `web` 容器，更新 `CADDY_TRUSTED_PROXIES` 后需重建或 reload 内层 Caddy。
 
 同步新的 `docker-compose.prod.yml`、可选的
 `docker-compose.prod.double-caddy.yml` 和 `docker/caddy/Caddyfile` 并填写环境变量后，在变更前检查现有
@@ -787,9 +800,8 @@ docker compose --env-file ".env.docker" \
 `CADDY_TRUSTED_PROXIES`；不要复用它在另一网络上的地址。
 
 不需要重建业务镜像。外层代理应使用稳定的容器地址，或在地址变化后同步精确的信任配置。
-现有容器需要快速热更新时，也可在服务器 Caddyfile 顶部的全局 `servers` 块中写入
-`trusted_proxies static 172.18.0.2/32`、`trusted_proxies_strict`、`client_ip_headers X-Forwarded-For`，
-先执行：
+现有容器需要快速热更新时，也可在服务器 Caddyfile 顶部的全局 `servers` 块中写入当前外层代理地址、
+`trusted_proxies_strict`、`client_ip_headers X-Forwarded-For`，先执行：
 
 ```bash
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" exec -T caddy \
