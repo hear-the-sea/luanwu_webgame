@@ -11,4 +11,5 @@ from tests.guest_summon_card.loot_box_config import *  # noqa: F401,F403
 from tests.guest_summon_card.loot_boxes import *  # noqa: F401,F403
 from tests.guest_summon_card.summon_flows import *  # noqa: F401,F403
 from tests.guest_summon_card.summon_validation import *  # noqa: F401,F403
+from tests.guest_summon_card.super_guest_summon import *  # noqa: F401,F403
 from tests.guest_summon_card.utility_items import *  # noqa: F401,F403

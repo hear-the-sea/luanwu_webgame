@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from datetime import date, datetime
+from datetime import timezone as datetime_timezone
+
 import pytest
 from django.core.cache import cache
+from django.utils import timezone
 from django_redis.exceptions import ConnectionInterrupted
 
 from core.exceptions import ItemNotFoundError, TradeValidationError
@@ -9,6 +13,7 @@ from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
 from trade.models import GoldBarExchangeLog
 from trade.services import bank_service, bank_supply_runtime
+from trade.services.bank_runtime import get_today_exchange_count
 
 
 def _ensure_gold_bar_template() -> ItemTemplate:
@@ -38,6 +43,32 @@ def test_calculate_progressive_factor_caps():
     assert bank_service.calculate_progressive_factor(0) == 1.0
     assert bank_service.calculate_progressive_factor(1) == 1.05
     assert bank_service.calculate_progressive_factor(100) == 1.60
+
+
+@pytest.mark.parametrize(
+    ("utc_now", "expected_exchange_date"),
+    [
+        (datetime(2026, 9, 18, 15, 59, tzinfo=datetime_timezone.utc), date(2026, 9, 18)),
+        (datetime(2026, 9, 18, 16, 0, tzinfo=datetime_timezone.utc), date(2026, 9, 19)),
+    ],
+)
+def test_get_today_exchange_count_uses_shanghai_local_date(utc_now, expected_exchange_date):
+    captured_filters = {}
+
+    def aggregate_quantity(**filters):
+        captured_filters.update(filters)
+        return {"total": 0}
+
+    assert (
+        get_today_exchange_count(
+            manor=object(),
+            aggregate_quantity=aggregate_quantity,
+            now_func=lambda: utc_now,
+            safe_int=lambda value, _default: int(value),
+        )
+        == 0
+    )
+    assert captured_filters["exchange_date"] == expected_exchange_date
 
 
 @pytest.mark.django_db
@@ -153,6 +184,7 @@ def test_exchange_gold_bar_deducts_silver_and_creates_inventory(monkeypatch, dja
     log = GoldBarExchangeLog.objects.get(manor=manor)
     assert log.quantity == 2
     assert log.silver_cost == 110
+    assert log.exchange_date == timezone.localdate()
 
 
 @pytest.mark.django_db

@@ -60,7 +60,7 @@ class GoldBarExchangeLog(models.Model):
     manor = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="gold_bar_exchanges")
     quantity = models.PositiveIntegerField(verbose_name="兑换数量")
     silver_cost = models.PositiveIntegerField(verbose_name="消耗银两")
-    exchange_date = models.DateField(auto_now_add=True, verbose_name="兑换日期")
+    exchange_date = models.DateField(default=timezone.localdate, verbose_name="兑换日期")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
 
     class Meta:

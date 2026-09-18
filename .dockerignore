@@ -2,6 +2,12 @@
 .gitignore
 .vscode
 .idea
+.worktrees/
+.agents/
+.codex/
+.claude/
+.omc/
+.superpowers/
 .venv/
 venv/
 

@@ -14,6 +14,9 @@ SUPER_GUEST_DISGUISE_HP_BONUS = 800
 SUPER_GUEST_DISGUISE_FORCE_BONUS = 20
 SUPER_GUEST_DISGUISE_AGILITY_BONUS = 20
 
+# 超级门客召唤卡只从可通过招募获得的未拥有橙色门客中随机选择。
+SUPER_GUEST_SUMMON_ACTION = "summon_unobtained_orange_guest"
+
 # 普通门客易容卡只允许使用素材目录中这三类头像，服务端会再次校验文件名，
 # 不把客户端提交的路径直接交给存储层。
 GUEST_DISGUISE_AVATAR_ACTION = "disguise_guest_avatar"

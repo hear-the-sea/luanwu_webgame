@@ -46,3 +46,21 @@ def test_catalog_image_sources_are_reincluded_in_docker_context():
         "!data/images/buildings/",
         "!data/images/buildings/guild-residence.webp",
     } <= rules
+
+
+def test_dockerignore_excludes_local_development_artifacts():
+    dockerignore = Path(__file__).resolve().parents[1] / ".dockerignore"
+    rules = {
+        line.strip()
+        for line in dockerignore.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    }
+
+    assert {
+        ".worktrees/",
+        ".agents/",
+        ".codex/",
+        ".claude/",
+        ".omc/",
+        ".superpowers/",
+    } <= rules

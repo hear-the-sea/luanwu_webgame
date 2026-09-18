@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from django.utils import timezone
+
 from core.exceptions import MessageError
 from core.utils.infrastructure import (
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
@@ -78,7 +80,7 @@ def send_purchase_notifications(
             f"- 单价：{listing.unit_price:,} 银两\n"
             f"- 总价：{listing.total_price:,} 银两\n"
             f"- 卖家：{listing.seller.display_name}\n"
-            f"- 成交时间：{listing.sold_at.strftime('%Y-%m-%d %H:%M:%S')}"
+            f"- 成交时间：{timezone.localtime(listing.sold_at).strftime('%Y-%m-%d %H:%M:%S')}"
         ),
     )
 
@@ -98,7 +100,7 @@ def send_purchase_notifications(
                 f"- 税费（10%）：{tax_amount:,} 银两\n"
                 f"- 实际到账：{seller_received:,} 银两\n"
                 f"- 买家：{buyer.display_name}\n"
-                f"- 成交时间：{listing.sold_at.strftime('%Y-%m-%d %H:%M:%S')}"
+                f"- 成交时间：{timezone.localtime(listing.sold_at).strftime('%Y-%m-%d %H:%M:%S')}"
             ),
         )
 

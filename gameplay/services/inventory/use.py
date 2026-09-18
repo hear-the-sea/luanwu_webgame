@@ -20,9 +20,11 @@ from core.exceptions import (
     ItemNotFoundError,
     ItemNotUsableError,
     ItemResourceOverflowConfirmationRequired,
+    NoTemplateAvailableError,
 )
 from gameplay.models import InventoryItem, ItemTemplate, Manor, ResourceEvent, ResourceType
 from gameplay.services.resources import grant_resources, grant_resources_locked, preview_resource_grant
+from guests.constants import SUPER_GUEST_SUMMON_ACTION
 
 from ..action_points import ACTION_POINTS_MAX, get_current_action_points, restore_action_points
 from .core import (
@@ -517,6 +519,43 @@ def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
     }
 
 
+def _apply_super_guest_summon(item: InventoryItem) -> Dict[str, Any]:
+    """从未拥有的、可正常招募的橙色门客中随机召唤一名。"""
+    from guests.models import GuestRarity
+    from guests.services.recruitment_guests import build_recruitment_custom_name, create_guest_from_template
+    from guests.services.recruitment_templates import _get_recruitable_templates_by_rarity
+    from guests.services.training import ensure_auto_training
+
+    manor = item.manor
+    _ensure_guest_capacity(manor)
+
+    recruitable_orange_templates = _get_recruitable_templates_by_rarity().get(GuestRarity.ORANGE, [])
+    owned_template_ids = set(manor.guests.values_list("template_id", flat=True))
+    available_templates = [
+        template for template in recruitable_orange_templates if template.id not in owned_template_ids
+    ]
+    if not available_templates:
+        raise NoTemplateAvailableError()
+
+    template = inventory_random.choice(available_templates)
+    summon_rng = inventory_random.Random()
+    guest = create_guest_from_template(
+        manor=manor,
+        template=template,
+        custom_name=build_recruitment_custom_name(template, summon_rng),
+        rng=summon_rng,
+        assign_fallback_avatar=True,
+    )
+    ensure_auto_training(guest)
+
+    rarity_display = template.get_rarity_display()
+    return {
+        "获得门客": guest.display_name,
+        "稀有度": rarity_display,
+        "_message": f"获得门客 {guest.display_name}（{rarity_display}）",
+    }
+
+
 def _apply_tool(item: InventoryItem) -> Dict[str, Any]:
     """
     使用道具类物品（统一 effect_type=tool）。
@@ -525,6 +564,8 @@ def _apply_tool(item: InventoryItem) -> Dict[str, Any]:
     normalized_action = _normalize_optional_tool_action(payload)
     if normalized_action == "summon_guest":
         return _apply_guest_summon(item)
+    if normalized_action == SUPER_GUEST_SUMMON_ACTION:
+        return _apply_super_guest_summon(item)
     if normalized_action == "synthesize_item":
         return _apply_item_synthesis(item)
     if normalized_action == "restore_action_points":

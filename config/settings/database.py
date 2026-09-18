@@ -110,7 +110,10 @@ if _conn_max_age_str.lower() == "none":
 elif _conn_max_age_str:
     _conn_max_age = int(_conn_max_age_str)
 else:
-    _conn_max_age = 60 if DEBUG else 300
+    # Keep the default bounded in production as well. A single-host MySQL
+    # deployment has no external pooler, so a five-minute idle connection can
+    # exhaust the small server-side pool during traffic spikes.
+    _conn_max_age = 60
 
 # Database-specific options
 _db_connect_timeout = max(1, int(env_float("DJANGO_DB_CONNECT_TIMEOUT", 5.0)))

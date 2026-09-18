@@ -26,7 +26,7 @@ class GuildMember(models.Model):
     )
     current_contribution = models.PositiveIntegerField(default=0, verbose_name="当前贡献", help_text="可用于兑换的贡献")
     weekly_contribution = models.PositiveIntegerField(default=0, verbose_name="本周贡献", help_text="每周一0点重置")
-    weekly_reset_at = models.DateField(default=timezone.now, verbose_name="本周重置时间")
+    weekly_reset_at = models.DateField(default=timezone.localdate, verbose_name="本周重置时间")
 
     # 时间记录
     joined_at = models.DateTimeField(auto_now_add=True, verbose_name="加入时间")
@@ -40,11 +40,11 @@ class GuildMember(models.Model):
     daily_donation_silver = models.PositiveIntegerField(default=0, verbose_name="今日捐赠银两")
     daily_donation_grain = models.PositiveIntegerField(default=0, verbose_name="今日捐赠粮食")
     daily_donation_gold_bar = models.PositiveIntegerField(default=0, verbose_name="今日捐赠金条")
-    daily_donation_reset_at = models.DateField(default=timezone.now, verbose_name="每日捐赠重置时间")
+    daily_donation_reset_at = models.DateField(default=timezone.localdate, verbose_name="每日捐赠重置时间")
 
     # 兑换限制（每日）
     daily_exchange_count = models.PositiveIntegerField(default=0, verbose_name="今日兑换次数")
-    daily_exchange_reset_at = models.DateField(default=timezone.now, verbose_name="每日兑换重置时间")
+    daily_exchange_reset_at = models.DateField(default=timezone.localdate, verbose_name="每日兑换重置时间")
 
     class Meta:
         db_table = "guild_members"

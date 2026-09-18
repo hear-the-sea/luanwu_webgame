@@ -23,3 +23,7 @@ def test_process_daily_loyalty_is_scheduled_at_midnight():
     assert entry["task"] == "guests.process_daily_loyalty"
     assert entry["schedule"]._orig_hour == 0
     assert entry["schedule"]._orig_minute == 0
+
+
+def test_celery_schedule_timezone_matches_django_business_timezone():
+    assert settings.CELERY_TIMEZONE == settings.TIME_ZONE == "Asia/Shanghai"

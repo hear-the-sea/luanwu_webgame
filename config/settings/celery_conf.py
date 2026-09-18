@@ -9,7 +9,7 @@ import os
 from celery.schedules import crontab
 from kombu import Queue
 
-from .base import ARENA_LOW_POPULATION_MODE, env
+from .base import ARENA_LOW_POPULATION_MODE, TIME_ZONE, env
 from .database import (
     REDIS_BROKER_URL,
     REDIS_PASSWORD,
@@ -18,6 +18,10 @@ from .database import (
     REDIS_SOCKET_TIMEOUT,
     _redis_url_with_password,
 )
+
+# Cron schedules are expressed in the player-facing business timezone. Celery
+# still stores/serializes instants in UTC when UTC support is enabled.
+CELERY_TIMEZONE = TIME_ZONE
 
 CELERY_BROKER_URL = _redis_url_with_password(env("CELERY_BROKER_URL", REDIS_BROKER_URL), REDIS_PASSWORD)
 CELERY_RESULT_BACKEND = env(

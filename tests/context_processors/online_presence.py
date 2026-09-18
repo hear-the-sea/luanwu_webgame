@@ -7,9 +7,17 @@ from django_redis.exceptions import ConnectionInterrupted
 
 from core.middleware.online_presence import OnlinePresenceMiddleware
 from gameplay.context_processors import notifications
+from gameplay.services import online_presence
 from tests.context_processors.support import FakeRedis
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture(autouse=True)
+def reset_online_presence_circuit():
+    online_presence._reset_presence_circuit()
+    yield
+    online_presence._reset_presence_circuit()
 
 
 def test_online_presence_http_touch_debounce_stays_responsive():
@@ -56,7 +64,51 @@ def test_online_presence_middleware_tolerates_connection_interrupted(monkeypatch
 
     OnlinePresenceMiddleware(lambda _request: None)(request)
 
-    assert any(key.startswith("stats:online_users:touch:") for key in deleted_keys)
+    # The touch key has a short TTL. Avoid a second Redis call while the
+    # process-local circuit is open after the failed touch.
+    assert deleted_keys == []
+
+
+def test_online_presence_cache_gate_failure_skips_redis_touch(monkeypatch, django_user_model):
+    user = django_user_model.objects.create_user(username="ctx_touch_cache_fail_user", password="pass")
+    request = RequestFactory().get("/")
+    request.user = user
+    redis_calls = 0
+
+    def broken_add(*_args, **_kwargs):
+        raise ConnectionInterrupted("redis down")
+
+    def unexpected_redis(*_args, **_kwargs):
+        nonlocal redis_calls
+        redis_calls += 1
+        raise AssertionError("cache gate failure must not trigger a second Redis operation")
+
+    monkeypatch.setattr("gameplay.services.online_presence.cache.add", broken_add)
+    monkeypatch.setattr("gameplay.services.online_presence.get_redis_connection_if_supported", unexpected_redis)
+
+    OnlinePresenceMiddleware(lambda _request: None)(request)
+
+    assert redis_calls == 0
+
+
+def test_online_presence_circuit_suppresses_repeated_cache_failures(monkeypatch, django_user_model):
+    user = django_user_model.objects.create_user(username="ctx_touch_circuit_user", password="pass")
+    request = RequestFactory().get("/")
+    request.user = user
+    add_calls = 0
+
+    def broken_add(*_args, **_kwargs):
+        nonlocal add_calls
+        add_calls += 1
+        raise ConnectionInterrupted("redis down")
+
+    monkeypatch.setattr("gameplay.services.online_presence.cache.add", broken_add)
+
+    middleware = OnlinePresenceMiddleware(lambda _request: None)
+    middleware(request)
+    middleware(request)
+
+    assert add_calls == 1
 
 
 def test_online_presence_middleware_runtime_marker_redis_error_bubbles_up(monkeypatch, django_user_model):
@@ -89,7 +141,10 @@ def test_online_presence_middleware_cache_delete_programming_error_bubbles_up(mo
 
     class BrokenRedis:
         def zadd(self, *_args, **_kwargs):
-            raise ConnectionInterrupted("redis down")
+            return None
+
+        def expire(self, *_args, **_kwargs):
+            return None
 
     monkeypatch.setattr("gameplay.services.online_presence.get_redis_connection_if_supported", lambda: BrokenRedis())
     monkeypatch.setattr(

@@ -11,6 +11,8 @@ services:
       - |
         exec redis-server \
           --appendonly yes \
+          --appendfsync everysec \
+          --save "" \
           --maxmemory "$$REDIS_MAXMEMORY" \
           --maxmemory-policy "$$REDIS_MAXMEMORY_POLICY" \
           --requirepass "$$REDIS_PASSWORD";
@@ -39,7 +41,9 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env.docker}
     command:
       - --innodb-buffer-pool-size=${MYSQL_INNODB_BUFFER_POOL_SIZE:-512M}
-      - --max-connections=${MYSQL_MAX_CONNECTIONS:-40}
+      - --max-connections=${MYSQL_MAX_CONNECTIONS:-60}
+      - --wait-timeout=${MYSQL_WAIT_TIMEOUT:-600}
+      - --binlog-expire-logs-seconds=${MYSQL_BINLOG_EXPIRE_LOGS_SECONDS:-86400}
       - --tmp-table-size=${MYSQL_TMP_TABLE_SIZE:-16M}
       - --max-heap-table-size=${MYSQL_MAX_HEAP_TABLE_SIZE:-16M}
     healthcheck:
@@ -234,7 +238,7 @@ services:
         "--max-tasks-per-child",
         "${CELERY_MAX_TASKS_PER_CHILD:-200}",
         "--max-memory-per-child",
-        "${CELERY_MAX_MEMORY_PER_CHILD:-180000}",
+        "${CELERY_TIMER_MAX_MEMORY_PER_CHILD:-500000}",
       ]
     volumes:
       - ./runtime/media:/app/media
@@ -424,8 +428,8 @@ services:
       - /var/run/celerybeat-schedule
     volumes:
       - ./runtime/celerybeat:/var/run
-    mem_limit: ${CELERY_BEAT_MEMORY_LIMIT:-96m}
-    mem_reservation: ${CELERY_BEAT_MEMORY_RESERVATION:-64m}
+    mem_limit: ${CELERY_BEAT_MEMORY_LIMIT:-192m}
+    mem_reservation: ${CELERY_BEAT_MEMORY_RESERVATION:-128m}
     depends_on:
       - db
       - redis

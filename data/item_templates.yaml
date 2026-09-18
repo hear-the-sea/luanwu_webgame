@@ -1741,6 +1741,21 @@ items:
       force: 20
       agility: 20
 
+  # ---------- 超级门客召唤卡 ----------
+
+  - key: super_guest_summon_card
+    name: 超级门客召唤卡
+    description: 使用后从所有可通过招募获得的橙色门客中，随机召唤一名庄园尚未拥有的门客；橙色门客全部获得后无法使用且不会消耗道具。
+    effect_type: tool
+    rarity: orange
+    tradeable: true
+    price: 8000000
+    storage_space: 100
+    is_usable: true
+    image: super_guest_summon_card.png
+    effect_payload:
+      action: summon_unobtained_orange_guest
+
   # ---------- 门客易容卡 ----------
 
   - key: guest_disguise_card

@@ -23,7 +23,16 @@ def ensure_training_timer(
     Returns True when a pending timer exists after refresh, False otherwise.
     """
     now = now or timezone.now()
-    finalize_guest_training_func(guest, now=now)
+    finalized = finalize_guest_training_func(guest, now=now)
+    # ``finalize_guest_training`` locks and refreshes a separate model
+    # instance.  When it completes a due timer it may also schedule the next
+    # timer, so the caller's object is stale unless it is refreshed here.  A
+    # stale due timestamp can make reduction callers repeatedly finalize the
+    # same guest without consuming any requested seconds.
+    if finalized:
+        refresh_from_db = getattr(guest, "refresh_from_db", None)
+        if callable(refresh_from_db):
+            refresh_from_db()
     if guest.level >= int(GUEST.MAX_LEVEL):
         return False
     if not guest.training_complete_at:

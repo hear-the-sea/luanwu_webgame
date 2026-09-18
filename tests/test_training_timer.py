@@ -7,6 +7,7 @@ from guests.models import RecruitmentPool
 from guests.services.recruitment import recruit_guest
 from guests.services.recruitment_guests import finalize_candidate
 from guests.services.training import ensure_auto_training, reduce_training_time, reduce_training_time_for_guest
+from guests.training_runtime import ensure_training_timer as ensure_training_timer_runtime
 from guests.utils.training_timer import ensure_training_timer, remaining_training_seconds
 
 
@@ -19,6 +20,41 @@ def _bootstrap_guest(django_user_model):
     candidate = recruit_guest(manor, pool, seed=1)[0]
     guest = finalize_candidate(candidate)
     return guest
+
+
+def test_ensure_training_timer_refreshes_after_finalization():
+    class GuestStub:
+        level = 1
+        training_complete_at = "expired"
+        refreshed = False
+
+        def refresh_from_db(self):
+            self.refreshed = True
+            self.level = 2
+            self.training_complete_at = "next"
+
+    guest = GuestStub()
+    finalize_calls = []
+
+    def finalize(_guest, *, now):
+        finalize_calls.append(now)
+        return True
+
+    def unexpected_auto_training(_guest):
+        raise AssertionError("the refreshed timer should already be present")
+
+    assert (
+        ensure_training_timer_runtime(
+            guest,
+            now="now",
+            finalize_guest_training_func=finalize,
+            ensure_auto_training_func=unexpected_auto_training,
+        )
+        is True
+    )
+    assert finalize_calls == ["now"]
+    assert guest.refreshed is True
+    assert guest.training_complete_at == "next"
 
 
 @pytest.mark.django_db

@@ -176,16 +176,44 @@ async def _channel_layer_roundtrip(channel_layer: Any, timeout_seconds: float) -
     return received
 
 
+def _isolated_channel_layer_for_health_check(channel_layer: Any) -> tuple[Any, bool]:
+    """Use a private Redis layer so WebSocket receive locks cannot starve readiness."""
+    try:
+        from channels_redis.core import RedisChannelLayer
+    except ImportError:
+        return channel_layer, False
+
+    if not isinstance(channel_layer, RedisChannelLayer):
+        return channel_layer, False
+
+    configured_layer = getattr(settings, "CHANNEL_LAYERS", {}).get("default", {})
+    layer_config = configured_layer.get("CONFIG", {}) if isinstance(configured_layer, dict) else {}
+    if not isinstance(layer_config, dict):
+        return channel_layer, False
+    return RedisChannelLayer(**layer_config), True
+
+
 def _check_channel_layer_ready() -> tuple[bool, str | None]:
+    isolated_layer = False
+    channel_layer = None
     try:
         channel_layer = get_channel_layer()
         if channel_layer is None:
             raise HealthCheckFailure("channel layer is unavailable")
+        channel_layer, isolated_layer = _isolated_channel_layer_for_health_check(channel_layer)
         timeout_seconds = max(0.01, float(getattr(settings, "HEALTH_CHECK_CHANNEL_LAYER_TIMEOUT_SECONDS", 1.0)))
         async_to_sync(_channel_layer_roundtrip)(channel_layer, timeout_seconds)
         return True, None
     except CHANNEL_LAYER_READY_EXCEPTIONS as exc:
         return False, _maybe_debug_error(exc)
+    finally:
+        if isolated_layer and channel_layer is not None:
+            close_pools = getattr(channel_layer, "close_pools", None)
+            if close_pools is not None:
+                try:
+                    async_to_sync(close_pools)()
+                except CHANNEL_LAYER_READY_EXCEPTIONS:
+                    logger.warning("Health check channel layer pool cleanup failed", exc_info=True)
 
 
 def _check_celery_broker_ready() -> tuple[bool, str | None]:

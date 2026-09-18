@@ -201,6 +201,47 @@ def test_notifications_online_user_count_uses_local_fallback_when_cache_and_redi
     assert count_calls["count"] == 1
 
 
+def test_notifications_cache_failure_circuit_skips_repeated_backend_calls(monkeypatch):
+    from gameplay.selectors import stats
+
+    stats._LOCAL_STATS_CACHE.clear()
+    first_request = RequestFactory().get("/")
+    first_request.user = AnonymousUser()
+    second_request = RequestFactory().get("/")
+    second_request.user = AnonymousUser()
+    cache_get_calls = 0
+    db_count_calls = 0
+
+    def broken_cache_get(*_args, **_kwargs):
+        nonlocal cache_get_calls
+        cache_get_calls += 1
+        raise ConnectionInterrupted("cache read failed")
+
+    def fake_count():
+        nonlocal db_count_calls
+        db_count_calls += 1
+        return 11
+
+    monkeypatch.setattr("gameplay.selectors.stats.cache.get", broken_cache_get)
+    monkeypatch.setattr(
+        "gameplay.selectors.stats.User.objects.filter",
+        lambda **_kwargs: type("FakeQuerySet", (), {"count": lambda self: fake_count()})(),
+    )
+    monkeypatch.setattr(
+        "gameplay.selectors.stats._load_online_user_count_from_redis",
+        lambda: (_ for _ in ()).throw(AssertionError("Redis must be skipped after a cache failure")),
+    )
+
+    first = notifications(first_request)
+    second = notifications(second_request)
+
+    assert first["total_user_count"] == 11
+    assert first["online_user_count"] == 11
+    assert second == first
+    assert cache_get_calls == 1
+    assert db_count_calls == 2
+
+
 def test_notifications_online_user_count_runtime_marker_redis_error_bubbles_up(monkeypatch):
     request = RequestFactory().get("/")
     request.user = AnonymousUser()

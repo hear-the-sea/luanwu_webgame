@@ -191,6 +191,10 @@ chmod 600 ".env.docker"
 - `CELERY_TIMER_SAFETY_QUEUE=timer_safety` 和 `CELERY_TIMER_SAFETY_CONCURRENCY`：确认安全任务使用独立 worker，默认并发为 1，避免队列排队制造心跳缺口。
 - `CELERY_TIMER_MAINTENANCE_QUEUE=timer_maintenance` 和 `CELERY_TIMER_MAINTENANCE_CONCURRENCY`：确认维护队列有独立 worker；默认并发为 1，避免低优先级任务争用核心扫描资源。
 - `REDIS_SOCKET_CONNECT_TIMEOUT` 和 `REDIS_SOCKET_TIMEOUT`：限制 Django cache 与 Celery 的 Redis 连接和读写等待，初始值为 2 秒；`REDIS_CHANNEL_SOCKET_TIMEOUT` 单独用于 Channels Redis，必须高于其默认 5 秒阻塞读取，初始值为 10 秒。
+- `DJANGO_DB_CONN_MAX_AGE=60` 和 `DJANGO_DB_CONN_HEALTH_CHECKS=1`：让 Django 短时间复用且复用前检查 MySQL 连接，避免少量僵尸连接长期占满连接池。
+- `MYSQL_WAIT_TIMEOUT=600`：限制 MySQL 空闲连接的服务端保留时间。
+- `MYSQL_BINLOG_EXPIRE_LOGS_SECONDS`：必须与备份/复制策略一致。8 GiB 单机示例使用 `86400`（24 小时），没有完成可恢复备份前不要盲目缩短该值。
+- `DJANGO_ONLINE_PRESENCE_FAILURE_COOLDOWN_SECONDS=30`：Redis 发生基础设施故障时，在线人数是可丢失的 best-effort 数据；进程会短暂熔断该写入，避免每个 HTTP 请求重复等待 Redis。页面公共统计也会在进程内短暂熔断缓存读取，并使用本地快照，避免故障扩散。
 
 #### 8 GiB 单机初始资源基线
 
@@ -209,9 +213,9 @@ worker 的 cgroup OOM，因此当前初始预算提高到 1 GiB。旧的 4 GiB �
 | Timer worker | 1024 MiB | 512 MiB |
 | 其他三个普通 worker，每个 | 256 MiB | 160 MiB |
 | Web | 384 MiB | 256 MiB |
-| Beat | 96 MiB | 64 MiB |
+| Beat | 192 MiB | 128 MiB |
 | Redis | 128 MiB | 64 MiB |
-| 合计 | **5472 MiB（约 5.34 GiB）** | **2912 MiB（约 2.84 GiB）** |
+| 合计 | **5568 MiB（约 5.44 GiB）** | **2976 MiB（约 2.91 GiB）** |
 
 这是一组针对已观察到的 OOM 调整的初始预算，不是压测得出的峰值，也不能保证不再 OOM。
 上限不是预分配内存，软保留值也不是额外叠加的硬上限；宿主机、Docker、其他项目和发布时的临时
@@ -220,16 +224,32 @@ worker 的 cgroup OOM，因此当前初始预算提高到 1 GiB。旧的 4 GiB �
 
 Timer、维护和安全 worker 分别使用独立的内存变量；原 `CELERY_WORKER_MEMORY_*` 继续控制
 `worker`、`worker_battle` 和 `worker_timer_scan` 三个普通 worker。需要定制维护预算的旧部署必须迁移到新变量。
-MySQL 保持 512 MiB buffer pool、40 个最大连接和原临时表参数，把新增空间留给服务器其他内存开销。
+MySQL 保持 512 MiB buffer pool 和原临时表参数，最大连接数基线调整为 60；`DJANGO_DB_CONN_MAX_AGE=60` 与
+`MYSQL_WAIT_TIMEOUT=600` 共同回收空闲连接，把连接池留给实时请求。
 Caddy 的 `validate` 健康检查会在同一容器中启动另一个进程，预算必须覆盖主进程和检查进程。
 
 六个 worker 仍各用 `concurrency=1`、`prefetch=1`，保持 `max-tasks-per-child=200`。普通 worker
-和维护 worker 使用 `max-memory-per-child=180000`（KiB），安全 worker 使用独立的
+和维护 worker 使用 `max-memory-per-child=180000`（KiB），Timer worker 使用独立的
+`CELERY_TIMER_MAX_MEMORY_PER_CHILD=500000`（KiB），安全 worker 使用独立的
 `CELERY_TIMER_SAFETY_MAX_MEMORY_PER_CHILD=400000`（KiB），以覆盖安全快照聚合的工作内存。
 该阈值是单个子进程的回收阈值，超过后在任务结束时回收，不是运行中任务或整个容器的实时内存上限；
 容器还要容纳父进程和任务峰值。
 参见 [Celery 子进程内存阈值](https://docs.celeryq.dev/en/stable/userguide/configuration.html#worker-max-memory-per-child)
 和 [Docker 内存限制](https://docs.docker.com/engine/containers/resource_constraints/#memory)。
+
+#### 磁盘、MySQL binlog 与 Redis AOF
+
+生产宿主机的根盘只有约 29 GiB 时，镜像层、MySQL 数据和 binlog 必须一起纳入容量预算。生产 Compose
+当前会把 MySQL 的 `binlog_expire_logs_seconds` 默认设为 86400 秒，并把空闲连接 `wait_timeout` 设为
+600 秒；实际 `.env.docker` 应按备份和复制要求显式复核这两个值。binlog 不是普通缓存，不能用 `rm` 直接删除；
+需要缩短历史时，先确认备份/PITR 与复制状态，再通过 MySQL 的 `PURGE BINARY LOGS` 或保留策略完成清理。
+
+Redis 生产实例保留 AOF、使用 `appendfsync everysec`，并关闭默认 RDB 定时快照（`--save ""`）。AOF 已是
+恢复来源时，这可以避免 BGSAVE 与 AOF fsync 同时争用满盘；如果部署需要 RDB 作为额外恢复介质，应在容量预算
+和备份流程中重新启用，而不是只删除 Redis 数据卷。
+
+镜像构建上下文会排除 `.worktrees/`、`.agents/`、`.codex/`、`.claude/`、`.omc/` 和 `.superpowers/`。
+这些目录不参与运行时，若再次进入镜像，会把本地 worktree 和工具缓存直接复制到每个发布层，迅速消耗根盘。
 
 #### Timer OOM 与 ETA 队列取证
 
@@ -271,6 +291,8 @@ timeout 一致设置为更大的值；不要凭估计写死。根治方案是把
 #### Web 卡住时的现场取证与恢复
 
 `web` 显示 `unhealthy` 不会触发 Compose 自动重建；`restart: unless-stopped` 只在容器进程退出时生效。
+在线人数 HTTP touch 是 best-effort 写入，Redis 基础设施异常后会由进程内单飞锁和 30 秒熔断窗口快速跳过，
+不会让每个 Daphne 请求都建立新的 Redis 阻塞调用。该保护只减少故障扩散，不替代磁盘、Redis 和 MySQL 的根因修复。
 若 Daphne 仍为 `running` 但本机 `/health/live` 也无法建立 TCP 连接，记录监听队列和进程状态后再恢复：
 
 ```bash
@@ -341,7 +363,16 @@ CELERY_TIMER_MAINTENANCE_MEMORY_LIMIT=768m
 CELERY_TIMER_MAINTENANCE_MEMORY_RESERVATION=384m
 CELERY_TIMER_SAFETY_MEMORY_LIMIT=512m
 CELERY_TIMER_SAFETY_MEMORY_RESERVATION=256m
+CELERY_BEAT_MEMORY_LIMIT=192m
+CELERY_BEAT_MEMORY_RESERVATION=128m
+CELERY_TIMER_MAX_MEMORY_PER_CHILD=500000
 CELERY_TIMER_SAFETY_MAX_MEMORY_PER_CHILD=400000
+MYSQL_MAX_CONNECTIONS=60
+MYSQL_WAIT_TIMEOUT=600
+MYSQL_BINLOG_EXPIRE_LOGS_SECONDS=86400
+DJANGO_DB_CONN_MAX_AGE=60
+DJANGO_DB_CONN_HEALTH_CHECKS=1
+DJANGO_ONLINE_PRESENCE_FAILURE_COOLDOWN_SECONDS=30
 REDIS_SOCKET_CONNECT_TIMEOUT=2
 REDIS_SOCKET_TIMEOUT=2
 REDIS_CHANNEL_SOCKET_TIMEOUT=10
@@ -841,7 +872,11 @@ redis:
     - sh
     - -c
     - |
-      exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD";
+      exec redis-server \
+        --appendonly yes \
+        --appendfsync everysec \
+        --save "" \
+        --requirepass "$$REDIS_PASSWORD";
 ```
 
 同时 `.env.docker` 里要设置：

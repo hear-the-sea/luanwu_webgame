@@ -191,7 +191,7 @@ def test_prod_compose_declares_8gb_memory_guardrails_and_single_child_baseline()
             "${CELERY_TIMER_MAINTENANCE_MEMORY_LIMIT:-768m}",
             "${CELERY_TIMER_MAINTENANCE_MEMORY_RESERVATION:-384m}",
         ),
-        "beat": ("${CELERY_BEAT_MEMORY_LIMIT:-96m}", "${CELERY_BEAT_MEMORY_RESERVATION:-64m}"),
+        "beat": ("${CELERY_BEAT_MEMORY_LIMIT:-192m}", "${CELERY_BEAT_MEMORY_RESERVATION:-128m}"),
         "caddy": ("${CADDY_MEMORY_LIMIT:-256m}", "${CADDY_MEMORY_RESERVATION:-128m}"),
     }
 
@@ -202,7 +202,6 @@ def test_prod_compose_declares_8gb_memory_guardrails_and_single_child_baseline()
     for service_name in (
         "worker",
         "worker_battle",
-        "worker_timer",
         "worker_timer_scan",
         "worker_timer_maintenance",
     ):
@@ -211,6 +210,10 @@ def test_prod_compose_declares_8gb_memory_guardrails_and_single_child_baseline()
         assert "${CELERY_MAX_TASKS_PER_CHILD:-200}" in command
         assert "${CELERY_MAX_MEMORY_PER_CHILD:-180000}" in command
 
+    timer_command = services["worker_timer"]["command"]
+    assert "${CELERY_MAX_TASKS_PER_CHILD:-200}" in timer_command
+    assert "${CELERY_TIMER_MAX_MEMORY_PER_CHILD:-500000}" in timer_command
+
     safety_command = services["worker_timer_safety"]["command"]
     assert "${CELERY_PREFETCH_MULTIPLIER:-1}" in safety_command
     assert "${CELERY_MAX_TASKS_PER_CHILD:-200}" in safety_command
@@ -218,7 +221,9 @@ def test_prod_compose_declares_8gb_memory_guardrails_and_single_child_baseline()
 
     assert services["db"]["command"] == [
         "--innodb-buffer-pool-size=${MYSQL_INNODB_BUFFER_POOL_SIZE:-512M}",
-        "--max-connections=${MYSQL_MAX_CONNECTIONS:-40}",
+        "--max-connections=${MYSQL_MAX_CONNECTIONS:-60}",
+        "--wait-timeout=${MYSQL_WAIT_TIMEOUT:-600}",
+        "--binlog-expire-logs-seconds=${MYSQL_BINLOG_EXPIRE_LOGS_SECONDS:-86400}",
         "--tmp-table-size=${MYSQL_TMP_TABLE_SIZE:-16M}",
         "--max-heap-table-size=${MYSQL_MAX_HEAP_TABLE_SIZE:-16M}",
     ]
@@ -238,6 +243,7 @@ def test_prod_env_example_matches_8gb_memory_and_queue_baseline() -> None:
     assert values["CELERY_TIMER_SAFETY_CONCURRENCY"] == "1"
     assert values["CELERY_MAX_TASKS_PER_CHILD"] == "200"
     assert values["CELERY_MAX_MEMORY_PER_CHILD"] == "180000"
+    assert values["CELERY_TIMER_MAX_MEMORY_PER_CHILD"] == "500000"
     assert values["CELERY_TIMER_SAFETY_MAX_MEMORY_PER_CHILD"] == "400000"
     assert values["DAPHNE_HTTP_TIMEOUT"] == "60"
     assert values["DJANGO_DB_CONNECT_TIMEOUT"] == "5"
@@ -247,7 +253,12 @@ def test_prod_env_example_matches_8gb_memory_and_queue_baseline() -> None:
     assert values["REDIS_SOCKET_TIMEOUT"] == "2"
     assert values["REDIS_CHANNEL_SOCKET_TIMEOUT"] == "10"
     assert values["MYSQL_INNODB_BUFFER_POOL_SIZE"] == "512M"
-    assert values["MYSQL_MAX_CONNECTIONS"] == "40"
+    assert values["MYSQL_MAX_CONNECTIONS"] == "60"
+    assert values["MYSQL_WAIT_TIMEOUT"] == "600"
+    assert values["MYSQL_BINLOG_EXPIRE_LOGS_SECONDS"] == "86400"
+    assert values["DJANGO_DB_CONN_MAX_AGE"] == "60"
+    assert values["DJANGO_DB_CONN_HEALTH_CHECKS"] == "1"
+    assert values["DJANGO_ONLINE_PRESENCE_FAILURE_COOLDOWN_SECONDS"] == "30"
     assert values["REDIS_MAXMEMORY"] == "128mb"
     assert values["REDIS_MAXMEMORY_POLICY"] == "noeviction"
 
@@ -266,7 +277,7 @@ def test_prod_env_example_matches_8gb_memory_and_queue_baseline() -> None:
             memory[field] = int(fallback[:-1])
             totals[field] += memory[field]
         assert 0 < memory["mem_reservation"] <= memory["mem_limit"]
-    assert totals == {"mem_limit": 5472, "mem_reservation": 2912}
+    assert totals == {"mem_limit": 5568, "mem_reservation": 2976}
 
 
 def test_prod_env_requires_a_non_empty_redis_password() -> None:

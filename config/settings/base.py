@@ -399,6 +399,10 @@ SINGLE_SESSION_FAIL_OPEN = env("DJANGO_SINGLE_SESSION_FAIL_OPEN", "0") == "1"
 # Bound authenticated WebSocket fan-out per user. Slots expire unless the
 # consumer heartbeat renews them, so unclean worker exits cannot leak capacity.
 WEBSOCKET_MAX_CONNECTIONS_PER_USER = max(1, int(env("DJANGO_WEBSOCKET_MAX_CONNECTIONS_PER_USER", "9")))
+ONLINE_PRESENCE_FAILURE_COOLDOWN_SECONDS = max(
+    1,
+    int(env("DJANGO_ONLINE_PRESENCE_FAILURE_COOLDOWN_SECONDS", "30")),
+)
 WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS = max(
     6,
     int(env("DJANGO_WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS", "30")),

@@ -32,6 +32,35 @@ ONLINE_USERS_FALLBACK_CACHE_TIMEOUT = 60
 _LOCAL_STATS_CACHE: dict[str, tuple[int, float]] = {}
 _LOCAL_STATS_CACHE_GUARD = Lock()
 _LOCAL_STATS_CACHE_MAX_SIZE = 64
+_STATS_CACHE_FAILURE_COOLDOWN_SECONDS = 30
+_STATS_CACHE_CIRCUIT_GUARD = Lock()
+_stats_cache_degraded_until = 0.0
+
+
+def _stats_cache_circuit_is_open() -> bool:
+    with _STATS_CACHE_CIRCUIT_GUARD:
+        return time.monotonic() < _stats_cache_degraded_until
+
+
+def _trip_stats_cache_circuit() -> None:
+    global _stats_cache_degraded_until
+    cooldown = max(1, int(_STATS_CACHE_FAILURE_COOLDOWN_SECONDS))
+    with _STATS_CACHE_CIRCUIT_GUARD:
+        _stats_cache_degraded_until = max(
+            _stats_cache_degraded_until,
+            time.monotonic() + cooldown,
+        )
+
+
+def _clear_stats_cache_circuit() -> None:
+    global _stats_cache_degraded_until
+    with _STATS_CACHE_CIRCUIT_GUARD:
+        _stats_cache_degraded_until = 0.0
+
+
+def _reset_stats_cache_circuit() -> None:
+    """Reset the process-local cache circuit for isolated tests and reloads."""
+    _clear_stats_cache_circuit()
 
 
 def get_redis_connection(*_args: Any, **_kwargs: Any):
@@ -42,24 +71,35 @@ def get_redis_connection(*_args: Any, **_kwargs: Any):
 
 
 def _safe_cache_get(key: str, default=None):
+    if _stats_cache_circuit_is_open():
+        return default
     try:
-        return cache.get(key, default)
+        value = cache.get(key, default)
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
+        _trip_stats_cache_circuit()
         logger.warning("Failed to read cache key: %s", key, exc_info=True)
         return default
+    _clear_stats_cache_circuit()
+    return value
 
 
 def _safe_cache_set(key: str, value, timeout: int) -> None:
+    if _stats_cache_circuit_is_open():
+        return
     try:
         cache.set(key, value, timeout=timeout)
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
+        _trip_stats_cache_circuit()
         logger.warning("Failed to write cache key: %s", key, exc_info=True)
 
 
 def _safe_cache_delete(key: str) -> None:
+    if _stats_cache_circuit_is_open():
+        return
     try:
         cache.delete(key)
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
+        _trip_stats_cache_circuit()
         logger.warning("Failed to delete cache key: %s", key, exc_info=True)
 
 
@@ -97,11 +137,16 @@ def _set_local_stats_cache(key: str, value: int, timeout: int) -> None:
 
 
 def _load_cached_stat_or_none(key: str) -> tuple[int | None, bool]:
+    if _stats_cache_circuit_is_open():
+        return _get_local_stats_cache(key), False
     try:
         cached = cache.get(key)
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
+        _trip_stats_cache_circuit()
         record_degradation(CACHE_FALLBACK, component="stats_selector", detail=f"stat cache read failed: {key}")
         return _get_local_stats_cache(key), False
+
+    _clear_stats_cache_circuit()
 
     if cached is None:
         return None, True
@@ -155,6 +200,14 @@ def load_online_user_count() -> int:
     if cached_online is not None:
         return cached_online
 
+    if not cache_available:
+        # A cache read failure already proves the shared Redis path is not
+        # healthy for this process. Avoid a second blocking Redis operation;
+        # the database fallback is recorded in the local snapshot below.
+        online_count = _load_online_user_count_from_db()
+        _persist_stat_cache(ONLINE_USERS_CACHE_KEY, online_count, timeout=ONLINE_USERS_FALLBACK_CACHE_TIMEOUT)
+        return online_count
+
     try:
         online_count = _load_online_user_count_from_redis()
     except NotImplementedError:
@@ -166,6 +219,7 @@ def load_online_user_count() -> int:
         _persist_stat_cache(ONLINE_USERS_CACHE_KEY, online_count, timeout=ONLINE_USERS_FALLBACK_CACHE_TIMEOUT)
         return online_count
     except INFRASTRUCTURE_EXCEPTIONS:
+        _trip_stats_cache_circuit()
         record_degradation(REDIS_FAILURE, component="stats_selector", detail="online user count Redis read failed")
         fallback_cached = _get_local_stats_cache(ONLINE_USERS_CACHE_KEY)
         if fallback_cached is not None:

@@ -34,6 +34,15 @@ def _reset_bootstrap_catalog_cache():
     clear_bootstrap_catalog_cache()
 
 
+@pytest.fixture(autouse=True)
+def _reset_stats_cache_circuit():
+    from gameplay.selectors import stats
+
+    stats._reset_stats_cache_circuit()
+    yield
+    stats._reset_stats_cache_circuit()
+
+
 _REQUIRED_BUILDING_KEYS = (
     BuildingKeys.SILVER_VAULT,
     BuildingKeys.GRANARY,

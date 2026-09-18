@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from django.utils import timezone
@@ -28,8 +28,9 @@ class TestMarketExpire:
         )
         listing_id = listing.id
 
-        listing.expires_at = timezone.now() - timedelta(hours=1)
-        listing.save()
+        listing.listed_at = datetime(2026, 9, 12, 4, 5, 6, tzinfo=UTC)
+        listing.expires_at = datetime(2026, 9, 12, 5, 5, 6, tzinfo=UTC)
+        listing.save(update_fields=["listed_at", "expires_at"])
 
         count = market_service.expire_listings()
 
@@ -46,6 +47,8 @@ class TestMarketExpire:
 
         message = Message.objects.filter(manor=seller_manor, kind="system", title__contains="交易过期").first()
         assert message is not None
+        assert "上架时间：2026-09-12 12:05:06" in message.body
+        assert "过期时间：2026-09-12 13:05:06" in message.body
         assert message.attachments == {}
 
     def test_expired_grain_listing_restores_both_balances(self, seller_manor):

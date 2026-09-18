@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -164,7 +165,7 @@ def test_send_purchase_notifications_returns_mail_flags_and_notifies_seller():
         unit_price=2500,
         seller=seller,
         seller_id=1,
-        sold_at=SimpleNamespace(strftime=lambda _fmt: "2026-03-12 12:00:00"),
+        sold_at=datetime(2026, 3, 12, 4, 0, 0, tzinfo=UTC),
     )
 
     buyer_sent, seller_sent = market_notification_helpers.send_purchase_notifications(
@@ -181,6 +182,8 @@ def test_send_purchase_notifications_returns_mail_flags_and_notifies_seller():
     assert len(calls["messages"]) == 2
     assert "- 卖家：卖家庄园\n" in calls["messages"][0]["body"]
     assert "- 买家：买家庄园\n" in calls["messages"][1]["body"]
+    assert "- 成交时间：2026-03-12 12:00:00" in calls["messages"][0]["body"]
+    assert "- 成交时间：2026-03-12 12:00:00" in calls["messages"][1]["body"]
     assert "- 卖家：seller\n" not in calls["messages"][0]["body"]
     assert "- 买家：buyer\n" not in calls["messages"][1]["body"]
     assert calls["notifications"] == [
@@ -208,7 +211,7 @@ def test_send_purchase_notifications_skips_seller_branch_without_seller_id():
         unit_price=100,
         seller=SimpleNamespace(display_name="NPC庄园", user=SimpleNamespace(username="npc"), user_id=0),
         seller_id=None,
-        sold_at=SimpleNamespace(strftime=lambda _fmt: "2026-03-12 12:00:00"),
+        sold_at=datetime(2026, 3, 12, 4, 0, 0, tzinfo=UTC),
     )
 
     calls = {"messages": 0, "notifications": 0}

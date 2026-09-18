@@ -95,8 +95,8 @@ def expire_listings_queryset(
                             f"- 物品：{item_name}\n"
                             f"- 数量：{quantity}\n"
                             f"- 定价：{unit_price:,} 银两/件\n"
-                            f"- 上架时间：{listed_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
-                            f"- 过期时间：{expires_at.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                            f"- 上架时间：{timezone.localtime(listed_at).strftime('%Y-%m-%d %H:%M:%S')}\n"
+                            f"- 过期时间：{timezone.localtime(expires_at).strftime('%Y-%m-%d %H:%M:%S')}\n\n"
                             f"注意：手续费 {listing_fee:,} 银两不予退还。"
                         ),
                     }

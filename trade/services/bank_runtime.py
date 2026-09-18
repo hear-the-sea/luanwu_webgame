@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
+from django.utils import timezone
+
 from core.exceptions import InsufficientResourceError, ItemNotFoundError, TradeValidationError
 
 from .cache_resilience import (
@@ -45,7 +47,7 @@ def get_today_exchange_count(
     now_func: Callable[[], Any],
     safe_int: Callable[..., int],
 ) -> int:
-    today = now_func().date()
+    today = timezone.localdate(now_func())
     count = aggregate_quantity(manor=manor, exchange_date=today)["total"]
     return max(0, safe_int(count, 0))
 
@@ -231,7 +233,12 @@ def record_gold_bar_exchange_locked(
     *,
     gold_bar_exchange_log_model: Any,
 ) -> None:
-    gold_bar_exchange_log_model.objects.create(manor=manor, quantity=quantity, silver_cost=total_cost)
+    gold_bar_exchange_log_model.objects.create(
+        manor=manor,
+        quantity=quantity,
+        silver_cost=total_cost,
+        exchange_date=timezone.localdate(),
+    )
 
 
 def build_exchange_result(

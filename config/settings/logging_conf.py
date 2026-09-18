@@ -17,9 +17,11 @@ LOGGING = {
     },
     "formatters": {
         "verbose": {
+            "()": "core.logging_formatters.ShanghaiFormatter",
             "format": "%(levelname)s %(asctime)s %(name)s:%(lineno)s [request_id=%(request_id)s] %(message)s",
         },
         "access": {
+            "()": "core.logging_formatters.ShanghaiFormatter",
             "format": "%(levelname)s %(asctime)s %(name)s:%(lineno)s %(message)s",
         },
     },

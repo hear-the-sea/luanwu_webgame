@@ -15,6 +15,7 @@ from django.db import DatabaseError
 from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from core.exceptions import GameError, GuestItemConfigurationError
@@ -145,7 +146,7 @@ def use_experience_item_view(request, pk: int):
             contract_name="experience item view result max_hp",
             min_value=1,
         )
-        eta_str = eta.strftime("%H:%M:%S") if eta else "已完成升级"
+        eta_str = timezone.localtime(eta).strftime("%H:%M:%S") if eta else "已完成升级"
         msg = f"{item.template.name} 已使用，缩短 {reduced_hours} 小时。预计完成：{eta_str}"
         if is_ajax:
             return json_success(
