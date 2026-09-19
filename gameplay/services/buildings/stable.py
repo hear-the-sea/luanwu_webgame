@@ -362,6 +362,7 @@ def _schedule_production_completion(production: HorseProduction, eta_seconds: in
             complete_horse_production,
             args=[production.id],
             countdown=countdown,
+            defer_long_eta=True,
             logger=logger,
             log_message="complete_horse_production dispatch failed",
         )

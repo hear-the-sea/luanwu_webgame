@@ -5,12 +5,17 @@ from dataclasses import dataclass
 
 from django.db import transaction
 
-from core.exceptions import GuestNotFoundError, GuestNotIdleError
+from core.exceptions import GuestNotFoundError, GuestNotIdleError, WorldUniqueGuestError
 from gameplay.models import Manor
 
 from ..models import Guest, GuestStatus
 from . import equipment as equipment_service
-from .world_unique import ensure_guest_not_world_unique
+from .world_unique import (
+    WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
+    ensure_guest_not_world_unique,
+    is_world_unique_guest,
+    release_world_unique_guest_after_dismissal,
+)
 
 
 @dataclass(frozen=True)
@@ -30,13 +35,22 @@ def dismiss_guest(guest: Guest) -> DismissGuestResult:
             raise GuestNotFoundError()
         if locked_guest.status not in {GuestStatus.IDLE, GuestStatus.INJURED}:
             raise GuestNotIdleError(locked_guest)
-        ensure_guest_not_world_unique(locked_guest, action="辞退")
 
         guest_name = locked_guest.display_name
         gear_items = list(locked_guest.gear_items.select_related("template"))
         gear_summary = Counter(gear.template.name for gear in gear_items)
-        for gear in gear_items:
-            equipment_service.unequip_guest_item(gear, locked_guest, allow_injured=True)
-        locked_guest.delete()
+        if is_world_unique_guest(locked_guest):
+            if locked_guest.template.key != WORLD_UNIQUE_LUBU_TEMPLATE_KEY:
+                ensure_guest_not_world_unique(locked_guest, action="辞退")
+            released = release_world_unique_guest_after_dismissal(
+                locked_manor,
+                guest_id=locked_guest.pk,
+            )
+            if released is None:
+                raise WorldUniqueGuestError(message="唯一门客归属状态异常，无法辞退")
+        else:
+            for gear in gear_items:
+                equipment_service.unequip_guest_item(gear, locked_guest, allow_injured=True)
+            locked_guest.delete()
 
     return DismissGuestResult(guest_name=guest_name, gear_summary=gear_summary)

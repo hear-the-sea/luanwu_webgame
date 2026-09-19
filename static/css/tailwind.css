@@ -5182,6 +5182,31 @@
   transform: none;
 }
 
+.tw-btn-trade--danger {
+  background: linear-gradient(180deg, #a63d32 0%, #7f241d 100%);
+  border-color: #641c17;
+  box-shadow: 0 2px 6px rgba(127, 36, 29, 0.2);
+}
+
+.tw-btn-trade--danger:hover:not(:disabled) {
+  background: linear-gradient(180deg, #923229 0%, #6b1e19 100%);
+  box-shadow: 0 4px 8px rgba(127, 36, 29, 0.3);
+}
+
+@media (max-width: 640px) {
+  .tw-work-card .tw-card-actions > .tw-shop-sell-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.tw-shop-sell-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .tw-out-of-stock {
   color: var(--text-muted);
 }

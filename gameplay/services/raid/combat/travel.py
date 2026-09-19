@@ -205,6 +205,7 @@ def _dismiss_marching_raids_if_protected(defender: Manor) -> int:
                 complete_raid_task,
                 args=[run.id],
                 countdown=return_time,
+                defer_long_eta=True,
                 logger=logger,
                 log_message="complete_raid_task dispatch failed for dismissed raid",
             )

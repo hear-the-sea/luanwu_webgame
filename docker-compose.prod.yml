@@ -3,7 +3,9 @@ services:
     image: redis:7-alpine
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env.docker}
-      REDIS_MAXMEMORY: ${REDIS_MAXMEMORY:-128mb}
+      # Keep Redis' dataset limit below the cgroup limit so allocator/AOF
+      # overhead cannot immediately consume the broker container's headroom.
+      REDIS_MAXMEMORY: ${REDIS_MAXMEMORY:-256mb}
       REDIS_MAXMEMORY_POLICY: ${REDIS_MAXMEMORY_POLICY:-noeviction}
     command:
       - sh
@@ -23,8 +25,8 @@ services:
       retries: 10
     volumes:
       - redis_data:/data
-    mem_limit: ${REDIS_MEMORY_LIMIT:-128m}
-    mem_reservation: ${REDIS_MEMORY_RESERVATION:-64m}
+    mem_limit: ${REDIS_MEMORY_LIMIT:-512m}
+    mem_reservation: ${REDIS_MEMORY_RESERVATION:-128m}
     logging:
       driver: "json-file"
       options:

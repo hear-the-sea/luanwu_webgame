@@ -80,3 +80,56 @@ test("trade page delegates mode and listing interactions in a real browser", asy
   await expect(page.locator("#modal-item-name")).toHaveText("测试道具");
   await expect(page.locator("#modal-item-icon img")).toHaveAttribute("src", "/static/test-item.png");
 });
+
+test("trade page confirms before selling all of an item", async ({ page }) => {
+  await page.setContent(`
+    <main data-trade-page="1">
+      <form class="shop-sell-form" method="post">
+        <input name="quantity" value="1" min="1" max="12" />
+        <button type="submit" class="tw-btn-trade">出售</button>
+        <button
+          type="submit"
+          class="tw-btn-trade tw-btn-trade--danger"
+          data-shop-sell-all
+          data-item-name="测试道具"
+          data-item-quantity="12"
+        >全部卖出</button>
+      </form>
+    </main>
+  `);
+
+  await page.evaluate(() => {
+    window.__shopSellAll = { confirms: [], submits: 0, confirmResult: false };
+    window.gameConfirm = (message, options) => {
+      window.__shopSellAll.confirms.push({ message, options });
+      return Promise.resolve(window.__shopSellAll.confirmResult);
+    };
+    HTMLFormElement.prototype.submit = function () {
+      window.__shopSellAll.submits += 1;
+    };
+  });
+  await page.addScriptTag({ path: staticPath("trade_core.js") });
+  await page.addScriptTag({ path: staticPath("trade.js") });
+
+  const form = page.locator(".shop-sell-form");
+  await form.locator("[data-shop-sell-all]").click();
+  await expect(form.locator('input[name="quantity"]')).toHaveValue("12");
+  expect(await page.evaluate(() => window.__shopSellAll.confirms)).toEqual([
+    {
+      message: "确认全部卖出「测试道具」×12？卖出后无法撤回。",
+      options: {
+        title: "全部卖出确认",
+        okText: "确认卖出",
+        cancelText: "保留物品",
+        danger: true,
+      },
+    },
+  ]);
+  expect(await page.evaluate(() => window.__shopSellAll.submits)).toBe(0);
+
+  await page.evaluate(() => {
+    window.__shopSellAll.confirmResult = true;
+  });
+  await form.locator("[data-shop-sell-all]").click();
+  await expect.poll(() => page.evaluate(() => window.__shopSellAll.submits)).toBe(1);
+});

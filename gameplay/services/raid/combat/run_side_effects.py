@@ -61,6 +61,7 @@ def dispatch_raid_battle_task_best_effort(
         process_raid_battle_task,
         args=[run.id],
         countdown=travel_time,
+        defer_long_eta=True,
         logger=logger,
         log_message="process_raid_battle_task dispatch failed",
     )
@@ -103,6 +104,7 @@ def schedule_raid_retreat_completion_best_effort(
         complete_raid_task,
         args=[run_id],
         countdown=countdown,
+        defer_long_eta=True,
         logger=logger,
         log_message="complete_raid_task dispatch failed for retreat",
     )

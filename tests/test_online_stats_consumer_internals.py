@@ -109,6 +109,23 @@ class OnlineStatsConsumerInternalTests(SimpleTestCase):
         consumer.close = AsyncMock()
         return consumer
 
+    @staticmethod
+    def _run_broadcast_inline(consumer: OnlineStatsConsumer, stats: dict) -> None:
+        """Keep cache-failure tests on the calling thread.
+
+        The production path deliberately offloads the synchronous cache lock
+        to a worker thread.  These tests replace the cache proxy itself, so an
+        inline adapter is needed to exercise the lock fallback without
+        resolving a different thread-local backend or opening a real Redis
+        connection.
+        """
+
+        async def acquire_inline() -> bool:
+            return consumer._acquire_broadcast_debounce_sync()
+
+        consumer._acquire_broadcast_debounce = acquire_inline  # type: ignore[method-assign]
+        asyncio.run(consumer._broadcast_stats_best_effort(stats))
+
     def test_online_stats_refresh_thresholds_stay_responsive(self):
         consumer = self._build_consumer()
 
@@ -125,7 +142,7 @@ class OnlineStatsConsumerInternalTests(SimpleTestCase):
         original_add = cache.add
         cache.add = lambda *_a, **_k: False
         try:
-            asyncio.run(consumer._broadcast_stats_best_effort({"online_count": 1}))
+            self._run_broadcast_inline(consumer, {"online_count": 1})
         finally:
             cache.add = original_add
 
@@ -139,7 +156,7 @@ class OnlineStatsConsumerInternalTests(SimpleTestCase):
         original_add = cache.add
         cache.add = lambda *_a, **_k: (_ for _ in ()).throw(ConnectionInterrupted("cache down"))
         try:
-            asyncio.run(consumer._broadcast_stats_best_effort({"online_count": 1}))
+            self._run_broadcast_inline(consumer, {"online_count": 1})
         finally:
             cache.add = original_add
 
@@ -154,7 +171,7 @@ class OnlineStatsConsumerInternalTests(SimpleTestCase):
         cache.add = lambda *_a, **_k: (_ for _ in ()).throw(RuntimeError("cache down"))
         try:
             with pytest.raises(RuntimeError, match="cache down"):
-                asyncio.run(consumer._broadcast_stats_best_effort({"online_count": 1}))
+                self._run_broadcast_inline(consumer, {"online_count": 1})
         finally:
             cache.add = original_add
 
@@ -169,8 +186,8 @@ class OnlineStatsConsumerInternalTests(SimpleTestCase):
         original_add = cache.add
         cache.add = lambda *_a, **_k: (_ for _ in ()).throw(ConnectionInterrupted("cache down"))
         try:
-            asyncio.run(consumer._broadcast_stats_best_effort({"online_count": 1}))
-            asyncio.run(consumer._broadcast_stats_best_effort({"online_count": 2}))
+            self._run_broadcast_inline(consumer, {"online_count": 1})
+            self._run_broadcast_inline(consumer, {"online_count": 2})
         finally:
             cache.add = original_add
             cache_lock_module._LOCAL_LOCKS.clear()

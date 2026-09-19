@@ -5,6 +5,7 @@ from typing import Any, Iterable, Mapping, Optional
 
 from celery.exceptions import TimeoutError as CeleryTimeoutError
 from django.core.cache import cache
+from django.core.exceptions import ImproperlyConfigured
 from kombu.exceptions import OperationalError
 
 from core.utils.infrastructure import CACHE_INFRASTRUCTURE_EXCEPTIONS
@@ -16,6 +17,38 @@ CELERY_DISPATCH_INFRA_EXCEPTIONS = (
     TimeoutError,
     CeleryTimeoutError,
 )
+
+DEFAULT_PERSISTENT_ETA_MAX_SECONDS = 300
+
+
+def persistent_eta_max_seconds() -> int:
+    """Return the maximum ETA kept in Celery for DB-backed state transitions.
+
+    The setting is read lazily so this module remains importable from small
+    command-line utilities and unit tests that do not initialize Django.
+    """
+    try:
+        from django.conf import settings
+
+        value = getattr(settings, "CELERY_PERSISTENT_ETA_MAX_SECONDS", DEFAULT_PERSISTENT_ETA_MAX_SECONDS)
+    except (ImportError, ImproperlyConfigured):  # pragma: no cover - unconfigured utility/test process
+        value = DEFAULT_PERSISTENT_ETA_MAX_SECONDS
+    try:
+        return max(0, int(value))
+    except (TypeError, ValueError):
+        return DEFAULT_PERSISTENT_ETA_MAX_SECONDS
+
+
+def should_defer_long_eta(countdown: Optional[int], *, max_seconds: Optional[int] = None) -> bool:
+    """Whether a persistent timer should be left for its database scanner."""
+    if countdown is None:
+        return False
+    try:
+        seconds = int(countdown)
+    except (TypeError, ValueError):
+        return False
+    limit = persistent_eta_max_seconds() if max_seconds is None else max(0, int(max_seconds))
+    return seconds > limit
 
 
 def _rollback_dedup_gate(dedup_key: str, *, logger: Optional[logging.Logger]) -> None:
@@ -36,6 +69,7 @@ def safe_apply_async(
     log_message: str = "celery task dispatch failed",
     log_extra: Optional[Mapping[str, Any]] = None,
     raise_on_failure: bool = False,
+    defer_long_eta: bool = False,
 ) -> bool:
     """
     Best-effort Celery dispatch wrapper.
@@ -63,6 +97,20 @@ def safe_apply_async(
     it indicates an infrastructure issue with the broker (Redis unavailable, network partition,
     etc.) rather than a bug in the task itself.
     """
+    if defer_long_eta and should_defer_long_eta(countdown):
+        if logger:
+            extra = dict(log_extra or {})
+            extra.update(
+                {
+                    "degraded": False,
+                    "component": "celery_eta_policy",
+                    "countdown": int(countdown or 0),
+                    "eta_limit_seconds": persistent_eta_max_seconds(),
+                }
+            )
+            logger.info("long persistent ETA deferred to database scanner", extra=extra)
+        return True
+
     try:
         task.apply_async(args=list(args or []), kwargs=dict(kwargs or {}), countdown=countdown)
         return True
@@ -91,6 +139,7 @@ def safe_apply_async_with_dedup(
     log_message: str = "celery task dispatch failed",
     log_extra: Optional[Mapping[str, Any]] = None,
     raise_on_failure: bool = False,
+    defer_long_eta: bool = False,
 ) -> bool:
     """
     Best-effort Celery dispatch with cache-based dedup gate.
@@ -116,6 +165,21 @@ def safe_apply_async_with_dedup(
     When ``degraded=True`` appears in log records it indicates either the broker or the
     cache backend (used for dedup) is experiencing an infrastructure issue.
     """
+    # Check before taking the dedup gate. A deferred timer must not reserve a
+    # cache key that would suppress the periodic scanner's near-term dispatch.
+    if defer_long_eta and should_defer_long_eta(countdown):
+        return safe_apply_async(
+            task,
+            args=args,
+            kwargs=kwargs,
+            countdown=countdown,
+            logger=logger,
+            log_message=log_message,
+            log_extra=log_extra,
+            raise_on_failure=raise_on_failure,
+            defer_long_eta=True,
+        )
+
     dedup_gate_acquired = False
     if dedup_key and dedup_timeout > 0:
         try:
@@ -144,6 +208,7 @@ def safe_apply_async_with_dedup(
             log_message=log_message,
             log_extra=log_extra,
             raise_on_failure=raise_on_failure,
+            defer_long_eta=defer_long_eta,
         )
         return ok
     finally:

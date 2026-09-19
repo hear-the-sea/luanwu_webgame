@@ -388,6 +388,23 @@
     }
   }
 
+  function confirmShopSellAll(itemName, quantity) {
+    const message = `确认全部卖出「${itemName}」×${quantity}？卖出后无法撤回。`;
+    const options = {
+      title: "全部卖出确认",
+      okText: "确认卖出",
+      cancelText: "保留物品",
+      danger: true,
+    };
+    if (typeof window.gameDialog?.danger === "function") {
+      return window.gameDialog.danger(message, options);
+    }
+    if (typeof window.gameConfirm === "function") {
+      return window.gameConfirm(message, options);
+    }
+    return Promise.resolve(window.confirm(message));
+  }
+
   function bindTradeEvents(root) {
     clickHandler = (event) => {
       const shopModeButton = event.target.closest(".tw-mode-btn[data-mode]");
@@ -453,19 +470,55 @@
 
     submitHandler = async (event) => {
       const form = event.target.closest(".market-cancel-form");
-      if (!form || !root.contains(form)) {
+      if (form && root.contains(form)) {
+        event.preventDefault();
+        try {
+          const confirmed = await window.gameConfirm("确定取消上架吗？物品将退回仓库，但手续费不退还。", {
+            title: "取消上架",
+          });
+          if (confirmed) {
+            form.submit();
+          }
+        } catch (error) {
+          console.error("取消上架确认失败:", error);
+        }
         return;
       }
+
+      const sellAllButton = event.submitter?.closest?.("[data-shop-sell-all]");
+      const sellForm = sellAllButton?.closest(".shop-sell-form");
+      if (!sellAllButton || !sellForm || !root.contains(sellForm) || sellForm.dataset.confirmPending === "1") {
+        return;
+      }
+
       event.preventDefault();
+      const quantityInput = sellForm.querySelector('input[name="quantity"]');
+      const quantity = tradeCore.parseInteger(sellAllButton.dataset.itemQuantity, 0);
+      if (!quantityInput || quantity <= 0) {
+        return;
+      }
+
+      quantityInput.value = String(quantity);
+      sellForm.dataset.confirmPending = "1";
+      sellAllButton.disabled = true;
+      let submitted = false;
       try {
-        const confirmed = await window.gameConfirm("确定取消上架吗？物品将退回仓库，但手续费不退还。", {
-          title: "取消上架",
-        });
+        const confirmed = await confirmShopSellAll(
+          sellAllButton.dataset.itemName || "该道具",
+          quantity,
+        );
         if (confirmed) {
-          form.submit();
+          sellForm.submit();
+          submitted = true;
+          return;
         }
       } catch (error) {
-        console.error("取消上架确认失败:", error);
+        console.error("全部卖出确认失败:", error);
+      } finally {
+        if (!submitted && sellForm.isConnected) {
+          delete sellForm.dataset.confirmPending;
+          sellAllButton.disabled = false;
+        }
       }
     };
 

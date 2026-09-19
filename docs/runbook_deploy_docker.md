@@ -214,18 +214,21 @@ worker 的 cgroup OOM，因此当前初始预算提高到 1 GiB。旧的 4 GiB �
 | 其他三个普通 worker，每个 | 256 MiB | 160 MiB |
 | Web | 384 MiB | 256 MiB |
 | Beat | 192 MiB | 128 MiB |
-| Redis | 128 MiB | 64 MiB |
-| 合计 | **5568 MiB（约 5.44 GiB）** | **2976 MiB（约 2.91 GiB）** |
+| Redis | 512 MiB | 128 MiB |
+| 合计 | **5952 MiB（约 5.81 GiB）** | **3040 MiB（约 2.97 GiB）** |
 
 这是一组针对已观察到的 OOM 调整的初始预算，不是压测得出的峰值，也不能保证不再 OOM。
 上限不是预分配内存，软保留值也不是额外叠加的硬上限；宿主机、Docker、其他项目和发布时的临时
-容器都需要额外空间。7.8 GiB 主机与上述硬上限总和的差额约 2.5 GiB，但不等于实时可用内存。
+容器都需要额外空间。7.8 GiB 主机与上述硬上限总和的差额约 2.0 GiB，但不等于实时可用内存。
 4 GiB 主机不能直接套用这组预算，应扩容、拆分服务或重新进行容量评估；增加服务副本或并发也要重算。
 
 Timer、维护和安全 worker 分别使用独立的内存变量；原 `CELERY_WORKER_MEMORY_*` 继续控制
 `worker`、`worker_battle` 和 `worker_timer_scan` 三个普通 worker。需要定制维护预算的旧部署必须迁移到新变量。
 MySQL 保持 512 MiB buffer pool 和原临时表参数，最大连接数基线调整为 60；`DJANGO_DB_CONN_MAX_AGE=60` 与
-`MYSQL_WAIT_TIMEOUT=600` 共同回收空闲连接，把连接池留给实时请求。
+`MYSQL_WAIT_TIMEOUT=600` 共同回收空闲连接，把连接池留给实时请求。Redis 的容器上限提高到 512 MiB，
+`REDIS_MAXMEMORY=256mb` 保留 Redis 分配器、AOF 和连接缓冲区的余量；保持 `noeviction`，避免 broker
+消息被静默淘汰。Redis 上限与 Compose 环境文件必须同步更新，否则已有 `.env.docker` 中的 128 MiB 值
+仍会覆盖模板默认值。
 Caddy 的 `validate` 健康检查会在同一容器中启动另一个进程，预算必须覆盖主进程和检查进程。
 
 六个 worker 仍各用 `concurrency=1`、`prefetch=1`，保持 `max-tasks-per-child=200`。普通 worker
@@ -276,6 +279,18 @@ done
 单个任务执行时 RSS 突然上升，则继续按任务名检查扫描批量、`prefetch_related` 和快照聚合。当前锁定的
 Celery 5.5.3 没有 `worker_eta_task_limit`，在该版本的环境文件中添加同名变量不会产生限制效果；该选项是
 Celery 5.6 才提供的能力，升级依赖前必须单独做兼容性验证。
+
+持久状态完成任务的 ETA 上限为 `CELERY_PERSISTENT_ETA_MAX_SECONDS=300`（旧环境中的
+`CELERY_GUEST_TRAINING_ETA_MAX_SECONDS` 仍可作为兼容回退）。超过 5 分钟的建筑、科技、任务、募兵、生产、
+门客训练、侦察、掠夺和帮会战斗只保留数据库截止时间，由各自的周期扫描器按索引批量结算；旧版遗留的长 ETA
+任务执行时也会直接交给扫描兜底。这样完成可能比理论时间最多晚一个扫描周期，但不会把数小时或数天的状态
+长期留在 `worker_timer` 的 ETA 保留列表中。调整该阈值前先观察各扫描队列 oldest-due、批量耗时和完成延迟，
+不要只提高 Redis 或 worker 的硬上限。
+
+升级后 Redis 的 `unacked` 仍可能暂时包含旧镜像已经预取的长 ETA 消息。不要直接删除 `unacked`、
+`unacked_index` 或 Redis 数据卷；先按任务名和 ETA 做只读统计，观察 worker 的内存、重启计数和数量是否持续下降。
+这些任务对应的业务截止时间仍以数据库为准，周期扫描器会补偿丢失、延迟或重复投递。只有在确认某类任务有完整的
+数据库扫描兜底、备份和审计记录后，才可以制定单独的消息回收方案；新代码发布后不应再产生超过 5 分钟的持久 ETA。
 
 本项目存在多种带 `countdown` 的持久业务状态，并且 Redis transport 默认可见性超时是 1 小时。保留超过
 1 小时的 countdown 时，任务可能在执行前被 Redis 重新投递，造成重复任务和更多内存；不能只把
@@ -367,6 +382,8 @@ CELERY_BEAT_MEMORY_LIMIT=192m
 CELERY_BEAT_MEMORY_RESERVATION=128m
 CELERY_TIMER_MAX_MEMORY_PER_CHILD=500000
 CELERY_TIMER_SAFETY_MAX_MEMORY_PER_CHILD=400000
+CELERY_PERSISTENT_ETA_MAX_SECONDS=300
+CELERY_GUEST_TRAINING_ETA_MAX_SECONDS=300
 MYSQL_MAX_CONNECTIONS=60
 MYSQL_WAIT_TIMEOUT=600
 MYSQL_BINLOG_EXPIRE_LOGS_SECONDS=86400
@@ -379,6 +396,9 @@ REDIS_CHANNEL_SOCKET_TIMEOUT=10
 DAPHNE_HTTP_TIMEOUT=60
 CADDY_MEMORY_LIMIT=256m
 CADDY_MEMORY_RESERVATION=128m
+REDIS_MEMORY_LIMIT=512m
+REDIS_MEMORY_RESERVATION=128m
+REDIS_MAXMEMORY=256mb
 ```
 
 不要用示例文件覆盖整个生产 `.env.docker`，不要修改其中的密码、域名、镜像标签或其他业务参数。
@@ -767,6 +787,15 @@ DJANGO_TRUSTED_PROXY_IPS=<INNER_CADDY_IP>/32,<OUTER_CADDY_IP>/32
 Caddy 的网络和端口绑定。双层部署必须使用覆盖文件持久化外层网络和端口配置；不能只依赖手工
 `docker network connect`，也不能用仓库默认文件覆盖服务器已有双层配置，否则重建会丢失连接。
 
+先确认宿主机 `80/443` 的归属：如果已有外层 Caddy 占用端口，目标就是双层部署，直接使用下面的“双层部署”命令，
+不能执行单层命令。只有确认端口空闲、游戏 Caddy 直接接收公网请求时，才使用单层命令。
+
+```bash
+docker ps --format '{{.Names}}\t{{.Ports}}' | rg '(:80->|:443->|0.0.0.0:80|0.0.0.0:443|:::80|:::443)' || true
+sudo ss -lntup | rg ':(80|443)\b' || true
+```
+
+单层部署（确认宿主机 `80/443` 空闲）:
 ```bash
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" config --quiet
 docker compose --env-file ".env.docker" -f "docker-compose.prod.yml" run --rm --no-deps caddy \

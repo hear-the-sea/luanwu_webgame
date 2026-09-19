@@ -222,6 +222,16 @@ class TestTaskMonitoringCounters:
         assert calls
         assert calls[0][0].startswith("degraded:global_mail:")
 
+    def test_increment_degraded_counter_uses_local_fallback_when_cache_is_known_down(self, monkeypatch):
+        def _unexpected_cache_retry(*_args, **_kwargs):
+            raise AssertionError("cache retry must be skipped after an observed outage")
+
+        monkeypatch.setattr(task_monitoring, "increment_counter", _unexpected_cache_retry)
+
+        task_monitoring.increment_degraded_counter("cache_lock_local_test", cache_unavailable=True)
+
+        assert task_monitoring.get_degraded_counter("cache_lock_local_test") >= 1
+
     def test_get_redis_registry_client_returns_none_when_django_redis_missing(self, monkeypatch):
         original_import = builtins.__import__
 

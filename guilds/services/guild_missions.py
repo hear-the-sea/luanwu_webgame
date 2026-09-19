@@ -71,6 +71,7 @@ def schedule_guild_mission_completion(run: GuildMissionRun) -> None:
             complete_guild_mission_task,
             args=[run_id],
             countdown=countdown,
+            defer_long_eta=True,
             logger=logger,
             log_message=f"guild mission completion dispatch failed: run_id={run_id}",
         )

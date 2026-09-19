@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 
 import pytest
+from django.conf import settings
 from django_redis.exceptions import ConnectionInterrupted
 from kombu.exceptions import OperationalError
 
@@ -115,6 +116,45 @@ def test_safe_apply_async_passes_countdown():
 
     assert ok is True
     assert task.last_kwargs["countdown"] == 60
+
+
+def test_long_persistent_eta_is_deferred_without_broker_dispatch(monkeypatch, caplog):
+    task = _Task()
+    monkeypatch.setattr(settings, "CELERY_PERSISTENT_ETA_MAX_SECONDS", 300, raising=False)
+    logger = logging.getLogger("test_celery.eta_policy")
+
+    with caplog.at_level(logging.INFO):
+        ok = celery_utils.safe_apply_async(
+            task,
+            args=[1],
+            countdown=301,
+            logger=logger,
+            defer_long_eta=True,
+        )
+
+    assert ok is True
+    assert task.called == 0
+    assert "deferred to database scanner" in caplog.text
+
+
+def test_long_persistent_eta_does_not_acquire_dedup_gate(monkeypatch):
+    task = _Task()
+    monkeypatch.setattr(settings, "CELERY_PERSISTENT_ETA_MAX_SECONDS", 300, raising=False)
+    calls = []
+    monkeypatch.setattr(celery_utils.cache, "add", lambda *args, **kwargs: calls.append((args, kwargs)) or True)
+
+    ok = celery_utils.safe_apply_async_with_dedup(
+        task,
+        dedup_key="persistent:timer:1",
+        dedup_timeout=600,
+        args=[1],
+        countdown=301,
+        defer_long_eta=True,
+    )
+
+    assert ok is True
+    assert task.called == 0
+    assert calls == []
 
 
 # ============ safe_apply_async_with_dedup tests ============

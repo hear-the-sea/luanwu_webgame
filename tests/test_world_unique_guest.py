@@ -14,12 +14,15 @@ from gameplay.services.jail import add_oath_bond
 from gameplay.services.raid.combat import capture as capture_service
 from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestTemplate, WorldUniqueGuest
 from guests.services.recruitment_guests import create_guest_from_template
+from guests.services.roster import dismiss_guest
 from guests.services.world_unique import (
     WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY,
     WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
     _status_payload_from_state,
     claim_world_unique_guest_from_scroll,
+    ensure_guest_not_world_unique,
     get_world_unique_guest_status,
+    release_world_unique_guest_after_dismissal,
     release_world_unique_guest_after_raid,
 )
 
@@ -219,6 +222,88 @@ def test_lubu_gear_returns_to_original_warehouse_when_lost(manor_factory):
 
 
 @pytest.mark.django_db
+def test_lubu_can_be_dismissed_and_returns_to_wild(manor_factory):
+    manor, _user = manor_factory(username=_key("world_unique_dismissal"))
+    guest = _claim(manor)
+    gear_template = GearTemplate.objects.create(
+        key=_key("world_unique_dismissal_gear"),
+        name="吕布辞退装备",
+        slot=GearSlot.WEAPON,
+    )
+    item_template = ItemTemplate.objects.create(
+        key=gear_template.key,
+        name="吕布辞退装备",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=True,
+    )
+    GearItem.objects.create(manor=manor, template=gear_template, guest=guest)
+
+    result = dismiss_guest(guest)
+
+    assert result.guest_name == "吕布"
+    assert result.gear_summary == {"吕布辞退装备": 1}
+    assert not Guest.objects.filter(pk=guest.pk).exists()
+    assert get_world_unique_guest_status()["summary"] == "在野"
+    assert (
+        InventoryItem.objects.get(
+            manor=manor,
+            template=item_template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        ).quantity
+        == 1
+    )
+
+
+@pytest.mark.django_db
+def test_lubu_dismissal_uses_canonical_template_key_when_flag_is_stale(manor_factory):
+    manor, _user = manor_factory(username=_key("world_unique_dismissal_stale_flag"))
+    guest = _claim(manor)
+    GuestTemplate.objects.filter(pk=guest.template_id).update(is_world_unique=False)
+    guest.refresh_from_db()
+
+    result = dismiss_guest(guest)
+
+    assert result.guest_name == "吕布"
+    assert not Guest.objects.filter(pk=guest.pk).exists()
+    assert get_world_unique_guest_status()["summary"] == "在野"
+
+
+@pytest.mark.django_db
+def test_other_world_unique_guest_remains_protected_from_dismissal(manor_factory):
+    manor, _user = manor_factory(username=_key("other_world_unique_dismissal"))
+    template = GuestTemplate.objects.create(
+        key=_key("other_world_unique_template"),
+        name="其他唯一门客",
+        archetype="military",
+        rarity="orange",
+        base_attack=100,
+        base_intellect=80,
+        base_defense=90,
+        base_agility=70,
+        base_luck=50,
+        base_hp=1200,
+        is_world_unique=True,
+        recruitable=False,
+    )
+    guest = Guest.objects.create(manor=manor, template=template)
+
+    with pytest.raises(WorldUniqueGuestError, match="不可辞退"):
+        dismiss_guest(guest)
+
+    with pytest.raises(WorldUniqueGuestError, match="不可升阶"):
+        ensure_guest_not_world_unique(guest, action="升阶")
+    assert Guest.objects.filter(pk=guest.pk).exists()
+
+
+@pytest.mark.django_db
+def test_lubu_dismissal_release_service_ignores_missing_guest(manor_factory):
+    manor, _user = manor_factory(username=_key("world_unique_dismissal_missing"))
+    _lubu_template()
+
+    assert release_world_unique_guest_after_dismissal(manor, guest_id=999999) is None
+
+
+@pytest.mark.django_db
 @pytest.mark.parametrize("owner_is_attacker", [True, False])
 def test_only_losing_participating_lubu_returns_to_wild(manor_factory, owner_is_attacker):
     owner, _user = manor_factory(username=_key("world_unique_battle_owner"))
@@ -243,6 +328,26 @@ def test_only_losing_participating_lubu_returns_to_wild(manor_factory, owner_is_
 
     assert result is not None
     assert result["from"] == ("attacker" if owner_is_attacker else "defender")
+    assert get_world_unique_guest_status()["summary"] == "在野"
+    assert not Guest.objects.filter(pk=guest.pk).exists()
+
+
+@pytest.mark.django_db
+def test_lubu_loss_falls_back_to_live_guest_template_when_snapshot_omits_key(manor_factory):
+    owner, _user = manor_factory(username=_key("world_unique_snapshot_owner"))
+    opponent, _opponent_user = manor_factory(username=_key("world_unique_snapshot_opponent"))
+    guest = _claim(owner)
+    run = SimpleNamespace(attacker=opponent, defender=owner)
+    report = SimpleNamespace(
+        winner="attacker",
+        attacker_team=[],
+        defender_team=[{"guest_id": guest.pk}],
+    )
+
+    result = capture_service._release_losing_world_unique_guest(run, report, True)
+
+    assert result is not None
+    assert result["into"] == WorldUniqueGuest.Status.WILD
     assert get_world_unique_guest_status()["summary"] == "在野"
     assert not Guest.objects.filter(pk=guest.pk).exists()
 

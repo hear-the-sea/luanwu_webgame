@@ -62,6 +62,7 @@ def complete_scout_task(self, record_id: int):
                     dedup_timeout=_dedup_timeout_for_countdown(remaining),
                     args=[record_id],
                     countdown=remaining,
+                    defer_long_eta=True,
                     logger=logger,
                     log_message=f"scout task reschedule failed: record_id={record_id}",
                 )
@@ -106,6 +107,7 @@ def complete_scout_return_task(self, record_id: int):
                     dedup_timeout=_dedup_timeout_for_countdown(remaining),
                     args=[record_id],
                     countdown=remaining,
+                    defer_long_eta=True,
                     logger=logger,
                     log_message=f"scout return task reschedule failed: record_id={record_id}",
                 )
@@ -198,6 +200,7 @@ def process_raid_battle_task(self, run_id: int):
                         dedup_timeout=_dedup_timeout_for_countdown(remaining),
                         args=[run_id],
                         countdown=remaining,
+                        defer_long_eta=True,
                         logger=logger,
                         log_message=f"raid complete task reschedule failed: run_id={run_id}",
                     )
@@ -226,6 +229,7 @@ def process_raid_battle_task(self, run_id: int):
                     dedup_timeout=_dedup_timeout_for_countdown(remaining),
                     args=[run_id],
                     countdown=remaining,
+                    defer_long_eta=True,
                     logger=logger,
                     log_message=f"raid battle task reschedule failed: run_id={run_id}",
                 )
@@ -274,6 +278,7 @@ def complete_raid_task(self, run_id: int):
                         dedup_timeout=_dedup_timeout_for_countdown(remaining),
                         args=[run_id],
                         countdown=remaining,
+                        defer_long_eta=True,
                         logger=logger,
                         log_message=f"raid complete task reschedule failed: run_id={run_id}",
                     )
@@ -294,6 +299,7 @@ def complete_raid_task(self, run_id: int):
                         dedup_timeout=_dedup_timeout_for_countdown(remaining),
                         args=[run_id],
                         countdown=remaining,
+                        defer_long_eta=True,
                         logger=logger,
                         log_message=f"raid complete task reschedule failed: run_id={run_id}",
                     )

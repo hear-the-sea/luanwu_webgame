@@ -45,6 +45,7 @@ def schedule_guest_recruitment_completion(
             complete_guest_recruitment,
             args=[recruitment.id],
             countdown=countdown,
+            defer_long_eta=True,
             logger=logger,
             log_message="complete_guest_recruitment dispatch failed",
         )

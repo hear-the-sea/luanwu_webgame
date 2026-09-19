@@ -172,6 +172,7 @@ def dispatch_scout_task(
         task,
         args=[record.id],
         countdown=countdown,
+        defer_long_eta=True,
         logger=logger,
         log_message=log_message,
     )

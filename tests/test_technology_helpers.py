@@ -121,6 +121,7 @@ def test_schedule_technology_completion_task_passes_dispatch_context_to_safe_app
         {
             "args": [17],
             "countdown": 45,
+            "defer_long_eta": True,
             "logger": logger,
             "log_message": "complete_technology_upgrade dispatch failed",
             "log_extra": {

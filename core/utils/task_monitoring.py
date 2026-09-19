@@ -69,6 +69,8 @@ _FIELDS = ("success", "failure", "retry", *_RUNTIME_FIELDS)
 _metrics: dict[str, dict[str, int]] = defaultdict(lambda: {field: 0 for field in _FIELDS})
 _metrics_lock = threading.Lock()
 _registry_lock = threading.Lock()
+_LOCAL_DEGRADED_COUNTERS: dict[str, int] = defaultdict(int)
+_LOCAL_DEGRADED_COUNTERS_LOCK = threading.Lock()
 
 
 # ---------------------------------------------------------------------------
@@ -296,17 +298,26 @@ def reset_task_metrics() -> None:
 _DEGRADED_COUNTER_TTL = 86400  # 24 hours
 
 
-def increment_degraded_counter(component: str) -> None:
+def increment_degraded_counter(component: str, *, cache_unavailable: bool = False) -> None:
     """
     Increment the degraded-path counter for a named component.
 
     Counters are keyed by component name and reset daily.
     Safe to call from any context; cache failures are silently ignored.
+
+    ``cache_unavailable`` is used by callers that have already observed a
+    cache outage.  Retrying the same backend just to record the outage can
+    block the request or WebSocket worker, so those events stay in a small
+    process-local counter until the cache is available again.
     """
     from django.utils import timezone
 
     today = timezone.localdate().isoformat()
     key = f"degraded:{component}:{today}"
+    if cache_unavailable:
+        with _LOCAL_DEGRADED_COUNTERS_LOCK:
+            _LOCAL_DEGRADED_COUNTERS[key] += 1
+        return
     try:
         increment_counter(key, ttl=_DEGRADED_COUNTER_TTL)
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
@@ -323,8 +334,10 @@ def get_degraded_counter(component: str, *, date_str: str | None = None) -> int:
     if date_str is None:
         date_str = timezone.localdate().isoformat()
     key = f"degraded:{component}:{date_str}"
+    with _LOCAL_DEGRADED_COUNTERS_LOCK:
+        local_count = _LOCAL_DEGRADED_COUNTERS.get(key, 0)
     try:
         value = cache.get(key)
-        return int(value or 0)
+        return int(value or 0) + local_count
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
-        return 0
+        return local_count

@@ -703,6 +703,7 @@ def schedule_building_completion(building: Building, eta_seconds: int) -> None:
             complete_building_upgrade,
             args=[building.id],
             countdown=countdown,
+            defer_long_eta=True,
             logger=logger,
             log_message="complete_building_upgrade dispatch failed",
         )

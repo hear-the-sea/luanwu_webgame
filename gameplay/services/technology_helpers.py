@@ -113,6 +113,7 @@ def schedule_technology_completion_task(
             complete_technology_upgrade,
             args=[tech.id],
             countdown=countdown,
+            defer_long_eta=True,
             logger=logger,
             log_message="complete_technology_upgrade dispatch failed",
             log_extra={

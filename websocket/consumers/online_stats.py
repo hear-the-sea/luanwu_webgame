@@ -119,6 +119,8 @@ class OnlineStatsConsumer(SingleSessionWebSocketMixin, AsyncJsonWebsocketConsume
 
     async def _acquire_broadcast_debounce(self) -> bool:
         """Acquire the debounce lock without blocking Daphne's event loop."""
+        if int(self.BROADCAST_DEBOUNCE_SECONDS) <= 0:
+            return True
         return await sync_to_async(self._acquire_broadcast_debounce_sync, thread_sensitive=False)()
 
     async def _send_stats_update(self, stats: dict) -> None:

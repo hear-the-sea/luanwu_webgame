@@ -94,10 +94,11 @@ def test_dispatch_complete_raid_task_uses_remaining_return_time(monkeypatch):
     now = timezone.now()
     captured: dict[str, object] = {}
 
-    def _fake_safe_apply_async(task, args, countdown, logger, log_message):
+    def _fake_safe_apply_async(task, args, countdown, logger, log_message, **kwargs):
         captured["task"] = task
         captured["args"] = args
         captured["countdown"] = countdown
+        captured.update(kwargs)
 
     import gameplay.tasks as gameplay_tasks
 
@@ -111,6 +112,7 @@ def test_dispatch_complete_raid_task_uses_remaining_return_time(monkeypatch):
     assert captured["task"] is fake_complete_task
     assert captured["args"] == [42]
     assert captured["countdown"] == 37
+    assert captured["defer_long_eta"] is True
 
 
 def test_dispatch_complete_raid_task_finalizes_sync_when_due_dispatch_fails(monkeypatch):

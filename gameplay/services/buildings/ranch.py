@@ -362,6 +362,7 @@ def _schedule_livestock_completion(production: LivestockProduction, eta_seconds:
             complete_livestock_production,
             args=[production.id],
             countdown=countdown,
+            defer_long_eta=True,
             logger=logger,
             log_message="complete_livestock_production dispatch failed",
         )

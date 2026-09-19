@@ -174,6 +174,7 @@ def schedule_forging_completion_task(
             complete_equipment_forging,
             args=[production.id],
             countdown=countdown,
+            defer_long_eta=True,
             logger=logger,
             log_message="complete_equipment_forging dispatch failed",
         )

@@ -29,9 +29,10 @@ def test_guest_training_fractional_remaining(monkeypatch):
 
     called = {}
 
-    def _safe_apply_async_with_dedup(*_args, args=None, countdown=None, **_kwargs):
+    def _safe_apply_async_with_dedup(*_args, args=None, countdown=None, dedup_key=None, **_kwargs):
         called["args"] = args
         called["countdown"] = countdown
+        called["dedup_key"] = dedup_key
         return True
 
     monkeypatch.setattr("guests.tasks.safe_apply_async_with_dedup", _safe_apply_async_with_dedup)
@@ -39,6 +40,7 @@ def test_guest_training_fractional_remaining(monkeypatch):
     assert guest_tasks.complete_guest_training.run(101) == "rescheduled"
     assert called["args"] == [101]
     assert called["countdown"] == 1
+    assert called["dedup_key"] == f"guest:training:101:{guest.training_complete_at.isoformat()}"
     assert not finalized
 
 
@@ -59,6 +61,44 @@ def test_guest_training_dispatch_false(monkeypatch, caplog):
             guest_tasks.complete_guest_training.run(102)
 
     assert "guest training reschedule dispatch returned False: guest_id=102" in caplog.text
+
+
+@pytest.mark.django_db
+def test_guest_training_long_eta_is_left_to_scan(monkeypatch):
+    import guests.services.training as guest_training_service
+    import guests.tasks as guest_tasks
+
+    monkeypatch.setattr(
+        guest_training_service,
+        "safe_apply_async_with_dedup",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("long ETA should not be dispatched")),
+    )
+    monkeypatch.setattr(guest_tasks, "guest_training_eta_max_seconds", lambda: 300)
+    monkeypatch.setattr(guest_training_service, "guest_training_eta_max_seconds", lambda: 300)
+
+    guest_training_service._try_enqueue_complete_guest_training(
+        SimpleNamespace(id=103, training_complete_at=timezone.now()),
+        countdown=301,
+        source="test-long-eta",
+    )
+
+
+@pytest.mark.django_db
+def test_guest_training_task_defers_long_legacy_eta_to_scan(monkeypatch):
+    import guests.tasks as guest_tasks
+
+    now = timezone.now()
+    guest = SimpleNamespace(training_complete_at=now + timedelta(seconds=301))
+    monkeypatch.setattr("guests.models.Guest", SimpleNamespace(objects=Chain(first_result=guest)))
+    monkeypatch.setattr("guests.tasks.timezone.now", lambda: now)
+    monkeypatch.setattr(guest_tasks, "guest_training_eta_max_seconds", lambda: 300)
+    monkeypatch.setattr(
+        guest_tasks,
+        "safe_apply_async_with_dedup",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("long ETA should not be rescheduled")),
+    )
+
+    assert guest_tasks.complete_guest_training.run(103) == "deferred_to_scan"
 
 
 @pytest.mark.django_db
@@ -151,37 +191,55 @@ def test_scan_guest_recruitments_programming_error_bubbles_up(monkeypatch):
 
 
 @pytest.mark.django_db
-def test_guest_training_via_safe_apply_async(monkeypatch):
+def test_guest_training_via_safe_apply_async_with_dedup(monkeypatch):
     import guests.services.training as guest_training_service
     import guests.tasks as guest_tasks
 
     called = {}
+    training_complete_at = timezone.now()
 
-    def _safe_apply_async(task, *, args=None, countdown=None, logger=None, log_message="", **_kwargs):
+    def _safe_apply_async_with_dedup(
+        task,
+        *,
+        dedup_key=None,
+        dedup_timeout=None,
+        args=None,
+        countdown=None,
+        logger=None,
+        log_message="",
+        log_extra=None,
+        **_kwargs,
+    ):
         called["task"] = task
+        called["dedup_key"] = dedup_key
+        called["dedup_timeout"] = dedup_timeout
         called["args"] = args
         called["countdown"] = countdown
         called["logger"] = logger
         called["log_message"] = log_message
+        called["log_extra"] = log_extra
         return True
 
     def _apply_async_should_not_run(*_args, **_kwargs):
         raise AssertionError("direct apply_async should not be used")
 
-    monkeypatch.setattr(guest_training_service, "safe_apply_async", _safe_apply_async)
+    monkeypatch.setattr(guest_training_service, "safe_apply_async_with_dedup", _safe_apply_async_with_dedup)
     monkeypatch.setattr(guest_tasks.complete_guest_training, "apply_async", _apply_async_should_not_run)
 
     guest_training_service._try_enqueue_complete_guest_training(
-        SimpleNamespace(id=77, training_complete_at=timezone.now()),
+        SimpleNamespace(id=77, training_complete_at=training_complete_at),
         countdown=5,
         source="test",
     )
 
     assert called["task"] is guest_tasks.complete_guest_training
+    assert called["dedup_key"] == f"guest:training:77:{training_complete_at.isoformat()}"
+    assert called["dedup_timeout"] == 65
     assert called["args"] == [77]
     assert called["countdown"] == 5
     assert called["logger"] is guest_training_service.logger
     assert called["log_message"] == "guest training task dispatch failed"
+    assert called["log_extra"] == {"guest_id": 77, "source": "test"}
 
 
 def test_guest_training_missing_target_module_degrades(monkeypatch):
@@ -207,7 +265,7 @@ def test_guest_training_missing_target_module_degrades(monkeypatch):
     )
     monkeypatch.setattr(
         guest_training_service,
-        "safe_apply_async",
+        "safe_apply_async_with_dedup",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("should not dispatch training task")),
     )
 

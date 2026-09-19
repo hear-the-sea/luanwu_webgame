@@ -59,6 +59,7 @@ def schedule_recruitment_completion(recruitment: TroopRecruitment, eta_seconds: 
             complete_troop_recruitment,
             args=[recruitment.id],
             countdown=countdown,
+            defer_long_eta=True,
             logger=logger,
             log_message="complete_troop_recruitment dispatch failed",
         )

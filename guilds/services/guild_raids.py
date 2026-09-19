@@ -76,6 +76,7 @@ def schedule_guild_raid_completion(run: GuildRaidRun) -> None:
             complete_guild_raid_task,
             args=[run_id],
             countdown=countdown,
+            defer_long_eta=True,
             logger=logger,
             log_message=f"guild raid completion dispatch failed: run_id={run_id}",
         )

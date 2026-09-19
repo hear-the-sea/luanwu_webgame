@@ -167,7 +167,7 @@ def test_prod_compose_declares_8gb_memory_guardrails_and_single_child_baseline()
     services = compose["services"]
 
     expected_memory = {
-        "redis": ("${REDIS_MEMORY_LIMIT:-128m}", "${REDIS_MEMORY_RESERVATION:-64m}"),
+        "redis": ("${REDIS_MEMORY_LIMIT:-512m}", "${REDIS_MEMORY_RESERVATION:-128m}"),
         "db": ("${MYSQL_MEMORY_LIMIT:-1536m}", "${MYSQL_MEMORY_RESERVATION:-768m}"),
         "web": ("${WEB_MEMORY_LIMIT:-384m}", "${WEB_MEMORY_RESERVATION:-256m}"),
         "worker": ("${CELERY_WORKER_MEMORY_LIMIT:-256m}", "${CELERY_WORKER_MEMORY_RESERVATION:-160m}"),
@@ -228,7 +228,7 @@ def test_prod_compose_declares_8gb_memory_guardrails_and_single_child_baseline()
         "--max-heap-table-size=${MYSQL_MAX_HEAP_TABLE_SIZE:-16M}",
     ]
     redis_environment = services["redis"]["environment"]
-    assert redis_environment["REDIS_MAXMEMORY"] == "${REDIS_MAXMEMORY:-128mb}"
+    assert redis_environment["REDIS_MAXMEMORY"] == "${REDIS_MAXMEMORY:-256mb}"
     assert redis_environment["REDIS_MAXMEMORY_POLICY"] == "${REDIS_MAXMEMORY_POLICY:-noeviction}"
 
 
@@ -245,6 +245,8 @@ def test_prod_env_example_matches_8gb_memory_and_queue_baseline() -> None:
     assert values["CELERY_MAX_MEMORY_PER_CHILD"] == "180000"
     assert values["CELERY_TIMER_MAX_MEMORY_PER_CHILD"] == "500000"
     assert values["CELERY_TIMER_SAFETY_MAX_MEMORY_PER_CHILD"] == "400000"
+    assert values["CELERY_PERSISTENT_ETA_MAX_SECONDS"] == "300"
+    assert values["CELERY_GUEST_TRAINING_ETA_MAX_SECONDS"] == "300"
     assert values["DAPHNE_HTTP_TIMEOUT"] == "60"
     assert values["DJANGO_DB_CONNECT_TIMEOUT"] == "5"
     assert values["DJANGO_DB_READ_TIMEOUT"] == "60"
@@ -259,7 +261,7 @@ def test_prod_env_example_matches_8gb_memory_and_queue_baseline() -> None:
     assert values["DJANGO_DB_CONN_MAX_AGE"] == "60"
     assert values["DJANGO_DB_CONN_HEALTH_CHECKS"] == "1"
     assert values["DJANGO_ONLINE_PRESENCE_FAILURE_COOLDOWN_SECONDS"] == "30"
-    assert values["REDIS_MAXMEMORY"] == "128mb"
+    assert values["REDIS_MAXMEMORY"] == "256mb"
     assert values["REDIS_MAXMEMORY_POLICY"] == "noeviction"
 
     # Every Compose fallback must agree with the production template. Count
@@ -277,7 +279,7 @@ def test_prod_env_example_matches_8gb_memory_and_queue_baseline() -> None:
             memory[field] = int(fallback[:-1])
             totals[field] += memory[field]
         assert 0 < memory["mem_reservation"] <= memory["mem_limit"]
-    assert totals == {"mem_limit": 5568, "mem_reservation": 2976}
+    assert totals == {"mem_limit": 5952, "mem_reservation": 3040}
 
 
 def test_prod_env_requires_a_non_empty_redis_password() -> None:

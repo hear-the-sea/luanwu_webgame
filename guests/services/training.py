@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, Dict, TypedDict
 from django.db import connection, transaction
 from django.utils import timezone
 
-from common.utils.celery import safe_apply_async
+from common.utils.celery import safe_apply_async_with_dedup
 from core.config import GUEST
 from core.exceptions import (
     GuestItemConfigurationError,
@@ -39,7 +39,12 @@ if TYPE_CHECKING:
 from ..growth_engine import GrowthAllocator, allocate_level_up_attributes, apply_training_completion
 from ..models import Guest, GuestStatus, TrainingLog
 from ..utils.training_calculator import get_level_up_cost, get_training_duration
-from ..utils.training_timer import ensure_training_timer, remaining_training_seconds
+from ..utils.training_timer import (
+    ensure_training_timer,
+    guest_training_eta_max_seconds,
+    remaining_training_seconds,
+    training_completion_dedup_key,
+)
 from .status import pause_guest_training
 
 logger = logging.getLogger(__name__)
@@ -316,12 +321,33 @@ def _try_enqueue_complete_guest_training(guest: Guest, *, countdown: int, source
             logger.warning("生产环境：保持训练完成时间，等待定时任务结算")
         return
 
-    dispatched = safe_apply_async(
+    # Training timers can be touched by several request/task paths at once
+    # (initial auto-training, time reduction and periodic reconciliation).
+    # Keep one broker message per guest and completion window; otherwise a
+    # burst of duplicate ETA messages can fill Redis before the worker gets
+    # a chance to consume them.
+    eta_limit = guest_training_eta_max_seconds()
+    if int(countdown) > eta_limit:
+        logger.debug(
+            "Guest training completion deferred to timer scan",
+            extra={
+                "guest_id": int(guest.id),
+                "countdown": int(countdown),
+                "eta_limit": eta_limit,
+                "source": source,
+            },
+        )
+        return
+
+    dispatched = safe_apply_async_with_dedup(
         complete_guest_training,
+        dedup_key=training_completion_dedup_key(guest.id, guest.training_complete_at),
+        dedup_timeout=max(int(countdown) + 60, 60),
         args=[guest.id],
         countdown=countdown,
         logger=logger,
         log_message="guest training task dispatch failed",
+        log_extra={"guest_id": int(guest.id), "source": source},
     )
     if not dispatched:
         logger.warning(

@@ -73,6 +73,7 @@ def dispatch_complete_raid_task(
         complete_raid_task,
         args=[run.id],
         countdown=remaining,
+        defer_long_eta=True,
         logger=logger,
         log_message="complete_raid_task dispatch failed",
     )

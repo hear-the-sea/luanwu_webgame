@@ -354,6 +354,25 @@ class TestCustomTemplateGrowthConfig(TestCase):
         self.assertGreaterEqual(total, 10, "自定义成长点数应至少10点")
         self.assertLessEqual(total, 15, "自定义成长点数应最多15点")
 
+    def test_fixed_growth_range_always_allocates_exact_total(self):
+        """测试：相同的成长区间上下限会固定每级成长点数"""
+        fixed_template = GuestTemplate.objects.create(
+            key="test_fixed_growth",
+            name="固定成长门客",
+            rarity=GuestRarity.ORANGE,
+            archetype=GuestArchetype.MILITARY,
+            growth_range=[14, 14],
+        )
+        guest = Guest.objects.create(
+            template=fixed_template,
+            manor=self.manor,
+            level=1,
+        )
+
+        for seed in range(5):
+            allocation = allocate_level_up_attributes(guest, levels=1, rng=random.Random(seed))
+            self.assertEqual(sum(allocation.values()), 14)
+
     def test_default_growth_range(self):
         """测试：无自定义配置时使用稀有��默认值"""
         guest = Guest.objects.create(

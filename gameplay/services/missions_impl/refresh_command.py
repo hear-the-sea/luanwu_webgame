@@ -104,6 +104,7 @@ def schedule_mission_completion(
         complete_mission_task,
         args=[run.id],
         countdown=countdown,
+        defer_long_eta=True,
         logger=logger,
         log_message="complete_mission_task dispatch failed; relying on refresh_mission_runs",
     )

@@ -11,7 +11,8 @@ from core.exceptions import MessageError
 from gameplay.models import Manor
 from gameplay.services.manor.core import ensure_manor
 from guests import tasks as guest_tasks
-from guests.models import Guest, GuestDefection, GuestTemplate
+from guests.models import Guest, GuestDefection, GuestTemplate, WorldUniqueGuest
+from guests.services.world_unique import WORLD_UNIQUE_LUBU_TEMPLATE_KEY
 
 
 def test_should_defect_deterministic_for_same_input():
@@ -165,3 +166,29 @@ def test_process_defection_batch_programming_error_bubbles_after_delete(django_u
 
     assert Guest.objects.filter(id=guest.id).exists() is False
     assert GuestDefection.objects.filter(guest_id=guest.id).count() == 1
+
+
+@pytest.mark.django_db
+def test_process_defection_batch_skips_lubu_even_when_unique_flag_is_stale(django_user_model):
+    user = django_user_model.objects.create_user(username="defection_lubu_stale_flag", password="pass12345")
+    manor = ensure_manor(user)
+    template = GuestTemplate.objects.create(
+        key=WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
+        name="吕布",
+        archetype="military",
+        rarity="orange",
+        is_world_unique=False,
+        recruitable=False,
+    )
+    state = WorldUniqueGuest.objects.create(template=template)
+    guest = Guest.objects.create(manor=manor, template=template, loyalty=0)
+    state.status = WorldUniqueGuest.Status.SERVING
+    state.owner_manor = manor
+    state.owner_guest = guest
+    state.save(update_fields=["status", "owner_manor", "owner_guest"])
+
+    count = guest_tasks._process_defection_batch([guest.id], create_message=lambda **_kwargs: None)
+
+    assert count == 0
+    assert Guest.objects.filter(pk=guest.pk).exists()
+    assert not GuestDefection.objects.filter(guest_id=guest.pk).exists()

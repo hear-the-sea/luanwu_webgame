@@ -489,6 +489,7 @@ def _schedule_smelting_completion(production: SmeltingProduction, eta_seconds: i
             complete_smelting_production,
             args=[production.id],
             countdown=countdown,
+            defer_long_eta=True,
             logger=logger,
             log_message="complete_smelting_production dispatch failed",
         )

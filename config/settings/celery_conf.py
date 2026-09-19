@@ -31,6 +31,20 @@ CELERY_RESULT_BACKEND = env(
 CELERY_RESULT_BACKEND = _redis_url_with_password(CELERY_RESULT_BACKEND, REDIS_PASSWORD)
 CELERY_RESULT_EXPIRES = int(env("CELERY_RESULT_EXPIRES", "3600"))
 CELERY_TASK_STORE_EAGER_RESULT = False
+# Persistent state transitions are settled by indexed timer scans instead of
+# staying reserved in a worker's ETA heap for hours or days. Keep the old
+# guest-specific variable as a backwards-compatible fallback for deployments
+# that already defined it.
+CELERY_PERSISTENT_ETA_MAX_SECONDS = max(
+    0,
+    int(
+        env(
+            "CELERY_PERSISTENT_ETA_MAX_SECONDS",
+            env("CELERY_GUEST_TRAINING_ETA_MAX_SECONDS", "300"),
+        )
+    ),
+)
+CELERY_GUEST_TRAINING_ETA_MAX_SECONDS = CELERY_PERSISTENT_ETA_MAX_SECONDS
 
 # Keep broker/result-backend waits finite. A stalled Redis must fail a task or
 # health check promptly instead of consuming a worker thread indefinitely.

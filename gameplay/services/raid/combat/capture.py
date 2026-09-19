@@ -6,6 +6,8 @@ import logging
 import random
 from typing import Any, Dict, List, Optional
 
+from django.db.models import Q
+
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.constants import get_raid_capture_guest_rate
 from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
@@ -63,8 +65,9 @@ def _filter_capture_candidates(losing_guest_ids: List[int]) -> List[int]:
     unique_guest_ids = set(
         Guest.objects.filter(
             id__in=losing_guest_ids,
-            template__is_world_unique=True,
-        ).values_list("id", flat=True)
+        )
+        .filter(Q(template__is_world_unique=True) | Q(template__key=WORLD_UNIQUE_LUBU_TEMPLATE_KEY))
+        .values_list("id", flat=True)
     )
     oathed_ids = set(OathBond.objects.filter(guest_id__in=losing_guest_ids).values_list("guest_id", flat=True))
     return [
@@ -90,7 +93,7 @@ def _select_capture_target(
 
     if OathBond.objects.filter(guest=target).exists():
         return None
-    if getattr(target.template, "is_world_unique", False):
+    if getattr(target.template, "is_world_unique", False) or target.template.key == WORLD_UNIQUE_LUBU_TEMPLATE_KEY:
         return None
 
     return target
@@ -102,8 +105,9 @@ def _find_losing_world_unique_guest_id(report: Any, is_attacker_victory: bool) -
         return None
 
     losing_team = (report.defender_team or []) if is_attacker_victory else (report.attacker_team or [])
+    candidate_ids: list[int] = []
     for entry in losing_team:
-        if not isinstance(entry, dict) or entry.get("template_key") != WORLD_UNIQUE_LUBU_TEMPLATE_KEY:
+        if not isinstance(entry, dict):
             continue
         raw_guest_id = entry.get("guest_id")
         if raw_guest_id is None:
@@ -113,6 +117,23 @@ def _find_losing_world_unique_guest_id(report: Any, is_attacker_victory: bool) -
         except (TypeError, ValueError):
             continue
         if guest_id > 0:
+            if entry.get("template_key") == WORLD_UNIQUE_LUBU_TEMPLATE_KEY:
+                return guest_id
+            candidate_ids.append(guest_id)
+
+    if not candidate_ids:
+        return None
+
+    # Older battle snapshots may omit template_key. Resolve the live guest by
+    # ID so a defeated Lubu still returns to the wild instead of entering jail.
+    live_guest_ids = set(
+        Guest.objects.filter(
+            pk__in=candidate_ids,
+            template__key=WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
+        ).values_list("pk", flat=True)
+    )
+    for guest_id in candidate_ids:
+        if guest_id in live_guest_ids:
             return guest_id
     return None
 

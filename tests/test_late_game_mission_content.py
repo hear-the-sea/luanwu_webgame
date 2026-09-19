@@ -133,7 +133,7 @@ def test_baimenlou_has_direct_recruitment_scrolls():
     lvbu = next(entry for entry in guest_roster["orange"] if entry["key"] == "hist_sljnbc_0013")
     assert lvbu["recruitable"] is False
     assert lvbu["is_world_unique"] is True
-    assert lvbu["growth_range"] == [11, 14]
+    assert lvbu["growth_range"] == [14, 14]
 
 
 def test_baimenlou_drops_the_super_guest_disguise_card():

@@ -199,11 +199,21 @@
                     <td>{{ item.inventory_item.quantity }}</td>
                     <td class="tw-price">{{ item.sell_price }} 银两</td>
                     <td>
-                        <form method="post" action="{% url 'trade:shop_sell' %}" class="flex gap-2 items-center">
+                        <form method="post" action="{% url 'trade:shop_sell' %}" class="shop-sell-form flex flex-wrap gap-2 items-center">
                             {% csrf_token %}
                             <input type="hidden" name="item_key" value="{{ item.inventory_item.template.key }}">
                             <input type="number" name="quantity" value="1" min="1" max="{{ item.inventory_item.quantity }}" class="tw-quantity-input">
-                            <button type="submit" class="tw-btn-trade">出售</button>
+                            <div class="tw-shop-sell-actions">
+                                <button type="submit" class="tw-btn-trade">出售</button>
+                                <button
+                                    type="submit"
+                                    class="tw-btn-trade tw-btn-trade--danger"
+                                    data-shop-sell-all
+                                    data-item-name="{{ item.inventory_item.template.name }}"
+                                    data-item-quantity="{{ item.inventory_item.quantity }}"
+                                    aria-label="全部卖出{{ item.inventory_item.template.name }}"
+                                >全部卖出</button>
+                            </div>
                         </form>
                     </td>
                 </tr>

@@ -226,6 +226,10 @@ def test_shop_tooltips_render_direct_stats_and_multi_tier_set_bonuses():
     assert "可携带护院人数+88" in html
     assert '<span class="tw-attr-label">护院加成</span><span class="tw-attr-value">弓系生命+1%</span>' in html
     assert '<span class="tw-attr-label">护院加成</span><span class="tw-attr-value">枪系生命+1%</span>' in html
+    assert "data-shop-sell-all" in html
+    assert 'data-item-name="回收装备"' in html
+    assert 'data-item-quantity="1"' in html
+    assert "全部卖出" in html
 
 
 @pytest.mark.django_db

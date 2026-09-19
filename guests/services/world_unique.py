@@ -22,11 +22,15 @@ def is_world_unique_template(template: Any) -> bool:
 
 
 def is_world_unique_guest(guest: Any) -> bool:
-    return is_world_unique_template(getattr(guest, "template", None))
+    template = getattr(guest, "template", None)
+    return is_world_unique_template(template) or getattr(template, "key", None) == WORLD_UNIQUE_LUBU_TEMPLATE_KEY
 
 
 def ensure_guest_not_world_unique(guest: Any, *, action: str) -> None:
-    """阻止会删除或改变唯一门客身份的普通操作。"""
+    """阻止会改变唯一门客身份的操作；吕布辞退由专用释放服务处理。"""
+    template = getattr(guest, "template", None)
+    if action == "辞退" and getattr(template, "key", None) == WORLD_UNIQUE_LUBU_TEMPLATE_KEY:
+        return
     if not is_world_unique_guest(guest):
         return
     guest_name = getattr(guest, "display_name", WORLD_UNIQUE_LUBU_NAME)
@@ -178,14 +182,14 @@ def claim_world_unique_guest_from_scroll(
 
 
 @transaction.atomic
-def release_world_unique_guest_after_raid(
+def _release_world_unique_guest(
     loser: Manor,
     *,
     guest_id: int,
     template_key: str = WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
-    losing_side: str,
+    source: str,
 ) -> dict[str, Any] | None:
-    """踢馆中唯一门客参战且战败时，归还装备并回到在野。"""
+    """释放唯一门客并归还装备；调用方需先确认触发场景。"""
     locked_loser = Manor.objects.select_for_update().get(pk=loser.pk)
     state = (
         WorldUniqueGuest.objects.select_for_update()
@@ -222,7 +226,38 @@ def release_world_unique_guest_after_raid(
     return {
         "guest_name": guest_name,
         "template_key": template_key,
-        "from": losing_side,
+        "from": source,
         "returned_gear_count": returned_gear_count,
         "into": WorldUniqueGuest.Status.WILD,
     }
+
+
+def release_world_unique_guest_after_raid(
+    loser: Manor,
+    *,
+    guest_id: int,
+    template_key: str = WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
+    losing_side: str,
+) -> dict[str, Any] | None:
+    """踢馆中唯一门客参战且战败时，归还装备并回到在野。"""
+    return _release_world_unique_guest(
+        loser,
+        guest_id=guest_id,
+        template_key=template_key,
+        source=losing_side,
+    )
+
+
+def release_world_unique_guest_after_dismissal(
+    manor: Manor,
+    *,
+    guest_id: int,
+    template_key: str = WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
+) -> dict[str, Any] | None:
+    """辞退唯一门客时，归还装备并将其状态恢复为在野。"""
+    return _release_world_unique_guest(
+        manor,
+        guest_id=guest_id,
+        template_key=template_key,
+        source="dismissal",
+    )

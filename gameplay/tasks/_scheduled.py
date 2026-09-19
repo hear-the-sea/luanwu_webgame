@@ -5,6 +5,7 @@ from collections.abc import Callable, Iterable
 from logging import Logger
 from typing import Any, TypeVar
 
+from common.utils.celery import persistent_eta_max_seconds, should_defer_long_eta
 from core.utils.infrastructure import InfrastructureExceptions
 
 RecordT = TypeVar("RecordT")
@@ -29,6 +30,17 @@ def maybe_reschedule_for_future(
     if eta_value and eta_value > now:
         remaining = math.ceil((eta_value - now).total_seconds())
         if remaining > 0:
+            if should_defer_long_eta(remaining):
+                logger.info(
+                    "persistent timer reschedule deferred to database scanner",
+                    extra={
+                        "component": "celery_eta_policy",
+                        "record_id": int(record_id),
+                        "countdown": int(remaining),
+                        "eta_limit_seconds": persistent_eta_max_seconds(),
+                    },
+                )
+                return "deferred_to_scan", now
             effective_dedup_timeout = max(int(remaining) + 60, dedup_timeout, 60)
             dispatched = schedule_func(
                 task_func,

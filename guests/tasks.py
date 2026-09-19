@@ -29,6 +29,8 @@ from gameplay.services.virtual_player_core.recovery import (
     record_recovery_failure,
     recovery_circuit_is_open,
 )
+from guests.services.world_unique import is_world_unique_guest
+from guests.utils.training_timer import guest_training_eta_max_seconds, training_completion_dedup_key
 
 logger = logging.getLogger(__name__)
 
@@ -87,9 +89,15 @@ def complete_guest_training(self, guest_id: int) -> str:
         if guest.training_complete_at and guest.training_complete_at > now:
             remaining = math.ceil((guest.training_complete_at - now).total_seconds())
             if remaining > 0:
+                if remaining > guest_training_eta_max_seconds():
+                    logger.debug(
+                        "Guest training completion deferred to timer scan",
+                        extra={"guest_id": int(guest_id), "countdown": remaining},
+                    )
+                    return "deferred_to_scan"
                 dispatched = safe_apply_async_with_dedup(
                     complete_guest_training,
-                    dedup_key=f"guest:training:{guest_id}",
+                    dedup_key=training_completion_dedup_key(guest_id, guest.training_complete_at),
                     dedup_timeout=_dedup_timeout_for_remaining(remaining),
                     args=[guest_id],
                     countdown=remaining,
@@ -274,6 +282,7 @@ def complete_guest_recruitment(self, recruitment_id: int) -> str:
                     dedup_timeout=_dedup_timeout_for_remaining(remaining),
                     args=[recruitment_id],
                     countdown=remaining,
+                    defer_long_eta=True,
                     logger=logger,
                     log_message=f"guest recruitment reschedule failed: recruitment_id={recruitment_id}",
                 )
@@ -602,7 +611,7 @@ def _process_defection_batch(guest_ids: list[int], *, create_message: Callable) 
                 if guest is None:
                     continue
                 guest.manor = locked_manor
-                if getattr(guest.template, "is_world_unique", False):
+                if is_world_unique_guest(guest):
                     logger.info("Skip defection for world-unique guest: guest_id=%d", guest.id)
                     continue
 
