@@ -225,7 +225,8 @@ def test_refresh_mission_runs_concurrent_with_finalize_mission_run_completes_onl
     monkeypatch.setattr(mission_execution, "apply_defender_troop_losses", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(mission_execution, "return_attacker_troops_after_mission", _record_return_troops)
     monkeypatch.setattr(mission_execution, "apply_mission_rewards_if_won", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(mission_execution, "send_mission_report_message", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(mission_execution, "create_mission_report_message", lambda *_args, **_kwargs: False)
+    monkeypatch.setattr(mission_execution, "notify_mission_report", lambda *_args, **_kwargs: None)
 
     barrier = threading.Barrier(2)
     errors: list[Exception] = []

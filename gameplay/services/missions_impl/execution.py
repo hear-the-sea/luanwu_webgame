@@ -39,11 +39,12 @@ from .finalization_helpers import (
     apply_mission_rewards_if_won,
     build_defense_report_if_needed,
     build_mission_drops_with_salvage,
+    create_mission_report_message,
     extract_report_guest_state,
+    notify_mission_report,
     prepare_guest_updates_for_finalize,
     return_attacker_troops_after_mission,
     select_guests_for_finalize,
-    send_mission_report_message,
 )
 from .finalize_command import finalize_mission_run as _finalize_mission_run_command
 from .launch_command import launch_mission as _launch_mission_command
@@ -58,6 +59,13 @@ logger = logging.getLogger(__name__)
 
 _MISSION_REFRESH_DISPATCH_DEDUP_SECONDS = 5
 MISSION_NOTIFICATION_INFRASTRUCTURE_EXCEPTIONS = NOTIFICATION_INFRASTRUCTURE_EXCEPTIONS
+
+
+def send_mission_report_message(*args: Any, **kwargs: Any) -> Any:
+    """Compatibility wrapper for callers using the pre-split helper."""
+    from .finalization_helpers import send_mission_report_message as _send_mission_report_message
+
+    return _send_mission_report_message(*args, **kwargs)
 
 
 def _normalize_mapping(raw: Any) -> Dict[str, object]:
@@ -125,7 +133,8 @@ def finalize_mission_run(run: MissionRun, now=None) -> bool:
             apply_mission_rewards_if_won=apply_mission_rewards_if_won,
             resolve_defense_drops_if_missing=resolve_defense_drops_if_missing,
             award_mission_drops_locked=award_mission_drops_locked,
-            send_mission_report_message=send_mission_report_message,
+            create_mission_report_message=create_mission_report_message,
+            notify_mission_report=notify_mission_report,
             create_message=create_message,
             notify_user=notify_user,
             notification_infrastructure_exceptions=MISSION_NOTIFICATION_INFRASTRUCTURE_EXCEPTIONS,

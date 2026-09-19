@@ -36,7 +36,8 @@ def _finalize(run: MissionRun, *, now, fail_after_damage: bool = False) -> None:
         apply_defender_troop_losses=lambda *_args, **_kwargs: None,
         return_attacker_troops_after_mission=lambda *_args, **_kwargs: None,
         apply_mission_rewards_if_won=_apply_rewards,
-        send_mission_report_message=lambda *_args, **_kwargs: None,
+        create_mission_report_message=lambda *_args, **_kwargs: False,
+        notify_mission_report=lambda *_args, **_kwargs: None,
     )
 
 

@@ -20,7 +20,8 @@ def finalize_mission_run(
     apply_defender_troop_losses,
     return_attacker_troops_after_mission,
     apply_mission_rewards_if_won,
-    send_mission_report_message,
+    create_mission_report_message,
+    notify_mission_report,
 ) -> bool:
     from guests.models import Guest
 
@@ -62,8 +63,6 @@ def finalize_mission_run(
         return_attacker_troops_after_mission(locked_run, report)
         apply_mission_rewards_if_won(locked_run, report, player_side)
 
-        def _send_report_message_after_commit() -> None:
-            send_mission_report_message(locked_run, report)
-
-        transaction.on_commit(_send_report_message_after_commit)
+        if create_mission_report_message(locked_run, report):
+            transaction.on_commit(lambda: notify_mission_report(locked_run, report))
         return True

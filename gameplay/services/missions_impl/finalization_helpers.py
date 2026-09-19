@@ -274,17 +274,36 @@ def apply_mission_rewards_if_won(
     award_mission_drops_locked(locked_run.manor, drops, locked_run.mission.name)
 
 
-def send_mission_report_message(
+def _log_mission_report_message_creation_failure(
+    locked_run: Any,
+    exc: Exception,
+    *,
+    logger: Any,
+) -> None:
+    logger.error(
+        "Mission report message creation failed: run_id=%s manor_id=%s error=%s",
+        locked_run.id,
+        locked_run.manor_id,
+        exc,
+        exc_info=True,
+        extra={"degraded": True, "component": "mission_report_message", "run_id": locked_run.id},
+    )
+
+
+def create_mission_report_message(
     locked_run: Any,
     report: Any,
     *,
     logger: Any,
     create_message: Callable[..., Any],
-    notify_user: Callable[..., Any],
-    notification_infrastructure_exceptions: tuple[type[Exception], ...],
-) -> None:
+) -> bool:
+    """Persist a mission report message in the caller's transaction.
+
+    Database errors intentionally propagate so mission settlement can roll
+    back and retry instead of committing a completed run without its report.
+    """
     if not report or locked_run.is_retreating:
-        return
+        return False
 
     try:
         create_message(
@@ -295,24 +314,21 @@ def send_mission_report_message(
             battle_report=report,
         )
     except MessageError as exc:
-        logger.error(
-            "Mission report message creation failed: run_id=%s manor_id=%s error=%s",
-            locked_run.id,
-            locked_run.manor_id,
-            exc,
-            exc_info=True,
-            extra={"degraded": True, "component": "mission_report_message", "run_id": locked_run.id},
-        )
-        return
-    except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
-        logger.error(
-            "Mission report message creation failed: run_id=%s manor_id=%s error=%s",
-            locked_run.id,
-            locked_run.manor_id,
-            exc,
-            exc_info=True,
-            extra={"degraded": True, "component": "mission_report_message", "run_id": locked_run.id},
-        )
+        _log_mission_report_message_creation_failure(locked_run, exc, logger=logger)
+        return False
+
+    return True
+
+
+def notify_mission_report(
+    locked_run: Any,
+    report: Any,
+    *,
+    logger: Any,
+    notify_user: Callable[..., Any],
+    notification_infrastructure_exceptions: tuple[type[Exception], ...],
+) -> None:
+    if not report or locked_run.is_retreating:
         return
 
     try:
@@ -336,4 +352,40 @@ def send_mission_report_message(
             exc,
             exc_info=True,
             extra={"degraded": True, "component": "mission_notification", "run_id": locked_run.id},
+        )
+
+
+def send_mission_report_message(
+    locked_run: Any,
+    report: Any,
+    *,
+    logger: Any,
+    create_message: Callable[..., Any],
+    notify_user: Callable[..., Any],
+    notification_infrastructure_exceptions: tuple[type[Exception], ...],
+) -> None:
+    """Create a report message and notify the user for legacy callers.
+
+    Mission finalization uses the two lower-level helpers separately so the
+    database write stays inside the settlement transaction while notification
+    is sent only after that transaction commits.
+    """
+    try:
+        created = create_mission_report_message(
+            locked_run,
+            report,
+            logger=logger,
+            create_message=create_message,
+        )
+    except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
+        _log_mission_report_message_creation_failure(locked_run, exc, logger=logger)
+        return
+
+    if created:
+        notify_mission_report(
+            locked_run,
+            report,
+            logger=logger,
+            notify_user=notify_user,
+            notification_infrastructure_exceptions=notification_infrastructure_exceptions,
         )

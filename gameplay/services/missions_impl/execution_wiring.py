@@ -21,7 +21,8 @@ def build_finalize_mission_dependencies(
     apply_mission_rewards_if_won: Callable[..., Any],
     resolve_defense_drops_if_missing: Callable[..., Any],
     award_mission_drops_locked: Callable[..., Any],
-    send_mission_report_message: Callable[..., Any],
+    create_mission_report_message: Callable[..., Any],
+    notify_mission_report: Callable[..., Any],
     create_message: Callable[..., Any],
     notify_user: Callable[..., Any],
     notification_infrastructure_exceptions: tuple[type[Exception], ...],
@@ -46,10 +47,14 @@ def build_finalize_mission_dependencies(
             resolve_defense_drops_if_missing=resolve_defense_drops_if_missing,
             award_mission_drops_locked=award_mission_drops_locked,
         ),
-        "send_mission_report_message": partial(
-            send_mission_report_message,
+        "create_mission_report_message": partial(
+            create_mission_report_message,
             logger=logger,
             create_message=create_message,
+        ),
+        "notify_mission_report": partial(
+            notify_mission_report,
+            logger=logger,
             notify_user=notify_user,
             notification_infrastructure_exceptions=notification_infrastructure_exceptions,
         ),

@@ -3,6 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pytest
+from django.db import OperationalError
 
 import gameplay.services.missions_impl.execution as mission_execution
 from core.exceptions import MessageError
@@ -43,6 +44,25 @@ def test_send_mission_report_message_ignores_explicit_message_failure(monkeypatc
     )
 
     _send_report(run, report)
+
+
+def test_create_mission_report_message_propagates_database_failure(monkeypatch):
+    run = _mission_run(188, manor_id=109, user_id=110)
+    report = SimpleNamespace(id=166)
+
+    monkeypatch.setattr(
+        mission_execution,
+        "create_message",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(OperationalError("deadlock", 1213)),
+    )
+
+    with pytest.raises(OperationalError, match="deadlock"):
+        mission_execution.create_mission_report_message(
+            run,
+            report,
+            logger=mission_execution.logger,
+            create_message=mission_execution.create_message,
+        )
 
 
 def test_send_mission_report_message_runtime_marker_error_bubbles_up(monkeypatch):
@@ -106,7 +126,8 @@ def test_send_mission_report_notification_runtime_marker_error_bubbles_up(monkey
 @pytest.mark.django_db
 def test_finalize_mission_run_defers_report_message_until_after_commit(monkeypatch):
     callbacks: list[object] = []
-    reported: list[tuple[int, int]] = []
+    created: list[tuple[int, int]] = []
+    notified: list[tuple[int, int]] = []
     report = SimpleNamespace(id=808)
     locked_run = SimpleNamespace(
         pk=707,
@@ -134,14 +155,16 @@ def test_finalize_mission_run_defers_report_message_until_after_commit(monkeypat
         apply_defender_troop_losses=lambda *_args, **_kwargs: None,
         return_attacker_troops_after_mission=lambda *_args, **_kwargs: None,
         apply_mission_rewards_if_won=lambda *_args, **_kwargs: None,
-        send_mission_report_message=lambda current_run, current_report: reported.append(
-            (current_run.id, current_report.id)
+        create_mission_report_message=lambda current_run, current_report: (
+            created.append((current_run.id, current_report.id)) or True
         ),
+        notify_mission_report=lambda current_run, current_report: notified.append((current_run.id, current_report.id)),
     )
 
-    assert reported == []
+    assert created == [(707, 808)]
+    assert notified == []
     assert len(callbacks) == 1
 
     callbacks[0]()
 
-    assert reported == [(707, 808)]
+    assert notified == [(707, 808)]
