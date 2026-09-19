@@ -19,6 +19,15 @@
 		format json
 	}
 
+	# Browsers request this asset on every page. Serve the empty response at
+	# the edge so a missing icon never reaches Django's session middleware or
+	# consumes a database connection during a request burst.
+	@favicon path /favicon.ico
+	handle @favicon {
+		header Cache-Control "public, max-age=86400"
+		respond 204
+	}
+
 	@hashed_static path_regexp hashed_static ^/static/.+\.[0-9a-f]{12}\..+$
 	handle @hashed_static {
 		uri strip_prefix /static
