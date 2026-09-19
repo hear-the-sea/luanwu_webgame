@@ -1537,9 +1537,14 @@ missions:
       experience_watermelon:
         chance: 0.85
         count: 5
-      equip_jingtiedao: 0.08
-      equip_tieyekui: 0.06
-      equip_xuantiejia: 0.05
+      sishui_equipment_pool:
+        chance: 0.10
+        count: 1
+        choices:
+          - equip_pozhenqiang
+          - equip_chuanyungong
+          - equip_longwenyupei
+      equip_zhuyuye: 0.005
       sishui_battle_report: 1
 
     base_travel_time: 2400

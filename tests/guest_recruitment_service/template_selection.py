@@ -68,15 +68,15 @@ def test_non_repeatable_rarities_excludes_gray_and_black():
 
 
 def test_recruitment_weights_match_production_rhythm_config():
-    # 正式配置节奏目标（按 ~170 抽/周估算）：
-    # 蓝一周一蓝、紫一月一紫、橙三月一橙、绿两天一绿，红色保持关闭
+    # 正式概率：橙 0.02%、紫 0.08%、蓝 0.3%、绿 1%、隐士 0.05%。
     weight_map = dict(RARITY_WEIGHTS)
-    assert weight_map[HERMIT_RARITY] == 1000
+    assert weight_map[HERMIT_RARITY] == 500
     assert weight_map[GuestRarity.RED] == 0
-    assert weight_map[GuestRarity.BLUE] == 6000
-    assert weight_map[GuestRarity.PURPLE] == 1500
-    assert weight_map[GuestRarity.ORANGE] == 500
-    assert weight_map[GuestRarity.GREEN] == 20000
+    assert weight_map[GuestRarity.BLUE] == 3000
+    assert weight_map[GuestRarity.PURPLE] == 800
+    assert weight_map[GuestRarity.ORANGE] == 200
+    assert weight_map[GuestRarity.GREEN] == 10000
+    assert weight_map[GuestRarity.GRAY] == 90000
 
 
 def test_recruitment_rarity_distribution_keeps_total_weight():
