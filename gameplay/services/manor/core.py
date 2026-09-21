@@ -131,6 +131,18 @@ def calculate_building_capacity(level: int, is_silver_vault: bool = False) -> in
     return int(CAPACITY_BASE * (growth ** (level - 1)))
 
 
+def calculate_building_upgrade_resource_cost(
+    base_cost: Mapping[str, int],
+    cost_reduction: float,
+) -> dict[str, int]:
+    """Return the resource cost after applying the architecture discount."""
+
+    reduction_multiplier = max(0.0, 1.0 - float(cost_reduction))
+    return {
+        str(resource): max(1, math.ceil(int(amount) * reduction_multiplier)) for resource, amount in base_cost.items()
+    }
+
+
 logger = logging.getLogger(__name__)
 
 ManorNotFoundError = _ManorNotFoundError
@@ -338,10 +350,7 @@ def quote_building_upgrade(
             "building_cost_reduction",
         )
     )
-    reduction_multiplier = max(0.0, 1.0 - cost_reduction)
-    resource_cost = {
-        resource: max(1, math.ceil(amount * reduction_multiplier)) for resource, amount in base_cost.items()
-    }
+    resource_cost = calculate_building_upgrade_resource_cost(base_cost, cost_reduction)
     base_duration = int(building.next_level_duration())
     duration_seconds = calculate_building_upgrade_duration(base_duration, float(manor.citang_building_time_reduction))
     return BuildingUpgradeQuote(

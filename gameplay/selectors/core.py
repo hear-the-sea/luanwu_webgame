@@ -6,12 +6,17 @@ from django.utils import timezone
 
 from common.constants.resources import ResourceType
 from gameplay.constants import BUILDING_MAX_LEVELS
-from gameplay.models import BuildingCategory
+from gameplay.models import BuildingCategory, PlayerTechnology
 from gameplay.services.action_points import ACTION_POINT_BUILDING_UPGRADE_COST
 from gameplay.services.city_defense import is_city_defense_key, prepare_city_defense_display
-from gameplay.services.manor.core import calculate_building_upgrade_duration, get_rename_card_count
+from gameplay.services.manor.core import (
+    calculate_building_upgrade_duration,
+    calculate_building_upgrade_resource_cost,
+    get_rename_card_count,
+)
 from gameplay.services.manor.prestige import get_prestige_progress
 from gameplay.services.ranking import get_ranking_with_player_context
+from gameplay.services.technology import get_tech_bonus_from_levels
 
 
 def _normalize_dashboard_category(raw_category: str | None) -> str:
@@ -21,7 +26,12 @@ def _normalize_dashboard_category(raw_category: str | None) -> str:
     return category
 
 
-def _prepare_building_display(buildings: Any, *, time_reduction: float) -> list[Any]:
+def _prepare_building_display(
+    buildings: Any,
+    *,
+    time_reduction: float,
+    building_cost_reduction: float,
+) -> list[Any]:
     prepared: list[Any] = []
     now = timezone.now()
     for building in buildings:
@@ -30,7 +40,22 @@ def _prepare_building_display(buildings: Any, *, time_reduction: float) -> list[
         building.max_level = max_level
         building.is_max_level = is_max_level
         building.can_upgrade = not building.is_upgrading and not is_max_level
-        building.next_level_cost_display = None if is_max_level else building.next_level_cost()
+        if is_max_level:
+            building.next_level_base_cost_display = None
+            building.next_level_cost_display = None
+            building.next_level_cost_reduction = 0.0
+            building.next_level_cost_reduction_percent = 0.0
+        else:
+            base_cost = building.next_level_cost()
+            building.next_level_base_cost_display = {
+                str(resource): int(amount) for resource, amount in base_cost.items()
+            }
+            building.next_level_cost_display = calculate_building_upgrade_resource_cost(
+                base_cost,
+                building_cost_reduction,
+            )
+            building.next_level_cost_reduction = building_cost_reduction
+            building.next_level_cost_reduction_percent = building_cost_reduction * 100
         if building.can_upgrade:
             building.upgrade_duration = calculate_building_upgrade_duration(
                 building.next_level_duration(), time_reduction
@@ -51,12 +76,21 @@ def get_dashboard_context(manor: Any, *, category: str) -> dict[str, Any]:
         .filter(building_type__category=normalized_category)
         .order_by("building_type__name")
     )
+    technology_levels = {
+        str(tech_key): int(level)
+        for tech_key, level in PlayerTechnology.objects.filter(manor_id=manor.pk).values_list("tech_key", "level")
+    }
+    building_cost_reduction = get_tech_bonus_from_levels(technology_levels, "building_cost_reduction")
     return {
         "current_category": normalized_category,
         "category_label": dict(BuildingCategory.choices).get(normalized_category, "资源生产"),
         "categories": BuildingCategory.choices,
         "building_upgrade_action_point_cost": ACTION_POINT_BUILDING_UPGRADE_COST,
-        "buildings": _prepare_building_display(buildings, time_reduction=float(manor.citang_building_time_reduction)),
+        "buildings": _prepare_building_display(
+            buildings,
+            time_reduction=float(manor.citang_building_time_reduction),
+            building_cost_reduction=building_cost_reduction,
+        ),
         "resource_labels": dict(ResourceType.choices),
     }
 

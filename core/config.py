@@ -131,7 +131,6 @@ class BuildingKeys:
     JUXIAN_ZHUANG: str = "juxianzhuang"  # 聚贤庄
     JIADING_FANG: str = "jiadingfang"  # 家丁房
     YOUXIA_BAOTA: str = "youxibaota"  # 游侠宝塔
-    LIANBING_DAYING: str = "lianbingdaying"  # 练兵大营
     LIANGGONG_CHANG: str = "lianggongchang"  # 练功场
     TREASURY: str = "treasury"  # 藏宝阁
     BATHHOUSE: str = "bathhouse"  # 澡堂

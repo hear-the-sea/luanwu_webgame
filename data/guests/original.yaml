@@ -115,6 +115,7 @@ heroes:
     archetype: civil
     flavor: 相传祝英台本是东晋闺秀，自幼聪慧过人，不甘只困于绣楼针黹之间，遂女扮男装远出求学。她与梁山伯同窗三载，情意在书声灯影里悄然生长，临别时又借一路山水、句句双关，将满怀心事细细托出。奈何世间最难违的，往往不是山长水远，而是父母之命与门第之见。待到出嫁之日，她绕道梁山伯墓前，悲恸叩拜，传说风雨骤起、墓裂如门，英台纵身而入，终与所爱埋骨一处。其后双蝶翩然而起，自坟前飞向长空，于是“梁祝化蝶”便成了华夏传说中最凄美也最自由的一笔。
     default_gender: female
+    avatar: zhuyingtai.png
     default_morality: 92
     growth_range:
     - 6
@@ -134,7 +135,7 @@ heroes:
     default_morality: 72
     growth_range:
     - 6
-    - 10
+    - 11
     recruitable: false
     attribute_weights:
       force: 45

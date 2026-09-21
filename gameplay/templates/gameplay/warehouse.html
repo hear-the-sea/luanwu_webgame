@@ -97,7 +97,7 @@
                                     {% if payload.defense %}<div class="tw-attr-row"><span class="tw-attr-label">防御</span><span class="tw-attr-value">+{{ payload.defense }}</span></div>{% endif %}
                                     {% if payload.force %}<div class="tw-attr-row"><span class="tw-attr-label">武力</span><span class="tw-attr-value">+{{ payload.force }}</span></div>{% endif %}
                                     {% if payload.agility %}<div class="tw-attr-row"><span class="tw-attr-label">敏捷</span><span class="tw-attr-value">+{{ payload.agility }}</span></div>{% endif %}
-                                    {% if payload.luck %}<div class="tw-attr-row"><span class="tw-attr-label">幸运</span><span class="tw-attr-value">+{{ payload.luck }}</span></div>{% endif %}
+                                    {% if payload.luck %}<div class="tw-attr-row"><span class="tw-attr-label">运势</span><span class="tw-attr-value">+{{ payload.luck }}</span></div>{% endif %}
                                     {% if payload.intellect %}<div class="tw-attr-row"><span class="tw-attr-label">智力</span><span class="tw-attr-value">+{{ payload.intellect }}</span></div>{% endif %}
                                     {% if payload.troop_capacity %}<div class="tw-attr-row"><span class="tw-attr-label">可携带护院人数</span><span class="tw-attr-value">+{{ payload.troop_capacity }}</span></div>{% endif %}
                                     {% if entry.template.troop_stat_bonus_summary %}<div class="tw-attr-row"><span class="tw-attr-label">护院加成</span><span class="tw-attr-value">{{ entry.template.troop_stat_bonus_summary }}</span></div>{% endif %}
@@ -115,7 +115,7 @@
                                         {% if set_bonus.bonus.defense %}防御+{{ set_bonus.bonus.defense }} {% endif %}
                                         {% if set_bonus.bonus.force %}武力+{{ set_bonus.bonus.force }} {% endif %}
                                         {% if set_bonus.bonus.agility %}敏捷+{{ set_bonus.bonus.agility }} {% endif %}
-                                        {% if set_bonus.bonus.luck %}幸运+{{ set_bonus.bonus.luck }} {% endif %}
+                                        {% if set_bonus.bonus.luck %}运势+{{ set_bonus.bonus.luck }} {% endif %}
                                         {% if set_bonus.bonus.intellect %}智力+{{ set_bonus.bonus.intellect }} {% endif %}
                                         {% if set_bonus.bonus.attack %}攻击+{{ set_bonus.bonus.attack }} {% endif %}
                                         {% if set_bonus.bonus.troop_capacity %}可携带护院人数+{{ set_bonus.bonus.troop_capacity }} {% endif %}
@@ -128,7 +128,7 @@
                                         {% if payload.set_bonus.bonus.defense %}防御+{{ payload.set_bonus.bonus.defense }} {% endif %}
                                         {% if payload.set_bonus.bonus.force %}武力+{{ payload.set_bonus.bonus.force }} {% endif %}
                                         {% if payload.set_bonus.bonus.agility %}敏捷+{{ payload.set_bonus.bonus.agility }} {% endif %}
-                                        {% if payload.set_bonus.bonus.luck %}幸运+{{ payload.set_bonus.bonus.luck }} {% endif %}
+                                        {% if payload.set_bonus.bonus.luck %}运势+{{ payload.set_bonus.bonus.luck }} {% endif %}
                                         {% if payload.set_bonus.bonus.intellect %}智力+{{ payload.set_bonus.bonus.intellect }} {% endif %}
                                         {% if payload.set_bonus.bonus.attack %}攻击+{{ payload.set_bonus.bonus.attack }} {% endif %}
                                         {% if payload.set_bonus.bonus.troop_capacity %}可携带护院人数+{{ payload.set_bonus.bonus.troop_capacity }} {% endif %}

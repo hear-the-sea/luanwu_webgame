@@ -42,8 +42,9 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env.docker}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env.docker}
     command:
-      - --innodb-buffer-pool-size=${MYSQL_INNODB_BUFFER_POOL_SIZE:-512M}
-      - --max-connections=${MYSQL_MAX_CONNECTIONS:-60}
+      - --innodb-buffer-pool-size=${MYSQL_INNODB_BUFFER_POOL_SIZE:-768M}
+      - --max-connections=${MYSQL_MAX_CONNECTIONS:-96}
+      - --thread-cache-size=${MYSQL_THREAD_CACHE_SIZE:-32}
       - --wait-timeout=${MYSQL_WAIT_TIMEOUT:-600}
       - --binlog-expire-logs-seconds=${MYSQL_BINLOG_EXPIRE_LOGS_SECONDS:-86400}
       - --tmp-table-size=${MYSQL_TMP_TABLE_SIZE:-16M}
@@ -55,8 +56,8 @@ services:
       retries: 10
     volumes:
       - db_data:/var/lib/mysql
-    mem_limit: ${MYSQL_MEMORY_LIMIT:-1536m}
-    mem_reservation: ${MYSQL_MEMORY_RESERVATION:-768m}
+    mem_limit: ${MYSQL_MEMORY_LIMIT:-2048m}
+    mem_reservation: ${MYSQL_MEMORY_RESERVATION:-1024m}
     logging:
       driver: "json-file"
       options:

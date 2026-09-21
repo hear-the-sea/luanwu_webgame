@@ -260,5 +260,5 @@ def _create_soul_fusion_ornament_template(guest: Guest, config: dict[str, Any], 
 def _format_soul_fusion_stat_summary(stats: dict[str, int]) -> str:
     return (
         f"生命+{stats['hp']}、武力+{stats['force']}、智力+{stats['intellect']}、"
-        f"敏捷+{stats['agility']}、幸运+{stats['luck']}"
+        f"敏捷+{stats['agility']}、运势+{stats['luck']}"
     )

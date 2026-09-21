@@ -92,6 +92,14 @@
                                         {% for key,val in building.next_level_cost_display.items %}
                                             <span>{{ resource_labels|get_label:key }} {{ val }}</span>
                                         {% endfor %}
+                                        {% if building.next_level_cost_reduction %}
+                                            <span class="text-xs text-text-muted">
+                                                原价：{% for key,val in building.next_level_base_cost_display.items %}{{ resource_labels|get_label:key }} {{ val }}{% if not forloop.last %}、{% endif %}{% endfor %}
+                                            </span>
+                                            <span class="text-xs text-text-muted">
+                                                建筑科技减免 {{ building.next_level_cost_reduction_percent|floatformat:"-2" }}%
+                                            </span>
+                                        {% endif %}
                                         <span>行动力 {{ building_upgrade_action_point_cost }}</span>
                                     {% endif %}
                                 </dd>

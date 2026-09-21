@@ -3,11 +3,7 @@ from __future__ import annotations
 import pytest
 from django.test import override_settings
 
-from gameplay.constants import BUILDING_MAX_LEVELS, BuildingKeys, PVPConstants, get_raid_capture_guest_rate
-
-
-def test_building_max_levels_contains_lianbing_daying_cap():
-    assert BUILDING_MAX_LEVELS.get(BuildingKeys.LIANBING_DAYING) == 10
+from gameplay.constants import PVPConstants, get_raid_capture_guest_rate
 
 
 @override_settings(RAID_CAPTURE_GUEST_RATE=1.7)

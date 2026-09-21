@@ -358,6 +358,21 @@ class TestCoreViews:
         assert response.status_code == 200
         assert "buildings" in response.context
 
+    def test_dashboard_displays_architecture_discounted_upgrade_cost(self, manor_with_user):
+        manor, client = manor_with_user
+        PlayerTechnology.objects.update_or_create(
+            manor=manor,
+            tech_key="architecture",
+            defaults={"level": 2},
+        )
+
+        response = client.get(reverse("gameplay:dashboard"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "建筑科技减免 10%" in body
+        assert "原价：" in body
+
     def test_dashboard_uses_selector_context(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user
         calls = {"selector": 0}

@@ -206,7 +206,7 @@ worker 的 cgroup OOM，因此当前初始预算提高到 1 GiB。旧的 4 GiB �
 
 | 服务 | 内存硬上限 | 软保留值 |
 | --- | ---: | ---: |
-| MySQL | 1536 MiB | 768 MiB |
+| MySQL | 2048 MiB | 1024 MiB |
 | 维护 worker | 768 MiB | 384 MiB |
 | 安全 worker | 512 MiB | 256 MiB |
 | Caddy | 256 MiB | 128 MiB |
@@ -215,17 +215,17 @@ worker 的 cgroup OOM，因此当前初始预算提高到 1 GiB。旧的 4 GiB �
 | Web | 384 MiB | 256 MiB |
 | Beat | 192 MiB | 128 MiB |
 | Redis | 512 MiB | 128 MiB |
-| 合计 | **5952 MiB（约 5.81 GiB）** | **3040 MiB（约 2.97 GiB）** |
+| 合计 | **6464 MiB（约 6.31 GiB）** | **3296 MiB（约 3.22 GiB）** |
 
 这是一组针对已观察到的 OOM 调整的初始预算，不是压测得出的峰值，也不能保证不再 OOM。
 上限不是预分配内存，软保留值也不是额外叠加的硬上限；宿主机、Docker、其他项目和发布时的临时
-容器都需要额外空间。7.8 GiB 主机与上述硬上限总和的差额约 2.0 GiB，但不等于实时可用内存。
+容器都需要额外空间。7.8 GiB 主机与上述硬上限总和的差额约 1.5 GiB，但不等于实时可用内存。
 4 GiB 主机不能直接套用这组预算，应扩容、拆分服务或重新进行容量评估；增加服务副本或并发也要重算。
 
 Timer、维护和安全 worker 分别使用独立的内存变量；原 `CELERY_WORKER_MEMORY_*` 继续控制
 `worker`、`worker_battle` 和 `worker_timer_scan` 三个普通 worker。需要定制维护预算的旧部署必须迁移到新变量。
-MySQL 保持 512 MiB buffer pool 和原临时表参数，最大连接数基线调整为 60；`DJANGO_DB_CONN_MAX_AGE=60` 与
-`MYSQL_WAIT_TIMEOUT=600` 共同回收空闲连接，把连接池留给实时请求。Redis 的容器上限提高到 512 MiB，
+MySQL 使用 768 MiB buffer pool 和原临时表参数，最大连接数基线调整为 96，并将线程缓存设为 32，减少
+高峰连接创建开销；`DJANGO_DB_CONN_MAX_AGE=60` 与 `MYSQL_WAIT_TIMEOUT=600` 共同回收空闲连接，把连接池留给实时请求。Redis 的容器上限提高到 512 MiB，
 `REDIS_MAXMEMORY=256mb` 保留 Redis 分配器、AOF 和连接缓冲区的余量；保持 `noeviction`，避免 broker
 消息被静默淘汰。Redis 上限与 Compose 环境文件必须同步更新，否则已有 `.env.docker` 中的 128 MiB 值
 仍会覆盖模板默认值。
@@ -365,8 +365,8 @@ df -i
 `docker-compose.prod.yml`，并在已有 `.env.docker` 中逐项更新下列值（不存在则补充，每个键只保留一次）：
 
 ```dotenv
-MYSQL_MEMORY_LIMIT=1536m
-MYSQL_MEMORY_RESERVATION=768m
+MYSQL_MEMORY_LIMIT=2048m
+MYSQL_MEMORY_RESERVATION=1024m
 DJANGO_DB_CONNECT_TIMEOUT=5
 DJANGO_DB_READ_TIMEOUT=60
 DJANGO_DB_WRITE_TIMEOUT=60
@@ -384,7 +384,8 @@ CELERY_TIMER_MAX_MEMORY_PER_CHILD=500000
 CELERY_TIMER_SAFETY_MAX_MEMORY_PER_CHILD=400000
 CELERY_PERSISTENT_ETA_MAX_SECONDS=300
 CELERY_GUEST_TRAINING_ETA_MAX_SECONDS=300
-MYSQL_MAX_CONNECTIONS=60
+MYSQL_MAX_CONNECTIONS=96
+MYSQL_THREAD_CACHE_SIZE=32
 MYSQL_WAIT_TIMEOUT=600
 MYSQL_BINLOG_EXPIRE_LOGS_SECONDS=86400
 DJANGO_DB_CONN_MAX_AGE=60

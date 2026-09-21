@@ -168,7 +168,7 @@ def test_prod_compose_declares_8gb_memory_guardrails_and_single_child_baseline()
 
     expected_memory = {
         "redis": ("${REDIS_MEMORY_LIMIT:-512m}", "${REDIS_MEMORY_RESERVATION:-128m}"),
-        "db": ("${MYSQL_MEMORY_LIMIT:-1536m}", "${MYSQL_MEMORY_RESERVATION:-768m}"),
+        "db": ("${MYSQL_MEMORY_LIMIT:-2048m}", "${MYSQL_MEMORY_RESERVATION:-1024m}"),
         "web": ("${WEB_MEMORY_LIMIT:-384m}", "${WEB_MEMORY_RESERVATION:-256m}"),
         "worker": ("${CELERY_WORKER_MEMORY_LIMIT:-256m}", "${CELERY_WORKER_MEMORY_RESERVATION:-160m}"),
         "worker_battle": (
@@ -220,8 +220,9 @@ def test_prod_compose_declares_8gb_memory_guardrails_and_single_child_baseline()
     assert "${CELERY_TIMER_SAFETY_MAX_MEMORY_PER_CHILD:-400000}" in safety_command
 
     assert services["db"]["command"] == [
-        "--innodb-buffer-pool-size=${MYSQL_INNODB_BUFFER_POOL_SIZE:-512M}",
-        "--max-connections=${MYSQL_MAX_CONNECTIONS:-60}",
+        "--innodb-buffer-pool-size=${MYSQL_INNODB_BUFFER_POOL_SIZE:-768M}",
+        "--max-connections=${MYSQL_MAX_CONNECTIONS:-96}",
+        "--thread-cache-size=${MYSQL_THREAD_CACHE_SIZE:-32}",
         "--wait-timeout=${MYSQL_WAIT_TIMEOUT:-600}",
         "--binlog-expire-logs-seconds=${MYSQL_BINLOG_EXPIRE_LOGS_SECONDS:-86400}",
         "--tmp-table-size=${MYSQL_TMP_TABLE_SIZE:-16M}",
@@ -254,8 +255,9 @@ def test_prod_env_example_matches_8gb_memory_and_queue_baseline() -> None:
     assert values["REDIS_SOCKET_CONNECT_TIMEOUT"] == "2"
     assert values["REDIS_SOCKET_TIMEOUT"] == "2"
     assert values["REDIS_CHANNEL_SOCKET_TIMEOUT"] == "10"
-    assert values["MYSQL_INNODB_BUFFER_POOL_SIZE"] == "512M"
-    assert values["MYSQL_MAX_CONNECTIONS"] == "60"
+    assert values["MYSQL_INNODB_BUFFER_POOL_SIZE"] == "768M"
+    assert values["MYSQL_MAX_CONNECTIONS"] == "96"
+    assert values["MYSQL_THREAD_CACHE_SIZE"] == "32"
     assert values["MYSQL_WAIT_TIMEOUT"] == "600"
     assert values["MYSQL_BINLOG_EXPIRE_LOGS_SECONDS"] == "86400"
     assert values["DJANGO_DB_CONN_MAX_AGE"] == "60"
@@ -279,7 +281,7 @@ def test_prod_env_example_matches_8gb_memory_and_queue_baseline() -> None:
             memory[field] = int(fallback[:-1])
             totals[field] += memory[field]
         assert 0 < memory["mem_reservation"] <= memory["mem_limit"]
-    assert totals == {"mem_limit": 5952, "mem_reservation": 3040}
+    assert totals == {"mem_limit": 6464, "mem_reservation": 3296}
 
 
 def test_prod_env_requires_a_non_empty_redis_password() -> None:

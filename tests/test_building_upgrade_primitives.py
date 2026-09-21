@@ -144,6 +144,10 @@ def test_quote_building_upgrade_freezes_architecture_discount_and_citang_duratio
 
     context = get_dashboard_context(manor, category=building.building_type.category)
     displayed = next(row for row in context["buildings"] if row.pk == building.pk)
+    assert displayed.next_level_base_cost_display == base_cost
+    assert displayed.next_level_cost_display == expected_cost
+    assert displayed.next_level_cost_reduction == pytest.approx(0.10)
+    assert displayed.next_level_cost_reduction_percent == pytest.approx(10.0)
     assert displayed.upgrade_duration == quote.duration_seconds
     total_minutes = math.ceil(quote.duration_seconds / 60)
     assert duration_hours_minutes(displayed.upgrade_duration) == f"{total_minutes // 60}小时{total_minutes % 60}分钟"

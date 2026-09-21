@@ -24,6 +24,7 @@ from django.db.models import (
     DateTimeField,
     Exists,
     F,
+    Func,
     IntegerField,
     Max,
     OuterRef,
@@ -33,8 +34,8 @@ from django.db.models import (
     Sum,
     When,
 )
-from django.db.models.expressions import RawSQL
-from django.db.models.functions import Cast
+from django.db.models.expressions import Expression, RawSQL
+from django.db.models.functions import Cast, Collate
 from django.utils import timezone
 
 from core.exceptions import (
@@ -9947,9 +9948,22 @@ def _maintain_due_virtual_players_v2(
             ),
         )
     )
+    recovery_entity_key: Expression = Cast(OuterRef("pk"), output_field=CharField())
+    if connection.vendor == "mysql":
+        # MySQL 8.0+ may persist recovery columns with 0900_ai_ci while the
+        # application connection uses unicode_ci. Explicitly collate the
+        # CAST expression so this cross-column comparison remains valid.
+        recovery_entity_key = Collate(
+            Func(
+                OuterRef("pk"),
+                output_field=CharField(),
+                template="CAST(%(expressions)s AS CHAR CHARACTER SET utf8mb4)",
+            ),
+            "utf8mb4_unicode_ci",
+        )
     recovery_needs_clear = BotMaintenanceRecovery.objects.filter(
         scope=BotMaintenanceRecovery.Scope.PROFILE,
-        entity_key=Cast(OuterRef("pk"), output_field=CharField()),
+        entity_key=recovery_entity_key,
     ).exclude(
         status=BotMaintenanceRecovery.Status.REQUEUED,
         failure_streak=0,

@@ -39,7 +39,6 @@ BUILDING_MAX_LEVELS = {
     BuildingKeys.SMITHY: 10,  # 冶炼坊：满级物资制造速度提升50%
     BuildingKeys.STABLE: 10,  # 马房：满级马匹制造速度提升50%
     # 战斗相关建筑
-    BuildingKeys.LIANBING_DAYING: 10,  # 练兵大营：满级护院训练速度提升50%
     BuildingKeys.FORGE: 10,  # 铁匠铺：满级装备锻造速度提升50%
 }
 
