@@ -30,6 +30,13 @@ from .projection import (
 )
 from .random_context import RandomContext
 from .strategy import BotDevelopmentPlan
+from .virtual_assets import (
+    VIRTUAL_RARE_COLORS,
+    VirtualAssetCandidate,
+    VirtualAssetError,
+    draw_inventory_batch,
+    inventory_rarity_cap_for_band,
+)
 
 RARITY_ORDER = ("black", "gray", "green", "red", "blue", "purple", "orange")
 RARITY_RANK = {rarity: index for index, rarity in enumerate(RARITY_ORDER)}
@@ -612,44 +619,67 @@ def _inventory_targets(
     *,
     context: RandomContext,
     archetype: str,
+    prestige_band: str,
+    growth_stage: int,
     config: Mapping[str, Any],
     catalog: BootstrapCatalog,
     historical_age_days: int,
 ) -> tuple[BootstrapInventoryTarget, ...]:
-    candidates = [
+    projection = config.get("projection") or {}
+    stage_caps = projection.get("inventory_max_rarity_by_stage") or projection.get("gear_max_rarity_by_stage") or {}
+    band_stage_caps = (config.get("growth") or {}).get("stage_caps") or {}
+    max_rarity = inventory_rarity_cap_for_band(
+        prestige_band=prestige_band,
+        growth_stage=growth_stage,
+        stage_caps=stage_caps,
+        band_stage_caps=band_stage_caps,
+    )
+    # Bootstrap stock stays below the global daily rare-item cap.  Later
+    # maintenance actions can supply red, purple and orange items.
+    max_rank = min(RARITY_RANK[max_rarity], RARITY_RANK["blue"])
+    candidates = tuple(
         entry
         for entry in catalog.inventory
         if entry.tradeable
         and entry.key != "grain"
-        and RARITY_RANK.get(entry.rarity, len(RARITY_ORDER)) <= RARITY_RANK["green"]
-    ]
-    candidates.sort(
-        key=lambda entry: (
-            RARITY_RANK.get(entry.rarity, len(RARITY_ORDER)),
-            context.digest(
-                domain="inventory",
-                discriminator={"template_key": entry.key},
-            ),
-            entry.key,
-        )
+        and entry.rarity not in VIRTUAL_RARE_COLORS
+        and RARITY_RANK.get(entry.rarity, len(RARITY_ORDER)) <= max_rank
     )
-    slot_count = min(_inventory_slot_count(archetype, config), len(candidates))
+    try:
+        batch = draw_inventory_batch(
+            tuple(
+                VirtualAssetCandidate(key=entry.key, kind=entry.effect_type, rarity=entry.rarity, weight=1)
+                for entry in candidates
+            ),
+            archetype=archetype,
+            prestige_band=prestige_band,
+            growth_stage=growth_stage,
+            seed=context.seed(domain="inventory", discriminator={"bootstrap_stock": archetype}),
+            requested_quantity=_inventory_slot_count(archetype, config),
+            stage_caps=stage_caps,
+            band_stage_caps=band_stage_caps,
+            color_weights_by_band=projection.get("inventory_color_weights_by_prestige_band") or {},
+            rare_colors=(),
+        )
+    except VirtualAssetError as exc:
+        raise BootstrapAssetPlanningError(f"bootstrap inventory selection failed: {exc}") from exc
     targets: list[BootstrapInventoryTarget] = []
-    for entry in candidates[:slot_count]:
+    for candidate in batch.candidates:
+        key = candidate.key
         quantity = 1 + context.bucket(
             domain="inventory",
-            discriminator={"quantity": entry.key},
+            discriminator={"quantity": key},
             bucket_count=3,
         )
         targets.append(
             BootstrapInventoryTarget(
-                template_key=entry.key,
+                template_key=key,
                 quantity=quantity,
                 storage_location="warehouse",
                 acquired_day_offset=_history_offset(
                     context,
                     domain="inventory",
-                    discriminator={"acquired": entry.key},
+                    discriminator={"acquired": key},
                     historical_age_days=historical_age_days,
                 ),
             )
@@ -697,6 +727,7 @@ def build_bootstrap_asset_targets(
     projection: BotProjectionConfig,
     target_strength: StrengthSummary,
     archetype: str,
+    prestige_band: str,
     historical_age_days: int,
 ) -> BootstrapAssetTargets:
     building_levels, building_offsets = _building_targets(
@@ -733,6 +764,8 @@ def build_bootstrap_asset_targets(
     inventory = _inventory_targets(
         context=context,
         archetype=str(archetype),
+        prestige_band=str(prestige_band),
+        growth_stage=max(1, int(projection.building_level)),
         config=config,
         catalog=catalog,
         historical_age_days=historical_age_days,

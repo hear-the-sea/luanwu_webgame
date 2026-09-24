@@ -1,16 +1,19 @@
 import random
+from datetime import timedelta
 from types import SimpleNamespace
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.utils import timezone
 
-from gameplay.models import InventoryItem, ItemTemplate, RaidRun, ResourceEvent
+from gameplay.models import BotProfile, InventoryItem, ItemTemplate, RaidRun, ResourceEvent
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.raid.combat import runs as combat_runs
 from gameplay.services.raid.combat.loot import (
     _apply_loot,
     _build_loot_item_queryset,
+    _calculate_loot,
     _calculate_loot_items,
     _calculate_resource_loot,
     _format_battle_rewards_description,
@@ -73,6 +76,92 @@ def test_calculate_resource_loot_keeps_max_cap_without_raid_context():
     loot = _calculate_resource_loot(defender, 0.30)
 
     assert loot == {"silver": 2_000_000}
+
+
+@pytest.mark.django_db
+def test_virtual_senior_loot_excludes_orange_stock_above_prestige_band():
+    user = User.objects.create_user(username="raid_virtual_senior_loot", password="pass123")
+    defender = ensure_manor(user)
+    now = timezone.now()
+    BotProfile.objects.create(
+        manor=defender,
+        prestige_band="senior",
+        target_prestige_band="senior",
+        current_prestige_band="senior",
+        growth_seed=1,
+        growth_stage=30,
+        next_growth_at=now + timedelta(hours=1),
+        abandon_at=now + timedelta(days=30),
+        retire_at=now + timedelta(days=60),
+    )
+    for rarity in ("green", "blue", "purple", "orange"):
+        template = ItemTemplate.objects.create(
+            key=f"raid_virtual_senior_{rarity}",
+            name=f"{rarity} loot",
+            effect_type="equip_weapon",
+            rarity=rarity,
+            tradeable=True,
+            storage_space=1,
+        )
+        InventoryItem.objects.create(
+            manor=defender,
+            template=template,
+            quantity=10,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+    non_equipment = ItemTemplate.objects.create(
+        key="raid_virtual_senior_orange_tool",
+        name="橙色道具",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        rarity="orange",
+        tradeable=True,
+        storage_space=1,
+    )
+    InventoryItem.objects.create(
+        manor=defender,
+        template=non_equipment,
+        quantity=10,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    capped_keys = set(_build_loot_item_queryset(defender, max_rarity="purple").values_list("template__key", flat=True))
+    assert "raid_virtual_senior_orange" not in capped_keys
+    assert non_equipment.key in capped_keys
+
+    _resources, loot_items = _calculate_loot(defender, rng=random.Random(1))
+
+    assert "raid_virtual_senior_orange" not in loot_items
+    assert loot_items
+    assert set(loot_items) <= {
+        "raid_virtual_senior_green",
+        "raid_virtual_senior_blue",
+        "raid_virtual_senior_purple",
+        non_equipment.key,
+    }
+
+
+@pytest.mark.django_db
+def test_real_defender_can_still_drop_orange_stock():
+    user = User.objects.create_user(username="raid_real_orange_loot", password="pass123")
+    defender = ensure_manor(user)
+    template = ItemTemplate.objects.create(
+        key="raid_real_orange_item",
+        name="橙色物品",
+        effect_type="equip_weapon",
+        rarity="orange",
+        tradeable=True,
+        storage_space=1,
+    )
+    InventoryItem.objects.create(
+        manor=defender,
+        template=template,
+        quantity=10,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+
+    _resources, loot_items = _calculate_loot(defender, rng=random.Random(1))
+
+    assert loot_items == {template.key: 2}
 
 
 @pytest.mark.django_db

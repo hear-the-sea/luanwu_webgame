@@ -473,6 +473,7 @@ def build_virtual_player_v2_bootstrap_plan(
             projection=projection,
             target_strength=target_strength,
             archetype=str(archetype),
+            prestige_band=prestige_band,
             historical_age_days=historical_age_days,
         )
     except (BootstrapCatalogError, BootstrapAssetPlanningError) as exc:

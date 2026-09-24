@@ -6,11 +6,11 @@ import random
 from typing import Any, Dict, Sequence, Tuple
 
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 
 from core.utils import safe_positive_int
 
-from ....models import InventoryItem, ItemTemplate, Manor, ResourceEvent
+from ....models import BotProfile, InventoryItem, ItemTemplate, Manor, ResourceEvent
 from ...inventory.core import (
     GRAIN_ITEM_KEY,
     add_item_to_inventory_locked,
@@ -24,6 +24,12 @@ from ...pvp_runtime.loot import (
     normalize_positive_int_mapping,
 )
 from ...resources import log_resource_gain
+from ...virtual_player_core.config import load_virtual_player_config
+from ...virtual_player_core.virtual_assets import (
+    VIRTUAL_RARITY_ORDER,
+    VIRTUAL_RARITY_RANK,
+    inventory_rarity_cap_for_band,
+)
 from .config import PVPConstants
 from .troops import _extract_raid_troops_lost, _normalize_mapping
 
@@ -126,13 +132,40 @@ def _calculate_resource_loot(
     return loot_resources
 
 
-def _build_loot_item_queryset(defender: Manor) -> QuerySet[InventoryItem]:
-    return InventoryItem.objects.filter(
+def _virtual_defender_loot_rarity_cap(defender: Manor) -> str | None:
+    prestige_band = (
+        BotProfile.objects.filter(manor_id=defender.pk).values_list("current_prestige_band", flat=True).first()
+    )
+    if not prestige_band:
+        return None
+    config = load_virtual_player_config()
+    band_stage_caps = (config.get("growth") or {}).get("stage_caps") or {}
+    band_stage_cap = band_stage_caps.get(prestige_band)
+    if band_stage_cap is None:
+        return None
+    projection = config.get("projection") or {}
+    stage_caps = projection.get("inventory_max_rarity_by_stage") or projection.get("gear_max_rarity_by_stage") or {}
+    return inventory_rarity_cap_for_band(
+        prestige_band=prestige_band,
+        growth_stage=int(band_stage_cap),
+        stage_caps=stage_caps,
+        band_stage_caps=band_stage_caps,
+    )
+
+
+def _build_loot_item_queryset(defender: Manor, *, max_rarity: str | None = None) -> QuerySet[InventoryItem]:
+    items = InventoryItem.objects.filter(
         manor=defender,
         template__tradeable=True,
         quantity__gt=0,
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
+    if max_rarity is not None:
+        items = items.filter(
+            ~Q(template__effect_type__startswith="equip_")
+            | Q(template__rarity__in=VIRTUAL_RARITY_ORDER[: VIRTUAL_RARITY_RANK[max_rarity] + 1])
+        )
+    return items
 
 
 def _build_weighted_loot_candidates(base_qs: QuerySet[InventoryItem]) -> list[WeightedLootCandidate]:
@@ -202,7 +235,7 @@ def _calculate_loot(
         battle_report=battle_report,
     )
     loot_items = _calculate_loot_items(
-        _build_loot_item_queryset(defender),
+        _build_loot_item_queryset(defender, max_rarity=_virtual_defender_loot_rarity_cap(defender)),
         rng=rng,
         guests=guests,
         troop_loadout=troop_loadout,

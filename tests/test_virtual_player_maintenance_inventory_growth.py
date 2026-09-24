@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from gameplay.models import Building, InventoryItem, ItemTemplate
+from gameplay.models import BotProfile, Building, InventoryItem, ItemTemplate, Manor
 from gameplay.services.virtual_player_core import maintenance
 from gameplay.services.virtual_player_core.contracts import MaintenanceTrigger
 from tests import test_virtual_player_maintenance_v2 as v2_fixtures
@@ -17,6 +17,12 @@ released_v2_policy = v2_fixtures.released_v2_policy
 def test_old_stage_can_draw_rare_inventory_without_redrawing_stocked_items(
     active_v2_profile, permissive_reference, monkeypatch
 ) -> None:
+    # A middle-band manor may stock red items after stage repair.
+    Manor.objects.filter(pk=active_v2_profile.manor_id).update(prestige=3_000)
+    BotProfile.objects.filter(pk=active_v2_profile.pk).update(
+        prestige_band="middle",
+        current_prestige_band="middle",
+    )
     Building.objects.filter(manor_id=active_v2_profile.manor_id, building_type__key="silver_vault").update(level=11)
     templates = tuple(
         ItemTemplate.objects.create(

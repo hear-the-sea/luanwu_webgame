@@ -119,16 +119,23 @@ def inventory_batch_quantity(archetype: str) -> int:
         raise VirtualAssetError(f"unsupported virtual-player archetype: {archetype!r}") from exc
 
 
-def _rarity_cap_for_stage(
+def inventory_rarity_cap_for_band(
     *,
     prestige_band: str,
     growth_stage: int,
     stage_caps: Mapping[int | str, str] | None,
+    band_stage_caps: Mapping[str, int] | None = None,
 ) -> str:
     if isinstance(growth_stage, bool) or not isinstance(growth_stage, int) or growth_stage < 0:
         raise VirtualAssetError("growth_stage must be a non-negative integer")
-    if str(prestige_band).strip() not in VIRTUAL_PRESTIGE_BANDS:
+    prestige_band = str(prestige_band).strip()
+    if prestige_band not in VIRTUAL_PRESTIGE_BANDS:
         raise VirtualAssetError(f"unsupported prestige band: {prestige_band!r}")
+    if band_stage_caps is not None and prestige_band in band_stage_caps:
+        band_cap = band_stage_caps[prestige_band]
+        if isinstance(band_cap, bool) or not isinstance(band_cap, int) or band_cap < 1:
+            raise VirtualAssetError(f"invalid growth stage cap for prestige band: {prestige_band!r}")
+        growth_stage = min(growth_stage, band_cap)
     if growth_stage <= 6:
         default_rarity = "green"
     elif growth_stage <= 10:
@@ -191,18 +198,18 @@ def _weighted_without_replacement(
     pool = [candidate for candidate in candidates if candidate.key not in used_keys]
     selected: list[VirtualAssetCandidate] = []
     rng = random.Random(int(seed))
-    while pool and len(selected) < quantity:
-        eligible = [
-            candidate
-            for candidate in pool
-            if rare_cap_remaining is None or candidate.rarity not in rare_colors or rare_cap_remaining > 0
-        ]
-        if not eligible:
+    catalog_colors = {candidate.rarity for candidate in candidates}
+    for _ in range(quantity):
+        if not pool:
             break
-        by_color: dict[str, list[VirtualAssetCandidate]] = {}
-        for candidate in eligible:
-            by_color.setdefault(candidate.rarity, []).append(candidate)
-        available_colors = tuple(color for color in VIRTUAL_RARITY_ORDER if color in by_color)
+        available_colors = tuple(
+            color
+            for color in VIRTUAL_RARITY_ORDER
+            if color in catalog_colors
+            and (rare_cap_remaining is None or color not in rare_colors or rare_cap_remaining > 0)
+        )
+        if not available_colors:
+            break
         color_weights = _normalized_color_weights(
             prestige_band=prestige_band,
             color_weights_by_band=color_weights_by_band,
@@ -213,10 +220,15 @@ def _weighted_without_replacement(
             weights=[weight for _color, weight in color_weights],
             k=1,
         )[0]
+        # Keep the configured color odds even when all templates of one color
+        # are already stocked.  Reweighting only the remaining pool would
+        # eventually turn a low-probability orange draw into a certainty.
         same_color = sorted(
-            by_color[chosen_color],
+            (candidate for candidate in pool if candidate.rarity == chosen_color),
             key=lambda candidate: (candidate.key, candidate.template_id or 0),
         )
+        if not same_color:
+            continue
         chosen = rng.choices(
             same_color,
             weights=[candidate.weight for candidate in same_color],
@@ -237,21 +249,26 @@ def draw_inventory_batch(
     prestige_band: str,
     growth_stage: int,
     seed: int,
+    requested_quantity: int | None = None,
     used_keys: set[str] | None = None,
     rare_count_today: int = 0,
     rare_daily_cap: int = 20,
     stage_caps: Mapping[int | str, str] | None = None,
+    band_stage_caps: Mapping[str, int] | None = None,
     color_weights_by_band: Mapping[str, Mapping[str, float]] | None = None,
     rare_colors: Sequence[str] = tuple(sorted(VIRTUAL_RARE_COLORS)),
 ) -> VirtualInventoryBatch:
     """Draw a deterministic, non-grain batch without using item price.
 
-    Invalid, duplicate, over-cap, and over-rarity candidates are treated as
-    redraws.  If the eligible pool is exhausted, the batch is intentionally
-    underfilled; an empty result is a deterministic ``NO_ACTION``.
+    Invalid, duplicate, over-cap, and over-rarity candidates are excluded.
+    A slot stays empty when its selected color has no unstocked template;
+    an empty result is a deterministic ``NO_ACTION``.
     """
 
-    quantity = inventory_batch_quantity(archetype)
+    default_quantity = inventory_batch_quantity(archetype)
+    quantity = default_quantity if requested_quantity is None else requested_quantity
+    if isinstance(quantity, bool) or not isinstance(quantity, int) or quantity < 0:
+        raise VirtualAssetError("requested_quantity must be a non-negative integer")
     if isinstance(rare_count_today, bool) or not isinstance(rare_count_today, int) or rare_count_today < 0:
         raise VirtualAssetError("rare_count_today must be a non-negative integer")
     if isinstance(rare_daily_cap, bool) or not isinstance(rare_daily_cap, int) or rare_daily_cap < 0:
@@ -260,10 +277,11 @@ def draw_inventory_batch(
     if not normalized_rare_colors.issubset(VIRTUAL_RARITY_RANK):
         raise VirtualAssetError("rare_colors contains an unsupported color")
     cap = VIRTUAL_RARITY_RANK[
-        _rarity_cap_for_stage(
+        inventory_rarity_cap_for_band(
             prestige_band=prestige_band,
             growth_stage=growth_stage,
             stage_caps=stage_caps,
+            band_stage_caps=band_stage_caps,
         )
     ]
     normalized: list[VirtualAssetCandidate] = []
@@ -432,6 +450,7 @@ __all__ = [
     "equipment_candidate_weight",
     "free_arena_shadow_cost",
     "inventory_batch_quantity",
+    "inventory_rarity_cap_for_band",
     "project_positive_troop_increment",
     "reduce_training_seconds",
     "resolve_skill_book_definition",

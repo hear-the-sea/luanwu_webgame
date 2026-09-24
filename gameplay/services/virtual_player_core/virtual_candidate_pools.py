@@ -504,6 +504,7 @@ def build_virtual_inventory_batch_candidate(
     del manor_id
     projection = config.get("projection") or {}
     stage_caps = projection.get("inventory_max_rarity_by_stage") or projection.get("gear_max_rarity_by_stage") or {}
+    band_stage_caps = (config.get("growth") or {}).get("stage_caps") or {}
     effect_weights = (
         (projection.get("inventory_effect_type_weights") or {}).get(str(archetype), {})
         if isinstance(projection, Mapping)
@@ -539,6 +540,7 @@ def build_virtual_inventory_batch_candidate(
         rare_count_today=rare_count_today,
         rare_daily_cap=int(projection.get("rare_item_daily_global_cap", 20) or 20),
         stage_caps=stage_caps,
+        band_stage_caps=band_stage_caps,
         color_weights_by_band=projection.get("inventory_color_weights_by_prestige_band") or {},
         rare_colors=tuple(
             str(color).strip().lower()
