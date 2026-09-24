@@ -1711,7 +1711,7 @@ items:
 
   - key: guest_rebirth_card
     name: 门客重生卡
-    description: 使用后可将指定门客重生至1级，属性点将全部重置，可重新分配成长方向。装备和技能书学习的技能将被保留。
+    description: 使用后将指定门客重生至1级，属性点重置，可重新分配成长方向。已学技能全部清空，已穿戴装备全部卸下并归还仓库。
     effect_type: tool
     rarity: purple
     tradeable: true

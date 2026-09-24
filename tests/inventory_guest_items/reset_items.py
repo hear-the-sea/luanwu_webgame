@@ -2,6 +2,7 @@ from random import Random as SystemRandom
 
 import pytest
 
+from battle.combatants_pkg.guest_builder import serialize_skills
 from core.exceptions import GameError, GuestAllocationResetError, GuestNotIdleError
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.inventory.guest_items import use_guest_rebirth_card, use_xidianka, use_xisuidan
@@ -161,8 +162,11 @@ def test_use_guest_rebirth_card_resets_guest_progression_and_clears_gear(django_
         rarity="green",
     )
     GearItem.objects.create(manor=manor, template=gear_template, guest=guest)
-    skill = Skill.objects.create(key="rebirth_test_skill", name="重生测试技能")
-    GuestSkill.objects.create(guest=guest, skill=skill)
+    template_skill = Skill.objects.create(key="rebirth_template_skill", name="重生测试初始技能")
+    book_skill = Skill.objects.create(key="rebirth_book_skill", name="重生测试技能书技能")
+    guest.template.initial_skills.add(template_skill)
+    GuestSkill.objects.create(guest=guest, skill=template_skill, source=GuestSkill.Source.TEMPLATE)
+    GuestSkill.objects.create(guest=guest, skill=book_skill, source=GuestSkill.Source.BOOK)
 
     result = use_guest_rebirth_card(manor, item, guest.id)
 
@@ -184,14 +188,15 @@ def test_use_guest_rebirth_card_resets_guest_progression_and_clears_gear(django_
     assert guest.current_hp == guest.max_hp
     assert guest.gear_items.count() == 0
     assert guest.guest_skills.count() == 0
+    assert serialize_skills(guest) == []
     assert guest.initial_force == guest.force
     assert guest.initial_intellect == guest.intellect
     assert guest.initial_defense == guest.defense_stat
     assert guest.initial_agility == guest.agility
     assert result["old_level"] == 35
     assert result["unequipped_count"] == 1
-    assert result["skills_cleared"] == 1
-    assert "技能已清空（1个）" in result["_message"]
+    assert result["skills_cleared"] == 2
+    assert "技能已清空（2个）" in result["_message"]
     assert "装备已卸下（1件）" in result["_message"]
     assert not InventoryItem.objects.filter(pk=item.pk).exists()
     returned_weapon = InventoryItem.objects.get(manor=manor, template=returned_item_template)
