@@ -76,8 +76,8 @@ def _normalize_guest_configs(raw: Any) -> List[Any]:
     return normalize_guest_configs(raw)
 
 
-def refresh_mission_runs(manor: Manor, *, prefer_async: bool = False) -> None:
-    refresh_mission_runs_entry(
+def refresh_mission_runs(manor: Manor, *, prefer_async: bool = False) -> int:
+    return refresh_mission_runs_entry(
         manor,
         prefer_async=prefer_async,
         refresh_mission_runs_command=_refresh_mission_runs_command,

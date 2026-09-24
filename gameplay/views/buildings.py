@@ -32,8 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 def _refresh_building_upgrades(manor) -> int:
-    finalize_upgrades(manor)
-    return 0
+    return finalize_upgrades(manor)
 
 
 def _handle_unexpected_building_error(

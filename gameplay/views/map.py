@@ -168,7 +168,7 @@ def _release_map_action_lock(lock_key: str, lock_token: str | None) -> None:
     release_scoped_action_lock(MAP_ACTION_LOCK_SPEC, lock_key, lock_token)
 
 
-def _build_raid_status_response(manor: Any) -> JsonResponse:
+def _build_raid_status_response(manor: Any, *, refreshed: int | None = None) -> JsonResponse:
     active_raids = get_active_raids(manor)
     active_scouts = get_active_scouts(manor)
     incoming_raids = get_incoming_raids(manor)
@@ -177,6 +177,7 @@ def _build_raid_status_response(manor: Any) -> JsonResponse:
         active_raids=active_raids,
         active_scouts=active_scouts,
         incoming_raids=incoming_raids,
+        refreshed=refreshed,
     )
 
 
@@ -435,7 +436,7 @@ def refresh_raid_activity_api(request: HttpRequest) -> JsonResponse:
         action_name="refresh_raid_activity",
         scope="self",
         operation=lambda: refresh_raid_activity(manor, prefer_async=True),
-        success_response=lambda _result: _build_raid_status_response(manor),
+        success_response=lambda result: _build_raid_status_response(manor, refreshed=result or 0),
         log_message="Unexpected raid activity refresh error: manor_id=%s user_id=%s",
         log_args=(
             getattr(manor, "id", None),

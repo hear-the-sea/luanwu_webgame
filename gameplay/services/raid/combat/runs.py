@@ -288,11 +288,11 @@ def can_raid_retreat(run: RaidRun, now: Optional[datetime] = None) -> bool:
     )
 
 
-def refresh_raid_runs(manor: Manor, *, prefer_async: bool = False) -> None:
+def refresh_raid_runs(manor: Manor, *, prefer_async: bool = False) -> int:
     """刷新庄园的踢馆状态（支持异步优先结算）。"""
     from .battle import process_raid_battle
 
-    _refresh_raid_runs_command(
+    return _refresh_raid_runs_command(
         manor,
         prefer_async=prefer_async,
         now_func=timezone.now,

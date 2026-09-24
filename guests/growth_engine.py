@@ -6,6 +6,9 @@ from typing import TYPE_CHECKING, Callable
 
 from core.config import GUEST
 from core.exceptions import GuestAllocationResetError
+from guests.constants import SUPER_GUEST_DISGUISE_AGILITY_BONUS, SUPER_GUEST_DISGUISE_FORCE_BONUS
+from guests.services.equipment_payloads import normalize_extra_stats
+from guests.utils.equipment_utils import compute_set_bonus
 
 from .growth_rules import (
     CIVIL_ATTRIBUTE_WEIGHTS,
@@ -123,22 +126,95 @@ def get_expected_growth(
     return {attr: (total_points * weight) / total_weight for attr, weight in weights.items()}
 
 
-def extract_current_guest_growth(guest: "Guest") -> GrowthAllocation:
+def _resolve_non_growth_attribute_bonuses(guest: "Guest") -> GrowthAllocation:
+    """Return direct attribute bonuses that must not be treated as growth.
+
+    Equipment and the super disguise card write directly to the same fields as
+    level growth.  Growth calculations therefore have to remove and restore
+    those values explicitly; otherwise a wash can either report a false
+    over-cap total or erase the bonuses while rewriting the base stats.
+    """
+    bonuses: GrowthAllocation = {key: 0 for key in GROWTH_KEYS}
+    gear_items = list(guest.gear_items.select_related("template"))
+    for gear in gear_items:
+        extra_stats = normalize_extra_stats(gear.template.extra_stats)
+        for key in GROWTH_KEYS:
+            bonuses[key] += int(extra_stats.get(key, 0) or 0)
+
+    # Set bonuses for force/intellect/agility are written to those same guest
+    # fields.  The defense set bonus is stored in defense_bonus, so it is not
+    # part of defense_stat or its growth total.
+    set_bonus = compute_set_bonus(gear_items)
+    for key in ("force", "intellect", "agility"):
+        bonuses[key] += int(set_bonus.get(key, 0) or 0)
+
+    if guest.super_disguise_applied:
+        bonuses["force"] += SUPER_GUEST_DISGUISE_FORCE_BONUS
+        bonuses["agility"] += SUPER_GUEST_DISGUISE_AGILITY_BONUS
+    return bonuses
+
+
+def extract_current_guest_growth(
+    guest: "Guest", *, non_growth_bonuses: GrowthAllocation | None = None
+) -> GrowthAllocation:
+    if non_growth_bonuses is None:
+        non_growth_bonuses = _resolve_non_growth_attribute_bonuses(guest)
     return {
-        "force": max(0, guest.force - guest.initial_force - guest.allocated_force),
-        "intellect": max(0, guest.intellect - guest.initial_intellect - guest.allocated_intellect),
-        "defense": max(0, guest.defense_stat - guest.initial_defense - guest.allocated_defense),
-        "agility": max(0, guest.agility - guest.initial_agility - guest.allocated_agility),
+        "force": max(0, guest.force - guest.initial_force - guest.allocated_force - non_growth_bonuses["force"]),
+        "intellect": max(
+            0,
+            guest.intellect - guest.initial_intellect - guest.allocated_intellect - non_growth_bonuses["intellect"],
+        ),
+        "defense": max(
+            0,
+            guest.defense_stat - guest.initial_defense - guest.allocated_defense - non_growth_bonuses["defense"],
+        ),
+        "agility": max(
+            0, guest.agility - guest.initial_agility - guest.allocated_agility - non_growth_bonuses["agility"]
+        ),
     }
 
 
-def resolve_guest_growth_stats(guest: "Guest", growth_allocation: GrowthAllocation) -> GrowthAllocation:
+def resolve_guest_growth_stats(
+    guest: "Guest",
+    growth_allocation: GrowthAllocation,
+    *,
+    non_growth_bonuses: GrowthAllocation | None = None,
+) -> GrowthAllocation:
+    if non_growth_bonuses is None:
+        non_growth_bonuses = _resolve_non_growth_attribute_bonuses(guest)
     return {
-        "force": guest.initial_force + guest.allocated_force + growth_allocation["force"],
-        "intellect": guest.initial_intellect + guest.allocated_intellect + growth_allocation["intellect"],
-        "defense": guest.initial_defense + guest.allocated_defense + growth_allocation["defense"],
-        "agility": guest.initial_agility + guest.allocated_agility + growth_allocation["agility"],
+        "force": guest.initial_force + guest.allocated_force + growth_allocation["force"] + non_growth_bonuses["force"],
+        "intellect": guest.initial_intellect
+        + guest.allocated_intellect
+        + growth_allocation["intellect"]
+        + non_growth_bonuses["intellect"],
+        "defense": guest.initial_defense
+        + guest.allocated_defense
+        + growth_allocation["defense"]
+        + non_growth_bonuses["defense"],
+        "agility": guest.initial_agility
+        + guest.allocated_agility
+        + growth_allocation["agility"]
+        + non_growth_bonuses["agility"],
     }
+
+
+def _allocate_growth_at_total(
+    guest: "Guest",
+    total_points: int,
+    rng: random.Random,
+) -> GrowthAllocation:
+    """Distribute an exact total using the guest's own attribute weights."""
+    allocation: GrowthAllocation = {key: 0 for key in GROWTH_KEYS}
+    if total_points <= 0:
+        return allocation
+
+    weights = _resolve_weights(guest.archetype, guest.template.attribute_weights)
+    choices = _build_weighted_choices(weights)
+    for _ in range(total_points):
+        allocation[rng.choice(choices)] += 1
+    return allocation
 
 
 def apply_training_completion(
@@ -168,30 +244,45 @@ def reroll_guest_growth(
     allocate_level_up_attributes_func: GrowthAllocator,
     max_attempts: int = XISUIDAN_MAX_REROLL_ATTEMPTS,
 ) -> GrowthRerollResult:
-    current_growth = extract_current_guest_growth(guest)
+    non_growth_bonuses = _resolve_non_growth_attribute_bonuses(guest)
+    current_growth = extract_current_guest_growth(guest, non_growth_bonuses=non_growth_bonuses)
     current_total = sum(current_growth.values())
     levels = max(0, guest.level - 1)
+    _minimum_growth, maximum_growth = _resolve_growth_range(guest.rarity, guest.template.growth_range)
+    maximum_total = levels * maximum_growth
 
-    best_growth = normalize_growth_allocation(allocate_level_up_attributes_func(guest, levels, rng))
-    best_total = sum(best_growth.values())
-
-    attempts_remaining = max(0, max_attempts - 1)
-    while best_total < current_total and attempts_remaining > 0:
-        candidate_growth = normalize_growth_allocation(allocate_level_up_attributes_func(guest, levels, rng))
-        candidate_total = sum(candidate_growth.values())
-        if candidate_total > best_total:
-            best_growth = candidate_growth
-            best_total = candidate_total
-        attempts_remaining -= 1
-
-    if best_total < current_total:
-        new_growth = current_growth
+    if current_total > maximum_total:
+        # Historical guests may have been trained under an older, broader
+        # range.  Grandfather their actual total rather than lowering stats;
+        # the current range still governs all future normal rolls.
+        new_growth = _allocate_growth_at_total(guest, current_total, rng)
         new_total = current_total
     else:
-        new_growth = best_growth
-        new_total = best_total
+        best_growth = normalize_growth_allocation(allocate_level_up_attributes_func(guest, levels, rng))
+        best_total = sum(best_growth.values())
 
-    new_stats = resolve_guest_growth_stats(guest, new_growth)
+        attempts_remaining = max(0, max_attempts - 1)
+        while best_total < current_total and attempts_remaining > 0:
+            candidate_growth = normalize_growth_allocation(allocate_level_up_attributes_func(guest, levels, rng))
+            candidate_total = sum(candidate_growth.values())
+            if candidate_total > best_total:
+                best_growth = candidate_growth
+                best_total = candidate_total
+            attempts_remaining -= 1
+
+        if best_total < current_total:
+            new_total = current_total
+            new_growth = current_growth
+            for _ in range(max(1, max_attempts)):
+                candidate_growth = _allocate_growth_at_total(guest, current_total, rng)
+                new_growth = candidate_growth
+                if current_total == 0 or candidate_growth != current_growth:
+                    break
+        else:
+            new_growth = best_growth
+            new_total = best_total
+
+    new_stats = resolve_guest_growth_stats(guest, new_growth, non_growth_bonuses=non_growth_bonuses)
     changes = {
         "force": new_stats["force"] - guest.force,
         "intellect": new_stats["intellect"] - guest.intellect,

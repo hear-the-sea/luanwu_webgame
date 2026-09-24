@@ -131,13 +131,13 @@ def refresh_manor_state(
     cache_backend: Any,
     logger: Any,
     timezone_module: Any,
-    finalize_upgrades_func: Callable[[Any], None],
+    finalize_upgrades_func: Callable[[Any], int],
     has_due_manor_refresh_work_func: Callable[..., bool],
     should_skip_refresh_by_local_fallback_func: Callable[[int, int], bool],
     sync_resource_production_func: Callable[[Any], None],
-    refresh_mission_runs_func: Callable[..., None],
-    refresh_scout_records_func: Callable[..., None],
-    refresh_raid_runs_func: Callable[..., None],
+    refresh_mission_runs_func: Callable[..., int],
+    refresh_scout_records_func: Callable[..., int],
+    refresh_raid_runs_func: Callable[..., int],
     refresh_arena_activity_func: Callable[..., Any],
 ) -> None:
     finalize_upgrades_func(manor)

@@ -111,4 +111,14 @@ def test_get_troop_class_for_key_ignores_invalid_troop_classes_shape(monkeypatch
 
 def test_get_guest_stat_bonuses_tolerates_invalid_guest_bonus():
     bonuses = tech.get_guest_stat_bonuses({"guest_bonus": "bad-value"})
-    assert bonuses == {"attack": 0.0, "defense": 0.0, "hp": 0.0, "agility": 0.0}
+    assert bonuses == {"attack": 0.0, "defense": 0.0, "hp": 0.0}
+
+
+def test_guest_bonus_does_not_grant_combat_agility():
+    bonuses = tech.get_guest_stat_bonuses({"guest_bonus": 0.2})
+    assert bonuses == {"attack": 0.2, "defense": 0.2, "hp": 0.2}
+
+
+def test_troop_agility_technology_bonus_is_retained():
+    bonuses = tech.get_troop_stat_bonuses_from_levels({"dao_agility": 2}, "dao_ke")
+    assert bonuses["agility"] == 0.2

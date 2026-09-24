@@ -26,15 +26,15 @@ def refresh_mission_runs_entry(
     manor: Any,
     *,
     prefer_async: bool,
-    refresh_mission_runs_command: Callable[..., None],
+    refresh_mission_runs_command: Callable[..., int],
     mission_run_model: Any,
     settings_obj: Any,
     logger: Any,
     now_func: Callable[[], Any],
     try_dispatch_mission_refresh_task: Callable[..., bool],
     finalize_mission_run: Callable[..., object],
-) -> None:
-    refresh_mission_runs_command(
+) -> int:
+    return refresh_mission_runs_command(
         manor,
         prefer_async=prefer_async,
         mission_run_model=mission_run_model,

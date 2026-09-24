@@ -17,12 +17,14 @@ def refresh_raid_runs(
     process_due_raid_run_ids: Callable[..., None],
     process_raid_battle: Callable[..., None],
     finalize_raid: Callable[..., Any],
-) -> None:
+) -> int:
     now = now_func()
     marching_ids, returning_ids, retreated_ids = collect_due_raid_run_ids(manor, now, raid_run_model)
 
     if not marching_ids and not returning_ids and not retreated_ids:
-        return
+        return 0
+
+    refreshed = len(marching_ids) + len(returning_ids) + len(retreated_ids)
 
     if prefer_async:
         marching_ids, returning_ids, retreated_ids, done_async = dispatch_async_raid_refresh(
@@ -34,7 +36,7 @@ def refresh_raid_runs(
             dispatch_refresh_task=try_dispatch_raid_refresh_task,
         )
         if done_async:
-            return
+            return refreshed
 
     process_due_raid_run_ids(
         now,
@@ -45,3 +47,4 @@ def refresh_raid_runs(
         process_raid_battle=process_raid_battle,
         finalize_raid=finalize_raid,
     )
+    return refreshed

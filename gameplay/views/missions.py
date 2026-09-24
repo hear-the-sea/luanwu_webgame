@@ -36,8 +36,7 @@ logger = logging.getLogger(__name__)
 
 
 def _refresh_mission_runtime(manor: Any) -> int:
-    mission_service.refresh_mission_runs(manor)
-    return 0
+    return mission_service.refresh_mission_runs(manor)
 
 
 class TaskBoardView(LoginRequiredMixin, TemplateView):

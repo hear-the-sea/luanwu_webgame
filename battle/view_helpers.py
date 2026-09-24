@@ -25,7 +25,7 @@ def _load_mission_run_for_report(report: "BattleReport"):
 
 def _load_raid_run_for_report(report: "BattleReport"):
     RaidRun = apps.get_model("gameplay", "RaidRun")
-    return RaidRun.objects.filter(battle_report=report).first()
+    return RaidRun.objects.select_related("attacker", "defender").filter(battle_report=report).first()
 
 
 def _load_arena_match_for_report(report: "BattleReport"):
@@ -587,6 +587,28 @@ def build_arena_matchup_context(report: "BattleReport", *, arena_match: Any = No
         defender_entry = getattr(arena_match, "defender_entry", None)
         attacker_manor = getattr(attacker_entry, "manor", None)
         defender_manor = getattr(defender_entry, "manor", None)
+        attacker_name = str(getattr(attacker_manor, "display_name", "") or "").strip()
+        defender_name = str(getattr(defender_manor, "display_name", "") or "").strip()
+    else:
+        attacker_name = str(getattr(getattr(report, "manor", None), "display_name", "") or "").strip()
+        defender_name = str(getattr(report, "opponent_name", "") or "").strip()
+
+    if not attacker_name and not defender_name:
+        return None
+    return {
+        "attacker_name": attacker_name or "进攻方",
+        "defender_name": defender_name or "防守方",
+    }
+
+
+def build_raid_matchup_context(report: "BattleReport", *, raid_run: Any = None) -> dict[str, str] | None:
+    """Build the attacker/defender manor names shown on raid reports."""
+    if str(getattr(report, "battle_type", "") or "") != "raid":
+        return None
+
+    if raid_run is not None:
+        attacker_manor = getattr(raid_run, "attacker", None)
+        defender_manor = getattr(raid_run, "defender", None)
         attacker_name = str(getattr(attacker_manor, "display_name", "") or "").strip()
         defender_name = str(getattr(defender_manor, "display_name", "") or "").strip()
     else:

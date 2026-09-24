@@ -299,7 +299,7 @@ def claim_work_reward_with_refresh(*, manor: Manor, assignment: WorkAssignment) 
     return claim_work_reward(assignment)
 
 
-def refresh_work_assignments(manor: Manor) -> None:
+def refresh_work_assignments(manor: Manor) -> int:
     """
     刷新打工状态
     自动完成到期的任务
@@ -319,8 +319,8 @@ def refresh_work_assignments(manor: Manor) -> None:
         )
 
         if not assignments:
-            return
+            return 0
 
         assignment_ids = [a.id for a in assignments]
 
-        _complete_assignment_batch(assignment_ids, now)
+        return _complete_assignment_batch(assignment_ids, now)

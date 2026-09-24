@@ -16,7 +16,7 @@ def refresh_mission_runs(
     now_func,
     try_dispatch_mission_refresh_task,
     finalize_mission_run,
-) -> None:
+) -> int:
     now = now_func()
     due_run_ids = list(
         manor.mission_runs.filter(
@@ -26,7 +26,9 @@ def refresh_mission_runs(
         ).values_list("id", flat=True)
     )
     if not due_run_ids:
-        return
+        return 0
+
+    refreshed = len(due_run_ids)
 
     sync_run_ids = due_run_ids
     raw_sync_max_runs = getattr(settings_obj, "MISSION_REFRESH_SYNC_MAX_RUNS", 3)
@@ -59,7 +61,7 @@ def refresh_mission_runs(
                     sync_run_ids.append(run_id)
 
             if not sync_run_ids:
-                return
+                return refreshed
 
     active_runs = list(
         mission_run_model.objects.select_related("mission")
@@ -69,6 +71,7 @@ def refresh_mission_runs(
     )
     for run in active_runs:
         finalize_mission_run(run, now=now)
+    return refreshed
 
 
 def schedule_mission_completion(

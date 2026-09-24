@@ -683,15 +683,17 @@ def finalize_building_upgrade(
     return True
 
 
-def finalize_upgrades(manor: Manor, now: datetime | None = None) -> None:
+def finalize_upgrades(manor: Manor, now: datetime | None = None) -> int:
     now = now or timezone.now()
     ready = list(
         manor.buildings.select_related("building_type").filter(is_upgrading=True, upgrade_complete_at__lte=now)
     )
     if not ready:
-        return
+        return 0
+    completed = 0
     for building in ready:
-        finalize_building_upgrade(building, now=now, send_notification=True)
+        completed += int(finalize_building_upgrade(building, now=now, send_notification=True))
+    return completed
 
 
 def schedule_building_completion(building: Building, eta_seconds: int) -> None:

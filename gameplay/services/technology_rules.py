@@ -178,7 +178,6 @@ def get_guest_stat_bonuses(
         bonuses["attack"] = bonus_percent
         bonuses["defense"] = bonus_percent
         bonuses["hp"] = bonus_percent
-        bonuses["agility"] = bonus_percent * 0.5
 
     return bonuses
 

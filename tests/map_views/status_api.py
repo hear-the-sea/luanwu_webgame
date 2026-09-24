@@ -3,11 +3,29 @@
 """
 
 import json
+from types import SimpleNamespace
 
 import pytest
 from django.urls import reverse
 
 from gameplay.models import BotBackfillDemand
+from gameplay.views.map_payloads import build_raid_status_response_payload
+
+
+def test_raid_refresh_payload_marks_due_activity_as_pending():
+    response = build_raid_status_response_payload(
+        active_raids=[],
+        active_scouts=[],
+        incoming_raids=[
+            SimpleNamespace(
+                id=1,
+                attacker=SimpleNamespace(display_name="来袭者", location_display="临淄"),
+                time_remaining=0,
+            )
+        ],
+        refreshed=1,
+    )
+    assert json.loads(response.content)["pending"] is True
 
 
 @pytest.mark.django_db
@@ -214,6 +232,8 @@ class TestMapStatusAPI:
         ]
         data = response.json()
         assert data["success"] is True
+        assert data["refreshed"] == 0
+        assert data["pending"] is False
         assert data["active_raids"] == []
         assert data["active_scouts"] == []
         assert data["incoming_raids"] == []

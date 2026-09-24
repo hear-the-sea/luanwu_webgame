@@ -1,10 +1,14 @@
+from random import Random as SystemRandom
+
 import pytest
 
 from core.exceptions import GameError, GuestAllocationResetError, GuestNotIdleError
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.inventory.guest_items import use_guest_rebirth_card, use_xidianka, use_xisuidan
+from guests.constants import SUPER_GUEST_DISGUISE_AGILITY_BONUS, SUPER_GUEST_DISGUISE_FORCE_BONUS
 from guests.models import GearItem, GearSlot, GearTemplate, GuestSkill, GuestStatus, Skill
 from guests.services.equipment import apply_set_bonuses
+from guests.services.equipment_stats import apply_template_stats_to_guest
 from tests.inventory_guest_items.support_reset import (
     _prepare_rebirth_case,
     _prepare_xidianka_case,
@@ -27,10 +31,8 @@ def test_use_xisuidan_keeps_total_when_reroll_is_worse(monkeypatch, django_user_
     assert result["old_total"] == 400
     assert result["new_total"] == 400
     assert result["growth_diff"] == 0
-    assert guest.force == 150
-    assert guest.intellect == 150
-    assert guest.defense_stat == 150
-    assert guest.agility == 150
+    assert sum(result["changes"].values()) == 0
+    assert any(value != 0 for value in result["changes"].values())
     assert guest.xisuidan_used == 1
     assert not InventoryItem.objects.filter(pk=item.pk).exists()
 
@@ -54,6 +56,77 @@ def test_use_xisuidan_applies_better_growth(monkeypatch, django_user_model):
     assert guest.intellect == 170
     assert guest.defense_stat == 170
     assert guest.agility == 170
+    assert guest.xisuidan_used == 1
+    assert not InventoryItem.objects.filter(pk=item.pk).exists()
+
+
+@pytest.mark.django_db
+def test_use_xisuidan_preserves_legacy_growth_above_guest_range(monkeypatch, django_user_model):
+    manor, guest, item = _prepare_xisuidan_case(django_user_model, "legacy_over_cap")
+    guest.template.growth_range = [2, 3]
+    guest.template.attribute_weights = {"force": 40, "intellect": 30, "defense": 20, "agility": 10}
+    guest.template.save(update_fields=["growth_range", "attribute_weights"])
+
+    monkeypatch.setattr(
+        "gameplay.services.inventory.guest_items.inventory_random.Random",
+        lambda *_args, **_kwargs: SystemRandom(7),
+    )
+
+    result = use_xisuidan(manor, item, guest.id)
+
+    guest.refresh_from_db()
+    assert result["old_total"] == 400
+    assert result["new_total"] == 400
+    assert result["growth_diff"] == 0
+    assert sum(result["changes"].values()) == 0
+    assert any(value != 0 for value in result["changes"].values())
+    assert "成长点数未变" in result["_message"]
+    assert guest.xisuidan_used == 1
+    assert not InventoryItem.objects.filter(pk=item.pk).exists()
+
+
+@pytest.mark.django_db
+def test_use_xisuidan_preserves_equipment_and_disguise_bonuses(monkeypatch, django_user_model):
+    manor, guest, item = _prepare_xisuidan_case(django_user_model, "equipment_bonus")
+    guest.template.growth_range = [2, 3]
+    guest.template.attribute_weights = {"force": 40, "intellect": 30, "defense": 20, "agility": 10}
+    guest.template.save(update_fields=["growth_range", "attribute_weights"])
+
+    gear_template = GearTemplate.objects.create(
+        key="xisuidan_bonus_blade",
+        name="洗髓测试装备",
+        slot=GearSlot.WEAPON,
+        rarity="gray",
+        set_key="xisuidan_bonus_set",
+        set_bonus={"pieces": 1, "bonus": {"force": 3, "intellect": 2, "agility": 4, "defense": 9}},
+        extra_stats={"force": 11, "intellect": 7, "defense": 5, "agility": 13},
+    )
+    gear = GearItem.objects.create(manor=manor, template=gear_template, guest=guest)
+    updates: set[str] = set()
+    apply_template_stats_to_guest(guest, gear.template, 1, updates)
+    guest.super_disguise_applied = True
+    guest.avatar_override_key = "lvbu_monkey"
+    guest.force += SUPER_GUEST_DISGUISE_FORCE_BONUS
+    guest.agility += SUPER_GUEST_DISGUISE_AGILITY_BONUS
+    guest.save(update_fields=list(updates) + ["super_disguise_applied", "avatar_override_key"])
+    apply_set_bonuses(guest)
+
+    monkeypatch.setattr(
+        "gameplay.services.inventory.guest_items.inventory_random.Random",
+        lambda *_args, **_kwargs: SystemRandom(7),
+    )
+
+    result = use_xisuidan(manor, item, guest.id)
+
+    guest.refresh_from_db()
+    assert result["old_total"] == 400
+    assert result["new_total"] == 400
+    assert result["growth_diff"] == 0
+    assert guest.force - guest.initial_force >= 11 + 3 + SUPER_GUEST_DISGUISE_FORCE_BONUS
+    assert guest.intellect - guest.initial_intellect >= 7 + 2
+    assert guest.defense_stat - guest.initial_defense >= 5
+    assert guest.agility - guest.initial_agility >= 13 + 4 + SUPER_GUEST_DISGUISE_AGILITY_BONUS
+    assert sum(result["changes"].values()) == 0
     assert guest.xisuidan_used == 1
     assert not InventoryItem.objects.filter(pk=item.pk).exists()
 

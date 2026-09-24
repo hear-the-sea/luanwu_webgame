@@ -87,7 +87,7 @@ def refresh_raid_runs_entry(
     manor: Any,
     *,
     prefer_async: bool,
-    refresh_raid_runs_command: Callable[..., None],
+    refresh_raid_runs_command: Callable[..., int],
     now_func: Callable[..., Any],
     raid_run_model: Any,
     collect_due_raid_run_ids: Callable[..., Any],
@@ -98,8 +98,8 @@ def refresh_raid_runs_entry(
     process_due_raid_run_ids: Callable[..., Any],
     process_raid_battle: Callable[..., Any],
     finalize_raid: Callable[..., Any],
-) -> None:
-    refresh_raid_runs_command(
+) -> int:
+    return refresh_raid_runs_command(
         manor,
         prefer_async=prefer_async,
         now_func=now_func,

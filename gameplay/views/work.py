@@ -40,8 +40,7 @@ logger = logging.getLogger(__name__)
 
 
 def _refresh_work_runtime(manor: Any) -> int:
-    refresh_work_assignments(manor)
-    return 0
+    return refresh_work_assignments(manor)
 
 
 def _handle_unexpected_work_error(

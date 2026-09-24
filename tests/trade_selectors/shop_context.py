@@ -5,6 +5,7 @@ from django.db import DatabaseError
 from django.test import RequestFactory
 
 import trade.selectors as trade_selectors
+from gameplay.models import InventoryItem, ItemTemplate
 from tests.trade_selectors.support import DummySellable, create_manor, make_sellable_items
 from trade.page_context import build_trade_request_params
 from trade.selectors import get_trade_context
@@ -52,10 +53,10 @@ def test_get_trade_context_shop_builds_categories_and_filters(monkeypatch, djang
         ),
     ]
 
-    captured = {"category": "unset"}
+    captured = {"categories": []}
 
     def _sellable_inventory(_manor, category=None):
-        captured["category"] = category
+        captured["categories"].append(category)
         return [DummySellable(inventory_item=object(), sell_price=1)]
 
     monkeypatch.setattr("trade.selectors.get_shop_items_for_display", lambda: list(shop_items))
@@ -67,13 +68,41 @@ def test_get_trade_context_shop_builds_categories_and_filters(monkeypatch, djang
     assert context["current_tab"] == "shop"
     assert context["selected_category"] == "tool"
     assert [item.key for item in context["shop_items"]] == ["tool_item"]
-    assert captured["category"] is None
+    assert captured["categories"] == [None, "tool"]
 
     category_keys = [category["key"] for category in context["categories"]]
     assert "all" in category_keys
     assert "tool" in category_keys
     assert "medicine" in category_keys
     assert len(context["inventory"]) == 1
+
+
+@pytest.mark.django_db
+def test_get_trade_context_shop_filters_sell_inventory_before_pagination(monkeypatch, django_user_model):
+    manor = create_manor(django_user_model, username="trade_ctx_shop_sell_category")
+    monkeypatch.setattr("trade.selectors.get_shop_items_for_display", lambda: [])
+    monkeypatch.setattr("trade.services.shop_service.get_shop_config", lambda: [])
+
+    for key, effect_type in (
+        ("sell_medicine", ItemTemplate.EffectType.MEDICINE),
+        ("sell_tool", ItemTemplate.EffectType.TOOL),
+        ("sell_loot_box", ItemTemplate.EffectType.LOOT_BOX),
+    ):
+        template = ItemTemplate.objects.create(key=key, name=key, effect_type=effect_type, price=10)
+        InventoryItem.objects.create(
+            manor=manor,
+            template=template,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            quantity=1,
+        )
+
+    request = RequestFactory().get("/trade", {"tab": "shop", "view": "sell", "category": "tool"})
+    context = get_trade_context(manor=manor, params=build_trade_request_params(request))
+
+    assert context["shop_view"] == "sell"
+    assert {category["key"] for category in context["categories"]} >= {"all", "medicine", "tool"}
+    assert context["shop_sell_page_obj"].paginator.count == 2
+    assert {row.inventory_item.template.key for row in context["inventory"]} == {"sell_tool", "sell_loot_box"}
 
 
 @pytest.mark.django_db

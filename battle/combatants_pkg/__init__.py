@@ -25,8 +25,6 @@ from .core import BattleSimulationResult, Combatant
 from .guest_builder import (
     DEFAULT_GUEST_AGILITY,
     DEFAULT_LUCK,
-    INTELLECT_TO_SPEED_DIVISOR,
-    MIN_SPEED_BONUS,
     VANGUARD_RATIO,
     assign_agility_based_priorities,
     build_guest_combatants,
@@ -52,8 +50,6 @@ __all__ = [
     # Guest builder
     "DEFAULT_GUEST_AGILITY",
     "DEFAULT_LUCK",
-    "INTELLECT_TO_SPEED_DIVISOR",
-    "MIN_SPEED_BONUS",
     "VANGUARD_RATIO",
     "assign_agility_based_priorities",
     "build_guest_combatants",

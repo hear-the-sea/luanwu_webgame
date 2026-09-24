@@ -10,9 +10,10 @@ def refresh_raid_activity(
     manor: Any,
     *,
     prefer_async: bool = True,
-    refresh_scout_records_func: Callable[..., None] = refresh_scout_records,
-    refresh_raid_runs_func: Callable[..., None] = refresh_raid_runs,
-) -> None:
+    refresh_scout_records_func: Callable[..., int | None] = refresh_scout_records,
+    refresh_raid_runs_func: Callable[..., int | None] = refresh_raid_runs,
+) -> int:
     """显式触发侦察/踢馆补偿刷新。"""
-    refresh_scout_records_func(manor, prefer_async=prefer_async)
-    refresh_raid_runs_func(manor, prefer_async=prefer_async)
+    scout_refreshed = refresh_scout_records_func(manor, prefer_async=prefer_async) or 0
+    raid_refreshed = refresh_raid_runs_func(manor, prefer_async=prefer_async) or 0
+    return int(scout_refreshed) + int(raid_refreshed)

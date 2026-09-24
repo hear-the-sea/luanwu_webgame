@@ -26,6 +26,7 @@ def test_refresh_building_upgrades_api_finalizes_due_building(manor_with_user):
     response = client.post(reverse("gameplay:refresh_building_upgrades_api"))
 
     assert response.status_code == 200
+    assert response.json()["refreshed"] == 1
     building.refresh_from_db()
     assert building.is_upgrading is False
     assert building.upgrade_complete_at is None
@@ -191,6 +192,36 @@ def test_refresh_mission_runs_api_finalizes_due_mission_run(manor_with_user):
     assert response.status_code == 200
     run.refresh_from_db()
     assert run.status == run.Status.COMPLETED
+
+
+@pytest.mark.django_db
+def test_mission_arrival_changes_countdown_without_finalizing_run(manor_with_user):
+    manor, client = manor_with_user
+    now = timezone.now()
+    mission = MissionTemplate.objects.create(
+        key=f"mission_arrival_countdown_{manor.id}",
+        name="去程倒计时",
+        is_defense=False,
+    )
+    run = manor.mission_runs.create(
+        mission=mission,
+        status="active",
+        travel_time=60,
+        return_at=now + timedelta(minutes=5),
+    )
+    manor.mission_runs.filter(pk=run.pk).update(started_at=now - timedelta(seconds=30))
+    run.refresh_from_db()
+    assert run.next_state_at == run.battle_at
+
+    manor.mission_runs.filter(pk=run.pk).update(started_at=now - timedelta(seconds=90))
+    run.refresh_from_db()
+    assert run.next_state_at == run.return_at
+
+    response = client.post(reverse("gameplay:refresh_mission_runs_api"))
+    assert response.status_code == 200
+    assert response.json()["refreshed"] == 0
+    run.refresh_from_db()
+    assert run.status == run.Status.ACTIVE
 
 
 @pytest.mark.django_db

@@ -247,7 +247,7 @@ def _gather_scout_intel(defender: Manor) -> Dict[str, Any]:
     }
 
 
-def refresh_scout_records(manor: Manor, *, prefer_async: bool = False) -> None:
+def refresh_scout_records(manor: Manor, *, prefer_async: bool = False) -> int:
     """刷新庄园的侦察记录状态（支持异步优先结算）。"""
 
     def _collect_due_ids(target_manor: Manor, current_time: datetime) -> tuple[list[int], list[int]]:
@@ -280,7 +280,7 @@ def refresh_scout_records(manor: Manor, *, prefer_async: bool = False) -> None:
             finalize_scout_return_fn=finalize_scout_return,
         )
 
-    scout_refresh_command.refresh_scout_records_command(
+    return scout_refresh_command.refresh_scout_records_command(
         manor,
         prefer_async=prefer_async,
         now_fn=timezone.now,

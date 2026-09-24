@@ -21,6 +21,7 @@ def test_use_xisuidan_rerolls_growth_from_current_stats(monkeypatch, django_user
         base_defense=80,
         base_agility=70,
         base_luck=60,
+        growth_range=[12, 13],
     )
     guest = Guest.objects.create(
         manor=manor,

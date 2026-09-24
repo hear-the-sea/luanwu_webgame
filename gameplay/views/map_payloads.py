@@ -26,9 +26,10 @@ def build_raid_status_response_payload(
     active_raids: list[Any],
     active_scouts: list[Any],
     incoming_raids: list[Any],
+    refreshed: int | None = None,
 ) -> JsonResponse:
-    return json_success(
-        active_raids=[
+    payload: dict[str, Any] = {
+        "active_raids": [
             {
                 "id": raid.id,
                 "target_name": raid.defender.display_name,
@@ -39,7 +40,7 @@ def build_raid_status_response_payload(
             }
             for raid in active_raids
         ],
-        active_scouts=[
+        "active_scouts": [
             {
                 "id": scout.id,
                 "target_name": scout.defender.display_name,
@@ -48,7 +49,7 @@ def build_raid_status_response_payload(
             }
             for scout in active_scouts
         ],
-        incoming_raids=[
+        "incoming_raids": [
             {
                 "id": raid.id,
                 "attacker_name": raid.attacker.display_name,
@@ -57,4 +58,12 @@ def build_raid_status_response_payload(
             }
             for raid in incoming_raids
         ],
-    )
+    }
+    if refreshed is not None:
+        payload["refreshed"] = max(0, int(refreshed))
+        payload["pending"] = any(
+            row["time_remaining"] <= 0
+            for group in (payload["active_raids"], payload["active_scouts"], payload["incoming_raids"])
+            for row in group
+        )
+    return json_success(**payload)

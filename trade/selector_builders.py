@@ -71,13 +71,14 @@ def _build_shop_category_options(shop_items: Any, sellable_items: Any) -> list[d
 def _load_sellable_inventory_source(
     manor: Any,
     *,
+    category: str | None = None,
     get_sellable_inventory: Callable[..., Any],
     get_sellable_inventory_queryset: Callable[..., Any],
     original_get_sellable_inventory: Callable[..., Any],
 ) -> Any:
     if get_sellable_inventory is not original_get_sellable_inventory:
-        return get_sellable_inventory(manor)
-    return get_sellable_inventory_queryset(manor)
+        return get_sellable_inventory(manor, category=category)
+    return get_sellable_inventory_queryset(manor, category=category)
 
 
 def _build_inventory_display_rows(
@@ -221,8 +222,20 @@ def build_shop_trade_context(
         shop_items = [
             item for item in shop_items if normalize_effect_type(item.effect_type or "other") == selected_category
         ]
+        sellable_inventory_source = _safe_call(
+            _load_sellable_inventory_source,
+            manor,
+            category=selected_category,
+            get_sellable_inventory=get_sellable_inventory,
+            get_sellable_inventory_queryset=get_sellable_inventory_queryset,
+            original_get_sellable_inventory=original_get_sellable_inventory,
+            default=[],
+            log_message="load filtered sellable inventory failed",
+        )
 
     shop_buy_page_obj = Paginator(shop_items, TRADE_ITEM_PAGE_SIZE).get_page(buy_page)
+    if isinstance(sellable_inventory_source, QuerySet) and not sellable_inventory_source.ordered:
+        sellable_inventory_source = sellable_inventory_source.order_by("pk")
     shop_sell_page_obj = Paginator(sellable_inventory_source, TRADE_ITEM_PAGE_SIZE).get_page(sell_page)
     inventory_rows = _safe_call(
         _build_inventory_display_rows,

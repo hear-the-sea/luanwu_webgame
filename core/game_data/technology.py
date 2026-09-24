@@ -148,7 +148,7 @@ def get_guest_stat_bonuses(config: Dict[str, Any]) -> Dict[str, float]:
     Compute guest stat bonuses from config.
 
     Currently supports:
-    - guest_bonus: uniform percent bonus (e.g. 0.2 means +20%), agility is half.
+    - guest_bonus: uniform percent bonus to attack, defense, and HP.
     """
     if not config:
         return {}
@@ -159,7 +159,6 @@ def get_guest_stat_bonuses(config: Dict[str, Any]) -> Dict[str, float]:
         bonuses["attack"] = bonus_percent
         bonuses["defense"] = bonus_percent
         bonuses["hp"] = bonus_percent
-        bonuses["agility"] = bonus_percent * 0.5
     return bonuses
 
 

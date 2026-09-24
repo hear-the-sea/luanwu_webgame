@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Any, Callable
 
 from django.db import transaction
@@ -7,6 +8,8 @@ from django.utils import timezone
 
 from guests.models import GuestStatus
 from guests.services.status import persist_guest_status_transitions
+
+logger = logging.getLogger(__name__)
 
 
 def finalize_raid(
@@ -50,6 +53,7 @@ def finalize_raid(
             if grain_loot > 0:
                 loot_resources["grain"] = grain_loot
             if loot_resources:
+                # 返程时按当前仓储余量入账，放不下的战利品直接丢弃，不阻断归队。
                 _, overflow = grant_resources_locked(
                     attacker_locked,
                     loot_resources,
@@ -58,10 +62,12 @@ def finalize_raid(
                     sync_production=False,
                 )
                 if overflow:
-                    # 战斗时已按攻击方容量裁剪；返程期间若容量又被占满，保持
-                    # RETURNING 并等待容量释放，不能把已从防守方扣除的资源静默丢掉。
-                    transaction.set_rollback(True)
-                    return False
+                    logger.info(
+                        "Raid return discarded resource overflow: run_id=%s attacker_id=%s overflow=%s",
+                        locked_run.pk,
+                        attacker_locked.pk,
+                        overflow,
+                    )
             if loot_items:
                 grant_loot_items(attacker_locked, loot_items)
 

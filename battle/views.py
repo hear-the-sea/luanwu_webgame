@@ -11,6 +11,7 @@ from .troops import load_troop_templates
 from .view_helpers import (
     attach_avatar_urls,
     build_arena_matchup_context,
+    build_raid_matchup_context,
     build_report_title,
     build_reward_context,
     build_rounds_display,
@@ -129,6 +130,10 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
         context["arena_matchup"] = build_arena_matchup_context(
             report,
             arena_match=report_runtime.get("arena_match"),
+        )
+        context["report_matchup"] = context["arena_matchup"] or build_raid_matchup_context(
+            report,
+            raid_run=report_runtime.get("raid_run"),
         )
         context.update(side_context)
 

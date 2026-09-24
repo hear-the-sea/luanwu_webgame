@@ -233,6 +233,36 @@ def test_shop_tooltips_render_direct_stats_and_multi_tier_set_bonuses():
 
 
 @pytest.mark.django_db
+def test_shop_filter_is_available_in_both_views_when_results_are_empty():
+    request = RequestFactory().get("/trade")
+    request.user = AnonymousUser()
+    html = render_to_string(
+        "trade/partials/_shop.html",
+        {
+            "shop_view": "sell",
+            "shop_items": [],
+            "inventory": [],
+            "categories": [{"key": "all", "label": "全部"}, {"key": "tool", "label": "道具"}],
+            "selected_category": "tool",
+            "shop_buy_page_obj": Paginator([], 20).page(1),
+            "shop_sell_page_obj": Paginator([], 20).page(1),
+        },
+        request=request,
+    )
+
+    buy_section, sell_section = html.split('id="shop-sell-section"', 1)
+    assert 'id="shop-category"' in buy_section
+    assert 'name="view" value="buy"' in buy_section
+    assert 'name="sell_page" value="1"' in buy_section
+    assert 'id="shop-sell-category"' in sell_section
+    assert 'name="view" value="sell"' in sell_section
+    assert 'name="buy_page" value="1"' in sell_section
+    assert "data-trade-auto-submit" in sell_section
+    assert 'value="tool" selected' in sell_section
+    assert "暂无可出售的物品" in sell_section
+
+
+@pytest.mark.django_db
 def test_market_and_auction_tooltips_render_device_troop_bonus_summary():
     equipment_summary = "武力+6；弓系生命+1%"
     item_template = SimpleNamespace(

@@ -127,16 +127,19 @@ def refresh_scout_records_command(
     collect_due_ids_fn: Callable[[Any, datetime], tuple[list[int], list[int]]],
     dispatch_async_fn: Callable[[list[int], list[int]], tuple[list[int], list[int], bool]],
     finalize_due_fn: Callable[[datetime, list[int], list[int]], None],
-) -> None:
+) -> int:
     now = now_fn()
     scouting_ids, returning_ids = collect_due_ids_fn(manor, now)
 
     if not scouting_ids and not returning_ids:
-        return
+        return 0
+
+    refreshed = len(scouting_ids) + len(returning_ids)
 
     if prefer_async:
         scouting_ids, returning_ids, done_async = dispatch_async_fn(scouting_ids, returning_ids)
         if done_async:
-            return
+            return refreshed
 
     finalize_due_fn(now, scouting_ids, returning_ids)
+    return refreshed

@@ -18,6 +18,7 @@ from gameplay.services.raid.combat.loot import (
     _grant_loot_items,
     clamp_loot_to_attacker_storage_capacity,
 )
+from guests.models import Guest, GuestStatus, GuestTemplate
 from tests.gameplay_services.support import ensure_grain_template
 
 User = get_user_model()
@@ -432,11 +433,16 @@ def test_finalize_raid_merges_new_and_legacy_grain_into_resource_ledger():
 
 
 @pytest.mark.django_db
-def test_finalize_raid_waits_when_return_capacity_was_filled():
+def test_finalize_raid_discards_full_storage_overflow_and_returns_guest():
     attacker_user = User.objects.create_user(username="raid_capacity_finalize_attacker", password="pass123")
     defender_user = User.objects.create_user(username="raid_capacity_finalize_defender", password="pass123")
     attacker = ensure_manor(attacker_user)
     defender = ensure_manor(defender_user)
+    guest_template = GuestTemplate.objects.create(
+        key="raid_capacity_finalize_guest", name="满仓返程门客", archetype="military", rarity="green"
+    )
+    guest = Guest.objects.create(manor=attacker, template=guest_template, status=GuestStatus.DEPLOYED)
+    loot_template = ItemTemplate.objects.create(key="raid_capacity_finalize_item", name="返程战利品", tradeable=True)
     attacker.silver = 100
     attacker.silver_capacity = 100
     attacker.save(update_fields=["silver", "silver_capacity"])
@@ -446,15 +452,72 @@ def test_finalize_raid_waits_when_return_capacity_was_filled():
         status=RaidRun.Status.RETURNING,
         is_attacker_victory=True,
         loot_resources={"silver": 10},
+        loot_items={"raid_capacity_finalize_item": 2},
     )
+    run.guests.add(guest)
 
     finalized = combat_runs.finalize_raid(run)
 
     attacker.refresh_from_db()
     run.refresh_from_db()
-    assert finalized is False
-    assert run.status == RaidRun.Status.RETURNING
+    guest.refresh_from_db()
+    assert finalized is True
+    assert run.status == RaidRun.Status.COMPLETED
+    assert run.completed_at is not None
+    assert guest.status == GuestStatus.IDLE
     assert attacker.silver == 100
+    assert InventoryItem.objects.get(manor=attacker, template=loot_template).quantity == 2
+    assert not ResourceEvent.objects.filter(
+        manor=attacker,
+        resource_type="silver",
+        reason=ResourceEvent.Reason.BATTLE_REWARD,
+        note="踢馆掠夺",
+    ).exists()
+
+
+@pytest.mark.django_db
+def test_finalize_raid_credits_available_capacity_once_and_discards_remainder():
+    attacker_user = User.objects.create_user(username="raid_partial_finalize_attacker", password="pass123")
+    defender_user = User.objects.create_user(username="raid_partial_finalize_defender", password="pass123")
+    attacker = ensure_manor(attacker_user)
+    defender = ensure_manor(defender_user)
+    grain_template = ensure_grain_template()
+    attacker.silver = 97
+    attacker.silver_capacity = 100
+    attacker.grain = 100
+    attacker.grain_capacity = 100
+    attacker.save(update_fields=["silver", "silver_capacity", "grain", "grain_capacity"])
+    InventoryItem.objects.create(
+        manor=attacker,
+        template=grain_template,
+        quantity=100,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    run = RaidRun.objects.create(
+        attacker=attacker,
+        defender=defender,
+        status=RaidRun.Status.RETURNING,
+        is_attacker_victory=True,
+        loot_resources={"silver": 10},
+        loot_items={"grain": 7},
+    )
+
+    assert combat_runs.finalize_raid(run) is True
+    assert combat_runs.finalize_raid(run) is True
+
+    attacker.refresh_from_db()
+    run.refresh_from_db()
+    assert run.status == RaidRun.Status.COMPLETED
+    assert attacker.silver == 100
+    assert attacker.grain == 100
+    assert InventoryItem.objects.get(manor=attacker, template=grain_template).quantity == 100
+    assert list(
+        ResourceEvent.objects.filter(
+            manor=attacker,
+            reason=ResourceEvent.Reason.BATTLE_REWARD,
+            note="踢馆掠夺",
+        ).values_list("resource_type", "delta")
+    ) == [("silver", 3)]
 
 
 @pytest.mark.django_db

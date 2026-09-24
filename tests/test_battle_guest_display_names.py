@@ -123,7 +123,7 @@ def test_build_guest_combatants_keeps_fractional_stat_bonuses_until_combat():
 
     assert combatant.attack == pytest.approx(108 * 1.05)
     assert combatant.defense == pytest.approx(90 * 1.05)
-    assert combatant.agility == pytest.approx((75 + 8) * 1.05)
+    assert combatant.agility == 75
     assert combatant.max_hp == 5985
     assert combatant.hp == 1050
     assert isinstance(combatant.hp, int)

@@ -23,10 +23,11 @@ function createClassList() {
   };
 }
 
-function createDashboardEnvironment(fetchResponses) {
+function createDashboardEnvironment(fetchResponses, storageData = new Map()) {
   const timeoutHandles = [];
   const eventListeners = new Map();
   let reloadCalls = 0;
+  const navigationCalls = [];
   let blockingInteraction = false;
   const levelElement = { textContent: "等级 1" };
   const hpElement = { textContent: "生命 100/100" };
@@ -125,9 +126,17 @@ function createDashboardEnvironment(fetchResponses) {
   const windowObj = {
     AbortController,
     location: {
+      pathname: "/",
       reload() {
         reloadCalls += 1;
       },
+      assign(url) {
+        navigationCalls.push(url);
+      },
+    },
+    sessionStorage: {
+      getItem(key) { return storageData.get(key) ?? null; },
+      setItem(key, value) { storageData.set(key, value); },
     },
     setInterval() {
       return 1;
@@ -166,6 +175,7 @@ function createDashboardEnvironment(fetchResponses) {
     context,
     countdownElement,
     attributes,
+    storageData,
     levelElement,
     hpElement,
     pendingTimeouts() {
@@ -176,6 +186,9 @@ function createDashboardEnvironment(fetchResponses) {
     },
     reloadCalls() {
       return reloadCalls;
+    },
+    navigationCalls() {
+      return navigationCalls;
     },
     dispatchEvent(event) {
       documentObj.dispatchEvent(event);
@@ -277,6 +290,233 @@ test("dashboard reloads an expired runtime countdown when the page is idle", asy
   reloadTimer.callback();
 
   assert.equal(environment.reloadCalls(), 1);
+});
+
+test("dashboard reloads once when an arrival timer has no server write", async () => {
+  const environment = createDashboardEnvironment([{
+    ok: true,
+    json: async () => ({ success: true, refreshed: 0 }),
+  }]);
+  const now = Date.now();
+  environment.context.Date = class extends Date {
+    static now() { return now; }
+  };
+  environment.attributes.set("data-countdown", new Date(now - 2000).toISOString());
+  environment.attributes.delete("data-check-url");
+  environment.attributes.set("data-refresh", "1");
+  environment.attributes.set("data-refresh-url", "/missions/refresh/");
+  environment.attributes.set("data-refresh-method", "post");
+
+  const scriptSource = fs.readFileSync(path.resolve(__dirname, "..", "dashboard.js"), "utf8");
+  vm.runInContext(scriptSource, environment.context, { filename: "dashboard.js" });
+  await flushAsyncWork();
+
+  assert.equal(environment.fetchCallCount(), 1);
+  const [reloadTimer] = environment.pendingTimeouts();
+  assert.equal(reloadTimer.delay, 500);
+  reloadTimer.fired = true;
+  reloadTimer.callback();
+  assert.equal(environment.reloadCalls(), 1);
+
+  const sameCountdown = createDashboardEnvironment([{
+    ok: true,
+    json: async () => ({ success: true, refreshed: 0 }),
+  }], environment.storageData);
+  sameCountdown.context.Date = environment.context.Date;
+  sameCountdown.attributes.set("data-countdown", new Date(now - 2000).toISOString());
+  sameCountdown.attributes.delete("data-check-url");
+  sameCountdown.attributes.set("data-refresh", "1");
+  sameCountdown.attributes.set("data-refresh-url", "/missions/refresh/");
+  sameCountdown.attributes.set("data-refresh-method", "post");
+  vm.runInContext(scriptSource, sameCountdown.context, { filename: "dashboard.js" });
+  await flushAsyncWork();
+
+  assert.equal(sameCountdown.reloadCalls(), 0);
+  assert.equal(sameCountdown.countdownElement.textContent, "等待服务器结算...");
+  assert.equal(sameCountdown.pendingTimeouts()[0].delay, 2000);
+});
+
+test("dashboard waits for asynchronous battle processing before reloading", async () => {
+  const environment = createDashboardEnvironment([
+    {
+      ok: true,
+      status: 200,
+      json: async () => ({ success: true, refreshed: 1, pending: true }),
+    },
+    {
+      ok: true,
+      status: 200,
+      json: async () => ({ success: true, refreshed: 0, pending: false }),
+    },
+  ]);
+  let now = Date.now();
+  environment.context.Date = class extends Date {
+    static now() { return now; }
+  };
+  environment.attributes.set("data-countdown", new Date(now - 2000).toISOString());
+  environment.attributes.delete("data-check-url");
+  environment.attributes.set("data-refresh", "1");
+  environment.attributes.set("data-refresh-url", "/runtime/refresh/");
+  environment.attributes.set("data-refresh-method", "post");
+
+  const scriptSource = fs.readFileSync(path.resolve(__dirname, "..", "dashboard.js"), "utf8");
+  vm.runInContext(scriptSource, environment.context, { filename: "dashboard.js" });
+  await flushAsyncWork();
+
+  assert.equal(environment.fetchCallCount(), 1);
+  assert.equal(environment.reloadCalls(), 0);
+  assert.equal(environment.countdownElement.textContent, "等待服务器结算...");
+  const [retryTimer] = environment.pendingTimeouts();
+  assert.equal(retryTimer.delay, 2000);
+
+  retryTimer.fired = true;
+  retryTimer.callback();
+  await flushAsyncWork();
+
+  assert.equal(environment.fetchCallCount(), 2);
+  const [reloadTimer] = environment.pendingTimeouts();
+  assert.equal(reloadTimer.delay, 500);
+  reloadTimer.fired = true;
+  reloadTimer.callback();
+  assert.equal(environment.reloadCalls(), 1);
+});
+
+test("dashboard refreshes separate expired activities even if one request hangs", async () => {
+  const environment = createDashboardEnvironment([
+    new Promise(() => {}),
+    { ok: true, json: async () => ({ success: true, refreshed: 1 }) },
+  ]);
+  const now = Date.now();
+  environment.context.Date = class extends Date {
+    static now() { return now; }
+  };
+  environment.attributes.set("data-countdown", new Date(now - 2000).toISOString());
+  environment.attributes.delete("data-check-url");
+  environment.attributes.set("data-refresh", "1");
+  environment.attributes.set("data-refresh-url", "/missions/refresh/");
+
+  const secondAttributes = new Map([
+    ["data-countdown", new Date(now - 2000).toISOString()],
+    ["data-refresh", "1"],
+    ["data-refresh-url", "/buildings/refresh/"],
+  ]);
+  const secondCountdown = {
+    isConnected: true,
+    textContent: "计算中",
+    classList: createClassList(),
+    getAttribute(name) { return secondAttributes.get(name) ?? null; },
+    removeAttribute(name) { secondAttributes.delete(name); },
+    closest() { return null; },
+  };
+  environment.setPageShell({
+    querySelectorAll(selector) {
+      if (selector === "[data-countdown]") return [environment.countdownElement, secondCountdown];
+      return [];
+    },
+  });
+
+  const scriptSource = fs.readFileSync(path.resolve(__dirname, "..", "dashboard.js"), "utf8");
+  vm.runInContext(scriptSource, environment.context, { filename: "dashboard.js" });
+  await flushAsyncWork();
+
+  assert.equal(environment.fetchCallCount(), 2);
+  assert.equal(environment.pendingTimeouts().some((timer) => timer.delay === 500), true);
+});
+
+test("dashboard times out a stalled refresh and schedules a retry", async () => {
+  const environment = createDashboardEnvironment([new Promise(() => {})]);
+  const now = Date.now();
+  environment.context.Date = class extends Date {
+    static now() { return now; }
+  };
+  environment.attributes.set("data-countdown", new Date(now - 2000).toISOString());
+  environment.attributes.delete("data-check-url");
+  environment.attributes.set("data-refresh", "1");
+  environment.attributes.set("data-refresh-url", "/missions/refresh/");
+
+  const scriptSource = fs.readFileSync(path.resolve(__dirname, "..", "dashboard.js"), "utf8");
+  vm.runInContext(scriptSource, environment.context, { filename: "dashboard.js" });
+  await flushAsyncWork();
+
+  const [requestTimer] = environment.pendingTimeouts();
+  assert.equal(requestTimer.delay, 10000);
+  requestTimer.fired = true;
+  requestTimer.callback();
+  await flushAsyncWork();
+
+  assert.equal(environment.countdownElement.textContent, "刷新失败，稍后重试...");
+  assert.equal(environment.pendingTimeouts()[0].delay, 2000);
+});
+
+test("dashboard opens login after an expired session instead of retrying the refresh", async () => {
+  const loginUrl = "https://game.example/accounts/login/?next=/manor/api/missions/refresh/";
+  const environment = createDashboardEnvironment([{
+    ok: true,
+    redirected: true,
+    url: loginUrl,
+    json: async () => { throw new Error("login page is not JSON"); },
+  }]);
+  const now = Date.now();
+  environment.context.Date = class extends Date {
+    static now() { return now; }
+  };
+  environment.attributes.set("data-countdown", new Date(now - 2000).toISOString());
+  environment.attributes.delete("data-check-url");
+  environment.attributes.set("data-refresh", "1");
+  environment.attributes.set("data-refresh-url", "/manor/api/missions/refresh/");
+
+  const scriptSource = fs.readFileSync(path.resolve(__dirname, "..", "dashboard.js"), "utf8");
+  vm.runInContext(scriptSource, environment.context, { filename: "dashboard.js" });
+  await flushAsyncWork();
+
+  assert.deepEqual(environment.navigationCalls(), [loginUrl]);
+  assert.equal(environment.reloadCalls(), 0);
+  assert.equal(environment.pendingTimeouts().length, 0);
+});
+
+test("guest training opens login after an expired session instead of retrying", async () => {
+  const loginUrl = "https://game.example/accounts/login/?next=/guests/1/check-training/";
+  const environment = createDashboardEnvironment([{
+    ok: true,
+    redirected: true,
+    url: loginUrl,
+    json: async () => { throw new Error("login page is not JSON"); },
+  }]);
+  const scriptSource = fs.readFileSync(path.resolve(__dirname, "..", "dashboard.js"), "utf8");
+  vm.runInContext(scriptSource, environment.context, { filename: "dashboard.js" });
+  await flushAsyncWork();
+
+  assert.deepEqual(environment.navigationCalls(), [loginUrl]);
+  assert.equal(environment.pendingTimeouts().length, 0);
+});
+
+test("dashboard backs off after a failed runtime refresh instead of reloading in a loop", async () => {
+  const environment = createDashboardEnvironment([
+    {
+      ok: false,
+      status: 429,
+      json: async () => ({ success: false, error: "状态刷新过于频繁" }),
+    },
+  ]);
+  let now = Date.now();
+  environment.context.Date = class extends Date {
+    static now() { return now; }
+  };
+  environment.attributes.set("data-countdown", new Date(now - 2000).toISOString());
+  environment.attributes.delete("data-check-url");
+  environment.attributes.set("data-refresh", "1");
+  environment.attributes.set("data-refresh-url", "/runtime/refresh/");
+  environment.attributes.set("data-refresh-method", "post");
+
+  const scriptSource = fs.readFileSync(path.resolve(__dirname, "..", "dashboard.js"), "utf8");
+  vm.runInContext(scriptSource, environment.context, { filename: "dashboard.js" });
+  await flushAsyncWork();
+
+  assert.equal(environment.fetchCallCount(), 1);
+  assert.equal(environment.reloadCalls(), 0);
+  assert.equal(environment.countdownElement.textContent, "刷新失败，稍后重试...");
+  const [retryTimer] = environment.pendingTimeouts();
+  assert.equal(retryTimer.delay, 2000);
 });
 
 test("dashboard preserves the interaction grace when refresh settles after a click", async () => {

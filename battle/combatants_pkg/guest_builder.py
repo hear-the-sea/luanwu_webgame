@@ -18,8 +18,6 @@ logger = logging.getLogger(__name__)
 
 # Guest combat constants
 DEFAULT_GUEST_AGILITY = 80
-INTELLECT_TO_SPEED_DIVISOR = 10
-MIN_SPEED_BONUS = 5
 DEFAULT_LUCK = 50
 VANGUARD_RATIO = 0.25
 
@@ -207,7 +205,6 @@ def build_guest_combatants(
         attack_mult = 1.0 + bonuses.get("attack", 0)
         defense_mult = 1.0 + bonuses.get("defense", 0)
         hp_mult = 1.0 + bonuses.get("hp", 0)
-        agility_mult = 1.0 + bonuses.get("agility", 0)
 
         # Keep combat attributes fractional until the damage formula consumes them.
         attack = min(MAX_STAT_VALUE, stats.attack * attack_mult)
@@ -220,10 +217,7 @@ def build_guest_combatants(
         else:
             hp = max_hp
 
-        base_agility = getattr(guest, "agility", DEFAULT_GUEST_AGILITY)
-        intellect_value = stats.intellect or getattr(guest, "intellect", DEFAULT_GUEST_AGILITY)
-        troop_speed = max(MIN_SPEED_BONUS, intellect_value // INTELLECT_TO_SPEED_DIVISOR)
-        agility = (base_agility + troop_speed) * agility_mult
+        agility = getattr(guest, "agility", DEFAULT_GUEST_AGILITY)
 
         priority = 0
         team.append(

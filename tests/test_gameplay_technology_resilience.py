@@ -111,7 +111,12 @@ def test_load_technology_templates_returns_empty_when_yaml_root_not_mapping(monk
 
 def test_get_guest_stat_bonuses_tolerates_invalid_guest_bonus():
     bonuses = tech_service.get_guest_stat_bonuses({"guest_bonus": "bad-value"})
-    assert bonuses == {"attack": 0.0, "defense": 0.0, "hp": 0.0, "agility": 0.0}
+    assert bonuses == {"attack": 0.0, "defense": 0.0, "hp": 0.0}
+
+
+def test_guest_bonus_does_not_grant_combat_agility():
+    bonuses = tech_service.get_guest_stat_bonuses({"guest_bonus": 0.2})
+    assert bonuses == {"attack": 0.2, "defense": 0.2, "hp": 0.2}
 
 
 def test_build_player_battle_technology_payload_wraps_levels(monkeypatch):

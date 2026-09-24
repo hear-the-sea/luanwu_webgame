@@ -12,8 +12,7 @@
   let reloadTimerId = null;
   let reloadPending = false;
   let lastUserInteractionAt = 0;
-  let refreshRequestInFlight = false;
-  let refreshRequestController = null;
+  const runtimeRefreshes = new Map();
   let refreshGeneration = 0;
   const PAGE_RELOAD_DELAY_MS = 500;
   const PAGE_RELOAD_INTERACTION_GRACE_MS = 1500;
@@ -21,6 +20,11 @@
   const AUTO_REFRESH_GRACE_MS = 800;
   const SHORT_COUNTDOWN_WINDOW_MS = 5000;
   const SHORT_COUNTDOWN_GRACE_MS = 1200;
+  const RUNTIME_REFRESH_RETRY_BASE_MS = 2000;
+  const RUNTIME_REFRESH_RETRY_MAX_MS = 30000;
+  const RUNTIME_REFRESH_TIMEOUT_MS = 10000;
+  const RUNTIME_RELOAD_COOLDOWN_MS = 15000;
+  const RUNTIME_RELOAD_STORAGE_KEY = "dashboard:recent-runtime-reloads";
   const TRAINING_CHECK_TIMEOUT_MS = 10000;
   const TRAINING_CHECK_RETRY_BASE_MS = 2000;
   const TRAINING_CHECK_RETRY_MAX_MS = 30000;
@@ -80,54 +84,175 @@
     refreshGeneration += 1;
     reloadPending = false;
     clearPageReloadTimer();
-    if (refreshRequestController) {
-      refreshRequestController.abort();
-      refreshRequestController = null;
+    for (const state of runtimeRefreshes.values()) {
+      if (state.retryTimerId !== null) window.clearTimeout(state.retryTimerId);
+      if (state.requestTimerId !== null) window.clearTimeout(state.requestTimerId);
+      if (state.controller) state.controller.abort();
     }
-    refreshRequestInFlight = false;
+    runtimeRefreshes.clear();
   }
 
-  function requestRefreshThenReload(refreshUrl, refreshMethod) {
-    if (!refreshUrl) {
-      schedulePageReload();
-      return;
+  function setRefreshStatus(element, text) {
+    if (!element || !isElementConnected(element)) return;
+    element.textContent = text;
+    element.classList.remove("countdown-finished");
+  }
+
+  function navigateToRedirectedPage(response) {
+    if (!response || !response.redirected || !response.url) return false;
+    window.location.assign(response.url);
+    return true;
+  }
+
+  function scheduleRefreshRetry(state, statusText) {
+    state.statusText = statusText;
+    state.elements.forEach((element) => setRefreshStatus(element, statusText));
+    if (state.retryTimerId !== null) return;
+
+    state.attempt += 1;
+    const retryDelay = Math.min(
+      RUNTIME_REFRESH_RETRY_BASE_MS * (2 ** (state.attempt - 1)),
+      RUNTIME_REFRESH_RETRY_MAX_MS,
+    );
+    state.retryTimerId = window.setTimeout(() => {
+      state.retryTimerId = null;
+      sendRuntimeRefresh(state);
+    }, retryDelay);
+  }
+
+  function reserveRuntimeReload(state) {
+    try {
+      const storage = window.sessionStorage;
+      if (!storage) return true;
+      const now = Date.now();
+      const stored = JSON.parse(storage.getItem(RUNTIME_RELOAD_STORAGE_KEY) || "{}");
+      const recent = stored && typeof stored === "object" && !Array.isArray(stored) ? stored : {};
+      for (const [key, timestamp] of Object.entries(recent)) {
+        if (!Number.isFinite(timestamp) || timestamp > now || now - timestamp >= RUNTIME_RELOAD_COOLDOWN_MS) {
+          delete recent[key];
+        }
+      }
+      const path = window.location.pathname || "";
+      const keys = [...state.targets].map((target) => `${path}|${state.key}|${target}`);
+      if (keys.length && keys.every((key) => Object.prototype.hasOwnProperty.call(recent, key))) {
+        return false;
+      }
+      keys.forEach((key) => { recent[key] = now; });
+      storage.setItem(RUNTIME_RELOAD_STORAGE_KEY, JSON.stringify(recent));
+      return true;
+    } catch (error) {
+      return true;
     }
-    if (refreshRequestInFlight) return;
-    refreshRequestInFlight = true;
+  }
+
+  function sendRuntimeRefresh(state) {
+    if (state.inFlight || state.retryTimerId !== null || reloadPending) return;
+    state.inFlight = true;
     const requestGeneration = refreshGeneration;
     const requestController = typeof window.AbortController === "function"
       ? new window.AbortController()
       : null;
-    refreshRequestController = requestController;
+    state.controller = requestController;
+    let timedOut = false;
 
-    const method = (refreshMethod || "GET").toUpperCase();
     const headers = { "X-Requested-With": "XMLHttpRequest" };
-    if (method !== "GET" && method !== "HEAD") {
+    if (state.method !== "GET" && state.method !== "HEAD") {
       const csrfToken = getCSRFToken();
       if (csrfToken) {
         headers["X-CSRFToken"] = csrfToken;
       }
     }
 
-    fetch(refreshUrl, {
-      method,
-      credentials: "same-origin",
-      headers,
-      signal: requestController ? requestController.signal : undefined,
-    })
+    const request = Promise.resolve()
+      .then(() => fetch(state.url, {
+        method: state.method,
+        credentials: "same-origin",
+        headers,
+        signal: requestController ? requestController.signal : undefined,
+      }))
+      .then(async (response) => {
+        if (navigateToRedirectedPage(response)) {
+          return { navigationRequested: true };
+        }
+        if (response && response.ok === false) {
+          throw new Error(`状态刷新失败 (${response.status || "unknown"})`);
+        }
+
+        let payload = null;
+        if (response && typeof response.json === "function") {
+          payload = await response.json();
+        }
+        if (payload && payload.success === false) {
+          throw new Error(payload.error || payload.message || "状态刷新失败");
+        }
+        if (payload && Object.prototype.hasOwnProperty.call(payload, "refreshed")) {
+          const refreshed = Number(payload.refreshed);
+          if (!Number.isFinite(refreshed)) {
+            throw new Error("状态刷新返回了无效结果");
+          }
+        }
+        return payload;
+      });
+    const timeout = new Promise((_, reject) => {
+      state.requestTimerId = window.setTimeout(() => {
+        timedOut = true;
+        if (requestController) requestController.abort();
+        reject(new Error("状态刷新超时"));
+      }, RUNTIME_REFRESH_TIMEOUT_MS);
+    });
+
+    Promise.race([request, timeout])
+      .then((payload) => {
+        if (requestGeneration !== refreshGeneration) return;
+        if (payload && payload.navigationRequested === true) {
+          return;
+        }
+        if (payload && payload.pending === true) {
+          scheduleRefreshRetry(state, "等待服务器结算...");
+        } else if (reserveRuntimeReload(state)) {
+          state.attempt = 0;
+          schedulePageReload();
+        } else {
+          scheduleRefreshRetry(state, "等待服务器结算...");
+        }
+      })
       .catch((err) => {
-        if (requestGeneration === refreshGeneration && err?.name !== "AbortError") {
+        if (requestGeneration === refreshGeneration && (timedOut || err?.name !== "AbortError")) {
           console.error("状态刷新失败:", err);
+          scheduleRefreshRetry(state, "刷新失败，稍后重试...");
         }
       })
       .finally(() => {
-        if (refreshRequestController === requestController) {
-          refreshRequestController = null;
-        }
+        if (state.requestTimerId !== null) window.clearTimeout(state.requestTimerId);
+        state.requestTimerId = null;
+        state.controller = null;
         if (requestGeneration !== refreshGeneration) return;
-        refreshRequestInFlight = false;
-        schedulePageReload();
+        state.inFlight = false;
       });
+  }
+
+  function requestRefreshThenReload(refreshUrl, refreshMethod, statusElement = null, target = null) {
+    if (!refreshUrl) {
+      schedulePageReload();
+      return;
+    }
+    const method = (refreshMethod || "GET").toUpperCase();
+    const key = `${method} ${refreshUrl}`;
+    let state = runtimeRefreshes.get(key);
+    if (!state) {
+      state = {
+        key, url: refreshUrl, method, elements: new Set(), targets: new Set(),
+        attempt: 0, retryTimerId: null, requestTimerId: null, controller: null,
+        inFlight: false, statusText: "刷新中...",
+      };
+      runtimeRefreshes.set(key, state);
+    }
+    if (statusElement) {
+      state.elements.add(statusElement);
+      setRefreshStatus(statusElement, state.statusText);
+    }
+    if (target !== null) state.targets.add(target);
+    sendRuntimeRefresh(state);
   }
 
   function refreshCache() {
@@ -390,6 +515,7 @@
         },
         signal: abortController ? abortController.signal : undefined,
       });
+      if (navigateToRedirectedPage(resp)) return false;
       const data = await resp.json();
       if (resp.ok === false || !data || data.success !== true) {
         throw new Error((data && (data.error || data.message)) || `训练状态检查失败 (${resp.status})`);
@@ -502,7 +628,7 @@
         if (checkUrl) {
           checkTrainingAndUpdate(el);
         } else if (shouldRefresh) {
-          requestRefreshThenReload(refreshUrl, refreshMethod);
+          requestRefreshThenReload(refreshUrl, refreshMethod, el, target);
         }
       } else if (shouldRefresh && diff <= 0) {
         // 倒计时到点后留出短暂缓冲，减少短计时建筑因节流/时钟偏差导致的重复刷新。

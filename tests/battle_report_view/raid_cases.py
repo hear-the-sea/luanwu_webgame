@@ -85,7 +85,15 @@ def test_raid_report_without_run_relation_uses_defender_perspective_from_message
     assert response.context["loss_left"]["casualties"][0]["label"] == "进攻方护院"
     assert response.context["loss_right"]["casualties"][0]["label"] == "防守方护院"
     assert response.context["report_title"] == "踢馆战报 - 防守失败"
+    assert response.context["report_matchup"] == {
+        "attacker_name": attacker_manor.display_name,
+        "defender_name": defender_manor.display_name,
+    }
     body = response.content.decode("utf-8")
+    assert 'aria-label="踢馆对战双方"' in body
+    assert body.index(f"<strong>{attacker_manor.display_name}</strong>") < body.index(
+        f"<strong>{defender_manor.display_name}</strong>"
+    )
     overview_html = body.split('<section class="battle-overview-table"', 1)[1].split("</section>", 1)[0]
     assert "我方" in overview_html
     assert "敌方" in overview_html
@@ -176,6 +184,11 @@ def test_raid_defender_failure_shows_pvp_loss_items(client, django_user_model):
     body = response.content.decode("utf-8")
 
     assert response.status_code == 200
+    assert response.context["report_matchup"] == {
+        "attacker_name": attacker_manor.display_name,
+        "defender_name": defender_manor.display_name,
+    }
+    assert 'aria-label="踢馆对战双方"' in body
     assert "战斗损失" in body
     assert "银两 -321" in body
     assert "粮食 -123" in body
@@ -183,6 +196,10 @@ def test_raid_defender_failure_shows_pvp_loss_items(client, django_user_model):
     assert "mysterious_stone" not in body
     assert "门客被俘（赵云）" in body
     assert "战斗失败不获得奖励" not in body
+
+    client.force_login(attacker_user)
+    attacker_response = client.get(reverse("battle:report_detail", kwargs={"pk": report.pk}))
+    assert attacker_response.context["report_matchup"] == response.context["report_matchup"]
 
 
 @pytest.mark.django_db

@@ -3,20 +3,8 @@
 <div class="shop-section">
     <!-- 购买区域 -->
     <div id="shop-buy-section" class="tw-trade-card {% if shop_view == 'sell' %}tw-shop-section-hidden{% endif %}">
+        {% include "trade/partials/_shop_category_filter.html" with filter_view="buy" filter_id="shop-category" other_page_name="sell_page" other_page_number=shop_sell_page_obj.number %}
         {% if shop_items %}
-        <div class="tw-filter-bar">
-            <form method="get" class="tw-filter-form">
-                <input type="hidden" name="tab" value="shop">
-                <input type="hidden" name="view" value="buy">
-                <input type="hidden" name="sell_page" value="{{ shop_sell_page_obj.number }}">
-                <label for="shop-category" class="tw-filter-label">筛选</label>
-                <select id="shop-category" name="category" class="tw-filter-select" data-trade-auto-submit>
-                    {% for opt in categories %}
-                    <option value="{{ opt.key }}" {% if selected_category == opt.key %}selected{% endif %}>{{ opt.label }}</option>
-                    {% endfor %}
-                </select>
-            </form>
-        </div>
         <div class="tw-shop-table-wrapper">
         <table class="tw-shop-table">
             <thead>
@@ -128,6 +116,7 @@
 
     <!-- 出售区域 -->
     <div id="shop-sell-section" class="tw-trade-card {% if shop_view != 'sell' %}tw-shop-section-hidden{% endif %}">
+        {% include "trade/partials/_shop_category_filter.html" with filter_view="sell" filter_id="shop-sell-category" other_page_name="buy_page" other_page_number=shop_buy_page_obj.number %}
         {% if inventory %}
         <div class="tw-shop-table-wrapper">
         <table class="tw-shop-table">
