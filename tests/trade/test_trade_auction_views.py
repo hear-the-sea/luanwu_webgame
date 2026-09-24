@@ -5,12 +5,20 @@ from django.contrib.messages import get_messages
 from django.urls import reverse
 
 from gameplay.services.manor.core import ensure_manor
+from trade.services.auction.access import AUCTION_MIN_PRESTIGE
+
+
+def _eligible_auction_manor(user):
+    manor = ensure_manor(user)
+    manor.prestige = AUCTION_MIN_PRESTIGE
+    manor.save(update_fields=["prestige"])
+    return manor
 
 
 @pytest.mark.django_db
 def test_auction_bid_view_messages_first_and_raise(monkeypatch, client, django_user_model):
     user = django_user_model.objects.create_user(username="auction_bid", password="pass12345")
-    _ = ensure_manor(user)
+    _ = _eligible_auction_manor(user)
     client.force_login(user)
 
     monkeypatch.setattr("trade.views.place_bid", lambda *_args, **_kwargs: (object(), True))
@@ -49,7 +57,7 @@ def test_auction_bid_view_rejects_invalid_amount_without_service_call(monkeypatc
 @pytest.mark.django_db
 def test_auction_bid_view_tolerates_missing_threshold_setting(monkeypatch, client, django_user_model):
     user = django_user_model.objects.create_user(username="auction_bid_missing_threshold", password="pass12345")
-    _ = ensure_manor(user)
+    _ = _eligible_auction_manor(user)
     client.force_login(user)
 
     monkeypatch.setattr("trade.views.place_bid", lambda *_args, **_kwargs: (object(), True))
@@ -64,7 +72,7 @@ def test_auction_bid_view_tolerates_missing_threshold_setting(monkeypatch, clien
 @pytest.mark.django_db
 def test_auction_bid_view_tolerates_invalid_threshold_setting(monkeypatch, client, django_user_model):
     user = django_user_model.objects.create_user(username="auction_bid_invalid_threshold", password="pass12345")
-    _ = ensure_manor(user)
+    _ = _eligible_auction_manor(user)
     client.force_login(user)
 
     monkeypatch.setattr("trade.views.place_bid", lambda *_args, **_kwargs: (object(), True))
@@ -80,7 +88,7 @@ def test_auction_bid_view_uses_shared_threshold_warning_helper(monkeypatch, clie
     calls: list[dict[str, object]] = []
 
     user = django_user_model.objects.create_user(username="auction_bid_shared_threshold", password="pass12345")
-    _ = ensure_manor(user)
+    _ = _eligible_auction_manor(user)
     client.force_login(user)
 
     monkeypatch.setattr("trade.views.place_bid", lambda *_args, **_kwargs: (object(), True))
@@ -100,3 +108,18 @@ def test_auction_bid_view_uses_shared_threshold_warning_helper(monkeypatch, clie
             "log_args": (user.id, 9, 77),
         }
     ]
+
+
+@pytest.mark.django_db
+def test_auction_bid_view_rejects_low_prestige(client, django_user_model):
+    user = django_user_model.objects.create_user(username="auction_bid_low_prestige", password="pass12345")
+    manor = ensure_manor(user)
+    manor.prestige = AUCTION_MIN_PRESTIGE - 1
+    manor.save(update_fields=["prestige"])
+    client.force_login(user)
+
+    response = client.post(reverse("trade:auction_bid", args=[1]), {"amount": "5"})
+
+    assert response.status_code == 302
+    assert response["Location"].endswith("?tab=auction")
+    assert any("声望达到 2000" in message.message for message in get_messages(response.wsgi_request))

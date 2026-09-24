@@ -7,6 +7,14 @@ from django.test import RequestFactory
 from tests.trade_selectors.support import create_manor
 from trade.page_context import build_trade_request_params
 from trade.selectors import get_trade_context
+from trade.services.auction.access import AUCTION_MIN_PRESTIGE
+
+
+def _auction_manor(django_user_model, *, username: str):
+    manor = create_manor(django_user_model, username=username)
+    manor.prestige = AUCTION_MIN_PRESTIGE
+    manor.save(update_fields=["prestige"])
+    return manor
 
 
 @pytest.mark.django_db
@@ -24,7 +32,7 @@ def test_get_trade_context_auction_browse_sets_bid_info(monkeypatch, django_user
         lambda slots_list, _manor: {slot.id: {"bid": slot.id} for slot in slots_list},
     )
 
-    manor = create_manor(django_user_model, username="trade_ctx_auction")
+    manor = _auction_manor(django_user_model, username="trade_ctx_auction")
     request = RequestFactory().get("/trade", {"tab": "auction", "view": "browse"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
@@ -47,7 +55,7 @@ def test_get_trade_context_auction_defaults_to_browse_without_view(monkeypatch, 
         lambda slots_list, _manor: {slot.id: {"bid": slot.id} for slot in slots_list},
     )
 
-    manor = create_manor(django_user_model, username="trade_ctx_auction_default")
+    manor = _auction_manor(django_user_model, username="trade_ctx_auction_default")
     request = RequestFactory().get("/trade", {"tab": "auction"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
@@ -70,7 +78,7 @@ def test_get_trade_context_auction_browse_tolerates_bid_info_batch_error(monkeyp
         lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("batch failed")),
     )
 
-    manor = create_manor(django_user_model, username="trade_ctx_auction_bidinfo_err")
+    manor = _auction_manor(django_user_model, username="trade_ctx_auction_bidinfo_err")
     request = RequestFactory().get("/trade", {"tab": "auction", "view": "browse"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
@@ -90,7 +98,7 @@ def test_get_trade_context_auction_browse_tolerates_stats_and_slot_errors(monkey
         lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("slots failed")),
     )
 
-    manor = create_manor(django_user_model, username="trade_ctx_auction_load_err")
+    manor = _auction_manor(django_user_model, username="trade_ctx_auction_load_err")
     request = RequestFactory().get("/trade", {"tab": "auction", "view": "browse"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
@@ -113,7 +121,7 @@ def test_get_trade_context_auction_my_bids_tolerates_loading_errors(monkeypatch,
         lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("leading bids failed")),
     )
 
-    manor = create_manor(django_user_model, username="trade_ctx_auction_my_err")
+    manor = _auction_manor(django_user_model, username="trade_ctx_auction_my_err")
     request = RequestFactory().get("/trade", {"tab": "auction", "view": "my_bids"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))

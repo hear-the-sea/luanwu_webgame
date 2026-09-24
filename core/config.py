@@ -336,6 +336,8 @@ class MessageConfig:
 class TradeConfig:
     """交易系统配置"""
 
+    AUCTION_MIN_PRESTIGE: int = 2000  # 进入拍卖行的最低声望
+
     # 市场交易
     MARKET_MIN_PRESTIGE: int = 300  # 集市购买和上架的最低声望
     TRANSACTION_TAX_RATE: float = 0.10  # 交易税率 10%

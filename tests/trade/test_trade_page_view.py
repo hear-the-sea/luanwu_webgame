@@ -13,6 +13,7 @@ from django.urls import reverse
 from gameplay.models import Manor
 from gameplay.services.manor.core import ensure_manor
 from trade.page_context import build_trade_page_context
+from trade.services.auction.access import AUCTION_MIN_PRESTIGE
 
 
 @pytest.mark.django_db
@@ -42,6 +43,28 @@ def test_market_page_disables_listing_for_low_prestige_user(client, django_user_
     assert "购买与上架未解锁" in content
     assert "当前声望 299，达到 300" in content
     assert 'disabled title="声望达到 300 后可上架"' in content
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("prestige, unlocked", [(1999, False), (2000, True)])
+def test_auction_page_requires_2000_prestige(client, django_user_model, prestige, unlocked):
+    user = django_user_model.objects.create_user(username=f"trade_auction_prestige_{prestige}", password="pass12345")
+    manor = ensure_manor(user)
+    manor.prestige = prestige
+    manor.save(update_fields=["prestige"])
+    client.force_login(user)
+
+    response = client.get(reverse("trade:trade"), {"tab": "auction"})
+
+    assert response.status_code == 200
+    content = response.content.decode("utf-8")
+    if unlocked:
+        assert "拍卖行未解锁" not in content
+        assert "tw-auction-info-bar" in content
+    else:
+        assert "拍卖行未解锁" in content
+        assert "tw-auction-info-bar" not in content
+        assert f"当前声望 {prestige}，达到 {AUCTION_MIN_PRESTIGE}" in content
 
 
 @pytest.mark.django_db

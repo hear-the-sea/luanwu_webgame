@@ -44,7 +44,14 @@
         </div>
         {% endif %}
         {% if current_tab == "auction" %}
+        {% if auction_can_enter %}
         {% include "trade/partials/_auction.html" %}
+        {% else %}
+        <div class="tw-alert-warning mb-4" role="status">
+            <strong>拍卖行未解锁</strong>
+            <span>当前声望 {{ manor.prestige }}，达到 {{ auction_min_prestige }} 后可进入拍卖行。</span>
+        </div>
+        {% endif %}
         {% elif current_tab == "shop" %}
         {% include "trade/partials/_shop.html" %}
         {% elif current_tab == "bank" %}

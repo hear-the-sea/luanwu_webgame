@@ -20,6 +20,7 @@ from gameplay.models import Manor
 from gameplay.services.utils.messages import create_message
 from gameplay.services.utils.notifications import notify_user
 from trade.models import AuctionBid, AuctionRound, AuctionSlot
+from trade.services.auction.access import require_auction_access
 from trade.services.auction.gold_bars import freeze_gold_bars, require_frozen_record, unfreeze_gold_bars
 
 logger = logging.getLogger(__name__)
@@ -283,6 +284,7 @@ def place_bid(
     amount = _normalize_bid_amount(amount)
 
     with transaction.atomic():
+        require_auction_access(manor)
         slot = _load_locked_slot(slot_id)
         _validate_slot_active(slot)
 

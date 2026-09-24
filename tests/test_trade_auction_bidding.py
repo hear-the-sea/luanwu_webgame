@@ -6,14 +6,17 @@ import pytest
 from django.utils import timezone
 
 from core.exceptions import MessageError, TradeValidationError
-from gameplay.models import InventoryItem
+from gameplay.models import InventoryItem, Manor
 from gameplay.services.manor.core import ensure_manor
 from tests.helpers.auction import create_active_round_slot, ensure_gold_bar_template
 from trade.models import AuctionBid
 from trade.services import auction_service
+from trade.services.auction.access import AUCTION_MIN_PRESTIGE
 
 
-def _set_gold_bars(manor, quantity: int) -> None:
+def _prepare_auction_bidder(manor, quantity: int) -> None:
+    manor.prestige = AUCTION_MIN_PRESTIGE
+    manor.save(update_fields=["prestige"])
     template = ensure_gold_bar_template()
     InventoryItem.objects.update_or_create(
         manor=manor,
@@ -39,12 +42,31 @@ def test_validate_bid_amount_rejects_below_starting_price(django_user_model):
 def test_place_bid_rejects_future_round_before_freezing_gold(django_user_model):
     user = django_user_model.objects.create_user(username="auction_future_round", password="pass12345")
     manor = ensure_manor(user)
+    manor.prestige = AUCTION_MIN_PRESTIGE
+    manor.save(update_fields=["prestige"])
     slot = create_active_round_slot(item_key="auction_future_round_item")
     slot.round.start_at = timezone.now() + timedelta(minutes=5)
     slot.round.save(update_fields=["start_at"])
 
     with pytest.raises(TradeValidationError, match="尚未开始"):
         auction_service.place_bid(manor, slot.id, 10)
+
+
+@pytest.mark.django_db
+def test_place_bid_requires_auction_prestige(django_user_model):
+    user = django_user_model.objects.create_user(username="auction_prestige_gate", password="pass12345")
+    manor = ensure_manor(user)
+    _prepare_auction_bidder(manor, 10)
+    slot = create_active_round_slot(item_key="auction_prestige_gate_item")
+
+    Manor.objects.filter(pk=manor.pk).update(prestige=AUCTION_MIN_PRESTIGE - 1)
+    with pytest.raises(TradeValidationError, match="声望达到 2000"):
+        auction_service.place_bid(manor, slot.id, 5)
+    assert not AuctionBid.objects.filter(slot=slot, manor=manor).exists()
+
+    Manor.objects.filter(pk=manor.pk).update(prestige=AUCTION_MIN_PRESTIGE)
+    bid, _ = auction_service.place_bid(manor, slot.id, 5)
+    assert bid.amount == 5
 
 
 @pytest.mark.django_db
@@ -55,8 +77,8 @@ def test_new_bidder_must_respect_min_increment_when_slot_is_full(monkeypatch, dj
     user2 = django_user_model.objects.create_user(username="auction_min_increment_second", password="pass12345")
     manor1 = ensure_manor(user1)
     manor2 = ensure_manor(user2)
-    _set_gold_bars(manor1, 30)
-    _set_gold_bars(manor2, 30)
+    _prepare_auction_bidder(manor1, 30)
+    _prepare_auction_bidder(manor2, 30)
 
     slot = create_active_round_slot(
         item_key="auction_min_increment_full_slot",
@@ -78,7 +100,7 @@ def test_place_bid_freezes_and_unfreezes_gold_bars(monkeypatch, django_user_mode
 
     user = django_user_model.objects.create_user(username="auction_freeze", password="pass12345")
     manor = ensure_manor(user)
-    _set_gold_bars(manor, 10)
+    _prepare_auction_bidder(manor, 10)
 
     slot = create_active_round_slot(item_key="auction_freeze_item")
 
@@ -108,8 +130,8 @@ def test_place_bid_kicks_out_previous_winner_and_refunds(monkeypatch, django_use
     user2 = django_user_model.objects.create_user(username="auction_kick2", password="pass12345")
     manor1 = ensure_manor(user1)
     manor2 = ensure_manor(user2)
-    _set_gold_bars(manor1, 10)
-    _set_gold_bars(manor2, 10)
+    _prepare_auction_bidder(manor1, 10)
+    _prepare_auction_bidder(manor2, 10)
 
     slot = create_active_round_slot(item_key="auction_kick_item", quantity=1)
 
@@ -147,7 +169,7 @@ def test_place_bid_allows_same_player_to_raise_bid_and_unfreezes_previous(monkey
 
     user = django_user_model.objects.create_user(username="auction_raise", password="pass12345")
     manor = ensure_manor(user)
-    _set_gold_bars(manor, 12)
+    _prepare_auction_bidder(manor, 12)
 
     slot = create_active_round_slot(item_key="auction_raise_item", quantity=2)
 
@@ -178,7 +200,7 @@ def test_place_bid_raises_when_previous_bid_frozen_record_is_missing(monkeypatch
 
     user = django_user_model.objects.create_user(username="auction_missing_previous_frozen", password="pass12345")
     manor = ensure_manor(user)
-    _set_gold_bars(manor, 12)
+    _prepare_auction_bidder(manor, 12)
 
     slot = create_active_round_slot(item_key="auction_missing_previous_frozen_item", quantity=2)
 
@@ -202,8 +224,8 @@ def test_place_bid_raises_when_outbid_player_frozen_record_is_missing(monkeypatc
     user2 = django_user_model.objects.create_user(username="auction_missing_kicked_frozen_2", password="pass12345")
     manor1 = ensure_manor(user1)
     manor2 = ensure_manor(user2)
-    _set_gold_bars(manor1, 10)
-    _set_gold_bars(manor2, 10)
+    _prepare_auction_bidder(manor1, 10)
+    _prepare_auction_bidder(manor2, 10)
 
     slot = create_active_round_slot(item_key="auction_missing_kicked_frozen_item", quantity=1)
 
@@ -225,8 +247,8 @@ def test_place_bid_succeeds_when_outbid_notification_fails(monkeypatch, django_u
     user2 = django_user_model.objects.create_user(username="auction_notify_fail_2", password="pass12345")
     manor1 = ensure_manor(user1)
     manor2 = ensure_manor(user2)
-    _set_gold_bars(manor1, 10)
-    _set_gold_bars(manor2, 10)
+    _prepare_auction_bidder(manor1, 10)
+    _prepare_auction_bidder(manor2, 10)
 
     slot = create_active_round_slot(item_key="auction_notify_fail_item", quantity=1)
 
@@ -253,8 +275,8 @@ def test_place_bid_runtime_marker_notification_error_bubbles_up(monkeypatch, dja
     user2 = django_user_model.objects.create_user(username="auction_notify_runtime_2", password="pass12345")
     manor1 = ensure_manor(user1)
     manor2 = ensure_manor(user2)
-    _set_gold_bars(manor1, 10)
-    _set_gold_bars(manor2, 10)
+    _prepare_auction_bidder(manor1, 10)
+    _prepare_auction_bidder(manor2, 10)
 
     slot = create_active_round_slot(item_key="auction_notify_runtime_item", quantity=1)
 
@@ -276,9 +298,9 @@ def test_place_bid_notifies_outbid_player_with_cutoff_price_in_multi_winner_slot
     manor1 = ensure_manor(user1)
     manor2 = ensure_manor(user2)
     manor3 = ensure_manor(user3)
-    _set_gold_bars(manor1, 20)
-    _set_gold_bars(manor2, 20)
-    _set_gold_bars(manor3, 20)
+    _prepare_auction_bidder(manor1, 20)
+    _prepare_auction_bidder(manor2, 20)
+    _prepare_auction_bidder(manor3, 20)
 
     slot = create_active_round_slot(item_key="auction_cutoff_item", quantity=2)
 
@@ -328,7 +350,7 @@ def test_validate_bid_amount_rejects_non_positive_amount(django_user_model):
 def test_place_bid_rejects_invalid_amount_type(django_user_model):
     user = django_user_model.objects.create_user(username="auction_invalid_amount_type", password="pass12345")
     manor = ensure_manor(user)
-    _set_gold_bars(manor, 10)
+    _prepare_auction_bidder(manor, 10)
     slot = create_active_round_slot(item_key="auction_invalid_amount_type_item")
 
     with pytest.raises(TradeValidationError, match="出价金额必须大于0"):
@@ -339,7 +361,7 @@ def test_place_bid_rejects_invalid_amount_type(django_user_model):
 def test_place_bid_rejects_invalid_winner_count_configuration(django_user_model):
     user = django_user_model.objects.create_user(username="auction_invalid_winner_count", password="pass12345")
     manor = ensure_manor(user)
-    _set_gold_bars(manor, 10)
+    _prepare_auction_bidder(manor, 10)
     slot = create_active_round_slot(item_key="auction_invalid_winner_count_item", quantity=1)
     slot.quantity = 0
     slot.save(update_fields=["quantity"])

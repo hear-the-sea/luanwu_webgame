@@ -13,6 +13,7 @@ from django.utils import timezone
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
 from trade.models import AuctionBid, AuctionRound, AuctionSlot, MarketListing
+from trade.services.auction.access import AUCTION_MIN_PRESTIGE
 from trade.services.auction_service import place_bid, settle_auction_round
 from trade.services.market_service import MARKET_MIN_PRESTIGE, cancel_listing, create_listing, purchase_listing
 from trade.services.shop_service import sell_item
@@ -147,6 +148,8 @@ def test_integration_auction_bid_and_settlement_flow(require_env_services, djang
         password="pass123",
     )
     bidder = ensure_manor(bidder_user)
+    bidder.prestige = AUCTION_MIN_PRESTIGE
+    bidder.save(update_fields=["prestige"])
 
     gold_bar_tpl, _ = ItemTemplate.objects.get_or_create(
         key="gold_bar",

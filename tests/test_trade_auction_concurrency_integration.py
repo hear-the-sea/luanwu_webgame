@@ -12,6 +12,7 @@ from gameplay.models import InventoryItem
 from gameplay.services.manor.core import ensure_manor
 from tests.helpers.auction import ensure_auction_item_template, ensure_gold_bar_template
 from trade.models import AuctionBid, AuctionDelivery, AuctionRound, AuctionSlot
+from trade.services.auction.access import AUCTION_MIN_PRESTIGE
 from trade.services.auction_service import place_bid, settle_auction_round
 
 pytestmark = [pytest.mark.integration]
@@ -27,6 +28,8 @@ def test_settle_auction_round_concurrent_requests_only_one_thread_completes(djan
         password="pass123",
     )
     bidder = ensure_manor(bidder_user)
+    bidder.prestige = AUCTION_MIN_PRESTIGE
+    bidder.save(update_fields=["prestige"])
 
     gold_bar_template = ensure_gold_bar_template()
     InventoryItem.objects.update_or_create(
