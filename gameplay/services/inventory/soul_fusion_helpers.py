@@ -137,8 +137,11 @@ def _extract_soul_fusion_source_stats(guest: Guest) -> dict[str, int]:
         set_bonus_value = int(set_bonus.get(stat, 0) or 0)
         source_stats[stat] = max(1, int(getattr(guest, stat) - gear_bonus[stat] - set_bonus_value))
 
-    # 装备额外防御会写入 defense_stat；套装 defense 写入 defense_bonus，不应重复扣减。
-    source_stats["defense"] = max(1, int(guest.defense_stat - gear_bonus["defense"]))
+    # 装备和套装的防御均写入 defense_stat，灵魂融合只使用门客自身属性。
+    source_stats["defense"] = max(
+        1,
+        int(guest.defense_stat - gear_bonus["defense"] - int(set_bonus.get("defense", 0) or 0)),
+    )
     return source_stats
 
 

@@ -25,7 +25,11 @@ from ..models import GearItem, GearSlot, GuestSkill, GuestStatus, Skill
 from ..services.equipment_inventory import attach_troop_device_bonus_summaries
 from ..services.recruitment_queries import available_guests
 from ..services.roster import dismiss_guest
-from ..services.skills import collect_skill_requirements, collect_unmet_skill_requirements
+from ..services.skills import (
+    collect_non_equipment_skill_attributes,
+    collect_skill_requirements,
+    collect_unmet_skill_requirements,
+)
 from .read_helpers import get_prepared_guest_detail_for_read, get_prepared_guest_roster_for_read
 
 logger = logging.getLogger(__name__)
@@ -96,6 +100,7 @@ def _load_guest_detail(manor, guest_pk: int):
                     "skill__key",
                     "skill__name",
                     "skill__description",
+                    "skill__kind",
                 ),
             ),
         ),
@@ -162,7 +167,7 @@ def _build_gear_set_context(gear_items):
     return gear_sets, gear_set_map
 
 
-def _build_skill_books_context(manor, guest, guest_skill_records):
+def _build_skill_books_context(manor, guest, guest_skill_records, gear_items):
     from gameplay.models import InventoryItem, ItemTemplate
 
     skill_books = []
@@ -191,6 +196,7 @@ def _build_skill_books_context(manor, guest, guest_skill_records):
             "name",
             "description",
             "rarity",
+            "kind",
             "required_level",
             "required_force",
             "required_intellect",
@@ -198,10 +204,13 @@ def _build_skill_books_context(manor, guest, guest_skill_records):
             "required_agility",
         )
     }
+    non_equipment_attributes = collect_non_equipment_skill_attributes(guest, gear_items=gear_items) if skills else None
     for entry, key, payload in skill_key_entries:
         skill = skills.get(key)
         requirements = collect_skill_requirements(skill)
-        unmet_requirements = collect_unmet_skill_requirements(guest, skill)
+        unmet_requirements = collect_unmet_skill_requirements(
+            guest, skill, non_equipment_attributes=non_equipment_attributes
+        )
         already_learned = bool(skill and skill.key in learned_skill_keys)
         display_meta = _skill_book_display_meta(entry, skill, payload)
         skill_books.append(
@@ -213,6 +222,7 @@ def _build_skill_books_context(manor, guest, guest_skill_records):
                 "requirements": requirements,
                 "requirements_text": "，".join(requirements),
                 "unmet_requirements": unmet_requirements,
+                "unmet_requirements_text": "，".join(unmet_requirements),
                 "already_learned": already_learned,
                 "can_learn": bool(skill) and not already_learned and not unmet_requirements and entry.quantity > 0,
             }
@@ -342,7 +352,7 @@ class GuestDetailView(LoginRequiredMixin, TemplateView):
                     "skill": record.skill if record else None,
                 }
             )
-        skill_books = _build_skill_books_context(manor, guest, guest_skill_records)
+        skill_books = _build_skill_books_context(manor, guest, guest_skill_records, gear_items)
         slot_panels = _build_slot_panels(slots, equipped, slot_capacity)
         context.update(
             {

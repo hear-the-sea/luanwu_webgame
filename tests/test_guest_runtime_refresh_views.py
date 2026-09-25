@@ -18,7 +18,17 @@ from gameplay.models import (
     RaidRun,
 )
 from gameplay.services.manor.core import ensure_manor
-from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestStatus, GuestTemplate, Skill, SkillKind
+from guests.models import (
+    GearItem,
+    GearSlot,
+    GearTemplate,
+    Guest,
+    GuestSkill,
+    GuestStatus,
+    GuestTemplate,
+    Skill,
+    SkillKind,
+)
 
 
 def _create_guest(manor, *, prefix: str) -> Guest:
@@ -197,7 +207,7 @@ def test_guest_detail_view_bubbles_up_invalid_skill_book_payload(game_data, djan
 
 
 @pytest.mark.django_db
-def test_guest_detail_skill_book_modal_hides_unmet_requirement_details(game_data, django_user_model):
+def test_guest_detail_skill_book_modal_shows_unmet_requirement_details(game_data, django_user_model):
     user = django_user_model.objects.create_user(username="detail_skill_book_requirements", password="pass123")
     manor = ensure_manor(user)
     guest = _create_guest(manor, prefix="detail_skill_book_requirements")
@@ -230,7 +240,8 @@ def test_guest_detail_skill_book_modal_hides_unmet_requirement_details(game_data
     content = response.content.decode("utf-8")
     assert "条件不足" in content
     assert "学习要求：等级需 ≥" in content
-    assert "当前不足" not in content
+    assert f"当前不足：等级需 ≥ {guest.level + 10}（当前 {guest.level}）" in content
+    assert f"武力需 ≥ {guest.force + 50}（当前 {guest.force}）" in content
 
 
 @pytest.mark.django_db
@@ -301,6 +312,49 @@ def test_guest_detail_skill_book_modal_renders_passive_skill_description(game_da
     content = response.content.decode("utf-8")
     assert "静守心诀" in content
     assert "被动技能实际效果描述。" in content
+
+
+@pytest.mark.django_db
+def test_guest_detail_labels_learned_and_book_skills_by_kind(game_data, django_user_model):
+    user = django_user_model.objects.create_user(username="detail_skill_kind_labels", password="pass123")
+    manor = ensure_manor(user)
+    guest = _create_guest(manor, prefix="detail_skill_kind_labels")
+    active = Skill.objects.create(
+        key="detail_skill_kind_active",
+        name="破阵一击",
+        kind=SkillKind.ACTIVE,
+        description="向敌方发起进攻。",
+    )
+    passive = Skill.objects.create(
+        key="detail_skill_kind_passive",
+        name="守心诀",
+        kind=SkillKind.PASSIVE,
+        description="持续提升防御。",
+    )
+    GuestSkill.objects.create(guest=guest, skill=active)
+    for skill in (active, passive):
+        template = ItemTemplate.objects.create(
+            key=f"{skill.key}_book",
+            name=f"{skill.name}秘卷",
+            effect_type=ItemTemplate.EffectType.SKILL_BOOK,
+            effect_payload={"skill_key": skill.key},
+        )
+        InventoryItem.objects.create(
+            manor=manor,
+            template=template,
+            quantity=2,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+
+    client = Client()
+    client.force_login(user)
+    response = client.get(reverse("guests:detail", args=[guest.pk]))
+
+    assert response.status_code == 200
+    content = response.content.decode("utf-8")
+    assert content.count('class="skill-kind-badge skill-kind-badge--active">主动技能</span>') == 2
+    assert 'class="skill-kind-badge skill-kind-badge--passive">被动技能</span>' in content
+    assert 'class="tw-table skill-book-table"' in content
 
 
 @pytest.mark.django_db

@@ -29,7 +29,7 @@ EQUIP_SLOT_MAP = {
 # 套装属性映射
 SET_STAT_FIELD_MAP = {
     "attack": "attack_bonus",
-    "defense": "defense_bonus",
+    "defense": "defense_stat",
     "hp": "hp_bonus",
     "force": "force",
     "intellect": "intellect",

@@ -16,7 +16,12 @@ from guests.services.equipment_payloads import (
     normalize_extra_stats,
 )
 from guests.services.equipment_stats import slot_capacity
-from guests.services.skills import MAX_GUEST_SKILL_SLOTS, assert_guest_meets_skill_requirements
+from guests.services.skills import (
+    MAX_GUEST_SKILL_SLOTS,
+    assert_guest_meets_skill_requirements,
+    collect_non_equipment_skill_attributes,
+    has_non_equipment_skill_requirements,
+)
 from guests.utils.equipment_utils import SET_STAT_FIELD_MAP, compute_set_bonus
 
 from .bootstrap_assets import RARITY_ORDER, RARITY_RANK
@@ -229,6 +234,7 @@ def build_skill_learning_candidates(
     guest_skills: tuple[GuestSkill, ...] | None = None,
     warehouse_items: tuple[InventoryItem, ...] | None = None,
     skills: tuple[Skill, ...] | None = None,
+    gear_items: tuple[GearItem, ...] | None = None,
 ) -> tuple[
     tuple[DevelopmentIntent, ...],
     dict[str, MaintenanceActionSpec],
@@ -309,17 +315,30 @@ def build_skill_learning_candidates(
     specs: dict[str, MaintenanceActionSpec] = {}
     preferred_kinds = set(development_plan.preferred_skill_kinds)
     preferred_archetypes = set(development_plan.preferred_guest_archetypes)
+    equipped_by_guest: dict[int, list[GearItem]] = defaultdict(list)
+    if gear_items is not None:
+        for gear in gear_items:
+            if gear.guest_id is not None:
+                equipped_by_guest[int(gear.guest_id)].append(gear)
+    needs_non_equipment = any(has_non_equipment_skill_requirements(skill) for skill in skills_by_key.values())
     for guest in candidate_guests:
         guest_id = int(guest.id)
         learned_skill_ids = learned_by_guest[guest_id]
         if len(learned_skill_ids) >= MAX_GUEST_SKILL_SLOTS:
             continue
+        non_equipment_attributes = (
+            collect_non_equipment_skill_attributes(
+                guest, gear_items=(equipped_by_guest[guest_id] if gear_items is not None else None)
+            )
+            if needs_non_equipment
+            else None
+        )
         for skill_key in sorted(book_by_skill_key):
             skill = skills_by_key[skill_key]
             if int(skill.id) in learned_skill_ids:
                 continue
             try:
-                assert_guest_meets_skill_requirements(guest, skill)
+                assert_guest_meets_skill_requirements(guest, skill, non_equipment_attributes=non_equipment_attributes)
             except GuestNotRequirementError:
                 continue
             item = book_by_skill_key[skill_key]

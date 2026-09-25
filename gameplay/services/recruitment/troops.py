@@ -190,9 +190,14 @@ def _return_surviving_troops_batch(
     if not loadout:
         return
 
+    from ..manor.troop_bank import return_troops_to_manor_or_bank_locked
+
+    def _restore_troops(current_manor: "Manor", troops: Dict[str, int]) -> None:
+        _add_troops_batch(current_manor, troops, enforce_capacity=False)
+
     if not report:
         # 没有战报（撤退等情况），全部归还
-        _add_troops_batch(manor, loadout)
+        return_troops_to_manor_or_bank_locked(manor, loadout, add_to_manor=_restore_troops)
         return
 
     casualties = _extract_casualties_for_loadout(loadout, report)
@@ -207,7 +212,7 @@ def _return_surviving_troops_batch(
             surviving_troops,
             extra={"manor_id": manor.id, "surviving_troops": surviving_troops},
         )
-        _add_troops_batch(manor, surviving_troops)
+        return_troops_to_manor_or_bank_locked(manor, surviving_troops, add_to_manor=_restore_troops)
     else:
         logger.warning(
             "没有存活护院需要归还: manor_id=%s, loadout=%s, troops_lost=%s",
@@ -218,7 +223,12 @@ def _return_surviving_troops_batch(
         )
 
 
-def _add_troops_batch(manor: "Manor", troops_to_add: Dict[str, int]) -> None:
+def _add_troops_batch(
+    manor: "Manor",
+    troops_to_add: Dict[str, int],
+    *,
+    enforce_capacity: bool = True,
+) -> None:
     """
     批量给庄园添加护院（通用函数）。
 
@@ -245,7 +255,8 @@ def _add_troops_batch(manor: "Manor", troops_to_add: Dict[str, int]) -> None:
     if not troops_to_add:
         return
 
-    ensure_manor_troop_capacity_locked(manor, sum(troops_to_add.values()))
+    if enforce_capacity:
+        ensure_manor_troop_capacity_locked(manor, sum(troops_to_add.values()))
 
     # 预加载模板
     from core.utils.template_loader import load_templates_by_key

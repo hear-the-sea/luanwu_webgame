@@ -606,6 +606,32 @@
   margin-top: 0.5rem;
 }
 
+.skill-kind-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.25rem;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.skill-kind-badge--active {
+  border-color: #d6a366;
+  background: #fff0d5;
+  color: #854419;
+}
+
+.skill-kind-badge--passive {
+  border-color: #9aaf8d;
+  background: #eaf1e5;
+  color: #4d6541;
+}
+
 #skill-book-modal .tw-modal-content {
   max-width: 920px;
 }

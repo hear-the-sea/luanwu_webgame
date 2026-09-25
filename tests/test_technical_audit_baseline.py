@@ -33,7 +33,7 @@ def _largest_test_files(limit: int) -> list[tuple[int, str]]:
 def test_recent_audit_entry_updates_document_header() -> None:
     header = AUDIT_DOC.read_text(encoding="utf-8").splitlines()[2]
 
-    assert header == "最近更新：2026-09-10"
+    assert header == "最近更新：2026-09-25"
 
 
 def test_recent_audit_entry_records_gate_verification_summary() -> None:

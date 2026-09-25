@@ -55,9 +55,9 @@ def test_hulao_replaces_recruitment_scrolls_with_lvbu_equipment():
     drop_table = missions["hulao_qunying_zhan_lvbu"]["drop_table"]
 
     assert {
-        "equip_fangtianhuaji": 0.008,
-        "equip_longlinzhanjia": 0.006,
-        "equip_chituma": 0.005,
+        "equip_fangtianhuaji": 0.0096,
+        "equip_longlinzhanjia": 0.0072,
+        "equip_chituma": 0.006,
     }.items() <= drop_table.items()
     assert not {"lvbu_guest_scroll", "zhaoyun_guest_scroll", "diaochan_guest_scroll"} & drop_table.keys()
 

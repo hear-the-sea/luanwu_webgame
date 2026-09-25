@@ -38,6 +38,7 @@ from guests.models import (
     RecruitmentRecord,
 )
 from guests.services.recruitment_guests import create_guest_from_template
+from guests.utils.recruitment_utils import get_recruitment_rarity_distribution
 
 
 def _seed_healthy_recruitment_runtime(now):
@@ -335,9 +336,18 @@ def test_virtual_recruitment_starts_with_snapshot_and_without_action_points(
     }
     assert rarity_snapshot["distribution"]
     rarity_weights = {row["rarity"]: row["weight"] for row in rarity_snapshot["distribution"]}
-    assert rarity_weights["purple"] == 750
-    assert rarity_weights["orange"] == 250
-    assert rarity_weights["black"] == 882_000
+    total_weight, _, base_distribution = get_recruitment_rarity_distribution()
+    base_weights = dict(base_distribution)
+    assert rarity_weights["purple"] == base_weights["purple"] // 2
+    assert rarity_weights["orange"] == base_weights["orange"] // 2
+    assert rarity_weights["black"] == (
+        base_weights["black"]
+        + base_weights["purple"]
+        - rarity_weights["purple"]
+        + base_weights["orange"]
+        - rarity_weights["orange"]
+    )
+    assert sum(rarity_weights.values()) == total_weight
     preview = recruitment.pool_snapshot["candidate_preview"]
     assert preview["salary"] == recruitment.salary_commitment
     assert preview["template_id"] > 0

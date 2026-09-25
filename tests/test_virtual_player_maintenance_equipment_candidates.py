@@ -306,7 +306,7 @@ def test_single_capacity_replacement_removes_old_direct_stats_and_weakens_never(
 
 
 @pytest.mark.django_db
-def test_set_activation_projects_exact_power_without_treating_set_defense_as_defense_stat(
+def test_set_activation_projects_exact_power_with_set_defense_as_defense_stat(
     manor_factory,
 ) -> None:
     manor, _user = manor_factory()
@@ -352,7 +352,7 @@ def test_set_activation_projects_exact_power_without_treating_set_defense_as_def
     expected_power = calculate_guest_arena_power(
         force=130,
         intellect=int(guest_snapshot.intellect),
-        defense=60,
+        defense=560,
         agility=int(guest_snapshot.agility),
         hp_bonus=int(guest_snapshot.hp_bonus),
         archetype=str(guest_snapshot.template.archetype),

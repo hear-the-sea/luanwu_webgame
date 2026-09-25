@@ -141,11 +141,10 @@ def _resolve_non_growth_attribute_bonuses(guest: "Guest") -> GrowthAllocation:
         for key in GROWTH_KEYS:
             bonuses[key] += int(extra_stats.get(key, 0) or 0)
 
-    # Set bonuses for force/intellect/agility are written to those same guest
-    # fields.  The defense set bonus is stored in defense_bonus, so it is not
-    # part of defense_stat or its growth total.
+    # Set bonuses for force/intellect/defense/agility are written directly to
+    # guest attributes and must not be counted as level growth.
     set_bonus = compute_set_bonus(gear_items)
-    for key in ("force", "intellect", "agility"):
+    for key in GROWTH_KEYS:
         bonuses[key] += int(set_bonus.get(key, 0) or 0)
 
     if guest.super_disguise_applied:

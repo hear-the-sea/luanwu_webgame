@@ -291,12 +291,13 @@ def test_guest_skills_accepts_new_passive_effect_types():
                 "passive_config": {
                     "triggers": [
                         {
-                            "timing": "round_start",
+                            "timing": "action_before",
                             "chance": 0.5,
                             "effects": [
                                 {"type": "lose_hp_ratio", "value": 0.1, "nonlethal": True},
                                 {"type": "modify_target_weight", "value": 0.5},
                                 {"type": "add_true_damage", "value": 0.05, "troop_value_multiplier": 0.25},
+                                {"type": "random_extra_target_true_damage", "value": 0.2},
                             ],
                         }
                     ]
@@ -306,6 +307,37 @@ def test_guest_skills_accepts_new_passive_effect_types():
     }
     result = validate_guest_skills(data)
     assert result.is_valid
+
+
+@pytest.mark.parametrize(
+    ("timing", "effect", "error_message"),
+    [
+        (
+            "round_start",
+            {"type": "random_extra_target_true_damage", "value": 0.2},
+            "only supports timing 'action_before'",
+        ),
+        (
+            "action_before",
+            {"type": "random_extra_target_true_damage", "value": 0.2, "target_scope": "allies"},
+            "only supports target_scope 'self'",
+        ),
+    ],
+)
+def test_guest_skills_restricts_random_extra_target_damage(timing, effect, error_message):
+    data = {
+        "skills": [
+            {
+                "key": "passive_signal",
+                "name": "被动信号",
+                "rarity": "purple",
+                "kind": "passive",
+                "passive_config": {"triggers": [{"timing": timing, "effects": [effect]}]},
+            }
+        ]
+    }
+
+    assert_invalid(validate_guest_skills(data), substring=error_message)
 
 
 def test_recruitment_rarity_weights_rejects_non_dict_root():

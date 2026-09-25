@@ -125,7 +125,7 @@ def test_use_xisuidan_preserves_equipment_and_disguise_bonuses(monkeypatch, djan
     assert result["growth_diff"] == 0
     assert guest.force - guest.initial_force >= 11 + 3 + SUPER_GUEST_DISGUISE_FORCE_BONUS
     assert guest.intellect - guest.initial_intellect >= 7 + 2
-    assert guest.defense_stat - guest.initial_defense >= 5
+    assert guest.defense_stat - guest.initial_defense >= 5 + 9
     assert guest.agility - guest.initial_agility >= 13 + 4 + SUPER_GUEST_DISGUISE_AGILITY_BONUS
     assert sum(result["changes"].values()) == 0
     assert guest.xisuidan_used == 1

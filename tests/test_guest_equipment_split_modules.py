@@ -188,7 +188,8 @@ def test_stats_module_apply_set_bonuses_accumulates_multi_tier_set_bonus(django_
     guest.refresh_from_db()
     assert result == {"attack": 40, "defense": 30, "hp": 600, "agility": 25, "luck": 20}
     assert guest.attack_bonus == 40
-    assert guest.defense_bonus == 30
+    assert guest.defense_stat == 110
+    assert guest.defense_bonus == 0
     assert guest.hp_bonus == 600
     assert guest.agility == 105
     assert guest.luck == 70

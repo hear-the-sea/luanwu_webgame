@@ -5,7 +5,8 @@ from django.contrib.messages import get_messages
 from django.urls import reverse
 
 from gameplay.models import InventoryItem, ItemTemplate
-from guests.models import Skill
+from guests.models import GearItem, GearSlot, GearTemplate, GuestSkill, Skill
+from guests.services.equipment import equip_guest
 from tests.guest_item_view_validation.support import bootstrap_guest_client
 
 
@@ -97,6 +98,43 @@ def test_learn_skill_view_rejects_unmet_requirements_redirect(game_data, django_
     assert any("学习条件不足" in m for m in messages)
     assert any("等级需 ≥" in m for m in messages)
     assert any("敏捷需 ≥" in m for m in messages)
+
+
+@pytest.mark.django_db
+def test_skill_book_modal_shows_non_equipment_attribute_shortfall(game_data, django_user_model):
+    manor, guest, client = bootstrap_guest_client(
+        game_data, django_user_model, username="view_learn_skill_non_equipment"
+    )
+    GuestSkill.objects.filter(guest=guest).delete()
+    base_force = int(guest.force)
+    gear_template = GearTemplate.objects.create(
+        key=f"view_skill_study_gear_{manor.id}",
+        name="试学武器",
+        slot=GearSlot.WEAPON,
+        extra_stats={"force": 200},
+    )
+    equip_guest(GearItem.objects.create(manor=manor, template=gear_template), guest)
+    skill = Skill.objects.create(
+        key=f"view_skill_non_equipment_{manor.id}",
+        name="试学技能",
+        rarity="blue",
+        required_force=base_force + 200,
+    )
+    item_template = ItemTemplate.objects.create(
+        key=f"view_skill_non_equipment_book_{manor.id}",
+        name="试学技能书",
+        effect_type=ItemTemplate.EffectType.SKILL_BOOK,
+        effect_payload={"skill_key": skill.key},
+    )
+    InventoryItem.objects.create(manor=manor, template=item_template, quantity=1)
+
+    response = client.get(reverse("guests:detail", args=[guest.pk]))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    minimum = ((base_force + 200) * 65 + 99) // 100
+    assert f"非装备武力需 ≥ {minimum}" in content
+    assert f"当前不足：非装备武力需 ≥ {minimum}（当前 {base_force}）" in content
 
 
 @pytest.mark.django_db

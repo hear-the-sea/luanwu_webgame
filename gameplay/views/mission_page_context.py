@@ -82,6 +82,7 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
             "custom_name",
             "hp_bonus",
             "defense_stat",
+            "troop_capacity_bonus",
             "template__id",
             "template__key",
             "template__name",

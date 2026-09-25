@@ -1497,6 +1497,33 @@
     @apply border-0 rounded-none bg-transparent p-0;
   }
 
+  .tw-task-loadout-heading {
+    @apply flex flex-wrap items-center justify-between gap-2 mb-3 pb-2
+           border-b border-border-light;
+  }
+
+  .tw-task-loadout-heading h5 {
+    @apply m-0 text-base font-bold text-text-primary;
+  }
+
+  .tw-task-loadout-heading p {
+    @apply m-0 mt-1 text-xs text-text-muted;
+  }
+
+  .tw-task-loadout-heading p strong {
+    @apply text-text-primary;
+  }
+
+  @media (max-width: 640px) {
+    .tw-task-troop-controls.tw-raid-troop-controls {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(54px, 1.3fr) repeat(2, minmax(0, 1fr));
+    }
+
+    .tw-task-troop-controls .tw-raid-fill-btn {
+      grid-column: 1 / -1;
+    }
+  }
+
   .tw-enemy-grid {
     @apply flex flex-wrap gap-2 items-start;
   }

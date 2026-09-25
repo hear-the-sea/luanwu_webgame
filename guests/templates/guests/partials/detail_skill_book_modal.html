@@ -30,11 +30,15 @@
                                         <div class="skill-book-skill-meta">
                                             <div class="skill-book-skill-name rarity-text {{ book.skill.rarity|rarity_class }}">
                                                 {{ book.skill_name }}
+                                                <span class="skill-kind-badge skill-kind-badge--{{ book.skill.kind }}">{{ book.skill.get_kind_display }}技能</span>
                                             </div>
                                             <div>{{ book.skill_description }}</div>
                                         </div>
                                         {% if book.requirements %}
                                             <div class="tw-muted">学习要求：{{ book.requirements_text }}</div>
+                                        {% endif %}
+                                        {% if book.unmet_requirements %}
+                                            <div class="tw-muted">当前不足：{{ book.unmet_requirements_text }}</div>
                                         {% endif %}
                                     {% else %}
                                         <div class="skill-book-skill-meta">

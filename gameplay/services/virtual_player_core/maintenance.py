@@ -4061,6 +4061,7 @@ def _build_v2_maintenance_plan_from_profile(
                     skill_books=virtual_skill_books,
                     skills=virtual_skills,
                     guest_skills=guest_skills,
+                    gear_items=gear_items,
                 )
             except VirtualCandidatePoolError as exc:
                 raise V2MaintenanceError(str(exc)) from exc
@@ -4073,6 +4074,7 @@ def _build_v2_maintenance_plan_from_profile(
             guest_skills=guest_skills,
             warehouse_items=warehouse_items,
             skills=skills,
+            gear_items=gear_items,
         )
 
     def _build_equipment_stage() -> tuple[tuple[DevelopmentIntent, ...], dict[str, MaintenanceActionSpec]]:

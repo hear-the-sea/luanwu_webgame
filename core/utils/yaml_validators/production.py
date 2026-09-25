@@ -133,6 +133,7 @@ VALID_PASSIVE_EFFECT_TYPES = {
     "modify_outgoing_damage",
     "modify_incoming_damage",
     "modify_target_weight",
+    "random_extra_target_true_damage",
     "set_softcap",
     "set_reflect",
     "set_state",
@@ -294,6 +295,26 @@ def _validate_passive_config(passive_config: dict, *, result: ValidationResult, 
             file=file,
             path=trigger_path,
         )
+        if timing == "action_before":
+            for effect_idx, effect in enumerate(effects):
+                if (
+                    isinstance(effect, dict)
+                    and effect.get("type") == "random_extra_target_true_damage"
+                    and effect.get("target_scope", "self") != "self"
+                ):
+                    result.add(
+                        file,
+                        f"{trigger_path}.effects[{effect_idx}]",
+                        "effect 'random_extra_target_true_damage' only supports target_scope 'self'",
+                    )
+        elif isinstance(effects, list):
+            for effect_idx, effect in enumerate(effects):
+                if isinstance(effect, dict) and effect.get("type") == "random_extra_target_true_damage":
+                    result.add(
+                        file,
+                        f"{trigger_path}.effects[{effect_idx}]",
+                        "effect 'random_extra_target_true_damage' only supports timing 'action_before'",
+                    )
 
 
 def validate_guest_skills(data: dict, *, file: str = "guest_skills.yaml") -> ValidationResult:

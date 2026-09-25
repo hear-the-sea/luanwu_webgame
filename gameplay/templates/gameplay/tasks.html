@@ -286,50 +286,73 @@
                                 <p class="tw-muted text-sm mb-4">最多可派遣 {{ max_squad }} 名门客</p>
                             {% endif %}
                         {% endif %}
-                        <form method="post" action="{% url 'gameplay:accept_mission' %}">
+                        <form method="post" action="{% url 'gameplay:accept_mission' %}"
+                              {% if not selected_mission.is_defense %}data-task-loadout data-max-squad-size="{{ max_squad }}"{% endif %}>
                             {% csrf_token %}
                             <input type="hidden" name="mission_key" value="{{ selected_mission.key }}">
                             {% if not selected_mission.is_defense %}
                                 <div class="mb-4">
-                                    <label class="font-bold mb-2 block">选择门客（空闲）</label>
-                                    <div class="tw-guest-selection">
+                                    <div class="tw-task-loadout-heading">
+                                        <div>
+                                            <h5>选择门客（空闲）</h5>
+                                            <p>已选择 <strong id="selected-guest-count" aria-live="polite">0</strong> / {{ max_squad }} 人</p>
+                                        </div>
+                                        {% if available_guests %}
+                                        <div class="tw-raid-panel-actions">
+                                            <button type="button" class="tw-btn-secondary tw-btn-sm" data-task-select-all>全选</button>
+                                            <button type="button" class="tw-btn-secondary tw-btn-sm" data-task-clear-guests>清空</button>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="tw-raid-guest-grid">
                                         {% for guest in available_guests %}
-                                            <label class="tw-guest-checkbox">
-                                                <input type="checkbox" name="guest_ids" value="{{ guest.id }}" class="guest-input">
-                                                <div class="tw-guest-card">
-                                                    <div class="tw-guest-avatar">
+                                            <label class="tw-raid-guest-option">
+                                                <input type="checkbox" name="guest_ids" value="{{ guest.id }}"
+                                                       data-task-guest data-troop-capacity="{{ guest.troop_capacity }}">
+                                                <span class="tw-raid-guest-card">
+                                                    <span class="tw-guest-avatar">
                                                         {% if guest.avatar_url %}
                                                         <img src="{{ guest.avatar_url }}" alt="{{ guest.display_name }}" loading="lazy" decoding="async">
                                                         {% else %}
-                                                        <div class="tw-avatar-placeholder">{{ guest.display_name|slice:":1" }}</div>
+                                                        <span class="tw-avatar-placeholder">{{ guest.display_name|slice:":1" }}</span>
                                                         {% endif %}
-                                                    </div>
-                                                    <div class="tw-guest-details">
-                                                        <div class="tw-guest-info-row">
+                                                    </span>
+                                                    <span class="tw-guest-details">
+                                                        <span class="tw-guest-info-row">
                                                             <span class="tw-guest-name-sm rarity-text-{{ guest.template.rarity|lower }}">{{ guest.display_name }}</span>
                                                             <span class="tw-guest-level-sm">等级 {{ guest.level }}</span>
-                                                        </div>
-                                                        <div class="tw-guest-stats-sm">
-                                                            <span title="生命">生命 {{ guest.current_hp }}/{{ guest.max_hp }}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                        </span>
+                                                        <span class="tw-raid-guest-stats">
+                                                            <span>生命 {{ guest.current_hp }}/{{ guest.max_hp }}</span>
+                                                            <span>带兵 {{ guest.troop_capacity }}</span>
+                                                        </span>
+                                                    </span>
+                                                    <span class="tw-raid-guest-check" aria-hidden="true">✓</span>
+                                                </span>
                                             </label>
                                         {% empty %}
                                             <p class="tw-muted">暂无空闲门客</p>
                                         {% endfor %}
                                     </div>
-                                    <div class="tw-selection-summary">
-                                        已选择 <strong id="selected-guest-count" data-max-squad="{{ max_squad }}">0</strong> / {{ max_squad }} 人
-                                    </div>
                                 </div>
                                 {% if not selected_mission.guest_only %}
                                 <div class="mb-4 mt-6">
-                                    <label class="font-bold mb-2 block">配置护院</label>
+                                    <div class="tw-task-loadout-heading">
+                                        <div>
+                                            <h5>携带护院</h5>
+                                            <p>已携带 <strong data-task-troop-total>0</strong> / <strong data-task-troop-capacity>0</strong> 人</p>
+                                        </div>
+                                        {% if player_troops %}
+                                        <div class="tw-raid-panel-actions">
+                                            <button type="button" class="tw-btn-secondary tw-btn-sm" data-task-clear-troops>全部清零</button>
+                                        </div>
+                                        {% endif %}
+                                    </div>
                                     {% if player_troops %}
-                                    <div class="tw-troop-selection">
+                                    <p class="tw-raid-capacity-status" data-task-capacity-status aria-live="polite">可先配置护院；选择门客后计算带兵上限</p>
+                                    <div class="tw-raid-troop-list">
                                         {% for troop in player_troops %}
-                                        <div class="tw-troop-row">
+                                        <div class="tw-raid-troop-row">
                                             <div class="tw-troop-info">
                                                 <div class="tw-troop-avatar">
                                                     {% if troop.avatar %}
@@ -340,17 +363,24 @@
                                                 </div>
                                                 <div class="tw-troop-details">
                                                     <span class="tw-troop-name">{{ troop.name }}</span>
-                                                    <span class="tw-troop-count">可用: {{ troop.count }}</span>
+                                                    <span class="tw-troop-count">可用 {{ troop.count }}</span>
                                                 </div>
                                             </div>
-                                            <div class="tw-troop-slider-group">
-                                                <input type="range" class="tw-troop-slider"
-                                                       value="0" min="0" max="{{ troop.count }}"
-                                                       data-troop-key="{{ troop.key }}" data-max="{{ troop.count }}">
-                                                <input type="number" class="tw-troop-num-input"
-                                                       value="0" min="0" max="{{ troop.count }}"
-                                                       data-troop-key="{{ troop.key }}" data-max="{{ troop.count }}"
-                                                       name="troop_{{ troop.key }}">
+                                            <div class="tw-raid-troop-controls tw-task-troop-controls" aria-label="{{ troop.name }}数量">
+                                                <button type="button" class="tw-raid-step-btn" data-task-adjust="-10"
+                                                        data-troop-key="{{ troop.key }}" aria-label="减少十名{{ troop.name }}">-10</button>
+                                                <button type="button" class="tw-raid-step-btn" data-task-adjust="-1"
+                                                        data-troop-key="{{ troop.key }}" aria-label="减少一名{{ troop.name }}">−</button>
+                                                <input type="number" name="troop_{{ troop.key }}" class="tw-raid-troop-input"
+                                                       value="0" min="0" max="{{ troop.count }}" inputmode="numeric"
+                                                       autocomplete="off" aria-label="{{ troop.name }}携带数量"
+                                                       data-task-troop data-troop-key="{{ troop.key }}" data-max="{{ troop.count }}">
+                                                <button type="button" class="tw-raid-step-btn" data-task-adjust="1"
+                                                        data-troop-key="{{ troop.key }}" aria-label="增加一名{{ troop.name }}">+</button>
+                                                <button type="button" class="tw-raid-step-btn" data-task-adjust="10"
+                                                        data-troop-key="{{ troop.key }}" aria-label="增加十名{{ troop.name }}">+10</button>
+                                                <button type="button" class="tw-raid-step-btn tw-raid-fill-btn"
+                                                        data-task-fill="{{ troop.key }}">全部</button>
                                             </div>
                                         </div>
                                         {% endfor %}
@@ -378,7 +408,7 @@
                                         无法出征
                                     </button>
                                 {% else %}
-                                    <button type="submit" class="tw-btn-primary">
+                                    <button type="submit" class="tw-btn-primary" {% if not selected_mission.is_defense %}data-task-submit{% endif %}>
                                         {% if selected_mission.is_defense %}接受任务{% else %}派遣出征{% endif %}
                                     </button>
                                 {% endif %}

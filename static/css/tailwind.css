@@ -3095,6 +3095,53 @@
 }
 
 @media (max-width: 640px) {
+  .tw-work-card .tw-card-actions > .tw-task-loadout-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.tw-task-loadout-heading {
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom-width: 1px;
+  border-color: var(--border-light);
+  padding-bottom: 0.5rem;
+}
+
+.tw-task-loadout-heading h5 {
+  margin: 0px;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tw-task-loadout-heading p {
+  margin: 0px;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--text-muted);
+}
+
+.tw-task-loadout-heading p strong {
+  color: var(--text-primary);
+}
+
+@media (max-width: 640px) {
+  .tw-task-troop-controls.tw-raid-troop-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(54px, 1.3fr) repeat(2, minmax(0, 1fr));
+  }
+
+  .tw-task-troop-controls .tw-raid-fill-btn {
+    grid-column: 1 / -1;
+  }
+
   .tw-work-card .tw-card-actions > .tw-enemy-grid {
     flex-direction: column;
     align-items: stretch;
@@ -7753,11 +7800,6 @@
 
 .outline {
   outline-style: solid;
-}
-
-.blur {
-  --tw-blur: blur(8px);
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
 .filter {

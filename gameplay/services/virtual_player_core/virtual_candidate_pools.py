@@ -14,7 +14,12 @@ from gameplay.services.recruitment.recruitment import TroopRecruitmentQuote
 from gameplay.services.recruitment.templates import get_troop_template
 from guests.models import GearItem, GearTemplate, Guest, GuestSkill, GuestStatus, Skill
 from guests.services.equipment_stats import apply_set_bonuses, apply_template_stats_to_guest, slot_capacity
-from guests.services.skills import MAX_GUEST_SKILL_SLOTS, assert_guest_meets_skill_requirements
+from guests.services.skills import (
+    MAX_GUEST_SKILL_SLOTS,
+    assert_guest_meets_skill_requirements,
+    collect_non_equipment_skill_attributes,
+    has_non_equipment_skill_requirements,
+)
 
 from .asset_policy import VIRTUAL_PLAYER_EXCLUDED_TROOP_KEYS, VIRTUAL_PLAYER_RETAINER_COUNT
 from .bootstrap_assets import RARITY_RANK
@@ -275,6 +280,7 @@ def build_virtual_skill_learning_candidates(
     skill_books: tuple[ItemTemplate, ...],
     skills: tuple[Skill, ...],
     guest_skills: tuple[GuestSkill, ...] = (),
+    gear_items: tuple[GearItem, ...] | None = None,
 ) -> tuple[tuple[DevelopmentIntent, ...], dict[str, MaintenanceActionSpec]]:
     """Build virtual skill actions only from player-facing skill-book definitions."""
 
@@ -298,12 +304,25 @@ def build_virtual_skill_learning_candidates(
     preferred_kinds = set(development_plan.preferred_skill_kinds)
     preferred_roles = set(development_plan.preferred_guest_archetypes)
     candidate_skill_keys = set(books_by_skill)
+    equipped_by_guest: dict[int, list[GearItem]] = defaultdict(list)
+    if gear_items is not None:
+        for gear in gear_items:
+            if gear.guest_id is not None:
+                equipped_by_guest[int(gear.guest_id)].append(gear)
+    needs_non_equipment = any(has_non_equipment_skill_requirements(skill) for skill in skills_by_key.values())
     for guest in sorted(guests, key=lambda item: int(item.id)):
         if guest.status != GuestStatus.IDLE or guest.training_complete_at is not None:
             continue
         learned = learned_by_guest[int(guest.id)]
         if len(learned) >= MAX_GUEST_SKILL_SLOTS:
             continue
+        non_equipment_attributes = (
+            collect_non_equipment_skill_attributes(
+                guest, gear_items=(equipped_by_guest[int(guest.id)] if gear_items is not None else None)
+            )
+            if needs_non_equipment
+            else None
+        )
         for skill_key in sorted(candidate_skill_keys):
             if not is_virtual_player_skill_allowed(skill_key):
                 continue
@@ -316,7 +335,7 @@ def build_virtual_skill_learning_candidates(
             if int(skill.id) in learned:
                 continue
             try:
-                assert_guest_meets_skill_requirements(guest, skill)
+                assert_guest_meets_skill_requirements(guest, skill, non_equipment_attributes=non_equipment_attributes)
             except GuestNotRequirementError:
                 continue
             spec = SkillLearningActionSpec(

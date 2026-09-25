@@ -84,7 +84,12 @@ def _add_troops(manor: Manor, troop_key: str, count: int) -> None:
     _add_troops_batch(manor, {troop_key: count})
 
 
-def _add_troops_batch(manor: Manor, troops_to_add: Dict[str, int]) -> None:
+def _add_troops_batch(
+    manor: Manor,
+    troops_to_add: Dict[str, int],
+    *,
+    enforce_capacity: bool = True,
+) -> None:
     """批量给庄园添加护院"""
     from battle.models import TroopTemplate
 
@@ -95,7 +100,8 @@ def _add_troops_batch(manor: Manor, troops_to_add: Dict[str, int]) -> None:
     if not troops_to_add:
         return
 
-    ensure_manor_troop_capacity_locked(manor, sum(troops_to_add.values()))
+    if enforce_capacity:
+        ensure_manor_troop_capacity_locked(manor, sum(troops_to_add.values()))
 
     from core.utils.template_loader import load_templates_by_key
 
@@ -126,11 +132,25 @@ def _return_surviving_troops(run: RaidRun) -> None:
         return
 
     if not run.battle_report:
-        _add_troops_batch(run.attacker, loadout)
+        _return_troops_to_storage(run.attacker, loadout)
         return
 
     troops_lost = _extract_raid_troops_lost(loadout, run.battle_report)
     surviving_troops = _calculate_surviving_raid_troops(loadout, troops_lost)
 
     if surviving_troops:
-        _add_troops_batch(run.attacker, surviving_troops)
+        _return_troops_to_storage(run.attacker, surviving_troops)
+
+
+def _return_troops_to_storage(manor: Manor, troop_loadout: dict[str, int]) -> None:
+    from ...manor.troop_bank import return_troops_to_manor_or_bank_locked
+
+    return_troops_to_manor_or_bank_locked(
+        manor,
+        troop_loadout,
+        add_to_manor=lambda current_manor, troops: _add_troops_batch(
+            current_manor,
+            troops,
+            enforce_capacity=False,
+        ),
+    )

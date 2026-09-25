@@ -17,6 +17,86 @@ pytestmark = [pytest.mark.integration]
 
 
 @pytest.mark.django_db(transaction=True)
+def test_virtual_gear_replacement_does_not_deadlock_with_catalog_lock(django_user_model):
+    if not connection.features.has_select_for_update_of:
+        pytest.skip("This database cannot limit a row lock to the gear item table")
+
+    suffix = uuid.uuid4().hex[:8]
+    user = django_user_model.objects.create_user(username=f"virtual_gear_lock_{suffix}", password="pass123")
+    manor = ensure_manor(user)
+    guest_template = GuestTemplate.objects.create(
+        key=f"virtual_gear_guest_{suffix}",
+        name="虚拟装备并发门客",
+        archetype=GuestArchetype.MILITARY,
+        rarity=GuestRarity.GREEN,
+        base_hp=1000,
+    )
+    guest = Guest.objects.create(manor=manor, template=guest_template, force=100, current_hp=1000)
+    old_template = GearTemplate.objects.create(
+        key=f"virtual_gear_a_old_{suffix}",
+        name="旧虚拟武器",
+        slot=GearSlot.WEAPON,
+        rarity=GuestRarity.GREEN,
+        extra_stats={"force": 8},
+    )
+    new_template = GearTemplate.objects.create(
+        key=f"virtual_gear_z_new_{suffix}",
+        name="新虚拟武器",
+        slot=GearSlot.WEAPON,
+        rarity=GuestRarity.BLUE,
+        extra_stats={"force": 12},
+    )
+    old_gear = GearItem.objects.create(manor=manor, template=old_template)
+    equipment_service.equip_guest(old_gear, guest)
+
+    old_template_locked = threading.Event()
+    new_template_locked = threading.Event()
+    errors: list[Exception] = []
+
+    def _catalog_worker() -> None:
+        try:
+            with transaction.atomic():
+                GearTemplate.objects.select_for_update().get(pk=old_template.pk)
+                old_template_locked.set()
+                assert new_template_locked.wait(timeout=5)
+                GearTemplate.objects.select_for_update().get(pk=new_template.pk)
+        except Exception as exc:
+            errors.append(exc)
+
+    def _growth_worker() -> None:
+        try:
+            assert old_template_locked.wait(timeout=5)
+            with transaction.atomic():
+                locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+                locked_guest = Guest.objects.select_for_update().get(pk=guest.pk)
+                GearTemplate.objects.select_for_update().get(pk=new_template.pk)
+                new_template_locked.set()
+                equipment_service.equip_guest_from_virtual_template_locked(
+                    locked_manor,
+                    locked_guest,
+                    new_template.pk,
+                    expected_template_key=new_template.key,
+                    expected_slot=GearSlot.WEAPON,
+                )
+        except Exception as exc:
+            errors.append(exc)
+
+    catalog_thread = threading.Thread(target=_catalog_worker, daemon=True)
+    growth_thread = threading.Thread(target=_growth_worker, daemon=True)
+    catalog_thread.start()
+    growth_thread.start()
+    catalog_thread.join(timeout=10)
+    growth_thread.join(timeout=10)
+
+    assert catalog_thread.is_alive() is False
+    assert growth_thread.is_alive() is False
+    assert errors == []
+    guest.refresh_from_db()
+    assert guest.force == 112
+    assert list(guest.gear_items.values_list("template_id", flat=True)) == [new_template.pk]
+
+
+@pytest.mark.django_db(transaction=True)
 def test_equip_and_unequip_same_guest_slot_complete_without_deadlock(django_user_model, monkeypatch):
     if connection.vendor == "sqlite":
         pytest.skip("SQLite does not provide row-level select_for_update semantics for this concurrency scenario")

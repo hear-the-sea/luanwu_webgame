@@ -270,7 +270,7 @@ def _attach_soul_fusion_gear_state(
 
     guest.force += int(extra_stats.get("force", 0) or 0) + int(set_bonus.get("force", 0) or 0)
     guest.intellect += int(extra_stats.get("intellect", 0) or 0) + int(set_bonus.get("intellect", 0) or 0)
-    guest.defense_stat += int(extra_stats.get("defense", 0) or 0)
+    guest.defense_stat += int(extra_stats.get("defense", 0) or 0) + int(set_bonus.get("defense", 0) or 0)
     guest.agility += int(extra_stats.get("agility", 0) or 0) + int(set_bonus.get("agility", 0) or 0)
     guest.luck += int(extra_stats.get("luck", 0) or 0) + int(set_bonus.get("luck", 0) or 0)
     guest.gear_set_bonus = set_bonus

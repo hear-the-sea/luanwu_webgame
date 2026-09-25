@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator, Mapping
 from typing import TYPE_CHECKING
 
 from django.db import transaction
@@ -18,7 +18,8 @@ from core.exceptions import (
     SkillSlotFullError,
 )
 
-from ..models import Guest, GuestSkill, GuestStatus, Skill
+from ..models import GearItem, Guest, GuestSkill, GuestStatus, Skill
+from .equipment_payloads import normalize_active_set_bonus, normalize_extra_stats
 
 if TYPE_CHECKING:
     from gameplay.models import InventoryItem, Manor
@@ -31,6 +32,43 @@ SKILL_REQUIREMENT_FIELDS = (
     ("defense", "required_defense", "defense_stat", "防御"),
     ("agility", "required_agility", "agility", "敏捷"),
 )
+SKILL_NON_EQUIPMENT_PERCENT = {"green": 60, "blue": 65, "purple": 70}
+SKILL_ATTRIBUTE_FIELDS = SKILL_REQUIREMENT_FIELDS[1:]
+
+
+def _non_equipment_minimum(skill: Skill, required: int) -> int:
+    percent = SKILL_NON_EQUIPMENT_PERCENT.get(str(skill.rarity), 0)
+    return (required * percent + 99) // 100 if percent else 0
+
+
+def has_non_equipment_skill_requirements(skill: Skill) -> bool:
+    return any(
+        _non_equipment_minimum(skill, int(getattr(skill, field, 0) or 0)) for _, field, _, _ in SKILL_ATTRIBUTE_FIELDS
+    )
+
+
+def collect_non_equipment_skill_attributes(
+    guest: Guest, *, gear_items: Iterable[GearItem] | None = None
+) -> dict[str, int]:
+    """Return guest attributes after excluding equipped gear and active set bonuses."""
+    equipment_bonus = {requirement_type: 0 for requirement_type, *_ in SKILL_ATTRIBUTE_FIELDS}
+    if gear_items is None:
+        gear_items = guest.gear_items.select_related("template")
+    for gear in gear_items:
+        extra_stats = normalize_extra_stats(gear.template.extra_stats)
+        for requirement_type in equipment_bonus:
+            equipment_bonus[requirement_type] += int(extra_stats.get(requirement_type, 0))
+
+    set_bonus = normalize_active_set_bonus(guest.gear_set_bonus)
+    return {
+        requirement_type: max(
+            0,
+            int(getattr(guest, guest_field, 0) or 0)
+            - equipment_bonus[requirement_type]
+            - int(set_bonus.get(requirement_type, 0)),
+        )
+        for requirement_type, _skill_field, guest_field, _label in SKILL_ATTRIBUTE_FIELDS
+    }
 
 
 def _iter_skill_requirements(guest: Guest | None, skill: Skill) -> Iterator[tuple[str, str, int, int | None]]:
@@ -45,23 +83,66 @@ def _iter_skill_requirements(guest: Guest | None, skill: Skill) -> Iterator[tupl
 def collect_skill_requirements(skill: Skill | None) -> list[str]:
     if skill is None:
         return []
-    return [f"{label}需 ≥ {required}" for _kind, label, required, _actual in _iter_skill_requirements(None, skill)]
+    requirements: list[str] = []
+    for requirement_type, label, required, _actual in _iter_skill_requirements(None, skill):
+        requirements.append(f"{label}需 ≥ {required}")
+        minimum = _non_equipment_minimum(skill, required) if requirement_type != "level" else 0
+        if minimum:
+            requirements.append(f"非装备{label}需 ≥ {minimum}")
+    return requirements
 
 
-def collect_unmet_skill_requirements(guest: Guest, skill: Skill | None) -> list[str]:
+def collect_unmet_skill_requirements(
+    guest: Guest,
+    skill: Skill | None,
+    *,
+    non_equipment_attributes: Mapping[str, int] | None = None,
+) -> list[str]:
     if skill is None:
         return []
+    requirements = list(_iter_skill_requirements(guest, skill))
+    if non_equipment_attributes is None and any(
+        requirement_type != "level" and _non_equipment_minimum(skill, required)
+        for requirement_type, _label, required, _actual in requirements
+    ):
+        non_equipment_attributes = collect_non_equipment_skill_attributes(guest)
     unmet: list[str] = []
-    for _kind, label, required, actual in _iter_skill_requirements(guest, skill):
+    for requirement_type, label, required, actual in requirements:
         if actual is not None and actual < required:
-            unmet.append(f"{label}需 ≥ {required}")
+            unmet.append(f"{label}需 ≥ {required}（当前 {actual}）")
+        minimum = _non_equipment_minimum(skill, required) if requirement_type != "level" else 0
+        if minimum and non_equipment_attributes is not None:
+            current = int(non_equipment_attributes[requirement_type])
+            if current < minimum:
+                unmet.append(f"非装备{label}需 ≥ {minimum}（当前 {current}）")
     return unmet
 
 
-def assert_guest_meets_skill_requirements(guest: Guest, skill: Skill) -> None:
-    for requirement_type, _label, required, actual in _iter_skill_requirements(guest, skill):
+def assert_guest_meets_skill_requirements(
+    guest: Guest, skill: Skill, *, non_equipment_attributes: Mapping[str, int] | None = None
+) -> None:
+    requirements = list(_iter_skill_requirements(guest, skill))
+    for requirement_type, _label, required, actual in requirements:
         if actual is not None and actual < required:
             raise GuestNotRequirementError(guest, requirement_type, required, actual)
+
+    for requirement_type, label, required, _actual in requirements:
+        if requirement_type == "level":
+            continue
+        minimum = _non_equipment_minimum(skill, required)
+        if not minimum:
+            continue
+        if non_equipment_attributes is None:
+            non_equipment_attributes = collect_non_equipment_skill_attributes(guest)
+        current = int(non_equipment_attributes[requirement_type])
+        if current < minimum:
+            raise GuestNotRequirementError(
+                guest,
+                requirement_type,
+                minimum,
+                current,
+                message=f"{guest.display_name} 非装备{label}不足，需要 {minimum}，当前 {current}",
+            )
 
 
 def _require_atomic_block(name: str) -> None:

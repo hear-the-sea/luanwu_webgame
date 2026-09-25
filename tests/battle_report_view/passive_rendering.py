@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 from bs4 import BeautifulSoup
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.html import strip_tags
 
@@ -11,6 +12,88 @@ from tests.battle_report_view.support import create_report
 
 def _normalized_report_text(body: str) -> str:
     return "".join(strip_tags(body).split())
+
+
+def test_report_renders_bloodthirsty_fury_bonus_on_the_current_target():
+    body = render_to_string(
+        "battle/partials/round_event_list.html",
+        {
+            "events": [
+                {
+                    "order": 1,
+                    "actor": "甲",
+                    "target": "主目标",
+                    "damage": 100,
+                    "skills": [],
+                    "kind": "guest",
+                    "kills": 0,
+                    "target_defeated": False,
+                    "additional_targets": [
+                        {
+                            "actor": "甲",
+                            "target": "主目标",
+                            "damage": 200,
+                            "skills": [],
+                            "kind": "guest",
+                            "kills": 0,
+                            "target_defeated": False,
+                            "current_target_bonus": True,
+                        }
+                    ],
+                }
+            ],
+            "my_side": "attacker",
+            "is_spectator": False,
+        },
+    )
+
+    assert "对当前目标主目标追加真实伤害200" in _normalized_report_text(body)
+
+
+def test_report_renders_merged_bloodthirsty_fury_damage_on_the_main_attack():
+    body = render_to_string(
+        "battle/partials/round_event_list.html",
+        {
+            "events": [
+                {
+                    "order": 1,
+                    "actor": "甲",
+                    "target": "主目标",
+                    "damage": 201,
+                    "is_crit": False,
+                    "is_dodge": False,
+                    "skills": [],
+                    "kind": "guest",
+                    "kills": 0,
+                    "target_defeated": False,
+                    "passive_events_before": [
+                        {
+                            "type": "passive",
+                            "unit": "甲",
+                            "effect": "嗜血狂怒",
+                            "message": "本次攻击追加真实伤害",
+                            "unit_state": {
+                                "kind": "guest",
+                                "side": "attacker",
+                                "current": 900,
+                                "maximum": 1000,
+                                "percent": 90,
+                                "status": "healthy",
+                                "status_label": "状态充足",
+                            },
+                        }
+                    ],
+                    "additional_targets": [],
+                }
+            ],
+            "my_side": "attacker",
+            "is_spectator": False,
+        },
+    )
+
+    text = _normalized_report_text(body)
+    assert "本次攻击追加真实伤害" in text
+    assert "普通攻击：对主目标造成伤害201" in text
 
 
 @pytest.mark.django_db

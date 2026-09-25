@@ -66,7 +66,7 @@ def test_huashan_lunjian_is_daily_advanced_guest_mission_with_guaranteed_chest()
     assert mission["drop_table"]["huashan_wulin_chest"] == 1
 
 
-def test_wulin_chest_contains_exactly_the_requested_equal_weight_equipment_pool():
+def test_wulin_chest_slightly_favors_orange_equipment():
     items = {row["key"]: row for row in _load_yaml("item_templates.yaml")["items"]}
     chest = items["huashan_wulin_chest"]
     choices = chest["effect_payload"]["gear_choices"]
@@ -76,10 +76,12 @@ def test_wulin_chest_contains_exactly_the_requested_equal_weight_equipment_pool(
     assert chest["is_usable"] is True
     assert chest["effect_payload"]["gear_chance"] == 1
     assert [row["item_key"] for row in choices] == EXPECTED_GEAR_KEYS
-    assert all(row["weight"] == 1 for row in choices)
     assert all(items[key]["effect_type"].startswith("equip_") for key in EXPECTED_GEAR_KEYS)
     assert sum(items[key]["rarity"] == "purple" for key in EXPECTED_GEAR_KEYS) == 18
     assert sum(items[key]["rarity"] == "orange" for key in EXPECTED_GEAR_KEYS) == 10
+    orange_weight = sum(row["weight"] for row in choices if items[row["item_key"]]["rarity"] == "orange")
+    purple_weight = sum(row["weight"] for row in choices if items[row["item_key"]]["rarity"] == "purple")
+    assert orange_weight / (orange_weight + purple_weight) == 0.4
 
 
 def test_huang_shang_is_a_non_recruitable_huashan_boss():

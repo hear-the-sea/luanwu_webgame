@@ -7,8 +7,9 @@ from django.test import TestCase
 
 from core.exceptions import BattlePreparationError, EquipmentError, ItemNotFoundError
 from gameplay.models import InventoryItem, ItemTemplate
-from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestArchetype, GuestRarity, GuestTemplate
+from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestArchetype, GuestRarity, GuestTemplate, Skill
 from guests.services.equipment import ensure_inventory_gears, equip_guest, unequip_guest_item
+from guests.services.skills import collect_unmet_skill_requirements
 
 User = get_user_model()
 
@@ -330,6 +331,51 @@ class TestEquipmentTroopCapacity(TestCase):
         self.assertEqual(new_gear.guest_id, self.guest.id)
         self.assertEqual(self.guest.troop_capacity_bonus, 0)
         self.assertEqual(self.guest.troop_capacity, 200)
+
+    def test_set_defense_updates_attribute_hp_and_skill_requirement(self):
+        set_bonus = {"pieces": 2, "bonus": {"defense": 30}}
+        helmet = self._create_gear(
+            key="test_defense_set_helmet",
+            name="防御套头盔",
+            slot=GearSlot.HELMET,
+            effect_type="equip_helmet",
+            extra_stats={"defense": 5},
+            set_key="test_defense_set",
+            set_bonus=set_bonus,
+        )
+        armor = self._create_gear(
+            key="test_defense_set_armor",
+            name="防御套衣甲",
+            slot=GearSlot.ARMOR,
+            effect_type="equip_armor",
+            extra_stats={"defense": 7},
+            set_key="test_defense_set",
+            set_bonus=set_bonus,
+        )
+        skill = Skill(required_defense=220)
+
+        equip_guest(helmet, self.guest)
+        self.guest.refresh_from_db()
+        self.assertEqual(self.guest.defense_stat, 185)
+        self.assertIn("防御需 ≥ 220（当前 185）", collect_unmet_skill_requirements(self.guest, skill))
+
+        equip_guest(armor, self.guest)
+        self.guest.refresh_from_db()
+        self.assertEqual(self.guest.gear_set_bonus["defense"], 30)
+        self.assertEqual(self.guest.defense_stat, 222)
+        self.assertEqual(self.guest.defense_bonus, 0)
+        self.assertEqual(self.guest.max_hp, 12100)
+        self.assertEqual(collect_unmet_skill_requirements(self.guest, skill), [])
+
+        self.guest.current_hp = self.guest.max_hp
+        self.guest.save(update_fields=["current_hp"])
+        unequip_guest_item(armor, self.guest)
+        self.guest.refresh_from_db()
+        self.assertEqual(self.guest.defense_stat, 185)
+        self.assertEqual(self.guest.defense_bonus, 0)
+        self.assertEqual(self.guest.max_hp, 10250)
+        self.assertEqual(self.guest.current_hp, 10250)
+        self.assertIn("防御需 ≥ 220（当前 185）", collect_unmet_skill_requirements(self.guest, skill))
 
 
 class TestEquipmentStringChoiceResolution(TestCase):

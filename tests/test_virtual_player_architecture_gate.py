@@ -109,6 +109,7 @@ BOT_PROFILE_DIRECT_IMPORTS = {
     "gameplay/services/arena/virtual_reserve_fill.py": "reserve candidate reads and row locks",
     "gameplay/services/arena/virtual_reserve_pool.py": "reserve candidate reads, row locks, and state checks",
     "gameplay/services/jail.py": "read-only virtual captor selection for bounded daily cleanup",
+    "gameplay/services/raid/combat/loot.py": "read-only virtual defender rarity cap for raid loot",
     "gameplay/services/raid/utils.py": "read-only attack eligibility",
     "gameplay/services/virtual_player_core/arena_healing.py": "Arena healing sweep profile selection and execution boundary",
     "gameplay/services/virtual_player_core/bootstrap.py": "bootstrap profile contract and Archetype defaults",

@@ -10,7 +10,7 @@ from guests.models import GuestStatus
 from guests.services.status import persist_guest_status_transitions
 
 from ....models import Manor, RaidRun
-from .troop_ops import _add_troops_batch
+from .troop_ops import _return_troops_to_storage
 from .troops import _normalize_positive_int_mapping
 
 logger = logging.getLogger(__name__)
@@ -85,7 +85,7 @@ def fail_raid_run_and_release_resources(
 
         returned_troops = _normalize_positive_int_mapping(locked_run.troop_loadout)
         if returned_troops:
-            _add_troops_batch(attacker, returned_troops)
+            _return_troops_to_storage(attacker, returned_troops)
 
     locked_run.status = RaidRun.Status.FAILED
     locked_run.failure_reason = failure_reason

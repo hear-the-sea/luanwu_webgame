@@ -7,7 +7,8 @@ from __future__ import annotations
 import logging
 
 from django.core.cache import cache
-from django.db import transaction
+from django.db import connection, transaction
+from django.db.models import QuerySet
 
 from core.exceptions import (
     DuplicateEquipmentError,
@@ -92,6 +93,13 @@ def give_gear(manor: Manor, template: GearTemplate) -> GearItem:
     return GearItem.objects.create(manor=manor, template=template)
 
 
+def _lock_gear_items(queryset: QuerySet[GearItem]) -> QuerySet[GearItem]:
+    # 模板只用于读取属性；锁住关联模板会与虚拟玩家初始化时的全目录锁形成死锁。
+    if connection.features.has_select_for_update_of:
+        return queryset.select_for_update(of=("self",))
+    return queryset.select_for_update()
+
+
 def return_guest_gear_to_inventory_locked(manor: Manor, guest: Guest) -> int:
     """在调用方已持有 Manor 锁时，将门客身上的装备完整归还仓库。"""
     _require_atomic_block("return_guest_gear_to_inventory_locked")
@@ -99,7 +107,7 @@ def return_guest_gear_to_inventory_locked(manor: Manor, guest: Guest) -> int:
         raise GuestOwnershipError(message="门客不存在或不属于该庄园")
 
     gear_items = list(
-        GearItem.objects.select_for_update().select_related("template").filter(manor_id=manor.pk, guest_id=guest.pk)
+        _lock_gear_items(GearItem.objects.select_related("template").filter(manor_id=manor.pk, guest_id=guest.pk))
     )
     slots: set[str] = set()
     for gear in gear_items:
@@ -194,7 +202,7 @@ def _apply_gear_to_locked_guest(
         return gear
 
     existing_items = list(
-        guest.gear_items.select_for_update().select_related("template").filter(template__slot=resolved_slot)
+        _lock_gear_items(guest.gear_items.select_related("template").filter(template__slot=resolved_slot))
     )
     updates = {"attack_bonus", "defense_bonus"}
     for item in existing_items:

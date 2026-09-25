@@ -11,6 +11,8 @@ from .modifier_lifecycle import (
 )
 from .simulation.report_state import snapshot_unit_state
 
+_PENDING_EXTRA_TARGET_TRUE_DAMAGE_KEY = "_pending_extra_target_true_damage"
+
 
 def _modifier_source_payload(modifiers: BattleModifiers, key: str) -> dict[str, Any]:
     payload = modifiers.get(key)
@@ -36,6 +38,16 @@ def _state_payload(actor: Any) -> dict[str, Any]:
     state = {}
     setattr(actor, "battle_state", state)
     return state
+
+
+def consume_pending_extra_target_true_damage(actor: Any) -> list[dict[str, Any]]:
+    state = getattr(actor, "battle_state", None)
+    if not isinstance(state, dict):
+        return []
+    pending = state.pop(_PENDING_EXTRA_TARGET_TRUE_DAMAGE_KEY, [])
+    if not isinstance(pending, list):
+        return []
+    return [effect for effect in pending if isinstance(effect, dict)]
 
 
 def _modifier_payload(actor: Any) -> BattleModifiers:
@@ -272,6 +284,24 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
                 troop_value_multiplier=float(effect.get("troop_value_multiplier") or 1.0),
                 scope=str(modifier_scope),
             )
+        return
+
+    if effect_type == "random_extra_target_true_damage":
+        if len(targets) != 1 or targets[0] is not actor:
+            return
+        value = float(effect.get("value") or 0)
+        if value <= 0:
+            return
+        pending = _state_payload(actor).setdefault(_PENDING_EXTRA_TARGET_TRUE_DAMAGE_KEY, [])
+        if not isinstance(pending, list):
+            raise AssertionError("pending extra-target true damage must be a list")
+        pending.append(
+            {
+                "value": value,
+                "troop_value_multiplier": float(effect.get("troop_value_multiplier") or 1.0),
+                "log_name": str(effect.get("log_name") or context.get("skill_key") or "被动技能"),
+            }
+        )
         return
 
     if effect_type == "set_softcap":

@@ -1039,7 +1039,7 @@ missions:
       equip_wuzhuima: 0.5
       equip_bawangqiang: 0.1
       experience_watermelon: 2
-      passive_skill_book_box: 0.05
+      passive_skill_book_box: 0.06
 
     daily_limit: 3
 
@@ -1067,7 +1067,7 @@ missions:
 
     drop_table:
       silver: 50000
-      civil_skill_book_box: 0.15
+      civil_skill_book_box: 0.18
       pubayi_guest_card: 0.1
 
     daily_limit: 3
@@ -1100,8 +1100,8 @@ missions:
       experience_pineapple:
         chance: 0.8
         count: 10
-      saiwai_equipment_box: 0.2
-      book_dragon_roar: 0.005
+      saiwai_equipment_box: 0.24
+      book_dragon_roar: 0.006
 
     daily_limit: 3
 
@@ -1246,9 +1246,9 @@ missions:
       experience_pineapple:
         chance: 0.7
         count: 12
-      book_five_thunder_descent: 0.04
-      book_hell_instant_formation: 0.04
-      equip_taiqingyuce: 0.008
+      book_five_thunder_descent: 0.048
+      book_hell_instant_formation: 0.048
+      equip_taiqingyuce: 0.0096
       yuxu_broken_seal:
         chance: 0.25
         count: 1
@@ -1292,12 +1292,12 @@ missions:
       experience_pineapple:
         chance: 0.8
         count: 15
-      book_dragon_roar: 0.02
-      book_five_thunder_descent: 0.04
-      book_last_chance_revival: 0.06
+      book_dragon_roar: 0.024
+      book_five_thunder_descent: 0.048
+      book_last_chance_revival: 0.072
       equip_baguajing: 0.08
-      equip_taiqingyuce: 0.01
-      equip_fengshenbang: 0.005
+      equip_taiqingyuce: 0.012
+      equip_fengshenbang: 0.006
       fengshen_equipment_box: 0.08
       blueprint_top_blue:
         chance: 0.45
@@ -1357,13 +1357,13 @@ missions:
       experience_watermelon:
         chance: 0.7
         count: 4
-      book_bloodthirsty_fury: 0.05
-      book_desperate_beast: 0.05
-      book_prison_break_blade: 0.04
-      book_city_felling_strike: 0.04
-      equip_shanheshejitu: 0.01
-      equip_zhoutianxingpan: 0.01
-      equip_xuanyuanjian: 0.005
+      book_bloodthirsty_fury: 0.06
+      book_desperate_beast: 0.06
+      book_prison_break_blade: 0.048
+      book_city_felling_strike: 0.048
+      equip_shanheshejitu: 0.012
+      equip_zhoutianxingpan: 0.012
+      equip_xuanyuanjian: 0.006
       blueprint_top_blue:
         chance: 0.45
         choices:
@@ -1420,13 +1420,13 @@ missions:
       experience_watermelon:
         chance: 0.75
         count: 5
-      equip_taixudiguan: 0.01
-      equip_hundunlongpao: 0.01
-      equip_changshengjian: 0.008
-      equip_panlonggun: 0.008
-      equip_qiankunshengong: 0.008
-      equip_tuwujian: 0.005
-      equip_jianghuling: 0.01
+      equip_taixudiguan: 0.012
+      equip_hundunlongpao: 0.012
+      equip_changshengjian: 0.0096
+      equip_panlonggun: 0.0096
+      equip_qiankunshengong: 0.0096
+      equip_tuwujian: 0.006
+      equip_jianghuling: 0.012
 
     base_travel_time: 2400
     daily_limit: 1
@@ -1589,9 +1589,9 @@ missions:
         chance: 0.75
         count: 5
       hulao_war_banner: 1
-      equip_fangtianhuaji: 0.008
-      equip_longlinzhanjia: 0.006
-      equip_chituma: 0.005
+      equip_fangtianhuaji: 0.0096
+      equip_longlinzhanjia: 0.0072
+      equip_chituma: 0.006
 
     base_travel_time: 2400
     daily_limit: 1
@@ -1645,12 +1645,12 @@ missions:
       lvbu_guest_scroll: 0.01
       super_guest_disguise_card: 0.01
       diaochan_guest_scroll: 0.02
-      equip_panlonggun: 0.008
+      equip_panlonggun: 0.0096
       equip_pojunzhanjia: 0.02
       equip_tianjiguan: 0.025
-      book_dragon_roar: 0.03
-      book_stratagem_burst: 0.03
-      book_prison_break_blade: 0.03
+      book_dragon_roar: 0.036
+      book_stratagem_burst: 0.036
+      book_prison_break_blade: 0.036
 
     base_travel_time: 2700
     daily_limit: 1

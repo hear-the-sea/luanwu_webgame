@@ -40,44 +40,118 @@
       });
     });
 
-    const selectedCountEls = document.querySelectorAll("[id='selected-guest-count']");
-    const guestInputs = document.querySelectorAll(".guest-input");
+    const loadoutForm = document.querySelector("[data-task-loadout]");
+    if (loadoutForm && loadoutForm.dataset.loadoutInitialized !== "1") {
+      loadoutForm.dataset.loadoutInitialized = "1";
+      const guestInputs = Array.from(loadoutForm.querySelectorAll("[data-task-guest]"));
+      const troopInputs = Array.from(loadoutForm.querySelectorAll("[data-task-troop]"));
+      const maxSquadSize = Math.max(0, Number.parseInt(loadoutForm.dataset.maxSquadSize || "0", 10) || 0);
+      const selectedCount = loadoutForm.querySelector("#selected-guest-count");
+      const troopTotal = loadoutForm.querySelector("[data-task-troop-total]");
+      const troopCapacity = loadoutForm.querySelector("[data-task-troop-capacity]");
+      const capacityStatus = loadoutForm.querySelector("[data-task-capacity-status]");
+      const submitButton = loadoutForm.querySelector("[data-task-submit]");
+      const parseCount = (value) => Math.max(0, Number.parseInt(value, 10) || 0);
+      const checkedGuests = () => guestInputs.filter((input) => input.checked);
+      const currentCapacity = () => checkedGuests().reduce(
+        (total, input) => total + parseCount(input.dataset.troopCapacity), 0
+      );
+      const currentTroopTotal = () => troopInputs.reduce(
+        (total, input) => total + parseCount(input.value), 0
+      );
 
-    const updateGuestCount = (scope) => {
-      if (!selectedCountEls.length) {
-        return;
-      }
-      selectedCountEls.forEach((element) => {
-        const container = scope || element.closest("form") || document;
-        const count = container.querySelectorAll(".guest-input:checked").length;
-        element.textContent = String(count);
-      });
-    };
-
-    guestInputs.forEach((input) => {
-      if (input.dataset.changeBound === "1") {
-        return;
-      }
-      input.dataset.changeBound = "1";
-      input.addEventListener("change", () => {
-        const form = input.closest("form") || document;
-        const selectedCountEl = form.querySelector("[id='selected-guest-count']") || selectedCountEls[0];
-        const maxSquadSize = Number.parseInt(selectedCountEl?.dataset?.maxSquad || "0", 10)
-          || Number.parseInt(document.body.dataset.maxMissionSquad || "0", 10)
-          || 5;
-        const selectedGuests = form.querySelectorAll(".guest-input:checked").length;
-        if (selectedGuests > maxSquadSize) {
-          input.checked = false;
-          if (typeof window.gameAlert === "function") {
-            window.gameAlert(`最多只能选择 ${maxSquadSize} 名门客出征`, { title: "选择限制" });
-          } else {
-            window.alert(`最多只能选择 ${maxSquadSize} 名门客出征`);
-          }
-          return;
+      const updateLoadout = () => {
+        const guestCount = checkedGuests().length;
+        const capacity = currentCapacity();
+        const troops = currentTroopTotal();
+        if (selectedCount) selectedCount.textContent = String(guestCount);
+        if (troopTotal) troopTotal.textContent = String(troops);
+        if (troopCapacity) troopCapacity.textContent = String(capacity);
+        if (capacityStatus) {
+          const overCapacity = troops > capacity;
+          capacityStatus.textContent = guestCount === 0
+            ? troops > 0
+              ? "已携带护院，请选择门客或全部清零"
+              : "可先配置护院；选择门客后计算带兵上限"
+            : overCapacity
+              ? `已超出带兵上限 ${troops - capacity} 人`
+              : `还可携带 ${capacity - troops} 人`;
+          capacityStatus.classList.toggle("is-over-limit", overCapacity);
+          capacityStatus.setAttribute("role", overCapacity ? "alert" : "status");
         }
-        updateGuestCount(form);
+        if (submitButton) submitButton.disabled = guestCount === 0 || troops > capacity;
+      };
+
+      const setTroopValue = (input, requested) => {
+        const inventoryMax = parseCount(input.dataset.max);
+        const next = Math.min(parseCount(requested), inventoryMax);
+        input.value = String(next);
+        updateLoadout();
+      };
+
+      guestInputs.forEach((input) => {
+        input.addEventListener("change", () => {
+          if (checkedGuests().length > maxSquadSize) {
+            input.checked = false;
+            if (typeof window.gameAlert === "function") {
+              window.gameAlert(`最多只能选择 ${maxSquadSize} 名门客出征`, { title: "选择限制" });
+            } else {
+              window.alert(`最多只能选择 ${maxSquadSize} 名门客出征`);
+            }
+          }
+          updateLoadout();
+        });
       });
-    });
+
+      loadoutForm.querySelector("[data-task-select-all]")?.addEventListener("click", () => {
+        let remaining = maxSquadSize;
+        guestInputs.forEach((input) => {
+          if (!input.checked) return;
+          if (remaining > 0) remaining -= 1;
+          else input.checked = false;
+        });
+        guestInputs.forEach((input) => {
+          if (!input.checked && remaining > 0) {
+            input.checked = true;
+            remaining -= 1;
+          }
+        });
+        updateLoadout();
+      });
+
+      loadoutForm.querySelector("[data-task-clear-guests]")?.addEventListener("click", () => {
+        guestInputs.forEach((input) => { input.checked = false; });
+        updateLoadout();
+      });
+
+      troopInputs.forEach((input) => {
+        input.addEventListener("input", updateLoadout);
+        input.addEventListener("change", () => setTroopValue(input, input.value));
+      });
+
+      loadoutForm.querySelectorAll("[data-task-adjust]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const input = troopInputs.find((item) => item.dataset.troopKey === button.dataset.troopKey);
+          if (input) setTroopValue(input, parseCount(input.value) + Number.parseInt(button.dataset.taskAdjust, 10));
+        });
+      });
+
+      loadoutForm.querySelectorAll("[data-task-fill]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const input = troopInputs.find((item) => item.dataset.troopKey === button.dataset.taskFill);
+          if (input) setTroopValue(input, input.dataset.max);
+        });
+      });
+
+      loadoutForm.querySelector("[data-task-clear-troops]")?.addEventListener("click", () => {
+        troopInputs.forEach((input) => {
+          input.value = "0";
+        });
+        updateLoadout();
+      });
+
+      updateLoadout();
+    }
 
     document.querySelectorAll(".js-mission-card-form").forEach((form) => {
       if (form.dataset.submitBound === "1") {
@@ -128,48 +202,6 @@
       });
     });
 
-    document.querySelectorAll(".tw-troop-slider").forEach((slider) => {
-      if (slider.dataset.inputBound === "1") {
-        return;
-      }
-      slider.dataset.inputBound = "1";
-      slider.addEventListener("input", () => {
-        const form = slider.closest("form") || document;
-        const troopKey = slider.dataset.troopKey;
-        const numInput = form.querySelector(`.tw-troop-num-input[data-troop-key="${troopKey}"]`);
-        if (numInput) {
-          numInput.value = slider.value;
-        }
-      });
-    });
-
-    document.querySelectorAll(".tw-troop-num-input").forEach((input) => {
-      if (input.dataset.inputBound !== "1") {
-        input.dataset.inputBound = "1";
-        input.addEventListener("input", () => {
-          const form = input.closest("form") || document;
-          const troopKey = input.dataset.troopKey;
-          const max = Number.parseInt(input.dataset.max || "0", 10) || 0;
-          let value = Number.parseInt(input.value, 10) || 0;
-          value = Math.max(0, Math.min(max, value));
-          const slider = form.querySelector(`.tw-troop-slider[data-troop-key="${troopKey}"]`);
-          if (slider) {
-            slider.value = String(value);
-          }
-        });
-      }
-      if (input.dataset.blurBound !== "1") {
-        input.dataset.blurBound = "1";
-        input.addEventListener("blur", () => {
-          const max = Number.parseInt(input.dataset.max || "0", 10) || 0;
-          let value = Number.parseInt(input.value, 10) || 0;
-          value = Math.max(0, Math.min(max, value));
-          input.value = String(value);
-        });
-      }
-    });
-
-    updateGuestCount();
   };
 
   document.addEventListener("DOMContentLoaded", initTasksPage);

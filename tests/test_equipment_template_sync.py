@@ -158,8 +158,8 @@ def test_sync_merges_legacy_head_and_reconciles_equipped_stats(django_user_model
     }
     assert armor_template.set_bonus == new_bonus
     assert guest.force == 165
-    assert guest.defense_stat == 135
-    assert guest.defense_bonus == 15
+    assert guest.defense_stat == 150
+    assert guest.defense_bonus == 0
     assert guest.hp_bonus == 790
     assert guest.troop_capacity_bonus == 150
     assert guest.gear_set_bonus == new_bonus["bonus"]

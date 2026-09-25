@@ -9,8 +9,9 @@ from django.db import DatabaseError
 from django.urls import reverse
 from django.utils import timezone
 
-from gameplay.models import InventoryItem, ItemTemplate, MissionExtraAttempt, MissionRun, MissionTemplate
-from guests.models import GuestTemplate
+from battle.models import TroopTemplate
+from gameplay.models import InventoryItem, ItemTemplate, MissionExtraAttempt, MissionRun, MissionTemplate, PlayerTroop
+from guests.models import Guest, GuestStatus, GuestTemplate
 
 
 @pytest.mark.django_db
@@ -75,6 +76,47 @@ class TestTaskBoardPage:
         _manor, client = manor_with_user
         response = client.get(reverse("gameplay:tasks") + "?mission=huashan_lunjian")
         assert response.status_code == 200
+
+    def test_task_board_renders_squad_actions_and_troop_buttons_for_offense(self, manor_with_user):
+        manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key="task_board_loadout_controls",
+            name="编队测试任务",
+            difficulty=MissionTemplate.Difficulty.JUNIOR,
+            daily_limit=3,
+        )
+        guest_template = GuestTemplate.objects.create(
+            key="task_board_loadout_guest",
+            name="编队测试门客",
+            archetype="military",
+            rarity="gray",
+        )
+        guest = Guest.objects.create(
+            manor=manor,
+            template=guest_template,
+            status=GuestStatus.IDLE,
+            troop_capacity_bonus=25,
+        )
+        troop_template = TroopTemplate.objects.create(key="task_board_guard", name="编队测试护院")
+        PlayerTroop.objects.create(manor=manor, troop_template=troop_template, count=40)
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert "data-task-select-all" in body
+        assert "data-task-clear-guests" in body
+        assert f'data-troop-capacity="{guest.troop_capacity}"' in body
+        assert "data-task-clear-troops" in body
+        assert 'data-task-adjust="-10"' in body
+        assert 'data-task-fill="task_board_guard"' in body
+        assert 'name="troop_task_board_guard"' in body
+
+        mission.guest_only = True
+        mission.save(update_fields=["guest_only"])
+        guest_only_body = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}").content.decode("utf-8")
+        assert "data-task-select-all" in guest_only_body
+        assert "data-task-adjust" not in guest_only_body
 
     def test_task_board_shows_lubu_status_only_on_baimenlou_detail(self, manor_with_user, monkeypatch):
         _manor, client = manor_with_user

@@ -211,16 +211,27 @@ def _apply_guest_vs_guest_split_scaling(*, base_damage: float, total_damage: flo
     return base_damage + skill_damage * GUEST_SKILL_VS_GUEST_MULTIPLIER
 
 
+def calculate_passive_true_damage(
+    actor: "Combatant",
+    target: "Combatant",
+    *,
+    value: float,
+    troop_value_multiplier: float = 1.0,
+) -> float:
+    max_hp = max(0, int(getattr(actor, "max_hp", 0) or 0))
+    if max_hp <= 0 or value <= 0:
+        return 0.0
+
+    multiplier = troop_value_multiplier if target.kind == "troop" else 1.0
+    return max(0.0, max_hp * value * multiplier)
+
+
 def _apply_passive_true_damage(actor: "Combatant", target: "Combatant", damage: float) -> float:
     modifiers = getattr(actor, "battle_modifiers", None)
     if not isinstance(modifiers, dict):
         return damage
     sources = modifiers.get("true_damage_ratio_sources")
     if not isinstance(sources, dict) or not sources:
-        return damage
-
-    max_hp = max(0, int(getattr(actor, "max_hp", 0) or 0))
-    if max_hp <= 0:
         return damage
 
     extra_damage = 0.0
@@ -231,7 +242,12 @@ def _apply_passive_true_damage(actor: "Combatant", target: "Combatant", damage: 
         if ratio <= 0:
             continue
         multiplier = float(payload.get("troop_value_multiplier") or 1.0) if target.kind == "troop" else 1.0
-        extra_damage += max(0.0, max_hp * ratio * multiplier)
+        extra_damage += calculate_passive_true_damage(
+            actor,
+            target,
+            value=ratio,
+            troop_value_multiplier=multiplier,
+        )
 
     if extra_damage <= 0:
         return damage

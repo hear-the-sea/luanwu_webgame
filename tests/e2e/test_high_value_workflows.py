@@ -14,6 +14,7 @@ from guests.models import Guest, GuestArchetype, GuestRarity, GuestStatus, Guest
 from guilds.models import GuildDonationLog, GuildMember, GuildWarehouse
 from tests.helpers.auction import create_active_round_slot, ensure_gold_bar_template
 from trade.models import AuctionBid, AuctionDelivery, FrozenGoldBar, ShopPurchaseLog, ShopSellLog
+from trade.services.auction.access import AUCTION_MIN_PRESTIGE
 from trade.services.auction.rounds import _settle_slot
 from trade.services.shop_config import ShopItemConfig
 
@@ -66,6 +67,8 @@ def _grant_item(manor, template: ItemTemplate, quantity: int) -> InventoryItem:
 
 def test_e2e_auction_bid_settlement_message_claims_reward(client, django_user_model, monkeypatch):
     user, manor = _create_user_manor(django_user_model, "e2e_auction_winner")
+    manor.prestige = AUCTION_MIN_PRESTIGE
+    manor.save(update_fields=["prestige"])
     _force_login(client, user)
     gold_template = ensure_gold_bar_template()
     _grant_item(manor, gold_template, 20)

@@ -64,6 +64,7 @@ from .troop_ops import (  # noqa: F401
     _bulk_create_troops_with_fallback,
     _deduct_troops,
     _return_surviving_troops,
+    _return_troops_to_storage,
 )
 
 # Import normalization helpers from the troops sub-module (still used in this file).
@@ -273,7 +274,7 @@ def _finalize_raid_retreat(run: RaidRun, now: Optional[datetime] = None) -> None
         run,
         now=now,
         normalize_positive_int_mapping=_normalize_positive_int_mapping,
-        add_troops_batch=_add_troops_batch,
+        add_troops_batch=_return_troops_to_storage,
         completed_status=RaidRun.Status.COMPLETED,
     )
 

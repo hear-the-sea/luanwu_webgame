@@ -488,7 +488,7 @@ def test_default_mission_templates_import_wanxian_niming_chain():
     assert fengbang.daily_limit == 1
     assert fengbang.entry_cost == {"yuxu_broken_seal": 1}
     assert "fengbang_torn_page" not in fengbang.drop_table
-    assert fengbang.drop_table["equip_fengshenbang"] == 0.005
+    assert fengbang.drop_table["equip_fengshenbang"] == 0.006
 
 
 @pytest.mark.django_db
@@ -521,13 +521,13 @@ def test_default_mission_templates_import_zhuolu_zhongyuan():
     assert mission.drop_table == {
         "silver": 100000,
         "experience_watermelon": {"chance": 0.7, "count": 4},
-        "book_bloodthirsty_fury": 0.05,
-        "book_desperate_beast": 0.05,
-        "book_prison_break_blade": 0.04,
-        "book_city_felling_strike": 0.04,
-        "equip_shanheshejitu": 0.01,
-        "equip_zhoutianxingpan": 0.01,
-        "equip_xuanyuanjian": 0.005,
+        "book_bloodthirsty_fury": 0.06,
+        "book_desperate_beast": 0.06,
+        "book_prison_break_blade": 0.048,
+        "book_city_felling_strike": 0.048,
+        "equip_shanheshejitu": 0.012,
+        "equip_zhoutianxingpan": 0.012,
+        "equip_xuanyuanjian": 0.006,
         "blueprint_top_blue": {
             "chance": 0.45,
             "choices": [

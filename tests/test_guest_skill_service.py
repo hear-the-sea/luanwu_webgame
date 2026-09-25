@@ -15,8 +15,16 @@ from core.exceptions import (
 )
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
-from guests.models import Guest, GuestSkill, GuestStatus, GuestTemplate, Skill
-from guests.services.skills import forget_guest_skill, learn_guest_skill, learn_guest_skill_locked
+from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestSkill, GuestStatus, GuestTemplate, Skill
+from guests.services.equipment import equip_guest
+from guests.services.skills import (
+    collect_non_equipment_skill_attributes,
+    collect_skill_requirements,
+    collect_unmet_skill_requirements,
+    forget_guest_skill,
+    learn_guest_skill,
+    learn_guest_skill_locked,
+)
 
 _COUNTER = count(1)
 
@@ -211,6 +219,62 @@ def test_learn_guest_skill_rejects_low_attribute_without_consuming_book(
     item.refresh_from_db(fields=["quantity"])
     assert item.quantity == 2
     assert not GuestSkill.objects.filter(guest=guest, skill=skill).exists()
+
+
+@pytest.mark.django_db
+def test_learn_guest_skill_rejects_borrowed_gear_until_base_attribute_reaches_floor(django_user_model):
+    user = django_user_model.objects.create_user(username=_unique("skill_service_gear_user"), password="pass123")
+    manor = ensure_manor(user)
+    guest = _create_guest(manor, force=150)
+    template = GearTemplate.objects.create(
+        key=_unique("skill_service_force_gear"),
+        name="借用武器",
+        slot=GearSlot.WEAPON,
+        extra_stats={"force": 100},
+        set_key="skill_service_force_set",
+        set_bonus={"pieces": 1, "bonus": {"force": 70}},
+    )
+    equip_guest(GearItem.objects.create(manor=manor, template=template), guest)
+    guest.refresh_from_db()
+    assert guest.force == 320
+    skill, item = _create_skill_book_item(manor, rarity="purple", required_force=300)
+    assert "非装备武力需 ≥ 210" in collect_skill_requirements(skill)
+    assert collect_unmet_skill_requirements(guest, skill) == ["非装备武力需 ≥ 210（当前 150）"]
+
+    with pytest.raises(GuestNotRequirementError, match="非装备武力不足"):
+        learn_guest_skill(guest, skill, item)
+    item.refresh_from_db(fields=["quantity"])
+    assert item.quantity == 2
+
+    guest.force += 60
+    guest.save(update_fields=["force"])
+    learned = learn_guest_skill(guest, skill, item)
+    item.refresh_from_db(fields=["quantity"])
+    assert learned.skill_id == skill.id
+    assert item.quantity == 1
+
+
+@pytest.mark.django_db
+def test_set_defense_counts_toward_total_but_not_non_equipment_skill_floor(django_user_model):
+    user = django_user_model.objects.create_user(username=_unique("skill_service_set_user"), password="pass123")
+    manor = ensure_manor(user)
+    guest = _create_guest(manor, defense_stat=120)
+    template = GearTemplate.objects.create(
+        key=_unique("skill_service_defense_gear"),
+        name="借用护甲",
+        slot=GearSlot.ARMOR,
+        extra_stats={"defense": 61},
+        set_key="skill_service_defense_set",
+        set_bonus={"pieces": 1, "bonus": {"defense": 20}},
+    )
+    equip_guest(GearItem.objects.create(manor=manor, template=template), guest)
+    guest.refresh_from_db()
+    skill = Skill(rarity="blue", required_defense=201)
+
+    assert guest.defense_stat == 201
+    assert collect_non_equipment_skill_attributes(guest)["defense"] == 120
+    assert "非装备防御需 ≥ 131" in collect_skill_requirements(skill)
+    assert collect_unmet_skill_requirements(guest, skill) == ["非装备防御需 ≥ 131（当前 120）"]
 
 
 @pytest.mark.django_db

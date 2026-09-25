@@ -71,7 +71,7 @@
                     <div>
                         <strong>技能位 {{ slot.index }}：</strong>
                         {% if slot.record %}
-                            <span>{{ slot.skill.name }} — {{ slot.skill.description }}</span>
+                            <span>{{ slot.skill.name }} <span class="skill-kind-badge skill-kind-badge--{{ slot.skill.kind }}">{{ slot.skill.get_kind_display }}技能</span> — {{ slot.skill.description }}</span>
                         {% else %}
                             <span>空闲，可通过技能书学习。</span>
                         {% endif %}

@@ -937,6 +937,7 @@ def test_skill_candidates_use_the_frozen_catalog_without_orm(
         key=f"v2_skill_snapshot_{active_v2_profile.id}",
         name="V2 snapshot skill",
         rarity="green",
+        required_force=1,
     )
     template = ItemTemplate.objects.create(
         key=f"v2_skill_book_snapshot_{active_v2_profile.id}",
@@ -970,10 +971,77 @@ def test_skill_candidates_use_the_frozen_catalog_without_orm(
             guest_skills=(),
             warehouse_items=(item,),
             skills=(skill,),
+            gear_items=(),
         )
 
     assert candidates
     assert set(specs) == {candidate.business_key for candidate in candidates}
+
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("idle_v2_guests")
+def test_skill_candidates_require_non_equipment_attribute_for_both_player_pools(active_v2_profile) -> None:
+    guest = Guest.objects.filter(manor_id=active_v2_profile.manor_id).select_related("template").order_by("id").first()
+    assert guest is not None
+    guest.force = 250
+    skill = Skill.objects.create(
+        key=f"v2_skill_inherent_{active_v2_profile.id}",
+        name="V2 inherent skill",
+        rarity="blue",
+        required_force=250,
+    )
+    book = ItemTemplate.objects.create(
+        key=f"v2_skill_inherent_book_{active_v2_profile.id}",
+        name="V2 inherent skill book",
+        effect_type=ItemTemplate.EffectType.SKILL_BOOK,
+        effect_payload={"skill_key": skill.key},
+    )
+    item = InventoryItem.objects.create(
+        manor_id=active_v2_profile.manor_id,
+        template=book,
+        quantity=1,
+        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+    )
+    gear_template = GearTemplate.objects.create(
+        key=f"v2_skill_inherent_gear_{active_v2_profile.id}",
+        name="V2 force gear",
+        slot=GearSlot.WEAPON,
+        extra_stats={"force": 100},
+    )
+    gear = GearItem(manor_id=active_v2_profile.manor_id, guest=guest, template=gear_template)
+    strength = load_manor_strength_summary(manor_id=active_v2_profile.manor_id, guests=(guest,))
+    development_plan = maintenance.parse_development_plan(
+        active_v2_profile.development_profile,
+        catalog=maintenance.development_plan_catalog_v1(),
+    )
+
+    def candidate_counts() -> tuple[int, int]:
+        ordinary, _ = maintenance.build_skill_learning_candidates(
+            manor_id=int(active_v2_profile.manor_id),
+            prestige_band=str(active_v2_profile.current_prestige_band),
+            strength_before=strength,
+            development_plan=development_plan,
+            guests=(guest,),
+            guest_skills=(),
+            warehouse_items=(item,),
+            skills=(skill,),
+            gear_items=(gear,),
+        )
+        virtual, _ = build_virtual_skill_learning_candidates(
+            prestige_band=str(active_v2_profile.current_prestige_band),
+            strength_before=strength,
+            development_plan=development_plan,
+            guests=(guest,),
+            skill_books=(book,),
+            skills=(skill,),
+            guest_skills=(),
+            gear_items=(gear,),
+        )
+        return len(ordinary), len(virtual)
+
+    assert candidate_counts() == (0, 0)
+    guest.force = 263  # 163 non-equipment force meets ceil(250 * 65%).
+    assert candidate_counts() == (1, 1)
 
 
 @pytest.mark.django_db

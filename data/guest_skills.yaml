@@ -24,8 +24,9 @@ skills:
       enemy:
         defense: 0.35
         intellect: 0.5
-    required_level: 10
-    required_intellect: 100
+    required_level: 50
+    required_intellect: 255
+    required_agility: 125
     targets: 1
 
 
@@ -33,7 +34,7 @@ skills:
   # ══════════════════════════════════════════════════════════════════════════════
   #                              文系伤害技能（法术系）
   # ══════════════════════════════════════════════════════════════════════════════
-  # 稀有度分布：绿色×7、蓝色×3、紫色×2
+  # 稀有度分布：绿色×5、蓝色×5、紫色×2
   # 文系技能特点：纯伤害技能，智力权重高
 
   # ---------- 绿色品质（入门法术）----------
@@ -51,8 +52,8 @@ skills:
       enemy:
         defense: 0.2
         intellect: 0.1
-    required_level: 5
-    required_intellect: 60
+    required_level: 12
+    required_intellect: 100
     targets: 1
 
   - key: thunder_control
@@ -70,8 +71,9 @@ skills:
       enemy:
         defense: 0.25
         intellect: 0.1
-    required_level: 5
-    required_intellect: 65
+    required_level: 15
+    required_intellect: 110
+    required_agility: 65
     targets: 1
 
   - key: dragon_break_curse
@@ -89,8 +91,8 @@ skills:
       enemy:
         defense: 0.05
         intellect: 0.05
-    required_level: 8
-    required_intellect: 70
+    required_level: 20
+    required_intellect: 125
     targets: 1
 
   - key: endless_chatter
@@ -108,8 +110,8 @@ skills:
       enemy:
         defense: 0.15
         intellect: 0.15
-    required_level: 3
-    required_intellect: 50
+    required_level: 12
+    required_intellect: 95
     targets: 1
 
   - key: taiyi_wind
@@ -127,13 +129,15 @@ skills:
       enemy:
         defense: 0.3
         intellect: 0.15
-    required_level: 12
-    required_intellect: 90
+    required_level: 24
+    required_intellect: 145
+    required_agility: 80
     targets: 1
 
+  # ---------- 蓝色品质（进阶法术）----------
   - key: flower_rain
     name: 天花乱坠
-    rarity: green
+    rarity: blue
     description: 口吐莲花，舌灿生辉，言辞如天花飘落，杀人于无形。
     base_probability: 0.75
     kind: active
@@ -146,13 +150,13 @@ skills:
       enemy:
         defense: 0.25
         intellect: 0.15
-    required_level: 10
-    required_intellect: 85
+    required_level: 28
+    required_intellect: 170
     targets: 1
 
   - key: soul_erode
     name: 销魂蚀骨
-    rarity: green
+    rarity: blue
     description: 阴毒法术侵蚀敌人精魄，直击灵魂深处。
     base_probability: 0.7
     kind: active
@@ -165,11 +169,10 @@ skills:
       enemy:
         defense: 0.1
         intellect: 0.2
-    required_level: 15
-    required_intellect: 100
+    required_level: 32
+    required_intellect: 190
     targets: 1
 
-  # ---------- 蓝色品质（进阶法术）----------
   - key: red_lotus_dance
     name: 红莲之舞
     rarity: blue
@@ -185,8 +188,9 @@ skills:
       enemy:
         defense: 0.25
         intellect: 0.15
-    required_level: 12
-    required_intellect: 95
+    required_level: 35
+    required_intellect: 205
+    required_agility: 110
     targets: 1
 
   - key: thunder_nine_heavens
@@ -204,8 +208,9 @@ skills:
       enemy:
         defense: 0.35
         intellect: 0.2
-    required_level: 20
-    required_intellect: 130
+    required_level: 45
+    required_intellect: 255
+    required_agility: 125
     targets: 1
 
   - key: tangseng_sermon
@@ -223,8 +228,8 @@ skills:
       enemy:
         defense: 0.2
         intellect: 0.25
-    required_level: 18
-    required_intellect: 120
+    required_level: 42
+    required_intellect: 240
     targets: 1
 
   # ---------- 紫色品质（高阶法术）----------
@@ -243,8 +248,9 @@ skills:
       enemy:
         defense: 0.1
         intellect: 0.25
-    required_level: 25
-    required_intellect: 140
+    required_level: 60
+    required_intellect: 320
+    required_agility: 140
     targets: 1
 
   - key: brahma_true_fire
@@ -262,8 +268,9 @@ skills:
       enemy:
         defense: 0.35
         intellect: 0.25
-    required_level: 25
-    required_intellect: 150
+    required_level: 70
+    required_intellect: 380
+    required_agility: 160
     targets: 1
 
   # ---------- 万仙逆命关键首领专属技能 ----------
@@ -398,9 +405,9 @@ skills:
       enemy:
         defense: 0.3
         agility: 0.25
-    required_level: 25
-    required_force: 140
-    required_agility: 105
+    required_level: 55
+    required_force: 290
+    required_agility: 145
     targets: 1
 
   - key: city_felling_strike
@@ -418,9 +425,9 @@ skills:
       enemy:
         defense: 0.35
         agility: 0.3
-    required_level: 25
-    required_force: 150
-    required_agility: 120
+    required_level: 65
+    required_force: 335
+    required_agility: 175
     targets: 1
 
   # ---------- 敏捷系技能 ----------
@@ -439,9 +446,9 @@ skills:
       enemy:
         defense: 0.2
         agility: 0.25
-    required_level: 18
-    required_force: 90
-    required_agility: 120
+    required_level: 38
+    required_force: 120
+    required_agility: 180
     targets: 1
 
   - key: hell_instant_formation
@@ -459,9 +466,9 @@ skills:
       enemy:
         defense: 0.25
         agility: 0.2
-    required_level: 24
-    required_force: 100
-    required_agility: 140
+    required_level: 65
+    required_force: 170
+    required_agility: 260
     targets: 3
 
   - key: meteor_pierce_moon
@@ -479,9 +486,9 @@ skills:
       enemy:
         defense: 0.2
         agility: 0.15
-    required_level: 55
-    required_force: 80
-    required_agility: 110
+    required_level: 68
+    required_force: 175
+    required_agility: 280
     targets: 2
 
   - key: dragon_roar
@@ -501,8 +508,9 @@ skills:
         defense: 0.3
         intellect: 0.2
         force: 0.2
-    required_level: 45
-    required_force: 150
+    required_level: 68
+    required_force: 330
+    required_defense: 175
     targets: 3
 
   # ---------- 帮会任务专属技能 ----------
@@ -796,8 +804,8 @@ skills:
     rarity: green
     description: 以静制动，沉着观察局势后再稳步放大己方攻势。
     kind: passive
-    required_level: 12
-    required_intellect: 80
+    required_level: 18
+    required_intellect: 110
     passive_config:
       triggers:
         - timing: round_start
@@ -817,8 +825,8 @@ skills:
     rarity: green
     description: 守中求稳，越是稳住心神，越能把外来的冲击化作缓冲。
     kind: passive
-    required_level: 14
-    required_defense: 90
+    required_level: 20
+    required_defense: 115
     passive_config:
       triggers:
         - timing: round_start
@@ -838,8 +846,9 @@ skills:
     rarity: purple
     description: 陷入绝境时强行压榨战意，攻势更狠，但防线也会露出破绽。
     kind: passive
-    required_level: 24
-    required_force: 140
+    required_level: 45
+    required_force: 255
+    required_defense: 145
     passive_config:
       triggers:
         - timing: round_start
@@ -861,8 +870,8 @@ skills:
     rarity: blue
     description: 气息将绝时守住最后一线生机，短促回气后重新稳住阵脚。
     kind: passive
-    required_level: 25
-    required_defense: 100
+    required_level: 42
+    required_defense: 200
     passive_config:
       triggers:
         - timing: action_before
@@ -885,35 +894,34 @@ skills:
   - key: bloodthirsty_fury
     name: 嗜血狂怒
     rarity: purple
-    description: 以自身气血催发狂怒，本回合每次命中都附带生命上限转化的真实伤害。
+    description: 行动前损失当前生命的10%，随机对本次攻击未选中的一名敌人造成自身生命上限20%的真实伤害；没有其他目标时追加到当前目标，若目标为护院则伤害按四分之一计算。
     kind: passive
-    required_level: 50
-    required_defense: 200
+    required_level: 75
+    required_force: 265
+    required_defense: 305
     passive_config:
       triggers:
         - timing: action_before
           effects:
-            - type: emit_log
-              log_name: 嗜血狂怒
-              message: 获得真伤
             - type: lose_hp_ratio
               value: 0.1
               current_hp_based: true
               nonlethal: true
               log: true
               log_name: 嗜血狂怒
-            - type: add_true_damage
-              value: 0.1
+            - type: random_extra_target_true_damage
+              value: 0.2
               troop_value_multiplier: 0.25
               target_scope: self
+              log_name: 嗜血狂怒
 
   - key: draw_enemy_blades
     name: 招锋引敌
     rarity: blue
     description: 主动露出破绽牵动敌阵，使对手更容易把攻势集中到自己身上。
     kind: passive
-    required_level: 18
-    required_defense: 90
+    required_level: 32
+    required_defense: 170
     passive_config:
       triggers:
         - timing: round_start
@@ -930,8 +938,9 @@ skills:
     rarity: purple
     description: 借队伍完整之势统一号令，让同袍间的输出更像一个整体。
     kind: passive
-    required_level: 26
-    required_intellect: 130
+    required_level: 55
+    required_intellect: 285
+    required_defense: 130
     passive_config:
       triggers:
         - timing: round_start

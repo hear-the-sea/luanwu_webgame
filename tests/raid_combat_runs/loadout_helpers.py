@@ -53,10 +53,10 @@ def test_can_raid_retreat_requires_marching(monkeypatch):
 def test_return_surviving_troops_returns_all_when_no_report(monkeypatch):
     called = {}
 
-    def _add_batch(_manor, payload):
+    def _return_to_storage(_manor, payload):
         called["payload"] = payload
 
-    monkeypatch.setattr(troop_ops, "_add_troops_batch", _add_batch)
+    monkeypatch.setattr(troop_ops, "_return_troops_to_storage", _return_to_storage)
 
     run = SimpleNamespace(attacker=object(), troop_loadout={"inf": 5}, battle_report=None)
     combat_runs._return_surviving_troops(run)
@@ -69,10 +69,10 @@ def test_return_surviving_troops_filters_casualties(monkeypatch):
 
     called = {}
 
-    def _add_batch(_manor, payload):
+    def _return_to_storage(_manor, payload):
         called["payload"] = payload
 
-    monkeypatch.setattr(troop_ops, "_add_troops_batch", _add_batch)
+    monkeypatch.setattr(troop_ops, "_return_troops_to_storage", _return_to_storage)
 
     report = SimpleNamespace(
         losses={
@@ -102,11 +102,11 @@ def test_extract_raid_troops_lost_handles_non_mapping_losses(monkeypatch):
 def test_return_surviving_troops_ignores_invalid_loadout_shape(monkeypatch):
     called = {"count": 0}
 
-    def _add_batch(_manor, payload):
+    def _return_to_storage(_manor, payload):
         called["count"] += 1
         called["payload"] = payload
 
-    monkeypatch.setattr(troop_ops, "_add_troops_batch", _add_batch)
+    monkeypatch.setattr(troop_ops, "_return_troops_to_storage", _return_to_storage)
 
     run = SimpleNamespace(attacker=object(), troop_loadout=["bad-shape"], battle_report=None)
     combat_runs._return_surviving_troops(run)

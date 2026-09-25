@@ -31,7 +31,7 @@ def _load_yaml(filename: str) -> dict:
 def test_manzu_invasion_drops_civil_skill_book_box_at_configured_rate():
     missions = {row["key"]: row for row in _load_yaml("mission_templates.yaml")["missions"]}
 
-    assert missions["manzu_ruqin"]["drop_table"]["civil_skill_book_box"] == 0.15
+    assert missions["manzu_ruqin"]["drop_table"]["civil_skill_book_box"] == 0.18
 
 
 def test_zhuiji_manzu_uses_chase_themed_rewards():
@@ -40,8 +40,8 @@ def test_zhuiji_manzu_uses_chase_themed_rewards():
 
     assert drop_table["silver"] == 40000
     assert drop_table["experience_pineapple"] == {"chance": 0.8, "count": 10}
-    assert drop_table["saiwai_equipment_box"] == 0.2
-    assert drop_table["book_dragon_roar"] == 0.005
+    assert drop_table["saiwai_equipment_box"] == 0.24
+    assert drop_table["book_dragon_roar"] == 0.006
 
 
 def test_saiwai_equipment_box_is_purple_with_a_rare_orange_gear_layer():
