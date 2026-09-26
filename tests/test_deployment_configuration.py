@@ -354,7 +354,7 @@ def test_env_examples_declare_worker_owned_websocket_capacity_defaults(filename:
         key, value = stripped.split("=", 1)
         values[key] = value
 
-    assert values["DJANGO_WEBSOCKET_MAX_CONNECTIONS_PER_USER"] == "9"
+    assert values["DJANGO_WEBSOCKET_MAX_CONNECTIONS_PER_USER"] == "12"
     assert values["DJANGO_WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS"] == "30"
     assert values["DJANGO_WEBSOCKET_WORKER_LEASE_TTL_SECONDS"] == "8"
     assert values["DJANGO_WEBSOCKET_WORKER_LEASE_HEARTBEAT_SECONDS"] == "2"

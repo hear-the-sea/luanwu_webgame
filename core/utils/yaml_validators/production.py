@@ -116,6 +116,7 @@ VALID_PASSIVE_TIMINGS = {
     "attack_after",
 }
 VALID_PASSIVE_CONDITION_KEYS = {
+    "hp_ratio_lt",
     "hp_ratio_lte",
     "hp_ratio_gte",
     "self_is_boss",

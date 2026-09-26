@@ -106,6 +106,31 @@ def test_get_trade_context_shop_filters_sell_inventory_before_pagination(monkeyp
 
 
 @pytest.mark.django_db
+def test_get_trade_context_shop_shows_grain_first_before_sell_pagination(monkeypatch, django_user_model):
+    manor = create_manor(django_user_model, username="trade_ctx_shop_grain_first")
+    monkeypatch.setattr("trade.selectors.get_shop_items_for_display", lambda: [])
+    monkeypatch.setattr("trade.services.shop_service.get_shop_config", lambda: [])
+
+    for index in range(21):
+        template = ItemTemplate.objects.create(key=f"sell_item_{index}", name=f"物品{index}", price=10)
+        InventoryItem.objects.create(manor=manor, template=template, quantity=1)
+
+    grain_template = ItemTemplate.objects.create(key="grain", name="粮食", price=10)
+    grain_item = InventoryItem.objects.create(manor=manor, template=grain_template, quantity=1)
+    assert grain_item.pk > InventoryItem.objects.filter(manor=manor).exclude(pk=grain_item.pk).last().pk
+
+    context = get_trade_context(manor=manor, params={"tab": "shop", "view": "sell"})
+    first_page_keys = [row.inventory_item.template.key for row in context["inventory"]]
+
+    assert context["shop_sell_page_obj"].paginator.count == 22
+    assert first_page_keys[:2] == ["grain", "sell_item_0"]
+    assert first_page_keys[-1] == "sell_item_18"
+
+    next_page = get_trade_context(manor=manor, params={"tab": "shop", "view": "sell", "sell_page": "2"})
+    assert [row.inventory_item.template.key for row in next_page["inventory"]] == ["sell_item_19", "sell_item_20"]
+
+
+@pytest.mark.django_db
 def test_get_trade_context_shop_treats_loot_box_as_tool_category(monkeypatch, django_user_model):
     manor = create_manor(django_user_model, username="trade_ctx_shop_loot_box")
 

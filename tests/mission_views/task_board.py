@@ -5,7 +5,8 @@ from datetime import date, timedelta
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db import DatabaseError
+from django.db import DatabaseError, connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
@@ -76,6 +77,40 @@ class TestTaskBoardPage:
         _manor, client = manor_with_user
         response = client.get(reverse("gameplay:tasks") + "?mission=huashan_lunjian")
         assert response.status_code == 200
+
+    def test_task_board_detail_query_count_does_not_grow_per_guest(self, manor_with_user):
+        manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(
+            key="task_board_query_count",
+            name="任务详情查询测试",
+            difficulty=MissionTemplate.Difficulty.JUNIOR,
+            daily_limit=3,
+        )
+        template = GuestTemplate.objects.create(
+            key="task_board_query_guest",
+            name="任务详情门客",
+            archetype="civil",
+            rarity="gray",
+        )
+        Guest.objects.create(manor=manor, template=template, status=GuestStatus.IDLE)
+        url = reverse("gameplay:tasks") + f"?mission={mission.key}"
+
+        client.get(url)  # Warm process-level template and configuration caches.
+        with CaptureQueriesContext(connection) as one_guest_queries:
+            client.get(url)
+
+        for _ in range(6):
+            Guest.objects.create(manor=manor, template=template, status=GuestStatus.IDLE)
+        with CaptureQueriesContext(connection) as seven_guest_queries:
+            response = client.get(url)
+
+        assert response.status_code == 200
+        assert response.content.decode("utf-8").count('name="guest_ids"') == 7
+
+        def select_count(queries):
+            return sum(query["sql"].lstrip().upper().startswith("SELECT") for query in queries)
+
+        assert select_count(seven_guest_queries) - select_count(one_guest_queries) <= 2
 
     def test_task_board_renders_squad_actions_and_troop_buttons_for_offense(self, manor_with_user):
         manor, client = manor_with_user

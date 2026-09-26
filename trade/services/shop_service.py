@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List
 
 from django.db import transaction
-from django.db.models import F
+from django.db.models import Case, F, IntegerField, When
 
 from core.exceptions import (
     InsufficientResourceError,
@@ -196,7 +196,7 @@ def get_sellable_inventory_queryset(manor: Manor, category: str = None):
         else:
             items = items.filter(template__effect_type=normalized_category)
 
-    return items
+    return items.order_by(Case(When(template__key="grain", then=0), default=1, output_field=IntegerField()), "pk")
 
 
 def build_sellable_inventory_display_rows(items: Iterable[InventoryItem]) -> List[SellableItemDisplay]:

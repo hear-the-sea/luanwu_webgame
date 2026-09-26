@@ -809,9 +809,9 @@ skills:
     passive_config:
       triggers:
         - timing: round_start
-          chance: 0.35
+          chance: 0.5
           conditions:
-            hp_ratio_gte: 0.7
+            hp_ratio_gte: 0.5
           effects:
             - type: emit_log
               log_name: 静水筹谋
@@ -830,15 +830,15 @@ skills:
     passive_config:
       triggers:
         - timing: round_start
-          chance: 0.35
+          chance: 0.5
           conditions:
-            hp_ratio_gte: 0.6
+            hp_ratio_gte: 0.35
           effects:
             - type: emit_log
               log_name: 铁壁心法
               message: 获得减伤
             - type: modify_incoming_damage
-              value: 0.85
+              value: 0.70
               target_scope: self
 
   - key: desperate_beast
@@ -876,7 +876,7 @@ skills:
       triggers:
         - timing: action_before
           conditions:
-            hp_ratio_lte: 0.25
+            hp_ratio_lt: 0.35
             state_absent: last_chance_revival_used
           effects:
             - type: set_state
@@ -902,6 +902,7 @@ skills:
     passive_config:
       triggers:
         - timing: action_before
+          chance: 0.5
           effects:
             - type: lose_hp_ratio
               value: 0.1
@@ -930,7 +931,7 @@ skills:
               log_name: 招锋引敌
               message: 受击概率↑
             - type: modify_target_weight
-              value: 3.0
+              value: 5.0
               target_scope: self
 
   - key: comrade_command

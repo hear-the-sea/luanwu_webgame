@@ -292,7 +292,7 @@ def test_worker_lease_settings_have_safe_defaults() -> None:
     result = _run_base_settings_import()
 
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "9 30 8 2"
+    assert result.stdout.strip() == "12 30 8 2"
 
 
 def test_worker_lease_settings_clamp_minimum_values() -> None:
@@ -303,7 +303,7 @@ def test_worker_lease_settings_clamp_minimum_values() -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "9 6 4 1"
+    assert result.stdout.strip() == "12 6 4 1"
 
 
 def test_worker_lease_settings_reject_heartbeat_too_close_to_expiry() -> None:

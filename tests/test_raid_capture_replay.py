@@ -13,6 +13,30 @@ from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
 from guests.models import Guest, GuestTemplate
 
 
+@pytest.mark.parametrize(
+    ("is_attacker_victory", "expected_losing_side"),
+    [(True, "defender"), (False, "attacker")],
+)
+def test_capture_uses_rate_for_losing_side(monkeypatch, is_attacker_victory, expected_losing_side):
+    captured: dict[str, str] = {}
+
+    def _capture_gate(_winner, *, losing_side, rng):
+        captured["losing_side"] = losing_side
+        return False
+
+    monkeypatch.setattr(raid_capture, "_can_attempt_capture", _capture_gate)
+
+    payload = raid_capture._try_capture_guest(
+        SimpleNamespace(attacker=object(), defender=object()),
+        SimpleNamespace(),
+        is_attacker_victory,
+        rng=BattleRandomContext.create(1234).rng(RNG_STREAM_CAPTURE),
+    )
+
+    assert payload is None
+    assert captured == {"losing_side": expected_losing_side}
+
+
 def _create_template(index: int) -> GuestTemplate:
     return GuestTemplate.objects.create(
         key=f"capture_replay_guest_{index}",

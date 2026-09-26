@@ -26,7 +26,7 @@ heroes:
     default_gender: male
     default_morality: 35
     growth_range:
-    - 4
+    - 5
     - 7
     recruitable: false
     attribute_weights:
@@ -42,7 +42,7 @@ heroes:
     default_gender: female
     default_morality: 90
     growth_range:
-    - 4
+    - 5
     - 7
     recruitable: true
     attribute_weights:
@@ -101,7 +101,7 @@ heroes:
     default_gender: male
     default_morality: 78
     growth_range:
-    - 5
+    - 7
     - 9
     recruitable: true
     attribute_weights:

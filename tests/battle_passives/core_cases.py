@@ -40,6 +40,16 @@ def test_passive_conditions_match_hp_ratio_and_boss_flag():
     )
 
 
+def test_passive_conditions_support_strict_hp_ratio_lt():
+    actor = make_unit(hp=70, max_hp=200)
+    context = {"actor": actor, "target": None, "attacker_team": [actor], "defender_team": []}
+
+    assert not conditions_match({"hp_ratio_lt": 0.35}, context)
+
+    actor.hp = 69
+    assert conditions_match({"hp_ratio_lt": 0.35}, context)
+
+
 def test_apply_heal_ratio_effect_uses_max_hp_and_emits_event():
     actor = make_unit(name="张无忌", side="defender", hp=120000, max_hp=300000)
     events = []

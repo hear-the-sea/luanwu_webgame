@@ -311,11 +311,13 @@
                                                        data-task-guest data-troop-capacity="{{ guest.troop_capacity }}">
                                                 <span class="tw-raid-guest-card">
                                                     <span class="tw-guest-avatar">
-                                                        {% if guest.avatar_url %}
-                                                        <img src="{{ guest.avatar_url }}" alt="{{ guest.display_name }}" loading="lazy" decoding="async">
+                                                        {% with guest_avatar=guest.avatar_url %}
+                                                        {% if guest_avatar %}
+                                                        <img src="{{ guest_avatar }}" alt="{{ guest.display_name }}" loading="lazy" decoding="async">
                                                         {% else %}
                                                         <span class="tw-avatar-placeholder">{{ guest.display_name|slice:":1" }}</span>
                                                         {% endif %}
+                                                        {% endwith %}
                                                     </span>
                                                     <span class="tw-guest-details">
                                                         <span class="tw-guest-info-row">

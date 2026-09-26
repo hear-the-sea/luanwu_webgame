@@ -361,7 +361,10 @@ MARKET_STATS_CACHE_LOCK_WAIT_SECONDS = max(
 )
 # Cache TTL for defender 24h raid-received counter in attack checks
 RAID_RECENT_ATTACKS_CACHE_TTL_SECONDS = int(env("DJANGO_RAID_RECENT_ATTACKS_CACHE_TTL_SECONDS", "5"))
-# Raid capture rate (0.0 ~ 1.0, clamped in gameplay.constants.get_raid_capture_guest_rate)
+# Raid capture rates (0.0 ~ 1.0, clamped in gameplay.constants.get_raid_capture_guest_rate)
+RAID_ATTACKER_DEFEAT_CAPTURE_RATE = env_float("DJANGO_RAID_ATTACKER_DEFEAT_CAPTURE_RATE", 0.2)
+RAID_DEFENDER_DEFEAT_CAPTURE_RATE = env_float("DJANGO_RAID_DEFENDER_DEFEAT_CAPTURE_RATE", 0.1)
+# Legacy setting retained for older UI/read paths that do not identify the losing side.
 RAID_CAPTURE_GUEST_RATE = env_float("DJANGO_RAID_CAPTURE_GUEST_RATE", 0.1)
 
 # High-value thresholds for logging/monitoring
@@ -396,9 +399,10 @@ HEALTH_CHECK_CELERY_BROKER = (
 # need a softer posture must opt in explicitly.
 SINGLE_SESSION_FAIL_OPEN = env("DJANGO_SINGLE_SESSION_FAIL_OPEN", "0") == "1"
 
-# Bound authenticated WebSocket fan-out per user. Slots expire unless the
-# consumer heartbeat renews them, so unclean worker exits cannot leak capacity.
-WEBSOCKET_MAX_CONNECTIONS_PER_USER = max(1, int(env("DJANGO_WEBSOCKET_MAX_CONNECTIONS_PER_USER", "9")))
+# Bound authenticated WebSocket fan-out per user. Twelve slots allow three
+# open pages plus one page transition (three sockets per page). Slots expire
+# unless the consumer heartbeat renews them, so unclean exits cannot leak capacity.
+WEBSOCKET_MAX_CONNECTIONS_PER_USER = max(1, int(env("DJANGO_WEBSOCKET_MAX_CONNECTIONS_PER_USER", "12")))
 ONLINE_PRESENCE_FAILURE_COOLDOWN_SECONDS = max(
     1,
     int(env("DJANGO_ONLINE_PRESENCE_FAILURE_COOLDOWN_SECONDS", "30")),

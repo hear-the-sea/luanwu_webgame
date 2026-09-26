@@ -26,7 +26,7 @@ def _resolve_capture_sides(run: RaidRun, is_attacker_victory: bool) -> tuple[Man
     return winner, loser
 
 
-def _can_attempt_capture(winner: Manor, *, rng: random.Random) -> bool:
+def _can_attempt_capture(winner: Manor, *, losing_side: str, rng: random.Random) -> bool:
     capacity = int(getattr(winner, "jail_capacity", 0) or 0)
     if capacity <= 0:
         return False
@@ -36,7 +36,7 @@ def _can_attempt_capture(winner: Manor, *, rng: random.Random) -> bool:
     if held_count >= capacity:
         return False
 
-    capture_rate = get_raid_capture_guest_rate()
+    capture_rate = get_raid_capture_guest_rate(losing_side=losing_side)
     if capture_rate <= 0:
         return False
     if rng.random() >= capture_rate:
@@ -216,14 +216,15 @@ def _try_capture_guest(
     尝试俘获失败方出战门客（单场最多1名）。
 
     规则：
-    - 概率固定（不受监牢/结义林影响）
+    - 进攻方失败时概率为20%，防守方失败时概率为10%（不受监牢/结义林影响）
     - 失败方：仅从本场出战门客中抽取
     - 结义门客不可被俘获
     - 监牢满员时不进行俘获判定，不给任何补偿
     - 俘获成功：门客从失败方列表移除，装备自动消失，进入胜利方监牢
     """
     winner, loser = _resolve_capture_sides(run, is_attacker_victory)
-    if not _can_attempt_capture(winner, rng=rng):
+    losing_side = "defender" if is_attacker_victory else "attacker"
+    if not _can_attempt_capture(winner, losing_side=losing_side, rng=rng):
         return None
 
     losing_guest_ids = _collect_losing_guest_ids(report, is_attacker_victory)

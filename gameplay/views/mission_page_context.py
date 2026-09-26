@@ -76,10 +76,13 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         .select_related("template")
         .only(
             "id",
+            "manor_id",
             "level",
             "current_hp",
             "status",
             "custom_name",
+            "avatar_override_key",
+            "avatar_asset_key",
             "hp_bonus",
             "defense_stat",
             "troop_capacity_bonus",
@@ -88,6 +91,7 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
             "template__name",
             "template__avatar",
             "template__rarity",
+            "template__base_hp",
         )
     )
 

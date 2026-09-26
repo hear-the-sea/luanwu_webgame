@@ -65,6 +65,8 @@ def conditions_match(conditions: dict[str, Any], context: dict[str, Any]) -> boo
     actor_ratio = _hp_ratio(actor)
     state = _state_payload(actor)
 
+    if "hp_ratio_lt" in conditions and actor_ratio >= float(conditions["hp_ratio_lt"]):
+        return False
     if "hp_ratio_lte" in conditions and actor_ratio > float(conditions["hp_ratio_lte"]):
         return False
     if "hp_ratio_gte" in conditions and actor_ratio < float(conditions["hp_ratio_gte"]):

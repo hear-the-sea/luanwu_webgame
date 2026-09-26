@@ -2,6 +2,8 @@
 游戏玩法相关常量
 """
 
+from typing import Any
+
 from django.conf import settings
 
 from common.constants.resources import ResourceType, ResourceTypes  # noqa: F401
@@ -119,7 +121,10 @@ class PVPConstants:
     RAID_DEFEAT_PROTECTION_SECONDS = 1800  # 防守失败后战败保护时长（30分钟）
 
     # 俘获/监牢
-    RAID_CAPTURE_GUEST_RATE = 0.1  # 单场胜利后俘获失败方出战门客的概率（单场最多1名）
+    RAID_ATTACKER_DEFEAT_CAPTURE_RATE = 0.2  # 进攻失败时被防守方俘获的概率（单场最多1名）
+    RAID_DEFENDER_DEFEAT_CAPTURE_RATE = 0.1  # 防守失败时被进攻方俘获的概率（单场最多1名）
+    # 兼容未区分失败方的旧调用，默认沿用防守失败概率。
+    RAID_CAPTURE_GUEST_RATE = RAID_DEFENDER_DEFEAT_CAPTURE_RATE
     JAIL_MAX_HOLD_DAYS = 30  # 俘虏门客最多关押30天，期满自动释放
     JAIL_LOYALTY_DAILY_DECAY = 5  # 被俘期间每日忠诚度衰减值
     JAIL_RECRUIT_LOYALTY_THRESHOLD = 30  # 忠诚度<=该值可招募
@@ -183,13 +188,35 @@ class PVPConstants:
     }
 
 
-def get_raid_capture_guest_rate() -> float:
-    raw_value = getattr(settings, "RAID_CAPTURE_GUEST_RATE", PVPConstants.RAID_CAPTURE_GUEST_RATE)
+def _clamp_raid_capture_guest_rate(raw_value: Any, fallback: float) -> float:
     try:
         capture_rate = float(raw_value)
     except (TypeError, ValueError):
-        capture_rate = float(PVPConstants.RAID_CAPTURE_GUEST_RATE)
+        capture_rate = float(fallback)
     return max(0.0, min(1.0, capture_rate))
+
+
+def get_raid_capture_guest_rate(*, losing_side: str | None = None) -> float:
+    """Return the capture chance for the losing side of a PVP raid.
+
+    ``losing_side`` is either ``"attacker"`` or ``"defender"``.  Calls that
+    omit it retain the legacy single-rate behavior for older UI/read paths.
+    """
+    if losing_side == "attacker":
+        return _clamp_raid_capture_guest_rate(
+            getattr(settings, "RAID_ATTACKER_DEFEAT_CAPTURE_RATE", PVPConstants.RAID_ATTACKER_DEFEAT_CAPTURE_RATE),
+            PVPConstants.RAID_ATTACKER_DEFEAT_CAPTURE_RATE,
+        )
+    if losing_side == "defender":
+        return _clamp_raid_capture_guest_rate(
+            getattr(settings, "RAID_DEFENDER_DEFEAT_CAPTURE_RATE", PVPConstants.RAID_DEFENDER_DEFEAT_CAPTURE_RATE),
+            PVPConstants.RAID_DEFENDER_DEFEAT_CAPTURE_RATE,
+        )
+
+    return _clamp_raid_capture_guest_rate(
+        getattr(settings, "RAID_CAPTURE_GUEST_RATE", PVPConstants.RAID_CAPTURE_GUEST_RATE),
+        PVPConstants.RAID_CAPTURE_GUEST_RATE,
+    )
 
 
 # ============ UI/分页常量 ============
