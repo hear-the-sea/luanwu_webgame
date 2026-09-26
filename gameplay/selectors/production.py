@@ -10,6 +10,7 @@ from gameplay.services.buildings.forge_helpers import DECOMPOSE_CATEGORIES, DECO
 from gameplay.services.buildings.ranch import (
     get_active_livestock_productions,
     get_livestock_options,
+    get_livestock_queue_capacity,
     get_max_livestock_quantity,
     get_ranch_speed_bonus,
     has_active_livestock_production,
@@ -71,14 +72,19 @@ def get_ranch_page_context(manor: Any) -> dict[str, Any]:
     from gameplay.services.inventory.core import get_warehouse_grain_quantity
 
     speed_bonus = get_ranch_speed_bonus(manor)
+    active_productions = get_active_livestock_productions(manor)
+    queue_capacity = get_livestock_queue_capacity(manor)
     return {
         "livestock_options": get_livestock_options(manor),
-        "active_productions": get_active_livestock_productions(manor),
+        "active_productions": active_productions,
         "speed_bonus": speed_bonus,
         "speed_bonus_percent": int(speed_bonus * 100),
         "animal_husbandry_level": get_player_technology_level(manor, "animal_husbandry"),
         "max_livestock_quantity": get_max_livestock_quantity(manor),
         "is_producing": has_active_livestock_production(manor),
+        "active_production_count": len(active_productions),
+        "production_queue_capacity": queue_capacity,
+        "production_queue_full": len(active_productions) >= queue_capacity,
         "warehouse_grain_quantity": get_warehouse_grain_quantity(manor),
     }
 

@@ -11,6 +11,7 @@ MAX_LEVEL_PRODUCTION_QUEUE_CAPACITY = 2
 
 _MAX_LEVEL_QUEUE_BUILDING_KEYS = frozenset(
     {
+        BuildingKeys.RANCH,
         BuildingKeys.SMITHY,
         BuildingKeys.FORGE,
         BuildingKeys.STABLE,

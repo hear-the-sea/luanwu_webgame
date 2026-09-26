@@ -391,7 +391,7 @@ buildings:
   - key: xiaoyao_shanzhuang
     name: 逍遥山庄
     category: special
-    description: 江湖奔波久了，也该歇歇脚。空闲门客可来此归闲，暂不参战与出征；每升一级增加一处居所，随时可以召回。
+    description: 江湖奔波久了，也该歇歇脚。空闲门客可来此归闲，暂不参战与出征；庄园防守战败时仍有较低概率被俘；每升一级增加一处居所，随时可以召回。
     resource_type: silver
     base_rate_per_hour: 0
     rate_growth: 0.0

@@ -137,6 +137,7 @@ def test_xiaoyao_page_and_roster_link(manor_factory, client):
     assert page.status_code == 200
     assert guest.display_name in page.content.decode()
     assert "放回庄园" in page.content.decode()
+    assert "防守战败时仍有较低概率被俘" in page.content.decode()
 
     response = client.post(reverse("gameplay:return_guest_from_xiaoyao", args=[guest.pk]))
     guest.refresh_from_db()

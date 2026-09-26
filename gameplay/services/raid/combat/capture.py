@@ -11,13 +11,16 @@ from django.db.models import Q
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.constants import get_raid_capture_guest_rate
 from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
-from guests.models import Guest, GuestRarity, GuestTemplate
+from guests.models import Guest, GuestRarity, GuestStatus, GuestTemplate
 from guests.services.world_unique import WORLD_UNIQUE_LUBU_TEMPLATE_KEY, release_world_unique_guest_after_raid
 
 from ....models import JailPrisoner, Manor, OathBond, RaidRun
 from ...jail_expiration import release_expired_prisoners_for_captor
 
 logger = logging.getLogger(__name__)
+
+ACTIVE_CAPTURE_CANDIDATE_WEIGHT = 2
+VACATION_CAPTURE_CANDIDATE_WEIGHT = 1
 
 
 def _resolve_capture_sides(run: RaidRun, is_attacker_victory: bool) -> tuple[Manor, Manor]:
@@ -76,12 +79,28 @@ def _filter_capture_candidates(losing_guest_ids: List[int]) -> List[int]:
 
 
 def _select_capture_target(
-    candidates: List[int],
+    candidates: List[int] | List[tuple[int, int]],
     loser: Manor,
     *,
     rng: random.Random,
 ) -> Optional[Guest]:
-    target_guest_id = rng.choice(candidates)
+    weighted_candidates = [(candidate, 1) if isinstance(candidate, int) else candidate for candidate in candidates]
+    total_weight = sum(weight for _guest_id, weight in weighted_candidates if weight > 0)
+    if total_weight <= 0:
+        return None
+
+    draw = rng.randrange(total_weight)
+    target_guest_id: int | None = None
+    for guest_id, weight in weighted_candidates:
+        if weight <= 0:
+            continue
+        if draw < weight:
+            target_guest_id = guest_id
+            break
+        draw -= weight
+    if target_guest_id is None:
+        return None
+
     target = (
         Guest.objects.select_for_update()
         .select_related("template", "manor")
@@ -213,14 +232,15 @@ def _try_capture_guest(
     rng: random.Random,
 ) -> Optional[Dict[str, Any]]:
     """
-    尝试俘获失败方出战门客（单场最多1名）。
+    尝试俘获失败方门客（单场最多1名）。
 
     规则：
     - 进攻方失败时概率为20%，防守方失败时概率为10%（不受监牢/结义林影响）
-    - 失败方：仅从本场出战门客中抽取
+    - 失败方：从本场出战门客中抽取；防守方战败时，逍遥山庄归闲门客也可被抽取
+    - 出战门客权重为2，逍遥山庄归闲门客权重为1
     - 结义门客不可被俘获
     - 监牢满员时不进行俘获判定，不给任何补偿
-    - 俘获成功：门客从失败方列表移除，装备自动消失，进入胜利方监牢
+    - 俘获成功：门客从失败方移除，装备自动消失，进入胜利方监牢
     """
     winner, loser = _resolve_capture_sides(run, is_attacker_victory)
     losing_side = "defender" if is_attacker_victory else "attacker"
@@ -228,14 +248,18 @@ def _try_capture_guest(
         return None
 
     losing_guest_ids = _collect_losing_guest_ids(report, is_attacker_victory)
-    if not losing_guest_ids:
+    active_candidates = _filter_capture_candidates(losing_guest_ids)
+    weighted_candidates = [(guest_id, ACTIVE_CAPTURE_CANDIDATE_WEIGHT) for guest_id in active_candidates]
+
+    if is_attacker_victory:
+        vacation_guest_ids = list(loser.guests.filter(status=GuestStatus.VACATION).values_list("id", flat=True))
+        vacation_candidates = _filter_capture_candidates(vacation_guest_ids)
+        weighted_candidates.extend((guest_id, VACATION_CAPTURE_CANDIDATE_WEIGHT) for guest_id in vacation_candidates)
+
+    if not weighted_candidates:
         return None
 
-    candidates = _filter_capture_candidates(losing_guest_ids)
-    if not candidates:
-        return None
-
-    target = _select_capture_target(candidates, loser, rng=rng)
+    target = _select_capture_target(weighted_candidates, loser, rng=rng)
     if not target:
         return None
 

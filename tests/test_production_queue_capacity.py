@@ -6,8 +6,17 @@ import pytest
 
 from core.exceptions import ForgeOperationError, ProductionStartError
 from gameplay.constants import BUILDING_MAX_LEVELS, BuildingKeys
-from gameplay.models import EquipmentProduction, HorseProduction, InventoryItem, ItemTemplate, Manor, SmeltingProduction
+from gameplay.models import (
+    EquipmentProduction,
+    HorseProduction,
+    InventoryItem,
+    ItemTemplate,
+    LivestockProduction,
+    Manor,
+    SmeltingProduction,
+)
 from gameplay.services.buildings import forge as forge_service
+from gameplay.services.buildings import ranch as ranch_service
 from gameplay.services.buildings import smithy as smithy_service
 from gameplay.services.buildings import stable as stable_service
 from gameplay.services.buildings.production_queue import get_production_queue_capacity
@@ -39,10 +48,11 @@ def _create_manor(django_user_model, username: str) -> Manor:
         (BuildingKeys.FORGE, BUILDING_MAX_LEVELS[BuildingKeys.FORGE], 2),
         (BuildingKeys.STABLE, 9, 1),
         (BuildingKeys.STABLE, BUILDING_MAX_LEVELS[BuildingKeys.STABLE], 2),
-        (BuildingKeys.RANCH, BUILDING_MAX_LEVELS[BuildingKeys.RANCH], 1),
+        (BuildingKeys.RANCH, 9, 1),
+        (BuildingKeys.RANCH, BUILDING_MAX_LEVELS[BuildingKeys.RANCH], 2),
     ],
 )
-def test_production_queue_capacity_unlocks_only_for_requested_buildings(
+def test_production_queue_capacity_unlocks_at_max_level(
     building_key: str,
     level: int,
     expected_capacity: int,
@@ -106,6 +116,39 @@ def test_max_level_stable_allows_two_parallel_productions(django_user_model, mon
         stable_service.start_horse_production(manor, "queue_horse", 1)
 
     assert HorseProduction.objects.filter(manor=manor, status=HorseProduction.Status.PRODUCING).count() == 2
+
+
+@pytest.mark.django_db
+def test_max_level_ranch_allows_two_parallel_productions(django_user_model, monkeypatch):
+    manor = _create_manor(django_user_model, "ranch_queue_capacity")
+    _set_building_level(manor, BuildingKeys.RANCH, 10)
+    monkeypatch.setattr(
+        ranch_service,
+        "LIVESTOCK_CONFIG",
+        {
+            "queue_livestock": {
+                "grain_cost": 10,
+                "base_duration": 60,
+                "required_animal_husbandry": 1,
+            }
+        },
+    )
+    monkeypatch.setattr("gameplay.services.technology.get_player_technology_level", lambda *_args, **_kwargs: 5)
+    monkeypatch.setattr(ranch_service, "_schedule_livestock_completion", lambda *_args: None)
+
+    ranch_service.start_livestock_production(manor, "queue_livestock", 1)
+    ranch_service.start_livestock_production(manor, "queue_livestock", 1)
+
+    with pytest.raises(ProductionStartError, match="队列已满"):
+        ranch_service.start_livestock_production(manor, "queue_livestock", 1)
+
+    assert (
+        LivestockProduction.objects.filter(
+            manor=manor,
+            status=LivestockProduction.Status.PRODUCING,
+        ).count()
+        == 2
+    )
 
 
 @pytest.mark.django_db

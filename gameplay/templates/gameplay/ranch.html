@@ -14,6 +14,7 @@
             <div class="production-page-meta">
                 <span class="production-meta-item">粮食 <strong>{{ warehouse_grain_quantity }}</strong></span>
                 <span class="production-meta-item">单次上限 <strong>{{ max_livestock_quantity }}</strong></span>
+                <span class="production-meta-item">养殖队列 <strong>{{ active_production_count }}/{{ production_queue_capacity }}</strong></span>
                 {% if speed_bonus_percent > 0 %}
                 <span class="production-meta-item production-meta-item--accent">速度 -{{ speed_bonus_percent }}%</span>
                 {% endif %}
@@ -66,7 +67,7 @@
         <div class="production-panel-body">
             <div class="production-option-grid">
                 {% for livestock in livestock_page_obj %}
-                <article class="production-option-card {% if not livestock.is_unlocked %}is-locked{% elif is_producing %}is-disabled{% endif %}">
+                <article class="production-option-card {% if not livestock.is_unlocked %}is-locked{% elif production_queue_full %}is-disabled{% endif %}">
                     <header class="production-option-card__header">
                         <div>
                             <h3>{{ livestock.name }}</h3>
@@ -96,8 +97,8 @@
                         <input type="hidden" name="livestock_key" value="{{ livestock.key }}">
                         {% if not livestock.is_unlocked %}
                         <button type="button" class="tw-btn-secondary w-full" disabled>未解锁</button>
-                        {% elif is_producing %}
-                        <button type="button" class="tw-btn-secondary w-full" disabled>养殖中</button>
+                        {% elif production_queue_full %}
+                        <button type="button" class="tw-btn-secondary w-full" disabled>养殖队列已满</button>
                         {% else %}
                         <div class="production-quantity-row">
                             <label for="quantity-{{ livestock.key }}">数量</label>

@@ -31,6 +31,7 @@ from ...constants import BuildingKeys
 from ...models import LivestockProduction, Manor
 from ..utils.notifications import notify_user
 from .production_cancel import cancel_active_production
+from .production_queue import get_production_queue_capacity
 
 logger = logging.getLogger(__name__)
 RANCH_MESSAGE_BEST_EFFORT_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
@@ -161,6 +162,11 @@ def get_max_livestock_quantity(manor: Manor) -> int:
     return max(1, animal_husbandry_level * 50)
 
 
+def get_livestock_queue_capacity(manor: Manor) -> int:
+    """获取畜牧场当前可同时进行的养殖队列数。"""
+    return get_production_queue_capacity(manor, BuildingKeys.RANCH)
+
+
 def calculate_livestock_duration(base_duration: int, manor: Manor) -> int:
     """
     计算实际养殖时间。
@@ -206,7 +212,9 @@ def get_livestock_options(manor: Manor) -> List[Dict[str, Any]]:
 
     animal_husbandry_level = get_player_technology_level(manor, "animal_husbandry")
     max_quantity = get_max_livestock_quantity(manor)
-    is_producing = has_active_livestock_production(manor)
+    active_productions = get_active_livestock_productions(manor)
+    is_producing = bool(active_productions)
+    queue_full = len(active_productions) >= get_livestock_queue_capacity(manor)
     warehouse_grain_quantity = get_warehouse_grain_quantity(manor)
     livestock_name_map = _get_item_name_map(set(LIVESTOCK_CONFIG.keys()))
 
@@ -232,6 +240,7 @@ def get_livestock_options(manor: Manor) -> List[Dict[str, Any]]:
                 "is_unlocked": is_unlocked,
                 "max_quantity": max_quantity,
                 "is_producing": is_producing,
+                "is_queue_full": queue_full,
             }
         )
     return options
@@ -250,7 +259,7 @@ def start_livestock_production(manor: Manor, livestock_key: str, quantity: int =
         LivestockProduction实例
 
     Raises:
-        ProductionStartError: 参数错误、科技等级不足或已有养殖进行中
+        ProductionStartError: 参数错误、科技等级不足或养殖队列已满
     """
     if livestock_key not in LIVESTOCK_CONFIG:
         raise ProductionStartError("无效的家畜类型")
@@ -288,8 +297,12 @@ def start_livestock_production(manor: Manor, livestock_key: str, quantity: int =
 
         locked_manor = ManorModel.objects.select_for_update().get(pk=manor.pk)
 
-        if has_active_livestock_production(locked_manor):
-            raise ProductionStartError("已有家畜正在养殖中，同时只能养殖一种家畜")
+        queue_capacity = get_livestock_queue_capacity(locked_manor)
+        active_queue_count = locked_manor.livestock_productions.filter(
+            status=LivestockProduction.Status.PRODUCING
+        ).count()
+        if active_queue_count >= queue_capacity:
+            raise ProductionStartError(f"畜牧场养殖队列已满，当前最多同时养殖{queue_capacity}项")
         try:
             spend_resources_locked(
                 locked_manor,

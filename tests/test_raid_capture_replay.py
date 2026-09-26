@@ -10,7 +10,7 @@ from gameplay.models import JailPrisoner, RaidRun
 from gameplay.services.manor.core import ensure_manor
 from gameplay.services.raid.combat import capture as raid_capture
 from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
-from guests.models import Guest, GuestTemplate
+from guests.models import Guest, GuestStatus, GuestTemplate
 
 
 @pytest.mark.parametrize(
@@ -138,3 +138,69 @@ def test_capture_converted_blue_guest_restores_original_green_template(monkeypat
         "from": "defender",
         "into": "jail",
     }
+
+
+@pytest.mark.django_db
+def test_defender_loss_can_capture_vacation_guest_with_half_weight(monkeypatch):
+    User = get_user_model()
+    attacker = ensure_manor(User.objects.create_user(username="capture_vacation_attacker", password="pass123"))
+    defender = ensure_manor(User.objects.create_user(username="capture_vacation_defender", password="pass123"))
+    active_template = _create_template(200)
+    vacation_template = _create_template(201)
+    active_guest = Guest.objects.create(
+        manor=defender,
+        template=active_template,
+        custom_name="出战门客",
+        level=10,
+    )
+    vacation_guest = Guest.objects.create(
+        manor=defender,
+        template=vacation_template,
+        custom_name="归闲门客",
+        level=10,
+        status=GuestStatus.VACATION,
+    )
+    run = RaidRun.objects.create(attacker=attacker, defender=defender)
+    report = SimpleNamespace(defender_team=[{"guest_id": active_guest.pk}])
+    monkeypatch.setattr(raid_capture, "_can_attempt_capture", lambda *_args, **_kwargs: True)
+
+    class _ChooseVacation:
+        def randrange(self, stop: int) -> int:
+            assert stop == raid_capture.ACTIVE_CAPTURE_CANDIDATE_WEIGHT + raid_capture.VACATION_CAPTURE_CANDIDATE_WEIGHT
+            return raid_capture.ACTIVE_CAPTURE_CANDIDATE_WEIGHT
+
+    payload = raid_capture._try_capture_guest(run, report, True, rng=_ChooseVacation())
+
+    assert payload is not None
+    assert payload["guest_name"] == "归闲门客"
+    assert not Guest.objects.filter(pk=vacation_guest.pk).exists()
+    assert Guest.objects.filter(pk=active_guest.pk).exists()
+    assert JailPrisoner.objects.filter(captor=attacker, original_manor=defender).count() == 1
+
+
+@pytest.mark.django_db
+def test_attacker_loss_does_not_include_attacker_vacation_guests(monkeypatch):
+    User = get_user_model()
+    attacker = ensure_manor(User.objects.create_user(username="capture_vacation_attacker_loss", password="pass123"))
+    defender = ensure_manor(User.objects.create_user(username="capture_vacation_defender_loss", password="pass123"))
+    vacation_template = _create_template(202)
+    vacation_guest = Guest.objects.create(
+        manor=attacker,
+        template=vacation_template,
+        custom_name="攻击方归闲门客",
+        status=GuestStatus.VACATION,
+    )
+    run = RaidRun.objects.create(attacker=attacker, defender=defender)
+    report = SimpleNamespace(attacker_team=[])
+    monkeypatch.setattr(raid_capture, "_can_attempt_capture", lambda *_args, **_kwargs: True)
+
+    payload = raid_capture._try_capture_guest(
+        run,
+        report,
+        False,
+        rng=BattleRandomContext.create(1234).rng(RNG_STREAM_CAPTURE),
+    )
+
+    assert payload is None
+    assert Guest.objects.filter(pk=vacation_guest.pk).exists()
+    assert not JailPrisoner.objects.filter(captor=defender, original_manor=attacker).exists()
