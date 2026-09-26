@@ -56,8 +56,6 @@ DEFAULT_ARENA_COOP_RULES: dict[str, Any] = {
         "guards": [
             {"template_key": "arena_gl_top_yang_xiao_guard", "display_name": "杨逍"},
             {"template_key": "arena_gl_top_wei_yixiao_guard", "display_name": "韦一笑"},
-            {"template_key": "arena_gl_top_five_flags_elite_front", "display_name": "五行旗精锐"},
-            {"template_key": "arena_gl_top_five_flags_elite_rear", "display_name": "五行旗精锐"},
         ],
     },
 }

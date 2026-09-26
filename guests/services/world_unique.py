@@ -157,7 +157,7 @@ def claim_world_unique_guest_from_scroll(
             message=f"{owner_summary}，当前无法使用吕布召唤卷轴",
         )
 
-    if locked_manor.guests.count() >= locked_manor.guest_capacity:
+    if locked_manor.active_guest_count >= locked_manor.guest_capacity:
         raise GuestCapacityFullError()
 
     from .recruitment_guests import create_guest_from_template

@@ -16,7 +16,7 @@ troops:
       tech_level: 0
       retainer_cost: 1
       equipment: [equip_zaohongma]
-      base_duration: 60
+      base_duration: 30
 
   # 刀类 - 攻击型，高攻击，中等防御
   - key: dao_ke
@@ -34,7 +34,7 @@ troops:
       tech_level: 1
       retainer_cost: 1
       equipment: [equip_duandao, equip_buxie, equip_bupao]
-      base_duration: 120
+      base_duration: 60
 
   - key: dao_jie
     name: 刀杰
@@ -51,7 +51,7 @@ troops:
       tech_level: 3
       retainer_cost: 1
       equipment: [equip_dakandao, equip_yangpixue, equip_shengpijia, equip_tieyekui, equip_zaohongma]
-      base_duration: 180
+      base_duration: 90
 
   - key: dao_ba
     name: 刀霸
@@ -68,7 +68,7 @@ troops:
       tech_level: 5
       retainer_cost: 1
       equipment: [equip_tongchangdao, equip_gangpianxue, equip_housipao, equip_yulindin, equip_huangbiaoma]
-      base_duration: 300
+      base_duration: 150
 
   - key: dao_sheng
     name: 刀圣
@@ -85,7 +85,7 @@ troops:
       tech_level: 7
       retainer_cost: 1
       equipment: [equip_jingtiedao, equip_yanyuxue, equip_shapijia, equip_baihongkui, equip_dawanma]
-      base_duration: 600
+      base_duration: 300
 
   # 枪类 - 防御型，高防御，高HP
   - key: qiang_ke
@@ -103,7 +103,7 @@ troops:
       tech_level: 1
       retainer_cost: 1
       equipment: [equip_changqiang, equip_buxie, equip_bupao]
-      base_duration: 120
+      base_duration: 60
 
   - key: qiang_hao
     name: 枪豪
@@ -120,7 +120,7 @@ troops:
       tech_level: 3
       retainer_cost: 1
       equipment: [equip_baoweiqiang, equip_yangpixue, equip_shengpijia, equip_tieyekui, equip_zaohongma]
-      base_duration: 180
+      base_duration: 90
 
   - key: qiang_ba
     name: 枪霸
@@ -137,7 +137,7 @@ troops:
       tech_level: 5
       retainer_cost: 1
       equipment: [equip_hutoumao, equip_gangpianxue, equip_housipao, equip_yulindin, equip_huangbiaoma]
-      base_duration: 300
+      base_duration: 150
 
   - key: qiang_wang
     name: 枪王
@@ -154,7 +154,7 @@ troops:
       tech_level: 7
       retainer_cost: 1
       equipment: [equip_pansheqiang, equip_yanyuxue, equip_shapijia, equip_baihongkui, equip_dawanma]
-      base_duration: 600
+      base_duration: 300
 
   # 剑类 - 均衡敏捷型，攻防均衡，速度快
   - key: jian_shi
@@ -172,7 +172,7 @@ troops:
       tech_level: 1
       retainer_cost: 1
       equipment: [equip_duanjian, equip_buxie, equip_bupao]
-      base_duration: 120
+      base_duration: 60
 
   - key: jian_xia
     name: 剑侠
@@ -189,7 +189,7 @@ troops:
       tech_level: 3
       retainer_cost: 1
       equipment: [equip_changjian, equip_yangpixue, equip_shengpijia, equip_tieyekui, equip_zaohongma]
-      base_duration: 180
+      base_duration: 90
 
   - key: jian_hao
     name: 剑豪
@@ -206,7 +206,7 @@ troops:
       tech_level: 5
       retainer_cost: 1
       equipment: [equip_qingmangjian, equip_gangpianxue, equip_housipao, equip_yulindin, equip_huangbiaoma]
-      base_duration: 300
+      base_duration: 150
 
   - key: jian_sheng
     name: 剑圣
@@ -223,7 +223,7 @@ troops:
       tech_level: 7
       retainer_cost: 1
       equipment: [equip_duanmajian, equip_yanyuxue, equip_shapijia, equip_baihongkui, equip_dawanma]
-      base_duration: 600
+      base_duration: 300
 
   # 拳类 - 近战爆发型，高攻击，高HP，低防御
   - key: quan_shi
@@ -241,7 +241,7 @@ troops:
       tech_level: 1
       retainer_cost: 1
       equipment: [equip_niupibian, equip_buxie, equip_bupao]
-      base_duration: 120
+      base_duration: 60
 
   - key: quan_ba
     name: 拳霸
@@ -258,7 +258,7 @@ troops:
       tech_level: 3
       retainer_cost: 1
       equipment: [equip_jicibian, equip_yangpixue, equip_shengpijia, equip_tieyekui, equip_zaohongma]
-      base_duration: 180
+      base_duration: 90
 
   - key: quan_wang
     name: 拳王
@@ -275,7 +275,7 @@ troops:
       tech_level: 5
       retainer_cost: 1
       equipment: [equip_jiulonggangbian, equip_gangpianxue, equip_housipao, equip_yulindin, equip_huangbiaoma]
-      base_duration: 300
+      base_duration: 150
 
   - key: quan_sheng
     name: 拳圣
@@ -292,7 +292,7 @@ troops:
       tech_level: 7
       retainer_cost: 1
       equipment: [equip_mingshejiebian, equip_yanyuxue, equip_shapijia, equip_baihongkui, equip_dawanma]
-      base_duration: 600
+      base_duration: 300
 
   # 弓箭类 - 远程攻击型，高攻击，低防御，优先攻击
   - key: archer
@@ -310,7 +310,7 @@ troops:
       tech_level: 1
       retainer_cost: 1
       equipment: [equip_changgong, equip_buxie, equip_bupao]
-      base_duration: 120
+      base_duration: 60
 
   - key: fast_archer
     name: 快箭手
@@ -327,7 +327,7 @@ troops:
       tech_level: 3
       retainer_cost: 1
       equipment: [equip_fanqugong, equip_yangpixue, equip_shengpijia, equip_tieyekui, equip_zaohongma]
-      base_duration: 180
+      base_duration: 90
 
   - key: divine_archer
     name: 神箭手
@@ -344,7 +344,7 @@ troops:
       tech_level: 5
       retainer_cost: 1
       equipment: [equip_tietaigong, equip_gangpianxue, equip_housipao, equip_yulindin, equip_huangbiaoma]
-      base_duration: 300
+      base_duration: 150
 
   - key: arrow_god
     name: 箭神
@@ -361,4 +361,4 @@ troops:
       tech_level: 7
       retainer_cost: 1
       equipment: [equip_shenbigong, equip_yanyuxue, equip_shapijia, equip_baihongkui, equip_dawanma]
-      base_duration: 600
+      base_duration: 300

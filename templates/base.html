@@ -121,11 +121,21 @@
             {% endif %}
 
             <main class="content-area {% if not user.is_authenticated %}content-area--guest{% endif %}">
-                {% if messages %}
+                {% if messages or global_announcement %}
                 <ul class="flash-messages">
+                    {% if global_announcement %}
+                    <li id="global-announcement-banner" class="flash success global-announcement-banner" role="status"
+                        aria-live="polite" data-announcement-id="{{ global_announcement.id }}"
+                        data-expires-at="{{ global_announcement.expires_at }}">
+                        <strong class="global-announcement-title">{{ global_announcement.title }}</strong>
+                        <span class="global-announcement-body">{{ global_announcement.body }}</span>
+                    </li>
+                    {% endif %}
+                    {% if messages %}
                     {% for message in messages %}
                     <li class="flash {% if message.tags == 'info' %}success{% else %}{{ message.tags }}{% endif %}">{{ message }}</li>
                     {% endfor %}
+                    {% endif %}
                 </ul>
                 {% endif %}
 
@@ -165,6 +175,7 @@
     <div id="toast-container" class="toast-container"></div>
     <script src="{% static 'js/player_facing_copy.js' %}"></script>
     <script src="{% static 'js/dialog.js' %}"></script>
+    <script src="{% static 'js/global-announcement.js' %}"></script>
     {% if user.is_authenticated %}
     <script src="{% static 'js/websocket_reconnect.js' %}"></script>
     <script src="{% static 'js/notifications.js' %}"></script>

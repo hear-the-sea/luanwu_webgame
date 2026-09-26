@@ -30,6 +30,7 @@ from ..services.skills import (
     collect_skill_requirements,
     collect_unmet_skill_requirements,
 )
+from ..services.vacation import get_xiaoyao_action_context
 from .read_helpers import get_prepared_guest_detail_for_read, get_prepared_guest_roster_for_read
 
 logger = logging.getLogger(__name__)
@@ -366,6 +367,7 @@ class GuestDetailView(LoginRequiredMixin, TemplateView):
                 "skill_point_form": AllocateSkillPointsForm(manor=manor, initial={"guest": guest}),
                 "gear_sets": gear_sets,
                 "gear_set_map": gear_set_map,
+                **get_xiaoyao_action_context(manor, guest),
             }
         )
         context["skill_point_form"].fields["guest"].queryset = manor.guests.filter(pk=guest.pk)

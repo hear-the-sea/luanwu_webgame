@@ -62,6 +62,31 @@ def test_get_decomposable_equipment_options_filters_by_rules(django_user_model, 
 
 
 @pytest.mark.django_db
+def test_get_decomposable_equipment_options_excludes_mounts(django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(username="forge_mount_filter", password="pass123")
+    manor = ensure_manor(user)
+    mount = _create_item_template("equip_mount_green", "绿色坐骑", "equip_mount", "green")
+    InventoryItem.objects.create(manor=manor, template=mount, quantity=1)
+
+    monkeypatch.setattr(forge_service, "get_recruitment_equipment_keys", lambda: set())
+
+    assert forge_service.get_decomposable_equipment_options(manor) == []
+
+
+@pytest.mark.django_db
+def test_decompose_equipment_rejects_mounts(django_user_model, monkeypatch):
+    user = django_user_model.objects.create_user(username="forge_mount_decompose", password="pass123")
+    manor = ensure_manor(user)
+    mount = _create_item_template("equip_mount_green_direct", "绿色坐骑", "equip_mount", "green")
+    InventoryItem.objects.create(manor=manor, template=mount, quantity=1)
+
+    monkeypatch.setattr(forge_service, "get_recruitment_equipment_keys", lambda: set())
+
+    with pytest.raises(ForgeOperationError, match="坐骑不可分解"):
+        forge_service.decompose_equipment(manor, mount.key)
+
+
+@pytest.mark.django_db
 def test_get_decomposable_equipment_options_category_fallback_from_effect_type(django_user_model, monkeypatch):
     user = django_user_model.objects.create_user(username="forge_category_fallback", password="pass123")
     manor = ensure_manor(user)

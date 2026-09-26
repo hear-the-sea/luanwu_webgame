@@ -17,6 +17,7 @@ from gameplay.services.manor.core import (
 from gameplay.services.manor.prestige import get_prestige_progress
 from gameplay.services.ranking import get_ranking_with_player_context
 from gameplay.services.technology import get_tech_bonus_from_levels
+from guests.models import GuestStatus
 
 
 def _normalize_dashboard_category(raw_category: str | None) -> str:
@@ -81,7 +82,7 @@ def get_dashboard_context(manor: Any, *, category: str) -> dict[str, Any]:
         for tech_key, level in PlayerTechnology.objects.filter(manor_id=manor.pk).values_list("tech_key", "level")
     }
     building_cost_reduction = get_tech_bonus_from_levels(technology_levels, "building_cost_reduction")
-    return {
+    context = {
         "current_category": normalized_category,
         "category_label": dict(BuildingCategory.choices).get(normalized_category, "资源生产"),
         "categories": BuildingCategory.choices,
@@ -93,6 +94,9 @@ def get_dashboard_context(manor: Any, *, category: str) -> dict[str, Any]:
         ),
         "resource_labels": dict(ResourceType.choices),
     }
+    if normalized_category == BuildingCategory.SPECIAL:
+        context["xiaoyao_occupied"] = manor.guests.filter(status=GuestStatus.VACATION).count()
+    return context
 
 
 def get_settings_page_context(manor: Any) -> dict[str, Any]:

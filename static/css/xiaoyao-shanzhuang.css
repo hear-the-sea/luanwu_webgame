@@ -1,0 +1,37 @@
+.xiaoyao-page {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.xiaoyao-hero {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border-primary);
+    border-radius: 1rem;
+    background: linear-gradient(120deg, #f8edda, #e5d0ae);
+}
+
+.xiaoyao-hero img {
+    width: 7.5rem;
+    height: 7.5rem;
+    flex: none;
+    object-fit: cover;
+    border-radius: .8rem;
+    border: 2px solid #b78f5d;
+}
+
+.xiaoyao-hero > div { flex: 1; }
+.xiaoyao-hero h1 { margin: .2rem 0 .5rem; font-size: 1.75rem; font-weight: 700; }
+.xiaoyao-hero p { margin: 0; }
+.xiaoyao-eyebrow { color: #87613d; letter-spacing: .12em; font-size: .8rem; }
+.xiaoyao-occupancy { margin-top: 1rem !important; color: #6f4b2c; }
+.xiaoyao-roster .tw-table-wrapper { overflow-x: auto; }
+.xiaoyao-note { margin-top: .8rem; color: var(--text-muted); }
+
+@media (max-width: 640px) {
+    .xiaoyao-hero { flex-wrap: wrap; gap: 1rem; }
+    .xiaoyao-hero img { width: 5rem; height: 5rem; }
+    .xiaoyao-hero > a { width: 100%; text-align: center; }
+}

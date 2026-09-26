@@ -221,10 +221,12 @@ class Manor(models.Model):
                 BuildingKeys.RANCH,
                 BuildingKeys.SMITHY,
                 BuildingKeys.STABLE,
+                BuildingKeys.FORGE,
                 BuildingKeys.TAVERN,
                 BuildingKeys.CITANG,
                 BuildingKeys.JAIL,
                 BuildingKeys.OATH_GROVE,
+                BuildingKeys.XIAOYAO_SHANZHUANG,
                 BuildingKeys.WALL,
                 BuildingKeys.ARROW_TOWER,
             ]
@@ -244,7 +246,19 @@ class Manor(models.Model):
     def get_building_level(self, building_key: str) -> int:
         """获取指定建筑的等级，使用缓存"""
         cache = self._get_building_levels_cache()
-        return cache.get(building_key, 1)
+        return cache.get(building_key, 0 if building_key == BuildingKeys.XIAOYAO_SHANZHUANG else 1)
+
+    @property
+    def active_guest_count(self) -> int:
+        """聚贤庄占用人数，不计入逍遥山庄归闲的门客。"""
+        from guests.models import GuestStatus
+
+        return self.guests.exclude(status=GuestStatus.VACATION).count()
+
+    @property
+    def xiaoyao_capacity(self) -> int:
+        """逍遥山庄每级提供一个归闲位置。"""
+        return max(0, min(10, self.get_building_level(BuildingKeys.XIAOYAO_SHANZHUANG)))
 
     @property
     def guest_capacity(self) -> int:
@@ -477,7 +491,17 @@ class Building(models.Model):
         growth = 1 + self.building_type.rate_growth * (self.level - 1)
         return self.building_type.base_rate_per_hour * growth
 
+    def _upgrade_reference(self) -> "Building":
+        """逍遥山庄的十次升级对应聚贤庄第6至15级。"""
+        if self.building_type.key != BuildingKeys.XIAOYAO_SHANZHUANG:
+            return self
+        reference_type = BuildingType.objects.get(key=BuildingKeys.JUXIAN_ZHUANG)
+        return Building(building_type=reference_type, level=self.level + 5)
+
     def next_level_cost(self) -> Dict[str, int]:
+        reference = self._upgrade_reference()
+        if reference is not self:
+            return reference.next_level_cost()
         target_level = self.level + 1
         max_level = BUILDING_MAX_LEVELS.get(str(self.building_type.key))
         budget_map = self.building_type.upgrade_cost_budget or {}
@@ -501,6 +525,9 @@ class Building(models.Model):
         return result
 
     def next_level_duration(self) -> int:
+        reference = self._upgrade_reference()
+        if reference is not self:
+            return reference.next_level_duration()
         max_level = BUILDING_MAX_LEVELS.get(str(self.building_type.key))
         budget = int(self.building_type.upgrade_time_budget or 0)
         if budget > 0 and max_level is not None:

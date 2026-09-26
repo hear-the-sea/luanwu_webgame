@@ -817,7 +817,7 @@ skills:
               log_name: 静水筹谋
               message: 伤害增加
             - type: modify_outgoing_damage
-              value: 1.10
+              value: 1.20
               target_scope: self
 
   - key: iron_wall_heart
@@ -886,7 +886,7 @@ skills:
               log_name: 绝处逢生
               message: 血量回复
             - type: heal_ratio
-              value: 0.2
+              value: 0.3
               max_hp_based: true
               log: true
               log_name: 绝处逢生
@@ -945,7 +945,7 @@ skills:
     passive_config:
       triggers:
         - timing: round_start
-          chance: 0.2
+          chance: 0.35
           conditions:
             ally_alive_template_count_gte: 2
           effects:

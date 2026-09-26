@@ -38,3 +38,19 @@ def test_load_arena_coop_rules_reads_yaml_via_cache(monkeypatch):
     loaded = load_arena_coop_rules()
 
     assert loaded["registration"]["prepare_duration_seconds"] == 180
+
+
+def test_default_and_yaml_rules_keep_only_two_guards():
+    assert [guard["template_key"] for guard in DEFAULT_ARENA_COOP_RULES["enemy"]["guards"]] == [
+        "arena_gl_top_yang_xiao_guard",
+        "arena_gl_top_wei_yixiao_guard",
+    ]
+
+    clear_arena_coop_rules_cache()
+    loaded = load_arena_coop_rules()
+    clear_arena_coop_rules_cache()
+
+    assert [guard["template_key"] for guard in loaded["enemy"]["guards"]] == [
+        "arena_gl_top_yang_xiao_guard",
+        "arena_gl_top_wei_yixiao_guard",
+    ]

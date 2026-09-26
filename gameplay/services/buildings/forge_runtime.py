@@ -26,6 +26,7 @@ from .forge_flow_helpers import (
     validate_forging_quantity,
 )
 from .production_cancel import cancel_active_production
+from .production_queue import get_production_queue_capacity
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +94,11 @@ def get_max_forging_quantity(manor: Any) -> int:
     return max(1, forging_level * 50)
 
 
+def get_forging_queue_capacity(manor: Any) -> int:
+    """获取铁匠铺当前可同时进行的锻造队列数。"""
+    return get_production_queue_capacity(manor, BuildingKeys.FORGE)
+
+
 def calculate_forging_duration(base_duration: int, manor: Any) -> int:
     bonus = get_forge_speed_bonus(manor)
     duration = max(1, int(base_duration * (1 - bonus)))
@@ -145,8 +151,12 @@ def start_equipment_forging(
     with transaction.atomic():
         locked_manor = ManorModel.objects.select_for_update().get(pk=manor.pk)
 
-        if has_active_forging(locked_manor):
-            raise ForgeOperationError("已有装备正在锻造中，同时只能锻造一种装备")
+        queue_capacity = get_forging_queue_capacity(locked_manor)
+        active_queue_count = locked_manor.equipment_productions.filter(
+            status=EquipmentProduction.Status.FORGING
+        ).count()
+        if active_queue_count >= queue_capacity:
+            raise ForgeOperationError(f"铁匠铺锻造队列已满，当前最多同时锻造{queue_capacity}项")
 
         consume_forging_materials_locked(
             inventory_item_model=InventoryItem,

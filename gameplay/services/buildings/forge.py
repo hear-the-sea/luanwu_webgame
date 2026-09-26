@@ -262,6 +262,11 @@ def get_max_forging_quantity(manor: Manor) -> int:
     return _forge_runtime.get_max_forging_quantity(manor)
 
 
+def get_forging_queue_capacity(manor: Manor) -> int:
+    """获取铁匠铺当前可同时进行的锻造队列数。"""
+    return _forge_runtime.get_forging_queue_capacity(manor)
+
+
 def calculate_forging_duration(base_duration: int, manor: Manor) -> int:
     """
     计算实际锻造时间。

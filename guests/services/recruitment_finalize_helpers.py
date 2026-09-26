@@ -36,7 +36,7 @@ def remaining_guest_capacity(manor: Manor) -> int:
         raise AssertionError(f"invalid recruitment guest capacity: {raw_capacity!r}") from exc
     if capacity < 0:
         raise AssertionError(f"invalid recruitment guest capacity: {raw_capacity!r}")
-    raw_guest_count = manor.guests.count()
+    raw_guest_count = manor.active_guest_count
     if raw_guest_count is None or isinstance(raw_guest_count, bool):
         raise AssertionError(f"invalid recruitment guest occupancy: {raw_guest_count!r}")
     try:

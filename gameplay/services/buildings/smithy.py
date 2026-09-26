@@ -31,6 +31,7 @@ from ...constants import BuildingKeys
 from ...models import Manor, SmeltingProduction
 from ..utils.notifications import notify_user
 from .production_cancel import cancel_active_production
+from .production_queue import get_production_queue_capacity
 
 logger = logging.getLogger(__name__)
 SMITHY_MESSAGE_BEST_EFFORT_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
@@ -196,6 +197,11 @@ def get_smithy_speed_bonus(manor: Manor) -> float:
     return level * 0.05
 
 
+def get_smelting_queue_capacity(manor: Manor) -> int:
+    """获取冶炼坊当前可同时进行的制作队列数。"""
+    return get_production_queue_capacity(manor, BuildingKeys.SMITHY)
+
+
 def get_max_smelting_quantity(manor: Manor) -> int:
     """
     获取单次冶炼金属的最大数量。
@@ -282,7 +288,9 @@ def get_metal_options(manor: Manor) -> List[Dict[str, Any]]:
 
     smelting_level = get_player_technology_level(manor, "smelting")
     smithy_level = manor.get_building_level(BuildingKeys.SMITHY)
-    is_producing = has_active_smelting_production(manor)
+    active_productions = get_active_smelting_productions(manor)
+    is_producing = bool(active_productions)
+    queue_full = len(active_productions) >= get_smelting_queue_capacity(manor)
 
     normalized_configs = {
         metal_key: _normalize_smithy_runtime_config_entry(
@@ -330,6 +338,7 @@ def get_metal_options(manor: Manor) -> List[Dict[str, Any]]:
                 "is_unlocked": is_unlocked,
                 "max_quantity": max_quantity,
                 "is_producing": is_producing,
+                "is_queue_full": queue_full,
             }
         )
     return options
@@ -396,8 +405,12 @@ def start_smelting_production(manor: Manor, metal_key: str, quantity: int = 1) -
         locked_manor = ManorModel.objects.select_for_update().get(pk=manor.pk)
 
         # 锁内再次检查，避免并发下绕过限制
-        if has_active_smelting_production(locked_manor):
-            raise ProductionStartError("已有物品正在制作中，同时只能制作一种物品")
+        queue_capacity = get_smelting_queue_capacity(locked_manor)
+        active_queue_count = locked_manor.smelting_productions.filter(
+            status=SmeltingProduction.Status.PRODUCING
+        ).count()
+        if active_queue_count >= queue_capacity:
+            raise ProductionStartError(f"冶炼坊制作队列已满，当前最多同时制作{queue_capacity}项")
 
         # 扣除材料
         if cost_type == "silver":

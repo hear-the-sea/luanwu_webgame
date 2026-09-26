@@ -75,6 +75,21 @@ const initGuestDetailPage = () => {
     });
   };
 
+  const bindRetreatForms = (root = document) => {
+    root.querySelectorAll(".retreat-form").forEach((form) => {
+      if (form.dataset.confirmBound === "1") return;
+      form.dataset.confirmBound = "1";
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const message = "是否移动至逍遥山庄？";
+        const confirmed = window.gameDialog?.confirm
+          ? await window.gameDialog.confirm(message, { title: "门客归闲", okText: "确认归闲" })
+          : window.confirm(message);
+        if (confirmed) form.submit();
+      });
+    });
+  };
+
   const replaceAttributePanel = (html) => {
     const currentPanel = document.getElementById("guest-attribute-panel");
     if (!currentPanel || !html) return;
@@ -85,6 +100,7 @@ const initGuestDetailPage = () => {
     currentPanel.replaceWith(nextPanel);
     bindAllocateForms();
     bindDismissForms();
+    bindRetreatForms();
     setAllocateButtonsBusy(false);
   };
 
@@ -182,6 +198,7 @@ const initGuestDetailPage = () => {
 
   bindAllocateForms();
   bindDismissForms();
+  bindRetreatForms();
 
   if (typeof window.initItemTooltip === "function") {
     window.initItemTooltip({

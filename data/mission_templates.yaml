@@ -1642,7 +1642,7 @@ missions:
       experience_watermelon:
         chance: 0.9
         count: 8
-      lvbu_guest_scroll: 0.01
+      lvbu_guest_scroll: 0.05
       super_guest_disguise_card: 0.01
       diaochan_guest_scroll: 0.02
       equip_panlonggun: 0.0096

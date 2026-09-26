@@ -30,6 +30,7 @@ from core.utils.yaml_loader import load_yaml_data
 from ...constants import BuildingKeys
 from ...models import HorseProduction, Manor
 from .production_cancel import cancel_active_production
+from .production_queue import get_production_queue_capacity
 
 logger = logging.getLogger(__name__)
 STABLE_MESSAGE_BEST_EFFORT_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
@@ -141,6 +142,11 @@ def get_stable_speed_bonus(manor: Manor) -> float:
     return level * 0.05
 
 
+def get_horse_queue_capacity(manor: Manor) -> int:
+    """获取马房当前可同时进行的生产队列数。"""
+    return get_production_queue_capacity(manor, BuildingKeys.STABLE)
+
+
 def get_max_production_quantity(manor: Manor) -> int:
     """
     获取单次生产马匹的最大数量。
@@ -205,7 +211,9 @@ def get_horse_options(manor: Manor) -> List[Dict[str, Any]]:
 
     horsemanship_level = get_player_technology_level(manor, "horsemanship")
     max_quantity = get_max_production_quantity(manor)
-    is_producing = has_active_production(manor)
+    active_productions = get_active_productions(manor)
+    is_producing = bool(active_productions)
+    queue_full = len(active_productions) >= get_horse_queue_capacity(manor)
     warehouse_grain_quantity = get_warehouse_grain_quantity(manor)
     horse_name_map = _get_item_name_map(set(HORSE_CONFIG.keys()))
 
@@ -231,6 +239,7 @@ def get_horse_options(manor: Manor) -> List[Dict[str, Any]]:
                 "is_unlocked": is_unlocked,
                 "max_quantity": max_quantity,
                 "is_producing": is_producing,
+                "is_queue_full": queue_full,
             }
         )
     return options
@@ -288,8 +297,10 @@ def start_horse_production(manor: Manor, horse_key: str, quantity: int = 1) -> H
         locked_manor = ManorModel.objects.select_for_update().get(pk=manor.pk)
 
         # 锁内再次检查，避免并发下绕过限制
-        if has_active_production(locked_manor):
-            raise ProductionStartError("已有马匹正在生产中，同时只能生产一种马匹")
+        queue_capacity = get_horse_queue_capacity(locked_manor)
+        active_queue_count = locked_manor.horse_productions.filter(status=HorseProduction.Status.PRODUCING).count()
+        if active_queue_count >= queue_capacity:
+            raise ProductionStartError(f"马房生产队列已满，当前最多同时生产{queue_capacity}项")
         try:
             spend_resources_locked(
                 locked_manor,

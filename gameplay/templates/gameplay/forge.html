@@ -13,6 +13,7 @@
             </div>
             <div class="production-page-meta">
                 <span class="production-meta-item">单次上限 <strong>{{ max_forging_quantity }}</strong></span>
+                <span class="production-meta-item">锻造队列 <strong>{{ active_production_count }}/{{ production_queue_capacity }}</strong></span>
                 {% if speed_bonus_percent > 0 %}
                 <span class="production-meta-item production-meta-item--accent">速度 -{{ speed_bonus_percent }}%</span>
                 {% endif %}
@@ -156,7 +157,7 @@
             <div class="production-panel-body">
                 <div class="production-option-grid">
                     {% for item in equipment_list %}
-                    <article class="production-option-card {% if not item.is_unlocked %}is-locked{% elif is_forging %}is-disabled{% endif %}">
+                    <article class="production-option-card {% if not item.is_unlocked %}is-locked{% elif production_queue_full %}is-disabled{% endif %}">
                         <header class="production-option-card__header">
                             <div>
                                 <h3>{{ item.name }}</h3>
@@ -199,8 +200,8 @@
                             <input type="hidden" name="mode" value="{{ current_mode }}">
                             {% if not item.is_unlocked %}
                             <button type="button" class="tw-btn-secondary w-full" disabled>未解锁</button>
-                            {% elif is_forging %}
-                            <button type="button" class="tw-btn-secondary w-full" disabled>锻造中</button>
+                            {% elif production_queue_full %}
+                            <button type="button" class="tw-btn-secondary w-full" disabled>锻造队列已满</button>
                             {% else %}
                             <div class="production-quantity-row">
                                 <label for="quantity-{{ item.key }}">数量</label>

@@ -1754,6 +1754,21 @@ table.table tbody tr+tr {
 }
 
 /* 消息与通知 */
+.global-announcement-banner {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.55rem;
+}
+
+.global-announcement-title {
+  font-weight: 700;
+}
+
+.global-announcement-body {
+  min-width: 0;
+}
+
 .nav-links a.nav-link .nav-unread-dot {
   width: 9px;
   height: 9px;

@@ -114,7 +114,7 @@ troops:
     assert spearman["recruit"]["tech_level"] == 0
     assert spearman["recruit"]["equipment"] == ["equip_spear", "7"]
     assert spearman["recruit"]["retainer_cost"] == 1
-    assert spearman["recruit"]["base_duration"] == 120
+    assert spearman["recruit"]["base_duration"] == 60
 
     broken_recruit = loaded["troops"][1]
     assert broken_recruit["recruit"] is None

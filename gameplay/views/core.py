@@ -131,7 +131,7 @@ class GuideView(LoginRequiredMixin, TemplateView):
         context["guide_snapshot"] = {
             "action_points": get_current_action_points(manor),
             "action_points_max": ACTION_POINTS_MAX,
-            "guest_count": manor.guests.count(),
+            "guest_count": manor.active_guest_count,
             "guest_capacity": manor.guest_capacity,
             "max_squad_size": manor.max_squad_size,
             "hourly_grain": round(float(hourly_rates.get("grain", 0))),

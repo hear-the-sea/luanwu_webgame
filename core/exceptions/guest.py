@@ -26,6 +26,7 @@ class GuestNotIdleError(GuestError):
         if message is None:
             status_labels = {
                 "idle": "空闲",
+                "vacation": "归闲中",
                 "working": "打工中",
                 "deployed": "出征中",
                 "arena": "竞技中",

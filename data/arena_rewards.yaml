@@ -35,6 +35,33 @@ rewards:
         - item_key: equip_jiaodoushizhichui
           weight: 15
 
+  - key: arena_bronze_gladiator_device
+    name: 青铜之角斗士
+    description: 兑换后获得1件绿色器械「青铜之角斗士」。
+    cost_coins: 800
+    weekly_limit: 2
+    rewards:
+      items:
+        equip_qingtongzhijiaodoushi: 1
+
+  - key: arena_silver_gladiator_device
+    name: 白银之角斗士
+    description: 兑换后获得1件蓝色器械「白银之角斗士」。
+    cost_coins: 1200
+    weekly_limit: 1
+    rewards:
+      items:
+        equip_baiyinzhijiaodoushi: 1
+
+  - key: arena_gold_gladiator_device
+    name: 黄金之角斗士
+    description: 兑换后获得1件紫色器械「黄金之角斗士」。
+    cost_coins: 2000
+    weekly_limit: 1
+    rewards:
+      items:
+        equip_huangjinzhijiaodoushi: 1
+
   - key: blueprint_blue_exchange
     name: 随机蓝色装备图纸
     description: 从全部蓝色装备图纸中随机获得1张，每日限兑1张。

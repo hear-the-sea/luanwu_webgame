@@ -50,8 +50,6 @@ async function loadMapPage({ searchQuery = "", results = [] } = {}) {
     ["manor-search", createElement({ value: searchQuery })],
     ["search-btn", createElement()],
     ["manor-list", createElement()],
-    ["manor-count", createElement()],
-    ["list-title", createElement()],
     ["pagination", createElement()],
     ["prev-page", createElement()],
     ["next-page", createElement()],

@@ -83,7 +83,15 @@
         </div>
         <div class="stat-row">
             <span>操作</span>
-            <div>
+            <div class="flex flex-wrap gap-2">
+                {% if guest.status == 'vacation' %}
+                    <a class="tw-btn-secondary tw-btn-sm" href="{% url 'gameplay:xiaoyao_shanzhuang' %}">查看逍遥山庄</a>
+                {% else %}
+                    <form method="post" action="{% url 'gameplay:move_guest_to_xiaoyao' guest.id %}" class="retreat-form">
+                        {% csrf_token %}
+                        <button type="submit" class="tw-btn-primary tw-btn-sm" {% if not can_retreat %}disabled{% if is_world_unique_guest %} title="唯一门客不能归闲"{% elif guest.status != 'idle' %} title="仅空闲门客可以归闲"{% else %} title="逍遥山庄暂无空位"{% endif %}{% endif %}>归闲</button>
+                    </form>
+                {% endif %}
                 <form method="post" action="{% url 'guests:dismiss' guest.id %}" class="dismiss-form" data-guest-name="{{ guest.display_name }}">
                     {% csrf_token %}
                     <button type="submit" class="tw-btn-secondary tw-btn-sm">辞退门客</button>

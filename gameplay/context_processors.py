@@ -10,6 +10,7 @@ import gameplay.selectors.sidebar as sidebar_selector
 import gameplay.selectors.stats as stats_selector
 from gameplay.request_context import get_prepared_manor
 from gameplay.services.action_points import ACTION_POINTS_MAX
+from gameplay.services.global_announcement import get_active_global_announcement
 from gameplay.services.utils.messages import unread_message_count
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ def _build_default_context() -> dict[str, Any]:
         "header_protection_status": DEFAULT_PROTECTION_STATUS.copy(),
         "sidebar_action_points_label": f"0/{ACTION_POINTS_MAX}",
         "sidebar_grain_quantity": 0,
+        "global_announcement": None,
     }
 
 
@@ -34,6 +36,9 @@ def _clone_notifications_context(context: dict[str, Any]) -> dict[str, Any]:
     protection_status = cloned.get("header_protection_status")
     if isinstance(protection_status, dict):
         cloned["header_protection_status"] = dict(protection_status)
+    announcement = cloned.get("global_announcement")
+    if isinstance(announcement, dict):
+        cloned["global_announcement"] = dict(announcement)
     return cloned
 
 
@@ -131,6 +136,8 @@ def notifications(request):
         return _clone_notifications_context(cached_context)
 
     context = _build_default_context()
+    if request.user.is_authenticated:
+        context["global_announcement"] = get_active_global_announcement()
     if _should_load_global_stats(request):
         context["total_user_count"] = stats_selector.load_total_user_count()
         context["online_user_count"] = stats_selector.load_online_user_count()

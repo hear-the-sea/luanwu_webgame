@@ -39,6 +39,7 @@ class GuestArchetype(models.TextChoices):
 
 class GuestStatus(models.TextChoices):
     IDLE = "idle", "空闲"
+    VACATION = "vacation", "归闲中"
     WORKING = "working", "打工中"
     DEPLOYED = "deployed", "出征中"
     ARENA = "arena", "竞技中"

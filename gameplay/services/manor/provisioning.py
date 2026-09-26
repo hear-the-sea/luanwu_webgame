@@ -164,7 +164,10 @@ def generate_unique_coordinate(region: str, *, manor_model, logger) -> tuple[int
 
 def bootstrap_buildings(manor, *, building_type_model, building_model) -> None:
     building_types = list(building_type_model.objects.all())
-    buildings_to_create = [building_model(manor=manor, building_type=bt) for bt in building_types]
+    buildings_to_create = [
+        building_model(manor=manor, building_type=bt, level=0 if bt.key == "xiaoyao_shanzhuang" else 1)
+        for bt in building_types
+    ]
     building_model.objects.bulk_create(buildings_to_create, ignore_conflicts=True)
 
 
@@ -172,7 +175,10 @@ def ensure_buildings_exist(manor, *, building_type_model, building_model) -> Non
     existing = set(manor.buildings.values_list("building_type_id", flat=True))
     missing = list(building_type_model.objects.exclude(id__in=existing))
     if missing:
-        buildings_to_create = [building_model(manor=manor, building_type=bt) for bt in missing]
+        buildings_to_create = [
+            building_model(manor=manor, building_type=bt, level=0 if bt.key == "xiaoyao_shanzhuang" else 1)
+            for bt in missing
+        ]
         building_model.objects.bulk_create(buildings_to_create)
 
 

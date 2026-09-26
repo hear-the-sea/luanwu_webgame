@@ -6,6 +6,7 @@ import pytest
 from django.utils import timezone
 
 import gameplay.services.arena.coop_core as arena_coop_core
+from battle.arena_coop import ARENA_COOP_BOSS_TEMPLATE_KEY, ARENA_COOP_ENEMY_FINAL_STATS
 from core.exceptions import ArenaCancellationError
 from gameplay.models import ArenaCoopEntry, ArenaCoopEvent, ArenaVirtualDemand
 from gameplay.services.arena.coop_core import cancel_arena_coop_entry, register_arena_coop_entry
@@ -28,8 +29,9 @@ def test_register_arena_coop_entry_creates_recruiting_event_and_snapshots():
     assert result.event.status == ArenaCoopEvent.Status.RECRUITING
     assert result.entry.entry_guests.count() == 3
     assert result.entry_count == 1
-    assert result.event.boss_initial_hp == 300000
-    assert result.event.boss_remaining_hp == 300000
+    boss_hp = ARENA_COOP_ENEMY_FINAL_STATS[ARENA_COOP_BOSS_TEMPLATE_KEY]["final_hp"]
+    assert result.event.boss_initial_hp == boss_hp
+    assert result.event.boss_remaining_hp == boss_hp
     assert result.event.base_seed > 0
     assert result.event.rng_version > 0
     assert result.event.battle_engine_version != "legacy"

@@ -475,7 +475,7 @@ def _recruit_prisoner(
 
     # 使用锁定后的 manor 对象检查容量
     capacity = locked_manor.guest_capacity
-    current = locked_manor.guests.count()
+    current = locked_manor.active_guest_count
     if current >= capacity:
         raise GuestCapacityFullError()
 

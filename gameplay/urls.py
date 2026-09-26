@@ -122,11 +122,15 @@ from .views.work import (
     recall_work_view,
     refresh_work_assignments_api,
 )
+from .views.xiaoyao import XiaoyaoShanzhuangView, move_guest_to_xiaoyao_view, return_guest_from_xiaoyao_view
 
 app_name = "gameplay"
 
 urlpatterns = [
     path("", DashboardView.as_view(), name="dashboard"),
+    path("xiaoyao-shanzhuang/", XiaoyaoShanzhuangView.as_view(), name="xiaoyao_shanzhuang"),
+    path("xiaoyao-shanzhuang/<int:pk>/move/", move_guest_to_xiaoyao_view, name="move_guest_to_xiaoyao"),
+    path("xiaoyao-shanzhuang/<int:pk>/return/", return_guest_from_xiaoyao_view, name="return_guest_from_xiaoyao"),
     path("buildings/<str:category>/", DashboardView.as_view(), name="buildings_category"),
     path("tasks/", TaskBoardView.as_view(), name="tasks"),
     path("arena/", ArenaView.as_view(), name="arena"),

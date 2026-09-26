@@ -11,6 +11,8 @@ from gameplay.models import Manor as ManorModel
 from ..inventory.core import add_item_to_inventory_locked, consume_inventory_item_locked
 from .forge_decompose_helpers import build_decomposable_equipment_option
 
+NON_DECOMPOSABLE_EQUIPMENT_EFFECT_TYPES = frozenset({"equip_mount"})
+
 
 def _normalize_decompose_reward_mapping(raw_value: object, *, contract_name: str) -> dict[str, int]:
     if not isinstance(raw_value, dict):
@@ -74,6 +76,7 @@ def get_decomposable_equipment_options(
             template__effect_type__startswith="equip_",
             template__rarity__in=supported_rarities,
         )
+        .exclude(template__effect_type__in=NON_DECOMPOSABLE_EQUIPMENT_EFFECT_TYPES)
         .select_related("template")
         .order_by("template__name")
     )
@@ -151,7 +154,10 @@ def decompose_equipment(
             raise ForgeOperationError("装备数量不足")
 
         template = locked_item.template
-        if not template.effect_type.startswith("equip_"):
+        effect_type = str(template.effect_type or "")
+        if effect_type in NON_DECOMPOSABLE_EQUIPMENT_EFFECT_TYPES:
+            raise ForgeOperationError("坐骑不可分解")
+        if not effect_type.startswith("equip_"):
             raise ForgeOperationError("该物品不是可分解装备")
         if template.rarity not in supported_rarities:
             raise ForgeOperationError("仅绿色及以上装备可分解")

@@ -52,6 +52,9 @@
                             {% if building.is_city_defense %}
                                 <dt>城防血量</dt>
                                 <dd>{{ building.current_hp }} / {{ building.city_defense_max_hp }}</dd>
+                            {% elif building.building_type.key == 'xiaoyao_shanzhuang' %}
+                                <dt>归闲位置</dt>
+                                <dd>{{ xiaoyao_occupied }} / {{ manor.xiaoyao_capacity }}</dd>
                             {% else %}
                                 <dt>当前产能</dt>
                                 <dd>{{ building.hourly_rate|floatformat:0 }} / 小时</dd>
@@ -114,7 +117,7 @@
                     </dl>
                     <div class="tw-card-actions">
                         {% if building.building_type.key == 'juxianzhuang' %}
-                            <p>门客容量：{{ manor.guests.count }} / {{ manor.guest_capacity }}</p>
+                            <p>门客容量：{{ manor.active_guest_count }} / {{ manor.guest_capacity }}</p>
                         {% endif %}
                         <div class="tw-btn-row">
                             <form method="post" action="{% url 'gameplay:upgrade_building' building.pk %}">
@@ -144,6 +147,8 @@
                                 <a class="tw-btn-primary" href="{% url 'gameplay:jail' %}">查看</a>
                             {% elif building.building_type.key == 'oath_grove' %}
                                 <a class="tw-btn-primary" href="{% url 'gameplay:oath_grove' %}">查看</a>
+                            {% elif building.building_type.key == 'xiaoyao_shanzhuang' %}
+                                <a class="tw-btn-primary" href="{% url 'gameplay:xiaoyao_shanzhuang' %}">查看门客</a>
                             {% elif building.is_city_defense %}
                                 <form method="post" action="{% url 'gameplay:repair_city_defense' building.pk %}">
                                     {% csrf_token %}

@@ -64,7 +64,8 @@ def get_home_context(manor, *, production_basis: ResourceProductionBasis | None 
         ("retainer", "家丁", f"{manor.retainer_count} / {manor.retainer_capacity}"),
     ]
 
-    guests = list(optimize_guest_queryset(manor.guests.all()).order_by("template__name"))
+    all_guests = list(optimize_guest_queryset(manor.guests.all()).order_by("template__name"))
+    guests = [guest for guest in all_guests if guest.status != GuestStatus.VACATION]
     guest_status_display = dict(GuestStatus.choices)
     for guest in guests:
         guest.status_display = guest_status_display.get(guest.status, guest.status)
@@ -91,7 +92,7 @@ def get_home_context(manor, *, production_basis: ResourceProductionBasis | None 
         tpl = get_technology_template(tech.tech_key) or {}
         tech.display_name = tpl.get("name", tech.tech_key)
 
-    total_guest_salary = sum(get_guest_salary_for_rarity(g.rarity) for g in guests)
+    total_guest_salary = sum(get_guest_salary_for_rarity(g.rarity) for g in all_guests)
 
     from ..utils.resource_calculator import get_hourly_rates, get_personnel_grain_cost_per_hour
 
@@ -189,7 +190,7 @@ def get_home_context(manor, *, production_basis: ResourceProductionBasis | None 
     else:
         personnel_grain_cost = get_personnel_grain_cost_per_hour(
             manor,
-            guest_count=len(guests),
+            guest_count=len(all_guests),
             troop_count=sum(int(getattr(troop, "count", 0) or 0) for troop in player_troops),
         )
 

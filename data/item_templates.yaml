@@ -6984,6 +6984,59 @@ items:
         gong: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
         scout: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
 
+  # ---------- 竞技场兑换器械 ----------
+
+  - key: equip_qingtongzhijiaodoushi
+    name: 青铜之角斗士
+    description: 青铜甲片与机簧拼装的角斗士机关偶，持剑护卫冲锋阵线。
+    effect_type: equip_device
+    rarity: green
+    tradeable: true
+    price: 2000
+    storage_space: 75
+    image: equip_qingtongzhijiaodoushi.png
+    effect_payload:
+      hp: 300
+      defense: 8
+      force: 18
+      agility: 8
+      troop_stat_bonus:
+        quan: {attack_pct: 0.005}
+
+  - key: equip_baiyinzhijiaodoushi
+    name: 白银之角斗士
+    description: 白银甲胄与精钢关节制成的角斗士机关偶，盾矛并举。
+    effect_type: equip_device
+    rarity: blue
+    tradeable: true
+    price: 6000
+    storage_space: 100
+    image: equip_baiyinzhijiaodoushi.png
+    effect_payload:
+      hp: 500
+      defense: 10
+      force: 27
+      agility: 12
+      troop_stat_bonus:
+        quan: {attack_pct: 0.01}
+
+  - key: equip_huangjinzhijiaodoushi
+    name: 黄金之角斗士
+    description: 鎏金精钢打造的角斗士机关偶，以耀日战盾护阵，以短剑破敌。
+    effect_type: equip_device
+    rarity: purple
+    tradeable: true
+    price: 16000
+    storage_space: 150
+    image: equip_huangjinzhijiaodoushi.png
+    effect_payload:
+      hp: 750
+      defense: 15
+      force: 38
+      agility: 16
+      troop_stat_bonus:
+        quan: {attack_pct: 0.01, defense_pct: 0.005}
+
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 坐骑
   # ══════════════════════════════════════════════════════════════════════════════

@@ -388,6 +388,23 @@ buildings:
     cost_curve: 1.03
     icon: ""
 
+  - key: xiaoyao_shanzhuang
+    name: 逍遥山庄
+    category: special
+    description: 江湖奔波久了，也该歇歇脚。空闲门客可来此归闲，暂不参战与出征；每升一级增加一处居所，随时可以召回。
+    resource_type: silver
+    base_rate_per_hour: 0
+    rate_growth: 0.0
+    base_upgrade_time: 3107
+    time_growth: 1.5
+    upgrade_time_budget: 15552000
+    time_curve: 1.10
+    base_cost:
+      grain: 3432
+      silver: 17164
+    cost_growth: 1.7
+    icon: ""
+
   # ==================== 城防建筑 ====================
   - key: wall
     name: 城墙

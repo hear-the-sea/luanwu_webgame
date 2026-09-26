@@ -9,7 +9,7 @@ from django.utils import timezone
 from core.config import RECRUITMENT
 from core.utils.time_scale import scale_duration
 
-from ..models import Guest, GuestRarity, GuestRecruitment, RecruitmentCandidate, RecruitmentPool
+from ..models import Guest, GuestRarity, GuestRecruitment, GuestStatus, RecruitmentCandidate, RecruitmentPool
 from ..query_utils import guest_template_rarity_rank_case
 from .recruitment_shared import CORE_POOL_TIERS, NON_REPEATABLE_RARITIES
 
@@ -146,7 +146,8 @@ def get_active_guest_recruitment(manor: Manor) -> GuestRecruitment | None:
 def available_guests(manor: Manor) -> QuerySet[Guest]:
     """获取庄园所有可用门客。"""
     return (
-        manor.guests.select_related("template")
+        manor.guests.exclude(status=GuestStatus.VACATION)
+        .select_related("template")
         .prefetch_related("gear_items__template")
         .annotate(_template_rarity_rank=guest_template_rarity_rank_case("template__rarity"))
         .order_by("-_template_rarity_rank", "-level")

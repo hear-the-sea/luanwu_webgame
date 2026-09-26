@@ -27,6 +27,7 @@ from ..forms import AllocateSkillPointsForm
 from ..models import Guest
 from ..services.recruitment_guests import allocate_attribute_points
 from ..services.training import finalize_guest_training, use_experience_item_for_guest
+from ..services.vacation import get_xiaoyao_action_context
 
 logger = logging.getLogger(__name__)
 
@@ -261,7 +262,7 @@ def allocate_points_view(request, pk: int):
             guest_field.queryset = manor.guests.filter(pk=guest.pk)
             attribute_panel_html = render_to_string(
                 "guests/partials/attribute_panel.html",
-                {"guest": guest, "skill_point_form": refreshed_form},
+                {"guest": guest, "skill_point_form": refreshed_form, **get_xiaoyao_action_context(manor, guest)},
                 request=request,
             )
             return json_success(

@@ -13,7 +13,7 @@
         <div>
             <p>当前门客数量：{{ guests|length }}</p>
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
             {% if unpaid_count > 0 %}
             <form method="post" action="{% url 'guests:pay_all_salaries' %}" style="display: inline;" id="pay-all-salary-form"
                 data-amount="{{ total_unpaid_salary }}">
@@ -35,6 +35,7 @@
                 </button>
             </form>
             <a class="tw-btn-primary" href="{% url 'gameplay:recruitment_hall' %}">前往聚贤庄</a>
+            <a class="tw-btn-secondary" href="{% url 'gameplay:xiaoyao_shanzhuang' %}">前往逍遥山庄</a>
         </div>
     </div>
 

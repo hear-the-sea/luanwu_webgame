@@ -31,7 +31,13 @@ from ..technology import get_player_technology_level, get_technology_template
 from .lifecycle import apply_troop_recruitment_result_locked, finalize_troop_recruitment
 from .lifecycle import schedule_recruitment_completion as _schedule_recruitment_completion
 from .queries import get_active_recruitments, get_player_troops, refresh_troop_recruitments
-from .templates import clear_troop_cache, get_recruit_config, get_troop_template, load_troop_templates
+from .templates import (
+    DEFAULT_TROOP_RECRUITMENT_BASE_DURATION,
+    clear_troop_cache,
+    get_recruit_config,
+    get_troop_template,
+    load_troop_templates,
+)
 
 logger = logging.getLogger(__name__)
 TROOP_RECRUITMENT_DEFAULT_MAX_QUANTITY = 10
@@ -375,7 +381,7 @@ def get_recruitment_options(manor: Manor) -> List[Dict[str, Any]]:
         max_quantity = min(max_quantity, capacity_remaining)
 
         # 计算时间
-        base_duration = recruit_config.get("base_duration", 120)
+        base_duration = recruit_config.get("base_duration", DEFAULT_TROOP_RECRUITMENT_BASE_DURATION)
         actual_duration = calculate_recruitment_duration(base_duration, manor)
 
         # 检查装备状态（从缓存的批量查询结果）
@@ -540,7 +546,10 @@ def quote_troop_recruitment(
     )
     tech_key = recruit_config.get("tech_key")
     tech_level = get_player_technology_level(manor, tech_key) if tech_key else 0
-    base_duration = safe_positive_int(recruit_config.get("base_duration"), 120)
+    base_duration = safe_positive_int(
+        recruit_config.get("base_duration"),
+        DEFAULT_TROOP_RECRUITMENT_BASE_DURATION,
+    )
     actual_duration = calculate_recruitment_duration(base_duration, manor) * quantity
     retainer_cost = safe_positive_int(recruit_config.get("retainer_cost"), 1) * quantity
 

@@ -114,7 +114,7 @@ def test_arena_coop_detail_view_shows_live_boss_hp_for_registered_event(arena_cl
 
     assert response.status_code == 200
     assert detail_response.status_code == 200
-    assert "剩余生命：300000" in detail_response.content.decode("utf-8")
+    assert f"剩余生命：{entry.event.boss_remaining_hp}" in detail_response.content.decode("utf-8")
 
 
 @pytest.mark.django_db

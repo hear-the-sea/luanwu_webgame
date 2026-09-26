@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static guest_extras %}
+
+{% block title %}逍遥山庄{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/xiaoyao-shanzhuang.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="dashboard xiaoyao-page">
+    <header class="xiaoyao-hero">
+        <img src="{% static 'images/buildings/逍遥山庄.webp' %}" alt="逍遥山庄" width="120" height="120">
+        <div>
+            <p class="xiaoyao-eyebrow">江湖稍歇 · 随时召回</p>
+            <h1>逍遥山庄</h1>
+            <p>门客在此休息，暂不参与战斗或出征。归闲期间工资照常结算。</p>
+            <p class="xiaoyao-occupancy">已入住 <strong>{{ guests|length }}</strong> / <strong>{{ capacity }}</strong> 位</p>
+        </div>
+        <a class="tw-btn-secondary" href="{% url 'guests:roster' %}">返回门客列表</a>
+    </header>
+
+    <section class="tw-panel xiaoyao-roster">
+        <div class="tw-panel-header">山庄门客</div>
+        <div class="tw-panel-content">
+            {% if guests %}
+                <div class="tw-table-wrapper">
+                    <table class="tw-table">
+                        <thead>
+                            <tr>
+                                <th>门客</th>
+                                <th>等级</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for guest in guests %}
+                                <tr>
+                                    <td><a class="rarity-text {{ guest.rarity|rarity_class }}" href="{% url 'guests:detail' guest.id %}">{{ guest.display_name }}</a></td>
+                                    <td>等级 {{ guest.level }}</td>
+                                    <td>{{ guest.get_status_display }}</td>
+                                    <td>
+                                        <form method="post" action="{% url 'gameplay:return_guest_from_xiaoyao' guest.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="tw-btn-primary tw-btn-sm" {% if active_guest_count >= manor.guest_capacity %}disabled title="聚贤庄位置已满"{% endif %}>放回庄园</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if active_guest_count >= manor.guest_capacity %}
+                    <p class="xiaoyao-note">聚贤庄已满；召回前请先腾出空位。</p>
+                {% endif %}
+            {% else %}
+                <p class="tw-empty-state">山庄里还没有门客。前往门客详情，选择「归闲」即可安排入住。</p>
+            {% endif %}
+        </div>
+    </section>
+</section>
+{% endblock %}

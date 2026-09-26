@@ -14,8 +14,6 @@
   const manorSearch = document.getElementById("manor-search");
   const searchBtn = document.getElementById("search-btn");
   const manorList = document.getElementById("manor-list");
-  const manorCount = document.getElementById("manor-count");
-  const listTitle = document.getElementById("list-title");
   const pagination = document.getElementById("pagination");
   const prevPageBtn = document.getElementById("prev-page");
   const nextPageBtn = document.getElementById("next-page");
@@ -26,8 +24,6 @@
     !manorSearch ||
     !searchBtn ||
     !manorList ||
-    !manorCount ||
-    !listTitle ||
     !pagination ||
     !prevPageBtn ||
     !nextPageBtn ||
@@ -67,11 +63,6 @@
     hint.className = className;
     hint.textContent = text;
     manorList.appendChild(hint);
-  }
-
-  function getRegionName(key) {
-    const option = regionSelect.querySelector(`option[value="${key}"]`);
-    return option ? option.textContent.replace(" (当前)", "").trim() : key;
   }
 
   function showToast(message, type) {
@@ -277,15 +268,12 @@
       }
 
       renderManorList(data.results);
-      manorCount.textContent = `共 ${data.total} 个庄园`;
 
       if (requestedSearchQuery) {
-        listTitle.textContent = `搜索结果: "${requestedSearchQuery}"`;
         pagination.style.display = "none";
         return;
       }
 
-      listTitle.textContent = `${getRegionName(currentRegion)}地区的庄园`;
       if (data.has_more || pageNumber > 1) {
         pagination.style.display = "flex";
         totalPages = Math.ceil(data.total / data.page_size);

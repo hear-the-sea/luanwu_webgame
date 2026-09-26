@@ -412,7 +412,7 @@ def test_full_arena_coop_simulation_runs_phase_mechanics_end_to_end():
         event for round_data in result.rounds for event in round_data["events"] if event.get("type") == "passive"
     ]
     assert result.rounds
-    assert boss.max_hp == 300000
+    assert boss.max_hp == 200000
     assert boss.hp < boss.max_hp
     assert phase_events
     assert passive_events

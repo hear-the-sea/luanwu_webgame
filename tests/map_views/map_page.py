@@ -85,15 +85,15 @@ class TestMapViews:
         assert response.status_code == 200
         assert response.context["selected_region"] == "north"
 
-    def test_map_page_renders_selected_region_display_name(self, manor_with_user):
+    def test_map_page_marks_selected_region_option(self, manor_with_user):
         _manor, client = manor_with_user
 
         response = client.get(reverse("gameplay:map") + "?region=north")
 
         assert response.status_code == 200
         body = response.content.decode("utf-8")
-        assert "北俱芦洲地区的庄园" in body
-        assert "north地区的庄园" not in body
+        assert '<option value="north" selected>' in body
+        assert "北俱芦洲" in body
 
     def test_map_page_raid_scout_countdowns_use_explicit_refresh_api(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user

@@ -19,12 +19,14 @@ from gameplay.services.buildings.smithy import (
     get_max_smelting_quantity,
     get_max_smithy_medicine_quantity,
     get_metal_options,
+    get_smelting_queue_capacity,
     get_smithy_speed_bonus,
     has_active_smelting_production,
 )
 from gameplay.services.buildings.stable import (
     get_active_productions,
     get_horse_options,
+    get_horse_queue_capacity,
     get_max_production_quantity,
     get_stable_speed_bonus,
     has_active_production,
@@ -48,14 +50,19 @@ def get_stable_page_context(manor: Any) -> dict[str, Any]:
     from gameplay.services.inventory.core import get_warehouse_grain_quantity
 
     speed_bonus = get_stable_speed_bonus(manor)
+    active_productions = get_active_productions(manor)
+    queue_capacity = get_horse_queue_capacity(manor)
     return {
         "horse_options": get_horse_options(manor),
-        "active_productions": get_active_productions(manor),
+        "active_productions": active_productions,
         "speed_bonus": speed_bonus,
         "speed_bonus_percent": int(speed_bonus * 100),
         "horsemanship_level": get_player_technology_level(manor, "horsemanship"),
         "max_production_quantity": get_max_production_quantity(manor),
         "is_producing": has_active_production(manor),
+        "active_production_count": len(active_productions),
+        "production_queue_capacity": queue_capacity,
+        "production_queue_full": len(active_productions) >= queue_capacity,
         "warehouse_grain_quantity": get_warehouse_grain_quantity(manor),
     }
 
@@ -90,18 +97,23 @@ def get_smithy_page_context(manor: Any, *, current_category: str | None = None) 
     max_current_quantity = (
         get_max_smithy_medicine_quantity(manor) if normalized_category == "medicine" else max_smelting_quantity
     )
+    active_productions = get_active_smelting_productions(manor)
+    queue_capacity = get_smelting_queue_capacity(manor)
     return {
         "current_smithy_category": normalized_category,
         "smithy_categories": SMITHY_CATEGORIES,
         "metal_options": metal_options,
         "selected_metal_options": [option for option in metal_options if option.get("category") == normalized_category],
-        "active_productions": get_active_smelting_productions(manor),
+        "active_productions": active_productions,
         "speed_bonus": speed_bonus,
         "speed_bonus_percent": int(speed_bonus * 100),
         "smelting_level": get_player_technology_level(manor, "smelting"),
         "max_smelting_quantity": max_smelting_quantity,
         "max_current_quantity": max_current_quantity,
         "is_producing": has_active_smelting_production(manor),
+        "active_production_count": len(active_productions),
+        "production_queue_capacity": queue_capacity,
+        "production_queue_full": len(active_productions) >= queue_capacity,
     }
 
 
@@ -158,6 +170,8 @@ def get_forge_page_context(
     decompose_paginator = Paginator(decomposable_equipment, decompose_items_per_page)
     decompose_page_obj = decompose_paginator.get_page(page)
     speed_bonus = forge_service.get_forge_speed_bonus(manor)
+    active_forgings = forge_service.get_active_forgings(manor)
+    queue_capacity = forge_service.get_forging_queue_capacity(manor)
 
     return {
         "current_mode": normalized_mode,
@@ -166,7 +180,7 @@ def get_forge_page_context(
         "equipment_list": page_obj,
         "page_obj": page_obj,
         "decompose_page_obj": decompose_page_obj,
-        "active_forgings": forge_service.get_active_forgings(manor),
+        "active_forgings": active_forgings,
         "blueprint_synthesis_options": blueprint_synthesis_options,
         "blueprint_page_obj": blueprint_page_obj,
         "decomposable_equipment": decompose_page_obj,
@@ -175,4 +189,7 @@ def get_forge_page_context(
         "forging_level": forging_level,
         "max_forging_quantity": max_quantity,
         "is_forging": is_forging,
+        "active_production_count": len(active_forgings),
+        "production_queue_capacity": queue_capacity,
+        "production_queue_full": len(active_forgings) >= queue_capacity,
     }

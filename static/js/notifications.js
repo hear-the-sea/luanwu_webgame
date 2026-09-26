@@ -212,6 +212,16 @@
     );
     const kind = field("kind") || "";
 
+    if (kind === "announcement") {
+      window.GlobalAnnouncement?.render({
+        announcement_id: field("announcement_id"),
+        title: field("title") || "全服公告",
+        body: field("body") || "",
+        expires_at: field("expires_at"),
+      });
+      return;
+    }
+
     if (kind === "system" && field("building_key")) {
       updateUnreadCount(1);
       showToast({

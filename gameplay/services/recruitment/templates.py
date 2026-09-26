@@ -11,6 +11,7 @@ from core.utils import safe_non_negative_int, safe_positive_int
 from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
 
 logger = logging.getLogger(__name__)
+DEFAULT_TROOP_RECRUITMENT_BASE_DURATION = 60
 
 
 def _normalize_recruit_config(raw: Any, *, troop_key: str) -> dict[str, Any] | None:
@@ -30,7 +31,7 @@ def _normalize_recruit_config(raw: Any, *, troop_key: str) -> dict[str, Any] | N
         "tech_level": safe_non_negative_int(recruit.get("tech_level"), 0),
         "equipment": equipment,
         "retainer_cost": safe_positive_int(recruit.get("retainer_cost"), 1),
-        "base_duration": safe_positive_int(recruit.get("base_duration"), 120),
+        "base_duration": safe_positive_int(recruit.get("base_duration"), DEFAULT_TROOP_RECRUITMENT_BASE_DURATION),
     }
 
 

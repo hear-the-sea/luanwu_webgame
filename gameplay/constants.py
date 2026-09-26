@@ -21,6 +21,7 @@ BUILDING_MAX_LEVELS = {
     BuildingKeys.TREASURY: 20,  # 藏宝阁：容量函数按20级封顶（平衡时间消耗）
     BuildingKeys.JAIL: 5,  # 监牢：满级5人
     BuildingKeys.OATH_GROVE: 5,  # 结义林：满级5人
+    BuildingKeys.XIAOYAO_SHANZHUANG: 10,  # 逍遥山庄：满级可归闲10位门客
     BuildingKeys.WALL: 10,  # 城墙：满级30000血
     BuildingKeys.ARROW_TOWER: 10,  # 箭塔：满级15000血，最多同时攻击3个目标
     # 仓储设施

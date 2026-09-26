@@ -129,6 +129,7 @@ class BuildingKeys:
     """建筑类型标识"""
 
     JUXIAN_ZHUANG: str = "juxianzhuang"  # 聚贤庄
+    XIAOYAO_SHANZHUANG: str = "xiaoyao_shanzhuang"  # 逍遥山庄
     JIADING_FANG: str = "jiadingfang"  # 家丁房
     YOUXIA_BAOTA: str = "youxibaota"  # 游侠宝塔
     LIANGGONG_CHANG: str = "lianggongchang"  # 练功场

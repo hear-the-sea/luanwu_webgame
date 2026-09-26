@@ -38,7 +38,7 @@ HULAO_SCROLL_RARITIES = {
 }
 
 HULAO_SCROLL_DROP_RATES = {
-    "lvbu_guest_scroll": 0.01,
+    "lvbu_guest_scroll": 0.05,
     "diaochan_guest_scroll": 0.02,
 }
 

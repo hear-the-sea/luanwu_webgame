@@ -16,6 +16,7 @@ _BUILDING_IMAGE_PATHS = {
     "stable": "images/buildings/马房.webp",
     "forge": "images/buildings/铁匠铺.webp",
     "juxianzhuang": "images/buildings/聚贤庄.webp",
+    "xiaoyao_shanzhuang": "images/buildings/逍遥山庄.webp",
     "jiadingfang": "images/buildings/家丁房.webp",
     "lianggongchang": "images/buildings/练功场.webp",
     "tavern": "images/buildings/酒楼.webp",

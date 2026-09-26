@@ -212,7 +212,7 @@ def _weighted_choose_template_key(template_keys: List[str], weights: List[int]) 
 
 
 def _ensure_guest_capacity(manor: Manor) -> None:
-    if manor.guests.count() >= manor.guest_capacity:
+    if manor.active_guest_count >= manor.guest_capacity:
         raise GuestCapacityFullError()
 
 
