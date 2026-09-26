@@ -121,6 +121,10 @@ def test_xiaoyao_page_and_roster_link(manor_factory, client):
     buildings = client.get(reverse("gameplay:buildings_category", args=["special"]))
     assert roster.status_code == 200
     assert "前往逍遥山庄" in roster.content.decode()
+    assert (
+        f'<a class="tw-btn-primary" href="{reverse("gameplay:xiaoyao_shanzhuang")}">前往逍遥山庄</a>'
+        in roster.content.decode()
+    )
     assert detail.status_code == 200
     assert "归闲" in detail.content.decode()
     assert buildings.status_code == 200
