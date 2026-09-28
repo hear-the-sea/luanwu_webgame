@@ -69,10 +69,10 @@ def invalidate_recent_attacks_cache(defender_id: int) -> None:
 
 def get_recent_attacks_24h(defender: Manor, now: Optional[datetime] = None, *, use_cache: bool = True) -> int:
     """
-    Return how many raids the defender received in the last 24 hours.
+    Return how many raids the defender received in the last 24 hours for legacy statistics.
 
     Cache is best-effort and should be disabled (`use_cache=False`) for strict checks
-    inside critical locked transactions.
+    inside critical locked transactions. This count no longer blocks raids.
     """
     now = now or timezone.now()
     defender_id = int(getattr(defender, "id", 0) or 0)
@@ -170,10 +170,10 @@ def can_attack_target(
     Args:
         attacker: 进攻方庄园
         defender: 防守方庄园
-        recent_attacks: 可选的“目标24小时内被攻击次数”预计算值；提供时将跳过数据库 COUNT
+        recent_attacks: 兼容旧调用，连续受攻只影响开战时血量
         now: 可选的当前时间（用于批量计算时复用）
-        use_cached_recent_attacks: 是否允许使用短TTL缓存读取被攻击次数
-        check_defeat_protection: 是否检查防守方战败保护（侦察逻辑可关闭）
+        use_cached_recent_attacks: 兼容旧调用
+        check_defeat_protection: 兼容旧调用
         check_stale_bot: 是否查询目标的虚拟玩家过期状态
 
     Returns:
@@ -220,6 +220,7 @@ def get_target_attack_block_reason(
     check_stale_bot: bool = True,
 ) -> str:
     """Return a blocker shared by every potential attacker for this target."""
+    del recent_attacks, now, use_cached_recent_attacks, check_defeat_protection
     if (
         check_stale_bot
         and BotProfile.objects.filter(manor_id=defender.id)
@@ -229,17 +230,8 @@ def get_target_attack_block_reason(
         return "该虚拟玩家暂不可用"
     if defender.is_under_newbie_protection:
         return "对方处于新手保护期"
-    if check_defeat_protection and defender.is_under_defeat_protection:
-        return "对方处于战败保护期"
     if defender.is_under_peace_shield:
         return "对方处于免战牌保护期"
-
-    # 检查目标24小时内被攻击次数（防止小号集群攻击）
-    now = now or timezone.now()
-    if recent_attacks is None:
-        recent_attacks = get_recent_attacks_24h(defender, now=now, use_cache=use_cached_recent_attacks)
-    if recent_attacks >= PVPConstants.RAID_MAX_DAILY_ATTACKS_RECEIVED:
-        return "该目标今日已被多次攻击，暂时无法攻击"
 
     return ""
 

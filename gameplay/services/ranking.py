@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional
 from django.core.cache import cache
 from django.db.models import Q
 
+from ..constants import UIConstants
 from ..models import Manor
 from .utils.cache import CACHE_TIMEOUT_MEDIUM, CACHE_TIMEOUT_RANKING, CacheKeys, get_or_set
 from .utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
@@ -34,12 +35,12 @@ def _safe_cache_set(key: str, value: int, timeout: int) -> None:
         logger.warning("Ranking cache.set failed: key=%s error=%s", key, exc, exc_info=True)
 
 
-def get_prestige_ranking(limit: int = 50) -> List[Dict[str, Any]]:
+def get_prestige_ranking(limit: int = UIConstants.RANKING_DEFAULT_LIMIT) -> List[Dict[str, Any]]:
     """
     获取声望排行榜（带缓存）。
 
     Args:
-        limit: 返回的排名数量，默认50
+        limit: 返回的排名数量，最多为排行榜显示上限
 
     Returns:
         排行榜列表，每项包含：
@@ -49,13 +50,14 @@ def get_prestige_ranking(limit: int = 50) -> List[Dict[str, Any]]:
         - username: 用户名
         - prestige: 声望值
     """
-    cache_key = f"{CacheKeys.RANKING_PRESTIGE}:{limit}"
+    normalized_limit = min(max(int(limit), 0), UIConstants.RANKING_DEFAULT_LIMIT)
+    cache_key = f"{CacheKeys.RANKING_PRESTIGE}:{normalized_limit}"
 
     def compute_ranking():
         manors = (
             Manor.objects.select_related("user")
             .filter(prestige__gt=0, bot_profile__isnull=True)
-            .order_by("-prestige", "created_at")[:limit]
+            .order_by("-prestige", "created_at")[:normalized_limit]
         )
 
         ranking = []
@@ -109,7 +111,10 @@ def get_player_rank(manor: Manor) -> Optional[int]:
     return rank
 
 
-def get_ranking_with_player_context(manor: Manor, limit: int = 50) -> Dict[str, Any]:
+def get_ranking_with_player_context(
+    manor: Manor,
+    limit: int = UIConstants.RANKING_DEFAULT_LIMIT,
+) -> Dict[str, Any]:
     """
     获取排行榜以及当前玩家的排名信息。
 

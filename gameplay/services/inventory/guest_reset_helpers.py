@@ -238,7 +238,7 @@ def _get_or_create_rarity_conversion_template(guest: Guest, *, target_rarity: st
                 default_morality=source_template.default_morality,
                 recruitable=False,
                 is_hermit=source_template.is_hermit,
-                # Empty means the blue rarity default range is used by the growth engine.
+                # Empty means the target rarity's default range is used by the growth engine.
                 growth_range=[],
                 attribute_weights=dict(source_attribute_weights),
             )

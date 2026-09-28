@@ -24,6 +24,7 @@ SOUL_FUSION_DEFAULT_ALLOWED_RARITIES = frozenset(
         GuestRarity.PURPLE,
     }
 )
+SOUL_FUSION_ALLOWED_GUEST_STATUSES = frozenset({GuestStatus.IDLE, GuestStatus.VACATION})
 SOUL_FUSION_ARCHETYPE_BASE_WEIGHTS: dict[str, dict[str, float]] = {
     GuestArchetype.MILITARY: {
         "force": 44.0,
@@ -101,7 +102,11 @@ def get_soul_fusion_requirements(payload: Any) -> tuple[int, set[str]]:
 
 def guest_is_eligible_for_soul_fusion(guest: Guest, *, min_level: int, allowed_rarities: set[str]) -> bool:
     guest_rarity = str(getattr(getattr(guest, "template", None), "rarity", "") or "").strip()
-    return guest.status == GuestStatus.IDLE and guest.level >= min_level and guest_rarity in allowed_rarities
+    return (
+        guest.status in SOUL_FUSION_ALLOWED_GUEST_STATUSES
+        and guest.level >= min_level
+        and guest_rarity in allowed_rarities
+    )
 
 
 def _guest_level_ratio(guest: Guest) -> float:

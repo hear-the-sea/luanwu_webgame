@@ -4271,6 +4271,46 @@ a.rarity-text:hover {
   font-size: 0.8125rem;
 }
 
+.tw-manor-name.map-target-prestige-higher {
+  color: var(--accent-red);
+}
+
+.tw-manor-name.map-target-prestige-lower {
+  color: var(--accent-green);
+}
+
+.tw-map-pagination {
+  flex-wrap: wrap;
+  gap: 0.625rem 0.875rem;
+}
+
+.tw-map-page-navigation {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.tw-map-page-navigation .tw-btn-secondary,
+.tw-map-page-navigation .tw-page-info {
+  white-space: nowrap;
+}
+
+.tw-map-page-jump {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.tw-map-page-input {
+  width: 4.25rem;
+  min-width: 0;
+  padding: 0.45rem 0.5rem;
+  text-align: center;
+}
+
 @media (max-width: 640px) {
   .production-page-header {
     align-items: flex-start;
@@ -4298,5 +4338,28 @@ a.rarity-text:hover {
 
   .production-pagination {
     gap: 0.5rem;
+  }
+
+  .tw-map-pagination {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .tw-map-page-navigation {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .tw-map-page-navigation .tw-btn-secondary {
+    flex: 0 0 auto;
+    padding-right: 0.625rem;
+    padding-left: 0.625rem;
+    font-size: 0.8125rem;
+  }
+
+  .tw-map-page-jump {
+    align-self: center;
   }
 }

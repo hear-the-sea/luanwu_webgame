@@ -11,10 +11,123 @@ from django.urls import reverse
 from django.utils import timezone
 
 from core.exceptions import ProductionStartError
-from gameplay.models import HorseProduction, LivestockProduction, SmeltingProduction
+from gameplay.constants import BUILDING_MAX_LEVELS, BuildingKeys
+from gameplay.models import EquipmentProduction, HorseProduction, ItemTemplate, LivestockProduction, SmeltingProduction
 from gameplay.services.buildings import ranch as ranch_service
 from gameplay.services.buildings import smithy as smithy_service
 from gameplay.services.buildings import stable as stable_service
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("page_name", "building_key", "model", "active_status", "fields"),
+    [
+        (
+            "stable",
+            BuildingKeys.STABLE,
+            HorseProduction,
+            HorseProduction.Status.PRODUCING,
+            {"horse_key": "queued_horse", "horse_name": "测试马", "grain_cost": 10},
+        ),
+        (
+            "ranch",
+            BuildingKeys.RANCH,
+            LivestockProduction,
+            LivestockProduction.Status.PRODUCING,
+            {"livestock_key": "queued_livestock", "livestock_name": "测试家畜", "grain_cost": 10},
+        ),
+        (
+            "smithy",
+            BuildingKeys.SMITHY,
+            SmeltingProduction,
+            SmeltingProduction.Status.PRODUCING,
+            {"metal_key": "queued_metal", "metal_name": "测试金属", "cost_type": "silver", "cost_amount": 10},
+        ),
+        (
+            "forge",
+            BuildingKeys.FORGE,
+            EquipmentProduction,
+            EquipmentProduction.Status.FORGING,
+            {"equipment_key": "queued_equipment", "equipment_name": "测试装备", "material_costs": {}},
+        ),
+    ],
+)
+def test_first_of_two_due_queues_keeps_automatic_settlement(
+    manor_with_user,
+    page_name,
+    building_key,
+    model,
+    active_status,
+    fields,
+):
+    manor, client = manor_with_user
+    building = manor.buildings.get(building_type__key=building_key)
+    building.level = BUILDING_MAX_LEVELS[building_key]
+    building.save(update_fields=["level"])
+    manor.invalidate_building_cache()
+
+    now = timezone.now()
+    for complete_at in (
+        now - timezone.timedelta(minutes=1),
+        now + timezone.timedelta(hours=1),
+    ):
+        model.objects.create(
+            manor=manor,
+            quantity=1,
+            base_duration=60,
+            actual_duration=60,
+            complete_at=complete_at,
+            status=active_status,
+            **fields,
+        )
+
+    response = client.get(reverse(f"gameplay:{page_name}"))
+
+    assert response.status_code == 200
+    assert response.context["production_queue_capacity"] == 2
+    assert response.context["active_production_count"] == 2
+    body = response.content.decode("utf-8")
+    refresh_url = reverse("gameplay:refresh_production_runtime_api")
+    assert body.count(f'data-refresh-url="{refresh_url}" data-refresh-method="post"') == 2
+    assert "结算中..." in body
+
+
+@pytest.mark.django_db
+def test_production_refresh_frees_only_finished_queue(manor_with_user):
+    manor, client = manor_with_user
+    output = ItemTemplate.objects.create(key="finished_queue_horse", name="队列测试马")
+    now = timezone.now()
+    due = HorseProduction.objects.create(
+        manor=manor,
+        horse_key=output.key,
+        horse_name=output.name,
+        quantity=1,
+        grain_cost=10,
+        base_duration=60,
+        actual_duration=60,
+        complete_at=now - timezone.timedelta(minutes=1),
+        status=HorseProduction.Status.PRODUCING,
+    )
+    future = HorseProduction.objects.create(
+        manor=manor,
+        horse_key=output.key,
+        horse_name=output.name,
+        quantity=1,
+        grain_cost=10,
+        base_duration=60,
+        actual_duration=60,
+        complete_at=now + timezone.timedelta(hours=1),
+        status=HorseProduction.Status.PRODUCING,
+    )
+
+    response = client.post(reverse("gameplay:refresh_production_runtime_api"))
+
+    assert response.status_code == 200
+    assert response.json()["refreshed"] == 1
+    due.refresh_from_db()
+    future.refresh_from_db()
+    assert due.status == HorseProduction.Status.COMPLETED
+    assert future.status == HorseProduction.Status.PRODUCING
 
 
 @pytest.mark.django_db

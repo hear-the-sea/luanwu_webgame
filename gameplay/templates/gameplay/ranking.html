@@ -54,20 +54,6 @@
                 </table>
             </div>
 
-            {% if not player_in_ranking and player_rank %}
-            <div class="mt-4 text-center text-text-muted">
-                <p class="mb-2">...</p>
-                <table class="tw-table">
-                    <tbody>
-                        <tr class="bg-blue-50">
-                            <td class="w-20 text-center">{{ player_rank }}</td>
-                            <td class="font-medium">{{ manor.display_name }} <span class="tw-self-badge">我</span></td>
-                            <td class="w-24 text-right font-semibold text-purple-600">{{ manor.prestige }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            {% endif %}
             {% else %}
             <p class="tw-empty-hint">暂无玩家上榜，成为第一个上榜的玩家吧！</p>
             {% endif %}

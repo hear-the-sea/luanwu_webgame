@@ -89,6 +89,7 @@ def build_guest_item_selection_context(
     *,
     eligible_guests: list[Guest],
     disguise_guests: list[Guest] | None = None,
+    soul_fusion_guests: list[Guest] | None = None,
 ) -> GuestItemSelectionContext:
     payloads = _load_guest_tool_payloads(manor)
     has_guest_avatar_disguise_card = any(
@@ -112,9 +113,10 @@ def build_guest_item_selection_context(
         )
     ]
 
+    soul_fusion_candidates = soul_fusion_guests if soul_fusion_guests is not None else eligible_guests
     guests_for_soul_fusion = [
         guest
-        for guest in eligible_guests
+        for guest in soul_fusion_candidates
         if guest_is_eligible_for_soul_fusion(
             guest,
             min_level=soul_fusion_min_level,

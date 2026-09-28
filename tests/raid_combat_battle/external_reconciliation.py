@@ -89,7 +89,6 @@ def _stub_successful_raid(monkeypatch, *, report: BattleReport) -> None:
         lambda *_args, **_kwargs: BotLootClampDecision(resources={}),
     )
     monkeypatch.setattr(combat_battle, "_apply_prestige_changes", _increase_defender_prestige)
-    monkeypatch.setattr(combat_battle, "_apply_defeat_protection", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(combat_battle, "_apply_capture_reward", lambda *_args: None)
     monkeypatch.setattr(combat_battle, "_apply_salvage_reward", lambda *_args: None)
     monkeypatch.setattr(combat_battle, "_get_defender_battle_block_reason", lambda *_args, **_kwargs: None)

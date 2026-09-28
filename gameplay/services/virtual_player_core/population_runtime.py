@@ -14,11 +14,10 @@ from typing import Any, Iterator
 from uuid import UUID, uuid4
 
 from django.db import DatabaseError, connection, transaction
-from django.db.models import Case, Count, F, IntegerField, Q, When
+from django.db.models import Case, F, IntegerField, Q, When
 from django.utils import timezone
 
 from core.utils.cache_lock import acquire_best_effort_lock, release_best_effort_lock, renew_best_effort_lock
-from gameplay.constants import PVPConstants
 from gameplay.models import (
     BotBackfillDemand,
     BotMaintenanceRecovery,
@@ -26,7 +25,6 @@ from gameplay.models import (
     BotPopulationRecomputeDemand,
     BotProfile,
     Manor,
-    RaidRun,
 )
 from gameplay.services.arena.virtual_protection import arena_protected_bot_manor_ids
 from gameplay.services.runtime_configs import (
@@ -774,14 +772,6 @@ def _build_population_plan(
     target_based = uses_regional_planning if target_based_membership is None else bool(target_based_membership)
     active_days = max(1, int(population.get("active_window_days") or 7))
     active_after = now - timedelta(days=active_days)
-    recent_after = now - timedelta(hours=24)
-    exhausted_manor_ids = list(
-        RaidRun.objects.filter(started_at__gte=recent_after, defender__bot_profile__isnull=False)
-        .values("defender_id")
-        .annotate(received=Count("id"))
-        .filter(received__gte=PVPConstants.RAID_MAX_DAILY_ATTACKS_RECEIVED)
-        .values_list("defender_id", flat=True)
-    )
     maintained = _maintained_bot_queryset().select_related("manor")
     if required_engine_version is not None:
         maintained = maintained.filter(engine_version=int(required_engine_version))
@@ -789,9 +779,8 @@ def _build_population_plan(
             maintained = maintained.filter(policy_version=2)
     attackable = maintained.filter(
         Q(manor__newbie_protection_until__isnull=True) | Q(manor__newbie_protection_until__lte=now),
-        Q(manor__defeat_protection_until__isnull=True) | Q(manor__defeat_protection_until__lte=now),
         Q(manor__peace_shield_until__isnull=True) | Q(manor__peace_shield_until__lte=now),
-    ).exclude(manor_id__in=exhausted_manor_ids)
+    )
     demands = {
         (row["region"], row["prestige_band"]): int(row["needed"] or 0)
         for row in BotBackfillDemand.objects.values("region", "prestige_band", "needed")

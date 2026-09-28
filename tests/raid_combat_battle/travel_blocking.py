@@ -112,7 +112,7 @@ def test_raid_travel_time_uses_continuous_distance_and_cross_region_penalty(
 
 
 @pytest.mark.django_db
-def test_dismiss_marching_raids_if_protected_reacts_to_defeat_protection(django_user_model, monkeypatch):
+def test_dismiss_marching_raids_if_protected_reacts_to_peace_shield(django_user_model, monkeypatch):
     attacker, defender = build_attacker_defender(
         django_user_model,
         attacker_username="raid_dismiss_attacker",
@@ -120,8 +120,8 @@ def test_dismiss_marching_raids_if_protected_reacts_to_defeat_protection(django_
     )
 
     now = timezone.now()
-    defender.defeat_protection_until = now + timedelta(minutes=30)
-    defender.save(update_fields=["defeat_protection_until"])
+    defender.peace_shield_until = now + timedelta(minutes=30)
+    defender.save(update_fields=["peace_shield_until"])
 
     run = RaidRun.objects.create(
         attacker=attacker,
@@ -158,7 +158,7 @@ def test_dismiss_marching_raids_if_protected_reacts_to_defeat_protection(django_
         callback()
 
     assert len(sent_messages) == 1
-    assert "战败保护期" in sent_messages[0]["body"]
+    assert "免战牌保护期" in sent_messages[0]["body"]
 
 
 def test_resolve_complete_raid_task_missing_target_module_degrades(monkeypatch):
@@ -193,8 +193,8 @@ def test_dismiss_marching_raids_if_protected_db_message_failure_still_persists(d
     )
 
     now = timezone.now()
-    defender.defeat_protection_until = now + timedelta(minutes=30)
-    defender.save(update_fields=["defeat_protection_until"])
+    defender.peace_shield_until = now + timedelta(minutes=30)
+    defender.save(update_fields=["peace_shield_until"])
 
     run = RaidRun.objects.create(
         attacker=attacker,

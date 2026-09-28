@@ -7,12 +7,12 @@ from uuid import uuid4
 import pytest
 
 from core.exceptions import GuestAlreadyOwnedError, WorldUniqueGuestError
-from gameplay.models import InventoryItem, ItemTemplate, OathBond
+from gameplay.models import InventoryItem, ItemTemplate, OathBond, RaidRun
 from gameplay.selectors.warehouse import get_warehouse_context
 from gameplay.services.inventory.use import use_inventory_item
 from gameplay.services.jail import add_oath_bond
 from gameplay.services.raid.combat import capture as capture_service
-from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestTemplate, WorldUniqueGuest
+from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestStatus, GuestTemplate, WorldUniqueGuest
 from guests.services.recruitment_guests import create_guest_from_template
 from guests.services.roster import dismiss_guest
 from guests.services.world_unique import (
@@ -353,14 +353,11 @@ def test_lubu_loss_falls_back_to_live_guest_template_when_snapshot_omits_key(man
 
 
 @pytest.mark.django_db
-def test_lubu_loss_requires_a_winning_side_and_actual_participation(manor_factory):
+def test_lubu_defensive_loss_requires_attacker_victory_but_not_participation(manor_factory):
     owner, _user = manor_factory(username=_key("world_unique_no_loss_owner"))
     opponent, _opponent_user = manor_factory(username=_key("world_unique_no_loss_opponent"))
     guest = _claim(owner)
     run = SimpleNamespace(attacker=opponent, defender=owner)
-
-    no_participation_report = SimpleNamespace(winner="attacker", attacker_team=[], defender_team=[])
-    assert capture_service._release_losing_world_unique_guest(run, no_participation_report, True) is None
 
     draw_report = SimpleNamespace(
         winner="draw",
@@ -370,6 +367,50 @@ def test_lubu_loss_requires_a_winning_side_and_actual_participation(manor_factor
     assert capture_service._release_losing_world_unique_guest(run, draw_report, False) is None
     assert Guest.objects.filter(pk=guest.pk).exists()
     assert get_world_unique_guest_status()["owner_manor_id"] == owner.pk
+
+    no_participation_report = SimpleNamespace(winner="attacker", attacker_team=[], defender_team=[])
+    result = capture_service._release_losing_world_unique_guest(run, no_participation_report, True)
+    assert result is not None
+    assert result["from"] == "defender"
+    assert not Guest.objects.filter(pk=guest.pk).exists()
+    assert get_world_unique_guest_status()["summary"] == "在野"
+
+
+@pytest.mark.django_db
+def test_lubu_defensive_loss_removes_him_from_outbound_raid_snapshot(manor_factory):
+    owner, _user = manor_factory(username=_key("world_unique_outbound_owner"))
+    opponent, _opponent_user = manor_factory(username=_key("world_unique_outbound_opponent"))
+    lubu = _claim(owner)
+    lubu.status = GuestStatus.DEPLOYED
+    lubu.save(update_fields=["status"])
+    other_template = GuestTemplate.objects.create(
+        key=_key("world_unique_outbound_other"),
+        name="同行门客",
+        archetype="military",
+        rarity="green",
+    )
+    other_guest = Guest.objects.create(manor=owner, template=other_template, status=GuestStatus.DEPLOYED)
+    outbound_run = RaidRun.objects.create(
+        attacker=owner,
+        defender=opponent,
+        status=RaidRun.Status.MARCHING,
+        guest_snapshots=[{"guest_id": lubu.pk}, {"guest_id": other_guest.pk}],
+    )
+    outbound_run.guests.add(lubu, other_guest)
+
+    losing_run = SimpleNamespace(attacker=opponent, defender=owner)
+    result = capture_service._release_losing_world_unique_guest(
+        losing_run,
+        SimpleNamespace(winner="attacker", attacker_team=[], defender_team=[]),
+        True,
+    )
+
+    outbound_run.refresh_from_db()
+    assert result is not None
+    assert result["from"] == "defender"
+    assert outbound_run.guest_snapshots == [{"guest_id": other_guest.pk}]
+    assert list(outbound_run.guests.values_list("pk", flat=True)) == [other_guest.pk]
+    assert get_world_unique_guest_status()["summary"] == "在野"
 
 
 @pytest.mark.django_db

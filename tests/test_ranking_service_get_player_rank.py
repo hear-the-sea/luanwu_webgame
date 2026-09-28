@@ -36,6 +36,31 @@ def test_get_player_rank_matches_expected_order(django_user_model):
 
 
 @pytest.mark.django_db
+def test_prestige_ranking_caps_at_ten_and_keeps_player_rank(django_user_model, monkeypatch):
+    from gameplay.services import ranking as ranking_service
+    from gameplay.services.manor.core import ensure_manor
+
+    monkeypatch.setattr(ranking_service, "get_or_set", lambda _key, compute, **_kwargs: compute())
+    monkeypatch.setattr(ranking_service, "_safe_cache_get", lambda _key: None)
+    manors = []
+    for index in range(12):
+        user = django_user_model.objects.create_user(username=f"rank_top_ten_{index}", password="pass")
+        manor = ensure_manor(user)
+        manor.prestige = index + 1
+        manor.save(update_fields=["prestige"])
+        manors.append(manor)
+
+    ranking = ranking_service.get_prestige_ranking(limit=50)
+    context = ranking_service.get_ranking_with_player_context(manors[0], limit=50)
+
+    assert len(ranking) == 10
+    assert [entry["manor_id"] for entry in ranking] == [manor.id for manor in reversed(manors[2:])]
+    assert context["player_rank"] == 12
+    assert context["player_in_ranking"] is False
+    assert context["total_players"] == 12
+
+
+@pytest.mark.django_db
 def test_get_player_rank_tolerates_cache_backend_failure(django_user_model, monkeypatch):
     from gameplay.services.manor.core import ensure_manor
     from gameplay.services.ranking import get_player_rank

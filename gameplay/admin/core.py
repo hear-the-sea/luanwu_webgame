@@ -65,7 +65,6 @@ class ManorAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "newbie_protection_until",
-                    "defeat_protection_until",
                     "peace_shield_until",
                     "last_relocation_at",
                 ),

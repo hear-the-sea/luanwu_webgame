@@ -171,7 +171,7 @@ def test_safe_cache_delete_runtime_marker_error_bubbles_up(monkeypatch):
 
 
 @pytest.mark.django_db
-def test_can_attack_target_can_bypass_cached_recent_attacks(monkeypatch):
+def test_can_attack_target_ignores_legacy_recent_attack_count(monkeypatch):
     attacker = SimpleNamespace(
         id=1,
         is_under_newbie_protection=False,
@@ -187,24 +187,22 @@ def test_can_attack_target_can_bypass_cached_recent_attacks(monkeypatch):
         prestige=1000,
     )
 
-    limit = raid_utils.PVPConstants.RAID_MAX_DAILY_ATTACKS_RECEIVED
-
     def _fake_recent_attacks(_defender, now=None, *, use_cache=True):
-        return limit if use_cache else 0
+        raise AssertionError("攻击资格不应读取旧的被攻次数")
 
     monkeypatch.setattr(raid_utils, "get_recent_attacks_24h", _fake_recent_attacks)
 
-    blocked, blocked_reason = raid_utils.can_attack_target(attacker, defender, use_cached_recent_attacks=True)
+    allowed_cached, cached_reason = raid_utils.can_attack_target(attacker, defender, use_cached_recent_attacks=True)
     allowed, allowed_reason = raid_utils.can_attack_target(attacker, defender, use_cached_recent_attacks=False)
 
-    assert blocked is False
-    assert "多次攻击" in blocked_reason
+    assert allowed_cached is True
+    assert cached_reason == ""
     assert allowed is True
     assert allowed_reason == ""
 
 
 @pytest.mark.django_db
-def test_can_attack_target_blocks_defender_defeat_protection():
+def test_can_attack_target_ignores_legacy_defeat_protection():
     attacker = SimpleNamespace(
         id=1,
         is_under_newbie_protection=False,
@@ -221,8 +219,8 @@ def test_can_attack_target_blocks_defender_defeat_protection():
     )
 
     allowed, reason = raid_utils.can_attack_target(attacker, defender)
-    assert allowed is False
-    assert "战败保护期" in reason
+    assert allowed is True
+    assert reason == ""
 
 
 @pytest.mark.django_db

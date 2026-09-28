@@ -52,10 +52,10 @@
                             <h3>{{ production.equipment_name }} <span>×{{ production.quantity }}</span></h3>
                         </div>
                         <div class="production-queue-actions">
-                            {% if production.time_remaining > 0 %}
                             <span class="production-status production-status--active">
-                                剩余 <span class="countdown" data-countdown="{{ production.complete_at|date:'c' }}" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_production_runtime_api' %}" data-refresh-method="post">{{ production.time_remaining }} 秒</span>
+                                {% if production.time_remaining > 0 %}剩余 {% endif %}<span class="countdown" data-countdown="{{ production.complete_at|date:'c' }}" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_production_runtime_api' %}" data-refresh-method="post">{% if production.time_remaining > 0 %}{{ production.time_remaining }} 秒{% else %}结算中...{% endif %}</span>
                             </span>
+                            {% if production.time_remaining > 0 %}
                             <form method="post"
                                   action="{% url 'gameplay:cancel_equipment_forging' production.id %}"
                                   class="m-0 js-production-cancel-form"
@@ -66,8 +66,6 @@
                                 <input type="hidden" name="category" value="{{ current_category }}">
                                 <button type="submit" class="tw-btn-danger tw-btn-sm">取消锻造</button>
                             </form>
-                            {% else %}
-                            <span class="tw-badge-green">已完成</span>
                             {% endif %}
                         </div>
                     </article>

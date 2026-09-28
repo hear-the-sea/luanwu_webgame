@@ -92,6 +92,7 @@ class Manor(models.Model):
         blank=True,
         help_text="注册后7天内免受攻击",
     )
+    # 兼容历史数据；当前踢馆不再依据此字段阻止进攻。
     defeat_protection_until = models.DateTimeField(
         "战败保护截止时间",
         null=True,
@@ -161,7 +162,7 @@ class Manor(models.Model):
 
     @property
     def is_under_defeat_protection(self) -> bool:
-        """是否处于战败保护期"""
+        """旧版战败保护状态，仅供兼容历史调用。"""
         if not self.defeat_protection_until:
             return False
         return self.defeat_protection_until > timezone.now()
@@ -176,7 +177,7 @@ class Manor(models.Model):
     @property
     def is_protected(self) -> bool:
         """是否处于任何保护状态"""
-        return self.is_under_newbie_protection or self.is_under_peace_shield or self.is_under_defeat_protection
+        return self.is_under_newbie_protection or self.is_under_peace_shield
 
     @property
     def can_relocate(self) -> bool:

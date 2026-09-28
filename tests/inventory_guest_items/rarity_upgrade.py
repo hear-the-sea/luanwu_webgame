@@ -126,10 +126,10 @@ def test_green_to_blue_pill_creates_reusable_blue_template_and_uses_blue_standar
         name="待转化门客",
         archetype="civil",
         rarity="green",
-        base_attack=120,
-        base_intellect=160,
-        base_defense=100,
-        base_agility=90,
+        base_attack=80,
+        base_intellect=75,
+        base_defense=70,
+        base_agility=65,
         base_luck=50,
         base_hp=1200,
         growth_range=[3, 7],
@@ -168,6 +168,13 @@ def test_green_to_blue_pill_creates_reusable_blue_template_and_uses_blue_standar
     assert converted_template.name == green_template.name
     assert converted_template.growth_range == []
     assert converted_template.attribute_weights == green_template.attribute_weights
+    assert (
+        guest.initial_force + guest.initial_intellect + guest.initial_defense + guest.initial_agility
+        == green_template.base_attack
+        + green_template.base_intellect
+        + green_template.base_defense
+        + green_template.base_agility
+    )
     assert guest.level == 1
     assert guest.experience == 0
     assert guest.training_target_level == 2
@@ -186,3 +193,51 @@ def test_green_to_blue_pill_creates_reusable_blue_template_and_uses_blue_standar
     second_guest.refresh_from_db()
     assert second_guest.template_id == converted_template.id
     assert second_result["new_rarity"] == "蓝"
+
+
+@pytest.mark.django_db
+def test_blue_to_purple_pill_resets_initial_attributes_and_uses_purple_standard_growth(django_user_model):
+    manor, guest, item, blue_template, _mapped_purple = _prepare_rarity_upgrade_blue_to_purple_case(
+        django_user_model, "pill"
+    )
+    blue_template.base_attack = 80
+    blue_template.base_intellect = 75
+    blue_template.base_defense = 70
+    blue_template.base_agility = 65
+    blue_template.base_luck = 50
+    blue_template.save(update_fields=["base_attack", "base_intellect", "base_defense", "base_agility", "base_luck"])
+    item.template.effect_payload = {
+        "action": "upgrade_guest_rarity",
+        "source_rarity": "blue",
+        "target_rarity": "purple",
+    }
+    item.template.save(update_fields=["effect_payload"])
+
+    result = use_guest_rarity_upgrade_item(manor, item, guest.id)
+
+    guest.refresh_from_db()
+    converted_template = guest.template
+    assert converted_template.rarity == "purple"
+    assert converted_template.name == blue_template.name
+    assert converted_template.growth_range == []
+    assert converted_template.base_attack == blue_template.base_attack
+    assert converted_template.base_intellect == blue_template.base_intellect
+    assert converted_template.base_defense == blue_template.base_defense
+    assert converted_template.base_agility == blue_template.base_agility
+    assert converted_template.base_luck == blue_template.base_luck
+    assert (
+        guest.initial_force + guest.initial_intellect + guest.initial_defense + guest.initial_agility
+        == blue_template.base_attack
+        + blue_template.base_intellect
+        + blue_template.base_defense
+        + blue_template.base_agility
+    )
+    assert guest.level == 1
+    assert guest.experience == 0
+    assert result["old_rarity"] == "蓝"
+    assert result["new_rarity"] == "紫"
+    assert not InventoryItem.objects.filter(pk=item.pk).exists()
+
+    spy_rng = _RangeSpyRng()
+    allocate_level_up_attributes(guest, levels=1, rng=spy_rng)
+    assert spy_rng.last_range == (6, 11)

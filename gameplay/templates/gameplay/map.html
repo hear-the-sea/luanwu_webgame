@@ -147,10 +147,19 @@
         </div>
 
         <!-- 分页 -->
-        <div id="pagination" class="tw-pagination" style="display: none;">
-            <button class="tw-btn-secondary" id="prev-page" disabled>上一页</button>
-            <span id="page-info" class="tw-page-info">第 1 页</span>
-            <button class="tw-btn-secondary" id="next-page">下一页</button>
+        <div id="pagination" class="tw-pagination tw-map-pagination" style="display: none;">
+            <div class="tw-map-page-navigation" role="group" aria-label="地图分页">
+                <button type="button" class="tw-btn-secondary" id="prev-page" disabled>上一页</button>
+                <span id="page-info" class="tw-page-info">第 1 页</span>
+                <button type="button" class="tw-btn-secondary" id="next-page">下一页</button>
+            </div>
+            <div class="tw-map-page-jump">
+                <label for="page-number">跳转到</label>
+                <input type="number" id="page-number" class="tw-form-input tw-map-page-input"
+                       min="1" step="1" inputmode="numeric" aria-label="地图页码">
+                <span>页</span>
+                <button type="button" class="tw-btn-secondary" id="page-jump">跳转</button>
+            </div>
         </div>
     </section>
 </section>

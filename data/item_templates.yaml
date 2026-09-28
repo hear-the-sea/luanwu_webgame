@@ -1629,6 +1629,21 @@ items:
       source_rarity: green
       target_rarity: blue
 
+  - key: blue_to_purple_pill
+    name: 蓝转紫丸子
+    description: 使用后可将指定蓝色门客转化为紫色品质并重置为1级；初始属性按原门客模板基础属性重新生成，后续成长按紫色标准区间计算。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 200000
+    storage_space: 50
+    is_usable: true
+    image: blue_to_purple_pill.png
+    effect_payload:
+      action: upgrade_guest_rarity
+      source_rarity: blue
+      target_rarity: purple
+
   - key: small_trumpet
     name: 小喇叭
     description: 在世界频道发言时消耗，让你的声音传遍江湖。

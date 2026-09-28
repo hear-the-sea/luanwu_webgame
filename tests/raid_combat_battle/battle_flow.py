@@ -188,24 +188,6 @@ def test_process_raid_battle_recovers_missing_return_deadline(monkeypatch):
 
 
 @pytest.mark.django_db
-def test_apply_defeat_protection_sets_defender_until(django_user_model):
-    attacker, defender = build_attacker_defender(
-        django_user_model,
-        attacker_username="raid_defeat_attacker",
-        defender_username="raid_defeat_defender",
-    )
-
-    run = RaidRun.objects.create(attacker=attacker, defender=defender)
-    now = timezone.now()
-    combat_battle._apply_defeat_protection(run, is_attacker_victory=True, now=now)
-
-    defender.refresh_from_db()
-    expected = now + timedelta(seconds=combat_battle.PVPConstants.RAID_DEFEAT_PROTECTION_SECONDS)
-    assert defender.defeat_protection_until is not None
-    assert abs((defender.defeat_protection_until - expected).total_seconds()) <= 1
-
-
-@pytest.mark.django_db
 def test_apply_raid_loot_passes_raid_context_to_loot_calculation(monkeypatch, django_user_model):
     attacker, defender = build_attacker_defender(
         django_user_model,

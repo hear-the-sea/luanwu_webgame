@@ -121,7 +121,7 @@ def test_start_raid_invalidates_recent_attack_cache_on_commit(monkeypatch):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_start_raid_clears_attacker_defeat_protection_on_success(monkeypatch):
+def test_start_raid_does_not_touch_legacy_defeat_protection(monkeypatch):
     now = timezone.now()
     saved = {"fields": None}
     attacker = SimpleNamespace(
@@ -158,8 +158,8 @@ def test_start_raid_clears_attacker_defeat_protection_on_success(monkeypatch):
 
         assert len(callbacks) == 1
 
-    assert attacker.defeat_protection_until is None
-    assert saved["fields"] == ["defeat_protection_until"]
+    assert attacker.defeat_protection_until == now + timedelta(minutes=15)
+    assert saved["fields"] is None
 
 
 def test_start_raid_succeeds_when_incoming_message_fails(monkeypatch):

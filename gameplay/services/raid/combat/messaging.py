@@ -8,7 +8,6 @@ if TYPE_CHECKING:
     from ....models import RaidRun
 
 from ...utils.messages import create_message
-from .config import PVPConstants
 from .loot import (
     _format_battle_rewards_description,
     _format_capture_description,
@@ -47,14 +46,15 @@ def _send_raid_battle_messages(run: RaidRun) -> None:
     battle_rewards_desc = _format_battle_rewards_description(battle_rewards)
     capture_desc = _format_capture_description(battle_rewards.get("capture"))
     unique_guest_loss_desc = _format_unique_guest_loss_description(battle_rewards.get("unique_guest_loss"))
-    defeat_protection_seconds = int(getattr(PVPConstants, "RAID_DEFEAT_PROTECTION_SECONDS", 1800) or 1800)
-    defeat_protection_minutes = max(1, defeat_protection_seconds // 60)
+    defense_recovery_desc = (
+        "\n\n连续受攻：本场开战前防守门客与城防耐久已回满。" if battle_rewards.get("defense_recovery") else ""
+    )
 
     # 进攻方消息
     if is_victory:
         attacker_title = "踢馆战报 - 踢馆胜利"
         loot_desc = _format_loot_description(loot_resources, loot_items)
-        attacker_body = f"""对 {run.defender.display_name} 的踢馆行动取得胜利！
+        attacker_body = f"""对 {run.defender.display_name} 的踢馆行动取得胜利！{defense_recovery_desc}
 
 战利品：
 {loot_desc}
@@ -78,7 +78,7 @@ def _send_raid_battle_messages(run: RaidRun) -> None:
 {unique_guest_loss_desc}"""
     else:
         attacker_title = "踢馆战报 - 踢馆失败"
-        attacker_body = f"""对 {run.defender.display_name} 的踢馆行动失败了。
+        attacker_body = f"""对 {run.defender.display_name} 的踢馆行动失败了。{defense_recovery_desc}
 
 声望变化：{run.attacker_prestige_change}"""
         if capture_desc:
@@ -104,13 +104,12 @@ def _send_raid_battle_messages(run: RaidRun) -> None:
     if is_victory:
         defender_title = "踢馆战报 - 防守失败"
         loot_desc = _format_loot_description(loot_resources, loot_items)
-        defender_body = f"""来自 {run.attacker.location_display} 的 {run.attacker.display_name} 踢馆成功！
+        defender_body = f"""来自 {run.attacker.location_display} 的 {run.attacker.display_name} 踢馆成功！{defense_recovery_desc}
 
 损失：
 {loot_desc}
 
-声望变化：{run.defender_prestige_change}
-已获得{defeat_protection_minutes}分钟战败保护"""
+声望变化：{run.defender_prestige_change}"""
         if capture_desc:
             defender_body += f"""
 
@@ -123,7 +122,7 @@ def _send_raid_battle_messages(run: RaidRun) -> None:
 {unique_guest_loss_desc}"""
     else:
         defender_title = "踢馆战报 - 防守成功"
-        defender_body = f"""成功抵御了来自 {run.attacker.location_display} 的 {run.attacker.display_name} 的踢馆！
+        defender_body = f"""成功抵御了来自 {run.attacker.location_display} 的 {run.attacker.display_name} 的踢馆！{defense_recovery_desc}
 
 声望变化：+{run.defender_prestige_change}"""
         # 防守方胜利时获得战斗通用奖励

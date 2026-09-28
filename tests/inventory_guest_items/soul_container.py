@@ -141,6 +141,33 @@ def test_use_soul_container_generates_green_ornament_with_military_bias_and_retu
 
 
 @pytest.mark.django_db
+def test_use_soul_container_accepts_vacation_guest(django_user_model, temporary_item_image_storage):
+    manor, guest, item = _prepare_soul_container_case(
+        django_user_model,
+        "vacation_green",
+        guest_rarity="green",
+        archetype="military",
+        level=30,
+        force=120,
+        intellect=100,
+        defense=110,
+        agility=100,
+        luck=60,
+    )
+    guest.status = GuestStatus.VACATION
+    guest.save(update_fields=["status"])
+    guest_id = guest.pk
+    guest_name = guest.display_name
+
+    result = use_soul_container(manor, item, guest.id)
+
+    assert result["guest_name"] == guest_name
+    assert not Guest.objects.filter(pk=guest_id).exists()
+    assert not InventoryItem.objects.filter(pk=item.pk).exists()
+    assert manor.guests.filter(status=GuestStatus.VACATION).count() == 0
+
+
+@pytest.mark.django_db
 def test_use_soul_container_ignores_equipment_and_set_bonuses_when_rolling_stats(
     monkeypatch,
     django_user_model,

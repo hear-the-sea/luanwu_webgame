@@ -18,6 +18,8 @@
   const prevPageBtn = document.getElementById("prev-page");
   const nextPageBtn = document.getElementById("next-page");
   const pageInfo = document.getElementById("page-info");
+  const pageNumberInput = document.getElementById("page-number");
+  const pageJumpBtn = document.getElementById("page-jump");
 
   if (
     !regionSelect ||
@@ -172,7 +174,13 @@
       info.className = "tw-manor-card-info";
 
       const nameRow = document.createElement("div");
-      nameRow.className = "tw-manor-name";
+      let prestigeClass = "";
+      if (!isSelf && manor.prestige_color === "red") {
+        prestigeClass = " map-target-prestige-higher";
+      } else if (!isSelf && manor.prestige_color === "green") {
+        prestigeClass = " map-target-prestige-lower";
+      }
+      nameRow.className = `tw-manor-name${prestigeClass}`;
       nameRow.appendChild(document.createTextNode(String(manor.name || "")));
 
       if (isSelf) {
@@ -280,6 +288,11 @@
         prevPageBtn.disabled = pageNumber <= 1;
         nextPageBtn.disabled = !data.has_more;
         pageInfo.textContent = `第 ${pageNumber} / ${totalPages} 页`;
+        if (pageNumberInput) {
+          pageNumberInput.min = "1";
+          pageNumberInput.max = String(totalPages);
+          pageNumberInput.value = String(pageNumber);
+        }
         return;
       }
 
@@ -316,6 +329,25 @@
     }
   });
   nextPageBtn.addEventListener("click", () => loadManors(currentPage + 1));
+  if (pageNumberInput && pageJumpBtn) {
+    pageJumpBtn.addEventListener("click", () => {
+      const requestedPage = Number(pageNumberInput.value);
+      if (!Number.isInteger(requestedPage) || requestedPage < 1 || requestedPage > totalPages) {
+        pageNumberInput.setCustomValidity(`请输入 1 到 ${totalPages} 之间的整数`);
+        pageNumberInput.reportValidity();
+        return;
+      }
+
+      pageNumberInput.setCustomValidity("");
+      loadManors(requestedPage);
+    });
+    pageNumberInput.addEventListener("input", () => pageNumberInput.setCustomValidity(""));
+    pageNumberInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        pageJumpBtn.click();
+      }
+    });
+  }
 
   loadManors(1);
 })();

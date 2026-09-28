@@ -75,6 +75,7 @@ from .capture import (  # noqa: F401
     _try_capture_guest,
 )
 from .config import PVPConstants
+from .defense_recovery import has_recent_defensive_battle, restore_defender_battle_hp
 from .failure import fail_raid_run_and_release_resources
 from .loot import _apply_loot, _calculate_loot, clamp_loot_to_attacker_storage_capacity
 from .messaging import _send_raid_battle_messages  # noqa: F401
@@ -303,35 +304,17 @@ def _process_bot_loot_retirement(
     )
 
 
-def _apply_defeat_protection(run: RaidRun, is_attacker_victory: bool, *, now: Optional[datetime] = None) -> None:
-    if not is_attacker_victory:
-        return
-    now = now or timezone.now()
-    duration_seconds = int(getattr(PVPConstants, "RAID_DEFEAT_PROTECTION_SECONDS", 1800) or 0)
-    if duration_seconds <= 0:
-        return
-
-    defender = Manor.objects.select_for_update().get(pk=run.defender_id)
-    new_until = now + timedelta(seconds=duration_seconds)
-    current_until = defender.defeat_protection_until
-    if current_until and current_until > new_until:
-        new_until = current_until
-    defender.defeat_protection_until = new_until
-    defender.save(update_fields=["defeat_protection_until"])
-    run.defender = defender
-
-
 def _apply_capture_reward(locked_run: RaidRun, report: Any, is_attacker_victory: bool) -> None:
-    try:
-        unique_guest_loss = _release_losing_world_unique_guest(
-            locked_run,
-            report,
-            is_attacker_victory,
-        )
-        if unique_guest_loss:
-            battle_rewards = _normalize_mapping(locked_run.battle_rewards)
-            locked_run.battle_rewards = {**battle_rewards, "unique_guest_loss": unique_guest_loss}
+    unique_guest_loss = _release_losing_world_unique_guest(
+        locked_run,
+        report,
+        is_attacker_victory,
+    )
+    if unique_guest_loss:
+        battle_rewards = _normalize_mapping(locked_run.battle_rewards)
+        locked_run.battle_rewards = {**battle_rewards, "unique_guest_loss": unique_guest_loss}
 
+    try:
         random_context = BattleRandomContext.create(
             locked_run.base_seed,
             rng_version=locked_run.rng_version,
@@ -490,7 +473,6 @@ def process_raid_battle(run: RaidRun, now: Optional[datetime] = None) -> None:
 
                 loot_decision = _apply_raid_loot_if_needed(locked_run, is_attacker_victory, now=now)
                 _apply_prestige_changes(locked_run, is_attacker_victory)
-                _apply_defeat_protection(locked_run, is_attacker_victory, now=now)
                 _apply_capture_reward(locked_run, report, is_attacker_victory)
                 _apply_salvage_reward(locked_run, report, is_attacker_victory)
                 _persist_raid_external_reconciliation_intents(
@@ -613,6 +595,10 @@ def _execute_raid_battle(run: RaidRun) -> Any:
         attacker_combat_guests = attacker_guests  # type: ignore[assignment]
 
     defender_guests = select_player_defender_lineup(defender)
+    battle_now = timezone.now()
+    if has_recent_defensive_battle(run, now=battle_now):
+        restore_defender_battle_hp(defender, defender_guests, now=battle_now)
+        run.battle_rewards = {**_normalize_mapping(run.battle_rewards), "defense_recovery": True}
 
     defender_troops: Dict[str, int] = {}
     for troop in (

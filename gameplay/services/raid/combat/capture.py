@@ -11,7 +11,7 @@ from django.db.models import Q
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.constants import get_raid_capture_guest_rate
 from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
-from guests.models import Guest, GuestRarity, GuestStatus, GuestTemplate
+from guests.models import Guest, GuestRarity, GuestStatus, GuestTemplate, WorldUniqueGuest
 from guests.services.world_unique import WORLD_UNIQUE_LUBU_TEMPLATE_KEY, release_world_unique_guest_after_raid
 
 from ....models import JailPrisoner, Manor, OathBond, RaidRun
@@ -162,7 +162,23 @@ def _release_losing_world_unique_guest(
     report: Any,
     is_attacker_victory: bool,
 ) -> Dict[str, Any] | None:
-    guest_id = _find_losing_world_unique_guest_id(report, is_attacker_victory)
+    winning_side = "attacker" if is_attacker_victory else "defender"
+    if str(getattr(report, "winner", "") or "").strip() != winning_side:
+        return None
+
+    if is_attacker_victory:
+        # A defeated defending manor loses Lubu even when he is absent from its lineup.
+        guest_id = (
+            WorldUniqueGuest.objects.filter(
+                template__key=WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
+                status=WorldUniqueGuest.Status.SERVING,
+                owner_manor_id=run.defender.pk,
+            )
+            .values_list("owner_guest_id", flat=True)
+            .first()
+        )
+    else:
+        guest_id = _find_losing_world_unique_guest_id(report, is_attacker_victory)
     if guest_id is None:
         return None
 

@@ -326,7 +326,45 @@ def test_get_warehouse_context_rarity_upgrade_reads_source_rarity_from_item_temp
 
 
 @pytest.mark.django_db
-def test_get_warehouse_context_soul_fusion_list_only_contains_supported_idle_high_level_guests():
+def test_get_warehouse_context_blue_to_purple_pill_selects_idle_blue_guests():
+    user = User.objects.create_user(username="warehouse_blue_to_purple_user", password="pass123")
+    manor = ensure_manor(user)
+    blue_template = GuestTemplate.objects.create(
+        key="warehouse_blue_to_purple_source",
+        name="蓝色门客",
+        rarity="blue",
+        archetype="civil",
+    )
+    green_template = GuestTemplate.objects.create(
+        key="warehouse_blue_to_purple_other",
+        name="绿色门客",
+        rarity="green",
+        archetype="civil",
+    )
+    eligible_guest = Guest.objects.create(manor=manor, template=blue_template, status=GuestStatus.IDLE, level=20)
+    Guest.objects.create(manor=manor, template=blue_template, status=GuestStatus.INJURED, level=20)
+    Guest.objects.create(manor=manor, template=green_template, status=GuestStatus.IDLE, level=20)
+
+    pill_template = ItemTemplate.objects.create(
+        key="warehouse_blue_to_purple_pill",
+        name="蓝转紫丸子",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=True,
+        effect_payload={
+            "action": "upgrade_guest_rarity",
+            "source_rarity": "blue",
+            "target_rarity": "purple",
+        },
+    )
+    InventoryItem.objects.create(manor=manor, template=pill_template, quantity=1)
+
+    context = get_warehouse_context(manor, current_tab="warehouse", selected_category="all", page=1)
+
+    assert [guest.id for guest in context["guests_for_rarity_upgrade"]] == [eligible_guest.id]
+
+
+@pytest.mark.django_db
+def test_get_warehouse_context_soul_fusion_list_contains_idle_and_vacation_high_level_guests():
     user = User.objects.create_user(username="warehouse_soul_fusion_user", password="pass123")
     manor = ensure_manor(user)
 
@@ -344,6 +382,7 @@ def test_get_warehouse_context_soul_fusion_list_only_contains_supported_idle_hig
 
     eligible_high = Guest.objects.create(manor=manor, template=purple_tpl, status=GuestStatus.IDLE, level=70)
     eligible_mid = Guest.objects.create(manor=manor, template=green_tpl, status=GuestStatus.IDLE, level=45)
+    vacation_guest = Guest.objects.create(manor=manor, template=blue_tpl, status=GuestStatus.VACATION, level=50)
     Guest.objects.create(manor=manor, template=blue_tpl, status=GuestStatus.INJURED, level=80)
     Guest.objects.create(manor=manor, template=blue_tpl, status=GuestStatus.IDLE, level=29)
     Guest.objects.create(manor=manor, template=gray_tpl, status=GuestStatus.IDLE, level=90)
@@ -364,6 +403,7 @@ def test_get_warehouse_context_soul_fusion_list_only_contains_supported_idle_hig
     context = get_warehouse_context(manor, current_tab="warehouse", selected_category="all", page=1)
     assert [guest.id for guest in context["guests_for_soul_fusion"]] == [
         eligible_high.id,
+        vacation_guest.id,
         eligible_mid.id,
     ]
 

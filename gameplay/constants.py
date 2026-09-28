@@ -118,8 +118,7 @@ class PVPConstants:
     RAID_BASE_TRAVEL_TIME = 30 * 60  # 基础单程行军时间30分钟
     RAID_TRAVEL_TIME_PER_DISTANCE = 15  # 每单位距离增加15秒
     RAID_CROSS_REGION_MULTIPLIER = 1.5  # 跨区系数
-    RAID_MAX_DAILY_ATTACKS_RECEIVED = 8  # 每个庄园每24小时最多被攻击次数（防小号集群）
-    RAID_DEFEAT_PROTECTION_SECONDS = 1800  # 防守失败后战败保护时长（30分钟）
+    RAID_REPEAT_DEFENSE_WINDOW_SECONDS = 6 * 60 * 60  # 6小时内第2场起开战前回满防守血量
 
     # 俘获/监牢
     RAID_ATTACKER_DEFEAT_CAPTURE_RATE = 0.2  # 进攻失败时被防守方俘获的概率（单场最多1名）
@@ -234,7 +233,7 @@ class UIConstants:
     RECRUITMENT_ITEMS_PER_PAGE = 6  # 护院招募页面每页显示数量
     MAP_SEARCH_PAGE_SIZE = 5  # 地图搜索每页数量
     MAP_SEARCH_NAME_LIMIT = 50  # 按名称搜索最大结果数
-    RANKING_DEFAULT_LIMIT = 50  # 排行榜默认显示数量
+    RANKING_DEFAULT_LIMIT = 10  # 声望排行榜最多显示数量
     HISTORY_DEFAULT_LIMIT = 20  # 历史记录默认显示数量
 
     # 列表显示限制

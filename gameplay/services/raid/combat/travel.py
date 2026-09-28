@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from importlib import import_module
 from typing import Dict, List
 
@@ -24,7 +24,6 @@ from guests.models import Guest
 from ....models import Manor, RaidRun
 from ...pvp_runtime.lifecycle import TravelTimeline
 from ...pvp_runtime.messages import build_blocked_target_body
-from ...pvp_runtime.protection import build_daily_cap_result
 from ...pvp_runtime.travel import calculate_pvp_travel_time
 from ...utils.messages import create_message
 from ..utils import calculate_distance, is_same_region
@@ -49,26 +48,11 @@ def resolve_complete_raid_task(*, logger: logging.Logger) -> object | None:
 
 def _get_defender_battle_block_reason(defender: Manor, *, now: datetime | None = None) -> str | None:
     """Return the protection reason that should cancel an arriving raid, if any."""
+    del now
     if defender.is_under_newbie_protection:
         return "对方处于新手保护期"
-    if defender.is_under_defeat_protection:
-        return "对方处于战败保护期"
     if defender.is_under_peace_shield:
         return "对方处于免战牌保护期"
-
-    now = now or timezone.now()
-    recent_attacks = (
-        RaidRun.objects.filter(defender=defender, started_at__gte=now - timedelta(hours=24))
-        .exclude(status=RaidRun.Status.MARCHING)
-        .count()
-    )
-    cap_result = build_daily_cap_result(
-        current_count=recent_attacks,
-        max_count=PVPConstants.RAID_MAX_DAILY_ATTACKS_RECEIVED,
-        blocked_reason="该目标今日已被多次攻击，暂时无法攻击",
-    )
-    if cap_result.blocked:
-        return cap_result.reason
     return None
 
 

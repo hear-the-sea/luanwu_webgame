@@ -96,13 +96,13 @@ transaction.atomic():
 | 兵种模板 | YAML + DB | `data/troop_templates.yaml` → `TroopTemplate` |
 | 玩家护院数量 | DB | `PlayerTroop` 模型 |
 | 掠夺概率常量 | 代码常量 | `PVPConstants` 类 |
-| 最近攻击记录 | DB + Cache | 用于攻击冷却判定 |
+| 近 6 小时防守战斗 | DB | 按已生成战报的实际时间判断开战前是否回满防守血量 |
 
 ### 缓存策略
 
 | 缓存 | 说明 |
 |------|------|
-| 最近攻击缓存 | `can_attack_target` 中按 defender_id 缓存最近 24 小时攻击记录，事务提交后通过 `on_commit` 失效 |
+| 最近攻击缓存 | 旧统计接口按 defender_id 缓存最近 24 小时出征记录，事务提交后通过 `on_commit` 失效；不参与攻击资格判定 |
 
 缓存使用较少——踢馆核心流程基于行级锁和实时 DB 查询，不依赖缓存做关键决策。
 
@@ -119,8 +119,7 @@ transaction.atomic():
     3. 门客 select_for_update + 状态设置为 DEPLOYED
     4. PlayerTroop.select_for_update — 扣除护院
     5. 创建 RaidRun 记录
-    6. 清除发起方战败保护
-    7. on_commit: 失效最近攻击缓存
+    6. on_commit: 失效旧统计接口的最近攻击缓存
     ↓（事务外，最佳努力）
 发送来袭警报消息
 调度 Celery 战斗任务
@@ -130,16 +129,14 @@ transaction.atomic():
 
 ```
 transaction.atomic():
-    1. RaidRun.select_for_update → 状态 MARCHING → BATTLING
-    2. _lock_battle_manors() — 双方行锁
-    3. 执行战斗模拟（simulate_report）
-    4. 应用门客 HP 伤害 (Guest.select_for_update)
-    5. 应用掠夺（defender 资源/物品扣除）
-    6. 应用声望变化（双方 Manor.select_for_update）
-    7. 应用战败保护
-    8. 尝试俘获门客（JailPrisoner.create + Guest.delete）
-    9. 应用战斗回收奖励
-   10. 状态设为 RETURNING
+    1. 按 pk 锁定双方 Manor 与 RaidRun，状态 MARCHING → BATTLING
+    2. 校验新手保护和免战牌
+    3. 查询防守方近 6 小时已结算战斗；第 2 场起回满参战门客及城防血量
+    4. 执行战斗模拟（simulate_report）并应用门客、城防伤害
+    5. 应用掠夺和声望变化
+    6. 防守庄园战败则释放吕布，即使未参战；同步清理未开战出征快照
+    7. 尝试俘获普通门客并应用战斗回收奖励
+    8. 状态设为 RETURNING
     ↓（事务外，最佳努力）
 发送战报消息
 驱散防守方来袭中的踢馆队伍

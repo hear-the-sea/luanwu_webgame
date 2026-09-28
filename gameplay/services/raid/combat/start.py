@@ -63,9 +63,6 @@ def start_raid(
         deduct_troops(attacker_locked, loadout)
         travel_time = calculate_raid_travel_time(attacker_locked, defender_locked, guests, loadout)
         run = create_raid_run_record(attacker_locked, defender_locked, guests, loadout, travel_time)
-        if attacker_locked.defeat_protection_until and attacker_locked.defeat_protection_until > now:
-            attacker_locked.defeat_protection_until = None
-            attacker_locked.save(update_fields=["defeat_protection_until"])
         invalidate_recent_attacks_cache_on_commit(defender_locked.pk)
 
     try:

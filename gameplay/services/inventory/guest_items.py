@@ -42,6 +42,7 @@ from .guest_reset_helpers import (
 )
 from .random_source import inventory_random
 from .soul_fusion_helpers import (  # noqa: F401
+    SOUL_FUSION_ALLOWED_GUEST_STATUSES,
     SOUL_FUSION_ARCHETYPE_BASE_WEIGHTS,
     SOUL_FUSION_DEFAULT_ALLOWED_RARITIES,
     SOUL_FUSION_DEFAULT_MIN_LEVEL,
@@ -357,6 +358,7 @@ def use_soul_container(manor: Manor, item: InventoryItem, guest_id: int) -> Dict
         item,
         guest_id,
         "soul_fusion",
+        allowed_statuses=SOUL_FUSION_ALLOWED_GUEST_STATUSES,
     )
     ensure_guest_not_world_unique(guest, action="灵魂融合")
 

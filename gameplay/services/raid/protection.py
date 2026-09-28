@@ -85,7 +85,7 @@ def get_protection_status(manor: Manor) -> Dict[str, Any]:
         "remaining_seconds": 0,
         "remaining_display": "",
         "newbie_protection": None,
-        "defeat_protection": None,
+        "defeat_protection": None,  # 保留旧接口键，当前不再提供自动战败免战
         "peace_shield": None,
     }
     active: List[Tuple[str, str, datetime, int]] = []
@@ -99,16 +99,6 @@ def get_protection_status(manor: Manor) -> Dict[str, Any]:
                 "remaining_seconds": remaining,
             }
             active.append(("newbie_protection", "新手保护", newbie_until, remaining))
-
-    if manor.is_under_defeat_protection:
-        defeat_until: Optional[datetime] = manor.defeat_protection_until
-        if defeat_until is not None:
-            remaining = int((defeat_until - now).total_seconds())
-            status["defeat_protection"] = {
-                "until": defeat_until.isoformat(),
-                "remaining_seconds": remaining,
-            }
-            active.append(("defeat_protection", "战败保护", defeat_until, remaining))
 
     if manor.is_under_peace_shield:
         shield_until: Optional[datetime] = manor.peace_shield_until

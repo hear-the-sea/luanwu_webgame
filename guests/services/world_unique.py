@@ -7,7 +7,7 @@ from typing import Any
 from django.db import transaction
 
 from core.exceptions import GuestAlreadyOwnedError, GuestCapacityFullError, WorldUniqueGuestError
-from gameplay.models import Manor, OathBond
+from gameplay.models import Manor, OathBond, RaidRun
 
 from ..models import Guest, GuestTemplate, WorldUniqueGuest
 from . import equipment as equipment_service
@@ -216,6 +216,24 @@ def _release_world_unique_guest(
     # 测试环境可能存在历史脏数据，清理旧结义关系，避免删除时残留业务关系。
     OathBond.objects.filter(guest_id=guest.pk).delete()
 
+    # 出征快照独立于门客实例；移除未开战队伍中的吕布，避免战败释放后仍由快照参战。
+    for run in (
+        RaidRun.objects.select_for_update()
+        .filter(attacker_id=locked_loser.pk, status=RaidRun.Status.MARCHING)
+        .order_by("pk")
+    ):
+        snapshots = run.guest_snapshots
+        if not isinstance(snapshots, list):
+            continue
+        remaining = [
+            snapshot
+            for snapshot in snapshots
+            if not (isinstance(snapshot, dict) and str(snapshot.get("guest_id")) == str(guest.pk))
+        ]
+        if len(remaining) != len(snapshots):
+            run.guest_snapshots = remaining
+            run.save(update_fields=["guest_snapshots"])
+
     state.status = WorldUniqueGuest.Status.WILD
     state.owner_manor_id = None
     state.owner_guest_id = None
@@ -239,7 +257,7 @@ def release_world_unique_guest_after_raid(
     template_key: str = WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
     losing_side: str,
 ) -> dict[str, Any] | None:
-    """踢馆中唯一门客参战且战败时，归还装备并回到在野。"""
+    """踢馆战败时释放吕布；防守方失去归属不要求其参战。"""
     return _release_world_unique_guest(
         loser,
         guest_id=guest_id,

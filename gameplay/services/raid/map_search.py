@@ -7,15 +7,13 @@
 from __future__ import annotations
 
 import math
-from datetime import datetime, timedelta
 from itertools import islice
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-from django.db.models import Count, Q, QuerySet
-from django.utils import timezone
+from django.db.models import Q, QuerySet
 
 from ...constants import PVPConstants
-from ...models import Manor, RaidRun
+from ...models import Manor
 from ..pvp_runtime.travel import calculate_pvp_travel_time
 from ..virtual_player_state_policy import VIRTUAL_PROFILE_MAP_VISIBLE_STATES
 from .utils import calculate_distance, can_attack_target, get_prestige_color, is_same_region
@@ -29,7 +27,6 @@ _SEARCH_MANOR_FIELDS = (
     "coordinate_x",
     "coordinate_y",
     "newbie_protection_until",
-    "defeat_protection_until",
     "peace_shield_until",
     "user__username",
 )
@@ -149,30 +146,11 @@ def _format_manor_list(searcher: Manor, manors: Iterable[Manor]) -> List[Dict[st
     if not manors_list:
         return []
 
-    # 性能优化：批量计算“目标24小时内被攻击次数”，避免对每个目标 N+1 次 COUNT 查询。
-    now = timezone.now()
-    cutoff = now - timedelta(hours=24)
-    defender_ids = [m.id for m in manors_list]
-    recent_attack_counts = {
-        row["defender_id"]: row["cnt"]
-        for row in (
-            RaidRun.objects.filter(defender_id__in=defender_ids, started_at__gte=cutoff)
-            .values("defender_id")
-            .annotate(cnt=Count("id"))
-        )
-    }
-
     result: List[Dict[str, Any]] = []
     for manor in manors_list:
         distance = calculate_distance(searcher, manor)
         color = get_prestige_color(searcher.prestige, manor.prestige)
-        can_attack, reason = can_attack_target(
-            searcher,
-            manor,
-            recent_attacks=int(recent_attack_counts.get(manor.id, 0) or 0),
-            now=now,
-            check_stale_bot=False,
-        )
+        can_attack, reason = can_attack_target(searcher, manor, check_stale_bot=False)
 
         result.append(
             {
@@ -197,37 +175,19 @@ def _format_manor_list(searcher: Manor, manors: Iterable[Manor]) -> List[Dict[st
     return result
 
 
-def _count_attackable_manors(queryset: QuerySet[Manor], searcher: Manor, *, now: datetime, limit: int) -> int:
+def _count_attackable_manors(queryset: QuerySet[Manor], searcher: Manor, *, limit: int) -> int:
     """Count attackable targets in bounded batches, stopping at the needed threshold."""
     if limit <= 0:
         return 0
 
-    cutoff = now - timedelta(hours=24)
     candidates = queryset.exclude(id=searcher.id).only(*_SEARCH_MANOR_FIELDS).iterator(chunk_size=_SEARCH_BATCH_SIZE)
     count = 0
     while count < limit:
         batch = list(islice(candidates, _SEARCH_BATCH_SIZE))
         if not batch:
             break
-        recent_attack_counts = {
-            row["defender_id"]: row["cnt"]
-            for row in (
-                RaidRun.objects.filter(
-                    defender_id__in=[manor.id for manor in batch],
-                    started_at__gte=cutoff,
-                )
-                .values("defender_id")
-                .annotate(cnt=Count("id"))
-            )
-        }
         for manor in batch:
-            if can_attack_target(
-                searcher,
-                manor,
-                recent_attacks=int(recent_attack_counts.get(manor.id, 0) or 0),
-                now=now,
-                check_stale_bot=False,
-            )[0]:
+            if can_attack_target(searcher, manor, check_stale_bot=False)[0]:
                 count += 1
                 if count >= limit:
                     break
@@ -242,7 +202,6 @@ def count_attackable_manors_by_region(searcher: Manor, region: str, *, limit: in
     return _count_attackable_manors(
         queryset,
         searcher,
-        now=timezone.now(),
         limit=limit,
     )
 

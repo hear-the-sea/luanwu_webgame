@@ -119,6 +119,7 @@ def get_warehouse_context(manor, current_tab: str, selected_category: str, page:
         manor,
         eligible_guests=eligible_guests,
         disguise_guests=all_guests,
+        soul_fusion_guests=all_guests,
     )
     context["guests_for_rebirth"] = guest_item_selection.guests_for_rebirth
     context["guests_for_xisuidan"] = guest_item_selection.guests_for_xisuidan
