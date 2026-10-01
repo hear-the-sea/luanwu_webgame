@@ -167,37 +167,7 @@ missions:
 
     drop_table:
       silver: 40000
-      mid_autumn_mooncake: 1
-      mid_autumn_mooncake_bonus_1:
-        chance: 0.55
-        count: 1
-        choices:
-          - mid_autumn_mooncake
-      mid_autumn_mooncake_bonus_2:
-        chance: 0.25
-        count: 2
-        choices:
-          - mid_autumn_mooncake
-      mid_autumn_mooncake_bonus_4:
-        chance: 0.08
-        count: 4
-        choices:
-          - mid_autumn_mooncake
-      mid_autumn_mooncake_bonus_10:
-        chance: 0.015
-        count: 10
-        choices:
-          - mid_autumn_mooncake
-      jade_rabbit_summon_scroll:
-        chance: 0.08
-        count: 1
-      wu_gang_summon_scroll:
-        chance: 0.05
-        count: 1
-      chang_e_summon_scroll:
-        chance: 0.03
-        count: 1
-
+      mission_chest_mid_autumn_moon_palace_trial: 1
     daily_limit: 3
 
   # ========================================
@@ -237,48 +207,7 @@ missions:
 
     drop_table:
       silver: 40000
-      kasukabe_crayon: 1
-      kasukabe_crayon_bonus_1:
-        chance: 0.55
-        count: 1
-        choices:
-          - kasukabe_crayon
-      kasukabe_crayon_bonus_2:
-        chance: 0.25
-        count: 2
-        choices:
-          - kasukabe_crayon
-      kasukabe_crayon_bonus_4:
-        chance: 0.08
-        count: 4
-        choices:
-          - kasukabe_crayon
-      kasukabe_crayon_bonus_10:
-        chance: 0.015
-        count: 10
-        choices:
-          - kasukabe_crayon
-      experience_pineapple:
-        chance: 0.35
-        count: 3
-      experience_watermelon:
-        chance: 0.05
-        count: 1
-      buxuedan:
-        chance: 0.45
-        count: 6
-      fangdajing:
-        chance: 0.18
-        count: 2
-      mission_card:
-        chance: 0.08
-        count: 1
-      equip_action_mask: 0.10
-      equip_shiro_leash: 0.10
-      equip_kasukabe_satchel: 0.08
-      equip_action_beam_glove: 0.06
-      equip_nohara_pan: 0.05
-
+      mission_chest_kasukabe_daisakusen: 1
     daily_limit: 3
 
   # ========================================
@@ -310,14 +239,7 @@ missions:
 
     drop_table:
       silver: 8000
-      book_thunder_control: 0.05
-      huashan_equipment_pool:
-        chance: 0.60
-        count: 1
-        choices:
-          - equip_shushengzhesan
-          - equip_yanlingmao
-
+      mission_chest_huashan_lunjian: 1
     daily_limit: 3
 
   # ========================================
@@ -356,19 +278,7 @@ missions:
 
     drop_table:
       silver: 40000
-      book_ice_curse: 0.2
-      book_fatal_chain_sword: 0.04
-      experience_pineapple:
-        chance: 0.3
-        count: 5
-      equip_feiyunzui: 0.1
-      equip_tiehufu: 0.06
-      equip_yiqiyaopai: 0.05
-      equip_xuantiekui: 0.07
-      equip_hantiekui: 0.06
-      equip_wujinjia: 0.06
-      equip_linwenzhanjia: 0.05
-
+      mission_chest_wagangzhai_nixi: 1
     base_travel_time: 1800
     daily_limit: 3
 
@@ -396,13 +306,7 @@ missions:
 
     drop_table:
       silver: 7000
-      jingyang_equipment_pool:
-        chance: 0.50
-        count: 1
-        choices:
-          - equip_hupixue
-          - equip_huwenkui
-
+      mission_chest_jingyanggang: 1
     daily_limit: 3
 
   - key: wulongshan
@@ -429,16 +333,7 @@ missions:
 
     drop_table:
       silver: 15000
-      book_dragon_break_curse: 0.05
-      wulong_equipment_pool:
-        chance: 0.70
-        count: 1
-        choices:
-          - equip_baoutoukui
-          - equip_tiegugun
-          - equip_youxiaxue
-          - equip_mengguma
-
+      mission_chest_wulongshan: 1
     daily_limit: 3
 
   - key: wagangzhai
@@ -463,20 +358,7 @@ missions:
 
     drop_table:
       silver: 20000
-      wagang_equipment_pool:
-        chance: 0.75
-        count: 1
-        choices:
-          - equip_suozijia
-          - equip_shanwenjia
-          - equip_tiexianjia
-          - equip_pofengji
-          - equip_tongshanchui
-          - equip_tiehufu
-          - equip_yiqiyaopai
-          - equip_xiliangma
-          - equip_chibiao
-
+      mission_chest_wagangzhai: 1
     daily_limit: 3
 
   - key: fugui_shanzhuang
@@ -499,16 +381,7 @@ missions:
 
     drop_table:
       silver: 14000
-      book_steadfast_planning: 0.05
-      fugui_equipment_pool:
-        chance: 0.80
-        count: 1
-        choices:
-          - equip_yupei
-          - equip_fudai
-          - equip_zhujian
-          - equip_moyuyan
-
+      mission_chest_fugui_shanzhuang: 1
     daily_limit: 3
 
   - key: shizipo_heidian
@@ -537,23 +410,7 @@ missions:
 
     drop_table:
       silver: 30000
-      shizipo_skill_book_random:
-        chance: 0.08
-        choices:
-          - item_key: book_soul_erode
-            weight: 1
-          - item_key: book_draw_enemy_blades
-            weight: 1
-      equip_hushenfu: 0.1
-      equip_tongjing: 0.1
-      equip_fudai: 0.1
-      equip_duanhunbian: 0.2
-      equip_hanyuejian: 0.1
-      equip_lieyandao: 0.1
-      equip_zhenyuechui: 0.1
-      equip_huyaxianglian: 0.1
-      equip_xueyuzhuo: 0.1
-
+      mission_chest_shizipo_heidian: 1
     daily_limit: 3
 
   - key: shanhaiguan
@@ -580,28 +437,7 @@ missions:
 
     drop_table:
       silver: 40000
-      shanhaiguan_skill_book_random:
-        chance: 0.09
-        choices:
-          - item_key: book_iron_wall_heart
-            weight: 5
-          - item_key: book_last_chance_revival
-            weight: 4
-      equip_luopan: 0.1
-      equip_tiehufu: 0.1
-      equip_feiyukui: 0.1
-      equip_langyakui: 0.1
-      equip_zhaoyeyushizi: 0.15
-      equip_zhuidian: 0.1
-      equip_bailongju: 0.1
-      blueprint_xiaowei_set:
-        chance: 0.35
-        choices:
-          - blueprint_xiaoweitoukie
-          - blueprint_xiaoweikaijia
-          - blueprint_xiaoweichangxue
-          - blueprint_xiaoweichangjian
-
+      mission_chest_shanhaiguan: 1
     daily_limit: 3
 
   - key: shiren_daochang
@@ -635,21 +471,7 @@ missions:
 
     drop_table:
       silver: 20000
-      shiren_skill_book_random:
-        chance: 0.10
-        choices:
-          - item_key: book_taiyi_wind
-            weight: 1
-          - item_key: book_flower_rain
-            weight: 1
-      experience_peach: 9
-      equip_tanmunianzhu: 0.1
-      equip_taomujian: 0.1
-      equip_yunwenkui: 0.1
-      equip_yunwenfayi: 0.1
-      equip_xingluoshan: 0.1
-      equip_linghuzhui: 0.1
-
+      mission_chest_shiren_daochang: 1
     daily_limit: 3
 
   - key: jiguanshou_chuxian
@@ -685,13 +507,7 @@ missions:
 
     drop_table:
       silver: 24000
-      jiguanshou_equipment_pool:
-        chance: 0.80
-        count: 1
-        choices:
-          - equip_jixiemao
-          - equip_qingtongsuanchou
-
+      mission_chest_jiguanshou_chuxian: 1
     daily_limit: 2
     mission_card_daily_limit: 1
 
@@ -715,17 +531,7 @@ missions:
 
     drop_table:
       silver: 20000
-      book_endless_chatter: 0.05
-      blueprint_jiguanxiong: 0.02
-      biwu_equipment_pool:
-        chance: 0.80
-        count: 1
-        choices:
-          - equip_xuantiejia
-          - equip_qingtongsuanchou
-          - equip_tongjing
-          - equip_qingzongma
-
+      mission_chest_biwu_zhaoqin: 1
     daily_limit: 3
 
   - key: tianpeng_dijiao_1
@@ -761,17 +567,7 @@ missions:
 
     drop_table:
       silver: 50000
-      book_red_lotus_dance: 0.05
-      book_tangseng_sermon: 0.03
-      experience_pineapple: 15
-      equip_junzijian: 0.1
-      equip_yupei: 0.06
-      equip_fudai: 0.06
-      equip_xuanjiazhanbao: 0.05
-      equip_xuanbinggong: 0.06
-      equip_fengyuzan: 0.07
-      equip_xingshashouchuan: 0.07
-
+      mission_chest_tianpeng_dijiao_1: 1
     daily_limit: 3
 
   - key: tianpeng_dijiao_2
@@ -813,18 +609,7 @@ missions:
       guest_bonus: 0.20
 
     drop_table:
-      experience_pineapple:
-        chance: 0.99
-        count: 20  # TODO: 替换为经验西瓜
-      blueprint_huxianjian: 0.05
-      blueprint_huxianpao: 0.1
-      blueprint_huxianxie: 0.1
-      equip_zhaoyaojing: 0.15
-      equip_qiankunquan: 0.1
-      equip_tianjiluopan: 0.1
-      equip_lingwenyubi: 0.1
-      equip_guanxingdeng: 0.1
-
+      mission_chest_tianpeng_dijiao_2: 1
     daily_limit: 3
 
   - key: jiguan_chuniao
@@ -856,18 +641,7 @@ missions:
 
     drop_table:
       silver: 30000
-      book_thunder_nine_heavens: 0.04
-      equip_jiguanchuniao: 1
-      equip_feiyunzui: 0.1
-      equip_luopan: 0.05
-      blueprint_mechanism_blue:
-        chance: 0.20
-        choices:
-          - blueprint_jixiemao
-          - blueprint_jiguanchuniao
-          - blueprint_kuileimuren
-          - blueprint_qingji
-
+      mission_chest_jiguan_chuniao: 1
     daily_limit: 3
 
   - key: dongtian_fudi
@@ -894,15 +668,7 @@ missions:
 
     drop_table:
       silver: 50000
-      experience_watermelon: 5
-      xidianka: 0.5
-      xisuidan: 0.05
-      equip_pojunji: 0.2
-      equip_pojunkui: 0.2
-      equip_pojunzhanjia: 0.2
-      equip_pojunxue: 0.1
-
-
+      mission_chest_dongtian_fudi: 1
     daily_limit: 3
 
   - key: jiufeng_feihuan
@@ -936,16 +702,7 @@ missions:
 
     drop_table:
       silver: 20000
-      equip_lingboxie: 1
-      equip_yemantoukie: 0.1
-      equip_yemankandao: 0.1
-      equip_zhuifengxue: 0.07
-      equip_yingxingxue: 0.07
-      equip_pojunxue: 0.06
-      equip_jinlinxue: 0.06
-      equip_qianliju: 0.06
-      equip_juanmaochitu: 0.06
-
+      mission_chest_jiufeng_feihuan: 1
     daily_limit: 3
 
   - key: taozi_fenban
@@ -984,23 +741,7 @@ missions:
       guest_bonus: 0.06
 
     drop_table:
-      experience_peach: 15
-      taozi_equipment_pool:
-        chance: 0.85
-        count: 1
-        choices:
-          - equip_qingzhujia
-          - equip_qingtengguan
-          - equip_zhuyelu
-          - equip_tayunxue
-          - equip_jifengxue
-          - equip_hushenfu
-          - equip_taomupai
-          - equip_tanmunianzhu
-          - equip_taomujian
-          - equip_luopan
-          - equip_taxuema
-
+      mission_chest_taozi_fenban: 1
     daily_limit: 1
     mission_card_daily_limit: 0
 
@@ -1036,11 +777,7 @@ missions:
 
     drop_table:
       silver: 50000
-      equip_wuzhuima: 0.5
-      equip_bawangqiang: 0.1
-      experience_watermelon: 2
-      passive_skill_book_box: 0.06
-
+      mission_chest_simian_chuge: 1
     daily_limit: 3
 
   - key: manzu_ruqin
@@ -1067,9 +804,7 @@ missions:
 
     drop_table:
       silver: 50000
-      civil_skill_book_box: 0.18
-      pubayi_guest_card: 0.1
-
+      mission_chest_manzu_ruqin: 1
     daily_limit: 3
 
   - key: zhuiji_manzu
@@ -1097,12 +832,7 @@ missions:
 
     drop_table:
       silver: 40000
-      experience_pineapple:
-        chance: 0.8
-        count: 10
-      saiwai_equipment_box: 0.24
-      book_dragon_roar: 0.006
-
+      mission_chest_zhuiji_manzu: 1
     daily_limit: 3
 
   - key: liangshanbo_zhuyingtai
@@ -1133,25 +863,7 @@ missions:
 
     drop_table:
       silver: 10000
-      haorenka: 1
-      nichang_random_piece:
-        chance: 0.1
-        choices:
-          - equip_nichangyuyi
-          - equip_nichangwuxie
-          - equip_nichangjian
-      equip_baguadao: 0.1
-      equip_yiqiyaopai: 0.06
-      equip_zhujian: 0.05
-      equip_moyuyan: 0.05
-      equip_xuantiejie: 0.07
-      equip_liuyunpei: 0.07
-
-    probability_drop_table:
-      equip_nichangyuyi: 1
-      equip_nichangwuxie: 1
-      equip_nichangjian: 1
-
+      mission_chest_liangshanbo_zhuyingtai: 1
     base_travel_time: 1800
     daily_limit: 3
 
@@ -1184,28 +896,7 @@ missions:
 
     drop_table:
       silver: 60000
-      experience_pineapple:
-        chance: 0.65
-        count: 8
-      book_last_chance_revival: 0.05
-      equip_baguajing: 0.06
-      wanyin_flag_fragment:
-        chance: 0.35
-        count: 1
-      equip_xiaowei_set:
-        chance: 0.35
-        choices:
-          - equip_xiaoweitoukui
-          - equip_xiaoweikaijia
-          - equip_xiaoweichangxue
-          - equip_xiaoweichangjian
-      equip_huxian_set:
-        chance: 0.10
-        choices:
-          - equip_huxianpao
-          - equip_huxianxie
-          - equip_huxianjian
-
+      mission_chest_biyou_candeng: 1
     base_travel_time: 1800
     daily_limit: 3
 
@@ -1243,16 +934,7 @@ missions:
 
     drop_table:
       silver: 80000
-      experience_pineapple:
-        chance: 0.7
-        count: 12
-      book_five_thunder_descent: 0.048
-      book_hell_instant_formation: 0.048
-      equip_taiqingyuce: 0.0096
-      yuxu_broken_seal:
-        chance: 0.25
-        count: 1
-
+      mission_chest_shier_xianyin: 1
     base_travel_time: 1800
     daily_limit: 2
 
@@ -1289,37 +971,7 @@ missions:
 
     drop_table:
       silver: 100000
-      experience_pineapple:
-        chance: 0.8
-        count: 15
-      book_dragon_roar: 0.024
-      book_five_thunder_descent: 0.048
-      book_last_chance_revival: 0.072
-      equip_baguajing: 0.08
-      equip_taiqingyuce: 0.012
-      equip_fengshenbang: 0.006
-      fengshen_equipment_box: 0.08
-      blueprint_top_blue:
-        chance: 0.45
-        choices:
-          - blueprint_qinglongkui
-          - blueprint_qinglongjia
-          - blueprint_qinglongxue
-          - blueprint_qinglongdao
-      blueprint_top_purple:
-        chance: 0.25
-        choices:
-          - blueprint_qilinkui
-          - blueprint_qilinjia
-          - blueprint_qilinxue
-          - blueprint_qilindao
-      blueprint_top_orange:
-        chance: 0.03
-        choices:
-          - blueprint_feiyuan
-          - blueprint_chixiaojifeng
-          - blueprint_mojiajiguanren
-
+      mission_chest_fengbang_tianmen: 1
     base_travel_time: 1800
     daily_limit: 1
 
@@ -1354,37 +1006,7 @@ missions:
 
     drop_table:
       silver: 100000
-      experience_watermelon:
-        chance: 0.7
-        count: 4
-      book_bloodthirsty_fury: 0.06
-      book_desperate_beast: 0.06
-      book_prison_break_blade: 0.048
-      book_city_felling_strike: 0.048
-      equip_shanheshejitu: 0.012
-      equip_zhoutianxingpan: 0.012
-      equip_xuanyuanjian: 0.006
-      blueprint_top_blue:
-        chance: 0.45
-        choices:
-          - blueprint_qinglongkui
-          - blueprint_qinglongjia
-          - blueprint_qinglongxue
-          - blueprint_qinglongdao
-      blueprint_top_purple:
-        chance: 0.25
-        choices:
-          - blueprint_qilinkui
-          - blueprint_qilinjia
-          - blueprint_qilinxue
-          - blueprint_qilindao
-      blueprint_top_orange:
-        chance: 0.03
-        choices:
-          - blueprint_feiyuan
-          - blueprint_chixiaojifeng
-          - blueprint_mojiajiguanren
-
+      mission_chest_zhuolu_zhongyuan: 1
     base_travel_time: 1800
     daily_limit: 1
 
@@ -1417,17 +1039,7 @@ missions:
 
     drop_table:
       silver: 120000
-      experience_watermelon:
-        chance: 0.75
-        count: 5
-      equip_taixudiguan: 0.012
-      equip_hundunlongpao: 0.012
-      equip_changshengjian: 0.0096
-      equip_panlonggun: 0.0096
-      equip_qiankunshengong: 0.0096
-      equip_tuwujian: 0.006
-      equip_jianghuling: 0.012
-
+      mission_chest_guandu_zhizhan: 1
     base_travel_time: 2400
     daily_limit: 1
 
@@ -1500,8 +1112,7 @@ missions:
 
     drop_table:
       silver: 120000
-      huashan_wulin_chest: 1
-
+      mission_chest_huashan_lunjian_advanced: 1
     base_travel_time: 2400
     daily_limit: 1
 
@@ -1534,19 +1145,7 @@ missions:
 
     drop_table:
       silver: 90000
-      experience_watermelon:
-        chance: 0.85
-        count: 5
-      sishui_equipment_pool:
-        chance: 0.10
-        count: 1
-        choices:
-          - equip_pozhenqiang
-          - equip_chuanyungong
-          - equip_longwenyupei
-      equip_zhuyuye: 0.005
-      sishui_battle_report: 1
-
+      mission_chest_sishui_huaxiong_chengwei: 1
     base_travel_time: 2400
     daily_limit: 1
 
@@ -1585,14 +1184,7 @@ missions:
 
     drop_table:
       silver: 110000
-      experience_watermelon:
-        chance: 0.75
-        count: 5
-      hulao_war_banner: 1
-      equip_fangtianhuaji: 0.0096
-      equip_longlinzhanjia: 0.0072
-      equip_chituma: 0.006
-
+      mission_chest_hulao_qunying_zhan_lvbu: 1
     base_travel_time: 2400
     daily_limit: 1
 
@@ -1639,19 +1231,7 @@ missions:
 
     drop_table:
       silver: 180000
-      experience_watermelon:
-        chance: 0.9
-        count: 8
-      lvbu_guest_scroll: 0.05
-      super_guest_disguise_card: 0.01
-      diaochan_guest_scroll: 0.02
-      equip_panlonggun: 0.0096
-      equip_pojunzhanjia: 0.02
-      equip_tianjiguan: 0.025
-      book_dragon_roar: 0.036
-      book_stratagem_burst: 0.036
-      book_prison_break_blade: 0.036
-
+      mission_chest_baimenlou_mingyun_jueze: 1
     base_travel_time: 2700
     daily_limit: 1
 

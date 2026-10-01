@@ -12,6 +12,12 @@ from battle.models import TroopTemplate
 from gameplay.models import BuildingType, MissionTemplate
 from guests.models import GuestTemplate
 from guilds.models import GuildMissionTemplate
+from tests.mission_reward_content_helpers import (
+    assert_fixed_reward,
+    assert_random_group,
+    mission_reward_payload,
+    reward_item_keys,
+)
 
 
 def _enemy_guest_key(entry):
@@ -375,10 +381,17 @@ def test_default_mission_templates_cover_configured_equipment_sources():
 
     intermediate_drop_keys = set()
     mission_drop_keys = set()
+    items = {
+        row["key"]: row
+        for row in yaml.safe_load((settings.BASE_DIR / "data" / "item_templates.yaml").read_text(encoding="utf-8"))[
+            "items"
+        ]
+    }
     for mission in MissionTemplate.objects.all():
-        mission_drop_keys.update(mission.drop_table)
+        keys = reward_item_keys(mission_reward_payload(mission, items))
+        mission_drop_keys.update(keys)
         if mission.difficulty == "intermediate":
-            intermediate_drop_keys.update(mission.drop_table)
+            intermediate_drop_keys.update(keys)
 
     assert _expected_mission_source_keys(intermediate_equipment) <= intermediate_drop_keys
     assert _expected_mission_source_keys(flexible_equipment) <= mission_drop_keys
@@ -425,10 +438,10 @@ def test_default_mission_templates_import_tianpeng_dijiao_2_as_huxian_blueprints
     call_command("load_mission_templates", file=str(payload_path), verbosity=0)
 
     tianpeng = MissionTemplate.objects.get(key="tianpeng_dijiao_2")
-    assert tianpeng.drop_table["blueprint_huxianjian"] == 0.05
-    assert tianpeng.drop_table["blueprint_huxianpao"] == 0.1
-    assert tianpeng.drop_table["blueprint_huxianxie"] == 0.1
-    assert not {"equip_huxianjian", "equip_huxianpao", "equip_huxianxie"}.intersection(tianpeng.drop_table)
+    payload = mission_reward_payload(tianpeng)
+    for key, chance in (("blueprint_huxianjian", 0.05), ("blueprint_huxianpao", 0.1), ("blueprint_huxianxie", 0.1)):
+        assert_random_group(payload, chance, 1, {key: 1})
+    assert not {"equip_huxianjian", "equip_huxianpao", "equip_huxianxie"}.intersection(reward_item_keys(payload))
 
 
 @pytest.mark.django_db
@@ -442,32 +455,36 @@ def test_default_mission_templates_import_wanxian_niming_chain():
     assert biyou.difficulty == "advanced"
     assert biyou.daily_limit == 3
     assert biyou.entry_cost == {}
-    assert biyou.drop_table["wanyin_flag_fragment"] == {"chance": 0.35, "count": 1}
-    assert biyou.drop_table["equip_xiaowei_set"] == {
-        "chance": 0.35,
-        "choices": [
-            "equip_xiaoweitoukui",
-            "equip_xiaoweikaijia",
-            "equip_xiaoweichangxue",
-            "equip_xiaoweichangjian",
-        ],
-    }
-    assert biyou.drop_table["equip_huxian_set"] == {
-        "chance": 0.10,
-        "choices": ["equip_huxianpao", "equip_huxianxie", "equip_huxianjian"],
-    }
-    assert not {"blueprint_advanced_blue", "blueprint_advanced_purple"}.intersection(biyou.drop_table)
+    biyou_payload = mission_reward_payload(biyou)
+    assert_fixed_reward(biyou_payload, "wanyin_flag_fragment", 1)
+    assert_random_group(
+        biyou_payload,
+        0.35,
+        1,
+        dict.fromkeys(
+            ["equip_xiaoweitoukui", "equip_xiaoweikaijia", "equip_xiaoweichangxue", "equip_xiaoweichangjian"], 1
+        ),
+    )
+    assert_random_group(
+        biyou_payload, 0.1, 1, dict.fromkeys(["blueprint_huxianpao", "blueprint_huxianxie", "blueprint_huxianjian"], 1)
+    )
+    assert not {"blueprint_advanced_blue", "blueprint_advanced_purple"}.intersection(reward_item_keys(biyou_payload))
 
     shanhaiguan = MissionTemplate.objects.get(key="shanhaiguan")
-    assert shanhaiguan.drop_table["blueprint_xiaowei_set"] == {
-        "chance": 0.35,
-        "choices": [
-            "blueprint_xiaoweitoukie",
-            "blueprint_xiaoweikaijia",
-            "blueprint_xiaoweichangxue",
-            "blueprint_xiaoweichangjian",
-        ],
-    }
+    assert_random_group(
+        mission_reward_payload(shanhaiguan),
+        0.35,
+        1,
+        dict.fromkeys(
+            [
+                "blueprint_xiaoweitoukie",
+                "blueprint_xiaoweikaijia",
+                "blueprint_xiaoweichangxue",
+                "blueprint_xiaoweichangjian",
+            ],
+            1,
+        ),
+    )
     assert biyou.enemy_guests == [
         "task_wanxian_nangong_lie",
         "task_wanxian_lu_xuanqing",
@@ -481,14 +498,18 @@ def test_default_mission_templates_import_wanxian_niming_chain():
     assert shier.name == "封神之战：十二仙印"
     assert shier.daily_limit == 2
     assert shier.entry_cost == {"wanyin_flag_fragment": 1}
-    assert shier.drop_table["yuxu_broken_seal"] == {"chance": 0.25, "count": 1}
+    assert_fixed_reward(mission_reward_payload(shier), "yuxu_broken_seal", 1)
 
     fengbang = MissionTemplate.objects.get(key="fengbang_tianmen")
     assert fengbang.name == "封神之战：封榜天门"
     assert fengbang.daily_limit == 1
     assert fengbang.entry_cost == {"yuxu_broken_seal": 1}
-    assert "fengbang_torn_page" not in fengbang.drop_table
-    assert fengbang.drop_table["equip_fengshenbang"] == 0.006
+    fengbang_payload = mission_reward_payload(fengbang)
+    assert "fengbang_torn_page" not in reward_item_keys(fengbang_payload)
+    assert_random_group(
+        fengbang_payload, 0.15, 1, {"equip_taiqingyuce": 1, "equip_fengshenbang": 1, "equip_zhuxianjian": 1}
+    )
+    assert_fixed_reward(fengbang_payload, "zhuxian_sword_intent", 1)
 
 
 @pytest.mark.django_db
@@ -518,43 +539,51 @@ def test_default_mission_templates_import_zhuolu_zhongyuan():
         "arrow_god": 900,
     }
     assert mission.enemy_technology == {"level": 10, "guest_level": 100, "guest_bonus": 0.62}
-    assert mission.drop_table == {
-        "silver": 100000,
-        "experience_watermelon": {"chance": 0.7, "count": 4},
-        "book_bloodthirsty_fury": 0.06,
-        "book_desperate_beast": 0.06,
-        "book_prison_break_blade": 0.048,
-        "book_city_felling_strike": 0.048,
-        "equip_shanheshejitu": 0.012,
-        "equip_zhoutianxingpan": 0.012,
-        "equip_xuanyuanjian": 0.006,
-        "blueprint_top_blue": {
-            "chance": 0.45,
-            "choices": [
-                "blueprint_qinglongkui",
-                "blueprint_qinglongjia",
-                "blueprint_qinglongxue",
-                "blueprint_qinglongdao",
-            ],
+    assert mission.drop_table == {"silver": 100000, "mission_chest_zhuolu_zhongyuan": 1}
+    payload = mission_reward_payload(mission)
+    assert_random_group(payload, 0.7, 4, {"experience_watermelon": 1})
+    for key, chance in (
+        ("book_bloodthirsty_fury", 0.06),
+        ("book_desperate_beast", 0.06),
+        ("book_prison_break_blade", 0.048),
+        ("book_city_felling_strike", 0.048),
+    ):
+        assert_random_group(payload, chance, 1, {key: 1})
+    assert_random_group(
+        payload,
+        0.15,
+        1,
+        {
+            "equip_shanheshejitu": 1,
+            "equip_zhoutianxingpan": 1,
+            "equip_xuanyuanjian": 1,
+            "equip_longhuangguan": 1,
+            "equip_chuanguoyuxi": 1,
+            "equip_qilin": 1,
+            "equip_qingluan": 1,
         },
-        "blueprint_top_purple": {
-            "chance": 0.25,
-            "choices": [
-                "blueprint_qilinkui",
-                "blueprint_qilinjia",
-                "blueprint_qilinxue",
-                "blueprint_qilindao",
-            ],
-        },
-        "blueprint_top_orange": {
-            "chance": 0.03,
-            "choices": [
-                "blueprint_feiyuan",
-                "blueprint_chixiaojifeng",
-                "blueprint_mojiajiguanren",
-            ],
-        },
-    }
+    )
+    assert_random_group(
+        payload,
+        0.45,
+        1,
+        dict.fromkeys(
+            ["blueprint_qinglongkui", "blueprint_qinglongjia", "blueprint_qinglongxue", "blueprint_qinglongdao"], 1
+        ),
+    )
+    assert_random_group(
+        payload,
+        0.25,
+        1,
+        dict.fromkeys(["blueprint_qilinkui", "blueprint_qilinjia", "blueprint_qilinxue", "blueprint_qilindao"], 1),
+    )
+    assert_random_group(
+        payload,
+        0.06,
+        1,
+        dict.fromkeys(["blueprint_feiyuan", "blueprint_chixiaojifeng", "blueprint_mojiajiguanren"], 1),
+    )
+    assert_fixed_reward(payload, "xuanyuan_sword_intent", 1)
 
 
 @pytest.mark.django_db

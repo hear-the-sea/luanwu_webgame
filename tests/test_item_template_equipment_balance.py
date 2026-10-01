@@ -123,6 +123,12 @@ RESOURCE_PACK_STORAGE = {
     "resource_pack_advanced": 100,
 }
 STRATEGIC_ITEM_STORAGE = {
+    "zhuxian_sword_intent": 1,
+    "xuanyuan_sword_intent": 1,
+    "hulao_halberd_fragment": 1,
+    "baimenlou_dragon_fragment": 1,
+    "guandu_emperor_fragment": 1,
+    "huashan_sword_fragment": 1,
     "peace_shield_small": 25,
     "peace_shield_medium": 50,
     "peace_shield_large": 100,
@@ -163,6 +169,8 @@ def _expected_storage_space(key: str, item: dict) -> int:
     if effect_type in {"medicine", "experience_items"}:
         return CONSUMABLE_STORAGE_BY_RARITY[rarity]
     if effect_type == "loot_box":
+        if (item.get("effect_payload") or {}).get("mission_reward_version") == 1:
+            return 5
         return LOOT_BOX_STORAGE_BY_RARITY[rarity]
     if effect_type == "skill_book" or key.startswith("blueprint_"):
         return BLUEPRINT_STORAGE_BY_RARITY[rarity]

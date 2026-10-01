@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.mission_reward_content_helpers import assert_fixed_reward, assert_random_group, mission_reward_payload
+
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 GREEN_GEAR_KEYS = [
@@ -83,33 +85,17 @@ def test_mid_autumn_mission_contract():
         "guest_level": 60,
         "guest_bonus": 0.12,
     }
-    assert mission["drop_table"] == {
-        "silver": 40000,
-        "mid_autumn_mooncake": 1,
-        "mid_autumn_mooncake_bonus_1": {
-            "chance": 0.55,
-            "count": 1,
-            "choices": ["mid_autumn_mooncake"],
-        },
-        "mid_autumn_mooncake_bonus_2": {
-            "chance": 0.25,
-            "count": 2,
-            "choices": ["mid_autumn_mooncake"],
-        },
-        "mid_autumn_mooncake_bonus_4": {
-            "chance": 0.08,
-            "count": 4,
-            "choices": ["mid_autumn_mooncake"],
-        },
-        "mid_autumn_mooncake_bonus_10": {
-            "chance": 0.015,
-            "count": 10,
-            "choices": ["mid_autumn_mooncake"],
-        },
-        "jade_rabbit_summon_scroll": {"chance": 0.08, "count": 1},
-        "wu_gang_summon_scroll": {"chance": 0.05, "count": 1},
-        "chang_e_summon_scroll": {"chance": 0.03, "count": 1},
-    }
+    assert mission["drop_table"]["silver"] == 40000
+    payload = mission_reward_payload(mission)
+    assert_fixed_reward(payload, "mid_autumn_mooncake", 1)
+    for chance, quantity in ((0.55, 1), (0.25, 2), (0.08, 4), (0.015, 10)):
+        assert_random_group(payload, chance, quantity, {"mid_autumn_mooncake": 1})
+    for key, chance in (
+        ("jade_rabbit_summon_scroll", 0.08),
+        ("wu_gang_summon_scroll", 0.05),
+        ("chang_e_summon_scroll", 0.03),
+    ):
+        assert_random_group(payload, chance, 1, {key: 1})
 
 
 def test_mid_autumn_mooncake_contract():

@@ -118,6 +118,7 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         "mission_card_daily_limit": mission_card_daily_limit,
         "selected_drop_items": [],
         "selected_probability_drop_items": [],
+        "selected_chest_preview": None,
         "selected_entry_cost_items": [],
         "can_afford_entry_cost": True,
         "world_unique_guest_status": None,
@@ -147,6 +148,23 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         )
         context["selected_drop_items"] = guaranteed_drops
         context["selected_probability_drop_items"] = probability_drops
+        for drop in guaranteed_drops:
+            box = item_templates.get(drop["key"])
+            payload = getattr(box, "effect_payload", {}) or {}
+            if payload.get("mission_reward_version") != 1:
+                continue
+            reward_keys = {reward["item_key"] for reward in payload.get("item_rewards", [])}
+            reward_keys.update(
+                choice["item_key"] for group in payload.get("random_item_groups", []) for choice in group["choices"]
+            )
+            reward_keys.update(
+                reward["item_key"]
+                for entries in payload.get("blueprint_material_support", {}).values()
+                for reward in entries
+            )
+            reward_templates = get_item_templates_by_keys(reward_keys)
+            context["selected_chest_preview"] = mission_helpers.build_chest_reward_preview(box, reward_templates)
+            break
         entry_cost_items, can_afford_entry_cost = mission_helpers.build_entry_cost_list(
             selected_mission,
             item_templates,

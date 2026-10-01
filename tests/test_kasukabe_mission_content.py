@@ -4,6 +4,8 @@ from pathlib import Path
 
 import yaml
 
+from tests.mission_reward_content_helpers import assert_fixed_reward, assert_random_group, mission_reward_payload
+
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 GEAR_KEYS = {
     "equip_action_mask",
@@ -68,18 +70,27 @@ def test_kasukabe_mission_rewards_crayons_and_blue_gear():
     missions = _missions()
 
     mission = missions["kasukabe_daisakusen"]
-    drop_table = mission["drop_table"]
+    payload = mission_reward_payload(mission)
 
     assert mission["name"] == "春日部大作战"
     assert mission["available_weekdays"] == [2, 4, 6, 7]
     assert mission["difficulty"] == "intermediate"
     assert mission["enemy_technology"] == {"level": 7, "guest_level": 60, "guest_bonus": 0.12}
-    assert drop_table["kasukabe_crayon"] == 1
-    assert drop_table["kasukabe_crayon_bonus_1"] == {"chance": 0.55, "count": 1, "choices": ["kasukabe_crayon"]}
-    assert drop_table["kasukabe_crayon_bonus_2"] == {"chance": 0.25, "count": 2, "choices": ["kasukabe_crayon"]}
-    assert drop_table["kasukabe_crayon_bonus_4"] == {"chance": 0.08, "count": 4, "choices": ["kasukabe_crayon"]}
-    assert drop_table["kasukabe_crayon_bonus_10"] == {"chance": 0.015, "count": 10, "choices": ["kasukabe_crayon"]}
-    assert GEAR_KEYS.issubset(drop_table)
+    assert_fixed_reward(payload, "kasukabe_crayon", 1)
+    for chance, quantity in ((0.55, 1), (0.25, 2), (0.08, 4), (0.015, 10)):
+        assert_random_group(payload, chance, quantity, {"kasukabe_crayon": 1})
+    assert_random_group(
+        payload,
+        0.39,
+        1,
+        {
+            "equip_action_mask": 10,
+            "equip_shiro_leash": 10,
+            "equip_kasukabe_satchel": 8,
+            "equip_action_beam_glove": 6,
+            "equip_nohara_pan": 5,
+        },
+    )
 
 
 def test_kasukabe_guest_is_purple_military_non_pool_guest():

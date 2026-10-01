@@ -4,6 +4,13 @@ from pathlib import Path
 
 import yaml
 
+from tests.mission_reward_content_helpers import (
+    assert_fixed_reward,
+    assert_random_group,
+    mission_reward_payload,
+    reward_item_keys,
+)
+
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 JUNIOR_ORDER = [
     "jingyanggang",
@@ -55,7 +62,12 @@ EQUIPMENT_POOLS = {
     "jiguanshou_chuxian": (
         "jiguanshou_equipment_pool",
         0.80,
-        ["equip_jixiemao", "equip_qingtongsuanchou"],
+        {
+            "blueprint_jixiemao": 1,
+            "equip_qingtongsuanchou": 3,
+            "blueprint_xiaoxingjiguanshu": 3,
+            "blueprint_tongchanjiguan": 3,
+        },
     ),
     "taozi_fenban": (
         "taozi_equipment_pool",
@@ -109,9 +121,9 @@ def test_junior_missions_follow_the_validated_progression_order_and_entry_diffic
 def test_junior_mission_rewards_use_one_equipment_pick_per_pool():
     missions = _missions()
 
-    for mission_key, (pool_key, chance, choices) in EQUIPMENT_POOLS.items():
-        pool = missions[mission_key]["drop_table"][pool_key]
-        assert pool == {"chance": chance, "count": 1, "choices": choices}
+    for mission_key, (_pool_key, chance, choices) in EQUIPMENT_POOLS.items():
+        payload = mission_reward_payload(missions[mission_key])
+        assert_random_group(payload, chance, 1, choices if isinstance(choices, dict) else dict.fromkeys(choices, 1))
 
 
 def test_junior_mission_fixed_rewards_and_attempt_limits_match_balance_budget():
@@ -134,10 +146,31 @@ def test_junior_mission_fixed_rewards_and_attempt_limits_match_balance_budget():
         assert mission.get("mission_card_daily_limit", 5) == card_limit
 
 
-def test_peaches_are_concentrated_in_the_daily_peach_mission_and_biwu_blueprint_is_two_percent():
+def test_peaches_are_concentrated_in_the_daily_peach_mission_and_biwu_blueprint_is_five_percent():
     missions = _missions()
 
     for mission_key in JUNIOR_ORDER[:-1]:
-        assert "experience_peach" not in missions[mission_key]["drop_table"]
-    assert missions["taozi_fenban"]["drop_table"]["experience_peach"] == 15
-    assert missions["biwu_zhaoqin"]["drop_table"]["blueprint_jiguanxiong"] == 0.02
+        assert "experience_peach" not in reward_item_keys(mission_reward_payload(missions[mission_key]))
+    assert_fixed_reward(mission_reward_payload(missions["taozi_fenban"]), "experience_peach", 15)
+    assert_random_group(mission_reward_payload(missions["biwu_zhaoqin"]), 0.05, 1, {"blueprint_jiguanxiong": 1})
+
+
+def test_jiguan_chuniao_has_a_separate_target_blueprint_without_duplicate_extra_pool_entries():
+    payload = mission_reward_payload(_missions()["jiguan_chuniao"])
+    main_key = "blueprint_jiguanchuniao"
+    assert_random_group(payload, 0.4, 1, {main_key: 1})
+    extra_keys = {"blueprint_jixiemao", "blueprint_kuileimuren", "blueprint_qingji"}
+    assert_random_group(payload, 0.2, 1, dict.fromkeys(extra_keys, 1))
+    assert main_key not in {row["item_key"] for row in payload["item_rewards"]}
+    assert (
+        sum(choice["item_key"] == main_key for group in payload["random_item_groups"] for choice in group["choices"])
+        == 1
+    )
+    recipes = yaml.safe_load((DATA_DIR / "forge_blueprints.yaml").read_text(encoding="utf-8"))["recipes"]
+    recipe_costs = {row["blueprint_key"]: row["costs"] for row in recipes}
+    assert set(payload["blueprint_material_support"]) == extra_keys | {main_key}
+    for key, rewards in payload["blueprint_material_support"].items():
+        assert {row["item_key"]: row["min_quantity"] for row in rewards} == {
+            material: cost // 2 for material, cost in recipe_costs[key].items() if cost // 2 > 0
+        }
+        assert all(row["min_quantity"] == row["max_quantity"] for row in rewards)

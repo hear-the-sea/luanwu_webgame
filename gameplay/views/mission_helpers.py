@@ -384,6 +384,7 @@ def build_drop_display_item(
 ) -> dict[str, Any]:
     template = item_templates.get(key)
     image = getattr(template, "image", None)
+    description = getattr(template, "description", "") or ""
     return {
         "key": key,
         "name": name,
@@ -391,7 +392,54 @@ def build_drop_display_item(
         "count": count,
         "rarity": rarity,
         "image_url": image.url if image else "",
+        **({"description": description} if description else {}),
     }
+
+
+def build_chest_reward_preview(box: Any, reward_templates: dict[str, Any]) -> dict[str, Any]:
+    """按实际宝箱配置展示必得奖励和各候选概率，不把权重当成概率。"""
+    payload = box.effect_payload
+
+    def reward_label(key: str, minimum: int, maximum: int) -> str:
+        template = reward_templates.get(key)
+        name = template.name if template else "奖励待同步"
+        quantity = str(minimum) if minimum == maximum else f"{minimum}—{maximum}"
+        label = f"{name} ×{quantity}"
+        support = payload.get("blueprint_material_support", {}).get(key, [])
+        if support:
+            materials = "、".join(
+                f"{getattr(reward_templates.get(entry['item_key']), 'name', '材料待同步')}×{entry['min_quantity']}"
+                for entry in support
+            )
+            forging_level = payload.get("blueprint_forging_requirements", {}).get(key)
+            forging_text = f"锻造{forging_level}级" if forging_level else "对应配方的锻造等级"
+            label += f"（命中附带：{materials}；制作仍需{forging_text}与剩余材料）"
+        template_payload = getattr(template, "effect_payload", {}) or {}
+        if template_payload.get("collection_cost"):
+            label += f"（集齐{template_payload['collection_cost']}个可在仓库兑换）"
+        return label
+
+    def percentage(value: float) -> str:
+        return f"{value * 100:.4f}".rstrip("0").rstrip(".") + "%"
+
+    guaranteed = [
+        reward_label(reward["item_key"], reward["min_quantity"], reward["max_quantity"])
+        for reward in payload.get("item_rewards", [])
+    ]
+    groups = []
+    for group in payload.get("random_item_groups", []):
+        total_weight = sum(choice["weight"] for choice in group["choices"])
+        groups.append(
+            {
+                "chance": percentage(group["chance"]),
+                "choices": [
+                    reward_label(choice["item_key"], group["min_quantity"], group["max_quantity"])
+                    + f"（{percentage(group['chance'] * choice['weight'] / total_weight)}）"
+                    for choice in group["choices"]
+                ],
+            }
+        )
+    return {"name": box.name, "guaranteed": guaranteed, "groups": groups}
 
 
 def build_drop_lists(

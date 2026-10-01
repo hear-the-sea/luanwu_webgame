@@ -231,6 +231,11 @@ def build_mission_drops_with_salvage(
             _require_mapping_payload(getattr(locked_run.mission, "drop_table", None), field_name="drop table"),
         )
 
+    # 新任务把经验与装备统一收入专属宝箱；按已保存的实际掉落识别版本，
+    # 保留旧战报已确定的奖励及回收；空掉落防守战报仍按当前模板补齐。
+    if any(key.startswith("mission_chest_") for key in drops):
+        return drops
+
     from ..battle_salvage import calculate_battle_salvage
 
     exp_fruit_count, equipment_recovery = calculate_battle_salvage(

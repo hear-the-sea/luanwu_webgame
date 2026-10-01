@@ -4,16 +4,17 @@ from pathlib import Path
 
 import yaml
 
+from tests.mission_reward_content_helpers import assert_fixed_reward, assert_random_group, mission_reward_payload
+
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
-GUANDU_ORANGE_GEAR_KEYS = {
-    "equip_taixudiguan",
-    "equip_hundunlongpao",
-    "equip_changshengjian",
-    "equip_panlonggun",
-    "equip_qiankunshengong",
-    "equip_tuwujian",
-    "equip_jianghuling",
+GUANDU_GEAR_WEIGHTS = {
+    "equip_taixudiguan": 120,
+    "equip_hundunlongpao": 120,
+    "equip_diwangkui": 120,
+    "equip_panlonggun": 96,
+    "equip_qiankunshengong": 96,
+    "equip_changshengjian": 36,
 }
 
 FENGSHEN_EQUIPMENT_BOX_GEAR_KEYS = {
@@ -84,10 +85,13 @@ def test_guandu_is_a_single_yuanshao_endgame_boss_with_orange_gear_drops():
         "guest_skills": ["stratagem_burst"],
     }
 
-    drop_table = mission["drop_table"]
-    assert GUANDU_ORANGE_GEAR_KEYS <= drop_table.keys()
-    assert all(items[key]["rarity"] == "orange" for key in GUANDU_ORANGE_GEAR_KEYS)
-    assert all(0 < drop_table[key] < 1 for key in GUANDU_ORANGE_GEAR_KEYS)
+    payload = mission_reward_payload(mission, items)
+    assert all(items[key]["rarity"] == "orange" for key in GUANDU_GEAR_WEIGHTS)
+    assert_random_group(payload, 0.15, 1, GUANDU_GEAR_WEIGHTS)
+    horse_keys = {"equip_jueying", "equip_zhaohuangfeidian"}
+    assert all(items[key]["rarity"] == "purple" for key in horse_keys)
+    assert_random_group(payload, 0.25, 1, dict.fromkeys(horse_keys, 1))
+    assert_fixed_reward(payload, "guandu_emperor_fragment", 1)
 
 
 def test_fengbang_drops_a_random_fengshen_equipment_box():
@@ -95,7 +99,9 @@ def test_fengbang_drops_a_random_fengshen_equipment_box():
     items = _items()
     box = items["fengshen_equipment_box"]
 
-    assert mission["drop_table"]["fengshen_equipment_box"] == 0.08
+    assert_random_group(
+        mission_reward_payload(mission, items), 0.08, 1, dict.fromkeys(FENGSHEN_EQUIPMENT_BOX_GEAR_KEYS, 1)
+    )
     assert box["effect_type"] == "loot_box"
     assert box["rarity"] == "purple"
     assert box["is_usable"] is True
@@ -117,7 +123,9 @@ def test_baimenlou_has_direct_recruitment_scrolls():
     for scroll_key, guest_key in HULAO_SCROLL_TARGETS.items():
         scroll = items[scroll_key]
         assert guest_key in guest_keys
-        assert mission["drop_table"][scroll_key] == HULAO_SCROLL_DROP_RATES[scroll_key]
+        assert_random_group(
+            mission_reward_payload(mission, items), HULAO_SCROLL_DROP_RATES[scroll_key], 1, {scroll_key: 1}
+        )
         assert scroll["effect_type"] == "tool"
         assert scroll["rarity"] == HULAO_SCROLL_RARITIES[scroll_key]
         assert scroll["is_usable"] is True
@@ -140,7 +148,7 @@ def test_baimenlou_drops_the_super_guest_disguise_card():
     mission = _missions()["baimenlou_mingyun_jueze"]
     disguise_card = _items()["super_guest_disguise_card"]
 
-    assert mission["drop_table"]["super_guest_disguise_card"] == 0.01
+    assert_random_group(mission_reward_payload(mission), 0.01, 1, {"super_guest_disguise_card": 1})
     assert disguise_card["effect_type"] == "tool"
     assert disguise_card["rarity"] == "orange"
     assert disguise_card["is_usable"] is True

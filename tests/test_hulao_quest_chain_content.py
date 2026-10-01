@@ -2,6 +2,13 @@ from pathlib import Path
 
 import yaml
 
+from tests.mission_reward_content_helpers import (
+    assert_fixed_reward,
+    assert_random_group,
+    mission_reward_payload,
+    reward_item_keys,
+)
+
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
 
@@ -20,11 +27,11 @@ def test_hulao_quest_chain_consumes_the_previous_stage_token():
 
     assert [stage["display_order"] for stage in stages] == [1001, 1002, 1003]
     assert stages[0].get("entry_cost", {}) == {}
-    assert stages[0]["drop_table"]["sishui_battle_report"] == 1
+    assert_fixed_reward(mission_reward_payload(stages[0]), "sishui_battle_report", 1)
     assert stages[1]["entry_cost"] == {"sishui_battle_report": 1}
-    assert stages[1]["drop_table"]["hulao_war_banner"] == 1
+    assert_fixed_reward(mission_reward_payload(stages[1]), "hulao_war_banner", 1)
     assert stages[2]["entry_cost"] == {"hulao_war_banner": 1}
-    assert stages[2]["drop_table"]["super_guest_disguise_card"] == 0.01
+    assert_random_group(mission_reward_payload(stages[2]), 0.01, 1, {"super_guest_disguise_card": 1})
 
 
 def test_baimenlou_has_the_requested_five_bosses_and_final_rewards():
@@ -47,19 +54,24 @@ def test_baimenlou_has_the_requested_five_bosses_and_final_rewards():
         "book_dragon_roar",
         "book_stratagem_burst",
         "book_prison_break_blade",
-    } <= mission["drop_table"].keys()
+    } <= reward_item_keys(mission_reward_payload(mission))
+    payload = mission_reward_payload(mission)
+    assert_random_group(payload, 0.1, 1, {"equip_panlonggun": 1})
+    assert_random_group(payload, 0.35, 1, {"equip_pojunzhanjia": 1, "equip_tianjiguan": 1})
+    assert_fixed_reward(payload, "baimenlou_dragon_fragment", 1)
 
 
 def test_hulao_replaces_recruitment_scrolls_with_lvbu_equipment():
     missions = {entry["key"]: entry for entry in _load_yaml("mission_templates.yaml")["missions"]}
-    drop_table = missions["hulao_qunying_zhan_lvbu"]["drop_table"]
-
-    assert {
-        "equip_fangtianhuaji": 0.0096,
-        "equip_longlinzhanjia": 0.0072,
-        "equip_chituma": 0.006,
-    }.items() <= drop_table.items()
-    assert not {"lvbu_guest_scroll", "zhaoyun_guest_scroll", "diaochan_guest_scroll"} & drop_table.keys()
+    payload = mission_reward_payload(missions["hulao_qunying_zhan_lvbu"])
+    assert_random_group(
+        payload,
+        0.1,
+        1,
+        {"equip_fangtianhuaji": 1, "equip_longlinzhanjia": 1, "equip_chituma": 1},
+    )
+    assert_fixed_reward(payload, "hulao_halberd_fragment", 1)
+    assert not {"lvbu_guest_scroll", "zhaoyun_guest_scroll", "diaochan_guest_scroll"} & reward_item_keys(payload)
 
 
 def test_hulao_quest_item_images_are_present():

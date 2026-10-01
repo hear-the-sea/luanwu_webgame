@@ -255,6 +255,20 @@
                                 {% include "gameplay/includes/mission_drop_item.html" with drop=drop only %}
                             {% endfor %}
                         </div>
+                        <p class="tw-muted text-sm mt-3 mb-0">胜利奖励中的宝箱需在仓库点击使用后开启。任务链凭证也在宝箱中，开箱后即可用于下一关。</p>
+                        {% if selected_chest_preview %}
+                        <details class="mt-3">
+                            <summary class="cursor-pointer text-text-primary">{{ selected_chest_preview.name }}：查看内容与概率</summary>
+                            <div class="tw-muted text-sm mt-2">
+                                <p>必得：{{ selected_chest_preview.guaranteed|join:"、" }}</p>
+                                <p>以下各组独立抽取，可同时获得；每组命中后只取一项。括号为每箱获得该项的概率。</p>
+                                <p>图纸配套材料随对应图纸一起发放。累计碎片达到标注数量后，可在仓库点击使用兑换；随机获得装备不会清空碎片。</p>
+                                {% for group in selected_chest_preview.groups %}
+                                <p class="mb-2">奖励组（命中 {{ group.chance }}）：{{ group.choices|join:"、" }}</p>
+                                {% endfor %}
+                            </div>
+                        </details>
+                        {% endif %}
                     </section>
                     {% if selected_entry_cost_items %}
                     <section class="tw-task-detail-section">

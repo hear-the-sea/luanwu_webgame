@@ -12,6 +12,7 @@
     {% if drop.count > 1 %}<span class="tw-drop-count">×{{ drop.count }}</span>{% endif %}
     <span class="tw-item-tooltip">
         <span class="tw-tooltip-header rarity-{{ drop.rarity|default:'default' }}">{{ drop.label }}</span>
+        {% if drop.description %}<span class="tw-tooltip-desc">{{ drop.description }}</span>{% endif %}
     </span>
 </button>
 {% endif %}

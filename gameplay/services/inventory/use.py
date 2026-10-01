@@ -30,6 +30,7 @@ from ..action_points import ACTION_POINTS_MAX, get_current_action_points, restor
 from .core import (
     add_item_to_inventory,
     add_item_to_inventory_locked,
+    add_items_to_inventory_locked,
     consume_inventory_item_for_manor_locked,
     consume_inventory_item_locked,
 )
@@ -432,6 +433,19 @@ def _apply_item_synthesis(item: InventoryItem) -> Dict[str, Any]:
     if result_template is None:
         raise ItemNotConfiguredError("result_item_key 配置异常")
 
+    # 使用物品本身还会在外层扣1；同一种碎片作合成输入时先保留这一份，
+    # 避免不足一份也先扣完库存，最终refresh失败而返回服务器错误。
+    required_items = payload.get("required_items")
+    if (
+        isinstance(required_items, dict)
+        and item.template.key in required_items
+        and item.storage_location == InventoryItem.StorageLocation.WAREHOUSE
+    ):
+        from core.exceptions import InsufficientStockError
+
+        same_item_cost = _normalize_positive_config_int(required_items[item.template.key], field_name="required_items")
+        if item.quantity < same_item_cost + 1:
+            raise InsufficientStockError(item.template.name, same_item_cost + 1, item.quantity)
     _consume_required_items_locked(item.manor, payload)
     add_item_to_inventory_locked(item.manor, result_key, result_quantity, template=result_template)
     return {
@@ -595,6 +609,42 @@ def _apply_tool(item: InventoryItem) -> Dict[str, Any]:
     raise ItemNotUsableError(item.template.name, message="未知的道具效果")
 
 
+def _normalize_blueprint_material_support(payload: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    raw = payload.get("blueprint_material_support", {})
+    if not isinstance(raw, dict):
+        raise ItemNotConfiguredError("blueprint_material_support 配置异常")
+    support = {}
+    for key, entries in raw.items():
+        blueprint_key = _normalize_non_empty_string(key, field_name="blueprint_material_support")
+        normalized = _normalize_item_reward_entries(entries, field_name="blueprint_material_support")
+        if any(entry["min_quantity"] != entry["max_quantity"] for entry in normalized):
+            raise ItemNotConfiguredError("图纸配套材料必须为固定数量")
+        support[blueprint_key] = normalized
+    return support
+
+
+def _grant_blueprint_material_support(
+    item: InventoryItem,
+    reward_key: str,
+    quantity: int,
+    support: dict[str, list[dict[str, Any]]],
+    templates: dict[str, ItemTemplate],
+    rewards: list[str],
+) -> None:
+    entries = support.get(reward_key, [])
+    grants: dict[str, int] = {}
+    for entry in entries:
+        amount = int(entry["min_quantity"]) * quantity
+        if amount > 0:
+            key = str(entry["item_key"])
+            grants[key] = grants.get(key, 0) + amount
+    if grants:
+        add_items_to_inventory_locked(item.manor, grants, templates=templates)
+        rewards.append(
+            "图纸配套材料：" + "、".join(f"{templates[key].name}×{amount}" for key, amount in grants.items())
+        )
+
+
 def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
     """使用宝箱类物品，按配置发放多种奖励。"""
     payload = _require_effect_payload_dict(item)
@@ -604,6 +654,24 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
     manor = item.manor
     rewards: List[str] = []
     skipped_bonus_items: List[str] = []
+    blueprint_support = _normalize_blueprint_material_support(payload)
+    reward_templates: dict[str, ItemTemplate] = {}
+
+    # 专属任务宝箱不可静默丢失奖励。先校验全部候选，缺模板时
+    # 保留整箱等待配置修复；普通历史宝箱维持原有兼容策略。
+    if payload.get("mission_reward_version") == 1 or blueprint_support:
+        configured_keys = {
+            str(reward["item_key"])
+            for reward in _normalize_item_reward_entries(payload.get("item_rewards"), field_name="item_rewards")
+        }
+        for group in _normalize_random_item_groups(payload.get("random_item_groups"), field_name="random_item_groups"):
+            configured_keys.update(str(choice["item_key"]) for choice in group["choices"])
+        configured_keys.update(blueprint_support)
+        configured_keys.update(str(entry["item_key"]) for entries in blueprint_support.values() for entry in entries)
+        reward_templates = {template.key: template for template in ItemTemplate.objects.filter(key__in=configured_keys)}
+        available_keys = set(reward_templates)
+        if not configured_keys or configured_keys - available_keys:
+            raise ItemNotConfiguredError("宝箱奖励配置尚未完整同步，宝箱已保留，请稍后再试")
 
     # 1. 固定资源掉落（可选）
     resources = _normalize_resource_reward_mapping(payload.get("resources"), field_name="resources")
@@ -624,7 +692,10 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
             reward_template = ItemTemplate.objects.filter(key=item_key).first()
             reward_name = reward_template.name if reward_template else "未知物品"
             rewards.append(f"物品【{reward_name}】×{quantity}")
+            _grant_blueprint_material_support(item, item_key, quantity, blueprint_support, reward_templates, rewards)
         except ItemNotFoundError as exc:
+            if payload.get("mission_reward_version") == 1 or blueprint_support:
+                raise ItemNotConfiguredError("宝箱奖励配置异常，宝箱已保留") from exc
             logger.warning(
                 "loot box item reward grant skipped: manor_id=%s loot_box_item_id=%s reward_item_key=%s error=%s",
                 manor.id,
@@ -659,7 +730,10 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
             reward_template = ItemTemplate.objects.filter(key=item_key).first()
             reward_name = reward_template.name if reward_template else "未知物品"
             rewards.append(f"物品【{reward_name}】×{quantity}")
+            _grant_blueprint_material_support(item, item_key, quantity, blueprint_support, reward_templates, rewards)
         except ItemNotFoundError as exc:
+            if payload.get("mission_reward_version") == 1 or blueprint_support:
+                raise ItemNotConfiguredError("宝箱奖励配置异常，宝箱已保留") from exc
             logger.warning(
                 "loot box random item group grant skipped: manor_id=%s loot_box_item_id=%s reward_item_key=%s error=%s",
                 manor.id,

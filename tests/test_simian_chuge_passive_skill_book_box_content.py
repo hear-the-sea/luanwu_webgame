@@ -2,6 +2,8 @@ from pathlib import Path
 
 import yaml
 
+from tests.mission_reward_content_helpers import assert_random_group, mission_reward_payload
+
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
 
@@ -26,7 +28,13 @@ def _current_passive_skill_book_keys(items: dict[str, dict]) -> set[str]:
 def test_simian_chuge_drops_passive_skill_book_box_at_configured_rate():
     missions = {row["key"]: row for row in _load_yaml("mission_templates.yaml")["missions"]}
 
-    assert missions["simian_chuge"]["drop_table"]["passive_skill_book_box"] == 0.06
+    items = {row["key"]: row for row in _load_yaml("item_templates.yaml")["items"]}
+    assert_random_group(
+        mission_reward_payload(missions["simian_chuge"], items),
+        0.06,
+        1,
+        dict.fromkeys(_current_passive_skill_book_keys(items), 1),
+    )
 
 
 def test_passive_skill_book_box_contains_every_current_passive_skill_book():
